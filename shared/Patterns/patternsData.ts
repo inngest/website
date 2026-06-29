@@ -181,6 +181,13 @@ export const PATTERNS: PatternIndexItem[] = [
       "Use group.experiment() to split traffic, keep cohorts stable, compare variants, and roll changes forward safely.",
   },
   {
+    category: "ai-evals",
+    slug: "score-agents-on-real-outcomes",
+    title: "Score agents on real outcomes",
+    subtitle:
+      "Attach scores to runs and steps, and defer scoring until the real-world signal arrives, so you measure agents on what actually happened.",
+  },
+  {
     category: "flow",
     slug: "flash-sales-and-bursty-workflows",
     title: "Flash sales and bursty workflows",

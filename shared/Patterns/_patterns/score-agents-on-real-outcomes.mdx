@@ -1,0 +1,163 @@
+---
+title: Score agents on real outcomes
+subtitle: Attach scores to runs and steps, and defer scoring until the real-world signal arrives. Measure agents on what actually happened, not on proxy metrics.
+pattern: ai-evals
+tags: [Scoring, Evals, AI]
+---
+
+Use deferred scoring to grade an agent on what actually happened: human feedback, a resolved ticket, or ground truth that only arrives after the run ends.
+
+The most honest signal for an agent is whether the real-world outcome was good, and that usually isn't known when the run finishes. 
+
+A triage agent posts a root-cause analysis now; whether it pointed at the right file is only known once an engineer ships the fix. 
+
+A support agent answers now; whether it resolved the ticket is known hours later.
+
+Because Inngest runs the agent, you can attach a score to that original run whenever the truth arrives; that can be inline if it's known during the run, or deferred against the run's ID if it lands later. The score lives next to the run, step, and trace that produced it, with no separate eval pipeline to ship traces to.
+
+This pattern is useful when you want to grade against a resolved outcome, capture a human 👍/👎, compare an agent's claim to ground truth, or measure goal completion rather than a model-judged proxy.
+
+## Which kind of score do you need?
+
+| Situation | Approach | Why |
+| --- | --- | --- |
+| The outcome is known during the run | `step.score()` inline | Score the run as it completes. |
+| The outcome arrives later (feedback, resolution, ground truth) | `inngest.score()` against the `runId` | Attach the score to the original run when the truth lands. |
+| You want the same scoring logic in several places | `createScorer()` | Define a named scorer once, reuse it. |
+| You're comparing variants | Pair with `group.experiment()` | The same scorer grades every variant. |
+
+A score is a number (commonly `0`–`1`) attached to a run, a specific step, or a session. You decide what it measures.
+
+## Score inline when the outcome is known
+
+If the agent can be graded against a known answer at the time it runs, whether a fixed value range or a deterministic algorithm, score it inline with `step.score()`. The score is memoized like any other step.
+
+```typescript
+export default inngest.createFunction(
+  { id: "classify-ticket", triggers: { event: "support/ticket.created" } },
+  async ({ event, step }) => {
+    const predicted = await step.run("classify", () =>
+      classify(event.data.body)
+    );
+
+    if (event.data.knownLabel) {
+      await step.score({
+        name: "classification-accuracy",
+        value: predicted === event.data.knownLabel ? 1 : 0,
+      });
+    }
+
+    return predicted;
+  }
+);
+```
+
+## Defer the score until the real outcome lands
+
+This is the common case for agents in production: the run finishes, and the outcome only arrives later. Define a scorer with `createScorer()` and kick it off from the agent run with `defer()`. The scorer runs as its own function: it waits for the outcome signal, then returns a `{ name, value }` score that attaches to the run that deferred it. The agent run is never blocked, and there's no glue table mapping runs to outcomes.
+
+In the incident-triage example, the agent posts a root-cause analysis and cites the files it believes are responsible. The score can't be computed yet (it depends on the files the eventual fix touches), so the scorer waits for `incident/fix.shipped`, then grades the cited files against what the fix actually changed.
+
+```typescript
+import { createScorer } from "inngest/experimental";
+import { z } from "zod";
+import { inngest } from "./client";
+
+// The scorer is its own function. It waits for the fix to ship,
+// then grades the agent's cited files against ground truth.
+export const triageScorer = createScorer(
+  inngest,
+  {
+    id: "triage-localization-scorer",
+    schema: z.object({
+      incidentId: z.string(),
+      cited: z.array(z.string()),
+    }),
+  },
+  async ({ event, step }) => {
+    const fix = await step.waitForEvent("wait-for-fix", {
+      event: "incident/fix.shipped",
+      timeout: "30d",
+      if: `async.data.incidentId == '${event.data.input.incidentId}'`,
+    });
+
+    // No fix shipped inside the window: record a zero rather than nothing.
+    if (!fix) {
+      return { name: "localization", value: 0 };
+    }
+
+    return {
+      name: "localization",
+      value: jaccard(event.data.input.cited, fix.data.fixFiles), // overlap, 0–1
+    };
+  }
+);
+```
+
+Trigger the scorer from the agent run with `defer()`. It's enqueued when the run finalizes, so the agent returns immediately and the grading happens in the background.
+
+```typescript
+export default inngest.createFunction(
+  { id: "triage-incident", triggers: { event: "incident/opened" } },
+  async ({ event, step, defer }) => {
+    const rca = await step.run("investigate", () => investigate(event.data));
+    await step.run("post-rca", () => postRca(event.data.incidentId, rca));
+
+    // Score this run once the fix ships, in the background.
+    defer("score-localization", {
+      function: triageScorer,
+      data: { incidentId: event.data.incidentId, cited: rca.citedFiles },
+    });
+
+    return rca;
+  }
+);
+```
+
+The returned score attaches to the triage run, so its trace, cost, and quality live in one place. Because the scorer is defined once, the same logic can grade any run that defers to it, including each variant of a `group.experiment()`.
+
+## Capture human feedback as a score
+
+When the outcome already arrives as an event that carries the run's ID, you don't need a scorer; score the run directly from a normal function. A thumbs-up/down from your UI is the typical case: send it as an event and score the run it refers to.
+
+```typescript
+export const scoreFeedback = inngest.createFunction(
+  { id: "score-feedback", triggers: { event: "agent/response.rated" } },
+  async ({ event }) => {
+    await inngest.score({
+      name: "human-feedback",
+      runId: event.data.runId,
+      value: event.data.rating === "up" ? 1 : 0,
+    });
+  }
+);
+```
+
+## Score the session, not just the run
+
+A conversation or an incident thread spans many runs. When the outcome reflects the whole flow rather than one step, score the session instead of a single run, using the same session key you group runs by.
+
+
+```typescript
+await inngest.score("goal-completed", {
+  session: { conversation_id: event.data.conversationId },
+  value: event.data.resolved ? 1 : 0,
+});
+```
+
+## Best practices
+
+- Score the outcome you care about, not a proxy for it. Prefer "did the ticket resolve" over "did the answer look good."
+- Use a stable score name. Names appear in the dashboard and in Insights, and renaming splits your history.
+- Keep `value` in `[0, 1]`. Map pass/fail to `1`/`0` and graded results to a fraction.
+- When you score directly from an outcome event, put the run's ID on that event so the handler knows which run to score. Deferred scorers don't need this: the score attaches to the run that deferred them.
+- Reach for a deferred score before an LLM-as-judge score. A real outcome is a better signal than a model's opinion of the output.
+
+## Related docs
+
+- [Score a function run](/docs/features/inngest-functions/steps-workflows/scoring?ref=docs-patterns-score-agents-on-real-outcomes): how-to for inline and external scoring
+- [Build a deferred scorer](/docs/features/inngest-functions/steps-workflows/deferred-scoring?ref=docs-patterns-score-agents-on-real-outcomes): score outcomes that resolve later
+- [Scoring reference](/docs/reference/typescript/v4/functions/scoring?ref=docs-patterns-score-agents-on-real-outcomes): `inngest.score()`, `step.score()`, `createScorer()`, `defer()`
+- [Deferred functions reference](/docs/reference/typescript/v4/functions/deferred-functions?ref=docs-patterns-score-agents-on-real-outcomes): `defer()` for fire-and-forget background work
+- [Patterns: Run experiments in production](/docs/patterns/ai-evals/run-experiments-in-production?ref=docs-patterns-score-agents-on-real-outcomes): split traffic and compare variants
+- [`group.experiment()` reference](/docs/reference/typescript/v4/functions/group-experiment?ref=docs-patterns-score-agents-on-real-outcomes): score each variant in an experiment
