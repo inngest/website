@@ -6,6 +6,7 @@ type PatternFrontmatter = {
   title?: string;
   subtitle?: string;
   tags?: string[];
+  unreleased?: string;
 };
 
 export default async function handler(
@@ -23,6 +24,11 @@ export default async function handler(
   try {
     const data = await loadMarkdownFile("shared/Patterns/_patterns", slug);
     const metadata = (data.metadata ?? {}) as PatternFrontmatter;
+    // No ?unreleased opt-in on this endpoint, so gated patterns 404.
+    if (metadata.unreleased) {
+      res.status(404).send("Pattern not found");
+      return;
+    }
     const body = (data as { content: string }).content;
     const markdown = patternMarkdown(
       metadata.title ?? slug,
