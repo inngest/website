@@ -135,12 +135,23 @@ function recommend(inputs: Inputs): PlanName {
 }
 
 const RECOMMENDED_BULLETS: Record<PlanName, string[]> = {
-  [PLAN_NAMES.hobby]: ["5 concurrent steps", "500 MB span data", "10K scores"],
-  [PLAN_NAMES.pro]: ["100 concurrent steps", "5 GB span data", "50K scores"],
+  [PLAN_NAMES.hobby]: [
+    "5 concurrent steps",
+    "500 MB span data",
+    "10K scores",
+    "500K events ingested",
+  ],
+  [PLAN_NAMES.pro]: [
+    "100 concurrent steps",
+    "5 GB span data",
+    "50K scores",
+    "5M events ingested",
+  ],
   [PLAN_NAMES.enterprise]: [
     "500+ concurrent steps",
     "Custom span data",
     "Custom scores",
+    "Custom events ingested",
   ],
 };
 

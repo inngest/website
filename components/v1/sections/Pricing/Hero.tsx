@@ -46,6 +46,7 @@ const LIFT_Y_PX = -8;
 const RELEASE_BOUNCE = springs.glide;
 const RETRACT_MS = 360;
 const HOLD_ELEVATION_MS = 700;
+const HEADLINE_FEATURE_COUNT = 5;
 
 // Inline style for every overlay span that extends with the surface.
 // `--surface-y` is the gated view of `--surface-extra-y` — zeroed
@@ -384,11 +385,11 @@ function PlanCard({
         {plan.cta.text}
       </ButtonLink>
 
-      {/* Feature bullets — the first three headline limits read larger,
+      {/* Feature bullets — headline limits read larger,
           then a short divider separates the supporting features below. */}
       <div className="relative z-10 flex flex-col gap-4 text-v1-frost">
         <ul className="flex list-disc flex-col gap-3 pl-[21px]">
-          {plan.features.slice(0, 3).map((feature) => (
+          {plan.features.slice(0, HEADLINE_FEATURE_COUNT).map((feature) => (
             <li key={feature.text} className="text-v1-body-sm">
               {feature.value && (
                 <span className="font-bold">{feature.value} </span>
@@ -397,11 +398,11 @@ function PlanCard({
             </li>
           ))}
         </ul>
-        {plan.features.length > 3 && (
+        {plan.features.length > HEADLINE_FEATURE_COUNT && (
           <>
             <span aria-hidden="true" className="h-px w-10 bg-v1-frost/30" />
             <ul className="flex list-disc flex-col gap-3 pl-[21px]">
-              {plan.features.slice(3).map((feature) => (
+              {plan.features.slice(HEADLINE_FEATURE_COUNT).map((feature) => (
                 <li key={feature.text} className="text-v1-body-xs">
                   {feature.value && (
                     <span className="font-bold">{feature.value} </span>

@@ -105,6 +105,7 @@ export const PLANS: Plan[] = [
     features: [
       "500 MB span data ingested",
       "10K scores included",
+      "500k events ingested",
       "Unlimited branch and staging envs",
       "Logs, traces, and observability",
       "Basic alerting",
@@ -149,6 +150,7 @@ export const PLANS: Plan[] = [
     features: [
       "500 MB span data ingested",
       "10K scores included",
+      "500k events ingested",
       "Unlimited branch and staging envs",
       "Logs, traces, and observability",
       "Basic alerting",
@@ -196,6 +198,7 @@ export const PLANS: Plan[] = [
     features: [
       "5 GB span data ingested",
       "50K scores included",
+      "5M events ingested",
       "Granular metrics",
       "Increased scale and throughput",
       "Higher usage limits",
@@ -239,6 +242,7 @@ export const PLANS: Plan[] = [
     features: [
       "Custom span data ingested",
       "Custom scores",
+      "Custom events ingested",
       "SAML, RBAC, and audit trails",
       "Exportable observability",
       "90 day trace retention",
