@@ -13,6 +13,14 @@ const config = {
 };
 
 /**
+ * True if an MDX source is gated behind ?unreleased=<label> (i.e. declares an
+ * `export const unreleased`). Gated docs must never leak to agent surfaces.
+ */
+export function isUnreleasedMdx(content: string): boolean {
+  return /export\s+const\s+unreleased\s*=/.test(content);
+}
+
+/**
  * Cleans MDX content for LLM consumption
  * @param content - Raw MDX content
  * @returns Cleaned content
@@ -56,8 +64,10 @@ function cleanMDXContent(content: string): string {
  * @param filePath - Path to the MDX file
  * @returns Processed content with metadata
  */
-function processMDXFile(filePath: string): string {
+function processMDXFile(filePath: string): string | null {
   const content = readFileSync(filePath, "utf-8");
+  // Skip pages gated behind ?unreleased=<label> — never leak them to agents.
+  if (isUnreleasedMdx(content)) return null;
   const relativePath = relative(config.docsDir, filePath);
 
   const cleanContent = cleanMDXContent(content);
@@ -102,7 +112,8 @@ export function processDirectory(
     if (file.isDirectory()) {
       results.push(...processDirectory(fullPath, excludeFiles));
     } else if (file.name.endsWith(".mdx")) {
-      results.push(processMDXFile(fullPath));
+      const processed = processMDXFile(fullPath);
+      if (processed !== null) results.push(processed);
     }
   }
 
