@@ -137,7 +137,7 @@ const sectionReference: (NavGroup | NavLink)[] = [
       { title: "Testing", href: tsRef("v4", "testing") },
       { title: "Durable Endpoints", href: tsRef("v4", "durable-endpoints") },
       { title: "Deferred Functions", href: tsRef("v4", "functions/deferred-functions"), tag: "beta" },
-      { title: "Scoring", href: tsRef("v4", "functions/scoring"), tag: "beta", unreleased: "score" },
+      { title: "Scoring", href: tsRef("v4", "functions/scoring"), tag: "beta" },
       {
         title: "Group",
         links: [
@@ -327,8 +327,8 @@ const sectionLearn: (NavGroup | NavLink)[] = [
           { title: "Wait for signal", href: "/docs/features/inngest-functions/steps-workflows/wait-for-signal" },
           { title: "Invoke other functions", href: `/docs/guides/invoking-functions-directly` },
           { title: "Step experiments", href: "/docs/features/inngest-functions/steps-workflows/step-experiments", tag: "new" },
-          { title: "Scoring", href: "/docs/features/inngest-functions/steps-workflows/scoring", tag: "beta", unreleased: "score" },
-          { title: "Deferred scoring", href: "/docs/features/inngest-functions/steps-workflows/deferred-scoring", tag: "beta", unreleased: "score" },
+          { title: "Scoring", href: "/docs/features/inngest-functions/steps-workflows/scoring", tag: "beta" },
+          { title: "Deferred scoring", href: "/docs/features/inngest-functions/steps-workflows/deferred-scoring", tag: "beta" },
           { title: "AI steps (LLM calls)", href: "/docs/features/inngest-functions/steps-workflows/step-ai-orchestration" },
           { title: "Durable Fetch", href: tsRef("v4", "functions/fetch") },
         ]
@@ -395,7 +395,7 @@ const sectionLearn: (NavGroup | NavLink)[] = [
           { title: "Overview", href: `/docs/features/events-triggers` },
           { title: "Sending events", href: `/docs/events` },
           { title: "Event payload format", href: `/docs/features/events-triggers/event-format` },
-          { title: "Sessions", href: `/docs/features/events-triggers/sessions`, tag: "new", unreleased: "score" },
+          { title: "Sessions", href: `/docs/features/events-triggers/sessions`, tag: "new" },
           { title: "Writing expressions", href: `/docs/guides/writing-expressions` },
           { title: "Consuming webhook events", href: `/docs/platform/webhooks` },
           { title: "Parallel steps", href: "/docs/guides/step-parallelism" },
