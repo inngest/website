@@ -251,6 +251,7 @@ Basic mathematical operations and calculations.
 String manipulation and search capabilities.
 - [String search functions](https://clickhouse.com/docs/sql-reference/functions/string-search-functions)
 - [String manipulation functions](https://clickhouse.com/docs/sql-reference/functions/string-functions)
+- [Splitting and merging functions](https://clickhouse.com/docs/sql-reference/functions/splitting-merging-functions)
 
 #### Date/Time Functions
 For analyzing event timing and patterns.
@@ -263,39 +264,56 @@ For analyzing event timing and patterns.
 - [Map functions](https://clickhouse.com/docs/sql-reference/functions/map-functions) — `map`, `mapKeys`, `mapValues`, `mapAdd`, `mapContains`, and more
 - [Tuple functions](https://clickhouse.com/docs/sql-reference/functions/tuple-functions) — `tuple`, `tupleElement`, arithmetic on tuples, `dotProduct`, `untuple`, and more
 - [Logical functions](https://clickhouse.com/docs/sql-reference/functions/logical-functions)
+- [Comparison functions](https://clickhouse.com/docs/sql-reference/functions/comparison-functions)
 - [Rounding functions](https://clickhouse.com/docs/sql-reference/functions/rounding-functions)
 - [Type conversion functions](https://clickhouse.com/docs/sql-reference/functions/type-conversion-functions)
 - [Functions for nulls](https://clickhouse.com/docs/sql-reference/functions/functions-for-nulls)
+- [JSON functions](https://clickhouse.com/docs/sql-reference/functions/json-functions) — `JSONExtract`, `JSONHas`, `JSONLength`, `JSONType`, and case-insensitive JSON extract variants
 - [ULID functions](https://clickhouse.com/docs/sql-reference/functions/ulid-functions)
 - [UUID functions](https://clickhouse.com/docs/sql-reference/functions/uuid-functions)
+- [URL functions](https://clickhouse.com/docs/sql-reference/functions/url-functions)
+- [IP address functions](https://clickhouse.com/docs/sql-reference/functions/ip-address-functions)
+- [Geo functions](https://clickhouse.com/docs/sql-reference/functions/geo/coordinates)
 - [Bit functions](https://clickhouse.com/docs/sql-reference/functions/bit-functions)
 - [Hash functions](https://clickhouse.com/docs/sql-reference/functions/hash-functions)
 - [Encoding functions](https://clickhouse.com/docs/sql-reference/functions/encoding-functions)
+- [Bitmap functions](https://clickhouse.com/docs/sql-reference/functions/bitmap-functions)
+- [Other functions](https://clickhouse.com/docs/sql-reference/functions/other-functions) — formatting and utility helpers such as `bar`, `byteSize`, `formatReadableSize`, and `formatReadableTimeDelta`
+- Window functions — aggregate functions can be used with `OVER (...)`, and `row_number()` is supported
 
 ### Aggregate Functions
 
-The following aggregate functions are supported:
+The following aggregate function families and aliases are supported:
 
 | Function | Description |
 |----------|-------------|
-| `ARRAY_AGG()` / `groupArray()` | [Aggregates values into an array](https://clickhouse.com/docs/sql-reference/aggregate-functions/reference/grouparray) |
+| `ARRAY_AGG()` / `array_agg()` / `groupArray()` / `groupArrayLast()` / `groupArraySorted()` / `groupUniqArray()` / `array_concat_agg()` | [Aggregates values into an array](https://clickhouse.com/docs/sql-reference/aggregate-functions/reference/grouparray) |
 | `AVG()` | [Calculates average](https://clickhouse.com/docs/sql-reference/aggregate-functions/reference/avg) |
 | `avgWeighted()` | [Weighted average](https://clickhouse.com/docs/sql-reference/aggregate-functions/reference/avgweighted) |
-| `any()` | [Returns an arbitrary value from the group](https://clickhouse.com/docs/sql-reference/aggregate-functions/reference/any) |
-| `anyLast()` | [Returns the last value in the group](https://clickhouse.com/docs/sql-reference/aggregate-functions/reference/anylast) |
+| `any()` / `anyLast()` / `anyHeavy()` / `any_value()` | [Returns an arbitrary value from the group](https://clickhouse.com/docs/sql-reference/aggregate-functions/reference/any) |
+| `anyRespectNulls()` / `anyLastRespectNulls()` / `anyValueRespectNulls()` / `any_respect_nulls()` / `anyLast_respect_nulls()` / `any_value_respect_nulls()` | Returns an arbitrary or last value while preserving `NULL` values |
+| `last_value()` | [Returns the last value in the group](https://clickhouse.com/docs/sql-reference/aggregate-functions/reference/last_value) |
 | `argMin(val, key)` | [Returns `val` for the row with the minimum `key`](https://clickhouse.com/docs/sql-reference/aggregate-functions/reference/argmin) |
 | `argMax(val, key)` | [Returns `val` for the row with the maximum `key`](https://clickhouse.com/docs/sql-reference/aggregate-functions/reference/argmax) |
+| `argAndMin(val, key)` / `argAndMax(val, key)` | [Returns `val` for rows selected by the corresponding `arg*` aggregate variant](https://clickhouse.com/docs/sql-reference/aggregate-functions/reference/argandmin) |
+| `bit_and()` / `bit_or()` / `bit_xor()` | Bitwise aggregate aliases |
 | `COUNT()` | [Counts rows](https://clickhouse.com/docs/sql-reference/aggregate-functions/reference/count) |
+| `uniq()` / `uniqExact()` / `uniqCombined()` / `uniqCombined64()` / `uniqHLL12()` / `uniqTheta()` / `uniqThetaIntersect()` / `uniqThetaNot()` / `uniqThetaUnion()` / `uniqUpTo()` | [Counts unique values with exact or approximate algorithms](https://clickhouse.com/docs/sql-reference/aggregate-functions/reference/uniq) |
 | `MAX()` | [Finds maximum value](https://clickhouse.com/docs/sql-reference/aggregate-functions/reference/max) |
 | `MIN()` | [Finds minimum value](https://clickhouse.com/docs/sql-reference/aggregate-functions/reference/min) |
 | `median()` | [Approximate median](https://clickhouse.com/docs/sql-reference/aggregate-functions/reference/median) |
 | `quantile(level)(val)` | [Approximate quantile at a given level (e.g. `quantile(0.95)(duration_ms)`)](https://clickhouse.com/docs/sql-reference/aggregate-functions/reference/quantile) |
 | `quantiles(l1, l2, ...)(val)` | [Multiple quantiles in a single pass](https://clickhouse.com/docs/sql-reference/aggregate-functions/reference/quantiles) |
-| `STDDEV_POP()` | [Population standard deviation](https://clickhouse.com/docs/sql-reference/aggregate-functions/reference/stddevpop) |
-| `STDDEV_SAMP()` | [Sample standard deviation](https://clickhouse.com/docs/sql-reference/aggregate-functions/reference/stddevsamp) |
+| `quantileBFloat16()` / `quantileDD()` / `quantileDeterministic()` / `quantileExact()` / `quantileExactHigh()` / `quantileExactLow()` / `quantileGK()` / `quantileTDigest()` / `quantileTiming()` and related exact, weighted, histogram, and timing variants | Additional [quantile functions](https://clickhouse.com/docs/sql-reference/aggregate-functions/reference/quantile) for exact, weighted, and approximate percentile calculations |
+| `quantilesBFloat16()` / `quantilesDD()` / `quantilesDeterministic()` / `quantilesExact()` / `quantilesExactHigh()` / `quantilesExactLow()` / `quantilesGK()` / `quantilesTDigest()` / `quantilesTiming()` and related exact, weighted, histogram, and timing variants | Additional [quantiles functions](https://clickhouse.com/docs/sql-reference/aggregate-functions/reference/quantiles) for multiple percentile calculations |
+| `STDDEV_POP()` / `stddevPop()` / `stddevPopStable()` | [Population standard deviation](https://clickhouse.com/docs/sql-reference/aggregate-functions/reference/stddevpop) |
+| `STDDEV_SAMP()` / `stddevSamp()` / `stddevSampStable()` / `std()` | [Sample standard deviation](https://clickhouse.com/docs/sql-reference/aggregate-functions/reference/stddevsamp) |
 | `SUM()` | [Calculates sum](https://clickhouse.com/docs/sql-reference/aggregate-functions/reference/sum) |
-| `VAR_POP()` | [Population variance](https://clickhouse.com/docs/en/sql-reference/aggregate-functions/reference/varPop) |
-| `VAR_SAMP()` | [Sample variance](https://clickhouse.com/docs/sql-reference/aggregate-functions/reference/varSamp) |
+| `sumKahan()` / `sumCount()` / `sumWithOverflow()` / `sumMapFiltered()` / `sumMapFilteredWithOverflow()` / `sumMapWithOverflow()` / `sumMappedArrays()` | Additional sum variants for compensated summation, overflow handling, map values, and arrays |
+| `VAR_POP()` / `varPop()` / `varPopStable()` | [Population variance](https://clickhouse.com/docs/en/sql-reference/aggregate-functions/reference/varPop) |
+| `VAR_SAMP()` / `varSamp()` / `varSampStable()` | [Sample variance](https://clickhouse.com/docs/sql-reference/aggregate-functions/reference/varSamp) |
+| `covarPop()` / `covarPopStable()` / `covarPopMatrix()` / `covar_pop()` | [Population covariance](https://clickhouse.com/docs/sql-reference/aggregate-functions/reference/covarpop) |
+| `covarSamp()` / `covarSampStable()` / `covarSampMatrix()` / `covar_samp()` | [Sample covariance](https://clickhouse.com/docs/sql-reference/aggregate-functions/reference/covarsamp) |
 
 ### Aggregate Function Combinators
 
