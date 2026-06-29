@@ -1,0 +1,131 @@
+import { Callout } from "src/shared/Docs/mdx";
+
+export const description = "Push real-time updates from Inngest functions to your UI. Channels, topics, and publish."
+
+# Realtime
+
+Inngest Realtime lets your functions push updates directly to the browser as work happens. No polling. No WebSocket boilerplate. No separate pub/sub service.
+
+You publish messages from inside your functions. Clients subscribe and receive them instantly. Everything is typed end to end.
+
+---
+
+## Three building blocks
+
+Realtime has three concepts. Everything else builds on these.
+
+**Channels** scope messages to a context. A channel might represent a user session, a document being processed, or a batch job. You define channels with a name or a function that generates a name from parameters like a user ID or document ID.
+
+**Topics** organize messages within a channel. A channel for document processing might have topics for `status`, `review`, `error`, and `completed`. Each topic carries its own typed payload schema.
+
+**Publish** sends a message to a topic within a channel. You publish from inside your functions using `publish()`, `step.realtime.publish()`, or `inngest.realtime.publish()`. Clients receive the message through a WebSocket connection.
+
+```
+Channel: document-processing:{documentId}
+  ├── Topic: status    → { progress: 50, message: "Analyzing..." }
+  ├── Topic: review    → { items: [...], requiresAction: true }
+  ├── Topic: error     → { error: "...", recoverable: true }
+  └── Topic: completed → { confidence: 0.95 }
+```
+
+On the client, you subscribe to a channel and its topics. Messages arrive as they're published. You render them however you want.
+
+---
+
+## Define a channel
+
+Channels are defined once and shared between your function code and your client code.
+
+```ts {{ filename: "inngest/channels.ts" }}
+import { channel, topic } from "inngest";
+
+export const pipelineChannel = channel((runId: string) => `pipeline:${runId}`)
+  .addTopic(
+    topic("status").type<{ message: string; progress: number }>()
+  )
+  .addTopic(
+    topic("tokens").type<{ token: string }>()
+  )
+  .addTopic(
+    topic("result").type<{ output: string; model: string }>()
+  );
+```
+
+The channel name is generated from parameters you pass at runtime. Topics define the shape of each message type. TypeScript enforces these types when you publish and when you subscribe.
+
+---
+
+## Publish from a function
+
+`publish` is available as a handler argument alongside `event` and `step`.
+
+```ts {{ filename: "inngest/functions/summarize.ts" }}
+import { inngest } from "../client";
+import { pipelineChannel } from "../channels";
+
+export default inngest.createFunction(
+  { id: "summarize-content", triggers: { event: "app/content.submitted" } },
+  async ({ event, step, publish }) => {
+    const ch = pipelineChannel({ runId: event.data.runId });
+
+    await publish(ch.status, { message: "Starting...", progress: 0 });
+
+    const result = await step.run("call-model", async () => {
+      return await generateSummary(event.data.content);
+    });
+
+    await step.realtime.publish("send-result", ch.result, {
+      output: result.text,
+      model: "gpt-4o",
+    });
+  }
+);
+```
+
+Use `publish()` for high-frequency updates like streaming tokens. Use `step.realtime.publish()` for important state transitions that should not duplicate on retry.
+
+---
+
+## Subscribe from the browser
+
+In React, use the `useRealtime` hook from `inngest/react`.
+
+```tsx {{ filename: "app/page.tsx" }}
+"use client";
+
+import { useRealtime } from "inngest/react";
+import { pipelineChannel } from "@/inngest/channels";
+import { fetchToken } from "./actions";
+
+export default function Progress({ runId }: { runId: string }) {
+  const ch = pipelineChannel({ runId });
+
+  const { messages, connectionStatus } = useRealtime({
+    channel: ch,
+    topics: ["status", "result"] as const,
+    token: () => fetchToken(runId),
+  });
+
+  return (
+    <div>
+      <p>Connection: {connectionStatus}</p>
+      <p>{messages.byTopic.status?.data.message}</p>
+      <p>Progress: {messages.byTopic.status?.data.progress}%</p>
+      {messages.byTopic.result && (
+        <p>Result: {messages.byTopic.result.data.output}</p>
+      )}
+    </div>
+  );
+}
+```
+
+The hook manages token refresh, reconnection, and buffering. Messages are typed per topic.
+
+---
+
+## Next steps
+
+- [Stream AI responses to your UI](/docs/features/realtime/stream-ai-responses) for a complete AI streaming walkthrough
+- [Publishing reference](/docs/reference/typescript/v4/realtime/publishing) for all three publish methods
+- [useRealtime reference](/docs/reference/typescript/v4/realtime/use-realtime) for the full hook API
+- [Channels reference](/docs/reference/typescript/v4/realtime/channels) for channel and topic definitions
