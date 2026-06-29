@@ -5,8 +5,7 @@ import { type ReactNode } from "react";
 import Footer from "@/components/v1/Footer";
 import Header from "@/components/v1/Header";
 import { MotionRoot } from "@/components/v1/MotionRoot";
-import { ScrollToTop } from "@/components/v1/ScrollToTop";
-import { ScrollResetOnLoad } from "@/components/v1/ScrollResetOnLoad";
+import { ScrollManager } from "@/components/v1/ScrollManager";
 
 /**
  * v1 page shell. Owns header/footer/grain backdrop + the MotionConfig.
@@ -22,8 +21,7 @@ export default function PageShell({
 }) {
   return (
     <div className="v1-page min-h-screen bg-v1-canvasBase text-v1-basis">
-      <ScrollResetOnLoad />
-      <ScrollToTop />
+      <ScrollManager />
       <Header />
       <div className="relative">
         <div
