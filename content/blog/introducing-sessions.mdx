@@ -1,0 +1,65 @@
+---
+heading: "Introducing Sessions: Group related runs"
+subtitle: "Tag events with a session key and see every related run together—no more manually correlating IDs across your dashboard."
+image: /assets/blog/introducing-sessions/featured-image.png
+showSubtitle: true
+date: 2026-06-30
+author: Lauren Craigie
+category: product-updates
+unreleased: score
+---
+
+If you've ever debugged a multi-step workflow, you've experienced the unique pain of time lost to manually correlating IDs across multiple pieces of the same problem—a message, a retrieval function, a follow-up, etc. If you're building with AI, this problem is particularly painful.
+
+Today we're introducing Sessions to change that. Group related runs under a shared identifier, so you can troubleshoot faster.
+
+## What are Sessions?
+
+Sessions let you treat similar runs as one—a conversation ID, a ticket ID, a workflow ID—whatever makes sense for your domain. Once you've tagged your events with a session key, the Inngest dashboard can show you all the runs that belong together: how many ran, how many failed, which functions were involved, and when the session was last active.
+
+It's a small addition to your event payload for a massive payoff in debugging efficiency.
+
+Sessions are built around the concept of a session key—a name you choose for the kind of grouping—and a session ID, the specific value for a given instance. A conversation-tracking system might use `conversation_id` as the key and `conv_abc123` as the ID. Support tooling might use `ticket_id`. An import pipeline might use `import_id`. You define the keys that make sense for your system, and Inngest indexes them.
+
+One run can belong to up to five sessions simultaneously. So if you want to slice by conversation, by tenant, and by model in the same query, you can attach all three.
+
+## How to add sessions
+
+Add a `meta.sessions` object to any event you send. The key is the name of the grouping (`conversation_id`), the value is the ID for this specific instance:
+
+```tsx
+import { inngest } from "./client";
+
+await inngest.send({
+  name: "app/message.created",
+  data: {
+    messageId: "msg_01JYY8R9C5R6VAW5EJ0P4K7V90",
+    conversationId: "conv_1234",
+  },
+  meta: {
+    sessions: {
+      conversation_id: "conv_1234",
+    },
+  },
+});
+```
+
+That's the whole SDK change. Every Inngest function triggered by that event will automatically be grouped under `conversation_id: conv_1234`.
+
+To see it in the dashboard, go to **AI → Sessions** in the left sidebar. Search for your session key — `conversation_id` in this case — and you'll get a list of every session ID seen for that key. Click into one and you'll see all the runs that belong to it: which functions ran, their status, the failure rate, and when the session was last active.
+
+Sessions follow events, not runs, so there's one thing worth knowing: if you invoke another function with `step.invoke()`, you'll need to pass `meta.sessions` explicitly — it doesn't carry over automatically. Everything else (functions triggered by events, failure handlers) inherits sessions as you'd expect.
+
+## Why this matters for AI
+
+Agents are hard to observe because they're never just one thing. A single user message might trigger a retrieval step, a generation step, a memory write, a tool call, and a follow-up scheduling action—all as separate Inngest functions, all producing separate runs, all currently living in different parts of your dashboard with no obvious connection between them.
+
+Sessions give that chaos a spine. Tag every event in a conversation with the same `conversation_id`, and you get a view that actually reflects how your system behaves: the full sequence of runs that made up one user's interaction, grouped together, with failure rates and timing that tell you whether the conversation succeeded as a whole.
+
+This also unlocks session-level scoring. [Scores in Inngest](/blog/introducing-scoring?ref=blog-introducing-sessions) attach to runs, and runs carry session membership—which means "score a conversation" becomes "aggregate the scores of the runs in the session." Most importantly, the grouping and the scoring live in the same place.
+
+## Getting started
+
+Sessions are now in public beta in the Inngest TypeScript SDK **`4.7.0`** and later—upgrade if you're on an earlier release. Add `meta.sessions` to your event sends, open **AI > Sessions** in the dashboard, and search for a session key to see your groups.
+
+Check the [Sessions docs](/docs/features/events-triggers/sessions?ref=blog-introducing-sessions) to get started.
