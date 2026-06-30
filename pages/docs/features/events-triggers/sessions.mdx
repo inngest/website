@@ -1,4 +1,4 @@
-import { Callout } from "src/shared/Docs/mdx";
+import { Callout, Info } from "src/shared/Docs/mdx";
 
 export const metaTitle = "Inngest Sessions: Group Related Function Runs";
 export const description = "Group related function runs with sessions so they are easier to find and inspect in the dashboard.";
@@ -16,6 +16,9 @@ Sessions do not change which functions run. They add event metadata that makes r
 </Callout>
 
 ## When to use sessions
+<Info>
+  Sessions is optimized for historical data, with a few-minute lag before data appears, so it’s not intended for monitoring live-executing runs.
+</Info>
 
 Use sessions when you already have a domain ID that ties multiple function runs together.
 
@@ -194,5 +197,5 @@ Because the index is updated asynchronously, newly sent events, recently started
 
 ## Related docs
 
-- [Agent Evals overview](/docs/ai-evals?ref=docs-sessions) to understand how sessions, traces, scores, and experiments fit together
+- [Agent Evals overview](/docs/learn/agent-evals?ref=docs-sessions) to understand how sessions, traces, scores, and experiments fit together
 - [Score a function run](/docs/features/inngest-functions/steps-workflows/scoring?ref=docs-sessions) for attaching outcomes to runs and steps
