@@ -1,5 +1,4 @@
-import { Callout, Unreleased } from "src/shared/Docs/mdx";
-
+import { Callout } from "src/shared/Docs/mdx";
 
 export const metaTitle = "Deferred Functions | Independent Background Work"
 export const description = "Learn how to launch fire-and-forget background work from inside an Inngest function using defer() and createDefer in the TypeScript SDK."
@@ -118,8 +117,6 @@ async ({ event, parents }) => {
 }
 ```
 
-<Unreleased label="score">
-
 ## Attributing scores to an experiment
 
 When the deferred function is an [LLM scorer](/docs/features/inngest-functions/steps-workflows/deferred-scoring), you can attribute its result to the [experiment variant](/docs/features/inngest-functions/steps-workflows/step-experiments) that produced the output being scored. Pass the `experimentRef` returned by `group.experiment()` as the `experiment` option:
@@ -133,8 +130,6 @@ defer("score", {
 ```
 
 The variant is surfaced to the deferred handler on `parents[0].experiment` as `{ experimentName, variant }`, so the scorer's result is attributed to the variant that generated the run.
-
-</Unreleased>
 
 ---
 

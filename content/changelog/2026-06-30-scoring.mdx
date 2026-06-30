@@ -1,6 +1,5 @@
 export const title = "Scoring: judge how well your AI actually performed";
 export const date = "2026-06-30";
-export const unreleased = "score";
 
 Scoring lets you attach a named quality signal to a function run, a step, or an experiment variant. It shines for AI evals: run an LLM-as-a-judge over a result and write the verdict back as a score with `inngest.score({ name, value })`, or defer the judge entirely so a slow model call never blocks the run that produced the output. A score is just a named number or boolean, so it tracks ordinary product signals too, from click-through and saves to conversions and error rates.
 
