@@ -11,6 +11,7 @@ import AgentEvalsDotsCanvas from "@/components/v1/sections/AgentEvals/AgentEvals
 export default function Hero() {
   return (
     <SplitHero
+      docsHref="/docs/learn/agent-evals"
       breadcrumbs={[{ label: "Agent Evals" }]}
       palette="blue"
       headlineId="agent-evals-hero-headline"
