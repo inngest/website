@@ -14,10 +14,11 @@ That's the agent observability gap. Every tool on the market measures whether th
 
 That's **outcome-based scoring**, and it's the heart of what Inngest is launching today as **Agent Evals**—a series of APIs that live in your codebase, not in yet another tool.
 
-- **[Experiments](/blog/introducing-group-experiment?ref=blog-introducing-agent-evals)** — run variants of a prompt, model, or strategy against live production traffic and compare them on the execution data Inngest already records.
-- **[Scoring](/blog/introducing-scoring?ref=blog-introducing-agent-evals)** — attach a metric, numeric or boolean, to any run or step, from inside or outside a function, including outcomes that don't arrive until long after the run finishes.
-- **[Defer](/blog/announcing-defer?ref=blog-introducing-agent-evals)** — launch typed, durable follow-up work from inside a function, the primitive that lets a scorer run after a run completes and wait for what happens next.
-- **[Traces for AI](/blog/introducing-enhanced-traces?ref=blog-introducing-agent-evals)** — capture model calls, token counts, and latency as span-level metadata on every agent run.
+- **[Scoring](/blog/introducing-scoring?ref=blog-introducing-agent-evals)** — Attach a metric to any run or step, from inside or outside a function, including outcomes that don't arrive until long after the run finishes.
+- **[Sessions](/blog/introducing-sessions?ref=blog-introducing-agent-evals)** — Group like or connected runs and score together.
+- **[Experiments](/blog/introducing-group-experiment?ref=blog-introducing-agent-evals)** — Run variants of a prompt, model, or strategy against live production traffic and compare against execution data Inngest already records.
+- **[Defer](/blog/announcing-defer?ref=blog-introducing-agent-evals)** — Launch durable follow-up work from inside a function, the primitive that lets a scorer run after a run completes and wait for what happens next.
+- **Traces for AI** — Capture model calls, token counts, and latency as span-level metadata on every agent run.
 
 Together, Experiments, Scoring, and Defer make up Agent Evals, and they sit alongside the observability you already use to understand your functions: insights, metrics, and traces—now extended with Traces for AI. You've been able to see how a run behaved. Now you can know whether it did what you wanted.
 
@@ -35,7 +36,9 @@ That outcome is exactly what today's eval tooling can't reach, for one structura
 
 It all starts with durable execution. Because Inngest runs your code, every step is already captured as it happens. Of course, the outcomes that matter _most_ tend not to arrive in the moment. That's what [Defer](/blog/announcing-defer?ref=blog-introducing-agent-evals) handles. A scorer runs as durable follow-up work, then writes the score back to the run that earned it.
 
-With outcomes captured as scores, [Experiments](/blog/introducing-group-experiment?ref=blog-introducing-agent-evals) turn them into decisions: run two variants of a prompt or model against live production traffic and compare them on the outcome itself, not a hunch about which reads better. And underneath all of it, [Traces for AI](/blog/introducing-enhanced-traces?ref=blog-introducing-agent-evals) gives you the span-level record of what each run actually did—so when a score comes back low, you can see where the run went wrong.
+![Experiments score summary comparing variants in the Inngest dashboard](/assets/blog/introducing-agent-evals/experiments-score-summary.png)
+
+With outcomes captured as scores, [Experiments](/blog/introducing-group-experiment?ref=blog-introducing-agent-evals) turn them into decisions: run two variants of a prompt or model against live production traffic and compare them on the outcome itself, not a hunch about which reads better. And underneath all of it, Traces for AI gives you the span-level record of what each run actually did—so when a score comes back low, you can see where the run went wrong.
 
 It all lands in your run data, queryable in [Insights](/docs/platform/monitor/insights?ref=blog-introducing-agent-evals) with SQL. So the questions you didn't know to ask up front—which model wins for a given customer segment, how a score moves with latency, what the slow runs have in common—are still there to answer later.
 
