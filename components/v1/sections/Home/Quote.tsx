@@ -28,11 +28,12 @@ const InngestLogoCanvas = dynamic(
 // narrow viewports don't blow out the rail. Joined with spaces they
 // form the full quote.
 const LINES = [
-  "How you build apps and agents will",
-  "change. How they run shouldn't.",
-  "Inngest moves durability out of",
+  "How you build agents will change.",
+  "How they run shouldn't.",
+  "Inngest moves durability and",
+  "observability out of separate",
   "infrastructure and into your",
-  "codebase, so what you build today",
+  "codebase, so what you write today",
   "still runs tomorrow."
 ] as const;
 const QUOTE = LINES.join(" ");
