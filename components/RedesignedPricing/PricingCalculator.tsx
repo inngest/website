@@ -108,8 +108,8 @@ function calculatePlanCost({
       "pro"
     );
   } else if (planName === PLAN_NAMES.pro) {
-    baseCost = 75;
-    includedExecutions = 1_000_000;
+    baseCost = num(plan.cost.basePrice);
+    includedExecutions = num(plan.cost.includedRuns);
     executionsCost = calculateExecutionsCost(
       totalExecutions,
       includedExecutions,
