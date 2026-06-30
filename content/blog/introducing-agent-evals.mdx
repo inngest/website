@@ -36,6 +36,8 @@ That outcome is exactly what today's eval tooling can't reach, for one structura
 
 It all starts with durable execution. Because Inngest runs your code, every step is already captured as it happens. Of course, the outcomes that matter _most_ tend not to arrive in the moment. That's what [Defer](/blog/announcing-defer?ref=blog-introducing-agent-evals) handles. A scorer runs as durable follow-up work, then writes the score back to the run that earned it.
 
+![Experiments score summary comparing variants in the Inngest dashboard](/assets/blog/introducing-agent-evals/experiments-score-summary.png)
+
 With outcomes captured as scores, [Experiments](/blog/introducing-group-experiment?ref=blog-introducing-agent-evals) turn them into decisions: run two variants of a prompt or model against live production traffic and compare them on the outcome itself, not a hunch about which reads better. And underneath all of it, Traces for AI gives you the span-level record of what each run actually did—so when a score comes back low, you can see where the run went wrong.
 
 It all lands in your run data, queryable in [Insights](/docs/platform/monitor/insights?ref=blog-introducing-agent-evals) with SQL. So the questions you didn't know to ask up front—which model wins for a given customer segment, how a score moves with latency, what the slow runs have in common—are still there to answer later.
