@@ -1,11 +1,4 @@
 import React from "react";
-import { RiRocket2Fill } from "@remixicon/react";
-
-type Props = {
-  href: string;
-  children: React.ReactNode;
-  className?: string;
-};
 
 /**
   Hide the page banner on specific pages by including this at the top of page.tsx:
@@ -17,32 +10,41 @@ type Props = {
   `}</style>
  */
 
-const Banner: React.FC<Props> = ({ href, children, className }) => (
-  <a
-    href={href}
-    // use the .page-banner class to hide it on select pages via CSS
-    className={`page-banner group flex w-full items-center justify-center gap-2.5 border-b border-[rgb(var(--color-primary-subtle))]
-                px-6 py-2 text-base
-                text-basis transition-all ${className}`}
-    style={{
-      backgroundImage: `
-        linear-gradient(270deg, rgba(2, 117, 177, 0.80) 0%, rgba(21, 158, 136, 0.80) 0.02%, rgba(102, 189, 139, 0.80) 17.5%, rgba(45, 159, 101, 0.80) 100%)`,
-    }}
-  >
-    <span className="rotate-45">
-      <RiRocket2Fill className="h-4 w-4 group-hover:animate-[wiggle_200ms_ease-in-out_infinite]" />
-    </span>
-    <span>{children}</span>
-  </a>
-);
+// Matches the v1 feature card salmon: bg-v1-accent-salmon-gradient = rgb(247, 98, 70)
+const BANNER_BG = "rgb(247, 98, 70)";
+
+// Inline SVG feTurbulence noise — zero network request, seamlessly tileable at any scale.
+// Replaces the 203KB noise-dark.webp which pixelates badly on a thin full-width strip.
+const NOISE_BG =
+  "url(\"data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='200' height='200'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.72' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='200' height='200' filter='url(%23n)' opacity='0.18'/%3E%3C/svg%3E\")";
 
 export default function AnnouncementBanner() {
   return (
-    <Banner href="/blog/ai-in-production-report-2026?ref=site-banner">
-      What are the most confident teams using to build AI? →{" "}
-      <strong className="underline underline-offset-2">
-        2026 Benchmark Report
-      </strong>
-    </Banner>
+    // hidden on mobile/tablet, flex on desktop (lg+). Server-rendered — no CLS, no LCP impact.
+    <div
+      className="page-banner relative hidden lg:flex w-full items-center justify-center overflow-hidden px-6 py-1.5 font-v1Heading text-sm text-white"
+      style={{ backgroundColor: BANNER_BG }}
+    >
+      {/* Inline SVG noise overlay — soft-light grain with zero added bytes or requests */}
+      <span
+        aria-hidden="true"
+        className="pointer-events-none absolute inset-0"
+        style={{
+          backgroundImage: NOISE_BG,
+          backgroundSize: "200px 200px",
+          mixBlendMode: "soft-light",
+        }}
+      />
+      <span className="relative">
+        Introducing{" "}
+        <a
+          href="/blog/introducing-agent-evals?ref=site-banner"
+          className="font-semibold underline underline-offset-2 transition-opacity hover:opacity-80"
+        >
+          Agent Evals
+        </a>
+        : Score your agents on real outcomes.
+      </span>
+    </div>
   );
 }

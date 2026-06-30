@@ -79,6 +79,13 @@ export default function RootLayout({
           href="/assets/v1/fonts/ABCWhyte-Regular.woff2"
           crossOrigin="anonymous"
         />
+        <link
+          rel="preload"
+          as="font"
+          type="font/woff2"
+          href="/assets/v1/fonts/ABCWhyteMono-Regular.woff2"
+          crossOrigin="anonymous"
+        />
         <link rel="stylesheet" href="https://fonts-cdn.inngest.com/fonts.css" />
         <Script
           id="js-inngest-queue-init"
