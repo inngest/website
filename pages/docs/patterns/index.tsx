@@ -10,6 +10,7 @@ import {
 import Viz from "../../../shared/Patterns/Viz";
 import AgentView from "../../../shared/Patterns/AgentView";
 import { indexMarkdown } from "../../../shared/Patterns/markdown";
+import { useUnreleasedLabels } from "../../../shared/Docs/Unreleased";
 import "../../../shared/Patterns/patterns-docs.css";
 
 const META_DESCRIPTION =
@@ -52,7 +53,7 @@ function scope(s: { accent: { hex: string }; accentDeep: string }) {
 
 export default function PatternsLanding() {
   const router = useRouter();
-  const sections = getPatternSections();
+  const sections = getPatternSections(useUnreleasedLabels());
 
   if (router.query.view === "agent") {
     return (
