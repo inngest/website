@@ -1,0 +1,292 @@
+import { Callout } from "src/shared/Docs/mdx";
+
+export const metaTitle = "Agent Evals | Evaluate AI Workflows in Production"
+export const description = "Use scoring, deferred scoring, sessions, traces, experiments, and Insights to evaluate production AI workflows on Inngest."
+export const unreleased = "score"
+
+# Agent Evals
+
+Agent Evals help you measure how well AI workflows perform in production. You attach scores to function runs, group related work into sessions, preserve execution details in traces, and compare changes with experiments.
+
+They are useful when you want to:
+
+- Score an agent run based on guardrails, model confidence, or output quality.
+- Wait for a real product signal, such as user feedback, ticket resolution, conversion, or human review.
+- Compare prompts, models, providers, tools, or workflow changes against production traffic.
+- Debug a bad result by tracing the run, session, model calls, tool calls, and outcome signal together.
+
+Agent Evals is not a separate SDK package. It is the production evaluation workflow you build with Inngest functions, scoring, deferred scoring, sessions, traces, step experiments, and Insights.
+
+<Callout variant="info">
+  Scoring and deferred scoring require the TypeScript SDK v4 and currently use beta APIs.
+</Callout>
+
+## Basic example
+
+Add `scoreMiddleware()` to your Inngest client, then score the current run from inside a function.
+
+```ts
+import { Inngest } from "inngest";
+import { scoreMiddleware } from "inngest/experimental";
+
+export const inngest = new Inngest({
+  id: "support-agent",
+  middleware: [scoreMiddleware()],
+});
+
+export default inngest.createFunction(
+  {
+    id: "answer-support-ticket",
+    triggers: { event: "support/ticket.created" },
+  },
+  async ({ event, step }) => {
+    const answer = await step.run("generate-answer", async () => {
+      return generateAnswer(event.data.ticket);
+    });
+
+    const passed = await step.run("check-answer", async () => {
+      return validateAnswer(answer);
+    });
+
+    await step.score("score-answer-quality", {
+      name: "answer-quality",
+      value: passed,
+    });
+
+    return { answer, passed };
+  }
+);
+```
+
+[`step.score()`](/docs/reference/typescript/v4/functions/scoring?ref=docs-agent-evals#step-score-id-options) is durable and memoized. If the function retries or replays, Inngest does not record the same score twice.
+
+## How Agent Evals works
+
+A production eval usually has four parts:
+
+1. **Run the workflow.** Put model calls, tool calls, waits, and side effects inside Inngest functions and steps.
+2. **Preserve context.** Use traces, AI metadata, OpenTelemetry, and sessions so the run can be inspected later.
+3. **Attach scores.** Use direct scoring when the result is known during the run, or deferred scoring when the outcome arrives later.
+4. **Compare changes.** Use step experiments when you need to compare prompts, models, tools, providers, or workflow variants.
+
+## Add session context
+
+[Sessions](/docs/features/events-triggers/sessions?ref=docs-agent-evals) group related function runs by an ID from your product, such as a conversation, support ticket, import, or agent task.
+
+Add `meta.sessions` when sending the event that starts the workflow:
+
+```ts
+await inngest.send({
+  name: "support/ticket.created",
+  data: {
+    ticketId: "tk_123",
+    message: "I can't sign in.",
+  },
+  meta: {
+    sessions: {
+      ticket_id: "tk_123",
+    },
+  },
+});
+```
+
+The session does not change which functions run. It makes every related run easier to find and inspect in the dashboard.
+
+## Score during the run
+
+Use [direct scoring](/docs/features/inngest-functions/steps-workflows/scoring?ref=docs-agent-evals) when the outcome is known before the function finishes.
+
+Good direct scores include:
+
+- guardrail pass or fail
+- JSON validity
+- retrieval confidence
+- tool success
+- model confidence
+- LLM-as-a-judge result that runs inline
+
+```ts
+const confidence = await step.run("score-retrieval", async () => {
+  return calculateRetrievalConfidence(results);
+});
+
+await step.score("score-retrieval-confidence", {
+  name: "retrieval-confidence",
+  value: confidence,
+});
+```
+
+Scores can be numbers or booleans. Use consistent score names across runs so results can be aggregated.
+
+## Score after the run
+
+Use [deferred scoring](/docs/features/inngest-functions/steps-workflows/deferred-scoring?ref=docs-agent-evals) when the signal arrives after the workflow finishes.
+
+For example, a support agent may answer a ticket now, but the useful score may arrive later when the user clicks "helpful" or the ticket reopens.
+
+```ts
+import { createScorer } from "inngest/experimental";
+import { z } from "zod";
+
+export const feedbackScorer = createScorer(
+  inngest,
+  {
+    id: "support-feedback-scorer",
+    schema: z.object({ ticketId: z.string() }),
+  },
+  async ({ event, step }) => {
+    const feedback = await step.waitForEvent("wait-for-feedback", {
+      event: "support/feedback.received",
+      timeout: "7d",
+      if: `async.data.ticketId == '${event.data.ticketId}'`,
+    });
+
+    return {
+      name: "user-feedback",
+      value: feedback?.data.helpful ? 1 : 0,
+    };
+  }
+);
+```
+
+Trigger the scorer from the function that produced the result:
+
+```ts
+export default inngest.createFunction(
+  {
+    id: "answer-support-ticket",
+    triggers: { event: "support/ticket.created" },
+  },
+  async ({ event, step, defer }) => {
+    const answer = await step.run("generate-answer", async () => {
+      return generateAnswer(event.data.ticket);
+    });
+
+    defer("score-feedback", {
+      function: feedbackScorer,
+      data: { ticketId: event.data.ticketId },
+    });
+
+    return { answer };
+  }
+);
+```
+
+The scorer runs separately in the background. Its returned score is attributed to the parent run that deferred it.
+
+## Compare variants
+
+Use [step experiments](/docs/features/inngest-functions/steps-workflows/step-experiments?ref=docs-agent-evals) when you need to compare more than one version of an AI workflow.
+
+For example, you can split traffic between two prompt strategies, then score the selected variant when feedback arrives:
+
+```ts
+import { experiment } from "inngest";
+
+const { result, experimentRef } = await group.experiment("answer-style", {
+  variants: {
+    concise: () => step.run("answer-concise", () => answerConcise(event.data)),
+    detailed: () => step.run("answer-detailed", () => answerDetailed(event.data)),
+  },
+  select: experiment.bucket(event.data.accountId, {
+    weights: { concise: 50, detailed: 50 },
+  }),
+});
+
+defer("score-answer-feedback", {
+  function: feedbackScorer,
+  data: { ticketId: event.data.ticketId },
+  experiment: experimentRef,
+});
+
+return result;
+```
+
+`experimentRef` identifies the experiment and variant that served the result. Passing it to [`defer()`](/docs/reference/typescript/v4/functions/scoring?ref=docs-agent-evals#defer-id-options) lets the scorer attribute the later score to the selected variant.
+
+## Attribute scores from later runs
+
+When a score is written outside the run that produced the result, pass the run ID you want to score.
+
+```ts
+await inngest.score({
+  name: "user-feedback",
+  value: 1,
+  runId: "01ABC123...",
+});
+```
+
+For experiment variants, pass both the original `runId` and the `experimentRef` returned by `group.experiment()`.
+
+```ts
+await inngest.score.experiment({
+  name: "clickthrough",
+  value: 1,
+  experiment: experimentRef,
+  runId: "01ABC123...",
+});
+```
+
+See the [scoring reference](/docs/reference/typescript/v4/functions/scoring?ref=docs-agent-evals) for the full attribution rules.
+
+## Inspect results
+
+Agent Evals connects several docs and dashboard surfaces:
+
+| Surface | Use it to |
+| --- | --- |
+| [Traces](/docs/platform/monitor/traces?ref=docs-agent-evals) | Inspect the function run, steps, model calls, tool calls, errors, and scores. |
+| [Sessions](/docs/features/events-triggers/sessions?ref=docs-agent-evals) | Find all runs related to a conversation, ticket, account, job, or agent task. |
+| [Scoring](/docs/features/inngest-functions/steps-workflows/scoring?ref=docs-agent-evals) | Attach numeric or boolean quality signals to runs and steps. |
+| [Deferred scoring](/docs/features/inngest-functions/steps-workflows/deferred-scoring?ref=docs-agent-evals) | Evaluate outcomes that arrive after the original workflow finishes. |
+| [Step experiments](/docs/features/inngest-functions/steps-workflows/step-experiments?ref=docs-agent-evals) | Split traffic across workflow variants and compare scored outcomes. |
+| [Insights](/docs/platform/monitor/insights?ref=docs-agent-evals) | Query historical run, event, step, and trace data. |
+
+## Choose the right eval tool
+
+| Goal | Use |
+| --- | --- |
+| Score a guardrail, validation check, model confidence, or inline judge result | [`step.score()` or `inngest.score()`](/docs/reference/typescript/v4/functions/scoring?ref=docs-agent-evals) |
+| Wait for user feedback, ticket resolution, conversion, or review before scoring | [Deferred scoring](/docs/features/inngest-functions/steps-workflows/deferred-scoring?ref=docs-agent-evals) |
+| Compare prompts, models, providers, tools, or workflow rewrites | [Step experiments](/docs/features/inngest-functions/steps-workflows/step-experiments?ref=docs-agent-evals) |
+| Keep a user, account, or tenant on the same variant while testing | [`experiment.bucket()`](/docs/features/inngest-functions/steps-workflows/step-experiments?ref=docs-agent-evals#bucket) |
+| Find all runs related to one conversation, ticket, import, or agent task | [Sessions](/docs/features/events-triggers/sessions?ref=docs-agent-evals) |
+| Inspect the model call, tool call, database query, or HTTP request inside a run | [OpenTelemetry](/docs/examples/open-telemetry?ref=docs-agent-evals) and [Extended Traces](/docs/reference/typescript/v4/extended-traces?ref=docs-agent-evals) |
+| Query historical events, runs, steps, traces, and scores | [Insights](/docs/platform/monitor/insights?ref=docs-agent-evals) |
+
+## Notes and best practices
+
+- Start with the product outcome you care about, then decide where that signal appears.
+- Use direct scoring for signals known during the run.
+- Use deferred scoring for signals that arrive later or take time to compute.
+- Use sessions when many runs belong to the same conversation, ticket, user task, or job.
+- Use stable score names. Changing score names creates separate metrics.
+- Score experiments with `experimentRef` so outcomes are attributed to the variant that produced them.
+- Keep model calls, tool calls, waits, and side effects inside steps so traces explain the score.
+
+## Troubleshooting
+
+| Issue | Solution |
+| --- | --- |
+| **Setup** | |
+| Scoring is not available. | Use the TypeScript SDK v4 and install the latest SDK version. |
+| `step.score()` is missing or throws. | Register `scoreMiddleware()` on the Inngest client: `middleware: [scoreMiddleware()]`. |
+| **Attribution** | |
+| A score does not appear on the run you expected. | When scoring outside the current run, pass the target `runId`. See [attribute scores from later runs](#attribute-scores-from-later-runs). |
+| A deferred score does not attach to an experiment variant. | Pass the `experimentRef` returned by `group.experiment()` when calling `defer()`. See [attribute scores from later runs](#attribute-scores-from-later-runs). |
+| Related runs are hard to find. | Add `meta.sessions` to the events that start or connect the workflow. |
+| **Interpreting results** | |
+| Boolean scores look like numbers in aggregates. | Boolean scores aggregate numerically. Treat `true` as `1` and `false` as `0`. |
+| A model call succeeded but the score is bad. | Inspect the trace and session. Production evals measure the outcome, not only whether the model request completed. |
+
+## Related docs
+
+- [Score a function run](/docs/features/inngest-functions/steps-workflows/scoring?ref=docs-agent-evals)
+- [Build a deferred scorer](/docs/features/inngest-functions/steps-workflows/deferred-scoring?ref=docs-agent-evals)
+- [Step experiments](/docs/features/inngest-functions/steps-workflows/step-experiments?ref=docs-agent-evals)
+- [Run experiments in production](/docs/patterns/ai-evals/run-experiments-in-production?ref=docs-agent-evals)
+- [Sessions](/docs/features/events-triggers/sessions?ref=docs-agent-evals)
+- [Traces](/docs/platform/monitor/traces?ref=docs-agent-evals)
+- [Set up OpenTelemetry with Inngest](/docs/examples/open-telemetry?ref=docs-agent-evals)
+- [Deferred Functions reference](/docs/reference/typescript/v4/functions/deferred-functions?ref=docs-agent-evals)
+- [Scoring reference](/docs/reference/typescript/v4/functions/scoring?ref=docs-agent-evals)
