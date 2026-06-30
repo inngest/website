@@ -1,0 +1,83 @@
+---
+heading: "Introducing Scoring: Attach a verdict to any run"
+subtitle: "Outcome-based scoring as easy as writing a function—no traces to export, no separate dashboards, no ID reconciliation."
+image: /assets/blog/introducing-scoring/featured-image.png
+showSubtitle: true
+date: 2026-06-30
+author: Lauren Craigie
+category: product-updates
+unreleased: score
+---
+
+Durable execution ensures every step of your workflow or agent completes successfully. But how do you know whether the outcome was the one you actually wanted?
+
+Your agent picked a tool—did it pick the right one? Your chatbot answered a question—did it consider context? Your recommender suggested an item—did the customer buy it? These are questions of quality, not completion. And before today, they weren't easy to answer: pre-define what you want to measure, wrap code in traces, ship to an observability tool, stand up a cron job, map IDs… _just enough effort to ensure it never happened._
+
+Even if it did, you still needed LLM-as-a-judge, or human review. Both so insanely expensive that you could only really do it for ~1% of production traffic.
+
+Inngest wants to make outcome-based scoring as easy as writing a function. Today we're launching `step.score()`, to do just that. Add the scoring API to your existing codebase to add metrics to any run or step. Because Inngest executes that code, you get all the data you need to score confidently, by default.
+
+## The fastest way to iterate on your app or agent
+
+With Inngest Scoring, the verdict lives on the run that produced it. No traces to export, no rules to maintain in a separate dashboard, no IDs to reconcile across systems.
+
+The simplest form is a direct write. From anywhere—inside a function, a cron job, a webhook handler, a one-off script—you can attach a score to a run:
+
+```tsx
+const summarize = inngest.createFunction(
+  { id: "summarize" },
+  { event: "ai/chat.message" },
+  async ({ event, step }) => {
+    const summary = await step.run("summarize", () => summarize(event.data.prompt));
+
+    await inngest.score({
+      name: "quality",
+      value: rate(summary),
+      sessions: { conversation_id: event.data.conversationId },
+    });
+
+    return summary;
+  },
+);
+```
+
+Inngest Scores work from any context, without compounding effort. That means you get:
+
+**Score every run, not a sample.** Score the retrieval step the moment it runs, inside the function, with the retrieved chunks right there in scope. You're scoring the real data as it flows through—on every run, not the sampled slice that trace-based tools fall back on when scoring gets expensive. And because the score sits on the step, a dip tells you it was retrieval, not generation.
+
+**Score against the actual response, not a proxy for it.** The run already holds what the model produced and the context it was given, so you can score the _content itself._ Check the answer against retrieved passages, or validate the output matches a schema. When human judgment lands later—like a "thumbs-up"—the handler writes a score straight to the run that made the suggestion, no separate pipelines, no manual matching.
+
+**No need for a separate scoring service.** A nightly cron job re-checks yesterday's outputs against ground truth that wasn't available in the moment and scores them in bulk. One scheduled function on infrastructure you already run—nothing extra to provision, pay for, and keep alive.
+
+In each case the score is a few lines in code you already have, attached to the run it describes—not a project that spans your app, an observability tool, and the glue between them.
+
+## Scoring + defer: measure what happens after the run
+
+We recently shipped [`defer`](/blog/announcing-defer?ref=blog-introducing-scoring)—the ability to launch background work the moment a parent function finishes. A defer runs as its own function with its own lifecycle, which is exactly what scoring an outcome needs: because it's a real function, it can call `step.waitForEvent` and simply wait. The run that made the decision can finish and return; the defer outlives it, parked until the thing you actually want to measure happens.
+
+That's the part a score written inline can't reach. Inside a function you can only judge what's true in the moment—the answer looked right, the output matched its schema. But the verdict that counts usually arrives later, and from somewhere else: a payment webhook when the charge clears, a GitHub event when the pull request gets merged or rejected. Pair a defer with a scorer and you wait for that signal, then write the score straight back to the run that produced the original decision. An agent opens a pull request; the defer waits for the merge-or-reject event and scores whether the code was accepted. A checkout flow recommends a plan; the defer waits for the payment webhook and scores whether it converted. The decision and its real-world outcome land on the same run—no pipeline reconciling IDs across systems after the fact, just a function that waited for the answer.
+
+## Scoring + experiments: pick a winner
+
+We also recently shipped [`group.experiment()`](/blog/introducing-group-experiment?ref=blog-introducing-scoring)—run variants of a prompt, model, or strategy against live production traffic. On its own, an experiment shows you how each variant _ran_: timing, retries, cost, where it failed. What it can't tell you is which one was _better_, because "better" is a judgment about the outcome, not the execution.
+
+Scoring is the other half. Attach a scorer to an experiment and every variant gets measured on what you actually care about—answer quality, task success, a conversion days later—so "which version should we ship" stops being a read of the traces and becomes a number you compare across variants. The experiment splits the traffic; the score picks the winner. Together they're the loop: change something, run it against real users, measure whether it helped.
+
+## Scoring belongs in the execution layer
+
+Agent scoring isn't new, but the way it's handled today robs engineering teams of time, money, and confidence. That's because every other eval tool in market sits _beside_ your application. You send traces, it scores a copy of your data after the fact, and it samples a slice of traffic. A scorer living outside your execution layer only knows what made it into the trace, and can only sample a slice because of the cost of capturing and storing that data elsewhere.
+
+Inngest is different, because Inngest _is_ the execution layer. The scorer isn't a rule in another product's dashboard—it's a function in your codebase, with the run right there as it happens. Two things follow from that:
+
+1. **You can score how a run _behaved_, not just what it returned.** Inside the function, the score sees what the execution layer already knows—which step ran, what it produced, whether it threw and retried before it succeeded. The behavior is in scope, so you don't reconstruct it from a trace after the fact.
+2. **The score can wait.** `createScorer` returns a scorer that runs after the parent run finishes, as its own deferred function—so its handler can use `step.waitForEvent` and `step.waitForSignal` to pause until the thing you actually want to measure happens. An agent recommends a product; the scorer waits for the purchase and scores whether it worked. A support agent closes a ticket; the scorer waits for the reply and scores whether it stayed closed.
+
+## Getting started
+
+Scoring is available in beta starting v4.8 of the TS SDK. The primitive `step.score()` is ready to use from inside or outside a function. The library, `createScorer`, gives you deferred and outcome-based scoring on top of it.
+
+Full documentation, including side-by-side examples of the primitive and the library, is on the docs site:
+
+- [Score a function run](/docs/features/inngest-functions/steps-workflows/scoring?ref=blog-introducing-scoring)
+- [Build a deferred scorer](/docs/features/inngest-functions/steps-workflows/deferred-scoring?ref=blog-introducing-scoring)
+- [`step.score()` API reference](/docs/reference/typescript/v4/functions/scoring?ref=blog-introducing-scoring)
