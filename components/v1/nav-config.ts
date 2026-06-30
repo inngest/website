@@ -253,5 +253,6 @@ export const NAV_SECONDARY: NavItem[] = [
   },
 ];
 
-export const SIGN_IN_URL = process.env.NEXT_PUBLIC_SIGNIN_URL ?? "#";
+export const SIGN_IN_URL =
+  process.env.NEXT_PUBLIC_APP_HOST ?? process.env.NEXT_PUBLIC_SIGNIN_URL ?? "#";
 export const SIGN_UP_URL = process.env.NEXT_PUBLIC_SIGNUP_URL ?? "#";
