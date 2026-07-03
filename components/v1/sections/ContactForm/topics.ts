@@ -20,7 +20,7 @@ export const GENERAL_TOPICS: Topic[] = [
   },
   {
     title: "Community & Questions",
-    body: "Questions about how Inngest works? Our Discord community — including the team — is the fastest way to get answers.",
+    body: "Questions about how Inngest works? Our Discord community is the fastest way to get answers.",
     action: {
       label: "Join us on Discord",
       href: "https://www.inngest.com/discord",
