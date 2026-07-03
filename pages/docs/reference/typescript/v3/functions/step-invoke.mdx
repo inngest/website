@@ -184,7 +184,6 @@ The invoked function will be executed as a regular Inngest function: it will hav
 
 If a `step.invoke()` fails for any of the reasons below, it will throw a `NonRetriableError`. This is to combat compounding retries, such that chains of invoked functions can be executed many more times than expected. For example, if A invokes B which invokes C, which invokes D, on failure D would be run 27 times (`retryCount^n`).
 
-This may change on the future - [let us know](https://roadmap.inngest.com/roadmap?ref=docs) if you'd like to change this.
 
 ## Error handling
 

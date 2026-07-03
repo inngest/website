@@ -67,10 +67,6 @@ const footerLinks = [
         url: "/blog?ref=footer",
       },
       {
-        label: "Roadmap",
-        url: "https://roadmap.inngest.com/roadmap?ref=footer",
-      },
-      {
         label: "Changelog",
         url: "/changelog?ref=footer",
       },
