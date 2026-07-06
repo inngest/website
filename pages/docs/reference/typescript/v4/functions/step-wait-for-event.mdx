@@ -88,12 +88,19 @@ Use `step.waitForEvent()` to pause your function's execution until a matching ev
 </Callout>
 
 <Callout variant="warning">
-  **No `in` operator support. Use multiple equality checks with `||` instead.** CEL's `in` operator is not supported with `if` expressions, instead, use multiple equality checks (`==`) with an or operator (`||`) to achieve the same result.
+**No `in` operator support. Use multiple equality checks with `||` instead.** CEL's `in` operator is not supported with `if` expressions, instead, use multiple equality checks (`==`) with an or operator (`||`) to achieve the same result.
 
-  {`// Do not use this:
-  // async.data.function_id in ["app-test-a", "app-test-b"]
-  // Use this:
-  (async.data.function_id == "app-test-a" || async.data.function_id == "app-test-b")`}
+```plaintext
+// Do not use this:
+// async.data.function_id in ["app-test-a", "app-test-b"]
 
-  See [GitHub issue #3907](https://github.com/inngest/inngest/issues/3907) for tracking.
+// Use this:
+(async.data.function_id == "app-test-a" || async.data.function_id == "app-test-b")
+```
+
+See [GitHub issue #3907](https://github.com/inngest/inngest/issues/3907) for tracking.
+</Callout>
+
+<Callout>
+  Inside a `group.parallel()` race, a losing `step.waitForEvent()` is not cancelled: it remains an active pause and keeps the run in a `Running` state until its `timeout` is reached. See the [step parallelism guide](/docs/guides/step-parallelism) for details.
 </Callout>
