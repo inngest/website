@@ -190,14 +190,13 @@ export const PATTERNS: PatternIndexItem[] = [
     title: "Score agents on real outcomes",
     subtitle:
       "Attach scores to runs and steps, and defer scoring until the real-world signal arrives, so you measure agents on what actually happened.",
-   },
-   {
+  },
+  {
     category: "ai-evals",
     slug: "score-agent-accuracy",
     title: "Score agent accuracy",
     subtitle:
       "Grade an agent against a known answer (exact match, set overlap, or numeric tolerance) and record the score on the run that produced it.",
-    unreleased: "score",
   },
   {
     category: "flow",
