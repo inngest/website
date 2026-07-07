@@ -11,6 +11,7 @@ type PatternFrontmatter = {
   title?: string;
   subtitle?: string;
   pattern?: string;
+  unreleased?: string;
 };
 
 export default async function handler(
@@ -24,6 +25,9 @@ export default async function handler(
   const bySection = new Map<string, PatternItem[]>();
   for (const entry of entries) {
     if (!entry.pattern || !entry.title || !entry.subtitle) continue;
+    // Keep unreleased patterns out of the agent/markdown index. This endpoint
+    // has no ?unreleased opt-in, so gated patterns are always excluded here.
+    if (entry.unreleased) continue;
     const list = bySection.get(entry.pattern) ?? [];
     list.push({
       slug: entry.slug,
