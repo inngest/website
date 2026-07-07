@@ -1,9 +1,7 @@
 import { Callout, Properties, Property, Row, Col } from "src/shared/Docs/mdx";
 
-
-export const metaTitle = "step.ai.score() | Score AI Outputs (TypeScript SDK v4)"
-export const description = "Attach numeric quality scores to AI function runs and steps to track performance across model versions."
-export const unreleased = "score"
+export const metaTitle = "inngest.score() | Score AI Outputs (TypeScript SDK v4)"
+export const description = "Attach numeric or boolean quality scores to AI function runs, steps, and experiment variants to track LLM-as-a-judge evals and performance across model versions."
 
 # Scoring
 
@@ -23,8 +21,8 @@ Score a run or step. Can be called inside or outside a function.
   <Property name="name" type="string" required>
     A label for the score. Use consistent names across runs for aggregation. Examples: `"accuracy"`, `"user-feedback"`, `"guardrail-pass"`.
   </Property>
-  <Property name="value" type="number" required>
-    The score value. Numeric. Use 0-1 for percentages, integers for counts, or any range that fits your use case.
+  <Property name="value" type="number | boolean" required>
+    The score value. A finite number or a boolean. Use `0`-`1` for percentages, integers for counts, booleans for pass/fail guardrails, or any range that fits your use case.
   </Property>
   <Property name="runId" type="string">
     The run to score. Required when scoring from outside a function. Omit when scoring the current run from inside a function.
@@ -52,28 +50,80 @@ await inngest.score({
 
 ---
 
-## `step.score(options)`
+## `inngest.score.experiment(options)`
 
-Score the current run from within a step context. Same options as `inngest.score()` but `runId` is automatically set to the current run.
+Attribute a score to the experiment variant that produced a result. `group.experiment()` returns an `experimentRef`, which identifies the experiment and the variant that was served. Pass it here to credit the score to that variant.
+
+The signal you want to score often arrives much later, from somewhere else entirely: a click, a rating, an LLM-judge verdict. Because you pass the `experimentRef` yourself, you can credit any of these back to the variant that produced the output, even hours later from a separate run.
 
 <Properties>
   <Property name="name" type="string" required>
     Score label.
   </Property>
-  <Property name="value" type="number" required>
-    Score value.
+  <Property name="value" type="number | boolean" required>
+    Score value. A finite number or a boolean.
+  </Property>
+  <Property name="experiment" type="ExperimentRef" required>
+    The `experimentRef` returned by `group.experiment()`. Identifies the experiment and the served variant. Shape: `{ experimentName: string, variant: string }`.
+  </Property>
+  <Property name="runId" type="string">
+    The run to attach the score to. Required when scoring from outside the run that produced the result; omit to use the current run.
+  </Property>
+</Properties>
+
+<Callout variant="info">
+  Scoring an experiment from a different run than the one that served the variant? Pass that run's `runId` so the score shows up in the experiment view — otherwise it attaches to the run you're scoring from and won't appear under the experiment.
+</Callout>
+
+```ts
+// Inside the function that runs the experiment
+const { result, experimentRef } = await group.experiment("summary-strategy", {
+  variants: { /* ... */ },
+  select: experiment.weighted({ questionLed: 50, factLed: 50 }),
+});
+
+// Persist experimentRef + runId (e.g. on your record) so later runs can score it
+
+// From a separate, later run (a click, rating, or deferred judge)
+await inngest.score.experiment({
+  name: "clickthrough",
+  value: 1,
+  experiment: experimentRef, // restored from your store
+  runId: summarizeRunId,
+});
+```
+
+---
+
+## `step.score(id, options)`
+
+Score the current run from within a step context, as a durable, memoized step. `runId` is automatically set to the current run. Requires `scoreMiddleware()` (from `inngest/experimental`) on the client.
+
+<Properties>
+  <Property name="id" type="string" required>
+    A durable step ID used to memoize this score write, so a replay or retry can't write it twice. Must be unique within the run.
+  </Property>
+  <Property name="options" type="object" required>
+    <Properties nested>
+      <Property name="name" type="string" required>
+        Score label.
+      </Property>
+      <Property name="value" type="number | boolean" required>
+        Score value. A finite number or a boolean.
+      </Property>
+    </Properties>
   </Property>
 </Properties>
 
 ```ts
-await step.score({ name: "guardrail-pass", value: 1 });
+await step.score("score-guardrail-pass", { name: "guardrail-pass", value: true });
 ```
 
 ---
 
 ## `createScorer(client, config, handler)`
 
-Create a reusable deferred scorer. Returns an Inngest function that can be triggered via `defer()`.
+Create a reusable deferred scorer: a separate function, triggered via `defer()`, that evaluates a result without blocking or slowing the run that produced it. Use it when scoring is expensive or slow, such as an LLM-as-a-judge call or waiting on a signal that arrives later.
 
 Imported from `inngest/experimental`.
 
@@ -86,15 +136,17 @@ Imported from `inngest/experimental`.
       <Property name="id" type="string" required>
         Unique identifier for the scorer function.
       </Property>
-      <Property name="schema" type="ZodSchema" required>
-        Zod schema defining the input data the scorer expects.
+      <Property name="schema" type="StandardSchema">
+        A [Standard Schema](https://standardschema.dev) (e.g. Zod) describing the input data the scorer expects. Optional; when set, the `data` passed to `defer()` is validated against it and the handler's `event.data` is typed from it.
       </Property>
     </Properties>
   </Property>
   <Property name="handler" type="function" required>
-    Async function that receives `event` and `step`, and returns `{ name: string, value: number }`.
+    Async function that receives `event`, `step`, and `parents`. Return `{ name, value }` and the score is written for you, attributed to the parent run, and to the served variant when the scorer was deferred with an `experiment` ref. Return `null` or `undefined` to write nothing.
   </Property>
 </Properties>
+
+The handler's `event.data` is the payload sent via `defer()`, typed from `schema`. The simplest scorer returns one score and lets the SDK attribute it:
 
 ```ts
 import { createScorer } from "inngest/experimental";
@@ -104,8 +156,26 @@ export const verbosityScorer = createScorer(
   inngest,
   { id: "verbosity-scorer", schema: z.object({ text: z.string() }) },
   async ({ event }) => {
-    const wordCount = event.data.input.text.split(" ").length;
+    const wordCount = event.data.text.split(" ").length;
     return { name: "verbosity", value: wordCount };
+  }
+);
+```
+
+To emit several scores, or to attribute explicitly, write them yourself with `inngest.score.experiment()`. The parent run and its served variant are on `ctx.parents[0]`, so there's no need to persist them:
+
+```ts
+export const judgeScorer = createScorer(
+  inngest,
+  { id: "judge-summary", schema: z.object({ summary: z.string() }) },
+  async ({ event, step, parents }) => {
+    const judged = await step.run("judge", () => judge(event.data.summary));
+
+    const { experiment, runId } = parents[0];
+    await inngest.score.experiment({ name: "faithfulness", value: judged.faithfulness, experiment, runId });
+    await inngest.score.experiment({ name: "spoiler", value: judged.spoiler, experiment, runId });
+
+    return null; // scores already written above
   }
 );
 ```
@@ -128,14 +198,20 @@ Trigger a deferred scorer from inside a function. Available as a handler argumen
       <Property name="data" type="object" required>
         Input data matching the scorer's schema.
       </Property>
+      <Property name="experiment" type="ExperimentRef">
+        The `experimentRef` from `group.experiment()`. Pass it to attribute the scorer's result to the served variant; surfaced on the scorer's `ctx.parents[0].experiment`.
+      </Property>
     </Properties>
   </Property>
 </Properties>
 
+`defer()` is fire-and-forget: it returns `void`, so there's nothing to `await`.
+
 ```ts
 defer("score-feedback", {
   function: feedbackScorer,
-  data: { ticketId: "tk_123", runId: "run_456" },
+  data: { ticketId: "tk_123" },
+  experiment: experimentRef, // optional; credits the score to the served variant
 });
 ```
 

@@ -1,11 +1,11 @@
 ---
 name: unreleased-content
-description: Hide docs pages, doc sections, nav items, and changelog entries behind a `?unreleased=<label>` URL param until a feature ships. Use when staging unreleased documentation or changelog entries, previewing not-yet-public content, gating nav links, or working with the `<Unreleased>` component or `export const unreleased` exports in the website repo.
+description: Hide docs pages, doc sections, nav items, changelog entries, and blog posts behind a `?unreleased=<label>` URL param until a feature ships. Use when staging unreleased documentation, changelog entries, or blog posts, previewing not-yet-public content, gating nav links, or working with the `<Unreleased>` component or `unreleased` exports/frontmatter in the website repo.
 ---
 
 # Unreleased content gating
 
-Hide content on the docs site and changelog until a previewer opts in with a URL param. Nothing is hidden behind auth — it's a lightweight, crawler-safe preview gate for staging content before a feature launches.
+Hide content on the docs site, changelog, and blog until a previewer opts in with a URL param. Nothing is hidden behind auth — it's a lightweight, crawler-safe preview gate for staging content before a feature launches.
 
 ## How it works
 
@@ -16,7 +16,7 @@ Hide content on the docs site and changelog until a previewer opts in with a URL
 
 The engine is `website/shared/Docs/Unreleased.tsx`: a client hook `useUnreleasedLabels()` (returns the active `Set<string>`), the `<Unreleased label fallback>` component, and `filterUnreleasedNav()` for nav data.
 
-## The four ways to gate
+## The ways to gate
 
 ### 1. A whole docs page
 
@@ -63,6 +63,21 @@ export const unreleased = "score";
 
 The entry is hidden from the `/changelog` feed and excluded from the side menu; its own `/changelog/<slug>` page shows "Entry not found" and sends `noindex`. With a matching label it appears in the feed.
 
+### 5. A blog post
+
+Blog posts use **YAML frontmatter** (not `export const`), so add the field to the frontmatter block in `website/content/blog/<date>-<slug>.mdx`:
+
+```mdx
+---
+heading: "Introducing scoring"
+date: 2026-06-24
+category: product-updates
+unreleased: score
+---
+```
+
+A gated post is excluded server-side from the `/blog` index, related-post cards, the RSS feed, `blog.txt`, and the `.md` mirror (which 404s). Its `/blog/<slug>` page shows "Post not found" and sends `noindex`. With a matching label, the post page renders. (Unlike the changelog feed, the blog index does not reveal gated cards client-side — reach a gated post by its direct URL.)
+
 ## Releasing a feature
 
 Delete the gate — that's the entire "ship it" step:
@@ -73,7 +88,7 @@ Delete the gate — that's the entire "ship it" step:
 ## SEO & performance
 
 - **No page-load impact.** Public pages are unchanged (no `unreleased` → no gating, no extra render). The only added code is a tiny client hook reading the URL + `sessionStorage` once.
-- Gated content is **not in the visible DOM** and gated pages/entries are **`noindex`**, so it stays out of search.
+- Gated content is **not in the visible DOM**, gated pages/entries are **`noindex`**, and they're **excluded from `sitemap.xml`** (a `transform` in `next-sitemap.config.js` drops any page whose source is `unreleased`) — so they stay fully out of search.
 - **Known residual:** the gated content's data still ends up in the page's serialized payload (`__NEXT_DATA__` for docs section titles; the RSC Flight `<script>` for a changelog entry body). It is not in the rendered DOM and not in Algolia's content index, but it is present in the HTML source. This is the cost of revealing server-rendered content client-side without a hard 404.
 - This is a **soft gate**: the URL still returns `200` (no middleware/404). Fine for "not yet public," not for secrets.
 
@@ -81,5 +96,6 @@ Delete the gate — that's the entire "ship it" step:
 
 - **Docs are Pages Router; the changelog is App Router (RSC).** `<Unreleased>` is a `"use client"` component and works as a client island in both.
 - The component lives at `shared/Docs/Unreleased.tsx` even though the changelog uses it too (the path is historical — it's general-purpose).
-- Whole-page/whole-entry gating uses the **`export const unreleased` page export**, not the `<Unreleased>` wrapper. Use the wrapper only for a section *inside* an otherwise-public page.
+- Whole-page/whole-entry gating uses the **`export const unreleased` page export** (docs, changelog) or the **`unreleased:` YAML frontmatter field** (blog), not the `<Unreleased>` wrapper. Use the wrapper only for a section *inside* an otherwise-public page.
+- The blog has extra agent/SEO surfaces (index, related cards, RSS, `blog.txt`, `.md` mirror) that render server-side with no client param — gated posts are excluded from each of those server-side.
 - A label is any string; reuse the same label across a feature's page, sections, nav item, and changelog entry so one `?unreleased=<label>` reveals all of it.

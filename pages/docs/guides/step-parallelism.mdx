@@ -110,7 +110,7 @@ You can disable optimized parallelism by setting `optimizeParallelism: false` on
 
 **Important considerations:**
 
-- **`Promise.race` behavior**: With optimized parallelism (the default in v4), `Promise.race` waits for all parallel steps to complete before resolving. If you need early resolution behavior, use `group.parallel()`:
+- **`Promise.race` behavior**: With optimized parallelism (the default in v4), `Promise.race` waits for all parallel steps to complete before resolving. If you need early resolution behavior, use `group.parallel()`, though note that early resolution [does not cancel the remaining steps](#racing-steps-are-not-cancelled):
 
 ```ts
 const winner = await group.parallel(async () => {
@@ -189,6 +189,12 @@ async def fn(ctx: inngest.Context) -> None:
 **Without specifying `parallel_mode`**, the steps will run in the order: `a`, `x`, `b`, `y` (optimized mode). Everything is still correct, but step `b` doesn't run until step `x` completes.
 
 **With `parallel_mode=inngest.ParallelMode.RACE`**, the steps run in the expected order: `a`, `b`, `x`, `y`, but with the performance trade-off of more requests.
+
+### Racing steps are not cancelled
+
+Race mode changes *when* Inngest re-invokes your function: as soon as any step in the group settles, instead of waiting for all of them. The losing steps are *not* cancelled and continue to run.
+
+This is most visible with [`step.waitForEvent()`](/docs/features/inngest-functions/steps-workflows/wait-for-event). A losing `waitForEvent` remains an active server-side pause, so the run stays in a `Running` state until that wait reaches its own `timeout`, even though your function code proceeded past the race earlier. Because the losing wait's timeout bounds the run's lifetime, use the tightest `waitForEvent` timeout that works for your use case when racing waits.
 
 ## Chunking jobs
 

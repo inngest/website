@@ -52,10 +52,6 @@ export const navigation = {
   company: [
     { name: "Blog", href: "/blog?ref=footer-links" },
     { name: "Changelog", href: "/changelog?ref=footer-links" },
-    {
-      name: "Roadmap",
-      href: "https://roadmap.inngest.com/roadmap?ref=footer-links",
-    },
     { name: "About", href: "/about?ref=footer-links" },
     { name: "Careers", href: "/careers?ref=footer-links" },
   ],

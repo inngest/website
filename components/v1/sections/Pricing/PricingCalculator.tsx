@@ -86,8 +86,8 @@ function planCost(plan: Plan, inputs: Inputs): number {
     included = num(HOBBY_PLAN.cost.includedRuns);
     exec = executionsCost(total, included, "pro");
   } else if (plan.name === PLAN_NAMES.pro) {
-    base = 75;
-    included = 1_000_000;
+    base = num(plan.cost.basePrice);
+    included = num(plan.cost.includedRuns);
     exec = executionsCost(total, included, "pro");
   } else {
     base = total <= 10_000_000 ? 1000 : 2500;
@@ -135,9 +135,24 @@ function recommend(inputs: Inputs): PlanName {
 }
 
 const RECOMMENDED_BULLETS: Record<PlanName, string[]> = {
-  [PLAN_NAMES.hobby]: ["5 concurrent steps", "50 realtime connections"],
-  [PLAN_NAMES.pro]: ["100 concurrent steps", "Granular metrics"],
-  [PLAN_NAMES.enterprise]: ["500+ concurrent steps", "Dedicated infra"],
+  [PLAN_NAMES.hobby]: [
+    "5 concurrent steps",
+    "500 MB span data",
+    "10K scores",
+    "500K events ingested",
+  ],
+  [PLAN_NAMES.pro]: [
+    "100 concurrent steps",
+    "5 GB span data",
+    "50K scores",
+    "5M events ingested",
+  ],
+  [PLAN_NAMES.enterprise]: [
+    "500+ concurrent steps",
+    "Custom span data",
+    "Custom scores",
+    "Custom events ingested",
+  ],
 };
 
 export default function PricingCalculator() {

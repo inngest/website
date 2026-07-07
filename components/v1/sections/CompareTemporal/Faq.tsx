@@ -47,7 +47,7 @@ const FAQS: FaqItem[] = [
     id: "cost",
     question: "How does cost actually compare?",
     answer:
-      "Temporal Cloud starts at $100/month plus the cost of running your own worker fleet — compute, scaling, and maintenance. Inngest starts at $75/month with no workers to run. At scale, the more meaningful difference is operational cost: Inngest removes an entire infrastructure layer that Temporal requires you to manage.",
+      "Temporal Cloud starts at $100/month plus the cost of running your own worker fleet — compute, scaling, and maintenance. Inngest starts at $99/month with no workers to run. At scale, the more meaningful difference is operational cost: Inngest removes an entire infrastructure layer that Temporal requires you to manage.",
   },
   {
     id: "ai-advantage",

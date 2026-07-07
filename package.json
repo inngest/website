@@ -30,6 +30,7 @@
     "v1:extract-de-dots": "node scripts/extract-durable-execution-dots.mjs",
     "v1:extract-events-dots": "node scripts/extract-events-dots.mjs",
     "v1:extract-qfc-dots": "node scripts/extract-queues-flow-control-dots.mjs",
+    "v1:extract-ae-dots": "node scripts/extract-agent-evals-dots.mjs",
     "v1:optimize-team-sphere": "node scripts/optimize-team-sphere-svg.mjs",
     "prettier": "prettier --write --trailing-comma es5 \"pages/**/*.tsx\" \"pages/**/*.js\" \"shared/*.tsx\" \"shared/*.js\"",
     "env:pull": "vercel env pull",

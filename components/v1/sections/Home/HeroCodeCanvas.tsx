@@ -11,7 +11,7 @@ import { HeroCodeScene } from "@/lib/animations/scenes/HeroCodeScene";
  * features layered on via its own options/methods —
  *
  *   1. `loop: false` — the reel plays through every function ONCE
- *      during the intro then freezes on the last one (step.invoke),
+ *      during the intro then freezes on the last one (step.score),
  *      handing control to the user instead of cycling forever.
  *   2. Clickable titles — an invisible <button> overlay per title row
  *      (polled from `getTitleBounds()`); clicking jumps the reel to

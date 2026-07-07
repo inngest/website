@@ -12,6 +12,10 @@ export interface PatternItem {
   slug: string;
   title: string;
   subtitle: string;
+  // When set, the pattern is hidden until the viewer opts in with
+  // ?unreleased=<label> (see shared/Docs/Unreleased.tsx). Mirror this in the
+  // pattern's MDX frontmatter so the markdown/agent surfaces gate it too.
+  unreleased?: string;
 }
 
 export interface PatternSectionMeta {
@@ -186,6 +190,14 @@ export const PATTERNS: PatternIndexItem[] = [
     title: "Score agents on real outcomes",
     subtitle:
       "Attach scores to runs and steps, and defer scoring until the real-world signal arrives, so you measure agents on what actually happened.",
+   },
+   {
+    category: "ai-evals",
+    slug: "score-agent-accuracy",
+    title: "Score agent accuracy",
+    subtitle:
+      "Grade an agent against a known answer (exact match, set overlap, or numeric tolerance) and record the score on the run that produced it.",
+    unreleased: "score",
   },
   {
     category: "flow",
@@ -239,12 +251,17 @@ export const PATTERNS: PatternIndexItem[] = [
 ];
 
 // Build the full sections-with-patterns list, in display order, dropping any
-// section that has no patterns.
-export function getPatternSections(): PatternSection[] {
+// section that has no patterns. Patterns gated behind `?unreleased=<label>` are
+// excluded unless their label is in `labels`. Defaults to no labels, so server
+// rendering and agent/markdown surfaces never expose unreleased patterns; pass
+// the active labels from useUnreleasedLabels() on the client to reveal them.
+export function getPatternSections(
+  labels: Set<string> = new Set()
+): PatternSection[] {
   return PATTERN_SECTIONS.flatMap((meta) => {
-    const patterns = PATTERNS.filter((p) => p.category === meta.id).map(
-      ({ slug, title, subtitle }) => ({ slug, title, subtitle })
-    );
+    const patterns = PATTERNS.filter((p) => p.category === meta.id)
+      .filter((p) => !p.unreleased || labels.has(p.unreleased))
+      .map(({ slug, title, subtitle }) => ({ slug, title, subtitle }));
     if (patterns.length === 0) return [];
     return [{ ...meta, patterns }];
   });

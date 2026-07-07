@@ -33,6 +33,11 @@ const COLUMN_PLATFORM: FooterColumnDef = {
       href: "/platform/observability",
       noPrefetch: true,
     },
+    {
+      label: "Agent Evals",
+      href: "/platform/agent-evals",
+      noPrefetch: true,
+    },
   ],
 };
 

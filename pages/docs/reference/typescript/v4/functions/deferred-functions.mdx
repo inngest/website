@@ -1,6 +1,5 @@
 import { Callout, Properties, Property, Row, Col, CodeGroup, VersionBadge } from "src/shared/Docs/mdx";
 
-
 export const metaTitle = "Deferred Functions | Fire-and-Forget Background Tasks"
 export const description = "Trigger independent background tasks with typed data without waiting for a return value."
 
@@ -12,13 +11,17 @@ A deferred function is an Inngest function that runs in the background as a side
   Deferred functions are experimental. `createDefer` is imported from `inngest/experimental` and the API may change before GA.
 </Callout>
 
+<Callout variant="info">
+  `defer(...)` doesn't yet work with [encryption middleware](/docs/reference/typescript/v4/middleware/encryption) — payloads passed to a deferred function aren't encrypted. Support is planned; in the meantime, avoid passing encrypted data through `defer(...)`.
+</Callout>
+
 Use deferred functions for work that should happen *because of* a run, not *as part of* it: scoring an agent's output, sending a notification, logging a side effect, queueing follow-up work. Any function can call the same deferred function, and each call is its own run.
 
 ## When to use
 
 | Tool                            | Returns to caller?  | Independent execution?    |
 | ------------------------------- | ------------------- | ------------------------- |
-| `step.invoke(fn, { data })`     | Yes (awaits result) | No (caller blocks)        |
+| `step.invoke(id, { function, data })` | Yes (awaits result) | No (caller blocks)        |
 | `step.sendEvent(...)`           | No                  | Yes (any matching fn)     |
 | `defer(id, { function, data })` | No                  | Yes (single typed target) |
 

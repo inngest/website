@@ -80,7 +80,9 @@ export const PLANS: Plan[] = [
     features: [
       { value: "50k", text: "executions" },
       { value: "5", text: "concurrent executions" },
-      { value: "500k", text: "events" },
+      { value: "500 MB", text: "span data ingested" },
+      { value: "10K", text: "scores" },
+      { value: "500k", text: "events ingested" },
       { value: "100k", text: "queue depth" },
       { value: "50", text: "realtime connections" },
       { text: "Basic tracing, metrics, and alerts" },
@@ -92,7 +94,7 @@ export const PLANS: Plan[] = [
       "For growing teams building production-ready workflows with increased scale and reliability.",
     cost: {
       startsAt: true,
-      basePrice: 75,
+      basePrice: 99,
       period: "mo",
       includedRuns: 1_000_000,
       additionalRunsPrice: 50,
@@ -118,7 +120,9 @@ export const PLANS: Plan[] = [
     features: [
       { value: "1M+", text: "executions" },
       { value: "100+", text: "concurrent executions" },
-      { value: "5M+", text: "events" },
+      { value: "5 GB", text: "span data ingested" },
+      { value: "50K", text: "scores" },
+      { value: "5M+", text: "events ingested" },
       { value: "1M+", text: "queue depth" },
       { value: "1000", text: "realtime connections" },
       { text: "Granular tracing, metrics, alerts + 7 day trace retention" },
@@ -156,7 +160,9 @@ export const PLANS: Plan[] = [
     features: [
       { value: "Custom", text: "executions" },
       { value: "Custom", text: "concurrent executions" },
-      { value: "Custom", text: "events" },
+      { value: "Custom", text: "span data ingested" },
+      { value: "Custom", text: "scores" },
+      { value: "Custom", text: "events ingested" },
       { value: "Custom", text: "queue depth" },
       { value: "Custom", text: "realtime connections" },
       { text: "Advanced tracing, metrics, alerts + 90 day trace retention" },
@@ -206,7 +212,7 @@ export const FEATURES: Feature[] = [
     section: "comparison",
     plans: {
       [PLAN_NAMES.hobby]: "$0",
-      [PLAN_NAMES.pro]: "$75 /mo",
+      [PLAN_NAMES.pro]: "$99 /mo",
       [PLAN_NAMES.enterprise]: "Contact us",
     },
   },
@@ -381,6 +387,32 @@ export const FEATURES: Feature[] = [
       [PLAN_NAMES.hobby]: "24 hours",
       [PLAN_NAMES.pro]: "7 days",
       [PLAN_NAMES.enterprise]: "90 days",
+    },
+  },
+  {
+    name: "Span data ingested",
+    description: "Trace span data ingested for observability",
+    section: "observability",
+    plans: {
+      [PLAN_NAMES.hobby]: "500 MB included",
+      [PLAN_NAMES.pro]: {
+        value: "5 GB included",
+        description: "then $3/GB",
+      },
+      [PLAN_NAMES.enterprise]: "Custom",
+    },
+  },
+  {
+    name: "Scores",
+    description: "Evaluation scores ingested for observability",
+    section: "observability",
+    plans: {
+      [PLAN_NAMES.hobby]: "10K included",
+      [PLAN_NAMES.pro]: {
+        value: "50K included",
+        description: "then $1.50 per 1K",
+      },
+      [PLAN_NAMES.enterprise]: "Custom",
     },
   },
   {

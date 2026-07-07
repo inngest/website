@@ -160,6 +160,10 @@ Check out the [`step.wait_for_event()` Python reference.](/docs/reference/python
 
 
 <Callout variant={'warning'}>
+Inside a `group.parallel()` race, a losing `step.waitForEvent()` is not cancelled: it keeps the run active until its `timeout` is reached, so keep timeouts tight. See the [step parallelism guide](/docs/guides/step-parallelism) for details.
+</Callout>
+
+<Callout variant={'warning'}>
 **Preventing race conditions**
 
 The "wait for event" method begins listening for new events from when the code is executed. This means that events sent before the function is executed will not be handled by the wait.

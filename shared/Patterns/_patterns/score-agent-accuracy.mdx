@@ -1,0 +1,97 @@
+---
+title: Score agent accuracy
+subtitle: Grade an agent against a known answer (exact match, set overlap, or numeric tolerance) and record the score on the run that produced it.
+pattern: ai-evals
+tags: [AI, Evals, Observability]
+unreleased: score
+---
+
+Agents fail quietly. A misrouted ticket, a wrong extracted value, or a fix that touched the wrong files looks like a successful run: no exception is thrown, the function returns `200`, and the trace is green. The only thing that went wrong is the answer.
+
+When you have ground truth (a labeled category, an expected value, the set of files a fix actually touched), accuracy is the most direct score you can record. You compare what the agent produced against the known answer and attach a `0`–`1` score to the run.
+
+Inngest records the score where the run already executed, so it sits next to the trace, inputs, and outputs that produced it. The known answer can be available at runtime, or it can arrive later as an outcome event. When it arrives later, you [score the run by its ID](/docs/features/inngest-functions/steps-workflows/scoring?ref=docs-patterns-score-agent-accuracy) instead of guessing at runtime.
+
+Use this pattern when you have a labeled set, a golden answer, or a verifiable result the agent should match: classification, extraction, routing, or file localization.
+
+## Which accuracy measure?
+
+| The answer is | Measure | Score |
+|---|---|---|
+| A single category or label | Exact match | `1` if equal, else `0` |
+| A set of items (files, tags, citations) | Overlap (Jaccard) | Fraction of the set the agent got right |
+| A number | Within tolerance | `1` inside the band, scaled or `0` outside |
+| Free text against a reference | Similarity | Embedding distance, or an LLM judge |
+
+The first three are exact, cheap, and deterministic. Reach for them whenever the answer has a definite shape:
+
+- **Exact match** fits a single category or label: score `1` when the agent's choice equals the known answer, else `0`. This is the measure for classification and routing.
+- **Overlap (Jaccard)** fits set-valued answers like cited files, extracted entities, or applied tags: score the fraction of the correct set the agent got, so partial credit tells you *how* wrong, not just *that* it was wrong. It's also the right shape for file localization, where you compare the files the agent proposed against the set the merged fix actually touched.
+- **Tolerance** fits numeric estimates and forecasts: score `1` inside an acceptable band, then decay toward `0` as the error grows.
+
+Free-text similarity is the fuzzy case; when there's no single correct string, grade it with a model instead (that's an LLM judge, not accuracy).
+
+## A worked example
+
+Define each measure once as a pure function, so the same check is reusable across functions and [experiment](/docs/patterns/ai-evals/run-experiments-in-production?ref=docs-patterns-score-agent-accuracy) variants:
+
+```typescript
+// measures.ts: define once, reuse everywhere
+export const exactMatch = (a: string, b: string): number => (a === b ? 1 : 0);
+
+// Jaccard: |intersection| / |union|, in [0, 1]
+export const jaccard = (a: string[], b: string[]): number => {
+  const A = new Set(a);
+  const B = new Set(b);
+  const shared = [...A].filter((x) => B.has(x)).length;
+  return shared / (A.size + B.size - shared);
+};
+
+// Full credit within `band`, decaying to 0 past it
+export const tolerance = (predicted: number, actual: number, band = 0.1) => {
+  const error = Math.abs(predicted - actual) / actual;
+  return error <= band ? 1 : Math.max(0, 1 - error);
+};
+```
+
+Then call the measure that matches your answer shape from inside the run, scoring only when ground truth is present so unlabeled production traffic doesn't drag the metric down:
+
+```typescript
+import { inngest } from "./client";
+import { exactMatch } from "./measures";
+
+export default inngest.createFunction(
+  { id: "route-ticket", triggers: { event: "support/ticket.created" } },
+  async ({ event, step }) => {
+    const team = await step.run("route", () => route(event.data));
+
+    if (event.data.knownTeam) {
+      await step.score("score-routing-accuracy", {
+        name: "routing-accuracy",
+        value: exactMatch(team, event.data.knownTeam),
+      });
+    }
+
+    return team;
+  }
+);
+```
+
+`step.score()` attaches the score to the current run. The first argument is a stable step `id`, which memoizes the score across retries and replays the same way `step.run()` IDs do; `name` is the series the score aggregates under in dashboards. Swap `exactMatch` for `jaccard` or `tolerance` when the answer is a set or a number.
+
+When the correct answer only emerges after the run finishes (a human corrects the output, a downstream system confirms the result), move the check into a [deferred scorer](/docs/features/inngest-functions/steps-workflows/deferred-scoring?ref=docs-patterns-score-agent-accuracy) that waits for the outcome event and scores the original run by its ID.
+
+## Best practices
+
+- Only score accuracy when you actually have ground truth. If you're scoring against a model's opinion, that's an LLM judge, not accuracy. Keep the two as separate score names so the trends don't blur.
+- Prefer partial-credit measures (overlap, tolerance) over exact match for anything set- or value-shaped. They tell you how wrong, not just that it was wrong.
+- Keep the score name stable so accuracy stays in one trend series. A renamed score starts a new, disconnected line.
+- Give each score step a stable `id`. Like `step.run()`, it memoizes across retries and replays so a score isn't counted twice.
+- When the correct answer only emerges later, score the run by its `runId` instead of forcing a guess at runtime.
+
+## Related docs
+
+- [Score a function run](/docs/features/inngest-functions/steps-workflows/scoring?ref=docs-patterns-score-agent-accuracy)
+- [Build a deferred scorer](/docs/features/inngest-functions/steps-workflows/deferred-scoring?ref=docs-patterns-score-agent-accuracy) for outcomes that arrive after the run
+- [`inngest.score()` reference](/docs/reference/typescript/v4/functions/scoring?ref=docs-patterns-score-agent-accuracy)
+- [Run experiments in production](/docs/patterns/ai-evals/run-experiments-in-production?ref=docs-patterns-score-agent-accuracy)

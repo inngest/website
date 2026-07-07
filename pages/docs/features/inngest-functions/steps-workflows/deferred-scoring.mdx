@@ -3,7 +3,6 @@ import { Callout, CodeGroup } from "src/shared/Docs/mdx";
 
 export const metaTitle = "Deferred Scoring | Run Evaluators After Completion"
 export const description = "Build reusable background scorers that evaluate AI outputs after a function completes, triggered by events that arrive asynchronously."
-export const unreleased = "score"
 
 # Build a deferred scorer
 
@@ -29,14 +28,14 @@ export const feedbackScorer = createScorer(
   inngest,
   {
     id: "feedback-scorer",
-    schema: z.object({ ticketId: z.string(), runId: z.string() }),
+    schema: z.object({ ticketId: z.string() }),
   },
   async ({ event, step }) => {
     // Wait up to 7 days for the user to give feedback
     const feedback = await step.waitForEvent("wait-for-feedback", {
       event: "support/feedback.received",
       timeout: "7d",
-      if: `async.data.ticketId == '${event.data.input.ticketId}'`,
+      if: `async.data.ticketId == '${event.data.ticketId}'`,
     });
 
     if (!feedback) {
@@ -80,7 +79,6 @@ export default inngest.createFunction(
       function: feedbackScorer,
       data: {
         ticketId: event.data.ticketId,
-        runId: event.data.runId,
       },
     });
 
@@ -88,6 +86,8 @@ export default inngest.createFunction(
   }
 );
 ```
+
+You don't need to pass the parent run's ID in `data`. The SDK threads it through automatically, so the scorer's return value is attributed to the run that deferred it. If you need to write scores explicitly, the parent run ID is available in the handler on `ctx.parents[0].runId`.
 
 ## How deferred scoring works
 
@@ -126,5 +126,6 @@ Inngest matches this event to any waiting scorer by the `ticketId` field. The sc
 
 ## Next steps
 
+- [Agent Evals overview](/docs/learn/agent-evals?ref=docs-deferred-scoring) to understand how scorers, sessions, traces, and experiments fit together
 - [Score a function run](/docs/features/inngest-functions/steps-workflows/scoring) for inline scoring
 - [Run experiments](/docs/patterns/ai-evals/run-experiments-in-production) to compare variants using scores

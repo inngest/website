@@ -10,6 +10,7 @@ import {
 import Viz from "../../../../shared/Patterns/Viz";
 import AgentView from "../../../../shared/Patterns/AgentView";
 import { categoryMarkdown } from "../../../../shared/Patterns/markdown";
+import { useUnreleasedLabels } from "../../../../shared/Docs/Unreleased";
 import "../../../../shared/Patterns/patterns-docs.css";
 
 function Arrow({ s = 14 }: { s?: number }) {
@@ -46,7 +47,7 @@ export const getStaticProps: GetStaticProps = async (ctx) => {
 
 export default function CategoryPage({ category }: { category: string }) {
   const router = useRouter();
-  const sections = getPatternSections();
+  const sections = getPatternSections(useUnreleasedLabels());
   const idx = sections.findIndex((s) => s.id === category);
   const section = sections[idx];
   if (!section) return null;

@@ -82,7 +82,7 @@ When the parent run finalizes, the deferred callback fires as its own linked Inn
 
 **`defer()` is fire-and-forget.** The call returns `void` and the parent run continues immediately. Buffered defer ops ship when the parent run finalizes, so the deferred function can't block, fail, or change the parent's outcome.
 
-**Steps work inside deferred runs.** The full power of Inngest — `step.run()`, `step.waitForEvent()`, `step.sleep()` — is available inside the deferred handler. This is what makes patterns like outcome-based scoring possible.
+**Steps work inside deferred runs.** The full power of Inngest — `step.run()`, `step.waitForEvent()`, `step.sleep()` — is available inside the deferred handler. This is what makes patterns like [outcome-based scoring](/blog/introducing-scoring?ref=blog-announcing-defer) possible.
 
 **Payloads are typed.** Pass a `schema` to `createDefer` and the `data` you send is validated at the call site and on the receiver, with `event.data` typed in the handler. Change the schema later and TypeScript points at every call site that needs updating, so refactors are painless.
 
@@ -283,6 +283,6 @@ We built `defer()` as a primitive. The underlying mechanism is a full durable ru
 
 ## Getting started
 
-`defer()` is available today as an experimental API in the Inngest TypeScript SDK. Check the [deferred functions documentation](/docs/reference/typescript/v4/functions/deferred-functions) for the full API reference.
+`defer()` is available today as an experimental API in the Inngest TypeScript SDK. Check the [deferred functions documentation](/docs/reference/typescript/v4/functions/deferred-functions) for the full API reference. For attaching scores to runs—including deferred, outcome-based scoring—see [Introducing Scoring](/blog/introducing-scoring?ref=blog-announcing-defer).
 
 We're especially interested in hearing how teams use this for durable workflows — including ensuring agents run as expected. If you're building eval pipelines or scoring loops and want to talk through how `defer()` fits, reach out.

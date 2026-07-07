@@ -103,6 +103,9 @@ export const PLANS: Plan[] = [
     },
     planIncludes: "INCLUDED IN HOBBY PLAN",
     features: [
+      "500 MB span data ingested",
+      "10K scores included",
+      "500k events ingested",
       "Unlimited branch and staging envs",
       "Logs, traces, and observability",
       "Basic alerting",
@@ -130,7 +133,7 @@ export const PLANS: Plan[] = [
       additionalWorkersPrice: 10,
       additionalWorkersRate: 1,
       //   between: true,
-      //   endPrice: 75,
+      //   endPrice: 99,
     },
     description: "Pay only for what you use with no upfront commitment",
     cta: {
@@ -145,6 +148,9 @@ export const PLANS: Plan[] = [
     },
     planIncludes: "INCLUDED IN HOBBY PLAN",
     features: [
+      "500 MB span data ingested",
+      "10K scores included",
+      "500k events ingested",
       "Unlimited branch and staging envs",
       "Logs, traces, and observability",
       "Basic alerting",
@@ -156,7 +162,7 @@ export const PLANS: Plan[] = [
     name: PLAN_NAMES.pro,
     cost: {
       startsAt: true,
-      basePrice: 75,
+      basePrice: 99,
       includedRuns: 1_000_000,
       additionalRunsPrice: 10, // $50 per 1 m (10 per 200 k)
       additionalRunsRate: 200_000,
@@ -190,6 +196,9 @@ export const PLANS: Plan[] = [
     },
     planIncludes: "INCLUDED IN PRO PLAN",
     features: [
+      "5 GB span data ingested",
+      "50K scores included",
+      "5M events ingested",
       "Granular metrics",
       "Increased scale and throughput",
       "Higher usage limits",
@@ -231,6 +240,9 @@ export const PLANS: Plan[] = [
     },
     planIncludes: "INCLUDED IN ENTERPRISE PLAN",
     features: [
+      "Custom span data ingested",
+      "Custom scores",
+      "Custom events ingested",
       "SAML, RBAC, and audit trails",
       "Exportable observability",
       "90 day trace retention",
@@ -257,7 +269,7 @@ export const FEATURES: Feature[] = [
     name: "Base price",
     plans: {
       [PLAN_NAMES.basicFree]: "$0",
-      [PLAN_NAMES.pro]: "$75 /mo",
+      [PLAN_NAMES.pro]: "$99 /mo",
       [PLAN_NAMES.enterprise]: "Contact us",
     },
     section: "platform",
@@ -446,6 +458,32 @@ export const FEATURES: Feature[] = [
       [PLAN_NAMES.enterprise]: "90 days",
     },
     infoUrl: "/docs/platform/monitor/inspecting-function-runs?ref=pricing",
+    section: "observability",
+  },
+  {
+    name: "Span data ingested",
+    description: "Trace span data ingested for observability",
+    plans: {
+      [PLAN_NAMES.basicFree]: "500 MB included",
+      [PLAN_NAMES.pro]: {
+        value: "5 GB included",
+        description: "then $3/GB",
+      },
+      [PLAN_NAMES.enterprise]: "Custom",
+    },
+    section: "observability",
+  },
+  {
+    name: "Scores",
+    description: "Evaluation scores ingested for observability",
+    plans: {
+      [PLAN_NAMES.basicFree]: "10K included",
+      [PLAN_NAMES.pro]: {
+        value: "50K included",
+        description: "then $1.50 per 1K",
+      },
+      [PLAN_NAMES.enterprise]: "Custom",
+    },
     section: "observability",
   },
   {

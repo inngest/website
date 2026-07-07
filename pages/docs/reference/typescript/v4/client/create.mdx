@@ -72,7 +72,7 @@ const inngest = new Inngest({
     A stack of [middleware](/docs/features/middleware) to add to the client.
   </Property>
   <Property name="aiMetadata" type="boolean">
-    Automatically extract AI metadata from OpenTelemetry spans instrumented with Open Inference in step runs. Metadata is attached to its step. Defaults to `true`.
+    Automatically extract AI metadata from OpenTelemetry spans with OpenTelemetry GenAI attributes. Metadata is attached to its step. Defaults to `true`.
 
     Set this to `false` to opt out of the SDK's built-in AI metadata extraction. This does not affect [Extended Traces](/docs/reference/typescript/v4/extended-traces).
   </Property>

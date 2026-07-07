@@ -1,0 +1,154 @@
+import { Callout } from "src/shared/Docs/mdx";
+
+export const metaTitle = "Deferred Functions | Independent Background Work"
+export const description = "Learn how to launch fire-and-forget background work from inside an Inngest function using defer() and createDefer in the TypeScript SDK."
+
+# Deferred functions
+
+A deferred function is an Inngest function that runs in the background as a side effect of another run. Instead of being triggered by an event, it is launched from inside a parent run with `defer("some-id", { function, data })`. The parent doesn't wait and never sees a result. It keeps executing while the deferred run proceeds on its own.
+
+For example, an order-processing function can hand the confirmation email to a deferred function and finish without waiting on it to send.
+
+<Callout variant="info">
+  Deferred functions are in beta. `createDefer` is imported from `inngest/experimental` and the API may change before GA. They are currently available in the TypeScript SDK only.
+</Callout>
+
+<Callout variant="info">
+  `defer(...)` doesn't yet work with [encryption middleware](/docs/features/middleware/encryption-middleware), so payloads passed to a deferred function aren't encrypted. Support is planned; in the meantime, avoid passing encrypted data through `defer(...)`.
+</Callout>
+
+---
+
+## When to use defer
+
+Inngest gives you three ways to trigger other work from inside a function. They differ in whether the caller gets a result back and whether the triggered work runs independently.
+
+| Tool                            | Returns to caller?  | Independent execution?    |
+| ------------------------------- | ------------------- | ------------------------- |
+| `step.invoke(id, { function, data })` | Yes (awaits result) | No (caller blocks)  |
+| `step.sendEvent(...)`           | No                  | Yes (any matching fn)     |
+| `defer(id, { function, data })` | No                  | Yes (single typed target) |
+
+Use `defer` when you want a typed contract with a specific target function and don't need its result. Use `step.invoke` when you need the result inline, and `step.sendEvent` when you want to fan out to any number of functions listening for an event.
+
+---
+
+## Defining a deferred function
+
+Use `createDefer` to define a deferred function. Unlike `inngest.createFunction`, the client is the first argument and you don't declare `triggers`. The function is triggered implicitly by `defer(...)`.
+
+```ts
+import { createDefer } from "inngest/experimental";
+import { z } from "zod";
+
+export const sendEmail = createDefer(
+  inngest,
+  {
+    id: "send-email",
+    schema: z.object({ to: z.string(), body: z.string() }),
+    concurrency: { limit: 5 },
+  },
+  async ({ event, step }) => {
+    event.data.to;   // typed from `schema`
+    event.data.body;
+  }
+);
+```
+
+A deferred function is a regular Inngest function with its own retries, concurrency, and step state, so the handler can use step tooling like `step.run()`, `step.sleep()`, and `step.waitForEvent()`. Register it in your serve handler alongside your other functions:
+
+```ts
+serve({ client: inngest, functions: [...myFunctions, sendEmail] });
+```
+
+`createDefer` accepts the same configuration as `inngest.createFunction` (`concurrency`, `throttle`, `rateLimit`, and so on) except `triggers`, `onFailure`, and `batchEvents`, and it adds `schema`. See the [`createDefer` reference](/docs/reference/typescript/v4/functions/deferred-functions) for the full API.
+
+---
+
+## Triggering with `defer`
+
+`defer` is available on the handler context of any Inngest function. Call it with a unique ID, the deferred function, and the typed payload:
+
+```ts
+export default inngest.createFunction(
+  { id: "order-placed", triggers: { event: "order/placed" } },
+  async ({ event, defer }) => {
+    defer("send-confirmation", {
+      function: sendEmail,
+      data: { to: event.data.email, body: "Thanks for your order!" },
+    });
+  }
+);
+```
+
+`defer(...)` is **synchronous and fire-and-forget**: it returns `void` and the parent run continues immediately. The deferred run is enqueued when the parent run finalizes, not the moment `defer` is called.
+
+It also works inside `step.run()`:
+
+```ts
+await step.run("notify", async () => {
+  defer("send-confirmation", { function: sendEmail, data: { to, body } });
+});
+```
+
+The ID must be unique within the parent run. Unlike step IDs, no implicit index is appended to dedupe duplicate IDs. A duplicate is skipped and logged.
+
+---
+
+## Typed payloads with schemas
+
+When you define a `schema` on the deferred function, the `data` you pass to `defer(...)` is type-checked and validated:
+
+- `data` is validated at the call site (synchronously).
+- `data` is validated again on the receiver side. This catches serialization round-trips that change the shape, such as a `Date` becoming an ISO string.
+- The same schema types `event.data` in the deferred handler.
+
+Call-site validation must be synchronous because `defer(...)` is synchronous. If the schema's validator returns a Promise, the call is logged and skipped; use a synchronous validator. Without a schema, `data` falls back to `Record<string, any>`.
+
+---
+
+## Knowing the parent run
+
+The deferred handler doesn't need to be told which run triggered it; the SDK threads the parent's identity through automatically. It's available on the handler context as `ctx.parents`, where each entry carries the parent's `fnSlug` and `runId`:
+
+```ts
+async ({ event, parents }) => {
+  const { fnSlug, runId } = parents[0];
+}
+```
+
+## Attributing scores to an experiment
+
+When the deferred function is an [LLM scorer](/docs/features/inngest-functions/steps-workflows/deferred-scoring), you can attribute its result to the [experiment variant](/docs/features/inngest-functions/steps-workflows/step-experiments) that produced the output being scored. Pass the `experimentRef` returned by `group.experiment()` as the `experiment` option:
+
+```ts
+defer("score", {
+  function: feedbackScorer,
+  data: { ticketId },
+  experiment: experimentRef,
+});
+```
+
+The variant is surfaced to the deferred handler on `parents[0].experiment` as `{ experimentName, variant }`, so the scorer's result is attributed to the variant that generated the run.
+
+---
+
+## Error handling
+
+Because `defer(...)` is fire-and-forget, a bad call should never derail the surrounding handler.
+
+- **Call-site errors**, such as a synchronous schema failure or passing a function that wasn't created with `createDefer`, are logged via the internal logger and the call is silently skipped. The parent run continues normally and the deferred function does not fire.
+- **Receiver-side errors** fail the deferred run itself, never the parent. A schema mismatch on the received `event.data` fails the run without retries, because retrying can't change the data. A handler that throws for any other reason fails with normal retry semantics.
+
+---
+
+## Sharing across parent functions
+
+A deferred function is a single function in the backend. Multiple parent functions can hold a reference to it, and each `defer(...)` call triggers an independent run with its own retries, concurrency, and step state.
+
+---
+
+## Next steps
+
+- [Deferred functions reference](/docs/reference/typescript/v4/functions/deferred-functions) for the full `createDefer` and `defer` API.
+- [Triggering functions](/docs/features/events-triggers) for the other ways to start an Inngest function.

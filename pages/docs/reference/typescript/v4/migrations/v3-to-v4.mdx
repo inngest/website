@@ -292,7 +292,7 @@ If the `serve` function does not support streaming then it throws an error. Prev
 
 "Optimized parallelism" significantly reduces the number of requests necessary to run parallel steps (steps in `Promise.all`, `Promise.allSettled`, etc.). This decrease in requests can dramatically improve CPU usage, memory usage, and function run duration.
 
-The primary downside is the change in `Promise.race` behavior. `Promise.race` will wait for *all* promises to settle before resolving. The correct "winner" is returned, but the `Promise.race` will *not* immediately resolve on the first winner. If you were relying on the early resolution behavior, use the new `group.parallel()` helper. This will disable optimized parallelism for groups of steps:
+The primary downside is the change in `Promise.race` behavior. `Promise.race` will wait for *all* promises to settle before resolving. The correct "winner" is returned, but the `Promise.race` will *not* immediately resolve on the first winner. If you were relying on the early resolution behavior, use the new `group.parallel()` helper. This will disable optimized parallelism for groups of steps. Note that early resolution does not cancel the remaining steps; see the [step parallelism guide](/docs/guides/step-parallelism) for details:
 
 ```typescript
 // Old behavior (no longer works as expected with optimized parallelism)

@@ -6,6 +6,7 @@ import { GetStaticPaths, GetStaticProps } from "next";
 import { loadMarkdownFile } from "utils/markdown";
 import {
   PATTERNS,
+  getPattern,
   getPatternSections,
   getSection,
 } from "../../../../../shared/Patterns/patternsData";
@@ -48,6 +49,8 @@ export const getStaticProps: GetStaticProps = async (ctx) => {
   const pageData = await loadMarkdownFile("shared/Patterns/_patterns", slug);
   const md = (pageData.metadata ?? {}) as PatternFrontmatter;
 
+  // `getPatternSections()` excludes unreleased patterns, so a public pattern's
+  // prev/next never links to a gated sibling server-side.
   const patterns = getPatternSections().find((s) => s.id === category)?.patterns ?? [];
   const i = patterns.findIndex((p) => p.slug === slug);
   const prev = i > 0 ? patterns[i - 1] : null;
@@ -65,6 +68,9 @@ export const getStaticProps: GetStaticProps = async (ctx) => {
       sectionName: section.name,
       accentHex: section.accent.hex,
       accentDeep: section.accentDeep,
+      // Gates the whole page in the docs Layout (Page not found + noindex) until
+      // ?unreleased=<label> matches. See shared/Docs/Layout.tsx.
+      unreleased: getPattern(category, slug)?.unreleased ?? null,
       prev,
       next,
       description: md.subtitle ?? "",
