@@ -102,6 +102,17 @@ Start the Dev Server:
 ```shell  {{ title: "Bash installer" }}
 # Install the CLI - follow the steps to complete install:
 curl -sSfL https://cli.inngest.com/install.sh | sh
+
+# Run the dev server
+inngest dev -u http://localhost:8000/api/inngest
+```
+```shell {{ title: "brew" }}
+# Install the CLI:
+brew install inngest/tap/inngest
+
+# If Homebrew warns about untrusted taps, run this and then install again
+brew trust --cask inngest/tap/inngest
+
 # Run the dev server
 inngest dev -u http://localhost:8000/api/inngest
 ```

@@ -1,4 +1,6 @@
 
+import { CodeGroup } from "src/shared/Docs/mdx";
+
 export const metaTitle = "Inngest FAQ | Frequently Asked Questions"
 export const description = "Answers to common Inngest questions: cron configuration, stopping functions, branch environment keys, timeouts, authentication, data redaction, and more."
 
@@ -19,6 +21,7 @@ export const description = "Answers to common Inngest questions: cron configurat
 - [Why am I getting an `Illegal invocation` error?](#why-am-i-getting-an-illegal-invocation-error)
 - [Why am I getting an `Invalid signature` error on my runs?](#why-am-i-getting-an-invalid-signature-error-on-my-runs)
 - [Why is the dev server polling endpoints that don't exist?](#why-is-the-dev-server-polling-endpoints-that-don-t-exist)
+- [Why doesn't the Dev Server do anything when I start it?](#why-doesn-t-the-dev-server-do-anything-when-i-start-it)
 
 ## How do I run crons only in production?
 
@@ -142,11 +145,24 @@ Learn more about this in the [dev server](/docs/dev-server#auto-discovery) docs.
 
 ## Why doesn't the Dev Server do anything when I start it?
 
-If the Dev Server command (`inngest dev`) doesn't do anything, it might be because you've installed via `npx` and disabled npm install scripts. Instead, you can use our bash installer which installs the binary from our GitHub repository:
+If the Dev Server command (`inngest dev`) doesn't do anything, it might be because you've installed via `npx` and disabled npm install scripts. Instead, install the binary directly with our bash installer or Homebrew:
 
+<CodeGroup>
 ```shell  {{ title: "Bash installer" }}
 # Install the CLI - follow the steps to complete install:
 curl -sSfL https://cli.inngest.com/install.sh | sh
+
 # Run the dev server
 inngest dev -u http://localhost:4321/api/inngest
 ```
+```shell {{ title: "brew" }}
+# Install the CLI:
+brew install inngest/tap/inngest
+
+# If Homebrew warns about untrusted taps, run this and then install again
+brew trust --cask inngest/tap/inngest
+
+# Run the dev server
+inngest dev -u http://localhost:4321/api/inngest
+```
+</CodeGroup>
