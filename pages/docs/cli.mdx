@@ -1,4 +1,4 @@
-import { Callout, CodeGroup } from "src/shared/Docs/mdx";
+import { CodeGroup } from "src/shared/Docs/mdx";
 
 
 export const metaTitle = "Inngest CLI"
@@ -14,6 +14,9 @@ npx inngest-cli@latest
 ```
 ```bash {{ title: "brew" }}
 brew install inngest/tap/inngest
+
+# If Homebrew warns about untrusted taps, run this and then install again
+brew trust --cask inngest/tap/inngest
 ```
 ```bash {{ title: "curl" }}
 curl -sfL https://cli.inngest.com/install.sh | sh
