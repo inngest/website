@@ -104,7 +104,7 @@ const orderPlaced = inngest.createFunction(
 );
 ```
 
-`defer(...)` is **synchronous and fire-and-forget**. It returns `void` and the parent run continues immediately. The deferred run starts when the parent run finalizes.
+`defer(...)` is **synchronous and fire-and-forget**. The parent run continues immediately and never sees a result; the deferred run starts when the parent run finalizes. The call returns a [`DeferHandle`](#defer-handle-abort-void) whose `abort()` cancels the deferred run.
 
 It also works inside `step.run()`:
 
@@ -114,7 +114,7 @@ await step.run("notify", async () => {
 });
 ```
 
-### `defer(id, options): void`
+### `defer(id, options): DeferHandle`
 
 <Properties>
   <Property name="id" type="string" required>
@@ -131,6 +131,24 @@ await step.run("notify", async () => {
     </Properties>
   </Property>
 </Properties>
+
+### `deferHandle.abort(): void`
+
+`defer(...)` returns a handle scoped to that call's deferred run. Calling `abort()` cancels the run:
+
+```ts
+const handle = defer("send", { function: sendEmail, data: { to, body } });
+// ...later in the same parent run:
+handle.abort();
+```
+
+Like `defer(...)` itself, `abort()` is synchronous, fire-and-forget, and idempotent:
+
+- An abort called at any point before the parent run finalizes prevents the deferred run from starting. Deferred runs only start once the parent finalizes, so there is no window where the run has already begun.
+- It never throws into the surrounding handler. Repeated aborts, or aborting a `defer(...)` call that was skipped (for example, after a schema validation failure), log a warning and do nothing.
+- Other `defer(...)` calls in the same run are unaffected.
+
+`abort()` works inside a `step.run()` closure: the abort ships together with the step's result, so if the result didn't reach Inngest the closure re-runs on retry and re-registers the abort.
 
 ---
 
