@@ -360,6 +360,13 @@ async function redirects() {
         "/?utm_medium=ooh&utm_source=car-wrap-sf&utm_campaign=aiewf-2026",
       permanent: false,
     },
+    // OOH campaign - AI conference signage (Sept 2026)
+    {
+      source: "/ai-conf",
+      destination:
+        "/?utm_medium=ooh&utm_source=signage&utm_campaign=ai-conf-0926",
+      permanent: false,
+    },
   ];
 }
 
