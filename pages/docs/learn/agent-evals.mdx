@@ -1,4 +1,6 @@
 import { Callout } from "src/shared/Docs/mdx";
+import { ResourceGrid, Resource } from "src/shared/Docs/Resources";
+import { VideoCameraIcon } from "@heroicons/react/24/outline";
 
 export const metaTitle = "Agent Evals | Evaluate AI Workflows in Production"
 export const description = "Use scoring, deferred scoring, sessions, traces, experiments, and Insights to evaluate production AI workflows on Inngest."
@@ -277,6 +279,20 @@ Agent Evals connects several docs and dashboard surfaces:
 | **Interpreting results** | |
 | Boolean scores look like numbers in aggregates. | Boolean scores aggregate numerically. Treat `true` as `1` and `false` as `0`. |
 | A model call succeeded but the score is bad. | Inspect the trace and session. Production evals measure the outcome, not only whether the model request completed. |
+
+## Resources
+
+<ResourceGrid cols={1}>
+
+<Resource resource={{
+  href: "https://youtu.be/ZPysQAlXUrc",
+  name: 'Video: "Score outcomes, not output"',
+  icon: VideoCameraIcon,
+  description: "See Agent Evals in action: scoring functions with step.score(), tracking outcomes from product signals, and evaluating full agent trajectories.",
+  pattern: 1,
+}}/>
+
+</ResourceGrid>
 
 ## Related docs
 
