@@ -75,7 +75,7 @@ Selector, and handler — all manual.`,
     id: "step-observability",
     title: "Step-level observability",
     blurb:
-      "— queue delay, step timing, flow control — so you know exactly what happened, and why.",
+      "Temporal shows workflow history, Inngest breaks execution into segment — queue delay, step timing, flow control — so you know exactly what happened, and why.",
     href: "https://www.inngest.com/docs/platform/monitor/observability-metrics",
     segments: true,
   },
@@ -127,7 +127,9 @@ function CodeContent({ code }: { code: string }) {
           <div key={i}>{i + 1}</div>
         ))}
       </div>
-      <pre className="overflow-x-auto whitespace-pre text-v1-frost">{rendered}</pre>
+      <pre className="overflow-x-auto whitespace-pre text-v1-frost">
+        {rendered}
+      </pre>
     </div>
   );
 }
@@ -181,7 +183,10 @@ function ChartContent() {
             ))}
             <div className="absolute inset-0 flex items-end justify-around">
               {CHART.groups.map((g) => (
-                <div key={g.label} className="flex items-end gap-1.5 sm:gap-[10px]">
+                <div
+                  key={g.label}
+                  className="flex items-end gap-1.5 sm:gap-[10px]"
+                >
                   <span
                     className="w-[26px] sm:w-[40px] lg:w-[50px]"
                     style={{
@@ -210,11 +215,17 @@ function ChartContent() {
       {/* legend */}
       <div className="mt-[28px] flex flex-wrap items-center gap-x-6 gap-y-[10px] pl-0 font-v1Label text-[12px] text-v1-frost/70 sm:pl-[34px]">
         <span className="flex items-center gap-2">
-          <span className="block size-[10px]" style={{ backgroundColor: CHART.orange }} />
+          <span
+            className="block size-[10px]"
+            style={{ backgroundColor: CHART.orange }}
+          />
           Without Inngest
         </span>
         <span className="flex items-center gap-2">
-          <span className="block size-[10px]" style={{ backgroundColor: CHART.green }} />
+          <span
+            className="block size-[10px]"
+            style={{ backgroundColor: CHART.green }}
+          />
           With Inngest
         </span>
       </div>
@@ -237,11 +248,38 @@ const SEGMENTS: {
   border: string;
   text?: string;
 }[] = [
-  { label: "QUEUE", sub: "delay", dot: SEG_SALMON, border: "rgba(251,85,54,0.55)", text: SEG_SALMON },
-  { label: "STEP 1", sub: "248ms", dot: "rgba(255,255,255,0.4)", border: "rgba(255,255,255,0.14)" },
-  { label: "FLOW", sub: "ctrl", dot: SEG_GREEN, border: "rgba(11,221,72,0.55)", text: SEG_GREEN },
-  { label: "STEP 2", sub: "1.2s", dot: "rgba(255,255,255,0.4)", border: "rgba(255,255,255,0.14)" },
-  { label: "STEP 3", sub: "891ms", dot: "rgba(255,255,255,0.4)", border: "rgba(255,255,255,0.14)" },
+  {
+    label: "QUEUE",
+    sub: "delay",
+    dot: SEG_SALMON,
+    border: "rgba(251,85,54,0.55)",
+    text: SEG_SALMON,
+  },
+  {
+    label: "STEP 1",
+    sub: "248ms",
+    dot: "rgba(255,255,255,0.4)",
+    border: "rgba(255,255,255,0.14)",
+  },
+  {
+    label: "FLOW",
+    sub: "ctrl",
+    dot: SEG_GREEN,
+    border: "rgba(11,221,72,0.55)",
+    text: SEG_GREEN,
+  },
+  {
+    label: "STEP 2",
+    sub: "1.2s",
+    dot: "rgba(255,255,255,0.4)",
+    border: "rgba(255,255,255,0.14)",
+  },
+  {
+    label: "STEP 3",
+    sub: "891ms",
+    dot: "rgba(255,255,255,0.4)",
+    border: "rgba(255,255,255,0.14)",
+  },
 ];
 
 function SegmentsContent() {
@@ -325,8 +363,8 @@ export default function DesignedForAI() {
         body={
           <>
             Temporal was architected for deterministic workflows.
-            <br className="hidden sm:block" /> The primitives it exposes
-            reflect that – and so do the gaps.
+            <br className="hidden sm:block" /> The primitives it exposes reflect
+            that – and so do the gaps.
           </>
         }
         bodyClassName="max-w-[572px]"
@@ -373,10 +411,10 @@ export default function DesignedForAI() {
                     <span className="flex flex-1 flex-col gap-2">
                       <span
                         className={cn(
-                          "flex min-h-[40px] items-center text-v1-heading-sm motion-safe:transition-colors",
+                          "text-v1-heading-sm flex min-h-[40px] items-center motion-safe:transition-colors",
                           isActive
                             ? "text-v1-frost"
-                            : "text-v1-frost/70 group-hover/row:text-v1-frost",
+                            : "text-v1-frost/70 group-hover/row:text-v1-frost"
                         )}
                       >
                         {slide.title}
@@ -384,7 +422,7 @@ export default function DesignedForAI() {
                       <span
                         className={cn(
                           "text-v1-body-sm motion-safe:transition-colors",
-                          isActive ? "text-v1-frost" : "text-v1-frost/80",
+                          isActive ? "text-v1-frost" : "text-v1-frost/80"
                         )}
                       >
                         {slide.blurb}
@@ -396,7 +434,7 @@ export default function DesignedForAI() {
                       href={slide.href}
                       target="_blank"
                       rel="noopener noreferrer"
-                      className="pl-[40px] pr-[22px] pb-2 pt-1 font-v1Label text-[13px] text-v1-frost/50 hover:text-v1-accent-salmon motion-safe:transition-colors motion-safe:duration-200"
+                      className="pb-2 pl-[40px] pr-[22px] pt-1 font-v1Label text-[13px] text-v1-frost/50 hover:text-v1-accent-salmon motion-safe:transition-colors motion-safe:duration-200"
                     >
                       Read the docs →
                     </Link>
