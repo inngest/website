@@ -35,8 +35,9 @@ export interface EventItem {
   imageFit?: "cover" | "contain";
 }
 
+// Descending — soonest/most recent first, oldest last.
 export function sortEventsByDate(events: EventItem[]): EventItem[] {
-  return [...events].sort((a, b) => a.startsAt.localeCompare(b.startsAt));
+  return [...events].sort((a, b) => b.startsAt.localeCompare(a.startsAt));
 }
 
 export function isPastEvent(ev: { startsAt: string }): boolean {
