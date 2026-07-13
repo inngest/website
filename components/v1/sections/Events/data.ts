@@ -5,6 +5,7 @@
 
 export const LOCATIONS = [
   "SAN FRANCISCO, CA",
+  "ONLINE",
 ] as const;
 
 export const TOPICS = [
@@ -12,6 +13,7 @@ export const TOPICS = [
   "Meetups",
   "Innhouse",
   "Happy Hours",
+  "Webinars",
 ] as const;
 
 export const SORTS = ["DATE", "ALPHABETICAL"] as const;
@@ -33,8 +35,20 @@ export interface EventItem {
   imageFit?: "cover" | "contain";
 }
 
+export function isPastEvent(ev: { startsAt: string }): boolean {
+  return new Date(ev.startsAt).getTime() < Date.now();
+}
+
+// Past events first (most recently completed leads), then upcoming
+// events after (soonest leads).
 export function sortEventsByDate(events: EventItem[]): EventItem[] {
-  return [...events].sort((a, b) => a.startsAt.localeCompare(b.startsAt));
+  const past = events
+    .filter((ev) => isPastEvent(ev))
+    .sort((a, b) => b.startsAt.localeCompare(a.startsAt));
+  const upcoming = events
+    .filter((ev) => !isPastEvent(ev))
+    .sort((a, b) => a.startsAt.localeCompare(b.startsAt));
+  return [...past, ...upcoming];
 }
 
 export const UPCOMING: EventItem[] = [
@@ -49,6 +63,20 @@ export const UPCOMING: EventItem[] = [
       "Find us at booth #U-G26 all week at Moscone West. Schedule time with the team or come by to see Inngest in action.",
     href: "/events/ai-engineer-worlds-fair-2026",
     image: "/assets/v1/events/social-card-v2.png",
+  },
+  {
+    id: "voice-demo-to-production-agent",
+    title:
+      "From Voice Demo to Production Agent: Building Reliable AI Workflows",
+    date: "Wednesday, July 29, 2026 · 11AM PT / 2PM ET",
+    startsAt: "2026-07-29T11:00:00-07:00",
+    location: "ONLINE",
+    topics: ["Webinars"],
+    excerpt:
+      "Amanda Martin (Vapi) and Sterling Chin (Inngest) build a production-ready AI voice agent live, covering durable workflows, retries, and evaluations.",
+    href: "/events/from-voice-demo-to-production-agent",
+    image: "/assets/v1/events/voice-demo-to-production-agent.png",
+    imageFit: "contain",
   },
 ];
 
@@ -125,6 +153,20 @@ export const ALL_EVENTS: EventItem[] = sortEventsByDate([
       "Join Cursor, Arcade, Vapi, and Inngest at Inngest HQ for an evening of AI in production war stories, demos, and networking. Free with RSVP.",
     href: "https://luma.com/5kvakl4z",
     image: "/assets/v1/events/ai-in-prod-meetup.png",
+  },
+  {
+    id: "voice-demo-to-production-agent",
+    title:
+      "From Voice Demo to Production Agent: Building Reliable AI Workflows",
+    date: "Wednesday, July 29, 2026 · 11AM PT / 2PM ET",
+    startsAt: "2026-07-29T11:00:00-07:00",
+    location: "ONLINE",
+    topics: ["Webinars"],
+    excerpt:
+      "Amanda Martin (Vapi) and Sterling Chin (Inngest) build a production-ready AI voice agent live, covering durable workflows, retries, and evaluations.",
+    href: "/events/from-voice-demo-to-production-agent",
+    image: "/assets/v1/events/voice-demo-to-production-agent.png",
+    imageFit: "contain",
   },
 ]);
 

@@ -3,7 +3,7 @@ import Chip from "@/components/v1/sections/shared/Chip";
 import SpotlightFrame from "@/components/v1/sections/Events/SpotlightFrame";
 import RegisterCue from "@/components/v1/sections/Events/RegisterCue";
 import { cn } from "@/utils/v1/cn";
-import type { EventItem } from "@/components/v1/sections/Events/data";
+import { isPastEvent, type EventItem } from "@/components/v1/sections/Events/data";
 
 // The grid card used in the All Events section. Hover matches the home
 // "Get Started" cards: cursor spotlight + 4px lift + soft shadow + a
@@ -33,7 +33,7 @@ export default function EventCard({ ev, newTab }: { ev: EventItem; newTab?: bool
             backgroundRepeat: "no-repeat",
           }}
         />
-        {ev.recording && (
+        {ev.recording ? (
           <Chip
             variant="solid"
             size="sm"
@@ -41,6 +41,16 @@ export default function EventCard({ ev, newTab }: { ev: EventItem; newTab?: bool
           >
             Recording
           </Chip>
+        ) : (
+          isPastEvent(ev) && (
+            <Chip
+              variant="solid"
+              size="sm"
+              className="absolute left-4 top-4 font-normal"
+            >
+              Past event
+            </Chip>
+          )
         )}
       </div>
       <div className="flex flex-1 flex-col gap-6 p-5">
@@ -65,7 +75,7 @@ export default function EventCard({ ev, newTab }: { ev: EventItem; newTab?: bool
               single-line ellipsis. */}
           <p className="text-v1-body-sm truncate text-white/80">{ev.excerpt}</p>
           <div className="py-1">
-            <RegisterCue />
+            <RegisterCue label={isPastEvent(ev) ? "View event details" : "Register"} />
           </div>
         </div>
       </div>
