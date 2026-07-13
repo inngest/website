@@ -23,7 +23,8 @@ import { V1_HEADER_CONTENT_MT } from "@/components/v1/sections/shared/sectionShe
 const CARD_STYLE = {
   // Card padding 32 top / 64 bottom / 20 sides. The
   // icon group adds its own 8px top slack, so pt-6 (24) + 8 = 32.
-  cardClassName: "justify-start gap-10 sm:gap-10 px-5 pt-6 pb-16 sm:px-5 sm:pt-6 sm:pb-16",
+  cardClassName:
+    "justify-start gap-10 sm:gap-10 px-5 pt-6 pb-16 sm:px-5 sm:pt-6 sm:pb-16",
   titleBlockClassName: "gap-[20px]",
   titleClassName: "text-v1-heading-md-cap lg:text-v1-heading-md-cap",
   subtitleClassName: "text-v1-body-lg leading-[1.5] text-v1-frost",
@@ -62,7 +63,7 @@ const CARDS: FeatureCard[] = [
     vectorWidth: 86,
     vectorHeight: 61, // viewBox 85.98 × 60.75
     bodyLines: [
-      "Step memorization, human-in-the-loop, and per-LLM-call observability – first-class, not bolted on.",
+      "Step memoization, human-in-the-loop, and per-LLM-call observability – first-class, not bolted on.",
     ],
   },
   {
@@ -73,7 +74,7 @@ const CARDS: FeatureCard[] = [
     vectorWidth: 81,
     vectorHeight: 91, // viewBox 80.75 × 90.75
     bodyLines: [
-      "Temporal’s strongest, SDK is Go, Inngest treats every language as a first-class citizen.",
+      "Temporal’s strongest SDK is Go, Inngest treats every language as a first-class citizen.",
     ],
   },
 ];
@@ -82,7 +83,7 @@ export default function WhyChoose() {
   return (
     <Section
       aria-labelledby="ct-why-heading"
-      className="relative z-10 isolate"
+      className="relative isolate z-10"
       containerClassName="flex flex-col"
     >
       <SectionHeader
