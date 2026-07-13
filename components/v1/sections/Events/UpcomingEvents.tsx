@@ -1,7 +1,9 @@
 import EventCardLarge from "@/components/v1/sections/Events/EventCardLarge";
-import { UPCOMING } from "@/components/v1/sections/Events/data";
+import { UPCOMING, isPastEvent } from "@/components/v1/sections/Events/data";
 
 export default function UpcomingEvents() {
+  const upcoming = UPCOMING.filter((ev) => !isPastEvent(ev));
+
   return (
     <section
       aria-labelledby="upcoming-events-heading"
@@ -19,7 +21,7 @@ export default function UpcomingEvents() {
         Upcoming Events
       </h2>
       <ul className="flex list-none flex-col gap-6 pl-0">
-        {UPCOMING.map((ev) => (
+        {upcoming.map((ev) => (
           <li key={ev.id} className="list-none">
             <EventCardLarge ev={ev} newTab />
           </li>

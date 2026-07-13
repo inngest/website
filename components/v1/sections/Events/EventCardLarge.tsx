@@ -2,7 +2,7 @@ import Link from "next/link";
 import Chip from "@/components/v1/sections/shared/Chip";
 import SpotlightFrame from "@/components/v1/sections/Events/SpotlightFrame";
 import RegisterCue from "@/components/v1/sections/Events/RegisterCue";
-import type { EventItem } from "@/components/v1/sections/Events/data";
+import { isPastEvent, type EventItem } from "@/components/v1/sections/Events/data";
 
 // The featured card used in the Upcoming Events list. Hover matches the
 // home "Get Started" cards: cursor spotlight + 4px lift + soft shadow
@@ -25,14 +25,34 @@ export default function EventCardLarge({ ev, newTab }: { ev: EventItem; newTab?:
           when the columns stack. */}
       <div
         aria-hidden="true"
-        className={`aspect-[16/9] w-full shrink-0 sm:aspect-auto sm:w-[32.513%]${ev.image ? "" : " opacity-10"}${ev.imageFit === "contain" ? " bg-black" : ""}`}
+        className={`relative aspect-[16/9] w-full shrink-0 sm:aspect-auto sm:w-[32.513%]${ev.image ? "" : " opacity-10"}${ev.imageFit === "contain" ? " bg-black" : ""}`}
         style={{
           backgroundImage: `url(${ev.image ?? "/assets/v1/events/event-placeholder.png"})`,
           backgroundSize: ev.imageFit ?? "cover",
           backgroundPosition: "center",
           backgroundRepeat: "no-repeat",
         }}
-      />
+      >
+        {ev.recording ? (
+          <Chip
+            variant="solid"
+            size="sm"
+            className="absolute left-4 top-4 font-normal"
+          >
+            Recording
+          </Chip>
+        ) : (
+          isPastEvent(ev) && (
+            <Chip
+              variant="solid"
+              size="sm"
+              className="absolute left-4 top-4 font-normal"
+            >
+              Past event
+            </Chip>
+          )
+        )}
+      </div>
       <div className="flex flex-col gap-2 p-5 sm:min-w-0 sm:flex-1">
         {/* Title + date sit top-left. */}
         <div className="flex flex-col gap-2 py-2">

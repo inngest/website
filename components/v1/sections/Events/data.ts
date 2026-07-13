@@ -39,6 +39,10 @@ export function sortEventsByDate(events: EventItem[]): EventItem[] {
   return [...events].sort((a, b) => a.startsAt.localeCompare(b.startsAt));
 }
 
+export function isPastEvent(ev: EventItem): boolean {
+  return new Date(ev.startsAt).getTime() < Date.now();
+}
+
 export const UPCOMING: EventItem[] = [
   {
     id: "aiewf-2026",
