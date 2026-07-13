@@ -15,19 +15,18 @@ const EVENT = {
   location: "Online · Virtual Webinar",
 };
 
-const REGISTER_URL = "https://luma.com/8oo53h01";
+const REGISTER_URL = "https://luma.com/lqnm60ut";
 
-// TODO: swap in real headshots once available.
 const SPEAKERS = [
   {
     name: "Amanda Martin",
     role: "Head of Developer Relations, Vapi",
-    avatar: "/assets/v1/events/speaker-placeholder.jpg",
+    avatar: "/assets/v1/events/amanda-martin-headshot.jpg",
   },
   {
     name: "Sterling Chin",
     role: "Head of Developer Relations, Inngest",
-    avatar: "/assets/v1/events/speaker-placeholder.jpg",
+    avatar: "/assets/v1/events/sterling-chin-headshot.png",
   },
 ];
 

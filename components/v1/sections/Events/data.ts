@@ -64,7 +64,6 @@ export const UPCOMING: EventItem[] = [
       "Amanda Martin (Vapi) and Sterling Chin (Inngest) build a production-ready AI voice agent live, covering durable workflows, retries, and evaluations.",
     href: "/events/from-voice-demo-to-production-agent",
     image: "/assets/v1/events/voice-demo-to-production-agent.png",
-    imageFit: "contain",
   },
 ];
 
@@ -154,7 +153,6 @@ export const ALL_EVENTS: EventItem[] = sortEventsByDate([
       "Amanda Martin (Vapi) and Sterling Chin (Inngest) build a production-ready AI voice agent live, covering durable workflows, retries, and evaluations.",
     href: "/events/from-voice-demo-to-production-agent",
     image: "/assets/v1/events/voice-demo-to-production-agent.png",
-    imageFit: "contain",
   },
 ]);
 
