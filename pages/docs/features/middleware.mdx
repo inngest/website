@@ -47,6 +47,8 @@ Adding middleware contributes to an overall "stack" of middleware. If you regist
 1. Middleware registered on the **client**, in descending order
 2. Middleware registered on the **function**, in descending order
 
+In TypeScript, those stacked transforms also compose at the type level. For a deep dive into how that once went wrong—and how we fixed it—see [Adding a second middleware broke our typescript types](/blog/adding-a-second-middleware-broke-our-typescript-types?ref=docs-middleware).
+
 For example:
 
 <CodeGroup>

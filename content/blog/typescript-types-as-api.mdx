@@ -114,7 +114,7 @@ If you're building something others will depend on — a library, an SDK, an int
 
 **Write the error message, not just the type.** When you define a generic, think about what happens when someone passes the wrong thing. Is the error going to make sense to someone who didn't write this code?
 
-**Test your types the way you test your code.** Libraries like [tsd](https://github.com/tsdjs/tsd) let you write assertions about what should and shouldn't compile. If you're shipping types to users, you should have a test suite that covers the cases they'll actually hit.
+**Test your types the way you test your code.** Libraries like [tsd](https://github.com/tsdjs/tsd) let you write assertions about what should and shouldn't compile. If you're shipping types to users, you should have a test suite that covers the cases they'll actually hit—and beware assertions that [look green while asserting almost nothing](/blog/adding-a-second-middleware-broke-our-typescript-types?ref=blog-typescript-types-as-api).
 
 **Watch for representation leakage.** Anywhere your internal model shows through the public type surface is a place where you've asked users to understand your implementation. That's usually a sign something needs an adapter type between the two.
 

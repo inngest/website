@@ -7,6 +7,8 @@ export const description = "Control how step inputs and outputs are serialized a
 
 Inngest sends step output, function output, and event data as JSON. This means non-JSON types like `Date`, `Map`, `Set`, or custom classes are lost during serialization. Custom serializer middleware lets you preserve these types by converting them to a JSON-safe format on the way out and restoring them on the way in.
 
+The default type-level transform for that JSON boundary is `Jsonify`. For why composing it twice used to silently collapse step return types—and how we fixed it—see [Adding a second middleware broke our typescript types](/blog/adding-a-second-middleware-broke-our-typescript-types?ref=docs-middleware-serialization).
+
 ## How it works
 
 A serializer middleware hooks into multiple points in the lifecycle:

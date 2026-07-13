@@ -77,6 +77,8 @@ The following is an example of adding a OpenAI client to all Inngest functions, 
         Middleware runs in the order specified when registering it (see [Middleware lifecycle](/docs/reference/typescript/v4/middleware/lifecycle)), which affects typing too.
 
         When inferring a mutated input or output, the SDK will apply changes from each middleware in sequence, just as it will at runtime. This means that for two middlewares that add a `foo` value to input arguments, the last one to run will be what it seen both in types and at runtime.
+
+        For how composed middleware transforms interact with TypeScript inference, see [Adding a second middleware broke our typescript types](/blog/adding-a-second-middleware-broke-our-typescript-types?ref=docs-middleware-dependency-injection).
     </LanguageSection>
 
     <LanguageSection show="typescript">
@@ -177,6 +179,8 @@ The following is an example of adding a OpenAI client to all Inngest functions, 
         Middleware runs in the order specified when registering it (see [Middleware lifecycle](/docs/reference/typescript/v4/middleware/lifecycle)), which affects typing too.
 
         When inferring a mutated input or output, the SDK will apply changes from each middleware in sequence, just as it will at runtime. This means that for two middlewares that add a `foo` value to input arguments, the last one to run will be what it seen both in types and at runtime.
+
+        For how composed middleware transforms interact with TypeScript inference, see [Adding a second middleware broke our typescript types](/blog/adding-a-second-middleware-broke-our-typescript-types?ref=docs-middleware-dependency-injection).
     </LanguageSection>
 
     <LanguageSection show="python">
