@@ -75,7 +75,7 @@ export default function EventCard({ ev, newTab }: { ev: EventItem; newTab?: bool
               single-line ellipsis. */}
           <p className="text-v1-body-sm truncate text-white/80">{ev.excerpt}</p>
           <div className="py-1">
-            <RegisterCue />
+            <RegisterCue label={isPastEvent(ev) ? "View event details" : "Register"} />
           </div>
         </div>
       </div>

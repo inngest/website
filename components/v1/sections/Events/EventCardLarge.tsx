@@ -71,7 +71,7 @@ export default function EventCardLarge({ ev, newTab }: { ev: EventItem; newTab?:
         </div>
         <p className="text-v1-body-xs text-white/80">{ev.excerpt}</p>
         <div className="py-1">
-          <RegisterCue />
+          <RegisterCue label={isPastEvent(ev) ? "View event details" : "Register"} />
         </div>
       </div>
       </SpotlightFrame>
