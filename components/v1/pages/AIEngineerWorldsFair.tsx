@@ -4,7 +4,7 @@ import PageShell from "@/components/v1/PageShell";
 import LogoMarquee from "@/components/v1/sections/Home/LogoMarquee";
 import Button from "@/components/v1/Button";
 import EventCardLarge from "@/components/v1/sections/Events/EventCardLarge";
-import { sortEventsByDate } from "@/components/v1/sections/Events/data";
+import { isPastEvent, sortEventsByDate } from "@/components/v1/sections/Events/data";
 
 const EVENT = {
   title: "Meet Inngest at AI Engineer World's Fair",
@@ -79,9 +79,25 @@ const OTHER_EVENTS = sortEventsByDate([
     href: "https://luma.com/5kvakl4z",
     image: "/assets/v1/events/ai-in-prod-meetup.png",
   },
+  {
+    id: "voice-demo-to-production-agent",
+    title:
+      "From Voice Demo to Production Agent: Building Reliable AI Workflows",
+    date: "Wednesday, July 29, 2026 · 11AM PT / 2PM ET",
+    startsAt: "2026-07-29T11:00:00-07:00",
+    location: "Online",
+    topics: ["webinar", "voice ai", "durable workflows"],
+    excerpt:
+      "Amanda Martin (Vapi) and Sterling Chin (Inngest) build a production-ready AI voice agent live, covering durable workflows, retries, and evaluations.",
+    href: "/events/from-voice-demo-to-production-agent",
+    image: "/assets/v1/events/voice-demo-to-production-agent.png",
+    imageFit: "contain",
+  },
 ]);
 
 export default function AIEngineerWorldsFair() {
+  const otherEvents = OTHER_EVENTS.filter((ev) => !isPastEvent(ev));
+
   return (
     <PageShell>
       <section
@@ -163,24 +179,26 @@ export default function AIEngineerWorldsFair() {
       <LogoMarquee />
 
       {/* Other upcoming events */}
-      <section
-        aria-labelledby="event-other-heading"
-        className="relative mx-auto flex w-full max-w-[1440px] flex-col gap-8 px-6 py-8 text-v1-frost sm:px-9 lg:gap-10 lg:px-[70px]"
-      >
-        <h2
-          id="event-other-heading"
-          className="text-v1-heading-md-cap text-white"
+      {otherEvents.length > 0 && (
+        <section
+          aria-labelledby="event-other-heading"
+          className="relative mx-auto flex w-full max-w-[1440px] flex-col gap-8 px-6 py-8 text-v1-frost sm:px-9 lg:gap-10 lg:px-[70px]"
         >
-          Other upcoming events
-        </h2>
-        <ul className="flex list-none flex-col gap-8 pl-0 lg:gap-10">
-          {OTHER_EVENTS.map((ev) => (
-            <li key={ev.id} className="list-none">
-              <EventCardLarge ev={ev} newTab />
-            </li>
-          ))}
-        </ul>
-      </section>
+          <h2
+            id="event-other-heading"
+            className="text-v1-heading-md-cap text-white"
+          >
+            Other upcoming events
+          </h2>
+          <ul className="flex list-none flex-col gap-8 pl-0 lg:gap-10">
+            {otherEvents.map((ev) => (
+              <li key={ev.id} className="list-none">
+                <EventCardLarge ev={ev} newTab={ev.href.startsWith("http")} />
+              </li>
+            ))}
+          </ul>
+        </section>
+      )}
     </PageShell>
   );
 }

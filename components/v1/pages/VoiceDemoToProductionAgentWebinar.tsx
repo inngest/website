@@ -5,7 +5,7 @@ import LogoMarquee from "@/components/v1/sections/Home/LogoMarquee";
 import Button from "@/components/v1/Button";
 import EventCardLarge from "@/components/v1/sections/Events/EventCardLarge";
 import SpotlightFrame from "@/components/v1/sections/Events/SpotlightFrame";
-import { sortEventsByDate } from "@/components/v1/sections/Events/data";
+import { isPastEvent, sortEventsByDate } from "@/components/v1/sections/Events/data";
 
 const COVER_IMAGE = "/assets/v1/events/voice-demo-to-production-agent.png";
 
@@ -95,6 +95,8 @@ const OTHER_EVENTS = sortEventsByDate([
 ]);
 
 export default function VoiceDemoToProductionAgentWebinar() {
+  const otherEvents = OTHER_EVENTS.filter((ev) => !isPastEvent(ev));
+
   return (
     <PageShell>
       <section
@@ -225,24 +227,26 @@ export default function VoiceDemoToProductionAgentWebinar() {
 
       <LogoMarquee />
 
-      <section
-        aria-labelledby="event-other-heading"
-        className="relative mx-auto flex w-full max-w-[1440px] flex-col gap-8 px-6 py-8 text-v1-frost sm:px-9 lg:gap-10 lg:px-[70px]"
-      >
-        <h2
-          id="event-other-heading"
-          className="text-v1-heading-md-cap text-white"
+      {otherEvents.length > 0 && (
+        <section
+          aria-labelledby="event-other-heading"
+          className="relative mx-auto flex w-full max-w-[1440px] flex-col gap-8 px-6 py-8 text-v1-frost sm:px-9 lg:gap-10 lg:px-[70px]"
         >
-          Other upcoming events
-        </h2>
-        <ul className="flex list-none flex-col gap-8 pl-0 lg:gap-10">
-          {OTHER_EVENTS.map((ev) => (
-            <li key={ev.id} className="list-none">
-              <EventCardLarge ev={ev} newTab={ev.href.startsWith("http")} />
-            </li>
-          ))}
-        </ul>
-      </section>
+          <h2
+            id="event-other-heading"
+            className="text-v1-heading-md-cap text-white"
+          >
+            Other upcoming events
+          </h2>
+          <ul className="flex list-none flex-col gap-8 pl-0 lg:gap-10">
+            {otherEvents.map((ev) => (
+              <li key={ev.id} className="list-none">
+                <EventCardLarge ev={ev} newTab={ev.href.startsWith("http")} />
+              </li>
+            ))}
+          </ul>
+        </section>
+      )}
     </PageShell>
   );
 }
