@@ -35,13 +35,20 @@ export interface EventItem {
   imageFit?: "cover" | "contain";
 }
 
-// Descending — soonest/most recent first, oldest last.
-export function sortEventsByDate(events: EventItem[]): EventItem[] {
-  return [...events].sort((a, b) => b.startsAt.localeCompare(a.startsAt));
-}
-
 export function isPastEvent(ev: { startsAt: string }): boolean {
   return new Date(ev.startsAt).getTime() < Date.now();
+}
+
+// Past events first (most recently completed leads), then upcoming
+// events after (soonest leads).
+export function sortEventsByDate(events: EventItem[]): EventItem[] {
+  const past = events
+    .filter((ev) => isPastEvent(ev))
+    .sort((a, b) => b.startsAt.localeCompare(a.startsAt));
+  const upcoming = events
+    .filter((ev) => !isPastEvent(ev))
+    .sort((a, b) => a.startsAt.localeCompare(b.startsAt));
+  return [...past, ...upcoming];
 }
 
 export const UPCOMING: EventItem[] = [
