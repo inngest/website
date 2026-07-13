@@ -38,7 +38,7 @@ Delete either of the middleware and the error vanishes. The actual middleware co
 
 It was obvious that something suspicious was going, so I slipped into a detective costume and started sleuthing.
 
-# Two should just be one, twice
+## Two should just be one, twice
 
 A crucial piece of context is that when an Inngest function runs, the result of every [`step.run`](/docs/reference/typescript/v4/functions/step-run?ref=blog-adding-a-second-middleware-broke-our-typescript-types) is serialized to JSON and stored, so the step can be [memoized across retries](/docs/learn/inngest-steps?ref=blog-adding-a-second-middleware-broke-our-typescript-types). Your function returns a `Date` *but* what comes back on replay is a string.
 
@@ -59,7 +59,7 @@ type Twice = Jsonify<Once>;   // { media: JsonifyObject<{}>[] }
 
 Delete `label?: string` and `Twice` comes out perfect. The entire failure hangs on *one optional property.* Huh?
 
-# An idiom with a record
+## An idiom with a record
 
 `Jsonify` has to drop properties that don't survive [serialization](/docs/reference/typescript/v4/middleware/serialization?ref=blog-adding-a-second-middleware-broke-our-typescript-types). Things like functions, symbols, and  `undefined`. The standard idiom for "filter an object's keys by their value type" looks like this:
 
@@ -71,7 +71,7 @@ type FilterJsonableKeys<T extends object> = {
 
 Map each property to *its own name* if the value is serializable, or `never` if it isn't, then read every value back out with `[keyof T]`. For `{ a: string; b: () => void }` the mapped type is `{ a: "a"; b: never }`, reading it back gives `"a" | never`, `never` vanishes from unions, and you're left with `"a"`. Feed that to `Pick` and you're done. You've probably done this before in your own code.
 
-# How `undefined` becomes a key
+## How `undefined` becomes a key
 
 Mapped types written with `[Key in keyof T]` preserve each property's modifiers, including the `?`. So for our widget's media element, the intermediate object is:
 
@@ -87,7 +87,7 @@ And reading an *optional* property in TypeScript includes `undefined` in wha
 
 An `undefined` in a list of keys doesn’t *seem* right, right? It isn't a key. It shouldn’t be a key? But the compiler is completely fine with it.
 
-# The loophole
+## The loophole
 
 This is what makes the bug so hard to see. The poisoned union feeds `Pick`:
 
@@ -124,7 +124,7 @@ const k: keyof typeof once = undefined; // compiles. ummm?
 
 An ill-formed object type has been minted silently and indistinguishably from a healthy one in every use that *doesn’t* poke directly at its keys. That’s why *one* middleware never failed, and why the existing tests were all green.
 
-# The collapse
+## The collapse
 
 All of `Jsonify`'s object machinery starts the same way: iterate `keyof T`. On the second application, one of those "keys" is `undefined`, so the compiler ends up computing `T[undefined]` .
 
@@ -132,7 +132,7 @@ Write that at the top level of your own code and you get a nice red error. Deep 
 
 Notice what's *not here*: a diagnostic. Not at declaration, not at first application, not at the collapse. The compiler just quietly and casually returns the wrong type.
 
-# The graveyard of reasonable fixes
+## The graveyard of reasonable fixes
 
 I wasn't the first person to take a swing at this. Two community PRs got there before me — both with regression tests, both fixing the reported repro — and each stopped one layer short, in an instructive way.
 
@@ -150,7 +150,7 @@ First, our `Jsonify` deliberately preserves `unknown` rather than widening it, a
 
 Then I checked the upstream source. `type-fest`'s own sibling filters, `FilterDefinedKeys` and `FilterOptionalKeys`, are built on the exact same idiom, and both wrap their result in `Exclude<…, undefined>`. `FilterJsonableKeys`, on the other hand, doesn't. Someone hit this class of bug before, fixed the two instances they could see, and missed the third. C’est la vie.
 
-# Fix it where the `undefined` gets in
+## Fix it where the `undefined` gets in
 
 Every fix so far patched a place where the corruption becomes visible, but the bug itself lives where the `undefined` gets in:
 
@@ -174,7 +174,7 @@ Does the new `Jsonify` change anything for types that were never broken? I struc
 
 Does it actually fix the bug? I re-ran the double-application battery that had collapsed all over the old code. All clean. Most importantly though, the red squiggle was no longer present in vim.
 
-# Your type tests can lie to you
+## Your type tests can lie to you
 
 One last trap, and it's one that nearly got me! The natural regression test here is:
 
@@ -194,7 +194,7 @@ assertType<IsEqual<Twice["media"][number]["mediaId"], string>>(true);
 
 Property access forces resolution. If your type-level tests only assert equality between composed aliases, they may be asserting nothing at all. (If you're building library types for other people, [treating those types as an API](/blog/typescript-types-as-api?ref=blog-adding-a-second-middleware-broke-our-typescript-types) is the right mental model—and this is one more way that model can quietly fail you.)
 
-# Takeaways
+## Takeaways
 
 1. If you filter keys with the `{ … }[keyof T]` idiom, optional properties put `undefined` in your result. `Exclude` it, even when it doesn't seem to matter yet. 
 2. Generic constraints are checked where the generic is written, not re-checked when it's later expanded with concrete types. An ill-formed type can be minted silently and travel a long ways before anything forces it to resolve.
@@ -206,7 +206,7 @@ The part I like best about the fix is how little there is to it. One `Exclude`, 
 
 And boring is the win condition. A boring type is one nobody ever has to learn anything about: no loophole to remember, no poisoned key sets, no folklore about how many middleware are safe to stack. The detective costume goes back in the closet.
 
-# Postscript: there's a better way
+## Postscript: there's a better way
 
 I shipped the `Exclude` and moved on. Then som-sm pointed out in review that the fix was still one layer too shallow. It wasn’t *wrong*, but it could definitely be better!
 
