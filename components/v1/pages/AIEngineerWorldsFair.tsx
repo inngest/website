@@ -3,12 +3,14 @@
 import PageShell from "@/components/v1/PageShell";
 import LogoMarquee from "@/components/v1/sections/Home/LogoMarquee";
 import Button from "@/components/v1/Button";
+import Chip from "@/components/v1/sections/shared/Chip";
 import EventCardLarge from "@/components/v1/sections/Events/EventCardLarge";
 import { isPastEvent, sortEventsByDate } from "@/components/v1/sections/Events/data";
 
 const EVENT = {
   title: "Meet Inngest at AI Engineer World's Fair",
   date: "June 29 – July 2, 2026",
+  startsAt: "2026-06-29",
   location: "Moscone West, San Francisco, CA 94103 | Booth #U-G26",
   description:
     "Inngest is agent infrastructure that lives in your codebase—write your logic as functions and get retries, flow control, and full observability with zero extra infra. If you're building agents or tired of babysitting background jobs, come see it in practice at booth #U-G26 all week.\n\nWant dedicated time? Book a slot with the team below.",
@@ -153,11 +155,17 @@ export default function AIEngineerWorldsFair() {
               </div>
 
               {/* Schedule time CTA — styled to match sample event page */}
-              <Button asChild variant="accent" className="self-start">
-                <a href={GCAL_URL} target="_blank" rel="noopener noreferrer">
-                  Schedule time with us →
-                </a>
-              </Button>
+              {isPastEvent(EVENT) ? (
+                <Chip variant="solid" size="md" className="self-start font-normal">
+                  Past event
+                </Chip>
+              ) : (
+                <Button asChild variant="accent" className="self-start">
+                  <a href={GCAL_URL} target="_blank" rel="noopener noreferrer">
+                    Schedule time with us →
+                  </a>
+                </Button>
+              )}
             </div>
           </div>
 

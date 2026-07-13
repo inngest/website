@@ -3,6 +3,7 @@
 import PageShell from "@/components/v1/PageShell";
 import LogoMarquee from "@/components/v1/sections/Home/LogoMarquee";
 import Button from "@/components/v1/Button";
+import Chip from "@/components/v1/sections/shared/Chip";
 import EventCardLarge from "@/components/v1/sections/Events/EventCardLarge";
 import { isPastEvent, sortEventsByDate } from "@/components/v1/sections/Events/data";
 
@@ -11,6 +12,7 @@ const COVER_IMAGE = "/assets/v1/events/no-half-baked-agents-breakfast.png";
 const EVENT = {
   title: "No Half-Baked Agents: Breakfast w/ Inngest & Nebius",
   date: "Thursday, July 2, 2026 · 8–9:30 AM PT",
+  startsAt: "2026-07-02T08:00:00-07:00",
   location: "Inngest Office, San Francisco, CA",
   description:
     "The last day of AI Engineer World's Fair calls for a proper breakfast 🌮\n\nBreakfast tacos, coffee & matcha, good music, and the people building the GPU infrastructure and reliability layer your agents depend on — just steps away from Moscone West.\n\nNo agenda, just food and good company before the final day!",
@@ -149,11 +151,17 @@ export default function NoHalfBakedAgentsBreakfast() {
                 ))}
               </div>
 
-              <Button asChild variant="accent" className="self-start">
-                <a href={REGISTER_URL} target="_blank" rel="noopener noreferrer">
-                  Register here →
-                </a>
-              </Button>
+              {isPastEvent(EVENT) ? (
+                <Chip variant="solid" size="md" className="self-start font-normal">
+                  Past event
+                </Chip>
+              ) : (
+                <Button asChild variant="accent" className="self-start">
+                  <a href={REGISTER_URL} target="_blank" rel="noopener noreferrer">
+                    Register here →
+                  </a>
+                </Button>
+              )}
             </div>
           </div>
 

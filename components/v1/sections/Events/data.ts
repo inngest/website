@@ -39,7 +39,7 @@ export function sortEventsByDate(events: EventItem[]): EventItem[] {
   return [...events].sort((a, b) => a.startsAt.localeCompare(b.startsAt));
 }
 
-export function isPastEvent(ev: EventItem): boolean {
+export function isPastEvent(ev: { startsAt: string }): boolean {
   return new Date(ev.startsAt).getTime() < Date.now();
 }
 
