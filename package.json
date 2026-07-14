@@ -37,7 +37,9 @@
     "env:add": "vercel env add",
     "env:rm": "vercel env rm",
     "github:stars": "pnpm dlx ts-node ./scripts/updateGithubStars.ts",
+    "test": "pnpm test:docs-markdown && pnpm test:code-language",
     "test:docs-markdown": "pnpm dlx ts-node ./mdx/utils/docs.test.ts",
+    "test:code-language": "pnpm dlx ts-node ./shared/Docs/codeLanguage.test.ts",
     "preinstall": "npx only-allow pnpm"
   },
   "dependencies": {
