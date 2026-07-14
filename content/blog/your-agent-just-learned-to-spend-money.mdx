@@ -1,0 +1,200 @@
+---
+heading: "Your agent just learned to spend money. Now make sure it only spends it once."
+subtitle: "Retries, crashes, and agent loops quietly turn one payment into three. Here's how to give money-moving tool calls exactly-once execution."
+showSubtitle: true
+image: /assets/blog/your-agent-just-learned-to-spend-money/featured-image.png
+date: 2026-07-14
+category: engineering
+tags: ["AI & Agents", "Durable Execution", "Engineering"]
+author: Inngest
+---
+Your AI Shopping Agent™️ works. It helps a customer pick the right product, charges their card, places the order, hands-free. Then one afternoon the payment gateway times out mid-charge, and your agent does the reasonable thing: it retries. Now the customer's been charged twice, and your support inbox is the first to find out. 
+
+This is the hypothetical failure and the very real pain I want to walk you through: why a payment inside an agent loop breaks in a way a normal API call doesn't, why the obvious fix, retry it, quietly makes it worse, and the roughly forty lines it took to turn a fragile agent into a durable one that survives the failure without paying twice. There's a companion video that shows the build live if you'd rather watch a quick example.
+
+[[VIDEO EMBED]](https://f.io/oQTbPxaC)
+
+# Retry Landmines
+
+A retry is safe when the call is idempotent: reading weather data twice costs you nothing. 
+
+Payments aren't that. The failure you actually fear isn't the call erroring *before* it charges. It's the call charging and *then* failing on the way back; the network drops the response, the process dies, the SDK throws, so your code never learns that the money has already moved. Retry now, and you've paid twice.
+
+One note before the code. The agent below uses a deliberately dumb payment tool: a mock that fails on a timer and never touches a real processor. That's on purpose. The double-charge problem is identical whether the charge is a Stripe call, an x402 settlement, or a fake, because the fix lives in how you *run* the tool, not inside it. 
+
+The pattern here transfers as-is. What doesn't transfer is the payment-specific part: which idempotency key your processor wants, how it dedupes, what a timeout actually means for a charge. That lives in your payment API's docs, so keep them open in the next tab.
+
+# The fragile version
+
+Here's the agent before any of this is handled. A normal loop: call the model, and if it asked for a tool, run the tool and feed the result back.
+
+```tsx
+// agent.ts — the naive loop
+const response = await client.messages.create({
+  model: MODEL,
+  max_tokens: 1024,
+  tools: toolDefinitions,
+  messages,
+});
+messages.push({ role: "assistant", content: response.content });
+
+if (response.stop_reason !== "tool_use") {
+  return response.content;
+}
+
+// No try/catch — an uncaught tool failure kills the whole run.
+for (const block of response.content) {
+  if (block.type !== "tool_use") continue;
+  // !focus(1:2)
+  const result = await executeTool(block.name, block.input);
+  toolResults.push({ type: "tool_result", tool_use_id: block.id, content: result });
+}
+```
+
+And the whole loop runs *inside the HTTP request*:
+
+```tsx
+// index.ts — the request blocks until the agent finishes… or throws
+async POST(req) {
+  const { prompt } = await req.json();
+  // !focus(1:1)
+  const content = await runAgent(prompt);
+  return Response.json({ content });
+}
+```
+
+Two things break here, and they compound.
+
+First, one sporadic failure takes down the entire run. `executeTool` throws, nothing catches it, the error bubbles up through `runAgent`, and the request handler returns a 500. Every model call and every tool result the agent accumulated before the failure is gone. 
+
+A single transient blip that resolves on its own if you just try again in a second costs the user the whole interaction.
+
+Second, and worse: the obvious fix makes it dangerous. If you wrap the request in a retry, you don't re-run the *failed* step; you re-run the loop from the top. That re-calls the model (nondeterministic, and you're paying for the tokens again) and re-executes every tool that already succeeded earlier in the loop, including any charge that already went through. 
+
+So the naive fix for "the run died" is the thing that double-charges your user. You're stuck choosing between losing runs and billing people twice.
+
+# Wrap the tool, don't rewrite it
+
+The real solution here is in the infrastructure: stop running the agent inside the request and let a durable function run it instead, where every model call and every tool call is a step that's independently retried and, once it succeeds, memoized.
+
+Starting with the tool call, we don’t want to change the business logic; the durable function should support the existing `executeTool` function by wrapping each one in an `inngest.createFunction`.
+
+```jsx
+// inngest/tool-functions.ts — one durable function per tool, same executeTool underneath
+export const toolFunctions = toolDefinitions.map((def) =>
+  inngest.createFunction(
+    // !mark[/retries: 5/]
+    { id: `tool-${def.name}`, retries: 5, triggers: [{ event: `tool/${def.name}.requested` }] },
+    async ({ event, step }) => {
+      const result = await step.run(`tool/${def.name}`, () =>
+	      // existing tool call function
+        executeTool(def.name, event.data.input),
+      );
+      await inngest.send({
+        name: `tool/${def.name}.completed`,
+        data: { toolCallId: event.data.toolCallId, result },
+      });
+      return result;
+    },
+  ),
+);
+```
+
+That `retries: 5` is the entire fix for transient failure. The flaky charge now gets up to five attempts, and the moment it succeeds, `step.run` records the result so it's never executed again.
+
+Now we modify the agent loop shape to match. The model call goes inside a `step.run` so it's memoized, and instead of calling the tool inline, the agent fires an event and waits for the tool's function to report back:
+
+```jsx
+
+// agent.ts — model call memoized, tool calls handed off durably
+// !diff(1:3) +
+const response = (await step.run("call-model", () =>
+  client.messages.create({ model: MODEL, max_tokens: 1024, tools: toolDefinitions, messages }),
+)) as Anthropic.Message;
+
+// Trigger the tool's own Inngest function, then wait for it to reply.
+const toolResults: Anthropic.ToolResultBlockParam[] = [];
+for (const block of response.content) {
+  if (block.type !== "tool_use") continue;
+  // ...fetch the tool_use blocks
+
+// ...for each tool_use block:
+// !diff -
+const result = await executeTool(block.name, block.input);
+// !diff(1:4) +
+await step.sendEvent(`trigger-${block.name}`, {
+  name: `tool/${block.name}.requested`,
+  data: { toolCallId: block.id, input: block.input },
+});
+
+// wait for tool function to report completed.
+// !diff(1:5) +
+const completion = await step.waitForEvent(`wait-${block.name}`, {
+  event: `tool/${block.name}.completed`,
+  timeout: "5m",
+  if: `async.data.toolCallId == ${JSON.stringify(block.id)}`,
+});
+```
+
+The `if` clause matches the completion back to the exact tool call by its `toolCallId`, so when the model asks for two tools at once, the results don't cross wires.
+
+Finally, the entry point stops blocking. The request just hands the run to Inngest and returns immediately; the agent executes durably in the background:
+
+```jsx
+// index.ts (stage 2) — hand off the run, return right away
+async POST(req) {
+  const { prompt } = await req.json();
+  // !diff -
+  const content = await runAgent(prompt);
+  // !diff +
+  const { ids } = await inngest.send({ name: "agent/run.requested", data: { prompt } });
+  return Response.json({ eventId: ids[0] });
+}
+```
+
+The thing I want to flag, because it's the whole point of the DX: converting stage one to stage two didn't touch a line of the tool's actual logic. 
+
+The loop is still a recognizable agent loop: same `messages` array, same Anthropic SDK calls, same control flow. That's the point — the conversion wraps whatever you already run. This example is the raw Anthropic SDK, but the move is identical if your agent lives in LangChain, Mastra, or the Vercel AI SDK: wrap the model and tool calls in steps, hand the run to Inngest, and leave the agent logic alone.
+
+# But won't it still charge twice?
+
+This is the right question to ask. We just saw how retries could end up *creating* the double-charge risk in the first place. So here's what actually protects you, and where the line is.
+
+The replay case is handled. When a step completes successfully, `step.run` memoizes its result and on any later replay of the run, that step returns its stored value instead of executing again. 
+
+So if the charge succeeds and then something *downstream* fails (a later tool, a model call, the process crashing), Inngest replays the function and the charge step just hands back its memoized result. It does not re-run. That kills the whole-loop-replay double-charge that made the naive retry so dangerous.
+
+The edge case is honest and worth stating plainly. Step retries give you *at-least-once* execution of the step body. 
+
+There's a narrow window where the charge succeeds on the payment provider's side but the step never records completion. The process dies right after the external call returns, or the call charges and then times out so `executeTool` throws. 
+
+On retry, the step body runs again, and a non-idempotent payment API will charge again. Memoization protects a step that *finished*; it can't reach back and neutralize a side effect that already escaped before the step was recorded.
+
+The fix is a stable idempotency key, and the nice part is you already have one. Every tool call the model makes carries a unique `toolCallId` (`block.id`), and the loop is already passing it through the event as `event.data.toolCallId`.
+
+```jsx
+await step.sendEvent(`trigger-${block.name}`, {
+  name: `tool/${block.name}.requested`,
+  data: { toolCallId: block.id, input: block.input },
+});
+```
+
+Thread it into the payment call as the provider's idempotency key: the header Stripe, x402 facilitators, and most payment APIs expose for exactly this. The charge dedupes even when the step body runs twice. The retry becomes safe end to end. 
+
+In our example code, our tool call is a mock function that doesn’t call any real API provider, so you’ll have to consult your specific payment API for exactly how to use an idempotency key.
+
+```jsx
+// inngest/tool-functions.ts — pass the idempotency key through to the tool
+const result = await step.run(`tool/${def.name}`, () =>
+  // !mark[/event.data.toolCallId/]
+  executeTool(def.name, event.data.input, event.data.toolCallId), // ← use as the charge's idempotency key
+);
+```
+
+# Try It
+
+Clone the repo, point `ANTHROPIC_BASE_URL` at whatever you're running, and give the agent a prompt that forces the payment tool. 
+
+Then make it fail on purpose: flip the kill switch mid-run, or kill the process between the charge and the response, and watch the run resume from the last completed step instead of starting over or billing twice. That's the difference between an agent that demos and one you'd put in front of real money.
+
+`[CODE REPO]`
