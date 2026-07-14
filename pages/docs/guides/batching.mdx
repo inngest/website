@@ -96,18 +96,18 @@ inngestgo.CreateFunction(
     batch_events=inngest.Batch(
         max_size=100,
         timeout=datetime.timedelta(seconds=5),
-        key="event.data.user_id"  # Optional: batch events by user ID
-        if="event.data.account_type == \"free\"" # Optional: Only batch events from free accounts 
+        key="event.data.user_id",  # Optional: batch events by user ID
+        if_exp="event.data.account_type == \"free\"",  # Optional: Only batch events from free accounts
     ),
 )
 async def record_api_calls(ctx: inngest.Context):
     # NOTE: Use the events from ctx, which is an array of event payloads
     attrs = [
         {
-            "user_id": evt.data.user_id,
-            "endpoint": evt.data.endpoint,
+            "user_id": evt.data["user_id"],
+            "endpoint": evt.data["endpoint"],
             "timestamp": to_datetime(evt.ts),
-            "account_type": evt.data.account_type
+            "account_type": evt.data["account_type"]
         }
         for evt in ctx.events
     ]
