@@ -9,8 +9,8 @@ export const description = "Start the Dev Server, manage local development, and 
 Inspect runs, fetch traces, invoke functions, and give coding agents access to your Inngest data from the terminal.
 
 <CodeGroup>
-```bash {{ title: "npx" }}
-npx inngest-cli@latest
+```bash {{ title: "bash" }}
+curl -sfL https://cli.inngest.com/install.sh | sh
 ```
 ```bash {{ title: "brew" }}
 brew install inngest/tap/inngest
@@ -18,8 +18,8 @@ brew install inngest/tap/inngest
 # If Homebrew warns about untrusted taps, run this and then install again
 brew trust --cask inngest/tap/inngest
 ```
-```bash {{ title: "curl" }}
-curl -sfL https://cli.inngest.com/install.sh | sh
+```bash {{ title: "npm" }}
+npm install -g inngest-cli
 ```
 </CodeGroup>
 
@@ -35,19 +35,19 @@ export INNGEST_API_KEY=sk-inn-api-...
 
 ```bash
 # Get a function run
-npx inngest-cli@latest api get-function-run 01KTCTWT8XDEGWDMVX3Q9M69ND
+inngest api get-function-run 01KTCTWT8XDEGWDMVX3Q9M69ND
 
 # Get runs triggered by an event
-npx inngest-cli@latest api get-event-runs 01KTCTWSZJEKAFEDA4F9GYHFQW --include-output --limit 5
+inngest api get-event-runs 01KTCTWSZJEKAFEDA4F9GYHFQW --include-output --limit 5
 
 # Invoke a function
-npx inngest-cli@latest api invoke-function my-app my-function --data '{"message": "hello"}'
+inngest api invoke-function my-app my-function --data '{"message": "hello"}'
 
 # Fetch a full trace
-npx inngest-cli@latest api get-function-trace 01KTCTWT8XDEGWDMVX3Q9M69ND --include-output
+inngest api get-function-trace 01KTCTWT8XDEGWDMVX3Q9M69ND --include-output
 ```
 
-The CLI auto-generates commands from the Inngest v2 REST API. Every API endpoint is available as a subcommand under `inngest-cli api`.
+The CLI auto-generates commands from the Inngest v2 REST API. Every API endpoint is available as a subcommand under `inngest api`.
 
 ---
 
@@ -72,13 +72,13 @@ The CLI targets your local dev server by default. Use `--prod` to hit Inngest Cl
 
 ```bash
 # Local dev server (default)
-npx inngest-cli@latest api get-function-run 01ABC123
+inngest api get-function-run 01ABC123
 
 # Inngest Cloud
-npx inngest-cli@latest api --prod get-function-run 01ABC123
+inngest api --prod get-function-run 01ABC123
 
 # Custom API host
-npx inngest-cli@latest api --api-host http://localhost:8288 get-function-run 01ABC123
+inngest api --api-host http://localhost:8288 get-function-run 01ABC123
 ```
 
 Target resolution:
@@ -91,11 +91,11 @@ Target resolution:
 
 ## Available commands
 
-All commands live under `inngest-cli api`. Run `--help` on any command to see its options:
+All commands live under `inngest api`. Run `--help` on any command to see its options:
 
 ```bash
-npx inngest-cli@latest api --help
-npx inngest-cli@latest api get-function-run --help
+inngest api --help
+inngest api get-function-run --help
 ```
 
 ### Runs
@@ -126,10 +126,10 @@ The CLI outputs compact JSON by default. Pipe to jq or other tools:
 
 ```bash
 # Get just the status
-npx inngest-cli@latest api --prod get-function-run 01ABC123 | jq '.data.status'
+inngest api --prod get-function-run 01ABC123 | jq '.data.status'
 
 # Pretty print
-npx inngest-cli@latest api --prod get-function-run 01ABC123 | jq .
+inngest api --prod get-function-run 01ABC123 | jq .
 ```
 
 ---
