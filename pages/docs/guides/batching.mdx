@@ -55,7 +55,7 @@ inngestgo.CreateFunction(
 		ID: "record-api-calls",
 		BatchEvents: &inngestgo.ConfigBatchEvents{
 			MaxSize: 100,
-			Timeout: "5s",
+			Timeout: 5 * time.Second,
 			Key: inngestgo.StrPtr("event.data.user_id"), // Optional: batch events by user ID
       If: inngestgo.StrPtr("event.data.account_type == \"free\""), // Optional: Only batch events from free accounts 
 		},
@@ -69,7 +69,7 @@ inngestgo.CreateFunction(
 			attrs[i] = map[string]interface{}{
 				"user_id":   evt.Data["user_id"],
 				"endpoint":  evt.Data["endpoint"],
-				"timestamp": toDateTime(evt.Ts),
+				"timestamp": toDateTime(evt.Timestamp),
         "account_type": evt.Data["account_type"],
 			}
 		}
