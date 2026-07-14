@@ -329,7 +329,7 @@ export function CodeGroup({
     getPanelTitle(child.props)
   );
   const [currentLanguage] = useLocalStorage("currentLanguage", null);
-  const { language: globalLanguage } = useLanguageStore();
+  const { language: globalLanguage, setLanguage } = useLanguageStore();
   const { preferredLanguages, addPreferredLanguage } =
     usePreferredLanguageStore();
   const { positionRef, preventLayoutShift } = usePreventLayoutShift();
@@ -376,7 +376,19 @@ export function CodeGroup({
   ]);
 
   const handleChange = (newSelectedIndex: number) => {
-    preventLayoutShift(() => addPreferredLanguage(languages[newSelectedIndex]));
+    const selectedTitle = languages[newSelectedIndex];
+    // A tab's title (e.g. "Go", "Python") may map to a global SDK language.
+    // When it does, update the global language store, which is the top-priority
+    // signal for `selectedIndex` — otherwise the tab would immediately snap back
+    // to whatever the global language already is. Also keep the per-group
+    // preference in sync for code groups whose tabs aren't SDK languages.
+    const sdkLanguage = GUIDE_KEY_TO_SDK[selectedTitle?.toLowerCase()];
+    preventLayoutShift(() => {
+      addPreferredLanguage(selectedTitle);
+      if (sdkLanguage) {
+        setLanguage(sdkLanguage);
+      }
+    });
   };
 
   const headerProps = hasTabs ? { selectedIndex } : {};
