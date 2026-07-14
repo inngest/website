@@ -104,10 +104,10 @@ async def record_api_calls(ctx: inngest.Context):
     # NOTE: Use the events from ctx, which is an array of event payloads
     attrs = [
         {
-            "user_id": evt.data.user_id,
-            "endpoint": evt.data.endpoint,
+            "user_id": evt.data["user_id"],
+            "endpoint": evt.data["endpoint"],
             "timestamp": to_datetime(evt.ts),
-            "account_type": evt.data.account_type
+            "account_type": evt.data["account_type"]
         }
         for evt in ctx.events
     ]
