@@ -197,4 +197,6 @@ Clone the repo, point `ANTHROPIC_BASE_URL` at whatever you're running, and give 
 
 Then make it fail on purpose: flip the kill switch mid-run, or kill the process between the charge and the response, and watch the run resume from the last completed step instead of starting over or billing twice. That's the difference between an agent that demos and one you'd put in front of real money.
 
+Before you close this tab, go look at what your own agent does when a tool call fails *after* the API call. If the honest answer is 'it retries and hopes,' you've got a double-charge waiting to happen, and now you know the shape of the fix. The repo has the rest.
+
 `[CODE REPO]`
