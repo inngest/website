@@ -81,7 +81,7 @@ export default inngest.createFunction(
 );
 ```
 
-`defer(...)` is **synchronous and fire-and-forget**: it returns `void` and the parent run continues immediately. The deferred run is enqueued when the parent run finalizes, not the moment `defer` is called.
+`defer(...)` is **synchronous and fire-and-forget**: the parent run continues immediately and never sees a result. The deferred run is enqueued when the parent run finalizes, not the moment `defer` is called. The call returns a handle whose `abort()` cancels the deferred run (see [Aborting a deferred run](#aborting-a-deferred-run)).
 
 It also works inside `step.run()`:
 
@@ -145,6 +145,37 @@ Because `defer(...)` is fire-and-forget, a bad call should never derail the surr
 ## Sharing across parent functions
 
 A deferred function is a single function in the backend. Multiple parent functions can hold a reference to it, and each `defer(...)` call triggers an independent run with its own retries, concurrency, and step state.
+
+---
+
+## Aborting a deferred run
+
+`defer(...)` returns a handle whose `abort()` cancels the deferred run. Use it when the parent run learns, after deferring, that the work is no longer needed. For example, suppose a data-sync function defers an expensive LLM job to judge the transformed results, then discovers mid-run that the import was too small to be worth judging:
+
+```ts
+async ({ event, defer, step }) => {
+  const scoring = defer("judge-results", {
+    function: judgeResults,
+    data: { importId: event.data.importId },
+  });
+
+  const { rowCount } = await step.run("sync-data", () => syncData(event.data));
+
+  if (rowCount < MINIMUM_ROWS_WORTH_JUDGING) {
+    scoring.abort();
+  }
+}
+```
+
+If the decision is available before you call `defer(...)`, a conditional call is simpler. `abort()` is for when the defer has already been registered — for example inside an earlier step, or in shared code the decision point doesn't control.
+
+`abort()` behaves like `defer(...)` itself: it is **synchronous, fire-and-forget, and idempotent**. Misuse — aborting twice, or aborting a call that was skipped — is logged and ignored rather than thrown. See the [`deferHandle.abort()` reference](/docs/reference/typescript/v4/functions/deferred-functions#defer-handle-abort-void) for the exact semantics.
+
+Because a deferred run only starts once the parent run finalizes, an abort called anywhere in the parent run prevents the deferred run from ever starting — whether it happens right after the `defer(...)` call, after intervening steps, or inside a `step.run()` closure. Aborting one deferred run has no effect on the run's other `defer(...)` calls.
+
+<Callout variant="info">
+  Calling `abort()` inside a `step.run()` closure is retry-safe: the abort ships together with the step's result, so one can't reach Inngest without the other.
+</Callout>
 
 ---
 
