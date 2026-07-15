@@ -6,11 +6,20 @@
  * Unbreakable layout.
  */
 
+import { useState } from "react";
 import { motion } from "motion/react";
 import { reveals } from "@/utils/v1/reveals";
 import { cn } from "@/utils/v1/cn";
 import Section from "@/components/v1/sections/shared/Section";
 import { V1_SECTION_TITLE } from "@/components/v1/sections/shared/sectionTitle";
+import Button from "@/components/v1/Button";
+import VideoModal from "@/components/v1/VideoModal";
+
+// "See it in action" demo video — opens in an on-page modal rather than
+// linking out to YouTube, so we don't lose visitors to youtube.com. The
+// iframe below is only mounted once the modal is opened (see VideoModal),
+// so this has zero impact on this page's initial load/perf.
+const DEMO_VIDEO_ID = "ZPysQAlXUrc";
 
 interface Pillar {
   number: string;
@@ -37,6 +46,8 @@ const PILLARS: Pillar[] = [
 ];
 
 export default function ScoreOutcomes() {
+  const [videoOpen, setVideoOpen] = useState(false);
+
   return (
     <Section
       aria-labelledby="agent-evals-score-heading"
@@ -44,7 +55,10 @@ export default function ScoreOutcomes() {
       containerClassName="relative flex flex-col gap-v1-stack-lg lg:flex-row lg:items-start lg:gap-x-16"
     >
       <div className="relative lg:sticky lg:top-[22vh] lg:min-w-0 lg:flex-1 lg:self-start">
-        <h2 id="agent-evals-score-heading" className={cn(V1_SECTION_TITLE, "relative z-10")}>
+        <h2
+          id="agent-evals-score-heading"
+          className={cn(V1_SECTION_TITLE, "relative z-10")}
+        >
           {["Score outcomes,", "not output"].map((line, i) => (
             <motion.span key={i} {...reveals.item(i)} className="block">
               {line}
@@ -53,11 +67,16 @@ export default function ScoreOutcomes() {
         </h2>
         <motion.p
           {...reveals.body}
-          className="mt-6 max-w-[440px] text-v1-body-lg-loose text-v1-frost"
+          className="text-v1-body-lg-loose mt-6 max-w-[440px] text-v1-frost"
         >
-          Score agents based on user and product signals, not just based on
-          what one LLM says about another.
+          Score agents based on user and product signals, not just based on what
+          one LLM says about another.
         </motion.p>
+        <motion.div {...reveals.item(2)} className="mt-8">
+          <Button variant="primary" onClick={() => setVideoOpen(true)}>
+            See it in action
+          </Button>
+        </motion.div>
       </div>
 
       <ol className="flex flex-col gap-[60px] lg:max-w-[550px] lg:gap-0">
@@ -65,6 +84,13 @@ export default function ScoreOutcomes() {
           <PillarRow key={pillar.number} pillar={pillar} index={i} />
         ))}
       </ol>
+
+      <VideoModal
+        open={videoOpen}
+        onClose={() => setVideoOpen(false)}
+        videoId={DEMO_VIDEO_ID}
+        title="Agent Evals — see it in action"
+      />
     </Section>
   );
 }
