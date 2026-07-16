@@ -20,7 +20,7 @@ We went from RAG being the consensus and everyone got their vector DBs, then to 
 
 If you coupled your infrastructure to any one of these patterns, you've already rebuilt at least twice. And you'll rebuild again.
 
-Here's the thesis: [there's a layer that doesn't change](/blog/owning-your-ai-agents-starts-with-the-execution-layer?ref=blog-background-agents-are-here). Durable orchestration: steps, events, state, retries, observability. Every pattern listed above runs on top of these same primitives. If you have this layer covered, changing agent patterns is easier. Get it wrong, every pattern shift is a rewrite or a migration.
+Here's the thesis: [there's a layer that doesn't change](/blog/your-agent-architecture-has-a-half-life?ref=blog-background-agents-are-here). Durable orchestration: steps, events, state, retries, observability. Every pattern listed above runs on top of these same primitives. If you have this layer covered, changing agent patterns is easier. Get it wrong, every pattern shift is a rewrite or a migration.
 
 ## The framework trap
 

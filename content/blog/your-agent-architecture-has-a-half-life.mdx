@@ -1,12 +1,16 @@
 ---
 tags: ["AI & Agents", "Durable Execution", "Workflows & Orchestration", "Observability & Debugging"]
-heading: "Owning Your AI Agents Starts With the Execution Layer"
-subtitle: "Every six months, the \"right\" way to build an agent changes — your architecture has a half-life. Here's the one layer worth owning, and how to make everything else swappable."
-image: /assets/blog/owning-your-ai-agents-starts-with-the-execution-layer/featured-image.png
+heading: "Your Agent Architecture Has a Half-Life. Your Execution Layer Shouldn't."
+subtitle: "Every six months, the \"right\" way to build an agent changes. Here's the one layer worth owning — and how to make everything else swappable."
+image: /assets/blog/your-agent-architecture-has-a-half-life/featured-image.png
 date: 2026-07-16
 author: Dan Farrelly
-category: engineering
 ---
+
+<Callout>
+  This article is adapted from a talk I gave at the AI Engineer World's Fair
+  2026 in San Francisco.
+</Callout>
 
 Every six months, the "right" way to build an AI agent changes.
 
@@ -28,7 +32,7 @@ Most conversations about agent architecture zoom in on specific components. Whic
 
 Step back. There are three layers underneath your agent, and they're not all created equal.
 
-I've written before about [why agents need a harness, not a framework](/blog/your-agent-needs-a-harness-not-a-framework?ref=blog-owning-your-ai-agents-starts-with-the-execution-layer). The harness is the infrastructure your agent sits on. Not the agent logic itself, not your product. The scaffolding that connects, protects, and orchestrates the components. Here's the deeper model.
+I've written before about [why agents need a harness, not a framework](/blog/your-agent-needs-a-harness-not-a-framework?ref=blog-your-agent-architecture-has-a-half-life). The harness is the infrastructure your agent sits on. Not the agent logic itself, not your product. The scaffolding that connects, protects, and orchestrates the components. Here's the deeper model.
 
 | Layer          | Role          | Contains                                          | Half-life |
 | -------------- | ------------- | ------------------------------------------------- | --------- |
@@ -50,7 +54,7 @@ Your agent and your application sit on top of all three. Many folks share their 
 
 Half-life: the time for something to decay by half. Radioactive isotopes have one. So does your architecture.
 
-Your prompts last weeks if you're lucky. A new model drops, capabilities shift, and suddenly that [carefully tuned chain-of-thought prompt](/blog/context-engineering-is-software-engineering-for-llms?ref=blog-owning-your-ai-agents-starts-with-the-execution-layer) needs a rewrite. Your tools change when you add a new integration or swap an API. Your RAG pipeline changes when you restructure your data or switch embedding models. Context has a half-life measured in weeks.
+Your prompts last weeks if you're lucky. A new model drops, capabilities shift, and suddenly that [carefully tuned chain-of-thought prompt](/blog/context-engineering-is-software-engineering-for-llms?ref=blog-your-agent-architecture-has-a-half-life) needs a rewrite. Your tools change when you add a new integration or swap an API. Your RAG pipeline changes when you restructure your data or switch embedding models. Context has a half-life measured in weeks.
 
 Compute is more stable but still volatile. Sandbox providers ship new features, pricing changes, a new player enters the market with faster cold starts. You move from E2B to Modal or vice versa. Months.
 
@@ -90,7 +94,7 @@ Three things the execution layer must do.
 
 An agent 45 minutes into a run shouldn't lose 45 minutes to a single failure.
 
-Agents handle longer-running tasks than ever. [Background agents](/blog/background-agents-are-here-your-orchestration-isnt-ready?ref=blog-owning-your-ai-agents-starts-with-the-execution-layer) run for minutes to hours. A three-hour run can't hold state in memory or on disk. A failed API call 38 steps into [a loop](/docs/ai-patterns/agent-tool-loops?ref=blog-owning-your-ai-agents-starts-with-the-execution-layer) should mean retry step 38, not restart from step 1.
+Agents handle longer-running tasks than ever. [Background agents](/blog/background-agents-are-here-your-orchestration-isnt-ready?ref=blog-your-agent-architecture-has-a-half-life) run for minutes to hours. A three-hour run can't hold state in memory or on disk. A failed API call 38 steps into [a loop](/docs/ai-patterns/agent-tool-loops?ref=blog-your-agent-architecture-has-a-half-life) should mean retry step 38, not restart from step 1.
 
 State must live outside the process. Durable and external. Without it, you end up adding manual checkpoints or log-based state hydration that leaks into the rest of your harness.
 
@@ -124,7 +128,7 @@ All of these problems are infrastructure problems, not AI problems.
 
 ### Invocation and Coordination
 
-Agents need flexible invocation. Event-driven. Cron-scheduled. API-triggered. [Human-in-the-loop approvals](/docs/ai-patterns/human-in-the-loop?ref=blog-owning-your-ai-agents-starts-with-the-execution-layer). And they need to coordinate with other agents, both synchronously and asynchronously.
+Agents need flexible invocation. Event-driven. Cron-scheduled. API-triggered. [Human-in-the-loop approvals](/docs/ai-patterns/human-in-the-loop?ref=blog-your-agent-architecture-has-a-half-life). And they need to coordinate with other agents, both synchronously and asynchronously.
 
 Without proper orchestration primitives, your harness logic starts absorbing queues, workers, polling, backoff, and scheduling. It becomes a mess of bad abstractions.
 
@@ -162,7 +166,7 @@ const orchestrator = inngest.createFunction(
 );
 ```
 
-Flexible execution primitives let you build any pattern your harness needs. Sync delegation with `step.invoke`. Async fan-out with `step.sendEvent`. Human-in-the-loop with `step.waitForEvent`. These are the building blocks. The [three sub-agent patterns](/blog/three-patterns-you-need-for-agentic-systems?ref=blog-owning-your-ai-agents-starts-with-the-execution-layer) you need for agentic systems all reduce to combinations of these primitives.
+Flexible execution primitives let you build any pattern your harness needs. Sync delegation with `step.invoke`. Async fan-out with `step.sendEvent`. Human-in-the-loop with `step.waitForEvent`. These are the building blocks. The [three sub-agent patterns](/blog/three-patterns-you-need-for-agentic-systems?ref=blog-your-agent-architecture-has-a-half-life) you need for agentic systems all reduce to combinations of these primitives.
 
 ### Observability: See the Whole Session
 
@@ -202,7 +206,7 @@ The next wave of agent systems is characterized by duration (long-running, varia
 
 Minutes to hours. Hundreds of tool calls. No one watching. Three hours of runtime, unattended. 200+ tool calls per session. At least one failure, guaranteed.
 
-You can't build these without durable execution. I wrote about this in detail in [Background Agents Are Here](/blog/background-agents-are-here-your-orchestration-isnt-ready?ref=blog-owning-your-ai-agents-starts-with-the-execution-layer). The short version: if your orchestration can't survive a single failure in a three-hour run, you don't have orchestration. You don't have confidence either.
+You can't build these without durable execution. I wrote about this in detail in [Background Agents Are Here](/blog/background-agents-are-here-your-orchestration-isnt-ready?ref=blog-your-agent-architecture-has-a-half-life). The short version: if your orchestration can't survive a single failure in a three-hour run, you don't have orchestration. You don't have confidence either.
 
 ### Loop Architectures
 
@@ -216,7 +220,7 @@ Three functions. Simple by design, flexible to iterate on. Each one is independe
 
 The important part: the reviewer function uses the execution layer's own data to evaluate and evolve the system. The loop improves itself. This is what orchestration plus a connected execution layer unlocks. Frameworks from three months ago weren't designed for this.
 
-For the deep dive on loop architectures with full code examples, check out [The Agent Loop Architecture](/blog/agent-loop-architecture?ref=blog-owning-your-ai-agents-starts-with-the-execution-layer).
+For the deep dive on loop architectures with full code examples, check out [The Agent Loop Architecture](/blog/agent-loop-architecture?ref=blog-your-agent-architecture-has-a-half-life).
 
 This may seem like a lot, but it proves the thesis. These three functions don't care which model you're using. They don't care which sandbox provider runs the triage agent's code. Swap Claude for Gemini, swap E2B for Modal. The execution flow doesn't change. The loop still works.
 
@@ -226,7 +230,7 @@ Here's where the execution layer investment pays off.
 
 The execution layer sits between the user and everything in the system. Every input, every decision, every output flows through it. That makes it the natural hub for three things: traces, scores, and insights. To iterate on your application, you need this data connected. You need to see the system as a whole.
 
-Most teams score model outputs. That's useful but incomplete. [Score on product outcomes](/blog/introducing-agent-evals?ref=blog-owning-your-ai-agents-starts-with-the-execution-layer).
+Most teams score model outputs. That's useful but incomplete. [Score on product outcomes](/blog/introducing-agent-evals?ref=blog-your-agent-architecture-has-a-half-life).
 
 ```typescript
 const agentTask = inngest.createFunction(
@@ -259,7 +263,7 @@ const agentTask = inngest.createFunction(
 );
 ```
 
-Don't just sample a few runs. [Score everything your agent does](/blog/introducing-scoring?ref=blog-owning-your-ai-agents-starts-with-the-execution-layer). `step.waitForEvent` lets you wait for real user behavior: did they save the result? Did they edit it? Did they discard it? That's signal you can't get from evaluating model outputs in isolation.
+Don't just sample a few runs. [Score everything your agent does](/blog/introducing-scoring?ref=blog-your-agent-architecture-has-a-half-life). `step.waitForEvent` lets you wait for real user behavior: did they save the result? Did they edit it? Did they discard it? That's signal you can't get from evaluating model outputs in isolation.
 
 Remember the loop architecture from the previous section? The reviewer function IS the feedback loop. It pulls traces and scores from the execution layer and uses them to decide if the system needs to change. Better prompts, different tools, adjusted thresholds.
 
@@ -269,7 +273,7 @@ This only works because execution owns the full picture. If your orchestration i
 
 ## The Execution Layer
 
-[Inngest](/?ref=blog-owning-your-ai-agents-starts-with-the-execution-layer) is the execution layer of the harness. The durable coordination layer that sits on top of both and outlasts them.
+[Inngest](/?ref=blog-your-agent-architecture-has-a-half-life) is the execution layer of the harness. The durable coordination layer that sits on top of both and outlasts them.
 
 - ✓ Durable steps, retryable and cached
 - ✓ Event triggers from any source
@@ -278,7 +282,7 @@ This only works because execution owns the full picture. If your orchestration i
 - ✓ Full-session traces across every decision
 - ✓ No infrastructure to manage
 
-The entire post above is the argument for why this layer matters. [Check out the docs](/docs?ref=blog-owning-your-ai-agents-starts-with-the-execution-layer) and start building.
+The entire post above is the argument for why this layer matters. [Check out the docs](/docs?ref=blog-your-agent-architecture-has-a-half-life) and start building.
 
 ## Build for the Next Three Shifts
 
