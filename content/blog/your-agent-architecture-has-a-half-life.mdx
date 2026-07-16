@@ -34,6 +34,8 @@ Step back. There are three layers underneath your agent, and they're not all cre
 
 I've written before about [why agents need a harness, not a framework](/blog/your-agent-needs-a-harness-not-a-framework?ref=blog-your-agent-architecture-has-a-half-life). The harness is the infrastructure your agent sits on. Not the agent logic itself, not your product. The scaffolding that connects, protects, and orchestrates the components. Here's the deeper model.
 
+![Layers of the harness: execution, context, compute](/assets/blog/your-agent-architecture-has-a-half-life/harness-layers.png)
+
 | Layer          | Role          | Contains                                          | Half-life |
 | -------------- | ------------- | ------------------------------------------------- | --------- |
 | **Execution**  | The brain     | flow · state · durability · retries · coordination | years     |
@@ -48,7 +50,7 @@ I've written before about [why agents need a harness, not a framework](/blog/you
 
 Your agent and your application sit on top of all three. Many folks share their "harness architecture" as specific component choices. I'm talking about the conceptual layers. The mental model for thinking about what to couple, what to decouple, and what to invest in.
 
-> **"Every layer decays. Not at the same rate."**
+> **Every layer decays. Not at the same rate.**
 
 ## Half-Life
 
@@ -76,7 +78,7 @@ Don't fight the churn. Embrace it. Think in layers. Invest in the stable one. Ma
 
 The execution layer is the one worth getting right. It has the longest half-life. Everything else will change around it.
 
-> **"Don't fight it. Embrace it."**
+> **Don't fight it. Embrace it.**
 
 ## What the Execution Layer Must Do
 
@@ -85,6 +87,8 @@ If execution is the layer worth investing in, what does it actually need to do?
 The execution layer is the system responsible for running your code reliably. It manages how, when, and whether each piece of work completes, independent of the infrastructure it runs on.
 
 Here's the key: execution connects the components. Context and compute are swappable. The flow looks like this: trigger → call model → run code → invoke sub-agent → call model → return result. Swap the model? That's a context change. Swap the sandbox? That's a compute change. Execution stays the same.
+
+![Execution layer overview in relations to the context and compute layers](/assets/blog/your-agent-architecture-has-a-half-life/execution-loop.png)
 
 That's decoupling.
 
@@ -176,9 +180,11 @@ If you can't see the whole session, you can't debug it. You can't improve it.
 
 Full-session traces span the entire agent run: trigger → plan → sandbox.exec → llm.call → browser.navigate → fs.write → finalize. This isn't just LLM observability. It's database errors, permission issues, tool failures, retries, and waits. One failure caught, retried, recovered.
 
+![Execution layer trace with all spans across your run](/assets/blog/your-agent-architecture-has-a-half-life/trace.png)
+
 The execution layer is the only thing that has the full picture. Individual tools can't see the whole session. The model can't see the infrastructure. Only execution sees everything.
 
-> **"If you can't see the whole session, you can't debug it. You can't improve it."**
+> **If you can't see the whole session, you can't debug it. You can't improve it.**
 
 ## Sandboxes Are Hands, Not Brains
 
@@ -215,6 +221,8 @@ This is where the execution layer thesis gets concrete.
 The most interesting agent architectures emerging right now aren't single-shot request/response flows. They're loops. Crons, scores, iteration. Three functions that work together: a scheduled monitor that watches for changes, a triage agent that investigates problems, and a reviewer that evaluates the system's own performance over time.
 
 The monitor runs on a cron. Every 30 minutes, it checks health metrics. If something looks wrong, it invokes the triage agent. The triage agent fetches detailed data, correlates it against deploy history, and finds the root cause. It uses tools, might spin up a sandbox, might run for minutes. Then, on a weekly cron, the reviewer pulls run history from the execution layer itself, analyzes how the triage agent performed, and decides if the system should be modified.
+
+![Loop architecture diagram with cron agent, sub-agents, and review agent](/assets/blog/your-agent-architecture-has-a-half-life/loop.png)
 
 Three functions. Simple by design, flexible to iterate on. Each one is independently deployable, testable, and observable. The context layer (the models, prompts, tools) inside each function is swappable. But the execution flow is stable.
 
@@ -266,6 +274,8 @@ const agentTask = inngest.createFunction(
 Don't just sample a few runs. [Score everything your agent does](/blog/introducing-scoring?ref=blog-your-agent-architecture-has-a-half-life). `step.waitForEvent` lets you wait for real user behavior: did they save the result? Did they edit it? Did they discard it? That's signal you can't get from evaluating model outputs in isolation.
 
 Remember the loop architecture from the previous section? The reviewer function IS the feedback loop. It pulls traces and scores from the execution layer and uses them to decide if the system needs to change. Better prompts, different tools, adjusted thresholds.
+
+![Execution layer as the hub for all data around agent architectures including traces, user feedback, scores, and insights](/assets/blog/your-agent-architecture-has-a-half-life/evals.png)
 
 This only works because execution owns the full picture. If your orchestration is spread across frameworks, sandboxes, and custom state machines, you can't build this. The data is scattered. The traces are fragmented. You're flying blind.
 
