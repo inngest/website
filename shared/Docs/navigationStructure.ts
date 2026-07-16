@@ -417,6 +417,10 @@ const sectionReference: (NavGroup | NavLink)[] = [
         title: "Migrations",
         links: [
           {
+            title: "v0.15 to v0.16",
+            href: `/docs/reference/go/migrations/v0.16`,
+          },
+          {
             title: "v0.8 to v0.11",
             href: `/docs/reference/go/migrations/v0.8-to-v0.11`,
           },
