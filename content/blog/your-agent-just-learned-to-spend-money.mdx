@@ -10,9 +10,9 @@ author: Inngest
 ---
 Your AI Shopping Agent™️ works. It helps a customer pick the right product, charges their card, places the order, hands-free. Then one afternoon the payment gateway times out mid-charge, and your agent does the reasonable thing: it retries. Now the customer's been charged twice, and your support inbox is the first to find out. 
 
-This is the hypothetical failure and the very real pain I want to walk you through: why a payment inside an agent loop breaks in a way a normal API call doesn't, why the obvious fix, retry it, quietly makes it worse, and the roughly forty lines it took to turn a fragile agent into a durable one that survives the failure without paying twice. There's a companion video that shows the build live if you'd rather watch a quick example.
+This is the hypothetical failure and the very real pain I want to walk you through: why a payment inside an agent loop breaks in a way a normal API call doesn't, why the obvious fix, retry it, makes it worse, and the roughly forty lines it took to turn a fragile agent into a durable one that survives the failure without paying twice. There's a companion video that shows the build live if you'd rather watch a quick example.
 
-[[VIDEO EMBED]](https://f.io/oQTbPxaC)
+<YouTube id="3nhRaJ3eOS8" height={300} />
 
 # Retry Landmines
 
@@ -80,63 +80,53 @@ The real solution here is in the infrastructure: stop running the agent inside t
 Starting with the tool call, we don’t want to change the business logic; the durable function should support the existing `executeTool` function by wrapping each one in an `inngest.createFunction`.
 
 ```jsx
-// inngest/tool-functions.ts — one durable function per tool, same executeTool underneath
-export const toolFunctions = toolDefinitions.map((def) =>
-  inngest.createFunction(
-    // !mark[/retries: 5/]
-    { id: `tool-${def.name}`, retries: 5, triggers: [{ event: `tool/${def.name}.requested` }] },
-    async ({ event, step }) => {
-      const result = await step.run(`tool/${def.name}`, () =>
-	      // existing tool call function
-        executeTool(def.name, event.data.input),
-      );
-      await inngest.send({
-        name: `tool/${def.name}.completed`,
-        data: { toolCallId: event.data.toolCallId, result },
-      });
-      return result;
-    },
-  ),
+// inngest/tool-functions.ts — one durable function per tool, keyed by name
+export const toolFunctions = Object.fromEntries(
+  toolDefinitions.map((def) => [
+    def.name,
+    inngest.createFunction(
+      // !mark[/retries: 5/]
+      { id: `tool-${def.name}`, retries: 5, triggers: [{ event: `tool/${def.name}.requested` }] },
+      async ({ event, step }) =>
+        // existing tool call function, memoized once it succeeds
+        step.run(`tool/${def.name}`, () => executeTool(def.name, event.data.input)),
+    ),
+  ]),
 );
 ```
 
-That `retries: 5` is the entire fix for transient failure. The flaky charge now gets up to five attempts, and the moment it succeeds, `step.run` records the result so it's never executed again.
+That `retries: 5` is the entire fix for transient failure. The flaky charge now gets up to five attempts, and the moment it succeeds, `step.run` records the result so it's never executed again. The function returns that result directly. No completion event to fire, because the caller is going to invoke it and get the value back.
 
-Now we modify the agent loop shape to match. The model call goes inside a `step.run` so it's memoized, and instead of calling the tool inline, the agent fires an event and waits for the tool's function to report back:
+You might ask why each tool gets its own function instead of just wrapping the call in `step.run` inline in the loop. For the narrow thing we're solving (don't double-charge on replay), you don't need one. The memoization is the fix, and `step.run` inside the agent function gives you that on its own. If minimal is the goal, inline it and move on.
+
+The function boundary earns its keep when the tool moves money. A separate function carries its own retry budget — that `retries: 5` is scoped to the charge, not shared with the model calls and every other tool in the loop — and its own flow control, so `concurrency`, `throttle`, or `rateLimit` can sit on the money-mover without touching the rest of the agent. 
+
+It's reusable and independently observable, too: the charge is its own function in the dashboard with its own run history. `step.run` can't reach across runs like that. Its memoization is scoped to the single run it lives in.
+
+Now we modify the agent loop shape to match. The model call goes inside a `step.run` so it's memoized, and instead of calling the tool inline, the agent invokes the tool's function and gets its result back directly:
 
 ```jsx
-
-// agent.ts — model call memoized, tool calls handed off durably
-// !diff(1:3) +
+// agent.ts — model call memoized, tool calls invoked durably
 const response = (await step.run("call-model", () =>
   client.messages.create({ model: MODEL, max_tokens: 1024, tools: toolDefinitions, messages }),
 )) as Anthropic.Message;
 
-// Trigger the tool's own Inngest function, then wait for it to reply.
-const toolResults: Anthropic.ToolResultBlockParam[] = [];
-for (const block of response.content) {
-  if (block.type !== "tool_use") continue;
-  // ...fetch the tool_use blocks
-
-// ...for each tool_use block:
-// !diff -
-const result = await executeTool(block.name, block.input);
-// !diff(1:4) +
-await step.sendEvent(`trigger-${block.name}`, {
-  name: `tool/${block.name}.requested`,
-  data: { toolCallId: block.id, input: block.input },
-});
-
-// wait for tool function to report completed.
-// !diff(1:5) +
-const completion = await step.waitForEvent(`wait-${block.name}`, {
-  event: `tool/${block.name}.completed`,
-  timeout: "5m",
-  if: `async.data.toolCallId == ${JSON.stringify(block.id)}`,
-});
+// Invoke each tool's own durable function and collect the results.
+const toolResults: Anthropic.ToolResultBlockParam[] = await Promise.all(
+  response.content
+    .filter((b): b is Anthropic.ToolUseBlock => b.type === "tool_use")
+    .map(async (block) => {
+      // !mark[/step.invoke/]
+      const content = await step.invoke(`run-${block.name}`, {
+        function: toolFunctions[block.name],
+        data: { input: block.input, toolCallId: block.id },
+      });
+      return { type: "tool_result", tool_use_id: block.id, content };
+    }),
+);
 ```
 
-The `if` clause matches the completion back to the exact tool call by its `toolCallId`, so when the model asks for two tools at once, the results don't cross wires.
+`step.invoke` calls the tool's function and returns its value straight to the line that asked for it. There's no event to match back, so when the model asks for two tools at once, `Promise.all` runs them in parallel and each result lands where it belongs by construction; there’s no `toolCallId` correlation to get wrong, and no timing window where a completion fires before anyone's listening for it.
 
 Finally, the entry point stops blocking. The request just hands the run to Inngest and returns immediately; the agent executes durably in the background:
 
@@ -152,13 +142,13 @@ async POST(req) {
 }
 ```
 
-The thing I want to flag, because it's the whole point of the DX: converting stage one to stage two didn't touch a line of the tool's actual logic. 
+The thing I want to flag, because it's the whole point of the DX: converting stage one to stage two didn't touch a line of the tool's actual logic. `executeTool` runs exactly as it did before; all we changed is where and how it's called. 
 
-The loop is still a recognizable agent loop: same `messages` array, same Anthropic SDK calls, same control flow. That's the point — the conversion wraps whatever you already run. This example is the raw Anthropic SDK, but the move is identical if your agent lives in LangChain, Mastra, or the Vercel AI SDK: wrap the model and tool calls in steps, hand the run to Inngest, and leave the agent logic alone.
+The loop is still a recognizable agent loop: same `messages` array, same Anthropic SDK calls. That's the point: the conversion wraps whatever you already run. This example is the raw Anthropic SDK, but the move is identical if your agent lives in LangChain, Mastra, or the Vercel AI SDK: wrap the model and tool calls in steps, invoke them durably, and leave the agent logic alone.
 
 # But won't it still charge twice?
 
-This is the right question to ask. We just saw how retries could end up *creating* the double-charge risk in the first place. So here's what actually protects you, and where the line is.
+This is the right question to ask. We just saw how retries could end up *creating* the double-charge risk in the first place.
 
 The replay case is handled. When a step completes successfully, `step.run` memoizes its result and on any later replay of the run, that step returns its stored value instead of executing again. 
 
@@ -170,12 +160,12 @@ There's a narrow window where the charge succeeds on the payment provider's side
 
 On retry, the step body runs again, and a non-idempotent payment API will charge again. Memoization protects a step that *finished*; it can't reach back and neutralize a side effect that already escaped before the step was recorded.
 
-The fix is a stable idempotency key, and the nice part is you already have one. Every tool call the model makes carries a unique `toolCallId` (`block.id`), and the loop is already passing it through the event as `event.data.toolCallId`.
+The fix is a stable idempotency key, and the nice part is you already have one. Every tool call the model makes carries a unique `toolCallId` (`block.id`), and the loop is already passing it through to the tool function as `event.data.toolCallId`.
 
 ```jsx
-await step.sendEvent(`trigger-${block.name}`, {
-  name: `tool/${block.name}.requested`,
-  data: { toolCallId: block.id, input: block.input },
+const content = await step.invoke(`run-${block.name}`, {
+  function: toolFunctions[block.name],
+  data: { input: block.input, toolCallId: block.id },
 });
 ```
 
@@ -185,7 +175,7 @@ In our example code, our tool call is a mock function that doesn’t call any re
 
 ```jsx
 // inngest/tool-functions.ts — pass the idempotency key through to the tool
-const result = await step.run(`tool/${def.name}`, () =>
+step.run(`tool/${def.name}`, () =>
   // !mark[/event.data.toolCallId/]
   executeTool(def.name, event.data.input, event.data.toolCallId), // ← use as the charge's idempotency key
 );
@@ -197,6 +187,6 @@ Clone the repo, point `ANTHROPIC_BASE_URL` at whatever you're running, and give 
 
 Then make it fail on purpose: flip the kill switch mid-run, or kill the process between the charge and the response, and watch the run resume from the last completed step instead of starting over or billing twice. That's the difference between an agent that demos and one you'd put in front of real money.
 
-Before you close this tab, go look at what your own agent does when a tool call fails *after* the API call. If the honest answer is 'it retries and hopes,' you've got a double-charge waiting to happen, and now you know the shape of the fix. [Build your own durable agent that handles retries and idempotency keys on Inngest.](https://www.inngest.com/docs/learn/durable-agents)
+Before you close this tab, go look at what your own agent does when a tool call fails *after* the money moves. If the honest answer is 'it retries and hopes,' you've got a double-charge waiting to happen, and now you know the shape of the fix. The repo has the rest.
 
 `[CODE REPO]`
