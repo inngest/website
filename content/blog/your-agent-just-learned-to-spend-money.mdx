@@ -3,14 +3,14 @@ heading: "Your agent just learned to spend money. Now make sure it only spends i
 subtitle: "Retries, crashes, and agent loops quietly turn one payment into three. Here's how to give money-moving tool calls exactly-once execution."
 showSubtitle: true
 image: https://cdn.inngest.com/blog/your-agent-just-learned-to-spend-money/featured-image.png
-date: 2026-07-14
+date: 2026-07-21
 category: engineering
 tags: ["AI & Agents", "Durable Execution", "Engineering"]
-author: Inngest
+author: Mitchell Alderson
 ---
 Your AI Shopping Agent™️ works. It helps a customer pick the right product, charges their card, places the order, hands-free. Then one afternoon the payment gateway times out mid-charge, and your agent does the reasonable thing: it retries. Now the customer's been charged twice, and your support inbox is the first to find out. 
 
-This is the hypothetical failure and the very real pain I want to walk you through: why a payment inside an agent loop breaks in a way a normal API call doesn't, why the obvious fix, retry it, makes it worse, and the roughly forty lines it took to turn a fragile agent into a durable one that survives the failure without paying twice. There's a companion video that shows the build live if you'd rather watch a quick example.
+This is the hypothetical failure and the very real paign I want to walk you through: why a payment inside an agent loop breaks in a way a normal API call doesn't, why the obvious fix, retry it, makes it worse, and the roughly forty lines it took to turn a fragile agent into a durable one that survives the failure without paying twice. There's a companion video that shows the build live if you'd rather watch a quick example.
 
 <AutoplayVideo src="https://cdn.inngest.com/videos/durable-agent-in-8-minutes.mov" loop={false} autoPlay={false} poster="/assets/blog/your-agent-just-learned-to-spend-money/video-thumbnail.png" />
 
