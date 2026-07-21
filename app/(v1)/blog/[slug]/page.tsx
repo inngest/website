@@ -22,6 +22,12 @@ import ArticleBody from "./ArticleBody";
 import BlogToc, { type BlogTocItem } from "./BlogToc";
 import Prose from "@/components/v1/Prose";
 import { Unreleased } from "shared/Docs/Unreleased";
+import {
+  ReportHero,
+  ReportLayoutShell,
+  ReportTableOfContents,
+  ReportMobileContentsBar,
+} from "@/components/Blog/Report";
 
 const ARTICLE_BODY_ID = "blog-article-body";
 
@@ -73,6 +79,9 @@ type Scope = {
   canonical_url?: string;
   // When set, the post is gated behind ?unreleased=<label>.
   unreleased?: string;
+  // When true, swaps the generic hero/sidebar layout for the wider,
+  // dedicated report shell (ReportHero, left-rail TOC, full-bleed sections).
+  reportLayout?: boolean;
 };
 
 type RelatedPost = {
@@ -325,15 +334,31 @@ export default async function BlogPostPage({
       />
       <div className="overflow-x-clip">
         <article>
-          <BlogHero
-            heading={scope.heading}
-            image={scope.image ?? null}
-            heroSize={heroSize}
-            authors={authors}
-            dateStr={dateStr}
-            readingText={readingText}
-          />
-          <ArticleSection content={content} scope={scope} tocItems={tocItems} />
+          {scope.reportLayout ? (
+            <ReportArticleSection
+              content={content}
+              scope={scope}
+              authors={authors}
+              dateStr={dateStr}
+              readingText={readingText}
+            />
+          ) : (
+            <>
+              <BlogHero
+                heading={scope.heading}
+                image={scope.image ?? null}
+                heroSize={heroSize}
+                authors={authors}
+                dateStr={dateStr}
+                readingText={readingText}
+              />
+              <ArticleSection
+                content={content}
+                scope={scope}
+                tocItems={tocItems}
+              />
+            </>
+          )}
           <RelatedContent posts={related} />
           <BuildBetterAgentsCta />
         </article>
@@ -363,7 +388,7 @@ function BlogNotFound() {
       <p className="mt-5">
         <Link
           href="/blog"
-          className="text-v1-frost/70 underline motion-safe:transition-colors hover:text-v1-accent-salmon-light"
+          className="text-v1-frost/70 underline hover:text-v1-accent-salmon-light motion-safe:transition-colors"
         >
           Back to the blog
         </Link>
@@ -445,6 +470,42 @@ function ArticleSection({
           <BlogToc items={tocItems} />
         </div>
       </div>
+    </section>
+  );
+}
+
+function ReportArticleSection({
+  content,
+  scope,
+  authors,
+  dateStr,
+  readingText,
+}: {
+  content: string;
+  scope: Scope;
+  authors: string[];
+  dateStr: string;
+  readingText: string;
+}) {
+  // Dedicated report shell: a slim left-rail TOC (13rem) instead of the
+  // generic 800/448 grid, so the report's full-bleed sections (exec
+  // summary, section breaks, charts) get the full content width rather
+  // than being squeezed by an (often empty) sidebar column.
+  return (
+    <section className="relative mx-auto w-full max-w-[1440px] px-6 pb-[96px] pt-[96px] text-v1-frost sm:px-9 sm:pb-[120px] lg:px-8 lg:pt-[108px]">
+      <ReportLayoutShell toc={<ReportTableOfContents />}>
+        <>
+          <ReportHero
+            author={authors}
+            date={dateStr}
+            readingTime={readingText}
+          />
+          <ReportMobileContentsBar />
+          <Prose id={ARTICLE_BODY_ID} className="report-prose max-w-none">
+            <ArticleBody source={content} scope={scope} />
+          </Prose>
+        </>
+      </ReportLayoutShell>
     </section>
   );
 }
