@@ -14,7 +14,7 @@ This is the hypothetical failure and the very real pain I want to walk you throu
 
 <AutoplayVideo src="https://cdn.inngest.com/videos/durable-agent-in-8-minutes.mov" loop={false} autoPlay={false} poster="/assets/blog/your-agent-just-learned-to-spend-money/video-thumbnail.png" />
 
-# Retry Landmines
+## Retry Landmines
 
 A retry is safe when the call is idempotent: reading weather data twice costs you nothing. 
 
@@ -24,7 +24,7 @@ One note before the code. The agent below uses a deliberately dumb payment tool:
 
 The pattern here transfers as-is. What doesn't transfer is the payment-specific part: which idempotency key your processor wants, how it dedupes, what a timeout actually means for a charge. That lives in your payment API's docs, so keep them open in the next tab.
 
-# The fragile version
+## The fragile version
 
 Here's the agent before any of this is handled. A normal loop: call the model, and if it asked for a tool, run the tool and feed the result back.
 
@@ -73,7 +73,7 @@ Second, and worse: the obvious fix makes it dangerous. If you wrap the request i
 
 So the naive fix for "the run died" is the thing that double-charges your user. You're stuck choosing between losing runs and billing people twice.
 
-# Wrap the tool, don't rewrite it
+## Wrap the tool, don't rewrite it
 
 The real solution here is in the infrastructure: stop running the agent inside the request and let a durable function run it instead, where every model call and every tool call is a step that's independently retried and, once it succeeds, memoized.
 
@@ -146,7 +146,7 @@ The thing I want to flag, because it's the whole point of the DX: converting sta
 
 The loop is still a recognizable agent loop: same `messages` array, same Anthropic SDK calls. That's the point: the conversion wraps whatever you already run. This example is the raw Anthropic SDK, but the move is identical if your agent lives in LangChain, Mastra, or the Vercel AI SDK: wrap the model and tool calls in steps, invoke them durably, and leave the agent logic alone.
 
-# But won't it still charge twice?
+## But won't it still charge twice?
 
 This is the right question to ask. We just saw how retries could end up *creating* the double-charge risk in the first place.
 
@@ -181,7 +181,7 @@ step.run(`tool/${def.name}`, () =>
 );
 ```
 
-# Try It
+## Try It
 
 Clone the repo, point `ANTHROPIC_BASE_URL` at whatever you're running, and give the agent a prompt that forces the payment tool. 
 
