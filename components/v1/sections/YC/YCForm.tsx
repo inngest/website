@@ -162,9 +162,15 @@ export default function YCForm() {
     );
   }
 
+  // Denser field sizing than the default v1 form scale (44px/16px inputs,
+  // 18px labels) — this card is narrower than the Sales/Contact forms, so
+  // the standard sizing read as oversized here.
+  const fieldClassName = "h-[38px] text-[14px]";
+  const labelClassName = "text-[14px]";
+
   return (
-    <form onSubmit={handleSubmit} className="flex flex-col gap-6">
-      <div className="flex flex-col gap-[28px]">
+    <form onSubmit={handleSubmit} className="flex flex-col gap-5">
+      <div className="flex flex-col gap-5">
         <TextField
           id="yc-name"
           label="Your name"
@@ -172,6 +178,8 @@ export default function YCForm() {
           value={name}
           onChange={setName}
           autoComplete="name"
+          className={fieldClassName}
+          labelClassName={labelClassName}
         />
 
         <TextField
@@ -182,6 +190,8 @@ export default function YCForm() {
           value={email}
           onChange={setEmail}
           autoComplete="email"
+          className={fieldClassName}
+          labelClassName={labelClassName}
         />
 
         <TextField
@@ -190,7 +200,7 @@ export default function YCForm() {
             <>
               YC Verification Badge URL{" "}
               <a
-                className="ml-1 font-v1Body text-[13px] normal-case text-v1-frost/70 underline hover:text-v1-frost"
+                className="ml-1 font-v1Body text-[12px] normal-case text-v1-frost/70 underline hover:text-v1-frost"
                 target="_blank"
                 rel="noopener noreferrer"
                 href="https://bookface.ycombinator.com/verify"
@@ -202,6 +212,8 @@ export default function YCForm() {
           required
           value={ycVerificationBadgeURL}
           onChange={setYCVerificationBadgeURL}
+          className={fieldClassName}
+          labelClassName={labelClassName}
         />
 
         <TextField
@@ -210,6 +222,8 @@ export default function YCForm() {
           required
           value={survey}
           onChange={setSurvey}
+          className={fieldClassName}
+          labelClassName={labelClassName}
         />
 
         <TextareaField
@@ -217,6 +231,9 @@ export default function YCForm() {
           label="What can we help you with?"
           value={message}
           onChange={setMessage}
+          rows={3}
+          className="text-[14px]"
+          labelClassName={labelClassName}
         />
       </div>
 
@@ -254,6 +271,7 @@ export default function YCForm() {
         <Button
           type="submit"
           variant="accent"
+          size="sm"
           className="!w-full sm:!w-auto"
           disabled={status === "sending"}
         >

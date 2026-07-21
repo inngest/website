@@ -16,6 +16,9 @@ export interface TextFieldProps
   value: string;
   /** Controlled change handler — receives the value, not the event. */
   onChange: (value: string) => void;
+  /** Optional override for the label's classes (e.g. a smaller
+   *  font-size on a denser form). Merged onto the default label style. */
+  labelClassName?: string;
 }
 
 /**
@@ -32,11 +35,12 @@ export function TextField({
   required,
   name,
   className,
+  labelClassName,
   ...rest
 }: TextFieldProps) {
   return (
     <div className="flex flex-col gap-4">
-      <FieldLabel htmlFor={id} required={required}>
+      <FieldLabel htmlFor={id} required={required} className={labelClassName}>
         {label}
       </FieldLabel>
       <input

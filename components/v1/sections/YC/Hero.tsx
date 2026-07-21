@@ -15,18 +15,18 @@ export default function Hero() {
     >
       <h1
         id="yc-hero-heading"
-        className="font-v1Display text-v1-display-sm uppercase leading-[1.25] tracking-[-0.01em] [font-size:clamp(2.5rem,7.5vw,5rem)] lg:px-[70px]"
+        className="text-center font-v1Display text-v1-display-sm uppercase leading-[1.25] tracking-[-0.01em] [font-size:clamp(2.5rem,7.5vw,5rem)] lg:px-[70px]"
       >
         Request the YC Deal
       </h1>
 
-      <p className="mt-6 text-v1-body-lg-loose text-v1-frost lg:mt-8 lg:px-[70px]">
+      <p className="mt-6 text-center text-v1-body-lg-loose text-v1-frost lg:mt-8 lg:px-[70px]">
         Are you a Y Combinator company or alumni? Let us know here for access
         to the YC deal: the Pro plan free for the first year.
       </p>
 
       <div className="mt-12 grid grid-cols-1 gap-y-12 lg:mt-[52px] lg:grid-cols-[1fr_1fr] lg:items-start lg:gap-x-12 lg:gap-y-0 lg:px-[70px]">
-        <div className="max-w-[460px] rounded-[4px] border border-v1-steel/20 bg-v1-surfaceElevated p-6 sm:p-8">
+        <div className="max-w-[600px] rounded-[4px] border border-v1-steel/20 bg-v1-surfaceElevated p-6 sm:p-8">
           <YCForm />
         </div>
 
