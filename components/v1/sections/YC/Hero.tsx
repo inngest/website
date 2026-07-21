@@ -21,8 +21,10 @@ export default function Hero() {
       </h1>
 
       <p className="mt-6 text-center text-v1-body-lg-loose text-v1-frost lg:mt-8 lg:px-[70px]">
-        Are you a Y Combinator company or alumni? Let us know here for access
-        to the YC deal: the Pro plan free for the first year.
+        Are you a Y Combinator company or alumni?
+        <br />
+        Let us know here for access to the YC deal: the Pro plan free for the
+        first year.
       </p>
 
       <div className="mt-12 grid grid-cols-1 gap-y-12 lg:mt-[52px] lg:grid-cols-[1fr_1fr] lg:items-start lg:gap-x-12 lg:gap-y-0 lg:px-[70px]">

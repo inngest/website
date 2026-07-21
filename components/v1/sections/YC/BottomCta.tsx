@@ -10,14 +10,14 @@ export default function BottomCta() {
   return (
     <StippleCtaSection
       headingId="yc-cta-heading"
-      heading="Develop reliable AI products, every time"
+      heading="Develop reliable AI products, every time."
       body="Talk to our team about running reliable AI products at scale — or dive into the docs yourself."
     >
       <ButtonLink href="/contact?ref=yc-footer-cta" variant="primary" wide>
         Let's Talk
       </ButtonLink>
       <ButtonLink href="/docs?ref=yc-footer-cta" variant="secondary" wide>
-        I'd rather look at the docs first
+        Read our docs
       </ButtonLink>
     </StippleCtaSection>
   );

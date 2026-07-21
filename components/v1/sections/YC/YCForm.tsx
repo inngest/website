@@ -164,9 +164,12 @@ export default function YCForm() {
 
   // Denser field sizing than the default v1 form scale (44px/16px inputs,
   // 18px labels) — this card is narrower than the Sales/Contact forms, so
-  // the standard sizing read as oversized here.
+  // the standard sizing read as oversized here. Labels use the same
+  // 16px/CircularXX/untrimmed token as the page's other paragraph copy
+  // (`v1-body-sm-loose`) rather than an arbitrary size, so the font
+  // actually matches instead of just happening to be the same px value.
   const fieldClassName = "h-[38px] text-[14px]";
-  const labelClassName = "text-[14px]";
+  const labelClassName = "text-v1-body-sm-loose";
 
   return (
     <form onSubmit={handleSubmit} className="flex flex-col gap-5">
