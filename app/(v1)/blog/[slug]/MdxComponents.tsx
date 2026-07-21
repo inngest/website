@@ -55,7 +55,7 @@ export function BlogCallout({
       className={cn(
         "my-6 rounded-lg p-6 [&>:first-child]:mt-0 [&>:last-child]:mb-0 [&_a]:decoration-current",
         (variant === "default" || variant === "info") &&
-          "bg-info text-info dark:bg-info/50 dark:text-info",
+          "bg-info/30 text-info dark:bg-info/30 dark:text-info",
         variant === "warning" &&
           "bg-warning text-warning dark:bg-warning/50 dark:text-warning",
         variant === "tip" &&

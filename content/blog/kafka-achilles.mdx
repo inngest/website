@@ -15,7 +15,7 @@ Your team picks Kafka for its speed, low latency, and strong community support. 
 
 Suddenly, you're not shipping features, you're maintaining infrastructure.
 
- 
+
 While building the resume parser with Kafka, your team has three key goals:
 
 1. **Prioritize** newly submitted resumes over background jobs
@@ -222,11 +222,11 @@ With Flow Control , what once required a distributed system of Kafka, Redis, and
 
 Now the team no longer has to worry about patching Redis logic, writing custom retry handlers, or managing Kafka infrastructure. They can finally focus on what actually matters: building a great product.
 
-The team is shipping faster. Bugs related to duplicate resume processing have disappeared. API usage has dropped thanks to built-in throttling. Product managers can now suggest changes or new features without it turning into a full sprint of Kafka reconfigurations. 
+The team is shipping faster. Bugs related to duplicate resume processing have disappeared. API usage has dropped thanks to built-in throttling. Product managers can now suggest changes or new features without it turning into a full sprint of Kafka reconfigurations.
 
 Kafka is powerful, no doubt, but for most teams, especially those building product workflows, it's too much. You end up writing glue code, managing extra infrastructure, and solving problems that have already been solved a hundred times.
 
-Inngest's [Flow Control](/docs/guides/flow-control)  gives you those same capabilities, **without the overhead**. You get [retries](/docs/features/inngest-functions/error-retries/retries), [rate limiting](/docs/guides/debounce), [debouncing](), [throttling](/docs/guides/throttling), [prioritization](/docs/guides/priority), and more,  all built-in, all configurable, and all production-ready.
+Inngest's [Flow Control](/docs/guides/flow-control)  gives you those same capabilities, **without the overhead**. You get [retries](/docs/features/inngest-functions/error-retries/retries), [rate limiting](/docs/guides/debounce), [debouncing](/docs/guides/debounce), [throttling](/docs/guides/throttling), [prioritization](/docs/guides/priority), and more,  all built-in, all configurable, and all production-ready.
 
 So if you're spending more time managing queues than delivering features, maybe it's time to ask a better question:
 
@@ -260,7 +260,7 @@ async ({ event }) => {
 
 **Perfect for scenarios where only the most recent execution matters:**
 - Live dashboards that need latest data
-- Real-time sync operations  
+- Real-time sync operations
 - Deduplication of rapid user actions
 - Ensuring only one payment processes per order
 
