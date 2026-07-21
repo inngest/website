@@ -12,7 +12,7 @@ Your AI Shopping Agent™️ works. It helps a customer pick the right product, 
 
 This is the hypothetical failure and the very real pain I want to walk you through: why a payment inside an agent loop breaks in a way a normal API call doesn't, why the obvious fix, retry it, makes it worse, and the roughly forty lines it took to turn a fragile agent into a durable one that survives the failure without paying twice. There's a companion video that shows the build live if you'd rather watch a quick example.
 
-<YouTube id="3nhRaJ3eOS8" height={300} />
+<AutoplayVideo src="https://cdn.inngest.com/videos/durable-agent-in-8-minutes.mov" loop={false} />
 
 # Retry Landmines
 
@@ -189,4 +189,4 @@ Then make it fail on purpose: flip the kill switch mid-run, or kill the process 
 
 Before you close this tab, go look at what your own agent does when a tool call fails *after* the money moves. If the honest answer is 'it retries and hopes,' you've got a double-charge waiting to happen, and now you know the shape of the fix. The repo has the rest.
 
-`[CODE REPO]`
+[Example Repo](https://github.com/inngest/agent-examples/tree/main/durable-agent)
