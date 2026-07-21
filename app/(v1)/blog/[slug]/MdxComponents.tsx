@@ -99,20 +99,25 @@ export function BlogAutoplayVideo({
   src,
   loop = true,
   controls = true,
+  autoPlay = true,
+  poster,
 }: {
   src: string;
   loop?: boolean;
   controls?: boolean;
+  autoPlay?: boolean;
+  poster?: string;
 }) {
   return (
     <video
       className="my-6 w-full rounded-[8px] border border-[rgba(124,124,124,0.35)]"
       src={src}
+      poster={poster}
       playsInline
       loop={loop}
       controls={controls}
       preload="metadata"
-      autoPlay
+      autoPlay={autoPlay}
       muted
     />
   );

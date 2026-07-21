@@ -4,12 +4,14 @@ type AutoplayVideoProps = {
   src: string;
   loop?: boolean;
   controls?: boolean;
+  autoPlay?: boolean;
 };
 
 export default function AutoplayVideo({
   src,
   loop = true,
   controls = true,
+  autoPlay = true,
 }: AutoplayVideoProps) {
   const [playing, setPlaying] = useState(false);
   const videoRef = useRef(null);
@@ -55,7 +57,7 @@ export default function AutoplayVideo({
       loop={loop}
       controls={controls}
       preload="auto"
-      autoPlay
+      autoPlay={autoPlay}
       muted
     ></video>
   );
