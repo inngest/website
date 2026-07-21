@@ -1,6 +1,6 @@
 import { CardGroup, Card } from "src/shared/Docs/mdx";
 import { EnvelopeIcon, Cog6ToothIcon } from "@heroicons/react/24/outline";
-import { RiBracesFill, RiCalendarScheduleFill, RiErrorWarningFill, RiArrowDownDoubleFill, RiWifiFill, RiBarChart2Fill, RiShieldCheckFill } from "@remixicon/react";
+import { RiBracesFill, RiCalendarScheduleFill, RiErrorWarningFill, RiArrowDownDoubleFill, RiWifiFill, RiBarChart2Fill, RiShieldCheckFill, RiCheckboxCircleFill } from "@remixicon/react";
 
 export const metaTitle = "Inngest Examples | Patterns, Integrations & Use Cases"
 export const description = "Browse code examples for Inngest: AI agents, email sequences, webhook integrations, scheduled jobs, durable HTTP, real-time streaming, and OpenTelemetry."
@@ -24,6 +24,14 @@ Make any API endpoint durable with automatic retries.
   title={'AI Agents and RAG'}
 >
 Use Inngest to build AI agents and RAG.
+</Card>
+
+<Card
+  href={"/docs/examples/ai-eval-scorer-quickstart"}
+  icon={<RiCheckboxCircleFill fill={"black"} className="h-6 w45 fill-carbon-700/10 stroke-carbon-700 transition-colors duration-300 group-hover:stroke-carbon-900 dark:fill-white/10 dark:stroke-carbon-400 dark:group-hover:fill-indigo-300/10 dark:group-hover:stroke-indigo-400" />}
+  title={'AI Eval Scorer Quickstart'}
+>
+Score AI outputs with inline guardrails, LLM-as-a-judge, and deferred scorers.
 </Card>
 
 <Card
