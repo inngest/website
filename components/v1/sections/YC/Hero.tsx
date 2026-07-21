@@ -2,10 +2,11 @@ import Image from "next/image";
 import FormTestimonial from "@/components/v1/sections/shared/FormTestimonial";
 import YCForm from "@/components/v1/sections/YC/YCForm";
 
-// Mirrors the SalesInquiryForm/ContactForm hub pages: H1, then a 555/885
-// grid — left column is intro copy + social proof, right column is the
-// form. Sections are unchanged from the legacy /yc page (intro, form,
-// Resend quote, SOC2, trusted-by logos); this is a visual port only.
+// H1, then an intro line spanning the full width, then a grid — left
+// column is the form (wider, since it's the primary action), right
+// column is social proof (testimonial, SOC2, trusted-by logos). Sections
+// are unchanged from the legacy /yc page (intro, form, Resend quote,
+// SOC2, trusted-by logos); this is a visual port only.
 export default function Hero() {
   return (
     <section
@@ -19,61 +20,38 @@ export default function Hero() {
         Request the YC Deal
       </h1>
 
-      <div className="mt-12 grid grid-cols-1 gap-y-12 lg:mt-[34px] lg:grid-cols-[555fr_885fr] lg:items-stretch lg:gap-y-0">
-        <div className="flex flex-col gap-12 lg:justify-between lg:gap-0 lg:pb-[120px] lg:pl-[90px] lg:pt-[44px]">
-          <p className="text-v1-body-lg-loose text-v1-frost">
-            Are you a Y Combinator company or alumni? Let us know here for
-            access to the YC deal: the Pro plan free for the first year.
-          </p>
+      <p className="mt-6 text-v1-body-lg-loose text-v1-frost lg:mt-8 lg:px-[70px]">
+        Are you a Y Combinator company or alumni? Let us know here for access
+        to the YC deal: the Pro plan free for the first year.
+      </p>
 
-          <div className="flex flex-col gap-10">
-            <FormTestimonial
-              caption={
-                <>
-                  <span className="block">Bu Kinoshita</span>
-                  <span className="block">CTO &amp; Co-founder (YC W23)</span>
-                </>
-              }
-            />
-
-            <div className="flex flex-row items-center gap-4 border-t border-v1-steel/20 pt-8">
-              <Image
-                src="/assets/v1/aicpa-soc2.png"
-                alt="AICPA SOC 2 Type II compliance badge"
-                width={64}
-                height={64}
-                className="shrink-0"
-              />
-              <p className="text-v1-caption text-v1-frost">
-                Inngest is SOC 2 Type II compliant.
-              </p>
-            </div>
-
-            <div className="flex flex-col gap-6">
-              <p className="text-v1-eyebrow text-v1-frost/60">Trusted by</p>
-              <div className="flex flex-row flex-wrap items-center gap-8">
-                <img
-                  src="/assets/v1/logos/soundcloud.svg"
-                  alt="SoundCloud"
-                  className="h-6 w-auto opacity-70 hover:opacity-100"
-                />
-                <img
-                  src="/assets/customers/conveo-logo-white.svg"
-                  alt="Conveo"
-                  className="h-7 w-auto opacity-70 hover:opacity-100"
-                />
-                <img
-                  src="/assets/v1/logos/gitbook.svg"
-                  alt="GitBook"
-                  className="h-6 w-auto opacity-70 hover:opacity-100"
-                />
-              </div>
-            </div>
-          </div>
+      <div className="mt-12 grid grid-cols-1 gap-y-12 lg:mt-[52px] lg:grid-cols-[1fr_1fr] lg:items-start lg:gap-x-12 lg:gap-y-0 lg:px-[70px]">
+        <div className="max-w-[460px] rounded-[4px] border border-v1-steel/20 bg-v1-surfaceElevated p-6 sm:p-8">
+          <YCForm />
         </div>
 
-        <div className="rounded-[4px] border border-v1-steel/20 bg-v1-surfaceElevated p-6 sm:p-8 lg:p-10">
-          <YCForm />
+        <div className="flex flex-col gap-10">
+          <FormTestimonial
+            caption={
+              <>
+                <span className="block">Bu Kinoshita</span>
+                <span className="block">CTO &amp; Co-founder (YC W23)</span>
+              </>
+            }
+          />
+
+          <div className="flex flex-row items-center gap-4 border-t border-v1-steel/20 pt-8">
+            <Image
+              src="/assets/v1/aicpa-soc2.png"
+              alt="AICPA SOC 2 Type II compliance badge"
+              width={64}
+              height={64}
+              className="shrink-0"
+            />
+            <p className="text-v1-caption text-v1-frost">
+              Inngest is SOC 2 Type II compliant.
+            </p>
+          </div>
         </div>
       </div>
     </section>
