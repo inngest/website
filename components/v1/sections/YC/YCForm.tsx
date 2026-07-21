@@ -106,7 +106,7 @@ export default function YCForm() {
     const firstTouch = readFirstTouch();
 
     try {
-      await window.Inngest?.event(
+      await window.Inngest.event(
         {
           name: EVENT_NAME,
           data: {
