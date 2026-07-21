@@ -115,18 +115,18 @@ Customer-facing impact:
 
 ### Timeline (UTC, July 16, 2026)
 
-| Time  | Event                                                                                    |
-| ----- | ---------------------------------------------------------------------------------------- |
-| 07:11 | An upgrade-readiness state store path was enabled.                                       |
-| 09:32 | State store proxy instances were evicted and rescheduled, then failed to become ready.   |
-| 09:35 | A medium-priority alert fired for the affected state store path.                         |
-| 11:40 | Incident formally identified and response initiated.                                     |
-| 12:10 | Fix deployed by disabling the upgrade-readiness state store path and restarting proxies. |
-| 12:20 | Incident resolved; checkpointing throughput and error rates confirmed back to normal.    |
+| Time  | Event                                                                                                         |
+| ----- | ------------------------------------------------------------------------------------------------------------- |
+| 07:11 | An upgrade-readiness state store path was enabled.                                                            |
+| 09:32 | Customer impact began. State store proxy instances were evicted and rescheduled, then failed to become ready. |
+| 09:35 | A medium-priority alert fired for the affected state store path.                                              |
+| 11:40 | Incident formally identified and response initiated.                                                          |
+| 12:10 | Fix deployed by disabling the upgrade-readiness state store path and restarting proxies.                      |
+| 12:20 | Incident resolved; checkpointing throughput and error rates confirmed back to normal.                         |
 
 Duration of impact:
 
-- **Checkpointing API and execution latency:** 2 hours 50 minutes.
+- **Checkpointing API and execution latency:** ~170 minutes (09:32–12:20 UTC).
 
 ### Root cause
 
@@ -153,15 +153,15 @@ We have also added safeguards before continuing this upgrade work:
 
 On July 16, 2026, starting at approximately 15:45 UTC, publishing of customer execution metrics to our metrics pipeline began to fail. During the incident window, dashboards showed no function execution or throughput metrics for affected customers. Function execution itself was not affected.
 
-The underlying issue was configuration drift between our live infrastructure and our infrastructure-as-code definitions. The metrics publishing path had been introduced earlier this year, and the associated message-broker topic and access permissions had been applied manually to the live cluster without being fully codified in our infrastructure repository. During routine maintenance on the cluster, resources were reapplied from the codified definitions, which unintentionally removed the manually applied permissions. Metrics publishing began failing with authorization errors immediately afterward.
+The underlying issue was a gap between our live infrastructure configuration and its declarative definitions. The metrics publishing path had been introduced earlier this year as part of scaling our metrics pipeline, and the associated message-broker topic and access permissions were live in production ahead of their declarative definitions being completed. During maintenance to prepare the cluster for upcoming capacity work, broker resources were reconciled from those definitions, which unintentionally removed the not-yet-declared permissions. Metrics publishing began failing with authorization errors immediately afterward.
 
-We restored the missing permissions, codified the topic and access definitions in our infrastructure repository, and restarted the affected services. Publishing recovered and error volume dropped to zero.
+We restored the missing permissions, completed the declarative definitions for the topic and access permissions, and restarted the affected services. Publishing recovered and error volume dropped to zero.
 
 ### What happened
 
-Customer execution metrics are published through a message broker before being ingested into our analytics store. The topic and access permissions for this path existed in the live production cluster but were not fully declared in our infrastructure-as-code repository — the cluster was relying on live-only state.
+Customer execution metrics are published through a message broker before being ingested into our analytics store. This path was introduced earlier this year as we scaled our metrics pipeline, and the broker topic and access permissions it relies on were live in production ahead of their declarative infrastructure definitions being completed.
 
-During maintenance and scaling operations, broker resources were reapplied from the codified definitions. Because those definitions omitted the metrics topic permissions, the reapply removed them, and services lost authorization to publish execution metrics. Because we had not yet set up alerting on this publishing path, the failure was not detected until later, when the incident was formally declared.
+During maintenance in preparation for upcoming capacity work, broker resources were reconciled from the declarative definitions. Because those definitions did not yet include the metrics topic permissions, the reconciliation removed them, and services lost authorization to publish execution metrics. Because we had not yet set up alerting on this publishing path, the failure was not detected until later, when the incident was formally declared.
 
 Customer-facing impact:
 
@@ -180,7 +180,7 @@ Customer-facing impact:
 
 ### Root cause
 
-The primary cause was infrastructure configuration drift: the message-broker topic and access permissions for the execution metrics path were applied manually to the live production cluster without being codified in our infrastructure-as-code repository. When broker resources were later reapplied from the codified definitions during maintenance, the manually applied permissions were removed and publishing failed.
+The primary cause was infrastructure configuration drift: the message-broker topic and access permissions for the execution metrics path were live in production ahead of their declarative infrastructure definitions being completed. When broker resources were later reconciled from those definitions during maintenance, the permissions were removed and publishing failed.
 
 Contributing factors:
 
@@ -189,10 +189,10 @@ Contributing factors:
 
 ### Follow-ups
 
-- Codified the metrics topic and access permission definitions in our infrastructure repository, making infrastructure-as-code the source of truth.
-- Added CI safeguards to detect drift between live broker configuration and codified definitions.
+- Completed the declarative definitions for the metrics topic and access permissions, making them the source of truth.
+- Added CI safeguards to detect drift between live broker configuration and the declarative definitions.
 - Adding alerting on metrics publishing errors so failures on this path are detected immediately.
-- Reinforced our operational policy that production changes must be codified and reviewed rather than applied manually.
+- Strengthened our rollout process so new infrastructure resources are declared and reviewed as part of their initial rollout.
 
 ## What This Means For You
 
