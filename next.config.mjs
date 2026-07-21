@@ -485,6 +485,10 @@ const nextConfig = {
         protocol: "https",
         hostname: "resend.com",
       },
+      {
+        protocol: "https",
+        hostname: "cdn.inngest.com",
+      },
     ],
     // Next.js 16 requires explicit localPatterns for all next/image local sources
     localPatterns: [
