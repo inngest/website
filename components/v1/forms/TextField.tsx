@@ -1,6 +1,6 @@
 "use client";
 
-import { type ComponentPropsWithoutRef } from "react";
+import { type ComponentPropsWithoutRef, type ReactNode } from "react";
 import { cn } from "@/utils/v1/cn";
 import { FieldLabel } from "./FieldLabel";
 import { INPUT_CLASSES } from "./fieldStyles";
@@ -10,7 +10,9 @@ export interface TextFieldProps
   /** Used for the `<label htmlFor>`, the input `id`, and (unless `name`
    *  is given) the input `name`. */
   id: string;
-  label: string;
+  /** Usually a string; accepts ReactNode for labels that need an inline
+   *  link or other markup (e.g. a "get your badge" link). */
+  label: ReactNode;
   value: string;
   /** Controlled change handler — receives the value, not the event. */
   onChange: (value: string) => void;
