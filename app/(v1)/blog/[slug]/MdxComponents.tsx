@@ -99,10 +99,12 @@ export function BlogAutoplayVideo({
   src,
   loop = true,
   controls = true,
+  autoPlay = true,
 }: {
   src: string;
   loop?: boolean;
   controls?: boolean;
+  autoPlay?: boolean;
 }) {
   return (
     <video
@@ -112,7 +114,7 @@ export function BlogAutoplayVideo({
       loop={loop}
       controls={controls}
       preload="metadata"
-      autoPlay
+      autoPlay={autoPlay}
       muted
     />
   );
