@@ -3,7 +3,7 @@ focus: false
 featured: false
 heading: "Root Cause Analysis: Service Incidents on July 10 and July 16, 2026"
 subtitle: A combined root cause analysis of the incidents in July 2026 that affected function execution, run scheduling, checkpointing, and execution metrics.
-date: 2026-07-21
+date: 2026-07-22
 author:
   - Bruno Scheufler
   - Muzammil A.
