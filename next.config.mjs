@@ -480,10 +480,19 @@ const nextConfig = {
   },
   images: {
     qualities: [75, 95],
+    // CDN images (cdn.inngest.com) ship no Cache-Control header, so the
+    // optimizer would fall back to the 1h default and re-transform hourly.
+    // Blog images are immutable per path, so hold transforms for 31 days.
+    minimumCacheTTL: 2678400,
     remotePatterns: [
       {
         protocol: "https",
         hostname: "resend.com",
+      },
+      {
+        protocol: "https",
+        hostname: "cdn.inngest.com",
+        pathname: "/blog/**",
       },
     ],
     // Next.js 16 requires explicit localPatterns for all next/image local sources
