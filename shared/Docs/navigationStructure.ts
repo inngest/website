@@ -913,11 +913,21 @@ const sectionLearn: (NavGroup | NavLink)[] = [
 
 const sectionExamples: NavGroup[] = [
   {
-    title: "Examples",
+    title: "AI Agent Examples",
+    defaultOpen: true,
+    links: [
+      { title: "AI Agents and RAG", href: `/docs/examples/ai-agents-and-rag` },
+      {
+        title: "AI Eval Scorer quickstart",
+        href: `/docs/examples/ai-eval-scorer-quickstart`,
+      },
+    ],
+  },
+  {
+    title: "Durable Workflow Examples",
     defaultOpen: true,
     links: [
       { title: "All examples", href: `/docs/examples/` },
-      { title: "AI Agents and RAG", href: `/docs/examples/ai-agents-and-rag` },
       { title: "Email Sequence", href: `/docs/examples/email-sequence` },
       {
         title: "Scheduling a one-off function",
