@@ -22,6 +22,7 @@ import ArticleBody from "./ArticleBody";
 import BlogToc, { type BlogTocItem } from "./BlogToc";
 import Prose from "@/components/v1/Prose";
 import { Unreleased } from "shared/Docs/Unreleased";
+import { getFullURL } from "src/utils/social";
 import {
   ReportHero,
   ReportLayoutShell,
@@ -254,9 +255,10 @@ export async function generateMetadata({
   const title = `${scope.heading} - Inngest Blog`;
   const description = scope.subtitle ?? "";
   const url = `${process.env.NEXT_PUBLIC_HOST ?? ""}${scope.path}`;
-  const imageUrl = scope.image
-    ? `${process.env.NEXT_PUBLIC_HOST ?? ""}${scope.image}`
-    : undefined;
+  // `getFullURL` leaves an already-absolute URL (e.g. a cdn.inngest.com
+  // image) untouched and only prepends the host to relative /assets paths,
+  // so social scrapers get a valid og:image either way.
+  const imageUrl = scope.image ? getFullURL(scope.image) : undefined;
   return {
     title: { absolute: title },
     description,
@@ -309,9 +311,7 @@ export default async function BlogPostPage({
     "@type": "BlogPosting",
     headline: scope.heading,
     description: scope.subtitle,
-    image: scope.image
-      ? [`${process.env.NEXT_PUBLIC_HOST}${scope.image}`]
-      : undefined,
+    image: scope.image ? [getFullURL(scope.image)] : undefined,
     datePublished: scope.date,
     dateModified: scope.dateUpdated ?? scope.date,
     author:
