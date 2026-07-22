@@ -5,6 +5,7 @@ type AutoplayVideoProps = {
   loop?: boolean;
   controls?: boolean;
   autoPlay?: boolean;
+  poster?: string;
 };
 
 export default function AutoplayVideo({
@@ -12,6 +13,7 @@ export default function AutoplayVideo({
   loop = true,
   controls = true,
   autoPlay = true,
+  poster,
 }: AutoplayVideoProps) {
   const [playing, setPlaying] = useState(false);
   const videoRef = useRef(null);
@@ -51,6 +53,7 @@ export default function AutoplayVideo({
   return (
     <video
       src={src}
+      poster={poster}
       onClick={handleVideoPress}
       ref={videoRef}
       playsInline
