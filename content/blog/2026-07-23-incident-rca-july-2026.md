@@ -1,9 +1,9 @@
 ---
 focus: false
 featured: false
-heading: "Root Cause Analysis: Service Incidents on July 10 and July 16, 2026"
-subtitle: A combined root cause analysis of the incidents in July 2026 that affected function execution, run scheduling, checkpointing, and execution metrics.
-date: 2026-07-22
+heading: "Root Cause Analysis: July 2026 Service Incidents"
+subtitle: A combined root cause analysis of the incidents in July 2026 that affected function execution, run scheduling, checkpointing, execution metrics, and event processing.
+date: 2026-07-23
 author:
   - Bruno Scheufler
   - Muzammil A.
@@ -13,7 +13,7 @@ category: engineering
 
 _All timestamps are in UTC._
 
-In July 2026, Inngest experienced three incidents: one on July 10 that degraded function execution and run scheduling, and two on July 16 — one that caused increased execution latency and checkpointing errors, and one that disrupted publishing of customer execution metrics.
+In July 2026, Inngest experienced four incidents: one on July 10 that degraded function execution and run scheduling, two on July 16 — one that caused increased execution latency and checkpointing errors, and one that disrupted publishing of customer execution metrics — and one on July 23 that caused an outage in event processing and delayed function execution.
 
 We know our customers depend on Inngest as critical infrastructure, and we apologize for the disruption these incidents caused. This report covers what happened in each incident, the root causes, and the corrective actions we have taken and are still working on.
 
@@ -194,10 +194,67 @@ Contributing factors:
 - Adding alerting on metrics publishing errors so failures on this path are detected immediately.
 - Strengthened our rollout process so new infrastructure resources are declared and reviewed as part of their initial rollout.
 
+## Incident 4 — July 23: Event processing outage and delayed function execution
+
+### Summary
+
+On July 23, 2026, starting at 14:03 UTC, the service responsible for processing incoming events and scheduling function runs stopped processing. Event processing was fully unavailable for approximately 37 minutes, and function execution was delayed until backlogs were processed at approximately 15:12 UTC.
+
+The cause was a capacity-allocation failure in a storage layer that had recently been introduced to back a single message-broker topic, used for a new event lifecycle publishing path. When that storage layer stopped accepting writes, the brokers backing this topic became unavailable. The event-processing service required a connection to this path during startup, so restarting instances could not become ready and event processing halted.
+
+We resolved the incident by disabling the event lifecycle publishing path to isolate the affected topic, and restarting and scaling the affected services. Event processing resumed at 14:40 UTC for most customers and by 14:53 UTC for all customers, and the resulting backlog was fully processed by approximately 15:12 UTC.
+
+### What happened
+
+As part of ongoing infrastructure work, we had introduced a new storage backend for one message-broker topic used by a new event lifecycle publishing path. On July 23, that storage backend stopped allocating new capacity on the affected volume, even though free space was available elsewhere in the cluster. As a result, the brokers backing this topic became unhealthy and clients timed out connecting to them.
+
+The event-processing service treated a connection to this publishing path as a startup requirement. As instances restarted, they failed to connect and could not become ready, which led to a full halt of event processing and run scheduling.
+
+Automated alerts fired within minutes and the on-call team responded immediately. Once the root cause was identified, we disabled the event lifecycle publishing path, which isolated the affected topic and allowed the event-processing service to start up and resume processing. We then scaled the affected services to work through the backlog, and held new releases until throughput returned to normal.
+
+Customer-facing impact:
+
+- New events were not processed and new function runs were not scheduled between 14:03 and 14:40 UTC (14:53 UTC for a subset of customers on dedicated infrastructure).
+- Events received during the outage were processed once service was restored; function runs were delayed until the backlog cleared at approximately 15:12 UTC.
+- Function execution latency was elevated while backlogs were processed.
+
+### Timeline (UTC, July 23, 2026)
+
+| Time  | Event                                                                                                      |
+| ----- | ---------------------------------------------------------------------------------------------------------- |
+| 14:03 | Customer impact began. Event processing and run scheduling stopped.                                        |
+| 14:10 | Automated alerts fired; on-call team began investigating.                                                  |
+| 14:16 | Incident declared with Critical severity.                                                                  |
+| 14:35 | Root cause identified: capacity-allocation failure in the storage layer backing the event lifecycle topic. |
+| 14:40 | Event lifecycle publishing path disabled; event processing resumed for most customers.                     |
+| 14:53 | Event processing resumed for the remaining customers on dedicated infrastructure.                          |
+| 15:10 | Affected path fully isolated; status moved to Monitoring.                                                  |
+| 15:12 | Backlog fully processed; run scheduling latency back to normal.                                            |
+
+Duration of impact:
+
+- **Event processing outage:** ~37 minutes (14:03–14:40 UTC).
+- **Delayed run scheduling until full recovery:** ~69 minutes (14:03–15:12 UTC).
+
+### Root cause
+
+The primary cause was a capacity-allocation failure in a newly introduced storage backend for one message-broker topic. The affected volume reported no available capacity even though the wider storage cluster had ample free space, which made the brokers backing the topic unavailable.
+
+A contributing factor was a startup dependency in the event-processing service: the event lifecycle publishing path is an auxiliary path, but a failure to connect to it prevented the service from starting at all. This turned the loss of a single non-critical topic into a full event-processing outage.
+
+We had also not yet completed monitoring and alerting for capacity and health of this new storage backend, which meant the failure surfaced through its downstream impact rather than ahead of it.
+
+### Follow-ups
+
+- Disabled the event lifecycle publishing path and paused the rollout of the new storage backend until the capacity-allocation failure is fully understood and addressed. Related planned work has been reverted.
+- Adding monitoring and alerting for capacity and health of the storage layer backing message-broker topics, so allocation failures are caught before they affect brokers.
+- Removing the startup dependency so the event-processing service can start and serve traffic even when the auxiliary publishing path is unavailable.
+
 ## What This Means For You
 
 - **July 10 (16:10–18:15 UTC):** If your functions rely on events sent during this window, some events may not have scheduled runs, and some steps may have received empty responses. We recommend reviewing activity during this window and replaying affected events where needed.
 - **July 16 (09:32–12:20 UTC):** If your functions used checkpointing during this window, you may have seen delayed execution progress, failed checkpoint requests, additional retries, or function and signal-related failures.
 - **July 16 (15:45–19:05 UTC):** Execution metrics for this window are missing from dashboards and cannot be backfilled. Function execution itself was not affected.
+- **July 23 (14:03–15:12 UTC):** New function runs were not scheduled during the outage window (14:03–14:40 UTC, or until 14:53 UTC for a subset of customers) and were delayed until backlogs cleared. Events received during the window were processed after recovery; if your workloads are time-sensitive, we recommend reviewing runs triggered during this window.
 
 If you would like help reviewing impact to your workloads during any of these windows, or identifying and replaying affected events, please reach out to [our support team](https://support.inngest.com).
