@@ -3,16 +3,20 @@ import { Callout, CodeGroup } from "shared/Docs/mdx";
 
 import { BookOpenIcon, CodeBracketIcon, ComputerDesktopIcon, WrenchScrewdriverIcon } from "@heroicons/react/24/outline";
 
-export const metaTitle = "Model Context Protocol (MCP) Integration";
-export const description = "Connect AI coding agents to your Inngest Dev Server via MCP. List functions, send events, and inspect runs from Claude Code, Cursor, or any MCP-compatible tool."
+export const metaTitle = "Inngest Dev Server MCP | Local AI Development Tools";
+export const description = "Connect AI coding agents to your local Inngest Dev Server via MCP. List functions, send events, invoke functions, and inspect local runs.";
 
-# Model Context Protocol (MCP) Integration
+# Inngest Dev Server MCP
 
-The Inngest dev server includes a comprehensive Model Context Protocol (MCP) server that provides AI assistants with direct access to your Inngest functions, events, and documentation. This enables powerful AI-assisted development workflows for testing, debugging, and building Inngest applications.
+The Inngest Dev Server includes a local Model Context Protocol (MCP) server that gives AI assistants direct access to the functions, events, and runs on your machine. Use it to test, debug, and build Inngest applications without connecting to Inngest Cloud.
+
+<Callout variant="info">
+Looking for deployed apps and runs? [Inngest Cloud MCP](/docs/ai-dev-tools/cloud-mcp) is a separate, hosted, read-only server that connects to your Inngest Cloud account with an API key.
+</Callout>
 
 ## What is MCP?
 
-[Model Context Protocol (MCP)](https://modelcontextprotocol.io/introduction) is a standard for connecting AI assistants to external tools and data sources. The Inngest MCP integration provides AI tools like Claude Code and Cursor with:
+[Model Context Protocol (MCP)](https://modelcontextprotocol.io/introduction) is a standard for connecting AI assistants to external tools and data sources. Dev Server MCP provides AI tools like Claude Code and Cursor with:
 
 - **Complete function visibility** - List and inspect all registered functions
 - **Event triggering** - Send events to test functions and workflows
@@ -21,7 +25,7 @@ The Inngest dev server includes a comprehensive Model Context Protocol (MCP) ser
 - **Direct function invocation** - Execute functions synchronously with immediate results
 
 <Callout>
-The Inngest MCP server runs locally with your dev server and requires no external dependencies, API keys, or internet connection to function.
+Dev Server MCP runs locally with your dev server and requires no external dependencies, API keys, or internet connection to function.
 </Callout>
 
 <Callout variant="info">
@@ -32,7 +36,7 @@ Pair Dev Server MCP with [Inngest agent plugins and skills](/docs/ai-dev-tools/a
 
 ### 1. Start the Inngest Dev Server
 
-The MCP server is automatically available when you start the Inngest dev server:
+Dev Server MCP is automatically available when you start the Inngest dev server:
 
 ```bash
 inngest dev
@@ -119,7 +123,7 @@ Search the docs for rate limiting examples
 
 ## Available MCP Tools
 
-The Inngest MCP server provides 8 powerful tools organized into three categories:
+Dev Server MCP provides 8 tools organized into three categories:
 
 ### Event Management Tools
 

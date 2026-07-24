@@ -6,13 +6,22 @@ import MCPIcon from "src/shared/Icons/MCP";
 import LLMsTXTIcon from "src/shared/Icons/LLMsTxt";
 
 export const description =
-  "Use Inngest with AI coding agents, MCP, CLI workflows, and LLM-ready docs to build, test, and debug durable functions faster.";
+  "Use Inngest with AI coding agents, Cloud and Dev Server MCP, CLI workflows, and LLM-ready docs to build, test, and debug durable functions faster.";
 
 # AI development tools for Inngest
 
-Use Inngest with AI coding agents, local MCP tools, CLI workflows, and LLM-ready documentation. These resources help agents write current Inngest code, connect to your running Dev Server, trigger test events, inspect runs, and debug durable functions in one loop.
+Use Inngest with AI coding agents, hosted and local MCP tools, CLI workflows, and LLM-ready documentation. These resources help agents write current Inngest code, inspect deployed apps and runs, connect to your local Dev Server, trigger test events, and debug durable functions in one loop.
 
 <CardGroup cols={2}>
+  <Card
+    href={"/docs/ai-dev-tools/cloud-mcp?ref=docs-ai-dev-tools"}
+    title={"Cloud MCP"}
+    icon={<MCPIcon className="text-basis h-12 w-12" />}
+    iconPlacement="top"
+  >
+    Connect AI assistants to Inngest Cloud to inspect environments, apps, functions, events, runs, and traces with read-only tools.
+  </Card>
+
   <Card
     href={"/docs/ai-dev-tools/mcp?ref=docs-ai-dev-tools"}
     title={"Dev Server MCP"}
@@ -53,11 +62,12 @@ Use Inngest with AI coding agents, local MCP tools, CLI workflows, and LLM-ready
 ## How the tools fit together
 
 - **Agent skills and plugins** teach your coding agent how to build with Inngest APIs and current patterns.
+- **Cloud MCP** gives your agent read-only access to deployed apps, functions, events, runs, and traces in Inngest Cloud.
 - **Dev Server MCP** lets your agent interact with your running local app by sending events, invoking functions, and inspecting run status.
 - **The CLI** gives both you and your agent a terminal-first way to start local services and debug function runs.
 - **LLM docs** provide crawlable markdown context for AI tools that need a compact table of contents or the full docs corpus.
 
-For the best feedback loop, install the agent plugin or skills for your coding tool, start the Inngest Dev Server, and connect the tool to the [Dev Server MCP endpoint](/docs/ai-dev-tools/mcp?ref=docs-ai-dev-tools).
+Use [Cloud MCP](/docs/ai-dev-tools/cloud-mcp?ref=docs-ai-dev-tools) to investigate deployed apps and runs. For local development, install the agent plugin or skills, start the Inngest Dev Server, and connect the tool to [Dev Server MCP](/docs/ai-dev-tools/mcp?ref=docs-ai-dev-tools).
 
 ## LLM Docs
 

@@ -1,0 +1,179 @@
+import { Callout, CodeGroup } from "shared/Docs/mdx";
+
+export const metaTitle = "Inngest Cloud MCP | Connect AI Assistants to Inngest";
+export const description =
+  "Connect Claude Code, Cursor, Codex, and other MCP clients to Inngest Cloud to inspect environments, apps, functions, events, runs, and traces.";
+
+# Inngest Cloud MCP
+
+Connect your AI assistant to Inngest Cloud to inspect apps, functions, events, runs, and traces without copying data from the dashboard.
+
+Inngest Cloud MCP is a hosted, read-only [Model Context Protocol (MCP)](https://modelcontextprotocol.io/introduction) server available at:
+
+`https://api.inngest.com/mcp`
+
+<Callout variant="info">
+  Looking for local development tools? [Dev Server MCP](/docs/ai-dev-tools/mcp) runs with `inngest dev`, requires no API key, and can send test events and invoke local functions. Cloud MCP connects to data in your Inngest Cloud account and is read-only.
+</Callout>
+
+## What you can do
+
+Use Cloud MCP to ask your AI assistant to:
+
+- List the environments in your Inngest account
+- Inspect an app or function configuration
+- Look up a function run and its status
+- Inspect a run trace to debug a failure
+- Find the runs triggered by an event
+- Retrieve run or span output when you explicitly request it
+
+## Set up Cloud MCP
+
+### 1. Create an API key
+
+Create an API key from [Settings > API Keys](https://app.inngest.com/settings/api-keys) in the Inngest dashboard. Choose the environment you want your assistant to inspect and copy the key when it is shown.
+
+Cloud MCP accepts Inngest API keys beginning with `sk-inn-api`. Event keys and signing keys are not supported.
+
+<Callout>
+  Treat your API key as a secret. Store it in an environment variable and do not commit it to your repository.
+</Callout>
+
+### 2. Set the API key
+
+```bash
+export INNGEST_API_KEY="sk-inn-api-..."
+```
+
+### 3. Connect your MCP client
+
+<CodeGroup>
+
+```bash {{ title: "Claude Code" }}
+claude mcp add-json --scope user inngest-cloud \
+  '{"type":"http","url":"https://api.inngest.com/mcp","headers":{"Authorization":"Bearer ${INNGEST_API_KEY}"}}'
+```
+
+```json {{ title: "Cursor" }}
+// Add to ~/.cursor/mcp.json
+{
+  "mcpServers": {
+    "inngest-cloud": {
+      "url": "https://api.inngest.com/mcp",
+      "headers": {
+        "Authorization": "Bearer ${env:INNGEST_API_KEY}"
+      }
+    }
+  }
+}
+```
+
+```toml {{ title: "Codex" }}
+# Add to ~/.codex/config.toml
+[mcp_servers.inngest-cloud]
+url = "https://api.inngest.com/mcp"
+bearer_token_env_var = "INNGEST_API_KEY"
+```
+
+</CodeGroup>
+
+Restart your MCP client after changing its configuration or environment variables. Then try:
+
+```text
+List my Inngest environments
+```
+
+```text
+Inspect run 01J... in production and explain why it failed
+```
+
+### Other MCP clients
+
+Use these settings with any client that supports Streamable HTTP and custom headers:
+
+- **URL:** `https://api.inngest.com/mcp`
+- **Transport:** Streamable HTTP
+- **Header:** `Authorization: Bearer <INNGEST_API_KEY>`
+
+Cloud MCP currently uses API-key authentication. Clients that cannot attach a custom authorization header are not supported.
+
+## Cloud MCP vs. Dev Server MCP
+
+| | Cloud MCP | Dev Server MCP |
+| --- | --- | --- |
+| Runs | Hosted by Inngest | Runs with `inngest dev` |
+| Data | Your Inngest Cloud account | Your local Dev Server |
+| Authentication | Inngest API key | None |
+| Access | Read-only | Local development and testing actions |
+| Typical use | Investigate deployed apps and runs | Send test events, invoke functions, and debug locally |
+| Endpoint | `https://api.inngest.com/mcp` | `http://127.0.0.1:8288/mcp` |
+
+You can configure both servers in the same MCP client. Use distinct names such as `inngest-cloud` and `inngest-dev` so your assistant can select the correct tools.
+
+## Environment access
+
+Cloud MCP resolves requests within the API key's owning Inngest account.
+
+API keys created in the dashboard are scoped to an environment. Most Cloud MCP tools include an `env` argument, and that value must match the environment assigned to the key. If the assistant requests another environment, the tool returns an environment-mismatch error instead of silently returning data from the key's environment.
+
+Account-scoped keys can use the `env` argument to select any environment within their owning account. Cloud MCP tools cannot use them to select parent, child, or sibling accounts.
+
+The `list_envs` tool does not require an `env` argument and lists environments for the key's account. Other resource tools remain limited to the environment selected by, or assigned to, the API key.
+
+## Available tools
+
+Cloud MCP provides seven read-only tools:
+
+| Tool | Description |
+| --- | --- |
+| `list_envs` | List environments for the authenticated account |
+| `get_app` | Get an app by slug or ID in an environment |
+| `list_functions` | List functions for an app in an environment |
+| `get_function` | Get a function's configuration |
+| `get_run` | Get a function run by run ID |
+| `get_run_trace` | Get the execution trace for a run |
+| `get_event_runs` | List runs triggered by an event |
+
+List tools support cursor-based pagination where the underlying API is paginated.
+
+### Run and trace output
+
+Run and span output may contain sensitive application data and can be large. Cloud MCP excludes it by default.
+
+When output is necessary, ask the assistant to include it. The `get_run`, `get_run_trace`, and `get_event_runs` tools support `includeOutput: true`.
+
+Tool responses are limited to 2 MiB. A tool returns an error instead of sending a larger response to the model.
+
+## Security
+
+- Cloud MCP is read-only and cannot create, update, invoke, cancel, replay, or delete Inngest resources.
+- The server can only access data permitted by the supplied API key.
+- Environment-scoped keys cannot use resource tools to read another environment.
+- The raw API key is used to authenticate the MCP request and is not forwarded to internal REST API calls.
+- Your MCP client and model provider may receive data returned by tools. Review their data-handling policies before connecting Cloud MCP to sensitive environments.
+
+## Troubleshooting
+
+### Authentication failed
+
+Confirm that the key begins with `sk-inn-api`, has not been deleted, and is included as a bearer token. Signing keys beginning with `signkey-` are not supported.
+
+### Environment mismatch
+
+The requested environment does not match the environment assigned to the API key. Ask the assistant to use the key's environment, or configure Cloud MCP with a key for the environment you want to inspect.
+
+### The server does not appear in your client
+
+Confirm that your client supports Streamable HTTP and custom authorization headers. Restart the client after setting `INNGEST_API_KEY` or changing its MCP configuration.
+
+### The response is too large
+
+Ask for a narrower resource, paginate list requests, or omit run and span output. Cloud MCP does not return responses larger than 2 MiB.
+
+## Related resources
+
+- [Dev Server MCP](/docs/ai-dev-tools/mcp)
+- [API keys](/docs/platform/api-keys)
+- [Inspecting function runs](/docs/platform/monitor/inspecting-function-runs)
+- [Traces](/docs/platform/monitor/traces)
+- [AI development tools](/docs/ai-dev-tools)

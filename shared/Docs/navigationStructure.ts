@@ -891,6 +891,11 @@ const sectionLearn: (NavGroup | NavLink)[] = [
         title: "Agent Plugins and Skills",
         href: "/docs/ai-dev-tools/agent-skills",
       },
+      {
+        title: "Cloud MCP",
+        href: "/docs/ai-dev-tools/cloud-mcp",
+        tag: "new",
+      },
       { title: "Dev Server MCP", href: "/docs/ai-dev-tools/mcp" },
       {
         title: "AgentKit",
