@@ -1,0 +1,53 @@
+import { Callout } from "src/shared/Docs/mdx";
+
+export const description = "Understand the difference between Branch Environments and Custom Environments in Inngest."
+
+# Branch Environments vs Custom Environments
+
+Inngest has two types of non-production environments. They serve different purposes and behave differently.
+
+---
+
+## Branch Environments
+
+Branch environments are automatic and temporary. When you deploy a branch to your hosting provider, Inngest creates an isolated environment for that branch with its own functions, events, and runs.
+
+The [Vercel integration](/docs/deploy/vercel) handles this on every push. No manual setup required.
+
+Branch environments share the production signing key. The integration manages this for you. When the branch is deleted or the preview deployment expires, the environment goes away.
+
+---
+
+## Custom Environments
+
+Custom environments are manual and permanent. You create them in the [Inngest dashboard](/docs/platform/environments#custom-environments) for persistent non-production use: staging, QA, load testing.
+
+Each custom environment has its own signing key and event key. You set these as environment variables in your hosting provider. The environment persists until you delete it.
+
+---
+
+## How they differ
+
+Branch environments exist for the lifecycle of a git branch. Custom environments exist until you remove them.
+
+Branch environments inherit the production signing key. Custom environments have their own keys.
+
+Branch environments are created automatically by the Vercel integration. Custom environments require manual setup in the dashboard and manual key configuration in your hosting provider.
+
+---
+
+## A common source of confusion
+
+Preview deployments can accidentally target a custom environment instead of creating branch environments. This happens when `INNGEST_SIGNING_KEY` in your Vercel preview settings points to a custom environment's key instead of letting the integration manage it.
+
+The result: functions from multiple branches overwrite each other in the same custom environment. Each branch should have its own isolated environment, but they all land in one.
+
+For the fix, see [Vercel integration troubleshooting](/docs/deploy/vercel-troubleshooting).
+
+---
+
+## Related
+
+- [Environments overview](/docs/platform/environments)
+- [Vercel deployment guide](/docs/deploy/vercel)
+- [Vercel integration troubleshooting](/docs/deploy/vercel-troubleshooting)
