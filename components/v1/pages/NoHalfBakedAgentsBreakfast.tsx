@@ -82,20 +82,6 @@ const OTHER_EVENTS = sortEventsByDate([
     href: "https://luma.com/5kvakl4z",
     image: "/assets/v1/events/ai-in-prod-meetup.png",
   },
-  {
-    id: "voice-demo-to-production-agent",
-    title:
-      "From Voice Demo to Production Agent: Building Reliable AI Workflows",
-    date: "Wednesday, July 29, 2026 · 11AM PT / 2PM ET",
-    startsAt: "2026-07-29T11:00:00-07:00",
-    location: "Online",
-    topics: ["webinar", "voice ai", "durable workflows"],
-    excerpt:
-      "Amanda Martin (Vapi) and Sterling Chin (Inngest) build a production-ready AI voice agent live, covering durable workflows, retries, and evaluations.",
-    href: "/events/from-voice-demo-to-production-agent",
-    image: "/assets/v1/events/voice-demo-to-production-agent.png",
-    imageFit: "contain",
-  },
 ]);
 
 export default function NoHalfBakedAgentsBreakfast() {
