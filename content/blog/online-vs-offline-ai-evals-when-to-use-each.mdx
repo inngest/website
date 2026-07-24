@@ -1,0 +1,180 @@
+---
+tags:
+  [
+    "AI & Agents",
+    "Tutorials & Guides",
+    "Durable Execution",
+    "Observability & Debugging",
+  ]
+heading: "Online vs Offline AI Evals: When to Use Each"
+subtitle: "How offline and online evals work, what they cost to run, and when to use each for AI agents in production."
+showSubtitle: true
+image: /assets/blog/online-vs-offline-ai-evals-when-to-use-each/featured-image.png
+date: 2026-07-14
+category: engineering
+author: Mitchell Alderson
+---
+
+AI agents excel at breaking things. They're non-deterministic: the same input can produce different outputs, some with bad consequences.
+
+Evaluations are how we monitor and measure the performance of AI systems, but how and when do you test and score your agent? In this guide we'll show the two patterns for checking that your agent works the way you think it does in production.
+
+**The short version:** offline and online evals differ in *when* they run and *what* they measure.
+
+An offline eval scores your agent against a fixed dataset before you ship: a unit test for AI, run in CI on inputs you choose in advance.
+
+An online eval scores each interaction as it happens in production, against real traffic and real outcomes. Use offline as a pre-deploy gate on a known set of cases; use online to see how the agent actually behaves once real users hit it. Most teams run both, offline to catch regressions before release, online to measure the truth that offline can only approximate.
+
+## The Common Components of a Good Eval
+
+What we call "AI evaluation" is made up of a few parts. Together they give a complete view of an agent's performance.
+
+### Dataset
+
+This can be a live stream of data as it happens, or a static file. Either way, the input is the first variable: the common source of truth every eval runs against.
+
+### Split Testing / Experiments
+
+Given the same input, did GPT or Claude produce the better result? What about prompt A vs. B? [Experiments](/blog/introducing-group-experiment?ref=blog-online-vs-offline-ai-evals-when-to-use-each) let you test multiple theories at once, or skip them and just test the deployed agent.
+
+### Scoring
+
+[Scoring](/blog/introducing-scoring?ref=blog-online-vs-offline-ai-evals-when-to-use-each) is where it all comes together. Given the combination of variables (the input, the model, the prompt), we can create a rubric that measures them the same way every time, based on what and how we care to measure:
+
+1. **LLM-as-Judge:** A scoring function can call a second LLM with the agent output and an evaluation prompt. Use it for evaluations that are highly nuanced and hard to fit into something more deterministic.
+2. **Algorithmic:** A code-only scoring function; measure the agent on token cost, number of words, speed of output generation, etc.
+3. **Signal-based:** This could be a scoring function that waits for human feedback, or an event from somewhere else in the system; an order successfully created indicates a successful tool call, for example.
+
+Defining your scoring rubrics is the most critical piece of a good eval system. Aim to capture a few dimensions to get the fullest view of your agent.
+
+Those pieces combine into two patterns. Here's how they compare before we dig into each:
+
+| Dimension | Offline eval | Online eval |
+| --- | --- | --- |
+| Data source | A fixed "golden" dataset you assemble | Live production traffic |
+| When it runs | Before deploy, in CI, or exported data separate from the runtime | Continuously, as each interaction happens |
+| Signal | Narrow but controlled: only the cases you picked | High-volume and real: whatever users actually do |
+| Catches regressions before users see them? | Yes | No, it measures what's already deployed |
+| Real-outcome signals (did the user accept it? did the PR merge?) | No | Yes, including deferred scoring when the outcome lands later |
+| Maintenance | You curate and refresh the dataset as the product drifts | Low-performing variants fall out of execution as experiments are run |
+
+## Offline Evals: Point-in-Time Peace of Mind
+
+The key definition of an offline eval is a **static dataset**. Given static input, scorer, and any split-test experiment, we get a defined evaluation.
+
+It's popular because you can test a change to the agent before deployment. Think unit tests, but for AI. You can run a static evaluation locally or as part of a CI pipeline on a known input.
+
+The downside: the test's scope is inherently limited. A handful of examples in a static dataset is a weak signal for what the agent will actually hit in production, and it's easy to miss cases you didn't think of when you built the test.
+
+There's a second cost. Someone has to build that golden dataset, keep it representative, and re-curate it every time the product changes.
+
+Skip the upkeep and the set goes stale: a green suite starts certifying behavior the agent hasn't shown in months. Offline evals also run single-shot, on the inputs you chose in advance, so they tell you about the cases you thought to include and nothing about the ones you didn't.
+
+## Online Evals: Scoring Powered by Live Data
+
+Online evals take a different approach: score and evaluate each agent interaction as it happens, on live data.
+
+This has two big advantages. First, you're scoring the agent on real data, not synthesized tests. Second, the sheer volume of scores is higher, which means a more accurate signal.
+
+This is where running evals inside Inngest pays off, and the reason is structural. Inngest already runs and orchestrates your agent durably: every step, retry, and outcome is persisted as it executes. So the data an eval needs is already there. Scoring it means reading runs the platform is already keeping, not standing up a second system to watch the first. The load-bearing part, durable execution, is already GA and proven; [evals](/platform/agent-evals?ref=blog-online-vs-offline-ai-evals-when-to-use-each) are that same machinery pointed at a new problem. Two things follow that offline setups can't do.
+
+You can run split-test experiments against live data. In the GPT-vs-Claude example, once one model outperforms the other, it's trivial to route traffic to the winner.
+
+```tsx
+const gptTraffic = 50;
+const ClaudeTraffic = 50;
+
+const { result: brief, variant, experimentRef } = await group.experiment(
+  "research-agent-model",
+  {
+    variants: {
+      "gpt-5.5": () =>
+        step.run("call-llm-synthesize-gpt-5.5", () =>
+          synthesizeBrief({ model: "gpt-5.5", evidence })
+        ),
+      "claude-opus-4.8": () =>
+        step.run("call-llm-synthesize-claude-opus-4.8", () =>
+          synthesizeBrief({ model: "claude-opus-4.8", evidence })
+        ),
+    },
+    select: experiment.weighted({
+      "gpt-5.5": gptTraffic,
+      "claude-opus-4.8": ClaudeTraffic,
+    }),
+  }
+);
+```
+
+Running evals in the execution layer also lets you use product signals as scores: the real outcome, not a proxy for it.
+
+After the code agent ran, did the user accept the answer? Did the PR get merged? Often that outcome doesn't arrive at request time, which is where [deferred scoring](/docs/features/inngest-functions/steps-workflows/deferred-scoring?ref=blog-online-vs-offline-ai-evals-when-to-use-each) comes in: the eval durably waits for the real result to land, days later if that's how long it takes, then scores against it.
+
+Each outcome is just an event sent to the scoring function, easily combined with more traditional scorers. The `waitForEvent` step below pauses for up to a week without holding a process open.
+
+```tsx
+export const researchSavedOutcomeScorer = createScorer(
+  inngest,
+  { id: "research-saved-outcome-scorer" },
+  async ({ event, step }) => {
+    const saved = await step.waitForEvent("wait-for-brief-save", {
+      event: "research/brief.saved",
+      if: "async.data.researchRunId == event.data.researchRunId",
+      timeout: "7d",
+    });
+
+    return { name: "research_saved", value: saved ? 1 : 0 };
+  }
+);
+```
+
+## What Does It Cost to Run Online Evals?
+
+Online evals aren't free, since you're scoring live traffic instead of a fixed set, but the cost profile is different from how it looks, and usually smaller where it counts.
+
+The eval data is a byproduct of execution: no second platform to run, no traces to export to an external tool, no scheduled offline job to keep alive. That's fewer moving parts, one load-bearing system instead of two, which is where the real complexity cost of an offline setup actually sits.
+
+The honest counterpoint: online scoring does run compute against real traffic, and it gives up the pre-deploy gate. It tells you what already happened, not what a new release will do before users see it. For that you still want some offline or synthetic set to sanity-check a change first. The two patterns aren't rivals; they cover different risks.
+
+## Takeaways
+
+Both patterns of AI evaluation are useful for different parts of your agent quality testing.
+
+**Use Offline Evals when:**
+
+- You have a static "golden" dataset that you want to test your agent against.
+- You want to run a pre-deployment sanity check before committing changes to your agent.
+- You have a synthetic benchmark you want to test against, but no live data yet.
+
+**Use Online Evals when:**
+
+- You want to evaluate your agent's live performance in real time.
+- You want to split-test or canary-deploy a change to your agent against production traffic.
+- You have live product signals you can use as scoring metrics against your agent's output, like user feedback or platform events.
+
+Usually, evals are a separate product: another platform you export traces to, running beside the system that executes your agent. On Inngest they aren't. Because it already runs your agent durably, evaluation happens in the same system, not a second one to buy and wire up.
+
+Spin up a durable agent with [native AI evals on Inngest](/platform/agent-evals?ref=blog-online-vs-offline-ai-evals-when-to-use-each) and point a scorer at your own production traffic. You can't improve what you can't measure!
+
+## Frequently Asked Questions
+
+### What is the difference between online and offline AI evals?
+
+Offline evals score an agent against a fixed dataset before you deploy, like a unit test run in CI. Online evals score real interactions as they happen in production.
+
+Offline catches known regressions before release; online measures how the agent actually behaves once real users hit it.
+
+### Can you use online and offline evals together?
+
+Yes, and most teams should. Offline acts as a pre-deploy gate on the cases you can replicate; online measures the reality you can't fully predict. They cover different risks, so running both gives you a check before release and a signal after it.
+
+### Are online evals more expensive than offline?
+
+Not inherently: the bigger cost lever is your scoring method, not where the eval runs. Algorithmic and signal-based scorers are cheap either way. LLM-as-judge is the expensive one: it adds a second model call on top of the agent's, which can roughly double the token bill on that path, online or offline. Batching and sampling bring it back down. Which scorer you pick moves the bill far more than where it runs.
+
+### What is LLM-as-judge scoring?
+
+A scoring method where a second model evaluates the agent's output against a rubric or prompt. It's useful for nuanced judgments that are hard to express as deterministic code, and it can run offline on a dataset or online against live output.
+
+### What is deferred scoring?
+
+Deferred scoring evaluates an interaction once its real outcome is known, rather than at the moment the agent responds. If the outcome you care about, like a merged PR or a shipped order, only resolves days later, the eval waits for that event and scores against it.

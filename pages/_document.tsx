@@ -23,16 +23,30 @@ export default class MyDocument extends Document {
             }
             media="(prefers-color-scheme: dark)"
           />
-          {/* <link rel="preconnect" href="https://rsms.me/" />
-          <link rel="stylesheet" href="https://rsms.me/inter/inter.css" /> */}
-          <link rel="preconnect" href="https://fonts-cdn.inngest.com/" />
           <link
-            rel="stylesheet"
-            href="https://fonts-cdn.inngest.com/fonts.css"
+            rel="preconnect"
+            href="https://fonts-cdn.inngest.com/"
+            crossOrigin="anonymous"
+          />
+          {/* Preload the primary CircularXX weights used above the fold:
+              Bold (700) for headings/LCP and Regular (400) for body. */}
+          <link
+            rel="preload"
+            as="font"
+            type="font/woff2"
+            href="https://fonts-cdn.inngest.com/Circular/CircularXXWeb-Bold.woff2"
+            crossOrigin="anonymous"
+          />
+          <link
+            rel="preload"
+            as="font"
+            type="font/woff2"
+            href="https://fonts-cdn.inngest.com/Circular/CircularXXWeb-Regular.woff2"
+            crossOrigin="anonymous"
           />
           <link
             rel="stylesheet"
-            href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.4.0/styles/github-dark.min.css"
+            href="https://fonts-cdn.inngest.com/fonts.css"
           />
           <script
             // We use a simple array queue to send any events after the SDK is loaded

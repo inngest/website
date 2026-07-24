@@ -1,0 +1,4 @@
+interface:
+  display_name: "Inngest Docs Writer"
+  short_description: "Write source-grounded Inngest docs"
+  default_prompt: "Use $inngest-docs-writer to plan and draft an Inngest docs update from source context."

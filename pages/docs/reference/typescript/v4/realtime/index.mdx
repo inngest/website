@@ -1,6 +1,8 @@
 import { Info } from "src/shared/Docs/mdx";
 
-export const description = "Stream real-time updates from Inngest functions to your UI using channels, topics, and typed subscriptions, all built into the v4 SDK."
+
+export const metaTitle = "Realtime | TypeScript SDK v4 Reference"
+export const description = "Stream real-time updates from Inngest functions using typed channels, topics, and subscriptions built into TypeScript SDK v4. No separate package required."
 
 # Realtime
 
@@ -100,7 +102,7 @@ export default function PipelinePage({ runId }: { runId: string }) {
     channel: ch,
     topics,
     token: () =>
-      fetch(`/api/realtime-token?runId=${runId}`).then((res) => res.text()),
+      fetch(`/api/realtime-token?runId=${runId}`).then((res) => res.json()),
   });
 
   return (

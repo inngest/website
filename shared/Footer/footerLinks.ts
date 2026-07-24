@@ -14,7 +14,7 @@ const footerLinks = [
       },
       {
         label: "Patterns: Async + Event-Driven",
-        url: "/patterns?ref=footer",
+        url: "/docs/patterns?ref=footer",
       },
       {
         label: "AgentKit: AI Agents with Inngest",
@@ -67,10 +67,6 @@ const footerLinks = [
         url: "/blog?ref=footer",
       },
       {
-        label: "Roadmap",
-        url: "https://roadmap.inngest.com/roadmap?ref=footer",
-      },
-      {
         label: "Changelog",
         url: "/changelog?ref=footer",
       },
@@ -89,7 +85,7 @@ const footerLinks = [
       },
       {
         label: "Support",
-        url: process.env.NEXT_PUBLIC_SUPPORT_URL,
+        url: process.env.NEXT_PUBLIC_SUPPORT_URL || "/contact?ref=footer-support",
       },
       {
         label: "Newsletter",

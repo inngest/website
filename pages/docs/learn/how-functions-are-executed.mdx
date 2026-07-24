@@ -1,6 +1,8 @@
 import { Callout } from "shared/Docs/mdx";
 
-export const description = "Learn how Inngest functions are executed using Durable Execution. Understand how steps are executed, how errors are handled, and how state is persisted."
+
+export const metaTitle = "How Inngest Functions Execute | Durable Execution"
+export const description = "How Inngest's Durable Execution Engine runs your functions: how steps are checkpointed, state is persisted, and retries work without re-running past steps."
 
 # How Inngest functions are executed: Durable Execution
 
@@ -116,14 +118,14 @@ Temporal is a pull-based durable execution platform, and teams often evaluate bo
 
 **Flow control.** Inngest includes [concurrency controls](/docs/functions/concurrency), [prioritization](/docs/guides/priority), [throttling](/docs/guides/throttling), [debouncing](/docs/guides/debounce), [rate limiting](/docs/guides/rate-limiting), and [idempotency](/docs/guides/handling-idempotency) as built-in features of the SDK, available in every environment: local development, self-hosted, and cloud. Temporal has recently introduced priority and fairness features for task queues, but fairness is a paid feature available only in Temporal Cloud.
 
-**Self-hosting.** Inngest can be self-hosted as a single binary with SQLite or Postgres as a backing store. Temporal self-hosting requires running multiple server components with a Cassandra or Postgres dependency, along with separate worker infrastructure.
+**Self-hosting.** Inngest can be [self-hosted](/docs/self-hosting) as a single binary with SQLite or Postgres as a backing store. Temporal self-hosting requires running multiple server components with a Cassandra or Postgres dependency, along with separate worker infrastructure.
 
 | | Inngest | Temporal |
 | --- | --- | --- |
 | **Infrastructure** | No separate infrastructure. Serve (serverless) or Connect (workers) on your compute. | Requires Temporal Server cluster + separate worker processes. |
 | **Programming model** | Step-based memoization with standard language primitives. | Deterministic replay with strict runtime rules. |
 | **Flow control** | Built-in: [concurrency](/docs/functions/concurrency), [priority](/docs/guides/priority), [throttling](/docs/guides/throttling), [debounce](/docs/guides/debounce), [rate limiting](/docs/guides/rate-limiting). Available everywhere. | Priority and fairness features are paid, cloud-only. |
-| **Self-hosting** | Single binary with SQLite or Postgres. | Multi-component cluster with Cassandra/Postgres. |
+| **Self-hosting** | [Single binary with SQLite or Postgres](/docs/self-hosting). | Multi-component cluster with Cassandra/Postgres. |
 | **Serverless support** | Native. Designed for serverless-first environments. | Requires persistent worker processes; not serverless-native. |
 
 ## Conclusion

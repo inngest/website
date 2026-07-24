@@ -10,10 +10,16 @@ import { Home } from "./Home";
 import { Header } from "./Header";
 import Logo from "../Icons/Logo";
 import { Navigation, PageSidebar, ActiveSectionProvider } from "./Navigation";
+import { useUnreleasedLabels } from "./Unreleased";
 import { Prose } from "./Prose";
 import { SectionProvider } from "./SectionProvider";
 import { useMobileNavigationStore } from "./MobileNavigation";
-import { getLanguageFromPath, getSdkVersionFromPath, TS_STABLE, SDK_ALL } from "./LanguageStore";
+import {
+  getLanguageFromPath,
+  getSdkVersionFromPath,
+  TS_STABLE,
+  SDK_ALL,
+} from "./LanguageStore";
 import { getOpenGraphImageURL } from "../../utils/social";
 import clsx from "clsx";
 
@@ -21,6 +27,26 @@ import { Breadcrumb } from "./Breadcrumb";
 
 const GITHUB_BRANCH = process.env.NEXT_PUBLIC_VERCEL_GIT_COMMIT_REF || "main";
 const GITHUB_PREFIX = `https://github.com/inngest/website/tree/${GITHUB_BRANCH}/`;
+
+export type JsonLdValue =
+  | string
+  | number
+  | boolean
+  | null
+  | JsonLdObject
+  | JsonLdValue[];
+export type JsonLdObject = {
+  [key: string]: JsonLdValue | undefined;
+};
+export type DocsStructuredData = JsonLdObject | JsonLdObject[];
+
+function getStructuredDataList(structuredData?: DocsStructuredData) {
+  if (!structuredData) {
+    return [];
+  }
+
+  return Array.isArray(structuredData) ? structuredData : [structuredData];
+}
 
 // Unsure if this should be here or in the _app and conditionally run only on docs
 function onRouteChange() {
@@ -44,6 +70,11 @@ export type Props = {
   sourceFilePath?: string;
   /* Whether to hide the right hand sidebar */
   hidePageSidebar?: boolean;
+  /* Optional Schema.org object(s) exported from MDX as structuredData */
+  structuredData?: DocsStructuredData;
+  /* Set via `export const unreleased = "label"` to gate the whole page until
+     ?unreleased includes that label */
+  unreleased?: string;
 };
 
 export function Layout({
@@ -54,12 +85,19 @@ export function Layout({
   description,
   sourceFilePath,
   hidePageSidebar,
+  structuredData: pageStructuredData,
+  unreleased,
 }: Props) {
   const router = useRouter();
+  // An unreleased page is hidden (body, TOC, prev/next) until ?unreleased
+  // includes its label.
+  const unreleasedLabels = useUnreleasedLabels();
+  const gated = !!unreleased && !unreleasedLabels.has(unreleased);
+  const noRightSidebar = hidePageSidebar || gated;
   const sdkLanguage = getLanguageFromPath(router.asPath) || SDK_ALL;
   const sdkVersion = getSdkVersionFromPath(router.asPath) || SDK_ALL;
 
-  const siteTitle = `Inngest Documentation`;
+  const siteTitle = `Inngest Docs`;
   const preferredTitle: string = metaTitle || title || siteTitle;
   const pageTitle =
     preferredTitle === siteTitle
@@ -73,14 +111,20 @@ export function Layout({
     : undefined;
 
   // Markdown alternate URL for AI/LLM discoverability
-  const docsPath = router.asPath.replace(/^\/(docs)/, "").split("?")[0].split("#")[0];
+  const docsPath = router.asPath
+    .replace(/^\/(docs)/, "")
+    .split("?")[0]
+    .split("#")[0];
   const markdownAlternateUrl = `https://www.inngest.com/docs-markdown${docsPath}`;
-  const canonicalUrl = `https://www.inngest.com${router.asPath.split("?")[0].split("#")[0]}`;
+  const canonicalUrl = `https://www.inngest.com${
+    router.asPath.split("?")[0].split("#")[0]
+  }`;
 
-  // JSON-LD structured data for documentation pages
-  const structuredData = {
-    "@context": "https://schema.org",
+  // JSON-LD structured data for documentation pages. MDX pages can export
+  // `structuredData` to append page-specific FAQPage, HowTo, or similar nodes.
+  const articleStructuredData: JsonLdObject = {
     "@type": "TechArticle",
+    "@id": `${canonicalUrl}#article`,
     headline: preferredTitle,
     description: metaDescription,
     url: canonicalUrl,
@@ -93,6 +137,13 @@ export function Layout({
       "@type": "WebPage",
       "@id": canonicalUrl,
     },
+  };
+  const structuredData = {
+    "@context": "https://schema.org",
+    "@graph": [
+      articleStructuredData,
+      ...getStructuredDataList(pageStructuredData),
+    ],
   };
 
   let tsV4Banner = null;
@@ -109,7 +160,7 @@ export function Layout({
     sdkVersion !== SDK_ALL &&
     sdkVersion !== TS_STABLE;
 
-  if (isLearnPage || isOutdatedTypeScriptReferencePage) {
+  if (isOutdatedTypeScriptReferencePage) {
     tsV4Banner = (
       <div className="sticky top-14 z-30 flex items-center gap-2 border-b border-indigo-500/20 bg-indigo-50 px-4 py-2 text-sm text-indigo-700 dark:bg-indigo-950 dark:text-indigo-300">
         TypeScript SDK {TS_STABLE} is now available!{" "}
@@ -123,12 +174,12 @@ export function Layout({
     );
   }
 
-
   return (
     <div className="dark:bg-carbon-1000">
       <MDXProvider components={mdxComponents as any}>
         <Head>
           <title>{pageTitle}</title>
+          {gated && <meta name="robots" content="noindex, nofollow" />}
           <meta name="description" content={metaDescription}></meta>
           <meta property="og:title" content={pageTitle} />
           <meta property="og:description" content={metaDescription} />
@@ -143,9 +194,33 @@ export function Layout({
           <meta name="docsearch:sdkVersion" content={sdkVersion} />
 
           {/* Markdown alternate for AI/LLM discoverability */}
-          <link rel="alternate" type="text/markdown" href={markdownAlternateUrl} />
+          <link
+            rel="alternate"
+            type="text/markdown"
+            href={`https://www.inngest.com/docs${docsPath}.md`}
+          />
 
-          <link rel="preconnect" href="https://fonts-cdn.inngest.com/" />
+          <link
+            rel="preconnect"
+            href="https://fonts-cdn.inngest.com/"
+            crossOrigin="anonymous"
+          />
+          {/* Preload the primary CircularXX weights used above the fold:
+              Bold (700) for headings/LCP and Regular (400) for body. */}
+          <link
+            rel="preload"
+            as="font"
+            type="font/woff2"
+            href="https://fonts-cdn.inngest.com/Circular/CircularXXWeb-Bold.woff2"
+            crossOrigin="anonymous"
+          />
+          <link
+            rel="preload"
+            as="font"
+            type="font/woff2"
+            href="https://fonts-cdn.inngest.com/Circular/CircularXXWeb-Regular.woff2"
+            crossOrigin="anonymous"
+          />
           <link
             rel="stylesheet"
             href="https://fonts-cdn.inngest.com/fonts.css"
@@ -160,60 +235,81 @@ export function Layout({
           />
 
           <script dangerouslySetInnerHTML={{ __html: modeScript }} />
-          <script dangerouslySetInnerHTML={{ __html: `
+          <script
+            dangerouslySetInnerHTML={{
+              __html: `
             window.editPageURL = "${editPageURL}";
-          `}} />
+          `,
+            }}
+          />
         </Head>
         <ActiveSectionProvider>
-        <SectionProvider sections={sections}>
-          <Header />
+          <SectionProvider sections={sections}>
+            <Header />
 
-          <div className="lg:ml-[248px] xl:ml-[280px]">
-            {/* @ts-ignore */}
-            <motion.header
-              layoutScroll
-              className="fixed inset-y-0 mt-14 left-0 z-40 contents lg:w-[248px]  xl:w-[280px] overflow-y-auto border-r border-subtle pl-4 pr-3 py-4 pb-8 lg:block"
-            >
-              <Navigation className="hidden lg:block" />
-            </motion.header>
-
-            {hidePageSidebar ? null : (
-              // @ts-ignore
-              <motion.nav
+            <div className="lg:ml-[248px] xl:ml-[280px]">
+              {/* @ts-ignore */}
+              <motion.header
                 layoutScroll
-                className="fixed overflow-y-auto inset-y-0 mt-14 pt-16 pb-12 right-0 z-40 hidden w-60 px-6 2xl:px-10 xl:block 2xl:w-96"
+                className="fixed inset-y-0 left-0 z-40 mt-14 contents overflow-y-auto  border-r border-subtle py-4 pb-8 pl-4 pr-3 lg:block lg:w-[248px] xl:w-[280px]"
               >
-                <div className="pt-2">
-                  <PageSidebar />
-                </div>
-              </motion.nav>
-            )}
+                <Navigation className="hidden lg:block" />
+              </motion.header>
 
-            {tsV4Banner}
-
-            <div
-              className={clsx(
-                "relative px-4 pt-14 sm:px-6 lg:px-8 xl:pl-8 xl:pr-16",
-                hidePageSidebar && "xl:mr-32 2xl:mr-10",
-                !hidePageSidebar && "xl:mr-40 2xl:mr-80"
-              )}
-            >
-              <main className="pt-6 lg:pt-8 xl:pr-8">
-                <Prose as="article">
-                  <Breadcrumb />
-                  {children}
-                  <div
-                    className={
-                      hidePageSidebar ? "py-10" : "pt-10 pb-12 xl:pr-0"
-                    }
-                  >
-                    <Footer editPageURL={editPageURL} />
+              {noRightSidebar ? null : (
+                // @ts-ignore
+                <motion.nav
+                  layoutScroll
+                  className="fixed inset-y-0 right-0 z-40 mt-14 hidden w-60 overflow-y-auto px-6 pb-12 pt-16 xl:block 2xl:w-96 2xl:px-10"
+                >
+                  <div className="pt-2">
+                    <PageSidebar />
                   </div>
-                </Prose>
-              </main>
+                </motion.nav>
+              )}
+
+              {!gated && tsV4Banner}
+
+              <div
+                className={clsx(
+                  "relative px-4 pt-14 sm:px-6 lg:px-8 xl:pl-8 xl:pr-16",
+                  noRightSidebar && "xl:mr-32 2xl:mr-10",
+                  !noRightSidebar && "xl:mr-40 2xl:mr-80"
+                )}
+              >
+                <main className="pt-6 lg:pt-8 xl:pr-8">
+                  {gated ? (
+                    <div className="py-24 text-center">
+                      <h1 className="text-2xl font-semibold text-basis">
+                        Page not found
+                      </h1>
+                      <p className="mt-3 text-subtle">
+                        This page is not available.
+                      </p>
+                      <Link
+                        href="/docs"
+                        className="mt-6 inline-block font-medium text-breeze-600 hover:text-breeze-500 dark:text-breeze-300 dark:hover:text-breeze-400"
+                      >
+                        Back to documentation
+                      </Link>
+                    </div>
+                  ) : (
+                    <Prose as="article">
+                      <Breadcrumb />
+                      {children}
+                      <div
+                        className={
+                          noRightSidebar ? "py-10" : "pb-12 pt-10 xl:pr-0"
+                        }
+                      >
+                        <Footer editPageURL={editPageURL} />
+                      </div>
+                    </Prose>
+                  )}
+                </main>
+              </div>
             </div>
-          </div>
-        </SectionProvider>
+          </SectionProvider>
         </ActiveSectionProvider>
       </MDXProvider>
     </div>

@@ -1,9 +1,17 @@
 ---
+tags:
+  [
+    "AI & Agents",
+    "Workflows & Orchestration",
+    "Background Jobs & Scheduling",
+    "Tutorials & Guides",
+  ]
 heading: Background agents are here. Your orchestration isn't ready.
 subtitle: Every six months, the "right" way to build an AI agent changes. How can you design for the next rewrite?
 image: /assets/blog/background-agents-are-here/featured-image-gold.png
 date: 2026-05-08
 author: Dan Farrelly
+primaryCTA: "report2026"
 ---
 
 Every six months, the "right" way to build an AI agent changes.
@@ -12,7 +20,7 @@ We went from RAG being the consensus and everyone got their vector DBs, then to 
 
 If you coupled your infrastructure to any one of these patterns, you've already rebuilt at least twice. And you'll rebuild again.
 
-Here's the thesis: there's a layer that doesn't change. Durable orchestration: steps, events, state, retries, observability. Every pattern listed above runs on top of these same primitives. If you have this layer covered, changing agent patterns is easier. Get it wrong, every pattern shift is a rewrite or a migration.
+Here's the thesis: [there's a layer that doesn't change](/blog/your-agent-architecture-has-a-half-life?ref=blog-background-agents-are-here). Durable orchestration: steps, events, state, retries, observability. Every pattern listed above runs on top of these same primitives. If you have this layer covered, changing agent patterns is easier. Get it wrong, every pattern shift is a rewrite or a migration.
 
 ## The framework trap
 
@@ -50,7 +58,7 @@ As models and approaches have improved, agents can take on long-horizon tasks fo
 
 Background agents need a few things to be successful:
 
-**Long-running execution with crash recovery.** The longer something runs, the higher the cost of failure. A 45-minute agent run can't live in a Lambda with a 5-minute timeout. It can't live in memory on a single process. It needs execution that survives restarts, deployments, and infrastructure failures (see: durable execution).
+**Long-running execution with crash recovery.** The longer something runs, the higher the cost of failure. A 45-minute agent run can't live in a Lambda with a 5-minute timeout. It can't live in memory on a single process. It needs execution that survives restarts, deployments, and infrastructure failures (see: [durable execution](/platform/durable-execution)).
 
 **Multi-step observability.** When a background agent produces a bad result 30 minutes into a run, you need to trace every step it took. Every LLM call, tool invocation, decision point, and sub-agent delegation. Cobbling together logs and state isn't going to cut it.
 
@@ -80,7 +88,7 @@ When you have `step.run()`, `step.invoke()`, `step.waitForEvent()`, and `step.sl
 
 Patterns change faster than ever. They're all compositions. Frameworks struggle to adapt for these things as they encode a fixed topology. Composable primitives don't have that same issue.
 
-There's another angle here that's easy to miss: [teams with strong orchestration and observability iterate faster](/content/ai-in-production-report-2026?ref=blog-background-agents-are-here). When you can see every step of every agent run (structured, not just logs) you can identify what's working and swap what isn't. **The composability gap is really an observability problem.** You can't recompose what you can't see.
+There's another angle here that's easy to miss: [teams with strong orchestration and observability iterate faster](/blog/ai-in-production-report-2026?ref=blog-background-agents-are-here). When you can see every step of every agent run (structured, not just logs) you can identify what's working and swap what isn't. **The composability gap is really an observability problem.** You can't recompose what you can't see.
 
 ## What this looks like in practice
 
@@ -88,7 +96,7 @@ There's another angle here that's easy to miss: [teams with strong orchestration
 
 This isn't theoretical. Here's how it maps to real infrastructure decisions.
 
-**The orchestration layer (stable).** Durable execution, step primitives, event system, state management, observability, scheduling. This is your multi-year decision. It doesn't change when agent patterns change.
+**The [orchestration layer](/blog/agent-loop-architecture?ref=blog-background-agents-are-here-your-orchestration-isnt-ready) (stable).** Durable execution, step primitives, event system, state management, observability, scheduling. This is your multi-year decision. It doesn't change when agent patterns change.
 
 **The agent layer (fluid).** How you structure LLM calls, tool use, reasoning, delegation. This changes every 3-6 months. It should be easy to change because it's just application code running on durable primitives.
 

@@ -1,0 +1,77 @@
+---
+title: Running functions in parallel
+subtitle: Fan out to multiple model calls, evaluations, or processing tasks from a single event.
+pattern: events
+tags: [Architecture, AI]
+---
+
+Event-driven systems let you have multiple subscribers for a single event stream. This allows you to [fan out](https://en.wikipedia.org/wiki/Fan-out_(software)#Message-oriented_middleware) an event to multiple functions that run in parallel, each retrying independently on failure.
+
+This is different from how most queueing systems work. In systems like SQS or Celery, a specific job in a queue runs a single function. This can cause developers to bundle unrelated logic into a single background job, where a failure in one part causes unrelated code to fail too.
+
+Fan-out is especially useful for AI workloads. A single event can trigger multiple model calls, each running independently: one to summarize, another to classify, another to extract entities. If the classification call fails, it retries without re-running the summarization. You can also fan out to run the same prompt against multiple models for evaluation, or distribute a batch of tasks across parallel workers.
+
+## How this works
+
+Inngest allows you to create as many functions as you need which subscribe to the same event:
+
+```typescript
+import { inngest } from "./client";
+
+// Summarize the content
+const summarize = inngest.createFunction(
+  { id: "summarize-content", triggers: [{ event: "document/uploaded" }] },
+  async ({ event, step }) => {
+    const content = await step.run("fetch-content", async () => {
+      return await storage.getContent(event.data.documentId);
+    });
+    return await step.run("generate-summary", async () => {
+      return await llm.summarize(content);
+    });
+  }
+);
+
+// Classify the document type
+const classify = inngest.createFunction(
+  { id: "classify-document", triggers: [{ event: "document/uploaded" }] },
+  async ({ event, step }) => {
+    const content = await step.run("fetch-content", async () => {
+      return await storage.getContent(event.data.documentId);
+    });
+    return await step.run("classify", async () => {
+      return await llm.classify(content, {
+        categories: ["invoice", "contract", "report"],
+      });
+    });
+  }
+);
+
+// Extract key entities
+const extractEntities = inngest.createFunction(
+  { id: "extract-entities", triggers: [{ event: "document/uploaded" }] },
+  async ({ event, step }) => {
+    const content = await step.run("fetch-content", async () => {
+      return await storage.getContent(event.data.documentId);
+    });
+    return await step.run("extract", async () => {
+      return await llm.extract(content, {
+        fields: ["names", "dates", "amounts", "companies"],
+      });
+    });
+  }
+);
+```
+
+In this example, all three functions run automatically in parallel whenever the `document/uploaded` event is received. Each runs independently and retries on its own. If the classification model returns an error, only that function retries. The summarization and entity extraction continue unaffected.
+
+You can also fan out within a single function using `step.run()` calls, but separating into distinct functions gives you independent retry policies, independent concurrency limits, and cleaner observability in the dashboard.
+
+## Alternative approaches
+
+You can build an event-driven system using NATS, Redis, or Kafka, all of which are reliable event streaming components. You'll need to configure topics, manage stateful subscribers with always-alive services, handle ack/nack behavior, manage retries and dead-letter queues, and maintain watermarks yourself. It's a common approach but requires significant setup and ongoing maintenance.
+
+## Additional resources
+
+* [Docs: Sending Events](/docs/events?ref=patterns)
+* [Docs: Writing Functions](/docs/functions?ref=patterns)
+* [Patterns: Reliably run critical workflows](/docs/patterns/reliably-run-critical-workflows?ref=patterns)

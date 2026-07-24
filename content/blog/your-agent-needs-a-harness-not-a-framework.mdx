@@ -1,10 +1,12 @@
 ---
+tags: ["Durable Execution", "AI & Agents", "Workflows & Orchestration", "Next.js & Frameworks"]
 heading: "Your Agent Needs a Harness, Not a Framework"
 subtitle: "Agent runtimes don't need yet another framework — they need a durable, event-driven harness that connects tools, memory, and models on production-grade infrastructure."
 image: /assets/blog/your-agent-needs-a-harness-not-a-framework/featured-image.png
 date: 2026-03-03
 author: Dan Farrelly
 category: engineering
+primaryCTA: "report2026"
 ---
 
 In every engineering discipline, a harness is the same thing: the layer that connects, protects, and orchestrates components — without doing the work itself. A wiring harness routes signals between an engine, sensors, and dashboard. A test harness provides the scaffolding that makes code repeatable and observable. A safety harness catches you when you fall.
@@ -254,11 +256,11 @@ Each Inngest step is atomic — it runs, produces a result, and that result is p
 
 Utah's a personal single-player harness that runs locally on your machine or a server. The core architecture enables much more. Over the coming weeks we're exploring what it will take to make Utah truly multi-player.
 
-To make it multi-player, we're going to explore swappable sandboxes, external state and memory. This would enable Utah to run on serverless if someone wanted to.
+To make it multi-player, we're going to explore [swappable sandboxes, external state and memory](/blog/your-agent-architecture-has-a-half-life?ref=blog-your-agent-needs-a-harness-not-a-framework). This would enable Utah to run on serverless if someone wanted to.
 
 There are a lot of fun UX things we'd like to add built on the Inngest API and our Insights feature to build session monitoring for coding sessions. We will also explore using `step.waitForEvent()` to create [human-in-the-loop approval flows](/docs/ai-patterns/human-in-the-loop?ref=blog-your-agent-needs-a-harness-not-a-framework) when more input is needed.
 
-The last piece that we're exploring to make this truly “universally triggered” is enabling Utah to write itself — building new agents and workflows, creating new webhooks, and monitoring itself via API. If you're interested, share some ideas on the GitHub repo.
+The last piece that we're exploring to make this truly “universally triggered” is [enabling Utah to write itself](/blog/agent-loop-architecture?ref=blog-your-agent-needs-a-harness-not-a-framework) — building new agents and workflows, creating new webhooks, and monitoring itself via API. If you're interested, share some ideas on the GitHub repo.
 
 ## Try it yourself
 

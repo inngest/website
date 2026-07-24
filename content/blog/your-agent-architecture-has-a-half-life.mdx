@@ -1,0 +1,314 @@
+---
+tags: ["AI & Agents", "Durable Execution", "Workflows & Orchestration", "Observability & Debugging"]
+heading: "Your Agent Architecture Has a Half-Life. Your Execution Layer Shouldn't."
+subtitle: "Every six months, the \"right\" way to build an agent changes. Here's the one layer worth owning — and how to make everything else swappable."
+image: /assets/blog/your-agent-architecture-has-a-half-life/featured-image-v2.png
+date: 2026-07-21
+author: Dan Farrelly
+---
+
+<Callout>
+  This article is adapted from a talk I gave at the AI Engineer World's Fair
+  2026 in San Francisco.
+  <YouTube id="X1kp-ABIIxQ" title="Your agent architecture has a half-life of 6 months — Dan Farrelly, CTO, Inngest"/>
+</Callout>
+
+Every six months, the "right" way to build an AI agent changes.
+
+Function calling was the move, then tool use, then MCP, then CLIs. LangChain was the answer, then LangGraph, then "just use the SDK directly." ReAct was the pattern, then plan-and-execute, then prompt chaining, then orchestrator-workers. Sub-agents with human-sounding role names. Nope, one big generic agent with a great prompt. Sandboxes that spin up in 200ms. Agent factories. Background agents that run for hours unsupervised. Context engineering is the real skill. Actually, loops are the real architecture.
+
+If you coupled your infrastructure to any one of these patterns, you've already rebuilt at least twice. And you'll rebuild again.
+
+This isn't a complaint. AI Engineering moves fast. That's good. Models get better, new capabilities emerge, patterns that were impossible a year ago become table stakes. The problem isn't that things change. The problem is when your architecture can't absorb the change without a rewrite.
+
+So here's the question: **what part of your architecture survives the next six months?**
+
+Most of it won't. And that's fine. But some of it should. The teams shipping the fastest right now aren't the ones who picked the right pattern six months ago. They're the ones who made the pattern replaceable.
+
+That's what this article is about. Not which pattern to pick — how to design your agent's architecture so the next pattern swap is a Tuesday, not a two-week rewrite.
+
+## Three Layers Under the Agent
+
+Most conversations about agent architecture zoom in on specific components. Which model. Which framework. Which tools. Which sandbox.
+
+Step back. There are three layers underneath your agent, and they're not all created equal.
+
+I've written before about [why agents need a harness, not a framework](/blog/your-agent-needs-a-harness-not-a-framework?ref=blog-your-agent-architecture-has-a-half-life). The harness is the infrastructure your agent sits on. Not the agent logic itself, not your product. The scaffolding that connects, protects, and orchestrates the components. Here's the deeper model.
+
+![Layers of the harness: execution, context, compute](/assets/blog/your-agent-architecture-has-a-half-life/harness-layers.png)
+
+| Layer          | Role          | Contains                                          | Half-life |
+| -------------- | ------------- | ------------------------------------------------- | --------- |
+| **Execution**  | The brain     | flow · state · durability · retries · coordination | years     |
+| **Context**    | The knowledge | models · prompts · tools · memory · RAG           | weeks     |
+| **Compute**    | The hands     | sandboxes · runtimes · browsers                   | months    |
+
+**Execution** is what orchestrates each step of your agent. How work flows, how state persists, how failures are handled, how agents coordinate with each other. It's the brain.
+
+**Context** is everything the agent "knows." The model it calls, the prompts it uses, the tools it has access to, the RAG pipeline, the memory system. This is the layer that changes the most. It's the knowledge.
+
+**Compute** is where code actually runs. Sandboxes, containers, browsers. Ephemeral by design. It's the hands.
+
+Your agent and your application sit on top of all three. Many folks share their "harness architecture" as specific component choices. I'm talking about the conceptual layers. The mental model for thinking about what to couple, what to decouple, and what to invest in.
+
+> **Every layer decays. Not at the same rate.**
+
+## Half-Life
+
+Half-life: the time for something to decay by half. Radioactive isotopes have one. So does your architecture.
+
+Your prompts last weeks if you're lucky. A new model drops, capabilities shift, and suddenly that [carefully tuned chain-of-thought prompt](/blog/context-engineering-is-software-engineering-for-llms?ref=blog-your-agent-architecture-has-a-half-life) needs a rewrite. Your tools change when you add a new integration or swap an API. Your RAG pipeline changes when you restructure your data or switch embedding models. Context has a half-life measured in weeks.
+
+Compute is more stable but still volatile. Sandbox providers ship new features, pricing changes, a new player enters the market with faster cold starts. You move from E2B to Modal or vice versa. Months.
+
+Execution, done right, lasts years. The need for durable steps, retries, coordination, and observability doesn't change when you swap from GPT-4 to Claude 4. It doesn't change when you move from ReAct to a loop architecture. It doesn't change when you add a sandbox or remove one.
+
+The problem is coupling. When you couple them, one layer inherits the churn of the other.
+
+Most teams couple these layers accidentally. Orchestration logic is buried deep in the framework du jour. State lives in the sandbox. Retry logic is tangled with prompt construction. When context changes (and it changes every few weeks), the coupled layers get dragged along. You can't swap anything without rewriting everything.
+
+I see three failure modes:
+
+1. **Magical frameworks.** Complexity grows, abstractions leak across responsibilities. The framework handles orchestration, state, and model calls in one opaque layer. When the framework's opinion diverges from yours, you're stuck.
+2. **Pre-built harnesses.** Complete lack of control. Someone (_or a major lab_) else decided how your agent should flow, retry, and coordinate. You're renting their opinions.
+3. **Custom rolled.** Very high-level abstractions that are difficult to adapt. You built it yourself, which felt great for three months. Now it's legacy code that only one person understands.
+
+The fix isn't picking the right framework. It's designing for evolution.
+
+Don't fight the churn. Embrace it. Think in layers. Invest in the stable one. Make the volatile ones swappable. You were using GPT-4 six months ago. Now you're on Claude 4. Your prompts changed. Some of your tools now require custom approval flows. You added a new memory implementation for your agents. What didn't change? The fact that you need durable steps, retries, and coordination.
+
+The execution layer is the one worth getting right. It has the longest half-life. Everything else will change around it.
+
+> **Don't fight it. Embrace it.**
+
+## What the Execution Layer Must Do
+
+If execution is the layer worth investing in, what does it actually need to do?
+
+The execution layer is the system responsible for running your code reliably. It manages how, when, and whether each piece of work completes, independent of the infrastructure it runs on.
+
+Here's the key: execution connects the components. Context and compute are swappable. The flow looks like this: trigger → call model → run code → invoke sub-agent → call model → return result. Swap the model? That's a context change. Swap the sandbox? That's a compute change. Execution stays the same.
+
+![Execution layer overview in relations to the context and compute layers](/assets/blog/your-agent-architecture-has-a-half-life/execution-loop.png)
+
+That's decoupling.
+
+Three things the execution layer must do.
+
+### Resume. Don't restart.
+
+An agent 45 minutes into a run shouldn't lose 45 minutes to a single failure.
+
+Agents handle longer-running tasks than ever. [Background agents](/blog/background-agents-are-here-your-orchestration-isnt-ready?ref=blog-your-agent-architecture-has-a-half-life) run for minutes to hours. A three-hour run can't hold state in memory or on disk. A failed API call 38 steps into [a loop](/docs/ai-patterns/agent-tool-loops?ref=blog-your-agent-architecture-has-a-half-life) should mean retry step 38, not restart from step 1.
+
+State must live outside the process. Durable and external. Without it, you end up adding manual checkpoints or log-based state hydration that leaks into the rest of your harness.
+
+```typescript
+const analyzeData = inngest.createFunction(
+  { id: "analyze-data", retries: 3 },
+  { event: "data/analyze.requested" },
+  async ({ event, step }) => {
+    // Each step is retryable, idempotent, and cached.
+    // If step 2 fails, step 1 doesn't re-run.
+    const data = await step.run("fetch-data", async () => {
+      return await fetchDataFromSource(event.data.sourceId);
+    });
+
+    const analysis = await step.run("run-analysis", async () => {
+      return await llm.analyze(data, { prompt: analysisPrompt });
+    });
+
+    const report = await step.run("generate-report", async () => {
+      return await generateReport(analysis);
+    });
+
+    return report;
+  }
+);
+```
+
+Completed steps are cached. If `run-analysis` fails, the function resumes at `run-analysis` with the cached result of `fetch-data`. The agent picks up at step 2, not step 1. Each step is retryable, idempotent, and cached.
+
+All of these problems are infrastructure problems, not AI problems.
+
+### Invocation and Coordination
+
+Agents need flexible invocation. Event-driven. Cron-scheduled. API-triggered. [Human-in-the-loop approvals](/docs/ai-patterns/human-in-the-loop?ref=blog-your-agent-architecture-has-a-half-life). And they need to coordinate with other agents, both synchronously and asynchronously.
+
+Without proper orchestration primitives, your harness logic starts absorbing queues, workers, polling, backoff, and scheduling. It becomes a mess of bad abstractions.
+
+```typescript
+const orchestrator = inngest.createFunction(
+  { id: "orchestrator-agent" },
+  { event: "task/complex" },
+  async ({ event, step }) => {
+    // Synchronous: invoke a sub-agent and wait for the result
+    const research = await step.invoke("research-agent", {
+      function: researchAgent,
+      data: { query: event.data.query },
+    });
+
+    // Asynchronous: fan out to multiple agents, don't block
+    await step.sendEvent("notify-agents", {
+      name: "research/complete",
+      data: { findings: research, taskId: event.data.taskId },
+    });
+
+    // Wait for human approval before proceeding
+    const approval = await step.waitForEvent("human-approval", {
+      event: "task/approved",
+      match: "data.taskId",
+      timeout: "24h",
+    });
+
+    if (approval) {
+      await step.invoke("execute-plan", {
+        function: executionAgent,
+        data: { plan: research.plan, approved: true },
+      });
+    }
+  }
+);
+```
+
+Flexible execution primitives let you build any pattern your harness needs. Sync delegation with `step.invoke`. Async fan-out with `step.sendEvent`. Human-in-the-loop with `step.waitForEvent`. These are the building blocks. The [three sub-agent patterns](/blog/three-patterns-you-need-for-agentic-systems?ref=blog-your-agent-architecture-has-a-half-life) you need for agentic systems all reduce to combinations of these primitives.
+
+### Observability: See the Whole Session
+
+Not one LLM call. The entire run. Or session. Models, tools, errors, pauses, retries, timeouts, human approvals.
+
+If you can't see the whole session, you can't debug it. You can't improve it.
+
+Full-session traces span the entire agent run: trigger → plan → sandbox.exec → llm.call → browser.navigate → fs.write → finalize. This isn't just LLM observability. It's database errors, permission issues, tool failures, retries, and waits. One failure caught, retried, recovered.
+
+![Execution layer trace with all spans across your run](/assets/blog/your-agent-architecture-has-a-half-life/trace.png)
+
+The execution layer is the only thing that has the full picture. Individual tools can't see the whole session. The model can't see the infrastructure. Only execution sees everything.
+
+> **If you can't see the whole session, you can't debug it. You can't improve it.**
+
+## Sandboxes Are Hands, Not Brains
+
+"But sandboxes solve this."
+
+I hear this a lot. Sandboxes are essential. Agents need them for code execution, browsing, and file manipulation. E2B, Modal, Daytona. They're great. They're getting faster and more capable every month.
+
+But a sandbox is stateless, ephemeral, has no real persistence, no sequencing, no recovery, and no retries. A sandbox does work. It doesn't think.
+
+Using a sandbox for durability or state is an anti-pattern. Some teams run their entire harness inside the sandbox. Claude Code, OpenCode, and similar tools do this. It works for interactive CLI use where a human is watching. But for production agents running autonomously, it makes the sandbox provider your orchestration provider by accident. Your orchestration is now split across layers with mixed observability and durability. Good luck debugging a three-hour background agent run where state lived in a sandbox that's already been torn down.
+
+The two layers are complementary. Execution gives sandboxes context, sequence, and durability. Sandboxes give execution a place to run untrusted code. Conflating them is a costly mistake on the road to production.
+
+That's the brain managing the hands.
+
+> **"A sandbox does work. It doesn't think."**
+
+## Emerging Architectures That Depend on Execution
+
+The execution layer isn't just about solving today's problems. It's about what's coming next.
+
+The next wave of agent systems is characterized by duration (long-running, variable, unbounded), triggers (scheduled, async, delegated), and patterns (fan-out/fan-in, non-deterministic, self-improving). Background agents, dynamic workflows, autonomous loops, agent factories. All of them depend on a real execution layer.
+
+### Background Agents
+
+Minutes to hours. Hundreds of tool calls. No one watching. Three hours of runtime, unattended. 200+ tool calls per session. At least one failure, guaranteed.
+
+You can't build these without durable execution. I wrote about this in detail in [Background Agents Are Here](/blog/background-agents-are-here-your-orchestration-isnt-ready?ref=blog-your-agent-architecture-has-a-half-life). The short version: if your orchestration can't survive a single failure in a three-hour run, you don't have orchestration. You don't have confidence either.
+
+### Loop Architectures
+
+This is where the execution layer thesis gets concrete.
+
+The most interesting agent architectures emerging right now aren't single-shot request/response flows. They're loops. Crons, scores, iteration. Three functions that work together: a scheduled monitor that watches for changes, a triage agent that investigates problems, and a reviewer that evaluates the system's own performance over time.
+
+The monitor runs on a cron. Every 30 minutes, it checks health metrics. If something looks wrong, it invokes the triage agent. The triage agent fetches detailed data, correlates it against deploy history, and finds the root cause. It uses tools, might spin up a sandbox, might run for minutes. Then, on a weekly cron, the reviewer pulls run history from the execution layer itself, analyzes how the triage agent performed, and decides if the system should be modified.
+
+![Loop architecture diagram with cron agent, sub-agents, and review agent](/assets/blog/your-agent-architecture-has-a-half-life/loop.png)
+
+Three functions. Simple by design, flexible to iterate on. Each one is independently deployable, testable, and observable. The context layer (the models, prompts, tools) inside each function is swappable. But the execution flow is stable.
+
+The important part: the reviewer function uses the execution layer's own data to evaluate and evolve the system. The loop improves itself. This is what orchestration plus a connected execution layer unlocks. Frameworks from three months ago weren't designed for this.
+
+For the deep dive on loop architectures with full code examples, check out [The Agent Loop Architecture](/blog/agent-loop-architecture?ref=blog-your-agent-architecture-has-a-half-life).
+
+This may seem like a lot, but it proves the thesis. These three functions don't care which model you're using. They don't care which sandbox provider runs the triage agent's code. Swap Claude for Gemini, swap E2B for Modal. The execution flow doesn't change. The loop still works.
+
+## Feedback Loops: Observability and Evals
+
+Here's where the execution layer investment pays off.
+
+The execution layer sits between the user and everything in the system. Every input, every decision, every output flows through it. That makes it the natural hub for three things: traces, scores, and insights. To iterate on your application, you need this data connected. You need to see the system as a whole.
+
+Most teams score model outputs. That's useful but incomplete. [Score on product outcomes](/blog/introducing-agent-evals?ref=blog-your-agent-architecture-has-a-half-life).
+
+```typescript
+const agentTask = inngest.createFunction(
+  { id: "agent-task" },
+  { event: "task/requested" },
+  async ({ event, step }) => {
+    const result = await step.run("execute-task", async () => {
+      return await agent.run(event.data);
+    });
+
+    // Did the user actually use what the agent produced?
+    const userAction = await step.waitForEvent("did-save", {
+      event: "task/result.saved",
+      match: "data.taskId",
+      timeout: "1h",
+    });
+
+    // Score based on real user behavior, not model confidence
+    await step.score("score-human-feedback", {
+      name: "human_feedback",
+      value: Boolean(userAction),
+    });
+
+    // Defer a deeper analysis to a separate scorer
+    defer("score-feedback", {
+      function: tokenEfficiencyScorer,
+      data: { metadata: result.metadata },
+    });
+  }
+);
+```
+
+Don't just sample a few runs. [Score everything your agent does](/blog/introducing-scoring?ref=blog-your-agent-architecture-has-a-half-life). `step.waitForEvent` lets you wait for real user behavior: did they save the result? Did they edit it? Did they discard it? That's signal you can't get from evaluating model outputs in isolation.
+
+Remember the loop architecture from the previous section? The reviewer function IS the feedback loop. It pulls traces and scores from the execution layer and uses them to decide if the system needs to change. Better prompts, different tools, adjusted thresholds.
+
+![Execution layer as the hub for all data around agent architectures including traces, user feedback, scores, and insights](/assets/blog/your-agent-architecture-has-a-half-life/evals.png)
+
+This only works because execution owns the full picture. If your orchestration is spread across frameworks, sandboxes, and custom state machines, you can't build this. The data is scattered. The traces are fragmented. You're flying blind.
+
+**The best agent architectures aren't the ones with the best models. They're the ones with the best harness.**
+
+## The Execution Layer
+
+[Inngest](/?ref=blog-your-agent-architecture-has-a-half-life) is the execution layer of the harness. The durable coordination layer that sits on top of both and outlasts them.
+
+- ✓ Durable steps, retryable and cached
+- ✓ Event triggers from any source
+- ✓ Scheduling with cron, delays, and debounce
+- ✓ Async coordination between agents
+- ✓ Full-session traces across every decision
+- ✓ No infrastructure to manage
+
+The entire post above is the argument for why this layer matters. [Check out the docs](/docs?ref=blog-your-agent-architecture-has-a-half-life) and start building.
+
+## Build for the Next Three Shifts
+
+Three layers. Different half-lives.
+
+**Execution** is stable. The brain. **Context** is swappable. The knowledge. **Compute** is swappable. The hands.
+
+Get the execution layer right and you can iterate on everything else quickly.
+
+Five practical takeaways:
+
+1. **Build a harness, not on a framework.** Understand each layer so you can swap any piece.
+2. **Decouple your execution layer from context and compute.** Don't let the brain inherit the half-life of the hands.
+3. **Invest in execution capabilities.** Resumability, durability, coordination, observability. Not abstractions of today's pattern.
+4. **Your execution layer should give you observability and evals for free.** It already owns the run.
+5. **Your agent architecture will change.** Make the cost of change low.
+
+Six months from now, there'll be a new pattern everyone's excited about. The teams that move fastest won't be the ones who picked the right pattern. They'll be the ones who made the pattern replaceable.

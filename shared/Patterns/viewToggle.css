@@ -1,0 +1,68 @@
+.view-toggle {
+  position: fixed;
+  right: 24px;
+  bottom: 24px;
+  z-index: 40;
+  display: inline-flex;
+  align-items: center;
+  padding: 4px;
+  background: rgba(15, 15, 15, 0.92);
+  backdrop-filter: blur(14px);
+  -webkit-backdrop-filter: blur(14px);
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  border-radius: 999px;
+  gap: 2px;
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.04),
+    0 10px 30px -10px rgba(0, 0, 0, 0.6),
+    0 2px 8px -2px rgba(0, 0, 0, 0.4);
+  transition: transform 0.2s ease, box-shadow 0.2s ease, border-color 0.2s ease;
+}
+.view-toggle:hover {
+  transform: translateY(-1px);
+  border-color: var(--color-cta, #cbb26a);
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.06),
+    0 14px 40px -10px rgba(0, 0, 0, 0.7),
+    0 0 0 4px rgba(203, 178, 106, 0.06);
+}
+
+.view-toggle-rail {
+  position: absolute;
+  top: 4px;
+  bottom: 4px;
+  width: calc(50% - 4px);
+  background: #050505;
+  border-radius: 999px;
+  box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.12);
+  transition: transform 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+  pointer-events: none;
+}
+.view-toggle-rail[data-pos="l"] { transform: translateX(0); }
+.view-toggle-rail[data-pos="r"] { transform: translateX(100%); }
+
+.view-toggle-btn {
+  position: relative;
+  z-index: 1;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  background: transparent;
+  border: 0;
+  padding: 7px 14px;
+  font-family: inherit;
+  font-size: 12.5px;
+  color: rgb(140, 140, 140);
+  border-radius: 999px;
+  cursor: pointer;
+  letter-spacing: -0.005em;
+  transition: color 0.15s ease;
+  white-space: nowrap;
+}
+.view-toggle-btn:hover { color: rgb(220, 220, 220); }
+.view-toggle-btn.is-active { color: var(--color-cta, #cbb26a); }
+
+@media (max-width: 600px) {
+  .view-toggle { right: 12px; bottom: 12px; }
+  .view-toggle-btn { padding: 6px 10px; font-size: 12px; }
+}

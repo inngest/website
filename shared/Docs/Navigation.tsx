@@ -32,6 +32,7 @@ import {
   NavLinkGroup,
   isNavLink,
 } from "./navigationStructure";
+import { useUnreleasedLabels, filterUnreleasedNav } from "./Unreleased";
 import * as Accordion from "@radix-ui/react-accordion";
 import { ChevronDownIcon, CheckIcon } from "@heroicons/react/24/outline";
 import { MobileSearch } from "./Search";
@@ -42,7 +43,6 @@ import {
   SDK_HOME_PAGES,
   getLanguageFromPath,
   getSdkVersionFromPath,
-  normalizeTsReferencePath,
   TS_STABLE,
   TS_VERSIONS,
   type SDKLanguage,
@@ -83,6 +83,11 @@ export function ActiveSectionProvider({
     const examplesTab = topLevelNav.find((tab) => tab.title === "Examples");
     if (examplesTab?.matcher && !!examplesTab.matcher(pathname)) {
       return "Examples";
+    }
+    // Check if current path matches the Patterns section
+    const patternsTab = topLevelNav.find((tab) => tab.title === "Patterns");
+    if (patternsTab?.matcher && !!patternsTab.matcher(pathname)) {
+      return "Patterns";
     }
     return "Learn";
   }, [pathname]);
@@ -394,9 +399,7 @@ function NavigationGroup({
   let isInsideMobileNavigation = useIsInsideMobileNavigation();
   let [router] = useInitialValue([useRouter()], isInsideMobileNavigation);
 
-  // Normalize the pathname so the versioned path from Next.js rewrites
-  // (e.g. /typescript/v3/intro) matches versionless nav hrefs (/typescript/intro).
-  const currentPath = normalizeTsReferencePath(router.pathname);
+  const currentPath = router.pathname;
 
   // hack: animation flickers on initial render so let's enable it after mount
   let [animateAccordion, setAnimateAccordion] = useState(false);
@@ -637,11 +640,9 @@ const SDK_ICONS: Record<
 function LanguageSwitcher({
   displayLanguage,
   setLanguage,
-  hydrated,
 }: {
   displayLanguage: SDKLanguage;
   setLanguage: (lang: SDKLanguage) => void;
-  hydrated: boolean;
 }) {
   const router = useRouter();
   const pathname = router.asPath.replace(/(\?|#).+$/, "");
@@ -671,12 +672,7 @@ function LanguageSwitcher({
   const CurrentIcon = SDK_ICONS[displayLanguage];
 
   return (
-    <div
-      className={clsx(
-        "mt-3 opacity-0 transition-opacity duration-150",
-        hydrated && "opacity-100"
-      )}
-    >
+    <div className="mt-3">
       <Select.Root
         value={displayLanguage}
         onValueChange={(val) => handleLanguageChange(val as SDKLanguage)}
@@ -748,13 +744,11 @@ function VersionSwitcher({
   activeSection,
   displayVersion,
   setTsVersion,
-  hydrated,
 }: {
   language: SDKLanguage;
   activeSection: string;
   displayVersion: TSVersion;
   setTsVersion: (version: TSVersion) => void;
-  hydrated: boolean;
 }) {
   const router = useRouter();
   const pathname = router.asPath.replace(/(\?|#).+$/, "");
@@ -762,13 +756,15 @@ function VersionSwitcher({
   const handleVersionChange = (newVersion: TSVersion) => {
     setTsVersion(newVersion);
 
-    // If on a versioned TS page for a different version, navigate to version intro
+    // If on a versioned TS page for a different version, navigate to version intro.
+    // Target the concrete generated /intro page so the client router fetches
+    // `_next/data` JSON instead of hitting a redirect or rewrite source.
     const pathVersion = getSdkVersionFromPath(pathname);
     if (pathVersion && pathVersion !== newVersion) {
       if (newVersion === TS_STABLE) {
-        router.push("/docs/reference/typescript");
+        router.push(`/docs/reference/typescript/${TS_STABLE}/intro`);
       } else {
-        router.push(`/docs/reference/typescript/${newVersion}`);
+        router.push(`/docs/reference/typescript/${newVersion}/intro`);
       }
     }
   };
@@ -781,12 +777,7 @@ function VersionSwitcher({
   const currentVersion = TS_VERSIONS.find((v) => v.id === displayVersion);
 
   return (
-    <div
-      className={clsx(
-        "mt-2 opacity-0 transition-opacity duration-150",
-        hydrated && "opacity-100"
-      )}
-    >
+    <div className="mt-2">
       <Select.Root
         value={displayVersion}
         onValueChange={(val) => handleVersionChange(val as TSVersion)}
@@ -851,19 +842,16 @@ function VersionSwitcher({
 export function Navigation(props) {
   const router = useRouter();
 
-  // Normalize the pathname so the versioned path from Next.js rewrites
-  // matches versionless nav hrefs.
-  const pathname = normalizeTsReferencePath(router.pathname);
+  const pathname = router.pathname;
 
   const { activeSection, setActiveSection } = useActiveSection();
-  const {
-    effectiveLanguage,
-    effectiveTsVersion,
-    hydrated,
-    setLanguage,
-    setTsVersion,
-  } = useHydratedLanguageState(pathname);
-  const { language, tsVersion } = useLanguageStore();
+  const { effectiveLanguage, effectiveTsVersion, setLanguage, setTsVersion } =
+    useHydratedLanguageState(pathname);
+
+  const unreleasedLabels = useUnreleasedLabels();
+  const visibleMenuTabs = filterUnreleasedNav(menuTabs, unreleasedLabels);
+  // Stable string for the accordion remount key below.
+  const unreleasedKey = Array.from(unreleasedLabels).sort().join(",");
 
   // Find the section based on the active tab (Learn/Reference)
   const nestedSection =
@@ -877,8 +865,14 @@ export function Navigation(props) {
   // This way crawlers can still see all the links
   const nestedNavigation = useMemo(() => {
     if (!nestedSection) return null;
-    return nestedSection;
-  }, [nestedSection]);
+    return {
+      ...nestedSection,
+      sectionLinks: filterUnreleasedNav(
+        nestedSection.sectionLinks ?? [],
+        unreleasedLabels
+      ),
+    };
+  }, [nestedSection, unreleasedLabels]);
 
   const activeGroup = useMemo(
     () =>
@@ -908,7 +902,7 @@ export function Navigation(props) {
         <MobileSearch />
 
         <ul role="list" className="flex flex-col lg:hidden">
-          {menuTabs.map((tab, idx) => (
+          {visibleMenuTabs.map((tab, idx) => (
             <li key={idx}>
               <TopLevelNavItem
                 href={tab.href}
@@ -920,7 +914,7 @@ export function Navigation(props) {
           ))}
         </ul>
 
-        {activeSection !== "Examples" && (
+        {!["Examples", "Patterns"].includes(activeSection) && (
           <div className="mb-4 lg:mb-8">
             <div className="flex rounded-lg bg-slate-100 p-1 dark:bg-slate-800/50">
               {sidebarMenuTabs.map((tab) => {
@@ -932,17 +926,21 @@ export function Navigation(props) {
                       setActiveSection(tab.title);
                       // Navigate to SDK home page when switching to Reference tab
                       if (tab.title === "Reference" && !isActive) {
-                        let href = SDK_HOME_PAGES[language];
+                        let href =
+                          SDK_HOME_PAGES[effectiveLanguage] ??
+                          SDK_HOME_PAGES.typescript;
 
                         // Preserve non-stable TS version in the URL. This was
                         // added because the VersionSwitcher would lose the
                         // selected version when the user switched between the
                         // "Learn" and "Reference" tabs.
                         if (
-                          language === "typescript" &&
-                          tsVersion !== TS_STABLE
+                          effectiveLanguage === "typescript" &&
+                          effectiveTsVersion !== TS_STABLE
                         ) {
-                          href = `/docs/reference/typescript/${tsVersion}`;
+                          // Target the concrete generated /intro page so the
+                          // client router fetches `_next/data` JSON.
+                          href = `/docs/reference/typescript/${effectiveTsVersion}/intro`;
                         }
 
                         router.push(href);
@@ -973,14 +971,12 @@ export function Navigation(props) {
             <LanguageSwitcher
               displayLanguage={effectiveLanguage}
               setLanguage={setLanguage}
-              hydrated={hydrated}
             />
             <VersionSwitcher
               language={effectiveLanguage}
               activeSection={activeSection}
               displayVersion={effectiveTsVersion}
               setTsVersion={setTsVersion}
-              hydrated={hydrated}
             />
           </div>
         )}
@@ -993,8 +989,9 @@ export function Navigation(props) {
             <>
               <Accordion.Root
                 key={
-                  // re-mount on page navigation
-                  pathname
+                  // re-mount on page navigation, and after an unreleased reveal so
+                  // a gated page's own group auto-opens once its nav link appears
+                  `${pathname}:${unreleasedKey}`
                 }
                 type="multiple"
                 defaultValue={defaultOpenGroupTitles}
@@ -1076,10 +1073,16 @@ export function Navigation(props) {
 }
 
 /**
- * Consolidated hydration-safe wrapper around the language store. During SSR and
- * the first client render, values are derived from the URL so the markup
- * matches what the server produced. After hydration, the persisted store
- * becomes the source of truth and the store is synced to the URL once.
+ * Hydration-safe wrapper around the persisted language store.
+ *
+ * The URL is the source of truth for which SDK/version the page is showing.
+ * The persisted store only fills in when the URL has no language/version info
+ * (e.g. /docs/learn/* pages) so the switchers remember the user's preference
+ * across navigations.
+ *
+ * Pre-hydration we never read the store. Post-hydration the store is consulted
+ * only as a fallback. This means: when the URL has SDK info, the value never
+ * changes between SSR and CSR — no flicker, no sidebar re-shuffle.
  */
 export function useHydratedLanguageState(pathname: string) {
   const [hydrated, setHydrated] = useState(false);
@@ -1090,6 +1093,12 @@ export function useHydratedLanguageState(pathname: string) {
   const { language, setLanguage, tsVersion, setTsVersion } = useLanguageStore();
   const pathLanguage = getLanguageFromPath(pathname);
   const pathTsVersion = getSdkVersionFromPath(pathname);
+  const storeLanguage = SDK_LANGUAGES.some((l) => l.id === language)
+    ? language
+    : "typescript";
+  const storeTsVersion = TS_VERSIONS.some((v) => v.id === tsVersion)
+    ? tsVersion
+    : TS_STABLE;
 
   // Sync store to URL on mount and on navigation so the URL always wins
   useEffect(() => {
@@ -1101,12 +1110,13 @@ export function useHydratedLanguageState(pathname: string) {
     }
   }, [pathLanguage, pathTsVersion, setLanguage, setTsVersion]);
 
-  let effectiveLanguage: SDKLanguage = pathLanguage || "typescript";
-  let effectiveTsVersion: TSVersion = pathTsVersion || TS_STABLE;
-  if (hydrated) {
-    effectiveLanguage = language;
-    effectiveTsVersion = tsVersion;
-  }
+  // URL wins. Store only fills in when the URL is silent (e.g. /docs/learn/*).
+  // Pre-hydration we ignore the store entirely so SSR and the first client
+  // render produce identical markup.
+  const effectiveLanguage: SDKLanguage =
+    pathLanguage ?? (hydrated ? storeLanguage : "typescript");
+  const effectiveTsVersion: TSVersion =
+    pathTsVersion ?? (hydrated ? storeTsVersion : TS_STABLE);
 
   return {
     effectiveLanguage,

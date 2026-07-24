@@ -1,6 +1,8 @@
 import { CodeGroup, Callout } from "src/shared/Docs/mdx";
 
-export const description = `Get started with Inngest in this ten-minute Python tutorial`
+
+export const metaTitle = "Python Quick Start | Add Background Jobs to Python"
+export const description = "Add durable background functions to a Python app using Flask, FastAPI, or Django in 10 minutes. No queue infrastructure required."
 
 {/* This is a duplicate of /docs/reference/python/overview/quick-start.mdx, which will soon be deleted*/}
 
@@ -100,6 +102,17 @@ Start the Dev Server:
 ```shell  {{ title: "Bash installer" }}
 # Install the CLI - follow the steps to complete install:
 curl -sSfL https://cli.inngest.com/install.sh | sh
+
+# Run the dev server
+inngest dev -u http://localhost:8000/api/inngest
+```
+```shell {{ title: "brew" }}
+# Install the CLI:
+brew install inngest/tap/inngest
+
+# If Homebrew warns about untrusted taps, run this and then install again
+brew trust --cask inngest/tap/inngest
+
 # Run the dev server
 inngest dev -u http://localhost:8000/api/inngest
 ```

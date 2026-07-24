@@ -1,4 +1,5 @@
 ---
+tags: ["AI & Agents", "Workflows & Orchestration", "Tutorials & Guides", "Integrations & Partners"]
 focus: false
 heading: "Building Agentic Workflows with Inngest"
 subtitle: Combine Weaviate and Inngest step.ai API to build AI workflows

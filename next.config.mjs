@@ -41,7 +41,9 @@ const permanentRedirects = [
 
   // Other pages
   ["/uses/zero-infra-llm-ai", "/ai"],
-  ["/uses/internal-tools", "/uses/workflow-engine"],
+  // Was -> /uses/workflow-engine, which now redirects to /uses/webhooks.
+  // Point straight at the final destination to avoid a redirect chain.
+  ["/uses/internal-tools", "/uses/webhooks"],
   ["/uses/user-journey-automation", "/blog/lifecycle-emails-with-resend"],
 
   // new IA
@@ -103,82 +105,126 @@ const permanentRedirects = [
     "/docs/reference/typescript/functions/metadata",
   ],
 
-  // TypeScript SDK versioned docs - landing page redirect
+  // TypeScript SDK versioned docs - landing page redirects (301 permanent)
+  ["/docs/reference/typescript", "/docs/reference/typescript/intro"],
+  ["/docs/reference/typescript/v4", "/docs/reference/typescript/v4/intro"],
+  ["/docs/reference/typescript/v3", "/docs/reference/typescript/v3/intro"],
+  // Legacy short paths - redirect directly to v4 TypeScript docs (collapsed from two-hop chain)
   [
-    "/docs/reference/typescript/v4",
+    "/docs/reference/client/create",
     "/docs/reference/typescript/v4/client/create",
   ],
-  // Legacy short paths - redirect to versionless TypeScript docs
-  ["/docs/reference/client/create", "/docs/reference/typescript/client/create"],
-  ["/docs/reference/events/send", "/docs/reference/typescript/events/send"],
+  ["/docs/reference/events/send", "/docs/reference/typescript/v4/events/send"],
   [
     "/docs/reference/functions/create",
-    "/docs/reference/typescript/functions/create",
+    "/docs/reference/typescript/v4/functions/create",
   ],
   [
     "/docs/reference/functions/debounce",
-    "/docs/reference/typescript/functions/debounce",
+    "/docs/reference/typescript/v4/functions/debounce",
   ],
   [
     "/docs/reference/functions/handling-failures",
-    "/docs/reference/typescript/functions/handling-failures",
+    "/docs/reference/typescript/v4/functions/handling-failures",
   ],
   [
     "/docs/reference/functions/rate-limit",
-    "/docs/reference/typescript/functions/rate-limit",
+    "/docs/reference/typescript/v4/functions/rate-limit",
   ],
   [
     "/docs/reference/functions/run-priority",
-    "/docs/reference/typescript/functions/run-priority",
+    "/docs/reference/typescript/v4/functions/run-priority",
   ],
   [
     "/docs/reference/functions/singleton",
-    "/docs/reference/typescript/functions/singleton",
+    "/docs/reference/typescript/v4/functions/singleton",
   ],
   [
     "/docs/reference/functions/step-invoke",
-    "/docs/reference/typescript/functions/step-invoke",
+    "/docs/reference/typescript/v4/functions/step-invoke",
   ],
   [
     "/docs/reference/functions/step-run",
-    "/docs/reference/typescript/functions/step-run",
+    "/docs/reference/typescript/v4/functions/step-run",
   ],
   [
     "/docs/reference/functions/step-send-event",
-    "/docs/reference/typescript/functions/step-send-event",
+    "/docs/reference/typescript/v4/functions/step-send-event",
   ],
   [
     "/docs/reference/functions/step-sleep-until",
-    "/docs/reference/typescript/functions/step-sleep-until",
+    "/docs/reference/typescript/v4/functions/step-sleep-until",
   ],
   [
     "/docs/reference/functions/step-sleep",
-    "/docs/reference/typescript/functions/step-sleep",
+    "/docs/reference/typescript/v4/functions/step-sleep",
   ],
   [
     "/docs/reference/functions/step-wait-for-event",
-    "/docs/reference/typescript/functions/step-wait-for-event",
+    "/docs/reference/typescript/v4/functions/step-wait-for-event",
   ],
   [
     "/docs/reference/functions/step-wait-for-signal",
-    "/docs/reference/typescript/functions/step-wait-for-signal",
+    "/docs/reference/typescript/v4/functions/step-wait-for-signal",
   ],
-  ["/docs/reference/serve", "/docs/reference/typescript/serve"],
-  ["/docs/reference/testing", "/docs/reference/typescript/testing"],
+  ["/docs/reference/serve", "/docs/reference/typescript/v4/serve"],
+  ["/docs/reference/testing", "/docs/reference/typescript/v4/testing"],
   [
     "/docs/reference/middleware/lifecycle",
-    "/docs/reference/typescript/middleware/lifecycle",
+    "/docs/reference/typescript/v4/middleware/lifecycle",
   ],
   [
     "/docs/reference/middleware/examples",
-    "/docs/reference/typescript/middleware/examples",
+    "/docs/reference/typescript/v4/middleware/examples",
   ],
   [
     "/docs/reference/typescript/migrations/v3-to-v4",
     "/docs/reference/typescript/v4/migrations/v3-to-v4",
   ],
   ["/docs/sdk/migration", "/docs/reference/typescript/v3/migrations/v2-to-v3"],
+  [
+    "/patterns/cancelling-scheduled-functions",
+    "/docs/guides/cancel-running-functions",
+  ],
+  ["/patterns/running-code-on-a-schedule", "/docs/guides/scheduled-functions"],
+
+  // run-experiments-in-production moved from the Durable Workflows category to
+  // the new AI Evals category (per Lauren's IA feedback). Old category URL is
+  // shared in Slack and linked from the experiments doc, so redirect it.
+  [
+    "/docs/patterns/durable/run-experiments-in-production",
+    "/docs/patterns/ai-evals/run-experiments-in-production",
+  ],
+
+  // New IA: platform + use-case pages replacing legacy landing pages, plus
+  // a few standalone LPs being retired.
+  ["/uses/durable-workflows", "/platform/durable-execution"],
+  ["/compare-to-legacy-queues", "/platform/flow-control"],
+  ["/uses/serverless-cron-jobs", "/uses/scheduled-jobs"],
+  ["/uses/workflow-engine", "/uses/webhooks"],
+  ["/durable-endpoints", "/platform/durable-execution"],
+  ["/platform", "/platform/durable-execution"],
+  ["/ai-personalized-documentation", "/docs/ai-dev-tools/agent-skills"],
+  ["/ai/early-access", "/ai"],
+  ["/launch-week", "/"],
+  ["/product/how-inngest-works", "/"],
+  // The scheduled-jobs page moved under /uses; preserve the old URL.
+  ["/scheduled-jobs", "/uses/scheduled-jobs"],
 ];
+
+// Pattern slug -> category, for redirecting old flat pattern URLs to the new
+// /docs/patterns/<category>/<slug> shape. Keep in sync with
+// shared/Patterns/patternsData.ts (PATTERNS).
+const PATTERN_SLUG_TO_CATEGORY = {
+  "reliably-run-critical-workflows": "durable",
+  "flash-sales-and-bursty-workflows": "flow",
+  "event-coordination-for-lost-customers": "events",
+  "reliable-scheduling-systems": "events",
+  "running-functions-in-parallel": "events",
+  "running-at-specific-times": "schedule",
+  "build-reliable-webhooks": "jobs",
+  "keeping-your-api-fast": "jobs",
+};
 
 async function redirects() {
   // Read blog redirects from MDX frontmatter
@@ -204,6 +250,18 @@ async function redirects() {
 
   return [
     ...blogRedirects,
+    {
+      // /sales-inquiry-form renamed to /contact
+      source: "/sales-inquiry-form",
+      destination: "/contact",
+      permanent: true,
+    },
+    {
+      // /careers redirects to /about
+      source: "/careers",
+      destination: "/about",
+      permanent: true,
+    },
     {
       source: "/workflow-kit",
       destination: "/docs/reference/workflow-kit",
@@ -246,143 +304,68 @@ async function redirects() {
       permanent: true,
     },
 
-    // Reference intros
-    {
-      source: "/docs/reference/typescript",
-      destination: "/docs/reference/typescript/intro",
-      permanent: false,
-    },
-    {
-      source: "/docs/reference/typescript/v4",
-      destination: "/docs/reference/typescript/v4/intro",
-      permanent: false,
-    },
-    {
-      source: "/docs/reference/typescript/v3",
-      destination: "/docs/reference/typescript/v3/intro",
-      permanent: false,
-    },
-
-    // Legacy short paths - redirect to versionless TypeScript docs
-    {
-      source: "/docs/reference/client/create",
-      destination: "/docs/reference/typescript/client/create",
-      permanent: false,
-    },
-    {
-      source: "/docs/reference/events/send",
-      destination: "/docs/reference/typescript/events/send",
-      permanent: false,
-    },
-    {
-      source: "/docs/reference/functions/create",
-      destination: "/docs/reference/typescript/functions/create",
-      permanent: false,
-    },
-    {
-      source: "/docs/reference/functions/debounce",
-      destination: "/docs/reference/typescript/functions/debounce",
-      permanent: false,
-    },
-    {
-      source: "/docs/reference/functions/handling-failures",
-      destination: "/docs/reference/typescript/functions/handling-failures",
-      permanent: false,
-    },
-    {
-      source: "/docs/reference/functions/rate-limit",
-      destination: "/docs/reference/typescript/functions/rate-limit",
-      permanent: false,
-    },
-    {
-      source: "/docs/reference/functions/run-priority",
-      destination: "/docs/reference/typescript/functions/run-priority",
-      permanent: false,
-    },
-    {
-      source: "/docs/reference/functions/singleton",
-      destination: "/docs/reference/typescript/functions/singleton",
-      permanent: false,
-    },
-    {
-      source: "/docs/reference/functions/step-invoke",
-      destination: "/docs/reference/typescript/functions/step-invoke",
-      permanent: false,
-    },
-    {
-      source: "/docs/reference/functions/step-run",
-      destination: "/docs/reference/typescript/functions/step-run",
-      permanent: false,
-    },
-    {
-      source: "/docs/reference/functions/step-send-event",
-      destination: "/docs/reference/typescript/functions/step-send-event",
-      permanent: false,
-    },
-    {
-      source: "/docs/reference/functions/step-sleep-until",
-      destination: "/docs/reference/typescript/functions/step-sleep-until",
-      permanent: false,
-    },
-    {
-      source: "/docs/reference/functions/step-sleep",
-      destination: "/docs/reference/typescript/functions/step-sleep",
-      permanent: false,
-    },
-    {
-      source: "/docs/reference/functions/step-wait-for-event",
-      destination: "/docs/reference/typescript/functions/step-wait-for-event",
-      permanent: false,
-    },
-    {
-      source: "/docs/reference/functions/step-wait-for-signal",
-      destination: "/docs/reference/typescript/functions/step-wait-for-signal",
-      permanent: false,
-    },
-    {
-      source: "/docs/reference/serve",
-      destination: "/docs/reference/typescript/serve",
-      permanent: false,
-    },
-    {
-      source: "/docs/reference/testing",
-      destination: "/docs/reference/typescript/testing",
-      permanent: false,
-    },
-    {
-      source: "/docs/reference/middleware/lifecycle",
-      destination: "/docs/reference/typescript/middleware/lifecycle",
-      permanent: false,
-    },
-    {
-      source: "/docs/reference/middleware/examples",
-      destination: "/docs/reference/typescript/middleware/examples",
-      permanent: false,
-    },
-    {
-      source: "/docs/reference/typescript/migrations/v3-to-v4",
-      destination: "/docs/reference/typescript/v4/migrations/v3-to-v4",
-      permanent: false,
-    },
-    {
-      source: "/docs/sdk/migration",
-      destination: "/docs/reference/typescript/v3/migrations/v2-to-v3",
-      permanent: false,
-    },
     ...permanentRedirects.map(([source, destination]) => ({
       source,
       destination,
       permanent: true,
     })),
+    // Patterns moved under /docs/patterns/<category>/<slug>. Keep these after
+    // permanentRedirects so the specific /patterns/* → /docs/guides/* entries
+    // above still win.
     {
-      source: "/library/:path*",
-      destination: "/patterns",
+      source: "/patterns",
+      destination: "/docs/patterns",
       permanent: true,
     },
     {
-      source: "/sign-up",
-      destination: process.env.NEXT_PUBLIC_SIGNUP_URL,
+      source: "/patterns/md",
+      destination: "/docs/patterns/md",
       permanent: true,
+    },
+    // Old flat pattern URLs (/patterns/<slug> and the interim
+    // /docs/patterns/<slug>) → the new category-scoped URLs.
+    ...Object.entries(PATTERN_SLUG_TO_CATEGORY).flatMap(([slug, category]) => [
+      {
+        source: `/patterns/${slug}`,
+        destination: `/docs/patterns/${category}/${slug}`,
+        permanent: true,
+      },
+      {
+        source: `/docs/patterns/${slug}`,
+        destination: `/docs/patterns/${category}/${slug}`,
+        permanent: true,
+      },
+    ]),
+    {
+      source: "/library/:path*",
+      destination: "/docs/patterns",
+      permanent: true,
+    },
+    // Conditionally include /sign-up redirect — only valid when the
+    // signup URL env var is set on this environment. Otherwise Vercel
+    // preview builds fail with "destination is missing".
+    ...(process.env.NEXT_PUBLIC_SIGNUP_URL
+      ? [
+          {
+            source: "/sign-up",
+            destination: process.env.NEXT_PUBLIC_SIGNUP_URL,
+            permanent: true,
+          },
+        ]
+      : []),
+    // OOH campaign - SF car wrap (AI Engineer World's Fair 2026)
+    {
+      source: "/sf",
+      destination:
+        "/?utm_medium=ooh&utm_source=car-wrap-sf&utm_campaign=aiewf-2026",
+      permanent: false,
+    },
+    // OOH campaign - AI conference signage (Sept 2026)
+    {
+      source: "/ai-conf",
+      destination:
+        "/?utm_medium=ooh&utm_source=signage&utm_campaign=ai-conf-0926",
+      permanent: false,
     },
   ];
 }
@@ -445,17 +428,37 @@ function touchFilesWithString(str, { dir = "./pages", ext = "mdx" } = {}) {
 const TS_STABLE_VERSION = "v4";
 
 async function rewrites() {
-  return [
-    // Versionless subpaths (excludes /v3/ and /v4/ prefixed paths)
-    {
-      source: "/docs/reference/typescript/:path((?!v3|v4).+)",
-      destination: `/docs/reference/typescript/${TS_STABLE_VERSION}/:path`,
-    },
-    {
-      source: "/docs-markdown/reference/typescript/:path((?!v3|v4).+)",
-      destination: `/docs-markdown/reference/typescript/${TS_STABLE_VERSION}/:path`,
-    },
-  ];
+  return {
+    // beforeFiles run before page/filesystem matching, so these intercept the
+    // raw-markdown URLs before the dynamic /docs/patterns/[category]/[slug]
+    // pages would 404 on them. Segment counts don't collide: index (3) /
+    // category (4) / pattern (5).
+    beforeFiles: [
+      {
+        source: "/docs/patterns/md",
+        destination: "/api/patterns/md",
+      },
+      {
+        source: "/docs/patterns/:category/md",
+        destination: "/api/patterns/category/:category/md",
+      },
+      {
+        source: "/docs/patterns/:category/:slug/md",
+        destination: "/api/patterns/:slug/md",
+      },
+    ],
+    afterFiles: [
+      // Versionless subpaths (excludes /v3/ and /v4/ prefixed paths)
+      {
+        source: "/docs/reference/typescript/:path((?!v3|v4).+)",
+        destination: `/docs/reference/typescript/${TS_STABLE_VERSION}/:path`,
+      },
+      {
+        source: "/docs-markdown/reference/typescript/:path((?!v3|v4).+)",
+        destination: `/docs-markdown/reference/typescript/${TS_STABLE_VERSION}/:path`,
+      },
+    ],
+  };
 }
 
 const nextConfig = {
@@ -466,16 +469,30 @@ const nextConfig = {
   rewrites,
   reactStrictMode: true,
   pageExtensions: ["js", "jsx", "ts", "tsx", "mdx"],
+  // next-mdx-remote ships a pre-bundled CJS build that, in the App Router
+  // (e.g. /blog/[slug]), resolves its own React copy and throws
+  // "Invalid hook call / more than one copy of React" when MDXRemote runs.
+  // Transpiling it makes Next bundle it against the app's single React.
+  transpilePackages: ["next-mdx-remote"],
   experimental: {
     scrollRestoration: true,
     turbopackFileSystemCacheForDev: true,
   },
   images: {
     qualities: [75, 95],
+    // CDN images (cdn.inngest.com) ship no Cache-Control header, so the
+    // optimizer would fall back to the 1h default and re-transform hourly.
+    // Blog images are immutable per path, so hold transforms for 31 days.
+    minimumCacheTTL: 2678400,
     remotePatterns: [
       {
         protocol: "https",
         hostname: "resend.com",
+      },
+      {
+        protocol: "https",
+        hostname: "cdn.inngest.com",
+        pathname: "/blog/**",
       },
     ],
     // Next.js 16 requires explicit localPatterns for all next/image local sources

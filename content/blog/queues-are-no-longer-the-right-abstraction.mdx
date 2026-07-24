@@ -1,4 +1,5 @@
 ---
+tags: ["Queues & Flow Control"]
 heading: Queues aren't the right abstraction
 subtitle: Why you shouldn't directly use message queues in 2024
 showSubtitle: true
@@ -73,7 +74,7 @@ Durable execution is the right abstraction instead of dealing with queues direct
 
 First, **durability**. Durable execution is fault-tolerant execution, guaranteeing that code will run to completion even with failures or restarts. This removes part of the problem above. With durable execution, developers don't have to build out processes to guarantee execution, such as implementing retry logic, handling failures, or persisting state, as these capabilities are provided out of the box by the durable execution runtime.
 
-But durability alone isn't enough. Reliability through durable execution requires **flow control**. Flow control is everything listed above that you have to build out for reliable workflows around queues. While durable execution focuses on guaranteeing the execution of tasks and handling failures, flow control deals with managing how or when the code is executed.
+But durability alone isn't enough. Reliability through durable execution requires **[flow control](/platform/flow-control)**. Flow control is everything listed above that you have to build out for reliable workflows around queues. While durable execution focuses on guaranteeing the execution of tasks and handling failures, flow control deals with managing how or when the code is executed.
 
 Flow control encompasses various aspects such as concurrency control, rate limiting, resource sharing, and prioritization. Let's say you have a processing workflow for transcribing video. What does this entail?
 

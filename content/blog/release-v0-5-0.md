@@ -4,7 +4,7 @@ subtitle: This release contains exciting new functionality, including replay and
 date: 2022-07-26
 dateUpdated: 2026-01-07
 image: "/assets/blog/release-v0.5.0.jpg"
-tags: release-notes
+tags: ["Company & Product News"]
 ---
 
 > **📢 Latest version:** This blog post covers Inngest v0.5.0 from July 2022. For information about the latest version of Inngest, including self-hosting support and recent features, see [**Announcing Inngest self-hosting (v1.0)**](/blog/inngest-1-0-announcing-self-hosting-support).

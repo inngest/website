@@ -1,6 +1,8 @@
 import { Info, Properties, Property, Row, Col, CodeGroup } from "src/shared/Docs/mdx";
 
-export const description = "Mint subscription tokens and consume realtime streams server-side with getClientSubscriptionToken and subscribe."
+
+export const metaTitle = "Server-Side Realtime Subscribing | TypeScript SDK v4"
+export const description = "Mint subscription tokens and consume streams using getClientSubscriptionToken() and subscribe()."
 
 # Subscribing
 
@@ -29,7 +31,7 @@ Mints a scoped subscription token on the server and returns a serializable objec
       </Property>
     </Properties>
 
-    Returns `Promise<ClientSubscriptionToken>` with `key` (the JWT string) and `apiBaseUrl` (the resolved server URL).
+    Returns `Promise<Realtime.Subscribe.ClientToken>` with `key` (the JWT string) and `apiBaseUrl` (the resolved server URL). `inngest/react` also exports this shape as the `ClientSubscriptionToken` type alias.
   </Col>
   <Col>
   ```ts
@@ -49,6 +51,12 @@ Mints a scoped subscription token on the server and returns a serializable objec
   ```
   </Col>
 </Row>
+
+<Info>
+  A client token does not include `channel` or `topics`. When passing it to
+  `useRealtime`, pass the same channel and topics as top-level hook options so
+  the hook can build the subscription and preserve typed message inference.
+</Info>
 
 <Info>
   Always mint tokens on the server. Never expose your Inngest signing key to the client. The token is scoped to the specified channel and topics, so a client cannot use it to access other channels.

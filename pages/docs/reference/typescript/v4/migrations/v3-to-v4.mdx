@@ -1,5 +1,8 @@
 import { Info, Tip, Warning } from "src/shared/Docs/mdx";
 
+export const metaTitle = "Migrate TypeScript SDK v3 → v4"
+export const description = "Complete migration guide for upgrading the Inngest TypeScript SDK from v3 to v4. Covers all breaking changes, new APIs, and step-by-step upgrade instructions."
+
 # TypeScript SDK Migration Guide: v3 to v4
 
 This guide helps you migrate your Inngest TypeScript SDK from v3 to v4.
@@ -22,6 +25,7 @@ Read the migration guide at https://www.inngest.com/docs-markdown/reference/type
 
 - Triggers moving into the options object (1st arg of createFunction)
 - EventSchemas being replaced with eventType() and staticSchema()
+- `event.user` being removed; move required fields into `event.data`
 - Serve options (signingKey, baseUrl, etc.) moving to the client constructor
 - step.invoke() no longer accepting string function IDs
 - Set `maxRuntime` option for `checkpointing` if running on serverless.
@@ -169,6 +173,43 @@ await inngest.send(userCreated.create({ userId: "1", email: "a@b.com" }));
   Please note: `staticSchema` expects a `type`, not an `interface`. You may need to convert existing interfaces to types.
 </Tip>
 
+### Remove `event.user`
+
+The deprecated `event.user` field has been removed. If you previously sent user information on the top-level `user` field or read it from `event.user` inside a function, move the data your function needs into `event.data` instead.
+
+```ts
+// Old (v3)
+await inngest.send({
+  name: "user/created",
+  user: { id: "user_123" },
+});
+
+inngest.createFunction(
+  { id: "sync-user-profile" },
+  { event: "user/created" },
+  async ({ event }) => {
+    await syncUserProfile(event.user.id);
+  }
+);
+
+// New (v4)
+await inngest.send({
+  name: "user/created",
+  data: { userId: "user_123" },
+});
+
+inngest.createFunction(
+  { id: "sync-user-profile", triggers: { event: "user/created" } },
+  async ({ event }) => {
+    await syncUserProfile(event.data.userId);
+  }
+);
+```
+
+`event.user` was left over from a deprecated feature and is not saved in the event store. This made it incompatible with features that reload stored event payloads, such as function run replay, where `event.user` was always an empty object.
+
+If you used `event.user` to keep sensitive values encrypted, use [encryption middleware](/docs/reference/typescript/v4/middleware/encryption) instead.
+
 ### Rename `serveHost` to `serveOrigin`
 
 Rename the `serveHost` option to `serveOrigin` to better reflect its purpose. Using "host" was actually a misnomer because the scheme and port can be specified, while a "host" is only the domain or IP.
@@ -251,7 +292,7 @@ If the `serve` function does not support streaming then it throws an error. Prev
 
 "Optimized parallelism" significantly reduces the number of requests necessary to run parallel steps (steps in `Promise.all`, `Promise.allSettled`, etc.). This decrease in requests can dramatically improve CPU usage, memory usage, and function run duration.
 
-The primary downside is the change in `Promise.race` behavior. `Promise.race` will wait for *all* promises to settle before resolving. The correct "winner" is returned, but the `Promise.race` will *not* immediately resolve on the first winner. If you were relying on the early resolution behavior, use the new `group.parallel()` helper. This will disable optimized parallelism for groups of steps:
+The primary downside is the change in `Promise.race` behavior. `Promise.race` will wait for *all* promises to settle before resolving. The correct "winner" is returned, but the `Promise.race` will *not* immediately resolve on the first winner. If you were relying on the early resolution behavior, use the new `group.parallel()` helper. This will disable optimized parallelism for groups of steps. Note that early resolution does not cancel the remaining steps; see the [step parallelism guide](/docs/guides/step-parallelism) for details:
 
 ```typescript
 // Old behavior (no longer works as expected with optimized parallelism)

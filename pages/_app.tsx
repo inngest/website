@@ -24,6 +24,7 @@ import {
 
 import type { PageProps } from "@/shared/types";
 import AnnouncementBanner from "src/components/AnnouncementBanner";
+import PatternsViewToggle from "../shared/Patterns/PatternsViewToggle";
 
 function DefaultLayout({ children }) {
   return (
@@ -49,6 +50,9 @@ function MyApp({ Component, pageProps }: AppProps<DefaultProps>) {
   const is404 = router.pathname === "/404";
   const isDocs = !is404 && !!router.asPath.match(/^\/docs/);
   const isCaseStudy = !is404 && !!router.asPath.match(/^\/customers\//);
+  // Patterns live under /docs/patterns and render inside the docs `Layout`
+  // (docs header, side nav, content column) like the rest of the docs.
+  const isPatterns = !is404 && router.asPath.startsWith("/docs/patterns");
   const Layout = isDocs
     ? DocsLayout
     : isCaseStudy
@@ -71,6 +75,9 @@ function MyApp({ Component, pageProps }: AppProps<DefaultProps>) {
       htmlEl.classList.add(`docs`);
     } else {
       htmlEl.classList.remove(`docs`);
+      // Non-docs pages are dark-themed. Docs toggles `dark` based on user
+      // preference, so we must restore it when navigating away from docs.
+      htmlEl.classList.add(`dark`);
     }
   });
   useEffect(() => {
@@ -161,6 +168,8 @@ function MyApp({ Component, pageProps }: AppProps<DefaultProps>) {
       <Layout {...pageProps}>
         <Component {...pageProps} />
       </Layout>
+
+      {isPatterns && <PatternsViewToggle />}
 
       <Script
         id="js-inngest-sdk-script"

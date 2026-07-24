@@ -1,0 +1,140 @@
+import { Info } from "src/shared/Docs/mdx";
+
+export const metaTitle = "Durable Agents"
+export const description = "A durable agent is designed to survive failures, restarts, and resume after being paused, all without losing a single step of progress."
+
+# Durable Agents
+
+## What is a Durable Agent?
+
+Most agent frameworks treat execution as ephemeral. Your agent runs in a single process — a loop of LLM calls, tool invocations, and decisions — and if that process crashes, times out, or gets deployed over, everything is gone. The agent starts from scratch, or it doesn't start at all.
+
+A durable agent is different. Every step, every tool call, every decision the agent makes is checkpointed as it happens. If the process dies at step 7 of 12, the agent picks up at step 7 — not step 1. If the agent needs to wait three hours for a human to approve something, it suspends entirely, holding zero resources, and resumes when the approval arrives.
+
+This isn't retry logic bolted onto an agent loop. It's a fundamentally different execution model — one that treats the entire agent lifecycle as recoverable infrastructure. The agent's progress is a durable record, not an in-memory variable that vanishes when the process does.
+
+## Why Agents Need Durability
+
+If you've run agents in production, you already know the failure modes. If you haven't, you'll hit them fast.
+
+**LLMs and tool calls fail.** Every network request is something you don't control. LLM providers have outages, tool calls to third party APIs timeout or hit rate limits. Each chain in your agent loop is an opportunity to fail. With more steps, the probability of failure compounds. Without durability, a failure on your 6th step means re-running steps 1 through 5.
+
+**Agents take longer than you expect.** The interesting agents aren't the ones that finish in 500 milliseconds. They're the ones that perform complex tasks, research across sources, pause for input, or coordinate with other agents. These operations take minutes, hours, or longer. These must be durable, inspectable, and resumable.
+
+**Failure is expensive.** Every LLM call costs tokens. Every token costs money. Replaying an entire agent run because a single step failed near the end is wasteful in the most literal sense — you're paying to redo work the agent already completed successfully. At scale, this waste becomes a real line item.
+
+**You can't debug what you can't see.** When an agent makes a bad decision in production, you need to know exactly what happened: what context the model received, what it decided, what tools it called, what those tools returned. Ephemeral execution gives you logs if you're lucky. Durable execution gives you a full, structured audit trail of every decision and action — because checkpointing the work *is* recording the work.
+
+## The Agent Loop as a Workflow
+
+The mental model for an agent is straightforward: it's a loop. Observe the current state, think about what to do next, take an action, observe the result, and repeat. This is the core loop behind every ReAct agent, every tool-using assistant, every autonomous system.
+
+What makes this loop interesting from an infrastructure perspective is that each iteration is an independently meaningful unit of work. The agent called a tool and got a result — that's a fact that doesn't need to be recomputed. The agent made an LLM call and chose a next action — that decision, and its reasoning, can be stored. Each cycle through the loop is a step that can be checkpointed on its own.
+
+The critical difference between an agent loop and a traditional workflow DAG is that the loop is ***dynamic***. A workflow DAG has a known shape at design time — step A, then step B, then fan out to C and D. In contrast, an agent's shape is decided ***at runtime*** by the model. The number of iterations, which tools get called, the order they run in, whether the agent loops back to retry something — none of this is known in advance. The workflow graph is drawn as the agent runs.
+
+This is what makes agents powerful. It's also what makes them challenging to run reliably — and it's why the durability mechanism matters.
+
+→ [Guide: Agent tool loops](/docs/ai-patterns/agent-tool-loops)
+
+## How Durability Works: Memoization and Deterministic Replay
+
+Durability for agents requires solving two problems simultaneously:
+
+**1. Support non-deterministic execution.** An agent's control flow is decided at runtime by the model. Which tools get called, how many loop iterations run, whether the agent backtracks — none of this is known in advance. There's no static DAG, no pre-declared workflow graph. Steps are defined *dynamically* as the agent runs. The durability system can't require you to declare the shape of execution ahead of time, because you don't know it.
+
+**2. Support deterministic replay.** When a process fails or an agent resumes after a pause, the system needs to reconstruct the agent's *full state* — every prior decision, every tool result, every branch taken — so execution can continue exactly where it left off. This reconstruction must be deterministic: the same state, every time.
+
+These sound contradictory, but they're not. Inngest solves both with the same mechanism: **step-level memoization**.
+
+Every time a step completes — an LLM call, a tool invocation, any side effect — Inngest persists the result. If the process fails and the function needs to recover, it re-executes from the top. But every previously completed step is short-circuited: instead of running again, it returns its memoized result. This is deterministic replay. The function walks the exact same execution path it walked before, because the memoized results *force* the same path. An LLM call that originally returned "use the search tool" will return that same result on replay — the call isn't re-made, its stored result is injected. So the agent takes the same branch, calls the same next tool, follows the same dynamic path, step by step, until all memoized steps have replayed. Then execution continues forward with new steps.
+
+This is what makes the model work for agents specifically. The execution doesn't need to be pre-declared: steps are defined at runtime, as the agent decides what to do. But on replay, those decisions are reproduced exactly, because the inputs that drove them (prior step results - the agent's state) are replayed exactly. Non-deterministic code on the first run. Deterministic replay on recovery.
+
+→ [Concept: How Inngest Durability Works](/docs/learn/how-functions-are-executed)
+
+## Core Primitives
+
+Inngest provides a small set of primitives that give agents durability without requiring you to redesign how they work. Each primitive wraps a specific kind of operation, making it checkpointed, retryable, and resumable.
+
+**[`step.run()`](/docs/learn/inngest-steps)** wraps any operation that has a side effect — an LLM call, a tool invocation, a database write, an API request. The result is memoized: if the step succeeds, it's never re-executed. If it fails, it's retried according to your configured policy. This is the building block that makes each iteration of the agent loop durable.
+
+```tsx
+const result = await step.run("search-documents", async () => {
+  return await vectorDB.search(query);
+});
+```
+
+**[`step.waitForEvent()`](/docs/features/inngest-functions/steps-workflows/wait-for-event)** pauses execution until an external signal arrives. The agent suspends completely — no process, no connection, no resources held. When the matching event is received (a human approval, a webhook callback, a message from another agent), execution resumes with the event data. This is what makes human-in-the-loop and inter-agent coordination possible without polling or timeouts.
+
+**[`step.invoke()`](/docs/guides/invoking-functions-directly?guide=python)** calls another Inngest function or sub-agent and waits for its result. This is how you compose agents — an orchestrator agent can delegate sub-tasks to sub-agents, each running with their own durability guarantees, and collect the results.
+
+**[`step.sleep()` and `step.sleepUntil()`](/docs/features/inngest-functions/steps-workflows/sleeps)** pause execution for a duration or until a specific time. Like `waitForEvent`, the agent fully suspends. You can sleep for five seconds or five days — the cost is the same (zero), because no process is running while the agent waits.
+
+{/* Link to sessions guide tomorrow */}
+**Sessions** - Agents often span multiple runs. Conversations have multiple turns, sub-agents are fanned-out, and replies can be decoupled. Sessions enable all runs to be grouped in any way that match your application: conversation ids, project ids, or ticket ids. Use one or more session ID to create the full picture of your system.
+
+These primitives compose naturally. An agent loop might call `step.run()` for each tool invocation, `step.waitForEvent()` when it needs human input, and `step.invoke()` when it delegates to another agent. The durability is granular — each primitive is independently checkpointed, so the agent never loses more than the currently-executing step.
+
+## Human-in-the-Loop
+
+Some of the most valuable agent workflows require a human somewhere in the middle. An agent researches a topic and drafts an email, but a human needs to approve it before it's sent. An agent triages a support ticket and proposes a resolution, but the resolution requires sign-off. An agent generates a code change, and a developer reviews it.
+
+In a non-durable system, this is painful. The agent either holds a process open while waiting (expensive and fragile) or you build an elaborate system of queues, state machines, and polling to park the work and pick it back up (complex and error-prone).
+
+With durable agents, the pattern is simple. The agent runs until it needs human input, calls `step.waitForEvent()` with a match condition, and suspends. No process is running. No connection is held. The agent's entire state — every step it completed, every decision it made — is safely persisted. When the human acts (clicks approve, submits feedback, makes an edit), an event is sent, and the agent wakes up exactly where it left off with the human's input available.
+
+This is where durability becomes more than a reliability feature — it changes what agents can *do*. Workflows that span hours or days, that cross the boundary between automated and manual work, become straightforward to build. The agent doesn't care if the human takes 30 seconds or 3 days. It's not waiting. It's suspended.
+
+→ [Guide: Human-in-the-Loop](/docs/ai-patterns/human-in-the-loop)
+
+## Multi-Agent Coordination
+
+Real systems rarely have a single agent doing everything. You may opt to use sub-agents to isolate context or create specialized agents with their own subset of tools. Coordinating multiple agents is an architecture problem, and durability is central to solving it well.
+
+A durable agent can invoke other agents using `step.invoke()`, fan out parallel work, and collect results — the classic orchestrator-worker pattern. But because each agent is independently durable, the failure characteristics are fundamentally better than a single monolithic agent. If the code-review agent fails, the search agent's completed work isn't lost. The orchestrator can retry the failed sub-agent, [gracefully recover](/docs/features/inngest-functions/error-retries/failure-handlers), or surface the partial results.
+
+This independence also means agents can communicate asynchronously through events. One agent can emit an event that wakes up another agent that's been suspended, waiting for exactly that signal. You can build pipelines, fan-out/fan-in patterns, and feedback loops — all with durability at every stage.
+
+The key insight is that durability makes coordination *safe*. Without it, multi-agent systems are brittle: a failure in one agent cascades unpredictably, and recovering coordinated state across multiple processes is a nightmare. With durability, each agent's progress is preserved independently, and the coordination layer can reason about what succeeded, what failed, and what to do about it.
+
+→ [Guide: Sub-agent delegation](/docs/ai-patterns/sub-agent-delegation)
+
+## Error Handling & Recovery
+
+Agents fail. The question is what happens next.
+
+Every step wrapped in `step.run()` gets automatic retries with configurable policies — you control the number of attempts, the backoff strategy, and the timeout. This handles the common case: a transient API failure, a rate limit, a momentary network issue. The step retries, succeeds, and the agent continues without losing progress.
+
+When retries are exhausted, the step fails permanently. But this doesn't necessarily mean the *agent* fails. This distinction is important. A single step failure might be something the agent can reason about — "the search API is down, let me try an alternative approach" — or it might be terminal. You can catch step failures and implement fallback logic, or let them propagate to fail the entire agent run.
+
+When an agent run does fail completely, the checkpointed state is still there. You know exactly which step failed, what the inputs were, what the error was, and what the agent had accomplished up to that point. Partial progress isn't lost — it's recorded. You can inspect it, fix the underlying issue, and in some cases, resume from the failure point rather than starting over.
+
+The design philosophy is that failure should be *granular*. The blast radius of a single API timeout shouldn't be an entire agent run. Each step is its own unit of failure, with its own retry policy and its own recovery path.
+
+→ [Guide: Error Handling](/docs/guides/error-handling)
+
+## Observability & Debugging
+
+Agents are non-deterministic systems. The same agent with the same input might take a different path every time. In production, this means you can't rely on reading the code to understand what happened — you need to see what *actually* happened on each run.
+
+Because every step is checkpointed, you get a complete, structured trace of the agent's execution for free. Every LLM call, every tool invocation, every decision point — recorded with inputs, outputs, and timing. This isn't logging you have to add. It's a natural byproduct of the durability model.
+
+This trace is the single most important debugging tool for production agents. When an agent produces a bad result, you can walk through exactly what it saw, what it decided, what tools it called, and what those tools returned. You can identify whether the problem was a bad model response, a tool returning unexpected data, or a flaw in the agent's prompt or logic.
+
+At scale, these traces become the foundation for understanding agent behavior in aggregate — which tools fail most often, where agents get stuck in loops, how long different operations take, and where you're spending the most tokens. Observability isn't an add-on for durable agents. It's built into how they work.
+
+→ [Guide: Tracing & Observability](/docs/platform/monitor/traces)
+
+---
+
+## What's Next
+
+Start building with the core primitives, or go deeper on the patterns:
+
+- [Steps](/docs/learn/inngest-steps) — how to leverage step-level durability
+- [Human-in-the-Loop](/docs/ai-patterns/human-in-the-loop) — building agents that collaborate with humans
+- [Multi-Agent Patterns](/docs/ai-patterns/sub-agent-delegation) — orchestrating multiple agents
+- [Error Handling](/docs/guides/error-handling) — retry policies, failure handlers, and recovery
+- [Tracing & Observability](/docs/platform/monitor/traces) — debugging and monitoring agents in production
+- [How Inngest Durability Works](/docs/learn/how-functions-are-executed) — the architecture behind durable execution

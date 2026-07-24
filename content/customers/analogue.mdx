@@ -1,0 +1,122 @@
+---
+title: Why Analogue Never Drops an Order, Even During Flash Sales
+companyName: Analogue
+logo: /assets/customers/analogue-logo-white.svg
+companyIndustry: Consumer Electronics
+companyUseCase: Order fulfillment, multi-warehouse shipping, repairs/RMA, address validation, manufacturing, analytics
+quote:
+  text: >-
+    In Inngest, I'm never questioning why something happened. It's always super
+    obvious, easy to trace back. It's not some phantom event that kicked off from
+    a retry three times ago. As long as you make sure the jobs are idempotent,
+    it's just going to work.
+  attribution:
+    name: Luke Shumard
+    title: Chief Digital Product Officer
+  avatar: /assets/customers/analogue-luke-shumard.jpg
+companyURL: 'https://www.analogue.co'
+companyDescription: High-fidelity recreations of timeless video game consoles
+ogImage: /assets/customers/analogue/featured-image.png
+---
+Analogue makes high-fidelity recreations of timeless video game consoles: 3D (inspired by N64), Pocket (inspired by Game Boy), Duo (inspired by TurboGrafx-16), Mega Sg (inspired by Sega), and Super Nt as well as Nt Mini (inspired by Nintendo). Their drops draw serious demand from dedicated gamers and collection curators around the world. To handle the surge of async work behind every order, they use Inngest. International address validation, multi-warehouse order management, tracking, repairs, analytics… all async workflows—all powered by Inngest.
+
+This is the story of the bigger vision Luke Shumard, Chief Digital Product Officer at Analogue had for a workflow solution, how Inngest delivered real time savings for the team, and where they go from here.
+
+|  |  |
+| --- | --- |
+| **Company** | Analogue |
+| **Description** | Consumer Electronics |
+| **Stack** | Next.js on Vercel, Node.js on Render, private worker (migrating some workloads to Inngest Connect) |
+| **Inngest Plan** | Pro |
+| **Use Cases** | Order fulfillment, multi-warehouse shipping, repairs/RMA, address validation, manufacturing, analytics |
+| **Connected Apps** | 4 |
+| **Branch Environments** | 220+ |
+| **Deploy Growth (3 months)** | 9× |
+
+## The Problem: An async architecture that needed too much attention
+
+Analogue's backend is event-driven. Every order triggers risk checks, fulfillment routing across multiple warehouses, inventory updates, tracking notifications, etc. During flash sales, this work gets very bursty very fast.
+
+To handle these background jobs, Luke evaluated solutions like Sidekiq, BullMQ, RabbitMQ, and Temporal. These evaluations were short-lived. RabbitMQ's vocabulary didn't map cleanly to business concepts, and Temporal felt far too heavy.
+
+> Temporal is a framework you plug other tools into, it's not a product. We were looking for a fully managed, plug-and-play product.
+>
+
+After initially exploring Inngest in the early days—before it offered the flow control primitives that would later bring him back—Luke found Faktory, "the polyglot equivalent of Sidekiq," according to him.
+
+But something was still missing. While he found Faktory to work very well for raw speed and execution, Luke noted some limitations.
+
+> With Faktory I realized we were duplicating a lot of work. We needed concurrency, throttling, and deduplication, which didn't match the developer experience I wanted. I started to wonder—**has anyone made a strongly opinionated abstraction over this concept that just nails it?** That's when I re-discovered Inngest.
+>
+
+## How Inngest turned 8 steps into one sync
+
+Luke compares Inngest to Next.js: both take strong opinions about hard problems and package them into an abstraction that lets developers focus on what matters. 
+
+With Faktory, there was no built-in way to manage the string of events that would happen after an order during a flash sale. With Inngest, that coordination is baked-in, handled through a set of flow control primitives that abstract away manual effort:
+
+- **Concurrency keys and throttling.** Coordinate work across related tasks and respect third-party API rate limits—without failing and retrying blindly.
+- **Event-driven debouncing.** Wait for the right signals before processing, eliminating redundant work when multiple events fire from a single order.
+- **Non-retriable errors.** Stop retrying immediately when something is definitively broken, instead of exponentially backing off and clogging downstream systems.
+- **Deduplication.** Prevent the same work from being triggered across multiple asynchronous workflows.
+
+But it's not just about coordination around each order. Luke also talks about the difference in change management since switching to Inngest. Before, changing the business logic of a background job meant provisioning and orchestrating deploys across a new Faktory server, a new API server, and Vercel preview environments—all at the same time. 
+
+![Analogue deploy before and after](/assets/customers/analogue/Analogue_Deploy_Before_After.png)
+
+With Inngest, deploying a change is just a sync.
+
+> **With Inngest, I just push the code, and the sync happens.** And just like that I get the gateway and piping for where everything needs to go. We're deploying with a monorepo, so it's a lot easier to have all of your jobs in one easy place. It's way faster and cheaper to test an entire end-to-end production environment without a bunch of DevOps.
+>
+
+## New functions–faster, on less compute
+
+It's not hard to write functions. But spinning up an environment to actually test each end-to-end can quickly become a bottleneck.
+
+Inngest eliminates manual effort, ensuring every feature branch gets its own isolated environment with real event delivery, function execution, and step-level observability—in just a few clicks.
+
+> How we create new functions in Inngest has been a massive gain for us. It used to mean configuring an expensive preview environment or manual piping to a non-production dedicated environment. Now it's all handled by Inngest, since it's our event gateway across all environments. It's very easy to spin up an environment and get an end-to-end demo, prototype, or deploy.
+— Luke Shumard
+>
+
+Analogue runs 220+ branch environments. Every PR, every CI run, and every prototype gets tested against real async behavior before it hits production.
+
+And once those functions *are* in production, Inngest's flow control features ensure they don't run more than they need to. Analogue uses throttle on their shipping and notification pipelines to smooth out bursty e-commerce traffic, capping functions at a steady rate instead of letting a big drop trigger hundreds of simultaneous executions. They also use debounce on webhooks, collapsing the rapid-fire updates Shopify sends for the same order into a single function run.
+
+It's a pattern that compounds: Inngest makes it fast to ship new functions, and then makes sure each one runs only when it actually needs to.
+
+## An entire fulfillment pipeline, automated
+
+![Analogue metrics](/assets/customers/analogue/Analogue_Metrics.png)
+
+Analogue uses Inngest across five connected apps covering nearly every async workflow in the business—and the scope keeps expanding.
+
+- **Order management.** The entire order-to-delivery pipeline across Shopify, ShipBob, Storkup, and GoShippo—from address validation and tracking to analytics. Zero manual handoffs.
+- **Repairs and RMA.** A full state machine: incoming → received → fixed → shipped, including address change requests with approval flows.
+- **Observability.** A dedicated function sends Slack alerts on any failure across the entire system.
+
+Of course, Luke didn't start out managing everything in Inngest—use cases expanded over time. **In just the last 3 months, production deploys increased 9×.**
+
+## "I never have to wonder if…"
+
+A recurring theme when talking to Luke was his emphasis on Inngest's "ergonomics"—how intuitive it is to set up, and how easy it is to then forget about low-lying architectural details.
+
+> **Inngest is extremely reliable, and extremely intuitive.** There's no mapping—no having to figure out which events trigger what and flow through where. It's super, super simple: every client action automatically pipes through to the connecting Inngest environment as an event like `order.updated.` So I'm never left wondering, did that order make it through? It's just so easy—the primitives couldn't make more sense.
+
+Aside from feeling confident that orders finish as expected, Luke appreciates Inngest's ability to ensure events are observable. Every execution shows its inputs, outputs, steps, and retry history. 
+
+> **In Inngest, I'm never questioning why something happened.** It's always super obvious, easy to trace back. It's not some phantom event that kicked off from a retry three times ago. As long as you make sure the jobs are idempotent, it's just going to work.
+
+Inngest's dashboard isn't just useful for debugging—it's legible enough that non-engineers can follow along. Events have human-readable names, and every function shows its steps and run IDs.
+
+> If I show a stakeholder the dashboard, they can see an event called `order.updated`, the order ID, and all the tasks with their steps. **You can understand what's happening without looking at the code.**
+
+Importantly, Luke doesn't have to *live* in Inngest to get these assurances. He only spends about 10 minutes a day in the dashboard. He's not pulling engineering metrics or monitoring infrastructure—he's checking business outcomes.
+
+## What's next for Analogue + Inngest
+
+Aside from any additional changes to Analogue's model, Luke plans to keep using Inngest for new personal projects as well—which might be the strongest endorsement a developer can give.
+
+> I'm a big fan of the Dieter Rams invisible tools concept, and that's what Inngest feels like. It just gets out of my way and I'm focused on the thing that actually matters—for everything I want to build.
+
+**Ready to stop managing your async infrastructure and start forgetting about it? [Get started with Inngest](/pricing?ref=analogue-case-study).**

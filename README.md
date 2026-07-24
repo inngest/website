@@ -56,6 +56,45 @@ $ pnpm start
 
 This can be useful for testing the app in production mode locally.
 
+### Blog Videos (Adaptive Streaming)
+
+Videos embedded in blog posts should be served as **HLS** (adaptive bitrate)
+rather than a single large file. HLS starts playback quickly and adapts the
+quality to the viewer's connection, so a slow network gets a lower-resolution
+stream instead of a stalled video.
+
+**Prerequisite:** [`ffmpeg`](https://ffmpeg.org/) (which includes `ffprobe`):
+
+```sh
+$ brew install ffmpeg
+```
+
+Transcode a source video into an HLS ladder (1080p / 720p / 480p) with:
+
+```sh
+# Writes ./hls/<name>/{master.m3u8,stream_0,stream_1,stream_2}
+$ pnpm video:hls ./durable-agent-in-8-minutes.mov
+
+# Optionally set a custom output directory
+$ pnpm video:hls ./demo.mp4 ./dist/demo
+```
+
+Then:
+
+1. Upload the **entire** output folder to the CDN, preserving its structure
+   (e.g. `cdn.inngest.com/videos/<name>/`). The playlists reference segments by
+   relative path, so the folder layout must be kept intact.
+2. Reference the master playlist as the video `src` in your MDX:
+
+   ```mdx
+   <AutoplayVideo src="https://cdn.inngest.com/videos/<name>/master.m3u8" poster="..." />
+   ```
+
+The `AutoplayVideo` component detects `.m3u8` sources automatically: Safari/iOS
+play HLS natively, and other browsers use a lazy-loaded `hls.js` shim. Non-HLS
+sources (`.mp4`, `.mov`) continue to work unchanged. The source video and local
+`hls/` output are build artifacts — don't commit them.
+
 ### Environment Variables
 
 Environment variables are managed with the [Vercel CLI](https://vercel.com/docs/cli/env). Use the

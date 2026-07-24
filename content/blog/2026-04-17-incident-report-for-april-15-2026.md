@@ -1,4 +1,5 @@
 ---
+tags: ["Background Jobs & Scheduling", "Incidents & Security"]
 focus: false
 heading: "Incident report for April 15, 2026 - Function scheduling and execution delays"
 subtitle: A full report on the incident that caused significant delays in function scheduling and execution for all customers.

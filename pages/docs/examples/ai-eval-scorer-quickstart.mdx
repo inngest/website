@@ -1,0 +1,172 @@
+import { Callout, CodeGroup } from "src/shared/Docs/mdx";
+
+
+export const metaTitle = "AI Eval Scorer Quickstart Examples"
+export const description = "Copy-paste scorer examples for evaluating AI outputs with Inngest: inline guardrails, LLM-as-a-judge, deferred user-feedback scorers, and experiment variant scoring."
+
+# AI Eval Scorer Quickstart Examples
+Get started on [Agent Evals](/docs/learn/agent-evals) quickly with some basic scoring functions. This example guide has a few of the most common ways to score an AI agent without setting up proprietary datasets or [scoring on outcomes](/docs/patterns/ai-evals/score-agents-on-real-outcomes). 
+
+These examples are in no way close to the limit of what you can do with Inngest agent evals, and by adding in additional outcome signals or your own proprietary scoring functions, you can create an extremely robust solution that measures your agents on real data and outcomes, and even run split [experiments with different logic](/docs/patterns/ai-evals/run-experiments-in-production).
+
+## Setting Up the Example
+
+Let's create a new file at `/inngest/scorers.ts` This guide has all the code necessary to get up and running; just drop the setup block below into your file and any scoring functions you want to use.
+
+```tsx
+// step.score() requires scoreMiddleware() from "inngest/experimental" registered
+// on your Inngest client (see ./client). Scoring is a beta API — verify imports
+// against the current docs before shipping.
+import Anthropic from "@anthropic-ai/sdk";
+import { inngest } from "./client";
+import type { GetStepTools } from "inngest";
+
+const client = new Anthropic({
+  apiKey: process.env.ANTHROPIC_API_KEY,
+  baseURL: process.env.ANTHROPIC_BASE_URL,
+});
+
+const MODEL = process.env.ANTHROPIC_MODEL ?? "claude-opus-4-8";
+
+type Step = GetStepTools<typeof inngest>;
+
+// Shared judge: ask the model to grade against a rubric and reply with a single
+// JSON verdict {"score": <0-1>, "reason": "..."}, normalized to { name, value }.
+async function judge(step: Step, name: string, rubric: string) {
+  const res = (await step.run(`judge-${name}`, () =>
+    client.messages.create({
+      model: MODEL,
+      max_tokens: 512,
+      messages: [{ role: "user", content: rubric }],
+    }),
+  )) as Anthropic.Message;
+
+  const text = res.content.find((b) => b.type === "text")?.text ?? "{}";
+  const { score } = JSON.parse(text) as { score: number };
+  return { name, value: score };
+}
+```
+
+## Score On Conciseness
+
+Verbose agents cost you twice: the user waits longer for an answer that's harder to read, and every extra token lands on your invoice. 
+
+This scorer asks an LLM judge to grade each response from 0 to 1 on how tight it is: complete but free of filler. While this system could be improved by adding a ground truth dataset, this example is reference-free; the judge only needs the prompt and what the agent actually said, so you can attach it to any agent today.
+
+```tsx
+// Conciseness: is the answer tight and free of filler? Reference-free.
+export async function scoreConciseness(
+  step: Step,
+  prompt: string,
+  actualOutput: string,
+) {
+  return judge(
+    step,
+    "conciseness",
+    `Grade whether the answer is concise and free of filler.
+
+		Question: ${prompt}
+		Answer: ${actualOutput}
+
+		Reply with ONLY {"score": <0-1>, "reason": "<one sentence>"},
+		where 1 = maximally concise while still complete and 0 = rambling or padded.`,
+  );
+}
+```
+
+## Score on Helpfulness
+
+Before you tune anything else, you want to know one thing about a run: did the answer address what the user actually asked? 
+
+A perfectly concise response that misses the point still fails. This scorer uses the same judge pattern with a different rubric, grading from "fully answers the request" down to "ignored or misunderstood it." Like conciseness, it's reference-free, and pairing the two gives you a useful early tension to watch: if helpfulness climbs while conciseness drops, your agent is padding its way to better answers.
+
+```tsx
+// Helpfulness: does the answer actually address the request? Reference-free.
+export async function scoreHelpfulness(
+  step: Step,
+  prompt: string,
+  actualOutput: string,
+) {
+  return judge(
+    step,
+    "helpfulness",
+    `Grade how well the answer addresses the user's request.
+
+		Question: ${prompt}
+		Answer: ${actualOutput}
+
+		Reply with ONLY {"score": <0-1>, "reason": "<one sentence>"},
+		where 1 = fully and directly answers the request and 0 = ignores or misunderstands it.`,
+  );
+}
+
+```
+
+## Score on Tool Use Efficiency
+
+Not every score needs an LLM. When an agent calls the same tool with the same input twice, it's usually looping, retrying blindly, or has lost track of what it already knows.
+
+This scorer is a plain deterministic check: count distinct tool calls against total calls, and the score drops below 1 the moment a call repeats. It runs in microseconds, costs nothing per run, and catches a failure mode LLM judges routinely miss because they only see the final answer.
+
+```tsx
+
+// Tool efficiency: did the agent avoid repeating identical calls? Deterministic.
+export function scoreToolEfficiency(
+  toolCalls: { name: string; input: unknown }[],
+) {
+  const keys = toolCalls.map((c) => `${c.name}(${JSON.stringify(c.input)})`);
+  const unique = new Set(keys).size;
+  // 1 = every call distinct (or none made); < 1 once a call is repeated.
+  const value = toolCalls.length === 0 ? 1 : unique / toolCalls.length;
+  return { name: "tool-efficiency", value };
+}
+
+```
+
+## Putting it All Together
+
+With the scorers defined, wire them into the function that runs your agent, in this example `/inngest/functions.ts` , or wherever your Inngest function lives. Each score is written with `step.score`, so it's a memoized step attached directly to the run: retried like any other step, and queryable in Insights alongside cost and execution data.
+
+These three run inline, right after the agent finishes. When the signal you care about doesn't exist yet at runtime, such as a user accepting the suggestion or a ticket actually closing, that's the job of [deferred scoring](/docs/features/inngest-functions/steps-workflows/deferred-scoring?ref=docs-patterns-score-agents-on-real-outcomes).
+
+```tsx
+import type Anthropic from "@anthropic-ai/sdk";
+import { inngest } from "./client";
+import { runAgent } from "../agent";
+import { scoreConciseness, scoreHelpfulness, scoreToolEfficiency } from "./scorers";
+
+export const runAgentFn = inngest.createFunction(
+  { id: "run-agent", triggers: [{ event: "agent/run.requested" }] },
+  async ({ event, step }) => {
+    
+    const { prompt } = event.data;
+    const { content, toolCalls } = await runAgent(step, prompt);
+
+    // Flatten the final answer to text so the LLM judges can grade it.
+    const actualOutput = content
+      .filter((b): b is Anthropic.TextBlock => b.type === "text")
+      .map((b) => b.text)
+      .join("");
+
+    // Score this run inline (no deferred runs). The two LLM judges are
+    // reference-free (no golden answer needed); tool-efficiency is a plain
+    // deterministic check. Each score is written with step.score, so it's a
+    // memoized step that attaches directly to this run.
+    await step.score("score-conciseness", await scoreConciseness(step, prompt, actualOutput));
+    await step.score("score-helpfulness", await scoreHelpfulness(step, prompt, actualOutput));
+    await step.score("score-tool-efficiency", scoreToolEfficiency(toolCalls));
+
+    return content;
+  },
+);
+
+```
+
+## More Context
+
+Check the resources below to learn more about building agent evals with Inngest.
+
+- [Step Experiments](/docs/features/inngest-functions/steps-workflows/step-experiments?ref=docs-examples-ai-eval-scorer)
+- [Scoring](/docs/features/inngest-functions/steps-workflows/scoring?ref=docs-examples-ai-eval-scorer)
+- [Deferred Scoring](/docs/features/inngest-functions/steps-workflows/deferred-scoring?ref=docs-examples-ai-eval-scorer)
+- [Scoring on Outcomes](/docs/patterns/ai-evals/score-agents-on-real-outcomes?ref=docs-examples-ai-eval-scorer)

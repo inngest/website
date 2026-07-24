@@ -24,6 +24,7 @@ export async function GET() {
 - [Documentation](${process.env.NEXT_PUBLIC_HOST}/docs-markdown/)
 - [Full documentation as single file](${process.env.NEXT_PUBLIC_HOST}/llms-full.txt)
 - [LLM integration context](${process.env.NEXT_PUBLIC_HOST}/llm-context.md)
+- [Blog index](${process.env.NEXT_PUBLIC_HOST}/blog.txt)
 
 ## Learn
 

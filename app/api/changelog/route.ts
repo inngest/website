@@ -1,6 +1,6 @@
 import * as fs from "node:fs";
 import * as path from "node:path";
-import { getChangelogURL } from "app/changelog/helpers";
+import { getChangelogURL } from "app/_changelog/helpers";
 
 export const dynamic = "force-static";
 

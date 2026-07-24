@@ -1,4 +1,5 @@
 ---
+tags: ["AI & Agents", "Workflows & Orchestration", "Tutorials & Guides", "Next.js & Frameworks"]
 heading: "Building an Event Driven Video Processing Workflow with Next.js, tRPC, and Inngest"
 subtitle: "How Badass Courses built a self-service video publishing workflow for Kent C. Dodds with AI generated transcripts and subtitles."
 image: "/assets/blog/nextjs-trpc-inngest/epic-web-kent-c-dodds.png"

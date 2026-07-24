@@ -84,18 +84,23 @@ function fullURL(path: string): string {
 /**
  * Recursively processes all MDX files in a directory
  * @param dir - Directory to process
+ * @param excludeFiles - Optional set of filenames (basename only) to skip
  * @returns Array of processed file contents
  */
-export function processDirectory(dir: string): string[] {
+export function processDirectory(
+  dir: string,
+  excludeFiles: Set<string> = new Set()
+): string[] {
   const results: string[] = [];
 
   for (const file of readdirSync(dir, { withFileTypes: true })) {
     if (config.excludes.includes(file.name)) continue;
+    if (excludeFiles.has(file.name)) continue;
 
     const fullPath = join(dir, file.name);
 
     if (file.isDirectory()) {
-      results.push(...processDirectory(fullPath));
+      results.push(...processDirectory(fullPath, excludeFiles));
     } else if (file.name.endsWith(".mdx")) {
       results.push(processMDXFile(fullPath));
     }

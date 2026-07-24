@@ -1,4 +1,5 @@
 ---
+tags: ["Queues & Flow Control", "Background Jobs & Scheduling", "SDKs & Languages"]
 heading: "Cross-language support and new Inngest SDKs: Python, Go, with more to come"
 subtitle: "The Inngest SDKs provide a language- and cloud-agnostic way to create fault-tolerant, long-running functions with built-in flow control."
 showSubtitle: true
@@ -24,8 +25,6 @@ We have just official released our [Python](/docs/reference/python) and [Go](htt
     />
 
 The Inngest SDKs provide a language- and cloud-agnostic way to create fault-tolerant, long-running functions with built-in flow control.
-
-👉 *Is your favorite language not included here? We want to hear from you! [Vote for your language of choice](https://roadmap.inngest.com/roadmap).*
 
 Because of how the Inngest architecture works, state is decoupled from your application using our SDKs. The state of your functions are stored within Inngest and the SDKs handle the communication with our APIs. This includes how state functions are triggered, results of steps are sent back to Inngest, and how state from previous steps is injected into your function (memoization). Because of this, the SDK logic does not need to be burdened by managing state — it’s just a chain of HTTP request and responses.
 

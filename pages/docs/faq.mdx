@@ -1,4 +1,8 @@
-export const description = "Frequently asked questions about Inngest";
+
+import { CodeGroup } from "src/shared/Docs/mdx";
+
+export const metaTitle = "Inngest FAQ | Frequently Asked Questions"
+export const description = "Answers to common Inngest questions: cron configuration, stopping functions, branch environment keys, timeouts, authentication, data redaction, and more."
 
 # Frequently Asked Questions (FAQs)
 
@@ -6,7 +10,7 @@ export const description = "Frequently asked questions about Inngest";
 - [How do I stop functions from running?](#how-do-i-stop-functions-from-running)
 - [What is the "Finalization" step in my trace?](#what-is-the-finalization-step-in-my-trace)
 - [Why am I getting “Event key not found" errors in branch environments?](#why-am-i-getting-event-key-not-found-errors-in-branch-environments)
-- [How do I specify multiple serve paths for a same Vercel application on the Dashboard?](#why-am-i-getting-event-key-not-found-errors-in-branch-environments)
+- [How do I specify multiple serve paths for a same Vercel application on the Dashboard?](#how-do-i-specify-multiple-serve-paths-for-a-same-vercel-application-on-the-dashboard)
 - [What's the recommended way to redact data from step outputs?](#what-s-the-recommended-way-to-redact-data-from-step-outputs)
 - [Why am I getting a `FUNCTION_INVOCATION_TIMEOUT` error?](#why-am-i-getting-a-function-invocation-timeout-error)
 - [My app's serve endpoint requires authentication. What should I
@@ -17,6 +21,7 @@ export const description = "Frequently asked questions about Inngest";
 - [Why am I getting an `Illegal invocation` error?](#why-am-i-getting-an-illegal-invocation-error)
 - [Why am I getting an `Invalid signature` error on my runs?](#why-am-i-getting-an-invalid-signature-error-on-my-runs)
 - [Why is the dev server polling endpoints that don't exist?](#why-is-the-dev-server-polling-endpoints-that-don-t-exist)
+- [Why doesn't the Dev Server do anything when I start it?](#why-doesn-t-the-dev-server-do-anything-when-i-start-it)
 
 ## How do I run crons only in production?
 
@@ -59,7 +64,7 @@ Branch environments are [automatically archived](/docs/platform/environments#arc
 It's possible to disable the auto archive functionality for each active environment on our [dashboard](https://app.inngest.com/env).
 
 
-## How do I specify multiple serve paths for a same Vercel application on the dashboard?
+## How do I specify multiple serve paths for a same Vercel application on the Dashboard?
 You can pass multiple paths by adding their path information to each Vercel project in the [Vercel Integration’s settings](https://app.inngest.com/settings/integrations/vercel).
 
 ## What's the recommended way to redact data from step outputs?
@@ -140,11 +145,24 @@ Learn more about this in the [dev server](/docs/dev-server#auto-discovery) docs.
 
 ## Why doesn't the Dev Server do anything when I start it?
 
-If the Dev Server command (`inngest dev`) doesn't do anything, it might be because you've installed via `npx` and disabled npm install scripts. Instead, you can use our bash installer which installs the binary from our GitHub repository:
+If the Dev Server command (`inngest dev`) doesn't do anything, it might be because you've installed via `npx` and disabled npm install scripts. Instead, install the binary directly with our bash installer or Homebrew:
 
+<CodeGroup>
 ```shell  {{ title: "Bash installer" }}
 # Install the CLI - follow the steps to complete install:
 curl -sSfL https://cli.inngest.com/install.sh | sh
+
 # Run the dev server
 inngest dev -u http://localhost:4321/api/inngest
 ```
+```shell {{ title: "brew" }}
+# Install the CLI:
+brew install inngest/tap/inngest
+
+# If Homebrew warns about untrusted taps, run this and then install again
+brew trust --cask inngest/tap/inngest
+
+# Run the dev server
+inngest dev -u http://localhost:4321/api/inngest
+```
+</CodeGroup>

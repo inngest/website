@@ -1,5 +1,8 @@
 import { Callout, Properties, Property } from "src/shared/Docs/mdx";
 
+export const metaTitle = "Middleware Lifecycle | TypeScript SDK v4 Reference"
+export const description = "Inngest middleware lifecycle in TypeScript SDK v4: onFunctionRun, transformInput, transformOutput, and beforeResponse hook signatures."
+
 # Middleware lifecycle
 
 Middleware lets you hook into function execution to add cross-cutting concerns like logging, error handling, and dependency injection. Middleware is class-based: you extend `Middleware.BaseMiddleware` and define hook methods.

@@ -1,4 +1,5 @@
 ---
+tags: ["Company & Product News"]
 heading: "Product updates:  Feb 8, 2022"
 subtitle: What's fresh out of the oven recently, and what's cooking?  Here's our bi-weekly product deep dive.
 image: "/assets/blog/product-updates.jpg"

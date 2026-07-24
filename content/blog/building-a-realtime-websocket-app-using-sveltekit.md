@@ -1,4 +1,5 @@
 ---
+tags: ["Realtime", "Tutorials & Guides", "Next.js & Frameworks"]
 focus: false
 heading: "Building a real-time websocket app using SvelteKit"
 subtitle: Our experience building https://typedwebhook.tools in 2 days using SvelteKit.

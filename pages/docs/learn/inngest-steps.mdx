@@ -1,14 +1,15 @@
 import { Callout } from "shared/Docs/mdx";
 import IconConcurrency from 'src/shared/Icons/FlowControl/Concurrency';
 
-export const description = 'Learn about Inngest steps and their methods.';
+export const metaTitle = "Steps in Inngest | Checkpointed, Retriable Units of Work";
+export const description = "Steps are the building blocks of Inngest functions. Each step is memoized, retriable, and can sleep, wait for events, or invoke other functions independently.";
 import { LanguageSelector, LanguageSection } from "shared/Docs/mdx";
 
 # Inngest Steps
 
-Steps are fundamental building blocks in Inngest functions. Each step represents an individual task (or other unit of work) within a function that can be executed independently.
+Inngest steps are checkpointed, retriable units of work inside [Inngest functions](/docs/learn/inngest-functions) and [Durable Endpoints](/docs/learn/durable-endpoints). Put side effects, API calls, sleeps, waits, and function invocations in steps so Inngest can memoize results, retry failures independently, and resume long-running work from the last successful checkpoint.
 
-Steps are crucial because they allow functions to run specific tasks in a controlled and sequential (or parallel) manner. You can build complex workflows by chaining together simple, discrete operations.
+Steps are the building blocks of durable execution. They let a function pause without holding compute, recover individual units of work after an error, and compose multi-step workflows from normal TypeScript, Python, or Go code.
 
 On this page, you will learn about the benefits of using steps, and get an overview of the available step methods.
 
@@ -109,7 +110,7 @@ The ID is also used to identify the function in the Inngest system.
 Inngest's SDK also records a counter for each unique step ID. The counter increases every time the same step is called. This allows you to run the same step in a loop, without changing the ID.
 
 <Callout>
-Please note that each step is executed as **a separate HTTP request**. To ensure efficient and correct execution, place any non-deterministic logic (such as DB calls or API calls) within a `step.run()` call.
+Place non-deterministic side effects, such as database writes or API calls, inside `step.run()` so Inngest can checkpoint the result and avoid re-running completed work during retries.
 </Callout>
 
 ## Available Step Methods

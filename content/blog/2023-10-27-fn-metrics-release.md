@@ -1,4 +1,5 @@
 ---
+tags: ["Observability & Debugging"]
 heading: "New in observability: Function Metrics"
 subtitle: "Better observability into function runs"
 image: /assets/blog/fn-metrics/feature-image.png

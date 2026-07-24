@@ -5,6 +5,10 @@ export type ReportGraph = {
   shareText: string;
 };
 
+/** Native dimensions of OG share-card chart PNGs — used for next/image. */
+export const REPORT_GRAPH_WIDTH = 3600;
+export const REPORT_GRAPH_HEIGHT = 1890;
+
 export const REPORT_PATH =
   "/assets/reports/2026-benchmark/2026-durable-execution-benchmark-report.pdf";
 

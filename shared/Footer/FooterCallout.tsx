@@ -15,7 +15,7 @@ url(/assets/textures/wave-large.svg)
 export default function FooterCallout({
   title = "Ready to start building?",
   description = "Ship reliable code without manage queues, infrastructure, or state",
-  ctaHref = process.env.NEXT_PUBLIC_SIGNUP_URL,
+  ctaHref = process.env.NEXT_PUBLIC_SIGNUP_URL || "#",
   ctaText = "Get started for free",
   ctaRef,
   showCliCmd = true,

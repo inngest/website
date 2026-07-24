@@ -1,0 +1,213 @@
+/* ============================================================================
+   Agent view — the in-page markdown / LLM view for patterns pages.
+   Relies on --accent / --accent-rgb being set on a parent (page--pattern)
+   or falls back to the site's CTA color.
+   ============================================================================ */
+
+.av {
+  --av-accent: var(--accent, var(--color-cta, #cbb26a));
+  max-width: 1240px;
+  margin: 0 auto;
+  padding: 0 32px 80px;
+}
+
+/* ─── Header ─────────────────────────────────────────────────────────────── */
+.av-header {
+  padding: 56px 0 48px;
+  border-bottom: 1px solid rgb(var(--color-border-subtle, 53 53 53));
+}
+
+.av-breadcrumb {
+  font-family: "Geist Mono", "CircularXXMono", ui-monospace, monospace;
+  font-size: 11px;
+  color: rgb(var(--color-foreground-muted, 155 155 155));
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+  margin: 0 0 28px;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+.av-sep { opacity: 0.4; }
+
+.av-meta-row {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 32px;
+  margin-bottom: 24px;
+  flex-wrap: wrap;
+}
+
+.av-title {
+  font-family: "Geist Mono", "CircularXXMono", ui-monospace, monospace;
+  font-size: clamp(36px, 5vw, 64px);
+  font-weight: 500;
+  color: rgb(var(--color-foreground-base, 246 246 246));
+  letter-spacing: -0.03em;
+  line-height: 1;
+  margin: 0;
+}
+
+.av-stats {
+  display: flex;
+  gap: 24px;
+  align-items: flex-end;
+  padding-bottom: 4px;
+  flex-shrink: 0;
+}
+.av-stat {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: 4px;
+}
+.av-stat strong {
+  font-family: "Geist Mono", "CircularXXMono", ui-monospace, monospace;
+  font-size: 32px;
+  font-weight: 400;
+  color: rgb(var(--color-foreground-base, 246 246 246));
+  line-height: 1;
+}
+.av-stat small {
+  font-family: "Geist Mono", "CircularXXMono", ui-monospace, monospace;
+  font-size: 9px;
+  letter-spacing: 0.18em;
+  color: rgb(var(--color-foreground-muted, 155 155 155));
+  text-transform: uppercase;
+}
+
+.av-desc {
+  font-size: 15px;
+  color: rgb(var(--color-foreground-muted, 155 155 155));
+  line-height: 1.6;
+  max-width: 600px;
+  margin: 0 0 28px;
+}
+.av-url-link {
+  font-family: "Geist Mono", "CircularXXMono", ui-monospace, monospace;
+  font-size: 13px;
+  color: var(--av-accent);
+  text-decoration: none;
+  border-bottom: 1px solid rgba(var(--accent-rgb, 203 178 106) / 0.3);
+  transition: border-color .15s ease;
+}
+.av-url-link:hover { border-bottom-color: var(--av-accent); }
+
+.av-actions {
+  display: flex;
+  gap: 10px;
+  flex-wrap: wrap;
+}
+
+.av-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 10px 18px;
+  border-radius: 4px;
+  font-family: "Geist Mono", "CircularXXMono", ui-monospace, monospace;
+  font-size: 12px;
+  font-weight: 500;
+  letter-spacing: 0.04em;
+  cursor: pointer;
+  transition: border-color .15s ease, color .15s ease, background .15s ease;
+  border: 1px solid rgb(var(--color-border-subtle, 53 53 53));
+  background: rgb(var(--color-background-canvas-subtle, 36 36 36));
+  color: rgb(var(--color-foreground-subtle, 204 204 204));
+}
+.av-btn:hover {
+  border-color: var(--av-accent);
+  color: var(--av-accent);
+}
+.av-btn--primary {
+  background: var(--av-accent);
+  border-color: var(--av-accent);
+  color: #050505;
+}
+.av-btn--primary:hover {
+  filter: brightness(1.1);
+  color: #050505;
+}
+
+/* ─── Code viewer ─────────────────────────────────────────────────────────── */
+.av-code {
+  margin-top: 40px;
+  border: 1px solid rgb(var(--color-border-subtle, 53 53 53));
+  border-radius: 6px;
+  overflow: hidden;
+}
+.av-code-head {
+  display: flex;
+  align-items: center;
+  gap: 0;
+  padding: 10px 14px;
+  background: rgb(var(--color-background-canvas-subtle, 36 36 36));
+  border-bottom: 1px solid rgb(var(--color-border-subtle, 53 53 53));
+}
+.av-dots {
+  display: flex;
+  gap: 6px;
+  align-items: center;
+  margin-right: 14px;
+}
+.av-dots span {
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+  background: rgb(var(--color-border-muted, 75 75 75));
+}
+.av-code-name {
+  font-family: "Geist Mono", "CircularXXMono", ui-monospace, monospace;
+  font-size: 11px;
+  color: rgb(var(--color-foreground-muted, 155 155 155));
+  letter-spacing: 0.04em;
+  flex: 1;
+}
+.av-code-type {
+  font-family: "Geist Mono", "CircularXXMono", ui-monospace, monospace;
+  font-size: 10px;
+  color: var(--av-accent);
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+}
+
+.av-pre {
+  margin: 0;
+  padding: 16px 0;
+  overflow-x: auto;
+  max-height: 520px;
+  overflow-y: auto;
+  font-family: "Geist Mono", "CircularXXMono", ui-monospace, monospace;
+  font-size: 13px;
+  line-height: 1.65;
+  background: rgb(var(--color-background-surface-subtle, 18 18 18));
+}
+.av-line {
+  display: grid;
+  grid-template-columns: 56px 1fr;
+  gap: 16px;
+  padding: 0 16px;
+}
+.av-ln {
+  color: rgb(var(--color-border-muted, 75 75 75));
+  user-select: none;
+  text-align: right;
+  font-size: 11px;
+  flex-shrink: 0;
+}
+.av-lc {
+  color: rgb(var(--color-foreground-muted, 155 155 155));
+  white-space: pre;
+}
+.av-lc--heading { color: rgb(var(--color-foreground-base, 246 246 246)); }
+.av-lc--meta    { color: var(--av-accent); opacity: 0.8; }
+.av-lc--blockquote { color: rgb(var(--color-foreground-muted, 155 155 155)); font-style: italic; }
+.av-lc--rule    { color: rgb(var(--color-border-muted, 75 75 75)); }
+
+@media (max-width: 760px) {
+  .av { padding: 0 20px 60px; }
+  .av-meta-row { flex-direction: column; gap: 20px; }
+  .av-stats { align-items: flex-start; }
+  .av-stat { align-items: flex-start; }
+}

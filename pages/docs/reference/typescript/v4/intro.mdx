@@ -2,6 +2,9 @@ import { Info, CodeGroup } from "src/shared/Docs/mdx";
 
 import GithubIcon from "shared/Icons/Github"
 
+export const metaTitle = "TypeScript SDK v4 | Inngest Reference";
+export const description = "Inngest TypeScript SDK v4: the latest release with improved type safety, native realtime, new step APIs, and updated middleware.";
+
 # TypeScript SDK v4
 
 <Info>
@@ -17,21 +20,31 @@ The TypeScript SDK v4 delivers a major upgrade to speed and developer experience
 - **Better schemas** — Runtime event data validation with Standard Schema support (not just Zod!).
 - **Faster by default** — Parallel step optimization and checkpointing are both enabled by default, leading to fewer requests and lower latency.
 - **Improved logging** — Structured logging (Pino-style) and cleaner separation of internal vs. app logs.
-- **Cleaner API** — Triggers in the options object, lazy init for edge runtimes, and more compile-time safety
+- **Cleaner API** — Triggers in the options object, lazy init for edge runtimes, and more compile-time safety.
 
 ## Installing
 
 <CodeGroup>
 ```shell {{ title: "npm" }}
-npm install inngest@beta
+npm install inngest
 ```
 ```shell {{ title: "pnpm" }}
-pnpm add inngest@beta
+pnpm add inngest
 ```
 ```shell {{ title: "yarn" }}
-yarn add inngest@beta
+yarn add inngest
 ```
 </CodeGroup>
+
+## Build with v4
+
+Start with the [client setup](/docs/reference/typescript/v4/client/create) and [function creation](/docs/reference/typescript/v4/functions/create) references, then use the v4 feature docs that match your application:
+
+- [Checkpointing](/docs/setup/checkpointing) for low-latency resumptions across durable steps.
+- [Realtime](/docs/features/realtime) for publishing workflow progress to users.
+- [Durable Endpoints](/docs/learn/durable-endpoints) for durable HTTP responses and streaming APIs.
+- [Middleware](/docs/reference/typescript/v4/middleware/lifecycle) for cross-cutting concerns like observability, serialization, encryption, and Sentry.
+- [v3 to v4 migration guide](/docs/reference/typescript/v4/migrations/v3-to-v4) for upgrading existing TypeScript projects.
 
 ## Source code
 

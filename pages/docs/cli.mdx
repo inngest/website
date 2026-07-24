@@ -1,0 +1,142 @@
+import { CodeGroup } from "src/shared/Docs/mdx";
+
+
+export const metaTitle = "Inngest CLI"
+export const description = "Start the Dev Server, manage local development, and run commands to test and debug your Inngest functions from the terminal."
+
+# Inngest CLI
+
+Inspect runs, fetch traces, invoke functions, and give coding agents access to your Inngest data from the terminal.
+
+<CodeGroup>
+```bash {{ title: "bash" }}
+curl -sfL https://cli.inngest.com/install.sh | sh
+```
+```bash {{ title: "brew" }}
+brew install inngest/tap/inngest
+
+# If Homebrew warns about untrusted taps, run this and then install again
+brew trust --cask inngest/tap/inngest
+```
+```bash {{ title: "npm" }}
+npm install -g inngest-cli
+```
+</CodeGroup>
+
+---
+
+## Quick start
+
+Set your API key and start inspecting runs:
+
+```bash
+export INNGEST_API_KEY=sk-inn-api-...
+```
+
+```bash
+# Get a function run
+inngest api get-function-run 01KTCTWT8XDEGWDMVX3Q9M69ND
+
+# Get runs triggered by an event
+inngest api get-event-runs 01KTCTWSZJEKAFEDA4F9GYHFQW --include-output --limit 5
+
+# Invoke a function
+inngest api invoke-function my-app my-function --data '{"message": "hello"}'
+
+# Fetch a full trace
+inngest api get-function-trace 01KTCTWT8XDEGWDMVX3Q9M69ND --include-output
+```
+
+The CLI auto-generates commands from the Inngest v2 REST API. Every API endpoint is available as a subcommand under `inngest api`.
+
+---
+
+## Authentication
+
+The CLI accepts environment-scoped API keys. These are separate from signing keys and can be scoped to a specific environment.
+
+Create an API key in the [Inngest dashboard](https://app.inngest.com) under Settings > API Keys. Environment-scoped keys automatically target the right environment without any extra configuration.
+
+Auth precedence:
+
+1. `--api-key` flag (explicit override)
+2. `INNGEST_API_KEY` environment variable
+3. `INNGEST_SIGNING_KEY` environment variable (fallback)
+4. Dev server: no auth required
+
+---
+
+## Dev server vs cloud
+
+The CLI targets your local dev server by default. Use `--prod` to hit Inngest Cloud:
+
+```bash
+# Local dev server (default)
+inngest api get-function-run 01ABC123
+
+# Inngest Cloud
+inngest api --prod get-function-run 01ABC123
+
+# Custom API host
+inngest api --api-host http://localhost:8288 get-function-run 01ABC123
+```
+
+Target resolution:
+
+1. `--api-host` or `--api-port` flags
+2. `--prod` flag
+3. Default: local dev server
+
+---
+
+## Available commands
+
+All commands live under `inngest api`. Run `--help` on any command to see its options:
+
+```bash
+inngest api --help
+inngest api get-function-run --help
+```
+
+### Runs
+
+| Command | Description |
+|---------|-------------|
+| `get-function-run <run_id>` | Get a function run summary |
+| `get-function-trace <run_id>` | Get the full trace with step spans |
+| `get-event-runs <event_id>` | List runs triggered by a specific event |
+
+### Functions
+
+| Command | Description |
+|---------|-------------|
+| `invoke-function <app_id> <function_id>` | Invoke a function with a JSON payload |
+
+Common flags:
+
+- `--include-output` includes step and run output in the response
+- `--limit N` limits the number of results
+- `--prod` targets Inngest Cloud instead of the dev server
+
+---
+
+## Output format
+
+The CLI outputs compact JSON by default. Pipe to jq or other tools:
+
+```bash
+# Get just the status
+inngest api --prod get-function-run 01ABC123 | jq '.data.status'
+
+# Pretty print
+inngest api --prod get-function-run 01ABC123 | jq .
+```
+
+---
+
+## Related
+
+- [Debug a function run from your terminal](/docs/guides/debug-with-cli) for a step-by-step guide
+- [Use the CLI with coding agents](/docs/ai-patterns/cli-for-coding-agents) to give Claude Code, Cursor, or Codex access to your Inngest data
+- [REST API documentation](https://api-docs.inngest.com) for the full API reference
+- [API Keys](/docs/platform/api-keys) for key management

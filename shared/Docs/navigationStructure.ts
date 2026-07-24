@@ -4,127 +4,79 @@ import {
   LightBulbIcon,
   BookOpenIcon,
   CodeBracketIcon,
+  Squares2X2Icon,
 } from "@heroicons/react/24/outline";
 import { parse } from "node:path";
 import { TS_STABLE, type TSVersion } from "./LanguageStore";
+import PATTERN_SECTIONS, { PATTERNS } from "../Patterns/patternsData";
 
-// Build a TypeScript SDK reference path. Stable version gets versionless
-// paths; non-stable gets a version prefix.
 function tsRef(version: TSVersion, path: string): string {
-  if (version === TS_STABLE) {
-    return `/docs/reference/typescript/${path}`;
-  }
   return `/docs/reference/typescript/${version}/${path}`;
 }
 
-// A basic link in the nav
 export type NavLink = {
   title: string;
   href: string;
   className?: string;
   tag?: string;
   target?: string;
+  unreleased?: string;
 };
 
 export type NavLinkGroup = {
   title: string;
   className?: string;
 };
-// A group nested of nav links with a header
+
 export type NavGroup = {
   title: string;
   href?: string;
   icon?: React.FC<React.SVGProps<SVGSVGElement>>;
   links: (NavGroup | NavLink | NavSection | NavLinkGroup)[];
-  /* Whether group should be open when there is no active group */
   defaultOpen?: boolean;
   tag?: string;
   target?: string;
+  unreleased?: string;
 };
-// A nav section with a nested navigation section
+
 export type NavSection = NavLink & {
   icon?: React.FC<React.SVGProps<SVGSVGElement>>;
   matcher?: RegExp | Function;
   tag?: string;
   target?: string;
+  unreleased?: string;
   sectionLinks: {
     title: string;
     links: NavLink[];
   }[];
 };
 
-// =============================================================================
-// REFERENCE SECTION
-// =============================================================================
 const sectionReference: (NavGroup | NavLink)[] = [
   {
     title: "TypeScript SDK v3",
     links: [
-      {
-        title: "Introduction",
-        href: tsRef("v3", "intro"),
-      },
-      {
-        title: "Create the client",
-        href: tsRef("v3", "client/create"),
-      },
-      {
-        title: "Create a function",
-        href: tsRef("v3", "functions/create"),
-      },
-      {
-        title: "Send events",
-        href: tsRef("v3", "events/send"),
-      },
-      {
-        title: "Errors",
-        href: `/docs/reference/typescript/functions/errors`,
-      },
+      { title: "Introduction", href: tsRef("v3", "intro") },
+      { title: "Create the client", href: tsRef("v3", "client/create") },
+      { title: "Create a function", href: tsRef("v3", "functions/create") },
+      { title: "Send events", href: tsRef("v3", "events/send") },
+      { title: "Errors", href: `/docs/reference/typescript/functions/errors` },
       {
         title: "Handling failures",
         href: tsRef("v3", "functions/handling-failures"),
       },
-      {
-        title: "Cancel on",
-        href: tsRef("v3", "functions/cancel-on"),
-      },
-      {
-        title: "Concurrency",
-        href: `/docs/functions/concurrency`,
-      },
-      {
-        title: "Rate limit",
-        href: tsRef("v3", "functions/rate-limit"),
-      },
-      {
-        title: "Singleton",
-        href: tsRef("v3", "functions/singleton"),
-      },
-      {
-        title: "Debounce",
-        href: tsRef("v3", "functions/debounce"),
-      },
+      { title: "Cancel on", href: tsRef("v3", "functions/cancel-on") },
+      { title: "Concurrency", href: `/docs/functions/concurrency` },
+      { title: "Rate limit", href: tsRef("v3", "functions/rate-limit") },
+      { title: "Singleton", href: tsRef("v3", "functions/singleton") },
+      { title: "Debounce", href: tsRef("v3", "functions/debounce") },
       {
         title: "Function run priority",
         href: tsRef("v3", "functions/run-priority"),
       },
-      {
-        title: "Extended Traces",
-        href: tsRef("v3", "extended-traces"),
-      },
-      {
-        title: "Referencing functions",
-        href: `/docs/functions/references`,
-      },
-      {
-        title: "Testing",
-        href: tsRef("v3", "testing"),
-      },
-      {
-        title: "Durable Endpoints",
-        href: tsRef("v3", "durable-endpoints"),
-        tag: "new",
-      },
+      { title: "Extended Traces", href: tsRef("v3", "extended-traces") },
+      { title: "Referencing functions", href: `/docs/functions/references` },
+      { title: "Testing", href: tsRef("v3", "testing") },
+      { title: "Durable Endpoints", href: tsRef("v3", "durable-endpoints") },
       {
         title: "Steps",
         links: [
@@ -172,24 +124,15 @@ const sectionReference: (NavGroup | NavLink)[] = [
             title: "Framework handlers",
             href: `/docs/learn/serving-inngest-functions`,
           },
-          {
-            title: "Configuration",
-            href: tsRef("v3", "serve"),
-          },
-          {
-            title: "Streaming",
-            href: `/docs/streaming`,
-          },
+          { title: "Configuration", href: tsRef("v3", "serve") },
+          { title: "Streaming", href: `/docs/streaming` },
         ],
       },
       {
         title: "Realtime",
         tag: "deprecated",
         links: [
-          {
-            title: "Overview",
-            href: tsRef("v3", "realtime"),
-          },
+          { title: "Overview", href: tsRef("v3", "realtime") },
           {
             title: "React hooks / Next.js",
             href: tsRef("v3", "realtime/react-hooks"),
@@ -199,14 +142,8 @@ const sectionReference: (NavGroup | NavLink)[] = [
       {
         title: "Middleware",
         links: [
-          {
-            title: "Lifecycle",
-            href: tsRef("v3", "middleware/lifecycle"),
-          },
-          {
-            title: "Examples",
-            href: tsRef("v3", "middleware/examples"),
-          },
+          { title: "Lifecycle", href: tsRef("v3", "middleware/lifecycle") },
+          { title: "Examples", href: tsRef("v3", "middleware/examples") },
           {
             title: "TypeScript",
             href: `/docs/reference/middleware/typescript`,
@@ -220,14 +157,8 @@ const sectionReference: (NavGroup | NavLink)[] = [
             title: "Environment variables",
             href: `/docs/sdk/environment-variables`,
           },
-          {
-            title: "Using TypeScript",
-            href: `/docs/typescript`,
-          },
-          {
-            title: "ESLint plugin",
-            href: `/docs/sdk/eslint`,
-          },
+          { title: "Using TypeScript", href: `/docs/typescript` },
+          { title: "ESLint plugin", href: `/docs/sdk/eslint` },
           {
             title: "Upgrading to v3",
             href: tsRef("v3", "migrations/v2-to-v3"),
@@ -240,78 +171,49 @@ const sectionReference: (NavGroup | NavLink)[] = [
     title: "TypeScript SDK v4",
     tag: "new",
     links: [
-      {
-        title: "Introduction",
-        href: tsRef("v4", "intro"),
-      },
-      {
-        title: "Create the client",
-        href: tsRef("v4", "client/create"),
-      },
-      {
-        title: "Create a function",
-        href: tsRef("v4", "functions/create"),
-      },
-      {
-        title: "Trigger helpers",
-        href: tsRef("v4", "functions/triggers"),
-      },
-      {
-        title: "Send events",
-        href: tsRef("v4", "events/send"),
-      },
-      {
-        title: "Errors",
-        href: `/docs/reference/typescript/functions/errors`,
-      },
+      { title: "Introduction", href: tsRef("v4", "intro") },
+      { title: "Create the client", href: tsRef("v4", "client/create") },
+      { title: "Create a function", href: tsRef("v4", "functions/create") },
+      { title: "Trigger helpers", href: tsRef("v4", "functions/triggers") },
+      { title: "Send events", href: tsRef("v4", "events/send") },
+      { title: "Errors", href: `/docs/reference/typescript/functions/errors` },
       {
         title: "Handling failures",
         href: tsRef("v4", "functions/handling-failures"),
       },
-      {
-        title: "Cancel on",
-        href: tsRef("v4", "functions/cancel-on"),
-      },
-      {
-        title: "Concurrency",
-        href: tsRef("v4", "functions/concurrency"),
-      },
-      {
-        title: "Rate limit",
-        href: tsRef("v4", "functions/rate-limit"),
-      },
-      {
-        title: "Singleton",
-        href: tsRef("v4", "functions/singleton"),
-      },
-      {
-        title: "Debounce",
-        href: tsRef("v4", "functions/debounce"),
-      },
+      { title: "Cancel on", href: tsRef("v4", "functions/cancel-on") },
+      { title: "Concurrency", href: tsRef("v4", "functions/concurrency") },
+      { title: "Rate limit", href: tsRef("v4", "functions/rate-limit") },
+      { title: "Singleton", href: tsRef("v4", "functions/singleton") },
+      { title: "Debounce", href: tsRef("v4", "functions/debounce") },
       {
         title: "Function run priority",
         href: tsRef("v4", "functions/run-priority"),
       },
-      {
-        title: "Logging",
-        href: tsRef("v4", "logging"),
-      },
-      {
-        title: "Extended Traces",
-        href: tsRef("v4", "extended-traces"),
-      },
+      { title: "Logging", href: tsRef("v4", "logging") },
+      { title: "Extended Traces", href: tsRef("v4", "extended-traces") },
       {
         title: "Referencing functions",
         href: tsRef("v4", "functions/references"),
       },
+      { title: "Testing", href: tsRef("v4", "testing") },
+      { title: "Durable Endpoints", href: tsRef("v4", "durable-endpoints") },
       {
-        title: "Testing",
-        href: tsRef("v4", "testing"),
+        title: "Deferred Functions",
+        href: tsRef("v4", "functions/deferred-functions"),
+        tag: "beta",
       },
+      { title: "Scoring", href: tsRef("v4", "functions/scoring"), tag: "beta" },
       {
-        title: "Durable Endpoints",
-        href: tsRef("v4", "durable-endpoints"),
-        tag: "new",
+        title: "Group",
+        links: [
+          {
+            title: "group.experiment()",
+            href: tsRef("v4", "functions/group-experiment"),
+            className: "font-mono",
+            tag: "beta",
+          },
+        ],
       },
       {
         title: "Steps",
@@ -365,75 +267,44 @@ const sectionReference: (NavGroup | NavLink)[] = [
             title: "Framework handlers",
             href: `/docs/learn/serving-inngest-functions`,
           },
-          {
-            title: "Configuration",
-            href: tsRef("v4", "serve"),
-          },
-          {
-            title: "Streaming",
-            href: tsRef("v4", "serve/streaming"),
-          },
+          { title: "Configuration", href: tsRef("v4", "serve") },
+          { title: "Streaming", href: tsRef("v4", "serve/streaming") },
         ],
       },
       {
         title: "Realtime",
-        tag: "new",
         links: [
-          {
-            title: "Overview",
-            href: tsRef("v4", "realtime"),
-          },
+          { title: "Overview", href: tsRef("v4", "realtime") },
           {
             title: "Channels & topics",
             href: tsRef("v4", "realtime/channels"),
           },
-          {
-            title: "Publishing",
-            href: tsRef("v4", "realtime/publishing"),
-          },
+          { title: "Publishing", href: tsRef("v4", "realtime/publishing") },
           {
             title: "useRealtime",
             href: tsRef("v4", "realtime/use-realtime"),
             className: "font-mono",
           },
-          {
-            title: "Subscribing",
-            href: tsRef("v4", "realtime/subscribing"),
-          },
+          { title: "Subscribing", href: tsRef("v4", "realtime/subscribing") },
         ],
       },
       {
         title: "Middleware",
         links: [
-          {
-            title: "Lifecycle",
-            href: tsRef("v4", "middleware/lifecycle"),
-          },
-          {
-            title: "Examples",
-            href: tsRef("v4", "middleware/examples"),
-          },
+          { title: "Lifecycle", href: tsRef("v4", "middleware/lifecycle") },
+          { title: "Examples", href: tsRef("v4", "middleware/examples") },
           {
             title: "Custom serialization",
             href: tsRef("v4", "middleware/serialization"),
           },
-          {
-            title: "Encryption",
-            href: tsRef("v4", "middleware/encryption"),
-          },
-          {
-            title: "Sentry",
-            href: tsRef("v4", "middleware/sentry"),
-          },
+          { title: "Encryption", href: tsRef("v4", "middleware/encryption") },
+          { title: "Sentry", href: tsRef("v4", "middleware/sentry") },
         ],
       },
       {
         title: "Migrations",
         links: [
-          {
-            title: "v3 to v4",
-            href: tsRef("v4", "migrations/v3-to-v4"),
-          },
+          { title: "v3 to v4", href: tsRef("v4", "migrations/v3-to-v4") },
         ],
       },
       {
@@ -443,14 +314,8 @@ const sectionReference: (NavGroup | NavLink)[] = [
             title: "Environment variables",
             href: `/docs/sdk/environment-variables`,
           },
-          {
-            title: "Using TypeScript",
-            href: `/docs/typescript`,
-          },
-          {
-            title: "ESLint plugin",
-            href: `/docs/sdk/eslint`,
-          },
+          { title: "Using TypeScript", href: `/docs/typescript` },
+          { title: "ESLint plugin", href: `/docs/sdk/eslint` },
         ],
       },
     ],
@@ -458,10 +323,7 @@ const sectionReference: (NavGroup | NavLink)[] = [
   {
     title: "Python SDK",
     links: [
-      {
-        title: "Introduction",
-        href: `/docs/reference/python`,
-      },
+      { title: "Introduction", href: `/docs/reference/python` },
       {
         title: "Quick start",
         href: `/docs/reference/python/overview/quick-start`,
@@ -474,10 +336,7 @@ const sectionReference: (NavGroup | NavLink)[] = [
         title: "Create function",
         href: `/docs/reference/python/functions/create`,
       },
-      {
-        title: "Send events",
-        href: `/docs/reference/python/client/send`,
-      },
+      { title: "Send events", href: `/docs/reference/python/client/send` },
       {
         title: "Environment variables",
         href: `/docs/reference/python/overview/env-vars`,
@@ -489,30 +348,18 @@ const sectionReference: (NavGroup | NavLink)[] = [
       {
         title: "Steps",
         links: [
-          {
-            title: "invoke",
-            href: `/docs/reference/python/steps/invoke`,
-          },
+          { title: "invoke", href: `/docs/reference/python/steps/invoke` },
           {
             title: "invoke_by_id",
             href: `/docs/reference/python/steps/invoke_by_id`,
           },
-          {
-            title: "parallel",
-            href: `/docs/reference/python/steps/parallel`,
-          },
-          {
-            title: "run",
-            href: `/docs/reference/python/steps/run`,
-          },
+          { title: "parallel", href: `/docs/reference/python/steps/parallel` },
+          { title: "run", href: `/docs/reference/python/steps/run` },
           {
             title: "send_event",
             href: `/docs/reference/python/steps/send-event`,
           },
-          {
-            title: "sleep",
-            href: `/docs/reference/python/steps/sleep`,
-          },
+          { title: "sleep", href: `/docs/reference/python/steps/sleep` },
           {
             title: "sleep_until",
             href: `/docs/reference/python/steps/sleep-until`,
@@ -539,18 +386,9 @@ const sectionReference: (NavGroup | NavLink)[] = [
       {
         title: "Guides",
         links: [
-          {
-            title: "Testing",
-            href: `/docs/reference/python/guides/testing`,
-          },
-          {
-            title: "Modal",
-            href: `/docs/reference/python/guides/modal`,
-          },
-          {
-            title: "Pydantic",
-            href: `/docs/reference/python/guides/pydantic`,
-          },
+          { title: "Testing", href: `/docs/reference/python/guides/testing` },
+          { title: "Modal", href: `/docs/reference/python/guides/modal` },
+          { title: "Pydantic", href: `/docs/reference/python/guides/pydantic` },
         ],
       },
       {
@@ -579,6 +417,10 @@ const sectionReference: (NavGroup | NavLink)[] = [
         title: "Migrations",
         links: [
           {
+            title: "v0.15 to v0.16",
+            href: `/docs/reference/go/migrations/v0.16`,
+          },
+          {
             title: "v0.8 to v0.11",
             href: `/docs/reference/go/migrations/v0.8-to-v0.11`,
           },
@@ -591,9 +433,11 @@ const sectionReference: (NavGroup | NavLink)[] = [
     ],
   },
   {
-    title: "REST API",
-    href: "https://api-docs.inngest.com",
+    title: "CLI",
+    href: "/docs/cli",
+    tag: "new",
   },
+  { title: "REST API", href: "https://api-docs.inngest.com" },
   {
     title: "System events",
     links: [
@@ -609,25 +453,16 @@ const sectionReference: (NavGroup | NavLink)[] = [
       },
     ],
   },
-  {
-    title: "Self-hosting",
-    href: `/docs/self-hosting`,
-  },
+  { title: "Self-hosting", href: `/docs/self-hosting` },
 ];
 
-// =============================================================================
-// LEARN SECTION
-// =============================================================================
 const sectionLearn: (NavGroup | NavLink)[] = [
   { title: "Home", href: "/docs" },
   {
     title: "Quick starts",
     defaultOpen: true,
     links: [
-      {
-        title: "Next.js",
-        href: "/docs/getting-started/nextjs-quick-start",
-      },
+      { title: "Next.js", href: "/docs/getting-started/nextjs-quick-start" },
       {
         title: "Node.js",
         links: [
@@ -635,18 +470,9 @@ const sectionLearn: (NavGroup | NavLink)[] = [
             title: "Express",
             href: "/docs/getting-started/express-quick-start",
           },
-          {
-            title: "Astro",
-            href: "/docs/getting-started/astro-quick-start",
-          },
-          {
-            title: "H3",
-            href: "/docs/getting-started/h3-quick-start",
-          },
-          {
-            title: "NestJS",
-            href: "/docs/getting-started/nestjs-quick-start",
-          },
+          { title: "Astro", href: "/docs/getting-started/astro-quick-start" },
+          { title: "H3", href: "/docs/getting-started/h3-quick-start" },
+          { title: "NestJS", href: "/docs/getting-started/nestjs-quick-start" },
           {
             title: "TanStack Start",
             href: "/docs/getting-started/tanstack-start-quick-start",
@@ -657,10 +483,7 @@ const sectionLearn: (NavGroup | NavLink)[] = [
           },
         ],
       },
-      {
-        title: "Python",
-        href: "/docs/getting-started/python-quick-start",
-      },
+      { title: "Python", href: "/docs/getting-started/python-quick-start" },
     ],
   },
   {
@@ -674,10 +497,7 @@ const sectionLearn: (NavGroup | NavLink)[] = [
       {
         title: "Durable Functions",
         links: [
-          {
-            title: "Overview",
-            href: `/docs/learn/inngest-functions`,
-          },
+          { title: "Overview", href: `/docs/learn/inngest-functions` },
           {
             title: "Serve Inngest Functions",
             href: "/docs/learn/serving-inngest-functions",
@@ -687,36 +507,40 @@ const sectionLearn: (NavGroup | NavLink)[] = [
             href: `/docs/features/events-triggers`,
           },
           {
-            title: "Idempotency",
-            href: `/docs/guides/handling-idempotency`,
+            title: "Deferred functions",
+            href: "/docs/features/inngest-functions/deferred-functions",
+            tag: "beta",
           },
-          {
-            title: "Logging",
-            href: "/docs/guides/logging",
-          },
+          { title: "Idempotency", href: `/docs/guides/handling-idempotency` },
+          { title: "Logging", href: "/docs/guides/logging" },
         ],
       },
       {
         title: "Durable Endpoints",
         links: [
-          {
-            title: "Overview",
-            href: `/docs/learn/durable-endpoints`,
-          },
+          { title: "Overview", href: `/docs/learn/durable-endpoints` },
           {
             title: "Streaming",
             href: "/docs/learn/durable-endpoints/streaming",
           },
         ],
-        tag: "new",
+      },
+      {
+        title: "Durable Agents",
+        href: `/docs/learn/durable-agents`,
+        // links: [
+        //   { title: "Overview", href: `/docs/learn/durable-agents` },
+        //   // Future "AI Observability" guide
+        //   // {
+        //   //   title: "AI Observability",
+        //   //   href: `/docs/learn/tbd`,
+        //   // },
+        // ],
       },
       {
         title: "Steps",
         links: [
-          {
-            title: "Building with steps",
-            href: `/docs/learn/inngest-steps`,
-          },
+          { title: "Building with steps", href: `/docs/learn/inngest-steps` },
           {
             title: "Sleeping",
             href: "/docs/features/inngest-functions/steps-workflows/sleeps",
@@ -734,22 +558,31 @@ const sectionLearn: (NavGroup | NavLink)[] = [
             href: `/docs/guides/invoking-functions-directly`,
           },
           {
+            title: "Step experiments",
+            href: "/docs/features/inngest-functions/steps-workflows/step-experiments",
+            tag: "new",
+          },
+          {
+            title: "Scoring",
+            href: "/docs/features/inngest-functions/steps-workflows/scoring",
+            tag: "beta",
+          },
+          {
+            title: "Deferred scoring",
+            href: "/docs/features/inngest-functions/steps-workflows/deferred-scoring",
+            tag: "beta",
+          },
+          {
             title: "AI steps (LLM calls)",
             href: "/docs/features/inngest-functions/steps-workflows/step-ai-orchestration",
           },
-          {
-            title: "Durable Fetch",
-            href: "/docs/reference/typescript/functions/fetch",
-          },
+          { title: "Durable Fetch", href: tsRef("v4", "functions/fetch") },
         ],
       },
       {
         title: "Error handling",
         links: [
-          {
-            title: "Overview",
-            href: `/docs/guides/error-handling`,
-          },
+          { title: "Overview", href: `/docs/guides/error-handling` },
           {
             title: "Retries",
             href: "/docs/features/inngest-functions/error-retries/retries",
@@ -771,40 +604,17 @@ const sectionLearn: (NavGroup | NavLink)[] = [
       {
         title: "Flow control",
         links: [
-          {
-            title: "Overview",
-            href: `/docs/guides/flow-control`,
-          },
-          {
-            title: "Concurrency",
-            href: `/docs/guides/concurrency`,
-          },
-          {
-            title: "Throttling",
-            href: `/docs/guides/throttling`,
-          },
-          {
-            title: "Batching",
-            href: `/docs/guides/batching`,
-          },
-          {
-            title: "Rate limit",
-            href: `/docs/guides/rate-limiting`,
-          },
-          {
-            title: "Singleton",
-            href: `/docs/guides/singleton`,
-          },
-          {
-            title: "Debounce",
-            href: `/docs/guides/debounce`,
-          },
-          {
-            title: "Priority",
-            href: `/docs/guides/priority`,
-          },
+          { title: "Overview", href: `/docs/guides/flow-control` },
+          { title: "Concurrency", href: `/docs/guides/concurrency` },
+          { title: "Throttling", href: `/docs/guides/throttling` },
+          { title: "Batching", href: `/docs/guides/batching` },
+          { title: "Rate limit", href: `/docs/guides/rate-limiting` },
+          { title: "Singleton", href: `/docs/guides/singleton` },
+          { title: "Debounce", href: `/docs/guides/debounce` },
+          { title: "Priority", href: `/docs/guides/priority` },
         ],
       },
+      { title: "Agent Evals", href: "/docs/learn/agent-evals", tag: "beta" },
       {
         title: "Cancellation",
         links: [
@@ -828,12 +638,8 @@ const sectionLearn: (NavGroup | NavLink)[] = [
       },
       {
         title: "Realtime",
-        tag: "new",
         links: [
-          {
-            title: "Overview",
-            href: "/docs/features/realtime",
-          },
+          { title: "Overview", href: "/docs/features/realtime" },
           {
             title: "React hooks / Next.js",
             href: "/docs/features/realtime/react-hooks",
@@ -844,26 +650,11 @@ const sectionLearn: (NavGroup | NavLink)[] = [
         title: "Environments and Apps",
         href: "/docs/apps",
         links: [
-          {
-            title: "Overview",
-            href: "/docs/apps",
-          },
-          {
-            title: "Environments",
-            href: `/docs/platform/environments`,
-          },
-          {
-            title: "Apps",
-            href: `/docs/platform/manage/apps`,
-          },
-          {
-            title: "Event keys",
-            href: `/docs/events/creating-an-event-key`,
-          },
-          {
-            title: "Signing keys",
-            href: `/docs/platform/signing-keys`,
-          },
+          { title: "Overview", href: "/docs/apps" },
+          { title: "Environments", href: `/docs/platform/environments` },
+          { title: "Apps", href: `/docs/platform/manage/apps` },
+          { title: "Event keys", href: `/docs/events/creating-an-event-key` },
+          { title: "Signing keys", href: `/docs/platform/signing-keys` },
         ],
       },
     ],
@@ -872,21 +663,39 @@ const sectionLearn: (NavGroup | NavLink)[] = [
     title: "Guides",
     defaultOpen: true,
     links: [
+      { title: "Local development", href: `/docs/local-development` },
       {
-        title: "Local development",
-        href: `/docs/local-development`,
+        title: "CLI",
+        tag: "new",
+        links: [
+          { title: "CLI reference", href: "/docs/cli" },
+          { title: "Debug with the CLI", href: "/docs/guides/debug-with-cli" },
+        ],
       },
       {
-        title: "Patterns",
+        title: "Events and Triggers",
         links: [
+          { title: "Overview", href: `/docs/features/events-triggers` },
+          { title: "Sending events", href: `/docs/events` },
           {
-            title: "Parallel steps",
-            href: "/docs/guides/step-parallelism",
+            title: "Event payload format",
+            href: `/docs/features/events-triggers/event-format`,
           },
           {
-            title: "Fan-out",
-            href: `/docs/guides/fan-out-jobs`,
+            title: "Sessions",
+            href: `/docs/features/events-triggers/sessions`,
+            tag: "new",
           },
+          {
+            title: "Writing expressions",
+            href: `/docs/guides/writing-expressions`,
+          },
+          {
+            title: "Consuming webhook events",
+            href: `/docs/platform/webhooks`,
+          },
+          { title: "Parallel steps", href: "/docs/guides/step-parallelism" },
+          { title: "Fan-out", href: `/docs/guides/fan-out-jobs` },
           {
             title: "Working with loops",
             href: "/docs/guides/working-with-loops",
@@ -895,14 +704,8 @@ const sectionLearn: (NavGroup | NavLink)[] = [
             title: "Delayed functions",
             href: `/docs/guides/delayed-functions`,
           },
-          {
-            title: "Cron functions",
-            href: `/docs/guides/scheduled-functions`,
-          },
-          {
-            title: "Background jobs",
-            href: `/docs/guides/background-jobs`,
-          },
+          { title: "Cron functions", href: `/docs/guides/scheduled-functions` },
+          { title: "Background jobs", href: `/docs/guides/background-jobs` },
           {
             title: "Multiple triggers & wildcards",
             href: `/docs/guides/multiple-triggers`,
@@ -922,10 +725,7 @@ const sectionLearn: (NavGroup | NavLink)[] = [
           {
             title: "Workflow Kit",
             links: [
-              {
-                title: "Introduction",
-                href: `/docs/reference/workflow-kit`,
-              },
+              { title: "Introduction", href: `/docs/reference/workflow-kit` },
               {
                 title: "Creating Workflow Actions",
                 href: `/docs/reference/workflow-kit/actions`,
@@ -947,7 +747,7 @@ const sectionLearn: (NavGroup | NavLink)[] = [
         ],
       },
       {
-        title: "AI Patterns",
+        title: "Agents",
         links: [
           {
             title: "Agent tool loops",
@@ -961,20 +761,19 @@ const sectionLearn: (NavGroup | NavLink)[] = [
             title: "Sub-agents",
             href: `/docs/ai-patterns/sub-agent-delegation`,
           },
+          {
+            title: "CLI for coding agents",
+            href: `/docs/ai-patterns/cli-for-coding-agents`,
+            tag: "new",
+          },
         ],
       },
       {
         title: "Deploying",
         defaultOpen: true,
         links: [
-          {
-            title: "Overview",
-            href: `/docs/platform/deployment`,
-          },
-          {
-            title: "Sync your app",
-            href: `/docs/apps/cloud`,
-          },
+          { title: "Overview", href: `/docs/platform/deployment` },
+          { title: "Sync your app", href: `/docs/apps/cloud` },
           {
             title: "Connect (workers)",
             href: `/docs/setup/connect`,
@@ -985,30 +784,19 @@ const sectionLearn: (NavGroup | NavLink)[] = [
             href: `/docs/setup/checkpointing`,
             tag: "new",
           },
+          { title: "Self-hosting", href: `/docs/self-hosting` },
           {
             title: "Cloud providers",
             links: [
-              {
-                title: "Vercel",
-                href: "/docs/deploy/vercel",
-              },
+              { title: "Vercel", href: "/docs/deploy/vercel" },
               {
                 title: "DigitalOcean",
                 href: "/docs/deploy/digital-ocean",
                 tag: "new",
               },
-              {
-                title: "Cloudflare Pages",
-                href: `/docs/deploy/cloudflare`,
-              },
-              {
-                title: "Netlify",
-                href: `/docs/deploy/netlify`,
-              },
-              {
-                title: "Render",
-                href: `/docs/deploy/render`,
-              },
+              { title: "Cloudflare Pages", href: `/docs/deploy/cloudflare` },
+              { title: "Netlify", href: `/docs/deploy/netlify` },
+              { title: "Render", href: `/docs/deploy/render` },
               {
                 title: "Cloud Provider Usage Limits",
                 href: `/docs/usage-limits/providers`,
@@ -1017,50 +805,13 @@ const sectionLearn: (NavGroup | NavLink)[] = [
           },
         ],
       },
-      {
-        title: "Events & Triggers",
-        links: [
-          {
-            title: "Overview",
-            href: `/docs/features/events-triggers`,
-          },
-          {
-            title: "Sending events",
-            href: `/docs/events`,
-          },
-          {
-            title: "Event payload format",
-            href: `/docs/features/events-triggers/event-format`,
-          },
-          {
-            title: "Writing expressions",
-            href: `/docs/guides/writing-expressions`,
-          },
-          {
-            title: "Consuming webhook events",
-            href: `/docs/platform/webhooks`,
-          },
-        ],
-      },
-      {
-        title: "Optimizing Performance",
-        href: `/docs/improve-performance`,
-      },
-      {
-        title: "Versioning",
-        href: `/docs/learn/versioning`,
-      },
-      {
-        title: "Logging",
-        href: "/docs/guides/logging",
-      },
+      { title: "Optimizing Performance", href: `/docs/improve-performance` },
+      { title: "Versioning", href: `/docs/learn/versioning` },
+      { title: "Logging", href: "/docs/guides/logging" },
       {
         title: "Middleware",
         links: [
-          {
-            title: "Overview",
-            href: `/docs/features/middleware`,
-          },
+          { title: "Overview", href: `/docs/features/middleware` },
           {
             title: "Creating middleware",
             href: `/docs/features/middleware/create`,
@@ -1087,26 +838,17 @@ const sectionLearn: (NavGroup | NavLink)[] = [
       {
         title: "Manage",
         links: [
-          {
-            title: "Bulk replay",
-            href: "/docs/platform/replay",
-          },
+          { title: "Bulk replay", href: "/docs/platform/replay" },
           {
             title: "Bulk cancel",
             href: "/docs/platform/manage/bulk-cancellation",
           },
-          {
-            title: "Pausing",
-            href: "/docs/guides/pause-functions",
-          },
+          { title: "Pausing", href: "/docs/guides/pause-functions" },
           {
             title: "Rotating keys",
             href: "/docs/platform/manage/rotating-keys",
           },
-          {
-            title: "API keys",
-            href: "/docs/platform/api-keys",
-          },
+          { title: "API keys", href: "/docs/platform/api-keys" },
         ],
       },
       {
@@ -1116,33 +858,19 @@ const sectionLearn: (NavGroup | NavLink)[] = [
             title: "Inspecting runs",
             href: "/docs/platform/monitor/inspecting-function-runs",
           },
-          {
-            title: "Traces",
-            href: "/docs/platform/monitor/traces",
-            tag: "new",
-          },
+          { title: "Traces", href: "/docs/platform/monitor/traces" },
           {
             title: "Observability and metrics",
             href: "/docs/platform/monitor/observability-metrics",
           },
-          {
-            title: "Insights",
-            href: "/docs/platform/monitor/insights",
-            tag: "new",
-          },
-          {
-            title: "Events",
-            href: "/docs/platform/monitor/inspecting-events",
-          },
+          { title: "Insights", href: "/docs/platform/monitor/insights" },
+          { title: "Events", href: "/docs/platform/monitor/inspecting-events" },
         ],
       },
       {
         title: "Integrations",
         links: [
-          {
-            title: "Neon",
-            href: `/docs/features/events-triggers/neon`,
-          },
+          { title: "Neon", href: `/docs/features/events-triggers/neon` },
           {
             title: "Datadog",
             href: "/docs/platform/monitor/datadog-integration",
@@ -1158,10 +886,12 @@ const sectionLearn: (NavGroup | NavLink)[] = [
   {
     title: "AI",
     links: [
+      { title: "AI development tools", href: "/docs/ai-dev-tools" },
       {
-        title: "Dev Server MCP",
-        href: "/docs/ai-dev-tools/mcp",
+        title: "Agent Plugins and Skills",
+        href: "/docs/ai-dev-tools/agent-skills",
       },
+      { title: "Dev Server MCP", href: "/docs/ai-dev-tools/mcp" },
       {
         title: "AgentKit",
         href: "https://agentkit.inngest.com",
@@ -1172,47 +902,33 @@ const sectionLearn: (NavGroup | NavLink)[] = [
   {
     title: "Resources",
     links: [
-      {
-        title: "Security",
-        href: "/docs/learn/security",
-      },
-      {
-        title: "Glossary",
-        href: `/docs/learn/glossary`,
-      },
-      {
-        title: "Release phases",
-        href: `/docs/release-phases`,
-      },
-      {
-        title: "FAQ",
-        href: `/docs/faq`,
-      },
-      {
-        title: "Limitations",
-        href: `/docs/usage-limits/inngest`,
-      },
+      { title: "Security", href: "/docs/learn/security" },
+      { title: "Glossary", href: `/docs/learn/glossary` },
+      { title: "Release phases", href: `/docs/release-phases` },
+      { title: "FAQ", href: `/docs/faq` },
+      { title: "Limitations", href: `/docs/usage-limits/inngest` },
     ],
   },
 ];
 
-// =============================================================================
-// EXAMPLES SECTION (kept for backwards compatibility)
-// =============================================================================
 const sectionExamples: NavGroup[] = [
   {
-    title: "Examples",
+    title: "AI Agent Examples",
+    defaultOpen: true,
+    links: [
+      { title: "AI Agents and RAG", href: `/docs/examples/ai-agents-and-rag` },
+      {
+        title: "AI Eval Scorer quickstart",
+        href: `/docs/examples/ai-eval-scorer-quickstart`,
+      },
+    ],
+  },
+  {
+    title: "Durable Workflow Examples",
     defaultOpen: true,
     links: [
       { title: "All examples", href: `/docs/examples/` },
-      {
-        title: "AI Agents and RAG",
-        href: `/docs/examples/ai-agents-and-rag`,
-      },
-      {
-        title: "Email Sequence",
-        href: `/docs/examples/email-sequence`,
-      },
+      { title: "Email Sequence", href: `/docs/examples/email-sequence` },
       {
         title: "Scheduling a one-off function",
         href: `/docs/examples/scheduling-one-off-function`,
@@ -1229,10 +945,7 @@ const sectionExamples: NavGroup[] = [
         title: "Cleanup after function cancellation",
         href: `/docs/examples/cleanup-after-function-cancellation`,
       },
-      {
-        title: "Fetch: Durable HTTP requests",
-        href: `/docs/examples/fetch`,
-      },
+      { title: "Fetch: Durable HTTP requests", href: `/docs/examples/fetch` },
       {
         title: "Stream updates from functions",
         href: `/docs/examples/realtime`,
@@ -1241,10 +954,7 @@ const sectionExamples: NavGroup[] = [
         title: "Setup OpenTelemetry with Inngest",
         href: `/docs/examples/open-telemetry`,
       },
-      {
-        title: "Durable Endpoints",
-        href: `/docs/examples/durable-endpoints`,
-      },
+      { title: "Durable Endpoints", href: `/docs/examples/durable-endpoints` },
       {
         title: "Trigger workflows from Retool",
         href: `/docs/guides/trigger-your-code-from-retool`,
@@ -1275,9 +985,6 @@ const sectionExamples: NavGroup[] = [
   },
 ];
 
-// =============================================================================
-// TYPE GUARDS
-// =============================================================================
 export const isNavGroup = (
   item: NavGroup | NavLink | NavSection | NavLinkGroup
 ): item is NavGroup => {
@@ -1299,9 +1006,6 @@ export const isNavLink = (
   return !!item.title && !!(item as NavLink).href;
 };
 
-// =============================================================================
-// LINK SEARCH HELPERS
-// =============================================================================
 function linkSearch(groups: (NavGroup | NavLink)[], pathname) {
   return groups.find((item) =>
     isNavGroup(item)
@@ -1311,9 +1015,7 @@ function linkSearch(groups: (NavGroup | NavLink)[], pathname) {
 }
 
 function recursiveLinkSearch(group: NavGroup, pathname) {
-  if (group.href === pathname) {
-    return true;
-  }
+  if (group.href === pathname) return true;
   return group.links.find((link) => {
     return isNavLink(link)
       ? link.href === pathname
@@ -1321,9 +1023,6 @@ function recursiveLinkSearch(group: NavGroup, pathname) {
   });
 }
 
-// =============================================================================
-// MATCHERS
-// =============================================================================
 const matchers: Record<string, (pathname: string) => any> = {
   docs: (pathname) => pathname === "/docs" || pathname === "/docs/",
   examples: (pathname) =>
@@ -1332,12 +1031,10 @@ const matchers: Record<string, (pathname: string) => any> = {
     /^\/docs\/reference/.test(pathname) ||
     linkSearch(sectionReference, pathname),
   learn: (pathname) => linkSearch(sectionLearn, pathname),
+  patterns: (pathname) => /^\/docs\/patterns/.test(pathname),
 };
 matchers.default = matchers.learn;
 
-// =============================================================================
-// MENU TABS (Top navigation)
-// =============================================================================
 export const menuTabs = [
   {
     title: "Documentation",
@@ -1351,11 +1048,14 @@ export const menuTabs = [
     href: "/docs/examples/",
     matcher: matchers.examples,
   },
+  {
+    title: "Patterns",
+    icon: Squares2X2Icon,
+    href: "/docs/patterns",
+    matcher: matchers.patterns,
+  },
 ];
 
-// =============================================================================
-// SIDEBAR TABS (Sidebar navigation)
-// =============================================================================
 export const sidebarMenuTabs = [
   {
     title: "Learn",
@@ -1366,14 +1066,27 @@ export const sidebarMenuTabs = [
   {
     title: "Reference",
     icon: CodeBracketIcon,
-    href: "/docs/reference/typescript",
+    href: `/docs/reference/typescript/${TS_STABLE}/intro`,
     matcher: matchers.reference,
   },
 ];
 
-// =============================================================================
-// TOP LEVEL NAV
-// =============================================================================
+const sectionPatterns: NavGroup[] = [
+  {
+    title: "Overview",
+    defaultOpen: true,
+    links: [{ title: "All patterns", href: "/docs/patterns" }],
+  },
+  ...PATTERN_SECTIONS.flatMap((s): NavGroup[] => {
+    const links = PATTERNS.filter((p) => p.category === s.id).map((p) => ({
+      title: p.title,
+      href: `/docs/patterns/${s.id}/${p.slug}`,
+    }));
+    if (links.length === 0) return [];
+    return [{ title: s.name, defaultOpen: true, links }];
+  }),
+];
+
 export const topLevelNav = [
   {
     title: "Learn",
@@ -1383,9 +1096,16 @@ export const topLevelNav = [
     matcher: matchers.learn,
   },
   {
+    title: "Patterns",
+    icon: Squares2X2Icon,
+    href: "/docs/patterns",
+    sectionLinks: sectionPatterns,
+    matcher: matchers.patterns,
+  },
+  {
     title: "Reference",
     icon: CodeBracketIcon,
-    href: "/docs/reference/typescript",
+    href: `/docs/reference/typescript/${TS_STABLE}/intro`,
     matcher: matchers.reference,
     sectionLinks: sectionReference,
   },

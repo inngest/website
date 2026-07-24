@@ -1,0 +1,459 @@
+/* Patterns inside docs. Ported from the patterns design handoff (docs-prose.jsx).
+   The design references tokens like --fg-base / --bg-surface / --figure-bg;
+   here we map them onto our docs --color-* tokens (which flip with .dark) so
+   the patterns pages adopt the docs light/dark theme automatically. Fenced
+   code + figures stay on a dark canvas in BOTH themes (deliberate, like other
+   technical diagrams). The pattern body content is wrapped in `.pattern-scope`
+   with per-section --accent / --accent-deep set inline. */
+
+/* Design tokens, replicating the patterns prototype against our raw carbon /
+   stone scale (R G B triplets in globals.css). Light values are the default;
+   html.dark overrides them. This keeps cards white (carbon-0) with carbon-100
+   borders in light mode, exactly like the design. */
+.pattern-scope {
+  --bg-canvas: var(--color-carbon-0);
+  --bg-canvas-subtle: var(--color-carbon-50);
+  --bg-surface: var(--color-carbon-0);
+  --border-subtle: var(--color-carbon-100);
+  --border-muted: var(--color-carbon-200);
+  --fg-base: var(--color-carbon-900);
+  --fg-subtle: var(--color-carbon-700);
+  --fg-muted: var(--color-carbon-600);
+  --fg-light: var(--color-carbon-400);
+  --info: 35 137 241;
+  --lux: 203 178 106;
+  /* Code + figure canvas: fixed dark in both themes. */
+  --figure-bg: 13 12 11;
+  --figure-border: 38 35 32;
+
+  /* Accent-text: readable accent for links/markers. Light uses the deep
+     variant, dark uses the bright hex. Structural accents use --accent. */
+  --accent-text: var(--accent-deep, var(--accent));
+}
+html.dark .pattern-scope {
+  --bg-canvas: var(--color-stone-950);
+  --bg-canvas-subtle: var(--color-carbon-900);
+  --bg-surface: var(--color-carbon-1000);
+  --border-subtle: var(--color-carbon-800);
+  --border-muted: var(--color-carbon-700);
+  --fg-base: var(--color-carbon-50);
+  --fg-subtle: var(--color-carbon-200);
+  --fg-muted: var(--color-carbon-400);
+  --fg-light: var(--color-carbon-500);
+  --accent-text: var(--accent);
+}
+
+/* ─── Prose ──────────────────────────────────────────────────────────────── */
+.pattern-scope .md-prose {
+  font-size: 16px;
+  line-height: 1.72;
+  color: rgb(var(--fg-subtle));
+  max-width: 720px;
+}
+.pattern-scope .md-prose > * + * { margin-top: 1.5em; }
+.pattern-scope .md-prose > .md-p + .md-p { margin-top: 1.6em; }
+.pattern-scope .md-prose > h2 + *,
+.pattern-scope .md-prose > h3 + * { margin-top: 0.85em; }
+
+.pattern-scope .md-h1 {
+  font-size: clamp(32px, 4vw, 44px);
+  line-height: 1.05;
+  letter-spacing: -0.025em;
+  font-weight: 600;
+  color: rgb(var(--fg-base));
+  margin: 0 0 0.5em;
+}
+.pattern-scope .md-h2 {
+  font-size: 26px;
+  line-height: 1.2;
+  letter-spacing: -0.018em;
+  font-weight: 600;
+  color: rgb(var(--fg-base));
+  margin-top: 2.2em;
+  scroll-margin-top: 80px;
+  position: relative;
+  padding-top: 1.2em;
+  border-top: 1px solid rgb(var(--border-subtle));
+}
+.pattern-scope .md-h2::after {
+  content: "";
+  position: absolute;
+  left: 0;
+  top: -1px;
+  width: 36px;
+  height: 2px;
+  background: var(--accent, rgb(var(--info)));
+}
+.pattern-scope .md-anchor {
+  /* Sit in the left gutter so the heading text stays flush-left (no indent). */
+  position: absolute;
+  left: -0.85em;
+  color: var(--accent-text, rgb(var(--info)));
+  opacity: 0;
+  font-weight: 400;
+  transition: opacity 0.15s ease;
+}
+.pattern-scope .md-h2:hover .md-anchor { opacity: 0.6; }
+.pattern-scope .md-h3 {
+  font-size: 19px;
+  letter-spacing: -0.012em;
+  font-weight: 600;
+  color: rgb(var(--fg-base));
+  margin-top: 1.7em;
+}
+.pattern-scope .md-p { margin: 0; color: rgb(var(--fg-subtle)); text-wrap: pretty; }
+.pattern-scope .md-hr { border: 0; height: 1px; background: rgb(var(--border-subtle)); margin: 2.4em 0; }
+.pattern-scope .md-blockquote {
+  margin: 0;
+  padding: 4px 0 4px 18px;
+  border-left: 2px solid var(--accent, rgb(var(--info)));
+  color: rgb(var(--fg-muted));
+  font-style: italic;
+}
+.pattern-scope .md-link {
+  color: var(--accent-text, rgb(var(--info)));
+  text-decoration: none;
+  border-bottom: 1px solid color-mix(in srgb, var(--accent-text, rgb(var(--info))) 35%, transparent);
+  transition: border-color 0.15s ease;
+}
+.pattern-scope .md-link:hover { border-bottom-color: var(--accent-text, rgb(var(--info))); }
+.pattern-scope .md-ul,
+.pattern-scope .md-ol { margin: 0; padding-left: 22px; color: rgb(var(--fg-subtle)); }
+.pattern-scope .md-ul li,
+.pattern-scope .md-ol li { margin: 0.45em 0; padding-left: 6px; }
+.pattern-scope .md-ul li::marker { color: var(--accent-text, rgb(var(--info))); }
+.pattern-scope .md-ol li::marker { color: var(--accent-text, rgb(var(--info))); font-weight: 600; }
+
+.pattern-scope .md-inline-code {
+  font-family: "CircularXXMono", "Geist Mono", ui-monospace, monospace;
+  font-size: 0.86em;
+  color: var(--accent-text, rgb(var(--info)));
+  background: color-mix(in srgb, var(--accent-text, rgb(var(--info))) 9%, transparent);
+  padding: 2px 6px;
+  border-radius: 4px;
+  border: 1px solid color-mix(in srgb, var(--accent-text, rgb(var(--info))) 18%, transparent);
+}
+
+/* ─── Code blocks (dark canvas in both themes) ─────────────────────────────── */
+.pattern-scope .md-code-block {
+  margin: 1.8em 0;
+  border: 1px solid rgb(var(--figure-border));
+  border-radius: 8px;
+  overflow: hidden;
+  background: rgb(var(--figure-bg));
+}
+.pattern-scope .md-code-block-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 9px 14px;
+  border-bottom: 1px solid rgb(var(--figure-border));
+  background: rgba(255, 255, 255, 0.02);
+}
+.pattern-scope .md-code-block-lang {
+  font-family: "CircularXXMono", "Geist Mono", monospace;
+  font-size: 10px;
+  color: var(--accent, rgb(var(--lux)));
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+}
+.pattern-scope .md-code-block-copy {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  background: transparent;
+  border: 0;
+  color: #7d756b;
+  font-family: "CircularXXMono", "Geist Mono", monospace;
+  font-size: 10px;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  padding: 4px 8px;
+  border-radius: 4px;
+  cursor: pointer;
+  transition: color 0.15s ease, background 0.15s ease;
+}
+.pattern-scope .md-code-block-copy:hover { color: #d6d0c4; background: rgba(255, 255, 255, 0.05); }
+.pattern-scope .md-code-block-pre {
+  margin: 0;
+  padding: 16px 0;
+  overflow-x: auto;
+  font-family: "CircularXXMono", "Geist Mono", monospace;
+  font-size: 12.5px;
+  line-height: 1.65;
+}
+.pattern-scope .md-code-line { display: grid; grid-template-columns: 44px 1fr; gap: 14px; padding: 0 16px; }
+.pattern-scope .md-code-num { color: #4a433d; user-select: none; text-align: right; font-size: 11px; }
+.pattern-scope .md-code-text { color: #c9c3b6; }
+.pattern-scope .tok-keyword { color: #e68b7a; }
+.pattern-scope .tok-string { color: #98c379; }
+.pattern-scope .tok-number { color: #d19a66; }
+.pattern-scope .tok-comment { color: #6f665d; font-style: italic; }
+.pattern-scope .tok-fn { color: #61afef; }
+.pattern-scope .tok-type { color: #e5c07b; }
+.pattern-scope .tok-id { color: #c9c3b6; }
+.pattern-scope .tok-punct { color: #888379; }
+
+/* ─── Tables ───────────────────────────────────────────────────────────────── */
+.pattern-scope .md-table-wrap { overflow-x: auto; margin: 1.6em 0; border: 1px solid rgb(var(--border-subtle)); border-radius: 8px; }
+.pattern-scope .md-table { border-collapse: collapse; width: 100%; font-size: 14px; }
+.pattern-scope .md-table th,
+.pattern-scope .md-table td { text-align: left; padding: 11px 16px; border-bottom: 1px solid rgb(var(--border-subtle)); }
+.pattern-scope .md-table tr:last-child td { border-bottom: 0; }
+.pattern-scope .md-table th {
+  color: var(--accent-text, rgb(var(--info)));
+  font-weight: 600;
+  font-family: "CircularXXMono", "Geist Mono", monospace;
+  font-size: 11px;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  background: rgb(var(--bg-canvas-subtle));
+}
+.pattern-scope .md-table td { color: rgb(var(--fg-subtle)); }
+.pattern-scope .md-table tr:hover td { background: rgb(var(--bg-canvas-subtle)); }
+
+/* ─── Visualization figure (dark canvas in both themes) ───────────────────── */
+.pattern-scope .viz-frame {
+  position: relative;
+  border: 1px solid rgb(var(--figure-border));
+  border-radius: 8px;
+  overflow: hidden;
+  background:
+    radial-gradient(ellipse at top left, rgba(255, 255, 255, 0.025), transparent 60%),
+    rgb(var(--figure-bg));
+  padding: 14px;
+  aspect-ratio: 1.7 / 1;
+  display: flex;
+  flex-direction: column;
+}
+.pattern-scope .viz-frame::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(135deg, color-mix(in srgb, var(--accent) 6%, transparent), transparent 60%);
+  pointer-events: none;
+}
+.pattern-scope .viz-svg { flex: 1; width: 100%; height: 100%; min-height: 0; }
+.pattern-scope .viz-caption {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 8px 4px 0;
+  border-top: 1px dashed rgb(var(--figure-border));
+  margin-top: 10px;
+  font-family: "CircularXXMono", "Geist Mono", monospace;
+  font-size: 10px;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+}
+.pattern-scope .viz-caption-label { color: var(--accent); }
+.pattern-scope .viz-caption-sub { color: #6f665d; }
+
+.pattern-scope .figure { margin: 0 0 4px; max-width: 560px; }
+
+/* ─── YouTube embed (carried from the prior pattern page) ──────────────────── */
+.pattern-scope .pattern-video {
+  position: relative;
+  width: 100%;
+  max-width: 720px;
+  aspect-ratio: 16 / 9;
+  margin: 28px 0 32px;
+  border: 1px solid rgb(var(--border-subtle));
+  border-radius: 10px;
+  overflow: hidden;
+  background: rgb(var(--bg-canvas-subtle));
+}
+.pattern-scope .pattern-video iframe { position: absolute; inset: 0; width: 100%; height: 100%; border: 0; }
+
+/* ─── Lead, eyebrow ───────────────────────────────────────────────────────── */
+.pattern-scope .md-lead {
+  font-size: 18px;
+  line-height: 1.6;
+  color: rgb(var(--fg-base));
+  /* Set the intro apart from the body that follows it. */
+  margin-bottom: 1.5em;
+}
+.pattern-scope .cat-eyebrow {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 11px;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--accent-text, rgb(var(--info)));
+  margin-bottom: 14px;
+}
+.pattern-scope .cat-eyebrow-dot { width: 7px; height: 7px; border-radius: 50%; background: var(--accent); }
+
+/* ─── Featured card (landing) ─────────────────────────────────────────────── */
+.pattern-scope .feat {
+  display: grid;
+  grid-template-columns: 1.3fr 1fr;
+  gap: 0;
+  margin: 2em 0;
+  border: 1px solid rgb(var(--border-subtle));
+  border-radius: 12px;
+  overflow: hidden;
+  background:
+    radial-gradient(circle at 0% 0%, color-mix(in srgb, var(--accent) 8%, transparent), transparent 55%),
+    rgb(var(--bg-surface));
+  transition: border-color 0.15s ease, box-shadow 0.15s ease;
+}
+.pattern-scope .feat:hover {
+  border-color: color-mix(in srgb, var(--accent) 55%, rgb(var(--border-muted)));
+  box-shadow: 0 12px 40px -18px color-mix(in srgb, var(--accent) 50%, transparent);
+}
+.pattern-scope .feat-body { padding: 26px 28px; display: flex; flex-direction: column; gap: 12px; }
+.pattern-scope .feat-tag {
+  display: inline-flex;
+  align-items: center;
+  gap: 9px;
+  font-family: "CircularXXMono", "Geist Mono", monospace;
+  font-size: 11px;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--accent-text, rgb(var(--info)));
+}
+.pattern-scope .feat-dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: var(--accent);
+  box-shadow: 0 0 0 4px color-mix(in srgb, var(--accent) 20%, transparent);
+}
+.pattern-scope .feat-title { font-size: 26px; font-weight: 600; letter-spacing: -0.02em; color: rgb(var(--fg-base)); line-height: 1.1; }
+.pattern-scope .feat-excerpt { font-size: 14.5px; line-height: 1.55; color: rgb(var(--fg-muted)); }
+.pattern-scope .feat-cta {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--accent-text, rgb(var(--info)));
+  margin-top: 4px;
+}
+.pattern-scope .feat-viz { border-left: 1px solid rgb(var(--border-subtle)); padding: 20px; display: flex; align-items: center; }
+.pattern-scope .feat-viz .viz-frame { aspect-ratio: 1.5 / 1; width: 100%; }
+.pattern-scope .feat-img { width: 100%; height: auto; display: block; border-radius: 8px; }
+
+/* ─── Category grid (landing) ─────────────────────────────────────────────── */
+.pattern-scope .cat-grid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 12px;
+  margin-top: 18px;
+  max-width: 820px;
+}
+.pattern-scope .cat-card {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  padding: 20px 20px 18px;
+  border: 1px solid rgb(var(--border-subtle));
+  border-radius: 10px;
+  background: rgb(var(--bg-surface));
+  transition: border-color 0.15s ease, background 0.15s ease, transform 0.12s ease;
+  scroll-margin-top: 76px;
+}
+.pattern-scope .cat-card:hover {
+  border-color: color-mix(in srgb, var(--accent) 55%, rgb(var(--border-muted)));
+  background: rgb(var(--bg-canvas-subtle));
+}
+.pattern-scope .cat-card-head { display: flex; align-items: center; justify-content: space-between; }
+.pattern-scope .cat-card-num { font-size: 12px; color: rgb(var(--fg-light)); letter-spacing: 0.1em; }
+.pattern-scope .cat-card-dot { width: 9px; height: 9px; border-radius: 50%; background: var(--accent); }
+.pattern-scope .cat-card-name { font-size: 17px; font-weight: 600; letter-spacing: -0.015em; color: rgb(var(--fg-base)); }
+.pattern-scope .cat-card-kicker { font-size: 13px; color: rgb(var(--fg-muted)); line-height: 1.4; flex: 1; }
+.pattern-scope .cat-card-meta {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 11px;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--accent-text, rgb(var(--info)));
+  margin-top: 6px;
+}
+
+/* ─── Category rows (pattern list) ────────────────────────────────────────── */
+.pattern-scope .cat-rows { display: flex; flex-direction: column; margin-top: 4px; max-width: 760px; }
+.pattern-scope .cat-row {
+  display: grid;
+  grid-template-columns: 44px 1fr auto;
+  gap: 18px;
+  align-items: center;
+  padding: 18px 6px;
+  border-bottom: 1px solid rgb(var(--border-subtle));
+  transition: background 0.12s ease, padding 0.12s ease;
+  position: relative;
+}
+.pattern-scope .cat-row::before {
+  content: "";
+  position: absolute;
+  left: 0;
+  top: 0;
+  bottom: 0;
+  width: 2px;
+  background: var(--accent);
+  transform: scaleY(0);
+  transition: transform 0.18s ease;
+}
+.pattern-scope .cat-row:hover { background: rgb(var(--bg-canvas-subtle)); padding-left: 14px; }
+.pattern-scope .cat-row:hover::before { transform: scaleY(1); }
+.pattern-scope .cat-row-num { font-size: 12px; color: rgb(var(--fg-light)); }
+.pattern-scope .cat-row-body { display: flex; flex-direction: column; gap: 3px; min-width: 0; }
+.pattern-scope .cat-row-title { font-size: 16px; font-weight: 600; letter-spacing: -0.012em; color: rgb(var(--fg-base)); }
+.pattern-scope .cat-row-sub { font-size: 13.5px; color: rgb(var(--fg-muted)); line-height: 1.45; }
+.pattern-scope .cat-row-arrow { color: rgb(var(--fg-light)); display: flex; transition: color 0.12s ease, transform 0.12s ease; }
+.pattern-scope .cat-row:hover .cat-row-arrow { color: var(--accent-text, rgb(var(--info))); transform: translateX(2px); }
+
+.pattern-scope .next-cat {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  margin-top: 36px;
+  padding: 22px 24px;
+  border: 1px solid rgb(var(--border-subtle));
+  border-radius: 10px;
+  background: rgb(var(--bg-surface));
+  max-width: 760px;
+  transition: border-color 0.15s ease, background 0.15s ease;
+}
+.pattern-scope .next-cat:hover { border-color: color-mix(in srgb, var(--accent) 50%, rgb(var(--border-muted))); background: rgb(var(--bg-canvas-subtle)); }
+.pattern-scope .next-cat-label { font-size: 11px; letter-spacing: 0.12em; text-transform: uppercase; color: rgb(var(--fg-light)); }
+.pattern-scope .next-cat-name { font-size: 20px; font-weight: 600; letter-spacing: -0.02em; color: rgb(var(--fg-base)); }
+
+/* ─── Prev / next pattern ─────────────────────────────────────────────────── */
+.pattern-scope .pat-nav {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 14px;
+  margin-top: 48px;
+  padding-top: 28px;
+  border-top: 1px solid rgb(var(--border-subtle));
+  max-width: 720px;
+}
+.pattern-scope .pat-nav-card {
+  display: flex;
+  flex-direction: column;
+  gap: 7px;
+  padding: 18px 20px;
+  border: 1px solid rgb(var(--border-subtle));
+  border-radius: 10px;
+  background: rgb(var(--bg-surface));
+  transition: border-color 0.15s ease, background 0.15s ease;
+}
+.pattern-scope .pat-nav-card:hover { border-color: color-mix(in srgb, var(--accent) 50%, rgb(var(--border-muted))); background: rgb(var(--bg-canvas-subtle)); }
+.pattern-scope .pat-nav-card--next { text-align: right; align-items: flex-end; }
+.pattern-scope .pat-nav-dir { font-size: 11px; letter-spacing: 0.1em; text-transform: uppercase; color: rgb(var(--fg-light)); }
+.pattern-scope .pat-nav-title { font-size: 16px; font-weight: 600; letter-spacing: -0.015em; color: rgb(var(--fg-base)); }
+
+.mono, .pattern-scope .mono { font-family: "CircularXXMono", "Geist Mono", ui-monospace, monospace; }
+
+@media (max-width: 720px) {
+  .pattern-scope .cat-grid { grid-template-columns: 1fr; }
+  .pattern-scope .feat { grid-template-columns: 1fr; }
+  .pattern-scope .feat-viz { border-left: 0; border-top: 1px solid rgb(var(--border-subtle)); }
+  .pattern-scope .pat-nav { grid-template-columns: 1fr; }
+  .pattern-scope .pat-nav-card--next { text-align: left; align-items: flex-start; }
+}

@@ -31,7 +31,7 @@ export default function FloatingCTA({ ctaRef }: { ctaRef: string }) {
           <Link
             href={`/contact?ref=${ctaRef}`}
             className={clsx(
-              "flex flex-row gap-1 rounded-md items-center pl-4 pr-3 py-1 bg-cta group-hover:bg-ctaHover text-carbon-1000 font-medium text-onContrast transition-all text-nowrap",
+              "flex flex-row gap-1 rounded-md items-center pl-4 pr-3 py-1 bg-cta group-hover:bg-ctaHover font-medium text-onContrast transition-all text-nowrap",
               open ? "opacity-100" : "opacity-0"
             )}
           >
@@ -73,7 +73,7 @@ export default function FloatingCTA({ ctaRef }: { ctaRef: string }) {
           <Link
             href={`/contact?ref=${ctaRef}`}
             className={clsx(
-              "flex flex-row gap-1 rounded-md items-center pl-4 pr-3 py-1 bg-cta group-hover:bg-ctaHover text-carbon-1000 font-medium text-onContrast transition-all text-nowrap",
+              "flex flex-row gap-1 rounded-md items-center pl-4 pr-3 py-1 bg-cta group-hover:bg-ctaHover font-medium text-onContrast transition-all text-nowrap",
               open ? "opacity-100" : "opacity-0"
             )}
           >

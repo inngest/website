@@ -7,19 +7,20 @@ import GoogleTagManger from "@/components/GoogleTagManager";
 import { getFullURL } from "src/utils/social";
 
 import "./globals.css";
-import AnnouncementBanner from "src/components/AnnouncementBanner";
-import Header from "src/components/RedesignedLanding/Header/Header";
-import Footer from "src/components/RedesignedLanding/Footer";
 import Analytics from "@/components/Analytics";
 
 export const metadata: Metadata = {
+  metadataBase: new URL("https://www.inngest.com"),
+  alternates: {
+    canonical: "./",
+  },
   title: {
-    default: "Inngest - Develop AI products at the speed of thought",
-    template: "%s - Inngest",
+    default: "Develop AI products at the speed of thought | Inngest",
+    template: "%s | Inngest",
   },
   openGraph: {
     // We cannot dynamically set the image URL with the page title, so we use this default
-    images: [getFullURL("/assets/homepage/open-graph-june-2025.png?v=2")],
+    images: [getFullURL("/assets/homepage/open-graph-2026.png")],
   },
   icons: {
     icon: [
@@ -39,20 +40,46 @@ export const metadata: Metadata = {
   },
 };
 
+// Root layout is intentionally chrome-free: it only sets up <html>/<body>,
+// fonts, and analytics. Page chrome is supplied per route group —
+// redesigned (v1) pages self-shell via PageShell; legacy pages get their
+// Header/Footer from app/(v0)/layout.tsx. Keeping this layout free of
+// request-time APIs (e.g. headers()) lets static pages prerender.
 export default function RootLayout({
   children,
 }: {
   children: React.ReactNode;
 }) {
   return (
-    <html className="scroll-smooth">
+    <html suppressHydrationWarning>
       <head>
-        <link rel="preconnect" href="https://fonts-cdn.inngest.com/" />
-        <link rel="stylesheet" href="https://fonts-cdn.inngest.com/fonts.css" />
         <link
-          rel="stylesheet"
-          href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.4.0/styles/github-dark.min.css"
+          rel="preconnect"
+          href="https://fonts-cdn.inngest.com/"
+          crossOrigin="anonymous"
         />
+        <link
+          rel="preload"
+          as="font"
+          type="font/woff2"
+          href="https://fonts-cdn.inngest.com/Circular/CircularXXWeb-Bold.woff2"
+          crossOrigin="anonymous"
+        />
+        <link
+          rel="preload"
+          as="font"
+          type="font/woff2"
+          href="https://fonts-cdn.inngest.com/Circular/CircularXXWeb-Regular.woff2"
+          crossOrigin="anonymous"
+        />
+        <link
+          rel="preload"
+          as="font"
+          type="font/woff2"
+          href="/assets/v1/fonts/ABCWhyte-Regular.woff2"
+          crossOrigin="anonymous"
+        />
+        <link rel="stylesheet" href="https://fonts-cdn.inngest.com/fonts.css" />
         <Script
           id="js-inngest-queue-init"
           async
@@ -62,13 +89,8 @@ export default function RootLayout({
           }}
         />
       </head>
-      <body className="dark font-sans">
-        <AnnouncementBanner />
-        <Header />
-
-        <main className="text-basis">{children}</main>
-
-        <Footer />
+      <body className="dark font-sans text-basis">
+        {children}
 
         <Suspense>
           <PageViews />

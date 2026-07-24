@@ -1,0 +1,72 @@
+---
+title: Running code at specific times
+subtitle: Schedule one-off work for appointment reminders, off-peak AI maintenance, embargoed publishing, and user-picked send times.
+pattern: schedule
+tags: [Scheduling, AI]
+---
+
+It's common to need to run code at a specific time. You might send appointment reminders 10 minutes before the event, publish blog posts at a scheduled time, compact a vector store index at 2am, or prune stale agent sessions during off-peak hours.
+
+Job systems allow you to specify the time that a code should run when you enqueue the job.  Within Inngest, jobs run automatically when an event is received.  How can you schedule work to run at a specific time?
+
+The answer is: pass the date and time that you want the event to run at within the event itself.  Within your function, you can `sleep` or `sleepUntil` the date within the event.
+
+## How this works
+
+In order to run code at a specific time based off of event data, first make sure that you send your desired time in the event:
+
+```typescript
+import { Inngest } from "inngest";
+
+// Create a new client
+const inngest = new Inngest({ id: "API" });
+
+// Send an event with the time to schedule a blog post in the event data.
+await inngest.send({
+  name: "blog/post.scheduled",
+  data: {
+    scheduleAt: "2023-04-01T12:30:00.000Z",
+    postID: "ed6f81",
+  },
+});
+```
+
+Then, within your function, you can pause until the time in the event:
+
+```typescript
+import { inngest } from "./client";
+
+const delayed = inngest.createFunction(
+  { id: "schedule-post", triggers: [{ event: "blog/post.scheduled" }] },
+  async ({ event, step }) => {
+    const at = new Date(event.data.scheduleAt);
+
+    // Use the built-in `sleepUntil` tool to sleep until the time in the event.
+    // This function will pause then resume running the code below at the given time.
+    await step.sleepUntil("wait-for-scheduled", at);
+
+    await step.run("publish-post", () => {
+      // Any code here runs at the time in the event.
+      schedulePost(event.data.postID);
+    });
+  }
+);
+```
+
+This function runs immediately when the `blog/post.scheduled` event is received, then pauses until the time and date within the event.  This lets you create a single function that can schedule work at any time using data from the event, intsead of hard-coding times within your code.
+
+You can also cancel these scheduled functions using the [cancellation guide](/docs/guides/cancel-running-functions).
+
+## Alternative approaches
+
+- **Scheduled queue jobs.** Most job queues (BullMQ, Sidekiq, SQS with delay queues) accept a `runAt` or delay parameter when enqueueing. Works for delays under ~15 minutes; provider-specific limits kick in beyond that, and your jobs hold queue resources the whole time they wait.
+- **Cron + a database table.** Run a sweeper cron that polls a `scheduled_jobs` table for due work. Simple, but the cron is now the bottleneck (see [Reliable scheduling systems](/docs/patterns/reliable-scheduling-systems)) and "due" is rounded to the cron interval.
+- **Inline `setTimeout`.** Works locally; gets erased the moment your server restarts. Don't.
+
+The pattern above (emit an event with a future timestamp, then `sleepUntil` inside a durable function) keeps the wait state in Inngest rather than your queue, and survives deploys without re-architecting anything.
+
+## Additional Resources
+
+* [Docs: Sending Events](/docs/events?ref=patterns)
+* [Docs: Writing Functions](/docs/functions?ref=patterns)
+* [Docs: Cancel running functions](/docs/guides/cancel-running-functions?ref=patterns)

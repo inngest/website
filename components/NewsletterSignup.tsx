@@ -83,7 +83,6 @@ function NewsletterSignup({
               className={`md:min-w-72 flex-grow border border-muted rounded-md px-4 py-2 text-white bg-transparent
                 focus:outline-none focus:ring-1 focus:ring-[rgb(var(--color-border-success))] focus:border-transparent
                 placeholder:text-muted
-                grow
               `}
               type="text"
               id={`${f.name}-input`}
@@ -100,7 +99,6 @@ function NewsletterSignup({
             className={`md:min-w-72 flex-grow border border-muted rounded-md px-4 py-2 text-white bg-transparent
             focus:outline-none focus:ring-1 focus:ring-[rgb(var(--color-border-success))] focus:border-transparent
             placeholder:text-muted
-            grow
           `}
             type="email"
             id="email-input"

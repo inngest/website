@@ -12,6 +12,7 @@ import {
   topLevelNav,
 } from "./navigationStructure";
 import SocialBadges from "./SocialBadges";
+import { useUnreleasedLabels } from "./Unreleased";
 
 function CheckIcon(props) {
   return (
@@ -162,7 +163,11 @@ function flattenNav(nav: any): NavLink[] {
 
 function PageNavigation() {
   let router = useRouter();
-  let allPages = flattenNav(topLevelNav);
+  const unreleasedLabels = useUnreleasedLabels();
+  // Drop unreleased pages from prev/next so they don't leak from adjacent public pages.
+  let allPages = flattenNav(topLevelNav).filter(
+    (page) => !page.unreleased || unreleasedLabels.has(page.unreleased)
+  );
   let currentPageIndex = allPages.findIndex(
     (page) => page.href === router.pathname
   );
@@ -207,7 +212,11 @@ const Divider: React.FC<React.PropsWithChildren> = ({ children }) => {
   );
 };
 
-function EditPageLink({ url }: { url: string }) {
+function EditPageLink({ url }: { url?: string }) {
+  // Pages without a source file (e.g. the patterns pages, which render custom
+  // components rather than MDX) have no edit URL — skip the link entirely so
+  // we never pass an undefined href to next/link.
+  if (!url) return null;
   return (
     <div className="flex justify-center md:justify-start">
       <Link

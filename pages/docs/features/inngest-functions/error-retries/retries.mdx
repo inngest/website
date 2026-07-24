@@ -1,5 +1,8 @@
 import { CardGroup, Card, Callout, LanguageSelector, LanguageSection } from "src/shared/Docs/mdx";
 
+export const metaTitle = "Automatic Retries in Inngest | Config & Behavior"
+export const description = "Inngest retries failed functions and steps up to 4 times with exponential backoff. Learn how to configure retry count, disable retries, and customize backoff."
+
 # Retries
 
 By default, in _addition_ to the **initial attempt**, Inngest will retry a function or a step up to 4 times until it succeeds. This means that for a function with a default configuration, it will be attempted 5 times in total.

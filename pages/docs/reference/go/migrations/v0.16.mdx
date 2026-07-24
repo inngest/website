@@ -1,0 +1,61 @@
+import { Info } from "src/shared/Docs/mdx";
+
+export const metaTitle = "Go SDK Migration: v0.15 → v0.16"
+export const description = "Migration guide for upgrading the Inngest Go SDK from v0.15 to v0.16."
+
+# Go SDK migration guide: v0.15 to v0.16
+
+This guide will help you migrate your Inngest Go SDK from v0.15 to v0.16 by providing a summary of the breaking changes.
+
+## `AllowInBandSync`
+
+The `ClientOpts.AllowInBandSync` option was removed. Authed sync requests now always perform the authenticated sync flow.
+
+```go
+// Before
+client, err := inngestgo.NewClient(inngestgo.ClientOpts{
+	AppID:            "my-app",
+	AllowInBandSync: inngestgo.Ptr(true),
+})
+
+// After
+client, err := inngestgo.NewClient(inngestgo.ClientOpts{
+	AppID: "my-app",
+})
+```
+
+The `INNGEST_ALLOW_IN_BAND_SYNC` environment variable was also removed.
+
+## Unauthed sync requests
+
+Unauthed sync requests in cloud mode are now rejected by default. Local development still allows unauthed sync requests because the Dev Server does not sign requests.
+
+<Info>
+Unauthed app syncs are not insecure: the SDK does not send app configuration back to the unauthed caller. Instead, it makes an outgoing authed request to Inngest Cloud. Requiring auth on the incoming sync request adds defense in depth.
+</Info>
+
+If you depend on unauthed sync requests in cloud mode, use `ServeOpts.EnableUnauthedSync`:
+
+```go
+handler := client.ServeWithOpts(inngestgo.ServeOpts{
+	EnableUnauthedSync: inngestgo.Ptr(true),
+})
+```
+
+You can also set `INNGEST_ENABLE_UNAUTHED_SYNC=true`.
+
+If you require unauthed sync requests in cloud mode, we recommend migrating to the [API-based sync flow](/docs/apps/cloud?ref=docs-go-v0-15-to-v0-16-migration#programmatically) instead of relying on unauthed requests to your served SDK endpoint.
+
+## Unauthorized responses
+
+Unauthorized responses now return a minimal response body:
+
+```json
+{
+  "message": "Unauthorized"
+}
+```
+
+These responses no longer include diagnostic fields such as `code`, `authentication_succeeded`, `function_count`, `mode`, `sdk_version`, or signing key hashes.
+
+Unauthorized and unsupported method responses now only expose `X-Inngest-SDK-Handled: true` from the `x-inngest-*` response headers.

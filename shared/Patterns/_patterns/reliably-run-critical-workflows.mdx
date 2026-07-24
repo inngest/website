@@ -1,0 +1,88 @@
+---
+title: Reliably run critical workflows
+subtitle: Break multi-step AI pipelines and complex business logic into durable, independently retried steps.
+pattern: durable
+tags: [Durability, AI]
+---
+
+Many applications run mission-critical code in the background: processing payments, orchestrating multi-step AI pipelines, syncing data across systems, or handling complex fulfillment logic. Because this work is asynchronous, it's harder to observe success or failure compared to synchronous API requests. And when a job runs for minutes or hours, reliability and durability become essential.
+
+You might start with a single long function, but what happens when it fails halfway through? Does the entire job restart from the beginning? If you're running an AI pipeline that calls an LLM, stores the result, then calls another LLM to evaluate the output, a failure on the evaluation step shouldn't force you to re-run (and re-pay for) the first LLM call.
+
+The answer is to break your long-running jobs into discrete steps. Each step runs independently, can throw its own errors, retries on its own, and passes data to the next step. This is the core of durable execution: your workflow makes progress even when individual pieces fail.
+
+## With Inngest
+
+Inngest lets you compose workflows using [built-in step tools](/docs/guides/multi-step-functions?ref=patterns). Each `step.run()` call is independently executed and retried. The following example demonstrates a multi-step AI content pipeline triggered by a document upload:
+
+```typescript
+import { inngest } from "./client";
+
+export const processDocument = inngest.createFunction(
+  { id: "process-uploaded-document", triggers: [{ event: "api/document.uploaded" }] },
+  async ({ event, step }) => {
+    // Step 1: Validate the upload
+    const { isValid, errors } = await step.run(
+      "validate-upload",
+      async () => {
+        const file = await storage.getFile(event.data.filename);
+        return validateDocument(file);
+      }
+    );
+
+    if (!isValid) {
+      return await step.run(
+        "notify-invalid-upload",
+        async () => await sendUploadFailedEmail(event.data.userId, errors)
+      );
+    }
+
+    // Step 2: Extract and summarize content with an LLM
+    const summary = await step.run("summarize-content", async () => {
+      const content = await storage.getFileContent(event.data.filename);
+      return await llm.summarize(content);
+    });
+
+    // Step 3: Classify the document
+    const classification = await step.run("classify-document", async () => {
+      return await llm.classify(summary, {
+        categories: ["invoice", "contract", "report", "correspondence"],
+      });
+    });
+
+    // Step 4: Store results
+    await step.run("save-results", async () => {
+      await db.documents.update({
+        where: { id: event.data.documentId },
+        data: { summary, classification: classification.category },
+      });
+    });
+
+    // Step 5: Notify the user
+    await step.run(
+      "notify-success",
+      async () => await sendProcessingCompleteEmail(
+        event.data.userId,
+        event.data.documentId
+      )
+    );
+  }
+);
+```
+
+Each step runs independently and retries when it fails. If the LLM call in step 3 times out, Inngest retries just that step without re-running the validation or the first LLM call. The data returned from each step is persisted and available to subsequent steps automatically.
+
+## Alternative approaches
+
+You can implement durable workflows with AWS Step Functions or Temporal, but each comes with significant learning curves and operational overhead. Step Functions require you to define workflows in a JSON DSL. Temporal requires running its own server infrastructure and learning a framework-specific programming model.
+
+Inngest's approach is serverless and designed to feel like writing normal code. You define steps using `step.run()` inside a regular function, deploy it alongside your application, and Inngest handles execution, retries, and state management.
+
+Rolling your own solution is also possible, but over time it tends to grow into a system of chained queues with separately deployed workers, each with their own retry logic, state management, and logging. This can become difficult to maintain and reason about.
+
+## Additional Resources
+
+* [Docs: Writing multi-step functions](/docs/guides/multi-step-functions?ref=patterns)
+* [Docs: Step tools reference](/docs/reference/functions/step-run?ref=patterns)
+* [Patterns: Running functions in parallel](/docs/patterns/running-functions-in-parallel?ref=patterns)
+* [Patterns: Building flows for lost customers](/docs/patterns/event-coordination-for-lost-customers?ref=patterns)

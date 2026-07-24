@@ -1,0 +1,15 @@
+export const title = "Deferred Functions: fire-and-forget background work with typed payloads";
+export const date = "2026-06-05";
+
+Deferred Functions are a new way to launch independent background work from inside an Inngest function. Call `defer("some-id", { function, data })` and the parent run keeps executing — the deferred run is fully independent, with its own retries, concurrency, step state, and typed payload.
+
+Reach for them when work should happen *because of* a run, not *as part of* it: scoring an agent's output, sending a notification, logging a side effect, or queueing follow-up work.
+
+- **Fire-and-forget** — `defer(...)` is synchronous and returns `void`. The parent doesn't block and never sees a result.
+- **Typed payloads** — Define a [Standard Schema](https://standardschema.dev/?ref=inngest) on the deferred function and `data` is validated on both the caller and receiver side, then typed in the handler.
+- **Fully independent runs** — Each call triggers its own run with its own retries, concurrency, and step state. Multiple parents can target the same deferred function.
+- **Works inside steps** — Call `defer(...)` directly in a handler or from inside `step.run()`.
+
+Deferred Functions are available now in beta via `createDefer` from `inngest/experimental` in the TypeScript SDK. A great use case is the new [deferred LLM scorer](/docs/features/inngest-functions/steps-workflows/deferred-scoring?ref=changelog-deferred-functions).
+
+See the [Deferred Functions reference](/docs/reference/typescript/v4/functions/deferred-functions?ref=changelog-deferred-functions) for the full API.
