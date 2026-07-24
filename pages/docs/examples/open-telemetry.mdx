@@ -1,7 +1,5 @@
 import { VersionBadge, Callout, CodeGroup } from "src/shared/Docs/mdx";
 
-
-
 export const metaTitle = "OpenTelemetry Integration with Inngest"
 export const description = "Set up OpenTelemetry with Inngest for AI metadata extraction and Extended Traces. Use @inngest/otel or bring your own OpenTelemetry provider."
 
@@ -24,20 +22,9 @@ Use [`@inngest/otel`](https://www.npmjs.com/package/@inngest/otel) if you want I
 
 If your application does not already configure OpenTelemetry, install and use [`@inngest/otel`](https://www.npmjs.com/package/@inngest/otel) to set up a Node.js provider and common instrumentations.
 
-<CodeGroup>
-```shell {{ title: "npm" }}
+```shell
 npm install @inngest/otel
 ```
-```shell {{ title: "yarn" }}
-yarn add @inngest/otel
-```
-```shell {{ title: "pnpm" }}
-pnpm add @inngest/otel
-```
-```shell {{ title: "bun" }}
-bun add @inngest/otel
-```
-</CodeGroup>
 
 Preload it before your application:
 
