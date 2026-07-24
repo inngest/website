@@ -1,0 +1,250 @@
+---
+title: Durable token streaming
+subtitle: Stream LLM tokens to the browser while running generation as a durable function, so a dropped connection or a crash never loses the response.
+pattern: durable
+tags: [Durable, Realtime]
+---
+
+> Stream tokens to your client as your AI agent generates them, with execution durability decoupled from transport.
+
+Token streaming means the LLM server returns tokens one at a time as it generates them, so your agent produces a progressive "typing" effect instead of delivering everything at once.
+Users start reading a long output sooner, they can stop the agent midway if it's heading the wrong direction, and a response they watch arrive feels faster than one they wait on.
+Most implementations reach for WebSockets or SSE (Server-Sent Events) to push near-realtime updates from the agent to the app.
+
+But both depend on one fragile persistent connection: if the socket drops, the run dies with it. Lost progress, half-finished tool calls.
+This pattern keeps token streaming alive through a dropped connection, using [realtime connections](/docs/features/realtime?ref=patterns-durable-token-streaming) and [Inngest connect](/docs/setup/connect?ref=patterns-durable-token-streaming).
+
+## Architecture
+
+Decouple the agent's execution from the transport that carries its tokens.
+
+Start with a standard REST request. The browser POSTs to `/api/chat` and gets an event id back immediately.
+
+The **Inngest execution engine** receives the `chat/message.sent` event and issues run requests to the **worker** over the connect websocket.
+
+The **worker** runs the agent's tasks (model turns, tool calls) as `step.run` and publishes tokens as the model produces them.
+
+The **browser** subscribes with short-lived subscription tokens and receives the live stream.
+
+Because the Inngest engine tracks progress instead of the socket:
+
+- If the worker dies, Inngest retries the function on the next healthy worker.
+- Finished steps replay instantly, since Inngest memoizes each one as it completes.
+- The interrupted turn restreams from `seq: 0`; the UI resets just that bubble.
+- The browser can re-subscribe at any time; it's only a viewer.
+
+> 💡 **The tradeoff:** there's no server-side session store. The browser holds the transcript and POSTs all of it on every `/api/chat` call. That keeps the server stateless, so any worker instance can pick up any request, and it keeps this example small. The cost is that the browser is the only copy of history.
+>
+> A real app would persist history (e.g. keyed by [sessionId](/docs/learn/agent-evals#add-session-context)) and send only the new message.
+
+## How to Implement Durable Token Streaming?
+
+The full working [example is in the repo](https://github.com/inngest/agent-examples/tree/main/token-streaming-agent). Below are the pieces that matter.
+
+### The Worker
+
+To cut latency, open a [direct websocket connection](/docs/setup/connect?ref=patterns-durable-token-streaming) from the worker to Inngest. Import and set up the `inngest/connect` package.
+
+```typescript
+import { connect } from "inngest/connect";
+import { inngest } from "../inngest/client";
+import { chatFn } from "./chat-function";
+
+// Establish an outbound persistent connection to Inngest.
+const connection = await connect({
+  apps: [{ client: inngest, functions: [chatFn] }],
+  // Identifies this worker instance for horizontal scaling and rolling
+  // deploys. Defaults to hostname if unset; in containers set this to the
+  // container id.
+  instanceId: process.env.INNGEST_INSTANCE_ID,
+});
+
+console.log("Worker: connected", connection.state);
+
+// Block until the connect socket gracefully closes (SIGTERM/SIGINT), then exit.
+await connection.closed;
+console.log("Worker: shut down");
+process.exit(0);
+```
+
+Next, a channel to publish the stream, with two topics: `status` and `tokens`.
+
+```typescript
+import { channel, staticSchema } from "inngest/realtime";
+
+// Shared contract between the worker (publisher) and the browser (subscriber).
+// Both sides import this file, so the topic shapes can never drift apart.
+
+// One `tokens` message is a small batch of streamed text for a single model
+// turn. `seq` is a per-turn counter starting at 0 — the UI groups by `turn`
+// and orders by `seq`, and treats a re-appearing `seq: 0` as a replay (the
+// turn's step was retried, so its buffer should be reset and re-built).
+export type TokenMessage = { turn: number; seq: number; delta: string };
+
+// Lifecycle/status events, published durably (`step.realtime.publish`) so
+// they survive worker restarts and are never duplicated or dropped.
+export type StatusMessage =
+  | { type: "run.started" }
+  | { type: "tool.called"; turn: number; name: string; input: unknown }
+  | { type: "tool.result"; turn: number; name: string; output: string }
+  | { type: "turn.completed"; turn: number; text: string }
+  | { type: "run.completed"; text: string }
+  | { type: "run.failed"; error: string };
+
+// One channel per chat session, with two topics: high-frequency token deltas
+// and low-frequency lifecycle status. Subscribers pick a session by calling
+// `chatChannel(sessionId)`.
+export const chatChannel = channel({
+  name: (sessionId: string) => `chat:${sessionId}`,
+  topics: {
+    tokens: { schema: staticSchema<TokenMessage>() },
+    status: { schema: staticSchema<StatusMessage>() },
+  },
+});
+
+// Client-owned chat history shape (see api/chat/route.ts) — this app has no
+// server-side session store, so the browser sends the full transcript on
+// every request.
+export type ChatMessage = { role: "user" | "assistant"; content: string };
+```
+
+- `status` publishes durably, through `step.realtime.publish`. The publish is a step, so it's memoized and a completed turn's status never gets re-sent.
+- `tokens` publishes non-durably, through a plain `inngest.realtime.publish` call. Nothing is memoized, so when a step retries the client gets the text streamed again.
+
+> 💡 **One caveat:** publishing every single token wastes bandwidth. The worker batches deltas and flushes every 40ms instead; frequent enough to read as live typing, without a message per token.
+
+```typescript
+// Fire-and-forget, non-durable: this is a live UI nicety, not part of
+// the durable record. `turn.completed` (below, durable) is the
+// authoritative text the UI falls back to if any deltas are lost.
+void inngest.realtime.publish(ch.tokens, { turn, seq: seq++, delta });
+
+   const stream = client.messages.stream({
+     model: MODEL,
+     max_tokens: 1024,
+     system: SYSTEM_PROMPT,
+     tools: toolDefinitions,
+     messages,
+   });
+
+   stream.on("text", (delta) => {
+     buffer += delta;
+     timer ??= setTimeout(flush, BATCH_MS);
+   });
+
+   const final = await stream.finalMessage();
+
+    {...}
+
+    // The durable status publishing step.
+    const text = extractText(response.content);
+     lastText = text;
+     await step.realtime.publish(`turn-completed-${turn}`, ch.status, {
+       type: "turn.completed",
+       turn,
+       text,
+     });
+```
+
+### The Browser
+
+The Next.js app imports the same `./inngest/channel` module the worker uses, then subscribes with the [inngest/react](/docs/features/realtime/react-hooks?ref=patterns-durable-token-streaming) package.
+
+```typescript
+import { getClientSubscriptionToken } from "inngest/react";
+import { inngest } from "../../../inngest/client";
+import { chatChannel } from "../../../inngest/channel";
+
+// Mints a short-lived subscription token scoped to one session's channel and
+// its two topics. The browser fetches this right before subscribing with
+// `useRealtime` (see components/Chat.tsx) — the token is never embedded in
+// page HTML or reused across sessions.
+export async function POST(req: Request) {
+  const { sessionId } = (await req.json()) as { sessionId: string };
+
+  if (!sessionId) {
+    return Response.json({ error: "Expected { sessionId }" }, { status: 400 });
+  }
+
+  const token = await getClientSubscriptionToken(inngest, {
+    channel: chatChannel(sessionId),
+    topics: ["tokens", "status"],
+  });
+
+  return Response.json(token);
+}
+```
+
+The token is scoped to one session's channel and its two topics, and the browser mints a fresh one right before it subscribes. It never lands in the page HTML and never gets reused across sessions.
+
+```typescript
+import { useRealtime } from "inngest/react";
+...
+
+
+export default function Chat() {
+  // One id per browser tab/session, generated once. There's no server-side
+  // session store — the transcript below is the only place history lives.
+  const [sessionId] = useState(() => crypto.randomUUID());
+  const [transcript, setTranscript] = useState<TranscriptEntry[]>([]);
+  const [input, setInput] = useState("");
+  const [running, setRunning] = useState(false);
+  // A failed run keeps whatever trace it accumulated too, so it isn't just
+  // silently discarded — it's shown alongside the error line.
+  const [errorBanner, setErrorBanner] = useState<{ message: string; trace: TraceItem[] } | null>(null);
+  const bottomRef = useRef<HTMLDivElement | null>(null);
+
+  const { messages, reset } = useRealtime({
+    channel: chatChannel(sessionId),
+    topics: ["tokens", "status"],
+    token: async () => {
+      const res = await fetch("/api/realtime-token", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ sessionId }),
+      });
+      return res.json();
+    },
+    // Only subscribe while a run is actually in flight — no point holding a
+    // connection open (and no realtime token to mint) between sends.
+    enabled: running,
+  });
+
+  ...
+```
+
+The client keeps no run state, which makes reconnecting cheap. It groups deltas by `turn`, orders them by `seq`, and reads a re-appearing `seq: 0` as a replay: that turn's step retried, so the browser clears the bubble's buffer and rebuilds it. There's no cursor to persist and no gap to backfill. If deltas go missing entirely, the durable `turn.completed` still arrives with the authoritative text, so the worst case is a bubble that fills in all at once instead of typing.
+
+Finally, the route that sends the event.
+
+```typescript
+// Stateless server: the browser owns the full transcript and sends it on
+// every request (see components/Chat.tsx). Simplest possible design for an
+// example — a real app would likely persist history server-side instead.
+export async function POST(req: Request) {
+  const { sessionId, messages } = (await req.json()) as { sessionId: string; messages: ChatMessage[] };
+
+  if (!sessionId || !Array.isArray(messages)) {
+    return Response.json({ error: "Expected { sessionId, messages }" }, { status: 400 });
+  }
+
+  const { ids } = await inngest.send({
+    name: "chat/message.sent",
+    data: { sessionId, messages },
+  });
+
+  return Response.json({ eventId: ids[0] });
+}
+```
+
+## Summary
+
+Ask the agent for something long, like a two-page report on current weather conditions in Omaha, NE, and tokens start arriving right away instead of after the whole generation finishes.
+
+![video](https://cdn.inngest.com/docs/token-streaming/hls/master.m3u8)
+
+On the Inngest dashboard, the model turns and tool-call steps are all tracked, ready to retry if one fails.
+
+![dashboard](https://cdn.inngest.com/docs/token-streaming/token-streaming-dashboard.png)
+
+[Clone the repo](https://github.com/inngest/agent-examples/tree/main/token-streaming-agent), swap in your own model and tools, then kill the worker mid-stream and watch the turn restream from `seq: 0`.
