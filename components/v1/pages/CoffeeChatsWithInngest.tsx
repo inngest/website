@@ -5,24 +5,20 @@ import LogoMarquee from "@/components/v1/sections/Home/LogoMarquee";
 import Button from "@/components/v1/Button";
 import Chip from "@/components/v1/sections/shared/Chip";
 import EventCardLarge from "@/components/v1/sections/Events/EventCardLarge";
-import SpotlightFrame from "@/components/v1/sections/Events/SpotlightFrame";
 import { isPastEvent, sortEventsByDate } from "@/components/v1/sections/Events/data";
 
-const COVER_IMAGE = "/assets/v1/events/agent-architecture-half-life.png";
+const COVER_IMAGE = "/assets/v1/events/coffee-chats-with-inngest.png";
 
-const EVENT_STARTS_AT = "2026-07-01T12:05:00-07:00";
-
-const SCHEDULE_URL =
-  "https://www.ai.engineer/worldsfair/schedule?utm_source=inngest";
-
-const SPEAKER = {
-  name: "Dan Farrelly",
-  role: "CTO & Co-founder, Inngest",
-  bio: "Dan is the CTO and Co-founder of Inngest, where he's building the infrastructure layer that keeps AI agents and workflows running reliably. He was previously CTO at Buffer and has spent over a decade building open source tools, including MailDev. When he's not thinking about durable execution, he's restoring a 100-year-old craftsman bungalow one weekend at a time.",
-  avatar: "/assets/v1/events/dan-farrelly-headshot.png",
-  github: "https://github.com/djfarrelly",
-  linkedin: "https://www.linkedin.com/in/djfarrelly",
+const EVENT = {
+  title: "Coffee Chats with Inngest",
+  date: "Wednesday, July 29, 2026 · 8:00–10:00 AM EDT",
+  startsAt: "2026-07-29T08:00:00-04:00",
+  location: "Stone Street Cafe, 379 Broome St, New York, NY 10013",
+  description:
+    "We hit capacity on our supper club faster than we expected, turns out a lot of you want to talk durable execution over dinner. Unfortunately, we only have so many seats at the table & we wanted to find another way to actually meet you while we're in town.\n\nso: coffee. Wednesday, July 29th, 8–10am at Stone Street Cafe. Swing by before work, we'll buy your coffee and a pastry. Same deal as the dinner, just earlier and more caffeinated. ☕️\n\nDrop in whenever works between 8am and 10am. We'll be there the whole window. Look for the Inngest sign - you can't miss us!",
 };
+
+const REGISTER_URL = "https://luma.com/inngest-ugl5";
 
 const OTHER_EVENTS = sortEventsByDate([
   {
@@ -50,6 +46,19 @@ const OTHER_EVENTS = sortEventsByDate([
     image: "/assets/v1/events/innhouse-card.png",
   },
   {
+    id: "aiewf-dan-talk",
+    title: "Your agent architecture has a half-life of 6 months",
+    date: "Wednesday, July 1 · 12:05–12:25 PM PT",
+    startsAt: "2026-07-01T12:05:00-07:00",
+    location: "San Francisco, CA",
+    topics: ["talk", "agents", "architecture"],
+    excerpt:
+      "Dan Farrelly on building agent architecture that survives the next trend cycle — Expo Stage 1 at AI Engineer World's Fair.",
+    href: "/events/your-agent-architecture-half-life",
+    image: "/assets/v1/events/agent-architecture-half-life.png",
+    imageFit: "contain",
+  },
+  {
     id: "aiewf-afterparty",
     title: "AI World's Fair Afterparty",
     date: "Wednesday, July 1 · 6–9 PM",
@@ -67,15 +76,40 @@ const OTHER_EVENTS = sortEventsByDate([
     date: "Thursday, July 2 · 8–9:30 AM PT",
     startsAt: "2026-07-02T08:00:00-07:00",
     location: "San Francisco, CA",
-    topics: ["breakfast", "nebius", "Innhouse"],
+    topics: ["breakfast", "gpu infra", "reliability"],
     excerpt:
       "Breakfast tacos, coffee & matcha with the teams building the GPU infrastructure and reliability layer your agents depend on — just steps from Moscone West.",
     href: "/events/no-half-baked-agents-breakfast",
     image: "/assets/v1/events/no-half-baked-agents-breakfast.png",
   },
+  {
+    id: "aiewf-ai-in-prod",
+    title: "{AI} in Production",
+    date: "Thursday, July 2 · 6–8 PM PDT",
+    startsAt: "2026-07-02T18:00:00-07:00",
+    location: "San Francisco, CA",
+    topics: ["meetup", "ai", "production"],
+    excerpt:
+      "Join Cursor, Arcade, Vapi, and Inngest at Inngest HQ for an evening of AI in production war stories, demos, and networking. Free with RSVP.",
+    href: "https://luma.com/5kvakl4z",
+    image: "/assets/v1/events/ai-in-prod-meetup.png",
+  },
+  {
+    id: "inngest-supper-club",
+    title: "Inngest Supper Club",
+    date: "Wednesday, July 29, 2026 · 6 PM (dinner ~7 PM)",
+    startsAt: "2026-07-29T18:00:00-04:00",
+    location: "New York, NY",
+    topics: ["Meetups", "At Capacity"],
+    excerpt:
+      "An intimate dinner in Peasant's wine cellar in Nolita — no decks, no pitch, just food, wine, and conversation.",
+    href: "/events/inngest-supper-club",
+    image: "/assets/v1/events/inngest-supper-club.png",
+    imageFit: "contain",
+  },
 ]);
 
-export default function AgentArchitectureHalfLifeTalk() {
+export default function CoffeeChatsWithInngest() {
   const otherEvents = OTHER_EVENTS.filter((ev) => !isPastEvent(ev));
 
   return (
@@ -107,134 +141,54 @@ export default function AgentArchitectureHalfLifeTalk() {
                   id="event-hero-heading"
                   className="text-v1-heading-lg text-[40px] leading-[1.207] sm:text-[48px] lg:text-[58px]"
                 >
-                  Your agent architecture has a half-life of 6 months
+                  {EVENT.title}
                 </h1>
                 <p className="font-v1Body text-[14px] leading-[20px] v1-trim">
-                  Wednesday, July 1, 2026 · 12:05–12:25 PM PT
+                  {EVENT.date}
                 </p>
               </div>
 
               <div className="flex flex-col gap-4">
                 <p className="text-v1-label-md uppercase">Location</p>
-                <p className="text-v1-body-sm">
-                  Moscone West, San Francisco, CA 94103 | Expo Stage 1
-                </p>
+                <p className="text-v1-body-sm">{EVENT.location}</p>
               </div>
 
               <div className="flex flex-col gap-4">
                 <p className="text-v1-label-md uppercase">Description</p>
-                <p className="text-v1-body-sm">
-                  A short history of the right way to build an agent: RAG,
-                  ReAct, prompt chaining, orchestrator-workers, MCP, CLI, MCP
-                  again... CLI again??
-                </p>
-                <p className="mt-4 text-v1-body-sm">
-                  Every time you adopt a trend you rebuild your architecture. In
-                  this talk, Dan Farrelly, Inngest co-founder and CTO, is not
-                  going to tell you what comes next. He&apos;s going to show you
-                  how to build so it doesn&apos;t matter. He&apos;ll cover the
-                  core primitives that show up in every production agent, how
-                  bringing decisions closer to code provides more stack
-                  flexibility, and why the right execution layer unlocks faster
-                  iteration.{" "}
-                  <a
-                    href={SCHEDULE_URL}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="underline underline-offset-2 hover:text-v1-accent-salmon"
-                  >
-                    View on AI Engineer World&apos;s Fair schedule here
-                  </a>
-                  .
-                </p>
+                {EVENT.description.split("\n\n").map((para, i) => (
+                  <p key={i} className={`text-v1-body-sm${i > 0 ? " mt-4" : ""}`}>
+                    {para}
+                  </p>
+                ))}
               </div>
 
-              {isPastEvent({ startsAt: EVENT_STARTS_AT }) ? (
+              {isPastEvent(EVENT) ? (
                 <Chip variant="solid" size="md" className="self-start font-normal">
                   Past event
                 </Chip>
               ) : (
                 <Button asChild variant="accent" className="self-start">
-                  <a href={SCHEDULE_URL} target="_blank" rel="noopener noreferrer">
-                    View on schedule →
+                  <a href={REGISTER_URL} target="_blank" rel="noopener noreferrer">
+                    RSVP here →
                   </a>
                 </Button>
               )}
             </div>
           </div>
 
-          <div className="relative min-h-[300px] overflow-hidden bg-v1-surfaceElevated lg:hidden">
+          <div className="relative min-h-[300px] overflow-hidden bg-black lg:hidden">
             <div
               aria-hidden="true"
               className="absolute inset-0"
               style={{
                 backgroundImage: `url(${COVER_IMAGE})`,
-                backgroundSize: "cover",
+                backgroundSize: "contain",
                 backgroundPosition: "center",
+                backgroundRepeat: "no-repeat",
               }}
             />
           </div>
         </div>
-      </section>
-
-      <section
-        aria-labelledby="event-speakers-heading"
-        className="relative mx-auto flex w-full max-w-[1440px] flex-col gap-8 px-6 py-8 text-v1-frost sm:px-9 lg:gap-10 lg:px-[70px]"
-      >
-        <h2
-          id="event-speakers-heading"
-          className="text-v1-heading-md-cap text-white"
-        >
-          Speakers
-        </h2>
-        <ul className="list-none pl-0 lg:max-w-[480px]">
-          <li className="list-none">
-            <SpotlightFrame
-              className="rounded-[10px]"
-              innerClassName="flex gap-4 p-4 sm:gap-5 sm:p-5"
-            >
-              <div className="h-20 w-20 shrink-0 overflow-hidden rounded-md bg-v1-surfaceElevated sm:h-24 sm:w-24">
-                <img
-                  src={SPEAKER.avatar}
-                  alt={SPEAKER.name}
-                  loading="lazy"
-                  className="h-full w-full object-cover mix-blend-luminosity"
-                />
-              </div>
-              <div className="flex min-w-0 flex-col gap-2 sm:gap-3">
-                <div className="flex flex-col gap-1">
-                  <p className="text-[18px] font-normal leading-[24px] tracking-[-0.18px] text-white">
-                    {SPEAKER.name}
-                  </p>
-                  <p className="text-[14px] leading-[20px] text-v1-frost/80">
-                    {SPEAKER.role}
-                  </p>
-                </div>
-                <p className="text-[14px] leading-[20px] text-v1-frost/90">
-                  {SPEAKER.bio}
-                </p>
-                <div className="flex flex-wrap gap-x-4 gap-y-1 text-[14px] leading-[20px]">
-                  <a
-                    href={SPEAKER.github}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="underline underline-offset-2 hover:text-v1-accent-salmon"
-                  >
-                    GitHub
-                  </a>
-                  <a
-                    href={SPEAKER.linkedin}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="underline underline-offset-2 hover:text-v1-accent-salmon"
-                  >
-                    LinkedIn
-                  </a>
-                </div>
-              </div>
-            </SpotlightFrame>
-          </li>
-        </ul>
       </section>
 
       <LogoMarquee />

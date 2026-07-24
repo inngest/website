@@ -5,6 +5,7 @@
 
 export const LOCATIONS = [
   "SAN FRANCISCO, CA",
+  "NEW YORK, NY",
   "ONLINE",
 ] as const;
 
@@ -65,17 +66,29 @@ export const UPCOMING: EventItem[] = [
     image: "/assets/v1/events/social-card-v2.png",
   },
   {
-    id: "voice-demo-to-production-agent",
-    title:
-      "From Voice Demo to Production Agent: Building Reliable AI Workflows",
-    date: "Wednesday, July 29, 2026 · 11AM PT / 2PM ET",
-    startsAt: "2026-07-29T11:00:00-07:00",
-    location: "ONLINE",
-    topics: ["Webinars"],
+    id: "inngest-supper-club",
+    title: "Inngest Supper Club",
+    date: "Wednesday, July 29, 2026 · 6 PM (dinner ~7 PM)",
+    startsAt: "2026-07-29T18:00:00-04:00",
+    location: "NEW YORK, NY",
+    topics: ["Meetups", "At Capacity"],
     excerpt:
-      "Amanda Martin (Vapi) and Sterling Chin (Inngest) build a production-ready AI voice agent live, covering durable workflows, retries, and evaluations.",
-    href: "/events/from-voice-demo-to-production-agent",
-    image: "/assets/v1/events/voice-demo-to-production-agent.png",
+      "An intimate dinner in Peasant's wine cellar in Nolita — no decks, no pitch, just food, wine, and conversation.",
+    href: "/events/inngest-supper-club",
+    image: "/assets/v1/events/inngest-supper-club.png",
+    imageFit: "contain",
+  },
+  {
+    id: "coffee-chats-with-inngest",
+    title: "Coffee Chats with Inngest",
+    date: "Wednesday, July 29, 2026 · 8–10 AM EDT",
+    startsAt: "2026-07-29T08:00:00-04:00",
+    location: "NEW YORK, NY",
+    topics: ["Meetups"],
+    excerpt:
+      "Swing by Stone Street Cafe before work — coffee and a pastry on us, no agenda, just conversation about durable execution.",
+    href: "/events/coffee-chats-with-inngest",
+    image: "/assets/v1/events/coffee-chats-with-inngest.png",
     imageFit: "contain",
   },
 ];
@@ -155,17 +168,29 @@ export const ALL_EVENTS: EventItem[] = sortEventsByDate([
     image: "/assets/v1/events/ai-in-prod-meetup.png",
   },
   {
-    id: "voice-demo-to-production-agent",
-    title:
-      "From Voice Demo to Production Agent: Building Reliable AI Workflows",
-    date: "Wednesday, July 29, 2026 · 11AM PT / 2PM ET",
-    startsAt: "2026-07-29T11:00:00-07:00",
-    location: "ONLINE",
-    topics: ["Webinars"],
+    id: "inngest-supper-club",
+    title: "Inngest Supper Club",
+    date: "Wednesday, July 29, 2026 · 6 PM (dinner ~7 PM)",
+    startsAt: "2026-07-29T18:00:00-04:00",
+    location: "NEW YORK, NY",
+    topics: ["Meetups", "At Capacity"],
     excerpt:
-      "Amanda Martin (Vapi) and Sterling Chin (Inngest) build a production-ready AI voice agent live, covering durable workflows, retries, and evaluations.",
-    href: "/events/from-voice-demo-to-production-agent",
-    image: "/assets/v1/events/voice-demo-to-production-agent.png",
+      "An intimate dinner in Peasant's wine cellar in Nolita — no decks, no pitch, just food, wine, and conversation.",
+    href: "/events/inngest-supper-club",
+    image: "/assets/v1/events/inngest-supper-club.png",
+    imageFit: "contain",
+  },
+  {
+    id: "coffee-chats-with-inngest",
+    title: "Coffee Chats with Inngest",
+    date: "Wednesday, July 29, 2026 · 8–10 AM EDT",
+    startsAt: "2026-07-29T08:00:00-04:00",
+    location: "NEW YORK, NY",
+    topics: ["Meetups"],
+    excerpt:
+      "Swing by Stone Street Cafe before work — coffee and a pastry on us, no agenda, just conversation about durable execution.",
+    href: "/events/coffee-chats-with-inngest",
+    image: "/assets/v1/events/coffee-chats-with-inngest.png",
     imageFit: "contain",
   },
 ]);
