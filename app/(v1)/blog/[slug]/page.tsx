@@ -10,8 +10,6 @@ import { notFound } from "next/navigation";
 import matter from "gray-matter";
 import readingTime from "reading-time";
 
-import sharp from "sharp";
-
 import PageShell from "@/components/v1/PageShell";
 import ButtonLink from "@/components/v1/ButtonLink";
 import Chip from "@/components/v1/sections/shared/Chip";
@@ -31,26 +29,6 @@ import {
 } from "@/components/Blog/Report";
 
 const ARTICLE_BODY_ID = "blog-article-body";
-
-// Read a public-asset image's intrinsic dimensions so the hero <Image>
-// can fill its column width at the asset's true aspect ratio (dynamic
-// height, no layout shift). Cached per process. Falls back to 2:1 — the
-// Figma cover ratio — when the file can't be measured (e.g. remote src).
-const getImageSize = cache(
-  async (src: string): Promise<{ width: number; height: number }> => {
-    const fallback = { width: 1600, height: 800 };
-    if (!src.startsWith("/")) return fallback;
-    try {
-      const { width, height } = await sharp(
-        path.join(process.cwd(), "public", src)
-      ).metadata();
-      if (!width || !height) return fallback;
-      return { width, height };
-    } catch {
-      return fallback;
-    }
-  }
-);
 
 // Canonical /blog/[slug] route. Reads the shared content/blog MDX and
 // renders it in a server component with the same rehype/remark pipeline
@@ -304,7 +282,6 @@ export default async function BlogPostPage({
     : [];
   const dateStr = scope.humanDate ?? scope.date ?? "MM/DD/YYYY";
   const readingText = scope.reading?.text ?? "";
-  const heroSize = scope.image ? await getImageSize(scope.image) : null;
 
   const structuredData = {
     "@context": "https://schema.org",
@@ -346,8 +323,6 @@ export default async function BlogPostPage({
             <>
               <BlogHero
                 heading={scope.heading}
-                image={scope.image ?? null}
-                heroSize={heroSize}
                 authors={authors}
                 dateStr={dateStr}
                 readingText={readingText}
@@ -399,25 +374,26 @@ function BlogNotFound() {
 
 function BlogHero({
   heading,
-  image,
-  heroSize,
   authors,
   dateStr,
   readingText,
 }: {
   heading: string;
-  image: string | null;
-  heroSize: { width: number; height: number } | null;
   authors: string[];
   dateStr: string;
   readingText: string;
 }) {
+  // LCP experiment: the cover image used to run full-bleed above the
+  // title at up to ~1360px wide — the near-certain mobile LCP candidate
+  // flagged in Search Console. A condensed side-by-side thumbnail was
+  // tried here first but didn't resolve cleanly, so this drops the cover
+  // from the post page entirely rather than continuing to tune it. The
+  // image is untouched everywhere else it's used for: /blog index cards
+  // (components/v1/sections/Learn/ResourceCard.tsx), Open Graph/Twitter
+  // meta (generateMetadata above), and the BlogPosting structured data.
   return (
     <section className="relative mx-auto w-full max-w-[1440px] px-6 pt-[96px] sm:px-9 lg:px-8 lg:pt-[108px]">
-      <div className="overflow-hidden rounded-[8px] border border-[rgba(124,124,124,0.35)]">
-        <HeroCover image={image} imageAlt={heading} size={heroSize} />
-      </div>
-      <div className="mt-8 flex flex-col gap-4 text-v1-frost lg:max-w-[calc(800/1248*100%)]">
+      <div className="flex flex-col gap-4 text-v1-frost lg:max-w-[calc(800/1248*100%)]">
         <Chip variant="solid" size="sm" className="self-start">
           Blog Article
         </Chip>
@@ -531,39 +507,6 @@ function BuildBetterAgentsCta() {
         Quick start guide&nbsp;→
       </ButtonLink>
     </StippleCtaSection>
-  );
-}
-
-function HeroCover({
-  image,
-  imageAlt,
-  size,
-}: {
-  image: string | null;
-  imageAlt: string;
-  size: { width: number; height: number } | null;
-}) {
-  // Cover fills the column width; its height follows the asset's native
-  // aspect ratio (no forced crop). Posts without an image fall back to a
-  // 2:1 grain panel matching the Figma cover proportions.
-  if (!image || !size) {
-    return (
-      <div
-        aria-hidden="true"
-        className="aspect-[2/1] w-full bg-[url(/assets/v1/page/.compressed/grain-bg.webp)] bg-cover bg-center"
-      />
-    );
-  }
-  return (
-    <Image
-      src={image}
-      alt={imageAlt}
-      width={size.width}
-      height={size.height}
-      priority
-      sizes="(min-width: 1024px) 1360px, 100vw"
-      className="h-auto w-full"
-    />
   );
 }
 
