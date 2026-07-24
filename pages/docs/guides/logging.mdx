@@ -25,6 +25,8 @@ async ({ event, step }) => {
 
 We provide a thin wrapper over existing logging tools, and export it to Inngest functions in order to mitigate these problems, so you, as the user, don't need to deal with them and things should work as you expect.
 
+This de-duplication only applies to the `logger` passed to your function as a handler argument (see [Usage](#usage) below). The SDK silences it while it replays memoized steps, so a log statement outside a `step` runs only on the real, non-replayed execution. A logger you import or instantiate yourself and call directly has no such awareness — called outside a `step`, it runs on every replay and duplicates. Use the handler's `logger`, or wrap the log in `step.run` when you need it to run exactly once.
+
 ## Usage
 
 A `logger` object is available within all Inngest functions as a handler argument. You can use it with the logger of your choice, or if absent, `logger` will default to use `console`.
