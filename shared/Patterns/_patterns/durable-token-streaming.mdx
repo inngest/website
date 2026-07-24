@@ -112,36 +112,57 @@ export type ChatMessage = { role: "user" | "assistant"; content: string };
 > 💡 **One caveat:** publishing every single token wastes bandwidth. The worker batches deltas and flushes every 40ms instead; frequent enough to read as live typing, without a message per token.
 
 ```typescript
-// Fire-and-forget, non-durable: this is a live UI nicety, not part of
-// the durable record. `turn.completed` (below, durable) is the
-// authoritative text the UI falls back to if any deltas are lost.
-void inngest.realtime.publish(ch.tokens, { turn, seq: seq++, delta });
+// Runs one model turn as a single durable step. Streaming to the browser is
+// a side effect of that step — non-durable publishes that restream from
+// `seq: 0` if the step retries. Once the step completes it's memoized, so a
+// finished turn never re-calls the model or re-streams.
+const response = await step.run(`llm-turn-${turn}`, async () => {
+  let seq = 0;
+  let buffer = "";
+  let timer: ReturnType<typeof setTimeout> | null = null;
 
-   const stream = client.messages.stream({
-     model: MODEL,
-     max_tokens: 1024,
-     system: SYSTEM_PROMPT,
-     tools: toolDefinitions,
-     messages,
-   });
+  const flush = () => {
+    if (!buffer) return;
+    const delta = buffer;
+    buffer = "";
+    timer = null;
+    // Fire-and-forget, non-durable: a live UI nicety, not part of the
+    // durable record. `turn.completed` (below, durable) is the authoritative
+    // text the UI falls back to if any deltas are lost — so a failed publish
+    // is swallowed rather than left as an unhandled rejection.
+    void inngest.realtime.publish(ch.tokens, { turn, seq: seq++, delta }).catch(() => {});
+  };
 
-   stream.on("text", (delta) => {
-     buffer += delta;
-     timer ??= setTimeout(flush, BATCH_MS);
-   });
+  const stream = client.messages.stream({
+    model: MODEL,
+    max_tokens: 1024,
+    system: SYSTEM_PROMPT,
+    tools: toolDefinitions,
+    messages,
+  });
 
-   const final = await stream.finalMessage();
+  stream.on("text", (delta) => {
+    buffer += delta;
+    timer ??= setTimeout(flush, BATCH_MS);
+  });
 
-    {...}
+  try {
+    return await stream.finalMessage();
+  } finally {
+    // Cancel any pending batch so no flush fires after the step settles.
+    if (timer) clearTimeout(timer);
+    flush();
+  }
+});
 
-    // The durable status publishing step.
-    const text = extractText(response.content);
-     lastText = text;
-     await step.realtime.publish(`turn-completed-${turn}`, ch.status, {
-       type: "turn.completed",
-       turn,
-       text,
-     });
+// ...later in the agent loop, once the turn's response is known — the
+// durable status publish, a memoized step of its own:
+const text = extractText(response.content);
+await step.realtime.publish(`turn-completed-${turn}`, ch.status, {
+  type: "turn.completed",
+  turn,
+  text,
+});
 ```
 
 ### The Browser
