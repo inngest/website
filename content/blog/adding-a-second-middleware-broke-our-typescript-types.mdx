@@ -1,0 +1,223 @@
+---
+heading: "Adding a second middleware broke our typescript types"
+subtitle: "How stacking middleware quietly collapsed our TypeScript inference—and what it took to fix it."
+image: /assets/blog/adding-a-second-middleware-broke-our-typescript-types/featured-image.jpg
+date: 2026-07-13
+author: Linell Bonnette
+category: engineering
+showSubtitle: true
+---
+
+While reading through `inngest-js`'s open issues, I came across one that was pretty surprising — **Multiple middlewares corrupt TS typings.**
+
+> *When I pass two middleware to the Inngest client, the return type of `step.run` collapses to `{}`. With one middleware, everything works.*
+> 
+
+```tsx
+type Widget = { media: { mediaId: string; label?: string }[] };
+const widgetValue: Widget = { media: [] };
+
+const client = new Inngest({
+  id: "my-app",
+  // middleware: [MiddlewareA], // working
+  // middleware: [MiddlewareB], // working
+  middleware: [MiddlewareA, MiddlewareB] // type error!
+
+});
+
+// inside a function…
+const widget = await step.run("load-widget", async (): Promise<Widget> => {
+  return loadWidget();
+});
+
+widget.media[0].mediaId;
+// Property 'mediaId' does not exist on type 'JsonifyObject<{}>' 🙃
+```
+
+Delete either of the middleware and the error vanishes. The actual middleware code itself doesn’t matter either, so two no-op middleware still faithfully causes an issue. Somehow the *count* is what breaks the types.
+
+It was obvious that something suspicious was going, so I slipped into a detective costume and started sleuthing.
+
+## Two should just be one, twice
+
+A crucial piece of context is that when an Inngest function runs, the result of every [`step.run`](/docs/reference/typescript/v4/functions/step-run?ref=blog-adding-a-second-middleware-broke-our-typescript-types) is serialized to JSON and stored, so the step can be [memoized across retries](/docs/learn/inngest-steps?ref=blog-adding-a-second-middleware-broke-our-typescript-types). Your function returns a `Date` *but* what comes back on replay is a string.
+
+[Middleware](/docs/features/middleware?ref=blog-adding-a-second-middleware-broke-our-typescript-types) can transform step outputs, so each middleware carries a static output transform. The default transform is `Jsonify` and those transforms compose, so two middleware means `Jsonify<Jsonify<T>>`.
+
+At runtime this is obviously fine: serializing already-serialized data is a no-op. 
+
+The type should be idempotent the same way… right?
+
+Instead, this is what happens:
+
+```tsx
+type Widget = { media: { mediaId: string; label?: string }[] };
+
+type Once  = Jsonify<Widget>; // { media: { mediaId: string; label?: string }[] }
+type Twice = Jsonify<Once>;   // { media: JsonifyObject<{}>[] }
+```
+
+Delete `label?: string` and `Twice` comes out perfect. The entire failure hangs on *one optional property.* Huh?
+
+## An idiom with a record
+
+`Jsonify` has to drop properties that don't survive [serialization](/docs/reference/typescript/v4/middleware/serialization?ref=blog-adding-a-second-middleware-broke-our-typescript-types). Things like functions, symbols, and  `undefined`. The standard idiom for "filter an object's keys by their value type" looks like this:
+
+```tsx
+type FilterJsonableKeys<T extends object> = {
+  [Key in keyof T]: T[Key] extends NotJsonable ? never : Key;
+}[keyof T];
+```
+
+Map each property to *its own name* if the value is serializable, or `never` if it isn't, then read every value back out with `[keyof T]`. For `{ a: string; b: () => void }` the mapped type is `{ a: "a"; b: never }`, reading it back gives `"a" | never`, `never` vanishes from unions, and you're left with `"a"`. Feed that to `Pick` and you're done. You've probably done this before in your own code.
+
+## How `undefined` becomes a key
+
+Mapped types written with `[Key in keyof T]` preserve each property's modifiers, including the `?`. So for our widget's media element, the intermediate object is:
+
+```tsx
+{ mediaId: "mediaId"; label?: "label" }
+```
+
+And reading an *optional* property in TypeScript includes `undefined` in what you get back. Read every value out of that object and you get:
+
+```tsx
+"mediaId" | "label" | undefined
+```
+
+An `undefined` in a list of keys doesn’t *seem* right, right? It isn't a key. It shouldn’t be a key? But the compiler is completely fine with it.
+
+## The loophole
+
+This is what makes the bug so hard to see. The poisoned union feeds `Pick`:
+
+```tsx
+type JsonifyObject<T extends object> = {
+  [Key in keyof Pick<T, FilterJsonableKeys<T>>]: Jsonify<T[Key]>;
+};
+```
+
+`Pick<T, K>` requires `K extends keyof T`, and normally that constraint has teeth.. Write this yourself, and the compiler rejects it on the spot:
+
+```tsx
+type Broken = Pick<Widget, "media" | undefined>;
+```
+
+Inside of `JsonifyObject` though, the same `Pick` is written against the generic `T`:
+
+```tsx
+Pick<T, FilterJsonableKeys<T>>
+```
+
+That’s the loophole. The compiler checks a constraint where the code is written, not again each time it’s used. At the definition site, `T` is still abstract, so there’s no concrete type for optionality to leak an `undefined` out of, which means that the check passes.
+
+Later, when `T` *is* filled in with a real type, the compiler is expanding a definition that it’s already approved. It doesn’t go back and re-check the constraint against the concrete types. `Pick` stamps out one property per union member and just tolerates the `undefined.`
+
+What comes out is a type that's only *half* broken. Property access works, assignability works, and hover looks healthy, so every *ordinary* interaction with it says that nothing is wrong. But its key set now literally contains `undefined`. I didn't quite believe that until I made the compiler admit it
+
+```tsx
+declare const once: Jsonify<{ mediaId: string; label?: string }>;
+
+once.mediaId;                           // string - looks perfectly healthy
+const k: keyof typeof once = undefined; // compiles. ummm?
+```
+
+An ill-formed object type has been minted silently and indistinguishably from a healthy one in every use that *doesn’t* poke directly at its keys. That’s why *one* middleware never failed, and why the existing tests were all green.
+
+## The collapse
+
+All of `Jsonify`'s object machinery starts the same way: iterate `keyof T`. On the second application, one of those "keys" is `undefined`, so the compiler ends up computing `T[undefined]` .
+
+Write that at the top level of your own code and you get a nice red error. Deep inside a generic instantiation, TypeScript doesn't report it. Instead, it substitutes its internal error type and keeps going. The error type is the compiler's `NaN`: everything it touches, becomes it. The key filter returns the error type instead of a key union, `Pick` with no valid keys produces `{}`, and out of the other end comes `JsonifyObject<{}>`. 
+
+Notice what's *not here*: a diagnostic. Not at declaration, not at first application, not at the collapse. The compiler just quietly and casually returns the wrong type.
+
+## The graveyard of reasonable fixes
+
+I wasn't the first person to take a swing at this. Two community PRs got there before me — both with regression tests, both fixing the reported repro — and each stopped one layer short, in an instructive way.
+
+The first attacked the composition: if every middleware in the stack uses the default transform, apply `Jsonify` once instead of once per middleware. That fixes the reported case, the all-default stack. But mix in one middleware with a custom transform and the check bails back to the old path, where the remaining defaults stack again and the collapse returns.
+
+The second guarded the transform itself — honestly the first thing I'd have reached for too:
+
+```
+Out: [this["In"]] extends [JsonValue] ? this["In"] : Jsonify<this["In"]>;
+```
+
+"If the input is already plain JSON, don't re-apply `Jsonify`." Its author read the collapse as an instantiation-depth problem, which is a very reasonable guess. The guard has two holes.
+
+First, our `Jsonify` deliberately preserves `unknown` rather than widening it, and `unknown` is not assignable to `JsonValue`, so any type containing `unknown` falls through the guard and collapses exactly as before. Second, it patches *one* composition site. [`step.invoke`](/docs/reference/typescript/v4/functions/step-invoke?ref=blog-adding-a-second-middleware-broke-our-typescript-types) composes `Jsonify` with itself too: invoke a function whose handler returns a step.run result and you get the double application with zero middleware. Patch the middleware stack and the bug still lives on in the primitive.
+
+Then I checked the upstream source. `type-fest`'s own sibling filters, `FilterDefinedKeys` and `FilterOptionalKeys`, are built on the exact same idiom, and both wrap their result in `Exclude<…, undefined>`. `FilterJsonableKeys`, on the other hand, doesn't. Someone hit this class of bug before, fixed the two instances they could see, and missed the third. C’est la vie.
+
+## Fix it where the `undefined` gets in
+
+Every fix so far patched a place where the corruption becomes visible, but the bug itself lives where the `undefined` gets in:
+
+```diff
+-type FilterJsonableKeys<T extends object> = {
+-  [Key in keyof T]: T[Key] extends NotJsonable ? never : Key;
+-}[keyof T];
++type FilterJsonableKeys<T extends object> = Exclude<
++  {
++    [Key in keyof T]: T[Key] extends NotJsonable ? never : Key;
++  }[keyof T],
++  undefined
++>;
+```
+
+Keep `undefined` out of the union and it never enters the object's key set. The first application produces a well-formed type, so re-applying `Jsonify` is a no-op and every composition site is fixed at once. The same fix is now submitted upstream to type-fest.
+
+Verification had to answer two questions:
+
+Does the new `Jsonify` change anything for types that were never broken? I structurally compared old and new, applied once, across every shape I could think of — unions, tuples, `Record` s, `readonly`, deeply nested optionals — and they're identical in every case.
+
+Does it actually fix the bug? I re-ran the double-application battery that had collapsed all over the old code. All clean. Most importantly though, the red squiggle was no longer present in vim.
+
+## Your type tests can lie to you
+
+One last trap, and it's one that nearly got me! The natural regression test here is:
+
+```tsx
+type Once  = Jsonify<Widget>;
+type Twice = Jsonify<Once>;
+
+// passes on broken code 🥲
+assertType<IsEqual<Once, Twice>>(true);
+```
+
+I ran that against the *broken* code, expecting to watch it fail. Instead, it passed. That’s because  `IsEqual` compares the two aliases while they're still deferred! TypeScript can relate them without fully evaluating either, and the corruption only materializes when evaluation is forced. The assertion that actually fails when it should is the mundane-looking one:
+
+```tsx
+assertType<IsEqual<Twice["media"][number]["mediaId"], string>>(true);
+```
+
+Property access forces resolution. If your type-level tests only assert equality between composed aliases, they may be asserting nothing at all. (If you're building library types for other people, [treating those types as an API](/blog/typescript-types-as-api?ref=blog-adding-a-second-middleware-broke-our-typescript-types) is the right mental model—and this is one more way that model can quietly fail you.)
+
+## Takeaways
+
+1. If you filter keys with the `{ … }[keyof T]` idiom, optional properties put `undefined` in your result. `Exclude` it, even when it doesn't seem to matter yet. 
+2. Generic constraints are checked where the generic is written, not re-checked when it's later expanded with concrete types. An ill-formed type can be minted silently and travel a long ways before anything forces it to resolve.
+3. TypeScript has an internal error type that silently swallows whatever it touches. By the time it reaches you it may have been laundered into something that looks legal: `keyof` gone wrong surfaced as `unknown`, `Pick` over the poisoned keys surfaced as `{}`. That's the `{}` in `JsonifyObject<{}>` — not "empty object" as a diagnosis, just the shape the wreckage *happened to take*. A type that's wrong but quiet hides far better than one that fails loudly.
+4. If a type transform can compose with itself, test the composition: `f(f(x))` should equal `f(x)`.
+5. Assert type tests through property access, not just `IsEqual` on aliases; equality of deferred types is weaker than it looks.
+
+The part I like best about the fix is how little there is to it. One `Exclude`, and a whole category of silent type corruption stops being possible: in [middleware stacks](/docs/features/middleware?ref=blog-adding-a-second-middleware-broke-our-typescript-types), in `step.invoke`, in compositions nobody has written yet. `Jsonify` goes back to being the boring part of the [TypeScript SDK](/blog/typescript-sdk-v4.0?ref=blog-adding-a-second-middleware-broke-our-typescript-types).
+
+And boring is the win condition. A boring type is one nobody ever has to learn anything about: no loophole to remember, no poisoned key sets, no folklore about how many middleware are safe to stack. The detective costume goes back in the closet.
+
+## Postscript: there's a better way
+
+I shipped the `Exclude` and moved on. Then som-sm pointed out in review that the fix was still one layer too shallow. It wasn’t *wrong*, but it could definitely be better!
+
+My fix kept the old shape: build a union of keys, `Exclude` the `undefined` back out, and feed it to `Pick`. *But* the `undefined` was only ever there because I read the keys *out* as a value union, `{ … }[keyof T]` , and reading an optional property drags `undefined` along. Every other step existed to clean up after that one. Skip it, and they all go with it. Filter the keys in place:
+
+```tsx
+type JsonifyObject<T extends object> = {
+  [Key in keyof T as T[Key] extends NotJsonable ? never : Key]: Jsonify<T[Key]>;
+};
+```
+
+Key remapping with `as` tests each key against `NotJsonable` where it's *still a key*, and drops the losers by mapping them to `never`. There's no value-union step, so there's no `undefined` to leak, so there's no `Exclude` to remember, and `FilterJsonableKeys` and `Pick` both delete themselves. Same output, verified against the same battery.
+
+My `Exclude` made the bug impossible; the `as` clause makes the *shape that had the bug* impossible. Boring won twice.

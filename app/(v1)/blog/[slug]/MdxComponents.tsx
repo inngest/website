@@ -1,6 +1,7 @@
 import Link from "next/link";
 import type { AnchorHTMLAttributes, ReactNode } from "react";
 import { cn } from "@/utils/v1/cn";
+import HlsVideo from "./HlsVideo";
 
 type BlogButtonProps = AnchorHTMLAttributes<HTMLAnchorElement> & {
   arrow?: "left" | "right";
@@ -55,7 +56,7 @@ export function BlogCallout({
       className={cn(
         "my-6 rounded-lg p-6 [&>:first-child]:mt-0 [&>:last-child]:mb-0 [&_a]:decoration-current",
         (variant === "default" || variant === "info") &&
-          "bg-info text-info dark:bg-info/50 dark:text-info",
+          "bg-info/30 text-info dark:bg-info/30 dark:text-info",
         variant === "warning" &&
           "bg-warning text-warning dark:bg-warning/50 dark:text-warning",
         variant === "tip" &&
@@ -99,20 +100,42 @@ export function BlogAutoplayVideo({
   src,
   loop = true,
   controls = true,
+  autoPlay = true,
+  poster,
 }: {
   src: string;
   loop?: boolean;
   controls?: boolean;
+  autoPlay?: boolean;
+  poster?: string;
 }) {
+  const className =
+    "my-6 w-full rounded-[8px] border border-[rgba(124,124,124,0.35)]";
+
+  // Adaptive-bitrate HLS streams need the hls.js-backed client component.
+  if (src.endsWith(".m3u8")) {
+    return (
+      <HlsVideo
+        src={src}
+        poster={poster}
+        loop={loop}
+        controls={controls}
+        autoPlay={autoPlay}
+        className={className}
+      />
+    );
+  }
+
   return (
     <video
-      className="my-6 w-full rounded-[8px] border border-[rgba(124,124,124,0.35)]"
+      className={className}
       src={src}
+      poster={poster}
       playsInline
       loop={loop}
       controls={controls}
       preload="metadata"
-      autoPlay
+      autoPlay={autoPlay}
       muted
     />
   );

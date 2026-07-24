@@ -181,13 +181,6 @@ const OBSERVABILITY_CONTENT: TabContent = {
       body: "Group multiple agent loops or turns as a single conversation, thread, or however you choose.",
       ...icon(4),
     },
-    // TODO(jb): the source listed “Scoring” twice — replace this sixth tile
-    // with the intended capability.
-    {
-      title: "[Needs copy]",
-      body: "[Placeholder] Sixth Agent Observability capability goes here.",
-      ...icon(5),
-    },
   ],
 };
 

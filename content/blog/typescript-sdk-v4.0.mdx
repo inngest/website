@@ -53,7 +53,7 @@ Middleware instances are created fresh per request, so you can safely use instan
 - **Wrapping hooks** (`wrap*`) for before/after logic using an onion model
 - **Transform hooks** (`transform*`) for modifying inputs and outputs
 
-Any hooks you don't define have zero overhead — the SDK skips them entirely. The [middleware lifecycle reference](/docs/reference/typescript/v4/middleware/lifecycle) covers the full API.
+Any hooks you don't define have zero overhead — the SDK skips them entirely. The [middleware lifecycle reference](/docs/reference/typescript/v4/middleware/lifecycle) covers the full API. Output transforms compose across the stack, which is why [adding a second middleware once collapsed our TypeScript types](/blog/adding-a-second-middleware-broke-our-typescript-types?ref=blog-typescript-sdk-v4).
 
 ## Type-safe trigger helpers
 

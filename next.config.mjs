@@ -360,6 +360,13 @@ async function redirects() {
         "/?utm_medium=ooh&utm_source=car-wrap-sf&utm_campaign=aiewf-2026",
       permanent: false,
     },
+    // OOH campaign - AI conference signage (Sept 2026)
+    {
+      source: "/ai-conf",
+      destination:
+        "/?utm_medium=ooh&utm_source=signage&utm_campaign=ai-conf-0926",
+      permanent: false,
+    },
   ];
 }
 
@@ -473,10 +480,19 @@ const nextConfig = {
   },
   images: {
     qualities: [75, 95],
+    // CDN images (cdn.inngest.com) ship no Cache-Control header, so the
+    // optimizer would fall back to the 1h default and re-transform hourly.
+    // Blog images are immutable per path, so hold transforms for 31 days.
+    minimumCacheTTL: 2678400,
     remotePatterns: [
       {
         protocol: "https",
         hostname: "resend.com",
+      },
+      {
+        protocol: "https",
+        hostname: "cdn.inngest.com",
+        pathname: "/blog/**",
       },
     ],
     // Next.js 16 requires explicit localPatterns for all next/image local sources
