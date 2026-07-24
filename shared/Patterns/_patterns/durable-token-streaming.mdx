@@ -5,8 +5,6 @@ pattern: durable
 tags: [Durable, Realtime]
 ---
 
-> Stream tokens to your client as your AI agent generates them, with execution durability decoupled from transport.
-
 Token streaming means the LLM server returns tokens one at a time as it generates them, so your agent produces a progressive "typing" effect instead of delivering everything at once.
 Users start reading a long output sooner, they can stop the agent midway if it's heading the wrong direction, and a response they watch arrive feels faster than one they wait on.
 Most implementations reach for WebSockets or SSE (Server-Sent Events) to push near-realtime updates from the agent to the app.
