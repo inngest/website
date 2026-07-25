@@ -48,7 +48,7 @@ export default inngest.createFunction(
         Expressions are defined using the Common Expression Language (CEL) with the original event accessible using dot-notation. Read [our guide to writing expressions](/docs/guides/writing-expressions) for more info. Examples:
 
         * Rate limit per customer id: `'event.data.customer_id'`
-        * Rate limit per account and email address: `'event.data.account_id + "-" + event.user.email'`
+        * Rate limit per account and email address: `'event.data.account_id + "-" + event.data.email'`
       </Property>
     </Properties>
   </Property>
@@ -109,12 +109,9 @@ When there is an issue in your system, you may want to send your user an email n
     incident_id: "01HB9PWHZ4CZJYRAGEY60XEHCZ",
     issue: "HTTP uptime check failed at 2023-09-26T21:23:51.515631317Z",
     user_id: "user_aW5uZ2VzdF9pc19mdWNraW5nX2F3ZXNvbWU=",
+    email: "user@example.com",
     service_name: "api",
     service_id: "01HB9Q2EFBYG2B7X8VCD6JVRFH"
-  },
-  user: {
-    external_id: "user_aW5uZ2VzdF9pc19mdWNraW5nX2F3ZXNvbWU=",
-    email: "user@example.com"
   }
 }
 */
@@ -133,7 +130,7 @@ export default inngest.createFunction(
     await step.run("send-alert-email", async () => {
       return await resend.emails.send({
         from: "notifications@myco.com",
-        to: event.user.email,
+        to: event.data.email,
         subject: `ALERT: ${event.data.issue}`,
         text: `Dear user, ...`,
       });
