@@ -1,7 +1,5 @@
 import { VersionBadge, Callout } from "src/shared/Docs/mdx";
 
-
-
 export const metaTitle = "OpenTelemetry Integration with Inngest"
 export const description = "Set up OpenTelemetry with Inngest for AI metadata extraction and Extended Traces. Use @inngest/otel or bring your own OpenTelemetry provider."
 
@@ -24,6 +22,10 @@ Use [`@inngest/otel`](https://www.npmjs.com/package/@inngest/otel) if you want I
 
 If your application does not already configure OpenTelemetry, install and use [`@inngest/otel`](https://www.npmjs.com/package/@inngest/otel) to set up a Node.js provider and common instrumentations.
 
+```shell
+npm install @inngest/otel
+```
+
 Preload it before your application:
 
 ```shell
@@ -36,6 +38,24 @@ If `--import` is not available, use a small bootstrap file as your process entry
 import "@inngest/otel/node";
 
 await import("./app.js");
+```
+
+#### Framework dev servers
+
+Many frameworks start their dev server through a CLI, so there is no direct way to pass `--import` to Node. TanStack Start and Nuxt, for example, run `vite dev`. In development, set the preload with the `NODE_OPTIONS` environment variable instead. It applies to the Node process the CLI starts and propagates to any worker threads the framework uses to run server code.
+
+```json package.json
+{
+  "scripts": {
+    "dev": "NODE_OPTIONS='--import @inngest/otel/node' vite dev"
+  }
+}
+```
+
+In production, these frameworks build a Node server entrypoint, so preload as usual:
+
+```shell
+node --import @inngest/otel/node .output/server/index.mjs
 ```
 
 ### Manual setup with your existing provider
