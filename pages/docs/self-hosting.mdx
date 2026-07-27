@@ -200,6 +200,24 @@ INNGEST_EVENT_KEY=<YOUR_EVENT_KEY> \
   node ./server.js
 ```
 
+#### Go SDK v0.16+ and manual sync
+
+The Go SDK v0.16 rejects unauthenticated sync requests by default when it is not running in local development mode. If your Go app is connected to a self-hosted Inngest server and manual sync fails with an unauthorized response, allow unauthenticated sync requests on the SDK endpoint:
+
+```go
+handler := client.ServeWithOpts(inngestgo.ServeOpts{
+	EnableUnauthedSync: inngestgo.Ptr(true),
+})
+```
+
+You can also set this on the application process with:
+
+```plaintext
+INNGEST_ENABLE_UNAUTHED_SYNC=true
+```
+
+Unauthenticated sync requests do not send app configuration back to the caller. Instead, the SDK makes an outgoing authenticated request to the configured Inngest API. Authenticated sync requests are still preferred because they add defense in depth by verifying that the incoming sync trigger came from your Inngest server.
+
 ### Using external services
 
 Inngest can be configured to use external services for the queue and state store, and soon, the database.
