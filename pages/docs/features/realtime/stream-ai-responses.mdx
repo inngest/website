@@ -1,0 +1,284 @@
+import { Callout, CodeGroup, Info, VersionBadge } from "src/shared/Docs/mdx";
+
+export const metaTitle = "Stream AI Responses to Your UI | Inngest Realtime";
+export const description = "Stream AI model output and processing status to your UI in real time using Inngest Realtime.";
+
+# Stream AI responses to your UI <VersionBadge version="TypeScript SDK v4" />
+
+This guide walks you through pushing AI output to the browser as it's generated.
+You'll define a typed channel, publish from an Inngest function, mint a
+subscription token, and subscribe from a React component.
+
+The pattern works for any AI workflow: LLM token streaming, document processing
+progress, agent tool call updates, or multi-step pipeline status.
+
+---
+
+## Define the channel
+
+Create a channel with topics for the different types of updates your UI needs.
+Each topic needs a `schema`, which can be any
+[Standard Schema](https://github.com/standard-schema/standard-schema) validator
+such as Zod, or `staticSchema<T>()` for types without runtime validation.
+
+```ts {{ filename: "inngest/channels.ts" }}
+import { realtime, staticSchema } from "inngest";
+import { z } from "zod";
+
+export const aiChannel = realtime.channel({
+  // `threadId` is your own conversation identifier, not an Inngest run ID.
+  // The client passes the same value when it subscribes.
+  name: ({ threadId }: { threadId: string }) => `ai-thread:${threadId}`,
+  topics: {
+    status: {
+      schema: z.object({ message: z.string(), progress: z.number() }),
+    },
+    // Token payloads are tiny and very high volume, so skip runtime
+    // validation and keep the types only.
+    tokens: {
+      schema: staticSchema<{ token: string }>(),
+    },
+    result: {
+      schema: staticSchema<{
+        output: string;
+        model: string;
+        outputTokens: number;
+      }>(),
+    },
+  },
+});
+```
+
+Three topics. `status` for progress updates, `tokens` for streaming LLM output,
+and `result` for the final output. Each topic has a typed payload.
+
+---
+
+## Publish from your function
+
+There are two publish methods. `inngest.realtime.publish()` is non-durable and
+fires immediately, which suits high-frequency token streaming where a duplicate
+on retry is acceptable. `step.realtime.publish()` is a durable step that is
+memoized, so the final result won't be sent twice.
+
+```ts {{ filename: "inngest/functions/generate.ts" }}
+import { OpenAI } from "openai";
+import { inngest } from "../client";
+import { aiChannel } from "../channels";
+
+const openai = new OpenAI();
+const MODEL = "gpt-5";
+
+export default inngest.createFunction(
+  { id: "generate-response", triggers: [{ event: "app/prompt.submitted" }] },
+  async ({ event, step }) => {
+    // One channel instance per conversation thread.
+    const ch = aiChannel({ threadId: event.data.threadId });
+
+    // Non-durable: a transient "we've started" ping.
+    await step.realtime.publish('start', ch.status, {
+      message: "Generating response...",
+      progress: 0,
+    });
+
+    const generated = await step.run("stream-model", async () => {
+      const stream = await openai.responses.create({
+        model: MODEL,
+        input: [{ role: "user", content: event.data.prompt }],
+        stream: true,
+      });
+
+      let text = "";
+      let outputTokens = 0;
+
+      // The Responses API emits semantic events. Branch on `event.type` and
+      // handle only the ones your UI needs.
+      for await (const chunk of stream) {
+        if (chunk.type === "response.output_text.delta") {
+          text += chunk.delta;
+
+          // Non-durable on purpose: one publish per token, and a replay on
+          // retry is cheaper than making each token a durable step.
+          await inngest.realtime.publish(ch.tokens, { token: chunk.delta });
+        }
+
+        if (chunk.type === "response.completed") {
+          outputTokens = chunk.response.usage?.output_tokens ?? 0;
+        }
+      }
+
+      return { text, outputTokens };
+    });
+
+    // Durable: memoized as a step, so retrying past this point will not
+    // publish the result a second time.
+    await step.realtime.publish("send-result", ch.result, {
+      output: generated.text,
+      model: MODEL,
+      outputTokens: generated.outputTokens,
+    });
+  }
+);
+```
+
+<Info>
+  `inngest.realtime.publish()` works both inside and outside `step.run()`.
+  It is recommended to use within `step.run()` unless you are properly handling
+  potential deduplication of messages on retry on your client.
+</Info>
+
+---
+
+## Create a subscription token
+
+The client needs a scoped token to connect. Create a server action or route that
+mints one, and authorize the user before you do.
+
+<CodeGroup>
+```ts {{ title: "Next.js Server Action" }}
+// app/actions.ts
+"use server";
+
+import { getClientSubscriptionToken } from "inngest/react";
+import { inngest } from "@/inngest/client";
+import { aiChannel } from "@/inngest/channels";
+import { getSession } from "@/lib/session";
+
+export async function fetchAIToken(threadId: string) {
+  // A token is a capability. Check the caller may read this thread first.
+  const { userId } = await getSession();
+  await assertUserOwnsThread(userId, threadId);
+
+  return getClientSubscriptionToken(inngest, {
+    channel: aiChannel({ threadId }),
+    topics: ["status", "tokens", "result"],
+  });
+}
+```
+```ts {{ title: "Express" }}
+import { getClientSubscriptionToken } from "inngest/react";
+import { inngest } from "./inngest/client";
+import { aiChannel } from "./inngest/channels";
+
+app.post("/api/ai-token", async (req, res) => {
+  const { threadId } = req.body;
+
+  const { userId } = getSession(req);
+  await assertUserOwnsThread(userId, threadId);
+
+  const token = await getClientSubscriptionToken(inngest, {
+    channel: aiChannel({ threadId }),
+    topics: ["status", "tokens", "result"],
+  });
+
+  res.json(token);
+});
+```
+</CodeGroup>
+
+The token is scoped to the specific channel and topics. The client can only
+subscribe to what you authorize. See
+[Subscription tokens](/docs/features/realtime/subscription-tokens?ref=docs-realtime-stream-ai-responses)
+for refresh behavior and more framework examples.
+
+---
+
+## Subscribe and render
+
+Use `useRealtime` to connect and render updates as they arrive.
+
+```tsx {{ filename: "app/components/AIStream.tsx" }}
+"use client";
+
+import { useRealtime } from "inngest/react";
+import { aiChannel } from "@/inngest/channels";
+import { fetchAIToken } from "../actions";
+
+export function AIStream({ threadId }: { threadId: string }) {
+  const { messages, connectionStatus } = useRealtime({
+    channel: aiChannel({ threadId }),
+    topics: ["status", "tokens", "result"] as const,
+    token: () => fetchAIToken(threadId),
+    enabled: !!threadId,
+    // `messages.all` keeps only the last 100 messages by default, which would
+    // silently drop the start of a long response. Disable the cap so every
+    // token is retained.
+    historyLimit: null,
+    // Batch re-renders instead of rendering once per token.
+    bufferInterval: 50,
+  });
+
+  // Rebuild the streamed text from the retained token messages. Skip `run`
+  // messages first: they are run lifecycle updates with untyped data.
+  let streamed = "";
+  for (const message of messages.all) {
+    if (message.kind === "run") continue;
+    if (message.topic === "tokens") {
+      streamed += message.data.token;
+    }
+  }
+
+  const status = messages.byTopic.status?.data;
+  const result = messages.byTopic.result?.data;
+
+  return (
+    <div>
+      <p>Connection: {connectionStatus}</p>
+
+      {status && !result && (
+        <p>{status.message} ({status.progress}%)</p>
+      )}
+
+      {streamed && !result && (
+        <div className="whitespace-pre-wrap">{streamed}</div>
+      )}
+
+      {result && (
+        <div>
+          <div className="whitespace-pre-wrap">{result.output}</div>
+          <p className="text-sm text-subtle">
+            Model: {result.model} | Output tokens: {result.outputTokens}
+          </p>
+        </div>
+      )}
+    </div>
+  );
+}
+```
+
+Each token arrives and appends to the displayed text. When the final result
+publishes, the component shows the complete output with metadata.
+
+<Callout>
+  Narrowing on `message.kind === "run"` before checking `message.topic` is
+  required for typed access to `message.data`. Run lifecycle messages share the
+  same union and carry an `unknown` payload.
+</Callout>
+
+---
+
+## Trigger the workflow
+
+Send an event to kick off the function. The `threadId` connects the function's
+publish calls to the client's subscription, so generate it before sending the
+event and pass the same value to your component.
+
+```ts
+const threadId = crypto.randomUUID();
+
+await inngest.send({
+  name: "app/prompt.submitted",
+  data: { threadId, prompt: "Summarize the key points of this document..." },
+});
+
+// Pass threadId to the AIStream component
+```
+
+---
+
+## Next steps
+
+- [Realtime overview](/docs/features/realtime?ref=docs-realtime-stream-ai-responses) for the core concepts
+- [Subscription tokens](/docs/features/realtime/subscription-tokens?ref=docs-realtime-stream-ai-responses) for scoping and authorizing client subscriptions
+- [Publishing reference](/docs/reference/typescript/v4/realtime/publishing?ref=docs-realtime-stream-ai-responses) for both publish methods and when to use each
+- [useRealtime reference](/docs/reference/typescript/v4/realtime/use-realtime?ref=docs-realtime-stream-ai-responses) for the full hook API including buffering and pause options

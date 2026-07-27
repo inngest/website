@@ -39,7 +39,7 @@ Mints a scoped subscription token on the server and returns a serializable objec
   import { inngest } from "./client";
   import { pipelineChannel } from "./channels";
 
-  const ch = pipelineChannel({ runId: "abc123" });
+  const ch = pipelineChannel({ contentId: "abc123" });
 
   const token = await getClientSubscriptionToken(inngest, {
     channel: ch,
@@ -76,9 +76,9 @@ import { getClientSubscriptionToken } from "inngest/react";
 import { inngest } from "../inngest/client";
 import { pipelineChannel } from "../inngest/channels";
 
-export async function getRealtimeToken(runId: string) {
+export async function getRealtimeToken(contentId: string) {
   return getClientSubscriptionToken(inngest, {
-    channel: pipelineChannel({ runId }),
+    channel: pipelineChannel({ contentId }),
     topics: ["status", "tokens"],
   });
 }
@@ -93,9 +93,9 @@ import { pipelineChannel } from "./channels";
 const app = express();
 
 app.get("/api/realtime-token", async (req, res) => {
-  const { runId } = req.query;
+  const { contentId } = req.query;
   const token = await getClientSubscriptionToken(inngest, {
-    channel: pipelineChannel({ runId: runId as string }),
+    channel: pipelineChannel({ contentId: contentId as string }),
     topics: ["status", "tokens"],
   });
   res.json(token);
@@ -109,10 +109,10 @@ import { inngest } from "./inngest/client";
 import { pipelineChannel } from "./inngest/channels";
 
 export const getRealtimeToken = createServerFn({ method: "GET" })
-  .validator((runId: string) => runId)
-  .handler(async ({ data: runId }) => {
+  .validator((contentId: string) => contentId)
+  .handler(async ({ data: contentId }) => {
     return getClientSubscriptionToken(inngest, {
-      channel: pipelineChannel({ runId }),
+      channel: pipelineChannel({ contentId }),
       topics: ["status", "tokens"],
     });
   });
@@ -155,7 +155,7 @@ Without `onMessage`, `subscribe` returns a stream subscription.
   import { inngest } from "./client";
   import { pipelineChannel } from "./channels";
 
-  const ch = pipelineChannel({ runId: "abc123" });
+  const ch = pipelineChannel({ contentId: "abc123" });
 
   const stream = await subscribe({
     app: inngest,
@@ -237,7 +237,7 @@ Pass `onMessage` to use an event-driven pattern instead of streams.
   import { inngest } from "./client";
   import { pipelineChannel } from "./channels";
 
-  const ch = pipelineChannel({ runId: "abc123" });
+  const ch = pipelineChannel({ contentId: "abc123" });
 
   const sub = await subscribe({
     app: inngest,
@@ -296,8 +296,8 @@ import { subscribe } from "inngest/realtime";
 import { inngest } from "./client";
 import { workflowChannel } from "./channels";
 
-async function monitorWorkflow(runId: string) {
-  const ch = workflowChannel({ runId });
+async function monitorWorkflow(workflowId: string) {
+  const ch = workflowChannel({ workflowId });
 
   const stream = await subscribe({
     app: inngest,

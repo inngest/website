@@ -14,14 +14,14 @@ The v4 SDK includes a built-in realtime system for streaming updates from your I
 
 ## Key concepts
 
-- **Channels** define a named scope for messages. They can be static or parameterized with runtime values like a `runId`.
+- **Channels** define a named scope for messages. They can be static or parameterized with runtime values like a `contentId` or `threadId`.
 - **Topics** are typed message streams within a channel, each with a schema.
-- **Publishing** sends data to a topic with `publish()` in a function handler, `inngest.realtime.publish()` from server-side code, or `step.realtime.publish()` for durable publishes.
+- **Publishing** sends data to a topic with `inngest.realtime.publish()` for non-durable messages, or `step.realtime.publish()` for durable publishes inside a function.
 - **Subscribing** consumes messages via `useRealtime`, `subscribe()`, or the client aliases `inngest.realtime.subscribe()` and `inngest.realtime.token()`.
 
 As a rule of thumb, prefer `step.realtime.publish()` for publishes inside
-functions. It is memoized and durable, unlike `publish()` and
-`inngest.realtime.publish()`, which will fire again if the function retries.
+functions. It is memoized and durable, unlike `inngest.realtime.publish()`,
+which will fire again if the function retries.
 
 ## Imports
 
@@ -30,7 +30,7 @@ functions. It is memoized and durable, unlike `publish()` and
 | `realtime`, `staticSchema` | `"inngest"` |
 | `useRealtime`, `getClientSubscriptionToken` | `"inngest/react"` |
 | `subscribe`, `getSubscriptionToken` | `"inngest/realtime"` |
-| `publish`, `step.realtime.publish` | Function handler context (no import needed) |
+| `step.realtime.publish` | Function handler context (no import needed) |
 | `inngest.realtime.publish`, `inngest.realtime.subscribe`, `inngest.realtime.token` | Your `Inngest` client instance |
 
 ## Quick start
@@ -42,7 +42,7 @@ import { realtime, staticSchema } from "inngest";
 import { z } from "zod";
 
 export const pipelineChannel = realtime.channel({
-  name: ({ runId }: { runId: string }) => `pipeline:${runId}`,
+  name: ({ contentId }: { contentId: string }) => `pipeline:${contentId}`,
   topics: {
     status: {
       schema: z.object({ message: z.string(), step: z.string().optional() }),
@@ -62,18 +62,18 @@ import { pipelineChannel } from "./channels";
 
 export const generate = inngest.createFunction(
   { id: "generate", triggers: [{ event: "app/generate" }] },
-  async ({ event, publish, step }) => {
-    const ch = pipelineChannel({ runId: event.data.runId });
+  async ({ event, step }) => {
+    const ch = pipelineChannel({ contentId: event.data.contentId });
 
     //
     // Non-durable on purpose. Use this only when replay on retry is OK.
-    await publish(ch.status, { message: "Starting..." });
+    await inngest.realtime.publish(ch.status, { message: "Starting..." });
 
     await step.run("stream-output", async () => {
       for (const token of ["Hello", " ", "world"]) {
         //
         // Non-durable on purpose. Token streams may replay on retry.
-        await publish(ch.tokens, { token });
+        await inngest.realtime.publish(ch.tokens, { token });
       }
     });
 
@@ -94,15 +94,17 @@ export const generate = inngest.createFunction(
 import { useRealtime } from "inngest/react";
 import { pipelineChannel } from "../inngest/channels";
 
-export default function PipelinePage({ runId }: { runId: string }) {
-  const ch = pipelineChannel({ runId });
+export default function PipelinePage({ contentId }: { contentId: string }) {
+  const ch = pipelineChannel({ contentId });
   const topics = ["status", "tokens"] as const;
 
   const { connectionStatus, runStatus, messages } = useRealtime({
     channel: ch,
     topics,
     token: () =>
-      fetch(`/api/realtime-token?runId=${runId}`).then((res) => res.json()),
+      fetch(`/api/realtime-token?contentId=${contentId}`).then((res) =>
+        res.json()
+      ),
   });
 
   return (
