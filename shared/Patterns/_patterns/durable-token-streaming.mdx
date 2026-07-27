@@ -112,30 +112,42 @@ export type ChatMessage = { role: "user" | "assistant"; content: string };
 > 💡 **One caveat:** publishing every single token wastes bandwidth. The worker batches deltas and flushes every 40ms instead; frequent enough to read as live typing, without a message per token.
 
 ```typescript
-// Runs one model turn as a single durable step. Streaming to the browser is
-// a side effect of that step — non-durable publishes that restream from
-// `seq: 0` if the step retries. Once the step completes it's memoized, so a
-// finished turn never re-calls the model or re-streams.
-const response = await step.run(`llm-turn-${turn}`, async () => {
+// Runs one model turn as a single durable step. Streaming to the browser is a
+// side effect of that step (non-durable `inngest.realtime.publish` calls) —
+// if the step retries, it re-streams from `seq: 0` and the UI resets that
+// turn's buffer (see Chat.tsx); once the step completes, it's memoized and
+// never re-streams or re-calls the model again.
+const result = await step.run(`llm-turn-${turn}`, async () => {
   let seq = 0;
   let buffer = "";
   let timer: ReturnType<typeof setTimeout> | null = null;
+  const pending: Promise<unknown>[] = [];
 
   const flush = () => {
     if (!buffer) return;
     const delta = buffer;
     buffer = "";
     timer = null;
-    // Fire-and-forget, non-durable: a live UI nicety, not part of the
-    // durable record. `turn.completed` (below, durable) is the authoritative
-    // text the UI falls back to if any deltas are lost — so a failed publish
-    // is swallowed rather than left as an unhandled rejection.
-    void inngest.realtime.publish(ch.tokens, { turn, seq: seq++, delta }).catch(() => {});
+    // Non-durable and non-blocking: this is a live UI nicety, not part of
+    // the durable record. `turn.completed` (below, durable) is the
+    // authoritative text the UI falls back to if any deltas are lost. Each
+    // publish is caught individually — a dropped batch is recoverable, but
+    // an unhandled rejection is fatal under Node's default settings — and
+    // tracked in `pending` so the step doesn't settle with publishes still
+    // in flight (a serverless runtime may freeze the instance as soon as
+    // the handler returns, silently dropping the tail of the stream).
+    pending.push(
+      inngest.realtime.publish(ch.tokens, { turn, seq: seq++, delta }).catch(() => {}),
+    );
   };
 
   const stream = client.messages.stream({
-    model: MODEL,
-    max_tokens: 1024,
+    model,
+    // Both experiment variants (Haiku 4.5 and Opus 4.8) stream and support
+    // ≥64K max output tokens; 16K leaves ample room for ~20 parallel tool
+    // calls plus a long final answer in one turn while keeping worst-case
+    // cost bounded alongside MAX_TURNS.
+    max_tokens: 16384,
     system: SYSTEM_PROMPT,
     tools: toolDefinitions,
     messages,
@@ -149,19 +161,14 @@ const response = await step.run(`llm-turn-${turn}`, async () => {
   try {
     return await stream.finalMessage();
   } finally {
-    // Cancel any pending batch so no flush fires after the step settles.
+    // Always cancel a pending batch so no flush fires after the step
+    // settles — on failure, a stray timer would otherwise publish stale
+    // tokens into the retry's fresh stream.
     if (timer) clearTimeout(timer);
     flush();
+    // Never rejects — every promise in `pending` is already caught.
+    await Promise.all(pending);
   }
-});
-
-// ...later in the agent loop, once the turn's response is known — the
-// durable status publish, a memoized step of its own:
-const text = extractText(response.content);
-await step.realtime.publish(`turn-completed-${turn}`, ch.status, {
-  type: "turn.completed",
-  turn,
-  text,
 });
 ```
 
