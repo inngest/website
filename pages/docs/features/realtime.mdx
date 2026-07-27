@@ -5,14 +5,13 @@ import {
 import {
   Info,
   Warning,
-  CodeGroup,
   CardGroup,
   Card,
   VersionBadge,
 } from "src/shared/Docs/mdx";
 
 export const metaTitle = "Inngest Realtime | Stream Updates from Functions";
-export const description = "Stream real-time updates from Inngest functions to your UI using typed channels and topics. Built into TypeScript SDK v4 with no extra infrastructure needed.";
+export const description = "Push real-time updates from Inngest functions to your UI with typed channels and topics. Built into TypeScript SDK v4 with no extra infrastructure needed.";
 
 export const structuredData = {
   "@type": "HowTo",
@@ -28,7 +27,7 @@ export const structuredData = {
     {
       "@type": "HowToStep",
       name: "Publish from a function",
-      text: "Publish messages with publish() for transient updates or step.realtime.publish() for durable, memoized updates inside a function.",
+      text: "Publish messages with inngest.realtime.publish() for transient updates or step.realtime.publish() for durable, memoized updates inside a function.",
     },
     {
       "@type": "HowToStep",
@@ -40,152 +39,242 @@ export const structuredData = {
 
 # Realtime <VersionBadge version="TypeScript SDK v4" />
 
-<Info>
-  Realtime is built into the v4 SDK. You define channels with
-  `realtime.channel()`, publish with `step.realtime.publish()` or
-  `inngest.realtime.publish()`, and subscribe with `useRealtime` or
-  `subscribe()`.
-</Info>
+Inngest Realtime lets your functions push updates directly to the browser as
+work happens. No polling. No WebSocket boilerplate. No separate pub/sub service.
+
+You publish messages from inside your functions. Clients subscribe and receive
+them instantly. Everything is typed end to end.
 
 <Warning>
   Looking for the older `@inngest/realtime` package docs? See the archived
   v3 docs [here](/docs/reference/typescript/v3/realtime).
 </Warning>
 
-Inngest Realtime streams updates from your functions to your UI with typed
-channels and topics in TypeScript SDK v4. Use it to show function progress, push
-live browser updates, and build interactive workflows like human-in-the-loop
-approvals without managing your own websocket infrastructure.
+---
 
-## Concepts
+## Four building blocks
 
-The v4 model revolves around five primitives:
+Realtime has four concepts. Everything else builds on these.
 
-- `channel` defines the scope for updates, such as a specific `runId`, user, or thread.
-- `topic` defines the category of data inside a channel, such as `status`, `tokens`, or `artifact`.
-- `publish()` emits non-durable messages from inside your function handler (also available as `inngest.realtime.publish()` from server-side code outside a function).
-- `step.realtime.publish()` emits durable, memoized messages that should not re-fire on retry.
-- `token` authorizes a client subscription to a specific channel and a specific set of topics.
+**Channels** scope messages to a context. A channel might represent a user
+session, a document being processed, or a batch job. You define channels with a
+name or a function that generates a name from parameters like a user ID or
+document ID.
 
-In practice, prefer `step.realtime.publish()` whenever possible. Use
-non-durable `publish()` or `inngest.realtime.publish()` only when you
-intentionally want low-overhead, retryable updates like token streams or you are
-publishing from outside a function.
+**Topics** organize messages within a channel. A channel for document processing
+might have topics for `status`, `review`, `error`, and `completed`. Each topic
+carries its own typed payload schema.
 
-## Quick start
+**Publishing** sends a message to a topic within a channel. You publish with
+`inngest.realtime.publish()` for transient updates or
+`step.realtime.publish()` when the message must not duplicate on retry.
 
-### 1. Define a shared channel
+**Tokens** authorize a client subscription. You mint them on the server, scoped
+to a single channel and an explicit list of topics.
 
-```ts
-import { realtime } from "inngest";
+```
+Channel: document-processing:{documentId}
+  ├── Topic: status    → { progress: 50, message: "Analyzing..." }
+  ├── Topic: review    → { items: [...], requiresAction: true }
+  ├── Topic: error     → { error: "...", recoverable: true }
+  └── Topic: completed → { confidence: 0.95 }
+```
+
+On the client, you subscribe to a channel and its topics. Messages arrive as
+they're published. You render them however you want.
+
+---
+
+## Define a channel
+
+Channels are defined once and shared between your function code and your client
+code. Each topic needs a `schema`, which can be any
+[Standard Schema](https://github.com/standard-schema/standard-schema) validator
+such as Zod, or `staticSchema<T>()` when you want types without runtime
+validation.
+
+```ts {{ filename: "inngest/channels.ts" }}
+import { realtime, staticSchema } from "inngest";
 import { z } from "zod";
 
-export const contentPipeline = realtime.channel({
-  name: ({ runId }: { runId: string }) => `pipeline:${runId}`,
+export const pipelineChannel = realtime.channel({
+  // The channel name is generated at runtime from the params you pass in.
+  // `contentId` is your own identifier, not an Inngest run ID.
+  name: ({ contentId }: { contentId: string }) => `pipeline:${contentId}`,
   topics: {
+    // Zod schemas are validated at publish time.
     status: {
-      schema: z.object({
-        message: z.string(),
-        step: z.string().optional(),
-      }),
+      schema: z.object({ message: z.string(), progress: z.number() }),
     },
+    // `staticSchema` gives you types only, with zero runtime cost.
     tokens: {
-      schema: z.object({ token: z.string(), step: z.string() }),
+      schema: staticSchema<{ token: string }>(),
+    },
+    result: {
+      schema: staticSchema<{ output: string; model: string }>(),
     },
   },
 });
 ```
 
-### 2. Publish from a function
+TypeScript enforces these types when you publish and when you subscribe.
 
-```ts
-export const generatePost = inngest.createFunction(
-  {
-    id: "generate-post",
-    triggers: [{ event: "app/generate-post" }],
-  },
-  async ({ event, publish, step }) => {
-    const ch = contentPipeline({ runId: event.data.runId });
+<Info>
+  `realtime` and `staticSchema` are imported from `"inngest"`. The same helpers
+  are also available from the `"inngest/realtime"` subpath.
+</Info>
 
-    //
-    // Non-durable on purpose. Fine for transient progress updates.
-    await publish(ch.status, {
-      message: "Researching topic...",
-      step: "research",
+---
+
+## Publish from a function
+
+There are two ways to publish. `inngest.realtime.publish()` is non-durable and
+fires immediately. `step.realtime.publish()` is a durable step that is memoized,
+so it will not re-fire if the function retries.
+
+```ts {{ filename: "inngest/functions/summarize.ts" }}
+import { inngest } from "../client";
+import { pipelineChannel } from "../channels";
+
+export default inngest.createFunction(
+  { id: "summarize-content", triggers: [{ event: "app/content.submitted" }] },
+  async ({ event, step }) => {
+    // Create a channel instance for this piece of content. The `contentId`
+    // comes from the event, and the client uses the same value to subscribe,
+    // which is what connects the two sides together.
+    const ch = pipelineChannel({ contentId: event.data.contentId });
+
+    // Durable publish (within a step). This caries the same benefit of step.run
+    // to handle retries without publishing duplicate messages
+    await step.realtime.publish('starting-status', ch.status, {
+      message: "Starting...",
+      progress: 0,
     });
 
-    //
-    // Non-durable on purpose. Token streams may replay on retry.
-    await publish(ch.tokens, {
-      token: "Hello",
-      step: "research",
-    });
-
-    //
-    // Prefer the durable publish for important state that should not replay.
-    await step.realtime.publish("status-complete", ch.status, {
-      message: "Done",
-      step: "complete",
+    const result = await step.run("call-model", async () => {
+      const stream = await generateTextStream(event.data.content);
+      // Use inngest.realtime.publish for sending messages within steps
+      let text = ''
+      for await (const chunk of stream) {
+        await inngest.realtime.publish(ch.tokens, { token: chunk.delta });
+        text += chunk.delta;
+      }
+      return text;
     });
   }
 );
 ```
 
-### 3. Mint a token and subscribe from the client
+Use `inngest.realtime.publish()` for high-frequency updates within steps like streaming
+tokens or progress ticks. Use `step.realtime.publish()` for state
+transitions that should not duplicate on retry.
 
-```tsx {{ title: "app/actions.ts" }}
+<Info>
+  `inngest.realtime.publish()` also works outside a function, in API routes,
+  webhooks, or any server-side code. Inside a function run it automatically
+  attaches the current run ID.
+</Info>
+
+---
+
+## Mint a subscription token
+
+Clients cannot subscribe directly. Your server mints a token scoped to one
+channel and an explicit list of topics, which is also where you check that the
+current user is allowed to see that data.
+
+```ts {{ filename: "app/actions.ts" }}
 "use server";
 
 import { getClientSubscriptionToken } from "inngest/react";
 import { inngest } from "@/inngest/client";
-import { contentPipeline } from "@/inngest/channels";
+import { pipelineChannel } from "@/inngest/channels";
+import { getSession } from "@/lib/session";
 
-export async function getRealtimeToken(runId: string) {
+export async function fetchToken(contentId: string) {
+  // Authorize before minting: the token is a capability, so only hand one out
+  // once you know this user may read this channel.
+  const { userId } = await getSession();
+  await assertUserOwnsContent(userId, contentId);
+
   return getClientSubscriptionToken(inngest, {
-    channel: contentPipeline({ runId }),
-    topics: ["status", "tokens"],
+    channel: pipelineChannel({ contentId }),
+    topics: ["status", "result"],
   });
 }
 ```
 
-```tsx {{ title: "app/page.tsx" }}
+See [Subscription tokens](/docs/features/realtime/subscription-tokens?ref=docs-realtime-overview)
+for authorization patterns, token refresh, and framework examples.
+
+---
+
+## Subscribe from the browser
+
+In React, use the `useRealtime` hook from `inngest/react`.
+
+```tsx {{ filename: "app/page.tsx" }}
 "use client";
 
 import { useRealtime } from "inngest/react";
-import { contentPipeline } from "@/inngest/channels";
-import { getRealtimeToken } from "./actions";
+import { pipelineChannel } from "@/inngest/channels";
+import { fetchToken } from "./actions";
 
-export default function Home({ runId }: { runId: string }) {
-  const topics = ["status", "tokens"] as const;
-  const channel = contentPipeline({ runId });
-
-  const { connectionStatus, runStatus, messages } = useRealtime({
-    channel,
-    topics,
-    token: () => getRealtimeToken(runId),
+export default function Progress({ contentId }: { contentId: string }) {
+  const { messages, connectionStatus } = useRealtime({
+    // Pass the channel instance (not just a name) so message data stays typed.
+    channel: pipelineChannel({ contentId }),
+    topics: ["status", "result"] as const,
+    // A token factory runs on mount and on every reconnect, so the hook
+    // always has a fresh token.
+    token: () => fetchToken(contentId),
   });
 
   return (
     <div>
       <p>Connection: {connectionStatus}</p>
-      <p>Run: {runStatus}</p>
-      <p>Status: {messages.byTopic.status?.data.message}</p>
+      <p>{messages.byTopic.status?.data.message}</p>
+      <p>Progress: {messages.byTopic.status?.data.progress}%</p>
+      {messages.byTopic.result && (
+        <p>Result: {messages.byTopic.result.data.output}</p>
+      )}
     </div>
   );
 }
 ```
 
-## When to use each publish mode
+The hook manages token refresh, reconnection, and buffering. Messages are typed
+per topic.
+
+`useRealtime` accepts a number of options beyond the three shown here, including
+`enabled`, `bufferInterval`, `historyLimit`, and reconnection controls. See the
+[React hooks guide](/docs/features/realtime/react-hooks?ref=docs-realtime-overview)
+for the typical Next.js flow, and the
+[`useRealtime` reference](/docs/reference/typescript/v4/realtime/use-realtime?ref=docs-realtime-overview)
+for every parameter and return value.
+
+---
+
+## When to use each publish method
 
 - Prefer `step.realtime.publish()` for important state transitions and final results.
-- Use `publish()` for high-frequency updates like tokens, logs, or progress ticks where replay on retry is acceptable.
-- Use `inngest.realtime.publish()` from routes, webhooks, or other server-side code outside a function run.
+- Use `inngest.realtime.publish()` for high-frequency updates like tokens, logs, or progress ticks where replay on retry is acceptable, and for publishing from routes, webhooks, or other server-side code outside a function run.
 
 ## Learn more
 
 <CardGroup cols={2}>
   <Card
-    href="/docs/features/realtime/react-hooks"
+    href="/docs/features/realtime/stream-ai-responses?ref=docs-realtime-overview"
+    title={"Stream AI responses to your UI"}
+    icon={<RiNodejsFill className="text-basis h-8 w-8" />}
+    iconPlacement="top"
+  >
+    Walk through token-by-token LLM streaming with a typed channel and the
+    `useRealtime` hook.
+  </Card>
+
+  <Card
+    href="/docs/features/realtime/react-hooks?ref=docs-realtime-overview"
     title={"Use React hooks in Next.js"}
     icon={<RiNextjsFill className="text-basis h-8 w-8" />}
     iconPlacement="top"
@@ -195,7 +284,16 @@ export default function Home({ runId }: { runId: string }) {
   </Card>
 
   <Card
-    href="/docs/examples/realtime"
+    href="/docs/features/realtime/subscription-tokens?ref=docs-realtime-overview"
+    title={"Secure subscriptions with tokens"}
+    icon={<RiNodejsFill className="text-basis h-8 w-8" />}
+    iconPlacement="top"
+  >
+    Scope tokens to channels and topics, authorize users, and handle refresh.
+  </Card>
+
+  <Card
+    href="/docs/examples/realtime?ref=docs-realtime-overview"
     title={"Explore patterns and examples"}
     icon={<RiNodejsFill className="text-basis h-8 w-8" />}
     iconPlacement="top"
@@ -205,7 +303,7 @@ export default function Home({ runId }: { runId: string }) {
   </Card>
 
   <Card
-    href="/docs/reference/typescript/v4/realtime"
+    href="/docs/reference/typescript/v4/realtime?ref=docs-realtime-overview"
     title={"Open the v4 reference docs"}
     icon={<RiNodejsFill className="text-basis h-8 w-8" />}
     iconPlacement="top"
@@ -214,7 +312,7 @@ export default function Home({ runId }: { runId: string }) {
   </Card>
 
   <Card
-    href="/docs/reference/typescript/v3/realtime"
+    href="/docs/reference/typescript/v3/realtime?ref=docs-realtime-overview"
     title={"View archived v3 docs"}
     icon={<RiNodejsFill className="text-basis h-8 w-8" />}
     iconPlacement="top"

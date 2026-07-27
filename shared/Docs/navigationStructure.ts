@@ -644,6 +644,16 @@ const sectionLearn: (NavGroup | NavLink)[] = [
             title: "React hooks / Next.js",
             href: "/docs/features/realtime/react-hooks",
           },
+          // Page hidden for now given upcoming Durable token streaming pattern
+          // TODO - Revisit this page and pattern relationship after updated IA in summer 2026
+          // {
+          //   title: "Stream AI responses",
+          //   href: "/docs/features/realtime/stream-ai-responses",
+          },
+          {
+            title: "Subscription tokens",
+            href: "/docs/features/realtime/subscription-tokens",
+          },
         ],
       },
       {

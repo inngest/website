@@ -12,15 +12,15 @@ The `useRealtime` hook subscribes to realtime messages from Inngest functions in
 import { useRealtime } from "inngest/react";
 import { pipelineChannel } from "../inngest/channels";
 
-function Pipeline({ runId }: { runId: string }) {
-  const ch = pipelineChannel({ runId });
+function Pipeline({ contentId }: { contentId: string }) {
+  const ch = pipelineChannel({ contentId });
   const topics = ["status", "tokens"] as const;
 
   const { connectionStatus, runStatus, messages, result } = useRealtime({
     channel: ch,
     topics,
     token: () =>
-      fetch(`/api/realtime-token?runId=${runId}`).then((r) => r.json()),
+      fetch(`/api/realtime-token?contentId=${contentId}`).then((r) => r.json()),
   });
 
   return (
@@ -159,9 +159,9 @@ import { getClientSubscriptionToken } from "inngest/react";
 import { inngest } from "../inngest/client";
 import { pipelineChannel } from "../inngest/channels";
 
-export async function getToken(runId: string) {
+export async function getToken(contentId: string) {
   return getClientSubscriptionToken(inngest, {
-    channel: pipelineChannel({ runId }),
+    channel: pipelineChannel({ contentId }),
     topics: ["status", "tokens"],
   });
 }
@@ -172,12 +172,12 @@ import { useRealtime } from "inngest/react";
 import { pipelineChannel } from "../inngest/channels";
 import { getToken } from "./actions";
 
-function Pipeline({ runId }: { runId: string }) {
+function Pipeline({ contentId }: { contentId: string }) {
   const topics = ["status", "tokens"] as const;
   const { connectionStatus, messages } = useRealtime({
-    channel: pipelineChannel({ runId }),
+    channel: pipelineChannel({ contentId }),
     topics,
-    token: () => getToken(runId),
+    token: () => getToken(contentId),
   });
 
   return (
@@ -196,10 +196,10 @@ import { pipelineChannel } from "../../inngest/channels";
 
 export async function GET(req: Request) {
   const { searchParams } = new URL(req.url);
-  const runId = searchParams.get("runId")!;
+  const contentId = searchParams.get("contentId")!;
 
   const token = await getClientSubscriptionToken(inngest, {
-    channel: pipelineChannel({ runId }),
+    channel: pipelineChannel({ contentId }),
     topics: ["status", "tokens"],
   });
 
@@ -211,13 +211,13 @@ export async function GET(req: Request) {
 import { useRealtime } from "inngest/react";
 import { pipelineChannel } from "../inngest/channels";
 
-function Pipeline({ runId }: { runId: string }) {
+function Pipeline({ contentId }: { contentId: string }) {
   const topics = ["status", "tokens"] as const;
   const { messages } = useRealtime({
-    channel: pipelineChannel({ runId }),
+    channel: pipelineChannel({ contentId }),
     topics,
     token: () =>
-      fetch(`/api/realtime-token?runId=${runId}`).then((r) => r.json()),
+      fetch(`/api/realtime-token?contentId=${contentId}`).then((r) => r.json()),
   });
 
   return <p>{messages.byTopic.status?.data.message}</p>;
@@ -236,8 +236,8 @@ import { pipelineChannel } from "../inngest/channels";
 import type { loader } from "./route";
 
 export function Pipeline() {
-  const { runId, realtimeToken } = useLoaderData<typeof loader>();
-  const channel = pipelineChannel({ runId });
+  const { contentId, realtimeToken } = useLoaderData<typeof loader>();
+  const channel = pipelineChannel({ contentId });
   const topics = ["status", "tokens"] as const;
 
   const { connectionStatus, messages } = useRealtime({
@@ -257,13 +257,13 @@ For long-lived subscriptions, prefer a token factory or route handler so `useRea
 When you pass a channel instance instead of a plain string, `messages.byTopic`, `messages.all`, `messages.last`, and `messages.delta` all stay typed to the subscribed topics:
 
 ```tsx
-const ch = pipelineChannel({ runId });
+const ch = pipelineChannel({ contentId });
 const topics = ["status", "tokens"] as const;
 
 const { messages } = useRealtime({
   channel: ch,
   topics,
-  token: () => getToken(runId),
+  token: () => getToken(contentId),
 });
 
 messages.byTopic.status?.data.message; // string
@@ -287,7 +287,7 @@ By default, `messages.all` retains the last 100 messages. Adjust with `historyLi
 useRealtime({
   channel: ch,
   topics: ["status"],
-  token: () => getToken(runId),
+  token: () => getToken(contentId),
   historyLimit: 500,
 });
 
@@ -295,7 +295,7 @@ useRealtime({
 useRealtime({
   channel: ch,
   topics: ["status"],
-  token: () => getToken(runId),
+  token: () => getToken(contentId),
   historyLimit: null,
 });
 
@@ -303,7 +303,7 @@ useRealtime({
 useRealtime({
   channel: ch,
   topics: ["status"],
-  token: () => getToken(runId),
+  token: () => getToken(contentId),
   historyLimit: 10,
 });
 ```
@@ -316,7 +316,7 @@ For high-frequency streams like token-by-token AI output, use `bufferInterval` t
 const { messages } = useRealtime({
   channel: ch,
   topics: ["tokens"],
-  token: () => getToken(runId),
+  token: () => getToken(contentId),
   bufferInterval: 100, // Batch messages, re-render at most every 100ms
 });
 
@@ -331,15 +331,15 @@ messages.all; // retained history after each flush
 Use `enabled` to start or stop the subscription without unmounting the component:
 
 ```tsx
-const [runId, setRunId] = useState<string | null>(null);
+const [contentId, setContentId] = useState<string | null>(null);
 
-const channel = runId ? pipelineChannel({ runId }) : undefined;
+const channel = contentId ? pipelineChannel({ contentId }) : undefined;
 
 const { connectionStatus, isPaused, pauseReason } = useRealtime({
   channel,
   topics: ["status"],
-  token: runId ? () => getToken(runId) : undefined,
-  enabled: !!runId,
+  token: contentId ? () => getToken(contentId) : undefined,
+  enabled: !!contentId,
 });
 
 connectionStatus; // "idle" until a run exists, then "connecting" | "open" | ...

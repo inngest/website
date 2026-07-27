@@ -67,10 +67,12 @@ import { helloChannel } from "../channels";
 
 export const someTask = inngest.createFunction(
   { id: "hello-world", triggers: [{ event: "hello-world/hello" }] },
-  async ({ event, step, publish }) => {
+  async ({ event, step }) => {
     const { uuid } = event.data;
     const ch = helloChannel({ uuid });
-    await publish(ch.logs, { message: "Hello, world!" });
+    // step.realtime.publish wraps publishing in a step which prevents
+    // duplicate messages if the function is retried.
+    await step.realtime.publish('send-logs', ch.logs, { message: "Hello, world!" });
   }
 );
 ```
@@ -142,16 +144,15 @@ export const likePost = inngest.createFunction(
       data: { postId = "123" },
     },
     step,
-    publish,
   }) => {
     if (!postId) {
-      await publish(globalChannel.logs, {
+      await step.realtime.publish('missing-id', globalChannel.logs, {
         message: "Missing postId when trying to like post",
       });
       throw new Error("Missing postId");
     }
 
-    await publish(globalChannel.logs, {
+    await step.realtime.publish('status', globalChannel.logs, {
       message: `Liking post ${postId}`,
     });
 
@@ -162,7 +163,11 @@ export const likePost = inngest.createFunction(
       };
 
       const ch = postChannel({ postId: fakePost.id });
-      await publish(ch.updated, fakePost);
+      // Use inngest.realtime.publish when sending messages within steps
+      // the wrapping step provides the durability and retries
+      // This is ideal for sending one or more updates related to the
+      // logic of your step, like LLM tokens.
+      await inngest.realtime.publish(ch.updated, fakePost);
       return fakePost;
     });
 
@@ -216,17 +221,19 @@ import { agenticWorkflowChannel } from "../channels";
 
 export const agenticWorkflow = inngest.createFunction(
   { id: "agentic-workflow", triggers: [{ event: "agentic-workflow/start" }] },
-  async ({ event, step, publish }) => {
+  async ({ event, step }) => {
     await step.run(/* ... */);
 
     const confirmationId = await step.run("get-confirmation-id", async () =>
       crypto.randomUUID()
     );
 
-    await publish(agenticWorkflowChannel.messages, {
-      message: "Confirm to proceed?",
-      confirmationId,
-    });
+    // A durable publish, so a retry won't prompt the user twice.
+    await step.realtime.publish(
+      "ask-for-confirmation",
+      agenticWorkflowChannel.messages,
+      { message: "Confirm to proceed?", confirmationId }
+    );
 
     const confirmation = await step.waitForEvent("wait-for-confirmation", {
       event: "agentic-workflow/confirmation",

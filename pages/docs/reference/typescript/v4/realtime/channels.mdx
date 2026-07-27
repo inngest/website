@@ -105,6 +105,12 @@ ch.message.topic;   // "message"
 
 Parameterized channels isolate subscribers to a specific instance. A subscriber to `chat:abc123` won't receive messages published to `chat:def456`.
 
+<Callout>
+  Channel parameters are yours to name and yours to generate. Use a domain-specific
+  term within your your product, such as `threadId`, `contentId`, `documentId`, or
+  `userId`.
+</Callout>
+
 ## Topic schemas
 
 Every topic requires a `schema` property. The schema serves two purposes:
@@ -193,10 +199,10 @@ ch.message.topic;   // "message"
 ch.message.config;  // { schema: ... }
 
 // Pass topic refs to publish and subscribe
-await publish(ch.message, { text: "Hello!", sender: "alice" });
+await inngest.realtime.publish(ch.message, { text: "Hello!", sender: "alice" });
 ```
 
-Topic refs are the primary way to reference a specific topic on a specific channel instance. They're used by [`publish`](/docs/reference/typescript/v4/realtime/publishing), [`step.realtime.publish`](/docs/reference/typescript/v4/realtime/publishing#steprealtimepublish), and [`getClientSubscriptionToken`](/docs/reference/typescript/v4/realtime/subscribing).
+Topic refs are the primary way to reference a specific topic on a specific channel instance. They're used by [`inngest.realtime.publish`](/docs/reference/typescript/v4/realtime/publishing#inngest-realtime-publish-topic-ref-data), [`step.realtime.publish`](/docs/reference/typescript/v4/realtime/publishing#step-realtime-publish-id-topic-ref-data), and [`getClientSubscriptionToken`](/docs/reference/typescript/v4/realtime/subscribing).
 
 ## Type inference
 
@@ -204,7 +210,7 @@ Channel definitions expose type utilities for extracting topic data types and pa
 
 ```ts
 const pipeline = realtime.channel({
-  name: ({ runId }: { runId: string }) => `pipeline:${runId}`,
+  name: ({ contentId }: { contentId: string }) => `pipeline:${contentId}`,
   topics: {
     status: { schema: z.object({ message: z.string() }) },
     tokens: { schema: staticSchema<{ token: string }>() },
@@ -216,7 +222,7 @@ type StatusData = typeof pipeline.$infer.status;  // { message: string }
 type TokenData = typeof pipeline.$infer.tokens;   // { token: string }
 
 // Infer channel parameters (parameterized channels only)
-type Params = typeof pipeline.$params;             // { runId: string }
+type Params = typeof pipeline.$params;             // { contentId: string }
 ```
 
 ## Portability
@@ -228,7 +234,7 @@ import { realtime, staticSchema } from "inngest";
 import { z } from "zod";
 
 export const pipelineChannel = realtime.channel({
-  name: ({ runId }: { runId: string }) => `pipeline:${runId}`,
+  name: ({ contentId }: { contentId: string }) => `pipeline:${contentId}`,
   topics: {
     status: { schema: z.object({ message: z.string() }) },
     tokens: { schema: staticSchema<{ token: string }>() },

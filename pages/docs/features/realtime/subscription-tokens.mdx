@@ -1,0 +1,273 @@
+import { Info, Warning, CodeGroup, VersionBadge } from "src/shared/Docs/mdx";
+
+export const metaTitle = "Realtime Subscription Tokens | Inngest";
+export const description = "Mint scoped subscription tokens on the server so clients can securely subscribe to Inngest Realtime channels and topics.";
+
+# Subscription tokens <VersionBadge version="TypeScript SDK v4" />
+
+Clients cannot subscribe to a Realtime channel directly. Instead, your server
+mints a short-lived **subscription token** that authorizes access to one channel
+and an explicit list of topics, then hands it to the browser.
+
+This keeps your Inngest signing key on the server and gives you a single place
+to decide who is allowed to read what.
+
+```
+Browser                    Your server                  Inngest
+   │                            │                          │
+   │── "I want thread abc" ────▶│                          │
+   │                            │── authorize the user     │
+   │                            │── mint token ───────────▶│
+   │                            │◀── { key, apiBaseUrl } ──│
+   │◀── token ──────────────────│                          │
+   │                                                       │
+   │────────── WebSocket subscribe with token ────────────▶│
+```
+
+---
+
+## Mint a token
+
+Use `getClientSubscriptionToken()` from `inngest/react`. It returns a
+serializable `{ key, apiBaseUrl }` object that is safe to send to the browser.
+
+```ts {{ filename: "app/actions.ts" }}
+"use server";
+
+import { getClientSubscriptionToken } from "inngest/react";
+import { inngest } from "@/inngest/client";
+import { aiChannel } from "@/inngest/channels";
+
+export async function fetchAIToken(threadId: string) {
+  return getClientSubscriptionToken(inngest, {
+    channel: aiChannel({ threadId }),
+    topics: ["status", "tokens", "result"],
+  });
+}
+```
+
+<Info>
+  Despite the import path, `getClientSubscriptionToken()` is not React-specific.
+  It runs on the server and works with any framework. The `inngest/react`
+  subpath is simply where the SDK exports it alongside `useRealtime`.
+</Info>
+
+The returned `apiBaseUrl` is resolved on the server from `INNGEST_DEV`, so
+`useRealtime` connects to the right environment automatically. Your client code
+does not need `NEXT_PUBLIC_INNGEST_DEV`, `VITE_INNGEST_DEV`, or any other
+browser-side environment variable.
+
+---
+
+## Always authorize before minting
+
+A token is a capability: anyone holding it can read every message on that
+channel and topic set until it expires. The function that mints the token is the
+right place to check permissions, because it's the last point where you still
+have the session.
+
+```ts {{ filename: "app/actions.ts" }}
+"use server";
+
+import { getClientSubscriptionToken } from "inngest/react";
+import { inngest } from "@/inngest/client";
+import { documentChannel } from "@/inngest/channels";
+import { getSession } from "@/lib/session";
+
+export async function fetchDocumentToken(documentId: string) {
+  const { userId } = await getSession();
+  if (!userId) throw new Error("Not authenticated");
+
+  // Confirm this user may read this document before handing out a token
+  // scoped to its channel.
+  const document = await db.documents.findFirst({
+    where: { id: documentId, ownerId: userId },
+  });
+  if (!document) throw new Error("Not found");
+
+  return getClientSubscriptionToken(inngest, {
+    channel: documentChannel({ documentId }),
+    // Grant only the topics this view needs. Omitting `debug` means the
+    // client cannot subscribe to it even if it asks.
+    topics: ["status", "completed"],
+  });
+}
+```
+
+<Warning>
+  Never accept the channel name from the client without validating it. If you
+  pass an unchecked request parameter straight into your channel function, a
+  caller can mint a token for someone else's data.
+</Warning>
+
+### Scope tokens narrowly
+
+- **One channel per token.** Channels are the security boundary. If a user needs
+  updates for three documents, mint three tokens.
+- **Only the topics the view needs.** A token that omits a topic cannot
+  subscribe to it, so keep internal topics like `debug` or `audit` off
+  client-facing tokens.
+- **Derive channel parameters from the session,** not from the request body,
+  whenever the parameter identifies a user.
+
+---
+
+## Refresh and expiry
+
+Tokens are short-lived. Pass a **token factory** to `useRealtime` rather than a
+pre-minted token: the factory runs on mount and again on every reconnect, so the
+hook always has a fresh token without you managing expiry.
+
+```tsx {{ filename: "app/page.tsx" }}
+"use client";
+
+import { useRealtime } from "inngest/react";
+import { aiChannel } from "@/inngest/channels";
+import { fetchAIToken } from "./actions";
+
+export default function Thread({ threadId }: { threadId: string }) {
+  const { messages, connectionStatus } = useRealtime({
+    channel: aiChannel({ threadId }),
+    topics: ["status", "tokens", "result"] as const,
+    // Called on mount and on each reconnect.
+    token: () => fetchAIToken(threadId),
+  });
+
+  return (
+    <p>
+      {connectionStatus}: {messages.byTopic.status?.data.message}
+    </p>
+  );
+}
+```
+
+If your framework passes data from a server loader into a client component, you
+can hand `useRealtime` the token object directly. Keep `channel` and `topics` as
+top-level options, since the client token intentionally contains only `key` and
+`apiBaseUrl` and the top-level values are what preserve typed message inference.
+
+```tsx
+const { threadId, realtimeToken } = useLoaderData<typeof loader>();
+
+const { messages } = useRealtime({
+  channel: aiChannel({ threadId }),
+  topics: ["status", "tokens"] as const,
+  token: realtimeToken,
+});
+```
+
+For long-lived subscriptions, prefer a factory or route handler so the hook can
+request a fresh token when it reconnects.
+
+---
+
+## Framework examples
+
+<CodeGroup forceTabs={true}>
+```ts {{ title: "Next.js Server Action" }}
+// app/actions.ts
+"use server";
+
+import { getClientSubscriptionToken } from "inngest/react";
+import { inngest } from "@/inngest/client";
+import { pipelineChannel } from "@/inngest/channels";
+
+export async function getRealtimeToken(contentId: string) {
+  return getClientSubscriptionToken(inngest, {
+    channel: pipelineChannel({ contentId }),
+    topics: ["status", "tokens"],
+  });
+}
+```
+
+```ts {{ title: "Next.js Route Handler" }}
+// app/api/realtime-token/route.ts
+import { getClientSubscriptionToken } from "inngest/react";
+import { inngest } from "@/inngest/client";
+import { pipelineChannel } from "@/inngest/channels";
+
+export async function GET(req: Request) {
+  const { searchParams } = new URL(req.url);
+  const contentId = searchParams.get("contentId")!;
+
+  const token = await getClientSubscriptionToken(inngest, {
+    channel: pipelineChannel({ contentId }),
+    topics: ["status", "tokens"],
+  });
+
+  return Response.json(token);
+}
+```
+
+```ts {{ title: "Express" }}
+import express from "express";
+import { getClientSubscriptionToken } from "inngest/react";
+import { inngest } from "./inngest/client";
+import { pipelineChannel } from "./inngest/channels";
+
+const app = express();
+
+app.get("/api/realtime-token", async (req, res) => {
+  const { contentId } = req.query;
+
+  const token = await getClientSubscriptionToken(inngest, {
+    channel: pipelineChannel({ contentId: contentId as string }),
+    topics: ["status", "tokens"],
+  });
+
+  res.json(token);
+});
+```
+
+```ts {{ title: "TanStack Start" }}
+import { createServerFn } from "@tanstack/start";
+import { getClientSubscriptionToken } from "inngest/react";
+import { inngest } from "./inngest/client";
+import { pipelineChannel } from "./inngest/channels";
+
+export const getRealtimeToken = createServerFn({ method: "GET" })
+  .validator((contentId: string) => contentId)
+  .handler(async ({ data: contentId }) => {
+    return getClientSubscriptionToken(inngest, {
+      channel: pipelineChannel({ contentId }),
+      topics: ["status", "tokens"],
+    });
+  });
+```
+</CodeGroup>
+
+---
+
+## Subscribing without a token
+
+Server-side code that already has your Inngest client does not need to mint a
+token first. `inngest.realtime.subscribe()` and `subscribe({ app: inngest, ... })`
+authenticate with the client's signing key directly.
+
+```ts
+import { aiChannel } from "./inngest/channels";
+import { inngest } from "./inngest/client";
+
+const stream = await inngest.realtime.subscribe({
+  channel: aiChannel({ threadId: "thread_abc" }),
+  topics: ["status", "tokens"],
+});
+
+for await (const message of stream) {
+  console.log(message.topic, message.data);
+}
+```
+
+If you need the full token object on the server, for instance to pass into
+`subscribe()` yourself, use `inngest.realtime.token({ channel, topics })` or
+`getSubscriptionToken()` from `inngest/realtime`. Unlike the client token, these
+include the channel and topics and are not meant to be sent to a browser as-is.
+
+---
+
+## Next steps
+
+- [Realtime overview](/docs/features/realtime?ref=docs-realtime-subscription-tokens) for channels, topics, and publishing
+- [React hooks guide](/docs/features/realtime/react-hooks?ref=docs-realtime-subscription-tokens) for the full Next.js flow
+- [Subscribing reference](/docs/reference/typescript/v4/realtime/subscribing?ref=docs-realtime-subscription-tokens) for `getClientSubscriptionToken()`, `subscribe()`, and message shapes
+- [useRealtime reference](/docs/reference/typescript/v4/realtime/use-realtime?ref=docs-realtime-subscription-tokens) for every hook option
