@@ -649,7 +649,7 @@ const sectionLearn: (NavGroup | NavLink)[] = [
           // {
           //   title: "Stream AI responses",
           //   href: "/docs/features/realtime/stream-ai-responses",
-          },
+          // },
           {
             title: "Subscription tokens",
             href: "/docs/features/realtime/subscription-tokens",
