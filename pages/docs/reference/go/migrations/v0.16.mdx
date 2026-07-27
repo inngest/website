@@ -26,15 +26,15 @@ client, err := inngestgo.NewClient(inngestgo.ClientOpts{
 
 The `INNGEST_ALLOW_IN_BAND_SYNC` environment variable was also removed.
 
-## Unauthed sync requests
+## Unauthenticated sync requests
 
-Unauthed sync requests in cloud mode are now rejected by default. Local development still allows unauthed sync requests because the Dev Server does not sign requests.
+Unauthenticated sync requests in cloud mode are now rejected by default. Local development still allows unauthenticated sync requests because the Dev Server does not sign requests.
 
 <Info>
-Unauthed app syncs are not insecure: the SDK does not send app configuration back to the unauthed caller. Instead, it makes an outgoing authed request to Inngest Cloud. Requiring auth on the incoming sync request adds defense in depth.
+Unauthenticated app syncs do not send app configuration back to the unauthenticated caller. Instead, the SDK makes an outgoing authenticated request to the configured Inngest API. Requiring authentication on the incoming sync request adds defense in depth.
 </Info>
 
-If you depend on unauthed sync requests in cloud mode, use `ServeOpts.EnableUnauthedSync`:
+If you depend on unauthenticated sync requests in cloud mode, use `ServeOpts.EnableUnauthedSync`:
 
 ```go
 handler := client.ServeWithOpts(inngestgo.ServeOpts{
@@ -44,7 +44,9 @@ handler := client.ServeWithOpts(inngestgo.ServeOpts{
 
 You can also set `INNGEST_ENABLE_UNAUTHED_SYNC=true`.
 
-If you require unauthed sync requests in cloud mode, we recommend migrating to the [API-based sync flow](/docs/apps/cloud?ref=docs-go-v0-15-to-v0-16-migration#programmatically) instead of relying on unauthed requests to your served SDK endpoint.
+If you require unauthenticated sync requests with Inngest Cloud, we recommend migrating to the [API-based sync flow](/docs/apps/cloud?ref=docs-go-v0-15-to-v0-16-migration#programmatically) instead of relying on unauthenticated requests to your served SDK endpoint.
+
+If you're self-hosting an Inngest server then you'll always need to enable unauthenticated syncs, since self-hosted doesn't yet have authenticated syncs.
 
 ## Unauthorized responses
 
