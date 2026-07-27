@@ -3,6 +3,7 @@ focus: false
 featured: false
 heading: "Root Cause Analysis: July 2026 Service Incidents"
 subtitle: A combined root cause analysis of the incidents in July 2026 that affected function execution, run scheduling, checkpointing, execution metrics, and event processing.
+image: /assets/blog/2026-07-23-incident-rca-july-2026/featured-image.png
 date: 2026-07-23
 author:
   - Bruno Scheufler
@@ -33,14 +34,14 @@ Connectivity to the third-party service that supplies our feature-flag values de
 
 When we rolled out a new release that day, newly started containers were unable to retrieve feature-flag values and fell back to default configuration. Two consequences followed:
 
-- A subset of internal traffic switched from its optimized transport path to a legacy path, which overloaded our internal network. Between 16:45 and 17:47 UTC, network performance was severely degraded: DNS query volume increased roughly tenfold, DNS lookup latency spiked, and connection setup times rose sharply. Traffic on a key internal path effectively stalled, breaking function execution.
+- A subset of internal traffic switched from its optimized gRPC transport path to a legacy internal HTTP path, which overloaded our internal network. The legacy path had been kept in place as a per-customer opt-out in case the gRPC path caused issues. Between 16:45 and 17:47 UTC, network performance was severely degraded: DNS query volume increased roughly tenfold, DNS lookup latency spiked, and connection setup times rose sharply. Traffic on a key internal path effectively stalled, breaking function execution.
 - Another subsystem was configured incorrectly, leading to retries in run scheduling for a subset of customers using debounce.
 
 In parallel, the same release contained a regression affecting certain idempotent requests on the scheduling path. During retries, this caused a subset of events to repeatedly fail until the release was rolled back.
 
 Customer-facing impact:
 
-- Function execution was delayed due to impaired internal connectivity. A subset of steps may have failed between 16:45 and 17:45 UTC. These should have retried, except for function runs with disabled or exhausted retries.
+- Function execution was delayed due to impaired internal connectivity. A subset of steps failed between 16:45 and 17:45 UTC. These were retried automatically, except for function runs with disabled or exhausted retries.
 - Run scheduling was delayed due to the scheduling errors and the request regression on retries.
 - Some outbound step requests (`step.fetch()`) returned empty responses, which may have disrupted dependent application logic.
 - Some customers may need to replay affected events to ensure the associated functions execute as expected.
@@ -49,7 +50,7 @@ Customer-facing impact:
 
 | Time  | Event                                                                                                                  |
 | ----- | ---------------------------------------------------------------------------------------------------------------------- |
-| 16:11 | Customer impact began. A subset of events began failing on retry due to the request regression on the scheduling path. |
+| 16:10 | Customer impact began. A subset of events began failing on retry due to the request regression on the scheduling path. |
 | 16:19 | First feature-flag initialization errors observed as containers failed to fetch flag values.                           |
 | 16:20 | Scheduling errors and retries started for a subset of customers.                                                       |
 | 16:45 | Internal network performance began degrading severely as traffic shifted to the legacy path.                           |
@@ -57,7 +58,7 @@ Customer-facing impact:
 | 17:41 | Internal gateway metrics began returning toward normal.                                                                |
 | 17:45 | Function execution impact ended.                                                                                       |
 | 17:47 | Internal network performance recovered.                                                                                |
-| 17:57 | Rollback fully propagated; status moved to Monitoring (Severity upgraded to Critical).                                 |
+| 17:57 | Rollback fully propagated; status moved to Monitoring.                                                                 |
 | 18:04 | Last feature-flag initialization errors observed.                                                                      |
 | 18:15 | Scheduling returned to normal; run-scheduling impact ended.                                                            |
 | 18:44 | Incident resolved; throughput confirmed back to normal.                                                                |
@@ -92,7 +93,7 @@ Scheduled and in progress:
 
 On July 16, 2026, Inngest experienced an incident that caused increased execution latency and elevated errors for customers.
 
-The issue occurred while we were preparing our state store infrastructure for upcoming upgrades. As part of that work, we had enabled an upgrade-readiness state store path behind a feature flag. That path depended on an internal state store connection during startup. While the path was covered by monitoring, it was tied to a medium-priority alert and a lower SLO than was appropriate for the customer impact this failure mode could create.
+The issue occurred while we were preparing our state store infrastructure for upcoming upgrades. Our services access the state store through a proxy layer, which routes traffic between our current state store and the infrastructure we are upgrading to. As part of that work, we had enabled an upgrade-readiness state store path in this proxy layer behind a feature flag. That path depended on an internal state store connection during startup. While the path was covered by monitoring, it was tied to a medium-priority alert and a lower SLO than was appropriate for the customer impact this failure mode could create.
 
 When that dependency began timing out, newly restarted state store proxy instances were unable to become ready. As more instances restarted, available proxy capacity dropped until the checkpointing API could no longer serve traffic reliably. We resolved the incident by disabling the upgrade-readiness state store path and restarting the affected proxy instances.
 
@@ -110,7 +111,7 @@ Customer-facing impact:
 
 - Customers experienced increased execution latency and elevated execution errors.
 - Checkpointing requests failed for affected functions during the incident window.
-- SDKs fell back to the normal async response path when checkpoint writes failed, which increased retries and latency.
+- SDKs fell back to the async response path to prevent data loss when checkpoint writes failed. This increased retries and latency.
 - Some functions, signals, or execution progress may have been delayed or failed during the incident window.
 
 ### Timeline (UTC, July 16, 2026)
@@ -126,13 +127,13 @@ Customer-facing impact:
 
 Duration of impact:
 
-- **Checkpointing API and execution latency:** ~170 minutes (09:32–12:20 UTC).
+- **Checkpointing API and execution latency:** ~168 minutes (09:32–12:20 UTC).
 
 ### Root cause
 
 The primary cause was a startup dependency in an upgrade-readiness state store path. When an internal state store connection began timing out, newly restarted state store proxy instances waited on that dependency before becoming ready. As a result, those instances could not serve traffic, and checkpointing API availability degraded as proxies restarted over time.
 
-A contributing factor was that the upgrade-readiness path was monitored with medium-priority alerting and a lower SLO than was appropriate for its customer impact. The alerting did not reflect that this path could affect the checkpointing API when proxy instances restarted.
+A contributing factor was that the upgrade-readiness path was monitored with medium-priority alerting and a lower SLO than was appropriate for its customer impact. The alerting did not reflect that this path could affect the checkpointing API when proxy instances restarted. Because the alert that fired at 09:35 UTC was medium-priority, it did not trigger immediate on-call escalation, which delayed formal identification of the incident until 11:40 UTC.
 
 Another contributing factor was that our prior testing had covered proxy restarts and several connection-failure scenarios, but had not covered this specific timeout-at-startup behavior in the upgrade path. The system handled already-established connections as expected, but newly started proxy instances treated the timeout as a startup-blocking failure instead of continuing to serve traffic on the stable state store path.
 
@@ -153,7 +154,7 @@ We have also added safeguards before continuing this upgrade work:
 
 On July 16, 2026, starting at approximately 15:45 UTC, publishing of customer execution metrics to our metrics pipeline began to fail. During the incident window, dashboards showed no function execution or throughput metrics for affected customers. Function execution itself was not affected.
 
-The underlying issue was a gap between our live infrastructure configuration and its declarative definitions. The metrics publishing path had been introduced earlier this year as part of scaling our metrics pipeline, and the associated message-broker topic and access permissions were live in production ahead of their declarative definitions being completed. During maintenance to prepare the cluster for upcoming capacity work, broker resources were reconciled from those definitions, which unintentionally removed the not-yet-declared permissions. Metrics publishing began failing with authorization errors immediately afterward.
+The underlying issue was drift between our live infrastructure configuration and its declarative definitions. The metrics publishing path had been introduced earlier this year as part of scaling our metrics pipeline, and the associated message-broker topic and access permissions were live in production ahead of their declarative definitions being completed. During maintenance to prepare the cluster for upcoming capacity work, broker resources were reconciled from those definitions, which unintentionally removed the not-yet-declared permissions. Metrics publishing began failing with authorization errors immediately afterward.
 
 We restored the missing permissions, completed the declarative definitions for the topic and access permissions, and restarted the affected services. Publishing recovered and error volume dropped to zero.
 
@@ -185,7 +186,7 @@ The primary cause was infrastructure configuration drift: the message-broker top
 Contributing factors:
 
 - Execution metrics had recently moved to being published through the message broker rather than written directly to the analytics store, increasing the impact of this path.
-- We had not yet set up alerting or monitoring on this publishing path, which delayed detection.
+- The publishing path had insufficient monitoring and alerting, which delayed detection.
 
 ### Follow-ups
 
@@ -198,7 +199,7 @@ Contributing factors:
 
 ### Summary
 
-On July 23, 2026, starting at 14:03 UTC, the service responsible for processing incoming events and scheduling function runs stopped processing. Event processing was fully unavailable for approximately 37 minutes, and function execution was delayed until backlogs were processed at approximately 15:12 UTC.
+On July 23, 2026, starting at 14:03 UTC, the service responsible for processing incoming events and scheduling function runs stopped processing. Event processing was fully unavailable for approximately 37 minutes, and function execution was delayed until backlogs were fully processed at approximately 15:12 UTC.
 
 The cause was a capacity-allocation failure in a storage layer that had recently been introduced to back a single message-broker topic, used for a new event lifecycle publishing path. When that storage layer stopped accepting writes, the brokers backing this topic became unavailable. The event-processing service required a connection to this path during startup, so restarting instances could not become ready and event processing halted.
 
@@ -214,7 +215,7 @@ Automated alerts fired within minutes and the on-call team responded immediately
 
 Customer-facing impact:
 
-- New events were not processed and new function runs were not scheduled between 14:03 and 14:40 UTC (14:53 UTC for a subset of customers on dedicated infrastructure).
+- New events experienced delayed processing and new function runs were not scheduled between 14:03 and 14:40 UTC (14:53 UTC for a subset of customers on dedicated infrastructure).
 - Events received during the outage were processed once service was restored; function runs were delayed until the backlog cleared at approximately 15:12 UTC.
 - Function execution latency was elevated while backlogs were processed.
 
@@ -242,7 +243,7 @@ The primary cause was a capacity-allocation failure in a newly introduced storag
 
 A contributing factor was a startup dependency in the event-processing service: the event lifecycle publishing path is an auxiliary path, but a failure to connect to it prevented the service from starting at all. This turned the loss of a single non-critical topic into a full event-processing outage.
 
-We had also not yet completed monitoring and alerting for capacity and health of this new storage backend, which meant the failure surfaced through its downstream impact rather than ahead of it.
+Full monitoring and alerting for capacity and health of this new Ceph-based storage backend was not completed. This caused the failure to surface via downstream impact rather than at the source.
 
 ### Follow-ups
 
