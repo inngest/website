@@ -1,5 +1,7 @@
 import { useMemo } from "react";
 
+import PatternMedia from "./PatternMedia";
+
 // ─── Inline markdown ─────────────────────────────────────────────────────────
 type InlineNode = string | React.ReactElement;
 
@@ -84,6 +86,7 @@ type Block =
   | { type: "ul"; items: string[] }
   | { type: "ol"; items: string[] }
   | { type: "table"; header: string[]; rows: string[][] }
+  | { type: "media"; src: string; alt: string; poster?: string }
   | { type: "code"; lang: string; value: string };
 
 const RE = {
@@ -95,7 +98,17 @@ const RE = {
   blockquote: /^>\s?(.*)$/,
   tableRow: /^\|(.+)\|\s*$/,
   tableDelim: /^\|?\s*:?-{3,}:?\s*(\|\s*:?-{3,}:?\s*)+\|?\s*$/,
+  // Standalone media line: ![alt](url) or ![alt](url "poster=/path")
+  media: /^!\[([^\]]*)\]\((\S+?)(?:\s+"([^"]*)")?\)\s*$/,
 };
+
+// Pulls a `poster=<value>` hint out of the Markdown title slot, e.g.
+// `![alt](video.mp4 "poster=/assets/thumb.png")`.
+function parsePoster(title?: string): string | undefined {
+  if (!title) return undefined;
+  const m = title.match(/poster=(\S+)/);
+  return m ? m[1] : undefined;
+}
 
 function blockParse(md: string): Block[] {
   const lines = md.replace(/\r\n/g, "\n").split("\n");
@@ -177,6 +190,13 @@ function blockParse(md: string): Block[] {
       continue;
     }
 
+    m = RE.media.exec(line);
+    if (m) {
+      blocks.push({ type: "media", alt: m[1], src: m[2], poster: parsePoster(m[3]) });
+      i++;
+      continue;
+    }
+
     const para = [line];
     i++;
     while (
@@ -187,7 +207,8 @@ function blockParse(md: string): Block[] {
       !RE.hr.test(lines[i]) &&
       !RE.ul.test(lines[i]) &&
       !RE.ol.test(lines[i]) &&
-      !RE.blockquote.test(lines[i])
+      !RE.blockquote.test(lines[i]) &&
+      !RE.media.test(lines[i])
     ) {
       para.push(lines[i]);
       i++;
@@ -370,6 +391,8 @@ export function MarkdownRender({ source }: { source: string }) {
                 </table>
               </div>
             );
+          case "media":
+            return <PatternMedia key={i} src={b.src} alt={b.alt} poster={b.poster} />;
           case "code":
             return <CodeBlock key={i} value={b.value} lang={b.lang} />;
         }

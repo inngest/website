@@ -1,7 +1,7 @@
 import Link from "next/link";
 import type { AnchorHTMLAttributes, ReactNode } from "react";
 import { cn } from "@/utils/v1/cn";
-import HlsVideo from "./HlsVideo";
+import HlsVideo from "@/shared/HlsVideo";
 
 type BlogButtonProps = AnchorHTMLAttributes<HTMLAnchorElement> & {
   arrow?: "left" | "right";

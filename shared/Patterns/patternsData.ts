@@ -178,6 +178,13 @@ export const PATTERNS: PatternIndexItem[] = [
       "Break multi-step AI pipelines and complex business logic into durable, independently retried steps.",
   },
   {
+    category: "durable",
+    slug: "durable-token-streaming",
+    title: "Durable token streaming",
+    subtitle:
+      "Stream LLM tokens to the browser while running generation as a durable function, so a dropped connection or a crash never loses the response.",
+  },
+  {
     category: "ai-evals",
     slug: "run-experiments-in-production",
     title: "Run experiments in production",
