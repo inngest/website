@@ -7,6 +7,7 @@ import Image from "next/image";
 import Link from "next/link";
 import { notFound } from "next/navigation";
 
+import GithubSlugger from "github-slugger";
 import matter from "gray-matter";
 import readingTime from "reading-time";
 
@@ -155,8 +156,6 @@ function loadRelated(currentSlug: string): RelatedPost[] {
     .slice(0, 3);
 }
 
-const GITHUB_SLUG_ASCII_PUNCTUATION = /[\0-\x1F!-,.\/:-@\[-\^`\{-~]/g;
-
 function cleanHeadingText(value: string): string {
   return value
     .replace(/\s+\{#[^}]+\}\s*$/, "")
@@ -167,15 +166,14 @@ function cleanHeadingText(value: string): string {
     .trim();
 }
 
-function slugifyHeading(value: string): string {
-  return value
-    .toLowerCase()
-    .replace(GITHUB_SLUG_ASCII_PUNCTUATION, "")
-    .replace(/ /g, "-");
-}
-
+// The TOC ids must match the heading ids `rehype-slug` writes into the
+// rendered article (see mdxOptions.ts), or the links scroll nowhere. So
+// use the same slugger `rehype-slug` uses (github-slugger) and feed it
+// *every* heading level in document order — the slugger's duplicate
+// counter is shared across the whole document, so skipping the h3s here
+// would desync the suffixes on repeated headings.
 function extractArticleHeadings(content: string): BlogTocItem[] {
-  const occurrences = new Map<string, number>();
+  const slugger = new GithubSlugger();
   const headings: BlogTocItem[] = [];
   let inFence = false;
   let fenceMarker: string | null = null;
@@ -195,19 +193,16 @@ function extractArticleHeadings(content: string): BlogTocItem[] {
     }
     if (inFence) continue;
 
-    const match = line.match(/^##(?!#)\s+(.+?)\s*#*\s*$/);
+    const match = line.match(/^(#{1,6})\s+(.+?)\s*#*\s*$/);
     if (!match) continue;
 
-    const text = cleanHeadingText(match[1]);
+    const text = cleanHeadingText(match[2]);
     if (!text) continue;
 
-    const base = slugifyHeading(text) || "section";
-    const count = occurrences.get(base) ?? 0;
-    occurrences.set(base, count + 1);
-    headings.push({
-      id: count === 0 ? base : `${base}-${count}`,
-      text,
-    });
+    const id = slugger.slug(text);
+    if (match[1].length !== 2) continue;
+
+    headings.push({ id, text });
   }
 
   return headings;
