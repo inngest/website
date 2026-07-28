@@ -39,8 +39,9 @@ export interface Plan {
   priceCaption: string;
   cta: { href: string; text: string };
   /** Feature bullets below the CTA. `value`, when set, renders bold
-   *  before the label — e.g. **50k** executions. */
-  features: { value?: string; text: string }[];
+   *  before the label — e.g. **50k** executions. `note`, when set,
+   *  renders below in a smaller, lighter weight. */
+  features: { value?: string; text: string; note?: string }[];
   /** Tags / badges (e.g. "POPULAR"). */
   badge?: string;
 }
@@ -118,7 +119,11 @@ export const PLANS: Plan[] = [
       text: "Get started for Free",
     },
     features: [
-      { value: "1M+", text: "executions" },
+      {
+        value: "1M",
+        text: "executions included",
+        note: "Up to 20M add-on",
+      },
       { value: "100+", text: "concurrent executions" },
       { value: "5 GB", text: "span data ingested" },
       { value: "50K", text: "scores" },
@@ -224,8 +229,8 @@ export const FEATURES: Feature[] = [
     plans: {
       [PLAN_NAMES.hobby]: "50k /mo included",
       [PLAN_NAMES.pro]: {
-        value: "1m /mo included",
-        description: "then $50 per 1m",
+        value: "1M executions included",
+        description: "Up to 20M add-on",
       },
       [PLAN_NAMES.enterprise]: "Custom",
     },
