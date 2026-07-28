@@ -6,211 +6,7 @@ import chokidar from "chokidar";
 import fs from "fs";
 import path from "path";
 import { fileURLToPath } from "url";
-
-// All permanent redirects (source -> destination)
-const permanentRedirects = [
-  // Legacy docs
-  ["/docs/functions/testing-functions", "/docs/local-development"],
-  ["/docs/what-is-inngest", "/docs"],
-  ["/docs/reference/functions/retries", "/docs/functions/retries"],
-  ["/docs/creating-an-event-key", "/docs/events/creating-an-event-key"],
-  ["/docs/event-format-and-structure", "/docs/reference/events/send"],
-  ["/docs/events/event-format-and-structure", "/docs/reference/events/send"],
-  ["/docs/writing-and-running-fuctions", "/docs/functions"], //typo
-  ["/docs/cli/steps/", "/docs/learn/inngest-steps"],
-  ["/docs/events/sources/sdks", "/docs/events"],
-  ["/docs/deploying-fuctions", "/docs/apps/cloud"],
-  ["/docs/deploy", "/docs/apps/cloud"],
-  ["/docs/functions/introduction", "/docs/functions"],
-  ["/docs/how-inngest-works", "/docs"], // TODO/DOCS redirect this to new concepts page
-  ["/docs/frameworks/cloudflare-pages", "/docs/sdk/serve#framework-cloudflare"],
-  ["/docs/frameworks/express", "/docs/sdk/serve#framework-express"],
-  ["/docs/frameworks/nextjs", "/docs/sdk/serve#framework-next-js"],
-  ["/docs/frameworks/redwoodjs", "/docs/sdk/serve#framework-redwood"],
-  ["/docs/sdk/reference/serve", "/docs/reference/serve"],
-  ["/docs/events/webhooks", "/docs/platform/webhooks"],
-  ["/docs/functions/retries", "/docs/reference/typescript/functions/errors"],
-  ["/docs/functions/cancellation", "/docs/guides/cancel-running-functions"],
-  [
-    "/docs/reference/python/overview/quick-start",
-    "/docs/getting-started/python-quick-start",
-  ],
-  ["/docs/sdk/overview", "/docs"],
-  ["/docs/dev-server", "/docs/local-development"],
-  ["/docs/guides/development-with-docker", "/docs/local-development"],
-
-  // Other pages
-  ["/uses/zero-infra-llm-ai", "/ai"],
-  // Was -> /uses/workflow-engine, which now redirects to /uses/webhooks.
-  // Point straight at the final destination to avoid a redirect chain.
-  ["/uses/internal-tools", "/uses/webhooks"],
-  ["/uses/user-journey-automation", "/blog/lifecycle-emails-with-resend"],
-
-  // new IA
-  ["/docs/security", "/docs/learn/security"],
-  ["/docs/functions", "/docs/learn/inngest-functions"],
-  ["/docs/functions/multi-step", "/docs/learn/inngest-steps"],
-  ["/docs/guides/multi-step-functions", "/docs/learn/inngest-steps"],
-  [
-    "/docs/features/inngest-functions/steps-workflows/fetch",
-    "/docs/reference/typescript/functions/fetch",
-  ],
-  ["/docs/guides/enqueueing-future-jobs", "/docs/guides/delayed-functions"],
-  ["/docs/steps", "/docs/learn/inngest-steps"],
-  ["/docs/features/inngest-functions", "/docs/learn/inngest-functions"],
-  [
-    "/docs/features/inngest-functions/steps-workflows",
-    "/docs/learn/inngest-functions",
-  ],
-  ["/blog/banger", "/blog/banger-video-rendering-pipeline"],
-  [
-    "/docs/reference/serve#custom-frameworks",
-    "/docs/learn/serving-inngest-functions#custom-frameworks",
-  ],
-  ["/docs/sdk/serve", "/docs/learn/serving-inngest-functions"],
-  [
-    "/docs/getting-started/quick-start/python",
-    "/docs/getting-started/python-quick-start",
-  ],
-  ["/docs/quick-start", "/docs/getting-started/nextjs-quick-start"],
-  [
-    "/docs/reference/typescript/functions/errors",
-    "/docs/features/inngest-functions/error-retries/inngest-errors",
-  ],
-  ["/docs/reference/middleware/overview", "/docs/features/middleware"],
-  [
-    "/docs/reference/middleware/create",
-    "/docs/features/middleware/create?guide=typescript",
-  ],
-  [
-    "/docs/reference/middleware/typescript",
-    "/docs/features/middleware/dependency-injection?guide=typescript",
-  ],
-  [
-    "/docs/reference/python/middleware/encryption",
-    "/docs/features/middleware/encryption-middleware?guide=python",
-  ],
-  ["/blog/nextjs-openai-o1", "/blog/agentic-workflow-example"],
-
-  ["/docs/agent-kit/:any*", "https://agentkit.inngest.com"],
-
-  ["/docs/features/realtime/nextjs", "/docs/features/realtime/react-hooks"],
-
-  // Durable Endpoints rename
-  ["/docs/learn/rest-endpoints", "/docs/learn/durable-endpoints"],
-
-  // Metadata reference moved to /reference/typescript/functions/metadata
-  [
-    "/docs/features/inngest-functions/steps-workflows/metadata",
-    "/docs/reference/typescript/functions/metadata",
-  ],
-
-  // TypeScript SDK versioned docs - landing page redirects (301 permanent)
-  ["/docs/reference/typescript", "/docs/reference/typescript/intro"],
-  ["/docs/reference/typescript/v4", "/docs/reference/typescript/v4/intro"],
-  ["/docs/reference/typescript/v3", "/docs/reference/typescript/v3/intro"],
-  // Legacy short paths - redirect directly to v4 TypeScript docs (collapsed from two-hop chain)
-  [
-    "/docs/reference/client/create",
-    "/docs/reference/typescript/v4/client/create",
-  ],
-  ["/docs/reference/events/send", "/docs/reference/typescript/v4/events/send"],
-  [
-    "/docs/reference/functions/create",
-    "/docs/reference/typescript/v4/functions/create",
-  ],
-  [
-    "/docs/reference/functions/debounce",
-    "/docs/reference/typescript/v4/functions/debounce",
-  ],
-  [
-    "/docs/reference/functions/handling-failures",
-    "/docs/reference/typescript/v4/functions/handling-failures",
-  ],
-  [
-    "/docs/reference/functions/rate-limit",
-    "/docs/reference/typescript/v4/functions/rate-limit",
-  ],
-  [
-    "/docs/reference/functions/run-priority",
-    "/docs/reference/typescript/v4/functions/run-priority",
-  ],
-  [
-    "/docs/reference/functions/singleton",
-    "/docs/reference/typescript/v4/functions/singleton",
-  ],
-  [
-    "/docs/reference/functions/step-invoke",
-    "/docs/reference/typescript/v4/functions/step-invoke",
-  ],
-  [
-    "/docs/reference/functions/step-run",
-    "/docs/reference/typescript/v4/functions/step-run",
-  ],
-  [
-    "/docs/reference/functions/step-send-event",
-    "/docs/reference/typescript/v4/functions/step-send-event",
-  ],
-  [
-    "/docs/reference/functions/step-sleep-until",
-    "/docs/reference/typescript/v4/functions/step-sleep-until",
-  ],
-  [
-    "/docs/reference/functions/step-sleep",
-    "/docs/reference/typescript/v4/functions/step-sleep",
-  ],
-  [
-    "/docs/reference/functions/step-wait-for-event",
-    "/docs/reference/typescript/v4/functions/step-wait-for-event",
-  ],
-  [
-    "/docs/reference/functions/step-wait-for-signal",
-    "/docs/reference/typescript/v4/functions/step-wait-for-signal",
-  ],
-  ["/docs/reference/serve", "/docs/reference/typescript/v4/serve"],
-  ["/docs/reference/testing", "/docs/reference/typescript/v4/testing"],
-  [
-    "/docs/reference/middleware/lifecycle",
-    "/docs/reference/typescript/v4/middleware/lifecycle",
-  ],
-  [
-    "/docs/reference/middleware/examples",
-    "/docs/reference/typescript/v4/middleware/examples",
-  ],
-  [
-    "/docs/reference/typescript/migrations/v3-to-v4",
-    "/docs/reference/typescript/v4/migrations/v3-to-v4",
-  ],
-  ["/docs/sdk/migration", "/docs/reference/typescript/v3/migrations/v2-to-v3"],
-  [
-    "/patterns/cancelling-scheduled-functions",
-    "/docs/guides/cancel-running-functions",
-  ],
-  ["/patterns/running-code-on-a-schedule", "/docs/guides/scheduled-functions"],
-
-  // run-experiments-in-production moved from the Durable Workflows category to
-  // the new AI Evals category (per Lauren's IA feedback). Old category URL is
-  // shared in Slack and linked from the experiments doc, so redirect it.
-  [
-    "/docs/patterns/durable/run-experiments-in-production",
-    "/docs/patterns/ai-evals/run-experiments-in-production",
-  ],
-
-  // New IA: platform + use-case pages replacing legacy landing pages, plus
-  // a few standalone LPs being retired.
-  ["/uses/durable-workflows", "/platform/durable-execution"],
-  ["/compare-to-legacy-queues", "/platform/flow-control"],
-  ["/uses/serverless-cron-jobs", "/uses/scheduled-jobs"],
-  ["/uses/workflow-engine", "/uses/webhooks"],
-  ["/durable-endpoints", "/platform/durable-execution"],
-  ["/platform", "/platform/durable-execution"],
-  ["/ai-personalized-documentation", "/docs/ai-dev-tools/agent-skills"],
-  ["/ai/early-access", "/ai"],
-  ["/launch-week", "/"],
-  ["/product/how-inngest-works", "/"],
-  // The scheduled-jobs page moved under /uses; preserve the old URL.
-  ["/scheduled-jobs", "/uses/scheduled-jobs"],
-];
+import { permanentRedirects, TS_STABLE_VERSION } from "./redirects.mjs";
 
 // Pattern slug -> category, for redirecting old flat pattern URLs to the new
 // /docs/patterns/<category>/<slug> shape. Keep in sync with
@@ -423,9 +219,6 @@ function touchFilesWithString(str, { dir = "./pages", ext = "mdx" } = {}) {
 }
 
 /** @type {import('next').NextConfig} */
-// Single source of truth for the stable TypeScript SDK version.
-// Exposed to client code via NEXT_PUBLIC_TS_STABLE (see LanguageStore.ts).
-const TS_STABLE_VERSION = "v4";
 
 async function rewrites() {
   return {
@@ -453,10 +246,14 @@ async function rewrites() {
         source: "/docs/reference/typescript/:path((?!v3|v4).+)",
         destination: `/docs/reference/typescript/${TS_STABLE_VERSION}/:path`,
       },
-      {
-        source: "/docs-markdown/reference/typescript/:path((?!v3|v4).+)",
-        destination: `/docs-markdown/reference/typescript/${TS_STABLE_VERSION}/:path`,
-      },
+      // NOTE: no /docs-markdown equivalent here on purpose. Rewrites run after
+      // redirects, so a rewrite would pin a moved path to a version directory
+      // before the redirect table could be consulted — e.g.
+      // /docs-markdown/reference/typescript/functions/errors became
+      // .../typescript/v4/functions/errors, which has no file, instead of
+      // /docs/features/inngest-functions/error-retries/inngest-errors.
+      // The markdown route applies both rules itself, in the right order,
+      // via resolveDocsPath() in redirects.mjs.
     ],
   };
 }
