@@ -395,6 +395,11 @@ function PlanCard({
                 <span className="font-bold">{feature.value} </span>
               )}
               {feature.text}
+              {feature.note && (
+                <span className="mt-0.5 block text-[11px] font-light leading-snug text-v1-frost/70 group-hover:text-white/70 group-data-[active]:text-white/70">
+                  {feature.note}
+                </span>
+              )}
             </li>
           ))}
         </ul>
@@ -408,6 +413,11 @@ function PlanCard({
                     <span className="font-bold">{feature.value} </span>
                   )}
                   {feature.text}
+                  {feature.note && (
+                    <span className="mt-0.5 block text-[11px] font-light leading-snug text-v1-frost/70 group-hover:text-white/70 group-data-[active]:text-white/70">
+                      {feature.note}
+                    </span>
+                  )}
                 </li>
               ))}
             </ul>
