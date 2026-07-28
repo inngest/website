@@ -57,11 +57,15 @@ function getAllDocPaths(): string[] {
  */
 function findDocFile(slug: string): string | null {
   const docsDir = path.join(process.cwd(), "pages", "docs");
-  const candidates = [
-    path.join(docsDir, `${slug}.mdx`),
-    path.join(docsDir, `${slug}/index.mdx`),
-    path.join(docsDir, `${slug}.md`),
-  ];
+
+  // An empty slug is /docs-markdown itself, which is backed by pages/docs/index.mdx.
+  const candidates = slug
+    ? [
+        path.join(docsDir, `${slug}.mdx`),
+        path.join(docsDir, slug, "index.mdx"),
+        path.join(docsDir, `${slug}.md`),
+      ]
+    : [path.join(docsDir, "index.mdx"), path.join(docsDir, "index.md")];
 
   return candidates.find((p) => fs.existsSync(p)) ?? null;
 }
@@ -98,9 +102,9 @@ export async function GET(
   const { slug: slugArray = [] } = await params;
   const docPath = slugArray.join("/");
 
-  if (!docPath || typeof docPath !== "string") {
-    return new Response("Missing 'path' query parameter", { status: 400 });
-  }
+  // An empty slug is legitimate: it is /docs-markdown, the docs index. This
+  // used to 400 ("Missing 'path' query parameter" — there is no such param),
+  // which broke the entry point agents reach for first.
 
   // Sanitize the path to prevent directory traversal
   const sanitizedPath = docPath
