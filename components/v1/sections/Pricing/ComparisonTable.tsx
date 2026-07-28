@@ -286,7 +286,7 @@ function Cell({ value }: { value: FeatureCell | undefined }) {
         {value.value}
       </span>
       {value.description && (
-        <span className="text-[11px] font-light leading-snug text-v1-carbon-200">
+        <span className="text-v1-body-xs italic text-v1-carbon-200">
           {value.description}
         </span>
       )}
