@@ -113,19 +113,13 @@ export async function GET(
   // old URLs survive both in our own MDX and in whatever agents indexed
   // earlier; without this pass every one of those is a hard 404 here even
   // though /docs/<slug> serves fine.
-  let resolvedPathSlug = sanitizedPath;
   let filePath = findDocFile(sanitizedPath);
 
   if (!filePath) {
-    // A destination can carry a #fragment; that is meaningful for the canonical
-    // URL but not for finding the file.
+    // A destination can carry a #fragment, which is not part of the file path.
     const [redirected] = splitDocsSuffix(resolveDocsPath(sanitizedPath));
     if (redirected !== sanitizedPath) {
-      const redirectedFile = findDocFile(redirected);
-      if (redirectedFile) {
-        resolvedPathSlug = redirected;
-        filePath = redirectedFile;
-      }
+      filePath = findDocFile(redirected);
     }
   }
 
@@ -155,17 +149,15 @@ export async function GET(
       contentWithMarkdownURLs
     );
 
-    // Canonical points at where the doc actually lives, not the (possibly
-    // redirected) slug that was requested.
-    const canonicalUrl = `${
-      process.env.NEXT_PUBLIC_HOST ?? "https://www.inngest.com"
-    }/docs/${resolvedPathSlug}`;
-
-    // Return as plain text for easy copying. Disable caching so this always runs
-    // dynamically and returns fresh content from the docs.
+    // No canonical Link header here on purpose: middleware.ts emits one for
+    // every request, so setting a second produced two rel="canonical" values.
+    // They disagreed whenever a redirect destination carried a #fragment
+    // (/docs/frameworks/express → ...serving-inngest-functions#framework-express),
+    // and conflicting canonicals are ignored wholesale by crawlers. Middleware
+    // owns it: it resolves the same redirects and always names the production
+    // origin, which is what a canonical has to point at from a preview deploy.
     const headers = new Headers({
       "Content-Type": "text/markdown;charset=UTF-8",
-      Link: `<${canonicalUrl}>; rel="canonical"`,
     });
     // Block traditional search engines from indexing the LLM markdown mirror pages
     // to prevent duplicate content issues. AI crawlers are still welcome.
