@@ -281,7 +281,7 @@ export function DurableWorkflowsPage({
               title: "Guide: Steps & Workflows",
               description:
                 "Learn how to use steps as building blocks for creating reliable workflows that run for hours and recover from failures.",
-              url: `/docs/features/inngest-functions/steps-workflows?ref=${baseCTA}`,
+              url: `/docs/learn/inngest-functions?ref=${baseCTA}`,
             },
           ]}
         />

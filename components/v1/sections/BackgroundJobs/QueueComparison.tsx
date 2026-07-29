@@ -131,7 +131,7 @@ export default function QueueComparison() {
         bodyClassName="max-w-[760px]"
         actions={
           <div className="flex flex-wrap gap-6">
-            <ButtonLink href="/docs/quick-start?ref=background-jobs" variant="primary">
+            <ButtonLink href="/docs/getting-started/nextjs-quick-start?ref=background-jobs" variant="primary">
               Quick start guide →
             </ButtonLink>
             <ButtonLink href="/docs?ref=background-jobs" variant="secondary">

@@ -13,7 +13,7 @@ In some workflows or pipeline functions, you may want to broadcast events from w
 * Your function is handling many items that you want to process in parallel functions
 * You want to [delegate tasks to sub-agents asynchronously](/docs/ai-patterns/sub-agent-delegation#delegate-asynchronously-with-stepsendevent) in an AI agent system
 * You want to [cancel](/docs/guides/cancel-running-functions) another function
-* You want to send data to another function [waiting for an event](/docs/reference/functions/step-wait-for-event)
+* You want to send data to another function [waiting for an event](/docs/reference/typescript/v4/functions/step-wait-for-event)
 
 If your function needs to handle the result of another function, or wait until that other function has completed, you should use [direct function invocation](/docs/guides/invoking-functions-directly) instead.
 
@@ -23,7 +23,7 @@ If your function needs to handle the result of another function, or wait until t
 
 <LanguageSection show="typescript">
 
-To send events from within functions, you will use [`step.sendEvent()`](/docs/reference/functions/step-send-event). This method takes a single event, or an array of events. The example below uses an array of events.
+To send events from within functions, you will use [`step.sendEvent()`](/docs/reference/typescript/v4/functions/step-send-event). This method takes a single event, or an array of events. The example below uses an array of events.
 
 This is an example of a [scheduled function](/docs/guides/scheduled-functions) that sends a weekly activity email to all users.
 
@@ -92,7 +92,7 @@ Each of these functions will run in parallel and individually retry on error, re
 
 ### Why `step.sendEvent()` vs. `inngest.send()`?
 
-By using [`step.sendEvent()`](/docs/reference/functions/step-send-event) Inngest's SDK can automatically add context and tracing which ties events to the current function run. If you use [`inngest.send()`](/docs/reference/events/send), the context around the function run is not present.
+By using [`step.sendEvent()`](/docs/reference/typescript/v4/functions/step-send-event) Inngest's SDK can automatically add context and tracing which ties events to the current function run. If you use [`inngest.send()`](/docs/reference/typescript/v4/events/send), the context around the function run is not present.
 
 </LanguageSection>
 <LanguageSection show="go">

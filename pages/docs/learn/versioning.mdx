@@ -141,7 +141,7 @@ Reordering steps triggers a warning because the execution order differs from the
 
 For complete rewrites where the new logic is incompatible with in-progress runs, use the **new function pattern** with timestamp-based routing.
 
-This pattern uses two functions that subscribe to the same event, with [`if` expressions](/docs/reference/functions/create#trigger) to route events based on timestamp:
+This pattern uses two functions that subscribe to the same event, with [`if` expressions](/docs/reference/typescript/v4/functions/create#trigger) to route events based on timestamp:
 
 <CodeGroup>
 ```ts {{ title: "Original function with timestamp filter" }}

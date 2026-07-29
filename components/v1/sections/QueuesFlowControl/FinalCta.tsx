@@ -6,7 +6,7 @@ import StippleCtaSection from "@/components/v1/sections/shared/StippleCtaSection
 // CTA stays consistent across surfaces.
 
 const SIGNUP_URL = "/sign-up?ref=queues-flow-control";
-const QUICK_START_URL = "/docs/quick-start?ref=queues-flow-control";
+const QUICK_START_URL = "/docs/getting-started/nextjs-quick-start?ref=queues-flow-control";
 
 export default function FinalCta() {
   return (

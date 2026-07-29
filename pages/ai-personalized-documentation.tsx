@@ -366,7 +366,7 @@ const Output = ({ selected }: { selected: Selected }) => {
                 </span>
               </a>
               <a
-                href="/docs/functions"
+                href="/docs/learn/inngest-functions"
                 className="bg-slate-800 rounded-lg px-6 py-5 hover:bg-slate-700/80 group block"
               >
                 <h4 className="text-white">Writing functions</h4>
@@ -420,7 +420,7 @@ const EXAMPLE_PROMPTS = [
       "Create a function that uses OpenAI to summarize text.  It should take a long string of text, splits the text into chunks, uses openAI to summarize the chunks in parallel, then summarizes all summaries.",
     reply: {
       description: `Here we create a function called "_Summarize text_" that takes a long string of text, splits the text into chunks, uses openAI to summarize the chunks in parallel, then summarizes all summaries. We use step tooling to run as many actions in parallel as possible and provide retries and durability to each.`,
-      references: ["https://www.inngest.com/docs/guides/multi-step-functions"],
+      references: ["https://www.inngest.com/docs/learn/inngest-steps"],
       code: `inngest.createFunction(
   { id: "summarize-text" },
   { event: "app/text.summarize" },
@@ -446,7 +446,7 @@ const EXAMPLE_PROMPTS = [
       "Create a function that runs every Friday at 9AM and queries my database for all users. It should then send an event for each user, where another function listens to that event and sends an email.",
     reply: {
       description: `Here we create a function that runs every Friday at 9AM and queries our database for all users. It then sends an event for each user, where another function listens to that event and sends an email. We use step tooling to run as many actions in parallel as possible and provide retries and durability to each.`,
-      references: ["https://www.inngest.com/docs/guides/multi-step-functions"],
+      references: ["https://www.inngest.com/docs/learn/inngest-steps"],
       code: `inngest.createFunction(
   { id: "send-weekly-email" },
   { cron: "0 9 * * 5" },
@@ -485,7 +485,7 @@ inngest.createFunction(
       "Create a function triggered by an order being created. It should charge the customer for the product in the order, failing if the charge did not succeed. We then wait for the order to be picked up. If it wasn't picked up within an hour, refund and notify the user. If the order was picked up, send a push notification to the user that it's been collected. We wait again for the order to be delivered this time. If it hasn't been delivered within an hour, refund and notify the user the same as before. If it does get delivered, send a push notification that the order has been delivered, wait 30 minutes, then another push notification asking them to rate their meal.",
     reply: {
       description: `Here we create a function called "_Order processing_" triggered by an \`app/order.created\` event. It charges the customer for the product in the order, failing if the charge did not succeed. We then wait for the order to be picked up. If it wasn't picked up within an hour, refund and notify the user. If the order was picked up, send a push notification to the user that it's been collected. We wait again for the order to be delivered this time. If it hasn't been delivered within an hour, refund and notify the user the same as before. If it does get delivered, send a push notification that the order has been delivered, wait 30 minutes, then another push notification asking them to rate their meal. We use step tooling to run as many actions in parallel as possible and provide retries and durability to each.`,
-      references: ["https://www.inngest.com/docs/guides/multi-step-functions"],
+      references: ["https://www.inngest.com/docs/learn/inngest-steps"],
       code: `inngest.createFunction(
   { id: "order-processing" },
   { event: "app/order.created" },

@@ -7,7 +7,7 @@ export const description = "Define a handler that runs when a function exhausts 
 
 # Handling Failures
 <Info skipSearchCrawler>
-  **TypeScript SDK v4 is now in beta.** See the [v4 docs](/docs/reference/typescript/v4) and [migration guide](/docs/reference/typescript/v4/migrations/v3-to-v4).
+  **TypeScript SDK v4 is now in beta.** See the [v4 docs](/docs/reference/typescript/v4/intro) and [migration guide](/docs/reference/typescript/v4/migrations/v3-to-v4).
 </Info>
 
 
@@ -38,7 +38,7 @@ The failure handler is very useful for:
 * Send a notification to your team or user that the job has failed
 * Perform a rollback of the transaction (i.e. undo work partially completed by the main handler)
 
-_Failures_ should not be confused with _Errors_ which will be retried. Read the [error handling & retries documentation](/docs/functions/retries) for more context.
+_Failures_ should not be confused with _Errors_ which will be retried. Read the [error handling & retries documentation](/docs/features/inngest-functions/error-retries/inngest-errors) for more context.
 
 ---
 

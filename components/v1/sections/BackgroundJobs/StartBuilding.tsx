@@ -29,7 +29,7 @@ export default function StartBuilding() {
       <ButtonLink href="/sign-up?ref=background-jobs" prefetch={false} variant="primary">
         Start Free
       </ButtonLink>
-      <ButtonLink href="/docs/quick-start?ref=background-jobs" variant="secondary">
+      <ButtonLink href="/docs/getting-started/nextjs-quick-start?ref=background-jobs" variant="secondary">
         Quick start guide →
       </ButtonLink>
     </StippleCtaSection>

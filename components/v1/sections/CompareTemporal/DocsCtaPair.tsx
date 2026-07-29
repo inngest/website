@@ -9,7 +9,7 @@ export default function DocsCtaPair() {
   return (
     <div className="flex flex-shrink-0 flex-col gap-3 sm:flex-row sm:flex-wrap sm:gap-6">
       <ButtonLink
-        href="/docs/quick-start?ref=compare-to-temporal"
+        href="/docs/getting-started/nextjs-quick-start?ref=compare-to-temporal"
         variant="primary"
         className="!w-full sm:!w-auto"
       >

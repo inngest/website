@@ -113,9 +113,9 @@ You will notice some new concepts here:
 
 - Inngest functions are **identified with a unique ID.**
 - Inngest functions are **triggered by events** (see next section).
-- Inngest functions get access to the `step` API, enabling you to **build durable workflows composed of [atomic and automatically retried steps](/docs/features/inngest-functions/steps-workflows).**
+- Inngest functions get access to the `step` API, enabling you to **build durable workflows composed of [atomic and automatically retried steps](/docs/learn/inngest-functions).**
 
-In our freshly migrated `sendEmail` task, any failure to send an email will be retried up to 4 times, [configurable via the Inngest function options](/docs/reference/functions/create).
+In our freshly migrated `sendEmail` task, any failure to send an email will be retried up to 4 times, [configurable via the Inngest function options](/docs/reference/typescript/v4/functions/create).
 
 Let's register this function by adding it to our Inngest serve handler:
 

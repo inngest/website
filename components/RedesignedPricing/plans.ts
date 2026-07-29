@@ -287,7 +287,7 @@ export const FEATURES: Feature[] = [
       },
       [PLAN_NAMES.enterprise]: "Custom",
     },
-    infoUrl: "/docs/features/inngest-functions?ref=pricing",
+    infoUrl: "/docs/learn/inngest-functions?ref=pricing",
     section: "platform",
   },
   {

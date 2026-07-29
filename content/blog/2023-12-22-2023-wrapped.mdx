@@ -25,7 +25,7 @@ The list of releases is quite long so let’s focus only on the milestones.
 
 ### Product maturity
 
-We shipped key product features including [concurrency](https://www.inngest.com/docs/functions/concurrency), [rate limiting](https://www.inngest.com/docs/reference/functions/rate-limit), [debouncing](https://www.inngest.com/docs/reference/functions/debounce), [prioritization](https://www.inngest.com/docs/reference/functions/run-priority), [parallel steps](https://www.inngest.com/docs/guides/step-parallelism), and [batching](https://www.inngest.com/docs/guides/batching). But the special mentions go to the two from December:
+We shipped key product features including [concurrency](https://www.inngest.com/docs/functions/concurrency), [rate limiting](https://www.inngest.com/docs/reference/typescript/v4/functions/rate-limit), [debouncing](https://www.inngest.com/docs/reference/typescript/v4/functions/debounce), [prioritization](https://www.inngest.com/docs/reference/typescript/v4/functions/run-priority), [parallel steps](https://www.inngest.com/docs/guides/step-parallelism), and [batching](https://www.inngest.com/docs/guides/batching). But the special mentions go to the two from December:
 
 - [Invoking functions as steps](https://www.inngest.com/docs/guides/invoking-functions-directly?ref=changelog), which makes it easy to compose workflows and re-use functionality from any part of your system by allowing functions to call and receive the result of other functions.
 - [Function Replay](https://www.inngest.com/docs/platform/replay), which enables you to easily recover from failures or incidents by re-running functions in bulk.
@@ -38,9 +38,9 @@ This year we shipped major updates to our TypeScript SDK, [recently releasing v3
 
 - [Steps](https://www.inngest.com/docs/learn/inngest-steps),
 - [Cancelling running functions with events](/docs/guides/cancel-running-functions),
-- [Custom failure handling](https://www.inngest.com/docs/reference/functions/handling-failures),
-- [Invoking functions from within a function](https://www.inngest.com/docs/reference/functions/step-invoke) to compose complex flows,
-- [Middleware](https://www.inngest.com/docs/reference/middleware/create) - enabling logging, encryption, tracing, and others,
+- [Custom failure handling](https://www.inngest.com/docs/reference/typescript/v4/functions/handling-failures),
+- [Invoking functions from within a function](https://www.inngest.com/docs/reference/typescript/v4/functions/step-invoke) to compose complex flows,
+- [Middleware](https://www.inngest.com/docs/features/middleware/create?guide=typescript) - enabling logging, encryption, tracing, and others,
 - [Streaming and edge support](https://www.inngest.com/docs/streaming).
 
 The current state of the SDK allows for multi-language support, and live-migrating functions across languages and clouds. This means that you can develop and ship a function using our TypeScript SDK, but as business and technology choices shift, you can rewrite it entirely in another language, redeploy, and long-running functions will continue where they left off.

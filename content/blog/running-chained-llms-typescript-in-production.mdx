@@ -115,7 +115,7 @@ In this example, we’re defining a function which automatically runs when you s
 
 - Create a new blank function run, with empty state
 - Call your function with empty state.
-- Run each step in series or parallel, injecting the current function state from [`step.run`](/docs/reference/functions/step-run) blocks into the appropriate variables.
+- Run each step in series or parallel, injecting the current function state from [`step.run`](/docs/reference/typescript/v4/functions/step-run) blocks into the appropriate variables.
 
 You can then start to chain LLMs without building out complex queues, state, or services.  You're writing standard TypeScript, so you don't need to learn a new framework.  Everything “just works”, allowing you to focus specifically on the model code without worrying about any infrastructure at all — meaning you can deploy to production within an hour.
 
@@ -124,7 +124,7 @@ Beyond this simple case, you can extend your functions to:
 - [Automatically parallelize calls](/docs/guides/step-parallelism) using *actual parallelism* to speed up your chain
 - [Automatically cancel](/docs/guides/cancel-running-functions?ref=blog-chained-llms) if desired, eg. on window close, to save on model costs
 - [Manage concurrency](/docs/functions/concurrency?ref=blog-chained-llms), ensuring that you automatically enqueue functions if they exceed rate limits
-- [Handle failures](/docs/functions/retries?ref=blog-chained-llms), allowing you to create cleanup code or notify users on error.
+- [Handle failures](/docs/features/inngest-functions/error-retries/inngest-errors?ref=blog-chained-llms), allowing you to create cleanup code or notify users on error.
 - We also provide [branch environments](/docs/platform/environments?ref=blog-chained-llms) across platforms, and work with your current CI/CD process — as functions are served via HTTP anywhere they’re accessible.
 
 We’re already helping a bunch of users build reliable products via LLMs.  We’re free to use, and we’d love feedback on how to make this better for your own AI usage.

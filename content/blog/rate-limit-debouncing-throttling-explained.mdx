@@ -20,7 +20,7 @@ Let's answer these questions with some examples and comparisons!
 
 Let's start with the most widespread one: rate limiting. You've probably encountered this term while working with public APIs such as OpenAI or Shopify API. Both leverage rate limiting to control the external usage of their API by limiting the number of requests per hour or day — additional requests above this limit are rejected.
 
-The same reasoning applies when developing your [Inngest Functions](https://www.inngest.com/docs/features/inngest-functions). For example, consider an Inngest Function, part of a CRM product that frequently scrapes and stores company information. Companies might be updated often, and scraping is a costly operation unrelated to the order of events.
+The same reasoning applies when developing your [Inngest Functions](https://www.inngest.com/docs/learn/inngest-functions). For example, consider an Inngest Function, part of a CRM product that frequently scrapes and stores company information. Companies might be updated often, and scraping is a costly operation unrelated to the order of events.
 
 Here is how Rate Limiting operates for a maximum of 1 call per minute:
 
@@ -97,7 +97,7 @@ export default inngest.createFunction(
 
 ### When should I use Debouncing?
 
-Popular use cases are [webhooks](https://www.inngest.com/docs/platform/webhooks), any [Inngest Function](https://www.inngest.com/docs/features/inngest-functions) reacting to use actions, or AI workflows.
+Popular use cases are [webhooks](https://www.inngest.com/docs/platform/webhooks), any [Inngest Function](https://www.inngest.com/docs/learn/inngest-functions) reacting to use actions, or AI workflows.
 
 The above scenarios occur in a usage-intensive environment where the event triggering the function matters for the Function's execution (ex, the AI workflow needs the latest up-to-date occurrence).
 
@@ -105,7 +105,7 @@ The above scenarios occur in a usage-intensive environment where the event trigg
 
 Interestingly, Throttling is the [Flow Control](https://www.inngest.com/docs/guides/flow-control) feature for dealing with third-party API rate limiting. Instead of dropping unwanted Function runs like Rate limiting and Debouncing, [Throttling](https://www.inngest.com/docs/guides/throttling) will buffer the queued Function runs to match the configured frequency and time window.
 
-A good example would be an [Inngest Function](https://www.inngest.com/docs/features/inngest-functions) performing some AI enrichment as part of an ETL pipeline. As events arrive, our Inngest Function needs to match OpenAI's API rate limit by reducing the frequency of runs.
+A good example would be an [Inngest Function](https://www.inngest.com/docs/learn/inngest-functions) performing some AI enrichment as part of an ETL pipeline. As events arrive, our Inngest Function needs to match OpenAI's API rate limit by reducing the frequency of runs.
 
 Here is how Throttling operates for a maximum of 3 calls per minute:
 

@@ -18,7 +18,7 @@ export default function CTA() {
         Start Free
       </ButtonLink>
       <ButtonLink
-        href="/docs/quick-start?ref=customers"
+        href="/docs/getting-started/nextjs-quick-start?ref=customers"
         variant="secondary"
       >
         Quick Start Guide

@@ -2,7 +2,7 @@ import ButtonLink from "@/components/v1/ButtonLink";
 import StippleCtaSection from "@/components/v1/sections/shared/StippleCtaSection";
 
 const SIGNUP_URL = "/sign-up?ref=durable-execution-final";
-const QUICKSTART_URL = "/docs/quick-start?ref=durable-execution-final";
+const QUICKSTART_URL = "/docs/getting-started/nextjs-quick-start?ref=durable-execution-final";
 
 export default function FinalCTA() {
   return (

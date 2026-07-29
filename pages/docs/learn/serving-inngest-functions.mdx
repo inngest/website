@@ -45,7 +45,7 @@ Inngest functions are portable, so you can migrate between `serve()` and `connec
 
 <LanguageSection show="typescript">
 
-Inngest provides a `serve()` handler which adds an API endpoint to your router. You expose your functions to Inngest through this HTTP endpoint. To make automated deploys much easier, **the endpoint needs to be defined at `/api/inngest`** (though you can [change the API path](/docs/reference/serve#serve-client-functions-options)).
+Inngest provides a `serve()` handler which adds an API endpoint to your router. You expose your functions to Inngest through this HTTP endpoint. To make automated deploys much easier, **the endpoint needs to be defined at `/api/inngest`** (though you can [change the API path](/docs/reference/typescript/v4/serve#serve-client-functions-options)).
 
 ```ts {{ title: "./api/inngest.ts" }}
 // All serve handlers have the same arguments:
@@ -122,7 +122,7 @@ See the [Astro example](https://github.com/inngest/inngest-js/tree/main/examples
 
 We recommend using [Lambda function URLs](https://docs.aws.amazon.com/lambda/latest/dg/lambda-urls.html) to trigger your functions, as these require no other configuration or cost.
 
-Alternatively, you can use an API Gateway to route requests to your Lambda. The handler supports [API Gateway V1](https://docs.aws.amazon.com/apigateway/latest/developerguide/http-api-develop-integrations-lambda.html) and [API Gateway V2](https://docs.aws.amazon.com/apigateway/latest/developerguide/http-api-develop-integrations-lambda.html). If you are running API Gateway behind a proxy or have some other configuration, you may have to specify the `serveOrigin` and `servePath` options when calling `serve()` to ensure Inngest knows the URL where you are serving your functions. See [Configuring the API path](/docs/reference/serve#serve-client-functions-options) for more details.
+Alternatively, you can use an API Gateway to route requests to your Lambda. The handler supports [API Gateway V1](https://docs.aws.amazon.com/apigateway/latest/developerguide/http-api-develop-integrations-lambda.html) and [API Gateway V2](https://docs.aws.amazon.com/apigateway/latest/developerguide/http-api-develop-integrations-lambda.html). If you are running API Gateway behind a proxy or have some other configuration, you may have to specify the `serveOrigin` and `servePath` options when calling `serve()` to ensure Inngest knows the URL where you are serving your functions. See [Configuring the API path](/docs/reference/typescript/v4/serve#serve-client-functions-options) for more details.
 
 <CodeGroup>
 ```ts
@@ -1066,7 +1066,7 @@ inngest.fast_api.serve(
 You'll need to assign your [signing key](/docs/platform/signing-keys) to an [`INNGEST_SIGNING_KEY`](/docs/sdk/environment-variables#inngest-signing-key) environment variable in your hosting
 provider or `.env` file locally, which lets the SDK securely communicate with Inngest. If you can't
 use an environment variable, you can pass the signing key directly to the Inngest client constructor via the `signingKey` option. [Read
-the reference for more information](/docs/sdk/reference/serve#reference).
+the reference for more information](/docs/reference/typescript/v4/serve#reference).
 
 ### Other configuration
 
@@ -1083,7 +1083,7 @@ After your app serves Inngest functions, choose the next step that matches where
 
 ## Reference
 
-For more information about the `serve` handler, read the [the reference guide](/docs/reference/serve), which includes:
+For more information about the `serve` handler, read the [the reference guide](/docs/reference/typescript/v4/serve), which includes:
 
-* [`serve()` configuration options](/docs/reference/serve#serve-client-functions-options)
-* [How the serve handler works](/docs/reference/serve#how-the-serve-api-handler-works)
+* [`serve()` configuration options](/docs/reference/typescript/v4/serve#serve-client-functions-options)
+* [How the serve handler works](/docs/reference/typescript/v4/serve#how-the-serve-api-handler-works)

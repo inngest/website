@@ -11,7 +11,7 @@ disableCTA: true
 
 We're thrilled to announce the release of Inngest's TypeScript SDK v2.0, featuring some powerful new features alongside some housekeeping to keep the SDK a consistent, smooth experience.
 
-Check out the [v2 migration guide](/docs/sdk/migration?ref=blog-sdk-2-0) to learn how to upgrade today.
+Check out the [v2 migration guide](/docs/reference/typescript/v3/migrations/v2-to-v3?ref=blog-sdk-2-0) to learn how to upgrade today.
 
 ## Better Event Typing
 
@@ -38,7 +38,7 @@ This provides everyone with massive benefits:
 
 Internally, this change also frees up the Inngest client from being passed a type, allowing us to perform even better type inference and build more powerful tooling, like middleware.
 
-Check out [Defining Event Payload Types](/docs/reference/client/create?ref=blog-sdk-2-0#defining-event-payload-types) to learn about specifying types in v2.
+Check out [Defining Event Payload Types](/docs/reference/typescript/v4/client/create?ref=blog-sdk-2-0#defining-event-payload-types) to learn about specifying types in v2.
 
 ### Update: Standard Schema support (September 2025)
 
@@ -57,7 +57,7 @@ const schemas = new EventSchemas()
 
 This gives you flexibility to use Zod 4, Valibot (smaller bundles), ArkType (TypeScript-first), joi, or any [Standard Schema](https://standardschema.dev/)-compatible library.
 
-Available in SDK v3.42.0+. [Learn more](/docs/reference/client/create#defining-event-payload-types)
+Available in SDK v3.42.0+. [Learn more](/docs/reference/typescript/v4/client/create#defining-event-payload-types)
 
 ## Middleware
 
@@ -65,9 +65,9 @@ Following the schema change, we can now add middleware. Middleware allows you to
 
 Some everyday use cases for middleware include:
 
-- Error monitoring (check out our [Sentry example](/docs/reference/middleware/examples?ref=blog-sdk-2-0#sentry-error-reporting-and-tracing))
+- Error monitoring (check out our [Sentry example](/docs/reference/typescript/v4/middleware/examples?ref=blog-sdk-2-0#sentry-error-reporting-and-tracing))
 - Data transformations
-- Logging support (check out our [logging example](/docs/reference/middleware/examples?ref=blog-sdk-2-0#logging))
+- Logging support (check out our [logging example](/docs/reference/typescript/v4/middleware/examples?ref=blog-sdk-2-0#logging))
 - Pre-run setup like connecting to databases
 - Adding tooling or patterns using Inngest's step tooling as building blocks
 
@@ -137,4 +137,4 @@ Version 2.0 of the Inngest TypeScript SDK has established a strong foundation fo
 
 With these new foundations in place, we can focus on further refining and expanding upon these concepts, ultimately providing you with even more powerful tools and features in the future.
 
-We're excited to see what you'll create with v2! Check out the [v2 migration guide](/docs/sdk/migration?ref=blog-sdk-2-0) to learn how to upgrade today.
+We're excited to see what you'll create with v2! Check out the [v2 migration guide](/docs/reference/typescript/v3/migrations/v2-to-v3?ref=blog-sdk-2-0) to learn how to upgrade today.
