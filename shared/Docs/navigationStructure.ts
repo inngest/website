@@ -198,6 +198,7 @@ const sectionReference: (NavGroup | NavLink)[] = [
       },
       { title: "Testing", href: tsRef("v4", "testing") },
       { title: "Durable Endpoints", href: tsRef("v4", "durable-endpoints") },
+      { title: "Sandboxes", href: tsRef("v4", "sandboxes") },
       {
         title: "Deferred Functions",
         href: tsRef("v4", "functions/deferred-functions"),
@@ -437,7 +438,20 @@ const sectionReference: (NavGroup | NavLink)[] = [
     href: "/docs/cli",
     tag: "new",
   },
-  { title: "REST API", href: "https://api-docs.inngest.com" },
+  {
+    title: "REST API",
+    links: [
+      {
+        title: "API reference",
+        href: "https://api-docs.inngest.com",
+        target: "_blank",
+      },
+      {
+        title: "Sandboxes",
+        href: "/docs/reference/rest/v2/sandboxes",
+      },
+    ],
+  },
   {
     title: "System events",
     links: [
@@ -536,6 +550,27 @@ const sectionLearn: (NavGroup | NavLink)[] = [
         //   //   href: `/docs/learn/tbd`,
         //   // },
         // ],
+      },
+      {
+        title: "Sandboxes",
+        links: [
+          {
+            title: "Overview",
+            href: "/docs/features/sandboxes",
+          },
+          {
+            title: "Managed processes",
+            href: "/docs/features/sandboxes/managed-processes",
+          },
+          {
+            title: "Errors and retries",
+            href: "/docs/features/sandboxes/errors-and-retries",
+          },
+          {
+            title: "Limitations",
+            href: "/docs/features/sandboxes/limitations",
+          },
+        ],
       },
       {
         title: "Steps",

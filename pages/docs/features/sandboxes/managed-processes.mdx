@@ -1,0 +1,399 @@
+import { Callout } from "src/shared/Docs/mdx";
+
+export const metaTitle = "Managed processes in Inngest Sandboxes"
+export const description = "Start, list, inspect, signal, wait for, and read output from background processes in an Inngest Sandbox."
+
+# Managed processes
+
+Managed processes are background commands running inside a sandbox. Start
+returns a stable UUID that you can use to inspect, signal, wait for, and read
+the output of that process.
+
+Use a managed process for servers, watchers, workers, and commands that should
+continue after the call that started them returns.
+
+## Processes are live, not durable
+
+The sandbox runtime keeps process metadata and output in memory:
+
+- process state and output disappear when the sandbox is destroyed;
+- they can be lost if the runtime is lost or restarted;
+- there is no durable process database or automatic recovery; and
+- `step.sandbox` memoizes API operations, not the guest process.
+
+If your application needs recovery, persist enough application-level intent to
+create a replacement and decide explicitly when replacing it is safe.
+
+## Start a process
+
+Direct:
+
+```ts
+const process = await sandbox.processes.start({
+  command: ["/bin/sh", "-c", "while :; do sleep 1; done"],
+  environment: {
+    PATH: "/usr/local/bin:/usr/bin:/bin",
+    PORT: "8080",
+  },
+  cwd: "/",
+});
+```
+
+Inside an Inngest function:
+
+```ts
+const process = await sandbox.processes.start("start-worker", {
+  command: ["/bin/sh", "-c", "while :; do sleep 1; done"],
+  environment: {
+    PATH: "/usr/local/bin:/usr/bin:/bin",
+    PORT: "8080",
+  },
+  cwd: "/",
+});
+```
+
+Start returns only after the target process is confirmed `RUNNING`:
+
+```ts
+console.log(process.id);      // Public UUID
+console.log(process.pid);     // PID inside the sandbox
+console.log(process.command); // Original argument vector
+console.log(process.state);   // "RUNNING"
+```
+
+The platform generates the public process UUID before dispatch. Internal
+`p1`, `p2`, and similar guest handles are never exposed.
+
+### Command rules
+
+`command` is an argument vector:
+
+```ts
+command: ["/usr/bin/git", "status", "--short"]
+```
+
+It is not parsed by a shell. To use shell syntax, invoke a shell explicitly:
+
+```ts
+command: [
+  "/bin/sh",
+  "-c",
+  "printf 'build complete\n' > /tmp/build.log",
+]
+```
+
+The executable in `command[0]` must be absolute. See
+[Errors and retries](/docs/features/sandboxes/errors-and-retries#validation-and-size-limits)
+for argument, environment, and encoded-size limits.
+
+### Environment behavior
+
+`environment` replaces the process environment. It is not merged.
+
+If it is omitted or empty, the current guest default is:
+
+```text
+PATH=/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin
+HOME=/
+TERM=linux
+container=simcity
+```
+
+For a non-empty environment, include every variable the process needs.
+Environment keys must be non-empty and cannot contain `=` or NUL.
+
+### Working directory
+
+An omitted or empty `cwd` uses `/`. The client accepts relative paths, but
+absolute paths are clearer and more portable.
+
+## Start can be ambiguous or duplicated
+
+A connection can fail after the node accepts Start but before the caller
+receives the UUID and PID. The API reports:
+
+```text
+409 operation_ambiguous
+```
+
+Do not call Start again automatically. A second call can create another
+process.
+
+Direct REST and `inngest.sandboxes` do not have a persisted
+`Idempotency-Key` intent.
+
+`step.sandbox` uses ordinary `step.run` at-least-once behavior. A persisted
+result is replayed without another Start, but a process can be started twice
+if Start succeeds and the function process stops before the step result is
+persisted.
+
+## List and get processes
+
+Process List uses opaque cursor pagination:
+
+```ts
+let cursor: string | undefined;
+
+do {
+  const page = await sandbox.processes.list({
+    cursor,
+    limit: 50,
+  });
+
+  for (const process of page.items) {
+    console.log(process.id, process.state);
+  }
+
+  cursor = page.page.cursor;
+} while (cursor);
+```
+
+Inside an Inngest function, add a unique step ID for each page:
+
+```ts
+const first = await sandbox.processes.list("list-processes-1", {
+  limit: 50,
+});
+
+const second = first.page.cursor
+  ? await sandbox.processes.list("list-processes-2", {
+      cursor: first.page.cursor,
+      limit: 50,
+    })
+  : undefined;
+```
+
+Pages are sorted by process UUID. They include terminal processes while their
+in-memory metadata remains.
+
+Get one process:
+
+```ts
+const process = await sandbox.processes.get(processId);
+```
+
+Or in an Inngest function:
+
+```ts
+const process = await sandbox.processes.get("get-process", processId);
+```
+
+Get returns `null` when the process is missing.
+
+## Process states
+
+```text
+STARTING -> RUNNING -> EXITED
+                    -> KILLED
+                    -> LOST
+STARTING ---------> FAILED
+```
+
+| State | Meaning |
+| --- | --- |
+| `STARTING` | The helper launched but the target was not confirmed |
+| `RUNNING` | The target process is running |
+| `EXITED` | The target exited normally; `exitCode` is present |
+| `KILLED` | The target ended because of a signal; `terminationSignal` is present |
+| `FAILED` | Setup or exec failed before the target ran |
+| `LOST` | The helper died and target status became unobservable |
+
+Start itself returns only `RUNNING`. Other states are observed through List,
+Get or Wait.
+
+## Signal a process
+
+Direct:
+
+```ts
+await process.signal({
+  signal: 15,
+  includeChildren: false,
+});
+```
+
+Inside an Inngest function:
+
+```ts
+await process.signal("stop-worker", {
+  signal: 15,
+  includeChildren: false,
+});
+```
+
+| Option | Default | Meaning |
+| --- | ---: | --- |
+| `signal` | Required | Numeric Unix signal from 1 through 64 |
+| `includeChildren` | `false` | Also signal processes in the managed process's cgroup |
+
+Use signal 15 (`SIGTERM`) for graceful shutdown and signal 9 (`SIGKILL`) when
+the process must stop immediately. Currently, set `includeChildren: true` only
+with `SIGKILL`. Descendant delivery with other signals can make the target's
+terminal state unobservable and produce `LOST`.
+
+Signalling an already-terminal process succeeds without changing it. A
+missing process returns `sandbox_process_not_found`.
+
+Signal is a mutation. Do not automatically resend a Signal that returns
+`operation_ambiguous`. With `step.sandbox`, a Signal can also happen twice
+across the ordinary `step.run` crash window.
+
+## Wait for a terminal state
+
+Direct:
+
+```ts
+const terminal = await process.wait({
+  timeout: "2m",
+});
+```
+
+Inside an Inngest function:
+
+```ts
+const terminal = await process.wait("wait-for-worker", {
+  timeout: "2m",
+});
+```
+
+Wait returns for `EXITED`, `KILLED`, `FAILED`, or `LOST`. The timeout defaults
+to 30 seconds and cannot exceed five minutes.
+
+A Wait timeout stops only the observation:
+
+- it does not stop the process;
+- it does not send a signal;
+- it does not remove the process; and
+- waiting again is safe.
+
+A timeout throws `sandbox_process_wait_timed_out` with HTTP status 504.
+
+## Read retained output
+
+Every managed process writes stdout and stderr into one ordered ring.
+
+Direct:
+
+```ts
+const output = await process.getOutput({
+  tailBytes: 64 * 1024,
+});
+```
+
+Inside an Inngest function:
+
+```ts
+const output = await process.getOutput("read-output", {
+  tailBytes: 64 * 1024,
+});
+```
+
+Each chunk contains:
+
+```ts
+interface SandboxOutputChunk {
+  stream: "STDOUT" | "STDERR";
+  data: Uint8Array;
+  at?: string;
+}
+```
+
+Chunks preserve observed stdout/stderr ordering. They are arbitrary byte
+segments, not lines.
+
+`tailBytes` defaults to `0`, meaning all currently retained output. It accepts
+0 through 524,288 bytes across both streams and preserves whole chunks, so the
+returned byte count is approximate at a chunk boundary.
+
+## Tail and follow live output
+
+Live process output is available only through the direct client:
+
+```ts
+const stream = await process.streamOutput({
+  tailBytes: 8 * 1024,
+});
+
+const reader = stream.getReader();
+const stdout = new TextDecoder();
+const stderr = new TextDecoder();
+
+try {
+  for (;;) {
+    const { done, value } = await reader.read();
+    if (done) break;
+
+    const decoder = value.stream === "STDERR" ? stderr : stdout;
+    console.log(value.stream, decoder.decode(value.data, { stream: true }));
+  }
+} finally {
+  await reader.cancel();
+}
+```
+
+The stream subscribes to live output, emits the retained tail, and then
+follows new output. It never reconnects automatically. Cancelling the
+`ReadableStream` aborts the HTTP request.
+
+<Callout variant="warning">
+  A slow consumer can miss live chunks. Frames have no sequence number,
+  resume token, or dropped-chunk marker.
+</Callout>
+
+Manual reconnection can replay retained chunks and create duplicates.
+
+## Output retention
+
+Managed-process output is best effort:
+
+- each process ring retains approximately 512 KiB;
+- only the newest 32 process output rings are retained;
+- starting another process can evict output while metadata remains;
+- all output disappears with the sandbox; and
+- retained output is not a durable log store.
+
+The API distinguishes:
+
+| Condition | Error code |
+| --- | --- |
+| Process does not exist | `sandbox_process_not_found` |
+| Process exists but its output was evicted | `sandbox_process_output_not_retained` |
+
+Persist important results to a file or external store before destroying the
+sandbox.
+
+## Graceful shutdown
+
+This direct-client example catches the Wait timeout because it intentionally
+changes behavior by escalating from a graceful signal to a forceful one:
+
+```ts
+import { SandboxError } from "inngest";
+
+try {
+  // Use the process.
+} finally {
+  await process.signal({ signal: 15, includeChildren: false });
+
+  try {
+    await process.wait({ timeout: "10s" });
+  } catch (error) {
+    if (
+      !(error instanceof SandboxError) ||
+      error.code !== "sandbox_process_wait_timed_out"
+    ) {
+      throw error;
+    }
+
+    // A Wait timeout only stops the observation, so escalation is safe.
+    await process.signal({ signal: 9, includeChildren: true });
+    await process.wait({ timeout: "10s" });
+  }
+}
+```
+
+If either Signal is ambiguous, do not send it again automatically. Get or wait
+for the process and apply an explicit reconciliation policy.
+
+For `step.sandbox`, use a distinct stable step ID for every Signal and Wait
+call, including the force-kill path.

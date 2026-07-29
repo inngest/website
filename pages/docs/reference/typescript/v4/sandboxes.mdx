@@ -1,0 +1,611 @@
+import { Callout } from "src/shared/Docs/mdx";
+
+export const metaTitle = "TypeScript Sandbox SDK reference"
+export const description = "Reference for inngest.sandboxes and step.sandbox lifecycle, command, file, log, and managed-process methods."
+
+# TypeScript Sandbox SDK
+
+The TypeScript SDK exposes two clients over the same sandbox resources:
+
+```ts
+import { Inngest } from "inngest";
+import { sandboxMiddleware } from "inngest/experimental";
+
+const inngest = new Inngest({
+  id: "sandbox-demo",
+  middleware: [sandboxMiddleware()],
+});
+
+// Direct REST-backed client
+await inngest.sandboxes.create({
+  name: "direct-sandbox",
+  vcpu: 2,
+  memoryMb: 512,
+});
+
+// Memoized middleware-backed step client
+await step.sandbox.create("step-id", {
+  name: "durable-sandbox",
+  vcpu: 2,
+  memoryMb: 512,
+});
+```
+
+| Operation | `inngest.sandboxes` | `step.sandbox` |
+| --- | :---: | :---: |
+| Create, List, Get, Destroy | Yes | Yes |
+| Captured Exec | Yes | Yes |
+| Start, List, Get, Signal, Wait process | Yes | Yes |
+| Retained process output | Yes | Yes |
+| Sandbox log stream | Yes | No |
+| Live process output stream | Yes | No |
+| File upload and download | Yes | No |
+
+Live streams and file bodies cannot be reconstructed from memoized JSON step
+state, so they are deliberately excluded from `step.sandbox`.
+
+`sandboxMiddleware()` is required only for the durable `step.sandbox` surface.
+The direct `inngest.sandboxes` client works without it.
+
+Read [Sandbox limitations](/docs/features/sandboxes/limitations) before relying
+on process recovery, output retention, stream delivery, custom runtime
+configuration, or idempotency.
+
+## Sandbox resource
+
+Create, List, and Get use one resource shape:
+
+```ts
+interface SandboxResource {
+  id: string;
+  name: string;
+  status:
+    | "PENDING"
+    | "STARTING"
+    | "RUNNING"
+    | "PAUSED"
+    | "TERMINATING"
+    | "TERMINATED"
+    | "FAILED";
+  vpcId: string;
+  imageRef: string;
+  resources: {
+    vcpu: number;
+    memoryMb: number;
+  };
+  createdAt: string;
+  startedAt?: string;
+  endedAt?: string;
+  error?: string;
+}
+```
+
+`id` and `vpcId` are canonical lowercase UUIDs. Timestamps are RFC 3339
+strings.
+
+Create currently chooses the workspace's default egress-only VPC and default
+image. `vpcId` and `imageRef` describe the created resource; they are not
+Create options.
+
+Sandbox objects are immutable snapshots:
+
+```ts
+const sandbox = await inngest.sandboxes.get(sandboxId);
+
+if (sandbox) {
+  console.log(Object.isFrozen(sandbox));           // true
+  console.log(Object.isFrozen(sandbox.resources)); // true
+}
+```
+
+Each Get returns a new object. It never mutates an earlier snapshot.
+
+## Process resource
+
+```ts
+interface SandboxProcessResource {
+  id: string;
+  command: readonly string[];
+  pid?: number;
+  state:
+    | "STARTING"
+    | "RUNNING"
+    | "EXITED"
+    | "KILLED"
+    | "FAILED"
+    | "LOST";
+  exitCode?: number;
+  terminationSignal?: number;
+  startedAt?: string;
+  endedAt?: string;
+}
+```
+
+The public process ID is a UUID, not an internal `p1` or `p2` guest handle.
+`pid` is visible to commands inside the sandbox. `exitCode` is present only
+for `EXITED`; `terminationSignal` is present only for `KILLED`.
+
+## Serializable references
+
+Sandbox and process facades implement `toJSON()`:
+
+```ts
+const ref = sandbox.toJSON();
+const serialized = JSON.stringify(sandbox);
+```
+
+A sandbox reference includes:
+
+```ts
+interface SandboxRef extends SandboxResource {
+  kind: "inngest/sandbox";
+  version: 1;
+}
+```
+
+Attach a stored sandbox reference without a network request:
+
+```ts
+const attached = inngest.sandboxes.attach(storedSandboxRef);
+const current = await inngest.sandboxes.get(attached.id);
+```
+
+Inside an Inngest function:
+
+```ts
+const attached = step.sandbox.attach(storedSandboxRef);
+const current = await step.sandbox.get("get-sandbox", attached.id);
+```
+
+An attached object can be stale. Fetch it with Get before deciding from
+current state.
+
+Process references use `kind: "inngest/sandbox.process"`, `version: 1`, and
+`sandboxId`. Reload one by attaching or getting its sandbox, then calling
+`sandbox.processes.get(processRef.id)`.
+
+## Direct client: `inngest.sandboxes`
+
+The direct client:
+
+- uses the Inngest client's base URL, signing key, environment headers, and
+  Fetch implementation;
+- requires a signing key;
+- executes each call immediately;
+- never retries automatically or reconnects a stream; and
+- returns `SandboxError` for API and transport failures.
+
+Keep it in trusted server-side code.
+
+### `create(options)`
+
+```ts
+const sandbox = await inngest.sandboxes.create({
+  name: "agent_job-42",
+  vcpu: 2,
+  memoryMb: 512,
+});
+```
+
+| Option | Required | Meaning |
+| --- | :---: | --- |
+| `name` | Yes | 1–63 lowercase letters, digits, `_`, or `-` |
+| `vcpu` | Yes | Positive integer virtual CPU count |
+| `memoryMb` | Yes | Positive integer memory in MiB |
+
+An active name must be unique in the workspace.
+
+Create returns a full `Sandbox`:
+
+- HTTP 201 becomes `RUNNING`;
+- HTTP 202 becomes `STARTING`.
+
+The SDK does not poll a `STARTING` sandbox. Call `inngest.sandboxes.get()` or
+`step.sandbox.get()` with a bound.
+
+### `list(options?)`
+
+```ts
+let cursor: string | undefined;
+
+do {
+  const result = await inngest.sandboxes.list({
+    cursor,
+    limit: 100,
+  });
+
+  for (const sandbox of result.items) {
+    console.log(sandbox.id, sandbox.status);
+  }
+
+  cursor = result.page.cursor;
+} while (cursor);
+```
+
+| Option | Default | Limits |
+| --- | ---: | --- |
+| `cursor` | None | Use only a cursor returned by the previous page |
+| `limit` | 50 | 1–250 |
+
+```ts
+interface SandboxListResult<TSandbox> {
+  items: TSandbox[];
+  page: {
+    cursor?: string;
+    hasMore: boolean;
+    limit: number;
+  };
+  fetchedAt: string;
+}
+```
+
+Sandbox List orders by creation time descending, then ID descending. It
+includes active and retained terminal resources. Cursors are opaque.
+
+### `get(sandboxId)`
+
+```ts
+const sandbox = await inngest.sandboxes.get(sandboxId);
+```
+
+Returns a `Sandbox` or `null` when the resource is missing or hidden by
+workspace scope. Other errors are thrown.
+
+`sandboxId` must be a canonical lowercase, non-nil UUID.
+
+### `attach(ref)`
+
+```ts
+const sandbox = inngest.sandboxes.attach(ref);
+```
+
+Synchronous. Makes no request. Validates and wraps a complete version 1
+sandbox reference.
+
+### `sandbox.destroy()`
+
+```ts
+const result = await sandbox.destroy();
+```
+
+```ts
+type SandboxDestroyResult =
+  | {
+      status: "TERMINATING";
+      sandbox: SandboxRef;
+    }
+  | {
+      status: "TERMINATED";
+      sandbox: null;
+    };
+```
+
+`TERMINATING` means the destroy intent was accepted and teardown continues.
+`TERMINATED` means teardown completed synchronously. A missing sandbox throws
+`sandbox_not_found`.
+
+### `sandbox.commands.run(options)`
+
+```ts
+const result = await sandbox.commands.run({
+  command: ["/bin/sh", "-c", "printf 'tests passed\n'"],
+  environment: {
+    PATH: "/usr/local/bin:/usr/bin:/bin",
+    CI: "true",
+  },
+  cwd: "/",
+  timeout: "5m",
+});
+```
+
+| Option | Default | Meaning |
+| --- | ---: | --- |
+| `command` | Required | Argument vector; item 0 must be absolute |
+| `environment` | Guest default | Replaces the complete process environment |
+| `cwd` | `/` | Working directory inside the sandbox |
+| `timeout` | 30 seconds | Positive duration, at most five minutes |
+
+Numeric durations are milliseconds. Strings accept forms such as `"500ms"`,
+`"30s"`, and `"5m"`. `Temporal.Duration` is also supported, except calendar
+years, months, and weeks.
+
+```ts
+type SandboxCommandOutputMetadata =
+  | {
+      truncated: false;
+    }
+  | {
+      truncated: true;
+      strategy: "tail";
+      originalBytes: {
+        stdout: number;
+        stderr: number;
+      };
+      retainedBytes: {
+        stdout: number;
+        stderr: number;
+      };
+    };
+
+interface SandboxCommandResult {
+  stdout: Uint8Array;
+  stderr: Uint8Array;
+  exitCode: number;
+  output: SandboxCommandOutputMetadata;
+}
+```
+
+The direct client accepts up to 4 MiB across stdout and stderr and reports
+`output: { truncated: false }`. A non-zero exit code is a successful result,
+not an exception.
+
+### `sandbox.logs.stream(options?)`
+
+```ts
+const stream = await sandbox.logs.stream({ follow: true });
+const reader = stream.getReader();
+
+for (;;) {
+  const { done, value } = await reader.read();
+  if (done) break;
+
+  console.log(value.stream, new TextDecoder().decode(value.data));
+}
+```
+
+`follow` defaults to `false`.
+
+```ts
+interface SandboxOutputChunk {
+  stream: "STDOUT" | "STDERR";
+  data: Uint8Array;
+  at?: string;
+}
+```
+
+The SDK decodes base64 NDJSON frames. A terminal `errors[]` frame makes the
+stream throw `SandboxError`. Cancelling the `ReadableStream` aborts the HTTP
+request. The SDK never reconnects automatically.
+
+### `sandbox.files.upload(options)`
+
+```ts
+const uploaded = await sandbox.files.upload({
+  path: "/tmp/input.bin",
+  data: new Uint8Array([0x00, 0xff]),
+  mode: 0o640,
+});
+```
+
+| Option | Default | Meaning |
+| --- | ---: | --- |
+| `path` | Required | Absolute path inside the sandbox |
+| `data` | Required | Fetch-compatible `BodyInit` |
+| `mode` | `0o644` | Permission bits from `0o001` through `0o777` |
+
+Uploads are limited to 100 MiB. A successful upload atomically replaces a
+regular file. It cannot replace `/`, a directory, symlink, device, socket, or
+FIFO.
+
+An upload can return `operation_ambiguous` after replacement may have
+committed. Inspect the target before deciding whether to upload again.
+
+### `sandbox.files.download(options)`
+
+```ts
+const response = await sandbox.files.download({
+  path: "/tmp/output.bin",
+});
+
+const bytes = new Uint8Array(await response.arrayBuffer());
+const mode = response.headers.get("X-Sandbox-File-Mode");
+const modifiedAt = response.headers.get("Last-Modified");
+```
+
+Returns the raw Fetch `Response`. Successful responses contain
+`Content-Type`, `Content-Length`, `X-Sandbox-File-Mode`, and, when available,
+`Last-Modified`.
+
+Only regular files up to 100 MiB are downloadable.
+
+### `sandbox.processes.start(options)`
+
+```ts
+const process = await sandbox.processes.start({
+  command: ["/bin/sh", "-c", "while :; do sleep 1; done"],
+  environment: {
+    PATH: "/usr/local/bin:/usr/bin:/bin",
+  },
+  cwd: "/",
+});
+```
+
+Uses the same command, environment, and working-directory rules as captured
+Exec, but has no runtime timeout. Returns a `RUNNING` process with UUID and PID.
+
+### `sandbox.processes.list(options?)`
+
+```ts
+const page = await sandbox.processes.list({
+  cursor,
+  limit: 50,
+});
+```
+
+`SandboxProcessListOptions` and `SandboxProcessListResult` use the same
+`cursor`, `limit`, `items`, `page`, and `fetchedAt` shapes as Sandbox List.
+
+Pages are ordered by process UUID and include terminal processes while their
+metadata remains. Internal guest handles are excluded.
+
+### `sandbox.processes.get(processId)`
+
+```ts
+const process = await sandbox.processes.get(processId);
+```
+
+Returns a process snapshot or `null`.
+
+### Process methods
+
+```ts
+const current = await sandbox.processes.get(process.id);
+
+await process.signal({
+  signal: 15,
+  includeChildren: false,
+});
+
+const terminal = await process.wait({ timeout: "1m" });
+const output = await process.getOutput({ tailBytes: 64 * 1024 });
+const stream = await process.streamOutput({ tailBytes: 8 * 1024 });
+```
+
+See [Managed processes](/docs/features/sandboxes/managed-processes) for state,
+signal, Wait, retention, and streaming semantics.
+
+## Step client: `step.sandbox`
+
+Each operation that communicates with the API adds a stable step ID as its
+first argument:
+
+```ts
+const sandbox = await step.sandbox.create("create-sandbox", {
+  name: "agent_job-42",
+  vcpu: 2,
+  memoryMb: 512,
+});
+
+const page = await step.sandbox.list("list-sandboxes", { limit: 50 });
+const loaded = await step.sandbox.get("get-sandbox", sandbox.id);
+
+const result = await sandbox.commands.run("run-command", {
+  command: ["/bin/true"],
+});
+
+const process = await sandbox.processes.start("start-process", {
+  command: ["/bin/sh", "-c", "while :; do sleep 1; done"],
+  cwd: "/",
+});
+
+const processPage = await sandbox.processes.list("list-processes", {
+  limit: 50,
+});
+const loadedProcess = await sandbox.processes.get(
+  "get-process",
+  process.id,
+);
+
+await process.signal("stop-process", {
+  signal: 15,
+  includeChildren: false,
+});
+
+const terminal = await process.wait("wait-process", {
+  timeout: "1m",
+});
+
+const output = await process.getOutput("get-output", {
+  tailBytes: 64 * 1024,
+});
+
+await sandbox.destroy("destroy-sandbox");
+```
+
+Complete signatures:
+
+```text
+step.sandbox.create(step, options)
+step.sandbox.list(step, options?)
+step.sandbox.get(step, sandboxId)
+step.sandbox.attach(ref)
+
+sandbox.destroy(step)
+sandbox.commands.run(step, options)
+sandbox.processes.start(step, options)
+sandbox.processes.list(step, options?)
+sandbox.processes.get(step, processId)
+
+process.signal(step, options)
+process.wait(step, options?)
+process.getOutput(step, options?)
+```
+
+`step` is a string ID or `{ id, name? }`.
+
+### Replay and retries
+
+The opt-in Sandbox middleware wraps each call in an ordinary `step.run`. The handler
+calls `inngest.sandboxes`, converts the result to JSON-safe data, and returns
+it for memoization.
+
+- Retriable `SandboxError` becomes an ordinary retriable step error.
+- Non-retryable `SandboxError` becomes `NonRetriableError`.
+- `SandboxValidationError` becomes `NonRetriableError`.
+
+On replay, a completed step reconstructs the facade from its memoized result.
+
+There is no sandbox-specific executor opcode or dispatch fence. A mutation can
+happen twice if REST commits and the function process stops before the result
+is persisted. An observed `operation_ambiguous` is non-retriable.
+
+### Durable captured-output limit
+
+`step.sandbox` retains at most 2 MiB across stdout and stderr before returning
+from `step.run`. It reserves half for each stream, gives unused capacity to the
+other stream, and keeps each tail.
+
+Larger successful commands do not throw. Inspect `result.output`:
+
+```ts
+if (result.output.truncated) {
+  console.warn({
+    strategy: result.output.strategy,
+    original: result.output.originalBytes,
+    retained: result.output.retainedBytes,
+  });
+}
+```
+
+### Excluded methods
+
+`step.sandbox` deliberately does not expose:
+
+```ts
+sandbox.logs
+sandbox.files
+process.streamOutput()
+```
+
+Use `inngest.sandboxes` for live streams and file bodies.
+
+## Decode binary output
+
+All command, log, and process output is `Uint8Array`.
+
+```ts
+const stdout = new TextDecoder().decode(result.stdout);
+```
+
+For streaming UTF-8, reuse a decoder so split multi-byte characters are
+handled correctly. Use one decoder per stream when stdout and stderr are
+decoded separately.
+
+## Handle errors
+
+Inside an Inngest function, do not catch `step.sandbox` errors merely to log
+or retry them. Let them escape. The middleware turns retryable sandbox errors
+into retriable step errors and non-retryable failures into
+`NonRetriableError`.
+
+Catch a failed step only when you intend to recover with a fallback,
+compensate for earlier work, or deliberately mark the error as handled.
+
+The direct `inngest.sandboxes` client does not receive Inngest's automatic
+retries. It throws `SandboxError` for API and transport failures and
+`SandboxValidationError` for invalid local input or malformed responses. If
+you catch either error outside an Inngest function, make sure your code owns
+the resulting retry or reconciliation policy.
+
+Read [Sandbox errors and retries](/docs/features/sandboxes/errors-and-retries)
+before implementing retry logic.
