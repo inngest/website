@@ -7,18 +7,24 @@ import Chip from "@/components/v1/sections/shared/Chip";
 import EventCardLarge from "@/components/v1/sections/Events/EventCardLarge";
 import { isPastEvent, sortEventsByDate } from "@/components/v1/sections/Events/data";
 
-const COVER_IMAGE = "/assets/v1/events/coffee-chats-with-inngest.png";
+const COVER_IMAGE = "/assets/v1/events/lightning-lab-ship-your-first-eval.png";
 
 const EVENT = {
-  title: "Coffee Chats with Inngest",
-  date: "Wednesday, July 29, 2026 · 8:00–10:00 AM EDT",
-  startsAt: "2026-07-29T08:00:00-04:00",
-  location: "Stone Street Cafe, 379 Broome St, New York, NY 10013",
-  description:
-    "We hit capacity on our supper club faster than we expected, turns out a lot of you want to talk durable execution over dinner. Unfortunately, we only have so many seats at the table & we wanted to find another way to actually meet you while we're in town.\n\nso: coffee. Wednesday, July 29th, 8–10am at Stone Street Cafe. Swing by before work, we'll buy your coffee and a pastry. Same deal as the dinner, just earlier and more caffeinated. ☕️\n\nDrop in whenever works between 8am and 10am. We'll be there the whole window. Look for the Inngest sign - you can't miss us!",
+  title: "Inngest Lightning Lab: Ship Your First Eval",
+  date: "Wednesday, August 12, 2026 · 11AM PT / 2PM ET",
+  startsAt: "2026-08-12T14:00:00-04:00",
+  location: "Online (Zoom)",
+  presenter: "Mitchell Alderson, Solutions Engineer at Inngest",
 };
 
-const REGISTER_URL = "https://luma.com/inngest-ugl5";
+const REGISTER_URL = "https://luma.com/inngest-r614?utm_source=eventspage";
+
+const COVERAGE = [
+  "Determining a first scoring metric",
+  "Attaching a scorer to a function you've already deployed",
+  "Deferred scoring, so a real product outcome that lands hours or days later becomes the score",
+  "Weighted experiments across models and parameters on live traffic",
+];
 
 const OTHER_EVENTS = sortEventsByDate([
   {
@@ -98,7 +104,7 @@ const OTHER_EVENTS = sortEventsByDate([
     id: "inngest-supper-club",
     title: "Inngest Supper Club",
     date: "Wednesday, July 29, 2026 · 6 PM (dinner ~7 PM)",
-    startsAt: "2026-07-29T18:00:00-04:00",
+    startsAt: "2026-07-29T09:00:00-04:00",
     location: "New York, NY",
     topics: ["Meetups", "At Capacity"],
     excerpt:
@@ -108,21 +114,21 @@ const OTHER_EVENTS = sortEventsByDate([
     imageFit: "contain",
   },
   {
-    id: "lightning-lab-ship-your-first-eval",
-    title: "Inngest Lightning Lab: Ship Your First Eval",
-    date: "Wednesday, August 12, 2026 · 11AM PT / 2PM ET",
-    startsAt: "2026-08-12T14:00:00-04:00",
-    location: "Online",
-    topics: ["webinar", "evals", "agent evals"],
+    id: "coffee-chats-with-inngest",
+    title: "Coffee Chats with Inngest",
+    date: "Wednesday, July 29, 2026 · 8–10 AM EDT",
+    startsAt: "2026-07-29T08:00:00-04:00",
+    location: "New York, NY",
+    topics: ["Meetups"],
     excerpt:
-      "You're already running agents in prod — see how to turn the runs you're producing into continuous online scores without adding a second SDK or system.",
-    href: "/events/lightning-lab-ship-your-first-eval",
-    image: "/assets/v1/events/lightning-lab-ship-your-first-eval.png",
+      "Swing by Stone Street Cafe before work — coffee and a pastry on us, no agenda, just conversation about durable execution.",
+    href: "/events/coffee-chats-with-inngest",
+    image: "/assets/v1/events/coffee-chats-with-inngest.png",
     imageFit: "contain",
   },
 ]);
 
-export default function CoffeeChatsWithInngest() {
+export default function LightningLabShipYourFirstEval() {
   const otherEvents = OTHER_EVENTS.filter((ev) => !isPastEvent(ev));
 
   return (
@@ -159,6 +165,9 @@ export default function CoffeeChatsWithInngest() {
                 <p className="font-v1Body text-[14px] leading-[20px] v1-trim">
                   {EVENT.date}
                 </p>
+                <p className="text-v1-body-xs text-v1-frost/70">
+                  Presented by {EVENT.presenter}
+                </p>
               </div>
 
               <div className="flex flex-col gap-4">
@@ -168,11 +177,39 @@ export default function CoffeeChatsWithInngest() {
 
               <div className="flex flex-col gap-4">
                 <p className="text-v1-label-md uppercase">Description</p>
-                {EVENT.description.split("\n\n").map((para, i) => (
-                  <p key={i} className={`text-v1-body-sm${i > 0 ? " mt-4" : ""}`}>
-                    {para}
-                  </p>
-                ))}
+                <p className="text-v1-body-sm">
+                  You&apos;re already running agents in prod. Ship your first
+                  eval.
+                </p>
+                <p className="mt-4 text-v1-body-sm">
+                  Your agent already runs on Inngest; every step is durable,
+                  and its state is recorded. Rich evaluation data already
+                  exists as a byproduct.
+                </p>
+                <p className="mt-4 text-v1-body-sm">
+                  In this session, we&apos;ll show you how to turn runs
+                  you&apos;re already producing into continuous online scores
+                  without adding a second SDK or system.
+                </p>
+                <p className="mt-4 text-v1-body-sm">
+                  In 20 minutes, with code and live demo footage, we&apos;ll
+                  cover:
+                </p>
+                <ul className="mt-2 list-disc space-y-1 pl-5 text-v1-body-sm">
+                  {COVERAGE.map((item) => (
+                    <li key={item}>{item}</li>
+                  ))}
+                </ul>
+                <p className="mt-4 text-v1-body-sm">
+                  We&apos;ll also be direct about where this doesn&apos;t fit:
+                  if you need versioned offline datasets and offline
+                  experiment tracking, online scoring is a complement, not a
+                  replacement.
+                </p>
+                <p className="mt-4 text-v1-body-sm">
+                  For: teams already running functions or agents on Inngest
+                  who haven&apos;t turned on Agent Evals yet.
+                </p>
               </div>
 
               {isPastEvent(EVENT) ? (
@@ -182,7 +219,7 @@ export default function CoffeeChatsWithInngest() {
               ) : (
                 <Button asChild variant="accent" className="self-start">
                   <a href={REGISTER_URL} target="_blank" rel="noopener noreferrer">
-                    RSVP here →
+                    Register here →
                   </a>
                 </Button>
               )}
