@@ -1,0 +1,149 @@
+import { Callout } from "src/shared/Docs/mdx";
+
+export const metaTitle = "Sandbox limitations"
+export const description = "Current lifecycle, durability, output-retention, streaming, file, networking, and SDK limitations for Inngest Sandboxes."
+
+# Sandbox limitations
+
+These are current product and implementation boundaries to design around.
+
+## Availability and configuration
+
+- The public Sandbox REST API is cloud-only.
+- Sandbox access is entitlement-gated.
+- Create uses the workspace's default egress-only VPC.
+- Create uses the default image.
+- Users cannot select a VPC, image, template, profile, or disk size.
+- CPU and memory requests can be rejected by capacity or account
+  entitlements.
+
+## Sandbox lifecycle
+
+- Create can return `STARTING`.
+- There is no `waitUntilRunning()` helper or dedicated readiness endpoint.
+  Poll Get with a bound.
+- Pause, resume, resize, snapshot, clone, and restore are not exposed.
+- There is no user-configurable sandbox TTL.
+- There is no documented sandbox-concurrency limit.
+- Destroy is asynchronous when it returns `TERMINATING`.
+- Files, processes, and process output disappear when the sandbox is
+  destroyed.
+
+## Captured commands
+
+- Captured Exec has a maximum observation timeout of five minutes.
+- It buffers stdout and stderr instead of streaming them.
+- Direct captured Exec accepts 4 MiB of combined raw output.
+- `step.sandbox` retains at most 2 MiB and tail-truncates larger successful
+  results.
+- REST timeout and output-limit failures do not prove that the command did not
+  execute.
+- There is no stdin, PTY, interactive terminal, or interactive Exec API.
+- Commands are argument vectors. Shell syntax requires an explicit shell.
+- `command[0]` must be absolute.
+- A supplied environment replaces the guest environment instead of merging.
+
+## Managed processes
+
+- Processes are live runtime resources, not durable records.
+- Process metadata is held in memory.
+- There is no restart reconciliation or automatic process recovery.
+- There is no process runtime timeout.
+- There is no process delete endpoint.
+- Terminal metadata remains while the sandbox runtime retains it.
+- There is no built-in port readiness, HTTP health, or log-pattern wait.
+- Direct Start has no persisted HTTP idempotency key.
+- An ambiguous Start can leave a running process whose UUID the caller did not
+  receive.
+- Signals are numeric Unix signals rather than portable names.
+- `includeChildren` is currently reliable only with `SIGKILL`; using it with
+  another signal can leave the process state `LOST`.
+
+## Process output
+
+- Each process retains approximately 512 KiB across stdout and stderr.
+- Only the newest 32 process output rings are retained.
+- Starting more processes can evict output while process metadata remains.
+- Output is memory-only and not durable.
+- Chunks are arbitrary byte segments, not lines.
+- `tailBytes` preserves whole chunks and is approximate at a chunk boundary.
+- A slow live subscriber can miss chunks.
+- Streams have no sequence number, resume token, or dropped-chunk marker.
+- The SDK never reconnects automatically.
+- Manual reconnection can replay retained chunks and create duplicates.
+- Live output is available through `inngest.sandboxes`, not `step.sandbox`.
+
+## Sandbox logs
+
+- Sandbox logs are a live NDJSON stream, not durable log storage.
+- The endpoint can commit HTTP 200 before upstream admission completes.
+- Admission and live failures after HTTP 200 use terminal `errors[]` frames.
+- Consumers must inspect frames; HTTP status alone is insufficient.
+- Live logs are not available through `step.sandbox`.
+
+## Files
+
+- Upload and download support regular files only.
+- Directories, symlinks, devices, sockets, and FIFOs are rejected.
+- Files are limited to 100 MiB.
+- Upload replaces a whole file.
+- There is no append, ranged write, directory listing, delete, rename, or
+  recursive transfer API.
+- Download does not implement HTTP range requests.
+- A binary failure after HTTP 200 appears as a short body, not a JSON terminal
+  frame.
+- File transfer is available through `inngest.sandboxes`, not `step.sandbox`.
+
+## Direct SDK
+
+- `inngest.sandboxes` is server-only because it uses a secret key.
+- It requires a Fetch-compatible runtime with `ReadableStream`.
+- It does not make calls durable.
+- It does not automatically retry requests.
+- It does not automatically reconnect streams.
+- Facades are snapshots and can be stale. Use Get to retrieve current state.
+- The first-party client currently authenticates with the Inngest signing key,
+  while hand-written REST clients use an environment-scoped API key.
+
+## `step.sandbox`
+
+- Live streams, Fetch `Response` bodies, and file transfers are unavailable.
+- Every call requires a stable, unique step ID.
+- Operations use ordinary `step.run` calls to the REST API.
+- Persisted results are memoized and not sent again on replay.
+- A mutation can happen twice if REST commits and the function process stops
+  before the step result is persisted.
+- There is no stronger dispatch fence or HTTP idempotency key.
+- Racing mutating operations is unsafe because cancelling the losing promise
+  cannot prove that the external mutation did not happen.
+- Durable execution does not make a sandbox or process recoverable after
+  runtime loss.
+- Process output is not stored durably.
+
+## REST API
+
+- Sandbox List has no name, status, image, or VPC filters.
+- Process List uses opaque cursors with a default of 50 and maximum of 250
+  items per page.
+- There is no public `Idempotency-Key` contract for Create, Exec, Start,
+  Signal, Destroy, or file upload.
+- JSON request bodies reject unknown fields.
+- UUID path parameters use canonical lowercase UUIDs.
+- Scoped 404 responses do not reveal resources in another workspace.
+
+## Not currently supported
+
+- snapshots and clones;
+- interactive Exec and PTYs;
+- lifecycle reconciliation and heartbeat recovery;
+- durable process recovery;
+- durable output storage;
+- custom or user-selectable VPCs;
+- custom images and templates;
+- user-configurable TTLs; and
+- live data on the `step.sandbox` surface.
+
+<Callout variant="warning">
+  If your application needs durable process recovery or lossless output,
+  persist application-level intent and results outside the sandbox.
+</Callout>
