@@ -13,7 +13,7 @@ const COVER_IMAGE = "/assets/v1/events/inngest-supper-club.png";
 const EVENT = {
   title: "Inngest Supper Club",
   date: "Wednesday, July 29, 2026 · 6:00 PM (dinner begins ~7:00 PM)",
-  startsAt: "2026-07-29T18:00:00-04:00",
+  startsAt: "2026-07-29T09:00:00-04:00",
   location: "Peasant, 194 Elizabeth St, New York, NY 10012",
   description:
     "Good things take time to build & so do good relationships.\n\nWe're heading to Peasant's wine cellar in Nolita for a night that's just dinner: no decks, no pitch, no demo before dessert. Just food, wine, and conversation with people we genuinely like building alongside.\n\nHeads up on the space: The supper club is in a cozy wine cellar, which unfortunately means stairs only and no elevator access. We want everyone to be able to connect, so if those stairs present a barrier for you, please email us at events@inngest.com. We'd love to set up a separate hang out so we don't miss out on meeting you!",
@@ -104,6 +104,19 @@ const OTHER_EVENTS = sortEventsByDate([
       "Swing by Stone Street Cafe before work — coffee and a pastry on us, no agenda, just conversation about durable execution.",
     href: "/events/coffee-chats-with-inngest",
     image: "/assets/v1/events/coffee-chats-with-inngest.png",
+    imageFit: "contain",
+  },
+  {
+    id: "lightning-lab-ship-your-first-eval",
+    title: "Inngest Lightning Lab: Ship Your First Eval",
+    date: "Wednesday, August 12, 2026 · 11AM PT / 2PM ET",
+    startsAt: "2026-08-12T14:00:00-04:00",
+    location: "Online",
+    topics: ["webinar", "evals", "agent evals"],
+    excerpt:
+      "You're already running agents in prod — see how to turn the runs you're producing into continuous online scores without adding a second SDK or system.",
+    href: "/events/lightning-lab-ship-your-first-eval",
+    image: "/assets/v1/events/lightning-lab-ship-your-first-eval.png",
     imageFit: "contain",
   },
 ]);

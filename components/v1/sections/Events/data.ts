@@ -69,7 +69,7 @@ export const UPCOMING: EventItem[] = [
     id: "inngest-supper-club",
     title: "Inngest Supper Club",
     date: "Wednesday, July 29, 2026 · 6 PM (dinner ~7 PM)",
-    startsAt: "2026-07-29T18:00:00-04:00",
+    startsAt: "2026-07-29T09:00:00-04:00",
     location: "NEW YORK, NY",
     topics: ["Meetups", "At Capacity"],
     excerpt:
@@ -89,6 +89,19 @@ export const UPCOMING: EventItem[] = [
       "Swing by Stone Street Cafe before work — coffee and a pastry on us, no agenda, just conversation about durable execution.",
     href: "/events/coffee-chats-with-inngest",
     image: "/assets/v1/events/coffee-chats-with-inngest.png",
+    imageFit: "contain",
+  },
+  {
+    id: "lightning-lab-ship-your-first-eval",
+    title: "Inngest Lightning Lab: Ship Your First Eval",
+    date: "Wednesday, August 12, 2026 · 11AM PT / 2PM ET",
+    startsAt: "2026-08-12T14:00:00-04:00",
+    location: "ONLINE",
+    topics: ["Webinars"],
+    excerpt:
+      "You're already running agents in prod — see how to turn the runs you're producing into continuous online scores without adding a second SDK or system.",
+    href: "/events/lightning-lab-ship-your-first-eval",
+    image: "/assets/v1/events/lightning-lab-ship-your-first-eval.png",
     imageFit: "contain",
   },
 ];
@@ -171,7 +184,7 @@ export const ALL_EVENTS: EventItem[] = sortEventsByDate([
     id: "inngest-supper-club",
     title: "Inngest Supper Club",
     date: "Wednesday, July 29, 2026 · 6 PM (dinner ~7 PM)",
-    startsAt: "2026-07-29T18:00:00-04:00",
+    startsAt: "2026-07-29T09:00:00-04:00",
     location: "NEW YORK, NY",
     topics: ["Meetups", "At Capacity"],
     excerpt:
@@ -191,6 +204,19 @@ export const ALL_EVENTS: EventItem[] = sortEventsByDate([
       "Swing by Stone Street Cafe before work — coffee and a pastry on us, no agenda, just conversation about durable execution.",
     href: "/events/coffee-chats-with-inngest",
     image: "/assets/v1/events/coffee-chats-with-inngest.png",
+    imageFit: "contain",
+  },
+  {
+    id: "lightning-lab-ship-your-first-eval",
+    title: "Inngest Lightning Lab: Ship Your First Eval",
+    date: "Wednesday, August 12, 2026 · 11AM PT / 2PM ET",
+    startsAt: "2026-08-12T14:00:00-04:00",
+    location: "ONLINE",
+    topics: ["Webinars"],
+    excerpt:
+      "You're already running agents in prod — see how to turn the runs you're producing into continuous online scores without adding a second SDK or system.",
+    href: "/events/lightning-lab-ship-your-first-eval",
+    image: "/assets/v1/events/lightning-lab-ship-your-first-eval.png",
     imageFit: "contain",
   },
 ]);
