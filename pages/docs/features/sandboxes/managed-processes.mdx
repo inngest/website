@@ -368,7 +368,7 @@ This direct-client example catches the Wait timeout because it intentionally
 changes behavior by escalating from a graceful signal to a forceful one:
 
 ```ts
-import { SandboxError } from "inngest";
+import { SandboxError } from "inngest/experimental";
 
 try {
   // Use the process.
