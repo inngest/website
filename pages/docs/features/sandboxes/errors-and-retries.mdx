@@ -183,7 +183,7 @@ Reconciliation is application policy. The SDK does not guess.
 1. The step handler sends the REST request.
 2. The SDK converts the response to JSON-safe data.
 3. Inngest persists the result.
-4. Replay reconstructs the facade from that result.
+4. Replay reconstructs the Sandbox object from that result.
 
 If a REST mutation commits and the function process stops before the result is
 persisted, Inngest can run the handler again. There is no sandbox-specific
