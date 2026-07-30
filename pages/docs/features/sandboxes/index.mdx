@@ -59,7 +59,7 @@ Use `inngest.sandboxes` in an API route, server action, worker, script, or
 other server-side code that owns its retries and cleanup.
 
 ```ts
-import type { Sandbox } from "inngest";
+import type { Sandbox } from "inngest/experimental";
 import { inngest } from "./client";
 
 let sandbox: Sandbox | undefined;

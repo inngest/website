@@ -139,7 +139,7 @@ Use `inngest.sandboxes` from an API route, worker, server action, or script when
 The direct client is not durable and never retries automatically, so your code owns readiness polling, retries, and cleanup.
 
 ```ts
-import type { Sandbox } from "inngest";
+import type { Sandbox } from "inngest/experimental";
 import { inngest } from "./inngest/client";
 
 let sandbox: Sandbox | undefined;

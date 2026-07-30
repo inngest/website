@@ -116,7 +116,7 @@ This example is for the direct `inngest.sandboxes` client. Do not add this
 loop around `step.sandbox`; Inngest already retries its retryable step errors.
 
 ```ts
-import { SandboxError } from "inngest";
+import { SandboxError } from "inngest/experimental";
 
 const sleep = (milliseconds: number) =>
   new Promise((resolve) => setTimeout(resolve, milliseconds));
