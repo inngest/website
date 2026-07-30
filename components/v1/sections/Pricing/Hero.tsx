@@ -396,7 +396,7 @@ function PlanCard({
               )}
               {feature.text}
               {feature.note && (
-                <span className="mt-0.5 block text-[11px] font-light leading-snug text-v1-frost/70 group-hover:text-white/70 group-data-[active]:text-white/70">
+                <span className="mt-0.5 block text-v1-body-xs text-v1-frost/80 group-hover:text-white/80 group-data-[active]:text-white/80">
                   {feature.note}
                 </span>
               )}
@@ -414,7 +414,7 @@ function PlanCard({
                   )}
                   {feature.text}
                   {feature.note && (
-                    <span className="mt-0.5 block text-[11px] font-light leading-snug text-v1-frost/70 group-hover:text-white/70 group-data-[active]:text-white/70">
+                    <span className="mt-0.5 block text-v1-frost/80 group-hover:text-white/80 group-data-[active]:text-white/80">
                       {feature.note}
                     </span>
                   )}
