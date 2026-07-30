@@ -1,0 +1,75 @@
+import { Callout } from "src/shared/Docs/mdx";
+
+export const metaTitle = "AI Metadata Quickstart"
+export const description = "Get AI metadata (model, tokens, latency, cost) showing up on your Inngest steps in a few minutes."
+
+# AI Metadata quickstart
+
+Inngest can automatically extract AI metadata — model, input/output tokens, provider, latency, and cost when available — from OpenTelemetry spans created while a step runs, and attach it to that step as `inngest.ai` metadata. It's on by default; you don't need to add middleware or call anything from your function code.
+
+This guide covers the minimum setup: getting an OpenTelemetry provider loaded, and making sure your AI calls actually emit the spans Inngest reads. For the full picture — bring-your-own provider, CJS/ESM preload details, and Extended Traces — see [Set up OpenTelemetry with Inngest](/docs/examples/open-telemetry?ref=docs-examples-ai-metadata-quickstart).
+
+## Step 1: Load an OpenTelemetry provider
+
+AI metadata extraction reads attributes off OpenTelemetry spans, so a provider needs to be registered in your process before it starts. If your app doesn't already set up OpenTelemetry, the fastest path is [`@inngest/otel`](https://www.npmjs.com/package/@inngest/otel):
+
+```shell
+npm install @inngest/otel
+```
+
+```shell
+node --import @inngest/otel/node ./app.js
+```
+
+If your app already has its own OpenTelemetry provider, keep it — see [manual setup](/docs/examples/open-telemetry?ref=docs-examples-ai-metadata-quickstart#manual-setup-with-your-existing-provider) for the CJS/ESM preload details.
+
+## Step 2: Make sure your AI calls emit `gen_ai.*` spans
+
+Inngest's extractor only reads spans with [OpenTelemetry GenAI semantic convention](https://github.com/open-telemetry/semantic-conventions-genai/blob/main/docs/gen-ai/gen-ai-spans.md) attributes (`gen_ai.request.model`, `gen_ai.usage.input_tokens`, and so on). Depending on how you call your model, you may need to do one of the following:
+
+- **OpenAI, Anthropic, or Google Generative AI SDKs directly:** `@inngest/otel`'s preload auto-instruments these SDKs and emits `gen_ai.*` spans for you — nothing else to configure once Step 1's preload is loaded.
+- **Vercel AI SDK:** the `ai` package emits `gen_ai.*` attributes natively, but telemetry is opt-in per call. Set `experimental_telemetry: { isEnabled: true }` on each `generateText`/`streamText`/etc. call you want captured:
+
+```ts
+import { generateText } from "ai";
+
+await generateText({
+  model: openai("gpt-4o"),
+  prompt: "...",
+  experimental_telemetry: { isEnabled: true },
+});
+```
+
+If you're using a different SDK or a custom HTTP client, it needs to emit spans with the same `gen_ai.*` attributes for Inngest to pick them up — check the [OpenTelemetry GenAI conventions](https://github.com/open-telemetry/semantic-conventions-genai/blob/main/docs/gen-ai/gen-ai-spans.md) for the attribute names to set.
+
+## Step 3: Confirm it's enabled
+
+AI metadata extraction defaults to on (`aiMetadata: true`). Only set `aiMetadata: false` if you want to opt out:
+
+```ts
+import { Inngest } from "inngest";
+
+export const inngest = new Inngest({
+  id: "my-app",
+  aiMetadata: false, // omit this line to keep AI metadata extraction on
+});
+```
+
+<Callout>
+  AI metadata extraction is independent of Extended Traces — you don't need `extendedTracesMiddleware()` for this to work.
+</Callout>
+
+## Step 4: Verify it in a run
+
+Trigger a function that makes one of the calls from Step 2, then open that run's trace in the Inngest dashboard. The step should show an **AI Metadata** entry with the model, token counts, and latency for that call.
+
+If you don't see it:
+
+- Confirm the OpenTelemetry preload from Step 1 is loading before your app code (check for a startup log line, or see the [ESM dual-package hazard section](/docs/examples/open-telemetry?ref=docs-examples-ai-metadata-quickstart#esm-applications) if spans go missing silently).
+- Confirm the call in Step 2 is actually instrumented — for Vercel AI SDK, double check `experimental_telemetry.isEnabled` is set on that specific call.
+
+## More context
+
+- [Set up OpenTelemetry with Inngest](/docs/examples/open-telemetry?ref=docs-examples-ai-metadata-quickstart) — full provider setup, including bring-your-own-provider and Extended Traces.
+- [`aiMetadata` client option](/docs/reference/typescript/v4/client/create?ref=docs-examples-ai-metadata-quickstart#aiMetadata)
+- [Metadata reference](/docs/reference/typescript/v4/functions/metadata?ref=docs-examples-ai-metadata-quickstart#built-in-metadata-kinds) — all built-in metadata kinds, including `inngest.ai`.

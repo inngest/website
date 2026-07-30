@@ -931,6 +931,10 @@ const sectionExamples: NavGroup[] = [
         title: "AI Eval Scorer quickstart",
         href: `/docs/examples/ai-eval-scorer-quickstart`,
       },
+      {
+        title: "AI Metadata quickstart",
+        href: `/docs/examples/ai-metadata-quickstart`,
+      },
     ],
   },
   {
