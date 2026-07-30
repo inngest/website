@@ -117,6 +117,8 @@ export const runInSandbox = inngest.createFunction(
 );
 ```
 
+`step.sandbox.create()` returns a usable Sandbox object during both fresh execution and replay. Do not wrap it in another `step.run`, serialize the object, or reconstruct it manually; the middleware memoizes the operation result and restores the Sandbox object automatically.
+
 Send an event with a sandbox-safe, stable job ID:
 
 ```json
@@ -181,6 +183,8 @@ try {
 ```
 
 The returned Sandbox object is an immutable snapshot. Call `inngest.sandboxes.get(sandbox.id)` to retrieve current state.
+
+When work needs to reconnect later, store only `sandbox.id` and call `inngest.sandboxes.get(sandboxId)` or `step.sandbox.get("get-sandbox", sandboxId)`. The SDK does not expose public object-attachment or snapshot-reconstruction helpers.
 
 ## 5. Start and manage a background process
 

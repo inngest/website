@@ -125,44 +125,27 @@ The public process ID is a UUID, not an internal `p1` or `p2` guest handle.
 `pid` is visible to commands inside the sandbox. `exitCode` is present only
 for `EXITED`; `terminationSignal` is present only for `KILLED`.
 
-## Serializable references
+## Reconnecting by ID
 
-Sandbox and process facades implement `toJSON()`:
-
-```ts
-const ref = sandbox.toJSON();
-const serialized = JSON.stringify(sandbox);
-```
-
-A sandbox reference includes:
+Store the sandbox ID when work needs to reconnect later:
 
 ```ts
-interface SandboxRef extends SandboxResource {
-  kind: "inngest/sandbox";
-  version: 1;
-}
+const sandboxId = sandbox.id;
+const current = await inngest.sandboxes.get(sandboxId);
 ```
 
-Attach a stored sandbox reference without a network request:
+Inside an Inngest function, use the durable Get operation:
 
 ```ts
-const attached = inngest.sandboxes.attach(storedSandboxRef);
-const current = await inngest.sandboxes.get(attached.id);
+const current = await step.sandbox.get("get-sandbox", sandboxId);
 ```
 
-Inside an Inngest function:
+Get returns current state and confirms that the sandbox still exists in the
+active workspace. Reload a process through its sandbox:
 
 ```ts
-const attached = step.sandbox.attach(storedSandboxRef);
-const current = await step.sandbox.get("get-sandbox", attached.id);
+const process = await current?.processes.get(processId);
 ```
-
-An attached object can be stale. Fetch it with Get before deciding from
-current state.
-
-Process references use `kind: "inngest/sandbox.process"`, `version: 1`, and
-`sandboxId`. Reload one by attaching or getting its sandbox, then calling
-`sandbox.processes.get(processRef.id)`.
 
 ## Direct client: `inngest.sandboxes`
 
@@ -252,15 +235,6 @@ Returns a `Sandbox` or `null` when the resource is missing or hidden by
 workspace scope. Other errors are thrown.
 
 `sandboxId` must be a canonical lowercase, non-nil UUID.
-
-### `attach(ref)`
-
-```ts
-const sandbox = inngest.sandboxes.attach(ref);
-```
-
-Synchronous. Makes no request. Validates and wraps a complete version 1
-sandbox reference.
 
 ### `sandbox.destroy()`
 
@@ -518,7 +492,6 @@ Complete signatures:
 step.sandbox.create(step, options)
 step.sandbox.list(step, options?)
 step.sandbox.get(step, sandboxId)
-step.sandbox.attach(ref)
 
 sandbox.destroy(step)
 sandbox.commands.run(step, options)
@@ -543,7 +516,7 @@ it for memoization.
 - Non-retryable `SandboxError` becomes `NonRetriableError`.
 - `SandboxValidationError` becomes `NonRetriableError`.
 
-On replay, a completed step reconstructs the facade from its memoized result.
+On replay, a completed step reconstructs the Sandbox object from its memoized result.
 
 There is no sandbox-specific executor opcode or dispatch fence. A mutation can
 happen twice if REST commits and the function process stops before the result
