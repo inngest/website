@@ -1,6 +1,6 @@
 # Introduction
 
-> **Status:** Experimental beta. This document describes the implemented REST v2 and TypeScript SDK contract as of July 2026. The API is access-gated, the SDK is prerelease software, and the contract may change without a compatibility period.
+> **Status:** Experimental beta. This document describes the implemented REST v2 and TypeScript SDK contract as of July 2026. The API is access-gated, and the contract may change without a compatibility period.
 
 **Problem and Use Cases**
 
@@ -8,30 +8,30 @@ Customers need isolated compute that agents and applications can program for a b
 
 Initial use cases include:
 
-- running tests, builds, and linters;
-- letting agents run generated or third-party code;
-- installing dependencies and executing a project in a clean environment;
-- isolating workloads from the caller's filesystem, processes, and network namespace;
-- uploading inputs and downloading generated files;
-- capturing stdout, stderr, and exit codes from one-off commands; and
+- running tests, builds, and linters
+- letting agents run generated or third-party code
+- installing dependencies and executing a project in a clean environment
+- isolating workloads from the caller's filesystem, processes, and network namespace
+- uploading inputs and downloading generated files
+- capturing stdout, stderr, and exit codes from one-off commands
 - starting background processes and observing their state and output.
 
 The beta exposes the same compute through two TypeScript surfaces:
 
-- `inngest.sandboxes` is an immediate, server-side REST client; and
+- `inngest.sandboxes` is an immediate, server-side REST client
 - `step.sandbox` runs supported operations as memoized Inngest steps.
 
 The public REST API is also usable without the TypeScript SDK.
 
 The current beta lets customers:
 
-- create, list, get, and destroy sandboxes;
-- request vCPU and memory;
-- execute a non-interactive command and capture its output;
-- stream sandbox logs;
-- upload or download one regular file at a time;
-- start, list, get, signal, and wait for managed processes;
-- read retained process output; and
+- create, list, get, and destroy sandboxes
+- request vCPU and memory
+- execute a non-interactive command and capture its output
+- stream sandbox logs
+- upload or download one regular file at a time
+- start, list, get, signal, and wait for managed processes
+- read retained process output
 - tail retained process output and follow new output.
 
 Sandboxes use a platform-provided image and the workspace's default egress-only VPC. A sandbox and every process inside it are identified by canonical lowercase UUIDs.
@@ -40,22 +40,21 @@ Sandboxes use a platform-provided image and the workspace's default egress-only 
 
 The following are not part of the beta contract:
 
-- snapshots, cloning, forking, or restore;
-- custom images, templates, language runtimes, or OCI images;
-- public VPC selection or user-defined network policy;
-- ingress, public URLs, SSH, VNC, browser automation, or port forwarding;
-- interactive Exec, stdin, PTYs, or terminal resize;
-- pause, resume, resize, or migration;
-- directory listing, recursive file transfer, append, rename, or delete;
-- durable file storage, process recovery, or output storage;
-- lifecycle reconciliation after a node or runtime restart;
-- secrets management or automatic secret injection;
-- a user-configurable sandbox TTL;
-- an HTTP idempotency-key contract;
-- a CLI or MCP server; and
+- custom images, templates, language runtimes, or OCI images
+- public VPC selection or user-defined network policy
+- ingress, public URLs, SSH, VNC, browser automation, or port forwarding
+- interactive Exec, stdin, PTYs, or terminal resize
+- pause, resume, resize, or migration
+- directory listing, recursive file transfer, append, rename, or delete
+- durable file storage, process recovery, or output storage
+- lifecycle reconciliation after a node or runtime restart
+- a user-configurable sandbox TTL
+- a CLI or MCP server
 - live logs, live process output, or file transfer through `step.sandbox`.
 
 These are potential follow-ups, not implied compatibility commitments.
+
+Snapshots and secrets are planned but are not implemented in the current beta.
 
 **Starting Questions**
 
@@ -67,8 +66,8 @@ Call `POST /v2/sandboxes`, `inngest.sandboxes.create()`, or `step.sandbox.create
 
 The beta does not clone repositories or upload directories directly. Customers can:
 
-- upload individual files;
-- run an absolute executable already in the image; or
+- upload individual files
+- run an absolute executable already in the image
 - run a command that downloads or checks out source from the network.
 
 ### Which runtimes are available?
@@ -81,7 +80,9 @@ Yes. Create allocates a live isolated runtime. Captured Exec runs one command in
 
 ### What happens when capacity is unavailable?
 
-The API returns `503 compute_unavailable` when it can prove that compute did not accept an operation. Reads may be retried with bounded backoff. A mutation that may have reached compute returns `409 operation_ambiguous` and must not be retried automatically.
+The API returns `503 compute_unavailable` when an operation is safe to repeat. This includes failures before dispatch and unconfirmed responses from Create, Destroy, and file upload. Reads and safe-to-repeat mutations may be retried with bounded backoff.
+
+`409 operation_ambiguous` is not a sandbox or process state. It means an unsafe-to-repeat operation may have completed even though the platform could not confirm its result. Use `SandboxError.action` and the action-specific recovery guidance below.
 
 ### How are stdout and stderr returned?
 
@@ -101,30 +102,36 @@ Authentication resolves an Inngest account and workspace. Every lookup also chec
 
 No. There is no public `Idempotency-Key` contract. Completed `step.sandbox` steps are memoized, but the ordinary at-least-once step window still exists if a REST mutation completes and the function process stops before the step result is persisted.
 
+### How is sandbox Create idempotent?
+
+A completed `step.sandbox.create()` replays from its memoized step result. If execution retries before that result is persisted, Create sends the same name and resources and the API returns the same pending, starting, or running sandbox with its stable UUID. The direct `inngest.sandboxes.create()` client receives the same active-name behavior.
+
+This guarantee lasts while the sandbox is active. After archival, the name may create a new sandbox. Other mutations do not inherit Create's active-name protection.
+
 # Implementation
 
 **Research**
 
 The design was informed by:
 
-- [Sprites API](https://sprites.dev/api/sprites), including resource-oriented lifecycle, command sessions, checkpoints, files, and network policy;
-- [E2B Sandboxes](https://e2b.dev/docs/sandbox), including lifecycle, templates, filesystems, foreground commands, and background commands;
-- [Daytona Sandboxes](https://www.daytona.io/docs/en/sandboxes/), including snapshots, process execution, files, and log streaming;
-- [Blaxel Sandboxes](https://docs.blaxel.ai/Sandboxes/Overview), including a sandbox-local API for process and file operations;
-- [Vercel Sandbox SDK](https://vercel.com/docs/sandbox/sdk-reference); and
-- [Cloudflare Sandbox SDK](https://developers.cloudflare.com/sandbox/api/).
+- Sprites API, including resource-oriented lifecycle, command sessions, checkpoints, files, and network policy
+- E2B Sandboxes, including lifecycle, templates, filesystems, foreground commands, and background commands
+- Daytona Sandboxes, including snapshots, process execution, files, and log streaming
+- Blaxel Sandboxes, including a sandbox-local API for process and file operations
+- Vercel Sandbox SDK
+- Cloudflare Sandbox SDK.
 
 The beta deliberately implements a smaller surface:
 
-- one stable sandbox resource instead of separate create and runtime models;
-- an explicit distinction between captured commands and managed processes;
-- raw, byte-safe output instead of assuming UTF-8 or line boundaries;
-- a direct REST client plus a separate durable-function surface; and
+- one stable sandbox resource instead of separate create and runtime models
+- an explicit distinction between captured commands and managed processes
+- raw, byte-safe output instead of assuming UTF-8 or line boundaries
+- a direct REST client plus a separate durable-function facade
 - honest ambiguity and retention boundaries instead of implied exactly-once execution or durable logs.
 
 **High level**
 
-```text
+```
 Direct server code
   inngest.sandboxes
           |
@@ -146,7 +153,7 @@ Isolated Linux guest
 
 Inside an Inngest function:
 
-```text
+```
 step.sandbox
     |
     | sandbox middleware
@@ -175,7 +182,7 @@ The control plane stores sandbox lifecycle state. Managed-process metadata and o
 
 #### Sandbox
 
-```ts
+```tsx
 interface SandboxResource {
   id: string;
   name: string;
@@ -206,7 +213,7 @@ Create returns only `STARTING` or `RUNNING`. Captured commands, logs, files, and
 
 #### Managed Process
 
-```ts
+```tsx
 interface SandboxProcessResource {
   id: string;
   command: readonly string[];
@@ -227,7 +234,7 @@ interface SandboxProcessResource {
 
 The complete status vocabulary is:
 
-```text
+```
 PENDING -> STARTING -> RUNNING -> TERMINATING -> TERMINATED
                  \                       /
                   +------> FAILED <-----+
@@ -240,11 +247,11 @@ Create is asynchronous:
 - HTTP 201 means the returned resource is already `RUNNING`.
 - HTTP 202 means the returned resource is `STARTING`.
 
-There is no dedicated readiness endpoint or `waitUntilRunning()` SDK helper. Poll Get with a bounded timeout. Every Sandbox object is an immutable resource snapshot, so a later Get returns a new object.
+There is no dedicated readiness endpoint. The SDK provides bounded polling through Create's `runningTimeout` option and each facade's `waitUntilRunning()` method. Both poll Get without redispatching Create and return a new immutable facade.
 
 Destroy can return:
 
-- HTTP 202 and a `TERMINATING` resource; or
+- HTTP 202 and a `TERMINATING` resource
 - HTTP 204 when teardown completed synchronously.
 
 Destroy removes the guest filesystem, processes, and retained output.
@@ -253,13 +260,13 @@ Destroy removes the guest filesystem, processes, and retained output.
 
 REST requests use:
 
-```text
+```
 Authorization: Bearer <INNGEST_API_KEY>
 ```
 
 A workspace-scoped key selects its workspace. An account-scoped key also requires:
 
-```text
+```
 X-Inngest-Env: production
 ```
 
@@ -271,8 +278,8 @@ Sandbox clients are server-only. Never put an API or signing key in a browser bu
 
 Cloud origin:
 
-```text
-https://api.inngest.com
+```
+<https://api.inngest.com>
 ```
 
 Most successful JSON responses use:
@@ -300,8 +307,8 @@ List responses add:
 
 JSON request bodies:
 
-- reject unknown fields;
-- reject trailing or multiple JSON values; and
+- reject unknown fields
+- reject trailing or multiple JSON values
 - are capped at 1 MiB for Create, captured Exec, process Start, and Signal.
 
 Errors use:
@@ -321,20 +328,20 @@ Clients must branch on `code`, not `message`. Live resources and output use `Cac
 
 ### Sandbox Management
 
-| Operation | Method and path | Behavior |
-| --- | --- | --- |
-| Create | `POST /v2/sandboxes` | Allocate a sandbox |
-| List | `GET /v2/sandboxes?cursor=&limit=` | List workspace sandboxes |
-| Get | `GET /v2/sandboxes/{sandboxId}` | Get current state |
-| Destroy | `DELETE /v2/sandboxes/{sandboxId}` | Begin or observe teardown |
-| Captured Exec | `POST /v2/sandboxes/{sandboxId}/exec` | Run one command and buffer output |
-| Logs | `GET /v2/sandboxes/{sandboxId}/logs` | Stream sandbox logs as NDJSON |
-| Upload file | `PUT /v2/sandboxes/{sandboxId}/files` | Atomically replace one regular file |
-| Download file | `GET /v2/sandboxes/{sandboxId}/files` | Stream one regular file |
+| Operation     | Method and path                       | Behavior                            |
+| ------------- | ------------------------------------- | ----------------------------------- |
+| Create        | `POST /v2/sandboxes`                  | Allocate a sandbox                  |
+| List          | `GET /v2/sandboxes?cursor=&limit=`    | List workspace sandboxes            |
+| Get           | `GET /v2/sandboxes/{sandboxId}`       | Get current state                   |
+| Destroy       | `DELETE /v2/sandboxes/{sandboxId}`    | Begin or observe teardown           |
+| Captured Exec | `POST /v2/sandboxes/{sandboxId}/exec` | Run one command and buffer output   |
+| Logs          | `GET /v2/sandboxes/{sandboxId}/logs`  | Stream sandbox logs as NDJSON       |
+| Upload file   | `PUT /v2/sandboxes/{sandboxId}/files` | Atomically replace one regular file |
+| Download file | `GET /v2/sandboxes/{sandboxId}/files` | Stream one regular file             |
 
 ### Creation Request
 
-```text
+```
 POST /v2/sandboxes
 Authorization: Bearer ...
 Content-Type: application/json
@@ -348,11 +355,11 @@ Content-Type: application/json
 }
 ```
 
-| Field | Rules |
-| --- | --- |
-| `name` | Required; 1–63 lowercase letters, digits, `_`, or `-` |
-| `vcpu` | Required positive unsigned 32-bit integer |
-| `memoryMb` | Required positive unsigned 32-bit integer in MiB |
+| Field      | Rules                                                 |
+| ---------- | ----------------------------------------------------- |
+| `name`     | Required; 1–63 lowercase letters, digits, `_`, or `-` |
+| `vcpu`     | Required positive unsigned 32-bit integer             |
+| `memoryMb` | Required positive unsigned 32-bit integer in MiB      |
 
 There is no `image`, `template`, `profile`, `vpcId`, disk-size, command, or TTL field.
 
@@ -382,11 +389,11 @@ There is no `image`, `template`, `profile`, `vpcId`, disk-size, command, or TTL 
 
 Name uniqueness applies to active resources in the workspace.
 
-There is no HTTP `Idempotency-Key`. If Create returns `operation_ambiguous`, the sandbox may exist. Reconcile by listing and inspecting the intended unique name instead of automatically creating again.
+Create is idempotent for an active sandbox with the same name and resource request. Repeating the exact request returns that sandbox instead of creating a second one. Reusing the name with different resources returns `sandbox_name_taken`. This guarantee ends after archival.
 
 ### List Sandboxes
 
-```text
+```
 GET /v2/sandboxes?limit=50&cursor=<opaque>
 ```
 
@@ -398,7 +405,7 @@ The beta has no name, status, image, or VPC filters.
 
 ### Get a Sandbox
 
-```text
+```
 GET /v2/sandboxes/{sandboxId}
 ```
 
@@ -406,7 +413,7 @@ Get returns the complete current resource. A missing or workspace-hidden sandbox
 
 ### Destroy a Sandbox
 
-```text
+```
 DELETE /v2/sandboxes/{sandboxId}
 ```
 
@@ -414,7 +421,7 @@ The service persists teardown intent before contacting the node. A successful re
 
 ### Captured Exec
 
-```text
+```
 POST /v2/sandboxes/{sandboxId}/exec
 Content-Type: application/json
 ```
@@ -431,12 +438,12 @@ Content-Type: application/json
 }
 ```
 
-| Field | Default | Rules |
-| --- | --- | --- |
-| `command` | Required | Argument vector; item 0 must be absolute |
-| `environment` | Guest default | Replaces the complete guest environment |
-| `cwd` | `/` | Working directory |
-| `timeout` | `30s` | Positive Go duration, maximum `5m` |
+| Field         | Default       | Rules                                    |
+| ------------- | ------------- | ---------------------------------------- |
+| `command`     | Required      | Argument vector; item 0 must be absolute |
+| `environment` | Guest default | Replaces the complete guest environment  |
+| `cwd`         | `/`           | Working directory                        |
+| `timeout`     | `30s`         | Positive Go duration, maximum `5m`       |
 
 The API does not shell-parse `command`. Invoke `/bin/sh` or another shell explicitly when shell syntax is required.
 
@@ -464,7 +471,7 @@ Captured Exec is not interactive and does not accept stdin.
 
 ### Sandbox Logs
 
-```text
+```
 GET /v2/sandboxes/{sandboxId}/logs?follow=false
 Accept: application/x-ndjson
 ```
@@ -474,13 +481,27 @@ Accept: application/x-ndjson
 Log frame:
 
 ```json
-{"type":"log","stream":"STDOUT","data":"c3RhcnRlZAo=","encoding":"base64","at":"2026-07-30T12:00:00Z"}
+{
+  "type": "log",
+  "stream": "STDOUT",
+  "data": "c3RhcnRlZAo=",
+  "encoding": "base64",
+  "at": "2026-07-30T12:00:00Z"
+}
 ```
 
 The endpoint can commit HTTP 200 before upstream admission finishes. Admission or live failures after headers use a terminal frame:
 
 ```json
-{"type":"error","errors":[{"code":"compute_unavailable","message":"Compute is temporarily unavailable"}]}
+{
+  "type": "error",
+  "errors": [
+    {
+      "code": "compute_unavailable",
+      "message": "Compute is temporarily unavailable"
+    }
+  ]
+}
 ```
 
 Consumers must parse every frame. HTTP 200 alone does not prove a successful stream. Logs are live runtime output, not durable log storage.
@@ -489,19 +510,19 @@ Consumers must parse every frame. HTTP 200 alone does not prove a successful str
 
 #### Upload or Replace
 
-```text
+```
 PUT /v2/sandboxes/{sandboxId}/files?path=/tmp/input.bin&mode=0640
 Content-Type: application/octet-stream
 ```
 
 The request body is the raw file.
 
-| Value | Limit |
-| --- | --- |
-| Path | Absolute, no NUL, at most 4096 UTF-8 bytes |
-| Mode | Octal `0001`–`0777`; default `0644` |
-| Body | At most 100 MiB |
-| Type | Regular file only |
+| Value | Limit                                      |
+| ----- | ------------------------------------------ |
+| Path  | Absolute, no NUL, at most 4096 UTF-8 bytes |
+| Mode  | Octal `0001`–`0777`; default `0644`        |
+| Body  | At most 100 MiB                            |
+| Type  | Regular file only                          |
 
 Upload atomically replaces the complete destination. It cannot replace `/`, a directory, symlink, device, socket, or FIFO.
 
@@ -519,11 +540,11 @@ Success returns:
 }
 ```
 
-A transport failure after replacement may return `operation_ambiguous`.
+Repeating the same upload with the same path, bytes, and mode is safe. Each successful upload atomically replaces the complete destination.
 
 #### Download
 
-```text
+```
 GET /v2/sandboxes/{sandboxId}/files?path=/tmp/output.bin
 ```
 
@@ -535,14 +556,14 @@ The beta has no list, append, ranged write, delete, rename, directory, symlink, 
 
 ### Managed Processes
 
-| Operation | Method and path |
-| --- | --- |
-| Start | `POST /v2/sandboxes/{sandboxId}/processes` |
-| List | `GET /v2/sandboxes/{sandboxId}/processes?cursor=&limit=` |
-| Get | `GET /v2/sandboxes/{sandboxId}/processes/{processId}` |
-| Signal | `POST /v2/sandboxes/{sandboxId}/processes/{processId}/signals` |
-| Wait | `POST /v2/sandboxes/{sandboxId}/processes/{processId}/wait` |
-| Retained output | `GET /v2/sandboxes/{sandboxId}/processes/{processId}/output` |
+| Operation        | Method and path                                                     |
+| ---------------- | ------------------------------------------------------------------- |
+| Start            | `POST /v2/sandboxes/{sandboxId}/processes`                          |
+| List             | `GET /v2/sandboxes/{sandboxId}/processes?cursor=&limit=`            |
+| Get              | `GET /v2/sandboxes/{sandboxId}/processes/{processId}`               |
+| Signal           | `POST /v2/sandboxes/{sandboxId}/processes/{processId}/signals`      |
+| Wait             | `POST /v2/sandboxes/{sandboxId}/processes/{processId}/wait`         |
+| Retained output  | `GET /v2/sandboxes/{sandboxId}/processes/{processId}/output`        |
 | Streaming output | `GET /v2/sandboxes/{sandboxId}/processes/{processId}/output/stream` |
 
 Managed processes are appropriate for servers, workers, watchers, and other commands that must continue after Start returns.
@@ -578,12 +599,11 @@ Start returns HTTP 201 only after the target process is confirmed `RUNNING`:
 
 The control plane generates the public UUID before dispatch and passes it to the node. Guest-generated handles are filtered out.
 
-Start has no HTTP idempotency key. An ambiguous response can leave a running process whose UUID was not received by the caller.
+Start has no HTTP idempotency key. `operation_ambiguous` means a process may be running even though its UUID and PID did not reach the caller. This is an error about the outcome of Start, not a process state. Do not call Start again automatically. List processes and compare command and start time. If the process cannot be identified confidently, require application-level or operator reconciliation.
 
 #### List and Get
 
-List returns processes sorted by UUID. `limit` defaults to 50 and is capped at
-250. Pagination cursors are opaque.
+List returns processes sorted by UUID. `limit` defaults to 50 and is capped at 250. Pagination cursors are opaque.
 
 Get returns one process or `404 sandbox_process_not_found`.
 
@@ -600,13 +620,13 @@ Process metadata is in-memory state. It disappears with the sandbox and may be l
 
 `signal` is an integer from 1 through 64. `includeChildren` defaults to false. Success returns HTTP 204. Signalling an already-terminal process is a no-op.
 
-Signal is a mutation. Never automatically resend `operation_ambiguous`.
+Signal is a mutation. `operation_ambiguous` means the signal may have been delivered even though its response was lost. Get or wait for the process before deciding what to do next. Send another signal only when duplicate delivery is safe for that signal and application.
 
 Current beta limitation: use `includeChildren: true` only with signal 9 (`SIGKILL`). Non-SIGKILL descendant delivery cannot be made race-free and can leave terminal state unobservable.
 
 #### Wait
 
-```text
+```
 POST /v2/sandboxes/{sandboxId}/processes/{processId}/wait?timeout=30s
 ```
 
@@ -618,7 +638,7 @@ There is no process runtime timeout. Applications must signal processes they no 
 
 #### Retained Output
 
-```text
+```
 GET /v2/sandboxes/{sandboxId}/processes/{processId}/output?tailBytes=65536
 ```
 
@@ -652,7 +672,7 @@ Chunks preserve observed stdout/stderr ordering and arbitrary bytes. They are no
 
 The API distinguishes:
 
-```text
+```
 404 sandbox_process_not_found
 404 sandbox_process_output_not_retained
 ```
@@ -661,7 +681,7 @@ The second code means the process metadata still exists but its output ring was 
 
 #### Streaming Output
 
-```text
+```
 GET /v2/sandboxes/{sandboxId}/processes/{processId}/output/stream?tailBytes=8192
 Accept: application/x-ndjson
 ```
@@ -672,9 +692,9 @@ Admission failures return a normal non-200 JSON error before headers. A failure 
 
 The stream is best effort:
 
-- a slow consumer can miss chunks;
-- frames have no sequence number, resume token, or loss marker;
-- the SDK never reconnects automatically; and
+- a slow consumer can miss chunks
+- frames have no sequence number, resume token, or loss marker
+- the SDK never reconnects automatically
 - manually reconnecting can replay retained chunks and create duplicates.
 
 #### Output Retention
@@ -688,92 +708,88 @@ Persist important results to a file or external store.
 
 ### Error Model
 
-| HTTP | Code | Meaning | Retry guidance |
-| ---: | --- | --- | --- |
-| 400 | `invalid_request` | Invalid JSON or unknown fields | Fix request |
-| 400 | `missing_field` | Required field missing | Fix request |
-| 400 | `invalid_field_format` | Invalid ID, command, signal, duration, cursor, path, mode, or tail | Fix request |
-| 401 | `authorization_header_missing` | Missing credentials | Fix credentials |
-| 401 | `invalid_api_key` | Invalid credentials | Rotate or replace |
-| 403 | `access_denied` | Beta not enabled | Request access |
-| 404 | `sandbox_not_found` | Sandbox missing or hidden | Reconcile target |
-| 404 | `sandbox_file_not_found` | File or sandbox missing | Reconcile target |
-| 404 | `sandbox_process_not_found` | Process missing | Reconcile target |
-| 404 | `sandbox_process_output_not_retained` | Output ring evicted | Cannot recover from this API |
-| 409 | `sandbox_name_taken` | Active name already exists | Choose or inspect name |
-| 409 | `invalid_request` | Resource not in required state | Get current state |
-| 409 | `operation_ambiguous` | Mutation may have happened | Never retry automatically |
-| 413 | `sandbox_exec_output_too_large` | Captured output exceeded 4 MiB | Command may have run |
-| 413 | `sandbox_file_too_large` | File exceeded 100 MiB | Reduce or split |
-| 429 | `rate_limited` | Rejected by rate limit | Retry safe operations with backoff |
-| 500 | `internal_error` | Unexpected failure | Retry only when proven safe |
-| 503 | `compute_unavailable` | Compute unavailable before confirmed dispatch | Safe reads may retry |
-| 504 | `sandbox_exec_timed_out` | Exec observation timed out | Command may have run |
-| 504 | `sandbox_process_wait_timed_out` | Wait observation timed out | Waiting again is safe |
+| HTTP | Code                                  | Meaning                                                                    | Retry guidance                                    |
+| ---- | ------------------------------------- | -------------------------------------------------------------------------- | ------------------------------------------------- |
+| 400  | `invalid_request`                     | Invalid JSON or unknown fields                                             | Fix request                                       |
+| 400  | `missing_field`                       | Required field missing                                                     | Fix request                                       |
+| 400  | `invalid_field_format`                | Invalid ID, command, signal, duration, cursor, path, mode, or tail         | Fix request                                       |
+| 401  | `authorization_header_missing`        | Missing credentials                                                        | Fix credentials                                   |
+| 401  | `invalid_api_key`                     | Invalid credentials                                                        | Rotate or replace                                 |
+| 403  | `access_denied`                       | Beta not enabled                                                           | Request access                                    |
+| 404  | `sandbox_not_found`                   | Sandbox missing or hidden                                                  | Reconcile target                                  |
+| 404  | `sandbox_file_not_found`              | File or sandbox missing                                                    | Reconcile target                                  |
+| 404  | `sandbox_process_not_found`           | Process missing                                                            | Reconcile target                                  |
+| 404  | `sandbox_process_output_not_retained` | Output ring evicted                                                        | Cannot recover from this API                      |
+| 409  | `sandbox_name_taken`                  | Active name already exists                                                 | Choose or inspect name                            |
+| 409  | `invalid_request`                     | Resource not in required state                                             | Get current state                                 |
+| 409  | `operation_ambiguous`                 | The result of the operation identified by `SandboxError.action` is unknown | Follow the action-specific recovery guidance      |
+| 413  | `sandbox_exec_output_too_large`       | Captured output exceeded 4 MiB                                             | Command may have run                              |
+| 413  | `sandbox_file_too_large`              | File exceeded 100 MiB                                                      | Reduce or split                                   |
+| 429  | `rate_limited`                        | Rejected by rate limit                                                     | Retry safe operations with backoff                |
+| 500  | `internal_error`                      | Unexpected failure                                                         | Retry only when proven safe                       |
+| 503  | `compute_unavailable`                 | Operation was rejected before dispatch or is safe to repeat                | Safe reads and safe-to-repeat mutations may retry |
+| 504  | `sandbox_exec_timed_out`              | Exec observation timed out                                                 | Command may have run                              |
+| 504  | `sandbox_process_wait_timed_out`      | Wait observation timed out                                                 | Waiting again is safe                             |
 
 Safe reads include List, Get, Wait, retained output, streams, and file download.
 
-Mutations include Create, captured Exec, Destroy, Start, Signal, and file upload.
+Mutations do not all have the same retry behavior. Repeating the same Create request recovers the matching active sandbox, Destroy records teardown intent before contacting the node, and repeating the same file upload produces the same destination. Captured Exec, process Start, and arbitrary process Signal can produce another side effect when repeated.
 
-A mutation may retry only when the service proves rejection before dispatch. A missing response is not proof. The direct SDK conservatively maps a transport failure during a mutation to `operation_ambiguous`.
+A non-idempotent mutation may retry only when the service proves rejection before dispatch. A missing response is not proof.
 
 ### Validation Limits
 
 #### Sandbox
 
-| Value | Limit |
-| --- | --- |
-| Name | 1–63 lowercase letters, digits, `_`, or `-` |
-| vCPU | Positive unsigned 32-bit integer |
-| Memory | Positive unsigned 32-bit integer in MiB |
-| Sandbox List page | Default 50, maximum 250 |
-| Create body | 1 MiB |
+| Value             | Limit                                       |
+| ----------------- | ------------------------------------------- |
+| Name              | 1–63 lowercase letters, digits, `_`, or `-` |
+| vCPU              | Positive unsigned 32-bit integer            |
+| Memory            | Positive unsigned 32-bit integer in MiB     |
+| Sandbox List page | Default 50, maximum 250                     |
+| Create body       | 1 MiB                                       |
 
 Entitlements and capacity can impose lower effective resource limits.
 
 #### Commands and Process Start
 
-| Value | Limit |
-| --- | --- |
-| Argument count | 1–128 |
-| Total argument UTF-8 bytes | 32 KiB |
-| Environment entries | 256 |
+| Value                               | Limit  |
+| ----------------------------------- | ------ |
+| Argument count                      | 1–128  |
+| Total argument UTF-8 bytes          | 32 KiB |
+| Environment entries                 | 256    |
 | Total environment `KEY=value` bytes | 64 KiB |
-| Working-directory UTF-8 bytes | 4096 |
-| Encoded process specification | 96 KiB |
-| JSON body | 1 MiB |
+| Working-directory UTF-8 bytes       | 4096   |
+| Encoded process specification       | 96 KiB |
+| JSON body                           | 1 MiB  |
 
 Arguments, environment keys and values, and `cwd` cannot contain NUL. Environment keys must be non-empty and cannot contain `=`.
 
 #### Time and Output
 
-| Value | Limit |
-| --- | --- |
-| Captured Exec default timeout | 30 seconds |
-| Captured Exec maximum timeout | 5 minutes |
-| Direct captured stdout + stderr | 4 MiB |
-| Durable retained stdout + stderr | 2 MiB |
-| Process Wait default | 30 seconds |
-| Process Wait maximum | 5 minutes |
-| Retained process output | Approximately 512 KiB |
-| Retained process rings | Newest 32 |
-| `tailBytes` | 0–524,288 |
+| Value                            | Limit                 |
+| -------------------------------- | --------------------- |
+| Captured Exec default timeout    | 30 seconds            |
+| Captured Exec maximum timeout    | 5 minutes             |
+| Direct captured stdout + stderr  | 4 MiB                 |
+| Durable retained stdout + stderr | 2 MiB                 |
+| Process Wait default             | 30 seconds            |
+| Process Wait maximum             | 5 minutes             |
+| Retained process output          | Approximately 512 KiB |
+| Retained process rings           | Newest 32             |
+| `tailBytes`                      | 0–524,288             |
 
 ## TypeScript SDK
 
-### Beta Installation
+### Installation
 
-Until the SDK change is released normally:
-
-```sh
-npm install inngest@pr-1654
+```bash
+npm install inngest@latest
 ```
-
-The prerelease is for evaluation only. Commit the lockfile so the tested build does not move unexpectedly.
 
 ### Client Setup
 
-```ts
+```tsx
 import { Inngest } from "inngest";
 import { sandboxMiddleware } from "inngest/experimental";
 
@@ -789,15 +805,15 @@ The SDK needs a server-side API or signing key. The client reads the standard In
 
 ### Choose a Surface
 
-| Capability | `inngest.sandboxes` | `step.sandbox` |
-| --- | :-: | :-: |
-| Create, List, Get, Destroy | Yes | Yes |
-| Captured Exec | Yes | Yes |
-| Process Start, List, Get, Signal, Wait | Yes | Yes |
-| Retained process output | Yes | Yes |
-| Sandbox logs | Yes | No |
-| Live process output | Yes | No |
-| File upload and download | Yes | No |
+| Capability                             | `inngest.sandboxes` | `step.sandbox` |
+| -------------------------------------- | ------------------- | -------------- |
+| Create, List, Get, Destroy             | Yes                 | Yes            |
+| Captured Exec                          | Yes                 | Yes            |
+| Process Start, List, Get, Signal, Wait | Yes                 | Yes            |
+| Retained process output                | Yes                 | Yes            |
+| Sandbox logs                           | Yes                 | No             |
+| Live process output                    | Yes                 | No             |
+| File upload and download               | Yes                 | No             |
 
 Use `inngest.sandboxes` from server routes, workers, scripts, or other code that owns its request lifecycle.
 
@@ -805,36 +821,9 @@ Use `step.sandbox` inside an Inngest function when the operation and its result 
 
 ### Direct Getting Started
 
-```ts
-import type { Sandbox } from "inngest";
+```tsx
+import type { Sandbox } from "inngest/experimental";
 import { inngest } from "./client";
-
-const sleep = (milliseconds: number) =>
-  new Promise((resolve) => setTimeout(resolve, milliseconds));
-
-async function waitUntilRunning(
-  sandbox: Sandbox,
-  timeoutMs = 60_000
-): Promise<Sandbox> {
-  const deadline = Date.now() + timeoutMs;
-  let current = sandbox;
-
-  while (current.status === "STARTING" && Date.now() < deadline) {
-    await sleep(1_000);
-
-    const loaded = await inngest.sandboxes.get(current.id);
-    if (!loaded) {
-      throw new Error("Sandbox disappeared while starting");
-    }
-    current = loaded;
-  }
-
-  if (current.status !== "RUNNING") {
-    throw new Error(`Sandbox did not become RUNNING: ${current.status}`);
-  }
-
-  return current;
-}
 
 let sandbox: Sandbox | undefined;
 
@@ -843,9 +832,8 @@ try {
     name: `beta-${crypto.randomUUID()}`,
     vcpu: 2,
     memoryMb: 512,
+    runningTimeout: "60s",
   });
-
-  sandbox = await waitUntilRunning(sandbox);
 
   const result = await sandbox.commands.run({
     command: ["/bin/sh", "-c", "printf 'hello from the sandbox\n'"],
@@ -860,11 +848,11 @@ try {
 }
 ```
 
-The direct client never retries automatically. The caller owns readiness, retry policy, cancellation, and cleanup.
+The direct client does not retry individual operations automatically. `runningTimeout` performs bounded readiness polling and never repeats Create. The caller owns other retry policy, cancellation, and cleanup.
 
 ### Durable Getting Started
 
-```ts
+```tsx
 import { inngest } from "./client";
 
 export const runInSandbox = inngest.createFunction(
@@ -873,32 +861,12 @@ export const runInSandbox = inngest.createFunction(
     triggers: [{ event: "sandbox/demo.requested" }],
   },
   async ({ event, step }) => {
-    let sandbox = await step.sandbox.create("create-sandbox", {
+    const sandbox = await step.sandbox.create("create-sandbox", {
       name: `beta-${event.data.jobId}`,
       vcpu: 2,
       memoryMb: 512,
+      runningTimeout: "60s",
     });
-
-    for (
-      let attempt = 0;
-      sandbox.status === "STARTING" && attempt < 60;
-      attempt++
-    ) {
-      await step.sleep(`wait-for-sandbox-${attempt}`, "1s");
-
-      const current = await step.sandbox.get(
-        `get-sandbox-${attempt}`,
-        sandbox.id
-      );
-      if (!current) {
-        throw new Error("Sandbox disappeared while starting");
-      }
-      sandbox = current;
-    }
-
-    if (sandbox.status !== "RUNNING") {
-      throw new Error(`Sandbox did not become RUNNING: ${sandbox.status}`);
-    }
 
     const result = await sandbox.commands.run("run-command", {
       command: ["/bin/sh", "-c", "printf 'hello from a durable step\n'"],
@@ -922,37 +890,11 @@ Every durable operation requires a stable, unique step ID. Let unexpected errors
 
 Destroy on the success path does not run after a permanently failed function. Use an Inngest failure handler or external cleanup policy when leaked sandboxes are unacceptable.
 
-### Sandbox Objects and Reconnection
-
-SDK Sandbox objects are immutable snapshots. A mutation does not change the object on which it was called.
-
-Use Get for current state:
-
-```ts
-const current = await inngest.sandboxes.get(sandbox.id);
-```
-
-There is intentionally no `refresh()` alias.
-
-Persist the sandbox ID when work needs to reconnect later:
-
-```ts
-const sandbox = await inngest.sandboxes.get(sandboxId);
-```
-
-The durable surface uses the same ID-based pattern:
-
-```ts
-const current = await step.sandbox.get("load-sandbox", sandboxId);
-```
-
-There is no public snapshot attachment or reconstruction API. Middleware serializes and reconstructs durable operation results internally.
-
 ### List Sandboxes
 
 Direct:
 
-```ts
+```tsx
 const first = await inngest.sandboxes.list({ limit: 50 });
 
 for (const sandbox of first.items) {
@@ -970,7 +912,7 @@ if (first.page.hasMore && first.page.cursor) {
 
 Durable:
 
-```ts
+```tsx
 const page = await step.sandbox.list("list-sandboxes", { limit: 50 });
 ```
 
@@ -978,7 +920,7 @@ const page = await step.sandbox.list("list-sandboxes", { limit: 50 });
 
 Direct:
 
-```ts
+```tsx
 const result = await sandbox.commands.run({
   command: ["/usr/bin/env", "node", "--version"],
   environment: {
@@ -991,7 +933,7 @@ const result = await sandbox.commands.run({
 
 Durable:
 
-```ts
+```tsx
 const result = await sandbox.commands.run("node-version", {
   command: ["/usr/bin/env", "node", "--version"],
   environment: {
@@ -1004,13 +946,13 @@ const result = await sandbox.commands.run("node-version", {
 
 Direct results contain at most 4 MiB and report:
 
-```ts
-result.output // { truncated: false }
+```tsx
+result.output; // { truncated: false }
 ```
 
 The durable middleware retains at most 2 MiB so the JSON-safe, base64-encoded step result fits the executor output limit. Larger successful results keep deterministic tails:
 
-```ts
+```tsx
 if (result.output.truncated) {
   console.log(result.output.strategy); // "tail"
   console.log(result.output.originalBytes);
@@ -1022,13 +964,9 @@ if (result.output.truncated) {
 
 Direct:
 
-```ts
+```tsx
 let worker = await sandbox.processes.start({
-  command: [
-    "/bin/sh",
-    "-c",
-    "printf 'worker started\n'; exec /bin/sleep 30",
-  ],
+  command: ["/bin/sh", "-c", "printf 'worker started\n'; exec /bin/sleep 30"],
   cwd: "/",
 });
 
@@ -1056,7 +994,7 @@ console.log(worker.state, worker.terminationSignal);
 
 Durable:
 
-```ts
+```tsx
 let worker = await sandbox.processes.start("start-worker", {
   command: ["/bin/sh", "-c", "exec /bin/sleep 30"],
 });
@@ -1079,7 +1017,7 @@ Process List and Get are available on both surfaces. A missing Get returns `null
 
 Live process output is direct-only:
 
-```ts
+```tsx
 const stream = await worker.streamOutput({ tailBytes: 8 * 1024 });
 const reader = stream.getReader();
 const outputDecoders = {
@@ -1108,7 +1046,7 @@ Cancelling the reader aborts the request. A terminal NDJSON error frame becomes 
 
 Logs are direct-only:
 
-```ts
+```tsx
 const stream = await sandbox.logs.stream({ follow: true });
 const reader = stream.getReader();
 
@@ -1128,7 +1066,7 @@ try {
 
 Files are direct-only:
 
-```ts
+```tsx
 await sandbox.files.upload({
   path: "/tmp/input.txt",
   data: "hello from the host\n",
@@ -1152,7 +1090,7 @@ The download method returns a Fetch `Response` so callers can stream bytes witho
 
 Request and API failures use:
 
-```ts
+```tsx
 class SandboxError extends Error {
   action: SandboxAction;
   code: SandboxErrorCode;
@@ -1169,13 +1107,25 @@ class SandboxError extends Error {
 
 Invalid local input and malformed server responses throw `SandboxValidationError`.
 
+`SandboxError.action` always identifies the attempted operation. Use `action`, `code`, `ambiguous`, and `retryable` for control flow. Messages are human-readable and may change.
+
+For `operation_ambiguous`, recover according to `action`:
+
+- `exec`: The command may have run, but its captured result was not confirmed. Inspect external effects or an application-defined completion marker. Do not run it again automatically.
+- `process.start`: A process may be running, but its generated UUID may not have reached the caller. List processes and compare command and start time. If it cannot be identified confidently, require application-level or operator reconciliation.
+- `process.signal`: The signal may have been delivered. Get or wait for the process. Send another signal only when duplicate delivery is safe for that signal and application.
+
+Create, Destroy, and file upload are safe to repeat when their responses are unconfirmed. The SDK reports those failures as retryable `compute_unavailable` errors instead of `operation_ambiguous`.
+
+`sandbox_exec_output_too_large` and `sandbox_exec_timed_out` use more specific codes, but they are also ambiguous because the command may have run without a complete observed result.
+
 The direct client never retries, even when `retryable` is true.
 
 The middleware maps:
 
-- retryable `SandboxError` to an ordinary retriable step error;
-- non-retryable `SandboxError` to `NonRetriableError`; and
-- `SandboxValidationError` to `NonRetriableError`.
+- retryable `SandboxError` to an ordinary retriable step error
+- non-retryable `SandboxError` to `NonRetriableError`
+- `SandboxValidationError` to `NonRetriableError`
 
 This classification does not make mutations exactly once.
 
@@ -1183,16 +1133,16 @@ This classification does not make mutations exactly once.
 
 The middleware uses ordinary `step.run`:
 
-1. the step handler sends the REST request;
-2. the SDK converts the result to JSON-safe data;
-3. Inngest persists the step result; and
-4. replay reconstructs a Sandbox object from the persisted result.
+1. The step handler sends the REST request
+2. The SDK converts the result to JSON-safe data
+3. Inngest persists the step result
+4. Replay reconstructs a facade from the persisted result
 
 A persisted step is not sent again on replay. However, if a REST mutation commits and the function process stops before step persistence, the step handler can run again.
 
-There is no sandbox-specific executor fence and no public HTTP idempotency key in the middleware-backed beta.
+There is no sandbox-specific executor fence in the middleware-backed beta.
 
-An observed `operation_ambiguous` is non-retryable. A process crash cannot report ambiguity, so mutation commands should still tolerate ordinary at-least-once execution.
+Create is protected by active-name reuse, while Destroy and identical file replacement are safe to repeat. An observed `operation_ambiguous` is non-retryable. A process crash cannot report that error, so captured Exec, process Start, and arbitrary process Signal require application-level idempotency or reconciliation when duplicate execution is unacceptable.
 
 ### Cleanup
 
@@ -1209,13 +1159,13 @@ The caller owns cleanup.
 
 Create could wait until `RUNNING`, but startup can exceed one request's useful latency and capacity failures need an observable resource. The beta returns honest 201 `RUNNING` or 202 `STARTING` instead.
 
-A future SDK helper such as `waitUntilRunning({ timeout })` can remove polling boilerplate without changing the REST lifecycle contract.
+The SDK provides opt-in readiness waiting through Create's `runningTimeout` option and `waitUntilRunning({ timeout })`. Both poll Get without redispatching Create.
 
 ### Executor-Owned Sandbox Opcodes
 
 An executor opcode can provide stronger mutation dispatch fencing than ordinary `step.run`, but it requires coordinated SDK and executor rollout. The current beta uses middleware and the public REST API so it can ship and iterate independently.
 
-Stronger fencing remains desirable for Create, captured Exec, Start, Signal, Destroy, and file upload.
+Stronger persisted fencing remains desirable for captured Exec, process Start, and process Signal. Create has active-name protection, while Destroy and identical file replacement are already safe to repeat.
 
 ### One Command Abstraction
 
@@ -1272,14 +1222,14 @@ Security review should cover guest isolation, egress policy, API-key handling, p
 
 Customers can use:
 
-- sandbox lifecycle state and timestamps;
-- process state, PID, timestamps, exit code, and termination signal;
-- captured stdout and stderr;
-- sandbox log and process-output streams;
-- stable error codes;
-- `SandboxError.requestId`;
-- sandbox and process UUIDs; and
-- file response size and modification metadata.
+- sandbox lifecycle state and timestamps
+- process state, PID, timestamps, exit code, and termination signal
+- captured stdout and stderr
+- sandbox log and process-output streams
+- stable error codes
+- `SandboxError.requestId`
+- sandbox and process UUIDs
+- file response size and modification metadata
 
 Support requests should include the operation, workspace, request ID, sandbox ID, process ID, error code, and whether retrying could duplicate a mutation.
 
@@ -1287,19 +1237,19 @@ Support requests should include the operation, workspace, request ID, sandbox ID
 
 The service should measure:
 
-- Create latency to `STARTING` and `RUNNING`;
-- capacity rejection and scheduling failure rate;
-- active and leaked sandboxes by workspace;
-- lifecycle duration and Destroy completion latency;
-- API latency and error rate by action and code;
-- `operation_ambiguous` rate by mutation;
-- node-session and transport failures;
-- captured Exec timeout and output-limit rate;
-- process Start, terminal state, Wait timeout, and `LOST` rate;
-- output-ring eviction and slow-subscriber loss;
-- stream admission and post-header terminal errors;
-- file bytes transferred, short downloads, and ambiguous uploads; and
-- durable result truncation frequency and byte counts.
+- Create latency to `STARTING` and `RUNNING`
+- capacity rejection and scheduling failure rate
+- active and leaked sandboxes by workspace
+- lifecycle duration and Destroy completion latency
+- API latency and error rate by action and code
+- `operation_ambiguous` rate by mutation
+- node-session and transport failures
+- captured Exec timeout and output-limit rate
+- process Start, terminal state, Wait timeout, and `LOST` rate
+- output-ring eviction and slow-subscriber loss
+- stream admission and post-header terminal errors
+- file bytes transferred and short downloads
+- durable result truncation frequency and byte counts
 
 Alerts should focus on sustained capacity failure, increasing ambiguity, orphaned `TERMINATING` resources, node disconnects, stream failures, and unexpected `LOST` process rates.
 
@@ -1307,7 +1257,6 @@ Alerts should focus on sustained capacity failure, increasing ambiguity, orphane
 
 ### Near-Term API Decisions
 
-- Should Create accept an SDK-only `runningTimeout`, or should the Sandbox object expose `waitUntilRunning({ timeout })`?
 - What vCPU and memory combinations are supported and how are entitlement errors communicated before scheduling?
 - What sandbox lifetime and concurrency limits will be documented and priced?
 - Should sandbox and process List gain additive status or name filters?
@@ -1318,16 +1267,16 @@ Alerts should focus on sustained capacity failure, increasing ambiguity, orphane
 
 ### Product Follow-Ups
 
-- custom images, templates, and locked dependency environments;
-- snapshots and cloning;
-- ingress and authenticated public services;
-- network policy and customer-selectable VPCs;
-- durable artifacts and recursive file transfer;
-- secrets;
-- interactive terminal and Exec;
-- CLI and MCP wrappers;
-- TypeScript, Python, and Go convenience layers;
-- runtime recovery and lifecycle reconciliation; and
+- custom images, templates, and locked dependency environments
+- snapshots and cloning
+- ingress and authenticated public services
+- network policy and customer-selectable VPCs
+- durable artifacts and recursive file transfer
+- secrets
+- interactive terminal and Exec
+- CLI and MCP wrappers
+- TypeScript, Python, and Go convenience layers
+- runtime recovery and lifecycle reconciliation
 - durable processes and output.
 
 **Rollout plan & Success Metrics**
@@ -1335,38 +1284,22 @@ Alerts should focus on sustained capacity failure, increasing ambiguity, orphane
 ### Rollout
 
 1. Keep the REST API entitlement-gated.
-2. Publish the TypeScript SDK as `inngest@pr-1654` for selected beta users.
-3. Validate complete lifecycle E2E against a production-like Simcity stack.
-4. Collect API, naming, polling, retry, output, and cleanup feedback.
-5. Resolve high-risk ambiguity, cleanup, and signalling issues.
-6. Publish a normal SDK version when the contract is ready for a compatibility commitment.
-7. Expand entitlements gradually while monitoring capacity and failure rates.
+2. Collect API, naming, polling, retry, output, and cleanup feedback
+3. Resolve high-risk ambiguity, cleanup, and signalling issues
+4. Publish a normal SDK version when the contract is ready for a compatibility commitment
+5. Expand entitlements gradually while monitoring capacity and failure rates
 
 ### Success Metrics
 
-- sandbox Create success rate and time to `RUNNING`;
-- percentage of beta users completing Create, command or process, and Destroy;
-- sandbox cleanup success and leaked-resource rate;
-- command and process success rates;
-- ambiguity and duplicate-mutation reports;
-- output truncation, eviction, and stream-loss reports;
-- SDK adoption split between direct and durable surfaces;
-- support tickets per active beta workspace;
-- repeated weekly beta use; and
+- sandbox Create success rate and time to `RUNNING`
+- percentage of beta users completing Create, command or process, and Destroy
+- sandbox cleanup success and leaked-resource rate
+- command and process success rates
+- ambiguity and duplicate-mutation reports
+- output truncation, eviction, and stream-loss reports
+- SDK adoption split between direct and durable surfaces
+- support tickets per active beta workspace
+- repeated weekly beta use
 - conversion of beta use cases into production-ready requirements.
 
 Pricing, resource quotas, and general-availability SLOs are not defined by this spec.
-
-**Documentation**
-
-Public documentation must include:
-
-- a short beta getting-started guide;
-- a TypeScript SDK reference for both surfaces;
-- a complete REST v2 reference;
-- managed-process guidance;
-- errors and retries;
-- current limitations; and
-- copyable examples verified against the beta package and local lifecycle stack.
-
-The public getting-started guide should remain task-focused. This document is the comprehensive implementation and product contract used to keep the REST reference, SDK reference, examples, and limitations consistent.

@@ -16,7 +16,7 @@ You can use a sandbox in two ways:
 | `step.sandbox` | An Inngest function needs memoized sandbox operations | Runs each operation as an ordinary `step.run` step |
 
 Both surfaces use sandbox UUIDs as identity and return immutable snapshots.
-Use the client’s `get()` method to fetch current state.
+Use `get()` to fetch current state or `waitUntilRunning()` to wait for startup.
 
 <Callout variant="warning">
   Managed processes and their output are live, sandbox-local resources. Durable
@@ -69,22 +69,8 @@ try {
     name: `analysis-${crypto.randomUUID()}`,
     vcpu: 2,
     memoryMb: 512,
+    runningTimeout: "60s",
   });
-
-  // Create can return while the sandbox is still starting.
-  while (sandbox.status === "STARTING") {
-    await new Promise((resolve) => setTimeout(resolve, 500));
-
-    const current = await inngest.sandboxes.get(sandbox.id);
-    if (!current) {
-      throw new Error("Sandbox disappeared while starting");
-    }
-    sandbox = current;
-  }
-
-  if (sandbox.status !== "RUNNING") {
-    throw new Error(`Sandbox failed to start: ${sandbox.status}`);
-  }
 
   const result = await sandbox.commands.run({
     command: ["/bin/sh", "-c", "printf 'hello from the sandbox\n'"],
@@ -123,6 +109,7 @@ export const inspectFilesystem = inngest.createFunction(
       name: `inspect-${event.data.jobId}`,
       vcpu: 2,
       memoryMb: 512,
+      runningTimeout: "60s",
     });
 
     const result = await sandbox.commands.run("inspect-files", {
