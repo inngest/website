@@ -152,3 +152,48 @@ If you prefer to set up a dedicated staging environment instead of using [branch
 ## Manually syncing apps
 
 While we strongly recommend our Vercel integration, you can still use Inngest by manually telling Inngest that you've deployed updated functions. You can sync your app [via the Inngest UI](/docs/apps/cloud#sync-a-new-app-in-inngest-cloud) or [via our API with a curl request](/docs/apps/cloud#curl-command).
+
+## Troubleshooting
+
+For sync failures that aren't specific to Vercel — apps landing in the wrong environment, duplicated apps, or syncs appearing under "unattached syncs" — see the [app syncing troubleshooting section](/docs/apps/cloud?ref=docs-deploy-vercel#troubleshooting).
+
+<details>
+  <summary id="integration-owner-left"><h3 className="inline-block my-2">Our integration stopped syncing after the person who installed it left the team</h3></summary>
+
+The Vercel integration is authorized by the Vercel user who installed it. If that person is removed from your Vercel team, synchronization can break: your app still appears in both dashboards, but Vercel can no longer notify Inngest on deploy, so your apps stop syncing automatically.
+
+Symptoms:
+
+- Your app in Inngest still shows an older sync while you keep deploying to Vercel.
+- New or renamed functions never appear in the Inngest dashboard.
+- No sync errors are reported, because no sync is being attempted at all.
+
+To confirm this is what you're hitting, go to **Settings → Integrations → Inngest → Manage → Settings** in Vercel. Under **Access**, look for "This Inngest installation is owned by …" and check whether that person still has access to your Vercel team.
+
+You can **Transfer ownership** within the Vercel dashboard. If there are no eligible recipients, [uninstall and reinstall the integration](#reinstall-integration).
+
+</details>
+
+<details>
+  <summary id="reinstall-integration"><h3 className="inline-block my-2">How do I safely uninstall and reinstall the Vercel integration?</h3></summary>
+
+Your existing functions, event history, and in-flight runs are unaffected when reinstalling. They don't depend on the Vercel link. What pauses is *automatic syncing on deploy*, from the moment you uninstall until you've reconnected. Functions that are already deployed keep running throughout. If you need to sync in the meantime, you can [sync your app manually](#manually-syncing-apps).
+
+**Before you uninstall**, write down:
+
+- The values of [`INNGEST_SIGNING_KEY`](/docs/sdk/environment-variables?ref=docs-deploy-vercel#inngest-signing-key) and [`INNGEST_EVENT_KEY`](/docs/sdk/environment-variables?ref=docs-deploy-vercel#inngest-event-key), from your Vercel project's **Settings → Environment Variables**. Do this for every environment you deploy (production, preview, and any [custom environments](#setting-up-a-staging-environment)).
+- The [serve paths](#multiple-apps-in-one-single-vercel-project) configured for each project on [the Inngest Vercel integration settings page](https://app.inngest.com/settings/integrations/vercel).
+- Your [Deployment Protection bypass secret](#configure-protection-bypass), if you use one — it will need to be re-added.
+
+**Then:**
+
+1. In Vercel, go to **Settings → Integrations → Inngest → Remove**.
+2. Reinstall by working through [Deploying to Vercel](#deploying-to-vercel) with the configuration you noted down.
+
+**Then validate:**
+
+3. Confirm that `INNGEST_SIGNING_KEY` and `INNGEST_EVENT_KEY` are present in your Vercel project's **Settings → Environment Variables**, in each environment you deploy. **If either is missing, re-add it manually** — from your notes, or by retrieving the [signing key](/docs/platform/signing-keys?ref=docs-deploy-vercel) or [event key](/docs/events/creating-an-event-key?ref=docs-deploy-vercel) in the Inngest dashboard.
+4. Trigger a deploy and confirm the app syncs in your Inngest dashboard.
+
+
+</details>
