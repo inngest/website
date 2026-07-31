@@ -361,8 +361,8 @@ Uploads are limited to 100 MiB. A successful upload atomically replaces a
 regular file. It cannot replace `/`, a directory, symlink, device, socket, or
 FIFO.
 
-An upload can return `operation_ambiguous` after replacement may have
-committed. Inspect the target before deciding whether to upload again.
+Repeating an upload with the same path, bytes, and mode is safe. Each successful
+upload atomically replaces the complete destination.
 
 ### `sandbox.files.download(options)`
 
@@ -520,7 +520,10 @@ On replay, a completed step reconstructs the Sandbox object from its memoized re
 
 There is no sandbox-specific executor opcode or dispatch fence. A mutation can
 happen twice if REST commits and the function process stops before the result
-is persisted. An observed `operation_ambiguous` is non-retriable.
+is persisted. Create and Destroy tolerate a repeated request. Captured Exec,
+process Start, and arbitrary process Signal require application-level
+idempotency or reconciliation when duplicates are unacceptable. An observed
+`operation_ambiguous` is non-retriable.
 
 ### Durable captured-output limit
 
@@ -579,6 +582,12 @@ retries. It throws `SandboxError` for API and transport failures and
 `SandboxValidationError` for invalid local input or malformed responses. If
 you catch either error outside an Inngest function, make sure your code owns
 the resulting retry or reconciliation policy.
+
+`SandboxError.action` always identifies the attempted operation.
+`operation_ambiguous` means an unsafe-to-repeat operation may have completed
+without a confirmed result; it is not a sandbox or process state. Use `action`
+to follow the operation-specific recovery guidance in the error guide. Create,
+Destroy, and identical file uploads use retryable availability errors instead.
 
 Read [Sandbox errors and retries](/docs/features/sandboxes/errors-and-retries)
 before implementing retry logic.

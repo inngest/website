@@ -1,15 +1,11 @@
-# Inngest Sandboxes beta: getting started
-
-> **This is an early, experimental beta.** The SDK is distributed from a prerelease pull request, the API is access-gated, and the contract can change without a compatibility period. Use it for evaluation and feedback—not production workloads or data you cannot recreate.
+> **This is an early, experimental beta.** The API is access-gated, and the contract can change without a compatibility period. Use it for evaluation and feedback—not production workloads or data you cannot recreate.
 
 Inngest Sandboxes give server-side code and Inngest functions an isolated Linux environment where they can:
 
-- run commands and capture stdout, stderr, and exit codes;
-- upload and download files;
-- start and manage background processes; and
-- read retained output or follow live output streams.
-
-This guide uses the TypeScript SDK from [`inngest-js` PR #1654](https://github.com/inngest/inngest-js/pull/1654).
+- run commands and capture stdout, stderr, and exit codes
+- upload and download files
+- start and manage background processes
+- read retained output or follow live output streams
 
 ## Before you start
 
@@ -22,21 +18,19 @@ You need:
 
 Sandbox access is currently enabled manually. If Create returns `403 access_denied`, ask the Inngest team to enable the beta for your environment.
 
-## 1. Install the prerelease SDK
+## 1. Install the SDK
 
-Install the build published from PR #1654:
+Install latest:
 
-```sh
-npm install inngest@pr-1654
+```bash
+npm install inngest@latest
 ```
-
-Commit your lockfile. The `pr-1654` prerelease is temporary and should be replaced with a normal SDK version when the beta is released.
 
 ## 2. Create an Inngest client
 
 Create one shared client:
 
-```ts
+```tsx
 // inngest/client.ts
 import { Inngest } from "inngest";
 import { sandboxMiddleware } from "inngest/experimental";
@@ -55,7 +49,7 @@ The middleware enables the durable `step.sandbox` surface. The direct `inngest.s
 
 Use `step.sandbox` when sandbox work is part of a durable Inngest function. Every operation takes a stable step ID.
 
-```ts
+```tsx
 // inngest/functions/run-in-sandbox.ts
 import { inngest } from "../client";
 
@@ -65,34 +59,12 @@ export const runInSandbox = inngest.createFunction(
     triggers: { event: "sandbox/demo.requested" },
   },
   async ({ event, step }) => {
-    let sandbox = await step.sandbox.create("create-sandbox", {
-      // Use stable, lowercase input in real functions.
+    const sandbox = await step.sandbox.create("create-sandbox", {
       name: `beta-${event.data.jobId}`,
       vcpu: 2,
       memoryMb: 512,
+      runningTimeout: "60s",
     });
-
-    // Create can return before the runtime is ready.
-    for (
-      let attempt = 0;
-      sandbox.status === "STARTING" && attempt < 60;
-      attempt++
-    ) {
-      await step.sleep(`wait-for-sandbox-${attempt}`, "1s");
-
-      const current = await step.sandbox.get(
-        `get-sandbox-${attempt}`,
-        sandbox.id
-      );
-      if (!current) {
-        throw new Error("Sandbox disappeared while starting");
-      }
-      sandbox = current;
-    }
-
-    if (sandbox.status !== "RUNNING") {
-      throw new Error(`Sandbox did not start: ${sandbox.status}`);
-    }
 
     const result = await sandbox.commands.run("run-command", {
       command: [
@@ -117,7 +89,17 @@ export const runInSandbox = inngest.createFunction(
 );
 ```
 
-`step.sandbox.create()` returns a usable Sandbox object during both fresh execution and replay. Do not wrap it in another `step.run`, serialize the object, or reconstruct it manually; the middleware memoizes the operation result and restores the Sandbox object automatically.
+`step.sandbox.create()` returns a Sandbox facade on both fresh execution and replay. You do not need to serialize or reconstruct it manually. With `runningTimeout`, Create waits for `RUNNING`; when it is omitted, Create returns as soon as the API accepts the sandbox. Waiting never repeats Create, is capped at five minutes, and does not destroy the sandbox if readiness times out.
+
+When you need the sandbox ID before waiting—for example, to guarantee cleanup after a readiness timeout—use the explicit durable helper:
+
+```ts
+const sandbox = await step.sandbox.create("create-sandbox", options);
+
+const running = await sandbox.waitUntilRunning("wait-for-sandbox", {
+  timeout: "60s",
+});
+```
 
 Send an event with a sandbox-safe, stable job ID:
 
@@ -138,9 +120,9 @@ The example destroys the sandbox on the successful path. For real workflows, add
 
 Use `inngest.sandboxes` from an API route, worker, server action, or script when the current process should make the request immediately.
 
-The direct client is not durable and never retries automatically, so your code owns readiness polling, retries, and cleanup.
+The direct client is not durable. Individual operations are not retried automatically, but `waitUntilRunning()` performs bounded readiness polling and tolerates retryable Get failures until its deadline. It never repeats Create. Your code still owns cancellation and cleanup.
 
-```ts
+```tsx
 import type { Sandbox } from "inngest/experimental";
 import { inngest } from "./inngest/client";
 
@@ -153,23 +135,7 @@ try {
     memoryMb: 512,
   });
 
-  for (
-    let attempt = 0;
-    sandbox.status === "STARTING" && attempt < 60;
-    attempt++
-  ) {
-    await new Promise((resolve) => setTimeout(resolve, 1_000));
-
-    const current = await inngest.sandboxes.get(sandbox.id);
-    if (!current) {
-      throw new Error("Sandbox disappeared while starting");
-    }
-    sandbox = current;
-  }
-
-  if (sandbox.status !== "RUNNING") {
-    throw new Error(`Sandbox did not start: ${sandbox.status}`);
-  }
+  sandbox = await sandbox.waitUntilRunning({ timeout: "60s" });
 
   const result = await sandbox.commands.run({
     command: ["/bin/sh", "-c", "printf 'hello from a direct client\n'"],
@@ -182,17 +148,17 @@ try {
 }
 ```
 
-The returned Sandbox object is an immutable snapshot. Call `inngest.sandboxes.get(sandbox.id)` to retrieve current state.
+The returned Sandbox object is an immutable snapshot. `waitUntilRunning()` and Get return a new facade with current state; they do not mutate the original object.
 
-When work needs to reconnect later, store only `sandbox.id` and call `inngest.sandboxes.get(sandboxId)` or `step.sandbox.get("get-sandbox", sandboxId)`. The SDK does not expose public object-attachment or snapshot-reconstruction helpers.
+When work needs to reconnect later, store only `sandbox.id` and call `inngest.sandboxes.get(sandboxId)` or `step.sandbox.get("get-sandbox", sandboxId)`. There is no manual attach or serialization step.
 
 ## 5. Start and manage a background process
 
 Use a managed process for a server, watcher, worker, or command that should keep running after Start returns. The following examples assume `sandbox` is a `RUNNING` sandbox that has not been destroyed:
 
-```ts
+```tsx
 let worker = await sandbox.processes.start({
-  command: ["/bin/sh", "-c", "printf 'worker started\n'; exec /bin/sleep 300"],
+  command: ["/bin/sh", "-c", "printf 'worker started\n'; exec /bin/sleep 30"],
   cwd: "/",
 });
 
@@ -220,9 +186,9 @@ console.log(worker.terminationSignal); // 9
 
 Inside an Inngest function, add a stable step ID to every call:
 
-```ts
+```tsx
 let worker = await sandbox.processes.start("start-worker", {
-  command: ["/bin/sh", "-c", "exec /bin/sleep 300"],
+  command: ["/bin/sh", "-c", "exec /bin/sleep 30"],
   cwd: "/",
 });
 
@@ -246,7 +212,7 @@ Process IDs are public UUIDs. Internal runtime handles such as `p1` and `p2` are
 
 Files are available on a `RUNNING` direct-client sandbox:
 
-```ts
+```tsx
 await sandbox.files.upload({
   path: "/tmp/input.txt",
   data: "hello from the host\n",
@@ -266,12 +232,12 @@ Uploads replace one complete regular file. The beta does not provide directory l
 
 Live streams are also direct-client only. This example starts its own process, stops reading after a known marker, and then cleans up the process:
 
-```ts
+```tsx
 let streamingWorker = await sandbox.processes.start({
   command: [
     "/bin/sh",
     "-c",
-    "sleep 1; printf 'stream complete\n'; exec /bin/sleep 300",
+    "sleep 1; printf 'stream complete\n'; exec /bin/sleep 30",
   ],
   cwd: "/",
 });
@@ -312,15 +278,15 @@ The stream emits the currently retained tail and then follows new output. It doe
 
 ## Which client should I use?
 
-| Capability | `inngest.sandboxes` | `step.sandbox` |
-| --- | :-: | :-: |
-| Create, List, Get, and Destroy | Yes | Yes |
-| Captured commands | Yes | Yes |
-| Start, List, Get, Signal, and Wait for processes | Yes | Yes |
-| Retained process output | Yes | Yes |
-| Live sandbox logs | Yes | No |
-| Live process output | Yes | No |
-| File upload and download | Yes | No |
+| Capability                                       | `inngest.sandboxes` | `step.sandbox` |
+| ------------------------------------------------ | ------------------- | -------------- |
+| Create, List, Get, and Destroy                   | Yes                 | Yes            |
+| Captured commands                                | Yes                 | Yes            |
+| Start, List, Get, Signal, and Wait for processes | Yes                 | Yes            |
+| Retained process output                          | Yes                 | Yes            |
+| Live sandbox logs                                | Yes                 | No             |
+| Live process output                              | Yes                 | No             |
+| File upload and download                         | Yes                 | No             |
 
 Use `step.sandbox` for operations that belong to an Inngest function and should be memoized as steps. Use `inngest.sandboxes` when you need an immediate server-side client, live streams, or file bodies.
 
@@ -328,7 +294,7 @@ Use `step.sandbox` for operations that belong to an Inngest function and should 
 
 ### The contract is unstable
 
-This is a prerelease SDK backed by an in-development API. Method names, types, limits, error codes, and behavior can change. Do not depend on semver compatibility until Sandboxes have a normal SDK release.
+This is an experimental SDK backed by an in-development API. Method names, types, limits, error codes, and behavior can change. Do not depend on semver compatibility until Sandboxes have a stable SDK release.
 
 ### Access and capacity are gated
 
@@ -341,12 +307,6 @@ Create uses the workspace's default egress-only VPC, default image, and current 
 ### Sandboxes and processes are live resources
 
 Durable steps memoize operation results; they do not make the sandbox, guest process, filesystem, or output durable. Process metadata and output are held in memory and disappear when the sandbox is destroyed. Runtime loss can also lose a process without recovery.
-
-### Mutations are not exactly once
-
-The beta `step.sandbox` implementation uses ordinary `step.run` memoization. A completed step is not sent again on replay, but a mutation can happen twice if the API commits it and the function process stops before Inngest persists the step result.
-
-Create, captured commands, process Start, Signal, Destroy, and file upload can also return `operation_ambiguous` when the platform cannot prove whether a mutation happened. Never retry `operation_ambiguous` automatically.
 
 ### Commands have strict semantics
 
@@ -374,18 +334,32 @@ Persist important output to a file or external store before destroying the sandb
 
 Use `includeChildren: false` for graceful `SIGTERM`. Currently, `includeChildren: true` is reliable only with `SIGKILL`; using descendant delivery with another signal can make terminal state unobservable and produce `LOST`.
 
+### Understand `operation_ambiguous`
+
+`operation_ambiguous` is an error about an unsafe-to-repeat operation's outcome. It is not a sandbox or process state. It means an operation may have completed even though Inngest could not confirm its result.
+
+A `SandboxError` always includes `action`, which tells you what was attempted:
+
+- `exec`: The command may have run. Inspect its external effects or an application-defined completion marker. Do not run it again automatically.
+- `process.start`: A process may be running even though its UUID did not reach the caller. List processes and compare command and start time. If you cannot identify it confidently, stop and reconcile manually rather than starting another process.
+- `process.signal`: The signal may have been delivered. Get or wait for the process. Send another signal only when duplicate delivery is safe for that signal and application.
+
+Create, Destroy, and file upload do not use `operation_ambiguous` for an unconfirmed response. Create is safe to repeat with the same active name and resources, Destroy records teardown intent before contacting the node, and repeating the same upload with the same path, bytes, and mode produces the same file. The SDK reports these failures as retryable availability errors.
+
+Inside an Inngest function, let an unexpected ambiguous error escape. It is non-retryable. Catch it only when the function implements a deliberate reconciliation or operator-review path.
+
 ### Cleanup is your responsibility
 
 Destroying a sandbox removes its processes, retained output, and filesystem. Use `finally` with the direct client. In an Inngest function, keep Destroy as a normal step on the successful path and add an `onFailure` cleanup strategy when leaked resources are unacceptable.
+
+When cleanup must also run after permanent failure, use an `onFailure` handler or a separate deferred cleanup function that receives the sandbox ID. A deferred cleanup function is not equivalent to JavaScript `finally`.
 
 ## Feedback and known issues
 
 This beta exists to validate the API and ergonomics. When reporting feedback, include:
 
-- whether you used `inngest.sandboxes` or `step.sandbox`;
-- the operation and stable error `code`;
-- the sandbox or process ID, when available;
-- whether retrying could duplicate a mutation; and
-- the SDK prerelease (`inngest@pr-1654`).
-
-Track the prerelease implementation or leave feedback on [`inngest-js` PR #1654](https://github.com/inngest/inngest-js/pull/1654).
+- whether you used `inngest.sandboxes` or `step.sandbox`
+- the operation and stable error `code`
+- the sandbox or process ID, when available
+- whether retrying could duplicate a mutation
+- what behavior you expected instead

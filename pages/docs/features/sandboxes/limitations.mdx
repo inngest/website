@@ -20,8 +20,8 @@ These are current product and implementation boundaries to design around.
 ## Sandbox lifecycle
 
 - Create can return `STARTING`.
-- There is no `waitUntilRunning()` helper or dedicated readiness endpoint.
-  Poll Get with a bound.
+- There is no dedicated readiness endpoint. The SDK's `runningTimeout` option
+  and `waitUntilRunning()` helper poll Get with a bounded timeout.
 - Pause, resume, resize, snapshot, clone, and restore are not exposed.
 - There is no user-configurable sandbox TTL.
 - There is no documented sandbox-concurrency limit.
@@ -55,6 +55,9 @@ These are current product and implementation boundaries to design around.
 - Direct Start has no persisted HTTP idempotency key.
 - An ambiguous Start can leave a running process whose UUID the caller did not
   receive.
+- `operation_ambiguous` is an operation-outcome error, not a process state. List
+  processes and reconcile by command and start time before considering another
+  Start.
 - Signals are numeric Unix signals rather than portable names.
 - `includeChildren` is currently reliable only with `SIGKILL`; using it with
   another signal can leave the process state `LOST`.
@@ -123,24 +126,25 @@ These are current product and implementation boundaries to design around.
 ## REST API
 
 - Sandbox List has no name, status, image, or VPC filters.
-- Process List uses opaque cursors with a default of 50 and maximum of 250
-  items per page.
+- Sandbox and process List use opaque cursors with a default of 50 and maximum
+  of 250 items per page.
 - There is no public `Idempotency-Key` contract for Create, Exec, Start,
   Signal, Destroy, or file upload.
 - JSON request bodies reject unknown fields.
 - UUID path parameters use canonical lowercase UUIDs.
 - Scoped 404 responses do not reveal resources in another workspace.
 
-## Not currently supported
+## Planned but not currently available
 
-- snapshots and clones;
-- interactive Exec and PTYs;
-- lifecycle reconciliation and heartbeat recovery;
-- durable process recovery;
-- durable output storage;
-- custom or user-selectable VPCs;
-- custom images and templates;
-- user-configurable TTLs; and
+- snapshots and clones
+- secrets management and automatic secret injection
+- interactive Exec and PTYs
+- lifecycle reconciliation and heartbeat recovery
+- durable process recovery
+- durable output storage
+- custom or user-selectable VPCs
+- custom images and templates
+- user-configurable TTLs
 - live data on the `step.sandbox` surface.
 
 <Callout variant="warning">

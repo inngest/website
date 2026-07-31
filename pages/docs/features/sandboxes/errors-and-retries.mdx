@@ -18,13 +18,17 @@ REST errors use an `errors` array:
   "errors": [
     {
       "code": "operation_ambiguous",
-      "message": "Sandbox process operation may have executed and must not be retried automatically"
+      "message": "Sandbox process may have started; list processes and reconcile before starting another"
     }
   ]
 }
 ```
 
 Use `code` for control flow. Messages are written for humans and can change.
+
+`operation_ambiguous` is not a sandbox or process state. It means an
+unsafe-to-repeat operation may have completed even though the platform could
+not confirm its result. Use the action-specific guidance below.
 
 ## SDK errors
 
@@ -45,6 +49,10 @@ class SandboxError extends Error {
 }
 ```
 
+`action` always identifies the operation that failed. Use `action`, `code`,
+`ambiguous`, and `retryable` for control flow. Use `message` for human-readable
+context.
+
 Invalid local input and malformed server responses throw
 `SandboxValidationError`.
 
@@ -52,9 +60,9 @@ The direct client never retries automatically, even when `retryable` is true.
 
 Inside `step.sandbox`:
 
-- `SandboxError` with `retryable: true` becomes a retriable step error;
-- non-retryable `SandboxError` becomes `NonRetriableError`; and
-- `SandboxValidationError` becomes `NonRetriableError`.
+- `SandboxError` with `retryable: true` becomes a retriable step error
+- non-retryable `SandboxError` becomes `NonRetriableError`
+- `SandboxValidationError` becomes `NonRetriableError`
 
 This uses the function's ordinary step retry behavior. It does not provide
 exactly-once dispatch.
@@ -75,12 +83,12 @@ exactly-once dispatch.
 | 404 | `sandbox_process_output_not_retained` | Process exists but output was evicted | Output cannot be recovered through this API |
 | 409 | `sandbox_name_taken` | Active sandbox name is already used | Choose another name or use the existing sandbox |
 | 409 | `invalid_request` | Sandbox is not in the required state | Get and inspect current state |
-| 409 | `operation_ambiguous` | Mutation may have happened | Never retry automatically |
+| 409 | `operation_ambiguous` | The result of the operation in `SandboxError.action` is unknown | Follow the action-specific recovery guidance below |
 | 413 | `sandbox_exec_output_too_large` | Direct output exceeded 4 MiB | Command may have run; do not retry blindly |
 | 413 | `sandbox_file_too_large` | File exceeds 100 MiB | Reduce or split the file |
 | 429 | `rate_limited` | Request rejected by rate limit | Retry with bounded backoff |
 | 500 | `internal_error` | Unexpected failure | Retry only when the operation is proven safe |
-| 503 | `compute_unavailable` | Node or compute unavailable | Safe reads and confirmed pre-dispatch mutations can retry |
+| 503 | `compute_unavailable` | Operation was rejected before dispatch or is safe to repeat | Safe reads and safe-to-repeat mutations can retry |
 | 504 | `sandbox_exec_timed_out` | Exec observation timed out | Command may have run; do not retry blindly |
 | 504 | `sandbox_process_wait_timed_out` | Wait observation timed out | Process continues; waiting again is safe |
 
@@ -92,20 +100,26 @@ exactly-once dispatch.
 
 Safe reads do not modify sandbox state:
 
-- List and Get sandbox;
-- List, Get, and Wait process;
-- retained process output;
-- sandbox and process streams; and
-- file download.
+- List and Get sandbox
+- List, Get, and Wait process
+- retained process output
+- sandbox and process streams
+- file download
 
 Mutations can have external effects:
 
-- Create sandbox;
-- captured Exec;
-- Destroy sandbox;
-- Start process;
-- Signal process; and
-- file upload.
+- Create sandbox
+- captured Exec
+- Destroy sandbox
+- Start process
+- Signal process
+- file upload
+
+Not every mutation has the same retry behavior. Repeating the same Create
+request recovers the matching active sandbox, Destroy records durable teardown
+intent, and uploading the same bytes and mode to the same path produces the
+same file. Captured Exec, process Start, and arbitrary process Signal can
+produce an additional side effect when repeated.
 
 ## Retry safe reads
 
@@ -142,37 +156,47 @@ async function getSandboxWithBackoff(id: string) {
 The direct client does not reconnect streams. A manual reconnect can replay
 retained chunks, so consumers must tolerate duplicates.
 
-## Retry mutations only before dispatch
+## Retry or reconcile mutations deliberately
 
-A mutation can retry only when the service confirms that it failed before
-dispatch. Examples include a 429 rate-limit response or a 503 response
-produced before a node session was obtained.
+A non-idempotent mutation can retry only when the service confirms that it
+failed before dispatch. Examples include a 429 rate-limit response or a 503
+response produced before a node session was obtained.
 
-Do not infer safety from a missing HTTP response. The direct SDK
-conservatively maps a transport failure during a mutation to
-`operation_ambiguous`.
+For Create, repeat the exact request. While the matching sandbox is active, its
+name and resource request identify the same sandbox. For Destroy, Get the
+sandbox and repeat Destroy if necessary. For file upload, repeating the same
+PUT with the same path, bytes, and mode is safe.
+
+Do not infer that a non-idempotent operation is safe from a missing HTTP
+response. The response can be lost after dispatch.
 
 ## Handle ambiguous operations
 
-Ambiguity means the platform cannot prove whether the mutation happened:
+Ambiguity means the platform cannot prove whether an unsafe-to-repeat operation
+happened. It does not mean the sandbox or process entered an `AMBIGUOUS` state.
 
-Do not catch an ambiguous error just to log it or call the operation again.
-Inside an Inngest function, let the error escape; it is non-retryable. With
-the direct client, let it escape unless you are implementing an explicit
-reconciliation or operator-review path.
+Do not blindly retry an ambiguous error. Inside an Inngest function, let the
+error escape; it is non-retryable. With the direct client, follow the
+action-specific guidance below only when your code deliberately owns the retry,
+reconciliation, or operator-review path.
 
-Possible reconciliation strategies:
+Use `SandboxError.action` to choose the recovery path:
 
-- **Create:** list sandboxes and inspect the intended unique name.
-- **Destroy:** get and inspect `TERMINATING` or terminal state.
-- **Start:** list processes if the UUID is known. Direct Start does not expose
-  its generated UUID before dispatch, so strong reconciliation is not always
-  possible.
-- **Signal:** get or wait, remembering that not every signal terminates a
-  process.
-- **File upload:** download or inspect the destination.
-- **Captured Exec:** design the command to be idempotent or write a completion
-  marker.
+| Action | What may have happened | Recovery |
+| --- | --- | --- |
+| `exec` | The command may have run, but its captured result was not confirmed | Inspect the command's external effects or an application-defined completion marker. Do not run it again automatically. |
+| `process.start` | A process may be running, but its generated UUID may not have reached the caller | List processes and compare command and start time. If the process cannot be identified confidently, stop and require operator or application-level reconciliation. |
+| `process.signal` | The signal may have been delivered | Get or wait for the process. Send another signal only when duplicate delivery is safe for that signal and application. |
+
+Create, Destroy, and file upload do not use `operation_ambiguous` for an
+unconfirmed response. Create is safe to repeat with the same active name and
+resources, Destroy records teardown intent before contacting the node, and an
+identical upload produces the same file. The SDK reports these failures as
+retryable availability errors.
+
+`sandbox_exec_output_too_large` and `sandbox_exec_timed_out` use more specific
+codes, but they are also ambiguous: the command may have run even though its
+complete result was not observed.
 
 Reconciliation is application policy. The SDK does not guess.
 
@@ -185,13 +209,15 @@ Reconciliation is application policy. The SDK does not guess.
 3. Inngest persists the result.
 4. Replay reconstructs the Sandbox object from that result.
 
-If a REST mutation commits and the function process stops before the result is
+If a REST operation commits and the function process stops before the result is
 persisted, Inngest can run the handler again. There is no sandbox-specific
-executor fence and no HTTP `Idempotency-Key`.
+executor fence.
 
 An observed `operation_ambiguous` is non-retriable. A process crash cannot
-report that error, so mutation commands should tolerate the ordinary
-at-least-once step window.
+report that error. Create and Destroy tolerate the ordinary at-least-once step
+window. Captured Exec, process Start, and arbitrary process Signal require
+application-level idempotency or reconciliation when duplicate execution is
+unacceptable.
 
 ## Validation and size limits
 

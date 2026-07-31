@@ -240,11 +240,13 @@ Important errors:
 | 400 | `invalid_request` or `invalid_field_format` | Invalid JSON, name, CPU, or memory |
 | 403 | `access_denied` | Sandbox access is not enabled |
 | 409 | `sandbox_name_taken` | Active sandbox already uses the name |
-| 409 | `operation_ambiguous` | Sandbox was created but its resource could not be confirmed |
 | 429 | `rate_limited` | Rejected before Create |
 | 503 | `compute_unavailable` | Compute could not accept Create |
 
-There is no HTTP `Idempotency-Key`. Do not retry `operation_ambiguous`.
+Create is idempotent for an active sandbox with the same name and resource
+request. Repeating the exact request returns that sandbox instead of creating a
+second one. Reusing the name with different resources returns
+`sandbox_name_taken`.
 
 ## List sandboxes
 
@@ -364,11 +366,13 @@ Combined raw output is limited to 4 MiB.
 
 | HTTP | Code | Meaning |
 | ---: | --- | --- |
-| 409 | `operation_ambiguous` | Command may have executed |
+| 409 | `operation_ambiguous` | The command may have executed, but its result was not confirmed |
 | 413 | `sandbox_exec_output_too_large` | Output exceeded 4 MiB; command may have executed |
 | 504 | `sandbox_exec_timed_out` | Observation timed out; command may have executed |
 
-Do not retry these automatically.
+`operation_ambiguous` is an error about the Exec outcome, not a sandbox state.
+Do not retry these automatically. Inspect the command's external effects or an
+application-defined completion marker before deciding what to do next.
 
 ## Stream sandbox logs
 
@@ -423,8 +427,9 @@ device, socket, or FIFO. A successful write uses an atomic replacement.
 }
 ```
 
-Success is HTTP 200. A connection failure after replacement may return
-`409 operation_ambiguous`.
+Success is HTTP 200. If the response cannot be confirmed after replacement,
+the API returns retryable `503 compute_unavailable`. Repeating the same PUT
+with the same path, bytes, and mode is safe.
 
 ## Download a file
 
@@ -484,8 +489,11 @@ Response: HTTP 201.
 ```
 
 The platform generates the UUID before dispatch and never exposes internal
-guest handles. Start is not HTTP-idempotent. Do not retry
-`409 operation_ambiguous`.
+guest handles. Start is not HTTP-idempotent. `409 operation_ambiguous` means a
+process may be running even though the caller did not receive its UUID and PID.
+Do not retry Start automatically. List processes and compare command and start
+time. If the process cannot be identified confidently, require application-level
+or operator reconciliation.
 
 ## List managed processes
 
@@ -555,7 +563,9 @@ Content-Type: application/json
 | `includeChildren` | `false` | Boolean |
 
 Success returns HTTP 204. An already-terminal process accepts Signal as a
-no-op. Do not resend `409 operation_ambiguous` automatically. Currently,
+no-op. `409 operation_ambiguous` means the signal may have been delivered. Get
+or wait for the process, and resend only when duplicate delivery is safe for
+that signal and application. Currently,
 `includeChildren: true` should be used only with signal 9 (`SIGKILL`);
 descendant delivery with other signals can make terminal state unobservable.
 

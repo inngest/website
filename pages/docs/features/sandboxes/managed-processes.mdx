@@ -116,8 +116,13 @@ receives the UUID and PID. The API reports:
 409 operation_ambiguous
 ```
 
-Do not call Start again automatically. A second call can create another
-process.
+This is an error about the outcome of Start, not a process state. A process may
+be running even though the caller did not receive its resource.
+
+Do not call Start again automatically. List processes and compare their command
+and start time with the attempted Start. If you cannot identify the process
+confidently, stop and require application-level or operator reconciliation. A
+second Start can create another process.
 
 Direct REST and `inngest.sandboxes` do not have a persisted
 `Idempotency-Key` intent.
@@ -234,9 +239,11 @@ terminal state unobservable and produce `LOST`.
 Signalling an already-terminal process succeeds without changing it. A
 missing process returns `sandbox_process_not_found`.
 
-Signal is a mutation. Do not automatically resend a Signal that returns
-`operation_ambiguous`. With `step.sandbox`, a Signal can also happen twice
-across the ordinary `step.run` crash window.
+Signal is a mutation. `operation_ambiguous` means the signal may have been
+delivered even though its response was lost. Get or wait for the process before
+deciding what to do next. Send another signal only when duplicate delivery is
+safe for that signal and application. With `step.sandbox`, a Signal can also
+happen twice across the ordinary `step.run` crash window.
 
 ## Wait for a terminal state
 
