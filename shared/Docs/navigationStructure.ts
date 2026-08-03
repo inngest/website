@@ -547,18 +547,6 @@ const sectionLearn: (NavGroup | NavLink)[] = [
             href: "/docs/features/inngest-functions/steps-workflows/step-ai-orchestration",
           },
           { title: "Durable Fetch", href: tsRef("v4", "functions/fetch") },
-          // Scoring belongs to Agent Evals in the new IA; it stays here until
-          // that section exists so the pages keep a nav home.
-          {
-            title: "Scoring",
-            href: "/docs/features/inngest-functions/steps-workflows/scoring",
-            tag: "beta",
-          },
-          {
-            title: "Deferred scoring",
-            href: "/docs/features/inngest-functions/steps-workflows/deferred-scoring",
-            tag: "beta",
-          },
         ],
       },
       {
@@ -759,9 +747,106 @@ const sectionLearn: (NavGroup | NavLink)[] = [
   },
   {
     title: "Durable Agents",
-    href: `/docs/learn/durable-agents`,
+    links: [
+      {
+        title: "What is a durable agent?",
+        href: `/docs/learn/durable-agents`,
+      },
+      // The three guides below are today's AI pattern pages. They keep their
+      // URLs through Phase 1 and get re-routed to the new Agents guides once
+      // those land (DEV-482).
+      {
+        title: "Agent tool loops",
+        href: `/docs/ai-patterns/agent-tool-loops`,
+      },
+      {
+        title: "Human-in-the-loop",
+        href: `/docs/ai-patterns/human-in-the-loop`,
+      },
+      {
+        title: "Sub-agents",
+        href: `/docs/ai-patterns/sub-agent-delegation`,
+      },
+      // Phase 2b (DEV-482) writes the rest of this section. Uncomment each
+      // entry as its page lands; leaving them out keeps the nav free of hrefs
+      // that would 404 and leak into llms.txt and the sitemap.
+      // { title: "Create an agent", href: `/docs/agents/create` },
+      // { title: "Build a harness", href: `/docs/agents/harness` },
+      // { title: "Instructions", href: `/docs/agents/instructions` },
+      // { title: "Adapters", href: `/docs/agents/adapters` },
+      // { title: "Tools", href: `/docs/agents/tools` },
+      // { title: "Hooks", href: `/docs/agents/hooks` },
+      // {
+      //   // Ways to extend an agent or harness, not core features — each is
+      //   // intentionally small.
+      //   title: "Extensions",
+      //   links: [
+      //     { title: "Human in the loop", href: `/docs/agents/extensions/human-in-the-loop` },
+      //     { title: "Memory", href: `/docs/agents/extensions/memory` },
+      //     { title: "Skills", href: `/docs/agents/extensions/skills` },
+      //     { title: "Sub-agents", href: `/docs/agents/extensions/sub-agents` },
+      //   ],
+      // },
+    ],
   },
-  { title: "Agent Evals", href: "/docs/learn/agent-evals", tag: "beta" },
+  {
+    title: "Agent Evals",
+    links: [
+      { title: "Overview", href: "/docs/learn/agent-evals", tag: "beta" },
+      {
+        title: "Online scoring",
+        href: "/docs/features/inngest-functions/steps-workflows/scoring",
+        tag: "beta",
+      },
+      {
+        title: "Deferred scoring",
+        href: "/docs/features/inngest-functions/steps-workflows/deferred-scoring",
+        tag: "beta",
+      },
+      // Phase 2b (DEV-483) expands this section:
+      // { title: "Offline evals", href: `/docs/agent-evals/offline-evals` },
+      // { title: "Scoring experiments", href: `/docs/agent-evals/scoring-experiments` },
+      // { title: "Measuring scores", href: `/docs/agent-evals/measuring-scores` },
+      // { title: "Scores for self-improving agents", href: `/docs/agent-evals/self-improving-agents` },
+    ],
+  },
+  {
+    // Promoted out of Platform → Monitor into a hallmark top-level bucket. The
+    // pages keep their /docs/platform/monitor/* URLs in Phase 1; any URL change
+    // is Phase 2a.
+    title: "Traces & Observability",
+    links: [
+      { title: "Traces", href: "/docs/platform/monitor/traces" },
+      // AI traces is a new page in Phase 2b (DEV-483).
+      // { title: "AI traces", href: `/docs/platform/monitor/ai-traces` },
+      { title: "Insights", href: "/docs/platform/monitor/insights" },
+      {
+        title: "Metrics & dashboards",
+        href: "/docs/platform/monitor/observability-metrics",
+      },
+      // The purpose of these two is unresolved (DEV-475); they keep a nav home
+      // until that lands.
+      {
+        title: "Inspecting runs",
+        href: "/docs/platform/monitor/inspecting-function-runs",
+      },
+      {
+        title: "Inspecting events",
+        href: "/docs/platform/monitor/inspecting-events",
+      },
+    ],
+  },
+  // Sandboxes is written in Phase 2b (DEV-481). None of these pages exist yet,
+  // so the section stays commented out rather than gated — an `unreleased` nav
+  // entry would still surface in llms.txt, which does not filter on the label.
+  // {
+  //   title: "Sandboxes",
+  //   links: [
+  //     { title: "Creating sandboxes", href: `/docs/sandboxes` },
+  //     { title: "Secrets", href: `/docs/sandboxes/secrets` },
+  //     { title: "Lifecycle", href: `/docs/sandboxes/lifecycle` },
+  //   ],
+  // },
   {
     title: "Realtime",
     links: [
@@ -810,18 +895,6 @@ const sectionLearn: (NavGroup | NavLink)[] = [
       {
         title: "Agents",
         links: [
-          {
-            title: "Agent tool loops",
-            href: `/docs/ai-patterns/agent-tool-loops`,
-          },
-          {
-            title: "Human-in-the-loop",
-            href: `/docs/ai-patterns/human-in-the-loop`,
-          },
-          {
-            title: "Sub-agents",
-            href: `/docs/ai-patterns/sub-agent-delegation`,
-          },
           {
             title: "CLI for coding agents",
             href: `/docs/ai-patterns/cli-for-coding-agents`,
@@ -884,22 +957,6 @@ const sectionLearn: (NavGroup | NavLink)[] = [
             href: "/docs/platform/manage/rotating-keys",
           },
           { title: "API keys", href: "/docs/platform/api-keys" },
-        ],
-      },
-      {
-        title: "Monitor",
-        links: [
-          {
-            title: "Inspecting runs",
-            href: "/docs/platform/monitor/inspecting-function-runs",
-          },
-          { title: "Traces", href: "/docs/platform/monitor/traces" },
-          {
-            title: "Observability and metrics",
-            href: "/docs/platform/monitor/observability-metrics",
-          },
-          { title: "Insights", href: "/docs/platform/monitor/insights" },
-          { title: "Events", href: "/docs/platform/monitor/inspecting-events" },
         ],
       },
       {
