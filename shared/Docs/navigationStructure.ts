@@ -911,11 +911,6 @@ const sectionLearn: (NavGroup | NavLink)[] = [
       // Needs a re-think: standalone doc, folded into the CLI guide, or a
       // Pattern. See DEV-467.
       { title: "Debugging with the CLI", href: "/docs/guides/debug-with-cli" },
-      {
-        title: "CLI for coding agents",
-        href: `/docs/ai-patterns/cli-for-coding-agents`,
-        tag: "new",
-      },
       { title: "AI development tools", href: "/docs/ai-dev-tools" },
       { title: "Agent skills", href: "/docs/ai-dev-tools/agent-skills" },
       { title: "MCP servers", href: "/docs/ai-dev-tools/mcp" },

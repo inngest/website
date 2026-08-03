@@ -219,6 +219,11 @@ export const permanentRedirects = [
   ["/product/how-inngest-works", "/"],
   // The scheduled-jobs page moved under /uses; preserve the old URL.
   ["/scheduled-jobs", "/uses/scheduled-jobs"],
+
+  // Docs IA re-org, Phase 1 (DEV-469). The AI patterns guide list is for
+  // building agents, not for developer tooling, so the CLI page is retired into
+  // the new Local development section.
+  ["/docs/ai-patterns/cli-for-coding-agents", "/docs/local-development"],
 ];
 
 const redirectMap = new Map(permanentRedirects);
