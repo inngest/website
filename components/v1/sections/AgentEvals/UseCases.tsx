@@ -22,6 +22,10 @@ const STUDIES: CaseStudyItem[] = [
         external pipeline, no trace ID threading.
       </>
     ),
+    cta: {
+      label: "Read the pattern",
+      href: "/docs/patterns/ai-evals/score-agents-on-real-outcomes?ref=agent-evals-usecases",
+    },
   },
   {
     id: "ab-test",
@@ -32,16 +36,28 @@ const STUDIES: CaseStudyItem[] = [
         cost, and latency across real users.
       </>
     ),
+    cta: {
+      label: "Read the pattern",
+      href: "/docs/patterns/ai-evals/run-experiments-in-production?ref=agent-evals-usecases",
+    },
   },
   {
     id: "llm-judge",
     title: "LLM-as-a-judge",
     body: <>Add this pattern to any experiment.</>,
+    cta: {
+      label: "Read the docs",
+      href: "/docs/examples/ai-eval-scorer-quickstart?ref=agent-evals-usecases",
+    },
   },
   {
     id: "cost",
     title: "Cost management",
     body: <>Learn how to instrument and measure costs across agents.</>,
+    cta: {
+      label: "Read the docs",
+      href: "/docs/examples/ai-metadata-quickstart?ref=agent-evals-usecases",
+    },
   },
   {
     id: "model-fallback",
@@ -52,6 +68,10 @@ const STUDIES: CaseStudyItem[] = [
         outage.
       </>
     ),
+    cta: {
+      label: "Read the docs",
+      href: "/docs/features/inngest-functions/error-retries/rollbacks?ref=agent-evals-usecases",
+    },
   },
 ];
 

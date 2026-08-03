@@ -53,7 +53,7 @@ const RETRIES_CONTENT: TabContent = {
       icon: "/assets/v1/scale-instantly/ai-agents.svg",
       iconWidth: 27.77,
       iconHeight: 32,
-      href: "/ai",
+      href: "/ai?ref=homepage-durable-execution",
     },
     {
       title: "API Endpoints",
@@ -61,7 +61,7 @@ const RETRIES_CONTENT: TabContent = {
       icon: "/assets/v1/scale-instantly/api-endpoints.svg",
       iconWidth: 30.02,
       iconHeight: 25.71,
-      href: "/docs/learn/durable-endpoints",
+      href: "/docs/learn/durable-endpoints?ref=homepage-durable-execution",
     },
     {
       title: "Workflows",
@@ -69,7 +69,7 @@ const RETRIES_CONTENT: TabContent = {
       icon: "/assets/v1/scale-instantly/workflows.svg",
       iconWidth: 32,
       iconHeight: 32,
-      href: "/ai",
+      href: "/ai?ref=homepage-durable-execution",
     },
     {
       title: "Schedules",
@@ -77,7 +77,7 @@ const RETRIES_CONTENT: TabContent = {
       icon: "/assets/v1/scale-instantly/schedules.svg",
       iconWidth: 32,
       iconHeight: 12.85,
-      href: "/uses/scheduled-jobs",
+      href: "/uses/scheduled-jobs?ref=homepage-durable-execution",
     },
     {
       title: "Serverless",
@@ -85,7 +85,7 @@ const RETRIES_CONTENT: TabContent = {
       icon: "/assets/v1/scale-instantly/serverless.svg",
       iconWidth: 32,
       iconHeight: 20.52,
-      href: "/docs/reference/typescript/v4/extended-traces#serverless",
+      href: "/docs/reference/typescript/v4/extended-traces?ref=homepage-durable-execution#serverless",
     },
     {
       title: "Events",
@@ -93,7 +93,7 @@ const RETRIES_CONTENT: TabContent = {
       icon: "/assets/v1/scale-instantly/events.svg",
       iconWidth: 21.65,
       iconHeight: 32,
-      href: "/uses/webhooks",
+      href: "/uses/webhooks?ref=homepage-durable-execution",
     },
   ],
 };
@@ -118,31 +118,37 @@ const FLOW_CONTROL_CONTENT: TabContent = {
     {
       title: "Concurrency Control",
       body: "Every tenant gets their fair share, no matter how much work one of them throws at your app.",
+      href: "/docs/guides/concurrency?ref=homepage-flow-control",
       ...icon(0),
     },
     {
       title: "Throttling & Rate Limiting",
       body: "Absorb traffic spikes without dropping work—excess runs queue and drain at your rate.",
+      href: "/docs/guides/throttling?ref=homepage-flow-control",
       ...icon(1),
     },
     {
       title: "Debouncing",
       body: "Don’t burn compute on redundant work. Collapse bursts of identical events into one execution.",
+      href: "/docs/guides/debounce?ref=homepage-flow-control",
       ...icon(2),
     },
     {
       title: "Dynamic Prioritization",
       body: "Decide which work should take priority without starving the rest.",
+      href: "/docs/guides/priority?ref=homepage-flow-control",
       ...icon(3),
     },
     {
       title: "Batch Processing",
       body: "Reduce invocation costs on high-volume workloads by ensuring whatever comes first triggers the run.",
+      href: "/docs/guides/batching?ref=homepage-flow-control",
       ...icon(4),
     },
     {
       title: "Declarative Cancellation",
       body: "Cancel in-flight runs automatically if a matching event occurs.",
+      href: "/docs/features/inngest-functions/cancellation/cancel-on-events?ref=homepage-flow-control",
       ...icon(5),
     },
   ],
@@ -159,26 +165,31 @@ const OBSERVABILITY_CONTENT: TabContent = {
     {
       title: "Scoring",
       body: "One shot was never enough. We let you use real production outcomes to eval variants.",
+      href: "/docs/patterns/ai-evals/score-agents-on-real-outcomes?ref=homepage-agent-observability",
       ...icon(0),
     },
     {
       title: "Live Experiments",
       body: "Test what works against live production traffic, or in a sandbox.",
+      href: "/docs/patterns/ai-evals/run-experiments-in-production?ref=homepage-agent-observability",
       ...icon(1),
     },
     {
       title: "100% not 1%",
       body: "Track outcomes across every run, without needing to sample.",
+      href: "/docs/platform/monitor/traces?ref=homepage-agent-observability",
       ...icon(2),
     },
     {
       title: "Datasets",
       body: "Generate datasets of good and bad runs for evals and offline replay.",
+      href: "/docs/platform/monitor/insights?ref=homepage-agent-observability",
       ...icon(3),
     },
     {
       title: "Sessions",
       body: "Group multiple agent loops or turns as a single conversation, thread, or however you choose.",
+      href: "/docs/features/events-triggers/sessions?ref=homepage-agent-observability",
       ...icon(4),
     },
   ],
