@@ -901,42 +901,50 @@ const sectionLearn: (NavGroup | NavLink)[] = [
     ],
   },
   {
-    title: "Guides",
+    // Pulls the CLI, dev server and agent tooling together. These are guides —
+    // the CLI reference lives in the Reference tab.
+    title: "Local development",
     links: [
-      { title: "Local development", href: `/docs/local-development` },
+      // Becomes the "Inngest CLI + Dev server" guide (how to use each, how it
+      // works, with screenshots) in Phase 2a.
+      { title: "Dev server", href: `/docs/local-development` },
+      // Needs a re-think: standalone doc, folded into the CLI guide, or a
+      // Pattern. See DEV-467.
+      { title: "Debugging with the CLI", href: "/docs/guides/debug-with-cli" },
       {
-        title: "CLI",
+        title: "CLI for coding agents",
+        href: `/docs/ai-patterns/cli-for-coding-agents`,
         tag: "new",
+      },
+      { title: "AI development tools", href: "/docs/ai-dev-tools" },
+      { title: "Agent skills", href: "/docs/ai-dev-tools/agent-skills" },
+      { title: "MCP servers", href: "/docs/ai-dev-tools/mcp" },
+      {
+        title: "AgentKit",
+        href: "https://agentkit.inngest.com",
+        target: "_blank",
+      },
+    ],
+  },
+  {
+    title: "Platform",
+    links: [
+      { title: "Environments", href: `/docs/platform/environments` },
+      {
+        // Two apps docs today; merging them into one page is DEV-474.
+        title: "Apps",
         links: [
-          { title: "CLI reference", href: "/docs/cli" },
-          { title: "Debug with the CLI", href: "/docs/guides/debug-with-cli" },
+          { title: "Overview", href: "/docs/apps" },
+          { title: "Managing apps", href: `/docs/platform/manage/apps` },
         ],
       },
       {
-        title: "Events and Triggers",
-        links: [
-          {
-            title: "Consuming webhook events",
-            href: `/docs/platform/webhooks`,
-          },
-        ],
-      },
-      {
-        title: "Agents",
-        links: [
-          {
-            title: "CLI for coding agents",
-            href: `/docs/ai-patterns/cli-for-coding-agents`,
-            tag: "new",
-          },
-        ],
-      },
-      {
-        title: "Deploying",
+        // Replaces the old split between "Sync your app" and the deployment
+        // overview.
+        title: "Deployment",
         links: [
           { title: "Overview", href: `/docs/platform/deployment` },
           { title: "Sync your app", href: `/docs/apps/cloud` },
-          { title: "Self-hosting", href: `/docs/self-hosting` },
           {
             title: "Cloud providers",
             links: [
@@ -950,37 +958,31 @@ const sectionLearn: (NavGroup | NavLink)[] = [
               { title: "Netlify", href: `/docs/deploy/netlify` },
               { title: "Render", href: `/docs/deploy/render` },
               {
-                title: "Cloud Provider Usage Limits",
+                title: "Cloud provider usage limits",
                 href: `/docs/usage-limits/providers`,
               },
             ],
           },
         ],
       },
+      { title: "Webhooks", href: `/docs/platform/webhooks` },
       {
-        title: "Environments and Apps",
-        links: [
-          { title: "Overview", href: "/docs/apps" },
-          { title: "Environments", href: `/docs/platform/environments` },
-          { title: "Apps", href: `/docs/platform/manage/apps` },
-          { title: "Event keys", href: `/docs/events/creating-an-event-key` },
-          { title: "Signing keys", href: `/docs/platform/signing-keys` },
-        ],
-      },
-    ],
-  },
-  {
-    title: "Platform",
-    links: [
-      {
-        title: "Manage",
+        // Renames the old "Manage" group.
+        title: "Recovery tools",
         links: [
           { title: "Bulk replay", href: "/docs/platform/replay" },
           {
             title: "Bulk cancel",
             href: "/docs/platform/manage/bulk-cancellation",
           },
-          { title: "Pausing", href: "/docs/guides/pause-functions" },
+          { title: "Pausing functions", href: "/docs/guides/pause-functions" },
+        ],
+      },
+      {
+        title: "Managing keys",
+        links: [
+          { title: "Event keys", href: `/docs/events/creating-an-event-key` },
+          { title: "Signing keys", href: `/docs/platform/signing-keys` },
           {
             title: "Rotating keys",
             href: "/docs/platform/manage/rotating-keys",
@@ -991,7 +993,6 @@ const sectionLearn: (NavGroup | NavLink)[] = [
       {
         title: "Integrations",
         links: [
-          { title: "Neon", href: `/docs/features/events-triggers/neon` },
           {
             title: "Datadog",
             href: "/docs/platform/monitor/datadog-integration",
@@ -1000,34 +1001,19 @@ const sectionLearn: (NavGroup | NavLink)[] = [
             title: "Prometheus",
             href: "/docs/platform/monitor/prometheus-metrics-export-integration",
           },
+          { title: "Neon", href: `/docs/features/events-triggers/neon` },
         ],
       },
-    ],
-  },
-  {
-    title: "AI",
-    links: [
-      { title: "AI development tools", href: "/docs/ai-dev-tools" },
-      {
-        title: "Agent Plugins and Skills",
-        href: "/docs/ai-dev-tools/agent-skills",
-      },
-      { title: "Dev Server MCP", href: "/docs/ai-dev-tools/mcp" },
-      {
-        title: "AgentKit",
-        href: "https://agentkit.inngest.com",
-        target: "_blank",
-      },
+      { title: "Security", href: "/docs/learn/security" },
+      { title: "Limits", href: `/docs/usage-limits/inngest` },
     ],
   },
   {
     title: "Resources",
     links: [
-      { title: "Security", href: "/docs/learn/security" },
-      { title: "Glossary", href: `/docs/learn/glossary` },
-      { title: "Release phases", href: `/docs/release-phases` },
       { title: "FAQ", href: `/docs/faq` },
-      { title: "Limitations", href: `/docs/usage-limits/inngest` },
+      { title: "Release phases", href: `/docs/release-phases` },
+      { title: "Glossary", href: `/docs/learn/glossary` },
     ],
   },
 ];
