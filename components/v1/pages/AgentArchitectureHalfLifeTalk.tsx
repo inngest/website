@@ -73,6 +73,19 @@ const OTHER_EVENTS = sortEventsByDate([
     href: "/events/no-half-baked-agents-breakfast",
     image: "/assets/v1/events/no-half-baked-agents-breakfast.png",
   },
+  {
+    id: "lightning-lab-ship-your-first-eval",
+    title: "Inngest Lightning Lab: Ship Your First Eval",
+    date: "Wednesday, August 12, 2026 · 11AM PT / 2PM ET",
+    startsAt: "2026-08-12T14:00:00-04:00",
+    location: "Online",
+    topics: ["webinar", "evals", "agent evals"],
+    excerpt:
+      "You're already running agents in prod — see how to turn the runs you're producing into continuous online scores without adding a second SDK or system.",
+    href: "/events/lightning-lab-ship-your-first-eval",
+    image: "/assets/v1/events/lightning-lab-ship-your-first-eval.png",
+    imageFit: "contain",
+  },
 ]);
 
 export default function AgentArchitectureHalfLifeTalk() {

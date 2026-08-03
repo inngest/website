@@ -122,7 +122,7 @@ export const PLANS: Plan[] = [
       {
         value: "1M",
         text: "executions included",
-        note: "Up to 20M add-on",
+        note: "Pay as you go up to 20M",
       },
       { value: "100+", text: "concurrent executions" },
       { value: "5 GB", text: "span data ingested" },
@@ -230,7 +230,7 @@ export const FEATURES: Feature[] = [
       [PLAN_NAMES.hobby]: "50k /mo included",
       [PLAN_NAMES.pro]: {
         value: "1M executions included",
-        description: "Up to 20M add-on",
+        description: "Pay as you go up to 20M",
       },
       [PLAN_NAMES.enterprise]: "Custom",
     },

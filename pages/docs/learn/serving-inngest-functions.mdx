@@ -175,6 +175,10 @@ export const onRequest = serve({
 ```
 </CodeGroup>
 
+<Callout>
+  Cloudflare Pages Functions run on the Workers runtime. Enable Node.js compatibility so Inngest can use `AsyncLocalStorage` during function execution.
+</Callout>
+
 ### Framework: Cloudflare Workers
 
 You can export `"inngest/cloudflare"`'s `serve()` as your Cloudflare Worker:
@@ -195,6 +199,10 @@ export default {
 };
 ```
 </CodeGroup>
+
+<Callout>
+  Enable Node.js compatibility so Inngest can use `AsyncLocalStorage` during function execution. Add `nodejs_compat` to your compatibility flags and use a compatibility date of `2024-09-23` or later.
+</Callout>
 
 <Tip>
   To automatically pass environment variables defined with Wrangler to Inngest function handlers, use the [Cloudflare Workers bindings middleware](/docs/examples/middleware/cloudflare-workers-environment-variables).
