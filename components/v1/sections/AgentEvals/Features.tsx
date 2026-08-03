@@ -1,6 +1,7 @@
 "use client";
 
 import { motion } from "motion/react";
+import Link from "next/link";
 import { reveals } from "@/utils/v1/reveals";
 import GradientFrame from "@/components/v1/sections/shared/GradientFrame";
 import Section from "@/components/v1/sections/shared/Section";
@@ -22,6 +23,7 @@ interface Feature {
   icon: string;
   iconWidth: number;
   iconHeight: number;
+  href?: string;
 }
 
 const FEATURES: Feature[] = [
@@ -31,6 +33,7 @@ const FEATURES: Feature[] = [
     icon: "/assets/v1/scale-instantly/ai-agents.svg",
     iconWidth: 27.77,
     iconHeight: 32,
+    href: "/docs/patterns/ai-evals/score-agents-on-real-outcomes?ref=agent-evals-features",
   },
   {
     title: "Live Experiments",
@@ -38,6 +41,7 @@ const FEATURES: Feature[] = [
     icon: "/assets/v1/scale-instantly/api-endpoints.svg",
     iconWidth: 30.02,
     iconHeight: 25.71,
+    href: "/docs/patterns/ai-evals/run-experiments-in-production?ref=agent-evals-features",
   },
   {
     title: "100% not 1%",
@@ -45,6 +49,7 @@ const FEATURES: Feature[] = [
     icon: "/assets/v1/scale-instantly/workflows.svg",
     iconWidth: 32,
     iconHeight: 32,
+    href: "/docs/platform/monitor/traces?ref=agent-evals-features",
   },
   {
     title: "Datasets",
@@ -52,6 +57,7 @@ const FEATURES: Feature[] = [
     icon: "/assets/v1/scale-instantly/serverless.svg",
     iconWidth: 32,
     iconHeight: 20.52,
+    href: "/docs/platform/monitor/insights?ref=agent-evals-features",
   },
   {
     title: "Sessions",
@@ -59,6 +65,7 @@ const FEATURES: Feature[] = [
     icon: "/assets/v1/scale-instantly/events.svg",
     iconWidth: 21.65,
     iconHeight: 32,
+    href: "/docs/features/events-triggers/sessions?ref=agent-evals-features",
   },
 ];
 
@@ -102,32 +109,51 @@ export default function Features() {
         </div>
 
         <ul className="grid grid-cols-1 gap-[22px] lg:grid-cols-3 lg:gap-[58px]">
-          {FEATURES.map((f, i) => (
-            <motion.li
-              key={f.title}
-              {...reveals.item(i)}
-              className="flex flex-col gap-2"
-            >
-              <div className="flex items-center gap-[10px]">
-                <span className="flex h-8 w-8 shrink-0 items-center justify-center">
-                  <img
-                    src={f.icon}
-                    alt=""
-                    aria-hidden="true"
-                    width={f.iconWidth}
-                    height={f.iconHeight}
-                    className="block"
-                  />
-                </span>
-                <h3 className="text-v1-heading-xs text-v1-frost lg:text-v1-heading-card">
-                  {f.title}
-                </h3>
-              </div>
-              <p className="text-v1-heading-xs-loose text-pretty text-[#B3B3B3]">
-                {f.body}
-              </p>
-            </motion.li>
-          ))}
+          {FEATURES.map((f, i) => {
+            const inner = (
+              <>
+                <div className="flex items-center gap-[10px]">
+                  <span className="flex h-8 w-8 shrink-0 items-center justify-center">
+                    <img
+                      src={f.icon}
+                      alt=""
+                      aria-hidden="true"
+                      width={f.iconWidth}
+                      height={f.iconHeight}
+                      className="block"
+                    />
+                  </span>
+                  <h3 className="text-v1-heading-xs text-v1-frost lg:text-v1-heading-card">
+                    {f.title}
+                  </h3>
+                </div>
+                <p className="text-v1-heading-xs-loose text-pretty text-[#B3B3B3]">
+                  {f.body}
+                </p>
+              </>
+            );
+            return (
+              <motion.li
+                key={f.title}
+                {...reveals.item(i)}
+                className="flex flex-col gap-2"
+              >
+                {f.href ? (
+                  <Link
+                    href={f.href}
+                    prefetch={false}
+                    className="-m-3 flex flex-col gap-2 rounded-md p-3 hover:bg-gradient-to-br hover:from-white/[0.06] hover:to-white/[0.02] motion-safe:transition-colors motion-safe:duration-200"
+                  >
+                    {inner}
+                  </Link>
+                ) : (
+                  <div className="flex cursor-default flex-col gap-2">
+                    {inner}
+                  </div>
+                )}
+              </motion.li>
+            );
+          })}
         </ul>
       </GradientFrame>
     </Section>
