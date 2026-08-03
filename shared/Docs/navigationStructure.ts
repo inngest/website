@@ -459,83 +459,72 @@ const sectionReference: (NavGroup | NavLink)[] = [
 const sectionLearn: (NavGroup | NavLink)[] = [
   { title: "Home", href: "/docs" },
   {
-    title: "Quick starts",
-    defaultOpen: true,
+    // Top-level entries are section titles; their direct children are always
+    // visible, and any group nested a further level down collapses by default.
+    title: "Durable functions",
     links: [
-      { title: "Next.js", href: "/docs/getting-started/nextjs-quick-start" },
+      { title: "Overview", href: `/docs/learn/inngest-functions` },
       {
-        title: "Node.js",
+        title: "How durable execution works",
+        href: `/docs/learn/how-functions-are-executed`,
+      },
+      {
+        title: "Quick starts",
         links: [
+          {
+            title: "Next.js",
+            href: "/docs/getting-started/nextjs-quick-start",
+          },
           {
             title: "Express",
             href: "/docs/getting-started/express-quick-start",
           },
-          { title: "Astro", href: "/docs/getting-started/astro-quick-start" },
-          { title: "H3", href: "/docs/getting-started/h3-quick-start" },
-          { title: "NestJS", href: "/docs/getting-started/nestjs-quick-start" },
-          {
-            title: "TanStack Start",
-            href: "/docs/getting-started/tanstack-start-quick-start",
-          },
+          { title: "Python", href: "/docs/getting-started/python-quick-start" },
           {
             title: "Other frameworks",
-            href: "/docs/getting-started/nodejs-quick-start",
+            links: [
+              {
+                title: "Node.js",
+                href: "/docs/getting-started/nodejs-quick-start",
+              },
+              {
+                title: "Astro",
+                href: "/docs/getting-started/astro-quick-start",
+              },
+              { title: "H3", href: "/docs/getting-started/h3-quick-start" },
+              {
+                title: "NestJS",
+                href: "/docs/getting-started/nestjs-quick-start",
+              },
+              {
+                title: "TanStack Start",
+                href: "/docs/getting-started/tanstack-start-quick-start",
+              },
+            ],
           },
         ],
       },
-      { title: "Python", href: "/docs/getting-started/python-quick-start" },
-    ],
-  },
-  {
-    title: "Concepts",
-    defaultOpen: true,
-    links: [
       {
-        title: "How Durable execution works",
-        href: `/docs/learn/how-functions-are-executed`,
-      },
-      {
-        title: "Durable Functions",
+        // Keeps every existing triggering page for now; merging them into a
+        // single doc is DEV-471.
+        title: "Triggers",
         links: [
-          { title: "Overview", href: `/docs/learn/inngest-functions` },
+          { title: "Overview", href: `/docs/features/events-triggers` },
+          { title: "Sending events", href: `/docs/events` },
           {
-            title: "Serve Inngest Functions",
-            href: "/docs/learn/serving-inngest-functions",
+            title: "Event payload format",
+            href: `/docs/features/events-triggers/event-format`,
+          },
+          { title: "Cron functions", href: `/docs/guides/scheduled-functions` },
+          {
+            title: "Multiple triggers & wildcards",
+            href: `/docs/guides/multiple-triggers`,
           },
           {
-            title: "Triggering functions",
-            href: `/docs/features/events-triggers`,
-          },
-          {
-            title: "Deferred functions",
-            href: "/docs/features/inngest-functions/deferred-functions",
-            tag: "beta",
-          },
-          { title: "Idempotency", href: `/docs/guides/handling-idempotency` },
-          { title: "Logging", href: "/docs/guides/logging" },
-        ],
-      },
-      {
-        title: "Durable Endpoints",
-        links: [
-          { title: "Overview", href: `/docs/learn/durable-endpoints` },
-          {
-            title: "Streaming",
-            href: "/docs/learn/durable-endpoints/streaming",
+            title: "Sending events from functions",
+            href: `/docs/guides/sending-events-from-functions`,
           },
         ],
-      },
-      {
-        title: "Durable Agents",
-        href: `/docs/learn/durable-agents`,
-        // links: [
-        //   { title: "Overview", href: `/docs/learn/durable-agents` },
-        //   // Future "AI Observability" guide
-        //   // {
-        //   //   title: "AI Observability",
-        //   //   href: `/docs/learn/tbd`,
-        //   // },
-        // ],
       },
       {
         title: "Steps",
@@ -554,14 +543,12 @@ const sectionLearn: (NavGroup | NavLink)[] = [
             href: "/docs/features/inngest-functions/steps-workflows/wait-for-signal",
           },
           {
-            title: "Invoke other functions",
-            href: `/docs/guides/invoking-functions-directly`,
+            title: "AI steps (LLM calls)",
+            href: "/docs/features/inngest-functions/steps-workflows/step-ai-orchestration",
           },
-          {
-            title: "Step experiments",
-            href: "/docs/features/inngest-functions/steps-workflows/step-experiments",
-            tag: "new",
-          },
+          { title: "Durable Fetch", href: tsRef("v4", "functions/fetch") },
+          // Scoring belongs to Agent Evals in the new IA; it stays here until
+          // that section exists so the pages keep a nav home.
           {
             title: "Scoring",
             href: "/docs/features/inngest-functions/steps-workflows/scoring",
@@ -572,14 +559,24 @@ const sectionLearn: (NavGroup | NavLink)[] = [
             href: "/docs/features/inngest-functions/steps-workflows/deferred-scoring",
             tag: "beta",
           },
-          {
-            title: "AI steps (LLM calls)",
-            href: "/docs/features/inngest-functions/steps-workflows/step-ai-orchestration",
-          },
-          { title: "Durable Fetch", href: tsRef("v4", "functions/fetch") },
         ],
       },
       {
+        title: "Flow control",
+        links: [
+          { title: "Overview", href: `/docs/guides/flow-control` },
+          { title: "Concurrency", href: `/docs/guides/concurrency` },
+          { title: "Throttling", href: `/docs/guides/throttling` },
+          { title: "Batching", href: `/docs/guides/batching` },
+          { title: "Rate limit", href: `/docs/guides/rate-limiting` },
+          { title: "Singleton", href: `/docs/guides/singleton` },
+          { title: "Debounce", href: `/docs/guides/debounce` },
+          { title: "Priority", href: `/docs/guides/priority` },
+        ],
+      },
+      {
+        // Keeps the overview plus the four sub-pages for now; merging them into
+        // a single doc is DEV-470.
         title: "Error handling",
         links: [
           { title: "Overview", href: `/docs/guides/error-handling` },
@@ -602,137 +599,139 @@ const sectionLearn: (NavGroup | NavLink)[] = [
         ],
       },
       {
-        title: "Flow control",
-        links: [
-          { title: "Overview", href: `/docs/guides/flow-control` },
-          { title: "Concurrency", href: `/docs/guides/concurrency` },
-          { title: "Throttling", href: `/docs/guides/throttling` },
-          { title: "Batching", href: `/docs/guides/batching` },
-          { title: "Rate limit", href: `/docs/guides/rate-limiting` },
-          { title: "Singleton", href: `/docs/guides/singleton` },
-          { title: "Debounce", href: `/docs/guides/debounce` },
-          { title: "Priority", href: `/docs/guides/priority` },
-        ],
-      },
-      { title: "Agent Evals", href: "/docs/learn/agent-evals", tag: "beta" },
-      {
-        title: "Cancellation",
+        // Framed around how the reader's code runs. The content rework behind
+        // these two entries is DEV-472.
+        title: "Running your app",
         links: [
           {
-            title: "Overview",
-            href: `/docs/features/inngest-functions/cancellation`,
+            title: "Serve via HTTP",
+            href: "/docs/learn/serving-inngest-functions",
           },
           {
-            title: "Cancel on timeouts",
-            href: `/docs/features/inngest-functions/cancellation/cancel-on-timeouts`,
-          },
-          {
-            title: "Cancel on events",
-            href: `/docs/features/inngest-functions/cancellation/cancel-on-events`,
-          },
-          {
-            title: "Bulk cancellation",
-            href: `/docs/guides/cancel-running-functions`,
+            title: "Workers (Connect)",
+            href: `/docs/setup/connect`,
+            tag: "beta",
           },
         ],
       },
       {
-        title: "Realtime",
-        links: [
-          { title: "Overview", href: "/docs/features/realtime" },
-          {
-            title: "React hooks / Next.js",
-            href: "/docs/features/realtime/react-hooks",
-          },
-          // Page hidden for now given upcoming Durable token streaming pattern
-          // TODO - Revisit this page and pattern relationship after updated IA in summer 2026
-          // {
-          //   title: "Stream AI responses",
-          //   href: "/docs/features/realtime/stream-ai-responses",
-          // },
-          {
-            title: "Subscription tokens",
-            href: "/docs/features/realtime/subscription-tokens",
-          },
-        ],
-      },
-      {
-        title: "Environments and Apps",
-        href: "/docs/apps",
-        links: [
-          { title: "Overview", href: "/docs/apps" },
-          { title: "Environments", href: `/docs/platform/environments` },
-          { title: "Apps", href: `/docs/platform/manage/apps` },
-          { title: "Event keys", href: `/docs/events/creating-an-event-key` },
-          { title: "Signing keys", href: `/docs/platform/signing-keys` },
-        ],
-      },
-    ],
-  },
-  {
-    title: "Guides",
-    defaultOpen: true,
-    links: [
-      { title: "Local development", href: `/docs/local-development` },
-      {
-        title: "CLI",
+        title: "Sessions",
+        href: `/docs/features/events-triggers/sessions`,
         tag: "new",
-        links: [
-          { title: "CLI reference", href: "/docs/cli" },
-          { title: "Debug with the CLI", href: "/docs/guides/debug-with-cli" },
-        ],
       },
       {
-        title: "Events and Triggers",
+        title: "Advanced",
         links: [
-          { title: "Overview", href: `/docs/features/events-triggers` },
-          { title: "Sending events", href: `/docs/events` },
           {
-            title: "Event payload format",
-            href: `/docs/features/events-triggers/event-format`,
+            title: "Deferred functions",
+            href: "/docs/features/inngest-functions/deferred-functions",
+            tag: "beta",
           },
           {
-            title: "Sessions",
-            href: `/docs/features/events-triggers/sessions`,
+            title: "Experiments",
+            href: "/docs/features/inngest-functions/steps-workflows/step-experiments",
             tag: "new",
           },
+          { title: "Idempotency", href: `/docs/guides/handling-idempotency` },
           {
-            title: "Writing expressions",
-            href: `/docs/guides/writing-expressions`,
+            title: "Cancellation",
+            links: [
+              {
+                title: "Overview",
+                href: `/docs/features/inngest-functions/cancellation`,
+              },
+              {
+                title: "Cancel on timeouts",
+                href: `/docs/features/inngest-functions/cancellation/cancel-on-timeouts`,
+              },
+              {
+                title: "Cancel on events",
+                href: `/docs/features/inngest-functions/cancellation/cancel-on-events`,
+              },
+              {
+                // Duplicates Platform → Recovery tools → Bulk cancel; the merge
+                // is DEV-474.
+                title: "Bulk cancellation",
+                href: `/docs/guides/cancel-running-functions`,
+              },
+            ],
           },
           {
-            title: "Consuming webhook events",
-            href: `/docs/platform/webhooks`,
+            title: "Checkpointing",
+            href: `/docs/setup/checkpointing`,
+            tag: "new",
           },
-          { title: "Parallel steps", href: "/docs/guides/step-parallelism" },
-          { title: "Fan-out", href: `/docs/guides/fan-out-jobs` },
+          // Logging lived in two places in the old nav; this is its single home.
+          { title: "Logging", href: "/docs/guides/logging" },
+          {
+            title: "Middleware",
+            links: [
+              { title: "Overview", href: `/docs/features/middleware` },
+              {
+                title: "Creating middleware",
+                href: `/docs/features/middleware/create`,
+              },
+              {
+                title: "Dependency Injection",
+                href: "/docs/features/middleware/dependency-injection",
+              },
+              {
+                title: "Encryption Middleware",
+                href: "/docs/features/middleware/encryption-middleware",
+              },
+              {
+                title: "Sentry Middleware",
+                href: "/docs/features/middleware/sentry-middleware",
+              },
+            ],
+          },
+          {
+            title: "Durable Endpoints",
+            links: [
+              { title: "Overview", href: `/docs/learn/durable-endpoints` },
+              {
+                title: "Streaming",
+                href: "/docs/learn/durable-endpoints/streaming",
+              },
+            ],
+          },
+        ],
+      },
+      {
+        title: "Guides",
+        links: [
           {
             title: "Working with loops",
             href: "/docs/guides/working-with-loops",
           },
           {
+            title: "Optimizing performance",
+            href: `/docs/improve-performance`,
+          },
+          { title: "Versioning", href: `/docs/learn/versioning` },
+          { title: "Fan-out", href: `/docs/guides/fan-out-jobs` },
+          {
+            title: "Invoking other functions",
+            href: `/docs/guides/invoking-functions-directly`,
+          },
+          { title: "Parallel steps", href: "/docs/guides/step-parallelism" },
+          {
             title: "Delayed functions",
             href: `/docs/guides/delayed-functions`,
           },
-          { title: "Cron functions", href: `/docs/guides/scheduled-functions` },
+          // Moving to Patterns is DEV-476.
           { title: "Background jobs", href: `/docs/guides/background-jobs` },
-          {
-            title: "Multiple triggers & wildcards",
-            href: `/docs/guides/multiple-triggers`,
-          },
-          {
-            title: "Sending events from functions",
-            href: `/docs/guides/sending-events-from-functions`,
-          },
           {
             title: "User-defined Workflows",
             href: `/docs/guides/user-defined-workflows`,
           },
+          // Relocating this is DEV-478.
           {
             title: "Mergent migration guide",
             href: `/docs/guides/mergent-migration`,
           },
           {
+            // Moving these to the GitHub repo as markdown is DEV-477.
             title: "Workflow Kit",
             links: [
               { title: "Introduction", href: `/docs/reference/workflow-kit` },
@@ -753,6 +752,58 @@ const sectionLearn: (NavGroup | NavLink)[] = [
                 href: `/docs/reference/workflow-kit/components-api`,
               },
             ],
+          },
+        ],
+      },
+    ],
+  },
+  {
+    title: "Durable Agents",
+    href: `/docs/learn/durable-agents`,
+  },
+  { title: "Agent Evals", href: "/docs/learn/agent-evals", tag: "beta" },
+  {
+    title: "Realtime",
+    links: [
+      { title: "Overview", href: "/docs/features/realtime" },
+      {
+        title: "React hooks / Next.js",
+        href: "/docs/features/realtime/react-hooks",
+      },
+      // Page hidden for now given upcoming Durable token streaming pattern
+      // TODO - Revisit this page and pattern relationship after updated IA in summer 2026
+      // {
+      //   title: "Stream AI responses",
+      //   href: "/docs/features/realtime/stream-ai-responses",
+      // },
+      {
+        title: "Subscription tokens",
+        href: "/docs/features/realtime/subscription-tokens",
+      },
+    ],
+  },
+  {
+    title: "Guides",
+    links: [
+      { title: "Local development", href: `/docs/local-development` },
+      {
+        title: "CLI",
+        tag: "new",
+        links: [
+          { title: "CLI reference", href: "/docs/cli" },
+          { title: "Debug with the CLI", href: "/docs/guides/debug-with-cli" },
+        ],
+      },
+      {
+        title: "Events and Triggers",
+        links: [
+          {
+            title: "Writing expressions",
+            href: `/docs/guides/writing-expressions`,
+          },
+          {
+            title: "Consuming webhook events",
+            href: `/docs/platform/webhooks`,
           },
         ],
       },
@@ -780,20 +831,9 @@ const sectionLearn: (NavGroup | NavLink)[] = [
       },
       {
         title: "Deploying",
-        defaultOpen: true,
         links: [
           { title: "Overview", href: `/docs/platform/deployment` },
           { title: "Sync your app", href: `/docs/apps/cloud` },
-          {
-            title: "Connect (workers)",
-            href: `/docs/setup/connect`,
-            tag: "beta",
-          },
-          {
-            title: "Checkpointing",
-            href: `/docs/setup/checkpointing`,
-            tag: "new",
-          },
           { title: "Self-hosting", href: `/docs/self-hosting` },
           {
             title: "Cloud providers",
@@ -815,29 +855,14 @@ const sectionLearn: (NavGroup | NavLink)[] = [
           },
         ],
       },
-      { title: "Optimizing Performance", href: `/docs/improve-performance` },
-      { title: "Versioning", href: `/docs/learn/versioning` },
-      { title: "Logging", href: "/docs/guides/logging" },
       {
-        title: "Middleware",
+        title: "Environments and Apps",
         links: [
-          { title: "Overview", href: `/docs/features/middleware` },
-          {
-            title: "Creating middleware",
-            href: `/docs/features/middleware/create`,
-          },
-          {
-            title: "Dependency Injection",
-            href: "/docs/features/middleware/dependency-injection",
-          },
-          {
-            title: "Encryption Middleware",
-            href: "/docs/features/middleware/encryption-middleware",
-          },
-          {
-            title: "Sentry Middleware",
-            href: "/docs/features/middleware/sentry-middleware",
-          },
+          { title: "Overview", href: "/docs/apps" },
+          { title: "Environments", href: `/docs/platform/environments` },
+          { title: "Apps", href: `/docs/platform/manage/apps` },
+          { title: "Event keys", href: `/docs/events/creating-an-event-key` },
+          { title: "Signing keys", href: `/docs/platform/signing-keys` },
         ],
       },
     ],
