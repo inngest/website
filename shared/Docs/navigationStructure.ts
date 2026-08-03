@@ -691,7 +691,6 @@ const sectionLearn: (NavGroup | NavLink)[] = [
           {
             title: "Checkpointing",
             href: `/docs/setup/checkpointing`,
-            tag: "new",
           },
           // Logging lived in two places in the old nav; this is its single home.
           { title: "Logging", href: "/docs/guides/logging" },
@@ -921,7 +920,9 @@ const sectionLearn: (NavGroup | NavLink)[] = [
       // Needs a re-think: standalone doc, folded into the CLI guide, or a
       // Pattern. See DEV-467.
       { title: "Debugging with the CLI", href: "/docs/guides/debug-with-cli" },
-      { title: "AI development tools", href: "/docs/ai-dev-tools" },
+      // TODO - This page should be removed as it's just a hub page, but it's likely
+      // linked to from the homepage or emails, so we keep the page
+      // { title: "AI development tools", href: "/docs/ai-dev-tools" },
       { title: "Agent skills", href: "/docs/ai-dev-tools/agent-skills" },
       { title: "MCP servers", href: "/docs/ai-dev-tools/mcp" },
     ],
