@@ -598,7 +598,13 @@ const SDK_SECTION_TITLES = [
 ];
 
 // Non-SDK reference sections that should always be shown (separated from SDK sections)
-const SHARED_REFERENCE_TITLES = ["REST API", "System events", "Self-hosting"];
+const SHARED_REFERENCE_TITLES = [
+  "Events",
+  "CLI",
+  "REST API",
+  "System events",
+  "Self-hosting",
+];
 
 // Helper to check if a section should be hidden based on selected language and TS version
 function shouldHideSection(

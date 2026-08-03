@@ -204,6 +204,15 @@ const sectionReference: (NavGroup | NavLink)[] = [
         tag: "beta",
       },
       { title: "Scoring", href: tsRef("v4", "functions/scoring"), tag: "beta" },
+      // Connect is already reference material in everything but name and URL.
+      // The nav slot lands here now; the move off /docs/setup/connect is
+      // Phase 2a (DEV-473).
+      { title: "Connect", href: `/docs/setup/connect`, tag: "beta" },
+      // Identical across every SDK and a reference, not a guide. Moving it off
+      // /docs/guides/writing-expressions is Phase 2a (DEV-473).
+      { title: "Expressions", href: `/docs/guides/writing-expressions` },
+      // Sandbox SDK methods are documented in Phase 2b (DEV-481).
+      // { title: "Sandboxes", href: tsRef("v4", "sandboxes") },
       {
         title: "Group",
         links: [
@@ -264,7 +273,10 @@ const sectionReference: (NavGroup | NavLink)[] = [
         title: "Serve",
         links: [
           {
-            title: "Framework handlers",
+            // Keeps its URL deliberately — the page carries search equity, so
+            // it is relabelled and re-introduced as a reference here while the
+            // fresh guide is written separately (DEV-473).
+            title: "Serve framework adapters",
             href: `/docs/learn/serving-inngest-functions`,
           },
           { title: "Configuration", href: tsRef("v4", "serve") },
@@ -433,10 +445,31 @@ const sectionReference: (NavGroup | NavLink)[] = [
     ],
   },
   {
-    title: "CLI",
-    href: "/docs/cli",
-    tag: "new",
+    // Language-agnostic event reference. Splitting /docs/events so its
+    // conceptual half stays in Learn → Triggers and its reference half lives
+    // here is Phase 2a, sequenced with DEV-471.
+    title: "Events",
+    links: [
+      {
+        title: "Event payload format",
+        href: `/docs/features/events-triggers/event-format`,
+      },
+      { title: "Event API", href: `/docs/events` },
+    ],
   },
+  {
+    title: "CLI",
+    links: [
+      { title: "Overview", href: "/docs/cli", tag: "new" },
+      // Phase 2a splits the CLI reference into its own pages. Installation may
+      // fold into the Local development guide instead — see DEV-468.
+      // { title: "Installation", href: `/docs/cli/installation` },
+      // { title: "Commands", href: `/docs/cli/commands` },
+      // { title: "Dev server", href: `/docs/cli/dev-server` },
+    ],
+  },
+  // New Sandbox API endpoints are documented in the REST API in Phase 2b
+  // (DEV-481).
   { title: "REST API", href: "https://api-docs.inngest.com" },
   {
     title: "System events",
@@ -882,10 +915,6 @@ const sectionLearn: (NavGroup | NavLink)[] = [
       {
         title: "Events and Triggers",
         links: [
-          {
-            title: "Writing expressions",
-            href: `/docs/guides/writing-expressions`,
-          },
           {
             title: "Consuming webhook events",
             href: `/docs/platform/webhooks`,
