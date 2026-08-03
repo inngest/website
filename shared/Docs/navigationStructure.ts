@@ -59,7 +59,10 @@ const sectionReference: (NavGroup | NavLink)[] = [
       { title: "Create the client", href: tsRef("v3", "client/create") },
       { title: "Create a function", href: tsRef("v3", "functions/create") },
       { title: "Send events", href: tsRef("v3", "events/send") },
-      { title: "Errors", href: `/docs/features/inngest-functions/error-retries/inngest-errors` },
+      {
+        title: "Errors",
+        href: `/docs/features/inngest-functions/error-retries/inngest-errors`,
+      },
       {
         title: "Handling failures",
         href: tsRef("v3", "functions/handling-failures"),
@@ -176,7 +179,10 @@ const sectionReference: (NavGroup | NavLink)[] = [
       { title: "Create a function", href: tsRef("v4", "functions/create") },
       { title: "Trigger helpers", href: tsRef("v4", "functions/triggers") },
       { title: "Send events", href: tsRef("v4", "events/send") },
-      { title: "Errors", href: `/docs/features/inngest-functions/error-retries/inngest-errors` },
+      {
+        title: "Errors",
+        href: `/docs/features/inngest-functions/error-retries/inngest-errors`,
+      },
       {
         title: "Handling failures",
         href: tsRef("v4", "functions/handling-failures"),
@@ -487,6 +493,11 @@ const sectionReference: (NavGroup | NavLink)[] = [
     ],
   },
   { title: "Self-hosting", href: `/docs/self-hosting` },
+  {
+    title: "AgentKit",
+    href: "https://agentkit.inngest.com",
+    target: "_blank",
+  },
 ];
 
 const sectionLearn: (NavGroup | NavLink)[] = [
@@ -824,17 +835,16 @@ const sectionLearn: (NavGroup | NavLink)[] = [
   },
   {
     title: "Agent Evals",
+    tag: "beta",
     links: [
-      { title: "Overview", href: "/docs/learn/agent-evals", tag: "beta" },
+      { title: "Overview", href: "/docs/learn/agent-evals" },
       {
         title: "Online scoring",
         href: "/docs/features/inngest-functions/steps-workflows/scoring",
-        tag: "beta",
       },
       {
         title: "Deferred scoring",
         href: "/docs/features/inngest-functions/steps-workflows/deferred-scoring",
-        tag: "beta",
       },
       // Phase 2b (DEV-483) expands this section:
       // { title: "Offline evals", href: `/docs/agent-evals/offline-evals` },
@@ -914,11 +924,6 @@ const sectionLearn: (NavGroup | NavLink)[] = [
       { title: "AI development tools", href: "/docs/ai-dev-tools" },
       { title: "Agent skills", href: "/docs/ai-dev-tools/agent-skills" },
       { title: "MCP servers", href: "/docs/ai-dev-tools/mcp" },
-      {
-        title: "AgentKit",
-        href: "https://agentkit.inngest.com",
-        target: "_blank",
-      },
     ],
   },
   {

@@ -120,7 +120,7 @@ function CodePanelHeader({ tag, label }) {
     >
       {tag && (
         <div className="flex">
-          <Tag variant="small">{tag}</Tag>
+          <Tag size="small">{tag}</Tag>
         </div>
       )}
       {tag && label && (
@@ -144,10 +144,11 @@ function CodePanel({ tag, label, code, children }: CodePanelProps) {
   // Children.only. Falls back to an empty props object if there's
   // nothing renderable.
   const childArray = Children.toArray(children);
-  const child: any =
-    (childArray.find((c) => typeof c === "object" && c !== null) as any) ?? {
-      props: {},
-    };
+  const child: any = (childArray.find(
+    (c) => typeof c === "object" && c !== null
+  ) as any) ?? {
+    props: {},
+  };
 
   return (
     <div className="group bg-codeEditor">
