@@ -59,7 +59,7 @@ const sectionReference: (NavGroup | NavLink)[] = [
       { title: "Create the client", href: tsRef("v3", "client/create") },
       { title: "Create a function", href: tsRef("v3", "functions/create") },
       { title: "Send events", href: tsRef("v3", "events/send") },
-      { title: "Errors", href: `/docs/reference/typescript/functions/errors` },
+      { title: "Errors", href: `/docs/features/inngest-functions/error-retries/inngest-errors` },
       {
         title: "Handling failures",
         href: tsRef("v3", "functions/handling-failures"),
@@ -146,7 +146,7 @@ const sectionReference: (NavGroup | NavLink)[] = [
           { title: "Examples", href: tsRef("v3", "middleware/examples") },
           {
             title: "TypeScript",
-            href: `/docs/reference/middleware/typescript`,
+            href: `/docs/features/middleware/dependency-injection?guide=typescript`,
           },
         ],
       },
@@ -176,7 +176,7 @@ const sectionReference: (NavGroup | NavLink)[] = [
       { title: "Create a function", href: tsRef("v4", "functions/create") },
       { title: "Trigger helpers", href: tsRef("v4", "functions/triggers") },
       { title: "Send events", href: tsRef("v4", "events/send") },
-      { title: "Errors", href: `/docs/reference/typescript/functions/errors` },
+      { title: "Errors", href: `/docs/features/inngest-functions/error-retries/inngest-errors` },
       {
         title: "Handling failures",
         href: tsRef("v4", "functions/handling-failures"),
@@ -326,7 +326,7 @@ const sectionReference: (NavGroup | NavLink)[] = [
       { title: "Introduction", href: `/docs/reference/python` },
       {
         title: "Quick start",
-        href: `/docs/reference/python/overview/quick-start`,
+        href: `/docs/getting-started/python-quick-start`,
       },
       {
         title: "Inngest Client",

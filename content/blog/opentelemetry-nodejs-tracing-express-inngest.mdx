@@ -134,7 +134,7 @@ app.listen(port, () => {
 
 ## 4. Using Inngest for Background Workflows with Traces
 
-Let's now update our Express API to kick off a background onboarding workflow upon user creation. We'll use Inngest, which enables us to write [durable workflows](https://www.inngest.com/docs/features/inngest-functions/steps-workflows) without having to set up a Redis storage or deal with workers and queues:
+Let's now update our Express API to kick off a background onboarding workflow upon user creation. We'll use Inngest, which enables us to write [durable workflows](https://www.inngest.com/docs/learn/inngest-functions) without having to set up a Redis storage or deal with workers and queues:
 
 ```js
 // workflow.js

@@ -38,7 +38,9 @@
     "env:add": "vercel env add",
     "env:rm": "vercel env rm",
     "github:stars": "pnpm dlx ts-node ./scripts/updateGithubStars.ts",
+    "test": "pnpm test:redirects && pnpm test:docs-markdown",
     "test:docs-markdown": "pnpm dlx ts-node ./mdx/utils/docs.test.ts",
+    "test:redirects": "node --test ./redirects.test.mjs",
     "preinstall": "npx only-allow pnpm"
   },
   "dependencies": {

@@ -9,7 +9,7 @@ The event payload is a JSON object that must contain a `name` and `data` propert
 
 ### Required properties
 
-* The `name` is the type or category of event. Event `name`s are used to [trigger functions](/docs/functions). For example, `app/user.created` or `billing/invoice.paid`. See [tips for event naming](#tips-for-event-naming) below.
+* The `name` is the type or category of event. Event `name`s are used to [trigger functions](/docs/learn/inngest-functions). For example, `app/user.created` or `billing/invoice.paid`. See [tips for event naming](#tips-for-event-naming) below.
 * `data` contains any data you want to associate with the event. This data will be serialized to JSON. For example, if you're sending an event for a paid invoice, you might include the invoice's `id`, the `amount`, and the `customerId` in the `data` property. The `data` property can contain any nested JSON object, including objects and arrays.
 
 ### Optional properties

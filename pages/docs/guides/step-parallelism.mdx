@@ -16,7 +16,7 @@ export const description = "Execute multiple Inngest steps in parallel using Pro
 
 You can run steps in parallel via `Promise.all()`:
 
-- Create each step via [`step.run()`](/docs/reference/functions/step-run) without awaiting, which returns an unresolved promise.
+- Create each step via [`step.run()`](/docs/reference/typescript/v4/functions/step-run) without awaiting, which returns an unresolved promise.
 - Await all steps via `Promise.all()`. This triggers all steps to run in parallel via separate executions.
 
 A common use case is to split work into chunks:

@@ -94,7 +94,7 @@ Each step is capable of handling failures and can automatically retry based on p
 
 Durable Functions can also include **waits** that pause the process for necessary delays (e.g., waiting for a third-party shipment confirmation) without consuming resources. This can be more efficient than traditional CRON jobs, which are less time flexible and can over-consume resources by continuously polling for status updates.
 
-Inngest's SDKS allows you to create waits through several methods, one of which is the [`step.waitForEvent`](/docs/reference/functions/step-wait-for-event?ref=blog-what-are-durable-functions) function.
+Inngest's SDKS allows you to create waits through several methods, one of which is the [`step.waitForEvent`](/docs/reference/typescript/v4/functions/step-wait-for-event?ref=blog-what-are-durable-functions) function.
 
 ![The Durable Functions "wait for event" feature enables pausing executions while waiting for another event, for example: waiting for shipment information to be dispatched.](/assets/blog/durable-functions-a-visual-javascript-primer/Group_88.png)
 
@@ -249,7 +249,7 @@ Benefits of `step.fetch()`:
 - No impact on your function's execution time limits
 - Full observability of all HTTP requests in the dashboard
 
-[Learn more about step.fetch()](/docs/features/inngest-functions/steps-workflows/fetch)
+[Learn more about step.fetch()](/docs/reference/typescript/functions/fetch)
 
 ## Conclusion
 

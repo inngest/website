@@ -55,7 +55,7 @@ You could write your own webhook handler for Clerk, but using Inngest for webhoo
 * Manage concurrency with configurable limits to the exact level of concurrent events processed to avoid overwhelming your database or APIs, enabling you to operate and scale webhooks.Inngest is designed to handle high load so you don't need to worry about [the pitfalls of operating and scaling webhooks](/blog/building-webhooks-that-scale).
 * [Fan-out events to multiple functions](/docs/guides/fan-out-jobs) to run work in parallel, each with automatic retries. You can have two jobs.
 * Create complex workflows that require multiple steps that are each automatically retried (a la transactions).
-* Delay certain tasks for hours or days with [`step.sleep()`](/docs/reference/functions/step-sleep) or [`step.sleepUntil()`](/docs/reference/functions/step-sleep-until).
+* Delay certain tasks for hours or days with [`step.sleep()`](/docs/reference/typescript/v4/functions/step-sleep) or [`step.sleepUntil()`](/docs/reference/typescript/v4/functions/step-sleep-until).
 
 
 ## See it in action

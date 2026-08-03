@@ -79,7 +79,7 @@ export const resourcesLinks: MenuProps = {
     {
       title: "Functions",
       description: "Learn about writing durable functions using steps",
-      url: "/docs/features/inngest-functions?ref=nav",
+      url: "/docs/learn/inngest-functions?ref=nav",
       icon: IconCompiling,
       iconBg: "bg-honey-800/30",
     },
@@ -122,7 +122,7 @@ export const resourcesLinks: MenuProps = {
     },
     {
       title: "Python",
-      url: "/docs/getting-started/quick-start/python?ref=nav",
+      url: "/docs/getting-started/python-quick-start?ref=nav",
       icon: PythonIcon,
       iconClassName: "w-4",
     },

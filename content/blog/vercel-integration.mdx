@@ -26,7 +26,7 @@ Inngest combines event streams, simple publishing APIs, and [a modern job schedu
 
 ## Serverless background functions in minutes
 
-Vercel now enables developers to ship functions with Inngest faster than ever before. Developers can use [Inngest's SDK](/docs/functions?ref=blog-vercel-integration) to define functions and the events that trigger them and host these functions on Vercel right alongside their app and API's [serverless functions](https://vercel.com/docs/concepts/functions/serverless-functions).
+Vercel now enables developers to ship functions with Inngest faster than ever before. Developers can use [Inngest's SDK](/docs/learn/inngest-functions?ref=blog-vercel-integration) to define functions and the events that trigger them and host these functions on Vercel right alongside their app and API's [serverless functions](https://vercel.com/docs/concepts/functions/serverless-functions).
 
 ![Code snippets of a background function, triggered by an event and a cron job](/assets/blog/vercel-integration/code-snippets.jpg)
 
@@ -45,7 +45,7 @@ These are just the highlights, but we're passionate about this approach and we t
 You can start running background tasks and cron jobs that run on your Vercel account in just a few short steps:
 
 1. Add [the Inngest integration from Vercel's marketplace](https://vercel.com/integrations/inngest) to link your Inngest account with your selected Vercel projects. This automatically sets required Inngest environment variables for your projects and also notifies Inngest whenever you deploy to Vercel.
-2. Write functions using the Inngest SDK and serve them to enable Inngest to remotely and securely invoke them  ([docs](/docs/functions?ref=blog-vercel-integration))
+2. Write functions using the Inngest SDK and serve them to enable Inngest to remotely and securely invoke them  ([docs](/docs/learn/inngest-functions?ref=blog-vercel-integration))
 3. Add some code to send an event from your application ([docs](/docs/events?ref=blog-vercel-integration))
 4. Merge and deploy your code to production on Vercel!
 
@@ -53,7 +53,7 @@ That's it! Now every time you deploy to Vercel, Inngest will check your app for 
 
 ![Screenshot of Inngest dashboard viewing active functions](/assets/blog/vercel-integration/app-screenshot.jpg)
 
-Check out [the Inngest docs](/docs/deploy/vercel?ref=blog-vercel-integration) for more detail on how this works and [how to test your functions right along side your existing local development workflow](/docs/functions/testing-functions?ref=blog-vercel-integration).
+Check out [the Inngest docs](/docs/deploy/vercel?ref=blog-vercel-integration) for more detail on how this works and [how to test your functions right along side your existing local development workflow](/docs/local-development?ref=blog-vercel-integration).
 
 ## AI-assisted local development with MCP
 
@@ -94,6 +94,6 @@ Very soon you'll be able to write [**Step Functions**](/features/step-functions?
 
 Combined, this enables some pretty powerful logic which would take stateful services and custom logic. You'll be able to ship amazing things in record time.
 
-We're also working on bringing a debugging UI to [our dev server](/docs/functions/testing-functions?ref=blog-vercel-integration) which will display live event and function logs from your application and provide tools to debug your functions including sending events, retries, replays, and traces. The dev server (`inngest dev`) is a mini Inngest that runs on your machine along side your existing app (e.g. `next dev`). It already provides developers with a sandbox and development experience which can capture events and invoke locally running functions.
+We're also working on bringing a debugging UI to [our dev server](/docs/local-development?ref=blog-vercel-integration) which will display live event and function logs from your application and provide tools to debug your functions including sending events, retries, replays, and traces. The dev server (`inngest dev`) is a mini Inngest that runs on your machine along side your existing app (e.g. `next dev`). It already provides developers with a sandbox and development experience which can capture events and invoke locally running functions.
 
 If you want to try either of these new features early, [get in touch with our team on Discord](/discord) - we're always looking for beta testers that can provide valuable feedback!

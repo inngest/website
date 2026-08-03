@@ -30,7 +30,7 @@ Each event that is received by Inngest will trigger any functions with that matc
 **Example:** Using an e-commerce store as an example, a user can add the same t-shirt to their cart twice because they want to buy two (_2 unique events_). That same user may check out and pay for all items in their cart but click the "pay" button twice (_2 duplicate events_).
 </Callout>
 
-To prevent an event from being handled twice, you can set a unique event `id` when [sending the event](/docs/reference/events/send#inngest-send-event-payload-event-payload-promise). This `id` acts as an idempotency key **over a 24 hour period** and Inngest will check to see if that event has already been received before triggering another function.
+To prevent an event from being handled twice, you can set a unique event `id` when [sending the event](/docs/reference/typescript/v4/events/send#inngest-send-event-payload-event-payload-promise). This `id` acts as an idempotency key **over a 24 hour period** and Inngest will check to see if that event has already been received before triggering another function.
 
 
 <CodeGroup>
@@ -104,7 +104,7 @@ TODO - Highlight the importance of the uniqueness of the event ID across events 
 
 ## At the function level (the consumer)
 
-You might prefer to ensure idempotency at the function level or you may not be able to control the event that is being sent (from a webhook). The [function's `idempotency` config option](/docs/reference/functions/create#inngest-create-function-configuration-trigger-handler-inngest-function) allows you to do this.
+You might prefer to ensure idempotency at the function level or you may not be able to control the event that is being sent (from a webhook). The [function's `idempotency` config option](/docs/reference/typescript/v4/functions/create#inngest-create-function-configuration-trigger-handler-inngest-function) allows you to do this.
 
 Each function's `idempotency` key is defined as a [CEL expression](/docs/guides/writing-expressions) that is evaluated with the event payload's data. The expression is used to generate a unique string key which idempotently prevents duplicate execution of the function.
 
@@ -165,8 +165,8 @@ For more information on writing CEL expressions, read [our guide](/docs/guides/w
 <Callout>
   💡 If you want to control when a function is executed over a period of time you might prefer:
 
-  * [`rateLimit`](/docs/reference/functions/rate-limit) - Limit the number of function executions per period of time
-  * [`debounce`](/docs/reference/functions/debounce) - Delay function execution for duplicate events over a period of time
+  * [`rateLimit`](/docs/reference/typescript/v4/functions/rate-limit) - Limit the number of function executions per period of time
+  * [`debounce`](/docs/reference/typescript/v4/functions/debounce) - Delay function execution for duplicate events over a period of time
 </Callout>
 
 ### Idempotency keys and fan-out

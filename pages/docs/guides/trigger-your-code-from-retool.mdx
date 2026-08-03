@@ -71,7 +71,7 @@ Using [the Inngest SDK](/features/sdk?ref=retool-guide) you can define your Inng
 mkdir -p inngest
 ```
 
-Now we'll create a file in this directory for our function - `runBackfillForUser.js`. This will be our Inngest function which will import our existing backfill code, use the `user_id` from the event payload to run that code, and return a http status code in our response to tell Inngest [if it should be retried or not](/docs/functions/retries?ref=retool-guide).
+Now we'll create a file in this directory for our function - `runBackfillForUser.js`. This will be our Inngest function which will import our existing backfill code, use the `user_id` from the event payload to run that code, and return a http status code in our response to tell Inngest [if it should be retried or not](/docs/features/inngest-functions/error-retries/inngest-errors?ref=retool-guide).
 
 
 <CodeGroup>
@@ -110,7 +110,7 @@ That's our function - now, we just need to serve our function.
 
 You need to serve your function to enable Inngest to remotely and securely invoke your function via HTTP.
 
-For this guide, we'll explain how to do this with an existing [Express.js](https://expressjs.com/) application. Inngest's default [`serve()`](/docs/reference/serve) handler can be imported and passed to Express.js' `app.use` or `router.use`. You can get your Inngest signing key from [the Inngest dashboard](https://app.inngest.com/env/production/manage/signing-key).
+For this guide, we'll explain how to do this with an existing [Express.js](https://expressjs.com/) application. Inngest's default [`serve()`](/docs/reference/typescript/v4/serve) handler can be imported and passed to Express.js' `app.use` or `router.use`. You can get your Inngest signing key from [the Inngest dashboard](https://app.inngest.com/env/production/manage/signing-key).
 
 ```js
 import { serve } from "inngest/express"

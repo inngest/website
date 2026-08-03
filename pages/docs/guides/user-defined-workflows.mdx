@@ -315,9 +315,9 @@ export const actions: EngineAction[] = [
 
 This new file adds the `handler` property to the existing _"Add a Table of Contents"_ action.
 
-A [workflow action `handler()`](/docs/reference/workflow-kit/actions#handler-function-argument-properties) has a similar signature to Inngest's function handlers, receiving two key arguments: `event` and [`step`](/docs/reference/functions/create#step).
+A [workflow action `handler()`](/docs/reference/workflow-kit/actions#handler-function-argument-properties) has a similar signature to Inngest's function handlers, receiving two key arguments: `event` and [`step`](/docs/reference/typescript/v4/functions/create#step).
 
-Our _"Add a Table of Contents"_ leverages Inngest's [step API](/docs/reference/functions/step-run) to create reliable and retriable steps generating and inserting a Table of Contents.
+Our _"Add a Table of Contents"_ leverages Inngest's [step API](/docs/reference/typescript/v4/functions/step-run) to create reliable and retriable steps generating and inserting a Table of Contents.
 
 
 <Callout>
@@ -331,7 +331,7 @@ The complete implementation of all workflow actions are [available on GitHub](ht
 ### 5. Creating an Inngest Function
 
 With all the workflow action handlers of our automation tasks [implemented](https://github.com/inngest/workflow-kit/blob/main/examples/nextjs-blog-cms/lib/inngest/workflowActionHandlers.ts),
-we can create a [`Engine`](/docs/reference/workflow-kit/engine) instance and pass it to a dedicated [Inngest Function](/docs/features/inngest-functions) that will run the automation when the `"blog-post.updated"` and `"blog-post.published"` events will be triggered:
+we can create a [`Engine`](/docs/reference/workflow-kit/engine) instance and pass it to a dedicated [Inngest Function](/docs/learn/inngest-functions) that will run the automation when the `"blog-post.updated"` and `"blog-post.published"` events will be triggered:
 
 ```tsx {{ title: "lib/inngest/workflow.ts" }}
 import { Engine } from "@inngest/workflow-kit";

@@ -121,7 +121,7 @@ We want to support video transfers from many different services, so defining the
 
 **💡 Takeaway #1: your Inngest function and event mapping doesn't need to be 1 to 1.**
 
-Once we have the list of videos, we map over them, building up an array of `truckload/video.process` events, and fire them off in a batch using [`step.sendEvent()`](/docs/reference/functions/step-send-event).
+Once we have the list of videos, we map over them, building up an array of `truckload/video.process` events, and fire them off in a batch using [`step.sendEvent()`](/docs/reference/typescript/v4/functions/step-send-event).
 
 ```js
 await step.sendEvent('process-videos', videoEvents);
@@ -181,7 +181,7 @@ What's up with this `encrypted` key?
 
 It's a good idea to store your end users' credentials for only as long as you absolutely need. Since video migrations are typically a one-off task, we really don't need to store credentials at all — we can use them for each task and then forget about them entirely.
 
-Inngest's [encryption middleware](/docs/reference/middleware/examples#e2-e-encryption) meets this requirement perfectly. The user can supply their source provider and destination credentials on the client, and as soon as these sensitive details hit the server, they're encrypted.
+Inngest's [encryption middleware](/docs/reference/typescript/v4/middleware/examples#e2-e-encryption) meets this requirement perfectly. The user can supply their source provider and destination credentials on the client, and as soon as these sensitive details hit the server, they're encrypted.
 
 The credentials are only unencrypted at the time that the third-party provider API calls are made. This is a great way to facilitate short-lived credentials safely without the liability of persisting them in your own datastore somewhere.
 

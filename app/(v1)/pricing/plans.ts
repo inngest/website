@@ -305,7 +305,7 @@ export const FEATURES: Feature[] = [
         getPlan(PLAN_NAMES.enterprise).cost.includedRuns
       }`,
     },
-    infoUrl: "/docs/features/inngest-functions?ref=pricing",
+    infoUrl: "/docs/learn/inngest-functions?ref=pricing",
     section: "platform",
   },
   {
@@ -343,7 +343,7 @@ export const FEATURES: Feature[] = [
         getPlan(PLAN_NAMES.enterprise).cost.additionalStepsPrice
       }`,
     },
-    infoUrl: "/docs/features/inngest-functions/steps-workflows?ref=pricing",
+    infoUrl: "/docs/learn/inngest-functions?ref=pricing",
     section: "platform",
   },
   {

@@ -115,7 +115,7 @@ In your browser open [`http://localhost:8288`](http://localhost:8288) to see the
 
 ## 3. Create an Inngest client
 
-Inngest invokes your functions securely via an [API endpoint](/docs/learn/serving-inngest-functions?ref=tanstack-start-quick-start) at `/api/inngest`. To enable that, you will create an [Inngest client](/docs/reference/client/create?ref=tanstack-start-quick-start) in your TanStack Start project, which you will use to send events and create functions.
+Inngest invokes your functions securely via an [API endpoint](/docs/learn/serving-inngest-functions?ref=tanstack-start-quick-start) at `/api/inngest`. To enable that, you will create an [Inngest client](/docs/reference/typescript/v4/client/create?ref=tanstack-start-quick-start) in your TanStack Start project, which you will use to send events and create functions.
 
 Make a new directory (for example, `src/inngest`) where you'll define your Inngest functions and the client.
 
@@ -159,14 +159,14 @@ In this step, you will write your first reliable serverless function. This funct
 
 ### Define the function
 
-To define the function, use the [`createFunction`](/docs/reference/functions/create?ref=tanstack-start-quick-start) method on the Inngest client.
+To define the function, use the [`createFunction`](/docs/reference/typescript/v4/functions/create?ref=tanstack-start-quick-start) method on the Inngest client.
 
 <details>
   <summary><strong>Learn more: What is `createFunction` method?</strong></summary>
 
   The `createFunction` method takes two arguments:
-    - **Configuration**: A unique `id` is required and it is the default name that will be displayed on the Inngest dashboard to refer to your function. You also specify `triggers` to define what starts the function (an `event` name or a `cron` schedule). You can also specify [additional options](/docs/reference/functions/create#configuration?ref=tanstack-start-quick-start) such as `concurrency`, `rateLimit`, `retries`, or `batchEvents`, and others. Learn more about triggers [here](/docs/features/events-triggers?ref=tanstack-start-quick-start).
-    - **Handler**: The function that is called when the trigger fires. The `event` payload is passed as an argument. Arguments include `step` to define durable steps within your handler and [additional arguments](/docs/reference/functions/create#handler?ref=tanstack-start-quick-start) include logging helpers and other data.
+    - **Configuration**: A unique `id` is required and it is the default name that will be displayed on the Inngest dashboard to refer to your function. You also specify `triggers` to define what starts the function (an `event` name or a `cron` schedule). You can also specify [additional options](/docs/reference/typescript/v4/functions/create#configuration?ref=tanstack-start-quick-start) such as `concurrency`, `rateLimit`, `retries`, or `batchEvents`, and others. Learn more about triggers [here](/docs/features/events-triggers?ref=tanstack-start-quick-start).
+    - **Handler**: The function that is called when the trigger fires. The `event` payload is passed as an argument. Arguments include `step` to define durable steps within your handler and [additional arguments](/docs/reference/typescript/v4/functions/create#handler?ref=tanstack-start-quick-start) include logging helpers and other data.
 </details>
 
 Inside your `src/inngest` directory create a new file called `functions.ts` where you will define Inngest functions. Add the following code:
@@ -212,7 +212,7 @@ export const Route = createFileRoute("/api/inngest")({
 ```
 
 <Callout>
-👉 Note that you can import [`serve()`](/docs/reference/serve?ref=tanstack-start-quick-start) for other frameworks and the rest of the code, in fact, remains the same — only the import statement changes. TanStack Start uses `inngest/edge` because it runs in an edge runtime environment.
+👉 Note that you can import [`serve()`](/docs/reference/typescript/v4/serve?ref=tanstack-start-quick-start) for other frameworks and the rest of the code, in fact, remains the same — only the import statement changes. TanStack Start uses `inngest/edge` because it runs in an edge runtime environment.
 </Callout>
 
 Now, it's time to run your function!
@@ -383,8 +383,8 @@ To continue your exploration, feel free to check out:
 - [Our blog](/blog?ref=tanstack-start-quick-start) where we explain how Inngest works, publish guest blog posts, and share our learnings.
 
 You can also read more:
-- About [Inngest functions](/docs/functions?ref=tanstack-start-quick-start).
-- About [Inngest steps](/docs/steps?ref=tanstack-start-quick-start).
+- About [Inngest functions](/docs/learn/inngest-functions?ref=tanstack-start-quick-start).
+- About [Inngest steps](/docs/learn/inngest-steps?ref=tanstack-start-quick-start).
 - About [Durable Execution](/docs/learn/how-functions-are-executed?ref=tanstack-start-quick-start)
 - How to [use Inngest with other frameworks](/docs/learn/serving-inngest-functions?ref=tanstack-start-quick-start).
-- How to [deploy your app to your platform](/docs/deploy?ref=tanstack-start-quick-start).
+- How to [deploy your app to your platform](/docs/apps/cloud?ref=tanstack-start-quick-start).

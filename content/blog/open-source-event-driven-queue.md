@@ -112,6 +112,6 @@ What do you want to see next? [Let us know on Discord, we'd love to hear from yo
 
 ## Check out the repo
 
-Head over to **[Github to check out the repo](https://github.com/inngest/inngest)**, the README, the architecture docs, and give it a spin yourself with [the quick start guide](/docs/functions).
+Head over to **[Github to check out the repo](https://github.com/inngest/inngest)**, the README, the architecture docs, and give it a spin yourself with [the quick start guide](/docs/learn/inngest-functions).
 
 We really hope developers get to experience what we’ve built and weigh in on the approach that we’re taking to improve working with queues and event-driven systems. We want developers to do more with less. Come chat with us!

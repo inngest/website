@@ -1,4 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
+import { resolveDocsPath } from "@/redirects.mjs";
 
 /**
  * Middleware for AI agent content negotiation and SEO canonicalization.
@@ -91,9 +92,15 @@ export function middleware(req: NextRequest) {
   // markdown mirrors (/docs-markdown, /blog-markdown), canonicalize to the
   // corresponding HTML page so crawlers don't index the raw markdown as a
   // duplicate.
-  const canonicalPathname = pathname
-    .replace(/^\/docs-markdown(\/|$)/, "/docs$1")
-    .replace(/^\/blog-markdown(\/|$)/, "/blog$1");
+  // For /docs-markdown the canonical must name where the doc actually lives:
+  // the route serves moved docs in place (see resolveDocsPath), so canonicalising
+  // to the requested slug would point crawlers at a URL that only 308s.
+  const docsMarkdownSlug = pathname.match(/^\/docs-markdown(?:\/(.*))?$/);
+  const canonicalPathname = docsMarkdownSlug
+    ? `/docs${
+        docsMarkdownSlug[1] ? `/${resolveDocsPath(docsMarkdownSlug[1])}` : ""
+      }`
+    : pathname.replace(/^\/blog-markdown(\/|$)/, "/blog$1");
   res.headers.set(
     "Link",
     `<${SITE_ORIGIN}${canonicalPathname}>; rel="canonical"`

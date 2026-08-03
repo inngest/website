@@ -69,7 +69,7 @@ In other words, Inngest makes it easy to build, manage, and execute reliable wor
 
 Imagine you’d like to send an email notification to users whenever a certain event happens. Without a tool like Inngest, you'd be responsible for task scheduling, execution, and handling retries when the task failed for whatever reason, likely requiring a team of specialists and significant resources.
 
-Instead, a single engineer, product manager, or even indie hacker can use Inngest to handle the execution but also see the [error logs](/docs/guides/logging), have the [failed tasks be automatically retried](/docs/functions/retries), and obtain useful metadata.
+Instead, a single engineer, product manager, or even indie hacker can use Inngest to handle the execution but also see the [error logs](/docs/guides/logging), have the [failed tasks be automatically retried](/docs/features/inngest-functions/error-retries/inngest-errors), and obtain useful metadata.
 
 All of this is done right from your own codebase — you own the code. Here’s how it’s done:
 
@@ -87,7 +87,7 @@ Being language and framework agnostic, Inngest works across your entire system. 
 
 You can also [send an event](/docs/events) from an Astro site that triggers an Inngest function in *another* codebase.
 
-In other words, a function owned by the product team can live in the Astro site and other functions in your backend codebase. At the moment, Inngest has three SDKs available ([TypeScript/JavaScript](/docs/reference/typescript), [Python](/docs/reference/python), [Go](https://pkg.go.dev/github.com/inngest/inngestgo)) but others are planned as well.
+In other words, a function owned by the product team can live in the Astro site and other functions in your backend codebase. At the moment, Inngest has three SDKs available ([TypeScript/JavaScript](/docs/reference/typescript/intro), [Python](/docs/reference/python), [Go](https://pkg.go.dev/github.com/inngest/inngestgo)) but others are planned as well.
 
 ## Get started now
 

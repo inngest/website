@@ -7,7 +7,7 @@ import StippleCtaSection from "@/components/v1/sections/shared/StippleCtaSection
 // pages also use, so the page-closing CTA stays consistent across surfaces.
 
 const SIGNUP_URL = "/sign-up?ref=observability-final";
-const CONTACT_URL = "/docs/quick-start?ref=observability-final";
+const CONTACT_URL = "/docs/getting-started/nextjs-quick-start?ref=observability-final";
 
 export default function FinalCTA() {
   return (

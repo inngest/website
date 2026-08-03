@@ -225,7 +225,7 @@ export const FEATURES: Feature[] = [
     name: "Executions",
     description: "A single durable function run or step execution",
     section: "comparison",
-    infoUrl: "/docs/features/inngest-functions?ref=pricing-comparison-table",
+    infoUrl: "/docs/learn/inngest-functions?ref=pricing-comparison-table",
     plans: {
       [PLAN_NAMES.hobby]: "50k /mo included",
       [PLAN_NAMES.pro]: {

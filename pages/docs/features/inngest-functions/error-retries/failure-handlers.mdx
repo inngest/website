@@ -5,7 +5,7 @@ export const description = "Define an onFailure handler that runs when an Innges
 
 # Failure handlers
 
-If your function exhausts all of its retries, it will be marked as "Failed." You can handle this circumstance by either providing an [`onFailure/on_failure`](/docs/reference/functions/handling-failures) handler when defining your function, or by listening for the [`inngest/function.failed`](/docs/reference/system-events/inngest-function-failed) system event.
+If your function exhausts all of its retries, it will be marked as "Failed." You can handle this circumstance by either providing an [`onFailure/on_failure`](/docs/reference/typescript/v4/functions/handling-failures) handler when defining your function, or by listening for the [`inngest/function.failed`](/docs/reference/system-events/inngest-function-failed) system event.
 
 The first approach is function-specific, while the second covers all function failures in a given Inngest environment.
 
@@ -32,7 +32,7 @@ inngest.createFunction(
   },
   async ({ event }) => { /* ... */ },
 );
-/* Option 2: Listens for the [`inngest/function.failed`](/docs/reference/functions/handling-failures#the-inngest-function-failed-event) system event to catch all failures in the inngest environment*/
+/* Option 2: Listens for the [`inngest/function.failed`](/docs/reference/typescript/v4/functions/handling-failures#the-inngest-function-failed-event) system event to catch all failures in the inngest environment*/
 inngest.createFunction(
   { id: "handle-any-fn-failure", triggers: { event: "inngest/function.failed" } },
   async ({ event }) => { /* ... */ },
@@ -58,7 +58,7 @@ async def update_subscription(ctx: Context):
     pass # ...
 
 
-# Option 2: Listens for the [inngest/function.failed](/docs/reference/functions/handling-failures#the-inngest-function-failed-event)
+# Option 2: Listens for the [inngest/function.failed](/docs/reference/typescript/v4/functions/handling-failures#the-inngest-function-failed-event)
 # system event to catch all failures in the inngest environment
 @inngest_client.create_function(
     fn_id="global_failure_handler",

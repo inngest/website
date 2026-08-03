@@ -185,14 +185,14 @@ def sync_systems(ctx: inngest.ContextSync) -> None:
 </LanguageSection>
 
 <Callout>
-**Important:** Each step gets its own independent retry counter. You can configure the number of [`retries`](/docs/reference/functions/create#inngest-create-function-configuration-trigger-handler-inngest-function) for each function. This excludes the initial attempt. A retry count of `4` means that **each individual step** will be attempted up to 5 times (1 initial attempt + 4 retries).
+**Important:** Each step gets its own independent retry counter. You can configure the number of [`retries`](/docs/reference/typescript/v4/functions/create#inngest-create-function-configuration-trigger-handler-inngest-function) for each function. This excludes the initial attempt. A retry count of `4` means that **each individual step** will be attempted up to 5 times (1 initial attempt + 4 retries).
 
 For example, if you have a function with 3 steps and `retries: 4` configured, each of the 3 steps can be retried up to 4 times independently. This means you could theoretically have up to 15 total attempts across all steps (5 attempts × 3 steps) if every step fails every time.
 </Callout>
 
 ## Preventing retries with Non-retriable errors
 
-You can throw a [non-retriable error](/docs/reference/typescript/functions/errors#non-retriable-error) from a step or a function, which will bypass any remaining retries and fail the step or function it was thrown from.
+You can throw a [non-retriable error](/docs/features/inngest-functions/error-retries/inngest-errors#non-retriable-error) from a step or a function, which will bypass any remaining retries and fail the step or function it was thrown from.
 
 This is useful for when you know an error is permanent and want to stop all execution. In this example, the user doesn't exist, so there's no need to continue to email them.
 

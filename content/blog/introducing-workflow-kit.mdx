@@ -26,13 +26,13 @@ The Inngest Workflow Kit is a significant leap forward. It enables developers to
 ### A powerful state machine on top of Inngest's Durable Execution Engine
 
 Building user-defined workflows is composed of multiple challenges, starting on the backend.
-Unlike [standard workflows](/docs/features/inngest-functions/steps-workflows?ref=blog-workflow-kit), which have a fixed number of steps, user-defined workflows need to dynamically determine the next steps based on previous actions and user configuration.
+Unlike [standard workflows](/docs/learn/inngest-functions?ref=blog-workflow-kit), which have a fixed number of steps, user-defined workflows need to dynamically determine the next steps based on previous actions and user configuration.
 
 This design requires tools to save and restore the state of a workflow using the BFS traversal algorithm and custom API implementations.
 
 The [`@inngest/workflow-kit`](https://www.npmjs.com/package/@inngest/workflow-kit) package leverages [Inngest's Durable Functions](/blog/durable-functions-a-visual-javascript-primer), enabling:
 
-- **Customizable workflow actions** benefiting from [Inngest steps' features](/docs/guides/multi-step-functions?ref=blog-workflow-kit) such as automatic retries, waits, and more.
+- **Customizable workflow actions** benefiting from [Inngest steps' features](/docs/learn/inngest-steps?ref=blog-workflow-kit) such as automatic retries, waits, and more.
 - **Dynamic workflow configuration** using a loader pattern to retrieve user-configured workflow instances.
 
 Our Workflow kit simplifies the workflow management process, freeing you from building your own workflow logic and allowing you to focus on implementing actions:
@@ -69,7 +69,7 @@ export default inngest.createFunction(
 
 ```
 
-Your newly created workflow is then passed to an [Inngest Function](/docs/features/inngest-functions?ref=blog-workflow-kit), which benefits from existing [Triggers](/docs/features/events-triggers?ref=blog-workflow-kit) to initiate your workflow based on user events or cron schedules. [Flow Control](/docs/guides/flow-control?ref=blog-workflow-kit) features like [Throttling](/docs/guides/throttling?ref=blog-workflow-kit) and [Rate Limiting](/docs/guides/rate-limiting?ref=blog-workflow-kit) are also available, particularly useful when developing AI workflows.
+Your newly created workflow is then passed to an [Inngest Function](/docs/learn/inngest-functions?ref=blog-workflow-kit), which benefits from existing [Triggers](/docs/features/events-triggers?ref=blog-workflow-kit) to initiate your workflow based on user events or cron schedules. [Flow Control](/docs/guides/flow-control?ref=blog-workflow-kit) features like [Throttling](/docs/guides/throttling?ref=blog-workflow-kit) and [Rate Limiting](/docs/guides/rate-limiting?ref=blog-workflow-kit) are also available, particularly useful when developing AI workflows.
 
 ### Building a Workflow Editor UI with prebuilt React components
 

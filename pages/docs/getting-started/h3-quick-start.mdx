@@ -142,7 +142,7 @@ In your browser open [`http://localhost:8288`](http://localhost:8288) to see the
 
 ## 3. Create an Inngest client
 
-Inngest invokes your functions securely via an [API endpoint](/docs/learn/serving-inngest-functions) at `/api/inngest`. To enable that, you will create an [Inngest client](/docs/reference/client/create) in your project, which you will use to send events and create functions.
+Inngest invokes your functions securely via an [API endpoint](/docs/learn/serving-inngest-functions) at `/api/inngest`. To enable that, you will create an [Inngest client](/docs/reference/typescript/v4/client/create) in your project, which you will use to send events and create functions.
 
 Create a file in the directory of your preference. We recommend creating an `inngest` directory for your client and all functions.
 
@@ -188,21 +188,21 @@ createServer(toNodeListener(app)).listen(3000, () => {
 ```
 
 <Callout>
-👉 Note that you can import a [`serve`](/docs/reference/serve) handler for other frameworks and the rest of the code remains the same. These adapters enable you to change your web framework without changing any Inngest function code (ex. instead of `inngest/h3` it could be `inngest/next` or `inngest/express`).
+👉 Note that you can import a [`serve`](/docs/reference/typescript/v4/serve) handler for other frameworks and the rest of the code remains the same. These adapters enable you to change your web framework without changing any Inngest function code (ex. instead of `inngest/h3` it could be `inngest/next` or `inngest/express`).
 </Callout>
 
 ## 5. Write your first Inngest function
 
 In this step, you will write your first durable function. This function will be triggered whenever a specific event occurs (in our case, it will be `test/hello.world`). Then, it will sleep for a second and return a "Hello, World!".
 
-To define the function, use the [`createFunction`](/docs/reference/functions/create) method on the Inngest client.
+To define the function, use the [`createFunction`](/docs/reference/typescript/v4/functions/create) method on the Inngest client.
 
 <details>
   <summary><strong>Learn more: What is `createFunction` method?</strong></summary>
 
   The `createFunction` method takes two arguments:
-    - **Configuration**: A unique `id` is required and it is the default name that will be displayed on the Inngest dashboard to refer to your function. You also specify `triggers` to define what starts the function (an `event` name or a `cron` schedule). You can also specify [additional options](/docs/reference/functions/create#configuration) such as `concurrency`, `rateLimit`, `retries`, or `batchEvents`, and others. Learn more about triggers [here](/docs/features/events-triggers).
-    - **Handler**: The function that is called when the trigger fires. The `event` payload is passed as an argument. Arguments include `step` to define durable steps within your handler and [additional arguments](/docs/reference/functions/create#handler) include logging helpers and other data.
+    - **Configuration**: A unique `id` is required and it is the default name that will be displayed on the Inngest dashboard to refer to your function. You also specify `triggers` to define what starts the function (an `event` name or a `cron` schedule). You can also specify [additional options](/docs/reference/typescript/v4/functions/create#configuration) such as `concurrency`, `rateLimit`, `retries`, or `batchEvents`, and others. Learn more about triggers [here](/docs/features/events-triggers).
+    - **Handler**: The function that is called when the trigger fires. The `event` payload is passed as an argument. Arguments include `step` to define durable steps within your handler and [additional arguments](/docs/reference/typescript/v4/functions/create#handler) include logging helpers and other data.
 </details>
 
 Define a function in the same file where we defined our Inngest client:
@@ -418,8 +418,8 @@ To continue your exploration, feel free to check out:
 - [Our blog](/blog) where we explain how Inngest works, publish guest blog posts, and share our learnings.
 
 You can also read more:
-- About [Inngest functions](/docs/functions).
-- About [Inngest steps](/docs/steps).
+- About [Inngest functions](/docs/learn/inngest-functions).
+- About [Inngest steps](/docs/learn/inngest-steps).
 - About [Durable Execution](/docs/learn/how-functions-are-executed)
 - How to [use Inngest with other frameworks](/docs/learn/serving-inngest-functions).
-- How to [deploy your app to your platform](/docs/deploy).
+- How to [deploy your app to your platform](/docs/apps/cloud).

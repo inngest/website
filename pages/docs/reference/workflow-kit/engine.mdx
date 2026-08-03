@@ -41,7 +41,7 @@ export default inngest.createFunction(
     See [the `EngineAction[]` reference](/docs/reference/workflow-kit/actions#passing-actions-to-the-workflow-engine-engine-action).
   </Property>
   <Property name="loader" type="function">
-    An async function receiving the [`event`](/docs/reference/functions/create#event) as unique argument and returning a valid [`Workflow` instance](/docs/reference/workflow-kit/workflow-instance) object.
+    An async function receiving the [`event`](/docs/reference/typescript/v4/functions/create#event) as unique argument and returning a valid [`Workflow` instance](/docs/reference/workflow-kit/workflow-instance) object.
   </Property>
   <Property name="disableBuiltinActions" type="boolean">
     For selectively adding built-in actions, set this to true and expose the actions you want via the [`<Provider>`](/docs/reference/workflow-kit/components-api) `availableActions` prop.

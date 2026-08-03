@@ -5,7 +5,7 @@ export const description = "Set limits, keys, and scopes to control step-level p
 
 # Managing concurrency
 
-Limit the number of concurrently running steps for your function with the [`concurrency`](/docs/reference/functions/create#configuration) configuration options. Setting an optional `key` parameter limits the concurrency for each unique value of the expression.
+Limit the number of concurrently running steps for your function with the [`concurrency`](/docs/reference/typescript/v4/functions/create#configuration) configuration options. Setting an optional `key` parameter limits the concurrency for each unique value of the expression.
 
 <Callout>
 **Important:** Concurrency limits _step_ execution, not the total number of function runs. Functions that are sleeping, waiting for events, or paused between steps do **not** count against your concurrency limit. This means you may have many more function runs in progress than your concurrency limit. [Learn more about how concurrency works →](/docs/guides/concurrency#how-concurrency-works)
@@ -64,7 +64,7 @@ Setting `concurrency` limits are very useful for:
 * Limiting database operations or connections
 * Preventing one of your user's accounts from consuming too many resources (see `key`)
 
-Alternatively, if you want to limit the number of times that your function runs in a given period, [the `rateLimit` option](/docs/reference/functions/rate-limit) may be better for your use case.
+Alternatively, if you want to limit the number of times that your function runs in a given period, [the `rateLimit` option](/docs/reference/typescript/v4/functions/rate-limit) may be better for your use case.
 
 
 ## Configuration

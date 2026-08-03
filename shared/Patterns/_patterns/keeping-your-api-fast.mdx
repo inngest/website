@@ -47,7 +47,7 @@ app.post("/api/documents", async (req, res) => {
 });
 ```
 
-Functions are defined by declaring which event(s) should trigger them. When matching events are received, all corresponding functions run in the background automatically. Any returned value is logged and any error thrown will inform Inngest to [retry the function](/docs/functions/retries?ref=patterns).
+Functions are defined by declaring which event(s) should trigger them. When matching events are received, all corresponding functions run in the background automatically. Any returned value is logged and any error thrown will inform Inngest to [retry the function](/docs/features/inngest-functions/error-retries/inngest-errors?ref=patterns).
 
 ```typescript
 import { inngest } from "./client";
@@ -74,7 +74,7 @@ export const processDocument = inngest.createFunction(
 );
 ```
 
-Functions can be [deployed in several ways](/docs/deploy?ref=patterns) that fit your current stack or needs.
+Functions can be [deployed in several ways](/docs/apps/cloud?ref=patterns) that fit your current stack or needs.
 
 ## Alternative approaches
 
@@ -85,5 +85,5 @@ Functions can be [deployed in several ways](/docs/deploy?ref=patterns) that fit 
 ## Additional Resources
 
 * [Docs: Sending Events](/docs/events?ref=patterns)
-* [Docs: Writing Functions](/docs/functions?ref=patterns)
+* [Docs: Writing Functions](/docs/learn/inngest-functions?ref=patterns)
 * [Patterns: Flash sales and bursty workflows](/docs/patterns/flash-sales-and-bursty-workflows?ref=patterns)

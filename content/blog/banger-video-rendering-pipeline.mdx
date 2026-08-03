@@ -298,7 +298,7 @@ await step.run('generate-thumbnail-and-upload-to-s3', async () => {
 
 ### 7. Handling failures
 
-We set a graceful flow termination strategy in the [`onFailure`](/docs/reference/functions/handling-failures) function (please keep in mind that it's simplified for this blog post).
+We set a graceful flow termination strategy in the [`onFailure`](/docs/reference/typescript/v4/functions/handling-failures) function (please keep in mind that it's simplified for this blog post).
 
 ```js
 export const renderVideo = inngest.createFunction(

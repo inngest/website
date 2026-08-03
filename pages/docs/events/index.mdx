@@ -31,7 +31,7 @@ export const structuredData = {
 
 Send events to Inngest from the TypeScript, Python, or Go SDK, or use the Event API to send events over HTTP from any language or service.
 
-To start, make sure you have [installed the Inngest SDK](/docs/sdk/overview).
+To start, make sure you have [installed the Inngest SDK](/docs).
 
 In order to send events, you'll need to instantiate the `Inngest` client. We recommend doing this in a single file and exporting the client so you can import it anywhere in your app. In production, you'll need an event key, which [we'll cover below](#setting-an-event-key).
 
@@ -129,7 +129,7 @@ Now with this client, you can send events from anywhere in your app. You can sen
 
 Sending this event, named `storefront/cart.checkout.completed`, to Inngest will do two things:
 
-1. Automatically run any [functions](/docs/functions) that are triggered by this specific event, passing the event payload to the function's arguments.
+1. Automatically run any [functions](/docs/learn/inngest-functions) that are triggered by this specific event, passing the event payload to the function's arguments.
 2. Store the event payload in Inngest cloud. You can find this in the **Events** tab of the dashboard.
 
 <Callout>
@@ -380,7 +380,7 @@ $response = json_decode($json_response, true);
 
 
 <Note>
-  When using the [dev server](/docs/dev-server), use `http://localhost:8288/e/<fake-key>` as the endpoint. If [self-hosting](/docs/self-hosting), replace with the url for your self-hosted instance.
+  When using the [dev server](/docs/local-development), use `http://localhost:8288/e/<fake-key>` as the endpoint. If [self-hosting](/docs/self-hosting), replace with the url for your self-hosted instance.
 </Note>
 
 The response will contain the `ids` of the events that were sent:
@@ -454,6 +454,6 @@ For example, for two events like `storefront/item.imported` and `storefront/item
 ## Further reading
 
 * [Creating an Event Key](/docs/events/creating-an-event-key)
-* [TypeScript SDK Reference: Send events](/docs/reference/events/send)
+* [TypeScript SDK Reference: Send events](/docs/reference/typescript/v4/events/send)
 * [Python SDK Reference: Send events](/docs/reference/python/client/send)
 * [Go SDK Reference: Send events](https://pkg.go.dev/github.com/inngest/inngestgo#Client)

@@ -66,7 +66,7 @@ Support for `x-www-form-urlencoded` and `multipart/form-data` content types. [Vi
 Build interactive applications that push updates from durable workflows to the browser. [View changelog](https://www.inngest.com/changelog/2025-09-26-python-realtime-beta) | [Read blog](/blog/announcing-realtime)
 
 **Zod 4 and Standard Schema support (September 2025)**  
-TypeScript SDK now supports Standard Schema interface, allowing use of Zod 4, Valibot, ArkType, joi, and more. [View changelog](https://www.inngest.com/changelog/2025-09-26-zod-4-standard-schema-support) | [Learn more](/docs/reference/client/create#defining-event-payload-types)
+TypeScript SDK now supports Standard Schema interface, allowing use of Zod 4, Valibot, ArkType, joi, and more. [View changelog](https://www.inngest.com/changelog/2025-09-26-zod-4-standard-schema-support) | [Learn more](/docs/reference/typescript/v4/client/create#defining-event-payload-types)
 
 **AgentKit: useAgent hook (September 2025)**  
 Stream realtime updates from AgentKit agents to the browser with `useAgent` and `useChat` hooks. [View changelog](https://www.inngest.com/changelog/2025-09-24-agentkit-use-agent) | [Learn more](https://agentkit.inngest.com)
