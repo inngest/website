@@ -1,5 +1,4 @@
 import React from "react";
-import { RiRocket2Fill } from "@remixicon/react";
 
 type Props = {
   href: string;
@@ -19,25 +18,40 @@ type Props = {
   `}</style>
  */
 
+// Matches the v1 feature card salmon: bg-v1-accent-salmon-gradient = rgb(247, 98, 70).
+// Set as a literal (not a Tailwind `bg-v1-*` utility) so it renders correctly on
+// every caller of this shared component, including legacy/pages-router routes
+// that don't load styles/v1.css (where `--color-v1-*` custom properties are undefined).
+const BANNER_BG = "rgb(247, 98, 70)";
+
+// Inline SVG feTurbulence noise — zero network request, seamlessly tileable at any scale.
+const NOISE_BG =
+  "url(\"data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='200' height='200'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.72' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='200' height='200' filter='url(%23n)' opacity='0.18'/%3E%3C/svg%3E\")";
+
 const Banner: React.FC<Props> = ({ href, children, className, target, rel }) => (
   <a
     href={href}
     target={target}
     rel={rel}
     // use the .page-banner class to hide it on select pages via CSS
-    // hidden on mobile/tablet, flex on desktop (md+) — matches the nav's own mobile/desktop breakpoint
-    className={`page-banner group hidden md:flex w-full items-center justify-center gap-2.5 border-b border-[rgb(var(--color-primary-subtle))]
-                px-6 py-2 text-base
-                text-basis transition-all ${className}`}
-    style={{
-      backgroundImage: `
-        linear-gradient(270deg, rgba(2, 117, 177, 0.80) 0%, rgba(21, 158, 136, 0.80) 0.02%, rgba(102, 189, 139, 0.80) 17.5%, rgba(45, 159, 101, 0.80) 100%)`,
-    }}
+    // hidden on mobile/tablet, flex on desktop (lg+) — matches the v1 redesign's
+    // own banner breakpoint from the prior global-promo-banner work
+    className={`page-banner group relative hidden lg:flex w-full items-center justify-center gap-1.5
+                overflow-hidden px-6 py-1.5 font-v1Heading text-sm
+                text-white transition-opacity hover:opacity-90 ${className}`}
+    style={{ backgroundColor: BANNER_BG }}
   >
-    <span className="rotate-45">
-      <RiRocket2Fill className="h-4 w-4 group-hover:animate-[wiggle_200ms_ease-in-out_infinite]" />
-    </span>
-    <span>{children}</span>
+    {/* Inline SVG noise overlay — soft-light grain with zero added bytes or requests */}
+    <span
+      aria-hidden="true"
+      className="pointer-events-none absolute inset-0"
+      style={{
+        backgroundImage: NOISE_BG,
+        backgroundSize: "200px 200px",
+        mixBlendMode: "soft-light",
+      }}
+    />
+    <span className="relative">{children}</span>
   </a>
 );
 
@@ -48,7 +62,7 @@ export default function AnnouncementBanner() {
       target="_blank"
       rel="noopener noreferrer"
     >
-      <strong className="underline underline-offset-2">
+      <strong className="font-semibold underline underline-offset-2">
         Join us on August 12th for an Agent Evals Lightning Lab
       </strong>{" "}
       →
