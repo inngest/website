@@ -5,6 +5,8 @@ type Props = {
   href: string;
   children: React.ReactNode;
   className?: string;
+  target?: string;
+  rel?: string;
 };
 
 /**
@@ -17,11 +19,14 @@ type Props = {
   `}</style>
  */
 
-const Banner: React.FC<Props> = ({ href, children, className }) => (
+const Banner: React.FC<Props> = ({ href, children, className, target, rel }) => (
   <a
     href={href}
+    target={target}
+    rel={rel}
     // use the .page-banner class to hide it on select pages via CSS
-    className={`page-banner group flex w-full items-center justify-center gap-2.5 border-b border-[rgb(var(--color-primary-subtle))]
+    // hidden on mobile/tablet, flex on desktop (md+) — matches the nav's own mobile/desktop breakpoint
+    className={`page-banner group hidden md:flex w-full items-center justify-center gap-2.5 border-b border-[rgb(var(--color-primary-subtle))]
                 px-6 py-2 text-base
                 text-basis transition-all ${className}`}
     style={{
@@ -38,11 +43,15 @@ const Banner: React.FC<Props> = ({ href, children, className }) => (
 
 export default function AnnouncementBanner() {
   return (
-    <Banner href="/blog/ai-in-production-report-2026?ref=site-banner">
-      What are the most confident teams using to build AI? →{" "}
+    <Banner
+      href="https://luma.com/inngest-r614?utm_source=web-banner"
+      target="_blank"
+      rel="noopener noreferrer"
+    >
       <strong className="underline underline-offset-2">
-        2026 Benchmark Report
-      </strong>
+        Join us on August 12th for an Agent Evals Lightning Lab
+      </strong>{" "}
+      →
     </Banner>
   );
 }
