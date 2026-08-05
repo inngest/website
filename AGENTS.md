@@ -125,6 +125,7 @@ See `snippets/CLAUDE.md` for full snippet documentation including validation com
 - `focus` (boolean) - Feature as highlighted post on main blog feed. Only use if a post must be highlighted for a longer time.
 - `hide` (boolean) - Accessible at URL but hidden from feeds and RSS. Only use for pre-release blog posts.
 - `featured` (boolean, optional) - When false, hidden from main feed but available on category pages.
+- `sidebarCta` (object, optional) - `{ text, buttonLabel, href }`. Renders a small text + button CTA below the table of contents in the sticky right rail (standard layout posts only; hidden below `lg`). Omit to render nothing.
 
 ### Changelog Entry Format
 

@@ -6,6 +6,10 @@ image: /assets/blog/three-patterns-you-need-for-agentic-systems/blog-banner.png
 date: 2026-03-11
 author: Dan Farrelly
 primaryCTA: "report2026"
+sidebarCta:
+  text: "Patterns for agentic systems. Proven building blocks in the docs."
+  buttonLabel: "See patterns"
+  href: "/docs/patterns?ref=blog-three-patterns-you-need-for-agentic-systems-sidebar"
 ---
 
 **Every agentic system that actually ships ends up needing three delegation patterns: one that blocks, one that fires and forgets, and one that runs later. The question isn't whether you need sub-agents — it's how you wire them up.**

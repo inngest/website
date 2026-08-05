@@ -4,6 +4,10 @@ heading: "Rapidly building interactive CLIs in Go with Bubbletea"
 subtitle: Our product is just different enough to make our CLI require really good interactivity.  We bundle an interactive event browser in our CLI.  Here's how it's built.
 image: "/assets/blog/interactive-clis-with-bubbletea.jpg?v=2022-04-28"
 date: 2022-04-15
+sidebarCta:
+  text: "Build and test locally. Spin up the Inngest dev server in minutes."
+  buttonLabel: "Local Development Docs"
+  href: "/docs/local-development?ref=blog-interactive-clis-with-bubbletea-sidebar"
 ---
 
 In this post we’ll walk through our use of Bubbletea, an elm-inspired TUI interface for Golang. We’ll discuss why we chose it, some example code, and some thoughts. Let’s start with context — what we’re building and why.

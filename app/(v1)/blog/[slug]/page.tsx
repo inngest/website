@@ -19,6 +19,7 @@ import RegisterCue from "@/components/v1/sections/Events/RegisterCue";
 import StippleCtaSection from "@/components/v1/sections/shared/StippleCtaSection";
 import ArticleBody from "./ArticleBody";
 import BlogToc, { type BlogTocItem } from "./BlogToc";
+import BlogSidebarCta from "./BlogSidebarCta";
 import Prose from "@/components/v1/Prose";
 import { Unreleased } from "shared/Docs/Unreleased";
 import { getFullURL } from "src/utils/social";
@@ -55,6 +56,13 @@ type Scope = {
   reading?: { text: string };
   primaryCTA?: "docs" | "sales" | "signUp";
   floatingCTA?: boolean;
+  // Opt-in text + button CTA rendered below the TOC in the sticky
+  // right rail (standard layout only). Omit to render nothing.
+  sidebarCta?: {
+    text: string;
+    buttonLabel: string;
+    href: string;
+  };
   // Syndicated posts point canonical at the original source.
   canonical_url?: string;
   // When set, the post is gated behind ?unreleased=<label>.
@@ -436,9 +444,18 @@ function ArticleSection({
             <ArticleBody source={content} scope={scope} />
           </Prose>
         </div>
-        {/* TOC — right rail, sticky, hidden on mobile */}
+        {/* TOC (+ optional CTA below it) — right rail, sticky, hidden
+            on mobile. Both share one sticky wrapper so the CTA scrolls
+            with the TOC instead of needing its own sticky context. */}
         <div className="hidden lg:sticky lg:top-[100px] lg:block">
           <BlogToc items={tocItems} />
+          {scope.sidebarCta ? (
+            <BlogSidebarCta
+              text={scope.sidebarCta.text}
+              buttonLabel={scope.sidebarCta.buttonLabel}
+              href={scope.sidebarCta.href}
+            />
+          ) : null}
         </div>
       </div>
     </section>
