@@ -104,6 +104,18 @@ export const UPCOMING: EventItem[] = [
     image: "/assets/v1/events/lightning-lab-ship-your-first-eval.png",
     imageFit: "contain",
   },
+  {
+    id: "sf-rooftop-tech-mixer",
+    title: "Rooftop Tech Mixer & Demo Night",
+    date: "Thursday, August 20, 2026 · 5–9 PM PDT",
+    startsAt: "2026-08-20T17:00:00-07:00",
+    location: "SAN FRANCISCO, CA",
+    topics: ["Meetups"],
+    excerpt:
+      "Rooftop views, drinks, and live product demos from Rootly AI, Twingate, Inngest, Spacelift, and more — cohosted with SVB.",
+    href: "https://luma.com/r6o27grm",
+    image: "/assets/v1/events/sf-rooftop-tech-mixer.png",
+  },
 ];
 
 export const ALL_EVENTS: EventItem[] = sortEventsByDate([
@@ -218,6 +230,18 @@ export const ALL_EVENTS: EventItem[] = sortEventsByDate([
     href: "/events/lightning-lab-ship-your-first-eval",
     image: "/assets/v1/events/lightning-lab-ship-your-first-eval.png",
     imageFit: "contain",
+  },
+  {
+    id: "sf-rooftop-tech-mixer",
+    title: "Rooftop Tech Mixer & Demo Night",
+    date: "Thursday, August 20, 2026 · 5–9 PM PDT",
+    startsAt: "2026-08-20T17:00:00-07:00",
+    location: "SAN FRANCISCO, CA",
+    topics: ["Meetups"],
+    excerpt:
+      "Rooftop views, drinks, and live product demos from Rootly AI, Twingate, Inngest, Spacelift, and more — cohosted with SVB.",
+    href: "https://luma.com/r6o27grm",
+    image: "/assets/v1/events/sf-rooftop-tech-mixer.png",
   },
 ]);
 
