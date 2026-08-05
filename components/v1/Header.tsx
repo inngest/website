@@ -13,6 +13,7 @@ import Link from "@/components/v1/Link";
 import Button from "@/components/v1/Button";
 import Logo from "@/components/v1/Logo";
 import MobileMenu from "@/components/v1/MobileMenu";
+import AnnouncementBanner from "src/components/AnnouncementBanner";
 import NavMenuPanel from "@/components/v1/NavMenuPanel";
 import {
   NAV_PRIMARY,
@@ -235,6 +236,8 @@ export default function Header() {
       style={wipeFillStyle}
       data-ink-nav={inkNav ? "" : undefined}
     >
+      {/* Promo banner — hidden on /blog (LCP risk) and when header is compacted */}
+      {!compact && !pathname?.startsWith("/blog") && <AnnouncementBanner />}
       {/* Full-bleed container: the bar spans the full page width with
           only the gutters insetting it, so the left group (logo + nav)
           anchors to the left edge and the right group (Open Source /
