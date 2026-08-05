@@ -62,9 +62,9 @@ export default function AnnouncementBanner() {
       target="_blank"
       rel="noopener noreferrer"
     >
-      <strong className="font-semibold underline underline-offset-2">
+      <span className="font-normal underline underline-offset-2">
         Join us on August 12th for an Agent Evals Lightning Lab
-      </strong>{" "}
+      </span>{" "}
       →
     </Banner>
   );
