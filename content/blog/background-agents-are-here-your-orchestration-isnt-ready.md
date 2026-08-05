@@ -12,6 +12,10 @@ image: /assets/blog/background-agents-are-here/featured-image-gold.png
 date: 2026-05-08
 author: Dan Farrelly
 primaryCTA: "report2026"
+sidebarCta:
+  text: "Keep it in your codebase. Everything you need to make it durable and observable."
+  buttonLabel: "Start free"
+  href: "/sign-up?ref=blog-background-agents-are-here-your-orchestration-isnt-ready-sidebar"
 ---
 
 Every six months, the "right" way to build an AI agent changes.
