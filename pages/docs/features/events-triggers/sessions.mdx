@@ -17,15 +17,11 @@ Use sessions when you already have a domain ID that ties multiple function runs 
 
 Common examples include AI conversations, agent runs, support tickets, imports, customer workflows, and long-running business processes.
 
-<Info>
-  Sessions is optimized for historical data, with a few-minute lag before data appears, so it’s not intended for monitoring live-executing runs.
-</Info>
+## When not to use sessions
 
-For one-off filtering, use [Insights](/docs/platform/monitor/insights?ref=docs-sessions) or the normal runs search instead. Sessions are best for IDs you expect to search and inspect repeatedly.
+Sessions are for high-cardinality identifiers — one ID per conversation, ticket, or job. They are not for low-cardinality labels like `environment: prod`.
 
-<Callout>
-  Sessions are for high-cardinality identifiers — one ID per conversation, ticket, or job. They are not for low-cardinality labels like `environment: prod`. For label-style filtering, use [Insights](/docs/platform/monitor/insights?ref=docs-sessions) instead.
-</Callout>
+Sessions are also best for IDs you expect to search and inspect repeatedly. For label-style or one-off filtering, use [Insights](/docs/platform/monitor/insights?ref=docs-sessions) or the normal runs search instead.
 
 ## Add sessions to an event
 
@@ -55,7 +51,7 @@ In the example above:
 - `conversation_id` is the session key
 - `conv_1234` is the session ID
 
-You can use the same session key across many events. Each unique session ID becomes a session in the dashboard.
+You can use the same session key across many events. Each unique session ID becomes a session in the dashboard. You can include up to 5 sessions.
 
 <Callout variant="info">
   When sending events with the TypeScript SDK, `meta.sessions` is supported in v4.7.0 and later.
@@ -97,7 +93,7 @@ Click a session row to open the detail page. The detail page shows the runs for 
   Sessions are scoped to the selected environment. If you do not see a session, check that you are in the environment where the event was sent.
 </Callout>
 
-## Use sessions for historical search
+### Data freshness
 
 Sessions use the same indexed event and run data that powers [Insights](/docs/platform/monitor/insights?ref=docs-sessions). This index is designed for search, filtering, and investigation across activity that Inngest has recorded.
 
@@ -176,6 +172,7 @@ Use stable IDs that are safe to show in the dashboard. Do not store secrets or s
 
 Session ID limits apply after numbers are normalized to strings.
 
+
 ## Session propagation
 
 {/* Add in the releasing version */}
@@ -242,7 +239,7 @@ Session propagation with `inngest.send()` will break within runtimes that don't 
 - **The run's sessions**: the run is associated with the sessions from every event in the batch. Inngest combines them, orders them alphanumerically, and keeps the first 25 unique session key/ID pairs.
 - **Propagated sessions**: events created by the run only carry the intersection of sessions from all triggering events — the same session key and ID must be present on every event in the batch. Propagated sessions remain limited to 5.
 
-If triggering a run based off a single event in the batch, we encourage you to read from the triggering event and manually set sessions.
+If you are triggering a run based off a single event in the batch, we encourage you to read from the triggering event and manually set sessions.
 
 ## Inspect or edit sessions with middleware
 
@@ -277,6 +274,7 @@ export class SessionPolicy extends Middleware.BaseMiddleware {
   }
 }
 ```
+
 
 ## Related docs
 
