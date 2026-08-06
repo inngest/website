@@ -421,7 +421,7 @@ function NavigationGroup({
               className={clsx("pl-2", {
                 "text-sm font-medium text-subtle hover:text-basis":
                   nestingLevel > 0,
-                "dark:text-carbon-00 text-xs font-bold uppercase tracking-wide text-carbon-300":
+                "text-sm font-bold uppercase tracking-wide text-carbon-700 dark:text-carbon-200":
                   nestingLevel == 0,
               })}
             >
@@ -429,7 +429,7 @@ function NavigationGroup({
             </span>
             <span className="flex items-center gap-1">
               {tag && (
-                <Tag color="matcha" className={"mr-2"}>
+                <Tag color="matcha" className={"mr-2"} variant="outline">
                   {tag}
                 </Tag>
               )}
@@ -598,7 +598,13 @@ const SDK_SECTION_TITLES = [
 ];
 
 // Non-SDK reference sections that should always be shown (separated from SDK sections)
-const SHARED_REFERENCE_TITLES = ["REST API", "System events", "Self-hosting"];
+const SHARED_REFERENCE_TITLES = [
+  "Events",
+  "CLI",
+  "REST API",
+  "System events",
+  "Self-hosting",
+];
 
 // Helper to check if a section should be hidden based on selected language and TS version
 function shouldHideSection(
@@ -1029,6 +1035,7 @@ export function Navigation(props) {
                       {isNavGroup(item) ? (
                         <NavigationGroup
                           group={item}
+                          tag={item.tag}
                           isActiveGroup={item.title === activeGroup?.title}
                         />
                       ) : (

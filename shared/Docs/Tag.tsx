@@ -1,26 +1,60 @@
 import clsx from "clsx";
 import { StarIcon } from "@heroicons/react/24/outline";
 
-const variantStyle = (variant: string): string => {
+const sizeClasses = (variant: string): string => {
   switch (variant) {
     case "medium":
-      return "px-1.5 py-0.5 ring-1 ring-inset";
+      return "px-2 py-0.5 ring-1 ring-inset";
 
     default:
       return null;
   }
 };
 
-const colorStyle = (
+// Tailwind scans source files as text, so these class names must be written
+// out statically — interpolated names like `ring-${color}-300` are never
+// generated into the stylesheet.
+const variantClasses: Record<string, { default: string; outline: string }> = {
+  matcha: {
+    default: "bg-matcha-500 dark:bg-matcha-600 text-white ring-0",
+    outline:
+      "bg-transparent text-matcha-600 dark:text-matcha-300 ring-matcha-300 ring-1",
+  },
+  breeze: {
+    default: "bg-breeze-500 dark:bg-breeze-600 text-white ring-0",
+    outline:
+      "bg-transparent text-breeze-600 dark:text-breeze-300 ring-breeze-300 ring-1",
+  },
+  honey: {
+    default: "bg-honey-500 dark:bg-honey-600 text-white ring-0",
+    outline:
+      "bg-transparent text-honey-600 dark:text-honey-300 ring-honey-300 ring-1",
+  },
+  ruby: {
+    default: "bg-ruby-500 dark:bg-ruby-600 text-white ring-0",
+    outline:
+      "bg-transparent text-ruby-600 dark:text-ruby-300 ring-ruby-300 ring-1",
+  },
+  indigo: {
+    default: "bg-indigo-500 dark:bg-indigo-600 text-white ring-0",
+    outline:
+      "bg-transparent text-indigo-600 dark:text-indigo-300 ring-indigo-300 ring-1",
+  },
+};
+
+const colorClasses = (
   color: string,
-  variant: string,
-  background: "default" | "page"
+  size: "small" | "medium" = "medium",
+  variant: "default" | "outline" = "default"
 ): string => {
-  switch (variant) {
+  const boxClasses = "rounded-full";
+  const classes = variantClasses[color] ?? variantClasses.indigo;
+  return [boxClasses, classes[variant]].join(" ");
+  switch (size) {
     case "small":
       return `text-${color}-${
-        background === "default" ? "400" : "600"
-      } dark:text-${color}-${background === "default" ? "300" : "400"}`;
+        variant === "default" ? "400" : "600"
+      } dark:text-${color}-${variant === "default" ? "300" : "400"}`;
 
     case "medium":
       if (color === "matcha") {
@@ -42,26 +76,26 @@ const valueColorMap = {
 
 export function Tag({
   children,
-  variant = "medium",
+  size = "medium",
   color = valueColorMap[children.toLowerCase()] ?? "indigo",
-  background = "default",
+  variant = "default",
   className,
 }: {
   children: string;
-  variant?: "small" | "medium";
+  size?: "small" | "medium";
   color?: string;
   className?: string;
-  background?: "default" | "page";
+  variant?: "default" | "outline";
 }) {
   const isNewTag = children.toLowerCase() === "new";
 
   return (
     <span
       className={clsx(
-        "text-xs leading-2",
+        "leading-2 text-xs",
         isNewTag && "inline-flex items-center gap-0.5",
-        variantStyle(variant),
-        colorStyle(color, variant, background),
+        sizeClasses(size),
+        colorClasses(color, size, variant),
         className
       )}
     >

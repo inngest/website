@@ -179,7 +179,11 @@ function PageNavigation() {
   let previousPage = allPages[currentPageIndex - 1];
   let nextPage = allPages[currentPageIndex + 1];
 
-  // Skip next page if it's an external link
+  // Skip adjacent pages that are external links (e.g. the AgentKit entry) —
+  // paginating out of the docs is never what the reader wants.
+  if (!previousPage?.href?.match(/^\//)) {
+    previousPage = null;
+  }
   if (!nextPage?.href?.match(/^\//)) {
     nextPage = null;
   }

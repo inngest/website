@@ -1,3 +1,4 @@
+import { CodeGroup } from "src/shared/Docs/mdx";
 
 export const metaTitle = "Debug Inngest Functions with the CLI"
 export const description = "Use the Inngest CLI to inspect function runs, send test events, and debug failures locally without needing the cloud dashboard."
@@ -8,8 +9,37 @@ This guide walks you through finding a failed run, pulling its trace, and identi
 
 ## Prerequisites
 
-- Inngest CLI: `npx inngest-cli@latest`
-- An API key set as `INNGEST_API_KEY` (create one in the [Inngest dashboard](https://app.inngest.com) under Settings > API Keys)
+- Set an API key set as `INNGEST_API_KEY` (create one in the [Inngest dashboard](https://app.inngest.com) under Settings > API Keys)
+- Install the Inngest CLI:
+
+<CodeGroup>
+  ```shell  {{ title: "Bash installer" }}
+  # Install the CLI - follow the steps to complete install:
+  curl -sSfL https://cli.inngest.com/install.sh | sh
+
+  # Run the dev server
+  inngest dev -u http://localhost:3000/api/inngest
+  ```
+  ```shell {{ title: "brew" }}
+  # Install the CLI:
+  brew install inngest/tap/inngest
+
+  # If Homebrew warns about untrusted taps, run this and then install again
+  brew trust --cask inngest/tap/inngest
+
+  # Run the dev server
+  inngest dev -u http://localhost:3000/api/inngest
+  ```
+  ```shell {{ title: "npx (npm)" }}
+  npx --ignore-scripts=false inngest-cli@latest dev
+  # You can specify the URL of your development `serve` API endpoint
+  npx --ignore-scripts=false inngest-cli@latest dev -u http://localhost:3000/api/inngest
+  ```
+  ```shell {{ title: "Docker" }}
+  docker run -p 8288:8288 -p 8289:8289 inngest/inngest \
+    inngest dev -u http://host.docker.internal:3000/api/inngest
+  ```
+</CodeGroup>
 
 ---
 
@@ -18,7 +48,7 @@ This guide walks you through finding a failed run, pulling its trace, and identi
 You have a run ID from a log, alert, or the dashboard. Fetch the summary:
 
 ```bash
-npx inngest-cli@latest api --prod get-function-run 01KTCTWT8XDEGWDMVX3Q9M69ND
+inngest api --prod get-function-run 01KTCTWT8XDEGWDMVX3Q9M69ND
 ```
 
 The response shows the run's status, function, timing, and trigger:
@@ -48,7 +78,7 @@ The run failed. Pull the trace to see which step broke.
 The trace shows every step in the run with its status, timing, and output:
 
 ```bash
-npx inngest-cli@latest api --prod get-function-trace 01KTCTWT8XDEGWDMVX3Q9M69ND --include-output
+inngest api --prod get-function-trace 01KTCTWT8XDEGWDMVX3Q9M69ND --include-output
 ```
 
 The response is a tree of spans. Each span is a step. Look for the one with a failed status:
@@ -97,7 +127,7 @@ The `create-shipment` step failed with a 503 from the shipping API. The `validat
 Extract just the failed steps:
 
 ```bash
-npx inngest-cli@latest api --prod get-function-trace 01KTCTWT8XDEGWDMVX3Q9M69ND --include-output \
+inngest api --prod get-function-trace 01KTCTWT8XDEGWDMVX3Q9M69ND --include-output \
   | jq '[.data.rootSpan.children[] | select(.status == "FAILED")]'
 ```
 
@@ -109,11 +139,11 @@ Once you identify the issue, fix the code and test against your local dev server
 
 ```bash
 # Invoke the function locally
-npx inngest-cli@latest api invoke-function my-app process-order \
+inngest api invoke-function my-app process-order \
   --data '{"orderId": "test-123", "address": "123 Main St"}'
 
 # Check the run
-npx inngest-cli@latest api get-event-runs <event_id> --include-output
+inngest api get-event-runs <event_id> --include-output
 ```
 
 No `--prod` flag means it hits `http://localhost:8288`. The dev server must be running.
