@@ -11,10 +11,6 @@ Add `meta.sessions` to an event when you want the Inngest dashboard to show all 
 
 Sessions do not change which functions run. They add event metadata that makes related runs easier to find and inspect.
 
-<Callout variant="info">
-  When sending events with the TypeScript SDK, `meta.sessions` is supported in v4.7.0 and later.
-</Callout>
-
 ## When to use sessions
 
 Use sessions when you already have a domain ID that ties multiple function runs together.
@@ -62,8 +58,123 @@ In the example above:
 You can use the same session key across many events. Each unique session ID becomes a session in the dashboard.
 
 <Callout variant="info">
+  When sending events with the TypeScript SDK, `meta.sessions` is supported in v4.7.0 and later.
+</Callout>
+
+<Callout variant="info">
   Webhook transforms can also add sessions by returning `meta.sessions` in the transformed event. See [webhook transforms](/docs/platform/webhooks?ref=docs-sessions#defining-a-transform-function) for more details.
 </Callout>
+
+## View sessions in the dashboard
+
+Open the Inngest dashboard and select an environment.
+
+Go to **AI > Sessions**.
+
+<figure className="not-prose my-6 flex justify-center">
+  <img
+    src="/assets/docs/features/events-triggers/sessions/sidebar.png"
+    alt="The Sessions entry in the Inngest dashboard sidebar"
+    className="rounded"
+    style={{ width: "min(100%, 260px)", height: "auto" }}
+  />
+</figure>
+
+Search for a session key, such as `conversation_id`.
+
+![The Sessions search page filtered by a session key](/assets/docs/features/events-triggers/sessions/search.png)
+
+The results page shows each session ID for that key, along with:
+
+- number of runs
+- failed runs and failure rate
+- last active time
+- functions seen in that session
+
+Click a session row to open the detail page. The detail page shows the runs for that specific session key and ID.
+
+<Callout>
+  Sessions are scoped to the selected environment. If you do not see a session, check that you are in the environment where the event was sent.
+</Callout>
+
+## Use sessions for historical search
+
+Sessions use the same indexed event and run data that powers [Insights](/docs/platform/monitor/insights?ref=docs-sessions). This index is designed for search, filtering, and investigation across activity that Inngest has recorded.
+
+Because the index is updated asynchronously, newly sent events, recently started runs, and status changes may take a short time to appear in Sessions. Treat Sessions as a historical view for finding and inspecting related runs, not as a realtime source of truth for the current state of an active workflow.
+
+## Choose a good session key
+
+Use a session key for the kind of thing you want to inspect later.
+
+Good examples:
+
+- `conversation_id`
+- `agent_run_id`
+- `ticket_id`
+- `workflow_id`
+- `import_id`
+
+Avoid putting the session ID in the session key. For example, use this:
+
+```ts
+meta: {
+  sessions: {
+    conversation_id: "conv_1234",
+  },
+}
+```
+
+Not this:
+
+```ts
+meta: {
+  sessions: {
+    "conversation_id:conv_1234": "true",
+  },
+}
+```
+
+Session IDs are treated as opaque strings. They can contain characters like `:` or `/`, and the dashboard will keep the session key and ID separate.
+
+## Supported values
+
+Session IDs can be strings or finite numbers. Numbers are stored as strings.
+
+`null` is also a valid value: it clears a propagated session rather than creating one (see [overriding propagated sessions](#overriding-propagated-sessions)). Other value types, including booleans, objects, and arrays, are rejected.
+
+Session keys must be non-empty strings; `null` is not a valid key.
+
+```ts
+await inngest.send({
+  name: "app/agent.step.completed",
+  data: {
+    stepId: "step_1",
+  },
+  meta: {
+    sessions: {
+      conversation_id: "conv_1234",
+      thread_id: 29563,
+    },
+  },
+});
+```
+
+Use stable IDs that are safe to show in the dashboard. Do not store secrets or sensitive personal data in session IDs.
+
+## Limits
+
+- Each event can include up to 5 entries in `meta.sessions`. For non-batched functions, that means the run can be associated with up to 5 sessions.
+- For [batched functions](#sessions-and-batching), the run combines sessions from every event in the batch and can be associated with up to 25 unique session key/ID pairs.
+- Session keys and IDs cannot be empty.
+- Session IDs must be strings or finite numbers. Numbers are normalized to strings.
+
+| Field | Limit |
+| --- | --- |
+| Session key | 128 bytes |
+| Session ID | 512 bytes |
+
+Session ID limits apply after numbers are normalized to strings.
 
 ## Session propagation
 
@@ -166,117 +277,6 @@ export class SessionPolicy extends Middleware.BaseMiddleware {
   }
 }
 ```
-
-## Supported values
-
-Session IDs can be strings or finite numbers. Numbers are stored as strings.
-
-`null` is also a valid value: it clears a propagated session rather than creating one (see [overriding propagated sessions](#overriding-propagated-sessions)). Other value types, including booleans, objects, and arrays, are rejected.
-
-Session keys must be non-empty strings; `null` is not a valid key.
-
-```ts
-await inngest.send({
-  name: "app/agent.step.completed",
-  data: {
-    stepId: "step_1",
-  },
-  meta: {
-    sessions: {
-      conversation_id: "conv_1234",
-      thread_id: 29563,
-    },
-  },
-});
-```
-
-Use stable IDs that are safe to show in the dashboard. Do not store secrets or sensitive personal data in session IDs.
-
-## Limits
-
-- Each event can include up to 5 entries in `meta.sessions`. For non-batched functions, that means the run can be associated with up to 5 sessions.
-- For [batched functions](#sessions-and-batching), the run combines sessions from every event in the batch and can be associated with up to 25 unique session key/ID pairs.
-- Session keys and IDs cannot be empty.
-- Session IDs must be strings or finite numbers. Numbers are normalized to strings.
-
-| Field | Limit |
-| --- | --- |
-| Session key | 128 bytes |
-| Session ID | 512 bytes |
-
-Session ID limits apply after numbers are normalized to strings.
-
-## Choose a good session key
-
-Use a session key for the kind of thing you want to inspect later.
-
-Good examples:
-
-- `conversation_id`
-- `agent_run_id`
-- `ticket_id`
-- `workflow_id`
-- `import_id`
-
-Avoid putting the session ID in the session key. For example, use this:
-
-```ts
-meta: {
-  sessions: {
-    conversation_id: "conv_1234",
-  },
-}
-```
-
-Not this:
-
-```ts
-meta: {
-  sessions: {
-    "conversation_id:conv_1234": "true",
-  },
-}
-```
-
-Session IDs are treated as opaque strings. They can contain characters like `:` or `/`, and the dashboard will keep the session key and ID separate.
-
-## View sessions in the dashboard
-
-Open the Inngest dashboard and select an environment.
-
-Go to **AI > Sessions**.
-
-<figure className="not-prose my-6 flex justify-center">
-  <img
-    src="/assets/docs/features/events-triggers/sessions/sidebar.png"
-    alt="The Sessions entry in the Inngest dashboard sidebar"
-    className="rounded"
-    style={{ width: "min(100%, 260px)", height: "auto" }}
-  />
-</figure>
-
-Search for a session key, such as `conversation_id`.
-
-![The Sessions search page filtered by a session key](/assets/docs/features/events-triggers/sessions/search.png)
-
-The results page shows each session ID for that key, along with:
-
-- number of runs
-- failed runs and failure rate
-- last active time
-- functions seen in that session
-
-Click a session row to open the detail page. The detail page shows the runs for that specific session key and ID.
-
-<Callout>
-  Sessions are scoped to the selected environment. If you do not see a session, check that you are in the environment where the event was sent.
-</Callout>
-
-## Use sessions for historical search
-
-Sessions use the same indexed event and run data that powers [Insights](/docs/platform/monitor/insights?ref=docs-sessions). This index is designed for search, filtering, and investigation across activity that Inngest has recorded.
-
-Because the index is updated asynchronously, newly sent events, recently started runs, and status changes may take a short time to appear in Sessions. Treat Sessions as a historical view for finding and inspecting related runs, not as a realtime source of truth for the current state of an active workflow.
 
 ## Related docs
 
