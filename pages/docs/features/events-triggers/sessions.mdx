@@ -124,6 +124,15 @@ Session propagation with `inngest.send()` will break within runtimes that don't 
 
 `step.waitForEvent()` does not match on sessions — matching is based only on the event name and any `match` or `if` expression. The matched event's sessions are returned on `result.meta?.sessions`.
 
+## Sessions and batching
+
+[Batching](/docs/guides/batching) allows a function to process multiple events in a single run. Batching affects sessions in two ways:
+
+- **The run's sessions**: the run is associated with the sessions from every event in the batch. Inngest combines them, orders them alphanumerically, and keeps the first 25 unique session key/ID pairs.
+- **Propagated sessions**: events created by the run only carry the intersection of sessions from all triggering events — the same session key and ID must be present on every event in the batch. Propagated sessions remain limited to 5.
+
+If triggering a run based off a single event in the batch, we encourage you to read from the triggering event and manually set sessions.
+
 ## Inspect or edit sessions with middleware
 
 You may want to inspect or edit sessions for encryption or validation. You can use [middleware](/docs/features/middleware?ref=docs-sessions) to inspect the propagated and manual sessions before they are sent to the server.
@@ -185,9 +194,8 @@ Use stable IDs that are safe to show in the dashboard. Do not store secrets or s
 
 ## Limits
 
-- Each event can include up to 5 entries in `meta.sessions`.
-- For non-batched functions, that means the run can be associated with up to 5 sessions.
-- For batched functions, one run can be triggered by multiple events. In that case, Inngest combines the sessions from every event in the batch, orders them alphanumerically, and keeps the first 25 unique session key/ID pairs for the run.
+- Each event can include up to 5 entries in `meta.sessions`. For non-batched functions, that means the run can be associated with up to 5 sessions.
+- For [batched functions](#sessions-and-batching), the run combines sessions from every event in the batch and can be associated with up to 25 unique session key/ID pairs.
 - Session keys and IDs cannot be empty.
 - Session IDs must be strings or finite numbers. Numbers are normalized to strings.
 
