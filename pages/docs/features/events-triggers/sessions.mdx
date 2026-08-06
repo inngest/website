@@ -175,8 +175,7 @@ Session ID limits apply after numbers are normalized to strings.
 
 ## Session propagation
 
-{/* Add in the releasing version */}
-A run's sessions automatically propagate into events created by that run, starting in JS SDK vX.Y.Z.
+A run's sessions automatically propagate into events created by that run, starting in inngest-js v4.18.0.
 
 Session propagation applies to `step.sendEvent()`, `step.invoke()`, `inngest.send()`, [deferred functions](/docs/features/inngest-functions/deferred-functions?ref=docs-sessions) started with `defer()`, and failure and lifecycle events (`inngest/function.finished`, `.failed`, `.cancelled`).
 
