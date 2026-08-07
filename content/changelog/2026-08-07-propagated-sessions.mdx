@@ -1,4 +1,4 @@
-export const title = "Propagated sessions";
+export const title = "Propagated Sessions";
 export const date = "2026-08-07";
 
 Sessions now propagate to child runs. Any run triggered by another run (via event, invoke, or defer) inherits its parent's sessions. Set sessions once on the root run and the whole tree is grouped on the Sessions page.
