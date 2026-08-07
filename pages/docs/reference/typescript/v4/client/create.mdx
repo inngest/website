@@ -76,6 +76,11 @@ const inngest = new Inngest({
 
     Set this to `false` to opt out of the SDK's built-in AI metadata extraction. This does not affect [Extended Traces](/docs/reference/typescript/v4/extended-traces).
   </Property>
+  <Property name="sessionPropagation" type="boolean">
+    Whether events created during a run — via `inngest.send()`, `step.sendEvent()`, `step.invoke()`, and `defer()` — inherit the run's [sessions](/docs/features/events-triggers/sessions?ref=docs-reference-client-create), so the resulting child runs stay grouped with their parent. Defaults to `true`.
+
+    Set this to `false` to opt out. Sessions you set explicitly in `meta.sessions` are still sent. See [disabling propagation](/docs/features/events-triggers/sessions?ref=docs-reference-client-create#disabling-propagation).
+  </Property>
   <Property name="endpointAdapter" type="InngestEndpointAdapter.Like">
     An endpoint adapter that enables [Durable Endpoints](/docs/reference/typescript/v4/durable-endpoints).  When provided, `inngest.endpoint()` and `inngest.endpointProxy()` become available.
   </Property>

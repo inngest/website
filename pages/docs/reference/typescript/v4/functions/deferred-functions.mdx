@@ -128,6 +128,14 @@ await step.run("notify", async () => {
       <Property name="data" type="object" required>
         Payload to send to the deferred function. Typed from `function.schema` when present.
       </Property>
+      <Property name="meta" type="object">
+        Event metadata shared with the deferred run.
+        <Properties nested>
+          <Property name="sessions" type="Record<string, string | number | null> | null">
+            [Sessions](/docs/features/events-triggers/sessions?ref=docs-reference-deferred-functions) to add to or override on the deferred run. Manually set sessions take precedence over sessions inherited from the calling run. A `null` value clears an inherited session for that key; setting `sessions` itself to `null` clears every inherited session. Numbers are normalized to strings.
+          </Property>
+        </Properties>
+      </Property>
     </Properties>
   </Property>
 </Properties>
@@ -164,11 +172,35 @@ Call-site validation must be synchronous because `defer(...)` itself is sync. If
 
 ---
 
+## Sessions
+
+A deferred run inherits the [sessions](/docs/features/events-triggers/sessions?ref=docs-reference-deferred-functions) of the run that called `defer(...)`, so the two are grouped together in the dashboard. Pass `meta.sessions` to add or override sessions on the deferred run:
+
+```ts
+defer("score", {
+  function: feedbackScorer,
+  data: { ticketId },
+  meta: {
+    sessions: {
+      conversation_id: "conv_1234", // add or override
+      internal_trace_id: null,      // clear an inherited session
+    },
+  },
+});
+```
+
+- Manually set sessions win over inherited ones, per key.
+- `meta.sessions: null` clears every inherited session.
+- Session IDs must be strings or finite numbers; numbers are normalized to strings. An invalid value is a call-site error — the whole `defer(...)` call is logged and skipped.
+- Inheritance is controlled by the client-level [`sessionPropagation`](/docs/reference/typescript/v4/client/create#configuration) option. Sessions passed explicitly in `meta.sessions` are sent regardless of that setting.
+
+---
+
 ## Error handling
 
 `defer(...)` is fire-and-forget, so a bad call should not derail the surrounding handler.
 
-- **Call-site errors** (for example, a synchronous schema failure) are logged via the internal logger and the call is silently skipped. The parent run continues normally and the deferred function does not fire.
+- **Call-site errors** (for example, a synchronous schema failure, or an invalid `meta.sessions` value) are logged via the internal logger and the call is silently skipped. The parent run continues normally and the deferred function does not fire.
 - **Receiver-side errors** (the deferred run reading invalid `event.data`, or the handler throwing) fail the deferred run itself with normal retry semantics.
 
 ---

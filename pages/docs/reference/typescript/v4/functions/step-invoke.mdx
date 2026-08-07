@@ -62,6 +62,14 @@ const mainFunction = inngest.createFunction(
           <Property name="user" type="object">
             Optional user context for the invocation.
           </Property>
+          <Property name="meta" type="object">
+            Optional event metadata for the invocation.
+            <Properties nested={true}>
+              <Property name="sessions" type="Record<string, string | number | null> | null">
+                [Sessions](/docs/features/events-triggers/sessions?ref=docs-reference-step-invoke) to add to or override on the invoked run, which otherwise inherits the calling run's sessions. A `null` value clears an inherited session for that key; setting `sessions` itself to `null` clears every inherited session. Numbers are normalized to strings.
+              </Property>
+            </Properties>
+          </Property>
           <Property name="timeout" type="string | number | Date | Temporal.Duration | Temporal.Instant | Temporal.ZonedDateTime">
             {/* Purposefully not mentioning the default timeout of 1 year, as we expect to lower this very soon. */}
             How long to wait for the invoked function to complete. Either:

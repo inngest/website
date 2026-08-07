@@ -46,6 +46,8 @@ To send events from outside of the context of a function, use [`inngest.send()`]
         An event payload object or an array of event payload objects.
 
         [See the documentation for `inngest.send()`](/docs/reference/typescript/v4/events/send#inngest-send-event-payload-event-payload-promise) for the event payload format.
+
+        Events sent from within a run inherit the run's [sessions](/docs/features/events-triggers/sessions?ref=docs-reference-step-send-event). Use `meta.sessions` on the payload to add or override them.
       </Property>
     </Properties>
   </Col>
