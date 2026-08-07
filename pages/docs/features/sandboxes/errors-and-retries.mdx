@@ -1,0 +1,313 @@
+import { Callout } from "src/shared/Docs/mdx";
+
+export const metaTitle = "Sandbox errors and retries"
+export const description = "Handle Sandbox validation, availability failures, ambiguous mutations, retries, and stream errors safely."
+
+# Sandbox errors and retries
+
+Sandbox operations can change live external state. Retry decisions must account
+for whether a mutation was definitely rejected, definitely completed, or may
+have happened without a confirmed response.
+
+## REST error responses
+
+REST errors use an `errors` array:
+
+```json
+{
+  "errors": [
+    {
+      "code": "operation_ambiguous",
+      "message": "Sandbox process may have started; list processes and reconcile before starting another"
+    }
+  ]
+}
+```
+
+Use `code` for control flow. Messages are written for humans and can change.
+
+`operation_ambiguous` is not a sandbox or process state. It means an
+unsafe-to-repeat operation may have completed even though the platform could
+not confirm its result. Use the action-specific guidance below.
+
+## SDK errors
+
+The TypeScript SDK converts API and transport failures to `SandboxError`:
+
+```ts
+class SandboxError extends Error {
+  action: SandboxAction;
+  code: SandboxErrorCode;
+  status?: number;
+  sandboxId?: string;
+  processId?: string;
+  ambiguous: boolean;
+  retryable: boolean;
+  requestId?: string;
+  details: readonly Record<string, unknown>[];
+  cause?: unknown;
+}
+```
+
+`action` always identifies the operation that failed. Use `action`, `code`,
+`ambiguous`, and `retryable` for control flow. Use `message` for human-readable
+context.
+
+Invalid local input and malformed server responses throw
+`SandboxValidationError`.
+
+The direct client never retries automatically, even when `retryable` is true.
+
+Inside `step.sandbox`:
+
+- `SandboxError` with `retryable: true` becomes a retriable step error
+- non-retryable `SandboxError` becomes `NonRetriableError`
+- `SandboxValidationError` becomes `NonRetriableError`
+
+This uses the function's ordinary step retry behavior. It does not provide
+exactly-once dispatch.
+
+## Error reference
+
+| HTTP | Code | Typical condition | Guidance |
+| ---: | --- | --- | --- |
+| 400 | `invalid_request` | Invalid JSON or unknown fields | Fix the request |
+| 400 | `missing_field` | Required field omitted | Fix the request |
+| 400 | `invalid_field_format` | Invalid UUID, command, signal, timeout, cursor, path, mode, or tail size | Fix the request |
+| 401 | `authorization_header_missing` | Missing authorization | Fix credentials |
+| 401 | `invalid_api_key` | Invalid API key | Rotate or replace credentials |
+| 403 | `access_denied` | Sandbox access is not enabled | Request access |
+| 404 | `sandbox_not_found` | Sandbox missing or hidden by workspace scope | Re-check the target |
+| 404 | `sandbox_file_not_found` | Sandbox or regular file missing | Re-check the target |
+| 404 | `sandbox_process_not_found` | Process missing | Re-check the target |
+| 404 | `sandbox_process_output_not_retained` | Process exists but output was evicted | Output cannot be recovered through this API |
+| 409 | `sandbox_name_taken` | Active sandbox name is already used | Choose another name or use the existing sandbox |
+| 409 | `invalid_request` | Sandbox is not in the required state | Get and inspect current state |
+| 409 | `operation_ambiguous` | The result of the operation in `SandboxError.action` is unknown | Follow the action-specific recovery guidance below |
+| 413 | `sandbox_exec_output_too_large` | Direct output exceeded 4 MiB | Command may have run; do not retry blindly |
+| 413 | `sandbox_file_too_large` | File exceeds 100 MiB | Reduce or split the file |
+| 429 | `rate_limited` | Request rejected by rate limit | Retry with bounded backoff |
+| 500 | `internal_error` | Unexpected failure | Retry only when the operation is proven safe |
+| 503 | `compute_unavailable` | Operation was rejected before dispatch or is safe to repeat | Safe reads and safe-to-repeat mutations can retry |
+| 504 | `sandbox_exec_timed_out` | Exec observation timed out | Command may have run; do not retry blindly |
+| 504 | `sandbox_process_wait_timed_out` | Wait observation timed out | Process continues; waiting again is safe |
+
+`sandbox_exec_output_too_large`, `sandbox_exec_timed_out`, and
+`operation_ambiguous` all produce `SandboxError.ambiguous === true` and
+`retryable === false`.
+
+## Reads and mutations
+
+Safe reads do not modify sandbox state:
+
+- List and Get sandbox
+- List, Get, and Wait process
+- retained process output
+- sandbox and process streams
+- file download
+
+Mutations can have external effects:
+
+- Create sandbox
+- captured Exec
+- Destroy sandbox
+- Start process
+- Signal process
+- file upload
+
+Not every mutation has the same retry behavior. Repeating the same Create
+request recovers the matching active sandbox, Destroy records durable teardown
+intent, and uploading the same bytes and mode to the same path produces the
+same file. Captured Exec, process Start, and arbitrary process Signal can
+produce an additional side effect when repeated.
+
+## Retry safe reads
+
+For `429 rate_limited` and `503 compute_unavailable`, retry a direct read with
+bounded exponential backoff and jitter:
+
+This example is for the direct `inngest.sandboxes` client. Do not add this
+loop around `step.sandbox`; Inngest already retries its retryable step errors.
+
+```ts
+import { SandboxError } from "inngest/experimental";
+
+const sleep = (milliseconds: number) =>
+  new Promise((resolve) => setTimeout(resolve, milliseconds));
+
+async function getSandboxWithBackoff(id: string) {
+  for (let attempt = 0; attempt < 4; attempt++) {
+    try {
+      return await inngest.sandboxes.get(id);
+    } catch (error) {
+      if (!(error instanceof SandboxError) || !error.retryable) {
+        throw error;
+      }
+
+      const delay = Math.min(250 * 2 ** attempt, 2_000);
+      await sleep(delay + Math.floor(Math.random() * 100));
+    }
+  }
+
+  throw new Error("Sandbox is still unavailable");
+}
+```
+
+The direct client does not reconnect streams. A manual reconnect can replay
+retained chunks, so consumers must tolerate duplicates.
+
+## Retry or reconcile mutations deliberately
+
+A non-idempotent mutation can retry only when the service confirms that it
+failed before dispatch. Examples include a 429 rate-limit response or a 503
+response produced before a node session was obtained.
+
+For Create, repeat the exact request. While the matching sandbox is active, its
+name and resource request identify the same sandbox. For Destroy, Get the
+sandbox and repeat Destroy if necessary. For file upload, repeating the same
+PUT with the same path, bytes, and mode is safe.
+
+Do not infer that a non-idempotent operation is safe from a missing HTTP
+response. The response can be lost after dispatch.
+
+## Handle ambiguous operations
+
+Ambiguity means the platform cannot prove whether an unsafe-to-repeat operation
+happened. It does not mean the sandbox or process entered an `AMBIGUOUS` state.
+
+Do not blindly retry an ambiguous error. Inside an Inngest function, let the
+error escape; it is non-retryable. With the direct client, follow the
+action-specific guidance below only when your code deliberately owns the retry,
+reconciliation, or operator-review path.
+
+Use `SandboxError.action` to choose the recovery path:
+
+| Action | What may have happened | Recovery |
+| --- | --- | --- |
+| `exec` | The command may have run, but its captured result was not confirmed | Inspect the command's external effects or an application-defined completion marker. Do not run it again automatically. |
+| `process.start` | A process may be running, but its generated UUID may not have reached the caller | List processes and compare command and start time. If the process cannot be identified confidently, stop and require operator or application-level reconciliation. |
+| `process.signal` | The signal may have been delivered | Get or wait for the process. Send another signal only when duplicate delivery is safe for that signal and application. |
+
+Create, Destroy, and file upload do not use `operation_ambiguous` for an
+unconfirmed response. Create is safe to repeat with the same active name and
+resources, Destroy records teardown intent before contacting the node, and an
+identical upload produces the same file. The SDK reports these failures as
+retryable availability errors.
+
+`sandbox_exec_output_too_large` and `sandbox_exec_timed_out` use more specific
+codes, but they are also ambiguous: the command may have run even though its
+complete result was not observed.
+
+Reconciliation is application policy. The SDK does not guess.
+
+## Understand `step.sandbox` replay
+
+`step.sandbox` uses ordinary `step.run` memoization:
+
+1. The step handler sends the REST request.
+2. The SDK converts the response to JSON-safe data.
+3. Inngest persists the result.
+4. Replay reconstructs the Sandbox object from that result.
+
+If a REST operation commits and the function process stops before the result is
+persisted, Inngest can run the handler again. There is no sandbox-specific
+executor fence.
+
+An observed `operation_ambiguous` is non-retriable. A process crash cannot
+report that error. Create and Destroy tolerate the ordinary at-least-once step
+window. Captured Exec, process Start, and arbitrary process Signal require
+application-level idempotency or reconciliation when duplicate execution is
+unacceptable.
+
+## Validation and size limits
+
+### Sandbox
+
+| Value | Limit |
+| --- | --- |
+| Name | 1–63 lowercase letters, digits, `_`, or `-` |
+| vCPU | Positive unsigned 32-bit integer |
+| Memory | Positive unsigned 32-bit integer in MiB |
+| List page | Default 50, maximum 250 |
+| Create JSON body | 1 MiB |
+
+Entitlements or capacity can impose lower effective resource limits.
+
+### Commands and process Start
+
+| Value | Limit |
+| --- | --- |
+| Argument count | 1–128 |
+| Sum of argument UTF-8 bytes | 32 KiB |
+| Environment entries | 256 |
+| Sum of environment `KEY=value` UTF-8 bytes | 64 KiB |
+| Working-directory UTF-8 bytes | 4096 |
+| Encoded process specification | 96 KiB |
+| JSON body | 1 MiB |
+
+Additional rules:
+
+- `command[0]` must be absolute;
+- arguments, keys, values, and `cwd` cannot contain NUL;
+- environment keys must be non-empty and cannot contain `=`;
+- the SDK rejects invalid Unicode surrogate sequences; and
+- `environment` replaces rather than merges with the guest environment.
+
+### Captured Exec
+
+| Value | Limit |
+| --- | --- |
+| Default timeout | 30 seconds |
+| Maximum timeout | 5 minutes |
+| Direct REST combined stdout and stderr | 4 MiB |
+| `step.sandbox` retained stdout and stderr | 2 MiB |
+
+The middleware applies the 2 MiB durable limit after a successful REST
+response. Larger results succeed with deterministic tail truncation and report
+original and retained byte counts.
+
+### Managed processes
+
+| Value | Limit |
+| --- | --- |
+| Process List page | Default 50, maximum 250 |
+| Signal | Integer 1–64 |
+| Wait default timeout | 30 seconds |
+| Wait maximum timeout | 5 minutes |
+| Retained output per process | Approximately 512 KiB |
+| Output rings retained | Newest 32 |
+| `tailBytes` | 0–524,288 |
+
+There is no process runtime timeout. Stop a process with a signal.
+
+### Files
+
+| Value | Limit |
+| --- | --- |
+| File size | 100 MiB |
+| Path | Absolute, no NUL, at most 4096 bytes |
+| Upload mode | Octal `0001`–`0777`; default `0644` |
+| File type | Regular files only |
+
+## Stream errors after HTTP 200
+
+An NDJSON stream can fail after response headers are committed. The API sends
+a terminal frame:
+
+```json
+{
+  "type": "error",
+  "errors": [
+    {
+      "code": "compute_unavailable",
+      "message": "Compute is temporarily unavailable"
+    }
+  ]
+}
+```
+
+Treat the frame as a failed stream. The TypeScript SDK turns it into
+`SandboxError`.
+
+A binary file download cannot append a JSON frame after HTTP 200. Verify that
+the body length matches `Content-Length`; a short body is a failed download.
