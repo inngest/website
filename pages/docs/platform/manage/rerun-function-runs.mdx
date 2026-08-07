@@ -1,0 +1,139 @@
+import { Callout } from "src/shared/Docs/mdx";
+
+export const metaTitle = "Rerun Function Runs from Any Step";
+export const description = "Rerun one Inngest function run from the beginning or from a selected step, reuse prior step state, and override supported step inputs from the dashboard, Dev Server, CLI, or REST API.";
+
+# Rerun and Rerun From Step
+
+Rerun a single function run from the beginning or from a selected step. Each rerun creates a new run from the original run's trigger data. When you rerun from a step, Inngest creates a new run and reconstructs the results of all earlier steps as memoized state. The selected step and every step after it execute again. If you provide replacement input, the selected step uses that new input.
+
+Use reruns to recover one failed production run after you deploy a fix, or to iterate on a function in the Dev Server.
+
+<Callout variant="info">
+  To recover many runs from an incident, use [Bulk Replay](/docs/platform/replay?ref=docs-rerun-function-runs) instead. Rerun targets one run; Replay selects many runs by function, time range, and status.
+</Callout>
+
+## Before you rerun
+
+Open the run in **Runs** in the Inngest Cloud dashboard or Dev Server and [inspect its trace](/docs/platform/monitor/traces?ref=docs-rerun-function-runs). Check the error, step inputs and outputs, and the side effects that may run again.
+
+A rerun uses the function code that is available when the new run starts. Deploy a production fix before rerunning a failed Cloud run.
+
+## Rerun from the beginning
+
+1. Open the function run.
+2. Select **Rerun** in the run header.
+3. Follow the new run to confirm that it completes.
+
+![A failed inventory function run with the Rerun action in the run header](/assets/docs/platform/manage/rerun/dev-server-rerun-failed-run-highlighted-2026-08-07.png)
+
+The new run uses the original trigger data and executes the function from the beginning. Completed steps from the original run are not reused.
+
+You can run the same operation against the local Dev Server with the CLI:
+
+```bash
+inngest api rerun <run_id>
+```
+
+Add `--prod` to target Inngest Cloud:
+
+```bash
+inngest api --prod rerun <run_id>
+```
+
+The equivalent REST API request is:
+
+```bash
+curl -X POST "https://api.inngest.com/v2/runs/<run_id>/rerun" \
+  -H "Authorization: Bearer $INNGEST_API_KEY" \
+  -H "Content-Type: application/json" \
+  -d '{}'
+```
+
+See the [`rerun` REST API reference](https://api-docs.inngest.com/v2/runs/Rerun) for the full request and response schemas, and [API keys](/docs/platform/api-keys?ref=docs-rerun-function-runs) for Cloud authentication.
+
+## Rerun from a step
+
+Use **Rerun from step** to keep the state created by earlier steps and restart the function at a later point.
+
+1. Select a step in the run trace.
+2. Select **Rerun from step** in the step details panel.
+3. Review the step input. If the step supports input overrides, edit the JSON input.
+4. Select **Rerun function**.
+5. Follow the new run and compare its trace with the original.
+
+![A completed AI function run with the Rerun action in the header and Rerun from step in the selected step panel](/assets/docs/platform/manage/rerun/dev-server-rerun-from-step-highlighted-2026-08-07.png)
+
+The input editor shows the original input beside the input for the new run. This is useful for testing a prompt variant without repeating earlier steps such as data loading, document parsing, or other model calls.
+
+![Editing an AI prompt before rerunning the function from the selected step](/assets/docs/platform/manage/rerun/dev-server-edit-step-input-duplicate-charge-2026-08-07.png)
+
+Step inputs must be JSON serializable. A step that does not support input overrides can still be used as the starting point, but its input cannot be edited. For `step.ai.wrap()`, pass the model and prompt as serializable arguments if you want to edit them before a rerun. See [AI orchestration](/docs/features/inngest-functions/steps-workflows/step-ai-orchestration?ref=docs-rerun-function-runs) for an example.
+
+Use `--from-step` with the CLI to rerun from a step. The value is the step's user-defined ID:
+
+```bash
+inngest api rerun <run_id> \
+  --from-step "using-vercel-ai" \
+  --input '[{"model":"gpt-5.4-mini","prompt":"Reply to the customer and confirm that a refund is in progress."}]'
+```
+
+Add `--prod` to run the command against Inngest Cloud. The equivalent REST API request is:
+
+```bash
+curl -X POST "https://api.inngest.com/v2/runs/<run_id>/rerun" \
+  -H "Authorization: Bearer $INNGEST_API_KEY" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "fromStep": {
+      "stepId": "using-vercel-ai",
+      "input": [
+        {
+          "model": "gpt-5.4-mini",
+          "prompt": "Reply to the customer and confirm that a refund is in progress."
+        }
+      ]
+    }
+  }'
+```
+
+The REST API and CLI require replacement step input as a JSON array because it represents the arguments passed to the step handler.
+
+## How rerun-from-step state works
+
+For a rerun that starts from `step-b`:
+
+| Part of the function | What the new run does |
+| --- | --- |
+| Steps before `step-b` | Restores their saved outputs from the original run |
+| `step-b` | Executes again, using the replacement input when provided |
+| Steps after `step-b` | Executes again |
+
+The new run has its own run ID and trace. The original run and its trace do not change.
+
+## Verify the rerun
+
+Open the new run and confirm:
+
+- The selected step and later steps executed again.
+- Earlier step outputs match the original run when you reran from a step.
+- The selected step shows the replacement input, if you provided one.
+- Later steps completed and any repeated side effects are correct.
+
+<Callout variant="warning">
+  Rerunning repeats every side effect from the selected starting point. Keep steps idempotent where possible, and review actions such as charging a card, sending a message, or updating a record before you rerun them.
+</Callout>
+
+## Limitations
+
+- Cron-triggered runs cannot be rerun.
+- A step ID must identify one step in the original run. If the same user-defined step ID appears more than once, choose a unique step ID before relying on API or CLI reruns from that step.
+- Input overrides must be a valid JSON array and must match the arguments expected by the step handler.
+
+## Related guides
+
+- [Inspect function runs](/docs/platform/monitor/inspecting-function-runs?ref=docs-rerun-function-runs)
+- [Traces](/docs/platform/monitor/traces?ref=docs-rerun-function-runs)
+- [Bulk Replay](/docs/platform/replay?ref=docs-rerun-function-runs)
+- [Inngest CLI](/docs/cli?ref=docs-rerun-function-runs)
+- [`rerun` REST API reference](https://api-docs.inngest.com/v2/runs/Rerun)

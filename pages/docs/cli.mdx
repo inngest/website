@@ -105,6 +105,7 @@ inngest api get-function-run --help
 | `get-function-run <run_id>` | Get a function run summary |
 | `get-function-trace <run_id>` | Get the full trace with step spans |
 | `get-event-runs <event_id>` | List runs triggered by a specific event |
+| `rerun <run_id>` | Rerun a function from the beginning or from a selected step |
 
 ### Functions
 
@@ -116,6 +117,8 @@ Common flags:
 
 - `--include-output` includes step and run output in the response
 - `--limit N` limits the number of results
+- `--from-step <step_id>` starts a rerun from the given user-defined step ID
+- `--input '<json_array>'` replaces the selected step's input
 - `--prod` targets Inngest Cloud instead of the dev server
 
 ---
@@ -137,6 +140,7 @@ inngest api --prod get-function-run 01ABC123 | jq .
 ## Related
 
 - [Debug a function run from your terminal](/docs/guides/debug-with-cli) for a step-by-step guide
+- [Rerun function runs](/docs/platform/manage/rerun-function-runs?ref=docs-cli) from the beginning or from a selected step
 - [Use the CLI with coding agents](/docs/ai-patterns/cli-for-coding-agents) to give Claude Code, Cursor, or Codex access to your Inngest data
 - [REST API documentation](https://api-docs.inngest.com) for the full API reference
 - [API Keys](/docs/platform/api-keys) for key management

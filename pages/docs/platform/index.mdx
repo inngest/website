@@ -1,6 +1,6 @@
 import { GuideGrid, Guide } from 'src/shared/Docs/Guides'
 export const metaTitle = "Inngest Platform Guides | Manage, Monitor & Deploy"
-export const description = "Guides for the Inngest platform: managing environments, monitoring runs, configuring webhooks, rotating keys, bulk replay, and observability integrations."
+export const description = "Guides for the Inngest platform: managing environments, monitoring and rerunning runs, configuring webhooks, bulk replay, and observability integrations."
 export const hidePageSidebar = true;
 
 # Platform Guides
@@ -28,9 +28,15 @@ Learn how to use the Inngest platform
   />
 
   <Guide
+    href="/docs/platform/manage/rerun-function-runs?ref=docs-platform-guides"
+    name="Rerunning function runs"
+    description="Rerun one function run from the beginning or from a selected step"
+  />
+
+  <Guide
     href="/docs/platform/replay"
     name="Replaying functions"
-    description="Replay your function runs"
+    description="Replay many function runs in bulk"
     />
 
 </GuideGrid>
