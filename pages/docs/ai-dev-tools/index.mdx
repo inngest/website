@@ -10,16 +10,16 @@ export const description =
 
 # AI development tools for Inngest
 
-Use Inngest with AI coding agents, local MCP tools, CLI workflows, and LLM-ready documentation. These resources help agents write current Inngest code, connect to your running Dev Server, trigger test events, inspect runs, and debug durable functions in one loop.
+Use Inngest with AI coding agents, MCP tools, CLI workflows, and LLM-ready documentation. These resources help agents write current Inngest code, work with local or deployed functions, trigger test events, inspect runs, and debug durable functions in one loop.
 
 <CardGroup cols={2}>
   <Card
     href={"/docs/ai-dev-tools/mcp?ref=docs-ai-dev-tools"}
-    title={"Dev Server MCP"}
+    title={"Inngest MCP"}
     icon={<MCPIcon className="text-basis h-12 w-12" />}
     iconPlacement="top"
   >
-    Connect Claude Code, Cursor, and other MCP-compatible tools to your local Inngest Dev Server to list functions, send events, and inspect runs.
+    Connect Claude Code, Codex, Cursor, and other MCP clients to Inngest Cloud or your local Dev Server to inspect and operate functions and runs.
   </Card>
 
   <Card
@@ -53,11 +53,11 @@ Use Inngest with AI coding agents, local MCP tools, CLI workflows, and LLM-ready
 ## How the tools fit together
 
 - **Agent skills and plugins** teach your coding agent how to build with Inngest APIs and current patterns.
-- **Dev Server MCP** lets your agent interact with your running local app by sending events, invoking functions, and inspecting run status.
+- **Inngest MCP** lets your agent inspect and operate deployed Cloud environments or your running local app.
 - **The CLI** gives both you and your agent a terminal-first way to start local services and debug function runs.
 - **LLM docs** provide crawlable markdown context for AI tools that need a compact table of contents or the full docs corpus.
 
-For the best feedback loop, install the agent plugin or skills for your coding tool, start the Inngest Dev Server, and connect the tool to the [Dev Server MCP endpoint](/docs/ai-dev-tools/mcp?ref=docs-ai-dev-tools).
+For the best feedback loop, install the agent plugin or skills for your coding tool, connect it to the [Inngest MCP server](/docs/ai-dev-tools/mcp?ref=docs-ai-dev-tools), and use the local or Cloud endpoint that matches your task.
 
 ## LLM Docs
 
