@@ -1,0 +1,8 @@
+export const title = "Propagated Sessions";
+export const date = "2026-08-07";
+
+Sessions now propagate to child runs. Any run triggered by another run (via event, invoke, or defer) inherits its parent's sessions. Set sessions once on the root run and the whole tree is grouped on the Sessions page.
+
+This is especially useful for AI agents and long-running workflows where one user action can fan out into multiple functions. Sessions show run counts, failures, recent activity, and the functions involved for each session.
+
+Read the [Sessions docs](/docs/features/events-triggers/sessions?ref=changelog-propagated-sessions) to start sending sessions.
