@@ -59,7 +59,10 @@ const sectionReference: (NavGroup | NavLink)[] = [
       { title: "Create the client", href: tsRef("v3", "client/create") },
       { title: "Create a function", href: tsRef("v3", "functions/create") },
       { title: "Send events", href: tsRef("v3", "events/send") },
-      { title: "Errors", href: `/docs/features/inngest-functions/error-retries/inngest-errors` },
+      {
+        title: "Errors",
+        href: `/docs/features/inngest-functions/error-retries/inngest-errors`,
+      },
       {
         title: "Handling failures",
         href: tsRef("v3", "functions/handling-failures"),
@@ -176,7 +179,10 @@ const sectionReference: (NavGroup | NavLink)[] = [
       { title: "Create a function", href: tsRef("v4", "functions/create") },
       { title: "Trigger helpers", href: tsRef("v4", "functions/triggers") },
       { title: "Send events", href: tsRef("v4", "events/send") },
-      { title: "Errors", href: `/docs/features/inngest-functions/error-retries/inngest-errors` },
+      {
+        title: "Errors",
+        href: `/docs/features/inngest-functions/error-retries/inngest-errors`,
+      },
       {
         title: "Handling failures",
         href: tsRef("v4", "functions/handling-failures"),
@@ -848,6 +854,10 @@ const sectionLearn: (NavGroup | NavLink)[] = [
       {
         title: "Manage",
         links: [
+          {
+            title: "Rerun and Rerun From Step",
+            href: "/docs/platform/manage/rerun-function-runs",
+          },
           { title: "Bulk replay", href: "/docs/platform/replay" },
           {
             title: "Bulk cancel",
