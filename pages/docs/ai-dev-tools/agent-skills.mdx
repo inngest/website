@@ -14,7 +14,7 @@ Inngest provides official plugins and [agent skills](https://agentskills.io) for
   Use the Claude Code or Codex plugin for the best experience. Each plugin packages Inngest skills with local dev server MCP wiring so your agent can write code and inspect running functions in one loop.
 </Callout>
 
-Start from the [AI development tools hub](/docs/ai-dev-tools) if you want to compare agent skills, Dev Server MCP, CLI workflows, and LLM-ready docs in one place.
+Start from the [AI development tools hub](/docs/ai-dev-tools?ref=docs-agent-skills) if you want to compare agent skills, Inngest MCP, CLI workflows, and LLM-ready docs in one place.
 
 ## What to install
 
@@ -34,6 +34,7 @@ Instead of relying on an AI model's training data, which may be outdated or inco
 - **Repository audits** — Agent-first guidance for finding durability gaps before making code changes
 - **Durable agent patterns** — Guidance for AgentKit workflows, tool calls, human approval, realtime progress, and provider flow control
 - **Local feedback loops** — MCP access to your running dev server so agents can list functions, send events, and inspect runs
+- **Cloud operations** — MCP access to deployed apps, runs, traces, environments, Insights, sessions, webhooks, and experiments
 
 ## Install
 
@@ -93,12 +94,13 @@ These plugins and skills are currently focused on **TypeScript**. Core concepts 
 
 For Python or Go, refer to the [Inngest documentation](/docs) and [llms.txt](https://www.inngest.com/llms.txt) for language-specific guidance.
 
-## Combine with Dev Server MCP
+## Combine with Inngest MCP
 
-For the best AI development experience, use agent skills alongside the [Inngest Dev Server MCP integration](/docs/ai-dev-tools/mcp). Together they provide:
+For the best AI development experience, use agent skills alongside [Inngest MCP](/docs/ai-dev-tools/mcp?ref=docs-agent-skills). Together they provide:
 
 - **Skills** give your agent knowledge of *how* to write correct Inngest code
-- **MCP** gives your agent the ability to *interact* with your running dev server — list functions, send events, and monitor runs
+- **Dev Server MCP** lets your agent test and debug functions running on your machine
+- **Cloud MCP** lets your agent inspect and operate deployed environments, functions, events, and runs
 
 This enables a complete write, test, and debug loop powered by your coding agent.
 
@@ -135,10 +137,10 @@ The plugin repositories share core skills from [`inngest/inngest-skills`](https:
 }}/>
 
 <Resource resource={{
-  href: "/docs/ai-dev-tools/mcp",
-  name: "Dev Server MCP Integration",
+  href: "/docs/ai-dev-tools/mcp?ref=docs-agent-skills",
+  name: "Inngest MCP",
   icon: WrenchScrewdriverIcon,
-  description: "Connect AI assistants to your running Inngest dev server.",
+  description: "Connect AI assistants to Inngest Cloud or your running local Dev Server.",
   pattern: 1,
 }}/>
 

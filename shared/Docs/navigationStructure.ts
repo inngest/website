@@ -911,7 +911,7 @@ const sectionLearn: (NavGroup | NavLink)[] = [
         title: "Agent Plugins and Skills",
         href: "/docs/ai-dev-tools/agent-skills",
       },
-      { title: "Dev Server MCP", href: "/docs/ai-dev-tools/mcp" },
+      { title: "Inngest MCP", href: "/docs/ai-dev-tools/mcp" },
       {
         title: "AgentKit",
         href: "https://agentkit.inngest.com",
