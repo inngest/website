@@ -14,12 +14,12 @@ Inngest MCP tools match the [REST API v2](https://api-docs.inngest.com/) and [In
 
 ## Choose an MCP server
 
+You can configure both servers in the same MCP client. Use the Dev Server while you build and test locally, then use Cloud MCP to inspect deployed environments and production data.
+
 | MCP server | Use it for | Endpoint | Authentication |
 | --- | --- | --- | --- |
 | **Inngest Cloud** | Deployed apps, functions, events, runs, traces, environments, Insights, sessions, webhooks, and experiments | `https://api.inngest.com/mcp` | Inngest API key |
 | **Dev Server** | Apps, functions, events, and runs on your local machine, plus embedded Inngest docs | `http://127.0.0.1:8288/mcp` | None |
-
-You can configure both servers in the same MCP client. Use the Dev Server while you build and test locally, then use Cloud MCP to inspect deployed environments and production data.
 
 <Callout variant="info">
 Some Cloud MCP tools change data, including tools that send events, invoke functions, rerun or cancel runs, sync apps, and manage environments or webhooks. Review a tool call before you approve it, especially in production.
@@ -200,7 +200,7 @@ For exact parameters and response shapes, inspect the schema shown by your MCP c
 
 ## Target a Cloud environment
 
-Cloud tools accept an optional `env` argument. With account-scoped credentials, omit `env` to use the production environment or pass an environment slug to select another environment. An environment-scoped API key can only access its assigned environment.
+Cloud tools accept an optional `env` argument. Your agent sends it when it calls a tool; it is not part of the MCP server setup. With account-scoped credentials, omit `env` to use the production environment or pass an environment slug to select another environment. An environment-scoped API key can only access its assigned environment.
 
 Be explicit in prompts that might affect data:
 
