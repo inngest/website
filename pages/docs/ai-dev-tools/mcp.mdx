@@ -3,54 +3,113 @@ import { Callout, CodeGroup } from "shared/Docs/mdx";
 
 import { BookOpenIcon, CodeBracketIcon, ComputerDesktopIcon, WrenchScrewdriverIcon } from "@heroicons/react/24/outline";
 
-export const metaTitle = "Model Context Protocol (MCP) Integration";
-export const description = "Connect AI coding agents to your Inngest Dev Server via MCP. List functions, send events, and inspect runs from Claude Code, Cursor, or any MCP-compatible tool."
+export const metaTitle = "Inngest Model Context Protocol (MCP)";
+export const description = "Connect AI coding agents to Inngest Cloud or the local Dev Server with MCP to inspect apps, functions, events, runs, traces, and more.";
 
-# Model Context Protocol (MCP) Integration
+# Inngest Model Context Protocol (MCP)
 
-The Inngest dev server includes a comprehensive Model Context Protocol (MCP) server that provides AI assistants with direct access to your Inngest functions, events, and documentation. This enables powerful AI-assisted development workflows for testing, debugging, and building Inngest applications.
+Inngest provides Model Context Protocol (MCP) servers for both Inngest Cloud and the local Dev Server. Connect Claude Code, Codex, Cursor, or another MCP client to inspect and operate Inngest from your coding agent.
 
-## What is MCP?
+Inngest MCP tools match the [REST API v2](https://api-docs.inngest.com/) and [Inngest CLI commands](/docs/cli?ref=docs-ai-dev-tools-mcp).
 
-[Model Context Protocol (MCP)](https://modelcontextprotocol.io/introduction) is a standard for connecting AI assistants to external tools and data sources. The Inngest MCP integration provides AI tools like Claude Code and Cursor with:
+## Choose an MCP server
 
-- **Complete function visibility** - List and inspect all registered functions
-- **Event triggering** - Send events to test functions and workflows
-- **Real-time monitoring** - Track function execution and debug failures
-- **Documentation access** - Search and read Inngest documentation offline
-- **Direct function invocation** - Execute functions synchronously with immediate results
+You can configure both servers in the same MCP client. Use the Dev Server while you build and test locally, then use Cloud MCP to inspect deployed environments and production data.
 
-<Callout>
-The Inngest MCP server runs locally with your dev server and requires no external dependencies, API keys, or internet connection to function.
-</Callout>
+| MCP server | Use it for | Endpoint | Authentication |
+| --- | --- | --- | --- |
+| **Inngest Cloud** | Deployed apps, functions, events, runs, traces, environments, Insights, sessions, webhooks, and experiments | `https://api.inngest.com/mcp` | Inngest API key |
+| **Dev Server** | Apps, functions, events, and runs on your local machine, plus embedded Inngest docs | `http://127.0.0.1:8288/mcp` | None |
 
 <Callout variant="info">
-Pair Dev Server MCP with [Inngest agent plugins and skills](/docs/ai-dev-tools/agent-skills) for the complete AI development loop. Start from the [AI development tools hub](/docs/ai-dev-tools) to choose the right resources for your coding agent.
+Some Cloud MCP tools change data, including tools that send events, invoke functions, rerun or cancel runs, sync apps, and manage environments or webhooks. Review a tool call before you approve it, especially in production.
 </Callout>
 
-## Quick Start
+## Connect to Inngest Cloud
 
-### 1. Start the Inngest Dev Server
+### 1. Create an API key
 
-The MCP server is automatically available when you start the Inngest dev server:
+Create an [Inngest API key](/docs/platform/api-keys?ref=docs-ai-dev-tools-mcp) in the Cloud dashboard, then make it available to your MCP client:
+
+```bash
+export INNGEST_API_KEY=sk-inn-api-...
+```
+
+Cloud MCP accepts API keys, not signing keys. Keep the key out of source control and use the narrowest access that your work needs.
+
+### 2. Add Cloud MCP to your client
+
+<CodeGroup>
+
+```bash {{ title: "Claude Code" }}
+claude mcp add --transport http inngest-cloud https://api.inngest.com/mcp \
+  --header "Authorization: Bearer $INNGEST_API_KEY"
+```
+
+```bash {{ title: "Codex" }}
+codex mcp add inngest-cloud \
+  --url https://api.inngest.com/mcp \
+  --bearer-token-env-var INNGEST_API_KEY
+```
+
+```json {{ title: "Cursor" }}
+{
+  "mcpServers": {
+    "inngest-cloud": {
+      "url": "https://api.inngest.com/mcp",
+      "headers": {
+        "Authorization": "Bearer ${env:INNGEST_API_KEY}"
+      }
+    }
+  }
+}
+```
+
+</CodeGroup>
+
+You can also open the [Cloud MCP setup page](https://app.inngest.com/mcp/setup) to copy client configuration and see the live tool list.
+
+### 3. Try Cloud MCP
+
+Ask your coding agent to complete a task such as:
+
+```text
+List my Inngest environments, then show the apps in production.
+```
+
+```text
+Find recent failed runs for my billing app and explain the first failed step.
+```
+
+```text
+Show the available Insights tables, then query event volume for the past 24 hours.
+```
+
+## Connect to the Dev Server
+
+### 1. Start the Dev Server
+
+The local MCP endpoint starts with the Inngest Dev Server:
 
 ```bash
 inngest dev
 ```
 
-The MCP endpoint will be available at `http://127.0.0.1:8288/mcp`
+The default endpoint is `http://127.0.0.1:8288/mcp`.
 
-### 2. Connect Your AI Tool
+### 2. Add Dev Server MCP to your client
 
 <CodeGroup>
 
 ```bash {{ title: "Claude Code" }}
-# Add to your MCP configuration
 claude mcp add --transport http inngest-dev http://127.0.0.1:8288/mcp
 ```
 
+```bash {{ title: "Codex" }}
+codex mcp add inngest-dev --url http://127.0.0.1:8288/mcp
+```
+
 ```json {{ title: "Cursor" }}
-// Add to .cursor/mcp.json
 {
   "mcpServers": {
     "inngest-dev": {
@@ -60,315 +119,192 @@ claude mcp add --transport http inngest-dev http://127.0.0.1:8288/mcp
 }
 ```
 
-```json {{ title: "Claude Desktop" }}
-// Add to Claude Desktop configuration
-{
-  "mcpServers": {
-    "inngest-dev": {
-      "command": "curl",
-      "args": [
-        "-X", "POST",
-        "http://127.0.0.1:8288/mcp",
-        "-H", "Content-Type: application/json",
-        "-d", "@-"
-      ]
-    }
-  }
-}
-```
-
 </CodeGroup>
 
-### 3. Start Building with AI
+The Dev Server dashboard also has an MCP setup page with client configuration and the live tool list.
 
-Once connected, you can ask your AI assistant to:
+### 3. Try Dev Server MCP
 
-```
-List all my Inngest functions and their triggers
-```
-
-```
-Send a test event to trigger the user signup workflow
+```text
+List my local apps, then list the functions in the checkout app.
 ```
 
-```
-Monitor the function run and show me any errors
-```
-```
-Search the docs for rate limiting examples
+```text
+Send an app/order.created event and inspect every run it triggers.
 ```
 
-## Best Practices
-
-### Function Testing
-- **Start simple:** Test individual functions before complex workflows
-- **Use descriptive events:** Clear event names help with debugging
-- **Monitor execution:** Always check run status after triggering events
-- **Test error scenarios:** Intentionally trigger failures to test error handling
-
-### Debugging Workflows
-- **Check step details:** Use `get_run_status` to see step-by-step execution
-- **Review error context:** Error messages include stack traces and context
-- **Verify data flow:** Check inputs and outputs at each step
-- **Use polling for async:** Monitor long-running workflows with `poll_run_status`
-
-### Documentation Usage
-- **Search before building:** Use `grep_docs` to find relevant examples
-- **Reference patterns:** Look for similar use cases in the documentation
-- **Cross-reference APIs:** Use `read_doc` for complete API documentation
-
-## Available MCP Tools
-
-The Inngest MCP server provides 8 powerful tools organized into three categories:
-
-### Event Management Tools
-
-#### `send_event`
-Send an event to trigger functions and get immediate feedback on which runs were created.
-
-**Parameters:**
-- `name` (string, required): Event name (e.g., 'app/user.created')
-- `data` (object, optional): Event payload data
-- `user` (object, optional): User context information
-- `eventIdSeed` (string, optional): Seed for deterministic event IDs
-
-**Example usage:**
-```
-Send a test event called 'app/user.signup' with user email 'test@example.com'
+```text
+Inspect the trace for the latest failed run and explain the error.
 ```
 
-#### `list_functions`
-Discover all registered functions with their names, IDs, and trigger information.
-
-**Returns:** Complete function inventory with trigger details (events, crons, etc.)
-
-#### `invoke_function`
-Directly execute a function and wait for its complete result - perfect for testing specific functions.
-
-**Parameters:**
-- `functionId` (string, required): Function slug, ID, or name
-- `data` (object, optional): Input data for the function
-- `user` (object, optional): User context
-- `timeout` (int, optional): Wait timeout in seconds (default: 30)
-
-**Example usage:**
-```
-> "Invoke the 'process-payment' function with amount 100 and currency USD"
+```text
+Search the Inngest docs for rate limiting examples.
 ```
 
-### Execution Monitoring Tools
+## Available MCP tools
 
-#### `get_run_status`
-Get detailed information about a specific function run, including step-by-step execution details.
+MCP clients receive the live tool list and each tool's input schema when they connect. The tables below summarize the current tools. Because eligible REST API v2 endpoints become MCP tools automatically, your client's tool list is the source of truth if it differs from this page.
 
-**Parameters:**
-- `runId` (string, required): The run ID from send_event or logs
+### Tools available in Cloud and the Dev Server
 
-**Returns:** Complete run information including status, steps, outputs, and error details
+| Tool | What it does |
+| --- | --- |
+| `cancel_run` | Cancel an in-progress function run. |
+| `get_app` | Get one app, including sync metadata and function count. |
+| `get_apps` | List active or archived apps. |
+| `get_event_runs` | List the function runs triggered by an event. |
+| `get_function` | Get one function's configuration and status. |
+| `get_run` | Get the summary and optional output for one run. |
+| `get_run_trace` | Get the trace tree and optional span output for one run. |
+| `health` | Check the API service health. |
+| `invoke_function` | Invoke a function and return its run details. |
+| `list_function_runs` | List runs for one function. |
+| `list_functions` | List the functions in one app. |
+| `list_runs` | List runs, with optional app, function, status, and time filters. |
+| `rerun` | Rerun a function from the start or from a selected step. |
+| `send_event` | Send an event and return its event ID. |
 
-#### `poll_run_status`
-Monitor multiple function runs until completion - essential for integration testing workflows.
+### Cloud-only tools
 
-**Parameters:**
-- `runIds` (array, required): Array of run IDs to monitor
-- `timeout` (int, optional): Total polling timeout in seconds (default: 30)
-- `pollInterval` (int, optional): Milliseconds between polls (default: 1000)
+| Tool | What it does |
+| --- | --- |
+| `create_env` | Create a custom environment. |
+| `create_score` | Add scores to a run or its steps. |
+| `create_webhook` | Create an incoming webhook. |
+| `fetch_account` | Get the authenticated account. |
+| `fetch_account_event_keys` | List account event keys, optionally for one environment. |
+| `fetch_account_signing_keys` | List account signing keys, optionally for one environment. |
+| `get_experiment` | Get run counts and score aggregates for an experiment. |
+| `list_envs` | List custom environments. |
+| `list_experiments` | List observed experiments. |
+| `list_insights_event_schemas` | List event schemas observed by Insights. |
+| `list_insights_tables` | List tables available to Insights queries. |
+| `list_session_keys` | List session keys observed in an environment. |
+| `list_session_runs` | List runs for one session. |
+| `list_sessions` | List session IDs for one session key. |
+| `list_webhooks` | List incoming webhooks. |
+| `patch_env` | Archive or unarchive an environment. |
+| `query_insights` | Run an Insights SQL query. |
+| `query_insights_prompt` | Turn a natural-language prompt into an Insights SQL query. |
+| `sync_app` | Sync an app from its Inngest endpoint URL. |
 
-**Example usage:**
-```
-Poll these 3 runs until they complete and show me a summary
-```
+### Dev Server-only tools
 
-### Documentation Tools
+| Tool | What it does |
+| --- | --- |
+| `grep_docs` | Search the docs embedded in the Dev Server. |
+| `list_docs` | List embedded documentation categories and counts. |
+| `read_doc` | Read one embedded documentation file. |
 
-#### `grep_docs`
-Search through embedded Inngest documentation using pattern matching.
+For exact parameters and response shapes, inspect the schema shown by your MCP client or use the [REST API v2 reference](https://api-docs.inngest.com/).
 
-**Parameters:**
-- `pattern` (string, required): Search pattern (regex supported)
-- `limit` (int, optional): Maximum results (default: 10)
+## Target a Cloud environment
 
-**Example usage:**
-```
-Search the docs for 'rate limiting' examples
-```
+Cloud tools accept an optional `env` argument. Your agent sends it when it calls a tool; it is not part of the MCP server setup. With account-scoped credentials, omit `env` to use the production environment or pass an environment slug to select another environment. An environment-scoped API key can only access its assigned environment.
 
-#### `read_doc`
-Read the complete content of a specific documentation file.
+Be explicit in prompts that might affect data:
 
-**Parameters:**
-- `path` (string, required): Document path relative to docs directory
-
-#### `list_docs`
-Get an overview of all available documentation with category breakdown.
-
-**Returns:** Documentation structure with counts by category and SDK
-
-## Usage Examples
-
-### Testing a User Signup Workflow
-
-```typescript
-// Your function
-export const handleSignup = inngest.createFunction(
-  { id: "handle-signup", triggers: { event: "app/user.signup" } },
-  async ({ event, step }) => {
-    const user = await step.run("create-user", async () => {
-      return createUser(event.data.email);
-    });
-
-    await step.run("send-welcome-email", async () => {
-      return sendWelcomeEmail(user.email);
-    });
-
-    return { success: true, userId: user.id };
-  }
-);
+```text
+In the staging environment, send an app/order.created event with orderId test-123.
 ```
 
-With MCP, you can test this workflow by asking your AI assistant:
+## Common workflows
 
-```
-Send a test signup event with email 'alice@example.com' and monitor the function execution
-```
+### Inspect a failed run
 
-The AI will:
-1. Use `send_event` to trigger the function
-2. Use `poll_run_status` to monitor execution
-3. Show you step-by-step progress and final results
-4. Report any errors with detailed context
+1. Use `list_runs` or `list_function_runs` with a failed status filter.
+2. Use `get_run` to inspect the run summary and output.
+3. Use `get_run_trace` to find the failed step and its error.
 
-### Debugging Failed Functions
+### Test an event-driven workflow
 
-```
-Get the status of run 01J5QH90... and explain what went wrong
-```
+1. Use `get_apps` and `list_functions` to confirm the app and its triggers.
+2. Use `send_event` with a test payload.
+3. Use `get_event_runs` with the returned event ID.
+4. Use `get_run` and `get_run_trace` to inspect each run.
 
-The AI will use `get_run_status` to retrieve:
-- Complete execution trace
-- Step-by-step status
-- Error messages and stack traces
-- Function outputs and intermediate results
+### Find implementation guidance locally
 
-### Integration Testing
-
-```
-Send events to trigger the complete order processing workflow and verify all steps complete successfully
-```
-
-The AI can:
-1. Send multiple coordinated events
-2. Monitor all resulting function runs
-3. Verify the entire workflow completes
-4. Report any failures or timeouts
+1. Use `grep_docs` in the Dev Server to find a term or API name.
+2. Use `read_doc` with a matching path to read the full source.
+3. Apply the guidance, send a test event, and inspect the resulting run.
 
 ## Troubleshooting
 
-### Common Issues
+**Cloud MCP returns `401 Unauthorized`**
 
-**MCP server not found**
-- Ensure the Inngest dev server is running: `inngest dev`
-- Verify the MCP endpoint is accessible: `curl http://127.0.0.1:8288/mcp`
-- Check your MCP client configuration
+- Confirm the client sends `Authorization: Bearer $INNGEST_API_KEY`.
+- Use an Inngest API key that starts with `sk-inn-api-`; signing keys are not supported.
+- Restart the MCP client after changing its environment variables.
 
-**Functions not listed**
-- Confirm functions are properly registered with the dev server
-- Check the dev server logs for registration errors
-- Verify your app is correctly synced with the dev server
+**The Dev Server MCP endpoint is not found**
 
-**Runs not found after sending events**
-- Wait a moment for event processing (500ms delay is built-in)
-- Check if the event name matches your function triggers exactly
-- Verify the function is actually registered and listening
+- Confirm `inngest dev` is running.
+- Confirm the client uses `http://127.0.0.1:8288/mcp`, or update the port if you changed it.
+- Restart the client after changing its MCP configuration.
 
-**Polling timeouts**
-- Increase timeout values for long-running functions
-- Check function logs for hanging operations
-- Verify functions are actually completing vs. hanging indefinitely
+**Functions are not listed**
 
-### Advanced Configuration
+- Call `get_apps` first and pass the returned app ID to `list_functions`.
+- Confirm the app has synced to the selected Cloud environment or local Dev Server.
+- Check app and Dev Server logs for registration errors.
 
-**Custom timeouts:**
-The default polling timeout is 30 seconds. For longer-running functions:
+**Runs or events appear to be missing**
 
-```
-Poll this run with a 60-second timeout instead of the default
-```
-
-**Event ID seeding:**
-For deterministic testing, you can provide event ID seeds:
-
-```
-Send a test event with seed 'test-123' for reproducible testing
-```
-
-**Documentation search:**
-Use regex patterns for advanced documentation searches:
-
-```
-Search docs for 'step\\.run.*retry' to find step retry examples
-```
+- Confirm the Cloud tool call targeted the expected `env`.
+- Check that the event name matches the function trigger.
+- Allow a moment for event and run data to become available, then retry the read tool.
 
 ## Resources
 
 <ResourceGrid cols={3}>
 
 <Resource resource={{
-href: "/docs/ai-dev-tools",
+href: "/docs/ai-dev-tools?ref=docs-ai-dev-tools-mcp",
 name: "AI Development Tools",
 icon: ComputerDesktopIcon,
-description: "Start here for Inngest MCP, agent plugins and skills, CLI workflows, and LLM-ready docs.",
+description: "Choose among Inngest MCP, agent plugins and skills, CLI workflows, and LLM-ready docs.",
 pattern: 1,
 }}/>
 
 <Resource resource={{
-href: "/docs/ai-dev-tools/agent-skills",
+href: "/docs/ai-dev-tools/agent-skills?ref=docs-ai-dev-tools-mcp",
 name: "Agent Plugins and Skills",
 icon: CodeBracketIcon,
-description: "Install Inngest plugins and skills for Claude Code, Codex, Cursor, Windsurf, and other agents.",
+description: "Install current Inngest guidance for Claude Code, Codex, Cursor, Windsurf, and other agents.",
+pattern: 1,
+}}/>
+
+<Resource resource={{
+href: "/docs/platform/api-keys?ref=docs-ai-dev-tools-mcp",
+name: "API Keys",
+icon: WrenchScrewdriverIcon,
+description: "Create and manage API keys for Cloud MCP and the REST API.",
+pattern: 1,
+}}/>
+
+<Resource resource={{
+href: "/docs/local-development?ref=docs-ai-dev-tools-mcp",
+name: "Local Development",
+icon: ComputerDesktopIcon,
+description: "Run Inngest functions and the Dev Server MCP endpoint on your machine.",
+pattern: 1,
+}}/>
+
+<Resource resource={{
+href: "https://api-docs.inngest.com/",
+name: "REST API v2 Reference",
+icon: BookOpenIcon,
+description: "See the endpoints and schemas that power generated MCP tools.",
 pattern: 1,
 }}/>
 
 <Resource resource={{
 href: "https://modelcontextprotocol.io/introduction",
-name: "Model Context Protocol Specification",
+name: "Model Context Protocol",
 icon: BookOpenIcon,
-description: "Learn more about the MCP standard and how it enables AI tool integrations.",
-pattern: 1,
-}}/>
-
-<Resource resource={{
-href: "/docs/local-development",
-name: "Inngest Dev Server Documentation",
-icon: ComputerDesktopIcon,
-description: "Comprehensive guide to the Inngest dev server and local development.",
-pattern: 1,
-}}/>
-
-<Resource resource={{
-href: "/docs/examples/ai-agents-and-rag",
-name: "AI Agents and RAG Examples",
-icon: WrenchScrewdriverIcon,
-description: "Examples of building AI-powered applications with Inngest functions.",
-pattern: 1,
-}}/>
-
-<Resource resource={{
-href: "/blog/context-engineering-is-software-engineering-for-llms",
-name: 'Blog: "Context Engineering is Software Engineering for LLMs"',
-icon: BookOpenIcon,
-description: "Understanding how tools like MCP enable better AI development workflows.",
+description: "Learn about MCP transports, tools, and client capabilities.",
 pattern: 1,
 }}/>
 
 </ResourceGrid>
-
-## Related Concepts
-
-- [AI Development Tools](/docs/ai-dev-tools): Hub for MCP, agent skills, CLI workflows, and LLM-ready docs
-- [Agent Plugins and Skills](/docs/ai-dev-tools/agent-skills): Install current Inngest guidance for AI coding agents
-- [Inngest Functions](/docs/learn/inngest-functions): Learn how to create and configure functions
-- [Event Triggers](/docs/features/events-triggers): Understanding event-driven architectures
-- [Local Development](/docs/local-development): Setting up your development environment
-- [Testing Functions](/docs/reference/typescript/v4/testing): Comprehensive testing strategies
-- [Error Handling](/docs/guides/error-handling): Debugging and error recovery patterns
