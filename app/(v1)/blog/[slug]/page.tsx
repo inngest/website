@@ -109,21 +109,48 @@ const loadAllPostsMeta = cache((): PostMeta[] => {
     .filter((p): p is PostMeta => p !== null);
 });
 
+function formatBlogDate(raw: string | Date): string {
+  // gray-matter parses YAML dates as UTC midnight Date objects. Use the
+  // UTC calendar day so "2026-08-10" does not render as Aug 9 in US zones.
+  // String dates may be YYYY-MM-DD or a full ISO timestamp — prefer the
+  // date portion when present.
+  if (typeof raw === "string" && /^\d{4}-\d{2}-\d{2}/.test(raw)) {
+    const [y, m, d] = raw.slice(0, 10).split("-").map(Number);
+    return new Date(y, m - 1, d).toLocaleDateString("en-US", {
+      month: "short",
+      day: "numeric",
+      year: "numeric",
+    });
+  }
+  const date = typeof raw === "string" ? new Date(raw) : raw;
+  return new Date(
+    date.getUTCFullYear(),
+    date.getUTCMonth(),
+    date.getUTCDate()
+  ).toLocaleDateString("en-US", {
+    month: "short",
+    day: "numeric",
+    year: "numeric",
+  });
+}
+
 function readBlogFile(slug: string): { content: string; data: Scope } | null {
   const meta = loadAllPostsMeta().find((p) => p.slug === slug);
   if (!meta) return null;
   const source = fs.readFileSync(meta.filePath);
   const { content, data } = matter(source);
   const rawDate = data.date as string | Date | undefined;
+  const rawDateUpdated = data.dateUpdated as string | Date | undefined;
   const rawTags = data.tags as string | string[] | undefined;
+  const displayDate = rawDateUpdated ?? rawDate;
   const scope: Scope = {
     ...(data as Scope),
     path: `/blog/${slug}`,
     reading: readingTime(content),
-    humanDate: rawDate
-      ? typeof rawDate === "string"
-        ? new Date(rawDate).toLocaleDateString()
-        : rawDate.toLocaleDateString()
+    humanDate: displayDate
+      ? rawDateUpdated
+        ? `Updated on ${formatBlogDate(displayDate)}`
+        : formatBlogDate(displayDate)
       : undefined,
     tags:
       typeof rawTags === "string"
