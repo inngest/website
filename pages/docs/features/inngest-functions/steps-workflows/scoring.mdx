@@ -1,4 +1,4 @@
-import { Callout, CodeGroup } from "src/shared/Docs/mdx";
+import { Callout, CodeGroup, Unreleased } from "src/shared/Docs/mdx";
 
 
 export const metaTitle = "Score Inngest Function Runs | AI Evaluation Docs"
@@ -45,6 +45,12 @@ export default inngest.createFunction(
   }
 );
 ```
+
+<Unreleased label="ai-middleware">
+
+`aiMiddleware()` (also from `inngest/experimental`) enables scoring too, bundled with step metadata and [Extended Traces](/docs/examples/open-telemetry?ref=docs-scoring#quick-start): `middleware: [...aiMiddleware()]`.
+
+</Unreleased>
 
 `step.score()` attaches the score to the current run. Its first argument is a durable step ID that memoizes the write, so a retry or replay can't record it twice. Use it when you know the outcome before the function finishes.
 
