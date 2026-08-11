@@ -34,11 +34,11 @@ import { aiMiddleware } from "inngest/experimental";
 
 export const inngest = new Inngest({
   id: "my-app",
-  middleware: aiMiddleware(),
+  middleware: [...aiMiddleware()],
 });
 ```
 
-No other configuration is needed. AI metadata extraction is on by default, and spans from model calls, HTTP requests, and database queries now appear in your run traces. `aiMiddleware()` returns a tuple of middleware, so spread it to combine the bundle with your own: `middleware: [...aiMiddleware(), myMiddleware]`.
+No other configuration is needed. AI metadata extraction is on by default, and spans from model calls, HTTP requests, and database queries now appear in your run traces. Add your own middleware alongside the spread: `middleware: [...aiMiddleware(), myMiddleware]`.
 
 If a framework CLI starts your dev server, pass the preload through `NODE_OPTIONS` instead (see [Framework dev servers](#framework-dev-servers)). The rest of this guide covers bringing your own OpenTelemetry provider and configuring each feature on its own.
 
