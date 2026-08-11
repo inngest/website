@@ -106,6 +106,31 @@ const OTHER_EVENTS = sortEventsByDate([
     href: "https://luma.com/r6o27grm",
     image: "/assets/v1/events/sf-rooftop-tech-mixer.png",
   },
+  {
+    id: "ai-in-production-aug-2026",
+    title: "{AI} in Production",
+    date: "Tuesday, August 25, 2026 · 6–8 PM PDT",
+    startsAt: "2026-08-25T18:00:00-07:00",
+    location: "San Francisco, CA",
+    topics: ["meetup", "ai", "production"],
+    excerpt:
+      "Lightning talks and real lessons learned from teams shipping AI in production — cohosted with Nebius Token Factory and Flox at Inngest HQ.",
+    href: "https://luma.com/inngest-77ls",
+    image: "/assets/v1/events/ai-in-production-aug-2026.png",
+  },
+  {
+    id: "inngest-supper-club-sf",
+    title: "Inngest Supper Club: San Francisco",
+    date: "Thursday, August 27, 2026 · 6 PM (dinner ~6:45 PM)",
+    startsAt: "2026-08-27T18:00:00-07:00",
+    location: "San Francisco, CA",
+    topics: ["Meetups"],
+    excerpt:
+      "A small, low-key dinner for people building agents, workflows, and the infra underneath them — no decks, no pitch.",
+    href: "/events/inngest-supper-club-sf",
+    image: "/assets/v1/events/inngest-supper-club-sf.png",
+    imageFit: "contain",
+  },
 ]);
 
 export default function AIEngineerWorldsFair() {
