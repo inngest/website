@@ -19,6 +19,9 @@ const EVENT = {
 
 const REGISTER_URL = "https://luma.com/inngest-r614?utm_source=eventspage";
 
+const RECORDING_URL =
+  "https://events.zoom.us/e/recording?videoId=uKbFJoUhRQKS9V71ysKkLw&eventId=Z8vtvPiATTq_LQxwlO8_ZA&organizationId=Jm1kZRVvQC6tCNBq9FaDag";
+
 const COVERAGE = [
   "Determining a first scoring metric",
   "Attaching a scorer to a function you've already deployed",
@@ -250,9 +253,16 @@ export default function LightningLabShipYourFirstEval() {
               </div>
 
               {isPastEvent(EVENT) ? (
-                <Chip variant="solid" size="md" className="self-start font-normal">
-                  Past event
-                </Chip>
+                <div className="flex flex-col items-start gap-4">
+                  <Chip variant="solid" size="md" className="self-start font-normal">
+                    Past event
+                  </Chip>
+                  <Button asChild variant="accent" className="self-start">
+                    <a href={RECORDING_URL} target="_blank" rel="noopener noreferrer">
+                      Watch the recording →
+                    </a>
+                  </Button>
+                </div>
               ) : (
                 <Button asChild variant="accent" className="self-start">
                   <a href={REGISTER_URL} target="_blank" rel="noopener noreferrer">
