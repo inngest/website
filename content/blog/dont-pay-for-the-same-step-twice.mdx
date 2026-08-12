@@ -24,7 +24,11 @@ Inngest reconstructs every step before the one you select as memoized output, th
 
 ## Why this is a big deal for AI-building teams specifically
 
-Let’s follow the $$$: Prompt tuning takes ten, twenty—however many it takes to get the output right. In a workflow with model calls stacked in sequence, each of those attempts touches every call ahead of the one you're actually testing, unless something stops it from doing that.
+Let’s follow the $$$. A full rerun charges for every model call ahead of the step you're actually changing. That shows up in at least three places.
+
+### 1. Prompt and input tuning
+
+Prompt tuning takes ten, twenty—however many it takes to get the output right. In a workflow with model calls stacked in sequence, each of those attempts touches every call ahead of the one you're actually testing, unless something stops it from doing that.
 
 Take a function with three model calls: extract data, generate a summary, draft a reply, orchestrated as steps. Assume the team is tuning the reply step, and each call costs $0.50.
 
@@ -44,7 +48,51 @@ Take a function with three model calls: extract data, generate a summary, draft 
 
 Ten iterations, 60% less cost, using placeholder pricing for illustration. The gap widens with more calls ahead of the step under test, or more iterations required to land the prompt—both of which are the normal working conditions of AI development, not exceptions to it.
 
-## Other annoying problems with rerunning from scratch that aren’t about cost
+### 2. Debugging a step deep in the pipeline
+
+A wrong or failed output at step N means inspecting that step. If every debug attempt restarts from step 1, you re-pay for every call that already succeeded just to reach the one under investigation. The deeper the step, the larger the prefix you burn on each attempt.
+
+Take a five-step pipeline where each model call costs $0.40. The issue is in step 4. You need five attempts to confirm the fix—each attempt must re-execute step 4 and the step after it.
+
+**Full rerun on every debug attempt:**
+
+|  | Calls per attempt | Attempts | Total calls | Cost |
+| --- | --- | --- | --- | --- |
+| Rerun from the start | 5 | 5 | 25 | $10.00 |
+
+**Rerun-from-step on every debug attempt:**
+
+|  | Calls per attempt | Attempts | Total calls | Cost |
+| --- | --- | --- | --- | --- |
+| Initial run | 5 | 1 | 5 | $2.00 |
+| Rerun from step 4 | 2 | 4 | 8 | $3.20 |
+| **Total** |  |  | **13** | **$5.20** |
+
+Five attempts, roughly half the token spend. With rerun-from-step, debugging step 4 of 5 costs two calls per attempt; from scratch it costs five. The unused prefix is spend that has nothing to do with the question you're asking—and that ratio only gets worse as the pipeline gets longer.
+
+### 3. Correcting output after a run has already completed
+
+Prompt tuning is what you do before you ship. Debugging is what you do when something fails or looks wrong during investigation. Separate from both: a run that already succeeded in production, and you need to correct or improve one step's output after the fact—a hotfix, a bad extraction that still completed, a reply that shipped with the wrong tone.
+
+That run already paid for every step. Replaying from the start to fix one of them charges for the prefix again, on work that already finished correctly.
+
+Take the same three-step function: extract, summarize, draft a reply. Each call costs $0.50. The extract and summary were fine; the reply needs a correction. You make three attempts at the fixed reply. The original production run is already paid for either way—what matters is what the correction attempts cost.
+
+**Full rerun on every correction:**
+
+|  | Calls per attempt | Attempts | Total calls | Cost |
+| --- | --- | --- | --- | --- |
+| Rerun from the start | 3 | 3 | 9 | $4.50 |
+
+**Rerun-from-step on every correction:**
+
+|  | Calls per attempt | Attempts | Total calls | Cost |
+| --- | --- | --- | --- | --- |
+| Rerun from step 3 | 1 | 3 | 3 | $1.50 |
+
+Three correction attempts, two-thirds less spend on the retry work alone. The extract and summary already ran correctly; charging for them again is paying for steps that are not part of the fix.
+
+## And it's not just about tokens
 
 **Duplicate side effects.** A step that sends an email or charges a card, rerun from the start, re-executes that action on every iteration. That produces a duplicate message or a duplicate charge landing somewhere outside your system.
 
