@@ -80,7 +80,7 @@ export const PLANS: Plan[] = [
     },
     features: [
       { value: "50k", text: "executions" },
-      { value: "5", text: "concurrent executions" },
+      { value: "5", text: "concurrent steps" },
       { value: "500 MB", text: "span data ingested" },
       { value: "10K", text: "scores" },
       { value: "500k", text: "events ingested" },
@@ -124,7 +124,7 @@ export const PLANS: Plan[] = [
         text: "executions included",
         note: "Pay as you go up to 20M",
       },
-      { value: "100+", text: "concurrent executions" },
+      { value: "100+", text: "concurrent steps" },
       { value: "5 GB", text: "span data ingested" },
       { value: "50K", text: "scores" },
       { value: "5M+", text: "events ingested" },
@@ -164,7 +164,7 @@ export const PLANS: Plan[] = [
     },
     features: [
       { value: "Custom", text: "executions" },
-      { value: "Custom", text: "concurrent executions" },
+      { value: "Custom", text: "concurrent steps" },
       { value: "Custom", text: "span data ingested" },
       { value: "Custom", text: "scores" },
       { value: "Custom", text: "events ingested" },
@@ -236,7 +236,7 @@ export const FEATURES: Feature[] = [
     },
   },
   {
-    name: "Concurrency",
+    name: "Concurrent steps",
     description: "Process steps in parallel while smoothing load",
     section: "comparison",
     infoUrl: "/docs/guides/concurrency?ref=pricing-comparison-table",
