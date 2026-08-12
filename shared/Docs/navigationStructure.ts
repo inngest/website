@@ -884,6 +884,7 @@ const sectionLearn: (NavGroup | NavLink)[] = [
             href: "/docs/platform/monitor/observability-metrics",
           },
           { title: "Insights", href: "/docs/platform/monitor/insights" },
+          { title: "AI overview", href: "/docs/platform/monitor/ai-overview" },
           { title: "Events", href: "/docs/platform/monitor/inspecting-events" },
         ],
       },
