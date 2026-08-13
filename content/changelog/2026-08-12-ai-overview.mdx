@@ -1,0 +1,16 @@
+export const title = "AI Overview: monitor AI calls, cost, and latency in one dashboard";
+export const date = "2026-08-12";
+
+We've added AI Overview, a dashboard that turns the OpenTelemetry-derived `gen_ai.*` metadata Inngest already captures from your AI calls into a live view of usage, cost, and performance across your environment.
+
+Filter by time range or function to see:
+
+- **Usage** — AI runs and token counts over time, plus your top functions and models by usage.
+- **Cost** — Estimated cost over time, cost per run, and cost broken down by model and function, alongside your most expensive runs, steps, and sessions. Every cost chart explains that estimates are based on uncached token usage.
+- **Performance** — Call latency by function and model, and your slowest runs, viewable as charts or sortable tables.
+
+Every chart and table links back to the runs, functions, and sessions behind it, so you can go from a spike in cost or latency straight to the run that caused it.
+
+AI Overview is available now and appears under the new **AI** section in the dashboard sidebar. It reads the same `gen_ai.*` metadata used elsewhere in the product, so make sure [OpenTelemetry is set up](/docs/examples/ai-metadata-quickstart?ref=changelog-ai-overview) to capture AI calls made with the OpenAI, Anthropic, Google Generative AI, or Vercel AI SDKs.
+
+Read the [AI Overview docs](/docs/platform/monitor/ai-overview?ref=changelog-ai-overview) for the full breakdown of what each section shows.
