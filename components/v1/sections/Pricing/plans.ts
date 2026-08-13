@@ -265,7 +265,7 @@ export const FEATURES: Feature[] = [
     section: "comparison",
     plans: {
       [PLAN_NAMES.hobby]: "3",
-      [PLAN_NAMES.pro]: { value: "20", description: "then $10/worker" },
+      [PLAN_NAMES.pro]: { value: "20", description: "then $10 per 10 workers" },
       [PLAN_NAMES.enterprise]: "Custom",
     },
   },
