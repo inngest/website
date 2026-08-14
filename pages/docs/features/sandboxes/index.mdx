@@ -1,0 +1,256 @@
+import { Callout } from "src/shared/Docs/mdx";
+
+export const metaTitle = "Inngest Sandboxes"
+export const description = "Run isolated commands, manage files, and operate background processes with the Inngest TypeScript SDK or REST API."
+
+# Sandboxes
+
+Sandboxes give your application an isolated Linux environment for running
+commands, working with files, and managing background processes.
+
+You can use a sandbox in two ways:
+
+| Surface | Use it when | Execution model |
+| --- | --- | --- |
+| `inngest.sandboxes` | Server-side code needs a live sandbox client immediately | Calls the Sandbox REST API from the current process |
+| `step.sandbox` | An Inngest function needs memoized sandbox operations | Runs each operation as an ordinary `step.run` step |
+
+Both surfaces use sandbox UUIDs as identity and return immutable snapshots.
+Use `get()` to fetch current state or `waitUntilRunning()` to wait for startup.
+
+<Callout variant="warning">
+  Managed processes and their output are live, sandbox-local resources. Durable
+  steps memoize API results; they do not make the guest process or its output
+  durable.
+</Callout>
+
+## Before you start
+
+You need:
+
+- the TypeScript SDK version that includes Sandboxes;
+- Sandbox access enabled for your account;
+- an Inngest signing key in `INNGEST_SIGNING_KEY`; and
+- a server runtime with the standard Fetch API.
+
+Keep the signing key in trusted server-side code. Do not call
+`inngest.sandboxes` from a browser.
+
+Create one shared Inngest client:
+
+```ts
+import { Inngest } from "inngest";
+import { sandboxMiddleware } from "inngest/experimental";
+
+export const inngest = new Inngest({
+  id: "sandbox-demo",
+  middleware: [sandboxMiddleware()],
+});
+```
+
+The client reads `INNGEST_SIGNING_KEY` automatically. Its configured base URL,
+environment, headers, and Fetch implementation also apply to sandbox requests.
+The opt-in middleware enables `step.sandbox`; `inngest.sandboxes` itself does
+not require middleware.
+
+## Run a command directly
+
+Use `inngest.sandboxes` in an API route, server action, worker, script, or
+other server-side code that owns its retries and cleanup.
+
+```ts
+import type { Sandbox } from "inngest/experimental";
+import { inngest } from "./client";
+
+let sandbox: Sandbox | undefined;
+
+try {
+  sandbox = await inngest.sandboxes.create({
+    name: `analysis-${crypto.randomUUID()}`,
+    vcpu: 2,
+    memoryMb: 512,
+    runningTimeout: "60s",
+  });
+
+  const result = await sandbox.commands.run({
+    command: ["/bin/sh", "-c", "printf 'hello from the sandbox\n'"],
+    timeout: "30s",
+  });
+
+  console.log(new TextDecoder().decode(result.stdout));
+  console.log("exit code:", result.exitCode);
+} finally {
+  await sandbox?.destroy();
+}
+```
+
+Commands are argument vectors, not shell strings. `command[0]` must be an
+absolute executable path. Invoke a shell explicitly when you need pipes,
+redirection, glob expansion, or multiple statements.
+
+Command output is returned as `Uint8Array`, so it is safe for text and binary
+data.
+
+## Run a command in an Inngest function
+
+Use `step.sandbox` when a sandbox operation belongs in a durable function.
+Every call takes a stable step ID.
+
+```ts
+import { inngest } from "./client";
+
+export const inspectFilesystem = inngest.createFunction(
+  {
+    id: "inspect-filesystem",
+    triggers: { event: "sandbox/inspect.requested" },
+  },
+  async ({ event, step }) => {
+    const sandbox = await step.sandbox.create("create-sandbox", {
+      name: `inspect-${event.data.jobId}`,
+      vcpu: 2,
+      memoryMb: 512,
+      runningTimeout: "60s",
+    });
+
+    const result = await sandbox.commands.run("inspect-files", {
+      command: ["/bin/sh", "-c", "find / -maxdepth 2 -type f"],
+      timeout: "1m",
+    });
+
+    if (result.output.truncated) {
+      console.warn("Command output was truncated", result.output);
+    }
+
+    await sandbox.destroy("destroy-sandbox");
+
+    return {
+      sandboxId: sandbox.id,
+      files: new TextDecoder().decode(result.stdout),
+      exitCode: result.exitCode,
+    };
+  },
+);
+```
+
+Let `step.sandbox` errors escape the function. Inngest automatically retries
+retryable step errors and records failures after retries are exhausted. Catch
+a failed step only when the function has an intentional fallback or
+compensation path.
+
+You can pass `{ id, name }` when the step should have a separate display name:
+
+```ts
+await sandbox.commands.run(
+  { id: "run-tests", name: "Run tests" },
+  {
+    command: ["/bin/sh", "-c", "printf 'tests passed\n'"],
+    cwd: "/",
+    timeout: "5m",
+  },
+);
+```
+
+`step.sandbox` uses ordinary `step.run` memoization. A completed step is not
+sent again on replay. Like any external mutation inside `step.run`, an
+operation can happen twice if the REST request commits and the function
+process stops before Inngest persists the step result.
+
+Avoid racing mutating sandbox steps. Cancelling a losing promise cannot prove
+that its external operation did not happen.
+
+## Choose a command or managed process
+
+Use `commands.run()` when:
+
+- the command should finish before your code continues;
+- you need captured stdout, stderr, and an exit code;
+- the command completes within five minutes; and
+- direct output is at most 4 MiB.
+
+`step.sandbox` retains at most 2 MiB of captured output so the encoded result
+fits within the durable step-output limit. Larger successful results retain
+the tail and report exact truncation metadata in `result.output`.
+
+Use `processes.start()` when:
+
+- the process should continue in the background;
+- you need to inspect, signal, or wait for it later;
+- you need retained or live stdout and stderr; or
+- the process can outlive one request or function invocation.
+
+```ts
+const process = await sandbox.processes.start({
+  command: ["/bin/sh", "-c", "while :; do sleep 1; done"],
+  cwd: "/",
+});
+
+console.log(process.id);    // Public UUID
+console.log(process.pid);   // PID inside the sandbox
+console.log(process.state); // "RUNNING"
+```
+
+On `step.sandbox`, add the step ID:
+
+```ts
+const process = await sandbox.processes.start("start-worker", {
+  command: ["/bin/sh", "-c", "while :; do sleep 1; done"],
+  cwd: "/",
+});
+```
+
+Read [Managed processes](/docs/features/sandboxes/managed-processes) before
+using a process as a long-lived service.
+
+## Environment variables replace the guest environment
+
+For commands and managed processes, `environment` replaces the inherited
+environment. It is not merged.
+
+```ts
+await sandbox.commands.run({
+  command: ["/usr/bin/env"],
+  environment: {
+    PATH: "/usr/local/bin:/usr/bin:/bin",
+    CI: "true",
+  },
+});
+```
+
+If `environment` is omitted or empty, the guest supplies its default
+environment.
+
+## Always clean up
+
+When using the direct client, destroy sandboxes in `finally` blocks. In an
+Inngest function, keep Destroy as an explicit step on the successful path and
+use an [`onFailure` handler](/docs/reference/typescript/v4/functions/handling-failures)
+when you need cleanup after a permanently failed function.
+
+```ts
+const result = await sandbox.destroy();
+
+if (result.status === "TERMINATING") {
+  // Destruction was accepted and is still in progress.
+  console.log(result.sandbox.id);
+} else {
+  // Teardown completed synchronously.
+  console.log(result.sandbox); // null
+}
+```
+
+For `step.sandbox`, pass a step ID:
+
+```ts
+await sandbox.destroy("destroy-sandbox");
+```
+
+Destroying a sandbox stops its managed processes and removes their metadata,
+retained output, and filesystem.
+
+## Next steps
+
+- [TypeScript SDK reference](/docs/reference/typescript/v4/sandboxes)
+- [Managed processes](/docs/features/sandboxes/managed-processes)
+- [Errors and retries](/docs/features/sandboxes/errors-and-retries)
+- [Limitations](/docs/features/sandboxes/limitations)
+- [REST API v2 reference](/docs/reference/rest/v2/sandboxes)
