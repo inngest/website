@@ -1,6 +1,7 @@
 import { Callout } from "src/shared/Docs/mdx";
 import { ResourceGrid, Resource } from "src/shared/Docs/Resources";
 import { VideoCameraIcon } from "@heroicons/react/24/outline";
+import HlsVideo from "src/shared/HlsVideo";
 
 export const metaTitle = "Agent Evals | Evaluate AI Workflows in Production"
 export const description = "Use scoring, deferred scoring, sessions, traces, experiments, and Insights to evaluate production AI workflows on Inngest."
@@ -21,6 +22,14 @@ Agent Evals is not a separate SDK package. It is the production evaluation workf
 <Callout variant="info">
   Scoring and deferred scoring require the TypeScript SDK v4 and currently use beta APIs.
 </Callout>
+
+<HlsVideo
+  src="https://cdn.inngest.com/videos/first_eval_webinar/master.m3u8"
+  loop={false}
+  controls
+  autoPlay={false}
+  className="my-6 w-full rounded-[8px] border border-[rgba(124,124,124,0.35)]"
+/>
 
 ## Basic example
 
