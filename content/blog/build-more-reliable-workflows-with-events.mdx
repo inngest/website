@@ -1,58 +1,75 @@
 ---
-tags: ["Workflows & Orchestration", "Observability & Debugging"]
-heading: "Building More Reliable Workflows With Events"
-subtitle: Run critical code with guarantees and observability
+heading: "Building Fault-Tolerant Event-Driven Systems with Inngest"
+subtitle: "What fault-tolerant event-driven architecture means, and how to ship reliable workflows with idempotency, retries, event replay, and observability."
+showSubtitle: true
 image: /assets/blog/build-more-reliable-workflows-with-events.jpg
 imageCredits: Photo by <a href="https://unsplash.com/@charlesdeluvio?utm_source=unsplash&utm_medium=referral&utm_content=creditCopyText">charlesdeluvio</a> on <a href="https://unsplash.com/?utm_source=unsplash&utm_medium=referral&utm_content=creditCopyText">Unsplash</a>
 date: 2022-11-10
-dateUpdated: 2026-01-07
+dateUpdated: 2026-08-14
 author: Dan Farrelly
+category: engineering
+sidebarCta:
+  text: "Retries, failure handlers, and rollbacks for production workflows."
+  buttonLabel: "Reliability docs"
+  href: "/docs/guides/error-handling?ref=blog-build-more-reliable-workflows-with-events-sidebar"
+faq:
+  - question: "What is a fault-tolerant event-driven system?"
+    answer: "A fault-tolerant event-driven system keeps processing events correctly when parts of the architecture fail. Events remain durable, handlers retry safely, and incomplete work can be recovered with tools like event replay instead of being lost."
+  - question: "What does fault tolerant mean for workflows?"
+    answer: "Fault tolerant means a workflow can survive crashes, timeouts, flaky APIs, and deploys without losing progress. Completed steps are remembered, failed steps retry independently, and operators can recover runs that exhaust retries."
+  - question: "How do idempotency and exactly-once processing relate?"
+    answer: "Event systems usually deliver at least once, so handlers must be idempotent. Idempotent event processing plus memoized steps and idempotency keys lets you approach exactly-once business effects even when the same event or step runs more than once."
+  - question: "Do you still need a dead letter queue with Inngest?"
+    answer: "Traditional queues often park permanently failed messages in a dead letter queue. Inngest stores run history and events so you can fix the root cause, then use event replay to reprocess failed work without maintaining a separate DLQ recovery pipeline."
+  - question: "How do you recover from long outages?"
+    answer: "After automatic retries are exhausted, use event replay to re-run failed functions over a time range. Combined with idempotent handlers, replay restores correctness after incidents that last hours or days."
 ---
 
-Every application starts off with running some basic code in the background. Common use cases include sending email notifications, handling subscription payment webhooks, or periodically fetching data from third party APIs.
+Every application starts with background work: sending email, handling payment webhooks, or syncing data from third-party APIs. Those jobs become critical when failures mean lost revenue, inconsistent data, or broken user state.
 
-Inngest's webhook support has evolved significantly—now supporting form-urlencoded and multipart data, plus a management API for programmatic webhook creation and version control. [Learn more](/docs/platform/webhooks)
+That is when you need a **fault-tolerant event-driven architecture**—not just a queue and a worker, but systems that keep running when steps fail, APIs flake, or infrastructure restarts.
 
-At some point, most applications will be required to run tasks in the background that are critical to the core functionality or business value of the product. This is when applications need to get serious and consider more robust solutions as failed tasks can represent lost revenue.
+This guide defines fault tolerance in event-driven systems, then shows how to build it with Inngest using retries, **idempotency**, **exactly-once** effects, **event replay**, and clearer recovery than a traditional **dead letter queue**.
 
-Application-critical tasks are everywhere and might include:
+## What is a fault-tolerant event-driven system?
 
-* Ingesting data from user uploads or third party APIs, transforming or validating data and sending user notifications
-* User actions that require propagation across several databases, systems or external integrations
-* Transaction processing including payments sent and received
+A **fault-tolerant event-driven system** is an architecture where events trigger work, and that work continues correctly even when individual components fail.
 
-All of these tasks must be reliable and fault-tolerant. Failures in these situations can lead data inconsistencies or broken states for users.
+In practice, that means:
 
-## What is needed
+- Events are durable facts: once accepted, they are not silently dropped.
+- Handlers can fail and retry without restarting the entire workflow from scratch.
+- Side effects are safe under retries through **idempotent event processing**.
+- Operators can recover from incidents with **event replay** instead of lost or stranded messages.
+- Failures are observable: you can see which step failed, why, and what to fix.
 
-As tasks gets more complex, it often can be split into multiple independent steps or phases. Many folks use the term "workflows" or step functions to describe these more complex tasks where, often, logic is required to glue the steps together.
+**Fault tolerant means** the system absorbs faults—network blips, rate limits, crashes, deploys—and still reaches a correct outcome, or gives you a clear path to recover when automatic retries are not enough.
 
-Developers or operators need confidence that their critical workflows are running consistently, reliably, and durably. Quite often, one part of a workflow may be more susceptible to failure due to a flaky external API or rate limiting. If this one part of the code fails, it should be independently retried, avoiding the need to restart a job from the beginning.
+## Why do event-driven systems need fault tolerance?
 
-Lastly, observability is crucial to understanding errors and results from each stage of your task. Status and logs should be grouped by type of workflow and individual workflow runs.
+Application-critical tasks show up everywhere:
 
-## Splitting the code into steps
+- Ingesting uploads or third-party data, transforming it, and notifying users
+- User actions that must propagate across databases, systems, or integrations
+- Transaction processing for payments sent and received
 
-There are many different ways to split tasks into discrete steps (e.g. actions, sub-tasks, etc.). A simple approach is that teams will chain together multiple queues and workers. This works, but it requires more overhead, it may be difficult to audit, and will likely require separating of related code into separate jobs.
+As tasks grow, they split into workflows: validate, enrich, wait for review, write to a database, notify. One flaky API call should not force you to re-run every earlier step. Without fault tolerance, teams invent ad hoc retries, custom dead letter queues, and one-off recovery scripts—usually after the first painful outage.
 
-Alternatively, another approach could be to use a workflow orchestration framework. Each has it's own paradigm for building this logic often with significant learning curves.
+Developers need confidence that critical workflows run **reliably and durably**, with status and logs grouped by workflow type and individual runs.
 
-## Writing critical workflows as code
+## How do you build fault-tolerant workflows with events?
 
-Our goals were to enable developers to write complex jobs combining multiple steps right in code while minimizing custom DSL and concepts to learn.
+You can chain queues and workers, or adopt a heavyweight orchestration framework. Both add overhead and often split related logic across jobs or DSLs.
 
-We don't think writing step functions or workflows as a large JSON configuration is a great developer experience. Also, using a online GUI to design these isn't always ideal as the logic or [DAG](https://en.wikipedia.org/wiki/Directed_acyclic_graph) may be edited or managed outside of the actual code's version control.
+Inngest’s approach is to write multi-step workflows as ordinary code. Each `step.run()` is independently retried; completed steps are memoized so execution resumes where it left off. You can also wait for additional events with `step.waitForEvent()`.
 
-We also believe it should be simple to run, from local development, to production where code can be [deployed to any number of platforms](/docs/apps/cloud?ref=blog-build-more-reliable-workflows-with-events).
-
-Let's take a use case to demonstrate our approach. A product is a CRM tool that enables a user to upload a large CSV file with contacts information. The API triggers this to run with the event `api/contact_list.uploaded`. This advanced CRM tool validates the upload then uses third party APIs to enrich the data with information about the contact's business then waits for the user to review and filter this list down before inserting all data into the CRM database. When the user approve or rejects and selects filers, the API will send another event: `api/contact_list.reviewed`. Here's what the code could look like:
-
+Example: a CRM import triggered by `api/contact_list.uploaded`. The workflow validates the CSV, enriches contacts via third-party APIs, waits for `api/contact_list.reviewed`, then writes approved rows into the CRM.
 
 ```typescript
 import { inngest } from "./client";
 
 inngest.createFunction(
-  { name: "Contacts Import and enrichment" },
+  { id: "contacts-import-and-enrichment", name: "Contacts Import and enrichment" },
   { event: "api/contact_list.uploaded" },
   async ({ event, step }) => {
     const { isValid, errors } = await step.run("Validate upload contents", async () => {
@@ -68,15 +85,15 @@ inngest.createFunction(
     }
 
     // Enrichment may fail at times due to networking blip
-    await step.run("Enrich contracts information", async () => {
-      // Call a third party API service to enriches each contact's info
+    await step.run("Enrich contacts information", async () => {
+      // Call a third party API service to enrich each contact's info
       // then uploads the data to an object store when complete
     });
 
     const listReviewedEvent = await step.waitForEvent("api/contact_list.reviewed", {
       timeout: "7d",
       match: "data.upload_id", // data.upload_id is in both events and must match to proceed
-    })
+    });
 
     if (listReviewedEvent.data.is_approved === false) {
       return await step.run("Delete uploaded contact lists", () => { /* ...*/ });
@@ -92,56 +109,85 @@ inngest.createFunction(
       await sendContactsImportSuccessEmail(event.user.id, totalUsersAdded)
     );
   }
-)
+);
 ```
 
-* All code within each `step.run()` callback will be run independently and will be **retried upon failure, resuming from where the function left off**.
-* Using `step.waitForEvent()` enable the workflow to wait for additional user interactions or events via [**event coordination**](/patterns/event-coordination-for-lost-customers?ref=blog-build-more-reliable-workflows-with-events).
-* The results of each step, including failures and retries are logged can be inspected on the Inngest dashboard for **complete observability**.
+What this gives you toward a fault-tolerant event-driven architecture:
 
-More info on these and other `tools` are [in our docs](/docs/learn/inngest-steps?ref=blog-build-more-reliable-workflows-with-events#tools).
+- Code inside each `step.run()` retries independently and **resumes from where the function left off**.
+- `step.waitForEvent()` coordinates follow-up user actions via [event coordination](/patterns/event-coordination-for-lost-customers?ref=blog-build-more-reliable-workflows-with-events).
+- Step results, failures, and retries are visible in the Inngest dashboard for **observability**.
 
-## Advanced monitoring and querying
+Deploy the same functions [locally or to any supported platform](/docs/apps/cloud?ref=blog-build-more-reliable-workflows-with-events). More on step tools is in the [steps docs](/docs/learn/inngest-steps?ref=blog-build-more-reliable-workflows-with-events).
 
-### Query your data with Insights
+## How do idempotency and exactly-once processing protect workflows?
 
-Inngest now includes **Insights**—the ability to query your events and runs using SQL directly in the dashboard:
+Most event buses and queues provide **at-least-once** delivery. Retries and duplicate publishes are normal. True broker-level **exactly-once** delivery is rare; what product systems need is **exactly-once effects**—the business outcome happens once.
 
-\`\`\`sql
-SELECT 
+That requires:
+
+1. **Idempotent event processing** in your handlers (upserts, deterministic IDs, check-before-write).
+2. Platform help: Inngest [idempotency keys](/docs/guides/handling-idempotency?ref=blog-build-more-reliable-workflows-with-events) can prevent duplicate events from triggering the same function more than once within a window, and memoized steps avoid re-running successful side effects on retry.
+
+Together, idempotency and step memoization let you design for **exactly-once** outcomes even when the transport retries. See [error handling and retries](/docs/guides/error-handling?ref=blog-build-more-reliable-workflows-with-events) for how failed steps retry without replaying completed work.
+
+## How do dead letter queues and event replay recover from failures?
+
+A classic **dead letter queue (DLQ)** holds messages that exhausted retries. Someone must later inspect, fix, and reprocess them—often with custom scripts and incomplete context.
+
+**Event replay** is a stronger recovery model for fault-tolerant systems: keep the history of events and function runs, fix the bug or outage, then re-run the failed work over a time range. Inngest [Replay](/docs/platform/replay?ref=blog-build-more-reliable-workflows-with-events) does this in the product UI so you do not maintain a separate DLQ pipeline. For the product story behind that approach, see [Announcing Replay](/blog/announcing-replay-the-death-of-the-dead-letter-queue?ref=blog-build-more-reliable-workflows-with-events).
+
+Use automatic retries for transient faults; use event replay for incidents that last hours or days. Always pair replay with idempotent handlers so recovered runs do not duplicate side effects.
+
+## How do you observe fault-tolerant event-driven systems?
+
+Fault tolerance without visibility is guesswork. You need per-step status, failure reasons, and the ability to query event and run history.
+
+### Query workflow data with Insights
+
+[Insights](/blog/insights-query-events-and-runs?ref=blog-build-more-reliable-workflows-with-events) lets you query events and runs with SQL in the dashboard:
+
+```sql
+SELECT
   event_name,
   COUNT(*) as event_count
 FROM events
 WHERE created_at > NOW() - INTERVAL '7 days'
 GROUP BY event_name
 ORDER BY event_count DESC;
-\`\`\`
+```
 
-**Insights enables:**
-- Custom queries for event analysis
-- Run performance tracking  
-- Data export for custom reporting
-- Schema explorer to discover available data
-
-Particularly powerful for AI workflows—track token usage, model calls, and agent performance directly from your workflow data.
-
-[Read the announcement](/blog/insights-query-events-and-runs)
+Use Insights for event analysis, run performance tracking, exports, and schema discovery—especially useful for AI workflows where you track tokens, model calls, and agent outcomes.
 
 ### Export metrics to Datadog
 
-For teams using Datadog, you can now export all Inngest metrics for centralized monitoring and alerting. Configure the integration in your Inngest dashboard under Settings > Integrations > Datadog.
+Teams on Datadog can [export Inngest metrics](/docs/platform/monitor/datadog-integration?ref=blog-build-more-reliable-workflows-with-events) for centralized alerting (`inngest_function_run_scheduled_total`, `inngest_function_run_started_total`, `inngest_function_run_ended_total`, and more).
 
-**Available metrics include:**
-- `inngest_function_run_scheduled_total`
-- `inngest_function_run_started_total`
-- `inngest_function_run_ended_total`
-- And more
+## FAQ: fault-tolerant event-driven architecture
 
-[Learn more](/docs/platform/monitor/datadog-integration)
+### What is a fault-tolerant event-driven system?
 
-## Over to you
+A system where events trigger durable work that survives failures: retries, idempotent handlers, persisted step state, and recovery via event replay rather than dropped messages.
 
-For critical code that runs in the background, developers need guarantees and observability in a simple to use package. Simple to use, easy to maintain. Investing in any solution should mean transparency, portability and potential to self-host. We keep our system including the execution engine that powers all of this functionality as well as the SDK completely open source: [inngest/inngest](https://github.com/inngest/inngest), [inngest/inngest-js](https://github.com/inngest/inngest-js).
+### What does fault tolerant mean?
 
-Our beta release is out today and can be used with [Inngest Cloud](https://app.inngest.com/sign-up?ref=blog-reliable-workflows-with-events) today - it's free to start using. Come join us on [Discord](/discord) or Github to share feedback or seek support on building out some critical workflows for yourself.
+It means failures are expected and handled. Progress is kept, unsafe duplicates are avoided through idempotency, and operators can restore correctness after outages.
 
+### How is this different from a dead letter queue workflow?
+
+A DLQ parks failed messages for later manual handling. With Inngest, failed runs stay queryable; after you fix the cause, event replay reprocesses them without a separate dead letter queue workflow.
+
+### How do you get near exactly-once behavior?
+
+Assume at-least-once delivery, write idempotent steps, and use Inngest idempotency keys plus memoized `step.run()` results so retries do not repeat successful side effects.
+
+## Next steps
+
+For critical background work, you need guarantees and observability without a custom reliability stack.
+
+- [Sign up for Inngest](https://app.inngest.com/sign-up?ref=blog-reliable-workflows-with-events) (free to start)
+- Read the [error handling guide](/docs/guides/error-handling?ref=blog-build-more-reliable-workflows-with-events) and [idempotency guide](/docs/guides/handling-idempotency?ref=blog-build-more-reliable-workflows-with-events)
+- Learn [function replay](/docs/platform/replay?ref=blog-build-more-reliable-workflows-with-events)
+- Join [Discord](/discord) if you want feedback on a production workflow
+
+The execution engine and SDKs are open source: [inngest/inngest](https://github.com/inngest/inngest), [inngest/inngest-js](https://github.com/inngest/inngest-js).
