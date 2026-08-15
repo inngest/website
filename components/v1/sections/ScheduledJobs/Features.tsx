@@ -21,25 +21,13 @@ const FEATURES: Feature[] = [
   {
     id: "fan-out-at-scale",
     title: "Fan-out at scale",
-    body: (
-      <>
-        Send an array of events from within your cron. Each one
-        spawns an independent job with its own retries. No batching
-        logic needed.
-      </>
-    ),
+    body: <>One cron fans out to many jobs—each with its own retries.</>,
     docsHref: "/docs/guides/fan-out-jobs",
   },
   {
     id: "serverless-first",
-    title: "Infrastructure-agnostic by default",
-    body: (
-      <>
-        Distributed serverless execution on your existing
-        deployment. No dedicated workers, no visual workflow
-        builder lock-in—just your code, invoked on schedule.
-      </>
-    ),
+    title: "Infrastructure-agnostic",
+    body: <>Runs on your existing deploy. No workers to manage.</>,
     docsHref: "/docs/platform/deployment",
   },
   {
@@ -47,9 +35,8 @@ const FEATURES: Feature[] = [
     title: "Schedule in timezones",
     body: (
       <>
-        Use <InlineCode>TZ=America/New_York</InlineCode> prefix in
-        your cron expression. Inngest handles DST and timezone math
-        so your jobs run when your users expect.
+        Prefix crons with <InlineCode>TZ=America/New_York</InlineCode>.
+        DST handled for you.
       </>
     ),
     docsHref: "/docs/guides/scheduled-functions",
@@ -57,35 +44,19 @@ const FEATURES: Feature[] = [
   {
     id: "cancel-before-firing",
     title: "Cancel before firing",
-    body: (
-      <>
-        A function sleeping until tomorrow can be automatically
-        cancelled the moment a matching event arrives. No stored
-        job IDs.
-      </>
-    ),
+    body: <>Cancel a sleeping run when a matching event arrives.</>,
     docsHref: "/docs/features/inngest-functions/cancellation/cancel-on-events",
   },
   {
     id: "mix-cron-and-events",
     title: "Mix cron and events",
-    body: (
-      <>
-        Trigger functions by schedule and/or event; run your daily
-        report automatically, or trigger on demand.
-      </>
-    ),
+    body: <>Same function: run on a schedule, or trigger on demand.</>,
     docsHref: "/docs/features/events-triggers",
   },
   {
     id: "full-visibility",
-    title: "Full visibility into every run",
-    body: (
-      <>
-        See execution history, step-level traces, and failure
-        reasons for every run. No more guessing if your cron fired.
-      </>
-    ),
+    title: "Full visibility",
+    body: <>Step-level traces and failure reasons for every run.</>,
     docsHref: "/docs/platform/monitor/inspecting-function-runs",
   },
 ];
@@ -105,11 +76,11 @@ export default function Features() {
       >
         <SectionHeader
           id="cron-features-heading"
-          eyebrow="Why teams choose Inngest for serverless orchestration"
+          eyebrow="Why teams choose Inngest for scheduled jobs"
           title={
             <>
               <span className="block">Everything for</span>
-              <span className="block">production data workflows</span>
+              <span className="block">production pipelines</span>
             </>
           }
         />
