@@ -8,7 +8,7 @@ const CUBE_DOTS_JSON = JSON.stringify(cubeDotsData);
 export const metadata: Metadata = generateMetadata({
   title: "Observability - Step-Level Traces",
   description:
-    "Step-level traces for AI agent workflows at scale. See where runs fail under concurrency, then use Flow Control for keyed caps, fairness, and throttle.",
+    "Step-level traces for concurrent AI agent workflows. See which agent failed under load, then use Flow Control for caps—or start from AI orchestration.",
 });
 
 export default function Page() {

@@ -6,56 +6,43 @@ import { motion } from "motion/react";
 import ButtonLink from "@/components/v1/ButtonLink";
 import Logo from "@/components/v1/Logo";
 import Section from "@/components/v1/sections/shared/Section";
-import { V1_SECTION_TITLE } from "@/components/v1/sections/shared/sectionTitle";
 import { reveals } from "@/utils/v1/reveals";
 
 /**
- * AEO citable chunks for concurrency / scale on AI agent workflows.
- * Routes deeper concurrency demand to Flow Control hub.
- * Keep short — this page is for citation, not head-term ranking.
+ * AEO quick-win on Observability: short FAQ-style H2s + a scannable
+ * comparison for concurrency/scale on AI agents. This page cites;
+ * deeper demand routes to Row 1 (/ai) and Flow Control (#4).
  */
 
+const AI_HUB_URL = "/ai?ref=observability-concurrency";
 const FLOW_CONTROL_URL = "/platform/flow-control?ref=observability-concurrency";
-const CONCURRENCY_DOCS_URL =
-  "/docs/guides/concurrency?ref=observability-concurrency";
 
 interface ComparisonRow {
   capability: string;
-  diy: string;
-  generic: string;
+  logsApm: string;
   inngest: string;
 }
 
 const ROWS: ComparisonRow[] = [
   {
-    capability: "Per-agent / per-tenant caps",
-    diy: "Hand-rolled locks",
-    generic: "Global only",
-    inngest: "Keyed concurrency",
+    capability: "See which agent hit the concurrency cap",
+    logsApm: "Guess from rate-limit errors",
+    inngest: "Per-run + step traces",
   },
   {
-    capability: "Fairness under burst load",
-    diy: "Noisy neighbors win",
-    generic: "Limited",
-    inngest: "Built-in fairness",
+    capability: "Trace many agents under load",
+    logsApm: "Trace IDs across tools",
+    inngest: "One waterfall per run",
   },
   {
-    capability: "Throttle LLM / API calls",
-    diy: "Custom rate limiter",
-    generic: "Add-on tooling",
-    inngest: "Throttle + rate limit",
+    capability: "Spot noisy-neighbor tenants",
+    logsApm: "Custom metrics job",
+    inngest: "Filter runs by user / tenant",
   },
   {
-    capability: "Step-level observability",
-    diy: "DIY traces",
-    generic: "Run-level only",
-    inngest: "Waterfall per step",
-  },
-  {
-    capability: "Fault-tolerant retries",
-    diy: "Manual",
-    generic: "Job-level",
-    inngest: "Per-step retries",
+    capability: "Debug a failed tool call at scale",
+    logsApm: "Opaque single span",
+    inngest: "Step input / output / retries",
   },
 ];
 
@@ -64,102 +51,133 @@ export default function ConcurrencyScale() {
     <Section
       aria-labelledby="ob-concurrency-heading"
       className="relative"
-      containerClassName="flex flex-col gap-v1-stack"
+      containerClassName="flex flex-col gap-12 lg:gap-16"
     >
-      {/* FAQ-style H2s — short citable answers, then the comparison table. */}
-      <div className="flex flex-col gap-12 lg:gap-14">
-        <div className="flex max-w-[720px] flex-col gap-4">
+      {/* Compact FAQ-style H2s — heading-sm, not display titles. */}
+      <div className="grid list-none grid-cols-1 gap-10 pl-0 lg:grid-cols-2 lg:gap-x-16 lg:gap-y-12">
+        <FaqBlock
+          id="ob-concurrency-heading"
+          question="How do you observe concurrency for AI agent workflows?"
+          answer={
+            <>
+              When hundreds of agents run in parallel, you need step-level
+              traces—not just “the job failed.” See which run hit a cap, which
+              tool call retried, and which tenant flooded the queue. Configure
+              those caps in{" "}
+              <Link
+                href={FLOW_CONTROL_URL}
+                prefetch={false}
+                className="underline decoration-current/40 underline-offset-4 hover:decoration-v1-accent-salmon"
+              >
+                Flow Control
+              </Link>
+              ; build the agents on{" "}
+              <Link
+                href={AI_HUB_URL}
+                prefetch={false}
+                className="underline decoration-current/40 underline-offset-4 hover:decoration-v1-accent-salmon"
+              >
+                AI workflow orchestration
+              </Link>
+              .
+            </>
+          }
+        />
+        <FaqBlock
+          question="What do high-scale fault-tolerant AI agent workflows need to show?"
+          answer={
+            <>
+              Per-step timing, retries, and outputs under load—so a failed LLM
+              or tool call is visible without replaying the whole loop. That’s
+              observability for agents at scale, not another APM dashboard.
+            </>
+          }
+        />
+      </div>
+
+      <div className="flex flex-col gap-8">
+        <div className="flex max-w-[640px] flex-col gap-4">
           <motion.h2
             {...reveals.heading}
-            id="ob-concurrency-heading"
-            className={V1_SECTION_TITLE}
+            className="text-v1-heading-sm text-v1-frost"
           >
-            How do you handle concurrency for AI agent workflows?
+            Inngest vs logs/APM for agent concurrency and scale
           </motion.h2>
-          <motion.p {...reveals.body} className="text-v1-body-lg">
-            Cap parallel runs per user, tenant, or agent with keyed concurrency—
-            then pair it with throttle and priority so bursts don’t melt your
-            model budget.{" "}
-            <Link
-              href={FLOW_CONTROL_URL}
-              prefetch={false}
-              className="text-v1-frost underline decoration-v1-frost/40 underline-offset-4 hover:decoration-v1-accent-salmon"
-            >
+          <motion.p {...reveals.body} className="text-v1-body-sm">
+            A quick look at how you see concurrent AI agents when something
+            breaks—not how you configure the limits (that’s Flow Control).
+          </motion.p>
+          <div className="flex flex-wrap gap-4 pt-1">
+            <ButtonLink href={AI_HUB_URL} variant="primary">
+              AI orchestration →
+            </ButtonLink>
+            <ButtonLink href={FLOW_CONTROL_URL} variant="secondary">
               Flow Control
-            </Link>{" "}
-            is the hub for those primitives.
-          </motion.p>
-        </div>
-
-        <div className="flex max-w-[720px] flex-col gap-4">
-          <motion.h2 {...reveals.heading} className={V1_SECTION_TITLE}>
-            What makes high-scale fault-tolerant AI agent workflows work?
-          </motion.h2>
-          <motion.p {...reveals.body} className="text-v1-body-lg">
-            Durable steps, per-step retries, and step-level traces—so a failed
-            tool call retries without replaying the whole agent loop, and you
-            can see exactly which step broke under load.
-          </motion.p>
-        </div>
-
-        <div className="flex flex-col gap-8">
-          <div className="flex max-w-[760px] flex-col gap-4">
-            <motion.h2 {...reveals.heading} className={V1_SECTION_TITLE}>
-              Inngest vs alternatives for agent concurrency and scale
-            </motion.h2>
-            <motion.p {...reveals.body} className="text-v1-body-lg">
-              How concurrency and scale compare when you’re running many AI
-              agents—not just a single background job.
-            </motion.p>
-            <div className="flex flex-wrap gap-4 pt-2">
-              <ButtonLink href={FLOW_CONTROL_URL} variant="primary">
-                Explore Flow Control →
-              </ButtonLink>
-              <ButtonLink href={CONCURRENCY_DOCS_URL} variant="secondary">
-                Concurrency docs
-              </ButtonLink>
-            </div>
+            </ButtonLink>
           </div>
+        </div>
 
-          <div className="-mx-6 overflow-x-auto sm:-mx-9 lg:mx-0 lg:overflow-visible">
-            <motion.div
-              {...reveals.item(2)}
-              role="table"
-              aria-label="Concurrency and scale comparison for AI agent workflows"
-              className="min-w-[880px] px-6 sm:px-9 lg:min-w-0 lg:px-0"
+        <div className="-mx-6 overflow-x-auto sm:-mx-9 lg:mx-0 lg:overflow-visible">
+          <motion.div
+            {...reveals.item(2)}
+            role="table"
+            aria-label="Observability comparison for concurrent AI agent workflows"
+            className="min-w-[720px] px-6 sm:px-9 lg:min-w-0 lg:px-0"
+          >
+            <div
+              role="row"
+              className="grid grid-cols-3 border-b border-solid border-v1-strong"
             >
-              <div
-                role="row"
-                className="grid grid-cols-4 border-b border-solid border-v1-strong"
+              <HeaderCell tone="frost">When agents run concurrently</HeaderCell>
+              <HeaderCell tone="dim">Logs / APM</HeaderCell>
+              <HeaderCell
+                tone="frost"
+                icon={<Logo logomarkOnly width={28} />}
+                iconGap={6}
               >
-                <HeaderCell tone="frost">Capability</HeaderCell>
-                <HeaderCell tone="dim">DIY queues</HeaderCell>
-                <HeaderCell tone="dim">Generic orchestrators</HeaderCell>
-                <HeaderCell
-                  tone="frost"
-                  icon={<Logo logomarkOnly width={28} />}
-                  iconGap={6}
-                >
-                  Inngest
-                </HeaderCell>
+                Inngest
+              </HeaderCell>
+            </div>
+            {ROWS.map((row) => (
+              <div
+                key={row.capability}
+                role="row"
+                className="grid grid-cols-3 border-b border-solid border-v1-strong/[0.4]"
+              >
+                <Cell emphasis>{row.capability}</Cell>
+                <Cell muted>{row.logsApm}</Cell>
+                <Cell emphasis>{row.inngest}</Cell>
               </div>
-              {ROWS.map((row) => (
-                <div
-                  key={row.capability}
-                  role="row"
-                  className="grid grid-cols-4 border-b border-solid border-v1-strong/[0.4]"
-                >
-                  <Cell emphasis>{row.capability}</Cell>
-                  <Cell muted>{row.diy}</Cell>
-                  <Cell muted>{row.generic}</Cell>
-                  <Cell emphasis>{row.inngest}</Cell>
-                </div>
-              ))}
-            </motion.div>
-          </div>
+            ))}
+          </motion.div>
         </div>
       </div>
     </Section>
+  );
+}
+
+function FaqBlock({
+  id,
+  question,
+  answer,
+}: {
+  id?: string;
+  question: string;
+  answer: ReactNode;
+}) {
+  return (
+    <div className="flex flex-col gap-3 border-t border-v1-carbon-100 pt-6">
+      <motion.h2
+        {...reveals.heading}
+        id={id}
+        className="text-v1-heading-sm text-v1-frost"
+      >
+        {question}
+      </motion.h2>
+      <motion.p {...reveals.body} className="text-v1-body-sm max-w-[520px]">
+        {answer}
+      </motion.p>
+    </div>
   );
 }
 
@@ -182,7 +200,7 @@ function HeaderCell({
     >
       {icon}
       <span
-        className="font-v1Mono text-[12px] uppercase leading-[16px] whitespace-nowrap lg:text-[15px]"
+        className="font-v1Mono text-[12px] uppercase leading-[16px] lg:text-[15px]"
         style={{
           color:
             tone === "dim"
