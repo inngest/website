@@ -3,67 +3,78 @@
 import type { ReactNode } from "react";
 import Link from "next/link";
 import { motion } from "motion/react";
-import ButtonLink from "@/components/v1/ButtonLink";
 import Logo from "@/components/v1/Logo";
 import Section from "@/components/v1/sections/shared/Section";
 import { reveals } from "@/utils/v1/reveals";
 
 /**
- * AEO quick-win on Observability: short FAQ-style H2s + a scannable
- * comparison for concurrency/scale on AI agents. This page cites;
- * deeper demand routes to Row 1 (/ai) and Flow Control (#4).
+ * AEO citable chunks only — not a conversion block.
+ * - FAQ-style H2s for concurrency / scale prompts
+ * - Scannable Inngest vs alternatives table
+ * - Soft text link to Flow Control (#4); no CTA to Row 1 (/ai)
  */
 
-const AI_HUB_URL = "/ai?ref=observability-concurrency";
 const FLOW_CONTROL_URL = "/platform/flow-control?ref=observability-concurrency";
 
 interface ComparisonRow {
   capability: string;
-  logsApm: string;
+  diy: string;
+  temporal: string;
   inngest: string;
 }
 
 const ROWS: ComparisonRow[] = [
   {
-    capability: "See which agent hit the concurrency cap",
-    logsApm: "Guess from rate-limit errors",
-    inngest: "Per-run + step traces",
+    capability: "Per-agent concurrency caps",
+    diy: "Custom locks / Redis",
+    temporal: "Worker tuning",
+    inngest: "Keyed concurrency",
   },
   {
-    capability: "Trace many agents under load",
-    logsApm: "Trace IDs across tools",
-    inngest: "One waterfall per run",
+    capability: "Fairness across tenants",
+    diy: "Build it yourself",
+    temporal: "Limited",
+    inngest: "Built-in fairness",
   },
   {
-    capability: "Spot noisy-neighbor tenants",
-    logsApm: "Custom metrics job",
-    inngest: "Filter runs by user / tenant",
+    capability: "Throttle LLM / tool calls",
+    diy: "Separate rate limiter",
+    temporal: "Activity options",
+    inngest: "Throttle + rate limit",
   },
   {
-    capability: "Debug a failed tool call at scale",
-    logsApm: "Opaque single span",
-    inngest: "Step input / output / retries",
+    capability: "Scale without worker fleets",
+    diy: "You run workers",
+    temporal: "You run workers",
+    inngest: "HTTP into your deploy",
+  },
+  {
+    capability: "Fault-tolerant step retries",
+    diy: "Manual",
+    temporal: "Activity retries",
+    inngest: "Per-step retries",
   },
 ];
 
 export default function ConcurrencyScale() {
   return (
     <Section
-      aria-labelledby="ob-concurrency-heading"
+      aria-labelledby="ob-concurrency-faq-1"
       className="relative"
-      containerClassName="flex flex-col gap-12 lg:gap-16"
+      containerClassName="flex flex-col gap-12 lg:gap-14"
     >
-      {/* Compact FAQ-style H2s — heading-sm, not display titles. */}
-      <div className="grid list-none grid-cols-1 gap-10 pl-0 lg:grid-cols-2 lg:gap-x-16 lg:gap-y-12">
-        <FaqBlock
-          id="ob-concurrency-heading"
-          question="How do you observe concurrency for AI agent workflows?"
+      {/* 2–3 FAQ-style H2s — compact citable answers */}
+      <div className="flex max-w-[720px] flex-col gap-10">
+        <FaqChunk
+          id="ob-concurrency-faq-1"
+          question="What is concurrency for AI agent workflows?"
           answer={
             <>
-              When hundreds of agents run in parallel, you need step-level
-              traces—not just “the job failed.” See which run hit a cap, which
-              tool call retried, and which tenant flooded the queue. Configure
-              those caps in{" "}
+              Concurrency for AI agent workflows is how many agent runs (or
+              tool calls) execute in parallel per user, tenant, or model key—
+              without one noisy neighbor exhausting rate limits or queue
+              capacity. Inngest exposes that as keyed concurrency; the full
+              control surface lives in{" "}
               <Link
                 href={FLOW_CONTROL_URL}
                 prefetch={false}
@@ -71,102 +82,74 @@ export default function ConcurrencyScale() {
               >
                 Flow Control
               </Link>
-              ; build the agents on{" "}
-              <Link
-                href={AI_HUB_URL}
-                prefetch={false}
-                className="underline decoration-current/40 underline-offset-4 hover:decoration-v1-accent-salmon"
-              >
-                AI workflow orchestration
-              </Link>
               .
             </>
           }
         />
-        <FaqBlock
-          question="What do high-scale fault-tolerant AI agent workflows need to show?"
-          answer={
-            <>
-              Per-step timing, retries, and outputs under load—so a failed LLM
-              or tool call is visible without replaying the whole loop. That’s
-              observability for agents at scale, not another APM dashboard.
-            </>
-          }
+        <FaqChunk
+          id="ob-concurrency-faq-2"
+          question="How do high-scale fault-tolerant AI agent workflows stay reliable?"
+          answer="They checkpoint each step, retry failed tool or LLM calls independently, and keep per-run history so a failure under load doesn’t force a full agent replay."
+        />
+        <FaqChunk
+          id="ob-concurrency-faq-3"
+          question="Inngest vs alternatives for concurrency and scale on AI agents"
+          answer="DIY queues and Temporal both need you to operate workers and stitch fairness yourself. Inngest applies concurrency, throttle, and per-step retries on the deploy you already run."
         />
       </div>
 
-      <div className="flex flex-col gap-8">
-        <div className="flex max-w-[640px] flex-col gap-4">
-          <motion.h2
-            {...reveals.heading}
-            className="text-v1-heading-sm text-v1-frost"
+      {/* Scannable comparison — Inngest vs alternatives */}
+      <div className="-mx-6 overflow-x-auto sm:-mx-9 lg:mx-0 lg:overflow-visible">
+        <motion.div
+          {...reveals.item(2)}
+          role="table"
+          aria-label="Inngest versus alternatives for concurrency and scale on AI agent workflows"
+          className="min-w-[880px] px-6 sm:px-9 lg:min-w-0 lg:px-0"
+        >
+          <div
+            role="row"
+            className="grid grid-cols-4 border-b border-solid border-v1-strong"
           >
-            Inngest vs logs/APM for agent concurrency and scale
-          </motion.h2>
-          <motion.p {...reveals.body} className="text-v1-body-sm">
-            A quick look at how you see concurrent AI agents when something
-            breaks—not how you configure the limits (that’s Flow Control).
-          </motion.p>
-          <div className="flex flex-wrap gap-4 pt-1">
-            <ButtonLink href={AI_HUB_URL} variant="primary">
-              AI orchestration →
-            </ButtonLink>
-            <ButtonLink href={FLOW_CONTROL_URL} variant="secondary">
-              Flow Control
-            </ButtonLink>
-          </div>
-        </div>
-
-        <div className="-mx-6 overflow-x-auto sm:-mx-9 lg:mx-0 lg:overflow-visible">
-          <motion.div
-            {...reveals.item(2)}
-            role="table"
-            aria-label="Observability comparison for concurrent AI agent workflows"
-            className="min-w-[720px] px-6 sm:px-9 lg:min-w-0 lg:px-0"
-          >
-            <div
-              role="row"
-              className="grid grid-cols-3 border-b border-solid border-v1-strong"
+            <HeaderCell tone="frost">Concurrency / scale</HeaderCell>
+            <HeaderCell tone="dim">DIY queues</HeaderCell>
+            <HeaderCell tone="dim">Temporal</HeaderCell>
+            <HeaderCell
+              tone="frost"
+              icon={<Logo logomarkOnly width={28} />}
+              iconGap={6}
             >
-              <HeaderCell tone="frost">When agents run concurrently</HeaderCell>
-              <HeaderCell tone="dim">Logs / APM</HeaderCell>
-              <HeaderCell
-                tone="frost"
-                icon={<Logo logomarkOnly width={28} />}
-                iconGap={6}
-              >
-                Inngest
-              </HeaderCell>
+              Inngest
+            </HeaderCell>
+          </div>
+          {ROWS.map((row) => (
+            <div
+              key={row.capability}
+              role="row"
+              className="grid grid-cols-4 border-b border-solid border-v1-strong/[0.4]"
+            >
+              <Cell emphasis>{row.capability}</Cell>
+              <Cell muted>{row.diy}</Cell>
+              <Cell muted>{row.temporal}</Cell>
+              <Cell emphasis>{row.inngest}</Cell>
             </div>
-            {ROWS.map((row) => (
-              <div
-                key={row.capability}
-                role="row"
-                className="grid grid-cols-3 border-b border-solid border-v1-strong/[0.4]"
-              >
-                <Cell emphasis>{row.capability}</Cell>
-                <Cell muted>{row.logsApm}</Cell>
-                <Cell emphasis>{row.inngest}</Cell>
-              </div>
-            ))}
-          </motion.div>
-        </div>
+          ))}
+        </motion.div>
       </div>
     </Section>
   );
 }
 
-function FaqBlock({
+function FaqChunk({
   id,
   question,
   answer,
 }: {
-  id?: string;
+  id: string;
   question: string;
   answer: ReactNode;
 }) {
   return (
-    <div className="flex flex-col gap-3 border-t border-v1-carbon-100 pt-6">
+    <div className="flex flex-col gap-3">
       <motion.h2
         {...reveals.heading}
         id={id}
@@ -174,7 +157,7 @@ function FaqBlock({
       >
         {question}
       </motion.h2>
-      <motion.p {...reveals.body} className="text-v1-body-sm max-w-[520px]">
+      <motion.p {...reveals.body} className="text-v1-body-sm">
         {answer}
       </motion.p>
     </div>
@@ -200,7 +183,7 @@ function HeaderCell({
     >
       {icon}
       <span
-        className="font-v1Mono text-[12px] uppercase leading-[16px] lg:text-[15px]"
+        className="whitespace-nowrap font-v1Mono text-[12px] uppercase leading-[16px] lg:text-[15px]"
         style={{
           color:
             tone === "dim"

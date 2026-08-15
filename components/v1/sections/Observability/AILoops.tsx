@@ -60,7 +60,7 @@ export default function AILoops() {
           eyebrow="AI & Insights"
           title="Know why your AI loops."
           titleClassName="max-w-[415px]"
-          body="An agent running as a single function call is completely opaque. You see it started. You see it failed. You have no idea what prompts went in, what came back, or where it went wrong—especially when many agents run concurrently."
+          body="An agent running as a single function call is completely opaque. You see it started. You see it failed. You have no idea what prompts went in, what came back, or where it went wrong."
           actions={
             <ButtonLink
               href={SEE_DOCS_URL}
