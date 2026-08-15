@@ -87,9 +87,9 @@ export default function Problems() {
     >
       <SectionHeader
         id="cron-problems-heading"
-        title="Did your cron finish?"
-        body="Platform-specific cron jobs all have the same problem: they fire and forget. You have no idea if the job succeeded, how long it took, or why it failed at 3am."
-        bodyClassName="max-w-[655px]"
+        title="Why platform crons fail at serverless orchestration"
+        body="Platform-specific cron jobs fire and forget. They are not infrastructure-agnostic workflow engines: you rarely know if the job succeeded, how long it took, or why it failed at 3am—and you cannot pause for human-in-the-loop approval or fan out data workflows without bolting on queues."
+        bodyClassName="max-w-[720px]"
       />
       {/* Layout matches the design:
           - At lg, the row is a fixed 331 px tall with each column

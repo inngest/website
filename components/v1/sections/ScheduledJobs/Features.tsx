@@ -32,12 +32,12 @@ const FEATURES: Feature[] = [
   },
   {
     id: "serverless-first",
-    title: "Serverless-first",
+    title: "Infrastructure-agnostic by default",
     body: (
       <>
-        Scheduled jobs run on your existing deployment. No
-        dedicated workers, no separate infrastructure — just your
-        code, invoked on schedule.
+        Distributed serverless execution on your existing
+        deployment. No dedicated workers, no visual workflow
+        builder lock-in—just your code, invoked on schedule.
       </>
     ),
     docsHref: "/docs/platform/deployment",
@@ -105,11 +105,11 @@ export default function Features() {
       >
         <SectionHeader
           id="cron-features-heading"
-          eyebrow="Why modern teams choose Inngest for scheduled jobs"
+          eyebrow="Why teams choose Inngest for serverless orchestration"
           title={
             <>
               <span className="block">Everything for</span>
-              <span className="block">production pipelines</span>
+              <span className="block">production data workflows</span>
             </>
           }
         />

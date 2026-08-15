@@ -4,7 +4,9 @@ import Faq from "@/components/v1/sections/ScheduledJobs/Faq";
 import Features from "@/components/v1/sections/ScheduledJobs/Features";
 import Hero from "@/components/v1/sections/ScheduledJobs/Hero";
 import InPractice from "@/components/v1/sections/ScheduledJobs/InPractice";
+import OrchestrationComparison from "@/components/v1/sections/ScheduledJobs/OrchestrationComparison";
 import Problems from "@/components/v1/sections/ScheduledJobs/Problems";
+import WhatIsOrchestration from "@/components/v1/sections/ScheduledJobs/WhatIsOrchestration";
 
 export default function ScheduledJobs() {
   return (
@@ -15,8 +17,10 @@ export default function ScheduledJobs() {
           images, long unbroken strings etc). */}
       <div className="overflow-x-clip">
         <Hero />
+        <WhatIsOrchestration />
         <Problems />
         <InPractice />
+        <OrchestrationComparison />
         <Features />
         <Customers />
         <Faq />

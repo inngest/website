@@ -23,9 +23,9 @@ export default function Hero() {
         </>
       }
       bodyLines={[
-        "Schedule functions that sleep, fan-out,",
-        "parallelize, retry, and recover. Trace every run",
-        "with step-level observability.",
+        "Infrastructure-agnostic serverless workflow",
+        "orchestration: sleep, fan-out, retry, and recover",
+        "on any deploy—with step-level observability.",
       ]}
       canvas={({ isDesktop }) =>
         isDesktop && (
