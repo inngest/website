@@ -24,57 +24,49 @@ interface Problem {
    *  than run" PNGs read smaller than the other two at the shared
    *  100 px cap, so they get bumped up here to balance the row. */
   iconMaxPx?: number;
-  /** Per-card body copy max-width (lg+) so longer copy wraps to more
-   *  lines instead of stretching to the full card width. */
-  bodyMaxPx: number;
 }
+
+/** Shared body measure so all four cards wrap to the same rhythm. */
+const BODY_MAX_PX = 240;
 
 const PROBLEMS: Problem[] = [
   {
     id: "no-observability",
     label: "No observability",
-    body:
-      "Did it finish? Was the output correct? You shouldn't have to build custom logging to know.",
+    body: "Did it finish? Was the output correct? You shouldn't need custom logging to know.",
     iconSrc: "/assets/v1/scheduled-jobs/1.png",
     iconAlt: "",
     iconWidth: 182,
     iconHeight: 178,
-    bodyMaxPx: 240,
   },
   {
     id: "no-retries",
     label: "No retries",
-    body:
-      "If your cron fails halfway through, it's gone. Wait until the next scheduled run, or write recoveries.",
+    body: "Fail halfway and it's gone—wait for the next schedule, or write your own recovery.",
     iconSrc: "/assets/v1/scheduled-jobs/2.png",
     iconAlt: "",
     iconWidth: 304,
     iconHeight: 167,
     iconMaxPx: 118,
-    bodyMaxPx: 250,
   },
   {
     id: "no-directives",
     label: "No directives",
-    body:
-      "Traditional crons can't sleep mid-function, fan-out to parallel jobs, or cancel a scheduled run based on business logic.",
+    body: "Can't sleep mid-run, fan out parallel jobs, or cancel from business logic.",
     iconSrc: "/assets/v1/scheduled-jobs/3.png",
     iconAlt: "",
     iconWidth: 183,
     iconHeight: 183,
-    bodyMaxPx: 312,
   },
   {
     id: "cant-do-more",
     label: "Can't do more than run",
-    body:
-      "Traditional crons can't sleep mid-function, fan-out to parallel jobs, or cancel a scheduled run based on business logic.",
+    body: "A schedule alone isn't orchestration—no steps, waits, or recovery path.",
     iconSrc: "/assets/v1/scheduled-jobs/4.png",
     iconAlt: "",
     iconWidth: 276,
     iconHeight: 202,
     iconMaxPx: 118,
-    bodyMaxPx: 312,
   },
 ];
 
@@ -87,9 +79,9 @@ export default function Problems() {
     >
       <SectionHeader
         id="cron-problems-heading"
-        title="Why platform crons fail at serverless orchestration"
-        body="Platform-specific cron jobs fire and forget. They are not infrastructure-agnostic workflow engines: you rarely know if the job succeeded, how long it took, or why it failed at 3am—and you cannot pause for human-in-the-loop approval or fan out data workflows without bolting on queues."
-        bodyClassName="max-w-[720px]"
+        title="Did your cron finish?"
+        body="Platform crons fire and forget. You rarely know if the job succeeded, how long it took, or why it failed at 3am."
+        bodyClassName="max-w-[655px]"
       />
       {/* Layout matches the design:
           - At lg, the row is a fixed 331 px tall with each column
@@ -124,7 +116,9 @@ export default function Problems() {
             </div>
             <div
               className={cn(
-                "flex w-full flex-col items-center justify-center gap-6 border border-v1-carbon-100 px-4 py-5 text-center",
+                // Fixed min-height keeps all four boxes the same size
+                // even when body copy wraps to slightly different lines.
+                "flex h-[168px] w-full flex-col items-center justify-center gap-6 border border-v1-carbon-100 px-4 py-5 text-center",
                 // On lg+ collapse adjacent borders so the four cards
                 // read as a single row with 1 px dividers.
                 "lg:-ml-px lg:first:ml-0",
@@ -135,7 +129,7 @@ export default function Problems() {
               </p>
               <p
                 className="text-v1-body-sm"
-                style={{ maxWidth: `${p.bodyMaxPx}px` }}
+                style={{ maxWidth: `${BODY_MAX_PX}px` }}
               >
                 {p.body}
               </p>

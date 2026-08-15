@@ -86,8 +86,8 @@ export default function OrchestrationComparison() {
             {" vs Temporal for serverless"}
           </>
         }
-        body="Comparing serverless workflow orchestration options in 2026: AWS Step Functions lock you into one cloud and a visual workflow builder; Temporal needs workers and cluster ops; Inngest keeps orchestration infrastructure-agnostic—distributed serverless execution on the deploy you already run."
-        bodyClassName="max-w-[820px]"
+        body="Step Functions lock you into AWS and often a visual builder. Temporal needs workers and a cluster. Inngest is infrastructure-agnostic: serverless orchestration on the deploy you already run."
+        bodyClassName="max-w-[760px]"
         actions={
           <div className="flex flex-wrap gap-6">
             <ButtonLink

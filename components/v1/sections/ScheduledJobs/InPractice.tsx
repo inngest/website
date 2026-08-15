@@ -242,7 +242,7 @@ export default function InPractice() {
           className="lg:pr-8"
           eyebrow="In Practice"
           title="Replace your setup with one line of code"
-          body="A single trigger in your existing codebase replaces platform crons and DIY orchestration. Inngest handles scheduling, retries, timezone support, and observability for serverless workflow orchestration."
+          body="A single trigger in your existing codebase can replace your entire cron setup. Inngest handles scheduling, retries, timezone support, and observability."
           bodyClassName="lg:max-w-[499px]"
           actions={
             <ButtonLink href={SEE_DOCS_URL} variant="primary">
