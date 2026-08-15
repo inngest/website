@@ -1,5 +1,6 @@
 import PageShell from "@/components/v1/PageShell";
 import AILoops from "@/components/v1/sections/Observability/AILoops";
+import ConcurrencyScale from "@/components/v1/sections/Observability/ConcurrencyScale";
 import FasterResolution from "@/components/v1/sections/Observability/FasterResolution";
 import FinalCTA from "@/components/v1/sections/Observability/FinalCTA";
 import FullObservability from "@/components/v1/sections/Observability/FullObservability";
@@ -17,6 +18,7 @@ export default function Observability() {
         <FasterResolution />
         <Insights />
         <AILoops />
+        <ConcurrencyScale />
         <FinalCTA />
       </div>
     </PageShell>
