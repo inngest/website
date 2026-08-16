@@ -19,7 +19,7 @@ We've spent a long time researching and building our own distributed queuing sys
 
 ## Challenges building queueing systems
 
-We built Inngest as a reliability layer for modern applications. It enables developers to write declarative  step functions in code by combining durable execution, event streams, and queues into a singe serverless platform.
+We built Inngest as a reliability layer for modern applications. It enables developers to write declarative  step functions in code by combining durable execution, event streams, and queues into a single serverless platform.
 
 Inngest manages the event streams, queues and state all within the platform. Environments are created and functions are automatically deployed for [every branch of your codebase](/blog/branch-environments). Teams might deploy *hundreds* of functions to Inngest across tens of branches, leading to thousands of functions reacting to events in real time (within ~10-100ms).
 
@@ -77,7 +77,7 @@ All of this happens automatically, without provisioning queues or infrastructure
 - When an event is received, we *[idempotently](/docs/guides/handling-idempotency)* enqueue a job which calls the function handler. This has to be idempotent, as [event streams are *at least once*](/blog/message-bus-vs-queues), and we want a single function run for one event.
 - Debounce complicates running functions: the job is scheduled with a 5 second delay (or whatever's in the function config), and any additional events delay the job again.
 - When the job becomes "visible", we ensure functions aren't beyond their concurrency limits and begin work by calling the function with the incoming event data.
-- Once a function runs a step, we store the step's result inside the function run's state and (worst case) enqueue *another* job to for the next step. There's some nuance here for long-running servers, though we'll talk about that in an execution deep dive separately.
+- Once a function runs a step, we store the step's result inside the function run's state and (worst case) enqueue *another* job for the next step. There's some nuance here for long-running servers, though we'll talk about that in an execution deep dive separately.
 
 Essentially, *everything* impacts the queue. Running a function reliably has to use a queue. Concurrency, debounce, and batching all have an impact how the queue works at an individual job level.
 
