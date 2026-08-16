@@ -27,7 +27,7 @@ A typical queue receives events, buffers them (typically persistently), and allo
 
 Broadly speaking, queues give you an ordered series of events. They can be:
 
-- FIFO (first-in-first-out), which means events are processed in the order that they’re re received.
+- FIFO (first-in-first-out), which means events are processed in the order that they’re received.
 - Ordered by time, which allows you to delay a message for a specific amount of time. This is particularly useful for scheduling jobs in advance.
 
 It turns out that ordering by time is the biggest differentiator in modern queueing systems.
@@ -92,8 +92,8 @@ You’ll end up using these when you need scale and separate your items into mic
 
 Brokers and queues have similar interfaces — you send and receive messages within different parts of your app. That said, the delivery guarantees, scheduling, and coupling are large differences between both systems:
 
-- Queues are typically 1:1, vs 1:N in message busses.
-- Message busses typically are real-time, vs supporting scheduled messages (eg. for delayed jobs and future work)
+- Queues are typically 1:1, vs 1:N in message buses.
+- Message buses typically are real-time, vs supporting scheduled messages (eg. for delayed jobs and future work)
 - The implementation of event streams within a message bus is often different to queues. While both can share persistence, they’re designed for slightly different scale and use cases.
 
 It’s typical that you’re going to need both a queue and a message broker when your system grows to some complexity.
