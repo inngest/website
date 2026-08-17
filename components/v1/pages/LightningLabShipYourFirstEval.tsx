@@ -166,6 +166,19 @@ const OTHER_EVENTS = sortEventsByDate([
     image: "/assets/v1/events/inngest-supper-club-sf.png",
     imageFit: "contain",
   },
+  {
+    id: "innhouse-sf-coffee-aug-2026",
+    title: "Innhouse with Inngest: Coffee Chats & Pastries",
+    date: "Wednesday, August 26, 2026 · 9AM–12PM PDT",
+    startsAt: "2026-08-26T09:00:00-07:00",
+    location: "San Francisco, CA",
+    topics: ["innhouse", "coffee", "pastries"],
+    excerpt:
+      "Swing by the Inngest office for pastries, espresso, and good conversation — drop in anytime, no fixed schedule.",
+    href: "/events/innhouse-sf-coffee-chats",
+    image: "/assets/v1/events/innhouse-sf-coffee.png",
+    imageFit: "contain",
+  },
 ]);
 
 export default function LightningLabShipYourFirstEval() {
