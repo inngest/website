@@ -139,7 +139,6 @@ export const UPCOMING: EventItem[] = [
       "Swing by the Inngest office for pastries, espresso, and good conversation — drop in anytime, no fixed schedule.",
     href: "/events/innhouse-sf-coffee-chats",
     image: "/assets/v1/events/innhouse-sf-coffee.png",
-    imageFit: "contain",
   },
   {
     id: "inngest-supper-club-sf",
@@ -304,7 +303,6 @@ export const ALL_EVENTS: EventItem[] = sortEventsByDate([
       "Swing by the Inngest office for pastries, espresso, and good conversation — drop in anytime, no fixed schedule.",
     href: "/events/innhouse-sf-coffee-chats",
     image: "/assets/v1/events/innhouse-sf-coffee.png",
-    imageFit: "contain",
   },
   {
     id: "inngest-supper-club-sf",
