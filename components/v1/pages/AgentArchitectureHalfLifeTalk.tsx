@@ -134,6 +134,7 @@ const OTHER_EVENTS = sortEventsByDate([
       "Swing by the Inngest office for pastries, espresso, and good conversation — drop in anytime, no fixed schedule.",
     href: "/events/innhouse-sf-coffee-chats",
     image: "/assets/v1/events/innhouse-sf-coffee.png",
+    imageFit: "contain",
   },
 ]);
 

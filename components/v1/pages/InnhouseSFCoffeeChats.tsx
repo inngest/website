@@ -189,8 +189,8 @@ export default function InnhouseSFCoffeeChats() {
             className="absolute inset-0"
             style={{
               backgroundImage: `url(${COVER_IMAGE})`,
-              backgroundSize: "cover",
-              backgroundPosition: "left center",
+              backgroundSize: "contain",
+              backgroundPosition: "center",
               backgroundRepeat: "no-repeat",
             }}
           />
@@ -245,8 +245,8 @@ export default function InnhouseSFCoffeeChats() {
               className="absolute inset-0"
               style={{
                 backgroundImage: `url(${COVER_IMAGE})`,
-                backgroundSize: "cover",
-                backgroundPosition: "left center",
+                backgroundSize: "contain",
+                backgroundPosition: "center",
                 backgroundRepeat: "no-repeat",
               }}
             />
