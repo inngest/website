@@ -1,0 +1,265 @@
+---
+tags:
+  [
+    "AI & Agents",
+    "Tutorials & Guides",
+    "Observability & Debugging",
+    "Durable Execution",
+  ]
+heading: "Evals in Inngest: A Practical Guide to Measuring and Improving Your Agent"
+subtitle: "Learn how to measure and improve AI agents in Inngest with evals—one metric at a time, deferred scoring on real outcomes, and experiments on live traffic."
+image: /assets/blog/evals-in-inngest-a-practical-guide-to-measuring-and-improving-your-agent/featured-image.png
+showSubtitle: true
+date: 2026-08-18
+author: Lauren Craigie
+category: engineering
+sidebarCta:
+  text: "Start with one metric. Score real outcomes in the execution layer you already have."
+  buttonLabel: "Read the docs"
+  href: "/docs/learn/agent-evals?ref=blog-evals-in-inngest-a-practical-guide-to-measuring-and-improving-your-agent-sidebar"
+---
+
+If you're building agents in Inngest, you know your agent works. But does it *work*? As in… is it giving you the outcomes you'd expect? How do you know?
+
+That's where [evals](/docs/learn/agent-evals?ref=blog-evals-in-inngest-a-practical-guide-to-measuring-and-improving-your-agent) come in.
+
+My much smarter colleague Mitch Alderson just hosted a [Lightning Lab on shipping your first eval](/events/lightning-lab-ship-your-first-eval?ref=blog-evals-in-inngest-a-practical-guide-to-measuring-and-improving-your-agent), which was fantastic. If you want to watch, it's only 20 minutes!
+
+<AutoplayVideo src="https://cdn.inngest.com/videos/first_evals_webinar/master.m3u8" loop={false} autoPlay={false} poster="/assets/blog/evals-in-inngest-a-practical-guide-to-measuring-and-improving-your-agent/featured-image.png" />
+
+If you're an Inngest user trying to understand what evals are, how they fit into your app, and how to get started without overthinking it, allow me to break it down for you.
+
+## What is an eval?
+
+An eval is just a measurement.
+
+More specifically, it's one metric that checks one aspect of your agent's behavior.
+
+That might be:
+
+- Did the user like the response?
+- Did the agent follow instructions?
+- Did it call the right tools?
+- Did it return valid JSON?
+- Was the output too long or too expensive?
+- Did the user take the action the agent was meant to drive?
+
+Personally this framing helped me a ton—it stopped evals from feeling like one big abstract score for "agent quality" and made them feel much more accessible. You're not trying to measure everything at once. You are trying to measure one useful thing at a time.
+
+And notice that these things don't have to be about AI, if that's not relevant to what you're making durable in Inngest.
+
+The webinar also shared a helpful set of starter categories for evals, including one you're probably already familiar with:
+
+- **[LLM-as-judge](/docs/examples/ai-eval-scorer-quickstart?ref=blog-evals-in-inngest-a-practical-guide-to-measuring-and-improving-your-agent):** use another model to grade tone, helpfulness, or similar subjective qualities
+- **User intent:** measure whether the user took the action you wanted
+- **Tool calls:** track the number or pattern of tool calls
+- **Instruction following:** compare the output against what the user asked for
+- **Structured output parsing:** check whether the output formats cleanly, like valid JSON
+- **Cost optimization:** look at token count, word count, or general output efficiency
+
+That list is useful because it gives you real places to start instead of just telling you to "evaluate your agent."
+
+## Why evals feel easier in Inngest
+
+Inngest sits in the [execution layer](/blog/introducing-agent-evals?ref=blog-evals-in-inngest-a-practical-guide-to-measuring-and-improving-your-agent)—where all the data about how your agent is built and executed already lives.
+
+Here's how Mitch explained it: "*If your agent runs on Inngest, a lot of the context you need for evals and observability is already there.*"
+
+That matters because the usual blocker with evals is complexity. You would normally need a separate pipeline, custom tracing, a new SDK, or a carefully labeled dataset before you can begin. The webinar made the opposite case: start with the live system you already have.
+
+## The simplest eval: thumbs up or thumbs down
+
+The example they used was about as practical as it gets.
+
+An agent returns an answer. The user clicks thumbs up or thumbs down. That click sends an event. Inngest ties that event back to the original run and [stores a score](/docs/features/inngest-functions/steps-workflows/scoring?ref=blog-evals-in-inngest-a-practical-guide-to-measuring-and-improving-your-agent).
+
+That score can be as simple as:
+
+- thumbs up = 1
+- thumbs down = 0
+
+This is a good first eval because it is easy to understand and easy to ship. More importantly, it shows a pattern that matters in real products: the thing you want to measure often happens after the model output.
+
+That is where deferred scoring comes in.
+
+## What is deferred scoring?
+
+This was one of my favorite parts of the webinar because so many people still don't know about [`defer`](/blog/announcing-defer?ref=blog-evals-in-inngest-a-practical-guide-to-measuring-and-improving-your-agent) in Inngest.
+
+Instead of forcing the score to happen immediately when the agent responds, you let the [scoring function](/docs/features/inngest-functions/steps-workflows/deferred-scoring?ref=blog-evals-in-inngest-a-practical-guide-to-measuring-and-improving-your-agent) wait for a later event. In the demo, that later event was user feedback. Once the event happened, the score was recorded against the original agent run.
+
+That pattern opens up a lot of possibilities.
+
+You are not limited to measuring the text of the response itself. You can measure what happened next.
+
+For example:
+
+- Did the user click approve?
+- Did they close the support ticket?
+- Did they complete the workflow?
+- Did they ignore the answer?
+- Did they re-ask the same question?
+
+That is a much more useful way to think about evals. Instead of asking only whether the output looked good, you can ask whether it led to the outcome you actually wanted.
+
+## Online evals vs. offline evals
+
+The webinar also made a clean distinction between [online and offline evals](/blog/online-vs-offline-ai-evals-when-to-use-each?ref=blog-evals-in-inngest-a-practical-guide-to-measuring-and-improving-your-agent).
+
+### Online evals
+
+Online evals run on live traffic.
+
+That makes them good for:
+
+- capturing real user behavior
+- collecting human feedback
+- testing changes in production
+- getting started without a prebuilt dataset
+
+This is what the webinar focused on.
+
+### Offline evals
+
+Offline evals run against a fixed dataset before deployment.
+
+That makes them better for:
+
+- regression testing
+- comparing changes before launch
+- checking known scenarios repeatedly
+
+The downside is that you need a dataset of examples, and those examples may not reflect the messy edge cases real users create.
+
+The takeaway was not that one is better than the other. It was that online evals are often the easiest way to start, while offline evals become more useful as your system matures.
+
+## How to get started with evals in Inngest
+
+Do less than you think.
+
+Seriously. Here is the practical path I would follow after watching this session:
+
+### 1. Pick one narrow metric
+
+Do not start with "evaluate my agent."
+
+Start with one question like:
+
+- Did the user like the answer?
+- Did the output parse as valid JSON?
+- Did the agent stay under a token budget?
+- Did the user take the intended next step?
+
+The narrower the metric, the easier it is to implement and trust.
+
+### 2. Add a scoring function
+
+In the webinar, the scoring function was wrapped in an Inngest primitive and attached to the existing agent flow.
+
+The important takeaway was not the exact syntax. It was that the [scoring logic](/docs/features/inngest-functions/steps-workflows/scoring?ref=blog-evals-in-inngest-a-practical-guide-to-measuring-and-improving-your-agent) lives close to the agent execution, and you can add it without rebuilding your whole app.
+
+### 3. Use deferred scoring when the signal happens later
+
+If the score depends on user behavior after the response, do not try to fake it at response time.
+
+Wait for the event that actually matters, then [record the score](/docs/features/inngest-functions/steps-workflows/deferred-scoring?ref=blog-evals-in-inngest-a-practical-guide-to-measuring-and-improving-your-agent).
+
+This is probably the key pattern to understand if you want evals to be useful in real products.
+
+### 4. View results in the Inngest dashboard
+
+The webinar showed how the eval data appears in the dashboard, alongside experiment results and [AI metadata](/docs/platform/monitor/ai-overview?ref=blog-evals-in-inngest-a-practical-guide-to-measuring-and-improving-your-agent).
+
+That matters because if scores are hard to inspect, teams stop using them. You want the feedback loop to be visible enough that people actually look at it.
+
+### 5. Add experiments so the scores tell you something useful
+
+This was another strong point from the session: a score by itself is often not enough.
+
+If users are giving thumbs down, what exactly are you comparing?
+
+To make the data useful, the webinar paired scoring with [experiments](/blog/introducing-group-experiment?ref=blog-evals-in-inngest-a-practical-guide-to-measuring-and-improving-your-agent). In the demo, traffic was split between a control model and a candidate model. Both versions received the same evals, which made it possible to compare outcomes.
+
+That same pattern can work for:
+
+- prompts
+- models
+- retrieval setups
+- context windows
+- tool access patterns
+
+The score becomes much more useful when it helps you [compare two real options](/docs/features/inngest-functions/steps-workflows/step-experiments?ref=blog-evals-in-inngest-a-practical-guide-to-measuring-and-improving-your-agent).
+
+### 6. Add more metrics over time
+
+The webinar was clear that a single thumbs up or thumbs down score is only a start.
+
+As your agent matures, you want a fuller picture. That might include:
+
+- user feedback
+- helpfulness
+- clarity
+- latency
+- cost
+- answer completeness
+- context use
+- structured output validity
+
+The point is not to add every metric on day one. The point is to start with one, then layer in more as you learn what matters.
+
+## Observability matters too
+
+One part of the webinar that stood out was the [OpenTelemetry](/docs/examples/open-telemetry?ref=blog-evals-in-inngest-a-practical-guide-to-measuring-and-improving-your-agent) example.
+
+The speaker showed how AI metadata like latency, tokens, and model usage can flow into the Inngest dashboard. That is not the same thing as an eval, but it is part of the same overall workflow.
+
+You need both:
+
+- **observability** tells you what happened operationally
+- **evals** tell you whether the outcome was good
+
+If a model is fast but users hate the answers, observability alone will not help you. If users like the output but costs are exploding, evals alone are not enough either.
+
+## A useful mental model
+
+After watching the webinar, this is the simplest way I would explain evals in Inngest:
+
+- **Your agent runs**
+- **You attach one or more scoring functions**
+- **Those scores measure specific aspects of behavior**
+- **Some scores happen immediately, others happen later**
+- **You compare results across experiments**
+- **You use the best outcomes to improve prompts, models, or context**
+
+That's it.
+
+Once I looked at it that way, evals felt much less intimidating.
+
+## What I'd do first as an Inngest user
+
+If I were starting this in a real app tomorrow, I would do this:
+
+1. Add one user-feedback score
+2. Add one quality or structure score
+3. Split test something small, like prompt wording or model choice
+4. Watch the results for a week
+5. Use the data to decide what to improve next
+
+That feels achievable. It also feels like the right level of ambition for most teams. You do not need a full eval strategy before you start. You need one signal, one comparison, and a loop for learning.
+
+## Final takeaway
+
+My main takeaway from the webinar was that evals in Inngest are not really about scoring for the sake of scoring.
+
+They are about building a practical feedback loop into your agent.
+
+Start with one metric. Keep it specific. Measure something real. Compare changes against it. Then expand from there.
+
+That is a much more useful way to think about evals than waiting until you have the perfect framework.
+
+## Next steps
+
+- [Agent Evals docs](/docs/learn/agent-evals?ref=blog-evals-in-inngest-a-practical-guide-to-measuring-and-improving-your-agent) — scoring, deferred scoring, sessions, traces, and experiments
+- [Score agents on real outcomes](/docs/patterns/ai-evals/score-agents-on-real-outcomes?ref=blog-evals-in-inngest-a-practical-guide-to-measuring-and-improving-your-agent) — wait for the product signal, then attach the score
+- [AI eval scorer examples](/docs/examples/ai-eval-scorer-quickstart?ref=blog-evals-in-inngest-a-practical-guide-to-measuring-and-improving-your-agent) — copy-paste starting points for judges, guardrails, and user feedback
+- [Watch the Lightning Lab recording](/events/lightning-lab-ship-your-first-eval?ref=blog-evals-in-inngest-a-practical-guide-to-measuring-and-improving-your-agent) — 20 minutes on shipping your first eval

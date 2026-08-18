@@ -76,6 +76,6 @@ You already have the two things you need: an agent running on Inngest, and an ou
 2. **Write a scorer that waits for it.** Use `createScorer` to run a scorer as deferred work after the run finishes, and `step.waitForEvent` to pause until the outcome lands. When it does, score the run. Minutes or weeks later, it's the same few lines.
 3. **Run a variant against it.** Once you can measure the outcome, `group.experiment()` lets you split live traffic between two prompts or models and compare them on that score, and ship the winner with evidence instead of a hunch.
 
-That's the loop: define what good means, measure it on real outcomes, change something, measure again. All in the layer your agent already runs on.
+That's the loop: define what good means, measure it on real outcomes, change something, measure again. All in the layer your agent already runs on. For a walkthrough of picking your first metric and shipping it, see [Evals in Inngest: A Practical Guide](/blog/evals-in-inngest-a-practical-guide-to-measuring-and-improving-your-agent?ref=blog-introducing-agent-evals).
 
 Everything you need for agent evals is now available in v4.8.0 of the TS SDK. Happy scoring!
