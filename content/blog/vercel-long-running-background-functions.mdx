@@ -1,94 +1,46 @@
 ---
 tags: ["Background Jobs & Scheduling", "Tutorials & Guides", "Integrations & Partners"]
-heading: Long-running background functions on Vercel
-subtitle: How to run business critical jobs for minutes, hours or days
+heading: "How to Fix Vercel Function Timeouts with Background Jobs"
+subtitle: Set up long-running background jobs on Inngest.
+showSubtitle: true
 image: /assets/blog/vercel-long-running-background-functions/featured-image.png
-date: 2023-03-31
-dateUpdated: 2024-06-06
+date: "2026-08-10"
+dateUpdated: "2026-08-10"
 author: Dan Farrelly
 disableCTA: true
 primaryCTA: "report2026"
 ---
 
-Serverless functions can be a game changer for devs building applications who want to get into production fast and elastically scale with usage. Today, developers primarily use serverless functions on platforms like Vercel to build synchronous APIs, but what do you do if you need to run critical business logic on top of serverless functions?
+Hitting a **Vercel function timeout** usually means your Next.js API route or serverless function exceeded Vercel's max duration (often 10–60 seconds). You do not need a second deploy target or a separate worker fleet to fix it. **[Inngest](/docs/getting-started/nextjs-quick-start?ref=blog-long-running-functions-vercel) is the solution for Vercel background jobs and long running functions**: keep your code on Vercel, break work into durable steps, and run jobs for minutes, hours, or days without a Next.js API timeout killing the request.
 
-What happens when these critical workloads need to run longer than the typical short timeouts of platforms like Vercel (e.g. 10 to 60 seconds)?
+This guide explains why Vercel functions time out, then shows how to fix it with Inngest — including a working code example you can adapt for imports, AI workflows, and other background work.
 
-You have to make some choices. Some developers choose to move these jobs to another infrastructure provider (e.g. AWS Lambda), but there are trade-offs. You then have multiple deploy targets and you lose some of the simplicity of shipping your application - you have more overhead, but maybe more flexibility - how do you choose?
+## Why Vercel functions time out
 
-You don't need to choose - you can keep everything in one app and platform.
+Vercel Functions are built for short, request/response work. Each invocation has a hard **max duration**. When a Next.js route handler, App Router `route.ts`, or Pages API endpoint still has work left after that limit, Vercel stops the invocation — that is a **Vercel function timeout** (and the same failure mode developers search for as a **Next.js API timeout**).
 
-## What you need
+Common triggers:
 
-There are two solutions to this problem:
+- Importing or syncing large datasets from a third-party API
+- Multi-step AI / LLM pipelines that wait on model responses
+- Fan-out email, webhook, or notification workflows
+- Any **long running function** that was written as one blocking script inside an API route
 
-- You find a way to run longer functions (e.g. [try Vercel's HTTP streaming support in Edge Functions](https://twitter.com/leeerob/status/1640837634053242885?s=20))
-- You break your functions into a series of smaller, coordinated functions that run independently
+Bumping `maxDuration` or enabling Fluid Compute can help for borderline cases, but it does not change the model: one HTTP request still has a ceiling. For true **Vercel background jobs** — work that should outlive the user's request and survive retries — you need durable orchestration, not a longer single timeout. (For a broader rundown of timeout tactics, see [How to solve Next.js timeouts](/blog/how-to-solve-nextjs-timeouts?ref=blog-long-running-functions-vercel).)
 
-HTTP streaming is very cool tech, but I'd say it's only appropriate when you have a client that keeps an open connection to the edge function. If the user navigates away and breaks the connection, it's a problem.
+Moving that logic to AWS Lambda or a custom worker often “solves” the timeout by adding another deploy target, more secrets, and a second ops surface. You can keep everything in one Next.js app on Vercel instead.
 
-When thinking about background jobs, one long script that runs for `n` minutes is often a bad idea anyway. Long-running jobs are prone to failure and if your job runs for 15 minutes and fails halfway through, most times, you need to restart them from the beginning resulting in loss or duplicated work.
+## Fix Vercel function timeouts with Inngest
 
-So in summary, to build long-running background jobs on Vercel, you need to:
+Inngest runs **reliable, long-running functions on Vercel** by orchestrating your code as independently retried steps over HTTP. Your functions stay in your repo and execute on Vercel; Inngest invokes each step so the *total* job can run far longer than a single Vercel function timeout, as long as each step finishes within the platform limit.
 
-- Break up your functions into individually retried steps
-- Utilize something that orchestrates each of these steps, including persisting the output across multiple steps and individually retrying each step when failures occur.
+What you need in practice:
 
-## How to break up a long-running job
+- Break the job into steps that can be retried independently
+- Persist step output so later steps resume without redoing finished work
+- Orchestrate the sequence outside the original HTTP request (so a Next.js API timeout cannot cancel the whole job)
 
-You may initially think it may be difficult or tedious to break your long-running background job into smaller pieces. At first, it may feel like overkill, but there are clear benefits after you've done the work:
-
-- Decoupled logic can be more easily isolated and tested
-- Decoupled logic can be better for error handling with individual retries that don't cause the entire job to fail.
-
-Let's take some typical background job business logic and see how we can decouple the parts:
-
-- Importing sets of data from a file into a database ➡️ _Split your function up to perform actions per row or for a batch of items_
-- Making external API call(s) ➡️ _Separate each external API call into a separate mini function which also helps to mitigate external API downtime_
-
-It's not hard to find the logical boundaries of your background job and the increased decoupling has clear benefits in terms of reliability and debugging.
-
-![A diagram highlighting distinct parts of a function](/assets/blog/vercel-long-running-background-functions/function-steps.png?v=2)
-
-## Connecting the pieces
-
-So you've mentally broken your function into logical parts. You now need something that can invoke and orchestrate each part in the correct order, passing data (state) from step to step, and retrying along the way as failures happen.
-
-Inngest is a platform built to run reliable functions. It is designed to handle complex workloads comprised of any number of steps.
-
-Inngest's SDK lets you do a few important things to accomplish this:
-
-- Define your business logic as a series of simple “steps” and connect them all using regular TypeScript or JavaScript.
-- Group all of your steps into a single, readable TS/JS function.
-- Define how your function will be called and with what data payload.
-
-With these basic concepts, Inngest's SDK enables you to build robust and reliable functions.
-
-## How does Inngest work with Vercel?
-
-At the most basic level, Inngest is a platform to manage and execute reliable functions. Inngest does not host your code - your functions continue to run on Vercel (or whatever platform that you're using).
-
-### Inngest remotely and *securely* invokes your functions via HTTP
-
-Your code all runs on Vercel - you keep the same repo, the same platform, and the same tooling. There is no need to set up another runtime for your functions and trust another platform to run your code (which likely has access to your database).
-
-![A diagram showing how Inngest works via HTTP](/assets/blog/vercel-long-running-background-functions/how-inngest-works.png)
-
-Your functions are “served” to Inngest using a `serve` handler for your particular framework. Inngest has several handlers including [Next.js, Remix, Nuxt, RedwoodJS](/docs/learn/serving-inngest-functions?ref=blog-long-running-functions-vercel), amongst others. Inngest also supports Vercel's edge runtime.
-
-Lastly, to trigger your functions, you send an event payload via the Inngest SDK's `inngest.send()` function. This then tells Inngest to invoke your function.
-
-### Inngest invokes *each step* independently via HTTP
-
-Since Inngest runs outside of your system, it can invoke each step independently via HTTP.  As Inngest invokes each separately, you only need to ensure that each step is less than the timeout of 10 or 60 seconds depending on your plan.
-
-In the example diagram below, we show how a function that would take approximately 500 seconds to run can be broken up into many shorter requests, each within the timeout limits of the platform. By decoupling your function into several HTTP requests, your functions can run for *minutes or hours*!
-
-![A diagram showing how long a function could run for](/assets/blog/vercel-long-running-background-functions/steps-timing.png)
-
-## An example
-
-We now know the concepts, let's check out some code. This example code fetches emails of people on a waiting list via an API over a given time period then creates an invite code and saves it in the database for each email then sends an invite email with this invite code.
+Inngest's SDK does that with familiar TypeScript/JavaScript: define steps with `step.run`, group them in one function, and trigger with an event.
 
 ```typescript
 export default inngest.createFunction(
@@ -118,11 +70,7 @@ export default inngest.createFunction(
 )
 ```
 
-As you can see - it's just JavaScript. The Inngest SDK's `[step.run](/docs/learn/inngest-steps)` allows you to encapsulate each part of your function. As mentioned above, each is invoked separately, so the sum of all the time can be greater than the normal HTTP timeouts.
-
-With automatic retries built-in, this enables you to run long background jobs reliably!
-
-You could trigger this function from any other part of your application:
+Each `step.run` is invoked separately over HTTP, so the sum of step time can exceed Vercel's per-request limit. Automatic retries mean a flaky API call retries that step — not the entire import. Trigger it from anywhere in your app:
 
 ```typescript
 await inngest.send({
@@ -131,19 +79,51 @@ await inngest.send({
 })
 ```
 
-This sends an event payload to Inngest. Inngest logs this event and then triggers the function that you configured to run when this event is received.
+That pattern is the fix for **Vercel function timeouts** on background work: the API route returns quickly after `inngest.send()`, and the long running function continues as a durable Vercel background job.
+
+## How to break up a long-running job
+
+You may initially think it is tedious to break a long-running background job into smaller pieces. The benefits show up quickly:
+
+- Decoupled logic is easier to isolate and test
+- Individual retries avoid failing (and redoing) the entire job
+
+Typical splits:
+
+- Importing data from a file into a database ➡️ _Process per row or batch_
+- Making external API call(s) ➡️ _One step per call, so downtime only retries that step_
+
+![A diagram highlighting distinct parts of a function](/assets/blog/vercel-long-running-background-functions/function-steps.png?v=2)
+
+HTTP streaming can help when a client keeps an open connection, but it is a poor fit for background jobs: if the user navigates away, the connection (and often the work) dies. A single script that runs for `n` minutes is also fragile — fail at minute 15 and you usually restart from scratch, losing or duplicating work.
+
+## How does Inngest work with Vercel?
+
+Inngest does not host your code — your functions continue to run on Vercel (or whatever platform you use).
+
+### Inngest remotely and *securely* invokes your functions via HTTP
+
+You keep the same repo, platform, and tooling. There is no need to stand up another runtime or trust a second host with access to your database.
+
+![A diagram showing how Inngest works via HTTP](/assets/blog/vercel-long-running-background-functions/how-inngest-works.png)
+
+Functions are served to Inngest with a `serve` handler for your framework. Inngest supports [Next.js, Remix, Nuxt, RedwoodJS](/docs/learn/serving-inngest-functions?ref=blog-long-running-functions-vercel), and others, including Vercel's edge runtime. Sending an event with `inngest.send()` tells Inngest to invoke the matching function.
+
+### Inngest invokes *each step* independently via HTTP
+
+Because each step is a separate HTTP invocation, you only need each step under the 10- or 60-second timeout for your plan. A job that would take ~500 seconds as one request becomes many short requests within platform limits — so **Vercel long running functions** can span minutes or hours.
+
+![A diagram showing how long a function could run for](/assets/blog/vercel-long-running-background-functions/steps-timing.png)
+
+As you can see — it's just JavaScript. The Inngest SDK's [`step.run`](/docs/learn/inngest-steps) wraps each part of the function. With automatic retries built in, you can run long background jobs reliably.
 
 ### How to deploy your functions
 
-Since Inngest invokes your functions via HTTP, you need to tell Inngest where your code is running. You can easily do this by installing our Vercel integration!
-
-The Vercel integration automatically tells Inngest every time that you've deployed your application and Inngest does the rest. Inngest pings your application to check what functions you have set up and you're good to go. The whole process happens in milliseconds.
-
-[Official Inngest integration on Vercel.com](https://vercel.com/integrations/inngest)
+Install the [official Inngest integration on Vercel](https://vercel.com/integrations/inngest). On each deploy, the integration tells Inngest where your app lives; Inngest discovers your functions and you are ready to go.
 
 ## What else can you do?
 
-Here are some other cool things that you can do with the Inngest SDK for long-running functions:
+Other patterns that pair well with long-running Vercel background jobs:
 
 ### Run steps in parallel
 
@@ -202,7 +182,7 @@ inngest.createFunction(
 
 ### Schedule work in the future
 
-Use `step.sleepUntil` to tell schedule a step in the future at a specific time:
+Use `step.sleepUntil` to schedule a step in the future at a specific time:
 
 ```typescript
 inngest.createFunction(
@@ -224,11 +204,11 @@ inngest.createFunction(
 
 ## What are you going to build?
 
-Now that you have learned how to create long-running background jobs on Vercel, what will you build?
+Now that you can fix Vercel function timeouts and run long-running background jobs on Vercel, what will you build?
 
 - [Third-party API imports](/blog/import-ecommerce-api-data-in-seconds?ref=blog-long-running-functions-vercel)
 - Data pipelines
-- OpenAI / GPT4 processing
+- OpenAI / GPT-4 processing
 - Schedule emails or reminders
 
-[Get started with our quick start guide on how to start building locally →](/docs/getting-started/nextjs-quick-start?ref=blog-long-running-functions-vercel)
+[Get started with our Next.js quick start →](/docs/getting-started/nextjs-quick-start?ref=blog-long-running-functions-vercel)
