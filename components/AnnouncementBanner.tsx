@@ -58,12 +58,12 @@ const Banner: React.FC<Props> = ({ href, children, className, target, rel }) => 
 export default function AnnouncementBanner() {
   return (
     <Banner
-      href="https://luma.com/inngest-r614?utm_source=web-banner"
+      href="https://events.zoom.us/e/recording?videoId=uKbFJoUhRQKS9V71ysKkLw&eventId=Z8vtvPiATTq_LQxwlO8_ZA&organizationId=Jm1kZRVvQC6tCNBq9FaDag"
       target="_blank"
       rel="noopener noreferrer"
     >
       <span className="font-normal underline underline-offset-2">
-        Join us on August 12th for an Agent Evals Lightning Lab
+        Build now: Outcome-based scoring for your workflow
       </span>{" "}
       →
     </Banner>

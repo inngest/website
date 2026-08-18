@@ -7,18 +7,18 @@ import Chip from "@/components/v1/sections/shared/Chip";
 import EventCardLarge from "@/components/v1/sections/Events/EventCardLarge";
 import { isPastEvent, sortEventsByDate } from "@/components/v1/sections/Events/data";
 
-const COVER_IMAGE = "/assets/v1/events/coffee-chats-with-inngest.png";
+const COVER_IMAGE = "/assets/v1/events/innhouse-sf-coffee.png";
 
 const EVENT = {
-  title: "Coffee Chats with Inngest",
-  date: "Wednesday, July 29, 2026 · 8:00–10:00 AM EDT",
-  startsAt: "2026-07-29T08:00:00-04:00",
-  location: "Stone Street Cafe, 379 Broome St, New York, NY 10013",
+  title: "Innhouse with Inngest: Coffee Chats & Pastries",
+  date: "Wednesday, August 26, 2026 · 9:00 AM–12:00 PM PDT",
+  startsAt: "2026-08-26T09:00:00-07:00",
+  location: "Inngest office, San Francisco, CA (exact address shared after RSVP approval)",
   description:
-    "We hit capacity on our supper club faster than we expected, turns out a lot of you want to talk durable execution over dinner. Unfortunately, we only have so many seats at the table & we wanted to find another way to actually meet you while we're in town.\n\nso: coffee. Wednesday, July 29th, 8–10am at Stone Street Cafe. Swing by before work, we'll buy your coffee and a pastry. Same deal as the dinner, just earlier and more caffeinated. ☕️\n\nDrop in whenever works between 8am and 10am. We'll be there the whole window. Look for the Inngest sign - you can't miss us!",
+    "Our Supper Club filled up fast — so we're opening our doors for coffee instead.\n\nSwing by the Inngest office for a casual morning coffee break — pastries, espresso, and good conversation, on us. Drop in anytime, no fixed schedule, come as you are.\n\nIt's a low-key way to meet the Inngest team, talk shop about durable execution, AI agents, and everything in between, or just grab a coffee before your day gets going.\n\nStop by for 5 minutes or stay the whole morning and work from Inngest HQ. Request your spot as space is limited.",
 };
 
-const REGISTER_URL = "https://luma.com/inngest-ugl5";
+const REGISTER_URL = "https://luma.com/inngest-tku7";
 
 const OTHER_EVENTS = sortEventsByDate([
   {
@@ -108,6 +108,19 @@ const OTHER_EVENTS = sortEventsByDate([
     imageFit: "contain",
   },
   {
+    id: "coffee-chats-with-inngest",
+    title: "Coffee Chats with Inngest",
+    date: "Wednesday, July 29, 2026 · 8–10 AM EDT",
+    startsAt: "2026-07-29T08:00:00-04:00",
+    location: "New York, NY",
+    topics: ["Meetups"],
+    excerpt:
+      "Swing by Stone Street Cafe before work — coffee and a pastry on us, no agenda, just conversation about durable execution.",
+    href: "/events/coffee-chats-with-inngest",
+    image: "/assets/v1/events/coffee-chats-with-inngest.png",
+    imageFit: "contain",
+  },
+  {
     id: "lightning-lab-ship-your-first-eval",
     title: "Inngest Lightning Lab: Ship Your First Eval",
     date: "Wednesday, August 12, 2026 · 11AM PT / 2PM ET",
@@ -157,22 +170,9 @@ const OTHER_EVENTS = sortEventsByDate([
     image: "/assets/v1/events/inngest-supper-club-sf.png",
     imageFit: "contain",
   },
-  {
-    id: "innhouse-sf-coffee-aug-2026",
-    title: "Innhouse with Inngest: Coffee Chats & Pastries",
-    date: "Wednesday, August 26, 2026 · 9AM–12PM PDT",
-    startsAt: "2026-08-26T09:00:00-07:00",
-    location: "San Francisco, CA",
-    topics: ["innhouse", "coffee", "pastries"],
-    excerpt:
-      "Swing by the Inngest office for pastries, espresso, and good conversation — drop in anytime, no fixed schedule.",
-    href: "/events/innhouse-sf-coffee-chats",
-    image: "/assets/v1/events/innhouse-sf-coffee.png",
-    imageFit: "contain",
-  },
 ]);
 
-export default function CoffeeChatsWithInngest() {
+export default function InnhouseSFCoffeeChats() {
   const otherEvents = OTHER_EVENTS.filter((ev) => !isPastEvent(ev));
 
   return (
@@ -232,7 +232,7 @@ export default function CoffeeChatsWithInngest() {
               ) : (
                 <Button asChild variant="accent" className="self-start">
                   <a href={REGISTER_URL} target="_blank" rel="noopener noreferrer">
-                    RSVP here →
+                    Request to join →
                   </a>
                 </Button>
               )}

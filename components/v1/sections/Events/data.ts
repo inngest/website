@@ -129,6 +129,19 @@ export const UPCOMING: EventItem[] = [
     image: "/assets/v1/events/ai-in-production-aug-2026.png",
   },
   {
+    id: "innhouse-sf-coffee-aug-2026",
+    title: "Innhouse with Inngest: Coffee Chats & Pastries",
+    date: "Wednesday, August 26, 2026 · 9AM–12PM PDT",
+    startsAt: "2026-08-26T09:00:00-07:00",
+    location: "SAN FRANCISCO, CA",
+    topics: ["Innhouse"],
+    excerpt:
+      "Swing by the Inngest office for pastries, espresso, and good conversation — drop in anytime, no fixed schedule.",
+    href: "/events/innhouse-sf-coffee-chats",
+    image: "/assets/v1/events/innhouse-sf-coffee.png",
+    imageFit: "contain",
+  },
+  {
     id: "inngest-supper-club-sf",
     title: "Inngest Supper Club: San Francisco",
     date: "Thursday, August 27, 2026 · 6 PM (dinner ~6:45 PM)",
@@ -279,6 +292,19 @@ export const ALL_EVENTS: EventItem[] = sortEventsByDate([
       "Lightning talks and real lessons learned from teams shipping AI in production — cohosted with Nebius Token Factory and Flox at Inngest HQ.",
     href: "https://luma.com/inngest-77ls",
     image: "/assets/v1/events/ai-in-production-aug-2026.png",
+  },
+  {
+    id: "innhouse-sf-coffee-aug-2026",
+    title: "Innhouse with Inngest: Coffee Chats & Pastries",
+    date: "Wednesday, August 26, 2026 · 9AM–12PM PDT",
+    startsAt: "2026-08-26T09:00:00-07:00",
+    location: "SAN FRANCISCO, CA",
+    topics: ["Innhouse"],
+    excerpt:
+      "Swing by the Inngest office for pastries, espresso, and good conversation — drop in anytime, no fixed schedule.",
+    href: "/events/innhouse-sf-coffee-chats",
+    image: "/assets/v1/events/innhouse-sf-coffee.png",
+    imageFit: "contain",
   },
   {
     id: "inngest-supper-club-sf",

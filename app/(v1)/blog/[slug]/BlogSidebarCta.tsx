@@ -24,6 +24,12 @@ export default function BlogSidebarCta({
   href,
   className,
 }: BlogSidebarCtaProps) {
+  // Off-site targets (e.g. a Zoom recording) open in a new tab, per
+  // the same convention as LightningLabShipYourFirstEval's external
+  // register link — internal /docs, /sign-up, /customers, etc. links
+  // navigate in-tab as usual.
+  const isExternal = /^https?:\/\//i.test(href);
+
   return (
     <div
       className={cn(
@@ -45,6 +51,9 @@ export default function BlogSidebarCta({
         // `cn` runs tailwind-merge, so these cleanly win over the
         // `sm` size classes instead of just concatenating.
         className="h-7 min-w-0 self-start px-4 text-[11px]"
+        {...(isExternal
+          ? { target: "_blank", rel: "noopener noreferrer" }
+          : {})}
       >
         {buttonLabel}
       </ButtonLink>
