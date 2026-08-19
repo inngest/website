@@ -52,10 +52,6 @@ export default function Hero() {
       className="relative overflow-x-clip"
       style={{ backgroundColor: IVORY }}
     >
-      <h1 id="ct-hero-headline" className="sr-only">
-        The developer experience Temporal wishes it had.
-      </h1>
-
       {/* Fine sand-grain over the ivory — SVG fractal noise (clean, not
           pixelated) at low opacity via soft-light. */}
       <span
@@ -69,28 +65,43 @@ export default function Hero() {
             wide screens the padding grows to keep it level with the
             max-w-[1440px] sections elsewhere on the page. */}
         <div className="flex flex-col gap-8 px-6 pb-12 pt-[120px] sm:gap-10 sm:px-9 sm:pt-[140px] lg:flex-1 lg:py-[155px] lg:pl-[max(2rem,calc((100vw-1440px)/2+2rem))] lg:pr-[56px]">
-          <motion.p
-            aria-hidden="true"
-            className="text-v1-display-hero uppercase lg:!text-[clamp(2.5rem,5vw,4.75rem)] lg:leading-[1.02] lg:tracking-[-0.025em]"
-            {...entry(60, INK)}
+          <motion.h1
+            id="ct-hero-headline"
+            className="flex flex-col gap-5"
+            {...entry(60)}
           >
-            <span className="block">The DX</span>
-            <span className="block">Temporal</span>
-            <span className="block">wish it had.</span>
-          </motion.p>
-
-          <motion.p
-            className="max-w-[480px] text-v1-body-lg [font-size:clamp(0.95rem,1.2vw,1.0625rem)] [line-height:1.55]"
-            {...entry(280, SUBINK)}
-          >
-            Temporal might make code failures irrelevant, but not the
-            infrastructure required to make that a reality. Don&apos;t get
-            stuck with workers, queues, and a layer of management that&apos;ll
-            just slow you down.
-          </motion.p>
+            <span
+              className="text-v1-eyebrow uppercase"
+              style={{ color: SUBINK }}
+            >
+              Temporal alternatives
+            </span>
+            <span
+              className="text-v1-display-hero uppercase lg:!text-[clamp(2.5rem,5vw,4.75rem)] lg:leading-[1.02] lg:tracking-[-0.025em]"
+              style={{ color: INK }}
+            >
+              <span className="block">Inngest vs</span>
+              <span className="block">Temporal</span>
+            </span>
+          </motion.h1>
 
           <motion.div
-            className="flex flex-col gap-[18px] sm:flex-row sm:items-center"
+            className="flex max-w-[480px] flex-col gap-5 text-v1-body-lg [font-size:clamp(0.95rem,1.2vw,1.0625rem)] [line-height:1.55]"
+            {...entry(280, SUBINK)}
+          >
+            <p className="italic">
+              The developer experience Temporal wishes it had.
+            </p>
+            <p>
+              If you&apos;re evaluating Temporal alternatives, Inngest vs
+              Temporal is just a question about whether you want to spend more
+              time on code, or the infrastructure around it. Inngest lets you
+              ship faster, no matter how your code is written or where it lives.
+            </p>
+          </motion.div>
+
+          <motion.div
+            className="flex flex-col gap-[18px] sm:flex-row sm:flex-wrap sm:items-center"
             {...entry(460)}
           >
             <ButtonLink
@@ -108,6 +119,13 @@ export default function Hero() {
               className="!w-full sm:!w-auto"
             >
               Build for free
+            </ButtonLink>
+            <ButtonLink
+              href="#comparison"
+              variant="secondaryLight"
+              className="!w-full sm:!w-auto"
+            >
+              View full comparison
             </ButtonLink>
           </motion.div>
         </div>

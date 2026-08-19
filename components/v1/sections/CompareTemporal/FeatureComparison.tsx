@@ -572,8 +572,9 @@ export default function FeatureComparison() {
 
   return (
     <Section
+      id="comparison"
       aria-labelledby="ct-table-heading"
-      className="relative"
+      className="relative scroll-mt-32"
     >
       <SectionHeader
         id="ct-table-heading"

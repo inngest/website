@@ -7,6 +7,18 @@ import SharedFaq, { type Faq as FaqItem } from "@/components/v1/sections/AI/Faq"
 
 const FAQS: FaqItem[] = [
   {
+    id: "temporal-alternative",
+    question: "Is there a Temporal alternative?",
+    answer:
+      "Yes. Inngest is a Temporal alternative built for teams that want durable execution without running workers, a cluster, or a separate queue. You write normal async functions, wrap side effects in step.run(), and Inngest invokes your existing HTTP app. Among Temporal competitors, Inngest is the option that keeps your current deployment as the runtime instead of asking you to operate a new one.",
+  },
+  {
+    id: "inngest-vs-temporal-differences",
+    question: "What are the Inngest vs Temporal differences?",
+    answer:
+      "The core Inngest vs Temporal difference is architecture. Temporal requires workers that poll a cluster, either self-hosted or on Temporal Cloud. Inngest has no workers: it calls your existing deployment over HTTP. Temporal workflow code must be deterministic because it replays history. Inngest uses step memoization, so non-deterministic LLM calls do not need a separate Activity layer. Inngest also ships native rate limiting, per-key concurrency, and step-level traces that Temporal typically requires you to build.",
+  },
+  {
     id: "scale",
     question: "Can Inngest handle the same scale as Temporal?",
     answer:
