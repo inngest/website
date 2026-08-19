@@ -13,6 +13,7 @@ import MasonryGrid from "src/components/LandingPage/MasonryGrid";
 import LanguagesAndPlatforms from "src/components/LandingPage/LanguagesAndPlatforms";
 import FeaturesCodeBlocks from "src/components/LandingPage/FeaturesCodeBlocks";
 import Resources from "src/components/LandingPage/Resources";
+import LandingSocialQuotes from "src/components/LandingPage/SocialQuotes";
 
 export const metadata: Metadata = generateMetadata({
   title: "Traditional queues weren't built for today's workflows",
@@ -367,6 +368,10 @@ export default function Page() {
           ]}
         />
       </section>
+      <LandingSocialQuotes
+        quoteIds={["rupesh-bullmq", "andrew-observability"]}
+        refTag={baseCTA}
+      />
       <section className="my-28">
         <Heading
           title="Chat with our team today"

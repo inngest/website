@@ -1,4 +1,5 @@
 import PageShell from "@/components/v1/PageShell";
+import DeveloperQuotes from "@/components/v1/sections/AI/DeveloperQuotes";
 import Faq from "@/components/v1/sections/AI/Faq";
 import GoDeeper from "@/components/v1/sections/AI/GoDeeper";
 import Hero from "@/components/v1/sections/AI/Hero";
@@ -35,6 +36,7 @@ export default function AIPage() {
         <Unbreakable />
         <Lifecycle />
         <UseCases />
+        <DeveloperQuotes />
         <Primitives />
         <Faq />
         <GoDeeper />
