@@ -28,12 +28,7 @@ export default function Community() {
             id="community-heading"
             eyebrow="Community"
             title="What builders are saying"
-            body={
-              <>
-                {SOCIAL_QUOTES.length} third-party quotes from X, LinkedIn,
-                and Reddit — every one links to the original post.
-              </>
-            }
+            body="Love from across the social sphere."
             bodyClassName="max-w-[640px]"
           />
 

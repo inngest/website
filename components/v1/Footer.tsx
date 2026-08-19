@@ -79,6 +79,7 @@ const COLUMN_COMPANY: FooterColumnDef = {
 const COLUMN_COMMUNITY: FooterColumnDef = {
   heading: "Community",
   links: [
+    { label: "Community Love", href: "/community" },
     { label: "X", href: "https://x.com/inngest" },
     { label: "Github", href: "https://github.com/inngest/inngest" },
     { label: "Discord", href: "https://www.inngest.com/discord" },

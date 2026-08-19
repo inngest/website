@@ -206,11 +206,6 @@ const RESOURCES_MENU: NavMenu = {
           href: "/platform/flow-control",
           description: "See how Inngest compares",
         },
-        {
-          label: "Community quotes",
-          href: "/community",
-          description: "What developers say about Inngest",
-        },
       ],
     },
   ],
