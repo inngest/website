@@ -4,17 +4,25 @@ heading: 5 Reasons Why Your Queue is Slowing You Down
 subtitle: Common pitfalls of traditional queues and how Inngest can help
 image: /assets/blog/why-your-queue-is-slowing-you-down/featured-image-v2.png
 date: 2024-10-28
-dateUpdated: 2026-01-07
+dateUpdated: 2026-08-18
 author: Tony Holdstock-Brown
 primaryCTA: sales
 floatingCTA: true
 ---
+
+import Blockquote from "src/shared/Blog/Blockquote";
 
 If you're building complex products, you're probably using some sort of queueing system. Traditional queues help with scale, job scheduling, and managing background jobs — but as products become complex, traditional queuing systems start to fall short.  While they work for basic message delivery and job processing, they often lack the higher-level abstractions required to build complex workflows. Things like workflow orchestration, multi-tenancy, and native throttling are being built into every product.
 
 Developers require more than speed and storage; they need the flexibility to create custom workflows without getting tied down in complex infrastructure and protocols. Traditional queuing systems rely heavily on lower level abstractions, often leading to slow development time, complex operational overhead, and potential reliability issues.
 
 Let's dive into the top 5 challenges modern teams typically face when building with traditional queues:
+
+<Blockquote
+  text="Almost used BullMQ because that's what everyone uses. Tried Inngest for the message queue instead. Zero broker setup, just functions that trigger when they should. Honestly the best infra decision I've made in months."
+  attribution={{ name: "Rupesh Shandilya", title: "Developer" }}
+  sourceUrl="https://x.com/rupeshkshandily/status/2089283590571852192"
+/>
 
 ## Problem 1: Juggling complex workflows
 

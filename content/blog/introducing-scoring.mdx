@@ -4,6 +4,7 @@ subtitle: "Outcome-based scoring as easy as writing a function—no traces to ex
 image: /assets/blog/introducing-scoring/featured-image.png
 showSubtitle: true
 date: 2026-06-30
+dateUpdated: 2026-08-18
 author: Lauren Craigie
 category: product-updates
 sidebarCta:
@@ -11,6 +12,8 @@ sidebarCta:
   buttonLabel: "Watch the recording"
   href: "https://events.zoom.us/e/recording?videoId=uKbFJoUhRQKS9V71ysKkLw&eventId=Z8vtvPiATTq_LQxwlO8_ZA&organizationId=Jm1kZRVvQC6tCNBq9FaDag"
 ---
+
+import Blockquote from "src/shared/Blog/Blockquote";
 
 Durable execution ensures every step of your workflow or agent completes successfully. But how do you know whether the outcome was the one you actually wanted?
 
@@ -59,6 +62,12 @@ In each case the score is a few lines in code you already have, attached to the 
 We recently shipped [`defer`](/blog/announcing-defer?ref=blog-introducing-scoring)—the ability to launch background work the moment a parent function finishes. A defer runs as its own function with its own lifecycle, which is exactly what scoring an outcome needs: because it's a real function, it can call `step.waitForEvent` and simply wait. The run that made the decision can finish and return; the defer outlives it, parked until the thing you actually want to measure happens.
 
 That's the part a score written inline can't reach. Inside a function you can only judge what's true in the moment—the answer looked right, the output matched its schema. But the verdict that counts usually arrives later, and from somewhere else: a payment webhook when the charge clears, a GitHub event when the pull request gets merged or rejected. Pair a defer with a scorer and you wait for that signal, then write the score straight back to the run that produced the original decision. An agent opens a pull request; the defer waits for the merge-or-reject event and scores whether the code was accepted. A checkout flow recommends a plan; the defer waits for the payment webhook and scores whether it converted. The decision and its real-world outcome land on the same run—no pipeline reconciling IDs across systems after the fact, just a function that waited for the answer.
+
+<Blockquote
+  text="Step-level scoring you can defer until the real signal arrives is a smart primitive for durable agents."
+  attribution={{ name: "Rohit Kashyap", title: "Developer" }}
+  sourceUrl="https://x.com/rohit_jsfreaky/status/2074908850747253032"
+/>
 
 ## Scoring + experiments: pick a winner
 

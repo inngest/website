@@ -5,8 +5,11 @@ subtitle: Why you shouldn't directly use message queues in 2024
 showSubtitle: true
 image: /assets/blog/queues-are-no-longer-the-right-abstraction/queues-are-over.png
 date: 2024-03-28
+dateUpdated: 2026-08-18
 author: Dan Farrelly
 ---
+
+import Blockquote from "src/shared/Blog/Blockquote";
 
 Amazon SQS will be [20 years old](https://aws.amazon.com/about-aws/whats-new/2004/11/03/introducing-the-amazon-simple-queue-service/) later this year. It still offers precisely what it advertises-a [simple queue service](https://aws.amazon.com/sqs/). It's also still great. During Prime Day 2022, SQS handled [over 70 million messages per second at peak](https://aws.amazon.com/blogs/aws/amazon-prime-day-2022-aws-for-the-win/). If you want a queue, this, or other time-tested solutions like RabbitMQ or ActiveMQ, work well.
 
@@ -58,6 +61,12 @@ Say you want concurrency. Now you're actually thinking about the workers that ar
 Repeat that decision tree for every component of the infrastructure. It isn't just a matter of grabbing an SQS URL and having SQS take care of everything. All of this needs to be built _around_ the message queue. Even if you don't immediately need this infrastructure, you'll have to build it out fully over time to build a robust message system.
 
 This is challenging and tedious work. There are ways to lessen the load - [Celery](https://docs.celeryq.dev/en/stable/getting-started/introduction.html), [Resque](https://github.com/resque/resque), [BullMQ](https://bullmq.io/) - but then you have the problems of these half-abstractions: lack of a polyglot option, slightly different implementations, and a learning curve for developers who are not familiar with these tools leading to increased complexity and maintenance overhead.
+
+<Blockquote
+  text="Almost used BullMQ because that's what everyone uses. Tried Inngest for the message queue instead. Zero broker setup, just functions that trigger when they should."
+  attribution={{ name: "Rupesh Shandilya", title: "Developer" }}
+  sourceUrl="https://x.com/rupeshkshandily/status/2089283590571852192"
+/>
 
 So, why do developers still reach for message queues if they are the wrong abstraction? Two reasons:
 
