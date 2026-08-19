@@ -4,6 +4,7 @@ import Customers from "@/components/v1/sections/BackgroundJobs/Customers";
 import Faq from "@/components/v1/sections/BackgroundJobs/Faq";
 import Hero from "@/components/v1/sections/BackgroundJobs/Hero";
 import HowItWorks from "@/components/v1/sections/BackgroundJobs/HowItWorks";
+import DeveloperQuotes from "@/components/v1/sections/BackgroundJobs/DeveloperQuotes";
 import QueueComparison from "@/components/v1/sections/BackgroundJobs/QueueComparison";
 import Reliability from "@/components/v1/sections/BackgroundJobs/Reliability";
 import SeeItInAction from "@/components/v1/sections/BackgroundJobs/SeeItInAction";
@@ -19,6 +20,7 @@ export default function BackgroundJobs() {
         <SeeItInAction />
         <Reliability />
         <QueueComparison />
+        <DeveloperQuotes />
         <CaseStudies />
         <Faq />
         <StartBuilding />

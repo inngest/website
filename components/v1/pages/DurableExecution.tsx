@@ -1,5 +1,6 @@
 import PageShell from "@/components/v1/PageShell";
 import CaseStudies from "@/components/v1/sections/DurableExecution/CaseStudies";
+import DeveloperQuotes from "@/components/v1/sections/DurableExecution/DeveloperQuotes";
 import FinalCTA from "@/components/v1/sections/DurableExecution/FinalCTA";
 import ProblemsGrid from "@/components/v1/sections/QueuesFlowControl/ProblemsGrid";
 import Hero from "@/components/v1/sections/DurableExecution/Hero";
@@ -32,6 +33,7 @@ export default function DurableExecution() {
       <Frictionless />
       <LocalFirst />
       <CaseStudies />
+      <DeveloperQuotes />
       <FinalCTA />
     </PageShell>
   );
