@@ -4,8 +4,11 @@ heading: "Your Agent Architecture Has a Half-Life. Your Execution Layer Shouldn'
 subtitle: "Every six months, the \"right\" way to build an agent changes. Here's the one layer worth owning — and how to make everything else swappable."
 image: /assets/blog/your-agent-architecture-has-a-half-life/featured-image-v2.png
 date: 2026-07-21
+dateUpdated: 2026-08-18
 author: Dan Farrelly
 ---
+
+import Blockquote from "src/shared/Blog/Blockquote";
 
 <Callout>
   This article is adapted from a talk I gave at the AI Engineer World's Fair
@@ -62,6 +65,12 @@ Your prompts last weeks if you're lucky. A new model drops, capabilities shift, 
 Compute is more stable but still volatile. Sandbox providers ship new features, pricing changes, a new player enters the market with faster cold starts. You move from E2B to Modal or vice versa. Months.
 
 Execution, done right, lasts years. The need for durable steps, retries, coordination, and observability doesn't change when you swap from GPT-4 to Claude 4. It doesn't change when you move from ReAct to a loop architecture. It doesn't change when you add a sandbox or remove one.
+
+<Blockquote
+  text="I can't even imagine hand-rolling durability and retries. Inngest has been such a time saver."
+  attribution={{ name: "Omer Demirkan", title: "Developer" }}
+  sourceUrl="https://x.com/umar_ibn_ansar/status/2079986105433326058"
+/>
 
 The problem is coupling. When you couple them, one layer inherits the churn of the other.
 

@@ -5,10 +5,12 @@ image: /assets/blog/nextjs-serverless-vs-durable-functions/featured-image-2.png
 showSubtitle: true
 subtitle: Learn how Durable Functions remove the need of a separate server to handle long-running workflows or to power queues.
 date: 2024-08-13
-dateUpdated: 2026-01-07
+dateUpdated: 2026-08-18
 author: Charly Poly
 disableCTA: true
 ---
+
+import Blockquote from "src/shared/Blog/Blockquote";
 
 
 Next.js makes using Serverless Functions easy for developers, but **running code on a schedule or over a long time span** requires managing queues, state, or handling the recovery from external failures.
@@ -27,6 +29,12 @@ The backend parts orchestrating the syncs, email batches, or AI features cannot 
 This dilemma requires us to seek “good-old” back-end solutions (*queueing libraries, SQS, Kafka*), often based on plumbing around queues or background jobs, pushing us outside our Next.js application's code and its associated DX.
 
 Durable Functions allow you to build such backend workflow parts faster from within your Next.js application.
+
+<Blockquote
+  text="It's really easy to deploy frontend apps on Vercel, but there's always been this gap for background jobs. Inngest is now filling that gap for a lot of my use cases."
+  attribution={{ name: "Patrick DeVivo", title: "Software Engineer & Founder" }}
+  sourceUrl="https://www.linkedin.com/posts/patrick-devivo_i-was-skeptical-of-all-the-durable-execution-activity-7320806674724786176-GWKg"
+/>
 
 ## Durable Functions
 
