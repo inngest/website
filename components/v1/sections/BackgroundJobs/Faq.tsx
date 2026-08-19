@@ -6,7 +6,7 @@ import AiFaq, { type Faq as FaqType } from "@/components/v1/sections/AI/Faq";
  * match the AI page.
  */
 
-export const BACKGROUND_JOBS_FAQS: FaqType[] = [
+const FAQS: FaqType[] = [
   {
     id: "is-queue",
     question: "Is Inngest a queue?",
@@ -59,5 +59,5 @@ export const BACKGROUND_JOBS_FAQS: FaqType[] = [
 ];
 
 export default function Faq() {
-  return <AiFaq faqs={BACKGROUND_JOBS_FAQS} refTag="serverless-node-background-jobs" />;
+  return <AiFaq faqs={FAQS} />;
 }

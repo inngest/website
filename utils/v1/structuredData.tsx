@@ -5,26 +5,6 @@
 
 const HOST = "https://www.inngest.com";
 
-export interface FaqSchemaEntry {
-  question: string;
-  answer: string;
-}
-
-export function buildFaqPageSchema(faqs: FaqSchemaEntry[]) {
-  return {
-    "@context": "https://schema.org",
-    "@type": "FAQPage",
-    mainEntity: faqs.map((faq) => ({
-      "@type": "Question",
-      name: faq.question,
-      acceptedAnswer: {
-        "@type": "Answer",
-        text: faq.answer,
-      },
-    })),
-  };
-}
-
 export interface QuotationSchemaInput {
   quote: string;
   authorName: string;

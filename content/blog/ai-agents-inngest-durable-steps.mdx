@@ -4,7 +4,7 @@ heading: "How to Build AI Agents That Don't Fail Silently"
 subtitle: "Use Inngest's step primitives to build resilient, observable AI agents without a heavyweight framework."
 image: "/assets/blog/ai-agents-inngest-durable-steps/featured-image.jpg"
 date: "2026-08-10"
-dateUpdated: "2026-08-18"
+dateUpdated: "2026-08-10"
 category: engineering
 author: Dan Farrelly
 showSubtitle: false
@@ -15,19 +15,11 @@ sidebarCta:
   href: "/docs/features/inngest-functions/steps-workflows?ref=blog-ai-agents-inngest-durable-steps-sidebar"
 ---
 
-import Blockquote from "src/shared/Blog/Blockquote";
-
 Most AI agents don't crash spectacularly — they fail silently. A tool returns bad data and the loop keeps going. An LLM call times out mid-turn and you get a partial answer that looks complete. Rate limits, invalid tool arguments, and swallowed errors look like success until a user notices days later. That's the **AI agent reliability** problem: without **step-level visibility** and solid **AI agent error handling**, you can't tell where the agent went wrong.
 
 Most tutorials stop at the happy path — call the LLM, run a tool, loop. But the moment you ship an agent to production, you hit those silent failures: tool calls fail, providers rate-limit you, long-running tasks time out, and you can't see what the hell happened when something goes wrong.
 
 This post walks through building an agent that handles all of that. We'll cover the agent loop, durable tool execution, observability, and sub-agent delegation with real code. (For a higher-level look at [durable context management and debugging](/blog/building-durable-agents?ref=blog-ai-agents-inngest-durable-steps), see our companion guide.)
-
-<Blockquote
-  text="Used Inngest to add observability to my RAG pipeline — tracking latency, errors, and full input/output logs for every LLM call. Still learning it, but it's already made debugging the pipeline so much easier."
-  attribution={{ name: "Vinit Khapekar", title: "Developer" }}
-  sourceUrl="https://x.com/vinit_khapekar_/status/2074483718627238204"
-/>
 
 You'll need an LLM provider (Anthropic, OpenAI, whatever) and TypeScript. The patterns work regardless of which model SDK you use.
 

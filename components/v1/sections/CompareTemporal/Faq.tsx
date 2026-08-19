@@ -5,7 +5,7 @@ import SharedFaq, { type Faq as FaqItem } from "@/components/v1/sections/AI/Faq"
  * Temporal-specific question set.
  */
 
-export const COMPARE_TEMPORAL_FAQS: FaqItem[] = [
+const FAQS: FaqItem[] = [
   {
     id: "scale",
     question: "Can Inngest handle the same scale as Temporal?",
@@ -58,5 +58,5 @@ export const COMPARE_TEMPORAL_FAQS: FaqItem[] = [
 ];
 
 export default function Faq() {
-  return <SharedFaq faqs={COMPARE_TEMPORAL_FAQS} heading="FAQ" />;
+  return <SharedFaq faqs={FAQS} heading="FAQ" />;
 }
