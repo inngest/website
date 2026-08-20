@@ -80,8 +80,8 @@ export default function Hero() {
               className="text-v1-display-hero uppercase lg:!text-[clamp(2.5rem,5vw,4.75rem)] lg:leading-[1.02] lg:tracking-[-0.025em]"
               style={{ color: INK }}
             >
-              <span className="block">Inngest vs</span>
-              <span className="block">Temporal</span>
+              <span className="block">The DX Temporal</span>
+              <span className="block">wish it had.</span>
             </span>
           </motion.h1>
 
@@ -89,9 +89,6 @@ export default function Hero() {
             className="flex max-w-[480px] flex-col gap-5 text-v1-body-lg [font-size:clamp(0.95rem,1.2vw,1.0625rem)] [line-height:1.55]"
             {...entry(280, SUBINK)}
           >
-            <p className="italic">
-              The developer experience Temporal wishes it had.
-            </p>
             <p>
               If you&apos;re evaluating Temporal alternatives, Inngest vs
               Temporal is just a question about whether you want to spend more
