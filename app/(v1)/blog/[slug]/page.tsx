@@ -63,6 +63,11 @@ type Scope = {
     buttonLabel: string;
     href: string;
   };
+  // Optional FAQ entries emit FAQPage JSON-LD alongside BlogPosting.
+  faq?: {
+    question: string;
+    answer: string;
+  }[];
   // Syndicated posts point canonical at the original source.
   canonical_url?: string;
   // When set, the post is gated behind ?unreleased=<label>.
@@ -333,12 +338,36 @@ export default async function BlogPostPage({
           ],
   };
 
+  const faqStructuredData =
+    Array.isArray(scope.faq) && scope.faq.length > 0
+      ? {
+          "@context": "https://schema.org",
+          "@type": "FAQPage",
+          mainEntity: scope.faq.map((item) => ({
+            "@type": "Question",
+            name: item.question,
+            acceptedAnswer: {
+              "@type": "Answer",
+              text: item.answer,
+            },
+          })),
+        }
+      : null;
+
   const body = (
     <>
       <script
         type="application/ld+json"
         dangerouslySetInnerHTML={{ __html: JSON.stringify(structuredData) }}
       />
+      {faqStructuredData ? (
+        <script
+          type="application/ld+json"
+          dangerouslySetInnerHTML={{
+            __html: JSON.stringify(faqStructuredData),
+          }}
+        />
+      ) : null}
       <div className="overflow-x-clip">
         <article>
           {scope.reportLayout ? (
