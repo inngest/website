@@ -6,10 +6,36 @@ import SharedFaq, { type Faq as FaqItem } from "@/components/v1/sections/AI/Faq"
 
 const FAQS: FaqItem[] = [
   {
+    id: "what-is-serverless-orchestration",
+    question: "What is serverless workflow orchestration?",
+    answer:
+      "It is coordinating multi-step jobs—schedules, events, data workflows, and approvals—on serverless or container deploys without running your own queue workers. Inngest persists step state and retries so distributed serverless execution stays reliable across timeouts and deploys.",
+  },
+  {
+    id: "infrastructure-agnostic",
+    question: "What does infrastructure-agnostic workflow mean?",
+    answer:
+      "Your orchestration is not tied to one cloud's cron service or a visual workflow builder. Inngest invokes functions over HTTP on Vercel, AWS, GCP, or any HTTP server, so the same code runs wherever you deploy.",
+  },
+  {
+    id: "vs-step-functions-temporal",
+    question:
+      "How does Inngest compare to AWS Step Functions and Temporal for serverless?",
+    answer:
+      "Step Functions are AWS-centric and often use ASL or a visual workflow builder. Temporal requires a cluster and worker processes. Inngest is infrastructure-agnostic: no workers to run, cron and events in one function, and per-step retries on your existing deploy.",
+  },
+  {
     id: "is-cron-service",
     question: "Is Inngest a cron job service?",
     answer:
-      "Inngest is not just a cron service. It adds durable, step-based execution to scheduled jobs — so if a scheduled job fails mid-run, only the failed step retries, not the whole job.",
+      "Inngest is not just a cron service. It adds durable, step-based serverless workflow orchestration to scheduled jobs — so if a scheduled job fails mid-run, only the failed step retries, not the whole job.",
+  },
+  {
+    id: "hitl-approval",
+    question:
+      "Can I model human-in-the-loop approval workflow state machine patterns?",
+    answer:
+      "Yes. Use step.sleep, step.sleepUntil, or step.waitForEvent to pause a run until an approval event arrives, then continue the same function. That covers HITL approval patterns without a separate state machine service.",
   },
   {
     id: "replace-existing",
