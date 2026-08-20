@@ -1,70 +1,68 @@
 ---
-tags: ["Workflows & Orchestration", "Observability & Debugging", "Tutorials & Guides", "Next.js & Frameworks"]
-heading: "How to Implement OpenTelemetry Tracing in Your Node.js Application"
+heading: "OpenTelemetry in Node.js: Tracing Express APIs"
+subtitle: "Set up OpenTelemetry in Node.js to trace Express APIs and background jobs. Configure @opentelemetry/sdk-node and export traces to any OTLP collector."
+showSubtitle: true
 image: /assets/blog/opentelemetry-nodejs-tracing-express-inngest/cover.png
-showSubtitle: false
-subtitle: "Add end-to-end visibility and supercharge your debugging with distributed tracing for Express APIs and background workflows."
 date: 2025-12-12
+dateUpdated: 2026-08-14
 author: Charly Poly
-disableCTA: false
+category: engineering
+sidebarCta:
+  text: "Step timelines, OTel spans, and queue delays in every function run."
+  buttonLabel: "Traces docs"
+  href: "/docs/platform/monitor/traces?ref=blog-opentelemetry-nodejs-tracing-express-inngest-sidebar"
 ---
 
-[OpenTelemetry](https://opentelemetry.io/docs/languages/js/) is an open-source observability framework that provides a standardized way to collect and export telemetry data, including traces, metrics, and logs. In this tutorial, you will learn how to implement **OpenTelemetry tracing in your Node.js and Express application**, so you can see end-to-end spans across API requests and background workflows.
+[OpenTelemetry](https://opentelemetry.io/docs/languages/js/) is the standard way to collect traces, metrics, and logs in Node.js. This guide shows how to set up **OpenTelemetry in Node.js** with Express, export spans over OTLP, and extend those traces into background workflows with Inngest.
 
-## 1. Introduction to OpenTelemetry and Tracing
-
-OpenTelemetry is essential when deploying Node.js applications to production, providing an end-to-end visibility of ongoing actions performed by external systems (ex, APIs, webhooks) or users.
-
-The OpenTelemetry standard takes shape as **traces** and **spans**:
-
-- **Trace:** A trace represents the lifecycle of a request as it flows through your application.
-- **Span:** A span represents a single unit of work or operation within a trace (*ex, a database query*).
-- **Distributed Traces**: The link between traces spanning across many components of your application. For example, an API endpoint triggering a background workflow.
-
-Traces become increasingly useful in Node.js applications that combine multiple components, such as microservices or background workflows, as they help follow the lifecycle of an incoming request or user action across the whole application.
-
-Let's now see how to set up OpenTelemetry in a Node.js user API, triggering a background workflow upon user creation (ex, *sending onboarding emails*).
+You will install `@opentelemetry/sdk-node` and `@opentelemetry/exporter-trace-otlp-http`, wire them to Jaeger or any OTLP collector, and link API requests to durable workflow spans you can inspect in [Inngest Traces](/docs/platform/monitor/traces?ref=blog-opentelemetry-nodejs-tracing-express-inngest) and [Observability & Metrics](/docs/platform/monitor/observability-metrics?ref=blog-opentelemetry-nodejs-tracing-express-inngest).
 
 <Callout>
-
-The tutorial's source code is [available on GitHub](https://github.com/inngest/nodejs-opentelemetry-example).
-
+The tutorial source code is [available on GitHub](https://github.com/inngest/nodejs-opentelemetry-example).
 </Callout>
 
-## 2. Setting Up OpenTelemetry in Node.js (Express + OTLP)
+## What is OpenTelemetry tracing in Node.js?
 
-First, you need to install the necessary packages for your Node.js application and configure OpenTelemetry. If you're starting fresh, run `npm init -y` and set `"type": "module"` in `package.json` so the ESM imports work seamlessly.
+OpenTelemetry tracing gives you end-to-end visibility of work triggered by users, APIs, webhooks, and background jobs. The core concepts:
 
-### Install the Required Packages
+- **Trace:** The full lifecycle of a request as it moves through your application.
+- **Span:** A single unit of work inside a trace (for example, an Express handler or a database query).
+- **Distributed traces:** Spans linked across components—such as an Express route that kicks off a background workflow.
 
-Run the following command to install the necessary packages:
+Distributed tracing is especially useful when a Node.js app mixes HTTP handlers with queues, workers, or durable workflows. Without it, debugging means hopping between logs and guessing which step failed.
+
+## Set up OpenTelemetry in Node.js with `@opentelemetry/sdk-node`
+
+Install the packages your Node.js app needs. If you are starting fresh, run `npm init -y` and set `"type": "module"` in `package.json` so ESM imports work.
+
+### Install `@opentelemetry/sdk-node` and related packages
 
 ```bash
-npm install @opentelemetry/sdk-node @opentelemetry/api @opentelemetry/exporter-trace-otlp-http express inngest
-
+npm install @opentelemetry/sdk-node @opentelemetry/api @opentelemetry/exporter-trace-otlp-http @opentelemetry/auto-instrumentations-node express inngest
 ```
 
-We installed:
+What each package does:
 
-- **Express** to serve our application's API
-- The OpenTelemetry Node.js client **automatically captures Express operations**.
-- The OpenTelemetry OLTP exporter, which will enable us to **visualize the Express traces**.
-- The Inngest SDK to create **background workflows with embedded OpenTelemetry traces**.
+- **`@opentelemetry/sdk-node`** — Node.js OpenTelemetry SDK that registers the tracer provider and runs your instrumentations.
+- **`@opentelemetry/exporter-trace-otlp-http`** — Sends spans to Jaeger, Grafana Tempo, Honeycomb, or any OTLP-compatible collector over HTTP.
+- **`@opentelemetry/auto-instrumentations-node`** — Auto-instruments Express, HTTP, and common libraries (optional but recommended).
+- **Express** — Serves the example API.
+- **Inngest** — Durable background workflows with [Extended Traces](/docs/platform/monitor/traces?ref=blog-opentelemetry-nodejs-tracing-express-inngest#extended-traces).
 
-### Initialize and configure OpenTelemetry
+### Configure `@opentelemetry/sdk-node`
 
-Create a new file named `tracing.js` and add the following code to initialize OpenTelemetry:
+Create `tracing.js` and start the SDK **before** importing Express or other libraries you want instrumented:
 
 ```js
 // tracing.js
 
 import { NodeSDK } from "@opentelemetry/sdk-node";
 import { OTLPTraceExporter } from "@opentelemetry/exporter-trace-otlp-http";
+import { getNodeAutoInstrumentations } from "@opentelemetry/auto-instrumentations-node";
 import { InngestSpanProcessor } from "inngest/experimental";
 import { inngest } from "./workflow.js";
 
-// Configure OTLP endpoint for Jaeger using the HTTP exporter
-// Jaeger typically accepts OTLP HTTP on http://localhost:4318/v1/traces
+// Configure OTLP endpoint for Jaeger (or your existing collector)
 // Override via OTEL_EXPORTER_OTLP_ENDPOINT or OTEL_EXPORTER_OTLP_TRACES_ENDPOINT
 const traceExporter = new OTLPTraceExporter({
   url:
@@ -74,10 +72,10 @@ const traceExporter = new OTLPTraceExporter({
 });
 
 const sdk = new NodeSDK({
-  traceExporter: traceExporter,
-  // Inngest's OTel extension also captures Express and Node.js traces
+  traceExporter,
+  instrumentations: [getNodeAutoInstrumentations()],
+  // Also export spans into Inngest Traces for workflow debugging
   spanProcessors: [new InngestSpanProcessor(inngest)],
-  // Set service name for Jaeger
   serviceName: "nodejs-open-telemetry-example",
 });
 
@@ -91,12 +89,29 @@ console.log(
     "http://localhost:4318/v1/traces"
   }`
 );
-
 ```
 
-## 3. Creating an Express User API with Tracing Enabled
+## Export traces with `@opentelemetry/exporter-trace-otlp-http`
 
-Create a new file named `app.js` and set up a basic Express server with a route to create users:
+`@opentelemetry/exporter-trace-otlp-http` is the standard way to ship Node.js spans to an observability backend. Point it at:
+
+- Local Jaeger: `http://localhost:4318/v1/traces`
+- Your company collector: whatever OTLP HTTP URL your platform team provides
+- A managed vendor that accepts OTLP
+
+Prefer environment variables in production:
+
+```bash
+export OTEL_EXPORTER_OTLP_TRACES_ENDPOINT="https://otel-collector.example.com/v1/traces"
+# or
+export OTEL_EXPORTER_OTLP_ENDPOINT="https://otel-collector.example.com"
+```
+
+The exporter in `tracing.js` already reads those variables, so the same code works locally and in production without edits.
+
+## Trace an Express API with OpenTelemetry
+
+Create `index.js`. Import `tracing.js` first so instrumentation patches Express and `fetch` before they load:
 
 ```js
 // index.js
@@ -109,32 +124,32 @@ import express from "express";
 const app = express();
 const port = 3000;
 
-// Middleware to parse JSON bodies
 app.use(express.json());
 
-// User creation route
 app.post("/users", async (req, res) => {
   const { name, email } = req.body;
   console.log(`Creating user: ${name}, ${email}`);
 
-  // add a HTTP request for tracing demo purposes
+  // HTTP call shows up as a child span for demo purposes
   await fetch("https://api.restful-api.dev/objects");
 
   res.status(201).send({ message: "User created successfully" });
 });
 
-// Example: Create a new user
-// curl -X POST http://localhost:3000/users -H "Content-Type: application/json" -d '{"name": "John Doe", "email": "john.doe@example.com"}'
+// Example: curl -X POST http://localhost:3000/users \
+//   -H "Content-Type: application/json" \
+//   -d '{"name": "John Doe", "email": "john.doe@example.com"}'
 
 app.listen(port, () => {
   console.log(`User API listening at http://localhost:${port}`);
 });
-
 ```
 
-## 4. Using Inngest for Background Workflows with Traces
+With `@opentelemetry/sdk-node` and auto-instrumentations, Express handlers and outbound HTTP calls become spans without manual `startSpan` calls.
 
-Let's now update our Express API to kick off a background onboarding workflow upon user creation. We'll use Inngest, which enables us to write [durable workflows](https://www.inngest.com/docs/learn/inngest-functions) without having to set up a Redis storage or deal with workers and queues:
+## Trace background workflows with Inngest Extended Traces
+
+Update the Express API to start an onboarding workflow when a user is created. Inngest lets you write [durable workflows](/docs/learn/inngest-functions?ref=blog-opentelemetry-nodejs-tracing-express-inngest) without standing up Redis, workers, or queues yourself:
 
 ```js
 // workflow.js
@@ -145,7 +160,8 @@ import { extendedTracesMiddleware } from "inngest/experimental";
 export const inngest = new Inngest({
   id: "nodejs-open-telemetry-example",
   name: "NodeJS Open Telemetry Example",
-  middleware: [extendedTracesMiddleware()],
+  // Provider is created in tracing.js; do not create a second one here
+  middleware: [extendedTracesMiddleware({ behaviour: "off" })],
 });
 
 export const userOnboarding = inngest.createFunction(
@@ -158,7 +174,6 @@ export const userOnboarding = inngest.createFunction(
 
     await step.run("create-user", async () => {
       console.log(`Creating user: ${event.data.name}, ${event.data.email}`);
-      // add a HTTP request for tracing demo purposes
       await fetch("https://api.restful-api.dev/objects");
       return {
         name: event.data.name,
@@ -177,12 +192,11 @@ export const userOnboarding = inngest.createFunction(
     });
   }
 );
-
 ```
 
-Inngest's [Extended Traces](https://www.inngest.com/docs/platform/monitor/traces#extended-traces) middleware helps automatically capture workflow steps, database queries, and HTTP requests as OpenTelemetry traces.
+Inngest [Extended Traces](/docs/platform/monitor/traces?ref=blog-opentelemetry-nodejs-tracing-express-inngest#extended-traces) capture workflow steps, database queries, and HTTP requests as OpenTelemetry spans. Full setup options (including `@inngest/otel`) are in the [OpenTelemetry example docs](/docs/examples/open-telemetry?ref=blog-opentelemetry-nodejs-tracing-express-inngest).
 
-Let's now update our Express API to trigger the workflow from the `POST /api/users` endpoint:
+Trigger the workflow from `POST /users`:
 
 ```js
 // index.js
@@ -196,23 +210,18 @@ import { inngest, userOnboarding } from "./workflow.js";
 const app = express();
 const port = 3000;
 
-// Middleware to parse JSON bodies
 app.use(express.json());
 
 app.use(
-  // Expose the middleware on our recommended path at `/api/inngest`.
   "/api/inngest",
   serve({ client: inngest, functions: [userOnboarding] })
 );
 
-// User creation route
 app.post("/users", async (req, res) => {
   const { name, email } = req.body;
   console.log(`Creating user: ${name}, ${email}`);
-  // add a HTTP request for tracing demo purposes
   await fetch("https://api.restful-api.dev/objects");
 
-  // trigger the user onboarding workflow
   await inngest.send({
     name: "user.onboarding",
     data: {
@@ -227,21 +236,46 @@ app.post("/users", async (req, res) => {
 // ...
 ```
 
-We are now ready to start our API, send a test API request, and inspect the OpenTelemetry traces!
+## Export Inngest traces to an existing OpenTelemetry collector
 
-## 5. Visualizing OpenTelemetry Spans in Jaeger (OTLP)
+If you already run an OpenTelemetry collector (or a vendor OTLP endpoint), you do not need a second pipeline for Inngest. Keep your existing `@opentelemetry/exporter-trace-otlp-http` configuration and add Inngest’s span processor so the **same** Node.js provider exports:
 
-To visualize the spans generated by Express and Inngest, you can use a visualization UI like [Jaeger](https://www.jaegertracing.io/).
+1. **To your collector** — via `OTLPTraceExporter` (Jaeger, Tempo, Datadog agent, Grafana Alloy, etc.)
+2. **To Inngest Traces** — via `InngestSpanProcessor`, so step timelines show HTTP, DB, and custom spans next to queue delay and retries
 
-Follow these steps to set up Jaeger:
+Pattern for apps that already own OpenTelemetry:
 
-1. **Install Jaeger:**
+```js
+import { NodeSDK } from "@opentelemetry/sdk-node";
+import { OTLPTraceExporter } from "@opentelemetry/exporter-trace-otlp-http";
+import { InngestSpanProcessor } from "inngest/experimental";
+import { inngest } from "./workflow.js";
 
-    [Jaeger](https://www.jaegertracing.io/) natively supports OTLP to receive trace data. You can run Jaeger in a Docker container with the UI accessible on port 16686, and OTLP enabled on ports 4317 and 4318:
+const sdk = new NodeSDK({
+  // Existing collector URL — do not replace your platform exporter
+  traceExporter: new OTLPTraceExporter({
+    url: process.env.OTEL_EXPORTER_OTLP_TRACES_ENDPOINT,
+  }),
+  spanProcessors: [new InngestSpanProcessor(inngest)],
+  serviceName: "nodejs-open-telemetry-example",
+});
+
+sdk.start();
+```
+
+On the Inngest client, set `extendedTracesMiddleware({ behaviour: "off" })` when you add `InngestSpanProcessor` yourself, so the middleware does not create a second provider. Details are in the [Extended Traces reference](/docs/reference/typescript/extended-traces?ref=blog-opentelemetry-nodejs-tracing-express-inngest).
+
+That dual-export setup is what “export Inngest traces to an existing OTel collector” means in practice: workflow spans ride your current OTLP path while remaining visible in the Inngest dashboard for run-level debugging.
+
+## Visualize OpenTelemetry spans in Jaeger
+
+To visualize Express and Inngest spans locally, run [Jaeger](https://www.jaegertracing.io/) with OTLP enabled:
+
+1. **Start Jaeger** (UI on `16686`, OTLP on `4317`/`4318`):
 
     ```bash
     docker run --rm \
-      -e COLLECTOR_ZIPKIN_HOST_PORT**=**:9411 \
+      -e COLLECTOR_ZIPKIN_HOST_PORT=:9411 \
       -p 16686:16686 \
       -p 4317:4317 \
       -p 4318:4318 \
@@ -249,48 +283,46 @@ Follow these steps to set up Jaeger:
       jaegertracing/all-in-one:latest
     ```
 
-2. **Start the API and the Inngest DevServer:**
+2. **Start the API and Inngest Dev Server:**
 
     ```bash
-    # start the Express API
-
     npm start
     ```
 
     ```bash
-    # start Inngest DevServer to process background workflows
-
     inngest dev -u http://localhost:3000/api/inngest --no-discovery
     ```
 
-3. **Access Jaeger UI:**
-    - Once Jaeger is running, you can access the Jaeger UI by navigating to `http://localhost:16686` in your web browser.
-4. **Send a test request to the application:**
+3. Open Jaeger at `http://localhost:16686`.
+
+4. **Send a test request:**
 
     ```bash
-    curl -X POST http://localhost:3000/users -H "Content-Type: application/json" -d '{"name": "John Doe", "email": "john.doe@example.com"}'
+    curl -X POST http://localhost:3000/users \
+      -H "Content-Type: application/json" \
+      -d '{"name": "John Doe", "email": "john.doe@example.com"}'
     ```
 
-5. **View Spans:**
-
-    In the Jaeger UI, you can view the spans generated by your Express application. By selecting the “nodejs-open-telemetry-example” service and click on “Find Traces”, a list of traces will display. This will help you understand the flow of requests and identify any performance bottlenecks across Express requests and workflow steps.
+5. In Jaeger, select the `nodejs-open-telemetry-example` service and click **Find Traces**. You should see the Express request and workflow steps in one distributed trace.
 
     ![Jaeger UI showing OpenTelemetry traces for a Node.js Express API and Inngest workflow spans](/assets/blog/opentelemetry-nodejs-tracing-express-inngest/jaeger-ui.png)
 
-6. **Bonus: access the live Inngest Traces from the [Inngest DevServer](https://www.inngest.com/docs/local-development)**
-
-    Open a new tab at `http://127.0.0.1:8288/runs` and inspect the Inngest Traces, which comes as a complementary essential tool for local development:
+6. **Bonus:** open the [Inngest Dev Server](/docs/local-development?ref=blog-opentelemetry-nodejs-tracing-express-inngest) at `http://127.0.0.1:8288/runs` to inspect the same run with step-level [Traces](/docs/platform/monitor/traces?ref=blog-opentelemetry-nodejs-tracing-express-inngest):
 
     ![Inngest DevServer traces view showing OpenTelemetry spans for Node.js background workflows](/assets/blog/opentelemetry-nodejs-tracing-express-inngest/inngest-devserver.png)
 
+## Monitor traces and metrics in Inngest
 
-You now have a robust observability template for any Node.js Express + background workflow application. With OpenTelemetry configured, your Node.js application won't have any secrets, enabling you to be notified of any errors and quickly narrow down the root causes of bugs.
+OpenTelemetry covers process-level spans. Inngest adds product observability on top:
 
-## 6. Bonus: Creating Custom Spans in Node.js
+- **[Traces](/docs/platform/monitor/traces?ref=blog-opentelemetry-nodejs-tracing-express-inngest)** — Interactive timeline per function run: queue delay, step duration, HTTP phases, retries, and Extended Traces / OTel spans.
+- **[Observability & Metrics](/docs/platform/monitor/observability-metrics?ref=blog-opentelemetry-nodejs-tracing-express-inngest)** — Function volume, failure rate, and latency charts across apps without extra instrumentation.
 
-The automatic spans collection for Express and Inngest workflows comes in handy, but can miss some other spots from your applications.
+Use Jaeger (or your collector) for fleet-wide search; use Inngest when you need to debug a specific durable run end to end.
 
-The OpenTelemetry Node.js client enables you to create custom spans by using the `trace` API. Here's an example of how to create custom spans in your Express route:
+## Create custom spans in Node.js
+
+Auto-instrumentation covers Express and many libraries, but you can still create custom spans with the OpenTelemetry API:
 
 ```js
 // index.js
@@ -300,7 +332,6 @@ import { trace } from "@opentelemetry/api";
 
 //...
 
-// User creation route
 app.post("/users", async (req, res) => {
   const { name, email } = req.body;
   console.log(`Creating user: ${name}, ${email}`);
@@ -332,7 +363,7 @@ app.post("/users", async (req, res) => {
 //...
 ```
 
-The same pattern can be applied to Inngest Workflows using Extended Traces:
+The same pattern works inside Inngest functions via the `tracer` argument from Extended Traces:
 
 ```tsx
 // workflow.js
@@ -343,8 +374,7 @@ export const userOnboarding = inngest.createFunction(
   { id: "user-onboarding" },
   { event: "user.onboarding" },
   async ({ event, step, tracer }) => {
-	  const { name, email } = event.data;
-
+    const { name, email } = event.data;
 
     await step.run("create-user", async () => {
       tracer.startActiveSpan("create-user-request", async (span) => {
@@ -357,28 +387,32 @@ export const userOnboarding = inngest.createFunction(
     });
 
     await step.run("send-welcome-email", async () => {
-	    // ...
+      // ...
     });
   }
 );
-
 ```
 
-## Conclusion
+## FAQ: OpenTelemetry in Node.js
 
-Implementing OpenTelemetry tracing in your Node.js application can significantly enhance your observability, helping you to debug and optimize your systems more effectively.
-
-By following the steps outlined in this article, you'll be able to capture detailed traces, identify bottlenecks, and improve overall performance. For those managing complex workflows, integrating tools like [Inngest](https://www.inngest.com/docs) can further enhance your observability and streamline your processes.
-
-Start tracing today and take the first step towards more efficient and maintainable applications.
-
-## FAQ: OpenTelemetry Tracing in Node.js
+**How do I set up OpenTelemetry in Node.js quickly?**
+Install `@opentelemetry/sdk-node` and `@opentelemetry/exporter-trace-otlp-http`, start a `NodeSDK` in a file imported before your app, and point the exporter at your OTLP endpoint.
 
 **How do I export OpenTelemetry traces from Node.js to Jaeger?**
-Use the OTLP HTTP exporter pointed at `http://localhost:4318/v1/traces` (or set `OTEL_EXPORTER_OTLP_TRACES_ENDPOINT`), then start Jaeger with OTLP enabled as shown above.
+Use `@opentelemetry/exporter-trace-otlp-http` with `http://localhost:4318/v1/traces` (or `OTEL_EXPORTER_OTLP_TRACES_ENDPOINT`), then run Jaeger with OTLP enabled as shown above.
 
 **Does Express support automatic OpenTelemetry instrumentation?**
-Yes, when you use `@opentelemetry/sdk-node` with the default auto-instrumentations, Express handlers and middleware are traced without manual span creation.
+Yes. With `@opentelemetry/sdk-node` and `@opentelemetry/auto-instrumentations-node`, Express handlers and middleware are traced without manual span creation.
+
+**How do I export Inngest workflow spans to my existing OTel collector?**
+Keep your existing OTLP exporter, add `InngestSpanProcessor` to the same provider, and set `extendedTracesMiddleware({ behaviour: "off" })` on the Inngest client.
 
 **How do I trace background jobs and workflows in Node.js?**
-Use Inngest with `extendedTracesMiddleware()` to capture each workflow step as spans, and send events from your API (`/users`) to `user.onboarding` so both the request and workflow appear in a single trace.
+Use Inngest with Extended Traces so each `step.run()` and nested HTTP/DB work appears as spans, then send events from your API (`/users`) so the request and workflow share one distributed trace.
+
+## Next steps
+
+- [Sign up for Inngest](https://app.inngest.com/sign-up?ref=blog-opentelemetry-nodejs-tracing-express-inngest) and connect Extended Traces in a few minutes
+- Read [Traces](/docs/platform/monitor/traces?ref=blog-opentelemetry-nodejs-tracing-express-inngest) and [Observability & Metrics](/docs/platform/monitor/observability-metrics?ref=blog-opentelemetry-nodejs-tracing-express-inngest)
+- Follow the full [OpenTelemetry + Inngest setup guide](/docs/examples/open-telemetry?ref=blog-opentelemetry-nodejs-tracing-express-inngest)
+- Clone the [example repo](https://github.com/inngest/nodejs-opentelemetry-example) and run the Jaeger walkthrough locally
