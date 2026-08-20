@@ -10,7 +10,7 @@ const SJ_DOTS_JSON = JSON.stringify(sjDotsData);
 export const metadata: Metadata = generateMetadata({
   title: "Serverless Workflow Orchestration for Cron Jobs",
   description:
-    "Infrastructure-agnostic serverless workflow orchestration for scheduled jobs. Compare Inngest vs Step Functions vs Temporal—retries, fan-out, and distributed serverless execution without workers.",
+    "Run reliable cron and scheduled jobs with Inngest. Automatic retries, fan-out, timezone support, and step-level observability, all in one function.",
 });
 
 export default function Page() {
