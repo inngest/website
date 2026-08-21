@@ -1,0 +1,363 @@
+---
+tags:
+  [
+    "Background Jobs & Scheduling",
+    "Durable Execution",
+    "SDKs & Languages",
+    "Tutorials & Guides",
+    "Queues & Flow Control",
+    "Workflows & Orchestration",
+  ]
+heading: "Inngest Python SDK: Durable Background Jobs for FastAPI, Flask, and Django"
+subtitle: "Background jobs in Python have always been more painful than they should be. Celery configs, Redis brokers, worker crashes with no retries, scattered logs. The whole affair is a mess. Inngest changes this with a developer-first SDK that makes durable, event-driven functions feel like writing ordinary Python."
+showSubtitle: true
+image: /assets/blog/inngest-python-sdk-durable-background-jobs-for-fastapi-flask-and-django/featured-image.png
+date: 2026-08-20
+author: Lauren Craigie
+category: engineering
+primaryCTA: docs
+floatingCTA: true
+---
+
+## **Python Background Jobs Without Celery or Redis**
+
+Inngest is a platform for writing reliable background functions that are triggered by events. You define a function, annotate it with Inngest decorators, and it handles all the hard parts: reliable delivery, automatic retries with backoff, **step-level durability**, fan-out concurrency, and a slick UI for inspecting runs.
+
+The Python SDK, available for **FastAPI, Flask, Django, Tornado, and DigitalOcean Functions**, lets you drop durable background jobs directly into your existing web stack without running a separate worker process, message broker, or orchestration service. Python 3.10+ is supported, with recent additions like Pydantic support and stable Connect covered in the **[Python SDK v0.5 release](/blog/2025-06-23-python-v0.5?ref=blog-inngest-python-sdk-durable-background-jobs-for-fastapi-flask-and-django)**. The full reference lives at **[inngest.com/docs/reference/python](/docs/reference/python?ref=blog-inngest-python-sdk-durable-background-jobs-for-fastapi-flask-and-django)**.
+
+If you've hit the limits of Celery-style task queues, **[when a queue isn't enough](/blog/when-a-queue-isnt-enough?ref=blog-inngest-python-sdk-durable-background-jobs-for-fastapi-flask-and-django)** explains when durable execution is the better fit.
+
+- **Automatic retries:** Functions retry on failure with configurable backoff, with no manual try/except threading.
+- **Step-level durability:** Each **`step.run()`** persists its result, so crashes mid-function resume from the last checkpoint.
+- **Sleep & wait:** Sleep for days or wait for external events without holding a thread or a DB row.
+- **Concurrency controls:** **Rate limiting, concurrency keys, and debouncing**, all in function config, no Redis needed.
+
+## **Add Inngest to an Existing Python Web App**
+
+Install the SDK. There's a single package for all frameworks (**[install docs](/docs/getting-started/python-quick-start?ref=blog-inngest-python-sdk-durable-background-jobs-for-fastapi-flask-and-django)**):
+
+```bash
+pip install inngest
+```
+
+Then create a client and register your app. Note the **`INNGEST_DEV`** environment variable: the SDK defaults to production mode for safety, so you must set it explicitly during local development (**[production mode docs](/docs/reference/python/overview/prod-mode?ref=blog-inngest-python-sdk-durable-background-jobs-for-fastapi-flask-and-django)**):
+
+```python
+import inngest
+from fastapi import FastAPI
+from inngest.fast_api import serve
+
+app = FastAPI()
+client = inngest.Inngest(app_id="my-python-app")
+
+# Mount Inngest's HTTP handler at /api/inngest
+serve(app, client, [])  # we'll add functions next
+```
+
+**Tip:** During local development, set **`INNGEST_DEV=1`** and run **`npx --ignore-scripts=false inngest-cli@latest dev -u http://127.0.0.1:8000/api/inngest --no-discovery`** to start the Dev Server. It gives you a visual run explorer at **`http://localhost:8288`**. See the **[Python quick start guide](/docs/getting-started/python-quick-start?ref=blog-inngest-python-sdk-durable-background-jobs-for-fastapi-flask-and-django)** for a full walkthrough.
+
+## **Run Code After an Event: Your First Inngest Function**
+
+An Inngest function is a decorated async (or sync) Python function. The handler receives a single **`ctx`** argument; step primitives are accessed via **`ctx.step`** (**[create function docs](/docs/reference/python/functions/create?ref=blog-inngest-python-sdk-durable-background-jobs-for-fastapi-flask-and-django)**). Here's the classic welcome email example, a pattern we also walk through for **[lifecycle emails with Resend](/blog/lifecycle-emails-with-resend?ref=blog-inngest-python-sdk-durable-background-jobs-for-fastapi-flask-and-django)**:
+
+```python
+import datetime
+
+import inngest
+from myapp import client, send_email, fetch_user
+
+@client.create_function(
+    fn_id="send-welcome-email",
+    trigger=inngest.TriggerEvent(event="app/user.signup"),
+)
+async def send_welcome_email(ctx: inngest.Context) -> None:
+    user_id = ctx.event.data["user_id"]
+
+    # ctx.step.run() memoizes the result, safe to retry without double-fetching
+    user = await ctx.step.run("fetch-user", fetch_user, user_id)
+
+    # Pause for an hour; no thread held, no timer row in your DB
+    await ctx.step.sleep("wait-1-hour", datetime.timedelta(hours=1))
+
+    await ctx.step.run(
+        "send-email",
+        lambda: send_email(
+            to=user["email"],
+            subject="Welcome to Acme!",
+            template="welcome",
+        ),
+    )
+```
+
+The **`ctx.step.sleep("wait-1-hour", datetime.timedelta(hours=1))`** call doesn't block a thread. Inngest pauses the function in the cloud and resumes it an hour later. No cronjob, no scheduler, no timer.
+
+## **How Inngest Handles Retries, Delays, and Multi-Step Workflows in Python**
+
+The real power of Inngest's Python SDK is the **`step`** API. Every call to **`ctx.step.run()`** is **individually retried and memoized**. If your function crashes halfway through a 10-step pipeline, Inngest replays from the failing step. Earlier results are retrieved from the run history, not re-executed. See **[how Inngest executes functions](/docs/learn/how-functions-are-executed?ref=blog-inngest-python-sdk-durable-background-jobs-for-fastapi-flask-and-django)** for the full execution model.
+
+```python
+import datetime
+
+async def my_function(ctx: inngest.Context) -> None:
+    # ① Memoized, retriable step
+    result = await ctx.step.run("step-name", my_callable)
+
+    # ② Sleep for a duration
+    await ctx.step.sleep("pause-name", datetime.timedelta(hours=24))
+
+    # ③ Wait for an external event
+    event = await ctx.step.wait_for_event(
+        "wait-for-payment",
+        event="stripe/payment.succeeded",
+        if_exp="event.data.order_id == async.data.order_id",
+        timeout=datetime.timedelta(days=7),
+    )
+
+    # ④ Fan-out: run steps in parallel
+    results = await ctx.group.parallel(
+        (
+            lambda: ctx.step.run("resize-small", resize, img, "128x128"),
+            lambda: ctx.step.run("resize-medium", resize, img, "512x512"),
+            lambda: ctx.step.run("resize-large", resize, img, "1024x1024"),
+        )
+    )
+```
+
+Note that parallel execution uses **`ctx.group.parallel`**. See the **[parallel step docs](/docs/reference/python/steps/parallel?ref=blog-inngest-python-sdk-durable-background-jobs-for-fastapi-flask-and-django)** for details. For **`wait_for_event()`**, see the dedicated reference for event matching and timeouts — Python uses **`if_exp`** (not `match`) for correlation expressions.
+
+## **Using Inngest with FastAPI, Flask, and Django**
+
+Inngest's Python SDK ships with first-class support for every major Python web framework (**[client docs](/docs/reference/python/client/overview?ref=blog-inngest-python-sdk-durable-background-jobs-for-fastapi-flask-and-django)**). The pattern is the same in each case: create a client, mount a handler at a route, pass it your function list.
+
+### **FastAPI**
+
+```python
+from fastapi import FastAPI
+import inngest
+from inngest.fast_api import serve
+
+app = FastAPI()
+inngest_client = inngest.Inngest(app_id="my-app", is_production=False)
+
+serve(app, inngest_client, [send_welcome_email, process_order])
+```
+
+### **Flask**
+
+```python
+from flask import Flask
+import inngest
+import inngest.flask
+
+flask_app = Flask(__name__)
+inngest_client = inngest.Inngest(app_id="my-flask-app", is_production=False)
+
+inngest.flask.serve(flask_app, inngest_client, [send_welcome_email])
+```
+
+### **Django**
+
+```python
+import inngest
+import inngest.django
+
+inngest_client = inngest.Inngest(app_id="my-django-app", is_production=False)
+
+urlpatterns = [
+    inngest.django.serve(inngest_client, [send_welcome_email]),
+]
+```
+
+## **Control Concurrency and Rate Limiting Per User, Tenant, or Resource**
+
+One of the more impressive parts of the Python SDK is how much operational complexity it moves into simple function configuration. Things that used to require Redis, Celery Beat, and careful locking are now just keyword arguments on your decorator (**[full config reference](/docs/reference/python/functions/create?ref=blog-inngest-python-sdk-durable-background-jobs-for-fastapi-flask-and-django)**).
+
+```python
+import datetime
+
+import inngest
+
+@client.create_function(
+    fn_id="process-user-export",
+    trigger=inngest.TriggerEvent(event="app/export.requested"),
+    # Max 3 concurrent runs per user; no Redis lock needed
+    concurrency=[
+        inngest.Concurrency(
+            limit=3,
+            key="event.data.user_id",
+        )
+    ],
+    # Rate limit: at most 10 runs per minute globally
+    rate_limit=inngest.RateLimit(
+        limit=10,
+        period=datetime.timedelta(minutes=1),
+    ),
+    # Debounce: wait 5s after last event before running
+    debounce=inngest.Debounce(
+        period=datetime.timedelta(seconds=5),
+        key="event.data.user_id",
+    ),
+    # Default retries is 4; range is 0-20
+    retries=5,
+)
+async def process_export(ctx: inngest.Context) -> None:
+    ...
+```
+
+**Note:** Concurrency keys use the same expression syntax as event matching: **`event.data.user_id`** references a field on the triggering event's data payload. You can scope limits per-user, per-tenant, or per-resource with **[flow control](/docs/guides/flow-control?ref=blog-inngest-python-sdk-durable-background-jobs-for-fastapi-flask-and-django)**, including the same **[per-tenant concurrency patterns](/blog/fixing-multi-tenant-queueing-concurrency-problems?ref=blog-inngest-python-sdk-durable-background-jobs-for-fastapi-flask-and-django)** used in multi-customer platforms.
+
+## **Triggering Background Jobs from Anywhere in Your Python App**
+
+Triggering functions is just sending an event from anywhere in your app. The client exposes both sync and async interfaces (**[send events docs](/docs/reference/python/client/send?ref=blog-inngest-python-sdk-durable-background-jobs-for-fastapi-flask-and-django)**):
+
+```python
+# Async (FastAPI, async Django, etc.)
+await client.send(
+    inngest.Event(
+        name="app/user.signup",
+        data={"user_id": user.id, "email": user.email},
+    )
+)
+
+# Sync (Flask, Django views, scripts)
+client.send_sync(
+    inngest.Event(
+        name="app/order.placed",
+        data={"order_id": order.id, "total": order.total},
+    )
+)
+
+# Batch multiple events atomically
+await client.send(
+    [
+        inngest.Event(name="app/analytics.pageview", data={"path": "/home"}),
+        inngest.Event(name="app/analytics.pageview", data={"path": "/pricing"}),
+        inngest.Event(name="app/analytics.pageview", data={"path": "/docs"}),
+    ]
+)
+```
+
+## **Scheduled Jobs with TriggerCron**
+
+Scheduled jobs use a **`TriggerCron`** instead of a **`TriggerEvent`**: standard unix-cron syntax, no external scheduler required. You can also add an optional **`jitter`** to spread load across a window (**[TriggerCron docs](/docs/reference/python/functions/create?ref=blog-inngest-python-sdk-durable-background-jobs-for-fastapi-flask-and-django)**). For a broader look at scheduling without Celery Beat or a separate cron service, see **[modern serverless job scheduling](/blog/modern-serverless-job-scheduler?ref=blog-inngest-python-sdk-durable-background-jobs-for-fastapi-flask-and-django)**:
+
+```python
+@client.create_function(
+    fn_id="daily-digest",
+    trigger=inngest.TriggerCron(cron="0 8 * * *"),  # 8am every day
+)
+async def send_daily_digest(ctx: inngest.Context) -> None:
+    users = await ctx.step.run("fetch-active-users", fetch_active_users)
+    for user in users:
+        await client.send(
+            inngest.Event(
+                name="app/digest.send",
+                data={"user_id": user["id"]},
+            )
+        )
+```
+
+## **Inngest vs Celery vs ARQ: Which Python Background Job Tool Should You Use?**
+
+Here's how Inngest's Python SDK stacks up against the two most common alternatives. For a deeper look at **[queues vs durable execution](/blog/when-a-queue-isnt-enough?ref=blog-inngest-python-sdk-durable-background-jobs-for-fastapi-flask-and-django)**, see our guide on when Celery-style tools stop being enough:
+
+| **Feature** | **Inngest** | **Celery** | **ARQ** |
+| --- | --- | --- | --- |
+| Step-level durability | ✓ Yes | ✗ No | ✗ No |
+| Sleep without holding thread | ✓ Yes | ✗ No | ✗ No |
+| No broker required | ✓ Yes | ✗ No | ✗ No |
+| Wait for external event | ✓ Yes | ✗ No | ✗ No |
+| Concurrency keys | ✓ Yes | ~ Partial | ✗ No |
+| Debounce / rate limiting | ✓ Yes | ✗ No | ✗ No |
+| **Visual run explorer** | ✓ Built in | ~ Flower | ✗ No |
+| Works inside existing web app | ✓ Yes | ✗ Separate worker | ✗ Separate worker |
+
+**Fair caveat:** Inngest is a managed cloud service, which means you do have a dependency on their infrastructure. They offer a **[self-hosted option](/docs/self-hosting?ref=blog-inngest-python-sdk-durable-background-jobs-for-fastapi-flask-and-django)** for enterprise customers, but for most teams the cloud offering is the path of least resistance, and the free tier is genuinely generous.
+
+## **Deploying Inngest with a Python App: No Extra Infrastructure Required**
+
+In production, Inngest communicates with your app over HTTPS. Deploy your app normally (Railway, Render, AWS Lambda, a VPS, anything that serves HTTP), then point Inngest at your endpoint. Two environment variables are required (**[env vars docs](/docs/reference/python/overview/env-vars?ref=blog-inngest-python-sdk-durable-background-jobs-for-fastapi-flask-and-django)**):
+
+```bash
+INNGEST_EVENT_KEY="your-event-key"     # for sending events
+INNGEST_SIGNING_KEY="signkey-prod-..."  # request signature verification
+# Do NOT set INNGEST_DEV in production
+```
+
+Inngest calls your **`/api/inngest`** endpoint to invoke functions. There's no long-polling worker process, no separate container. Your existing deployment just gains durable function capabilities. See the **[production mode guide](/docs/reference/python/overview/prod-mode?ref=blog-inngest-python-sdk-durable-background-jobs-for-fastapi-flask-and-django)** for more detail on the security model.
+
+## **When to Use Inngest: Python Background Jobs by Use Case**
+
+Inngest isn't the right tool for every situation, but for Python teams running web apps who want reliable, multi-step background jobs without managing broker infrastructure, it's hard to beat. The step API removes an entire class of problems around retries, delays, and crash recovery. The framework integrations are thin enough that you can drop it into an existing FastAPI, Flask, or Django app in an afternoon.
+
+If you're still running Celery because it's familiar, the gap in ergonomics is significant, especially once your workflows involve more than a single task. The SDK is open source (**[inngest/inngest-py](https://github.com/inngest/inngest-py)**), the free tier is real, and the **[documentation](/docs?ref=blog-inngest-python-sdk-durable-background-jobs-for-fastapi-flask-and-django)** is thorough. Here's where it specifically makes sense:
+
+### **You have a Python web app and don't want to run a separate worker process**
+
+If you're running FastAPI, Flask, or Django and the idea of maintaining a separate Celery worker container alongside your app feels like unnecessary overhead, Inngest is the right tool. Your existing web app becomes the worker. Inngest calls into it over HTTP. One deployment, one service, no broker to manage.
+
+### **You're building or scaling an ecommerce store in Python**
+
+Ecommerce backends are full of multi-step, time-sensitive workflows: order confirmation emails, delayed shipping notifications, abandoned cart reminders 2 hours after checkout, post-purchase review requests a week later, inventory sync after fulfillment. Inngest handles all of these natively: **`step.sleep(..., datetime.timedelta(hours=2))`** doesn't hold a thread, and each step in the order flow is individually retried if something goes wrong. See **[importing ecommerce API data](/blog/import-ecommerce-api-data-in-seconds?ref=blog-inngest-python-sdk-durable-background-jobs-for-fastapi-flask-and-django)** for a concrete Python pipeline example. If your Python ecommerce backend runs on Django or FastAPI, Inngest is the right background job tool.
+
+### **You need reliable background jobs but have no dedicated DevOps or infrastructure team**
+
+Small Python engineering teams often end up with fragile Celery setups because no one owns the Redis broker, the worker scaling, or the dead-letter queue. Inngest removes that entire class of problem. There's no broker to configure, no worker to scale, and no infrastructure to monitor. If you're a startup or small team running Python and background job reliability is a recurring pain point, Inngest is the right choice.
+
+### **You're building AI or LLM pipelines in Python that need to be reliable**
+
+AI workflows (calling an LLM, processing the response, storing results, triggering downstream actions) are exactly the kind of multi-step, long-running work that breaks down with naive task queues. If a step fails halfway through, you don't want to re-run the expensive LLM call. Inngest's step memoization ensures each stage runs exactly once. For **[managing AI capacity with flow control](/blog/multi-tenant-ai-platform-flow-control?ref=blog-inngest-python-sdk-durable-background-jobs-for-fastapi-flask-and-django)**, see our production AI guide. If you're building agentic or AI-powered features in a Python web app, Inngest is a strong fit for the orchestration layer.
+
+### **You're processing webhooks from third-party services**
+
+Stripe, GitHub, Shopify, Twilio: webhook-driven workflows often need to do several things in sequence after an event arrives (validate, update records, send notifications, trigger follow-up logic). With Inngest, you send the incoming webhook payload as an event and handle the rest in a durable step function, or use **[Inngest as a webhook consumer](/docs/platform/webhooks?ref=blog-inngest-python-sdk-durable-background-jobs-for-fastapi-flask-and-django)** directly. If your Python backend processes webhooks and you want that processing to be reliable and observable, Inngest is the right tool.
+
+### **You're already on FastAPI and want background tasks that actually retry**
+
+FastAPI's built-in **`BackgroundTasks`** are fire-and-forget. If the task fails, it's gone. If you're on FastAPI and you need your background work to be retried on failure, run in guaranteed order, or span multiple steps, Inngest is the natural upgrade path. It drops into an existing FastAPI app with minimal changes.
+
+### **You're migrating away from Celery**
+
+If your team runs Python and is tired of managing Redis, debugging Celery worker crashes, or dealing with task serialization issues, Inngest is the most direct replacement. You get retries, scheduling, and async execution without the broker, without the separate worker process, and with far better visibility into what's running and why. For a multi-step pipeline that outgrew Celery, see **[building a durable lead enrichment pipeline](/blog/lead-enrichment-pipeline-durable-execution-inngest?ref=blog-inngest-python-sdk-durable-background-jobs-for-fastapi-flask-and-django)**.
+
+## Frequently asked questions about the Inngest Python SDK
+
+### **Do I need Redis or a message broker to use Inngest with Python?**
+
+No, you do not need Redis to use Inngest with Python. Inngest has no dependency on Redis, RabbitMQ, or any message broker. Inngest's cloud platform handles message delivery and state — your Python app just needs to expose an HTTP endpoint. This is one of the primary reasons teams switch from Celery.
+
+### **Does Inngest work with synchronous Python frameworks like standard Django or Flask?**
+
+Yes, Inngest works with Djanho and Flask. The Inngest Python SDK supports both async and sync functions in the same app. For sync frameworks, use `StepSync` instead of `Step` and define your handler as a regular `def` rather than `async def`. You can mix sync and async functions freely within one Inngest app.
+
+### **Can I run Inngest on serverless infrastructure like AWS Lambda or Google Cloud Run?**
+
+Yes Inngest supports serverless infrastructure. Because Inngest communicates with your app over HTTP rather than keeping a persistent worker process alive, it works naturally on serverless and short-lived compute. Your function is invoked per-step, so there's no need to hold a long-lived connection.
+
+### **How do I write unit tests for Inngest functions in Python?**
+
+Inngest functions are plain Python callables, so you can test the core logic directly without the Inngest runtime. For integration testing, the Dev Server can be pointed at a test instance of your app. See the [local development docs](/docs/local-development?ref=blog-inngest-python-sdk-durable-background-jobs-for-fastapi-flask-and-django) for testing patterns.
+
+### **What happens to in-flight jobs if I redeploy my Python app?**
+
+In-flight function runs resume from their last completed step after the new deployment is live. Because step results are stored in Inngest's platform rather than in your app's memory, a rolling restart or redeploy doesn't lose progress. Functions that are mid-sleep will wake up and call back into the new deployment.
+
+### **Is there a limit on how large my event payload can be?**
+
+Yes, Inngest event payloads are capped at 512KB. For larger data — images, documents, bulk records — store the data in S3 or your database and pass a reference ID in the event payload instead. Steps can then fetch the full data as needed.
+
+### **Can I use Inngest alongside an existing Celery setup during migration?**
+
+Yes, you can use Inngest with Celery. Inngest and Celery can run side by side in the same Python app. You can migrate task by task — new workflows go to Inngest while existing Celery tasks run unchanged. There's no need for a big-bang migration.
+
+### **Does the Inngest Python SDK support type hints and Pydantic models?**
+
+Yes, the Inngest Python SDK supports Pydantic models. The SDK is fully typed and works with standard Python type hints. Event data arrives as a dict by default, but you can validate and parse it into Pydantic models inside a `step.run()` call with no special configuration needed.
+
+### **What Python version do I need?**
+
+You will need to use Python 3.10 or higher with Inngest. The SDK supports Django 4.2+, FastAPI 0.100+, Flask 2.3+, and Tornado 6.3+.
+
+### **Is Inngest production-ready for Python, or is it still experimental?**
+
+Yes, the Inngest Python SDK is production-ready.
