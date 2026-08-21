@@ -1,0 +1,75 @@
+import { Warning } from "src/shared/Docs/mdx";
+
+{/*
+  Unlisted page: intentionally NOT registered in shared/Docs/navigationStructure.ts.
+  It is reached from the "Draining" badge in the dashboard, not from docs nav.
+
+  One inference to confirm before wiring the app link: the "Replaying skipped
+  triggers" section assumes skipped triggers are recorded with the "Skipped"
+  status and are replayable through Replay, mirroring paused functions. The
+  spec only states they are not replayed *automatically*.
+*/}
+
+export const metaTitle = "Drain an Inngest Function | Finish Existing Runs, Start No New Ones"
+export const description = "Draining stops an Inngest function from starting new runs while letting existing runs finish. Learn how draining differs from pausing and what happens to skipped triggers."
+
+# Function Draining
+
+**Draining stops new runs from starting while allowing existing runs to finish.**
+
+Draining is useful when you need a function to finish its existing work but do not want it to accept additional work — for example, before a maintenance window or when retiring a function.
+
+Unlike [pausing](/docs/guides/pause-functions?ref=docs-drain-functions), draining does not suspend runs that are already in progress.
+
+## When a function is draining
+
+- **New triggers do not start runs.** Events, cron triggers, and invokes do not start runs for the function.
+- **Existing runs continue normally.** Runs created before draining began keep going, including queued and sleeping runs.
+- **Existing runs are not cancelled or paused.**
+- **For [batched functions](/docs/guides/batching?ref=docs-drain-functions), new events are not added to a batch.**
+
+<Warning>
+Triggers skipped while a function is draining are not replayed automatically when you stop draining. Only future triggers start runs again.
+</Warning>
+
+## Draining is a persistent state
+
+Draining does not clear on its own. The function stays in the **Draining** state until you manually disable it — including after the last active run finishes.
+
+This is the main thing that surprises people: draining is a persistent operational state, not a temporary progress indicator. A function with no runs left is still draining, and still skipping new triggers, until you stop draining it.
+
+## Draining versus pausing
+
+Both stop new runs from starting. They differ in what happens to work already underway.
+
+|                                    | Draining | Paused                        |
+| ---------------------------------- | -------- | ----------------------------- |
+| Starts new runs                    | No       | No                            |
+| Existing runs continue             | Yes      | No; execution is suspended    |
+| Cancels existing runs              | No       | Not immediately               |
+| Automatically resumes              | No       | No                            |
+| Skipped work automatically replays | No       | No                            |
+
+Choose **draining** when in-flight work must complete — draining a function before retiring it, or letting a queue empty ahead of maintenance. Choose **[pausing](/docs/guides/pause-functions?ref=docs-drain-functions)** when execution itself needs to stop, such as a bug that makes continued processing harmful.
+
+## Stop draining
+
+Use the **Stop draining** action on the function's dashboard.
+
+Disabling draining allows future triggers to start runs again. It does not replay triggers that were skipped while the function was draining.
+
+## Replaying skipped triggers
+
+To process work that was skipped during a drain, use [Replay](/docs/platform/replay?ref=docs-drain-functions):
+
+1. Navigate to the function's dashboard.
+2. Select the **Replay** option in the "All actions" menu.
+3. Select a date window covering the drain and enable the **Skipped** status.
+
+Your plan's history limit applies to the window you can replay, so replay skipped work before it ages out. See the [Replay guide](/docs/platform/replay?ref=docs-drain-functions) for details.
+
+## Related
+
+- **[Pausing a function](/docs/guides/pause-functions?ref=docs-drain-functions)** stops new runs and suspends runs in progress.
+- **[Concurrency limits](/docs/guides/concurrency?ref=docs-drain-functions)** and **[throttling](/docs/guides/throttling?ref=docs-drain-functions)** shape how quickly runs start, rather than stopping them.
+- **[Start timeouts](/docs/features/inngest-functions/cancellation/cancel-on-timeouts?ref=docs-drain-functions)** cancel runs that wait in the queue too long. Runs already queued when a drain begins still count against these timeouts.
