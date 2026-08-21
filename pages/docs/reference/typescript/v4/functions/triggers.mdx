@@ -349,9 +349,7 @@ const computeSquare = inngest.createFunction(
     id: "compute-square",
     triggers: [
       { event: "calculate/square" },
-      invoke({
-        schema: z.object({ number: z.number() }),
-      }),
+      invoke(z.object({ number: z.number() })),
     ],
   },
   async ({ event }) => {
@@ -363,12 +361,8 @@ const computeSquare = inngest.createFunction(
 ### Parameters
 
 <Properties>
-  <Property name="options" type="object" required>
-    <Properties nested={true}>
-      <Property name="schema" type="StandardSchemaV1 | StaticSchema" required>
-        A schema defining the expected `data` shape when callers invoke this function via `step.invoke()`. Accepts any [Standard Schema](https://standardschema.dev/) compatible library or a [`staticSchema()`](#staticschema).
-      </Property>
-    </Properties>
+  <Property name="schema" type="StandardSchemaV1 | StaticSchema" required>
+    A schema defining the expected `data` shape when callers invoke this function via `step.invoke()`. Accepts any [Standard Schema](https://standardschema.dev/) compatible library or a [`staticSchema()`](#staticschema).
   </Property>
 </Properties>
 
@@ -387,12 +381,10 @@ Define the invoke schema on the target function, then call it with typed data:
         id: "process-image",
         triggers: [
           { event: "image/uploaded" },
-          invoke({
-            schema: z.object({
-              imageUrl: z.string().url(),
-              width: z.number(),
-            }),
-          }),
+          invoke(z.object({
+            imageUrl: z.string().url(),
+            width: z.number(),
+          })),
         ],
       },
       async ({ event }) => {
@@ -485,7 +477,7 @@ const resizeImage = inngest.createFunction(
   {
     id: "resize-image",
     triggers: [
-      invoke({ schema: staticSchema<ResizeInput>() }),
+      invoke(staticSchema<ResizeInput>()),
     ],
   },
   async ({ event }) => {
