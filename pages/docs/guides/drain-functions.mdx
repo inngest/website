@@ -52,6 +52,20 @@ Both stop new runs from starting. They differ in what happens to work already un
 
 Choose **draining** when in-flight work must complete — draining a function before retiring it, or letting a queue empty ahead of maintenance. Choose **[pausing](/docs/guides/pause-functions?ref=docs-drain-functions)** when execution itself needs to stop, such as a bug that makes continued processing harmful.
 
+## Draining and pausing together
+
+A function can be draining and paused at the same time. Pausing does not clear draining — both states remain set, and each must be disabled separately.
+
+When both are set:
+
+- **New runs stay blocked.** For normal scheduling, pausing takes precedence as the reported skip reason.
+- **Runs that draining allowed to continue become suspended** by the pause, in line with the pause option you choose. If you select "Cancel immediately", those runs are cancelled instead.
+- **Unpausing resumes suspended runs, but the function is still draining.** It keeps rejecting new triggers until you stop draining as well.
+
+<Warning>
+Unpausing a draining function does not return it to normal operation. It resumes the runs that were suspended, but new triggers are still skipped until you also stop draining.
+</Warning>
+
 ## Stop draining
 
 Use the **Stop draining** action on the function's dashboard.
