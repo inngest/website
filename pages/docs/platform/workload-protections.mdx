@@ -1,0 +1,101 @@
+import { Callout, Warning } from "src/shared/Docs/mdx";
+
+{/*
+  Unlisted page: intentionally NOT registered in shared/Docs/navigationStructure.ts.
+  Reached from the "Draining" badge in the dashboard, which should deep-link to
+  the #draining anchor.
+
+  Two things to confirm before wiring the app link:
+  - The "What to do" section assumes support is the route to ask about an active
+    drain. Confirm the intended contact path.
+  - The Replay guidance assumes skipped triggers carry the "Skipped" status and
+    are replayable, mirroring paused functions.
+
+  Structured so additional operator actions can be added as sibling H2s.
+*/}
+
+export const metaTitle = "Workload Protections | Actions Inngest Takes to Protect the Platform"
+export const description = "Inngest sometimes acts on a specific workload to keep the shared platform healthy. Learn what draining means, what happens to your runs, and what to do."
+
+# Workload protections
+
+Inngest runs a shared, multi-tenant platform. When one workload's traffic threatens the health of that platform, the Inngest team can take action on that specific workload to contain the impact.
+
+This page explains those actions, what you will see in the dashboard, and what to do.
+
+<Callout variant="info">
+These are actions Inngest takes, not settings you configure. You cannot enable or disable them yourself, and they do not correspond to anything in your function's code.
+</Callout>
+
+## Draining
+
+**Draining stops new runs from starting while allowing existing runs to finish.**
+
+Inngest drains a function when it needs that function to stop taking on additional work — for example, when its volume is saturating shared infrastructure and affecting other workloads. Draining lets the work already underway complete while the source of new work is cut off.
+
+A drained function shows a **Draining** badge in the dashboard.
+
+### What happens while a function is draining
+
+- **New triggers do not start runs.** Events, cron triggers, and invokes do not start runs for the function.
+- **Existing runs continue normally.** Runs created before draining began keep going, including queued and sleeping runs.
+- **Existing runs are not cancelled or paused.**
+- **For [batched functions](/docs/guides/batching?ref=docs-workload-protections), new events are not added to a batch.**
+
+<Warning>
+Triggers skipped while a function is draining are not replayed automatically when the drain is lifted. Only future triggers start runs again. See [recovering skipped triggers](#recovering-skipped-triggers) below.
+</Warning>
+
+### Draining does not clear on its own
+
+Draining is a persistent operational state, not a temporary progress indicator. It stays in effect until Inngest disables it — including after the last active run has finished. A function with no runs left is still draining, and still skipping new triggers.
+
+### If you pause a draining function
+
+[Pausing](/docs/guides/pause-functions?ref=docs-workload-protections) is a control you have; draining is not. Pausing a draining function does not clear the drain — both states remain set, and each is disabled separately, by you and by Inngest respectively.
+
+When both are set:
+
+- **New runs stay blocked.** For normal scheduling, pausing takes precedence as the reported skip reason.
+- **Runs that draining allowed to continue become suspended** by the pause, in line with the pause option you choose. If you select "Cancel immediately", those runs are cancelled instead.
+- **Unpausing resumes suspended runs, but the function is still draining.**
+
+<Warning>
+Unpausing does not lift a drain. It resumes the runs your pause suspended, but new triggers are still skipped until Inngest disables draining.
+</Warning>
+
+Because pausing a draining function suspends work that would otherwise have completed, it usually works against what the drain is doing. If you are considering pausing a draining function, contact support first.
+
+### What to do while your function is draining
+
+Draining is not caused by a bug in your code, and no deploy or sync will clear it.
+
+1. **Check [status.inngest.com](https://status.inngest.com)** for an active incident. Draining is often one part of a broader response.
+2. **Contact support** to ask why your function was drained, what is needed to lift it, and when to expect that.
+3. **Reduce the function's incoming volume** if you can. This does not lift the drain, but it limits how much work is skipped while the drain is in effect.
+
+### Recovering skipped triggers
+
+Work skipped during a drain is not replayed automatically. To process it once the drain is lifted, use [Replay](/docs/platform/replay?ref=docs-workload-protections):
+
+1. Navigate to the function's dashboard.
+2. Select the **Replay** option in the "All actions" menu.
+3. Select a date window covering the drain and enable the **Skipped** status.
+
+Your plan's history limit bounds how far back you can replay, so recover skipped work before it ages out. See the [Replay guide](/docs/platform/replay?ref=docs-workload-protections) for details.
+
+## Why Inngest takes these actions
+
+Run scheduling, batching, pause processing, and async step operations all route through shared, horizontally sharded infrastructure. A single workload producing an unusual volume or shape of work can saturate one shard, degrading every other workload on it.
+
+Acting on the specific workload contains that blast radius. It is a last resort, used when scaling and rebalancing are not enough or not fast enough. The [April 15, 2026 incident report](/blog/2026-04-17-incident-report-for-april-15-2026?ref=docs-workload-protections) walks through a case where draining was used this way.
+
+## Limits you control
+
+Workload protections are distinct from the limits that apply to your account and the flow control you configure yourself:
+
+- **[Usage limits](/docs/usage-limits/inngest?ref=docs-workload-protections)** are the plan and platform limits that apply to every account.
+- **[Concurrency](/docs/guides/concurrency?ref=docs-workload-protections)**, **[throttling](/docs/guides/throttling?ref=docs-workload-protections)**, and **[rate limiting](/docs/guides/rate-limiting?ref=docs-workload-protections)** shape how quickly your runs start.
+- **[Pausing](/docs/guides/pause-functions?ref=docs-workload-protections)** stops new runs and suspends runs in progress.
+
+Staying well inside these limits, and using flow control to smooth bursty workloads, is the most reliable way to avoid needing a protection in the first place.
