@@ -5,11 +5,9 @@ import { Callout, Warning } from "src/shared/Docs/mdx";
   Reached from the "Draining" badge in the dashboard, which should deep-link to
   the #draining anchor.
 
-  Two things to confirm before wiring the app link:
-  - The "What to do" section assumes support is the route to ask about an active
-    drain. Confirm the intended contact path.
-  - The Replay guidance assumes skipped triggers carry the "Skipped" status and
-    are replayable, mirroring paused functions.
+  One thing to confirm before wiring the app link: the Replay guidance assumes
+  skipped triggers carry the "Skipped" status and are replayable, mirroring
+  paused functions.
 
   Structured so additional operator actions can be added as sibling H2s.
 */}
@@ -33,7 +31,7 @@ These are actions Inngest takes, not settings you configure. You cannot enable o
 
 Inngest drains a function when it needs that function to stop taking on additional work — for example, when its volume is saturating shared infrastructure and affecting other workloads. Draining lets the work already underway complete while the source of new work is cut off.
 
-A drained function shows a **Draining** badge in the dashboard.
+A drained function shows a **Draining** badge in the dashboard, and Inngest emails you when the drain is applied.
 
 ### What happens while a function is draining
 
@@ -70,9 +68,10 @@ Because pausing a draining function suspends work that would otherwise have comp
 
 Draining is not caused by a bug in your code, and no deploy or sync will clear it.
 
-1. **Check [status.inngest.com](https://status.inngest.com)** for an active incident. Draining is often one part of a broader response.
-2. **Contact support** to ask why your function was drained, what is needed to lift it, and when to expect that.
-3. **Reduce the function's incoming volume** if you can. This does not lift the drain, but it limits how much work is skipped while the drain is in effect.
+1. **Check your email.** You should have received a message from Inngest when the drain was applied, explaining why. That is the best starting point for your specific case.
+2. **Check [status.inngest.com](https://status.inngest.com)** for an active incident. Draining is often one part of a broader response.
+3. **Contact support** to ask what is needed to lift the drain and when to expect that. Replying to the email you received keeps the context together.
+4. **Reduce the function's incoming volume** if you can. This does not lift the drain, but it limits how much work is skipped while the drain is in effect.
 
 ### Recovering skipped triggers
 
