@@ -6,9 +6,7 @@ import DurableExecutionDotsCanvas from "@/components/v1/sections/DurableExecutio
 export default function Hero() {
   return (
     <SplitHero
-      breadcrumbs={[
-        { label: "Durable Execution" },
-      ]}
+      breadcrumbs={[{ label: "Durable Execution" }]}
       palette="blue"
       headlineId="de-hero-headline"
       srHeadline="Code that works, without extra workers."
@@ -21,10 +19,10 @@ export default function Hero() {
         </>
       }
       bodyLines={[
-        "Your code has to complete no matter what. LLM",
-        "outages, API timeouts, server restarts, traffic spikes.",
-        "Inngest lets you make every function durable without",
-        "leaving your codebase."
+        "What is durable execution? Fault-tolerant code that",
+        "finishes even when APIs fail or servers restart.",
+        "Inngest checkpoints every step and retries",
+        "automatically—so workflows resume where they left off.",
       ]}
       docsHref="/docs/learn/how-functions-are-executed?ref=durable-execution"
       signupHref="/sign-up?ref=durable-execution"

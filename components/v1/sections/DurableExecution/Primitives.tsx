@@ -17,37 +17,37 @@ const PRIMITIVES: Primitive[] = [
   {
     id: "step-run",
     api: "step.run",
-    body: "The core unit of durability. Wrap any piece of work and it becomes a named checkpoint — retried automatically on failure, result cached so it never re-runs if a later step fails.",
+    body: "Wrap any work as a named checkpoint. Retried on failure, cached on success.",
     illustration: "/assets/v1/durable-execution/primitives/d1.svg",
   },
   {
     id: "step-sleep",
     api: "step.sleep",
-    body: "Suspend a workflow mid-execution for seconds or months at zero cost. No polling loops, no cron jobs, no workers spinning in the background. Resumes exactly where it stopped.",
+    body: "Pause for seconds or months at zero cost. No polling, no idle workers.",
     illustration: "/assets/v1/durable-execution/primitives/d2.svg",
   },
   {
     id: "step-wait-for-event",
     api: "step.waitForEvent",
-    body: "Suspend until a matching external event arrives — an approval, webhook, or user action — then resume with the event data in hand. The function waits at zero cost, however long it takes.",
+    body: "Suspend until an approval, webhook, or user action arrives, then resume.",
     illustration: "/assets/v1/durable-execution/primitives/d3.svg",
   },
   {
     id: "step-invoke",
     api: "step.invoke",
-    body: "Call another function and wait for its result as a durable step. Compose workflows across functions without losing the durability guarantee. Each child function is independently traced and retried.",
+    body: "Call another function as a durable step. Independently traced and retried.",
     illustration: "/assets/v1/durable-execution/primitives/d4.svg",
   },
   {
     id: "parallel-steps",
     api: "Parallel steps",
-    body: "Send one or more events from within a running function — as a durable step. Fan out to multiple downstream workflows without worrying about partial sends if the function retries.",
+    body: "Fan out events from a running function without risking partial sends.",
     illustration: "/assets/v1/durable-execution/primitives/d5.svg",
   },
   {
     id: "custom-retries",
     api: "Custom retries",
-    body: "“Retry everything 3 times” causes more problems than it solves. Zero retries for payments. Exponential backoff for flaky APIs. Immediate retry for bad LLM JSON. Configured per function, not globally inherited.",
+    body: "Tune retries per function: zero for payments, backoff for flaky APIs.",
     illustration: "/assets/v1/durable-execution/primitives/d6.svg",
   },
 ];

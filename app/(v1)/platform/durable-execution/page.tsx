@@ -8,9 +8,9 @@ import deDotsData from "@/public/assets/v1/durable-execution-hero/dots.json";
 const DE_DOTS_JSON = JSON.stringify(deDotsData);
 
 export const metadata: Metadata = generateMetadata({
-  title: "Durable Execution - Reliable Workflows",
+  title: "Durable Execution Explained: Automatic Retries & Checkpoints",
   description:
-    "Make any function durable with step.run, step.sleep, and waitForEvent. Inngest retries, resumes, and traces your workflows - no extra workers required.",
+    "What is durable execution? Fault-tolerant code that finishes despite failures—via automatic retries and step checkpoints. Compare Inngest to Temporal and start building durable functions.",
 });
 
 export default function Page() {
