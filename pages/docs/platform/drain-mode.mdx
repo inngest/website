@@ -1,0 +1,68 @@
+import { Callout, Info } from "src/shared/Docs/mdx";
+
+{/*
+  Unlisted page: intentionally NOT registered in shared/Docs/navigationStructure.ts.
+  It is reached from the "Draining" badge in the dashboard, not from docs nav.
+
+  Sourced from the April 15, 2026 incident report, which is the only public
+  description of drain mode. Confirm the following with the platform team before
+  wiring the app link, and update this page if any of it is wrong:
+    - whether draining applies to all functions or only batched ones
+    - whether new runs are queued vs. merely excluded from batching
+    - whether drain mode is ever auto-enabled, or always operator-initiated
+*/}
+
+export const metaTitle = "Function Drain Mode | Why a Function Shows as Draining"
+export const description = "Understand what it means when an Inngest function is draining: how queued runs and incoming events are handled, why drain mode is enabled, and what to do while it's active."
+
+# Draining functions
+
+**A draining function is temporarily not taking on new work so that the work it already has can finish.** Inngest enables drain mode on a function during incident response, when that function's traffic is contributing to platform-wide congestion. It is a containment measure, not an error, and not something wrong with your code.
+
+Drain mode is enabled and cleared by Inngest. You cannot turn it on or off yourself.
+
+<Callout variant="info">
+Your events are still accepted while a function is draining. Runs that are already queued are not cancelled. Draining slows a function down on purpose; it does not discard your data.
+</Callout>
+
+## What happens while a function is draining
+
+- **Incoming events are still accepted.** Sending events to a draining function's trigger continues to work, and those events are still recorded.
+- **Work already in the queue keeps being processed.** The existing backlog drains — that is what the state is named for. Queued runs are not cancelled.
+- **New work is held back.** Inngest stops feeding fresh work into the congested part of the pipeline. For [batched functions](/docs/guides/batching?ref=docs-drain-mode), this means events are not added to new batches while the drain is active.
+- **Latency increases.** Runs on a draining function take longer to start than usual. This is the intended effect.
+
+Once the drain clears, held-back work resumes normally. You should see the function's [backlog](/docs/platform/monitor/observability-metrics?ref=docs-drain-mode#backlog) fall and then recover to its usual shape.
+
+## Why a function gets drained
+
+Inngest routes run scheduling, batching, pause processing, and async step operations through a shared, horizontally sharded state store. A single function producing an unusual volume or shape of work can saturate one shard, which degrades other workloads on that shard.
+
+Draining that function isolates the pressure. It gives the platform room to clear its backlogs and keeps one workload's spike from spreading to everything else on the same infrastructure.
+
+The most detailed public example is the [April 15, 2026 incident report](/blog/2026-04-17-incident-report-for-april-15-2026?ref=docs-drain-mode), where drain mode was used on high-volume batching functions while shards were rebalanced.
+
+## What to do while your function is draining
+
+For most teams, the answer is nothing — wait for it to clear.
+
+If you want more context on an active drain:
+
+1. **Check [status.inngest.com](https://status.inngest.com)** for an open incident. Drains are usually one part of a broader response, and the status page is the fastest signal for whether one is in progress.
+2. **Watch your function's backlog** in [Metrics](/docs/platform/monitor/observability-metrics?ref=docs-drain-mode) to see the drain progressing.
+3. **Contact support** if the badge persists with no corresponding incident, or if the delay is causing customer-facing impact you need help sizing.
+
+Reducing the function's event volume while it drains will shorten the backlog, but it is not required and you should not need to change code or redeploy.
+
+<Info>
+Draining is applied by Inngest during incident response. Exposing drain controls through the API is on the roadmap, but there is no self-serve way to drain a function today.
+</Info>
+
+## Related concepts
+
+Draining is distinct from several things it can resemble in the dashboard:
+
+- **[Concurrency limits](/docs/guides/concurrency?ref=docs-drain-mode)** are limits you configure. They create a backlog by design and are unrelated to platform incidents.
+- **[Throttling](/docs/guides/throttling?ref=docs-drain-mode)** and **[rate limiting](/docs/guides/rate-limiting?ref=docs-drain-mode)** are also your own configuration, applied per function.
+- **[Pausing a function](/docs/guides/pause-functions?ref=docs-drain-mode)** stops it entirely and is something you control.
+- **[Start timeouts](/docs/features/inngest-functions/cancellation/cancel-on-timeouts?ref=docs-drain-mode)** cancel runs that sit in the queue too long. If you have them configured, a long drain can cause those cancellations to fire — worth checking if you rely on them.
