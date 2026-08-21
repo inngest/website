@@ -328,7 +328,7 @@ No, you do not need Redis to use Inngest with Python. Inngest has no dependency 
 
 ### **Does Inngest work with synchronous Python frameworks like standard Django or Flask?**
 
-Yes, Inngest works with Djanho and Flask. The Inngest Python SDK supports both async and sync functions in the same app. For sync frameworks, use `StepSync` instead of `Step` and define your handler as a regular `def` rather than `async def`. You can mix sync and async functions freely within one Inngest app.
+Yes, Inngest works with Django and Flask. The Inngest Python SDK supports both async and sync functions in the same app. For sync frameworks, use `SyncStep` instead of `Step` and define your handler as a regular `def` rather than `async def`. You can mix sync and async functions freely within one Inngest app.
 
 ### **Can I run Inngest on serverless infrastructure like AWS Lambda or Google Cloud Run?**
 
@@ -344,7 +344,7 @@ In-flight function runs resume from their last completed step after the new depl
 
 ### **Is there a limit on how large my event payload can be?**
 
-Yes, Inngest event payloads are capped at 512KB. For larger data — images, documents, bulk records — store the data in S3 or your database and pass a reference ID in the event payload instead. Steps can then fetch the full data as needed.
+Yes — event payload size is plan-dependent: 256KiB on Free, 512KiB on Basic, 3MiB on Pro, and custom limits on Enterprise (see [usage limits](/docs/usage-limits/inngest?ref=blog-inngest-python-sdk-durable-background-jobs-for-fastapi-flask-and-django)). For larger data — images, documents, bulk records — store the data in S3 or your database and pass a reference ID in the event payload instead. Steps can then fetch the full data as needed.
 
 ### **Can I use Inngest alongside an existing Celery setup during migration?**
 
