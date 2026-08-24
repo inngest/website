@@ -500,6 +500,7 @@ const sectionLearn: (NavGroup | NavLink)[] = [
         title: "How Durable execution works",
         href: `/docs/learn/how-functions-are-executed`,
       },
+      { title: "Cloud architecture", href: `/docs/architecture` },
       {
         title: "Durable Functions",
         links: [

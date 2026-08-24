@@ -1,0 +1,74 @@
+export const metaTitle = "Inngest Cloud Architecture | Scheduling & Execution"
+export const description = "How Inngest Cloud receives events, schedules durable function runs, executes them on isolated infrastructure, and invokes your code."
+
+# Inngest Cloud architecture
+
+Inngest receives events, matches them to functions, and executes each function as a durable run. Scheduling and execution are separated by queues so that incoming events do not need to wait for function code to run.
+
+## From event to function execution
+
+```text
+┌────────────┐     ┌─────────┐     ┌──────────┐     ┌─────────────┐
+│ Event API  │────▶│ Pub/Sub │────▶│ New Runs │────▶│ Queue shard │
+└────────────┘     └─────────┘     └──────────┘     └──────┬──────┘
+                                                          │
+                                                          ▼
+                                                   ┌─────────────┐
+                                                   │ Executors   │
+                                                   └──────┬──────┘
+                                                          │
+                                                          ▼
+                                                   ┌──────────────┐
+                                                   │ Customer SDK │
+                                                   └──────────────┘
+```
+
+1. The **Event API** receives and validates an event, associates it with the correct account and environment, and publishes it to Pub/Sub.
+2. The **New Runs** service consumes the event from Pub/Sub and checks for functions with matching triggers.
+3. For each match, New Runs applies the function's flow control configuration, including batching, debounce, and singleton rules.
+4. When the function is ready to start, New Runs creates the run and enqueues its first item on the appropriate queue shard.
+5. **Executors** consume queue items and invoke the customer's SDK over HTTP or an Inngest Connect connection. Additional steps, retries, sleeps, and waits are also coordinated through durable queue and run state.
+
+## Regions and infrastructure
+
+Inngest Cloud runs across two nearby infrastructure footprints in the eastern United States:
+
+- **AWS `us-east-2` (Ohio)** hosts customer-facing APIs, control plane services, and supporting data services.
+- **Inngest-operated bare metal in Ashburn, Virginia** hosts the primary run scheduling and function execution data plane, including New Runs consumers, queues, constraints, and executors.
+
+For the standard event flow, the Event API accepts an event in AWS and publishes it to Pub/Sub. Scheduling and execution services in Ashburn consume the event, create and queue matching runs, and dispatch each queue item to the customer's SDK.
+
+The executor coordinates a run but does not host the customer's application code. HTTP functions run wherever the customer's endpoint is deployed, while [Inngest Connect](/docs/setup/connect?ref=docs-architecture) functions run on the customer's connected workers. Calls cross the regional boundary when that customer infrastructure is outside Ashburn.
+
+Dedicated Infrastructure provides isolated scheduling and execution capacity within this Inngest-managed data plane.
+
+## Enterprise isolation
+
+Inngest uses separate infrastructure layers for scheduling, execution, and flow control. This limits noisy-neighbor effects and allows capacity to be scaled independently.
+
+### Enterprise
+
+Enterprise customers run on dedicated function execution infrastructure:
+
+- **Queue shards** isolate queued function work.
+- **Constraint shards** isolate concurrency and capacity accounting.
+- **Executor capacity** consumes work from the assigned enterprise queue shards.
+
+### Dedicated Infrastructure
+
+Enterprise customers with Dedicated Infrastructure receive dedicated run scheduling and execution infrastructure. Their events are routed through a dedicated Pub/Sub topic with dedicated New Runs consumers, then scheduled onto dedicated queue and constraint shards served by dedicated executor capacity.
+
+```text
+Dedicated Pub/Sub topic
+          │
+          ▼
+Dedicated New Runs consumers
+          │
+          ▼
+Dedicated queue and constraint shards
+          │
+          ▼
+Dedicated executors
+```
+
+This isolates the path from event delivery through function execution and allows each layer to be operated and scaled for the customer's workload.
