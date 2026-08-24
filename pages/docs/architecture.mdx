@@ -40,8 +40,6 @@ For the standard event flow, the Event API accepts an event in AWS and publishes
 
 The executor coordinates a run but does not host the customer's application code. HTTP functions run wherever the customer's endpoint is deployed, while [Inngest Connect](/docs/setup/connect?ref=docs-architecture) functions run on the customer's connected workers. Calls cross the regional boundary when that customer infrastructure is outside Ashburn.
 
-Dedicated Infrastructure provides isolated scheduling and execution capacity within this Inngest-managed data plane.
-
 ## Enterprise isolation
 
 Inngest uses separate infrastructure layers for scheduling, execution, and flow control. This limits noisy-neighbor effects and allows capacity to be scaled independently.
@@ -56,19 +54,4 @@ Enterprise customers run on dedicated function execution infrastructure:
 
 ### Dedicated Infrastructure
 
-Enterprise customers with Dedicated Infrastructure receive dedicated run scheduling and execution infrastructure. Their events are routed through a dedicated Pub/Sub topic with dedicated New Runs consumers, then scheduled onto dedicated queue and constraint shards served by dedicated executor capacity.
-
-```text
-Dedicated Pub/Sub topic
-          │
-          ▼
-Dedicated New Runs consumers
-          │
-          ▼
-Dedicated queue and constraint shards
-          │
-          ▼
-Dedicated executors
-```
-
-This isolates the path from event delivery through function execution and allows each layer to be operated and scaled for the customer's workload.
+Dedicated Infrastructure is an enterprise-only add-on available on request.
