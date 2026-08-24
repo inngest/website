@@ -11,8 +11,8 @@ Inngest receives events, matches them to functions, and executes each function a
 ┌────────────┐     ┌─────────┐     ┌──────────┐     ┌─────────────┐
 │ Event API  │────▶│ Pub/Sub │────▶│ New Runs │────▶│ Queue shard │
 └────────────┘     └─────────┘     └──────────┘     └──────┬──────┘
-                                                          │
-                                                          ▼
+                                                           │
+                                                           ▼
                                                    ┌─────────────┐
                                                    │ Executors   │
                                                    └──────┬──────┘
