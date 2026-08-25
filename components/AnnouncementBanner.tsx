@@ -58,7 +58,7 @@ const Banner: React.FC<Props> = ({ href, children, className, target, rel }) => 
 export default function AnnouncementBanner() {
   return (
     <Banner
-      href="https://events.zoom.us/e/recording?videoId=uKbFJoUhRQKS9V71ysKkLw&eventId=Z8vtvPiATTq_LQxwlO8_ZA&organizationId=Jm1kZRVvQC6tCNBq9FaDag"
+      href="https://www.inngest.com/docs/learn/agent-evals#ship-your-first-eval-webinar-recording"
       target="_blank"
       rel="noopener noreferrer"
     >
