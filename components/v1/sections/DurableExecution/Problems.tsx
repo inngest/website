@@ -71,7 +71,7 @@ function OutcomeCard({
       {...reveals.item(i)}
       className="group relative flex list-none flex-col items-stretch gap-10 sm:gap-[60px] lg:gap-[83px]"
     >
-      <div className="relative flex h-[148px] items-center justify-center motion-safe:transition-transform motion-safe:duration-300 motion-safe:ease-out motion-safe:group-hover:scale-105">
+      <div className="relative flex h-[180px] items-center justify-center motion-safe:transition-transform motion-safe:duration-300 motion-safe:ease-out motion-safe:group-hover:scale-110">
         <Glyph />
       </div>
 

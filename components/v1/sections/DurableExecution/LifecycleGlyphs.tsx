@@ -50,10 +50,10 @@ function GlyphShell({
   return (
     <svg
       viewBox="0 0 120 100"
-      width={160}
-      height={133}
+      width={192}
+      height={160}
       aria-hidden="true"
-      className="de-lifecycle-glyph h-auto w-full max-w-[160px]"
+      className="de-lifecycle-glyph h-auto w-full max-w-[192px]"
     >
       <title>{label}</title>
       {children}

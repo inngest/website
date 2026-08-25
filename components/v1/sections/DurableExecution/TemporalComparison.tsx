@@ -5,6 +5,7 @@ import ButtonLink from "@/components/v1/ButtonLink";
 import Logo from "@/components/v1/Logo";
 import Section from "@/components/v1/sections/shared/Section";
 import SectionHeader from "@/components/v1/sections/shared/SectionHeader";
+import { cn } from "@/utils/v1/cn";
 import { reveals } from "@/utils/v1/reveals";
 
 /**
@@ -173,6 +174,7 @@ export default function TemporalComparison() {
               tone="frost"
               icon={<Logo logomarkOnly width={30} />}
               iconGap={6}
+              highlight
             >
               Inngest
             </HeaderCell>
@@ -186,7 +188,7 @@ export default function TemporalComparison() {
               <CapabilityCell>{row.capability}</CapabilityCell>
               <FeatureCell cell={row.queues} muted />
               <FeatureCell cell={row.temporal} muted />
-              <FeatureCell cell={row.inngest} />
+              <FeatureCell cell={row.inngest} highlight />
             </div>
           ))}
         </motion.div>
@@ -200,25 +202,36 @@ function HeaderCell({
   tone,
   icon,
   iconGap = 8,
+  highlight,
 }: {
   children: React.ReactNode;
   tone: "frost" | "dim";
   icon?: React.ReactNode;
   iconGap?: number;
+  /** Inngest column only - subtle green wash + hairline sides so the
+   * "us" lane reads with more contrast against the reference columns. */
+  highlight?: boolean;
 }) {
   return (
     <div
       role="columnheader"
-      className="flex h-[52px] items-center px-4 lg:px-6"
+      className={cn(
+        "flex h-[52px] items-center px-4 lg:px-6",
+        highlight &&
+          "border-x border-solid border-v1-accent-green/25 bg-v1-accent-green/[0.06]",
+      )}
       style={{ columnGap: iconGap }}
     >
       {icon}
       <span
-        className="font-v1Mono text-[12px] uppercase leading-[14px] whitespace-nowrap lg:text-[16px] lg:leading-[18px]"
+        className={cn(
+          "font-v1Mono text-[12px] uppercase leading-[14px] whitespace-nowrap lg:text-[16px] lg:leading-[18px]",
+          highlight && "font-medium",
+        )}
         style={{
           color:
             tone === "dim"
-              ? "rgb(var(--color-v1-carbon-100) / 0.7)"
+              ? "rgb(var(--color-v1-carbon-100) / 0.55)"
               : "rgb(var(--color-v1-frost))",
         }}
       >
@@ -238,21 +251,37 @@ function CapabilityCell({ children }: { children: React.ReactNode }) {
   );
 }
 
-function FeatureCell({ cell, muted }: { cell: Cell; muted?: boolean }) {
+function FeatureCell({
+  cell,
+  muted,
+  highlight,
+}: {
+  cell: Cell;
+  muted?: boolean;
+  /** Inngest column only - see HeaderCell. */
+  highlight?: boolean;
+}) {
   const { text, cross, check } = cell;
   return (
     <div
       role="cell"
-      className="flex min-h-[52px] items-center gap-1 px-4 py-3 lg:gap-[10px] lg:px-6"
+      className={cn(
+        "flex min-h-[52px] items-center gap-1 px-4 py-3 lg:gap-[10px] lg:px-6",
+        highlight &&
+          "border-x border-solid border-v1-accent-green/25 bg-v1-accent-green/[0.06]",
+      )}
     >
       {check && <CheckIcon />}
       {cross && <CrossIcon />}
       {text && (
         <span
-          className="font-v1Body text-[13px] leading-[18px] lg:text-[15px] lg:leading-[22px]"
+          className={cn(
+            "font-v1Body text-[13px] leading-[18px] lg:text-[15px] lg:leading-[22px]",
+            highlight && "font-medium",
+          )}
           style={{
             color: muted
-              ? "rgb(var(--color-v1-carbon-100) / 0.7)"
+              ? "rgb(var(--color-v1-carbon-100) / 0.55)"
               : "rgb(var(--color-v1-frost))",
           }}
         >
