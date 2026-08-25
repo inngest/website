@@ -1,0 +1,118 @@
+---
+tags:
+  [
+    "Queues & Flow Control",
+    "Engineering",
+    "Company & Product News",
+    "Background Jobs & Scheduling",
+    "Durable Execution",
+  ]
+heading: "Giving Inngest's Queue a Bigger Brain (and a Backup Generator): Our Migration to FoundationDB, Part 1"
+subtitle: "Why Valkey became a ceiling for Inngest's queue—and how we chose FoundationDB as the durable, horizontally scalable replacement."
+showSubtitle: true
+image: /assets/blog/migration-to-foundationdb-part-1/featured-image.png
+date: 2026-08-24
+author:
+  - Bruno Scheufler
+  - Lakshmi Kasinathan
+  - Dan Lambright
+category: engineering
+---
+
+This post is the first in a series about a project that started—in some form or another—before we (the authors) joined Inngest. This is the story of why, and how we decided to migrate Inngest’s queue onto a new database.
+
+Of course before you commit to reading this, it might be helpful to explain exactly what Inngest’s queue is: it’s the internal system that decides which job runs next, for which account, on which executor, out of everything currently scheduled across Inngest. Every function run passes through it.
+
+It might also be helpful to tell you what we’re migrating *from*: We're moving off [Valkey](https://valkey.io/) (Redis under a different license) and onto [FoundationDB](https://apple.github.io/foundationdb/), the distributed, ACID-compliant key-value store that Apple acquired, open sourced, and now runs CloudKit on.
+
+This first post—in *n* number of posts—will cover how we got here. How we knew Valkey had become a ceiling and not a bottleneck we could tune away, what we tried before reaching for a new database, and how we evaluated FoundationDB against the alternatives. Later posts in the series will get into the sharding and rebalancing design, the migration and rollout mechanics, and whatever we learn once this is fully live across every billing tier.
+
+## What does Inngest's queue actually do?
+
+Every time a function run gets scheduled in Inngest, we enqueue a job. The queue is the set of internal components and services responsible for storing that job, ordering it correctly relative to everything else in the system, and handing it to an executor to process, all while enforcing [fairness across tenants](/docs/guides/flow-control?ref=blog-migration-to-foundationdb-part-1) sharing the same infrastructure. It needs to do this at low latency and high throughput, and it needs to do it without one customer's spike in traffic degrading service for everyone else.
+
+We run multiple queue shards today: isolated deployments split across our [billing tiers](/pricing?ref=blog-migration-to-foundationdb-part-1) (free, self-serve, enterprise), plus separate shards for internal system features like [cron](/docs/guides/scheduled-functions?ref=blog-migration-to-foundationdb-part-1) and [debounce](/docs/guides/debounce?ref=blog-migration-to-foundationdb-part-1).
+
+## What problem are we actually solving?
+
+Valkey is an in-memory key-value store. That's fine until you outgrow the memory on the box, and we're outgrowing it. When a Valkey cluster runs out of memory, the whole cluster goes down, not just the tenant that pushed it over the edge.
+
+In-memory storage also means durability is only ever as good as our replication and persistence setup. A power outage or a hard failure on the wrong node is, in the worst case, a data-loss event. That's a separate problem from running out of memory, and it's arguably the more serious one: an outage recovers, but a queue that loses track of a run doesn't.
+
+That's a bad failure mode for a queue specifically, because of what stops working when it happens:
+
+- Function execution halts entirely while the cluster is down.
+- Every other system waiting on the queue backs up too, so scheduling slows down even after the cluster comes back, working through the backlog it built while it was gone.
+- Recovery time depends on how long it takes to bring a stateful, single-threaded cluster back into a consistent state, not on how quickly we can fail over.
+
+We were also boxed in architecturally in ways that had nothing to do with capacity. Valkey's single execution thread meant we could only peek and process a subset of accounts, functions, and queue items at any given time. Whatever we didn't peek waited longer, and because we couldn't process everything, we couldn't guarantee fairness between tenants. An account with a much larger backlog than its neighbors had no formal guarantee of getting a proportional share of processing time. Solving that properly needed either another layer of indirection or bigger peek sizes, and bigger peek sizes meant more load on a system that was already memory constrained.
+
+Put simply: we couldn't add the fairness and observability features we wanted, because every added operation slowed the system down further, on a database that was already close to its ceiling.
+
+## How we got here: what we tried before reaching for a new database
+
+We didn't jump straight to "replace the database." Over roughly the last two years, we made a series of targeted improvements to get more life out of Valkey.
+
+**Horizontal shard scaling.** We grouped executors by billing plan type and introduced shard leases for dynamic processing, with operator-based auto-scaling to satisfy shard demand as it grew. This bought us runway, but shard assignment stayed static and manual. Growing capacity meant provisioning new Valkey clusters by hand, not just adding compute to existing ones. (We wrote about an earlier chapter of this work in [Sharding at Inngest](/blog/sharding-at-inngest?ref=blog-migration-to-foundationdb-part-1).)
+
+**The Constraint API.** We pulled all constraint enforcement ([concurrency](/docs/guides/concurrency?ref=blog-migration-to-foundationdb-part-1) limits, [throttling](/docs/guides/throttling?ref=blog-migration-to-foundationdb-part-1), and similar policies) out of the queue itself and into a dedicated service. This was a meaningful simplification: the queue no longer needed to know about every policy an account might have configured, and it meant the queue's job could shrink down to what it should have been in the first place: storage, ordering, and picking items according to a well-defined policy. See [The Constraint API](/blog/announcing-the-constraint-api?ref=blog-migration-to-foundationdb-part-1) for that story.
+
+**Key queues, v1 and v2.** We built (and rebuilt) a mechanism for per-key fairness, so that [noisy tenants](/blog/fixing-multi-tenant-queueing-concurrency-problems?ref=blog-migration-to-foundationdb-part-1) inside a single account or function couldn't starve quieter ones. Both versions were held back by the same root cause: performance. Every added guarantee meant more operations against a database that was already memory- and single-thread-bound, so we couldn't roll key queues out broadly without risking the exact outage mode we were trying to prevent.
+
+Each of these was the right call at the time, and each one worked, for a while. But we kept running into the same wall from different directions: the database underneath the queue couldn't give us the concurrency, the durability, or the storage headroom that the next set of features needed. At some point that stops being a queue problem and starts being a storage engine problem.
+
+## How we decided it was time for a new database, not another patch
+
+We didn't want to make an infrastructure bet this size on instinct, so before comparing databases, we wrote down what we were actually optimizing for. Some of this may be obvious in hindsight, but it's worth stating explicitly because it shaped every decision after it:
+
+- **Correctness under real-world conditions**, not just in the happy path: multi-layer fairness (between account groups, between accounts, between functions, and between individual tenants inside a function), strict ordering where required, and the ability to disable strict FIFO where it isn't.
+- **Full horizontal scalability**, so growing capacity means adding disks and compute, not standing up and hand-wiring a new shard.
+- **Isolation against noisy neighbors**, so one partition or one account growing unexpectedly doesn't degrade latency for everyone sharing its shard.
+- **Low operational cost.** We wanted auto-scaling storage and compute instead of the manual, tedious work of provisioning queue shards by hand every time a tier grew.
+- **Rollout safety.** Whatever we picked had to support a gradual, reversible rollout. A queue outage is one of the worst possible failure modes for a workflow platform, so "can we back this out mid-rollout" mattered as much as raw performance.
+
+That list is also roughly how we evaluate any big infrastructure decision at Inngest: understand the requirements and where they came from, retrieve real production data on current versus expected scale, and only then start comparing solutions, discarding anything that doesn't actually solve the problem or that's overbuilt for how long we expect it to last.
+
+## Why FoundationDB, specifically?
+
+[FoundationDB](https://apple.github.io/foundationdb/) is an open source, distributed, ordered key-value store that Apple acquired in 2015 and open sourced under Apache 2.0 in 2018. It's spent the years since as one of the more battle-tested pieces of infrastructure in the industry: it's what Apple runs CloudKit on, and Snowflake uses it as the metadata store underneath its compute layer, both at a scale considerably larger than ours ([CloudKit paper](https://doi.org/10.1145/3187009.3164138); [FoundationDB SIGMOD paper](https://www.foundationdb.org/files/fdb-paper.pdf)).
+
+A few properties made it a strong fit for a queue specifically:
+
+**Strong ACID guarantees, with real durability.** This is a separate win from the OOM problem, worth calling out on its own. Valkey is in-memory, so a power outage or a hard node failure is a data-loss event: whatever hadn't been persisted is gone. FoundationDB [commits to disk](https://apple.github.io/foundationdb/developer-guide.html#transaction-basics), so once a transaction commits, it's genuinely durable. We don't lose queue state if part of the database deployment goes down or a data center loses power, full stop. That's a different guarantee than "the cluster doesn't crash as often," and it's the one that matters most for a system whose entire job is to not lose track of your function runs.
+
+**Data on disk, not in memory.** This is the one that directly solves our original problem. We stop caring whether an account has a backlog of 10 items or 10 million, because disk is cheap relative to memory and we're no longer racing against a hard memory ceiling. It also means a saturated tenant doesn't threaten to take the whole cluster down with it.
+
+**Horizontal scaling and multi-threading.** We're no longer limited to a single execution thread per cluster. We can use more than one CPU core, and we can grow capacity by adding hardware rather than hand-provisioning new isolated clusters. See FoundationDB's [architecture overview](https://apple.github.io/foundationdb/architecture.html) for how roles scale independently.
+
+**A decoupled read and write path.** FoundationDB's architecture separates [transaction management from storage](https://apple.github.io/foundationdb/architecture.html), which means we can run a lot more [observability](/platform/observability?ref=blog-migration-to-foundationdb-part-1) and processing-related reads concurrently without them competing with the writes that matter for correctness and latency.
+
+We also leaned on research outside our own walls before committing. Apple's [CloudKit paper](https://doi.org/10.1145/3187009.3164138) on rebalancing tenants across partitions, the [QuiCK paper](https://www.foundationdb.org/files/QuiCK.pdf) on queue implementations, and [Tigris's writeup on building with FoundationDB](https://dev.to/tigrisdata/global-by-design-tigriss-distributed-object-storage-architecture-48m1) all fed into our design for sharding and rebalancing, which is the subject of the next post in this series.
+
+None of this makes FoundationDB a free lunch. It's a different operational model than a Redis-family database, with its own deployment topology, its own failure modes, and its own learning curve for anyone who has to operate it ([operator guide](https://apple.github.io/foundationdb/administration.html)). We'll get into the tradeoffs and the parts we're still working through in future posts.
+
+## What's changing, architecturally
+
+The short version: instead of one shared, in-memory cluster, we're moving to one FoundationDB cluster per billing tier (free, self-serve, enterprise), plus a separate cluster for internal metadata and routing. Inside each tier's cluster, accounts get grouped into logical shards, which is the FDB-native equivalent of what we call a shard today, except assignment is automatic instead of static and manual.
+
+Enterprise accounts can get dedicated logical shards with a configurable executor count, without us having to spin up and wire in an entirely separate physical cluster by hand, which directly solves a request we've heard from larger customers wanting more predictable, isolated queue performance.
+
+Here's what that looks like side by side with what we have today, including the two failure modes we're specifically fixing: the outage-on-OOM behavior, and the underlying durability gap.
+
+![Today's Valkey queue vs FoundationDB: OOM and durability failure modes fixed](/assets/blog/migration-to-foundationdb-part-1/fdb-before-after.png)
+
+Zooming in on the FoundationDB side: each billing tier gets its own physical cluster, and within it, accounts are grouped into logical shards that the metadata service assigns automatically instead of us wiring them up by hand.
+
+![FoundationDB clusters per billing tier with automatic logical shard assignment](/assets/blog/migration-to-foundationdb-part-1/fdb-cluster-partitioning.png)
+
+## How we're rolling this out
+
+We're not flipping this on everywhere at once. The plan is a gradual rollout ordered by billing tier: free accounts first, then self-serve, then enterprise last. Within each tier, we roll out to a segment of accounts, let it run, and watch our monitoring and observability tooling before expanding further. If something looks wrong at any stage, we need to be able to move accounts back to Valkey without data loss, and that requirement shaped the migration mechanics as much as anything else did.
+
+We've completed the core implementation work already and are now in the benchmarking and optimization phase: running artificial workloads against a real cluster, and testing the rollout flow itself against internal accounts before it touches anyone else's traffic.
+
+## What's next in this series
+
+The next post will get into the actual design: how sharding and rebalancing work, how we route an enqueue to the correct shard without every producer service needing full knowledge of our cluster topology, and the tenant fairness guarantees we're building on top of FoundationDB's transaction model. After that, we'll cover the rollout itself, including whatever breaks, because something always does, and what the operational reality of running FoundationDB in production has actually looked like compared to what the research promised.
+
+If you're running anything similar, on Valkey, Redis, or otherwise, and you're starting to feel the same ceiling we did, I'd like to hear about it.
