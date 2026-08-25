@@ -52,6 +52,27 @@ function readImageDimensions(filePath: string) {
     };
   }
 
+  const asText = buffer.toString("utf8", 0, Math.min(buffer.length, 2048));
+  if (asText.includes("<svg")) {
+    const widthAttr = asText.match(/\bwidth=["'](\d+(?:\.\d+)?)["']/);
+    const heightAttr = asText.match(/\bheight=["'](\d+(?:\.\d+)?)["']/);
+    if (widthAttr && heightAttr) {
+      return {
+        width: Math.round(Number(widthAttr[1])),
+        height: Math.round(Number(heightAttr[1])),
+      };
+    }
+    const viewBox = asText.match(
+      /\bviewBox=["']\s*([-\d.]+)\s+([-\d.]+)\s+([-\d.]+)\s+([-\d.]+)\s*["']/,
+    );
+    if (viewBox) {
+      return {
+        width: Math.round(Number(viewBox[3])),
+        height: Math.round(Number(viewBox[4])),
+      };
+    }
+  }
+
   return null;
 }
 
@@ -88,17 +109,23 @@ export function MdxImage({
 }: ImgHTMLAttributes<HTMLImageElement>) {
   if (typeof src !== "string") return null;
 
+  const pathname = decodeURIComponent(src.split(/[?#]/)[0] ?? "");
+  const isSvg = pathname.toLowerCase().endsWith(".svg");
   const dimensions = getLocalImageDimensions(src);
-  if (!dimensions) {
+
+  // next/image does not optimize SVGs; use a native img with intrinsic size.
+  if (isSvg || !dimensions) {
     return (
       <img
         {...props}
         alt={alt}
         className={className}
         decoding="async"
+        height={dimensions?.height}
         loading={loading ?? "lazy"}
         src={src}
         title={title}
+        width={dimensions?.width}
       />
     );
   }
