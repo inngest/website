@@ -138,6 +138,8 @@ There are a few strategies we use to solve this.  One key part is that each work
 ## Conclusion
 There's a ton more nuance to the queue, though at a high level this solves all key requirements:  contention, fairness, and latency.  A huge benefit to this model:  queues become incredibly cheap.  It's the magic that lets you create queues for each function, and it's *part* of the magic that lets us create virtual queues to add multiple concurrency levels to each function. This approach has allows us to create a queue with built-in flow control features to all users in a way that is reliable, performant, and scalable. We're *really* happy with this solution, and think it has a lot of legs.
 
+If you're putting that fairness to work across many customer-facing SaaS syncs, see [Have lots of SaaS integrations? You don't need lots of reliability models](/blog/have-lots-of-saas-integrations-you-dont-need-lots-of-reliability-models?ref=blog-building-the-inngest-queue-pt-i-fairness-multi-tenancy).
+
 Even though queues are fundamental to how we work, we think that reliability layers like Inngest mean that you never actually need to implement queueing, or even think about how it works.  The system abstracts everything for you declaratively by code, so even the freshest of engineers can productively build reliable systems.
 
 If you found this interesting or you'd like to work on systems like this please reach out to us [by email](/contact), [Twitter](https://twitter.com/inngest), or on our [Discord](/discord). We'd love to hear your thoughts, and [we're hiring](/about)!
