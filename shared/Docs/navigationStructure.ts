@@ -794,7 +794,6 @@ const sectionLearn: (NavGroup | NavLink)[] = [
           {
             title: "Connect (workers)",
             href: `/docs/setup/connect`,
-            tag: "beta",
           },
           {
             title: "Checkpointing",
