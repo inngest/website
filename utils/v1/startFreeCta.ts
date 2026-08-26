@@ -55,10 +55,24 @@ export async function withAnonymousId(url: string): Promise<string> {
  * navigates to `href` with `ajs_aid` appended when available -- or to the
  * original `href` if anything above goes wrong. Scoped to this one CTA;
  * every other link to app.inngest.com is untouched.
+ *
+ * Modified clicks (cmd/ctrl/shift/alt-click, or a non-primary mouse
+ * button such as the middle-click that opens a new tab) are left alone
+ * so the browser's native "open in new tab/window" behavior still works
+ * -- we only intercept a plain left click.
  */
 export function handleStartFreeClick(href: string) {
   return (event: MouseEvent<HTMLAnchorElement>) => {
     if (!href || href === "#") return;
+    if (
+      event.metaKey ||
+      event.ctrlKey ||
+      event.shiftKey ||
+      event.altKey ||
+      event.button !== 0
+    ) {
+      return;
+    }
     event.preventDefault();
     void withAnonymousId(href).then((destination) => {
       window.location.href = destination;
