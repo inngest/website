@@ -9,6 +9,7 @@ import LogoStrip from "@/components/v1/sections/Home/LogoStrip";
 import Quote from "@/components/v1/sections/Home/Quote";
 import StartBuilding from "@/components/v1/sections/Home/StartBuilding";
 import TrustedInBigLeagues from "@/components/v1/sections/Home/TrustedInBigLeagues";
+import UseCaseBand from "@/components/v1/sections/Home/UseCaseBand";
 
 export default function Home() {
   return (
@@ -36,6 +37,7 @@ export default function Home() {
       <LogoStrip contained />
       <Quote />
       <DurabilityInCode />
+      <UseCaseBand />
       <Customers />
       <ItDoesntHaveToBeHard />
       <HowItWorks />
