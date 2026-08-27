@@ -231,7 +231,7 @@ A Celery alternative in 2026 is either another Python queue (Dramatiq, Arq, RQ) 
 
 Stay on Celery if the team is Python-native, tasks are mostly independent, and the broker is a solved problem operationally.
 
-Look past Celery when the pain is state across steps, fairness, or actually seeing a run. Same list as the Node teams, just with Beat and Flower standing in for Bull Board. [Inngest's Python SDK](/blog/inngest-python-sdk-durable-background-jobs-for-fastapi-flask-and-django?ref=blog-best-job-queue-alternatives) covers that shape. So do Temporal and Restate. None of them is a drop-in replacement for `delay()`. You're changing how you write the code, not swapping a library.
+Look past Celery when the pain is state across steps, fairness, or actually seeing a run. Same list as the Node teams, just with Beat and Flower standing in for Bull Board. [Inngest's Python SDK](/docs/getting-started/python-quick-start?ref=blog-best-job-queue-alternatives) covers that shape. So do Temporal and Restate. None of them is a drop-in replacement for `delay()`. You're changing how you write the code, not swapping a library.
 
 Sidekiq stays the right default for a lot of Rails apps. Look at durable platforms only once the job has actually become a workflow.
 
