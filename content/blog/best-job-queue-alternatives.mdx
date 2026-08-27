@@ -11,7 +11,7 @@ subtitle: A practical job queue comparison for 2026 — BullMQ, Celery, Sidekiq,
 showSubtitle: true
 image: /assets/blog/best-job-queue-alternatives/featured-image.png
 date: 2026-08-26
-author: Dan Farrelly
+author: Lauren Craigie
 primaryCTA: signUp
 floatingCTA: true
 sidebarCta:
@@ -166,7 +166,7 @@ That's plenty for `sendWelcomeEmail(userId)` or `resizeImage(s3Key)`. Pick BullM
 
 Managed brokers, SQS, RabbitMQ, Kafka, sit next door to this category. They're excellent at delivering messages at scale and have nothing to say about job lifecycle. SQS will confirm a message arrived. It won't tell you which step of a customer's onboarding failed, let you cancel a run mid-flight, or replay from step three. RabbitMQ and Kafka add routing and throughput on top, and you still build retries, state, scheduling, and observability yourself, from scratch, the way every team before you did.
 
-[MegaSEO](/customers/megaseo?ref=blog-best-job-queue-alternatives) started on an SQS-based system and burned real engineering time building durability logic a runtime would have handed them for free. [Resend](/customers/resend?ref=blog-best-job-queue-alternatives) serverless queue could tell them a job failed. It couldn't tell them why, because nothing connected the message, the logs, and the code path that actually ran.
+[MegaSEO](/customers/megaseo?ref=blog-best-job-queue-alternatives) started on SQS and burned real engineering time building durability logic a runtime would have handed them for free. [Resend](/customers/resend?ref=blog-best-job-queue-alternatives) hit the observability wall instead: their queue could tell them a job failed, but not why, because nothing connected the message, the logs, and the code that ran.
 
 ### Where teams hit the ceiling
 
