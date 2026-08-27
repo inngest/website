@@ -40,7 +40,7 @@ const USE_CASES: UseCase[] = [
     id: "background-jobs",
     title: "Background jobs",
     body: "One line in your code makes any background job reliable. Automatic retries, recovery, and observability.",
-    href: "/docs/guides/background-jobs",
+    href: "/uses/serverless-node-background-jobs",
     icon: "/assets/v1/feature-cards/retries.svg",
     iconW: 208.397,
     iconH: 172.823,
@@ -103,7 +103,7 @@ export default function UseCaseBand() {
             <br className="hidden sm:inline" /> in one codebase.
           </>
         }
-        body="Add durable functions to your existing code, from background jobs and queues to AI agents. No infrastructure to provision or maintain."
+        body="Add durable functions to your existing code, to keep event-driven workflows, background jobs, and agents running. No infrastructure to provision or maintain."
         bodyClassName="max-w-[640px]"
       />
       <ul className="mt-v1-stack grid grid-cols-1 gap-[10px] pl-0 sm:grid-cols-2 lg:grid-cols-3">
@@ -159,7 +159,7 @@ function UseCaseCard({ useCase }: { useCase: UseCase }) {
       </div>
 
       <div className="relative">
-        <RegisterCue label="See use cases" />
+        <RegisterCue label="Learn More" />
       </div>
     </Link>
   );
