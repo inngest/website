@@ -27,6 +27,12 @@ interface UseCase {
   title: string;
   body: string;
   href: string;
+  /** Existing site line-icon (white stroke) shown above the title. */
+  icon: string;
+  /** Icon intrinsic dimensions, so it renders at the right aspect
+   *  inside the fixed icon box (no layout shift). */
+  iconW: number;
+  iconH: number;
 }
 
 const USE_CASES: UseCase[] = [
@@ -35,36 +41,54 @@ const USE_CASES: UseCase[] = [
     title: "Background jobs",
     body: "One line in your code makes any background job reliable. Automatic retries, recovery, and observability.",
     href: "/docs/guides/background-jobs",
+    icon: "/assets/v1/feature-cards/retries.svg",
+    iconW: 208.397,
+    iconH: 172.823,
   },
   {
     id: "messaging-queues",
     title: "Messaging queues",
     body: "Durable message queues without the infrastructure—no Redis or broker, with built-in flow control.",
     href: "/platform/flow-control",
+    icon: "/assets/v1/feature-cards/flow-control.svg",
+    iconW: 205.865,
+    iconH: 143.85,
   },
   {
     id: "workflow-orchestration",
     title: "Workflow orchestration",
     body: "Multi-step workflow orchestration in code: functions that checkpoint, wait, and fan out across steps.",
     href: "/platform/durable-execution",
+    icon: "/assets/v1/scale-instantly/workflows.svg",
+    iconW: 32,
+    iconH: 32,
   },
   {
     id: "scheduled-cron",
     title: "Scheduled & cron jobs",
     body: "Run scheduled and cron jobs as functions that sleep, fan out, parallelize, retry, and recover.",
     href: "/uses/scheduled-jobs",
+    icon: "/assets/v1/scale-instantly/schedules.svg",
+    iconW: 32,
+    iconH: 12.85,
   },
   {
     id: "webhooks-events",
     title: "Webhooks & Events",
     body: "Handle webhooks and event-driven functions reliably. Inngest retries failures and shows what happened.",
     href: "/uses/webhooks",
+    icon: "/assets/v1/scale-instantly/events.svg",
+    iconW: 21.65,
+    iconH: 32,
   },
   {
     id: "serverless-background-jobs",
     title: "Serverless background jobs",
     body: "Replace your serverless background job stack with one SDK you drop into your existing codebase.",
     href: "/uses/serverless-node-background-jobs",
+    icon: "/assets/v1/scale-instantly/serverless.svg",
+    iconW: 32,
+    iconH: 20.52,
   },
 ];
 
@@ -118,6 +142,16 @@ function UseCaseCard({ useCase }: { useCase: UseCase }) {
       />
 
       <div className="relative flex flex-col gap-3">
+        <span className="mb-2 flex h-9 items-center">
+          <img
+            src={useCase.icon}
+            alt=""
+            aria-hidden="true"
+            width={useCase.iconW}
+            height={useCase.iconH}
+            className="block h-auto max-h-9 w-auto max-w-[44px] object-contain object-left"
+          />
+        </span>
         <h3 className="font-v1Heading text-[24px] font-normal leading-[1.2] tracking-[-0.01em] text-v1-frost sm:text-[28px]">
           {useCase.title}
         </h3>
@@ -125,7 +159,7 @@ function UseCaseCard({ useCase }: { useCase: UseCase }) {
       </div>
 
       <div className="relative">
-        <RegisterCue label="Learn more" />
+        <RegisterCue label="See use cases" />
       </div>
     </Link>
   );
