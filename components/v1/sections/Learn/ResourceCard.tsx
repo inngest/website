@@ -47,7 +47,7 @@ export default function ResourceCard({ post }: { post: PostCard }) {
           {/* Description + CTA. The CTA is the shared RegisterCue
               (Label/Md, reacts to the card's group/card hover with a
               salmon + arrow nudge). */}
-          <p className="text-v1-body-sm line-clamp-2 text-white/80">
+          <p className="text-v1-body-sm-loose line-clamp-2 tracking-[-0.01em] text-white/80">
             {post.subtitle ?? ""}
           </p>
           <div className="mt-auto">
