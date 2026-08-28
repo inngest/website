@@ -4,6 +4,12 @@ import { UPCOMING, isPastEvent } from "@/components/v1/sections/Events/data";
 export default function UpcomingEvents() {
   const upcoming = UPCOMING.filter((ev) => !isPastEvent(ev));
 
+  // Once every event has started there is nothing to promote, so drop the
+  // whole section rather than leaving a bare "Upcoming Events" heading over
+  // an empty list. Mirrors the "Other upcoming events" rail on the event
+  // detail pages, which hides itself the same way.
+  if (upcoming.length === 0) return null;
+
   return (
     <section
       aria-labelledby="upcoming-events-heading"
