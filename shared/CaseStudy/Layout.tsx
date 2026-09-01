@@ -7,7 +7,6 @@ import Container from "src/shared/layout/Container";
 import Footer from "src/components/RedesignedLanding/Footer";
 import { Button } from "../Button";
 import { SectionProvider } from "shared/Docs/SectionProvider";
-import AnnouncementBanner from "src/components/AnnouncementBanner";
 
 export type Props = {
   children: React.ReactNode;
@@ -72,7 +71,6 @@ export function Layout({
           content={`https://www.inngest.com${ogImage}`}
         />
       </Head>
-      <AnnouncementBanner />
       <Header />
       <Container>
         <div className="mx-auto my-12 flex max-w-[1200px] flex-col items-start justify-between gap-8 lg:flex-row">
