@@ -8,9 +8,9 @@ import deDotsData from "@/public/assets/v1/durable-execution-hero/dots.json";
 const DE_DOTS_JSON = JSON.stringify(deDotsData);
 
 export const metadata: Metadata = generateMetadata({
-  title: "Durable Execution - Reliable Workflows",
+  title: "Durable Execution Platform for Reliable Workflows",
   description:
-    "Make any function durable with step.run, step.sleep, and waitForEvent. Inngest retries, resumes, and traces your workflows - no extra workers required.",
+    "Durable execution keeps functions running through failures, retries, and restarts. Add step.run, step.sleep, and waitForEvent to any code. No extra workers required.",
 });
 
 export default function Page() {

@@ -67,6 +67,7 @@ function Copy() {
       <div className="flex flex-col gap-10">
         <SectionHeader
           id="de-control-flow-heading"
+          eyebrow="Flow control"
           title="Control flow through every event."
           body="Left to a queue, work piles up, noisy tenants starve others, and APIs get hammered. Flow control is how you stay in control as volume grows."
         />
