@@ -26,6 +26,12 @@ export interface EventItem {
   date: string;
   /** ISO 8601 start time for sorting (display copy stays in `date`). */
   startsAt: string;
+  /**
+   * ISO 8601 end time. Only needed for multi-day events (conferences),
+   * where `startsAt` alone would mark the event "past" on its own opening
+   * morning. Single-session events can leave this off.
+   */
+  endsAt?: string;
   location: string;
   topics: string[];
   excerpt: string;
@@ -36,8 +42,14 @@ export interface EventItem {
   imageFit?: "cover" | "contain";
 }
 
-export function isPastEvent(ev: { startsAt: string }): boolean {
-  return new Date(ev.startsAt).getTime() < Date.now();
+// An event stays "upcoming" until it is actually over: multi-day events
+// carry `endsAt` so they keep their live Register CTA while the doors are
+// still open, instead of going stale the moment day one begins.
+export function isPastEvent(ev: {
+  startsAt: string;
+  endsAt?: string;
+}): boolean {
+  return new Date(ev.endsAt ?? ev.startsAt).getTime() < Date.now();
 }
 
 // Past events first (most recently completed leads), then upcoming
@@ -153,6 +165,20 @@ export const UPCOMING: EventItem[] = [
       "A small, low-key dinner for people building agents, workflows, and the infra underneath them — no decks, no pitch.",
     href: "/events/inngest-supper-club-sf",
     image: "/assets/v1/events/inngest-supper-club-sf.png",
+    imageFit: "contain",
+  },
+  {
+    id: "the-ai-conference-2026",
+    title: "Meet Inngest at The AI Conference",
+    date: "September 30 – October 1, 2026",
+    startsAt: "2026-09-30T09:00:00-07:00",
+    endsAt: "2026-10-01T18:00:00-07:00",
+    location: "SAN FRANCISCO, CA",
+    topics: ["Events"],
+    excerpt:
+      "Find us at booth #136 at Pier 48. Come see how teams run agents and workflows on infrastructure that lives in their own codebase.",
+    href: "/events/the-ai-conference-2026",
+    image: "/assets/v1/events/the-ai-conference-2026.png",
     imageFit: "contain",
   },
 ];
@@ -319,6 +345,20 @@ export const ALL_EVENTS: EventItem[] = sortEventsByDate([
       "A small, low-key dinner for people building agents, workflows, and the infra underneath them — no decks, no pitch.",
     href: "/events/inngest-supper-club-sf",
     image: "/assets/v1/events/inngest-supper-club-sf.png",
+    imageFit: "contain",
+  },
+  {
+    id: "the-ai-conference-2026",
+    title: "Meet Inngest at The AI Conference",
+    date: "September 30 – October 1, 2026",
+    startsAt: "2026-09-30T09:00:00-07:00",
+    endsAt: "2026-10-01T18:00:00-07:00",
+    location: "SAN FRANCISCO, CA",
+    topics: ["Events"],
+    excerpt:
+      "Find us at booth #136 at Pier 48. Come see how teams run agents and workflows on infrastructure that lives in their own codebase.",
+    href: "/events/the-ai-conference-2026",
+    image: "/assets/v1/events/the-ai-conference-2026.png",
     imageFit: "contain",
   },
 ]);
