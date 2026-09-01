@@ -67,6 +67,12 @@ Output is JSON. Use jq to filter.
 
 Point your agent at a run ID when something breaks. It reads the actual trace—which steps ran, which failed, what the error was—and works from real execution data rather than guessing from code alone. Then it can invoke locally to verify the fix before you ship anything.
 
+We also updated our agent skills and plugins with these commands, so Claude Code, Codex, and other agents can debug runs without wiring up a `CLAUDE.md` block by hand:
+
+- [inngest-skills](https://github.com/inngest/inngest-skills)
+- [inngest-claude-code-plugin](https://github.com/inngest/inngest-claude-code-plugin)
+- [inngest-codex-plugin](https://github.com/inngest/inngest-codex-plugin)
+
 See the [coding agents guide](/docs/ai-dev-tools/agent-skills?ref=blog-debug-functions-terminal-cli-v2-rest-api) for setup details.
 
 ## The v2 REST API
