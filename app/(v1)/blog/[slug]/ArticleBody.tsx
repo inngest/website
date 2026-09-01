@@ -4,6 +4,7 @@ import { MDXRemote } from "next-mdx-remote/rsc";
 import DiscordCTA from "src/shared/Blog/DiscordCTA";
 import CTACallout from "src/shared/CTACallout";
 import Blockquote from "src/shared/Blog/Blockquote";
+import QueueTreeViz from "src/shared/Blog/QueueTreeViz";
 import { ReportChart } from "@/components/Blog/Report/ReportChart";
 import { ReportExecSummary } from "@/components/Blog/Report/ReportExecSummary";
 import { ReportSectionBreak } from "@/components/Blog/Report/ReportSectionBreak";
@@ -28,6 +29,7 @@ const components: MDXComponents = {
   DiscordCTA,
   CTACallout,
   Blockquote,
+  QueueTreeViz,
   AutoplayVideo: BlogAutoplayVideo as unknown as MDXComponents["AutoplayVideo"],
   YouTube: BlogYouTube as unknown as MDXComponents["YouTube"],
   Code: CodeBlock,
