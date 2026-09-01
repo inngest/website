@@ -81,24 +81,22 @@ Wildcards cannot be used following any characters other than `/` and `.` or in t
 To define types for wildcard triggers, you need to explicitly define
 
 ```ts
-import { eventType, Inngest } from "inngest";
+import { eventType, Inngest, staticSchema } from "inngest";
 
-const blogPostCreated = eventType({
-  name: "app/blog.post.created",
-  data: {} as {
+type BlogPostEventData =
+  | {
     postId: string;
     authorId: string;
     createdAt: string;
-  },
-});
-
-const blogPostPublished = eventType({
-  name: "app/blog.post.published",
-  data: {} as {
+  }
+  | {
     postId: string;
     authorId: string;
     publishedAt: string;
-  },
+  };
+
+const blogPostEvent = eventType("app/blog.post.*", {
+  schema: staticSchema<BlogPostEventData>(),
 });
 
 const inngest = new Inngest({
@@ -106,7 +104,7 @@ const inngest = new Inngest({
 });
 
 inngest.createFunction(
-  { id: "blog-updates-to-slack", triggers: [{ event: "app/blog.post.*" }] },
+  { id: "blog-updates-to-slack", triggers: [blogPostEvent] },
   async ({ event, step }) => {
     // ...
   },

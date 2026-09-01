@@ -351,13 +351,13 @@ from src.inngest.client import inngest_client
     trigger=inngest.TriggerEvent(event="user.created"),
 )
 def send_welcome_notification(ctx: inngest.ContextSync) -> None:
-	success, retryAfter, err = twilio.Messages.Create(twilio.MessageOpts{
-		To:   ctx.event.data["user"]["phoneNumber"],
-		Body: "Welcome to our service!",
-	})
+    success, retry_after = send_twilio_message(
+        to=ctx.event.data["user"]["phoneNumber"],
+        body="Welcome to our service!",
+    )
 
-	if not success and retryAfter is not None:
-		raise inngest.RetryAfterError("Hit Twilio rate limit", retryAfter)
+    if not success and retry_after is not None:
+        raise inngest.RetryAfterError("Hit Twilio rate limit", retry_after)
 ```
 
 </LanguageSection>
