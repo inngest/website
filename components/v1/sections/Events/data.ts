@@ -125,7 +125,8 @@ export const UPCOMING: EventItem[] = [
     topics: ["Meetups"],
     excerpt:
       "Lightning talks and real lessons learned from teams shipping AI in production — cohosted with Nebius Token Factory and Flox at Inngest HQ.",
-    href: "https://luma.com/inngest-77ls",
+    href: "https://www.youtube.com/watch?v=A5D939_aVEE",
+    recording: true,
     image: "/assets/v1/events/ai-in-production-aug-2026.png",
   },
   {
@@ -290,7 +291,8 @@ export const ALL_EVENTS: EventItem[] = sortEventsByDate([
     topics: ["Meetups"],
     excerpt:
       "Lightning talks and real lessons learned from teams shipping AI in production — cohosted with Nebius Token Factory and Flox at Inngest HQ.",
-    href: "https://luma.com/inngest-77ls",
+    href: "https://www.youtube.com/watch?v=A5D939_aVEE",
+    recording: true,
     image: "/assets/v1/events/ai-in-production-aug-2026.png",
   },
   {

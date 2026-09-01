@@ -8,6 +8,14 @@ import eventsDotsData from "@/public/assets/v1/events-hero/dots.json";
 // pattern paints on the first frame instead of after a fetch.
 const EVENTS_DOTS_JSON = JSON.stringify(eventsDotsData);
 
+// "Upcoming Events" is server-rendered, so its past/upcoming split gets
+// frozen into the prerendered HTML at build time — an event that ended
+// after the last deploy kept showing a live Register button. Regenerate
+// at most hourly so the section tracks the clock rather than the deploy
+// cadence. ("All Events" is a client component and self-corrects on
+// hydration, which is why only this section drifted.)
+export const revalidate = 3600;
+
 export const metadata: Metadata = generateMetadata({
   title: "Events - Conferences, Meetups & Talks",
   description:
