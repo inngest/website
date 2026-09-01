@@ -19,10 +19,10 @@ export default function Hero() {
         </>
       }
       bodyLines={[
-        "What is durable execution? Fault-tolerant code that",
-        "finishes even when APIs fail or servers restart.",
-        "Inngest checkpoints every step and retries",
-        "automatically—so workflows resume where they left off.",
+        "Durable execution means your code completes no",
+        "matter what. LLM outages, API timeouts, server",
+        "restarts, traffic spikes. Inngest makes every",
+        "function durable without leaving your codebase.",
       ]}
       docsHref="/docs/learn/how-functions-are-executed?ref=durable-execution"
       signupHref="/sign-up?ref=durable-execution"
