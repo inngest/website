@@ -1,4 +1,4 @@
-import { CodeGroup, VersionBadge, Info, Warning } from "src/shared/Docs/mdx";
+import { CodeGroup, VersionBadge, Info, Warning, Unreleased } from "src/shared/Docs/mdx";
 
 
 export const metaTitle = "step.metadata() | Attach Metadata to Runs (SDK v4)"
@@ -27,6 +27,12 @@ const inngest = new Inngest({
 ```
 
 This makes `step.metadata()` available inside function handlers and `inngest.metadata` available on the client instance.
+
+<Unreleased label="ai-middleware">
+
+Alternatively, `aiMiddleware()` enables step metadata alongside scoring and [Extended Traces](/docs/examples/open-telemetry?ref=docs-metadata#quick-start): `middleware: [...aiMiddleware()]`.
+
+</Unreleased>
 
 ## `step.metadata(memoId)`
 

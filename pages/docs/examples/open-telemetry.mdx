@@ -1,4 +1,4 @@
-import { VersionBadge, Callout } from "src/shared/Docs/mdx";
+import { VersionBadge, Callout, Unreleased } from "src/shared/Docs/mdx";
 
 export const metaTitle = "OpenTelemetry Integration with Inngest"
 export const description = "Set up OpenTelemetry with Inngest for AI metadata extraction and Extended Traces. Use @inngest/otel or bring your own OpenTelemetry provider."
@@ -14,7 +14,37 @@ Inngest uses OpenTelemetry for two separate features:
 - **AI metadata extraction:** Extract AI metadata from OpenTelemetry spans with OpenTelemetry GenAI attributes and attach it to the step where the model call happened. This is enabled by default with `aiMetadata: true`.
 - **Extended Traces:** Export spans from inside your function run into [Inngest Traces](/docs/platform/monitor/traces#extended-traces), so database queries, HTTP calls, AI requests, and custom spans appear in the run timeline.
 
-This guide first shows how to set up OpenTelemetry in your process. After that, it shows how to use that setup for AI metadata extraction and Extended Traces.
+<Unreleased label="ai-middleware" fallback={<p>This guide first shows how to set up OpenTelemetry in your process. After that, it shows how to use that setup for AI metadata extraction and Extended Traces.</p>}>
+
+## Quick start
+
+If your application does not already configure OpenTelemetry, install [`@inngest/otel`](https://www.npmjs.com/package/@inngest/otel) and preload it so it registers a provider and common instrumentation before any application code loads:
+
+```shell
+npm install @inngest/otel
+```
+
+```shell
+node --import @inngest/otel/node ./app.js
+```
+
+Then add `aiMiddleware()` to your Inngest client. It enables Extended Traces on the provider you just registered, along with scoring ([`step.score()`](/docs/features/inngest-functions/steps-workflows/scoring?ref=docs-open-telemetry)) and step metadata ([`step.metadata()`](/docs/features/inngest-functions/steps-workflows/step-metadata-how-to?ref=docs-open-telemetry)):
+
+```ts inngest/client.ts
+import { Inngest } from "inngest";
+import { aiMiddleware } from "inngest/experimental";
+
+export const inngest = new Inngest({
+  id: "my-app",
+  middleware: [...aiMiddleware()],
+});
+```
+
+No other configuration is needed. AI metadata extraction is on by default, and spans from model calls, HTTP requests, and database queries now appear in your run traces. Add your own middleware alongside the spread: `middleware: [...aiMiddleware(), myMiddleware]`.
+
+If a framework CLI starts your dev server, pass the preload through `NODE_OPTIONS` instead (see [Framework dev servers](#framework-dev-servers)). The rest of this guide covers bringing your own OpenTelemetry provider and configuring each feature on its own.
+
+</Unreleased>
 
 ## Set up OpenTelemetry
 
@@ -199,6 +229,12 @@ See the [`aiMetadata` client option](/docs/reference/typescript/v4/client/create
 
 Extended Traces export application OpenTelemetry spans from inside an Inngest function run to [Inngest Traces](/docs/platform/monitor/traces#extended-traces). Use this when you want HTTP calls, database queries, AI requests, and custom spans to appear in the run timeline.
 
+<Unreleased label="ai-middleware">
+
+`aiMiddleware()` from the [quick start](#quick-start) already enables Extended Traces. Use `extendedTracesMiddleware()` directly when you want Extended Traces without the rest of the bundle.
+
+</Unreleased>
+
 If you create the provider yourself, add `new InngestSpanProcessor(inngest)` to that provider and configure the Inngest middleware with `behaviour: "off"`.
 
 The provider setup imports your Inngest client, so keep that module focused on creating the client. Do not use it as a barrel file that imports your app entrypoint, functions, route handlers, database clients, or AI SDK clients. Those modules should import the Inngest client, not the other way around.
@@ -239,6 +275,12 @@ If you create the OpenTelemetry provider yourself and add `InngestSpanProcessor`
 If you want the middleware to attach to an already-registered provider, set `behaviour` to `"extendProvider"`.
 
 Avoid `behaviour: "createProvider"` for new setups. Provider creation from the middleware is deprecated.
+
+<Unreleased label="ai-middleware">
+
+With `aiMiddleware()`, set the mode through its `traces` option: `aiMiddleware({ traces: { behaviour: "off" } })`.
+
+</Unreleased>
 
 </Callout>
 
