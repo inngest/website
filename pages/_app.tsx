@@ -23,16 +23,10 @@ import {
 } from "../shared/CaseStudy/Layout";
 
 import type { PageProps } from "@/shared/types";
-import AnnouncementBanner from "src/components/AnnouncementBanner";
 import PatternsViewToggle from "../shared/Patterns/PatternsViewToggle";
 
 function DefaultLayout({ children }) {
-  return (
-    <>
-      <AnnouncementBanner />
-      {children}
-    </>
-  );
+  return <>{children}</>;
 }
 
 type DefaultProps = PageProps & DocsLayoutProps & CaseStudyLayoutProps;
