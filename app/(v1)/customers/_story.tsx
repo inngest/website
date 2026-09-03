@@ -44,6 +44,8 @@ export type Frontmatter = {
   companyIndustry?: string;
   companyUseCase?: string;
   ogImage?: string;
+  /** Optional secondary pill beside the "Customer story" chip. */
+  pill?: string;
 };
 
 export const listCustomerSlugs = cache((): string[] => {
@@ -118,6 +120,7 @@ function buildStoryData(data: Frontmatter, content: string): CustomerStoryData {
     .join(", ");
   return {
     tag: "Customer story",
+    pill: data.pill,
     title: data.title,
     author: data.quote?.attribution?.name,
     readTime: readingTime(content).text,

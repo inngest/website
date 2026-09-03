@@ -4,6 +4,8 @@
 
 export interface CustomerStoryData {
   tag: string;
+  /** Optional secondary pill (e.g. acquisition note) shown beside `tag`. */
+  pill?: string;
   title: string;
   author?: string;
   readTime?: string;
