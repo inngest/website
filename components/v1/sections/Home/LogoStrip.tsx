@@ -35,6 +35,9 @@ interface CustomerLogo {
   /** When set, the logo shows an orange case-study indicator and links
    *  to that customer story. */
   caseStudyHref?: string;
+  /** Extra horizontal nudge (px) for the case-study dot — positive
+   *  pushes it further past the right edge of the wordmark. */
+  dotDx?: number;
 }
 
 // Heights are optically cheated per logo: very wide wordmarks
@@ -83,6 +86,9 @@ const LOGOS: CustomerLogo[] = [
     width: 118,
     height: 29,
     caseStudyHref: "/customers/resend",
+    // Wordmark sits flush to the SVG right edge, so the default
+    // -right-1.5 lands on the "d" — nudge the dot clear of the letter.
+    dotDx: 8,
   },
   { name: "Avoca", src: "/assets/v1/logos/avoca.svg", width: 118, height: 29 },
   {
@@ -163,6 +169,11 @@ function LogoMark({
       <span
         aria-hidden="true"
         className="absolute -right-1.5 -top-1 size-1.5 rounded-full bg-v1-accent-salmon shadow-[0_0_0_2px_rgb(var(--color-v1-bg-canvas-base))] sm:size-[7px]"
+        style={
+          logo.dotDx
+            ? { right: `-${6 + logo.dotDx}px` } // base -right-1.5 = 6px
+            : undefined
+        }
       />
       <span
         role="tooltip"
