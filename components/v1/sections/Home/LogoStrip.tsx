@@ -133,7 +133,7 @@ function LogoMark({
   decorative,
 }: {
   logo: CustomerLogo;
-  /** Second marquee copy — hide from a11y / focus. */
+  /** Second marquee copy — keep out of tab order / a11y tree. */
   decorative: boolean;
 }) {
   const img = (
@@ -161,10 +161,19 @@ function LogoMark({
   const className =
     "group/logo logo-item relative shrink-0 outline-none focus-visible:opacity-100";
 
-  // Shared visual chrome (dot + tooltip) for both the interactive link
-  // and the decorative duplicate so both marquee copies look identical.
-  const chrome = (
-    <>
+  // Both marquee copies must be real links — after the track translates
+  // past -50%, the duplicate set is what's under the cursor. The second
+  // copy stays out of the tab order / a11y tree via tabIndex + the
+  // parent `aria-hidden`.
+  return (
+    <Link
+      href={href}
+      className={className}
+      aria-label={
+        decorative ? undefined : `${logo.name} — Read the case study`
+      }
+      tabIndex={decorative ? -1 : undefined}
+    >
       {img}
       <span
         aria-hidden="true"
@@ -181,20 +190,6 @@ function LogoMark({
       >
         Read the case study
       </span>
-    </>
-  );
-
-  if (decorative) {
-    return <span className={className}>{chrome}</span>;
-  }
-
-  return (
-    <Link
-      href={href}
-      className={className}
-      aria-label={`${logo.name} — Read the case study`}
-    >
-      {chrome}
     </Link>
   );
 }
