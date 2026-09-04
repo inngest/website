@@ -28,6 +28,8 @@ As part of ongoing work to expand capacity across multiple data centers, a chang
 
 Several critical execution services depend on that private path to access state required to schedule and run functions. When the path became unavailable, those services could not initialize or make progress. This interrupted function execution and delayed scheduling across the platform.
 
+Within minutes of identifying the impact, we restored the original VPC attachment. AWS automatically disassociates a Virtual Private Gateway from its Direct Connect gateway when the gateway is detached from a VPC. Reattaching the VPC attachment did not automatically restore that separate Direct Connect association, so the team had to identify and restore it before traffic and dependent services could recover.
+
 The affected path did not have enough independent redundancy. While our services have connection fallbacks, they depended on the same unavailable network path and could not keep execution available in a degraded state.
 
 ## Timeline
@@ -40,7 +42,7 @@ The affected path did not have enough independent redundancy. While our services
 
 ## Root Cause
 
-The incident was caused by an interruption to the private network path between our Ashburn environment and AWS-hosted state services. Without that connectivity, the services responsible for state, scheduling, and execution could not operate normally, which led to a platform-wide function execution outage.
+The incident was caused by an interruption to the private network path between our Ashburn environment and AWS-hosted state services. AWS automatically disassociated the Direct Connect association when the Virtual Private Gateway was detached from the VPC. Restoring the VPC attachment alone did not automatically restore that Direct Connect association. Without connectivity, the services responsible for state, scheduling, and execution could not operate normally, which led to a platform-wide function execution outage.
 
 The design also exposed a single network failure domain: the loss of one connectivity path could interrupt execution rather than allowing the platform to continue in a degraded mode.
 
