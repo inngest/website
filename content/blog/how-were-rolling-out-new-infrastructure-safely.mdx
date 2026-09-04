@@ -1,0 +1,33 @@
+---
+heading: "How we're rolling out new infrastructure safely"
+subtitle: "Why we're introducing Inngest's next generation of infrastructure gradually, starting with Free accounts."
+showSubtitle: true
+image: /assets/blog/how-were-rolling-out-new-infrastructure-safely/featured-image.png
+date: 2026-09-04
+category: company-news
+author: Inngest
+---
+
+We are rolling out new infrastructure designed to make Inngest more reliable, performant, and scalable for the future.
+
+Changes this fundamental need to be tested carefully. After multiple rounds of internal testing and benchmarking, we are introducing the new infrastructure to production gradually, beginning with small cohorts of accounts on the Free plan. We will monitor each stage before expanding the rollout.
+
+## Why we start with Free accounts
+
+Internal testing can validate correctness and simulate load, but it cannot reproduce every workload, traffic pattern, or interaction that occurs in production. A staged rollout lets us learn from real-world usage while limiting the number of accounts exposed to a change at any one time.
+
+Starting with Free accounts reduces the potential blast radius while we validate the infrastructure under production conditions. It also gives us room to pause, adjust, and resolve issues before rolling changes out more broadly. We use the same gradual approach for major infrastructure migrations; you can read more about the engineering behind our current work in [our FoundationDB migration series](/blog/migration-to-foundationdb-part-1?ref=blog-how-were-rolling-out-new-infrastructure-safely).
+
+This means some Free accounts may experience temporary degraded performance during a rollout. We strive to keep any impact to a minimum by rolling out to small cohorts, monitoring the results closely, and addressing degraded performance before continuing.
+
+## Options for evaluations and production workloads
+
+If you are evaluating Inngest on a Free account and need a more predictable environment, [contact our Sales team](/contact?ref=blog-how-were-rolling-out-new-infrastructure-safely). We can help move your evaluation to infrastructure with stronger performance isolation.
+
+Upgrading to [any paid plan](/pricing?ref=blog-how-were-rolling-out-new-infrastructure-safely) automatically moves your account to infrastructure that is isolated from the Free-plan rollout pool. Paid-plan infrastructure offers stronger performance isolation and is not used as the first stage for these rollouts.
+
+## Shipping with confidence
+
+Production rollouts are an essential part of operating a reliable platform. Some behavior can only be understood under the variety and scale of real workloads, but that does not lessen our responsibility to protect the people building on Inngest.
+
+Gradual rollouts allow us to improve the platform with confidence, learn quickly, and contain unexpected impact. We will continue investing in safeguards, monitoring, and infrastructure isolation as we build a more reliable and scalable foundation for every Inngest account.
