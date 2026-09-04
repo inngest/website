@@ -100,7 +100,7 @@ We considered using a feature flag to provide the time at which runs should be w
 
 To solve the issue of aligning switchover times and reduce the risk of enabling sharding for everyone at the same time, we wrote a rollout policy as part of the codebase. Compiled into the same binary as the production services, the policy would be immediately available on rollout.
 
-Similar to our state coordinator rollout, we designed the rollout to occur in multiple stages, affecting various customer segments, starting with Hobby users and ending with enterprise customers. We continue to use this approach for major changes; [our rollout policy explains why and outlines the options available to teams evaluating Inngest](/blog/how-were-rolling-out-new-infrastructure-safely?ref=blog-sharding-at-inngest).
+Similar to our state coordinator rollout, we designed the rollout to occur in multiple stages, affecting various customer segments, starting with Hobbyist users and ending with enterprise customers. We continue to use this approach for major changes; [our rollout policy explains why and outlines the options available to teams evaluating Inngest](/blog/how-inngest-rolls-out-infrastructure-changes?ref=blog-sharding-at-inngest).
 
 Once we successfully deployed the new code and monitored the system for potential issues, we felt confident to enroll Inngest's own production account for sharding on the same day. On the minute of hitting the switchover, new data appeared in the newly-created cluster. We were ecstatic.
 
