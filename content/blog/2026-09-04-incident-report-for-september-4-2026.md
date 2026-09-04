@@ -1,8 +1,8 @@
 ---
 focus: false
 featured: false
-heading: "Incident report for September 4, 2026 - Function execution outage"
-subtitle: A report on the network connectivity incident that temporarily interrupted function execution across Inngest.
+heading: "Incident report for September 4, 2026 - Network connectivity issues"
+subtitle: A report on the network connectivity incident that temporarily disrupted Inngest services.
 image: /assets/blog/incident-post-mortem.svg
 date: 2026-09-04
 author:
