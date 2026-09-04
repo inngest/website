@@ -20,7 +20,7 @@ On September 4, 2026, Inngest experienced a network connectivity incident that t
 
 Events continued to be accepted during the incident and queued work resumed processing after connectivity was restored. Some function runs failed during the outage and may need to be replayed.
 
-We sincerely apologize for the disruption. We know customers rely on Inngest for timely, dependable execution, and this outage fell short of that expectation.
+We sincerely apologize for the disruption. We recognize the impact this incident had on customers and are committed to strengthening the reliability of the platform.
 
 ## What Happened
 
