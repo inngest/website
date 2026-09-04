@@ -62,6 +62,6 @@ We restored the affected connectivity path and monitored service recovery. We ar
 - Events continued to be accepted, and processing resumed as service recovered. Some affected work may require replay.
 - Function scheduling resumed after connectivity was restored and queued work began catching up.
 
-We are sorry for the impact this outage had on your applications and customers. Building a more resilient, multi-data-center platform is a priority, and this incident reinforces the importance of independent network paths and tested failover.
+We apologize for the disruption. We know customers depend on Inngest, and we believe it’s important to share what happened. We’re continuing to build out capacity across multiple data centers and make sure a failure in one network path doesn’t interrupt execution.
 
 If you have questions about this incident or need help with affected runs, please contact [our support team](https://support.inngest.com).
