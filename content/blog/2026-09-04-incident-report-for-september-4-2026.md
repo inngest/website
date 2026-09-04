@@ -12,15 +12,17 @@ author:
 category: engineering
 ---
 
-_All timestamps are in PDT._
+_All timestamps are in UTC._
 
-On September 4, 2026, Inngest experienced a network connectivity incident that temporarily interrupted function execution across the platform. From 11:13 AM to 11:48 AM, our execution services could not reach a critical state service hosted in AWS.
+## Summary
+
+On September 4, 2026, Inngest experienced a network connectivity incident that temporarily interrupted function execution across the platform. From 18:13 to 18:48 UTC, our execution services could not reach a critical state service hosted in AWS.
 
 Events continued to be accepted during the incident and queued work resumed processing after connectivity was restored. Some function runs failed during the outage and may need to be replayed.
 
 We sincerely apologize for the disruption. We know customers rely on Inngest for timely, dependable execution, and this outage fell short of that expectation.
 
-## What happened
+## What Happened
 
 As part of ongoing work to expand capacity across multiple data centers, a change to private network connectivity temporarily interrupted the path between our Ashburn environment and AWS-hosted services.
 
@@ -28,28 +30,21 @@ Several critical execution services depend on that private path to access state 
 
 The affected path did not have enough independent redundancy. While our services have connection fallbacks, they depended on the same unavailable network path and could not keep execution available in a degraded state.
 
-## Customer impact
-
-- Function execution was unavailable from 11:13 AM to 11:48 AM PDT.
-- Events sent to Inngest continued to be accepted and were processed as service recovered.
-- Function scheduling resumed after connectivity was restored and queued work began catching up.
-- Some runs failed during the outage and may need to be replayed. Customers who need help assessing or replaying affected runs can contact [our support team](https://support.inngest.com).
-
 ## Timeline
 
-- **11:13 AM:** Function execution becomes unavailable across the platform.
-- **11:17 AM:** We declare an incident and begin investigating.
-- **11:26 AM:** We publish a status-page update and begin customer communication.
-- **11:48 AM:** Connectivity is restored and services begin recovering.
-- **12:09 PM:** We move the public status-page incident to Monitoring while we verify recovery and process queued work.
+- **18:13:** Function execution becomes unavailable across the platform.
+- **18:17:** We declare an incident and begin investigating.
+- **18:26:** We publish a status-page update and begin customer communication.
+- **18:48:** Connectivity is restored and services begin recovering.
+- **19:09:** We move the public status-page incident to Monitoring while we verify recovery and process queued work.
 
-## Root cause
+## Root Cause
 
 The incident was caused by an interruption to the private network path between our Ashburn environment and AWS-hosted state services. Without that connectivity, the services responsible for state, scheduling, and execution could not operate normally, which led to a platform-wide function execution outage.
 
 The design also exposed a single network failure domain: the loss of one connectivity path could interrupt execution rather than allowing the platform to continue in a degraded mode.
 
-## Corrective actions
+## Additional Safeguards
 
 We restored the affected connectivity path and monitored service recovery. We are also making the following improvements:
 
@@ -59,7 +54,12 @@ We restored the affected connectivity path and monitored service recovery. We ar
 - **Reducing reliance on AWS-hosted dependencies.** As part of this expansion, we plan to move workloads and critical dependencies off AWS where appropriate, reducing the number of cross-environment dependencies required for core execution.
 - **Improving dependency and failover monitoring.** We are adding more direct checks of network paths and failover behavior so we can detect a connectivity issue before dependent services become unavailable.
 
-## In closing
+## What This Means For You
+
+- Function execution was unavailable from 18:13 to 18:48 UTC.
+- Events sent to Inngest continued to be accepted and were processed as service recovered.
+- Function scheduling resumed after connectivity was restored and queued work began catching up.
+- Some runs failed during the outage and may need to be replayed.
 
 We are sorry for the impact this outage had on your applications and customers. Building a more resilient, multi-data-center platform is a priority, and this incident reinforces the importance of independent network paths, reviewed infrastructure changes, and tested failover.
 
