@@ -18,7 +18,7 @@ _All timestamps are in UTC._
 
 On September 4, 2026, Inngest experienced a network connectivity incident that temporarily interrupted function execution across the platform. From 18:13 to 18:48 UTC, our execution services could not reach a critical state service hosted in AWS.
 
-Events continued to be accepted during the incident and queued work resumed processing after connectivity was restored. Some function runs failed during the outage and may need to be replayed.
+Events continued to be accepted during the incident, and processing resumed as service recovered. Some affected work may require replay.
 
 We sincerely apologize for the disruption. We recognize the impact this incident had on customers and are committed to strengthening the reliability of the platform.
 
@@ -59,9 +59,8 @@ We restored the affected connectivity path and monitored service recovery. We ar
 ## What This Means For You
 
 - Function execution was unavailable from 18:13 to 18:48 UTC.
-- Events sent to Inngest continued to be accepted and were processed as service recovered.
+- Events continued to be accepted, and processing resumed as service recovered. Some affected work may require replay.
 - Function scheduling resumed after connectivity was restored and queued work began catching up.
-- Some runs failed during the outage and may need to be replayed.
 
 We are sorry for the impact this outage had on your applications and customers. Building a more resilient, multi-data-center platform is a priority, and this incident reinforces the importance of independent network paths, reviewed infrastructure changes, and tested failover.
 
