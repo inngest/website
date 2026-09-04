@@ -2,12 +2,13 @@
 import { CodeGroup } from "src/shared/Docs/mdx";
 
 export const metaTitle = "Inngest FAQ | Frequently Asked Questions"
-export const description = "Answers to common Inngest questions: cron configuration, stopping functions, branch environment keys, timeouts, authentication, data redaction, and more."
+export const description = "Answers to common Inngest questions about latency, cron configuration, stopping functions, branch environment keys, timeouts, authentication, data redaction, and more."
 
 # Frequently Asked Questions (FAQs)
 
 - [How do I run crons only in production?](#how-do-i-run-crons-only-in-production)
 - [How do I stop functions from running?](#how-do-i-stop-functions-from-running)
+- [Why might my Hobbyist account experience increased latency?](#why-might-my-hobbyist-account-experience-increased-latency)
 - [What is the "Finalization" step in my trace?](#what-is-the-finalization-step-in-my-trace)
 - [Why am I getting “Event key not found" errors in branch environments?](#why-am-i-getting-event-key-not-found-errors-in-branch-environments)
 - [How do I specify multiple serve paths for a same Vercel application on the Dashboard?](#how-do-i-specify-multiple-serve-paths-for-a-same-vercel-application-on-the-dashboard)
@@ -36,6 +37,14 @@ process.env.NODE_ENV === "production" ? { cron: "* * *" } : { event: "dev/manual
 
 ## How do I stop functions from running?
 The best way to ensure a deprecated function doesn't run is to deploy without including it in your [serve handler](/docs/reference/typescript/v4/serve). You can temporarily achieved the same result by archiving the function on our dashboard, but note that a new deployment will unarchive the function.
+
+## Why might my Hobbyist account experience increased latency?
+
+After multiple rounds of internal testing, Inngest may introduce major infrastructure changes gradually to small cohorts of Hobbyist accounts before expanding a rollout to Pro and Enterprise. The Hobbyist plan is designed for testing and validating workflows rather than production use, so starting with these accounts reduces the risk of disrupting end users. These infrastructure changes are expected to benefit every account; Hobbyist users receive them first so we can validate behavior that cannot be fully reproduced internally.
+
+Some Hobbyist accounts may experience temporary degraded performance during a rollout while we monitor and resolve issues. If you are evaluating Inngest and need a more predictable environment, [contact our Sales team](/contact?ref=docs-faq). We can help move your evaluation to infrastructure with stronger performance isolation. Upgrading to [any paid plan](/pricing?ref=docs-faq) automatically moves your account to infrastructure isolated from the Hobbyist rollout pool.
+
+Read [how Inngest rolls out infrastructure changes](/blog/how-inngest-rolls-out-infrastructure-changes?ref=docs-faq) for more information.
 
 ## What is the "Finalization" step in my trace?
 

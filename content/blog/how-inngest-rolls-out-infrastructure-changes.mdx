@@ -1,0 +1,48 @@
+---
+heading: "How Inngest rolls out infrastructure changes"
+subtitle: "How staged releases help us improve reliability and performance while minimizing risk to production workloads."
+showSubtitle: true
+image: /assets/blog/how-inngest-rolls-out-infrastructure-changes/featured-image.png
+date: 2026-09-04
+category: company-news
+author: Inngest
+---
+
+We are rolling out new infrastructure designed to make Inngest more reliable, performant, and scalable for the future. A change this significant requires a deliberate release strategy, so we thought it would be a good time to share how we roll out infrastructure changes.
+
+This process is not specific to our current work. It is how we introduce major infrastructure changes that we expect to benefit every Inngest user while minimizing risk to production workloads.
+
+## What happens before a production rollout
+
+Every major infrastructure change goes through multiple rounds of internal testing and benchmarking before it reaches customer accounts. For our current rollout, this has included running artificial workloads against the new infrastructure and testing the rollout flow with Inngest's own internal accounts.
+
+Internal testing can validate correctness and simulate load, but it cannot reproduce every workload, traffic pattern, or interaction that occurs in production. Once a change passes our internal checks, a staged rollout lets us validate it against a limited set of real-world workloads before expanding access.
+
+## Why Hobbyist accounts receive changes first
+
+The Hobbyist plan is designed for individual developers to test and validate their workflows, rather than for business-critical production use. These accounts should therefore carry the lowest risk of disruption to end users. Starting with small cohorts of Hobbyist accounts limits the potential blast radius while we validate infrastructure under production conditions.
+
+These are not changes intended only for Hobbyist users. We roll out infrastructure that we expect will improve reliability, performance, and scalability for everyone; Hobbyist accounts receive those improvements first so we can validate them before expanding to Pro and Enterprise accounts.
+
+Some Hobbyist accounts may experience temporary degraded performance during a rollout. We strive to keep any impact to a minimum by rolling out to small cohorts, monitoring the results closely, and addressing degraded performance before continuing. We use the same gradual approach for major infrastructure migrations; you can read more about the engineering behind our current work in [our FoundationDB migration series](/blog/migration-to-foundationdb-part-1?ref=blog-how-inngest-rolls-out-infrastructure-changes).
+
+## Ensuring stability for Pro and Enterprise users
+
+We take seriously the fact that you trust us with your most important workloads. Pro and Enterprise accounts are not included in the first stage of major infrastructure rollouts. This strategy further minimizes the risk of disruption to production systems.
+
+Upgrading to [any paid plan](/pricing?ref=blog-how-inngest-rolls-out-infrastructure-changes) automatically moves your account to infrastructure that is isolated from the Hobbyist rollout pool. If you are evaluating Inngest on a Hobbyist account and need a more predictable environment, [contact our Sales team](/contact?ref=blog-how-inngest-rolls-out-infrastructure-changes). We can help move your evaluation to infrastructure with stronger performance isolation. If you are looking for the strongest performance isolation, talk with us about Enterprise.
+
+## How to get support
+
+If you experience unexpected latency or degraded performance, there are several ways to get help:
+
+- [File a support request](https://support.inngest.com/) for account-specific help. Include the affected environment, function or run IDs, and the approximate time the issue occurred so our team can investigate.
+- [Join the Inngest Discord](/discord?ref=blog-how-inngest-rolls-out-infrastructure-changes) to ask questions and connect with our team and community.
+- [Check the Inngest status page](https://status.inngest.com/) for active incidents and platform updates. You can also subscribe there for notifications.
+- Enterprise customers can contact us through their dedicated Slack channel. [Learn more about Enterprise support](/pricing?ref=blog-how-inngest-rolls-out-infrastructure-changes).
+
+## Shipping with confidence
+
+Production rollouts are an essential part of operating a reliable platform. Some behavior can only be understood under the variety and scale of real workloads, but that does not lessen our responsibility to protect the people building on Inngest.
+
+Gradual rollouts allow us to improve the platform with confidence, learn quickly, and contain unexpected impact. We will continue investing in safeguards, monitoring, and infrastructure isolation as we build a more reliable and scalable foundation for every Inngest account.
