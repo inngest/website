@@ -51,10 +51,10 @@ The design also exposed a single network failure domain: the loss of one connect
 We restored the affected connectivity path and monitored service recovery. We are also making the following improvements:
 
 - **Adding independent network redundancy.** We are establishing resilient connectivity between our data centers and AWS-hosted services so that the loss of a single path does not interrupt execution platform-wide. We will regularly validate failover behavior rather than relying on an untested secondary path.
-- **Managing network configuration as code.** We are bringing the relevant network configuration under version control and review, so planned changes clearly show their effects, receive peer review, and can be checked for drift.
+- **Strengthening critical network change controls.** We are improving the planning, validation, and review of changes to critical connectivity.
 - **Expanding multi-data-center capacity.** We are continuing our work to add capacity across multiple data centers and to establish reliable connectivity to our new data center. This will reduce the impact of a failure in any one location or network path.
 - **Reducing reliance on AWS-hosted dependencies.** As part of this expansion, we plan to move workloads and critical dependencies off AWS where appropriate, reducing the number of cross-environment dependencies required for core execution.
-- **Improving dependency and failover monitoring.** We are adding more direct checks of network paths and failover behavior so we can detect a connectivity issue before dependent services become unavailable.
+- **Enhancing network visibility.** We are expanding visibility into critical connectivity paths and recovery behavior to accelerate detection and response.
 
 ## What This Means For You
 
@@ -62,6 +62,6 @@ We restored the affected connectivity path and monitored service recovery. We ar
 - Events continued to be accepted, and processing resumed as service recovered. Some affected work may require replay.
 - Function scheduling resumed after connectivity was restored and queued work began catching up.
 
-We are sorry for the impact this outage had on your applications and customers. Building a more resilient, multi-data-center platform is a priority, and this incident reinforces the importance of independent network paths, reviewed infrastructure changes, and tested failover.
+We are sorry for the impact this outage had on your applications and customers. Building a more resilient, multi-data-center platform is a priority, and this incident reinforces the importance of independent network paths and tested failover.
 
 If you have questions about this incident or need help with affected runs, please contact [our support team](https://support.inngest.com).
