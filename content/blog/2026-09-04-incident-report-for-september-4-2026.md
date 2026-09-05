@@ -22,7 +22,7 @@ Events continued to be accepted during the incident, and processing resumed as s
 
 ## What Happened
 
-As part of ongoing work to expand capacity across multiple data centers, a change to private network connectivity temporarily interrupted the path between our Ashburn environment and AWS-hosted services.
+As part of ongoing work to expand capacity across multiple data centers, a change to private network connectivity temporarily interrupted the path between our Ashburn data center and AWS-hosted services.
 
 [AWS permits only one Virtual Private Gateway to be attached to a VPC at a time](https://docs.aws.amazon.com/vpn/latest/s2svpn/vpn-limits.html). The existing gateway appeared to serve only an inactive tunnel, so it was removed to make room for the new connection. It was later found that the same gateway also carried the active Direct Connect association used by Ashburn-to-AWS traffic.
 
