@@ -49,7 +49,7 @@ The design also exposed a single network failure domain: the loss of one connect
 We restored the affected connection and monitored service recovery. Bringing new capacity online and building high availability are separate initiatives: the former adds capacity, while the latter requires redundant network paths and failover.
 
 - **Completing connectivity to the new data center.** We are finishing the remaining network work required to bring new capacity online.
-- **Adding guardrails to critical network changes.** We are putting key network configuration under version control so changes have clear plans and review before they are applied.
+- **Strengthening critical network change controls.** We are improving the planning, validation, and review of changes to critical connectivity.
 - **Building redundancy for critical connectivity.** We are prioritizing redundant network paths and failover for execution dependencies. We will share a more detailed update as the design and implementation plan are finalized.
 
 ## What This Means For You
