@@ -18,9 +18,7 @@ _All timestamps are in UTC._
 
 On September 4, 2026, Inngest experienced a network connectivity incident that temporarily interrupted function execution across the platform. From 18:13 to 18:48 UTC, our execution services could not reach a critical state service hosted in AWS.
 
-Events continued to be accepted during the incident, and processing resumed as service recovered. Some affected work may require replay.
-
-We sincerely apologize for the disruption. We recognize the impact this incident had on customers and are committed to strengthening the reliability of the platform.
+Events continued to be accepted during the incident, and processing resumed as services recovered. Some affected work may require replay.
 
 ## What Happened
 
@@ -46,20 +44,18 @@ The incident was caused by an interruption to the private network path between o
 
 The design also exposed a single network failure domain: the loss of one connectivity path could interrupt execution rather than allowing the platform to continue in a degraded mode.
 
-## Additional Safeguards
+## What We’re Doing Now
 
-We restored the affected connectivity path and monitored service recovery. We are also making the following improvements:
+We restored the affected connection and monitored service recovery. Bringing new capacity online and building high availability are separate initiatives: the former adds capacity, while the latter requires redundant network paths and failover.
 
-- **Adding independent network redundancy.** We are establishing resilient connectivity between our data centers and AWS-hosted services so that the loss of a single path does not interrupt execution platform-wide. We will regularly validate failover behavior rather than relying on an untested secondary path.
-- **Strengthening critical network change controls.** We are improving the planning, validation, and review of changes to critical connectivity.
-- **Expanding multi-data-center capacity.** We are continuing our work to add capacity across multiple data centers and to establish reliable connectivity to our new data center. This will reduce the impact of a failure in any one location or network path.
-- **Reducing reliance on AWS-hosted dependencies.** As part of this expansion, we plan to move workloads and critical dependencies off AWS where appropriate, reducing the number of cross-environment dependencies required for core execution.
-- **Enhancing network visibility.** We are expanding visibility into critical connectivity paths and recovery behavior to accelerate detection and response.
+- **Completing connectivity to the new data center.** We are finishing the remaining network work required to bring new capacity online.
+- **Adding guardrails to critical network changes.** We are putting key network configuration under version control so changes have clear plans and review before they are applied.
+- **Building redundancy for critical connectivity.** We are prioritizing redundant network paths and failover for execution dependencies. We will share a more detailed update as the design and implementation plan are finalized.
 
 ## What This Means For You
 
 - Function execution was unavailable from 18:13 to 18:48 UTC.
-- Events continued to be accepted, and processing resumed as service recovered. Some affected work may require replay.
+- Some affected work may require replay.
 - Function scheduling resumed after connectivity was restored and queued work began catching up.
 
 We apologize for the disruption. We know customers depend on Inngest, and we believe it’s important to share what happened. We’re continuing to build out capacity across multiple data centers and make sure a failure in one network path doesn’t interrupt execution.
