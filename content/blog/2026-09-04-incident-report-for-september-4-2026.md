@@ -24,6 +24,8 @@ Events continued to be accepted during the incident, and processing resumed as s
 
 As part of ongoing work to expand capacity across multiple data centers, a change to private network connectivity temporarily interrupted the path between our Ashburn environment and AWS-hosted services.
 
+[AWS permits only one Virtual Private Gateway to be attached to a VPC at a time](https://docs.aws.amazon.com/vpn/latest/s2svpn/vpn-limits.html). The existing gateway appeared to serve only an inactive tunnel, so it was removed to make room for the new connection. It was later found that the same gateway also carried the active Direct Connect association used by Ashburn-to-AWS traffic.
+
 Several critical execution services depend on that private path to access state required to schedule and run functions. When the path became unavailable, those services could not initialize or make progress. This interrupted function execution and delayed scheduling across the platform.
 
 Within minutes of identifying the impact, we restored the original VPC attachment. As [AWS documents](https://docs.aws.amazon.com/directconnect/latest/UserGuide/virtualgateways.html), detaching a Virtual Private Gateway from a VPC also disassociates it from a Direct Connect gateway. Reattaching the VPC attachment did not automatically restore that separate Direct Connect association, so the team had to identify and restore it before traffic and dependent services could recover.
