@@ -254,9 +254,9 @@ const { ids } = await inngest.send([
 
 ```python
 await inngest_client.send([
-  { name: "storefront/cart.checkout.completed", data: { ... } },
-  { name: "storefront/coupon.used", data: { ... } },
-  { name: "storefront/loyalty.program.joined", data: { ... } },
+  inngest.Event(name="storefront/cart.checkout.completed", data={}),
+  inngest.Event(name="storefront/coupon.used", data={}),
+  inngest.Event(name="storefront/loyalty.program.joined", data={}),
 ])
 ```
 
@@ -265,12 +265,12 @@ This is especially useful if you have an array of data in your app and you want 
 ```python
 # This function call might return 10s or 100s of items, so we can use map
 # to transform the items into event payloads then pass that array to send:
-importedItems = await api.fetchAllItems();
+imported_items = await api.fetch_all_items()
 events = [
   inngest.Event(name="storefront/item.imported", data=item)
-  for item in importedItems
+  for item in imported_items
 ]
-await inngest_client.send(events);
+await inngest_client.send(events)
 ```
 
 ## Sending events from within functions

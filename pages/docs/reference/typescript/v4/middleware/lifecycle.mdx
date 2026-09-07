@@ -78,7 +78,7 @@ Will not call if the first attempt fails to reach the app (e.g. a network error)
   <Property required name="ctx">
     The function context.
   </Property>
-  <Property required name="functionInfo">
+  <Property required name="fn">
     Metadata about the function being executed.
   </Property>
 </Properties>
@@ -93,7 +93,7 @@ Called when a function completes successfully.
   <Property required name="ctx">
     The function context.
   </Property>
-  <Property required name="functionInfo">
+  <Property required name="fn">
     Metadata about the function.
   </Property>
   <Property required name="output">
@@ -114,7 +114,7 @@ Called each time a function throws an error.
   <Property required name="error">
     The error that was thrown.
   </Property>
-  <Property required name="functionInfo">
+  <Property required name="fn">
     Metadata about the function.
   </Property>
   <Property required name="isFinalAttempt">
@@ -132,7 +132,7 @@ Called before a step handler runs. Only called for `step.run` and `step.sendEven
   <Property required name="ctx">
     The function context.
   </Property>
-  <Property required name="functionInfo">
+  <Property required name="fn">
     Metadata about the function.
   </Property>
   <Property required name="stepInfo">
@@ -150,7 +150,7 @@ Called when a step succeeds. Only called for `step.run` and `step.sendEvent`. Ne
   <Property required name="ctx">
     The function context.
   </Property>
-  <Property required name="functionInfo">
+  <Property required name="fn">
     Metadata about the function.
   </Property>
   <Property required name="output">
@@ -174,7 +174,7 @@ Called when a step throws an error. Only called for `step.run` and `step.sendEve
   <Property required name="error">
     The error that was thrown.
   </Property>
-  <Property required name="functionInfo">
+  <Property required name="fn">
     Metadata about the function.
   </Property>
   <Property required name="isFinalAttempt">
@@ -197,7 +197,7 @@ Use cases for this hook are limited. It's primarily useful for logging or metric
   <Property required name="ctx">
     The function context.
   </Property>
-  <Property required name="functionInfo">
+  <Property required name="fn">
     Metadata about the function.
   </Property>
 </Properties>
@@ -229,7 +229,7 @@ Wraps the entire HTTP request
 Example use cases: auth, top-level metrics, or error boundaries.
 
 <Properties>
-  <Property required name="functionInfo">
+  <Property required name="fn">
     Metadata about the function.
   </Property>
   <Property required name="next">
@@ -259,7 +259,7 @@ Example use cases: `AsyncLocalStorage`, error transformation, timing, or [insert
   <Property required name="ctx">
     The function context.
   </Property>
-  <Property required name="functionInfo">
+  <Property required name="fn">
     Metadata about the function.
   </Property>
   <Property required name="next">
@@ -283,7 +283,7 @@ If the step is not memoized, `next()` never resolves for that request. The metho
   <Property required name="ctx">
     The function context.
   </Property>
-  <Property required name="functionInfo">
+  <Property required name="fn">
     Metadata about the function.
   </Property>
   <Property required name="next">
@@ -306,7 +306,7 @@ Example use cases: serialize step output, [error handling](/docs/reference/types
   <Property required name="ctx">
     The function context.
   </Property>
-  <Property required name="functionInfo">
+  <Property required name="fn">
     Metadata about the function.
   </Property>
   <Property required name="next">
@@ -329,7 +329,7 @@ Example use cases: backup on send failure, metrics.
   <Property required name="events">
     The events being sent.
   </Property>
-  <Property required name="functionInfo">
+  <Property required name="fn">
     Metadata about the function, or `null` if called outside a function (e.g. `inngest.send()`).
   </Property>
   <Property required name="next">
@@ -353,7 +353,7 @@ Example use cases: dependency injection, deserialize event data.
   <Property required name="ctx">
     The function context. Add properties here to inject them into the function handler.
   </Property>
-  <Property required name="functionInfo">
+  <Property required name="fn">
     Metadata about the function.
   </Property>
   <Property required name="steps">
@@ -370,7 +370,7 @@ Modify step options or input before a step runs.
 Example use cases: serialize `step.invoke` data, bust memoization cache (i.e. change step ID).
 
 <Properties>
-  <Property required name="functionInfo">
+  <Property required name="fn">
     Metadata about the function.
   </Property>
   <Property required name="stepInfo">
@@ -396,7 +396,7 @@ Example use cases: serialize event data, add metadata.
   <Property required name="events">
     The events being sent. Return a modified copy to change them.
   </Property>
-  <Property required name="functionInfo">
+  <Property required name="fn">
     Metadata about the function, or `null` if called outside a function.
   </Property>
 </Properties>
@@ -491,7 +491,7 @@ Example use cases: one-time setup.
 ```ts
 class MyMiddleware extends Middleware.BaseMiddleware {
   id = "my-middleware";
-  static onRegister({ client, functionInfo }: Middleware.OnRegisterArgs) {
+  static onRegister({ client, fn }: Middleware.OnRegisterArgs) {
     // One-time setup
   }
 }
@@ -501,7 +501,7 @@ class MyMiddleware extends Middleware.BaseMiddleware {
   <Property required name="client">
     The Inngest client instance.
   </Property>
-  <Property required name="functionInfo">
+  <Property required name="fn">
     Metadata about the function, or `null` for client-level middleware.
   </Property>
 </Properties>

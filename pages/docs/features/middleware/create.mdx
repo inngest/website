@@ -163,8 +163,8 @@ As it's possible for an application to use multiple Inngest clients, it's recomm
       id = "my-middleware";
 
       // Observable hook: runs before the function handler on the first attempt
-      onRunStart({ ctx, functionInfo }: Middleware.OnRunStartArgs) {
-        console.log(`Starting ${functionInfo.id}`);
+      onRunStart({ ctx, fn }: Middleware.OnRunStartArgs) {
+        console.log(`Starting ${fn.id()}`);
       }
 
       // Wrapping hook: wraps function execution
@@ -237,7 +237,7 @@ It's common for middleware to require additional customization or options from d
     export function createMyMiddleware(logEventOutput: string) {
       return class MyMiddleware extends Middleware.BaseMiddleware {
         id = "my-middleware";
-        onRunComplete({ ctx, functionInfo, output }: Middleware.OnRunCompleteArgs) {
+        onRunComplete({ ctx, output }: Middleware.OnRunCompleteArgs) {
           if (ctx.event.name === logEventOutput) {
             console.log(
               `${logEventOutput} output: ${JSON.stringify(output)}`
@@ -339,4 +339,3 @@ Check out our pre-built middleware and examples:
 
 
 </LanguageSelector>
-

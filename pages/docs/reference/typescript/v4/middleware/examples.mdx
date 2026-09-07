@@ -85,27 +85,27 @@ import { Middleware } from "inngest";
 
 class ObservabilityMiddleware extends Middleware.BaseMiddleware {
   id = "o11y";
-  onRunStart({ functionInfo }: Middleware.OnRunStartArgs) {
-    console.log(`[run:start] ${functionInfo.id}`);
+  onRunStart({ fn }: Middleware.OnRunStartArgs) {
+    console.log(`[run:start] ${fn.id()}`);
   }
 
-  onRunComplete({ functionInfo, output }: Middleware.OnRunCompleteArgs) {
-    console.log(`[run:complete] ${functionInfo.id}`, output);
+  onRunComplete({ fn, output }: Middleware.OnRunCompleteArgs) {
+    console.log(`[run:complete] ${fn.id()}`, output);
   }
 
-  onRunError({ functionInfo, error, isFinalAttempt }: Middleware.OnRunErrorArgs) {
-    console.error(`[run:error] ${functionInfo.id}`, error);
+  onRunError({ fn, error, isFinalAttempt }: Middleware.OnRunErrorArgs) {
+    console.error(`[run:error] ${fn.id()}`, error);
     if (isFinalAttempt) {
       // Send to error tracking service
     }
   }
 
-  onStepComplete({ functionInfo, stepInfo }: Middleware.OnStepCompleteArgs) {
-    console.log(`[step:complete] ${functionInfo.id} > ${stepInfo.hashedId}`);
+  onStepComplete({ fn, stepInfo }: Middleware.OnStepCompleteArgs) {
+    console.log(`[step:complete] ${fn.id()} > ${stepInfo.hashedId}`);
   }
 
-  onStepError({ functionInfo, stepInfo, error }: Middleware.OnStepErrorArgs) {
-    console.error(`[step:error] ${functionInfo.id} > ${stepInfo.hashedId}`, error);
+  onStepError({ fn, stepInfo, error }: Middleware.OnStepErrorArgs) {
+    console.error(`[step:error] ${fn.id()} > ${stepInfo.hashedId}`, error);
   }
 }
 ```

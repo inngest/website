@@ -59,15 +59,19 @@ inngest.Send(context.Background(), inngestgo.Event{
 
 
 ```python {{ title: "Python" }}
+import inngest
+
 cart_id = 'CGo5Q5ekAxilN92d27asEoDO'
-await inngest.send({
-  id: f'checkout-completed-{cart_id}', // <-- This is the idempotency key
-  name: 'cart/checkout.completed',
-  data: {
-    email: 'taylor@example.com',
-    cart_id: cart_id
-  }
-})
+await inngest_client.send(
+    inngest.Event(
+        id=f'checkout-completed-{cart_id}',  # This is the idempotency key
+        name='cart/checkout.completed',
+        data={
+            'email': 'taylor@example.com',
+            'cart_id': cart_id,
+        },
+    )
+)
 ```
 
 </CodeGroup>
@@ -212,7 +216,6 @@ const runGeneration = inngest.createFunction(
 ```
 
 </details>
-
 
 
 

@@ -62,6 +62,7 @@ inngest_client = inngest.Inngest(app_id="flask_example", logger=logger)
     trigger=inngest.TriggerEvent(event="say-hello"),
 )
 def hello(ctx: inngest.ContextSync) -> str:
+    return "Hello, World!"
 
 inngest.flask.serve(
     app,

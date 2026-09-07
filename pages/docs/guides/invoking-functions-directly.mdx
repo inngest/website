@@ -91,7 +91,8 @@ const square = await step.invoke("compute-square-value", {
 References can also be used to invoke local functions without needing to import them (and their dependencies) directly. This can be useful for frameworks like Next.js where edge and serverless handlers can be mixed together and require different sets of dependencies.
 
 ```ts
-import { inngest, referenceFunction } from "inngest";
+import { referenceFunction } from "inngest";
+import { inngest } from "@/inngest/client";
 import { type computeSquare } from "@/inngest/computeSquare"; // Import only the type
 
 const mainFunction = inngest.createFunction(

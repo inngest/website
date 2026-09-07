@@ -129,12 +129,14 @@ await inngest.send({
 ```
 
 ```python {{ title: "Python" }}
-from inngest import Inngest
+import inngest
 
 inngest_client = inngest.Inngest(app_id="my_app")
 await inngest_client.send(
-  name="user.avatar.uploaded",
-  data={"url": "https://a-bucket.s3.us-west-2.amazonaws.com/..."},
+  inngest.Event(
+    name="user.avatar.uploaded",
+    data={"url": "https://a-bucket.s3.us-west-2.amazonaws.com/..."},
+  )
 )
 ```
 
