@@ -18,19 +18,19 @@ Every major infrastructure change goes through multiple rounds of internal testi
 
 Internal testing can validate correctness and simulate load, but it cannot reproduce every workload, traffic pattern, or interaction that occurs in production. Once a change passes our internal checks, a staged rollout lets us validate it against a limited set of real-world workloads before expanding access.
 
-## Why Hobbyist accounts receive changes first
+## Why Hobby accounts receive changes first
 
-The Hobbyist plan is designed for individual developers to test and validate their workflows, rather than for business-critical production use. These accounts should therefore carry the lowest risk of disruption to end users. Starting with small cohorts of Hobbyist accounts limits the potential blast radius while we validate infrastructure under production conditions.
+The Hobby plan is designed for individual developers to test and validate their workflows, rather than for business-critical production use. These accounts should therefore carry the lowest risk of disruption to end users. Starting with small cohorts of Hobby accounts limits the potential blast radius while we validate infrastructure under production conditions.
 
-These are not changes intended only for Hobbyist users. We roll out infrastructure that we expect will improve reliability, performance, and scalability for everyone; Hobbyist accounts receive those improvements first so we can validate them before expanding to Pro and Enterprise accounts.
+These are not changes intended only for Hobby users. We roll out infrastructure that we expect will improve reliability, performance, and scalability for everyone; Hobby accounts receive those improvements first so we can validate them before expanding to Pro and Enterprise accounts.
 
-Some Hobbyist accounts may experience temporary degraded performance during a rollout. We strive to keep any impact to a minimum by rolling out to small cohorts, monitoring the results closely, and addressing degraded performance before continuing. We use the same gradual approach for major infrastructure migrations; you can read more about the engineering behind our current work in [our FoundationDB migration series](/blog/migration-to-foundationdb-part-1?ref=blog-how-inngest-rolls-out-infrastructure-changes).
+Some Hobby accounts may experience temporary degraded performance during a rollout. We strive to keep any impact to a minimum by rolling out to small cohorts, monitoring the results closely, and addressing degraded performance before continuing. We use the same gradual approach for major infrastructure migrations; you can read more about the engineering behind our current work in [our FoundationDB migration series](/blog/migration-to-foundationdb-part-1?ref=blog-how-inngest-rolls-out-infrastructure-changes).
 
 ## Ensuring stability for Pro and Enterprise users
 
 We take seriously the fact that you trust us with your most important workloads. Pro and Enterprise accounts are not included in the first stage of major infrastructure rollouts. This strategy further minimizes the risk of disruption to production systems.
 
-Upgrading to [any paid plan](/pricing?ref=blog-how-inngest-rolls-out-infrastructure-changes) automatically moves your account to infrastructure that is isolated from the Hobbyist rollout pool. If you are evaluating Inngest on a Hobbyist account and need a more predictable environment, [contact our Sales team](/contact?ref=blog-how-inngest-rolls-out-infrastructure-changes). We can help move your evaluation to infrastructure with stronger performance isolation. If you are looking for the strongest performance isolation, talk with us about Enterprise.
+Upgrading to [any paid plan](/pricing?ref=blog-how-inngest-rolls-out-infrastructure-changes) automatically moves your account to infrastructure that is isolated from the Hobby rollout pool. If you are evaluating Inngest on a Hobby account and need a more predictable environment, [contact our Sales team](/contact?ref=blog-how-inngest-rolls-out-infrastructure-changes). We can help move your evaluation to infrastructure with stronger performance isolation. If you are looking for the strongest performance isolation, talk with us about Enterprise.
 
 ## How to get support
 
