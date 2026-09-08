@@ -39,6 +39,15 @@ export const LOGO_HEIGHT = 24;
 
 export const STORIES: StoryCard[] = [
   {
+    // TODO: finalize title/body once Featured copy lands.
+    id: "featured",
+    brand: "Featured",
+    logo: "/assets/customers/featured/featured-logo.svg",
+    tags: ["AI", "Saas"],
+    title: "Featured's orchestration layer used to be eight people",
+    body: "TODO: one-line summary from copy.",
+  },
+  {
     id: "soundcloud",
     brand: "SoundCloud",
     logo: "/assets/customers/soundcloud-logo-white-horizontal.svg",
