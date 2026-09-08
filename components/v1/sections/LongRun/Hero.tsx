@@ -6,6 +6,7 @@ import { tweens } from "@/utils/v1/springs";
 import { CURSOR_SPOTLIGHT_SEED } from "@/utils/v1/cursorFx";
 import {
   MARKET_COPY,
+  HERO_BODY,
   type Market,
 } from "@/components/v1/sections/LongRun/data";
 import CourseLine from "@/components/v1/sections/LongRun/CourseLine";
@@ -103,9 +104,9 @@ export default function Hero({ market }: { market: Market }) {
           className="mt-10 flex max-w-[560px] flex-col gap-6 lg:mt-14"
         >
           <p className="text-v1-heading-xs-loose !text-v1-frost">
-            Long running humans. Long running agents.
+            {copy.lede}
           </p>
-          <p className="text-v1-body-lg-loose !text-v1-frost/85">{copy.lede}</p>
+          <p className="text-v1-body-lg-loose !text-v1-frost/85">{HERO_BODY}</p>
         </motion.div>
 
         <motion.div

@@ -8,18 +8,21 @@ import LogoMarquee from "@/components/v1/sections/Home/LogoMarquee";
 import { Unreleased } from "@/shared/Docs/Unreleased";
 
 import Hero from "@/components/v1/sections/LongRun/Hero";
-import Durations from "@/components/v1/sections/LongRun/Durations";
+import WhatItIs from "@/components/v1/sections/LongRun/WhatItIs";
 import Course from "@/components/v1/sections/LongRun/Course";
-import PosterQuote from "@/components/v1/sections/LongRun/PosterQuote";
-import Pillars from "@/components/v1/sections/LongRun/Pillars";
-import Metaphor from "@/components/v1/sections/LongRun/Metaphor";
-import Cities from "@/components/v1/sections/LongRun/Cities";
 import type { Market } from "@/components/v1/sections/LongRun/data";
 
 /**
  * "Build for the long run" — the campaign landing page behind the NYC and SF
  * OOH/DOOH placements (step.run/nyc, step.run/sf, step.run/build all point
  * here).
+ *
+ * Scoped for street traffic: someone scanned a QR code off a poster and is
+ * reading this standing up, so the page is four sections — the line that
+ * rewards the scan, what Inngest does (in code, because the audience is
+ * technical), the course, and one CTA. The campaign deck's internal
+ * material (the three pillars, the marathon-metaphor rationale, the
+ * activation plan) is deliberately not here.
  *
  * Gated behind `?unreleased=long-run` until the campaign goes live: the body
  * is a client island that renders nothing on the server, so the page is
@@ -33,13 +36,9 @@ export default function LongRun({ market = "all" }: { market?: Market }) {
       <Unreleased label="long-run" fallback={<GateFallback />}>
         <div className="overflow-x-clip">
           <Hero market={market} />
-          <Durations />
+          <WhatItIs />
           <Course />
-          <PosterQuote />
-          <Pillars />
           <LogoMarquee />
-          <Metaphor />
-          <Cities market={market} />
           <StippleCtaSection
             headingId="long-run-cta-heading"
             heading={

@@ -27,9 +27,9 @@ export default function Course() {
       <SectionHeader
         id="long-run-course-heading"
         eyebrow="26.2 miles"
-        title={<>Six boroughs. Six things that keep your work running.</>}
-        body="The New York City marathon runs through five boroughs and finishes in the park. So does everything Inngest does for a long-running job."
-        bodyClassName="max-w-[655px]"
+        title={<>Five boroughs and a finish line.</>}
+        body="The course crosses all five boroughs and ends in Central Park. Every leg of it is something Inngest does for work that runs long."
+        bodyClassName="max-w-[600px]"
       />
 
       {/* Two-row × three-column course at lg. Each cell carries its own
@@ -69,15 +69,17 @@ export default function Course() {
                 {stage.mile} · {stage.place}
               </p>
               <h3 className="text-v1-heading-xs uppercase text-v1-frost">
-                {stage.capability}
+                <Link
+                  href={stage.href}
+                  className="transition-opacity duration-200 hover:opacity-70"
+                >
+                  {stage.capability}{" "}
+                  <span aria-hidden="true" className="text-v1-accent-salmon-light">
+                    →
+                  </span>
+                </Link>
               </h3>
               <p className="text-v1-body-sm-loose">{stage.body}</p>
-              <Link
-                href={stage.href}
-                className="text-v1-label-md uppercase text-v1-accent-salmon-light transition-opacity duration-200 hover:opacity-70"
-              >
-                {stage.linkLabel} →
-              </Link>
             </div>
           </motion.li>
         ))}
