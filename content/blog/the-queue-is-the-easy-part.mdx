@@ -1,6 +1,6 @@
 ---
 tags: ["Engineering", "Queues & Flow Control"]
-heading: "Inngest Engineering: The queue is the easy part"
+heading: "How we keep a noisy neighbor from starving your jobs: fairness in a multi-tenant queue"
 subtitle: "Building a job queue that is durable and fair across thousands of tenants is hard - here is how we did it."
 image: https://cdn.inngest.com/blog/the-queue-is%20-the-easy-part/The%20queue%20is%20the%20easy%20part.png
 date: 2026-09-09
@@ -11,9 +11,9 @@ Every function that runs on Inngest goes through one queue. It decides which job
 
 Darwin Wu, Founding Architect, has spent much of the last 3 years inside that queue. This post is how it actually works: the problems that make a production queue hard, the approach we settled on, and where it's headed next. If you've built a job queue before or talked yourself out of building one, it's written for you.
 
-A queue sounds simple. A line of jobs, first in, first out. At real scale, it stops being simple, and two problems break the naive version. The first is **fairness**: thousands of customers share the same queue, and one busy customer can't be allowed to starve everyone else. The second is **durability**: a job in the queue is a promise that it will run, and losing the queue can never mean losing your jobs. The data structure underneath all this turned out to be the easy part. Fairness and durability were the work.
+## The queue is the easy part
 
-## What the queue has to guarantee
+A queue sounds simple. A line of jobs, first in, first out. At real scale, it stops being simple, and two problems break the naive version. The first is **fairness**: thousands of customers share the same queue, and one busy customer can't be allowed to starve everyone else. The second is **durability**: a job in the queue is a promise that it will run, and losing the queue can never mean losing your jobs. The data structure underneath all this turned out to be the easy part. Fairness and durability were the work.
 
 Stripped down, the queue's job is simple: out of all the work waiting to run, pick what runs next. Every durable function, every retry, every step that resumes after a sleep is the queue deciding what's due and handing it to an executor.
 
