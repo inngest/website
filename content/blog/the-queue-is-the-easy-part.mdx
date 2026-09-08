@@ -1,15 +1,108 @@
 ---
 tags: ["Engineering", "Queues & Flow Control"]
 heading: "Inngest Engineering: The queue is the easy part"
-subtitle: "TODO: subtitle copy"
-image: /assets/blog/the-queue-is-the-easy-part/featured-image.png
-date: 2026-09-01
-author: Mitchell Alderson
+subtitle: "Building a job queue that is durable and fair across thousands of tenents is hard - here is how we did it."
+image: https://cdn.inngest.com/blog/the-queue-is%20-the-easy-part/The%20queue%20is%20the%20easy%20part.png
+date: 2026-09-09
+author: Darwin Wu, Mitchell Alderson
 category: engineering
 ---
+Every function that runs on Inngest goes through one queue. It decides which job runs next, for which customer, and it has to make that call fairly across thousands of tenants without ever dropping a job, even when a machine dies mid-run. Inngest is a durable execution platform, and the queue is what makes "durable" a reality. Get it wrong, and everything above it is wrong too.
 
-TODO: Intro paragraph. Placeholder copy — the real intro will explain why a plain time-sorted queue is only half the story.
+Darwin Wu, Founding Architect, has spent much of the last 3 years inside that queue. This post is how it actually works: the problems that make a production queue hard, the approach we settled on, and where it's headed next. If you've built a job queue before or talked yourself out of building one, it's written for you.
+
+A queue sounds simple. A line of jobs, first in, first out. At real scale, it stops being simple, and two problems break the naive version. The first is **fairness**: thousands of customers share the same queue, and one busy customer can't be allowed to starve everyone else. The second is **durability**: a job in the queue is a promise that it will run, and losing the queue can never mean losing your jobs. The data structure underneath all this turned out to be the easy part. Fairness and durability were the work.
+
+## What the queue has to guarantee
+
+Stripped down, the queue's job is simple: out of all the work waiting to run, pick what runs next. Every durable function, every retry, every step that resumes after a sleep is the queue deciding what's due and handing it to an executor.
+
+What makes that hard is everything wrapped around "what runs next." The queue is multi-tenant, so thousands of customers share it and one customer's spike can't stall everyone else. It's durable, so a job sitting in it is a promise a crash isn't allowed to break. And it runs hot, with hundreds of millions of items in flight, which rules out anything that scans the whole thing to make a decision. None of this shows up when you build a queue for one app on a slow afternoon. All of it shows up in production.
+
+## How we landed on a tree
+
+The starting point wasn't ours. Apple published a paper, QuiCK, on the queue behind CloudKit: the scheduling that decides when your phone pulls an update or fires a notification. Darwin worked through it the way you actually learn a paper, reading the pseudocode and drawing the data structure by hand as he went. What came out on paper was a tree. A red-black tree, the balanced binary tree from every data-structures course, with one difference that makes it work as a queue. It's sorted by the time each job is due.
+
+That sort order is what makes everything else tractable. In a store that keeps its keys sorted, walking them in order costs nothing, so the leftmost node in the tree is always the next job due. To find what to run, you walk the left edge and take what's ready. As Darwin puts it, "if you can assume something is sorted, everything becomes ten times easier."
+
+If you've written scheduler code, this will look familiar. The Linux kernel's completely fair scheduler works the same way: a red-black tree it reads from the left to choose the next process, rebalancing as processes run and get pushed back. We're doing to jobs what the kernel does to CPU time.
 
 <QueueTreeViz />
 
-TODO: Body copy. Placeholder — this section will walk through the tree-based queue visualization above: how jobs are ordered by due time, and how the two-second sweep window guarantees progress without starvation.
+Sorting by time also hands you multi-tenancy cheaply. Every job already carries one sort key, its due time, so you can group on a second one, per customer or per concurrency or throttle limit, without reaching for a different structure. That's how a busy tenant's backlog stays in its own lane instead of clogging everyone else's. (The limits themselves are enforced in a separate service; the queue only has to store, order, and pick.)
+
+## How a job moves through it
+
+A tree sorted by time raises an obvious worry: if you always take the leftmost node, don't jobs scheduled further out get starved while the queue keeps grabbing whatever's closest? They don't, because nothing is ever skipped. The queue asks for a slice of time (everything due up to roughly two seconds out, including anything already past) and works that slice. As the clock moves, the next slice comes into range. Nothing piles up in the far future; the window just slides forward through the tree.
+
+A job that can't run yet, held back by a concurrency or throttle limit, isn't dropped. It gets pushed back to a later point in the tree and picked up on a later pass. 
+
+Two systems split this work, and it's worth pulling them apart because they get conflated. A run is one execution of your function, and it's made of steps. The queue owns timing: when a run happens, and the durability of that scheduling. The **state store** owns the run's data, the memoized result of every step, so a retry never repeats work that already finished. It lives as long as the run is active, then archives to ClickHouse when the run ends. Darwin calls it "the firmware of state." The executor reads both to rebuild a run: the queue says when, the state store says what's happened so far. A queue item itself is mostly a bag of identifiers pointing at the rest.
+
+```go
+// a queue item — the identifiers that let the
+// executor tie a scheduled tick back to one specific run
+type QueueItem struct {
+    AccountID   ulid.ULID
+    WorkspaceID ulid.ULID
+    EnvID       ulid.ULID
+    AppID       ulid.ULID
+    FunctionID  ulid.ULID
+    RunID       ulid.ULID
+    // plus scheduling metadata: due time, attempt, flow-control keys
+}
+```
+
+That split, timing on one side and run state on the other, is a boundary you have to draw on purpose and keep clean as both sides grow. If you build this yourself, it's the delineation to get right on day one. 
+
+## Where Valkey ran out of room
+
+The queue has run on Valkey (the Redis fork we use) for a long time, and it got us a long way. Then scale found the limits. Running out of memory takes the whole cluster down. An in-memory store means a hard failure can lose data. Recovery reloads single-threaded and is slow. The full story of why we're moving off it is its own post: Our Migration to FoundationDB, Part 1.
+
+For this post, one limit matters more than the rest. Valkey runs on a single thread, so every operation the queue does happens one at a time. That's the constraint the next section runs straight into.
+
+## The problem you can't solve on one thread
+
+The single thread is where fairness breaks, and it's worth seeing exactly how, because it's the failure most homegrown queues share.
+
+The queue grabs a fixed number of items per pass between 1 and 2,000. You can't just grab more; ask for too many at once, and you hold the single thread long enough to slow every other operation behind you. 
+
+Now say half of the two thousand you grabbed are blocked by a concurrency or throttle limit. You make progress on the thousand that can run, and the thousand that can't come back next pass. As that blocked fraction climbs, the real work you clear each pass shrinks, not because the work isn't ready but because of what fits in a single grab.
+
+The clean fix is a virtual queue per tenant: give every key its own lane so no one tenant crowds the window. It works on paper and dies on a single thread. Picture a customer keyed by user ID with a hundred thousand users behind one function. That's a hundred thousand lanes, and draining them a thousand items at a time, one lane at a time, you never get around to all of them. You can't patch it with offsets either, because the tree is sorted by time and shifts under you between passes: a backfill lands, something gets processed, and the offset you were holding now points at the wrong place. Lock it down to stay consistent and you've traded a fairness bug for a latency bug.
+
+Most queues never solve this. Fairness is easy to skip on day one and expensive to add on day five hundred, so plenty of systems just don't have it and treat the noisy neighbor as a fact of life. Designing the data layout so fairness is even possible was the hardest part of the whole thing.
+
+## Where it's going: FoundationDB
+
+The single thread is the trap, so the fix is a store that doesn't force you onto one. That's FoundationDB: cheap enough to hold the whole keyspace on disk, and multi-threaded, so instead of draining tenant lanes one at a time you read every tenant's due work in parallel, up to a guaranteed point in time. No tenant starves because nothing is bottlenecked on one thread walking the tree. Durability comes with it: the data is kept in double redundancy, with two copies on separate machines, so losing one doesn't affect normal operation, and recovery is operator-managed rather than a manual failover to babysit.
+
+That's as far as this post goes on the database, on purpose. The full move (the write path we had to rethink, the stores we evaluated and dropped, how the rollout is going) is its own series, starting with Our Migration to FoundationDB, Part 1. For now the honest status: Valkey runs the queue today, and we're moving it onto FoundationDB because that's what finally makes real fairness possible.
+
+## So should you build your own?
+
+You might read all this and decide your case is simpler than ours, and you'll build your own. Sometimes that's the right call. Here's how we'd tell you to think it through.
+
+### Don't start on a transactional database
+
+Postgres or MySQL as a queue is fine at low volume, a few hundred jobs a day. At scale you inherit problems that database was never meant to hand you. Postgres transaction IDs are 32-bit, so a high-churn queue marches toward XID wraparound, and auto-vacuum can stall on a high-churn table at the worst possible time, the way a garbage collector pauses the world. 
+
+Every queue is a garbage-collection problem in disguise, since jobs are created and deleted constantly, and transactional databases handle that churn worst. Tools that put a durable queue directly on Postgres exist and are genuinely convenient at the low end; just know the throughput ceiling you're accepting comes from that design choice, and you won't tune it away later.
+
+### Reach for a KV or NoSQL store
+
+If you do build one, that's the foundation to put it on. Go in-memory only if you truly don't need durability, and even then, work out your replication factor before you need it.
+
+### Decide what kind of queue you actually need
+
+"Queue" covers two very different things. If you want a durable dumb pipe (work in one end, out the other, order not critical) RabbitMQ or a Pub/Sub service already does that well. If you want a multi-tenant queue that supports real workflows, with retries and flow control, you're signing up for the hard version.
+
+### How much of the schedule will you build?
+
+The useful way to frame it: you're building a schedule with a queue, and the question is how much of that schedule you're willing to implement. Scheduling mechanisms (rate limiting, debouncing, batching, one-at-a-time keys) decide when a job becomes eligible. Execution mechanisms (throttling, concurrency, retries) decide whether it runs when its turn comes. Priority sits across both, and the trick is almost funny once the tree is time-sorted: you raise a job's priority by dating its timestamp into the past so it sorts earlier.
+
+### The real question: does fairness matter?
+
+If it doesn't, if one tenant crowding out the others is fine, or you don't have tenants, a much simpler queue will do, and you should take it. If it does, you've just signed up for the data-layout problem this whole post has been about.
+
+The reason we run our own queue instead of gluing one together is everything above: fairness, durability, and the scheduling hidden in the word "queue." That work belongs in the execution layer, so the code you write on top doesn't have to carry it. If you build on Inngest, it's the part you're handing off.
