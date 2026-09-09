@@ -77,7 +77,7 @@ You can configure throttling on each function using the optional `throttle` para
 - `limit`: The total number of runs allowed to start within the given `period`.
 - `period`: The period within the limit will be applied.
 - `burst`: The number of runs allowed to start in the given window in a single burst on top of `limit`.
-- `key`: An optional expression which returns a throttling key using event data. This allows you to apply unique throttle limits specific to a user.
+- `key`: An optional expression which returns a throttling key using event data. This applies the throttle independently to each key value, which can [reduce head-of-line blocking in multi-tenant systems](/docs/guides/multi-tenancy?ref=docs-throttling).
 
 <Callout>
   GCRA breaks down the provided `period` into smaller windows based on the `limit`.
