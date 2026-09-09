@@ -171,6 +171,7 @@ function loadRelated(currentSlug: string): RelatedPost[] {
     .map((p): RelatedPost | null => {
       const fm = p.data;
       if (fm.redirect) return null;
+      if (fm.hide) return null;
       if (fm.unreleased) return null;
       if (!fm.heading) return null;
       const date =
