@@ -57,7 +57,7 @@ That split, timing on one side and run state on the other, is a boundary you hav
 
 ## Where Valkey ran out of room
 
-The queue has run on Valkey (the Redis fork we use) for a long time, and it got us a long way. Then scale found the limits. Running out of memory takes the whole cluster down. An in-memory store means a hard failure can lose data. Recovery reloads single-threaded and is slow. The full story of why we're moving off it is its own post: Our Migration to FoundationDB, Part 1.
+The queue has run on Valkey (the Redis fork we use) for a long time, and it got us a long way. Then scale found the limits. Running out of memory takes the whole cluster down. An in-memory store means a hard failure can lose data. Recovery reloads single-threaded and is slow. The full story of why we're moving off it is its own post: [Our Migration to FoundationDB, Part 1](https://www.inngest.com/blog/migration-to-foundationdb-part-1).
 
 For this post, one limit matters more than the rest. Valkey runs on a single thread, so every operation the queue does happens one at a time. That's the constraint the next section runs straight into.
 
@@ -77,7 +77,7 @@ Most queues never solve this. Fairness is easy to skip on day one and expensive 
 
 The single thread is the trap, so the fix is a store that doesn't force you onto one. That's FoundationDB: cheap enough to hold the whole keyspace on disk, and multi-threaded, so instead of draining tenant lanes one at a time you read every tenant's due work in parallel, up to a guaranteed point in time. No tenant starves because nothing is bottlenecked on one thread walking the tree. Durability comes with it: the data is kept in double redundancy, with two copies on separate machines, so losing one doesn't affect normal operation, and recovery is operator-managed rather than a manual failover to babysit.
 
-That's as far as this post goes on the database, on purpose. The full move (the write path we had to rethink, the stores we evaluated and dropped, how the rollout is going) is its own series, starting with Our Migration to FoundationDB, Part 1. For now the honest status: Valkey runs the queue today, and we're moving it onto FoundationDB because that's what finally makes real fairness possible.
+That's as far as this post goes on the database, on purpose. The full move (the write path we had to rethink, the stores we evaluated and dropped, how the rollout is going) is its own series, starting with [Our Migration to FoundationDB, Part 1](https://www.inngest.com/blog/migration-to-foundationdb-part-1). For now the honest status: Valkey runs the queue today, and we're moving it onto FoundationDB because that's what finally makes real fairness possible.
 
 ## So should you build your own?
 
