@@ -1,0 +1,92 @@
+<h2 class="sr-only">A red-black tree of queued jobs sorted by due time; a sliding two-second window sweeps left to right, grabbing jobs as they come due so none are starved.</h2>
+<style>
+.sr-only{position:absolute;width:1px;height:1px;padding:0;margin:-1px;overflow:hidden;clip:rect(0,0,0,0);border:0}
+.qedge{stroke:var(--border);stroke-width:1px;fill:none}
+.qnode circle{fill:var(--surface-1);stroke:var(--border-strong);stroke-width:.5px;transition:fill .2s,stroke .2s,opacity .2s}
+.qnode text{fill:var(--text-primary);transition:fill .2s}
+.qnode.win circle{fill:var(--bg-warning);stroke:var(--border-warning)}
+.qnode.win text{fill:var(--text-warning)}
+.qnode.done{opacity:.3}
+#band{fill:var(--bg-accent);opacity:.6;transition:x .15s,width .15s}
+#nowline{stroke:var(--text-accent);stroke-width:1.5px;transition:x1 .15s,x2 .15s}
+#nowlbl{fill:var(--text-accent)}
+.qctrl{display:flex;align-items:center;gap:12px;margin:14px 0 8px;font-size:14px;color:var(--text-secondary)}
+.qlegend{display:flex;flex-wrap:wrap;gap:16px;font-size:13px;color:var(--text-secondary);margin-top:4px}
+.qlegend span{display:inline-flex;align-items:center;gap:6px}
+.qswatch{width:14px;height:14px;border-radius:4px;border:.5px solid var(--border-strong)}
+</style>
+<svg width="100%" viewBox="0 0 680 330" role="img">
+<title>Queue as a red-black tree sorted by due time</title>
+<desc>Seven jobs arranged so left-to-right position is chronological order. A blue two-second window and a "now" line sweep rightward as time advances; jobs inside the window are grabbed this pass, jobs behind it have already run, and jobs ahead wait their turn.</desc>
+<rect id="band" x="90" y="60" width="170" height="228"/>
+<line id="nowline" x1="90" y1="58" x2="90" y2="292"/>
+<text id="nowlbl" class="ts" x="90" y="50" text-anchor="middle">now</text>
+<path class="qedge" d="M345 90 L175 170"/>
+<path class="qedge" d="M345 90 L515 170"/>
+<path class="qedge" d="M175 170 L90 250"/>
+<path class="qedge" d="M175 170 L260 250"/>
+<path class="qedge" d="M515 170 L430 250"/>
+<path class="qedge" d="M515 170 L600 250"/>
+<g class="qnode" id="qn0"><circle cx="90" cy="250" r="26"/><text x="90" y="250" text-anchor="middle" dominant-baseline="central" class="t">0s</text></g>
+<g class="qnode" id="qn1"><circle cx="175" cy="170" r="26"/><text x="175" y="170" text-anchor="middle" dominant-baseline="central" class="t">1s</text></g>
+<g class="qnode" id="qn2"><circle cx="260" cy="250" r="26"/><text x="260" y="250" text-anchor="middle" dominant-baseline="central" class="t">2s</text></g>
+<g class="qnode" id="qn3"><circle cx="345" cy="90" r="26"/><text x="345" y="90" text-anchor="middle" dominant-baseline="central" class="t">4s</text></g>
+<g class="qnode" id="qn4"><circle cx="430" cy="250" r="26"/><text x="430" y="250" text-anchor="middle" dominant-baseline="central" class="t">7s</text></g>
+<g class="qnode" id="qn5"><circle cx="515" cy="170" r="26"/><text x="515" y="170" text-anchor="middle" dominant-baseline="central" class="t">12s</text></g>
+<g class="qnode" id="qn6"><circle cx="600" cy="250" r="26"/><text x="600" y="250" text-anchor="middle" dominant-baseline="central" class="t">20s</text></g>
+</svg>
+<div class="qctrl">
+  <button id="qplay" type="button" style="width:84px">Play</button>
+  <span>now</span>
+  <input id="qnow" type="range" min="0" max="24" step="1" value="0" style="flex:1">
+  <span id="qnowval" style="min-width:34px;text-align:right;font-weight:500;color:var(--text-primary)">0s</span>
+</div>
+<div class="qlegend">
+  <span><span class="qswatch" style="background:var(--bg-accent)"></span>now + 2s window</span>
+  <span><span class="qswatch" style="background:var(--bg-warning);border-color:var(--border-warning)"></span>grabbed this pass</span>
+  <span><span class="qswatch" style="background:var(--surface-1);opacity:.4"></span>already run</span>
+</div>
+<script>
+(function(){
+  var nodes=[{due:0,i:0},{due:1,i:1},{due:2,i:2},{due:4,i:3},{due:7,i:4},{due:12,i:5},{due:20,i:6}];
+  var anchors=[[0,90],[1,175],[2,260],[4,345],[7,430],[12,515],[20,600]];
+  function xAt(t){
+    if(t<=0)return 90;
+    if(t>=20)return Math.min(600+(t-20)*4,632);
+    for(var k=0;k<anchors.length-1;k++){
+      var a=anchors[k],b=anchors[k+1];
+      if(t>=a[0]&&t<=b[0])return a[1]+(t-a[0])/(b[0]-a[0])*(b[1]-a[1]);
+    }
+    return 600;
+  }
+  var slider=document.getElementById('qnow'),val=document.getElementById('qnowval');
+  var band=document.getElementById('band'),line=document.getElementById('nowline'),lbl=document.getElementById('nowlbl');
+  function render(now){
+    val.textContent=now+'s';
+    var xn=xAt(now),xw=xAt(now+2);
+    band.setAttribute('x',xn);band.setAttribute('width',Math.max(0,xw-xn));
+    line.setAttribute('x1',xn);line.setAttribute('x2',xn);
+    lbl.setAttribute('x',xn);
+    nodes.forEach(function(n){
+      var g=document.getElementById('qn'+n.i);
+      g.classList.remove('win','done');
+      if(n.due<now)g.classList.add('done');
+      else if(n.due<=now+2)g.classList.add('win');
+    });
+  }
+  slider.addEventListener('input',function(){stop();render(+slider.value);});
+  var timer=null,btn=document.getElementById('qplay');
+  function stop(){if(timer){clearInterval(timer);timer=null;btn.textContent='Play';}}
+  btn.addEventListener('click',function(){
+    if(timer){stop();return;}
+    if(+slider.value>=24)slider.value=0;
+    btn.textContent='Pause';
+    timer=setInterval(function(){
+      var v=+slider.value;
+      if(v>=24){stop();return;}
+      slider.value=v+1;render(v+1);
+    },700);
+  });
+  render(0);
+})();
+</script>
