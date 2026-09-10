@@ -161,8 +161,10 @@ export const UPCOMING: EventItem[] = [
     excerpt:
       "Swing by the Inngest office for pastries, espresso, and good conversation — drop in anytime, no fixed schedule.",
     href: "/events/innhouse-sf-coffee-chats",
+    // Photograph, so it fills the card: `contain` floated it with card
+    // showing either side, and the overlaid text sits well inside the
+    // ~3% top/bottom that `cover` crops off a 16:9 image in this box.
     image: "/assets/v1/events/innhouse-sf-coffee.png",
-    imageFit: "contain",
   },
   {
     id: "inngest-supper-club-sf",
@@ -346,8 +348,10 @@ export const ALL_EVENTS: EventItem[] = sortEventsByDate([
     excerpt:
       "Swing by the Inngest office for pastries, espresso, and good conversation — drop in anytime, no fixed schedule.",
     href: "/events/innhouse-sf-coffee-chats",
+    // Photograph, so it fills the card: `contain` floated it with card
+    // showing either side, and the overlaid text sits well inside the
+    // ~3% top/bottom that `cover` crops off a 16:9 image in this box.
     image: "/assets/v1/events/innhouse-sf-coffee.png",
-    imageFit: "contain",
   },
   {
     id: "inngest-supper-club-sf",
