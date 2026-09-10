@@ -29,7 +29,7 @@ export default function EventCard({ ev, newTab }: { ev: EventItem; newTab?: bool
           style={{
             backgroundImage: `url(${ev.image ?? "/assets/v1/events/event-placeholder.png"})`,
             backgroundSize: ev.imageFit ?? "cover",
-            backgroundPosition: "center",
+            backgroundPosition: ev.imagePosition ?? "center",
             backgroundRepeat: "no-repeat",
           }}
         />

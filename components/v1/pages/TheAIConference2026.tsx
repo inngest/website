@@ -17,7 +17,7 @@ const EVENT = {
   endsAt: "2026-10-01T18:00:00-07:00",
   location: "Pier 48, San Francisco, CA | Booth #136",
   description:
-    "Inngest is agent infrastructure that lives in your codebase—write your logic as functions and get retries, flow control, and full observability with zero extra infra.\n\nWe're sponsoring The AI Conference at Pier 48. Come by booth #136 to see Inngest running, talk through the agent or workflow you're building, and grab some swag while you're there.",
+    "Inngest is agent infrastructure that lives in your codebase—write your logic as functions and get retries, flow control, and full observability with zero extra infra.\n\nWe're sponsoring The AI Conference at Pier 48, which runs September 29 – October 1. Our booth is open on the 30th and the 1st — come by #136 to see Inngest running, talk through the agent or workflow you're building, and grab some swag while you're there.",
 };
 
 const REGISTER_URL = "https://aiconference.com/";

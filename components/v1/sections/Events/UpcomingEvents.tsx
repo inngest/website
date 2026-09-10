@@ -1,8 +1,11 @@
 import EventCardLarge from "@/components/v1/sections/Events/EventCardLarge";
-import { UPCOMING, isPastEvent } from "@/components/v1/sections/Events/data";
+import { UPCOMING, isPastEvent, sortEventsByDate } from "@/components/v1/sections/Events/data";
 
 export default function UpcomingEvents() {
-  const upcoming = UPCOMING.filter((ev) => !isPastEvent(ev));
+  // Sort rather than trust the array order: UPCOMING is hand-edited, so a
+  // newly added event gets appended to the end and would otherwise render
+  // last no matter when it actually happens.
+  const upcoming = sortEventsByDate(UPCOMING.filter((ev) => !isPastEvent(ev)));
 
   // Once every event has started there is nothing to promote, so drop the
   // whole section rather than leaving a bare "Upcoming Events" heading over

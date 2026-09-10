@@ -40,6 +40,13 @@ export interface EventItem {
   image?: string;
   /** Tile/card image fit. Use `contain` for text-heavy graphics. */
   imageFit?: "cover" | "contain";
+  /**
+   * `background-position` for the tile/card image. Defaults to `center`.
+   * Set this when a `cover` crop would eat content that sits off-centre —
+   * e.g. artwork with all its type on the left and a bleed pattern on the
+   * right, which wants `left center` so the crop lands on the pattern.
+   */
+  imagePosition?: string;
 }
 
 // An event stays "upcoming" until it is actually over: multi-day events
@@ -52,16 +59,19 @@ export function isPastEvent(ev: {
   return new Date(ev.endsAt ?? ev.startsAt).getTime() < Date.now();
 }
 
-// Past events first (most recently completed leads), then upcoming
-// events after (soonest leads).
+// Upcoming events first (soonest leads), then past events after (most
+// recently completed leads). Anything still open to register for is what
+// the page is promoting, so it belongs above the archive — otherwise a
+// newly added event lands at the very bottom of "All Events", behind
+// every event that has already happened.
 export function sortEventsByDate(events: EventItem[]): EventItem[] {
-  const past = events
-    .filter((ev) => isPastEvent(ev))
-    .sort((a, b) => b.startsAt.localeCompare(a.startsAt));
   const upcoming = events
     .filter((ev) => !isPastEvent(ev))
     .sort((a, b) => a.startsAt.localeCompare(b.startsAt));
-  return [...past, ...upcoming];
+  const past = events
+    .filter((ev) => isPastEvent(ev))
+    .sort((a, b) => b.startsAt.localeCompare(a.startsAt));
+  return [...upcoming, ...past];
 }
 
 export const UPCOMING: EventItem[] = [
@@ -178,8 +188,13 @@ export const UPCOMING: EventItem[] = [
     excerpt:
       "Find us at booth #136 at Pier 48. Come see how teams run agents and workflows on infrastructure that lives in their own codebase.",
     href: "/events/the-ai-conference-2026",
+    // Full-bleed 16:9 artwork, so it fills the card — `contain`
+    // letterboxed it against the frame gradient. The large card's image
+    // column is narrower than 16:9 and so crops the sides: anchor left,
+    // because all the type lives in the left panel and the crop then
+    // lands on the bleed pattern instead.
     image: "/assets/v1/events/the-ai-conference-2026.png",
-    imageFit: "contain",
+    imagePosition: "left center",
   },
 ];
 
@@ -358,8 +373,13 @@ export const ALL_EVENTS: EventItem[] = sortEventsByDate([
     excerpt:
       "Find us at booth #136 at Pier 48. Come see how teams run agents and workflows on infrastructure that lives in their own codebase.",
     href: "/events/the-ai-conference-2026",
+    // Full-bleed 16:9 artwork, so it fills the card — `contain`
+    // letterboxed it against the frame gradient. The large card's image
+    // column is narrower than 16:9 and so crops the sides: anchor left,
+    // because all the type lives in the left panel and the crop then
+    // lands on the bleed pattern instead.
     image: "/assets/v1/events/the-ai-conference-2026.png",
-    imageFit: "contain",
+    imagePosition: "left center",
   },
 ]);
 
