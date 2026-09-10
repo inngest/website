@@ -1,3 +1,5 @@
+import { Callout } from "src/shared/Docs/mdx";
+
 export const metaTitle = "Multi-tenant Flow Control with Keys"
 export const description = "Learn how Inngest groups queued work by flow control keys to reduce head-of-line blocking and provide best-effort fairness between tenants."
 
@@ -6,6 +8,10 @@ export const description = "Learn how Inngest groups queued work by flow control
 In a multi-tenant system, one tenant can create much more work than another. If every item waits in a single queue, a busy tenant can delay other tenants even when their work is ready to run. This is **head-of-line blocking**, often described as the noisy neighbor problem.
 
 Inngest reduces head-of-line blocking by grouping queued work with flow control **keys**. Each unique key value gets its own application of the configured flow control limit. These per-key groups are sometimes called **key queues**.
+
+<Callout variant="info">
+  **Availability:** The key queue scheduling system described on this page is currently available to Enterprise customers on request. [Contact our team](/contact?ref=docs-multi-tenancy) to request access. We plan to make key queues more broadly available in the future.
+</Callout>
 
 ## Why group work by key
 
