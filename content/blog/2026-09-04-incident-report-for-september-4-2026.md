@@ -1,6 +1,7 @@
 ---
 focus: false
 featured: false
+hide: true
 heading: "Incident report for September 4, 2026 - Network connectivity issues"
 subtitle: A report on the network connectivity incident that temporarily disrupted Inngest services.
 image: /assets/blog/incident-post-mortem.svg
