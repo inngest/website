@@ -9,20 +9,34 @@ import { Unreleased } from "@/shared/Docs/Unreleased";
 
 import Hero from "@/components/v1/sections/LongRun/Hero";
 import WhatItIs from "@/components/v1/sections/LongRun/WhatItIs";
+import LongRunning from "@/components/v1/sections/LongRun/LongRunning";
 import Course from "@/components/v1/sections/LongRun/Course";
-import type { Market } from "@/components/v1/sections/LongRun/data";
+import Activations from "@/components/v1/sections/LongRun/Activations";
+import References from "@/components/v1/sections/LongRun/References";
+import {
+  SF_ACTIVATIONS,
+  type Market,
+} from "@/components/v1/sections/LongRun/data";
 
 /**
  * "Build for the long run" — the campaign landing page behind the NYC and SF
  * OOH/DOOH placements (step.run/nyc, step.run/sf, step.run/build all point
  * here).
  *
- * Scoped for street traffic: someone scanned a QR code off a poster and is
- * reading this standing up, so the page is four sections — the line that
- * rewards the scan, what Inngest does (in code, because the audience is
- * technical), the course, and one CTA. The campaign deck's internal
- * material (the three pillars, the marathon-metaphor rationale, the
- * activation plan) is deliberately not here.
+ * Scoped for street traffic by default: someone scanned a QR code off a
+ * poster and is reading this standing up, so NYC and the city-agnostic cut
+ * are four sections — the line that rewards the scan, what Inngest does
+ * (in code, because the audience is technical), the course, and one CTA.
+ * The campaign deck's internal material (the three pillars, the
+ * marathon-metaphor rationale, the media plan) is deliberately not here.
+ *
+ * SF runs longer. Its placements are in-person and conversational — a run
+ * club, a drink sponsorship, an after-hours office night — so the page has
+ * to finish a conversation rather than reward a glance. It picks up three
+ * more sections: what "long-running" actually means (the term the
+ * activation never got to define), where to find us next, and where to
+ * read further. Sections are market-gated rather than global so the
+ * street-traffic cut stays short.
  *
  * Gated behind `?unreleased=long-run` until the campaign goes live: the body
  * is a client island that renders nothing on the server, so the page is
@@ -31,13 +45,27 @@ import type { Market } from "@/components/v1/sections/LongRun/data";
  * sitemap exclusion that go with it).
  */
 export default function LongRun({ market = "all" }: { market?: Market }) {
+  // Markets whose activations are conversations rather than posters, and
+  // so inherit the longer page. SF today; NYC's in-person programming
+  // (the run club, the cheer squad) lands here too once its schedule is
+  // confirmed.
+  const isConversational = market === "sf";
+
   return (
     <PageShell>
       <Unreleased label="long-run" fallback={<GateFallback />}>
         <div className="overflow-x-clip">
           <Hero market={market} />
+          {/* Problem before answer: LongRunning ends on "run the whole
+              thing again?" and WhatItIs opens with "Retry the step." On
+              the short cut there's no LongRunning and WhatItIs leads. */}
+          {isConversational && <LongRunning />}
           <WhatItIs />
-          <Course />
+          <Course market={market} />
+          {market === "sf" && (
+            <Activations city="San Francisco" activations={SF_ACTIVATIONS} />
+          )}
+          {isConversational && <References />}
           <LogoMarquee />
           <StippleCtaSection
             headingId="long-run-cta-heading"

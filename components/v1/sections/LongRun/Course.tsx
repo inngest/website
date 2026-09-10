@@ -5,11 +5,16 @@ import { motion } from "motion/react";
 import Section from "@/components/v1/sections/shared/Section";
 import SectionHeader from "@/components/v1/sections/shared/SectionHeader";
 import { reveals } from "@/utils/v1/reveals";
-import { COURSE } from "@/components/v1/sections/LongRun/data";
+import {
+  COURSE_COPY,
+  type Market,
+} from "@/components/v1/sections/LongRun/data";
 
 /**
- * The campaign centrepiece — 26.2 miles of NYC marathon course mapped, leg
- * by leg, onto what Inngest does over a long run (deck p.19).
+ * The campaign centrepiece — a real city-crossing race route mapped, leg by
+ * leg, onto what Inngest does over a long run (deck p.19). New York gets
+ * the marathon; San Francisco gets Bay to Breakers, so the SF page isn't
+ * quoting mile markers from the wrong coast. Both come from COURSE_COPY.
  *
  * Laid out as a race course rather than a feature grid: a rule runs through
  * six mile-marker dots, and each leg hangs off its marker. The rule is
@@ -17,7 +22,9 @@ import { COURSE } from "@/components/v1/sections/LongRun/data";
  * below it, so the "course" reading holds at every width without any SVG
  * alignment to keep in sync.
  */
-export default function Course() {
+export default function Course({ market }: { market: Market }) {
+  const copy = COURSE_COPY[market];
+
   return (
     <Section
       aria-labelledby="long-run-course-heading"
@@ -26,9 +33,9 @@ export default function Course() {
     >
       <SectionHeader
         id="long-run-course-heading"
-        eyebrow="26.2 miles"
-        title={<>Five boroughs and a finish line.</>}
-        body="The course crosses all five boroughs and ends in Central Park. Every leg of it is something Inngest does for work that runs long."
+        eyebrow={copy.eyebrow}
+        title={copy.title}
+        body={copy.body}
         bodyClassName="max-w-[600px]"
       />
 
@@ -37,7 +44,7 @@ export default function Course() {
           cards can be any height. Below lg it collapses to a single
           vertical course. */}
       <ol className="grid list-none grid-cols-1 gap-x-8 gap-y-0 pl-0 lg:grid-cols-3 lg:gap-y-16">
-        {COURSE.map((stage, i) => (
+        {copy.stages.map((stage, i) => (
           <motion.li
             key={stage.id}
             {...reveals.item(i)}
