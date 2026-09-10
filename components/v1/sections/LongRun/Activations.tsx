@@ -31,9 +31,16 @@ import {
  */
 export default function Activations({
   city,
+  title,
+  body,
   activations,
 }: {
   city: string;
+  /** Header copy comes from the caller: the markets don't share a
+   *  metaphor, so "come find us on the course" only reads right where
+   *  there's a course. */
+  title: string;
+  body: string;
   activations: Activation[];
 }) {
   // Sorted per render rather than at module scope: the upcoming/past
@@ -52,8 +59,8 @@ export default function Activations({
       <SectionHeader
         id="long-run-activations-heading"
         eyebrow={`On the ground in ${city}`}
-        title={<>Come find us on the course.</>}
-        body="We're spending the season where people building long-running things actually are — early mornings, late nights, and a few places in between. Everything here is open; nothing here is a demo."
+        title={<>{title}</>}
+        body={body}
         bodyClassName="max-w-[655px]"
       />
 

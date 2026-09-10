@@ -63,7 +63,12 @@ export default function LongRun({ market = "all" }: { market?: Market }) {
           <WhatItIs />
           <Course market={market} />
           {market === "sf" && (
-            <Activations city="San Francisco" activations={SF_ACTIVATIONS} />
+            <Activations
+              city="San Francisco"
+              title="Come find us around the clock."
+              body="Every one of these is on the same clock the section above runs on — a 6 AM run club, a drink that's waiting whenever you get there, an office that stays open until 3. All of it open; none of it a demo."
+              activations={SF_ACTIVATIONS}
+            />
           )}
           {isConversational && <References />}
           <LogoMarquee />

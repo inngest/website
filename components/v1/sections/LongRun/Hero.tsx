@@ -131,10 +131,12 @@ export default function Hero({ market }: { market: Market }) {
         </motion.div>
       </div>
 
-      {/* The course, drawing itself along the bottom of the panel. Purely
-          decorative here — the labelled version lives in the Course
-          section further down the page. */}
+      {/* The line along the bottom of the panel. Purely decorative — the
+          labelled version lives in the Course section further down the
+          page, and matches this variant: NYC traces the marathon route,
+          SF draws the day that doesn't come back down. */}
       <CourseLine
+        variant={market === "sf" ? "day" : "route"}
         className="pointer-events-none absolute inset-x-0 bottom-0 h-[120px] text-v1-frost/45 lg:h-[176px]"
         drawDurationMs={2600}
       />

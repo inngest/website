@@ -73,7 +73,7 @@ export default function Course({ market }: { market: Market }) {
 
             <div className="flex flex-col gap-4 lg:pr-8 lg:pt-8">
               <p className="text-v1-label-sm uppercase text-v1-frost/55">
-                {stage.mile} · {stage.place}
+                {stage.marker} · {stage.place}
               </p>
               <h3 className="text-v1-heading-xs uppercase text-v1-frost">
                 <Link

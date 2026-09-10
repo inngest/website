@@ -13,6 +13,14 @@
  * the page has to do the explaining the activation didn't: what
  * "long-running" actually means, where to read further, and where to find
  * us next. Those sections are market-gated, not global.
+ *
+ * SF also runs on a different metaphor. New York's placement is the
+ * marathon, so that page is built on distance. San Francisco's programme
+ * is barely a running programme at all — one run club against a drink
+ * sponsorship, a coffee cart and an office open until 3 AM — so its
+ * through-line is the hours instead: the work that doesn't stop when the
+ * workday does. That reading is also closer to the product, since
+ * "long-running" is a property of time.
  */
 
 export type Market = "nyc" | "sf" | "all";
@@ -60,9 +68,12 @@ export const FACTS = [
 
 export interface CourseStage {
   id: string;
-  /** Mile marker as it appears on the course. */
-  mile: string;
-  /** Borough, or Central Park for the finish. */
+  /**
+   * The marker on the leg — a mile for New York's route, a clock time
+   * for San Francisco's day. Free text so both read naturally.
+   */
+  marker: string;
+  /** Borough, neighbourhood, or wherever the leg happens. */
   place: string;
   /** The Inngest capability this leg stands for. */
   capability: string;
@@ -82,7 +93,7 @@ export interface CourseStage {
 export const COURSE: CourseStage[] = [
   {
     id: "staten-island",
-    mile: "Mile 0",
+    marker: "Mile 0",
     place: "Staten Island",
     capability: "Start the run",
     body: "Write an ordinary function and export it. No queue to provision, no worker to babysit.",
@@ -90,7 +101,7 @@ export const COURSE: CourseStage[] = [
   },
   {
     id: "brooklyn",
-    mile: "Miles 2–13",
+    marker: "Miles 2–13",
     place: "Brooklyn",
     capability: "Durable execution",
     body: "The longest stretch of the race. A crash at mile nine picks up at mile nine.",
@@ -98,7 +109,7 @@ export const COURSE: CourseStage[] = [
   },
   {
     id: "queens",
-    mile: "Miles 13–15",
+    marker: "Miles 13–15",
     place: "Queens",
     capability: "Long-running steps",
     body: "Sleep for a week. Wait for an event. Pause for a human. The run holds its place.",
@@ -106,7 +117,7 @@ export const COURSE: CourseStage[] = [
   },
   {
     id: "manhattan",
-    mile: "Miles 15–20",
+    marker: "Miles 15–20",
     place: "Manhattan · First Ave",
     capability: "Retries & resume",
     body: "Something fails at hour three. Retry the step — the work banked behind it stays banked.",
@@ -114,7 +125,7 @@ export const COURSE: CourseStage[] = [
   },
   {
     id: "bronx",
-    mile: "Miles 20–21",
+    marker: "Miles 20–21",
     place: "The Bronx",
     capability: "Observability & traces",
     body: "Mile 20 is where races are lost. See which step, which input, which attempt.",
@@ -122,7 +133,7 @@ export const COURSE: CourseStage[] = [
   },
   {
     id: "central-park",
-    mile: "Mile 26.2",
+    marker: "Mile 26.2",
     place: "Central Park",
     capability: "Evals & outcomes",
     body: "Score real production runs, and change course mid-race without losing what already worked.",
@@ -136,17 +147,22 @@ export const COURSE: CourseStage[] = [
  * PLACEHOLDER COPY — the shape is settled, the words are not.
  *
  * "Long-running" is the term the whole campaign leans on and the one thing
- * a poster can't define. The ladder puts the campaign's marathon on the
- * same axis as real production work, so the metaphor stops being a
- * metaphor: an agent run and a marathon are the same order of magnitude,
- * and a migration dwarfs both.
+ * a poster can't define. The ladder measures real work against the ~30
+ * seconds a request gets, so the term stops being vague: nearly everything
+ * worth running is already off the end of it.
+ *
+ * The workday row is doing the campaign's work. Sitting a human's eight
+ * hours directly under an agent's makes the page's whole argument in two
+ * lines — they're the same order of magnitude, and neither of them fits in
+ * a request. (New York's cut of this section swaps in "A marathon runs 4.5
+ * hours" instead, where the race is the placement.)
  *
  * Ordered short → long so the reader's own workload lands somewhere on it.
  */
 export const DURATIONS = [
   { subject: "An HTTP request", verb: "gets", length: "~30 seconds" },
+  { subject: "A workday", verb: "runs", length: "8 hours" },
   { subject: "An agent", verb: "runs for", length: "hours" },
-  { subject: "A marathon", verb: "runs", length: "4.5 hours" },
   { subject: "A migration", verb: "runs for", length: "months" },
   { subject: "A service", verb: "runs for", length: "years" },
 ] as const;
@@ -358,65 +374,71 @@ export function sortActivations(
   return [...upcoming, ...past];
 }
 
-/* ── The SF course: Bay to Breakers → capabilities ─────────────────── */
+/* ── The SF day: hours → capabilities ──────────────────────────────── */
 
 /**
- * The SF cut of the course device. Bay to Breakers is the city's own
- * long run — 12K straight across San Francisco, bay to ocean — so the
- * campaign's "course" reading survives the move west without borrowing
- * New York's mile markers.
+ * The SF cut of the course device, on a clock instead of a route.
  *
- * The mapping is load-bearing in one place: Hayes Street Hill is the
- * stretch everyone remembers failing on, which is exactly where retries
- * belong. The rest follows the real route east to west.
+ * New York's placement is the marathon, so distance is the right axis
+ * there. San Francisco's isn't a race — it's a run club, a drink
+ * sponsorship, a coffee cart and an office that stays open until 3 AM —
+ * so the shared idea isn't distance, it's the hours. Which is also the
+ * more literal reading of the product: "long-running" is a property of
+ * time, and a route only ever implied that.
+ *
+ * The hinge is 17:00. Everything above it is an ordinary workday;
+ * everything below it is the part the campaign is actually about — the
+ * work, human and otherwise, that doesn't stop when the office does.
+ * Each leg is pinned to a real SF activation so the page and the street
+ * programme describe the same day.
  */
-export const SF_COURSE: CourseStage[] = [
+export const SF_DAY: CourseStage[] = [
   {
-    id: "embarcadero",
-    mile: "Mile 0",
-    place: "The Embarcadero",
+    id: "0600",
+    marker: "06:00",
+    place: "Ferry Building",
     capability: "Start the run",
-    body: "Write an ordinary function and export it. No queue to provision, no worker to babysit.",
+    body: "The run club sets off. Write an ordinary function, export it — no queue to provision first.",
     href: "/docs/getting-started/nextjs-quick-start?ref=long-run-sf-course",
   },
   {
-    id: "soma",
-    mile: "Miles 1–2",
-    place: "SoMa · Howard St",
+    id: "0900",
+    marker: "09:00",
+    place: "SoMa",
     capability: "Durable execution",
-    body: "The long flat stretch. Every step checkpoints as it finishes, so a crash picks up where it stopped.",
+    body: "The long flat stretch of the day. Every step checkpoints as it finishes, so a crash picks up where it stopped.",
     href: "/platform/durable-execution?ref=long-run-sf-course",
   },
   {
-    id: "hayes-hill",
-    mile: "Mile 2.5",
-    place: "Hayes Street Hill",
-    capability: "Retries & resume",
-    body: "The part everyone remembers failing on. Retry that one step — the work banked behind it stays banked.",
-    href: "/docs/guides/error-handling?ref=long-run-sf-course",
-  },
-  {
-    id: "panhandle",
-    mile: "Miles 3–5",
-    place: "The Panhandle",
+    id: "1300",
+    marker: "13:00",
+    place: "Inner Sunset",
     capability: "Long-running steps",
-    body: "Sleep for a week. Wait for an event. Pause for a human. The run holds its place.",
+    body: "Sleep for a week. Wait for an event. Pause for a human who's gone to lunch. The run holds its place.",
     href: "/docs/learn/inngest-steps?ref=long-run-sf-course",
   },
   {
-    id: "golden-gate-park",
-    mile: "Miles 5–7",
-    place: "Golden Gate Park",
+    id: "1700",
+    marker: "17:00",
+    place: "Everywhere else",
+    capability: "Retries & resume",
+    body: "The hour a request would have given up. A step failed at three and retried on its own — the work banked behind it stayed banked.",
+    href: "/docs/guides/error-handling?ref=long-run-sf-course",
+  },
+  {
+    id: "2100",
+    marker: "21:00",
+    place: "Inngest HQ",
     capability: "Observability & traces",
-    body: "Where races are lost quietly. See which step, which input, which attempt.",
+    body: "The office is quiet and something's off in prod. See which step, which input, which attempt — not a local replay.",
     href: "/platform/observability?ref=long-run-sf-course",
   },
   {
-    id: "ocean-beach",
-    mile: "Mile 7.46",
-    place: "Ocean Beach",
+    id: "0300",
+    marker: "03:00",
+    place: "Still going",
     capability: "Evals & outcomes",
-    body: "Score real production runs, and change course mid-race without losing what already worked.",
+    body: "Score the runs that happened while you slept, and change course without losing what already worked.",
     href: "/platform/agent-evals?ref=long-run-sf-course",
   },
 ];
@@ -441,10 +463,10 @@ export const COURSE_COPY: Record<Market, CourseCopy> = {
     stages: COURSE,
   },
   sf: {
-    eyebrow: "12 kilometres",
-    title: "Bay to breakers, end to end.",
-    body: "San Francisco's own long run goes straight across the city, from the bay to the ocean. Every leg of it is something Inngest does for work that runs long.",
-    stages: SF_COURSE,
+    eyebrow: "06:00 – 03:00",
+    title: "The work doesn't stop at five.",
+    body: "San Francisco keeps going long after the office lights go off, and so does everything you left running. Here's one day of it — the hours, and what Inngest is doing in each of them.",
+    stages: SF_DAY,
   },
   all: {
     eyebrow: "26.2 miles",
