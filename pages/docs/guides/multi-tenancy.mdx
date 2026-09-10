@@ -1,0 +1,70 @@
+export const metaTitle = "Multi-tenant Flow Control with Keys"
+export const description = "Learn how Inngest groups queued work by flow control keys to reduce head-of-line blocking and provide best-effort fairness between tenants."
+
+# Multi-tenancy and flow control
+
+In a multi-tenant system, one tenant can create much more work than another. If every item waits in a single queue, a busy tenant can delay other tenants even when their work is ready to run. This is **head-of-line blocking**, often described as the noisy neighbor problem.
+
+Inngest reduces head-of-line blocking by grouping queued work with flow control **keys**. Each unique key value gets its own application of the configured flow control limit. These per-key groups are sometimes called **key queues**.
+
+## Why group work by key
+
+Consider a function serving two tenants:
+
+| Tenant | Queued work | Current state |
+| --- | ---: | --- |
+| Tenant A | 1,000 items | At its flow control limit |
+| Tenant B | 1 item | Ready to run |
+
+In a single FIFO queue, Tenant B's item can sit behind hundreds of items from Tenant A. Because Tenant A is already at its limit, repeatedly finding its items does not produce runnable work. The chance of reaching Tenant B's item is extremely low until the queue advances far enough.
+
+With a key such as `event.data.tenant_id`, Inngest groups Tenant A and Tenant B into separate key queues. The scheduler can consider Tenant B's ready queue without first moving through Tenant A's backlog. This provides **best-effort fairness** between keys while continuing to enforce each tenant's limit.
+
+Key queues are part of the scheduling and execution system described in the [Inngest Cloud architecture](/docs/architecture?ref=docs-multi-tenancy) overview. You configure the key in your function; Inngest manages the queue grouping and scheduling.
+
+## How flow control keys work
+
+Flow control features such as [concurrency](/docs/guides/concurrency?ref=docs-multi-tenancy) and [throttling](/docs/guides/throttling?ref=docs-multi-tenancy) accept an optional key expression. Inngest evaluates the expression for each item and applies the limit independently to each resulting value.
+
+For example, this function uses the tenant ID for both limits:
+
+```ts
+inngest.createFunction(
+  {
+    id: "sync-tenant-data",
+    triggers: { event: "app/tenant.sync.requested" },
+    concurrency: {
+      key: "event.data.tenant_id",
+      limit: 5,
+    },
+    throttle: {
+      key: "event.data.tenant_id",
+      limit: 100,
+      period: "1m",
+    },
+  },
+  async ({ event, step }) => {
+    await step.run("sync-data", async () => {
+      await syncTenantData(event.data.tenant_id);
+    });
+  }
+);
+```
+
+If events contain `tenant_id` values of `tenant-a` and `tenant-b`, each tenant receives its own concurrency limit of five executing steps and its own throttle limit of 100 run starts per minute. A backlog for one tenant does not consume the other tenant's per-key limit.
+
+Choose a stable key that represents the resource or tenant you want to isolate, such as an account ID, workspace ID, or user ID. Keys are [expressions evaluated from event data](/docs/guides/writing-expressions?ref=docs-multi-tenancy), so the same function can create groups dynamically without you provisioning queues.
+
+## Ordering within each key
+
+Inngest applies [best-effort FIFO ordering](/docs/guides/concurrency?ref=docs-multi-tenancy#queue-ordering) within each key queue. Older work for a key is generally selected before newer work for that same key. Scheduling across different keys favors fairness rather than a single global FIFO order.
+
+If you change a function's key expression, already queued items remain grouped by the key value that was evaluated when they entered the queue. Their relative ordering stays stable. Only newly queued items are grouped using the new key expression.
+
+Best-effort fairness and FIFO ordering are scheduling goals, not strict execution-order guarantees. Retries, available capacity, and other flow control constraints can affect which item runs next.
+
+## Next steps
+
+- [Configure multi-tenant concurrency](/docs/guides/concurrency?ref=docs-multi-tenancy#concurrency-keys-multi-tenant-concurrency)
+- [Configure throttling by key](/docs/guides/throttling?ref=docs-multi-tenancy#how-to-configure-throttling)
+- [Learn how queue items are scheduled and executed](/docs/architecture?ref=docs-multi-tenancy#from-event-to-function-execution)
