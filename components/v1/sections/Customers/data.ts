@@ -42,10 +42,10 @@ export const STORIES: StoryCard[] = [
     // TODO: finalize title/body once Featured copy lands.
     id: "featured",
     brand: "Featured",
-    logo: "/assets/customers/featured/featured-logo.svg",
+    logo: "https://cdn.inngest.com/customers/featured/04_Featured_Main%20Logo_White_RGB.png",
     tags: ["AI", "Saas"],
     title: "Featured's orchestration layer used to be eight people",
-    body: "TODO: one-line summary from copy.",
+    body: "How Connectively, HARO, and Featured run three brands and 2,500 articles a month on a team of seven — and where the reliable, boring layer underneath actually draws its lines.",
   },
   {
     id: "soundcloud",
