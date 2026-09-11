@@ -31,8 +31,13 @@ interface MarketCopy {
   /** Uppercase eyebrow above the headline — anchors the page to the
    *  placement the visitor just walked past. */
   eyebrow: string;
-  /** The line that rewards the scan. Names the city, so the page reads as
-   *  a continuation of the street rather than a generic product page. */
+  /**
+   * The opening line. Names the city either way, so the page reads as a
+   * continuation of the placement rather than a generic product page —
+   * but the register differs by market. NYC rewards a scan off a poster
+   * ("you just walked past us"); SF greets someone we've most likely
+   * already met in person, at the run club or over a sponsored drink.
+   */
   lede: string;
 }
 
@@ -43,7 +48,7 @@ export const MARKET_COPY: Record<Market, MarketCopy> = {
   },
   sf: {
     eyebrow: "San Francisco · Built here, running here",
-    lede: "You just walked past us in San Francisco.",
+    lede: "It's good to see you, San Francisco.",
   },
   all: {
     eyebrow: "Build for the long run",

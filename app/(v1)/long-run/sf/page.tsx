@@ -7,7 +7,7 @@ export const metadata: Metadata = {
   ...generateMetadata({
     title: "Build for the long run · San Francisco",
     description:
-      "You just walked past us in San Francisco. Inngest is durable execution for work that runs for hours, days, or years — retry the step, not the chain.",
+      "It's good to see you, San Francisco. Inngest is durable execution for work that runs for hours, days, or years — retry the step, not the chain.",
   }),
   robots: { index: false, follow: false },
 };
