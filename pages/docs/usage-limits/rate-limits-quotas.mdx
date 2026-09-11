@@ -1,0 +1,81 @@
+import { Callout } from "src/shared/Docs/mdx";
+
+export const description = "Rate limits, quotas, and size limits for the Inngest platform, REST API, and SDKs."
+
+# Rate limits and quotas
+
+Rate limits, size limits, and quotas for the Inngest platform. Check here first if you are hitting 429 errors or unexpected rejections.
+
+---
+
+## Sending events
+
+| Limit | Value | Notes |
+|-------|-------|-------|
+| REST API rate limit | 75 requests per 5 seconds | Per event key. Returns 429 when exceeded. |
+| Batch size | Up to 5,000 events per request | Use `inngest.send()` with an array. |
+| Event payload size | 3 MB max | Per individual event. |
+| Event name length | 256 characters max | Use slash-namespaced names like `app/user.created`. |
+
+<Callout variant="info">
+  Seeing 429 errors from `inngest.send()`? You are exceeding the 75 req/5s limit. Batch events into fewer, larger requests instead of sending one event per request.
+</Callout>
+
+---
+
+## Function execution
+
+| Limit | Value | Notes |
+|-------|-------|-------|
+| Concurrency (Free) | 5 concurrent steps | Per account. |
+| Concurrency (Pro) | 100 concurrent steps | Per account. Configurable per function. |
+| Concurrency (Enterprise) | Custom | Contact sales. |
+| Step output size | 4 MB | Data returned from a single `step.run()`. |
+| Function timeout | Depends on hosting provider | Vercel: up to 300s (Pro). Use streaming for longer. |
+| Retries | 0-20 per function | Default: 4. Configurable in function options. |
+
+---
+
+## Connect workers
+
+| Limit | Value | Notes |
+|-------|-------|-------|
+| Worker connections | Based on plan | Free: limited. Pro: configurable. |
+| Worker concurrency | Configurable per worker | Set in connect configuration. |
+
+---
+
+## Platform limits
+
+| Limit | Value | Notes |
+|-------|-------|-------|
+| Event retention | 7 days (default) | Advanced Observability add-on extends this. |
+| Function run history | 7 days (default) | Advanced Observability add-on for longer retention. |
+| Apps per environment | No hard limit | Each serve endpoint registers as one app. |
+| Functions per app | No hard limit | Practical limit depends on sync payload size. |
+
+---
+
+## Realtime
+
+| Limit | Value | Notes |
+|-------|-------|-------|
+| WebSocket connections | ~1,000 concurrent | Per account. |
+| Message size | Subject to event payload limits | Published messages follow the same size constraints. |
+
+---
+
+## REST API
+
+| Endpoint | Rate limit |
+|----------|-----------|
+| Send events (`/e/{key}`) | 75 req / 5 seconds per key |
+| All other API endpoints | Subject to account-level limits |
+
+---
+
+## Related
+
+- [Usage limits](/docs/usage-limits/inngest)
+- [Cloud provider limits](/docs/usage-limits/providers)
+- [Pricing](https://www.inngest.com/pricing)
