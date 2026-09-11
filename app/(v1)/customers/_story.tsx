@@ -71,7 +71,7 @@ const readStudy = cache(
       }
     }
     return null;
-  },
+  }
 );
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -92,7 +92,11 @@ export function customerMetadata(slug: string): Metadata {
   const { data } = post;
   const host = process.env.NEXT_PUBLIC_HOST ?? "";
   const metaTitle = `Customer story - ${data.companyName}`;
-  const image = data.ogImage ? `${host}${data.ogImage}` : undefined;
+  const image = data.ogImage
+    ? data.ogImage.startsWith("http")
+      ? data.ogImage
+      : `${host}${data.ogImage}`
+    : undefined;
   return {
     title: { absolute: metaTitle },
     description: data.title,
