@@ -39,7 +39,6 @@ export const LOGO_HEIGHT = 24;
 
 export const STORIES: StoryCard[] = [
   {
-    // TODO: finalize title/body once Featured copy lands.
     id: "featured",
     brand: "Featured",
     logo: "https://cdn.inngest.com/customers/featured/04_Featured_Main%20Logo_White_RGB.png",
