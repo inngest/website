@@ -634,3 +634,21 @@ button:focus-visible .v1-wipe-reveal {
     display: none;
   }
 }
+
+/* ---------- CodeTV Web Dev Challenge ---------- */
+@keyframes v1CodetvMarquee {
+  from { transform: translateX(0); }
+  to   { transform: translateX(-50%); }
+}
+@keyframes v1CodetvPulse {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.35; }
+}
+@media (prefers-reduced-motion: no-preference) {
+  .v1-codetv-marquee {
+    animation: v1CodetvMarquee 28s linear infinite;
+  }
+  .v1-codetv-pulse {
+    animation: v1CodetvPulse 1.6s ease-in-out infinite;
+  }
+}
