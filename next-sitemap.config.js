@@ -79,6 +79,12 @@ module.exports = {
     // Pages with noindex set in code — sitemap + noindex is contradictory.
     "/content/ai-in-production-report-2026",
     "/content/ai-in-production-report-2026/*",
+    // "Build for the long run" campaign pages — gated behind
+    // ?unreleased=long-run and noindex until the campaign launches.
+    // Remove these two lines (and the robots block in the page files) to
+    // ship the campaign.
+    "/long-run",
+    "/long-run/*",
     "/resources/access/*",
   ],
 };
