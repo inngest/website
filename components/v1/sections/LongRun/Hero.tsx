@@ -2,11 +2,13 @@
 
 import { motion } from "motion/react";
 import ButtonLink from "@/components/v1/ButtonLink";
+import { cn } from "@/utils/v1/cn";
 import { tweens } from "@/utils/v1/springs";
 import { CURSOR_SPOTLIGHT_SEED } from "@/utils/v1/cursorFx";
 import {
   MARKET_COPY,
   HERO_BODY,
+  HERO_NARRATIVE,
   type Market,
 } from "@/components/v1/sections/LongRun/data";
 import CourseLine from "@/components/v1/sections/LongRun/CourseLine";
@@ -38,6 +40,11 @@ const entry = (delayMs: number) => ({
 
 export default function Hero({ market }: { market: Market }) {
   const copy = MARKET_COPY[market];
+  // Markets on the narrative cut (NYC today) replace the lede + one-breath
+  // explanation with the poster→production turn and a single CTA. Markets
+  // without an entry keep the original short hero untouched.
+  const narrative = HERO_NARRATIVE[market];
+  const eyebrow = narrative?.eyebrow ?? copy.eyebrow;
 
   return (
     <section
@@ -78,57 +85,119 @@ export default function Hero({ market }: { market: Market }) {
       {/* Vertical padding runs a step heavier than the standard section
           box so the campaign line has room to be the loudest thing on the
           site; the top value also clears the fixed header. */}
-      <div className="relative z-10 mx-auto w-full max-w-[1440px] px-6 py-24 sm:px-9 lg:px-8 lg:py-40">
-        <motion.p
-          {...entry(40)}
-          className="text-v1-label-md uppercase text-v1-frost"
-        >
-          {copy.eyebrow}
-        </motion.p>
+      <div
+        className={cn(
+          "relative z-10 mx-auto w-full max-w-[1440px] px-6 py-24 sm:px-9 lg:px-8 lg:py-40",
+          // The narrative cut carries two paragraphs and a CTA beside the
+          // campaign line rather than under it — stacked, the right half
+          // of the panel sits empty on desktop. Below lg both cuts are one
+          // column.
+          narrative &&
+            "lg:grid lg:grid-cols-[minmax(0,1fr)_minmax(0,480px)] lg:items-end lg:gap-x-16",
+        )}
+      >
+        <div>
+          <motion.p
+            {...entry(40)}
+            className="text-v1-label-md uppercase text-v1-frost"
+          >
+            {eyebrow}
+          </motion.p>
 
-        {/* The campaign line, set as large as the grid allows. Three lines
-            on desktop; it reflows naturally below lg. */}
-        <h1
-          id="long-run-hero-heading"
-          className="text-v1-display-hero mt-8 uppercase text-v1-frost lg:mt-10"
-        >
-          {["Build for", "the long", "run."].map((line, i) => (
-            <motion.span key={line} className="block" {...entry(120 + i * 110)}>
-              {line}
-            </motion.span>
+          {/* The campaign line, set as large as the grid allows. Three
+              lines on desktop; it reflows naturally below lg. */}
+          <h1
+            id="long-run-hero-heading"
+            className="text-v1-display-hero mt-8 uppercase text-v1-frost lg:mt-10"
+          >
+            {["Build for", "the long", "run."].map((line, i) => (
+              <motion.span
+                key={line}
+                className="block"
+                {...entry(120 + i * 110)}
+              >
+                {line}
+              </motion.span>
           ))}
-        </h1>
+          </h1>
+        </div>
 
-        <motion.div
-          {...entry(520)}
-          className="mt-10 flex max-w-[560px] flex-col gap-6 lg:mt-14"
-        >
-          <p className="text-v1-heading-xs-loose !text-v1-frost">
-            {copy.lede}
-          </p>
-          <p className="text-v1-body-lg-loose !text-v1-frost/85">{HERO_BODY}</p>
-        </motion.div>
+        {narrative ? (
+          <>
+            {/* Narrative markets turn from the poster to production right
+                here, and send the one CTA down to the run visual — the
+                page's job is to explain before it asks. */}
+            <div className="mt-10 flex max-w-[620px] flex-col gap-8 lg:mt-0">
+            <motion.div {...entry(520)} className="flex flex-col gap-8">
+              <div className="flex flex-col gap-2">
+                {narrative.bridge.map((line) => (
+                  <p
+                    key={line}
+                    className="text-v1-heading-xs-loose !text-v1-frost"
+                  >
+                    {line}
+                  </p>
+                ))}
+              </div>
+              <div className="flex flex-col gap-5">
+                {narrative.body.map((para) => (
+                  <p
+                    key={para}
+                    className="text-v1-body-lg-loose !text-v1-frost/85"
+                  >
+                    {para}
+                  </p>
+                ))}
+              </div>
+            </motion.div>
 
-        <motion.div
-          {...entry(640)}
-          className="mt-10 flex flex-col items-stretch gap-3 sm:flex-row sm:items-center sm:gap-4"
-        >
-          <ButtonLink
-            href="/sign-up?ref=long-run-hero"
-            prefetch={false}
-            variant="primary"
-            className="!w-full hover:!border-v1-jetBlack hover:!bg-v1-jetBlack hover:!text-v1-frost sm:!w-auto"
-          >
-            Build something that keeps running →
-          </ButtonLink>
-          <ButtonLink
-            href="/docs?ref=long-run-hero"
-            variant="secondary"
-            className="!w-full hover:!border-v1-jetBlack hover:!bg-v1-jetBlack hover:!text-v1-frost sm:!w-auto"
-          >
-            Read the docs
-          </ButtonLink>
-        </motion.div>
+            <motion.div {...entry(640)}>
+              <ButtonLink
+                href={narrative.cta.href}
+                variant="primary"
+                className="!w-full hover:!border-v1-jetBlack hover:!bg-v1-jetBlack hover:!text-v1-frost sm:!w-auto"
+              >
+                {narrative.cta.label} →
+              </ButtonLink>
+            </motion.div>
+            </div>
+          </>
+        ) : (
+          <>
+            <motion.div
+              {...entry(520)}
+              className="mt-10 flex max-w-[560px] flex-col gap-6 lg:mt-14"
+            >
+              <p className="text-v1-heading-xs-loose !text-v1-frost">
+                {copy.lede}
+              </p>
+              <p className="text-v1-body-lg-loose !text-v1-frost/85">
+                {HERO_BODY}
+              </p>
+            </motion.div>
+
+            <motion.div
+              {...entry(640)}
+              className="mt-10 flex flex-col items-stretch gap-3 sm:flex-row sm:items-center sm:gap-4"
+            >
+              <ButtonLink
+                href="/sign-up?ref=long-run-hero"
+                prefetch={false}
+                variant="primary"
+                className="!w-full hover:!border-v1-jetBlack hover:!bg-v1-jetBlack hover:!text-v1-frost sm:!w-auto"
+              >
+                Build something that keeps running →
+              </ButtonLink>
+              <ButtonLink
+                href="/docs?ref=long-run-hero"
+                variant="secondary"
+                className="!w-full hover:!border-v1-jetBlack hover:!bg-v1-jetBlack hover:!text-v1-frost sm:!w-auto"
+              >
+                Read the docs
+              </ButtonLink>
+            </motion.div>
+          </>
+        )}
       </div>
 
       {/* The line along the bottom of the panel. Purely decorative — the
