@@ -270,6 +270,31 @@ No signing or event keys are required in local development mode.
   </Step>
 </Steps>
 
+### Bundling TypeScript and JavaScript workers
+
+If you bundle a Node.js application that uses `connect()`, configure your bundler to treat `inngest` and its subpaths, such as `inngest/connect`, as external dependencies. Externalizing keeps the SDK out of the application bundle and loads it from the installed package at runtime.
+
+Connect uses a separate worker thread to manage the connection and heartbeats. Application bundlers can omit the worker's runner file or change the path used to locate it. Externalizing the SDK preserves the package layout so the worker can find its runner.
+
+For [esbuild](https://esbuild.github.io/api/#external), add `external: ["inngest", "inngest/*"]` to your build options:
+
+```js {{ title: "build.mjs" }}
+import { build } from "esbuild";
+
+await build({
+  entryPoints: ["src/index.ts"],
+  bundle: true,
+  platform: "node",
+  format: "cjs",
+  outfile: "dist/index.cjs",
+  external: ["inngest", "inngest/*"],
+});
+```
+
+Keep `inngest` in your application's `dependencies`, and install or include it and its dependencies in the deployed environment's `node_modules`. For container deployments, these packages must be present in the final runtime image. Deploying only the application bundle is not sufficient when the SDK is externalized.
+
+If a bundled application fails with `Cannot find module` pointing to `runner.js`, `runner.mjs`, or `runner.cjs`, check that the SDK is externalized and its installed package is included in your deployment, then rebuild and redeploy.
+
 ## Lifecycle
 
 As a connect worker is a long-running process, it's important to understand the lifecycle of the worker and how it relates to the deployment of a new version of your app. Here is an overview of the lifecycle of a connect worker and where you can hook into it to handle graceful shutdowns and other lifecycle events.
