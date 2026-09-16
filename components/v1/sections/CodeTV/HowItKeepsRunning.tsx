@@ -1,7 +1,10 @@
 import Section from "@/components/v1/sections/shared/Section";
 import SectionHeader from "@/components/v1/sections/shared/SectionHeader";
+import BeforeAfterSlider from "@/components/v1/sections/shared/BeforeAfterSlider";
 import { V1_HEADER_CONTENT_MT } from "@/components/v1/sections/shared/sectionShell";
-import RunDiagram from "@/components/v1/sections/CodeTV/RunDiagram";
+
+const BEFORE_SRC = "/assets/v1/it-doesnt-have-to-be-hard/before.webp";
+const AFTER_SRC = "/assets/v1/it-doesnt-have-to-be-hard/after.webp";
 
 export default function HowItKeepsRunning() {
   return (
@@ -14,13 +17,49 @@ export default function HowItKeepsRunning() {
       <SectionHeader
         id="codetv-how-heading"
         eyebrow="How it works"
-        title="How does Inngest keep your project running?"
-        body="You write a function in your app. Inngest turns each piece of work into a checkpoint. If the process dies, a deploy ships, or you walk away for coffee, the run does not. It sleeps, waits for an event, retries the failed call, and picks up from the last step that actually finished."
+        title="How does Inngest keep your code running?"
+        body="Workers? Queues? State Machines? You don't have time for all that. Inngest lets you wrap existing code in steps that dictate how it should behave during any event, at any scale. If your workflow dies, a deploy ships, or you're waiting on a response, your run pauses, resumes, and retries only what didn't finish. Zero extra infra required."
         bodyClassName="max-w-[680px]"
       />
 
       <div className={V1_HEADER_CONTENT_MT}>
-        <RunDiagram />
+        <BeforeAfterSlider
+          ariaLabel="Drag to compare building reliability yourself versus a single Inngest step"
+          before={
+            <img
+              src={BEFORE_SRC}
+              alt="Before: the tangle of infrastructure (queues, pubsub, idempotency, error handling, capacity management) you have to build yourself."
+              className="absolute inset-0 block h-full w-full object-cover"
+              draggable={false}
+            />
+          }
+          after={
+            <img
+              src={AFTER_SRC}
+              alt="After: a single step.run() call replacing all that infrastructure."
+              className="absolute inset-0 block h-full w-full object-cover"
+              draggable={false}
+            />
+          }
+          beforeOverlay={
+            <div
+              className="absolute inset-0"
+              style={{
+                background:
+                  "linear-gradient(180deg, rgba(0,0,0,0.22) 0%, rgba(0,0,0,0.10) 60%, rgba(0,0,0,0) 100%)",
+              }}
+            />
+          }
+          afterOverlay={
+            <div
+              className="absolute inset-0"
+              style={{
+                background:
+                  "radial-gradient(120% 90% at 80% 30%, rgba(255, 240, 230, 0.14), rgba(255, 240, 230, 0) 70%)",
+              }}
+            />
+          }
+        />
       </div>
     </Section>
   );

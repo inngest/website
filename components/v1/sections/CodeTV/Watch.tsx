@@ -14,7 +14,7 @@ export default function Watch() {
     <Section
       id="episode"
       aria-labelledby="codetv-watch-heading"
-      className="scroll-mt-28 !pb-12 sm:!pb-16 lg:!pb-20 !pt-16 sm:!pt-20 lg:!pt-24"
+      className="scroll-mt-28"
       containerClassName="flex flex-col"
     >
       <div className="flex flex-col items-start gap-6">
@@ -24,7 +24,7 @@ export default function Watch() {
         <SectionHeader
           id="codetv-watch-heading"
           title="Watch the episode."
-          body="Three teams. Four hours. Filmed in Portland. When CodeTV drops the cut, this is where you'll press play — a whole lot of work that refused to stop."
+          body="Four hours. Three teams. Two days. And one glimpse into the potential hellscape that might await us if the agents take over (you gotta watch to understand)."
           bodyClassName="max-w-[640px]"
         />
       </div>

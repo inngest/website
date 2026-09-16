@@ -3,6 +3,7 @@ import HoverCardShell from "@/components/v1/sections/shared/HoverCardShell";
 import Section from "@/components/v1/sections/shared/Section";
 import SectionHeader from "@/components/v1/sections/shared/SectionHeader";
 import { V1_HEADER_CONTENT_MT } from "@/components/v1/sections/shared/sectionShell";
+import { cn } from "@/utils/v1/cn";
 import { appendRef } from "@/utils/v1/ref";
 import {
   KEEP_GOING_CODE,
@@ -16,13 +17,13 @@ export default function ResourceKit() {
     <Section
       id="resource-kit"
       aria-labelledby="codetv-kit-heading"
-      className="scroll-mt-28"
+      className="scroll-mt-28 bg-v1-canvasMuted"
       containerClassName="flex flex-col"
     >
       <SectionHeader
         id="codetv-kit-heading"
         eyebrow="Resource kit"
-        title="Everything you need to ship it."
+        title="Start building"
         body="Same stack the teams used on set: a quickstart, a function that sleeps and waits, and the docs for the primitives behind it."
         bodyClassName="max-w-[640px]"
       />
@@ -34,8 +35,18 @@ export default function ResourceKit() {
           <li key={q.title}>
             <HoverCardShell
               href={appendRef(q.href, `${PAGE_REF}-kit`)}
-              className="-mx-4 gap-8 px-4 pb-6 pt-5 lg:mx-0"
+              className="gap-6 bg-v1-surfaceElevated px-5 pb-6 pt-5 !border-v1-frost/20 lg:px-6"
             >
+              <div className="flex h-12 w-12 items-center justify-center overflow-hidden">
+                <img
+                  src={q.logo}
+                  alt=""
+                  className={cn(
+                    "h-12 w-12 object-contain",
+                    q.invert && "invert",
+                  )}
+                />
+              </div>
               <div className="flex flex-col gap-2.5">
                 <p className="text-v1-label-md uppercase motion-safe:transition-colors motion-safe:duration-[400ms] group-hover:text-v1-accent-salmon">
                   {q.eyebrow}
@@ -79,7 +90,10 @@ export default function ResourceKit() {
           </p>
           <ul className="flex flex-col">
             {RESOURCE_LINKS.map((link) => (
-              <li key={link.href} className="border-t border-v1-subtle last:border-b">
+              <li
+                key={link.href}
+                className="border-t border-v1-frost/15 last:border-b"
+              >
                 <a
                   href={appendRef(link.href, `${PAGE_REF}-kit`)}
                   className="group flex items-baseline justify-between gap-4 py-4"

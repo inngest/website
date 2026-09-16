@@ -9,14 +9,13 @@ export default function Teams() {
     <Section
       id="teams"
       aria-labelledby="codetv-teams-heading"
-      className="scroll-mt-28 !pt-12 sm:!pt-16 lg:!pt-20"
+      className="scroll-mt-28"
       containerClassName="flex flex-col"
     >
       <SectionHeader
         id="codetv-teams-heading"
-        eyebrow="The teams"
-        title="Three teams. Four hours. No babysitting the job."
-        body="Names and what they built are coming. For now: two builders per team, one function that had to keep going without them."
+        title="Meet the teams"
+        body="Learn how each pair used Inngest to build durable agents that keep running no matter what."
         bodyClassName="max-w-[640px]"
       />
 

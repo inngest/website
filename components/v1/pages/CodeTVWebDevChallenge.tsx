@@ -18,8 +18,8 @@ export default function CodeTVWebDevChallenge() {
       <Marquee />
       <Watch />
       <Teams />
-      <HowItKeepsRunning />
       <ResourceKit />
+      <HowItKeepsRunning />
       <Gallery />
       <StippleCtaSection
         headingId="codetv-cta-heading"

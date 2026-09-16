@@ -49,7 +49,7 @@ export default function RunConsole() {
     <div className="flex w-full flex-col overflow-hidden rounded-lg border border-v1-subtle bg-v1-carbon-400 text-v1-frost">
       <div className="flex items-center justify-between gap-3 border-b border-v1-subtle px-4 py-3">
         <p className="font-v1Label text-[11px] uppercase tracking-[0.08em] text-v1-frost/70">
-          inngest · keep-going
+          Inngest
         </p>
         <span className="inline-flex items-center gap-2 font-v1Label text-[11px] uppercase tracking-[0.08em] text-v1-accent-green">
           <span

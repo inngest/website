@@ -4,8 +4,12 @@ import Section from "@/components/v1/sections/shared/Section";
 import SectionHeader from "@/components/v1/sections/shared/SectionHeader";
 import { V1_HEADER_CONTENT_MT } from "@/components/v1/sections/shared/sectionShell";
 import { GALLERY } from "@/components/v1/sections/CodeTV/data";
+import GiveScott from "@/components/v1/sections/CodeTV/GiveScott";
 
 export default function Gallery() {
+  const beforeScott = GALLERY.slice(0, 2);
+  const afterScott = GALLERY.slice(2);
+
   return (
     <Section
       id="from-the-set"
@@ -16,20 +20,38 @@ export default function Gallery() {
       <SectionHeader
         id="codetv-gallery-heading"
         eyebrow="From the set"
-        title="The room where it kept running."
-        body="Still more photos to add. For now, a first look at the Web Dev Challenge floor — desks, clapperboards, and the kind of energy you only get when the clock is loud and the functions don't quit."
+        title="Snapshots from Portland"
+        body="A few of our favorite moments on set with the CodeTV team. Huge thank you to the contestants, and production team that made magic!"
         bodyClassName="max-w-[640px]"
       />
 
       <ul
-        className={`${V1_HEADER_CONTENT_MT} grid grid-cols-1 items-start gap-3 sm:grid-cols-2 lg:grid-cols-12 lg:gap-4`}
+        className={`${V1_HEADER_CONTENT_MT} grid grid-cols-1 items-stretch gap-3 sm:grid-cols-2 lg:grid-cols-12 lg:gap-4`}
       >
-        {GALLERY.map((photo) => (
+        {beforeScott.map((photo) => (
           <li
             key={photo.src}
             className={cn(
-              "relative overflow-hidden rounded-lg bg-v1-surfaceElevated",
-              photo.className
+              "relative h-full overflow-hidden rounded-lg bg-v1-surfaceElevated",
+              photo.className,
+            )}
+          >
+            <Image
+              src={photo.src}
+              alt={photo.alt}
+              fill
+              sizes="(min-width: 1024px) 50vw, 100vw"
+              className="object-cover"
+            />
+          </li>
+        ))}
+        <GiveScott />
+        {afterScott.map((photo) => (
+          <li
+            key={photo.src}
+            className={cn(
+              "relative h-full overflow-hidden rounded-lg bg-v1-surfaceElevated",
+              photo.className,
             )}
           >
             <Image

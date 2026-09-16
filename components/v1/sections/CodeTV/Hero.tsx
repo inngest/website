@@ -2,14 +2,7 @@ import Image from "next/image";
 import Chip from "@/components/v1/sections/shared/Chip";
 import ButtonLink from "@/components/v1/ButtonLink";
 import RunConsole from "@/components/v1/sections/CodeTV/RunConsole";
-
-const NAV = [
-  { href: "#episode", label: "Episode" },
-  { href: "#teams", label: "Teams" },
-  { href: "#how-it-works", label: "How it works" },
-  { href: "#resource-kit", label: "Resource kit" },
-  { href: "#from-the-set", label: "From the set" },
-] as const;
+import { EPISODE_YOUTUBE_ID } from "@/components/v1/sections/CodeTV/data";
 
 export default function Hero() {
   return (
@@ -19,8 +12,8 @@ export default function Hero() {
     >
       <div className="relative mx-auto grid w-full max-w-[1440px] grid-cols-1 gap-12 px-6 pb-16 pt-[104px] sm:px-9 lg:grid-cols-12 lg:gap-10 lg:px-[70px] lg:pb-20 lg:pt-[152px]">
         <div className="flex flex-col gap-8 lg:col-span-7 lg:gap-10">
-          <Chip variant="solid" size="sm" className="self-start font-normal">
-            CodeTV × Inngest · Challenge open
+          <Chip variant="solid" size="sm" className="self-start whitespace-normal font-normal sm:whitespace-nowrap">
+            CodeTV Web Dev Challenge × Inngest
           </Chip>
 
           <h1
@@ -28,37 +21,33 @@ export default function Hero() {
             className="text-v1-display-sm uppercase [font-size:clamp(2.25rem,7vw,4.75rem)] [line-height:1.05]"
           >
             Build an app
-            <span className="block">that works while</span>
+            <span className="block">that does work while</span>
             <span className="block text-v1-accent-salmon">you&apos;re away</span>
           </h1>
 
-          <p className="text-v1-body-lg-loose max-w-[34rem] text-v1-frost/80">
-            Three teams. Four hours. One brief that sounds like a dare: ship
-            something that keeps running even when you walk away. Inngest made
-            sure that was actually possible.
+          <p className="text-v1-body-lg-loose max-w-[38rem] text-v1-frost/80">
+            Welcome to Inngest&apos;s Web Dev Challenge Hackathon. Build an
+            event-driven app or agent that runs no matter what. The Inngest
+            SDK is all you need to make work reliable at scale.
           </p>
 
-          <nav
-            aria-label="On this page"
-            className="flex flex-wrap gap-x-6 gap-y-3"
-          >
-            {NAV.map((item) => (
-              <a
-                key={item.href}
-                href={item.href}
-                className="font-v1Label text-[12px] uppercase tracking-[0.08em] text-v1-frost/70 hover:text-v1-accent-salmon motion-safe:transition-colors"
-              >
-                {item.label}
-              </a>
-            ))}
-          </nav>
-
           <div className="flex flex-wrap items-center gap-3">
-            <ButtonLink href="#teams" variant="accent" size="md">
-              Meet the teams
+            <ButtonLink
+              href={
+                EPISODE_YOUTUBE_ID
+                  ? `https://www.youtube.com/watch?v=${EPISODE_YOUTUBE_ID}`
+                  : "#episode"
+              }
+              variant="accent"
+              size="md"
+              {...(EPISODE_YOUTUBE_ID
+                ? { target: "_blank", rel: "noreferrer", prefetch: false }
+                : {})}
+            >
+              Watch our episode
             </ButtonLink>
             <ButtonLink href="#resource-kit" variant="secondary">
-              Resource kit
+              Get Started
             </ButtonLink>
           </div>
         </div>

@@ -46,6 +46,13 @@ module.exports = {
   transform: async (config, urlPath) => {
     const src = gatedSourceFor(urlPath);
     if (src && sourceIsGated(src)) return null;
+    // Keep in sync with INDEXABLE_AT in components/v1/sections/CodeTV/data.ts.
+    if (
+      urlPath.replace(/\/+$/, "") === "/events/codetv-web-dev-challenge" &&
+      Date.now() < Date.parse("2026-09-22T00:00:00-07:00")
+    ) {
+      return null;
+    }
     return {
       loc: urlPath,
       changefreq: config.changefreq,
