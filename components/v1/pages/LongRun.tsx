@@ -15,6 +15,7 @@ import SeeItRun from "@/components/v1/sections/LongRun/SeeItRun";
 import Proof from "@/components/v1/sections/LongRun/Proof";
 import CampaignMoment from "@/components/v1/sections/LongRun/CampaignMoment";
 import CampaignFooter from "@/components/v1/sections/LongRun/CampaignFooter";
+import OnTheGround from "@/components/v1/sections/LongRun/OnTheGround";
 import WhatItIs from "@/components/v1/sections/LongRun/WhatItIs";
 import Course from "@/components/v1/sections/LongRun/Course";
 import { TRY, type Market } from "@/components/v1/sections/LongRun/data";
@@ -43,9 +44,14 @@ import { TRY, type Market } from "@/components/v1/sections/LongRun/data";
  * sitemap exclusion that go with it).
  */
 export default function LongRun({ market = "all" }: { market?: Market }) {
-  // NYC leads with the product story and lands the marathon as payoff.
-  // The city-agnostic cut stays on the short four-section page.
-  const isNarrative = market === "nyc";
+  // Both city pages lead with the product story; the city-agnostic cut
+  // stays on the short four-section page.
+  //
+  // They diverge on where the campaign lands. NYC hangs on one weekend, so
+  // its moment sits before the ask and the whole page builds to it. SF's
+  // programming runs for weeks across the city, so "where to find us"
+  // reads better after the ask — once the product case is already made.
+  const isNarrative = market === "nyc" || market === "sf";
 
   return (
     <PageShell>
@@ -54,12 +60,15 @@ export default function LongRun({ market = "all" }: { market?: Market }) {
           <Hero market={market} />
           {isNarrative ? (
             <>
-              <Connection />
-              <Problem />
+              {/* NYC opens with what a long run is made of; SF's hero has
+                  already done that work, so it goes straight to what
+                  breaks. */}
+              {market === "nyc" && <Connection />}
+              <Problem market={market} />
               <ProductTruth />
-              <SeeItRun />
+              <SeeItRun market={market} />
               <Proof />
-              <CampaignMoment market={market} />
+              {market === "nyc" && <CampaignMoment market={market} />}
             </>
           ) : (
             <>
@@ -130,6 +139,7 @@ export default function LongRun({ market = "all" }: { market?: Market }) {
               </ButtonLink>
             </StippleCtaSection>
           )}
+          {market === "sf" && <OnTheGround />}
           {isNarrative && <CampaignFooter market={market} />}
         </div>
       </Unreleased>

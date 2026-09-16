@@ -149,6 +149,12 @@ export default function Hero({ market }: { market: Market }) {
                   </p>
                 ))}
               </div>
+
+              {narrative.closer && (
+                <p className="text-v1-heading-xs-loose !text-v1-frost">
+                  {narrative.closer}
+                </p>
+              )}
             </motion.div>
 
             <motion.div {...entry(640)}>
@@ -159,6 +165,11 @@ export default function Hero({ market }: { market: Market }) {
               >
                 {narrative.cta.label} →
               </ButtonLink>
+              {narrative.note && (
+                <p className="mt-6 text-v1-body-sm !text-v1-frost/70">
+                  {narrative.note}
+                </p>
+              )}
             </motion.div>
             </div>
           </>

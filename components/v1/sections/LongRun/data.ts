@@ -146,10 +146,16 @@ export const COURSE: CourseStage[] = [
 export interface HeroNarrative {
   /** Eyebrow override for the narrative cut. */
   eyebrow: string;
-  /** The two lines bridging the marathon to production. */
+  /** Emphasised line(s) opening the rail — the turn from poster to
+   *  production. */
   bridge: string[];
   body: string[];
+  /** Emphasised line closing the rail, under the body. */
+  closer?: string;
   cta: { label: string; href: string };
+  /** Small line under the CTA acknowledging the placement someone just
+   *  walked past. */
+  note?: string;
 }
 
 export const HERO_NARRATIVE: Partial<Record<Market, HeroNarrative>> = {
@@ -166,6 +172,21 @@ export const HERO_NARRATIVE: Partial<Record<Market, HeroNarrative>> = {
     // Points at the run visual rather than off-site: the CTA promises
     // proof, so it goes to the proof.
     cta: { label: "See how it works", href: "#long-run-see-it-run" },
+  },
+  sf: {
+    eyebrow: "San Francisco · Built here, running here",
+    bridge: [
+      "Long-running agents and workflows don't happen in one request.",
+    ],
+    body: [
+      "They run for hours, days, or weeks — across model calls, APIs, human approvals, deploys, failures, and everything else production throws at them.",
+    ],
+    closer: "Inngest makes that work durable.",
+    cta: { label: "See how it works", href: "#long-run-see-it-run" },
+    // SF's placements are scattered across the city rather than tied to
+    // one weekend, so the page acknowledges the sighting without naming
+    // a single moment.
+    note: "Spotted us around San Francisco? You're in the right place.",
   },
 };
 
@@ -198,20 +219,54 @@ export const CONNECTION = {
 
 /* ── 03 · The problem ──────────────────────────────────────────────── */
 
-export const PROBLEM = {
-  eyebrow: "Mile 18. Hour three. Step 47.",
-  title: ["Something", "will break."],
-  failures: [
-    "A model times out.",
-    "An API goes down.",
-    "A deploy lands mid-run.",
-    "A human takes three days to approve something.",
-    "A process crashes after hours of completed work.",
-  ],
-  setup: "And suddenly you're faced with a very bad option:",
-  badOption: ["Go back to zero", "and run the whole", "thing again?"],
-  rebuttal: "No thanks.",
-} as const;
+export interface ProblemCopy {
+  eyebrow: string;
+  title: string[];
+  failures: string[];
+  /** Lines between the failure tally and the statement. */
+  setup: string[];
+  /** The page's low point, set at display weight. */
+  statement: string[];
+  /** Optional beat after the statement. NYC answers its own question;
+   *  SF's statement is already an answer, so it has none. */
+  rebuttal?: string;
+}
+
+export const PROBLEM: Partial<Record<Market, ProblemCopy>> = {
+  nyc: {
+    eyebrow: "Mile 18. Hour three. Step 47.",
+    title: ["Something", "will break."],
+    failures: [
+      "A model times out.",
+      "An API goes down.",
+      "A deploy lands mid-run.",
+      "A human takes three days to approve something.",
+      "A process crashes after hours of completed work.",
+    ],
+    setup: ["And suddenly you're faced with a very bad option:"],
+    statement: ["Go back to zero", "and run the whole", "thing again?"],
+    rebuttal: "No thanks.",
+  },
+  sf: {
+    // SF has no marathon to hang the eyebrow on, and its hero already did
+    // the "what a long run is made of" work — so this section carries the
+    // whole problem on its own.
+    eyebrow: "Long-running software",
+    title: ["The longer it runs,", "the more can go wrong."],
+    failures: [
+      "A model times out.",
+      "An API fails.",
+      "A deploy lands mid-run.",
+      "A human approval takes three days.",
+      "A process crashes after hours of completed work.",
+    ],
+    setup: [
+      "For work that lasts seconds, maybe that's annoying.",
+      "For work that's already been running for hours?",
+    ],
+    statement: ["Don't start over."],
+  },
+};
 
 /* ── 04 · The product truth ────────────────────────────────────────── */
 
@@ -281,13 +336,41 @@ export const RUN: RunEntry[] = [
   { at: "03:17", label: "Run completed", state: "ok" },
 ];
 
-export const SEE_IT_RUN = {
-  eyebrow: "See it run",
-  title: ["Break something.", "Keep running."],
-  payoff: "The run didn't restart. Neither did the work that already finished.",
+export interface SeeItRunCopy {
+  eyebrow: string;
+  title: string[];
+  payoff: string;
+  ctaLabel: string;
+  ctaHref: string;
+}
+
+const DEMO_CTA = {
   ctaLabel: "Build this workflow",
   ctaHref: "/docs/getting-started/nextjs-quick-start?ref=long-run-demo",
-} as const;
+};
+
+export const SEE_IT_RUN: Record<Market, SeeItRunCopy> = {
+  nyc: {
+    eyebrow: "See it run",
+    title: ["Break something.", "Keep running."],
+    payoff:
+      "The run didn't restart. Neither did the work that already finished.",
+    ...DEMO_CTA,
+  },
+  sf: {
+    eyebrow: "See it run",
+    title: ["Break a step.", "Keep the run."],
+    payoff: "The failed step retried. The completed work didn't.",
+    ...DEMO_CTA,
+  },
+  all: {
+    eyebrow: "See it run",
+    title: ["Break something.", "Keep running."],
+    payoff:
+      "The run didn't restart. Neither did the work that already finished.",
+    ...DEMO_CTA,
+  },
+};
 
 /* ── 06 · Proof ────────────────────────────────────────────────────── */
 
@@ -373,11 +456,68 @@ export const ELSEWHERE: Record<Market, { label: string; href: string }[]> = {
     { label: "The full story", href: "/long-run?ref=long-run-footer" },
   ],
   sf: [
-    { label: "New York City", href: "/long-run/nyc?ref=long-run-footer" },
-    { label: "The full story", href: "/long-run?ref=long-run-footer" },
+    { label: "New York", href: "/long-run/nyc?ref=long-run-footer" },
+    { label: "Build", href: "/long-run?ref=long-run-footer" },
   ],
   all: [
     { label: "New York City", href: "/long-run/nyc?ref=long-run-footer" },
     { label: "San Francisco", href: "/long-run/sf?ref=long-run-footer" },
   ],
 };
+
+/* ── SF · On the ground ────────────────────────────────────────────── */
+
+export interface Activation {
+  id: string;
+  name: string;
+  /** Venue / date line. Say "Date to be confirmed" rather than inventing
+   *  one — these render publicly. */
+  meta: string;
+  body: string;
+  cta: {
+    label: string;
+    /** Omit until the real destination exists. A CTA without an href
+     *  renders as a visibly unfinished placeholder rather than a dead
+     *  link, so the page can't ship with one. */
+    href?: string;
+  };
+  /** Photography slot, shown as a labelled placeholder until the real
+   *  asset lands. */
+  mediaNote?: string;
+}
+
+/**
+ * SF's programming. Dates and RSVP destinations are deliberately not
+ * filled in — none were provided, and inventing either would put wrong
+ * information on a public page. Each is a one-line edit once confirmed.
+ */
+export const SF_ACTIVATIONS: Activation[] = [
+  {
+    id: "the-long-run",
+    name: "The Long Run",
+    meta: "Corgi Cafe · Claude Ln · October",
+    body: "Our long-running drink, available all month.",
+    cta: { label: "Corgi Cafe" },
+    mediaNote: "Photo from the cafe — the coffee sleeve",
+  },
+  {
+    id: "builders-who-run",
+    name: "Builders Who Run",
+    meta: "Date to be confirmed · San Francisco",
+    body: "An easy 5K with people who ship for a living. No pace requirement. Coffee on us at the end.",
+    cta: { label: "RSVP" },
+  },
+  {
+    id: "innhouse-after-dark",
+    name: "Innhouse After Dark",
+    meta: "Date to be confirmed · Inngest HQ",
+    body: "Bring the thing you're stuck on. We'll keep the lights on.",
+    cta: { label: "RSVP" },
+  },
+];
+
+export const ON_THE_GROUND = {
+  eyebrow: "On the ground in San Francisco",
+  title: ["Find us around the city."],
+  lead: "We're building for the long run here, too.",
+} as const;
