@@ -10,6 +10,7 @@ import {
   MARKET_COPY,
   HERO_BODY,
   HERO_NARRATIVE,
+  type HeroNarrative,
   type Market,
 } from "@/components/v1/sections/LongRun/data";
 import CourseLine from "@/components/v1/sections/LongRun/CourseLine";
@@ -30,7 +31,7 @@ import { handleAnchorClick } from "@/components/v1/sections/LongRun/useAnchorScr
 // Mirrors SplitHero's entry cascade so the campaign page feels like it
 // belongs to the same site: SSR-render the from-state inline, then let
 // motion animate straight to the animate state without a hydration snap.
-const entry = (delayMs: number) => ({
+const entryAnim = (delayMs: number) => ({
   style: {
     opacity: 0,
     transform: "translateY(14px)",
@@ -40,6 +41,82 @@ const entry = (delayMs: number) => ({
   animate: { opacity: 1, y: 0 } as const,
   transition: { ...tweens.entry, delay: delayMs / 1000 },
 });
+const entry = entryAnim;
+
+/**
+ * The hero's copy stack — bridge lines, body, closer, CTAs and the small
+ * contextual note. Extracted because it renders in two different places:
+ * inside the left column on markets with a product visual, and as the
+ * right-hand rail on markets without one.
+ */
+function HeroCopyStack({
+  narrative,
+  entry,
+}: {
+  narrative: HeroNarrative;
+  entry: typeof entryAnim;
+}) {
+  return (
+    <div className="flex flex-col gap-8">
+      <motion.div {...entry(520)} className="flex flex-col gap-8">
+        {narrative.bridge.length > 0 && (
+          <div className="flex flex-col gap-2">
+            {narrative.bridge.map((line) => (
+              <p key={line} className="text-v1-heading-xs-loose !text-v1-frost">
+                {line}
+              </p>
+            ))}
+          </div>
+        )}
+        <div className="flex flex-col gap-5">
+          {narrative.body.map((para) => (
+            <p key={para} className="text-v1-body-lg-loose !text-v1-frost/85">
+              {para}
+            </p>
+          ))}
+        </div>
+        {narrative.closer && (
+          <p className="text-v1-heading-xs-loose !text-v1-frost">
+            {narrative.closer}
+          </p>
+        )}
+      </motion.div>
+
+      <motion.div {...entry(640)}>
+        <div className="flex flex-col items-stretch gap-3 sm:flex-row sm:flex-wrap sm:items-center sm:gap-4">
+          <ButtonLink
+            href={narrative.cta.href}
+            prefetch={false}
+            variant="primary"
+            className="!w-full hover:!border-v1-jetBlack hover:!bg-v1-jetBlack hover:!text-v1-frost sm:!w-auto"
+          >
+            {narrative.cta.label} →
+          </ButtonLink>
+          {narrative.secondaryCta && (
+            <ButtonLink
+              href={narrative.secondaryCta.href}
+              variant="secondary"
+              // Stays a real anchor so it works without JS and is announced
+              // as a link; the handler only upgrades the jump to a smooth
+              // scroll, and honours reduced motion.
+              onClick={handleAnchorClick(
+                narrative.secondaryCta.href.replace("#", "")
+              )}
+              className="!w-full hover:!border-v1-jetBlack hover:!bg-v1-jetBlack hover:!text-v1-frost sm:!w-auto"
+            >
+              {narrative.secondaryCta.label} →
+            </ButtonLink>
+          )}
+        </div>
+        {narrative.note && (
+          <p className="text-v1-body-sm mt-6 !text-v1-frost/70">
+            {narrative.note}
+          </p>
+        )}
+      </motion.div>
+    </div>
+  );
+}
 
 export default function Hero({ market }: { market: Market }) {
   const copy = MARKET_COPY[market];
@@ -48,6 +125,11 @@ export default function Hero({ market }: { market: Market }) {
   // without an entry keep the original short hero untouched.
   const narrative = HERO_NARRATIVE[market];
   const eyebrow = narrative?.eyebrow ?? copy.eyebrow;
+  // With a product visual the hero becomes a true split: the whole copy
+  // stack (headline, body, CTAs) reads down the left column and the
+  // product UI sits beside it. Without one, the headline and the rail
+  // share the row as before.
+  const hasVisual = Boolean(narrative?.visual);
 
   return (
     <section
@@ -96,10 +178,16 @@ export default function Hero({ market }: { market: Market }) {
           // of the panel sits empty on desktop. Below lg both cuts are one
           // column.
           narrative &&
+            !hasVisual &&
             "lg:grid lg:grid-cols-[minmax(0,1fr)_minmax(0,480px)] lg:items-end lg:gap-x-16",
+          // Split hero: copy column, then the product UI. Centred on the
+          // row so the screenshot sits against the middle of the stack
+          // rather than dropping below it.
+          hasVisual &&
+            "lg:grid lg:grid-cols-[minmax(0,1fr)_minmax(0,46%)] lg:items-center lg:gap-x-12"
         )}
       >
-        <div>
+        <div className={cn(hasVisual && "flex flex-col")}>
           <motion.p
             {...entry(40)}
             className="text-v1-label-md uppercase text-v1-frost"
@@ -121,81 +209,37 @@ export default function Hero({ market }: { market: Market }) {
               >
                 {line}
               </motion.span>
-          ))}
+            ))}
           </h1>
+          {hasVisual && narrative && (
+            <HeroCopyStack narrative={narrative} entry={entry} />
+          )}
         </div>
 
-        {narrative ? (
-          <>
-            {/* Narrative markets turn from the poster to production right
-                here, and send the one CTA down to the run visual — the
-                page's job is to explain before it asks. */}
-            <div className="mt-10 flex max-w-[620px] flex-col gap-8 lg:mt-0">
-            <motion.div {...entry(520)} className="flex flex-col gap-8">
-              {narrative.bridge.length > 0 && (
-                <div className="flex flex-col gap-2">
-                  {narrative.bridge.map((line) => (
-                    <p
-                      key={line}
-                      className="text-v1-heading-xs-loose !text-v1-frost"
-                    >
-                      {line}
-                    </p>
-                  ))}
-                </div>
-              )}
-              <div className="flex flex-col gap-5">
-                {narrative.body.map((para) => (
-                  <p
-                    key={para}
-                    className="text-v1-body-lg-loose !text-v1-frost/85"
-                  >
-                    {para}
-                  </p>
-                ))}
-              </div>
-
-              {narrative.closer && (
-                <p className="text-v1-heading-xs-loose !text-v1-frost">
-                  {narrative.closer}
-                </p>
-              )}
-            </motion.div>
-
-            <motion.div {...entry(640)}>
-              <div className="flex flex-col items-stretch gap-3 sm:flex-row sm:flex-wrap sm:items-center sm:gap-4">
-                <ButtonLink
-                  href={narrative.cta.href}
-                  prefetch={false}
-                  variant="primary"
-                  className="!w-full hover:!border-v1-jetBlack hover:!bg-v1-jetBlack hover:!text-v1-frost sm:!w-auto"
-                >
-                  {narrative.cta.label} →
-                </ButtonLink>
-                {narrative.secondaryCta && (
-                  <ButtonLink
-                    href={narrative.secondaryCta.href}
-                    variant="secondary"
-                    // Stays a real anchor so it works without JS and is
-                    // announced as a link; the handler only upgrades the
-                    // jump to a smooth scroll, and honours reduced motion.
-                    onClick={handleAnchorClick(
-                      narrative.secondaryCta.href.replace("#", ""),
-                    )}
-                    className="!w-full hover:!border-v1-jetBlack hover:!bg-v1-jetBlack hover:!text-v1-frost sm:!w-auto"
-                  >
-                    {narrative.secondaryCta.label} →
-                  </ButtonLink>
-                )}
-              </div>
-              {narrative.note && (
-                <p className="mt-6 text-v1-body-sm !text-v1-frost/70">
-                  {narrative.note}
-                </p>
-              )}
-            </motion.div>
-            </div>
-          </>
+        {hasVisual && narrative?.visual ? (
+          <motion.div {...entry(700)} className="mt-12 lg:mt-0">
+            <GradientFrame
+              variant="black"
+              className="overflow-hidden rounded-lg"
+            >
+              <Image
+                src={narrative.visual.src}
+                alt={narrative.visual.alt}
+                width={narrative.visual.width}
+                height={narrative.visual.height}
+                // Above the fold, so not lazy-loaded; sized down from the
+                // 1806px source at each breakpoint rather than shipping
+                // the full asset to phones.
+                priority
+                sizes="(max-width: 1024px) 100vw, 640px"
+                className="h-auto w-full"
+              />
+            </GradientFrame>
+          </motion.div>
+        ) : narrative ? (
+          <div className="mt-10 max-w-[620px] lg:mt-0">
+            <HeroCopyStack narrative={narrative} entry={entry} />
+          </div>
         ) : (
           <>
             <motion.div
@@ -233,28 +277,6 @@ export default function Hero({ market }: { market: Market }) {
           </>
         )}
       </div>
-
-      {narrative?.visual && (
-        <motion.div
-          {...entry(760)}
-          className="relative z-10 mx-auto w-full max-w-[1440px] px-6 pb-24 sm:px-9 lg:px-8 lg:pb-32"
-        >
-          <GradientFrame variant="black" className="overflow-hidden rounded-lg">
-            <Image
-              src={narrative.visual.src}
-              alt={narrative.visual.alt}
-              width={narrative.visual.width}
-              height={narrative.visual.height}
-              // Above the fold, so it is not lazy-loaded; sized down from
-              // the 1806px source at every breakpoint rather than shipping
-              // the full-width asset to phones.
-              priority
-              sizes="(max-width: 1024px) 100vw, 1376px"
-              className="h-auto w-full"
-            />
-          </GradientFrame>
-        </motion.div>
-      )}
 
       {/* The marathon route, drawing itself along the bottom of the panel.
           Purely decorative — the labelled version of the course lives in
