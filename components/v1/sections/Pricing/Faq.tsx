@@ -11,13 +11,13 @@ const FAQS: FaqItem[] = [
     id: "exceed-included-runs",
     question: "What happens if I exceed the included executions on my plan?",
     answer:
-      "Pro plans bill metered usage above the included executions at tiered rates — the more you use, the lower the per-execution price. Hobby plans pause execution once the free quota is exhausted; upgrade to keep running.",
+      "Pro plans bill metered usage above the included executions at tiered rates — the more you use, the lower the per-execution price. Free plans pause execution once the free quota is exhausted; upgrade to keep running.",
   },
   {
     id: "swap-plans",
     question: "Can I switch plans later?",
     answer:
-      "Yes. You can upgrade from Hobby to Pro at any time, and switch to Enterprise once you need custom scale, SAML, or dedicated support. Plan changes take effect immediately and prorate the current billing cycle.",
+      "Yes. You can upgrade from Free to Pro at any time, and switch to Enterprise once you need custom scale, SAML, or dedicated support. Plan changes take effect immediately and prorate the current billing cycle.",
   },
   {
     id: "self-host",

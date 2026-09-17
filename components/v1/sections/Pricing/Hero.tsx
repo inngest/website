@@ -12,6 +12,7 @@ import { cn } from "@/utils/v1/cn";
 import { reveals } from "@/utils/v1/reveals";
 import { springs, tweens } from "@/utils/v1/springs";
 import { PLANS, type Plan, type PlanName } from "./plans";
+import LogoWall from "./LogoWall";
 
 // Pixel-perfect port of the hero design + hover
 // animation borrowed from Home/FeatureCards:
@@ -22,11 +23,12 @@ import { PLANS, type Plan, type PlanName } from "./plans";
 //   - Hover floods the card with the salmon gradient + soft-light
 //     noise, fires a cursor-tracked spotlight, lifts the whole card
 //     -8 px, and extends the surface ±12 px above/below the row.
-//   - POPULAR chip floats over the Pro card's top edge to mark it
-//     as recommended; no longer dependent on salmon-at-rest.
+//     The ring grows with that surface so the card doesn't break
+//     out of its container.
+//   - Pro is the resting highlight. Moving onto Free or Enterprise
+//     takes the salmon with you; leaving the row returns it to Pro.
 //   - Buttons share one outline-frost style; on group-hover they
-//     flood solid frost so the active card reads the same way the
-//     old static Pro card did.
+//     flood solid frost so the active card reads as the primary CTA.
 
 const wordEntry = (delay: number) => ({
   style: {
@@ -46,7 +48,14 @@ const LIFT_Y_PX = -8;
 const RELEASE_BOUNCE = springs.glide;
 const RETRACT_MS = 360;
 const HOLD_ELEVATION_MS = 700;
-const HEADLINE_FEATURE_COUNT = 5;
+
+const FEATURE_CATEGORIES = [
+  "Platform",
+  "Events",
+  "Observability",
+  "Security",
+  "Support",
+] as const;
 
 // Inline style for every overlay span that extends with the surface.
 // `--surface-y` is the gated view of `--surface-extra-y` — zeroed
@@ -58,17 +67,14 @@ const followsExtraY: React.CSSProperties = {
 };
 
 export default function Hero() {
-  // The badged plan (Pro) is the RESTING active card — it wears the
-  // full hover treatment (salmon flood + grow + lift) with no pointer
-  // over it, so the recommended plan reads as selected by default.
+  // The badged plan (Pro) is the resting highlight — salmon with no
+  // pointer over it. Hovering a sibling moves the treatment there;
+  // leaving the row returns it to Pro.
   const badgedPlanName = PLANS.find((p) => p.badge)?.name ?? null;
 
   // Serialised hover hand-off — pendingId tracks intent, activeId is
   // what's on screen. Switching siblings retracts the previous active
-  // card first and then expands the next after RETRACT_MS. Same
-  // pattern as Home/FeatureCards, except both rest on the badged plan
-  // instead of null: leaving a card returns the treatment to Pro
-  // rather than clearing the whole row.
+  // card first and then expands the next after RETRACT_MS.
   const [pendingId, setPendingId] = useState<PlanName | null>(badgedPlanName);
   const [activeId, setActiveId] = useState<PlanName | null>(badgedPlanName);
   useEffect(() => {
@@ -86,46 +92,49 @@ export default function Hero() {
   return (
     <section
       aria-labelledby="pricing-hero-headline"
-      className="relative mx-auto flex w-full max-w-[1440px] flex-col gap-10 px-6 pb-6 pt-[100px] text-v1-frost sm:px-9 lg:gap-[70px] lg:px-8 lg:pt-[122px]"
+      className="relative mx-auto flex w-full max-w-[1440px] flex-col gap-6 px-6 pb-6 pt-[80px] text-v1-frost sm:px-9 lg:gap-8 lg:px-8 lg:pt-[96px]"
     >
-      {/* Single centred headline (max-w 1176, two lines, 16px gap).
-          The full headline lives in the h1 so screen readers get all
-          three sentences. */}
-      <div className="flex w-full justify-center lg:py-8">
+      {/* Centered headline, then a full-width logo banner. */}
+      <div className="flex w-full flex-col items-center gap-4 text-center">
         <h1
           id="pricing-hero-headline"
-          className="flex max-w-[1176px] flex-col gap-4 text-center font-v1Display uppercase tracking-[-0.01em] text-[40px] leading-[44px] sm:text-[52px] sm:leading-[60px] lg:text-[58px] lg:leading-[70px] v1-trim"
+          className="flex flex-col gap-4 text-center font-v1Display uppercase tracking-[-0.01em] text-[40px] leading-[44px] sm:text-[52px] sm:leading-[60px] lg:text-[58px] lg:leading-[70px] v1-trim"
         >
           <motion.span className="block" {...wordEntry(60)}>
-            Reliable workflows. Invisible infra.
+            Pricing that
           </motion.span>
           <motion.span className="block" {...wordEntry(180)}>
-            Scalable pricing.
+            scales with you
           </motion.span>
         </h1>
+        <motion.h2
+          className="max-w-[36rem] text-center text-v1-body-lg-loose font-normal text-v1-frost/80"
+          {...wordEntry(280)}
+        >
+          Inngest is open source. Start on the dev server, and move to any of
+          our Cloud packages when you&apos;re ready for production.
+        </motion.h2>
       </div>
+
+      <LogoWall />
 
       <div className="relative">
         <ul className="grid list-none grid-cols-1 gap-6 pl-0 lg:grid-cols-3 lg:gap-0">
           {PLANS.map((plan, i) => (
-            <motion.li
+            <PlanCard
               key={plan.name}
-              {...reveals.item(i)}
-              className="list-none"
-            >
-              <PlanCard
-                plan={plan}
-                isFirst={i === 0}
-                isLast={i === PLANS.length - 1}
-                isActive={activeId === plan.name}
-                onEnter={() => setPendingId(plan.name)}
-                onLeave={() =>
-                  setPendingId((prev) =>
-                    prev === plan.name ? badgedPlanName : prev,
-                  )
-                }
-              />
-            </motion.li>
+              plan={plan}
+              index={i}
+              isFirst={i === 0}
+              isLast={i === PLANS.length - 1}
+              isActive={activeId === plan.name}
+              onEnter={() => setPendingId(plan.name)}
+              onLeave={() =>
+                setPendingId((prev) =>
+                  prev === plan.name ? badgedPlanName : prev,
+                )
+              }
+            />
           ))}
         </ul>
       </div>
@@ -135,6 +144,7 @@ export default function Hero() {
 
 function PlanCard({
   plan,
+  index,
   isFirst,
   isLast,
   isActive,
@@ -142,6 +152,7 @@ function PlanCard({
   onLeave,
 }: {
   plan: Plan;
+  index: number;
   isFirst: boolean;
   isLast: boolean;
   isActive: boolean;
@@ -229,7 +240,8 @@ function PlanCard({
   };
 
   return (
-    <motion.article
+    <motion.li
+      {...reveals.item(index)}
       onPointerMove={onCursorSpotlightMove}
       onPointerEnter={onEnter}
       onPointerLeave={onLeave}
@@ -245,18 +257,20 @@ function PlanCard({
         willChange: "transform",
       }}
       className={cn(
-        "pricing-plan-card group relative isolate flex h-full flex-col gap-[29px] p-8 [--lift-y:0px] [--surface-y:0px] [--seam-x:0px] lg:[--lift-y:var(--lift)] lg:[--surface-y:var(--surface-extra-y)] lg:[--seam-x:-2px]",
+        "pricing-plan-card group relative isolate flex list-none flex-col gap-[29px] p-8 [--lift-y:0px] [--surface-y:0px] [--seam-x:0px] lg:h-full lg:[--lift-y:var(--lift)] lg:[--surface-y:var(--surface-extra-y)] lg:[--seam-x:-2px]",
         isActive ? "z-20" : elevated ? "z-10" : "",
       )}
     >
-      {/* Base surface — carbon-200 ring at rest. Border snaps to
-          transparent the moment hover engages so the extended
-          top/bottom edges don't read as floating grey strips. */}
+      {/* Base surface — carbon-200 ring that tracks the surface grow
+          so the white container lifts with the card instead of the
+          salmon breaking out of a static box. Hover restores the
+          shared-seam left edge so the lifted card reads as a full
+          outlined container. */}
       <span
         aria-hidden="true"
         style={followsExtraY}
         className={cn(
-          "pointer-events-none absolute inset-0 -z-10 border border-v1-contrast motion-safe:transition-[border-color] motion-safe:duration-200 group-hover:border-transparent group-focus-within:border-transparent group-data-[active]:border-transparent",
+          "pointer-events-none absolute inset-0 -z-10 border border-v1-contrast motion-safe:transition-[border-color,border-radius] motion-safe:duration-200 group-hover:!rounded group-hover:border-l group-focus-within:!rounded group-focus-within:border-l group-data-[active]:!rounded group-data-[active]:border-l",
           cornerRadius,
           innerEdgeFlat,
         )}
@@ -338,8 +352,11 @@ function PlanCard({
         className={cn("absolute inset-0 z-20 outline-none", cornerRadius)}
       />
 
-      {/* Header: plan name + description */}
-      <div className="relative z-10 flex flex-col gap-5">
+      {/* Name, price, CTA. Description and price rows are equalized
+          across cards (2-line desc, reserved "Starting at") so the
+          three buttons share a baseline. Extra space under the copy,
+          tight space above the button. */}
+      <div className="relative z-10 flex shrink-0 flex-col text-v1-frost">
         {/* Mobile-only inline badge — sits inside the card above the plan
             name (the lg+ straddling badge above is hidden < lg). */}
         {plan.badge && (
@@ -347,83 +364,86 @@ function PlanCard({
             <Chip>{plan.badge}</Chip>
           </div>
         )}
-        <div className="flex flex-col gap-4 text-v1-frost">
-          <h2 className="text-v1-heading-card">{plan.name}</h2>
-          <p className="text-v1-body-sm">{plan.description}</p>
-        </div>
+        <h2 className="text-v1-heading-card">{plan.name}</h2>
+        <p className="mt-4 min-h-[2lh] text-v1-body-sm">{plan.description}</p>
 
-        {/* Price block — "Starting at" caption is reserved across all
-            three plans via a 16 px spacer when absent so the price
-            rows line up at the same baseline. */}
-        <div className="flex flex-col items-start text-v1-frost">
-          {plan.cost.startsAt ? (
-            <p className="text-v1-caption">Starting at</p>
-          ) : (
-            <span aria-hidden="true" className="block h-[16px]" />
+        <div className="mt-10 flex flex-col items-start gap-3">
+          {plan.cost.startsAt && (
+            <p className="text-v1-body-sm">Starting at</p>
           )}
-          <p className="py-4 text-v1-heading-sm">
+          <p className="text-v1-heading-sm">
             {typeof plan.cost.basePrice === "number"
               ? `$${plan.cost.basePrice}/${plan.cost.period}`
               : plan.cost.basePrice}
           </p>
-          <p className="text-v1-body-sm">{plan.priceCaption}</p>
+          {plan.priceCaption ? (
+            <p className="text-v1-body-sm">{plan.priceCaption}</p>
+          ) : null}
         </div>
+
+        {/* CTA — shared Button at the new `lg` size (h-52). Card-hover
+            flips it to solid frost via `group-hover` overrides so the
+            active salmon card reads with the same primary-CTA weight
+            the static Pro card used to ship with. `!important` on the
+            group-hover classes beats Button's own `:hover` (which
+            floods salmon and would otherwise blend into the salmon
+            card bg). */}
+        <ButtonLink
+          href={plan.cta.href}
+          variant="secondary"
+          className="mt-10 !w-full group-hover:!bg-v1-frost group-hover:!text-v1-jetBlack group-data-[active]:!bg-v1-frost group-data-[active]:!text-v1-jetBlack"
+        >
+          {plan.cta.text}
+        </ButtonLink>
       </div>
 
-      {/* CTA — shared Button at the new `lg` size (h-52). Card-hover
-          flips it to solid frost via `group-hover` overrides so the
-          active salmon card reads with the same primary-CTA weight
-          the static Pro card used to ship with. `!important` on the
-          group-hover classes beats Button's own `:hover` (which
-          floods salmon and would otherwise blend into the salmon
-          card bg). */}
-      <ButtonLink
-        href={plan.cta.href}
-        variant="secondary"
-        className="relative z-10 !w-full group-hover:!bg-v1-frost group-hover:!text-v1-jetBlack group-data-[active]:!bg-v1-frost group-data-[active]:!text-v1-jetBlack"
-      >
-        {plan.cta.text}
-      </ButtonLink>
-
-      {/* Feature bullets — headline limits read larger,
-          then a short divider separates the supporting features below. */}
-      <div className="relative z-10 flex flex-col gap-4 text-v1-frost">
-        <ul className="flex list-disc flex-col gap-3 pl-[21px]">
-          {plan.features.slice(0, HEADLINE_FEATURE_COUNT).map((feature) => (
-            <li key={feature.text} className="text-v1-body-sm">
-              {feature.value && (
-                <span className="font-bold">{feature.value} </span>
-              )}
-              {feature.text}
-              {feature.note && (
-                <span className="mt-0.5 block text-v1-body-xs text-v1-frost/80 group-hover:text-white/80 group-data-[active]:text-white/80">
-                  {feature.note}
-                </span>
-              )}
-            </li>
-          ))}
-        </ul>
-        {plan.features.length > HEADLINE_FEATURE_COUNT && (
-          <>
-            <span aria-hidden="true" className="h-px w-10 bg-v1-frost/30" />
-            <ul className="flex list-disc flex-col gap-3 pl-[21px]">
-              {plan.features.slice(HEADLINE_FEATURE_COUNT).map((feature) => (
-                <li key={feature.text} className="text-v1-body-xs">
-                  {feature.value && (
-                    <span className="font-bold">{feature.value} </span>
-                  )}
-                  {feature.text}
-                  {feature.note && (
-                    <span className="mt-0.5 block text-v1-frost/80 group-hover:text-white/80 group-data-[active]:text-white/80">
-                      {feature.note}
-                    </span>
-                  )}
-                </li>
-              ))}
-            </ul>
-          </>
-        )}
+      {/* Equal-height category rows so Platform / Events / … start on
+          the same rhythm in every card. Empty categories still take a
+          slot at lg (hidden on mobile). */}
+      <div className="relative z-10 flex flex-1 flex-col gap-[29px]">
+        {FEATURE_CATEGORIES.map((category) => {
+          const items = plan.features.filter(
+            (feature) => feature.category === category,
+          );
+          if (items.length === 0) {
+            return (
+              <div
+                key={category}
+                aria-hidden="true"
+                className="hidden lg:block lg:flex-1"
+              />
+            );
+          }
+          return (
+            <div
+              key={category}
+              className="flex flex-1 flex-col gap-2 text-v1-frost"
+            >
+              <p className="text-v1-label-sm uppercase tracking-[0.06em] text-v1-frost/45">
+                {category}
+              </p>
+              <ul className="flex list-disc flex-col gap-2.5 pl-[21px]">
+                {items.map((feature) => (
+                  <li
+                    key={`${feature.value ?? ""}-${feature.text}`}
+                    className="text-v1-body-sm"
+                  >
+                    {feature.value && (
+                      <span className="font-bold">{feature.value} </span>
+                    )}
+                    {feature.text}
+                    {feature.note && (
+                      <span className="mt-0.5 block text-v1-body-xs text-v1-frost/80 group-hover:text-white/80 group-data-[active]:text-white/80">
+                        {feature.note}
+                      </span>
+                    )}
+                  </li>
+                ))}
+              </ul>
+            </div>
+          );
+        })}
       </div>
-    </motion.article>
+    </motion.li>
   );
 }
