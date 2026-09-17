@@ -120,7 +120,7 @@ export default function TrustedInBigLeagues() {
   return (
     <Section
       aria-labelledby="pricing-trust-heading"
-      className="relative"
+      className="relative !pt-20 sm:!pt-24 lg:!pt-0"
       containerClassName="flex flex-col gap-v1-stack-lg"
     >
       <SectionHeader

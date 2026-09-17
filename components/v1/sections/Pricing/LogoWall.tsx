@@ -67,16 +67,16 @@ function LogoMark({
 export default function LogoWall() {
   return (
     <div
-      aria-label="Trusted by 100k developers at logos you actually know"
-      className="relative mt-4 overflow-hidden lg:mt-6"
+      aria-label="Trusted by 100k+ developers at logos you actually know."
+      className="relative mt-4 mb-6 overflow-hidden lg:mt-6 lg:mb-8"
       role="region"
     >
       <p className="relative z-10 ml-8 w-[11.5rem] py-0.5 text-[12px] leading-[17px] text-v1-frost/80">
-        Trusted by 100k
+        Trusted by 100k+
         <br />
         developers at logos
         <br />
-        you actually know
+        you actually know.
       </p>
 
       <div

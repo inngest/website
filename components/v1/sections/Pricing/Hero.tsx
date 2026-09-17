@@ -108,11 +108,12 @@ export default function Hero() {
           </motion.span>
         </h1>
         <motion.h2
-          className="max-w-[36rem] text-center text-v1-body-lg-loose font-normal text-v1-frost/80"
+          className="max-w-[48rem] text-center text-v1-body-lg-loose font-normal text-v1-frost/80"
           {...wordEntry(280)}
         >
-          Inngest is open source. Start on the dev server, and move to any of
-          our Cloud packages when you&apos;re ready for production.
+          Inngest is an open source SDK for orchestrating event-driven apps and
+          agents. Start in the dev server, and move to Cloud when ready. Zero
+          infra required.
         </motion.h2>
       </div>
 
