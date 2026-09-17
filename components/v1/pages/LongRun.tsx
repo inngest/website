@@ -6,6 +6,7 @@ import StippleCtaSection from "@/components/v1/sections/shared/StippleCtaSection
 import NotFoundBackground from "@/components/v1/sections/shared/NotFoundBackground";
 import LogoMarquee from "@/components/v1/sections/Home/LogoMarquee";
 import { Unreleased } from "@/shared/Docs/Unreleased";
+import { handleAnchorClick } from "@/components/v1/sections/LongRun/useAnchorScroll";
 
 import Hero from "@/components/v1/sections/LongRun/Hero";
 import Connection from "@/components/v1/sections/LongRun/Connection";
@@ -16,9 +17,20 @@ import Proof from "@/components/v1/sections/LongRun/Proof";
 import CampaignMoment from "@/components/v1/sections/LongRun/CampaignMoment";
 import CampaignFooter from "@/components/v1/sections/LongRun/CampaignFooter";
 import OnTheGround from "@/components/v1/sections/LongRun/OnTheGround";
+import SfDifference from "@/components/v1/sections/LongRun/SfDifference";
+import SfUseCases from "@/components/v1/sections/LongRun/SfUseCases";
+import TechnicalProof from "@/components/v1/sections/LongRun/TechnicalProof";
+import SfProductProof from "@/components/v1/sections/LongRun/SfProductProof";
+import SfResources from "@/components/v1/sections/LongRun/SfResources";
 import WhatItIs from "@/components/v1/sections/LongRun/WhatItIs";
 import Course from "@/components/v1/sections/LongRun/Course";
-import { TRY, type Market } from "@/components/v1/sections/LongRun/data";
+import {
+  TRY,
+  SF_CLOSER,
+  SF_PRIMARY_CTA,
+  SF_PROOF_ANCHOR,
+  type Market,
+} from "@/components/v1/sections/LongRun/data";
 
 /**
  * "Build for the long run" — the campaign landing page behind the NYC and SF
@@ -58,17 +70,24 @@ export default function LongRun({ market = "all" }: { market?: Market }) {
       <Unreleased label="long-run" fallback={<GateFallback />}>
         <div className="overflow-x-clip">
           <Hero market={market} />
-          {isNarrative ? (
+          {market === "sf" ? (
+            // SF leads with the product and drops the campaign below it:
+            // difference → use cases → technical proof → product proof,
+            // then the ask, then the city programming and resources.
             <>
-              {/* NYC opens with what a long run is made of; SF's hero has
-                  already done that work, so it goes straight to what
-                  breaks. */}
-              {market === "nyc" && <Connection />}
+              <SfDifference />
+              <SfUseCases />
+              <TechnicalProof />
+              <SfProductProof />
+            </>
+          ) : isNarrative ? (
+            <>
+              <Connection />
               <Problem market={market} />
               <ProductTruth />
               <SeeItRun market={market} />
               <Proof />
-              {market === "nyc" && <CampaignMoment market={market} />}
+              <CampaignMoment market={market} />
             </>
           ) : (
             <>
@@ -80,7 +99,36 @@ export default function LongRun({ market = "all" }: { market?: Market }) {
           {/* The ask. Both cuts close on the site's standard stipple CTA;
               the narrative cut carries the campaign's own wording, which
               names the thing the run visual just showed. */}
-          {isNarrative ? (
+          {market === "sf" ? (
+            <StippleCtaSection
+              headingId="long-run-cta-heading"
+              heading={
+                <>
+                  {SF_CLOSER.title[0]}
+                  <br />
+                  {SF_CLOSER.title[1]}
+                </>
+              }
+              body={SF_CLOSER.body}
+              bodyClassName="max-w-[520px]"
+              footnote={TRY.footnote}
+            >
+              <ButtonLink
+                href={`/sign-up?ref=${SF_PRIMARY_CTA.ref.final}`}
+                prefetch={false}
+                variant="primary"
+              >
+                {SF_PRIMARY_CTA.label} →
+              </ButtonLink>
+              <ButtonLink
+                href={`#${SF_PROOF_ANCHOR}`}
+                variant="secondary"
+                onClick={handleAnchorClick(SF_PROOF_ANCHOR)}
+              >
+                See how it works →
+              </ButtonLink>
+            </StippleCtaSection>
+          ) : isNarrative ? (
             <StippleCtaSection
               headingId="long-run-cta-heading"
               heading={
@@ -139,7 +187,12 @@ export default function LongRun({ market = "all" }: { market?: Market }) {
               </ButtonLink>
             </StippleCtaSection>
           )}
-          {market === "sf" && <OnTheGround />}
+          {market === "sf" && (
+            <>
+              <OnTheGround />
+              <SfResources />
+            </>
+          )}
           {isNarrative && <CampaignFooter market={market} />}
         </div>
       </Unreleased>

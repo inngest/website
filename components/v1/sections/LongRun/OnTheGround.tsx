@@ -6,26 +6,27 @@ import Section from "@/components/v1/sections/shared/Section";
 import { V1_SECTION_TITLE } from "@/components/v1/sections/shared/sectionTitle";
 import { reveals } from "@/utils/v1/reveals";
 import {
-  ON_THE_GROUND,
-  SF_ACTIVATIONS,
+  SF_CAMPAIGN,
+  SF_CAMPAIGN_CARDS,
 } from "@/components/v1/sections/LongRun/data";
 
 /**
- * SF's campaign moment — the programming around the city.
+ * Section 06 — the San Francisco programming.
  *
- * Sits after the CTA rather than before it: SF's placements are scattered
- * across weeks instead of hanging on one weekend, so this reads as "here's
- * where to actually find us" once the product case is already made.
+ * Sits below the product story by design: the page's job is product-led,
+ * and this connects it back to however someone ran into the campaign in
+ * the city. It is not an event directory, so each card stays to a title,
+ * a line, and a date.
  *
- * Dates and RSVP destinations that haven't been confirmed render as
- * visible placeholders rather than invented values or dead links — the
- * page is public, so a wrong date costs more than an obviously unfinished
- * one.
+ * Unconfirmed events render a plain "details coming soon" line and no
+ * button at all — an inactive CTA reads as broken, and a placeholder date
+ * on a public page is worse. Cards gain a CTA the moment a real
+ * destination exists in `SF_CAMPAIGN_CARDS`.
  */
 export default function OnTheGround() {
   return (
     <Section
-      aria-labelledby="long-run-ground-heading"
+      aria-labelledby="long-run-sf-campaign-heading"
       className="border-y border-v1-subtle bg-v1-surfaceBase"
       containerClassName="flex flex-col gap-v1-stack"
     >
@@ -34,71 +35,77 @@ export default function OnTheGround() {
           {...reveals.body}
           className="text-v1-eyebrow uppercase text-v1-frost/55"
         >
-          {ON_THE_GROUND.eyebrow}
+          {SF_CAMPAIGN.eyebrow}
         </motion.p>
         <motion.h2
           {...reveals.heading}
-          id="long-run-ground-heading"
+          id="long-run-sf-campaign-heading"
           className={V1_SECTION_TITLE}
         >
-          {ON_THE_GROUND.title.map((line) => (
+          {SF_CAMPAIGN.title.map((line) => (
             <span key={line} className="block">
               {line}
             </span>
           ))}
         </motion.h2>
-        <motion.p {...reveals.body} className="text-v1-body-lg-loose">
-          {ON_THE_GROUND.lead}
+        <motion.p
+          {...reveals.body}
+          className="text-v1-body-lg-loose max-w-[640px]"
+        >
+          {SF_CAMPAIGN.body}
         </motion.p>
       </div>
 
       <ul className="grid list-none grid-cols-1 gap-8 pl-0 lg:grid-cols-3">
-        {SF_ACTIVATIONS.map((a, i) => (
+        {SF_CAMPAIGN_CARDS.map((card, i) => (
           <motion.li
-            key={a.id}
+            key={card.id}
             {...reveals.item(i)}
             className="flex list-none flex-col gap-5 rounded-lg border border-v1-subtle p-6"
           >
-            {a.mediaNote && (
+            {card.mediaNote && (
               <div
                 role="img"
-                aria-label={a.mediaNote}
+                aria-label={card.mediaNote}
                 className="flex min-h-[160px] items-center justify-center rounded border border-dashed border-v1-muted px-4 text-center"
               >
                 <span className="text-v1-label-sm uppercase text-v1-frost/45">
-                  {a.mediaNote}
+                  {card.mediaNote}
                 </span>
               </div>
             )}
 
-            <div className="flex flex-col gap-2">
-              <h3 className="text-v1-heading-xs uppercase text-v1-frost">
-                {a.name}
-              </h3>
+            <h3 className="text-v1-heading-xs text-v1-frost">{card.title}</h3>
+            <p className="text-v1-body-sm-loose flex-1">{card.body}</p>
+
+            {card.detail && (
               <p className="text-v1-label-sm uppercase text-v1-frost/55">
-                {a.meta}
+                {card.detail}
               </p>
-            </div>
+            )}
 
-            <p className="flex-1 text-v1-body-sm-loose">{a.body}</p>
+            {/* An unconfirmed event says so plainly and shows no button.
+                The brief is explicit that a disabled CTA is not an
+                acceptable stand-in. */}
+            {card.pending && (
+              <p className="text-v1-label-sm uppercase text-v1-frost/45">
+                {card.pending}
+              </p>
+            )}
 
-            {a.cta.href ? (
+            {card.cta && (
               <Link
-                href={a.cta.href}
+                href={card.cta.href}
                 className="text-v1-label-md uppercase text-v1-frost transition-opacity duration-200 hover:opacity-70"
               >
-                {a.cta.label}{" "}
-                <span aria-hidden="true" className="text-v1-accent-salmon-light">
+                {card.cta.label}{" "}
+                <span
+                  aria-hidden="true"
+                  className="text-v1-accent-salmon-light"
+                >
                   →
                 </span>
               </Link>
-            ) : (
-              // No destination yet. Rendered as inert, visibly unfinished
-              // text so it reads as outstanding in review instead of
-              // shipping as a link that goes nowhere.
-              <p className="text-v1-label-md uppercase text-v1-frost/35">
-                {a.cta.label} · link to come
-              </p>
             )}
           </motion.li>
         ))}

@@ -2,6 +2,7 @@
 
 import { motion } from "motion/react";
 import ButtonLink from "@/components/v1/ButtonLink";
+import Image from "next/image";
 import { cn } from "@/utils/v1/cn";
 import { tweens } from "@/utils/v1/springs";
 import { CURSOR_SPOTLIGHT_SEED } from "@/utils/v1/cursorFx";
@@ -12,6 +13,8 @@ import {
   type Market,
 } from "@/components/v1/sections/LongRun/data";
 import CourseLine from "@/components/v1/sections/LongRun/CourseLine";
+import GradientFrame from "@/components/v1/sections/shared/GradientFrame";
+import { handleAnchorClick } from "@/components/v1/sections/LongRun/useAnchorScroll";
 
 /**
  * Campaign hero — the first thing someone sees after scanning a poster or
@@ -129,16 +132,18 @@ export default function Hero({ market }: { market: Market }) {
                 page's job is to explain before it asks. */}
             <div className="mt-10 flex max-w-[620px] flex-col gap-8 lg:mt-0">
             <motion.div {...entry(520)} className="flex flex-col gap-8">
-              <div className="flex flex-col gap-2">
-                {narrative.bridge.map((line) => (
-                  <p
-                    key={line}
-                    className="text-v1-heading-xs-loose !text-v1-frost"
-                  >
-                    {line}
-                  </p>
-                ))}
-              </div>
+              {narrative.bridge.length > 0 && (
+                <div className="flex flex-col gap-2">
+                  {narrative.bridge.map((line) => (
+                    <p
+                      key={line}
+                      className="text-v1-heading-xs-loose !text-v1-frost"
+                    >
+                      {line}
+                    </p>
+                  ))}
+                </div>
+              )}
               <div className="flex flex-col gap-5">
                 {narrative.body.map((para) => (
                   <p
@@ -158,13 +163,31 @@ export default function Hero({ market }: { market: Market }) {
             </motion.div>
 
             <motion.div {...entry(640)}>
-              <ButtonLink
-                href={narrative.cta.href}
-                variant="primary"
-                className="!w-full hover:!border-v1-jetBlack hover:!bg-v1-jetBlack hover:!text-v1-frost sm:!w-auto"
-              >
-                {narrative.cta.label} →
-              </ButtonLink>
+              <div className="flex flex-col items-stretch gap-3 sm:flex-row sm:flex-wrap sm:items-center sm:gap-4">
+                <ButtonLink
+                  href={narrative.cta.href}
+                  prefetch={false}
+                  variant="primary"
+                  className="!w-full hover:!border-v1-jetBlack hover:!bg-v1-jetBlack hover:!text-v1-frost sm:!w-auto"
+                >
+                  {narrative.cta.label} →
+                </ButtonLink>
+                {narrative.secondaryCta && (
+                  <ButtonLink
+                    href={narrative.secondaryCta.href}
+                    variant="secondary"
+                    // Stays a real anchor so it works without JS and is
+                    // announced as a link; the handler only upgrades the
+                    // jump to a smooth scroll, and honours reduced motion.
+                    onClick={handleAnchorClick(
+                      narrative.secondaryCta.href.replace("#", ""),
+                    )}
+                    className="!w-full hover:!border-v1-jetBlack hover:!bg-v1-jetBlack hover:!text-v1-frost sm:!w-auto"
+                  >
+                    {narrative.secondaryCta.label} →
+                  </ButtonLink>
+                )}
+              </div>
               {narrative.note && (
                 <p className="mt-6 text-v1-body-sm !text-v1-frost/70">
                   {narrative.note}
@@ -210,6 +233,28 @@ export default function Hero({ market }: { market: Market }) {
           </>
         )}
       </div>
+
+      {narrative?.visual && (
+        <motion.div
+          {...entry(760)}
+          className="relative z-10 mx-auto w-full max-w-[1440px] px-6 pb-24 sm:px-9 lg:px-8 lg:pb-32"
+        >
+          <GradientFrame variant="black" className="overflow-hidden rounded-lg">
+            <Image
+              src={narrative.visual.src}
+              alt={narrative.visual.alt}
+              width={narrative.visual.width}
+              height={narrative.visual.height}
+              // Above the fold, so it is not lazy-loaded; sized down from
+              // the 1806px source at every breakpoint rather than shipping
+              // the full-width asset to phones.
+              priority
+              sizes="(max-width: 1024px) 100vw, 1376px"
+              className="h-auto w-full"
+            />
+          </GradientFrame>
+        </motion.div>
+      )}
 
       {/* The marathon route, drawing itself along the bottom of the panel.
           Purely decorative — the labelled version of the course lives in
