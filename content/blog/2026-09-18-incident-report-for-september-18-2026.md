@@ -19,7 +19,7 @@ _All timestamps are in UTC._
 
 On September 18, 2026, an account deletion originating from our Vercel Marketplace integration blocked our primary Postgres database for long enough to exhaust PgBouncer, the connection pooler that sits in front of it. From 16:18 to 16:42 UTC, both PgBouncer instances were rejecting new connections, and services across the platform could not reach the database. This stalled run scheduling and event acknowledgement. A second, slightly larger period of impact ran from 17:50 to 18:12 UTC, while we were rolling out the mitigation.
 
-Events sent to Inngest during the incident were durably accepted, and scheduling resumed once the blocking transactions cleared. Affected work was delayed rather than lost.
+Events we accepted during the incident were durably stored, and scheduling caught up once the blocking transactions cleared: affected work was delayed rather than lost. If you sent an event and did not receive an acknowledgement, retry it to confirm it was submitted.
 
 ## What Happened
 
@@ -43,7 +43,7 @@ We restarted PgBouncer at 16:26. The blocking transactions were still running, s
 
 Cancelling the queries removed the symptom but not the source: deletion requests were still arriving and still being processed. We prepared a kill switch to stop the deletion path outright.
 
-At 17:45 the same pattern began again, and by 18:00 PgBouncer was saturated a second time. The kill switch had merged at 17:54 and was rolling out into a system that was already contending. This wave reached more services than the first: executor, batches, pauses, new-runs, queue-proxy, debug-api and CDC crash-looped, two queue shards stopped processing, and a batches backlog built up.
+At 17:45 the same lock-contention pattern began again, and by 18:00 PgBouncer was saturated a second time. The kill switch had merged at 17:54 and was rolling out into a system that was already contending. What triggered this second round of contention is still under investigation. This wave reached more services than the first: executor, batches, pauses, new-runs, queue-proxy, debug-api and CDC crash-looped, two queue shards stopped processing, and a batches backlog built up.
 
 Postgres lock counts returned to baseline by 18:00, but PgBouncer stayed saturated for about ten minutes longer: the queue of waiting clients had to drain before services could reconnect. Recovery completed at approximately 18:12, and by 18:15 no clients were waiting and query times were back to normal.
 
@@ -91,8 +91,9 @@ The third and fourth factors are what made this a platform-wide event with a lon
 ## What This Means For You
 
 - Run scheduling and event acknowledgement were interrupted in two windows: approximately 16:18 to 16:42, and 17:50 to 18:12.
-- Events sent during the incident were durably accepted; delivery and scheduling resumed as connections recovered.
+- Events we accepted were durably stored; delivery and scheduling caught up as connections recovered.
 - Runs scheduled during these windows were delayed while queued work caught up.
+- If you sent an event during either window and did not receive an acknowledgement, retry it — an unacknowledged event may not have reached us.
 
 We apologize for the disruption. An internal administrative operation should never be able to interrupt function execution for unrelated customers, and the changes above are aimed squarely at that separation.
 
