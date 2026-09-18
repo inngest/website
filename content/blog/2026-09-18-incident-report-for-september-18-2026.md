@@ -37,7 +37,7 @@ FATAL: no more connections allowed (max_client_conn) (SQLSTATE 08P01)
 
 At that point the failure was platform-wide, including services with no relationship to the deletion. Run scheduling volume dropped, inbound events stopped being acknowledged, Connect gateway and Constraint API throughput fell, checkpointing latency breached its SLO, and several services crash-looped because they could not reach the database on startup.
 
-We restarted PgBouncer at 16:26. The blocking transactions were still running, so the pools simply refilled, and the restart surfaced an unrelated missing runtime directory that slowed us further. The first period of impact ended instead at 16:39, when we cancelled nine of the user deletions along with the original account deletion. Lock counts cleared by approximately 16:42.
+We restarted PgBouncer at 16:26. The blocking transactions were still running, so the pools simply refilled. The first period of impact ended instead at 16:39, when we cancelled nine of the user deletions along with the original account deletion. Lock counts cleared by approximately 16:42.
 
 ### The recurrence during rollout
 
