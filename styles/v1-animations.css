@@ -634,3 +634,59 @@ button:focus-visible .v1-wipe-reveal {
     display: none;
   }
 }
+
+/* ---------- CodeTV Web Dev Challenge ---------- */
+@keyframes v1CodetvMarquee {
+  from { transform: translateX(0); }
+  to   { transform: translateX(-50%); }
+}
+@keyframes v1CodetvPulse {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.35; }
+}
+@keyframes v1CodetvSparkle {
+  0% {
+    opacity: 0;
+    transform: translate(-50%, -50%) scale(0.2) rotate(0deg);
+  }
+  18% {
+    opacity: 1;
+    transform: translate(-50%, -50%) scale(1) rotate(20deg);
+  }
+  100% {
+    opacity: 0;
+    transform: translate(calc(-50% + var(--dx, 0px)), calc(-50% + var(--dy, -40px))) scale(0.4) rotate(80deg);
+  }
+}
+.v1-codetv-sparkle {
+  display: block;
+  color: currentColor;
+  background: currentColor;
+  clip-path: polygon(
+    50% 0%,
+    62% 35%,
+    100% 50%,
+    62% 65%,
+    50% 100%,
+    38% 65%,
+    0% 50%,
+    38% 35%
+  );
+  filter: drop-shadow(0 0 6px currentColor);
+}
+@media (prefers-reduced-motion: no-preference) {
+  .v1-codetv-marquee {
+    animation: v1CodetvMarquee 28s linear infinite;
+  }
+  .v1-codetv-pulse {
+    animation: v1CodetvPulse 1.6s ease-in-out infinite;
+  }
+  .v1-codetv-sparkle {
+    animation: v1CodetvSparkle 900ms cubic-bezier(0.2, 0.8, 0.2, 1) both;
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .v1-codetv-sparkle {
+    display: none;
+  }
+}
