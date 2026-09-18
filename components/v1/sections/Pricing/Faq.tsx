@@ -35,7 +35,7 @@ const FAQS: FaqItem[] = [
     id: "included-vs-addon",
     question: "What's included versus billed as an add-on?",
     answer:
-      "Core execution, concurrency, seats, and workers are part of your plan's base allowance and overage rates. Advanced observability and HIPAA compliance are separate paid add-ons, not included in the base Pro or Enterprise price.",
+      "Core execution, concurrency, seats, and workers are part of your plan's base allowance and overage rates. Advanced observability and HIPAA compliance are separate paid add-ons, not included in the base Pro, Business, or Enterprise price.",
   },
   {
     id: "compare-temporal-trigger",
@@ -61,7 +61,7 @@ const FAQS: FaqItem[] = [
     id: "swap-plans",
     question: "Can I switch plans later?",
     answer:
-      "Yes. You can upgrade from Free to Pro at any time, and switch to Enterprise once you need custom scale, SAML, or dedicated support. Plan changes take effect immediately and prorate the current billing cycle.",
+      "Yes. You can upgrade from Free to Pro or Business at any time, and switch to Enterprise once you need custom scale, SAML, or dedicated support. Plan changes take effect immediately and prorate the current billing cycle.",
   },
   {
     id: "self-host",

@@ -21,7 +21,7 @@ import {
 // rhythms (the calculator already provides a full bottom pad).
 
 const SECTIONS = [
-  { key: "all", label: "Plan Comparison" },
+  { key: "all", label: "Platform" },
   ...FEATURE_SECTIONS.map((s) => ({ key: s.key, label: s.name })),
 ];
 
@@ -45,12 +45,12 @@ export default function ComparisonTable() {
           scrolls horizontally; at lg+ the min-width matches the
           natural content so there's no overflow. */}
       <div className="-mx-6 overflow-x-auto sm:-mx-9 lg:mx-0 lg:overflow-visible">
-        <div className="min-w-[660px] px-6 sm:px-9 lg:min-w-0 lg:px-0">
+        <div className="min-w-[820px] px-6 sm:px-9 lg:min-w-0 lg:px-0">
           {/* Header row: PLAN FEATURES on left, 3 plan CTAs across the
               right. Each cell sits in its own column with a single
               cdcdcd hairline at the bottom. Below lg the entire table
               scrolls horizontally inside the outer overflow wrapper. */}
-          <div className="grid min-h-[80px] grid-cols-[180px_repeat(3,minmax(160px,1fr))] items-center border-b border-v1-contrast py-3 lg:min-h-0 lg:grid-cols-[minmax(0,1.7fr)_repeat(3,minmax(0,1fr))] lg:py-6">
+          <div className="grid min-h-[80px] grid-cols-[180px_repeat(4,minmax(140px,1fr))] items-center border-b border-v1-contrast py-3 lg:min-h-0 lg:grid-cols-[minmax(0,1.3fr)_repeat(4,minmax(0,1fr))] lg:py-6">
             <div className="flex h-full items-center pr-4 lg:pr-6">
               <motion.h2
                 {...reveals.heading}
@@ -132,7 +132,7 @@ function PlanHeaderCol({ plan, highlight }: { plan: Plan; highlight: boolean }) 
       <ButtonLink
         href={plan.cta.href}
         variant={highlight ? "primary" : "secondary"}
-        className="w-full max-w-[180px] !min-w-0 !px-3 lg:!min-w-[154px] lg:!px-5"
+        className="w-full max-w-[160px] !min-w-0 !px-2 lg:max-w-[180px] lg:!min-w-0 lg:!px-4"
       >
         {plan.cta.text}
       </ButtonLink>
@@ -170,7 +170,7 @@ function FeatureRow({ feature }: { feature: Feature }) {
   // secondary description is hidden below sm to keep that sticky
   // column narrow on phones.
   return (
-    <div className="grid grid-cols-[180px_repeat(3,minmax(160px,1fr))] lg:grid-cols-[1.5fr_repeat(3,minmax(0,1fr))] items-center border-b border-v1-strong/[0.4] py-3 lg:py-4">
+    <div className="grid grid-cols-[180px_repeat(4,minmax(140px,1fr))] lg:grid-cols-[1.3fr_repeat(4,minmax(0,1fr))] items-center border-b border-v1-strong/[0.4] py-3 lg:py-4">
       <div className="flex h-full items-center gap-2 pl-4 pr-3 lg:pl-[34px] lg:pr-6">
         <p className="text-v1-body-xs text-v1-frost lg:text-v1-body-sm">
           {feature.name}
@@ -182,7 +182,7 @@ function FeatureRow({ feature }: { feature: Feature }) {
       {PLANS.map((plan) => (
         <div
           key={plan.name}
-          className="flex flex-col items-start gap-1 pl-4 pr-3 lg:pl-[82px] lg:pr-6"
+          className="flex flex-col items-start gap-1 pl-3 pr-2 lg:pl-6 lg:pr-4"
         >
           <Cell value={feature.plans[plan.name]} />
         </div>

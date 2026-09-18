@@ -35,7 +35,7 @@ interface Step {
 const STEPS: Step[] = [
   {
     number: "01",
-    title: "Write your function with Steps",
+    title: "Wrap functions in Steps",
     body:
       "Wrap your existing code in step.run(). Each step automatically handles retries, state, and failure recovery. No refactoring, no new patterns to learn — just wrap and go.",
     iconSrc: "/assets/v1/feature-cards/retries.svg",

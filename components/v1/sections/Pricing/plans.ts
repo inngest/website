@@ -7,6 +7,7 @@ import type { ReactNode } from "react";
 export const PLAN_NAMES = {
   hobby: "Free",
   pro: "Pro",
+  business: "Business",
   enterprise: "Enterprise",
 } as const;
 
@@ -64,7 +65,7 @@ export const PLANS: Plan[] = [
   {
     name: PLAN_NAMES.hobby,
     description:
-      "Generous usage limits to prove your use case before production. No credit card needed.",
+      "Generous monthly limits to prove it before production. No credit card required.",
     cost: {
       basePrice: 0,
       period: "mo",
@@ -108,7 +109,7 @@ export const PLANS: Plan[] = [
   {
     name: PLAN_NAMES.pro,
     description:
-      "For growing teams building production-ready workflows with increased scale and reliability.",
+      "Production-ready features for teams that still need lots of flexibility.",
     cost: {
       startsAt: true,
       basePrice: 99,
@@ -136,15 +137,15 @@ export const PLANS: Plan[] = [
     },
     features: [
       { category: "Platform", value: "15", text: "seats" },
-      { category: "Platform", value: "1M+", text: "executions included" },
+      { category: "Platform", value: "1M", text: "executions + add-on" },
       { category: "Platform", value: "100+", text: "concurrent steps" },
-      { category: "Platform", value: "20", text: "workers" },
+      { category: "Platform", value: "20", text: "workers + add-on" },
       { category: "Platform", value: "Unlimited", text: "serverless workers" },
       { category: "Events", value: "5M+", text: "events ingested" },
       { category: "Events", value: "1M+", text: "queue depth" },
       { category: "Events", value: "1000", text: "realtime connections" },
       { category: "Events", value: "3 MiB", text: "event size" },
-      { category: "Observability", value: "5 GB", text: "span data ingested" },
+      { category: "Observability", value: "5GB", text: "span data + overages" },
       { category: "Observability", value: "50K", text: "scores" },
       { category: "Observability", value: "7 day", text: "trace history" },
       { category: "Observability", value: "15 minute", text: "metrics granularity" },
@@ -154,9 +155,55 @@ export const PLANS: Plan[] = [
     badge: "POPULAR",
   },
   {
+    name: PLAN_NAMES.business,
+    description: "For growing teams that want to optimize cost at scale.",
+    cost: {
+      startsAt: true,
+      basePrice: 499,
+      period: "mo",
+      includedRuns: 10_000_000,
+      additionalRunsPrice: 50,
+      additionalRunsRate: 1_000_000,
+      includedSteps: 5,
+      additionalStepsPrice: 4,
+      additionalStepsRate: 200_000,
+      includedConcurrency: 500,
+      additionalConcurrencyPrice: 25,
+      additionalConcurrencyRate: 25,
+      includedUsers: 30,
+      additionalUsersPrice: 10,
+      additionalUsersRate: 1,
+      includedWorkers: 100,
+      additionalWorkersPrice: 10,
+      additionalWorkersRate: 1,
+    },
+    priceCaption: "",
+    cta: {
+      href: `${SIGNUP}?ref=pricing-card-business`,
+      text: "Start Free",
+    },
+    features: [
+      { category: "Platform", value: "30", text: "seats" },
+      { category: "Platform", value: "10M", text: "executions + add-on" },
+      { category: "Platform", value: "500", text: "concurrent steps" },
+      { category: "Platform", value: "100", text: "workers + add-on" },
+      { category: "Platform", value: "Unlimited", text: "serverless workers" },
+      { category: "Events", value: "50M+", text: "events ingested" },
+      { category: "Events", value: "10M+", text: "queue depth" },
+      { category: "Events", value: "5000", text: "realtime connections" },
+      { category: "Events", value: "3 MiB", text: "event size" },
+      { category: "Observability", value: "25GB", text: "span data + overages" },
+      { category: "Observability", value: "250K", text: "scores" },
+      { category: "Observability", value: "14 day", text: "trace history" },
+      { category: "Observability", value: "1 minute", text: "metrics granularity" },
+      { category: "Observability", text: "Datadog / advanced observability add-on" },
+      { category: "Security", text: "HIPAA add-on" },
+    ],
+  },
+  {
     name: PLAN_NAMES.enterprise,
     description:
-      "For enterprise teams that need additional security and support, with volume-based discounts.",
+      "For established teams that need additional security, support, and observability.",
     cost: {
       basePrice: "Custom",
       includedRuns: "Custom",
@@ -168,7 +215,7 @@ export const PLANS: Plan[] = [
       includedConcurrency: 500,
       additionalConcurrencyPrice: "Custom",
       additionalConcurrencyRate: null,
-      includedUsers: 50,
+      includedUsers: "Custom",
       additionalUsersPrice: "Custom",
       additionalUsersRate: null,
       includedWorkers: "Unlimited",
@@ -181,7 +228,7 @@ export const PLANS: Plan[] = [
       text: "Contact Us",
     },
     features: [
-      { category: "Platform", value: "50", text: "seats" },
+      { category: "Platform", value: "Custom", text: "seats" },
       { category: "Platform", value: "Custom", text: "executions" },
       { category: "Platform", value: "Custom", text: "concurrent steps" },
       { category: "Platform", value: "Custom", text: "workers" },
@@ -244,6 +291,7 @@ export const FEATURES: Feature[] = [
     plans: {
       [PLAN_NAMES.hobby]: "$0",
       [PLAN_NAMES.pro]: "$99 /mo",
+      [PLAN_NAMES.business]: "$499 /mo",
       [PLAN_NAMES.enterprise]: "Contact us",
     },
   },
@@ -253,10 +301,8 @@ export const FEATURES: Feature[] = [
     section: "comparison",
     plans: {
       [PLAN_NAMES.hobby]: "50k /mo included",
-      [PLAN_NAMES.pro]: {
-        value: "1M+ executions included",
-        description: "up to 20M",
-      },
+      [PLAN_NAMES.pro]: "1M executions + add-on",
+      [PLAN_NAMES.business]: "10M executions + add-on",
       [PLAN_NAMES.enterprise]: "Custom",
     },
   },
@@ -270,6 +316,7 @@ export const FEATURES: Feature[] = [
         value: "100 included",
         description: "then $25 per 25",
       },
+      [PLAN_NAMES.business]: "500 included",
       [PLAN_NAMES.enterprise]: "500 included",
     },
   },
@@ -280,7 +327,8 @@ export const FEATURES: Feature[] = [
     plans: {
       [PLAN_NAMES.hobby]: "5",
       [PLAN_NAMES.pro]: { value: "15", description: "then $10/seat" },
-      [PLAN_NAMES.enterprise]: "50",
+      [PLAN_NAMES.business]: { value: "30", description: "then $10/seat" },
+      [PLAN_NAMES.enterprise]: "Custom",
     },
   },
   {
@@ -289,7 +337,8 @@ export const FEATURES: Feature[] = [
     section: "comparison",
     plans: {
       [PLAN_NAMES.hobby]: "3",
-      [PLAN_NAMES.pro]: { value: "20", description: "then $10 per 10 workers" },
+      [PLAN_NAMES.pro]: "20 workers + add-on",
+      [PLAN_NAMES.business]: "100 workers + add-on",
       [PLAN_NAMES.enterprise]: "Custom",
     },
   },
@@ -300,6 +349,7 @@ export const FEATURES: Feature[] = [
     plans: {
       [PLAN_NAMES.hobby]: "Unlimited",
       [PLAN_NAMES.pro]: "Unlimited",
+      [PLAN_NAMES.business]: "Unlimited",
       [PLAN_NAMES.enterprise]: "Unlimited",
     },
   },
@@ -310,6 +360,7 @@ export const FEATURES: Feature[] = [
     plans: {
       [PLAN_NAMES.hobby]: false,
       [PLAN_NAMES.pro]: false,
+      [PLAN_NAMES.business]: false,
       [PLAN_NAMES.enterprise]: true,
     },
   },
@@ -320,6 +371,7 @@ export const FEATURES: Feature[] = [
     plans: {
       [PLAN_NAMES.hobby]: false,
       [PLAN_NAMES.pro]: "Add-on",
+      [PLAN_NAMES.business]: "Add-on",
       [PLAN_NAMES.enterprise]: true,
     },
   },
@@ -333,6 +385,7 @@ export const FEATURES: Feature[] = [
         value: "5m/mo included",
         description: "then $0.5 per 1m",
       },
+      [PLAN_NAMES.business]: "50m/mo included",
       [PLAN_NAMES.enterprise]: "Custom",
     },
   },
@@ -343,6 +396,7 @@ export const FEATURES: Feature[] = [
     plans: {
       [PLAN_NAMES.hobby]: "100k included",
       [PLAN_NAMES.pro]: "1m included",
+      [PLAN_NAMES.business]: "10m included",
       [PLAN_NAMES.enterprise]: "Custom",
     },
   },
@@ -353,6 +407,7 @@ export const FEATURES: Feature[] = [
     plans: {
       [PLAN_NAMES.hobby]: "256 KiB",
       [PLAN_NAMES.pro]: "3 MiB",
+      [PLAN_NAMES.business]: "3 MiB",
       [PLAN_NAMES.enterprise]: "Custom",
     },
   },
@@ -363,6 +418,7 @@ export const FEATURES: Feature[] = [
     plans: {
       [PLAN_NAMES.hobby]: "5",
       [PLAN_NAMES.pro]: "100",
+      [PLAN_NAMES.business]: "500",
       [PLAN_NAMES.enterprise]: "Custom",
     },
   },
@@ -373,6 +429,7 @@ export const FEATURES: Feature[] = [
     plans: {
       [PLAN_NAMES.hobby]: "30 seconds",
       [PLAN_NAMES.pro]: "5 minutes",
+      [PLAN_NAMES.business]: "5 minutes",
       [PLAN_NAMES.enterprise]: "Custom",
     },
   },
@@ -382,7 +439,8 @@ export const FEATURES: Feature[] = [
     plans: {
       [PLAN_NAMES.hobby]: "50",
       [PLAN_NAMES.pro]: "1000",
-      [PLAN_NAMES.enterprise]: "1000",
+      [PLAN_NAMES.business]: "5000",
+      [PLAN_NAMES.enterprise]: "Custom",
     },
   },
   {
@@ -391,7 +449,8 @@ export const FEATURES: Feature[] = [
     plans: {
       [PLAN_NAMES.hobby]: "250k per day",
       [PLAN_NAMES.pro]: "1m per day",
-      [PLAN_NAMES.enterprise]: "1m per day",
+      [PLAN_NAMES.business]: "5m per day",
+      [PLAN_NAMES.enterprise]: "Custom",
     },
   },
   {
@@ -401,6 +460,7 @@ export const FEATURES: Feature[] = [
     plans: {
       [PLAN_NAMES.hobby]: "30 minutes",
       [PLAN_NAMES.pro]: "15 minutes",
+      [PLAN_NAMES.business]: "1 minute",
       [PLAN_NAMES.enterprise]: "1 minute",
     },
   },
@@ -411,6 +471,7 @@ export const FEATURES: Feature[] = [
     plans: {
       [PLAN_NAMES.hobby]: "24 hours",
       [PLAN_NAMES.pro]: "7 days",
+      [PLAN_NAMES.business]: "14 days",
       [PLAN_NAMES.enterprise]: "90 days",
     },
   },
@@ -420,10 +481,8 @@ export const FEATURES: Feature[] = [
     section: "observability",
     plans: {
       [PLAN_NAMES.hobby]: "500 MB included",
-      [PLAN_NAMES.pro]: {
-        value: "5 GB included",
-        description: "then $3/GB",
-      },
+      [PLAN_NAMES.pro]: "5GB span data + overages",
+      [PLAN_NAMES.business]: "25GB span data + overages",
       [PLAN_NAMES.enterprise]: "Custom",
     },
   },
@@ -437,6 +496,7 @@ export const FEATURES: Feature[] = [
         value: "50K included",
         description: "then $1.50 per 1K",
       },
+      [PLAN_NAMES.business]: "250K included",
       [PLAN_NAMES.enterprise]: "Custom",
     },
   },
@@ -447,7 +507,8 @@ export const FEATURES: Feature[] = [
     plans: {
       [PLAN_NAMES.hobby]: false,
       [PLAN_NAMES.pro]: false,
-      [PLAN_NAMES.enterprise]: "Contact us",
+      [PLAN_NAMES.business]: false,
+      [PLAN_NAMES.enterprise]: true,
     },
   },
   {
@@ -457,6 +518,7 @@ export const FEATURES: Feature[] = [
     plans: {
       [PLAN_NAMES.hobby]: false,
       [PLAN_NAMES.pro]: "$300",
+      [PLAN_NAMES.business]: "$300",
       [PLAN_NAMES.enterprise]: true,
     },
   },

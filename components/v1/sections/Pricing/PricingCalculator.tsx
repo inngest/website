@@ -13,6 +13,7 @@ import { PLANS, PLAN_NAMES, getPlan, type Plan, type PlanName } from "./plans";
 
 const HOBBY_PLAN = getPlan(PLAN_NAMES.hobby);
 const PRO_PLAN = getPlan(PLAN_NAMES.pro);
+const BUSINESS_PLAN = getPlan(PLAN_NAMES.business);
 
 const EXECUTION_TIERS: Record<
   "pro" | "enterprise",
@@ -78,8 +79,15 @@ const PRO_LIMITS = {
   realtime: 1_000,
 } as const;
 
+const BUSINESS_LIMITS = {
+  scores: 250_000,
+  queueDepth: 10_000_000,
+  realtime: 5_000,
+} as const;
+
 interface Inputs {
   runs: number;
+  steps: number;
   concurrency: number;
   users: number;
   workers: number;
@@ -89,7 +97,7 @@ interface Inputs {
 }
 
 function executionCount(inputs: Inputs): number {
-  return inputs.runs;
+  return inputs.runs * inputs.steps + inputs.runs;
 }
 
 function planCost(plan: Plan, inputs: Inputs): number {
@@ -101,6 +109,10 @@ function planCost(plan: Plan, inputs: Inputs): number {
     included = num(HOBBY_PLAN.cost.includedRuns);
     exec = executionsCost(total, included, "pro");
   } else if (plan.name === PLAN_NAMES.pro) {
+    base = num(plan.cost.basePrice);
+    included = num(plan.cost.includedRuns);
+    exec = executionsCost(total, included, "pro");
+  } else if (plan.name === PLAN_NAMES.business) {
     base = num(plan.cost.basePrice);
     included = num(plan.cost.includedRuns);
     exec = executionsCost(total, included, "pro");
@@ -147,11 +159,25 @@ function recommend(inputs: Inputs): PlanName {
     inputs.realtime > HOBBY_LIMITS.realtime;
   if (!exceedsHobby) return PLAN_NAMES.hobby;
   const exceedsPro =
+    executionCount(inputs) > num(PRO_PLAN.cost.includedRuns) ||
+    inputs.concurrency > num(PRO_PLAN.cost.includedConcurrency) ||
+    inputs.users > num(PRO_PLAN.cost.includedUsers) ||
+    inputs.workers > num(PRO_PLAN.cost.includedWorkers ?? 0) ||
     inputs.scores > PRO_LIMITS.scores ||
     inputs.queueDepth > PRO_LIMITS.queueDepth ||
     inputs.realtime > PRO_LIMITS.realtime;
+  const exceedsBusiness =
+    executionCount(inputs) > num(BUSINESS_PLAN.cost.includedRuns) ||
+    inputs.concurrency > num(BUSINESS_PLAN.cost.includedConcurrency) ||
+    inputs.users > num(BUSINESS_PLAN.cost.includedUsers) ||
+    inputs.workers > num(BUSINESS_PLAN.cost.includedWorkers ?? 0) ||
+    inputs.scores > BUSINESS_LIMITS.scores ||
+    inputs.queueDepth > BUSINESS_LIMITS.queueDepth ||
+    inputs.realtime > BUSINESS_LIMITS.realtime;
   const proCost = planCost(PRO_PLAN, inputs);
-  if (exceedsPro || proCost > 1500) return PLAN_NAMES.enterprise;
+  const businessCost = planCost(BUSINESS_PLAN, inputs);
+  if (exceedsBusiness || businessCost > 4000) return PLAN_NAMES.enterprise;
+  if (exceedsPro || proCost > 1500) return PLAN_NAMES.business;
   return PLAN_NAMES.pro;
 }
 
@@ -176,8 +202,16 @@ const RECOMMENDED_DIMENSIONS: Record<PlanName, RecDimension[]> = {
     { value: "1M+", label: "queue depth" },
     { value: "1000", label: "realtime connections" },
   ],
+  [PLAN_NAMES.business]: [
+    { value: "30", label: "seats" },
+    { value: "10M+", label: "executions" },
+    { value: "500", label: "concurrent steps" },
+    { value: "250K", label: "scores" },
+    { value: "10M+", label: "queue depth" },
+    { value: "5000", label: "realtime connections" },
+  ],
   [PLAN_NAMES.enterprise]: [
-    { value: "50", label: "seats" },
+    { value: "Custom", label: "seats" },
     { value: "Custom", label: "executions" },
     { value: "Custom", label: "concurrent steps" },
     { value: "Custom", label: "scores" },
@@ -192,6 +226,7 @@ export default function PricingCalculator() {
   const [users, setUsers] = useState(5);
   const [concurrency, setConcurrency] = useState(3);
   const [runs, setRuns] = useState(30_000);
+  const [steps, setSteps] = useState(2);
   const [workers, setWorkers] = useState(3);
   const [scores, setScores] = useState(5_000);
   const [queueDepth, setQueueDepth] = useState(50_000);
@@ -199,6 +234,7 @@ export default function PricingCalculator() {
 
   const inputs: Inputs = {
     runs,
+    steps,
     users,
     concurrency,
     workers,
@@ -209,7 +245,7 @@ export default function PricingCalculator() {
 
   const recName = useMemo(
     () => recommend(inputs),
-    [runs, users, concurrency, workers, scores, queueDepth, realtime],
+    [runs, steps, users, concurrency, workers, scores, queueDepth, realtime],
   );
   const plan = getPlan(recName);
   const cost = useMemo(
@@ -217,6 +253,7 @@ export default function PricingCalculator() {
     [
       recName,
       runs,
+      steps,
       users,
       concurrency,
       workers,
@@ -234,7 +271,7 @@ export default function PricingCalculator() {
   return (
     <Section
       aria-labelledby="pricing-calc-heading"
-      className="relative"
+      className="relative !pt-12 sm:!pt-16 lg:!pt-20"
       containerClassName="flex flex-col gap-v1-stack"
     >
       <SectionHeader
@@ -244,28 +281,39 @@ export default function PricingCalculator() {
       />
 
       <div
-        className="grid grid-cols-1 gap-y-8 overflow-hidden rounded-md border border-v1-contrast px-5 py-6 sm:px-8 lg:grid-cols-[1.05fr_minmax(0,0.95fr)] lg:gap-x-10 lg:py-7"
+        className="grid grid-cols-1 items-start gap-y-6 overflow-hidden rounded-md border border-v1-contrast px-5 py-5 sm:px-8 lg:grid-cols-[1.05fr_minmax(0,0.95fr)] lg:gap-x-10 lg:py-5"
         style={{
           backgroundImage:
             "linear-gradient(-38.4355deg, rgba(2, 2, 2, 0) 1.4608%, rgb(33, 33, 33) 50.427%)",
         }}
       >
-        <div className="flex flex-col gap-5">
+        <div className="flex flex-col gap-3">
           <h3 className="text-v1-label-sm uppercase tracking-[0.04em] text-v1-frost">
             Pricing calculator
           </h3>
 
-          <div className="flex flex-col gap-5">
+          <div className="flex flex-col gap-3">
             <SliderRow
               id="calc-runs"
               label="Number of runs"
-              hint="Function invocations per month. Each run counts as an execution."
+              hint="Function invocations per month."
               value={runs}
               min={0}
               max={1_000_000}
               step={1_000}
               onChange={setRuns}
               displayValue={runs.toLocaleString()}
+            />
+            <SliderRow
+              id="calc-steps"
+              label="Average steps per run"
+              hint="step.run() calls per run. Executions = runs × (steps + 1)."
+              value={steps}
+              min={1}
+              max={100}
+              step={1}
+              onChange={setSteps}
+              displayValue={steps.toLocaleString()}
             />
             <SliderRow
               id="calc-scores"
@@ -302,7 +350,7 @@ export default function PricingCalculator() {
             />
           </div>
 
-          <div className="grid grid-cols-1 gap-x-8 gap-y-5 sm:grid-cols-3">
+          <div className="grid grid-cols-1 gap-x-8 gap-y-3 sm:grid-cols-3">
             <NumberStepper
               id="calc-users"
               label="Seats"
@@ -328,7 +376,7 @@ export default function PricingCalculator() {
         </div>
 
         <div
-          className="group/plancard relative isolate flex h-full min-w-0 cursor-pointer flex-col items-start gap-6 rounded-md border border-v1-contrast px-5 py-6 motion-safe:transition-colors hover:border-v1-frost/40 lg:px-6 lg:py-6"
+          className="group/plancard relative isolate flex min-w-0 cursor-pointer flex-col items-start gap-3 rounded-md border border-v1-contrast px-5 py-4 motion-safe:transition-colors hover:border-v1-frost/40 lg:px-6 lg:py-4"
           onPointerMove={onCursorSpotlightMove}
           style={{
             ...CURSOR_SPOTLIGHT_SEED,
@@ -346,7 +394,7 @@ export default function PricingCalculator() {
           />
 
           <div className="flex flex-wrap items-center gap-3">
-            <h3 className="font-v1Display text-[32px] uppercase leading-[1.15] tracking-[-0.01em] text-v1-frost sm:text-[40px]">
+            <h3 className="font-v1Display text-[28px] uppercase leading-[1.15] tracking-[-0.01em] text-v1-frost sm:text-[32px]">
               {plan.name.toUpperCase()}
             </h3>
             <Chip size="sm" variant="solid">
@@ -360,7 +408,7 @@ export default function PricingCalculator() {
 
           <div className="flex flex-col items-start gap-2">
             <p className="flex items-baseline gap-1 text-v1-frost">
-              <span className="font-v1Display text-[36px] leading-[1.15] tracking-[-0.01em] sm:text-[44px]">
+              <span className="font-v1Display text-[32px] leading-[1.15] tracking-[-0.01em] sm:text-[36px]">
                 {priceText}
               </span>
               {showPeriod && (
@@ -376,7 +424,7 @@ export default function PricingCalculator() {
             )}
           </div>
 
-          <div className="flex w-full min-w-0 flex-col gap-4">
+          <div className="flex w-full min-w-0 flex-col gap-3">
             <ul className="m-0 grid list-none grid-cols-[minmax(0,1fr)_auto] gap-x-6 gap-y-2 p-0">
               {RECOMMENDED_DIMENSIONS[recName]
                 .slice(0, PRIMARY_DIMENSION_COUNT)
@@ -413,7 +461,7 @@ export default function PricingCalculator() {
             variant="accent"
             size="sm"
             wide
-            className="mt-auto cursor-pointer before:absolute before:inset-0 before:rounded-md before:content-['']"
+            className="cursor-pointer before:absolute before:inset-0 before:rounded-md before:content-['']"
           >
             {plan.cta.text}
           </ButtonLink>
@@ -446,14 +494,14 @@ function SliderRow({
 }) {
   const pct = ((value - min) / (max - min)) * 100;
   return (
-    <div className="flex flex-col gap-1.5">
+    <div className="flex flex-col gap-1">
       <div className="flex items-baseline justify-between gap-3 text-v1-body-xs text-v1-frost">
         <label htmlFor={id}>{label}</label>
         <span className="shrink-0 font-medium tracking-[-0.01em]">
           {displayValue}
         </span>
       </div>
-      <p id={`${id}-hint`} className="text-v1-caption text-v1-frost/50">
+      <p id={`${id}-hint`} className="text-[11px] leading-4 text-v1-frost/50">
         {hint}
       </p>
       <input
@@ -464,7 +512,7 @@ function SliderRow({
         step={step}
         value={value}
         onChange={(e) => onChange(parseInt(e.target.value, 10))}
-        className="v1-pricing-slider mt-1 w-full appearance-none bg-transparent"
+        className="v1-pricing-slider w-full appearance-none bg-transparent"
         style={
           {
             ["--pct" as string]: `${pct}%`,
@@ -564,7 +612,7 @@ function NumberStepper({
   };
 
   return (
-    <div className="flex flex-col gap-[13px]">
+    <div className="flex flex-col gap-1.5">
       <label htmlFor={id} className="text-v1-body-xs text-v1-frost">
         {label}
       </label>

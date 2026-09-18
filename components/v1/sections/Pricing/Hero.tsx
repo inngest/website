@@ -98,29 +98,26 @@ export default function Hero() {
       <div className="flex w-full flex-col items-center gap-4 text-center">
         <h1
           id="pricing-hero-headline"
-          className="flex flex-col gap-4 text-center font-v1Display uppercase tracking-[-0.01em] text-[40px] leading-[44px] sm:text-[52px] sm:leading-[60px] lg:text-[58px] lg:leading-[70px] v1-trim"
+          className="text-center font-v1Display uppercase tracking-[-0.01em] text-[32px] leading-[36px] sm:text-[44px] sm:leading-[50px] lg:whitespace-nowrap lg:text-[58px] lg:leading-[70px] v1-trim"
         >
-          <motion.span className="block" {...wordEntry(60)}>
-            Pricing that
-          </motion.span>
-          <motion.span className="block" {...wordEntry(180)}>
-            scales with you
+          <motion.span {...wordEntry(60)}>
+            Pricing that scales with you
           </motion.span>
         </h1>
         <motion.h2
-          className="max-w-[48rem] text-center text-v1-body-lg-loose font-normal text-v1-frost/80"
-          {...wordEntry(280)}
+          className="max-w-[52rem] text-center text-v1-body-lg-loose font-normal text-v1-frost/80"
+          {...wordEntry(180)}
         >
           Inngest is an open source SDK for orchestrating event-driven apps and
-          agents. Start in the dev server, and move to Cloud when ready. Zero
-          infra required.
+          agents. Start locally, and move to Cloud when you&apos;re ready for
+          production. Zero infra required.
         </motion.h2>
       </div>
 
       <LogoWall />
 
       <div className="relative">
-        <ul className="grid list-none grid-cols-1 gap-6 pl-0 lg:grid-cols-3 lg:gap-0">
+        <ul className="grid list-none grid-cols-1 gap-6 pl-0 lg:grid-cols-4 lg:gap-0">
           {PLANS.map((plan, i) => (
             <PlanCard
               key={plan.name}
@@ -258,7 +255,7 @@ function PlanCard({
         willChange: "transform",
       }}
       className={cn(
-        "pricing-plan-card group relative isolate flex list-none flex-col gap-[29px] p-8 [--lift-y:0px] [--surface-y:0px] [--seam-x:0px] lg:h-full lg:[--lift-y:var(--lift)] lg:[--surface-y:var(--surface-extra-y)] lg:[--seam-x:-2px]",
+        "pricing-plan-card group relative isolate flex list-none flex-col gap-6 p-6 [--lift-y:0px] [--surface-y:0px] [--seam-x:0px] lg:h-full lg:gap-[29px] lg:p-6 lg:[--lift-y:var(--lift)] lg:[--surface-y:var(--surface-extra-y)] lg:[--seam-x:-2px]",
         isActive ? "z-20" : elevated ? "z-10" : "",
       )}
     >
