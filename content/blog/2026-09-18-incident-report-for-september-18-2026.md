@@ -27,37 +27,29 @@ Events sent to Inngest during the incident were durably accepted, and scheduling
 
 ## What Happened
 
-We use Postgres for account management. It holds accounts, workspaces, API keys and the rest of our customer-facing configuration, and our services query it continuously rather than occasionally: resolving entitlements and tier changes, determining which part of our infrastructure an account's work should run on, and picking up configuration changes as they happen. A database that stops answering therefore stops far more than account administration — it stops scheduling.
+We use Postgres for account management: accounts, workspaces, API keys and the rest of our customer-facing configuration. Our services query it continuously, not occasionally — resolving entitlements and tier changes, determining which part of our infrastructure an account's work should run on, and picking up configuration changes as they happen. They reach it through PgBouncer, a connection pooler that multiplexes many application connections onto a smaller number of real database connections, and every service draws from the same shared pools.
 
-Our services do not connect to Postgres directly. They connect through PgBouncer, a connection pooler that multiplexes many application connections onto a smaller number of real database connections. This is a shared resource: every service draws from the same pools.
+At 15:39:39, our Vercel Marketplace integration received an installation deletion and began deprovisioning the corresponding Inngest account. That path was built to hard delete, rather than to soft delete the way we do everywhere else, so that an uninstalled account leaves nothing behind that would block the customer from installing again later. It deletes the user inside a transaction, then issues a real `DELETE` against the account row. That second statement cascades: accounts and workspaces are referenced by foreign keys from dozens of tables, most declared `ON DELETE CASCADE`. One account deletion fans out across a large portion of the schema in a single transaction, holding locks on everything it touches until it commits.
 
-At 15:39:39, our Vercel Marketplace integration received an installation deletion and began deprovisioning the corresponding Inngest account. The request path was: Vercel installation deletion, to marketplace deprovisioning, to a cascading account delete.
+What turned a slow transaction into an outage was the retry behavior around it. Between 15:41 and 15:56, ten more deletion attempts arrived for the same installation and account. Each tried to delete rows the first transaction already held locks on, so instead of failing fast they queued behind it — one user-delete query ended up waiting 44 minutes. Lock counts on the primary peaked at roughly seventeen times baseline at 16:16.
 
-Our marketplace deprovisioning path was built to hard delete, rather than to soft delete the way we do everywhere else in the product, so that an uninstalled account leaves nothing behind that would block the customer from installing again later. It deletes the user inside a transaction and then issues a real `DELETE` against the account row. That second statement cascades: accounts and workspaces are referenced by foreign keys from dozens of tables, most declared `ON DELETE CASCADE`. One account deletion fans out into deletes across a large portion of the schema, inside one transaction, holding locks on everything it touches until it commits.
-
-What turned a slow transaction into an outage was the retry behavior around it. Between 15:41 and 15:56, ten additional deletion attempts arrived for the same installation and the same account. Each one tried to delete rows the first transaction already held locks on, so instead of failing fast they queued behind it. One user-delete query ended up waiting 44 minutes. Lock counts on the primary peaked at roughly seventeen times their baseline at 16:16, and active backend connections rose to about five times normal.
-
-Blocked queries do not release their connection. Each one continued to occupy a client slot in PgBouncer for the entire wait, and the pressure spread to every service sharing that pool, including services with no relationship to the deletion. Client connections to our poolers rose to roughly fourteen times their steady-state level, and almost all of the increase was connections doing nothing but waiting for a server connection. From 16:09 the pooler queues grew steadily, and by 16:18–16:19 our poolers were full. They began rejecting new connections and disconnecting waiting clients at the 120 second wait timeout:
+Blocked queries do not release their connection, so each one held a client slot in PgBouncer for the entire wait. Client connections rose to roughly fourteen times their steady-state level, almost all of them doing nothing but waiting. By 16:18–16:19 PgBouncer was full, rejecting new connections and disconnecting waiting clients at the 120 second timeout:
 
 ```
 FATAL: no more connections allowed (max_client_conn) (SQLSTATE 08P01)
 ```
 
-At that point the failure was platform-wide. Run scheduling volume dropped, inbound events stopped being acknowledged, Connect gateway message forwarding and Constraint API throughput fell, checkpointing latency breached its SLO, and several services entered crash loops because they could not reach the database on startup.
+At that point the failure was platform-wide, including services with no relationship to the deletion. Run scheduling volume dropped, inbound events stopped being acknowledged, Connect gateway and Constraint API throughput fell, checkpointing latency breached its SLO, and several services crash-looped because they could not reach the database on startup.
 
-We restarted the PgBouncer instances at 16:26. This was after the pools had already saturated, and it did not address the cause: the blocking transactions were still running, so the pools refilled. The restart also surfaced an unrelated problem, a missing runtime directory, which slowed our recovery further.
-
-The first period of impact ended when we cancelled the blocking queries. At 16:39 we cancelled nine of the user deletions along with the original account deletion. Lock counts cleared at approximately 16:42 and dependent services recovered over the following minutes.
+We restarted PgBouncer at 16:26. The blocking transactions were still running, so the pools simply refilled, and the restart surfaced an unrelated missing runtime directory that slowed us further. The first period of impact ended instead at 16:39, when we cancelled nine of the user deletions along with the original account deletion. Lock counts cleared by approximately 16:42.
 
 ### The recurrence during rollout
 
-Cancelling the queries removed the symptom but not the source. Deletion requests were still arriving and still being processed, so we prepared a kill switch to stop the deletion path outright.
+Cancelling the queries removed the symptom but not the source: deletion requests were still arriving and still being processed. So we prepared a kill switch to stop the deletion path outright.
 
-At 17:45 the same pattern began again. Waiting clients climbed from zero, average query times rose from 16 ms to over 600 ms, and Postgres active backends climbed to roughly four times baseline. The kill switch merged at 17:54:21 and began rolling out into a system that was already contending, and by 18:00 PgBouncer was saturated again, marginally worse than the first peak, with the longest client wait pinned at the 120 second timeout and average query times of 20 to 22 seconds.
+At 17:45 the same pattern began again. The kill switch merged at 17:54:21, rolling out into a system that was already contending, and by 18:00 PgBouncer was saturated a second time — marginally worse than the first peak, with average query times of 20 to 22 seconds. The second wave hit more services than the first: executor, batches, pauses, new-runs, queue-proxy, debug-api and CDC crash-looped, two queue shards stopped processing, and a batches backlog built up. Twelve separate incidents were merged into this one during the first wave, and a further twelve during the second.
 
-The second wave produced broader service impact than the first: executor, batches, pauses, new-runs, queue-proxy, debug-api and CDC services crash-looped, two queue shards stopped processing, and a batches backlog built up. Across both periods, twelve separate incidents were merged into this one during the first wave and a further twelve during the second.
-
-Recovery came at approximately 18:12. One detail is worth calling out: Postgres lock counts had already fallen back to baseline by 18:00, while PgBouncer stayed saturated for another eight to ten minutes. Once every client slot is held by a waiting query, the pooler does not recover on the database's timescale — the queue has to drain first. By 18:15 waiting clients were at zero and query times were back to 15–16 ms.
+Recovery came at approximately 18:12. Postgres lock counts had already returned to baseline by 18:00, while PgBouncer stayed saturated for another eight to ten minutes — a gap we return to below. By 18:15 waiting clients were at zero and query times were back to 15–16 ms.
 
 ## Timeline
 
