@@ -50,7 +50,7 @@ Postgres lock counts returned to baseline by 18:00, but PgBouncer stayed saturat
 ## Timeline
 
 - **15:39:** A Vercel Marketplace installation deletion begins. The user is deleted inside a transaction, and the cascading account delete starts.
-- **15:41–15:56:** Ten further deletion attempts arrive for the same installation and account. They queue behind the first transaction; one waits 44 minutes.
+- **15:41–15:56:** Multiple further deletion attempts arrive for the same installation and account. They queue behind the first transaction.
 - **16:09:** PgBouncer client queues begin growing.
 - **16:16:** Database lock counts peak at roughly seventeen times baseline.
 - **16:18–16:19:** Our PgBouncer instances fill and begin rejecting connections and disconnecting clients.
