@@ -17,11 +17,7 @@ _All timestamps are in UTC._
 
 ## Summary
 
-On September 18, 2026, an account deletion originating from our Vercel Marketplace integration blocked our primary Postgres database for long enough to saturate the connection poolers that sit in front of it.
-
-Pooler saturation is what made this an outage rather than a slow query. Once every client slot in our poolers was held by a query waiting on the database, services could not obtain a database connection at all — including services that had nothing to do with the deletion. Run scheduling and event acknowledgement stalled across the platform.
-
-There were two periods of impact: 16:18 to 16:42, and a second, slightly larger one from 17:50 to 18:12 that occurred while we were rolling out the mitigation.
+On September 18, 2026, an account deletion originating from our Vercel Marketplace integration blocked our primary Postgres database for long enough to exhaust PgBouncer, the connection pooler that sits in front of it. From 16:18 to 16:42 UTC, both PgBouncer instances were rejecting new connections, and services across the platform could not reach the database. This stalled run scheduling and event acknowledgement. A second, slightly larger period of impact ran from 17:50 to 18:12 UTC, while we were rolling out the mitigation.
 
 Events sent to Inngest during the incident were durably accepted, and scheduling resumed once the blocking transactions cleared. Affected work was delayed rather than lost.
 
