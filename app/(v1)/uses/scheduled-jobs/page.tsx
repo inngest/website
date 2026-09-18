@@ -8,9 +8,9 @@ import sjDotsData from "@/public/assets/v1/scheduled-jobs-hero/dots.json";
 const SJ_DOTS_JSON = JSON.stringify(sjDotsData);
 
 export const metadata: Metadata = generateMetadata({
-  title: "Cron Jobs & Scheduled Functions That Retry",
+  title: "Serverless Workflow Orchestration for Cron Jobs",
   description:
-    "Replace fire-and-forget crons with Inngest. Automatic retries, fan-out, timezone support, step-level observability, and cancel-on-event - in one function.",
+    "Run reliable cron and scheduled jobs with Inngest. Automatic retries, fan-out, timezone support, and step-level observability, all in one function.",
 });
 
 export default function Page() {

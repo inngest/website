@@ -26,6 +26,12 @@ export interface EventItem {
   date: string;
   /** ISO 8601 start time for sorting (display copy stays in `date`). */
   startsAt: string;
+  /**
+   * ISO 8601 end time. Only needed for multi-day events (conferences),
+   * where `startsAt` alone would mark the event "past" on its own opening
+   * morning. Single-session events can leave this off.
+   */
+  endsAt?: string;
   location: string;
   topics: string[];
   excerpt: string;
@@ -34,22 +40,38 @@ export interface EventItem {
   image?: string;
   /** Tile/card image fit. Use `contain` for text-heavy graphics. */
   imageFit?: "cover" | "contain";
+  /**
+   * `background-position` for the tile/card image. Defaults to `center`.
+   * Set this when a `cover` crop would eat content that sits off-centre —
+   * e.g. artwork with all its type on the left and a bleed pattern on the
+   * right, which wants `left center` so the crop lands on the pattern.
+   */
+  imagePosition?: string;
 }
 
-export function isPastEvent(ev: { startsAt: string }): boolean {
-  return new Date(ev.startsAt).getTime() < Date.now();
+// An event stays "upcoming" until it is actually over: multi-day events
+// carry `endsAt` so they keep their live Register CTA while the doors are
+// still open, instead of going stale the moment day one begins.
+export function isPastEvent(ev: {
+  startsAt: string;
+  endsAt?: string;
+}): boolean {
+  return new Date(ev.endsAt ?? ev.startsAt).getTime() < Date.now();
 }
 
-// Past events first (most recently completed leads), then upcoming
-// events after (soonest leads).
+// Upcoming events first (soonest leads), then past events after (most
+// recently completed leads). Anything still open to register for is what
+// the page is promoting, so it belongs above the archive — otherwise a
+// newly added event lands at the very bottom of "All Events", behind
+// every event that has already happened.
 export function sortEventsByDate(events: EventItem[]): EventItem[] {
-  const past = events
-    .filter((ev) => isPastEvent(ev))
-    .sort((a, b) => b.startsAt.localeCompare(a.startsAt));
   const upcoming = events
     .filter((ev) => !isPastEvent(ev))
     .sort((a, b) => a.startsAt.localeCompare(b.startsAt));
-  return [...past, ...upcoming];
+  const past = events
+    .filter((ev) => isPastEvent(ev))
+    .sort((a, b) => b.startsAt.localeCompare(a.startsAt));
+  return [...upcoming, ...past];
 }
 
 export const UPCOMING: EventItem[] = [
@@ -125,7 +147,8 @@ export const UPCOMING: EventItem[] = [
     topics: ["Meetups"],
     excerpt:
       "Lightning talks and real lessons learned from teams shipping AI in production — cohosted with Nebius Token Factory and Flox at Inngest HQ.",
-    href: "https://luma.com/inngest-77ls",
+    href: "https://www.youtube.com/watch?v=A5D939_aVEE",
+    recording: true,
     image: "/assets/v1/events/ai-in-production-aug-2026.png",
   },
   {
@@ -138,8 +161,10 @@ export const UPCOMING: EventItem[] = [
     excerpt:
       "Swing by the Inngest office for pastries, espresso, and good conversation — drop in anytime, no fixed schedule.",
     href: "/events/innhouse-sf-coffee-chats",
+    // Photograph, so it fills the card: `contain` floated it with card
+    // showing either side, and the overlaid text sits well inside the
+    // ~3% top/bottom that `cover` crops off a 16:9 image in this box.
     image: "/assets/v1/events/innhouse-sf-coffee.png",
-    imageFit: "contain",
   },
   {
     id: "inngest-supper-club-sf",
@@ -153,6 +178,25 @@ export const UPCOMING: EventItem[] = [
     href: "/events/inngest-supper-club-sf",
     image: "/assets/v1/events/inngest-supper-club-sf.png",
     imageFit: "contain",
+  },
+  {
+    id: "the-ai-conference-2026",
+    title: "Meet Inngest at The AI Conference",
+    date: "September 30 – October 1, 2026",
+    startsAt: "2026-09-30T09:00:00-07:00",
+    endsAt: "2026-10-01T18:00:00-07:00",
+    location: "SAN FRANCISCO, CA",
+    topics: ["Events"],
+    excerpt:
+      "Find us at booth #136 at Pier 48. Come see how teams run agents and workflows on infrastructure that lives in their own codebase.",
+    href: "/events/the-ai-conference-2026",
+    // Full-bleed 16:9 artwork, so it fills the card — `contain`
+    // letterboxed it against the frame gradient. The large card's image
+    // column is narrower than 16:9 and so crops the sides: anchor left,
+    // because all the type lives in the left panel and the crop then
+    // lands on the bleed pattern instead.
+    image: "/assets/v1/events/the-ai-conference-2026.png",
+    imagePosition: "left center",
   },
 ];
 
@@ -290,7 +334,8 @@ export const ALL_EVENTS: EventItem[] = sortEventsByDate([
     topics: ["Meetups"],
     excerpt:
       "Lightning talks and real lessons learned from teams shipping AI in production — cohosted with Nebius Token Factory and Flox at Inngest HQ.",
-    href: "https://luma.com/inngest-77ls",
+    href: "https://www.youtube.com/watch?v=A5D939_aVEE",
+    recording: true,
     image: "/assets/v1/events/ai-in-production-aug-2026.png",
   },
   {
@@ -303,8 +348,10 @@ export const ALL_EVENTS: EventItem[] = sortEventsByDate([
     excerpt:
       "Swing by the Inngest office for pastries, espresso, and good conversation — drop in anytime, no fixed schedule.",
     href: "/events/innhouse-sf-coffee-chats",
+    // Photograph, so it fills the card: `contain` floated it with card
+    // showing either side, and the overlaid text sits well inside the
+    // ~3% top/bottom that `cover` crops off a 16:9 image in this box.
     image: "/assets/v1/events/innhouse-sf-coffee.png",
-    imageFit: "contain",
   },
   {
     id: "inngest-supper-club-sf",
@@ -318,6 +365,25 @@ export const ALL_EVENTS: EventItem[] = sortEventsByDate([
     href: "/events/inngest-supper-club-sf",
     image: "/assets/v1/events/inngest-supper-club-sf.png",
     imageFit: "contain",
+  },
+  {
+    id: "the-ai-conference-2026",
+    title: "Meet Inngest at The AI Conference",
+    date: "September 30 – October 1, 2026",
+    startsAt: "2026-09-30T09:00:00-07:00",
+    endsAt: "2026-10-01T18:00:00-07:00",
+    location: "SAN FRANCISCO, CA",
+    topics: ["Events"],
+    excerpt:
+      "Find us at booth #136 at Pier 48. Come see how teams run agents and workflows on infrastructure that lives in their own codebase.",
+    href: "/events/the-ai-conference-2026",
+    // Full-bleed 16:9 artwork, so it fills the card — `contain`
+    // letterboxed it against the frame gradient. The large card's image
+    // column is narrower than 16:9 and so crops the sides: anchor left,
+    // because all the type lives in the left panel and the crop then
+    // lands on the bleed pattern instead.
+    image: "/assets/v1/events/the-ai-conference-2026.png",
+    imagePosition: "left center",
   },
 ]);
 

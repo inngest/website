@@ -1,0 +1,142 @@
+---
+tags:
+  [
+    "Queues & Flow Control",
+    "Durable Execution",
+    "Integrations & Partners",
+    "Tutorials & Guides",
+    "Workflows & Orchestration",
+    "Background Jobs & Scheduling",
+  ]
+heading: "Have lots of SaaS integrations? You don't need lots of reliability models."
+subtitle: "How to build a multi-tenant SaaS sync architecture with one reliability contract—and provider-specific code only where providers actually differ."
+showSubtitle: true
+image: /assets/blog/have-lots-of-saas-integrations-you-dont-need-lots-of-reliability-models/featured-image.png
+date: 2026-08-26
+author: Lauren Craigie
+category: engineering
+---
+
+If your product connects to other SaaS tools on behalf of your customers (Salesforce, HubSpot, Slack, Teams, Notion, Zendesk, etc) you're syncing data per tenant, per provider, at whatever scale your customer base has reached.
+
+If you've got just a few dozen customers, you're gravy. Once you're dealing with thousands of tenants with their own auth flow, rate limits, and pagination… less gravy.
+
+This post is about identifying when that shift will happen for you, and what to do about it.
+
+## When You Need a Multi-Tenant Integration Sync Architecture
+
+Not every integration setup needs this. If you're syncing one or two providers for a handful of customers, a simple job per provider is fine. Don't over-architect early.
+
+You know you're past that point when:
+
+- You're adding a new provider every quarter, and each one takes weeks instead of days
+- One customer's misbehaving Salesforce instance backs up the queue for everyone else's Slack sync
+- Support tickets say "my data is stale" and you genuinely don't know which pipeline is the culprit
+- You have customers in the EU asking, reasonably, where their data is actually processed
+- Your on-call rotation has silently become "whoever understands the HubSpot sync this week"
+
+If that's starting to sound familiar, keep reading.
+
+## Common Approaches to Syncing Multiple SaaS Integrations (and Why They Break)
+
+The default answer is usually one of two things, and both get expensive in the same way.
+
+### A Separate Sync Job Per Provider
+
+You write a Salesforce sync job, a HubSpot sync job, a Slack sync job — and each one gets its own cron schedule, its own retry logic, its own rate-limit handling, because every provider is a little different. This works fine for provider #3. By provider #15 you have 15 slightly-different implementations of pagination, backoff, and partial failure, and nobody wants to touch the old ones because nobody remembers exactly how they handle edge cases.
+
+### A Generic Sync Framework
+
+You try to solve it once, upfront, with a config-driven system that's supposed to handle any provider. This usually works until it doesn't — the first provider with a weird auth flow or a non-standard rate limit header breaks the abstraction, and now you're writing provider-specific escape hatches inside a framework that was supposed to prevent exactly that.
+
+Either way, you end up with the same failure mode: one tenant's bad connection or rate-limited API affects every other tenant sharing that pipeline, because [concurrency](/docs/guides/concurrency?ref=blog-have-lots-of-saas-integrations-you-dont-need-lots-of-reliability-models) and [retries](/docs/guides/error-handling?ref=blog-have-lots-of-saas-integrations-you-dont-need-lots-of-reliability-models) were never scoped per customer to begin with.
+
+## One Reliability Model, Many Provider-Specific Functions
+
+The instinct is to treat "a dozen integrations" as a dozen different problems. It's closer to one problem — sync data reliably from an external API, per customer — with a dozen sets of provider-specific details plugged into it.
+
+Note what that does and doesn't imply. It does *not* mean collapsing everything into a single function that pretends Salesforce and Slack are the same. Teams running this at scale usually end up with many functions, sometimes dozens per provider family, because a mature integration is rarely one sync — it's an initial backfill, an incremental sync, a webhook handler, a token refresh, and a teardown path. What it means is that those functions should share one reliability contract instead of each inventing its own.
+
+Retries, concurrency isolation, and observability are the same problem every time. What's genuinely different between providers is small: the auth, the endpoint, the pagination shape, the object model. Getting that boundary right is the actual win — you keep the freedom to write provider-specific code where providers really differ, and you stop re-deriving backoff and fairness a dozen times.
+
+## How to Build a Per-Tenant SaaS Sync Function
+
+Start with the unit of work: one function, triggered per tenant, per provider. The event carries the provider and tenant as data, so fan-out is just sending more events.
+
+```ts
+await inngest.send({
+  name: "integrations/sync.requested",
+  data: {
+    tenantId: "cust_492",
+    provider: "salesforce",
+    region: "eu",
+  },
+});
+```
+
+A customer with five connected tools sends five events, each handled independently. If Salesforce is slow today, it doesn't touch the Slack sync.
+
+Inside the function, the provider-specific parts sit in [steps](/docs/features/inngest-functions/steps-workflows?ref=blog-have-lots-of-saas-integrations-you-dont-need-lots-of-reliability-models), and the reliability configuration wraps all of them:
+
+```ts
+export const syncProviderData = inngest.createFunction(
+  {
+    id: "sync-provider-data",
+    concurrency: [
+      {
+        // Fairness: at most one sync in flight per tenant
+        key: "event.data.tenantId",
+        limit: 1,
+      },
+      {
+        // Global ceiling that protects your own infrastructure
+        limit: 200,
+      },
+    ],
+    triggers: { event: "integrations/sync.requested" },
+  },
+  async ({ event, step }) => {
+    const { tenantId, provider, region } = event.data;
+
+    const credentials = await step.run("fetch-credentials", async () => {
+      return getStoredCredentials(tenantId, provider);
+    });
+
+    const records = await step.run(`fetch-${provider}-records`, async () => {
+      return providerClients[provider].fetchRecords(credentials);
+    });
+
+    await step.run("write-to-destination", async () => {
+      return region === "eu"
+        ? writeToEuDataStore(tenantId, records)
+        : writeToUsDataStore(tenantId, records);
+    });
+  }
+);
+```
+
+### Scoping Concurrency Per Tenant to Prevent Noisy-Neighbor Failures
+
+Concurrency here is layered via [flow control](/docs/guides/flow-control?ref=blog-have-lots-of-saas-integrations-you-dont-need-lots-of-reliability-models), and the tenant key is the important layer. The keyed limit says: at most one sync in flight per tenant, so customer #492's slow Salesforce sync can't eat capacity meant for customer #493's Slack sync. The unkeyed limit is the global ceiling that protects your own infrastructure.
+
+Teams running this in production almost always use both — a keyed limit of 1 for fairness, a function-wide cap in the hundreds for throughput. Hand-rolled queue setups tend to have only the global one, which is usually why ["one bad customer breaks it for everyone"](/blog/multi-tenant-ai-platform-flow-control?ref=blog-have-lots-of-saas-integrations-you-dont-need-lots-of-reliability-models) shows up in the first place.
+
+### Isolating Provider Differences Behind a Client Lookup
+
+`providerClients[provider]` is just a lookup. The retry behavior, durability, and concurrency scoping around it are identical whether it resolves to Salesforce or Slack. When you add provider #13, you're writing a client and its provider-specific quirks — not a new pipeline, a new schedule, and a new theory of backoff.
+
+### Retrying Individual Steps Without Re-Running the Whole Sync
+
+If `fetch-salesforce-records` fails because their API rate-limited you, only that step retries. The credentials fetch and the destination write don't re-run, and no other tenant's sync is affected while it does.
+
+## Handling EU Data Residency in Multi-Region Integration Syncs
+
+Be realistic here. If your compliance requirement is that EU tenant data is processed on EU infrastructure, you will still run infrastructure in both regions — that part isn't an abstraction problem. What changes is how much of your *application* has to fork to make it happen.
+
+Because the region is on the event, routing is a data decision inside a function that looks the same in both places. Whether you deploy one codebase to two regions or branch on `region` within a single deployment, the sync logic, retry semantics, and per-tenant fairness rules are defined once.
+
+Some teams get all the way to a single set of functions deployed per region. Others end up with a regional variant of each function sharing the same core logic. Both are dramatically better than the version where EU is a separate project with its own retry rules — the one that drifts every time a provider changes its auth flow.
+
+## Dozens of Integrations, One Sync Architecture to Maintain
+
+Not "dozens of providers, one function." Something more useful: dozens of providers, many functions, and *one* model for retries, concurrency, and per-tenant isolation — so the only thing you maintain per provider is the part that's genuinely provider-specific.

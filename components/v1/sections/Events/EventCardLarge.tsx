@@ -22,14 +22,20 @@ export default function EventCardLarge({ ev, newTab }: { ev: EventItem; newTab?:
       {/* Image column — placeholder stretched to cover. Desktop width
           is the fixed 32.51% column and height comes from the row
           stretch; mobile uses 16/9 so the image still has a visible area
-          when the columns stack. */}
+          when the columns stack.
+
+          Carries no fill of its own: because the height is content-driven
+          the column's aspect is arbitrary, so a `contain` image nearly
+          always letterboxes. Painting it black put a hard black band
+          above and below the art; transparent lets the frame's gradient
+          show through instead, so the bars read as card surface. */}
       <div
         aria-hidden="true"
-        className={`relative aspect-[16/9] w-full shrink-0 sm:aspect-auto sm:w-[32.513%]${ev.image ? "" : " opacity-10"}${ev.imageFit === "contain" ? " bg-black" : ""}`}
+        className={`relative aspect-[16/9] w-full shrink-0 sm:aspect-auto sm:w-[32.513%]${ev.image ? "" : " opacity-10"}`}
         style={{
           backgroundImage: `url(${ev.image ?? "/assets/v1/events/event-placeholder.png"})`,
           backgroundSize: ev.imageFit ?? "cover",
-          backgroundPosition: "center",
+          backgroundPosition: ev.imagePosition ?? "center",
           backgroundRepeat: "no-repeat",
         }}
       >
@@ -71,7 +77,9 @@ export default function EventCardLarge({ ev, newTab }: { ev: EventItem; newTab?:
         </div>
         <p className="text-v1-body-xs text-white/80">{ev.excerpt}</p>
         <div className="py-1">
-          <RegisterCue label={isPastEvent(ev) ? "View event details" : "Register"} />
+          <RegisterCue
+            label={ev.recording ? "Watch recording" : isPastEvent(ev) ? "View event details" : "Register"}
+          />
         </div>
       </div>
       </SpotlightFrame>

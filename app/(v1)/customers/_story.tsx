@@ -44,6 +44,8 @@ export type Frontmatter = {
   companyIndustry?: string;
   companyUseCase?: string;
   ogImage?: string;
+  /** Optional secondary pill beside the "Customer story" chip. */
+  pill?: string;
 };
 
 export const listCustomerSlugs = cache((): string[] => {
@@ -69,7 +71,7 @@ const readStudy = cache(
       }
     }
     return null;
-  },
+  }
 );
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -90,7 +92,11 @@ export function customerMetadata(slug: string): Metadata {
   const { data } = post;
   const host = process.env.NEXT_PUBLIC_HOST ?? "";
   const metaTitle = `Customer story - ${data.companyName}`;
-  const image = data.ogImage ? `${host}${data.ogImage}` : undefined;
+  const image = data.ogImage
+    ? data.ogImage.startsWith("http")
+      ? data.ogImage
+      : `${host}${data.ogImage}`
+    : undefined;
   return {
     title: { absolute: metaTitle },
     description: data.title,
@@ -118,6 +124,7 @@ function buildStoryData(data: Frontmatter, content: string): CustomerStoryData {
     .join(", ");
   return {
     tag: "Customer story",
+    pill: data.pill,
     title: data.title,
     author: data.quote?.attribution?.name,
     readTime: readingTime(content).text,

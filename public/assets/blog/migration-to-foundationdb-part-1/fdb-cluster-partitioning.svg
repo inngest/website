@@ -1,0 +1,87 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="960" height="560" viewBox="0 0 960 560" role="img" aria-labelledby="title2 desc2">
+  <title id="title2">FoundationDB cluster partitioning by billing tier</title>
+  <desc id="desc2">Metadata service assigns accounts into logical shards inside separate FoundationDB clusters for free, self-serve, and enterprise tiers.</desc>
+  <rect width="960" height="560" fill="#ffffff"/>
+
+  <text x="480" y="36" text-anchor="middle" fill="#0f172a" font-family="Inter, Segoe UI, Helvetica, Arial, sans-serif" font-size="15" font-weight="700">FoundationDB layout: physical clusters and logical shards</text>
+
+  <rect x="40" y="64" width="160" height="72" rx="8" fill="#f1f5f9" stroke="#cbd5e1" stroke-width="1.5"/>
+  <text x="120" y="94" text-anchor="middle" fill="#0f172a" font-family="Inter, Segoe UI, Helvetica, Arial, sans-serif" font-size="12" font-weight="600">Producers</text>
+  <text x="120" y="114" text-anchor="middle" fill="#64748b" font-family="Inter, Segoe UI, Helvetica, Arial, sans-serif" font-size="10">enqueue / schedule</text>
+
+  <line x1="200" y1="100" x2="268" y2="100" stroke="#64748b" stroke-width="1.5"/>
+  <polygon points="268,96 280,100 268,104" fill="#64748b"/>
+
+  <rect x="280" y="56" width="400" height="88" rx="10" fill="#ecfdf5" stroke="#34d399" stroke-width="1.75"/>
+  <text x="480" y="88" text-anchor="middle" fill="#065f46" font-family="Inter, Segoe UI, Helvetica, Arial, sans-serif" font-size="13" font-weight="700">Metadata and routing service</text>
+  <text x="480" y="110" text-anchor="middle" fill="#047857" font-family="Inter, Segoe UI, Helvetica, Arial, sans-serif" font-size="11">Maps accounts to logical shards; owns topology</text>
+  <text x="480" y="128" text-anchor="middle" fill="#059669" font-family="Inter, Segoe UI, Helvetica, Arial, sans-serif" font-size="10">Separate FoundationDB cluster for metadata</text>
+
+  <line x1="360" y1="144" x2="200" y2="188" stroke="#94a3b8" stroke-width="1.25"/>
+  <line x1="480" y1="144" x2="480" y2="188" stroke="#94a3b8" stroke-width="1.25"/>
+  <line x1="600" y1="144" x2="760" y2="188" stroke="#94a3b8" stroke-width="1.25"/>
+
+  <rect x="40" y="188" width="280" height="320" rx="10" fill="#f8fafc" stroke="#e2e8f0" stroke-width="1.5"/>
+  <rect x="40" y="188" width="280" height="40" rx="10" fill="#dbeafe"/>
+  <rect x="40" y="208" width="280" height="20" fill="#dbeafe"/>
+  <text x="180" y="214" text-anchor="middle" fill="#1e3a8a" font-family="Inter, Segoe UI, Helvetica, Arial, sans-serif" font-size="12" font-weight="700">Free - physical FDB cluster</text>
+
+  <text x="56" y="252" fill="#475569" font-family="Inter, Segoe UI, Helvetica, Arial, sans-serif" font-size="10" font-weight="600">LOGICAL SHARDS</text>
+
+  <rect x="56" y="264" width="248" height="52" rx="6" fill="#ffffff" stroke="#93c5fd" stroke-width="1.25"/>
+  <text x="180" y="286" text-anchor="middle" fill="#1e40af" font-family="Inter, Segoe UI, Helvetica, Arial, sans-serif" font-size="11" font-weight="600">Shard A</text>
+  <text x="180" y="304" text-anchor="middle" fill="#64748b" font-family="Inter, Segoe UI, Helvetica, Arial, sans-serif" font-size="10">accounts, auto-assigned</text>
+
+  <rect x="56" y="328" width="248" height="52" rx="6" fill="#ffffff" stroke="#93c5fd" stroke-width="1.25"/>
+  <text x="180" y="350" text-anchor="middle" fill="#1e40af" font-family="Inter, Segoe UI, Helvetica, Arial, sans-serif" font-size="11" font-weight="600">Shard B</text>
+  <text x="180" y="368" text-anchor="middle" fill="#64748b" font-family="Inter, Segoe UI, Helvetica, Arial, sans-serif" font-size="10">accounts, auto-assigned</text>
+
+  <rect x="56" y="392" width="248" height="52" rx="6" fill="#ffffff" stroke="#93c5fd" stroke-width="1.25"/>
+  <text x="180" y="414" text-anchor="middle" fill="#1e40af" font-family="Inter, Segoe UI, Helvetica, Arial, sans-serif" font-size="11" font-weight="600">Shard C</text>
+  <text x="180" y="432" text-anchor="middle" fill="#64748b" font-family="Inter, Segoe UI, Helvetica, Arial, sans-serif" font-size="10">accounts, auto-assigned</text>
+
+  <text x="180" y="478" text-anchor="middle" fill="#64748b" font-family="Inter, Segoe UI, Helvetica, Arial, sans-serif" font-size="10">Disk-backed, shared within tier</text>
+
+  <rect x="340" y="188" width="280" height="320" rx="10" fill="#f8fafc" stroke="#e2e8f0" stroke-width="1.5"/>
+  <rect x="340" y="188" width="280" height="40" rx="10" fill="#dcfce7"/>
+  <rect x="340" y="208" width="280" height="20" fill="#dcfce7"/>
+  <text x="480" y="214" text-anchor="middle" fill="#14532d" font-family="Inter, Segoe UI, Helvetica, Arial, sans-serif" font-size="12" font-weight="700">Self-serve - physical FDB cluster</text>
+
+  <text x="356" y="252" fill="#475569" font-family="Inter, Segoe UI, Helvetica, Arial, sans-serif" font-size="10" font-weight="600">LOGICAL SHARDS</text>
+
+  <rect x="356" y="264" width="248" height="52" rx="6" fill="#ffffff" stroke="#86efac" stroke-width="1.25"/>
+  <text x="480" y="286" text-anchor="middle" fill="#166534" font-family="Inter, Segoe UI, Helvetica, Arial, sans-serif" font-size="11" font-weight="600">Shard D</text>
+  <text x="480" y="304" text-anchor="middle" fill="#64748b" font-family="Inter, Segoe UI, Helvetica, Arial, sans-serif" font-size="10">accounts, auto-assigned</text>
+
+  <rect x="356" y="328" width="248" height="52" rx="6" fill="#ffffff" stroke="#86efac" stroke-width="1.25"/>
+  <text x="480" y="350" text-anchor="middle" fill="#166534" font-family="Inter, Segoe UI, Helvetica, Arial, sans-serif" font-size="11" font-weight="600">Shard E</text>
+  <text x="480" y="368" text-anchor="middle" fill="#64748b" font-family="Inter, Segoe UI, Helvetica, Arial, sans-serif" font-size="10">accounts, auto-assigned</text>
+
+  <rect x="356" y="392" width="248" height="52" rx="6" fill="#ffffff" stroke="#86efac" stroke-width="1.25"/>
+  <text x="480" y="414" text-anchor="middle" fill="#166534" font-family="Inter, Segoe UI, Helvetica, Arial, sans-serif" font-size="11" font-weight="600">Shard F</text>
+  <text x="480" y="432" text-anchor="middle" fill="#64748b" font-family="Inter, Segoe UI, Helvetica, Arial, sans-serif" font-size="10">accounts, auto-assigned</text>
+
+  <text x="480" y="478" text-anchor="middle" fill="#64748b" font-family="Inter, Segoe UI, Helvetica, Arial, sans-serif" font-size="10">Scale by adding disks and compute</text>
+
+  <rect x="640" y="188" width="280" height="320" rx="10" fill="#f8fafc" stroke="#e2e8f0" stroke-width="1.5"/>
+  <rect x="640" y="188" width="280" height="40" rx="10" fill="#fef3c7"/>
+  <rect x="640" y="208" width="280" height="20" fill="#fef3c7"/>
+  <text x="780" y="214" text-anchor="middle" fill="#92400e" font-family="Inter, Segoe UI, Helvetica, Arial, sans-serif" font-size="12" font-weight="700">Enterprise - physical FDB cluster</text>
+
+  <text x="656" y="252" fill="#475569" font-family="Inter, Segoe UI, Helvetica, Arial, sans-serif" font-size="10" font-weight="600">LOGICAL SHARDS</text>
+
+  <rect x="656" y="264" width="248" height="52" rx="6" fill="#ffffff" stroke="#fbbf24" stroke-width="1.25"/>
+  <text x="780" y="286" text-anchor="middle" fill="#92400e" font-family="Inter, Segoe UI, Helvetica, Arial, sans-serif" font-size="11" font-weight="600">Shared shard G</text>
+  <text x="780" y="304" text-anchor="middle" fill="#64748b" font-family="Inter, Segoe UI, Helvetica, Arial, sans-serif" font-size="10">multi-tenant enterprise</text>
+
+  <rect x="656" y="328" width="248" height="68" rx="6" fill="#ffffff" stroke="#f59e0b" stroke-width="1.75"/>
+  <text x="780" y="352" text-anchor="middle" fill="#92400e" font-family="Inter, Segoe UI, Helvetica, Arial, sans-serif" font-size="11" font-weight="700">Dedicated shard H</text>
+  <text x="780" y="370" text-anchor="middle" fill="#64748b" font-family="Inter, Segoe UI, Helvetica, Arial, sans-serif" font-size="10">single large customer</text>
+  <text x="780" y="386" text-anchor="middle" fill="#b45309" font-family="Inter, Segoe UI, Helvetica, Arial, sans-serif" font-size="10">configurable executor count</text>
+
+  <rect x="656" y="412" width="248" height="52" rx="6" fill="#ffffff" stroke="#fbbf24" stroke-width="1.25"/>
+  <text x="780" y="434" text-anchor="middle" fill="#92400e" font-family="Inter, Segoe UI, Helvetica, Arial, sans-serif" font-size="11" font-weight="600">Shard I</text>
+  <text x="780" y="452" text-anchor="middle" fill="#64748b" font-family="Inter, Segoe UI, Helvetica, Arial, sans-serif" font-size="10">accounts, auto-assigned</text>
+
+  <text x="780" y="490" text-anchor="middle" fill="#64748b" font-family="Inter, Segoe UI, Helvetica, Arial, sans-serif" font-size="10">Isolation without hand-wired clusters</text>
+</svg>

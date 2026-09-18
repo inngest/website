@@ -1,5 +1,6 @@
 import PageShell from "@/components/v1/PageShell";
 import AILoops from "@/components/v1/sections/Observability/AILoops";
+import DeveloperQuotes from "@/components/v1/sections/Observability/DeveloperQuotes";
 import FasterResolution from "@/components/v1/sections/Observability/FasterResolution";
 import FinalCTA from "@/components/v1/sections/Observability/FinalCTA";
 import FullObservability from "@/components/v1/sections/Observability/FullObservability";
@@ -16,6 +17,7 @@ export default function Observability() {
         <FullObservability />
         <FasterResolution />
         <Insights />
+        <DeveloperQuotes />
         <AILoops />
         <FinalCTA />
       </div>

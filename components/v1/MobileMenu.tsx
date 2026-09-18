@@ -23,6 +23,7 @@ import {
   type NavMenuItem,
 } from "@/components/v1/nav-config";
 import { appendRef } from "@/utils/v1/ref";
+import { handleStartFreeClick } from "@/utils/v1/startFreeCta";
 import { cn } from "@/utils/v1/cn";
 
 /** Flatten a NavMenu into the rows shown in the mobile accordion —
@@ -173,7 +174,13 @@ export default function MobileMenu({ isOpen, onClose }: MobileMenuProps) {
                 </a>
               </Button>
               <Button asChild variant="pill" size="lg" className="!w-full">
-                <a href={appendRef(SIGN_UP_URL, "nav")} onClick={onClose}>
+                <a
+                  href={appendRef(SIGN_UP_URL, "nav")}
+                  onClick={(event) => {
+                    onClose();
+                    handleStartFreeClick(appendRef(SIGN_UP_URL, "nav"))(event);
+                  }}
+                >
                   Start free
                 </a>
               </Button>

@@ -4,6 +4,7 @@ import { CardGroup, Card, ImageTheme } from "src/shared/Docs/mdx";
 
 import {
   RiGitPullRequestFill,
+  RiGroupLine,
   RiSlowDownFill,
   RiSkipRightFill,
 } from "@remixicon/react";
@@ -20,6 +21,9 @@ There are several methods to manage flow control for each Inngest function. Lear
 
 
 <CardGroup cols={1}>
+  <Card title="Multi-tenancy" icon={<RiGroupLine className="text-basis h-4 w-4" />} href={'/docs/guides/multi-tenancy?ref=docs-flow-control'}>
+    Group queued work by tenant or resource to reduce head-of-line blocking and provide best-effort fairness.
+  </Card>
   <Card title="Concurrency" icon={<IconConcurrency className="text-basis h-4 w-4" />} href={'/docs/guides/concurrency'}>
     Limit the number of executing steps across your function runs. Ideal for limiting concurrent workloads by user, resource, or in general.
   </Card>

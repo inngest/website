@@ -7,6 +7,8 @@ export const description = "Set up OpenTelemetry with Inngest for AI metadata ex
 
 OpenTelemetry lets Inngest connect what happens inside a function run to the libraries, model calls, services, and databases your code uses.
 
+Want a copy-paste Express tutorial first? See [OpenTelemetry in Node.js](/blog/opentelemetry-nodejs-tracing-express-inngest?ref=docs-examples-open-telemetry) for `@opentelemetry/sdk-node`, OTLP export, and Jaeger.
+
 Inngest uses OpenTelemetry for two separate features:
 
 - **AI metadata extraction:** Extract AI metadata from OpenTelemetry spans with OpenTelemetry GenAI attributes and attach it to the step where the model call happened. This is enabled by default with `aiMetadata: true`.

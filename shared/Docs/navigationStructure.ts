@@ -500,6 +500,7 @@ const sectionLearn: (NavGroup | NavLink)[] = [
         title: "How Durable execution works",
         href: `/docs/learn/how-functions-are-executed`,
       },
+      { title: "Cloud architecture", href: `/docs/architecture` },
       {
         title: "Durable Functions",
         links: [
@@ -611,6 +612,7 @@ const sectionLearn: (NavGroup | NavLink)[] = [
         title: "Flow control",
         links: [
           { title: "Overview", href: `/docs/guides/flow-control` },
+          { title: "Multi-tenancy", href: `/docs/guides/multi-tenancy` },
           { title: "Concurrency", href: `/docs/guides/concurrency` },
           { title: "Throttling", href: `/docs/guides/throttling` },
           { title: "Batching", href: `/docs/guides/batching` },
@@ -793,7 +795,6 @@ const sectionLearn: (NavGroup | NavLink)[] = [
           {
             title: "Connect (workers)",
             href: `/docs/setup/connect`,
-            tag: "beta",
           },
           {
             title: "Checkpointing",

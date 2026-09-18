@@ -1,12 +1,13 @@
 ---
 tags: ["Durable Execution", "AI & Agents", "Tutorials & Guides", "Next.js & Frameworks"]
-heading: "How to Build a Durable AI Agent with Inngest"
+heading: "How to Build AI Agents That Don't Fail Silently"
 subtitle: "Use Inngest's step primitives to build resilient, observable AI agents without a heavyweight framework."
 image: "/assets/blog/ai-agents-inngest-durable-steps/featured-image.jpg"
-date: 2026-03-17
+date: "2026-08-10"
+dateUpdated: "2026-08-10"
 category: engineering
 author: Dan Farrelly
-showSubtitle: true
+showSubtitle: false
 primaryCTA: "report2026"
 sidebarCta:
   text: "Durable steps for agents. Each step retries on its own, no restarts."
@@ -14,17 +15,19 @@ sidebarCta:
   href: "/docs/features/inngest-functions/steps-workflows?ref=blog-ai-agents-inngest-durable-steps-sidebar"
 ---
 
-Most AI agent tutorials stop at the happy path — call the LLM, run a tool, loop. But the moment you ship an agent to production, you hit the real problems: tool calls fail, LLM providers rate-limit you, long-running tasks time out, and you can't see what the hell happened when something goes wrong.
+Most AI agents don't crash spectacularly — they fail silently. A tool returns bad data and the loop keeps going. An LLM call times out mid-turn and you get a partial answer that looks complete. Rate limits, invalid tool arguments, and swallowed errors look like success until a user notices days later. That's the **AI agent reliability** problem: without **step-level visibility** and solid **AI agent error handling**, you can't tell where the agent went wrong.
 
-This post walks through building an AI agent on Inngest that handles all of that. We'll cover the agent loop, durable tool execution, observability, and sub-agent delegation with real code. (For a higher-level look at [durable context management and debugging](/blog/building-durable-agents?ref=blog-ai-agents-inngest-durable-steps), see our companion guide.)
+Most tutorials stop at the happy path — call the LLM, run a tool, loop. But the moment you ship an agent to production, you hit those silent failures: tool calls fail, providers rate-limit you, long-running tasks time out, and you can't see what the hell happened when something goes wrong.
 
-You'll need Inngest, an LLM provider (Anthropic, OpenAI, whatever), and TypeScript. The patterns work regardless of which SDK you use.
+This post walks through building an agent that handles all of that. We'll cover the agent loop, durable tool execution, observability, and sub-agent delegation with real code. (For a higher-level look at [durable context management and debugging](/blog/building-durable-agents?ref=blog-ai-agents-inngest-durable-steps), see our companion guide.)
+
+You'll need an LLM provider (Anthropic, OpenAI, whatever) and TypeScript. The patterns work regardless of which model SDK you use.
 
 ---
 
 ## Three Primitives — All You Need
 
-If you're new to Inngest, here's the short version: any AI agent is really just a series of steps. An LLM call is a step. A tool execution is a step. Saving data is a step. Inngest makes each step durable - tracked, retryable, and resumable if something crashes.
+If you're new to Inngest, here's the short version: any AI agent is really just a series of steps. An LLM call is a step. A tool execution is a step. Saving data is a step. Inngest makes each step durable — tracked, retryable, and resumable if something crashes — which is how you get **durable AI agents** instead of silent failures.
 
 You only need three primitives to build a full agent:
 
@@ -41,7 +44,7 @@ That's it. Everything in this post builds on those three. Let's go.
 If you’re just getting started with Inngest, you’ll need Node.js 18+ and a free [Inngest account](/?ref=blog-ai-agents-inngest-durable-steps). Framework-specific quickstarts for [Next.js](/docs/getting-started/nextjs-quick-start?ref=blog-ai-agents-inngest-durable-steps), [Node.js](/docs/getting-started/nodejs-quick-start?ref=blog-ai-agents-inngest-durable-steps), and [Python](/docs/getting-started/python-quick-start?ref=blog-ai-agents-inngest-durable-steps) are in the docs if you need them.
 
 ```bash
-npm install inngest
+pnpm add inngest
 ```
 
 Initialize a client:
@@ -55,10 +58,10 @@ export const inngest = new Inngest({ id: "ai-agent" });
 To run functions locally, start the Inngest dev server alongside your app:
 
 ```bash
-# Install the CLI - follow the steps to complete install:
+# Install the CLI — follow the steps to complete install:
 curl -sSfL https://cli.inngest.com/install.sh | sh
 # Run the dev server
-inngest dev
+npx inngest-cli@latest dev
 ```
 
 Then serve your functions over HTTP. Here's a Next.js example — the pattern is the same for Express, Hono, or any other framework:
@@ -210,7 +213,7 @@ A few things to call out:
 
 - **`singleton`** is [a flow control option](/docs/guides/singleton?ref=blog-ai-agents-inngest-durable-steps) that ensures only one run per session at a time. If a user sends a second message while the agent is still thinking, the in-flight run gets cancelled and the new one starts. No race conditions, no duplicate replies. Explore [other flow control options](/docs/guides/flow-control?ref=blog-ai-agents-inngest-durable-steps) for your use case.
 - **The reply is just another step**. You can handle where to send the result at the end within another step, send a reply in Slack, an email, write to a database, also retried on error.
-- **`retries: 2`** means if the entire function fails (LLM provider down, unhandled error), Inngest retries it. Combined with step-level durability, this covers both transient and persistent failures. Increase or decrease the retries to suit your needs ([docs](/docs/features/inngest-functions/error-retries/retries?ref=blog-ai-agents-inngest-durable-steps)).
+- **`retries: 2`** means if the entire function fails (LLM provider down, unhandled error), Inngest retries it. Combined with step-level durability, this covers both transient and persistent failures — practical **AI agent error handling** without wrapping every call yourself. Increase or decrease the retries to suit your needs ([docs](/docs/features/inngest-functions/error-retries/retries?ref=blog-ai-agents-inngest-durable-steps)).
 
 ---
 
@@ -220,22 +223,18 @@ This is where Inngest's step model really pays off. Every tool call runs inside 
 
 ```tsx
 for (const tc of toolCalls) {
-  const toolResult = await step.run(
-    `tool-${tc.name}`,
-    async ({ name, id, args }) => {
-      const tool = tools.find((t) => t.name === name);
-      if (tool) {
-        validateToolArguments(tool, {
-          type: "toolCall",
-          name,
-          id,
-          arguments: args,
-        });
-      }
-      return await executeTool(id, name, args);
-    },
-    { name: tc.name, id: tc.id, args: tc.arguments },
-  );
+  const toolResult = await step.run(`tool-${tc.name}`, async () => {
+    const tool = tools.find((t) => t.name === tc.name);
+    if (tool) {
+      validateToolArguments(tool, {
+        type: "toolCall",
+        name: tc.name,
+        id: tc.id,
+        arguments: tc.arguments,
+      });
+    }
+    return await executeTool(tc.id, tc.name, tc.arguments);
+  });
 
   messages.push({
     role: "toolResult",
@@ -249,17 +248,21 @@ for (const tc of toolCalls) {
 
 Why does this matter?
 
-1. **Each tool call is independently retryable.** If a `bash` command times out, Inngest retries that step — not the entire loop iteration.
+1. **Each tool call is independently retryable.** If a `bash` command times out, Inngest retries that step — not the entire loop iteration. That's the core of **AI agent error handling** at the step level.
 2. **Tool results are memoized.** If the function restarts (process crash, deployment, scaling), completed tool steps return their cached results instantly. No re-execution.
 3. **You get a trace per tool call.** In the Inngest dashboard, you see every tool invocation as a discrete step with its input, output, and duration. More on this next.
+
+Step-level retries are what keep agents from failing silently *and* from failing expensively. A flaky tool or rate-limited LLM call should retry that step alone — not re-run every prior `think` and tool invocation you already paid for. The same memoization that powers automatic retries also lets you [rerun from a specific step](/docs/platform/manage/rerun-function-runs?ref=blog-ai-agents-inngest-durable-steps) after a run finishes (succeeded or failed), so you can iterate on a prompt or tool input without replaying the whole loop. We cover why that matters for AI cost and side effects in [Don't pay for the same step twice](/blog/dont-pay-for-the-same-step-twice?ref=blog-ai-agents-inngest-durable-steps).
 
 The tool execution itself is just a switch statement or function dispatcher — implement it however you want. The important thing is that `executeTool` returns `{ result: string }` (or `{ result: string, error: true }` on failure). The step wrapper handles durability and observability; you just write the tool logic.
 
 ---
 
-## Observability: Traces for Free
+## Step-level observability for AI agents
 
-This is one of the things that surprised me most. When you run an agent loop with Inngest steps, you get detailed traces in the dashboard with no extra instrumentation.
+Silent failures are an observability problem as much as a reliability one. LLM-only logs tell you a model responded. They rarely show which tool ran, what it returned, or which iteration went sideways. **Agent observability** needs **step-level visibility**: every `think` and every tool call as its own span, with inputs, outputs, timing, and errors.
+
+This is one of the things that surprised me most. When you run an agent loop with Inngest steps, you get detailed traces in the dashboard with no extra instrumentation — the same step-level model that powers durable execution is also your **agent observability platform**.
 
 Each function run shows:
 
@@ -268,13 +271,16 @@ Each function run shows:
 - **Timing** — how long each LLM call took, how long each tool ran
 - **Token usage and costs** — logged per iteration via the step output
 
-When something goes wrong — the agent loops too many times, a tool returns an error, the LLM hallucinates a bad tool call — you open the trace and see exactly what happened at each step. No `console.log` archaeology. No custom telemetry pipeline.
+When something goes wrong — the agent loops too many times, a tool returns an error, the LLM hallucinates a bad tool call — you open the trace and see exactly what happened at each step. No `console.log` archaeology. No custom telemetry pipeline. That's how you catch agents that would otherwise fail silently.
+
+For a broader look at traces, metrics, and debugging across LLM workflows and background jobs, see our [LLM & Background Job Observability](/platform/observability?ref=blog-ai-agents-inngest-durable-steps) hub.
 
 ![Screenshot of Inngest extended traces UI](/assets/blog/ai-agents-inngest-durable-steps/extended_traces.png)
 
-You can also leverage our [extended traces middleware](/docs/reference/typescript/v4/extended-traces?ref=blog-ai-agents-inngest-durable-steps) which uses OpenTelemetry to automatically capture additional trace spans from within your steps. To get extended traces, add the middleware:
+You can also leverage our [extended traces middleware](/docs/reference/typescript/v4/extended-traces?ref=blog-ai-agents-inngest-durable-steps), which uses OpenTelemetry to automatically capture additional trace spans from within your steps. If your app doesn't already configure OpenTelemetry, preload `@inngest/otel` (for example `node --import @inngest/otel/node`), then add the middleware:
 
 ```tsx
+import { Inngest } from "inngest";
 import { extendedTracesMiddleware } from "inngest/experimental";
 
 export const inngest = new Inngest({
@@ -283,7 +289,7 @@ export const inngest = new Inngest({
 });
 ```
 
-That's it. Every step's arguments and return values show up in the Inngest dashboard. For an agent that might run 15+ steps per conversation turn, this is the difference between debugging blind and having a complete execution history.
+That's it. Every step's arguments and return values show up in the Inngest dashboard. For an agent that might run 15+ steps per conversation turn, this is the difference between debugging blind and having complete **AI agent observability** — one of the few **agent observability tools** that comes from the execution model itself, not a bolted-on logger.
 
 ---
 
@@ -335,15 +341,15 @@ Here's the full picture in a few steps:
 3. **The agent loop** thinks, acts, observes — delegating to sub-agents when needed via `step.invoke()` or `step.sendEvent()`.
 4. **The agent replies** with the result.
 
-You [don't need an agent framework](/blog/your-agent-needs-a-harness-not-a-framework?ref=blog-ai-agents-inngest-durable-steps) for this, it's durable functions, events and steps. This model is extremely flexible to enable you to iterate in areas of context engineering or cost controls or end user experience. Inngest provides the underlying orchestration that makes it all reliable and observable.
+You [don't need an agent framework](/blog/your-agent-needs-a-harness-not-a-framework?ref=blog-ai-agents-inngest-durable-steps) for this — it's durable functions, events, and steps. This model is extremely flexible for iterating on context engineering, cost controls, or end-user experience. Inngest provides the underlying orchestration that makes durable AI agents reliable and observable.
 
 ---
 
 ## Start Building
 
-Dive into our docs or check out [this reference repo](https://github.com/inngest/utah) which builds on these patterns.
+Dive into our docs or check out [this reference repo](https://github.com/inngest/utah) which builds on these patterns. For step-level traces across agents and jobs, start from the [observability hub](/platform/observability?ref=blog-ai-agents-inngest-durable-steps).
 
-All of these same patterns work for support bots, coding agents, research agents, automations. You can use them in any place where an LLM needs to take actions reliably.
+All of these same patterns work for support bots, coding agents, research agents, automations. You can use them in any place where an LLM needs to take actions reliably — without failing silently.
 
 **Key Inngest primitives used:**
 
@@ -354,7 +360,7 @@ All of these same patterns work for support bots, coding agents, research agents
 | Async sub-agent | `step.sendEvent()` | *Covered in next post* |
 | Scheduled sub-agent | `step.sendEvent()` + `ts` | *Covered in next post* |
 | Singleton | `singleton` config | One run per session |
-| Observability | `extendedTracesMiddleware` | Full step-level traces |
+| Observability | `extendedTracesMiddleware` | Step-level visibility / agent observability |
 | Reply events | `step.run()` | Handle the result |
 
 Check out the [Inngest docs](/docs?ref=blog-ai-agents-inngest-durable-steps) for more on steps, invoke, and event-driven functions. To add approval gates to your agent, see the [human-in-the-loop pattern](/docs/ai-patterns/human-in-the-loop?ref=blog-ai-agents-inngest-durable-steps).

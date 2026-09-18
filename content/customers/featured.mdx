@@ -1,0 +1,143 @@
+---
+title: Featured's orchestration layer used to be eight people
+companyName: Featured
+logo: https://cdn.inngest.com/customers/featured/04_Featured_Main%20Logo_White_RGB.png
+companyIndustry: "Journalism and PR Media"
+companyUseCase: "Job Orchestration/AI Agent"
+quote:
+  text: "Inngest helps our trains (workflows) run; without losing sleep or manually shoveling coal into an engine."
+  attribution:
+    name: "Brett Farmiloe and the Featured team"
+    title: "CTO, Featured"
+  avatar: https://cdn.inngest.com/customers/featured/1740506975380.jpg
+companyURL: 'https://featured.com'
+companyDescription: "How Connectively, HARO, and Featured run three brands and 2,500 articles a month on a team of seven — and where the reliable, boring layer underneath actually draws its lines."
+ogImage: https://cdn.inngest.com/customers/featured/Feature.png
+---
+
+In 2020, Featured's orchestration layer was eight people.
+
+There was a Content Strategist who worked with publishers to shape questions. Two Community Outreach specialists who recruited experts and chased answers. A Technical SEO manager who posted finished articles to publisher sites by hand. A few staff writers who read the responses picked the good ones and wrote the sections. And a Digital PR Manager holding the whole thing together. Brett Farmiloe, who founded the company, describes that group plainly: "a team of 8 or so people that were the orchestration layer to make sure things ran reliably."
+
+Today that orchestration layer is software, and a team of seven runs all three brands.
+
+Featured is a PR co-pilot, and the company behind two of the best-known names in earned media. HARO (Help a Reporter Out), revived in April 2025, sends more than 100 million emails a year to over 60,000 journalists. Connectively, its expert-response platform, is now past 100,000 members, and between them the two have fielded upward of 2.5 million pitches. Brett's mission for all of it is to "unlock the full potential of human knowledge, one answer at a time." Doing that at scale — matching the right experts to the right questions, and getting finished content to publishers on time, every day — is a systems problem before it's anything else.
+
+This is the story of how that pipeline runs — how seven people ship 2,500 articles a month against hard deadlines on durable orchestration they never have to operate.
+
+## How Featured runs three brands with a seven-person team
+
+Connectively works a little like a decentralized Quora built for publishers. A publisher posts a question to fill a content gap on their site. Connectively approves it, invites vetted experts to answer, and collects responses up to a stated deadline; on average, 42 answers per question. When the deadline hits, the system selects the best answers, structures them into a ready-to-publish article, and pushes it to the publisher's site as a draft or a live post. Then it notifies the experts who made the cut, with the article link and suggestions for sharing, so the publisher never has to.
+
+The deadline is the promise everything else bends around. A publisher came to Connectively to stop worrying about a content gap. Miss the deadline and that promise flips: now they're worrying again, except later, with less time to fix it. Brett is blunt about the cost. Most articles succeed; when one fails, it's usually because a hyper-specific question didn't draw enough quality answers. What actually gets damaged is trust: "When publishers can't trust Connectively to deliver a ready-to-be published article at their deadline, they move on and find a provider or solution that will deliver." Retention rides on that, and the whole system is designed backward from it.
+
+## From deadline to published article
+
+### How runs get triggered: a cron sweep, not a durable timer
+
+Everything in this section is how the pipeline runs today on Inngest. The first interesting decision is how a run even begins. You might expect a durable timer: the moment a question opens, start one that sleeps until the exact deadline, then wakes and fires the run. Inngest will do that, precise to the second. 
+
+Featured picked the other option Inngest offers instead, on purpose: a cron that sweeps every 15 minutes for questions whose deadline has passed, starting a run for each one it finds. The reason is a real-world detail a timer handles badly: publishers move deadlines. 
+
+A sleeping timer holds the deadline it was created with, so a change means canceling and rescheduling it. The sweep just re-reads the current deadline on every pass, so a publisher pushing a deadline back two days is handled by nothing at all: no special code, no timer to cancel, no stale wake-up to defend against. 
+
+While they aren’t concerned with immediacy, a run can start up to 15 minutes late; what they won't give up is the opposite, firing early. By construction, the sweep never closes a question ahead of its deadline, because closing early would mean throwing away answers that were still on their way.
+
+In Inngest terms, that sweep is an ordinary cron function that re-reads the database on every pass:
+
+```tsx
+// inngest/functions/close-question-sweep.ts — illustrative sketch
+//
+// The "checked, not remembered" decision, in code. A cron re-reads which
+// questions are actually past their *current* deadline every 15 minutes,
+// instead of a durable timer sleeping on a deadline that may have moved.
+export const closeQuestionSweep = inngest.createFunction(
+  { id: "close-question-sweep", triggers: { cron: "*/15 * * * *" } },
+  async ({ step }) => {
+    // Re-read current state on every pass. A publisher who pushed a deadline
+    // is handled by nothing at all: no timer to cancel, no stale wake-up.
+    const due = await step.run("find-due-questions", async () =>
+      db.query.questions.findMany({
+        where: (q, { and, eq, lte }) =>
+          and(eq(q.status, "open"), lte(q.closeAt, new Date())),
+      })
+    );
+
+    // One run per question. Each event starts that question's own pipeline
+    // run (evaluate -> select -> assemble), handled downstream.
+    await step.sendEvent(
+      "start-article-runs",
+      due.map((q) => ({
+        name: "article/question.closed",
+        data: { questionId: q.id },
+      }))
+    );
+  }
+);
+```
+
+### One run per question
+
+The part that surprised me: those 42 responses are never gathered in parallel and merged. There's no fan-in — no swarm of concurrent runs converging into one. Answers arrive over days as ordinary database writes, each one a finished transaction with nothing left in flight. When the sweep picks up a question, exactly one run starts, and that run does everything as a sequence of durable steps. A typical run is between 60 and 150 of them.
+
+Evaluation is about ten of those steps, and each one is a pass over the whole set of answers rather than a step per answer. 
+
+The system reads each expert through something close to Google's E-E-A-T lens: experience, expertise, authority, trust. For expertise alone that means asking what a profile actually establishes: the job title, how long they've held it, what they did before, where they work and what that company is known for, whether they hold relevant certifications, whether their public history matches how they present on the platform.
+
+### Choosing answers, one at a time
+
+This is where the "diversify perspectives" idea stops being a principle and becomes a mechanism. 
+
+It isn't a single decision that evaluates everything and picks winners. It's a loop that admits answers one at a time. Take the highest-scoring answer still on the table, ask the model how similar it is to the answers already admitted, and if it's distinct enough, it goes in; otherwise, it's rejected, and the reason is recorded rather than thrown away. Repeat up to 25 times.
+
+So an article built from 42 near-identical responses can't happen, and not because anything screens for it afterward. As Brett puts it, "the second one through the door has to prove it isn't the first one."
+
+### What the orchestration layer deliberately doesn't own
+
+Two design decisions in here matter more than the rest, and both are about drawing a line around what the orchestration layer is allowed to be responsible for.
+
+The first: correctness that absolutely cannot break is guaranteed somewhere other than the workflow. Featured notifies every expert who gets featured, and telling the same ten people twice that they made the article is an embarrassment. 
+
+So the guarantee against it doesn't live in how carefully the workflow was written. It lives in a uniqueness constraint in Postgres: one notification per expert per published article, and the second write is simply refused. Brett's framing is the cleanest version of a rule every durable system eventually learns. "Orchestration decides what happens and when. The database decides what's allowed to happen at all."
+
+The second: most of the functions don't retry, on purpose. That cuts against the reflex that durable execution means retrying everything. But the failure mode Featured actually fears isn't a late article. It's a bad article auto-published under a publisher's masthead. 
+
+So a run that can't produce something they'd stand behind marks itself failed and stops, rather than shipping or silently retrying its way into a mess. Every run writes a job record with its status and run ID, and the team watches an internal dashboard built on those records. Because the run stops at the stage that broke, the stage boundary tells them exactly what did and didn't happen — the article was assembled, the CMS push wasn't — and nothing downstream ran, so there's no half-delivered state to untangle.
+
+### What runs where: Inngest, Vercel, and Postgres
+
+Featured's application and data layer is TypeScript, Next.js, and Postgres (Drizzle, on Supabase), deployed on Vercel. 
+
+That's where the durable state lives: questions, expert profiles, submitted answers, publisher settings, finished articles. Inngest owns the scheduling and the flow control: all 45 crons, the events that pass between functions, and the throttle, rate-limit, and concurrency controls. 
+
+The split is clean: Postgres holds the state, Inngest schedules and controls flow, and the pipeline executes on Vercel. A second app, HARO, shares the same Inngest environment, with events crossing between the two. The article generation itself (the model calls that read and write prose) runs on Vercel, not Inngest.
+
+Brett's own metaphor covers the whole arrangement better than a diagram would: "Each article is like a train with a timed departure and arrival. Inngest helps our trains run, without losing sleep or manually shoveling coal into an engine."
+
+## What "reliable" actually means for this pipeline
+
+"Reliable" means something narrower here than "it never fails." Articles do fail: a question too specific to draw good answers produces a run that can't clear the quality bar, so it stops itself. That's an input-quality outcome, and stopping is the correct behavior, not a defect. What has to be reliable is the layer underneath. The sweep fires on schedule, the run starts, the steps execute in order, and the irreversible action, pushing to the publisher's CMS, happens once and only when the article is one they'd stand behind. 
+
+The publisher's trust depends on that lower layer holding, every deadline, without a person watching it. Featured spent years getting the layer above it (the evaluation and selection) right. The layer below it is the one they chose not to build and rebuild by hand.
+
+## What a seven-person team can run on durable orchestration
+
+Line the numbers up and the shape of the bet is obvious. 2,500 articles a month. 42 answers per question, on average. Three brands. A team of seven.
+
+Brett's read on why this matters goes past his own company. There's plenty of hype about founders running tens or hundreds of businesses off an orchestration layer, and he thinks there's real substance under it, but he's more interested in what it does for employees than founders. "Employees who enjoy a sophisticated orchestration system can focus on high-value work." 
+
+The coordination that used to eat eight people's days is now handled by the scheduler and the database; the people moved up the stack to the judgment work: shaping questions, tuning evaluation, deciding what "an article we'd stand behind" even means. It's also what makes a fourth brand thinkable. A third acquisition is in motion, and absorbing another brand at seven people is only reasonable because the layer that would otherwise need staffing is already in place.
+
+## Click, click, done
+
+Featured's north star predates ChatGPT.
+
+The vision, in Brett's words, is "Click, click, done" — a publisher clicks approve on a content idea, clicks publish when it's ready, and that's the whole job. GPT-3 was the moment the team realized that vision wasn't far off anymore. Everything since has been about making the machinery under those two clicks reliable enough that a publisher never has to think about it.
+
+I asked Brett what breaks first if Inngest disappears tomorrow. The answer says more about the pipeline than any uptime number could:
+
+"My life. Pretty sure I wouldn't get to see my family again. Company operations would be disrupted. Inbox and phone and Slack would be overflowing with questions to answer, and decisions to be made. Please don't break on us, Inngest."
+
+If you're running a small team against promises you can't afford to miss, the pattern is worth stealing: schedule the work with a sweep that reads current state instead of a timer that remembers stale state, decompose the pipeline into durable steps so a failure names itself, and put the guarantees you can't break in the database, not the workflow. Those three moves line up with the three parts of an Inngest function — cron triggers, flow control, and durable steps — which is where the Inngest Functions docs begin. Good place to start reading if you're building against a deadline of your own.
+
+**[Get started with Inngest](/pricing?ref=featured-case-study).**

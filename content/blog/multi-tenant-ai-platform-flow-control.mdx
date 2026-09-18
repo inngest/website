@@ -98,3 +98,5 @@ Job queues give you durability and a global concurrency knob. Workflow engines l
 Inngest treats every one of them as a **first-class, declarative feature of the function definition.** Per-tenant concurrency, per-resource serialization, per-provider quota lanes, throttle, rate-limit, debounce, batching, priority, cancellation—they all live in the same place, next to the function they govern, enforced automatically. If your product is a long-running, non-deterministic, multi-step AI pipeline shared across multiple customers, then **your workflow runtime is your business.** The capabilities that decide whether your business works aren't durability and retries. They're per-tenant fairness, artifact-level safety, provider-aware cost shaping, and step-level visibility.
 
 Pick a runtime that treats those as core. Or build them yourself, badly, for the next three years.
+
+The same per-tenant fairness pattern applies outside AI too—for example when you're [syncing dozens of SaaS integrations per customer](/blog/have-lots-of-saas-integrations-you-dont-need-lots-of-reliability-models?ref=blog-multi-tenant-ai-platform-flow-control).

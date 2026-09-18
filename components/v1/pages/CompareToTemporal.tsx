@@ -29,11 +29,11 @@ export default function CompareToTemporal() {
             MissionCritical · CtaBand · Faq · FinalCta */}
         <Hero />
         <LogoStrip />
+        <Testimonials />
         <WhyChoose />
         <CodeComparison />
         <FeatureComparison />
         <DesignedForAI />
-        <Testimonials />
         <MissionCritical />
         <CtaBand />
         <Faq />

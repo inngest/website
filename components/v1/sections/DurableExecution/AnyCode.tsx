@@ -24,6 +24,7 @@ export default function AnyCode() {
     >
       <SectionHeader
         className="lg:pr-8"
+        eyebrow="Optionality"
         title="Any code, any runtime."
         body="Workflows, agents, endpoints. API calls, webhooks, cron. Edge, serverless, traditional. Same primitives, same guarantees, no matter what or where you run. Wrap functions in steps to make any code durable by default."
         bodyClassName="max-w-[640px]"

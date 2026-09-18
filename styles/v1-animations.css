@@ -627,3 +627,10 @@ button:focus-visible .v1-wipe-reveal {
     transition: none;
   }
 }
+
+/* ---------- Durable Execution / lifecycle glyphs ---------- */
+@media (prefers-reduced-motion: reduce) {
+  .de-lifecycle-spark {
+    display: none;
+  }
+}

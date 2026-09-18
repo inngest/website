@@ -36,6 +36,48 @@ interface TabContent {
   capabilities: Capability[];
 }
 
+// Shared icon set for the "Durability belongs in code" panel. Named (not
+// positional) so the Retries tile order/content can change freely without
+// silently reshuffling the icons on the Flow Control / Agent Observability
+// tabs below, which still borrow these icons as placeholders.
+const ICONS = {
+  "ai-agents": {
+    icon: "/assets/v1/scale-instantly/ai-agents.svg",
+    iconWidth: 27.77,
+    iconHeight: 32,
+  },
+  "api-endpoints": {
+    icon: "/assets/v1/scale-instantly/api-endpoints.svg",
+    iconWidth: 30.02,
+    iconHeight: 25.71,
+  },
+  workflows: {
+    icon: "/assets/v1/scale-instantly/workflows.svg",
+    iconWidth: 32,
+    iconHeight: 32,
+  },
+  schedules: {
+    icon: "/assets/v1/scale-instantly/schedules.svg",
+    iconWidth: 32,
+    iconHeight: 12.85,
+  },
+  serverless: {
+    icon: "/assets/v1/scale-instantly/serverless.svg",
+    iconWidth: 32,
+    iconHeight: 20.52,
+  },
+  events: {
+    icon: "/assets/v1/scale-instantly/events.svg",
+    iconWidth: 21.65,
+    iconHeight: 32,
+  },
+} as const;
+
+// Icons + video are still placeholders for the two non-retries tabs.
+// TODO(jb): supply per-tab icons, a per-tab dashboard video (these reuse
+// the Retries video), and tile hrefs (none set yet).
+const icon = (name: keyof typeof ICONS) => ICONS[name];
+
 // ── Retries & Reliability ──────────────────────────────────────────────
 // Real content (the original "Durability belongs in code" copy).
 const RETRIES_CONTENT: TabContent = {
@@ -48,63 +90,42 @@ const RETRIES_CONTENT: TabContent = {
     "https://cdn.inngest.com/homepage/june-2026-redesign-dashboard-tour-v2.mp4",
   capabilities: [
     {
-      title: "AI Agents",
-      body: "Pause mid-execution, wait for input, then resume exactly where you left off.",
-      icon: "/assets/v1/scale-instantly/ai-agents.svg",
-      iconWidth: 27.77,
-      iconHeight: 32,
-      href: "/ai?ref=homepage-durable-execution",
+      title: "Memoization",
+      body: "Completed steps are memoized—on retry, Inngest skips finished work and resumes exactly where it left off.",
+      ...icon("serverless"),
+      href: "/docs/learn/how-functions-are-executed?ref=homepage-durable-execution",
     },
     {
-      title: "API Endpoints",
-      body: "Long-running endpoints that survive timeouts, failures, and deploys.",
-      icon: "/assets/v1/scale-instantly/api-endpoints.svg",
-      iconWidth: 30.02,
-      iconHeight: 25.71,
-      href: "/docs/learn/durable-endpoints?ref=homepage-durable-execution",
+      title: "Retries",
+      body: "Automatic retries with exponential backoff on every step, so failures recover without code.",
+      ...icon("workflows"),
+      href: "/docs/features/inngest-functions/error-retries/retries?ref=homepage-durable-execution",
     },
     {
-      title: "Workflows",
-      body: "Each step retries independently. No failed run restarts from scratch.",
-      icon: "/assets/v1/scale-instantly/workflows.svg",
-      iconWidth: 32,
-      iconHeight: 32,
-      href: "/ai?ref=homepage-durable-execution",
+      title: "Wait for Event",
+      body: "Pause a function and wait for another event—for minutes or months—then resume automatically when it arrives.",
+      ...icon("ai-agents"),
+      href: "/docs/features/inngest-functions/steps-workflows/wait-for-event?ref=homepage-durable-execution",
     },
     {
-      title: "Schedules",
-      body: "Missed runs recover automatically. Every execution is logged and replayable.",
-      icon: "/assets/v1/scale-instantly/schedules.svg",
-      iconWidth: 32,
-      iconHeight: 12.85,
-      href: "/uses/scheduled-jobs?ref=homepage-durable-execution",
+      title: "Deferment",
+      body: "Defer work to run later: sleep, schedule, or throttle steps without blocking or holding infrastructure.",
+      ...icon("events"),
+      href: "/docs/features/inngest-functions/steps-workflows/sleeps?ref=homepage-durable-execution",
     },
     {
-      title: "Serverless",
-      body: "Functions persist state across invocations without a database.",
-      icon: "/assets/v1/scale-instantly/serverless.svg",
-      iconWidth: 32,
-      iconHeight: 20.52,
-      href: "/docs/reference/typescript/v4/extended-traces?ref=homepage-durable-execution#serverless",
+      title: "Idempotency",
+      body: "Built-in idempotency keys prevent duplicate runs, so the same event never triggers the same work twice.",
+      ...icon("api-endpoints"),
+      href: "/docs/guides/handling-idempotency?ref=homepage-durable-execution",
     },
     {
-      title: "Events",
-      body: "Fan out thousands of jobs per event. Every one tracked, retriable, and replayable.",
-      icon: "/assets/v1/scale-instantly/events.svg",
-      iconWidth: 21.65,
-      iconHeight: 32,
-      href: "/uses/webhooks?ref=homepage-durable-execution",
+      title: "Replays",
+      body: "Replay past runs against new code to debug and recover. Re-execute real events without resending them.",
+      ...icon("schedules"),
+      href: "/docs/platform/replay?ref=homepage-durable-execution",
     },
   ],
-};
-
-// Icons + video are still placeholders for the two non-retries tabs.
-// TODO(jb): supply per-tab icons (these reuse the Retries icons by index),
-// a per-tab dashboard video (these reuse the Retries video), and tile
-// hrefs (none set yet). `icon(i)` borrows the Retries tile icon at index i.
-const icon = (i: number) => {
-  const c = RETRIES_CONTENT.capabilities[i];
-  return { icon: c.icon, iconWidth: c.iconWidth, iconHeight: c.iconHeight };
 };
 
 // ── Flow Control ────────────────────────────────────────────────────────
@@ -119,37 +140,37 @@ const FLOW_CONTROL_CONTENT: TabContent = {
       title: "Concurrency Control",
       body: "Every tenant gets their fair share, no matter how much work one of them throws at your app.",
       href: "/docs/guides/concurrency?ref=homepage-flow-control",
-      ...icon(0),
+      ...icon("ai-agents"),
     },
     {
       title: "Throttling & Rate Limiting",
       body: "Absorb traffic spikes without dropping work—excess runs queue and drain at your rate.",
       href: "/docs/guides/throttling?ref=homepage-flow-control",
-      ...icon(1),
+      ...icon("api-endpoints"),
     },
     {
       title: "Debouncing",
       body: "Don’t burn compute on redundant work. Collapse bursts of identical events into one execution.",
       href: "/docs/guides/debounce?ref=homepage-flow-control",
-      ...icon(2),
+      ...icon("workflows"),
     },
     {
       title: "Dynamic Prioritization",
       body: "Decide which work should take priority without starving the rest.",
       href: "/docs/guides/priority?ref=homepage-flow-control",
-      ...icon(3),
+      ...icon("schedules"),
     },
     {
       title: "Batch Processing",
       body: "Reduce invocation costs on high-volume workloads by ensuring whatever comes first triggers the run.",
       href: "/docs/guides/batching?ref=homepage-flow-control",
-      ...icon(4),
+      ...icon("serverless"),
     },
     {
       title: "Declarative Cancellation",
       body: "Cancel in-flight runs automatically if a matching event occurs.",
       href: "/docs/features/inngest-functions/cancellation/cancel-on-events?ref=homepage-flow-control",
-      ...icon(5),
+      ...icon("events"),
     },
   ],
 };
@@ -166,31 +187,31 @@ const OBSERVABILITY_CONTENT: TabContent = {
       title: "Scoring",
       body: "One shot was never enough. We let you use real production outcomes to eval variants.",
       href: "/docs/patterns/ai-evals/score-agents-on-real-outcomes?ref=homepage-agent-observability",
-      ...icon(0),
+      ...icon("ai-agents"),
     },
     {
       title: "Live Experiments",
       body: "Test what works against live production traffic, or in a sandbox.",
       href: "/docs/patterns/ai-evals/run-experiments-in-production?ref=homepage-agent-observability",
-      ...icon(1),
+      ...icon("api-endpoints"),
     },
     {
       title: "100% not 1%",
       body: "Track outcomes across every run, without needing to sample.",
       href: "/docs/platform/monitor/traces?ref=homepage-agent-observability",
-      ...icon(2),
+      ...icon("workflows"),
     },
     {
       title: "Datasets",
       body: "Generate datasets of good and bad runs for evals and offline replay.",
       href: "/docs/platform/monitor/insights?ref=homepage-agent-observability",
-      ...icon(3),
+      ...icon("schedules"),
     },
     {
       title: "Sessions",
       body: "Group multiple agent loops or turns as a single conversation, thread, or however you choose.",
       href: "/docs/features/events-triggers/sessions?ref=homepage-agent-observability",
-      ...icon(4),
+      ...icon("serverless"),
     },
   ],
 };

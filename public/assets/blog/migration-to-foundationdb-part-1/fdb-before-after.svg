@@ -1,0 +1,83 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="960" height="520" viewBox="0 0 960 520" role="img" aria-labelledby="title desc">
+  <title id="title">Queue architecture before and after FoundationDB</title>
+  <desc id="desc">Side-by-side comparison of today's shared Valkey clusters versus FoundationDB clusters per billing tier, highlighting OOM outage and durability failure modes on the left.</desc>
+  <rect width="960" height="520" fill="#ffffff"/>
+
+  <text x="240" y="36" text-anchor="middle" fill="#0f172a" font-family="Inter, Segoe UI, Helvetica, Arial, sans-serif" font-size="15" font-weight="700">Today: Valkey</text>
+  <text x="720" y="36" text-anchor="middle" fill="#0f172a" font-family="Inter, Segoe UI, Helvetica, Arial, sans-serif" font-size="15" font-weight="700">Next: FoundationDB</text>
+
+  <rect x="24" y="52" width="432" height="444" rx="10" fill="#f8fafc" stroke="#e2e8f0" stroke-width="1.5"/>
+
+  <rect x="52" y="76" width="376" height="168" rx="8" fill="#ffffff" stroke="#cbd5e1" stroke-width="1.5"/>
+  <text x="240" y="100" text-anchor="middle" fill="#334155" font-family="Inter, Segoe UI, Helvetica, Arial, sans-serif" font-size="12" font-weight="600">Shared Valkey cluster (in-memory)</text>
+
+  <rect x="72" y="116" width="104" height="56" rx="6" fill="#eff6ff" stroke="#93c5fd" stroke-width="1.25"/>
+  <text x="124" y="140" text-anchor="middle" fill="#1e3a8a" font-family="Inter, Segoe UI, Helvetica, Arial, sans-serif" font-size="11" font-weight="600">Free</text>
+  <text x="124" y="156" text-anchor="middle" fill="#64748b" font-family="Inter, Segoe UI, Helvetica, Arial, sans-serif" font-size="10">static shard</text>
+
+  <rect x="188" y="116" width="104" height="56" rx="6" fill="#eff6ff" stroke="#93c5fd" stroke-width="1.25"/>
+  <text x="240" y="140" text-anchor="middle" fill="#1e3a8a" font-family="Inter, Segoe UI, Helvetica, Arial, sans-serif" font-size="11" font-weight="600">Self-serve</text>
+  <text x="240" y="156" text-anchor="middle" fill="#64748b" font-family="Inter, Segoe UI, Helvetica, Arial, sans-serif" font-size="10">static shard</text>
+
+  <rect x="304" y="116" width="104" height="56" rx="6" fill="#eff6ff" stroke="#93c5fd" stroke-width="1.25"/>
+  <text x="356" y="140" text-anchor="middle" fill="#1e3a8a" font-family="Inter, Segoe UI, Helvetica, Arial, sans-serif" font-size="11" font-weight="600">Enterprise</text>
+  <text x="356" y="156" text-anchor="middle" fill="#64748b" font-family="Inter, Segoe UI, Helvetica, Arial, sans-serif" font-size="10">static shard</text>
+
+  <text x="240" y="198" text-anchor="middle" fill="#64748b" font-family="Inter, Segoe UI, Helvetica, Arial, sans-serif" font-size="10">Manual provisioning, single-threaded peek</text>
+  <text x="240" y="214" text-anchor="middle" fill="#64748b" font-family="Inter, Segoe UI, Helvetica, Arial, sans-serif" font-size="10">Memory-bound capacity</text>
+
+  <rect x="52" y="264" width="376" height="96" rx="8" fill="#fff7ed" stroke="#fdba74" stroke-width="1.5"/>
+  <text x="72" y="288" fill="#9a3412" font-family="Inter, Segoe UI, Helvetica, Arial, sans-serif" font-size="11" font-weight="700">Failure mode 1: OOM</text>
+  <text x="72" y="308" fill="#7c2d12" font-family="Inter, Segoe UI, Helvetica, Arial, sans-serif" font-size="11">One saturated tenant can take the whole cluster down.</text>
+  <text x="72" y="336" fill="#9a3412" font-family="Inter, Segoe UI, Helvetica, Arial, sans-serif" font-size="11" font-weight="700">Failure mode 2: Durability</text>
+  <text x="72" y="356" fill="#7c2d12" font-family="Inter, Segoe UI, Helvetica, Arial, sans-serif" font-size="11">Hard node / power loss can drop unreplicated queue state.</text>
+
+  <rect x="52" y="380" width="376" height="92" rx="8" fill="#ffffff" stroke="#e2e8f0" stroke-width="1.25"/>
+  <text x="72" y="406" fill="#334155" font-family="Inter, Segoe UI, Helvetica, Arial, sans-serif" font-size="11" font-weight="600">Result</text>
+  <text x="72" y="426" fill="#475569" font-family="Inter, Segoe UI, Helvetica, Arial, sans-serif" font-size="11">Execution halts, backlog builds, fairness stalls</text>
+  <text x="72" y="446" fill="#475569" font-family="Inter, Segoe UI, Helvetica, Arial, sans-serif" font-size="11">Recovery tied to bringing a stateful cluster back online</text>
+
+  <rect x="504" y="52" width="432" height="444" rx="10" fill="#f8fafc" stroke="#e2e8f0" stroke-width="1.5"/>
+
+  <rect x="532" y="76" width="376" height="52" rx="8" fill="#ecfdf5" stroke="#6ee7b7" stroke-width="1.5"/>
+  <text x="720" y="98" text-anchor="middle" fill="#065f46" font-family="Inter, Segoe UI, Helvetica, Arial, sans-serif" font-size="12" font-weight="600">Metadata and routing cluster</text>
+  <text x="720" y="116" text-anchor="middle" fill="#047857" font-family="Inter, Segoe UI, Helvetica, Arial, sans-serif" font-size="10">Automatic logical-shard assignment</text>
+
+  <rect x="532" y="148" width="112" height="150" rx="8" fill="#ffffff" stroke="#86efac" stroke-width="1.5"/>
+  <text x="588" y="172" text-anchor="middle" fill="#14532d" font-family="Inter, Segoe UI, Helvetica, Arial, sans-serif" font-size="11" font-weight="700">Free</text>
+  <text x="588" y="190" text-anchor="middle" fill="#166534" font-family="Inter, Segoe UI, Helvetica, Arial, sans-serif" font-size="10">FDB cluster</text>
+  <rect x="548" y="206" width="80" height="24" rx="4" fill="#f0fdf4" stroke="#86efac"/>
+  <text x="588" y="222" text-anchor="middle" fill="#166534" font-family="Inter, Segoe UI, Helvetica, Arial, sans-serif" font-size="9">logical shards</text>
+  <rect x="548" y="238" width="80" height="24" rx="4" fill="#f0fdf4" stroke="#86efac"/>
+  <text x="588" y="254" text-anchor="middle" fill="#166534" font-family="Inter, Segoe UI, Helvetica, Arial, sans-serif" font-size="9">on disk</text>
+  <text x="588" y="284" text-anchor="middle" fill="#64748b" font-family="Inter, Segoe UI, Helvetica, Arial, sans-serif" font-size="9">ACID durable</text>
+
+  <rect x="664" y="148" width="112" height="150" rx="8" fill="#ffffff" stroke="#86efac" stroke-width="1.5"/>
+  <text x="720" y="172" text-anchor="middle" fill="#14532d" font-family="Inter, Segoe UI, Helvetica, Arial, sans-serif" font-size="11" font-weight="700">Self-serve</text>
+  <text x="720" y="190" text-anchor="middle" fill="#166534" font-family="Inter, Segoe UI, Helvetica, Arial, sans-serif" font-size="10">FDB cluster</text>
+  <rect x="680" y="206" width="80" height="24" rx="4" fill="#f0fdf4" stroke="#86efac"/>
+  <text x="720" y="222" text-anchor="middle" fill="#166534" font-family="Inter, Segoe UI, Helvetica, Arial, sans-serif" font-size="9">logical shards</text>
+  <rect x="680" y="238" width="80" height="24" rx="4" fill="#f0fdf4" stroke="#86efac"/>
+  <text x="720" y="254" text-anchor="middle" fill="#166534" font-family="Inter, Segoe UI, Helvetica, Arial, sans-serif" font-size="9">on disk</text>
+  <text x="720" y="284" text-anchor="middle" fill="#64748b" font-family="Inter, Segoe UI, Helvetica, Arial, sans-serif" font-size="9">multi-threaded</text>
+
+  <rect x="796" y="148" width="112" height="150" rx="8" fill="#ffffff" stroke="#86efac" stroke-width="1.5"/>
+  <text x="852" y="172" text-anchor="middle" fill="#14532d" font-family="Inter, Segoe UI, Helvetica, Arial, sans-serif" font-size="11" font-weight="700">Enterprise</text>
+  <text x="852" y="190" text-anchor="middle" fill="#166534" font-family="Inter, Segoe UI, Helvetica, Arial, sans-serif" font-size="10">FDB cluster</text>
+  <rect x="812" y="206" width="80" height="24" rx="4" fill="#f0fdf4" stroke="#86efac"/>
+  <text x="852" y="222" text-anchor="middle" fill="#166534" font-family="Inter, Segoe UI, Helvetica, Arial, sans-serif" font-size="9">logical shards</text>
+  <rect x="812" y="238" width="80" height="24" rx="4" fill="#f0fdf4" stroke="#86efac"/>
+  <text x="852" y="254" text-anchor="middle" fill="#166534" font-family="Inter, Segoe UI, Helvetica, Arial, sans-serif" font-size="9">dedicated OK</text>
+  <text x="852" y="284" text-anchor="middle" fill="#64748b" font-family="Inter, Segoe UI, Helvetica, Arial, sans-serif" font-size="9">isolated lanes</text>
+
+  <rect x="532" y="320" width="376" height="152" rx="8" fill="#ffffff" stroke="#86efac" stroke-width="1.5"/>
+  <text x="552" y="348" fill="#14532d" font-family="Inter, Segoe UI, Helvetica, Arial, sans-serif" font-size="11" font-weight="700">What this fixes</text>
+  <circle cx="560" cy="376" r="3.5" fill="#16a34a"/>
+  <text x="572" y="380" fill="#334155" font-family="Inter, Segoe UI, Helvetica, Arial, sans-serif" font-size="11">Disk-backed storage - no shared OOM cliff</text>
+  <circle cx="560" cy="404" r="3.5" fill="#16a34a"/>
+  <text x="572" y="408" fill="#334155" font-family="Inter, Segoe UI, Helvetica, Arial, sans-serif" font-size="11">Committed transactions are durable</text>
+  <circle cx="560" cy="432" r="3.5" fill="#16a34a"/>
+  <text x="572" y="436" fill="#334155" font-family="Inter, Segoe UI, Helvetica, Arial, sans-serif" font-size="11">Horizontal scale by adding hardware</text>
+  <circle cx="560" cy="460" r="3.5" fill="#16a34a"/>
+  <text x="572" y="464" fill="#334155" font-family="Inter, Segoe UI, Helvetica, Arial, sans-serif" font-size="11">Automatic shard assignment per tier</text>
+</svg>

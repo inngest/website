@@ -1,4 +1,3 @@
-import AnnouncementBanner from "src/components/AnnouncementBanner";
 import Header from "src/components/RedesignedLanding/Header/Header";
 import Footer from "src/components/RedesignedLanding/Footer";
 
@@ -12,7 +11,6 @@ export default function V0Layout({
 }) {
   return (
     <>
-      <AnnouncementBanner />
       <Header />
       <main className="text-basis">{children}</main>
       <Footer />
