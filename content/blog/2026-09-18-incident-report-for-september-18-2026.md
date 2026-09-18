@@ -27,9 +27,9 @@ We use Postgres for account management: accounts, workspaces and the rest of our
 
 At 15:39:39, our Vercel Marketplace integration received an installation deletion and began deprovisioning the corresponding Inngest account. That path was built to hard delete, rather than to soft delete the way we do everywhere else, so that an uninstalled account leaves nothing behind that would block the customer from installing again later. It deletes the user inside a transaction, then issues a real `DELETE` against the account row. That second statement cascades: accounts and workspaces are referenced by foreign keys from dozens of tables, most declared `ON DELETE CASCADE`. One account deletion fans out across a large portion of the schema in a single transaction, holding locks on everything it touches until it commits.
 
-The retries are what turned a slow transaction into an outage. Between 15:41 and 15:56, ten more deletion attempts arrived for the same installation and account. Each tried to delete rows the first transaction already held locks on, so instead of failing fast they queued behind it — one user-delete query ended up waiting 44 minutes. Lock counts on the primary peaked at roughly seventeen times baseline at 16:16.
+The retries are what turned a slow transaction into an outage. Between 15:41 and 15:56, ten more deletion attempts arrived for the same installation and account. Each tried to delete rows the first transaction already held locks on, so instead of failing fast they queued behind it.
 
-Blocked queries do not release their connection, so each one held a client slot in PgBouncer for the entire wait. Client connections rose to roughly fourteen times their steady-state level, almost all of them doing nothing but waiting. By 16:18–16:19 PgBouncer was full, rejecting new connections and disconnecting waiting clients at the 120 second timeout:
+Blocked queries do not release their connection, so each one held a client slot in PgBouncer for the entire wait. Client connections rose to roughly _fourteen times_ their steady-state level, almost all of them doing nothing but waiting. By 16:18–16:19 PgBouncer was full, rejecting new connections and disconnecting waiting clients:
 
 ```
 FATAL: no more connections allowed (max_client_conn) (SQLSTATE 08P01)
@@ -43,26 +43,26 @@ We restarted PgBouncer at 16:26. The blocking transactions were still running, s
 
 Cancelling the queries removed the symptom but not the source: deletion requests were still arriving and still being processed. So we prepared a kill switch to stop the deletion path outright.
 
-At 17:45 the same pattern began again. The kill switch merged at 17:54:21, rolling out into a system that was already contending, and by 18:00 PgBouncer was saturated a second time — marginally worse than the first peak, with average query times of 20 to 22 seconds. The second wave hit more services than the first: executor, batches, pauses, new-runs, queue-proxy, debug-api and CDC crash-looped, two queue shards stopped processing, and a batches backlog built up. Twelve separate incidents were merged into this one during the first wave, and a further twelve during the second.
+At 17:45 the same pattern began again, and by 18:00 PgBouncer was saturated a second time. The kill switch had merged at 17:54:21, into a system that was already contending. This wave reached more services than the first: executor, batches, pauses, new-runs, queue-proxy, debug-api and CDC crash-looped, two queue shards stopped processing, and a batches backlog built up.
 
-Recovery came at approximately 18:12. Postgres lock counts had already returned to baseline by 18:00, while PgBouncer stayed saturated for another eight to ten minutes — a gap we return to below. By 18:15 waiting clients were at zero and query times were back to 15–16 ms.
+Postgres lock counts returned to baseline by 18:00, but PgBouncer stayed saturated for about ten minutes longer: the queue of waiting clients had to drain before services could reconnect. Recovery completed at approximately 18:12, and by 18:15 no clients were waiting and query times were back to normal.
 
 ## Timeline
 
-- **15:39:39:** A Vercel Marketplace installation deletion begins. The user is deleted inside a transaction, and the cascading account delete starts.
+- **15:39:** A Vercel Marketplace installation deletion begins. The user is deleted inside a transaction, and the cascading account delete starts.
 - **15:41–15:56:** Ten further deletion attempts arrive for the same installation and account. They queue behind the first transaction; one waits 44 minutes.
 - **16:09:** PgBouncer client queues begin growing.
 - **16:16:** Database lock counts peak at roughly seventeen times baseline.
-- **16:18–16:19:** Our PgBouncer instances fill and begin rejecting connections and disconnecting clients at the 120 second wait timeout.
-- **16:21:44:** We declare an incident and page on-call.
-- **16:22:47:** `max_client_conn` errors are confirmed as the immediate failure.
-- **16:26:51:** We restart the PgBouncer instances. The pools refill, because the blocking transactions are still running.
-- **16:31:53:** We confirm sessions blocked on locks, including the long-running account and user deletion queries.
+- **16:18–16:19:** Our PgBouncer instances fill and begin rejecting connections and disconnecting clients.
+- **16:21:** We declare an incident and page on-call.
+- **16:22:** `max_client_conn` errors are confirmed as the immediate failure.
+- **16:26:** We restart the PgBouncer instances. The pools refill, because the blocking transactions are still running.
+- **16:31:** We confirm sessions blocked on locks, including the long-running account and user deletion queries.
 - **16:39:** We cancel nine user deletions and the original account deletion.
 - **16:42:** Lock counts clear and services begin recovering.
 - **16:51:** First period of impact assessed as recovered.
 - **17:45–17:50:** Lock contention and long-running queries return. Waiting clients and query times climb again.
-- **17:54:21:** The Vercel Marketplace deletion kill switch merges and begins rolling out.
+- **17:54:** The Vercel Marketplace deletion kill switch merges and begins rolling out.
 - **18:00–18:05:** PgBouncer saturates a second time, marginally worse than the first peak, with query times of 20 to 22 seconds.
 - **~18:12:** Recovery. Lock counts had returned to baseline by 18:00; the PgBouncer queue finished draining by 18:15.
 
