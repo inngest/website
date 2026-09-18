@@ -17,9 +17,9 @@ _All timestamps are in UTC._
 
 ## Summary
 
-On September 18, 2026, an account deletion originating from our Vercel Marketplace integration blocked our primary Postgres database for long enough to saturate the PgBouncer connection poolers that sit in front of it.
+On September 18, 2026, an account deletion originating from our Vercel Marketplace integration blocked our primary Postgres database for long enough to saturate the connection poolers that sit in front of it.
 
-PgBouncer saturation is what made this an outage rather than a slow query. Once every client slot in PgBouncer was held by a query waiting on the database, services could not obtain a database connection at all — including services that had nothing to do with the deletion. Run scheduling and event acknowledgement stalled across the platform.
+Pooler saturation is what made this an outage rather than a slow query. Once every client slot in our poolers was held by a query waiting on the database, services could not obtain a database connection at all — including services that had nothing to do with the deletion. Run scheduling and event acknowledgement stalled across the platform.
 
 There were two periods of impact: 16:18 to 16:42, and a second, slightly larger one from 17:50 to 18:12 that occurred while we were rolling out the mitigation.
 
