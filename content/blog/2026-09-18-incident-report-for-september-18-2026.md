@@ -87,7 +87,6 @@ The third and fourth factors are what made this a platform-wide event with a lon
 - **Rolling out changes into a quiet system.** The kill switch landed while the database was already contending, which gave us no clean signal about whether it had taken effect. We are tightening how we sequence mitigations during an incident so that a fix and a recurrence cannot overlap the way they did here.
 - **Adding headroom and isolation in PgBouncer.** We have adjusted PgBouncer configuration and are reviewing pool sizing so that a single saturating workload cannot consume the connection capacity that unrelated services depend on. We are also looking at how to drain a saturated pool deliberately rather than waiting for it to clear.
 - **Improving visibility into database contention.** We are expanding our PgBouncer and Postgres dashboards and alerting so that rising lock counts and client wait times page us before the pool is exhausted, rather than after dependent services begin failing.
-- **Fixing recovery friction.** The missing runtime directory encountered during the PgBouncer restart, and the SSH access gaps that slowed responders from reaching the PgBouncer hosts, are both being addressed so that operating this tier during an incident is faster.
 
 ## What This Means For You
 
