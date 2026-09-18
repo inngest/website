@@ -1,0 +1,682 @@
+import { Callout } from "src/shared/Docs/mdx";
+
+export const metaTitle = "Sandbox REST API v2 reference"
+export const description = "REST API reference for Sandbox lifecycle, captured commands, logs, files, managed processes, retained output, and streaming output."
+
+# Sandbox REST API v2
+
+The Sandbox REST API creates isolated Linux runtimes, executes commands,
+transfers files, streams logs, and manages background processes.
+
+Cloud API origin:
+
+```text
+https://api.inngest.com
+```
+
+Every route below includes its `/v2` prefix.
+
+## Authentication
+
+Use an environment-scoped Inngest API key:
+
+```text
+Authorization: Bearer <INNGEST_API_KEY>
+```
+
+```sh
+curl https://api.inngest.com/v2/sandboxes \
+  --header "Authorization: Bearer $INNGEST_API_KEY"
+```
+
+Create API keys in the Inngest dashboard. Keep them in server-side code and
+secret stores.
+
+A workspace-scoped key selects its workspace automatically. With an
+account-scoped key, also send the environment name:
+
+```text
+X-Inngest-Env: production
+```
+
+The request fails if the header is missing, does not match an environment, or
+matches more than one environment in the account.
+
+The TypeScript `inngest.sandboxes` client uses the signing key and environment
+configuration attached to its `Inngest` client. See the
+[TypeScript SDK reference](/docs/reference/typescript/v4/sandboxes).
+
+## JSON conventions
+
+JSON requests:
+
+- use `Content-Type: application/json`;
+- reject unknown fields;
+- reject trailing or multiple JSON values; and
+- are capped at 1 MiB for Create, captured Exec, process Start, and Signal.
+
+Most successful responses use:
+
+```json
+{
+  "data": {},
+  "metadata": {
+    "fetchedAt": "2026-07-28T19:00:00.123456789Z"
+  }
+}
+```
+
+List responses also include a top-level `page`.
+
+Errors use:
+
+```json
+{
+  "errors": [
+    {
+      "code": "invalid_field_format",
+      "message": "command must begin with an absolute executable path"
+    }
+  ]
+}
+```
+
+Branch on `code`, not `message`. Live responses set
+`Cache-Control: no-store`. RFC 3339 timestamps can include nanosecond
+precision.
+
+## Sandbox resource
+
+```json
+{
+  "id": "b066bdf7-a57b-4d8b-a1a7-76eab1f91273",
+  "name": "agent_job-42",
+  "status": "RUNNING",
+  "vpcId": "5f82a217-9d54-4fa8-a9be-d1dbba8a8db2",
+  "imageRef": "default",
+  "resources": {
+    "vcpu": 2,
+    "memoryMb": 512
+  },
+  "createdAt": "2026-07-28T19:00:00.123456789Z",
+  "startedAt": "2026-07-28T19:00:00.500000000Z",
+  "endedAt": null
+}
+```
+
+| Field | Meaning |
+| --- | --- |
+| `id` | Public sandbox UUID |
+| `name` | Workspace-scoped active name |
+| `status` | Uppercase lifecycle state |
+| `vpcId` | Resolved workspace VPC; informational |
+| `imageRef` | Resolved image; currently `default` |
+| `resources.vcpu` | Allocated virtual CPUs |
+| `resources.memoryMb` | Allocated memory in MiB |
+| `createdAt` | Resource creation time |
+| `startedAt` | Runtime start time or `null` |
+| `endedAt` | Terminal time or `null` |
+| `error` | Optional terminal error information |
+
+Possible statuses:
+
+```text
+PENDING
+STARTING
+RUNNING
+PAUSED
+TERMINATING
+TERMINATED
+FAILED
+```
+
+Create returns only `STARTING` or `RUNNING`. Runtime operations require
+`RUNNING`.
+
+## Process resource
+
+```json
+{
+  "id": "45cef567-a28c-4109-b464-bc9c504ea900",
+  "command": ["/bin/sh", "-c", "while :; do sleep 1; done"],
+  "pid": 87,
+  "state": "RUNNING",
+  "startedAt": "2026-07-28T19:00:02.123456789Z"
+}
+```
+
+Possible states:
+
+```text
+STARTING
+RUNNING
+EXITED
+KILLED
+FAILED
+LOST
+```
+
+`exitCode` is included only for `EXITED`. `terminationSignal` is included only
+for `KILLED`. Process metadata is held in memory and disappears with the
+sandbox.
+
+## Endpoints
+
+| Method | Route | Purpose |
+| --- | --- | --- |
+| `POST` | `/v2/sandboxes` | Create a sandbox |
+| `GET` | `/v2/sandboxes` | List sandboxes |
+| `GET` | `/v2/sandboxes/{sandboxId}` | Get a sandbox |
+| `DELETE` | `/v2/sandboxes/{sandboxId}` | Destroy a sandbox |
+| `POST` | `/v2/sandboxes/{sandboxId}/exec` | Run a captured command |
+| `GET` | `/v2/sandboxes/{sandboxId}/logs` | Stream sandbox logs |
+| `PUT` | `/v2/sandboxes/{sandboxId}/files` | Upload or replace a file |
+| `GET` | `/v2/sandboxes/{sandboxId}/files` | Download a file |
+| `POST` | `/v2/sandboxes/{sandboxId}/processes` | Start a process |
+| `GET` | `/v2/sandboxes/{sandboxId}/processes` | List processes |
+| `GET` | `/v2/sandboxes/{sandboxId}/processes/{processId}` | Get a process |
+| `POST` | `/v2/sandboxes/{sandboxId}/processes/{processId}/signals` | Signal a process |
+| `POST` | `/v2/sandboxes/{sandboxId}/processes/{processId}/wait` | Wait for a process |
+| `GET` | `/v2/sandboxes/{sandboxId}/processes/{processId}/output` | Read retained output |
+| `GET` | `/v2/sandboxes/{sandboxId}/processes/{processId}/output/stream` | Tail and follow output |
+
+IDs are canonical lowercase UUIDs.
+
+## Create a sandbox
+
+```text
+POST /v2/sandboxes
+Content-Type: application/json
+```
+
+```json
+{
+  "name": "agent_job-42",
+  "vcpu": 2,
+  "memoryMb": 512
+}
+```
+
+| Field | Validation |
+| --- | --- |
+| `name` | Required; 1–63 lowercase letters, digits, `_`, or `-` |
+| `vcpu` | Required positive unsigned 32-bit integer |
+| `memoryMb` | Required positive unsigned 32-bit integer |
+
+The API resolves the workspace's default egress-only VPC and default image.
+There is no `vpcId`, `image`, or `template` request field.
+
+Response:
+
+- HTTP 201 with a full `RUNNING` sandbox; or
+- HTTP 202 with a full `STARTING` sandbox.
+
+```json
+{
+  "data": {
+    "id": "b066bdf7-a57b-4d8b-a1a7-76eab1f91273",
+    "name": "agent_job-42",
+    "status": "STARTING",
+    "vpcId": "5f82a217-9d54-4fa8-a9be-d1dbba8a8db2",
+    "imageRef": "default",
+    "resources": {
+      "vcpu": 2,
+      "memoryMb": 512
+    },
+    "createdAt": "2026-07-28T19:00:00.123456789Z",
+    "startedAt": null,
+    "endedAt": null
+  },
+  "metadata": {
+    "fetchedAt": "2026-07-28T19:00:00.200000000Z"
+  }
+}
+```
+
+Important errors:
+
+| HTTP | Code | Meaning |
+| ---: | --- | --- |
+| 400 | `invalid_request` or `invalid_field_format` | Invalid JSON, name, CPU, or memory |
+| 403 | `access_denied` | Sandbox access is not enabled |
+| 409 | `sandbox_name_taken` | Active sandbox already uses the name |
+| 429 | `rate_limited` | Rejected before Create |
+| 503 | `compute_unavailable` | Compute could not accept Create |
+
+Create is idempotent for an active sandbox with the same name and resource
+request. Repeating the exact request returns that sandbox instead of creating a
+second one. Reusing the name with different resources returns
+`sandbox_name_taken`.
+
+## List sandboxes
+
+```text
+GET /v2/sandboxes?limit=50&cursor=<opaque>
+```
+
+| Parameter | Default | Validation |
+| --- | ---: | --- |
+| `limit` | 50 | Integer from 1 through 250 |
+| `cursor` | None | Opaque cursor from the previous page |
+
+```json
+{
+  "data": [
+    {
+      "id": "b066bdf7-a57b-4d8b-a1a7-76eab1f91273",
+      "name": "agent_job-42",
+      "status": "RUNNING",
+      "vpcId": "5f82a217-9d54-4fa8-a9be-d1dbba8a8db2",
+      "imageRef": "default",
+      "resources": {
+        "vcpu": 2,
+        "memoryMb": 512
+      },
+      "createdAt": "2026-07-28T19:00:00.123456789Z",
+      "startedAt": "2026-07-28T19:00:00.500000000Z",
+      "endedAt": null
+    }
+  ],
+  "metadata": {
+    "fetchedAt": "2026-07-28T19:00:03.000000000Z"
+  },
+  "page": {
+    "cursor": "eyJjcmVhdGVkQXQiOi...",
+    "hasMore": true,
+    "limit": 50
+  }
+}
+```
+
+List is scoped to the authenticated workspace, includes retained terminal
+resources, and orders by `createdAt DESC`, then `id DESC`. It uses keyset
+pagination. Do not decode or construct cursors.
+
+## Get a sandbox
+
+```text
+GET /v2/sandboxes/{sandboxId}
+```
+
+Returns HTTP 200 with the full resource. A missing or workspace-hidden
+resource returns:
+
+```text
+404 sandbox_not_found
+```
+
+## Destroy a sandbox
+
+```text
+DELETE /v2/sandboxes/{sandboxId}
+```
+
+- HTTP 202 returns the full `TERMINATING` resource.
+- HTTP 204 has no body when teardown completed synchronously.
+- A missing or hidden resource returns `404 sandbox_not_found`.
+
+The destroy intent is persisted before node teardown. After the intent is
+stored, temporary node unavailability can still return the durable
+`TERMINATING` resource.
+
+## Run a captured command
+
+```text
+POST /v2/sandboxes/{sandboxId}/exec
+Content-Type: application/json
+```
+
+```json
+{
+  "command": ["/bin/sh", "-c", "printf 'tests passed\n'"],
+  "environment": {
+    "PATH": "/usr/local/bin:/usr/bin:/bin",
+    "CI": "true"
+  },
+  "cwd": "/",
+  "timeout": "5m"
+}
+```
+
+| Field | Default | Meaning |
+| --- | ---: | --- |
+| `command` | Required | Argument vector; item 0 must be absolute |
+| `environment` | Guest default | Replaces the complete environment |
+| `cwd` | `/` | Working directory |
+| `timeout` | `30s` | Go duration greater than zero and at most `5m` |
+
+The command is not shell-parsed.
+
+```json
+{
+  "data": {
+    "stdout": "dGVzdHMgcGFzc2VkCg==",
+    "stderr": "",
+    "encoding": "base64",
+    "exitCode": 0
+  },
+  "metadata": {
+    "fetchedAt": "2026-07-28T19:01:00.000000000Z"
+  }
+}
+```
+
+`stdout` and `stderr` are base64. A non-zero exit code still returns HTTP 200.
+Combined raw output is limited to 4 MiB.
+
+| HTTP | Code | Meaning |
+| ---: | --- | --- |
+| 409 | `operation_ambiguous` | The command may have executed, but its result was not confirmed |
+| 413 | `sandbox_exec_output_too_large` | Output exceeded 4 MiB; command may have executed |
+| 504 | `sandbox_exec_timed_out` | Observation timed out; command may have executed |
+
+`operation_ambiguous` is an error about the Exec outcome, not a sandbox state.
+Do not retry these automatically. Inspect the command's external effects or an
+application-defined completion marker before deciding what to do next.
+
+## Stream sandbox logs
+
+```text
+GET /v2/sandboxes/{sandboxId}/logs?follow=false
+Accept: application/x-ndjson
+```
+
+`follow` defaults to `false` and accepts only `true` or `false`.
+
+```json
+{"type":"log","stream":"STDOUT","data":"c3RhcnRlZAo=","encoding":"base64","at":"2026-07-28T19:00:00Z"}
+{"type":"log","stream":"STDERR","data":"d2FybmluZwo=","encoding":"base64","at":"2026-07-28T19:00:01Z"}
+```
+
+The endpoint can commit HTTP 200 before upstream admission completes. An
+admission or live failure after that point is terminal:
+
+```json
+{"type":"error","errors":[{"code":"compute_unavailable","message":"Compute is temporarily unavailable"}]}
+```
+
+Parse every frame. HTTP 200 alone does not mean the stream completed
+successfully.
+
+## Upload or replace a file
+
+```text
+PUT /v2/sandboxes/{sandboxId}/files?path=/tmp/input.bin&mode=0640
+Content-Type: application/octet-stream
+```
+
+The body is the raw file. URL-encode query values.
+
+| Parameter | Default | Validation |
+| --- | ---: | --- |
+| `path` | Required | Absolute path, at most 4096 bytes |
+| `mode` | `0644` | Octal `0001` through `0777` |
+
+Files are capped at 100 MiB. Upload cannot replace `/`, a directory, symlink,
+device, socket, or FIFO. A successful write uses an atomic replacement.
+
+```json
+{
+  "data": {
+    "path": "/tmp/input.bin",
+    "bytesWritten": 2
+  },
+  "metadata": {
+    "fetchedAt": "2026-07-28T19:00:05.000000000Z"
+  }
+}
+```
+
+Success is HTTP 200. If the response cannot be confirmed after replacement,
+the API returns retryable `503 compute_unavailable`. Repeating the same PUT
+with the same path, bytes, and mode is safe.
+
+## Download a file
+
+```text
+GET /v2/sandboxes/{sandboxId}/files?path=/tmp/output.bin
+```
+
+```text
+HTTP/1.1 200 OK
+Content-Type: application/octet-stream
+Content-Length: 1234
+Cache-Control: no-store
+X-Sandbox-File-Mode: 0640
+Last-Modified: Tue, 28 Jul 2026 19:00:00 GMT
+```
+
+The body is the raw file. Only regular files up to 100 MiB are downloadable.
+Missing sandboxes and files use `404 sandbox_file_not_found`.
+
+A failure after HTTP 200 cannot become JSON. Treat a body shorter than
+`Content-Length` as failed.
+
+## Start a managed process
+
+```text
+POST /v2/sandboxes/{sandboxId}/processes
+Content-Type: application/json
+```
+
+```json
+{
+  "command": ["/bin/sh", "-c", "while :; do sleep 1; done"],
+  "environment": {
+    "PATH": "/usr/local/bin:/usr/bin:/bin",
+    "PORT": "8080"
+  },
+  "cwd": "/"
+}
+```
+
+`command` is required. `environment` replaces rather than merges.
+
+Response: HTTP 201.
+
+```json
+{
+  "data": {
+    "id": "45cef567-a28c-4109-b464-bc9c504ea900",
+    "command": ["/bin/sh", "-c", "while :; do sleep 1; done"],
+    "pid": 87,
+    "state": "RUNNING"
+  },
+  "metadata": {
+    "fetchedAt": "2026-07-28T19:00:02.500000000Z"
+  }
+}
+```
+
+The platform generates the UUID before dispatch and never exposes internal
+guest handles. Start is not HTTP-idempotent. `409 operation_ambiguous` means a
+process may be running even though the caller did not receive its UUID and PID.
+Do not retry Start automatically. List processes and compare command and start
+time. If the process cannot be identified confidently, require application-level
+or operator reconciliation.
+
+## List managed processes
+
+```text
+GET /v2/sandboxes/{sandboxId}/processes?limit=50&cursor=<opaque>
+```
+
+| Parameter | Default | Validation |
+| --- | ---: | --- |
+| `limit` | 50 | Integer from 1 through 250 |
+| `cursor` | None | Opaque cursor from the previous page |
+
+```json
+{
+  "data": [
+    {
+      "id": "45cef567-a28c-4109-b464-bc9c504ea900",
+      "command": ["/bin/sh", "-c", "while :; do sleep 1; done"],
+      "pid": 87,
+      "state": "RUNNING",
+      "startedAt": "2026-07-28T19:00:02.123456789Z"
+    }
+  ],
+  "metadata": {
+    "fetchedAt": "2026-07-28T19:00:03.000000000Z"
+  },
+  "page": {
+    "cursor": "eyJpZCI6IjQ1Y2VmNTY3...",
+    "hasMore": true,
+    "limit": 50
+  }
+}
+```
+
+Pages are sorted by process UUID and exclude internal handles. Pass the cursor
+unchanged. When `hasMore` is false, `cursor` can be omitted.
+
+## Get a managed process
+
+```text
+GET /v2/sandboxes/{sandboxId}/processes/{processId}
+```
+
+Returns HTTP 200 with one process resource. A missing process returns:
+
+```text
+404 sandbox_process_not_found
+```
+
+## Signal a managed process
+
+```text
+POST /v2/sandboxes/{sandboxId}/processes/{processId}/signals
+Content-Type: application/json
+```
+
+```json
+{
+  "signal": 15,
+  "includeChildren": false
+}
+```
+
+| Field | Default | Validation |
+| --- | ---: | --- |
+| `signal` | Required | Integer from 1 through 64 |
+| `includeChildren` | `false` | Boolean |
+
+Success returns HTTP 204. An already-terminal process accepts Signal as a
+no-op. `409 operation_ambiguous` means the signal may have been delivered. Get
+or wait for the process, and resend only when duplicate delivery is safe for
+that signal and application. Currently,
+`includeChildren: true` should be used only with signal 9 (`SIGKILL`);
+descendant delivery with other signals can make terminal state unobservable.
+
+## Wait for a managed process
+
+```text
+POST /v2/sandboxes/{sandboxId}/processes/{processId}/wait?timeout=30s
+```
+
+There is no request body. `timeout` defaults to `30s`, uses Go duration syntax,
+must be positive, and cannot exceed `5m`.
+
+```json
+{
+  "data": {
+    "id": "45cef567-a28c-4109-b464-bc9c504ea900",
+    "state": "EXITED",
+    "exitCode": 0
+  },
+  "metadata": {
+    "fetchedAt": "2026-07-28T19:01:00.000000000Z"
+  }
+}
+```
+
+`KILLED` includes `terminationSignal` instead of `exitCode`.
+
+`504 sandbox_process_wait_timed_out` stops only the observation. It does not
+stop or signal the process.
+
+## Read retained process output
+
+```text
+GET /v2/sandboxes/{sandboxId}/processes/{processId}/output?tailBytes=65536
+```
+
+`tailBytes` defaults to 0, meaning all retained output. It accepts 0 through
+524,288 bytes across stdout and stderr.
+
+```json
+{
+  "data": {
+    "chunks": [
+      {
+        "stream": "STDOUT",
+        "data": "c2VydmVyIHN0YXJ0ZWQK",
+        "encoding": "base64",
+        "at": "2026-07-28T19:00:03.000000000Z"
+      },
+      {
+        "stream": "STDERR",
+        "data": "d2FybmluZwo=",
+        "encoding": "base64",
+        "at": "2026-07-28T19:00:04.000000000Z"
+      }
+    ]
+  },
+  "metadata": {
+    "fetchedAt": "2026-07-28T19:00:05.000000000Z"
+  }
+}
+```
+
+Chunks preserve observed ordering and arbitrary bytes. They are not lines.
+Tail selection preserves whole chunks.
+
+The endpoint distinguishes:
+
+```text
+404 sandbox_process_not_found
+404 sandbox_process_output_not_retained
+```
+
+## Tail and follow process output
+
+```text
+GET /v2/sandboxes/{sandboxId}/processes/{processId}/output/stream?tailBytes=8192
+Accept: application/x-ndjson
+```
+
+The endpoint always sends the retained tail and then follows live output.
+There is no `follow` parameter.
+
+It confirms the process and retained-output ring and opens the upstream stream
+before committing HTTP 200. Admission failures therefore return an ordinary
+non-200 JSON error.
+
+```json
+{"type":"log","stream":"STDOUT","data":"c3RhcnRlZAo=","encoding":"base64","at":"2026-07-28T19:00:03Z"}
+{"type":"log","stream":"STDERR","data":"d2FybmluZwo=","encoding":"base64","at":"2026-07-28T19:00:04Z"}
+```
+
+A failure after HTTP 200 sends:
+
+```json
+{"type":"error","errors":[{"code":"compute_unavailable","message":"Compute is temporarily unavailable"}]}
+```
+
+Fail the stream when `type` is `error`.
+
+The stream is best effort. A slow consumer can miss chunks, and frames have no
+sequence number or loss marker.
+
+## Output retention
+
+- Approximately 512 KiB is retained per process.
+- Only the newest 32 process output rings are retained.
+- Output can be evicted while process metadata remains.
+- All output disappears with the sandbox.
+- Output is not a durable log store.
+
+See [Managed processes](/docs/features/sandboxes/managed-processes) for
+application guidance and [Sandbox errors and retries](/docs/features/sandboxes/errors-and-retries)
+for the full error and retry model.
