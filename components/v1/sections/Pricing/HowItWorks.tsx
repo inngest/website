@@ -35,7 +35,7 @@ interface Step {
 const STEPS: Step[] = [
   {
     number: "01",
-    title: "Write your function with Steps",
+    title: "Wrap functions in Steps",
     body:
       "Wrap your existing code in step.run(). Each step automatically handles retries, state, and failure recovery. No refactoring, no new patterns to learn — just wrap and go.",
     iconSrc: "/assets/v1/feature-cards/retries.svg",
@@ -81,7 +81,11 @@ export default function HowItWorks() {
   return (
     <section
       aria-labelledby="pricing-how-heading"
-      className={cn("relative overflow-x-clip", V1_SECTION_PADDING_Y)}
+      className={cn(
+        "relative overflow-x-clip",
+        V1_SECTION_PADDING_Y,
+        "!pt-20 sm:!pt-24 lg:!pt-0",
+      )}
     >
       <div className="mx-auto flex max-w-[1440px] flex-col gap-v1-stack-lg">
         {/* Header row: heading + orange-filled "See Docs" CTA beside the

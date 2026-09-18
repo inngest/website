@@ -10,19 +10,18 @@ import {
   FEATURES,
   FEATURE_SECTIONS,
   PLANS,
-  PLAN_NAMES,
   type Feature,
   type FeatureCell,
   type Plan,
 } from "./plans";
 
-// "PLAN FEATURES" comparison.
-// Left column carries the section eyebrow ("PLAN FEATURES") + the
-// per-plan CTA stack; the rest of the row is taken up by feature
-// rows grouped under accordion-style category headers.
+// Comparison table. Heading + per-plan CTAs, then feature rows
+// grouped under accordion-style category headers. Top padding is
+// halved so the gap from the calculator matches other section
+// rhythms (the calculator already provides a full bottom pad).
 
 const SECTIONS = [
-  { key: "all", label: "Plan Comparison" },
+  { key: "all", label: "Platform" },
   ...FEATURE_SECTIONS.map((s) => ({ key: s.key, label: s.name })),
 ];
 
@@ -38,24 +37,27 @@ export default function ComparisonTable() {
       return next;
     });
   return (
-    <Section aria-labelledby="pricing-compare-heading" className="relative">
+    <Section
+      aria-labelledby="pricing-compare-heading"
+      className="relative !pt-20 sm:!pt-24 lg:!pt-0"
+    >
       {/* Below lg the inner table is wider than the viewport and
           scrolls horizontally; at lg+ the min-width matches the
           natural content so there's no overflow. */}
       <div className="-mx-6 overflow-x-auto sm:-mx-9 lg:mx-0 lg:overflow-visible">
-        <div className="min-w-[660px] px-6 sm:px-9 lg:min-w-0 lg:px-0">
+        <div className="min-w-[820px] px-6 sm:px-9 lg:min-w-0 lg:px-0">
           {/* Header row: PLAN FEATURES on left, 3 plan CTAs across the
               right. Each cell sits in its own column with a single
               cdcdcd hairline at the bottom. Below lg the entire table
               scrolls horizontally inside the outer overflow wrapper. */}
-          <div className="grid min-h-[80px] grid-cols-[180px_repeat(3,minmax(160px,1fr))] items-center border-b border-v1-contrast py-3 lg:h-[122px] lg:min-h-0 lg:grid-cols-[1.5fr_repeat(3,minmax(0,1fr))] lg:py-0">
+          <div className="grid min-h-[80px] grid-cols-[180px_repeat(4,minmax(140px,1fr))] items-center border-b border-v1-contrast py-3 lg:min-h-0 lg:grid-cols-[minmax(0,1.3fr)_repeat(4,minmax(0,1fr))] lg:py-6">
             <div className="flex h-full items-center pr-4 lg:pr-6">
               <motion.h2
                 {...reveals.heading}
                 id="pricing-compare-heading"
                 className="text-v1-heading-xs sm:text-v1-heading-sm lg:text-v1-heading-card uppercase text-v1-frost"
               >
-                Plan features
+                Compare Plan Features
               </motion.h2>
             </div>
             {PLANS.map((plan, i) => (
@@ -100,7 +102,7 @@ export default function ComparisonTable() {
                       isOpen ? "grid-rows-[1fr]" : "grid-rows-[0fr]"
                     )}
                   >
-                    <div className="overflow-hidden">
+                    <div className={isOpen ? "overflow-visible" : "overflow-hidden"}>
                       <div className="flex flex-col">
                         {rows.map((row) => (
                           <FeatureRow key={row.name} feature={row} />
@@ -130,13 +132,9 @@ function PlanHeaderCol({ plan, highlight }: { plan: Plan; highlight: boolean }) 
       <ButtonLink
         href={plan.cta.href}
         variant={highlight ? "primary" : "secondary"}
-        className="w-full max-w-[180px] !min-w-0 !px-3 lg:!min-w-[154px] lg:!px-5"
+        className="w-full max-w-[160px] !min-w-0 !px-2 lg:max-w-[180px] lg:!min-w-0 lg:!px-4"
       >
-        {plan.name === PLAN_NAMES.enterprise
-          ? "Contact Us"
-          : plan.name === PLAN_NAMES.pro
-            ? "Start Building"
-            : "Get Started"}
+        {plan.cta.text}
       </ButtonLink>
     </motion.div>
   );
@@ -172,32 +170,19 @@ function FeatureRow({ feature }: { feature: Feature }) {
   // secondary description is hidden below sm to keep that sticky
   // column narrow on phones.
   return (
-    <div className="grid grid-cols-[180px_repeat(3,minmax(160px,1fr))] lg:grid-cols-[1.5fr_repeat(3,minmax(0,1fr))] items-center border-b border-v1-strong/[0.4] py-3 lg:py-4">
-      <div className="flex h-full flex-col justify-center gap-1 pl-4 pr-3 lg:gap-1.5 lg:pl-[34px] lg:pr-6">
-        <div className="flex items-center gap-2">
-          <p className="text-v1-body-xs text-v1-frost lg:text-v1-body-sm">
-            {feature.name}
-          </p>
-          {feature.infoUrl && feature.infoUrl !== "#" && (
-            <a
-              href={feature.infoUrl}
-              aria-label={`More info about ${feature.name}`}
-              className="text-v1-frost/70 motion-safe:transition-colors hover:text-v1-frost"
-            >
-              <InfoIcon />
-            </a>
-          )}
-        </div>
+    <div className="grid grid-cols-[180px_repeat(4,minmax(140px,1fr))] lg:grid-cols-[1.3fr_repeat(4,minmax(0,1fr))] items-center border-b border-v1-strong/[0.4] py-3 lg:py-4">
+      <div className="flex h-full items-center gap-2 pl-4 pr-3 lg:pl-[34px] lg:pr-6">
+        <p className="text-v1-body-xs text-v1-frost lg:text-v1-body-sm">
+          {feature.name}
+        </p>
         {feature.description && (
-          <p className="hidden text-v1-body-xs text-v1-frost sm:block">
-            {feature.description}
-          </p>
+          <InfoTip label={feature.name} text={feature.description} />
         )}
       </div>
       {PLANS.map((plan) => (
         <div
           key={plan.name}
-          className="flex flex-col items-start gap-1 pl-4 pr-3 lg:pl-[82px] lg:pr-6"
+          className="flex flex-col items-start gap-1 pl-3 pr-2 lg:pl-6 lg:pr-4"
         >
           <Cell value={feature.plans[plan.name]} />
         </div>
@@ -206,28 +191,45 @@ function FeatureRow({ feature }: { feature: Feature }) {
   );
 }
 
-function InfoIcon() {
-  // file-list-line icon — 20×19.5 white-ish glyph next
-  // to each feature name.
+function InfoTip({ label, text }: { label: string; text: string }) {
   return (
-    <svg
-      viewBox="0 0 20 20"
-      className="size-5 shrink-0"
-      aria-hidden="true"
-    >
-      <rect
-        x="3"
-        y="2"
-        width="14"
-        height="16"
-        rx="1"
+    <span className="group/info relative inline-flex shrink-0">
+      <button
+        type="button"
+        aria-label={`About ${label}`}
+        className="text-v1-frost/55 outline-none motion-safe:transition-colors hover:text-v1-frost focus-visible:text-v1-frost"
+      >
+        <InfoIcon />
+      </button>
+      <span
+        role="tooltip"
+        className="pointer-events-none absolute left-0 top-[calc(100%+8px)] z-30 w-max max-w-[240px] rounded-md border border-v1-contrast bg-v1-carbon-400 px-2.5 py-2 text-left text-v1-body-xs text-v1-frost opacity-0 shadow-[0_8px_24px_rgba(0,0,0,0.45)] motion-safe:transition-opacity motion-safe:duration-150 group-hover/info:opacity-100 group-focus-within/info:opacity-100"
+      >
+        {text}
+      </span>
+    </span>
+  );
+}
+
+function InfoIcon() {
+  return (
+    <svg viewBox="0 0 16 16" className="size-4" aria-hidden="true">
+      <circle
+        cx="8"
+        cy="8"
+        r="6.25"
         fill="none"
         stroke="currentColor"
         strokeWidth="1.2"
       />
-      <line x1="6" y1="6.5" x2="14" y2="6.5" stroke="currentColor" strokeWidth="1.2" />
-      <line x1="6" y1="10" x2="14" y2="10" stroke="currentColor" strokeWidth="1.2" />
-      <line x1="6" y1="13.5" x2="11" y2="13.5" stroke="currentColor" strokeWidth="1.2" />
+      <circle cx="8" cy="5.25" r="0.85" fill="currentColor" />
+      <path
+        d="M8 7.25 v4"
+        fill="none"
+        stroke="currentColor"
+        strokeWidth="1.3"
+        strokeLinecap="round"
+      />
     </svg>
   );
 }
