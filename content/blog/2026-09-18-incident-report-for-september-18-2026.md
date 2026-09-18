@@ -1,7 +1,7 @@
 ---
 focus: false
 featured: false
-heading: "Incident report for September 18, 2026 - Database connection exhaustion"
+heading: "Incident report for September 18, 2026 - When Deletion Cascades Exhausted Our Database Connections"
 subtitle: A report on the database connection pool exhaustion that interrupted run scheduling and event processing.
 image: /assets/blog/incident-post-mortem.svg
 date: 2026-09-18
