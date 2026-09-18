@@ -79,8 +79,6 @@ Four factors combined:
 
 The third and fourth factors are what made this a platform-wide event with a long tail, rather than a slow background job. A shared connection pool with no isolation between workloads means one expensive write path can deny database access to everything else, and keep denying it after the original problem is gone.
 
-We have not yet established who initiated the original deletion or why the first cascade ran as long as it did. We are continuing to investigate both, and will update this report as we learn more.
-
 ## What We're Doing Now
 
 - **Gating marketplace deletions.** We have shipped an operational kill switch that stops Vercel Marketplace installation and resource deletion mutations. Deletion requests are still recorded as internal events with deterministic IDs so nothing is lost and they can be reconciled later, and the webhook returns an error so Vercel retries rather than dropping the request.
