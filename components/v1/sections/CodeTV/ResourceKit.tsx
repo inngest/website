@@ -33,8 +33,9 @@ export default function ResourceKit() {
         actions={
           <div className="flex flex-wrap items-center gap-3">
             <ButtonLink
-              href={appendRef("/pricing", `${PAGE_REF}-kit`)}
+              href={appendRef("/sign-up", "hackathon")}
               variant="accent"
+              prefetch={false}
             >
               Build Free
             </ButtonLink>
