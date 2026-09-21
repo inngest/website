@@ -1,3 +1,4 @@
+import { Fragment } from "react";
 import {
   CHALLENGE_STATUS_LEAD,
   CHALLENGE_STATUS_REST,
@@ -5,21 +6,28 @@ import {
 
 const REPEAT = 6;
 
+function Pulse() {
+  return (
+    <span
+      aria-hidden="true"
+      className="v1-codetv-pulse size-1.5 shrink-0 rounded-full bg-v1-accent-green"
+    />
+  );
+}
+
 function MarqueeRow({ decorative = false }: { decorative?: boolean }) {
   return (
-    <div aria-hidden={decorative ? true : undefined} className="flex shrink-0">
+    <div
+      aria-hidden={decorative ? true : undefined}
+      className="flex shrink-0 items-center gap-3 px-3 font-v1Label text-[12px] uppercase tracking-[0.08em] sm:text-[13px]"
+    >
       {Array.from({ length: REPEAT }, (_, i) => (
-        <span
-          key={i}
-          className="flex shrink-0 items-center gap-3 px-5 font-v1Label text-[12px] uppercase tracking-[0.08em] sm:text-[13px]"
-        >
-          {CHALLENGE_STATUS_LEAD}
-          <span
-            aria-hidden="true"
-            className="v1-codetv-pulse size-1.5 shrink-0 rounded-full bg-v1-accent-green"
-          />
-          {CHALLENGE_STATUS_REST}
-        </span>
+        <Fragment key={i}>
+          <span className="shrink-0">{CHALLENGE_STATUS_LEAD}</span>
+          <Pulse />
+          <span className="shrink-0">{CHALLENGE_STATUS_REST}</span>
+          <Pulse />
+        </Fragment>
       ))}
     </div>
   );

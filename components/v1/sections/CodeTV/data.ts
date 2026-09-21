@@ -31,8 +31,8 @@ function still(n: number, copy?: 1) {
 
 export const HERO_IMAGE = still(139, 1);
 
-/** Set when the episode drops. Watch swaps the placeholder for the embed. */
-export const EPISODE_YOUTUBE_ID: string | null = null;
+/** CodeTV Web Dev Challenge S3.E6. */
+export const EPISODE_YOUTUBE_ID = "pui1mW9sexM";
 
 /** Click-to-color gag in the set gallery. */
 export const SCOTT = {
@@ -100,6 +100,28 @@ export const RESOURCE_LINKS = [
   },
 ] as const;
 
+export const PRIZES = [
+  {
+    place: "First Prize",
+    description: "1 year of Inngest Pro + Anti-Infra Hoodie",
+    image: "/assets/v1/events/codetv/prizes/anti-infra-hoodie.jpg",
+    imageAlt: "The back of the Anti-Infra hoodie",
+  },
+  {
+    place: "Second Prize",
+    description: "3 months of Pro + Anti-Infra shirt",
+    image: "/assets/v1/events/codetv/prizes/anti-infra-shirt.png",
+    imageAlt: "The Anti-Infra t-shirt",
+  },
+  {
+    place: "Third Prize",
+    description: "1 month of Pro + exclusive sticker pack",
+    image: null as string | null,
+    imageAlt: "Exclusive sticker pack and one month of Inngest Pro",
+    visual: "stickers" as const,
+  },
+] as const;
+
 export const TEAMS = [
   {
     id: "team-1",
@@ -119,7 +141,7 @@ export const TEAMS = [
     image: still(52),
     imageAlt: "Scott and Brian of Meatbags on the CodeTV set",
     built:
-      "Meatbags is the nightmare scenario of an agentic manager that understands your current work and provides demoralizing feedback in real time.",
+      "Meatbags is my nightmare (the app not the team). An agentic manager that provides demoralizing feedback in real time? Help.",
   },
   {
     id: "team-3",

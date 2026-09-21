@@ -2,7 +2,10 @@ import Image from "next/image";
 import Chip from "@/components/v1/sections/shared/Chip";
 import Section from "@/components/v1/sections/shared/Section";
 import SectionHeader from "@/components/v1/sections/shared/SectionHeader";
-import { V1_HEADER_CONTENT_MT } from "@/components/v1/sections/shared/sectionShell";
+import {
+  V1_HEADER_CONTENT_MT,
+  V1_SECTION_PADDING_Y_COMPACT,
+} from "@/components/v1/sections/shared/sectionShell";
 import {
   CHALLENGE_STATUS_LEAD,
   CHALLENGE_STATUS_REST,
@@ -16,16 +19,16 @@ export default function Watch() {
     <Section
       id="episode"
       aria-labelledby="codetv-watch-heading"
-      className="scroll-mt-28"
+      className={`scroll-mt-28 ${V1_SECTION_PADDING_Y_COMPACT}`}
       containerClassName="flex flex-col"
     >
       <div className="flex flex-col items-start gap-6">
         <Chip variant="solid" size="sm" className="font-normal">
-          YouTube · Coming soon
+          {EPISODE_YOUTUBE_ID ? "YouTube" : "YouTube · Coming soon"}
         </Chip>
         <SectionHeader
           id="codetv-watch-heading"
-          title="Watch the episode."
+          title="Watch the episode"
           body="Four hours. Three teams. Two days. And one glimpse into the potential hellscape that might await us if the agents take over (you gotta watch to understand)."
           bodyClassName="max-w-[640px]"
         />

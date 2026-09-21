@@ -1,7 +1,10 @@
 import Section from "@/components/v1/sections/shared/Section";
 import SectionHeader from "@/components/v1/sections/shared/SectionHeader";
 import BeforeAfterSlider from "@/components/v1/sections/shared/BeforeAfterSlider";
-import { V1_HEADER_CONTENT_MT } from "@/components/v1/sections/shared/sectionShell";
+import {
+  V1_HEADER_CONTENT_MT,
+  V1_SECTION_PADDING_Y_COMPACT,
+} from "@/components/v1/sections/shared/sectionShell";
 
 const BEFORE_SRC = "/assets/v1/it-doesnt-have-to-be-hard/before.webp";
 const AFTER_SRC = "/assets/v1/it-doesnt-have-to-be-hard/after.webp";
@@ -11,7 +14,7 @@ export default function HowItKeepsRunning() {
     <Section
       id="how-it-works"
       aria-labelledby="codetv-how-heading"
-      className="scroll-mt-28"
+      className={`scroll-mt-28 ${V1_SECTION_PADDING_Y_COMPACT}`}
       containerClassName="flex flex-col"
     >
       <SectionHeader

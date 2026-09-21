@@ -36,9 +36,10 @@ export default function Hero() {
           </h1>
 
           <p className="text-v1-body-lg-loose max-w-[38rem] text-v1-frost/80">
-            Welcome to Inngest&apos;s Web Dev Challenge Hackathon. Build an
-            event-driven app or agent that runs no matter what. The Inngest SDK
-            is all you need to make work reliable at scale.
+            Welcome to Inngest&apos;s Web Dev Challenge Hackathon! Build an
+            event-driven app or agent that runs no matter what, and win cool
+            prizes. The Inngest SDK is all you need to make work reliable at
+            scale.
           </p>
 
           <div className="flex flex-wrap items-center gap-3">

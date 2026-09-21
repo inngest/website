@@ -2,7 +2,10 @@ import Image from "next/image";
 import { cn } from "@/utils/v1/cn";
 import Section from "@/components/v1/sections/shared/Section";
 import SectionHeader from "@/components/v1/sections/shared/SectionHeader";
-import { V1_HEADER_CONTENT_MT } from "@/components/v1/sections/shared/sectionShell";
+import {
+  V1_HEADER_CONTENT_MT,
+  V1_SECTION_PADDING_Y_COMPACT,
+} from "@/components/v1/sections/shared/sectionShell";
 import { GALLERY } from "@/components/v1/sections/CodeTV/data";
 import GiveScott from "@/components/v1/sections/CodeTV/GiveScott";
 
@@ -14,7 +17,7 @@ export default function Gallery() {
     <Section
       id="from-the-set"
       aria-labelledby="codetv-gallery-heading"
-      className="scroll-mt-28"
+      className={`scroll-mt-28 ${V1_SECTION_PADDING_Y_COMPACT}`}
       containerClassName="flex flex-col"
     >
       <SectionHeader
@@ -33,7 +36,7 @@ export default function Gallery() {
             key={photo.src}
             className={cn(
               "relative h-full overflow-hidden rounded-lg bg-v1-surfaceElevated",
-              photo.className,
+              photo.className
             )}
           >
             <Image
@@ -51,7 +54,7 @@ export default function Gallery() {
             key={photo.src}
             className={cn(
               "relative h-full overflow-hidden rounded-lg bg-v1-surfaceElevated",
-              photo.className,
+              photo.className
             )}
           >
             <Image

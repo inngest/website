@@ -23,7 +23,7 @@ import { useIsDesktop } from "@/utils/v1/hooks/useIsDesktop";
 
 const InngestLogoCanvas = dynamic(
   () => import("@/components/v1/sections/shared/InngestLogoCanvas"),
-  { ssr: false },
+  { ssr: false }
 );
 
 export interface StippleCtaSectionProps {
@@ -56,6 +56,7 @@ export interface StippleCtaSectionProps {
    * card required · Free tier"). Small, dimmed reassurance copy.
    */
   footnote?: ReactNode;
+  className?: string;
 }
 
 export default function StippleCtaSection({
@@ -67,6 +68,7 @@ export default function StippleCtaSection({
   headingClassName,
   bodyClassName,
   footnote,
+  className,
 }: StippleCtaSectionProps) {
   const isDesktop = useIsDesktop();
   return (
@@ -75,6 +77,7 @@ export default function StippleCtaSection({
       className={cn(
         "relative flex w-full items-center text-v1-frost",
         V1_SECTION_PADDING_Y,
+        className
       )}
     >
       {/* Animated Inngest-logomark stipple — same canvas the homepage
@@ -89,7 +92,7 @@ export default function StippleCtaSection({
           midpoint to whichever vertical position is active. */}
       <div
         aria-hidden="true"
-        className="pointer-events-none absolute h-[100vw] w-full -translate-y-1/2 top-[85%] opacity-30 lg:top-1/2 lg:opacity-40 -z-10"
+        className="pointer-events-none absolute top-[85%] -z-10 h-[100vw] w-full -translate-y-1/2 opacity-30 lg:top-1/2 lg:opacity-40"
       >
         <InngestLogoCanvas
           enterRange={1.3}
@@ -106,7 +109,7 @@ export default function StippleCtaSection({
         <div
           className={cn(
             "flex max-w-[720px] flex-col items-start gap-v1-stack",
-            containerClassName,
+            containerClassName
           )}
         >
           <motion.h2
@@ -118,7 +121,7 @@ export default function StippleCtaSection({
               // naturally instead of breaking at a desktop-tuned point.
               V1_SECTION_TITLE,
               "text-balance max-sm:[&_br]:hidden",
-              headingClassName,
+              headingClassName
             )}
           >
             {heading}
@@ -128,10 +131,7 @@ export default function StippleCtaSection({
           <div className="flex flex-col items-start gap-10">
             <motion.p
               {...reveals.body}
-              className={cn(
-                "text-v1-body-lg-loose",
-                bodyClassName,
-              )}
+              className={cn("text-v1-body-lg-loose", bodyClassName)}
             >
               {body}
             </motion.p>

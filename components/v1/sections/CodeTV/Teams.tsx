@@ -1,7 +1,10 @@
 import Image from "next/image";
 import Section from "@/components/v1/sections/shared/Section";
 import SectionHeader from "@/components/v1/sections/shared/SectionHeader";
-import { V1_HEADER_CONTENT_MT } from "@/components/v1/sections/shared/sectionShell";
+import {
+  V1_HEADER_CONTENT_MT,
+  V1_SECTION_PADDING_Y_COMPACT,
+} from "@/components/v1/sections/shared/sectionShell";
 import { TEAMS } from "@/components/v1/sections/CodeTV/data";
 
 export default function Teams() {
@@ -9,7 +12,7 @@ export default function Teams() {
     <Section
       id="teams"
       aria-labelledby="codetv-teams-heading"
-      className="scroll-mt-28"
+      className={`scroll-mt-28 ${V1_SECTION_PADDING_Y_COMPACT}`}
       containerClassName="flex flex-col"
     >
       <SectionHeader

@@ -3,6 +3,7 @@ import ButtonLink from "@/components/v1/ButtonLink";
 import StippleCtaSection from "@/components/v1/sections/shared/StippleCtaSection";
 import Hero from "@/components/v1/sections/CodeTV/Hero";
 import Marquee from "@/components/v1/sections/CodeTV/Marquee";
+import Prizes from "@/components/v1/sections/CodeTV/Prizes";
 import Watch from "@/components/v1/sections/CodeTV/Watch";
 import HowItKeepsRunning from "@/components/v1/sections/CodeTV/HowItKeepsRunning";
 import ResourceKit from "@/components/v1/sections/CodeTV/ResourceKit";
@@ -13,6 +14,7 @@ import {
   PAGE_REF,
   SUBMIT_APP_HREF,
 } from "@/components/v1/sections/CodeTV/data";
+import { V1_SECTION_PADDING_Y_COMPACT } from "@/components/v1/sections/shared/sectionShell";
 
 export default function CodeTVWebDevChallenge() {
   return (
@@ -21,6 +23,7 @@ export default function CodeTVWebDevChallenge() {
       <Marquee />
       <Watch />
       <Teams />
+      <Prizes />
       <ResourceKit />
       <HowItKeepsRunning />
       <Gallery />
@@ -30,6 +33,7 @@ export default function CodeTVWebDevChallenge() {
         body="Write the function. Walk away. Inngest keeps the work running — through a crash, after an event, while you're off doing something else."
         footnote="Free tier · No workers to babysit"
         containerClassName="max-w-[780px]"
+        className={V1_SECTION_PADDING_Y_COMPACT}
       >
         <ButtonLink
           href={SUBMIT_APP_HREF}
@@ -48,7 +52,7 @@ export default function CodeTVWebDevChallenge() {
           Start building free
         </ButtonLink>
         <ButtonLink href="#resource-kit" variant="secondary">
-          Open the resource kit
+          Go to the Resource Kit
         </ButtonLink>
       </StippleCtaSection>
     </PageShell>
