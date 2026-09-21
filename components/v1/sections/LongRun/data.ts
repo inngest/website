@@ -164,6 +164,8 @@ export interface HeroNarrative {
   /** Second CTA beside the primary. Used for the in-page jump to the
    *  technical proof. */
   secondaryCta?: { label: string; href: string };
+  /** Copy-to-clipboard install button beside the primary CTA. */
+  installCta?: { label: string; command: string };
   /** Small line under the CTAs acknowledging the placement someone just
    *  walked past. */
   note?: string;
@@ -198,19 +200,18 @@ export const HERO_NARRATIVE: Partial<Record<Market, HeroNarrative>> = {
     // the campaign section much further down.
     bridge: [],
     body: [
-      "Build agents and workflows that can run for minutes, hours, or days. Inngest handles durable execution, retries, and recovery so your code can pick up where it left off.",
+      "Now anyone can build apps and agents that run for days. Wrap functions in steps that pause for events, retry, fan-out, and handle everything production throws at you. Scale instantly, without touching infra.",
     ],
     cta: {
-      label: "Build your first long-running function",
+      label: "Start Free",
       // `/sign-up` is a site-wide redirect to NEXT_PUBLIC_SIGNUP_URL, so
       // this resolves to the real signup app per environment. Ref tag
       // follows the repo convention: hero gets the bare page slug.
       href: "/sign-up?ref=long-run-sf",
     },
-    secondaryCta: {
-      label: "See how it works",
-      href: `#${SF_PROOF_ANCHOR}`,
-    },
+    // Copies the install command rather than linking out — there is no
+    // /npm route in this app, and the command is what the label promises.
+    installCta: { label: "NPM Install", command: "npm install inngest" },
     // SF's placements are scattered across the city rather than tied to
     // one weekend, so the page acknowledges the sighting without naming
     // a single moment.
@@ -311,8 +312,7 @@ export const PROBLEM: Partial<Record<Market, ProblemCopy>> = {
 export const TRUTH = {
   eyebrow: "Durable execution",
   title: ["Retry the step.", "Not the chain."],
-  lead:
-    "Inngest checkpoints each step as it completes, so the work behind you stays done.",
+  lead: "Inngest checkpoints each step as it completes, so the work behind you stays done.",
   capabilities: [
     {
       id: "duration",
@@ -571,48 +571,19 @@ export const ON_THE_GROUND = {
  * they already use; nothing here is wired into them.
  * ═══════════════════════════════════════════════════════════════════ */
 
-/**
- * Verified signup destination. `/sign-up` is a site-wide redirect defined
- * in next.config.mjs from NEXT_PUBLIC_SIGNUP_URL, so it resolves to
- * whatever the environment's real signup app is rather than a hardcoded
- * host.
- *
- * LAUNCH DEPENDENCY: the campaign wants a "build your first long-running
- * function" entry point. This currently points at the standard signup
- * flow; confirm whether it should instead deep-link to a quickstart.
- */
-export const SF_PRIMARY_CTA = {
-  label: "Build your first long-running function",
-  /** Ref tags follow the repo convention: hero gets the bare page slug,
-   *  other sections get a suffix. */
-  ref: { hero: "long-run-sf", final: "long-run-sf-final" },
-} as const;
-
-
 /* ── 02 · The product difference ───────────────────────────────────── */
 
 export const SF_DIFFERENCE = {
-  title: ["Everything is now long-running."],
-  supporting: "Don't start over.",
-  body:
-    "If your app needs to wait for human input, run while you're away, or recover from failure, you need durable execution.",
+  title: ["It doesn't have to be hard."],
+  body: "Ensuring code completes no matter what is a tough problem to solve, especially as your users scale, or you introduce AI workloads. But you don't need to wrangle a bunch of extra infrastructure just to keep things running. Simply wrap existing functions in Steps to make workflows deterministic.",
+  /** Reuses the homepage's before/after assets and the shared slider. */
   before: {
-    label: "Before Inngest",
-    headline: "Build the infrastructure yourself.",
-    items: [
-      "Build retry logic yourself.",
-      "Track completed work manually.",
-      "Manage additional orchestration infrastructure.",
-    ],
+    src: "/assets/v1/it-doesnt-have-to-be-hard/before.webp",
+    alt: "Before: the tangle of infrastructure (queues, pubsub, idempotency, error handling, capacity management) you have to build yourself.",
   },
   after: {
-    label: "With Inngest",
-    headline: "Write the code. Inngest keeps it running.",
-    items: [
-      "Define durable steps.",
-      "Resume without repeating completed steps.",
-      "Use Inngest to orchestrate execution.",
-    ],
+    src: "/assets/v1/it-doesnt-have-to-be-hard/after.webp",
+    alt: "After: a single step.run() call replacing all that infrastructure.",
   },
 } as const;
 
@@ -624,6 +595,8 @@ export interface SfUseCase {
   body: string;
   /** Reuses the nav's existing icon set rather than introducing new art. */
   icon: NavIconName;
+  /** Docs page this use case links through to. */
+  href: string;
 }
 
 export const SF_USE_CASES: SfUseCase[] = [
@@ -632,24 +605,28 @@ export const SF_USE_CASES: SfUseCase[] = [
     title: "Workflows",
     body: "Coordinate multi-step processes without losing completed work.",
     icon: "durable-execution",
+    href: "/docs/features/inngest-functions/steps-workflows?ref=long-run-sf-use-cases",
   },
   {
     id: "background-jobs",
     title: "Background jobs",
     body: "Run work beyond the request-response cycle.",
     icon: "background-jobs",
+    href: "/docs/guides/background-jobs?ref=long-run-sf-use-cases",
   },
   {
     id: "ai-agents",
     title: "AI agents",
     body: "Support unpredictable sequences of model calls and tool use.",
     icon: "ai-workflows",
+    href: "/docs/learn/durable-agents?ref=long-run-sf-use-cases",
   },
   {
     id: "data-pipelines",
     title: "Data pipelines",
     body: "Process multi-step data operations with durable execution.",
     icon: "queues",
+    href: "/docs/guides/flow-control?ref=long-run-sf-use-cases",
   },
 ];
 
@@ -657,44 +634,9 @@ export const SF_USE_CASES: SfUseCase[] = [
 
 export const SF_TECHNICAL_PROOF = {
   title: ["Retry the step.", "Not the chain."],
-  body:
-    "When a step fails, Inngest can retry it without repeating successfully completed steps.",
+  body: "When a step fails, Inngest can retry it without repeating successfully completed steps.",
   supporting:
     "Your agent doesn't know how many turns or tool calls it'll need. Inngest lets you create durable steps dynamically, preserving completed work so execution can continue after a failure.",
-} as const;
-
-/* ── 05 · Product proof ────────────────────────────────────────────── */
-
-export interface SfPillar {
-  id: string;
-  title: string;
-  body: string;
-}
-
-export const SF_PILLARS: SfPillar[] = [
-  {
-    id: "keep-running",
-    title: "Built to keep running",
-    body: "Durable execution and retries help workflows recover from failure.",
-  },
-  {
-    id: "understood",
-    title: "Built to be understood",
-    body: "Inspect runs and execution details to understand what happened.",
-  },
-  {
-    id: "improve",
-    title: "Built to improve",
-    body: "Use evaluation and experimentation capabilities to iterate on your agents.",
-  },
-];
-
-export const SF_PRODUCT_PROOF = {
-  title: [
-    "Built to keep running.",
-    "Built to be understood.",
-    "Built to improve.",
-  ],
 } as const;
 
 /* ── 06 · San Francisco campaign ───────────────────────────────────── */
@@ -752,13 +694,6 @@ export const SF_CAMPAIGN = {
   eyebrow: "The long run · San Francisco",
   title: ["Long-running humans.", "Long-running agents."],
   body: "We're bringing Build for the Long Run to San Francisco through coffee, community, and a few opportunities to get moving.",
-} as const;
-
-/* ── 08 · Final conversion ─────────────────────────────────────────── */
-
-export const SF_CLOSER = {
-  title: ["Your next long run", "starts here."],
-  body: "Build your first durable workflow with Inngest.",
 } as const;
 
 /* ── 07 · Resources ────────────────────────────────────────────────── */

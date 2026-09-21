@@ -17,17 +17,15 @@ import Proof from "@/components/v1/sections/LongRun/Proof";
 import CampaignMoment from "@/components/v1/sections/LongRun/CampaignMoment";
 import CampaignFooter from "@/components/v1/sections/LongRun/CampaignFooter";
 import OnTheGround from "@/components/v1/sections/LongRun/OnTheGround";
+import StartBuilding from "@/components/v1/sections/Home/StartBuilding";
 import SfDifference from "@/components/v1/sections/LongRun/SfDifference";
 import SfUseCases from "@/components/v1/sections/LongRun/SfUseCases";
 import TechnicalProof from "@/components/v1/sections/LongRun/TechnicalProof";
-import SfProductProof from "@/components/v1/sections/LongRun/SfProductProof";
 import SfResources from "@/components/v1/sections/LongRun/SfResources";
 import WhatItIs from "@/components/v1/sections/LongRun/WhatItIs";
 import Course from "@/components/v1/sections/LongRun/Course";
 import {
   TRY,
-  SF_CLOSER,
-  SF_PRIMARY_CTA,
   SF_PROOF_ANCHOR,
   type Market,
 } from "@/components/v1/sections/LongRun/data";
@@ -78,7 +76,6 @@ export default function LongRun({ market = "all" }: { market?: Market }) {
               <SfDifference />
               <SfUseCases />
               <TechnicalProof />
-              <SfProductProof />
             </>
           ) : isNarrative ? (
             <>
@@ -100,34 +97,11 @@ export default function LongRun({ market = "all" }: { market?: Market }) {
               the narrative cut carries the campaign's own wording, which
               names the thing the run visual just showed. */}
           {market === "sf" ? (
-            <StippleCtaSection
-              headingId="long-run-cta-heading"
-              heading={
-                <>
-                  {SF_CLOSER.title[0]}
-                  <br />
-                  {SF_CLOSER.title[1]}
-                </>
-              }
-              body={SF_CLOSER.body}
-              bodyClassName="max-w-[520px]"
-              footnote={TRY.footnote}
-            >
-              <ButtonLink
-                href={`/sign-up?ref=${SF_PRIMARY_CTA.ref.final}`}
-                prefetch={false}
-                variant="primary"
-              >
-                {SF_PRIMARY_CTA.label} →
-              </ButtonLink>
-              <ButtonLink
-                href={`#${SF_PROOF_ANCHOR}`}
-                variant="secondary"
-                onClick={handleAnchorClick(SF_PROOF_ANCHOR)}
-              >
-                See how it works →
-              </ButtonLink>
-            </StippleCtaSection>
+            // The homepage's quick-start template cards stand in for a
+            // closing CTA band: "pick a template" is a more concrete next
+            // step than another sign-up button, and it is the same
+            // component the homepage closes on.
+            <StartBuilding refTag="long-run-sf-start-building" />
           ) : isNarrative ? (
             <StippleCtaSection
               headingId="long-run-cta-heading"

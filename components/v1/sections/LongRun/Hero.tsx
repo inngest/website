@@ -15,6 +15,7 @@ import {
 } from "@/components/v1/sections/LongRun/data";
 import CourseLine from "@/components/v1/sections/LongRun/CourseLine";
 import GradientFrame from "@/components/v1/sections/shared/GradientFrame";
+import InstallButton from "@/components/v1/sections/LongRun/InstallButton";
 import { handleAnchorClick } from "@/components/v1/sections/LongRun/useAnchorScroll";
 
 /**
@@ -92,6 +93,13 @@ function HeroCopyStack({
           >
             {narrative.cta.label} →
           </ButtonLink>
+          {narrative.installCta && (
+            <InstallButton
+              label={narrative.installCta.label}
+              command={narrative.installCta.command}
+              className="w-full sm:w-auto"
+            />
+          )}
           {narrative.secondaryCta && (
             <ButtonLink
               href={narrative.secondaryCta.href}
