@@ -8,16 +8,36 @@ import type { Line } from "@/components/v1/sections/shared/CodeBlock";
 
 export const PAGE_REF = "codetv-web-dev-challenge";
 
+export const SUBMIT_APP_HREF =
+  "https://docs.google.com/forms/d/e/1FAIpQLSdbJ784vS_A-CdVOV3va-V1htF2vTLinAMHq2Hn4b7QCwmy_Q/viewform?usp=publish-editor";
+
+export const CHALLENGE_STATUS_LEAD = "Challenge Open";
+export const CHALLENGE_STATUS_REST = "Submissions close on October 6";
+export const CHALLENGE_STATUS = `${CHALLENGE_STATUS_LEAD} - ${CHALLENGE_STATUS_REST}`;
+
 /** Indexing starts at 00:00 America/Los_Angeles. Keep in sync with next-sitemap.config.js. */
 export const INDEXABLE_AT = "2026-09-22T00:00:00-07:00";
+
+const CODETV_CDN = "https://cdn.inngest.com/codetv-hackathon-landing-page";
+
+/** Original still on the CodeTV CDN. `copy` is the `(1)` export suffix. */
+function still(n: number, copy?: 1) {
+  const filename =
+    copy === 1
+      ? `Web_Dev_Challenge_S3_E6_Stills-${n} (1).jpg`
+      : `Web_Dev_Challenge_S3_E6_Stills-${n}.jpg`;
+  return `${CODETV_CDN}/${encodeURIComponent(filename)}`;
+}
+
+export const HERO_IMAGE = still(139, 1);
 
 /** Set when the episode drops. Watch swaps the placeholder for the embed. */
 export const EPISODE_YOUTUBE_ID: string | null = null;
 
 /** Click-to-color gag in the set gallery. */
 export const SCOTT = {
-  before: "/assets/v1/events/codetv/scott-before.jpg",
-  after: "/assets/v1/events/codetv/scott-after.jpg",
+  before: still(111, 1),
+  after: still(12),
   beforeAlt: "Scott mid-debug, pre-Inngest",
   afterAlt: "Scott after being given Inngest",
 } as const;
@@ -30,7 +50,7 @@ export const EPISODE_FACTS: {
   { label: "When", value: "August 25" },
   { label: "Filmed", value: "Portland, OR" },
   { label: "Sponsor", value: "Inngest" },
-  { label: "Status", value: "Challenge open", live: true },
+  { label: "Status", value: CHALLENGE_STATUS, live: true },
 ];
 
 export const QUICKSTARTS = [
@@ -86,7 +106,7 @@ export const TEAMS = [
     number: "01",
     name: "Off the Bench",
     members: ["Syscily", "Nadira"],
-    image: "/assets/v1/events/codetv/team-1.jpg",
+    image: still(35, 1),
     imageAlt: "Syscily and Nadira of Off the Bench on the CodeTV set",
     built:
       "Off the Bench is an app that lets players and coaches make asynchronous updates to schedules and locations for rec team leagues.",
@@ -96,7 +116,7 @@ export const TEAMS = [
     number: "02",
     name: "Meatbags",
     members: ["Brian", "Scott"],
-    image: "/assets/v1/events/codetv/team-2.jpg",
+    image: still(52),
     imageAlt: "Scott and Brian of Meatbags on the CodeTV set",
     built:
       "Meatbags is the nightmare scenario of an agentic manager that understands your current work and provides demoralizing feedback in real time.",
@@ -106,141 +126,126 @@ export const TEAMS = [
     number: "03",
     name: "Mailbug",
     members: ["Business Goose", "Eli"],
-    image: "/assets/v1/events/codetv/team-3.jpg",
+    image: still(61),
     imageAlt: "Business Goose and Eli of Mailbug on the CodeTV set",
     built:
       "Email sucks. Mailbug to the rescue. This app analyzes emails and intelligently sorts by real priority and impact, so you don't have to.",
   },
 ] as const;
 
-export const MARQUEE = [
-  "Challenge open",
-  "Challenge open",
-  "Challenge open",
-  "Challenge open",
-  "Challenge open",
-  "Challenge open",
-  "Challenge open",
-  "Challenge open",
-  "Challenge open",
-  "Challenge open",
-  "Challenge open",
-  "Challenge open",
-] as const;
-
 export const GALLERY = [
   {
-    src: "/assets/v1/events/codetv/group-peace.jpg",
+    src: still(140),
     alt: "The CodeTV Web Dev Challenge cast together on set",
     className: "aspect-[3/2] lg:col-span-8",
   },
   {
-    src: "/assets/v1/events/codetv/camera.jpg",
+    src: still(22),
     alt: "A camera filming the Web Dev Challenge",
     className: "aspect-[3/2] lg:col-span-4 lg:aspect-auto",
   },
   {
-    src: "/assets/v1/events/codetv/studio-audience.jpg",
+    src: still(146),
     alt: "Teams watching a demo on the CodeTV set",
     className: "aspect-[3/2] lg:col-span-8",
   },
   {
-    src: "/assets/v1/events/codetv/briefing.jpg",
+    src: still(27),
     alt: "A briefing under the Web Dev Challenge clock",
     className: "aspect-[3/2] lg:col-span-6",
   },
   {
-    src: "/assets/v1/events/codetv/coding-pair.jpg",
+    src: still(132),
     alt: "Two contestants collaborating at a laptop",
     className: "aspect-[3/2] lg:col-span-6",
   },
   {
-    src: "/assets/v1/events/codetv/huddle.jpg",
+    src: still(130),
     alt: "A huddle around a monitor during the challenge",
     className: "aspect-[3/2] lg:col-span-6",
   },
   {
-    src: "/assets/v1/events/codetv/coffee-break.jpg",
+    src: still(28),
     alt: "Two contestants taking a coffee break at the desk",
     className: "aspect-[3/2] lg:col-span-6",
   },
   {
-    src: "/assets/v1/events/codetv/bleachers.jpg",
+    src: still(148, 1),
     alt: "The teams on the bleachers mid-episode",
     className: "aspect-[3/2] lg:col-span-8",
   },
   {
-    src: "/assets/v1/events/codetv/pointing.jpg",
+    src: still(4, 1),
     alt: "On set during the CodeTV Web Dev Challenge",
     className: "aspect-[3/2] lg:col-span-4 lg:aspect-auto",
   },
   {
-    src: "/assets/v1/events/codetv/coding-desk.jpg",
+    src: still(15),
     alt: "Two builders collaborating at the desk during the challenge",
-    className: "aspect-[3/2] lg:col-span-4 lg:aspect-auto",
+    className: "aspect-[3/2] lg:col-span-4",
   },
   {
-    src: "/assets/v1/events/codetv/studio-pair.jpg",
+    src: still(35, 1),
     alt: "Builders on the Web Dev Challenge set",
-    className: "aspect-[3/2] lg:col-span-4 lg:aspect-auto",
+    className: "aspect-[3/2] lg:col-span-4",
   },
   {
-    src: "/assets/v1/events/codetv/clapperboard.jpg",
+    src: still(9, 1),
     alt: "Clapperboard and crew on the Web Dev Challenge set",
-    className: "aspect-[3/2] lg:col-span-4 lg:aspect-auto",
+    className: "aspect-[3/2] lg:col-span-4",
   },
   {
-    src: "/assets/v1/events/codetv/bts-glam.jpg",
+    src: still(2),
     alt: "Behind the scenes on the CodeTV set",
     className: "aspect-[3/2] lg:col-span-8",
   },
   {
-    src: "/assets/v1/events/codetv/host-cameras.jpg",
+    src: still(46),
     alt: "The host laughing on set while cameras roll",
     className: "aspect-[3/2] lg:col-span-6",
   },
   {
-    src: "/assets/v1/events/codetv/host-hoodie.jpg",
+    src: still(75, 1),
     alt: "The host with a contestant on the CodeTV lounge set",
     className: "aspect-[3/2] lg:col-span-6",
   },
   {
-    src: "/assets/v1/events/codetv/hoodie-directing.jpg",
+    src: still(11, 1),
     alt: "A contestant directing from behind the desks",
     className: "aspect-[3/2] lg:col-span-8",
   },
   {
-    src: "/assets/v1/events/codetv/steadicam.jpg",
+    src: still(18),
     alt: "A camera operator filming in front of the Inngest mark",
     className: "aspect-[3/2] lg:col-span-4 lg:aspect-auto",
   },
   {
-    src: "/assets/v1/events/codetv/hoodie-back.jpg",
+    src: still(47),
     alt: "The Anti Infra hoodie on the CodeTV lounge set",
     className: "aspect-[3/2] lg:col-span-4 lg:aspect-auto",
   },
   {
-    src: "/assets/v1/events/codetv/challenge-sign.jpg",
+    src: still(129),
     alt: "Teams watching under the Web Dev Challenge sign",
     className: "aspect-[3/2] lg:col-span-8",
   },
   {
-    src: "/assets/v1/events/codetv/watching-code.jpg",
+    src: still(113),
     alt: "Builders watching a run come together on a monitor",
     className: "aspect-[3/2] lg:col-span-6",
   },
   {
-    src: "/assets/v1/events/codetv/contestant-point.jpg",
+    src: still(39),
     alt: "A contestant pointing to camera on the lounge set",
     className: "aspect-[3/2] lg:col-span-6",
   },
   {
-    src: "/assets/v1/events/codetv/contestant-lounge.jpg",
+    src: still(42),
     alt: "A contestant on the CodeTV lounge set",
     className: "aspect-[3/2] lg:col-span-6",
   },
   {
-    src: "/assets/v1/events/codetv/desk-laugh.jpg",
+    src: still(135, 1),
     alt: "Two builders laughing at the desk during the challenge",
     className: "aspect-[3/2] lg:col-span-6",
   },

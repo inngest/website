@@ -1,21 +1,24 @@
-import { MARQUEE } from "@/components/v1/sections/CodeTV/data";
+import {
+  CHALLENGE_STATUS_LEAD,
+  CHALLENGE_STATUS_REST,
+} from "@/components/v1/sections/CodeTV/data";
+
+const REPEAT = 6;
 
 function MarqueeRow({ decorative = false }: { decorative?: boolean }) {
   return (
-    <div
-      aria-hidden={decorative ? true : undefined}
-      className="flex shrink-0"
-    >
-      {MARQUEE.map((item, i) => (
+    <div aria-hidden={decorative ? true : undefined} className="flex shrink-0">
+      {Array.from({ length: REPEAT }, (_, i) => (
         <span
-          key={`${item}-${i}`}
-          className="flex shrink-0 items-center gap-4 px-4 font-v1Label text-[12px] uppercase tracking-[0.08em] sm:text-[13px]"
+          key={i}
+          className="flex shrink-0 items-center gap-3 px-5 font-v1Label text-[12px] uppercase tracking-[0.08em] sm:text-[13px]"
         >
+          {CHALLENGE_STATUS_LEAD}
           <span
             aria-hidden="true"
-            className="v1-codetv-pulse size-1.5 rounded-full bg-v1-accent-green"
+            className="v1-codetv-pulse size-1.5 shrink-0 rounded-full bg-v1-accent-green"
           />
-          {item}
+          {CHALLENGE_STATUS_REST}
         </span>
       ))}
     </div>

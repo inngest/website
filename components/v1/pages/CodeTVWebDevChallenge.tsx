@@ -9,7 +9,10 @@ import ResourceKit from "@/components/v1/sections/CodeTV/ResourceKit";
 import Teams from "@/components/v1/sections/CodeTV/Teams";
 import Gallery from "@/components/v1/sections/CodeTV/Gallery";
 import { appendRef } from "@/utils/v1/ref";
-import { PAGE_REF } from "@/components/v1/sections/CodeTV/data";
+import {
+  PAGE_REF,
+  SUBMIT_APP_HREF,
+} from "@/components/v1/sections/CodeTV/data";
 
 export default function CodeTVWebDevChallenge() {
   return (
@@ -29,16 +32,22 @@ export default function CodeTVWebDevChallenge() {
         containerClassName="max-w-[780px]"
       >
         <ButtonLink
+          href={SUBMIT_APP_HREF}
+          variant="accent"
+          target="_blank"
+          rel="noreferrer"
+          prefetch={false}
+        >
+          Submit your app
+        </ButtonLink>
+        <ButtonLink
           href={appendRef("/sign-up", `${PAGE_REF}-cta`)}
           prefetch={false}
-          variant="primary"
+          variant="secondary"
         >
           Start building free
         </ButtonLink>
-        <ButtonLink
-          href="#resource-kit"
-          variant="secondary"
-        >
+        <ButtonLink href="#resource-kit" variant="secondary">
           Open the resource kit
         </ButtonLink>
       </StippleCtaSection>

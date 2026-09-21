@@ -4,10 +4,12 @@ import Section from "@/components/v1/sections/shared/Section";
 import SectionHeader from "@/components/v1/sections/shared/SectionHeader";
 import { V1_HEADER_CONTENT_MT } from "@/components/v1/sections/shared/sectionShell";
 import {
+  CHALLENGE_STATUS_LEAD,
+  CHALLENGE_STATUS_REST,
   EPISODE_FACTS,
   EPISODE_YOUTUBE_ID,
+  HERO_IMAGE,
 } from "@/components/v1/sections/CodeTV/data";
-import { cn } from "@/utils/v1/cn";
 
 export default function Watch() {
   return (
@@ -37,29 +39,34 @@ export default function Watch() {
         aria-label="Episode details"
         className="mt-4 w-full overflow-hidden rounded-lg border border-v1-subtle bg-v1-surfaceElevated"
       >
-        <dl className="grid grid-cols-2 divide-y divide-v1-subtle sm:grid-cols-4 sm:divide-x sm:divide-y-0">
-          {EPISODE_FACTS.map((fact) => (
+        <dl>
+          <div className="grid grid-cols-3 divide-x divide-v1-subtle">
+            {EPISODE_FACTS.filter((fact) => !fact.live).map((fact) => (
+              <div key={fact.label} className="flex flex-col gap-2 px-5 py-4">
+                <dt className="font-v1Label text-[11px] uppercase tracking-[0.08em] text-v1-frost/50">
+                  {fact.label}
+                </dt>
+                <dd className="font-v1Label text-[12px] uppercase tracking-[0.06em] text-v1-frost">
+                  {fact.value}
+                </dd>
+              </div>
+            ))}
+          </div>
+          {EPISODE_FACTS.filter((fact) => fact.live).map((fact) => (
             <div
               key={fact.label}
-              className="flex flex-col gap-2 px-5 py-4"
+              className="flex flex-col gap-2 border-t border-v1-subtle px-5 py-4"
             >
               <dt className="font-v1Label text-[11px] uppercase tracking-[0.08em] text-v1-frost/50">
                 {fact.label}
               </dt>
-              <dd
-                className={cn(
-                  "font-v1Label text-[12px] uppercase tracking-[0.06em] text-v1-frost",
-                  fact.live &&
-                    "inline-flex items-center gap-2 text-v1-accent-green",
-                )}
-              >
-                {fact.live && (
-                  <span
-                    aria-hidden="true"
-                    className="v1-codetv-pulse size-1.5 rounded-full bg-v1-accent-green"
-                  />
-                )}
-                {fact.value}
+              <dd className="flex flex-wrap items-center gap-x-2 gap-y-1 font-v1Label text-[12px] uppercase tracking-[0.06em] text-v1-accent-green">
+                {CHALLENGE_STATUS_LEAD}
+                <span
+                  aria-hidden="true"
+                  className="v1-codetv-pulse size-1.5 shrink-0 rounded-full bg-v1-accent-green"
+                />
+                {CHALLENGE_STATUS_REST}
               </dd>
             </div>
           ))}
@@ -90,7 +97,7 @@ function EpisodePlayer() {
       aria-label="Episode video coming soon"
     >
       <Image
-        src="/assets/v1/events/codetv/group.jpg"
+        src={HERO_IMAGE}
         alt=""
         fill
         sizes="(min-width: 1440px) 1300px, 100vw"
@@ -112,10 +119,7 @@ function EpisodePlayer() {
             aria-hidden="true"
             className="ml-1"
           >
-            <path
-              d="M0 0 L22 13 L0 26 Z"
-              fill="rgb(var(--color-v1-frost))"
-            />
+            <path d="M0 0 L22 13 L0 26 Z" fill="rgb(var(--color-v1-frost))" />
           </svg>
         </span>
         <p className="font-v1Label text-[12px] uppercase tracking-[0.08em] text-v1-frost">
