@@ -70,6 +70,7 @@ type Scope = {
   }[];
   // Syndicated posts point canonical at the original source.
   canonical_url?: string;
+  noindex?: boolean;
   // When set, the post is gated behind ?unreleased=<label>.
   unreleased?: string;
   // When true, swaps the generic hero/sidebar layout for the wider,
@@ -178,8 +179,8 @@ function loadRelated(currentSlug: string): RelatedPost[] {
         fm.date instanceof Date
           ? fm.date.toISOString()
           : typeof fm.date === "string"
-          ? fm.date
-          : null;
+            ? fm.date
+            : null;
       return {
         slug: p.slug,
         title: String(fm.heading),
@@ -276,8 +277,11 @@ export async function generateMetadata({
   return {
     title: { absolute: title },
     description,
-    // Keep unreleased posts out of search; they 200 but are gated client-side.
-    robots: scope.unreleased ? { index: false, follow: false } : undefined,
+    // the noindex and unreleased frontmatter keep these public URLs out of search results.
+    robots:
+      scope.noindex || scope.unreleased
+        ? { index: false, follow: false }
+        : undefined,
     // Match the legacy blog: external canonical for syndicated posts,
     // otherwise an absolute self-canonical to the post URL.
     alternates: { canonical: scope.canonical_url ?? url },
@@ -331,28 +335,28 @@ export default async function BlogPostPage({
       authors.length > 0
         ? authors.map((name) => ({ "@type": "Person", name }))
         : [
-            {
-              "@type": "Organization",
-              name: "Inngest",
-              url: process.env.NEXT_PUBLIC_HOST,
-            },
-          ],
+          {
+            "@type": "Organization",
+            name: "Inngest",
+            url: process.env.NEXT_PUBLIC_HOST,
+          },
+        ],
   };
 
   const faqStructuredData =
     Array.isArray(scope.faq) && scope.faq.length > 0
       ? {
-          "@context": "https://schema.org",
-          "@type": "FAQPage",
-          mainEntity: scope.faq.map((item) => ({
-            "@type": "Question",
-            name: item.question,
-            acceptedAnswer: {
-              "@type": "Answer",
-              text: item.answer,
-            },
-          })),
-        }
+        "@context": "https://schema.org",
+        "@type": "FAQPage",
+        mainEntity: scope.faq.map((item) => ({
+          "@type": "Question",
+          name: item.question,
+          acceptedAnswer: {
+            "@type": "Answer",
+            text: item.answer,
+          },
+        })),
+      }
       : null;
 
   const body = (
