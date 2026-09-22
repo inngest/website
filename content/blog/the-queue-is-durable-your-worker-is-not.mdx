@@ -1,0 +1,313 @@
+---
+tags: ["Durable Execution", "Engineering", "Queues & Flow Control"]
+heading: "The Queue is Durable. Your Worker is Not"
+subtitle: "Durable execution means nothing gets lost. It doesn't mean your worker picked it up, finished it (or finished it exactly once). The decisions that make app workers highly available: step size, deploys, queue shape, and retry-safe side effects."
+image: "TODO: featured image URL"
+date: 2026-09-22
+author: Mitchell Alderson
+category: engineering
+---
+
+Your job workers are deployed to a single AWS region. Critical path functions wrapped in Inngest functions: debounce, throttling, retries all taken care of. If a worker goes down, no work is lost, Inngest routes or holds the work until another worker is ready to handle it. This is durability.
+
+But what happens when `us-east-2` runs into issues: network failover, scaling delays, your workers can't be reached or created; how do you keep the work running?
+
+## Why durable execution doesn't make your workers highly available
+
+A durable queue does not make your app highly available. Durability and availability are different promises. A durable queue persists every step result, retries what fails, and resumes a run on whatever infrastructure is available. That's the "nothing gets lost" guarantee, and it holds. What it doesn't guarantee is _when_ the work runs or _whether your worker finishes it_.
+
+There are two sides to every incident: the platform not running your function, or your worker not finishing it. This post is about the second side. Assume the platform is up. The failures that remain are yours, and they come in a short list:
+
+- A worker pod dies mid-step.
+- A deploy ships a bug, and every retry runs it again.
+- A step hangs on a downstream call and holds a slot open.
+- A burst outruns your concurrency, and the critical path waits behind bulk work.
+- A retry re-runs a side effect that wasn't safe to run twice.
+
+Each of those has a fix you own. The rest of the post walks through them in that order.
+
+## Serve vs connect: which deployment model is more available?
+
+You pick a deployment model once, and a few of the mechanics below depend on it, so this is the one place the post branches.
+
+With **serve**, Inngest calls [an HTTP endpoint your app exposes](/docs/learn/serving-inngest-functions?ref=blog-the-queue-is-durable-your-worker-is-not). Availability is mostly your load balancer's job: a dead pod gets pulled by health checks and traffic routes around it, deploys are whatever your platform does (blue-green, canary, rolling), and step execution is bound by your platform's HTTP timeout, which puts a ceiling on how long a hung step can hang. It works on serverless.
+
+With **connect**, workers open an outbound WebSocket to Inngest. No inbound load balancer, lowest latency, long-running runtimes only. Inngest distributes steps across every connected worker, drains in-flight steps when a worker gets SIGTERM, flushes results over HTTP if the socket drops, and does rolling releases keyed on an `appVersion` you set. Steps aren't bound by HTTP timeouts. That's what you want for long work, and it also means your own downstream timeouts are the only ceiling a hung step has.
+
+|                  | serve                                            | connect                                                  |
+| ---------------- | ------------------------------------------------ | -------------------------------------------------------- |
+| Dead pod         | LB health check pulls it; next step routes elsewhere | Step retries to another connected worker              |
+| Deploy           | Your platform's blue-green / canary              | Rolling by `appVersion`; runs on all connected workers    |
+| Rollback         | Redeploy previous version                        | Bring an old-version worker back up                      |
+| Long step        | Bound by platform HTTP timeout                   | No HTTP ceiling; your downstream timeouts only           |
+| Per-worker cap   | LB per-target limits + your process              | `maxWorkerConcurrency` per `instanceId`                  |
+| Runtime          | Anything, including serverless                   | Long-running only                                         |
+
+So which should you pick? Connect is the stronger availability story if you run containers: no LB in the failure path, a per-worker step cap, and rollback that's one `kubectl scale` away. Serve is the right call on serverless, or when you already have LB and deploy tooling you trust and don't want a second system to reason about. The sections below note the model-specific delta where one exists.
+
+## How do you tell a platform incident from a worker failure?
+
+Did the platform not run it, or did my worker not finish it? That's the first question in any incident, and you should be able to answer it in under a minute. If that takes you longer than a minute, fix that before anything else in this post.
+
+The seam is visible in the exported metrics, and the same set ships to Datadog and Prometheus. Runs _scheduled_ versus runs _started_ is the platform-side queue. Step executions _ended_, broken out by status, and the _steps running_ gauge are your worker.
+
+Scheduled climbing while started stays flat means work is waiting on the platform side: concurrency limit, throttle, or a backlog. Started looking normal while step-ended errors climb means the platform handed you the work and your code or your pods didn't finish it. Those two shapes point at different people.
+
+```
+# Prometheus names; Datadog uses inngest.function_run.scheduled.total etc.
+inngest_function_run_scheduled_total{fn="orders-confirm"}
+inngest_function_run_started_total{fn="orders-confirm"}
+inngest_sdk_req_ended_total{fn="orders-confirm",status="errored"}
+inngest_sdk_req_ended_total{fn="orders-confirm",status="failed"}
+inngest_steps_running{fn="orders-confirm"}
+```
+
+<!-- TODO(screenshot): one panel with scheduled vs started overlaid on req_ended by status, ideally from a real incident, with the two shapes labelled -->
+
+One honest caveat on that dashboard. On the Pro plan the export runs at 5-minute granularity with a 5-minute delay (Basic is 15 and 15, Enterprise is 1-minute and immediate). That's fine for capacity planning and useless for live triage. When something is on fire, the live view is the Inngest dashboard and Traces, and the export is what you look at afterwards to see how it built.
+
+Two things people expect the metrics export to do that it doesn't. It doesn't carry traces; Inngest's OpenTelemetry support runs the other direction, forwarding your app's OTel spans _into_ Inngest Traces so you can debug a run end to end. And it doesn't carry LLM call data; that lives in Traces too, extracted from the same spans. So: metrics out to your dashboards, traces in to Inngest.
+
+## What happens when a worker dies mid-step?
+
+A worker pod gets evicted halfway through a step. The step result never comes back. What happens next depends on one thing: how long until the platform decides that step is dead and sends it somewhere else.
+
+Here is where I'd expected function timeouts to help, and they don't. `timeouts.start` cancels a run that's been queued too long; `timeouts.finish` cancels a run that's been executing too long. Both _cancel_. Neither moves anything. The docs say it plainly in the limitations: a timeout will not cut a step short, and a concurrency backlog can delay when the timeout even fires. A hung step on a dead pod is exactly the case function timeouts are not for.
+
+What does move work is the step boundary. Every step is a separate request to your app, its result is persisted, and the run resumes on the same or different infrastructure. A step that fails is retried as a fresh request, and that request lands wherever your load balancer (serve) or connection pool (connect) sends it. So the lever you own is step size. A 30-minute step is a 30-minute hostage. Ten 3-minute steps lose you three minutes when a pod dies.
+
+The second half of the same lever is putting your own timeouts on the calls _inside_ the step, so a hung dependency becomes a fast step failure instead of a request that sits open until something upstream gives up.
+
+```tsx
+// inngest/functions/orders-confirm.ts
+export const confirmOrder = inngest.createFunction(
+  { id: "orders-confirm", triggers: [{ event: "orders/completed" }] },
+  async ({ event, step }) => {
+    // One short step per side effect. Each is retried and memoized on its own.
+    const receipt = await step.run("charge", () =>
+      payments.charge(event.data.orderId, {
+        // Your ceiling, not the platform's. Hung provider = fast failure.
+        signal: AbortSignal.timeout(8_000),
+      })
+    );
+
+    await step.run("write-crm", () =>
+      crm.upsertOrder(event.data.orderId, receipt, {
+        signal: AbortSignal.timeout(5_000),
+      })
+    );
+
+    await step.run("email", () =>
+      mail.send(orderConfirmation(event.data, receipt), {
+        signal: AbortSignal.timeout(5_000),
+      })
+    );
+  }
+);
+```
+
+<!-- TODO(code): replace the three calls with your real clients; keep the shape. Consider a before/after showing the same work as one 90-second step vs. three short ones -->
+
+Graceful shutdown is the other half of "short steps." Whatever your deployment model, the termination grace period on your pods has to outlast your longest step, or the kill lands mid-flight and that step retries elsewhere. Short steps make that number small. With connect, the SDK handles the drain: on SIGTERM it stops accepting new steps, lets in-flight ones finish, and flushes results over HTTP after the socket closes. With serve, that's your HTTP server's drain behavior, and you should check it actually waits.
+
+```yaml
+# k8s: give the worker longer than your longest step to drain
+spec:
+  terminationGracePeriodSeconds: 60
+```
+
+The ungraceful case, an OOM kill or a lost node with a step mid-flight, is the one a grace period can't help with. There, the platform notices the worker is gone and re-sends the step to another one. Which brings the whole thing back to step size: the platform's part of "fail fast" is already fast. Yours is how much work a single step is carrying when it dies.
+
+Fast failures and short steps mean more retries, and more retries mean more chances to run a side effect twice. Hold that thought; it's the last section.
+
+## How do you deploy workers without taking every function down?
+
+The classic 5pm deploy bug has one root cause that has nothing to do with the bug itself: a single version of the worker fleet was serving 100% of the critical path, and rolling back meant a hotfix.
+
+Two rules. Never have one version serving all of it during a deploy, and never be more than one action away from the previous version.
+
+Canary by capacity: bring up one worker on the new version while the old ones keep running, watch step-ended errors by status for that version, then scale up. If it goes wrong, bring the old version back.
+
+Readiness gates the rollout. A pod is not ready until it can actually take work, and your orchestrator should not mark it ready before then. With connect, that means a small HTTP endpoint that returns 200 only when the connection state is `ACTIVE`:
+
+```tsx
+// worker.ts
+import { createServer } from "http";
+import { connect, ConnectionState } from "inngest/connect";
+import { inngest, functions } from "./inngest";
+
+const connection = await connect({
+  apps: [{ client: inngest, functions }],
+  // Changes per deploy: git sha, image tag. Inngest tracks versions by this.
+  appVersion: process.env.APP_VERSION,
+  // Unique per pod, or two pods will share one worker cap.
+  instanceId: process.env.HOSTNAME,
+});
+
+createServer((req, res) => {
+  if (req.url !== "/ready") return res.writeHead(404).end();
+  const ok = connection.state === ConnectionState.ACTIVE;
+  res.writeHead(ok ? 200 : 503).end(ok ? "OK" : "NOT READY");
+}).listen(8080);
+```
+
+```yaml
+readinessProbe:
+  httpGet:
+    path: /ready
+    port: 8080
+  initialDelaySeconds: 3
+  periodSeconds: 10
+  failureThreshold: 3
+```
+
+The connect delta in one line: while old and new workers are both connected, Inngest runs functions on all of them regardless of version, so your canary split is literally your pod ratio, and rollback is scaling an old-image pod back up. The serve delta: this is your load balancer's blue-green or canary, and your endpoint's health check. Same principle, your tooling.
+
+One more structural move, model-agnostic: separate apps by criticality. The nightly reconciliation job and the order-confirmation function should not share a deploy, a rollback, or a bad Tuesday. The platform can retry your bug forever. It can't fix it.
+
+## How do you keep critical work ahead of bulk work in a burst?
+
+Flash sale. Concurrency is capped, and for the first two minutes everything queued is either an order confirmation or an inventory sync kicked off by the same orders. By default nothing goes first. The queue is inherently fair: send it 100 jobs and it processes them fairly, not prioritizing one over the other unless you tell it otherwise. That's by design, because the alternative is work that gets starved forever. But right now you have work that must go first, and fairness is putting it behind a sync.
+
+Three moves, in order of how much they change.
+
+**Prioritize the critical path.** Order side effects go first; everything else waits.
+
+```tsx
+export const confirmOrder = inngest.createFunction(
+  {
+    id: "orders-confirm",
+    triggers: [{ event: "orders/completed" }],
+    priority: {
+      // Completed orders run ahead of work enqueued in the last 120s.
+      run: "event.data.status == 'completed' ? 120 : 0",
+    },
+  },
+  async ({ event, step }) => {
+    /* ... */
+  }
+);
+```
+
+Priority reorders within your concurrency. It does not create capacity, which is why the next move matters more.
+
+**Isolate the latency-sensitive path from the bulk sync.** Separate functions, separate concurrency limits, so the sync can saturate its own pool without touching the order pool. Then key the concurrency so one noisy tenant can't starve the rest. Picture two tenants: Tenant A has a thousand items queued and is at its limit; Tenant B has one item, ready to run. In one shared queue, B's item sits behind A's backlog even though none of A's items can run. With a key such as `event.data.tenant_id`, each tenant gets its own application of the limit. Instead of scanning the whole catalog, the scheduler looks in Tenant B's bucket and finds ready work.
+
+```tsx
+export const syncInventory = inngest.createFunction(
+  {
+    id: "inventory-sync",
+    triggers: [{ event: "inventory/changed" }],
+    concurrency: {
+      // Per-tenant limit. A's backlog doesn't consume B's slots.
+      key: "event.data.tenant_id",
+      limit: 5,
+    },
+    throttle: {
+      key: "event.data.tenant_id",
+      limit: 100,
+      period: "1m",
+    },
+  },
+  async ({ event, step }) => {
+    /* ... */
+  }
+);
+```
+
+An honest note on what the key buys you today. The per-key _limit_ is standard SDK config and applies on every plan. The per-key _scheduling_ that removes head-of-line blocking between keys (the docs call it key queues) is available to Enterprise customers on request.
+
+**Batch or defer the non-urgent work** so it never lands in the burst window at all. Inventory syncs for a flash sale don't need to run per event; they need to run correctly, soon.
+
+```tsx
+export const syncInventory = inngest.createFunction(
+  {
+    id: "inventory-sync",
+    triggers: [{ event: "inventory/changed" }],
+    batchEvents: { maxSize: 100, timeout: "30s" },
+    // Stale after this long? Cancel it; a newer sync has superseded it.
+    timeouts: { start: "10m" },
+  },
+  async ({ events, step }) => {
+    /* one write for 100 changes */
+  }
+);
+```
+
+This is where `timeouts.start` earns its keep: shedding work that's been queued so long it's no longer worth doing. A cancelled run emits `inngest/function.cancelled`, so if the work still matters you can react to that event instead of silently dropping it.
+
+## Measure queue time, not success rate
+
+Queue time on the critical path is the metric that would have predicted the flash-sale miss, and it's missing from most dashboards. Success rate reads 100% the whole time, because every run eventually completes.
+
+Steady-state concurrency sits well under the ceiling. The ceiling only bites in short bursts, and averages hide it completely. If you size headroom from average concurrency, you'll size it wrong; size it from p99 queue time during your last spike.
+
+|                        | Steady state  | Burst (2 min) | What it tells you                        |
+| ---------------------- | ------------- | ------------- | ---------------------------------------- |
+| Concurrent steps       | <!-- TODO --> | <!-- TODO --> | Whether the ceiling is ever the constraint |
+| Queue time p50         | <!-- TODO --> | <!-- TODO --> | Normal path is fine                      |
+| Queue time p99         | <!-- TODO --> | <!-- TODO --> | The number that predicts the missed booking |
+| Step-ended errors      | <!-- TODO --> | <!-- TODO --> | Whether the burst is also breaking your code |
+
+<!-- TODO(table): fill from a real spike. Decide how you're pulling queue time: dashboard, a Traces query, or scheduled-minus-started from the export -->
+
+Headroom has two ceilings, and people plan for one. Account concurrency is the first. The second is the worker itself: by default a connect worker accepts as many concurrent steps as Inngest sends it, so a burst that fits comfortably under your account limit can still OOM a single pod. Cap steps per worker and scale pods, not the cap.
+
+```tsx
+await connect({
+  apps: [{ client: inngest, functions }],
+  instanceId: process.env.HOSTNAME,
+  // Sized to what one pod can actually hold in memory. Scale pods from here.
+  maxWorkerConcurrency: 10,
+});
+```
+
+When a worker hits its cap it rejects the step, Inngest re-enqueues it, and the rejection does not count against the function's retries. So "All workers are at capacity" in the dashboard is telling you to add pods. The footgun: two pods with the same `instanceId` share one cap. Copy-pasted config will do this to you.
+
+Serve has no per-worker knob. Your cap is the load balancer's per-target limit and your process's own concurrency, with function-level `concurrency` as the outer ceiling.
+
+## Is every side effect safe to run twice?
+
+Everything above makes retries more likely, on purpose. Short steps fail faster and retry more. Deploy rollbacks re-drive in-flight work. A cap-rejected step gets re-sent. A durable platform makes retries cheap, and cheap retries make non-idempotent side effects dangerous.
+
+Does a retry re-run a step? A completed step is memoized and won't run again. A step killed _mid-flight_ will. If that step charged a card, decremented inventory, or wrote a CRM record, the retry does it again unless the write itself refuses to.
+
+Idempotency keys on anything that touches money, inventory, or a customer record. Most of that is your own code: the payment provider's idempotency header, an upsert keyed on order ID instead of an insert, a `WHERE version = ?` on the inventory decrement.
+
+```tsx
+await step.run("charge", () =>
+  payments.charge(event.data.orderId, {
+    // The provider dedupes on this. A retried step is a no-op.
+    idempotencyKey: `charge:${event.data.orderId}`,
+    signal: AbortSignal.timeout(8_000),
+  })
+);
+
+await step.run("decrement-inventory", () =>
+  db.execute(
+    `UPDATE inventory SET qty = qty - $1
+     WHERE sku = $2 AND NOT EXISTS (
+       SELECT 1 FROM inventory_events WHERE order_id = $3 AND sku = $2)`,
+    [event.data.qty, event.data.sku, event.data.orderId]
+  )
+);
+```
+
+At the function level, an `idempotency` key on the trigger collapses duplicate _events_ into one run for a 24-hour window, which handles the double-webhook case before it ever reaches a step.
+
+The pattern is the same in every case: the thing that performs the side effect is the thing that knows whether it already happened. Your worker shouldn't have to.
+
+## The worker availability audit
+
+Run this against your own system this week. Not the platform's uptime, your workers':
+
+1. In an incident, can you tell in under a minute whether the platform didn't run it or your worker didn't finish it?
+2. Are your steps short enough that a dead pod costs you seconds, not the length of the step?
+3. Does your termination grace period outlast your longest step?
+4. Can one deploy take every critical function down? Can you roll back by bringing up an old pod, without a hotfix?
+5. Is each worker capped so a burst that fits your account limit can't OOM a pod?
+6. Is critical-path work prioritized and isolated from bulk work, with its own concurrency pool?
+7. What was p99 queue time on the critical path during your last spike?
+8. Would every side effect in that path survive running twice?
+
+If you want one place to start, pull p99 queue time on your order path from your last spike and check whether you'd have missed the booking. That number tells you which of the other seven to do first.
