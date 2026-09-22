@@ -442,6 +442,15 @@
   text-box-edge: cap alphabetic;
 }
 
+/* Outlined ("hollow") display text: stroke only, no fill. Stroke width is
+ * em-based so it keeps the same optical weight as a clamped headline
+ * scales, and `currentColor` means it follows the surrounding text
+ * colour. Display sizes only — the stroke closes up on small text. */
+.v1-hollow {
+  -webkit-text-stroke: 0.022em currentColor;
+  -webkit-text-fill-color: transparent;
+}
+
 /* Cap-trim for custom-sized block titles that can't use a `text-v1-*`
  * token (e.g. 58px Inktrap — no matching token). Same native trim as
  * `.v1-trim`, PLUS the Capsize ::before/::after fallback so Firefox

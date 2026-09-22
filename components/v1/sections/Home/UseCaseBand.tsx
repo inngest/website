@@ -14,9 +14,9 @@ import {
 } from "@/utils/v1/cursorFx";
 
 /**
- * Homepage "From background jobs to agents, in one codebase" — a
- * use-case band directly beneath the "Durability belongs in code"
- * section. Six clickable cards (title + body + "Learn more →" cue),
+ * Homepage "Make any code durable, observable, and improvable" — a
+ * use-case band above the "Durability belongs in code" section. Six
+ * clickable cards (title + body + "Learn more →" cue),
  * each linking to the matching docs/platform/uses page. Exists to give
  * crawlers + answer engines concrete use-case anchor text and internal
  * links (SEO/AEO), so the copy and hrefs are the payload here.
@@ -99,8 +99,8 @@ export default function UseCaseBand() {
         id="home-use-cases-heading"
         title={
           <>
-            From background jobs to agents,
-            <br className="hidden sm:inline" /> in one codebase.
+            Make any code durable,
+            <br className="hidden sm:inline" /> observable, and improvable.
           </>
         }
         body="Add durable functions to your existing code, to keep event-driven workflows, background jobs, and agents running. No infrastructure to provision or maintain."

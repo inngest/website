@@ -865,3 +865,468 @@ button:focus-visible .v1-wipe-reveal {
     display: none;
   }
 }
+
+/* ---------- Home / hero trace ----------
+ * One shared 9.5s clock. Each piece names its own keyframes; the
+ * percentages are slices of that clock so the loop stays in sync.
+ * Resting styles (no animation) are the finished trace, which is what
+ * `prefers-reduced-motion` shows.
+ */
+@media (prefers-reduced-motion: no-preference) {
+  .ht-anim {
+    animation-duration: 9.5s;
+    animation-timing-function: linear;
+    animation-iteration-count: infinite;
+    animation-fill-mode: both;
+  }
+
+  .ht-shell {
+    animation-name: htShell;
+  }
+  .ht-run-dot {
+    animation-name: htRunDot;
+  }
+  .ht-run-check {
+    animation-name: htRunCheck;
+  }
+  .ht-bar-run {
+    animation-name: htBarRun;
+  }
+  .ht-bar-flaky {
+    animation-name: htBarFlaky;
+  }
+  .ht-bar-fail0 {
+    animation-name: htBarFail0;
+  }
+  .ht-bar-fail1 {
+    animation-name: htBarFail1;
+  }
+  .ht-bar-ok {
+    animation-name: htBarOk;
+  }
+  .ht-bar-sandbox {
+    animation-name: htBarSandbox;
+  }
+  .ht-bar-wait {
+    animation-name: htBarWait;
+  }
+  .ht-time-run {
+    animation-name: htTimeRun;
+  }
+  .ht-time-flaky {
+    animation-name: htTimeFlaky;
+  }
+  .ht-time-fail0,
+  .ht-mini-retry {
+    animation-name: htTimeFail0;
+  }
+  .ht-time-fail1 {
+    animation-name: htTimeFail1;
+  }
+  .ht-time-sandbox {
+    animation-name: htTimeSandbox;
+  }
+  .ht-time-wait {
+    animation-name: htTimeWait;
+  }
+  .ht-check {
+    animation-name: htCheck;
+  }
+  .ht-error {
+    animation-name: htError;
+  }
+  .ht-retry {
+    animation-name: htRetry;
+  }
+  .ht-retry-ring {
+    animation-name: htRetryRing;
+  }
+  .ht-cursor {
+    animation-name: htCursor;
+  }
+  .ht-step {
+    animation-name: htStep;
+  }
+}
+
+.ht-hatch {
+  background-image: repeating-linear-gradient(
+    -45deg,
+    rgb(11, 221, 72) 0 7px,
+    rgb(78, 232, 128) 7px 14px
+  );
+}
+.ht-error {
+  top: 6.5rem;
+  right: 0;
+}
+.ht-retry {
+  top: 7.35rem;
+  right: 15.25rem;
+}
+.ht-run-dot {
+  opacity: 0;
+}
+.ht-retry-ring,
+.ht-cursor {
+  opacity: 0;
+}
+
+.ht-frame {
+  container-type: inline-size;
+}
+@container (max-width: 560px) {
+  .ht-error,
+  .ht-retry {
+    display: none;
+  }
+}
+
+@keyframes htShell {
+  0%,
+  100% {
+    opacity: 0;
+  }
+  4%,
+  88% {
+    opacity: 1;
+  }
+  95% {
+    opacity: 0;
+  }
+}
+@keyframes htRunDot {
+  0%,
+  6%,
+  40%,
+  100% {
+    opacity: 0;
+  }
+  10%,
+  34% {
+    opacity: 1;
+  }
+}
+@keyframes htRunCheck {
+  0%,
+  38% {
+    opacity: 0;
+    transform: scale(0.4);
+  }
+  46%,
+  88% {
+    opacity: 1;
+    transform: scale(1);
+  }
+  95%,
+  100% {
+    opacity: 0;
+    transform: scale(0.4);
+  }
+}
+@keyframes htBarRun {
+  0%,
+  7% {
+    transform: scaleX(0);
+  }
+  42%,
+  88% {
+    transform: scaleX(1);
+  }
+  95%,
+  100% {
+    transform: scaleX(0);
+  }
+}
+@keyframes htBarFlaky {
+  0%,
+  16% {
+    transform: scaleX(0);
+  }
+  24%,
+  88% {
+    transform: scaleX(1);
+  }
+  95%,
+  100% {
+    transform: scaleX(0);
+  }
+}
+@keyframes htBarFail0 {
+  0%,
+  26% {
+    transform: scaleX(0);
+  }
+  31%,
+  88% {
+    transform: scaleX(1);
+  }
+  95%,
+  100% {
+    transform: scaleX(0);
+  }
+}
+@keyframes htBarFail1 {
+  0%,
+  33% {
+    transform: scaleX(0);
+  }
+  38%,
+  88% {
+    transform: scaleX(1);
+  }
+  95%,
+  100% {
+    transform: scaleX(0);
+  }
+}
+@keyframes htBarOk {
+  0%,
+  52% {
+    transform: scaleX(0);
+  }
+  62%,
+  88% {
+    transform: scaleX(1);
+  }
+  95%,
+  100% {
+    transform: scaleX(0);
+  }
+}
+@keyframes htBarSandbox {
+  0%,
+  60% {
+    transform: scaleX(0);
+  }
+  74%,
+  88% {
+    transform: scaleX(1);
+  }
+  95%,
+  100% {
+    transform: scaleX(0);
+  }
+}
+@keyframes htBarWait {
+  0%,
+  72% {
+    transform: scaleX(0);
+  }
+  78%,
+  88% {
+    transform: scaleX(1);
+  }
+  95%,
+  100% {
+    transform: scaleX(0);
+  }
+}
+@keyframes htTimeRun {
+  0%,
+  18% {
+    opacity: 0;
+  }
+  28%,
+  88% {
+    opacity: 1;
+  }
+  95%,
+  100% {
+    opacity: 0;
+  }
+}
+@keyframes htTimeFlaky {
+  0%,
+  20% {
+    opacity: 0;
+  }
+  26%,
+  88% {
+    opacity: 1;
+  }
+  95%,
+  100% {
+    opacity: 0;
+  }
+}
+@keyframes htTimeFail0 {
+  0%,
+  28% {
+    opacity: 0;
+  }
+  34%,
+  88% {
+    opacity: 1;
+  }
+  95%,
+  100% {
+    opacity: 0;
+  }
+}
+@keyframes htTimeFail1 {
+  0%,
+  35% {
+    opacity: 0;
+  }
+  40%,
+  88% {
+    opacity: 1;
+  }
+  95%,
+  100% {
+    opacity: 0;
+  }
+}
+@keyframes htTimeSandbox {
+  0%,
+  66% {
+    opacity: 0;
+  }
+  74%,
+  88% {
+    opacity: 1;
+  }
+  95%,
+  100% {
+    opacity: 0;
+  }
+}
+@keyframes htTimeWait {
+  0%,
+  74% {
+    opacity: 0;
+  }
+  80%,
+  88% {
+    opacity: 1;
+  }
+  95%,
+  100% {
+    opacity: 0;
+  }
+}
+@keyframes htCheck {
+  0%,
+  58% {
+    opacity: 0;
+    transform: scale(0.3);
+  }
+  66%,
+  88% {
+    opacity: 1;
+    transform: scale(1);
+  }
+  95%,
+  100% {
+    opacity: 0;
+    transform: scale(0.3);
+  }
+}
+@keyframes htError {
+  0%,
+  36% {
+    opacity: 0;
+    transform: translateX(10px);
+  }
+  44%,
+  88% {
+    opacity: 1;
+    transform: translateX(0);
+  }
+  95%,
+  100% {
+    opacity: 0;
+    transform: translateX(10px);
+  }
+}
+@keyframes htRetry {
+  0%,
+  40% {
+    opacity: 0;
+    transform: translateY(8px) scale(0.96);
+  }
+  48%,
+  88% {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+  95%,
+  100% {
+    opacity: 0;
+    transform: translateY(8px) scale(0.96);
+  }
+}
+@keyframes htRetryRing {
+  0%,
+  50% {
+    opacity: 0;
+    transform: scale(0.7);
+  }
+  54% {
+    opacity: 0.9;
+    transform: scale(1);
+  }
+  64%,
+  100% {
+    opacity: 0;
+    transform: scale(1.45);
+  }
+}
+@keyframes htCursor {
+  0%,
+  42% {
+    opacity: 0;
+    transform: translate(64px, 48px);
+  }
+  46% {
+    opacity: 1;
+    transform: translate(64px, 48px);
+  }
+  54% {
+    opacity: 1;
+    transform: translate(0, 0);
+  }
+  56% {
+    opacity: 1;
+    transform: translate(0, 2px) scale(0.92);
+  }
+  60%,
+  88% {
+    opacity: 1;
+    transform: translate(0, 0);
+  }
+  95%,
+  100% {
+    opacity: 0;
+    transform: translate(64px, 48px);
+  }
+}
+@keyframes htStep {
+  0%,
+  74% {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+  82%,
+  88% {
+    opacity: 1;
+    transform: translateY(0);
+  }
+  95%,
+  100% {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .ht-anim {
+    animation: none;
+  }
+  .ht-cursor,
+  .ht-retry-ring,
+  .ht-run-dot {
+    opacity: 0;
+  }
+}
