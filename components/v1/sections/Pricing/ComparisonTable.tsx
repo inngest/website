@@ -4,6 +4,7 @@ import { useState } from "react";
 import { motion } from "motion/react";
 import ButtonLink from "@/components/v1/ButtonLink";
 import Section from "@/components/v1/sections/shared/Section";
+import SectionHeader from "@/components/v1/sections/shared/SectionHeader";
 import { cn } from "@/utils/v1/cn";
 import { reveals } from "@/utils/v1/reveals";
 import {
@@ -39,27 +40,23 @@ export default function ComparisonTable() {
   return (
     <Section
       aria-labelledby="pricing-compare-heading"
-      className="relative !pt-20 sm:!pt-24 lg:!pt-0"
+      className="relative !pt-20 sm:!pt-24 lg:!pt-16"
+      containerClassName="flex flex-col gap-v1-stack"
     >
+      <SectionHeader
+        id="pricing-compare-heading"
+        title="Compare All Plan Features"
+        body="A detailed look at every Cloud pricing tier. Know exactly what you get at every phase of growth."
+      />
       {/* Below lg the inner table is wider than the viewport and
           scrolls horizontally; at lg+ the min-width matches the
           natural content so there's no overflow. */}
       <div className="-mx-6 overflow-x-auto sm:-mx-9 lg:mx-0 lg:overflow-visible">
         <div className="min-w-[820px] px-6 sm:px-9 lg:min-w-0 lg:px-0">
-          {/* Header row: PLAN FEATURES on left, 3 plan CTAs across the
-              right. Each cell sits in its own column with a single
-              cdcdcd hairline at the bottom. Below lg the entire table
-              scrolls horizontally inside the outer overflow wrapper. */}
+          {/* Header row: empty first column (feature labels sit
+              below), plan CTAs across the right. */}
           <div className="grid min-h-[80px] grid-cols-[180px_repeat(4,minmax(140px,1fr))] items-center border-b border-v1-contrast py-3 lg:min-h-0 lg:grid-cols-[minmax(0,1.3fr)_repeat(4,minmax(0,1fr))] lg:py-6">
-            <div className="flex h-full items-center pr-4 lg:pr-6">
-              <motion.h2
-                {...reveals.heading}
-                id="pricing-compare-heading"
-                className="text-v1-heading-xs sm:text-v1-heading-sm lg:text-v1-heading-card uppercase text-v1-frost"
-              >
-                Compare Plan Features
-              </motion.h2>
-            </div>
+            <div className="pr-4 lg:pr-6" />
             {PLANS.map((plan, i) => (
               <PlanHeaderCol key={plan.name} plan={plan} highlight={i === 1} />
             ))}
@@ -126,7 +123,7 @@ function PlanHeaderCol({ plan, highlight }: { plan: Plan; highlight: boolean }) 
       {...reveals.body}
       className="flex flex-col items-center justify-center gap-3 px-2 text-center lg:gap-[18px] lg:px-6"
     >
-      <h3 className="text-v1-label-sm uppercase text-v1-frost lg:text-v1-label-md">
+      <h3 className="text-v1-heading-xs uppercase text-v1-frost">
         {plan.name}
       </h3>
       <ButtonLink

@@ -9,7 +9,7 @@ export default function SavingsQuote() {
   return (
     <section
       aria-label="Sully Omar on Inngest"
-      className={`mx-auto w-full max-w-[1440px] ${V1_SECTION_GUTTER_X} py-8 lg:py-10`}
+      className={`mx-auto w-full max-w-[1440px] ${V1_SECTION_GUTTER_X} py-12 lg:py-20`}
     >
       <figure className="mx-auto flex w-full flex-col items-center gap-4 text-center lg:gap-5">
         <Image

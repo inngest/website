@@ -16,16 +16,14 @@ import LogoWall from "./LogoWall";
 
 // Pixel-perfect port of the hero design + hover
 // animation borrowed from Home/FeatureCards:
-//   - All three cards sit dark at rest, with a carbon-200 1 px ring
-//     drawn per card; seams collapse so the row reads as a single
-//     outlined strip with internal dividers (same trick the home
-//     feature row uses).
+//   - Four cards sit as separate rounded boxes with a gap between
+//     columns so the 4-up row stays scannable.
 //   - Hover floods the card with the salmon gradient + soft-light
 //     noise, fires a cursor-tracked spotlight, lifts the whole card
 //     -8 px, and extends the surface ±12 px above/below the row.
 //     The ring grows with that surface so the card doesn't break
 //     out of its container.
-//   - Pro is the resting highlight. Moving onto Free or Enterprise
+//   - Pro is the resting highlight. Moving onto another card
 //     takes the salmon with you; leaving the row returns it to Pro.
 //   - Buttons share one outline-frost style; on group-hover they
 //     flood solid frost so the active card reads as the primary CTA.
@@ -92,7 +90,7 @@ export default function Hero() {
   return (
     <section
       aria-labelledby="pricing-hero-headline"
-      className="relative mx-auto flex w-full max-w-[1440px] flex-col gap-6 px-6 pb-6 pt-[80px] text-v1-frost sm:px-9 lg:gap-8 lg:px-8 lg:pt-[96px]"
+      className="relative mx-auto flex w-full max-w-[1440px] flex-col gap-8 px-6 pb-12 pt-[120px] text-v1-frost sm:px-9 lg:gap-10 lg:px-8 lg:pb-16 lg:pt-[144px]"
     >
       {/* Centered headline, then a full-width logo banner. */}
       <div className="flex w-full flex-col items-center gap-4 text-center">
@@ -117,14 +115,12 @@ export default function Hero() {
       <LogoWall />
 
       <div className="relative">
-        <ul className="grid list-none grid-cols-1 gap-6 pl-0 lg:grid-cols-4 lg:gap-0">
+        <ul className="grid list-none grid-cols-1 gap-6 pl-0 lg:grid-cols-4 lg:gap-5">
           {PLANS.map((plan, i) => (
             <PlanCard
               key={plan.name}
               plan={plan}
               index={i}
-              isFirst={i === 0}
-              isLast={i === PLANS.length - 1}
               isActive={activeId === plan.name}
               onEnter={() => setPendingId(plan.name)}
               onLeave={() =>
@@ -143,40 +139,19 @@ export default function Hero() {
 function PlanCard({
   plan,
   index,
-  isFirst,
-  isLast,
   isActive,
   onEnter,
   onLeave,
 }: {
   plan: Plan;
   index: number;
-  isFirst: boolean;
-  isLast: boolean;
   isActive: boolean;
   onEnter: () => void;
   onLeave: () => void;
 }) {
-  // Shared-seam border collapse so card-to-card joins are one 1 px
-  // stroke rather than two stacked. Mobile (vertical stack): all
-  // cards except the last drop their bottom border. Lg+ (horizontal):
-  // all cards except the first drop their left border, and the
-  // bottom border returns.
-  // Mobile (vertical stack) renders each card as its own separated,
-  // fully-bordered box with a gap between them — so no border collapse
-  // here. The shared-seam join only kicks in at lg+ (horizontal row),
-  // where every card except the first drops its left border.
-  const innerEdgeFlat = isFirst ? "" : "lg:border-l-0";
-
-  // Mobile: every card is fully rounded (separated boxes). Lg+ rotates
-  // to a contiguous row — first/last own the rounded outer ends, the
-  // middle cards square off so the seam reads as one strip.
-  const cornerRadius = cn(
-    "rounded-md",
-    isFirst && "lg:rounded-l-md lg:rounded-r-none",
-    isLast && "lg:rounded-r-md lg:rounded-l-none",
-    !isFirst && !isLast && "lg:rounded-none",
-  );
+  // Each plan is its own rounded box with a gap between columns, so
+  // the 4-up row stays scannable. No shared-seam collapse.
+  const cornerRadius = "rounded-md";
 
   // Hold the elevated z-index for the full lift + grow + shrink
   // window so the card stays above its neighbours throughout the
@@ -216,25 +191,9 @@ function PlanCard({
   }, [isActive, liftY]);
   const liftYVar = useTransform(liftY, (v) => `${v}px`);
 
-  // Overlay geometry: tracks the vertical surface-grow (top/bottom)
-  // and, on lg+ for non-first cards, bleeds 2px to the LEFT so the
-  // active salmon paints over the hairline seam the left neighbour
-  // draws with its right border. Without this the middle/last card
-  // shows a stray grey line down its left edge when active — a card's
-  // own `border-transparent` can't hide a seam its neighbour owns.
-  // Why -2px and not -1px: card widths are fractional (≈458.66 px on
-  // the 3-col grid), so the seam lands on a sub-pixel boundary. With
-  // -1px the salmon's antialiased left edge falls in the same pixel
-  // column as the neighbour's antialiased right border, and the two
-  // partial coverages blend into a visible grey hairline. -2px moves
-  // the salmon's edge one column past the border so the seam column
-  // is fully opaque salmon and the antialiased edge sits over plain
-  // card content. `--seam-x` is 0 below lg, where cards stack and the
-  // seam is top/bottom (already covered by `--surface-y`).
   const overlayGeometry: React.CSSProperties = {
     top: "calc(0px - var(--surface-y, 0px))",
     bottom: "calc(0px - var(--surface-y, 0px))",
-    ...(isFirst ? null : { left: "var(--seam-x, 0px)" }),
   };
 
   return (
@@ -255,7 +214,7 @@ function PlanCard({
         willChange: "transform",
       }}
       className={cn(
-        "pricing-plan-card group relative isolate flex list-none flex-col gap-6 p-6 [--lift-y:0px] [--surface-y:0px] [--seam-x:0px] lg:h-full lg:gap-[29px] lg:p-6 lg:[--lift-y:var(--lift)] lg:[--surface-y:var(--surface-extra-y)] lg:[--seam-x:-2px]",
+        "pricing-plan-card group relative isolate flex list-none flex-col gap-4 p-7 pb-4 pt-8 [--lift-y:0px] [--surface-y:0px] sm:px-8 sm:pb-4 sm:pt-8 lg:h-full lg:gap-5 lg:px-8 lg:pb-4 lg:pt-8 lg:[--lift-y:var(--lift)] lg:[--surface-y:var(--surface-extra-y)]",
         isActive ? "z-20" : elevated ? "z-10" : "",
       )}
     >
@@ -268,9 +227,8 @@ function PlanCard({
         aria-hidden="true"
         style={followsExtraY}
         className={cn(
-          "pointer-events-none absolute inset-0 -z-10 border border-v1-contrast motion-safe:transition-[border-color,border-radius] motion-safe:duration-200 group-hover:!rounded group-hover:border-l group-focus-within:!rounded group-focus-within:border-l group-data-[active]:!rounded group-data-[active]:border-l",
+          "pointer-events-none absolute inset-0 -z-10 border border-v1-contrast",
           cornerRadius,
-          innerEdgeFlat,
         )}
       />
 
@@ -350,10 +308,14 @@ function PlanCard({
         className={cn("absolute inset-0 z-20 outline-none", cornerRadius)}
       />
 
-      {/* Name, price, CTA. Description and price rows are equalized
-          across cards (2-line desc, reserved "Starting at") so the
-          three buttons share a baseline. Extra space under the copy,
-          tight space above the button. */}
+      {/* Name, price, CTA. Descriptions share a min-height so the
+          price *block* (Free: $0 + caption; Pro/Business: Starting
+          at + amount; Enterprise: Custom + caption) starts on one
+          row. Blocks are top-aligned to Free — no invisible
+          placeholder rows, which would pin dollar amounts instead
+          of the block. A matching min-height on the price block
+          keeps CTAs even when a stack is two lines in a different
+          order. */}
       <div className="relative z-10 flex shrink-0 flex-col text-v1-frost">
         {/* Mobile-only inline badge — sits inside the card above the plan
             name (the lg+ straddling badge above is hidden < lg). */}
@@ -362,20 +324,39 @@ function PlanCard({
             <Chip>{plan.badge}</Chip>
           </div>
         )}
-        <h2 className="text-v1-heading-card">{plan.name}</h2>
-        <p className="mt-4 min-h-[2lh] text-v1-body-sm">{plan.description}</p>
+        <h2 className="text-v1-heading-sm">{plan.name}</h2>
+        <p className="mt-4 min-h-[4.5rem] font-v1Body text-[16px] leading-6 tracking-[-0.01em]">
+          {plan.description}
+        </p>
 
-        <div className="mt-10 flex flex-col items-start gap-3">
-          {plan.cost.startsAt && (
-            <p className="text-v1-body-sm">Starting at</p>
-          )}
-          <p className="text-v1-heading-sm">
-            {typeof plan.cost.basePrice === "number"
-              ? `$${plan.cost.basePrice}/${plan.cost.period}`
-              : plan.cost.basePrice}
+        <div className="mt-2 flex min-h-[72px] flex-col items-start justify-start gap-1">
+          {plan.cost.startsAt ? (
+            <p className="font-v1Body text-[16px] leading-6 tracking-[-0.01em] text-v1-frost/70">
+              Starting at
+            </p>
+          ) : null}
+          <p className="flex h-[44px] items-baseline gap-1">
+            {typeof plan.cost.basePrice === "number" ? (
+              <>
+                <span className="font-v1Heading text-[40px] leading-none tracking-[-0.02em] lg:text-[44px]">
+                  ${plan.cost.basePrice}
+                </span>
+                {plan.cost.period ? (
+                  <span className="font-v1Body text-[16px] leading-6 tracking-[-0.01em] text-v1-frost/70">
+                    /{plan.cost.period}
+                  </span>
+                ) : null}
+              </>
+            ) : (
+              <span className="font-v1Heading text-[40px] leading-none tracking-[-0.02em] lg:text-[44px]">
+                {plan.cost.basePrice}
+              </span>
+            )}
           </p>
           {plan.priceCaption ? (
-            <p className="text-v1-body-sm">{plan.priceCaption}</p>
+            <p className="font-v1Body text-[16px] leading-6 tracking-[-0.01em] text-v1-frost/70">
+              {plan.priceCaption}
+            </p>
           ) : null}
         </div>
 
@@ -389,7 +370,7 @@ function PlanCard({
         <ButtonLink
           href={plan.cta.href}
           variant="secondary"
-          className="mt-10 !w-full group-hover:!bg-v1-frost group-hover:!text-v1-jetBlack group-data-[active]:!bg-v1-frost group-data-[active]:!text-v1-jetBlack"
+          className="mt-4 !w-full group-hover:!bg-v1-frost group-hover:!text-v1-jetBlack group-data-[active]:!bg-v1-frost group-data-[active]:!text-v1-jetBlack"
         >
           {plan.cta.text}
         </ButtonLink>
@@ -398,7 +379,7 @@ function PlanCard({
       {/* Equal-height category rows so Platform / Events / … start on
           the same rhythm in every card. Empty categories still take a
           slot at lg (hidden on mobile). */}
-      <div className="relative z-10 flex flex-1 flex-col gap-[29px]">
+      <div className="relative z-10 flex flex-1 flex-col gap-[18px]">
         {FEATURE_CATEGORIES.map((category) => {
           const items = plan.features.filter(
             (feature) => feature.category === category,
@@ -415,26 +396,29 @@ function PlanCard({
           return (
             <div
               key={category}
-              className="flex flex-1 flex-col gap-2 text-v1-frost"
+              className="flex flex-1 flex-col gap-1.5 text-v1-frost"
             >
-              <p className="text-v1-label-sm uppercase tracking-[0.06em] text-v1-frost/45">
+              <p className="text-v1-label-sm uppercase tracking-[0.06em] text-v1-frost/40">
                 {category}
               </p>
-              <ul className="flex list-disc flex-col gap-2.5 pl-[21px]">
+              <ul className="flex flex-col gap-3">
                 {items.map((feature) => (
                   <li
                     key={`${feature.value ?? ""}-${feature.text}`}
-                    className="text-v1-body-sm"
+                    className="flex items-start gap-2.5 text-v1-body-sm leading-6"
                   >
-                    {feature.value && (
-                      <span className="font-bold">{feature.value} </span>
-                    )}
-                    {feature.text}
-                    {feature.note && (
-                      <span className="mt-0.5 block text-v1-body-xs text-v1-frost/80 group-hover:text-white/80 group-data-[active]:text-white/80">
-                        {feature.note}
-                      </span>
-                    )}
+                    <CheckMark className="mt-0.5 size-4 shrink-0 text-[#3DE070] group-hover:text-white group-data-[active]:text-white" />
+                    <span>
+                      {feature.value && (
+                        <span className="font-bold">{feature.value} </span>
+                      )}
+                      {feature.text}
+                      {feature.note && (
+                        <span className="mt-0.5 block text-v1-body-xs text-v1-frost/80 group-hover:text-white/80 group-data-[active]:text-white/80">
+                          {feature.note}
+                        </span>
+                      )}
+                    </span>
                   </li>
                 ))}
               </ul>
@@ -443,5 +427,24 @@ function PlanCard({
         })}
       </div>
     </motion.li>
+  );
+}
+
+function CheckMark({ className }: { className?: string }) {
+  return (
+    <svg
+      viewBox="0 0 16 16"
+      fill="none"
+      aria-hidden="true"
+      className={className}
+    >
+      <path
+        d="M3.2 8.3 6.3 11.4 12.8 4.6"
+        stroke="currentColor"
+        strokeWidth="1.6"
+        strokeLinecap="round"
+        strokeLinejoin="round"
+      />
+    </svg>
   );
 }

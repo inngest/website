@@ -271,7 +271,7 @@ export default function PricingCalculator() {
   return (
     <Section
       aria-labelledby="pricing-calc-heading"
-      className="relative !pt-12 sm:!pt-16 lg:!pt-20"
+      className="relative !pt-16 sm:!pt-20 lg:!pt-24"
       containerClassName="flex flex-col gap-v1-stack"
     >
       <SectionHeader

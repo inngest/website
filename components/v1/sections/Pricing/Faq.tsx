@@ -84,7 +84,7 @@ export default function Faq() {
       faqs={FAQS}
       heading="FAQ"
       refTag="pricing"
-      className="!pt-20 sm:!pt-24 lg:!pt-0"
+      className="!pt-20 sm:!pt-24 lg:!pt-16"
     />
   );
 }

@@ -19,7 +19,7 @@ import {
   onCursorSpotlightMove,
 } from "@/utils/v1/cursorFx";
 
-// "Trusted in the Big Leagues".
+// "Real customer savings".
 //
 // Three customer story cards share a hairline #7a7a7a border. Hover
 // reuses the exact Home/FeatureCards elevation stack:
@@ -120,18 +120,12 @@ export default function TrustedInBigLeagues() {
   return (
     <Section
       aria-labelledby="pricing-trust-heading"
-      className="relative !pt-20 sm:!pt-24 lg:!pt-0"
+      className="relative !pt-20 sm:!pt-24 lg:!pt-16"
       containerClassName="flex flex-col gap-v1-stack-lg"
     >
       <SectionHeader
         id="pricing-trust-heading"
-        title={
-          <>
-            Trusted in the
-            <br />
-            Big Leagues
-          </>
-        }
+        title="Real customer savings"
       />
 
       {/* All three cards default to the grey hairline-bordered surface.

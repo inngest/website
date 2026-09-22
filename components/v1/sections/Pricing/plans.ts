@@ -156,7 +156,7 @@ export const PLANS: Plan[] = [
   },
   {
     name: PLAN_NAMES.business,
-    description: "For growing teams that want to optimize cost at scale.",
+    description: "For growing teams that need higher limits, and greater cost efficiency as they scale.",
     cost: {
       startsAt: true,
       basePrice: 499,
