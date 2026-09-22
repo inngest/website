@@ -29,6 +29,7 @@ const LOGOS: CustomerLogo[] = [
     dy: 2,
   },
   { name: "BAERskin", src: "/assets/v1/logos/baerskin.svg", width: 176, height: 25 },
+  { name: "Artisan", src: "/assets/v1/logos/artisan.svg", width: 230, height: 22 },
   { name: "Outtake", src: "/assets/v1/logos/outtake.svg", width: 153, height: 27 },
 ];
 
