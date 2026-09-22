@@ -1,4 +1,5 @@
 import PageShell from "@/components/v1/PageShell";
+import ButtonLink from "@/components/v1/ButtonLink";
 import Customers from "@/components/v1/sections/Home/Customers";
 import DurabilityInCode from "@/components/v1/sections/Home/DurabilityInCode";
 import Hero from "@/components/v1/sections/Home/Hero";
@@ -34,6 +35,24 @@ export default function Home() {
         fetchPriority="high"
       />
       <Hero />
+      <section
+        aria-label="Dev Server UI preview"
+        className="relative h-[420px] bg-v1-jetBlack sm:h-[560px] lg:h-[720px]"
+      >
+        <iframe
+          src="/dev/"
+          title="Inngest Dev Server UI preview"
+          loading="lazy"
+          tabIndex={-1}
+          aria-hidden="true"
+          className="pointer-events-none h-full w-full border-0"
+        />
+        <div className="absolute inset-0 flex items-center justify-center bg-black/25 px-6">
+          <ButtonLink href="/dev/" variant="accent">
+            Explore the Dev Server UI
+          </ButtonLink>
+        </div>
+      </section>
       <LogoStrip contained />
       <Quote />
       <DurabilityInCode />
