@@ -1,5 +1,4 @@
 import React from "react";
-import { TvIcon } from "@heroicons/react/24/outline";
 
 type Props = {
   href: string;
@@ -67,7 +66,7 @@ export default function AnnouncementBanner() {
         <span className="font-normal underline underline-offset-2">
           Watch our CodeTV episode on YouTube!
         </span>
-        <TvIcon className="h-4 w-4 shrink-0" aria-hidden="true" />
+        <span aria-hidden="true">📺</span>
       </span>
     </Banner>
   );
