@@ -109,7 +109,7 @@ export const PLANS: Plan[] = [
   {
     name: PLAN_NAMES.pro,
     description:
-      "Production-ready features for teams that still need lots of flexibility.",
+      "Production-ready features for teams that are scaling fast, but still need flexibility.",
     cost: {
       startsAt: true,
       basePrice: 99,

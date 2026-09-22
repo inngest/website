@@ -19,7 +19,7 @@ export default function SavingsQuote() {
           height={32}
           className="h-4 w-auto sm:h-5"
         />
-        <blockquote className="font-v1Body font-normal text-[16px] leading-[1.5] text-v1-frost sm:text-[18px] sm:leading-[1.5]">
+        <blockquote className="font-v1Body font-normal text-[24px] leading-[1.5] text-v1-frost sm:text-[27px] sm:leading-[1.5]">
           <span className="lg:block lg:whitespace-nowrap">
             &ldquo;Inngest completely transformed how Otto (by Cohere)
             handles AI orchestration.

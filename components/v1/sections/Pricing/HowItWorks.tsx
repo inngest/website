@@ -7,7 +7,7 @@ import ButtonLink from "@/components/v1/ButtonLink";
 import { AdvanceClick } from "@/components/v1/sections/shared/AdvanceClick";
 import { CarouselArrow } from "@/components/v1/sections/shared/CarouselArrow";
 import SectionHeader from "@/components/v1/sections/shared/SectionHeader";
-import { V1_SECTION_PADDING_Y } from "@/components/v1/sections/shared/sectionShell";
+import { V1_SECTION_GUTTER_X, V1_SECTION_PADDING_Y } from "@/components/v1/sections/shared/sectionShell";
 import { cn } from "@/utils/v1/cn";
 import { springs, tweens, V1_CYCLE_MS } from "@/utils/v1/springs";
 
@@ -88,14 +88,15 @@ export default function HowItWorks() {
       )}
     >
       <div className="mx-auto flex max-w-[1440px] flex-col gap-v1-stack-lg">
-        {/* Header row: heading + orange-filled "See Docs" CTA beside the
-            title (stacks on mobile). The carousel keeps its 72px inset, so
-            the header carries the same gutter to stay aligned with it. */}
+        {/* Title shares the same gutters as Real customer savings
+            above. See Docs sits under the heading on the left, not
+            in the title row. The carousel keeps its 72px inset so
+            the next card can peek. */}
         <SectionHeader
           id="pricing-how-heading"
-          className="px-6 lg:px-[72px]"
+          className={V1_SECTION_GUTTER_X}
           title="How it works"
-          titleAside={
+          actions={
             <ButtonLink href={DOCS_URL} variant="accent">
               See Docs
             </ButtonLink>
