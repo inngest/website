@@ -8,6 +8,7 @@ import { appendRef } from "@/utils/v1/ref";
 interface FooterLink {
   label: string;
   href: string;
+  externalApp?: boolean;
   /** Disable Next.js Link prefetch — set true for routes that don't
    *  exist yet (planned IA) or that redirect off-domain. Without
    *  this, hover-prefetch logs 404 / CORS errors in DevTools. */
@@ -56,6 +57,9 @@ const COLUMN_RESOURCES: FooterColumnDef = {
   links: [
     { label: "Blog", href: "/blog", noPrefetch: true },
     { label: "Docs", href: "/docs" },
+    ...(process.env.DEV_SERVER_UI_ORIGIN
+      ? [{ label: "Dev Server", href: "/dev", externalApp: true }]
+      : []),
     {
       label: "Inngest vs. Traditional Queues",
       href: "/platform/flow-control",
@@ -183,19 +187,27 @@ function FooterCol({ heading, links }: FooterColumnDef) {
           // Internal links carry the `?ref=footer` attribution tag; social
           // and other off-domain links (http) are left untouched.
           const external = link.href.startsWith("http");
+          const href = external ? link.href : appendRef(link.href, "footer");
+          const className = "text-v1-caption text-v1-frost lg:text-v1-body-sm";
           return (
             <li key={link.label}>
               {/* `WipeLabel` (React element child) bypasses Link's
                   auto-wrap-in-BleedLabel — footer links use the same
                   left-to-right salmon wipe as the header nav, not
                   the radial bleed effect. */}
-              <Link
-                href={external ? link.href : appendRef(link.href, "footer")}
-                prefetch={link.noPrefetch ? false : undefined}
-                className="text-v1-caption text-v1-frost lg:text-v1-body-sm"
-              >
-                <WipeLabel>{link.label}</WipeLabel>
-              </Link>
+              {link.externalApp ? (
+                <a href={href} className={className}>
+                  <WipeLabel>{link.label}</WipeLabel>
+                </a>
+              ) : (
+                <Link
+                  href={href}
+                  prefetch={link.noPrefetch ? false : undefined}
+                  className={className}
+                >
+                  <WipeLabel>{link.label}</WipeLabel>
+                </Link>
+              )}
             </li>
           );
         })}

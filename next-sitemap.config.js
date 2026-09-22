@@ -39,6 +39,10 @@ function contentSourceFor(urlPath) {
 /** @type {import('next-sitemap').IConfig} */
 module.exports = {
   siteUrl: "https://www.inngest.com",
+  additionalPaths: async (config) =>
+    process.env.DEV_SERVER_UI_ORIGIN
+      ? [await config.transform(config, "/dev")]
+      : [],
   // remove content with unreleased or noindex metadata from the sitemap.  the
   // static exclude list covers routes whose metadata lives in code.
   transform: async (config, urlPath) => {
@@ -53,6 +57,7 @@ module.exports = {
     };
   },
   exclude: [
+    "/dev/*",
     "*/_*",
     "*/landing/*",
     "/blog-markdown/*",

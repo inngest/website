@@ -7,6 +7,7 @@ import fs from "fs";
 import path from "path";
 import { fileURLToPath } from "url";
 import { permanentRedirects, TS_STABLE_VERSION } from "./redirects.mjs";
+import { devServerUIRewrites } from "./dev-server-ui.mjs";
 
 // Pattern slug -> category, for redirecting old flat pattern URLs to the new
 // /docs/patterns/<category>/<slug> shape. Keep in sync with
@@ -227,6 +228,7 @@ async function rewrites() {
     // pages would 404 on them. Segment counts don't collide: index (3) /
     // category (4) / pattern (5).
     beforeFiles: [
+      ...devServerUIRewrites(),
       {
         source: "/docs/patterns/md",
         destination: "/api/patterns/md",
