@@ -13,6 +13,8 @@
  */
 export const V1_SECTION_GUTTER_X = "px-6 sm:px-9 lg:px-8";
 export const V1_SECTION_PADDING_Y = "py-20 sm:py-24 lg:py-40";
+/** Half of `V1_SECTION_PADDING_Y` — tighter landings (CodeTV). */
+export const V1_SECTION_PADDING_Y_COMPACT = "py-10 sm:py-12 lg:py-20";
 export const V1_SECTION_SHELL = `${V1_SECTION_GUTTER_X} ${V1_SECTION_PADDING_Y}`;
 
 /**
