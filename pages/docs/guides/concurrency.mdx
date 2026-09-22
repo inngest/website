@@ -16,7 +16,7 @@ This means you may have many more function runs in progress than your concurrenc
 </Callout>
 
 {/* TODO - Link to updated keys section */}
-Step concurrency can be optionally configured using "keys" which applies the limit to each unique value of the key (ex. user id). The concurrency option can also be applied to different "scopes" which allows a concurrency limit to be shared across _multiple_ functions.
+Step concurrency can be optionally configured using "keys" which applies the limit to each unique value of the key (ex. user id). This creates separate queue groups that provide [best-effort fairness in multi-tenant systems](/docs/guides/multi-tenancy?ref=docs-concurrency). The concurrency option can also be applied to different "scopes" which allows a concurrency limit to be shared across _multiple_ functions.
 
 As compared to traditional queue and worker systems, Inngest manages the concurrency within the system so you do not need to implement additional worker-level logic or state.
 
@@ -97,7 +97,7 @@ inngest.createFunction(
 </CodeGroup>
 
 <Tip>
-  Concurrency keys are great for creating fair, multi-tenant systems. This can help prevent the noisy neighbor issue where one user triggers a lot of jobs and consumes far more resources that slow down your other users.
+  Concurrency keys are great for creating fair, multi-tenant systems. This can help prevent the noisy neighbor issue where one user triggers a lot of jobs and consumes far more resources that slow down your other users. [Learn how flow control keys reduce head-of-line blocking.](/docs/guides/multi-tenancy?ref=docs-concurrency)
 </Tip>
 
 ### Sharing limits across functions (scope)
@@ -217,7 +217,9 @@ The key insight is that your concurrency limit applies to _active execution_, no
 
 ### Queue ordering
 
-**Queues are ordered from oldest to newest jobs ([FIFO](https://en.wikipedia.org/wiki/FIFO))** across the same function.  Ordering amongst different functions is not guaranteed.  This means that within a specific function, Inngest prioritizes finishing older functions above starting newer functions - even if the older functions continue to schedule new steps to run.  Different functions, however, compete for capacity, with runs on the most backlogged function much more likely (but not guaranteed) to be scheduled first.
+Within the same function and flow control key, queues use **best-effort [FIFO](https://en.wikipedia.org/wiki/FIFO) ordering** from oldest to newest jobs. Ordering across different keys or functions is not guaranteed because the scheduler also considers capacity and fairness. This means Inngest generally prioritizes older work within a key while preventing one key's backlog from blocking other keys.
+
+If you change a key expression, existing jobs retain the key that was evaluated when they entered the queue. Only new jobs are grouped using the new expression. Learn more about [multi-tenancy and flow control keys](/docs/guides/multi-tenancy?ref=docs-concurrency#ordering-within-each-key).
 
 ### Additional information
 
@@ -293,8 +295,8 @@ Because functions are FIFO, function runs are more likely to be worked on the ol
 - Concurrency limits the number of steps executing at a single time. It does not _yet_ perform rate limiting over a given period of time.
 - Functions can specify up to 2 concurrency constraints at once
 - The maximum concurrency limit is defined by <a href="/pricing?ref=docs-concurrency" target="_blank" rel="nofollow">your account's plan</a>
-- Ordering amongst the same function is guaranteed (with the exception of retries)
-- Ordering amongst different functions is not guaranteed.  Functions compete with each other randomly to be scheduled.
+- Ordering within the same function and flow control key is best-effort FIFO (with the exception of retries).
+- Ordering across different keys or functions is not guaranteed. The scheduler also considers capacity and fairness.
 
 ## Concurrency reference
 

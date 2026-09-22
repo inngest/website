@@ -26,8 +26,10 @@ export type BlogPost = {
   focus?: boolean;
   /** Hero CTA label on /blog when this post is `focus` (default: "Read article") */
   focusCta?: string;
-  // When hidden, the post will be available on at the URL, but not in any blog feed of RSS
+  // When hidden, the post will be available at the URL, but not in the blog
+  // index, related cards, RSS, blog.txt, or the .md mirror
   hide?: boolean;
+  noindex?: boolean;
   // When set, the post is gated behind ?unreleased=<label>: hidden from the blog
   // index, related cards, RSS, blog.txt, and the .md mirror, and its page 404s
   // (noindex) until the label is present. See shared/Docs/Unreleased.

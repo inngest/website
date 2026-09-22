@@ -2,23 +2,21 @@ const fs = require("node:fs");
 const path = require("node:path");
 const matter = require("gray-matter");
 
-// A page is "gated" (behind ?unreleased=<label>) if its source declares an
-// `unreleased` label — YAML frontmatter for blog posts, an `export const
-// unreleased` for docs/changelog MDX. Gated pages send noindex, so they must
-// stay out of the sitemap (sitemap + noindex is contradictory).
-function sourceIsGated(filePath) {
+// unreleased pages and blog posts with noindex stay out of the sitemap.
+// their robots metadata conflicts with a sitemap entry.
+function sourceIsExcludedFromSitemap(filePath) {
   try {
     const src = fs.readFileSync(filePath, "utf8");
-    if (matter(src).data.unreleased) return true;
+    const data = matter(src).data;
+    if (data.unreleased || data.noindex) return true;
     return /export\s+const\s+unreleased\s*=/.test(src);
   } catch {
     return false;
   }
 }
 
-// Map a sitemap URL back to the content file that backs it, for the three
-// surfaces that support gating. Returns null for everything else.
-function gatedSourceFor(urlPath) {
+// map a sitemap URL to the content file that controls its robots metadata.
+function contentSourceFor(urlPath) {
   const p = urlPath.replace(/\/+$/, "");
   const candidates = [];
   if (p.startsWith("/blog/")) {
@@ -41,18 +39,11 @@ function gatedSourceFor(urlPath) {
 /** @type {import('next-sitemap').IConfig} */
 module.exports = {
   siteUrl: "https://www.inngest.com",
-  // Drop pages gated behind ?unreleased=<label> — they're noindex, so the
-  // sitemap must not list them. Complements the static `exclude` list below.
+  // remove content with unreleased or noindex metadata from the sitemap.  the
+  // static exclude list covers routes whose metadata lives in code.
   transform: async (config, urlPath) => {
-    const src = gatedSourceFor(urlPath);
-    if (src && sourceIsGated(src)) return null;
-    // Keep in sync with INDEXABLE_AT in components/v1/sections/CodeTV/data.ts.
-    if (
-      urlPath.replace(/\/+$/, "") === "/events/codetv-web-dev-challenge" &&
-      Date.now() < Date.parse("2026-09-22T00:00:00-07:00")
-    ) {
-      return null;
-    }
+    const src = contentSourceFor(urlPath);
+    if (src && sourceIsExcludedFromSitemap(src)) return null;
     return {
       loc: urlPath,
       changefreq: config.changefreq,

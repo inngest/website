@@ -1,4 +1,3 @@
-import Image from "next/image";
 import Chip from "@/components/v1/sections/shared/Chip";
 import Section from "@/components/v1/sections/shared/Section";
 import SectionHeader from "@/components/v1/sections/shared/SectionHeader";
@@ -11,7 +10,6 @@ import {
   CHALLENGE_STATUS_REST,
   EPISODE_FACTS,
   EPISODE_YOUTUBE_ID,
-  HERO_IMAGE,
 } from "@/components/v1/sections/CodeTV/data";
 
 export default function Watch() {
@@ -24,7 +22,7 @@ export default function Watch() {
     >
       <div className="flex flex-col items-start gap-6">
         <Chip variant="solid" size="sm" className="font-normal">
-          {EPISODE_YOUTUBE_ID ? "YouTube" : "YouTube · Coming soon"}
+          YouTube
         </Chip>
         <SectionHeader
           id="codetv-watch-heading"
@@ -35,7 +33,15 @@ export default function Watch() {
       </div>
 
       <div className={V1_HEADER_CONTENT_MT}>
-        <EpisodePlayer />
+        <div className="relative aspect-video w-full overflow-hidden rounded-lg border border-v1-subtle bg-v1-jetBlack">
+          <iframe
+            className="absolute inset-0 h-full w-full"
+            src={`https://www.youtube-nocookie.com/embed/${EPISODE_YOUTUBE_ID}?rel=0`}
+            title="CodeTV Web Dev Challenge — Season 3, Episode 6"
+            allow="encrypted-media; picture-in-picture; fullscreen"
+            allowFullScreen
+          />
+        </div>
       </div>
 
       <aside
@@ -76,59 +82,5 @@ export default function Watch() {
         </dl>
       </aside>
     </Section>
-  );
-}
-
-function EpisodePlayer() {
-  if (EPISODE_YOUTUBE_ID) {
-    return (
-      <div className="relative aspect-video w-full overflow-hidden rounded-lg border border-v1-subtle bg-v1-jetBlack">
-        <iframe
-          className="absolute inset-0 h-full w-full"
-          src={`https://www.youtube-nocookie.com/embed/${EPISODE_YOUTUBE_ID}?rel=0`}
-          title="CodeTV Web Dev Challenge — Season 3, Episode 6"
-          allow="encrypted-media; picture-in-picture; fullscreen"
-          allowFullScreen
-        />
-      </div>
-    );
-  }
-
-  return (
-    <div
-      className="relative aspect-video w-full overflow-hidden rounded-lg border border-v1-subtle bg-v1-jetBlack"
-      aria-label="Episode video coming soon"
-    >
-      <Image
-        src={HERO_IMAGE}
-        alt=""
-        fill
-        sizes="(min-width: 1440px) 1300px, 100vw"
-        className="object-cover object-center opacity-40"
-      />
-      <div
-        aria-hidden="true"
-        className="absolute inset-0 bg-gradient-to-t from-v1-jetBlack/80 via-v1-jetBlack/35 to-v1-jetBlack/20"
-      />
-      <div className="absolute inset-0 flex flex-col items-center justify-center gap-5">
-        <span
-          aria-hidden="true"
-          className="flex size-[72px] items-center justify-center rounded-full border border-v1-frost/25 bg-v1-frost/10 backdrop-blur-sm sm:size-[88px]"
-        >
-          <svg
-            width="22"
-            height="26"
-            viewBox="0 0 22 26"
-            aria-hidden="true"
-            className="ml-1"
-          >
-            <path d="M0 0 L22 13 L0 26 Z" fill="rgb(var(--color-v1-frost))" />
-          </svg>
-        </span>
-        <p className="font-v1Label text-[12px] uppercase tracking-[0.08em] text-v1-frost">
-          Episode dropping soon
-        </p>
-      </div>
-    </div>
   );
 }

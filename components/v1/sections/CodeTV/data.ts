@@ -2,8 +2,7 @@ import type { Line } from "@/components/v1/sections/shared/CodeBlock";
 
 /**
  * CodeTV × Inngest Web Dev Challenge landing copy.
- * Team write-ups live in `TEAMS`. Gallery stills and the YouTube embed
- * are still filling in as the episode lands.
+ * Team write-ups live in `TEAMS`.
  */
 
 export const PAGE_REF = "codetv-web-dev-challenge";
@@ -14,9 +13,6 @@ export const SUBMIT_APP_HREF =
 export const CHALLENGE_STATUS_LEAD = "Challenge Open";
 export const CHALLENGE_STATUS_REST = "Submissions close on October 6";
 export const CHALLENGE_STATUS = `${CHALLENGE_STATUS_LEAD} - ${CHALLENGE_STATUS_REST}`;
-
-/** Indexing starts at 00:00 America/Los_Angeles. Keep in sync with next-sitemap.config.js. */
-export const INDEXABLE_AT = "2026-09-22T00:00:00-07:00";
 
 const CODETV_CDN = "https://cdn.inngest.com/codetv-hackathon-landing-page";
 

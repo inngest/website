@@ -21,7 +21,15 @@ export default function EventCard({ ev, newTab }: { ev: EventItem; newTab?: bool
         aria-hidden="true"
         // Image area is 204px tall. The placeholder lives here at 10%
         // opacity.
-        className={`relative h-[204px] w-full shrink-0 overflow-hidden${ev.imageFit === "contain" ? " bg-black" : ""}`}
+        //
+        // No fill of its own: `contain` images letterbox whenever their
+        // aspect doesn't match this box (~1.909), and painting the box
+        // black put a hard black band beside art that sits on the
+        // frame's #212121→#020202 gradient. Leaving it transparent lets
+        // that gradient show through, so the letterbox area is the card
+        // surface and the bars can't be seen — whatever aspect the art
+        // arrives at.
+        className="relative h-[204px] w-full shrink-0 overflow-hidden"
       >
         <div
           aria-hidden="true"
@@ -29,7 +37,7 @@ export default function EventCard({ ev, newTab }: { ev: EventItem; newTab?: bool
           style={{
             backgroundImage: `url(${ev.image ?? "/assets/v1/events/event-placeholder.png"})`,
             backgroundSize: ev.imageFit ?? "cover",
-            backgroundPosition: "center",
+            backgroundPosition: ev.imagePosition ?? "center",
             backgroundRepeat: "no-repeat",
           }}
         />
