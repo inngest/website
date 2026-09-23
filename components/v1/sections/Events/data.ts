@@ -37,6 +37,8 @@ export interface EventItem {
   excerpt: string;
   href: string;
   recording?: boolean;
+  /** Override the card CTA. Defaults to Register / Watch recording / View event details. */
+  cta?: string;
   image?: string;
   /** Tile/card image fit. Use `contain` for text-heavy graphics. */
   imageFit?: "cover" | "contain";
@@ -197,6 +199,21 @@ export const UPCOMING: EventItem[] = [
     // lands on the bleed pattern instead.
     image: "/assets/v1/events/the-ai-conference-2026.png",
     imagePosition: "left center",
+  },
+  {
+    id: "codetv-web-dev-challenge",
+    title: "CodeTV Web Dev Challenge",
+    date: "Submissions close October 6, 2026",
+    startsAt: "2026-08-25",
+    endsAt: "2026-10-06T23:59:59-07:00",
+    location: "ONLINE",
+    topics: ["Events"],
+    excerpt:
+      "Build an event-driven app or agent that runs no matter what, and compete for a year of Inngest Pro plus merch.",
+    href: "/events/codetv-web-dev-challenge",
+    image:
+      "https://cdn.inngest.com/codetv-hackathon-landing-page/Web_Dev_Challenge_S3_E6_Stills-139%20(1).jpg",
+    cta: "View challenge",
   },
 ];
 
@@ -384,6 +401,21 @@ export const ALL_EVENTS: EventItem[] = sortEventsByDate([
     // lands on the bleed pattern instead.
     image: "/assets/v1/events/the-ai-conference-2026.png",
     imagePosition: "left center",
+  },
+  {
+    id: "codetv-web-dev-challenge",
+    title: "CodeTV Web Dev Challenge",
+    date: "Submissions close October 6, 2026",
+    startsAt: "2026-08-25",
+    endsAt: "2026-10-06T23:59:59-07:00",
+    location: "ONLINE",
+    topics: ["Events"],
+    excerpt:
+      "Build an event-driven app or agent that runs no matter what, and compete for a year of Inngest Pro plus merch.",
+    href: "/events/codetv-web-dev-challenge",
+    image:
+      "https://cdn.inngest.com/codetv-hackathon-landing-page/Web_Dev_Challenge_S3_E6_Stills-139%20(1).jpg",
+    cta: "View challenge",
   },
 ]);
 

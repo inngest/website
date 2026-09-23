@@ -84,7 +84,14 @@ export default function EventCard({ ev, newTab }: { ev: EventItem; newTab?: bool
           <p className="text-v1-body-sm truncate text-white/80">{ev.excerpt}</p>
           <div className="py-1">
             <RegisterCue
-              label={ev.recording ? "Watch recording" : isPastEvent(ev) ? "View event details" : "Register"}
+              label={
+                ev.cta ??
+                (ev.recording
+                  ? "Watch recording"
+                  : isPastEvent(ev)
+                    ? "View event details"
+                    : "Register")
+              }
             />
           </div>
         </div>
