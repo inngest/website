@@ -366,7 +366,7 @@ The Inngest server does not automatically delete old database rows within Postgr
   For example, if a run is deleted from Postgres before it completes, the root trace spans will be lost and later trace spans will not be ingested or present correctly.
 </Info>
 
-For additional guidance on deletion strategies [view the guide in our open source repo](https://github.com/inngest/inngest/blob/main/docs/POSTRES_RETENTION.md).
+For additional guidance on deletion strategies [view the guide in our open source repo](https://github.com/inngest/inngest/blob/main/docs/POSTGRES_RETENTION.md).
 
 <Tip>
   When cleaning up old data, we recommend setting a cron task to perform this cleanup. This can be an Inngest cron function or a Kubernetes cron job.
