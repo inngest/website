@@ -35,7 +35,7 @@ export default function EventCard({ ev, newTab }: { ev: EventItem; newTab?: bool
           aria-hidden="true"
           className={`pointer-events-none absolute inset-0${ev.image ? "" : " opacity-10"}`}
           style={{
-            backgroundImage: `url(${ev.image ?? "/assets/v1/events/event-placeholder.png"})`,
+            backgroundImage: `url("${ev.image ?? "/assets/v1/events/event-placeholder.png"}")`,
             backgroundSize: ev.imageFit ?? "cover",
             backgroundPosition: ev.imagePosition ?? "center",
             backgroundRepeat: "no-repeat",

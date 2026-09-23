@@ -33,7 +33,7 @@ export default function EventCardLarge({ ev, newTab }: { ev: EventItem; newTab?:
         aria-hidden="true"
         className={`relative aspect-[16/9] w-full shrink-0 sm:aspect-auto sm:w-[32.513%]${ev.image ? "" : " opacity-10"}`}
         style={{
-          backgroundImage: `url(${ev.image ?? "/assets/v1/events/event-placeholder.png"})`,
+          backgroundImage: `url("${ev.image ?? "/assets/v1/events/event-placeholder.png"}")`,
           backgroundSize: ev.imageFit ?? "cover",
           backgroundPosition: ev.imagePosition ?? "center",
           backgroundRepeat: "no-repeat",
