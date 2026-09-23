@@ -12,22 +12,24 @@ export interface TeamMember {
   avatar?: string;
 }
 
-// Every member has a headshot except Albert Chae, whose card uses the
-// Inngest logomark placeholder (rendered as the empty-state card —
-// name + role over the per-card dot-sphere background). Photos are
-// transparent grayscale PNG cutouts, resized to 850px and
-// palette-quantized; the runtime layers them over `sphere.svg`.
+// Members without a headshot use the Inngest logomark placeholder
+// (rendered as the empty-state card — name + role over the per-card
+// dot-sphere background). Photos are transparent cutouts; the runtime
+// renders them in grayscale over `sphere.svg`.
 const TEAM_PHOTOS_BASE = "/assets/v1/about-team/photos";
 export const TEAM: TeamMember[] = [
   { name: "Tony Holdstock-Brown", title: "CEO & Founder", avatar: `${TEAM_PHOTOS_BASE}/tony.png` },
   { name: "Dan Farrelly", title: "CTO & Founder", avatar: `${TEAM_PHOTOS_BASE}/dan.png` },
   { name: "Jack Williams", title: "Founding Engineer", avatar: `${TEAM_PHOTOS_BASE}/jack.png` },
+  { name: "Duc Nguyen", title: "Engineering Manager", avatar: `${TEAM_PHOTOS_BASE}/duc.png` },
   { name: "Lauren Craigie", title: "Head of Marketing", avatar: `${TEAM_PHOTOS_BASE}/lauren.png` },
-  { name: "Sterling Chin", title: "Head of DevRel", avatar: `${TEAM_PHOTOS_BASE}/sterling.png` },
+  { name: "Mitchell Alderson", title: "Technical GTM", avatar: `${TEAM_PHOTOS_BASE}/mitchell.png` },
   { name: "Patrick West", title: "GTM", avatar: `${TEAM_PHOTOS_BASE}/patrick.png` },
+  { name: "Mel Tan", title: "Operations", avatar: `${TEAM_PHOTOS_BASE}/mel.png` },
   { name: "Pat Holcomb", title: "Growth & Demand Gen", avatar: `${TEAM_PHOTOS_BASE}/pat.png` },
   { name: "John Buchta", title: "Head of Design", avatar: `${TEAM_PHOTOS_BASE}/john.png` },
   { name: "Riley O’Toole", title: "Brand & Experiential", avatar: `${TEAM_PHOTOS_BASE}/rileyo.png` },
+  { name: "Savannah Bergeron", title: "Brand Designer", avatar: `${TEAM_PHOTOS_BASE}/savannah.png` },
   { name: "Albert Chae", title: "Systems Engineer" },
   { name: "Lakshmi Kasinathan", title: "Systems Engineer", avatar: `${TEAM_PHOTOS_BASE}/lakshmi.png` },
   { name: "Scott Numamoto", title: "Systems Engineer", avatar: `${TEAM_PHOTOS_BASE}/scott.png` },
@@ -35,13 +37,10 @@ export const TEAM: TeamMember[] = [
   { name: "Riley Wilburn", title: "Systems Engineer", avatar: `${TEAM_PHOTOS_BASE}/rileyw.png` },
   { name: "Sanjana Laddha", title: "Designer", avatar: `${TEAM_PHOTOS_BASE}/sanjana.png` },
   { name: "Aaron Harper", title: "Engineer", avatar: `${TEAM_PHOTOS_BASE}/aaron.png` },
-  { name: "Ana Filipa de Almeida", title: "Engineer", avatar: `${TEAM_PHOTOS_BASE}/ana.png` },
-  { name: "Darwin Wu", title: "Engineer", avatar: `${TEAM_PHOTOS_BASE}/darwin.png` },
   { name: "Bruno Scheufler", title: "Engineer", avatar: `${TEAM_PHOTOS_BASE}/bruno.png` },
   { name: "Jacob Heric", title: "Engineer", avatar: `${TEAM_PHOTOS_BASE}/jacobh.png` },
   { name: "Riadh Daghmoura", title: "Engineer", avatar: `${TEAM_PHOTOS_BASE}/riadh.png` },
   { name: "Jakob Evangelista", title: "Engineer", avatar: `${TEAM_PHOTOS_BASE}/jakobe.png` },
-  { name: "Andy Lawrence", title: "Engineer", avatar: `${TEAM_PHOTOS_BASE}/andy.png` },
   { name: "Linell Bonnette", title: "Engineer", avatar: `${TEAM_PHOTOS_BASE}/linell.png` },
   { name: "Muzammil Abdul Rehman", title: "Engineer", avatar: `${TEAM_PHOTOS_BASE}/muzammil.png` },
   { name: "Dan Lambright", title: "Engineer", avatar: `${TEAM_PHOTOS_BASE}/danl.png` },
