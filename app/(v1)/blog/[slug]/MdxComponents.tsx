@@ -175,7 +175,7 @@ export function BlogYouTube({
 }
 
 const PRODUCT_HUNT_URL =
-  "https://www.producthunt.com/products/workflow-kit-by-inngest?launch=workflow-kit-by-inngest";
+  "https://www.producthunt.com/products/workflow-kit-by-inngest?embed=true&utm_source=badge-top-post-badge&utm_medium=badge&utm_souce=badge-workflow&launch=workflow-kit-by-inngest";
 
 export function BlogProductHunt() {
   return (
