@@ -5,8 +5,9 @@ import type { ReactNode } from "react";
 // /pricing tier model — see PricingCalculator.tsx.
 
 export const PLAN_NAMES = {
-  hobby: "Hobby",
+  hobby: "Free",
   pro: "Pro",
+  business: "Business",
   enterprise: "Enterprise",
 } as const;
 
@@ -38,10 +39,21 @@ export interface Plan {
   /** Caption beneath the price (e.g. "No credit card required"). */
   priceCaption: string;
   cta: { href: string; text: string };
-  /** Feature bullets below the CTA. `value`, when set, renders bold
-   *  before the label — e.g. **50k** executions. `note`, when set,
-   *  renders below in a smaller, lighter weight. */
-  features: { value?: string; text: string; note?: string }[];
+  /** Feature bullets below the CTA, grouped by `category` on the card.
+   *  `value`, when set, renders bold before the label — e.g. **50k**
+   *  executions. `note`, when set, renders below in a smaller, lighter
+   *  weight. */
+  features: {
+    category:
+      | "Platform"
+      | "Events"
+      | "Observability"
+      | "Security"
+      | "Support";
+    value?: string;
+    text: string;
+    note?: string;
+  }[];
   /** Tags / badges (e.g. "POPULAR"). */
   badge?: string;
 }
@@ -53,7 +65,7 @@ export const PLANS: Plan[] = [
   {
     name: PLAN_NAMES.hobby,
     description:
-      "For individual developers and small projects getting started with durable execution.",
+      "Generous monthly limits to prove it before production. No credit card required.",
     cost: {
       basePrice: 0,
       period: "mo",
@@ -66,7 +78,7 @@ export const PLANS: Plan[] = [
       includedConcurrency: 5,
       additionalConcurrencyPrice: null,
       additionalConcurrencyRate: null,
-      includedUsers: 3,
+      includedUsers: 5,
       additionalUsersPrice: null,
       additionalUsersRate: null,
       includedWorkers: 3,
@@ -76,23 +88,28 @@ export const PLANS: Plan[] = [
     priceCaption: "No credit card required",
     cta: {
       href: `${SIGNUP}?ref=pricing-card-hobby`,
-      text: "Get started for Free",
+      text: "Start Free",
     },
     features: [
-      { value: "50k", text: "executions" },
-      { value: "5", text: "concurrent steps" },
-      { value: "500 MB", text: "span data ingested" },
-      { value: "10K", text: "scores" },
-      { value: "500k", text: "events ingested" },
-      { value: "100k", text: "queue depth" },
-      { value: "50", text: "realtime connections" },
-      { text: "Basic tracing, metrics, and alerts" },
+      { category: "Platform", value: "5", text: "seats" },
+      { category: "Platform", value: "50k", text: "executions" },
+      { category: "Platform", value: "5", text: "concurrent steps" },
+      { category: "Platform", value: "3", text: "workers" },
+      { category: "Platform", value: "Unlimited", text: "serverless workers" },
+      { category: "Events", value: "500k", text: "events ingested" },
+      { category: "Events", value: "100k", text: "queue depth" },
+      { category: "Events", value: "50", text: "realtime connections" },
+      { category: "Events", value: "256 KiB", text: "event size" },
+      { category: "Observability", value: "500 MB", text: "span data ingested" },
+      { category: "Observability", value: "10K", text: "scores" },
+      { category: "Observability", value: "24 hour", text: "trace history" },
+      { category: "Observability", value: "30 minute", text: "metrics granularity" },
     ],
   },
   {
     name: PLAN_NAMES.pro,
     description:
-      "For growing teams building production-ready workflows with increased scale and reliability.",
+      "Production-ready features for teams that are scaling fast, but still need flexibility.",
     cost: {
       startsAt: true,
       basePrice: 99,
@@ -116,31 +133,79 @@ export const PLANS: Plan[] = [
     priceCaption: "",
     cta: {
       href: `${SIGNUP}?ref=pricing-card-pro`,
-      text: "Get started for Free",
+      text: "Start Free",
     },
     features: [
-      {
-        value: "1M",
-        text: "executions included",
-        note: "Pay as you go up to 20M",
-      },
-      { value: "100+", text: "concurrent steps" },
-      { value: "5 GB", text: "span data ingested" },
-      { value: "50K", text: "scores" },
-      { value: "5M+", text: "events ingested" },
-      { value: "1M+", text: "queue depth" },
-      { value: "1000", text: "realtime connections" },
-      { text: "Granular tracing, metrics, alerts + 7 day trace retention" },
-      { text: "Increased throughput" },
+      { category: "Platform", value: "15", text: "seats" },
+      { category: "Platform", value: "1M", text: "executions + add-on" },
+      { category: "Platform", value: "100+", text: "concurrent steps" },
+      { category: "Platform", value: "20", text: "workers + add-on" },
+      { category: "Platform", value: "Unlimited", text: "serverless workers" },
+      { category: "Events", value: "5M+", text: "events ingested" },
+      { category: "Events", value: "1M+", text: "queue depth" },
+      { category: "Events", value: "1000", text: "realtime connections" },
+      { category: "Events", value: "3 MiB", text: "event size" },
+      { category: "Observability", value: "5GB", text: "span data + overages" },
+      { category: "Observability", value: "50K", text: "scores" },
+      { category: "Observability", value: "7 day", text: "trace history" },
+      { category: "Observability", value: "15 minute", text: "metrics granularity" },
+      { category: "Observability", text: "Datadog / advanced observability add-on" },
+      { category: "Security", text: "HIPAA add-on" },
     ],
     badge: "POPULAR",
   },
   {
+    name: PLAN_NAMES.business,
+    description: "For growing teams that need higher limits, and greater cost efficiency as they scale.",
+    cost: {
+      startsAt: true,
+      basePrice: 499,
+      period: "mo",
+      includedRuns: 10_000_000,
+      additionalRunsPrice: 50,
+      additionalRunsRate: 1_000_000,
+      includedSteps: 5,
+      additionalStepsPrice: 4,
+      additionalStepsRate: 200_000,
+      includedConcurrency: 500,
+      additionalConcurrencyPrice: 25,
+      additionalConcurrencyRate: 25,
+      includedUsers: 30,
+      additionalUsersPrice: 10,
+      additionalUsersRate: 1,
+      includedWorkers: 100,
+      additionalWorkersPrice: 10,
+      additionalWorkersRate: 1,
+    },
+    priceCaption: "",
+    cta: {
+      href: `${SIGNUP}?ref=pricing-card-business`,
+      text: "Start Free",
+    },
+    features: [
+      { category: "Platform", value: "30", text: "seats" },
+      { category: "Platform", value: "10M", text: "executions + add-on" },
+      { category: "Platform", value: "500", text: "concurrent steps" },
+      { category: "Platform", value: "100", text: "workers + add-on" },
+      { category: "Platform", value: "Unlimited", text: "serverless workers" },
+      { category: "Events", value: "50M+", text: "events ingested" },
+      { category: "Events", value: "10M+", text: "queue depth" },
+      { category: "Events", value: "5000", text: "realtime connections" },
+      { category: "Events", value: "3 MiB", text: "event size" },
+      { category: "Observability", value: "25GB", text: "span data + overages" },
+      { category: "Observability", value: "250K", text: "scores" },
+      { category: "Observability", value: "14 day", text: "trace history" },
+      { category: "Observability", value: "1 minute", text: "metrics granularity" },
+      { category: "Observability", text: "Datadog / advanced observability add-on" },
+      { category: "Security", text: "HIPAA add-on" },
+    ],
+  },
+  {
     name: PLAN_NAMES.enterprise,
     description:
-      "For organizations running critical workflows at scale with advanced security, support, and customization.",
+      "For established teams that need additional security, support, and observability.",
     cost: {
-      basePrice: "Scalable Pricing",
+      basePrice: "Custom",
       includedRuns: "Custom",
       additionalRunsPrice: "Custom",
       additionalRunsRate: null,
@@ -150,29 +215,38 @@ export const PLANS: Plan[] = [
       includedConcurrency: 500,
       additionalConcurrencyPrice: "Custom",
       additionalConcurrencyRate: null,
-      includedUsers: 50,
+      includedUsers: "Custom",
       additionalUsersPrice: "Custom",
       additionalUsersRate: null,
       includedWorkers: "Unlimited",
       additionalWorkersPrice: "Custom",
       additionalWorkersRate: null,
     },
-    priceCaption: "Contact us to learn more & request a demo",
+    priceCaption: "Contact us to learn more",
     cta: {
       href: "/contact?ref=pricing-card-enterprise",
       text: "Contact Us",
     },
     features: [
-      { value: "Custom", text: "executions" },
-      { value: "Custom", text: "concurrent steps" },
-      { value: "Custom", text: "span data ingested" },
-      { value: "Custom", text: "scores" },
-      { value: "Custom", text: "events ingested" },
-      { value: "Custom", text: "queue depth" },
-      { value: "Custom", text: "realtime connections" },
-      { text: "Advanced tracing, metrics, alerts + 90 day trace retention" },
-      { text: "Dedicated Slack channel" },
-      { text: "SAML, RBAC, audit trails" },
+      { category: "Platform", value: "Custom", text: "seats" },
+      { category: "Platform", value: "Custom", text: "executions" },
+      { category: "Platform", value: "Custom", text: "concurrent steps" },
+      { category: "Platform", value: "Custom", text: "workers" },
+      { category: "Platform", value: "Unlimited", text: "serverless workers" },
+      { category: "Events", value: "Custom", text: "events ingested" },
+      { category: "Events", value: "Custom", text: "queue depth" },
+      { category: "Events", value: "1000", text: "realtime connections" },
+      { category: "Events", value: "Custom", text: "event size" },
+      { category: "Observability", value: "Custom", text: "span data ingested" },
+      { category: "Observability", value: "Custom", text: "scores" },
+      { category: "Observability", value: "90 day", text: "trace history" },
+      { category: "Observability", value: "1 minute", text: "metrics granularity" },
+      { category: "Observability", text: "Trace and log exports" },
+      { category: "Observability", text: "Datadog and advanced observability" },
+      { category: "Security", text: "SAML, RBAC, audit trails" },
+      { category: "Security", text: "HIPAA included" },
+      { category: "Support", text: "Dedicated Slack channel" },
+      { category: "Support", text: "Dedicated account management" },
     ],
   },
 ];
@@ -201,7 +275,6 @@ export interface Feature {
   name: string;
   description?: string;
   section: string;
-  infoUrl?: string;
   plans: Partial<Record<PlanName, FeatureCell>>;
 }
 
@@ -218,6 +291,7 @@ export const FEATURES: Feature[] = [
     plans: {
       [PLAN_NAMES.hobby]: "$0",
       [PLAN_NAMES.pro]: "$99 /mo",
+      [PLAN_NAMES.business]: "$499 /mo",
       [PLAN_NAMES.enterprise]: "Contact us",
     },
   },
@@ -225,13 +299,10 @@ export const FEATURES: Feature[] = [
     name: "Executions",
     description: "A single durable function run or step execution",
     section: "comparison",
-    infoUrl: "/docs/learn/inngest-functions?ref=pricing-comparison-table",
     plans: {
       [PLAN_NAMES.hobby]: "50k /mo included",
-      [PLAN_NAMES.pro]: {
-        value: "1M executions included",
-        description: "Pay as you go up to 20M",
-      },
+      [PLAN_NAMES.pro]: "1M executions + add-on",
+      [PLAN_NAMES.business]: "10M executions + add-on",
       [PLAN_NAMES.enterprise]: "Custom",
     },
   },
@@ -239,24 +310,25 @@ export const FEATURES: Feature[] = [
     name: "Concurrent steps",
     description: "Process steps in parallel while smoothing load",
     section: "comparison",
-    infoUrl: "/docs/guides/concurrency?ref=pricing-comparison-table",
     plans: {
       [PLAN_NAMES.hobby]: "5 included",
       [PLAN_NAMES.pro]: {
         value: "100 included",
         description: "then $25 per 25",
       },
+      [PLAN_NAMES.business]: "500 included",
       [PLAN_NAMES.enterprise]: "500 included",
     },
   },
   {
-    name: "Users",
+    name: "Seats",
     description: "Develop with your entire team",
     section: "comparison",
     plans: {
-      [PLAN_NAMES.hobby]: "3",
-      [PLAN_NAMES.pro]: { value: "15", description: "then $10/user" },
-      [PLAN_NAMES.enterprise]: "50",
+      [PLAN_NAMES.hobby]: "5",
+      [PLAN_NAMES.pro]: { value: "15", description: "then $10/seat" },
+      [PLAN_NAMES.business]: { value: "30", description: "then $10/seat" },
+      [PLAN_NAMES.enterprise]: "Custom",
     },
   },
   {
@@ -265,7 +337,8 @@ export const FEATURES: Feature[] = [
     section: "comparison",
     plans: {
       [PLAN_NAMES.hobby]: "3",
-      [PLAN_NAMES.pro]: { value: "20", description: "then $10 per 10 workers" },
+      [PLAN_NAMES.pro]: "20 workers + add-on",
+      [PLAN_NAMES.business]: "100 workers + add-on",
       [PLAN_NAMES.enterprise]: "Custom",
     },
   },
@@ -276,6 +349,7 @@ export const FEATURES: Feature[] = [
     plans: {
       [PLAN_NAMES.hobby]: "Unlimited",
       [PLAN_NAMES.pro]: "Unlimited",
+      [PLAN_NAMES.business]: "Unlimited",
       [PLAN_NAMES.enterprise]: "Unlimited",
     },
   },
@@ -286,6 +360,7 @@ export const FEATURES: Feature[] = [
     plans: {
       [PLAN_NAMES.hobby]: false,
       [PLAN_NAMES.pro]: false,
+      [PLAN_NAMES.business]: false,
       [PLAN_NAMES.enterprise]: true,
     },
   },
@@ -296,6 +371,7 @@ export const FEATURES: Feature[] = [
     plans: {
       [PLAN_NAMES.hobby]: false,
       [PLAN_NAMES.pro]: "Add-on",
+      [PLAN_NAMES.business]: "Add-on",
       [PLAN_NAMES.enterprise]: true,
     },
   },
@@ -303,13 +379,13 @@ export const FEATURES: Feature[] = [
     name: "Events",
     description: "Received/processed",
     section: "events",
-    infoUrl: "/docs/guides/sending-events-from-functions?ref=pricing-comparison-table",
     plans: {
       [PLAN_NAMES.hobby]: "500k/mo included",
       [PLAN_NAMES.pro]: {
         value: "5m/mo included",
         description: "then $0.5 per 1m",
       },
+      [PLAN_NAMES.business]: "50m/mo included",
       [PLAN_NAMES.enterprise]: "Custom",
     },
   },
@@ -320,6 +396,7 @@ export const FEATURES: Feature[] = [
     plans: {
       [PLAN_NAMES.hobby]: "100k included",
       [PLAN_NAMES.pro]: "1m included",
+      [PLAN_NAMES.business]: "10m included",
       [PLAN_NAMES.enterprise]: "Custom",
     },
   },
@@ -330,6 +407,7 @@ export const FEATURES: Feature[] = [
     plans: {
       [PLAN_NAMES.hobby]: "256 KiB",
       [PLAN_NAMES.pro]: "3 MiB",
+      [PLAN_NAMES.business]: "3 MiB",
       [PLAN_NAMES.enterprise]: "Custom",
     },
   },
@@ -340,6 +418,7 @@ export const FEATURES: Feature[] = [
     plans: {
       [PLAN_NAMES.hobby]: "5",
       [PLAN_NAMES.pro]: "100",
+      [PLAN_NAMES.business]: "500",
       [PLAN_NAMES.enterprise]: "Custom",
     },
   },
@@ -350,17 +429,18 @@ export const FEATURES: Feature[] = [
     plans: {
       [PLAN_NAMES.hobby]: "30 seconds",
       [PLAN_NAMES.pro]: "5 minutes",
+      [PLAN_NAMES.business]: "5 minutes",
       [PLAN_NAMES.enterprise]: "Custom",
     },
   },
   {
     name: "Connections",
     section: "realtime",
-    infoUrl: "/docs/features/realtime?ref=pricing-comparison-table",
     plans: {
       [PLAN_NAMES.hobby]: "50",
       [PLAN_NAMES.pro]: "1000",
-      [PLAN_NAMES.enterprise]: "1000",
+      [PLAN_NAMES.business]: "5000",
+      [PLAN_NAMES.enterprise]: "Custom",
     },
   },
   {
@@ -369,17 +449,18 @@ export const FEATURES: Feature[] = [
     plans: {
       [PLAN_NAMES.hobby]: "250k per day",
       [PLAN_NAMES.pro]: "1m per day",
-      [PLAN_NAMES.enterprise]: "1m per day",
+      [PLAN_NAMES.business]: "5m per day",
+      [PLAN_NAMES.enterprise]: "Custom",
     },
   },
   {
     name: "Metrics granularity",
     description: "Real-time function metrics",
     section: "observability",
-    infoUrl: "/docs/platform/monitor/observability-metrics?ref=pricing-comparison-table",
     plans: {
       [PLAN_NAMES.hobby]: "30 minutes",
       [PLAN_NAMES.pro]: "15 minutes",
+      [PLAN_NAMES.business]: "1 minute",
       [PLAN_NAMES.enterprise]: "1 minute",
     },
   },
@@ -387,10 +468,10 @@ export const FEATURES: Feature[] = [
     name: "Trace and log history",
     description: "Tracing for every function run",
     section: "observability",
-    infoUrl: "/docs/platform/monitor/inspecting-function-runs?ref=pricing-comparison-table",
     plans: {
       [PLAN_NAMES.hobby]: "24 hours",
       [PLAN_NAMES.pro]: "7 days",
+      [PLAN_NAMES.business]: "14 days",
       [PLAN_NAMES.enterprise]: "90 days",
     },
   },
@@ -400,10 +481,8 @@ export const FEATURES: Feature[] = [
     section: "observability",
     plans: {
       [PLAN_NAMES.hobby]: "500 MB included",
-      [PLAN_NAMES.pro]: {
-        value: "5 GB included",
-        description: "then $3/GB",
-      },
+      [PLAN_NAMES.pro]: "5GB span data + overages",
+      [PLAN_NAMES.business]: "25GB span data + overages",
       [PLAN_NAMES.enterprise]: "Custom",
     },
   },
@@ -417,6 +496,7 @@ export const FEATURES: Feature[] = [
         value: "50K included",
         description: "then $1.50 per 1K",
       },
+      [PLAN_NAMES.business]: "250K included",
       [PLAN_NAMES.enterprise]: "Custom",
     },
   },
@@ -427,7 +507,8 @@ export const FEATURES: Feature[] = [
     plans: {
       [PLAN_NAMES.hobby]: false,
       [PLAN_NAMES.pro]: false,
-      [PLAN_NAMES.enterprise]: "Contact us",
+      [PLAN_NAMES.business]: false,
+      [PLAN_NAMES.enterprise]: true,
     },
   },
   {
@@ -437,6 +518,7 @@ export const FEATURES: Feature[] = [
     plans: {
       [PLAN_NAMES.hobby]: false,
       [PLAN_NAMES.pro]: "$300",
+      [PLAN_NAMES.business]: "$300",
       [PLAN_NAMES.enterprise]: true,
     },
   },
