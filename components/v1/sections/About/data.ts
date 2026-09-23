@@ -29,7 +29,7 @@ export const TEAM: TeamMember[] = [
   { name: "Pat Holcomb", title: "Growth & Demand Gen", avatar: `${TEAM_PHOTOS_BASE}/pat.png` },
   { name: "John Buchta", title: "Head of Design", avatar: `${TEAM_PHOTOS_BASE}/john.png` },
   { name: "Riley O’Toole", title: "Brand & Experiential", avatar: `${TEAM_PHOTOS_BASE}/rileyo.png` },
-  { name: "Savannah Bergeron", title: "Brand Designer" },
+  { name: "Savannah Bergeron", title: "Brand Designer", avatar: `${TEAM_PHOTOS_BASE}/savannah.png` },
   { name: "Albert Chae", title: "Systems Engineer" },
   { name: "Lakshmi Kasinathan", title: "Systems Engineer", avatar: `${TEAM_PHOTOS_BASE}/lakshmi.png` },
   { name: "Scott Numamoto", title: "Systems Engineer", avatar: `${TEAM_PHOTOS_BASE}/scott.png` },
