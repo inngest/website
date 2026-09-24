@@ -86,7 +86,7 @@ The `createFunction` method accepts a series of arguments to define your functio
     Expressions are defined using the Common Expression Language (CEL) with the original event accessible using dot-notation. Read [our guide to writing expressions](/docs/guides/writing-expressions) for more info. Examples:
 
     * Only run once for each customer id: `'event.data.customer_id'`
-    * Only run once for each account and email address: `'event.data.account_id + "-" + event.user.email'`
+    * Only run once for each account and email address: `'event.data.account_id + "-" + event.data.email'`
   </Property>
 
   <Property name="rateLimit" type="object">
@@ -106,7 +106,7 @@ The `createFunction` method accepts a series of arguments to define your functio
         Expressions are defined using the Common Expression Language (CEL) with the original event accessible using dot-notation. Read [our guide to writing expressions](/docs/guides/writing-expressions) for more info. Examples:
 
         * Rate limit per customer id: `'event.data.customer_id'`
-        * Rate limit per account and email address: `'event.data.account_id + "-" + event.user.email'`
+        * Rate limit per account and email address: `'event.data.account_id + "-" + event.data.email'`
       </Property>
     </Properties>
   </Property>
@@ -124,7 +124,7 @@ The `createFunction` method accepts a series of arguments to define your functio
         Expressions are defined using the Common Expression Language (CEL) with the original event accessible using dot-notation. Read [our guide to writing expressions](/docs/guides/writing-expressions) for more info. Examples:
 
         * Debounce per customer id: `'event.data.customer_id'`
-        * Debounce per account and email address: `'event.data.account_id + "-" + event.user.email'`
+        * Debounce per account and email address: `'event.data.account_id + "-" + event.data.email'`
       </Property>
     </Properties>
   </Property>
@@ -163,7 +163,7 @@ The `createFunction` method accepts a series of arguments to define your functio
         Expressions are defined using the Common Expression Language (CEL) with the original event accessible using dot-notation. Read [our guide to writing expressions](/docs/guides/writing-expressions) for more info. Examples:
 
         * Batch events per customer id: `'event.data.customer_id'`
-        * Batch events per account and email address: `'event.data.account_id + "-" + event.user.email'`
+        * Batch events per account and email address: `'event.data.account_id + "-" + event.data.email'`
       </Property>
       <Property name="if" type="string">
         A boolean expression to conditionally batch events that evaluate to true on this expression. The expression is evaluated for each triggering event.

@@ -18,10 +18,6 @@ await inngest.send({
     accountId: "645e9f6794e10937e9bdc201",
     billingPlan: "pro",
   },
-  user: {
-    external_id: "645ea000129f1c40109ca7ad",
-    email: "taylor@example.com",
-  }
 })
 ```
 
@@ -48,14 +44,6 @@ To send events from within the context of a function, use [`step.sendEvent()`](/
           </Property>
           <Property name="data" type="object" required>
             Any data to associate with the event. Will be serialized as JSON.
-          </Property>
-          <Property name="user" type="object">
-            Any relevant user identifying data or attributes associated with the event. **This data is encrypted at rest.**
-            <Properties nested>
-              <Property name="external_id" type="string">
-                An external identifier for the user. Most commonly, their user id in your system.
-              </Property>
-            </Properties>
           </Property>
           <Property name="id" type="string">
             A unique ID used to idempotently trigger function runs.  If duplicate event IDs are seen,
@@ -103,23 +91,12 @@ To send events from within the context of a function, use [`step.sendEvent()`](/
     },
   ]);
 
-  // Send user data that will be encrypted at rest
-  await inngest.send({
-    name: "app/account.created",
-    data: { billingPlan: "pro" },
-    user: {
-      external_id: "6463da8211cdbbcb191dd7da",
-      email: "test@example.com"
-    }
-  });
-
   // Specify the idempotency id, version, and timestamp
   await inngest.send({
     // Use an id specific to the event type & payload
     id: "cart-checkout-completed-ed12c8bde",
     name: "storefront/cart.checkout.completed",
     data: { cartId: "ed12c8bde" },
-    user: { external_id: "6463da8211cdbbcb191dd7da" },
     ts: 1684274328198,
     v: "2024-05-15.1"
   });
@@ -149,16 +126,6 @@ const { ids } = await inngest.send([
  * ]
  */
 ```
-
-## User data encryption 🔐
-
-All data sent in the `user` object is fully encrypted at rest.
-
-<Callout variant="warning">
-  <span className="text-yellow-300">⚠️</span> When [replaying a function](/docs/platform/replay), `event.user` will be empty. This will be fixed in the future, but for now assume that you cannot replay functions that rely on `event.user` data.
-</Callout>
-
-In the future, this object will be used to support programmatic deletion via API endpoint to support certain right-to-be-forgotten flows in your system. This will use the `user.external_id` property for lookup.
 
 ## Usage limits
 
