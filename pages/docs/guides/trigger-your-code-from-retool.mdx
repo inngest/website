@@ -114,11 +114,13 @@ For this guide, we'll explain how to do this with an existing [Express.js](https
 
 ```js
 import { serve } from "inngest/express"
+import { inngest } from "../inngest/client"
 import runBackfillForUser from "../inngest/runBackfillForUser"
 
-app.use("/api/inngest", serve("My API", process.env.INNGEST_SIGNING_KEY, [
-  runBackfillForUser,
-]))
+app.use("/api/inngest", serve({
+  client: inngest,
+  functions: [runBackfillForUser],
+}))
 // your existing routes...
 app.get("/api/whatever", ...)
 app.post("/api/something_else", ...)

@@ -929,7 +929,6 @@ import { Inngest, InngestCommHandler, type ServeHandlerOptions } from "inngest";
 const serve = (options: ServeHandlerOptions) => {
   const handler = new InngestCommHandler({
     frameworkName: "edge",
-    fetch: fetch.bind(globalThis),
     ...options,
     handler: (req: Request) => {
       return {
@@ -1026,6 +1025,7 @@ inngest_client = inngest.Inngest(app_id="flask_example", logger=logger)
     trigger=inngest.TriggerEvent(event="say-hello"),
 )
 def hello(ctx: inngest.ContextSync) -> str:
+    return "Hello, World!"
 
 inngest.flask.serve(
     app,
