@@ -41,24 +41,15 @@ export default function EventCard({ ev, newTab }: { ev: EventItem; newTab?: bool
             backgroundRepeat: "no-repeat",
           }}
         />
-        {ev.recording ? (
+        {(ev.badge ??
+          (ev.recording ? "Recording" : isPastEvent(ev) ? "Past event" : null)) && (
           <Chip
             variant="solid"
             size="sm"
             className="absolute left-4 top-4 font-normal"
           >
-            Recording
+            {ev.badge ?? (ev.recording ? "Recording" : "Past event")}
           </Chip>
-        ) : (
-          isPastEvent(ev) && (
-            <Chip
-              variant="solid"
-              size="sm"
-              className="absolute left-4 top-4 font-normal"
-            >
-              Past event
-            </Chip>
-          )
         )}
       </div>
       <div className="flex flex-1 flex-col gap-6 p-5">

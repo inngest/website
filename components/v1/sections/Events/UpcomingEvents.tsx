@@ -1,25 +1,27 @@
 import EventCardLarge from "@/components/v1/sections/Events/EventCardLarge";
-import { UPCOMING, isPastEvent, sortEventsByDate } from "@/components/v1/sections/Events/data";
+import {
+  CURRENT,
+  UPCOMING,
+  isPastEvent,
+  sortEventsByDate,
+  type EventItem,
+} from "@/components/v1/sections/Events/data";
 
-export default function UpcomingEvents() {
-  // Sort rather than trust the array order: UPCOMING is hand-edited, so a
-  // newly added event gets appended to the end and would otherwise render
-  // last no matter when it actually happens.
-  const upcoming = sortEventsByDate(UPCOMING.filter((ev) => !isPastEvent(ev)));
-
-  // Once every event has started there is nothing to promote, so drop the
-  // whole section rather than leaving a bare "Upcoming Events" heading over
-  // an empty list. Mirrors the "Other upcoming events" rail on the event
-  // detail pages, which hides itself the same way.
-  if (upcoming.length === 0) return null;
+function EventBand({
+  headingId,
+  title,
+  events,
+}: {
+  headingId: string;
+  title: string;
+  events: EventItem[];
+}) {
+  if (events.length === 0) return null;
 
   return (
-    <section
-      aria-labelledby="upcoming-events-heading"
-      className="relative mx-auto w-full max-w-[1280px] px-6 pb-[60px] pt-10 text-v1-frost sm:px-9 sm:pb-20 sm:pt-[50px] lg:px-8 lg:pb-[100px] lg:pt-[60px]"
-    >
+    <section aria-labelledby={headingId}>
       <h2
-        id="upcoming-events-heading"
+        id={headingId}
         // Heading/Md — Whyte regular 32, line-height 40, tracking
         // -0.01em (= -0.32px @ 32px). Capsize-trimmed via text-box-*.
         // `leading-none` so the line box collapses to the font-size box
@@ -27,15 +29,44 @@ export default function UpcomingEvents() {
         // the trimmed look without relying solely on the new property).
         className="mb-8 text-v1-heading-md-cap text-white"
       >
-        Upcoming Events
+        {title}
       </h2>
       <ul className="flex list-none flex-col gap-6 pl-0">
-        {upcoming.map((ev) => (
+        {events.map((ev) => (
           <li key={ev.id} className="list-none">
             <EventCardLarge ev={ev} newTab />
           </li>
         ))}
       </ul>
     </section>
+  );
+}
+
+export default function UpcomingEvents() {
+  // Sort rather than trust the array order: these lists are hand-edited,
+  // so a newly added event gets appended to the end and would otherwise
+  // render last no matter when it actually happens.
+  const current = sortEventsByDate(CURRENT.filter((ev) => !isPastEvent(ev)));
+  const upcoming = sortEventsByDate(UPCOMING.filter((ev) => !isPastEvent(ev)));
+
+  // Once every event has started there is nothing to promote, so drop the
+  // whole section rather than leaving a bare heading over an empty list.
+  // Mirrors the "Other upcoming events" rail on the event detail pages,
+  // which hides itself the same way.
+  if (current.length === 0 && upcoming.length === 0) return null;
+
+  return (
+    <div className="relative mx-auto flex w-full max-w-[1280px] flex-col gap-10 px-6 pb-[60px] pt-10 text-v1-frost sm:px-9 sm:pb-20 sm:pt-[50px] lg:gap-16 lg:px-8 lg:pb-[100px] lg:pt-[60px]">
+      <EventBand
+        headingId="current-events-heading"
+        title="Current Events"
+        events={current}
+      />
+      <EventBand
+        headingId="upcoming-events-heading"
+        title="Upcoming Events"
+        events={upcoming}
+      />
+    </div>
   );
 }
