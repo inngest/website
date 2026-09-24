@@ -11,6 +11,7 @@ export const LOCATIONS = [
 
 export const TOPICS = [
   "Events",
+  "Hackathon",
   "Meetups",
   "Innhouse",
   "Happy Hours",
@@ -37,6 +38,10 @@ export interface EventItem {
   excerpt: string;
   href: string;
   recording?: boolean;
+  /** Override the image-corner pill. Defaults to Recording / Past event. */
+  badge?: string;
+  /** Override the card CTA. Defaults to Register / Watch recording / View event details. */
+  cta?: string;
   image?: string;
   /** Tile/card image fit. Use `contain` for text-heavy graphics. */
   imageFit?: "cover" | "contain";
@@ -199,6 +204,25 @@ export const UPCOMING: EventItem[] = [
     imagePosition: "left center",
   },
 ];
+
+const CODETV_HACKATHON: EventItem = {
+  id: "codetv-web-dev-challenge",
+  title: "CodeTV Web Dev Challenge",
+  date: "Submissions close October 6, 2026",
+  startsAt: "2026-08-25",
+  endsAt: "2026-10-06T23:59:59-07:00",
+  location: "ONLINE",
+  topics: ["Hackathon"],
+  excerpt:
+    "Build an event-driven app or agent that runs no matter what, and compete for a year of Inngest Pro plus merch.",
+  href: "/events/codetv-web-dev-challenge",
+  image:
+    "https://cdn.inngest.com/codetv-hackathon-landing-page/Web_Dev_Challenge_S3_E6_Stills-139%20(1).jpg",
+  cta: "View challenge",
+};
+
+/** Open-ended happenings (hackathons, challenges) that aren't a dated upcoming session. */
+export const CURRENT: EventItem[] = [CODETV_HACKATHON];
 
 export const ALL_EVENTS: EventItem[] = sortEventsByDate([
   {
@@ -385,6 +409,7 @@ export const ALL_EVENTS: EventItem[] = sortEventsByDate([
     image: "/assets/v1/events/the-ai-conference-2026.png",
     imagePosition: "left center",
   },
+  CODETV_HACKATHON,
 ]);
 
 // ─── Event detail page (/events/sample) ────────────────────────
