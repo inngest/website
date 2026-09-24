@@ -1,4 +1,4 @@
-import { Callout } from "src/shared/Docs/mdx";
+import { Callout, Unreleased } from "src/shared/Docs/mdx";
 import { ResourceGrid, Resource } from "src/shared/Docs/Resources";
 import { VideoCameraIcon } from "@heroicons/react/24/outline";
 import HlsVideo from "src/shared/HlsVideo";
@@ -71,6 +71,12 @@ export default inngest.createFunction(
 ```
 
 [`step.score()`](/docs/reference/typescript/v4/functions/scoring?ref=docs-agent-evals#step-score-id-options) is durable and memoized. If the function retries or replays, Inngest does not record the same score twice.
+
+<Unreleased label="ai-middleware">
+
+To enable scoring together with step metadata and Extended Traces, use `aiMiddleware()` from `inngest/experimental` instead: `middleware: [...aiMiddleware()]`. See the [OpenTelemetry quick start](/docs/examples/open-telemetry?ref=docs-agent-evals#quick-start).
+
+</Unreleased>
 
 ## How Agent Evals works
 
