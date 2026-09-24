@@ -206,7 +206,7 @@ export function DurableEndpointsLP({
                 title: "Durable Execution reference",
                 description:
                   "Explore the Durable Endpoints TypeScript SDK reference with the complete list of options and use case examples.",
-                url: `/docs/reference/typescript/durable-endpoints?ref=${ref}`,
+                url: `/docs/reference/typescript/v4/durable-endpoints?ref=${ref}`,
               },
             ]}
           />
