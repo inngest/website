@@ -195,9 +195,13 @@ export default function Hero({ market }: { market: Market }) {
         className={cn(
           "relative z-10 mx-auto w-full max-w-[1440px] px-6 py-24 sm:px-9 lg:px-8 lg:py-40",
           // With an illustration below, the standard 160px bottom padding
-          // strands it far under the CTAs. Trim it so the artwork sits
-          // just beneath the copy, as designed.
-          hasVisual && "pb-10 lg:pb-14",
+          // strands it far under the CTAs. The artwork fills its canvas
+          // edge to edge (no transparent margin baked in), so this value
+          // is the whole visible gap — keep it small so the mouth sits
+          // just under the buttons, as designed.
+          // Both breakpoints stated: an unprefixed `pb-4` loses to the
+          // `lg:py-40` above it at lg, so the lg variant is required.
+          hasVisual && "pb-4 lg:pb-4",
           // The narrative cut carries two paragraphs and a CTA beside the
           // campaign line rather than under it — stacked, the right half
           // of the panel sits empty on desktop. Below lg both cuts are one
