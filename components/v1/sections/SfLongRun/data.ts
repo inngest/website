@@ -240,7 +240,7 @@ export const SF_RESOURCES: SfResource[] = [
 
 export const SF_USE_CASES_COPY = {
   title: "Because one request is never the finish line.",
-  body: "From background jobs to AI agents, keep execution moving even when work takes longer than expected.",
+  body: "However it's written, wherever it runs, Inngest makes long running jobs (and short sprints), unbreakable.",
 } as const;
 
 export const SF_RESOURCES_COPY = {
