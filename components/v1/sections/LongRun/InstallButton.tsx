@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from "react";
 import Button from "@/components/v1/Button";
+import { cn } from "@/utils/v1/cn";
 
 /**
  * "NPM Install" CTA — copies the install command to the clipboard.
@@ -57,7 +58,7 @@ export default function InstallButton({
   }
 
   return (
-    <div className={className}>
+    <div className={cn("relative", className)}>
       <Button
         onClick={copy}
         variant="secondary"
@@ -91,11 +92,17 @@ export default function InstallButton({
         </span>
       </Button>
       {/* Announced to screen readers as well as shown, so the outcome of
-          the click isn't visual-only. */}
+          the click isn't visual-only.
+
+          Absolutely positioned: in the flow, its 8px top margin counted
+          toward the wrapper's height even while empty, making this
+          control 50px against the 42px CTA beside it — which
+          `items-center` then split, sitting this button 4px high. Out of
+          flow, the wrapper is exactly the button's height. */}
       <span
         role="status"
         aria-live="polite"
-        className="text-v1-label-sm mt-2 block text-v1-frost/70"
+        className="text-v1-label-sm absolute left-0 top-full mt-2 whitespace-nowrap text-v1-frost/70"
       >
         {state === "copied"
           ? `Copied: ${command}`

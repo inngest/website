@@ -62,7 +62,7 @@ export default function OnTheGround() {
           <motion.li
             key={card.id}
             {...reveals.item(i)}
-            className="flex list-none flex-col gap-5 rounded-lg border border-v1-subtle p-6"
+            className="flex list-none flex-col overflow-hidden rounded-lg border border-v1-subtle"
           >
             {card.image ? (
               <img
@@ -70,7 +70,7 @@ export default function OnTheGround() {
                 alt={card.image.alt}
                 loading="lazy"
                 decoding="async"
-                className="-m-6 mb-0 block aspect-[2/1] w-full border-b border-v1-subtle object-cover"
+                className="block aspect-[2/1] w-full border-b border-v1-subtle object-cover"
               />
             ) : (
               card.mediaNote && (
@@ -78,7 +78,7 @@ export default function OnTheGround() {
                 <div
                   role="img"
                   aria-label={card.mediaNote}
-                  className="-m-6 mb-0 flex aspect-[2/1] items-center justify-center border-b border-dashed border-v1-muted px-4 text-center"
+                  className="flex aspect-[2/1] items-center justify-center border-b border-dashed border-v1-muted px-4 text-center"
                 >
                   <span className="text-v1-label-sm uppercase text-v1-frost/40">
                     {card.mediaNote}
@@ -87,38 +87,40 @@ export default function OnTheGround() {
               )
             )}
 
-            <h3 className="text-v1-heading-xs text-v1-frost">{card.title}</h3>
-            <p className="text-v1-body-sm-loose flex-1">{card.body}</p>
+            <div className="flex flex-1 flex-col gap-5 p-6">
+              <h3 className="text-v1-heading-xs text-v1-frost">{card.title}</h3>
+              <p className="text-v1-body-sm-loose flex-1">{card.body}</p>
 
-            {card.detail && (
-              <p className="text-v1-label-sm uppercase text-v1-frost/55">
-                {card.detail}
-              </p>
-            )}
+              {card.detail && (
+                <p className="text-v1-label-sm uppercase text-v1-frost/55">
+                  {card.detail}
+                </p>
+              )}
 
-            {/* An unconfirmed event says so plainly and shows no button.
+              {/* An unconfirmed event says so plainly and shows no button.
                 The brief is explicit that a disabled CTA is not an
                 acceptable stand-in. */}
-            {card.pending && (
-              <p className="text-v1-label-sm uppercase text-v1-frost/45">
-                {card.pending}
-              </p>
-            )}
+              {card.pending && (
+                <p className="text-v1-label-sm uppercase text-v1-frost/45">
+                  {card.pending}
+                </p>
+              )}
 
-            {card.cta && (
-              <Link
-                href={card.cta.href}
-                className="text-v1-label-md uppercase text-v1-frost transition-opacity duration-200 hover:opacity-70"
-              >
-                {card.cta.label}{" "}
-                <span
-                  aria-hidden="true"
-                  className="text-v1-accent-salmon-light"
+              {card.cta && (
+                <Link
+                  href={card.cta.href}
+                  className="text-v1-label-md uppercase text-v1-frost transition-opacity duration-200 hover:opacity-70"
                 >
-                  →
-                </span>
-              </Link>
-            )}
+                  {card.cta.label}{" "}
+                  <span
+                    aria-hidden="true"
+                    className="text-v1-accent-salmon-light"
+                  >
+                    →
+                  </span>
+                </Link>
+              )}
+            </div>
           </motion.li>
         ))}
       </ul>
