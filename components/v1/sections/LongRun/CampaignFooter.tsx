@@ -3,6 +3,7 @@
 import Link from "next/link";
 import { motion } from "motion/react";
 import Section from "@/components/v1/sections/shared/Section";
+import { cn } from "@/utils/v1/cn";
 import { reveals } from "@/utils/v1/reveals";
 import { ELSEWHERE, type Market } from "@/components/v1/sections/LongRun/data";
 
@@ -13,13 +14,21 @@ import { ELSEWHERE, type Market } from "@/components/v1/sections/LongRun/data";
  * across to the other markets' pages. Deliberately plain — the page has
  * already asked for the click in section 08.
  */
-export default function CampaignFooter({ market }: { market: Market }) {
+export default function CampaignFooter({
+  market,
+  /** Extra classes on the <Section> box. SF overrides the shared
+   *  vertical rhythm; NYC keeps it. */
+  className,
+}: {
+  market: Market;
+  className?: string;
+}) {
   const elsewhere = ELSEWHERE[market];
 
   return (
     <Section
       aria-labelledby="long-run-campaign-footer-heading"
-      className="border-t border-v1-subtle"
+      className={cn("border-t border-v1-subtle", className)}
       containerClassName="flex flex-col gap-10 sm:flex-row sm:items-end sm:justify-between"
     >
       <motion.h2

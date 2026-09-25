@@ -5,8 +5,10 @@ import { motion } from "motion/react";
 import Section from "@/components/v1/sections/shared/Section";
 import {
   SF_ACCENT,
+  SF_SECTION_PADDING,
   SF_SECTION_TITLE,
 } from "@/components/v1/sections/LongRun/sfHeadings";
+import { cn } from "@/utils/v1/cn";
 import { reveals } from "@/utils/v1/reveals";
 import {
   SF_CAMPAIGN,
@@ -30,7 +32,10 @@ export default function OnTheGround() {
   return (
     <Section
       aria-labelledby="long-run-sf-campaign-heading"
-      className="border-y border-v1-subtle bg-v1-surfaceBase"
+      className={cn(
+        "border-y border-v1-subtle bg-v1-surfaceBase",
+        SF_SECTION_PADDING
+      )}
       containerClassName="flex flex-col gap-v1-stack"
     >
       <div className="flex flex-col gap-6">

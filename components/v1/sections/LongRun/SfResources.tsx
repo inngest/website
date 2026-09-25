@@ -3,7 +3,11 @@
 import Link from "next/link";
 import { motion } from "motion/react";
 import Section from "@/components/v1/sections/shared/Section";
-import { SF_SECTION_TITLE } from "@/components/v1/sections/LongRun/sfHeadings";
+import {
+  SF_SECTION_PADDING,
+  SF_SECTION_TITLE,
+} from "@/components/v1/sections/LongRun/sfHeadings";
+import { cn } from "@/utils/v1/cn";
 import { reveals } from "@/utils/v1/reveals";
 import {
   SF_RESOURCES,
@@ -23,7 +27,7 @@ export default function SfResources() {
   return (
     <Section
       aria-labelledby="long-run-resources-heading"
-      className="border-t border-v1-subtle"
+      className={cn("border-t border-v1-subtle", SF_SECTION_PADDING)}
       containerClassName="flex flex-col"
     >
       <div className="flex flex-col items-center gap-4 text-center">

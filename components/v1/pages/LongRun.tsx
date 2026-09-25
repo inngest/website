@@ -18,6 +18,7 @@ import CampaignMoment from "@/components/v1/sections/LongRun/CampaignMoment";
 import CampaignFooter from "@/components/v1/sections/LongRun/CampaignFooter";
 import OnTheGround from "@/components/v1/sections/LongRun/OnTheGround";
 import StartBuilding from "@/components/v1/sections/Home/StartBuilding";
+import { SF_SECTION_PADDING } from "@/components/v1/sections/LongRun/sfHeadings";
 import SfDifference from "@/components/v1/sections/LongRun/SfDifference";
 import SfUseCases from "@/components/v1/sections/LongRun/SfUseCases";
 import SfResources from "@/components/v1/sections/LongRun/SfResources";
@@ -101,6 +102,7 @@ export default function LongRun({ market = "all" }: { market?: Market }) {
               refTag="long-run-sf-start-building"
               title="Start building."
               titleClassName="normal-case"
+              className={SF_SECTION_PADDING}
             />
           ) : isNarrative ? (
             <StippleCtaSection
@@ -167,7 +169,12 @@ export default function LongRun({ market = "all" }: { market?: Market }) {
               <SfResources />
             </>
           )}
-          {isNarrative && <CampaignFooter market={market} />}
+          {isNarrative && (
+            <CampaignFooter
+              market={market}
+              className={market === "sf" ? SF_SECTION_PADDING : undefined}
+            />
+          )}
         </div>
       </Unreleased>
     </PageShell>

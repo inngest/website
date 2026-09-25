@@ -3,7 +3,11 @@
 import { motion } from "motion/react";
 import BeforeAfterSlider from "@/components/v1/sections/shared/BeforeAfterSlider";
 import Section from "@/components/v1/sections/shared/Section";
-import { SF_SECTION_TITLE } from "@/components/v1/sections/LongRun/sfHeadings";
+import {
+  SF_SECTION_PADDING,
+  SF_SECTION_TITLE,
+} from "@/components/v1/sections/LongRun/sfHeadings";
+import { cn } from "@/utils/v1/cn";
 import { reveals } from "@/utils/v1/reveals";
 import { SF_DIFFERENCE } from "@/components/v1/sections/LongRun/data";
 
@@ -20,7 +24,7 @@ export default function SfDifference() {
   return (
     <Section
       aria-labelledby="long-run-difference-heading"
-      className="relative"
+      className={cn("relative", SF_SECTION_PADDING)}
       containerClassName="grid grid-cols-1 gap-8 lg:grid-cols-[854fr_420fr] lg:items-center lg:gap-16"
     >
       <BeforeAfterSlider

@@ -42,16 +42,20 @@ export default function StartBuilding({
   // The shared section title is uppercase; the SF design sets this
   // heading in sentence case, so it passes `normal-case`.
   titleClassName,
+  /** Extra classes on the <Section> box — lets a consuming page override
+   *  the shared vertical rhythm. */
+  className,
 }: {
   refTag?: string;
   title?: string;
   body?: string;
   titleClassName?: string;
+  className?: string;
 } = {}) {
   return (
     <Section
       aria-label="Start building"
-      className="relative"
+      className={`relative ${className ?? ""}`}
       containerClassName="flex flex-col gap-[58px]"
     >
       <SectionHeader

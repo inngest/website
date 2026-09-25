@@ -194,6 +194,10 @@ export default function Hero({ market }: { market: Market }) {
       <div
         className={cn(
           "relative z-10 mx-auto w-full max-w-[1440px] px-6 py-24 sm:px-9 lg:px-8 lg:py-40",
+          // With an illustration below, the standard 160px bottom padding
+          // strands it far under the CTAs. Trim it so the artwork sits
+          // just beneath the copy, as designed.
+          hasVisual && "pb-10 lg:pb-14",
           // The narrative cut carries two paragraphs and a CTA beside the
           // campaign line rather than under it — stacked, the right half
           // of the panel sits empty on desktop. Below lg both cuts are one

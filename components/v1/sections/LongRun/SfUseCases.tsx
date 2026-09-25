@@ -3,7 +3,11 @@
 import Link from "next/link";
 import { motion } from "motion/react";
 import Section from "@/components/v1/sections/shared/Section";
-import { SF_SECTION_TITLE } from "@/components/v1/sections/LongRun/sfHeadings";
+import {
+  SF_SECTION_PADDING,
+  SF_SECTION_TITLE,
+} from "@/components/v1/sections/LongRun/sfHeadings";
+import { cn } from "@/utils/v1/cn";
 import { reveals } from "@/utils/v1/reveals";
 import {
   SF_USE_CASES,
@@ -16,14 +20,14 @@ import {
  * Centred header, four cards across at lg, each led by a product
  * thumbnail and linking into the relevant docs.
  *
- * PENDING ASSETS: the four card thumbnails aren't in the repo yet. Each
- * card renders a labelled placeholder until `image` is filled in on its
- * entry in `SF_USE_CASES` — no stand-in art is substituted.
+ * Cards fall back to a labelled placeholder if an entry in
+ * `SF_USE_CASES` has no `image`, rather than substituting stand-in art.
  */
 export default function SfUseCases() {
   return (
     <Section
       aria-labelledby="long-run-use-cases-heading"
+      className={SF_SECTION_PADDING}
       containerClassName="flex flex-col gap-10"
     >
       <div className="flex flex-col items-center gap-4 text-center">
