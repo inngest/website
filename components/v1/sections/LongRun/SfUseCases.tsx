@@ -3,10 +3,7 @@
 import Link from "next/link";
 import { motion } from "motion/react";
 import Section from "@/components/v1/sections/shared/Section";
-import {
-  SF_ACCENT,
-  SF_SECTION_TITLE,
-} from "@/components/v1/sections/LongRun/sfHeadings";
+import { SF_SECTION_TITLE } from "@/components/v1/sections/LongRun/sfHeadings";
 import { reveals } from "@/utils/v1/reveals";
 import {
   SF_USE_CASES,
@@ -75,7 +72,7 @@ export default function SfUseCases() {
               <span className="flex flex-1 flex-col gap-2 p-5">
                 <span className="text-v1-heading-xs text-v1-frost">
                   {c.title}{" "}
-                  <span aria-hidden="true" className={SF_ACCENT}>
+                  <span aria-hidden="true" className="text-v1-accent-salmon">
                     →
                   </span>
                 </span>

@@ -3,10 +3,7 @@
 import Link from "next/link";
 import { motion } from "motion/react";
 import Section from "@/components/v1/sections/shared/Section";
-import {
-  SF_ACCENT,
-  SF_SECTION_TITLE,
-} from "@/components/v1/sections/LongRun/sfHeadings";
+import { SF_SECTION_TITLE } from "@/components/v1/sections/LongRun/sfHeadings";
 import { reveals } from "@/utils/v1/reveals";
 import {
   SF_RESOURCES,
@@ -62,7 +59,7 @@ export default function SfResources() {
               </span>
               <span
                 aria-hidden="true"
-                className={`text-v1-label-md uppercase ${SF_ACCENT}`}
+                className="text-v1-label-md uppercase text-v1-accent-salmon"
               >
                 Read →
               </span>

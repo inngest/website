@@ -97,7 +97,11 @@ export default function LongRun({ market = "all" }: { market?: Market }) {
             // closing CTA band: "pick a template" is a more concrete next
             // step than another sign-up button, and it is the same
             // component the homepage closes on.
-            <StartBuilding refTag="long-run-sf-start-building" />
+            <StartBuilding
+              refTag="long-run-sf-start-building"
+              title="Start building."
+              titleClassName="normal-case"
+            />
           ) : isNarrative ? (
             <StippleCtaSection
               headingId="long-run-cta-heading"

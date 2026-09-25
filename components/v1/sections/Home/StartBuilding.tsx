@@ -36,7 +36,18 @@ export default function StartBuilding({
   // section pass their own so their traffic isn't reported as homepage
   // traffic.
   refTag = "home-start-building",
-}: { refTag?: string } = {}) {
+  // The SF campaign page sets these; the homepage keeps its own wording.
+  title = "Start Building",
+  body = "Pick a template",
+  // The shared section title is uppercase; the SF design sets this
+  // heading in sentence case, so it passes `normal-case`.
+  titleClassName,
+}: {
+  refTag?: string;
+  title?: string;
+  body?: string;
+  titleClassName?: string;
+} = {}) {
   return (
     <Section
       aria-label="Start building"
@@ -48,9 +59,9 @@ export default function StartBuilding({
         // title/subtitle align with the "QUICKSTART" eyebrow below.
         // Tighter title→subtitle gap than the default 48px v1-stack.
         className="!gap-5 lg:pl-4"
-        titleClassName="text-balance"
-        title="Start Building"
-        body="Pick a template"
+        titleClassName={`text-balance ${titleClassName ?? ""}`}
+        title={title}
+        body={body}
         // Larger heading-sm lead (not the default body-lg-loose);
         // frost since it reads as a sub-heading.
         bodyClassName="text-v1-heading-sm text-v1-frost"

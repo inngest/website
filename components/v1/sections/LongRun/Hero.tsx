@@ -308,6 +308,34 @@ export default function Hero({ market }: { market: Market }) {
         )}
       </div>
 
+      {/* Campaign illustration — full-bleed, bleeding past the hero's
+          bottom edge so the swoosh runs behind the logo strip below.
+          `pointer-events-none` so it never eats a CTA click. */}
+      {hasVisual &&
+        (narrative?.illustration ? (
+          <img
+            src={narrative.illustration.src}
+            alt={narrative.illustration.alt}
+            width={narrative.illustration.width}
+            height={narrative.illustration.height}
+            aria-hidden={narrative.illustration.alt === "" ? true : undefined}
+            className="pointer-events-none relative z-0 -mb-16 block w-full select-none lg:-mb-24"
+          />
+        ) : (
+          // PENDING ASSET: the mouth / tongue-swoosh / running-cup
+          // artwork isn't in the repo. Labelled slot so the gap is
+          // obvious in review rather than silently missing.
+          <div
+            role="img"
+            aria-label="Campaign illustration — mouth, tongue swoosh and running cup"
+            className="pointer-events-none relative z-0 mx-6 mb-8 flex h-[160px] items-center justify-center border border-dashed border-v1-muted px-4 text-center sm:mx-9 lg:mx-8 lg:h-[220px]"
+          >
+            <span className="text-v1-label-sm uppercase text-v1-frost/40">
+              Campaign illustration — mouth, tongue swoosh, running cup
+            </span>
+          </div>
+        ))}
+
       {/* The marathon route, drawing itself along the bottom of the
           salmon panel. Omitted on the SF hero, whose design carries its
           own illustration instead. */}

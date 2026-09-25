@@ -165,6 +165,8 @@ export interface HeroNarrative {
   /** Small line under the CTAs acknowledging the placement someone just
    *  walked past. */
   note?: string;
+  /** Full-bleed campaign illustration beneath the hero copy. */
+  illustration?: { src: string; alt: string; width: number; height: number };
   /** Real product screenshot shown under the hero copy. */
   visual?: {
     src: string;
@@ -213,6 +215,20 @@ export const HERO_NARRATIVE: Partial<Record<Market, HeroNarrative>> = {
       label: "npm install inngest",
       command: "npm install inngest",
     },
+    // Full-bleed campaign illustration under the hero copy: the mouth,
+    // the green tongue-swoosh, and the running cup running along it.
+    //
+    // TO ENABLE: drop the export at the path below and uncomment. Until
+    // then the hero renders a labelled slot rather than nothing, so the
+    // gap is visible in review. Export as a transparent PNG (or SVG) at
+    // roughly 2880px wide — it spans the full viewport and bleeds over
+    // the logo strip.
+    // illustration: {
+    //   src: "/assets/v1/sf-long-run/tongue-swoosh.png",
+    //   alt: "",
+    //   width: 2880,
+    //   height: 980,
+    // },
     // A real capture of the Inngest dashboard showing a multi-step run
     // trace with per-step durations — already approved and in use on
     // /compare-to-temporal. Reused rather than mocked up: the brief
@@ -514,7 +530,7 @@ export const ELSEWHERE: Record<Market, { label: string; href: string }[]> = {
 /* ── 02 · The product difference ───────────────────────────────────── */
 
 export const SF_DIFFERENCE = {
-  title: ["It doesn't have to be hard."],
+  title: ["Durable doesn't have to be hard."],
   body: "Orchestrating long-running code is tough. But you don't need to wrangle a bunch of extra infrastructure to do it. The Inngest SDK is the fastest way to make any code durable and observable by default.",
   /** Reuses the homepage's before/after assets and the shared slider. */
   before: {
@@ -611,7 +627,7 @@ export interface SfCampaignCard {
 export const SF_CAMPAIGN_CARDS: SfCampaignCard[] = [
   {
     id: "corgi-cafe",
-    title: "The Long Run (short legs).",
+    title: "The Long Run.",
     body: "Find our campaign drink at Corgi Café and follow the long run from your cup to your code.",
     detail: "Starting October 1.",
     mediaNote: "Approved campaign drink photo — cup or sleeve artwork",
@@ -636,9 +652,8 @@ export const SF_CAMPAIGN = {
   // Two-tone eyebrow: campaign name in the accent, city in frost.
   eyebrowAccent: "The long run.",
   eyebrow: "San Francisco.",
-  // One line in the design. Hyphenation made consistent across both
-  // halves — the mock reads "Long running agents" unhyphenated.
-  title: ["Long-running humans. Long-running agents."],
+  // Set exactly as designed, including the unhyphenated second half.
+  title: ["Long-running humans. Long running agents."],
   body: "We're bringing Build for the Long Run to San Francisco through coffee, community, and a few opportunities to get moving.",
 } as const;
 
