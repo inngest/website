@@ -490,7 +490,7 @@ export const TRY = {
 
 export const ELSEWHERE: Record<Market, { label: string; href: string }[]> = {
   nyc: [
-    { label: "San Francisco", href: "/long-run/sf?ref=long-run-footer" },
+    { label: "San Francisco", href: "/sf-long-run?ref=long-run-footer" },
     { label: "The full story", href: "/long-run?ref=long-run-footer" },
   ],
   sf: [
@@ -499,7 +499,7 @@ export const ELSEWHERE: Record<Market, { label: string; href: string }[]> = {
   ],
   all: [
     { label: "New York City", href: "/long-run/nyc?ref=long-run-footer" },
-    { label: "San Francisco", href: "/long-run/sf?ref=long-run-footer" },
+    { label: "San Francisco", href: "/sf-long-run?ref=long-run-footer" },
   ],
 };
 
