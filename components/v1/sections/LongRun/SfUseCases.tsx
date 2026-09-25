@@ -55,13 +55,13 @@ export default function SfUseCases() {
                   alt={c.image.alt}
                   loading="lazy"
                   decoding="async"
-                  className="block aspect-[16/10] w-full object-cover"
+                  className="block aspect-[11/6] w-full object-cover"
                 />
               ) : (
                 <span
                   role="img"
                   aria-label={c.imageNote}
-                  className="flex aspect-[16/10] w-full items-center justify-center border-b border-dashed border-v1-muted px-4 text-center"
+                  className="flex aspect-[11/6] w-full items-center justify-center border-b border-dashed border-v1-muted px-4 text-center"
                 >
                   <span className="text-v1-label-sm uppercase text-v1-frost/40">
                     {c.imageNote}
