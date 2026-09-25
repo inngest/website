@@ -61,7 +61,7 @@ export default function Connection() {
               <motion.li
                 key={item}
                 {...reveals.item(i)}
-                className="list-none rounded-full border border-v1-subtle px-4 py-2 text-v1-label-sm uppercase text-v1-frost/75"
+                className="text-v1-label-sm list-none rounded-full border border-v1-subtle px-4 py-2 uppercase text-v1-frost/75"
               >
                 {item}
               </motion.li>

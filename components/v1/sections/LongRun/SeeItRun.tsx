@@ -6,7 +6,7 @@ import Section from "@/components/v1/sections/shared/Section";
 import { V1_SECTION_TITLE } from "@/components/v1/sections/shared/sectionTitle";
 import { reveals } from "@/utils/v1/reveals";
 import RunTimeline from "@/components/v1/sections/LongRun/RunTimeline";
-import { SEE_IT_RUN } from "@/components/v1/sections/LongRun/data";
+import { SEE_IT_RUN, type Market } from "@/components/v1/sections/LongRun/data";
 
 /**
  * Section 05 — the hero technical proof.
@@ -18,7 +18,9 @@ import { SEE_IT_RUN } from "@/components/v1/sections/LongRun/data";
  * so it can be reused across markets, paid and social rather than rebuilt
  * per surface.
  */
-export default function SeeItRun() {
+export default function SeeItRun({ market }: { market: Market }) {
+  const copy = SEE_IT_RUN[market];
+
   return (
     <Section
       id="long-run-see-it-run"
@@ -34,14 +36,14 @@ export default function SeeItRun() {
             {...reveals.body}
             className="text-v1-eyebrow uppercase text-v1-frost/55"
           >
-            {SEE_IT_RUN.eyebrow}
+            {copy.eyebrow}
           </motion.p>
           <motion.h2
             {...reveals.heading}
             id="long-run-see-it-run-heading"
             className={V1_SECTION_TITLE}
           >
-            {SEE_IT_RUN.title.map((line) => (
+            {copy.title.map((line) => (
               <span key={line} className="block">
                 {line}
               </span>
@@ -51,11 +53,11 @@ export default function SeeItRun() {
 
         <div className="flex flex-col items-start gap-8">
           <motion.p {...reveals.body} className="text-v1-body-lg-loose">
-            {SEE_IT_RUN.payoff}
+            {copy.payoff}
           </motion.p>
           <motion.div {...reveals.item(2)}>
-            <ButtonLink href={SEE_IT_RUN.ctaHref} variant="primary">
-              {SEE_IT_RUN.ctaLabel} →
+            <ButtonLink href={copy.ctaHref} variant="primary">
+              {copy.ctaLabel} →
             </ButtonLink>
           </motion.div>
         </div>

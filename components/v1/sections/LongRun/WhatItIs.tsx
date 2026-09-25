@@ -161,7 +161,7 @@ export default function WhatItIs() {
             <motion.li
               key={f}
               {...reveals.item(i)}
-              className="flex list-none items-start gap-4 text-v1-body-lg-loose"
+              className="text-v1-body-lg-loose flex list-none items-start gap-4"
             >
               <span
                 aria-hidden="true"

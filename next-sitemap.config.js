@@ -85,6 +85,7 @@ module.exports = {
     // ship the campaign.
     "/long-run",
     "/long-run/*",
+    "/sf-long-run",
     "/resources/access/*",
   ],
 };

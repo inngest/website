@@ -74,7 +74,10 @@ export default function Course() {
                   className="transition-opacity duration-200 hover:opacity-70"
                 >
                   {stage.capability}{" "}
-                  <span aria-hidden="true" className="text-v1-accent-salmon-light">
+                  <span
+                    aria-hidden="true"
+                    className="text-v1-accent-salmon-light"
+                  >
                     →
                   </span>
                 </Link>

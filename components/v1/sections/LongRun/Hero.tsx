@@ -2,6 +2,7 @@
 
 import { motion } from "motion/react";
 import ButtonLink from "@/components/v1/ButtonLink";
+import Image from "next/image";
 import { cn } from "@/utils/v1/cn";
 import { tweens } from "@/utils/v1/springs";
 import { CURSOR_SPOTLIGHT_SEED } from "@/utils/v1/cursorFx";
@@ -9,9 +10,14 @@ import {
   MARKET_COPY,
   HERO_BODY,
   HERO_NARRATIVE,
+  type HeroNarrative,
   type Market,
 } from "@/components/v1/sections/LongRun/data";
 import CourseLine from "@/components/v1/sections/LongRun/CourseLine";
+import GradientFrame from "@/components/v1/sections/shared/GradientFrame";
+import InstallButton from "@/components/v1/sections/LongRun/InstallButton";
+import TongueSwoosh from "@/components/v1/sections/LongRun/TongueSwoosh";
+import { handleAnchorClick } from "@/components/v1/sections/LongRun/useAnchorScroll";
 
 /**
  * Campaign hero — the first thing someone sees after scanning a poster or
@@ -27,7 +33,7 @@ import CourseLine from "@/components/v1/sections/LongRun/CourseLine";
 // Mirrors SplitHero's entry cascade so the campaign page feels like it
 // belongs to the same site: SSR-render the from-state inline, then let
 // motion animate straight to the animate state without a hydration snap.
-const entry = (delayMs: number) => ({
+const entryAnim = (delayMs: number) => ({
   style: {
     opacity: 0,
     transform: "translateY(14px)",
@@ -37,6 +43,95 @@ const entry = (delayMs: number) => ({
   animate: { opacity: 1, y: 0 } as const,
   transition: { ...tweens.entry, delay: delayMs / 1000 },
 });
+const entry = entryAnim;
+
+/**
+ * The hero's copy stack — bridge lines, body, closer, CTAs and the small
+ * contextual note. Extracted because it renders in two different places:
+ * inside the left column on markets with a product visual, and as the
+ * right-hand rail on markets without one.
+ */
+function HeroCopyStack({
+  narrative,
+  entry,
+}: {
+  narrative: HeroNarrative;
+  entry: typeof entryAnim;
+}) {
+  // The dark SF hero takes the green campaign accent; the salmon poster
+  // heroes keep the frost-on-salmon buttons.
+  const onDark = Boolean(narrative.visual);
+  const primaryClass = onDark
+    ? "!w-full !border-v1-accent-green !bg-transparent !text-v1-accent-green hover:!bg-v1-accent-green hover:!text-v1-jetBlack sm:!w-auto"
+    : "!w-full hover:!border-v1-jetBlack hover:!bg-v1-jetBlack hover:!text-v1-frost sm:!w-auto";
+  return (
+    <div className="flex flex-col gap-8">
+      <motion.div {...entry(520)} className="flex flex-col gap-8">
+        {narrative.bridge.length > 0 && (
+          <div className="flex flex-col gap-2">
+            {narrative.bridge.map((line) => (
+              <p key={line} className="text-v1-heading-xs-loose !text-v1-frost">
+                {line}
+              </p>
+            ))}
+          </div>
+        )}
+        <div className="flex flex-col gap-5">
+          {narrative.body.map((para) => (
+            <p key={para} className="text-v1-body-lg-loose !text-v1-frost/85">
+              {para}
+            </p>
+          ))}
+        </div>
+        {narrative.closer && (
+          <p className="text-v1-heading-xs-loose !text-v1-frost">
+            {narrative.closer}
+          </p>
+        )}
+      </motion.div>
+
+      <motion.div {...entry(640)}>
+        <div className="flex flex-col items-stretch gap-3 sm:flex-row sm:flex-wrap sm:items-center sm:gap-4">
+          <ButtonLink
+            href={narrative.cta.href}
+            prefetch={false}
+            variant="primary"
+            className={primaryClass}
+          >
+            {narrative.cta.label}
+          </ButtonLink>
+          {narrative.installCta && (
+            <InstallButton
+              label={narrative.installCta.label}
+              command={narrative.installCta.command}
+              className="w-full sm:w-auto"
+            />
+          )}
+          {narrative.secondaryCta && (
+            <ButtonLink
+              href={narrative.secondaryCta.href}
+              variant="secondary"
+              // Stays a real anchor so it works without JS and is announced
+              // as a link; the handler only upgrades the jump to a smooth
+              // scroll, and honours reduced motion.
+              onClick={handleAnchorClick(
+                narrative.secondaryCta.href.replace("#", "")
+              )}
+              className="!w-full hover:!border-v1-jetBlack hover:!bg-v1-jetBlack hover:!text-v1-frost sm:!w-auto"
+            >
+              {narrative.secondaryCta.label} →
+            </ButtonLink>
+          )}
+        </div>
+        {narrative.note && (
+          <p className="text-v1-body-sm mt-6 !text-v1-frost/70">
+            {narrative.note}
+          </p>
+        )}
+      </motion.div>
+    </div>
+  );
+}
 
 export default function Hero({ market }: { market: Market }) {
   const copy = MARKET_COPY[market];
@@ -45,11 +140,21 @@ export default function Hero({ market }: { market: Market }) {
   // without an entry keep the original short hero untouched.
   const narrative = HERO_NARRATIVE[market];
   const eyebrow = narrative?.eyebrow ?? copy.eyebrow;
+  // With a product visual the hero becomes a true split: the whole copy
+  // stack (headline, body, CTAs) reads down the left column and the
+  // product UI sits beside it. Without one, the headline and the rail
+  // share the row as before.
+  const hasVisual = Boolean(narrative?.visual);
 
   return (
     <section
       aria-labelledby="long-run-hero-heading"
-      className="relative w-full overflow-hidden bg-v1-accent-salmon text-v1-frost"
+      className={cn(
+        "relative w-full overflow-hidden text-v1-frost",
+        // The SF design puts the hero on the dark canvas; the other
+        // campaign cuts keep the salmon poster panel.
+        hasVisual ? "bg-v1-canvasBase" : "bg-v1-accent-salmon"
+      )}
       onPointerMove={(e) => {
         // Cursor spotlight, same technique as SplitHero: write the
         // pointer position onto the section as CSS custom properties and
@@ -73,14 +178,16 @@ export default function Hero({ market }: { market: Market }) {
           as texture cropped to /ai's 2/3 panel — full-bleed it puts a hard
           light/dark block across the hero. A flat panel plus the cursor
           spotlight is also closer to the printed poster. */}
-      <span
-        aria-hidden="true"
-        className="pointer-events-none absolute inset-0 hidden lg:block"
-        style={{
-          background:
-            "radial-gradient(300px circle at var(--mx) var(--my), rgba(255, 210, 195, 0.18), transparent 78%)",
-        }}
-      />
+      {!hasVisual && (
+        <span
+          aria-hidden="true"
+          className="pointer-events-none absolute inset-0 hidden lg:block"
+          style={{
+            background:
+              "radial-gradient(300px circle at var(--mx) var(--my), rgba(255, 210, 195, 0.18), transparent 78%)",
+          }}
+        />
+      )}
 
       {/* Vertical padding runs a step heavier than the standard section
           box so the campaign line has room to be the loudest thing on the
@@ -88,20 +195,43 @@ export default function Hero({ market }: { market: Market }) {
       <div
         className={cn(
           "relative z-10 mx-auto w-full max-w-[1440px] px-6 py-24 sm:px-9 lg:px-8 lg:py-40",
+          // With an illustration below, the standard 160px bottom padding
+          // strands it far under the CTAs. The artwork fills its canvas
+          // edge to edge (no transparent margin baked in), so this value
+          // is the whole visible gap — keep it small so the mouth sits
+          // just under the buttons, as designed.
+          // Both breakpoints stated: an unprefixed `pb-4` loses to the
+          // `lg:py-40` above it at lg, so the lg variant is required.
+          hasVisual && "pb-4 lg:pb-4",
           // The narrative cut carries two paragraphs and a CTA beside the
           // campaign line rather than under it — stacked, the right half
           // of the panel sits empty on desktop. Below lg both cuts are one
           // column.
           narrative &&
+            !hasVisual &&
             "lg:grid lg:grid-cols-[minmax(0,1fr)_minmax(0,480px)] lg:items-end lg:gap-x-16",
+          // Split hero: copy column, then the product UI. Centred on the
+          // row so the screenshot sits against the middle of the stack
+          // rather than dropping below it.
+          hasVisual &&
+            "lg:grid lg:grid-cols-[minmax(0,1fr)_minmax(0,46%)] lg:items-center lg:gap-x-12"
         )}
       >
-        <div>
+        <div className={cn(hasVisual && "flex flex-col")}>
           <motion.p
             {...entry(40)}
             className="text-v1-label-md uppercase text-v1-frost"
           >
-            {eyebrow}
+            {narrative?.eyebrowAccent ? (
+              <>
+                <span className="text-v1-frost">{eyebrow}</span>{" "}
+                <span className="text-v1-accent-green">
+                  {narrative.eyebrowAccent}
+                </span>
+              </>
+            ) : (
+              eyebrow
+            )}
           </motion.p>
 
           {/* The campaign line, set as large as the grid allows. Three
@@ -118,50 +248,38 @@ export default function Hero({ market }: { market: Market }) {
               >
                 {line}
               </motion.span>
-          ))}
+            ))}
           </h1>
+          {hasVisual && narrative && (
+            <HeroCopyStack narrative={narrative} entry={entry} />
+          )}
         </div>
 
-        {narrative ? (
-          <>
-            {/* Narrative markets turn from the poster to production right
-                here, and send the one CTA down to the run visual — the
-                page's job is to explain before it asks. */}
-            <div className="mt-10 flex max-w-[620px] flex-col gap-8 lg:mt-0">
-            <motion.div {...entry(520)} className="flex flex-col gap-8">
-              <div className="flex flex-col gap-2">
-                {narrative.bridge.map((line) => (
-                  <p
-                    key={line}
-                    className="text-v1-heading-xs-loose !text-v1-frost"
-                  >
-                    {line}
-                  </p>
-                ))}
-              </div>
-              <div className="flex flex-col gap-5">
-                {narrative.body.map((para) => (
-                  <p
-                    key={para}
-                    className="text-v1-body-lg-loose !text-v1-frost/85"
-                  >
-                    {para}
-                  </p>
-                ))}
-              </div>
-            </motion.div>
-
-            <motion.div {...entry(640)}>
-              <ButtonLink
-                href={narrative.cta.href}
-                variant="primary"
-                className="!w-full hover:!border-v1-jetBlack hover:!bg-v1-jetBlack hover:!text-v1-frost sm:!w-auto"
-              >
-                {narrative.cta.label} →
-              </ButtonLink>
-            </motion.div>
-            </div>
-          </>
+        {hasVisual && narrative?.visual ? (
+          <motion.div {...entry(700)} className="mt-12 lg:mt-0">
+            <GradientFrame
+              variant="black"
+              className="overflow-hidden rounded-lg"
+            >
+              <Image
+                src={narrative.visual.src}
+                alt={narrative.visual.alt}
+                width={narrative.visual.width}
+                height={narrative.visual.height}
+                // Above the fold, so not lazy-loaded. The panel occupies
+                // ~46% of the container at lg and the full width below it;
+                // stating that lets Next pick a variant that matches the
+                // slot instead of undershooting it.
+                priority
+                sizes="(max-width: 1024px) 92vw, 46vw"
+                className="h-auto w-full"
+              />
+            </GradientFrame>
+          </motion.div>
+        ) : narrative ? (
+          <div className="mt-10 max-w-[620px] lg:mt-0">
+            <HeroCopyStack narrative={narrative} entry={entry} />
+          </div>
         ) : (
           <>
             <motion.div
@@ -200,13 +318,23 @@ export default function Hero({ market }: { market: Market }) {
         )}
       </div>
 
-      {/* The marathon route, drawing itself along the bottom of the panel.
-          Purely decorative — the labelled version of the course lives in
-          the Course section further down the short cut. */}
-      <CourseLine
-        className="pointer-events-none absolute inset-x-0 bottom-0 h-[120px] text-v1-frost/45 lg:h-[176px]"
-        drawDurationMs={2600}
-      />
+      {/* Campaign illustration — full-bleed, bleeding past the hero's
+          bottom edge so the swoosh runs behind the logo strip below.
+          Scroll-driven: the cup runs forward as the page scrolls down
+          and backwards as it scrolls up. */}
+      {hasVisual && (
+        <TongueSwoosh className="relative z-0 -mb-16 block w-full lg:-mb-24" />
+      )}
+
+      {/* The marathon route, drawing itself along the bottom of the
+          salmon panel. Omitted on the SF hero, whose design carries its
+          own illustration instead. */}
+      {!hasVisual && (
+        <CourseLine
+          className="pointer-events-none absolute inset-x-0 bottom-0 h-[120px] text-v1-frost/45 lg:h-[176px]"
+          drawDurationMs={2600}
+        />
+      )}
     </section>
   );
 }

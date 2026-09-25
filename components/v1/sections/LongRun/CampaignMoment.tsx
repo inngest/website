@@ -76,10 +76,7 @@ export default function CampaignMoment({ market }: { market: Market }) {
         </span>
       </motion.div>
 
-      <motion.p
-        {...reveals.body}
-        className="text-v1-heading-xs text-v1-frost"
-      >
+      <motion.p {...reveals.body} className="text-v1-heading-xs text-v1-frost">
         {moment.kicker}
       </motion.p>
     </Section>

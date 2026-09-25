@@ -100,6 +100,16 @@ async function redirects() {
       permanent: true,
     },
 
+    // The SF campaign page moved from /long-run/sf to /sf-long-run.
+    // Preview links to the old path were already shared for review, so
+    // this keeps them working. Not `permanent` — the page is still gated
+    // and unlaunched, so nothing should cache this redirect forever.
+    {
+      source: "/long-run/sf",
+      destination: "/sf-long-run",
+      permanent: false,
+    },
+
     ...permanentRedirects.map(([source, destination]) => ({
       source,
       destination,

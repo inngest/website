@@ -30,21 +30,42 @@ const QUICKSTARTS: Quickstart[] = [
   },
 ];
 
-export default function StartBuilding() {
+export default function StartBuilding({
+  // Attribution tag for the quickstart links. Defaults to the homepage
+  // value so Home's behaviour is unchanged; other pages that reuse this
+  // section pass their own so their traffic isn't reported as homepage
+  // traffic.
+  refTag = "home-start-building",
+  // The SF campaign page sets these; the homepage keeps its own wording.
+  title = "Start Building",
+  body = "Pick a template",
+  // The shared section title is uppercase; the SF design sets this
+  // heading in sentence case, so it passes `normal-case`.
+  titleClassName,
+  /** Extra classes on the <Section> box — lets a consuming page override
+   *  the shared vertical rhythm. */
+  className,
+}: {
+  refTag?: string;
+  title?: string;
+  body?: string;
+  titleClassName?: string;
+  className?: string;
+} = {}) {
   return (
     <Section
       aria-label="Start building"
-      className="relative"
+      className={`relative ${className ?? ""}`}
       containerClassName="flex flex-col gap-[58px]"
     >
       <SectionHeader
         // Inset at lg to match the cards' px-4 content offset, so the
         // title/subtitle align with the "QUICKSTART" eyebrow below.
         // Tighter title→subtitle gap than the default 48px v1-stack.
-        className="lg:pl-4 !gap-5"
-        titleClassName="text-balance"
-        title="Start Building"
-        body="Pick a template"
+        className="!gap-5 lg:pl-4"
+        titleClassName={`text-balance ${titleClassName ?? ""}`}
+        title={title}
+        body={body}
         // Larger heading-sm lead (not the default body-lg-loose);
         // frost since it reads as a sub-heading.
         bodyClassName="text-v1-heading-sm text-v1-frost"
@@ -53,7 +74,7 @@ export default function StartBuilding() {
       <ul className="grid grid-cols-1 gap-x-4 gap-y-4 lg:grid-cols-3 lg:gap-y-12">
         {QUICKSTARTS.map((q) => (
           <li key={q.title}>
-            <QuickstartCard quickstart={q} />
+            <QuickstartCard quickstart={q} refTag={refTag} />
           </li>
         ))}
       </ul>
@@ -61,14 +82,20 @@ export default function StartBuilding() {
   );
 }
 
-function QuickstartCard({ quickstart }: { quickstart: Quickstart }) {
+function QuickstartCard({
+  quickstart,
+  refTag,
+}: {
+  quickstart: Quickstart;
+  refTag: string;
+}) {
   return (
     // -mx-4 / lg:mx-0 lets the hover border bleed past the content
     // edge on mobile (where the grid sits flush to the viewport)
     // but tucks back inside the grid at lg+.
     <HoverCardShell
-      href={appendRef(quickstart.href, "home-start-building")}
-      className="gap-8 -mx-4 px-4 pb-6 pt-5 lg:mx-0"
+      href={appendRef(quickstart.href, refTag)}
+      className="-mx-4 gap-8 px-4 pb-6 pt-5 lg:mx-0"
     >
       <div className="flex flex-col gap-2.5">
         {/* `mr-2` (animated with width) instead of flex gap so the
@@ -77,25 +104,25 @@ function QuickstartCard({ quickstart }: { quickstart: Quickstart }) {
         <div className="flex items-center">
           <span
             aria-hidden="true"
-            className="block h-[10px] w-0 origin-center scale-y-0 bg-v1-accent-salmon ease-v1-in motion-safe:transition-[width,margin,transform] motion-safe:duration-[450ms] group-hover:mr-2 group-hover:w-[2px] group-hover:scale-y-100"
+            className="block h-[10px] w-0 origin-center scale-y-0 bg-v1-accent-salmon ease-v1-in group-hover:mr-2 group-hover:w-[2px] group-hover:scale-y-100 motion-safe:transition-[width,margin,transform] motion-safe:duration-[450ms]"
           />
-          <p className="text-v1-label-md uppercase motion-safe:transition-colors motion-safe:duration-[400ms] group-hover:text-v1-accent-salmon">
+          <p className="text-v1-label-md uppercase group-hover:text-v1-accent-salmon motion-safe:transition-colors motion-safe:duration-[400ms]">
             {quickstart.eyebrow}
           </p>
         </div>
         {/* Raw utilities (not text-v1-heading-card) because the design
             specs lh=font-size here while the token is calibrated looser. */}
-        <h3 className="max-w-[310px] font-whyte text-[24px] font-normal leading-[32px] mt-1 lg:text-[32px]">
+        <h3 className="mt-1 max-w-[310px] font-whyte text-[24px] font-normal leading-[32px] lg:text-[32px]">
           {quickstart.title}
         </h3>
       </div>
       {/* Arrow renders at all breakpoints — same affordance the
           card carries everywhere; no separate mobile underline. */}
-      <span className="text-v1-label-md uppercase motion-safe:transition-colors motion-safe:duration-300 group-hover:text-v1-accent-salmon">
+      <span className="text-v1-label-md uppercase group-hover:text-v1-accent-salmon motion-safe:transition-colors motion-safe:duration-300">
         Get Started
         <span
           aria-hidden="true"
-          className="ml-2 inline-block motion-safe:transition-transform motion-safe:duration-[400ms] motion-safe:ease-v1-in group-hover:translate-x-[6px]"
+          className="ml-2 inline-block group-hover:translate-x-[6px] motion-safe:transition-transform motion-safe:duration-[400ms] motion-safe:ease-v1-in"
         >
           →
         </span>
