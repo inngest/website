@@ -218,17 +218,15 @@ export const HERO_NARRATIVE: Partial<Record<Market, HeroNarrative>> = {
     // Full-bleed campaign illustration under the hero copy: the mouth,
     // the green tongue-swoosh, and the running cup running along it.
     //
-    // TO ENABLE: drop the export at the path below and uncomment. Until
-    // then the hero renders a labelled slot rather than nothing, so the
-    // gap is visible in review. Export as a transparent PNG (or SVG) at
-    // roughly 2880px wide — it spans the full viewport and bleeds over
-    // the logo strip.
-    // illustration: {
-    //   src: "/assets/v1/sf-long-run/tongue-swoosh.png",
-    //   alt: "",
-    //   width: 2880,
-    //   height: 980,
-    // },
+    //
+    // Decorative, so `alt=""`: the mouth and the running cup carry brand
+    // character, not information the copy doesn't already give.
+    illustration: {
+      src: "/assets/v1/sf-long-run/tongue-swoosh.png",
+      alt: "",
+      width: 1440,
+      height: 499,
+    },
     // A real capture of the Inngest dashboard showing a multi-step run
     // trace with per-step durations — already approved and in use on
     // /compare-to-temporal. Reused rather than mocked up: the brief
