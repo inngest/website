@@ -163,6 +163,13 @@ async function redirects() {
         "/?utm_medium=ooh&utm_source=signage&utm_campaign=ai-conf-0926",
       permanent: false,
     },
+    // AI conference booth - business card QR (Sept 2026)
+    {
+      source: "/ai-conf-2026",
+      destination:
+        "https://app.inngest.com/sign-up?utm_medium=booth&utm_source=card&utm_campaign=taic26",
+      permanent: false,
+    },
   ];
 }
 
