@@ -77,6 +77,10 @@ module.exports = {
     // Pages with noindex set in code — sitemap + noindex is contradictory.
     "/content/ai-in-production-report-2026",
     "/content/ai-in-production-report-2026/*",
+    // Campaign landing page for step.run/sf — live but unlisted, and
+    // noindex in the page's own metadata, so it must stay out of the
+    // sitemap. Remove this line to list it publicly.
+    "/sf-long-run",
     "/resources/access/*",
   ],
 };
