@@ -57,6 +57,12 @@ function HeroCopyStack({
   narrative: HeroNarrative;
   entry: typeof entryAnim;
 }) {
+  // The dark SF hero takes the green campaign accent; the salmon poster
+  // heroes keep the frost-on-salmon buttons.
+  const onDark = Boolean(narrative.visual);
+  const primaryClass = onDark
+    ? "!w-full !border-v1-accent-green !bg-transparent !text-v1-accent-green hover:!bg-v1-accent-green hover:!text-v1-jetBlack sm:!w-auto"
+    : "!w-full hover:!border-v1-jetBlack hover:!bg-v1-jetBlack hover:!text-v1-frost sm:!w-auto";
   return (
     <div className="flex flex-col gap-8">
       <motion.div {...entry(520)} className="flex flex-col gap-8">
@@ -89,9 +95,9 @@ function HeroCopyStack({
             href={narrative.cta.href}
             prefetch={false}
             variant="primary"
-            className="!w-full hover:!border-v1-jetBlack hover:!bg-v1-jetBlack hover:!text-v1-frost sm:!w-auto"
+            className={primaryClass}
           >
-            {narrative.cta.label} →
+            {narrative.cta.label}
           </ButtonLink>
           {narrative.installCta && (
             <InstallButton
@@ -142,7 +148,12 @@ export default function Hero({ market }: { market: Market }) {
   return (
     <section
       aria-labelledby="long-run-hero-heading"
-      className="relative w-full overflow-hidden bg-v1-accent-salmon text-v1-frost"
+      className={cn(
+        "relative w-full overflow-hidden text-v1-frost",
+        // The SF design puts the hero on the dark canvas; the other
+        // campaign cuts keep the salmon poster panel.
+        hasVisual ? "bg-v1-canvasBase" : "bg-v1-accent-salmon"
+      )}
       onPointerMove={(e) => {
         // Cursor spotlight, same technique as SplitHero: write the
         // pointer position onto the section as CSS custom properties and
@@ -166,14 +177,16 @@ export default function Hero({ market }: { market: Market }) {
           as texture cropped to /ai's 2/3 panel — full-bleed it puts a hard
           light/dark block across the hero. A flat panel plus the cursor
           spotlight is also closer to the printed poster. */}
-      <span
-        aria-hidden="true"
-        className="pointer-events-none absolute inset-0 hidden lg:block"
-        style={{
-          background:
-            "radial-gradient(300px circle at var(--mx) var(--my), rgba(255, 210, 195, 0.18), transparent 78%)",
-        }}
-      />
+      {!hasVisual && (
+        <span
+          aria-hidden="true"
+          className="pointer-events-none absolute inset-0 hidden lg:block"
+          style={{
+            background:
+              "radial-gradient(300px circle at var(--mx) var(--my), rgba(255, 210, 195, 0.18), transparent 78%)",
+          }}
+        />
+      )}
 
       {/* Vertical padding runs a step heavier than the standard section
           box so the campaign line has room to be the loudest thing on the
@@ -200,7 +213,16 @@ export default function Hero({ market }: { market: Market }) {
             {...entry(40)}
             className="text-v1-label-md uppercase text-v1-frost"
           >
-            {eyebrow}
+            {narrative?.eyebrowAccent ? (
+              <>
+                <span className="text-v1-frost">{eyebrow}</span>{" "}
+                <span className="text-v1-accent-green">
+                  {narrative.eyebrowAccent}
+                </span>
+              </>
+            ) : (
+              eyebrow
+            )}
           </motion.p>
 
           {/* The campaign line, set as large as the grid allows. Three
@@ -286,13 +308,15 @@ export default function Hero({ market }: { market: Market }) {
         )}
       </div>
 
-      {/* The marathon route, drawing itself along the bottom of the panel.
-          Purely decorative — the labelled version of the course lives in
-          the Course section further down the short cut. */}
-      <CourseLine
-        className="pointer-events-none absolute inset-x-0 bottom-0 h-[120px] text-v1-frost/45 lg:h-[176px]"
-        drawDurationMs={2600}
-      />
+      {/* The marathon route, drawing itself along the bottom of the
+          salmon panel. Omitted on the SF hero, whose design carries its
+          own illustration instead. */}
+      {!hasVisual && (
+        <CourseLine
+          className="pointer-events-none absolute inset-x-0 bottom-0 h-[120px] text-v1-frost/45 lg:h-[176px]"
+          drawDurationMs={2600}
+        />
+      )}
     </section>
   );
 }

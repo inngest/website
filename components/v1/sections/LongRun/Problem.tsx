@@ -53,7 +53,7 @@ export default function Problem({ market }: { market: Market }) {
           <motion.li
             key={f}
             {...reveals.item(i)}
-            className="list-none border-b border-v1-subtle py-5 text-v1-heading-xs-loose text-v1-frost/80 lg:py-6"
+            className="text-v1-heading-xs-loose list-none border-b border-v1-subtle py-5 text-v1-frost/80 lg:py-6"
           >
             {f}
           </motion.li>

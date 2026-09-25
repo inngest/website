@@ -3,44 +3,45 @@
 import Link from "next/link";
 import { motion } from "motion/react";
 import Section from "@/components/v1/sections/shared/Section";
-import { V1_SECTION_TITLE } from "@/components/v1/sections/shared/sectionTitle";
-import NavIcon from "@/components/v1/NavIcons";
+import {
+  SF_ACCENT,
+  SF_SECTION_TITLE,
+} from "@/components/v1/sections/LongRun/sfHeadings";
 import { reveals } from "@/utils/v1/reveals";
-import { SF_USE_CASES } from "@/components/v1/sections/LongRun/data";
+import {
+  SF_USE_CASES,
+  SF_USE_CASES_COPY,
+} from "@/components/v1/sections/LongRun/data";
 
 /**
  * Section 03 — what people build.
  *
- * Deliberately low-profile: this is a signpost between the product
- * argument and the technical proof, so it runs tighter than a standard
- * section (reduced vertical padding, compact header, four-up at lg) and
- * each card links straight into the relevant docs.
+ * Centred header, four cards across at lg, each led by a product
+ * thumbnail and linking into the relevant docs.
+ *
+ * PENDING ASSETS: the four card thumbnails aren't in the repo yet. Each
+ * card renders a labelled placeholder until `image` is filled in on its
+ * entry in `SF_USE_CASES` — no stand-in art is substituted.
  */
 export default function SfUseCases() {
   return (
     <Section
       aria-labelledby="long-run-use-cases-heading"
-      // Runs tighter than the standard section box (80/96/160) — this
-      // section is a signpost, not a destination.
-      className="bg-v1-canvasSubtle !py-16 lg:!py-24"
       containerClassName="flex flex-col gap-10"
     >
-      <div className="flex flex-col gap-4">
+      <div className="flex flex-col items-center gap-4 text-center">
         <motion.h2
           {...reveals.heading}
           id="long-run-use-cases-heading"
-          // A step down from the standard section title so the section
-          // reads as secondary to the ones either side of it.
-          className={`${V1_SECTION_TITLE} !text-v1-heading-card`}
+          className={SF_SECTION_TITLE}
         >
-          Built for work that doesn&apos;t finish in one request.
+          {SF_USE_CASES_COPY.title}
         </motion.h2>
         <motion.p
           {...reveals.body}
-          className="text-v1-body-sm-loose max-w-[640px]"
+          className="text-v1-body-sm-loose max-w-[720px]"
         >
-          From background jobs to AI agents, keep execution moving even when
-          work takes longer than expected.
+          {SF_USE_CASES_COPY.body}
         </motion.p>
       </div>
 
@@ -49,22 +50,37 @@ export default function SfUseCases() {
           <motion.li key={c.id} {...reveals.item(i)} className="list-none">
             <Link
               href={c.href}
-              className="group flex h-full flex-col gap-3 rounded-lg border border-v1-subtle p-5 transition-colors duration-200 hover:border-v1-contrast"
+              className="group flex h-full flex-col overflow-hidden rounded-lg border border-v1-subtle bg-v1-surfaceBase transition-colors duration-200 hover:border-v1-contrast"
             >
-              <NavIcon
-                name={c.icon}
-                className="h-5 w-5 text-v1-accent-salmon-light"
-              />
-              <h3 className="text-v1-heading-xs text-v1-frost">
-                {c.title}{" "}
+              {c.image ? (
+                <img
+                  src={c.image.src}
+                  alt={c.image.alt}
+                  loading="lazy"
+                  decoding="async"
+                  className="block aspect-[16/10] w-full object-cover"
+                />
+              ) : (
                 <span
-                  aria-hidden="true"
-                  className="text-v1-accent-salmon-light"
+                  role="img"
+                  aria-label={c.imageNote}
+                  className="flex aspect-[16/10] w-full items-center justify-center border-b border-dashed border-v1-muted px-4 text-center"
                 >
-                  →
+                  <span className="text-v1-label-sm uppercase text-v1-frost/40">
+                    {c.imageNote}
+                  </span>
                 </span>
-              </h3>
-              <p className="text-v1-body-sm-loose">{c.body}</p>
+              )}
+
+              <span className="flex flex-1 flex-col gap-2 p-5">
+                <span className="text-v1-heading-xs text-v1-frost">
+                  {c.title}{" "}
+                  <span aria-hidden="true" className={SF_ACCENT}>
+                    →
+                  </span>
+                </span>
+                <span className="text-v1-body-sm-loose">{c.body}</span>
+              </span>
             </Link>
           </motion.li>
         ))}

@@ -3,7 +3,10 @@
 import Link from "next/link";
 import { motion } from "motion/react";
 import Section from "@/components/v1/sections/shared/Section";
-import { V1_SECTION_TITLE } from "@/components/v1/sections/shared/sectionTitle";
+import {
+  SF_ACCENT,
+  SF_SECTION_TITLE,
+} from "@/components/v1/sections/LongRun/sfHeadings";
 import { reveals } from "@/utils/v1/reveals";
 import {
   SF_CAMPAIGN,
@@ -31,16 +34,14 @@ export default function OnTheGround() {
       containerClassName="flex flex-col gap-v1-stack"
     >
       <div className="flex flex-col gap-6">
-        <motion.p
-          {...reveals.body}
-          className="text-v1-eyebrow uppercase text-v1-frost/55"
-        >
-          {SF_CAMPAIGN.eyebrow}
+        <motion.p {...reveals.body} className="text-v1-eyebrow uppercase">
+          <span className={SF_ACCENT}>{SF_CAMPAIGN.eyebrowAccent}</span>{" "}
+          <span className="text-v1-frost/70">{SF_CAMPAIGN.eyebrow}</span>
         </motion.p>
         <motion.h2
           {...reveals.heading}
           id="long-run-sf-campaign-heading"
-          className={V1_SECTION_TITLE}
+          className={SF_SECTION_TITLE}
         >
           {SF_CAMPAIGN.title.map((line) => (
             <span key={line} className="block">
@@ -64,12 +65,14 @@ export default function OnTheGround() {
             className="flex list-none flex-col gap-5 rounded-lg border border-v1-subtle p-6"
           >
             {card.mediaNote && (
+              // PENDING ASSETS: campaign photography isn't in the repo.
+              // A labelled slot rather than substitute imagery.
               <div
                 role="img"
                 aria-label={card.mediaNote}
-                className="flex min-h-[160px] items-center justify-center rounded border border-dashed border-v1-muted px-4 text-center"
+                className="-m-6 mb-0 flex aspect-[16/10] items-center justify-center border-b border-dashed border-v1-muted px-4 text-center"
               >
-                <span className="text-v1-label-sm uppercase text-v1-frost/45">
+                <span className="text-v1-label-sm uppercase text-v1-frost/40">
                   {card.mediaNote}
                 </span>
               </div>

@@ -12,12 +12,6 @@ import type { NavIconName } from "@/components/v1/NavIcons";
 
 export type Market = "nyc" | "sf" | "all";
 
-/** The in-page technical proof section on the SF page. Declared here
- *  because the hero's secondary CTA references it, and a `const` used
- *  before its declaration would be a temporal dead zone error at module
- *  evaluation. */
-export const SF_PROOF_ANCHOR = "long-run-technical-proof";
-
 /* ── Hero ──────────────────────────────────────────────────────────── */
 
 interface MarketCopy {
@@ -154,6 +148,8 @@ export const COURSE: CourseStage[] = [
 export interface HeroNarrative {
   /** Eyebrow override for the narrative cut. */
   eyebrow: string;
+  /** Second half of the eyebrow, rendered in the campaign accent. */
+  eyebrowAccent?: string;
   /** Emphasised line(s) opening the rail — the turn from poster to
    *  production. */
   bridge: string[];
@@ -194,13 +190,14 @@ export const HERO_NARRATIVE: Partial<Record<Market, HeroNarrative>> = {
     cta: { label: "See how it works", href: "#long-run-see-it-run" },
   },
   sf: {
-    eyebrow: "San Francisco · Built here, running here",
+    eyebrow: "San Francisco.",
+    eyebrowAccent: "Built here, running here.",
     // No bridge line: SF leads with the product rather than the campaign,
     // so the body does the work and the marathon reference waits until
     // the campaign section much further down.
     bridge: [],
     body: [
-      "Now anyone can build apps and agents that run for days. Wrap functions in steps that pause for events, retry, fan-out, and handle everything production throws at you. Scale instantly, without touching infra.",
+      "If your code runs for minutes or days, it won't run straight through. Wrap functions in steps that automatically retry, pause, and fan out. Scale instantly, without thinking about infra.",
     ],
     cta: {
       label: "Start Free",
@@ -211,11 +208,11 @@ export const HERO_NARRATIVE: Partial<Record<Market, HeroNarrative>> = {
     },
     // Copies the install command rather than linking out — there is no
     // /npm route in this app, and the command is what the label promises.
-    installCta: { label: "NPM Install", command: "npm install inngest" },
-    // SF's placements are scattered across the city rather than tied to
-    // one weekend, so the page acknowledges the sighting without naming
-    // a single moment.
-    note: "Spotted us around San Francisco? You're in the right place.",
+    // Shows the command itself rather than a generic label, per design.
+    installCta: {
+      label: "npm install inngest",
+      command: "npm install inngest",
+    },
     // A real capture of the Inngest dashboard showing a multi-step run
     // trace with per-step durations — already approved and in use on
     // /compare-to-temporal. Reused rather than mocked up: the brief
@@ -503,63 +500,6 @@ export const ELSEWHERE: Record<Market, { label: string; href: string }[]> = {
   ],
 };
 
-/* ── SF · On the ground ────────────────────────────────────────────── */
-
-export interface Activation {
-  id: string;
-  name: string;
-  /** Venue / date line. Say "Date to be confirmed" rather than inventing
-   *  one — these render publicly. */
-  meta: string;
-  body: string;
-  cta: {
-    label: string;
-    /** Omit until the real destination exists. A CTA without an href
-     *  renders as a visibly unfinished placeholder rather than a dead
-     *  link, so the page can't ship with one. */
-    href?: string;
-  };
-  /** Photography slot, shown as a labelled placeholder until the real
-   *  asset lands. */
-  mediaNote?: string;
-}
-
-/**
- * SF's programming. Dates and RSVP destinations are deliberately not
- * filled in — none were provided, and inventing either would put wrong
- * information on a public page. Each is a one-line edit once confirmed.
- */
-export const SF_ACTIVATIONS: Activation[] = [
-  {
-    id: "the-long-run",
-    name: "The Long Run",
-    meta: "Corgi Cafe · Claude Ln · October",
-    body: "Our long-running drink, available all month.",
-    cta: { label: "Corgi Cafe" },
-    mediaNote: "Photo from the cafe — the coffee sleeve",
-  },
-  {
-    id: "builders-who-run",
-    name: "Builders Who Run",
-    meta: "Date to be confirmed · San Francisco",
-    body: "An easy 5K with people who ship for a living. No pace requirement. Coffee on us at the end.",
-    cta: { label: "RSVP" },
-  },
-  {
-    id: "innhouse-after-dark",
-    name: "Innhouse After Dark",
-    meta: "Date to be confirmed · Inngest HQ",
-    body: "Bring the thing you're stuck on. We'll keep the lights on.",
-    cta: { label: "RSVP" },
-  },
-];
-
-export const ON_THE_GROUND = {
-  eyebrow: "On the ground in San Francisco",
-  title: ["Find us around the city."],
-  lead: "We're building for the long run here, too.",
-} as const;
-
 /* ═══════════════════════════════════════════════════════════════════
  * SF page — revised structure (Sept 2026)
  *
@@ -575,7 +515,7 @@ export const ON_THE_GROUND = {
 
 export const SF_DIFFERENCE = {
   title: ["It doesn't have to be hard."],
-  body: "Ensuring code completes no matter what is a tough problem to solve, especially as your users scale, or you introduce AI workloads. But you don't need to wrangle a bunch of extra infrastructure just to keep things running. Simply wrap existing functions in Steps to make workflows deterministic.",
+  body: "Orchestrating long-running code is tough. But you don't need to wrangle a bunch of extra infrastructure to do it. The Inngest SDK is the fastest way to make any code durable and observable by default.",
   /** Reuses the homepage's before/after assets and the shared slider. */
   before: {
     src: "/assets/v1/it-doesnt-have-to-be-hard/before.webp",
@@ -597,6 +537,11 @@ export interface SfUseCase {
   icon: NavIconName;
   /** Docs page this use case links through to. */
   href: string;
+  /** Card thumbnail. Absent until the design's art is exported — the card
+   *  renders a labelled placeholder rather than a stand-in image. */
+  image?: { src: string; alt: string };
+  /** What the thumbnail should show; used as the placeholder label. */
+  imageNote: string;
 }
 
 export const SF_USE_CASES: SfUseCase[] = [
@@ -606,6 +551,7 @@ export const SF_USE_CASES: SfUseCase[] = [
     body: "Coordinate multi-step processes without losing completed work.",
     icon: "durable-execution",
     href: "/docs/features/inngest-functions/steps-workflows?ref=long-run-sf-use-cases",
+    imageNote: "Run timeline — inngest/function.invoked",
   },
   {
     id: "background-jobs",
@@ -613,6 +559,7 @@ export const SF_USE_CASES: SfUseCase[] = [
     body: "Run work beyond the request-response cycle.",
     icon: "background-jobs",
     href: "/docs/guides/background-jobs?ref=long-run-sf-use-cases",
+    imageNote: "Event fan-out — app/user.created to sendSignupEmail",
   },
   {
     id: "ai-agents",
@@ -620,6 +567,7 @@ export const SF_USE_CASES: SfUseCase[] = [
     body: "Support unpredictable sequences of model calls and tool use.",
     icon: "ai-workflows",
     href: "/docs/learn/durable-agents?ref=long-run-sf-use-cases",
+    imageNote: "Agent chat panel",
   },
   {
     id: "data-pipelines",
@@ -627,17 +575,9 @@ export const SF_USE_CASES: SfUseCase[] = [
     body: "Process multi-step data operations with durable execution.",
     icon: "queues",
     href: "/docs/guides/flow-control?ref=long-run-sf-use-cases",
+    imageNote: "Step DAG graph",
   },
 ];
-
-/* ── 04 · Technical proof ──────────────────────────────────────────── */
-
-export const SF_TECHNICAL_PROOF = {
-  title: ["Retry the step.", "Not the chain."],
-  body: "When a step fails, Inngest can retry it without repeating successfully completed steps.",
-  supporting:
-    "Your agent doesn't know how many turns or tool calls it'll need. Inngest lets you create durable steps dynamically, preserving completed work so execution can continue after a failure.",
-} as const;
 
 /* ── 06 · San Francisco campaign ───────────────────────────────────── */
 
@@ -680,19 +620,25 @@ export const SF_CAMPAIGN_CARDS: SfCampaignCard[] = [
     id: "run-club",
     title: "Run with us.",
     body: "Join the Inngest community for a run in San Francisco. All paces welcome.",
-    pending: "Date to be confirmed.",
+    pending: "Date TBD",
+    mediaNote: "Campaign photo — San Francisco run",
   },
   {
     id: "community",
     title: "Keep the long run going.",
     body: "Join us for another opportunity to connect with San Francisco builders.",
-    pending: "Date, venue and format to be confirmed.",
+    pending: "Date and venue TBD",
+    mediaNote: "Campaign photo — community event",
   },
 ];
 
 export const SF_CAMPAIGN = {
-  eyebrow: "The long run · San Francisco",
-  title: ["Long-running humans.", "Long-running agents."],
+  // Two-tone eyebrow: campaign name in the accent, city in frost.
+  eyebrowAccent: "The long run.",
+  eyebrow: "San Francisco.",
+  // One line in the design. Hyphenation made consistent across both
+  // halves — the mock reads "Long running agents" unhyphenated.
+  title: ["Long-running humans. Long-running agents."],
   body: "We're bringing Build for the Long Run to San Francisco through coffee, community, and a few opportunities to get moving.",
 } as const;
 
@@ -735,6 +681,11 @@ export const SF_RESOURCES: SfResource[] = [
     href: "/docs/learn/inngest-steps?ref=long-run-sf-resources",
   },
 ];
+
+export const SF_USE_CASES_COPY = {
+  title: "Because one request is never the finish line.",
+  body: "From background jobs to AI agents, keep execution moving even when work takes longer than expected.",
+} as const;
 
 export const SF_RESOURCES_COPY = {
   title: ["Keep building."],

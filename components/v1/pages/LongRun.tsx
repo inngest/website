@@ -5,8 +5,8 @@ import ButtonLink from "@/components/v1/ButtonLink";
 import StippleCtaSection from "@/components/v1/sections/shared/StippleCtaSection";
 import NotFoundBackground from "@/components/v1/sections/shared/NotFoundBackground";
 import LogoMarquee from "@/components/v1/sections/Home/LogoMarquee";
+import LogoStrip from "@/components/v1/sections/Home/LogoStrip";
 import { Unreleased } from "@/shared/Docs/Unreleased";
-import { handleAnchorClick } from "@/components/v1/sections/LongRun/useAnchorScroll";
 
 import Hero from "@/components/v1/sections/LongRun/Hero";
 import Connection from "@/components/v1/sections/LongRun/Connection";
@@ -20,15 +20,10 @@ import OnTheGround from "@/components/v1/sections/LongRun/OnTheGround";
 import StartBuilding from "@/components/v1/sections/Home/StartBuilding";
 import SfDifference from "@/components/v1/sections/LongRun/SfDifference";
 import SfUseCases from "@/components/v1/sections/LongRun/SfUseCases";
-import TechnicalProof from "@/components/v1/sections/LongRun/TechnicalProof";
 import SfResources from "@/components/v1/sections/LongRun/SfResources";
 import WhatItIs from "@/components/v1/sections/LongRun/WhatItIs";
 import Course from "@/components/v1/sections/LongRun/Course";
-import {
-  TRY,
-  SF_PROOF_ANCHOR,
-  type Market,
-} from "@/components/v1/sections/LongRun/data";
+import { TRY, type Market } from "@/components/v1/sections/LongRun/data";
 
 /**
  * "Build for the long run" — the campaign landing page behind the NYC and SF
@@ -73,9 +68,10 @@ export default function LongRun({ market = "all" }: { market?: Market }) {
             // difference → use cases → technical proof → product proof,
             // then the ask, then the city programming and resources.
             <>
+              {/* Customer logos sit directly under the hero, per design. */}
+              <LogoStrip contained />
               <SfDifference />
               <SfUseCases />
-              <TechnicalProof />
             </>
           ) : isNarrative ? (
             <>

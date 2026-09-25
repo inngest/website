@@ -42,7 +42,10 @@ export default function CampaignFooter({ market }: { market: Market }) {
                 className="text-v1-label-md uppercase text-v1-frost transition-opacity duration-200 hover:opacity-70"
               >
                 {link.label}{" "}
-                <span aria-hidden="true" className="text-v1-accent-salmon-light">
+                <span
+                  aria-hidden="true"
+                  className="text-v1-accent-salmon-light"
+                >
                   →
                 </span>
               </Link>

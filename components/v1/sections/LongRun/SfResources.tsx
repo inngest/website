@@ -3,8 +3,10 @@
 import Link from "next/link";
 import { motion } from "motion/react";
 import Section from "@/components/v1/sections/shared/Section";
-import SectionHeader from "@/components/v1/sections/shared/SectionHeader";
-import { V1_HEADER_CONTENT_MT } from "@/components/v1/sections/shared/sectionShell";
+import {
+  SF_ACCENT,
+  SF_SECTION_TITLE,
+} from "@/components/v1/sections/LongRun/sfHeadings";
 import { reveals } from "@/utils/v1/reveals";
 import {
   SF_RESOURCES,
@@ -27,15 +29,24 @@ export default function SfResources() {
       className="border-t border-v1-subtle"
       containerClassName="flex flex-col"
     >
-      <SectionHeader
-        id="long-run-resources-heading"
-        title={<>{SF_RESOURCES_COPY.title[0]}</>}
-        body={SF_RESOURCES_COPY.body}
-        bodyClassName="max-w-[560px]"
-      />
+      <div className="flex flex-col items-center gap-4 text-center">
+        <motion.h2
+          {...reveals.heading}
+          id="long-run-resources-heading"
+          className={SF_SECTION_TITLE}
+        >
+          {SF_RESOURCES_COPY.title[0]}
+        </motion.h2>
+        <motion.p
+          {...reveals.body}
+          className="text-v1-body-sm-loose max-w-[640px]"
+        >
+          {SF_RESOURCES_COPY.body}
+        </motion.p>
+      </div>
 
       <ul
-        className={`${V1_HEADER_CONTENT_MT} grid list-none grid-cols-1 gap-6 pl-0 md:grid-cols-3`}
+        className={`mt-10 grid list-none grid-cols-1 gap-6 pl-0 md:grid-cols-3`}
       >
         {SF_RESOURCES.map((r, i) => (
           <motion.li key={r.id} {...reveals.item(i)} className="list-none">
@@ -51,7 +62,7 @@ export default function SfResources() {
               </span>
               <span
                 aria-hidden="true"
-                className="text-v1-label-md uppercase text-v1-accent-salmon-light"
+                className={`text-v1-label-md uppercase ${SF_ACCENT}`}
               >
                 Read →
               </span>

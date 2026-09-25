@@ -96,12 +96,12 @@ export default function RunTimeline() {
             <li
               key={`${entry.at}-${entry.label}`}
               className={cn(
-                "flex list-none items-baseline gap-4 text-v1-code",
+                "text-v1-code flex list-none items-baseline gap-4",
                 // Entries hold their space from the start so nothing
                 // below shifts as the run plays — the log fills in, it
                 // doesn't grow.
                 "motion-safe:transition-opacity motion-safe:duration-300",
-                landed ? "opacity-100" : "opacity-0",
+                landed ? "opacity-100" : "opacity-0"
               )}
             >
               <span className="shrink-0 tabular-nums text-v1-frost/45">
@@ -112,7 +112,7 @@ export default function RunTimeline() {
                   "flex-1",
                   entry.state === "fail"
                     ? "text-v1-accent-salmon"
-                    : "text-v1-frost/85",
+                    : "text-v1-frost/85"
                 )}
               >
                 {entry.label}

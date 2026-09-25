@@ -3,7 +3,7 @@
 import { motion } from "motion/react";
 import BeforeAfterSlider from "@/components/v1/sections/shared/BeforeAfterSlider";
 import Section from "@/components/v1/sections/shared/Section";
-import { V1_SECTION_TITLE } from "@/components/v1/sections/shared/sectionTitle";
+import { SF_SECTION_TITLE } from "@/components/v1/sections/LongRun/sfHeadings";
 import { reveals } from "@/utils/v1/reveals";
 import { SF_DIFFERENCE } from "@/components/v1/sections/LongRun/data";
 
@@ -21,21 +21,8 @@ export default function SfDifference() {
     <Section
       aria-labelledby="long-run-difference-heading"
       className="relative"
-      containerClassName="grid grid-cols-1 gap-8 lg:grid-cols-[420fr_854fr] lg:items-stretch lg:gap-16"
+      containerClassName="grid grid-cols-1 gap-8 lg:grid-cols-[854fr_420fr] lg:items-center lg:gap-16"
     >
-      <div className="flex flex-col gap-v1-stack lg:pt-16">
-        <motion.h2
-          {...reveals.heading}
-          id="long-run-difference-heading"
-          className={V1_SECTION_TITLE}
-        >
-          {SF_DIFFERENCE.title[0]}
-        </motion.h2>
-        <motion.p {...reveals.body} className="text-v1-body-lg-loose">
-          {SF_DIFFERENCE.body}
-        </motion.p>
-      </div>
-
       <BeforeAfterSlider
         ariaLabel="Drag to compare the before and after states"
         before={
@@ -73,6 +60,18 @@ export default function SfDifference() {
           />
         }
       />
+      <div className="flex flex-col gap-6">
+        <motion.h2
+          {...reveals.heading}
+          id="long-run-difference-heading"
+          className={SF_SECTION_TITLE}
+        >
+          {SF_DIFFERENCE.title[0]}
+        </motion.h2>
+        <motion.p {...reveals.body} className="text-v1-body-lg-loose">
+          {SF_DIFFERENCE.body}
+        </motion.p>
+      </div>
     </Section>
   );
 }

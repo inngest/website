@@ -58,8 +58,37 @@ export default function InstallButton({
 
   return (
     <div className={className}>
-      <Button onClick={copy} variant="secondary" className="!w-full sm:!w-auto">
-        {label}
+      <Button
+        onClick={copy}
+        variant="secondary"
+        className="!w-full !border-v1-accent-green/50 !font-v1Mono !text-v1-accent-green hover:!border-v1-accent-green hover:!bg-v1-accent-green/10 sm:!w-auto"
+      >
+        <span className="inline-flex items-center gap-2">
+          {/* Copy glyph — two offset rounded rects, per the design. */}
+          <svg
+            aria-hidden="true"
+            width="13"
+            height="13"
+            viewBox="0 0 16 16"
+            fill="none"
+            className="shrink-0"
+          >
+            <rect
+              x="5.5"
+              y="5.5"
+              width="8"
+              height="8"
+              rx="1.5"
+              stroke="currentColor"
+            />
+            <path
+              d="M10.5 2.5H3a.5.5 0 0 0-.5.5v7.5"
+              stroke="currentColor"
+              strokeLinecap="round"
+            />
+          </svg>
+          {label}
+        </span>
       </Button>
       {/* Announced to screen readers as well as shown, so the outcome of
           the click isn't visual-only. */}

@@ -49,7 +49,11 @@ export default function ProductTruth() {
 
       <dl className="grid grid-cols-1 gap-x-8 gap-y-10 border-t border-v1-subtle pt-10 sm:grid-cols-2 lg:grid-cols-3">
         {TRUTH.capabilities.map((c, i) => (
-          <motion.div key={c.id} {...reveals.item(i)} className="flex flex-col gap-3">
+          <motion.div
+            key={c.id}
+            {...reveals.item(i)}
+            className="flex flex-col gap-3"
+          >
             <dt className="text-v1-heading-xs text-v1-frost">{c.title}</dt>
             <dd className="text-v1-body-sm-loose">{c.body}</dd>
           </motion.div>
