@@ -257,11 +257,12 @@ export default function Hero({ market }: { market: Market }) {
                 alt={narrative.visual.alt}
                 width={narrative.visual.width}
                 height={narrative.visual.height}
-                // Above the fold, so not lazy-loaded; sized down from the
-                // 1806px source at each breakpoint rather than shipping
-                // the full asset to phones.
+                // Above the fold, so not lazy-loaded. The panel occupies
+                // ~46% of the container at lg and the full width below it;
+                // stating that lets Next pick a variant that matches the
+                // slot instead of undershooting it.
                 priority
-                sizes="(max-width: 1024px) 100vw, 640px"
+                sizes="(max-width: 1024px) 92vw, 46vw"
                 className="h-auto w-full"
               />
             </GradientFrame>

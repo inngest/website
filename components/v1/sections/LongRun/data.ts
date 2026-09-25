@@ -227,15 +227,13 @@ export const HERO_NARRATIVE: Partial<Record<Market, HeroNarrative>> = {
       width: 1440,
       height: 499,
     },
-    // A real capture of the Inngest dashboard showing a multi-step run
-    // trace with per-step durations — already approved and in use on
-    // /compare-to-temporal. Reused rather than mocked up: the brief
-    // forbids inventing a realistic-looking dashboard.
+    // The design's run-trace panel: a step.run function with a flaky
+    // step retrying across three attempts before completing.
     visual: {
-      src: "/assets/v1/compare-temporal/runs-dashboard.jpg",
-      alt: "The Inngest dashboard showing a run trace, with each step of a multi-step function listed alongside its duration.",
-      width: 1806,
-      height: 1107,
+      src: "/assets/v1/sf-long-run/dashboard-header-ui.png",
+      alt: "An Inngest run trace: a step.run function with a flaky step retrying across three attempts before completing, alongside each step's duration.",
+      width: 627,
+      height: 487,
     },
   },
 };
@@ -573,6 +571,11 @@ export const SF_USE_CASES: SfUseCase[] = [
     body: "Run work beyond the request-response cycle.",
     icon: "background-jobs",
     href: "/docs/guides/background-jobs?ref=long-run-sf-use-cases",
+    image: {
+      src: "/assets/v1/sf-long-run/background-jobs.png",
+      // Decorative: the card title and body already say what it is.
+      alt: "",
+    },
     imageNote: "Event fan-out — app/user.created to sendSignupEmail",
   },
   {
@@ -581,6 +584,11 @@ export const SF_USE_CASES: SfUseCase[] = [
     body: "Support unpredictable sequences of model calls and tool use.",
     icon: "ai-workflows",
     href: "/docs/learn/durable-agents?ref=long-run-sf-use-cases",
+    image: {
+      src: "/assets/v1/sf-long-run/agent-bot.png",
+      // Decorative: the card title and body already say what it is.
+      alt: "",
+    },
     imageNote: "Agent chat panel",
   },
   {
