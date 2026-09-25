@@ -224,16 +224,16 @@ export const HERO_NARRATIVE: Partial<Record<Market, HeroNarrative>> = {
     illustration: {
       src: "/assets/v1/sf-long-run/tongue-swoosh.png",
       alt: "",
-      width: 1440,
-      height: 499,
+      width: 2880,
+      height: 998,
     },
     // The design's run-trace panel: a step.run function with a flaky
     // step retrying across three attempts before completing.
     visual: {
       src: "/assets/v1/sf-long-run/dashboard-header-ui.png",
       alt: "An Inngest run trace: a step.run function with a flaky step retrying across three attempts before completing, alongside each step's duration.",
-      width: 627,
-      height: 487,
+      width: 1255,
+      height: 973,
     },
   },
 };
@@ -563,6 +563,11 @@ export const SF_USE_CASES: SfUseCase[] = [
     body: "Coordinate multi-step processes without losing completed work.",
     icon: "durable-execution",
     href: "/docs/features/inngest-functions/steps-workflows?ref=long-run-sf-use-cases",
+    image: {
+      src: "/assets/v1/sf-long-run/workflows.png",
+      // Decorative: the card title and body already say what it is.
+      alt: "",
+    },
     imageNote: "Run timeline — inngest/function.invoked",
   },
   {
@@ -597,6 +602,11 @@ export const SF_USE_CASES: SfUseCase[] = [
     body: "Process multi-step data operations with durable execution.",
     icon: "queues",
     href: "/docs/guides/flow-control?ref=long-run-sf-use-cases",
+    image: {
+      src: "/assets/v1/sf-long-run/data-pipelines.png",
+      // Decorative: the card title and body already say what it is.
+      alt: "",
+    },
     imageNote: "Step DAG graph",
   },
 ];
@@ -613,8 +623,10 @@ export interface SfCampaignCard {
    *  an unconfirmed event must not ship an inactive CTA. */
   pending?: string;
   cta?: { label: string; href: string };
-  /** Photography slot, rendered as a labelled placeholder until an
-   *  approved campaign asset exists. */
+  /** Card photography. */
+  image?: { src: string; alt: string };
+  /** Describes the intended art; used as the placeholder label until
+   *  `image` is set. */
   mediaNote?: string;
 }
 
@@ -636,6 +648,10 @@ export const SF_CAMPAIGN_CARDS: SfCampaignCard[] = [
     title: "The Long Run.",
     body: "Find our campaign drink at Corgi Café and follow the long run from your cup to your code.",
     detail: "Starting October 1.",
+    image: {
+      src: "/assets/v1/sf-long-run/corgi-cup.png",
+      alt: "The campaign drink at Corgi Café.",
+    },
     mediaNote: "Approved campaign drink photo — cup or sleeve artwork",
   },
   {
@@ -643,6 +659,10 @@ export const SF_CAMPAIGN_CARDS: SfCampaignCard[] = [
     title: "Run with us.",
     body: "Join the Inngest community for a run in San Francisco. All paces welcome.",
     pending: "Date TBD",
+    image: {
+      src: "/assets/v1/sf-long-run/sf-run.png",
+      alt: "The San Francisco bay, looking toward the Golden Gate Bridge.",
+    },
     mediaNote: "Campaign photo — San Francisco run",
   },
   {
@@ -650,6 +670,10 @@ export const SF_CAMPAIGN_CARDS: SfCampaignCard[] = [
     title: "Keep the long run going.",
     body: "Join us for another opportunity to connect with San Francisco builders.",
     pending: "Date and venue TBD",
+    image: {
+      src: "/assets/v1/sf-long-run/innhouse.png",
+      alt: "Developers working together at an Inngest community event.",
+    },
     mediaNote: "Campaign photo — community event",
   },
 ];

@@ -64,18 +64,27 @@ export default function OnTheGround() {
             {...reveals.item(i)}
             className="flex list-none flex-col gap-5 rounded-lg border border-v1-subtle p-6"
           >
-            {card.mediaNote && (
-              // PENDING ASSETS: campaign photography isn't in the repo.
-              // A labelled slot rather than substitute imagery.
-              <div
-                role="img"
-                aria-label={card.mediaNote}
-                className="-m-6 mb-0 flex aspect-[16/10] items-center justify-center border-b border-dashed border-v1-muted px-4 text-center"
-              >
-                <span className="text-v1-label-sm uppercase text-v1-frost/40">
-                  {card.mediaNote}
-                </span>
-              </div>
+            {card.image ? (
+              <img
+                src={card.image.src}
+                alt={card.image.alt}
+                loading="lazy"
+                decoding="async"
+                className="-m-6 mb-0 block aspect-[2/1] w-full border-b border-v1-subtle object-cover"
+              />
+            ) : (
+              card.mediaNote && (
+                // PENDING ASSET: labelled slot rather than substitute art.
+                <div
+                  role="img"
+                  aria-label={card.mediaNote}
+                  className="-m-6 mb-0 flex aspect-[2/1] items-center justify-center border-b border-dashed border-v1-muted px-4 text-center"
+                >
+                  <span className="text-v1-label-sm uppercase text-v1-frost/40">
+                    {card.mediaNote}
+                  </span>
+                </div>
+              )
             )}
 
             <h3 className="text-v1-heading-xs text-v1-frost">{card.title}</h3>
