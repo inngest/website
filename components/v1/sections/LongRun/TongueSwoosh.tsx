@@ -27,8 +27,6 @@ import {
 
 /** Distance in px of scroll per full stride. */
 const STEP_LENGTH = 110;
-/** Fraction of viewport height over which the cup crosses the tongue. */
-const TRAVEL_PORTION = 0.6;
 /** Idle delay before the sweat droplet fades out, matching the source. */
 const IDLE_MS = 220;
 
@@ -104,8 +102,19 @@ export default function TongueSwoosh({ className }: { className?: string }) {
       frame = 0;
       const doc = document.scrollingElement || document.documentElement;
       const y = window.scrollY || doc.scrollTop || 0;
-      const run = Math.max(1, window.innerHeight * TRAVEL_PORTION);
-      const progress = Math.min(1, Math.max(0, y / run));
+
+      // Progress tracks the artwork's own journey across the viewport, not
+      // absolute scroll position: 0 as it enters from the bottom, 1 as it
+      // leaves the top. The artboard used `scrollY / (0.6 * viewport)`,
+      // which worked there because the art sat centred in its own
+      // full-height container. Here it sits near the top of a long page,
+      // so that formula finished the run within half a screen and then
+      // froze while the artwork was still on its way out. Tying it to the
+      // element means the cup runs for exactly as long as it is visible.
+      const box = host.getBoundingClientRect();
+      const vh = window.innerHeight || doc.clientHeight;
+      const span = vh + box.height;
+      const progress = Math.min(1, Math.max(0, (vh - box.top) / span));
 
       // Direction is what makes scrolling up run the cycle backwards.
       if (y > distance) direction = 1;
