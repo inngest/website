@@ -120,7 +120,7 @@ Throughout the week, our entire system was seeing greater load across the board,
 
 While our system was experiencing higher load, the optimizations shipped the previous day in our execution workers also put even more load on our ClickHouse cluster as writes were higher than ever before. The cluster became CPU bound performance was heavily degraded.
 
-Throughout the incident response, we scaled up cluster resources and ran analysis on slow queries and API request patterns. With this data, we decided to isolate reads and writes into dedicated clusters, changing our setup to a [ClickHouse warehouse](https://clickhouse.com/docs/cloud/reference/warehouses). With both increased writes and reads, this setup should ensure better performance as both loads are isolated to their own compute resources.
+Throughout the incident response, we scaled up cluster resources and ran analysis on slow queries and API request patterns. With this data, we decided to isolate reads and writes into dedicated clusters, changing our setup to a [ClickHouse warehouse](https://clickhouse.com/docs/products/cloud/features/infrastructure/warehouses). With both increased writes and reads, this setup should ensure better performance as both loads are isolated to their own compute resources.
 
 After this change rolled out, we still noticed inconsistent metrics, so we spun up a new dedicated cluster that serves API requests from our Inngest dashboard only, ensuring isolated resources from other public APIs and parts of our system. This setup led to more performant and consistent load times in our dashboard.
 
