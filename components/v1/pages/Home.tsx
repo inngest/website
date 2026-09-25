@@ -1,8 +1,7 @@
 import PageShell from "@/components/v1/PageShell";
+import CapabilityRows from "@/components/v1/sections/Home/CapabilityRows";
 import Customers from "@/components/v1/sections/Home/Customers";
-import DurabilityInCode from "@/components/v1/sections/Home/DurabilityInCode";
 import Hero from "@/components/v1/sections/Home/Hero";
-import HowItWorks from "@/components/v1/sections/Home/HowItWorks";
 import ItDoesntHaveToBeHard from "@/components/v1/sections/Home/ItDoesntHaveToBeHard";
 import LogoMarquee from "@/components/v1/sections/Home/LogoMarquee";
 import LogoStrip from "@/components/v1/sections/Home/LogoStrip";
@@ -36,11 +35,10 @@ export default function Home() {
       <Hero />
       <LogoStrip contained />
       <Quote />
-      <DurabilityInCode />
-      <UseCaseBand />
+      <CapabilityRows />
       <Customers />
+      <UseCaseBand />
       <ItDoesntHaveToBeHard />
-      <HowItWorks />
       <TrustedInBigLeagues />
       <StartBuilding />
       <LogoMarquee />
