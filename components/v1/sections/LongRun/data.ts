@@ -165,8 +165,6 @@ export interface HeroNarrative {
   /** Small line under the CTAs acknowledging the placement someone just
    *  walked past. */
   note?: string;
-  /** Full-bleed campaign illustration beneath the hero copy. */
-  illustration?: { src: string; alt: string; width: number; height: number };
   /** Real product screenshot shown under the hero copy. */
   visual?: {
     src: string;
@@ -214,18 +212,6 @@ export const HERO_NARRATIVE: Partial<Record<Market, HeroNarrative>> = {
     installCta: {
       label: "npm install inngest",
       command: "npm install inngest",
-    },
-    // Full-bleed campaign illustration under the hero copy: the mouth,
-    // the green tongue-swoosh, and the running cup running along it.
-    //
-    //
-    // Decorative, so `alt=""`: the mouth and the running cup carry brand
-    // character, not information the copy doesn't already give.
-    illustration: {
-      src: "/assets/v1/sf-long-run/tongue-swoosh.png",
-      alt: "",
-      width: 2880,
-      height: 998,
     },
     // The design's run-trace panel: a step.run function with a flaky
     // step retrying across three attempts before completing.
