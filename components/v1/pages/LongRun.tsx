@@ -169,12 +169,11 @@ export default function LongRun({ market = "all" }: { market?: Market }) {
               <SfResources />
             </>
           )}
-          {isNarrative && (
-            <CampaignFooter
-              market={market}
-              className={market === "sf" ? SF_SECTION_PADDING : undefined}
-            />
-          )}
+          {/* "Running elsewhere?" — hidden on SF until the pages it links
+              to are ready. Everything it needs is still wired (the links
+              live in ELSEWHERE.sf in data.ts); restore it by dropping the
+              `market !== "sf"` guard. */}
+          {isNarrative && market !== "sf" && <CampaignFooter market={market} />}
         </div>
       </Unreleased>
     </PageShell>
