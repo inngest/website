@@ -46,7 +46,7 @@ export default inngest.createFunction(
         Expressions are defined using the Common Expression Language (CEL) with the original event accessible using dot-notation. Read [our guide to writing expressions](/docs/guides/writing-expressions) for more info. Examples:
 
         * Rate limit per customer id: `'event.data.customer_id'`
-        * Rate limit per account and email address: `'event.data.account_id + "-" + event.user.email'`
+        * Rate limit per account and email address: `'event.data.account_id + "-" + event.data.email'`
       </Property>
       <Property name="timeout" type="string">
         The maximum time that a debounce can be extended before running.
@@ -62,4 +62,3 @@ export default inngest.createFunction(
 <Callout variant="warning">
   Debounce cannot be combined with [batching](/docs/guides/batching).
 </Callout>
-

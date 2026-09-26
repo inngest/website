@@ -39,7 +39,7 @@ export default inngest.createFunction(
         Expressions are defined using the Common Expression Language (CEL) with the original event accessible using dot-notation. Read [our guide to writing expressions](/docs/guides/writing-expressions) for more info. Examples:
 
         * Ensure exclusive execution of a function per customer ID: `'event.data.customer_id'`
-        * Ensure exclusive execution of a function per account and email address: `'event.data.account_id + "-" + event.user.email'`
+        * Ensure exclusive execution of a function per account and email address: `'event.data.account_id + "-" + event.data.email'`
       </Property>
       <Property name="mode" type="string" required>
         The mode to use for the singleton function:
@@ -92,4 +92,3 @@ export default inngest.createFunction(
 While similar to [Debounce](/docs/guides/debounce), Singleton Functions are designed to ensure that only a single run of a function is happening at a time, whereas Debounce ensures that only a single event is processed within a given time window.
 
 Refer to the [Singleton Functions guide](/docs/guides/singleton) for more information about how this feature works.
-
