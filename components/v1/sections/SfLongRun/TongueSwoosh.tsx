@@ -2,10 +2,7 @@
 
 import { useEffect, useRef } from "react";
 import { cn } from "@/utils/v1/cn";
-import {
-  TONGUE_SWOOSH_SVG,
-  TONGUE_SWOOSH_VIEWBOX,
-} from "@/components/v1/sections/SfLongRun/tongueSwooshSvg";
+import { TONGUE_SWOOSH_SVG } from "@/components/v1/sections/SfLongRun/tongueSwooshSvg";
 
 /**
  * The campaign illustration, animated by scroll: the cup runs along the
@@ -27,6 +24,33 @@ import {
 
 /** Distance in px of scroll per full stride. */
 const STEP_LENGTH = 110;
+
+/**
+ * The cup's x range in artwork units, per framing.
+ *
+ * The artwork is a 3.5:1 banner, so at phone width it is only ~108px
+ * tall and the cup renders about 45px across — too small to read as a
+ * character. Vector scaling can't fix that; the ratio is the ratio.
+ *
+ * So narrow viewports give the wrapper a fixed height instead and let
+ * `preserveAspectRatio="xMinYMid slice"` crop the right-hand side. That
+ * roughly doubles everything's scale and keeps the mouth anchored at the
+ * left, where a centred crop would have dropped it. The cup's run then
+ * has to shorten to stay inside the visible window.
+ *
+ * Both ends stay within x 413–1336, the range over which the tongue's
+ * top edge is defined.
+ */
+const TRAVEL = {
+  wide: [1280, 480] as const,
+  narrow: [820, 470] as const,
+};
+
+/** Tailwind's `md` breakpoint. The wrapper switches framing at
+ *  `min-width: 768px`, so the travel range has to flip on the same
+ *  boundary — `< MD`, not `<= MD`, or at exactly 768px the CSS would use
+ *  the wide framing while the cup still ran the short, cropped route. */
+const MD = 768;
 /** Idle delay before the sweat droplet fades out, matching the source. */
 const IDLE_MS = 220;
 
@@ -92,6 +116,12 @@ export default function TongueSwoosh({ className }: { className?: string }) {
       [173.4, 125],
     ];
 
+    let travel: readonly [number, number] = TRAVEL.wide;
+    const applyFraming = () => {
+      travel = window.innerWidth < MD ? TRAVEL.narrow : TRAVEL.wide;
+    };
+    applyFraming();
+
     let distance = 0;
     let direction = 1;
     let moving = false;
@@ -126,7 +156,8 @@ export default function TongueSwoosh({ className }: { className?: string }) {
       const lift = Math.abs(Math.sin(phase));
 
       // Position along the tongue, with the feet tracking its top edge.
-      const x = 1280 - (1280 - 480) * progress;
+      const [from, to] = travel;
+      const x = from - (from - to) * progress;
       const footY = topAt(x) + 68;
       const slope = (topAt(x + 40) - topAt(x - 40)) / 80;
       const tilt = Math.max(
@@ -222,6 +253,11 @@ export default function TongueSwoosh({ className }: { className?: string }) {
       });
     };
 
+    const onResize = () => {
+      applyFraming();
+      if (!frame) frame = requestAnimationFrame(draw);
+    };
+
     const onScroll = () => {
       moving = true;
       if (!frame) frame = requestAnimationFrame(draw);
@@ -234,10 +270,10 @@ export default function TongueSwoosh({ className }: { className?: string }) {
 
     draw(); // Settle into the right pose for the current scroll position.
     window.addEventListener("scroll", onScroll, { passive: true });
-    window.addEventListener("resize", onScroll, { passive: true });
+    window.addEventListener("resize", onResize, { passive: true });
     return () => {
       window.removeEventListener("scroll", onScroll);
-      window.removeEventListener("resize", onScroll);
+      window.removeEventListener("resize", onResize);
       if (frame) cancelAnimationFrame(frame);
       clearTimeout(idleTimer);
     };
@@ -249,12 +285,15 @@ export default function TongueSwoosh({ className }: { className?: string }) {
       // Decorative: the surrounding copy carries the meaning, and the
       // motion is ambient. Never intercepts a CTA click.
       aria-hidden="true"
-      className={cn("pointer-events-none select-none", className)}
-      style={{
-        // Reserve the artwork's height before paint so the hero doesn't
-        // reflow when the markup lands.
-        aspectRatio: `${TONGUE_SWOOSH_VIEWBOX.width} / ${TONGUE_SWOOSH_VIEWBOX.height}`,
-      }}
+      className={cn(
+        "pointer-events-none select-none",
+        // Narrow screens take a fixed height, which is what drives the
+        // crop: the SVG slices off the right rather than squashing the
+        // whole 3.5:1 banner into ~108px. From md the artwork's own
+        // aspect takes over and nothing is cropped.
+        "h-[210px] sm:h-[240px] md:h-auto md:[aspect-ratio:1738/499]",
+        className
+      )}
       dangerouslySetInnerHTML={{ __html: TONGUE_SWOOSH_SVG }}
     />
   );
