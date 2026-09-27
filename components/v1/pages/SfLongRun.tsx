@@ -11,7 +11,7 @@ import SfResources from "@/components/v1/sections/SfLongRun/SfResources";
 import { SF_SECTION_PADDING } from "@/components/v1/sections/SfLongRun/sfHeadings";
 
 /**
- * inngest.com/sf-long-run — the "Build for the long run" campaign page
+ * inngest.com/sf-long-run — the "Build for the Lonng Run" campaign page
  * behind the San Francisco placements. step.run/sf points here.
  *
  * Product-led, campaign second: hero → the product difference → use
