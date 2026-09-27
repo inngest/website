@@ -68,7 +68,7 @@ export default function Hero() {
             id="sf-long-run-hero-heading"
             className="text-v1-display-hero mt-8 uppercase text-v1-frost lg:mt-10"
           >
-            {["Build for", "the long", "run."].map((line, i) => (
+            {["Build for", "the lonng", "run."].map((line, i) => (
               <motion.span
                 key={line}
                 className="block"
