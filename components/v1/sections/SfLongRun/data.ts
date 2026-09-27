@@ -38,7 +38,7 @@ export const HERO = {
 
 export const SF_DIFFERENCE = {
   title: ["Durable doesn't have to be hard."],
-  body: "Orchestrating long-running code is tough. But you don't need to wrangle a bunch of extra infrastructure to do it. The Inngest SDK is the fastest way to make any code durable and observable by default.",
+  body: "Orchestrating lonng-running code is tough. But you don't need to wrangle a bunch of extra infrastructure to do it. The Inngest SDK is the fastest way to make any code durable and observable by default.",
   /** Reuses the homepage's before/after assets and the shared slider. */
   before: {
     src: "/assets/v1/it-doesnt-have-to-be-hard/before.webp",
@@ -194,7 +194,7 @@ export const SF_CAMPAIGN = {
   eyebrowAccent: "The lonng run.",
   eyebrow: "San Francisco.",
   // Set exactly as designed, including the unhyphenated second half.
-  title: ["Long-running humans. Long running agents."],
+  title: ["Lonng-running humans. Lonng running agents."],
   body: "We're bringing Build for the Lonng Run to San Francisco through coffee, community, and a few opportunities to get moving.",
 } as const;
 
@@ -240,10 +240,10 @@ export const SF_RESOURCES: SfResource[] = [
 
 export const SF_USE_CASES_COPY = {
   title: "Because one request is never the finish line.",
-  body: "However it's written, wherever it runs, Inngest makes long running jobs (and short sprints), unbreakable.",
+  body: "However it's written, wherever it runs, Inngest makes lonng running jobs (and short sprints), unbreakable.",
 } as const;
 
 export const SF_RESOURCES_COPY = {
   title: ["Keep building."],
-  body: "Explore the technical ideas behind long-running agents and workflows.",
+  body: "Explore the technical ideas behind lonng-running agents and workflows.",
 } as const;
