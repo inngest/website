@@ -3,12 +3,11 @@
 import Image from "next/image";
 import { motion } from "motion/react";
 import ButtonLink from "@/components/v1/ButtonLink";
-import GradientFrame from "@/components/v1/sections/shared/GradientFrame";
 import { tweens } from "@/utils/v1/springs";
 import { CURSOR_SPOTLIGHT_SEED } from "@/utils/v1/cursorFx";
 import { HERO } from "@/components/v1/sections/SfLongRun/data";
 import InstallButton from "@/components/v1/sections/SfLongRun/InstallButton";
-import TongueSwoosh from "@/components/v1/sections/SfLongRun/TongueSwoosh";
+import RunningFriend from "@/components/v1/sections/SfLongRun/RunningFriend";
 
 /**
  * Campaign hero — what someone sees after scanning a step.run/sf
@@ -68,7 +67,7 @@ export default function Hero() {
             id="sf-long-run-hero-heading"
             className="text-v1-display-hero mt-8 uppercase text-v1-frost lg:mt-10"
           >
-            {["Build for", "the long", "run."].map((line, i) => (
+            {["Build for", "the lonng", "run."].map((line, i) => (
               <motion.span
                 key={line}
                 className="block"
@@ -106,27 +105,31 @@ export default function Hero() {
           </motion.div>
         </div>
 
+        {/* No frame: the panel artwork carries its own chrome and sits
+            directly on the page background. */}
         <motion.div {...entry(700)} className="mt-12 lg:mt-0">
-          <GradientFrame variant="black" className="overflow-hidden rounded-lg">
-            <Image
-              src={HERO.visual.src}
-              alt={HERO.visual.alt}
-              width={HERO.visual.width}
-              height={HERO.visual.height}
-              // Above the fold, so not lazy-loaded. Stating the slot width
-              // lets Next pick a variant that matches the column.
-              priority
-              sizes="(max-width: 1024px) 92vw, 46vw"
-              className="h-auto w-full"
-            />
-          </GradientFrame>
+          <Image
+            src={HERO.visual.src}
+            alt={HERO.visual.alt}
+            width={HERO.visual.width}
+            height={HERO.visual.height}
+            // Above the fold, so not lazy-loaded. Stating the slot width
+            // lets Next pick a variant that matches the column.
+            priority
+            sizes="(max-width: 1024px) 92vw, 46vw"
+            className="h-auto w-full"
+          />
         </motion.div>
       </div>
 
-      {/* Scroll-driven: the cup runs forward as the page scrolls down and
-          backwards as it scrolls up. Bleeds past the hero's bottom edge
+      {/* Scroll-driven: the cup runs toward the mouth as the page scrolls
+          down and turns around on the way back up. Carries its own
+          desktop/mobile framing — the phone crop zooms to the mouth and
+          the first stretch of tongue. Bleeds past the hero's bottom edge
           so the swoosh runs behind the logo strip below. */}
-      <TongueSwoosh className="relative z-0 -mb-16 block w-full lg:-mb-24" />
+      <div className="relative z-0 -mb-16 lg:-mb-24">
+        <RunningFriend />
+      </div>
     </section>
   );
 }

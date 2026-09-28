@@ -1,7 +1,7 @@
 import type { NavIconName } from "@/components/v1/NavIcons";
 
 /**
- * "Build for the long run" — San Francisco.
+ * "Build for the Lonng Run" — San Francisco.
  *
  * Copy for the campaign landing page at inngest.com/sf-long-run, which
  * the step.run/sf placements point to. Everything the page says lives
@@ -38,7 +38,7 @@ export const HERO = {
 
 export const SF_DIFFERENCE = {
   title: ["Durable doesn't have to be hard."],
-  body: "Orchestrating long-running code is tough. But you don't need to wrangle a bunch of extra infrastructure to do it. The Inngest SDK is the fastest way to make any code durable and observable by default.",
+  body: "Orchestrating lonng-running code is tough. But you don't need to wrangle a bunch of extra infrastructure to do it. The Inngest SDK is the fastest way to make any code durable and observable by default.",
   /** Reuses the homepage's before/after assets and the shared slider. */
   before: {
     src: "/assets/v1/it-doesnt-have-to-be-hard/before.webp",
@@ -156,8 +156,8 @@ export interface SfCampaignCard {
 export const SF_CAMPAIGN_CARDS: SfCampaignCard[] = [
   {
     id: "corgi-cafe",
-    title: "The Long Run.",
-    body: "Find our campaign drink at Corgi Café and follow the long run from your cup to your code.",
+    title: "The Lonng Run.",
+    body: "Find our campaign drink at Corgi Café and follow the lonng run from your cup to your code.",
     detail: "Starting October 1.",
     image: {
       src: "/assets/v1/sf-long-run/corgi-cup.png",
@@ -178,7 +178,7 @@ export const SF_CAMPAIGN_CARDS: SfCampaignCard[] = [
   },
   {
     id: "community",
-    title: "Keep the long run going.",
+    title: "Keep the lonng run going.",
     body: "Join us for another opportunity to connect with San Francisco builders.",
     pending: "Date and venue TBD",
     image: {
@@ -191,11 +191,11 @@ export const SF_CAMPAIGN_CARDS: SfCampaignCard[] = [
 
 export const SF_CAMPAIGN = {
   // Two-tone eyebrow: campaign name in the accent, city in frost.
-  eyebrowAccent: "The long run.",
+  eyebrowAccent: "The lonng run.",
   eyebrow: "San Francisco.",
   // Set exactly as designed, including the unhyphenated second half.
-  title: ["Long-running humans. Long running agents."],
-  body: "We're bringing Build for the Long Run to San Francisco through coffee, community, and a few opportunities to get moving.",
+  title: ["Lonng-running humans. Lonng running agents."],
+  body: "We're bringing Build for the Lonng Run to San Francisco through coffee, community, and a few opportunities to get moving.",
 } as const;
 
 /* ── 07 · Resources ────────────────────────────────────────────────── */
@@ -240,10 +240,10 @@ export const SF_RESOURCES: SfResource[] = [
 
 export const SF_USE_CASES_COPY = {
   title: "Because one request is never the finish line.",
-  body: "However it's written, wherever it runs, Inngest makes long running jobs (and short sprints), unbreakable.",
+  body: "However it's written, wherever it runs, Inngest makes lonng running jobs (and short sprints), unbreakable.",
 } as const;
 
 export const SF_RESOURCES_COPY = {
   title: ["Keep building."],
-  body: "Explore the technical ideas behind long-running agents and workflows.",
+  body: "Explore the technical ideas behind lonng-running agents and workflows.",
 } as const;
