@@ -75,7 +75,7 @@ That list is also roughly how we evaluate any big infrastructure decision at Inn
 
 ## Why FoundationDB, specifically?
 
-[FoundationDB](https://apple.github.io/foundationdb/) is an open source, distributed, ordered key-value store that Apple acquired in 2015 and open sourced under Apache 2.0 in 2018. It's spent the years since as one of the more battle-tested pieces of infrastructure in the industry: it's what Apple runs CloudKit on, and Snowflake uses it as the metadata store underneath its compute layer, both at a scale considerably larger than ours ([CloudKit paper](https://doi.org/10.1145/3187009.3164138); [FoundationDB SIGMOD paper](https://www.foundationdb.org/files/fdb-paper.pdf)).
+[FoundationDB](https://apple.github.io/foundationdb/) is an open source, distributed, ordered key-value store that Apple acquired in 2015 and open sourced under Apache 2.0 in 2018. It's spent the years since as one of the more battle-tested pieces of infrastructure in the industry: it's what Apple runs CloudKit on, and Snowflake uses it as the metadata store underneath its compute layer, both at a scale considerably larger than ours ([CloudKit paper](https://www.vldb.org/pvldb/vol11/p540-shraer.pdf); [FoundationDB SIGMOD paper](https://www.foundationdb.org/files/fdb-paper.pdf)).
 
 A few properties made it a strong fit for a queue specifically:
 
@@ -87,7 +87,7 @@ A few properties made it a strong fit for a queue specifically:
 
 **A decoupled read and write path.** FoundationDB's architecture separates [transaction management from storage](https://apple.github.io/foundationdb/architecture.html), which means we can run a lot more [observability](/platform/observability?ref=blog-migration-to-foundationdb-part-1) and processing-related reads concurrently without them competing with the writes that matter for correctness and latency.
 
-We also leaned on research outside our own walls before committing. Apple's [CloudKit paper](https://doi.org/10.1145/3187009.3164138) on rebalancing tenants across partitions, the [QuiCK paper](https://www.foundationdb.org/files/QuiCK.pdf) on queue implementations, and [Tigris's writeup on building with FoundationDB](https://dev.to/tigrisdata/global-by-design-tigriss-distributed-object-storage-architecture-48m1) all fed into our design for sharding and rebalancing, which is the subject of the next post in this series.
+We also leaned on research outside our own walls before committing. Apple's [CloudKit paper](https://www.vldb.org/pvldb/vol11/p540-shraer.pdf) on rebalancing tenants across partitions, the [QuiCK paper](https://www.foundationdb.org/files/QuiCK.pdf) on queue implementations, and [Tigris's writeup on building with FoundationDB](https://dev.to/tigrisdata/global-by-design-tigriss-distributed-object-storage-architecture-48m1) all fed into our design for sharding and rebalancing, which is the subject of the next post in this series.
 
 None of this makes FoundationDB a free lunch. It's a different operational model than a Redis-family database, with its own deployment topology, its own failure modes, and its own learning curve for anyone who has to operate it ([operator guide](https://apple.github.io/foundationdb/administration.html)). We'll get into the tradeoffs and the parts we're still working through in future posts.
 
