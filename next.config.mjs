@@ -221,12 +221,24 @@ function touchFilesWithString(str, { dir = "./pages", ext = "mdx" } = {}) {
 /** @type {import('next').NextConfig} */
 
 async function rewrites() {
+  // The Sandboxes playground (inngest/sandboxes-playground) is a separate
+  // deployment served under /try-sandboxes. It bakes in that base path, so a
+  // single prefix rewrite proxies its pages and its _next assets alike. Gated
+  // on the env var so builds without it configured are unaffected.
+  const trySandboxesOrigin = process.env.TRY_SANDBOXES_ORIGIN;
+  const trySandboxes = trySandboxesOrigin
+    ? [
+        { source: "/try-sandboxes", destination: `${trySandboxesOrigin}/try-sandboxes` },
+        { source: "/try-sandboxes/:path*", destination: `${trySandboxesOrigin}/try-sandboxes/:path*` },
+      ]
+    : [];
   return {
     // beforeFiles run before page/filesystem matching, so these intercept the
     // raw-markdown URLs before the dynamic /docs/patterns/[category]/[slug]
     // pages would 404 on them. Segment counts don't collide: index (3) /
     // category (4) / pattern (5).
     beforeFiles: [
+      ...trySandboxes,
       {
         source: "/docs/patterns/md",
         destination: "/api/patterns/md",
