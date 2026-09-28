@@ -1,0 +1,99 @@
+export const metaTitle = "Snapshots and restore | Sandboxes";
+export const description = "Reuse a prepared Sandbox by cloning new environments from its snapshot.";
+
+# Snapshots and restore
+
+> Reuse a prepared Sandbox by cloning new environments from its snapshot.
+
+Prepare dependencies or files once, then snapshot the Sandbox and clone it for separate jobs. Each clone gets its own Sandbox ID and a copy of the captured local filesystem.
+
+> **Experimental beta.** Sandboxes require beta access and `inngest@4.20.0` or newer. Snapshot APIs and limits can change. Do not use snapshots as permanent storage.
+
+## What a snapshot captures
+
+A user snapshot captures the sandbox's memory, disk, environment, image, and CPU and memory configuration. Files on the sandbox filesystem carry into each clone. An S3-backed persistent mount attaches the same backing path to each clone, so mounted files can be shared across Sandboxes. The source sandbox keeps running after you create the snapshot.
+
+The snapshot is a point-in-time, crash-consistent capture. Flush databases and other important application state first. The snapshot does not coordinate with your application to finish writes. It also does not provide permanent storage. Each snapshot has a server-defined `expiresAt` and counts against account-specific snapshot limits.
+
+## Create and clone a snapshot
+
+The direct client works in a server-side API route, worker, or script. This example assumes `sandbox` is a running sandbox:
+
+```typescript
+await sandbox.commands.run(
+  "mkdir -p /work && printf 'prepared\\n' > /work/config.txt"
+);
+
+const snapshot = await sandbox.snapshot({}, { timeout: "5m" });
+
+try {
+  const clone = await snapshot.clone({
+    name: `prepared-${crypto.randomUUID()}`,
+    runningTimeout: "2m",
+  });
+
+  try {
+    const result = await clone.commands.run("cat /work/config.txt");
+    console.log(result.stdout);
+  } finally {
+    await clone.destroy();
+  }
+} finally {
+  await snapshot.delete();
+}
+```
+
+`sandbox.snapshot()` returns when the snapshot reaches `READY`. The REST API initially returns `202 CREATING` while it uploads the artifact. The SDK waits up to five minutes by default and at most five minutes. If the wait times out, snapshot creation continues. List or get the snapshot before you create another one.
+
+`snapshot.clone()` creates a new sandbox. It inherits the captured image, resources, environment, memory, and disk. The clone has a new UUID. It may start immediately or enter `STARTING`; the SDK waits for `RUNNING` by default. `runningTimeout` changes that wait. A timeout does not destroy the new sandbox.
+
+Keep the snapshot while you need to make more clones. Delete it when finished, and destroy each clone when its work ends. The source sandbox remains separate and needs its own cleanup.
+
+## Use snapshots inside an Inngest function
+
+Use `step.sandbox` when snapshot operations belong to a durable function. Give each operation a stable step ID. This example assumes `sandbox` is a running durable sandbox and `event.data.jobId` is stable:
+
+```typescript
+const snapshot = await sandbox.snapshot(
+  "snapshot-prepared-sandbox",
+  {},
+  { timeout: "5m" }
+);
+
+const clone = await snapshot.clone("clone-prepared-sandbox", {
+  name: `prepared-${event.data.jobId}`,
+  runningTimeout: "2m",
+});
+
+const result = await clone.commands.run(
+  "read-prepared-file",
+  "cat /work/config.txt"
+);
+
+await clone.destroy("destroy-clone");
+await snapshot.delete("delete-snapshot");
+
+return result.stdout;
+```
+
+Snapshot Create and its readiness wait are separate memoized steps. Let unexpected errors escape so Inngest can apply the operation's retry policy. If a function can fail permanently before cleanup, use an `onFailure` handler or another cleanup function that knows the sandbox ID. A JavaScript `finally` block around durable steps does not guarantee cleanup after permanent failure or cancellation.
+
+## Restore or resume?
+
+A **clone** starts a new sandbox from a ready user snapshot. Use it to repeat work from the same prepared state or branch into independent runs. It does not overwrite the source sandbox.
+
+**Pause and resume** preserve the original sandbox ID. Pause uses a private checkpoint; resume restores the same sandbox's filesystem, memory, environment, resources, and remaining runtime. Private pause checkpoints do not appear in the user snapshot list or count against user snapshot quota. See [Pause and resume](/docs/sandboxes/features/pause-and-resume) for the lifecycle guide.
+
+Restore means either resuming a paused sandbox with the same ID or cloning a user snapshot into a new sandbox. There is no separate operation that replaces an existing sandbox with a user snapshot. See [Cloning](/docs/sandboxes/features/cloning) for more on independent sandbox copies.
+
+## Find and manage snapshots
+
+Use `inngest.sandboxes.snapshots.list()` and `get(snapshotId)` from the direct client, or `step.sandbox.snapshots.list(stepId)` and `get(stepId, snapshotId)` in a function. A snapshot can be `CREATING`, `READY`, `DELETING`, `DELETED`, `FAILED`, or `LOST`. Clone only a `READY` snapshot.
+
+Snapshot Create has no idempotency key. If a request returns `operation_ambiguous`, a snapshot may still be creating. List recent snapshots and reconcile before sending another Create. Snapshot count or storage quota can also reject creation. The beta guide does not publish fixed quota or retention values; check `expiresAt` on each snapshot.
+
+
+## Questions to settle before publication
+
+- What snapshot count, storage quota, and retention values should the published limits page show?
+- A snapshot clone attaches the same backing path for an S3-backed mount. Does a user snapshot capture mounted data, and what are the read-after-write and concurrent-write rules for clones?

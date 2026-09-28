@@ -1,0 +1,63 @@
+export const metaTitle = "step.waitForSignal";
+export const description = "Resume one waiting workflow run directly when a specific answer arrives.";
+
+
+# Wait for one run with `step.waitForSignal`
+
+> Resume one waiting workflow run directly when a specific answer arrives.
+
+> Draft for the documentation refresh. TypeScript SDK v4.
+
+Wait for an approval or callback that belongs to one specific run. Give that wait a distinct signal name, then send the same name to resume it. Inngest shows the wait in the run trace.
+
+## Why choose a signal?
+
+- **Resume one run directly.** A unique signal name addresses one active wait.
+- **Resume sooner.** The signal API is transactional; event delivery is eventually consistent.
+
+Use [step.waitForEvent](/docs/durable-execution/primitives/step-waitforevent) for most waits. An event can resume multiple runs, trigger other functions, and provide a stored record for audit and Insights. Choose a signal when one run needs a direct, latency-sensitive response.
+
+## Wait for a signal
+
+Give each waiting run a distinct signal name. The sender must use the same name. The example uses a request ID to connect an approval to its waiting run.
+
+```typescript
+const approveRequest = inngest.createFunction(
+  {
+    id: "approve-request",
+    triggers: { event: "app/approval.requested" },
+  },
+  async ({ event, step }) => {
+    const signal = `approval/${event.data.requestId}`;
+
+    const approval = await step.waitForSignal<{ approved: boolean }>(
+      "wait-for-approval",
+      {
+        signal,
+        timeout: "3d",
+        onConflict: "fail",
+      }
+    );
+
+    if (approval === null) return { status: "timed-out" };
+    if (!approval.data.approved) return { status: "rejected" };
+
+    return { status: "approved" };
+  }
+);
+```
+From the code that receives the approval, send the matching signal:
+
+```typescript
+await inngest.sendSignal({
+  signal: `approval/${requestId}`,
+  data: { approved: true },
+});
+```
+The TypeScript v4 SDK defines `step.waitForSignal(id, { signal, timeout, onConflict })`. It returns an object with `signal` and `data`, or `null` when the timeout expires. `inngest.sendSignal({ signal, data })` sends from outside a function; `step.sendSignal` sends as a durable step inside one. These calls are currently experimental.
+
+## Handle duplicate names, timeouts, and cancellation
+
+`onConflict: "fail"` fails this run if another active wait uses the same signal name. `onConflict: "replace"` gives the name to the new wait; the earlier wait stays pending until its timeout. Use a request or run identifier in the signal name so unrelated runs do not compete.
+
+A signal timeout resumes the function with `null`. Check that result before reading `data`. Cancelling the function run is a separate action: it stops subsequent work rather than returning a timeout value to this code. Use cancellation when you need to stop the run instead of returning a timeout value.

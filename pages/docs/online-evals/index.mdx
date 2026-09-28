@@ -1,0 +1,26 @@
+export const metaTitle = "Online Evals";
+export const description = "Find out whether your agent or workflow helped users by linking outcome scores to durable runs.";
+
+# Online Evals
+
+> Find out whether your agent or workflow helped users by linking outcome scores to durable runs.
+
+For example, a support agent can finish a run before a customer rates its answer. Online Evals links that later score to the run and experiment variant that produced the answer. Compare the new path with the current one, then open individual traces to explain the results.
+
+## From execution to outcome
+
+1. **Group related work with sessions.** Use a conversation, ticket, or job ID to find the runs behind one outcome.
+2. **Score what you know.** Record a named numeric or true/false score for a run or step. Start with a guardrail result or a product outcome.
+3. **Defer scoring when the result comes later.** Wait for feedback, a review, or a conversion. Inngest attributes the score to the original run.
+4. **Test a change with ****`group.experiment()`****.** Put alternative steps or whole workflow paths in variant callbacks. Score the selected variant and compare outcomes.
+
+You can score a run without an experiment. Add sessions and deferred scoring when the work spans runs or the outcome arrives later. Inngest's durable execution preserves the run, step, and variant context that connects an eventual score to the work behind it.
+
+## Start here
+
+- [Overview](/docs/online-evals/overview) explains the concepts with a support agent example.
+- [Quick start](/docs/online-evals/quick-start) walks through a scored experiment in TypeScript.
+- [Interpreting results](/docs/online-evals/interpreting-results) shows how to compare results and inspect a trace.
+- [Cost management](/docs/online-evals/cost-management) explains usage-based scoring costs. You can write as many scores as you need. Your application chooses which runs to score; scoring has no built-in sampling or budget cap.
+
+The current scoring and deferred scoring APIs use TypeScript SDK v4 beta features.

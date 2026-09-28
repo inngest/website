@@ -1,0 +1,59 @@
+export const metaTitle = "Overview | Sandboxes";
+export const description = "Run generated code or test a project in an isolated microVM while your durable function coordinates the job.";
+
+# Overview
+
+> Run generated code or test a project in an isolated microVM while your durable function coordinates the job.
+
+Run generated code or test a project in a fully isolated microVM while your durable function coordinates the job. Sandboxes boot in under a second. You can pause and resume the same Sandbox, or snapshot it and clone a new one. Inngest coordinates their lifecycle with the run and shows sandbox activity in the same trace. You can give code its own execution environment without building a separate service to start, stop, and track it.
+
+## Why use a Sandbox?
+
+For example, an agent can edit a repository and run its tests in a Sandbox. The durable function coordinates the task while the generated code runs in a separate microVM.
+
+A durable run can include steps, waits, and retries that span more than one request or process. Sandbox operations belong in that run. Inngest can coordinate the environment as the work advances and record what happened alongside the rest of the execution. This lets you inspect the code execution and the workflow that led to it in one place.
+
+## What you can do
+
+- **Boot quickly.** Start a microVM in under a second when work needs an isolated environment.
+- **Run code in isolation.** Keep code that needs its own environment apart from the function's runtime.
+- **Pause and continue.** Stop active work and continue when the job is ready.
+- **Snapshot and clone.** Save Sandbox state and start a new Sandbox from it. Pause and resume continue the original Sandbox. Files persist through these operations.
+- **Follow the work in a trace.** See sandbox activity with the steps and events of the durable run.
+
+The lifecycle depends on the API you use. With the low-level `step.sandbox.create()` API, your function calls create and destroy as durable operations and handles cleanup after permanent failure. A planned `step.sandbox.typescript` call will start a Sandbox, run TypeScript, and stop it automatically. Its exact call shape and failure behavior are still TBD.
+
+## How Sandboxes fit into Inngest
+
+An Inngest function coordinates the job. It may call a Sandbox for isolated code execution, wait for another event, and continue later. The durable run provides the shared context for those actions. The trace connects the workflow and its Sandbox activity.
+
+```text
+event or request
+      ↓
+durable function → steps, waits, retries
+      ↓
+Sandbox → boot, run code, pause or save state
+      ↓
+durable function continues → result and trace
+```
+
+Sandboxes provide an execution environment for work inside a run. They are separate from where you host an Inngest app's functions. Inngest [branch deploys](/docs/platform-and-operations/environments-and-branch-deploys) are different: they give a Git branch its own deployment preview and event data.
+
+## Next steps
+
+- [Quick start](/docs/sandboxes/quick-start) — run your first Sandbox.
+- [Features](/docs/sandboxes/features) — understand isolation, lifecycle controls, and traces.
+- [Guides](/docs/sandboxes/guides) — use Sandboxes in durable work.
+- [Limits](/docs/sandboxes/limits) and [Reference](/docs/sandboxes/reference) — check exact support, behavior, and API details.
+
+---
+
+## Editorial TBD before publication
+
+- What isolation boundary does “fully isolated” cover? What can a Sandbox access by default?
+- How is sub-second boot measured, and under which image, region, and load conditions does it apply?
+- What is the exact `step.sandbox.typescript` contract, and how does it handle failure and cleanup? Which other operations must application code request?
+- What non-filesystem state survives pause and resume or a snapshot clone? How long does each state persist, and what are the consistency rules for S3-backed persistent mounts shared across sandboxes?
+- What happens to a Sandbox when its workflow step retries, its run fails, or its function is redeployed?
+- Which SDKs, runtimes, plans, and regions support Sandboxes at launch? What are the exact limits and prices?
+- Which Sandbox events and operations appear in traces, and how are they linked to steps?

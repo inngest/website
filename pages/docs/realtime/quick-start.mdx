@@ -1,0 +1,183 @@
+export const metaTitle = "Quick start";
+export const description = "Show progress from a durable function in a signed-in user's browser.";
+
+# Quick start
+
+> Show progress from a durable function in a signed-in user's browser.
+
+> **Editorial status:** draft
+
+Build a Next.js page that shows a job’s live status and final result. A server action starts the Inngest function, which publishes two durable updates. Your server mints a subscription token for the signed-in user so the browser can receive them.
+
+**Before you start:** Use a Next.js App Router project with TypeScript, Inngest SDK v4, and an existing sign-in flow. This example calls your app's `requireCurrentUser()` function from `@/lib/auth`. Implement that function so it returns a user with a string `id` and rejects unauthenticated requests. The token action and event action both call it. If you have not set up Inngest yet, complete the [Next.js quick start](/docs/durable-execution/quick-start/typescript-quick-start) first.
+
+Install the channel schema dependency if your app does not already use it:
+
+```bash
+npm install inngest zod
+```
+
+## 1. Define the channel and topics
+
+A channel groups messages for one user. The `status` and `result` topics each validate the message shape when the function publishes.
+
+`src/inngest/client.ts`
+
+```typescript
+import { Inngest } from "inngest";
+
+export const inngest = new Inngest({ id: "realtime-demo" });
+```
+
+`src/inngest/channels.ts`
+
+```typescript
+import { realtime } from "inngest";
+import { z } from "zod";
+
+export const progressChannel = realtime.channel({
+  name: ({ userId }: { userId: string }) => "progress:" + userId,
+  topics: {
+    status: { schema: z.object({ message: z.string() }) },
+    result: { schema: z.object({ message: z.string() }) },
+  },
+});
+```
+
+## 2. Publish from a durable function
+
+The function publishes a starting message, waits three seconds, and publishes a result. `step.realtime.publish()` is a durable step: if the function retries after that step completes, it does not publish that completed message again.
+
+`src/inngest/functions.ts`
+
+```typescript
+import { inngest } from "./client";
+import { progressChannel } from "./channels";
+
+export const showProgress = inngest.createFunction(
+  { id: "show-progress", triggers: [{ event: "demo/progress.requested" }] },
+  async ({ event, step }) => {
+    const channel = progressChannel({ userId: event.data.userId });
+
+    await step.realtime.publish("started", channel.status, {
+      message: "Started",
+    });
+    await step.sleep("demo-wait", "3s");
+    await step.realtime.publish("finished", channel.result, {
+      message: "The work is complete.",
+    });
+  }
+);
+```
+
+Register the function in your Next.js route:
+
+`src/app/api/inngest/route.ts`
+
+```typescript
+import { serve } from "inngest/next";
+import { inngest } from "@/inngest/client";
+import { showProgress } from "@/inngest/functions";
+
+export const { GET, POST, PUT } = serve({
+  client: inngest,
+  functions: [showProgress],
+});
+```
+
+## 3. Mint a token on the server
+
+The browser cannot mint its own subscription token. These server actions read the user ID from your authenticated session. The token grants access only to that user's channel and the two topics this page needs. Do not accept a user ID or channel name from the browser in the token action.
+
+`src/app/realtime/actions.ts`
+
+```typescript
+"use server";
+
+import { getClientSubscriptionToken } from "inngest/react";
+import { requireCurrentUser } from "@/lib/auth";
+import { inngest } from "@/inngest/client";
+import { progressChannel } from "@/inngest/channels";
+
+export async function getProgressToken() {
+  const user = await requireCurrentUser();
+
+  return getClientSubscriptionToken(inngest, {
+    channel: progressChannel({ userId: user.id }),
+    topics: ["status", "result"],
+  });
+}
+
+export async function startDemo() {
+  const user = await requireCurrentUser();
+
+  await inngest.send({
+    name: "demo/progress.requested",
+    data: { userId: user.id },
+  });
+}
+```
+
+Keep your Inngest signing key on the server. `getClientSubscriptionToken()` returns a client-safe token object with the connection URL. The hook requests a fresh token when it reconnects.
+
+## 4. Subscribe and show the result
+
+The server page gets the current user. The client component uses that ID to select the same channel as the function. It starts the function only after the Realtime connection opens, so the browser can receive the starting update.
+
+`src/app/realtime/page.tsx`
+
+```typescript
+import { requireCurrentUser } from "@/lib/auth";
+import { RealtimeDemo } from "./realtime-demo";
+
+export default async function Page() {
+  const user = await requireCurrentUser();
+  return <RealtimeDemo userId={user.id} />;
+}
+```
+
+`src/app/realtime/realtime-demo.tsx`
+
+```typescript
+"use client";
+
+import { useRealtime } from "inngest/react";
+import { progressChannel } from "@/inngest/channels";
+import { getProgressToken, startDemo } from "./actions";
+
+export function RealtimeDemo({ userId }: { userId: string }) {
+  const { connectionStatus, messages } = useRealtime({
+    channel: progressChannel({ userId }),
+    topics: ["status", "result"] as const,
+    token: () => getProgressToken(),
+  });
+
+  return (
+    <main>
+      <h1>Live progress</h1>
+      <p>Connection: {connectionStatus}</p>
+      <button
+        type="button"
+        disabled={connectionStatus !== "open"}
+        onClick={() => startDemo()}
+      >
+        Start work
+      </button>
+      <p>Status: {messages.byTopic.status?.data.message ?? "Waiting"}</p>
+      <p>Result: {messages.byTopic.result?.data.message ?? "Waiting"}</p>
+    </main>
+  );
+}
+```
+
+## Run it
+
+Start the Inngest Dev Server with `inngest dev`. Run your Next.js app with `INNGEST_DEV=1 npm run dev`, then open `/realtime` while signed in. Wait until the page shows `Connection: open`. Select **Start work**. The status changes to `Started`, then the result appears after the sleep. Open [the Dev Server](http://localhost:8288) to inspect the function run and its publish steps.
+
+The channel name identifies this user's messages. It does not authorize access on its own; the server-side session check controls who receives a token. For an app that shows multiple runs to one user at once, use a per-run channel and check that the signed-in user can read that run before minting a token.
+
+## Next steps
+
+- [Channels and topics](/docs/realtime/channels-and-topics) explains channel names and topic schemas.
+- [Guides](/docs/realtime/guides) covers common Realtime tasks.
+- [Reference](/docs/realtime/reference) lists the TypeScript v4 calls used here.

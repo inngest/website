@@ -1,0 +1,54 @@
+export const metaTitle = "Durable Execution";
+export const description = "Build background workflows and HTTP endpoints that keep their progress through failures and long waits.";
+
+# Durable Execution
+
+> Learn how durable execution survives failures and makes building long-running code simple.
+
+Build background workflows and HTTP endpoints that keep their progress through failures and long waits. Write the work in application code and mark recoverable operations as steps. Inngest saves completed steps and retries failed work, so you do not have to build a queue or track each run's state yourself.
+
+## What is durable execution?
+
+A **durable function** is application code that Inngest coordinates as a run. A run has its own input, steps, and trace. Inngest stores each completed step's result. When work resumes after a retry or wait, it can reuse that result instead of repeating the completed action.
+
+For example, a file import can validate a file, write its records, and send a confirmation in separate steps. If writing records fails, the next attempt reuses the validation result. You can see the failed step and its retry in the run trace.
+
+- **Recover from failure.** Retry failed work without starting the whole run again.
+- **Wait without holding compute.** Resume after a delay or external event without keeping a worker busy.
+- **Control load for workflows.** Set concurrency and other flow controls to protect services your workflow calls.
+- **See what happened.** Inspect steps, waits, retries, and failures in [Traces](/docs/platform-and-operations/traces).
+
+## Types of durable functions
+
+### Durable workflows
+
+Durable workflows are typically background functions invoked from an event, schedule, webhook, or another function. Your app triggers a workflow that runs asynchronously, then moves on to other processing.  Use this path for jobs that take time, wait for another action, or coordinate several services.
+
+Learn more:
+
+- Read [Durable Workflows](/docs/durable-execution/durable-workflows) to see how triggers, runs, and checkpoints fit together.
+- Read our [Quick start](/docs/durable-execution/quick-start) to build a workflow.
+- Learn how [Events and triggers](/docs/durable-execution/guides-and-advanced/events-and-triggers) start work.
+- Read [Flow control](/docs/durable-execution/flow-control) to orchestrate and manage your functions.
+
+### Durable endpoints
+
+Durable endpoints are API endpoints that survive intermittent errors.  They are regular HTTP endpoints, and they return results as HTTP responses, even after temporary errors and retries.  This brings the power of durable execution to every API endpoint you write, without updating any client code.
+
+Learn more:
+
+- Read [Durable Endpoints](/docs/durable-execution/durable-endpoints) for the request and response flow and a TypeScript example.
+
+Check adapter, option, and client response behavior before deploying an endpoint. Workflow flow controls such as concurrency and rate limiting do not currently apply to Durable Endpoints.
+
+## Next up
+
+All functions can run code in [Sandboxes](/docs/sandboxes), measure outcomes with [Online Evals](/docs/online-evals), and publish progress through [Realtime](/docs/realtime). For framework setup and method signatures, use [SDKs & APIs](/docs/sdk/overview).
+
+- [Concepts](/docs/durable-execution/concepts) defines runs, triggers, steps, waits, and retries for both entry points.
+- [Primitives](/docs/durable-execution/primitives) introduces the operations you can put inside a run. Check each feature's SDK reference for endpoint support.
+- [Guides and advanced](/docs/durable-execution/guides-and-advanced) covers errors, cancellation, middleware, idempotency, versioning, logging, testing, and deployment.
+- [Deploying functions](/docs/durable-execution/guides-and-advanced/deploying-functions) explains HTTP Serve and Connect for functions on your infrastructure. Inngest compute is planned as an app-level hosting option.
+- [Limits](/docs/durable-execution/limits), [Best practices](/docs/durable-execution/best-practices), and [Troubleshooting](/docs/durable-execution/troubleshooting) help you ship and operate durable workflows. Check the Durable Endpoints page for its beta limits.
+
+---

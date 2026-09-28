@@ -1,0 +1,51 @@
+export const metaTitle = "step.sleep";
+export const description = "Pause a workflow for a set duration without keeping your function running.";
+
+# `step.sleep`
+
+> Pause a workflow for a set duration without keeping your function running.
+
+Wait 30 minutes before sending a follow-up email without keeping a process running. Inngest stores the wait, releases the execution slot, and resumes the run after the delay.
+
+## Use `step.sleep`
+
+```typescript
+import { Inngest } from "inngest";
+
+const inngest = new Inngest({ id: "my-app" });
+
+export const sendFollowUp = inngest.createFunction(
+  { id: "send-follow-up", triggers: { event: "app/user.signed-up" } },
+  async ({ event, step }) => {
+    await step.sleep("wait-before-follow-up", "30m");
+
+    await step.run("send-follow-up", () =>
+      sendFollowUpEmail(event.data.email)
+    );
+  }
+);
+```
+Replace `sendFollowUpEmail` with your application’s email function. The sleep pauses this run for 30 minutes. The following `step.run` sends the email as a retriable step.
+
+## Signature
+
+`step.sleep(id, duration): Promise`
+
+- `id` is a required string. Give this step a stable ID. Inngest shows it in logs and uses it to remember the step’s state across function versions.
+- `duration` is required. Pass a number of milliseconds, an `ms`-compatible string such as `"30m"`, `"3 hours"`, or `"2.5d"`, or a `Temporal.Duration`.
+- Await the Promise or handle it so the function sleeps correctly.
+
+
+## Resuming, retrying, and rerunning
+
+Inngest schedules the next execution when the sleep ends. Your code does not keep running during the delay. Completed steps retain their state, so a later step failure can retry without repeating earlier completed work. Keep database writes and API calls in `step.run` so those actions also have durable step boundaries.
+
+A manual rerun from the beginning creates a new run and executes the sleep again. A rerun from a later step restores earlier step state and starts at the selected step. Review any side effects that will run again.
+
+## Limits and common mistakes
+
+- A sleep can last up to one year. The Free plan allows up to seven days. Check the plan’s maximum function run length too; it is a separate limit.
+- Sleeping runs do not count toward account or function concurrency limits.
+- A long sleeping run can disappear from the Function Runs list after its plan’s trace and log history window. It still resumes on schedule. Search for its run ID to inspect it.
+- Use [step.sleepUntil](/docs/durable-execution/primitives/step-sleepuntil) when you have a date and time. Use [step.waitForEvent](/docs/durable-execution/primitives/step-waitforevent) when an external event should resume the run.
+

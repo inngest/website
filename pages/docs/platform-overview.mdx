@@ -1,0 +1,71 @@
+import { Mermaid } from "src/shared/Docs/Mermaid";
+
+export const metaTitle = "Platform overview";
+export const description = "Inngest gives your code durability.  Runs record completed steps so work can resume after a failure or wait.  Sandboxes bring isolated code execution into that run, with lifecycle activity visible in its trace.  Online e";
+
+# Platform overview
+
+> Build work that survives failures, run code in isolation, show progress, and learn whether the result helped.
+
+Inngest gives your code durability.  Runs record completed steps so work can resume after a failure or wait.  Sandboxes bring isolated code execution into your runs, with lifecycle activity visible in its trace.  Online evals connect later feedback to the run and, when you A/B test steps, to the variant that produced the result.
+
+Together, you can see what ran, handle failures, build safely, and measure the empirical outcome of every agent session online.
+
+## An example run
+
+A support agent answers a customer request. The same path works for background jobs and other workflows:
+
+<Mermaid
+  label="A trigger starts a durable run. Its steps can include a Sandbox step. The run produces a result and trace that can be scored and compared."
+  chart={`flowchart TB
+  A(["Trigger"]) --> B["Durable run"]
+  B --> P["Steps"]
+  P --> C["Result + trace"]
+  P --> S["Sandbox step"]
+  S --> C
+  C --> D(["Score + compare"])
+  class B,D accent
+  class S info`}
+/>
+
+## How Inngest works
+
+### 1.  Workflow orchestration
+
+An event, schedule, or API request starts a run.  Inngest records completed steps, resumes after waits, retries failed work from where the function left off, and controls how much work runs at once.  If you run an A/B test, it assigns a variant before the outcome is known:
+- [Events and triggers](/docs/durable-execution/guides-and-advanced/events-and-triggers) start work from events, schedules, webhooks, or another function.
+- [Steps](/docs/durable-execution/primitives) save progress so retries skip completed work.
+- Retries recover failed work.
+- [Wait for events](/docs/durable-execution/primitives/step-waitforevent) or [sleep until later](/docs/durable-execution/primitives/step-sleep) without keeping compute running.
+- [Flow control](/docs/durable-execution/flow-control) limits concurrency and traffic to protect downstream services.
+- [Idempotency](/docs/durable-execution/guides-and-advanced/idempotency) prevents duplicate events or runs from repeating work.
+
+Workflows can be durable background jobs or durable API endpoints, with execution details available in traces.
+
+### 2. Run isolated code
+
+Use a Sandbox microVM when a step needs its own execution environment. Each Sandbox is isolated from the host and other Sandboxes, with no traffic between Sandboxes; outbound access is allowed by default. Pause and resume keep the same Sandbox. A snapshot can create a new Sandbox through cloning. Sandbox activity appears in the run trace. The current low-level SDK requires explicit cleanup; a planned higher-level TypeScript helper will start, run code, and stop a Sandbox in one call.
+
+### 3. Measure outcomes
+
+Score a run as soon as you know the result, or defer scoring until feedback arrives. Sessions group related runs. A deferred scorer credits its score to the original run; pass an experiment reference to credit the selected A/B variant.
+
+### 4. Compare and improve
+
+Use `group.experiment()` to select a variant. Each variant can contain one step or a larger workflow path. Compare scores for those variants, then inspect traces to see how each result was produced.
+
+### 5. Show progress
+
+Use Realtime to send typed progress messages from a function to an authorized client. Choose a durable publish when a retry must not send the message twice. See [Realtime](/docs/realtime).
+
+## Where function code runs
+
+Run your Inngest functions on compatible cloud or server infrastructure through an HTTP `serve()` endpoint or a Connect worker. Inngest coordinates durable execution while your code runs there. Inngest compute is a planned hosting option. Compute placement will be per app, so one environment can contain apps on your infrastructure and apps on Inngest compute. Sandboxes are for isolated code execution within work, not another way to host an Inngest function.
+
+## Related docs
+- [Durable Execution](/docs/durable-execution) for steps, waits, retries, and deployment.
+- [Sandboxes](/docs/sandboxes) for isolated code execution.
+- [Online Evals](/docs/online-evals) for sessions, scores, deferred scoring, and experiments.
+- [Realtime](/docs/realtime) for live updates from durable functions.
+
+- [Deploying functions](/docs/durable-execution/guides-and-advanced/deploying-functions)

@@ -1,0 +1,13 @@
+export const metaTitle = "Cloud architecture and security";
+export const description = "See where an event becomes a run and where your function code executes.";
+
+# Cloud architecture and security
+
+> See where Inngest coordinates runs and where your code executes so you can choose the right security controls.
+
+See where an event becomes a run and where your function code executes. Use that boundary to choose deployment and security controls.
+## From event to run
+The Event API accepts an event for an account and environment. Inngest matches it to function triggers, applies flow controls, creates runs, and queues their work. Executors invoke the customer's SDK over HTTP or Connect. Inngest stores run progress so later steps, retries, sleeps, and waits continue durably.
+With self-hosted function code, the HTTP endpoint or Connect worker runs on your infrastructure. Inngest compute is planned as an app-level hosting choice; do not present its runtime or security details as launched. Sandboxes are isolated microVMs used within work, not the host for your function app.
+## Protect the integration
+Inngest encrypts data at rest and in transit. SDK endpoint adapters verify signed requests using the environment's signing key. Scope API keys to the intended environment where possible, store credentials as secrets, and rotate them using the documented procedure. The security guide covers SAML availability, encryption middleware, and firewall allowlists.

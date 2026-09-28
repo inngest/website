@@ -1,0 +1,54 @@
+export const metaTitle = "Primitives and steps";
+export const description = "Use durable primitives to save progress, wait without running code, and coordinate independent work.";
+
+# Primitives and steps
+
+> Use durable primitives to save progress, wait without running code, and coordinate independent work.
+
+Put an external call in `step.run` when its result must survive a retry. Use a wait when the next action depends on time or another event. Give each step a stable ID so an active run can find its saved progress after a deployment.
+
+## Why use steps
+
+Inngest saves the result of each completed step. If a later step fails, Inngest can retry that work and reuse the earlier result. A sleep or event wait pauses the run without keeping your function process active. The run trace shows which step completed, waited, or retried.
+
+## Anatomy of a step
+
+Inside a TypeScript v4 function handler, each `step.run()` call names the work and supplies a callback:
+
+```typescript
+const order = await step.run("load-order", () =>
+  getOrder(event.data.orderId)
+);
+
+await step.run("send-receipt", () => sendReceipt(order));
+```
+
+`"load-order"` is the step ID. Inngest runs the callback and saves its returned `order`. If `send-receipt` fails, Inngest retries it. When the handler runs again, the SDK returns the saved `order` without calling `getOrder` again. Code outside steps can run again.
+
+## Keep step IDs stable
+
+A function ID identifies the function; a step ID identifies work within its run. Keep each logical step's ID stable across deployments so an active run can find its saved result. If you need an active run to execute changed step logic, changing the ID makes it new work. See [Versioning](/docs/durable-execution/guides-and-advanced/versioning) before changing IDs in a deployed function.
+
+A step does not make an external action exactly once. If a provider accepts a request but its response is lost, the step can retry the action. Use an idempotency key for writes, payments, and messages that must not happen twice. See [Idempotency](/docs/durable-execution/guides-and-advanced/idempotency).
+
+## Step primitives
+
+- [step.run](/docs/durable-execution/primitives/step-run) — Run code, such as an API call or database write, as a retriable step. Use it when the workflow must keep the result or retry the work on failure.
+- [step.sleep](/docs/durable-execution/primitives/step-sleep) — Resume after a duration, such as 30 minutes.
+- [step.sleepUntil](/docs/durable-execution/primitives/step-sleepuntil) — Resume at a specific date and time.
+- [step.waitForEvent](/docs/durable-execution/primitives/step-waitforevent) — Resume when a matching event arrives, or handle the timeout.  Use this for most external actions and events that can affect multiple runs.
+- [step.waitForSignal](/docs/durable-execution/primitives/step-waitforsignal) — Resume one run with a unique signal. Use it only when the run needs direct, latency-sensitive resumption.
+- [step.invoke](/docs/durable-execution/primitives/step-invoke) — Start another Inngest function and wait for its result. Use it to reuse or compose functions.
+- [step.sendEvent](/docs/durable-execution/primitives/step-sendevent) — Send an event from inside a function as a reliable step. Use it to trigger other functions without losing the send when this function retries.
+
+## Other primitives
+
+- [defer](/docs/durable-execution/primitives/defer) — Start one typed function in its own run without waiting for its result.
+- [group.parallel](/docs/durable-execution/primitives/group-parallel) — Run steps concurrently. Use it with `Promise.race()` when the first result must return early.
+- [group.experiment](/docs/durable-execution/primitives/group-experiment) — Select a durable variant for a run so you can compare outcomes.
+
+There is no documented `group.race()` method. See `group.parallel` for racing steps in TypeScript and Python.
+
+## Keep runs predictable
+
+Put side effects in steps so a resumed run can reuse completed results. Handle timeouts for waits and invocations. Step results must be JSON-serializable; return only the data later steps need.

@@ -1,0 +1,150 @@
+export const metaTitle = "Go quick start";
+export const description = "Build a durable workflow in Go and inspect its steps locally.";
+
+# Go quick start
+
+> Build a durable workflow in Go and inspect its steps locally.
+
+Send a task event from a Go HTTP app, run a retriable step, then inspect the one-second pause and completed run in the local Dev Server. You need no Inngest account for this exercise.
+
+## Before you start
+
+Install Go. Keep one terminal for the app and another for the Inngest Dev Server. Create a directory and module:
+
+```bash
+mkdir inngest-go-quickstart
+cd inngest-go-quickstart
+go mod init quickstart-go
+```
+
+## 1. Define and serve a workflow
+
+Create `main.go`:
+
+```go
+package main
+
+import (
+	"context"
+	"encoding/json"
+	"fmt"
+	"log"
+	"net/http"
+	"time"
+
+	"github.com/inngest/inngestgo"
+	"github.com/inngest/inngestgo/step"
+)
+
+type TaskData struct {
+	ID string `json:"id"`
+}
+
+type TaskEvent = inngestgo.GenericEvent[TaskData]
+
+func main() {
+	client, err := inngestgo.NewClient(inngestgo.ClientOpts{AppID: "quickstart-go"})
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	registerFunctions(client)
+
+	http.Handle("/api/inngest", client.Serve())
+
+	http.HandleFunc("/api/create-task", func(w http.ResponseWriter, r *http.Request) {
+		if r.Method != http.MethodPost {
+			w.WriteHeader(http.StatusMethodNotAllowed)
+			return
+		}
+
+		id, err := client.Send(r.Context(), inngestgo.Event{
+			Name: "app/task.created",
+			Data: map[string]any{"id": "task_002"},
+		})
+		if err != nil {
+			http.Error(w, err.Error(), http.StatusBadGateway)
+			return
+		}
+
+		w.Header().Set("Content-Type", "application/json")
+		_ = json.NewEncoder(w).Encode(map[string]string{"eventId": id})
+	})
+
+	log.Fatal(http.ListenAndServe(":8080", nil))
+}
+
+func registerFunctions(client inngestgo.Client) {
+	_, err := inngestgo.CreateFunction(
+		client,
+		inngestgo.FunctionOpts{ID: "process-task"},
+		inngestgo.EventTrigger("app/task.created", nil),
+		processTask,
+	)
+	if err != nil {
+		log.Fatal(err)
+	}
+}
+
+func processTask(ctx context.Context, input inngestgo.Input[TaskEvent]) (map[string]any, error) {
+	taskID := input.Event.Data.ID
+
+	result, err := step.Run(ctx, "handle-task", func(ctx context.Context) (map[string]any, error) {
+		return map[string]any{"processed": true, "id": taskID}, nil
+	})
+	if err != nil {
+		return nil, err
+	}
+
+	step.Sleep(ctx, "pause", time.Second)
+	return map[string]any{"message": fmt.Sprintf("Task %s complete", taskID), "result": result}, nil
+}
+
+```
+The `app/task.created` event runs the `process-task` function. `step.Run` saves the result of `handle-task`, and `step.Sleep` pauses the run without keeping a worker busy.  The HTTP handler at `/api/inngest` lets the Dev Server discover and call the function.
+
+Install the SDK and start the app:
+
+```bash
+go get github.com/inngest/inngestgo@latest
+INNGEST_DEV=1 go run .
+```
+Leave it running on port `8080`.
+
+## 2. Start the Dev Server
+
+In a second terminal, install the [Inngest CLI](/docs/local-development) and point it at your app:
+
+```bash
+curl -sSfL https://cli.inngest.com/install.sh | sh
+inngest dev -u http://localhost:8080/api/inngest
+```
+Open [http://localhost:8288](http://localhost:8288). In **Apps**, find `quickstart-go`. In **Functions**, find `process-task`.
+
+## 3. Trigger and inspect a run
+
+In **Functions**, open `process-task` and choose **Invoke**. Enter:
+
+```json
+{"data":{"id":"task_001"}}
+```
+Open **Runs** and select the new run. You should see `handle-task`, the one-second pause, and a result whose message is `Task task_001 complete`. The trace shows the event, step output, and execution timeline.
+
+## 4. Send an event from the app
+
+The app also exposes a route that sends an event. In a third terminal, run:
+
+```bash
+curl -X POST http://localhost:8080/api/create-task
+```
+The route returns an event ID. Open **Runs** again to see the run for `task_002`.
+
+## See a retry
+
+To see step retries, add `if taskID == "retry-demo" { return nil, fmt.Errorf("temporary failure") }` at the start of the `step.Run` callback, before its return. Restart the app and invoke the function with `{"data":{"id":"retry-demo"}}`. The trace shows the failed step attempts. Remove that line when you finish.
+
+## Next steps
+
+- Read [Durable Workflows](/docs/durable-execution/durable-workflows) to understand runs and saved steps.
+- Read [Primitives](/docs/durable-execution/primitives) for step primitives.
+- Read [Deploying functions](/docs/durable-execution/guides-and-advanced/deploying-functions) when you deploy.

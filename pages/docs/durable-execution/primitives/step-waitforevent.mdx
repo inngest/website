@@ -1,0 +1,84 @@
+export const metaTitle = "step.waitForEvent";
+export const description = "Wait for an event to resume your workflow without keeping your function running.";
+
+# `step.waitForEvent`
+
+> Wait for an event to resume your workflow without keeping your function running.
+
+Wait for an approval event that names the invoice under review. Inngest pauses the run without keeping your function running, then returns the matching event or `null` on timeout.
+
+## Why choose an event?
+
+- **Resume several runs.** One event can resume multiple matching waits and trigger other functions.
+- **Keep systems independent.** The sender publishes an event; it does not need to know which runs are waiting.
+- **Keep an audit trail.** Inngest stores events for audit and Insights.
+
+Use `step.waitForEvent` for most waits. If you must address one run directly and need lower resume latency, use [step.waitForSignal](/docs/durable-execution/primitives/step-waitforsignal). A signal resumes one run through a transactional API.
+
+## Wait for invoice review
+
+This function waits up to seven days for an invoice review. It matches the review to the invoice that started the run.
+
+```typescript
+import { eventType, Inngest, staticSchema } from "inngest";
+
+type ApprovalRequested = { invoiceId: string };
+type ApprovalRecorded = { invoiceId: string; approved: boolean };
+
+const approvalRequested = eventType("invoice/approval.requested", {
+  schema: staticSchema<ApprovalRequested>(),
+});
+const approvalRecorded = eventType("invoice/approval.recorded", {
+  schema: staticSchema<ApprovalRecorded>(),
+});
+
+const inngest = new Inngest({ id: "billing" });
+
+export const awaitInvoiceReview = inngest.createFunction(
+  { id: "await-invoice-review", triggers: [approvalRequested] },
+  async ({ event, step }) => {
+    const review = await step.waitForEvent("wait-for-review", {
+      event: approvalRecorded,
+      match: "data.invoiceId",
+      timeout: "7d",
+    });
+
+    if (review === null) {
+      return { invoiceId: event.data.invoiceId, status: "timed-out" };
+    }
+
+    return {
+      invoiceId: event.data.invoiceId,
+      status: review.data.approved ? "approved" : "rejected",
+    };
+  }
+);
+```
+Send `invoice/approval.recorded` with the same `invoiceId` after the wait starts. The returned event provides `review.data.approved`; a timeout returns `null`. Using an `eventType()` result gives the returned event a TypeScript type.
+
+## Choose wait options
+
+`await step.waitForEvent(id, options)` returns the matching event payload or `null` when the timeout expires.
+
+- `id` is a stable step ID. Inngest uses it to record the wait and show it in the run.
+- `event` is the event name or an `eventType()` result.
+- `timeout` is required. Use an `ms` duration such as `"7d"`, milliseconds as a number, an absolute `Date`, or a supported `Temporal` duration or instant.
+- `match` optionally names a property shared by the trigger event and the later event, such as `"data.invoiceId"`.
+- `if` optionally supplies a CEL expression for a more specific match. In that expression, `event` is the trigger event and `async` is the later event. For example, `"event.data.invoiceId == async.data.invoiceId && async.data.approved == true"`. Use `match` or `if`, not both.
+
+Await the call so the function pauses correctly. Give every wait a timeout path that makes sense for the user, such as recording an expired request or sending a reminder. The `if` expression does not support CEL's `in` operator; use equality checks joined with `||` when matching several values.
+
+## Match the right event
+
+Use a stable request or entity ID in both events. An event name alone can match unrelated runs. Sessions do not filter `step.waitForEvent()`; the event name and `match` or `if` determine the match.
+
+The wait only sees events sent after it starts listening. If an external system can send a response before the wait begins, arrange the sequence so the wait is registered first or check the external state before waiting. A matching event sent earlier will not resume this wait.
+
+Use `step.waitForEvent()` for events that can fan out to multiple functions or runs. For direct, latency-sensitive resumption of one run, see [step.waitForSignal](/docs/durable-execution/primitives/step-waitforsignal).
+
+## Limits and related pages
+
+- Check the current platform limits when choosing a timeout and shaping event or run data. The limit for a running step is a separate setting from a durable wait.
+- In a `group.parallel()` race, a losing `step.waitForEvent()` remains active until its timeout. Use a short timeout when that pattern applies.
+- For a delay with no external event, use [step.sleep](/docs/durable-execution/primitives/step-sleep).
+

@@ -1,0 +1,35 @@
+export const metaTitle = "Overview";
+export const description = "Show users what their work is doing as it happens.";
+
+# Overview
+
+> Show users what their work is doing as it happens.
+
+> **Editorial status:** draft
+
+Show a user each stage of a long document import and deliver the result when it finishes. Your function publishes updates to an Inngest Realtime channel; authorized clients subscribe to its topics through the TypeScript SDK v4 `inngest` package.
+
+## Realtime with durable execution
+
+A durable workflow can wait, retry, and resume after the original request ends. Publish updates during that run so people can see progress without asking your app to check repeatedly.
+
+For example, a document-processing function can publish “analyzing,” stream generated text, and publish “complete” when the work finishes.
+
+Use `step.realtime.publish()` for important state changes. It creates a durable, memoized step, so a function retry does not publish that completed step again.
+
+Use `inngest.realtime.publish()` for immediate, high-frequency messages such as streamed tokens or progress ticks. An immediate publish can happen again if the surrounding work retries. It also works in server-side code outside an Inngest function.
+
+## How updates reach clients
+
+1. **Define a channel and topics.** A channel names the work or audience, such as a document ID. Topics separate message types such as `status`, `tokens`, and `result`. Define a schema for each topic so publishers and subscribers agree on the data.
+2. **Publish from server-side code.** A function publishes updates to a channel topic as it works. Choose a durable publish for state changes that should not repeat on retry, or an immediate publish for a stream.
+3. **Authorize and subscribe.** Your server checks who may read a channel, then mints a subscription token for that channel and an explicit list of topics. A client uses the token to subscribe. In React, `useRealtime` manages the connection and receives typed messages.
+
+This flow can update a single user's UI or any authorized client that subscribes to the same channel. Channel names can include your own runtime identifiers, such as a document or thread ID.
+
+## Where to go next
+
+- [Quick start](/docs/realtime/quick-start) builds a working publish-and-subscribe example.
+- [Channels and topics](/docs/realtime/channels-and-topics) explains channels, topics, and schemas.
+- [Guides](/docs/realtime/guides) covers common implementation tasks.
+- [Reference](/docs/realtime/reference) lists the TypeScript v4 APIs.

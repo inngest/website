@@ -1,0 +1,34 @@
+export const metaTitle = "Guides";
+export const description = "Attach outcomes to the runs that produced them and compare variants when you have a change to test.";
+
+# Guides
+
+> Attach outcomes to the runs that produced them and compare variants when you have a change to test.
+
+Start with an outcome such as a resolved ticket and attach its score to the run that produced the answer. Use these guides to handle feedback that arrives later and compare variants when you have a change to test. A score does not require an experiment.
+
+If you want one working example, start with [Quick start](/docs/online-evals/quick-start). The focused tasks below show where to go next.
+
+## Build the evaluation loop
+
+1. **Group the work.** Add your conversation, ticket, or job ID to the triggering event's `meta.sessions`. Use the same key and ID on related events so you can find their runs together.
+2. **Score a result you know now.** Add a named boolean or numeric score to the run or step. A format check or guardrail result can be available before the function finishes. Keep the score's name and meaning stable.
+3. **Score a result that comes later.** Use a deferred scorer when the evaluation needs separate work or must wait for feedback, review, or conversion. The scorer can wait for an event and return a score for the original run. If another process already knows the outcome, save the original run ID and write a score to that run directly.
+4. **Test a change.** Put alternative steps or whole workflow paths in `group.experiment()` variant callbacks. Select one variant for each run. Pass the returned `experimentRef` when you score that variant, including when a deferred scorer records the outcome.
+5. **Read the result.** Compare the same score across variants, and count both assigned runs and runs with an outcome. Give later outcomes time to arrive. Open a low-scoring run's trace and session to see what happened.
+
+Sessions → scores → deferred scoring → experiments is a useful learning order. You can begin with a single score and add the other parts when your question needs them.
+
+## Find the task you need
+
+- **A customer says an answer was helpful the next day.** [Score a real product outcome](/docs/online-evals/outcomes-and-scoring), then use a deferred scorer or the original run ID to credit the answer that earned it.
+- **A prompt, model, or tool is changing.** [A/B testing](/docs/online-evals/a-b-testing) explains variant selection and score attribution. Compare the same outcome across both variants.
+- **An entire workflow path is changing.** Put the complete current and proposed paths in `group.experiment()` callbacks. [A/B testing](/docs/online-evals/a-b-testing) shows a workflow rewrite.
+- **A score appears under the wrong run or variant.** Keep the original `runId` and `experimentRef` with the result your application stores. Pass both when a later run writes an experiment score.
+- **Evaluation costs are rising.** [Cost management](/docs/online-evals/cost-management) shows how to count runs, steps, scores, and external model calls. Select which runs to score in your application; Online Evals has no built-in score sampling or budget cap at launch.
+
+## Before you publish a comparison
+
+Choose the outcome, eligible audience, and observation window before changing traffic. A missing score means you do not know the outcome; it is not automatically a negative result. Review [Best practices](/docs/online-evals/best-practices) and [Limits](/docs/online-evals/limits) for measurement rules and constraints.
+
+The scoring and deferred scoring examples in these guides use TypeScript SDK v4 beta APIs.

@@ -1,0 +1,12 @@
+export const metaTitle = "Insights";
+export const description = "Find repeated failures or slow steps across many runs with Insights queries.";
+
+# Insights
+
+> Find recurring failures and slowdowns by querying historical execution data.
+
+Find repeated failures or slow steps across many runs with Insights queries. Open the live Runs view and traces when you need to inspect a run that is still executing.
+Open **Insights** in the dashboard. Start with a template or write SQL in the editor. The schema explorer shows the tables and event fields available to query. Insights covers `events`, `runs`, `steps`, `step_attempts`, `extended_trace_spans`, and `metadata`.
+For example, count failed runs by function or compare step duration before and after a deployment. Save a query that your team will reuse. Inspect the rows behind an outlier in the corresponding run trace.
+Insights data arrives with a delay of a few minutes, so do not use it as the only view of live execution. Insights returns up to 1,000 rows per page. Check the pricing page for current retention.
+Online Evals adds sessions and scores for later outcome analysis. Link from this page to the Online Evals guides once the final score query model is confirmed; do not claim that its data already appears in an Insights table.

@@ -1,0 +1,15 @@
+export const metaTitle = "Error handling";
+export const description = "When an API or database call fails, Inngest retries the failed step and keeps results from steps that already succeeded.";
+
+# Error handling
+
+> Recover from failed work and handle errors that retries cannot resolve.
+
+When an API or database call fails, Inngest retries the failed step and keeps results from steps that already succeeded. If the error persists, run a fallback, compensate for earlier work, or report the final failure.
+## Start here
+- [Overview](/docs/durable-execution/guides-and-advanced/error-handling/overview) explains errors, failed steps, failed runs, and the recovery paths.
+- [Retries](/docs/durable-execution/guides-and-advanced/error-handling/retries) shows retry scope, defaults, and timing.
+- [Rollbacks](/docs/durable-execution/guides-and-advanced/error-handling/rollbacks) uses a failed step to choose a fallback or compensating action.
+- [Failure handlers](/docs/durable-execution/guides-and-advanced/error-handling/failure-handlers) responds after a function exhausts its retries.
+- [Inngest errors](/docs/durable-execution/guides-and-advanced/error-handling/inngest-errors) describes errors that stop or schedule retries.
+Keep external side effects safe to repeat when a step retries.

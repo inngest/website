@@ -1,0 +1,41 @@
+export const metaTitle = "Schedules and delayed starts";
+export const description = "Run a daily report or send a reminder at a chosen time without keeping an app timer running.";
+
+# Schedules and delayed starts
+
+> Schedule recurring or future work without keeping an app timer running.
+
+Run a daily report or send a reminder at a chosen time without keeping an app timer running. Inngest stores the schedule or delay and starts the function when it is due.
+## Run on a recurring schedule
+Use a cron trigger for work such as a daily report.
+```typescript
+import { cron } from "inngest";
+
+export const dailyReport = inngest.createFunction(
+  {
+    id: "daily-report",
+    triggers: [cron("0 9 * * *")],
+  },
+  async ({ step }) => {
+    return step.run("build-report", buildReport);
+  }
+);
+```
+The basic cron expression runs at 09:00 UTC. Prefix the expression with a timezone when the business schedule follows local time, for example `TZ=Europe/Paris 0 9 * * *`. Check daylight saving changes for schedules near clock transitions.
+## Start once in the future
+Set an event's `ts` to a future Unix millisecond timestamp when nothing must happen before the start time.
+```typescript
+await inngest.send({
+  name: "notifications/reminder.due",
+  data: { reminderId: "rem_123" },
+  ts: Date.now() + 5 * 60 * 1000,
+});
+```
+The event starts matching functions at that time. A future `ts` does not delay a waiting run that matches the event.
+## Pause an existing run
+Use `step.sleep()` for a duration or `step.sleepUntil()` for a date when the run needs to do work before and after the pause. Inngest resumes the durable run after the wait; your host does not need to keep a process open.
+## Choose one
+- **Cron:** repeat on a calendar schedule.
+- **Future event ****`ts`****:** start new work once at a known time.
+- **Sleep step:** continue the same run later.
+Check [Limits](/docs/durable-execution/limits) for current delay allowances.

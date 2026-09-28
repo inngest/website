@@ -1,0 +1,60 @@
+export const metaTitle = "Rate limiting";
+export const description = "Skip excess runs to protect a service from work you can discard.";
+
+# Rate limiting
+
+> Skip excess runs to protect a service from work you can discard.
+
+Discard redundant webhook work once a start limit is reached. Inngest checks each matching event before it starts the function and skips excess runs; it does not queue them for later.
+
+**Choose this only when you can discard excess runs.** If every event must produce a run, use [throttling](/docs/durable-execution/flow-control/throttling) to queue runs until capacity is available.
+
+## Set a limit per customer
+
+This TypeScript v4 function starts at most one run for each company within a four-hour period. The `key` expression reads `company_id` from the triggering event. Replace `syncCompanyRecord` with your application's synchronization code.
+
+```typescript
+import { Inngest } from "inngest";
+
+const inngest = new Inngest({ id: "customer-sync" });
+
+export const syncCompany = inngest.createFunction(
+  {
+    id: "sync-company",
+    triggers: { event: "company/updated" },
+    rateLimit: {
+      limit: 1,
+      period: "4h",
+      key: "event.data.company_id",
+    },
+  },
+  async ({ event, step }) => {
+    await step.run("sync-company-record", () =>
+      syncCompanyRecord(event.data.company_id)
+    );
+  }
+);
+```
+The `key` is a Common Expression Language (CEL) expression string, not a JavaScript callback. Each distinct value has its own limit. Without a `key`, the function uses one shared limit for all matching events.
+
+## What happens to an excess event?
+
+The event remains stored in Inngest, but it does not start this function. Inngest does not queue a skipped run for later execution. Rate limiting controls **run starts**. It does not limit the number of steps running inside an admitted function run.
+
+Inngest uses the generic cell rate algorithm to apply the limit over time. Do not treat the period as a calendar window that resets at a fixed clock time.
+
+| You need to… | Use… | What happens at the limit |
+| --- | --- | --- |
+| Discard excess runs | Rate limiting | The event does not start this function. |
+| Process every run at a controlled pace | [Throttling](/docs/durable-execution/flow-control/throttling) | Inngest queues the run for later. |
+| Limit work running at the same time | [Concurrency](/docs/durable-execution/flow-control/concurrency) | Inngest controls active execution. |
+
+## Configuration
+
+| Option | Meaning |
+| --- | --- |
+| `limit` | Maximum number of function runs that can start in the period. Required. |
+| `period` | Duration used to apply the limit. Required. TypeScript v4 permits `1s` through `24h`. |
+| `key` | Optional CEL expression evaluated for each triggering event. Each unique result gets its own limit. |
+Use [idempotency](/docs/durable-execution/guides-and-advanced/idempotency) when the goal is to prevent the same event from starting duplicate runs. Use rate limiting when you want to reduce the number of runs over time, including runs from different events with the same key.
+

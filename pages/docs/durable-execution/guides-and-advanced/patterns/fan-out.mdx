@@ -1,0 +1,55 @@
+export const metaTitle = "Fan-out";
+export const description = "Start independent functions from one event so one failure does not stop the other work.";
+
+# Fan-out
+
+> Start independent functions from one event so one failure does not stop the other work.
+
+Send one signup event to start a welcome email and trial setup in separate runs. Each function keeps its own retries and trace, so a failure in one does not stop the other.
+For example, a signup event can start a welcome email and a trial setup at the same time.
+## Send one event
+Send the event after your app creates the user:
+```typescript
+await inngest.send({
+  name: "app/user.signed_up",
+  data: { userId: user.id, email: user.email },
+});
+```
+The event starts every registered function whose trigger matches `app/user.signed_up`.
+## Create independent functions
+This TypeScript v4 example uses the same typed event for both functions. Assume `inngest`, `sendWelcomeEmail`, and `createTrial` are defined by your app.
+```typescript
+import { eventType, staticSchema } from "inngest";
+
+const userSignedUp = eventType("app/user.signed_up", {
+  schema: staticSchema<{ userId: string; email: string }>(),
+});
+
+export const welcomeEmail = inngest.createFunction(
+  { id: "send-welcome-email", triggers: [userSignedUp] },
+  async ({ event, step }) => {
+    await step.run("send-email", () =>
+      sendWelcomeEmail(event.data.email)
+    );
+  }
+);
+
+export const trialSetup = inngest.createFunction(
+  { id: "start-trial", triggers: [userSignedUp] },
+  async ({ event, step }) => {
+    await step.run("create-trial", () =>
+      createTrial(event.data.userId)
+    );
+  }
+);
+```
+Register both functions in your app. Inngest starts a separate run for each matching function. A failure in trial setup does not stop the welcome email. You can inspect and recover the failed run without rerunning the other function.
+## Choose the right shape
+- **One event, several functions:** Use this pattern when the work has separate owners, retry needs, or destinations. Functions can live in different apps and use different language SDKs.
+- **One function, parallel steps:** Keep related results in one run when later steps need them.
+- **One function, many items:** Process items in a loop when one run should track the sequence. See [Working with loops](/docs/durable-execution/guides-and-advanced/patterns/working-with-loops).
+To fan out from inside an Inngest function, send new events with [`step.sendEvent()`](/docs/durable-execution/primitives/step-sendevent). Use `step.invoke()` when the caller needs a child function's result. For high-volume fan-out, check [Limits](/docs/durable-execution/limits) and [Flow control](/docs/durable-execution/flow-control) before choosing event and concurrency settings.
+## Related pages
+- [Send events](/docs/durable-execution/guides-and-advanced/events-and-triggers/send-events) explains sending events.
+- [Idempotency](/docs/durable-execution/guides-and-advanced/idempotency) explains how to make external writes safe when a step retries.
+

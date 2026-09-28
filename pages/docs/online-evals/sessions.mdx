@@ -1,0 +1,64 @@
+export const metaTitle = "Sessions";
+export const description = "Find related runs in one view by giving their events the same conversation, ticket, or job ID.";
+
+# Sessions
+
+> Find related runs in one view by giving their events the same conversation, ticket, or job ID.
+
+> Draft for the documentation refresh. The code below uses the TypeScript SDK v4.
+
+A support ticket may trigger several functions before a customer gives feedback. Put the same ticket ID on each relevant event so the session shows those runs together. You can then trace the work behind one outcome across functions.
+
+Sessions add metadata to events. They do not change which functions run, how events match triggers, or how a waiting function matches an event.
+
+## What belongs in a session
+
+Choose an ID your application already uses. For a support flow, `ticket_id` can group the runs started by new messages, agent work, and follow-up actions for one ticket. Use the same **session key** (`ticket_id`) and **session ID** (`ticket_42`) on each event you want to group.
+
+Use sessions for IDs with many distinct values, such as conversation IDs, ticket IDs, and import IDs. Keep broad labels such as `environment: prod` out of sessions.
+
+## Add a session to an event
+
+Put `sessions` in the event's top-level `meta` object. This example adds a ticket session when the application sends a message event.
+
+```typescript
+import { inngest } from "./client";
+
+await inngest.send({
+  name: "support/message.received",
+  data: {
+    ticketId: "ticket_42",
+    messageId: "msg_17",
+  },
+  meta: {
+    sessions: {
+      ticket_id: "ticket_42",
+    },
+  },
+});
+```
+
+Here, `ticket_id` is the session key and `ticket_42` is the session ID. Put the same pair on later events for that ticket. Each event can carry up to five session entries. `meta.sessions` requires TypeScript SDK v4.7.0 or later.
+
+With TypeScript SDK v4.18.0 or later, runs pass their sessions to events they create through `step.sendEvent()`, `step.invoke()`, `inngest.send()`, and `defer()`. You can set `meta.sessions` explicitly on a child event to add or override a session.
+
+## Inspect the related runs
+
+In the Inngest dashboard, choose the environment that received the event, then open **AI → Sessions**. Search for `ticket_id` and select `ticket_42`. The session page lists the related runs; open a run to inspect its trace and failures. Newly sent events and status changes can take a short time to appear because Sessions uses an asynchronous search index. Use the run view for current execution state.
+
+## Choose IDs that stay useful
+
+- Use one stable key for each kind of work, such as `conversation_id` or `ticket_id`.
+- Put the changing ID in the value, not the key. Use `ticket_id: "ticket_42"`, not `"ticket_id:ticket_42": "true"`.
+- Use IDs that are safe to display in the dashboard. Keep secrets and sensitive personal data out of session IDs.
+- A session does not make `step.waitForEvent()` match by session. Match the event name and a `match` or `if` expression when you need to resume a specific run.
+
+## Where sessions fit in Online Evals
+
+Sessions help you inspect the work that led to an outcome. [Scores](/docs/online-evals/outcomes-and-scoring) record the outcome on a run or step; [A/B testing](/docs/online-evals/a-b-testing) compares variants. A shared session ID makes related runs easier to find while you investigate the result.
+
+## Next steps
+
+- [Outcomes and scoring](/docs/online-evals/outcomes-and-scoring)
+- [A/B testing](/docs/online-evals/a-b-testing)
+- [TypeScript v4 event sending reference](/docs/durable-execution/guides-and-advanced/events-and-triggers/send-events)

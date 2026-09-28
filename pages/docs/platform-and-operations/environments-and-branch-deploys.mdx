@@ -1,0 +1,17 @@
+export const metaTitle = "Environments and branch deploys";
+export const description = "Keep test events and runs out of production by using separate environments.";
+
+# Environments and branch deploys
+
+> Keep production traffic separate from tests and preview changes with branch deploys.
+
+Keep test events and runs out of production by using separate environments. Each environment has its own apps, functions, event history, and credentials.
+## Pick the right environment
+- **Production** runs live traffic.
+- **Custom environments** support shared staging, QA, or canary work.
+- **Branch deploys** give preview deployments for code branches their own isolated work. They are deployment previews, not Inngest Sandboxes microVMs.
+- **Local development** uses the Dev Server on your machine.
+A single environment can contain several apps. Select the environment in the dashboard before inspecting its apps, events, or runs.
+## Configure a branch deploy
+Set the app's environment from the current branch, using `INNGEST_ENV` or the SDK client's `env` option. Supported hosts may detect the branch automatically. For a host that exposes a branch variable only at build time, pass that variable explicitly. Use the same branch value when sending events so the events reach the matching branch deploy.
+Branch deploys share branch credentials. The current environment guide says they archive three days after their latest deployment; archiving stops functions from triggering and does not delete their data. Confirm this policy against the launch configuration before publication.

@@ -1,0 +1,63 @@
+export const metaTitle = "step.sendEvent";
+export const description = "Start independent workflows with events without repeating a completed send after a retry.";
+
+# `step.sendEvent`
+
+> Start independent workflows with events without repeating a completed send after a retry.
+
+Publish a fulfillment event after an order is accepted. `step.sendEvent` saves the send as a step, so a resumed function does not repeat a completed send. Matching functions run independently, and the sender does not wait for their results.
+
+## Send an event
+
+Call `step.sendEvent(stepId, event)` inside an Inngest function. Give the step a stable ID. The event needs a `name` and JSON `data`. Await the call before the function continues.
+
+```typescript
+import { Inngest } from "inngest";
+
+const inngest = new Inngest({ id: "orders" });
+
+export const queueFulfillment = inngest.createFunction(
+  { id: "queue-fulfillment", triggers: { event: "shop/order.accepted" } },
+  async ({ event, step }) => {
+    const { ids } = await step.sendEvent("publish-fulfillment-request", {
+      id: `fulfillment-request-${event.data.orderId}`,
+      name: "shop/fulfillment.requested",
+      data: { orderId: event.data.orderId },
+    });
+
+    return { eventId: ids[0] };
+  }
+);
+```
+Any function triggered by `shop/fulfillment.requested` can process the order in its own run. The optional event `id` in this example prevents a second event with that ID from starting duplicate runs during the [24-hour deduplication window](/docs/durable-execution/guides-and-advanced/idempotency). Use a value specific to this event and business operation.
+
+## API and result
+
+`step.sendEvent(id, eventPayload | eventPayload[]): Promise<{ ids: string[] }>` accepts one event or an array. `id` names the step and lets Inngest memoize its completed state. It is separate from the optional `eventPayload.id`, which deduplicates event delivery. Each event needs `name` and `data`. Use `eventType().create()` when you want the SDK to type-check the payload.
+
+The resolved promise contains `ids`, an array of sent Event IDs. Use an ID to find the event in the dashboard or REST API. It does not contain the result of any function triggered by the event. Events sent during a run inherit that run's sessions; set `meta.sessions` on a payload to add or override them.
+
+## Failures and duplicate work
+
+`step.sendEvent` is a durable step. Inngest records a successful send so resuming the function does not repeat that completed step. If the send errors, normal step retry handling applies. A batched send reports partial success when only some events are accepted. Do not assume a failed batch sent zero events. Catch a failed step after retries if the function can recover, or let the error fail the run.
+
+A stable step ID protects a completed step within its run. An event `id` protects consumers when the same event is submitted again, including from another run. Event deduplication lasts 24 hours. Keep receiving functions idempotent when their own side effects can be retried.
+
+## When to use it
+
+- Use `step.sendEvent` for independent work, bulk fan-out, or one event that should trigger several functions. Await it even when the receiving work is asynchronous.
+- Use [step.invoke](/docs/durable-execution/primitives/step-invoke) when this function needs a specific function's result before it can continue.
+- Use `inngest.send` outside an Inngest function. Inside a function, `step.sendEvent` also ties the send to the run's trace.
+
+## Limits
+
+One call can send at most 5,000 events. Event size depends on the account plan, and event names can be at most 256 characters. Check the current usage limits before batching large payloads.
+
+## Next
+
+Read Sending events from functions for fan-out patterns, Event payloads for fields, and [step.invoke](/docs/durable-execution/primitives/step-invoke) for dependent work.
+
+## Editorial TBD
+
+Confirmed for this refresh: a batched `step.sendEvent` reports partial success. Confirm the exact response and error fields that identify accepted and failed events, and whether retries resend the full batch or only failed events. The response and error fields still need confirmation. Do not promise batch atomicity or exactly-once delivery before confirmation.
+

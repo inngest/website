@@ -1,0 +1,54 @@
+export const metaTitle = "Priority";
+export const description = "Move urgent queued work ahead of routine runs within a function.";
+
+# Priority
+
+> Move urgent queued work ahead of routine runs within a function.
+
+Give urgent customer requests a higher position in a function's queue. Set priority from event data, such as the customer's plan; Inngest uses it when choosing the next queued run.
+
+Priority changes **which queued run starts next within a function**. It does not interrupt a step that is already executing, add capacity, or guarantee an exact start time.
+
+## Set run priority
+
+The `priority.run` value is a Common Expression Language expression evaluated from the triggering event. It returns an integer factor in seconds. This TypeScript v4 example gives enterprise requests a factor of `120` and other requests `0`:
+
+```typescript
+import { Inngest } from "inngest";
+
+const inngest = new Inngest({ id: "summaries" });
+
+export const generateSummary = inngest.createFunction(
+  {
+    id: "generate-summary",
+    triggers: { event: "ai/summary.requested" },
+    concurrency: 1,
+    priority: {
+      run: "event.data.tier == 'enterprise' ? 120 : 0",
+    },
+  },
+  async ({ event, step }) => {
+    return step.run("record-request", () => ({
+      requestId: String(event.data.requestId),
+    }));
+  }
+);
+```
+Replace the example step with your summary work. The concurrency limit creates a backlog when one step is executing, so priority can affect which queued run starts when that slot opens.
+
+## What the factor means
+
+| Factor | Effect on queued work |
+| --- | --- |
+| `120` | Moves a new run ahead of runs queued within the preceding 120 seconds, while they remain queued. |
+| `0` | Uses the normal queue position. |
+| `-120` | Moves the new run later in the queue by 120 seconds. |
+Positive factors pull a run forward. Negative factors push it back. The default allowed range is **-600 to 600 seconds**. Inngest clips values outside your account's allowed bounds. An invalid expression evaluates to `0`.
+
+Priority only matters when work is waiting. Combine it with [Concurrency](/docs/durable-execution/flow-control/concurrency) or another control that creates a backlog. Available capacity and other flow-control constraints still determine when a run can start. Use a scheduling primitive when you need a specific future start time.
+
+## Limits
+
+You cannot combine priority with [Batching](/docs/durable-execution/flow-control/batching) on the same function.
+
+

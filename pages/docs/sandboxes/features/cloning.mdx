@@ -1,0 +1,107 @@
+export const metaTitle = "Cloning | Sandboxes";
+export const description = "Prepare a Sandbox once and start separate jobs from the same saved snapshot.";
+
+# Cloning
+
+> Prepare a Sandbox once and start separate jobs from the same saved snapshot.
+
+If several jobs need the same dependencies, prepare one Sandbox, snapshot it, and clone a separate Sandbox for each job. Each clone starts from the captured state with its own Sandbox ID.
+
+> **Beta:** Sandboxes are an access-gated, experimental feature. The API can change.
+
+## What a clone contains
+
+A user snapshot captures the source sandbox's memory, disk, environment, image, and CPU and memory configuration. The source keeps running while Inngest creates the snapshot. Each clone starts from that captured state with a **new sandbox ID** and inherits the snapshot's resource size and environment. The files in the source filesystem are part of the captured disk state.
+
+A snapshot is crash-consistent. Flush databases and other important application state before taking one. A clone does not accept an environment override that replaces captured values.
+
+## Clone a prepared sandbox
+
+This example uses the server-side direct client. It prepares a sandbox, waits for the snapshot to become ready, and starts a clone.
+
+```typescript
+const builder = await inngest.sandboxes.create({
+  name: `builder-${crypto.randomUUID()}`,
+  vcpu: 2,
+  memoryMb: 2048,
+});
+
+try {
+  await builder.commands.run(
+    "mkdir -p /tmp/project && cd /tmp/project && npm init -y && npm install lodash",
+    { timeout: "5m" },
+  );
+
+  const snapshot = await builder.snapshot({}, { timeout: "5m" });
+
+  try {
+    const clone = await snapshot.clone({
+      name: `worker-${crypto.randomUUID()}`,
+      runningTimeout: "2m",
+    });
+
+    try {
+      const result = await clone.commands.run(
+        "node -p \"require('/tmp/project/node_modules/lodash').VERSION\"",
+      );
+
+      console.log(clone.id, result.stdout);
+    } finally {
+      await clone.destroy();
+    }
+  } finally {
+    await snapshot.delete();
+  }
+} finally {
+  await builder.destroy();
+}
+```
+
+Use `try`/`finally` around direct-client work so cleanup also runs when a command fails. Destroy every clone and the source when you finish with them. Delete the snapshot when you no longer need to make clones. Destroying a sandbox removes its filesystem and processes.
+
+## Clone inside an Inngest function
+
+Add stable step IDs when sandbox work belongs to a durable function. The example assumes you created and prepared `builder` with `step.sandbox.create()`.
+
+```typescript
+const snapshot = await builder.snapshot(
+  "snapshot-builder",
+  {},
+  { timeout: "5m" },
+);
+
+const clone = await snapshot.clone("clone-worker", {
+  name: `worker-${event.data.jobId}`,
+  runningTimeout: "2m",
+});
+
+const result = await clone.commands.run(
+  "run-check",
+  "node -p \"require('/tmp/project/node_modules/lodash').VERSION\"",
+);
+
+await clone.destroy("destroy-clone");
+await snapshot.delete("delete-snapshot");
+
+return result.stdout;
+```
+
+Each durable sandbox operation uses its own step ID. Destroy the source sandbox when its work ends. If a function fails permanently before cleanup, use an Inngest `onFailure` handler or a separate cleanup function; a JavaScript `finally` block around durable steps does not guarantee cleanup after permanent failure.
+
+## Readiness, expiry, and limits
+
+Snapshot creation and clone startup are separate. The REST API can return a snapshot in `CREATING`; `sandbox.snapshot()` waits until it reaches `READY` and waits up to five minutes by default. If that wait times out, snapshot creation continues. List or get the snapshot before trying again. If snapshot creation has an ambiguous result, list recent snapshots before creating another.
+
+`snapshot.clone()` returns a clone that is already `RUNNING`, or waits for a `STARTING` clone to reach `RUNNING`. The default readiness wait is up to 120 seconds. Set `runningTimeout` to change that bound. A readiness timeout does not destroy the new sandbox, so track and clean it up.
+
+Snapshots have a server-defined `expiresAt`. They are not permanent storage and use account-specific count and storage quotas. The exact retention period and quotas are still being finalized for launch. The beta supports resource pairs of 1 vCPU / 1024 MB, 2 vCPU / 2048 MB, and 4 vCPU / 4096 MB; clones inherit the snapshot's pair.
+
+## Clone or pause?
+
+**Clone** a user snapshot when you need a separate sandbox with a new ID, including multiple workers from one prepared environment. **Pause and resume** when you need to stop and later continue the same sandbox with the same ID. User snapshots do not restore in place.
+
+## Persistent filesystem mounts
+
+The snapshot captures the local filesystem. If the source sandbox has an S3-backed persistent filesystem mount, each clone attaches the **same backing path**. Use separate paths when jobs need independent files.
+
+**TBD:** Confirm concurrent-write and read-after-write behavior for clones that use the same mounted path.

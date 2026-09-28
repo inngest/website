@@ -1,0 +1,16 @@
+export const metaTitle = "Apps and syncs";
+export const description = "Group each service's functions in one app to inspect its deployments and sync failures together.";
+
+# Apps and syncs
+
+> Group functions into apps so you can inspect deployments and resolve sync failures in one place.
+
+Group each service's functions in one app to inspect its deployments and sync failures together. Keep the SDK client's app ID stable; changing it creates a new app on the next sync. An environment can contain several apps.
+## Inspect an app
+1. Select the environment in the Inngest dashboard.
+2. Open **Apps**. Check each app's status, function count, and SDK version.
+3. Open an app to see its functions, triggers, deployment URL, and sync history.
+4. If a sync fails, inspect **Unattached Syncs** and run **App Diagnostics** before changing the deployment.
+Sync the app after you deploy changes to its function definitions. A manual sync asks the deployed app for its current function configuration. [Deploying functions](/docs/durable-execution/guides-and-advanced/deploying-functions) explains serving and connection choices.
+## Archive an app
+Archive an app when it should stop triggering new runs. Its existing runs continue, and its functions and run history remain visible. Use cancellation when you need to stop existing runs. You can unarchive the app later.

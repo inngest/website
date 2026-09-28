@@ -1,0 +1,47 @@
+export const metaTitle = "Failure handlers";
+export const description = "Send an alert or clean up after a function exhausts its retries.";
+
+# Failure handlers
+
+> Alert or clean up when a function exhausts its retries.
+
+Send an alert or clean up after a function exhausts its retries. Attach `onFailure` to one function, or listen for `inngest/function.failed` to handle failures across an environment.
+## Handle one function's final failure
+TypeScript v4 accepts `onFailure` in the function configuration:
+These examples use the `inngest` client from the [Quick start](/docs/durable-execution/quick-start).
+```typescript
+export const syncCatalog = inngest.createFunction(
+  {
+    id: "sync-catalog",
+    triggers: { event: "catalog/sync.requested" },
+    onFailure: async ({ error, event, step }) => {
+      await step.run("record-sync-failure", () =>
+        recordSyncFailure({
+          failedRunId: event.data.run_id,
+          message: error.message,
+        })
+      );
+    },
+  },
+  async ({ event, step }) => {
+    await step.run("sync-catalog", () => syncCatalogFromSource(event.data));
+  }
+);
+```
+`recordSyncFailure` and `syncCatalogFromSource` are functions in your app. The failure handler is a separate Inngest function. Its `event` is the `inngest/function.failed` system event, and `event.data.run_id` identifies the original failed run. The `runId` passed directly to the failure handler identifies the handler's own run. Use a named step for retriable alerting or cleanup.
+## Handle failures across an environment
+Create a function triggered by `inngest/function.failed` when one team needs a shared failure stream:
+```typescript
+export const watchFailures = inngest.createFunction(
+  {
+    id: "watch-function-failures",
+    triggers: { event: "inngest/function.failed" },
+  },
+  async ({ event }) => {
+    console.error("function failed", event.data.function_id, event.data.run_id);
+  }
+);
+```
+An `onFailure` handler applies to its function. The system-event trigger applies across the environment. Both respond to final failure, not every transient attempt.
+## Read the error safely
+The SDK serializes and deserializes the original error for `onFailure`. Custom error subclasses become ordinary `Error` objects, so do not use `instanceof` there to decide how to recover. Store a stable error code in your own data when downstream failure handling needs one. Make alerts and compensation idempotent because their handler is a separate function.

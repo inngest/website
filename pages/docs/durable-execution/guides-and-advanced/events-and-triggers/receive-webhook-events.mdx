@@ -1,0 +1,33 @@
+export const metaTitle = "Receive webhook events";
+export const description = "Give a provider an Inngest webhook URL so its request can start durable functions.";
+
+# Receive webhook events
+
+> Turn provider webhooks into events that start durable functions without routing them through your app server.
+
+Give a provider an Inngest webhook URL so its request can start durable functions. Inngest receives and transforms the request, so your app server does not need a webhook handler for it.
+## Create and connect a webhook
+1. Open **Manage → Webhooks** in the intended Inngest environment and create a webhook.
+2. Give the generated URL to the provider.
+3. Define a transform that returns an event `name` and `data`.
+4. Test the transform with a sample provider payload.
+5. Register a function whose trigger matches the transformed event name.
+For a Stripe style payload, a transform can preserve the provider event ID for deduplication:
+```javascript
+function transform(evt) {
+  return {
+    id: evt.id,
+    name: `stripe/${evt.type}`,
+    data: evt,
+  };
+}
+```
+Prefix provider event names so they do not collide with app events. A transform can also read request headers, query parameters, and the raw body when the provider format requires them.
+## Check trust before side effects
+Many providers sign webhook requests. Preserve the raw body and signature header in the transformed event when the provider's verification method needs them. Verify the signature in the triggered function before processing its data. Follow the provider's signing instructions.
+## Handle transform failures
+A transform that throws causes Inngest to reject the webhook request. If you catch the error and return a diagnostic event instead, the provider may treat the webhook as accepted and stop retrying. Choose the response based on whether the event can be processed safely.
+## Test and inspect
+Use the dashboard transform preview before enabling production delivery. After the provider sends a request, inspect the resulting event and its linked run in the target environment. For local development, send a copy of a cloud event to the Dev Server.
+## Source and detailed setup
+Inngest can transform incoming webhooks, validate request signatures and content types, filter requests, and route branch deploys.

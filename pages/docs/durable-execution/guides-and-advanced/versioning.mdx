@@ -1,0 +1,24 @@
+export const metaTitle = "Versioning";
+export const description = "Keep in-flight runs working when you deploy new function code.";
+
+# Versioning
+
+> Change workflows while preserving progress for runs already in flight.
+
+Keep in-flight runs working when you deploy new function code. Stable function and step IDs let Inngest find each completed step result when a run resumes.
+## Understand what a deployment changes
+Inngest saves the result of each completed step. When a run resumes, the current function code uses the step ID to find that result. If you change a step's code but keep its ID, an existing run with a completed step uses the saved result. A new run executes the new code.
+An in-flight run can encounter a newly added step. Removing a step leaves its old saved result unused. Reordering steps can produce a warning, so test the path an in-flight run will take. Do not add a step that needs data from a later step that has not run yet.
+## Keep IDs stable
+Give each step a descriptive, unique ID based on its job, such as `charge-customer`. Avoid IDs derived from input values, timestamps, or wording that will change. Keep the function ID stable for compatible edits. Treat an ID change as a decision to change how live runs find saved work.
+Changing a step ID causes a live run to treat it as a new step. If that step writes to another system, it can repeat an effect. Check [Idempotency](/docs/durable-execution/guides-and-advanced/idempotency) before changing an ID for a payment, email, or provisioned resource.
+## Route incompatible rewrites
+For a major change that cannot safely consume existing state, create a new function with a new ID. Use mutually exclusive event filters or an event version to send new events to the new function while old runs finish in the original one. Keep the original function deployed until its waiting runs complete. Avoid letting both functions handle the same event unintentionally.
+The event `v` field can help producers mark a new event schema. Treat schema changes and workflow changes together: a resumed run can still carry an older event payload.
+## Test a live-run path
+1. Start a workflow in the Dev Server and pause it with a sleep or wait.
+2. Change the function code, then resume the run.
+3. Inspect which step results are reused and which steps execute.
+4. Repeat with a fresh run to confirm the new path.
+5. Check external side effects and event filters before deploying.
+Use the platform and language reference for exact SDK syntax.

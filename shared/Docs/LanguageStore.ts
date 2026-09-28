@@ -1,5 +1,5 @@
 import create from "zustand";
-import { persist } from "zustand/middleware";
+import { createJSONStorage, persist } from "zustand/middleware";
 
 export type SDKLanguage = "typescript" | "python" | "go";
 
@@ -71,6 +71,7 @@ export const useLanguageStore = create<LanguageState>()(
     }),
     {
       name: "inngest-docs-language",
+      storage: createJSONStorage(() => window.localStorage),
     }
   )
 );

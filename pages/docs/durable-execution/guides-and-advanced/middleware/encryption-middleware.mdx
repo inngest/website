@@ -1,0 +1,37 @@
+export const metaTitle = "Encryption middleware";
+export const description = "Keep selected event data, step results, and function output encrypted while Inngest coordinates runs.";
+
+# Encryption middleware
+
+> Keep selected event data, step results, and function output encrypted while Inngest coordinates runs.
+
+Encrypt selected event data, step results, and function output before Inngest stores them. Your application holds the key and decrypts the data when a function needs it.
+## Set up TypeScript v4
+Install [`@inngest/middleware-encryption`](https://www.npmjs.com/package/@inngest/middleware-encryption). Keep the key in your application's secret store and provide it to every app process that sends or handles the encrypted data.
+```bash
+npm install @inngest/middleware-encryption
+```
+```typescript
+import { Inngest } from "inngest";
+import { encryptionMiddleware } from "@inngest/middleware-encryption";
+
+const encryptionKey = process.env.MY_ENCRYPTION_KEY;
+if (!encryptionKey) {
+  throw new Error("MY_ENCRYPTION_KEY is required");
+}
+
+export const inngest = new Inngest({
+  id: "my-app",
+  middleware: [
+    encryptionMiddleware({ key: encryptionKey }),
+  ],
+});
+```
+Register the middleware on the client to apply it to that app's functions. You can also register it on one function.
+## Know what it encrypts
+By default, the middleware encrypts all step data and function output. For events, it encrypts only `event.data.encrypted`. Other event fields remain outside that encrypted field. Put sensitive event values inside `data.encrypted`, or set `eventEncryptionField` to a different field name. Check your event shape before sending real data.
+The middleware can read data written with an older key when you configure `fallbackDecryptionKeys`. The `decryptOnly` option stops new encryption while still decrypting existing data. Plan key changes around runs and events that still need the old key.
+## SDKs and next steps
+TypeScript and Python encryption middleware can interoperate when configured with compatible keys and fields. Go middleware support is planned.
+- [Overview](/docs/durable-execution/guides-and-advanced/middleware/overview) explains the middleware lifecycle.
+- [Creating middleware](/docs/durable-execution/guides-and-advanced/middleware/creating-middleware) covers custom middleware.

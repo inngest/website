@@ -1,0 +1,14 @@
+export const metaTitle = "Replay runs in bulk";
+export const description = "After fixing an incident, replay the affected runs by function, time range, and status.";
+
+# Replay runs in bulk
+
+> Recover many affected runs after an incident without restarting them one by one.
+
+After fixing an incident, replay the affected runs by function, time range, and status. Replay creates new executions, so check which charges, messages, or records could repeat. Follow [Idempotency](/docs/durable-execution/guides-and-advanced/idempotency) when a repeated charge, message, or record update would cause harm.
+1. Deploy and verify the fix.
+2. Open the function in the dashboard and choose **Replay** from **All actions**.
+3. Name the replay after the incident. Select its time range and the statuses to include.
+4. Review the selection. Include successful runs only if they also need recovery.
+5. Start the replay and watch its progress.
+Replay spreads the selected work over time. Use a narrow time window and confirm the affected functions before starting. For one run, use [Rerun a run](/docs/platform-and-operations/rerun-a-run) instead. For events skipped while a function was paused, select the **Skipped** status after resuming that function. Historical availability follows your plan's event retention; check pricing rather than assuming an unlimited replay window.

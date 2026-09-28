@@ -1,0 +1,62 @@
+export const metaTitle = "Traces | Sandboxes";
+export const description = "Find failed or slow Sandbox operations alongside the other steps in a function run.";
+
+# Traces
+
+> Find failed or slow Sandbox operations alongside the other steps in a function run.
+
+Open the function trace to find which Sandbox operation slowed or failed a job. Each `step.sandbox` call is a durable step: Inngest records its result for replay and applies that operation’s retry classification. Guest commands and files still have their own lifecycle.
+
+## What appears in the trace
+
+Open the function run in the Inngest dashboard or Dev Server. The trace shows the steps alongside the rest of the function. Select a step to inspect its timing, input, output, error details, and retry attempts.
+
+Give each Sandbox operation a stable, descriptive step ID. For example, `create-sandbox`, `run-command`, and `destroy-sandbox` make the sequence readable and let you identify the operation that failed. A retry appears as another attempt for that step. Completed steps return their recorded results when the function replays.
+
+A trace records the durable API operations. It does not make the Sandbox guest process, filesystem, or output durable. Dedicated Sandbox fields, resource links, and redaction in the trace UI remain **TBD**.
+
+## Try it in a function
+
+The example uses the TypeScript v4 beta API. Configure `sandboxMiddleware()`, enable Sandbox beta access, and set `INNGEST_SIGNING_KEY` before running the example.
+
+```typescript
+const sandbox = await step.sandbox.create("create-sandbox", {
+  name: `trace-${event.data.jobId}`,
+  vcpu: 1,
+  memoryMb: 1024,
+});
+
+const result = await sandbox.commands.run(
+  "run-command",
+  "printf 'hello from the sandbox\\n'",
+  { timeout: "30s" },
+);
+
+await sandbox.destroy("destroy-sandbox");
+
+return {
+  sandboxId: sandbox.id,
+  exitCode: result.exitCode,
+  stdout: result.stdout,
+};
+```
+
+After the run, open its trace and follow the three step IDs. Select `run-command` to inspect the step result or an error. Select the run to inspect the function's returned Sandbox ID and command result. A command that exits with a nonzero code still returns a command result; it does not throw solely because of that exit code.
+
+The example destroys the Sandbox on the successful path. For a function that can fail permanently, add an `onFailure` cleanup strategy. A JavaScript `finally` block around durable steps does not guarantee cleanup after permanent failure or cancellation. See [Managed lifecycle](/docs/sandboxes/features/managed-lifecycle).
+
+## When calls do not become durable steps
+
+`inngest.sandboxes` makes immediate server-side requests. It does not memoize each operation as a step or add a separate step to the run trace. Use `step.sandbox` when the operation belongs to a durable function run. Use the direct client for immediate calls, live streams, or file transfer.
+
+## Protect trace data
+
+The current trace view displays step inputs, outputs, and errors. Keep credentials out of command strings, captured output, and returned values. The beta can inject selected workspace secrets into the Sandbox environment, but it does not automatically redact values printed to command output or files. The launch documentation must define how sensitive trace data is handled.
+
+## Questions to resolve before publication
+
+- Which Sandbox resource IDs, lifecycle states, command results, and errors appear in step input and output? Are any fields linked to Sandbox detail views?
+- Does the trace show Sandbox-specific events beyond ordinary durable steps?
+- What redaction applies to command text, captured output, guest environment values, launch secrets, and error details?
+- Can users correlate a direct `inngest.sandboxes` call with a function run, and if so, how?
+- Will the planned `step.sandbox.typescript` helper show its start, execution, and automatic stop as one step or multiple steps?

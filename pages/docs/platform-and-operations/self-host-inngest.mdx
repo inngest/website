@@ -1,0 +1,48 @@
+export const metaTitle = "Self-host Inngest";
+export const description = "Run the Inngest server on your infrastructure when you need control over event intake, scheduling, run state, APIs, and the dashboard.";
+
+# Self-host Inngest
+
+> Run Inngest on your own infrastructure when you need control over its operation and data.
+
+Run the Inngest server on your infrastructure when you need control over event intake, scheduling, run state, APIs, and the dashboard. Your app still serves function code through HTTP `serve()` or Connect. The current `inngest start` help labels its single-node mode beta.
+Confirm the Inngest server version and feature support before a production rollout.
+## What you operate
+- The Event API accepts events. The runner schedules functions, resumes waits, and handles cancellation. The executor runs steps and records their results.
+- The queue and run-state store hold pending work and execution state. A database holds apps, functions, events, and run history.
+- The API and dashboard let you manage and inspect the installation.
+- Your application hosts its function code separately. Connect workers use the gateway on port `8289` by default.
+## Start one server
+Generate an event key and a hexadecimal signing key, then pass both to the server. This Docker command is a first-run example. It does not mount the SQLite database, so removing the container also removes its local database.
+```bash
+export INNGEST_EVENT_KEY="replace-with-an-event-key"
+export INNGEST_SIGNING_KEY="$(openssl rand -hex 32)"
+docker run -p 8288:8288 -p 8289:8289 \
+  -e INNGEST_EVENT_KEY -e INNGEST_SIGNING_KEY \
+  inngest/inngest inngest start
+```
+Open the dashboard on port `8288`. The same port serves the Event API and platform API. Port `8289` serves Connect workers. For a persistent single-node installation, mount the SQLite data directory or configure external services before creating live work.
+## Connect an application
+Point the SDK at the self-hosted server and give the application the same event and signing keys. For a Node.js application connected to a server on the local machine:
+```bash
+INNGEST_EVENT_KEY="replace-with-an-event-key" \
+INNGEST_SIGNING_KEY="replace-with-the-server-signing-key" \
+INNGEST_DEV=0 \
+INNGEST_BASE_URL=http://localhost:8288 \
+node ./server.js
+```
+Register the application’s `serve()` URL with `--sdk-url`, list it under `urls` in a configuration file, or enable sync polling with `--poll-interval`. Check the Go SDK’s manual-sync security implications before enabling it.
+## Configure persistence and capacity
+Without external services, `inngest start` uses an embedded Redis-compatible store for the queue and run state, and SQLite at `./.inngest/main.db` for persistence. Queue and state snapshots are written to SQLite periodically, including at shutdown. This setup is simple to start but needs deliberate disk persistence and recovery planning.
+For a larger installation, set `--redis-uri` for an external Redis service and `--postgres-uri` for PostgreSQL. Use Docker Compose to run Inngest with both services, or use the Helm chart for Kubernetes installation, resource settings, ingress, and autoscaling.
+Pass options as flags, environment variables, or a YAML/JSON/TOML configuration file. Convert a flag such as `--queue-workers` to `INNGEST_QUEUE_WORKERS`. `LOG_LEVEL` is an exception: it has no `INNGEST_` prefix. Run `inngest start --help` on the version you deploy for the complete option list.
+## Secure and observe the installation
+- Keep event keys, signing keys, and database credentials in a secret store. The signing key must be an even-length hexadecimal string.
+- Protect the dashboard, APIs, Connect gateway, and `/metrics` endpoint with your network and ingress controls. The published guide says `/metrics` has no authentication by default.
+- Scrape `/metrics` for queue depth. Function and SDK lifecycle counters require `INNGEST_EXPERIMENTAL_PROM_METRICS=1` in the documented versions.
+- Monitor queue depth, execution latency, Redis load, PostgreSQL load, and disk growth. PostgreSQL rows for events, runs, and traces are not automatically removed; plan retention and cleanup.
+- Tune function flow control before increasing `--queue-workers`; more workers also increase server CPU and memory use.
+## Support and feature scope
+The public guide does not guarantee direct support for self-hosted instances. Use the [Inngest repository](https://github.com/inngest/inngest) for issues, or contact Inngest about dedicated support.
+**TBD before publication:** Confirm self-hosted support and version requirements for Sandboxes, Online Evals, Realtime, and planned Inngest compute. Do not imply that every managed-platform capability is available in a self-hosted installation.
+Related pages: [Deploying functions](/docs/durable-execution/guides-and-advanced/deploying-functions) for deploying function code, [Keys and access](/docs/platform-and-operations/keys-and-access) for keys, and [Cloud architecture and security](/docs/platform-and-operations/cloud-architecture-and-security) for cloud architecture and security.

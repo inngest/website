@@ -1,0 +1,116 @@
+export const metaTitle = "A/B testing";
+export const description = "Compare changed steps or workflow paths against the current version using real outcome scores.";
+
+# A/B testing
+
+> Compare changed steps or workflow paths against the current version using real outcome scores.
+
+Send a small share of support requests through a new response path, then compare its outcome scores with the current path. `group.experiment()` runs one named variant for each run. Inngest keeps that selection on retries and records it in the trace, so a later score can identify the path that served the user.
+
+This guide uses the TypeScript SDK v4. Experiments require version 4.8.0 or later. Scoring is in beta.
+
+## Choose what to compare
+
+Put each version of the work in a variant callback. A callback can contain one `step.run()` call, or several `step.*` calls that form a workflow path. Inngest runs only the selected callback. Every callback must call at least one step tool so its work is durable. Use a unique experiment ID in the function and keep variant names stable.
+
+## Split traffic and score a result
+
+This example sends most new invoice runs through the current path and a small share through a rewrite. Each path generates and sends an invoice. It then records the same validation score for either result.
+
+```typescript
+import { experiment } from "inngest";
+import { inngest } from "./client";
+
+export default inngest.createFunction(
+  {
+    id: "generate-invoice",
+    triggers: { event: "billing/invoice.requested" },
+  },
+  async ({ event, step, group }) => {
+    const { result, experimentRef } = await group.experiment(
+      "invoice-engine",
+      {
+        variants: {
+          current: async () => {
+            const invoice = await step.run("generate-current", () =>
+              generateInvoiceV1(event.data)
+            );
+            await step.run("send-current", () => sendInvoice(invoice));
+            return invoice;
+          },
+          rewrite: async () => {
+            const invoice = await step.run("generate-rewrite", () =>
+              generateInvoiceV2(event.data)
+            );
+            await step.run("send-rewrite", () => sendInvoice(invoice));
+            return invoice;
+          },
+        },
+        select: experiment.weighted({ current: 99, rewrite: 1 }),
+      }
+    );
+
+    await inngest.score.experiment({
+      name: "invoice-valid",
+      value: validateInvoice(result),
+      experiment: experimentRef,
+    });
+
+    return result;
+  }
+);
+```
+
+The weights are relative. `99:1` gives the rewrite about one new run in a hundred. Inngest saves each run's selected variant, so retries and replays keep it. A new deployment with different weights affects new selections.
+
+## Understand replay and step usage
+
+`group.experiment()` saves the selection as one durable step. Steps inside the selected callback count separately and follow their normal retry rules. The callback can call `step.run()`, `step.invoke()`, `step.waitForEvent()`, or `step.sendEvent()`.
+
+Code outside a step can run again when Inngest replays a function. Put side effects inside steps so a replay does not repeat them. The unselected variant callback does not run.
+
+The score must be a finite number or a boolean. Use the same score name and definition for both variants so you compare the same outcome. Here, `validateInvoice()` is application code that returns a boolean. `generateInvoiceV1()`, `generateInvoiceV2()`, and `sendInvoice()` are also application functions that you supply. The example shows where durable steps belong; it is not a standalone runnable file.
+
+## Pick the right assignment
+
+- **`experiment.weighted()`** assigns each new run independently. Use it to canary a change or increase traffic gradually.
+- **`experiment.bucket()`** hashes a stable user or account key, so that key usually sees the same variant across runs. Changing bucket weights can change future assignments. Pass a present, stable key; missing keys hash to the same assignment.
+- **`experiment.custom()`** reads an assignment from your flag service or database. Use it when you need to change assignment without deploying or keep a stored assignment fixed. Return a declared variant name or the run fails.
+- **`experiment.fixed()`** always selects one variant. Use it to pin a path during a manual override.
+
+Each strategy returns one variant for the run.
+
+## Credit later outcomes to the right variant
+
+Invoice validation measures the immediate output. Payment or a customer correction may tell you more about the real outcome. `group.experiment()` returns `{ result, variant, experimentRef }`. `result` is the selected callback's value, `variant` names the selected path for logging or analytics, and `experimentRef` identifies the experiment and variant for scoring. Store the reference **and the original run ID** with the invoice when you need to score an outcome from another run.
+
+When the later signal arrives, load both values and attach the score to the original run:
+
+```typescript
+await inngest.score.experiment({
+  name: "invoice-paid",
+  value: true,
+  experiment: saved.experimentRef,
+  runId: saved.runId,
+});
+```
+
+The example's `saved` value is the record your application loaded for this invoice. A later handler should set `value` from the actual payment outcome. Passing the original `runId` matters: without it, a score written from a different run attaches to that later run and does not appear under the original experiment. A [deferred scorer](/docs/online-evals/reference) can also wait for an outcome and attribute its returned score to the parent run and variant when you pass the experiment reference to `defer()`.
+
+## Read the comparison
+
+Inspect the experiment selection and steps in the run trace. Compare the same score across variants over the same period. Count how many runs received each variant and how many produced the outcome; missing or delayed outcomes can distort an early comparison. Small traffic slices can look uneven or noisy. Change one meaningful behavior at a time so the result tells you which change mattered.
+
+Use a product outcome when you can. A valid invoice is useful, but payment, correction rate, or support contact may show whether the rewrite helped customers.
+
+## Troubleshoot the comparison
+
+- **A user sees different variants across runs.** `experiment.weighted()` selects per run. Use `experiment.bucket()` with a stable user or account key.
+- **A bucket gets a surprising share of traffic.** Check for missing keys; they hash to the same assignment. Small samples can also look uneven.
+- **A selector fails the run.** Make sure `experiment.fixed()` or `experiment.custom()` returns a name in `variants`.
+- **A score is rejected.** Send a finite number or boolean. In aggregate views, `true` counts as `1` and `false` as `0`.
+
+## Related pages
+
+- [Experiment API reference](/docs/durable-execution/primitives/group-experiment)
+- [Scoring reference](/docs/online-evals/reference)

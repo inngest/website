@@ -1,0 +1,40 @@
+export const metaTitle = "Rollbacks";
+export const description = "If charging an order still fails after retries, release its inventory reservation or choose another payment path.";
+
+# Rollbacks
+
+> Run a fallback or compensating action after a step exhausts its retries.
+
+If charging an order still fails after retries, release its inventory reservation or choose another payment path. Catch the failed `step.run()` error and put the fallback or compensation in its own step.
+## Add a compensating step
+This TypeScript v4 example reserves inventory, tries to charge an order, and releases the reservation if charging still fails. The three called functions represent your application's integrations.
+It uses the `inngest` client from the [Quick start](/docs/durable-execution/quick-start).
+```typescript
+export const fulfillOrder = inngest.createFunction(
+  {
+    id: "fulfill-order",
+    triggers: { event: "shop/order.placed" },
+  },
+  async ({ event, step }) => {
+    const orderId = event.data.orderId;
+    const reservationId = await step.run("reserve-inventory", () =>
+      reserveInventory(orderId)
+    );
+
+    try {
+      await step.run("charge-order", () => chargeOrder(orderId));
+    } catch (error) {
+      await step.run("release-inventory", () =>
+        releaseInventory(reservationId)
+      );
+      throw error;
+    }
+  }
+);
+```
+Inngest retries `charge-order` before the `catch` block runs. If it still fails, `release-inventory` is its own durable, retriable step. Rethrowing the error leaves the function failed after compensation; returning instead would let the function continue. Give reservation, charge, and release operations stable IDs so each can be called again safely.
+## Choose recovery or compensation
+- **Fallback.** Call another service in a new step, then continue when its result satisfies the workflow.
+- **Compensation.** Undo a completed external action in a new step, such as releasing a reservation. This is a business action, not an automatic transaction rollback.
+- **Ignore a noncritical failure.** Catch the failed step and record the outcome so the function can continue intentionally.
+Catch only a step whose failure you can handle. An unhandled failed step makes the function fail. A function-level [Failure handlers](/docs/durable-execution/guides-and-advanced/error-handling/failure-handlers) runs after the function has exhausted retries; it serves a different purpose from local recovery.

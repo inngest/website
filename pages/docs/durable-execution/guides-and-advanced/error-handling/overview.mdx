@@ -1,0 +1,16 @@
+export const metaTitle = "Overview";
+export const description = "If a provider times out after an earlier step completes, Inngest retries the failed work and reuses the saved step result.";
+
+# Overview
+
+> Recover from temporary failures while preserving completed steps.
+
+If a provider times out after an earlier step completes, Inngest retries the failed work and reuses the saved step result. You decide whether to use a fallback or report a final failure when retries run out.
+## Choose how to respond
+- **Let Inngest retry a temporary error.** Throw a standard `Error` from a function or `step.run()` handler. Each step has its own retry counter. Read [Retries](/docs/durable-execution/guides-and-advanced/error-handling/retries).
+- **Handle one failed step.** Catch the error after the step exhausts retries, then use a fallback or a separate compensation step. Read [Rollbacks](/docs/durable-execution/guides-and-advanced/error-handling/rollbacks).
+- **Handle a failed function.** Add `onFailure` for one function or subscribe to `inngest/function.failed` for failures across an environment. Read [Failure handlers](/docs/durable-execution/guides-and-advanced/error-handling/failure-handlers).
+- **Control retry behavior.** Throw `NonRetriableError` for a permanent problem or `RetryAfterError` when an upstream service tells you when to retry. Read [Inngest errors](/docs/durable-execution/guides-and-advanced/error-handling/inngest-errors).
+## Know the boundary
+An **error** is thrown during an attempt. Inngest retries it while attempts remain. A **failed step** has exhausted its attempts and throws back into the function, where you can catch it. A **failed function** has exhausted retries or received an unhandled failed step. Inngest marks that run failed.
+By default, Inngest allows four retries after the first attempt. A completed `step.run()` result is saved, so later attempts reuse it instead of repeating the operation. This protects progress, but it does not make an external side effect exactly once. Give writes, payments, and messages stable idempotency keys so a timeout after a successful external call does not duplicate the action.

@@ -1,0 +1,108 @@
+export const metaTitle = "Troubleshooting | Sandboxes";
+export const description = "Diagnose a failed Sandbox operation and decide whether it is safe to retry.";
+
+# Troubleshooting
+
+> Diagnose a failed Sandbox operation and decide whether it is safe to retry.
+
+When a Sandbox operation fails, find its step in the run trace or inspect the direct SDK error. Check the resource’s current state before retrying: a lost response does not prove that a command or mutation failed. Keep the error `code`, `requestId`, and resource ID for investigation.
+
+> **Experimental beta:** The guidance below describes the access-gated `inngest@4.20.0+` beta. The API and limits can change. The newer beta reference documents selecting existing workspace secrets for a fresh Sandbox. SSH, S3-backed mounts, and `step.sandbox.typescript` are planned for launch; their troubleshooting steps remain **TBD** until their public contracts are documented.
+
+## Before you retry
+
+1. **Find the operation.** Record whether the call used `step.sandbox`, `inngest.sandboxes`, or REST. For an SDK error, read `SandboxError.action`, `code`, `ambiguous`, `retryable`, `requestId`, and any Sandbox, process, or snapshot ID. Branch on the code, not the message.
+2. **Check current state.** Get the Sandbox, process, or snapshot with its ID. SDK objects are views of an earlier response; a fresh Get shows the current state. A missing resource can also mean it belongs to another workspace or environment.
+3. **Check the effect.** A failed response can follow a successful command or mutation. Inspect an external result or application completion marker before repeating work that changes state.
+4. **Preserve evidence.** Keep the run ID, step ID, error code, request ID, resource IDs, and the time of the attempt when you contact Inngest.
+
+## Create returns `403 access_denied`
+
+**Check:** Confirm that the call targets the intended Inngest Cloud environment, that Sandbox beta access is enabled there, and that server-side code uses that environment’s `INNGEST_SIGNING_KEY`. Keep the key out of browser code.
+
+**Fix:** Ask the Inngest team to enable Sandbox beta access for that environment. Then retry Create. Changing the Sandbox name or size does not grant access.
+
+## Create rejects a size or cannot place the Sandbox
+
+**Check:** A fresh beta Sandbox accepts only `1 vCPU / 1024 MiB`, `2 / 2048`, or `4 / 4096`. The values must come from the same pair. A supported pair can still fail because of account entitlement or unavailable matching capacity. Check the error code and current entitlement. `compute_unavailable` reports a temporary compute or storage availability failure.
+
+**Fix:** Correct an unsupported pair. For an entitlement or capacity rejection, check your beta access with Inngest and use a size your account can run. If Create returned an unconfirmed availability failure, reuse the **same active name and configuration** rather than making a second named Sandbox. A matching Create returns the existing Sandbox; a conflicting configuration returns `sandbox_name_taken`. Do not claim a placement time from the SDK’s readiness wait.
+
+## Create rejects selected secrets
+
+**Check:** The newer beta selects active workspace secrets by exact, case-sensitive name. Names must be unique, valid environment keys, and different from keys in the literal `environment` object. The caller must use the workspace that owns those secrets.
+
+**Fix:** Correct the names or key overlap and retry Create with the intended configuration. A clone cannot select new secrets; it carries values captured in the source snapshot. Pause and Resume do not fetch rotated values again.
+
+## Create returns an ID but the Sandbox is not ready
+
+**Check:** A TypeScript Create waits up to 120 seconds for `RUNNING` by default. A `runningTimeout` deadline ends that wait; it does not cancel Create or destroy the Sandbox. Get the Sandbox ID and inspect `PENDING`, `STARTING`, `RUNNING`, `FAILED`, or a terminal state.
+
+**Fix:** If it is still starting, wait for `RUNNING` before running commands. If it failed, inspect the resource error and clean up the Sandbox. When cleanup after readiness failure matters, create with `runningTimeout: false` so you retain the ID, then call `waitUntilRunning` separately. Do not issue an unrelated new Create while the first Sandbox may still be starting.
+
+## A command failed, timed out, or lost output
+
+**Check:** A nonzero `exitCode` is a command result, not an SDK exception. Read `stdout`, `stderr`, and `exitCode`. A captured command has a 30-second default observation timeout and a five-minute maximum. `sandbox_exec_timed_out`, `sandbox_exec_output_too_large`, or `operation_ambiguous` can arrive after the command ran.
+
+**Fix:** Correct the command when its exit code shows an application error. For a timeout or unconfirmed result, inspect the command’s external effects or an application-defined completion marker before running it again. Use a managed process for work that must run longer than a captured command. If output is too large, write it to a file or external store and return a small summary. The direct client and REST cap captured output at 4 MiB; `step.sandbox` retains a 2 MiB tail and reports `result.output.truncated`. A truncated tail does not contain the full output.
+
+## The error is `operation_ambiguous`
+
+**Check:** Read `SandboxError.action`. This code means the operation may have completed without a confirmed result. It is not a Sandbox state.
+
+**Fix by action:**
+
+- `exec`: Inspect the command’s external effect or completion marker. Do not rerun it automatically.
+- `process.start`: List processes and compare command and start time. If you cannot identify the process, stop and reconcile manually before starting another.
+- `process.signal`: Get or wait for the process. Send another signal only when duplicate delivery is safe.
+- `snapshot.create`: List recent snapshots and inspect their status before creating another.
+
+Create, Destroy, Pause, Resume, snapshot Delete, and an identical file upload have repeat-safe behavior after an unconfirmed availability failure under the current beta contract. An unexpected ambiguous `step.sandbox` error is non-retryable; let it surface unless your function implements deliberate reconciliation. The direct client never retries calls automatically.
+
+## A managed process is `LOST` or its output is missing
+
+**Check:** Get the process and Sandbox states. `LOST` can follow Sandbox runtime loss. In the beta, process metadata and retained output live with that runtime and have no recovery path. Also check how you sent a signal: the SDK defaults `includeChildren` to `true`, REST defaults it to `false`, and descendant delivery is reliable only with signal 9 in the current beta. Another descendant signal can make terminal state unobservable. A `sandbox_process_wait_timed_out` response ends the wait, not the process.
+
+**Fix:** Treat a `LOST` process as an unknown outcome. Check external effects before starting replacement work. Pass `includeChildren` explicitly. Use `false` for graceful `SIGTERM`; use signal 9 when you need descendant delivery in the beta. If output returns `sandbox_process_output_not_retained`, it has been evicted: each process keeps about 512 KiB, and only the newest 32 output rings remain. Persist important output before destroying the Sandbox. Live streams are best effort and can miss or replay chunks after manual reconnection.
+
+## Pause or Resume did not finish
+
+**Check:** Get the Sandbox again. Pause may return `PAUSING`; Resume may return `RESUMING`. Commands, files, logs, and process operations require `RUNNING`. A pause is a cold checkpoint and can interrupt external connections.
+
+**Fix:** Wait for `PAUSED` before treating the Sandbox as paused, or for `RUNNING` before using it after Resume. The same Sandbox ID, filesystem, memory, and remaining runtime return on Resume. Repeating Pause or Resume after an unconfirmed availability failure continues the state-based transition in the beta. If the Sandbox is `FAILED` or terminal, inspect its error; Resume does not restore a destroyed Sandbox. A user snapshot does not support in-place restore.
+
+## A snapshot or clone is pending, unavailable, or expired
+
+**Check:** Snapshot Create first returns `CREATING`. The TypeScript SDK waits up to five minutes for `READY`; a polling timeout does not cancel the background upload. Get the snapshot or list recent snapshots before another Create. A clone needs a `READY` snapshot. Check `expiresAt`, status, and any snapshot error. `sandbox_snapshot_not_ready` means the requested operation cannot use the current status; `sandbox_snapshot_not_found` can also mean the snapshot is outside the selected workspace.
+
+**Fix:** Wait for `READY` before cloning. If Snapshot Create had an ambiguous result, list recent snapshots and reconcile rather than creating another immediately. If a snapshot is `FAILED`, `LOST`, deleted, or expired, use a valid source Sandbox to make a new one; an expired snapshot is not permanent storage. A clone is a **new** Sandbox with a new ID. A clone that is still `STARTING` follows the Create readiness checks above. Flush application state before taking a new snapshot because beta snapshots are crash-consistent.
+
+## The Sandbox reached its runtime limit
+
+**Check:** The newer beta reference allows one hour of active runtime per Sandbox. Time spent paused does not consume that limit. Get the Sandbox to inspect its current status before trying another command. Track active time in your application if you need to plan against the limit.
+
+**Fix:** Save lasting artifacts outside the Sandbox. Create a new Sandbox for later work, or pause while waiting. A destroyed or terminal Sandbox cannot resume.
+
+## A durable run failed before Destroy
+
+**Check:** Find the Sandbox ID from the successful Create step or from a stable job-derived name. Check whether the Sandbox is still active, already `TERMINATING`, terminal, or missing. A completed `step.sandbox` result is memoized, but that does not preserve the guest process or guarantee cleanup after a permanent function failure.
+
+**Fix:** Destroy a Sandbox that the failed run no longer needs. In the beta low-level API, keep a Destroy step on the successful path and use an Inngest `onFailure` handler or separate cleanup function when permanent failure must release it. Direct client code should normally use `finally`. Cleanup should tolerate an already terminating, terminal, or missing Sandbox. A JavaScript `finally` around durable steps does not guarantee cleanup after permanent failure or cancellation. The planned `step.sandbox.typescript` one-call helper will manage start and stop, but its exact failure contract is **TBD**.
+
+## A Sandbox operation does not appear in the trace
+
+**Check:** Confirm that the operation ran inside an Inngest function through `step.sandbox`, that the client has `sandboxMiddleware()`, and that each call uses a stable step ID. Open the run in the same environment where the event was sent. A call through the immediate `inngest.sandboxes` client or REST does not create a durable step in that run.
+
+**Fix:** Use `step.sandbox` for Sandbox operations that belong in a durable function trace. Inspect the function run and its step errors. Sandbox-specific trace fields and the final dashboard labels are **TBD**; do not rely on an undocumented field name to locate an operation.
+
+## More help
+
+Use the [Quick start](/docs/sandboxes/quick-start) to reproduce a Create–command–Destroy run. [Reference](/docs/sandboxes/reference) lists API calls and errors, [Limits](/docs/sandboxes/limits) lists beta bounds, and [Managed lifecycle](/docs/sandboxes/features/managed-lifecycle) explains durable cleanup and uncertain outcomes.
+
+When reporting an issue, include the SDK or REST surface, operation, stable error code, request ID, run and step IDs when relevant, resource IDs, and whether repeating the operation could duplicate a mutation. A Sandbox is an isolated microVM for code. A [branch deploy](/docs/platform-and-operations/environments-and-branch-deploys) is a deployment preview for a Git branch.
+
+## Launch questions
+
+- Which Sandbox-specific trace fields and filters will users see?
+- What cleanup and error guarantees will `step.sandbox.typescript` provide after failure or cancellation?
+- How will SSH connection failures, key authorization, Sandbox secret injection, and S3-backed mount errors appear in public APIs?

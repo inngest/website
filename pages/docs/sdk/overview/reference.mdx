@@ -1,0 +1,39 @@
+export const metaTitle = "SDK and API reference";
+export const description = "Find the Inngest API for the task you are implementing.";
+
+# SDK and API reference
+
+> Find the exact method, option, or limit you need to implement an Inngest feature.
+
+Start with the task below, then use the platform and language navigation for your SDK's exact signatures and version support. The examples in this documentation use TypeScript SDK v4 unless a page says otherwise. Go and Python have their own APIs and availability.
+
+## Events and triggers
+
+- [Event payloads and schemas](/docs/durable-execution/guides-and-advanced/events-and-triggers/event-payloads-and-schemas) defines event fields.
+- [Send events](/docs/durable-execution/guides-and-advanced/events-and-triggers/send-events) shows how to start work from your app or another function.
+- [Events and triggers](/docs/durable-execution/guides-and-advanced/events-and-triggers) covers event, cron, and other trigger choices.
+
+## Functions and steps
+
+- [Durable workflows](/docs/durable-execution/durable-workflows) explains function configuration and the handler context.
+- [Step primitives](/docs/durable-execution/primitives) helps you choose the operation that fits the work.
+- [Run code](/docs/durable-execution/primitives/step-run), [sleep](/docs/durable-execution/primitives/step-sleep), [wait for an event](/docs/durable-execution/primitives/step-waitforevent), [invoke a function](/docs/durable-execution/primitives/step-invoke), and [send an event](/docs/durable-execution/primitives/step-sendevent) cover common step calls.
+
+## Failures and run status
+
+- [Error handling](/docs/durable-execution/guides-and-advanced/error-handling) explains retries, rollback steps, failure handlers, and error types.
+- [Cancellation](/docs/durable-execution/guides-and-advanced/cancellation) covers event and timeout cancellation.
+- [Insights](/docs/platform-and-operations/insights) explains the run statuses available for analysis. For REST response schemas, use the API reference in the platform and language navigation.
+
+## Flow control
+
+- [Flow control](/docs/durable-execution/flow-control) compares concurrency, rate limiting, throttling, batching, singleton, debounce, priority, and multi-tenancy.
+- [Limits](/docs/durable-execution/limits) lists enforced bounds that can affect a function configuration.
+
+## Serving and compute placement
+
+- [Deploying functions](/docs/durable-execution/guides-and-advanced/deploying-functions) explains HTTP serving, Connect, and deployment requirements.
+- [Keys and access](/docs/platform-and-operations/keys-and-access) covers event, signing, and API credentials.
+- [Environments and branch deploys](/docs/platform-and-operations/environments-and-branch-deploys) explains how to separate production and preview deployments.
+
+Compute placement is per app. Apps on your infrastructure and apps on Inngest compute can share an environment. **TBD before Inngest compute launch:** configuration API, supported SDKs and runtimes, deployment format, secrets, networking, resource limits, and availability.

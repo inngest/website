@@ -1,0 +1,14 @@
+export const metaTitle = "Metrics";
+export const description = "Spot a rise in failures or backlog in metrics, then open a run trace to find which function or step needs attention.";
+
+# Metrics
+
+> Spot changes in workload health and open the runs behind them.
+
+Spot a rise in failures or backlog in metrics, then open a run trace to find which function or step needs attention.
+## Watch function health
+Start with the Functions list for each function's trigger, volume, and failure rate. Open a function to see status counts, failed functions, run and step throughput, and backlog over a selected time range. Filter by app or function to separate one service from the account total.
+A rising failure rate calls for a failed run trace. A growing backlog or falling throughput calls for a check of flow controls, account capacity, app sync, and the host running your code. Metrics show the pattern; the trace shows the run.
+## Watch event flow
+The Events page shows event types, volume, and associated functions. Open an event type to inspect its recent events. If events arrive but no run starts, check the trigger, app sync, environment, and whether the function is paused.
+For historical SQL analysis across events, runs, steps, and spans, use Insights. For exact current plan retention, use the pricing page.

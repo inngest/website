@@ -1,0 +1,84 @@
+export const metaTitle = "Concurrency";
+export const description = "Protect APIs and databases by limiting how many workflow steps execute at once.";
+
+# Concurrency
+
+> Protect APIs and databases by limiting how many workflow steps execute at once.
+
+Limit the number of steps calling a payment API at once. Inngest queues steps above the concurrency limit and starts them when capacity opens; waiting runs do not use those execution slots.
+
+## What a concurrency limit counts
+
+A limit counts **steps executing code**, not all function runs in progress. A run waiting in `step.sleep()`, `step.waitForEvent()`, or `step.invoke()` does not use a concurrency slot while it waits. For example, a limit of 10 can coexist with hundreds of paused runs, but only 10 steps from those runs execute at once.
+
+Use concurrency when simultaneous work is the constraint, such as database connections or calls to a service that slows under parallel load. Use [Throttling](/docs/durable-execution/flow-control/throttling) to control how quickly runs start over time. Use [Rate limiting](/docs/durable-execution/flow-control/rate-limiting) when excess events should be skipped.
+
+## Limit one function
+
+Set `concurrency` in the function configuration. This TypeScript v4 example lets at most 10 steps from this function execute at once. Replace the example step body with the work whose parallel load you need to control.
+
+```typescript
+import { Inngest } from "inngest";
+
+const inngest = new Inngest({ id: "imports" });
+
+export const processImport = inngest.createFunction(
+  {
+    id: "process-import",
+    triggers: { event: "imports/requested" },
+    concurrency: 10,
+  },
+  async ({ event, step }) => {
+    return step.run("normalize-import-id", () =>
+      String(event.data.importId).toUpperCase()
+    );
+  }
+);
+```
+When all 10 slots are occupied, later steps wait in Inngest's queue. A numeric value is shorthand for `{ limit: 10 }`.
+
+## Give each account its own limit
+
+Add a `key` expression to apply the limit separately to each evaluated value:
+
+```typescript
+concurrency: {
+  limit: 2,
+  key: "event.data.accountId",
+}
+```
+With this configuration, steps for one account do not use another account's two slots. Choose a stable key that identifies the resource you want to protect. The key is a Common Expression Language expression over the triggering event, not a JavaScript callback. See [Multi-tenancy](/docs/durable-execution/flow-control/multi-tenancy) for scheduling and fairness between keys.
+
+## Share a limit across functions
+
+The default `fn` scope applies within one function. Use `env` to share capacity across functions in one environment or `account` to share it across environments. Both require a `key`. A fixed key is a quoted string inside the expression:
+
+```typescript
+concurrency: {
+  scope: "account",
+  key: '"external-api"',
+  limit: 20,
+}
+```
+Configure every function that uses the shared capacity with the same scope, key, and limit. Keep those settings in a shared constant so the functions agree on the ceiling.
+
+A function can have **up to two** concurrency constraints. For example, combine a shared API ceiling with a per-account ceiling:
+
+```typescript
+concurrency: [
+  { scope: "account", key: '"external-api"', limit: 20 },
+  { key: "event.data.accountId", limit: 2 },
+]
+```
+A step starts only when it fits both limits. If one step needs its own ceiling, move that work to a separate function with its own concurrency setting and call it with `step.invoke()`.
+
+## Queue behavior and limits
+
+- Within a function and key, Inngest selects queued work in best-effort FIFO order. Retries can affect that order. Do not depend on strict execution order.
+- Changing a key expression affects new work. Already queued work retains the value assigned when it entered the queue.
+- A value of `0` or `undefined` sets no concurrency limit. The highest allowed limit depends on your plan.
+- A low limit can build a backlog. Set a start timeout when queued work becomes useless after a deadline.
+
+A separate key-queue scheduling feature is available to Enterprise customers on request. Check its availability before promising best-effort fairness between tenants.
+
+

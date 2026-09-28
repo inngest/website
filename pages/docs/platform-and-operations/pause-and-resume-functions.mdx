@@ -1,0 +1,16 @@
+export const metaTitle = "Pause and resume functions";
+export const description = "Pause a function during maintenance so new events do not start its runs.";
+
+# Pause and resume functions
+
+> Stop new runs during maintenance and resume the function when you are ready.
+
+Pause a function during maintenance so new events do not start its runs. Inngest still receives and stores those events, but skips the paused function.
+## Pause safely
+1. Open the function in the dashboard and choose **Pause** from **All actions**.
+2. Choose what happens to existing runs. The current dashboard offers pause after the active step, with cancellation after seven days by default, or immediate cancellation after the active step.
+3. Inspect in-progress runs and record the pause time for later recovery.
+Inngest does not interrupt a running step. A paused function does not start new runs from incoming events.
+## Resume and recover
+Choose **Resume** from the function's actions. New events can trigger it again. Events received during the pause do not run automatically. If they must be processed, create a Replay for the paused time range and include **Skipped** status. Include **Canceled** if you also need to recover runs canceled during the pause. The available history depends on your plan's retention.
+Use run cancellation when you need to stop a particular run rather than pause an entire function.

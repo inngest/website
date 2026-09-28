@@ -1,0 +1,35 @@
+export const metaTitle = "Send events";
+export const description = "Send an event when an app action should start a durable function.";
+
+# Send events
+
+> Start durable work by sending events from your app or a function.
+
+Send an event when an app action should start a durable function. Await the send call so the process stays alive until Inngest accepts the event.
+## Send one event
+```typescript
+import { Inngest } from "inngest";
+
+const inngest = new Inngest({ id: "billing-app" });
+
+const { ids } = await inngest.send({
+  name: "billing/invoice.paid",
+  data: { invoiceId: "inv_123", customerId: "cus_456" },
+});
+```
+The returned event ID lets you find the event in the dashboard. A matching trigger starts its function. One event may start several functions.
+## Send from a function
+Use `step.sendEvent()` inside a durable function. This records the send as a step and prevents replay of that completed step from sending the event again.
+```typescript
+await step.sendEvent("notify-accounting", {
+  name: "billing/invoice.paid",
+  data: { invoiceId: event.data.invoiceId },
+});
+```
+A batch that only partly succeeds reports the accepted events.
+## Send typed events
+Define a name and schema with `eventType()`, then use `.create()` to build a typed payload. [Event payloads and schemas](/docs/durable-execution/guides-and-advanced/events-and-triggers/event-payloads-and-schemas) shows the schema and send example. Use a runtime schema when incoming data needs validation; `staticSchema()` provides TypeScript checking without runtime validation.
+## Send a batch
+Pass an array to `inngest.send()` to send several events in one call. Services without an SDK can send events through the HTTP Event API.
+## Prevent duplicate starts
+Set a unique event `id` when the sender may retry the same action.  This acts as an idempotency key, ensuring that duplicate events received within 24 hours do not start another run for each active function.  See [Idempotency](/docs/durable-execution/guides-and-advanced/idempotency) for event and function idempotency.

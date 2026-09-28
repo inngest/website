@@ -1,0 +1,20 @@
+export const metaTitle = "Inspect events and runs";
+export const description = "Trace a failed workflow from its trigger event to the run and failed step.";
+
+# Inspect events and runs
+
+> Trace a failed run back to its event and step so you can fix the cause.
+
+Trace a failed workflow from its trigger event to the run and failed step. This shows what completed before you choose a recovery action.
+## Inspect an event
+1. Select the environment in the dashboard and open **Events**.
+2. Filter by time or open an event type to narrow the list.
+3. Open the event to inspect its payload and the functions it triggered.
+4. Use **Show search** for a CEL query such as `event.data.orderId == "123"` when you know a payload field.
+## Inspect a run
+1. Open **Runs** in the selected environment. Filter by status, time, or app.
+2. Search for a known event field or output, for example `output.name == "NonRetriableError"`.
+3. Open the run. Check its trigger, input, output, timing, and step timeline.
+4. Expand a failed step to see each retry's error and timing.
+Run search accepts a limited set of CEL fields and operators. Use the current search reference before relying on a complex expression. When a failure depends on the input, send the trigger event to the local Dev Server to reproduce it.
+Before any recovery action, identify which side effects completed. A rerun or replay can execute them again.

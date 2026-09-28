@@ -1,0 +1,98 @@
+export const metaTitle = "Outcomes and scoring";
+export const description = "Measure whether a workflow achieved the result that matters by scoring its run or steps.";
+
+# Outcomes and scoring
+
+> Measure whether a workflow achieved the result that matters by scoring its run or steps.
+
+A completed support run tells you the function finished. Score the customer’s feedback or ticket resolution to learn whether it helped. Inngest links the named score to the run or step that produced the work.
+
+You can score a run without running an experiment. When you do compare variants, attach the same outcome to each variant so you can judge the change by results instead of execution alone.
+
+## Choose an outcome
+
+Give each score a stable name and a numeric or boolean value. Use a boolean for a clear pass or fail, such as `guardrail-pass`. Use a number for a rate, count, rating, or measured quality, such as `resolution-quality`. Define what the name and range mean before you compare runs. For example, decide whether `1` means a ticket was resolved or only that an answer looked plausible.
+
+Technical checks and product outcomes answer different questions. A format check can tell you immediately whether an agent returned valid JSON. Customer feedback or ticket resolution tells you later whether the answer worked. Track both when you need to understand *why* an outcome changed.
+
+Scores attach to a function run or a step. Run scores measure the result of the whole run. Step scores let you inspect a specific operation alongside its trace. Sessions group related runs, such as turns in one conversation; score the relevant runs or steps, then inspect them in the session.
+
+## Score when the answer is available
+
+In the TypeScript v4 SDK, `step.score()` records a score for the current run as a durable, memoized step. Add `scoreMiddleware()` to the client, then give the score write a unique step ID. The value can be a number or a boolean.
+
+```typescript
+import { Inngest } from "inngest";
+import { scoreMiddleware } from "inngest/experimental";
+
+const inngest = new Inngest({
+  id: "support",
+  middleware: [scoreMiddleware()],
+});
+
+export const answerTicket = inngest.createFunction(
+  { id: "answer-ticket", triggers: { event: "support/ticket.created" } },
+  async ({ event, step }) => {
+    const answer = await step.run("write-answer", () =>
+      writeAnswer(event.data.message)
+    );
+
+    await step.score("score-format-valid", {
+      name: "format-valid",
+      value: isValidAnswer(answer),
+    });
+
+    return answer;
+  }
+);
+```
+
+Use `inngest.score({ name, value })` for a direct score inside a function. Call it with a `runId` from external code after the original run ends. Pass `stepId` when the score belongs to a specific step. A run score and a step score appear with the corresponding trace; function dashboards show score trends over time.
+
+## Score after the outcome arrives
+
+A customer may rate the answer tomorrow. A ticket may reopen next week. Use a deferred scorer when scoring takes time or must wait for that signal. `defer()` schedules a separate scorer after the parent run finishes. The scorer can wait for an event without keeping the original run open, then return a score that Inngest attributes to the parent run.
+
+```typescript
+import { createScorer } from "inngest/experimental";
+import { z } from "zod";
+
+export const feedbackScorer = createScorer(
+  inngest,
+  { id: "feedback-scorer", schema: z.object({ ticketId: z.string() }) },
+  async ({ event, step }) => {
+    const feedback = await step.waitForEvent("wait-for-feedback", {
+      event: "support/feedback.received",
+      timeout: "7d",
+      if: `async.data.ticketId == '${event.data.ticketId}'`,
+    });
+
+    if (!feedback) return null;
+    return { name: "customer-helpful", value: feedback.data.helpful };
+  }
+);
+```
+
+Register `feedbackScorer` alongside your other functions in the `serve()` handler. From the original function, call `defer("score-feedback", { function: feedbackScorer, data: { ticketId: event.data.ticketId } })`. Send a `support/feedback.received` event with the same `ticketId` when the customer responds. The scorer above writes no score if feedback never arrives within seven days; choose that behavior deliberately. An absent signal is different from a negative response. [Build a deferred scorer](/docs/online-evals/outcomes-and-scoring).
+
+Deferred scoring is a TypeScript v4 beta API. `createScorer` comes from `inngest/experimental`, and its API may change before general availability.
+
+## Connect scores to experiments
+
+`group.experiment()` returns an `experimentRef` that identifies the selected variant. Use the same score name and definition for every variant. To score an outcome available during the original run, pass the ref to `inngest.score.experiment()`:
+
+```typescript
+await inngest.score.experiment({
+  name: "customer-helpful",
+  value: true,
+  experiment: experimentRef,
+});
+```
+
+For a deferred scorer, pass `experiment: experimentRef` in the `defer()` options. The scorer's returned score then credits the variant that served the result. If a separate later run writes the score itself, store the original `experimentRef` and `runId`, then pass both to `inngest.score.experiment()`. The original `runId` places the score under the experiment that produced the result. You can compare one step or a larger workflow path inside the variants.
+
+## Read the result
+
+Inspect a low score with its run or step trace to see what happened. Compare score trends across runs and variants with the same score definition. Check sample size, missing feedback, and whether the variants served similar users before declaring a winner. [Interpret results](/docs/online-evals/interpreting-results).
+
+Next, [build an experiment](/docs/online-evals/a-b-testing), [interpret the results](/docs/online-evals/interpreting-results), or check the [API reference](/docs/online-evals/reference).

@@ -1,0 +1,32 @@
+export const metaTitle = "Realtime";
+export const description = "Keep users informed while work runs.";
+
+# Realtime
+
+> Keep users informed while work runs.
+
+> **Editorial status:** draft
+
+When a document import outlives its initial request, show the user its progress and final result. Inngest Realtime delivers updates from your function to subscribed clients, so the page can follow the job as it runs.
+
+## What you can build
+
+- **Live progress:** Show users how a report, upload, or document is progressing without making them refresh the page.
+- **Streaming responses:** Display an agent's answer as it arrives instead of making users wait for the full response.
+- **Timely results:** Tell users when a task needs their review or its result is ready, even after the original request ends.
+
+## Channels and topics
+
+Name a channel for the user, document, or task you want to update.
+
+Use topics such as `status`, `tokens`, and `result` to let clients subscribe to the message types they need. Your server authorizes each subscription before a client connects.
+
+## Keep important updates accurate
+
+- Use `step.realtime.publish()` for state changes and final results. It prevents a completed publish from repeating when the function retries.
+- Use `inngest.realtime.publish()` for token streams and frequent progress updates. It sends immediately, so a retry can repeat an update. You can also use it from server-side code outside a function.
+
+## Start here
+
+Follow [Quick start](/docs/realtime/quick-start) to show live progress in a browser. Then explore channels and topics, guides, limits, and APIs below.
+

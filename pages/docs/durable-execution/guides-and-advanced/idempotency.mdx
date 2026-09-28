@@ -1,0 +1,27 @@
+export const metaTitle = "Idempotency";
+export const description = "Keep a duplicate checkout event from starting another payment run.";
+
+# Idempotency
+
+> Prevent duplicate events and retries from repeating payments, messages, or provisioning.
+
+Keep a duplicate checkout event from starting another payment run. Use an event or function key to control whether a run starts, and make the payment safe to repeat if its step runs again.
+## Decide where to deduplicate
+- **At the event producer.** Set a stable event `id` for one business occurrence, such as one checkout. Inngest uses it to avoid starting functions again for a duplicate event received within 24 hours. The duplicate still appears in event history. Reusing an ID for a genuinely new occurrence suppresses work, so choose the boundary carefully.
+- **At the function.** Use the function's `idempotency` expression when only one consumer of an event should run once for a business key. The expression reads event data and prevents another execution with the same value for 24 hours. Other functions triggered by that event can still run.
+- **At the external service.** Send a stable operation key to a payment, email, database, or provisioning API. A request can succeed before Inngest records the step result. A retry can then call the API again. Event and function deduplication do not remove that risk.
+## Choose a business key
+Start with the operation whose effect must occur once. Use a checkout ID for a payment, an order and message type for an email, or a customer and resource ID for provisioning. Include every field needed to distinguish valid repeats. Do not use a new retry attempt ID as the external idempotency key.
+For example, send the same `id` when retrying delivery of a checkout event:
+```typescript
+await inngest.send({
+  id: `checkout-completed-${checkoutId}`,
+  name: "cart/checkout.completed",
+  data: { checkoutId },
+});
+```
+If several functions receive that event but only the payment function needs deduplication, set that function's `idempotency` expression from `event.data.checkoutId` instead of deduplicating the whole event. For the exact TypeScript, Go, or Python configuration, use the platform and language reference tab.
+## Check feature interactions
+The current event-ID deduplication behavior does not apply to debouncing, event batching, or events received while a function is paused. Design and test those paths separately. Rate limits and debounce control when work starts; they do not replace an idempotency key for an external effect.
+## Verify the behavior
+Send the same event ID twice in a test environment and inspect the event history and function runs. Then test two valid business occurrences with distinct IDs. Test an external call that succeeds just before the step reports a failure, and confirm the provider accepts the repeated operation key.

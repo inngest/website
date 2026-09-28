@@ -1,0 +1,12 @@
+export const metaTitle = "Traces";
+export const description = "Open a run trace to find the slow or failed step before changing code or capacity.";
+
+# Traces
+
+> Find slow or failed work by following each step, wait, and retry in a run trace.
+
+Open a run trace to find the slow or failed step before changing code or capacity. Inngest records traces automatically in the Dev Server and Cloud dashboard.
+## Read the timeline
+Open a run and select a bar in its waterfall timeline. The run bar shows overall status and duration. Step bars show `step.run`, sleeps, waits, invokes, and other operations. Expand a step to separate queue delay from time spent in your server. A high queue delay points to scheduling or capacity; a long server span points to your function code or a dependency.
+The details panel shows step input, output, errors, attempt number, and timing. Retry attempts appear as separate spans. Select the root bar for trigger and run details. Use the trace to choose a safe starting point before rerunning a step.
+Custom OpenTelemetry spans can appear as extended traces when supported by your SDK and instrumentation. The new Sandboxes experience should show sandbox operations within the durable execution trace; verify its launch UI and labels before publication.

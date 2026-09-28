@@ -1,0 +1,118 @@
+import { Mermaid } from "src/shared/Docs/Mermaid";
+
+export const metaTitle = "Durable Workflows";
+export const description = "Run work in the background.";
+
+# Durable Workflows
+
+> Run reliable background work that survives failures and waits after your app returns a response.
+
+**Run work in the background.** An event, schedule, webhook, or another function starts a durable workflow. Your app can return from a request after sending an event; the workflow continues on its own. Inngest saves completed steps, retries failed work, and resumes after waits.
+
+## Durable workflows vs Durable endpoints
+
+- **Durable workflow:** An event, schedule, webhook, or another function starts background work. Your API can return after sending an event while the workflow continues. Use it when the caller does not need to wait for the result, or if the workflow takes longer than 60 seconds.
+- **Durable Endpoint:**  An HTTP request starts the work, and the caller receives its result as an HTTP response.  This allows synchronous API requests to survive temporary step errors.  Endpoints are for lighter, synchronous functions where the caller needs a response and should last no longer than 60 seconds.
+
+Both use durable steps and traces. Read [Durable Endpoints](/docs/durable-execution/durable-endpoints) for the request and response path.
+
+## Runs, steps, and checkpoints
+
+A trigger starts a **run** of an Inngest function. The run has its own input and progress. An event, schedule, or webhook can start a function. A **step** is a named unit of work inside that run. When a step succeeds, Inngest stores its result as a **checkpoint**. Later steps can use that result.
+
+After a successful step, the function continues in the same handler. Inngest stores the result as a checkpoint; it does not restart the handler between ordinary steps. If the run waits or a later step fails, Inngest uses saved results for completed steps without running their callbacks again. Local process memory does not carry across a pause or retry.
+
+## How a run checkpoints and continues
+
+<Mermaid
+  wide
+  label="An event, API call, or schedule triggers the function. Inngest starts the workflow. Step 1 saves a checkpoint, then Step 2 runs in the same handler before the run completes."
+  chart={`sequenceDiagram
+  participant Trigger as Trigger source
+  participant Inngest
+  participant Function as Your function
+  Trigger->>Inngest: Trigger function
+  Inngest->>Function: Start run
+  Function->>Function: Step 1 completes
+  Function-)Inngest: Save Step 1 checkpoint
+  Function->>Function: Step 2 runs in the same handler
+  Function-->>Inngest: Complete run`}
+/>
+
+If the run waits or Step 2 fails, Inngest uses the Step 1 checkpoint to resume without rerunning Step 1. A wait does not keep a worker running.
+
+## Resume, rerun, and replay
+
+Resuming a run reuses its saved step results. **Rerun** starts a new run from one earlier run, either from the beginning or from a selected step. **Replay** targets many runs after an incident. Rerun and replay are explicit recovery actions. They differ from continuing in the same handler after a successful step.
+
+## A three-step example
+
+This TypeScript SDK v4 function processes an order. The functions `loadOrder`, `chargeOrder`, and `sendReceipt` represent your application code.
+
+```typescript
+import { inngest } from "./client";
+
+export const processOrder = inngest.createFunction(
+  { id: "process-order", triggers: { event: "shop/order.placed" } },
+  async ({ event, step }) => {
+    const order = await step.run("load-order", () =>
+      loadOrder(event.data.orderId)
+    );
+
+    await step.run("charge-order", () => chargeOrder(order));
+    await step.run("send-receipt", () => sendReceipt(order));
+
+    return { orderId: order.id };
+  }
+);
+```
+If `charge-order` fails, Inngest can retry it and reuse the saved `load-order` result. If `send-receipt` fails, both earlier results remain available. The run shows each step and its attempts.
+
+## Start one workflow from multiple triggers
+
+One durable function can start from several event types or schedules. Use this when each trigger leads to related work and should share one function's retry policy and flow controls. In the handler, check `event.name` to choose the right path after the run starts.
+
+```typescript
+import { inngest } from "./client";
+
+export const syncUser = inngest.createFunction(
+  {
+    id: "sync-user",
+    triggers: [
+      { event: "app/user.created" },
+      { event: "app/user.updated" },
+      { cron: "0 5 * * *" },
+    ],
+  },
+  async ({ event, step }) => {
+    if (event.name === "app/user.created") {
+      return step.run("sync-created-user", () => syncCreatedUser(event.data));
+    }
+    if (event.name === "app/user.updated") {
+      return step.run("sync-updated-user", () => syncUpdatedUser(event.data));
+    }
+    return step.run("daily-sync", runDailySync);
+  }
+);
+```
+Each matching event or schedule starts a run. The JavaScript `if` statements choose work within that run. To reject an event **before** a run starts, use a trigger `if` condition instead; see [Event and trigger concepts](/docs/durable-execution/guides-and-advanced/events-and-triggers/event-and-trigger-concepts). If two cron triggers on one function fire in the same second, Inngest starts one run. Use a trigger condition to choose which events start a run.
+
+## Wait for the next action
+
+A workflow can pause without keeping a worker busy. Use `step.sleep()` for a delay, `step.sleepUntil()` for a time, or `step.waitForEvent()` or `step.waitForSignal()` to continue after an external action. Inngest resumes the run when the wait ends. For example, an order workflow can wait for a payment event before fulfillment.
+
+## Keep side effects safe
+
+Put database writes, API calls, and other side effects inside `step.run()`. Completed steps use their saved results when the function resumes. A step can still repeat an external action if that action succeeded but the step failed before Inngest recorded completion. Use an idempotency key or another safeguard in the external system for actions such as charging a card or sending a message.
+
+Keep step IDs stable for work that must retain its saved result across deployments. Changing an ID makes an in-progress run treat that step as new work.
+
+## Realtime updates for your UI
+
+Use [Realtime](/docs/realtime) to broadcast progress or results to a subscribed UI while a workflow runs. These messages update users as work happens. The run trace records steps, retries, and errors for debugging and operational observability. The request that started the workflow can return before the work finishes.
+
+## Continue
+
+- [Quick start](/docs/durable-execution/quick-start) builds and inspects a first run.
+- [Primitives](/docs/durable-execution/primitives) explains each operation.
+- [Best practices](/docs/durable-execution/best-practices) covers safe step boundaries and changes to running workflows.

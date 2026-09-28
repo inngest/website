@@ -1,0 +1,43 @@
+export const metaTitle = "Guides | Sandboxes";
+export const description = "Run isolated code, preserve work across lifecycle changes, and inspect failures in one durable run.";
+
+# Guides
+
+> Run isolated code, preserve work across lifecycle changes, and inspect failures in one durable run.
+
+Start with the TypeScript quick start to run a command in a Sandbox. Then use these guides to preserve files across lifecycle changes, inspect failures in the run trace, and clean up resources after work ends.
+
+> **Draft status:** The access-gated beta supports the low-level TypeScript APIs today. You can select existing workspace secrets when you create a Sandbox. SSH and S3-backed persistent mounts are planned for launch; their setup steps remain TBD until the product contract is confirmed.
+
+## Start and run
+
+- [Run your first Sandbox](/docs/sandboxes/quick-start). Create a Sandbox in a durable TypeScript function, run one command, inspect its result, and destroy it.
+- **Run code and commands.** Use [Managed lifecycle](/docs/sandboxes/features/managed-lifecycle) for `step.sandbox` inside a function. The immediate `inngest.sandboxes` client supports command inputs, captured output, and timeouts. The planned `step.sandbox.typescript` helper will start, run TypeScript, and stop a Sandbox in one call; its signature is TBD.
+- **Move files and manage processes.** The beta APIs support file upload and download, background processes, retained output, and live output. File transfer and live streams currently use the direct server-side client.
+
+## Keep or branch your work
+
+- [Pause and resume](/docs/sandboxes/features/pause-and-resume). Continue the same Sandbox later with its filesystem, memory, and Sandbox ID.
+- [Create a snapshot](/docs/sandboxes/features/snapshots-and-restore) and [clone it](/docs/sandboxes/features/cloning). Save a prepared state and start a new Sandbox from it. Cloning does not replace the original Sandbox.
+- [Share files across Sandboxes](/docs/sandboxes/features/durable-filesystems). Learn when a Sandbox filesystem survives pause or appears in a snapshot clone, and when to use an S3-backed persistent mount. A clone attaches the same backing path for a shared mount. Mount setup and concurrent-write rules are TBD.
+
+## Access and inspect
+
+- [Connect over SSH](/docs/sandboxes/features/ssh). Upload a public key to Inngest, then connect to a running Sandbox using its SSH address. The exact upload path and final address format are TBD.
+- [Use Sandbox secrets](/docs/sandboxes/features/secrets). Select existing workspace secrets by exact name when creating a fresh Sandbox. Code throughout that Sandbox can read the injected values, and output is not automatically redacted.
+- [Inspect Sandbox steps in a trace](/docs/sandboxes/features/traces). Find the operation, result, error, and retry attempt in the function run. Sandbox-specific trace fields remain TBD.
+
+## Recover and clean up
+
+- **Handle retries and uncertain outcomes.** [Managed lifecycle](/docs/sandboxes/features/managed-lifecycle) explains safe step retries and `operation_ambiguous`. Inspect the current Sandbox or external effect before repeating a command that may already have run.
+- **Clean up after success and failure.** The beta `step.sandbox.create()` flow needs an explicit Destroy step and a failure cleanup path when a permanently failed run could leave a Sandbox. Direct `inngest.sandboxes` calls need application cleanup, such as `try/finally`. The planned `step.sandbox.typescript` helper manages start and stop for its one-call task; its failure contract is TBD.
+
+## Before publication
+
+- What is the tested `step.sandbox.typescript` signature, and what cleanup does it guarantee after failure or cancellation?
+- How do users create and attach S3-backed mounts? What are the write visibility and concurrent-write rules?
+- What are the final SSH key upload steps, address format, permissions, and session limits?
+- What workspace permissions and launch UI govern secret management, and what will Inngest redact from output and traces?
+- Which Sandbox-specific fields appear in traces, and how do users find a Sandbox from a run?
+
+These guides describe isolated microVM Sandboxes. Deployment previews are [branch deploys](/docs/platform-and-operations/environments-and-branch-deploys).

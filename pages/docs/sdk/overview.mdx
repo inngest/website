@@ -1,17 +1,17 @@
 import { CodeGroup, LanguageSelector, LanguageSection } from "shared/Docs/mdx";
 
-# Installing the SDK
+export const metaTitle = "SDKs & APIs";
+export const description = "Choose an SDK for your language to build durable functions, send events, and connect your app.";
 
-The Inngest SDK allows you to write reliable, durable functions in your existing projects incrementally. Functions can be automatically triggered by events or run on a schedule without infrastructure, and can be fully serverless or added to your existing HTTP server.
+# SDKs & APIs
 
-- It works with any framework and platform by using HTTP to call your functions
-- It supports serverless providers, without any additional infrastructure
-- It fully supports TypeScript out of the box
-- You can locally test your code without any extra setup
+> Find the SDK for your language and start building durable functions in your existing app.
 
+Choose an SDK for your language to build durable functions, send events, and connect your app. Inngest also connects Sandboxes, Online Evals, and Realtime to those runs. Use the [versioned reference](/docs/sdk/overview/reference) for exact methods and options.
 
+You can serve functions over HTTP from your existing app or use Connect to run a worker that connects to Inngest. Choose the deployment model that fits your host.
 
-## Getting started
+## Install an SDK
 
 <LanguageSelector>
 
@@ -19,7 +19,7 @@ The Inngest SDK allows you to write reliable, durable functions in your existing
 
 ### Installation
 
-To get started, install the SDK via your favorite package manager:
+Install `inngest` with your package manager:
 
 <CodeGroup>
 ```shell {{ title: "npm" }}
@@ -38,7 +38,7 @@ bun add inngest
 
 ### Setup
 
-Once Inngest is installed, create an Inngest client, later used to define your functions and trigger events:
+Create an Inngest client to define functions and send events:
 
 ```typescript
 import { Inngest } from "inngest";
@@ -54,13 +54,11 @@ export const inngest = new Inngest({
 <LanguageSection show="go">
 
 
-To get started, install the SDK via `go get`:
+Add the Go SDK to your project:
 
 ```shell
 go get github.com/inngest/inngestgo
 ```
-
-
 
 </LanguageSection>
 
@@ -68,11 +66,7 @@ go get github.com/inngest/inngestgo
 
 ### Installation
 
-
-
-To get started, install the SDK via `pip`:
-
-
+Install the Python SDK:
 
 ```shell
 pip install inngest
@@ -80,28 +74,27 @@ pip install inngest
 
 ### Setup
 
-Once Inngest is installed, create an Inngest client, later used to define your functions and trigger events:
+Create an Inngest client to define functions and send events:
 
 ```python
 import inngest
 import logging
 
-# Create an Inngest client
 inngest_client = inngest.Inngest(
     app_id="app_example",
     logger=logging.getLogger("uvicorn"),
 )
 ```
 
-
-
 </LanguageSection>
 
 </LanguageSelector>
 
 
-Your project is now ready to start writing Inngest functions:
+Next, build and connect a function:
 
-1. [Define and write your functions](/docs/learn/inngest-functions)
-2. [Trigger functions with events](/docs/events)
-3. [Set up and serve the Inngest API for your framework](/docs/learn/serving-inngest-functions)
+1. [Define a durable workflow](/docs/durable-execution/durable-workflows)
+2. [Start work with an event](/docs/durable-execution/guides-and-advanced/events-and-triggers/send-events)
+3. [Deploy and serve your function](/docs/durable-execution/guides-and-advanced/deploying-functions)
+
+Use the [SDK reference](/docs/sdk/overview/reference) for method signatures and version support.

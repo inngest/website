@@ -1,0 +1,45 @@
+export const metaTitle = "Event and trigger concepts";
+export const description = "When a customer places an order, your app can send one shop/order.placed event.";
+
+# Event and trigger concepts
+
+> Decouple event senders from workflows so one action can start independent functions.
+
+When a customer places an order, your app can send one `shop/order.placed` event. Inngest can start separate payment and notification functions from it. The event records what happened; each trigger tells Inngest which function to start.
+## The path from action to run
+1. Your app or a provider sends an event with a name and data.
+2. Inngest records the event in the selected environment.
+3. Each active function with a matching trigger starts its own run.
+4. Each run receives the triggering event and records its steps, waits, and result.
+A cron schedule starts a run without an app-sent event. A function may also start through direct invocation. See [Primitives](/docs/durable-execution/primitives) for durable waits and invocation.
+## Choose the right connection
+- **Use an event** when several functions may react, the sender does not need their return values, or the action crosses apps.
+- **Use a webhook** when an external service sends the action to an Inngest URL.
+- **Use cron** when time starts recurring work.
+- **Use ****`step.invoke()`** when a run needs a specific child function and its result.
+An event can also resolve a waiting run or cancel a matching run. It is useful for approval, follow-up, and stop signals as well as for starting new runs.
+## Match an event before starting a run
+A trigger can match one event name or an event family. Add a trigger `if` condition when only some events should start a run. Inngest evaluates the condition before it starts the function. The condition uses Common Expression Language (CEL), and it must return `true` or `false`.
+```typescript
+import { eventType, staticSchema } from "inngest";
+import { inngest } from "./client";
+
+const orderPlaced = eventType("shop/order.placed", {
+  schema: staticSchema<{ orderId: string; total: number }>(),
+});
+
+export const largeOrder = inngest.createFunction(
+  {
+    id: "process-large-order",
+    triggers: [{ event: orderPlaced, if: "event.data.total > 100" }],
+  },
+  async ({ event }) => processOrder(event.data)
+);
+```
+In the expression, `event` is the incoming event. Test the condition against representative payloads. A JavaScript `if` inside the handler chooses what a run does **after** it starts; a trigger `if` decides whether the run starts at all.
+A wildcard such as `app/user.*` matches names such as `app/user.created` and `app/user.updated`. Wildcards follow a slash or dot and match only a trailing suffix. They cannot appear in the middle of a name. Use a wildcard for broad intake, then inspect `event.name` and validate each payload before acting. A wildcard event type cannot define one schema for every possible payload.
+An event can match several functions. Check overlapping triggers before deploying so one event does not start unintended work.
+## Identify an event
+Use a descriptive, stable name such as `billing/invoice.paid`. Keep the relevant resource ID in `data`. An event ID identifies the sent event for lookup and optional deduplication. A run ID identifies one function execution. One event can produce multiple run IDs.
+## Inspect the result
+Find the event in the environment where you sent it. Open the linked run and inspect its trace. If no run starts, compare the event name, trigger condition, app sync, and environment. See [Troubleshooting](/docs/durable-execution/troubleshooting).

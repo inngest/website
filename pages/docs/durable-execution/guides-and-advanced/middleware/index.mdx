@@ -1,0 +1,23 @@
+export const metaTitle = "Middleware";
+export const description = "Apply logging, dependencies, error reporting, and data protection across your functions from one place.";
+
+# Middleware
+
+> Apply logging, dependencies, error reporting, and data protection across your functions from one place.
+
+Add a database client, error reporter, or encryption behavior once and apply it across a client's functions. Register middleware on one function when only that function needs the behavior.
+Middleware runs at defined points as Inngest handles a request, runs a function or step, and sends events. TypeScript v4 uses middleware classes and hooks. Use the TypeScript v4 class API for new middleware.
+## Learn and build
+- [Overview](/docs/durable-execution/guides-and-advanced/middleware/overview) explains when middleware helps and how client and function registration work.
+- [Creating middleware](/docs/durable-execution/guides-and-advanced/middleware/creating-middleware) covers the TypeScript v4 class model, lifecycle hooks, and registration.
+## Common uses
+- [Dependency injection](/docs/durable-execution/guides-and-advanced/middleware/dependency-injection) provides shared clients and services to functions.
+- [Encryption middleware](/docs/durable-execution/guides-and-advanced/middleware/encryption-middleware) protects event data and persisted results when they cross Inngest's servers.
+- [Sentry middleware](/docs/durable-execution/guides-and-advanced/middleware/sentry-middleware) sends function errors and traces to Sentry.
+## SDK support
+Middleware is available in TypeScript and Python. Go support is planned. The TypeScript v4 API defines the hook order and arguments.
+- [Overview](/docs/durable-execution/guides-and-advanced/middleware/overview)
+- [Creating middleware](/docs/durable-execution/guides-and-advanced/middleware/creating-middleware)
+- [Dependency injection](/docs/durable-execution/guides-and-advanced/middleware/dependency-injection)
+- [Encryption middleware](/docs/durable-execution/guides-and-advanced/middleware/encryption-middleware)
+- [Sentry middleware](/docs/durable-execution/guides-and-advanced/middleware/sentry-middleware)

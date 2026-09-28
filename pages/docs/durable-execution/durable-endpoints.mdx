@@ -1,0 +1,91 @@
+import { Mermaid } from "src/shared/Docs/Mermaid";
+
+export const metaTitle = "Durable Endpoints";
+export const description = "Recover an HTTP request after a failure.";
+
+# Durable Endpoints
+
+> Keep HTTP requests recoverable so callers can receive a response after temporary failures.
+
+**Recover an HTTP request after a failure.** A Durable Endpoint keeps the request and response model. Inngest saves completed steps and retries failed work. If recovery takes longer, the endpoint can redirect the client to await the final response.
+
+## Durable endpoints vs durable workflows
+
+- **Durable Endpoint:**  An HTTP request starts the work, and the caller receives its result as an HTTP response.  This allows synchronous API requests to survive temporary step errors.  Endpoints are for lighter, synchronous functions where the caller needs a response and should last no longer than 60 seconds.
+- **Durable workflow:** An event, schedule, webhook, or another function starts background work. Your API can return after sending an event while the workflow continues. Use it when the caller does not need to wait for the result, or if the workflow takes longer than 60 seconds.
+
+## How it works
+
+1. Your client sends a request to your endpoint.
+2. Your handler runs normal application code. Put operations that need retry and recovery inside `step.run()`.
+3. Inngest stores completed step results asynchronously. Your endpoint continues without waiting for storage, so recording results does not slow the API request. If a later step fails, Inngest retries it and reuses completed step results.
+4. If steps need to retry, the client is redirected to a new URL that waits for the API result.
+5. When Inngest finishes the retry of the API, the result is sent to the user waiting for the result at its new URL.
+
+<Mermaid
+  wide
+  label="A client calls a Durable Endpoint. The first step completes and its result is stored asynchronously while the API request continues. The second step fails, so the endpoint redirects the client. Inngest re-enters the handler, retries the second step, and returns the final response to the waiting client."
+  chart={`sequenceDiagram
+  participant Client
+  participant Endpoint as Your endpoint
+  participant Inngest
+  Client->>Endpoint: HTTP request
+  Endpoint->>Endpoint: Step 1 completes
+  Endpoint-)Inngest: Store Step 1 result asynchronously
+  Note over Endpoint: Continue without waiting for storage
+  Endpoint->>Endpoint: Step 2 fails
+  Endpoint-->>Client: Redirect to result URL
+  Client->>Inngest: Follow redirect and wait
+  Inngest->>Endpoint: Re-enter handler
+  Note over Endpoint: Reuse Step 1 result
+  Endpoint->>Endpoint: Retry Step 2
+  Endpoint-->>Inngest: Final response
+  Inngest-->>Client: Return result`}
+/>
+
+This shows the retry path. On a successful first attempt, your endpoint returns the HTTP response directly.
+
+You can also use `step.sleep()` and `step.waitForEvent()` in a Durable Endpoint. Inngest records these waits in the run trace.
+
+
+## Add durability to an endpoint
+
+This TypeScript v4 example wraps a Next.js POST handler with `inngest.endpoint()` and reads a JSON body. Replace the application functions with your own code.
+
+```typescript
+import { Inngest, step } from "inngest";
+import { endpointAdapter } from "inngest/next";
+import { NextRequest } from "next/server";
+
+const inngest = new Inngest({
+  id: "orders-app",
+  endpointAdapter,
+});
+
+export const POST = inngest.endpoint(async (req: NextRequest) => {
+  const { orderId } = (await req.json()) as { orderId?: string };
+
+  if (!orderId) {
+    return Response.json({ error: "orderId is required" }, { status: 400 });
+  }
+
+  const order = await step.run("load-order", () => loadOrder(orderId));
+
+  const reservation = await step.run("reserve-inventory", () =>
+    reserveInventory(order)
+  );
+
+  return Response.json({ orderId, reservation });
+});
+```
+Send a JSON body such as `{ "orderId": "123" }` to this route. If `reserve-inventory` fails, Inngest retries that step without rerunning `load-order`. Make operations with external effects safe to retry, because the step that fails can run again.
+
+## Handle a request that takes longer
+
+On the normal success path, the caller receives the response from your route. When a retry or long-running step moves the result to Inngest, the endpoint can return a redirect to a result URL. Browser clients must follow the redirect and handle the cross-origin response. If the browser must use your own origin for the result URL, the SDK documents `endpointProxy()` and `asyncRedirectUrl`.
+
+## Current support and limits
+
+- Durable Endpoints are beta, and are available in TypeScript and Go.
+- Workflow flow control such as concurrency and rate limits does not currently apply to Durable Endpoints.
+- Streaming is in developer preview.

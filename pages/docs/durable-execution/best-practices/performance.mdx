@@ -1,0 +1,34 @@
+export const metaTitle = "Performance";
+export const description = "Open a run trace to find whether latency comes from the queue, your code, or the handoff between steps.";
+
+# Performance
+
+> Reduce workflow latency by identifying queue, execution, and step handoff delays.
+
+Open a run trace to find whether latency comes from the queue, your code, or the handoff between steps. Then change the relevant flow control, host capacity, or checkpointing setting.
+## Let checkpointing run consecutive steps sooner
+The TypeScript v4 SDK enables checkpointing by default. It lets the SDK run consecutive synchronous steps without waiting for a separate platform round trip after each one. Inngest still records progress. If a step fails, the run falls back to standard orchestration for retries.
+On an always-on server, start with the default. On a serverless host, set `checkpointing.maxRuntime` slightly below the host's request duration limit so the SDK can return before the host stops the request:
+```typescript
+import { Inngest } from "inngest";
+
+export const inngest = new Inngest({
+  id: "my-app",
+  checkpointing: {
+    maxRuntime: "50s",
+  },
+});
+```
+The `50s` value is an example, not a general recommendation. Use your actual host limit. The checkpointing options are `maxRuntime`, `bufferedSteps`, and `maxInterval`.
+Keep the default `bufferedSteps: 1` unless measurements show a need to reduce checkpoint requests. Increasing it can reduce requests, but a server termination can lose completed steps that have not yet been checkpointed. Those steps can run again. Make their external effects idempotent before changing the buffer.
+Parallel branches can switch temporarily to standard orchestration. Measure the complete run before assuming that every step will use the faster path.
+## Use Connect for long-running workers
+For a long-running server or container, `connect()` keeps an outbound connection between your worker and Inngest. It avoids a new inbound HTTP request for each step and supports horizontal scaling with more workers. It also avoids the request duration limit that constrains a `serve()` endpoint on a serverless host.
+Use Connect when you can run an always-on worker and want lower handoff latency or longer step execution. Use `serve()` when your deployment is built around HTTP or a serverless host. Connect requires an always-on runtime and is not supported on serverless platforms.
+Keep worker capacity aligned with CPU, memory, and downstream connection pools. Set `maxWorkerConcurrency` only after confirming your SDK and deployment support it. Adding workers can raise capacity, but it does not remove function concurrency limits or a downstream service bottleneck.
+## Change one bottleneck at a time
+1. Open a representative run trace. Separate queue delay from step duration and handoff time.
+2. If handoffs dominate, check that your v4 app uses checkpointing and that a serverless `maxRuntime` fits its host limit. Consider Connect for an always-on worker.
+3. If a step dominates, inspect that step's code and external calls. Put independent side effects in separate steps only when each needs its own retry or trace.
+4. If queue delay dominates, compare function and worker concurrency with actual host and downstream capacity. Raise a limit only when the system it protects has room.
+5. Repeat the same workload and compare the full run. Check failure and retry behavior as well as latency.

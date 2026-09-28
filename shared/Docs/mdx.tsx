@@ -53,9 +53,16 @@ export { Unreleased } from "./Unreleased";
 
 import { PageActions } from "./PageActions";
 
-export const h1: React.FC<any> = function (props) {
+export const h1: React.FC<any> = function ({
+  "data-docs-page-heading": docsPageHeading,
+  ...props
+}) {
+  if (docsPageHeading) {
+    return <Heading level={1} {...props} anchor={false} />;
+  }
+
   return (
-    <div className="group/h1 mb-8">
+    <div className="group/h1 mb-12">
       <Heading level={1} {...props} anchor={false} />
       <div className="mt-4">
         <PageActions />
@@ -63,6 +70,19 @@ export const h1: React.FC<any> = function (props) {
     </div>
   );
 };
+
+export function DocsPageHeading({ children }: { children: React.ReactNode }) {
+  return (
+    <div className="group/h1 mb-12">
+      <div className="[&>p]:mb-0 [&>p]:mt-3 [&>p]:text-lg [&>p]:font-normal [&>p]:leading-7 [&>p]:text-slate-600 dark:[&>p]:text-slate-400">
+        {children}
+      </div>
+      <div className="mt-4">
+        <PageActions />
+      </div>
+    </div>
+  );
+}
 export const h2: React.FC<any> = function (props) {
   return <Heading level={2} {...props} />;
 };

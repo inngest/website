@@ -1,0 +1,137 @@
+export const metaTitle = "Quick start | Sandboxes";
+export const description = "Run your first Sandbox from a durable function and inspect its command output in the run trace.";
+
+# Quick start
+
+> Run your first Sandbox from a durable function and inspect its command output in the run trace.
+
+Run a command in an isolated Linux Sandbox, return its output, and destroy the Sandbox from a durable Inngest function. The run trace shows each operation, so you can find where a command failed.
+
+## Before you start
+
+You need:
+
+- An existing server-side TypeScript Inngest app and a function handler connected to an Inngest Cloud environment. If you need an app, start with the [Node.js quick start](/docs/getting-started/nodejs-quick-start).
+- A Node.js 20 or newer server runtime with the standard Fetch API.
+- An Inngest Cloud environment with Sandbox beta access enabled. If Create returns `403 access_denied`, ask Inngest to enable access for that environment.
+- `inngest` version 4.20.0 or newer.
+- Your environment's signing key set as `INNGEST_SIGNING_KEY` in your **server** environment. Keep it out of browser code and source control.
+
+## 1. Install the SDK
+
+In your server-side project, install Inngest:
+
+```bash
+npm install inngest@latest
+```
+
+Check that the installed version is 4.20.0 or newer before continuing.
+
+## 2. Enable durable Sandbox steps
+
+Add the Sandbox middleware to your shared Inngest client. This makes `step.sandbox` available inside Inngest functions.
+
+`inngest/client.ts`
+
+```typescript
+import { Inngest } from "inngest";
+import { sandboxMiddleware } from "inngest/experimental";
+
+export const inngest = new Inngest({
+  id: "sandbox-beta-demo",
+  middleware: [sandboxMiddleware()],
+});
+```
+
+Keep your existing app ID if you are adding this to an app you already use.
+
+## 3. Create a function that runs one command
+
+Add this function to your server-side project. The command prints one line to standard output and another to standard error. Each Sandbox operation has a stable step ID so Inngest can record it in the durable run.
+
+`inngest/functions/run-in-sandbox.ts`
+
+```typescript
+import { inngest } from "../client";
+
+export const runInSandbox = inngest.createFunction(
+  {
+    id: "run-in-sandbox",
+    triggers: { event: "sandbox/demo.requested" },
+  },
+  async ({ event, step }) => {
+    const sandbox = await step.sandbox.create("create-sandbox", {
+      name: `beta-${event.data.jobId}`,
+      vcpu: 1,
+      memoryMb: 1024,
+    });
+
+    const result = await sandbox.commands.run(
+      "run-command",
+      "printf 'hello from the sandbox\\n'; printf 'diagnostic\\n' >&2",
+      {
+        cwd: "/",
+        timeout: "30s",
+      },
+    );
+
+    await sandbox.destroy("destroy-sandbox");
+
+    return {
+      sandboxId: sandbox.id,
+      stdout: result.stdout,
+      stderr: result.stderr,
+      exitCode: result.exitCode,
+      outputWasTruncated: result.output.truncated,
+    };
+  },
+);
+```
+
+Register `runInSandbox` in the `functions` array of your existing `serve()` handler. Deploy or connect the app to the Cloud environment with Sandbox beta access.
+
+## 4. Trigger your function
+
+Send this event to the same Inngest environment from the Inngest dashboard or your application's event sender:
+
+```json
+{
+  "name": "sandbox/demo.requested",
+  "data": {
+    "jobId": "job_123"
+  }
+}
+```
+
+Use a stable job ID that is safe in a Sandbox name. Use a new ID for each new run.
+
+## 5. Inspect the result
+
+Open the function run in Inngest. A successful run returns a result like this, with an actual Sandbox ID:
+
+```json
+{
+  "sandboxId": "...",
+  "stdout": "hello from the sandbox\n",
+  "stderr": "diagnostic\n",
+  "exitCode": 0,
+  "outputWasTruncated": false
+}
+```
+
+Inspect the run's steps. You should find `create-sandbox`, `run-command`, and `destroy-sandbox` in the durable execution record. The first creates and waits for a running Sandbox, the second captures the command result, and the third destroys the Sandbox on the successful path. Open the trace to inspect the steps and any failure.
+
+## Cleanup and beta behavior
+
+This example explicitly destroys the Sandbox after the command succeeds. **Durable Sandbox steps do not automatically guarantee cleanup after a permanent function failure.** For a workflow where a leaked Sandbox matters, add an Inngest `onFailure` handler or a separate deferred cleanup function that receives the Sandbox ID. A JavaScript `finally` block inside the function is not a substitute for cleanup after a permanently failed run.
+
+Destroying a Sandbox removes its filesystem, processes, and retained output. Save anything you need outside the Sandbox before destroying it.
+
+## Continue from here
+
+- [Sandboxes overview](/docs/sandboxes/overview) explains how isolated execution fits into a durable run.
+- [Sandboxes features](/docs/sandboxes/features) introduces files, processes, pause, snapshots, clones, and restore.
+- [Sandboxes guides](/docs/sandboxes/guides) covers longer tasks.
+- [Sandboxes limits](/docs/sandboxes/limits) and [reference](/docs/sandboxes/reference) hold the beta constraints and API details.
+
+A Sandbox is an isolated Linux environment for code in a run. A [branch deploy](/docs/platform-and-operations/environments-and-branch-deploys) is a deployment preview for a Git branch.

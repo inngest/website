@@ -308,13 +308,12 @@ module.exports = ({ theme }) => ({
       ":is(a, h1, h2, h3, blockquote, thead th) code": {
         color: "inherit",
       },
-      "h2 code": {
-        fontSize: theme("fontSize.base")[0],
+      ":is(h1, h2, h3) code": {
+        fontSize: "inherit",
         fontWeight: "inherit",
-      },
-      "h3 code": {
-        fontSize: theme("fontSize.sm")[0],
-        fontWeight: "inherit",
+        backgroundColor: "transparent",
+        padding: "0",
+        borderRadius: "0",
       },
 
       // Overrides

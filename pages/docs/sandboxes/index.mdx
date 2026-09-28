@@ -1,0 +1,27 @@
+export const metaTitle = "Sandboxes";
+export const description = "Run generated code in an isolated microVM and see its activity alongside your function steps and retries.";
+
+# Sandboxes
+
+> Run generated code in an isolated microVM and see its activity alongside your function steps and retries.
+
+When an agent needs to run generated code or test a repository, put that work in a Sandbox. Each Sandbox has its own filesystem and processes. Inngest records Sandbox operations in the durable function run, so you can inspect the job and retry the surrounding steps from one trace.
+
+## What you can do
+
+- **Run code in isolation.** Each Sandbox runs in a separate VM, isolated from the host and other Sandboxes. Sandboxes cannot send traffic directly to one another; outbound network access is allowed by default.
+- **Start quickly and keep your work.** Sandboxes boot in under a second. Pause and resume the same Sandbox, or capture a snapshot and clone it into a new Sandbox. Its filesystem persists through those operations.
+- **Share files when tasks need them.** S3-backed persistent mounts let different Sandboxes use the same backing path.
+- **Follow the whole job.** See Sandbox operations alongside function steps, waits, and retries in a run trace.
+
+A durable function can start a Sandbox, run code, wait for another event, and continue later. The lifecycle depends on the API. The beta's low-level `step.sandbox.create()` path requires your function to destroy the Sandbox and handle cleanup after permanent failure. A planned higher-level `step.sandbox.typescript` call will start a Sandbox, run TypeScript, and stop it automatically; its exact API is still being specified.
+
+## Start here
+
+- [Overview](/docs/sandboxes/overview) explains how Sandboxes fit into durable execution.
+- [Quick start](/docs/sandboxes/quick-start) runs a command with the access-gated TypeScript beta.
+- [Features](/docs/sandboxes/features) covers lifecycle, filesystems, SSH, secrets, isolation, and traces.
+- [Guides](/docs/sandboxes/guides) shows how to use Sandboxes in a durable job.
+- [Reference](/docs/sandboxes/reference) and [Limits](/docs/sandboxes/limits) give the current API and beta limits.
+
+**Draft status.** The TypeScript Sandbox beta is access-gated and intended for evaluation. Launch availability, pricing, and the measured conditions for sub-second boot remain to be confirmed.

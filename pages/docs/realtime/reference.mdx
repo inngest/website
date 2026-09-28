@@ -1,0 +1,81 @@
+export const metaTitle = "Reference";
+export const description = "Publish typed updates from your functions and let authorized clients follow the work.";
+
+# Reference
+
+> Publish typed updates from your functions and let authorized clients follow the work.
+
+> **Editorial status:** draft
+
+Find the TypeScript SDK v4 calls for defining channels, publishing messages, and subscribing clients. Realtime ships in `inngest`; the v3 API has separate documentation. Start with [Quick start](/docs/realtime/quick-start) for a full publish-and-subscribe example.
+
+## Imports
+
+- `realtime` and `staticSchema` from `inngest` define channels and topic schemas.
+- `useRealtime` and `getClientSubscriptionToken` from `inngest/react` serve React subscriptions and client tokens.
+- `subscribe` from `inngest/realtime` consumes messages in server-side code.
+- `inngest.realtime.publish()`, `inngest.realtime.subscribe()`, and `inngest.realtime.token()` are methods on your Inngest client. `step.realtime.publish()` comes from a function handler’s `step` object.
+
+
+## Define channels and topics
+
+`realtime.channel({ name, topics })` defines a named channel and its typed topics. `name` is a fixed string or a function that receives one parameter object and returns a string. Each topic requires `schema`. Use a Standard Schema validator such as Zod for runtime validation, or `staticSchema<T>()` for type checking without runtime validation. A fixed name returns a channel instance; a name function returns a factory that you call with its parameters. Each topic property is a `TopicRef` with `channel`, `topic`, and `config` fields.
+
+```typescript
+import { realtime } from "inngest";
+import { z } from "zod";
+
+export const jobChannel = realtime.channel({
+  name: ({ jobId }: { jobId: string }) => "job:" + jobId,
+  topics: {
+    status: { schema: z.object({ message: z.string() }) },
+  },
+});
+
+const job = jobChannel({ jobId: "job-123" });
+const statusTopic = job.status;
+```
+
+Use the same channel definition in publishers, token routes, and subscribers. [Channels and topics](/docs/realtime/channels-and-topics) shows how to define it.
+
+## Publish messages
+
+- `await step.realtime.publish(id, topicRef, data)` creates a durable, memoized publish step inside an Inngest function. Give the step a unique string ID. A retry past a completed step does not publish it again. The call returns the published data.
+- `await inngest.realtime.publish(topicRef, data)` publishes immediately from server-side code, including code outside a function. It returns `Promise<void>`. It is not memoized; a retry of surrounding function work can publish the message again.
+
+The payload must match the topic schema. Use a durable publish for a final result or important state change. Use an immediate publish for token streams and other updates where replay on retry is acceptable.
+
+```typescript
+await step.realtime.publish("job-complete", job.status, {
+  message: "Complete",
+});
+
+await inngest.realtime.publish(job.status, {
+  message: "Processing",
+});
+```
+
+
+## Mint a client subscription token
+
+`await getClientSubscriptionToken(inngest, { channel, topics })` runs on your server. `channel` accepts a channel instance or a string. `topics` lists the topics the client may read. The returned client-safe object has `key` and `apiBaseUrl`; it does not include the channel or topic list. Pass the same `channel` and `topics` to `useRealtime`.
+
+Authenticate the caller and check access to that channel before minting a token. A channel name alone does not grant access. Keep the Inngest signing key on the server. The token scopes the client to its channel and listed topics.
+
+## Subscribe in React
+
+`useRealtime({ channel, topics, token })` from `inngest/react` opens and manages the client connection. Supply a channel instance for typed topic messages. Pass a token object or an async token factory; the factory can request a fresh token when the hook reconnects.
+
+The hook returns `connectionStatus`, `runStatus`, `messages`, `result`, `error`, and `reset`. Read the latest topic message at `messages.byTopic.status`, recent retained messages at `messages.all`, the latest message at `messages.last`, or a new batch at `messages.delta`. `result` contains a completed function’s return value when available. `runStatus` reports `unknown`, `running`, `completed`, `failed`, or `cancelled`.
+
+Key options include `enabled` to pause a subscription, `historyLimit` to bound retained messages, `bufferInterval` to reduce rerenders for high-frequency streams, `validate` to check incoming messages, and `reconnect` to control automatic reconnection. Check the installed SDK version for defaults and full return types.
+
+## Subscribe in server-side code
+
+`await subscribe({ app: inngest, channel, topics })` from `inngest/realtime` returns a readable stream when you omit `onMessage`. Pass `onMessage` for a callback subscription handle. Use `inngest.realtime.subscribe({ channel, topics })` when the client is already known. The stream offers `getReader()`, `getJsonStream()`, `getEncodedStream()`, and `close()`; close subscriptions when the consumer finishes. Server-side messages include `topic`, `channel`, `data`, `kind`, and, when available, run metadata.
+
+## Choose the next page
+
+- [Quick start](/docs/realtime/quick-start) walks through a complete app.
+- [Channels and topics](/docs/realtime/channels-and-topics) explains names, topic schemas, and authorization.
+- [Guides](/docs/realtime/guides) collects task-oriented guides.

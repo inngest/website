@@ -1,0 +1,66 @@
+export const metaTitle = "defer";
+export const description = "Start independent follow-up work without delaying the current run.";
+
+# `defer`
+
+> Start independent follow-up work without delaying the current run.
+
+Send a receipt or score an agent response after the parent run can finish. `defer` starts a separate run with its own steps and retries, so the parent does not wait for that result.
+
+## Start follow-up work
+
+Define the target with `createDefer` from `inngest/experimental`. Register it alongside your other functions in `serve()`, then call `defer` from an Inngest function handler. Add a schema when you want the SDK to type and validate the payload.
+
+```typescript
+import { createDefer } from "inngest/experimental";
+import { z } from "zod";
+import { inngest } from "./client";
+import { sendEmailMessage } from "./email";
+
+export const sendEmail = createDefer(
+  inngest,
+  {
+    id: "send-email",
+    schema: z.object({ to: z.string().email() }),
+  },
+  async ({ event, step }) => {
+    await step.run("send", () => sendEmailMessage(event.data.to));
+  }
+);
+
+export const orderPlaced = inngest.createFunction(
+  { id: "order-placed", triggers: { event: "order/placed" } },
+  async ({ event, defer }) => {
+    defer("send-confirmation", {
+      function: sendEmail,
+      data: { to: event.data.email },
+    });
+  }
+);
+```
+The parent keeps running. Inngest starts the deferred run when the parent finalizes. Give each `defer` call a unique ID within its parent run.
+
+## Payload, identity, and cancellation
+
+- The SDK validates `data` against the deferred function's schema when you call `defer()` and again when the receiver starts. Use a synchronous schema validator; an invalid call is logged and skipped.
+- The deferred run inherits the parent's sessions. Set `meta.sessions` on the call when the follow-up work needs another session. In the deferred handler, `parents[0]` provides the parent function slug and run ID.
+- `defer()` returns a handle with `abort()`. Call it if the parent later decides the follow-up work is unnecessary. Aborting prevents that deferred run from starting and does not affect other deferred calls.
+
+A deferred function has its own retry and flow-control settings. Register it in `serve()` alongside the parent. `createDefer` does not accept `triggers`, `onFailure`, or `batchEvents`.
+
+## Using the right primitive
+
+- Use `step.invoke` when the current run needs another function's result.
+- Use `step.sendEvent` when an event should trigger any matching functions.
+- Use `defer` when one named function should run independently with a typed payload.
+
+## Durable Endpoints
+
+**Editorial question:** Does the TypeScript v4 Durable Endpoint handler support `defer`? Endpoint support is not yet confirmed. Confirm support before adding an endpoint example.
+
+## Sandbox cleanup
+
+If you keep a sandbox after the main work, pass its ID to a deferred cleanup function. The parent can finish while teardown runs in its own retryable run. Make cleanup safe to repeat. `defer` is not a `finally` block; the published docs do not promise cleanup when the parent fails or is cancelled. Cover those paths separately, and use Inngest's built-in sandbox lifecycle when it already handles teardown. See [Sandboxes](/docs/sandboxes) and cleanup after cancellation.
+
+Deferred functions are currently beta and available in the TypeScript SDK. Invalid `defer` calls, including synchronous payload validation failures, are logged and skipped while the parent continues. `defer` does not yet work with encryption middleware, so do not send data that requires that middleware in a deferred payload. For Online Evals, pass the `experimentRef` returned by `group.experiment()` to a deferred scorer with the `experiment` option so later scores credit the variant that served the result. See [A/B testing](/docs/online-evals/a-b-testing).
+

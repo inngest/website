@@ -1,0 +1,55 @@
+export const metaTitle = "Troubleshooting";
+export const description = "Find why a function did not start or finish, fix the cause, and confirm the next run works.";
+
+# Troubleshooting
+
+> Find why a function did not start or finish and confirm the next run works.
+
+Find the failure point, fix it, and confirm the next run works. Start with the environment, app, event, and run in that order. A function cannot run until Inngest knows the deployed app and receives a matching trigger.
+## Check the environment, app, event, and run
+1. Open the intended environment in Inngest Cloud, or open the local Dev Server. Confirm you are inspecting the same environment that receives your events.
+2. Find your app and function. Check the app's sync history and the function's registered trigger. If the app is missing, start with “Function is missing” below.
+3. Find the event or scheduled trigger. Compare its name and data with the function's trigger. If the event is absent, start with “Event is missing” below.
+4. Open the run and its trace. Inspect the trigger, step status, attempts, and error details. If no run exists, start with “Event exists, but no run starts.”
+## Function is missing after a deploy
+**Check:** Is the app in the intended environment? Is the function included in the deployed `serve()` handler's `functions` array, or in the connected worker's app configuration? Did the latest app sync succeed?
+**Fix:** Deploy the code that registers the function. For HTTP `serve()`, sync the app after changing function definitions. Check the app's sync history and **Unattached Syncs** for errors, then run **App Diagnostic** if the sync fails. For Connect, start a worker and confirm it connects; Connect syncs functions when the worker connects. Keep the app ID stable across deployments. A changed ID creates a different app.
+**Confirm:** The app lists the new function and its expected trigger in the intended environment.
+## App sync fails or reaches the wrong app
+**Check:** Read the sync error, endpoint URL, app ID, and environment. For an HTTP app, confirm the deployed `serve()` route is reachable at the URL used for sync. Check whether a deployment URL changed. Check that `INNGEST_SIGNING_KEY` belongs to the intended environment.
+**Fix:** Correct the route or URL, deploy, and sync again. If the app moved to a new URL, update that URL when you resync. Keep the same app ID if this is the same app. Use **Unattached Syncs** to find failed automatic syncs. For branch deploys, check the branch's environment and keys separately from production.
+**Confirm:** The latest sync succeeds and the app shows the expected deployment URL and functions.
+## Event is missing
+**Check:** Confirm the event sender completed its `inngest.send()` or `step.sendEvent()` call. Check the event key and destination environment. In local development, confirm the Dev Server is running and the SDK points to it.
+**Fix:** Use the event key for the intended environment, resend a test event, and inspect that environment's event history. Follow the [Workflows Quick start](/docs/durable-execution/quick-start) to send and inspect a local test event. Check the exact send method in the [Workflows Reference](/docs/sdk/overview/reference).
+**Confirm:** The event appears in the intended environment with the name and data you sent.
+## Event exists, but no run starts
+**Check:** Compare the event name with the deployed function trigger. Check any trigger condition. Confirm the app and function are active. If you reused an event ID, check whether event idempotency suppressed another run. For a scheduled function, inspect its deployed cron trigger instead of looking for a sent event.
+**Fix:** Correct the trigger or event name, deploy, and sync the function configuration. Correct any condition that excludes the test event. Unarchive the app if it was archived. Send a new test event with a fresh ID when checking a possible duplicate. An archived app does not start new runs; duplicate event IDs can appear in event history without triggering another run.
+**Confirm:** The test event links to a new run for the expected function.
+## Run retries or fails
+**Check:** Open the run trace. Select the failing step and read each attempt's error and input. Check whether the error comes from your code, an external service, or your function host.
+**Fix:** Repair the failed operation or its input. Keep side effects in `step.run()` and make retried work safe to repeat. After deploying a fix, rerun the failed run if appropriate. Review any side effects before rerunning, because the selected step and later steps execute again.
+**Confirm:** The next attempt or new run completes, and its trace shows the repaired step.
+## Run appears stuck or waits longer than expected
+**Check:** Open the trace and identify the current step. A `step.sleep()` or `step.sleepUntil()` pauses until its target time. A `step.waitForEvent()` needs the expected event and matching data before its timeout. A `step.waitForSignal()` needs its signal. A queued run can also wait for concurrency or other flow-control capacity.
+**Fix:** If the run is waiting for an event, compare the wait's event name and match expression with the actual event payload. If it is sleeping, inspect the scheduled wake time. If it is queued, review the function's flow-control settings and your plan's current capacity. Follow the [Workflows Limits](/docs/durable-execution/limits) page and your account's billing view for current allowances.
+**Confirm:** The trace shows the wait resolving, the sleep ending, or the queued run starting. If the wait times out, handle the timeout result in the function.
+## HTTP `serve()` returns an error
+**Check:** Confirm the framework route uses the correct handler and includes the function. Confirm the deployed endpoint is reachable from Inngest. If a proxy changes the public host or path, check the `serve()` URL configuration. Check the signing key for the environment. In Express, confirm JSON body parsing is enabled and accepts the request size.
+**Fix:** Use the framework's documented `serve()` adapter and route exports. Correct the public URL or path, signing key, or body parser, then deploy and sync the app. Check your hosting provider's timeout and request limits if the call fails during execution.
+**Confirm:** The app sync succeeds and a test event produces a run.
+## Connect worker is disconnected
+**Check:** Inspect the worker connection status and last heartbeat in Inngest Cloud. Check the worker logs, `INNGEST_SIGNING_KEY`, `INNGEST_EVENT_KEY`, and outbound network access. Confirm the runtime supports a long-running process and the SDK's Connect requirements.
+**Fix:** Restore the worker or outbound connection, set the keys for the intended environment, and restart the worker. Add a health check that reports whether its Inngest connection is active. Connect workers sync their functions when they connect.
+**Confirm:** The worker reports a live connection, its app lists the expected functions, and a new event starts a run.
+## Run exists, but the trace looks missing
+**Check:** Open the run in the same environment where the event was sent. Confirm the run ID and time range. Traces are attached to function runs in the Dev Server and Inngest Cloud. Check whether the run falls outside your plan's trace-history period.
+**Fix:** Open the run's trace from its run details. If you were looking at the wrong environment, switch to the correct one. For older runs, consult the [Workflows Limits](/docs/durable-execution/limits) page and the [current pricing page](https://www.inngest.com/pricing) for history retention. Capture the run ID, event ID, app, function, environment, and time when asking support to investigate a recent run with missing trace data.
+**Confirm:** You can view the expected run's steps and attempts, or you have the identifiers needed to investigate the missing trace.
+## Related pages
+- [Quick start](/docs/durable-execution/quick-start) for a known working local workflow.
+- [Deploy functions](/docs/durable-execution/guides-and-advanced/deploying-functions) for HTTP, Connect, and planned Inngest compute placement.
+- [Reference](/docs/sdk/overview/reference) for exact SDK methods and configuration.
+- [Limits](/docs/durable-execution/limits) for plan and platform constraints.
+**TBD before Inngest compute launch:** Add its deployment failure, app sync, runtime, and trace diagnostics after the compute contract and dashboard behavior are confirmed.

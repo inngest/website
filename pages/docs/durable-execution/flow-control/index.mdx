@@ -1,0 +1,25 @@
+export const metaTitle = "Flow control";
+export const description = "Protect dependent services and keep urgent work moving with controls on when runs and steps execute.";
+
+# Flow control
+
+> Protect dependent services and keep urgent work moving with controls on when runs and steps execute.
+
+Limit concurrent work, smooth bursts, discard excess runs, or move urgent work ahead in a queue. Inngest applies these controls when it schedules function runs and steps, so you can protect the services they call.
+
+## Choose a control
+
+- [Concurrency](/docs/durable-execution/flow-control/concurrency) caps steps executing at the same time. Waiting runs do not use a slot.
+- [Throttling](/docs/durable-execution/flow-control/throttling) limits how often runs start. Extra runs wait in the queue.
+- [Rate limiting](/docs/durable-execution/flow-control/rate-limiting) limits how often runs start and skips excess triggers. Use it when you can discard excess work.
+- [Batching](/docs/durable-execution/flow-control/batching) groups events into one run for bulk operations.
+- [Singleton](/docs/durable-execution/flow-control/singleton) keeps one run active for a chosen key.
+- [Debounce](/docs/durable-execution/flow-control/debounce) waits for a quiet period so a burst of updates starts one run.
+- [Priority](/docs/durable-execution/flow-control/priority) moves higher-value work ahead in the queue.
+- [Multi-tenancy](/docs/durable-execution/flow-control/multi-tenancy) applies limits by tenant key and reduces the effect of one tenant's backlog on another. Key-queue scheduling currently requires Enterprise access on request.
+
+## Combine controls carefully
+
+Use a stable event-data key when limits should apply independently per customer or resource. Batching can work with concurrency, but it cannot be combined with rate limiting or priority. See each page for its exact behavior and constraints.
+
+

@@ -1,0 +1,93 @@
+export const metaTitle = "step.invoke";
+export const description = "Reuse another durable function and continue your workflow when it returns a result.";
+
+# `step.invoke`
+
+> Reuse another durable function and continue your workflow when it returns a result.
+
+Call a reusable function to calculate an order total, then continue with its result. `step.invoke()` starts a separate durable run for the child, while the parent waits without keeping its code running.
+
+## Call a function and await its result
+
+This TypeScript v4 example defines both functions in one app. The `invoke()` trigger validates and types the child function's input. Expose both functions through your Inngest handler or Connect worker.
+
+```typescript
+import { Inngest, eventType, invoke } from "inngest";
+import { z } from "zod";
+
+export const inngest = new Inngest({ id: "checkout-app" });
+
+const checkoutRequested = eventType("checkout/requested", {
+  schema: z.object({
+    orderId: z.string(),
+    subtotalCents: z.number(),
+    shippingCents: z.number(),
+  }),
+});
+
+export const calculateTotal = inngest.createFunction(
+  {
+    id: "calculate-total",
+    triggers: [
+      invoke({
+        schema: z.object({
+          subtotalCents: z.number(),
+          shippingCents: z.number(),
+        }),
+      }),
+    ],
+  },
+  async ({ event }) => {
+    return {
+      totalCents: event.data.subtotalCents + event.data.shippingCents,
+    };
+  }
+);
+
+export const prepareCheckout = inngest.createFunction(
+  {
+    id: "prepare-checkout",
+    triggers: [checkoutRequested],
+  },
+  async ({ event, step }) => {
+    const total = await step.invoke("calculate-total", {
+      function: calculateTotal,
+      data: {
+        subtotalCents: event.data.subtotalCents,
+        shippingCents: event.data.shippingCents,
+      },
+      timeout: "5m",
+    });
+
+    return {
+      orderId: event.data.orderId,
+      totalCents: total.totalCents,
+    };
+  }
+);
+
+export const functions = [calculateTotal, prepareCheckout];
+```
+Send `checkout/requested` with `orderId`, `subtotalCents`, and `shippingCents`. The parent returns the child's calculated total. Register both functions in the endpoint or worker that serves `functions`.
+
+## Choose invocation options
+
+`step.invoke(id, options)` returns a Promise for the called function's return value. The first argument is a stable **step ID**, not a function ID. Set `options.function` to a function object or a `referenceFunction()` reference. Pass input through `options.data`. Set `options.timeout` to limit how long the parent waits. The v4 SDK also accepts optional `user` and `meta` fields. The child inherits the parent's sessions unless `meta.sessions` overrides or clears them.
+
+To call a function in another app, use `referenceFunction({ appId, functionId })` as `options.function`. This lets a function running on one cloud call a function running on another.
+
+## Return values, failures, and timeouts
+
+The child returns JSON-serializable data to the parent. Keep that result small enough for the step payload and run state limits.
+
+The child runs as an independent Inngest function and uses its own retry settings. If the child exhausts its retries, Inngest cannot find it, or the invocation times out, `step.invoke()` throws a `NonRetriableError` in the parent. Catch that error if the parent can recover. Set an explicit timeout that fits the work and the parent's deadline. **A timed-out child keeps running.** Do not assume the timeout cancels its work. If the child function is rate limited and skipped, the invocation fails. If it is debounced and skipped, the invocation fails when its timeout is reached. Choose a meaningful timeout for a debounced child.
+
+## Choose the right primitive
+
+- Use `step.invoke()` when the parent needs one called function's return value or the child needs its own function configuration.
+- Use [step.run](/docs/durable-execution/primitives/step-run) when work belongs in the current function and does not need a separate function.
+- Use [step.sendEvent](/docs/durable-execution/primitives/step-sendevent) when the parent needs to trigger work but does not need the other function's result. An event can trigger multiple functions.
+
+## Next
+
+Read [Primitives](/docs/durable-execution/primitives) for the other ways to pause and resume work.

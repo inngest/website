@@ -1,0 +1,50 @@
+export const metaTitle = "Guides and advanced";
+export const description = "Find the right guide to trigger, coordinate, deploy, and inspect durable workflows.";
+
+# Guides and advanced
+
+> Find the right guide to trigger, coordinate, deploy, and inspect durable workflows.
+
+Start with the task you need to finish, such as sending an event, coordinating steps, or deploying a function. Each guide links the implementation to the behavior you can inspect in a run. If you are new to Inngest, start with the [Quick start](/docs/durable-execution/quick-start).
+## Trigger work
+- **Send events and use webhooks.** Start functions from your app or an external service. See [Send events](/docs/durable-execution/guides-and-advanced/events-and-triggers/send-events) and [Receive webhook events](/docs/durable-execution/guides-and-advanced/events-and-triggers/receive-webhook-events).
+- **Schedule work.** Run a function on a cron schedule or after a delay. See [Schedules and delayed starts](/docs/durable-execution/guides-and-advanced/events-and-triggers/schedules-and-delayed-starts).
+- **Match the right events.** Use a trigger `if` condition or wildcard when only certain events should start a run. See [Event and trigger concepts](/docs/durable-execution/guides-and-advanced/events-and-triggers/event-and-trigger-concepts). To start one durable workflow from multiple events or a schedule, see [Durable Workflows](/docs/durable-execution/durable-workflows). For naming and schema design, see [Event payloads and schemas](/docs/durable-execution/guides-and-advanced/events-and-triggers/event-payloads-and-schemas).
+## Coordinate steps and functions
+- **Save progress in steps.** Make completed work available when a run resumes or retries. See [Primitives](/docs/durable-execution/primitives) and its [step.run](/docs/durable-execution/primitives/step-run).
+- **Wait for an external action.** Pause a run until an event or signal arrives, or until a timeout expires. See [step.waitForEvent](/docs/durable-execution/primitives/step-waitforevent) and [step.waitForSignal](/docs/durable-execution/primitives/step-waitforsignal).
+- **Repeat or split work.** Run independent steps together, start separate functions from one event, or process a list in one run. Use independent steps in one run, or read [Fan-out](/docs/durable-execution/guides-and-advanced/patterns/fan-out), [Working with loops](/docs/durable-execution/guides-and-advanced/patterns/working-with-loops), and [batching events](/docs/durable-execution/flow-control/batching).
+- **Compose functions and user-defined workflows.** Invoke a function and wait for its result, or let users configure a workflow. See [step.invoke](/docs/durable-execution/primitives/step-invoke), user-defined workflows, and Workflow Kit.
+- **Add human approval.** Wait for a person's decision before the next step. Use an event or signal to resume after approval. For progress updates to a client, see [Realtime](/docs/realtime).
+## Keep runs reliable and control load
+- **Recover from failures.** Set retry behavior, handle errors, and make external writes safe to retry. See [Error handling](/docs/durable-execution/guides-and-advanced/error-handling) and [Idempotency](/docs/durable-execution/guides-and-advanced/idempotency).
+- **Cancel or pause work.** Stop runs that are no longer needed or pause a function. See [Cancellation](/docs/durable-execution/guides-and-advanced/cancellation) and [Pause and resume functions](/docs/platform-and-operations/pause-and-resume-functions).
+- **Change a live workflow safely.** Keep step IDs stable, test a waiting run after a code change, and route incompatible rewrites to a new function. See [Versioning](/docs/durable-execution/guides-and-advanced/versioning) and [Testing](/docs/durable-execution/guides-and-advanced/testing).
+- **Protect downstream services.** Limit concurrent runs, rate limit or throttle requests, and debounce bursts. See [flow control](/docs/durable-execution/flow-control), [rate limiting](/docs/durable-execution/flow-control/rate-limiting), [throttling](/docs/durable-execution/flow-control/throttling), and [debouncing](/docs/durable-execution/flow-control/debounce).
+## Deploy and operate
+- **Deploy your functions.** Run an app on your infrastructure with an HTTP `serve()` handler or Connect. See [Deploying functions](/docs/durable-execution/guides-and-advanced/deploying-functions) for more information.
+- **Log the work that happened.** Add structured context to function logs without duplicating messages during a resume. See [Logging](/docs/durable-execution/guides-and-advanced/logging).
+- **Test before deployment.** Check function decisions, step behavior, waits, and retries locally. See [Testing](/docs/durable-execution/guides-and-advanced/testing).
+- **Inspect and recover runs.** Find an event or run, read its step trace, and replay work when appropriate. See [Inspect events and runs](/docs/platform-and-operations/inspect-events-and-runs), [Traces](/docs/platform-and-operations/traces), and [Replay runs in bulk](/docs/platform-and-operations/replay-runs-in-bulk). For CLI commands, use Debug with the CLI.
+- **Keep apps in sync.** Register changed function definitions and check deployment health. See [Apps and syncs](/docs/platform-and-operations/apps-and-syncs) and [Deploying functions](/docs/durable-execution/guides-and-advanced/deploying-functions).
+
+## Move from `serve()` to `connect()`
+The function code is portable, but Connect needs a long-running worker with an outbound connection. Start a separate Connect app to test your functions. A migration path for an existing `serve()` app is TBD. Connect syncs its functions when a worker connects; check credentials, worker readiness, and runtime requirements before moving production work.
+## Move across clouds and hosts
+1. Deploy the same `serve()` handler on the new host. Keep the app, function, and step IDs stable so waiting runs can use saved progress.
+2. Configure keys and check the new provider's timeouts, payload size, and network access.
+3. Update the app URL in Inngest and resync. Confirm the expected functions appear and run a test event.
+4. In a test environment, confirm a waiting run resumes after the move before retiring the old endpoint.
+Inngest keeps completed step results across deployments; the new code must still work with those saved results. See [apps and syncing](/docs/platform-and-operations/apps-and-syncs), [Versioning](/docs/durable-execution/guides-and-advanced/versioning), and [Idempotency](/docs/durable-execution/guides-and-advanced/idempotency). Moving an app to planned Inngest compute needs a separate procedure once its deployment requirements are confirmed.
+For API options, use the [Reference](/docs/sdk/overview/reference). For quotas and runtime constraints, use [Limits](/docs/durable-execution/limits).
+
+- [Events and triggers](/docs/durable-execution/guides-and-advanced/events-and-triggers)
+- [Idempotency](/docs/durable-execution/guides-and-advanced/idempotency)
+- [Versioning](/docs/durable-execution/guides-and-advanced/versioning)
+- [Logging](/docs/durable-execution/guides-and-advanced/logging)
+- [Testing](/docs/durable-execution/guides-and-advanced/testing)
+- [Middleware](/docs/durable-execution/guides-and-advanced/middleware)
+- [Error handling](/docs/durable-execution/guides-and-advanced/error-handling)
+- [Cancellation](/docs/durable-execution/guides-and-advanced/cancellation)
+- [Deploying functions](/docs/durable-execution/guides-and-advanced/deploying-functions)
+- [Patterns](/docs/durable-execution/guides-and-advanced/patterns)

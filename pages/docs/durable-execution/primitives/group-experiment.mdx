@@ -1,0 +1,81 @@
+export const metaTitle = "group.experiment";
+export const description = "Compare workflow variants on real traffic while keeping each run's choice stable through retries.";
+
+# `group.experiment`
+
+> Compare workflow variants on real traffic while keeping each run's choice stable through retries.
+
+Send a small share of runs through a new model, prompt, or workflow path before widening the rollout. `group.experiment` chooses one variant, records it in the trace, and keeps that choice through retries. This beta API requires TypeScript SDK v4.8.0 or later.
+
+## When to test a variant
+
+- **Roll out safely.** Send a small share of runs to a new prompt, model, step, or workflow path before increasing traffic.
+- **Keep cohorts consistent.** Give `experiment.bucket()` a stable user or account ID so that ID usually reaches the same variant across runs.
+- **Find what works.** Score outcomes now or later, then compare the variants that served users.
+- **Explain the result.** See the selected variant and its steps in each run's trace.
+
+## Run an experiment
+
+```typescript
+import { experiment } from "inngest";
+
+const { result, variant, experimentRef } = await group.experiment(
+  "answer-model",
+  {
+    variants: {
+      current: () => step.run("answer-current", () => answerWithCurrentModel()),
+      new: () => step.run("answer-new", () => answerWithNewModel()),
+    },
+    select: experiment.weighted({ current: 90, new: 10 }),
+  }
+);
+```
+Only the selected callback runs. `result` contains its return value, `variant` names the selected path, and `experimentRef` lets you credit a score to that path. Each callback must call at least one `step.*` method. Put side effects inside steps because code outside steps can run again on replay.
+
+## Test a larger workflow path
+
+Use the same API when each variant has several steps. Only the selected path runs:
+
+```typescript
+const { result, experimentRef } = await group.experiment("invoice-engine", {
+  variants: {
+    current: async () => {
+      const invoice = await step.run("generate-current", () =>
+        generateInvoiceV1(event.data)
+      );
+      await step.run("send-current", () => sendInvoice(invoice));
+      return invoice;
+    },
+    rewrite: async () => {
+      const invoice = await step.run("generate-rewrite", () =>
+        generateInvoiceV2(event.data)
+      );
+      await step.run("send-rewrite", () => sendInvoice(invoice));
+      return invoice;
+    },
+  },
+  select: experiment.weighted({ current: 99, rewrite: 1 }),
+});
+```
+`group.experiment()` records one selection step. It also meters each step the selected path runs. Give each experiment a unique, stable ID within a function, and keep variant names stable so traces and outcome comparisons remain clear.
+
+## Choose a variant
+
+- **Split new runs:** `experiment.weighted({ current: 90, new: 10 })` assigns variants by relative weights. Change the weights to ramp up a new path; existing runs keep their choice.
+- **Keep a cohort together:** `experiment.bucket(userId, { weights: { current: 90, new: 10 } })` maps a stable user or account ID to a variant across runs.
+- **Use your own assignment:** `experiment.custom(fn)` reads a feature flag or database record. Use it when assignment must change without a deploy or must stay fixed through a migration.
+- **Pin one variant:** `experiment.fixed("current")` always selects the same path for an override or test.
+
+Pass a present, stable key to `experiment.bucket()`; a missing key sends those runs to the same bucket. Changing bucket weights can change a user's future assignment. If a user must never switch back, store the assignment and use `experiment.custom()`. Its selector must return a name in `variants`.
+
+The returned `experimentRef` identifies the served variant. If the outcome is available during this run, pass the ref to `inngest.score.experiment()`:
+
+```typescript
+await inngest.score.experiment({
+  name: "invoice-valid",
+  value: validateInvoice(result),
+  experiment: experimentRef,
+});
+```
+When another run scores a later outcome, save the original `experimentRef` and run ID with the result. Pass both to `inngest.score.experiment()` so the score attaches to the run and variant that produced it. You can also pass the ref to a deferred scorer through `defer()`. See [A/B testing](/docs/online-evals/a-b-testing) for the full path from selection to scoring.
+

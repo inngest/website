@@ -1,0 +1,32 @@
+export const metaTitle = "Timeouts";
+export const description = "Set timeouts on a TypeScript v4 function to cancel stale work.";
+
+# Timeouts
+
+> Cancel runs that wait too long to start or take too long to finish.
+
+Set `timeouts` on a TypeScript v4 function to cancel stale work. A start timeout stops work that waited too long in the queue; a finish timeout stops a run that took too long after its first step began.
+## Set the two clocks
+- `timeouts.start` measures the wait from scheduling the run until the first step attempt begins. Queueing caused by concurrency or throttling can consume this time. Once the first step attempt begins, this clock no longer applies.
+- `timeouts.finish` measures execution time after the run starts. This clock begins when the first step attempt begins. It does not include the initial queue wait.
+You can set either value or both. Use a duration string such as `"10m"` or `"1h"`.
+```typescript
+import { inngest } from "./client";
+import { buildReport } from "./reports";
+
+export const createReport = inngest.createFunction(
+  {
+    id: "create-report",
+    triggers: { event: "reports/created" },
+    timeouts: { start: "10m", finish: "1h" },
+  },
+  async ({ event, step }) => {
+    await step.run("build-report", () => buildReport(event.data.reportId));
+  }
+);
+```
+Here, Inngest cancels a run that has not begun its first step attempt within 10 minutes. After that attempt begins, the run has a one-hour finish window.
+## What happens at the deadline
+A timeout cancels the run and emits `inngest/function.cancelled`. The deadline does not interrupt a step that is already executing. That step runs to completion before cancellation takes effect, so `timeouts.finish` is not a hard limit on an external operation inside a step.
+Concurrency can also delay when Inngest observes a timeout. Set a timeout on the external request itself if that operation needs a strict deadline.
+Use [Events](/docs/durable-execution/guides-and-advanced/cancellation/events) when a business event should cancel a run. Use [Bulk cancellation](/docs/durable-execution/guides-and-advanced/cancellation/bulk-cancellation) to stop selected existing runs.

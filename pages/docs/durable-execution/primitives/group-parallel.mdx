@@ -1,0 +1,73 @@
+export const metaTitle = "group.parallel";
+export const description = "Coordinate parallel steps so your workflow can use the result it needs.";
+
+# `group.parallel`
+
+> Coordinate parallel steps so your workflow can use the result it needs.
+
+Run a cache read and a source read as parallel steps when the first result can satisfy a request. In TypeScript v4, `group.parallel` coordinates the `Promise.race()`; in Python, it runs a tuple of step callbacks and returns all their results.
+
+## TypeScript v4: use the first result
+
+```typescript
+import { Inngest } from "inngest";
+
+const inngest = new Inngest({ id: "parallel-example" });
+
+export const getValue = inngest.createFunction(
+  { id: "get-value", triggers: { event: "app/value.requested" } },
+  async ({ step, group }) => {
+    const winner = await group.parallel(async () =>
+      Promise.race([
+        step.run("read-cache", async () => ({
+          source: "cache",
+          value: "cached value",
+        })),
+        step.run("read-source", async () => ({
+          source: "source",
+          value: "fresh value",
+        })),
+      ])
+    );
+
+    return winner;
+  }
+);
+```
+TypeScript v4 optimizes ordinary parallel steps by default. Use `Promise.all()` when you need every result, or `Promise.allSettled()` when you need every outcome. Both work without `group.parallel`. With the default optimization, a bare `Promise.race()` identifies the winner but waits for all parallel steps before it resolves. Wrapping the race in `group.parallel()` lets the function proceed when the first step settles.
+
+**An early result does not cancel the other steps.** They continue to run. If you race `step.waitForEvent()` calls, a losing wait can keep the run in a Running state until its own timeout. Set each wait's timeout to the shortest period your workflow needs.
+
+## Python: run steps together
+
+```python
+import inngest
+
+inngest_client = inngest.Inngest(app_id="parallel-example")
+
+@inngest_client.create_function(
+    fn_id="get-values",
+    trigger=inngest.TriggerEvent(event="app/value.requested"),
+)
+async def get_values(ctx: inngest.Context) -> dict[str, str]:
+    first, second = await ctx.group.parallel(
+        (
+            lambda: ctx.step.run("first", lambda: "one"),
+            lambda: ctx.step.run("second", lambda: "two"),
+        )
+    )
+    return {"first": first, "second": second}
+```
+`ctx.group.parallel()` takes a tuple of no-argument callables and returns a tuple of their results. It also works in synchronous functions without `await`. Use it for Python steps instead of `asyncio.gather()`, which does not support Inngest's step execution model.
+
+Python uses optimized parallelism by default. Set `parallel_mode=inngest.ParallelMode.RACE` when later steps in one branch must advance as soon as that branch finishes a step. This mode can send more requests to your app. The Python option changes branch progress; it does not make `ctx.group.parallel()` return only one winning result.
+
+## Choose parallel steps or fan-out
+
+Use `Promise.all()` for independent steps whose results the current function needs. For many input items, map each item to a `step.run()` with a stable ID, then aggregate the results after `Promise.all()` resolves. Each step retries independently. If the work exceeds one run's step or state limits, send events to child functions instead; fan-out gives each child its own run and failure history.
+
+## Related pages
+
+- [Primitives](/docs/durable-execution/primitives) for other workflow operations.
+- [step.run](/docs/durable-execution/primitives/step-run) for retriable work inside a parallel group.
+
