@@ -3,9 +3,14 @@ export const description = "Reuse another durable function and continue your wor
 
 # `step.invoke`
 
-> Reuse another durable function and continue your workflow when it returns a result.
+`step.invoke()` starts another Inngest function and waits for its result. The called function runs separately with its own steps and retries, so you can reuse it without copying its logic into the parent.
 
-Call a reusable function to calculate an order total, then continue with its result. `step.invoke()` starts a separate durable run for the child, while the parent waits without keeping its code running.
+They are useful when:
+
+- Several workflows need the same function.
+- One workflow needs another function's result before continuing.
+- You want separate retry settings for a part of the work.
+- One function would exceed the 1,000-step limit. Move part of the work into an invoked function, which has its own step limit.
 
 ## Call a function and await its result
 

@@ -48,9 +48,8 @@ A run that fails and is retrying still occupies its singleton slot. In skip mode
 
 ## Use it with other flow controls
 
-- [Concurrency](/docs/durable-execution/flow-control/concurrency) controls active step execution. Singleton already implies one active run per key. Treat an additional concurrency setting with care because it can change scheduling without replacing the run-level rule.
+- [Step concurrency](/docs/durable-execution/flow-control/concurrency) controls active step execution. Singleton already implies one active run per key. Treat an additional concurrency setting with care because it can change scheduling without replacing the run-level rule.
 - [Rate limiting](/docs/durable-execution/flow-control/rate-limiting) limits run starts over a specified period. Singleton uses the duration of an active run.
 - [Throttling](/docs/durable-execution/flow-control/throttling) queues excess runs. Singleton skip mode discards overlapping runs; cancel mode replaces the active one.
 - [Debounce](/docs/durable-execution/flow-control/debounce) can be combined with singleton when you want to wait for a quiet period before applying the run-level rule.
 - [Batching](/docs/durable-execution/flow-control/batching) cannot be combined with singleton. Function registration fails when both are set.
-

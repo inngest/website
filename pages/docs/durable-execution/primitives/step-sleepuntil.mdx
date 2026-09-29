@@ -3,9 +3,13 @@ export const description = "Resume a workflow at a specific time without keeping
 
 # `step.sleepUntil`
 
-> Resume a workflow at a specific time without keeping a process running.
+`step.sleepUntil()` pauses a run until a date and time you choose. Inngest resumes it at that time without keeping your function process running.
 
-Send a reminder at a customer-selected appointment time. Give `step.sleepUntil()` that timestamp, and Inngest stores the wait until the run can resume without keeping a process running.
+They are useful when:
+
+- You need to send a reminder at a scheduled time.
+- A deadline determines when the next step should run.
+- An event provides a timestamp for later work.
 
 ## Use a date or a duration
 
@@ -73,4 +77,3 @@ Inngest pauses the run and resumes it at the scheduled time. Your code uses no c
 - [step.waitForEvent](/docs/durable-execution/primitives/step-waitforevent) for an external event.
 - [Schedules and delayed starts](/docs/durable-execution/guides-and-advanced/events-and-triggers/schedules-and-delayed-starts) when the wait should happen before the function starts.
 - [Limits](/docs/durable-execution/limits) for the plan's maximum wait and run length.
-

@@ -3,16 +3,16 @@ export const description = "Compare workflow variants on real traffic while keep
 
 # `group.experiment`
 
-> Compare workflow variants on real traffic while keeping each run's choice stable through retries.
+`group.experiment()` selects one of several named variants for a run. Inngest keeps that selection through retries, so you can compare changes on real traffic without switching a run between variants.
 
-Send a small share of runs through a new model, prompt, or workflow path before widening the rollout. `group.experiment` chooses one variant, records it in the trace, and keeps that choice through retries. This beta API requires TypeScript SDK v4.8.0 or later.
+They are useful when:
 
-## When to test a variant
+- You want to roll out a new step or workflow path to a small share of runs.
+- You need to compare models, prompts, or providers.
+- You want the same user or account to receive a consistent variant across runs.
+- You need to score outcomes and compare the variants that produced them.
 
-- **Roll out safely.** Send a small share of runs to a new prompt, model, step, or workflow path before increasing traffic.
-- **Keep cohorts consistent.** Give `experiment.bucket()` a stable user or account ID so that ID usually reaches the same variant across runs.
-- **Find what works.** Score outcomes now or later, then compare the variants that served users.
-- **Explain the result.** See the selected variant and its steps in each run's trace.
+This beta API requires TypeScript SDK v4.8.0 or later.
 
 ## Run an experiment
 
@@ -78,4 +78,3 @@ await inngest.score.experiment({
 });
 ```
 When another run scores a later outcome, save the original `experimentRef` and run ID with the result. Pass both to `inngest.score.experiment()` so the score attaches to the run and variant that produced it. You can also pass the ref to a deferred scorer through `defer()`. See [A/B testing](/docs/online-evals/a-b-testing) for the full path from selection to scoring.
-

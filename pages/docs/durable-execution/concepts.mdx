@@ -17,21 +17,22 @@ A payment may need approval before your app can charge a card. Inngest can start
 
 ## Base concepts
 
-- **Function:** Either a workflow or endpoint that runs a series of steps.
-- **Trigger:** How a function starts. This may be an event, a schedule, an HTTP request, or an invocation through the REST API.
-- **Steps:** Units of work whose outputs Inngest saves. A run can continue after a failed step without repeating completed steps.
-  - **Waits:** A step can wait until a time or another event. Waits suspend the function's compute and do not count toward concurrency.
-- **Memoization:** Serializing and storing a step output for use when the function replays.
-- **Expressions:** CEL conditions that can add logic to triggers and waits.
+- **[Function](/docs/learn/inngest-functions):** Either a workflow or endpoint that runs a series of steps.
+- **[Trigger](/docs/features/events-triggers):** How a function starts. This may be an event, a schedule, an HTTP request, or an invocation through the REST API.
+- **[Steps](/docs/learn/inngest-steps):** Units of work whose outputs Inngest saves. A run can continue after a failed step without repeating completed steps.
+  - **[Waits](/docs/features/inngest-functions/steps-workflows):** A step can wait until a time or another event. Waits suspend the function's compute and do not count toward concurrency.
+- **[Memoization](/docs/learn/how-functions-are-executed):** Serializing and storing a step output for use when the function replays.
+- **[Idempotency](/docs/guides/handling-idempotency):** An operation that has the same effect when repeated, such as a payment request that does not charge the card twice.
+- **[Expressions](/docs/guides/writing-expressions):** CEL conditions that can add logic to triggers and waits.
 - **Results:** The data that a function returns and Inngest stores as its result.
-- **Flow control:** Rules for if and when functions run, such as concurrency, throttling, rate limiting, and debounce.
-- **Errors vs failures:** Inngest can retry errors. A step or function fails if every retry results in an error.
+- **[Flow control](/docs/guides/flow-control):** Rules for if and when functions run, such as concurrency, throttling, rate limiting, and debounce.
+- **[Errors vs failures](/docs/features/inngest-functions/error-retries/retries):** Inngest can retry errors. A step or function fails if every retry results in an error.
 
 ## Additional concepts
 
-- **Apps:** An app is a service that serves a set of functions.
-- **Syncs:** You register an app and its functions with Inngest so it knows which functions run for each trigger.
-- **Traces:** Show the path a function takes across steps, waits, retries, and the result.
+- **[Apps](/docs/apps):** An app is a service that serves a set of functions.
+- **[Syncs](/docs/apps/cloud):** You register an app and its functions with Inngest so it knows which functions run for each trigger.
+- **[Traces](/docs/platform/monitor/traces):** Show the path a function takes across steps, waits, retries, and the result.
 - **Lifecycles:** A function transitions from queued to running to resolved, either completed or failed. Lifecycles run for each status transition.
 
 Follow the [quick start](/docs/durable-execution/quick-start) to see these concepts in a working function.

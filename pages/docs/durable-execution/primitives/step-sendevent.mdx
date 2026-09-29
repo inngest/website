@@ -3,9 +3,13 @@ export const description = "Start independent workflows with events without repe
 
 # `step.sendEvent`
 
-> Start independent workflows with events without repeating a completed send after a retry.
+`step.sendEvent()` publishes an event from inside a durable function. Inngest saves a completed send as a step, so the sender can retry later work without sending that event again.
 
-Publish a fulfillment event after an order is accepted. `step.sendEvent` saves the send as a step, so a resumed function does not repeat a completed send. Matching functions run independently, and the sender does not wait for their results.
+They are useful when:
+
+- You want other functions to start after a step completes.
+- Several independent functions should react to the same event.
+- The sender does not need to wait for those functions to finish.
 
 ## Send an event
 
@@ -60,4 +64,3 @@ Read Sending events from functions for fan-out patterns, Event payloads for fiel
 ## Editorial TBD
 
 Confirmed for this refresh: a batched `step.sendEvent` reports partial success. Confirm the exact response and error fields that identify accepted and failed events, and whether retries resend the full batch or only failed events. The response and error fields still need confirmation. Do not promise batch atomicity or exactly-once delivery before confirmation.
-

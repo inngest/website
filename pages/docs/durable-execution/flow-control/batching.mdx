@@ -59,7 +59,7 @@ Choose a batch size your handler can process within its memory and execution lim
 
 ## Combine with concurrency
 
-You can use [Concurrency](/docs/durable-execution/flow-control/concurrency) to cap how many batches execute together. For example, `concurrency: { limit: 1 }` lets only one batch from this function execute at a time.
+You can use [Step concurrency](/docs/durable-execution/flow-control/concurrency) to cap how many batches execute together. For example, `concurrency: { limit: 1 }` lets only one batch from this function execute at a time.
 
 If concurrency also uses a `key`, Inngest evaluates that key from the **first event in the batch**. Use the same key expression for batching and concurrency. Otherwise, a mixed batch can consume a slot for the first event's key even though it also contains events for other keys.
 
@@ -93,5 +93,4 @@ The [pricing page](https://www.inngest.com/pricing) is the source for current pl
 The 10 MiB batch size hard cap still applies. A batch starts when it reaches that cap, even if it has not reached `maxSize` or `timeout`.
 
 **TBD before publication:** Published batching limits conflict. Confirm the plan limits for `maxSize` and `timeout`. The example above stays within all published limits.
-
 

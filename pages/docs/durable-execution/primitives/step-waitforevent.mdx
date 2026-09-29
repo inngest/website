@@ -3,9 +3,13 @@ export const description = "Wait for an event to resume your workflow without ke
 
 # `step.waitForEvent`
 
-> Wait for an event to resume your workflow without keeping your function running.
+`step.waitForEvent()` pauses a run until a matching event arrives or the wait times out. Inngest resumes the run with the event without keeping your function process running while it waits.
 
-Wait for an approval event that names the invoice under review. Inngest pauses the run without keeping your function running, then returns the matching event or `null` on timeout.
+They are useful when:
+
+- You need a response from another service before continuing.
+- A person must approve or reject work.
+- One event should be able to resume multiple matching runs.
 
 ## Why choose an event?
 
@@ -81,4 +85,3 @@ Use `step.waitForEvent()` for events that can fan out to multiple functions or r
 - Check the current platform limits when choosing a timeout and shaping event or run data. The limit for a running step is a separate setting from a durable wait.
 - In a `group.parallel()` race, a losing `step.waitForEvent()` remains active until its timeout. Use a short timeout when that pattern applies.
 - For a delay with no external event, use [step.sleep](/docs/durable-execution/primitives/step-sleep).
-

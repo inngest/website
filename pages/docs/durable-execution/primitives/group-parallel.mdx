@@ -1,42 +1,35 @@
-export const metaTitle = "group.parallel";
-export const description = "Coordinate parallel steps so your workflow can use the result it needs.";
+export const metaTitle = "Parallel steps";
+export const description = "Run independent steps at the same time and continue when their results are ready.";
 
-# `group.parallel`
+# Parallel steps
 
-> Coordinate parallel steps so your workflow can use the result it needs.
+Run independent steps at the same time and continue when all their results are ready. Use `Promise.all()` in TypeScript v4 or `ctx.group.parallel()` in Python.
 
-Run a cache read and a source read as parallel steps when the first result can satisfy a request. In TypeScript v4, `group.parallel` coordinates the `Promise.race()`; in Python, it runs a tuple of step callbacks and returns all their results.
+Parallel steps are useful when:
 
-## TypeScript v4: use the first result
+- You need several independent results before the function can continue.
+- You want each operation to keep its own step result and retries.
+
+## TypeScript v4: collect every result
 
 ```typescript
 import { Inngest } from "inngest";
 
 const inngest = new Inngest({ id: "parallel-example" });
 
-export const getValue = inngest.createFunction(
-  { id: "get-value", triggers: { event: "app/value.requested" } },
-  async ({ step, group }) => {
-    const winner = await group.parallel(async () =>
-      Promise.race([
-        step.run("read-cache", async () => ({
-          source: "cache",
-          value: "cached value",
-        })),
-        step.run("read-source", async () => ({
-          source: "source",
-          value: "fresh value",
-        })),
-      ])
-    );
+export const getValues = inngest.createFunction(
+  { id: "get-values", triggers: { event: "app/values.requested" } },
+  async ({ step }) => {
+    const [profile, orders] = await Promise.all([
+      step.run("load-profile", async () => ({ id: "user-123" })),
+      step.run("load-orders", async () => [{ id: "order-456" }]),
+    ]);
 
-    return winner;
+    return { profile, orders };
   }
 );
 ```
-TypeScript v4 optimizes ordinary parallel steps by default. Use `Promise.all()` when you need every result, or `Promise.allSettled()` when you need every outcome. Both work without `group.parallel`. With the default optimization, a bare `Promise.race()` identifies the winner but waits for all parallel steps before it resolves. Wrapping the race in `group.parallel()` lets the function proceed when the first step settles.
-
-**An early result does not cancel the other steps.** They continue to run. If you race `step.waitForEvent()` calls, a losing wait can keep the run in a Running state until its own timeout. Set each wait's timeout to the shortest period your workflow needs.
+Both steps can run concurrently. The function continues when both results are ready. TypeScript v4 optimizes parallel steps by default, so you do not need `group.parallel()` here. Use `Promise.allSettled()` when you need the outcome of every step, including failures.
 
 ## Python: run steps together
 
@@ -60,8 +53,6 @@ async def get_values(ctx: inngest.Context) -> dict[str, str]:
 ```
 `ctx.group.parallel()` takes a tuple of no-argument callables and returns a tuple of their results. It also works in synchronous functions without `await`. Use it for Python steps instead of `asyncio.gather()`, which does not support Inngest's step execution model.
 
-Python uses optimized parallelism by default. Set `parallel_mode=inngest.ParallelMode.RACE` when later steps in one branch must advance as soon as that branch finishes a step. This mode can send more requests to your app. The Python option changes branch progress; it does not make `ctx.group.parallel()` return only one winning result.
-
 ## Choose parallel steps or fan-out
 
 Use `Promise.all()` for independent steps whose results the current function needs. For many input items, map each item to a `step.run()` with a stable ID, then aggregate the results after `Promise.all()` resolves. Each step retries independently. If the work exceeds one run's step or state limits, send events to child functions instead; fan-out gives each child its own run and failure history.
@@ -70,4 +61,3 @@ Use `Promise.all()` for independent steps whose results the current function nee
 
 - [Primitives](/docs/durable-execution/primitives) for other workflow operations.
 - [step.run](/docs/durable-execution/primitives/step-run) for retriable work inside a parallel group.
-

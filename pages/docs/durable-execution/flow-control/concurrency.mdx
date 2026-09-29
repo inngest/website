@@ -1,15 +1,23 @@
-export const metaTitle = "Concurrency";
+export const metaTitle = "Step concurrency";
 export const description = "Protect APIs and databases by limiting how many workflow steps execute at once.";
 
-# Concurrency
+# Step concurrency
 
 > Protect APIs and databases by limiting how many workflow steps execute at once.
 
 Limit the number of steps calling a payment API at once. Inngest queues steps above the concurrency limit and starts them when capacity opens; waiting runs do not use those execution slots.
 
-## What a concurrency limit counts
+## How concurrency works
 
-A limit counts **steps executing code**, not all function runs in progress. A run waiting in `step.sleep()`, `step.waitForEvent()`, or `step.invoke()` does not use a concurrency slot while it waits. For example, a limit of 10 can coexist with hundreds of paused runs, but only 10 steps from those runs execute at once.
+Before Inngest starts a step, it checks every concurrency limit on the function. If a limit has no free slot, the step waits in a queue. When an executing step finishes or a run starts waiting, Inngest can use the free slot to start another eligible step.
+
+### What uses a slot
+
+- `step.run()` uses a slot while its callback executes.
+- `step.sleep()`, `step.sleepUntil()`, `step.waitForEvent()`, and `step.invoke()` do not use a slot while they wait.
+- The time between steps does not use a slot.
+
+A limit counts **steps executing code**, not all function runs in progress. For example, a limit of 10 can coexist with hundreds of paused runs, but only 10 steps from those runs execute at once. If one run sleeps, another queued step can use its slot. When the sleeping run resumes, its next step must wait for a free slot if the limit is full.
 
 Use concurrency when simultaneous work is the constraint, such as database connections or calls to a service that slows under parallel load. Use [Throttling](/docs/durable-execution/flow-control/throttling) to control how quickly runs start over time. Use [Rate limiting](/docs/durable-execution/flow-control/rate-limiting) when excess events should be skipped.
 
@@ -62,6 +70,8 @@ concurrency: {
 ```
 Configure every function that uses the shared capacity with the same scope, key, and limit. Keep those settings in a shared constant so the functions agree on the ceiling.
 
+Functions with the same `account` key can set different limits, but each function checks the shared active count against its own limit. If one function sets 5 and another sets 50, the first waits when five steps use the shared key, while the second may start more work. The higher limit can delay work from the first function. Use one shared limit when both functions must respect the same ceiling.
+
 A function can have **up to two** concurrency constraints. For example, combine a shared API ceiling with a per-account ceiling:
 
 ```typescript
@@ -72,13 +82,34 @@ concurrency: [
 ```
 A step starts only when it fits both limits. If one step needs its own ceiling, move that work to a separate function with its own concurrency setting and call it with `step.invoke()`.
 
+The order of the constraints does not change which steps can start. You can use two keys with the same scope if they evaluate to different strings.
+
+## Limit customer imports
+
+Use a customer ID as the key when processing steps for the same customer must not execute together:
+
+```typescript
+export const processCustomerImport = inngest.createFunction(
+  {
+    id: "process-customer-import",
+    triggers: { event: "csv/file.uploaded" },
+    concurrency: { limit: 1, key: "event.data.customerId" },
+  },
+  async ({ event, step }) => {
+    await step.run("process-file", () => processFile(event.data.fileURI));
+  }
+);
+```
+
+Replace `processFile` with your import implementation. Inngest can execute imports for different customers at the same time. For one customer, only one step executes at once. A waiting step in one import does not reserve that customer's slot, so this setting does not guarantee that whole imports run one after another.
+
 ## Queue behavior and limits
 
-- Within a function and key, Inngest selects queued work in best-effort FIFO order. Retries can affect that order. Do not depend on strict execution order.
+- Within a function and key, Inngest selects queued work in best-effort FIFO order. Retries can affect that order. Across keys or functions, the scheduler also considers capacity and fairness, so execution order is not guaranteed.
 - Changing a key expression affects new work. Already queued work retains the value assigned when it entered the queue.
 - A value of `0` or `undefined` sets no concurrency limit. The highest allowed limit depends on your plan.
-- A low limit can build a backlog. Set a start timeout when queued work becomes useless after a deadline.
+- A low limit can build a backlog. Set a [start timeout](/docs/durable-execution/guides-and-advanced/cancellation/timeouts) when queued work becomes useless after a deadline.
+
+The `key` is a CEL expression that evaluates to a string. For a separate limit per user and import, use `event.data.userId + "-" + event.data.importId`. For a fixed shared limit, use a quoted string expression such as `'"external-api"'`.
 
 A separate key-queue scheduling feature is available to Enterprise customers on request. Check its availability before promising best-effort fairness between tenants.
-
-

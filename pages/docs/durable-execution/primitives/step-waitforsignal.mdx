@@ -4,11 +4,13 @@ export const description = "Resume one waiting workflow run directly when a spec
 
 # Wait for one run with `step.waitForSignal`
 
-> Resume one waiting workflow run directly when a specific answer arrives.
+`step.waitForSignal()` pauses one run until a signal with its name arrives or the wait times out. You can resume that run directly when its specific answer is ready.
 
-> Draft for the documentation refresh. TypeScript SDK v4.
+They are useful when:
 
-Wait for an approval or callback that belongs to one specific run. Give that wait a distinct signal name, then send the same name to resume it. Inngest shows the wait in the run trace.
+- A callback belongs to one waiting run.
+- You need to resume a run as soon as its response arrives.
+- You want to address a wait by a unique signal name.
 
 ## Why choose a signal?
 

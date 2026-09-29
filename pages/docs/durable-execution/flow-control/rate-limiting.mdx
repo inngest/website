@@ -47,7 +47,7 @@ Inngest uses the generic cell rate algorithm to apply the limit over time. Do no
 | --- | --- | --- |
 | Discard excess runs | Rate limiting | The event does not start this function. |
 | Process every run at a controlled pace | [Throttling](/docs/durable-execution/flow-control/throttling) | Inngest queues the run for later. |
-| Limit work running at the same time | [Concurrency](/docs/durable-execution/flow-control/concurrency) | Inngest controls active execution. |
+| Limit work running at the same time | [Step concurrency](/docs/durable-execution/flow-control/concurrency) | Inngest controls active execution. |
 
 ## Configuration
 
@@ -57,4 +57,3 @@ Inngest uses the generic cell rate algorithm to apply the limit over time. Do no
 | `period` | Duration used to apply the limit. Required. TypeScript v4 permits `1s` through `24h`. |
 | `key` | Optional CEL expression evaluated for each triggering event. Each unique result gets its own limit. |
 Use [idempotency](/docs/durable-execution/guides-and-advanced/idempotency) when the goal is to prevent the same event from starting duplicate runs. Use rate limiting when you want to reduce the number of runs over time, including runs from different events with the same key.
-

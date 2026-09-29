@@ -125,7 +125,7 @@ export const docsRefreshOutline: DocsRefreshPage[] = [
         href: "/docs/durable-execution/flow-control",
         children: [
           {
-            title: "Concurrency",
+            title: "Step concurrency",
             href: "/docs/durable-execution/flow-control/concurrency",
           },
           {

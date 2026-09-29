@@ -9,7 +9,7 @@ Limit concurrent work, smooth bursts, discard excess runs, or move urgent work a
 
 ## Choose a control
 
-- [Concurrency](/docs/durable-execution/flow-control/concurrency) caps steps executing at the same time. Waiting runs do not use a slot.
+- [Step concurrency](/docs/durable-execution/flow-control/concurrency) caps steps executing at the same time. Waiting runs do not use a slot.
 - [Throttling](/docs/durable-execution/flow-control/throttling) limits how often runs start. Extra runs wait in the queue.
 - [Rate limiting](/docs/durable-execution/flow-control/rate-limiting) limits how often runs start and skips excess triggers. Use it when you can discard excess work.
 - [Batching](/docs/durable-execution/flow-control/batching) groups events into one run for bulk operations.
@@ -21,5 +21,4 @@ Limit concurrent work, smooth bursts, discard excess runs, or move urgent work a
 ## Combine controls carefully
 
 Use a stable event-data key when limits should apply independently per customer or resource. Batching can work with concurrency, but it cannot be combined with rate limiting or priority. See each page for its exact behavior and constraints.
-
 
