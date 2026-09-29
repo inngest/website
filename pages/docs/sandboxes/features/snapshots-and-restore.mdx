@@ -91,9 +91,3 @@ Restore means either resuming a paused sandbox with the same ID or cloning a use
 Use `inngest.sandboxes.snapshots.list()` and `get(snapshotId)` from the direct client, or `step.sandbox.snapshots.list(stepId)` and `get(stepId, snapshotId)` in a function. A snapshot can be `CREATING`, `READY`, `DELETING`, `DELETED`, `FAILED`, or `LOST`. Clone only a `READY` snapshot.
 
 Snapshot Create has no idempotency key. If a request returns `operation_ambiguous`, a snapshot may still be creating. List recent snapshots and reconcile before sending another Create. Snapshot count or storage quota can also reject creation. The beta guide does not publish fixed quota or retention values; check `expiresAt` on each snapshot.
-
-
-## Questions to settle before publication
-
-- What snapshot count, storage quota, and retention values should the published limits page show?
-- A snapshot clone attaches the same backing path for an S3-backed mount. Does a user snapshot capture mounted data, and what are the read-after-write and concurrent-write rules for clones?
