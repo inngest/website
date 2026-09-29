@@ -1,6 +1,6 @@
 "use client";
 
-import { type ComponentProps, useId } from "react";
+import { type ComponentProps, type ReactNode, useId } from "react";
 import dynamic from "next/dynamic";
 import { motion } from "motion/react";
 import { cn } from "@/utils/v1/cn";
@@ -26,6 +26,8 @@ export interface TestimonialsProps extends Omit<CarouselProps, "slides"> {
    * use "\n" to control line breaks.
    */
   title?: string;
+  /** Optional subtitle under the title. Requires `title`. */
+  body?: ReactNode;
   /** Render the animated brand-mark watermark behind the carousel
    *  (home / background-jobs layout). */
   watermark?: boolean;
@@ -48,8 +50,9 @@ export const EDGE_TESTIMONIALS_TITLE =
  * background-jobs, queues/flow-control, download-gate). Carousel
  * behaviour props (`portraitClassName`, `directionMode`,
  * `bylineStaggerMs`, `disablePortraitReveal`) pass straight through.
- * Set `watermark` for the brand-mark backdrop variant and `title` for a
- * heading above the rail (which also wires up `aria-labelledby`).
+ * Set `watermark` for the brand-mark backdrop variant and `title`
+ * (optionally with `body`) for a heading above the rail, which also
+ * wires up `aria-labelledby`.
  *
  * Pages whose heading differs from the standard testimonials title
  * (e.g. compare-to-temporal's `SectionHeading`) compose
@@ -58,28 +61,47 @@ export const EDGE_TESTIMONIALS_TITLE =
 export default function Testimonials({
   slides,
   title,
+  body,
   watermark = false,
   className,
   ...carousel
 }: TestimonialsProps) {
   const headingId = useId();
 
-  const heading = title ? (
+  const titleEl = title ? (
     <motion.h2
       {...reveals.heading}
       id={headingId}
       // mb (not a wrapper gap) so the heading drops into both the
       // watermark and plain layouts; matches the home page's
-      // gap-2 / lg:gap-24 between title and rail.
+      // gap-2 / lg:gap-24 between title and rail. With a subtitle the
+      // margin moves to the lockup, which sets its own rhythm.
       // Ignore the forced "\n" on mobile (let the title wrap naturally
       // instead of breaking awkwardly after "agents"); honor the two-line
       // break only at lg+ where it fits cleanly.
-      className="mb-2 whitespace-normal font-v1Display uppercase leading-[1.25] tracking-[-0.01em] text-v1-frost lg:mb-24 lg:whitespace-pre-line"
+      className={cn(
+        "whitespace-normal font-v1Display uppercase leading-[1.25] tracking-[-0.01em] text-v1-frost lg:whitespace-pre-line",
+        !body && "mb-2 lg:mb-24"
+      )}
       style={{ fontSize: "clamp(2rem, 4.6vw, 4rem)" }}
     >
       {title}
     </motion.h2>
   ) : null;
+
+  const heading = body ? (
+    <div className="mb-8 lg:mb-14">
+      {titleEl}
+      <motion.p
+        {...reveals.body}
+        className="text-v1-body-lg-loose mt-5 max-w-[46rem] text-v1-frost"
+      >
+        {body}
+      </motion.p>
+    </div>
+  ) : (
+    titleEl
+  );
 
   const labelProps = title
     ? { "aria-labelledby": headingId }
@@ -94,7 +116,7 @@ export default function Testimonials({
         <div
           className={cn(
             "relative z-10 mx-auto max-w-[1440px]",
-            className ?? DEFAULT_PADDING,
+            className ?? DEFAULT_PADDING
           )}
         >
           {heading}
@@ -109,7 +131,7 @@ export default function Testimonials({
       {...labelProps}
       className={cn(
         "relative mx-auto w-full max-w-[1440px]",
-        className ?? DEFAULT_PADDING,
+        className ?? DEFAULT_PADDING
       )}
     >
       {heading}
