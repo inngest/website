@@ -61,8 +61,5 @@ Keep the function model and triggers, then test Connect in a separate app before
 - Cloudflare Pages has a deployment guide. The HTTP handler reference also covers Cloudflare Workers. Enable Node.js compatibility for `AsyncLocalStorage` when serving on the Workers runtime.
 - Connect covers long-running workers on container platforms.
 If your provider is not listed, start with the HTTP handler and custom adapter guidance or the Connect requirements. Check that your runtime supports the chosen SDK, connection, request handling, and execution limits.
-## Run on Inngest compute
-**Planned documentation.** Inngest compute will let you run an app's function code on Inngest-managed compute. Inngest still coordinates its durable runs. Apps using Inngest compute can share an environment with apps that run on your infrastructure.
-**TBD before publication:** the supported SDKs and runtimes; how an app selects Inngest compute; how code and secrets are deployed; networking and resource limits; rollout availability; and the procedure for moving an existing app. This page must link to a runnable setup guide and a limits page after those contracts are confirmed.
 ## Best practices
 Check [Limits](/docs/durable-execution/limits) and your SDK's configuration before you deploy. Your cloud provider can also set request duration, memory, payload, and network constraints. [Sandboxes](/docs/sandboxes) are isolated execution within work which Inngest manages without having to deploy new infrastructure.

@@ -44,10 +44,8 @@ A step does not make an external action exactly once. If a provider accepts a re
 ## Other primitives
 
 - [defer](/docs/durable-execution/primitives/defer) — Start one typed function in its own run without waiting for its result.
-- [group.parallel](/docs/durable-execution/primitives/group-parallel) — Run steps concurrently. Use it with `Promise.race()` when the first result must return early.
+- [Parallel steps](/docs/durable-execution/primitives/group-parallel) — Run independent steps concurrently and collect their results.
 - [group.experiment](/docs/durable-execution/primitives/group-experiment) — Select a durable variant for a run so you can compare outcomes.
-
-There is no documented `group.race()` method. See `group.parallel` for racing steps in TypeScript and Python.
 
 ## Keep runs predictable
 
