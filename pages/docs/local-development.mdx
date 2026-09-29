@@ -11,9 +11,9 @@ You can run Inngest locally in a single command to build, test, and iterate loca
 
 The Dev Server records local events and function runs, so you can test steps, waits, retries, and errors before you deploy.  The Dev Server also bundles in a full tracing UI and allows you to replay local and production functions to easily fix issues.
 
-## Getting started
+## Running the dev server locally
 
-Start the Dev Server with one of the commands below. It looks for `serve()` endpoints on common local ports and paths. Use `-u` to give it your app's endpoint URL directly. See [Auto-discovery](#auto-discovery) for the paths and ports it checks.
+Start the Dev Server with one of the commands below:
 
 <CodeGroup>
 ```bash {{ title: "Bash installer" }}
@@ -37,8 +37,6 @@ docker run -p 8288:8288 -p 8289:8289 inngest/inngest \
 </CodeGroup>
 
 If Homebrew blocks the tap as untrusted, run `brew trust --cask inngest/tap/inngest` and retry the install.
-
-For a standalone container or Docker Compose setup, follow [Docker-based local development](/docs/local-development/docker).
 
 ## Connecting your Inngest functions
 

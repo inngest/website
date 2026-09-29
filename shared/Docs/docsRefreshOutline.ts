@@ -548,8 +548,4 @@ export const docsRefreshOutline: DocsRefreshPage[] = [
       },
     ],
   },
-  {
-    title: "Examples",
-    href: "/docs/examples",
-  },
 ];

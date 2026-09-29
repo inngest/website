@@ -321,23 +321,14 @@ export function PageSidebar() {
   );
 }
 
-const NavigationGroupStructureContext = createContext(0);
-
 function NavigationGroupStructure({
-  nestingLevel,
   children,
   ...props
-}: { nestingLevel?: number; children: React.ReactNode } & ComponentProps<
-  typeof Accordion.Item
->) {
+}: { children: React.ReactNode } & ComponentProps<typeof Accordion.Item>) {
   return (
-    <NavigationGroupStructureContext.Provider value={nestingLevel}>
-      {nestingLevel > 0 ? (
-        <Accordion.Item {...props}>{children}</Accordion.Item>
-      ) : (
-        <div>{children}</div>
-      )}
-    </NavigationGroupStructureContext.Provider>
+    <Accordion.Item asChild {...props}>
+      {children}
+    </Accordion.Item>
   );
 }
 
@@ -345,26 +336,14 @@ NavigationGroupStructure.Trigger = function NavigationGroupStructureItem({
   children,
   ...props
 }: { children: React.ReactNode } & ComponentProps<typeof Accordion.Trigger>) {
-  const nestingLevel = useContext(NavigationGroupStructureContext);
-
-  return nestingLevel > 0 ? (
-    <Accordion.Trigger {...props}>{children}</Accordion.Trigger>
-  ) : (
-    <div>{children}</div>
-  );
+  return <Accordion.Trigger {...props}>{children}</Accordion.Trigger>;
 };
 
 NavigationGroupStructure.Content = function NavigationGroupStructureItem({
   children,
   ...props
 }: { children: React.ReactNode } & ComponentProps<typeof Accordion.Content>) {
-  const nestingLevel = useContext(NavigationGroupStructureContext);
-
-  return nestingLevel > 0 ? (
-    <Accordion.Content {...props}>{children}</Accordion.Content>
-  ) : (
-    <div>{children}</div>
-  );
+  return <Accordion.Content {...props}>{children}</Accordion.Content>;
 };
 
 // A nested navigation group of links that expand and follow
@@ -397,13 +376,13 @@ function NavigationGroup({
   }, []);
 
   return (
-    <NavigationGroupStructure value={group.title} nestingLevel={nestingLevel}>
-      <li className={clsx("relative", className, nestingLevel == 0 && "mb-2")}>
+    <NavigationGroupStructure value={group.title}>
+      <li className={clsx("relative", className, nestingLevel === 0 && "mt-2")}>
         {group.href ? (
           <div
             className={clsx(
               "flex items-center rounded-md transition-colors hover:bg-canvasSubtle",
-              nestingLevel === 0 && "mb-2 mt-6"
+              nestingLevel === 0 && "py-2"
             )}
           >
             <LinkOrHref
@@ -438,13 +417,13 @@ function NavigationGroup({
             )}
           </div>
         ) : (
-          <NavigationGroupStructure.Trigger className="animate-accordion-trigger w-full rounded-md transition-colors hover:bg-canvasSubtle">
-            <div
-              className={clsx("m-0 flex items-center justify-between", {
-                "py-1": nestingLevel > 0,
-                "mb-2 mt-6": nestingLevel === 0,
-              })}
-            >
+          <NavigationGroupStructure.Trigger
+            className={clsx(
+              "animate-accordion-trigger w-full rounded-md text-left transition-colors hover:bg-canvasSubtle",
+              nestingLevel === 0 ? "py-2" : "py-1"
+            )}
+          >
+            <div className="flex w-full items-center justify-between">
               <span
                 className={clsx("pl-2", {
                   "text-sm font-medium text-subtle hover:text-basis":
@@ -461,9 +440,7 @@ function NavigationGroup({
                     {tag}
                   </Tag>
                 )}
-                {nestingLevel > 0 && (
-                  <ChevronDownIcon className="mr-2 h-4 w-4 text-carbon-600 dark:text-carbon-500" />
-                )}
+                <ChevronDownIcon className="mr-2 h-4 w-4 text-carbon-600 dark:text-carbon-500" />
               </span>
             </div>
           </NavigationGroupStructure.Trigger>
@@ -472,7 +449,12 @@ function NavigationGroup({
         <NavigationGroupStructure.Content
           className={animateAccordion ? "animate-accordion" : ""}
         >
-          <div className={clsx("relative overflow-hidden")}>
+          <div
+            className={clsx(
+              "relative overflow-hidden",
+              nestingLevel === 0 && "pb-4"
+            )}
+          >
             {/* @ts-ignore */}
             <motion.ul
               role="list"
