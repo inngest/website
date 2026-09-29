@@ -29,13 +29,3 @@ A durable workflow can coordinate these operations and show sandbox activity in 
 ## Share files across sandboxes
 
 S3-backed persistent filesystem mounts let separate sandboxes use a filesystem beyond any one sandbox's lifecycle. For example, one sandbox can prepare a dataset and other sandboxes can use that dataset in separate tasks. Mount setup, concurrent access, and write visibility need product confirmation before this page can give procedural guidance.
-
-## TBD questions before publication
-
-- What API creates and attaches a persistent mount? Who owns the backing S3 bucket, and how does a user authorize access?
-- When can another sandbox see files written to a shared mount? What happens when two sandboxes write the same path at once?
-- A clone attaches the same backing path for an S3-backed mount. Does a user snapshot capture any mounted data, and what happens to mount access after pause and resume?
-- What durability guarantees apply to a sandbox filesystem and to an S3-backed mount? How do writes behave during pause, failure, and retry?
-- What are the size, throughput, file count, retention, and pricing limits for each filesystem type?
-- What paths, permissions, encryption, isolation, and credential rules apply to shared mounts?
-- Which SDKs and runtime environments support filesystem and mount operations at launch?
