@@ -16,7 +16,7 @@ A cron schedule starts a run without an app-sent event. A function may also star
 - **Use an event** when several functions may react, the sender does not need their return values, or the action crosses apps.
 - **Use a webhook** when an external service sends the action to an Inngest URL.
 - **Use cron** when time starts recurring work.
-- **Use ****`step.invoke()`** when a run needs a specific child function and its result.
+- **Use** **`step.invoke()`** when a run needs a specific child function and its result.
 An event can also resolve a waiting run or cancel a matching run. It is useful for approval, follow-up, and stop signals as well as for starting new runs.
 ## Match an event before starting a run
 A trigger can match one event name or an event family. Add a trigger `if` condition when only some events should start a run. Inngest evaluates the condition before it starts the function. The condition uses Common Expression Language (CEL), and it must return `true` or `false`.

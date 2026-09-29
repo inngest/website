@@ -219,6 +219,10 @@ export const docsRefreshOutline: DocsRefreshPage[] = [
                 href: "/docs/durable-execution/guides-and-advanced/error-handling/retries",
               },
               {
+                title: "Non-retriable errors",
+                href: "/docs/durable-execution/guides-and-advanced/error-handling/non-retriable-errors",
+              },
+              {
                 title: "Rollbacks",
                 href: "/docs/durable-execution/guides-and-advanced/error-handling/rollbacks",
               },

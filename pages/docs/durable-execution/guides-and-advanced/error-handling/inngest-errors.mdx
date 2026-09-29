@@ -7,7 +7,7 @@ export const description = "Stop retrying a permanent error or delay the next at
 
 Stop retrying a permanent error or delay the next attempt until a provider is ready. A standard error follows the default retry policy; `NonRetriableError` and `RetryAfterError` change that behavior.
 ## Stop retries for a permanent error
-Throw `NonRetriableError` when the same input cannot succeed on another attempt, such as an ID that fails validation. It bypasses remaining retries for the function or step where you throw it.
+Throw `NonRetriableError` when the same input cannot succeed on another attempt, such as an ID that fails validation. It bypasses remaining retries for the function or step where you throw it. A failed step can still be caught by the function. See [Non-retriable errors](/docs/durable-execution/guides-and-advanced/error-handling/non-retriable-errors).
 ## Retry when an upstream service is ready
 Throw `RetryAfterError` when a rate limit or temporary condition provides a useful delay. The second argument accepts milliseconds, a duration string such as `"30s"`, or a `Date`. If you throw a standard error instead, Inngest uses its normal backoff.
 This example uses the `inngest` client from the [Quick start](/docs/durable-execution/quick-start).
