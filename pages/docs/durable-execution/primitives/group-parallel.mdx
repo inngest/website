@@ -57,6 +57,25 @@ async def get_values(ctx: inngest.Context) -> dict[str, str]:
 
 Use `Promise.all()` for independent steps whose results the current function needs. For many input items, map each item to a `step.run()` with a stable ID, then aggregate the results after `Promise.all()` resolves. Each step retries independently. If the work exceeds one run's step or state limits, send events to child functions instead; fan-out gives each child its own run and failure history.
 
+---
+
+## Continue after the first step settles
+
+Use a race when one completed step can satisfy the request. In TypeScript v4, a bare `Promise.race()` waits for all parallel steps under the default optimization. Wrap the race in `group.parallel()` to continue when the first step settles.
+
+```typescript
+const winner = await group.parallel(async () =>
+  Promise.race([
+    step.run("read-cache", async () => ({ source: "cache", value: "cached value" })),
+    step.run("read-source", async () => ({ source: "source", value: "fresh value" })),
+  ])
+);
+```
+
+If the first step rejects, the race rejects. An early result does not cancel the other steps. A losing `step.waitForEvent()` stays active until its timeout and can keep the run in a Running state, so set a timeout that fits the workflow.
+
+In Python, `parallel_mode=inngest.ParallelMode.RACE` changes when branches advance. It does not make `ctx.group.parallel()` return only the first result, and it can send more requests to your app.
+
 ## Related pages
 
 - [Primitives](/docs/durable-execution/primitives) for other workflow operations.
