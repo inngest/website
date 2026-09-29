@@ -7,6 +7,8 @@ export const description = "Keep in-flight runs working when you deploy new func
 
 > Change workflows while preserving progress for runs already in flight.
 
+Long-running functions inevitably change over time. Inngest enables developers to deploy changes to functions without explicit version markers or complex migration logic. This guide explains how Inngest handles versioning and the strategies you can use to evolve functions safely.
+
 ## How Inngest handles versioning
 
 Inngest uses **step-based memoization** and a graceful deterministic execution model. This is consistent across all language SDKs. Unlike systems that require explicit version annotations in your code, Inngest tracks function state through step identifiers, allowing you to modify functions while they're running.
