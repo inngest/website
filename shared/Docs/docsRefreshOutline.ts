@@ -311,11 +311,7 @@ export const docsRefreshOutline: DocsRefreshPage[] = [
             href: "/docs/durable-execution/best-practices/performance",
           },
         ],
-      },
-      {
-        title: "Troubleshooting",
-        href: "/docs/durable-execution/troubleshooting",
-      },
+      }
     ],
   },
   {
@@ -392,10 +388,6 @@ export const docsRefreshOutline: DocsRefreshPage[] = [
         title: "Best practices",
         href: "/docs/sandboxes/best-practices",
       },
-      {
-        title: "Troubleshooting",
-        href: "/docs/sandboxes/troubleshooting",
-      },
     ],
   },
   {
@@ -446,10 +438,6 @@ export const docsRefreshOutline: DocsRefreshPage[] = [
         title: "Best practices",
         href: "/docs/online-evals/best-practices",
       },
-      {
-        title: "Troubleshooting",
-        href: "/docs/online-evals/troubleshooting",
-      },
     ],
   },
   {
@@ -489,10 +477,6 @@ export const docsRefreshOutline: DocsRefreshPage[] = [
       {
         title: "Limits",
         href: "/docs/realtime/limits",
-      },
-      {
-        title: "Troubleshooting",
-        href: "/docs/realtime/troubleshooting",
       },
     ],
   },
