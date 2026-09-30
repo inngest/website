@@ -1,12 +1,13 @@
 "use client";
 
-import { useEffect, useRef, type ComponentType } from "react";
+import { useEffect, useRef } from "react";
 import Link from "next/link";
 import {
   RiBox3Fill,
   RiEyeFill,
   RiFlaskFill,
   RiWindyLine,
+  type RemixiconComponentType,
 } from "@remixicon/react";
 import { cn } from "@/utils/v1/cn";
 import { appendRef } from "@/utils/v1/ref";
@@ -16,7 +17,7 @@ interface Capability {
   label: string;
   heading: string;
   body: string;
-  icon: ComponentType<{ className?: string; size?: number }>;
+  icon: RemixiconComponentType;
   videoSrc?: string;
   /** Seconds to skip at the start of the clip, including each loop. */
   videoStart?: number;
