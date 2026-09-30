@@ -5,8 +5,6 @@ export const description = "Plan your client connections and message volume befo
 
 > Plan your client connections and message volume before you stream updates to users.
 
-> **Editorial status:** draft.  The plan values below come from the current [pricing comparison](https://www.inngest.com/pricing).  Confirm the open questions before publication.
-
 ## Realtime plan limits
 
 Estimate the number of clients online at once and the updates your app will publish each day. The pricing page lists concurrent Realtime connections and daily messages by plan. Check both before you add Realtime to a high-volume job.
@@ -31,16 +29,6 @@ The hook also reconnects automatically by default.  It pauses when the browser t
 ## Keep message volume predictable
 
 Publish meaningful state changes as Realtime messages.  If you stream model output token by token, estimate the daily message volume for your expected run count.  Use `bufferInterval` to reduce UI render work, and use `historyLimit` to bound browser memory.  For an important final result or state transition inside a function, `step.realtime.publish()` is durable and memoized on retry.
-
-## Limits awaiting confirmation
-
-The published pricing table does not explain every Realtime limit.  Confirm these before using them in production sizing guidance.
-
-- **TBD:** What counts as one daily message?  Does one publish sent to multiple subscribers count once or once per recipient?
-- **TBD:** When does the daily allowance reset, and what happens when an account reaches it?
-- **TBD:** What are the maximum message payload size, publish rate, and channel or topic count, if any?
-- **TBD:** What server-side history or replay window, if any, is available after a client disconnects?
-- **TBD:** The Enterprise summary card on [pricing](https://www.inngest.com/pricing) says 1,000 Realtime connections, while its detailed comparison says custom.  Which value should the published docs use?
 
 ## Next steps
 

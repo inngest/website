@@ -5,8 +5,6 @@ export const description = "Show progress from a durable function in a signed-in
 
 > Show progress from a durable function in a signed-in user's browser.
 
-> **Editorial status:** draft
-
 Build a Next.js page that shows a job’s live status and final result. A server action starts the Inngest function, which publishes two durable updates. Your server mints a subscription token for the signed-in user so the browser can receive them.
 
 **Before you start:** Use a Next.js App Router project with TypeScript, Inngest SDK v4, and an existing sign-in flow. This example calls your app's `requireCurrentUser()` function from `@/lib/auth`. Implement that function so it returns a user with a string `id` and rejects unauthenticated requests. The token action and event action both call it. If you have not set up Inngest yet, complete the [Next.js quick start](/docs/durable-execution/quick-start/typescript-quick-start) first.

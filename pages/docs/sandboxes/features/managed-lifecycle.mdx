@@ -5,7 +5,7 @@ export const description = "Coordinate Sandbox creation, commands, and cleanup a
 
 > Coordinate Sandbox creation, commands, and cleanup as durable steps in a function run.
 
-> **Draft for review.** The low-level TypeScript API below follows the access-gated Sandbox beta. The planned `step.sandbox.typescript` helper has no published call shape yet.
+> **Access-gated beta.** The low-level TypeScript API below follows the access-gated Sandbox beta. The planned `step.sandbox.typescript` helper has no published call shape yet.
 
 Use durable Sandbox steps when isolated code belongs to a longer function run. Inngest records each operation’s result, so a resumed function can continue after completed steps. The API you choose determines which lifecycle and cleanup actions your function must handle.
 
@@ -13,7 +13,7 @@ Use durable Sandbox steps when isolated code belongs to a longer function run. I
 | --- | --- | --- |
 | `step.sandbox.create()` and other low-level steps | Durable operation results, safe retries, readiness polling by default, and step failures | When to pause, resume, snapshot, clone, and destroy the Sandbox; cleanup after permanent failure |
 | `inngest.sandboxes` | Immediate Sandbox requests and bounded readiness polling | Retries, cancellation, and cleanup in your server process |
-| Planned `step.sandbox.typescript` | Starts a Sandbox, runs TypeScript, and stops the Sandbox in one call | The task input and result; exact API details are **TBD** |
+| Planned `step.sandbox.typescript` | Starts a Sandbox, runs TypeScript, and stops the Sandbox in one call | Planned; no beta API |
 
 ## Use a Sandbox in a durable function
 
@@ -80,11 +80,11 @@ Let unexpected `step.sandbox` errors escape the function. Inngest retries operat
 
 A durable step records the operation result; it does not promise that a Sandbox, guest process, or retained output survives a lost runtime. Inspect the current Sandbox state with Get when work resumes after a long wait or external interruption.
 
-Sandbox operations used as durable steps appear with the function's other steps in its run trace. The exact trace fields and links are **TBD**.
+Sandbox operations used as durable steps appear with the function's other steps in its run trace.
 
 ## One-call TypeScript execution
 
-A planned `step.sandbox.typescript` call will start a Sandbox, run TypeScript, and stop it automatically. Use this path when one isolated task needs no persistent Sandbox between steps. The method signature, error behavior, cleanup guarantee, and trace shape are **TBD** until its specification is available.
+A planned `step.sandbox.typescript` call will start a Sandbox, run TypeScript, and stop it automatically. This planned path is for one isolated task that does not keep a Sandbox between steps.
 
 This page describes isolated microVM Sandboxes. Deployment preview environments are called **branch deploys**.
 

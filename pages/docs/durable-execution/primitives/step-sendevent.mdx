@@ -60,7 +60,3 @@ One call can send at most 5,000 events. Event size depends on the account plan, 
 ## Next
 
 Read Sending events from functions for fan-out patterns, Event payloads for fields, and [step.invoke](/docs/durable-execution/primitives/step-invoke) for dependent work.
-
-## Editorial TBD
-
-Confirmed for this refresh: a batched `step.sendEvent` reports partial success. Confirm the exact response and error fields that identify accepted and failed events, and whether retries resend the full batch or only failed events. The response and error fields still need confirmation. Do not promise batch atomicity or exactly-once delivery before confirmation.

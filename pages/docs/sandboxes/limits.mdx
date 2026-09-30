@@ -5,7 +5,7 @@ export const description = "Choose a supported Sandbox size and plan tasks aroun
 
 > Choose a supported Sandbox size and plan tasks around the current beta limits.
 
-> **Draft for the access-gated beta.** These values describe the current Sandbox beta, not a launch guarantee. The API and limits can change without a compatibility period. Use the beta for evaluation and feedback, not production data you cannot recreate.
+> **Access-gated beta.** These values describe the current Sandbox beta, not a launch guarantee. The API and limits can change without a compatibility period. Use the beta for evaluation and feedback, not production data you cannot recreate.
 
 Choose a supported Sandbox size before you start work, then check command output and runtime limits before running long jobs. These beta limits apply to Sandboxes; workflow limits are separate.
 
@@ -27,16 +27,3 @@ Choose a supported Sandbox size before you start work, then check command output
 The beta uses one fixed image and the workspace's default egress-allowed network. It does not expose custom image, template, VPC, or public ingress selection. The beta also limits argument, environment, process specification, and JSON body sizes.
 
 A snapshot captures memory, disk, environment, image, and resources. A clone has a new Sandbox ID and captured filesystem. Pause and Resume preserve the same Sandbox ID and filesystem; a private pause checkpoint does not count as a user snapshot. Snapshots are crash-consistent, expire, and are not permanent storage. Destroy removes the Sandbox filesystem and process output.
-
-## Launch values to confirm
-
-The [pricing page](https://www.inngest.com/pricing) defines Free, Pro, Business, and Enterprise plans. It does not define Sandbox access, allowances, or pricing. Beta access remains entitlement-gated.
-
-- **Capacity and billing — TBD.** What are concurrent Sandbox, CPU, memory, paused-time, and storage allowances per plan? What is billable, and what happens at a limit?
-- **Lifetime and retention — TBD.** What are the maximum running and paused durations, disk size, snapshot count and stored bytes, snapshot retention, and cleanup policy? Which limits can users raise?
-- **S3-backed mounts — TBD.** What are size, I/O, concurrency, consistency, region, and retention limits? Clones attach the same backing path rather than a copy of mounted data.
-- **SSH — TBD.** Launch access uses uploaded public keys and an address such as `ssh [workload-id]@ssh.inngest.com`. What are key count/type/size, session, and transfer limits?
-- **Secrets — current beta and launch values to confirm.** Fresh Sandbox Create can select existing workspace secrets by name. The newer beta reference defines name and combined environment limits, but launch count, update, and plan limits remain to be confirmed. Values are visible throughout the guest and are not automatically redacted from output.
-- **Boot time — TBD.** Define the measurement and conditions behind the sub-second claim, including image, Sandbox size, region, load, and percentile.
-
-Publish verified launch limits with units, scope, enforcement, remedy, and a verification date.

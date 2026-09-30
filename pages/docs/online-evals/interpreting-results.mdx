@@ -5,7 +5,7 @@ export const description = "Read variant assignments and outcome scores together
 
 > Read variant assignments and outcome scores together to see whether a change helped users.
 
-> Draft for the documentation refresh. This guide uses the TypeScript SDK v4. Scoring and deferred scoring are beta APIs.
+Scoring and deferred scoring are TypeScript SDK v4 beta APIs.
 
 Before sending more traffic to a new prompt or workflow path, compare its outcome scores with the current variant. The experiment records which variant ran; a score records what happened afterward. Inspect individual traces when a result looks surprising.
 
@@ -59,8 +59,3 @@ If the candidate meets your outcome and operational criteria, increase its weigh
 - **Related runs are missing from a session.** Check the environment, session key and ID on the triggering events, then allow for indexing delay.
 
 Next, [review A/B testing](/docs/online-evals/a-b-testing), [learn how outcomes and scoring work](/docs/online-evals/outcomes-and-scoring), or [inspect sessions](/docs/online-evals/sessions).
-
-## Editorial TBD
-
-- Confirm which experiment dashboard filters and counts are available for assigned runs, scored runs, unresolved outcomes, and assignment cohorts. This guide explains what to compare but does not promise a specific chart or control for those measures.
-- Confirm the approved statistical decision guidance before publishing any numeric sample-size threshold or significance claim.

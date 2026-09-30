@@ -26,7 +26,7 @@ Destroy a Sandbox when the work finishes. Destroy removes its processes, filesys
 - If Create can wait for readiness, use `runningTimeout: false` when you need the Sandbox ID before the wait. Then call `waitUntilRunning` as a separate step. A readiness timeout does not destroy the Sandbox.
 - Store the Sandbox ID when another function or process must reconnect. Fetch the Sandbox by ID rather than storing a serialized SDK object.
 
-The planned `step.sandbox.typescript` convenience call will start a Sandbox, run TypeScript, and stop it automatically. Its call shape is still TBD. Use the documented create, run, and destroy operations in beta examples.
+The planned `step.sandbox.typescript` convenience call will start a Sandbox, run TypeScript, and stop it automatically. Use the documented create, run, and destroy operations in beta examples.
 
 ## Make retries safe
 
@@ -63,13 +63,6 @@ The current beta has one default image, a one-hour active runtime per Sandbox, a
 
 Treat code inside a Sandbox as able to read its environment. The newer beta API lets fresh Sandbox Create select existing workspace secrets by exact name; it injects values throughout the guest. Select only what the task needs. Values printed to output or saved in files and snapshots are not automatically redacted. A clone restores captured secret values and cannot select new ones. See [Secrets](/docs/sandboxes/features/secrets).
 
-At launch, users will upload an SSH public key to Inngest and connect to a workload using an address shaped like `ssh <workload-id>@ssh.inngest.com`. Publish the final setup steps when the SSH interface is specified. Do not place private keys in the Sandbox.
+At launch, users will upload an SSH public key to Inngest and connect to a workload using an address shaped like `ssh <workload-id>@ssh.inngest.com`. Do not place private keys in the Sandbox.
 
 Sandboxes are separate VMs isolated from the host and from other Sandboxes. Egress is allowed by default. Review what a task can reach over the network before running generated or untrusted code.
-
-## Open launch questions
-
-- What are the final workspace secret management permissions and UI, and the exact SSH setup and lifecycle APIs?
-- What are the S3-backed mount configuration, access control, and concurrent-write guarantees?
-- What is the final `step.sandbox.typescript` call shape and its cleanup behavior when execution fails?
-- Which resource, runtime, snapshot, and storage limits apply at launch?

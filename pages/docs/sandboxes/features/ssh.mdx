@@ -7,13 +7,11 @@ export const description = "Learn how planned SSH access will let you inspect an
 
 Use SSH to inspect files or debug a process inside a running Sandbox. Your session reaches that Sandbox’s own filesystem and processes. SSH is planned for launch; the current beta does not provide a supported public connection path.
 
-> **Draft for launch.** SSH access is planned for the initial Sandboxes launch. Users will upload an SSH public key to Inngest, then connect using the Sandbox address Inngest provides. The current beta image includes OpenSSH, but the beta network is egress-only and does not expose public ingress or a supported SSH connection path. The exact setup screen, address format, permissions, and limits still need confirmation before publication.
-
 ## How a session fits into the Sandbox lifecycle
 
-1. Upload your SSH public key to Inngest. **TBD:** document the exact UI or API path.
+1. Upload your SSH public key to Inngest.
 2. Create a Sandbox and wait until it is `RUNNING`.
-3. Connect with your matching private key and the Sandbox SSH address that Inngest provides. An expected address shape is `ssh <workload-id>@ssh.inngest.com`; confirm the final hostname and identifier before publishing a tested command.
+3. Connect with your matching private key and the Sandbox SSH address that Inngest provides. An expected address shape is `ssh <workload-id>@ssh.inngest.com`.
 4. Close the session when you finish. The Sandbox remains a separate resource until it is paused or destroyed.
 5. Reconnect after a pause and resume if you need interactive access again. Pause is a cold checkpoint and can interrupt external network sessions.
 
@@ -21,21 +19,9 @@ SSH changes the same live environment that commands and managed processes use. A
 
 ## Access and isolation
 
-Only give SSH access to people and systems that should be able to change the Sandbox. A connected user can inspect its files and processes and can alter the work running there. The microVM isolates this environment from other Sandboxes. The launch documentation must describe the exact access boundary, network path, and audit behavior before readers rely on SSH for sensitive work.
+Only give SSH access to people and systems that should be able to change the Sandbox. A connected user can inspect its files and processes and can alter the work running there. The microVM isolates this environment from other Sandboxes.
 
-Use the Sandboxes SDK for repeatable application work. Use SSH when a person needs to inspect or debug a live Sandbox. If an Inngest function creates the Sandbox, its durable steps still record the SDK operations; an interactive SSH command is outside those steps unless the product explicitly records it. **TBD:** confirm how SSH sessions and commands appear in traces.
-
-## Questions to resolve before publication
-
-- Where does the user upload an SSH public key and find the Sandbox SSH address? What is the final hostname and workload identifier format?
-- Is the SSH address stable across pause and resume?
-- How do users remove or rotate uploaded public keys? When does a change affect active sessions?
-- Which users and service identities may connect? What account, environment, and Sandbox permissions apply?
-- Which ports and network policies apply? Does SSH require a separate allowlist or firewall rule?
-- What does the product record for session starts, users, commands, and file changes? What appears in the Inngest trace?
-- What are the session, idle, connection-count, and data-transfer limits?
-- What happens to a session when the Sandbox pauses, resumes, reaches its runtime limit, or is destroyed?
-- Which SSH clients and operating systems have tested setup steps?
+Use the Sandboxes SDK for repeatable application work. Use SSH when a person needs to inspect or debug a live Sandbox. If an Inngest function creates the Sandbox, its durable steps still record the SDK operations; an interactive SSH command is outside those steps unless the product explicitly records it.
 
 ## Next
 

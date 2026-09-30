@@ -7,7 +7,7 @@ export const description = "Diagnose a failed Sandbox operation and decide wheth
 
 When a Sandbox operation fails, find its step in the run trace or inspect the direct SDK error. Check the resource’s current state before retrying: a lost response does not prove that a command or mutation failed. Keep the error `code`, `requestId`, and resource ID for investigation.
 
-> **Experimental beta:** The guidance below describes the access-gated `inngest@4.20.0+` beta. The API and limits can change. The newer beta reference documents selecting existing workspace secrets for a fresh Sandbox. SSH, S3-backed mounts, and `step.sandbox.typescript` are planned for launch; their troubleshooting steps remain **TBD** until their public contracts are documented.
+> **Experimental beta:** The guidance below describes the access-gated `inngest@4.20.0+` beta. The API and limits can change. The newer beta reference documents selecting existing workspace secrets for a fresh Sandbox.
 
 ## Before you retry
 
@@ -87,22 +87,16 @@ Create, Destroy, Pause, Resume, snapshot Delete, and an identical file upload ha
 
 **Check:** Find the Sandbox ID from the successful Create step or from a stable job-derived name. Check whether the Sandbox is still active, already `TERMINATING`, terminal, or missing. A completed `step.sandbox` result is memoized, but that does not preserve the guest process or guarantee cleanup after a permanent function failure.
 
-**Fix:** Destroy a Sandbox that the failed run no longer needs. In the beta low-level API, keep a Destroy step on the successful path and use an Inngest `onFailure` handler or separate cleanup function when permanent failure must release it. Direct client code should normally use `finally`. Cleanup should tolerate an already terminating, terminal, or missing Sandbox. A JavaScript `finally` around durable steps does not guarantee cleanup after permanent failure or cancellation. The planned `step.sandbox.typescript` one-call helper will manage start and stop, but its exact failure contract is **TBD**.
+**Fix:** Destroy a Sandbox that the failed run no longer needs. In the beta low-level API, keep a Destroy step on the successful path and use an Inngest `onFailure` handler or separate cleanup function when permanent failure must release it. Direct client code should normally use `finally`. Cleanup should tolerate an already terminating, terminal, or missing Sandbox. A JavaScript `finally` around durable steps does not guarantee cleanup after permanent failure or cancellation.
 
 ## A Sandbox operation does not appear in the trace
 
 **Check:** Confirm that the operation ran inside an Inngest function through `step.sandbox`, that the client has `sandboxMiddleware()`, and that each call uses a stable step ID. Open the run in the same environment where the event was sent. A call through the immediate `inngest.sandboxes` client or REST does not create a durable step in that run.
 
-**Fix:** Use `step.sandbox` for Sandbox operations that belong in a durable function trace. Inspect the function run and its step errors. Sandbox-specific trace fields and the final dashboard labels are **TBD**; do not rely on an undocumented field name to locate an operation.
+**Fix:** Use `step.sandbox` for Sandbox operations that belong in a durable function trace. Inspect the function run and its step errors. Use the step ID to locate the operation.
 
 ## More help
 
 Use the [Quick start](/docs/sandboxes/quick-start) to reproduce a Create–command–Destroy run. [Reference](/docs/sandboxes/reference) lists API calls and errors, [Limits](/docs/sandboxes/limits) lists beta bounds, and [Managed lifecycle](/docs/sandboxes/features/managed-lifecycle) explains durable cleanup and uncertain outcomes.
 
 When reporting an issue, include the SDK or REST surface, operation, stable error code, request ID, run and step IDs when relevant, resource IDs, and whether repeating the operation could duplicate a mutation. A Sandbox is an isolated microVM for code. A [branch deploy](/docs/platform-and-operations/environments-and-branch-deploys) is a deployment preview for a Git branch.
-
-## Launch questions
-
-- Which Sandbox-specific trace fields and filters will users see?
-- What cleanup and error guarantees will `step.sandbox.typescript` provide after failure or cancellation?
-- How will SSH connection failures, key authorization, Sandbox secret injection, and S3-backed mount errors appear in public APIs?

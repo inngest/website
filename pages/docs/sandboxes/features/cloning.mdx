@@ -103,5 +103,3 @@ Snapshots have a server-defined `expiresAt`. They are not permanent storage and 
 ## Persistent filesystem mounts
 
 The snapshot captures the local filesystem. If the source sandbox has an S3-backed persistent filesystem mount, each clone attaches the **same backing path**. Use separate paths when jobs need independent files.
-
-**TBD:** Confirm concurrent-write and read-after-write behavior for clones that use the same mounted path.

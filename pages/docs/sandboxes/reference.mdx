@@ -5,7 +5,7 @@ export const description = "Find the current beta API calls and constraints for 
 
 > Find the current beta API calls and constraints for creating, running, and managing Sandboxes.
 
-> **Draft for the access-gated beta.** The TypeScript and REST contracts can change without a compatibility period. Use this reference to evaluate the current API. See the [Limits](/docs/sandboxes/limits) page for resource and output limits.
+> **Access-gated beta.** The TypeScript and REST contracts can change without a compatibility period. Use this reference to evaluate the current API. See the [Limits](/docs/sandboxes/limits) page for resource and output limits.
 
 ## Before you call the beta API
 
@@ -89,7 +89,7 @@ Pause and Resume keep the same Sandbox ID, filesystem, memory, environment, and 
 
 `sandbox.snapshot()` captures memory, disk, environment, image, and resources while the source Sandbox remains running. The SDK waits for `READY` by default, up to five minutes. A timeout stops polling; snapshot creation may continue. `snapshot.clone()` creates a **new Sandbox ID** from a READY snapshot. A clone inherits the captured resources, filesystem, memory, and environment. Snapshots are crash-consistent and expire at a server-defined time. Flush application state before taking one.
 
-A private Pause checkpoint serves only Resume of the same Sandbox. It is not a user snapshot and cannot be cloned. The planned S3-backed persistent filesystem mount shares its backing path across Sandboxes and clones; its SDK shape and consistency rules remain **TBD**.
+A private Pause checkpoint serves only Resume of the same Sandbox. It is not a user snapshot and cannot be cloned. The planned S3-backed persistent filesystem mount shares its backing path across Sandboxes and clones.
 
 ## Errors and cleanup
 
@@ -105,17 +105,6 @@ A private Pause checkpoint serves only Resume of the same Sandbox. It is not a u
 Captured-command timeout and output-limit errors may also mean the command ran. Create, Destroy, Pause, Resume, snapshot Delete, and identical file upload are safe to repeat after an unconfirmed availability failure under the beta contract. Let unexpected durable step errors escape unless the function has a deliberate reconciliation path.
 
 The caller owns cleanup in this beta. Use `finally` for direct calls. Destroy the Sandbox on a function's successful path and use an `onFailure` cleanup path when permanent failure must release it. A JavaScript `finally` block around durable steps does not guarantee cleanup after permanent failure.
-
-## Launch details to resolve
-
-The following are confirmed product direction, but the beta guide does not define their public API:
-
-- `step.sandbox.typescript` will start a Sandbox, run TypeScript, and stop the Sandbox in one call. **TBD:** signature, options, return type, and failure behavior.
-- SSH access will use uploaded public keys and a workload address such as `ssh <workload-id>@ssh.inngest.com`. **TBD:** key-management UI/API and exact user-facing command.
-- Secret selection is available in the newer beta contract and values are visible throughout the guest. **TBD for launch:** workspace management UI, permissions, and redaction behavior.
-- S3-backed persistent filesystem mounts will share a backing path across Sandboxes. **TBD:** mount API, path selection, consistency, and limits.
-
-These planned features should not appear in runnable examples until their public contract is published.
 
 ## Limits
 

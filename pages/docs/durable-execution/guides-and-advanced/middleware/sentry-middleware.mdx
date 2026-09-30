@@ -19,7 +19,7 @@ inngest_client = inngest.Inngest(
 ```
 Initialize Python Sentry with `sentry_sdk.init()` before registering the middleware. Keep Sentry configuration in your app so the middleware uses the same reporting policy as your other code.
 ## TypeScript v4
-Sentry middleware captures exceptions, tracing, and Inngest context. **TBD before publication:** add and verify a TypeScript v4 installation and registration example. Do not reuse TypeScript v3 middleware registration code for v4.
+Sentry middleware captures exceptions, tracing, and Inngest context. TypeScript v3 middleware registration code does not apply to v4.
 Inngest [traces](/docs/platform-and-operations/traces) still show the durable run and its steps. Use Sentry when you also need errors and trace context in your application monitoring system.
 ## Next
 - [Overview](/docs/durable-execution/guides-and-advanced/middleware/overview) explains the middleware lifecycle.

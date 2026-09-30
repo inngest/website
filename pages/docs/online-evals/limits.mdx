@@ -33,12 +33,3 @@ A score value must be a finite number or boolean. Keep its name and meaning cons
 A deferred scorer is an independent function run with its own retries, concurrency, and steps. Each `defer()` call uses an ID unique within its parent run. Deferred functions are experimental. There is no separate Online Evals quota for deferred scorers. Normal function and plan limits still apply to their runs.
 
 `group.experiment()` selects one variant per run and memoizes the choice across retries. Each variant callback must call at least one `step.*` tool. This rule applies whether a variant wraps one step or a larger workflow path. [A/B testing](/docs/online-evals/a-b-testing) shows the variant rules in use.
-
-## Publication questions
-
-- **TBD:** How long do score records, experiment aggregates, and session search data remain available on each Cloud plan? The pricing page gives trace and log history, but does not say these other records have the same retention.
-- **TBD:** Publish the billing terms for scores beyond each plan's included monthly quantity, including Free and Business, and show where users can inspect usage.
-- **TBD:** Is there a maximum number of scores per run, distinct score names, active experiments, or deferred scorers beyond the general function limits?
-- **TBD:** Confirm launch status and SDK version floors for scoring, deferred scorers, and experiments before publishing the final availability table.
-
-For other function, event, and provider limits, use [Limits](/docs/durable-execution/limits) and the [current pricing page](https://www.inngest.com/pricing).

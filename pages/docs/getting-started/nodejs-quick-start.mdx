@@ -132,16 +132,8 @@ Scoring is currently a beta API. To test this call, invoke `handle-ticket` from 
 ## Where to go next
 
 - [Durable Execution](/docs/durable-execution) explains triggers, steps, waits, retries, and deployment.
-- [Sandboxes](/docs/sandboxes) explains how isolated microVM work fits inside a durable run. The Sandbox API for this tutorial is still TBD.
+- [Sandboxes](/docs/sandboxes) explains how isolated microVM work fits inside a durable run.
 - [Online Evals](/docs/online-evals) explains sessions, later outcome scores, deferred scoring, and experiments.
 - Choose the SDK and framework setup for your app from the platform and language tab.
 
 You can deploy an app's functions to your own infrastructure through HTTP `serve()` or Connect. Inngest compute is planned as another per-app placement. Apps using your compute and Inngest compute can share one Inngest environment when that service launches. Sandboxes run isolated code within a workflow; they are separate from function hosting.
-
----
-
-## Draft questions
-
-- **TBD:** Which Sandbox action should extend this tutorial, and what is its supported SDK call and trace view?
-- **TBD:** When Inngest compute launches, what exact deploy action and prerequisites should appear here?
-- **TBD:** Should the first tutorial include a customer-resolution event and deferred score, or leave the full outcome loop to a focused Online Evals tutorial?

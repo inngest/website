@@ -13,7 +13,7 @@ Open the function run in the Inngest dashboard or Dev Server. The trace shows th
 
 Give each Sandbox operation a stable, descriptive step ID. For example, `create-sandbox`, `run-command`, and `destroy-sandbox` make the sequence readable and let you identify the operation that failed. A retry appears as another attempt for that step. Completed steps return their recorded results when the function replays.
 
-A trace records the durable API operations. It does not make the Sandbox guest process, filesystem, or output durable. Dedicated Sandbox fields, resource links, and redaction in the trace UI remain **TBD**.
+A trace records the durable API operations. It does not make the Sandbox guest process, filesystem, or output durable.
 
 ## Try it in a function
 
@@ -51,12 +51,4 @@ The example destroys the Sandbox on the successful path. For a function that can
 
 ## Protect trace data
 
-The current trace view displays step inputs, outputs, and errors. Keep credentials out of command strings, captured output, and returned values. The beta can inject selected workspace secrets into the Sandbox environment, but it does not automatically redact values printed to command output or files. The launch documentation must define how sensitive trace data is handled.
-
-## Questions to resolve before publication
-
-- Which Sandbox resource IDs, lifecycle states, command results, and errors appear in step input and output? Are any fields linked to Sandbox detail views?
-- Does the trace show Sandbox-specific events beyond ordinary durable steps?
-- What redaction applies to command text, captured output, guest environment values, launch secrets, and error details?
-- Can users correlate a direct `inngest.sandboxes` call with a function run, and if so, how?
-- Will the planned `step.sandbox.typescript` helper show its start, execution, and automatic stop as one step or multiple steps?
+The current trace view displays step inputs, outputs, and errors. Keep credentials out of command strings, captured output, and returned values. The beta can inject selected workspace secrets into the Sandbox environment, but it does not automatically redact values printed to command output or files.

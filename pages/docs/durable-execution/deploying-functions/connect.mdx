@@ -371,8 +371,6 @@ This view is helpful for debugging connection issues or verifying rolling deploy
 
 ## Syncing and Rollbacks
 
-{/* TODO: Create diagram to explain syncing */}
-
 Inngest keeps track of the version your workers are running on. This internal representation changes when you update your function configuration, provide a new app version identifier to the client configuration, or change the SDK version or language.
 
 When you deploy a new version of your application, the first worker to connect to Inngest will automatically sync your app. This will update function configurations to the desired state configured in your code. Unlike `serve`, connect apps do not require [manual syncing](/docs/platform-and-operations/apps-and-syncs) with Inngest Cloud.
@@ -487,8 +485,6 @@ readinessProbe:
 
 ## Worker concurrency
 
-{/* TODO: Mention minimum supported version for this feature */}
-
 Worker concurrency is supported in the following versions of the SDK:
 - **TypeScript**: SDK `3.45.1` or higher.
 - **Go**: SDK `0.14.3` or higher.
@@ -512,11 +508,6 @@ This means that if you update the `maxWorkerConcurrency` after a worker is conne
 - Prevents worker resource exhaustion (CPU, memory, connections)
 - Enables predictable resource allocation per worker
 - Helps with horizontal scaling over both homogeneous and heterogenous workers
-
-{/* TODO: Uncomment when we have intelligent load balancing
-- Allows Inngest to intelligently distribute load across your worker fleet
-- Helps with horizontal scaling by ensuring even distribution
-*/}
 
 <CodeGroup>
 ```ts
