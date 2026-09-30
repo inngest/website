@@ -179,6 +179,10 @@ export const docsRefreshOutline: DocsRefreshPage[] = [
                 title: "Multi-tenancy",
                 href: "/docs/durable-execution/flow-control/multi-tenancy",
               },
+              {
+                title: "Simulator",
+                href: "/docs/durable-execution/flow-control/simulator",
+              },
             ],
           },
           {
