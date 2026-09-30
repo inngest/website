@@ -34,14 +34,16 @@ export const sendFollowUp = inngest.createFunction(
 ```
 Replace `sendFollowUpEmail` with your application’s email function. The sleep pauses this run for 30 minutes. The following `step.run` sends the email as a retriable step.
 
-## Signature
+## API
 
-`step.sleep(id, duration): Promise`
+```ts
+await step.sleep(id, duration);
+```
 
-- `id` is a required string. Give this step a stable ID. Inngest shows it in logs and uses it to remember the step’s state across function versions.
-- `duration` is required. Pass a number of milliseconds, an `ms`-compatible string such as `"30m"`, `"3 hours"`, or `"2.5d"`, or a `Temporal.Duration`.
-- Await the Promise or handle it so the function sleeps correctly.
+- **`id`**: a stable step ID, such as `"wait-30-minutes"`.
+- **`duration`**: how long to wait, such as `"30m"`, `"3h"`, or `"2d"`.
 
+See the [`step.sleep` reference](/docs/reference/typescript/functions/step-sleep) for every option.
 
 ## Resuming, retrying, and rerunning
 

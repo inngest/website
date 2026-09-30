@@ -61,19 +61,21 @@ export const awaitInvoiceReview = inngest.createFunction(
   }
 );
 ```
-Send `invoice/approval.recorded` with the same `invoiceId` after the wait starts. The returned event provides `review.data.approved`; a timeout returns `null`. Using an `eventType()` result gives the returned event a TypeScript type.
+Send `invoice/approval.recorded` with the same `invoiceId` after the wait starts. The returned event provides `review.data.approved`; a timeout returns `null`.
 
-## Choose wait options
+## API
 
-`await step.waitForEvent(id, options)` returns the matching event payload or `null` when the timeout expires.
+```ts
+const event = await step.waitForEvent(id, { event, timeout, match });
+```
 
-- `id` is a stable step ID. Inngest uses it to record the wait and show it in the run.
-- `event` is the event name or an `eventType()` result.
-- `timeout` is required. Use an `ms` duration such as `"7d"`, milliseconds as a number, an absolute `Date`, or a supported `Temporal` duration or instant.
-- `match` optionally names a property shared by the trigger event and the later event, such as `"data.invoiceId"`.
-- `if` optionally supplies a CEL expression for a more specific match. In that expression, `event` is the trigger event and `async` is the later event. For example, `"event.data.invoiceId == async.data.invoiceId && async.data.approved == true"`. Use `match` or `if`, not both.
+- **`id`**: a stable step ID.
+- **`event`**: the name of the event to wait for.
+- **`timeout`**: how long to wait, such as `"7d"`.
+- **`match`**: a field both events share, such as `"data.invoiceId"`. For more specific matches, use an `if` expression instead.
+- **Returns** the matching event, or `null` if the timeout expires.
 
-Await the call so the function pauses correctly. Give every wait a timeout path that makes sense for the user, such as recording an expired request or sending a reminder. The `if` expression does not support CEL's `in` operator; use equality checks joined with `||` when matching several values.
+Always handle the timeout, for example by recording an expired request or sending a reminder. See the [`step.waitForEvent` reference](/docs/reference/typescript/functions/step-wait-for-event) for every option, including `if` expressions.
 
 ## Match the right event
 

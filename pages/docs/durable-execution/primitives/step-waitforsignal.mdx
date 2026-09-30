@@ -59,7 +59,18 @@ await inngest.sendSignal({
   data: { approved: true },
 });
 ```
-The TypeScript v4 SDK defines `step.waitForSignal(id, { signal, timeout, onConflict })`. It returns an object with `signal` and `data`, or `null` when the timeout expires. `inngest.sendSignal({ signal, data })` sends from outside a function; `step.sendSignal` sends as a durable step inside one. These calls are currently experimental.
+## API
+
+```ts
+const result = await step.waitForSignal(id, { signal, timeout });
+```
+
+- **`id`**: a stable step ID.
+- **`signal`**: a unique name for this wait, such as `` `approval/${requestId}` ``.
+- **`timeout`**: how long to wait, such as `"1h"`.
+- **Returns** an object with the signal's `data`, or `null` if the timeout expires.
+
+Send a signal with `inngest.sendSignal({ signal, data })` from your app, or `step.sendSignal()` from another function. Signals are currently experimental. See the [`step.waitForSignal` reference](/docs/reference/typescript/functions/step-wait-for-signal) for every option.
 
 ## Handle duplicate names, timeouts, and cancellation
 

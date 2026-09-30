@@ -18,21 +18,11 @@ They are useful when:
 
 Use `step.sleepUntil()` when you have a deadline or a timestamp in event data. Use [step.sleep](/docs/durable-execution/primitives/step-sleep) when you want to wait for a duration, such as 30 minutes from the current step. If you need to delay the start of the whole function, set the event's `ts` field instead.
 
-## TypeScript v4
-
-```typescript
-await step.sleepUntil(id, datetime);
-```
-
-- `id` is a required string. Give the step a stable ID so Inngest can identify its saved state when the function resumes or you deploy a new version.
-- `datetime` is required. It accepts a JavaScript `Date`, a date-time string accepted by `Date`, `Temporal.Instant`, or `Temporal.ZonedDateTime`.
-- The call returns a `Promise`. Use `await` or another Promise handler so the workflow pauses correctly.
-
-For strings, use an unambiguous time zone, such as `2026-10-01T16:30:00.000Z`. JavaScript `Date` also parses date-only strings, but a time zone makes the intended time clear.
+Pass a `Date` or an ISO 8601 string with a time zone, such as `2026-10-01T16:30:00Z`.
 
 ## Send an appointment reminder
 
-This TypeScript v4 function waits until the timestamp supplied by the event, then runs the reminder action. The event sender supplies `remindAt` as an ISO 8601 timestamp with a time zone.
+This function waits until the timestamp supplied by the event, then runs the reminder action. The event sender supplies `remindAt` as an ISO 8601 timestamp with a time zone.
 
 ```typescript
 import { Inngest } from "inngest";

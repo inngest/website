@@ -11,9 +11,19 @@ Put an external call in `step.run` when its result must survive a retry. Use a w
 
 Inngest saves the result of each completed step. If a later step fails, Inngest can retry that work and reuse the earlier result. A sleep or event wait pauses the run without keeping your function process active. The run trace shows which step completed, waited, or retried.
 
+### Benefits of using steps
+
+- **Improved reliability:** Structured steps give you precise control over each task in a function.
+- **Error handling:** Capturing and managing errors at the step level means better error recovery.
+- **Retries:** A failing step can be retried and recovered on its own, without re-running steps that already succeeded.
+- **Independent testing:** You can test and debug each step separately from the others.
+- **Readable code:** Small, named steps make code easier to navigate and refactor.
+
+To learn more about how steps run, see [Anatomy of workflows: runs, steps, and checkpoints](/docs/durable-execution/durable-workflows#anatomy-of-workflows-runs-steps-and-checkpoints).
+
 ## Anatomy of a step
 
-Inside a TypeScript v4 function handler, each `step.run()` call names the work and supplies a callback:
+Each `step.run()` call names the work and supplies a callback:
 
 ```typescript
 const order = await step.run("load-order", () =>
@@ -69,3 +79,13 @@ In a durable endpoint, a sleep or wait turns the request async and redirects the
 ## Keep runs predictable
 
 Put side effects in steps so a resumed run can reuse completed results. Handle timeouts for waits and invocations. Step results must be JSON-serializable; return only the data later steps need.
+
+## Limits
+
+- **Steps per function:** 1,000. Process items within a step, or [fan out](/docs/durable-execution/guides-and-advanced/patterns/fan-out) to more runs.
+- **Step result size:** 4 MiB per step. Store large results elsewhere and return a reference.
+- **Run state:** 32 MiB across event data, step results, and the function's return value.
+- **Step duration:** up to 2 hours, or less if your host has a shorter timeout.
+- **Sleeps:** up to 1 year with `step.sleep()` or `step.sleepUntil()`.
+
+See [Limits](/docs/durable-execution/limits) for every platform limit.

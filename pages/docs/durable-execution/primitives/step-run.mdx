@@ -14,16 +14,6 @@ They are useful when:
 - Later steps need the result of earlier work.
 - You want to retry one failed operation without repeating completed steps.
 
-## TypeScript v4 API
-
-```typescript
-step.run(id: string, handler: () => T | Promise<T>): Promise<T>
-```
-
-- `id` names the step in logs and identifies its saved state. Give each logical operation a stable, descriptive ID. The SDK counts repeated calls with the same ID, including calls in a loop.
-- `handler` runs synchronous or asynchronous code. Return the data later steps need, or return nothing for work with no result.
-- `step.run` returns a Promise. Use `await` when later work needs the result.
-
 ## Run two steps
 
 This function loads a task, then processes it. The client import assumes you have created an Inngest client in `./client`. Replace `loadTask` and `processTaskRecord` with your application's functions.
@@ -61,6 +51,7 @@ Inngest serializes returned values as JSON. Return only the data later work need
 
 ## Next
 
+- [`step.run` reference](/docs/reference/typescript/functions/step-run) for every option.
 - [Primitives](/docs/durable-execution/primitives) for sleeps, waits, events, and invocations.
 - [Error handling and retries](/docs/durable-execution/guides-and-advanced/error-handling) for failure and recovery patterns.
 - [Handling idempotency](/docs/durable-execution/guides-and-advanced/idempotency) for duplicate-safe side effects.

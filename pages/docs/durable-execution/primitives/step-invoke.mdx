@@ -17,7 +17,7 @@ They are useful when:
 
 ## Call a function and await its result
 
-This TypeScript v4 example defines both functions in one app. The `invoke()` trigger validates and types the child function's input. Expose both functions through your Inngest handler or Connect worker.
+This example defines both functions in one app. The `invoke()` trigger validates and types the child function's input. Expose both functions through your Inngest handler or Connect worker.
 
 ```typescript
 import { Inngest, eventType, invoke } from "inngest";
@@ -78,11 +78,19 @@ export const functions = [calculateTotal, prepareCheckout];
 ```
 Send `checkout/requested` with `orderId`, `subtotalCents`, and `shippingCents`. The parent returns the child's calculated total. Register both functions in the endpoint or worker that serves `functions`.
 
-## Choose invocation options
+## API
 
-`step.invoke(id, options)` returns a Promise for the called function's return value. The first argument is a stable **step ID**, not a function ID. Set `options.function` to a function object or a `referenceFunction()` reference. Pass input through `options.data`. Set `options.timeout` to limit how long the parent waits. The v4 SDK also accepts optional `user` and `meta` fields. The child inherits the parent's sessions unless `meta.sessions` overrides or clears them.
+```ts
+const result = await step.invoke(id, { function, data, timeout });
+```
 
-To call a function in another app, use `referenceFunction({ appId, functionId })` as `options.function`. This lets a function running on one cloud call a function running on another.
+- **`id`**: a stable step ID, not the ID of the function you're calling.
+- **`function`**: the function to call. To call a function in another app, use `referenceFunction({ appId, functionId })`.
+- **`data`**: the input to pass to the function.
+- **`timeout`**: how long to wait for the result, such as `"1h"`.
+- **Returns** the called function's return value.
+
+See the [`step.invoke` reference](/docs/reference/typescript/functions/step-invoke) for every option.
 
 ## Return values, failures, and timeouts
 

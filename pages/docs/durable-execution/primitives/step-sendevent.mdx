@@ -38,11 +38,17 @@ export const queueFulfillment = inngest.createFunction(
 ```
 Any function triggered by `shop/fulfillment.requested` can process the order in its own run. The optional event `id` in this example prevents a second event with that ID from starting duplicate runs during the [24-hour deduplication window](/docs/durable-execution/guides-and-advanced/idempotency). Use a value specific to this event and business operation.
 
-## API and result
+## API
 
-`step.sendEvent(id, eventPayload | eventPayload[]): Promise<{ ids: string[] }>` accepts one event or an array. `id` names the step and lets Inngest memoize its completed state. It is separate from the optional `eventPayload.id`, which deduplicates event delivery. Each event needs `name` and `data`. Use `eventType().create()` when you want the SDK to type-check the payload.
+```ts
+const { ids } = await step.sendEvent(id, events);
+```
 
-The resolved promise contains `ids`, an array of sent Event IDs. Use an ID to find the event in the dashboard or REST API. It does not contain the result of any function triggered by the event. Events sent during a run inherit that run's sessions; set `meta.sessions` on a payload to add or override them.
+- **`id`**: a stable step ID, such as `"send-fulfillment"`.
+- **`events`**: one event or an array. Each event needs a `name` and `data`.
+- **Returns** the IDs of the sent events, not the results of any functions they trigger.
+
+See the [`step.sendEvent` reference](/docs/reference/typescript/functions/step-send-event) for every option.
 
 ## Failures and duplicate work
 

@@ -47,13 +47,18 @@ export const orderPlaced = inngest.createFunction(
 ```
 The parent keeps running. Inngest starts the deferred run when the parent finalizes. Give each `defer` call a unique ID within its parent run.
 
-## Payload, identity, and cancellation
+## API
 
-- The SDK validates `data` against the deferred function's schema when you call `defer()` and again when the receiver starts. Use a synchronous schema validator; an invalid call is logged and skipped.
-- The deferred run inherits the parent's sessions. Set `meta.sessions` on the call when the follow-up work needs another session. In the deferred handler, `parents[0]` provides the parent function slug and run ID.
-- `defer()` returns a handle with `abort()`. Call it if the parent later decides the follow-up work is unnecessary. Aborting prevents that deferred run from starting and does not affect other deferred calls.
+```ts
+const handle = defer(id, { function, data });
+```
 
-A deferred function has its own retry and flow-control settings. Register it in `serve()` alongside the parent. `createDefer` does not accept `triggers`, `onFailure`, or `batchEvents`.
+- **`id`**: a stable ID for this call.
+- **`function`**: the function created with `createDefer`.
+- **`data`**: the input. It's checked against the function's schema, and an invalid call is logged and skipped.
+- **Returns** a handle. Call `handle.abort()` if the follow-up work is no longer needed.
+
+A deferred function has its own retries and flow control. Register it in `serve()` alongside the parent. See the [`defer` reference](/docs/reference/typescript/functions/deferred-functions) for every option.
 
 ## Using the right primitive
 

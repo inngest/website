@@ -6,14 +6,14 @@ export const description = "Run independent steps at the same time and continue 
 
 <Compatibility />
 
-Run independent steps at the same time and continue when all their results are ready. Use `Promise.all()` in TypeScript v4 or `ctx.group.parallel()` in Python.
+Run independent steps at the same time and continue when all their results are ready. Use `Promise.all()` in TypeScript or `ctx.group.parallel()` in Python.
 
 Parallel steps are useful when:
 
 - You need several independent results before the function can continue.
 - You want each operation to keep its own step result and retries.
 
-## TypeScript v4: collect every result
+## TypeScript: collect every result
 
 ```typescript
 import { Inngest } from "inngest";
@@ -32,7 +32,7 @@ export const getValues = inngest.createFunction(
   }
 );
 ```
-Both steps can run concurrently. The function continues when both results are ready. TypeScript v4 optimizes parallel steps by default, so you do not need `group.parallel()` here. Use `Promise.allSettled()` when you need the outcome of every step, including failures.
+Both steps can run concurrently. The function continues when both results are ready. Inngest runs parallel steps efficiently by default, so you don't need `group.parallel()` here. Use `Promise.allSettled()` when you need the outcome of every step, including failures.
 
 ## Python: run steps together
 
@@ -64,7 +64,7 @@ Use `Promise.all()` for independent steps whose results the current function nee
 
 ## Continue after the first step settles
 
-Use a race when one completed step can satisfy the request. In TypeScript v4, a bare `Promise.race()` waits for all parallel steps under the default optimization. Wrap the race in `group.parallel()` to continue when the first step settles.
+Use a race when one completed step can satisfy the request. A bare `Promise.race()` waits for all parallel steps under the default optimization. Wrap the race in `group.parallel()` to continue when the first step settles.
 
 ```typescript
 const winner = await group.parallel(async () =>
