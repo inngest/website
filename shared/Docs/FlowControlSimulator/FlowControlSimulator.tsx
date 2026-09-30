@@ -22,16 +22,21 @@ import { fmtT, niceDomain } from "./derive";
 import { cloneConfig, getPreset, PRESETS } from "./presets";
 import { CodeView, FlowSettings, Steps, Traffic } from "./Controls";
 import { Log } from "./Log";
-import { StatusStrip } from "./Status";
 import { Summary } from "./Summary";
-import { Timeline } from "./Timeline";
+import { RunTimeline } from "./Timeline";
+import { MarbleDiagram } from "../FlowControlMarbles/Diagram";
+import { MarbleLegend } from "../FlowControlMarbles/Legend";
+import { buildModel } from "../FlowControlMarbles/model";
 import { decodeState, encodeState, SIMULATOR_PATH } from "./share";
 import { Button, IconButton, Select, Tabs } from "./ui";
 
 /** Playback always covers the whole timeline in roughly this many seconds. */
 const PLAYBACK_SECONDS = 20;
 
-type Tab = "settings" | "traffic" | "steps" | "log" | "code";
+type Tab = "settings" | "traffic" | "steps" | "runs" | "log" | "code";
+
+/** Output lanes shown before extra runs share one lane. */
+const MAX_LANES = 10;
 
 export function FlowControlSimulator({
   preset = "basic",
@@ -67,6 +72,16 @@ export function FlowControlSimulator({
 
   const result = useMemo(() => simulate(cfg), [cfg]);
   const domain = useMemo(() => niceDomain(result), [result]);
+  const model = useMemo(
+    () =>
+      buildModel(cfg, result, {
+        domain,
+        realDuration: PLAYBACK_SECONDS,
+        alwaysQueue: true,
+        maxLanes: MAX_LANES,
+      }),
+    [cfg, result, domain]
+  );
 
   // Playback ------------------------------------------------------------------
   const [t, setT] = useState<number>(() =>
@@ -265,29 +280,28 @@ export function FlowControlSimulator({
             ))}
           </div>
         ) : (
-          <Timeline
-            result={result}
-            cfg={cfg}
-            domain={domain}
-            t={t}
-            onSeek={seek}
-            selectedRun={selectedRun}
-            onSelectRun={selectRun}
-            onAddEvent={addEvent}
-            onRemoveManual={removeManual}
-            groupByTenant={false}
-          />
-        )}
-        {result.errors.length === 0 && (
-          <StatusStrip result={result} cfg={cfg} t={t} />
+          <>
+            <MarbleDiagram
+              model={model}
+              t={t}
+              label="Flow control simulation: events, flow control, and runs over time"
+              onSeek={seek}
+              onScrubStart={() => setPlaying(false)}
+              interactive
+              onAddEvent={addEvent}
+              onRemoveManual={removeManual}
+              onSelectRun={selectRun}
+              selectedRun={selectedRun}
+              showFuture
+            />
+            <MarbleLegend model={model} t={t} counts />
+          </>
         )}
         <p className="m-0 text-[11px] text-muted">
-          One row per run. Drag the time axis to scrub. Click an event lane to
-          add an event, or a row to see what happened to that run.
+          Click an event row to add an event, and click an added event to remove
+          it. Click a run to see its log. Drag anywhere else to scrub.
         </p>
       </div>
-
-      {result.errors.length === 0 && <Summary result={result} />}
 
       <div className="flex flex-col gap-3">
         <Tabs<Tab>
@@ -305,6 +319,7 @@ export function FlowControlSimulator({
             },
             { value: "traffic", label: "Traffic" },
             { value: "steps", label: "Steps" },
+            { value: "runs", label: "Runs" },
             { value: "log", label: "Log" },
             { value: "code", label: "Code" },
           ]}
@@ -314,6 +329,20 @@ export function FlowControlSimulator({
         )}
         {tab === "traffic" && <Traffic cfg={cfg} update={update} />}
         {tab === "steps" && <Steps cfg={cfg} update={update} />}
+        {tab === "runs" && result.errors.length === 0 && (
+          <div className="flex flex-col gap-4">
+            <Summary result={result} />
+            <RunTimeline
+              result={result}
+              cfg={cfg}
+              domain={domain}
+              t={t}
+              onSeek={seek}
+              selectedRun={selectedRun}
+              onSelectRun={selectRun}
+            />
+          </div>
+        )}
         {tab === "log" && (
           <Log
             result={result}

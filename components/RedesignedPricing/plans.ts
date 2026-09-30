@@ -426,7 +426,7 @@ export const FEATURES: Feature[] = [
       [PLAN_NAMES.pro]: "1000",
       [PLAN_NAMES.enterprise]: "1000",
     },
-    infoUrl: "/docs/features/realtime?ref=pricing",
+    infoUrl: "/docs/realtime?ref=pricing",
     section: "connectivity",
   },
   {

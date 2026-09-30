@@ -5,11 +5,13 @@ export const description = "Give every realtime update a clear destination and a
 
 > Give every realtime update a clear destination and a predictable shape.
 
-Send a document import’s `status` and `result` updates to the clients watching that job. Define a **channel** for the document and a **topic** for each message stream. The publisher and authorized subscribers use the same definitions so messages reach the intended audience with the expected shape.
+A **channel** decides where a message goes, and a **topic** decides its shape. Define both once and share the definition between your function, your token route, and your UI. TypeScript then checks every publish and every subscription against the same types.
+
+For example, a document import can publish `status` and `result` messages to a channel for that document. Only clients watching that document receive them.
 
 ## Define a channel and its topics
 
-Use `realtime.channel()` from the TypeScript SDK v4. Every topic needs a `schema`.
+Use `realtime.channel()` from `inngest`. Give the channel a name and give every topic a `schema`.
 
 ```typescript
 import { realtime } from "inngest";
@@ -34,7 +36,7 @@ export const documentChannel = realtime.channel({
 });
 ```
 
-Call the factory with your document ID to get a channel instance. The `status` and `result` properties are **topic references**. Each reference carries its channel name, topic name, and schema.
+Call the factory with a document ID to get a channel instance. Its `status` and `result` properties are **topic references**. You pass a topic reference to a publish call, and it carries the channel name, topic name, and schema.
 
 ```typescript
 const document = documentChannel({ documentId: "abc123" });
@@ -44,7 +46,7 @@ const statusChannel = document.status.channel;
 const statusTopic = document.status.topic;
 ```
 
-A message published to `document:abc123` stays in that channel. A subscription to `document:def456` receives its own messages.
+A message published to `document:abc123` reaches only subscribers of `document:abc123`. A subscriber of `document:def456` never sees it.
 
 ## Fixed and parameterized channels
 
@@ -61,13 +63,17 @@ export const alertsChannel = realtime.channel({
 });
 ```
 
-Use a **name function** when each document, session, job, or user needs a separate stream. Pass your app's identifier when you publish or subscribe. The identifier is yours to define; it does not have to be an Inngest run ID.
+Use a **name function** when each document, session, job, or user needs its own stream. Pass your app's identifier when you publish or subscribe. The identifier is yours to choose; it doesn't have to be an Inngest run ID.
 
-Keep names stable for the lifetime of the work. Use IDs that your app already uses, and avoid putting secrets or personal data in channel names. A channel name routes messages; it does **not** decide who may read them.
+Follow these rules when you name channels:
+
+- **Keep names stable** for the lifetime of the work. Use IDs your app already has.
+- **Group what one view needs.** A subscription token covers one channel, so put the topics a single page shows on the same channel.
+- **Leave secrets and personal data out.** A channel name routes messages; it does **not** decide who may read them.
 
 ## Choose a topic schema
 
-A Standard Schema validator such as Zod, Valibot, or ArkType gives TypeScript types and validates data at publish time. The SDK can also validate messages when a subscriber receives them. Use this when the message shape matters at runtime.
+A [Standard Schema](https://github.com/standard-schema/standard-schema) validator such as Zod, Valibot, or ArkType gives you TypeScript types and validates each payload when you publish. Subscribers also validate incoming messages by default. Use a runtime schema when a malformed message must fail.
 
 For type checking without runtime validation, use `staticSchema<T>()`:
 
@@ -84,11 +90,11 @@ export const metricsChannel = realtime.channel({
 });
 ```
 
-`staticSchema<T>()` does not validate the payload at runtime. Choose a runtime schema when a malformed message should fail before delivery. You can use runtime and type-only schemas on different topics in the same channel.
+`staticSchema<T>()` skips runtime validation, which suits small, high-volume payloads such as streamed tokens. You can mix runtime and type-only schemas on different topics in the same channel.
 
 ## Share the definition
 
-Put the channel definition in a shared module, such as `src/inngest/channels.ts`. Import it in your function code, the server route that mints subscription tokens, and the client component that subscribes. This keeps topic names and payload types aligned.
+Put the channel definition in a shared module, such as `src/inngest/channels.ts`. Import it in your function, in the server code that mints subscription tokens, and in the component that subscribes. Topic names and payload types then stay aligned everywhere.
 
 Use a topic reference to publish to a specific channel and topic:
 
@@ -104,15 +110,16 @@ await inngest.realtime.publish(document.status, {
 });
 ```
 
-This immediate publish suits transient progress updates. For a state change that a function retry must not publish twice, use `step.realtime.publish()` inside the function.
+This immediate publish suits frequent progress updates. For a state change that a retry must not publish twice, use `step.realtime.publish()` inside the function. See [Durable and immediate publishing](/docs/realtime/overview#durable-and-immediate-publishing).
 
 ## Authorize subscriptions
 
-Your server must check that the current user may read the requested document or job **before** it calls `getClientSubscriptionToken()`. Mint the token for that channel and only the topics the user may receive. Keep token minting on the server and keep your Inngest signing key out of client code. The token limits the subscription to the specified channel and topics; the channel name by itself grants no access.
+A token limits a client to one channel and the topics you list. Before your server calls `getClientSubscriptionToken()`, check that the current user may read the requested document or job. Include only the topics that user should receive.
 
-For the full token flow, follow the [Quick start](/docs/realtime/quick-start).
+[Subscription tokens](/docs/realtime/guides/subscription-tokens) shows the full authorization flow.
 
 ## Next steps
 
-- [Guides](/docs/realtime/guides) shows publishing and subscription patterns.
-- [Reference](/docs/realtime/reference) collects the Realtime API reference.
+- [Subscription tokens](/docs/realtime/guides/subscription-tokens) shows how to authorize subscribers.
+- [Guides](/docs/realtime/guides) cover publishing and subscription patterns.
+- [Channels reference](/docs/reference/typescript/v4/realtime/channels) lists every channel option.

@@ -513,11 +513,19 @@ export const docsRefreshOutline: DocsRefreshPage[] = [
             children: [
               {
                 title: "Subscription tokens",
-                href: "/docs/features/realtime/subscription-tokens",
+                href: "/docs/realtime/guides/subscription-tokens",
               },
               {
                 title: "React hooks",
-                href: "/docs/features/realtime/react-hooks",
+                href: "/docs/realtime/guides/react-hooks",
+              },
+              {
+                title: "Stream AI responses",
+                href: "/docs/realtime/guides/stream-ai-responses",
+              },
+              {
+                title: "Server-side subscriptions",
+                href: "/docs/realtime/guides/server-side-subscriptions",
               },
             ],
           },
@@ -528,6 +536,10 @@ export const docsRefreshOutline: DocsRefreshPage[] = [
           {
             title: "Limits",
             href: "/docs/realtime/limits",
+          },
+          {
+            title: "Troubleshooting",
+            href: "/docs/realtime/troubleshooting",
           },
         ],
       },
@@ -566,20 +578,26 @@ export const docsRefreshOutline: DocsRefreshPage[] = [
             href: "/docs/platform-and-operations/cloud-architecture-and-security",
           },
           {
-            title: "Inspect events and runs",
-            href: "/docs/platform-and-operations/inspect-events-and-runs",
-          },
-          {
-            title: "Traces",
-            href: "/docs/platform-and-operations/traces",
-          },
-          {
-            title: "Metrics",
-            href: "/docs/platform-and-operations/metrics",
-          },
-          {
-            title: "Insights",
-            href: "/docs/platform-and-operations/insights",
+            title: "Observability",
+            href: "/docs/platform-and-operations/observability",
+            children: [
+              {
+                title: "Inspect events and runs",
+                href: "/docs/platform-and-operations/inspect-events-and-runs",
+              },
+              {
+                title: "Traces",
+                href: "/docs/platform-and-operations/traces",
+              },
+              {
+                title: "Metrics",
+                href: "/docs/platform-and-operations/metrics",
+              },
+              {
+                title: "Insights",
+                href: "/docs/platform-and-operations/insights",
+              },
+            ],
           },
           {
             title: "Rerun a run",

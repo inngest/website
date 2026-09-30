@@ -1,57 +1,33 @@
-export const metaTitle = "Guides";
-export const description = "Put live progress and results in front of users while Inngest runs the work.";
+export const metaTitle = "Guides | Realtime";
+export const description = "Authorize viewers, render updates in React, stream AI output, and subscribe from your server.";
 
 # Guides
 
-> Put live progress and results in front of users while Inngest runs the work.
+> Authorize viewers, render updates in React, stream AI output, and subscribe from your server.
 
-Show progress while a function runs by publishing typed messages from server-side code. Start with [Overview](/docs/realtime/overview) for the model and [Quick start](/docs/realtime/quick-start) for a working TypeScript v4 example.
+These guides build on the [Quick start](/docs/realtime/quick-start). Each one covers a single task from start to finish.
 
-## Show progress from a long-running function
+- [Subscription tokens](/docs/realtime/guides/subscription-tokens) authorizes each viewer on your server and scopes the browser to one channel and its topics.
+- [React hooks](/docs/realtime/guides/react-hooks) renders typed messages with `useRealtime` and explains its options.
+- [Stream AI responses](/docs/realtime/guides/stream-ai-responses) shows a model's answer token by token and publishes the final result as a durable step.
+- [Server-side subscriptions](/docs/realtime/guides/server-side-subscriptions) reads messages in server code and forwards them over Server-Sent Events.
 
-Give each job, document, or user a channel. Publish a `status` message when work starts and when a significant state changes. Your server authorizes the viewer and mints a token for that channel. The client subscribes before it starts work if it must show the first update.
+## Ask a person to approve work
 
-Use `step.realtime.publish()` for state changes and final results that must not repeat when a function retries. The [Quick start](/docs/realtime/quick-start) builds this flow end to end.
+A function can pause until a person approves or rejects its work. Realtime shows the request; an event carries the decision back.
 
-## Stream AI output as it arrives
+1. Publish the review request to a channel the reviewer can read.
+2. Wait with [`step.waitForEvent()`](/docs/durable-execution/primitives/step-waitforevent), matching on a request ID and setting a timeout.
+3. When the reviewer acts, your app sends a confirmation event with the same request ID, and the function continues.
 
-Define separate topics for progress, output tokens, and the final result. Publish token deltas with `inngest.realtime.publish()` as your model returns them. Publish the completed result with `step.realtime.publish()` when a retry must not send that final message again. A non-durable token publish can repeat if its work retries, so the UI must handle repeated output when that matters.
+Authorize the reviewer before you mint their subscription token and again before you accept the confirmation event. See [Human in the loop](/docs/ai-patterns/human-in-the-loop) for a complete example.
 
-Use [Channels and topics](/docs/realtime/channels-and-topics) to define typed topics.
+## More examples
 
-## Secure a browser subscription
+[Realtime examples](/docs/examples/realtime) include single-run subscriptions, multi-channel fanout, and human-in-the-loop flows.
 
-Mint a subscription token on your server with `getClientSubscriptionToken()`. Check the signed-in user's access to the job, document, or thread **before** minting. Grant one channel and only the topics that view needs. Keep the Inngest signing key on the server. A channel name alone does not authorize a viewer.
-
-For a long-lived React subscription, give `useRealtime` a token factory so it requests a fresh token after reconnecting. The [Quick start](/docs/realtime/quick-start) includes a server action that derives the channel from the authenticated user.
-
-## Render updates in React
-
-Import `useRealtime` from `inngest/react`. Pass the same shared channel definition and topic list that the publisher uses, plus a server-minted token factory. Use `connectionStatus` to show connection state and `messages.byTopic` to show the latest message for each topic. Choose `messages.all` when the UI needs an ordered list of recent messages.
-
-The [Quick start](/docs/realtime/quick-start) shows a working React subscription. Check [Reference](/docs/realtime/reference) for hook options.
-
-## Choose durable or immediate publishing
-
-Inside a function, start with `step.realtime.publish(id, topic, data)`. Inngest records that publish as a step, so a retry skips it after it completes. Use it for results and state transitions.
-
-Use `inngest.realtime.publish(topic, data)` for high-frequency progress or tokens, or from server-side code outside a function. It publishes immediately and can run again on retry.
-
-## Subscribe from server-side code
-
-Use `subscribe({ app: inngest, channel, topics })` or `inngest.realtime.subscribe({ channel, topics })` when a server needs to consume updates. Read the returned stream, attach an `onMessage` callback, or send its encoded stream through a Server-Sent Events response. Close a subscription when its consumer ends.
-
-Server-side code with the Inngest client can authenticate directly; browser clients need a scoped token.
-
-## Ask for human approval
-
-Publish a review request to a channel the reviewer can read. Have your app send a confirmation event when the reviewer acts. Use `step.waitForEvent()` with a matching confirmation ID and timeout so the durable function resumes on the right response. Realtime delivers the request; the event delivers the decision to the waiting function.
-
-Use [`step.waitForEvent()`](/docs/durable-execution/primitives/step-waitforevent) to resume the function when the reviewer responds. Authorize the reviewer before issuing a subscription token and before accepting the confirmation event.
-
-## Related pages
+## Next steps
 
 - [Channels and topics](/docs/realtime/channels-and-topics) explains channel names, topics, and schemas.
-- [Reference](/docs/realtime/reference) lists the TypeScript v4 Realtime APIs.
-- [Limits](/docs/realtime/limits) covers operational limits.
+- [Reference](/docs/realtime/reference) lists every Realtime API.
 - [Troubleshooting](/docs/realtime/troubleshooting) helps diagnose connection and delivery problems.

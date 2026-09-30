@@ -1,30 +1,43 @@
 export const metaTitle = "Realtime";
-export const description = "Keep users informed while work runs.";
+export const description = "Stream progress and results from your functions to users while the work runs.";
 
 # Realtime
 
-> Keep users informed while work runs.
+> Stream progress and results from your functions to users while the work runs.
 
-When a document import outlives its initial request, show the user its progress and final result. Inngest Realtime delivers updates from your function to subscribed clients, so the page can follow the job as it runs.
+**Inngest Realtime** pushes updates from your functions to the browser as they happen. Users see each step of a long job, watch an AI answer appear token by token, and get the final result without refreshing or polling. You don't run a WebSocket server or a separate pub/sub service.
 
-## What you can build
+Your function publishes typed messages to a channel. Your server decides who may read that channel and gives the browser a scoped token. The browser subscribes and renders each message as it arrives.
 
-- **Live progress:** Show users how a report, upload, or document is progressing without making them refresh the page.
-- **Streaming responses:** Display an agent's answer as it arrives instead of making users wait for the full response.
-- **Timely results:** Tell users when a task needs their review or its result is ready, even after the original request ends.
+### Benefits:
 
-## Channels and topics
+- **Show live progress.** Tell users how an import, report, or agent run is going while it runs.
+- **Stream AI output.** Display a model's answer as it's generated instead of after it finishes.
+- **Keep updates accurate on retry.** Publish state changes as durable steps so a retry doesn't send them twice.
+- **Type every message.** Share one channel definition between your function and your UI so payloads always match.
+- **Control who sees what.** Your server authorizes each subscription and limits it to one channel and the topics you choose.
 
-Name a channel for the user, document, or task you want to update.
+<hr />
 
-Use topics such as `status`, `tokens`, and `result` to let clients subscribe to the message types they need. Your server authorizes each subscription before a client connects.
+## How it works
 
-## Keep important updates accurate
+1. **Define a channel.** A channel names the thing users watch, such as a document or a chat thread. Topics such as `status`, `tokens`, and `result` separate the kinds of messages on that channel.
+2. **Publish from your function.** Use `step.realtime.publish()` for state changes and final results. Use `inngest.realtime.publish()` for high-frequency updates such as streamed tokens.
+3. **Subscribe from your app.** Your server mints a subscription token. In React, the `useRealtime` hook connects with that token and returns typed messages.
 
-- Use `step.realtime.publish()` for state changes and final results. It prevents a completed publish from repeating when the function retries.
-- Use `inngest.realtime.publish()` for token streams and frequent progress updates. It sends immediately, so a retry can repeat an update. You can also use it from server-side code outside a function.
+Read the [Overview](/docs/realtime/overview) for how these pieces fit together.
 
-## Start here
+## Language support
 
-Follow [Quick start](/docs/realtime/quick-start) to show live progress in a browser. Then explore channels and topics, guides, limits, and APIs below.
+The examples in this section use the TypeScript SDK, which includes publishing, tokens, server-side subscriptions, and the `useRealtime` React hook.
 
+The Python SDK supports publishing and minting subscription tokens as a beta in `inngest.experimental.realtime`. See [Python](/docs/realtime/reference#python) in the reference and the [FastAPI example project](https://github.com/inngest/inngest-py/tree/main/examples/fast_api_realtime).
+
+<hr />
+
+## Next steps
+
+- [Quick start](/docs/realtime/quick-start) builds a page that shows live progress from a function.
+- [Channels and topics](/docs/realtime/channels-and-topics) explains how to name channels and type messages.
+- [Guides](/docs/realtime/guides) cover tokens, React, AI streaming, and server-side subscriptions.
+- [Reference](/docs/realtime/reference), [Limits](/docs/realtime/limits), and [Troubleshooting](/docs/realtime/troubleshooting) help you ship and operate Realtime.

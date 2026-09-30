@@ -1,37 +1,39 @@
-export const metaTitle = "Limits";
-export const description = "Plan your client connections and message volume before you stream updates to users.";
+export const metaTitle = "Limits | Realtime";
+export const description = "Plan client connections and message volume before you stream updates to users.";
 
 # Limits
 
-> Plan your client connections and message volume before you stream updates to users.
+> Plan client connections and message volume before you stream updates to users.
 
-## Realtime plan limits
+Realtime has two plan limits: how many subscribers can be connected at once, and how many messages you can publish each day. Estimate both before you add Realtime to a high-volume job.
 
-Estimate the number of clients online at once and the updates your app will publish each day. The pricing page lists concurrent Realtime connections and daily messages by plan. Check both before you add Realtime to a high-volume job.
+## Plan limits
 
-| Plan | Concurrent Realtime connections | Realtime messages per day |
+| Plan | Concurrent connections | Messages per day |
 | --- | --- | --- |
 | Free | 50 | 250,000 |
 | Pro | 1,000 | 1,000,000 |
 | Business | 5,000 | 5,000,000 |
 | Enterprise | Custom | Custom |
 
-See [pricing](https://www.inngest.com/pricing) for the current plan comparison.  These connection limits apply to Realtime subscribers.  Do not confuse them with Inngest worker connections or concurrent workflow steps, which have separate limits.
-
-## Client-side message history and buffering
-
-In TypeScript SDK v4, `useRealtime()` keeps the latest **100 received messages** in `messages.all` by default.  Set `historyLimit` to change how many messages that React hook keeps in memory, or set it to `null` for unbounded local history.  This setting does not increase your plan's daily message allowance or define a server-side replay window.
-
-By default, `bufferInterval` is **0 ms**, so incoming messages update the hook immediately.  Set a larger interval to group UI updates when you stream many small messages.  Buffering changes when React renders; it does not change the published plan allowance.
-
-The hook also reconnects automatically by default.  It pauses when the browser tab is hidden and closes when the associated run reaches a terminal state, unless you change those options.
+See [pricing](/pricing?ref=docs-realtime-limits) for the current plan comparison. Connection limits apply to Realtime subscribers only. Worker connections and step concurrency have [separate limits](/docs/durable-execution/limits).
 
 ## Keep message volume predictable
 
-Publish meaningful state changes as Realtime messages.  If you stream model output token by token, estimate the daily message volume for your expected run count.  Use `bufferInterval` to reduce UI render work, and use `historyLimit` to bound browser memory.  For an important final result or state transition inside a function, `step.realtime.publish()` is durable and memoized on retry.
+Every publish counts as one message. If you stream model output token by token, a single long answer can publish thousands of messages. Multiply by your expected runs per day and compare the total with your plan.
+
+To reduce volume, publish meaningful state changes rather than every small tick, or batch several tokens into one message before you publish.
+
+## React hook memory and rendering
+
+These `useRealtime` settings run in the browser. They don't change your plan limits or add server-side replay.
+
+- **`historyLimit`** keeps the latest **100** messages in `messages.all` by default. Raise it, or set `null` to keep every message, when the UI rebuilds text from a stream.
+- **`bufferInterval`** is **0 ms** by default, so every message triggers a render. Set a larger interval to batch renders for fast streams.
+- **`pauseOnHidden`** and **`autoCloseOnTerminal`** default to `true`. The hook pauses in hidden tabs and closes when the run finishes, which frees the connection.
 
 ## Next steps
 
-- [Quick start](/docs/realtime/quick-start) shows a complete publish-and-subscribe flow.
-- [Reference](/docs/realtime/reference) lists the TypeScript v4 Realtime APIs.
+- [React hooks](/docs/realtime/guides/react-hooks) lists every hook option and its default.
+- [Stream AI responses](/docs/realtime/guides/stream-ai-responses) shows buffering and history settings for a token stream.
 - [Troubleshooting](/docs/realtime/troubleshooting) helps diagnose connection and delivery problems.

@@ -1,53 +1,64 @@
-export const metaTitle = "Troubleshooting";
+export const metaTitle = "Troubleshooting | Realtime";
 export const description = "Find why a live update did not reach your client, then fix the channel, token, connection, or publish call.";
 
 # Troubleshooting
 
 > Find why a live update did not reach your client, then fix the channel, token, connection, or publish call.
 
-When a client misses a live update, check the publish call, token, channel, topic, and connection. The examples use TypeScript SDK v4. Start with [Quick start](/docs/realtime/quick-start) for a working publisher and subscriber.
+Most missed updates come from one of five places: the publish call, the token, the channel name, the topic list, or the connection. Work through the sections below in order. For a known-good publisher and subscriber to compare against, see the [Quick start](/docs/realtime/quick-start).
 
 ## The client receives no messages
 
-1. **Check that publishing ran.** Find the function run. A `step.realtime.publish()` call appears as a step in the execution graph. For `inngest.realtime.publish()`, check the server-side code path and any error from the awaited call.
-2. **Compare resolved channel names.** A publisher on `job:123` does not reach a subscriber on `job:124`. Compare the publisher, token, and `useRealtime` channel.
-3. **Compare topics.** The publisher, token, and `useRealtime({ topics })` must include the same topic. A token only grants its listed topics.
-4. **Check subscription timing.** Inspect `connectionStatus`. If the UI needs the first update, establish the subscription before starting the work that publishes it.
-5. **Check the hook's retained messages.** `messages.byTopic.status` holds the latest `status` message. `messages.all` retains up to `historyLimit` messages, 100 by default. `bufferInterval` can delay a render while messages are batched.
+1. **Check that publishing ran.** Open the function run. A `step.realtime.publish()` call appears as a step in the trace. For `inngest.realtime.publish()`, check that the code path ran and that the awaited call didn't throw.
+2. **Compare resolved channel names.** A publisher on `job:123` doesn't reach a subscriber on `job:124`. Compare the channel in the publisher, the token, and `useRealtime`.
+3. **Compare topics.** The publisher, the token, and `useRealtime({ topics })` must all include the topic. A token grants only its listed topics.
+4. **Check subscription timing.** Realtime delivers messages only to clients connected when they're published. Wait for `connectionStatus` to be `open` before you start the work that publishes the first update. A tab that was hidden also misses messages published while it was paused.
+5. **Check the hook's retained messages.** `messages.byTopic.status` holds only the latest `status` message. `messages.all` keeps up to `historyLimit` messages, 100 by default. A `bufferInterval` delays renders while it batches messages.
 
-Use [Channels and topics](/docs/realtime/channels-and-topics) for channel and topic definitions and the [v4 hook reference](/docs/realtime/reference) for hook state.
+See [Channels and topics](/docs/realtime/channels-and-topics) for definitions and [React hooks](/docs/realtime/guides/react-hooks) for hook state.
 
 ## Publishing fails with a schema error
 
-Compare the payload with the topic's required fields and types. Import the same channel definition in the publisher and subscriber. A runtime validator such as Zod rejects mismatched data. `staticSchema<T>()` checks TypeScript types without runtime validation; a subscriber that validates incoming data can then reveal a mismatch. If only the subscriber reports trouble, check whether it and the publisher deployed different schema versions.
+Compare the payload with the topic's required fields and types, and import the same channel definition in the publisher and subscriber. A runtime validator such as Zod rejects mismatched data when you publish. `staticSchema<T>()` checks types only at compile time, so a mismatch can reach the subscriber, which logs a validation error. If only the subscriber reports errors, check whether the publisher and subscriber deployed different schema versions.
 
 ## The client cannot connect or gets an authorization error
 
-Mint the token on your server with `getClientSubscriptionToken()` after checking the user's permission for the requested channel. Send the resulting `{ key, apiBaseUrl }` object to the client. Keep the Inngest signing key on the server. Check that the token's channel and topics include the requested subscription. Also pass `channel` and `topics` to `useRealtime`; the client token does not contain them. Compare `apiBaseUrl` with the environment where the publisher runs. For a long-lived view, pass a token factory so the hook gets a fresh token on reconnect.
+- **Mint on the server.** Call `getClientSubscriptionToken()` on your server and send the `{ key, apiBaseUrl }` object to the browser. The signing key must stay on the server.
+- **Match the scope.** The token's channel and topics must cover what `useRealtime` requests. Pass `channel` and `topics` to the hook too; the client token doesn't contain them.
+- **Match the environment.** Compare `apiBaseUrl` with the environment where the publisher runs. Locally, set `INNGEST_DEV=1` on the server that mints tokens.
+- **Refresh tokens.** Pass a token factory so the hook gets a fresh token when it reconnects.
 
-Never mint a token for an unchecked client-supplied channel ID. Confirm the signed-in user can read the underlying job, document, or thread.
+Never mint a token for an unchecked channel ID from the browser. See [Subscription tokens](/docs/realtime/guides/subscription-tokens).
 
 ## The connection closes or keeps reconnecting
 
-Inspect `connectionStatus` and `error`. A `paused` state can come from `enabled: false` or a hidden tab with `pauseOnHidden: true`; `pauseReason` identifies the cause. A `closed` state can follow a completed, failed, or cancelled run when `autoCloseOnTerminal` is enabled. An `error` state has a corresponding connection error.
+Inspect `connectionStatus` and `error`.
 
-The hook reconnects by default. If reconnect fails, check the token factory, the user's current access, and `apiBaseUrl`. If the job or channel ID changes, pass the new channel or change the hook's `key` to reset retained state and reconnect. `reset()` clears retained messages, result, and error.
+- **`paused`** comes from `enabled: false` or a hidden tab while `pauseOnHidden` is `true`. `pauseReason` says which.
+- **`closed`** follows a completed, failed, or cancelled run while `autoCloseOnTerminal` is `true`.
+- **`error`** comes with a matching `error` value.
+
+The hook reconnects by default. If reconnecting fails, check the token factory, the user's current access, and `apiBaseUrl`. When the job or channel ID changes, pass the new channel or change the hook's `key` to reset state and reconnect. `reset()` clears retained messages, result, and error.
 
 ## The UI shows repeated progress or tokens
 
-`inngest.realtime.publish()` sends immediately and is not memoized. It can publish again when surrounding function work retries. Use `step.realtime.publish(id, topic, data)` for important state changes or final results that should not repeat after their publish step completed. Give each durable publish a stable, unique step ID. For an immediate stream, handle repeated output when the source work retries. Memoization of the publish step does not define subscriber replay or delivery behavior.
+`inngest.realtime.publish()` sends immediately and isn't memoized, so it publishes again when the surrounding work retries. A call outside any step can also repeat when the function resumes after a wait. To fix repeats:
+
+- Use `step.realtime.publish(id, topic, data)` for state changes and final results, with a stable, unique step ID.
+- Move immediate publishes inside `step.run()`.
+- For a token stream, let the UI tolerate repeats, for example by resetting the streamed text when the step restarts.
 
 ## A server-side subscriber receives nothing
 
-Check the `channel` and `topics` passed to `subscribe({ app: inngest, ... })` or `inngest.realtime.subscribe()`. Read the returned stream or attach `onMessage`; merely creating the subscription does not process messages for your app. With callback subscriptions, capture `onError`. Close a subscription when its consumer ends.
+Check the `channel` and `topics` passed to `subscribe({ app: inngest, ... })` or `inngest.realtime.subscribe()`. Read the returned stream or pass `onMessage`; creating a subscription alone doesn't process messages. Pass `onError` to see connection errors, and subscribe before the work publishes. See [Server-side subscriptions](/docs/realtime/guides/server-side-subscriptions).
 
 ## Capture useful facts
 
-Record the resolved channel name, topic, function run ID, publish method, `connectionStatus`, `error`, token-minting route result, and whether the browser was hidden. Do not include token keys or signing keys in a shared report.
+When you ask for help, include the resolved channel name, topic, function run ID, publish method, `connectionStatus`, `error`, the token route's response status, and whether the tab was hidden. Don't include token keys or signing keys.
 
-## Related pages
+## Next steps
 
-- [Overview](/docs/realtime/overview) explains where Realtime fits.
-- [Guides](/docs/realtime/guides) covers implementation tasks.
-- [Reference](/docs/realtime/reference) maps the TypeScript v4 API.
-- [Limits](/docs/realtime/limits) covers limits.
+- [Overview](/docs/realtime/overview) explains how messages reach clients.
+- [Guides](/docs/realtime/guides) cover tokens, React, AI streaming, and server-side subscriptions.
+- [Reference](/docs/realtime/reference) lists every Realtime API.
+- [Limits](/docs/realtime/limits) covers connection and message allowances.

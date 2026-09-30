@@ -10,7 +10,7 @@ Users start reading a long output sooner, they can stop the agent midway if it's
 Most implementations reach for WebSockets or SSE (Server-Sent Events) to push near-realtime updates from the agent to the app.
 
 But both depend on one fragile persistent connection: if the socket drops, the run dies with it. Lost progress, half-finished tool calls.
-This pattern keeps token streaming alive through a dropped connection, using [realtime connections](/docs/features/realtime?ref=patterns-durable-token-streaming) and [Inngest connect](/docs/setup/connect?ref=patterns-durable-token-streaming).
+This pattern keeps token streaming alive through a dropped connection, using [realtime connections](/docs/realtime?ref=patterns-durable-token-streaming) and [Inngest connect](/docs/setup/connect?ref=patterns-durable-token-streaming).
 
 ## Architecture
 
@@ -174,7 +174,7 @@ const result = await step.run(`llm-turn-${turn}`, async () => {
 
 ### The Browser
 
-The Next.js app imports the same `./inngest/channel` module the worker uses, then subscribes with the [inngest/react](/docs/features/realtime/react-hooks?ref=patterns-durable-token-streaming) package.
+The Next.js app imports the same `./inngest/channel` module the worker uses, then subscribes with the [inngest/react](/docs/realtime/guides/react-hooks?ref=patterns-durable-token-streaming) package.
 
 ```typescript
 import { getClientSubscriptionToken } from "inngest/react";

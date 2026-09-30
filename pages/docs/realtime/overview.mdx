@@ -1,33 +1,62 @@
-export const metaTitle = "Overview";
-export const description = "Show users what their work is doing as it happens.";
+import { Mermaid } from "src/shared/Docs/Mermaid";
+
+export const metaTitle = "Overview | Realtime";
+export const description = "See how functions publish updates, how your server authorizes viewers, and how clients receive typed messages.";
 
 # Overview
 
-> Show users what their work is doing as it happens.
+> See how functions publish updates, how your server authorizes viewers, and how clients receive typed messages.
 
-Show a user each stage of a long document import and deliver the result when it finishes. Your function publishes updates to an Inngest Realtime channel; authorized clients subscribe to its topics through the TypeScript SDK v4 `inngest` package.
+A durable function can run for minutes or hours, retry after failures, and continue after the request that started it has ended. Realtime lets that function report back to the user as it goes. It publishes messages from inside the run, and every authorized client watching the same channel receives them.
 
-## Realtime with durable execution
+For example, a document-processing function can publish `Analyzing` as it starts, stream generated text as a model returns it, and publish the final result when it finishes.
 
-A durable workflow can wait, retry, and resume after the original request ends. Publish updates during that run so people can see progress without asking your app to check repeatedly.
+## The pieces
 
-For example, a document-processing function can publish “analyzing,” stream generated text, and publish “complete” when the work finishes.
+- **Channel.** A named stream for one thing users watch, such as `document:abc123`. You define a channel once and reuse it in your function, your token route, and your UI.
+- **Topic.** A message type within a channel, such as `status`, `tokens`, or `result`. Each topic has a schema, so publishers and subscribers agree on the payload.
+- **Publish.** Your function or other server-side code sends a message to one topic on one channel.
+- **Subscription token.** Your server mints a token for one channel and a list of topics after it checks that the user may read them. The browser can't subscribe without one.
+- **Subscriber.** A browser, through the `useRealtime` React hook, or server-side code that reads a stream of messages.
 
-Use `step.realtime.publish()` for important state changes. It creates a durable, memoized step, so a function retry does not publish that completed step again.
+## How a message reaches the browser
 
-Use `inngest.realtime.publish()` for immediate, high-frequency messages such as streamed tokens or progress ticks. An immediate publish can happen again if the surrounding work retries. It also works in server-side code outside an Inngest function.
+<Mermaid
+  wide
+  label="The browser asks your server for a token. Your server checks access and mints a token from Inngest. The browser subscribes with the token. The function publishes messages to Inngest, which delivers them to the subscribed browser."
+  chart={`sequenceDiagram
+  participant B as Browser
+  participant S as Your server
+  participant I as Inngest
+  participant F as Function
+  B->>S: Request a token
+  S->>S: Check access
+  S->>I: Mint token for channel and topics
+  I-->>S: Token
+  S-->>B: Token
+  B->>I: Subscribe with token
+  F->>I: Publish to channel topic
+  I-->>B: Deliver message`}
+/>
 
-## How updates reach clients
+Realtime delivers each message to the clients connected when it's published. Subscribe before the function publishes the updates you need to show. The quick start does this by starting the function only after the connection opens.
 
-1. **Define a channel and topics.** A channel names the work or audience, such as a document ID. Topics separate message types such as `status`, `tokens`, and `result`. Define a schema for each topic so publishers and subscribers agree on the data.
-2. **Publish from server-side code.** A function publishes updates to a channel topic as it works. Choose a durable publish for state changes that should not repeat on retry, or an immediate publish for a stream.
-3. **Authorize and subscribe.** Your server checks who may read a channel, then mints a subscription token for that channel and an explicit list of topics. A client uses the token to subscribe. In React, `useRealtime` manages the connection and receives typed messages.
+## Durable and immediate publishing
 
-This flow can update a single user's UI or any authorized client that subscribes to the same channel. Channel names can include your own runtime identifiers, such as a document or thread ID.
+Choose a publish method based on what a retry should do.
 
-## Where to go next
+- **`step.realtime.publish()`** is a durable step. Inngest memoizes it like any other step, so a retry after it completes doesn't publish the message again. Use it for state changes and final results.
+- **`inngest.realtime.publish()`** sends immediately and isn't memoized. If the surrounding work retries, it can publish the same message again. Use it for streamed tokens and frequent progress updates, where a repeat is acceptable. It also works in API routes, webhooks, and other server-side code outside a function.
+
+Inside a function, call `inngest.realtime.publish()` from within `step.run()`. Code outside a step can run again when the function resumes after a wait or retry, so a publish there can repeat.
+
+## Security model
+
+A channel name routes messages; it doesn't grant access. Your server grants access when it mints a token. Check that the signed-in user may read the underlying document, job, or thread before you mint one, and include only the topics that view needs. Your Inngest signing key stays on the server.
+
+## Next steps
 
 - [Quick start](/docs/realtime/quick-start) builds a working publish-and-subscribe example.
-- [Channels and topics](/docs/realtime/channels-and-topics) explains channels, topics, and schemas.
-- [Guides](/docs/realtime/guides) covers common implementation tasks.
-- [Reference](/docs/realtime/reference) lists the TypeScript v4 APIs.
+- [Channels and topics](/docs/realtime/channels-and-topics) explains channel names, topics, and schemas.
+- [Subscription tokens](/docs/realtime/guides/subscription-tokens) shows how to authorize viewers.
+- [Reference](/docs/realtime/reference) lists every Realtime API.

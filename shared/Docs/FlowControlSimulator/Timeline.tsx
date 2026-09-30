@@ -2,16 +2,14 @@
 
 import clsx from "clsx";
 import { memo, useCallback, useEffect, useMemo, useRef, useState } from "react";
-import type { SimConfig, SimEvent, SimResult, SimRun } from "./engine";
-import { fmtT, niceStep, runName, sampleSeries, WAIT_LABEL } from "./derive";
+import type { SimConfig, SimResult, SimRun } from "./engine";
+import { fmtT, niceStep, runName, WAIT_LABEL } from "./derive";
 import { FILL, STROKE } from "./styles";
 import { TenantChip } from "./ui";
 
 const GUTTER = 60;
 const RIGHT = 12;
 const AXIS_H = 22;
-const EVENT_ROW_H = 18;
-const LANE_H = 34;
 
 interface Geo {
   width: number;
@@ -38,7 +36,8 @@ function useWidth<T extends HTMLElement>() {
 
 type Tip = { x: number; y: number; title: string; body?: string } | null;
 
-export function Timeline({
+/** One row per run over time, for the Runs tab. */
+export function RunTimeline({
   result,
   cfg,
   domain,
@@ -46,9 +45,6 @@ export function Timeline({
   onSeek,
   selectedRun,
   onSelectRun,
-  onAddEvent,
-  onRemoveManual,
-  groupByTenant,
 }: {
   result: SimResult;
   cfg: SimConfig;
@@ -57,9 +53,6 @@ export function Timeline({
   onSeek: (t: number) => void;
   selectedRun: number | null;
   onSelectRun: (id: number | null) => void;
-  onAddEvent: (tenant: string, t: number) => void;
-  onRemoveManual: (index: number) => void;
-  groupByTenant: boolean;
 }) {
   const [ref, width] = useWidth<HTMLDivElement>();
   const [tip, setTip] = useState<Tip>(null);
@@ -74,13 +67,7 @@ export function Timeline({
     };
   }, [width, domain]);
 
-  const rows = useMemo(() => {
-    const rs = result.runs.slice();
-    if (groupByTenant) {
-      rs.sort((a, b) => a.tenant.localeCompare(b.tenant) || a.id - b.id);
-    }
-    return rs;
-  }, [result, groupByTenant]);
+  const rows = result.runs;
 
   const n = rows.length;
   const rowH = n <= 16 ? 20 : n <= 30 ? 14 : n <= 60 ? 9 : n <= 120 ? 6 : 4;
@@ -126,14 +113,6 @@ export function Timeline({
           >
             <Axis geo={geo} />
           </div>
-          <EventLanes
-            geo={geo}
-            result={result}
-            onAddEvent={onAddEvent}
-            onRemoveManual={onRemoveManual}
-            showTip={showTip}
-            hideTip={hideTip}
-          />
           <div
             className="relative mt-1 overflow-y-auto overflow-x-hidden"
             style={{ maxHeight: 440 }}
@@ -160,24 +139,6 @@ export function Timeline({
                 cfg={cfg}
               />
             )}
-          </div>
-          <div
-            className="cursor-ew-resize touch-none"
-            onPointerDown={(e) => {
-              dragging.current = true;
-              (e.target as Element).setPointerCapture?.(e.pointerId);
-              seekFromEvent(e);
-            }}
-            onPointerMove={(e) => dragging.current && seekFromEvent(e)}
-            onPointerUp={() => (dragging.current = false)}
-          >
-            <CapacityLanes
-              geo={geo}
-              result={result}
-              cfg={cfg}
-              showTip={showTip}
-              hideTip={hideTip}
-            />
           </div>
           {/* Playhead and future dimming. Positioned over everything. */}
           <div
@@ -242,190 +203,6 @@ const Axis = memo(function Axis({ geo }: { geo: Geo }) {
           </text>
         </g>
       ))}
-    </svg>
-  );
-});
-
-function eventTip(ev: SimEvent, result: SimResult): string {
-  const run = ev.runId !== undefined ? result.runs[ev.runId - 1] : undefined;
-  switch (ev.outcome) {
-    case "rate-limited":
-      return "Skipped by the rate limit. No run was created.";
-    case "singleton-skipped":
-      return "Skipped by singleton: another run was active for this key.";
-    case "debounce-superseded":
-      return `Restarted the debounce period, then was replaced by a later event${
-        run ? ` (run ${run.label})` : ""
-      }.`;
-    case "batched":
-      return `Added to batch ${run?.label ?? ""}.`;
-    case "run":
-      return run ? `Handled by run ${run.label}.` : "Started a run.";
-    default:
-      return "Waiting when the simulation ended.";
-  }
-}
-
-const EventLanes = memo(function EventLanes({
-  geo,
-  result,
-  onAddEvent,
-  onRemoveManual,
-  showTip,
-  hideTip,
-}: {
-  geo: Geo;
-  result: SimResult;
-  onAddEvent: (tenant: string, t: number) => void;
-  onRemoveManual: (index: number) => void;
-  showTip: (
-    e: React.PointerEvent | React.MouseEvent,
-    title: string,
-    body?: string
-  ) => void;
-  hideTip: () => void;
-}) {
-  const [ghost, setGhost] = useState<{ tenant: string; x: number } | null>(
-    null
-  );
-  const h = result.tenants.length * EVENT_ROW_H + 6;
-  return (
-    <svg width={geo.width} height={h} className="block">
-      {result.tenants.map((tenant, i) => {
-        const y = 3 + i * EVENT_ROW_H;
-        const cy = y + EVENT_ROW_H / 2;
-        const evs = result.events.filter((e) => e.tenant === tenant);
-        return (
-          <g key={tenant}>
-            <foreignObject
-              x={4}
-              y={y + 1}
-              width={GUTTER - 8}
-              height={EVENT_ROW_H - 2}
-            >
-              <div className="flex h-full items-center gap-1 text-[10px] text-muted">
-                <TenantChip id={tenant} />
-                <span>events</span>
-              </div>
-            </foreignObject>
-            <rect
-              x={GUTTER}
-              y={y}
-              width={geo.width - GUTTER - RIGHT}
-              height={EVENT_ROW_H}
-              className="cursor-copy fill-transparent hover:fill-carbon-50 dark:hover:fill-carbon-900"
-              onPointerMove={(e) => {
-                const box = (
-                  e.currentTarget.ownerSVGElement as SVGSVGElement
-                ).getBoundingClientRect();
-                setGhost({ tenant, x: e.clientX - box.left });
-                showTip(
-                  e,
-                  `Add an event for tenant ${tenant}`,
-                  `at ${fmtT(
-                    Math.round(geo.tAt(e.clientX - box.left) * 2) / 2
-                  )}`
-                );
-              }}
-              onPointerLeave={() => {
-                setGhost(null);
-                hideTip();
-              }}
-              onClick={(e) => {
-                const box = (
-                  e.currentTarget.ownerSVGElement as SVGSVGElement
-                ).getBoundingClientRect();
-                onAddEvent(
-                  tenant,
-                  Math.round(geo.tAt(e.clientX - box.left) * 2) / 2
-                );
-              }}
-            />
-            <line
-              x1={GUTTER}
-              x2={geo.width - RIGHT}
-              y1={cy}
-              y2={cy}
-              className="pointer-events-none stroke-carbon-100 dark:stroke-carbon-800"
-            />
-            {ghost?.tenant === tenant && (
-              <circle
-                cx={ghost.x}
-                cy={cy}
-                r={3.5}
-                className="pointer-events-none fill-none stroke-breeze-500"
-                strokeDasharray="2 2"
-              />
-            )}
-            {evs.map((ev) => {
-              const x = geo.x(ev.t);
-              const skipped =
-                ev.outcome === "rate-limited" ||
-                ev.outcome === "singleton-skipped";
-              const title = `${ev.label} at ${fmtT(ev.t)}`;
-              const body =
-                eventTip(ev, result) + (ev.manual ? " Click to remove." : "");
-              return (
-                <g
-                  key={ev.id}
-                  className={ev.manual ? "cursor-pointer" : undefined}
-                  onPointerEnter={(e) => showTip(e, title, body)}
-                  onPointerMove={(e) => showTip(e, title, body)}
-                  onPointerLeave={hideTip}
-                  onClick={() =>
-                    ev.manual &&
-                    ev.manualIndex !== undefined &&
-                    onRemoveManual(ev.manualIndex)
-                  }
-                >
-                  <rect
-                    x={x - 5}
-                    y={y}
-                    width={10}
-                    height={EVENT_ROW_H}
-                    className="fill-transparent"
-                  />
-                  {ev.manual && (
-                    <circle
-                      cx={x}
-                      cy={cy}
-                      r={6}
-                      className="fill-none stroke-breeze-500/60"
-                      strokeWidth={1.25}
-                    />
-                  )}
-                  {skipped ? (
-                    <path
-                      d={`M${x - 3.2},${cy - 3.2}L${x + 3.2},${cy + 3.2}M${
-                        x + 3.2
-                      },${cy - 3.2}L${x - 3.2},${cy + 3.2}`}
-                      className={STROKE.cancel}
-                      strokeWidth={1.75}
-                      strokeLinecap="round"
-                    />
-                  ) : ev.outcome === "debounce-superseded" ? (
-                    <circle
-                      cx={x}
-                      cy={cy}
-                      r={3.25}
-                      className="fill-white stroke-carbon-500 dark:fill-carbon-1000"
-                      strokeWidth={1.25}
-                    />
-                  ) : (
-                    <circle
-                      cx={x}
-                      cy={cy}
-                      r={3.5}
-                      className="fill-carbon-800 stroke-white dark:fill-carbon-100 dark:stroke-carbon-1000"
-                      strokeWidth={1}
-                    />
-                  )}
-                </g>
-              );
-            })}
-          </g>
-        );
-      })}
     </svg>
   );
 });
@@ -782,138 +559,3 @@ function EndMarker({
     </g>
   );
 }
-
-const CapacityLanes = memo(function CapacityLanes({
-  geo,
-  result,
-  cfg,
-  showTip,
-  hideTip,
-}: {
-  geo: Geo;
-  result: SimResult;
-  cfg: SimConfig;
-  showTip: (
-    e: React.PointerEvent | React.MouseEvent,
-    title: string,
-    body?: string
-  ) => void;
-  hideTip: () => void;
-}) {
-  const samples = Math.min(
-    600,
-    Math.max(100, Math.floor((geo.width - GUTTER) / 2))
-  );
-  const series = useMemo(
-    () => sampleSeries(result, geo.domain, samples),
-    [result, geo.domain, samples]
-  );
-  const fnLimit = cfg.concurrency.constraints
-    .filter((c) => c.key !== "tenant")
-    .map((c) => c.limit - (c.key === "shared" ? c.externalLoad : 0))
-    .reduce((a, b) => Math.min(a, b), Number.POSITIVE_INFINITY);
-  const lanes = [
-    {
-      label: "executing",
-      values: series.exec,
-      fill: "fill-breeze-500/20 dark:fill-breeze-400/25",
-      stroke: "stroke-breeze-500 dark:stroke-breeze-400",
-      limit: Number.isFinite(fnLimit) ? fnLimit : undefined,
-    },
-    {
-      label: "waiting",
-      values: series.wait,
-      fill: "fill-purplehaze-400/20 dark:fill-purplehaze-400/25",
-      stroke: "stroke-purplehaze-500 dark:stroke-purplehaze-400",
-      limit: undefined as number | undefined,
-    },
-  ];
-  const H = lanes.length * LANE_H + 6;
-  return (
-    <svg
-      width={geo.width}
-      height={H}
-      className="block"
-      onPointerMove={(e) => {
-        const box = e.currentTarget.getBoundingClientRect();
-        const tt = geo.tAt(e.clientX - box.left);
-        const i = Math.round((tt / geo.domain) * samples);
-        showTip(
-          e,
-          `At ${fmtT(tt)}`,
-          `${series.exec[i] ?? 0} steps executing · ${
-            series.wait[i] ?? 0
-          } waiting in the queue`
-        );
-      }}
-      onPointerLeave={hideTip}
-    >
-      {lanes.map((lane, li) => {
-        const top = 4 + li * LANE_H;
-        const h = LANE_H - 8;
-        const max = Math.max(1, ...lane.values, lane.limit ?? 0);
-        const y = (v: number) => top + h - (v / max) * h;
-        let d = `M${geo.x(0)},${y(0)}`;
-        lane.values.forEach((v, i) => {
-          const xx = geo.x(series.times[i]);
-          d += `L${xx},${y(lane.values[i - 1] ?? 0)}L${xx},${y(v)}`;
-        });
-        const line = d;
-        const area = `${d}L${geo.x(geo.domain)},${y(0)}Z`;
-        const peak = Math.max(...lane.values);
-        return (
-          <g key={lane.label}>
-            <text
-              x={4}
-              y={top + 10}
-              className="fill-carbon-500 text-[10px] dark:fill-carbon-400"
-            >
-              {lane.label}
-            </text>
-            <text
-              x={4}
-              y={top + 21}
-              className="fill-carbon-400 text-[9px] tabular-nums dark:fill-carbon-500"
-            >
-              peak {peak}
-            </text>
-            <line
-              x1={GUTTER}
-              x2={geo.width - RIGHT}
-              y1={y(0)}
-              y2={y(0)}
-              className="stroke-carbon-200 dark:stroke-carbon-700"
-            />
-            <path d={area} className={lane.fill} />
-            <path
-              d={line}
-              className={clsx("fill-none", lane.stroke)}
-              strokeWidth={1.5}
-              strokeLinejoin="round"
-            />
-            {lane.limit !== undefined && (
-              <g>
-                <line
-                  x1={GUTTER}
-                  x2={geo.width - RIGHT}
-                  y1={y(lane.limit)}
-                  y2={y(lane.limit)}
-                  className="stroke-carbon-500"
-                  strokeDasharray="4 3"
-                />
-                <text
-                  x={geo.width - RIGHT - 2}
-                  y={y(lane.limit) - 2}
-                  textAnchor="end"
-                  className="fill-carbon-500 text-[9px]"
-                >
-                  limit {lane.limit}
-                </text>
-              </g>
-            )}
-          </g>
-        );
-      })}
-    </svg>
-  );
-});
