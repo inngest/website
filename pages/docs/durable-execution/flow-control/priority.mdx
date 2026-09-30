@@ -49,6 +49,7 @@ Replace the example step with your summary work. The concurrency limit creates a
 | `120` | Moves a new run ahead of runs queued within the preceding 120 seconds, while they remain queued. |
 | `0` | Uses the normal queue position. |
 | `-120` | Moves the new run later in the queue by 120 seconds. |
+
 Positive factors pull a run forward. Negative factors push it back. The default allowed range is **-600 to 600 seconds**. Inngest clips values outside your account's allowed bounds. An invalid expression evaluates to `0`.
 
 Priority only matters when work is waiting. Combine it with [Step concurrency](/docs/durable-execution/flow-control/concurrency) or another control that creates a backlog. Available capacity and other flow-control constraints still determine when a run can start. Use a scheduling primitive when you need a specific future start time.
