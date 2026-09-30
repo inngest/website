@@ -138,8 +138,6 @@ interface LogoStripProps {
    * Default (false) keeps the full-bleed behavior used on the home page.
    */
   contained?: boolean;
-  /** Skip the top wash. The homepage draws its own rule there instead. */
-  hideTopFade?: boolean;
 }
 
 function LogoMark({
@@ -208,10 +206,7 @@ function LogoMark({
   );
 }
 
-export default function LogoStrip({
-  contained = false,
-  hideTopFade = false,
-}: LogoStripProps) {
+export default function LogoStrip({ contained = false }: LogoStripProps) {
   // Soft 120px fade at both horizontal edges so logos drift in/out of view
   // instead of hard-cutting. `[--mask]` keeps both the standard and the
   // legacy WebKit variant in one place.
@@ -230,15 +225,11 @@ export default function LogoStrip({
     >
       {/* Top-edge fade so the hero's grain bleeds into this strip
           instead of a hard horizontal cut. Vertical mask only on the
-          top 96px; horizontal edge mask is applied on the section.
-          The homepage hides this and draws a full-width rule instead,
-          because the wash's top edge reads as a hard seam. */}
-      {hideTopFade ? null : (
-        <span
-          aria-hidden="true"
-          className="pointer-events-none absolute inset-x-0 top-0 z-0 h-24 bg-gradient-to-b from-v1-canvasBase/40 to-transparent"
-        />
-      )}
+          top 96px; horizontal edge mask is applied on the section. */}
+      <span
+        aria-hidden="true"
+        className="from-v1-canvasBase/40 pointer-events-none absolute inset-x-0 top-0 z-0 h-24 bg-gradient-to-b to-transparent"
+      />
       {/* Pause is gated to hovering an actual logo (`group/strip:has(.logo-item:hover)`)
           rather than anywhere in the section, so passive cursor
           travel across the strip doesn't freeze the marquee.
