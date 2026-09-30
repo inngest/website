@@ -18,6 +18,15 @@ export const TS_STABLE_VERSION = "v4";
 
 // All permanent redirects (source -> destination)
 export const permanentRedirects = [
+  // Overview pages merged into their parent section pages
+  [
+    "/docs/durable-execution/guides-and-advanced/error-handling/overview",
+    "/docs/durable-execution/guides-and-advanced/error-handling",
+  ],
+  [
+    "/docs/durable-execution/guides-and-advanced/middleware/overview",
+    "/docs/durable-execution/guides-and-advanced/middleware",
+  ],
   // Legacy docs
   ["/docs/functions/testing-functions", "/docs/local-development"],
   ["/docs/what-is-inngest", "/docs"],

@@ -12,6 +12,11 @@ export type DocsRefreshPage = {
    */
   section?: boolean;
   icon?: React.ComponentType<{ className?: string }>;
+  /**
+   * Open this group by default when the current page isn't inside any other
+   * collapsible group (for example, on the docs home).
+   */
+  openWhenIdle?: boolean;
   children?: DocsRefreshPage[];
 };
 
@@ -50,6 +55,7 @@ export const docsRefreshOutline: DocsRefreshPage[] = [
       {
         title: "Durable Execution",
         href: "/docs/durable-execution",
+        openWhenIdle: true,
         children: [
           {
             title: "Durable workflows",
@@ -176,6 +182,76 @@ export const docsRefreshOutline: DocsRefreshPage[] = [
             ],
           },
           {
+            title: "Events and triggers",
+            href: "/docs/durable-execution/guides-and-advanced/events-and-triggers",
+            children: [
+              {
+                title: "Event and trigger concepts",
+                href: "/docs/durable-execution/guides-and-advanced/events-and-triggers/event-and-trigger-concepts",
+              },
+              {
+                title: "Event payloads and schemas",
+                href: "/docs/durable-execution/guides-and-advanced/events-and-triggers/event-payloads-and-schemas",
+              },
+              {
+                title: "Send events",
+                href: "/docs/durable-execution/guides-and-advanced/events-and-triggers/send-events",
+              },
+              {
+                title: "Receive webhook events",
+                href: "/docs/durable-execution/guides-and-advanced/events-and-triggers/receive-webhook-events",
+              },
+              {
+                title: "Schedules and delayed starts",
+                href: "/docs/durable-execution/guides-and-advanced/events-and-triggers/schedules-and-delayed-starts",
+              },
+            ],
+          },
+          {
+            title: "Error handling",
+            href: "/docs/durable-execution/guides-and-advanced/error-handling",
+            children: [
+              {
+                title: "Retries",
+                href: "/docs/durable-execution/guides-and-advanced/error-handling/retries",
+              },
+              {
+                title: "Non-retriable errors",
+                href: "/docs/durable-execution/guides-and-advanced/error-handling/non-retriable-errors",
+              },
+              {
+                title: "Rollbacks",
+                href: "/docs/durable-execution/guides-and-advanced/error-handling/rollbacks",
+              },
+              {
+                title: "Failure handlers",
+                href: "/docs/durable-execution/guides-and-advanced/error-handling/failure-handlers",
+              },
+              {
+                title: "Inngest errors",
+                href: "/docs/durable-execution/guides-and-advanced/error-handling/inngest-errors",
+              },
+            ],
+          },
+          {
+            title: "Cancellation",
+            href: "/docs/durable-execution/guides-and-advanced/cancellation",
+            children: [
+              {
+                title: "Timeouts",
+                href: "/docs/durable-execution/guides-and-advanced/cancellation/timeouts",
+              },
+              {
+                title: "Cancelling via events",
+                href: "/docs/durable-execution/guides-and-advanced/cancellation/events",
+              },
+              {
+                title: "Bulk cancellation",
+                href: "/docs/durable-execution/guides-and-advanced/cancellation/bulk-cancellation",
+              },
+            ],
+          },
+          {
             title: "Deploying functions",
             href: "/docs/durable-execution/deploying-functions",
             children: [
@@ -193,6 +269,18 @@ export const docsRefreshOutline: DocsRefreshPage[] = [
             title: "Advanced",
             href: "/docs/durable-execution/guides-and-advanced",
             children: [
+              {
+                title: "Idempotency",
+                href: "/docs/durable-execution/guides-and-advanced/idempotency",
+              },
+              {
+                title: "Versioning",
+                href: "/docs/durable-execution/guides-and-advanced/versioning",
+              },
+              {
+                title: "Testing",
+                href: "/docs/durable-execution/guides-and-advanced/testing",
+              },
               {
                 title: "Patterns",
                 href: "/docs/durable-execution/guides-and-advanced/patterns",
@@ -212,10 +300,6 @@ export const docsRefreshOutline: DocsRefreshPage[] = [
                 href: "/docs/durable-execution/guides-and-advanced/middleware",
                 children: [
                   {
-                    title: "Overview",
-                    href: "/docs/durable-execution/guides-and-advanced/middleware/overview",
-                  },
-                  {
                     title: "Creating middleware",
                     href: "/docs/durable-execution/guides-and-advanced/middleware/creating-middleware",
                   },
@@ -234,94 +318,8 @@ export const docsRefreshOutline: DocsRefreshPage[] = [
                 ],
               },
               {
-                title: "Error handling",
-                href: "/docs/durable-execution/guides-and-advanced/error-handling",
-                children: [
-                  {
-                    title: "Overview",
-                    href: "/docs/durable-execution/guides-and-advanced/error-handling/overview",
-                  },
-                  {
-                    title: "Retries",
-                    href: "/docs/durable-execution/guides-and-advanced/error-handling/retries",
-                  },
-                  {
-                    title: "Non-retriable errors",
-                    href: "/docs/durable-execution/guides-and-advanced/error-handling/non-retriable-errors",
-                  },
-                  {
-                    title: "Rollbacks",
-                    href: "/docs/durable-execution/guides-and-advanced/error-handling/rollbacks",
-                  },
-                  {
-                    title: "Failure handlers",
-                    href: "/docs/durable-execution/guides-and-advanced/error-handling/failure-handlers",
-                  },
-                  {
-                    title: "Inngest errors",
-                    href: "/docs/durable-execution/guides-and-advanced/error-handling/inngest-errors",
-                  },
-                ],
-              },
-              {
-                title: "Cancellation",
-                href: "/docs/durable-execution/guides-and-advanced/cancellation",
-                children: [
-                  {
-                    title: "Timeouts",
-                    href: "/docs/durable-execution/guides-and-advanced/cancellation/timeouts",
-                  },
-                  {
-                    title: "Cancelling via events",
-                    href: "/docs/durable-execution/guides-and-advanced/cancellation/events",
-                  },
-                  {
-                    title: "Bulk cancellation",
-                    href: "/docs/durable-execution/guides-and-advanced/cancellation/bulk-cancellation",
-                  },
-                ],
-              },
-              {
-                title: "Events and triggers",
-                href: "/docs/durable-execution/guides-and-advanced/events-and-triggers",
-                children: [
-                  {
-                    title: "Event and trigger concepts",
-                    href: "/docs/durable-execution/guides-and-advanced/events-and-triggers/event-and-trigger-concepts",
-                  },
-                  {
-                    title: "Event payloads and schemas",
-                    href: "/docs/durable-execution/guides-and-advanced/events-and-triggers/event-payloads-and-schemas",
-                  },
-                  {
-                    title: "Send events",
-                    href: "/docs/durable-execution/guides-and-advanced/events-and-triggers/send-events",
-                  },
-                  {
-                    title: "Receive webhook events",
-                    href: "/docs/durable-execution/guides-and-advanced/events-and-triggers/receive-webhook-events",
-                  },
-                  {
-                    title: "Schedules and delayed starts",
-                    href: "/docs/durable-execution/guides-and-advanced/events-and-triggers/schedules-and-delayed-starts",
-                  },
-                ],
-              },
-              {
-                title: "Idempotency",
-                href: "/docs/durable-execution/guides-and-advanced/idempotency",
-              },
-              {
-                title: "Versioning",
-                href: "/docs/durable-execution/guides-and-advanced/versioning",
-              },
-              {
                 title: "Logging",
                 href: "/docs/durable-execution/guides-and-advanced/logging",
-              },
-              {
-                title: "Testing",
-                href: "/docs/durable-execution/guides-and-advanced/testing",
               },
               {
                 title: "Checkpointing",

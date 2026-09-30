@@ -5,12 +5,26 @@ export const description = "When an API or database call fails, Inngest retries 
 
 > Recover from failed work and handle errors that retries cannot resolve.
 
-When an API or database call fails, Inngest retries the failed step and keeps results from steps that already succeeded. If the error persists, run a fallback, compensate for earlier work, or report the final failure.
-## Start here
-- [Overview](/docs/durable-execution/guides-and-advanced/error-handling/overview) explains errors, failed steps, failed runs, and the recovery paths.
-- [Retries](/docs/durable-execution/guides-and-advanced/error-handling/retries) shows retry scope, defaults, and timing.
-- [Non-retriable errors](/docs/durable-execution/guides-and-advanced/error-handling/non-retriable-errors) stops retries for work that cannot succeed with the same input.
-- [Rollbacks](/docs/durable-execution/guides-and-advanced/error-handling/rollbacks) uses a failed step to choose a fallback or compensating action.
-- [Failure handlers](/docs/durable-execution/guides-and-advanced/error-handling/failure-handlers) responds after a function exhausts its retries.
-- [Inngest errors](/docs/durable-execution/guides-and-advanced/error-handling/inngest-errors) describes errors that stop or schedule retries.
-Keep external side effects safe to repeat when a step retries.
+When an API or database call fails, Inngest retries the failed step and reuses results from steps that already succeeded. If the error persists, run a fallback, compensate for earlier work, or report the final failure.
+
+## Choose how to respond
+
+- **Let Inngest retry a temporary error.** Throw a standard `Error` from a function or `step.run()` handler. Each step has its own retry counter. See [Retries](/docs/durable-execution/guides-and-advanced/error-handling/retries).
+- **Stop retrying a permanent error.** Throw `NonRetriableError` when another attempt can't succeed. See [Non-retriable errors](/docs/durable-execution/guides-and-advanced/error-handling/non-retriable-errors).
+- **Handle one failed step.** Catch the error after the step exhausts its retries, then run a fallback or a compensation step. See [Rollbacks](/docs/durable-execution/guides-and-advanced/error-handling/rollbacks).
+- **Handle a failed function.** Add `onFailure` to one function, or listen for `inngest/function.failed` across an environment. See [Failure handlers](/docs/durable-execution/guides-and-advanced/error-handling/failure-handlers).
+- **Control retry timing.** Throw `RetryAfterError` when an upstream service tells you when to retry. See [Inngest errors](/docs/durable-execution/guides-and-advanced/error-handling/inngest-errors).
+
+## Errors, failed steps, and failed runs
+
+- **Error:** thrown during an attempt. Inngest retries it while attempts remain.
+- **Failed step:** a step that has exhausted its attempts. It throws back into the function, where you can catch it.
+- **Failed run:** a function that exhausted its retries or didn't catch a failed step. Inngest marks the run failed.
+
+By default, Inngest allows four retries after the first attempt.
+
+## Keep side effects safe to repeat
+
+A completed `step.run()` result is saved, so later attempts reuse it. That protects progress, but it doesn't make external side effects exactly-once. A call can succeed and then time out before Inngest records the result.
+
+Give writes, payments, and messages stable [idempotency](/docs/durable-execution/guides-and-advanced/idempotency) keys so a retry doesn't repeat the action.

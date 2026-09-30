@@ -627,6 +627,28 @@ export function getAllSections(nav) {
   }, []);
 }
 
+// Collapsible groups (not always-open sections), at any depth.
+function collectCollapsibleGroups(
+  items: (NavGroup | NavLink | NavSection | NavLinkGroup)[]
+): NavGroup[] {
+  return items.flatMap((item) => {
+    if (!isNavGroup(item)) return [];
+    const children = collectCollapsibleGroups(item.links ?? []);
+    return item.section ? children : [item, ...children];
+  });
+}
+
+// Groups flagged `openWhenIdle` open when no other collapsible group contains
+// the current page, so first-time visitors see the main outline.
+function getIdleOpenSections(
+  items: (NavGroup | NavLink | NavSection | NavLinkGroup)[],
+  currentPath: string
+) {
+  const groups = collectCollapsibleGroups(items);
+  if (groups.some((group) => hasNavGroupPath(group, currentPath))) return [];
+  return groups.filter((group) => group.openWhenIdle).map((g) => g.title);
+}
+
 function getAllOpenedByDefaultSections(
   sections: (NavGroup | NavLink | NavSection | NavLinkGroup)[],
   currentPath: string
@@ -969,6 +991,8 @@ export function Navigation(props) {
             : []),
         ],
         pathname
+      ).concat(
+        getIdleOpenSections(nestedNavigation?.sectionLinks ?? [], pathname)
       ),
     [activeGroup, nestedNavigation, pathname]
   );

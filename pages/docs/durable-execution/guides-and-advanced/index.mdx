@@ -1,42 +1,31 @@
-export const metaTitle = "Guides and advanced";
-export const description = "Find the right guide to trigger, coordinate, and inspect durable workflows.";
+export const metaTitle = "Advanced";
+export const description = "Deduplicate work, change live workflows safely, and test, log, and extend your durable functions.";
 
-# Guides and advanced
+# Advanced
 
-> Find the right guide to trigger, coordinate, and inspect durable workflows.
+> Deduplicate work, change live workflows safely, and test, log, and extend your durable functions.
 
-Start with the task you need to finish, such as sending an event, coordinating steps, or inspecting a run. Each guide links the implementation to the behavior you can inspect in a run. If you are new to Inngest, start with the [Quick start](/docs/durable-execution/quick-start).
-## Trigger work
-- **Send events and use webhooks.** Start functions from your app or an external service. See [Send events](/docs/durable-execution/guides-and-advanced/events-and-triggers/send-events) and [Receive webhook events](/docs/durable-execution/guides-and-advanced/events-and-triggers/receive-webhook-events).
-- **Schedule work.** Run a function on a cron schedule or after a delay. See [Schedules and delayed starts](/docs/durable-execution/guides-and-advanced/events-and-triggers/schedules-and-delayed-starts).
-- **Match the right events.** Use a trigger `if` condition or wildcard when only certain events should start a run. See [Event and trigger concepts](/docs/durable-execution/guides-and-advanced/events-and-triggers/event-and-trigger-concepts). To start one durable workflow from multiple events or a schedule, see [Durable Workflows](/docs/durable-execution/durable-workflows). For naming and schema design, see [Event payloads and schemas](/docs/durable-execution/guides-and-advanced/events-and-triggers/event-payloads-and-schemas).
-## Coordinate steps and functions
-- **Save progress in steps.** Make completed work available when a run resumes or retries. See [Primitives](/docs/durable-execution/primitives) and its [step.run](/docs/durable-execution/primitives/step-run).
-- **Wait for an external action.** Pause a run until an event or signal arrives, or until a timeout expires. See [step.waitForEvent](/docs/durable-execution/primitives/step-waitforevent) and [step.waitForSignal](/docs/durable-execution/primitives/step-waitforsignal).
-- **Repeat or split work.** Run independent steps together, start separate functions from one event, or process a list in one run. Use independent steps in one run, or read [Fan-out](/docs/durable-execution/guides-and-advanced/patterns/fan-out), [Working with loops](/docs/durable-execution/guides-and-advanced/patterns/working-with-loops), and [batching events](/docs/durable-execution/flow-control/batching).
-- **Compose functions and user-defined workflows.** Invoke a function and wait for its result, or let users configure a workflow. See [step.invoke](/docs/durable-execution/primitives/step-invoke), user-defined workflows, and Workflow Kit.
-- **Add human approval.** Wait for a person's decision before the next step. Use an event or signal to resume after approval. For progress updates to a client, see [Realtime](/docs/realtime).
-## Keep runs reliable and control load
-- **Recover from failures.** Set retry behavior, handle errors, and make external writes safe to retry. See [Error handling](/docs/durable-execution/guides-and-advanced/error-handling) and [Idempotency](/docs/durable-execution/guides-and-advanced/idempotency).
-- **Cancel or pause work.** Stop runs that are no longer needed or pause a function. See [Cancellation](/docs/durable-execution/guides-and-advanced/cancellation) and [Pause and resume functions](/docs/platform-and-operations/pause-and-resume-functions).
-- **Change a live workflow safely.** Keep step IDs stable, test a waiting run after a code change, and route incompatible rewrites to a new function. See [Versioning](/docs/durable-execution/guides-and-advanced/versioning) and [Testing](/docs/durable-execution/guides-and-advanced/testing).
-- **Protect downstream services.** Limit concurrent runs, rate limit or throttle requests, and debounce bursts. See [flow control](/docs/durable-execution/flow-control), [rate limiting](/docs/durable-execution/flow-control/rate-limiting), [throttling](/docs/durable-execution/flow-control/throttling), and [debouncing](/docs/durable-execution/flow-control/debounce).
-## Operate functions
-- **Speed up consecutive steps.** Use checkpointing to run steps eagerly while Inngest records their progress. See [Checkpointing](/docs/durable-execution/guides-and-advanced/checkpointing) for setup, runtime options, and limitations.
-- **Log the work that happened.** Add structured context to function logs without duplicating messages during a resume. See [Logging](/docs/durable-execution/guides-and-advanced/logging).
-- **Test before deployment.** Check function decisions, step behavior, waits, and retries locally. See [Testing](/docs/durable-execution/guides-and-advanced/testing).
-- **Inspect and recover runs.** Find an event or run, read its step trace, and replay work when appropriate. See [Inspect events and runs](/docs/platform-and-operations/inspect-events-and-runs), [Traces](/docs/platform-and-operations/traces), and [Replay runs in bulk](/docs/platform-and-operations/replay-runs-in-bulk). For CLI commands, use Debug with the CLI.
-- **Keep apps in sync.** Register changed function definitions and check deployment health. See [Apps and syncs](/docs/platform-and-operations/apps-and-syncs).
+These guides cover what you need once your first workflows are running. New to Inngest? Start with the [Quick start](/docs/durable-execution/quick-start).
 
-For API options, use the [Reference](/docs/sdk/overview/reference). For quotas and runtime constraints, use [Limits](/docs/durable-execution/limits).
+## Keep runs correct
 
-- [Events and triggers](/docs/durable-execution/guides-and-advanced/events-and-triggers)
-- [Idempotency](/docs/durable-execution/guides-and-advanced/idempotency)
-- [Versioning](/docs/durable-execution/guides-and-advanced/versioning)
-- [Logging](/docs/durable-execution/guides-and-advanced/logging)
-- [Testing](/docs/durable-execution/guides-and-advanced/testing)
-- [Middleware](/docs/durable-execution/guides-and-advanced/middleware)
-- [Error handling](/docs/durable-execution/guides-and-advanced/error-handling)
-- [Cancellation](/docs/durable-execution/guides-and-advanced/cancellation)
-- [Patterns](/docs/durable-execution/guides-and-advanced/patterns)
-- [Checkpointing](/docs/durable-execution/guides-and-advanced/checkpointing)
+- [Idempotency](/docs/durable-execution/guides-and-advanced/idempotency): Stop duplicate events and runs from repeating work.
+- [Versioning](/docs/durable-execution/guides-and-advanced/versioning): Change step IDs, order, or branching without breaking runs that are already in progress.
+- [Testing](/docs/durable-execution/guides-and-advanced/testing): Check steps, waits, and retries before you deploy.
+
+## Structure your work
+
+- [Patterns](/docs/durable-execution/guides-and-advanced/patterns): Choose between [fan-out](/docs/durable-execution/guides-and-advanced/patterns/fan-out) and [loops](/docs/durable-execution/guides-and-advanced/patterns/working-with-loops) for repeated work.
+- [Middleware](/docs/durable-execution/guides-and-advanced/middleware): Add shared clients, error reporting, or encryption across functions.
+
+## Operate and tune
+
+- [Logging](/docs/durable-execution/guides-and-advanced/logging): Add run context to logs without duplicates when a run resumes.
+- [Checkpointing](/docs/durable-execution/guides-and-advanced/checkpointing): Configure how steps run back to back, especially on serverless hosts.
+
+## Also in Durable Execution
+
+- [Events and triggers](/docs/durable-execution/guides-and-advanced/events-and-triggers): Send events, receive webhooks, and schedule work.
+- [Error handling](/docs/durable-execution/guides-and-advanced/error-handling): Retry, fall back, or report failures.
+- [Cancellation](/docs/durable-execution/guides-and-advanced/cancellation): Stop runs with timeouts, events, or in bulk.
+- [Flow control](/docs/durable-execution/flow-control): Protect downstream services from bursts.

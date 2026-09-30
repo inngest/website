@@ -35,6 +35,8 @@ export type NavGroup = {
   icon?: React.FC<React.SVGProps<SVGSVGElement>>;
   links: (NavGroup | NavLink | NavSection | NavLinkGroup)[];
   defaultOpen?: boolean;
+  /** Open by default when the current page isn't in any other collapsible group. */
+  openWhenIdle?: boolean;
   /** Always-open top-level section with an icon header (Learn sidebar). */
   section?: boolean;
   tag?: string;
@@ -485,6 +487,7 @@ function docsRefreshNav(page: DocsRefreshPage): NavGroup | NavLink {
     );
     return {
       title: page.title,
+      ...(page.openWhenIdle ? { openWhenIdle: true } : {}),
       links: [
         ...(!hasOverview ? [{ title: "Overview", href: page.href }] : []),
         ...page.children.map(docsRefreshNav),
