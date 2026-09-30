@@ -33,20 +33,18 @@ export default function Home() {
         fetchPriority="high"
       />
       <div className="home-desktop-7">
-        {/* The hero image lightens toward the logos; the page grain
-            darkens away from the top. Their meeting point is the seam
-            above the logo strip. The layer is pulled through the
-            frame's padding and the gap so that edge lands on the strip. */}
-        <div className="relative w-full">
-          <div
-            aria-hidden="true"
-            className="pointer-events-none absolute -top-10 bottom-[-3rem] left-1/2 z-0 w-screen -translate-x-1/2 bg-cover bg-center bg-no-repeat bg-[url(/assets/v1/hero/.compressed/inngest-hero-mobile.avif)] lg:-top-20 lg:bottom-[-6rem] lg:bg-[url(/assets/v1/hero/.compressed/inngest-hero.avif?v=3)]"
-          />
-          <div className="relative z-10">
-            <Hero />
+        {/* Same opening as the live homepage: the hero image covers the
+            first screen and the page grain continues from the logo row. */}
+        <div className="relative -mx-6 -mt-10 w-[calc(100%+3rem)] lg:-mx-8 lg:-mt-20 lg:w-[calc(100%+4rem)]">
+          <div className="relative min-h-svh">
+            <div
+              aria-hidden="true"
+              className="pointer-events-none absolute inset-y-0 left-1/2 z-0 w-screen -translate-x-1/2 bg-[url(/assets/v1/hero/.compressed/inngest-hero-mobile.avif)] bg-cover bg-center bg-no-repeat lg:bg-[url(/assets/v1/hero/.compressed/inngest-hero.avif?v=3)]"
+            />
+            <div className="relative z-10 mx-auto flex h-full w-full max-w-[1440px] flex-col items-center px-6 pt-10 lg:px-8 lg:pt-20">
+              <Hero />
+            </div>
           </div>
-        </div>
-        <div className="relative z-10 -mx-6 w-[calc(100%+3rem)] lg:-mx-8 lg:w-[calc(100%+4rem)]">
           <LogoStrip contained />
         </div>
         <div className="relative flex w-full flex-col items-center gap-12 lg:gap-24">
