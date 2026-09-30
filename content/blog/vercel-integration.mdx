@@ -30,7 +30,7 @@ Vercel now enables developers to ship functions with Inngest faster than ever be
 
 ![Code snippets of a background function, triggered by an event and a cron job](/assets/blog/vercel-integration/code-snippets.jpg)
 
-Functions are triggered by events using [a simple `inngest.send()` call](/docs/events?ref=blog-vercel-integration). As Inngest receives events, it instantly and securely invokes any function that is defined to run when that event occurs. Multiple functions can be triggered by the same event, so you can [fan-out](https://en.wikipedia.org/wiki/Fan-out_(software)) work to separate functions, enabling you to decouple functions by their purpose.
+Functions are triggered by events using [a simple `inngest.send()` call](/docs/events?ref=blog-vercel-integration). As Inngest receives events, it instantly and securely invokes any function that is defined to run when that event occurs. Multiple functions can be triggered by the same event, so you can [fan-out](/docs/guides/fan-out-jobs?ref=blog-vercel-integration) work to separate functions, enabling you to decouple functions by their purpose.
 
 This decoupling makes it a great way to trigger background work. For example, you can send a `user.signup` event which could trigger separate background tasks to send a welcome email, start a Stripe trial, and add the user to Intercom. Some other benefits:
 
