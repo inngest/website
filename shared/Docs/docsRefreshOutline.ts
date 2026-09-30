@@ -267,10 +267,6 @@ export const docsRefreshOutline: DocsRefreshPage[] = [
                 title: "Cancelling via events",
                 href: "/docs/durable-execution/guides-and-advanced/cancellation/events",
               },
-              {
-                title: "Bulk cancellation",
-                href: "/docs/durable-execution/guides-and-advanced/cancellation/bulk-cancellation",
-              },
             ],
           },
           {
@@ -580,6 +576,36 @@ export const docsRefreshOutline: DocsRefreshPage[] = [
             ],
           },
           {
+            title: "Manage and recover",
+            href: "/docs/platform-and-operations/manage-and-recover",
+            children: [
+              {
+                title: "Rerun a run",
+                href: "/docs/platform-and-operations/rerun-a-run",
+              },
+              {
+                title: "Replay runs in bulk",
+                href: "/docs/platform-and-operations/replay-runs-in-bulk",
+              },
+              {
+                title: "Bulk cancellation",
+                href: "/docs/durable-execution/guides-and-advanced/cancellation/bulk-cancellation",
+              },
+              {
+                title: "Pause and resume functions",
+                href: "/docs/platform-and-operations/pause-and-resume-functions",
+              },
+              {
+                title: "Rotate event and signing keys",
+                href: "/docs/platform-and-operations/rotate-event-and-signing-keys",
+              },
+              {
+                title: "Keys and access",
+                href: "/docs/platform-and-operations/keys-and-access",
+              },
+            ],
+          },
+          {
             title: "Apps and syncs",
             href: "/docs/platform-and-operations/apps-and-syncs",
           },
@@ -588,28 +614,8 @@ export const docsRefreshOutline: DocsRefreshPage[] = [
             href: "/docs/platform-and-operations/environments-and-branch-deploys",
           },
           {
-            title: "Keys and access",
-            href: "/docs/platform-and-operations/keys-and-access",
-          },
-          {
-            title: "Rotate event and signing keys",
-            href: "/docs/platform-and-operations/rotate-event-and-signing-keys",
-          },
-          {
             title: "Cloud architecture and security",
             href: "/docs/platform-and-operations/cloud-architecture-and-security",
-          },
-          {
-            title: "Rerun a run",
-            href: "/docs/platform-and-operations/rerun-a-run",
-          },
-          {
-            title: "Replay runs in bulk",
-            href: "/docs/platform-and-operations/replay-runs-in-bulk",
-          },
-          {
-            title: "Pause and resume functions",
-            href: "/docs/platform-and-operations/pause-and-resume-functions",
           },
           {
             title: "Self-host Inngest",

@@ -112,7 +112,25 @@ export const permanentRedirects = [
 
   ["/docs/agent-kit/:any*", "https://agentkit.inngest.com"],
 
-  ["/docs/features/realtime/nextjs", "/docs/features/realtime/react-hooks"],
+  // Realtime moved to /docs/realtime
+  ["/docs/features/realtime", "/docs/realtime"],
+  ["/docs/features/realtime/nextjs", "/docs/realtime/guides/react-hooks"],
+  [
+    "/docs/features/realtime/react-hooks",
+    "/docs/realtime/guides/react-hooks",
+  ],
+  [
+    "/docs/features/realtime/subscription-tokens",
+    "/docs/realtime/guides/subscription-tokens",
+  ],
+  [
+    "/docs/features/realtime/stream-ai-responses",
+    "/docs/realtime/guides/stream-ai-responses",
+  ],
+  [
+    "/docs/features/realtime/subscribe",
+    "/docs/realtime/guides/server-side-subscriptions",
+  ],
 
   // Durable Endpoints rename
   ["/docs/learn/rest-endpoints", "/docs/learn/durable-endpoints"],
