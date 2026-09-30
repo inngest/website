@@ -1,4 +1,5 @@
 import { CardGroup, Card } from "src/shared/Docs/mdx";
+import { WelcomeGrid, PlatformGrid, UseCaseGrid, StartBuilding } from "src/shared/Docs/DocsHome";
 import InngestIcon from "src/shared/Icons/InngestIcon";
 import SkillsMDIcon from "src/shared/Icons/SkillsMD";
 import MCPIcon from "src/shared/Icons/MCP";
@@ -8,66 +9,33 @@ export const metaTitle = "Inngest Docs";
 export const description = "Build durable, observable workflows and agents that survive failures without managing orchestration infrastructure.";
 export const hidePageSidebar = true;
 
-# Overview to Inngest
+# Introducing Inngest
+
 > Build durable, observable, failure-resistant code with sandboxing, online evals, and A/B tests built in.
 
-<br />
-**Inngest is the platform for building durable, observable workflows and agents that survive failures, without managing orchestration infrastructure.**
+Inngest is the platform for building durable workflows and agents that survive failures, without managing orchestration infrastructure. Write functions in your existing code and add steps. Inngest runs each step, saves its result, and retries failed work from the step that failed.
 
-Write functions in your existing code and add steps to your logic.  Inngest coordinates each run, saves completed step results, and retries failed work from where the last step failed.
+<WelcomeGrid />
 
-Inngest also adds isolated sandboxes, live updates, and outcome tracking to the same run, so you can see what happened and continue improving your product.
+## The Inngest platform
 
-### What you get
+Durable execution, isolated Sandboxes, outcome scores, and live updates all share the same run, so you can follow the whole job in one trace.
 
-1. **Workflows** coordinate steps, retries, waits, and flow control, so you can build long-running jobs and agents without writing your own orchestration.
-2. **Sandboxes** run code in isolated microVMs. Inngest coordinates their lifecycle with the workflow and shows their activity in traces within runs.
-3. **Online Evals** connect scores and later feedback to the run and variant that produced them. Compare changes to a step or a whole workflow against real outcomes.
+<PlatformGrid />
 
-For example:
+For example, a support agent can call tools and run code in a Sandbox while it answers a request. Inngest retries failed steps and records the work in a trace. When feedback arrives later, a score links it to the run and experiment variant, so you can compare the outcomes of agent changes.
 
-> A support agent can call tools and run code in a Sandbox while answering a request. Inngest retries failed steps and records the work in a trace. When feedback arrives later, a score links it to the run and experiment variant, so you can compare the outcomes of agent changes.
+## Explore use cases
 
-## Explore Inngest
+See how teams use Inngest to run agents, background jobs, generated code, and experiments in production.
 
-- [Durable Execution](/docs/durable-execution): Coordinate durable work with functions, steps, waits, and retries.
-- [Sandboxes](/docs/sandboxes): Run code in isolated microVMs as part of the work.
-- [Online Evals](/docs/online-evals): Score outcomes and compare changes to steps and workflows.
-- [Realtime](/docs/realtime): Stream progress from durable runs to your users through typed channels and topics.
+<UseCaseGrid />
 
-## Next steps
+## Start building
 
-Use [Local Development](/docs/local-development) to run and inspect your functions on your machine.
+Pick your language to build your first durable workflow. Use [Local Development](/docs/local-development) to run and inspect it on your machine.
 
-<CardGroup cols={2}>
-  <Card
-    href={"/docs/platform-overview?ref=docs-home"}
-    title={"Platform overview"}
-  >
-    See how workflows, sandboxes, and outcome scores fit together.
-  </Card>
-
-  <Card
-    href={"/docs/getting-started?ref=docs-home"}
-    title={"Get started"}
-  >
-    Choose a quick start for a workflow, Sandbox, online eval, or live update.
-  </Card>
-
-  <Card
-    href={"/docs/learn/agent-evals?ref=docs-home"}
-    title={"Measure outcomes"}
-  >
-    Score runs and compare changes using real outcomes.
-  </Card>
-
-  <Card
-    href={"/docs/platform/deployment?ref=docs-home"}
-    title={"Deploy your functions"}
-  >
-    Run functions on your infrastructure and connect them to Inngest.
-  </Card>
-</CardGroup>
+<StartBuilding />
 
 ## Coding agent resources
 
