@@ -1,4 +1,5 @@
 import { Mermaid } from "src/shared/Docs/Mermaid";
+import { SdkSupport } from "src/shared/Docs/SdkSupport";
 
 export const metaTitle = "Overview | Sandboxes";
 export const description = "Run generated code or test a project in an isolated microVM while your durable function coordinates the job.";
@@ -6,6 +7,27 @@ export const description = "Run generated code or test a project in an isolated 
 # Overview
 
 > Run generated code or test a project in an isolated microVM while your durable function coordinates the job.
+
+<SdkSupport
+  sdks={[
+    {
+      sdk: "typescript",
+      href: "/docs/sandboxes/reference",
+      status: "Beta",
+      features: {
+        "Durable step.sandbox calls": true,
+        "Direct inngest.sandboxes client": true,
+        "Commands and background processes": true,
+        "Pause, resume, snapshot, and clone": true,
+        "File upload and download": { supported: true, tag: "Direct client" },
+        "Workspace secrets": true,
+        "SSH access": { supported: false, tag: "Planned" },
+        "S3-backed persistent mounts": { supported: false, tag: "Planned" },
+      },
+      note: "Access-gated beta. The API can change before launch.",
+    },
+  ]}
+/>
 
 Run generated code or test a project in a fully isolated microVM while your durable function coordinates the job. Sandboxes boot in under a second. You can pause and resume the same Sandbox, or snapshot it and clone a new one. Inngest coordinates their lifecycle with the run and shows sandbox activity in the same trace. You can give code its own execution environment without building a separate service to start, stop, and track it.
 

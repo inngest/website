@@ -1,9 +1,27 @@
+import { SdkSupport } from "src/shared/Docs/SdkSupport";
+
 export const metaTitle = "Overview";
 export const description = "Connect outcome scores to the runs that produced them so you can compare changes using production results.";
 
 # Overview
 
 > Connect outcome scores to the runs that produced them so you can compare changes using production results.
+
+<SdkSupport
+  sdks={[
+    {
+      sdk: "typescript",
+      href: "/docs/online-evals/reference",
+      features: {
+        "Sessions on events": { supported: true, tag: "v4.7+" },
+        "Experiments and variants": { supported: true, tag: "v4.8+" },
+        "Run and step scores": { supported: true, tag: "Beta" },
+        "Deferred scoring": { supported: true, tag: "Beta" },
+      },
+      note: "Scoring and deferred scoring APIs may change before general availability.",
+    },
+  ]}
+/>
 
 A support answer can pass every code check and still fail to help the customer. Score the later resolution or feedback, link it to the run that produced the answer, and compare changes using those outcomes.
 
