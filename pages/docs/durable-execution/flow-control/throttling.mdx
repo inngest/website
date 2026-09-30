@@ -36,7 +36,7 @@ export const summarize = inngest.createFunction(
   },
 );
 ```
-This TypeScript v4 function sets a separate throttle for each `user_id`. Replace the example step with the service call you need to pace. Inngest evaluates `key` against the triggering event. Without a key, the throttle applies to all runs of this function. Each function has its own throttle, even when two functions use the same key.
+This function sets a separate throttle for each `user_id`. Replace the example step with the service call you need to pace. Inngest evaluates `key` against the triggering event. Without a key, the throttle applies to all runs of this function. Each function has its own throttle, even when two functions use the same key.
 
 ## Choose the settings
 
