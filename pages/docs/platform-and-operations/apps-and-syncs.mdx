@@ -1,3 +1,5 @@
+import { Callout } from "src/shared/Docs/mdx";
+
 export const metaTitle = "Apps and syncs";
 export const description = "Group each service's functions in one app to inspect its deployments and sync failures together.";
 
@@ -6,11 +8,64 @@ export const description = "Group each service's functions in one app to inspect
 > Group functions into apps so you can inspect deployments and resolve sync failures in one place.
 
 Group each service's functions in one app to inspect its deployments and sync failures together. Keep the SDK client's app ID stable; changing it creates a new app on the next sync. An environment can contain several apps.
+
+## Sync an app
+
+A sync tells Inngest where your app runs and which functions it serves. Inngest calls your app's `serve()` endpoint and records its current function configuration. [Deploying functions](/docs/durable-execution/deploying-functions) explains serving and connection choices.
+
+Sync an app in one of three ways:
+
+- **In the dashboard:** select the environment, open **Apps**, choose **Sync new app**, and paste the URL of your `serve()` endpoint, such as `https://my-app.com/api/inngest`.
+- **With a hosting integration:** the [Vercel](/docs/deploy/vercel) and [Netlify](/docs/deploy/netlify) integrations sync your app on every deploy.
+- **With the REST API:** call the [sync endpoint](https://api-docs.inngest.com/v2/apps/SyncApp) from your CI/CD pipeline.
+
+To sync with the REST API, you need an [API key](/docs/platform-and-operations/keys-and-access), your app's `serve()` URL, and your app ID (the Inngest client's `id`):
+
+```sh
+curl -X POST "https://api.inngest.com/v2/apps/$APP_ID/syncs" \
+  -H "Authorization: Bearer $INNGEST_API_KEY" \
+  -d "{\"url\": \"$APP_URL\"}"
+```
+
+<Callout>
+Sync only after the new version of your code is live. Some hosts roll out deploys over seconds or minutes, so an early sync can register the old function configuration. This matters most when you automate syncs yourself.
+</Callout>
+
+## Resync after each deploy
+
+Resync the app whenever you deploy changes to its function definitions. Hosting integrations resync automatically.
+
+Resync manually when an automatic sync fails, for example because of a network error, or when you don't use an integration. To resync, open the app in the dashboard and choose **Resync**. If the app's URL changed, override the URL before you resync. Keep the same app ID, or Inngest creates a new app instead.
+
+A manual resync doesn't turn off an integration. The next deploy still resyncs automatically.
+
+<Callout>
+Vercel [generates a unique URL for each deployment](https://vercel.com/docs/deployments/generated-urls). If you sync a generated deployment URL instead of a stable domain, confirm that it points to the deployment you want.
+</Callout>
+
 ## Inspect an app
+
 1. Select the environment in the Inngest dashboard.
 2. Open **Apps**. Check each app's status, function count, and SDK version.
 3. Open an app to see its functions, triggers, deployment URL, and sync history.
 4. If a sync fails, inspect **Unattached Syncs** and run **App Diagnostics** before changing the deployment.
-Sync the app after you deploy changes to its function definitions. A manual sync asks the deployed app for its current function configuration. [Deploying functions](/docs/durable-execution/deploying-functions) explains serving and connection choices.
+
+## Troubleshoot syncs
+
+### My app synced to the wrong environment
+
+Each app syncs to one environment, chosen by its signing key. Check that `INNGEST_SIGNING_KEY` in your host or local `.env` file holds the key for the environment you want. See [Keys and access](/docs/platform-and-operations/keys-and-access).
+
+### I have duplicate apps
+
+Inngest identifies an app by the ID you pass to the Inngest client. If you change that ID, the next sync creates a new app instead of a new sync in the existing app.
+
+### My sync doesn't appear in the sync list
+
+- **The app ID changed.** The sync created a new app. Look for it in **Apps**.
+- **A manual sync failed.** The dashboard shows the error and doesn't create a sync. Fix the error and sync again.
+- **An automatic sync failed.** Integrations report failures as an unattached sync, which is a sync with no app. Open **Unattached Syncs** and fix the error in its message.
+
 ## Archive an app
+
 Archive an app when it should stop triggering new runs. Its existing runs continue, and its functions and run history remain visible. Use cancellation when you need to stop existing runs. You can unarchive the app later.

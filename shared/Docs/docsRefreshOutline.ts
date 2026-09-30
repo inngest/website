@@ -558,26 +558,6 @@ export const docsRefreshOutline: DocsRefreshPage[] = [
         href: "/docs/platform-and-operations",
         children: [
           {
-            title: "Apps and syncs",
-            href: "/docs/platform-and-operations/apps-and-syncs",
-          },
-          {
-            title: "Environments and branch deploys",
-            href: "/docs/platform-and-operations/environments-and-branch-deploys",
-          },
-          {
-            title: "Keys and access",
-            href: "/docs/platform-and-operations/keys-and-access",
-          },
-          {
-            title: "Rotate event and signing keys",
-            href: "/docs/platform-and-operations/rotate-event-and-signing-keys",
-          },
-          {
-            title: "Cloud architecture and security",
-            href: "/docs/platform-and-operations/cloud-architecture-and-security",
-          },
-          {
             title: "Observability",
             href: "/docs/platform-and-operations/observability",
             children: [
@@ -598,6 +578,26 @@ export const docsRefreshOutline: DocsRefreshPage[] = [
                 href: "/docs/platform-and-operations/insights",
               },
             ],
+          },
+          {
+            title: "Apps and syncs",
+            href: "/docs/platform-and-operations/apps-and-syncs",
+          },
+          {
+            title: "Environments and branch deploys",
+            href: "/docs/platform-and-operations/environments-and-branch-deploys",
+          },
+          {
+            title: "Keys and access",
+            href: "/docs/platform-and-operations/keys-and-access",
+          },
+          {
+            title: "Rotate event and signing keys",
+            href: "/docs/platform-and-operations/rotate-event-and-signing-keys",
+          },
+          {
+            title: "Cloud architecture and security",
+            href: "/docs/platform-and-operations/cloud-architecture-and-security",
           },
           {
             title: "Rerun a run",
