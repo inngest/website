@@ -32,7 +32,12 @@ function captionAt(time: number) {
   return i;
 }
 
-export default function DevServerTour() {
+export default function DevServerTour({
+  showPips = true,
+}: {
+  /** Hide the step pips (e.g. when the frame sits over the blue band). */
+  showPips?: boolean;
+} = {}) {
   const videoRef = useRef<HTMLVideoElement>(null);
   const [active, setActive] = useState(0);
 
@@ -93,17 +98,19 @@ export default function DevServerTour() {
       </div>
 
       {/* Step pips — position in the tour, not a control. */}
-      <div aria-hidden="true" className="mt-5 flex justify-center gap-2">
-        {CAPTIONS.map((caption, i) => (
-          <span
-            key={caption.label}
-            className={cn(
-              "size-1.5 rounded-full transition-colors duration-300",
-              i === active ? "bg-v1-accent-salmon" : "bg-white/20"
-            )}
-          />
-        ))}
-      </div>
+      {showPips && (
+        <div aria-hidden="true" className="mt-5 flex justify-center gap-2">
+          {CAPTIONS.map((caption, i) => (
+            <span
+              key={caption.label}
+              className={cn(
+                "size-1.5 rounded-full transition-colors duration-300",
+                i === active ? "bg-v1-accent-salmon" : "bg-white/20"
+              )}
+            />
+          ))}
+        </div>
+      )}
     </div>
   );
 }

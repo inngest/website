@@ -32,7 +32,7 @@ export default function Quote() {
   return (
     <section
       aria-label="Why Inngest"
-      className="relative isolate overflow-x-clip"
+      className="relative isolate z-10 overflow-x-clip"
     >
       {/* Canvas wrapper extends 120 px above (just enough that the
           chain-logo particles can stream in from the bottom-right of
@@ -56,8 +56,10 @@ export default function Quote() {
 
       {/* Asymmetric padding: the top is kept tight so the heading and the
           top of the dev server frame come into view as the hero scrolls
-          past, rather than needing a second scroll. */}
-      <div className="relative z-10 mx-auto max-w-[1440px] px-6 pb-10 pt-10 lg:px-8 lg:pb-[clamp(40px,4.5vh,64px)] lg:pt-[clamp(40px,4.5vh,64px)]">
+          past, rather than needing a second scroll. No bottom padding:
+          the blue headline band in CapabilityRows rides up behind the
+          bottom of the frame, and z-10 above keeps the frame on top. */}
+      <div className="relative z-10 mx-auto max-w-[1440px] px-6 pb-0 pt-10 lg:px-8 lg:pt-[clamp(40px,4.5vh,64px)]">
         <div className="flex flex-col items-center gap-v1-stack text-center">
           {/* Held to one line from lg up — the clamp scales with the
               viewport, so the full rail always has room for it. Mobile
@@ -88,7 +90,7 @@ export default function Quote() {
           {...reveals.body}
           className="mx-auto mt-8 max-w-[1200px] lg:mt-10"
         >
-          <DevServerTour />
+          <DevServerTour showPips={false} />
         </motion.div>
       </div>
     </section>
