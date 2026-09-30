@@ -478,7 +478,7 @@ function NavigationGroup({
               "relative overflow-hidden",
               nestingLevel === 0 && "pb-4",
               // Breathing room between a parent, its open list, and the next item.
-              nestingLevel > 0 && "pb-1 pt-1"
+              nestingLevel > 0 && "pt-1.5"
             )}
           >
             <NavigationLinks
@@ -515,7 +515,7 @@ function NavigationLinks({
     // @ts-ignore
     <motion.ul
       role="list"
-      className={clsx("space-y-1", listClassName, {
+      className={clsx("space-y-1.5", listClassName, {
         "ml-2.5 border-l border-carbon-100/60 pl-2 dark:border-white/[0.06]":
           nestingLevel > 0,
       })}
