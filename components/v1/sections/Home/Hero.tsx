@@ -8,9 +8,9 @@ export default function Hero() {
   return (
     <section
       aria-labelledby="hero-headline"
-      className="flex w-full max-w-[1280px] flex-col items-center gap-16 pt-10 lg:min-h-[488px] lg:flex-row lg:items-stretch lg:gap-[84px] lg:pt-16"
+      className="flex w-full max-w-[1280px] flex-col items-center gap-16 pt-10 lg:min-h-[488px] lg:flex-row lg:items-start lg:gap-[84px] lg:pt-16"
     >
-      <div className="flex w-full max-w-[608px] shrink-0 flex-col items-start justify-between gap-14 lg:h-full">
+      <div className="flex w-full max-w-[608px] shrink-0 flex-col items-start gap-16 lg:gap-24">
         <p className="v1-trim w-full font-v1Heading text-[20px] uppercase leading-[1.2] tracking-[-1px] text-v1-accent-salmon">
           Open Source Durable Execution
         </p>
