@@ -46,7 +46,7 @@ export const MARBLE_SCENARIOS: MarbleScenario[] = [
     id: "concurrency",
     code: ["concurrency: 2"],
     caption:
-      "Six events arrive 0.4s apart, and each run has one 2s step. Two steps execute at once. The other runs wait in the queue and start, oldest first, as slots open.",
+      "Six events arrive at once, and each run has one 2s step. Two steps execute at once, so the other four runs wait in the queue and start, oldest first, as slots open.",
     band: "Queue",
     meter: "slots",
     lanes: "slot",
@@ -54,7 +54,7 @@ export const MARBLE_SCENARIOS: MarbleScenario[] = [
     preset: "basic",
     config: make((c) => {
       c.steps = [{ kind: "run", duration: 2 }];
-      c.manual = events("A", [0, 0.4, 0.8, 1.2, 1.6, 2]);
+      c.manual = events("A", [0, 0, 0, 0, 0, 0]);
       c.concurrency = limit(2);
     }),
   },
@@ -89,7 +89,13 @@ export const MARBLE_SCENARIOS: MarbleScenario[] = [
     config: make((c) => {
       c.steps = [{ kind: "run", duration: 1 }];
       c.manual = events("A", [0, 0.5, 1, 1.5, 2, 2.5]);
-      c.throttle = { enabled: true, limit: 2, period: 6, burst: 1, key: "none" };
+      c.throttle = {
+        enabled: true,
+        limit: 2,
+        period: 6,
+        burst: 1,
+        key: "none",
+      };
     }),
   },
   {
@@ -170,7 +176,10 @@ export const MARBLE_SCENARIOS: MarbleScenario[] = [
     preset: "debounce",
     config: make((c) => {
       c.steps = [{ kind: "run", duration: 1 }];
-      c.manual = events("A", [0, 0.6, 1.2, 5, 5.8, 6.6, 7.4, 8.2, 9, 9.8, 10.6]);
+      c.manual = events(
+        "A",
+        [0, 0.6, 1.2, 5, 5.8, 6.6, 7.4, 8.2, 9, 9.8, 10.6]
+      );
       c.debounce = {
         enabled: true,
         period: 2,

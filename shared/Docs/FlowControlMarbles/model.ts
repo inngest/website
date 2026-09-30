@@ -71,6 +71,10 @@ export interface Model {
   realDuration: number;
   timing: Timing;
   tenants: string[];
+  /** Events at the same instant stack vertically: index and count, by event id. */
+  stack: Map<number, { i: number; n: number }>;
+  /** Tallest stack in each event row. */
+  rowDepth: number[];
   groups: string[];
   lanes: Lane[];
   laneOf: Map<number, number>;
@@ -89,10 +93,7 @@ export interface Model {
   tenantName: (tenant: string) => string;
 }
 
-export function buildModel(
-  scenario: MarbleScenario,
-  result: SimResult
-): Model {
+export function buildModel(scenario: MarbleScenario, result: SimResult): Model {
   const cfg = scenario.config;
   const tenants = result.tenants;
   const single = tenants.length === 1;
@@ -120,6 +121,23 @@ export function buildModel(
   };
   const tenantName = (tenant: string) =>
     scenario.tenantNames?.[tenant] ?? (single ? "Events" : `${tenant} events`);
+
+  // Simultaneous events on one row stack vertically so each stays visible.
+  const stack = new Map<number, { i: number; n: number }>();
+  const rowDepth = tenants.map((tenant) => {
+    const byTime = new Map<number, number[]>();
+    for (const ev of result.events) {
+      if (ev.tenant !== tenant) continue;
+      const k = Math.round(ev.t * 1000);
+      byTime.set(k, [...(byTime.get(k) || []), ev.id]);
+    }
+    let depth = 1;
+    byTime.forEach((ids) => {
+      ids.forEach((id, i) => stack.set(id, { i, n: ids.length }));
+      depth = Math.max(depth, ids.length);
+    });
+    return depth;
+  });
 
   // Output lanes: pack runs by their active interval, per group.
   const laneOf = new Map<number, number>();
@@ -211,7 +229,8 @@ export function buildModel(
       case "debounce-superseded": {
         if (!run) break;
         stages.push({ t: t1, kind: "collect", runId: run.id });
-        const next = result.events[run.eventIds[run.eventIds.indexOf(ev.id) + 1]];
+        const next =
+          result.events[run.eventIds[run.eventIds.indexOf(ev.id) + 1]];
         if (next)
           stages.push({
             t: Math.max(next.t + T.hold, t1 + T.move),
@@ -288,7 +307,12 @@ export function buildModel(
         continue;
       }
       if (r.firstStartAt > r.createdAt + EPS)
-        spans.push({ runId: r.id, from: r.createdAt, to: r.firstStartAt, score });
+        spans.push({
+          runId: r.id,
+          from: r.createdAt,
+          to: r.firstStartAt,
+          score,
+        });
       for (const seg of r.segments) {
         if (seg.kind === "wait" && seg.from >= r.firstStartAt - EPS)
           spans.push({ runId: r.id, from: seg.from, to: seg.to, score });
@@ -316,6 +340,8 @@ export function buildModel(
     realDuration,
     timing,
     tenants,
+    stack,
+    rowDepth,
     groups,
     lanes,
     laneOf,

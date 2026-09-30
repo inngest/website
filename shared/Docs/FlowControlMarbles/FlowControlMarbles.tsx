@@ -112,7 +112,13 @@ function layoutFor(model: Model, width: number) {
   const x = (t: number) => plotLeft + (Math.max(0, t) / domain) * plotW;
   const tAt = (px: number) =>
     Math.max(0, Math.min(domain, ((px - plotLeft) / plotW) * domain));
-  const bandTop = top + model.tenants.length * IN_H + 6;
+  const STACK = 2 * R + 1;
+  const rowH = model.rowDepth.map((d) => IN_H + (d - 1) * STACK);
+  const rowTop = rowH.map((_, i) =>
+    rowH.slice(0, i).reduce((sum, h) => sum + h, top)
+  );
+  const rowY = (i: number) => rowTop[i] + rowH[i] / 2;
+  const bandTop = top + rowH.reduce((sum, h) => sum + h, 0) + 6;
   const bandBottom = bandTop + model.groups.length * BAND_H;
   const lanesTop = bandBottom + 8;
   const axisTop = lanesTop + model.lanes.length * LANE_H + 4;
@@ -127,7 +133,12 @@ function layoutFor(model: Model, width: number) {
     plotLeft,
     x,
     tAt,
-    inY: (i: number) => top + i * IN_H + IN_H / 2,
+    inY: rowY,
+    /** An event marble's center, offset when it shares an instant. */
+    evY: (tenantIndex: number, eventId: number) => {
+      const st = model.stack.get(eventId) ?? { i: 0, n: 1 };
+      return rowY(tenantIndex) + (st.i - (st.n - 1) / 2) * STACK;
+    },
     IN_H,
     BAND_H,
     bandTop,
@@ -159,7 +170,13 @@ function slot(L: Layout, t: number, i: number, n: number) {
   return anchor - i * L.QSP + shift;
 }
 
-function queueX(model: Model, L: Layout, group: string, runId: number, t: number) {
+function queueX(
+  model: Model,
+  L: Layout,
+  group: string,
+  runId: number,
+  t: number
+) {
   const { cur, prev } = queueAt(model, group, t);
   const ci = cur.order.indexOf(runId);
   const pi = prev ? prev.order.indexOf(runId) : -1;
@@ -175,15 +192,22 @@ function queueX(model: Model, L: Layout, group: string, runId: number, t: number
   return target;
 }
 
-function stagePos(model: Model, L: Layout, tok: Token, s: Stage, t: number): Pt {
+function stagePos(
+  model: Model,
+  L: Layout,
+  tok: Token,
+  s: Stage,
+  t: number
+): Pt {
   const g = model.groups.indexOf(tok.group);
   const bandY = L.bandY(Math.max(0, g));
-  const run = s.runId !== undefined ? model.result.runs[s.runId - 1] : undefined;
+  const run =
+    s.runId !== undefined ? model.result.runs[s.runId - 1] : undefined;
   switch (s.kind) {
     case "input":
       return {
         x: L.x(tok.ev!.t),
-        y: L.inY(model.tenants.indexOf(tok.tenant)),
+        y: L.evY(model.tenants.indexOf(tok.tenant), tok.ev!.id),
       };
     case "lane": {
       const lane = model.laneOf.get(run!.id) ?? 0;
@@ -245,7 +269,8 @@ function tokenView(
   let opacity = 1;
   let scale = 1;
   let cross = false;
-  const run = cur.runId !== undefined ? model.result.runs[cur.runId - 1] : undefined;
+  const run =
+    cur.runId !== undefined ? model.result.runs[cur.runId - 1] : undefined;
   switch (cur.kind) {
     case "collect":
       look = LOOK.collect;
@@ -297,6 +322,8 @@ function Marble({
   look,
   opacity = 1,
   scale = 1,
+  ring = false,
+  hideLabel = false,
 }: {
   x: number;
   y: number;
@@ -305,24 +332,32 @@ function Marble({
   look: Look;
   opacity?: number;
   scale?: number;
+  /** Separate overlapping marbles with a background-colored ring. */
+  ring?: boolean;
+  hideLabel?: boolean;
 }) {
   const fs = label.length > 2 ? r * 0.85 : r * 1.05;
   return (
     <g transform={`translate(${x} ${y}) scale(${scale})`} opacity={opacity}>
+      {ring && (
+        <circle r={r + 1.5} className="fill-white dark:fill-carbon-1000" />
+      )}
       <circle
         r={look.stroke ? r - 0.75 : r}
         className={clsx(look.fill, look.stroke)}
         strokeWidth={look.stroke ? 1.5 : 0}
         strokeDasharray={look.dash}
       />
-      <text
-        textAnchor="middle"
-        dy="0.36em"
-        className={clsx(look.text, "font-semibold tabular-nums")}
-        style={{ fontSize: fs }}
-      >
-        {label}
-      </text>
+      {!hideLabel && (
+        <text
+          textAnchor="middle"
+          dy="0.36em"
+          className={clsx(look.text, "font-semibold tabular-nums")}
+          style={{ fontSize: fs }}
+        >
+          {label}
+        </text>
+      )}
     </g>
   );
 }
@@ -342,7 +377,9 @@ function Cross({
 }) {
   return (
     <path
-      d={`M${x - s},${y - s}L${x + s},${y + s}M${x + s},${y - s}L${x - s},${y + s}`}
+      d={`M${x - s},${y - s}L${x + s},${y + s}M${x + s},${y - s}L${x - s},${
+        y + s
+      }`}
       className={className}
       strokeWidth={width}
       strokeLinecap="round"
@@ -351,10 +388,22 @@ function Cross({
   );
 }
 
-function Check({ x, y, s, className }: { x: number; y: number; s: number; className: string }) {
+function Check({
+  x,
+  y,
+  s,
+  className,
+}: {
+  x: number;
+  y: number;
+  s: number;
+  className: string;
+}) {
   return (
     <path
-      d={`M${x - s},${y + 0.1 * s}L${x - 0.3 * s},${y + 0.75 * s}L${x + s},${y - 0.7 * s}`}
+      d={`M${x - s},${y + 0.1 * s}L${x - 0.3 * s},${y + 0.75 * s}L${x + s},${
+        y - 0.7 * s
+      }`}
       className={className}
       strokeWidth={1.75}
       strokeLinecap="round"
@@ -364,11 +413,25 @@ function Check({ x, y, s, className }: { x: number; y: number; s: number; classN
   );
 }
 
-function Arrow({ x1, x2, y, className }: { x1: number; x2: number; y: number; className: string }) {
+function Arrow({
+  x1,
+  x2,
+  y,
+  className,
+}: {
+  x1: number;
+  x2: number;
+  y: number;
+  className: string;
+}) {
   return (
     <g className={className} fill="none" strokeWidth={1.25}>
       <line x1={x1} x2={x2} y1={y} y2={y} />
-      <path d={`M${x2 - 5},${y - 3.5}L${x2},${y}L${x2 - 5},${y + 3.5}`} strokeLinecap="round" strokeLinejoin="round" />
+      <path
+        d={`M${x2 - 5},${y - 3.5}L${x2},${y}L${x2 - 5},${y + 3.5}`}
+        strokeLinecap="round"
+        strokeLinejoin="round"
+      />
     </g>
   );
 }
@@ -398,11 +461,28 @@ function Dots({
         return (
           <g key={i}>
             <clipPath id={`${id}-${i}`}>
-              <rect x={cx - r} y={y + r - 2 * r * f} width={2 * r} height={2 * r * f} />
+              <rect
+                x={cx - r}
+                y={y + r - 2 * r * f}
+                width={2 * r}
+                height={2 * r * f}
+              />
             </clipPath>
-            <circle cx={cx} cy={y} r={r - 0.5} className="fill-none stroke-carbon-400 dark:stroke-carbon-500" strokeWidth={1} />
+            <circle
+              cx={cx}
+              cy={y}
+              r={r - 0.5}
+              className="fill-none stroke-carbon-400 dark:stroke-carbon-500"
+              strokeWidth={1}
+            />
             {f > 0 && (
-              <circle cx={cx} cy={y} r={r} className={fill} clipPath={`url(#${id}-${i})`} />
+              <circle
+                cx={cx}
+                cy={y}
+                r={r}
+                className={fill}
+                clipPath={`url(#${id}-${i})`}
+              />
             )}
           </g>
         );
@@ -411,11 +491,24 @@ function Dots({
   );
 }
 
-function LockGlyph({ x, y, className }: { x: number; y: number; className: string }) {
+function LockGlyph({
+  x,
+  y,
+  className,
+}: {
+  x: number;
+  y: number;
+  className: string;
+}) {
   return (
     <g className={className} transform={`translate(${x} ${y})`}>
       <rect x={-3.5} y={-1} width={7} height={5.5} rx={1} />
-      <path d="M-2,-1V-3a2,2 0 0 1 4,0V-1" fill="none" strokeWidth={1.25} className="stroke-current" />
+      <path
+        d="M-2,-1V-3a2,2 0 0 1 4,0V-1"
+        fill="none"
+        strokeWidth={1.25}
+        className="stroke-current"
+      />
     </g>
   );
 }
@@ -424,7 +517,17 @@ function LockGlyph({ x, y, className }: { x: number; y: number; className: strin
 // Diagram
 // ---------------------------------------------------------------------------
 
-function Diagram({ model, L, t, hatchId }: { model: Model; L: Layout; t: number; hatchId: string }) {
+function Diagram({
+  model,
+  L,
+  t,
+  hatchId,
+}: {
+  model: Model;
+  L: Layout;
+  t: number;
+  hatchId: string;
+}) {
   const { result, scenario, timing: T } = model;
   const R = L.R;
   const right = L.width - L.RIGHT;
@@ -439,15 +542,33 @@ function Diagram({ model, L, t, hatchId }: { model: Model; L: Layout; t: number;
   return (
     <>
       <defs>
-        <pattern id={hatchId} width="4" height="4" patternUnits="userSpaceOnUse" patternTransform="rotate(45)">
-          <line x1="0" y1="0" x2="0" y2="4" className="stroke-ruby-500 dark:stroke-ruby-400" strokeWidth="1.6" />
+        <pattern
+          id={hatchId}
+          width="4"
+          height="4"
+          patternUnits="userSpaceOnUse"
+          patternTransform="rotate(45)"
+        >
+          <line
+            x1="0"
+            y1="0"
+            x2="0"
+            y2="4"
+            className="stroke-ruby-500 dark:stroke-ruby-400"
+            strokeWidth="1.6"
+          />
         </pattern>
       </defs>
 
       {/* Event rows */}
       {model.tenants.map((tenant, i) => (
         <g key={tenant}>
-          <text x={0} y={L.inY(i)} dy="0.35em" className={clsx(GUTTER_TEXT, "text-[11px] font-medium")}>
+          <text
+            x={0}
+            y={L.inY(i)}
+            dy="0.35em"
+            className={clsx(GUTTER_TEXT, "text-[11px] font-medium")}
+          >
             {model.tenantName(tenant)}
           </text>
           <Arrow x1={L.GUT} x2={right} y={L.inY(i)} className={LINE} />
@@ -466,13 +587,27 @@ function Diagram({ model, L, t, hatchId }: { model: Model; L: Layout; t: number;
       />
       {model.groups.map((g, j) => {
         const y = L.bandY(j);
-        const label = scenario.byTenant ? `${g} ${scenario.band.toLowerCase()}` : scenario.band;
+        const label = scenario.byTenant
+          ? `${g} ${scenario.band.toLowerCase()}`
+          : scenario.band;
         return (
           <g key={g}>
             {j > 0 && (
-              <line x1={L.GUT + 8} x2={right - 8} y1={L.bandTop + j * L.BAND_H} y2={L.bandTop + j * L.BAND_H} className="stroke-carbon-200 dark:stroke-carbon-700" strokeDasharray="3 3" />
+              <line
+                x1={L.GUT + 8}
+                x2={right - 8}
+                y1={L.bandTop + j * L.BAND_H}
+                y2={L.bandTop + j * L.BAND_H}
+                className="stroke-carbon-200 dark:stroke-carbon-700"
+                strokeDasharray="3 3"
+              />
             )}
-            <text x={0} y={y - 6} dy="0.35em" className={clsx(GUTTER_TEXT, "text-[11px] font-medium")}>
+            <text
+              x={0}
+              y={y - 6}
+              dy="0.35em"
+              className={clsx(GUTTER_TEXT, "text-[11px] font-medium")}
+            >
               {label}
             </text>
             <Meter model={model} L={L} group={g} y={y + 8} t={t} />
@@ -485,22 +620,50 @@ function Diagram({ model, L, t, hatchId }: { model: Model; L: Layout; t: number;
       {model.lanes.map((lane, k) => (
         <g key={k}>
           {lane.label && (
-            <text x={0} y={L.laneY(k)} dy="0.35em" className={clsx(GUTTER_TEXT, "text-[11px] font-medium")}>
+            <text
+              x={0}
+              y={L.laneY(k)}
+              dy="0.35em"
+              className={clsx(GUTTER_TEXT, "text-[11px] font-medium")}
+            >
               {lane.label}
             </text>
           )}
-          <Arrow x1={L.GUT} x2={right} y={L.laneY(k)} className="stroke-carbon-200 dark:stroke-carbon-700" />
+          <Arrow
+            x1={L.GUT}
+            x2={right}
+            y={L.laneY(k)}
+            className="stroke-carbon-200 dark:stroke-carbon-700"
+          />
         </g>
       ))}
       {result.runs.map((run) => (
-        <Capsule key={run.id} model={model} L={L} run={run} t={t} hatchId={hatchId} />
+        <Capsule
+          key={run.id}
+          model={model}
+          L={L}
+          run={run}
+          t={t}
+          hatchId={hatchId}
+        />
       ))}
 
       {/* Axis */}
       {ticks.map((v) => (
         <g key={v}>
-          <line x1={L.x(v)} x2={L.x(v)} y1={L.axisTop} y2={L.axisTop + 4} className={LINE} />
-          <text x={L.x(v)} y={L.axisTop + 13} textAnchor="middle" className={clsx(MUTED_TEXT, "text-[10px] tabular-nums")}>
+          <line
+            x1={L.x(v)}
+            x2={L.x(v)}
+            y1={L.axisTop}
+            y2={L.axisTop + 4}
+            className={LINE}
+          />
+          <text
+            x={L.x(v)}
+            y={L.axisTop + 13}
+            textAnchor="middle"
+            className={clsx(MUTED_TEXT, "text-[10px] tabular-nums")}
+          >
             {`${v}s`}
           </text>
         </g>
@@ -517,24 +680,59 @@ function Diagram({ model, L, t, hatchId }: { model: Model; L: Layout; t: number;
       />
 
       {/* Event marbles */}
-      {model.tokens.map((tok) => {
+      {model.tokens.map((tok, i) => {
         const ev = tok.ev!;
         if (t + EPS < ev.t) return null;
+        const row = model.tenants.indexOf(tok.tenant);
+        const y = L.evY(row, ev.id);
+        // A later marble drawn over this one hides its label.
+        const covered = model.tokens
+          .slice(i + 1)
+          .some(
+            (o) =>
+              o.tenant === tok.tenant &&
+              t + EPS >= o.ev!.t &&
+              Math.abs(L.evY(row, o.ev!.id) - y) < 2 * R - 1 &&
+              L.x(o.ev!.t) - L.x(ev.t) < 2 * R - 1
+          );
         const pop = ease(clamp01((t - ev.t) / T.pop));
         const rej = tok.stages.find((s) => s.kind === "reject");
         const rep = tok.stages.find((s) => s.kind === "replaced");
         const skipped = rej && t + EPS >= rej.t + T.move;
         const replaced = rep && t + EPS >= rep.t;
         const x = L.x(ev.t);
-        const y = L.inY(model.tenants.indexOf(tok.tenant));
-        const look = skipped ? LOOK.skipped : replaced ? LOOK.replaced : LOOK.event;
+        const look = skipped
+          ? LOOK.skipped
+          : replaced
+          ? LOOK.replaced
+          : LOOK.event;
         return (
           <g key={tok.key}>
-            <Marble x={x} y={y} r={R} label={tok.label} look={look} scale={0.5 + 0.5 * pop} />
+            <Marble
+              x={x}
+              y={y}
+              r={R}
+              label={tok.label}
+              look={look}
+              scale={0.5 + 0.5 * pop}
+              ring
+              hideLabel={covered}
+            />
             {skipped && (
               <g>
-                <circle cx={x + R * 0.8} cy={y - R * 0.8} r={4.5} className="fill-ruby-500 dark:fill-ruby-400" />
-                <Cross x={x + R * 0.8} y={y - R * 0.8} s={1.8} className="stroke-white dark:stroke-carbon-1000" width={1.4} />
+                <circle
+                  cx={x + R * 0.8}
+                  cy={y - R * 0.8}
+                  r={4.5}
+                  className="fill-ruby-500 dark:fill-ruby-400"
+                />
+                <Cross
+                  x={x + R * 0.8}
+                  y={y - R * 0.8}
+                  s={1.8}
+                  className="stroke-white dark:stroke-carbon-1000"
+                  width={1.4}
+                />
               </g>
             )}
           </g>
@@ -544,10 +742,24 @@ function Diagram({ model, L, t, hatchId }: { model: Model; L: Layout; t: number;
       {/* Moving tokens */}
       {views.map((v) => (
         <g key={v.key}>
-          <Marble x={v.x} y={v.y} r={R} label={v.label} look={v.look} opacity={v.opacity} scale={v.scale} />
+          <Marble
+            x={v.x}
+            y={v.y}
+            r={R}
+            label={v.label}
+            look={v.look}
+            opacity={v.opacity}
+            scale={v.scale}
+          />
           {v.cross && (
             <g opacity={v.opacity}>
-              <Cross x={v.x} y={v.y} s={R * 0.95 * v.scale} className="stroke-ruby-500 dark:stroke-ruby-400" width={2} />
+              <Cross
+                x={v.x}
+                y={v.y}
+                s={R * 0.95 * v.scale}
+                className="stroke-ruby-500 dark:stroke-ruby-400"
+                width={2}
+              />
             </g>
           )}
         </g>
@@ -556,27 +768,75 @@ function Diagram({ model, L, t, hatchId }: { model: Model; L: Layout; t: number;
   );
 }
 
-function Meter({ model, L, group, y, t }: { model: Model; L: Layout; group: string; y: number; t: number }) {
+function Meter({
+  model,
+  L,
+  group,
+  y,
+  t,
+}: {
+  model: Model;
+  L: Layout;
+  group: string;
+  y: number;
+  t: number;
+}) {
   const { scenario, cfg, result } = model;
   const tenant = group === "*" ? model.tenants[0] : group;
   switch (scenario.meter) {
     case "slots": {
       const n = cfg.concurrency.constraints[0].limit;
-      return <Dots x={0} y={y} n={n} value={busySlots(model, group, t)} fill="fill-breeze-500 dark:fill-breeze-400" />;
+      return (
+        <Dots
+          x={0}
+          y={y}
+          n={n}
+          value={busySlots(model, group, t)}
+          fill="fill-breeze-500 dark:fill-breeze-400"
+        />
+      );
     }
     case "throttle":
       if (!result.throttle) return null;
       return (
-        <Dots x={0} y={y} n={result.throttle.capacity} value={gcraUnits(result.throttle, gcraKey(cfg.throttle.key, tenant), t)} fill="fill-carbon-700 dark:fill-carbon-200" />
+        <Dots
+          x={0}
+          y={y}
+          n={result.throttle.capacity}
+          value={gcraUnits(
+            result.throttle,
+            gcraKey(cfg.throttle.key, tenant),
+            t
+          )}
+          fill="fill-carbon-700 dark:fill-carbon-200"
+        />
       );
     case "rateLimit":
       if (!result.rateLimit) return null;
       return (
-        <Dots x={0} y={y} n={result.rateLimit.capacity} value={gcraUnits(result.rateLimit, gcraKey(cfg.rateLimit.key, tenant), t)} fill="fill-carbon-700 dark:fill-carbon-200" />
+        <Dots
+          x={0}
+          y={y}
+          n={result.rateLimit.capacity}
+          value={gcraUnits(
+            result.rateLimit,
+            gcraKey(cfg.rateLimit.key, tenant),
+            t
+          )}
+          fill="fill-carbon-700 dark:fill-carbon-200"
+        />
       );
     case "batch": {
       const c = collectingAt(model, group, t);
-      return <Dots x={0} y={y} n={cfg.batching.maxSize} value={c?.kind === "batch" ? c.count : 0} fill="fill-blush-400" />;
+      return (
+        <Dots
+          x={0}
+          y={y}
+          n={cfg.batching.maxSize}
+          value={c?.kind === "batch" ? c.count : 0}
+          fill="fill-blush-400"
+        />
+      );
     }
     default:
       return null;
@@ -584,7 +844,19 @@ function Meter({ model, L, group, y, t }: { model: Model; L: Layout; group: stri
 }
 
 /** Plans and holds drawn inside the band: debounce and batch timers, singleton locks. */
-function BandOverlay({ model, L, group, y, t }: { model: Model; L: Layout; group: string; y: number; t: number }) {
+function BandOverlay({
+  model,
+  L,
+  group,
+  y,
+  t,
+}: {
+  model: Model;
+  L: Layout;
+  group: string;
+  y: number;
+  t: number;
+}) {
   const { result, cfg } = model;
   const R = L.R;
   const out: ReactNode[] = [];
@@ -599,11 +871,28 @@ function BandOverlay({ model, L, group, y, t }: { model: Model; L: Layout; group
       const w = x1 - x0;
       out.push(
         <g key={`h${h.runId}`}>
-          <rect x={x0 + 0.5} y={y - R - 3} width={w - 1} height={2 * R + 6} rx={R + 3} className="fill-breeze-100/70 stroke-breeze-300 dark:fill-breeze-500/15 dark:stroke-breeze-600" strokeWidth={1} />
+          <rect
+            x={x0 + 0.5}
+            y={y - R - 3}
+            width={w - 1}
+            height={2 * R + 6}
+            rx={R + 3}
+            className="fill-breeze-100/70 stroke-breeze-300 dark:fill-breeze-500/15 dark:stroke-breeze-600"
+            strokeWidth={1}
+          />
           {w > 44 && (
             <>
-              <LockGlyph x={x0 + 10} y={y - 1.5} className="fill-breeze-600 text-breeze-600 dark:fill-breeze-300 dark:text-breeze-300" />
-              <text x={x0 + 18} y={y} dy="0.35em" className="fill-breeze-700 text-[10px] font-medium dark:fill-breeze-200">
+              <LockGlyph
+                x={x0 + 10}
+                y={y - 1.5}
+                className="fill-breeze-600 text-breeze-600 dark:fill-breeze-300 dark:text-breeze-300"
+              />
+              <text
+                x={x0 + 18}
+                y={y}
+                dy="0.35em"
+                className="fill-breeze-700 text-[10px] font-medium dark:fill-breeze-200"
+              >
                 {`run ${model.runLabel(run)}`}
               </text>
             </>
@@ -620,13 +909,35 @@ function BandOverlay({ model, L, group, y, t }: { model: Model; L: Layout; group
     const capped = c.fireAt >= c.cap - EPS;
     if (xf > xs) {
       out.push(
-        <line key="plan" x1={xs} x2={xf} y1={y} y2={y} className="stroke-blush-400" strokeWidth={1.25} strokeDasharray="3 3" />
+        <line
+          key="plan"
+          x1={xs}
+          x2={xf}
+          y1={y}
+          y2={y}
+          className="stroke-blush-400"
+          strokeWidth={1.25}
+          strokeDasharray="3 3"
+        />
       );
     }
     out.push(
       <g key="fire">
-        <line x1={xf} x2={xf} y1={y - 7} y2={y + 7} className="stroke-blush-500 dark:stroke-blush-400" strokeWidth={1.5} strokeLinecap="round" />
-        <text x={xf} y={y - 12} textAnchor="middle" className="fill-blush-700 text-[9.5px] font-medium dark:fill-blush-200">
+        <line
+          x1={xf}
+          x2={xf}
+          y1={y - 7}
+          y2={y + 7}
+          className="stroke-blush-500 dark:stroke-blush-400"
+          strokeWidth={1.5}
+          strokeLinecap="round"
+        />
+        <text
+          x={xf}
+          y={y - 12}
+          textAnchor="middle"
+          className="fill-blush-700 text-[9.5px] font-medium dark:fill-blush-200"
+        >
           {c.kind === "batch" || capped ? "timeout" : "quiet"}
         </text>
       </g>
@@ -635,8 +946,21 @@ function BandOverlay({ model, L, group, y, t }: { model: Model; L: Layout; group
       const xc = L.x(c.cap);
       out.push(
         <g key="cap" opacity={0.7}>
-          <line x1={xc} x2={xc} y1={y - 5} y2={y + 5} className="stroke-carbon-400 dark:stroke-carbon-500" strokeWidth={1.25} strokeDasharray="2 2" />
-          <text x={xc} y={y - 12} textAnchor="middle" className={clsx(MUTED_TEXT, "text-[9.5px]")}>
+          <line
+            x1={xc}
+            x2={xc}
+            y1={y - 5}
+            y2={y + 5}
+            className="stroke-carbon-400 dark:stroke-carbon-500"
+            strokeWidth={1.25}
+            strokeDasharray="2 2"
+          />
+          <text
+            x={xc}
+            y={y - 12}
+            textAnchor="middle"
+            className={clsx(MUTED_TEXT, "text-[9.5px]")}
+          >
             timeout
           </text>
         </g>
@@ -646,7 +970,19 @@ function BandOverlay({ model, L, group, y, t }: { model: Model; L: Layout; group
   return <>{out}</>;
 }
 
-function Capsule({ model, L, run, t, hatchId }: { model: Model; L: Layout; run: SimRun; t: number; hatchId: string }) {
+function Capsule({
+  model,
+  L,
+  run,
+  t,
+  hatchId,
+}: {
+  model: Model;
+  L: Layout;
+  run: SimRun;
+  t: number;
+  hatchId: string;
+}) {
   if (run.firstStartAt === undefined) return null;
   const land = model.landAt.get(run.id) ?? run.firstStartAt;
   if (t + EPS < land) return null;
@@ -659,7 +995,8 @@ function Capsule({ model, L, run, t, hatchId }: { model: Model; L: Layout; run: 
   const grow = ease(clamp01((t - land) / T.move));
   const full = L.x(Math.min(t, tEnd));
   const edge = x0 + 2 * R + Math.max(0, full - x0 - 2 * R) * grow;
-  const ended = run.endedAt !== undefined && t + EPS >= run.endedAt && grow >= 1;
+  const ended =
+    run.endedAt !== undefined && t + EPS >= run.endedAt && grow >= 1;
   const cancelled = ended && run.end === "cancelled";
   const completed = ended && run.end === "completed";
   const cancelAt = model.cancelAt.get(run.id);
@@ -680,39 +1017,109 @@ function Capsule({ model, L, run, t, hatchId }: { model: Model; L: Layout; run: 
           const inset = 0.75;
           if (s.kind === "sleep") {
             return (
-              <rect key={i} x={a + inset} y={y - R + inset} width={Math.max(0, w - 2 * inset)} height={2 * R - 2 * inset} rx={Math.max(0, rx - inset)} className="fill-white stroke-carbon-400 dark:fill-carbon-1000 dark:stroke-carbon-500" strokeWidth={1.25} strokeDasharray="3 2.5" />
+              <rect
+                key={i}
+                x={a + inset}
+                y={y - R + inset}
+                width={Math.max(0, w - 2 * inset)}
+                height={2 * R - 2 * inset}
+                rx={Math.max(0, rx - inset)}
+                className="fill-white stroke-carbon-400 dark:fill-carbon-1000 dark:stroke-carbon-500"
+                strokeWidth={1.25}
+                strokeDasharray="3 2.5"
+              />
             );
           }
-          const look = s.kind === "wait" ? LOOK[s.reason || "backlog"] : LOOK.run;
-          const hatchFrom = s.kind === "run" && s.cancelling && cancelAt !== undefined ? L.x(cancelAt) : null;
+          const look =
+            s.kind === "wait" ? LOOK[s.reason || "backlog"] : LOOK.run;
+          const hatchFrom =
+            s.kind === "run" && s.cancelling && cancelAt !== undefined
+              ? L.x(cancelAt)
+              : null;
           return (
             <g key={i}>
-              <rect x={a + inset} y={y - R} width={Math.max(0, w - 2 * inset)} height={2 * R} rx={rx} className={look.fill} />
-              {hatchFrom !== null && edge > hatchFrom && t + EPS >= cancelAt! && (
-                <>
-                  <clipPath id={`${hatchId}-c${run.id}-${i}`}>
-                    <rect x={a + inset} y={y - R} width={Math.max(0, w - 2 * inset)} height={2 * R} rx={rx} />
-                  </clipPath>
-                  <rect x={hatchFrom} y={y - R} width={Math.max(0, b - hatchFrom)} height={2 * R} fill={`url(#${hatchId})`} clipPath={`url(#${hatchId}-c${run.id}-${i})`} opacity={0.85} />
-                </>
-              )}
+              <rect
+                x={a + inset}
+                y={y - R}
+                width={Math.max(0, w - 2 * inset)}
+                height={2 * R}
+                rx={rx}
+                className={look.fill}
+              />
+              {hatchFrom !== null &&
+                edge > hatchFrom &&
+                t + EPS >= cancelAt! && (
+                  <>
+                    <clipPath id={`${hatchId}-c${run.id}-${i}`}>
+                      <rect
+                        x={a + inset}
+                        y={y - R}
+                        width={Math.max(0, w - 2 * inset)}
+                        height={2 * R}
+                        rx={rx}
+                      />
+                    </clipPath>
+                    <rect
+                      x={hatchFrom}
+                      y={y - R}
+                      width={Math.max(0, b - hatchFrom)}
+                      height={2 * R}
+                      fill={`url(#${hatchId})`}
+                      clipPath={`url(#${hatchId}-c${run.id}-${i})`}
+                      opacity={0.85}
+                    />
+                  </>
+                )}
             </g>
           );
         })}
-        <text x={x0 + R} y={y} dy="0.36em" textAnchor="middle" className={clsx(LOOK.run.text, "font-semibold tabular-nums")} style={{ fontSize: model.runLabel(run).length > 2 ? R * 0.85 : R * 1.05 }}>
+        <text
+          x={x0 + R}
+          y={y}
+          dy="0.36em"
+          textAnchor="middle"
+          className={clsx(LOOK.run.text, "font-semibold tabular-nums")}
+          style={{
+            fontSize: model.runLabel(run).length > 2 ? R * 0.85 : R * 1.05,
+          }}
+        >
           {run.collect?.kind === "batch" ? "" : model.runLabel(run)}
         </text>
         {run.collect?.kind === "batch" && (
-          <text x={x0 + 6} y={y} dy="0.36em" className={clsx(LOOK.run.text, "font-semibold tabular-nums")} style={{ fontSize: R * 0.95 }}>
+          <text
+            x={x0 + 6}
+            y={y}
+            dy="0.36em"
+            className={clsx(LOOK.run.text, "font-semibold tabular-nums")}
+            style={{ fontSize: R * 0.95 }}
+          >
             {model.runLabel(run)}
           </text>
         )}
       </g>
-      {completed && <Check x={L.x(tEnd) - R + 0.5} y={y} s={R * 0.42} className="stroke-white dark:stroke-carbon-1000" />}
+      {completed && (
+        <Check
+          x={L.x(tEnd) - R + 0.5}
+          y={y}
+          s={R * 0.42}
+          className="stroke-white dark:stroke-carbon-1000"
+        />
+      )}
       {cancelled && (
         <g>
-          <circle cx={L.x(tEnd) - R} cy={y} r={R} className="fill-ruby-500 dark:fill-ruby-400" />
-          <Cross x={L.x(tEnd) - R} y={y} s={R * 0.38} className="stroke-white dark:stroke-carbon-1000" width={1.75} />
+          <circle
+            cx={L.x(tEnd) - R}
+            cy={y}
+            r={R}
+            className="fill-ruby-500 dark:fill-ruby-400"
+          />
+          <Cross
+            x={L.x(tEnd) - R}
+            y={y}
+            s={R * 0.38}
+            className="stroke-white dark:stroke-carbon-1000"
+            width={1.75}
+          />
         </g>
       )}
     </g>
@@ -726,46 +1133,100 @@ function Capsule({ model, L, run, t, hatchId }: { model: Model; L: Layout; run: 
 function legendItems(model: Model) {
   const { result } = model;
   const firstWaits = result.runs.flatMap((r) =>
-    r.segments.filter((s) => s.kind === "wait" && (r.firstStartAt === undefined || s.to <= r.firstStartAt + EPS))
+    r.segments.filter(
+      (s) =>
+        s.kind === "wait" &&
+        (r.firstStartAt === undefined || s.to <= r.firstStartAt + EPS)
+    )
   );
   const has = (fn: () => boolean) => fn();
   const items: { key: string; label: string; swatch: ReactNode }[] = [];
   const dot = (look: Look) => (
     <svg width={14} height={14} viewBox="-7 -7 14 14" aria-hidden>
-      <circle r={look.stroke ? 5.75 : 6} className={clsx(look.fill, look.stroke)} strokeWidth={look.stroke ? 1.5 : 0} strokeDasharray={look.dash} />
+      <circle
+        r={look.stroke ? 5.75 : 6}
+        className={clsx(look.fill, look.stroke)}
+        strokeWidth={look.stroke ? 1.5 : 0}
+        strokeDasharray={look.dash}
+      />
     </svg>
   );
   items.push({ key: "event", label: "Event", swatch: dot(LOOK.event) });
   if (result.events.some((e) => e.outcome === "debounce-superseded"))
-    items.push({ key: "replaced", label: "Replaced by a later event", swatch: dot(LOOK.replaced) });
-  if (result.events.some((e) => e.outcome === "rate-limited" || e.outcome === "singleton-skipped"))
+    items.push({
+      key: "replaced",
+      label: "Replaced by a later event",
+      swatch: dot(LOOK.replaced),
+    });
+  if (
+    result.events.some(
+      (e) => e.outcome === "rate-limited" || e.outcome === "singleton-skipped"
+    )
+  )
     items.push({
       key: "skipped",
       label: "Skipped",
       swatch: (
         <svg width={14} height={14} viewBox="-7 -7 14 14" aria-hidden>
-          <circle r={5.75} className={clsx(LOOK.skipped.fill, LOOK.skipped.stroke)} strokeWidth={1.5} />
-          <Cross x={0} y={0} s={2.6} className="stroke-ruby-500 dark:stroke-ruby-400" width={1.5} />
+          <circle
+            r={5.75}
+            className={clsx(LOOK.skipped.fill, LOOK.skipped.stroke)}
+            strokeWidth={1.5}
+          />
+          <Cross
+            x={0}
+            y={0}
+            s={2.6}
+            className="stroke-ruby-500 dark:stroke-ruby-400"
+            width={1.5}
+          />
         </svg>
       ),
     });
   if (result.runs.some((r) => r.collect?.kind === "debounce"))
-    items.push({ key: "collect-d", label: "Waiting for a quiet period", swatch: dot(LOOK.collect) });
+    items.push({
+      key: "collect-d",
+      label: "Waiting for a quiet period",
+      swatch: dot(LOOK.collect),
+    });
   if (result.runs.some((r) => r.collect?.kind === "batch"))
-    items.push({ key: "collect-b", label: "Collecting into a batch", swatch: dot(LOOK.collect) });
+    items.push({
+      key: "collect-b",
+      label: "Collecting into a batch",
+      swatch: dot(LOOK.collect),
+    });
   if (firstWaits.some((s) => s.reason === "concurrency"))
-    items.push({ key: "q-c", label: "Queued for a slot", swatch: dot(LOOK.concurrency) });
+    items.push({
+      key: "q-c",
+      label: "Queued for a slot",
+      swatch: dot(LOOK.concurrency),
+    });
   if (firstWaits.some((s) => s.reason === "throttle"))
-    items.push({ key: "q-t", label: "Queued for throttle capacity", swatch: dot(LOOK.throttle) });
+    items.push({
+      key: "q-t",
+      label: "Queued for throttle capacity",
+      swatch: dot(LOOK.throttle),
+    });
   if (firstWaits.some((s) => s.reason === "backlog"))
-    items.push({ key: "q-b", label: "Queued behind other keys", swatch: dot(LOOK.backlog) });
+    items.push({
+      key: "q-b",
+      label: "Queued behind other keys",
+      swatch: dot(LOOK.backlog),
+    });
   if (result.runs.some((r) => r.firstStartAt !== undefined))
     items.push({
       key: "run",
       label: "Step executing",
       swatch: (
         <svg width={20} height={14} viewBox="0 0 20 14" aria-hidden>
-          <rect x={1} y={1} width={18} height={12} rx={6} className={LOOK.run.fill} />
+          <rect
+            x={1}
+            y={1}
+            width={18}
+            height={12}
+            rx={6}
+            className={LOOK.run.fill}
+          />
         </svg>
       ),
     });
@@ -775,7 +1236,16 @@ function legendItems(model: Model) {
       label: "Sleeping (no slot)",
       swatch: (
         <svg width={20} height={14} viewBox="0 0 20 14" aria-hidden>
-          <rect x={1.5} y={1.5} width={17} height={11} rx={5.5} className="fill-white stroke-carbon-400 dark:fill-carbon-1000 dark:stroke-carbon-500" strokeWidth={1.25} strokeDasharray="3 2.5" />
+          <rect
+            x={1.5}
+            y={1.5}
+            width={17}
+            height={11}
+            rx={5.5}
+            className="fill-white stroke-carbon-400 dark:fill-carbon-1000 dark:stroke-carbon-500"
+            strokeWidth={1.25}
+            strokeDasharray="3 2.5"
+          />
         </svg>
       ),
     });
@@ -786,7 +1256,12 @@ function legendItems(model: Model) {
       swatch: (
         <svg width={14} height={14} viewBox="-7 -7 14 14" aria-hidden>
           <circle r={6} className={LOOK.run.fill} />
-          <Check x={0} y={0} s={2.8} className="stroke-white dark:stroke-carbon-1000" />
+          <Check
+            x={0}
+            y={0}
+            s={2.8}
+            className="stroke-white dark:stroke-carbon-1000"
+          />
         </svg>
       ),
     });
@@ -797,7 +1272,13 @@ function legendItems(model: Model) {
       swatch: (
         <svg width={14} height={14} viewBox="-7 -7 14 14" aria-hidden>
           <circle r={6} className="fill-ruby-500 dark:fill-ruby-400" />
-          <Cross x={0} y={0} s={2.4} className="stroke-white dark:stroke-carbon-1000" width={1.5} />
+          <Cross
+            x={0}
+            y={0}
+            s={2.4}
+            className="stroke-white dark:stroke-carbon-1000"
+            width={1.5}
+          />
         </svg>
       ),
     });
@@ -913,7 +1394,9 @@ function useWidth<T extends HTMLElement>() {
   useEffect(() => {
     const el = ref.current;
     if (!el) return;
-    const ro = new ResizeObserver(([entry]) => setWidth(Math.floor(entry.contentRect.width)));
+    const ro = new ResizeObserver(([entry]) =>
+      setWidth(Math.floor(entry.contentRect.width))
+    );
     ro.observe(el);
     setWidth(Math.floor(el.getBoundingClientRect().width));
     return () => ro.disconnect();
@@ -943,6 +1426,11 @@ export function FlowControlMarbles({ scenario: id }: { scenario: string }) {
   const [boxRef, width] = useWidth<HTMLDivElement>();
   const hatchId = `fcm-hatch-${useId().replace(/:/g, "")}`;
   const dragging = useRef(false);
+  const legend = useMemo(() => (model ? legendItems(model) : []), [model]);
+  const reserve = useMemo(
+    () => (model ? layoutFor(model, 700).height : 0),
+    [model]
+  );
 
   if (!scenario || !model) {
     return process.env.NODE_ENV === "development" ? (
@@ -951,8 +1439,6 @@ export function FlowControlMarbles({ scenario: id }: { scenario: string }) {
   }
 
   const L = width > 0 ? layoutFor(model, width) : null;
-  const reserve = layoutFor(model, 700).height;
-  const legend = legendItems(model);
   const scrub = (e: React.PointerEvent<SVGSVGElement>) => {
     if (!L) return;
     const box = e.currentTarget.getBoundingClientRect();
@@ -974,11 +1460,18 @@ export function FlowControlMarbles({ scenario: id }: { scenario: string }) {
           </code>
         ))}
         <div className="ml-auto flex items-center gap-0.5">
-          <span className="mr-1 w-10 text-right font-mono text-[11px] tabular-nums text-muted" aria-hidden>
+          <span
+            className="mr-1 w-10 text-right font-mono text-[11px] tabular-nums text-muted"
+            aria-hidden
+          >
             {`${t.toFixed(1)}s`}
           </span>
           <ControlButton label={playing ? "Pause" : "Play"} onClick={toggle}>
-            {playing ? <RiPauseFill className="h-3.5 w-3.5" /> : <RiPlayFill className="h-3.5 w-3.5" />}
+            {playing ? (
+              <RiPauseFill className="h-3.5 w-3.5" />
+            ) : (
+              <RiPlayFill className="h-3.5 w-3.5" />
+            )}
           </ControlButton>
           <ControlButton label="Replay" onClick={replay}>
             <RiRestartLine className="h-3.5 w-3.5" />
@@ -994,7 +1487,11 @@ export function FlowControlMarbles({ scenario: id }: { scenario: string }) {
         </div>
       </div>
 
-      <div ref={boxRef} className="rounded-lg bg-canvasBase px-2 py-2 sm:px-3" style={{ minHeight: L ? undefined : reserve + 16 }}>
+      <div
+        ref={boxRef}
+        className="rounded-lg bg-canvasBase px-2 py-2 sm:px-3"
+        style={{ minHeight: L ? undefined : reserve + 16 }}
+      >
         {L && (
           <svg
             width={L.width}
@@ -1031,13 +1528,23 @@ export function FlowControlMarbles({ scenario: id }: { scenario: string }) {
             </li>
           ))}
         </ul>
-        <p className="m-0 text-xs leading-relaxed text-subtle">{scenario.caption}</p>
+        <p className="m-0 text-xs leading-relaxed text-subtle">
+          {scenario.caption}
+        </p>
       </figcaption>
     </figure>
   );
 }
 
-function ControlButton({ label, onClick, children }: { label: string; onClick: () => void; children: ReactNode }) {
+function ControlButton({
+  label,
+  onClick,
+  children,
+}: {
+  label: string;
+  onClick: () => void;
+  children: ReactNode;
+}) {
   return (
     <button
       type="button"
