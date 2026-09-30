@@ -514,7 +514,7 @@ const sectionExamples: NavGroup[] = [
       { title: "AI Agents and RAG", href: `/docs/examples/ai-agents-and-rag` },
       {
         title: "AI Eval Scorer quickstart",
-        href: `/docs/examples/ai-eval-scorer-quickstart`,
+        href: `/docs/agent-evals/guides/llm-judge`,
       },
       {
         title: "AI Metadata quickstart",

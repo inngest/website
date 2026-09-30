@@ -39,7 +39,7 @@ const PRIMITIVES: Primitive[] = [
     body: "Each step is an atomic transaction. When step 7 fails only step 7 retries — the tokens spent on steps 1-6 are never wasted.",
     iconSrc: "/assets/v1/primitives/icon-1-checkpointing.svg",
     iconWidth: 168,
-    href: "/docs/setup/checkpointing",
+    href: "/docs/durable-execution/guides-and-advanced/checkpointing",
   },
   {
     id: "telemetry",
@@ -47,7 +47,7 @@ const PRIMITIVES: Primitive[] = [
     body: "Every model call is captured: prompt, response, token count, latency, and cost — automatically. Offloads the wait so serverless functions don't burn compute.",
     iconSrc: "/assets/v1/primitives/icon-2-telemetry.svg",
     iconWidth: 164,
-    href: "/docs/platform/monitor/insights",
+    href: "/docs/platform-and-operations/insights",
   },
   {
     id: "flow-control",
@@ -55,7 +55,7 @@ const PRIMITIVES: Primitive[] = [
     body: "Rate-limit by any identifier. One user's burst can't saturate your OpenAI quota and degrade everyone else. Priority queuing for premium tiers, built in.",
     iconSrc: "/assets/v1/primitives/icon-3-flow-control.svg",
     iconWidth: 164,
-    href: "/docs/guides/flow-control",
+    href: "/docs/durable-execution/flow-control",
   },
   {
     id: "human-in-the-loop",
@@ -71,7 +71,7 @@ const PRIMITIVES: Primitive[] = [
     body: "LLM chains run for minutes. Batch pipelines run for hours. Inngest functions run to completion across any host — no 30-second limits.",
     iconSrc: "/assets/v1/primitives/icon-5-no-timeout.svg",
     iconWidth: 164,
-    href: "/docs/features/inngest-functions/cancellation/cancel-on-timeouts",
+    href: "/docs/durable-execution/guides-and-advanced/cancellation/timeouts",
   },
   {
     id: "local-env",

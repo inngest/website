@@ -52,17 +52,17 @@ When a `key` is added, a separate debounce period is applied for each unique val
 
 ## Comparison to rate limiting
 
-If you prefer to execute a function for the _first_ event received, consider using [rate limiting](/docs/guides/rate-limiting) instead. Rate limiting ensures that a function runs once for each `key` the *first* time an event is received, while debounce uses the *last* event during a specified period.
+If you prefer to execute a function for the _first_ event received, consider using [rate limiting](/docs/durable-execution/flow-control/rate-limiting) instead. Rate limiting ensures that a function runs once for each `key` the *first* time an event is received, while debounce uses the *last* event during a specified period.
 
 ## Combining with idempotency
 
-Debounce can be combined with [idempotency](/docs/guides/handling-idempotency#at-the-function-level-the-consumer) to ensure that once the debounced function has run, it does not run again.
+Debounce can be combined with [idempotency](/docs/durable-execution/guides-and-advanced/idempotency) to ensure that once the debounced function has run, it does not run again.
 
 ## Limitations
 
 * The maximum debounce `period` is 7 days (168 hours).
 * The minimum debounce `period` is 1 second.
-* Debounce does not work with [batched functions](/docs/guides/batching).
+* Debounce does not work with [batched functions](/docs/durable-execution/flow-control/batching).
 
 ## Further reference
 

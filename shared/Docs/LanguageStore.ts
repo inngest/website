@@ -82,7 +82,7 @@ export const useLanguageStore = create<LanguageState>()(
 export function getLanguageFromPath(path: string): SDKLanguage | null {
   if (path.startsWith("/docs/reference/python")) return "python";
   if (path.startsWith("/docs/reference/go")) return "go";
-  if (path.startsWith("/docs/reference/typescript")) return "typescript";
+  if (path.startsWith("/docs/reference/typescript/intro")) return "typescript";
   // Some TypeScript reference pages aren't under /typescript
   if (path.startsWith("/docs/reference/")) return "typescript";
   return null;
@@ -118,8 +118,8 @@ export function getSdkVersionFromPath(path: string): TSVersion | null {
 
   // Versionless TypeScript reference paths map to stable
   if (
-    path === "/docs/reference/typescript" ||
-    path.startsWith("/docs/reference/typescript/")
+    path === "/docs/reference/typescript/intro" ||
+    path.startsWith("/docs/reference/typescript/intro")
   ) {
     return TS_STABLE;
   }

@@ -29,7 +29,10 @@ export async function loadMarkdownFilesMetadata<T>(
   const matter = require("gray-matter");
   const readingTime = require("reading-time");
 
-  const baseDir = path.join(process.cwd(), dir);
+  // `dir` is dynamic, so tell Turbopack not to trace it (otherwise it matches
+  // the whole project). The content dirs are added to the serverless bundles
+  // via `outputFileTracingIncludes` in next.config.mjs.
+  const baseDir = path.join(/*turbopackIgnore: true*/ process.cwd(), dir);
 
   // Iterate all files in the directory, then parse the markdown.
   const mdxFilenames = fs
@@ -41,7 +44,7 @@ export async function loadMarkdownFilesMetadata<T>(
   const filesMetadata: (T & MDXFileMetadata)[] = [];
   for (const filename of mdxFilenames) {
     try {
-      const filePath = path.join(baseDir, filename);
+      const filePath = path.join(/*turbopackIgnore: true*/ baseDir, filename);
       const source = fs.readFileSync(filePath, "utf8");
 
       const { data, content } = matter(source);
@@ -96,7 +99,11 @@ export async function loadMarkdownFile<T>(
   const path = require("node:path");
   const fs = require("node:fs");
   const matter = require("gray-matter");
-  const sourceFilename = path.join(dir, `${slug}.mdx`);
+  const sourceFilename = path.join(
+    /*turbopackIgnore: true*/ process.cwd(),
+    dir,
+    `${slug}.mdx`
+  );
   const source = fs.readFileSync(sourceFilename, "utf8");
   const { content, data } = matter(source);
 

@@ -44,7 +44,7 @@ handler := client.ServeWithOpts(inngestgo.ServeOpts{
 
 You can also set `INNGEST_ENABLE_UNAUTHED_SYNC=true`.
 
-If you require unauthenticated sync requests with Inngest Cloud, we recommend migrating to the [API-based sync flow](/docs/apps/cloud?ref=docs-go-v0-15-to-v0-16-migration#programmatically) instead of relying on unauthenticated requests to your served SDK endpoint.
+If you require unauthenticated sync requests with Inngest Cloud, we recommend migrating to the [API-based sync flow](/docs/platform-and-operations/apps-and-syncs?ref=docs-go-v0-15-to-v0-16-migration#programmatically) instead of relying on unauthenticated requests to your served SDK endpoint.
 
 If you're self-hosting an Inngest server then you'll always need to enable unauthenticated syncs, since self-hosted doesn't yet have authenticated syncs.
 

@@ -10,7 +10,7 @@ Users start reading a long output sooner, they can stop the agent midway if it's
 Most implementations reach for WebSockets or SSE (Server-Sent Events) to push near-realtime updates from the agent to the app.
 
 But both depend on one fragile persistent connection: if the socket drops, the run dies with it. Lost progress, half-finished tool calls.
-This pattern keeps token streaming alive through a dropped connection, using [realtime connections](/docs/realtime?ref=patterns-durable-token-streaming) and [Inngest connect](/docs/setup/connect?ref=patterns-durable-token-streaming).
+This pattern keeps token streaming alive through a dropped connection, using [realtime connections](/docs/realtime?ref=patterns-durable-token-streaming) and [Inngest connect](/docs/durable-execution/deploying-functions/connect?ref=patterns-durable-token-streaming).
 
 ## Architecture
 
@@ -41,7 +41,7 @@ The full working [example is in the repo](https://github.com/inngest/agent-examp
 
 ### The Worker
 
-To cut latency, open a [direct websocket connection](/docs/setup/connect?ref=patterns-durable-token-streaming) from the worker to Inngest. Import and set up the `inngest/connect` package.
+To cut latency, open a [direct websocket connection](/docs/durable-execution/deploying-functions/connect?ref=patterns-durable-token-streaming) from the worker to Inngest. Import and set up the `inngest/connect` package.
 
 ```typescript
 import { connect } from "inngest/connect";

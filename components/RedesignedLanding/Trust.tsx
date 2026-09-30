@@ -9,7 +9,7 @@ export default function TrustFeaturesSection() {
       description:
         "Regular security audits and compliance with SOC 2 standards.",
       link: "Read more here",
-      linkHref: "/docs/learn/security?ref=homepage-trust",
+      linkHref: "/docs/platform-and-operations/cloud-architecture-and-security?ref=homepage-trust",
     },
     {
       title: "E2E ENCRYPTION",

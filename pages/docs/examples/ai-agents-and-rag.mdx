@@ -19,7 +19,7 @@ Below is an example of a RAG workflow (from this [example app](https://github.co
 - Combine the transcript and queried content to generate a summary using GPT-4.
 - Save the summary to a database and sends a notification to the client.
 
-The function uses [Inngest steps](/docs/learn/inngest-steps) to guarantee automatic retries on failure.
+The function uses [Inngest steps](/docs/durable-execution/primitives) to guarantee automatic retries on failure.
 
 ```typescript {{ title: "./inngest/functions.ts" }}
 export const summarizeContent = inngest.createFunction(
@@ -168,9 +168,9 @@ pattern: 1,
 
 ## Related concepts
 
-- [Concurrency](/docs/guides/concurrency): control the number of steps executing code at any one time.
-- [Debouncing](/docs/guides/debounce): delay function execution until a series of events are no longer received.
-- [Prioritization](/docs/guides/priority): dynamically execute some runs ahead or behind others based on any data.
-- [Rate limiting](/docs/guides/rate-limiting): limit on how many function runs can start within a time period.
+- [Concurrency](/docs/durable-execution/flow-control/concurrency): control the number of steps executing code at any one time.
+- [Debouncing](/docs/durable-execution/flow-control/debounce): delay function execution until a series of events are no longer received.
+- [Prioritization](/docs/durable-execution/flow-control/priority): dynamically execute some runs ahead or behind others based on any data.
+- [Rate limiting](/docs/durable-execution/flow-control/rate-limiting): limit on how many function runs can start within a time period.
 - [Steps](/docs/reference/typescript/v4/functions/step-run): individual tasks within a function that can be executed independently with a guaranteed retrial.
-- [Throttling](/docs/guides/throttling): specify how many function runs can start within a time period.
+- [Throttling](/docs/durable-execution/flow-control/throttling): specify how many function runs can start within a time period.

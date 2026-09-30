@@ -168,7 +168,7 @@ No signing or event keys are required in local development mode.
   <Step title="Set signing and event keys">
     To enable your application to securely connect to Inngest, you must set the `INNGEST_SIGNING_KEY` and `INNGEST_EVENT_KEY` environment variables.
 
-    These keys can be found in the Inngest Dashboard. Learn more about [Event keys](/docs/events/creating-an-event-key) and [Signing Keys](/docs/platform/signing-keys).
+    These keys can be found in the Inngest Dashboard. Learn more about [Event keys](/docs/platform-and-operations/keys-and-access) and [Signing Keys](/docs/platform/signing-keys).
   </Step>
   <Step title="Set your app version">
     The `appVersion` is used to identify the version of your app that is connected to Inngest. This allows Inngest to support rolling deploys where multiple versions of your app may be connected to Inngest.
@@ -398,7 +398,7 @@ This view is helpful for debugging connection issues or verifying rolling deploy
 
 Inngest keeps track of the version your workers are running on. This internal representation changes when you update your function configuration, provide a new app version identifier to the client configuration, or change the SDK version or language.
 
-When you deploy a new version of your application, the first worker to connect to Inngest will automatically sync your app. This will update function configurations to the desired state configured in your code. Unlike `serve`, connect apps do not require [manual syncing](/docs/apps/cloud) with Inngest Cloud.
+When you deploy a new version of your application, the first worker to connect to Inngest will automatically sync your app. This will update function configurations to the desired state configured in your code. Unlike `serve`, connect apps do not require [manual syncing](/docs/platform-and-operations/apps-and-syncs) with Inngest Cloud.
 
 `connect` supports rolling releases: During a deployment of your app, Inngest will run functions on all connected workers, regardless of the version, as long as they are able to process a request for a given function. This prevents traffic from concentrating on a single instance during rollouts and causing a thundering herd issue.
 

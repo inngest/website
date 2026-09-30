@@ -16,11 +16,11 @@ Every section can be filtered by:
 - **Time range** - a relative window (for example, last 7 days) or an absolute date range, limited by your plan's data retention.
 - **Function** - one or more functions, to scope the dashboard to a specific workflow.
 
-Every chart and table links back to the underlying data — click through to the runs, functions, or sessions behind any data point to investigate further. Each chart also has a menu with an **Open in Insights** link that opens the exact query behind it in the [Insights](/docs/platform/monitor/insights?ref=docs-ai-overview) SQL editor, so you can inspect or modify it further.
+Every chart and table links back to the underlying data — click through to the runs, functions, or sessions behind any data point to investigate further. Each chart also has a menu with an **Open in Insights** link that opens the exact query behind it in the [Insights](/docs/platform-and-operations/insights?ref=docs-ai-overview) SQL editor, so you can inspect or modify it further.
 
 ## Requirements
 
-AI Overview reads the same `gen_ai.*` metadata used elsewhere in the product (for example, on the [run details page](/docs/platform/monitor/inspecting-function-runs)). To populate it:
+AI Overview reads the same `gen_ai.*` metadata used elsewhere in the product (for example, on the [run details page](/docs/platform-and-operations/inspect-events-and-runs)). To populate it:
 
 1. Load an OpenTelemetry provider in your app.
 2. Make sure your AI calls emit `gen_ai.*` spans — this happens automatically for the OpenAI, Anthropic, and Google Generative AI SDKs, and for the Vercel AI SDK once telemetry is enabled per call.

@@ -121,7 +121,7 @@ _, err := inngestgo.CreateFunction(
 
 ## How Does It Work?
 
-The [Inngest default execution model](/docs/learn/how-functions-are-executed) is a complete handoff to the Inngest Platform, where an HTTP request is performed to store the execution state upon each step completion, leading to inter-step latency.
+The [Inngest default execution model](/docs/durable-execution/durable-workflows) is a complete handoff to the Inngest Platform, where an HTTP request is performed to store the execution state upon each step completion, leading to inter-step latency.
 
 ![With and Without Checkpointing](/assets/docs/checkpointing/checkpointing_with_without.png)
 

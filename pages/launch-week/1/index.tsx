@@ -57,7 +57,7 @@ export default function LaunchWeek() {
           image="/assets/blog/announcing-replay/featured-image.png"
           label="New"
           buttonHref="/blog/announcing-replay-the-death-of-the-dead-letter-queue"
-          docsHref="/docs/platform/replay"
+          docsHref="/docs/platform-and-operations/replay-runs-in-bulk"
           orientation="left"
         />
         <RowItem
@@ -66,7 +66,7 @@ export default function LaunchWeek() {
           image="/assets/blog/bulk-cancellation-api/featured-image.png"
           label="New"
           buttonHref="/blog/bulk-cancellation-api"
-          docsHref="/docs/guides/cancel-running-functions"
+          docsHref="/docs/durable-execution/guides-and-advanced/cancellation/bulk-cancellation"
           orientation="right"
         />
         <RowItem
@@ -93,7 +93,7 @@ export default function LaunchWeek() {
           image="/assets/blog/migrating-across-clouds-with-zero-downtime/featured-image.png"
           label="New"
           buttonHref="/blog/migrating-across-clouds-with-zero-downtime"
-          docsHref="/docs/apps/cloud"
+          docsHref="/docs/platform-and-operations/apps-and-syncs"
           orientation="left"
         />
 
@@ -123,7 +123,7 @@ export default function LaunchWeek() {
           image="/assets/blog/improved-error-handling/featured-image.png"
           label="New"
           buttonHref="/blog/improved-error-handling"
-          docsHref="/docs/guides/error-handling"
+          docsHref="/docs/durable-execution/guides-and-advanced/error-handling"
           orientation="right"
         />
 

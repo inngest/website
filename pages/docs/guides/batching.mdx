@@ -10,7 +10,7 @@ Batching allows a function to process multiple events in a single run. This is u
 
 * Reducing the number of requests to an external API that supports batch operations.
 * Creating a batch of database writes to reduce the number of transactions.
-* Reducing the number of requests to your [Inngest app](/docs/apps) to improve performance or serverless costs.
+* Reducing the number of requests to your [Inngest app](/docs/platform-and-operations/apps-and-syncs) to improve performance or serverless costs.
 
 ## How to configure batching
 
@@ -152,7 +152,7 @@ Batching does not work with all other flow control features.
 
 ### Batching with Concurrency limits
 
-You can combine batching with [concurrency](/docs/guides/concurrency) limits. For example, setting `concurrency: { limit: 1 }` will process one batch at a time.
+You can combine batching with [concurrency](/docs/durable-execution/flow-control/concurrency) limits. For example, setting `concurrency: { limit: 1 }` will process one batch at a time.
 
 ### Batching with Custom Concurrency keys
 
@@ -165,7 +165,7 @@ For predictable behavior, **use the same key expression for both batching and co
 
 ### Incompatible flow control features
 
-You _cannot_ use batching with [idempotency](/docs/guides/handling-idempotency), [rate limiting](/docs/guides/rate-limiting), [cancellation events](/docs/guides/cancel-running-functions#cancel-with-events), or [priority](/docs/guides/priority).
+You _cannot_ use batching with [idempotency](/docs/durable-execution/guides-and-advanced/idempotency), [rate limiting](/docs/durable-execution/flow-control/rate-limiting), [cancellation events](/docs/durable-execution/guides-and-advanced/cancellation/bulk-cancellation), or [priority](/docs/durable-execution/flow-control/priority).
 
 ## Limitations
 

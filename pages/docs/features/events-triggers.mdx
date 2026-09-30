@@ -16,28 +16,28 @@ Inngest functions are triggered asynchronously by **events** coming from various
 
 
 <CardGroup cols={2}>
-  <Card title="Your application" icon={<RiCloudLine className="text-basis h-4 w-4" />} href="/docs/events">
+  <Card title="Your application" icon={<RiCloudLine className="text-basis h-4 w-4" />} href="/docs/durable-execution/guides-and-advanced/events-and-triggers/send-events">
     Send an event from your application’s backend with the Inngest SDK.
   </Card>
-  <Card title="Cron schedule" icon={<RiTimeLine className="text-basis h-4 w-4" />} href={'/docs/guides/scheduled-functions'}>
+  <Card title="Cron schedule" icon={<RiTimeLine className="text-basis h-4 w-4" />} href={'/docs/durable-execution/guides-and-advanced/events-and-triggers/schedules-and-delayed-starts'}>
     Run an Inngest function periodically with a trigger using cron syntax.
   </Card>
-  <Card title="Webhook events" icon={<RiWebhookFill className="text-basis h-4 w-4"/>} href={'/docs/platform/webhooks'}>
+  <Card title="Webhook events" icon={<RiWebhookFill className="text-basis h-4 w-4"/>} href={'/docs/durable-execution/guides-and-advanced/events-and-triggers/receive-webhook-events'}>
     Use Inngest as a webhook consumer for any service to trigger functions.
   </Card>
-  <Card title="Another Inngest function" icon={<RiGitForkFill className="rotate-90 text-basis h-4 w-4" />} href={'/docs/guides/invoking-functions-directly'}>
+  <Card title="Another Inngest function" icon={<RiGitForkFill className="rotate-90 text-basis h-4 w-4" />} href={'/docs/durable-execution/primitives/step-invoke'}>
     Directly invoke other functions to compose more powerful functions.
   </Card>
 </CardGroup>
 
-You can also launch a specific function as fire-and-forget background work from inside another run with [deferred functions](/docs/features/inngest-functions/deferred-functions).
+You can also launch a specific function as fire-and-forget background work from inside another run with [deferred functions](/docs/durable-execution/primitives/defer).
 
 You can customize each of these triggers in multiple ways:
 
 - **[Filtering event triggers](/docs/durable-execution/guides-and-advanced/writing-expressions)** - Trigger a function for a subset of matching events sent.
-- **[Delaying execution](/docs/guides/delayed-functions)** - Trigger a function to run at a specific timestamp in the future.
-- **[Batching events](/docs/guides/batching)** - Process multiple events in a single function for more efficient systems.
-- **[Multiple triggers](/docs/guides/multiple-triggers)** - Use a single function to handle multiple event types.
+- **[Delaying execution](/docs/durable-execution/guides-and-advanced/events-and-triggers/schedules-and-delayed-starts)** - Trigger a function to run at a specific timestamp in the future.
+- **[Batching events](/docs/durable-execution/flow-control/batching)** - Process multiple events in a single function for more efficient systems.
+- **[Multiple triggers](/docs/durable-execution/guides-and-advanced/events-and-triggers/event-and-trigger-concepts)** - Use a single function to handle multiple event types.
 
 
 ## Why events?
@@ -45,7 +45,7 @@ You can customize each of these triggers in multiple ways:
 Using Events to trigger Inngest Functions instead of direct invocations offers a lot of flexibility:
 
 - Events can trigger multiple Inngest Functions.
-- Events can be used to synchronize Inngest Function runs with [cancellation](/docs/features/inngest-functions/cancellation) and [“wait for event” step](/docs/reference/typescript/v4/functions/step-wait-for-event).
+- Events can be used to synchronize Inngest Function runs with [cancellation](/docs/durable-execution/guides-and-advanced/cancellation) and [“wait for event” step](/docs/reference/typescript/v4/functions/step-wait-for-event).
 - Events can be leveraged to trigger Functions across multiple applications.
 - Similar Events can be grouped together for faster processing.
 

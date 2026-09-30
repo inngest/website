@@ -50,8 +50,8 @@ export async function GET(
   }
 
   // Ensure the resolved path stays inside the blog directory
-  const resolvedPath = path.resolve(filePath);
-  const resolvedBlogDir = path.resolve(BLOG_DIR);
+  const resolvedPath = path.resolve(/*turbopackIgnore: true*/ filePath);
+  const resolvedBlogDir = path.resolve(/*turbopackIgnore: true*/ BLOG_DIR);
   if (!resolvedPath.startsWith(resolvedBlogDir)) {
     return new Response("Access denied", {
       status: 403,

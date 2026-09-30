@@ -24,7 +24,7 @@ export default function Hero() {
         "restarts, traffic spikes. Inngest makes every",
         "function durable without leaving your codebase.",
       ]}
-      docsHref="/docs/learn/how-functions-are-executed?ref=durable-execution"
+      docsHref="/docs/durable-execution/durable-workflows?ref=durable-execution"
       signupHref="/sign-up?ref=durable-execution"
       canvas={({ isDesktop }) =>
         isDesktop && (

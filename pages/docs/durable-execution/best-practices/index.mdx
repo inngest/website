@@ -10,7 +10,7 @@ Use this page as a checklist while you design and review durable functions. For 
 
 ### Put every side effect in a step
 
-Your function runs its steps back to back until it needs to pause, such as for a sleep or a retry. When it resumes, the handler runs again from the top: completed steps return their saved result, but code outside a step runs again. See [How functions are executed](/docs/learn/how-functions-are-executed).
+Your function runs its steps back to back until it needs to pause, such as for a sleep or a retry. When it resumes, the handler runs again from the top: completed steps return their saved result, but code outside a step runs again. See [How functions are executed](/docs/durable-execution/durable-workflows).
 
 - Wrap database writes, API calls, emails, and payments in [`step.run()`](/docs/durable-execution/primitives/step-run).
 - Keep pure calculations outside steps. Re-running them is harmless.

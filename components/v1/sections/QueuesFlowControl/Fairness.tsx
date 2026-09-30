@@ -74,7 +74,7 @@ function Copy() {
       bodyClassName="sm:max-w-[420px] lg:max-w-[362px]"
       actions={
         <ButtonLink
-          href="/docs/guides/concurrency?ref=queues-flow-control"
+          href="/docs/durable-execution/flow-control/concurrency?ref=queues-flow-control"
           variant="primary"
           className="max-sm:w-full"
         >

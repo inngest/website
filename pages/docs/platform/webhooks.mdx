@@ -35,7 +35,7 @@ Give your webhook a name and save it. Next we'll explore how to turn the request
 
 ## Defining a transform function
 
-Most webhooks send event data as JSON within the POST request body. These raw events must be transformed slightly to be compatible with [the Inngest event payload format](/docs/features/events-triggers/event-format). Mainly, we must have `name` and `data` set in the Inngest event.
+Most webhooks send event data as JSON within the POST request body. These raw events must be transformed slightly to be compatible with [the Inngest event payload format](/docs/durable-execution/guides-and-advanced/events-and-triggers/event-payloads-and-schemas). Mainly, we must have `name` and `data` set in the Inngest event.
 
 Fortunately, Inngest includes **_transform_** functions for every webhook. You can define a short JavaScript function used to transform the shape of the payload. This transform runs on Inngest's servers so there is no added load or cost to your infra.
 

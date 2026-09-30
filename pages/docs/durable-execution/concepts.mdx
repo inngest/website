@@ -16,22 +16,22 @@ A payment may need approval before your app can charge a card. Inngest can start
 
 ## Base concepts
 
-- **[Function](/docs/learn/inngest-functions):** Either a workflow or endpoint that runs a series of steps.
-- **[Trigger](/docs/features/events-triggers):** How a function starts. This may be an event, a schedule, an HTTP request, or an invocation through the REST API.
-- **[Steps](/docs/learn/inngest-steps):** Units of work whose outputs Inngest saves. A run can continue after a failed step without repeating completed steps.
-  - **[Waits](/docs/features/inngest-functions/steps-workflows):** A step can wait until a time or another event. Waits suspend the function's compute and do not count toward concurrency.
-- **[Memoization](/docs/learn/how-functions-are-executed):** Serializing and storing a step output for use when the function replays.
-- **[Idempotency](/docs/guides/handling-idempotency):** An operation that has the same effect when repeated, such as a payment request that does not charge the card twice.
+- **[Function](/docs/durable-execution/durable-workflows):** Either a workflow or endpoint that runs a series of steps.
+- **[Trigger](/docs/durable-execution/guides-and-advanced/events-and-triggers):** How a function starts. This may be an event, a schedule, an HTTP request, or an invocation through the REST API.
+- **[Steps](/docs/durable-execution/primitives):** Units of work whose outputs Inngest saves. A run can continue after a failed step without repeating completed steps.
+  - **[Waits](/docs/durable-execution/primitives):** A step can wait until a time or another event. Waits suspend the function's compute and do not count toward concurrency.
+- **[Memoization](/docs/durable-execution/durable-workflows):** Serializing and storing a step output for use when the function replays.
+- **[Idempotency](/docs/durable-execution/guides-and-advanced/idempotency):** An operation that has the same effect when repeated, such as a payment request that does not charge the card twice.
 - **[Expressions](/docs/durable-execution/guides-and-advanced/writing-expressions):** CEL conditions that can add logic to triggers and waits.
 - **Results:** The data that a function returns and Inngest stores as its result.
-- **[Flow control](/docs/guides/flow-control):** Rules for if and when functions run, such as concurrency, throttling, rate limiting, and debounce.
-- **[Errors vs failures](/docs/features/inngest-functions/error-retries/retries):** Inngest can retry errors. A step or function fails if every retry results in an error.
+- **[Flow control](/docs/durable-execution/flow-control):** Rules for if and when functions run, such as concurrency, throttling, rate limiting, and debounce.
+- **[Errors vs failures](/docs/durable-execution/guides-and-advanced/error-handling/retries):** Inngest can retry errors. A step or function fails if every retry results in an error.
 
 ## Additional concepts
 
-- **[Apps](/docs/apps):** An app is a service that serves a set of functions.
-- **[Syncs](/docs/apps/cloud):** You register an app and its functions with Inngest so it knows which functions run for each trigger.
-- **[Traces](/docs/platform/monitor/traces):** Show the path a function takes across steps, waits, retries, and the result.
+- **[Apps](/docs/platform-and-operations/apps-and-syncs):** An app is a service that serves a set of functions.
+- **[Syncs](/docs/platform-and-operations/apps-and-syncs):** You register an app and its functions with Inngest so it knows which functions run for each trigger.
+- **[Traces](/docs/platform-and-operations/traces):** Show the path a function takes across steps, waits, retries, and the result.
 - **Lifecycles:** A function transitions from queued to running to resolved, either completed or failed. Lifecycles run for each status transition.
 
 Follow the [quick start](/docs/durable-execution/quick-start) to see these concepts in a working function.

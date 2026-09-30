@@ -38,7 +38,7 @@ const FEATURES: Feature[] = [
     title: "Automatic retries",
     body:
       "Events that fail retry automatically with exponential backoff. Step-level — so only the failed step re-runs, not the whole function.",
-    cta: { label: "Read the docs →", href: "/docs/features/inngest-functions/error-retries/retries" },
+    cta: { label: "Read the docs →", href: "/docs/durable-execution/guides-and-advanced/error-handling/retries" },
     visual: <RetryVisual />,
   },
   {
@@ -46,7 +46,7 @@ const FEATURES: Feature[] = [
     title: "Idempotency",
     body:
       "Providers retry on failure. Set an event ID or function key and Inngest guarantees your function runs exactly once — no duplicate charges, no double-sends.",
-    cta: { label: "Read the docs →", href: "/docs/guides/handling-idempotency" },
+    cta: { label: "Read the docs →", href: "/docs/durable-execution/guides-and-advanced/idempotency" },
     visual: <IdempotencyVisual />,
   },
   {
@@ -54,7 +54,7 @@ const FEATURES: Feature[] = [
     title: "Fan-Out",
     body:
       "Any number of functions can subscribe to the same event, and all run in parallel, with independent retries. No routing. No extra queues.",
-    cta: { label: "Read the pattern →", href: "/docs/guides/fan-out-jobs" },
+    cta: { label: "Read the pattern →", href: "/docs/durable-execution/guides-and-advanced/patterns/fan-out" },
     visual: <FanOutVisual />,
   },
   {
@@ -70,7 +70,7 @@ const FEATURES: Feature[] = [
     title: "Cancelation",
     body:
       "Automatically cancel a sleeping function when a matching event arrives. A blog post scheduled to publish tomorrow can be cancelled the moment an editor fires post.cancelled.",
-    cta: { label: "Read the pattern →", href: "/docs/guides/cancel-running-functions" },
+    cta: { label: "Read the pattern →", href: "/docs/durable-execution/guides-and-advanced/cancellation/bulk-cancellation" },
     visual: <CancelationVisual />,
   },
 ];

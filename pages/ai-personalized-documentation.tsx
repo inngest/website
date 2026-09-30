@@ -366,7 +366,7 @@ const Output = ({ selected }: { selected: Selected }) => {
                 </span>
               </a>
               <a
-                href="/docs/learn/inngest-functions"
+                href="/docs/durable-execution/durable-workflows"
                 className="bg-slate-800 rounded-lg px-6 py-5 hover:bg-slate-700/80 group block"
               >
                 <h4 className="text-white">Writing functions</h4>
@@ -376,7 +376,7 @@ const Output = ({ selected }: { selected: Selected }) => {
                 </span>
               </a>
               <a
-                href="/docs/events"
+                href="/docs/durable-execution/guides-and-advanced/events-and-triggers/send-events"
                 className="bg-slate-800 rounded-lg px-6 py-5 hover:bg-slate-700/80 group block"
               >
                 <h4 className="text-white">Sending Events</h4>

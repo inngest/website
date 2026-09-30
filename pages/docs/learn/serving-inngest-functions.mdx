@@ -25,7 +25,7 @@ There are two ways to connect your app to Inngest:
       <li>Deploying with your existing CI/CD pipeline.</li>
     </ul>
   </Card>
-  <Card title="connect()" href="/docs/setup/connect">
+  <Card title="connect()" href="/docs/durable-execution/deploying-functions/connect">
     <p className="my-4">Connect to Inngest's servers using an outbound WebSocket connection.</p>
 
     <p className="my-2">**Ideal for**:</p>
@@ -1085,9 +1085,9 @@ When using `serve`, allow requests up to 4 MB in size. This is the maximum reque
 After your app serves Inngest functions, choose the next step that matches where you are in the setup:
 
 * Start from a framework guide, such as the [Next.js quick start](/docs/getting-started/nextjs-quick-start?ref=docs-serving-inngest-functions), [Express quick start](/docs/getting-started/express-quick-start?ref=docs-serving-inngest-functions), or [Python quick start](/docs/getting-started/python-quick-start?ref=docs-serving-inngest-functions).
-* Configure production secrets with [signing keys](/docs/platform/signing-keys?ref=docs-serving-inngest-functions) and [event keys](/docs/events/creating-an-event-key?ref=docs-serving-inngest-functions).
+* Configure production secrets with [signing keys](/docs/platform/signing-keys?ref=docs-serving-inngest-functions) and [event keys](/docs/platform-and-operations/keys-and-access?ref=docs-serving-inngest-functions).
 * Deploy on Vercel with the [Vercel deployment guide](/docs/durable-execution/deploying-functions/platforms/vercel?ref=docs-serving-inngest-functions), including `maxDuration` and streaming guidance for long-running work.
-* Use [Connect](/docs/setup/connect?ref=docs-serving-inngest-functions) instead of `serve()` when you want worker-style execution over an outbound WebSocket connection.
+* Use [Connect](/docs/durable-execution/deploying-functions/connect?ref=docs-serving-inngest-functions) instead of `serve()` when you want worker-style execution over an outbound WebSocket connection.
 
 ## Reference
 

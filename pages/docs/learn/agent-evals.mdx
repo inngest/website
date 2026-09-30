@@ -83,7 +83,7 @@ A production eval usually has four parts:
 
 ## Add session context
 
-[Sessions](/docs/features/events-triggers/sessions?ref=docs-agent-evals) group related function runs by an ID from your product, such as a conversation, support ticket, import, or agent task.
+[Sessions](/docs/agent-evals/sessions?ref=docs-agent-evals) group related function runs by an ID from your product, such as a conversation, support ticket, import, or agent task.
 
 Add `meta.sessions` when sending the event that starts the workflow:
 
@@ -106,7 +106,7 @@ The session does not change which functions run. It makes every related run easi
 
 ## Score during the run
 
-Use [direct scoring](/docs/features/inngest-functions/steps-workflows/scoring?ref=docs-agent-evals) when the outcome is known before the function finishes.
+Use [direct scoring](/docs/agent-evals/scores?ref=docs-agent-evals) when the outcome is known before the function finishes.
 
 Good direct scores include:
 
@@ -132,7 +132,7 @@ Scores can be numbers or booleans. Use consistent score names across runs so res
 
 ## Score after the run
 
-Use [deferred scoring](/docs/features/inngest-functions/steps-workflows/deferred-scoring?ref=docs-agent-evals) when the signal arrives after the workflow finishes.
+Use [deferred scoring](/docs/agent-evals/deferred-scoring?ref=docs-agent-evals) when the signal arrives after the workflow finishes.
 
 For example, a support agent may answer a ticket now, but the useful score may arrive later when the user clicks "helpful" or the ticket reopens.
 
@@ -188,7 +188,7 @@ The scorer runs separately in the background. Its returned score is attributed t
 
 ## Compare variants
 
-Use [step experiments](/docs/features/inngest-functions/steps-workflows/step-experiments?ref=docs-agent-evals) when you need to compare more than one version of an AI workflow.
+Use [step experiments](/docs/agent-evals/experiments?ref=docs-agent-evals) when you need to compare more than one version of an AI workflow.
 
 For example, you can split traffic between two prompt strategies, then score the selected variant when feedback arrives:
 
@@ -247,24 +247,24 @@ Agent Evals connects several docs and dashboard surfaces:
 
 | Surface | Use it to |
 | --- | --- |
-| [Traces](/docs/platform/monitor/traces?ref=docs-agent-evals) | Inspect the function run, steps, model calls, tool calls, errors, and scores. |
-| [Sessions](/docs/features/events-triggers/sessions?ref=docs-agent-evals) | Find all runs related to a conversation, ticket, account, job, or agent task. |
-| [Scoring](/docs/features/inngest-functions/steps-workflows/scoring?ref=docs-agent-evals) | Attach numeric or boolean quality signals to runs and steps. |
-| [Deferred scoring](/docs/features/inngest-functions/steps-workflows/deferred-scoring?ref=docs-agent-evals) | Evaluate outcomes that arrive after the original workflow finishes. |
-| [Step experiments](/docs/features/inngest-functions/steps-workflows/step-experiments?ref=docs-agent-evals) | Split traffic across workflow variants and compare scored outcomes. |
-| [Insights](/docs/platform/monitor/insights?ref=docs-agent-evals) | Query historical run, event, step, and trace data. |
+| [Traces](/docs/platform-and-operations/traces?ref=docs-agent-evals) | Inspect the function run, steps, model calls, tool calls, errors, and scores. |
+| [Sessions](/docs/agent-evals/sessions?ref=docs-agent-evals) | Find all runs related to a conversation, ticket, account, job, or agent task. |
+| [Scoring](/docs/agent-evals/scores?ref=docs-agent-evals) | Attach numeric or boolean quality signals to runs and steps. |
+| [Deferred scoring](/docs/agent-evals/deferred-scoring?ref=docs-agent-evals) | Evaluate outcomes that arrive after the original workflow finishes. |
+| [Step experiments](/docs/agent-evals/experiments?ref=docs-agent-evals) | Split traffic across workflow variants and compare scored outcomes. |
+| [Insights](/docs/platform-and-operations/insights?ref=docs-agent-evals) | Query historical run, event, step, and trace data. |
 
 ## Choose the right eval tool
 
 | Goal | Use |
 | --- | --- |
 | Score a guardrail, validation check, model confidence, or inline judge result | [`step.score()` or `inngest.score()`](/docs/reference/typescript/v4/functions/scoring?ref=docs-agent-evals) |
-| Wait for user feedback, ticket resolution, conversion, or review before scoring | [Deferred scoring](/docs/features/inngest-functions/steps-workflows/deferred-scoring?ref=docs-agent-evals) |
-| Compare prompts, models, providers, tools, or workflow rewrites | [Step experiments](/docs/features/inngest-functions/steps-workflows/step-experiments?ref=docs-agent-evals) |
-| Keep a user, account, or tenant on the same variant while testing | [`experiment.bucket()`](/docs/features/inngest-functions/steps-workflows/step-experiments?ref=docs-agent-evals#bucket) |
-| Find all runs related to one conversation, ticket, import, or agent task | [Sessions](/docs/features/events-triggers/sessions?ref=docs-agent-evals) |
+| Wait for user feedback, ticket resolution, conversion, or review before scoring | [Deferred scoring](/docs/agent-evals/deferred-scoring?ref=docs-agent-evals) |
+| Compare prompts, models, providers, tools, or workflow rewrites | [Step experiments](/docs/agent-evals/experiments?ref=docs-agent-evals) |
+| Keep a user, account, or tenant on the same variant while testing | [`experiment.bucket()`](/docs/agent-evals/experiments?ref=docs-agent-evals#bucket) |
+| Find all runs related to one conversation, ticket, import, or agent task | [Sessions](/docs/agent-evals/sessions?ref=docs-agent-evals) |
 | Inspect the model call, tool call, database query, or HTTP request inside a run | [OpenTelemetry](/docs/examples/open-telemetry?ref=docs-agent-evals) and [Extended Traces](/docs/reference/typescript/v4/extended-traces?ref=docs-agent-evals) |
-| Query historical events, runs, steps, traces, and scores | [Insights](/docs/platform/monitor/insights?ref=docs-agent-evals) |
+| Query historical events, runs, steps, traces, and scores | [Insights](/docs/platform-and-operations/insights?ref=docs-agent-evals) |
 
 ## Notes and best practices
 
@@ -307,12 +307,12 @@ Agent Evals connects several docs and dashboard surfaces:
 
 ## Related docs
 
-- [Score a function run](/docs/features/inngest-functions/steps-workflows/scoring?ref=docs-agent-evals)
-- [Build a deferred scorer](/docs/features/inngest-functions/steps-workflows/deferred-scoring?ref=docs-agent-evals)
-- [Step experiments](/docs/features/inngest-functions/steps-workflows/step-experiments?ref=docs-agent-evals)
+- [Score a function run](/docs/agent-evals/scores?ref=docs-agent-evals)
+- [Build a deferred scorer](/docs/agent-evals/deferred-scoring?ref=docs-agent-evals)
+- [Step experiments](/docs/agent-evals/experiments?ref=docs-agent-evals)
 - [Run experiments in production](/docs/patterns/ai-evals/run-experiments-in-production?ref=docs-agent-evals)
-- [Sessions](/docs/features/events-triggers/sessions?ref=docs-agent-evals)
-- [Traces](/docs/platform/monitor/traces?ref=docs-agent-evals)
+- [Sessions](/docs/agent-evals/sessions?ref=docs-agent-evals)
+- [Traces](/docs/platform-and-operations/traces?ref=docs-agent-evals)
 - [Set up OpenTelemetry with Inngest](/docs/examples/open-telemetry?ref=docs-agent-evals)
 - [Deferred Functions reference](/docs/reference/typescript/v4/functions/deferred-functions?ref=docs-agent-evals)
 - [Scoring reference](/docs/reference/typescript/v4/functions/scoring?ref=docs-agent-evals)

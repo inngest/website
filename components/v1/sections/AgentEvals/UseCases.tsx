@@ -70,7 +70,7 @@ const STUDIES: CaseStudyItem[] = [
     ),
     cta: {
       label: "Read the docs",
-      href: "/docs/features/inngest-functions/error-retries/rollbacks?ref=agent-evals-usecases",
+      href: "/docs/durable-execution/guides-and-advanced/error-handling/rollbacks?ref=agent-evals-usecases",
     },
   },
 ];

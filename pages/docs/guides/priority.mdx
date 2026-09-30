@@ -105,13 +105,13 @@ Job Y was successfully prioritized by a factor of `120` seconds ahead of other j
 
 ## Combining with concurrency
 
-Prioritization is most useful when combined with a flow control option that limits throughput, such as [concurrency](/docs/guides/concurrency). Jobs often wait in the queue when limiting throughput, so prioritization allows you to control the order in which jobs are executed in that backlog.
+Prioritization is most useful when combined with a flow control option that limits throughput, such as [concurrency](/docs/durable-execution/flow-control/concurrency). Jobs often wait in the queue when limiting throughput, so prioritization allows you to control the order in which jobs are executed in that backlog.
 
 ## Limitations
 
 * The highest priority is `600` (seconds).
 * The lowest priority is `-600` (seconds).
-* Not compatible with [batching](/docs/guides/batching).
+* Not compatible with [batching](/docs/durable-execution/flow-control/batching).
 
 ## Further reference
 

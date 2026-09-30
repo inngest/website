@@ -36,12 +36,26 @@ function contentSourceFor(urlPath) {
   return null;
 }
 
+// Every permanent redirect source is excluded from the sitemap, so old docs
+// pages that still have files on disk don't get listed next to their new pages.
+let redirectSources;
+async function getRedirectSources() {
+  if (!redirectSources) {
+    const { permanentRedirects } = await import("./redirects.mjs");
+    redirectSources = new Set(
+      permanentRedirects.map(([source]) => source.replace(/\/$/, ""))
+    );
+  }
+  return redirectSources;
+}
+
 /** @type {import('next-sitemap').IConfig} */
 module.exports = {
   siteUrl: "https://www.inngest.com",
   // remove content with unreleased or noindex metadata from the sitemap.  the
   // static exclude list covers routes whose metadata lives in code.
   transform: async (config, urlPath) => {
+    if ((await getRedirectSources()).has(urlPath)) return null;
     const src = contentSourceFor(urlPath);
     if (src && sourceIsExcludedFromSitemap(src)) return null;
     return {

@@ -11,7 +11,7 @@ export const description = "Delay function execution and cancel prior pending ru
 
 Debounce delays a function run for the given `period`, and reschedules functions for the given `period` any time new events are received while the debounce is active.  The function run starts after the specified `period` passes and no new events have been received.  Functions use the last event as their input data.
 
-See the [Debounce guide](/docs/guides/debounce) for more information about how this feature works.
+See the [Debounce guide](/docs/durable-execution/flow-control/debounce) for more information about how this feature works.
 
 ```ts
 export default inngest.createFunction(
@@ -63,6 +63,6 @@ export default inngest.createFunction(
 </Callout>
 
 <Callout variant="warning">
-  Debounce cannot be combined with [batching](/docs/guides/batching).
+  Debounce cannot be combined with [batching](/docs/durable-execution/flow-control/batching).
 </Callout>
 

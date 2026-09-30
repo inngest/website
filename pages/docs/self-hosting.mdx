@@ -20,7 +20,7 @@ Inngest's support team does not guarantee direct support for self-hosted instanc
 
 ## Why self-host Inngest?
 
-While the easiest way to get started with Inngest is using our hosted platform, including our generous [free tier](/pricing?ref=docs-self-hosting), we understand that developers may want to self-host for a variety of reasons. If security or data privacy are concerns, review our [security documentation](/docs/learn/security?ref=docs-self-hosting) for more information including details about [end-to-end encryption](/docs/features/middleware/encryption-middleware?ref=docs-self-hosting).
+While the easiest way to get started with Inngest is using our hosted platform, including our generous [free tier](/pricing?ref=docs-self-hosting), we understand that developers may want to self-host for a variety of reasons. If security or data privacy are concerns, review our [security documentation](/docs/platform-and-operations/cloud-architecture-and-security?ref=docs-self-hosting) for more information including details about [end-to-end encryption](/docs/features/middleware/encryption-middleware?ref=docs-self-hosting).
 
 ## Inngest system architecture
 
@@ -30,14 +30,14 @@ To best understand how to self-host Inngest, it's important to understand the sy
 
 The system is composed of the following services:
 
-* **Event API** - Receives events from SDKs via HTTP requests. Authenticates client requests via [Event Keys](/docs/events/creating-an-event-key?ref=docs-self-hosting). The Event API publishes event payloads to an internal event stream.
+* **Event API** - Receives events from SDKs via HTTP requests. Authenticates client requests via [Event Keys](/docs/platform-and-operations/keys-and-access?ref=docs-self-hosting). The Event API publishes event payloads to an internal event stream.
 * **Event stream** - Acts as a buffer between the _Event API_ and the _Runner_.
 * **Runner** - Consumes incoming events and performs several actions:
   * Scheduling of new "function runs" (aka jobs) given the event type, creating initial run state in the _State store_ database. Runs are added to queues given the function's flow control configuration.
-  * Resumes functions paused via [`waitForEvent`](/docs/features/inngest-functions/steps-workflows/wait-for-event?ref=docs-self-hosting) with matching expressions.
-  * Cancels running functions with matching [`cancelOn`](/docs/features/inngest-functions/cancellation/cancel-on-events?ref=docs-self-hosting) expressions.
+  * Resumes functions paused via [`waitForEvent`](/docs/durable-execution/primitives/step-waitforevent?ref=docs-self-hosting) with matching expressions.
+  * Cancels running functions with matching [`cancelOn`](/docs/durable-execution/guides-and-advanced/cancellation/events?ref=docs-self-hosting) expressions.
   * Writes ingested events to a database for historical record and future replay.
-* **Queue** - A multitenant-aware, multitier queue designed for fairness and various [flow control](/docs/guides/flow-control?ref=docs-self-hosting) methods (concurrency, throttling, prioritization, debouncing, rate limiting) and [batching](/docs/guides/batching?ref=docs-self-hosting).
+* **Queue** - A multitenant-aware, multitier queue designed for fairness and various [flow control](/docs/durable-execution/flow-control?ref=docs-self-hosting) methods (concurrency, throttling, prioritization, debouncing, rate limiting) and [batching](/docs/durable-execution/flow-control/batching?ref=docs-self-hosting).
 * **Executor** - Responsible for executing functions, from initial execution, step execution, writing incremental function run state to the _State store_, and retries after failures.
 * **State store (database)** - Persists data for pending and ongoing function runs. Data includes initial triggering event(s), step output and step errors.
 * **Database** - Persists system data and history including Apps, Functions, Events, Function run results.
@@ -81,7 +81,7 @@ Configuring the server can be done via command-line flags, environment variables
 
 By default, the server will:
 
-* Run on `localhost:8288` to serve the Event API, API, and Dashboard UI. `localhost:8289` is used for `connect` workers ([see docs for more connect-specific configuration](/docs/setup/connect#self-hosted-inngest)).
+* Run on `localhost:8288` to serve the Event API, API, and Dashboard UI. `localhost:8289` is used for `connect` workers ([see docs for more connect-specific configuration](/docs/durable-execution/deploying-functions/connect#self-hosted-inngest)).
 * Use an in-memory Redis server for the queue and state store. (See [Using external services](#using-external-services) for more information.)
 * Use SQLite for persistence. The default database is located at `./.inngest/main.db`. Queue and state store snapshots are periodically saved to the SQLite database, including prior to shutdown.
 * Disable app sync polling to check for new functions or updated configurations (see `--poll-interval` flag).
@@ -347,7 +347,7 @@ Inngest exposes a Prometheus-compatible scrape endpoint at `GET /metrics` on the
 Each system workload is different, so each deployment of the Inngest server may require different adjustments for scaling. We recommend monitoring your Redis and Postgres servers to asses how you may need to scale for your workflow. Consider some of the following options for improving performance:
 
 * **Execution slowness** - Functions are executing slower than expected.
-  * Function configuration: Adjust the [flow control](/docs/guides/flow-control) configuration for your functions that may be limiting throughput.
+  * Function configuration: Adjust the [flow control](/docs/durable-execution/flow-control) configuration for your functions that may be limiting throughput.
   * Increase `--queue-workers`: By default, each Inngest server only runs `100` queue workers in parallel for execution. Increase this number to increase the amount of concurrent executions for each Inngest server ([see configuration](#configuration)). Note that this will increase CPU and memory usage on your Inngest server.
   * Horizontal scaling: You can opt to horizontally scale your Inngest server to add more capacity by adding more replicas/containers to your setup instead of increasing `--queue-workers`.
   * Redis vertical scaling: If your Redis server is showing high CPU usage, you may need to vertically scale your Redis server(s).

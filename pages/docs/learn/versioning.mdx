@@ -14,7 +14,7 @@ Inngest uses **step-based memoization** and a graceful deterministic execution m
 
 ### Step-based memoization
 
-Each [step](/docs/learn/inngest-steps) in a function has a unique string identifier. When a function executes, the SDK:
+Each [step](/docs/durable-execution/primitives) in a function has a unique string identifier. When a function executes, the SDK:
 
 1. Hashes the step's identifier along with a counter (enabling steps inside loops)
 2. Checks if this hash exists in the function's stored state
@@ -23,7 +23,7 @@ Each [step](/docs/learn/inngest-steps) in a function has a unique string identif
 
 This means that completed steps are never re-executed, even across deployments. The SDK determines what to run based on the step identifiers in your code, not version numbers.
 
-For more details on this execution model, see [How Inngest functions are executed](/docs/learn/how-functions-are-executed).
+For more details on this execution model, see [How Inngest functions are executed](/docs/durable-execution/durable-workflows).
 
 ### Graceful determinism by default
 
@@ -208,7 +208,7 @@ This approach ensures:
 
 ### Using event versions
 
-You can also use the event's `v` [version field](/docs/features/events-triggers/event-format#event-payload-format) in combination with the `if` pattern above if you choose to control the
+You can also use the event's `v` [version field](/docs/durable-execution/guides-and-advanced/events-and-triggers/event-payloads-and-schemas) in combination with the `if` pattern above if you choose to control the
 
 ```typescript
 await inngest.send({
@@ -273,5 +273,5 @@ This helps you understand the impact of changes before deploying to production.
 
 ## Further reading
 
-- [How Inngest functions are executed](/docs/learn/how-functions-are-executed) — Detailed explanation of durable execution
-- [Inngest steps](/docs/learn/inngest-steps) — Step methods and patterns
+- [How Inngest functions are executed](/docs/durable-execution/durable-workflows) — Detailed explanation of durable execution
+- [Inngest steps](/docs/durable-execution/primitives) — Step methods and patterns

@@ -157,7 +157,7 @@ export default function FlowAccordion() {
               className="w-auto px-5 py-2.5 text-sm"
               asChild
             >
-              <Link href="/docs/guides/flow-control?ref=homepage">
+              <Link href="/docs/durable-execution/flow-control?ref=homepage">
                 Learn more
               </Link>
             </Button>

@@ -12,7 +12,7 @@ Want a copy-paste Express tutorial first? See [OpenTelemetry in Node.js](/blog/o
 Inngest uses OpenTelemetry for two separate features:
 
 - **AI metadata extraction:** Extract AI metadata from OpenTelemetry spans with OpenTelemetry GenAI attributes and attach it to the step where the model call happened. This is enabled by default with `aiMetadata: true`.
-- **Extended Traces:** Export spans from inside your function run into [Inngest Traces](/docs/platform/monitor/traces#extended-traces), so database queries, HTTP calls, AI requests, and custom spans appear in the run timeline.
+- **Extended Traces:** Export spans from inside your function run into [Inngest Traces](/docs/platform-and-operations/traces), so database queries, HTTP calls, AI requests, and custom spans appear in the run timeline.
 
 This guide first shows how to set up OpenTelemetry in your process. After that, it shows how to use that setup for AI metadata extraction and Extended Traces.
 
@@ -197,7 +197,7 @@ See the [`aiMetadata` client option](/docs/reference/typescript/v4/client/create
 
 ### Enable Extended Traces
 
-Extended Traces export application OpenTelemetry spans from inside an Inngest function run to [Inngest Traces](/docs/platform/monitor/traces#extended-traces). Use this when you want HTTP calls, database queries, AI requests, and custom spans to appear in the run timeline.
+Extended Traces export application OpenTelemetry spans from inside an Inngest function run to [Inngest Traces](/docs/platform-and-operations/traces). Use this when you want HTTP calls, database queries, AI requests, and custom spans to appear in the run timeline.
 
 If you create the provider yourself, add `new InngestSpanProcessor(inngest)` to that provider and configure the Inngest middleware with `behaviour: "off"`.
 

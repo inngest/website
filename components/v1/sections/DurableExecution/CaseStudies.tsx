@@ -32,13 +32,13 @@ const STUDIES: CaseStudyItem[] = [
     id: "realtime",
     title: "Realtime",
     body: "Use Realtime to stream updates from one to multiple Inngest functions or to implement a Human in the Loop mechanism.",
-    cta: { label: "Read the docs", href: "/docs/features/realtime" },
+    cta: { label: "Read the docs", href: "/docs/realtime" },
   },
   {
     id: "durable-endpoints",
     title: "Durable endpoints",
     body: "Make any API endpoint durable with automatic retries.",
-    cta: { label: "Read the docs", href: "/docs/learn/durable-endpoints" },
+    cta: { label: "Read the docs", href: "/docs/durable-execution/durable-endpoints" },
   },
 ];
 

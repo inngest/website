@@ -9,13 +9,13 @@ export const description = "Use step.sendEvent() inside an Inngest function to t
 In some workflows or pipeline functions, you may want to broadcast events from within your function to trigger _other_ functions. This pattern is useful when:
 
 * You want to decouple logic into separate functions that can be re-used across your system
-* You want to send an event to [fan-out](/docs/guides/fan-out-jobs) to multiple other functions
+* You want to send an event to [fan-out](/docs/durable-execution/guides-and-advanced/patterns/fan-out) to multiple other functions
 * Your function is handling many items that you want to process in parallel functions
 * You want to [delegate tasks to sub-agents asynchronously](/docs/durable-execution/durable-agents/sub-agent-delegation#delegate-asynchronously-with-stepsendevent) in an AI agent system
-* You want to [cancel](/docs/guides/cancel-running-functions) another function
+* You want to [cancel](/docs/durable-execution/guides-and-advanced/cancellation/bulk-cancellation) another function
 * You want to send data to another function [waiting for an event](/docs/reference/typescript/v4/functions/step-wait-for-event)
 
-If your function needs to handle the result of another function, or wait until that other function has completed, you should use [direct function invocation](/docs/guides/invoking-functions-directly) instead.
+If your function needs to handle the result of another function, or wait until that other function has completed, you should use [direct function invocation](/docs/durable-execution/primitives/step-invoke) instead.
 
 ## How to send events from functions
 
@@ -25,7 +25,7 @@ If your function needs to handle the result of another function, or wait until t
 
 To send events from within functions, you will use [`step.sendEvent()`](/docs/reference/typescript/v4/functions/step-send-event). This method takes a single event, or an array of events. The example below uses an array of events.
 
-This is an example of a [scheduled function](/docs/guides/scheduled-functions) that sends a weekly activity email to all users.
+This is an example of a [scheduled function](/docs/durable-execution/guides-and-advanced/events-and-triggers/schedules-and-delayed-starts) that sends a weekly activity email to all users.
 
 First, the function fetches all users, then it maps over all users to create a `"app/weekly-email-activity.send"` event for each user, and finally it sends all events to Inngest.
 
@@ -87,7 +87,7 @@ export const sendReminder = inngest.createFunction(
 Each of these functions will run in parallel and individually retry on error, resulting in a faster, more reliable system.
 
 <Callout>
-  💡 **Tip**: When triggering lots of functions to run in parallel, you will likely want to configure `concurrency` limits to prevent overloading your system. See our [concurrency guide](/docs/guides/concurrency) for more information.
+  💡 **Tip**: When triggering lots of functions to run in parallel, you will likely want to configure `concurrency` limits to prevent overloading your system. See our [concurrency guide](/docs/durable-execution/flow-control/concurrency) for more information.
 </Callout>
 
 ### Why `step.sendEvent()` vs. `inngest.send()`?
@@ -99,7 +99,7 @@ By using [`step.sendEvent()`](/docs/reference/typescript/v4/functions/step-send-
 
 To send events from within functions, you  will use [`step.Send()`](https://pkg.go.dev/github.com/inngest/inngestgo/step#Send) or [`step.SendMany()`](https://pkg.go.dev/github.com/inngest/inngestgo/step#SendMany)
 
-This is an example of a [scheduled function](/docs/guides/scheduled-functions) that sends a weekly activity email to all users.
+This is an example of a [scheduled function](/docs/durable-execution/guides-and-advanced/events-and-triggers/schedules-and-delayed-starts) that sends a weekly activity email to all users.
 
 First, the function fetches all users, then it maps over all users to create a `"app/weekly-email-activity.send"` event for each user, and finally it sends all events to Inngest.
 
@@ -116,7 +116,7 @@ Next, create a function that listens for the `"app/weekly-email-activity.send"` 
 Each of these functions will run in parallel and individually retry on error, resulting in a faster, more reliable system.
 
 <Callout>
-  💡 **Tip**: When triggering lots of functions to run in parallel, you will likely want to configure `concurrency` limits to prevent overloading your system. See our [concurrency guide](/docs/guides/concurrency) for more information.
+  💡 **Tip**: When triggering lots of functions to run in parallel, you will likely want to configure `concurrency` limits to prevent overloading your system. See our [concurrency guide](/docs/durable-execution/flow-control/concurrency) for more information.
 </Callout>
 
 </LanguageSection>
@@ -124,7 +124,7 @@ Each of these functions will run in parallel and individually retry on error, re
 
 To send events from within functions, you will use [`step.send_event()`](/docs/reference/python/steps/send-event). This method takes a single event, or an array of events. The example below uses an array of events.
 
-This is an example of a [scheduled function](/docs/guides/scheduled-functions) that sends a weekly activity email to all users.
+This is an example of a [scheduled function](/docs/durable-execution/guides-and-advanced/events-and-triggers/schedules-and-delayed-starts) that sends a weekly activity email to all users.
 
 First, the function fetches all users, then it maps over all users to create a `"app/weekly-email-activity.send"` event for each user, and finally it sends all events to Inngest.
 
@@ -187,7 +187,7 @@ async def send_reminder(ctx: inngest.Context):
 Each of these functions will run in parallel and individually retry on error, resulting in a faster, more reliable system.
 
 <Callout>
-  💡 **Tip**: When triggering lots of functions to run in parallel, you will likely want to configure `concurrency` limits to prevent overloading your system. See our [concurrency guide](/docs/guides/concurrency) for more information.
+  💡 **Tip**: When triggering lots of functions to run in parallel, you will likely want to configure `concurrency` limits to prevent overloading your system. See our [concurrency guide](/docs/durable-execution/flow-control/concurrency) for more information.
 </Callout>
 
 ### Why `step.send_event()` vs. `inngest.send()`?
@@ -200,20 +200,20 @@ By using [`step.send_event()`](/docs/reference/python/steps/send-event) Inngest'
 
 ## Parallel functions vs. parallel steps
 
-Another technique similar is running multiple steps in parallel (read the [step parallelism guide](/docs/guides/step-parallelism)). Here are the key differences:
+Another technique similar is running multiple steps in parallel (read the [step parallelism guide](/docs/durable-execution/primitives/group-parallel)). Here are the key differences:
 
 * Both patterns run code in parallel
 * With parallel steps, you can access the output of each step, whereas with the above example, you cannot
 * Parallel steps have limit of 1,000 steps, though you can trigger as many functions as you'd like using the send event pattern
-* Decoupled functions can be tested and [replayed](/docs/platform/replay) separately, whereas parallel steps can only be tested as a whole
+* Decoupled functions can be tested and [replayed](/docs/platform-and-operations/replay-runs-in-bulk) separately, whereas parallel steps can only be tested as a whole
 * You can retry individual functions easily if they permanently fail, whereas if a step permanently fails (after retrying) the function itself will fail and terminate.
 
 ## Sending events vs. invoking
 
-A related pattern is invoking external functions directly instead of just triggering them with an event. See the [Invoking functions directly](/docs/guides/invoking-functions-directly) guide. Here are some key differences:
+A related pattern is invoking external functions directly instead of just triggering them with an event. See the [Invoking functions directly](/docs/durable-execution/primitives/step-invoke) guide. Here are some key differences:
 
 * Sending events from functions is better suited for parallel processing of independent tasks and invocation is better for coordinated, interdependent functions
 * Sending events can be done in bulk, whereas invoke can only invoke one function at a time.
-* Sending events can be combined with [fan-out](/docs/guides/fan-out-jobs) to trigger multiple functions from a single event
+* Sending events can be combined with [fan-out](/docs/durable-execution/guides-and-advanced/patterns/fan-out) to trigger multiple functions from a single event
 * Unlike invocation, sending events will not receive the result of the invoked function
 

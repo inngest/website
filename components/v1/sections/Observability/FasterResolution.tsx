@@ -14,7 +14,7 @@ import { reveals } from "@/utils/v1/reveals";
 // (1828×914, q82) so we don't have to hand-rebuild the typography in
 // HTML — ~320KB combined vs 4.2MB as JPG.
 
-const SEE_DOCS_URL = "/docs/guides/concurrency?ref=observability";
+const SEE_DOCS_URL = "/docs/durable-execution/flow-control/concurrency?ref=observability";
 
 const BEFORE_SRC = "/assets/v1/observability/faster-resolution-before.webp";
 const AFTER_SRC = "/assets/v1/observability/faster-resolution-after.webp";

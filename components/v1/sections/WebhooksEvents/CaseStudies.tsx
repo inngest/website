@@ -79,7 +79,7 @@ const STUDIES: CaseStudyItem[] = [
       </>
     ),
     logo: { src: "/assets/v1/logos/replit.svg", alt: "Replit", width: 112, height: 28 },
-    cta: { label: "Read the events & triggers docs", href: "/docs/features/events-triggers" },
+    cta: { label: "Read the events & triggers docs", href: "/docs/durable-execution/guides-and-advanced/events-and-triggers" },
   },
 ];
 

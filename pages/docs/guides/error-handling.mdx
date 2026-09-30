@@ -54,13 +54,13 @@ Use Inngest error handling in four layers:
 ## Error handling options
 
 <CardGroup cols={1}>
-  <Card title="Automatic retries" icon={<ReplayIcon className="text-basis h-4 w-4" />} href={'/docs/features/inngest-functions/error-retries/retries'}>
+  <Card title="Automatic retries" icon={<ReplayIcon className="text-basis h-4 w-4" />} href={'/docs/durable-execution/guides-and-advanced/error-handling/retries'}>
     Configure how many times Inngest retries a function or step after it throws.
   </Card>
-  <Card title="Failure handlers" icon={<RiErrorWarningLine className="text-basis h-4 w-4"/>} href={'/docs/features/inngest-functions/error-retries/failure-handlers'}>
+  <Card title="Failure handlers" icon={<RiErrorWarningLine className="text-basis h-4 w-4"/>} href={'/docs/durable-execution/guides-and-advanced/error-handling/failure-handlers'}>
     Run cleanup, alerts, or compensating logic after all retries are exhausted.
   </Card>
-  <Card title="Step-level rollbacks" icon={<RiArrowGoBackLine className="text-basis h-4 w-4"/>} href={'/docs/features/inngest-functions/error-retries/rollbacks'}>
+  <Card title="Step-level rollbacks" icon={<RiArrowGoBackLine className="text-basis h-4 w-4"/>} href={'/docs/durable-execution/guides-and-advanced/error-handling/rollbacks'}>
     Catch a failed step and run fallback or rollback logic without failing the entire workflow.
   </Card>
 </CardGroup>
@@ -86,13 +86,13 @@ Inngest helps you handle both **errors** and **failures**:
 - A **failed step** is a step that has exhausted all retry attempts. You can catch it with native language error handling.
 - A **failed function** is a function run that has exhausted retries or received an unhandled failed step. It is marked as failed in the Inngest UI.
 
-Use [failure handlers](/docs/features/inngest-functions/error-retries/failure-handlers) when you need a final callback after every retry is exhausted. Use [rollbacks](/docs/features/inngest-functions/error-retries/rollbacks) when you want to handle one failed step and continue or compensate inside the same workflow.
+Use [failure handlers](/docs/durable-execution/guides-and-advanced/error-handling/failure-handlers) when you need a final callback after every retry is exhausted. Use [rollbacks](/docs/durable-execution/guides-and-advanced/error-handling/rollbacks) when you want to handle one failed step and continue or compensate inside the same workflow.
 
 ## Keep retried work idempotent
 
 Retried code should be idempotent, which means running it more than once does not create duplicate or inconsistent side effects. For example, inserting a new user can create duplicates if the first write succeeded but the response timed out. [Upserting a user](https://www.cockroachlabs.com/blog/sql-upsert/), using deterministic IDs, or checking for existing records before writing are safer retry patterns.
 
-Learn how to write retriable steps safely in the [handling idempotency guide](/docs/guides/handling-idempotency).
+Learn how to write retriable steps safely in the [handling idempotency guide](/docs/durable-execution/guides-and-advanced/idempotency).
 
 ## FAQ
 
@@ -106,7 +106,7 @@ Retries are applied to each step independently. A failed `step.run()` can retry 
 
 ### How do I handle a step that fails after all retries?
 
-Wrap the step in native language error handling such as `try`/`catch`, then run fallback logic, a rollback step, or a different provider. See [step-level rollbacks](/docs/features/inngest-functions/error-retries/rollbacks).
+Wrap the step in native language error handling such as `try`/`catch`, then run fallback logic, a rollback step, or a different provider. See [step-level rollbacks](/docs/durable-execution/guides-and-advanced/error-handling/rollbacks).
 
 ### How do I run code after a function fails permanently?
 

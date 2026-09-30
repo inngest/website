@@ -62,7 +62,7 @@ The `createFunction` method accepts a series of arguments to define your functio
   </Property>
 
   <Property name="throttle" type="object">
-    Limits the number of new function runs started over a given period of time ([guide](/docs/guides/throttling)).
+    Limits the number of new function runs started over a given period of time ([guide](/docs/durable-execution/flow-control/throttling)).
 
     <Properties nested={true} collapse={true}>
       <Property name="limit" type="number" required>
@@ -81,7 +81,7 @@ The `createFunction` method accepts a series of arguments to define your functio
   </Property>
 
   <Property name="idempotency" type="string">
-    A key expression which is used to prevent duplicate events from triggering a function more than once in 24 hours. This is equivalent to setting `rateLimit` with a `key`, a `limit` of `1`  and `period` of `24hr`. [Read the idempotency guide here](/docs/guides/handling-idempotency).
+    A key expression which is used to prevent duplicate events from triggering a function more than once in 24 hours. This is equivalent to setting `rateLimit` with a `key`, a `limit` of `1`  and `period` of `24hr`. [Read the idempotency guide here](/docs/durable-execution/guides-and-advanced/idempotency).
 
     Expressions are defined using the Common Expression Language (CEL) with the original event accessible using dot-notation. Read [our guide to writing expressions](/docs/durable-execution/guides-and-advanced/writing-expressions) for more info. Examples:
 
@@ -147,7 +147,7 @@ The `createFunction` method accepts a series of arguments to define your functio
   </Property>
 
   <Property name="batchEvents" type="object">
-    Configure how the function should consume batches of events ([reference](/docs/guides/batching))
+    Configure how the function should consume batches of events ([reference](/docs/durable-execution/flow-control/batching))
 
     <Properties nested={true} collapse={true}>  
       <Property name="maxSize" type="number" required>
@@ -203,7 +203,7 @@ The `createFunction` method accepts a series of arguments to define your functio
   </Property>
 
   <Property name="timeouts" type="object">
-    Options to configure timeouts for cancellation ([reference](/docs/features/inngest-functions/cancellation/cancel-on-timeouts))
+    Options to configure timeouts for cancellation ([reference](/docs/durable-execution/guides-and-advanced/cancellation/timeouts))
     <Properties nested={true} collapse={true}>
       <Property name="start" type="string">
         The timeout for starting a function run.  If the time between scheduling and starting a function exceeds this duration, the function will be cancelled.
@@ -244,7 +244,7 @@ inngest.createFunction(
 ```
 
 Alternatively, you can specify an array of up to 10 of the following triggers to invoke
-your function with multiple events or crons. See the [Multiple Triggers](/docs/guides/multiple-triggers) guide.
+your function with multiple events or crons. See the [Multiple Triggers](/docs/durable-execution/guides-and-advanced/events-and-triggers/event-and-trigger-concepts) guide.
 
 <Callout>
 Cron triggers with overlapping schedules for a single function will be deduplicated.
@@ -328,7 +328,7 @@ export interface Logger {
 }
 ```
 
-It is a proxy object that is either backed by `console` or the logger you provided ([reference](/docs/guides/logging)).
+It is a proxy object that is either backed by `console` or the logger you provided ([reference](/docs/durable-execution/guides-and-advanced/logging)).
 
 #### `attempt`
 

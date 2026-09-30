@@ -85,8 +85,8 @@ or, if you're on Vercel's Pro plan, configure protection bypass:
 
 If you have Vercel's [Deployment Protection feature](https://vercel.com/docs/security/deployment-protection) enabled, _by default_, Inngest may not be able to communicate with your application. This may depend on what configuration you have set:
 
-* **"Standard protection"** or **"All deployments"** - This affects Inngest production and [branch environments](/docs/platform/environments).
-* **"Only preview deployments"** - This affects [branch environments](/docs/platform/environments).
+* **"Standard protection"** or **"All deployments"** - This affects Inngest production and [branch environments](/docs/platform-and-operations/environments-and-branch-deploys).
+* **"Only preview deployments"** - This affects [branch environments](/docs/platform-and-operations/environments-and-branch-deploys).
 
 To work around this, you can either:
 
@@ -138,10 +138,10 @@ You can pass multiple paths by adding their path information to each Vercel proj
 
 ## Setting up a staging environment
 
-If you prefer to set up a dedicated staging environment instead of using [branch environments](/docs/platform/environments), you can do that leveraging Inngest's custom environments and Vercel's custom environments. Here are the steps to set that up correctly:
+If you prefer to set up a dedicated staging environment instead of using [branch environments](/docs/platform-and-operations/environments-and-branch-deploys), you can do that leveraging Inngest's custom environments and Vercel's custom environments. Here are the steps to set that up correctly:
 
 1. Create a Vercel custom environment ([docs](https://vercel.com/docs/deployments/environments#custom-environments))
-2. Create an Inngest custom environment ([docs](/docs/platform/environments#custom-environments))
+2. Create an Inngest custom environment ([docs](/docs/platform-and-operations/environments-and-branch-deploys))
 3. Create an Inngest Event Key in your new custom environment with a memorable name like "Vercel - My app" ([docs](/docs/platform-and-operations/keys-and-access)). Copy this for later.
     <img src="/assets/docs/deploy/inngest-dash-staging-keys.png" className="max-w-sm my-1"/>
 4. Copy your Inngest [Signing Key](/docs/platform/signing-keys)

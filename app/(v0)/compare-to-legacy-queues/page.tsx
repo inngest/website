@@ -356,14 +356,14 @@ export default function Page() {
               title: "Basic example: Simple background job",
               description:
                 "A guide on how to create the basic, queued background job and trigger it with the Inngest SDK.",
-              url: `/docs/guides/background-jobs?ref=${baseCTA}`,
+              url: `/docs/patterns/jobs/keeping-your-api-fast?ref=${baseCTA}`,
             },
             {
               type: "docs",
               title: "Flow control configuration",
               description:
                 "Learn about the powerful options including throttling, concurrency controls, rate limiting, debounce and priority.",
-              url: `/docs/guides/flow-control?ref=${baseCTA}`,
+              url: `/docs/durable-execution/flow-control?ref=${baseCTA}`,
             },
           ]}
         />
