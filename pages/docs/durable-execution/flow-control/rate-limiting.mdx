@@ -1,9 +1,12 @@
+import { Compatibility } from "shared/Docs/mdx";
 export const metaTitle = "Rate limiting";
 export const description = "Skip excess runs to protect a service from work you can discard.";
 
 # Rate limiting
 
 > Skip excess runs to protect a service from work you can discard.
+
+<Compatibility endpoints={false} />
 
 Discard redundant webhook work once a start limit is reached. Inngest checks each matching event before it starts the function and skips excess runs; it does not queue them for later.
 

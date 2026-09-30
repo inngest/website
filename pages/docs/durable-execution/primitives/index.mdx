@@ -47,6 +47,25 @@ A step does not make an external action exactly once. If a provider accepts a re
 - [Parallel steps](/docs/durable-execution/primitives/group-parallel) — Run independent steps concurrently and collect their results.
 - [group.experiment](/docs/durable-execution/primitives/group-experiment) — Select a durable variant for a run so you can compare outcomes.
 
+## Workflow and endpoint support
+
+Every primitive works in [durable workflows](/docs/durable-execution/durable-workflows). Most also work in [durable endpoints](/docs/durable-execution/durable-endpoints):
+
+| Primitive | Durable workflows | Durable endpoints |
+| --- | :---: | :---: |
+| `step.run` | ✓ | ✓ |
+| `step.sleep` | ✓ | ✓ |
+| `step.sleepUntil` | ✓ | ✓ |
+| `step.waitForEvent` | ✓ | ✓ |
+| `step.waitForSignal` | ✓ | ✓ |
+| `step.invoke` | ✓ | ✓ |
+| `step.sendEvent` | ✓ | ✓ |
+| Parallel steps | ✓ | ✓ |
+| `defer` | ✓ | — |
+| `group.experiment` | ✓ | — |
+
+In a durable endpoint, a sleep or wait turns the request async and redirects the caller to wait for the result.
+
 ## Keep runs predictable
 
 Put side effects in steps so a resumed run can reuse completed results. Handle timeouts for waits and invocations. Step results must be JSON-serializable; return only the data later steps need.

@@ -1,9 +1,12 @@
+import { Compatibility } from "shared/Docs/mdx";
 export const metaTitle = "Throttling";
 export const description = "Smooth traffic bursts by queueing runs until your service has capacity.";
 
 # Throttling
 
 > Smooth traffic bursts by queueing runs until your service has capacity.
+
+<Compatibility endpoints={false} />
 
 Protect an API that accepts only a fixed number of requests per period. Throttling queues runs above the start limit and starts them as capacity becomes available, so burst traffic does not discard work.
 

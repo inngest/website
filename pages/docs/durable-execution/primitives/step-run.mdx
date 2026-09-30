@@ -1,7 +1,10 @@
+import { Compatibility } from "shared/Docs/mdx";
 export const metaTitle = "step.run";
 export const description = "Retry failed work without repeating earlier completed steps.";
 
 # `step.run`
+
+<Compatibility />
 
 `step.run()` makes one operation a durable step that Inngest can retry if it fails. Inngest saves a completed step's result, so later retries can continue without repeating that work.
 

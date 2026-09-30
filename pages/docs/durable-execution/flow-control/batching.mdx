@@ -1,9 +1,12 @@
+import { Compatibility } from "shared/Docs/mdx";
 export const metaTitle = "Batching";
 export const description = "Reduce API calls and database writes by processing many events in one run.";
 
 # Batching
 
 > Reduce API calls and database writes by processing many events in one run.
+
+<Compatibility endpoints={false} />
 
 Group activity events by account and send one bulk write for each batch. Inngest collects matching events and passes them to one function run as `events`, reducing calls to your database or API.
 

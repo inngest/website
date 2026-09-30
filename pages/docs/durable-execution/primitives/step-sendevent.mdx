@@ -1,7 +1,10 @@
+import { Compatibility } from "shared/Docs/mdx";
 export const metaTitle = "step.sendEvent";
 export const description = "Start independent workflows with events without repeating a completed send after a retry.";
 
 # `step.sendEvent`
+
+<Compatibility />
 
 `step.sendEvent()` publishes an event from inside a durable function. Inngest saves a completed send as a step, so the sender can retry later work without sending that event again.
 

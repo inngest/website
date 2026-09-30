@@ -1,7 +1,10 @@
+import { Compatibility } from "shared/Docs/mdx";
 export const metaTitle = "group.experiment";
 export const description = "Compare workflow variants on real traffic while keeping each run's choice stable through retries.";
 
 # `group.experiment`
+
+<Compatibility endpoints={false} />
 
 `group.experiment()` selects one of several named variants for a run. Inngest keeps that selection through retries, so you can compare changes on real traffic without switching a run between variants.
 

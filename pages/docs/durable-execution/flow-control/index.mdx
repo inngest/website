@@ -1,3 +1,4 @@
+import { Compatibility } from "shared/Docs/mdx";
 import { Mermaid } from "src/shared/Docs/Mermaid";
 
 export const metaTitle = "Flow control";
@@ -7,7 +8,9 @@ export const description = "Protect dependent services and keep urgent work movi
 
 > Protect dependent services and keep urgent work moving with controls on when runs and steps execute.
 
-Limit concurrent work, smooth bursts, discard excess runs, or move urgent work ahead in a queue. Inngest applies these controls when it schedules function runs and steps, so you can protect the services they call.
+<Compatibility endpoints={false} />
+
+Limit concurrent work, smooth bursts, discard excess runs, or move urgent work ahead in a queue. Inngest applies these controls when it schedules function runs and steps, so you can protect the services they call. Flow control applies to [durable workflows](/docs/durable-execution/durable-workflows). It doesn't currently apply to [durable endpoints](/docs/durable-execution/durable-endpoints).
 
 ## Flow control types
 

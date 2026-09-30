@@ -1,7 +1,10 @@
+import { Compatibility } from "shared/Docs/mdx";
 export const metaTitle = "step.waitForEvent";
 export const description = "Wait for an event to resume your workflow without keeping your function running.";
 
 # `step.waitForEvent`
+
+<Compatibility />
 
 `step.waitForEvent()` pauses a run until a matching event arrives or the wait times out. Inngest resumes the run with the event without keeping your function process running while it waits.
 

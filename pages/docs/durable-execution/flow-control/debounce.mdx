@@ -1,9 +1,12 @@
+import { Compatibility } from "shared/Docs/mdx";
 export const metaTitle = "Debounce";
 export const description = "Handle a burst of updates once using its latest event.";
 
 # Debounce
 
 > Handle a burst of updates once using its latest event.
+
+<Compatibility endpoints={false} />
 
 Wait until a user stops editing a record, then process only the latest update. Each matching event restarts the quiet period for its key, so the function runs once for the burst.
 

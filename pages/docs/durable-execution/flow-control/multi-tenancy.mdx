@@ -1,9 +1,12 @@
+import { Compatibility } from "shared/Docs/mdx";
 export const metaTitle = "Multi-tenancy";
 export const description = "Apply limits per tenant so one tenant's workload does not consume capacity reserved for others.";
 
 # Multi-tenancy
 
 > Apply limits per tenant so one tenant's workload does not consume capacity reserved for others.
+
+<Compatibility endpoints={false} />
 
 Give each tenant its own concurrency and throttle limits so one busy tenant does not consume another tenant's allowance. Use the same stable tenant ID in each key expression to keep those limits aligned.
 

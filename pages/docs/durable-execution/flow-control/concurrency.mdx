@@ -1,3 +1,4 @@
+import { Compatibility } from "shared/Docs/mdx";
 import Lottie from "lottie-react";
 import Concurrency from "components/RedesignedLanding/FlowAccoridion/Lottie/Concurrency.json";
 
@@ -7,6 +8,8 @@ export const description = "Protect APIs and databases by limiting how many work
 # Step concurrency
 
 > Protect APIs and databases by limiting how many workflow steps execute at once.
+
+<Compatibility endpoints={false} />
 
 Limit the number of steps calling a payment API at once. Inngest queues steps above the concurrency limit and starts them when capacity opens; waiting runs do not use those execution slots.
 

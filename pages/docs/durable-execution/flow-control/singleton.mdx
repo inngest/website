@@ -1,9 +1,12 @@
+import { Compatibility } from "shared/Docs/mdx";
 export const metaTitle = "Singleton";
 export const description = "Prevent overlapping runs for the same key from duplicating work or overwriting results.";
 
 # Singleton
 
 > Prevent overlapping runs for the same key from duplicating work or overwriting results.
+
+<Compatibility endpoints={false} />
 
 Keep two syncs for the same user from running at once. Singleton applies to the entire function run for that key; choose whether a new event skips its run or replaces the active run.
 

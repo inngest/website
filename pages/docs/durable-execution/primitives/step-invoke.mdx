@@ -1,7 +1,10 @@
+import { Compatibility } from "shared/Docs/mdx";
 export const metaTitle = "step.invoke";
 export const description = "Reuse another durable function and continue your workflow when it returns a result.";
 
 # `step.invoke`
+
+<Compatibility />
 
 `step.invoke()` starts another Inngest function and waits for its result. The called function runs separately with its own steps and retries, so you can reuse it without copying its logic into the parent.
 

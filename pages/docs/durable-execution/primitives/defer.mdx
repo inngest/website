@@ -1,7 +1,10 @@
+import { Compatibility } from "shared/Docs/mdx";
 export const metaTitle = "defer";
 export const description = "Start independent follow-up work without delaying the current run.";
 
 # `defer`
+
+<Compatibility endpoints={false} />
 
 `defer()` schedules another function to run after the current run finishes. The deferred function has its own steps and retries, so follow-up work does not delay the parent run.
 
