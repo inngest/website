@@ -1,19 +1,69 @@
+import { Col } from "src/shared/Docs/mdx";
+
 export const metaTitle = "TypeScript quick start";
-export const description = "Build a durable background workflow in Next.js and inspect its steps locally.";
+export const description = "Build a durable TypeScript workflow and inspect its steps locally.";
 
 # TypeScript quick start
 
-> Build a durable background workflow in Next.js and inspect its steps locally.
+> Build a durable TypeScript workflow on Node.js, Bun, or Deno with your framework of choice.
 
 Send a task event from a Next.js app, run a saved step, then inspect the one-second pause and completed run in the local Dev Server. You need no Inngest account for this exercise.
 
-This example uses the TypeScript SDK v4 and the Next.js App Router. If your app uses another runtime, see [framework setup](/docs/durable-execution/guides-and-advanced/deploying-functions) after you finish the core example.
+The TypeScript SDK v4 works across Node.js, Bun, and Deno and with any framework. This quick start uses the Next.js App Router for a complete example. If you use another framework, choose its [HTTP handler](#use-another-framework) when you reach step 3.
 
 > **Using a coding agent?** Paste the instruction below into it. The agent should build and verify the same workflow taught on this page.
 
-```text
-In this Next.js App Router project, add an Inngest TypeScript v4 workflow. Reuse any existing Inngest client or serve route. Create a process-task function triggered by app/task.created. Use step.run("handle-task") to return the event ID and step.sleep("pause", "1s") to pause the run. Serve the function at /api/inngest and add a POST /api/create-task route that sends a sample event. Start the app with INNGEST_DEV=1 and start the Dev Server against the actual serve URL. Trigger the function, inspect its run, and report the files changed, commands run, and observed result.
+```plaintext
+In this Next.js App Router project,
+add an Inngest TypeScript v4 workflow. Reuse any existing Inngest client or serve route. Create a process-task function triggered by app/task.created. Use step.run("handle-task") to return the event ID and step.sleep("pause", "1s") to pause the run. Serve the function at /api/inngest and add a POST /api/create-task route that sends a sample event. Start the app with INNGEST_DEV=1 and start the Dev Server against the actual serve URL. Trigger the function, inspect its run, and report the files changed, commands run, and observed result.
 ```
+
+<hr />
+
+### Supported frameworks
+
+**While this guide uses NextJS**, Inngest supports **all** major frameworks and runs across Node, Bun, and Deno:
+
+<div className="grid gap-x-6 md:grid-cols-3">
+
+<Col>
+* [Astro](/docs/learn/serving-inngest-functions#framework-astro)
+* [AWS Lambda](/docs/learn/serving-inngest-functions#framework-aws-lambda)
+* [Bun](/docs/learn/serving-inngest-functions#bun-serve)
+* [Cloudflare Pages](/docs/learn/serving-inngest-functions#framework-cloudflare-pages-functions)
+* [Cloudflare Workers](/docs/learn/serving-inngest-functions#framework-cloudflare-workers)
+* [DigitalOcean Functions](/docs/learn/serving-inngest-functions#framework-digital-ocean-functions)
+* [ElysiaJS](/docs/learn/serving-inngest-functions#framework-elysia-js)
+* [Express](/docs/learn/serving-inngest-functions#framework-express)
+</Col>
+
+<Col>
+* [Fastify](/docs/learn/serving-inngest-functions#framework-fastify)
+* [Firebase Cloud Functions](/docs/learn/serving-inngest-functions#framework-firebase-cloud-functions)
+* [Fresh (Deno)](/docs/learn/serving-inngest-functions#framework-fresh-deno)
+* [Google Cloud Run Functions](/docs/learn/serving-inngest-functions#framework-google-cloud-run-functions)
+* [H3](/docs/learn/serving-inngest-functions#framework-h3)
+* [Hono](/docs/learn/serving-inngest-functions#framework-hono)
+* [Koa](/docs/learn/serving-inngest-functions#framework-koa)
+* [NestJS](/docs/learn/serving-inngest-functions#framework-nest-js)
+</Col>
+
+<Col>
+* [Next.js](/docs/learn/serving-inngest-functions#framework-next-js)
+* [Nitro](/docs/learn/serving-inngest-functions#framework-nitro)
+* [Nuxt](/docs/learn/serving-inngest-functions#framework-nuxt)
+* [Redwood](/docs/learn/serving-inngest-functions#framework-redwood)
+* [Remix](/docs/learn/serving-inngest-functions#framework-remix)
+* [Supabase Edge Functions](/docs/learn/serving-inngest-functions#framework-supabase-edge-functions)
+* [SvelteKit](/docs/learn/serving-inngest-functions#framework-svelte-kit)
+* [TanStack Start](/docs/learn/serving-inngest-functions#framework-tanstack-start)
+</Col>
+
+</div>
+
+If your framework is not listed, [create a custom handler](/docs/learn/serving-inngest-functions#custom-frameworks).
+
+<hr />
 
 ## Before you start
 
@@ -157,4 +207,4 @@ Invoke `process-task` again with `{"data":{"id":"retry-demo"}}`. Open the run an
 - [How durable execution works](/docs/durable-execution/concepts) explains why runs can resume after a pause or failure.
 - Run a step explains saved results and retries.
 - [Error handling and retries](/docs/durable-execution/guides-and-advanced/error-handling) shows how to recover from real failures and keep side effects safe.
-- [Deploy your functions](/docs/durable-execution/guides-and-advanced/deploying-functions) covers hosting paths.
+- [Deploy your functions](/docs/durable-execution/deploying-functions) covers hosting paths.

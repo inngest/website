@@ -1,4 +1,4 @@
-import { CodeGroup } from "src/shared/Docs/mdx";
+import { CodeGroup, DocsCallout } from "src/shared/Docs/mdx";
 
 export const metaTitle = "Local Development";
 export const description = "Build, test, and run Inngest functions locally in a single command.";
@@ -12,6 +12,8 @@ You can run Inngest locally in a single command to build, test, and iterate loca
 The Dev Server records local events and function runs, so you can test steps, waits, retries, and errors before you deploy.  The Dev Server also bundles in a full tracing UI and allows you to replay local and production functions to easily fix issues.
 
 ## Running the dev server locally
+
+<DocsCallout>
 
 Start the Dev Server with one of the commands below:
 
@@ -35,6 +37,8 @@ docker run -p 8288:8288 -p 8289:8289 inngest/inngest \
   inngest dev -u http://host.docker.internal:3000/api/inngest
 ```
 </CodeGroup>
+
+</DocsCallout>
 
 If Homebrew blocks the tap as untrusted, run `brew trust --cask inngest/tap/inngest` and retry the install.
 

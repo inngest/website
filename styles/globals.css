@@ -118,6 +118,52 @@ html.docs.dark li code, html.docs.dark p code {
   border-radius: 3px;
 }
 
+html.docs:has(.docs-callout) {
+  overflow-x: clip;
+}
+
+.docs-callout {
+  position: relative;
+  isolation: isolate;
+  margin: 1.5rem 0;
+  padding: 3rem 1.5rem;
+  color: rgb(var(--color-foreground-base));
+  background-color: rgb(var(--color-background-canvas-subtle) / 0.5);
+}
+
+.docs-callout > :first-child {
+  margin-top: 0;
+}
+
+.docs-callout > :last-child {
+  margin-bottom: 0;
+}
+
+@media (min-width: 1024px) {
+  .docs-callout {
+    margin-left: -4rem;
+    padding-left: 4rem;
+    background-color: transparent;
+  }
+
+  .docs-callout::before {
+    content: "";
+    position: absolute;
+    top: 0;
+    bottom: 0;
+    left: 0;
+    z-index: -1;
+    width: calc(100vw - 248px);
+    background-color: rgb(var(--color-background-canvas-subtle) / 0.5);
+  }
+}
+
+@media (min-width: 1280px) {
+  .docs-callout::before {
+    width: calc(100vw - 280px);
+  }
+}
+
 * {
   transition: box-shadow .3s;
 }

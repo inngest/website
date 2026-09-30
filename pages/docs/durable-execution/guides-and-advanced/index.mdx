@@ -1,11 +1,11 @@
 export const metaTitle = "Guides and advanced";
-export const description = "Find the right guide to trigger, coordinate, deploy, and inspect durable workflows.";
+export const description = "Find the right guide to trigger, coordinate, and inspect durable workflows.";
 
 # Guides and advanced
 
-> Find the right guide to trigger, coordinate, deploy, and inspect durable workflows.
+> Find the right guide to trigger, coordinate, and inspect durable workflows.
 
-Start with the task you need to finish, such as sending an event, coordinating steps, or deploying a function. Each guide links the implementation to the behavior you can inspect in a run. If you are new to Inngest, start with the [Quick start](/docs/durable-execution/quick-start).
+Start with the task you need to finish, such as sending an event, coordinating steps, or inspecting a run. Each guide links the implementation to the behavior you can inspect in a run. If you are new to Inngest, start with the [Quick start](/docs/durable-execution/quick-start).
 ## Trigger work
 - **Send events and use webhooks.** Start functions from your app or an external service. See [Send events](/docs/durable-execution/guides-and-advanced/events-and-triggers/send-events) and [Receive webhook events](/docs/durable-execution/guides-and-advanced/events-and-triggers/receive-webhook-events).
 - **Schedule work.** Run a function on a cron schedule or after a delay. See [Schedules and delayed starts](/docs/durable-execution/guides-and-advanced/events-and-triggers/schedules-and-delayed-starts).
@@ -21,21 +21,13 @@ Start with the task you need to finish, such as sending an event, coordinating s
 - **Cancel or pause work.** Stop runs that are no longer needed or pause a function. See [Cancellation](/docs/durable-execution/guides-and-advanced/cancellation) and [Pause and resume functions](/docs/platform-and-operations/pause-and-resume-functions).
 - **Change a live workflow safely.** Keep step IDs stable, test a waiting run after a code change, and route incompatible rewrites to a new function. See [Versioning](/docs/durable-execution/guides-and-advanced/versioning) and [Testing](/docs/durable-execution/guides-and-advanced/testing).
 - **Protect downstream services.** Limit concurrent runs, rate limit or throttle requests, and debounce bursts. See [flow control](/docs/durable-execution/flow-control), [rate limiting](/docs/durable-execution/flow-control/rate-limiting), [throttling](/docs/durable-execution/flow-control/throttling), and [debouncing](/docs/durable-execution/flow-control/debounce).
-## Deploy and operate
-- **Deploy your functions.** Run an app on your infrastructure with an HTTP `serve()` handler or Connect. See [Deploying functions](/docs/durable-execution/guides-and-advanced/deploying-functions) for more information.
+## Operate functions
+- **Speed up consecutive steps.** Use checkpointing to run steps eagerly while Inngest records their progress. See [Checkpointing](/docs/durable-execution/guides-and-advanced/checkpointing) for setup, runtime options, and limitations.
 - **Log the work that happened.** Add structured context to function logs without duplicating messages during a resume. See [Logging](/docs/durable-execution/guides-and-advanced/logging).
 - **Test before deployment.** Check function decisions, step behavior, waits, and retries locally. See [Testing](/docs/durable-execution/guides-and-advanced/testing).
 - **Inspect and recover runs.** Find an event or run, read its step trace, and replay work when appropriate. See [Inspect events and runs](/docs/platform-and-operations/inspect-events-and-runs), [Traces](/docs/platform-and-operations/traces), and [Replay runs in bulk](/docs/platform-and-operations/replay-runs-in-bulk). For CLI commands, use Debug with the CLI.
-- **Keep apps in sync.** Register changed function definitions and check deployment health. See [Apps and syncs](/docs/platform-and-operations/apps-and-syncs) and [Deploying functions](/docs/durable-execution/guides-and-advanced/deploying-functions).
+- **Keep apps in sync.** Register changed function definitions and check deployment health. See [Apps and syncs](/docs/platform-and-operations/apps-and-syncs).
 
-## Move from `serve()` to `connect()`
-The function code is portable, but Connect needs a long-running worker with an outbound connection. Start a separate Connect app to test your functions. A migration path for an existing `serve()` app is TBD. Connect syncs its functions when a worker connects; check credentials, worker readiness, and runtime requirements before moving production work.
-## Move across clouds and hosts
-1. Deploy the same `serve()` handler on the new host. Keep the app, function, and step IDs stable so waiting runs can use saved progress.
-2. Configure keys and check the new provider's timeouts, payload size, and network access.
-3. Update the app URL in Inngest and resync. Confirm the expected functions appear and run a test event.
-4. In a test environment, confirm a waiting run resumes after the move before retiring the old endpoint.
-Inngest keeps completed step results across deployments; the new code must still work with those saved results. See [apps and syncing](/docs/platform-and-operations/apps-and-syncs), [Versioning](/docs/durable-execution/guides-and-advanced/versioning), and [Idempotency](/docs/durable-execution/guides-and-advanced/idempotency). Moving an app to planned Inngest compute needs a separate procedure once its deployment requirements are confirmed.
 For API options, use the [Reference](/docs/sdk/overview/reference). For quotas and runtime constraints, use [Limits](/docs/durable-execution/limits).
 
 - [Events and triggers](/docs/durable-execution/guides-and-advanced/events-and-triggers)
@@ -46,5 +38,5 @@ For API options, use the [Reference](/docs/sdk/overview/reference). For quotas a
 - [Middleware](/docs/durable-execution/guides-and-advanced/middleware)
 - [Error handling](/docs/durable-execution/guides-and-advanced/error-handling)
 - [Cancellation](/docs/durable-execution/guides-and-advanced/cancellation)
-- [Deploying functions](/docs/durable-execution/guides-and-advanced/deploying-functions)
 - [Patterns](/docs/durable-execution/guides-and-advanced/patterns)
+- [Checkpointing](/docs/durable-execution/guides-and-advanced/checkpointing)

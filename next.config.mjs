@@ -47,6 +47,16 @@ async function redirects() {
   return [
     ...blogRedirects,
     {
+      source: "/docs/durable-execution/guides-and-advanced/deploying-functions",
+      destination: "/docs/durable-execution/deploying-functions",
+      permanent: true,
+    },
+    {
+      source: "/docs/durable-execution/guides-and-advanced/max-runtime-for-serverless-environments",
+      destination: "/docs/durable-execution/guides-and-advanced/checkpointing",
+      permanent: true,
+    },
+    {
       // /sales-inquiry-form renamed to /contact
       source: "/sales-inquiry-form",
       destination: "/contact",

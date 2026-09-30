@@ -159,13 +159,23 @@ export const docsRefreshOutline: DocsRefreshPage[] = [
         ],
       },
       {
+        title: "Deploying functions",
+        href: "/docs/durable-execution/deploying-functions",
+        children: [
+          {
+            title: "Serve",
+            href: "/docs/durable-execution/deploying-functions/serve",
+          },
+          {
+            title: "Connect",
+            href: "/docs/durable-execution/deploying-functions/connect",
+          },
+        ],
+      },
+      {
         title: "Advanced",
         href: "/docs/durable-execution/guides-and-advanced",
         children: [
-          {
-            title: "Deploying functions",
-            href: "/docs/durable-execution/guides-and-advanced/deploying-functions",
-          },
           {
             title: "Patterns",
             href: "/docs/durable-execution/guides-and-advanced/patterns",
@@ -295,6 +305,10 @@ export const docsRefreshOutline: DocsRefreshPage[] = [
           {
             title: "Testing",
             href: "/docs/durable-execution/guides-and-advanced/testing",
+          },
+          {
+            title: "Checkpointing",
+            href: "/docs/durable-execution/guides-and-advanced/checkpointing",
           },
         ],
       },

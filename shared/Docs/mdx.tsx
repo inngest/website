@@ -154,6 +154,10 @@ export function Note({ children }) {
   );
 }
 
+export function DocsCallout({ children }: { children: React.ReactNode }) {
+  return <div className="docs-callout">{children}</div>;
+}
+
 export function Callout({
   variant = "default",
   Icon = null,

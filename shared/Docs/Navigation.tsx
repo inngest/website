@@ -188,7 +188,8 @@ function NavLink({
       aria-current={active ? "page" : undefined}
       target={linkTarget}
       className={clsx(
-        "group flex items-center justify-between gap-2 rounded py-1 pl-2 text-sm transition", // group for nested hovers
+        "group flex items-center justify-between gap-2 rounded py-1 pl-2 transition",
+        isAnchorLink ? "text-[13px]" : "text-sm",
         active
           ? "rounded bg-secondary-3xSubtle font-medium text-info hover:bg-secondary-2xSubtle"
           : "font-medium text-subtle hover:bg-canvasSubtle hover:text-basis",
@@ -274,8 +275,8 @@ export function PageSidebar() {
   }, [router.pathname, windowWidth, pageSectionsEl]);
 
   return (
-    <div>
-      <h4 className="pb-2 text-base font-medium">On this page</h4>
+    <div className="opacity-75">
+      <h4 className="pb-2 text-sm font-medium">On this page</h4>
       <div className="relative">
         <AnimatePresence initial={!isInsideMobileNavigation}>
           {pageSectionListItems && (
