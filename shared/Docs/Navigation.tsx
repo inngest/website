@@ -165,6 +165,7 @@ function NavLink({
   isAnchorLink = false,
   isTopLevel = false,
   truncate = true,
+  nested = false,
 
   className = "",
   children,
@@ -176,6 +177,8 @@ function NavLink({
   isAnchorLink?: boolean;
   isTopLevel?: boolean;
   truncate?: boolean;
+  /** Links inside a group use regular weight (400). */
+  nested?: boolean;
   className?: string;
   target?: string;
   children: React.ReactNode;
@@ -190,9 +193,10 @@ function NavLink({
       className={clsx(
         "group flex items-center justify-between gap-2 rounded py-1 pl-2 transition",
         isAnchorLink ? "text-[13px]" : "text-sm",
+        nested ? "font-normal" : "font-medium",
         active
-          ? "rounded bg-secondary-3xSubtle font-medium text-info hover:bg-secondary-2xSubtle"
-          : "font-medium text-subtle hover:bg-canvasSubtle hover:text-basis",
+          ? "rounded bg-secondary-3xSubtle text-info hover:bg-secondary-2xSubtle"
+          : "text-subtle hover:bg-canvasSubtle hover:text-basis",
         className
       )}
     >
@@ -409,8 +413,10 @@ function NavigationGroup({
                 nestingLevel === 0
                   ? "dark:text-carbon-00 text-xs font-bold uppercase tracking-wide text-carbon-300"
                   : clsx(
-                      "py-1 text-sm font-medium hover:text-basis",
-                      emphasized ? "text-basis" : "text-subtle"
+                      "py-1 text-sm hover:text-basis",
+                      emphasized
+                        ? "font-medium text-basis"
+                        : "font-normal text-subtle"
                     )
               )}
             >
@@ -443,9 +449,9 @@ function NavigationGroup({
             <div className="flex w-full items-center justify-between">
               <span
                 className={clsx("pl-2", {
-                  "text-sm font-medium hover:text-basis": nestingLevel > 0,
-                  "text-basis": nestingLevel > 0 && emphasized,
-                  "text-subtle": nestingLevel > 0 && !emphasized,
+                  "text-sm hover:text-basis": nestingLevel > 0,
+                  "font-medium text-basis": nestingLevel > 0 && emphasized,
+                  "font-normal text-subtle": nestingLevel > 0 && !emphasized,
                   "dark:text-carbon-00 text-xs font-bold uppercase tracking-wide text-carbon-300":
                     nestingLevel == 0,
                 })}
@@ -472,7 +478,7 @@ function NavigationGroup({
               "relative overflow-hidden",
               nestingLevel === 0 && "pb-4",
               // Breathing room between a parent, its open list, and the next item.
-              nestingLevel > 0 && "pb-2 pt-1"
+              nestingLevel > 0 && "pb-1 pt-1"
             )}
           >
             <NavigationLinks
@@ -509,7 +515,7 @@ function NavigationLinks({
     // @ts-ignore
     <motion.ul
       role="list"
-      className={clsx(listClassName, {
+      className={clsx("space-y-1", listClassName, {
         "ml-2.5 border-l border-carbon-100/60 pl-2 dark:border-white/[0.06]":
           nestingLevel > 0,
       })}
@@ -543,6 +549,7 @@ function NavigationLinks({
                 active={link.href === currentPath}
                 className={link.className}
                 tag={link.tag}
+                nested={nestingLevel > 1}
               >
                 <span>{link.title}</span>
               </NavLink>
@@ -588,7 +595,6 @@ function NavigationSection({ group }: { group: NavGroup }) {
         links={group.links}
         nestingLevel={1}
         currentPath={router.pathname}
-        listClassName="space-y-1.5"
         emphasizeGroups
       />
     </li>
