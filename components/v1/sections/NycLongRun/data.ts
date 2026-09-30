@@ -238,12 +238,12 @@ export const NYC_RESOURCES_COPY = {
 
 /**
  * Chip tone. Three groups, not decoration: green is work that runs,
- * warm is work that waits or pauses, salmon is work that fails or needs
- * a person. The Figma uses an amber for the warm group; the v1 palette
- * has no yellow, so this maps to `accent-salmon-light` — the ramp's
- * warm orange — rather than introducing an off-system colour.
+ * amber is work that waits or pauses, salmon is work that fails or
+ * needs a person. `accent-amber` was added to the v1 palette for this
+ * section (styles/v1.css), carrying the same value as the site's
+ * existing honey-300.
  */
-export type NycKeepGoingTone = "green" | "warm" | "salmon";
+export type NycKeepGoingTone = "green" | "amber" | "salmon";
 
 export interface NycKeepGoingItem {
   label: string;
@@ -267,13 +267,13 @@ export const NYC_KEEP_GOING = {
    */
   work: [
     { label: "Research", icon: "search", tone: "green" },
-    { label: "Tool calls", icon: "gear", tone: "warm" },
+    { label: "Tool calls", icon: "gear", tone: "amber" },
     { label: "Human approvals", icon: "person", tone: "salmon" },
     { label: "Model calls", icon: "sparkle", tone: "salmon" },
     { label: "External APIs", icon: "code", tone: "green" },
     { label: "Background jobs", icon: "loop", tone: "green" },
     { label: "Work that waits", icon: "clock", tone: "green" },
     { label: "Work that fails", icon: "cross", tone: "salmon" },
-    { label: "Work that resumes hours later", icon: "pause", tone: "warm" },
+    { label: "Work that resumes hours later", icon: "pause", tone: "amber" },
   ] satisfies NycKeepGoingItem[],
 } as const;

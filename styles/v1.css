@@ -80,6 +80,10 @@
   /* Green (primary ramp) */
   --color-v1-green-200: 11 221 72;
 
+  /* Amber (decorative). Same value as the site's existing honey-300 in
+     globals.css, so the two design systems agree on one amber. */
+  --color-v1-amber-200: 252 196 63;
+
   /* Slate (utility) */
   --color-v1-slate-300: 203 213 225;
   --color-v1-slate-500: 100 116 139;
@@ -136,6 +140,9 @@
 
   /* Brand accents — Green (decorative, distinct from primary ramp) */
   --color-v1-accent-green: var(--color-v1-green-200);
+
+  /* Brand accents — Amber (decorative; waiting / paused states) */
+  --color-v1-accent-amber: var(--color-v1-amber-200);
 
   /* Button — primary */
   --color-v1-btn-primary-bg: 2 122 72;

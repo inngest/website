@@ -28,10 +28,10 @@ import {
  * copy sits beside them.
  */
 
-/** Tone → border/text pair. Green runs, warm waits, salmon breaks. */
+/** Tone → border/text pair. Green runs, amber waits, salmon breaks. */
 const TONES: Record<NycKeepGoingTone, string> = {
   green: "border-v1-accent-green/40 text-v1-accent-green",
-  warm: "border-v1-accent-salmon-light/40 text-v1-accent-salmon-light",
+  amber: "border-v1-accent-amber/45 text-v1-accent-amber",
   salmon: "border-v1-accent-salmon/45 text-v1-accent-salmon",
 };
 
