@@ -279,32 +279,6 @@ export function tenantStats(result: SimResult): TenantStats[] {
   });
 }
 
-/** Counts over time for the capacity lanes. */
-export function sampleSeries(
-  result: SimResult,
-  domain: number,
-  samples: number
-) {
-  const exec: number[] = [];
-  const wait: number[] = [];
-  const times: number[] = [];
-  for (let i = 0; i <= samples; i++) {
-    const t = (domain * i) / samples;
-    times.push(t);
-    let e = 0;
-    let w = 0;
-    for (const r of result.runs) {
-      const s = segmentAt(r, t);
-      if (!s) continue;
-      if (s.kind === "run") e++;
-      else if (s.kind === "wait") w++;
-    }
-    exec.push(e);
-    wait.push(w);
-  }
-  return { times, exec, wait };
-}
-
 export const WAIT_LABEL: Record<WaitReason, string> = {
   concurrency: "Waiting for a concurrency slot",
   throttle: "Waiting for throttle capacity",

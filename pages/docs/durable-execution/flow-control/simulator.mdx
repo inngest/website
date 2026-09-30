@@ -14,10 +14,11 @@ Pick a scenario, turn controls on and off, and press **Play**. The simulator app
 
 ## Read the simulator
 
-- **Event lanes** show each tenant's events. A filled dot started or joined a run, a hollow dot was replaced by a later debounced event, and a red cross was skipped by rate limiting or singleton. Click a lane to add an event.
-- **Run rows** show each run over time. A waiting bar's color shows why it waited: a concurrency slot, throttle capacity, or blocked work from other keys at the head of the queue. Sleeping runs are hollow because they hold no concurrency slot.
-- **The line under the timeline** counts runs in each state at the playhead, and doubles as the legend.
-- **Log** explains each decision in order. Click a run row to see only that run.
+- **Event rows** show each tenant's events as they arrive. Events at the same instant stack. A red ✕ means rate limiting or singleton skipped the event, and a hollow dot was replaced by a later debounced event. Dashed outlines are events that haven't arrived yet. Click a row to add an event, and click an added event to remove it.
+- **The flow control band** shows what each control is doing at the playhead. Scheduling rows hold debounce and batch timers, singleton locks, and rate-limit skips. The queue row shows runs waiting to start, with the front of the line at the playhead. A dot's color shows why it waits: a concurrency slot, throttle capacity, or blocked work from other keys. Meters under a row's label show slots in use and the throttle or rate-limit capacity left.
+- **Lanes** show runs executing. A solid bar is an executing step, and a dashed bar is a sleep, which holds no concurrency slot. A check marks a completed run, and a red ✕ a cancelled one. Hover a run for its timing, or click it to see its log.
+- **The line under the diagram** counts events and runs in each state at the playhead, and doubles as the legend.
+- **Runs** has per-tenant results and one row per run for the whole simulation. **Log** explains each decision in order.
 
 Every function in the simulator has a step concurrency limit, 5 by default. The **Code** tab shows the TypeScript function configuration for the current settings. Tenants map to `event.data.tenant_id`.
 
