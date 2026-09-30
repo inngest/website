@@ -39,6 +39,24 @@ export const docsRefreshOutline: DocsRefreshPage[] = [
             title: "Using Docker",
             href: "/docs/local-development/docker",
           },
+          {
+            title: "AI and MCP",
+            href: "/docs/ai-dev-tools",
+            children: [
+              {
+                title: "Inngest MCP",
+                href: "/docs/ai-dev-tools/mcp",
+              },
+              {
+                title: "Agent plugins and skills",
+                href: "/docs/ai-dev-tools/agent-skills",
+              },
+              {
+                title: "CLI for coding agents",
+                href: "/docs/ai-patterns/cli-for-coding-agents",
+              },
+            ],
+          },
         ],
       },
       {

@@ -11,21 +11,23 @@ export const description = "Protect APIs and databases by limiting how many work
 
 <Compatibility endpoints={false} />
 
-Limit the number of steps calling a payment API at once. Inngest queues steps above the concurrency limit and starts them when capacity opens; waiting runs do not use those execution slots.
+Limit the number of steps executing at once. Inngest queues steps above the concurrency limit and starts them when capacity opens, allowing you to protect your resources from sudden spikes of activity.
 
 ## What a concurrency limit counts
 
 Before Inngest starts a step, it checks every concurrency limit on the function. If a limit has no free slot, the step waits in a queue. When an executing step finishes or a run starts waiting, Inngest can use the free slot to start another eligible step.
 
-### What uses a slot
+### What counts towards concurrency
 
-- `step.run()` uses a slot while its callback executes.
-- `step.sleep()`, `step.sleepUntil()`, `step.waitForEvent()`, and `step.invoke()` do not use a slot while they wait.
-- The time between steps does not use a slot.
+- All code execution (including inside steps and outside of steps) uses a concurrency slot
+- Each request counts as a single slot.  For example, 3 parallel steps uses 3 concurrency slots.
 
 A limit counts **steps executing code**, not all function runs in progress. For example, a limit of 10 can coexist with hundreds of paused runs, but only 10 steps from those runs execute at once. If one run sleeps, another queued step can use its slot. When the sleeping run resumes, its next step must wait for a free slot if the limit is full.
 
 Use concurrency when simultaneous work is the constraint, such as database connections or calls to a service that slows under parallel load. Use [Throttling](/docs/durable-execution/flow-control/throttling) to control how quickly runs start over time. Use [Rate limiting](/docs/durable-execution/flow-control/rate-limiting) when excess events should be skipped.
+
+### What does not count towards concurrency
+- `step.sleep()`, `step.sleepUntil()`, `step.waitForEvent()`, and `step.invoke()` do not use a slot while they wait.
 
 ## Limit one function
 
