@@ -1,4 +1,5 @@
 import type { NavIconName } from "@/components/v1/NavIcons";
+import type { KeepGoingIconName } from "@/components/v1/sections/NycLongRun/KeepGoingIcons";
 
 /**
  * "Build for the Lonng Run" — New York City.
@@ -231,4 +232,48 @@ export const NYC_USE_CASES_COPY = {
 export const NYC_RESOURCES_COPY = {
   title: ["Keep building."],
   body: "Explore the technical ideas behind lonng-running agents and workflows.",
+} as const;
+
+/* ── 02 · What a lonng run is made of ──────────────────────────────── */
+
+/**
+ * Chip tone. Three groups, not decoration: green is work that runs,
+ * warm is work that waits or pauses, salmon is work that fails or needs
+ * a person. The Figma uses an amber for the warm group; the v1 palette
+ * has no yellow, so this maps to `accent-salmon-light` — the ramp's
+ * warm orange — rather than introducing an off-system colour.
+ */
+export type NycKeepGoingTone = "green" | "warm" | "salmon";
+
+export interface NycKeepGoingItem {
+  label: string;
+  icon: KeepGoingIconName;
+  tone: NycKeepGoingTone;
+}
+
+export const NYC_KEEP_GOING = {
+  // Two-tone eyebrow, the campaign line split across the accent and frost.
+  eyebrowAccent: "Lonng-running humans.",
+  eyebrow: "Lonng-running agents.",
+  title: "Some things are built to keep going.",
+  body: [
+    "A marathon doesn't happen in one step. Neither does the work your agents are doing.",
+    "The longer the run, the more chances something has to go wrong. The question is what happens when it does.",
+  ],
+  /**
+   * The pile-up is the argument, so this is set as a wrapping run of
+   * chips rather than a tidy column: it should read as "this keeps
+   * going" before any single item is read.
+   */
+  work: [
+    { label: "Research", icon: "search", tone: "green" },
+    { label: "Tool calls", icon: "gear", tone: "warm" },
+    { label: "Human approvals", icon: "person", tone: "salmon" },
+    { label: "Model calls", icon: "sparkle", tone: "salmon" },
+    { label: "External APIs", icon: "code", tone: "green" },
+    { label: "Background jobs", icon: "loop", tone: "green" },
+    { label: "Work that waits", icon: "clock", tone: "green" },
+    { label: "Work that fails", icon: "cross", tone: "salmon" },
+    { label: "Work that resumes hours later", icon: "pause", tone: "warm" },
+  ] satisfies NycKeepGoingItem[],
 } as const;
