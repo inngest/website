@@ -32,7 +32,7 @@ export const docsRefreshOutline: DocsRefreshPage[] = [
         href: "/docs/platform-overview",
       },
       {
-        title: "Local Development",
+        title: "Local development",
         href: "/docs/local-development",
         children: [
           {
