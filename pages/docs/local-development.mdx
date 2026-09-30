@@ -7,7 +7,7 @@ export const description = "Build, test, and run Inngest functions locally in a 
 
 > Build, test, and run Inngest functions locally in a single command.
 
-You can run Inngest locally in a single command to build, test, and iterate locally, exactly as code runs on production.  The Inngest Dev Server is a fully-featured and [**open-source**](https://github.com/inngest/inngest) local version of the [**Inngest Platform**](/docs/durable-execution/guides-and-advanced/deploying-functions) enabling a seamless transition from your local development to feature, staging and production environments.
+You can run Inngest locally in a single command to build, test, and iterate locally, exactly as code runs on production.  The Inngest Dev Server is a fully-featured and [**open-source**](https://github.com/inngest/inngest) local version of the [**Inngest Platform**](/docs/durable-execution/deploying-functions) enabling a seamless transition from your local development to feature, staging and production environments.
 
 The Dev Server records local events and function runs, so you can test steps, waits, retries, and errors before you deploy.  The Dev Server also bundles in a full tracing UI and allows you to replay local and production functions to easily fix issues.
 
@@ -66,7 +66,7 @@ The Dev Server also exposes a local Model Context Protocol (MCP) integration at 
 
 ## Use a local Connect worker
 
-If your app uses `connect()` instead of an HTTP `serve()` endpoint, start the Dev Server and run the worker process with `INNGEST_DEV=1`. The worker connects to the Dev Server and syncs its functions automatically; you do not pass an HTTP `-u` URL for that worker. Local Connect requires no signing or event key. Keep the worker process running while you test. See the [Connect local development guide](/docs/durable-execution/guides-and-advanced/deploying-functions) for the worker setup and runtime requirements.
+If your app uses `connect()` instead of an HTTP `serve()` endpoint, start the Dev Server and run the worker process with `INNGEST_DEV=1`. The worker connects to the Dev Server and syncs its functions automatically; you do not pass an HTTP `-u` URL for that worker. Local Connect requires no signing or event key. Keep the worker process running while you test. See the [Connect local development guide](/docs/durable-execution/deploying-functions) for the worker setup and runtime requirements.
 
 ## Test a function
 
@@ -111,7 +111,7 @@ no-discovery: true
 
 ## Inngest SDK debug endpoint
 
-Send a `GET` request to your app's [SDK `serve()` endpoint](/docs/durable-execution/guides-and-advanced/deploying-functions) to inspect its local configuration. Open the URL in a browser or use `curl`. For an app at `http://localhost:3000/api/inngest`, a response can look like this:
+Send a `GET` request to your app's [SDK `serve()` endpoint](/docs/durable-execution/deploying-functions) to inspect its local configuration. Open the URL in a browser or use `curl`. For an app at `http://localhost:3000/api/inngest`, a response can look like this:
 
 ```bash
 curl -s http://localhost:3000/api/inngest | jq

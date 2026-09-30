@@ -7,7 +7,7 @@ export const description = "Build background workflows and HTTP endpoints that k
 
 ## What is durable execution?
 
-A **durable function** is application code that Inngest coordinates as a run which survives failures and can wait indefinitely. A run has its own input, steps, and trace. Inngest stores each completed step's result. When work resumes after a retry or wait, functions reusme from the last completed step instead of from the start.
+A **durable function** is application code that Inngest coordinates as a run which survives failures and can wait indefinitely. A run has its own input, steps, and trace. Inngest stores each completed step's result. When work resumes after a retry or wait, functions resume from the last completed step instead of from the start.
 
 For example, an AI workflow can retrieve context, call an LLM, and validate the response in separate steps. If the LLM call fails or returns an invalid response, the next attempt reuses the retrieved context and continues from the failed step. You can see the failed step and its retry in the run trace.  This occurs over your entire agent run.
 

@@ -29,20 +29,16 @@ Inngest applies flow control in three stages:
 3. **When executing:** Step concurrency limits how many steps execute at once.
 
 <Mermaid
-  wide
-  label="Flow control order. Before scheduling, an exceeded rate limit skips a run, while batching collects events until the batch finalizes. A batch skips scheduling controls. Other eligible runs pass through scheduling controls. Step concurrency applies when steps execute."
+  label="Flow control order. Before scheduling, an exceeded rate limit skips a run, while batching collects events until the batch finalizes. A batch skips scheduling controls. Other eligible runs pass through debounce and singleton when scheduling. Concurrency and throttling apply when executing."
   chart={`flowchart TB
-  A["Trigger"] --> B["1. Before scheduling"]
-  B -- "Limit exceeded" --> X["Skip run"]
-  B -- "Batching" --> C["Collect events"]
-  C --> D["Batch finalizes"]
-  D --> Q["Queued run"]
-  B -- "Other runs" --> S["2. When scheduling<br/>(debounce, singleton)"]
+  T(["Event received"]):::muted --> B["<b>1. Before scheduling</b><br/>Rate limit · Batching"]:::accent
+  B -- "rate limited" --> X(["Run skipped"]):::warn
+  B -- "batched" --> BA["Collect events until the batch finalizes"]:::info
+  B -- "not batched" --> S["<b>2. When scheduling</b><br/>Debounce · Singleton"]:::accent
+  BA -- "skips step 2" --> Q(["Run queued"]):::muted
   S --> Q
-  Q --> E["3. When executing<br/>(concurrency, throttling)"]
-  E --> R["Execute steps"]
-  class B,S,E accent
-  class X info`}
+  Q --> E["<b>3. When executing</b><br/>Concurrency · Throttling"]:::accent
+  E --> R(["Steps execute"]):::accent`}
 />
 
 Flow control always operates in this order.  This has the following implications:

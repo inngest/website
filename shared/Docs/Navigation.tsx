@@ -196,7 +196,17 @@ function NavLink({
         className
       )}
     >
-      {!isAnchorLink && <span className="absolute inset-y-0 left-0 w-px" />}
+      {!isAnchorLink && (
+        <span
+          className={clsx(
+            "absolute inset-y-0",
+            // Accent the parent list's left border next to the active page.
+            active && !isTopLevel
+              ? "-left-[9px] w-0.5 rounded-full bg-breeze-500"
+              : "left-0 w-px"
+          )}
+        />
+      )}
       <span>{children}</span>
       {tag && (
         <Tag color="matcha" className={"mr-2"}>
@@ -354,12 +364,15 @@ function NavigationGroup({
   nestingLevel = 0,
   className = "",
   tag = "",
+  emphasized = false,
 }: {
   group: NavGroup;
   isActiveGroup?: boolean;
   nestingLevel?: number;
   className?: string;
   tag?: string;
+  /** Direct children of a sidebar section get a stronger title color. */
+  emphasized?: boolean;
 }) {
   const defaultOpenGroupTitles = useContext(DefaultOpenSectionsContext);
   // If this is the mobile navigation then we always render the initial
@@ -395,7 +408,10 @@ function NavigationGroup({
                 "flex min-w-0 flex-1 items-center gap-1 pl-2",
                 nestingLevel === 0
                   ? "dark:text-carbon-00 text-xs font-bold uppercase tracking-wide text-carbon-300"
-                  : "py-1 text-sm font-medium text-subtle hover:text-basis"
+                  : clsx(
+                      "py-1 text-sm font-medium hover:text-basis",
+                      emphasized ? "text-basis" : "text-subtle"
+                    )
               )}
             >
               <span className="truncate">{group.title}</span>
@@ -427,8 +443,9 @@ function NavigationGroup({
             <div className="flex w-full items-center justify-between">
               <span
                 className={clsx("pl-2", {
-                  "text-sm font-medium text-subtle hover:text-basis":
-                    nestingLevel > 0,
+                  "text-sm font-medium hover:text-basis": nestingLevel > 0,
+                  "text-basis": nestingLevel > 0 && emphasized,
+                  "text-subtle": nestingLevel > 0 && !emphasized,
                   "dark:text-carbon-00 text-xs font-bold uppercase tracking-wide text-carbon-300":
                     nestingLevel == 0,
                 })}
@@ -453,80 +470,128 @@ function NavigationGroup({
           <div
             className={clsx(
               "relative overflow-hidden",
-              nestingLevel === 0 && "pb-4"
+              nestingLevel === 0 && "pb-4",
+              // Breathing room between a parent, its open list, and the next item.
+              nestingLevel > 0 && "pb-2 pt-1"
             )}
           >
-            {/* @ts-ignore */}
-            <motion.ul
-              role="list"
-              className={clsx({
-                "ml-2.5 border-l border-carbon-100 pl-2 dark:border-[#3D3D3D]":
-                  nestingLevel > 0,
-              })}
-            >
-              {group.links.map((link, idx) => {
-                if (isNavGroup(link)) {
-                  return (
-                    <Accordion.Root
-                      key={idx}
-                      type="multiple"
-                      defaultValue={
-                        hasNavGroupPath(link, currentPath)
-                          ? [...defaultOpenGroupTitles, link.title]
-                          : defaultOpenGroupTitles
-                      }
-                    >
-                      <NavigationGroup
-                        group={link}
-                        tag={(link as any).tag || ""}
-                        nestingLevel={nestingLevel + 1}
-                      />
-                    </Accordion.Root>
-                  );
-                } else if (isNavLink(link)) {
-                  return (
-                    // @ts-ignore
-                    <motion.li
-                      key={link.href}
-                      layout="position"
-                      className={"relative"}
-                    >
-                      <NavLink
-                        href={link.href}
-                        active={link.href === currentPath}
-                        className={link.className}
-                        tag={link.tag}
-                      >
-                        <span>{link.title}</span>
-                      </NavLink>
-                    </motion.li>
-                  );
-                } else {
-                  return (
-                    // @ts-ignore
-                    <motion.li
-                      key={link.title}
-                      layout="position"
-                      className={"relative"}
-                    >
-                      <span
-                        className={clsx(
-                          "group flex items-center justify-between py-1 pl-2 text-sm transition",
-                          "text-xs font-semibold text-carbon-300 dark:text-carbon-600",
-                          className
-                        )}
-                      >
-                        {link.title}
-                      </span>
-                    </motion.li>
-                  );
-                }
-              })}
-            </motion.ul>
+            <NavigationLinks
+              links={group.links}
+              nestingLevel={nestingLevel}
+              currentPath={currentPath}
+              className={className}
+            />
           </div>
         </NavigationGroupStructure.Content>
       </li>
     </NavigationGroupStructure>
+  );
+}
+
+// The list of links and nested groups inside a navigation group or section.
+function NavigationLinks({
+  links,
+  nestingLevel,
+  currentPath,
+  className = "",
+  listClassName = "",
+  emphasizeGroups = false,
+}: {
+  links: NavGroup["links"];
+  nestingLevel: number;
+  currentPath: string;
+  className?: string;
+  listClassName?: string;
+  emphasizeGroups?: boolean;
+}) {
+  const defaultOpenGroupTitles = useContext(DefaultOpenSectionsContext);
+  return (
+    // @ts-ignore
+    <motion.ul
+      role="list"
+      className={clsx(listClassName, {
+        "ml-2.5 border-l border-carbon-100/60 pl-2 dark:border-white/[0.06]":
+          nestingLevel > 0,
+      })}
+    >
+      {links.map((link, idx) => {
+        if (isNavGroup(link)) {
+          return (
+            <Accordion.Root
+              key={idx}
+              type="multiple"
+              defaultValue={
+                hasNavGroupPath(link, currentPath)
+                  ? [...defaultOpenGroupTitles, link.title]
+                  : defaultOpenGroupTitles
+              }
+            >
+              <NavigationGroup
+                group={link}
+                tag={(link as any).tag || ""}
+                nestingLevel={nestingLevel + 1}
+                emphasized={emphasizeGroups}
+              />
+            </Accordion.Root>
+          );
+        } else if (isNavLink(link)) {
+          return (
+            // @ts-ignore
+            <motion.li key={link.href} layout="position" className={"relative"}>
+              <NavLink
+                href={link.href}
+                active={link.href === currentPath}
+                className={link.className}
+                tag={link.tag}
+              >
+                <span>{link.title}</span>
+              </NavLink>
+            </motion.li>
+          );
+        } else {
+          return (
+            // @ts-ignore
+            <motion.li
+              key={link.title}
+              layout="position"
+              className={"relative"}
+            >
+              <span
+                className={clsx(
+                  "group flex items-center justify-between py-1 pl-2 text-sm transition",
+                  "text-xs font-semibold text-carbon-300 dark:text-carbon-600",
+                  className
+                )}
+              >
+                {link.title}
+              </span>
+            </motion.li>
+          );
+        }
+      })}
+    </motion.ul>
+  );
+}
+
+// An always-open top-level section with an icon header, e.g. "Introduction".
+function NavigationSection({ group }: { group: NavGroup }) {
+  let isInsideMobileNavigation = useIsInsideMobileNavigation();
+  let [router] = useInitialValue([useRouter()], isInsideMobileNavigation);
+  const Icon = group.icon;
+  return (
+    <li className="relative mb-6 mt-2 list-none">
+      <div className="flex items-center gap-2 py-2 pl-0.5 text-sm font-semibold text-basis">
+        {Icon && <Icon className="h-4 w-4 shrink-0 text-subtle" aria-hidden />}
+        <span>{group.title}</span>
+      </div>
+      <NavigationLinks
+        links={group.links}
+        nestingLevel={1}
+        currentPath={router.pathname}
+        listClassName="space-y-1.5"
+        emphasizeGroups
+      />
+    </li>
   );
 }
 
@@ -1028,7 +1093,9 @@ export function Navigation(props) {
                       {activeSection === "sdk" && isFirstSharedSection && (
                         <div className="mb-4 mt-6 border-t border-slate-200 dark:border-slate-700" />
                       )}
-                      {isNavGroup(item) ? (
+                      {isNavGroup(item) && item.section ? (
+                        <NavigationSection group={item} />
+                      ) : isNavGroup(item) ? (
                         <NavigationGroup
                           group={item}
                           isActiveGroup={item.title === activeGroup?.title}

@@ -30,6 +30,14 @@ const cardBase = clsx(cardSurface, "flex h-full flex-col");
 const titleClass = "text-base font-semibold text-basis";
 const descClass = "mt-1 text-sm text-subtle";
 
+// Appends a `ref` query param for analytics, e.g. withRef("/docs/x", "docs-home").
+function withRef(href: string, ref?: string) {
+  if (!ref) return href;
+  const [path, hash] = href.split("#");
+  const sep = path.includes("?") ? "&" : "?";
+  return `${path}${sep}ref=${ref}${hash ? `#${hash}` : ""}`;
+}
+
 // Shared SVG class names.
 const S = {
   surface: "fill-white dark:fill-carbon-900",
@@ -441,7 +449,7 @@ export function WelcomeGrid() {
         },
         {
           href: "/docs/platform-overview?ref=docs-home",
-          title: "Platform overview",
+          title: "What is Inngest?",
           description:
             "See how workflows, Sandboxes, and outcome scores fit together.",
           illustration: <IllustrationPlatform />,
@@ -520,42 +528,46 @@ function IconCard({ href, title, description, icon }: IconCardItem) {
   );
 }
 
-export function PlatformGrid() {
+export function PlatformGrid({
+  refParam = "docs-home",
+}: {
+  refParam?: string;
+} = {}) {
   const items: IconCardItem[] = [
     {
-      href: "/docs/durable-execution?ref=docs-home",
+      href: "/docs/durable-execution",
       title: "Durable Execution",
       description:
         "Coordinate steps, retries, waits, and events so work finishes after failures.",
       icon: <RiFlowChart className="h-5 w-5" />,
     },
     {
-      href: "/docs/sandboxes?ref=docs-home",
+      href: "/docs/sandboxes",
       title: "Sandboxes",
       description: "Run code in isolated microVMs as part of a durable run.",
       icon: <RiTerminalBoxLine className="h-5 w-5" />,
     },
     {
-      href: "/docs/online-evals?ref=docs-home",
+      href: "/docs/online-evals",
       title: "Online Evals",
       description: "Score outcomes and compare changes to steps and workflows.",
       icon: <RiBarChartBoxLine className="h-5 w-5" />,
     },
     {
-      href: "/docs/realtime?ref=docs-home",
+      href: "/docs/realtime",
       title: "Realtime",
       description: "Stream progress from durable runs to your users.",
       icon: <RiBroadcastLine className="h-5 w-5" />,
     },
     {
-      href: "/docs/durable-execution/flow-control?ref=docs-home",
+      href: "/docs/durable-execution/flow-control",
       title: "Flow control",
       description:
         "Control concurrency, throughput, and fairness across tenants.",
       icon: <RiSpeedUpLine className="h-5 w-5" />,
     },
     {
-      href: "/docs/platform-and-operations?ref=docs-home",
+      href: "/docs/platform-and-operations",
       title: "Observability",
       description:
         "Inspect traces, replay runs, and track metrics in production.",
@@ -565,7 +577,11 @@ export function PlatformGrid() {
   return (
     <div className="not-prose my-6 grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
       {items.map((item) => (
-        <IconCard key={item.href} {...item} />
+        <IconCard
+          key={item.href}
+          {...item}
+          href={withRef(item.href, refParam)}
+        />
       ))}
     </div>
   );
@@ -573,13 +589,13 @@ export function PlatformGrid() {
 
 const languages = [
   {
-    href: "/docs/durable-execution/quick-start/typescript-quick-start?ref=docs-home",
+    href: "/docs/durable-execution/quick-start/typescript-quick-start",
     title: "TypeScript",
     description: "Works with Node.js, Bun, Deno, and edge runtimes.",
     icon: <IconTypeScript size={28} className="text-[#3178C6]" />,
   },
   {
-    href: "/docs/durable-execution/quick-start/python-quick-start?ref=docs-home",
+    href: "/docs/durable-execution/quick-start/python-quick-start",
     title: "Python",
     description: "Sync and async functions with FastAPI, Flask, or Django.",
     icon: (
@@ -587,7 +603,7 @@ const languages = [
     ),
   },
   {
-    href: "/docs/durable-execution/quick-start/go-quick-start?ref=docs-home",
+    href: "/docs/durable-execution/quick-start/go-quick-start",
     title: "Go",
     description: "Typed events and durable steps with the standard library.",
     icon: <IconGo size={44} className="text-[#00ADD8]" />,
@@ -611,12 +627,20 @@ const frameworks = [
   },
 ];
 
-export function StartBuilding() {
+export function StartBuilding({
+  refParam = "docs-home",
+}: {
+  refParam?: string;
+} = {}) {
   return (
     <>
       <div className="not-prose my-6 grid grid-cols-1 gap-4 sm:grid-cols-3">
         {languages.map((l) => (
-          <Link key={l.href} href={l.href} className={clsx(cardBase, "p-5")}>
+          <Link
+            key={l.href}
+            href={withRef(l.href, refParam)}
+            className={clsx(cardBase, "p-5")}
+          >
             <div className="mb-3 flex h-9 items-center">{l.icon}</div>
             <h3 className={titleClass}>{l.title}</h3>
             <p className={descClass}>{l.description}</p>
@@ -628,7 +652,7 @@ export function StartBuilding() {
         {frameworks.map((f) => (
           <Link
             key={f.href}
-            href={`${f.href}?ref=docs-home`}
+            href={withRef(f.href, refParam)}
             className={clsx(
               cardSurface,
               "flex items-center justify-between px-4 py-3 text-sm font-medium text-basis"

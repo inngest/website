@@ -25,7 +25,7 @@ docker run -p 8288:8288 -p 8289:8289 \
   inngest dev -u http://host.docker.internal:3000/api/inngest
 ```
 
-`host.docker.internal` lets the container reach the app on your host machine. Use a different hostname if your Docker network requires one. Open [http://localhost:8288](http://localhost:8288) to use the Dev Server. Port `8289` supports [`connect()`](/docs/durable-execution/guides-and-advanced/deploying-functions).
+`host.docker.internal` lets the container reach the app on your host machine. Use a different hostname if your Docker network requires one. Open [http://localhost:8288](http://localhost:8288) to use the Dev Server. Port `8289` supports [`connect()`](/docs/durable-execution/deploying-functions).
 
 If you decide to run the Dev Server on another port, you will need to set the **`INNGEST_BASE_URL`** environment variable in your app to point to the correct port. This value defaults to **`http://localhost:8288`**.
 
@@ -55,6 +55,6 @@ In this example, we have two services: **`app`** and **`inngest`**. The **`app`*
 - The **`INNGEST_DEV=1`** environment variable tells the Inngest SDK it should connect to the Dev Server\*.
 - The **`INNGEST_BASE_URL=http://inngest:8288`** environment variable tells the Inngest SDK where the Dev Server is running. In our example, the **`inngest`** service is running on port **`8288`** (the default Dev Server port).
 - The **`command: 'inngest dev -u http://app:3000/api/inngest'`** command tells the Dev Server where to find your app within the Docker network. In this example, the **`app`** service is running on port **`3000`**.
-- The **`ports`** configuration exposes the Dev Server on port **`8288`** so you can view this on your host machine in the browser. It also exposes **`8289`** which is used for [**`connect()`**](/docs/durable-execution/guides-and-advanced/deploying-functions).
+- The **`ports`** configuration exposes the Dev Server on port **`8288`** so you can view this on your host machine in the browser. It also exposes **`8289`** which is used for [**`connect()`**](/docs/durable-execution/deploying-functions).
 
 SDKs default to production, sending data to the cloud. Setting INNGEST_DEV=1 explicitly enables dev mode, which connects to the Dev Server and disables signature verification.

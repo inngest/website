@@ -7,7 +7,7 @@ import { motion } from "framer-motion";
 import * as mdxComponents from "src/shared/Docs/mdx";
 import { Footer } from "./Footer";
 import { Home } from "./Home";
-import { Header } from "./Header";
+import { DocsLogo, Header } from "./Header";
 import Logo from "../Icons/Logo";
 import { Navigation, PageSidebar, ActiveSectionProvider } from "./Navigation";
 import { useUnreleasedLabels } from "./Unreleased";
@@ -252,8 +252,12 @@ export function Layout({
               {/* @ts-ignore */}
               <motion.header
                 layoutScroll
-                className="fixed inset-y-0 left-0 z-40 mt-14 contents overflow-y-auto  border-r border-subtle py-4 pb-8 pl-4 pr-3 lg:block lg:w-[248px] xl:w-[280px]"
+                className="fixed inset-y-0 left-0 z-40 contents overflow-y-auto border-r border-subtle bg-canvasBase pb-8 pl-4 pr-3 lg:block lg:w-[248px] xl:w-[280px]"
               >
+                {/* Full-height sidebar: the logo sits in the top bar's row. */}
+                <div className="sticky top-0 z-10 -mr-3 mb-4 hidden h-14 items-center bg-canvasBase pl-2 lg:flex">
+                  <DocsLogo />
+                </div>
                 <Navigation className="hidden lg:block" />
               </motion.header>
 

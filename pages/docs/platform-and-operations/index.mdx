@@ -13,7 +13,7 @@ Continue with [Apps and syncs](/docs/platform-and-operations/apps-and-syncs), [E
 ## Deploy and connect apps
 Today, you can run Inngest function code on your infrastructure. Serve an HTTP endpoint with `serve()` on a compatible serverless or server runtime, or use Connect on a long-running worker. Your app can run on AWS, Google Cloud, Vercel, Cloudflare, or another compatible host. Inngest triggers runs and records their progress while your code runs in that app.
 **Inngest compute is planned.** It will host an app's function code on Inngest-managed compute. Compute placement is per app: an environment can include apps on your infrastructure alongside apps on Inngest compute. This is one platform and one function model. Sandboxes provide isolated execution inside work; they are not a deployment target for Inngest functions.
-Follow [Deploying functions](/docs/durable-execution/guides-and-advanced/deploying-functions) for setup, sync, host requirements, and the differences between HTTP serving and Connect.
+Follow [Deploying functions](/docs/durable-execution/deploying-functions) for setup, sync, host requirements, and the differences between HTTP serving and Connect.
 To operate the Inngest server in your own infrastructure, follow [Self-host Inngest](/docs/platform-and-operations/self-host-inngest). Check its feature scope before assuming managed-platform capabilities are available.
 ## Manage keys and access
 Use an **event key** when an app sends events to an environment. Use its **signing key** to secure communication between Inngest and your deployed app. Use an **API key** for the Inngest REST API. These credentials serve different requests; give each deployment the credential it needs and keep secrets out of source control and browser code.
@@ -25,7 +25,7 @@ Start with [Inspect events and runs](/docs/platform-and-operations/inspect-event
 Set concurrency, throttling, rate limiting, or other [flow controls](/docs/durable-execution/flow-control) on the functions that need them. Check [Limits](/docs/durable-execution/limits), your host's limits, and the [pricing page](https://www.inngest.com/pricing) before production deployment. Pricing is the source for the current Free, Pro, Business, and Enterprise plan allowances.
 When a run fails or an app does not sync, inspect the app and run trace first. Then use the relevant [Troubleshooting](/docs/durable-execution/troubleshooting) guide. [Rerun a run](/docs/platform-and-operations/rerun-a-run) recovers one run. [Replay runs in bulk](/docs/platform-and-operations/replay-runs-in-bulk) recovers a selected set. [Pause and resume functions](/docs/platform-and-operations/pause-and-resume-functions) stops new runs during maintenance or an incident. Read each action's scope before using it on live work.
 ## Continue by task
-- [Deploying functions](/docs/durable-execution/guides-and-advanced/deploying-functions) to connect an app.
+- [Deploying functions](/docs/durable-execution/deploying-functions) to connect an app.
 - [Sandboxes](/docs/sandboxes) to run code in an isolated microVM within a durable run.
 - [Online Evals](/docs/online-evals) to attach scores to runs and compare variants.
 - [Realtime](/docs/realtime) to publish updates to connected clients.

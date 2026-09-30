@@ -35,6 +35,8 @@ export type NavGroup = {
   icon?: React.FC<React.SVGProps<SVGSVGElement>>;
   links: (NavGroup | NavLink | NavSection | NavLinkGroup)[];
   defaultOpen?: boolean;
+  /** Always-open top-level section with an icon header (Learn sidebar). */
+  section?: boolean;
   tag?: string;
   target?: string;
   unreleased?: string;
@@ -465,6 +467,18 @@ const sectionReference: (NavGroup | NavLink)[] = [
 ];
 
 function docsRefreshNav(page: DocsRefreshPage): NavGroup | NavLink {
+  if (page.section) {
+    return {
+      title: page.title,
+      section: true,
+      icon: page.icon as NavGroup["icon"],
+      links: [
+        ...(page.href ? [{ title: "Overview", href: page.href }] : []),
+        ...(page.children ?? []).map(docsRefreshNav),
+      ],
+    };
+  }
+
   if (page.children?.length) {
     const hasOverview = page.children.some(
       (child) => child.title === "Overview"

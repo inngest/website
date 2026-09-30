@@ -27,7 +27,7 @@ function Separator() {
   );
 }
 
-function DocsLogo() {
+export function DocsLogo() {
   return (
     <a href="/" className="group/logo flex items-center gap-1.5 pt-1">
       <Logo className="w-24 text-black dark:text-white" />
@@ -55,7 +55,7 @@ export const Header = forwardRef<HTMLDivElement>(function Header(
       className={clsx(
         className,
         // NOTE - if we remove the AI button we may have to add "lg:justify-end"
-        "fixed inset-x-0 top-0 z-50 flex h-14 items-center justify-between gap-12 px-4 transition lg:z-30",
+        "fixed inset-x-0 top-0 z-50 flex h-14 items-center justify-between gap-12 px-4 transition lg:left-[248px] lg:z-30 lg:pl-[52px] xl:left-[280px]",
         !isInsideMobileNavigation && "backdrop-blur-sm dark:backdrop-blur",
         isInsideMobileNavigation
           ? "bg-white dark:bg-carbon-900"
@@ -74,14 +74,17 @@ export const Header = forwardRef<HTMLDivElement>(function Header(
           <DocsLogo />
         </div>
 
-        <div className="ml-2 hidden items-center space-x-4 lg:flex">
-          <DocsLogo />
-        </div>
-
-        <nav className="ml-4 hidden lg:block">
+        {/* On desktop the logo lives at the top of the sidebar (see Layout).
+            The tabs are offset so their labels line up with the page content. */}
+        <nav className="hidden lg:block">
           <ul role="list" className="flex items-center">
             {visibleMenuTabs.map((tab) => (
-              <TabItem key={tab.title} href={tab.href} matcher={tab.matcher} title={tab.title}>
+              <TabItem
+                key={tab.title}
+                href={tab.href}
+                matcher={tab.matcher}
+                title={tab.title}
+              >
                 {tab.title}
               </TabItem>
             ))}
