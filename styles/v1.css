@@ -69,7 +69,7 @@
 
   /* Salmon (brand accent ramp) */
   --color-v1-salmon-100: 253 138 114;
-  --color-v1-salmon-200: 251 85 54;
+  --color-v1-salmon-200: 246 92 79;
   --color-v1-salmon-300: 217 74 43;
   --color-v1-salmon-gradient: 247 98 70;
 
@@ -168,8 +168,7 @@
   /* Card hover shadow — depth + ambient + salmon glow + 1 px salmon
    * ring. Composed entirely from semantic colour tokens so a tint
    * adjustment lands by editing one token, not 4 rgba strings. */
-  --v1-shadow-card-hover:
-    0 28px 72px -20px rgb(var(--color-v1-jet-black) / 0.7),
+  --v1-shadow-card-hover: 0 28px 72px -20px rgb(var(--color-v1-jet-black) / 0.7),
     0 12px 32px -14px rgb(var(--color-v1-jet-black) / 0.5),
     0 30px 80px -28px rgb(var(--color-v1-salmon-200) / 0.4),
     0 0 0 1px rgb(var(--color-v1-salmon-200) / 0.18);
@@ -192,7 +191,8 @@
  * gives this (0,2,0) specificity, overriding the `text-v1-frost`
  * utility these spans/paragraphs set.
  */
-.v1-page :is(
+.v1-page
+  :is(
     .text-v1-body-lg,
     .text-v1-body-lg-loose,
     .text-v1-body-md,
@@ -209,7 +209,9 @@
  * stays legible on the salmon surface. The descendant chain gives this
  * (0,4,0) specificity, beating the (0,2,0) global body-copy rule above.
  */
-.v1-page .pricing-plan-card:is(:hover, [data-active]) :is(
+.v1-page
+  .pricing-plan-card:is(:hover, [data-active])
+  :is(
     .text-v1-body-lg,
     .text-v1-body-lg-loose,
     .text-v1-body-md,
@@ -225,6 +227,31 @@
   background-size: 100% auto;
   background-position: top center;
   background-repeat: repeat-y;
+}
+
+/*
+ * Homepage Desktop - 7 frame: 80px padding, 96px section gap.
+ * Canvas + grain stay on `.v1-page` / `.v1-page-bg` — do not paint an
+ * opaque fill here or the homepage texture disappears.
+ */
+.home-desktop-7 {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  isolation: isolate;
+  overflow: visible;
+  width: 100%;
+  max-width: 1440px;
+  margin-inline: auto;
+  padding: 40px 24px;
+  gap: 48px;
+}
+
+@media (min-width: 1024px) {
+  .home-desktop-7 {
+    padding: 80px 32px;
+    gap: 96px;
+  }
 }
 
 /*
@@ -260,8 +287,12 @@
  * when a matching `animate-*` utility is present in the build.
  */
 @keyframes v1-carousel-progress {
-  from { transform: scaleX(0); }
-  to   { transform: scaleX(1); }
+  from {
+    transform: scaleX(0);
+  }
+  to {
+    transform: scaleX(1);
+  }
 }
 
 /*
@@ -273,7 +304,9 @@
  * visible jump.
  */
 @keyframes v1-agents-march {
-  to { stroke-dashoffset: -11; }
+  to {
+    stroke-dashoffset: -11;
+  }
 }
 
 /*
@@ -285,7 +318,9 @@
  */
 @media (prefers-reduced-motion: reduce) {
   @keyframes v1-agents-march {
-    to { stroke-dashoffset: 0; }
+    to {
+      stroke-dashoffset: 0;
+    }
   }
 }
 
@@ -295,12 +330,20 @@
  * affordance. Reduced motion holds the dots fully opaque.
  */
 @keyframes v1-typing-pulse {
-  0%, 100% { opacity: 0.3; }
-  50% { opacity: 1; }
+  0%,
+  100% {
+    opacity: 0.3;
+  }
+  50% {
+    opacity: 1;
+  }
 }
 @media (prefers-reduced-motion: reduce) {
   @keyframes v1-typing-pulse {
-    from, to { opacity: 1; }
+    from,
+    to {
+      opacity: 1;
+    }
   }
 }
 
@@ -332,8 +375,10 @@
  * or button inside `[data-wcag-cta]` (added on /home-test and
  * /ai-test) with the `hover:bg-v1-accent-salmon` utility.
  */
-[data-wcag-cta] a.hover\:bg-v1-accent-salmon:not(.hover\:\!bg-v1-jetBlack):hover,
-[data-wcag-cta] button.hover\:bg-v1-accent-salmon:not(.hover\:\!bg-v1-jetBlack):hover {
+[data-wcag-cta]
+  a.hover\:bg-v1-accent-salmon:not(.hover\:\!bg-v1-jetBlack):hover,
+[data-wcag-cta]
+  button.hover\:bg-v1-accent-salmon:not(.hover\:\!bg-v1-jetBlack):hover {
   background-color: rgb(199 64 41) !important;
 }
 
@@ -440,6 +485,20 @@
 .v1-trim {
   text-box-trim: trim-both;
   text-box-edge: cap alphabetic;
+}
+
+/* Outlined ("hollow") display text: stroke only, no fill. Stroke width is
+ * em-based so it keeps the same optical weight as a clamped headline
+ * scales, and `currentColor` means it follows the surrounding text
+ * colour. Display sizes only — the stroke closes up on small text. */
+.v1-hollow {
+  -webkit-text-stroke: 0.022em currentColor;
+  -webkit-text-fill-color: transparent;
+}
+
+.v1-hollow-1px {
+  -webkit-text-stroke: 1px currentColor;
+  -webkit-text-fill-color: transparent;
 }
 
 /* Cap-trim for custom-sized block titles that can't use a `text-v1-*`
