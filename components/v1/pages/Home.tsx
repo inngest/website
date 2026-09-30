@@ -17,9 +17,11 @@ export default function Home() {
   return (
     <PageShell>
       <div className="home-desktop-7">
-        <Hero />
-        <div className="-mx-6 w-[calc(100%+3rem)] lg:-mx-8 lg:w-[calc(100%+4rem)]">
-          <LogoStrip contained />
+        <div className="flex w-full flex-col gap-6 lg:gap-8">
+          <Hero />
+          <div className="-mx-6 w-[calc(100%+3rem)] lg:-mx-8 lg:w-[calc(100%+4rem)]">
+            <LogoStrip contained />
+          </div>
         </div>
         <div className="relative flex w-full flex-col items-center gap-12 lg:gap-24">
           <div className="relative w-full">

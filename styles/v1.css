@@ -249,7 +249,7 @@
 
 @media (min-width: 1024px) {
   .home-desktop-7 {
-    padding: 80px 32px;
+    padding: 72px 32px 80px;
     gap: 96px;
   }
 }

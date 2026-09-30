@@ -8,16 +8,16 @@ export default function Hero() {
   return (
     <section
       aria-labelledby="hero-headline"
-      className="flex w-full max-w-[1280px] flex-col items-center gap-16 pt-10 lg:min-h-[488px] lg:flex-row lg:items-start lg:gap-[84px] lg:pt-16"
+      className="flex w-full max-w-[1280px] flex-col items-center gap-12 pt-6 lg:flex-row lg:items-start lg:gap-[84px] lg:pt-8"
     >
-      <div className="flex w-full max-w-[608px] shrink-0 flex-col items-start gap-12 lg:gap-[46px]">
+      <div className="flex w-full max-w-[608px] shrink-0 flex-col items-start gap-8 lg:gap-[30px]">
         <p className="v1-trim w-full font-v1Heading text-[20px] uppercase leading-[1.2] tracking-[-1px] text-v1-accent-salmon">
           Open Source Durable Execution
         </p>
 
         <h1
           id="hero-headline"
-          className="v1-trim w-full font-v1Heading text-[clamp(2.5rem,8vw,78px)] uppercase leading-[0.95] tracking-[-1px] text-white"
+          className="v1-trim w-full font-v1Heading text-[clamp(2.25rem,6.5vw,64px)] uppercase leading-[0.95] tracking-[-1px] text-white"
         >
           make every
           <br />

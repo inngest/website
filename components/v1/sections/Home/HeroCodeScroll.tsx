@@ -192,7 +192,7 @@ export default function HeroCodeScroll() {
   return (
     <div
       ref={viewportRef}
-      className="hero-code-reel relative h-[min(28rem,70vw)] w-full max-w-[588px] shrink-0 overflow-hidden lg:h-[488px] lg:flex-none"
+      className="hero-code-reel relative h-[min(22rem,60vw)] w-full max-w-[588px] shrink-0 overflow-hidden lg:h-[400px] lg:flex-none"
     >
       <pre
         className={cn(
