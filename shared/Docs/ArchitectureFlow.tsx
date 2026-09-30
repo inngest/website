@@ -131,7 +131,7 @@ export function ArchitectureFlow() {
           lines={["New Runs", "match triggers · flow control"]}
         />
         <Down x={cx} y1={206} y2={236} />
-        <Node x={x} y={236} w={w} kind="muted" lines={["Queue"]} />
+        <Node x={x} y={236} w={w} kind="muted" lines={["Queue and State"]} />
         <Down x={cx} y1={276} y2={306} />
         <Node x={x} y={306} w={w} kind="accent" lines={["Executors"]} />
 

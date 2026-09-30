@@ -1,4 +1,5 @@
 import { Mermaid } from "src/shared/Docs/Mermaid";
+import { SdkSupport } from "src/shared/Docs/SdkSupport";
 
 export const metaTitle = "Overview | Realtime";
 export const description = "See how functions publish updates, how your server authorizes viewers, and how clients receive typed messages.";
@@ -6,6 +7,48 @@ export const description = "See how functions publish updates, how your server a
 # Overview
 
 > See how functions publish updates, how your server authorizes viewers, and how clients receive typed messages.
+
+<SdkSupport
+  sdks={[
+    {
+      sdk: "typescript",
+      href: "/docs/realtime/reference",
+      features: {
+        "Typed channels and topics": true,
+        "Publish": true,
+        "Durable publish step": true,
+        "Mint subscription tokens": true,
+        "Subscribe from the server": true,
+        "useRealtime React hook": true,
+      },
+    },
+    {
+      sdk: "python",
+      href: "/docs/realtime/reference#python",
+      status: "Beta",
+      features: {
+        "Typed channels and topics": false,
+        "Publish": true,
+        "Durable publish step": false,
+        "Mint subscription tokens": true,
+        "Subscribe from the server": false,
+      },
+      note: "Beta API in inngest.experimental.realtime.",
+    },
+    {
+      sdk: "go",
+      href: "/docs/realtime/reference#go",
+      features: {
+        "Typed channels and topics": false,
+        "Publish": true,
+        "Durable publish step": false,
+        "Mint subscription tokens": false,
+        "Subscribe from the server": true,
+      },
+      note: "Publish works inside functions and does not repeat on replay. Mint tokens with TypeScript or Python.",
+    },
+  ]}
+/>
 
 A durable function can run for minutes or hours, retry after failures, and continue after the request that started it has ended. Realtime lets that function report back to the user as it goes. It publishes messages from inside the run, and every authorized client watching the same channel receives them.
 
