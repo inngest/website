@@ -3,10 +3,12 @@ import { Callout, CodeGroup } from "shared/Docs/mdx";
 
 import { CodeBracketIcon, ComputerDesktopIcon, WrenchScrewdriverIcon } from "@heroicons/react/24/outline";
 
-export const metaTitle = "AI Coding Agent Plugins & Skills";
+export const metaTitle = "Agent plugins and skills";
 export const description = "Install Inngest plugins and skills for Claude Code, Codex, Cursor, and other AI coding agents so they can write, test, and debug durable functions correctly."
 
-# AI Coding Agent Plugins and Skills
+# Agent plugins and skills
+
+> Teach your coding agent to write current, correct Inngest code.
 
 Inngest provides official plugins and [agent skills](https://agentskills.io) for AI coding agents like Claude Code, Codex, Cursor, and Windsurf. They give your agent current guidance for building reliable applications with Inngest — from initial setup to advanced flow control and realtime updates.
 
@@ -14,7 +16,7 @@ Inngest provides official plugins and [agent skills](https://agentskills.io) for
   Use the Claude Code or Codex plugin for the best experience. Each plugin packages Inngest skills with local dev server MCP wiring so your agent can write code and inspect running functions in one loop.
 </Callout>
 
-Start from the [AI development tools hub](/docs/ai-dev-tools?ref=docs-agent-skills) if you want to compare agent skills, Inngest MCP, CLI workflows, and LLM-ready docs in one place.
+To compare skills, MCP, the CLI, and LLM-ready docs, see [AI and MCP](/docs/ai-dev-tools).
 
 ## What to install
 
@@ -26,15 +28,12 @@ Start from the [AI development tools hub](/docs/ai-dev-tools?ref=docs-agent-skil
 
 ## Why use Inngest plugins?
 
-Instead of relying on an AI model's training data, which may be outdated or incomplete, Inngest plugins provide:
+A model's training data can be outdated or incomplete. Inngest plugins give your agent:
 
-- **Current API knowledge** — Accurate function signatures, configuration options, and best practices
-- **Step-by-step guidance** — Structured instructions for common Inngest patterns
-- **Workflow templates** — Proven patterns for background jobs, scheduled tasks, webhook handlers, and event-driven workflows
-- **Repository audits** — Agent-first guidance for finding durability gaps before making code changes
-- **Durable agent patterns** — Guidance for AgentKit workflows, tool calls, human approval, realtime progress, and provider flow control
-- **Local feedback loops** — MCP access to your running dev server so agents can list functions, send events, and inspect runs
-- **Cloud operations** — MCP access to deployed apps, runs, traces, environments, Insights, sessions, webhooks, and experiments
+- **Current APIs:** accurate function signatures, configuration options, and best practices.
+- **Proven patterns:** templates for background jobs, scheduled tasks, webhook handlers, and durable AI agents.
+- **Step-by-step guidance:** structured instructions for setup, steps, flow control, and realtime.
+- **Repository audits:** guidance for finding durability gaps in an existing codebase before changing it.
 
 ## Install
 
@@ -57,7 +56,7 @@ npx skills add inngest/inngest-skills
 ```
 
 ```text {{ title: "Cursor" }}
-# Add to your .cursorrules file:
+# Add a project rule, such as .cursor/rules/inngest.mdc:
 Load the Inngest skills from https://github.com/inngest/inngest-skills for building with Inngest's durable execution platform.
 ```
 
@@ -96,7 +95,7 @@ For Python or Go, refer to the [Inngest documentation](/docs) and [llms.txt](htt
 
 ## Combine with Inngest MCP
 
-For the best AI development experience, use agent skills alongside [Inngest MCP](/docs/ai-dev-tools/mcp?ref=docs-agent-skills). Together they provide:
+For the best AI development experience, use agent skills alongside [Inngest MCP](/docs/ai-dev-tools/mcp). Together they provide:
 
 - **Skills** give your agent knowledge of *how* to write correct Inngest code
 - **Dev Server MCP** lets your agent test and debug functions running on your machine
@@ -104,11 +103,9 @@ For the best AI development experience, use agent skills alongside [Inngest MCP]
 
 This enables a complete write, test, and debug loop powered by your coding agent.
 
-## Repositories
-
-The plugin repositories share core skills from [`inngest/inngest-skills`](https://github.com/inngest/inngest-skills) so Claude Code, Codex, and portable skills installs stay aligned. The Codex plugin also includes Codex-specific skills, examples, and eval fixtures for agent-first codebase audits and durable agent workflows.
-
 ## Resources
+
+Both plugins share their core skills with [`inngest/inngest-skills`](https://github.com/inngest/inngest-skills), so every install stays aligned. The Codex plugin adds Codex-specific skills, examples, and evals.
 
 <ResourceGrid cols={3}>
 
@@ -137,7 +134,7 @@ The plugin repositories share core skills from [`inngest/inngest-skills`](https:
 }}/>
 
 <Resource resource={{
-  href: "/docs/ai-dev-tools/mcp?ref=docs-agent-skills",
+  href: "/docs/ai-dev-tools/mcp",
   name: "Inngest MCP",
   icon: WrenchScrewdriverIcon,
   description: "Connect AI assistants to Inngest Cloud or your running local Dev Server.",

@@ -3,14 +3,16 @@ import { Callout, CodeGroup } from "shared/Docs/mdx";
 
 import { BookOpenIcon, CodeBracketIcon, ComputerDesktopIcon, WrenchScrewdriverIcon } from "@heroicons/react/24/outline";
 
-export const metaTitle = "Inngest Model Context Protocol (MCP)";
+export const metaTitle = "Inngest MCP";
 export const description = "Connect AI coding agents to Inngest Cloud or the local Dev Server with MCP to inspect apps, functions, events, runs, traces, and more.";
 
-# Inngest Model Context Protocol (MCP)
+# Inngest MCP
 
-Inngest provides Model Context Protocol (MCP) servers for both Inngest Cloud and the local Dev Server. Connect Claude Code, Codex, Cursor, or another MCP client to inspect and operate Inngest from your coding agent.
+> Let your coding agent inspect and operate Inngest from your editor, locally or in the cloud.
 
-Inngest MCP tools match the [REST API v2](https://api-docs.inngest.com/) and [Inngest CLI commands](/docs/cli?ref=docs-ai-dev-tools-mcp).
+Inngest runs Model Context Protocol (MCP) servers for Inngest Cloud and the local Dev Server. Connect Claude Code, Codex, Cursor, or another MCP client to list functions, send events, and inspect runs from your coding agent.
+
+Inngest MCP tools match the [REST API v2](https://api-docs.inngest.com/) and [Inngest CLI commands](/docs/cli).
 
 ## Choose an MCP server
 
@@ -21,7 +23,7 @@ You can configure both servers in the same MCP client. Use the Dev Server while 
 | **Inngest Cloud** | Deployed apps, functions, events, runs, traces, environments, Insights, sessions, webhooks, and experiments | `https://api.inngest.com/mcp` | Inngest API key |
 | **Dev Server** | Apps, functions, events, and runs on your local machine, plus embedded Inngest docs | `http://127.0.0.1:8288/mcp` | None |
 
-<Callout variant="info">
+<Callout variant="warning">
 Some Cloud MCP tools change data, including tools that send events, invoke functions, rerun or cancel runs, sync apps, and manage environments or webhooks. Review a tool call before you approve it, especially in production.
 </Callout>
 
@@ -29,7 +31,7 @@ Some Cloud MCP tools change data, including tools that send events, invoke funct
 
 ### 1. Create an API key
 
-Create an [Inngest API key](/docs/platform/api-keys?ref=docs-ai-dev-tools-mcp) in the Cloud dashboard, then make it available to your MCP client:
+Create an [Inngest API key](/docs/platform-and-operations/keys-and-access) in the Cloud dashboard, then make it available to your MCP client:
 
 ```bash
 export INNGEST_API_KEY=sk-inn-api-...
@@ -92,7 +94,7 @@ Show the available Insights tables, then query event volume for the past 24 hour
 The local MCP endpoint starts with the Inngest Dev Server:
 
 ```bash
-inngest dev
+npx --ignore-scripts=false inngest-cli@latest dev
 ```
 
 The default endpoint is `http://127.0.0.1:8288/mcp`.
@@ -239,7 +241,7 @@ In the staging environment, send an app/order.created event with orderId test-12
 
 **The Dev Server MCP endpoint is not found**
 
-- Confirm `inngest dev` is running.
+- Confirm the Dev Server is running.
 - Confirm the client uses `http://127.0.0.1:8288/mcp`, or update the port if you changed it.
 - Restart the client after changing its MCP configuration.
 
@@ -260,32 +262,32 @@ In the staging environment, send an app/order.created event with orderId test-12
 <ResourceGrid cols={3}>
 
 <Resource resource={{
-href: "/docs/ai-dev-tools?ref=docs-ai-dev-tools-mcp",
-name: "AI Development Tools",
+href: "/docs/ai-dev-tools",
+name: "AI and MCP",
 icon: ComputerDesktopIcon,
 description: "Choose among Inngest MCP, agent plugins and skills, CLI workflows, and LLM-ready docs.",
 pattern: 1,
 }}/>
 
 <Resource resource={{
-href: "/docs/ai-dev-tools/agent-skills?ref=docs-ai-dev-tools-mcp",
-name: "Agent Plugins and Skills",
+href: "/docs/ai-dev-tools/agent-skills",
+name: "Agent plugins and skills",
 icon: CodeBracketIcon,
 description: "Install current Inngest guidance for Claude Code, Codex, Cursor, Windsurf, and other agents.",
 pattern: 1,
 }}/>
 
 <Resource resource={{
-href: "/docs/platform/api-keys?ref=docs-ai-dev-tools-mcp",
-name: "API Keys",
+href: "/docs/platform-and-operations/keys-and-access",
+name: "Keys and access",
 icon: WrenchScrewdriverIcon,
 description: "Create and manage API keys for Cloud MCP and the REST API.",
 pattern: 1,
 }}/>
 
 <Resource resource={{
-href: "/docs/local-development?ref=docs-ai-dev-tools-mcp",
-name: "Local Development",
+href: "/docs/local-development",
+name: "Local development",
 icon: ComputerDesktopIcon,
 description: "Run Inngest functions and the Dev Server MCP endpoint on your machine.",
 pattern: 1,
