@@ -8,8 +8,6 @@ export const description = "Choose how to repeat work or start independent work 
 Choose fan-out when independent tasks need separate runs and retries. Choose a loop when one function must process a list or paginated source while saving progress.
 - **Fan-out.** See [Fan-out](/docs/durable-execution/guides-and-advanced/patterns/fan-out). One event starts separate functions. Each function has its own run, retries, and history.
 - **Working with loops.** See [Working with loops](/docs/durable-execution/guides-and-advanced/patterns/working-with-loops). One function processes a sequence or paginated source. Each iteration can save progress in a step.
-AI agents use the same building blocks. Each LLM call and tool call runs as a step, so an agent can resume after a failure or wait for a person.
-- **Agent tool loops.** See [Agent tool loops](/docs/durable-execution/guides-and-advanced/patterns/agent-tool-loops). Run each LLM call and tool call as a step, and stop the loop when the task is done.
-- **Human-in-the-loop.** See [Human-in-the-loop](/docs/durable-execution/guides-and-advanced/patterns/human-in-the-loop). Pause an agent for a person to approve or reject an action.
-- **Sub-agent delegation.** See [Sub-agent delegation](/docs/durable-execution/guides-and-advanced/patterns/sub-agent-delegation). Hand a task to a separate function with its own context, and wait for its result or continue without it.
+AI agents use the same building blocks. See [Durable agents](/docs/durable-execution/durable-agents) for tool loops, human approval, and sub-agent delegation.
+
 For independent steps that belong to one run, use [step.run](/docs/durable-execution/primitives/step-run) with `Promise.all()`.

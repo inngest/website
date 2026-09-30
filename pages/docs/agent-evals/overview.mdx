@@ -36,7 +36,7 @@ export const description = "Connect outcome scores to the runs that produced the
 
 A support answer can pass every code check and still fail to help the customer. Agent Evals lets you score the result that matters, link it to the run that produced the answer, and compare changes using those outcomes.
 
-Inngest already records each durable run, its steps, and its trace. Agent Evals adds outcome signals to those runs, including signals that arrive days after the work finishes. When a score is bad, you open the execution behind it instead of guessing from a final output.
+Inngest already records each durable run, its steps, and its [trace](/docs/platform-and-operations/traces). Agent Evals adds outcome signals to those runs, including signals that arrive days after the work finishes. When a score is bad, you open the execution behind it instead of guessing from a final output.
 
 ## Score your first run
 
@@ -68,18 +68,27 @@ export default inngest.createFunction(
 );
 ```
 
-`step.score()` is a durable step, so a retry or replay doesn't record the score twice. The score appears on the run's trace and in the function's score trends.
+`step.score()` is a durable step, so a retry or replay doesn't record the score twice. The score appears on the run's trace and in the function's [score trends](/docs/agent-evals/scores#where-scores-appear).
 
-## How the parts fit together
+## Grow from one score to a full eval
 
-A production eval usually grows in this order. Start with a single score and add the rest when your question needs it.
+Most teams start with a single score and add the other parts as their questions get harder. Each part answers a new question:
 
-1. **Scores** record a named number or boolean on a run or step. Score an immediate check, such as a guardrail, or a product outcome you already know. [Scores](/docs/agent-evals/scores).
-2. **Deferred scoring** handles outcomes that arrive later. A scorer runs separately, waits for feedback, review, or conversion, and scores the run that started it. [Deferred scoring](/docs/agent-evals/deferred-scoring).
-3. **Experiments** compare changes. `group.experiment()` picks one variant per run and keeps it on retries. Pass the returned `experimentRef` with a score so the outcome counts toward the variant that served it. [Experiments](/docs/agent-evals/experiments).
-4. **Sessions** group related runs by a conversation, ticket, or job ID, so you can inspect every run behind one outcome. [Sessions](/docs/agent-evals/sessions).
+1. **[Scores](/docs/agent-evals/scores): is this result good?** `step.score()` records a named number or boolean on a run or step. Use it for checks you can make right away, such as a guardrail, a validation, or an LLM judge.
+2. **[Deferred scoring](/docs/agent-evals/deferred-scoring): did it help later?** `defer()` starts a scorer that waits for feedback, a review, or a conversion, then scores the run that started it. The original run doesn't stay open while it waits.
+3. **[Experiments](/docs/agent-evals/experiments): is the change better?** `group.experiment()` picks one variant per run and keeps it on retries. Pass the returned `experimentRef` with a score so the outcome counts toward the variant that served it.
+4. **[Sessions](/docs/agent-evals/sessions): what else happened?** A session ID on your events groups the runs behind one conversation, ticket, or job, so you can inspect everything that led to an outcome.
 
-For example, a support agent answers a ticket. An experiment sends the ticket through one of two answer strategies. The agent scores an immediate answer check, then defers a scorer that waits for the customer's rating. When the rating arrives, the score points back to the original run and its variant, and the ticket's session shows every run involved. You can answer two questions: **did the system produce a valid answer**, and **did the answer help the customer?**
+### Example: a support agent
+
+A support agent answers tickets, and you're testing a new answer strategy against the current one:
+
+- An experiment sends each ticket through one of the two strategies.
+- The agent checks its answer and records `answer-valid` with `step.score()`.
+- The agent defers a scorer that waits for the customer's rating. When the rating arrives, the scorer records `customer-helped` on the original run and credits the variant that served it.
+- A `ticket_id` session collects every run for the ticket, including follow-ups.
+
+In the experiment view, you compare both scores for each variant: **did the agent produce a valid answer**, and **did the answer help the customer?**
 
 ## Choose the right tool
 
@@ -98,9 +107,9 @@ For example, a support agent answers a ticket. An experiment sends the ticket th
 | Surface | Use it to |
 | --- | --- |
 | [Traces](/docs/platform-and-operations/traces) | Inspect a run's steps, model calls, tool calls, errors, the selected variant, and its scores. |
-| Function dashboard | Watch score trends over time. A drop after a prompt change tells you something broke. |
-| Experiment view | Compare run counts and score aggregates for each variant. |
-| **AI → Sessions** | Find every run related to a conversation, ticket, or job. |
+| [Function dashboard](/docs/agent-evals/scores#where-scores-appear) | Watch score trends over time. A drop after a prompt change tells you something broke. |
+| [Experiment view](/docs/agent-evals/experiments#score-a-variant) | Compare run counts and score aggregates for each variant. |
+| [**AI → Sessions**](/docs/agent-evals/sessions#inspect-related-runs) | Find every run related to a conversation, ticket, or job. |
 | [Insights](/docs/platform-and-operations/insights) | Query historical events, runs, and steps with SQL. |
 | [Extended Traces](/docs/reference/typescript/v4/extended-traces) | Capture spans from your model SDKs, databases, and HTTP calls inside each step with OpenTelemetry. |
 | [Inngest MCP](/docs/ai-dev-tools/mcp) | Read experiment run counts and score aggregates from a coding agent. |

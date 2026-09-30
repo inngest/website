@@ -201,7 +201,7 @@ defer("score", {
 `defer(...)` is fire-and-forget, so a bad call should not derail the surrounding handler.
 
 - **Call-site errors** (for example, a synchronous schema failure, or an invalid `meta.sessions` value) are logged via the internal logger and the call is silently skipped. The parent run continues normally and the deferred function does not fire.
-- **Receiver-side errors** (the deferred run reading invalid `event.data`, or the handler throwing) fail the deferred run itself with normal retry semantics.
+- **Receiver-side errors** fail the deferred run itself, never the parent. If `event.data` fails schema validation, the deferred run fails without retries. If the handler throws, the run retries with normal retry semantics.
 
 ---
 

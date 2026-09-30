@@ -1,8 +1,10 @@
-import { Compatibility } from "shared/Docs/mdx";
+import { Callout, Compatibility } from "shared/Docs/mdx";
 export const metaTitle = "defer";
 export const description = "Start independent follow-up work without delaying the current run.";
 
 # `defer`
+
+> Run a typed follow-up function in the background, without making the current run wait.
 
 <Compatibility endpoints={false} />
 
@@ -13,6 +15,10 @@ They are useful when:
 - You need to send a notification after the main work finishes.
 - You want to score or record an outcome in a separate run.
 - The current run does not need the follow-up function's result.
+
+<Callout variant="info">
+  Deferred functions are in beta and available in the TypeScript SDK only. `createDefer` is imported from `inngest/experimental`, and the API may change before GA.
+</Callout>
 
 ## Start follow-up work
 
@@ -58,7 +64,7 @@ const handle = defer(id, { function, data });
 - **`data`**: the input. It's checked against the function's schema, and an invalid call is logged and skipped.
 - **Returns** a handle. Call `handle.abort()` if the follow-up work is no longer needed.
 
-A deferred function has its own retries and flow control. Register it in `serve()` alongside the parent. See the [`defer` reference](/docs/reference/typescript/functions/deferred-functions) for every option.
+A deferred function has its own retries and flow control. Register it in `serve()` alongside the parent. See the [`defer` reference](/docs/reference/typescript/v4/functions/deferred-functions) for every option.
 
 ## Using the right primitive
 
@@ -66,8 +72,182 @@ A deferred function has its own retries and flow control. Register it in `serve(
 - Use `step.sendEvent` when an event should trigger any matching functions.
 - Use `defer` when one named function should run independently with a typed payload.
 
+| Tool                            | Returns to caller?  | Independent execution?    |
+| ------------------------------- | ------------------- | ------------------------- |
+| `step.invoke(id, { function, data })` | Yes (awaits result) | No (caller blocks)  |
+| `step.sendEvent(...)`           | No                  | Yes (any matching fn)     |
+| `defer(id, { function, data })` | No                  | Yes (single typed target) |
+
+See [`step.invoke`](/docs/durable-execution/primitives/step-invoke) and [`step.sendEvent`](/docs/durable-execution/primitives/step-sendevent).
+
+## Define a deferred function
+
+A deferred function is a regular Inngest function. It gets its own retries, concurrency, and step state, so its handler can use `step.run()`, `step.sleep()`, `step.waitForEvent()`, and the other step tools.
+
+`createDefer` differs from `inngest.createFunction` in a few ways:
+
+- The client is the first argument.
+- You don't declare `triggers`. A `defer(...)` call triggers the function.
+- It adds `schema`, which describes the payload callers send.
+- It accepts the other `createFunction` options, such as `concurrency`, `throttle`, and `rateLimit`. `onFailure` and `batchEvents` are not supported yet.
+
+```ts
+import { createDefer } from "inngest/experimental";
+import { z } from "zod";
+import { inngest } from "./client";
+
+export const sendEmail = createDefer(
+  inngest,
+  {
+    id: "send-email",
+    schema: z.object({ to: z.string(), body: z.string() }),
+    concurrency: { limit: 5 },
+  },
+  async ({ event, step }) => {
+    event.data.to;   // typed from `schema`
+    event.data.body;
+  }
+);
+```
+
+Register it in your serve handler alongside your other functions:
+
+```ts
+import { serve } from "inngest/next"; // or your framework's adapter
+
+// myFunctions: the other Inngest functions your app already serves
+serve({ client: inngest, functions: [...myFunctions, sendEmail] });
+```
+
+## Call `defer`
+
+`defer` is on the handler context of every Inngest function. The call is synchronous and fire-and-forget. The parent continues at once and never sees a result. Inngest enqueues the deferred run when the parent run finalizes, not when you call `defer`.
+
+You can also call `defer` inside `step.run()`:
+
+```ts
+// Inside a handler that destructures { defer, step }; `to` and `body` are your payload values
+await step.run("notify", async () => {
+  defer("send-confirmation", { function: sendEmail, data: { to, body } });
+});
+```
+
+The ID must be unique within the parent run. Unlike step IDs, Inngest does not append an index to tell duplicate IDs apart. A call with a duplicate ID is logged and skipped.
+
+## Type and validate the payload
+
+When the deferred function has a `schema`, the `data` you pass to `defer(...)` is type-checked and validated:
+
+- `data` is validated at the call site, synchronously.
+- `data` is validated again when the deferred run receives it. This catches changes from serialization, such as a `Date` becoming an ISO string. If this check fails, the deferred run fails without retries. The parent run is never affected.
+- The same schema types `event.data` in the deferred handler.
+
+Call-site validation must be synchronous because `defer(...)` is synchronous. If the validator returns a Promise, the call is logged and skipped, so use a synchronous validator. Without a schema, `data` is typed as `Record<string, any>`.
+
+## Know which run deferred the work
+
+You don't need to pass the parent's ID yourself. The SDK passes it through for you. Read it from `parents` on the handler context. Each entry has the parent's `fnSlug` and `runId`:
+
+```ts
+async ({ event, parents }) => {
+  const { fnSlug, runId } = parents[0];
+}
+```
+
+## Group runs with sessions
+
+A deferred run joins the [sessions](/docs/agent-evals/sessions) of the run that deferred it. The two runs appear together in the dashboard, and you don't need to pass anything.
+
+To set a session on the deferred run yourself, pass `meta.sessions`:
+
+```ts
+defer("send-confirmation", {
+  function: sendEmail,
+  data: { to: event.data.email, body: "Thanks for your order!" },
+  meta: {
+    sessions: {
+      conversation_id: event.data.conversationId,
+    },
+  },
+});
+```
+
+Sessions you set here win over inherited ones. To clear inherited sessions or turn off inheritance, see the [`defer` reference](/docs/reference/typescript/v4/functions/deferred-functions#sessions) and [Sessions](/docs/agent-evals/sessions).
+
+## Credit scores to an experiment
+
+When the deferred function is an [LLM scorer](/docs/agent-evals/deferred-scoring), you can credit its score to the [experiment variant](/docs/agent-evals/experiments) that produced the output. Pass the `experimentRef` returned by [`group.experiment()`](/docs/durable-execution/primitives/group-experiment) as the `experiment` option:
+
+```ts
+// feedbackScorer is a scorer created with createScorer;
+// experimentRef comes from `await group.experiment(...)` earlier in this run
+defer("score", {
+  function: feedbackScorer,
+  data: { ticketId },
+  experiment: experimentRef,
+});
+```
+
+The deferred handler sees the variant on `parents[0].experiment` as `{ experimentName, variant }`. Later scores then credit the variant that served the result. See [Scores](/docs/agent-evals/scores) for other ways to record outcomes.
+
+## Cancel a deferred run
+
+`defer(...)` returns a handle. Call `abort()` on it when the parent learns, after deferring, that the work is no longer needed.
+
+For example, a data-sync function defers an expensive LLM job to judge the results. Midway through, it finds the import was too small to be worth judging:
+
+```ts
+// judgeResults is a deferred function; syncData and MINIMUM_ROWS_WORTH_JUDGING are your own code
+async ({ event, defer, step }) => {
+  const scoring = defer("judge-results", {
+    function: judgeResults,
+    data: { importId: event.data.importId },
+  });
+
+  const { rowCount } = await step.run("sync-data", () => syncData(event.data));
+
+  if (rowCount < MINIMUM_ROWS_WORTH_JUDGING) {
+    scoring.abort();
+  }
+}
+```
+
+If you know the answer before you call `defer(...)`, skip the call instead. Use `abort()` when the defer is already registered, for example in an earlier step or in shared code you don't control.
+
+- `abort()` is synchronous, fire-and-forget, and idempotent, like `defer(...)`.
+- Misuse is logged and ignored, not thrown. This includes aborting twice or aborting a call that was skipped.
+- A deferred run starts only after the parent finalizes. An abort anywhere in the parent run stops it from ever starting: right after the `defer(...)` call, after other steps, or inside a `step.run()` closure.
+- Aborting one deferred run does not affect the run's other `defer(...)` calls.
+
+<Callout variant="info">
+  Calling `abort()` inside a `step.run()` closure is retry-safe. The abort ships with the step's result, so one can't reach Inngest without the other.
+</Callout>
+
+See the [`deferHandle.abort()` reference](/docs/reference/typescript/v4/functions/deferred-functions#defer-handle-abort-void) for the exact behavior.
+
+## Handle errors
+
+A bad `defer` call never breaks the parent run.
+
+- **Call-site errors** are logged and the call is skipped. The parent continues, and the deferred function does not run. These include a synchronous schema failure, an invalid `meta.sessions` value, and a function that wasn't created with `createDefer`.
+- **Receiver-side errors** fail the deferred run, never the parent. If the deferred run receives `event.data` that fails schema validation, the run fails without retries. If the handler throws, the run retries like any other Inngest function.
+
+## Reuse one deferred function
+
+A deferred function is a single function in Inngest. Many parent functions can defer it. Each `defer(...)` call starts an independent run with its own retries, concurrency, and step state.
+
 ## Sandbox cleanup
 
-If you keep a sandbox after the main work, pass its ID to a deferred cleanup function. The parent can finish while teardown runs in its own retryable run. Make cleanup safe to repeat. `defer` is not a `finally` block; the published docs do not promise cleanup when the parent fails or is cancelled. Cover those paths separately, and use Inngest's built-in sandbox lifecycle when it already handles teardown. See [Sandboxes](/docs/sandboxes) and cleanup after cancellation.
+If you keep a sandbox after the main work, pass its ID to a deferred cleanup function. The parent can finish while teardown runs in its own retryable run. Make cleanup safe to repeat. `defer` is not a `finally` block; the published docs do not promise cleanup when the parent fails or is cancelled. Cover those paths separately, and use Inngest's built-in sandbox lifecycle when it already handles teardown. See [Sandboxes](/docs/sandboxes) and [cleanup after cancellation](/docs/durable-execution/guides-and-advanced/cancellation#clean-up-after-cancellation).
 
-Deferred functions are currently beta and available in the TypeScript SDK. Invalid `defer` calls, including synchronous payload validation failures, are logged and skipped while the parent continues. `defer` does not yet work with encryption middleware, so do not send data that requires that middleware in a deferred payload. For Agent Evals, pass the `experimentRef` returned by `group.experiment()` to a deferred scorer with the `experiment` option so later scores credit the variant that served the result. See [Experiments](/docs/agent-evals/experiments).
+## Limits
+
+- Deferred functions are currently beta and available in the TypeScript SDK.
+- Invalid `defer` calls, including synchronous payload validation failures, are logged and skipped while the parent continues.
+- `defer` does not yet work with [encryption middleware](/docs/durable-execution/guides-and-advanced/middleware/encryption-middleware), so deferred payloads are not encrypted. Do not send data that requires that middleware in a deferred payload. Support is planned.
+
+## Next
+
+- Read the [deferred functions reference](/docs/reference/typescript/v4/functions/deferred-functions) for the full `createDefer` and `defer` API.
+- Read [Events and triggers](/docs/durable-execution/guides-and-advanced/events-and-triggers) for other ways to start a function.
+- Read [Primitives](/docs/durable-execution/primitives) for the other ways to pause and resume work.

@@ -15,9 +15,11 @@ They are useful when:
 - You want the same user or account to receive a consistent variant across runs.
 - You need to score outcomes and compare the variants that produced them.
 
-`group.experiment()` is in beta.
+`group.experiment()` is in beta. It requires TypeScript SDK v4.8.0 or later. You don't need a separate package or feature-flag service.
 
 ## Run an experiment
+
+Import the `experiment` helper from `inngest`. Then call `group.experiment()` in your function handler. The handler receives `group` alongside `event` and `step`.
 
 ```typescript
 import { experiment } from "inngest";
@@ -34,6 +36,14 @@ const { result, variant, experimentRef } = await group.experiment(
 );
 ```
 Only the selected callback runs. `result` contains its return value, `variant` names the selected path, and `experimentRef` lets you credit a score to that path. Each callback must call at least one `step.*` method. Put side effects inside steps because code outside steps can run again on replay.
+
+## How selection works
+
+The selection is a durable, memoized step. The first time a run reaches `group.experiment()`, Inngest evaluates the `select` strategy and saves the chosen variant. When the run retries or replays, it reuses that variant.
+
+A variant callback can use any step tool, including `step.run()`, `step.invoke()`, `step.waitForEvent()`, and `step.sendEvent()`. Each of those steps retries and memoizes like any other step. If a callback finishes without calling a step tool, the SDK throws a `NonRetriableError`.
+
+Each `group.experiment()` call counts as one step in your run and billing metrics. Steps inside the selected callback count separately.
 
 ## Test a larger workflow path
 
@@ -69,7 +79,85 @@ const { result, experimentRef } = await group.experiment("invoice-engine", {
 - **Use your own assignment:** `experiment.custom(fn)` reads a feature flag or database record. Use it when assignment must change without a deploy or must stay fixed through a migration.
 - **Pin one variant:** `experiment.fixed("current")` always selects the same path for an override or test.
 
-Pass a present, stable key to `experiment.bucket()`; a missing key sends those runs to the same bucket. Changing bucket weights can change a user's future assignment. If a user must never switch back, store the assignment and use `experiment.custom()`. Its selector must return a name in `variants`.
+### Split new runs with `weighted`
+
+Each new run gets its own assignment. Weights are relative, so `{ control: 9, candidate: 1 }` and `{ control: 90, candidate: 10 }` give the same split.
+
+```typescript
+select: experiment.weighted({ control: 90, candidate: 10 })
+```
+
+Selection is seeded by the run ID, so a run keeps its variant on retries. New weights in a later deploy only affect new selections. Because the seed is the run, not the user, one user can get different variants across runs.
+
+### Keep a user on one variant with `bucket`
+
+Pass a stable value, such as a user, account, or tenant ID. Inngest hashes it to a variant, so a user doesn't see a different experience each time they trigger the function.
+
+```typescript
+select: experiment.bucket(event.data.userId, {
+  weights: { control: 80, candidate: 20 },
+})
+```
+
+Pass a present, stable key to `experiment.bucket()`; a missing key sends those runs to the same bucket. Changing bucket weights can change a user's future assignment. If a user must never switch back, store the assignment and use `experiment.custom()`.
+
+### Read the assignment from your system with `custom`
+
+Use a feature flag, rollout table, entitlement, or stored migration assignment. The selector can be sync or async, and its result is memoized for the run.
+
+```typescript
+select: experiment.custom(async () => {
+  const assignment = await rolloutTable.get(event.data.accountId);
+  return assignment ?? "control";
+})
+```
+
+Its selector must return a name in `variants`. An unknown name fails the run.
+
+### Pin one variant with `fixed`
+
+Always select the same variant. Use it for a manual override, to test one path, or to pin a winner while you remove the experiment.
+
+```typescript
+select: experiment.fixed("candidate")
+```
+
+## Use the result and variant name
+
+`group.experiment()` always returns `{ result, variant, experimentRef }`:
+
+- **`result`**: the selected callback's return value.
+- **`variant`**: the selected variant's name. Use it for logging, analytics, or later decisions.
+- **`experimentRef`**: a replay-stable handle, `{ experimentName, variant }`. Pass it with a score to credit the variant that served this run.
+
+If your team already uses an analytics warehouse, record the variant from a step:
+
+```typescript
+const { result, variant, experimentRef } = await group.experiment("copy-style", {
+  variants: {
+    short: () => step.run("short-copy", () => generateShortCopy(event.data)),
+    detailed: () =>
+      step.run("detailed-copy", () => generateDetailedCopy(event.data)),
+  },
+  select: experiment.bucket(event.data.userId, {
+    weights: { short: 50, detailed: 50 },
+  }),
+});
+
+await step.run("track-experiment", () =>
+  analytics.track("experiment.variant_selected", {
+    experiment: "copy-style",
+    variant,
+    userId: event.data.userId,
+  })
+);
+
+return result;
+```
+
+## Score the served variant
+
+An experiment tells you which variant ran. It doesn't decide which one is best. Attach your own outcome signal with a score.
 
 The returned `experimentRef` identifies the served variant. If the outcome is available during this run, pass the ref to `inngest.score.experiment()`:
 
@@ -81,3 +169,36 @@ await inngest.score.experiment({
 });
 ```
 When another run scores a later outcome, save the original `experimentRef` and run ID with the result. Pass both to `inngest.score.experiment()` so the score attaches to the run and variant that produced it. You can also pass the ref to a deferred scorer through `defer()`. See [Experiments](/docs/agent-evals/experiments) for the full path from selection to scoring.
+
+For score types and attribution rules, see [Scores](/docs/agent-evals/scores), [Deferred scoring](/docs/agent-evals/deferred-scoring), and the [scoring reference](/docs/reference/typescript/v4/functions/scoring).
+
+## Best practices
+
+- Give every experiment in a function a unique ID.
+- Keep variant names stable. They appear in traces and analytics.
+- Use `weighted()` when each run can get a fresh assignment.
+- Use `bucket()` when a stable user or account experience matters.
+- Use `custom()` when assignment must be controlled outside code or changed without a deploy.
+- Keep selectors simple. Put the behavior you're comparing inside the variant callbacks.
+- Prefer distinct experiment names across functions. Two functions can share a name, and the dashboard scopes detail views by function, but distinct names are easier to compare in lists.
+
+## Troubleshooting
+
+| Issue | Solution |
+|-------|----------|
+| Experiments aren't available. | Upgrade to TypeScript SDK v4.8.0 or later. |
+| The same user sees different variants across runs. | `experiment.weighted()` is seeded by run ID, not user ID. Use `experiment.bucket(userId, { weights })` to keep a user on one variant. |
+| The run fails with an unknown variant. | Make sure the `experiment.fixed()` or `experiment.custom()` value exactly matches a key in `variants`. A typo fails the run. |
+| The run fails with a `NonRetriableError`. | Make sure every variant callback calls at least one `step.*` tool. |
+| `experiment.bucket()` gives surprising skew. | Check that the bucket value isn't `null` or `undefined`. Missing values hash as an empty string, so they all land in the same bucket. The trace shows a warning. |
+| A 50/50 split looks uneven. | Small samples are noisy. Send more events before you assume selection is wrong. |
+
+For scoring problems, such as a missing `step.score()` or scores that don't attach to a variant, see [Agent Evals troubleshooting](/docs/agent-evals/troubleshooting).
+
+## Related docs
+
+- [`group.experiment()` reference](/docs/reference/typescript/v4/functions/group-experiment)
+- [Experiments](/docs/agent-evals/experiments)
+- [Compare models and prompts](/docs/agent-evals/guides/compare-models-and-prompts)
+- [Roll out a workflow rewrite](/docs/agent-evals/guides/workflow-rewrite)
+- [Versioning](/docs/durable-execution/guides-and-advanced/versioning)

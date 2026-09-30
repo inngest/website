@@ -1,10 +1,10 @@
 
-export const metaTitle = "Sub-Agent Delegation"
+export const metaTitle = "Sub-agent delegation | Durable agents";
 export const description = "Delegate tasks to specialized sub-agents in your AI system, each with its own context window, tools, and token budget. Scale multi-agent pipelines with Inngest."
 
 # Delegate Tasks to Sub-Agents
 
-Delegation gives sub-agents their own context window, tools, and token budget. A sub-agent can be modeled as a separate Inngest function that runs its own [agent loop](/docs/durable-execution/guides-and-advanced/patterns/agent-tool-loops) — the parent either waits for a result or fires and forgets.
+Delegation gives sub-agents their own context window, tools, and token budget. A sub-agent can be modeled as a separate Inngest function that runs its own [agent loop](/docs/durable-execution/durable-agents/agent-tool-loops) — the parent either waits for a result or fires and forgets.
 
 ## Define a sub-agent function
 
@@ -201,8 +201,7 @@ if (isAsync) {
 ```typescript
 // Separate function handles result delivery
 export const deliverSubAgentResult = inngest.createFunction(
-  { id: "deliver-sub-agent-result" },
-  { event: "agent/sub-agent.completed" },
+  { id: "deliver-sub-agent-result", triggers: { event: "agent/sub-agent.completed" } },
   async ({ event, step }) => {
     const { response, parentSessionId } = event.data;
 
@@ -250,8 +249,7 @@ Combine tool restriction with a hard iteration cap for two layers of protection:
 
 ```typescript
 export const subAgent = inngest.createFunction(
-  { id: "sub-agent", retries: 1 },
-  { event: "agent/sub-agent.spawn" },
+  { id: "sub-agent", retries: 1, triggers: { event: "agent/sub-agent.spawn" } },
   async ({ event, step }) => {
     const result = await runAgentLoop({
       step,
@@ -285,7 +283,7 @@ try {
 
 ## Schedule a sub-agent
 
-To run a sub-agent at a future time, include a [timestamp](/docs/durable-execution/guides-and-advanced/events-and-triggers/schedules-and-delayed-starts#schedule-a-function-for-later) (`ts`) when sending the event:
+To run a sub-agent at a future time, include a [timestamp](/docs/durable-execution/guides-and-advanced/events-and-triggers/schedules-and-delayed-starts#start-once-in-the-future) (`ts`) when sending the event:
 
 ```typescript
 await step.sendEvent("schedule-daily-report", {
@@ -300,7 +298,7 @@ await step.sendEvent("schedule-daily-report", {
 });
 ```
 
-For recurring work, use a [cron-triggered function](/docs/guides/scheduled-functions) instead.
+For recurring work, use a [cron-triggered function](/docs/durable-execution/guides-and-advanced/events-and-triggers/schedules-and-delayed-starts#run-on-a-recurring-schedule) instead.
 
 ## Write self-contained task descriptions
 
@@ -324,7 +322,7 @@ The task description and available tools are enough to specialize behavior.
 
 ## Next steps
 
-- [Build an Agent Tool Loop](/docs/durable-execution/guides-and-advanced/patterns/agent-tool-loops) — Build the agent loop that powers both parent and sub-agents.
-- [Pause for Human Approval](/docs/durable-execution/guides-and-advanced/patterns/human-in-the-loop) — Add approval gates before or after delegation with `step.waitForEvent()`.
+- [Build an Agent Tool Loop](/docs/durable-execution/durable-agents/agent-tool-loops) — Build the agent loop that powers both parent and sub-agents.
+- [Pause for Human Approval](/docs/durable-execution/durable-agents/human-in-the-loop) — Add approval gates before or after delegation with `step.waitForEvent()`.
 - [Three sub-agent patterns you need for your agentic system](/blog/three-patterns-you-need-for-agentic-systems) — sync, async, and scheduled delegation patterns in depth
 {/*- [Run Sub-Agents in Parallel](/docs/ai-patterns/parallelization) — Spawn multiple sub-agents simultaneously and aggregate results. - [Manage Context Across Agents](/docs/ai-patterns/context-management) — Strategies for managing token budgets across agent hierarchies.*/}

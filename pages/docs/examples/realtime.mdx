@@ -195,7 +195,7 @@ The `globalChannel` will be used to stream updates for all posts, and the `postC
 
 ## Human in the loop: Bi-directional workflows
 
-Combine Realtime with `waitForEvent()` to enable workflows that require user input, such as [review or approval steps](/docs/durable-execution/guides-and-advanced/patterns/human-in-the-loop). Here's how to send a message to the user and wait for their confirmation:
+Combine Realtime with `waitForEvent()` to enable workflows that require user input, such as [review or approval steps](/docs/durable-execution/durable-agents/human-in-the-loop). Here's how to send a message to the user and wait for their confirmation:
 
 ```ts {{ filename: "src/inngest/channels.ts" }}
 import { realtime } from "inngest";

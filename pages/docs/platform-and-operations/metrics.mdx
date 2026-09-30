@@ -6,9 +6,51 @@ export const description = "Spot a rise in failures or backlog in metrics, then 
 > Spot changes in workload health and open the runs behind them.
 
 Spot a rise in failures or backlog in metrics, then open a run trace to find which function or step needs attention.
+
+Inngest records metrics for every function run and event without extra instrumentation. For step-level detail in a single run, see [Traces](/docs/platform-and-operations/traces). For historical SQL analysis, see [Insights](/docs/platform-and-operations/insights).
+
 ## Watch function health
+
 Start with the Functions list for each function's trigger, volume, and failure rate. Open a function to see status counts, failed functions, run and step throughput, and backlog over a selected time range. Filter by app or function to separate one service from the account total.
+
+The Functions list shows, for each function:
+
+- **Triggers:** the events or cron schedule that start it.
+- **Failure rate:** spot a surge of errors.
+- **Volume:** spot a drop in processing.
+
 A rising failure rate calls for a failed run trace. A growing backlog or falling throughput calls for a check of flow controls, account capacity, app sync, and the host running your code. Metrics show the pattern; the trace shows the run.
+
+## Read the function charts
+
+Each chart uses the selected time range (for example, the last 24 hours) and your app or function filters.
+
+| Chart | What it shows | Use it to |
+| --- | --- | --- |
+| **Function Status** | The number of runs grouped by status: succeeded, failed, or cancelled. | Spot an unwanted failure rate at a glance. |
+| **Failed Functions** | The top six failing functions and how often each fails. | Find the functions behind a rise in failures. Select **View all** to open their runs. |
+| **Total runs throughput** | The rate at which new runs start, per app. | See how fast runs are created and handled. Flow control can limit this rate on purpose. |
+| **Total steps throughput** | The rate at which steps run, per app. | Check your function configuration. Low step throughput can mean many concurrent steps held back by a strict [concurrency](/docs/durable-execution/flow-control/concurrency) limit. |
+| **Backlog** | The number of runs waiting to be processed in each time bucket, per app. | Check your account's concurrency capacity and spot spikes of activity. |
+
 ## Watch event flow
+
 The Events page shows event types, volume, and associated functions. Open an event type to inspect its recent events. If events arrive but no run starts, check the trigger, app sync, environment, and whether the function is paused.
+
+The event type page shows:
+
+- **Throughput:** a chart of how often the event arrives over time.
+- **Functions:** the functions this event triggers.
+- **Source:** the app that sent each event. This helps when several apps send the same event, for example from different languages.
+
+Open an event to see its payload and the runs it triggered. To trace a failure from the event to the run, or to send the event to your local Dev Server, see [Inspect events and runs](/docs/platform-and-operations/inspect-events-and-runs).
+
 For historical SQL analysis across events, runs, steps, and spans, use Insights. For exact current plan retention, use the pricing page.
+
+## Find apps, functions, and events
+
+Press **Cmd + K** (macOS) or **Ctrl + K** (Windows and Linux), or select the search icon in the top-left corner. Global search finds apps, functions, and events by name or ID. You can also use it to move around the environment, take quick actions, and open help resources.
+
+## Export metrics
+
+To watch Inngest metrics and set alerts in your own monitoring tools, export them to [Datadog](/docs/platform-and-operations/integrations/datadog) or a [Prometheus](/docs/platform-and-operations/integrations/prometheus)-compatible tool.

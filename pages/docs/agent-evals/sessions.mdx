@@ -7,7 +7,7 @@ export const description = "Find related runs in one view by giving their events
 
 > Find related runs in one view by giving their events the same conversation, ticket, or job ID.
 
-A support ticket may trigger several functions before a customer gives feedback. Put the same ticket ID on each relevant event, and the session shows those runs together. You can then trace the work behind one outcome across functions.
+A support ticket may trigger several functions before a customer gives feedback. Put the same ticket ID on each relevant event, and the session shows those runs together. You can then trace the work behind one outcome across functions. Use sessions for any ID that ties runs together, such as an AI conversation, agent run, support ticket, import, or long-running business process.
 
 Sessions add metadata to events. They don't change which functions run, how events match triggers, or how a waiting function matches an event. `meta.sessions` requires TypeScript SDK v4.7.0 or later.
 
@@ -28,6 +28,8 @@ await inngest.send({
 ```
 
 `ticket_id` is the **session key** and `ticket_42` is the **session ID**. Put the same pair on later events for that ticket. An event can carry up to five sessions, such as a `conversation_id` and a `user_id`.
+
+Webhook transforms can add sessions too. Return `meta.sessions` in the transformed event. See [Write a transform](/docs/durable-execution/guides-and-advanced/events-and-triggers/receive-webhook-events#write-a-transform).
 
 ## Choose a session key
 
@@ -51,6 +53,23 @@ Session IDs are opaque strings and can contain characters like `:` or `/`. Use I
 - Session IDs must be non-empty strings or finite numbers, up to 512 bytes. Numbers are stored as strings.
 - `null` clears a propagated session instead of creating one. See [Override propagated sessions](#override-propagated-sessions).
 - Booleans, objects, and arrays are rejected.
+
+This event uses a string ID and a numeric ID:
+
+```typescript
+await inngest.send({
+  name: "app/agent.step.completed",
+  data: {
+    stepId: "step_1",
+  },
+  meta: {
+    sessions: {
+      conversation_id: "conv_1234",
+      thread_id: 29563,
+    },
+  },
+});
+```
 
 See [Limits](/docs/agent-evals/limits#session-metadata-limits) for the per-event and per-run limits.
 
@@ -102,7 +121,17 @@ await step.invoke("summarize-conversation", {
 });
 ```
 
-Set `meta.sessions` to `null` to clear every propagated session.
+Set `meta.sessions` to `null` to clear every propagated session:
+
+```typescript
+await step.invoke("summarize-conversation", {
+  function: summarizeConversation,
+  data: { conversationId: event.data.conversationId },
+  meta: {
+    sessions: null,
+  },
+});
+```
 
 ### Disable propagation
 
@@ -157,6 +186,7 @@ export class SessionPolicy extends Middleware.BaseMiddleware {
 
 ## Next steps
 
+- [Agent Evals overview](/docs/agent-evals/overview) shows how sessions, traces, scores, and experiments fit together.
 - [Scores](/docs/agent-evals/scores) record the outcome on a run or step.
 - [Experiments](/docs/agent-evals/experiments) compare variants.
 - [Send events](/docs/durable-execution/guides-and-advanced/events-and-triggers/send-events) covers the rest of the event `meta` object.

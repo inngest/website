@@ -52,6 +52,71 @@ Enterprise customers run on dedicated function execution infrastructure:
 
 **Dedicated Infrastructure** is an enterprise-only add-on, available on request.
 
-## Protect the integration
+## Compliance and audits
 
-Inngest encrypts data at rest and in transit. SDK endpoint adapters verify signed requests using the environment's signing key. Scope API keys to the intended environment where possible, store credentials as secrets, and [rotate them](/docs/platform-and-operations/rotate-event-and-signing-keys) using the documented procedure. The security guide covers SAML availability, encryption middleware, and firewall allowlists.
+Inngest is [SOC 2 Type II compliant](/blog/soc2-compliant?ref=docs-security). The company and platform are regularly audited against SOC 2 standards. The platform and SDKs also undergo periodic independent security assessments, including penetration testing and red-team simulated attacks.
+
+To learn more about Inngest's security practices or request a copy of the SOC 2 report, visit the [trust center](https://trust.inngest.com/).
+
+## Encryption at rest and in transit
+
+Inngest encrypts all data in its databases at rest. Data is also encrypted in transit, including between Inngest's servers and yours. For another layer of control, add [encryption middleware](#encrypt-sensitive-data-with-middleware) and bring your own encryption key.
+
+## Signed requests to your app
+
+Every request between Inngest and your app is signed with a [signing key](/docs/platform-and-operations/keys-and-access), in addition to TLS. The signing key is a pre-shared key, unique to each environment.
+
+SDK endpoint adapters verify the signature for you through `serve`. Each signature embeds a timestamp, so the SDK rejects old requests and blocks replay attacks.
+
+Signing keys also authenticate your app when it calls the Inngest API, for example to checkpoint runs. [Connect workers](/docs/durable-execution/deploying-functions/connect) use them to open a connection to Inngest.
+
+**Keep your signing key secret.** An exposed key puts your endpoints at risk. You can [rotate signing keys](/docs/platform-and-operations/rotate-event-and-signing-keys) with zero downtime.
+
+## API keys for scripts and CI
+
+Use [API keys](/docs/platform-and-operations/keys-and-access) for programmatic access to the [Inngest REST API](https://api-docs.inngest.com/), such as custom scripts, tooling, or CI/CD pipelines. Scope each key to a specific environment.
+
+## Sign in with SAML
+
+Enterprise users can require SAML to sign in to their account. To turn on SAML:
+
+1. Ask your account manager for a SAML integration.
+2. Send the configuration your SAML provider requires. This varies by provider and may include a metadata URL, an SSO URL, an IdP entity ID, or an IdP x.509 certificate.
+3. Use the ACS and Metadata URL your account manager sends to configure your provider.
+4. Work with your account manager to map attributes so sign-in works fully.
+
+Once SAML is on, users **must** sign in with SAML. To learn about enterprise plans, [contact the Inngest team](/contact?ref=docs-security).
+
+## How app syncs work
+
+Your functions live in your codebase and run on your infrastructure. Inngest [syncs](/docs/platform-and-operations/apps-and-syncs) your app to read the current function configuration. For apps that use `serve` on a public HTTP endpoint, Inngest uses one of two methods:
+
+- **Direct sync:** Inngest sends a signed `PUT` request to your endpoint, and your app returns its configuration, including all function config, in the response. This is the default as of TypeScript SDK [v3.31.0](https://github.com/inngest/inngest-js/releases/tag/inngest%403.31.0) and Python SDK [0.4.18](https://github.com/inngest/inngest-py/releases/tag/0.4.18).
+- **Indirect sync:** the default before direct sync, and still available to start a sync from your server. A `PUT` request to your endpoint starts the handshake. Your app then serializes its configuration and sends it to the Inngest API, authenticating with its signing key. The SDK only sends requests to `https://api.inngest.com`, unless you configure it for a self-hosted Inngest server.
+
+Connect workers sync their app configuration directly with the Inngest API when they start.
+
+## Security best practices
+
+### Encrypt sensitive data with middleware
+
+Inngest runs your functions from the event data you send. It also stores the output of each `step.run` in function state. Both can contain regulated or sensitive data.
+
+If you process sensitive data, Inngest strongly recommends, and sometimes requires, [encryption middleware](/docs/durable-execution/guides-and-advanced/middleware/encryption-middleware) in your SDK. The middleware runs on your servers and encrypts data with a key only you hold:
+
+- Data in `event.data.encrypted` is encrypted _before_ it leaves your servers. Inngest can never read it.
+- Step output and function output are encrypted _before_ they leave your servers. Inngest only receives encrypted values and sends function state back to the SDK fully encrypted. The SDK decrypts it on your servers and resumes as usual.
+- The middleware decrypts data automatically when your app receives it.
+
+Your data stays encrypted even if something unexpected happens.
+
+### Allow Inngest IP addresses
+
+Inngest makes outbound requests to your app, so add Inngest's IP addresses to your firewall allowlist or security groups. These ranges cover all function invocations and webhook deliveries. Use the complete ranges from these lists:
+
+- [IPv4 addresses](https://www.inngest.com/ips-v4): `https://www.inngest.com/ips-v4`
+- [IPv6 addresses](https://www.inngest.com/ips-v6): `https://www.inngest.com/ips-v6`
+
+### Store and rotate keys
+
+Store event keys, signing keys, and API keys as secrets, never in source control or browser code. Scope API keys to the intended environment where possible. You can rotate signing, event, and API keys with built-in tools. To rotate signing and event keys for your app, follow the [key rotation procedure](/docs/platform-and-operations/rotate-event-and-signing-keys).

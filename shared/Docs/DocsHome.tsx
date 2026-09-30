@@ -477,7 +477,7 @@ export function UseCaseGrid() {
     <ImageCardGrid
       items={[
         {
-          href: "/docs/learn/durable-agents?ref=docs-home",
+          href: "/docs/durable-execution/durable-agents?ref=docs-home",
           title: "AI agents",
           description:
             "Run agent loops that call tools, wait for people, and survive failures.",

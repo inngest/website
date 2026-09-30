@@ -116,6 +116,24 @@ export const docsRefreshOutline: DocsRefreshPage[] = [
             ],
           },
           {
+            title: "Durable agents",
+            href: "/docs/durable-execution/durable-agents",
+            children: [
+              {
+                title: "Agent tool loops",
+                href: "/docs/durable-execution/durable-agents/agent-tool-loops",
+              },
+              {
+                title: "Human-in-the-loop",
+                href: "/docs/durable-execution/durable-agents/human-in-the-loop",
+              },
+              {
+                title: "Sub-agent delegation",
+                href: "/docs/durable-execution/durable-agents/sub-agent-delegation",
+              },
+            ],
+          },
+          {
             title: "Concepts",
             href: "/docs/durable-execution/concepts",
           },
@@ -376,18 +394,6 @@ export const docsRefreshOutline: DocsRefreshPage[] = [
                   {
                     title: "Working with loops",
                     href: "/docs/durable-execution/guides-and-advanced/patterns/working-with-loops",
-                  },
-                  {
-                    title: "Agent tool loops",
-                    href: "/docs/durable-execution/guides-and-advanced/patterns/agent-tool-loops",
-                  },
-                  {
-                    title: "Human-in-the-loop",
-                    href: "/docs/durable-execution/guides-and-advanced/patterns/human-in-the-loop",
-                  },
-                  {
-                    title: "Sub-agent delegation",
-                    href: "/docs/durable-execution/guides-and-advanced/patterns/sub-agent-delegation",
                   },
                 ],
               },

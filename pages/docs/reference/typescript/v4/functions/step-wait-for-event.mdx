@@ -7,7 +7,7 @@ export const description = "Pause a function and resume when a matching event ar
 # Wait for event
 
 
-Use `step.waitForEvent()` to pause your function's execution until a matching event is received or a timeout is reached. This is useful for building [human-in-the-loop workflows](/docs/durable-execution/guides-and-advanced/patterns/human-in-the-loop), waiting for approvals, or coordinating between separate functions.
+Use `step.waitForEvent()` to pause your function's execution until a matching event is received or a timeout is reached. This is useful for building [human-in-the-loop workflows](/docs/durable-execution/durable-agents/human-in-the-loop), waiting for approvals, or coordinating between separate functions.
 
 ## `step.waitForEvent(id, options): Promise<null | EventPayload>`
 

@@ -66,15 +66,15 @@ export const permanentRedirects = [
   ],
   [
     "/docs/ai-patterns/agent-tool-loops",
-    "/docs/durable-execution/guides-and-advanced/patterns/agent-tool-loops",
+    "/docs/durable-execution/durable-agents/agent-tool-loops",
   ],
   [
     "/docs/ai-patterns/human-in-the-loop",
-    "/docs/durable-execution/guides-and-advanced/patterns/human-in-the-loop",
+    "/docs/durable-execution/durable-agents/human-in-the-loop",
   ],
   [
     "/docs/ai-patterns/sub-agent-delegation",
-    "/docs/durable-execution/guides-and-advanced/patterns/sub-agent-delegation",
+    "/docs/durable-execution/durable-agents/sub-agent-delegation",
   ],
   [
     "/docs/features/events-triggers/neon",
@@ -197,6 +197,21 @@ export const permanentRedirects = [
   [
     "/docs/features/realtime/subscribe",
     "/docs/realtime/guides/server-side-subscriptions",
+  ],
+
+  // Durable agents moved under Durable Execution
+  ["/docs/learn/durable-agents", "/docs/durable-execution/durable-agents"],
+  [
+    "/docs/durable-execution/guides-and-advanced/patterns/agent-tool-loops",
+    "/docs/durable-execution/durable-agents/agent-tool-loops",
+  ],
+  [
+    "/docs/durable-execution/guides-and-advanced/patterns/human-in-the-loop",
+    "/docs/durable-execution/durable-agents/human-in-the-loop",
+  ],
+  [
+    "/docs/durable-execution/guides-and-advanced/patterns/sub-agent-delegation",
+    "/docs/durable-execution/durable-agents/sub-agent-delegation",
   ],
 
   // Agent Evals moved to /docs/agent-evals

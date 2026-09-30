@@ -83,6 +83,7 @@ module.exports = {
     "/docs/platform/monitor/datadog-integration",
     "/docs/platform/monitor/prometheus-metrics-export-integration",
     "/docs/learn/agent-evals",
+    "/docs/learn/durable-agents",
     "/docs/features/inngest-functions/steps-workflows/scoring",
     "/docs/features/inngest-functions/steps-workflows/deferred-scoring",
     "/docs/features/inngest-functions/steps-workflows/step-experiments",

@@ -35,7 +35,7 @@ The critical difference between an agent loop and a traditional workflow DAG is 
 
 This is what makes agents powerful. It's also what makes them challenging to run reliably — and it's why the durability mechanism matters.
 
-→ [Guide: Agent tool loops](/docs/durable-execution/guides-and-advanced/patterns/agent-tool-loops)
+→ [Guide: Agent tool loops](/docs/durable-execution/durable-agents/agent-tool-loops)
 
 ## How Durability Works: Memoization and Deterministic Replay
 
@@ -86,7 +86,7 @@ With durable agents, the pattern is simple. The agent runs until it needs human 
 
 This is where durability becomes more than a reliability feature — it changes what agents can *do*. Workflows that span hours or days, that cross the boundary between automated and manual work, become straightforward to build. The agent doesn't care if the human takes 30 seconds or 3 days. It's not waiting. It's suspended.
 
-→ [Guide: Human-in-the-Loop](/docs/durable-execution/guides-and-advanced/patterns/human-in-the-loop)
+→ [Guide: Human-in-the-Loop](/docs/durable-execution/durable-agents/human-in-the-loop)
 
 ## Multi-Agent Coordination
 
@@ -98,7 +98,7 @@ This independence also means agents can communicate asynchronously through event
 
 The key insight is that durability makes coordination *safe*. Without it, multi-agent systems are brittle: a failure in one agent cascades unpredictably, and recovering coordinated state across multiple processes is a nightmare. With durability, each agent's progress is preserved independently, and the coordination layer can reason about what succeeded, what failed, and what to do about it.
 
-→ [Guide: Sub-agent delegation](/docs/durable-execution/guides-and-advanced/patterns/sub-agent-delegation)
+→ [Guide: Sub-agent delegation](/docs/durable-execution/durable-agents/sub-agent-delegation)
 
 ## Error Handling & Recovery
 
@@ -133,8 +133,8 @@ At scale, these traces become the foundation for understanding agent behavior in
 Start building with the core primitives, or go deeper on the patterns:
 
 - [Steps](/docs/learn/inngest-steps) — how to leverage step-level durability
-- [Human-in-the-Loop](/docs/durable-execution/guides-and-advanced/patterns/human-in-the-loop) — building agents that collaborate with humans
-- [Multi-Agent Patterns](/docs/durable-execution/guides-and-advanced/patterns/sub-agent-delegation) — orchestrating multiple agents
+- [Human-in-the-Loop](/docs/durable-execution/durable-agents/human-in-the-loop) — building agents that collaborate with humans
+- [Multi-Agent Patterns](/docs/durable-execution/durable-agents/sub-agent-delegation) — orchestrating multiple agents
 - [Error Handling](/docs/guides/error-handling) — retry policies, failure handlers, and recovery
 - [Tracing & Observability](/docs/platform/monitor/traces) — debugging and monitoring agents in production
 - [How Inngest Durability Works](/docs/learn/how-functions-are-executed) — the architecture behind durable execution

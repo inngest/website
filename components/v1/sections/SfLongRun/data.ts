@@ -99,7 +99,7 @@ export const SF_USE_CASES: SfUseCase[] = [
     title: "AI agents",
     body: "Support unpredictable sequences of model calls and tool use.",
     icon: "ai-workflows",
-    href: "/docs/learn/durable-agents?ref=sf-long-run-use-cases",
+    href: "/docs/durable-execution/durable-agents?ref=sf-long-run-use-cases",
     image: {
       src: "/assets/v1/sf-long-run/agent-bot.png",
       // Decorative: the card title and body already say what it is.
