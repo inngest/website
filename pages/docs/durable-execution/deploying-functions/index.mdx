@@ -1,0 +1,64 @@
+import { Card, CardGroup } from "shared/Docs/mdx";
+
+export const metaTitle = "Deploying Functions | Platform Overview";
+export const description = "Choose how your app connects to Inngest and deploy durable functions on your infrastructure.";
+
+# Deploying functions
+
+> Deploy durable functions alongside your app while Inngest coordinates their runs.
+
+To let Inngest invoke your functions, your application needs a secure connection back to Inngest. Most web apps do this by serving an HTTP endpoint, usually at `/api/inngest`, that exposes the functions defined with the SDK.
+
+Use this page to choose between `serve()` and `connect()`, set up the right framework handler, and confirm the deployment requirements for your app.
+
+There are two ways to connect your app to Inngest:
+
+<CardGroup cols={2}>
+  <Card title="serve()" href="/docs/durable-execution/deploying-functions/serve">
+    <p className="my-4">Serve your Inngest functions by creating an HTTP endpoint in your application.</p>
+    <p className="my-2">Ideal for:</p>
+    <ul className="list-disc list-inside">
+      <li>Serverless platforms like Vercel, Lambda, etc.</li>
+      <li>Adding Inngest to an existing API.</li>
+      <li>Deploying with your existing CI/CD pipeline.</li>
+    </ul>
+  </Card>
+  <Card title="connect()" href="/docs/durable-execution/deploying-functions/connect">
+    <p className="my-4">Connect to Inngest's servers using an outbound WebSocket connection.</p>
+    <p className="my-2">Ideal for:</p>
+    <ul className="list-disc list-inside">
+      <li>Container runtimes (Kubernetes, Docker, etc.)</li>
+      <li>Latency sensitive applications</li>
+      <li>Horizontal scaling with workers.</li>
+    </ul>
+  </Card>
+</CardGroup>
+
+Inngest functions are portable, so you can migrate between `serve()` and `connect()` as well as cloud providers.
+
+## Deploy on your infrastructure
+
+Your app runs the function code. Inngest triggers runs, tracks their progress, and calls back into your app when work can continue. You can host the app on AWS, Google Cloud, Vercel, Cloudflare, or another compatible runtime. [Platforms](/docs/durable-execution/deploying-functions/platforms) has guides for Vercel, Netlify, Cloudflare Pages, Render, and DigitalOcean.
+
+1. **Define your functions in an Inngest app.** Keep the app ID stable across deployments. Register the functions you want this app to expose.
+2. **Choose a connection method.** Use [Serve](/docs/durable-execution/deploying-functions/serve) for an HTTP endpoint or [Connect](/docs/durable-execution/deploying-functions/connect) for a long-running worker.
+3. **Configure credentials and reachability.** Set the signing key. Set the event key when your app sends events; Connect requires both keys. Make a Serve endpoint reachable by Inngest or allow a Connect worker to connect outbound.
+4. **Deploy and sync the app.** Sync a Serve app after a deployment changes function definitions. A Connect worker syncs when it connects.
+5. **Check the deployed app.** Confirm that Inngest lists the expected functions, then trigger a run and inspect its trace.
+
+[Apps and syncing](/docs/platform-and-operations/apps-and-syncs) explains app IDs and how HTTP deployments register function changes.
+
+## Change how an app connects
+
+As long as app IDs remain the same, you can swap between Serve and Connect seamlessly.  Functions will resume at their next step as soon as all in-flight requests finish.
+
+## Move across clouds and hosts
+
+1. Deploy the same `serve()` handler on the new host. Keep the app, function, and step IDs stable so waiting runs can use saved progress.
+2. Configure keys and check the new provider's timeouts, payload size, and network access.
+3. Update the app URL in Inngest and resync. Confirm the expected functions appear and run a test event.
+4. In a test environment, confirm a waiting run resumes after the move before retiring the old endpoint.
+
+Inngest keeps completed step results across deployments; the new code must still work with those saved results. See [Apps and syncing](/docs/platform-and-operations/apps-and-syncs), [Versioning](/docs/durable-execution/guides-and-advanced/versioning), and [Idempotency](/docs/durable-execution/guides-and-advanced/idempotency).
+
+Check [Limits](/docs/durable-execution/limits) and your SDK's configuration before you deploy. Your cloud provider can also set request duration, memory, payload, and network constraints.

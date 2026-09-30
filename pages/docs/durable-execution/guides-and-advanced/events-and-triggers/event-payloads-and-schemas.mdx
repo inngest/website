@@ -1,0 +1,54 @@
+export const metaTitle = "Event Payload Format & Schemas";
+export const description = "Send an event such as billing/invoice.paid with the invoice ID that downstream functions need.";
+
+# Event payloads and schemas
+
+> Define stable event names and payloads so senders and consumers can evolve independently.
+
+Send an event such as `billing/invoice.paid` with the invoice ID that downstream functions need. Keep its name and payload stable so you can change the sender and consumer independently.
+## Example event
+```json
+{
+  "name": "billing/invoice.paid",
+  "data": {
+    "invoiceId": "inv_123",
+    "customerId": "cus_456"
+  },
+  "v": "2026-12-01.AA"
+}
+```
+## Required fields
+- `name` selects matching event triggers
+- `data` is a JSON object passed to each run, and describes the event that occurred
+## Optional fields
+- `id` gives the event a sender-defined deduplication key.
+- `ts` records an event timestamp in Unix milliseconds. A future timestamp can schedule when event-triggered functions start.
+- `v` identifies a payload version.
+
+Use [Agent Evals](/docs/agent-evals) for sessions and outcome scores. Keep sensitive values out of event data unless you have chosen a suitable data protection strategy such as using [encryption via middleware](/docs/durable-execution/guides-and-advanced/middleware).
+
+## Name events for facts
+Prefer a domain and a past-tense action such as `account/user.created`. Use one convention across apps. Avoid names that describe which function should run, because more than one function may use the same event.
+
+## Define a TypeScript v4 schema
+```typescript
+import { eventType, Inngest } from "inngest";
+import { z } from "zod";
+
+const inngest = new Inngest({ id: "billing-app" });
+
+export const invoicePaid = eventType("billing/invoice.paid", {
+  schema: z.object({
+    invoiceId: z.string(),
+    customerId: z.string(),
+  }),
+});
+
+await inngest.send(invoicePaid.create({
+  invoiceId: "inv_123",
+  customerId: "cus_456",
+}));
+```
+The event type can also appear in a function's `triggers` array and in `step.waitForEvent()`. A runtime schema validates event data. Use `staticSchema()` when only TypeScript checking is required.
+## Change a payload safely
+Keep existing fields stable for deployed consumers. Add fields when consumers can ignore them. If you must change the meaning or shape of a field, version the event and plan the sender and consumer rollout together. See [Versioning](/docs/durable-execution/guides-and-advanced/versioning) for changing code while runs remain active.

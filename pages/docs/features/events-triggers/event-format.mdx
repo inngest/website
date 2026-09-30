@@ -9,15 +9,15 @@ The event payload is a JSON object that must contain a `name` and `data` propert
 
 ### Required properties
 
-* The `name` is the type or category of event. Event `name`s are used to [trigger functions](/docs/learn/inngest-functions). For example, `app/user.created` or `billing/invoice.paid`. See [tips for event naming](#tips-for-event-naming) below.
+* The `name` is the type or category of event. Event `name`s are used to [trigger functions](/docs/durable-execution/durable-workflows). For example, `app/user.created` or `billing/invoice.paid`. See [tips for event naming](#tips-for-event-naming) below.
 * `data` contains any data you want to associate with the event. This data will be serialized to JSON. For example, if you're sending an event for a paid invoice, you might include the invoice's `id`, the `amount`, and the `customerId` in the `data` property. The `data` property can contain any nested JSON object, including objects and arrays.
 
 ### Optional properties
 
-* `id` is a unique identifier for the event used to prevent duplicate events. Learn more about [deduplication](/docs/events#deduplication).
+* `id` is a unique identifier for the event used to prevent duplicate events. Learn more about [deduplication](/docs/durable-execution/guides-and-advanced/events-and-triggers/send-events).
 * `ts` is the timestamp of the event in milliseconds since the Unix epoch. If not provided, the timestamp will be set to the time the event was received by Inngest.
 * `v` is the event payload version. This is useful to track changes in the event payload shape over time. For example, `"2024-01-14.1"`
-* `meta.sessions` groups related function runs in the dashboard. For example, `"meta": { "sessions": { "conversation_id": "conv_1234" } }`. Learn more about [sessions](/docs/features/events-triggers/sessions).
+* `meta.sessions` groups related function runs in the dashboard. For example, `"meta": { "sessions": { "conversation_id": "conv_1234" } }`. Learn more about [sessions](/docs/agent-evals/sessions).
 
 <CodeGroup>
 ```json {{ title: "Basic JSON event example" }}

@@ -1,0 +1,129 @@
+export const metaTitle = "Experiments | A/B Test AI Workflows";
+export const description = "Compare prompts, models, or whole workflow paths on production traffic and credit each outcome to the variant that served it.";
+
+# Experiments
+
+> Compare prompts, models, or whole workflow paths on production traffic and credit each outcome to the variant that served it.
+
+Send a share of support requests through a new prompt, then compare its outcome scores with the current one. `group.experiment()` runs one named variant for each run. Inngest keeps that selection on retries and records it in the trace, so a later score can identify the path that served the user.
+
+Experiments require TypeScript SDK v4.8.0 or later. Scoring is a beta API. For the full `group.experiment()` API, see the [primitive reference](/docs/durable-execution/primitives/group-experiment).
+
+## Run an experiment
+
+Put each version of the work in a variant callback and choose how to assign variants:
+
+```typescript
+import { experiment } from "inngest";
+
+export default inngest.createFunction(
+  { id: "summarize-document", triggers: { event: "docs/summary.requested" } },
+  async ({ event, step, group }) => {
+    const { result, variant, experimentRef } = await group.experiment(
+      "summary-model",
+      {
+        variants: {
+          current: () =>
+            step.run("summarize-current", () =>
+              summarize({ model: "current-model", text: event.data.text })
+            ),
+          candidate: () =>
+            step.run("summarize-candidate", () =>
+              summarize({ model: "candidate-model", text: event.data.text })
+            ),
+        },
+        select: experiment.weighted({ current: 90, candidate: 10 }),
+      }
+    );
+
+    await inngest.score.experiment({
+      name: "summary-under-limit",
+      value: result.length <= 500,
+      experiment: experimentRef,
+    });
+
+    return { variant, summary: result };
+  }
+);
+```
+
+Only the selected callback runs. `group.experiment()` returns:
+
+- **`result`**: the selected callback's return value.
+- **`variant`**: the selected variant's name, for logging or analytics.
+- **`experimentRef`**: `{ experimentName, variant }`. Pass it with a score to credit that variant.
+
+A callback can hold one step or several `step.*` calls that form a workflow path, so the same API compares a prompt or an [entire workflow rewrite](/docs/agent-evals/guides/workflow-rewrite). Every callback must call at least one step tool, or the run fails with a `NonRetriableError`. Give each experiment a unique ID within the function and keep variant names stable; both appear in traces and aggregates.
+
+## Choose an assignment strategy
+
+| Goal | Strategy |
+| --- | --- |
+| Canary a change or ramp traffic gradually | `experiment.weighted()` |
+| Keep a user or account on one variant across runs | `experiment.bucket()` |
+| Read the assignment from a feature flag or database | `experiment.custom()` |
+| Pin one variant for an override or test | `experiment.fixed()` |
+
+**Weighted** assigns each new run independently by relative weights. `{ current: 9, candidate: 1 }` and `{ current: 90, candidate: 10 }` give the same split. Selection is seeded by the run, so a run keeps its variant on retries, and new weights in a later deploy only affect new runs.
+
+```typescript
+select: experiment.weighted({ current: 90, candidate: 10 })
+```
+
+**Bucket** hashes a stable key, such as a user or account ID, so that key usually gets the same variant across runs. Pass a key that's always present: a `null` or `undefined` key hashes as an empty string, so all of those runs land in one bucket and the trace shows a warning. Changing bucket weights can move a key to a different variant.
+
+```typescript
+select: experiment.bucket(event.data.accountId, {
+  weights: { current: 80, candidate: 20 },
+})
+```
+
+**Custom** reads the assignment from your own system. Use it to change routing without a deploy, as a kill switch, or when an account must never move back once assigned. The selector must return a declared variant name, or the run fails. Its result is memoized for the run.
+
+```typescript
+select: experiment.custom(async () => {
+  const assignment = await rolloutTable.get(event.data.accountId);
+  return assignment ?? "current";
+})
+```
+
+**Fixed** always selects one variant. Use it to pin a winner while you decide whether to remove the experiment.
+
+```typescript
+select: experiment.fixed("candidate")
+```
+
+## Score a variant
+
+Use the same score name and definition for every variant, so you compare the same outcome. There are three ways to credit a variant:
+
+**During the run.** Call `inngest.score.experiment()` with the `experimentRef`, as in the example above. Call it in the function body, outside `step.run()`. A call inside `step.run()` without a `runId` writes a step score that the experiment view doesn't show.
+
+**With a deferred scorer.** Pass `experiment: experimentRef` to `defer()`. The scorer's returned score counts toward the variant. See [Deferred scoring](/docs/agent-evals/deferred-scoring#start-the-scorer-from-a-run).
+
+**From a later run or another service.** Store `experimentRef` and the original run ID with your application record. When the outcome arrives, pass both:
+
+```typescript
+await inngest.score.experiment({
+  name: "invoice-paid",
+  value: true,
+  experiment: saved.experimentRef,
+  runId: saved.runId,
+});
+```
+
+Without the original `runId`, the score attaches to the later run and doesn't appear under the experiment.
+
+A score written without the ref, such as a plain `step.score()`, still appears on the run and in function score trends, but doesn't count toward a variant in the experiment view.
+
+## Replay and step usage
+
+`group.experiment()` saves the selection as one durable step. Steps inside the selected callback count separately and follow their normal retry rules. The unselected callbacks don't run.
+
+Code outside a step runs again each time Inngest replays the function. Put side effects inside steps. Place a body-level `inngest.score.experiment()` call after your last step so a replay doesn't send it again.
+
+## Next steps
+
+- [Compare models and prompts](/docs/agent-evals/guides/compare-models-and-prompts) builds an experiment scored by later feedback.
+- [Roll out a workflow rewrite](/docs/agent-evals/guides/workflow-rewrite) canaries a multi-step path.
+- [Read results and roll out](/docs/agent-evals/guides/interpreting-results) explains how to compare variants.

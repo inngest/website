@@ -67,8 +67,8 @@ describe("resolveRedirect", () => {
 
   it("leaves an unknown path untouched", () => {
     assert.equal(
-      resolveRedirect("/docs/learn/inngest-steps"),
-      "/docs/learn/inngest-steps"
+      resolveRedirect("/docs/durable-execution/primitives"),
+      "/docs/durable-execution/primitives"
     );
   });
 
@@ -97,11 +97,11 @@ describe("resolveRedirect", () => {
   });
 
   it("stops at maxHops rather than looping forever", () => {
-    // Chains are at most 3 hops today; capping at 1 must stop early instead of
-    // running to the end.
+    // Entries are collapsed to their final destination, so there are no
+    // chains in the table today. A hop limit of 0 must return the input as-is.
     assert.equal(
-      resolveRedirect("/docs/functions/retries", 1),
-      "/docs/reference/typescript/functions/errors"
+      resolveRedirect("/docs/functions/retries", 0),
+      "/docs/functions/retries"
     );
   });
 });
@@ -156,7 +156,7 @@ describe("resolveDocsPath", () => {
   });
 
   it("leaves an unknown slug untouched", () => {
-    assert.equal(resolveDocsPath("learn/inngest-steps"), "learn/inngest-steps");
+    assert.equal(resolveDocsPath("durable-execution/primitives"), "durable-execution/primitives");
   });
 });
 

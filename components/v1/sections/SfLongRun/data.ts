@@ -73,7 +73,7 @@ export const SF_USE_CASES: SfUseCase[] = [
     title: "Workflows",
     body: "Coordinate multi-step processes without losing completed work.",
     icon: "durable-execution",
-    href: "/docs/features/inngest-functions/steps-workflows?ref=sf-long-run-use-cases",
+    href: "/docs/durable-execution/primitives?ref=sf-long-run-use-cases",
     image: {
       src: "/assets/v1/sf-long-run/workflows.png",
       // Decorative: the card title and body already say what it is.
@@ -86,7 +86,7 @@ export const SF_USE_CASES: SfUseCase[] = [
     title: "Background jobs",
     body: "Run work beyond the request-response cycle.",
     icon: "background-jobs",
-    href: "/docs/guides/background-jobs?ref=sf-long-run-use-cases",
+    href: "/docs/patterns/jobs/keeping-your-api-fast?ref=sf-long-run-use-cases",
     image: {
       src: "/assets/v1/sf-long-run/background-jobs.png",
       // Decorative: the card title and body already say what it is.
@@ -99,7 +99,7 @@ export const SF_USE_CASES: SfUseCase[] = [
     title: "AI agents",
     body: "Support unpredictable sequences of model calls and tool use.",
     icon: "ai-workflows",
-    href: "/docs/learn/durable-agents?ref=sf-long-run-use-cases",
+    href: "/docs/durable-execution/durable-agents?ref=sf-long-run-use-cases",
     image: {
       src: "/assets/v1/sf-long-run/agent-bot.png",
       // Decorative: the card title and body already say what it is.
@@ -112,7 +112,7 @@ export const SF_USE_CASES: SfUseCase[] = [
     title: "Data pipelines",
     body: "Process multi-step data operations with durable execution.",
     icon: "queues",
-    href: "/docs/guides/flow-control?ref=sf-long-run-use-cases",
+    href: "/docs/durable-execution/flow-control?ref=sf-long-run-use-cases",
     image: {
       src: "/assets/v1/sf-long-run/data-pipelines.png",
       // Decorative: the card title and body already say what it is.
@@ -234,7 +234,7 @@ export const SF_RESOURCES: SfResource[] = [
     id: "steps-guide",
     kind: "Developer guide",
     title: "Steps in Inngest: checkpointed, retriable units of work",
-    href: "/docs/learn/inngest-steps?ref=sf-long-run-resources",
+    href: "/docs/durable-execution/primitives?ref=sf-long-run-resources",
   },
 ];
 

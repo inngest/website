@@ -8,7 +8,7 @@ export default function TestPricingTrustFeaturesSection() {
       description:
         "Regular security audits and compliance with SOC 2 standards.",
       link: "Read more here",
-      linkHref: "/docs/learn/security?ref=pricing-trust",
+      linkHref: "/docs/platform-and-operations/cloud-architecture-and-security?ref=pricing-trust",
     },
     {
       title: "Dedicated slack support",

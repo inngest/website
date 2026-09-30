@@ -25,31 +25,31 @@ const FEATURES: Feature[] = [
     id: "metrics-dashboard",
     title: "Metrics Dashboard",
     body: "Check system health and drill down into the function causing problems without losing context.",
-    href: "/docs/platform/monitor/observability-metrics",
+    href: "/docs/platform-and-operations/metrics",
   },
   {
     id: "run-search",
     title: "Run search",
     body: "Filter across millions of runs with the same context your log stack uses: event payload, function output, user ID.",
-    href: "/docs/platform/monitor/inspecting-function-runs#searching-function-runs",
+    href: "/docs/platform-and-operations/inspect-events-and-runs",
   },
   {
     id: "waterfall-traces",
     title: "Waterfall traces",
     body: "Show every run, side by side, with the names you wrote in code. Timing, input, output, queue delay, retries—all in one place.",
-    href: "/docs/platform/monitor/traces",
+    href: "/docs/platform-and-operations/traces",
   },
   {
     id: "replay",
     title: "Replay without Queues",
     body: "Forget dead-letter queues and manual ID tracking. Re-run jobs in bulk with one action.",
-    href: "/docs/platform/replay",
+    href: "/docs/platform-and-operations/replay-runs-in-bulk",
   },
   {
     id: "insights",
     title: "Insights",
     body: "Query event and run data without SQL. No exporting, no one-off scripts.",
-    href: "/docs/platform/monitor/insights",
+    href: "/docs/platform-and-operations/insights",
   },
 ];
 

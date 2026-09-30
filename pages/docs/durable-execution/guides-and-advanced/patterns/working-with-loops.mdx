@@ -1,0 +1,60 @@
+export const metaTitle = "Working with Loops | Pitfalls & Patterns";
+export const description = "Process lists or paginated data with saved progress so retries resume from completed work.";
+
+# Working with loops
+
+> Process lists or paginated data with saved progress so retries resume from completed work.
+
+Process a list or paginated source one item at a time and keep the completed results. Put external calls in named steps so a retry does not repeat work that already succeeded.
+## Process a list
+This TypeScript v4 example processes each ID in an event. Assume `inngest` and `processItem` are defined by your app.
+```typescript
+import { eventType, staticSchema } from "inngest";
+
+const importRequested = eventType("app/items.import_requested", {
+  schema: staticSchema<{ itemIds: string[] }>(),
+});
+
+export const importItems = inngest.createFunction(
+  { id: "import-items", triggers: [importRequested] },
+  async ({ event, step }) => {
+    for (const itemId of event.data.itemIds) {
+      await step.run("process-item", () => processItem(itemId));
+    }
+  }
+);
+```
+The SDK counts repeated calls to the same step ID, so each iteration has its own saved result. Keep the input list and its order stable while the run is active. If the list comes from an API or database, load it in a step.
+## Process a paginated source
+When an API provides a cursor, return the next cursor from each step and use it to start the next page. The following example assumes `source.listPage` returns `items` and `nextCursor`, and `store.upsertMany` safely repeats a write.
+```typescript
+export const importPages = inngest.createFunction(
+  { id: "import-pages", triggers: { event: "app/pages.import_requested" } },
+  async ({ step }) => {
+    let cursor: string | null = null;
+
+    do {
+      const nextCursor: string | null = await step.run(
+        "import-page",
+        async () => {
+          const page = await source.listPage({ cursor });
+          await store.upsertMany(page.items);
+          return page.nextCursor;
+        }
+      );
+      cursor = nextCursor;
+    } while (cursor !== null);
+  }
+);
+```
+A completed iteration saves its cursor. When the function resumes, it re-enters the handler and reads saved step results to reach the next iteration. If a step fails after writing but before it completes, it can repeat the write. Make the external write idempotent.
+## Keep loop behavior predictable
+- Put API calls, database reads and writes, random values, and current-time decisions inside steps. Code outside steps can run again as the function resumes.
+- Keep step IDs and the order of iterations stable for in-progress runs. See [Versioning](/docs/durable-execution/guides-and-advanced/versioning) when changing a live workflow.
+- Use `step.sleep()` between iterations when an external API needs a delay. A sleep pauses the run without holding a worker.
+- Keep each step's return value small enough for your plan's limits. Store large payloads outside run state and return an ID or cursor instead. See [Limits](/docs/durable-execution/limits).
+For many independent items that can run and fail separately, see [Fan-out](/docs/durable-execution/guides-and-advanced/patterns/fan-out). For parallel steps in one run, use `Promise.all()` with stable step IDs.
+## Related pages
+- [Primitives](/docs/durable-execution/primitives) explains how steps save progress.
+- [Idempotency](/docs/durable-execution/guides-and-advanced/idempotency) explains safe repeated writes.
+

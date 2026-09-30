@@ -60,7 +60,7 @@ export const QUICKSTARTS = [
   {
     eyebrow: "Quickstart",
     title: "Node.js",
-    href: "/docs/getting-started/nodejs-quick-start",
+    href: "/docs/durable-execution/quick-start/typescript-quick-start",
     logo: "/assets/v1/start-building/node.svg",
     invert: false,
   },
@@ -77,22 +77,22 @@ export const RESOURCE_LINKS = [
   {
     title: "Steps",
     body: "Turn any work into a named checkpoint that retries on its own.",
-    href: "/docs/learn/inngest-steps",
+    href: "/docs/durable-execution/primitives",
   },
   {
     title: "Sleeps",
     body: "Pause for minutes or months without an idle worker.",
-    href: "/docs/features/inngest-functions/steps-workflows/sleeps",
+    href: "/docs/durable-execution/primitives/step-sleep",
   },
   {
     title: "Wait for an event",
     body: "Park the function until the world happens, then continue.",
-    href: "/docs/features/inngest-functions/steps-workflows/wait-for-event",
+    href: "/docs/durable-execution/primitives/step-waitforevent",
   },
   {
     title: "Retries",
     body: "Failed steps come back automatically from the last checkpoint.",
-    href: "/docs/features/inngest-functions/error-retries/retries",
+    href: "/docs/durable-execution/guides-and-advanced/error-handling/retries",
   },
 ] as const;
 

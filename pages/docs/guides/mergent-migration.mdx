@@ -113,7 +113,7 @@ You will notice some new concepts here:
 
 - Inngest functions are **identified with a unique ID.**
 - Inngest functions are **triggered by events** (see next section).
-- Inngest functions get access to the `step` API, enabling you to **build durable workflows composed of [atomic and automatically retried steps](/docs/learn/inngest-functions).**
+- Inngest functions get access to the `step` API, enabling you to **build durable workflows composed of [atomic and automatically retried steps](/docs/durable-execution/durable-workflows).**
 
 In our freshly migrated `sendEmail` task, any failure to send an email will be retried up to 4 times, [configurable via the Inngest function options](/docs/reference/typescript/v4/functions/create).
 
@@ -180,7 +180,7 @@ Using events over direct HTTP invocation comes with many benefits, allowing you 
 
 - **Fan-out,** having one event trigger many functions
 - **Replay events on failure**, in bulk
-- **Wait for matching events,** in the middle of functions ([docs](/docs/features/inngest-functions/steps-workflows/wait-for-event))
+- **Wait for matching events,** in the middle of functions ([docs](/docs/durable-execution/primitives/step-waitforevent))
 
 **Triggering Inngest Functions via the UI**
 
@@ -227,4 +227,4 @@ Note that, like any Inngest Function, Inngest Scheduled Functions can be trigger
 
 ## **Deploy to Production**
 
-Once you're ready, deploy your Inngest functions to your platform of choice (Vercel, Netlify, or a custom Node.js server). Inngest works seamlessly with serverless platforms and can also run inside any Express/Next.js app.  [Read the deployment docs here.](/docs/platform/deployment)
+Once you're ready, deploy your Inngest functions to your platform of choice (Vercel, Netlify, or a custom Node.js server). Inngest works seamlessly with serverless platforms and can also run inside any Express/Next.js app.  [Read the deployment docs here.](/docs/durable-execution/deploying-functions)

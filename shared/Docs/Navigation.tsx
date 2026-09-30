@@ -23,7 +23,6 @@ import { remToPx } from "../../utils/remToPx";
 import {
   topLevelNav,
   menuTabs,
-  sidebarMenuTabs,
   type NavGroup,
   type NavLink,
   isNavGroup,
@@ -34,7 +33,12 @@ import {
 } from "./navigationStructure";
 import { useUnreleasedLabels, filterUnreleasedNav } from "./Unreleased";
 import * as Accordion from "@radix-ui/react-accordion";
-import { ChevronDownIcon, CheckIcon } from "@heroicons/react/24/outline";
+import {
+  BookOpenIcon,
+  ChevronDownIcon,
+  CheckIcon,
+  CodeBracketIcon,
+} from "@heroicons/react/24/outline";
 import { MobileSearch } from "./Search";
 import * as Select from "@radix-ui/react-select";
 import {
@@ -58,7 +62,7 @@ type ActiveSectionContextType = {
 };
 
 const ActiveSectionContext = createContext<ActiveSectionContextType>({
-  activeSection: "Learn",
+  activeSection: "docs",
   setActiveSection: () => {},
 });
 
@@ -70,26 +74,11 @@ export function ActiveSectionProvider({
   const router = useRouter();
   const pathname = router.pathname;
 
-  // Determine initial section based on current URL
   const getInitialSection = useCallback(() => {
-    // Check if current path matches Reference section
-    const referenceTab = sidebarMenuTabs.find(
-      (tab) => tab.title === "Reference"
+    const section = topLevelNav.find(
+      (item) => item.id !== "docs" && item.matcher(pathname)
     );
-    if (referenceTab?.matcher && !!referenceTab.matcher(pathname)) {
-      return "Reference";
-    }
-    // Check if current path matches Examples section
-    const examplesTab = topLevelNav.find((tab) => tab.title === "Examples");
-    if (examplesTab?.matcher && !!examplesTab.matcher(pathname)) {
-      return "Examples";
-    }
-    // Check if current path matches the Patterns section
-    const patternsTab = topLevelNav.find((tab) => tab.title === "Patterns");
-    if (patternsTab?.matcher && !!patternsTab.matcher(pathname)) {
-      return "Patterns";
-    }
-    return "Learn";
+    return section?.id ?? "docs";
   }, [pathname]);
 
   const [activeSection, setActiveSection] = useState(getInitialSection);
@@ -176,6 +165,7 @@ function NavLink({
   isAnchorLink = false,
   isTopLevel = false,
   truncate = true,
+  nested = false,
 
   className = "",
   children,
@@ -187,6 +177,8 @@ function NavLink({
   isAnchorLink?: boolean;
   isTopLevel?: boolean;
   truncate?: boolean;
+  /** Links inside a group use regular weight (400). */
+  nested?: boolean;
   className?: string;
   target?: string;
   children: React.ReactNode;
@@ -199,14 +191,26 @@ function NavLink({
       aria-current={active ? "page" : undefined}
       target={linkTarget}
       className={clsx(
-        "group flex items-center justify-between gap-2 rounded py-1 pl-2 text-sm transition", // group for nested hovers
+        "group flex items-center justify-between gap-2 rounded py-1 pl-2 transition",
+        isAnchorLink ? "text-[13px]" : "text-sm",
+        nested ? "font-normal" : "font-medium",
         active
-          ? "rounded bg-secondary-3xSubtle font-medium text-info hover:bg-secondary-2xSubtle"
-          : "font-medium text-subtle hover:bg-canvasSubtle hover:text-basis",
+          ? "rounded bg-secondary-3xSubtle text-info hover:bg-secondary-2xSubtle"
+          : "text-subtle hover:bg-canvasSubtle hover:text-basis",
         className
       )}
     >
-      {!isAnchorLink && <span className="absolute inset-y-0 left-0 w-px" />}
+      {!isAnchorLink && (
+        <span
+          className={clsx(
+            "absolute inset-y-0",
+            // Accent the parent list's left border next to the active page.
+            active && !isTopLevel
+              ? "-left-[9px] w-0.5 rounded-full bg-breeze-500"
+              : "left-0 w-px"
+          )}
+        />
+      )}
       <span>{children}</span>
       {tag && (
         <Tag color="matcha" className={"mr-2"}>
@@ -285,8 +289,8 @@ export function PageSidebar() {
   }, [router.pathname, windowWidth, pageSectionsEl]);
 
   return (
-    <div>
-      <h4 className="pb-2 text-base font-medium">On this page</h4>
+    <div className="opacity-75">
+      <h4 className="pb-2 text-sm font-medium">On this page</h4>
       <div className="relative">
         <AnimatePresence initial={!isInsideMobileNavigation}>
           {pageSectionListItems && (
@@ -332,23 +336,14 @@ export function PageSidebar() {
   );
 }
 
-const NavigationGroupStructureContext = createContext(0);
-
 function NavigationGroupStructure({
-  nestingLevel,
   children,
   ...props
-}: { nestingLevel?: number; children: React.ReactNode } & ComponentProps<
-  typeof Accordion.Item
->) {
+}: { children: React.ReactNode } & ComponentProps<typeof Accordion.Item>) {
   return (
-    <NavigationGroupStructureContext.Provider value={nestingLevel}>
-      {nestingLevel > 0 ? (
-        <Accordion.Item {...props}>{children}</Accordion.Item>
-      ) : (
-        <div>{children}</div>
-      )}
-    </NavigationGroupStructureContext.Provider>
+    <Accordion.Item asChild {...props}>
+      {children}
+    </Accordion.Item>
   );
 }
 
@@ -356,26 +351,14 @@ NavigationGroupStructure.Trigger = function NavigationGroupStructureItem({
   children,
   ...props
 }: { children: React.ReactNode } & ComponentProps<typeof Accordion.Trigger>) {
-  const nestingLevel = useContext(NavigationGroupStructureContext);
-
-  return nestingLevel > 0 ? (
-    <Accordion.Trigger {...props}>{children}</Accordion.Trigger>
-  ) : (
-    <div>{children}</div>
-  );
+  return <Accordion.Trigger {...props}>{children}</Accordion.Trigger>;
 };
 
 NavigationGroupStructure.Content = function NavigationGroupStructureItem({
   children,
   ...props
 }: { children: React.ReactNode } & ComponentProps<typeof Accordion.Content>) {
-  const nestingLevel = useContext(NavigationGroupStructureContext);
-
-  return nestingLevel > 0 ? (
-    <Accordion.Content {...props}>{children}</Accordion.Content>
-  ) : (
-    <div>{children}</div>
-  );
+  return <Accordion.Content {...props}>{children}</Accordion.Content>;
 };
 
 // A nested navigation group of links that expand and follow
@@ -385,12 +368,15 @@ function NavigationGroup({
   nestingLevel = 0,
   className = "",
   tag = "",
+  emphasized = false,
 }: {
   group: NavGroup;
   isActiveGroup?: boolean;
   nestingLevel?: number;
   className?: string;
   tag?: string;
+  /** Direct children of a sidebar section get a stronger title color. */
+  emphasized?: boolean;
 }) {
   const defaultOpenGroupTitles = useContext(DefaultOpenSectionsContext);
   // If this is the mobile navigation then we always render the initial
@@ -408,113 +394,210 @@ function NavigationGroup({
   }, []);
 
   return (
-    <NavigationGroupStructure value={group.title} nestingLevel={nestingLevel}>
-      <li className={clsx("relative", className, nestingLevel == 0 && "mb-2")}>
-        <NavigationGroupStructure.Trigger className="animate-accordion-trigger w-full rounded-md transition-colors hover:bg-canvasSubtle">
+    <NavigationGroupStructure value={group.title}>
+      <li className={clsx("relative", className, nestingLevel === 0 && "mt-2")}>
+        {group.href ? (
           <div
-            className={clsx("m-0 flex items-center justify-between", {
-              "py-1": nestingLevel > 0,
-              "mb-2 mt-6": nestingLevel === 0,
-            })}
+            className={clsx(
+              "flex items-center rounded-md transition-colors hover:bg-canvasSubtle",
+              nestingLevel === 0 && "py-2"
+            )}
           >
-            <span
-              className={clsx("pl-2", {
-                "text-sm font-medium text-subtle hover:text-basis":
-                  nestingLevel > 0,
-                "dark:text-carbon-00 text-xs font-bold uppercase tracking-wide text-carbon-300":
-                  nestingLevel == 0,
-              })}
+            <LinkOrHref
+              href={group.href}
+              target={/^https?:\/\//.test(group.href) ? "_blank" : undefined}
+              rel="noopener noreferrer"
+              aria-current={group.href === currentPath ? "page" : undefined}
+              className={clsx(
+                "flex min-w-0 flex-1 items-center gap-1 pl-2",
+                nestingLevel === 0
+                  ? "dark:text-carbon-00 text-xs font-bold uppercase tracking-wide text-carbon-300"
+                  : clsx(
+                      "py-1 text-sm hover:text-basis",
+                      emphasized
+                        ? "font-medium text-basis"
+                        : "font-normal text-subtle"
+                    )
+              )}
             >
-              {group.title}
-            </span>
-            <span className="flex items-center gap-1">
-              {tag && (
-                <Tag color="matcha" className={"mr-2"}>
-                  {tag}
-                </Tag>
+              <span className="truncate">{group.title}</span>
+              {/^https?:\/\//.test(group.href) && (
+                <RiExternalLinkLine className="h-3 w-3 shrink-0" />
               )}
-              {nestingLevel > 0 && (
-                <ChevronDownIcon className="mr-2 h-4 w-4 text-carbon-600 dark:text-carbon-500" />
-              )}
-            </span>
+            </LinkOrHref>
+            {tag && (
+              <Tag color="matcha" className="mr-2">
+                {tag}
+              </Tag>
+            )}
+            {nestingLevel > 0 && (
+              <NavigationGroupStructure.Trigger
+                aria-label={`Toggle ${group.title}`}
+                className="animate-accordion-trigger px-2 py-1"
+              >
+                <ChevronDownIcon className="h-4 w-4 text-carbon-600 dark:text-carbon-500" />
+              </NavigationGroupStructure.Trigger>
+            )}
           </div>
-        </NavigationGroupStructure.Trigger>
+        ) : (
+          <NavigationGroupStructure.Trigger
+            className={clsx(
+              "animate-accordion-trigger w-full rounded-md text-left transition-colors hover:bg-canvasSubtle",
+              nestingLevel === 0 ? "py-2" : "py-1"
+            )}
+          >
+            <div className="flex w-full items-center justify-between">
+              <span
+                className={clsx("pl-2", {
+                  "text-sm hover:text-basis": nestingLevel > 0,
+                  "font-medium text-basis": nestingLevel > 0 && emphasized,
+                  "font-normal text-subtle": nestingLevel > 0 && !emphasized,
+                  "dark:text-carbon-00 text-xs font-bold uppercase tracking-wide text-carbon-300":
+                    nestingLevel == 0,
+                })}
+              >
+                {group.title}
+              </span>
+              <span className="flex items-center gap-1">
+                {tag && (
+                  <Tag color="matcha" className={"mr-2"}>
+                    {tag}
+                  </Tag>
+                )}
+                <ChevronDownIcon className="mr-2 h-4 w-4 text-carbon-600 dark:text-carbon-500" />
+              </span>
+            </div>
+          </NavigationGroupStructure.Trigger>
+        )}
 
         <NavigationGroupStructure.Content
           className={animateAccordion ? "animate-accordion" : ""}
         >
-          <div className={clsx("relative overflow-hidden")}>
-            {/* @ts-ignore */}
-            <motion.ul
-              role="list"
-              className={clsx({
-                "ml-2.5 border-l border-carbon-100 pl-2 dark:border-[#3D3D3D]":
-                  nestingLevel > 0,
-              })}
-            >
-              {group.links.map((link, idx) => {
-                if (isNavGroup(link)) {
-                  return (
-                    <Accordion.Root
-                      key={idx}
-                      type="multiple"
-                      defaultValue={
-                        hasNavGroupPath(link, currentPath)
-                          ? [...defaultOpenGroupTitles, link.title]
-                          : defaultOpenGroupTitles
-                      }
-                    >
-                      <NavigationGroup
-                        group={link}
-                        tag={(link as any).tag || ""}
-                        nestingLevel={nestingLevel + 1}
-                      />
-                    </Accordion.Root>
-                  );
-                } else if (isNavLink(link)) {
-                  return (
-                    // @ts-ignore
-                    <motion.li
-                      key={link.href}
-                      layout="position"
-                      className={"relative"}
-                    >
-                      <NavLink
-                        href={link.href}
-                        active={link.href === currentPath}
-                        className={link.className}
-                        tag={link.tag}
-                      >
-                        <span>{link.title}</span>
-                      </NavLink>
-                    </motion.li>
-                  );
-                } else {
-                  return (
-                    // @ts-ignore
-                    <motion.li
-                      key={link.title}
-                      layout="position"
-                      className={"relative"}
-                    >
-                      <span
-                        className={clsx(
-                          "group flex items-center justify-between py-1 pl-2 text-sm transition",
-                          "text-xs font-semibold text-carbon-300 dark:text-carbon-600",
-                          className
-                        )}
-                      >
-                        {link.title}
-                      </span>
-                    </motion.li>
-                  );
-                }
-              })}
-            </motion.ul>
+          <div
+            className={clsx(
+              "relative overflow-hidden",
+              nestingLevel === 0 && "pb-4",
+              // Breathing room between a parent, its open list, and the next item.
+              nestingLevel > 0 && "pt-1.5"
+            )}
+          >
+            <NavigationLinks
+              links={group.links}
+              nestingLevel={nestingLevel}
+              currentPath={currentPath}
+              className={className}
+            />
           </div>
         </NavigationGroupStructure.Content>
       </li>
     </NavigationGroupStructure>
+  );
+}
+
+// The list of links and nested groups inside a navigation group or section.
+function NavigationLinks({
+  links,
+  nestingLevel,
+  currentPath,
+  className = "",
+  listClassName = "",
+  emphasizeGroups = false,
+}: {
+  links: NavGroup["links"];
+  nestingLevel: number;
+  currentPath: string;
+  className?: string;
+  listClassName?: string;
+  emphasizeGroups?: boolean;
+}) {
+  const defaultOpenGroupTitles = useContext(DefaultOpenSectionsContext);
+  return (
+    // @ts-ignore
+    <motion.ul
+      role="list"
+      className={clsx("space-y-1.5", listClassName, {
+        "ml-2.5 border-l border-carbon-100/60 pl-2 dark:border-white/[0.06]":
+          nestingLevel > 0,
+      })}
+    >
+      {links.map((link, idx) => {
+        if (isNavGroup(link)) {
+          return (
+            <Accordion.Root
+              key={idx}
+              type="multiple"
+              defaultValue={
+                hasNavGroupPath(link, currentPath)
+                  ? [...defaultOpenGroupTitles, link.title]
+                  : defaultOpenGroupTitles
+              }
+            >
+              <NavigationGroup
+                group={link}
+                tag={(link as any).tag || ""}
+                nestingLevel={nestingLevel + 1}
+                emphasized={emphasizeGroups}
+              />
+            </Accordion.Root>
+          );
+        } else if (isNavLink(link)) {
+          return (
+            // @ts-ignore
+            <motion.li key={link.href} layout="position" className={"relative"}>
+              <NavLink
+                href={link.href}
+                active={link.href === currentPath}
+                className={link.className}
+                tag={link.tag}
+                nested={nestingLevel > 1}
+              >
+                <span>{link.title}</span>
+              </NavLink>
+            </motion.li>
+          );
+        } else {
+          return (
+            // @ts-ignore
+            <motion.li
+              key={link.title}
+              layout="position"
+              className={"relative"}
+            >
+              <span
+                className={clsx(
+                  "group flex items-center justify-between py-1 pl-2 text-sm transition",
+                  "text-xs font-semibold text-carbon-300 dark:text-carbon-600",
+                  className
+                )}
+              >
+                {link.title}
+              </span>
+            </motion.li>
+          );
+        }
+      })}
+    </motion.ul>
+  );
+}
+
+// An always-open top-level section with an icon header, e.g. "Introduction".
+function NavigationSection({ group }: { group: NavGroup }) {
+  let isInsideMobileNavigation = useIsInsideMobileNavigation();
+  let [router] = useInitialValue([useRouter()], isInsideMobileNavigation);
+  const Icon = group.icon;
+  return (
+    <li className="relative mb-6 mt-2 list-none">
+      <div className="flex items-center gap-2 py-2 pl-0.5 text-sm font-semibold text-basis">
+        {Icon && <Icon className="h-4 w-4 shrink-0 text-subtle" aria-hidden />}
+        <span>{group.title}</span>
+      </div>
+      <NavigationLinks
+        links={group.links}
+        nestingLevel={1}
+        currentPath={router.pathname}
+        emphasizeGroups
+      />
+    </li>
   );
 }
 
@@ -527,6 +610,7 @@ function hasPath(links: { href?: string }[], pathname: string) {
 }
 
 export function hasNavGroupPath(group: NavGroup, pathname: string) {
+  if (group.href === pathname) return true;
   return group.links.find((link) => {
     return isNavGroup(link)
       ? hasNavGroupPath(link, pathname)
@@ -547,6 +631,28 @@ export function getAllSections(nav) {
     }
     return acc;
   }, []);
+}
+
+// Collapsible groups (not always-open sections), at any depth.
+function collectCollapsibleGroups(
+  items: (NavGroup | NavLink | NavSection | NavLinkGroup)[]
+): NavGroup[] {
+  return items.flatMap((item) => {
+    if (!isNavGroup(item)) return [];
+    const children = collectCollapsibleGroups(item.links ?? []);
+    return item.section ? children : [item, ...children];
+  });
+}
+
+// Groups flagged `openWhenIdle` open when no other collapsible group contains
+// the current page, so first-time visitors see the main outline.
+function getIdleOpenSections(
+  items: (NavGroup | NavLink | NavSection | NavLinkGroup)[],
+  currentPath: string
+) {
+  const groups = collectCollapsibleGroups(items);
+  if (groups.some((group) => hasNavGroupPath(group, currentPath))) return [];
+  return groups.filter((group) => group.openWhenIdle).map((g) => g.title);
 }
 
 function getAllOpenedByDefaultSections(
@@ -586,7 +692,7 @@ function findRecursiveSectionLinkMatch(sections, pathname) {
 export const DefaultOpenSectionsContext = createContext([]);
 
 const defaultSection = getAllSections(topLevelNav).find(
-  (section) => section.title === "Learn"
+  (section) => section.id === "docs"
 );
 
 // SDK titles that should be filtered based on language and version selection
@@ -637,16 +743,25 @@ const SDK_ICONS: Record<
   go: GoIcon,
 };
 
+function sdkHomePath(language: SDKLanguage, tsVersion: TSVersion): string {
+  return language === "typescript"
+    ? `/docs/reference/typescript/${tsVersion}/intro`
+    : SDK_HOME_PAGES[language];
+}
+
 function LanguageSwitcher({
   displayLanguage,
   setLanguage,
+  activeSection,
+  tsVersion,
 }: {
   displayLanguage: SDKLanguage;
   setLanguage: (lang: SDKLanguage) => void;
+  activeSection: string;
+  tsVersion: TSVersion;
 }) {
   const router = useRouter();
   const pathname = router.asPath.replace(/(\?|#).+$/, "");
-  const { activeSection } = useActiveSection();
 
   const handleLanguageChange = (newLang: SDKLanguage) => {
     const currentPathLang = getLanguageFromPath(pathname);
@@ -654,17 +769,11 @@ function LanguageSwitcher({
 
     setLanguage(newLang);
 
-    // Navigate based on active tab vs current page mismatch
-    if (activeSection === "Learn" && isOnSDKPage) {
-      router.push("/docs");
-    } else if (activeSection === "Reference" && !isOnSDKPage) {
-      router.push(SDK_HOME_PAGES[newLang]);
-    } else if (
-      activeSection === "Reference" &&
-      isOnSDKPage &&
-      currentPathLang !== newLang
+    if (
+      activeSection === "sdk" &&
+      (!isOnSDKPage || currentPathLang !== newLang)
     ) {
-      router.push(SDK_HOME_PAGES[newLang]);
+      router.push(sdkHomePath(newLang, tsVersion));
     }
   };
 
@@ -741,12 +850,10 @@ function LanguageSwitcher({
 
 function VersionSwitcher({
   language,
-  activeSection,
   displayVersion,
   setTsVersion,
 }: {
   language: SDKLanguage;
-  activeSection: string;
   displayVersion: TSVersion;
   setTsVersion: (version: TSVersion) => void;
 }) {
@@ -769,8 +876,7 @@ function VersionSwitcher({
     }
   };
 
-  // Only visible for TypeScript in the Reference tab
-  if (language !== "typescript" || activeSection !== "Reference") {
+  if (language !== "typescript") {
     return null;
   }
 
@@ -844,7 +950,7 @@ export function Navigation(props) {
 
   const pathname = router.pathname;
 
-  const { activeSection, setActiveSection } = useActiveSection();
+  const { activeSection } = useActiveSection();
   const { effectiveLanguage, effectiveTsVersion, setLanguage, setTsVersion } =
     useHydratedLanguageState(pathname);
 
@@ -853,10 +959,9 @@ export function Navigation(props) {
   // Stable string for the accordion remount key below.
   const unreleasedKey = Array.from(unreleasedLabels).sort().join(",");
 
-  // Find the section based on the active tab (Learn/Reference)
   const nestedSection =
     getAllSections(topLevelNav).find(
-      (section) => section.title === activeSection
+      (section) => section.id === activeSection
     ) ?? defaultSection;
 
   const isNested = !!nestedSection;
@@ -892,6 +997,8 @@ export function Navigation(props) {
             : []),
         ],
         pathname
+      ).concat(
+        getIdleOpenSections(nestedNavigation?.sectionLinks ?? [], pathname)
       ),
     [activeGroup, nestedNavigation, pathname]
   );
@@ -914,37 +1021,29 @@ export function Navigation(props) {
           ))}
         </ul>
 
-        {!["Examples", "Patterns"].includes(activeSection) && (
+        {activeSection !== "examples" && (
           <div className="mb-4 lg:mb-8">
-            <div className="flex rounded-lg bg-slate-100 p-1 dark:bg-slate-800/50">
-              {sidebarMenuTabs.map((tab) => {
-                const isActive = activeSection === tab.title;
+            <div
+              aria-label="Documentation view"
+              className="flex rounded-lg bg-slate-100 p-1 dark:bg-slate-800/50"
+            >
+              {[
+                { id: "docs", title: "Learn", icon: BookOpenIcon },
+                { id: "sdk", title: "Reference", icon: CodeBracketIcon },
+              ].map((tab) => {
+                const isActive = activeSection === tab.id;
                 return (
                   <button
-                    key={tab.title}
+                    key={tab.id}
+                    type="button"
+                    aria-pressed={isActive}
                     onClick={() => {
-                      setActiveSection(tab.title);
-                      // Navigate to SDK home page when switching to Reference tab
-                      if (tab.title === "Reference" && !isActive) {
-                        let href =
-                          SDK_HOME_PAGES[effectiveLanguage] ??
-                          SDK_HOME_PAGES.typescript;
-
-                        // Preserve non-stable TS version in the URL. This was
-                        // added because the VersionSwitcher would lose the
-                        // selected version when the user switched between the
-                        // "Learn" and "Reference" tabs.
-                        if (
-                          effectiveLanguage === "typescript" &&
-                          effectiveTsVersion !== TS_STABLE
-                        ) {
-                          // Target the concrete generated /intro page so the
-                          // client router fetches `_next/data` JSON.
-                          href = `/docs/reference/typescript/${effectiveTsVersion}/intro`;
-                        }
-
-                        router.push(href);
-                      }
+                      if (isActive) return;
+                      router.push(
+                        tab.id === "docs"
+                          ? "/docs"
+                          : sdkHomePath(effectiveLanguage, effectiveTsVersion)
+                      );
                     }}
                     className={clsx(
                       "flex flex-1 items-center justify-center gap-2 rounded-md px-3 py-1.5 text-sm font-medium transition-all",
@@ -966,18 +1065,19 @@ export function Navigation(props) {
                 );
               })}
             </div>
-
-            {/* Language Switcher - shown on both Learn and Reference */}
             <LanguageSwitcher
               displayLanguage={effectiveLanguage}
               setLanguage={setLanguage}
-            />
-            <VersionSwitcher
-              language={effectiveLanguage}
               activeSection={activeSection}
-              displayVersion={effectiveTsVersion}
-              setTsVersion={setTsVersion}
+              tsVersion={effectiveTsVersion}
             />
+            {activeSection === "sdk" && (
+              <VersionSwitcher
+                language={effectiveLanguage}
+                displayVersion={effectiveTsVersion}
+                setTsVersion={setTsVersion}
+              />
+            )}
           </div>
         )}
 
@@ -997,9 +1097,8 @@ export function Navigation(props) {
                 defaultValue={defaultOpenGroupTitles}
               >
                 {nestedNavigation.sectionLinks.map((item, groupIndex) => {
-                  // For Reference section, hide non-selected SDK sections with CSS (keeps links in DOM for SEO)
                   const isHidden =
-                    activeSection === "Reference" &&
+                    activeSection === "sdk" &&
                     shouldHideSection(
                       item.title,
                       effectiveLanguage,
@@ -1021,12 +1120,12 @@ export function Navigation(props) {
                       key={item.title || `grp-${groupIndex}`}
                       className={clsx(isHidden && "hidden")}
                     >
-                      {/* Separator before shared sections in Reference */}
-                      {activeSection === "Reference" &&
-                        isFirstSharedSection && (
-                          <div className="mb-4 mt-6 border-t border-slate-200 dark:border-slate-700" />
-                        )}
-                      {isNavGroup(item) ? (
+                      {activeSection === "sdk" && isFirstSharedSection && (
+                        <div className="mb-4 mt-6 border-t border-slate-200 dark:border-slate-700" />
+                      )}
+                      {isNavGroup(item) && item.section ? (
+                        <NavigationSection group={item} />
+                      ) : isNavGroup(item) ? (
                         <NavigationGroup
                           group={item}
                           isActiveGroup={item.title === activeGroup?.title}

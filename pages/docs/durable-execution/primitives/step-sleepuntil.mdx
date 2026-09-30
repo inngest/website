@@ -1,0 +1,72 @@
+import { Compatibility } from "shared/Docs/mdx";
+export const metaTitle = "step.sleepUntil";
+export const description = "Resume a workflow at a specific time without keeping a process running.";
+
+# `step.sleepUntil`
+
+<Compatibility />
+
+`step.sleepUntil()` pauses a run until a date and time you choose. Inngest resumes it at that time without keeping your function process running.
+
+They are useful when:
+
+- You need to send a reminder at a scheduled time.
+- A deadline determines when the next step should run.
+- An event provides a timestamp for later work.
+
+## Use a date or a duration
+
+Use `step.sleepUntil()` when you have a deadline or a timestamp in event data. Use [step.sleep](/docs/durable-execution/primitives/step-sleep) when you want to wait for a duration, such as 30 minutes from the current step. If you need to delay the start of the whole function, set the event's `ts` field instead.
+
+Pass a `Date` or an ISO 8601 string with a time zone, such as `2026-10-01T16:30:00Z`.
+
+## Send an appointment reminder
+
+This function waits until the timestamp supplied by the event, then runs the reminder action. The event sender supplies `remindAt` as an ISO 8601 timestamp with a time zone.
+
+```typescript
+import { Inngest } from "inngest";
+
+const inngest = new Inngest({ id: "reminders" });
+
+export const sendScheduledReminder = inngest.createFunction(
+  { id: "send-scheduled-reminder", triggers: { event: "app/reminder.scheduled" } },
+  async ({ event, step }) => {
+    const remindAt = new Date(event.data.remindAt);
+    if (Number.isNaN(remindAt.getTime())) {
+      throw new Error("Invalid reminder time");
+    }
+
+    await step.sleepUntil("wait-for-reminder", remindAt);
+
+    await step.run("send-reminder", async () => {
+      await fetch("https://api.example.com/reminders", {
+        method: "POST",
+        headers: { "content-type": "application/json" },
+        body: JSON.stringify({ reminderId: event.data.reminderId }),
+      });
+    });
+  }
+);
+```
+Replace the example request with your reminder service. Check its response and make the action safe to retry before using it in production.
+
+## What happens while the function waits
+
+Inngest pauses the run and resumes it at the scheduled time. Your code uses no compute during the wait, and the sleeping run does not count against step concurrency. The wait survives server restarts and redeploys. When the run resumes, Inngest re-invokes the function and uses saved step state to continue past completed work. A later `step.run()` can retry without re-running earlier completed steps.
+
+## Limits and pitfalls
+
+- A sleep can last up to one year. The Free plan allows up to seven days. Your plan also sets a maximum total function run length, so check both limits before scheduling a long wait.
+- Validate timestamps before calling `step.sleepUntil()`. Include an explicit time zone to avoid scheduling for an unintended local time.
+- Use `await`. Omitting it can prevent the function from sleeping correctly.
+- Keep the step ID stable when you change the function. Inngest uses it to match saved state across versions.
+- A long sleep can outlast your plan's trace and log history window. The run still resumes, but it may no longer appear in the Function Runs view while it sleeps.
+- Use an event wait when the next action depends on an event, rather than on a known time.
+
+## Next
+
+- [step.sleep](/docs/durable-execution/primitives/step-sleep) for a duration.
+- [step.waitForEvent](/docs/durable-execution/primitives/step-waitforevent) for an external event.
+- [Schedules and delayed starts](/docs/durable-execution/guides-and-advanced/events-and-triggers/schedules-and-delayed-starts) when the wait should happen before the function starts.
+- [Limits](/docs/durable-execution/limits) for the plan's maximum wait and run length.

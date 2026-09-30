@@ -10,6 +10,8 @@ import {
   RiLightbulbLine,
   RiInformationLine,
   RiAlertLine,
+  RiCheckLine,
+  RiSubtractLine,
   type RemixiconComponentType,
 } from "@remixicon/react";
 
@@ -53,16 +55,56 @@ export { Unreleased } from "./Unreleased";
 
 import { PageActions } from "./PageActions";
 
-export const h1: React.FC<any> = function (props) {
+export const h1: React.FC<any> = function ({
+  "data-docs-page-heading": docsPageHeading,
+  ...props
+}) {
+  if (docsPageHeading) {
+    return <Heading level={1} {...props} anchor={false} />;
+  }
+
   return (
-    <div className="group/h1 mb-8">
-      <Heading level={1} {...props} anchor={false} />
-      <div className="mt-4">
+    <div className="group/h1 mb-12">
+      <TitleRow>
+        <Heading level={1} {...props} anchor={false} />
+      </TitleRow>
+    </div>
+  );
+};
+
+// Page title with the Copy / Open actions right-aligned on the same line.
+// On narrow screens the actions wrap below the title.
+function TitleRow({ children }: { children: React.ReactNode }) {
+  return (
+    <div className="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between sm:gap-6 [&_h1]:mb-0 [&_h1]:block">
+      <div className="min-w-0 flex-1">{children}</div>
+      <div className="shrink-0 sm:pt-1.5">
         <PageActions />
       </div>
     </div>
   );
-};
+}
+
+export function DocsPageHeading({ children }: { children: React.ReactNode }) {
+  const items = React.Children.toArray(children);
+  const titleIndex = items.findIndex(
+    (child) =>
+      React.isValidElement(child) &&
+      (child.props as Record<string, unknown>)["data-docs-page-heading"]
+  );
+  const title = titleIndex >= 0 ? items[titleIndex] : null;
+  const rest =
+    titleIndex >= 0 ? items.filter((_, i) => i !== titleIndex) : items;
+
+  return (
+    <div className="group/h1 mb-12">
+      {title && <TitleRow>{title}</TitleRow>}
+      <div className="[&>p]:mb-0 [&>p]:mt-3 [&>p]:text-lg [&>p]:font-normal [&>p]:leading-7 [&>p]:text-slate-600 dark:[&>p]:text-slate-400">
+        {rest}
+      </div>
+    </div>
+  );
+}
 export const h2: React.FC<any> = function (props) {
   return <Heading level={2} {...props} />;
 };
@@ -132,6 +174,10 @@ export function Note({ children }) {
       </div>
     </div>
   );
+}
+
+export function DocsCallout({ children }: { children: React.ReactNode }) {
+  return <div className="docs-callout">{children}</div>;
 }
 
 export function Callout({
@@ -393,6 +439,60 @@ export function Property({
         </dd>
       </dl>
     </li>
+  );
+}
+
+/**
+ * Shows which kinds of durable function a feature works with, placed under a
+ * page's header. Unsupported kinds render muted with a dash.
+ */
+export function Compatibility({
+  workflows = true,
+  endpoints = true,
+}: {
+  workflows?: boolean;
+  endpoints?: boolean;
+}) {
+  const items = [
+    {
+      label: "Durable workflows",
+      href: "/docs/durable-execution/durable-workflows",
+      supported: workflows,
+    },
+    {
+      label: "Durable endpoints",
+      href: "/docs/durable-execution/durable-endpoints",
+      supported: endpoints,
+    },
+  ];
+  return (
+    <div className="not-prose -mt-8 mb-12 flex flex-wrap items-center gap-2 text-xs">
+      <span className="font-medium text-muted">Works with</span>
+      {items.map(({ label, href, supported }) => {
+        const Icon = supported ? RiCheckLine : RiSubtractLine;
+        return (
+          <Link
+            key={href}
+            href={href}
+            title={
+              supported
+                ? `Works with ${label.toLowerCase()}`
+                : `Not supported in ${label.toLowerCase()}`
+            }
+            className={clsx(
+              "inline-flex items-center gap-1 rounded-full px-2.5 py-1 font-medium transition-colors",
+              supported
+                ? "bg-matcha-500/10 text-matcha-700 hover:bg-matcha-500/20 dark:text-matcha-300"
+                : "bg-carbon-100/70 text-muted hover:bg-carbon-100 dark:bg-carbon-800/60 dark:hover:bg-carbon-800"
+            )}
+          >
+            <Icon className="h-3.5 w-3.5" aria-hidden="true" />
+            <span>{label}</span>
+            {!supported && <span className="sr-only">(not supported)</span>}
+          </Link>
+        );
+      })}
+    </div>
   );
 }
 

@@ -1,0 +1,381 @@
+import { CodeGroup, Note } from "shared/Docs/mdx";
+
+export const metaTitle = "Sending Events | SDK & HTTP Reference";
+export const description = "Send an event when an app action should start a durable function.";
+
+# Send events
+
+> Start durable work by sending events from your app or a function.
+
+Send an event when an app action should start a durable function. Await the send call so the process stays alive until Inngest accepts the event.
+
+## Create a client
+
+Create the Inngest client once, in its own file, and import it wherever you send events.
+
+<CodeGroup>
+```ts {{ title: "TypeScript", filename: 'inngest/client.ts' }}
+import { Inngest } from "inngest";
+
+export const inngest = new Inngest({ id: "acme-storefront-app" }); // Use your app's ID
+```
+
+```python {{ title: "Python", filename: 'src/inngest/client.py' }}
+import inngest
+
+inngest_client = inngest.Inngest(app_id="acme-storefront-app")
+```
+
+```go {{ title: "Go" }}
+!snippet:path=snippets/go/docs/clients/new_client_acme_storefront_app.go
+```
+</CodeGroup>
+
+## Send one event
+
+```typescript
+import { Inngest } from "inngest";
+
+const inngest = new Inngest({ id: "billing-app" });
+
+const { ids } = await inngest.send({
+  name: "billing/invoice.paid",
+  data: { invoiceId: "inv_123", customerId: "cus_456" },
+});
+```
+
+The returned event ID lets you find the event in the dashboard. A matching trigger starts its function. One event may start several functions. Unlike a traditional message queue, where one worker consumes each message, every function that matches the event runs. See [Fan-out](/docs/durable-execution/guides-and-advanced/patterns/fan-out).
+
+Inngest also stores each event. You can find it in the **Events** tab of the dashboard.
+
+The same send in each SDK:
+
+<CodeGroup>
+```ts {{ title: "TypeScript", filename: 'app/api/checkout/route.ts' }}
+import { inngest } from "../../../inngest/client";
+
+// This sends an event to Inngest.
+await inngest.send({
+  // The event name
+  name: "storefront/cart.checkout.completed",
+  // The event's data
+  data: {
+    cartId: "ed12c8bde",
+    itemIds: ["9f08sdh84", "sdf098487", "0fnun498n"],
+    account: {
+      id: 123,
+      email: "test@example.com",
+    },
+  },
+});
+```
+
+```python {{ title: "Python", filename: 'src/api/checkout/route.py' }}
+import inngest
+from src.inngest.client import inngest_client
+
+# This sends an event to Inngest.
+await inngest_client.send(
+  inngest.Event(
+    name="storefront/cart.checkout.completed",
+    data={
+      "cartId": "ed12c8bde",
+      "itemIds": ["9f08sdh84", "sdf098487", "0fnun498n"],
+      "account": {
+        "id": 123,
+        "email": "test@example.com",
+      },
+    },
+  )
+)
+```
+
+```go {{ title: "Go" }}
+!snippet:path=snippets/go/docs/events/checkout_completed.go
+```
+</CodeGroup>
+
+In TypeScript, `send()` returns a `Promise`. Always use `await` or `.then()`. Serverless functions can shut down quickly, and an unawaited send may never reach Inngest.
+
+In Python, `send()` is async, so call it with `await`. In synchronous code, use [`send_sync()`](/docs/reference/python/client/send) instead.
+
+Every event needs a `name` and a `data` object. [Event payloads and schemas](/docs/durable-execution/guides-and-advanced/events-and-triggers/event-payloads-and-schemas) covers the optional fields.
+
+## Set an Event Key in production
+
+In production, your app needs an Event Key to send events. The key authenticates your app and routes events to one [environment](/docs/platform-and-operations/environments-and-branch-deploys) in your Inngest account. See [Keys and access](/docs/platform-and-operations/keys-and-access) to create one.
+
+Set the key in one of two ways:
+
+1. Set the `INNGEST_EVENT_KEY` environment variable. This is the recommended approach.
+2. Pass the key to the client constructor. Avoid hard-coding keys in your code.
+
+<CodeGroup>
+```ts {{ title: "TypeScript", filename: 'inngest/client.ts' }}
+import { Inngest } from "inngest";
+
+// NOTE - It is not recommended to hard-code your Event Key in your code.
+const inngest = new Inngest({ id: "your-app-id", eventKey: "xyz..." });
+```
+
+```python {{ title: "Python", filename: 'src/inngest/client.py' }}
+import inngest
+
+# It is not recommended to hard-code your Event Key in your code.
+inngest_client = inngest.Inngest(app_id="your-app-id", event_key="xyz...")
+```
+</CodeGroup>
+
+You don't need an Event Key in local development. Events go to the [Inngest Dev Server](/docs/local-development) without one.
+
+## Send from a function
+
+Use `step.sendEvent()` inside a durable function. This records the send as a step and prevents replay of that completed step from sending the event again. Use it instead of `inngest.send()` inside functions. In Python, use `step.send_event()`. See [`step.sendEvent()`](/docs/durable-execution/primitives/step-sendevent) for details.
+
+```typescript
+await step.sendEvent("notify-accounting", {
+  name: "billing/invoice.paid",
+  data: { invoiceId: event.data.invoiceId },
+});
+```
+
+A full function in each SDK:
+
+<CodeGroup>
+```ts {{ title: "TypeScript" }}
+export default inngest.createFunction(
+  { id: "user-onboarding", triggers: { event: "app/user.signup" } },
+  async ({ event, step }) => {
+    // Do something
+    await step.sendEvent("send-activation-event", {
+      name: "app/user.activated",
+      data: { userId: event.data.userId },
+    });
+    // Do something else
+  }
+);
+```
+
+```python {{ title: "Python" }}
+import inngest
+from src.inngest.client import inngest_client
+
+@inngest_client.create_function(
+    fn_id="my_function",
+    trigger=inngest.TriggerEvent(event="app/my_function"),
+)
+async def fn(ctx: inngest.Context) -> list[str]:
+    return await ctx.step.send_event("send", inngest.Event(name="foo"))
+```
+</CodeGroup>
+
+## Send typed events
+
+Define a name and schema with `eventType()`, then use `.create()` to build a typed payload. [Event payloads and schemas](/docs/durable-execution/guides-and-advanced/events-and-triggers/event-payloads-and-schemas) shows the schema and send example. Use a runtime schema when incoming data needs validation; `staticSchema()` provides TypeScript checking without runtime validation.
+
+## Send a batch
+
+Pass an array to `inngest.send()` to send several events in one call. Services without an SDK can send events through the [HTTP Event API](#send-events-over-http).
+
+<CodeGroup>
+```ts {{ title: "TypeScript" }}
+await inngest.send([
+  { name: "storefront/cart.checkout.completed", data: { /* ... */ } },
+  { name: "storefront/coupon.used", data: { /* ... */ } },
+  { name: "storefront/loyalty.program.joined", data: { /* ... */ } },
+])
+```
+
+```python {{ title: "Python" }}
+await inngest_client.send([
+  inngest.Event(name="storefront/cart.checkout.completed", data={"cartId": "ed12c8bde"}),
+  inngest.Event(name="storefront/coupon.used", data={"cartId": "ed12c8bde"}),
+  inngest.Event(name="storefront/loyalty.program.joined", data={"cartId": "ed12c8bde"}),
+])
+```
+
+```go {{ title: "Go" }}
+!snippet:path=snippets/go/docs/events/send_many_events.go
+```
+</CodeGroup>
+
+Batch requests have size limits. See [Platform limits](/docs/durable-execution/limits#platform-limits) for the maximum number of events per send request.
+
+A batch that only partly succeeds reports the accepted events.
+
+Batches suit lists of records. Map each item to an event, then send the array:
+
+<CodeGroup>
+```ts {{ title: "TypeScript" }}
+// This function call might return 10s or 100s of items, so we can use map
+// to transform the items into event payloads then pass that array to send:
+const importedItems = await api.fetchAllItems();
+const events = importedItems.map((item) => ({
+  name: "storefront/item.imported",
+  data: {
+    ...item,
+  }
+}));
+await inngest.send(events);
+```
+
+```python {{ title: "Python" }}
+# This function call might return 10s or 100s of items, so we can use map
+# to transform the items into event payloads then pass that array to send:
+importedItems = await api.fetchAllItems();
+events = [
+  inngest.Event(name="storefront/item.imported", data=item)
+  for item in importedItems
+]
+await inngest_client.send(events);
+```
+</CodeGroup>
+
+## Use event IDs
+
+Inngest gives each event a unique ID. `inngest.send()`, `step.sendEvent()` and Go's `client.SendMany()` return these IDs. Log or save them to look up events later in the dashboard or through [the REST API](https://api-docs.inngest.com/v1/events/GetEvent).
+
+<CodeGroup>
+```ts {{ title: "TypeScript" }}
+const { ids } = await inngest.send([
+  {
+    name: "app/invoice.created",
+    data: { invoiceId: "645e9e024befa68763f5b500" }
+  },
+  {
+    name: "app/invoice.created",
+    data: { invoiceId: "645e9e08f29fb563c972b1f7" }
+  },
+]);
+/**
+ * ids = [
+ *   "01HQ8PTAESBZPBDS8JTRZZYY3S",
+ *   "01HQ8PTFYYKDH1CP3C6PSTBZN5"
+ * ]
+ */
+```
+
+```python {{ title: "Python" }}
+ids = await inngest_client.send(
+    [
+        inngest.Event(name="my_event", data={"msg": "Hello!"}),
+        inngest.Event(name="my_other_event", data={"name": "Alice"}),
+    ]
+)
+#
+#  ids = [
+#    "01HQ8PTAESBZPBDS8JTRZZYY3S",
+#    "01HQ8PTFYYKDH1CP3C6PSTBZN5"
+#  ]
+# 
+```
+
+```go {{ title: "Go" }}
+!snippet:path=snippets/go/docs/events/send_many_events_return_ids.go
+```
+</CodeGroup>
+
+## Prevent duplicate starts
+
+Set a unique event `id` when the sender may retry the same action. The `id` acts as an idempotency key. When an event is sent again with the same `id` within 24 hours, the event is still stored, but no new run executes. See [Idempotency](/docs/durable-execution/guides-and-advanced/idempotency) for event and function idempotency.
+
+<CodeGroup>
+```ts {{ title: "TypeScript" }}
+await inngest.send({
+  // Your deduplication id must be specific to this event payload.
+  // Use something that will not be used across event types, not a generic value like cartId
+  id: "cart-checkout-completed-ed12c8bde",
+  name: "storefront/cart.checkout.completed",
+  data: {
+    cartId: "ed12c8bde",
+    // ...the rest of the payload's data...
+  }
+});
+```
+
+```python {{ title: "Python" }}
+await inngest_client.send(
+  inngest.Event(
+    name="storefront/cart.checkout.completed",
+    id="cart-checkout-completed-ed12c8bde",
+    data={"cartId": "ed12c8bde"},
+  )
+)
+```
+
+```go {{ title: "Go" }}
+!snippet:path=snippets/go/docs/events/event_idempotency.go
+```
+</CodeGroup>
+
+The `id` is global across all event types. Make it specific to one event type. For example, `storefront/item.imported` and `storefront/item.deleted` should not both use the item's ID (`9f08sdh84`). Combine the ID with the event type instead, such as `item-imported-9f08sdh84`.
+
+## Send events over HTTP
+
+Send events from any language or system with the Event API and an Event Key. The API accepts one event payload or an array of them.
+
+<CodeGroup tag="POST" label="inn.gs/e/:eventKey">
+
+```bash {{ title: 'cURL' }}
+curl -X POST https://inn.gs/e/$INNGEST_EVENT_KEY \
+  -H 'Content-Type: application/json' \
+  --data '{
+    "name": "user.signup",
+    "data": {
+      "userId": "645ea8289ad09eac29230442"
+    }
+  }'
+```
+
+```php
+$url = "https://inn.gs/e/{$eventKey}";
+$content = json_encode([
+    "name" => "user.signup",
+    "data" => [
+      "userId" => "645ea8289ad09eac29230442",
+    ],
+]);
+
+$curl = curl_init($url);
+curl_setopt($curl, CURLOPT_HEADER, false);
+curl_setopt($curl, CURLOPT_RETURNTRANSFER, true);
+curl_setopt($curl, CURLOPT_HTTPHEADER, ["Content-type: application/json"]);
+curl_setopt($curl, CURLOPT_POST, true);
+curl_setopt($curl, CURLOPT_POSTFIELDS, $content);
+
+$json_response = curl_exec($curl);
+$status = curl_getinfo($curl, CURLINFO_HTTP_CODE);
+if ($status != 200) {
+    return [
+        'status' => $status,
+        'message' => "Error: call to URL $url failed with status $status, response $json_response, curl_error " . curl_error($curl) . ", curl_errno " . curl_errno($curl),
+    ];
+}
+
+curl_close($curl);
+$response = json_decode($json_response, true);
+```
+
+</CodeGroup>
+
+The response contains the IDs of the events you sent:
+
+```json {{ title: 'Response' }}
+{
+  "ids": ["01H08W4TMBNKMEWFD0TYC532GG"],
+  "status": 200
+}
+```
+
+To send to a [branch environment](/docs/platform-and-operations/environments-and-branch-deploys), set the `x-inngest-env` header to its name, for example `x-inngest-env: feature/my-branch`.
+
+<Note>
+  With the [Dev Server](/docs/local-development), send to `http://localhost:8288/e/<fake-key>`. If you [self-host](/docs/self-hosting), use your instance's URL instead.
+</Note>
+
+## Further reading
+
+- [Keys and access](/docs/platform-and-operations/keys-and-access)
+- [TypeScript SDK reference: Send events](/docs/reference/typescript/v4/events/send)
+- [Python SDK reference: Send events](/docs/reference/python/client/send)
+- [Go SDK reference: Send events](https://pkg.go.dev/github.com/inngest/inngestgo#Client)

@@ -1,0 +1,38 @@
+export const metaTitle = "Limits | Realtime";
+export const description = "Plan client connections and message volume before you stream updates to users.";
+
+# Realtime limits
+> Plan client connections and message volume before you stream updates to users.
+
+Realtime has two plan limits: how many subscribers can be connected at once, and how many messages you can publish each day. Estimate both before you add Realtime to a high-volume job.
+
+## Plan limits
+
+| Plan | Concurrent connections | Messages per day |
+| --- | --- | --- |
+| Free | 50 | 250,000 |
+| Pro | 1,000 | 1,000,000 |
+| Business | 5,000 | 5,000,000 |
+| Enterprise | Custom | Custom |
+
+See [pricing](/pricing?ref=docs-realtime-limits) for the current plan comparison. Connection limits apply to Realtime subscribers only. Worker connections and step concurrency have [separate limits](/docs/durable-execution/limits).
+
+## Keep message volume predictable
+
+Every publish counts as one message. If you stream model output token by token, a single long answer can publish thousands of messages. Multiply by your expected runs per day and compare the total with your plan.
+
+To reduce volume, publish meaningful state changes rather than every small tick, or batch several tokens into one message before you publish.
+
+## React hook memory and rendering
+
+These `useRealtime` settings run in the browser. They don't change your plan limits or add server-side replay.
+
+- **`historyLimit`** keeps the latest **100** messages in `messages.all` by default. Raise it, or set `null` to keep every message, when the UI rebuilds text from a stream.
+- **`bufferInterval`** is **0 ms** by default, so every message triggers a render. Set a larger interval to batch renders for fast streams.
+- **`pauseOnHidden`** and **`autoCloseOnTerminal`** default to `true`. The hook pauses in hidden tabs and closes when the run finishes, which frees the connection.
+
+## Next steps
+
+- [React hooks](/docs/realtime/guides/react-hooks) lists every hook option and its default.
+- [Stream AI responses](/docs/realtime/guides/stream-ai-responses) shows buffering and history settings for a token stream.
+- [Troubleshooting](/docs/realtime/troubleshooting) helps diagnose connection and delivery problems.

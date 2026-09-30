@@ -11,16 +11,16 @@ The Function run details will provide all the information to understand how this
 
 ## Accessing Function runs
 
-Functions runs across all application of the currently [selected environment](/docs/platform/environments) are accessible via the "Runs" page in the left side navigation.
+Functions runs across all application of the currently [selected environment](/docs/platform-and-operations/environments-and-branch-deploys) are accessible via the "Runs" page in the left side navigation.
 
 ![The "Handle failed payments" Function runs list features a run in a failing state.](/assets/docs/platform/monitor/inspecting-function-runs/function-runs.png)
 
 _Runs can be filtered using a Status, Queued or Started at and Application filters._
 
-Accessing the runs of a specific Function is achieved via the "Functions" menu, as described in [the function run details section](/docs/platform/monitor/inspecting-function-runs#the-function-run-details).
+Accessing the runs of a specific Function is achieved via the "Functions" menu, as described in [the function run details section](/docs/platform-and-operations/inspect-events-and-runs).
 
 ## Searching Function runs
-Advanced filters are available using a [CEL expression](/docs/guides/writing-expressions). The search feature is available by clicking on the "Show search" button next to the other run filters.
+Advanced filters are available using a [CEL expression](/docs/durable-execution/guides-and-advanced/writing-expressions). The search feature is available by clicking on the "Show search" button next to the other run filters.
 
 ![The runs list features an advance search feature that filters results using a CEL query.](/assets/docs/platform/monitor/inspecting-function-runs/function-runs-search.png)
 
@@ -36,7 +36,7 @@ event.v| `string`| `==`, `!=`
 event.data| `map[string]any`| `==`, `!=`, `>`, `>=`, `<`, `<=`
 output| `any`| `==`, `!=`, `>`, `>=`, `<`, `<=`
 
-A few examples of valid search queries are `event.data.hello == "world"` and `output.success != true`. [Learn more about how expressions are used in Inngest.](/docs/guides/writing-expressions)
+A few examples of valid search queries are `event.data.hello == "world"` and `output.success != true`. [Learn more about how expressions are used in Inngest.](/docs/durable-execution/guides-and-advanced/writing-expressions)
 
 <Tip>
   You can combine multiple search queries using the `&&` operator or `||` operator. Adding a new line is the equivalent of using the `&&` operator.

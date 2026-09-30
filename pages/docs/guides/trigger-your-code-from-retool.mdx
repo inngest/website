@@ -28,7 +28,7 @@ The goal is to enable your team to trigger a script anytime they click a button 
 
 ## Sending an event from Retool
 
-To send data from Retool, we'll need to set up a “[Resource](https://docs.retool.com/docs/resources)” first. On your Resources tab in Retool, click “Create New” then select “Resource.” Then select “Rest API.” Now jump over to the Inngest Cloud dashboard and [create a new Event Key in the Inngest dashboard](/docs/events/creating-an-event-key). Copy your brand new key and in the Retool dashboard, prefix your key with the Inngest Event API URL and path: `https://inn.gs/e/`
+To send data from Retool, we'll need to set up a “[Resource](https://docs.retool.com/docs/resources)” first. On your Resources tab in Retool, click “Create New” then select “Resource.” Then select “Rest API.” Now jump over to the Inngest Cloud dashboard and [create a new Event Key in the Inngest dashboard](/docs/platform-and-operations/keys-and-access). Copy your brand new key and in the Retool dashboard, prefix your key with the Inngest Event API URL and path: `https://inn.gs/e/`
 
 ```shell
 https://inn.gs/e/<INNGEST-EVENT-KEY>
@@ -129,7 +129,7 @@ app.post("/api/something_else", ...)
 By serving your functions via HTTP, you don't need to deploy your code to Inngest Cloud or set up a new deployment process. After you deploy your code, you need to visit the Inngest dashboard to sync your app. This allows Inngest to discover and remotely execute your functions.
 
 <aside>
-  👉 You can read how to do this in <a href="/docs/apps/cloud">our Working with apps guide</a>.
+  👉 You can read how to do this in <a href="/docs/platform-and-operations/apps-and-syncs">our Working with apps guide</a>.
 </aside>
 
 After syncing your app, your new function should appear in the Functions tab of the Inngest Cloud dashboard:

@@ -26,7 +26,7 @@ This pattern is useful when you want to grade against a resolved outcome, captur
 | You want the same scoring logic in several places | `createScorer()` | Define a named scorer once, reuse it. |
 | You're comparing variants | Pair with `group.experiment()` | The same scorer grades every variant. |
 
-A score is a number (commonly `0`–`1`) attached to a run, a specific step, or a session. You decide what it measures.
+A score is a number (commonly `0`–`1`) attached to a run or a specific step. You decide what it measures.
 
 ## Score inline when the outcome is known
 
@@ -41,7 +41,7 @@ export default inngest.createFunction(
     );
 
     if (event.data.knownLabel) {
-      await step.score({
+      await step.score("score-classification", {
         name: "classification-accuracy",
         value: predicted === event.data.knownLabel ? 1 : 0,
       });
@@ -78,7 +78,7 @@ export const triageScorer = createScorer(
     const fix = await step.waitForEvent("wait-for-fix", {
       event: "incident/fix.shipped",
       timeout: "30d",
-      if: `async.data.incidentId == '${event.data.input.incidentId}'`,
+      if: `async.data.incidentId == '${event.data.incidentId}'`,
     });
 
     // No fix shipped inside the window: record a zero rather than nothing.
@@ -88,7 +88,7 @@ export const triageScorer = createScorer(
 
     return {
       name: "localization",
-      value: jaccard(event.data.input.cited, fix.data.fixFiles), // overlap, 0–1
+      value: jaccard(event.data.cited, fix.data.fixFiles), // overlap, 0–1
     };
   }
 );
@@ -133,14 +133,14 @@ export const scoreFeedback = inngest.createFunction(
 );
 ```
 
-## Score the session, not just the run
+## Score the conversation, not just one run
 
-A conversation or an incident thread spans many runs. When the outcome reflects the whole flow rather than one step, score the session instead of a single run, using the same session key you group runs by.
-
+A conversation or an incident thread spans many runs. Scores attach to a run or a step, so score the run that produced the final outcome, such as the run that closed the conversation, and add the same [session](/docs/agent-evals/sessions?ref=docs-patterns-score-agents-on-real-outcomes) key to every event in the flow. The session view then shows every run behind the score.
 
 ```typescript
-await inngest.score("goal-completed", {
-  session: { conversation_id: event.data.conversationId },
+await inngest.score({
+  name: "goal-completed",
+  runId: event.data.finalRunId,
   value: event.data.resolved ? 1 : 0,
 });
 ```
@@ -155,8 +155,8 @@ await inngest.score("goal-completed", {
 
 ## Related docs
 
-- [Score a function run](/docs/features/inngest-functions/steps-workflows/scoring?ref=docs-patterns-score-agents-on-real-outcomes): how-to for inline and external scoring
-- [Build a deferred scorer](/docs/features/inngest-functions/steps-workflows/deferred-scoring?ref=docs-patterns-score-agents-on-real-outcomes): score outcomes that resolve later
+- [Score a function run](/docs/agent-evals/scores?ref=docs-patterns-score-agents-on-real-outcomes): how-to for inline and external scoring
+- [Build a deferred scorer](/docs/agent-evals/deferred-scoring?ref=docs-patterns-score-agents-on-real-outcomes): score outcomes that resolve later
 - [Scoring reference](/docs/reference/typescript/v4/functions/scoring?ref=docs-patterns-score-agents-on-real-outcomes): `inngest.score()`, `step.score()`, `createScorer()`, `defer()`
 - [Deferred functions reference](/docs/reference/typescript/v4/functions/deferred-functions?ref=docs-patterns-score-agents-on-real-outcomes): `defer()` for fire-and-forget background work
 - [Patterns: Run experiments in production](/docs/patterns/ai-evals/run-experiments-in-production?ref=docs-patterns-score-agents-on-real-outcomes): split traffic and compare variants

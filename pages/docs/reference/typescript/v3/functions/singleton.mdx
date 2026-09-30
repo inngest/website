@@ -11,7 +11,7 @@ export const description = "Ensure only one run of a function executes at a time
 
 Ensure that only a single run of a function (_or a set of specific functions, based on specific event properties_) is running at a time.
 
-See the [Singleton Functions guide](/docs/guides/singleton) for more information about how this feature works.
+See the [Singleton Functions guide](/docs/durable-execution/flow-control/singleton) for more information about how this feature works.
 
 
 
@@ -42,7 +42,7 @@ export default inngest.createFunction(
       <Property name="key" type="string" required>
         A unique key expression to which the limit is applied. This expression is evaluated for each triggering event.
 
-        Expressions are defined using the Common Expression Language (CEL) with the original event accessible using dot-notation. Read [our guide to writing expressions](/docs/guides/writing-expressions) for more info. Examples:
+        Expressions are defined using the Common Expression Language (CEL) with the original event accessible using dot-notation. Read [our guide to writing expressions](/docs/durable-execution/guides-and-advanced/writing-expressions) for more info. Examples:
 
         * Ensure exclusive execution of a function per customer ID: `'event.data.customer_id'`
         * Ensure exclusive execution of a function per account and email address: `'event.data.account_id + "-" + event.user.email'`
@@ -95,6 +95,6 @@ export default inngest.createFunction(
 );
 ```
 
-While similar to [Debounce](/docs/guides/debounce), Singleton Functions are designed to ensure that only a single run of a function is happening at a time, whereas Debounce ensures that only a single event is processed within a given time window.
+While similar to [Debounce](/docs/durable-execution/flow-control/debounce), Singleton Functions are designed to ensure that only a single run of a function is happening at a time, whereas Debounce ensures that only a single event is processed within a given time window.
 
-Refer to the [Singleton Functions guide](/docs/guides/singleton) for more information about how this feature works. */}
+Refer to the [Singleton Functions guide](/docs/durable-execution/flow-control/singleton) for more information about how this feature works. */}

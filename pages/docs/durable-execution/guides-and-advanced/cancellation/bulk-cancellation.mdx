@@ -1,0 +1,31 @@
+export const metaTitle = "Bulk Cancel Running Functions";
+export const description = "Cancel affected runs by function and time range after an incident makes their remaining work unnecessary.";
+
+# Bulk cancellation
+
+> Cancel many existing runs through the Dashboard or a filtered REST API request.
+
+Stop many existing runs when a deployment, duplicate event stream, or other incident makes their remaining work unnecessary. Use the Dashboard for a quick selection or the REST API when you need a repeatable, filtered operation.
+## Cancel selected runs in the dashboard
+Use the Platform's bulk cancellation UI to cancel runs for a function within a time range. This is the quickest path when you are responding by hand.
+## Cancel through the REST API
+Send `POST https://api.inngest.com/v1/cancellations` with `app_id`, `function_id`, `started_after`, and `started_before`. Add an optional `if` expression to select runs by their original trigger data.
+```bash
+curl -X POST https://api.inngest.com/v1/cancellations \
+  -H "Authorization: Bearer $INNGEST_SIGNING_KEY" \
+  -H "Content-Type: application/json" \
+  --data @- <<'JSON'
+  {
+    "app_id": "acme-app",
+    "function_id": "schedule-reminder",
+    "started_after": "2026-09-20T00:00:00.000Z",
+    "started_before": "2026-09-21T00:00:00.000Z",
+    "if": "event.data.userId == 'user_123'"
+  }
+JSON
+```
+Set `INNGEST_SIGNING_KEY` to the signing key for the target environment before running the command. Check the app ID, function ID, UTC time range, and expression against the runs you intend to stop. A successful response includes a cancellation ID and the cancellation job data; it does not mean a running step was interrupted.
+## Understand the boundary
+Bulk cancellation targets runs that match the selection. A step already executing runs to completion. The run is then marked canceled and later steps do not run. Each canceled run emits `inngest/function.cancelled`, which can trigger cleanup.
+This operation does not block new runs from being enqueued. Pause the function or stop the incoming trigger if new runs must also stop.
+Use [Events](/docs/durable-execution/guides-and-advanced/cancellation/events) or [Timeouts](/docs/durable-execution/guides-and-advanced/cancellation/timeouts) when the function should apply cancellation rules automatically to each run.

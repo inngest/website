@@ -1,0 +1,45 @@
+export const metaTitle = "Realtime | Stream Updates from Functions";
+export const description = "Stream progress and results from your functions to users while the work runs.";
+
+# Realtime
+
+> Stream progress and results from your functions to users while the work runs.
+
+**Inngest Realtime** pushes updates from your functions to the browser as they happen. Users see each step of a long job, watch an AI answer appear token by token, and get the final result without refreshing or polling. You don't run a WebSocket server or a separate pub/sub service.
+
+Your function publishes typed messages to a channel. Your server decides who may read that channel and gives the browser a scoped token. The browser subscribes and renders each message as it arrives.
+
+### Benefits:
+
+- **Show live progress.** Tell users how an import, report, or agent run is going while it runs.
+- **Stream AI output.** Display a model's answer as it's generated instead of after it finishes.
+- **Keep updates accurate on retry.** Publish state changes as durable steps so a retry doesn't send them twice.
+- **Type every message.** Share one channel definition between your function and your UI so payloads always match.
+- **Control who sees what.** Your server authorizes each subscription and limits it to one channel and the topics you choose.
+
+<hr />
+
+## How it works
+
+1. **Define a channel.** A channel names the thing users watch, such as a document or a chat thread. Topics such as `status`, `tokens`, and `result` separate the kinds of messages on that channel.
+2. **Publish from your function.** Use `step.realtime.publish()` for state changes and final results. Use `inngest.realtime.publish()` for high-frequency updates such as streamed tokens.
+3. **Subscribe from your app.** Your server mints a subscription token. In React, the `useRealtime` hook connects with that token and returns typed messages.
+
+Read the [Overview](/docs/realtime/overview) for how these pieces fit together.
+
+## Language support
+
+The examples in this section use the TypeScript SDK, which includes typed channels, publishing, tokens, server-side subscriptions, and the `useRealtime` React hook.
+
+The Python SDK supports publishing and minting subscription tokens as a beta in `inngest.experimental.realtime`. See [Python](/docs/realtime/reference#python) in the reference and the [FastAPI example project](https://github.com/inngest/inngest-py/tree/main/examples/fast_api_realtime).
+
+The Go SDK supports publishing from functions and subscribing with a token in the `inngestgo/realtime` package. See [Go](/docs/realtime/reference#go) in the reference.
+
+<hr />
+
+## Next steps
+
+- [Quick start](/docs/realtime/quick-start) builds a page that shows live progress from a function.
+- [Channels and topics](/docs/realtime/channels-and-topics) explains how to name channels and type messages.
+- [Guides](/docs/realtime/guides) cover tokens, React, AI streaming, and server-side subscriptions.
+- [Reference](/docs/realtime/reference), [Limits](/docs/realtime/limits), and [Troubleshooting](/docs/realtime/troubleshooting) help you ship and operate Realtime.

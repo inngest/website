@@ -1,0 +1,114 @@
+import { Mermaid } from "src/shared/Docs/Mermaid";
+import { SdkSupport } from "src/shared/Docs/SdkSupport";
+
+export const metaTitle = "Overview | Realtime";
+export const description = "See how functions publish updates, how your server authorizes viewers, and how clients receive typed messages.";
+
+# Realtime overview
+
+> See how functions publish updates, how your server authorizes viewers, and how clients receive typed messages.
+
+<SdkSupport
+  feature="Realtime"
+  links={{
+    "Typed channels and topics": "/docs/realtime/channels-and-topics",
+    "Publish": "/docs/realtime/overview#durable-and-immediate-publishing",
+    "Durable publish step": "/docs/realtime/overview#durable-and-immediate-publishing",
+    "Mint subscription tokens": "/docs/realtime/guides/subscription-tokens",
+    "Subscribe from the server": "/docs/realtime/guides/server-side-subscriptions",
+    "useRealtime React hook": "/docs/realtime/guides/react-hooks",
+  }}
+  sdks={[
+    {
+      sdk: "typescript",
+      href: "/docs/realtime/reference",
+      features: {
+        "Typed channels and topics": true,
+        "Publish": true,
+        "Durable publish step": true,
+        "Mint subscription tokens": true,
+        "Subscribe from the server": true,
+        "useRealtime React hook": true,
+      },
+    },
+    {
+      sdk: "python",
+      href: "/docs/realtime/reference#python",
+      status: "Beta",
+      features: {
+        "Typed channels and topics": false,
+        "Publish": true,
+        "Durable publish step": false,
+        "Mint subscription tokens": true,
+        "Subscribe from the server": false,
+      },
+      note: "Beta API in inngest.experimental.realtime.",
+    },
+    {
+      sdk: "go",
+      href: "/docs/realtime/reference#go",
+      features: {
+        "Typed channels and topics": false,
+        "Publish": true,
+        "Durable publish step": false,
+        "Mint subscription tokens": false,
+        "Subscribe from the server": true,
+      },
+      note: "Publish works inside functions and does not repeat on replay. Mint tokens with TypeScript or Python.",
+    },
+  ]}
+/>
+
+A durable function can run for minutes or hours, retry after failures, and continue after the request that started it has ended. Realtime lets that function report back to the user as it goes. It publishes messages from inside the run, and every authorized client watching the same channel receives them.
+
+For example, a document-processing function can publish `Analyzing` as it starts, stream generated text as a model returns it, and publish the final result when it finishes.
+
+## The pieces
+
+- **Channel.** A named stream for one thing users watch, such as `document:abc123`. You define a channel once and reuse it in your function, your token route, and your UI.
+- **Topic.** A message type within a channel, such as `status`, `tokens`, or `result`. Each topic has a schema, so publishers and subscribers agree on the payload.
+- **Publish.** Your function or other server-side code sends a message to one topic on one channel.
+- **Subscription token.** Your server mints a token for one channel and a list of topics after it checks that the user may read them. The browser can't subscribe without one.
+- **Subscriber.** A browser, through the `useRealtime` React hook, or server-side code that reads a stream of messages.
+
+## How a message reaches the browser
+
+<Mermaid
+  wide
+  label="The browser asks your server for a token. Your server checks access and mints a token from Inngest. The browser subscribes with the token. The function publishes messages to Inngest, which delivers them to the subscribed browser."
+  chart={`sequenceDiagram
+  participant B as Browser
+  participant S as Your server
+  participant I as Inngest
+  participant F as Function
+  B->>S: Request a token
+  S->>S: Check access
+  S->>I: Mint token for channel and topics
+  I-->>S: Token
+  S-->>B: Token
+  B->>I: Subscribe with token
+  F->>I: Publish to channel topic
+  I-->>B: Deliver message`}
+/>
+
+Realtime delivers each message to the clients connected when it's published. Subscribe before the function publishes the updates you need to show. The quick start does this by starting the function only after the connection opens.
+
+## Durable and immediate publishing
+
+Choose a publish method based on what a retry should do.
+
+- **`step.realtime.publish()`** is a durable step. Inngest memoizes it like any other step, so a retry after it completes doesn't publish the message again. Use it for state changes and final results.
+- **`inngest.realtime.publish()`** sends immediately and isn't memoized. If the surrounding work retries, it can publish the same message again. Use it for streamed tokens and frequent progress updates, where a repeat is acceptable. It also works in API routes, webhooks, and other server-side code outside a function.
+
+Inside a function, call `inngest.realtime.publish()` from within `step.run()`. Code outside a step can run again when the function resumes after a wait or retry, so a publish there can repeat.
+
+## Security model
+
+A channel name routes messages; it doesn't grant access. Your server grants access when it mints a token. Check that the signed-in user may read the underlying document, job, or thread before you mint one, and include only the topics that view needs. Your Inngest signing key stays on the server.
+
+## Next steps
+
+- [Quick start](/docs/realtime/quick-start) builds a working publish-and-subscribe example.
+- [Channels and topics](/docs/realtime/channels-and-topics) explains channel names, topics, and schemas.
+- [Subscription tokens](/docs/realtime/guides/subscription-tokens) shows how to authorize viewers.
+- [Reference](/docs/realtime/reference) lists every Realtime API.

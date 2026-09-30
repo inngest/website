@@ -1,0 +1,16 @@
+export const metaTitle = "Platforms";
+export const description = "Deploy Inngest functions on Vercel, Netlify, Cloudflare Pages, Render, or DigitalOcean, and check each provider's limits.";
+
+# Platforms
+
+> Deploy your functions on the host you already use.
+
+Inngest calls your functions wherever your app runs. Each guide covers the serve handler, environment variables, and how to sync your app on that platform. For any other host, follow [Serve](/docs/durable-execution/deploying-functions/serve) or run a [Connect](/docs/durable-execution/deploying-functions/connect) worker.
+
+- [Vercel](/docs/durable-execution/deploying-functions/platforms/vercel): serve functions from Next.js or other frameworks, with automatic syncs and preview deployments.
+- [Netlify](/docs/durable-execution/deploying-functions/platforms/netlify): serve functions from Netlify Functions.
+- [Cloudflare Pages](/docs/durable-execution/deploying-functions/platforms/cloudflare): serve functions from Cloudflare Pages Functions.
+- [Render](/docs/durable-execution/deploying-functions/platforms/render): run functions on a Render web service and sync after each deploy.
+- [DigitalOcean](/docs/durable-execution/deploying-functions/platforms/digital-ocean): run functions on App Platform or a Droplet.
+
+Your host sets its own limits on payload size, concurrency, and timeouts. Check [provider limits](/docs/durable-execution/deploying-functions/platforms/provider-limits) before you deploy, and set [checkpointing](/docs/durable-execution/guides-and-advanced/checkpointing) `maxRuntime` below your platform's timeout.

@@ -1,0 +1,111 @@
+import { Tip } from "src/shared/Docs/mdx";
+
+export const metaTitle = "Inspect Events & Function Runs | Debugging";
+export const description = "Trace a failed workflow from its trigger event to the run and failed step.";
+
+# Inspect events and runs
+
+> Trace a failed run back to its event and step so you can fix the cause.
+
+Trace a failed workflow from its trigger event to the run and failed step. This shows what completed before you choose a recovery action.
+
+## Inspect an event
+
+1. Select the environment in the dashboard and open **Events**.
+2. Filter by time or open an event type to narrow the list.
+3. Open the event to inspect its payload and the functions it triggered.
+4. Use **Show search** for a CEL query such as `event.data.orderId == "123"` when you know a payload field.
+
+## Inspect a run
+
+1. Open **Runs** in the selected environment to see runs across all apps. Filter by status, queued or started time, or app. To see one function's runs, open it from **Functions**.
+2. Search for a known event field or output, for example `output.name == "NonRetriableError"`.
+3. Open the run. Check its trigger, input, output, timing, and step timeline.
+4. Expand a failed step to see each retry's error and timing.
+
+The run details show three things:
+
+- **Trigger details:** the run and trigger IDs. Share these when you contact support.
+- **Event payload:** the event that triggered the run.
+- **Run details:** the run's status, error, and a timeline of its steps. Open it in a new tab for a full-page view, which helps with runs that have many steps or retries.
+
+The run's error tells you what failed. The timeline tells you where: find the failed step, then expand it to see whether every retry raised the same error or the failure was temporary.
+
+## Search runs
+
+Select **Show search** next to the run filters and enter a [CEL expression](/docs/durable-execution/guides-and-advanced/writing-expressions). Run search supports the `event` and `output` variables and basic operators:
+
+| Field | Type | Operators |
+| --- | --- | --- |
+| `event.id` | `string` | `==`, `!=` |
+| `event.name` | `string` | `==`, `!=` |
+| `event.ts` | `int64` | `==`, `!=`, `>`, `>=`, `<`, `<=` |
+| `event.v` | `string` | `==`, `!=` |
+| `event.data` | `map[string]any` | `==`, `!=`, `>`, `>=`, `<`, `<=` |
+| `output` | `any` | `==`, `!=`, `>`, `>=`, `<`, `<=` |
+
+For example, `event.data.hello == "world"` or `output.success != true`.
+
+<Tip>
+Combine queries with `&&` or `||`. A new line works the same as `&&`.
+</Tip>
+
+### Search for errors
+
+A failed run stores its error as JSON on `output`. When the SDK supports it, the error has structured fields. For example, this TypeScript error:
+
+```typescript
+throw new NonRetriableError("Failed to import data");
+```
+
+is stored as:
+
+```json
+{
+  "name": "NonRetriableError",
+  "message": "Failed to import data",
+  "stack": "NonRetriableError: Failed to import data\n    at ..."
+}
+```
+
+and matches this search:
+
+```
+output.name == "NonRetriableError" && output.message == "Failed to import data"
+```
+
+Custom error classes make failures easier to find by type:
+
+```typescript
+import { NonRetriableError } from "inngest";
+
+class UserNotFoundError extends NonRetriableError {
+  constructor(message: string) {
+    super(message);
+    this.name = "UserNotFoundError";
+  }
+}
+
+inngest.createFunction(
+  { id: "my-fn", triggers: { event: "user" } },
+  async ({ step, event }) => {
+    await step.run("get-user", async () => {
+      const user = await getUser(event.data.userId);
+      if (!user) {
+        throw new UserNotFoundError(`User not found (${event.data.userId})`);
+      }
+    });
+  }
+);
+```
+
+```
+event.data.userId == "12345" && output.name == "UserNotFoundError"
+```
+
+## Reproduce or recover
+
+- **Reproduce locally:** send the trigger event to your local Dev Server. This reproduces failures that depend on the input rather than on external factors such as a recent deploy or bad data.
+- **Rerun:** if the failure was temporary or you've deployed a fix, select **Rerun**. You can also select a step in the trace to rerun from that step. See [Rerun a run](/docs/platform-and-operations/rerun-a-run).
+
+Before any recovery action, identify which side effects completed. A rerun or replay can execute them again.

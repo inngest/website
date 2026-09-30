@@ -1,0 +1,51 @@
+export const metaTitle = "Creating Inngest Middleware";
+export const description = "Create reusable middleware for function runs and steps with the hooks you need.";
+
+# Creating middleware
+
+> Create reusable middleware for function runs and steps with the hooks you need.
+
+Measure each `step.run()` or `step.sendEvent()` handler attempt with one TypeScript v4 middleware class. Register it on the client to cover its functions, or on one function for a narrower scope, and implement only the hook you need.
+## Create a v4 middleware
+This example records how long each `step.run()` or `step.sendEvent()` handler attempt takes.
+```typescript
+import { Inngest, Middleware } from "inngest";
+
+class StepTimingMiddleware extends Middleware.BaseMiddleware {
+  id = "step-timing";
+
+  async wrapStepHandler({
+    next,
+    stepInfo,
+  }: Middleware.WrapStepHandlerArgs) {
+    const startedAt = Date.now();
+
+    try {
+      return await next();
+    } finally {
+      console.info("step duration", {
+        stepId: stepInfo.hashedId,
+        durationMs: Date.now() - startedAt,
+      });
+    }
+  }
+}
+
+export const inngest = new Inngest({
+  id: "my-app",
+  middleware: [StepTimingMiddleware],
+});
+```
+Register on the client to use it for that app's functions. Put `middleware: [StepTimingMiddleware]` in a function's options when only that function needs it. The SDK creates a new middleware instance per request.
+## Choose the right hook
+- Use `onRunStart`, `onRunComplete`, or step observation hooks for logging or metrics that only need to observe. Observable hook errors are logged and do not fail the run.
+- Use `wrapStepHandler` around a `step.run()` or `step.sendEvent()` handler attempt. Call `next()` to execute the handler and return its result.
+- Use `transformFunctionInput` to add a typed dependency to the function context. See [Dependency injection](/docs/durable-execution/guides-and-advanced/middleware/dependency-injection).
+- Use `transformSendEvent` when event data needs a copy with added or changed fields.
+Wrapping hooks nest when you register several middleware classes. Always call and return `next()`; skipping it leaves the request hanging. Check hook arguments, order, and execution boundaries before changing middleware behavior.
+## Setup and hook order
+The SDK creates a fresh middleware instance for each request. Use instance fields only for request-local state. The static `onRegister` hook runs once when you register the class on a client or function. Several wrapping middleware classes nest, so check their registration order when one changes data another reads.
+`wrapFunctionHandler()` and `wrapStep()` can hand off a newly discovered step before their `next()` promise resolves on that request. Do not put required cleanup only after `next()` in those hooks. The `wrapStepHandler()` example above wraps an executing handler attempt.
+## Check behavior before rollout
+Run a function with one successful step and one failing step locally. Inspect its trace and your application logs to confirm which hook runs on retries. Keep business actions that require durable retry behavior inside named Inngest steps.
+TypeScript v4 uses `Middleware.BaseMiddleware`. Older `InngestMiddleware` examples use the v3 API and need migration. Use v4 middleware classes for new TypeScript code.

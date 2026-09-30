@@ -1,106 +1,31 @@
-import { CardGroup, Card } from "src/shared/Docs/mdx";
-import { EnvelopeIcon, Cog6ToothIcon } from "@heroicons/react/24/outline";
-import { RiBracesFill, RiCalendarScheduleFill, RiErrorWarningFill, RiArrowDownDoubleFill, RiWifiFill, RiBarChart2Fill, RiShieldCheckFill, RiCheckboxCircleFill } from "@remixicon/react";
-
-export const metaTitle = "Inngest Examples | Patterns, Integrations & Use Cases"
-export const description = "Browse code examples for Inngest: AI agents, email sequences, webhook integrations, scheduled jobs, durable HTTP, real-time streaming, and OpenTelemetry."
-export const hidePageSidebar = true;
+export const metaTitle = "Examples | Patterns, Integrations & Use Cases";
+export const description = "Start with a working example for durable workflows, Sandboxes, Agent Evals, or Realtime.";
 
 # Examples
 
-<CardGroup cols={2}>
+> Start from a working example to build durable workflows, isolated code execution, and outcome tracking faster.
 
-<Card
-  href={"/docs/examples/durable-endpoints"}
-  icon={<RiShieldCheckFill fill={"black"} className="h-6 w45 fill-carbon-700/10 stroke-carbon-700 transition-colors duration-300 group-hover:stroke-carbon-900 dark:fill-white/10 dark:stroke-carbon-400 dark:group-hover:fill-indigo-300/10 dark:group-hover:stroke-indigo-400" />}
-  title={'Durable Endpoints'}
->
-Make any API endpoint durable with automatic retries.
-</Card>
+Choose the result you want, then follow an example that shows the relevant Inngest APIs in context.
 
-<Card
-  href={"/docs/examples/ai-agents-and-rag"}
-  icon={<Cog6ToothIcon className="h-6 w45 fill-carbon-700/10 stroke-carbon-700 transition-colors duration-300 group-hover:stroke-carbon-900 dark:fill-white/10 dark:stroke-carbon-400 dark:group-hover:fill-indigo-300/10 dark:group-hover:stroke-indigo-400" />}
-  title={'AI Agents and RAG'}
->
-Use Inngest to build AI agents and RAG.
-</Card>
+## Finish work reliably
 
-<Card
-  href={"/docs/examples/ai-eval-scorer-quickstart"}
-  icon={<RiCheckboxCircleFill fill={"black"} className="h-6 w45 fill-carbon-700/10 stroke-carbon-700 transition-colors duration-300 group-hover:stroke-carbon-900 dark:fill-white/10 dark:stroke-carbon-400 dark:group-hover:fill-indigo-300/10 dark:group-hover:stroke-indigo-400" />}
-  title={'AI Eval Scorer Quickstart'}
->
-Score AI outputs with inline guardrails, LLM-as-a-judge, and deferred scorers.
-</Card>
+- [TypeScript quick start](/docs/durable-execution/quick-start/typescript-quick-start) builds a durable workflow and runs it locally. [Go](/docs/durable-execution/quick-start/go-quick-start) and [Python](/docs/durable-execution/quick-start/python-quick-start) quick starts cover those languages.
+- [Durable endpoints](/docs/durable-execution/durable-endpoints) shows how a request can start work that survives retries.
+- [Fan-out](/docs/durable-execution/guides-and-advanced/patterns/fan-out) runs independent work in parallel. [Working with loops](/docs/durable-execution/guides-and-advanced/patterns/working-with-loops) handles repeated work with stable steps.
+- [Schedules and delayed starts](/docs/durable-execution/guides-and-advanced/events-and-triggers/schedules-and-delayed-starts) starts work at a chosen time.
 
-<Card
-  href={"/docs/examples/email-sequence"}
-  icon={<EnvelopeIcon fill={"black"} className="h-6 w45 fill-carbon-700/10 stroke-carbon-700 transition-colors duration-300 group-hover:stroke-carbon-900 dark:fill-white/10 dark:stroke-carbon-400 dark:group-hover:fill-indigo-300/10 dark:group-hover:stroke-indigo-400" />}
-  title={'Email Sequence'}
->
-Build a dynamic drip campaign based on a user's behavior.
-</Card>
+## Run code in isolation
 
-<Card
-  href={"/docs/examples/scheduling-one-off-function"}
-  icon={<RiCalendarScheduleFill fill={"black"} className="h-6 w45 fill-carbon-700/10 stroke-carbon-700 transition-colors duration-300 group-hover:stroke-carbon-900 dark:fill-white/10 dark:stroke-carbon-400 dark:group-hover:fill-indigo-300/10 dark:group-hover:stroke-indigo-400" />}
-  title={'Scheduling a one-off function'}
->
-Schedule a function to run at a specific time.
-</Card>
+- [Sandboxes quick start](/docs/sandboxes/quick-start) starts a Sandbox, runs a command, and inspects the result.
+- [Managed lifecycle](/docs/sandboxes/features/managed-lifecycle) shows how a durable function manages Sandbox work and cleanup.
 
-<Card
-  href={"/docs/examples/fetch-run-status-and-output"}
-  icon={<RiBracesFill fill={"black"} className="h-6 w45 fill-carbon-700/10 stroke-carbon-700 transition-colors duration-300 group-hover:stroke-carbon-900 dark:fill-white/10 dark:stroke-carbon-400 dark:group-hover:fill-indigo-300/10 dark:group-hover:stroke-indigo-400" />}
-  title={'Fetch run status and output'}
->
-Get the result of a run using an Event ID.
-</Card>
+## Measure outcomes
 
-<Card
-  href={"/docs/examples/track-failures-in-datadog"}
-  icon={<RiErrorWarningFill fill={"black"} className="h-6 w45 fill-carbon-700/10 stroke-carbon-700 transition-colors duration-300 group-hover:stroke-carbon-900 dark:fill-white/10 dark:stroke-carbon-400 dark:group-hover:fill-indigo-300/10 dark:group-hover:stroke-indigo-400" />}
-  title={'Track all function failures in Datadog'}
->
-Send all function failures to Datadog (or similar) for monitoring.
-</Card>
+- [Agent Evals quick start](/docs/agent-evals/quick-start) connects a session, a score, and an experiment.
+- [Score with an LLM judge](/docs/agent-evals/guides/llm-judge) grades agent answers with a model and a deterministic tool-use check.
+- [Experiments](/docs/agent-evals/experiments) compares a step or an entire workflow path using production outcomes.
 
-<Card
-  href={"/docs/examples/fetch"}
-  icon={<RiArrowDownDoubleFill fill={"black"} className="h-6 w45 fill-carbon-700/10 stroke-carbon-700 transition-colors duration-300 group-hover:stroke-carbon-900 dark:fill-white/10 dark:stroke-carbon-400 dark:group-hover:fill-indigo-300/10 dark:group-hover:stroke-indigo-400" />}
-  title={'Fetch'}
->
-Make durable HTTP requests within an Inngest function.
-</Card>
+## Show progress
 
-<Card
-  href={"/docs/examples/realtime"}
-  icon={<RiWifiFill fill={"black"} className="h-6 w45 fill-carbon-700/10 stroke-carbon-700 transition-colors duration-300 group-hover:stroke-carbon-900 dark:fill-white/10 dark:stroke-carbon-400 dark:group-hover:fill-indigo-300/10 dark:group-hover:stroke-indigo-400" />}
-  title={'Realtime'}
->
-Use Realtime to stream updates from one to multiple Inngest functions or to implement a Human in the Loop mechanism.
-</Card>
-
-<Card
-  href={"/docs/examples/open-telemetry"}
-  icon={<RiBarChart2Fill fill={"black"} className="h-6 w45 fill-carbon-700/10 stroke-carbon-700 transition-colors duration-300 group-hover:stroke-carbon-900 dark:fill-white/10 dark:stroke-carbon-400 dark:group-hover:fill-indigo-300/10 dark:group-hover:stroke-indigo-400" />}
-  title={'Setup OpenTelemetry with Inngest'}
->
-  Forward your application's OpenTelemetry traces to Inngest Traces
-</Card>
-
-
-</CardGroup>
-
-## Middleware
-
-<CardGroup>
-<Card
-  href="/docs/examples/middleware/cloudflare-workers-environment-variables"
-  title={'Cloudflare Workers & Hono environment variables'}
->
-  Access environment variables and other Cloudflare bindings within Inngest functions when using Workers or Hono.
-</Card>
-
-</CardGroup>
+- [Realtime quick start](/docs/realtime/quick-start) publishes progress from a durable function to a signed-in browser.
+- [Channels and topics](/docs/realtime/channels-and-topics) defines the messages a client can receive.

@@ -46,7 +46,7 @@ export const structuredData = {
 
 Inngest usage limits keep function runs, steps, events, and history predictable for every account. Use these tables to check plan limits, rate-limit related controls, event payload limits, retention windows, and hard platform limits.
 
-If you're looking for function-level rate limiting, use the [rate limiting guide](/docs/guides/rate-limiting?ref=docs-usage-limits) or [throttling guide](/docs/guides/throttling?ref=docs-usage-limits).
+If you're looking for function-level rate limiting, use the [rate limiting guide](/docs/durable-execution/flow-control/rate-limiting?ref=docs-usage-limits) or [throttling guide](/docs/durable-execution/flow-control/throttling?ref=docs-usage-limits).
 
 Some of these limits are customizable, so if you need more than what the current limits provide, please [contact us][contact] and we can update the limits for you.
 
@@ -56,7 +56,7 @@ Some of these limits are customizable, so if you need more than what the current
 | --- | --- | --- | --- | --- |
 | Max concurrent steps | 5 | 25 | 200+ | Custom |
 | Single event size | 256KiB | 512KiB | 3MiB | Custom |
-| Trace and log history | 24 hours | 7 days | 14 days | 90 days |
+| Trace and log history | 24 hours | 7 days | 14 days | Up to 365 days |
 | Event lookback period | 1 hour | 1 hour | 3 days | Custom |
 | Maximum function run length | 30 days | 90 days | 366 days | Custom |
 
@@ -162,6 +162,6 @@ await inngest.send(events)
 The hard limit of a batch size is 10 MiB regardless of the `timeout` or `maxSize` limit.
 Meaning the batch will be started if that limit is crossed even if the batch is not full or has not reached the timeout duration configured.
 
-[provider-docs]: /docs/usage-limits/providers
+[provider-docs]: /docs/durable-execution/deploying-functions/platforms/provider-limits
 [fanout-guide]: /docs/guides/fan-out-jobs
 [contact]: /contact

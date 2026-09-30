@@ -1,0 +1,28 @@
+export const metaTitle = "Logging Inside Inngest Functions";
+export const description = "Find the log lines for one order or run without losing them when a function resumes.";
+
+# Logging
+
+> Trace workflow actions with useful context while avoiding duplicate or missing log lines.
+
+Find the log lines for one order or run without losing them when a function resumes. Use the function context's logger and include business identifiers that connect each message to the run.
+## Log within the work you want to inspect
+The function handler can execute again as a run resumes. A plain log outside a step can therefore appear more than once. Put a log for a specific side effect inside the step that performs that work. In serverless environments, process shutdown can also prevent an ordinary logger from flushing.
+In TypeScript v4, use the function context's `logger`. It has `info`, `warn`, `error`, and `debug` methods. The default logger uses the console. Configure a structured logger on the Inngest client for production.
+```typescript
+const processOrder = inngest.createFunction(
+  { id: "process-order", triggers: { event: "order/created" } },
+  async ({ event, step, logger }) => {
+    return step.run("charge-order", async () => {
+      logger.info({ orderId: event.data.orderId }, "Charging order");
+      return chargeOrder(event.data.orderId);
+    });
+  }
+);
+```
+## Keep useful context
+Include an order, customer, or request ID in structured fields. Use the run ID and trace to follow the execution path. Do not log secrets or full sensitive payloads. A logger that supports child loggers can add function, event, and run metadata automatically.
+## Configure the logger
+Pass a logger to the Inngest client so functions receive it through `ctx.logger`. TypeScript v4 expects object-first structured logging. Wrap a string-first logger if needed. Route SDK internal logs separately with `internalLogger` when operational messages need a different destination.
+Use [Middleware](/docs/durable-execution/guides-and-advanced/middleware) for shared logging behavior across functions. Use run traces to inspect step timing and retries.
+Use the platform and language reference for exact logging APIs in each SDK.

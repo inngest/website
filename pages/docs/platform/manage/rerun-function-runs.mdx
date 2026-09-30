@@ -10,12 +10,12 @@ Rerun a single function run from the beginning or from a selected step. Each rer
 Use reruns to recover one failed production run after you deploy a fix, or to iterate on a function in the Dev Server.
 
 <Callout variant="info">
-  To recover many runs from an incident, use [Bulk Replay](/docs/platform/replay?ref=docs-rerun-function-runs) instead. Rerun targets one run; Replay selects many runs by function, time range, and status.
+  To recover many runs from an incident, use [Bulk Replay](/docs/platform-and-operations/replay-runs-in-bulk?ref=docs-rerun-function-runs) instead. Rerun targets one run; Replay selects many runs by function, time range, and status.
 </Callout>
 
 ## Before you rerun
 
-Open the run in **Runs** in the Inngest Cloud dashboard or Dev Server and [inspect its trace](/docs/platform/monitor/traces?ref=docs-rerun-function-runs). Check the error, step inputs and outputs, and the side effects that may run again.
+Open the run in **Runs** in the Inngest Cloud dashboard or Dev Server and [inspect its trace](/docs/platform-and-operations/traces?ref=docs-rerun-function-runs). Check the error, step inputs and outputs, and the side effects that may run again.
 
 A rerun uses the function code that is available when the new run starts. Deploy a production fix before rerunning a failed Cloud run.
 
@@ -50,7 +50,7 @@ curl -X POST "https://api.inngest.com/v2/runs/<run_id>/rerun" \
   -d '{}'
 ```
 
-See the [`rerun` REST API reference](https://api-docs.inngest.com/v2/runs/Rerun) for the full request and response schemas, and [API keys](/docs/platform/api-keys?ref=docs-rerun-function-runs) for Cloud authentication.
+See the [`rerun` REST API reference](https://api-docs.inngest.com/v2/runs/Rerun) for the full request and response schemas, and [API keys](/docs/platform-and-operations/keys-and-access?ref=docs-rerun-function-runs) for Cloud authentication.
 
 ## Rerun from a step
 
@@ -132,8 +132,8 @@ Open the new run and confirm:
 
 ## Related guides
 
-- [Inspect function runs](/docs/platform/monitor/inspecting-function-runs?ref=docs-rerun-function-runs)
-- [Traces](/docs/platform/monitor/traces?ref=docs-rerun-function-runs)
-- [Bulk Replay](/docs/platform/replay?ref=docs-rerun-function-runs)
+- [Inspect function runs](/docs/platform-and-operations/inspect-events-and-runs?ref=docs-rerun-function-runs)
+- [Traces](/docs/platform-and-operations/traces?ref=docs-rerun-function-runs)
+- [Bulk Replay](/docs/platform-and-operations/replay-runs-in-bulk?ref=docs-rerun-function-runs)
 - [Inngest CLI](/docs/cli?ref=docs-rerun-function-runs)
 - [`rerun` REST API reference](https://api-docs.inngest.com/v2/runs/Rerun)

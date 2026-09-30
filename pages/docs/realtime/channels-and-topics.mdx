@@ -1,0 +1,125 @@
+export const metaTitle = "Channels and topics";
+export const description = "Give every realtime update a clear destination and a predictable shape.";
+
+# Channels and topics
+
+> Give every realtime update a clear destination and a predictable shape.
+
+A **channel** decides where a message goes, and a **topic** decides its shape. Define both once and share the definition between your function, your token route, and your UI. TypeScript then checks every publish and every subscription against the same types.
+
+For example, a document import can publish `status` and `result` messages to a channel for that document. Only clients watching that document receive them.
+
+## Define a channel and its topics
+
+Use `realtime.channel()` from `inngest`. Give the channel a name and give every topic a `schema`.
+
+```typescript
+import { realtime } from "inngest";
+import { z } from "zod";
+
+export const documentChannel = realtime.channel({
+  name: ({ documentId }: { documentId: string }) =>
+    `document:${documentId}`,
+  topics: {
+    status: {
+      schema: z.object({
+        message: z.string(),
+        progress: z.number(),
+      }),
+    },
+    result: {
+      schema: z.object({
+        url: z.string().url(),
+      }),
+    },
+  },
+});
+```
+
+Call the factory with a document ID to get a channel instance. Its `status` and `result` properties are **topic references**. You pass a topic reference to a publish call, and it carries the channel name, topic name, and schema.
+
+```typescript
+const document = documentChannel({ documentId: "abc123" });
+
+const channelName = document.name;
+const statusChannel = document.status.channel;
+const statusTopic = document.status.topic;
+```
+
+A message published to `document:abc123` reaches only subscribers of `document:abc123`. A subscriber of `document:def456` never sees it.
+
+## Fixed and parameterized channels
+
+Use a **fixed name** for a shared stream such as system alerts. `realtime.channel()` returns the channel instance directly.
+
+```typescript
+export const alertsChannel = realtime.channel({
+  name: "system:alerts",
+  topics: {
+    alert: {
+      schema: z.object({ message: z.string() }),
+    },
+  },
+});
+```
+
+Use a **name function** when each document, session, job, or user needs its own stream. Pass your app's identifier when you publish or subscribe. The identifier is yours to choose; it doesn't have to be an Inngest run ID.
+
+Follow these rules when you name channels:
+
+- **Keep names stable** for the lifetime of the work. Use IDs your app already has.
+- **Group what one view needs.** A subscription token covers one channel, so put the topics a single page shows on the same channel.
+- **Leave secrets and personal data out.** A channel name routes messages; it does **not** decide who may read them.
+
+## Choose a topic schema
+
+A [Standard Schema](https://github.com/standard-schema/standard-schema) validator such as Zod, Valibot, or ArkType gives you TypeScript types and validates each payload when you publish. Subscribers also validate incoming messages by default. Use a runtime schema when a malformed message must fail.
+
+For type checking without runtime validation, use `staticSchema<T>()`:
+
+```typescript
+import { realtime, staticSchema } from "inngest";
+
+export const metricsChannel = realtime.channel({
+  name: "metrics",
+  topics: {
+    usage: {
+      schema: staticSchema<{ tokens: number; latencyMs: number }>(),
+    },
+  },
+});
+```
+
+`staticSchema<T>()` skips runtime validation, which suits small, high-volume payloads such as streamed tokens. You can mix runtime and type-only schemas on different topics in the same channel.
+
+## Share the definition
+
+Put the channel definition in a shared module, such as `src/inngest/channels.ts`. Import it in your function, in the server code that mints subscription tokens, and in the component that subscribes. Topic names and payload types then stay aligned everywhere.
+
+Use a topic reference to publish to a specific channel and topic:
+
+```typescript
+import { inngest } from "./client";
+import { documentChannel } from "./channels";
+
+const document = documentChannel({ documentId: "abc123" });
+
+await inngest.realtime.publish(document.status, {
+  message: "Analyzing",
+  progress: 50,
+});
+```
+
+This immediate publish suits frequent progress updates. For a state change that a retry must not publish twice, use `step.realtime.publish()` inside the function. See [Durable and immediate publishing](/docs/realtime/overview#durable-and-immediate-publishing).
+
+## Authorize subscriptions
+
+A token limits a client to one channel and the topics you list. Before your server calls `getClientSubscriptionToken()`, check that the current user may read the requested document or job. Include only the topics that user should receive.
+
+[Subscription tokens](/docs/realtime/guides/subscription-tokens) shows the full authorization flow.
+
+## Next steps
+
+- [Subscription tokens](/docs/realtime/guides/subscription-tokens) shows how to authorize subscribers.
+- [Guides](/docs/realtime/guides) cover publishing and subscription patterns.
+- [Channels reference](/docs/reference/typescript/v4/realtime/channels) lists every channel option.

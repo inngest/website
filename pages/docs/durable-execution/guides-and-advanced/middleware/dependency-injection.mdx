@@ -1,0 +1,54 @@
+export const metaTitle = "Dependency injection";
+export const description = "Give functions a shared, typed database or API client without creating one in each handler.";
+
+# Dependency injection
+
+> Give functions a shared, typed database or API client without creating one in each handler.
+
+Provide a typed Prisma client to every function created with one Inngest client. Middleware adds the existing client to each handler's context, so handlers can use it without constructing another connection.
+## TypeScript v4 example
+Create one client in your application process. Register a class-based middleware on the Inngest client so every function in that app can use it.
+```typescript
+import { Inngest, Middleware } from "inngest";
+import { PrismaClient } from "@prisma/client";
+
+const prisma = new PrismaClient();
+
+class PrismaMiddleware extends Middleware.BaseMiddleware {
+  id = "prisma";
+
+  transformFunctionInput(args: Middleware.TransformFunctionInputArgs) {
+    return {
+      ...args,
+      ctx: {
+        ...args.ctx,
+        prisma,
+      },
+    };
+  }
+}
+
+export const inngest = new Inngest({
+  id: "my-app",
+  middleware: [PrismaMiddleware],
+});
+```
+A function created with this client receives a typed `prisma` property:
+```typescript
+export const writeAuditLog = inngest.createFunction(
+  { id: "write-audit-log", triggers: { event: "app/user.logged-in" } },
+  async ({ event, prisma, step }) => {
+    await step.run("write-audit-log", () =>
+      prisma.auditLog.create({
+        data: { userId: event.data.userId, action: "logged-in" },
+      })
+    );
+  }
+);
+```
+The SDK creates a middleware instance for each request. The `prisma` client above belongs to your application process; manage its credentials and connection lifecycle there. Keep the database write inside `step.run()` so Inngest records its successful result and retries the step independently. Register middleware on one function instead when only that function needs the dependency.
+## Version and scope
+TypeScript v4 uses classes that extend `Middleware.BaseMiddleware`. The earlier `dependencyInjectionMiddleware()` API does not apply to v4 code. Middleware is also available in the Python SDK; its setup differs from TypeScript. Go middleware support is planned.
+## Next
+- [Middleware](/docs/durable-execution/guides-and-advanced/middleware) explains where middleware runs.
+- [Creating middleware](/docs/durable-execution/guides-and-advanced/middleware/creating-middleware) shows how to write another v4 middleware.

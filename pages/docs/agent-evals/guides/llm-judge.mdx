@@ -1,0 +1,136 @@
+export const metaTitle = "LLM-as-a-Judge Scoring | AI Eval Scorers";
+export const description = "Grade agent answers against a rubric with a model and record the verdict as a score on the run.";
+
+# Score with an LLM judge
+> Grade agent answers against a rubric with a model and record the verdict as a score on the run.
+
+Some qualities have no single right answer: was the response helpful, was it concise, did it stay on topic? An **LLM judge** asks a model to grade the agent's answer against a rubric and returns a 0 to 1 verdict. This guide builds two reference-free judges, conciseness and helpfulness, that need only the prompt and the answer, plus a deterministic tool-use check that costs nothing to run.
+
+A judge measures a model's opinion of the output. When you can observe the real outcome, such as a resolved ticket, prefer that signal and use a judge to explain it. See [Score user feedback](/docs/agent-evals/guides/user-feedback).
+
+## Before you start
+
+- Complete the [Quick start](/docs/agent-evals/quick-start) or register `scoreMiddleware()` on your client.
+- This example uses the Anthropic SDK: `npm install @anthropic-ai/sdk`. Any model provider works.
+
+## 1. Write a shared judge
+
+Save this as `inngest/scorers.ts`. The judge runs the model call as a durable step, so a retry reuses the verdict instead of paying for a new one:
+
+```typescript {{ filename: "inngest/scorers.ts" }}
+import Anthropic from "@anthropic-ai/sdk";
+import type { GetStepTools } from "inngest";
+import { inngest } from "./client";
+
+const anthropic = new Anthropic();
+const MODEL = process.env.JUDGE_MODEL!; // the model that grades answers
+
+type Step = GetStepTools<typeof inngest>;
+
+// Ask the model to grade against a rubric and reply with
+// {"score": <0-1>, "reason": "..."}. Normalize to { name, value }.
+async function judge(step: Step, name: string, rubric: string) {
+  const text = await step.run(`judge-${name}`, async () => {
+    const res = await anthropic.messages.create({
+      model: MODEL,
+      max_tokens: 512,
+      messages: [{ role: "user", content: rubric }],
+    });
+    const block = res.content.find((b) => b.type === "text");
+    return block?.type === "text" ? block.text : "{}";
+  });
+
+  const { score } = JSON.parse(text) as { score: number };
+  return { name, value: score };
+}
+```
+
+## 2. Define the rubrics
+
+Each judge is the shared function with a different rubric. Describe what `1` and `0` mean so the scale stays fixed:
+
+```typescript {{ filename: "inngest/scorers.ts" }}
+export function scoreConciseness(step: Step, prompt: string, answer: string) {
+  return judge(
+    step,
+    "conciseness",
+    `Grade whether the answer is concise and free of filler.
+
+Question: ${prompt}
+Answer: ${answer}
+
+Reply with ONLY {"score": <0-1>, "reason": "<one sentence>"},
+where 1 = maximally concise while still complete and 0 = rambling or padded.`
+  );
+}
+
+export function scoreHelpfulness(step: Step, prompt: string, answer: string) {
+  return judge(
+    step,
+    "helpfulness",
+    `Grade how well the answer addresses the user's request.
+
+Question: ${prompt}
+Answer: ${answer}
+
+Reply with ONLY {"score": <0-1>, "reason": "<one sentence>"},
+where 1 = fully and directly answers the request and 0 = ignores or misunderstands it.`
+  );
+}
+```
+
+Watch the two together. If helpfulness climbs while conciseness drops, the agent may be padding its way to better answers.
+
+## 3. Add a deterministic check
+
+Not every score needs a model. An agent that calls the same tool with the same input twice is usually looping or retrying blindly. This check compares distinct calls to total calls and drops below `1` as soon as a call repeats:
+
+```typescript {{ filename: "inngest/scorers.ts" }}
+export function scoreToolEfficiency(
+  toolCalls: { name: string; input: unknown }[]
+) {
+  const keys = toolCalls.map((c) => `${c.name}(${JSON.stringify(c.input)})`);
+  const value = toolCalls.length === 0 ? 1 : new Set(keys).size / keys.length;
+  return { name: "tool-efficiency", value };
+}
+```
+
+When you have ground truth, such as a labeled category or the files a fix actually touched, score accuracy directly. Exact match fits a single label, set overlap (Jaccard) fits lists such as cited files, and a tolerance band fits numbers. Keep accuracy and judge scores under separate names so their trends don't blur.
+
+## 4. Score the agent run
+
+Call the scorers after the agent finishes and record each result with `step.score()`:
+
+```typescript {{ filename: "inngest/functions.ts" }}
+import { inngest } from "./client";
+import { runAgent } from "./agent";
+import { scoreConciseness, scoreHelpfulness, scoreToolEfficiency } from "./scorers";
+
+export const runAgentFn = inngest.createFunction(
+  { id: "run-agent", triggers: { event: "agent/run.requested" } },
+  async ({ event, step }) => {
+    const { prompt } = event.data;
+    const { answer, toolCalls } = await runAgent(step, prompt);
+
+    await step.score("score-conciseness", await scoreConciseness(step, prompt, answer));
+    await step.score("score-helpfulness", await scoreHelpfulness(step, prompt, answer));
+    await step.score("score-tool-efficiency", scoreToolEfficiency(toolCalls));
+
+    return answer;
+  }
+);
+```
+
+Each judge adds a model call and two steps to the run. Open a run's trace to see the judge steps, their verdicts, and the scores side by side.
+
+## Keep judges cheap and fair
+
+- **Judge a sample when the model call is costly.** Choose the sample in code before the judge runs, and apply the same rule to every variant. See [Manage eval costs](/docs/agent-evals/guides/cost-management).
+- **Move slow judges out of the run.** Put the judge in a [deferred scorer](/docs/agent-evals/deferred-scoring) when it shouldn't delay the response. The score still attaches to the original run.
+- **Keep the rubric and judge model fixed** while you compare variants. Changing either changes what the score means.
+- **Control provider rate limits** on a deferred judge with [concurrency](/docs/durable-execution/flow-control/concurrency) or [throttling](/docs/durable-execution/flow-control/throttling).
+
+## Next steps
+
+- [Score user feedback](/docs/agent-evals/guides/user-feedback) records the real outcome alongside the judge.
+- [Compare models and prompts](/docs/agent-evals/guides/compare-models-and-prompts) uses scores to compare variants.

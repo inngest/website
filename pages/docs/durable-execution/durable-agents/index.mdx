@@ -1,0 +1,303 @@
+import { Mermaid } from "src/shared/Docs/Mermaid";
+
+export const metaTitle = "Durable Agents";
+export const description = "Run AI agents that survive failures, wait for people, and resume without redoing model or tool calls.";
+
+# Durable Agents
+
+> Run AI agents that survive failures, wait for people, and resume without redoing model or tool calls.
+
+**A durable agent keeps its progress when anything goes wrong.** An agent is a loop of model calls and tool calls. On Inngest, each call runs as a step. Inngest saves every completed step, retries only the step that failed, and resumes the agent after a crash, a deploy, or a wait of days. You write the loop in normal code; there's no graph to declare.
+
+When you build agents with durable execution, you get:
+
+- **Recovery without repeated work.** A failed tool call retries on its own. Earlier model calls aren't made or paid for again.
+- **Waits that cost nothing.** Pause for a person's approval or another system's reply, for seconds or days, without holding a worker.
+- **Safe delegation.** Hand tasks to sub-agents that run, retry, and fail independently of the parent.
+- **A trace of every decision.** Each run records the agent's trajectory: what the model received, what it chose, which tools ran, and what they returned.
+- **Sandboxes only where you need them.** The agent loop runs in your app, not inside a VM. Model calls and waits don't hold a Sandbox open, and your credentials stay out of it. Start a [Sandbox](/docs/sandboxes) only for the steps that run model-written code, so you pay for isolated compute only while that code runs.
+- **A loop for getting better.** Score runs, test prompt and model changes on real traffic, and roll out the winner.
+- **Any model provider.** Call any model SDK from your own code, and Inngest coordinates the run.
+
+## How durable agents work
+
+1. An event, schedule, or API call starts a **run** of the agent function.
+2. Each model call runs in `step.run()`. The model's response decides the next step: call a tool, delegate, wait, or answer.
+3. Each tool call runs in its own `step.run()`. When a step succeeds, Inngest saves its result as a **checkpoint**.
+4. If a step fails, Inngest retries that step. Completed steps return their saved results instead of running again.
+5. The loop repeats until the model answers or the agent hits a limit you set.
+
+<Mermaid
+  wide
+  label="An event starts an agent run. The first model call chooses a tool and its result is saved. The tool call fails, so Inngest retries only the tool step and reuses the saved model response. The tool succeeds, the second model call returns an answer, and the run completes."
+  chart={`sequenceDiagram
+  participant Trigger as Trigger source
+  participant Inngest
+  participant Agent as Your agent function
+  Trigger->>Inngest: agent/message.received
+  Inngest->>Agent: Start run
+  Agent->>Agent: think: model chooses a tool
+  Agent-)Inngest: Save model response
+  Agent->>Agent: tool-search fails
+  Inngest->>Agent: Retry tool-search
+  Note over Agent: Reuse saved model response
+  Agent->>Agent: tool-search succeeds
+  Agent->>Agent: think: model answers
+  Agent-->>Inngest: Complete run`}
+/>
+
+### Dynamic steps, deterministic replay
+
+A workflow usually has a shape you know in advance. An agent's shape is decided while it runs: the model picks how many iterations, which tools, and in what order. Inngest doesn't need that shape up front. Steps are created as your code reaches them.
+
+When a run resumes, Inngest re-enters your function and returns each completed step's saved result. A model call that chose `search` returns that same choice, so the agent takes the same path until it reaches new work, then continues. Keep anything that changes between executions, such as random values, the current time, and API calls, inside steps so a resumed run makes the same decisions.
+
+<hr />
+
+## An example agent
+
+This TypeScript function runs a tool-using agent with the Anthropic SDK. `tools` and `executeTool()` stand in for your tool definitions and code; any model provider works the same way.
+
+```typescript
+import Anthropic from "@anthropic-ai/sdk";
+import { inngest } from "./client";
+
+const anthropic = new Anthropic();
+
+export const supportAgent = inngest.createFunction(
+  { id: "support-agent", triggers: { event: "agent/message.received" } },
+  async ({ event, step }) => {
+    const messages: Anthropic.MessageParam[] = [
+      { role: "user", content: event.data.message },
+    ];
+
+    for (let i = 0; i < 10; i++) {
+      // Think: ask the model what to do next.
+      const response = await step.run("think", () =>
+        anthropic.messages.create({
+          model: "claude-opus-4-6",
+          max_tokens: 4096,
+          system: "You are a support agent with access to tools.",
+          messages,
+          tools,
+        })
+      );
+
+      const toolCalls = response.content.filter(
+        (block): block is Anthropic.ToolUseBlock => block.type === "tool_use"
+      );
+
+      // No tool calls: the model has answered.
+      if (toolCalls.length === 0) {
+        const text = response.content.find((b) => b.type === "text");
+        return { answer: text?.type === "text" ? text.text : "" };
+      }
+
+      // Act: run each tool as its own step.
+      messages.push({ role: "assistant", content: response.content });
+      const results: Anthropic.ToolResultBlockParam[] = [];
+      for (const call of toolCalls) {
+        const output = await step.run(`tool-${call.name}`, () =>
+          executeTool(call.name, call.input)
+        );
+        results.push({ type: "tool_result", tool_use_id: call.id, content: output });
+      }
+
+      // Observe: feed the results back and loop.
+      messages.push({ role: "user", content: results });
+    }
+
+    return { answer: "Reached the iteration limit." };
+  }
+);
+```
+
+If a tool call fails, Inngest retries only that tool's step. The model responses and earlier tool results stay saved, so a failure on the sixth call doesn't repeat the first five. Step IDs can repeat inside a loop; Inngest tracks each occurrence in order. The `for` loop caps iterations so a confused model can't run forever.
+
+[Agent tool loops](/docs/durable-execution/durable-agents/agent-tool-loops) covers parallel tools, token budgets, stuck-loop detection, and context pruning.
+
+<hr />
+
+## Wait for people and other systems
+
+Some actions need a person to approve them first. `step.waitForEvent()` pauses the agent until a matching event arrives or a timeout passes. The run is suspended while it waits, so it holds no worker and no connection.
+
+```typescript
+const approval = await step.waitForEvent("wait-for-approval", {
+  event: "agent/approval.response",
+  if: "async.data.approvalId == event.data.approvalId",
+  timeout: "24h",
+});
+
+if (!approval?.data.approved) {
+  return { status: approval ? "rejected" : "timed_out" };
+}
+```
+
+Your app sends `agent/approval.response` when the reviewer clicks approve or reject, and the agent continues with their answer. Handle all three outcomes: approved, rejected, and no response. Use `step.sleep()` or `step.sleepUntil()` when the agent should pause for a set time instead.
+
+[Human-in-the-loop](/docs/durable-execution/durable-agents/human-in-the-loop) shows approval gates inside a tool loop, escalation, and chained reviews.
+
+## Delegate to sub-agents
+
+A sub-agent is another Inngest function with its own context, tools, and retries. Give the parent model a delegation tool, then start the sub-agent from that tool call:
+
+- **`step.invoke()`** runs the sub-agent and waits for its result. Use it when the parent needs the answer to continue.
+- **`step.sendEvent()`** starts the sub-agent and continues right away. Use it for long tasks whose results you deliver later.
+
+Because each agent is its own run, a failed sub-agent doesn't lose the parent's progress. The parent can catch the failure and let the model choose another approach. Leave delegation tools out of the sub-agent's tool set so agents can't spawn each other without limit.
+
+[Sub-agent delegation](/docs/durable-execution/durable-agents/sub-agent-delegation) covers sync and async delegation, result delivery, scheduling, and recursion limits.
+
+## Run tools in a sandbox
+
+Coding and data agents often need to run code the model wrote. Run it in a [Sandbox](/docs/sandboxes), an isolated Linux VM, instead of on your own servers. Each Sandbox call is a durable step, so a retry reuses the Sandbox instead of creating another.
+
+```typescript
+const sandbox = await step.sandbox.create("create-sandbox", {
+  name: `agent-${event.data.taskId}`,
+  vcpu: 1,
+  memoryMb: 1024,
+});
+
+// Inside the loop, for a "run_command" tool call:
+const result = await sandbox.commands.run(`run-command-${i}`, call.input.command, {
+  cwd: "/workspace",
+  timeout: "60s",
+});
+results.push({
+  type: "tool_result",
+  tool_use_id: call.id,
+  content: `exit ${result.exitCode}\n${result.stdout}${result.stderr}`,
+});
+
+// After the loop:
+await sandbox.destroy("destroy-sandbox");
+```
+
+A nonzero exit code comes back as a result, not an exception, so the model sees the error and can fix its code. Files and processes persist between tool calls. When the agent waits for approval, [pause](/docs/sandboxes/features/pause-and-resume) the Sandbox; paused time doesn't count toward its runtime. Sandboxes are in beta and you own cleanup: destroy the Sandbox on success and in a [failure handler](/docs/durable-execution/guides-and-advanced/error-handling/failure-handlers). See the [Sandboxes quick start](/docs/sandboxes/quick-start) to enable `step.sandbox`.
+
+## Handle failures
+
+- **Retries per step.** Every step retries on its own with backoff. Set the count with the function's `retries` option. See [Retries](/docs/durable-execution/guides-and-advanced/error-handling/retries).
+- **Let the model recover.** When a step exhausts its retries, it throws. Catch the error and pass it back to the model as a tool result, such as "the search API is unavailable", so it can try another path.
+- **Stop permanent failures early.** Throw a [`NonRetriableError`](/docs/durable-execution/guides-and-advanced/error-handling/non-retriable-errors) for errors that won't succeed on retry, such as invalid input.
+- **Clean up after a failed run.** Use a [failure handler](/docs/durable-execution/guides-and-advanced/error-handling/failure-handlers) to notify someone or undo partial work.
+- **Make tool effects safe to repeat.** A tool can change an external system and then fail before its result is saved. Use [idempotency](/docs/durable-execution/guides-and-advanced/idempotency) keys for writes, sends, and payments.
+- **Cap the loop.** Limit iterations and track token usage so a stuck agent stops. Use [cancellation](/docs/durable-execution/guides-and-advanced/cancellation) to stop a run from outside.
+
+<hr />
+
+## Trajectories, context, and memory
+
+### Every run is a trajectory
+
+An agent's trajectory is the path it took: each model call, what the model chose, each tool call, and what came back. Because each of those is a step, the run's [trace](/docs/platform-and-operations/traces) is the trajectory, with inputs, outputs, timing, retries, and errors recorded as the agent runs. You don't add logging to get it.
+
+- **Name steps by what they do**, such as `think` and `tool-${name}`, so trajectories line up across runs and you can spot loops and failing tools.
+- **Follow trajectories across runs.** Put a conversation or task ID in [sessions](/docs/agent-evals/sessions) on each event, and the session shows every turn and sub-agent behind one outcome.
+- **Score the trajectory, not just the answer.** Record iterations, repeated tool calls, or token usage with [`step.score()`](/docs/agent-evals/scores) at the end of the run. See [tool-use efficiency](/docs/agent-evals/guides/llm-judge#3-add-a-deterministic-check).
+- **See inside each step** with [Extended Traces](/docs/reference/typescript/v4/extended-traces), which record model SDK, database, and HTTP spans with OpenTelemetry.
+
+### Context within a run
+
+You don't need to save the message history to resume an agent. When a run resumes, Inngest returns each completed step's saved result, and your loop rebuilds `messages` from them exactly as it did before. The history lives in your code; the steps are what make it durable.
+
+Every step result counts toward the run's state, which is capped at 32 MiB, and the model's context window is smaller still. As the loop grows:
+
+- **Prune** older turns and keep the original request and recent messages. See [Agent tool loops](/docs/durable-execution/durable-agents/agent-tool-loops#prune-context-as-the-loop-grows).
+- **Compact** by asking the model to summarize earlier turns in a step, then continue from the summary.
+- **Return references** from tools that produce large output, such as a file path or document ID, and fetch the content only when the model needs it.
+- **Isolate** big subtasks in a [sub-agent](/docs/durable-execution/durable-agents/sub-agent-delegation). It gets its own context window and returns only a summary to the parent.
+
+### Memory across runs
+
+A run ends when the agent answers. For a chat, make each user message its own run, and keep memory in your own store, keyed by the conversation or user ID:
+
+```typescript
+const history = await step.run("load-memory", () =>
+  memory.load(event.data.conversationId)
+);
+
+// ...run the loop with history + the new message...
+
+await step.run("save-memory", () =>
+  memory.save(event.data.conversationId, { answer, summary })
+);
+```
+
+Loading in a step means a resumed run uses the same history it started with, even if the store changed since. Saving in a step means a resumed run doesn't save again; make the save an upsert in case the step itself retries. Store summaries or facts the agent should keep, not only raw transcripts, so later turns start with less context.
+
+## Improve the agent over time
+
+Durable runs record what the agent did. [Agent Evals](/docs/agent-evals) adds whether it worked, so you can change the agent and prove the change helped:
+
+1. **Score every run.** Record guardrails, [LLM judge](/docs/agent-evals/guides/llm-judge) verdicts, and trajectory checks with `step.score()`.
+2. **Wait for the real outcome.** A [deferred scorer](/docs/agent-evals/deferred-scoring) waits for user feedback or a resolved ticket and scores the original run.
+3. **Test a change on real traffic.** Put the current and candidate prompt, model, or tool set in [`group.experiment()`](/docs/agent-evals/experiments) variants and credit each score to the variant that served it.
+4. **Read the results and roll out.** Compare scores by variant, open the traces behind low scores, and ramp the winner. See [Read results and roll out](/docs/agent-evals/guides/interpreting-results).
+
+```typescript
+const { result: answer, experimentRef } = await group.experiment("system-prompt", {
+  variants: {
+    current: () => runAgentLoop(step, { system: CURRENT_PROMPT, message }),
+    candidate: () => runAgentLoop(step, { system: CANDIDATE_PROMPT, message }),
+  },
+  select: experiment.bucket(event.data.userId, {
+    weights: { current: 90, candidate: 10 },
+  }),
+});
+
+defer("score-feedback", {
+  function: feedbackScorer,
+  data: { conversationId: event.data.conversationId },
+  experiment: experimentRef,
+});
+```
+
+Each variant runs a whole agent loop, so the experiment compares complete trajectories, not single calls. Low scores point you to the traces that explain them; those traces become your next prompt fix or test case. After you fix a bug, [replay](/docs/platform-and-operations/replay-runs-in-bulk) the failed runs with the new code.
+
+<hr />
+
+## Keep agents fast
+
+Agents often sit behind a chat box, so latency matters. Find where a run spends its time in its [trace](/docs/platform-and-operations/traces), then fix that one thing. [Performance](/docs/durable-execution/best-practices/performance) covers each option in depth.
+
+- **Keep checkpointing on.** [Checkpointing](/docs/durable-execution/guides-and-advanced/checkpointing) runs consecutive steps back to back without a round trip to Inngest after each one. It's on by default in the TypeScript SDK. On serverless hosts, set `checkpointing.maxRuntime` just below your host's request limit.
+- **Start chat turns directly.** For latency-sensitive runs, start the agent with the [Invoke Function API](https://api-docs.inngest.com/v2/functions/InvokeFunction) instead of an event. It skips event matching and queue lookup.
+- **Use Connect for always-on workers.** [Connect](/docs/durable-execution/deploying-functions/connect) removes the per-step HTTP handoff and the host's request duration limit.
+- **Run independent tools in parallel.** Wrap parallel tool steps in `Promise.all()` with unique step IDs. See [group.parallel](/docs/durable-execution/primitives/group-parallel).
+- **Keep step results small.** Each step can return up to 4 MiB, and a run's state is capped at 32 MiB. Store large documents and long histories outside run state and return a reference. See [Limits](/docs/durable-execution/limits).
+
+## Protect models and tools under load
+
+Model providers rate-limit you, and one busy customer can crowd out others. Use flow control on the agent function:
+
+- **[Concurrency](/docs/durable-execution/flow-control/concurrency)** limits how many steps run at once, per function or per key such as a user or account ID.
+- **[Throttling](/docs/durable-execution/flow-control/throttling)** limits how often new runs start, which keeps you under a provider's request rate.
+- **[Multi-tenancy](/docs/durable-execution/flow-control/multi-tenancy)** gives each tenant a fair share so one backlog doesn't delay everyone.
+
+<hr />
+
+## Build on the rest of Inngest
+
+- **Stream answers as they're written.** [Realtime](/docs/realtime/guides/stream-ai-responses) streams tokens and progress to the browser while the agent runs.
+- **Query agent behavior in aggregate.** [Insights](/docs/platform-and-operations/insights) runs SQL over runs, steps, and events, such as which tools fail most often.
+- **Watch health over time.** [Metrics](/docs/platform-and-operations/metrics) show throughput, failures, and latency for each agent function.
+
+## Durable agents vs durable workflows
+
+A durable agent is a [durable workflow](/docs/durable-execution/durable-workflows) whose next step is chosen by a model. Both use the same steps, retries, waits, and traces.
+
+- **Durable workflow:** Code decides the steps. Use it for known processes such as orders, imports, and syncs.
+- **Durable agent:** The model decides the steps while the run executes. Use it when the path depends on the task.
+
+Short agent calls that must return an HTTP response in under 60 seconds can run as a [Durable Endpoint](/docs/durable-execution/durable-endpoints). Endpoints don't support `defer()` or `group.experiment()`, so run agents you score with deferred scorers or compare with experiments as functions.
+
+## Next steps
+
+- [Agent tool loops](/docs/durable-execution/durable-agents/agent-tool-loops) builds the loop step by step.
+- [Human-in-the-loop](/docs/durable-execution/durable-agents/human-in-the-loop) adds approval gates.
+- [Sub-agent delegation](/docs/durable-execution/durable-agents/sub-agent-delegation) splits work across agents.
+- [Sandboxes quick start](/docs/sandboxes/quick-start) runs your first command in an isolated VM.
+- [Agent Evals quick start](/docs/agent-evals/quick-start) scores an agent's answers with later feedback.

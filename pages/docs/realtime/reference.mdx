@@ -1,0 +1,154 @@
+export const metaTitle = "Reference | Realtime";
+export const description = "Find every Realtime call for defining channels, publishing messages, minting tokens, and subscribing.";
+
+# Realtime reference
+> Find every Realtime call for defining channels, publishing messages, minting tokens, and subscribing.
+
+This page summarizes each Realtime call and links to its full reference. Realtime ships in the `inngest` package, so you don't install anything else. For a working example, start with the [Quick start](/docs/realtime/quick-start).
+
+| Task | Call | Full reference |
+| --- | --- | --- |
+| Define a channel | `realtime.channel()` | [Channels & topics](/docs/reference/typescript/v4/realtime/channels) |
+| Publish a message | `step.realtime.publish()`, `inngest.realtime.publish()` | [Publishing](/docs/reference/typescript/v4/realtime/publishing) |
+| Mint a browser token | `getClientSubscriptionToken()` | [Subscribing](/docs/reference/typescript/v4/realtime/subscribing) |
+| Subscribe in React | `useRealtime()` | [useRealtime](/docs/reference/typescript/v4/realtime/use-realtime) |
+| Subscribe on the server | `subscribe()`, `inngest.realtime.subscribe()` | [Subscribing](/docs/reference/typescript/v4/realtime/subscribing) |
+
+## Imports
+
+- `realtime` and `staticSchema` from `inngest` define channels and topic schemas. `inngest/realtime` exports them too.
+- `useRealtime` and `getClientSubscriptionToken` from `inngest/react` handle React subscriptions and browser tokens.
+- `subscribe` and `getSubscriptionToken` from `inngest/realtime` read messages and mint full tokens in server code.
+- `inngest.realtime.publish()`, `inngest.realtime.subscribe()`, and `inngest.realtime.token()` are methods on your Inngest client. `step.realtime.publish()` is on the `step` object in a function handler.
+## Define channels and topics
+
+`realtime.channel({ name, topics })` defines a channel and its typed topics.
+
+- **`name`** is a fixed string, which returns a channel instance, or a function that takes one parameter object and returns a string, which returns a factory you call with those parameters.
+- **`topics`** maps each topic name to `{ schema }`. Use a Standard Schema validator such as Zod for runtime validation, or `staticSchema<T>()` for types only.
+
+Each topic property on a channel instance is a `TopicRef` with `channel`, `topic`, and `config` fields. Pass it to a publish call.
+
+```typescript
+import { realtime } from "inngest";
+import { z } from "zod";
+
+export const jobChannel = realtime.channel({
+  name: ({ jobId }: { jobId: string }) => "job:" + jobId,
+  topics: {
+    status: { schema: z.object({ message: z.string() }) },
+  },
+});
+
+const job = jobChannel({ jobId: "job-123" });
+const statusTopic = job.status;
+```
+
+Use the same channel definition in publishers, token routes, and subscribers. [Channels and topics](/docs/realtime/channels-and-topics) explains naming and schemas.
+
+## Publish messages
+
+- **`step.realtime.publish(id, topicRef, data)`** publishes as a durable, memoized step inside a function. Give it a unique step ID. A retry after the step completes doesn't publish again. It returns the published data.
+- **`inngest.realtime.publish(topicRef, data)`** publishes immediately from any server-side code, inside or outside a function. It isn't memoized, so a retry of the surrounding work can publish again. Inside a run, it attaches the run ID to the message. It returns `Promise<void>`.
+
+The payload must match the topic schema. Use a durable publish for final results and state changes. Use an immediate publish for token streams and other updates where a repeat on retry is acceptable.
+
+```typescript
+await step.realtime.publish("job-complete", job.status, {
+  message: "Complete",
+});
+
+await inngest.realtime.publish(job.status, {
+  message: "Processing",
+});
+```
+
+## Mint a browser token
+
+`getClientSubscriptionToken(inngest, { channel, topics })` runs on your server. `channel` accepts a channel instance or a string, and `topics` lists what the client may read. It returns `{ key, apiBaseUrl }`, which is safe to send to the browser. The token doesn't include the channel or topics, so pass the same values to `useRealtime`.
+
+Check that the caller may read the channel before you mint a token. See [Subscription tokens](/docs/realtime/guides/subscription-tokens).
+
+## Subscribe in React
+
+`useRealtime({ channel, topics, token })` from `inngest/react` opens and manages the connection. Pass a channel instance for typed messages. Pass a token object, or an async token factory that the hook calls again on every reconnect.
+
+The hook returns `connectionStatus`, `runStatus`, `messages`, `result`, `error`, `isPaused`, `pauseReason`, and `reset`. Read the latest message per topic at `messages.byTopic`, retained messages at `messages.all`, the newest message at `messages.last`, and the latest batch at `messages.delta`. `result` holds a completed run's return value when available.
+
+Options include `enabled`, `bufferInterval`, `historyLimit`, `validate`, `pauseOnHidden`, `autoCloseOnTerminal`, `reconnect`, and `key`. [React hooks](/docs/realtime/guides/react-hooks) lists their defaults.
+## Subscribe in server code
+
+`subscribe({ app: inngest, channel, topics })` from `inngest/realtime` and `inngest.realtime.subscribe({ channel, topics })` return a readable stream. Pass `onMessage` (and optionally `onError`) to get a callback subscription handle instead. The stream offers `getJsonStream()`, `getEncodedStream()`, and `close()`. Messages include `topic`, `channel`, `data`, `kind`, and run metadata when available. Close a subscription when its consumer finishes. See [Server-side subscriptions](/docs/realtime/guides/server-side-subscriptions).
+
+## Python
+
+The Python SDK includes Realtime as a beta in `inngest.experimental.realtime`:
+
+- **`realtime.publish(client, channel, topic, data)`** publishes a message immediately. It isn't a durable step. Code outside a step can run again when the function resumes, so call it inside `ctx.step.run()`. `publish_sync()` is the synchronous version.
+- **`realtime.get_subscription_token(client, channel, topics)`** mints a token for a channel and a list of topics. It returns a dictionary with `channel`, `topics`, and `key` that a browser client can use. `get_subscription_token_sync()` is the synchronous version.
+
+Channels and topics are plain strings in Python.
+
+```python
+from inngest.experimental import realtime
+
+await realtime.publish(
+    client=inngest_client,
+    channel=f"user:{ctx.event.data['user_id']}",
+    topic="messages",
+    data={"message": "Processing"},
+)
+```
+
+See the [FastAPI example project](https://github.com/inngest/inngest-py/tree/main/examples/fast_api_realtime) and the [Python Realtime announcement](/blog/python-realtime?ref=docs-realtime-reference).
+
+## Go
+
+The Go SDK includes Realtime in the `github.com/inngest/inngestgo/realtime` package:
+
+- **`realtime.Publish(ctx, channel, topic, data)`** publishes raw bytes to a channel and topic. Channels and topics are plain strings, so encode your payload yourself, for example with `json.Marshal`. It works only inside an Inngest function. Outside a step, it publishes only the first time the function reaches that line, so replays and retries don't repeat it. Inside `step.Run()`, it publishes each time the step runs.
+- **`realtime.Subscribe(ctx, token)`** opens a WebSocket with a subscription token and returns a Go channel of `StreamItem` values. Check each item with `IsMessage()`, `IsChunk()`, or `IsErr()`. The channel closes when the connection or `ctx` ends.
+
+The Go SDK doesn't mint subscription tokens. Mint them in TypeScript or Python.
+
+```go
+import (
+	"context"
+	"encoding/json"
+
+	"github.com/inngest/inngestgo"
+	"github.com/inngest/inngestgo/realtime"
+	"github.com/inngest/inngestgo/step"
+)
+
+type ImportRequested struct {
+	UserID string `json:"userId"`
+}
+
+func processImport(ctx context.Context, input inngestgo.Input[ImportRequested]) (any, error) {
+	channel := "user:" + input.Event.Data.UserID
+
+	data, _ := json.Marshal(map[string]string{"message": "Started"})
+	if err := realtime.Publish(ctx, channel, "status", data); err != nil {
+		return nil, err
+	}
+
+	return step.Run(ctx, "import", func(ctx context.Context) (string, error) {
+		// Do the work, then report the result.
+		data, _ := json.Marshal(map[string]string{"message": "Complete"})
+		return "done", realtime.Publish(ctx, channel, "result", data)
+	})
+}
+```
+
+`Publish` and `Subscribe` connect to Inngest Cloud. To use the local Dev Server, call `realtime.PublishWithURL(ctx, "http://localhost:8288/v1/realtime/publish", ...)` and `realtime.SubscribeWithURL(ctx, "ws://localhost:8288/v1/realtime/connect", token)`.
+
+## Earlier SDK versions
+
+If you maintain an app on TypeScript SDK v3 and `@inngest/realtime`, see the [archived v3 Realtime docs](/docs/reference/typescript/v3/realtime).
+
+## Next steps
+
+- [Quick start](/docs/realtime/quick-start) walks through a complete app.
+- [Channels and topics](/docs/realtime/channels-and-topics) explains names, topic schemas, and authorization.
+- [Guides](/docs/realtime/guides) cover tokens, React, AI streaming, and server-side subscriptions.

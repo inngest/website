@@ -1,0 +1,440 @@
+import { Info, Warning } from "src/shared/Docs/mdx";
+
+export const metaTitle = "Inngest Insights | Query Run & Event Data with SQL";
+export const description = "Run SQL queries over Inngest function run and event data in the platform. Analyze performance, error rates, event volumes, and trends without external tools.";
+
+# Insights
+
+> Find recurring failures and slowdowns by querying historical execution data.
+
+Inngest Insights allows you to query and analyze events, function runs, steps, trace spans, and metadata using SQL directly within the Inngest platform. Every event, run, and step contains valuable information, and Insights gives you the power to extract meaningful patterns and analytics from that data.
+
+<Info>
+  Insights is optimized for historical data, with a few-minute lag before data appears, so it’s not intended for monitoring live-executing runs. Use [runs](/docs/platform-and-operations/inspect-events-and-runs) and [traces](/docs/platform-and-operations/traces) to inspect live runs.
+</Info>
+
+## Overview
+
+Insights provides an in-app SQL editor and query interface where you can:
+- **Use AI to generate queries** - Describe what you want in plain English and let the Insights AI write the SQL for you
+- Query events, runs, steps, trace spans, and metadata using familiar SQL syntax
+- Save and reuse common queries
+- Share them with your team
+- Browse table and event schemas directly in the editor
+- Analyze patterns in your event triggers and function executions
+- Extract business intelligence from your workflows
+
+## Getting Started
+
+Access Insights through the Inngest dashboard by clicking on the "Insights" tab in the left navigation.
+
+![Getting Started Dashboard View](/assets/docs/platform/monitor/insights/insights_dashboard_view.png)
+
+We have several pre-built query templates to help you get started exploring your data.
+
+![Getting Started Templates View](/assets/docs/platform/monitor/insights/insights_template_view.png)
+
+## Insights AI
+
+Insights AI helps you generate SQL queries using natural language. Instead of writing SQL manually, you can describe what you want to analyze and the assistant will create the query for you.
+
+### How it works
+
+Simply describe what you want to query in plain English, and Insights AI will:
+
+1. **Match events** - Analyze your prompt and identify the most relevant events from your account to use in the query
+2. **Write the query** - Generate a properly formatted SQL query based on your event schemas
+3. **Summarize results** - Provide a natural language summary of your query results
+
+### Example prompts
+
+- "Show me all failed functions in the last 24 hours"
+- "Count orders by user for the past week"
+- "What are the most common event types?"
+- "Find all events where the amount is greater than 100"
+
+The generated query is automatically inserted into the SQL editor and executed, so you can see results immediately and further refine the query if needed.
+
+<Info>
+  Insights AI is built using Inngest's own [Realtime API](/docs/realtime), [AgentKit](https://agentkit.inngest.com), and durable execution with checkpointing.
+</Info>
+
+## SQL Editor
+
+The Insights interface includes a full-featured SQL editor where you can:
+
+- Write and execute SQL queries against Insights tables
+- Save frequently used queries for later access
+- View query results in an organized table format
+- Access query history and templates from the sidebar
+- Use autocomplete for SQL keywords, table names, column names, and event types
+- Format your SQL queries automatically for better readability
+
+
+
+![Sql Editor View](/assets/docs/platform/monitor/insights/insights_sql_editor.png)
+
+## Data Sources
+
+Insights supports querying these data sources:
+
+- `events` - Inbound events sent to Inngest
+- `runs` - Function executions
+- `steps` - The latest attempt for each step
+- `step_attempts` - Every step attempt, including retries
+- `extended_trace_spans` - OpenTelemetry spans emitted during function execution
+- `metadata` - System-defined and user-defined metadata attached to spans at the run, step, attempt, and extended trace levels
+
+### Events Table
+
+| Column | Type | Description |
+|--------|------|-------------|
+| `id` | String | Unique identifier for the event |
+| `name` | String | The name/type of the event |
+| **`data`** | **JSON** | **Your event payload data** |
+| `v` | String | Event format version |
+| `ts` | Unix timestamp (ms) | Unix timestamp in milliseconds when the event occurred - [reference](https://www.unixtimestamp.com/) |
+| `ts_dt` | DateTime | The same time as `ts` as a DateTime
+| `received_at` | Unix timestamp (ms) | Unix timestamp in milliseconds when the event was received by Inngest |
+| `received_at_dt` | DateTime | The same time as `received_at` as a DateTime
+
+For more details on the event format, see the [Inngest Event Format documentation](/docs/durable-execution/guides-and-advanced/events-and-triggers/event-payloads-and-schemas).
+
+### Runs Table
+
+The `runs` table contains data about your function executions. This allows you to analyze function performance, debug failures, and track execution patterns.
+
+| Column | Type | Description |
+|--------|------|-------------|
+| `id` | String | Unique identifier for the run (ULID) |
+| `triggering_event_name` | String | The name of the event trigger |
+| `status` | String | Run status: `Queued`, `Running`, `Failed`, `Cancelled`, `Completed` |
+| `queued_at` | DateTime | When the run was queued |
+| `started_at` | DateTime | When the run started executing (NULL if it hasn't started yet) |
+| `ended_at` | DateTime | When the run ended (NULL if still running) |
+| `app_id` | String | The app ID as defined in your app |
+| `function_id` | String | The "fully qualified" function ID. This is the app ID concatenated to the function ID as defined in your app with a `-` (e.g., `my-app-my-function`) |
+| `inputs` | Array(JSON) | Array of input events (for batch functions or functions triggered by multiple events) |
+| `input` | JSON | Shorthand for `inputs[1]` - if you know a single event triggered the run as opposed to a batch. **ClickHouse arrays are 1-indexed, not 0-indexed.** |
+| `output` | JSON | The output/return value from the function (NULL if not completed or no output) |
+| `error` | JSON | Error details if the run failed (NULL if successful) |
+| `attributes` | JSON | Raw attributes from the run span |
+| `inngest` | JSON | Inngest-defined structured metadata. Values are keyed by metadata kind and include `updated_at` and `values` |
+| `metadata` | JSON | User-defined unstructured metadata with the same shape as `inngest` |
+
+<Info>
+  The `function_id` and `app_id` columns closely match your SDK calls in your app. For example, if you define a function with `inngest.createFunction({ id: "process-order", ... })` in an app with ID `my-app`, the "fully qualified" `function_id` will be `my-app-process-order`. This also matches the slugs in URLs used on https://app.inngest.com/env/production/functions.
+</Info>
+
+<Warning>
+  Due to a limitation with `function_id` and `app_id`, sorting may be out of order.
+</Warning>
+
+### Steps & Step Attempts Tables
+
+The `steps` and `step_attempts` tables contain data about your functions' step executions. This allows you to analyze individual step performance, debug failures, and track execution patterns. The `step_attempts` table contains all step attempts including all retries while the `steps` table only contains the latest retry of an individual step.
+
+| Column | Type | Description |
+|--------|------|-------------|
+| `run_id` | String | Unique identifier for the run (ULID) |
+| `app_id` | String | The app ID as defined in your app |
+| `function_id` | String | The "fully qualified" function ID. This is the app ID concatenated to the function ID as defined in your app with a `-` (e.g., `my-app-my-function`) |
+| `type` | String | Step type, such as `StepRun`, `StepPlanned`, `StepFailed`, `InvokeFunction`, `Sleep`, `AIGateway`, or `StepError` |
+| `name` | String | The name of the step which is the same as id unless an explicit display name is provided |
+| `id` | String | The id used when creating the step like `step.run('<id>', ...)` |
+| `loop_index` | Int | The index for repeated steps |
+| `attempt` | Int | The attempt number for retried steps |
+| `status` | String | Step status: `Queued`, `Running`, `Failed`, `Errored`, `Completed` |
+| `queued_at` | DateTime | When the step was queued |
+| `started_at` | DateTime | When the step started executing (NULL if it hasn't started yet) |
+| `ended_at` | DateTime | When the step ended (NULL if still running) |
+| `output` | JSON | The output/return value from the step (NULL if not completed or no output) |
+| `error` | JSON | Error details if the step failed (NULL if successful) |
+| `attributes` | JSON | Raw attributes on the step including step-type specific info |
+| `inngest` | JSON | Inngest-defined structured metadata. Values are keyed by metadata kind and include `updated_at` and `values` |
+| `metadata` | JSON | User-defined unstructured metadata with the same shape as `inngest` |
+
+<Info>
+  The `function_id` and `app_id` columns closely match your SDK calls in your app. For example, if you define a function with `inngest.createFunction({ id: "process-order", ... })` in an app with ID `my-app`, the "fully qualified" `function_id` will be `my-app-process-order`. This also matches the slugs in URLs used on https://app.inngest.com/env/production/functions.
+</Info>
+
+<Warning>
+  Due to a limitation with `function_id` and `app_id`, sorting may be out of order.
+</Warning>
+
+### Extended Trace Spans Table
+
+The `extended_trace_spans` table contains [Extended Trace](/docs/reference/typescript/v4/extended-traces) spans emitted during your functions' step executions. This allows you to analyze performance inside of steps, debug failures, and track execution patterns.
+
+| Column | Type | Description |
+|--------|------|-------------|
+| `run_id` | String | Unique identifier for the run (ULID) |
+| `app_id` | String | The app ID as defined in your app |
+| `function_id` | String | The "fully qualified" function ID. This is the app ID concatenated to the function ID as defined in your app with a `-` (e.g., `my-app-my-function`) |
+| `step_id` | String | The id of the step executing when the span was created |
+| `step_index` | Int | The index of the parent step for repeated steps |
+| `step_attempt` | Int | The attempt number of the step for retried steps |
+| `trace_id` | String | The OpenTelemetry trace ID |
+| `span_id` | String | The OpenTelemetry span ID |
+| `parent_span_id` | String | The id of this span's parent |
+| `start_time` | DateTime | The start timestamp of the span |
+| `end_time` | DateTime | The end timestamp of the span |
+| `name` | String | The name of the span |
+| `kind` | String | The OpenTelemetry span kind of the span |
+| `scope_name` | String | The [OpenTelemetry Instrumentation Scope](https://opentelemetry.io/docs/concepts/instrumentation-scope/) name for the span |
+| `scope_version` | String | The [OpenTelemetry Instrumentation Scope](https://opentelemetry.io/docs/concepts/instrumentation-scope/) version for the span |
+| `service_name` | String | The [OpenTelemetry Service](https://opentelemetry.io/docs/specs/semconv/registry/attributes/service/) name for the span |
+| `attributes` | JSON | Raw attributes on the span |
+| `inngest` | JSON | Inngest-defined structured metadata. Values are keyed by metadata kind and include `updated_at` and `values` |
+| `metadata` | JSON | User-defined unstructured metadata with the same shape as `inngest` |
+
+<Info>
+  The `function_id` and `app_id` columns closely match your SDK calls in your app. For example, if you define a function with `inngest.createFunction({ id: "process-order", ... })` in an app with ID `my-app`, the "fully qualified" `function_id` will be `my-app-process-order`. This also matches the slugs in URLs used on https://app.inngest.com/env/production/functions.
+</Info>
+
+<Warning>
+  Due to a limitation with `function_id` and `app_id`, sorting may be out of order.
+</Warning>
+
+### Metadata Table
+
+The `metadata` table contains one row per run, step, or extended trace span metadata record. Use it when you need to query low-level metadata rows directly.
+
+| Column | Type | Description |
+|--------|------|-------------|
+| `run_id` | String | Unique identifier for the run (ULID) |
+| `run_queued_at` | DateTime | When the run was queued |
+| `updated_at` | DateTime | When the metadata row was last updated |
+| `app_id` | String | The app ID as defined in your app |
+| `function_id` | String | The "fully qualified" function ID. This is the app ID concatenated to the function ID as defined in your app with a `-` (e.g., `my-app-my-function`) |
+| `step_id` | String | The id used when creating the step like `step.run('<id>', ...)` |
+| `step_index` | Int | The index for repeated steps |
+| `step_attempt` | Int | The attempt number for retried steps |
+| `span_id` | String | The OpenTelemetry span ID |
+| `level` | String | Span level: `run`, `step`, or `extended_trace`. This is not a log level |
+| `step_type` | String | Step type from the `_inngest.step.type` attribute, such as `run` or `groupExperiment` |
+| `inngest` | JSON | Inngest-defined structured metadata. Values are keyed by metadata kind and include `updated_at` and `values` |
+| `metadata` | JSON | User-defined unstructured metadata with the same shape as `inngest` |
+
+### Data Retention
+
+Refer to [pricing plans](/pricing) for data retention limits.
+
+### Result Limits
+
+- Current page limit: **1000 rows**
+
+## Schema Explorer
+
+The Schema Explorer, located on the right side, enables you to explore the fields available to write your Insights query. Browse and search available tables and event schemas without leaving the editor.
+
+The schemas include:
+- Available tables - Queryable tables such as `events`, `runs`, `steps`, `step_attempts`, `extended_trace_spans`, and `metadata`
+- Event-specific schemas - The structure of each event type's `data` payload
+
+Search is also available for more efficient filtering of fields. After you have located the field you want, you can click to copy and paste it into your SQL editor.
+
+![Schema Explorer](/assets/docs/platform/monitor/insights/insights_schema_explorer.png)
+
+## SQL Support
+
+Insights is built on ClickHouse, which provides powerful SQL capabilities with some differences from traditional SQL databases.
+
+![Sql Editor View](/assets/docs/platform/monitor/insights/insights_query_results.png)
+
+### Supported Functions
+
+#### Arithmetic Functions
+Basic mathematical operations and calculations.
+[View ClickHouse arithmetic functions documentation](https://clickhouse.com/docs/sql-reference/functions/arithmetic-functions)
+
+#### String Functions
+String manipulation and search capabilities.
+- [String search functions](https://clickhouse.com/docs/sql-reference/functions/string-search-functions)
+- [String manipulation functions](https://clickhouse.com/docs/sql-reference/functions/string-functions)
+- [Splitting and merging functions](https://clickhouse.com/docs/sql-reference/functions/splitting-merging-functions)
+
+#### Date/Time Functions
+For analyzing event timing and patterns.
+[View ClickHouse date/time functions documentation](https://clickhouse.com/docs/sql-reference/functions/date-time-functions)
+
+#### Other Supported Function Categories
+- [Conditional functions](https://clickhouse.com/docs/sql-reference/functions/conditional-functions) — `if`, `multiIf`, `greatest`, `least`, `clamp`
+- [Mathematical functions](https://clickhouse.com/docs/sql-reference/functions/math-functions) — trig, log/exp, `sqrt`, `pow`, `sign`, `factorial`, and more
+- [Array functions](https://clickhouse.com/docs/sql-reference/functions/array-functions) — construct, access, sort, and aggregate arrays; includes `has`, `hasAny`, `hasAll`, and `arrayJoin`
+- [Map functions](https://clickhouse.com/docs/sql-reference/functions/map-functions) — `map`, `mapKeys`, `mapValues`, `mapAdd`, `mapContains`, and more
+- [Tuple functions](https://clickhouse.com/docs/sql-reference/functions/tuple-functions) — `tuple`, `tupleElement`, arithmetic on tuples, `dotProduct`, `untuple`, and more
+- [Logical functions](https://clickhouse.com/docs/sql-reference/functions/logical-functions)
+- [Comparison functions](https://clickhouse.com/docs/sql-reference/functions/comparison-functions)
+- [Rounding functions](https://clickhouse.com/docs/sql-reference/functions/rounding-functions)
+- [Type conversion functions](https://clickhouse.com/docs/sql-reference/functions/type-conversion-functions)
+- [Functions for nulls](https://clickhouse.com/docs/sql-reference/functions/functions-for-nulls)
+- [JSON functions](https://clickhouse.com/docs/sql-reference/functions/json-functions) — `JSONExtract`, `JSONHas`, `JSONLength`, `JSONType`, and case-insensitive JSON extract variants
+- [ULID functions](https://clickhouse.com/docs/sql-reference/functions/ulid-functions)
+- [UUID functions](https://clickhouse.com/docs/sql-reference/functions/uuid-functions)
+- [URL functions](https://clickhouse.com/docs/sql-reference/functions/url-functions)
+- [IP address functions](https://clickhouse.com/docs/sql-reference/functions/ip-address-functions)
+- [Geo functions](https://clickhouse.com/docs/sql-reference/functions/geo/coordinates)
+- [Bit functions](https://clickhouse.com/docs/sql-reference/functions/bit-functions)
+- [Hash functions](https://clickhouse.com/docs/sql-reference/functions/hash-functions)
+- [Encoding functions](https://clickhouse.com/docs/sql-reference/functions/encoding-functions)
+- [Bitmap functions](https://clickhouse.com/docs/sql-reference/functions/bitmap-functions)
+- [Other functions](https://clickhouse.com/docs/sql-reference/functions/other-functions) — formatting and utility helpers such as `bar`, `byteSize`, `formatReadableSize`, and `formatReadableTimeDelta`
+- Window functions — aggregate functions can be used with `OVER (...)`, and `row_number()` is supported
+
+### Aggregate Functions
+
+The following aggregate function families and aliases are supported:
+
+| Function | Description |
+|----------|-------------|
+| `ARRAY_AGG()` / `array_agg()` / `groupArray()` / `groupArrayLast()` / `groupArraySorted()` / `groupUniqArray()` / `array_concat_agg()` | [Aggregates values into an array](https://clickhouse.com/docs/sql-reference/aggregate-functions/reference/grouparray) |
+| `AVG()` | [Calculates average](https://clickhouse.com/docs/sql-reference/aggregate-functions/reference/avg) |
+| `avgWeighted()` | [Weighted average](https://clickhouse.com/docs/sql-reference/aggregate-functions/reference/avgweighted) |
+| `any()` / `anyLast()` / `anyHeavy()` / `any_value()` | [Returns an arbitrary value from the group](https://clickhouse.com/docs/sql-reference/aggregate-functions/reference/any) |
+| `anyRespectNulls()` / `anyLastRespectNulls()` / `anyValueRespectNulls()` / `any_respect_nulls()` / `anyLast_respect_nulls()` / `any_value_respect_nulls()` | Returns an arbitrary or last value while preserving `NULL` values |
+| `last_value()` | [Returns the last value in the group](https://clickhouse.com/docs/sql-reference/aggregate-functions/reference/last_value) |
+| `argMin(val, key)` | [Returns `val` for the row with the minimum `key`](https://clickhouse.com/docs/sql-reference/aggregate-functions/reference/argmin) |
+| `argMax(val, key)` | [Returns `val` for the row with the maximum `key`](https://clickhouse.com/docs/sql-reference/aggregate-functions/reference/argmax) |
+| `argAndMin(val, key)` / `argAndMax(val, key)` | [Returns `val` for rows selected by the corresponding `arg*` aggregate variant](https://clickhouse.com/docs/sql-reference/aggregate-functions/reference/argandmin) |
+| `bit_and()` / `bit_or()` / `bit_xor()` | Bitwise aggregate aliases |
+| `COUNT()` | [Counts rows](https://clickhouse.com/docs/sql-reference/aggregate-functions/reference/count) |
+| `uniq()` / `uniqExact()` / `uniqCombined()` / `uniqCombined64()` / `uniqHLL12()` / `uniqTheta()` / `uniqThetaIntersect()` / `uniqThetaNot()` / `uniqThetaUnion()` / `uniqUpTo()` | [Counts unique values with exact or approximate algorithms](https://clickhouse.com/docs/sql-reference/aggregate-functions/reference/uniq) |
+| `MAX()` | [Finds maximum value](https://clickhouse.com/docs/sql-reference/aggregate-functions/reference/max) |
+| `MIN()` | [Finds minimum value](https://clickhouse.com/docs/sql-reference/aggregate-functions/reference/min) |
+| `median()` | [Approximate median](https://clickhouse.com/docs/sql-reference/aggregate-functions/reference/median) |
+| `quantile(level)(val)` | [Approximate quantile at a given level (e.g. `quantile(0.95)(duration_ms)`)](https://clickhouse.com/docs/sql-reference/aggregate-functions/reference/quantile) |
+| `quantiles(l1, l2, ...)(val)` | [Multiple quantiles in a single pass](https://clickhouse.com/docs/sql-reference/aggregate-functions/reference/quantiles) |
+| `quantileBFloat16()` / `quantileDD()` / `quantileDeterministic()` / `quantileExact()` / `quantileExactHigh()` / `quantileExactLow()` / `quantileGK()` / `quantileTDigest()` / `quantileTiming()` and related exact, weighted, histogram, and timing variants | Additional [quantile functions](https://clickhouse.com/docs/sql-reference/aggregate-functions/reference/quantile) for exact, weighted, and approximate percentile calculations |
+| `quantilesBFloat16()` / `quantilesDD()` / `quantilesDeterministic()` / `quantilesExact()` / `quantilesExactHigh()` / `quantilesExactLow()` / `quantilesGK()` / `quantilesTDigest()` / `quantilesTiming()` and related exact, weighted, histogram, and timing variants | Additional [quantiles functions](https://clickhouse.com/docs/sql-reference/aggregate-functions/reference/quantiles) for multiple percentile calculations |
+| `STDDEV_POP()` / `stddevPop()` / `stddevPopStable()` | [Population standard deviation](https://clickhouse.com/docs/sql-reference/aggregate-functions/reference/stddevpop) |
+| `STDDEV_SAMP()` / `stddevSamp()` / `stddevSampStable()` / `std()` | [Sample standard deviation](https://clickhouse.com/docs/sql-reference/aggregate-functions/reference/stddevsamp) |
+| `SUM()` | [Calculates sum](https://clickhouse.com/docs/sql-reference/aggregate-functions/reference/sum) |
+| `sumKahan()` / `sumCount()` / `sumWithOverflow()` / `sumMapFiltered()` / `sumMapFilteredWithOverflow()` / `sumMapWithOverflow()` / `sumMappedArrays()` | Additional sum variants for compensated summation, overflow handling, map values, and arrays |
+| `VAR_POP()` / `varPop()` / `varPopStable()` | [Population variance](https://clickhouse.com/docs/en/sql-reference/aggregate-functions/reference/varPop) |
+| `VAR_SAMP()` / `varSamp()` / `varSampStable()` | [Sample variance](https://clickhouse.com/docs/sql-reference/aggregate-functions/reference/varSamp) |
+| `covarPop()` / `covarPopStable()` / `covarPopMatrix()` / `covar_pop()` | [Population covariance](https://clickhouse.com/docs/sql-reference/aggregate-functions/reference/covarpop) |
+| `covarSamp()` / `covarSampStable()` / `covarSampMatrix()` / `covar_samp()` | [Sample covariance](https://clickhouse.com/docs/sql-reference/aggregate-functions/reference/covarsamp) |
+
+### Aggregate Function Combinators
+
+Most aggregate functions support combinators that modify their behavior by appending a suffix:
+
+| Combinator | Effect |
+|------------|--------|
+| `If` | Adds a condition — e.g. `countIf(status = 'Failed')` |
+| `OrNull` | Returns `NULL` instead of a default when there are no rows |
+| `OrDefault` | Returns the type's default value instead of `NULL` when there are no rows |
+| `ArgMin` / `ArgMax` | Adds `argMin`/`argMax` semantics to an existing aggregate |
+| `ForEach` | Applies the aggregate to each element of an array column |
+| `Array` | Takes array columns as input instead of individual values |
+| `Map` | Applies the aggregate per key of a `Map` column |
+
+[View ClickHouse combinator documentation](https://clickhouse.com/docs/sql-reference/aggregate-functions/combinators)
+
+
+## Working with JSON Data
+
+Both `events.data` and runs columns like `input`, `output`, and `error` often contain JSON data.
+
+### JSON Dot Notation (Recommended)
+
+Insights provides syntactic sugar for accessing JSON fields using dot notation. This will attempt to infer the type, but for maximum control you can rely on [ClickHouse native JSON functions](https://clickhouse.com/docs/sql-reference/functions/json-functions).
+
+```sql
+SELECT data.function_id, COUNT(*) as count
+FROM events
+WHERE name = 'inngest/function.failed'
+GROUP BY data.function_id
+ORDER BY count DESC;
+```
+
+```sql
+SELECT input.user_id, input.order.amount
+FROM runs
+WHERE function_id = 'my-app-process-order'
+  AND input.order.amount > 100;
+```
+
+### ClickHouse JSON Functions
+
+For more complex JSON operations and control over types, you can use ClickHouse's native JSON functions:
+
+```sql
+SELECT JSONExtractString(data, 'function_id'), COUNT(*) as count
+FROM events
+WHERE name = 'inngest/function.failed'
+GROUP BY JSONExtractString(data, 'function_id')
+ORDER BY count DESC;
+```
+
+### Array Indexing
+
+For array data, you can use bracket notation to access specific elements:
+
+```sql
+-- Access the first input event (same as using `input`)
+SELECT inputs[1].user_id
+FROM runs
+WHERE function_id = 'my-app-process-order';
+```
+
+
+### Example Queries
+
+#### Basic Event Filtering
+```sql
+SELECT count(*)
+FROM events
+WHERE name = 'inngest/function.failed'
+  AND data.function_id = 'generate-report'
+  AND ts > toUnixTimestamp(addHours(now(), -1)) * 1000;
+```
+
+#### Extracting JSON Data and Aggregating
+```sql
+SELECT data.user_id as user_id, count(*)
+FROM events
+WHERE name = 'order.created'
+GROUP BY user_id
+ORDER BY count(*) DESC
+LIMIT 10;
+```
+
+#### Count runs by status in the last 24 hours
+```sql
+SELECT status, COUNT(*) as count
+FROM runs
+WHERE queued_at > now() - INTERVAL 1 DAY
+GROUP BY status
+ORDER BY count DESC;
+```
+
+#### Count steps by status for each step in the last 24 hours
+```sql
+SELECT app_id, function_id, id, status, COUNT(*) as count
+FROM steps
+WHERE queued_at > now() - INTERVAL 1 DAY
+GROUP BY app_id, function_id, id, status
+ORDER BY count DESC;
+```
+
+## Saved Queries
+
+You can save frequently used queries for quick access. Saved queries are private to you by default.
+
+### Shared Queries
+
+Some queries are valuable to the whole organization, and now you can more easily share those across your organization. Once you save a query, you can select the actions dropdown and share it with your organization.
+
+Shared queries will be added to a `Shared queries` navigation dropdown within the Insights Sidebar.
+
+![Share With Org](/assets/docs/platform/monitor/insights/insights_share_with_org.png)
+![Shared Queries Navigation](/assets/docs/platform/monitor/insights/insights_shared_queries.png)
+
+## Need Help?
+
+If you encounter issues or have questions about Insights:
+1. Check this documentation for common solutions
+2. Review the [ClickHouse SQL reference](https://clickhouse.com/docs/sql-reference/) for advanced function usage
+3. Contact support through the Inngest platform

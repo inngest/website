@@ -92,6 +92,7 @@
     "lottie-react": "2.4.1",
     "mdast-util-to-string": "4.0.0",
     "mdx-annotations": "0.1.4",
+    "mermaid": "12.0.0",
     "monaco-editor": "0.28.1",
     "motion": "12.18.1",
     "next": "16.2.6",

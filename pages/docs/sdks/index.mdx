@@ -1,0 +1,173 @@
+import { CodeGroup, LanguageSelector, LanguageSection } from "shared/Docs/mdx";
+
+export const metaTitle = "Inngest SDKs & APIs | TypeScript, Python & Go";
+export const description = "Compare the TypeScript, Python, and Go SDKs, install one, and find each SDK's reference.";
+
+# SDKs & APIs
+
+> Pick the SDK for your language, check what it supports, and jump to its reference.
+
+Inngest has official SDKs for TypeScript, Python, and Go. Each one defines durable functions, sends events, and serves your functions over HTTP or through a [Connect](/docs/durable-execution/deploying-functions/connect) worker. All three are open source.
+
+## Supported SDKs
+
+| SDK | Package | Runs on | Reference | Source |
+| --- | --- | --- | --- | --- |
+| TypeScript | [`inngest`](https://www.npmjs.com/package/inngest) | Node.js, Bun, Deno, edge | [TypeScript SDK](/docs/reference/typescript/v4/intro) | [inngest-js](https://github.com/inngest/inngest-js) |
+| Python | [`inngest`](https://pypi.org/project/inngest/) | Python 3.10+ | [Python SDK](/docs/reference/python) | [inngest-py](https://github.com/inngest/inngest-py) |
+| Go | [`inngestgo`](https://pkg.go.dev/github.com/inngest/inngestgo) | Go | [Go SDK](/docs/reference/go) | [inngestgo](https://github.com/inngest/inngestgo) |
+
+TypeScript gets new features first. [Install an SDK](#install-an-sdk) below shows the install command and client setup for each language. The examples in these docs use TypeScript unless a page says otherwise.
+
+## Feature support
+
+✓ supported · — not supported yet
+
+| Feature | TypeScript | Python | Go |
+| --- | --- | --- | --- |
+| **Durable Execution** | | | |
+| [`step.run`](/docs/durable-execution/primitives/step-run) | ✓ | ✓ | ✓ |
+| [Sleep and sleep until](/docs/durable-execution/primitives/step-sleep) | ✓ | ✓ | ✓ |
+| [Wait for event](/docs/durable-execution/primitives/step-waitforevent) | ✓ | ✓ | ✓ |
+| [Wait for signal](/docs/durable-execution/primitives/step-waitforsignal) | ✓ | — | ✓ |
+| [Invoke another function](/docs/durable-execution/primitives/step-invoke) | ✓ | ✓ | ✓ |
+| [Send events from a step](/docs/durable-execution/primitives/step-sendevent) | ✓ | ✓ | ✓ |
+| [Parallel steps](/docs/durable-execution/primitives/group-parallel) | ✓ | ✓ | ✓ |
+| [AI inference step](/docs/features/inngest-functions/steps-workflows/step-ai-orchestration) | ✓ | ✓ | ✓ |
+| [`step.fetch`](/docs/examples/fetch) | ✓ | — | ✓ |
+| [`defer`](/docs/durable-execution/primitives/defer) | ✓ | — | — |
+| [Experiments](/docs/durable-execution/primitives/group-experiment) | ✓ | — | — |
+| [Flow control](/docs/durable-execution/flow-control) | ✓ | ✓ | ✓ |
+| [Cron triggers](/docs/durable-execution/guides-and-advanced/events-and-triggers/schedules-and-delayed-starts) | ✓ | ✓ | ✓ |
+| [Per-function failure handler](/docs/durable-execution/guides-and-advanced/error-handling/failure-handlers) | ✓ | ✓ | — |
+| [Checkpointing](/docs/durable-execution/guides-and-advanced/checkpointing) | ✓ (default) | — | ✓ |
+| [Durable Endpoints](/docs/durable-execution/durable-endpoints) | Beta | — | Beta |
+| [Connect workers](/docs/durable-execution/deploying-functions/connect) | ✓ | ✓ | ✓ |
+| [Middleware](/docs/durable-execution/guides-and-advanced/middleware) | ✓ | ✓ | ✓ |
+| **Realtime** | | | |
+| [Publish](/docs/realtime/overview#durable-and-immediate-publishing) | ✓ | Beta | ✓ |
+| [Typed channels and topics](/docs/realtime/channels-and-topics) | ✓ | — | — |
+| [Mint subscription tokens](/docs/realtime/guides/subscription-tokens) | ✓ | Beta | — |
+| [Subscribe from the server](/docs/realtime/guides/server-side-subscriptions) | ✓ | — | ✓ |
+| [`useRealtime` React hook](/docs/realtime/guides/react-hooks) | ✓ | — | — |
+| **Sandboxes** | | | |
+| [Sandboxes](/docs/sandboxes) | Beta | Planned | Planned |
+| **Agent Evals** | | | |
+| [Sessions, experiments, and scores](/docs/agent-evals) | ✓ (scores in beta) | Planned | — |
+
+Each product's overview page shows the same support details when you hover over an SDK.
+
+## Install an SDK
+
+<LanguageSelector>
+
+<LanguageSection show="typescript">
+
+### Installation
+
+Install `inngest` with your package manager:
+
+<CodeGroup>
+```shell {{ title: "npm" }}
+npm install inngest
+```
+```shell {{ title: "yarn" }}
+yarn add inngest
+```
+```shell {{ title: "pnpm" }}
+pnpm add inngest
+```
+```shell {{ title: "bun" }}
+bun add inngest
+```
+</CodeGroup>
+
+### Setup
+
+Create an Inngest client to define functions and send events:
+
+```typescript
+import { Inngest } from "inngest";
+
+export const inngest = new Inngest({
+  id: "my-app",
+});
+```
+
+
+</LanguageSection>
+
+<LanguageSection show="go">
+
+
+Add the Go SDK to your project:
+
+```shell
+go get github.com/inngest/inngestgo
+```
+
+</LanguageSection>
+
+<LanguageSection show="python">
+
+### Installation
+
+Install the Python SDK:
+
+```shell
+pip install inngest
+```
+
+### Setup
+
+Create an Inngest client to define functions and send events:
+
+```python
+import inngest
+import logging
+
+inngest_client = inngest.Inngest(
+    app_id="app_example",
+    logger=logging.getLogger("uvicorn"),
+)
+```
+
+</LanguageSection>
+
+</LanguageSelector>
+
+## SDK references
+
+**TypeScript**
+
+- [TypeScript SDK v4 reference](/docs/reference/typescript/v4/intro): the client, functions, steps, serve, middleware, and Realtime.
+- [TypeScript SDK v3 reference](/docs/reference/typescript/v3/intro): for apps that haven't upgraded yet. See [migrating from v3 to v4](/docs/reference/typescript/v4/migrations/v3-to-v4).
+- [Using TypeScript](/docs/typescript), [environment variables](/docs/sdk/environment-variables), and the [ESLint plugin](/docs/sdk/eslint).
+
+**Python**
+
+- [Python SDK reference](/docs/reference/python): the client, functions, steps, and middleware.
+- [Environment variables](/docs/reference/python/overview/env-vars) and [production mode](/docs/reference/python/overview/prod-mode).
+
+**Go**
+
+- [Go SDK](/docs/reference/go): install, packages, and guides. The [pkg.go.dev reference](https://pkg.go.dev/github.com/inngest/inngestgo) lists every type and option.
+- [Migration guides](/docs/reference/go/migrations/v0.16) for upgrading older versions.
+
+**Product references**
+
+- [Realtime reference](/docs/realtime/reference)
+- [Sandboxes reference](/docs/sandboxes/reference)
+- [Agent Evals reference](/docs/agent-evals/reference)
+
+**APIs and tools**
+
+- [REST API](https://api-docs.inngest.com): manage runs, events, and apps over HTTP.
+- [Inngest CLI](/docs/cli): run the Dev Server and inspect runs from your terminal.
+- [System events](/docs/reference/system-events/inngest-function-failed): react when a function fails or is cancelled.
+
+## Next steps
+
+1. [Define a durable workflow](/docs/durable-execution/durable-workflows)
+2. [Start work with an event](/docs/durable-execution/guides-and-advanced/events-and-triggers/send-events)
+3. [Deploy and serve your function](/docs/durable-execution/deploying-functions)

@@ -1,0 +1,26 @@
+export const metaTitle = "Sentry Middleware | Inngest Error Reporting";
+export const description = "Diagnose function failures in Sentry with the Inngest context attached to each report.";
+
+# Sentry middleware
+
+> Diagnose function failures in Sentry with the Inngest context attached to each report.
+
+Report function exceptions to Sentry with their Inngest function and event context. Initialize Sentry in your app, then register the middleware so reports follow the same policy as your other application errors.
+## Python setup
+Initialize the Sentry SDK in your application, then register Inngest's `SentryMiddleware` on the client. Configure your Sentry DSN and sampling policy in your application's Sentry setup.
+```python
+import inngest
+from inngest.experimental.sentry_middleware import SentryMiddleware
+
+inngest_client = inngest.Inngest(
+    app_id="my-app",
+    middleware=[SentryMiddleware],
+)
+```
+Initialize Python Sentry with `sentry_sdk.init()` before registering the middleware. Keep Sentry configuration in your app so the middleware uses the same reporting policy as your other code.
+## TypeScript v4
+Sentry middleware captures exceptions, tracing, and Inngest context. TypeScript v3 middleware registration code does not apply to v4.
+Inngest [traces](/docs/platform-and-operations/traces) still show the durable run and its steps. Use Sentry when you also need errors and trace context in your application monitoring system.
+## Next
+- [Middleware](/docs/durable-execution/guides-and-advanced/middleware) explains the middleware lifecycle.
+- [Creating middleware](/docs/durable-execution/guides-and-advanced/middleware/creating-middleware) covers custom middleware.

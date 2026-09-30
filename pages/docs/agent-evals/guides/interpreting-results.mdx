@@ -1,0 +1,63 @@
+export const metaTitle = "Read results and roll out | Agent Evals";
+export const description = "Read variant assignments and outcome scores together to see whether a change helped users.";
+
+# Read results and roll out
+
+> Read variant assignments and outcome scores together to see whether a change helped users.
+
+Before sending more traffic to a new prompt or workflow path, compare its outcome scores with the current variant. The experiment records which variant ran; a score records what happened afterward. Inspect individual traces when a result looks surprising.
+
+## Start with one outcome
+
+Choose the outcome before you compare variants. For a support agent, `customer-helpful` might record whether a customer marked the answer helpful. `answer-valid` might record an immediate format check. The first measures a product result; the second helps explain why a result changed.
+
+Use the **same score name, definition, range, and direction** for every variant. A boolean score means `true` or `false`; aggregates treat those values as 1 or 0. A numeric score needs a documented scale, such as 0 to 1 with higher meaning better. Do not combine a score that changed meaning partway through the comparison.
+
+## Compare the same set of runs
+
+For each variant, record these facts for the same function, experiment, eligible audience, and assignment period:
+
+| Question | What to check |
+| --- | --- |
+| How much traffic did it receive? | Count runs assigned to the variant. Relative weights describe the intended split; a small sample can look uneven. |
+| How many outcomes are known? | Count runs with the chosen score. Keep this separate from assigned runs. |
+| What did users experience? | Compare the chosen score only across runs whose outcomes are known. Check the score's range and whether higher or lower is better. |
+| What is still unresolved? | Count outcomes that have not arrived or whose scorer is still waiting. |
+| Did the work stay healthy? | Inspect failures, latency, and the steps in the run traces alongside the product outcome. |
+
+A score average covers the scores that exist. It does not tell you what happened to runs without that score. If one variant has much less feedback, its apparent lead may reflect who responded, rather than better behavior. Keep the assignment and outcome counts beside every comparison. [Experiments](/docs/agent-evals/experiments#score-a-variant) explains score attribution.
+
+## Let later outcomes catch up
+
+A customer may respond after the original run finishes. A deferred scorer can wait for that signal and attach its result to the original run and selected variant. Compare runs after each has had a comparable chance to receive the outcome. For example, if feedback can arrive within seven days, do not compare yesterday's candidate runs with control runs from last week as though both groups were complete.
+
+Decide what a timeout means for your score. **No score** means the outcome is unknown or the scorer wrote nothing. **Zero** means your scoring rule recorded a negative result. Keep those cases separate unless your product definition explicitly treats no response as failure. If a scorer returns `null` or `undefined`, it writes no score.
+
+When a later function writes a score, check attribution before reading the aggregate: the score needs the `experimentRef` and, from a different run, the **original** `runId`. See [Score a variant](/docs/agent-evals/experiments#score-a-variant).
+
+## Investigate individual results
+
+Open a run trace when a score surprises you. The trace shows the selected variant, the steps that ran, errors, and scores on the run or step. A successful model call does not prove that its answer helped the user.
+
+Use a session to find related runs for one ticket, conversation, or job, then inspect the runs that led to the outcome. Sessions group related work; they do not select an experiment variant. In the dashboard, choose the environment that received the events and open **AI → Sessions**. New runs and status changes can take a short time to appear because Sessions uses an asynchronous index.
+
+Use the experiment view for variant counts and score aggregates, then open traces to explain particular results. Inngest Cloud MCP also exposes a `get_experiment` read tool for run counts and score aggregates. For a custom analysis, keep the same outcome definition and comparison window in your own analytics.
+
+## Decide whether to roll out
+
+Set the outcome you want to improve, the operational limits you cannot exceed, and the amount of evidence you need **before** you inspect the comparison. There is no universal run count that makes a result conclusive. Check the number of assigned runs, the number with mature outcomes, the share still missing, and whether both variants served comparable users. A small canary proves the new path runs; it may give too little outcome data to show which path is better.
+
+If the candidate meets your outcome and operational criteria, increase its weight in stages and keep watching new runs and later scores. Runs that already selected a variant keep that choice on retries and replays. Changing bucket weights can change a user's future assignment; use a stored assignment with `experiment.custom()` when that must not happen. If quality worsens, use your existing assignment strategy to route new runs to the safe variant while you inspect the traces. [Experiments](/docs/agent-evals/experiments#choose-an-assignment-strategy) explains weighted, bucket, custom, and fixed selection.
+
+## If the comparison looks wrong
+
+- **A variant has few or no scores.** Check whether its scorer is still waiting, timed out without writing a score, or missed the outcome event.
+- **A score appears on the wrong run or outside the experiment.** Check the saved `experimentRef` and original `runId`.
+- **The split looks uneven.** Check the assigned run count and the selection strategy. Weighted selection varies across new runs; bucket selection depends on a present, stable key.
+- **Related runs are missing from a session.** Check the environment, session key and ID on the triggering events, then allow for indexing delay.
+
+## Next steps
+
+- [Experiments](/docs/agent-evals/experiments) explains assignment strategies and attribution.
+- [Troubleshooting](/docs/agent-evals/troubleshooting) helps find missing or misattributed scores.
+- [Manage eval costs](/docs/agent-evals/guides/cost-management) explains what each comparison costs.

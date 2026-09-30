@@ -24,32 +24,32 @@ const FEATURES: Feature[] = [
   {
     title: "Waterfall Traces",
     body: "Functions traced automatically, in parallel",
-    href: "/docs/platform/monitor/traces?ref=durable-execution",
+    href: "/docs/platform-and-operations/traces?ref=durable-execution",
   },
   {
     title: "Metrics dashboard",
     body: "System health at the environment level",
-    href: "/docs/platform/monitor/observability-metrics?ref=durable-execution#function-metrics",
+    href: "/docs/platform-and-operations/metrics?ref=durable-execution#function-metrics",
   },
   {
     title: "Run search",
     body: "Find the exact run for any user, org,\nor error pattern",
-    href: "/docs/platform/monitor/inspecting-function-runs?ref=durable-execution#searching-function-runs",
+    href: "/docs/platform-and-operations/inspect-events-and-runs?ref=durable-execution#searching-function-runs",
   },
   {
     title: "Replay",
     body: "Deploy a fix and re-run in bulk—\nno dead-letter queues",
-    href: "/docs/platform/replay?ref=durable-execution",
+    href: "/docs/platform-and-operations/replay-runs-in-bulk?ref=durable-execution",
   },
   {
     title: "Scoring",
     body: "Score runs or groups of runs in code—\nquality signals on every execution",
-    href: "/docs/features/inngest-functions/steps-workflows/scoring?ref=durable-execution",
+    href: "/docs/agent-evals/scores?ref=durable-execution",
   },
   {
     title: "Experiments",
     body: "Split traffic across variants and\ncompare scored outcomes in production",
-    href: "/docs/features/inngest-functions/steps-workflows/step-experiments?ref=durable-execution",
+    href: "/docs/agent-evals/experiments?ref=durable-execution",
   },
 ];
 

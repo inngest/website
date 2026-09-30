@@ -1,0 +1,36 @@
+export const metaTitle = "Inngest Middleware | Docs Overview";
+export const description = "Apply logging, dependencies, error reporting, and data protection across your functions from one place.";
+
+# Middleware
+
+> Apply logging, dependencies, error reporting, and data protection across your functions from one place.
+
+Add a database client, error reporter, or encryption behavior once instead of copying setup into each handler.
+
+## Common uses
+
+- [Dependency injection](/docs/durable-execution/guides-and-advanced/middleware/dependency-injection) adds a shared database or API client to typed function context.
+- [Encryption middleware](/docs/durable-execution/guides-and-advanced/middleware/encryption-middleware) protects event data, step data, and function output before they reach Inngest.
+- [Sentry middleware](/docs/durable-execution/guides-and-advanced/middleware/sentry-middleware) sends function errors and trace context to Sentry.
+- [Creating middleware](/docs/durable-execution/guides-and-advanced/middleware/creating-middleware) shows how to write and register your own.
+
+## How middleware works
+
+- **Where it runs:** around a request, a function handler, a step, or an event send.
+- **Scope:** register it on an Inngest client to apply it to that app's functions, or on one function for a narrower scope.
+- **Structure:** in TypeScript v4, a middleware extends `Middleware.BaseMiddleware` and defines only the hooks it needs. The SDK creates a fresh instance for each request.
+- **Wrapping hooks** must call `next()` so the wrapped work continues. Code before and after `next()` runs on either side of that work. With several middleware, the hooks nest.
+
+Check hook order and arguments before changing retries, step output, or event data.
+
+## Use it safely
+
+- **Logging and metrics:** use observable hooks. The SDK logs their errors without failing the run.
+- **Final failures:** `onRunError` can run on every errored attempt. Use a function's [`onFailure`](/docs/durable-execution/guides-and-advanced/error-handling/failure-handlers) handler for work that should happen only once, after the final failure.
+- **Business actions:** put anything that must be durable in named steps, so a retry reuses completed work.
+
+## SDK support
+
+- **TypeScript v4** uses middleware classes. The v3 `InngestMiddleware` API doesn't work in a v4 app.
+- **Python** has its own middleware lifecycle and versioned hooks.
+- **Go** support is planned.

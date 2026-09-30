@@ -1,0 +1,100 @@
+export const metaTitle = "Roll out a workflow rewrite | Agent Evals";
+export const description = "Canary a rewritten multi-step workflow on a small share of runs, score both paths, and ramp up safely.";
+
+# Roll out a workflow rewrite
+> Canary a rewritten multi-step workflow on a small share of runs, score both paths, and ramp up safely.
+
+A rewrite rarely changes one step. It changes how several steps work together. `group.experiment()` can hold a whole workflow path in each variant, so you can send one run in a hundred through the rewrite, score both paths the same way, and ramp up once the results hold.
+
+## 1. Put each path in a variant
+
+Each callback runs a complete path. Only the selected path runs; the other callback is skipped:
+
+```typescript {{ filename: "inngest/invoice.ts" }}
+import { experiment } from "inngest";
+import { inngest } from "./client";
+
+export default inngest.createFunction(
+  { id: "generate-invoice", triggers: { event: "billing/invoice.requested" } },
+  async ({ event, step, group, runId }) => {
+    const { result: invoice, experimentRef } = await group.experiment(
+      "invoice-engine",
+      {
+        variants: {
+          current: async () => {
+            const invoice = await step.run("generate-current", () =>
+              generateInvoiceV1(event.data)
+            );
+            await step.run("send-current", () => sendInvoice(invoice));
+            return invoice;
+          },
+          rewrite: async () => {
+            const draft = await step.run("draft-rewrite", () =>
+              draftInvoiceV2(event.data)
+            );
+            const invoice = await step.run("price-rewrite", () =>
+              applyPricingV2(draft)
+            );
+            await step.run("send-rewrite", () => sendInvoice(invoice));
+            return invoice;
+          },
+        },
+        select: experiment.weighted({ current: 99, rewrite: 1 }),
+      }
+    );
+
+    // Save what a later outcome needs to find this run and variant.
+    await step.run("save-invoice", () =>
+      db.invoices.insert({ id: invoice.id, runId, experimentRef })
+    );
+
+    await inngest.score.experiment({
+      name: "invoice-valid",
+      value: validateInvoice(invoice),
+      experiment: experimentRef,
+    });
+
+    return invoice;
+  }
+);
+```
+
+Weights are relative: `99:1` sends about one new run in a hundred through the rewrite. Put every side effect, such as sending the invoice, inside a step so a replay doesn't repeat it.
+
+## 2. Score the real outcome later
+
+A valid invoice is useful, but payment or a customer correction shows whether the rewrite worked. When your payment webhook fires, load the saved values and score the original run:
+
+```typescript {{ filename: "inngest/payments.ts" }}
+export const scorePayment = inngest.createFunction(
+  { id: "score-invoice-paid", triggers: { event: "billing/invoice.paid" } },
+  async ({ event, step }) => {
+    const saved = await step.run("load-invoice", () =>
+      db.invoices.get(event.data.invoiceId)
+    );
+
+    await inngest.score.experiment({
+      name: "invoice-paid",
+      value: true,
+      experiment: saved.experimentRef,
+      runId: saved.runId,
+    });
+  }
+);
+```
+
+Passing the original `runId` places the score under the experiment. Without it, the score attaches to the `score-invoice-paid` run.
+
+## 3. Watch, then ramp
+
+While the rewrite runs on a small share, compare both variants on `invoice-valid` and `invoice-paid`, and check errors and latency in the traces. A 1% canary proves the new path runs; it may take a while to collect enough outcomes to show which path is better.
+
+When the rewrite holds up, deploy new weights in stages: `{ current: 90, rewrite: 10 }`, then `50:50`, then `0:100`. Runs that already selected a variant keep it on retries and replays; new runs use the new weights. If results worsen, set the rewrite's weight to `0`, or read the split from a flag with `experiment.custom()` so you can roll back without a deploy.
+
+When the old path is no longer needed, pin the winner with `experiment.fixed("rewrite")` or remove the experiment and keep only the rewrite's steps.
+
+## Next steps
+
+- [Experiments](/docs/agent-evals/experiments) covers assignment strategies and replay behavior.
+- [Read results and roll out](/docs/agent-evals/guides/interpreting-results) explains how much evidence to collect before you ramp.
+- [Manage eval costs](/docs/agent-evals/guides/cost-management) explains the extra selection step and scores.

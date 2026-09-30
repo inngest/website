@@ -1,0 +1,131 @@
+import { Note, VersionBadge } from "src/shared/Docs/mdx";
+
+export const metaTitle = "Inngest Traces | Step Timelines & OTel Spans";
+export const description = "Open a run trace to find the slow or failed step before changing code or capacity.";
+
+# Traces
+
+> Find slow or failed work by following each step, wait, and retry in a run trace.
+
+Open a run trace to find the slow or failed step before changing code or capacity. Inngest records traces automatically in the [Dev Server](/docs/local-development) and Cloud dashboard. You don't need to configure anything. Each trace shows step timing, queue delays, retry attempts, and input and output data.
+
+## Read the timeline
+Open a run and select a bar in its waterfall timeline. The run bar shows overall status and duration. Step bars show `step.run`, sleeps, waits, invokes, and other operations. Expand a step to separate queue delay from time spent in your server. A high queue delay points to scheduling or capacity; a long server span points to your function code or a dependency.
+The details panel shows step input, output, errors, attempt number, and timing. Retry attempts appear as separate spans. Select the root bar for trigger and run details. Use the trace to choose a safe starting point before rerunning a step.
+Custom OpenTelemetry spans can appear as extended traces when supported by your SDK and instrumentation. Sandbox operations appear alongside the durable steps that call them.
+
+## Find your way around the trace view
+The trace view has two panels. The left panel holds the run header and the timeline. The right panel shows details for the step or run you select. Drag the divider between them to resize.
+
+The run header shows:
+
+- The function name, with breadcrumbs (App > Function > Run)
+- The run ID, with links to the app and function
+- **Duration**: total time from queued to ended
+- **Queued at**, **Started at**, and **Ended at** timestamps
+- An AI indicator when the function uses `step.ai` methods
+
+Use the header actions to [**Rerun**](/docs/platform-and-operations/rerun-a-run) the run, **Cancel** a run in progress, or **Invoke** the function again.
+
+## Tell bars apart
+Each bar is a span. Its position and length match its start time and duration within the run. Markers at the top show 0%, 25%, 50%, 75%, and 100% of the run. Each bar shows a name and icon on the left and its duration on the right.
+
+| Bar | What it shows | Style |
+|-----|---------------|-------|
+| **Run** | The whole function execution | Solid bar in the status color |
+| **step.run** | A `step.run()` execution | Solid bar in the status color |
+| **step.sleep** | A `step.sleep()` pause | Gray solid bar |
+| **step.waitForEvent** | A `step.waitForEvent()` wait | Gray solid bar |
+| **step.invoke** | A `step.invoke()` call to another function | Gray solid bar |
+| **Inngest** | Queue and scheduling delay | Short gray bar |
+| **Your server** | Time your server spent running the step | Tall bar with diagonal stripes |
+| **Connecting** | The connection phase | Dotted outline |
+| **Finalization** | Cleanup and saving state after execution | Short bar in the status color |
+| **Userland span** | A custom OpenTelemetry span from your code, nested under "Your server" (see [Extended Traces](#add-your-own-spans-with-extended-traces)) | Blue solid bar |
+
+Run and step bars use status colors: green for completed, red for failed, and gray for cancelled.
+
+When a step has both queue delay and execution time, it shows as a compound bar. A short gray segment for the wait comes first, then a status-colored segment for the execution. This shows at a glance how long the step waited compared with how long it ran.
+
+Hover over a bar to see its duration, its queue delay (when there is one), and its start and end times to the millisecond.
+
+## Split queue time from server time
+Select the expand arrow on a step bar to see where its time went:
+
+1. **Inngest** (gear icon): time in Inngest's queue before your server received the request.
+2. **Your server** (building icon, or your organization's name): time your server spent running the step.
+
+A long Inngest bar points to queue congestion. A long server bar points to your code or a dependency.
+
+## Zoom into part of a run
+Long runs with short steps can be hard to read. Use the time brush in the timeline header to zoom in:
+
+- Drag the handles at either end to narrow the window.
+- Drag the selected region to pan across the run.
+- Click outside the selection to expand it.
+- Select the reset button to return to the full run (0%–100%).
+
+The time markers and bars rescale to fill the window.
+
+## Inspect a step
+Select a step bar to open its details. The header shows the step name and, after a retry, an **Attempt N** badge in the step's status color. Use [**Rerun from step**](/docs/platform-and-operations/rerun-a-run) to run the function again from this step. For supported steps, you can replace the step's input first.
+
+The timing section shows **Queued at**, **Started at**, **Ended at**, **Delay** (time waiting in the queue), **Duration**, and the step type, such as `step.run` or `step.invoke`.
+
+Some step types show extra fields:
+
+| Step type | Fields shown |
+|-----------|--------------|
+| `step.invoke` | Function ID, triggering event ID, triggered run ID, timeout, timed out status, return event ID |
+| `step.sleep` | Sleep until datetime |
+| `step.waitForEvent` | Event name, match expression, timeout, timed out status, matched event ID |
+| `step.waitForSignal` | Signal name, timeout, timed out status |
+
+Tabs below the timing section show:
+
+- **Input**: the step's input as formatted JSON
+- **Output**: the step's return value as formatted JSON
+- **Error details**: the error message and body. This tab opens by default when the step failed.
+- **Headers**: response headers returned by your SDK endpoint
+- **Metadata**: key-value tables for span metadata, such as custom metadata, AI metadata, and warnings
+
+## Inspect the run and its trigger
+Select the root bar, or clear your step selection, to see run details. Trigger fields depend on how the run started:
+
+| Trigger type | Fields shown |
+|--------------|--------------|
+| **Event** | Event name, event ID, received at timestamp |
+| **Cron** | Cron expression, cron ID, triggered at timestamp |
+| **Batch** | Event name, batch ID, received at timestamp |
+
+Use **Invoke** to run the function again with a custom payload.
+
+Tabs show:
+
+- **Input**: the triggering event payload as formatted JSON. In the Dev Server, you can also send it to the Dev Server from here.
+- **Output**: the function's return value
+- **Error details**: the error message and body, when the run failed
+- **Metadata**: run-level span metadata
+
+## Compare retry attempts
+When a step fails and retries, its details show an attempt badge, such as "Attempt 2". The badge is red for a failed attempt and green for a successful retry. Each attempt is a separate span in the timeline. Compare their timing and output to see what changed between attempts.
+
+## Add your own spans with Extended Traces
+<VersionBadge version="TypeScript 3.44.5+" />
+
+Extended Traces add [OpenTelemetry](https://opentelemetry.io/) spans from your own code to the trace. Use them to see work that happens outside Inngest steps:
+
+- External calls, such as HTTP requests, database queries, and third-party APIs
+- Slow operations anywhere in the execution path
+- Trace context carried across your stack
+
+Extended trace spans appear as child bars nested under your server's execution, labeled with the operation they represent. Select one to open its **Attributes** tab. It shows the span name, span kind (such as client, server, or internal), service name, and all OpenTelemetry attributes as key-value pairs. Inngest hides its own internal attributes.
+
+<Note>
+  With `@inngest/otel`, Extended Traces capture spans from popular libraries, such as HTTP clients and database drivers, automatically. See the [instrumentation notes](/docs/reference/typescript/v4/extended-traces#instrumentation).
+</Note>
+
+### Set up Extended Traces
+Extended Traces are opt-in and available in the TypeScript SDK. To set them up, configure `@inngest/otel` and add the Extended Traces middleware to your Inngest client. Follow the [Extended Traces reference](/docs/reference/typescript/v4/extended-traces) for the code ([SDK v3 version](/docs/reference/typescript/v3/extended-traces)).
+
+For a full Node.js walkthrough, see [OpenTelemetry in Node.js: Tracing Express APIs and Background Workflows](/blog/opentelemetry-nodejs-tracing-express-inngest). It covers `@opentelemetry/sdk-node`, `@opentelemetry/exporter-trace-otlp-http`, Express instrumentation, and sending spans to an existing OpenTelemetry collector.

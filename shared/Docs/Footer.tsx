@@ -70,7 +70,7 @@ const FeedbackThanks = forwardRef<HTMLDivElement, {}>(function FeedbackThanks(
       ref={ref}
       className="absolute inset-0 flex justify-center md:justify-start"
     >
-      <div className="flex items-center gap-3 rounded-full bg-breeze-50/50 py-1 pr-3 pl-1.5 text-sm text-breeze-900 ring-1 ring-inset ring-breeze-500/20 dark:bg-breeze-500/5 dark:text-breeze-200 dark:ring-breeze-500/30">
+      <div className="bg-breeze-50/50 flex items-center gap-3 rounded-full py-1 pl-1.5 pr-3 text-sm text-breeze-900 ring-1 ring-inset ring-breeze-500/20 dark:bg-breeze-500/5 dark:text-breeze-200 dark:ring-breeze-500/30">
         <CheckIcon className="h-5 w-5 flex-none fill-breeze-500 stroke-white dark:fill-breeze-200/20 dark:stroke-breeze-200" />
         Thanks for your feedback!
       </div>
@@ -141,7 +141,7 @@ function PageLink({ label, page, previous = false }) {
         href={page.href}
         tabIndex={-1}
         aria-hidden="true"
-        className="mx-4 no-underline text-lg font-medium text-slate-900 transition hover:text-slate-600 dark:text-white dark:hover:text-slate-300"
+        className="mx-4 text-lg font-medium text-slate-900 no-underline transition hover:text-slate-600 dark:text-white dark:hover:text-slate-300"
       >
         {page.title}
       </Link>
@@ -158,7 +158,7 @@ function flattenNav(nav: any): NavLink[] {
         ? flattenNav(group.links)
         : group;
     })
-    .filter((link) => !!link.href);
+    .filter((link) => link.href?.startsWith("/docs"));
 }
 
 function PageNavigation() {
@@ -221,9 +221,9 @@ function EditPageLink({ url }: { url?: string }) {
     <div className="flex justify-center md:justify-start">
       <Link
         href={url}
-        className="flex space-x-2 font-medium text-breeze-600 hover:text-slate-800 hover:underline transition-all duration-150 dark:hover:text-white dark:text-breeze-400"
+        className="flex items-center gap-1.5 text-xs font-medium text-breeze-600 transition-all duration-150 hover:text-slate-800 hover:underline dark:text-breeze-400 dark:hover:text-white"
       >
-        <PencilSquareIcon className="h-5" />
+        <PencilSquareIcon className="h-3.5 w-3.5" />
         <span>Edit this page on GitHub</span>
       </Link>
     </div>
@@ -254,9 +254,11 @@ export function Footer({ editPageURL }: { editPageURL: string }) {
 
   return (
     <footer className="mx-auto max-w-2xl space-y-8 lg:max-w-none">
-      <Feedback key={router.pathname} page={router.pathname} />
-      <EditPageLink url={editPageURL} />
       <PageNavigation />
+      <div className="space-y-3">
+        <Feedback key={router.pathname} page={router.pathname} />
+        <EditPageLink url={editPageURL} />
+      </div>
       <SmallPrint />
     </footer>
   );

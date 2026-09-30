@@ -19,6 +19,8 @@ import "../../../../../shared/Patterns/patterns-docs.css";
 
 type PatternFrontmatter = {
   title?: string;
+  // Optional SEO title override for the <title> tag (docs Layout `metaTitle`).
+  metaTitle?: string;
   subtitle?: string;
   tags?: string[];
   video?: string;
@@ -61,6 +63,7 @@ export const getStaticProps: GetStaticProps = async (ctx) => {
       category,
       slug,
       title: md.title ?? slug,
+      metaTitle: md.metaTitle ?? null,
       subtitle: md.subtitle ?? "",
       tags: md.tags ?? [],
       video: md.video ?? "",
@@ -77,7 +80,9 @@ export const getStaticProps: GetStaticProps = async (ctx) => {
       hidePageSidebar: true,
       designVersion: "2",
       meta: {
-        title: md.title ? `${md.title} | Inngest patterns` : "Inngest patterns",
+        title:
+          md.metaTitle ??
+          (md.title ? `${md.title} | Inngest patterns` : "Inngest patterns"),
         description:
           md.subtitle ??
           "Architecture patterns for building reliable AI pipelines, background jobs, and event-driven workflows.",

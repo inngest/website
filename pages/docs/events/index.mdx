@@ -129,20 +129,20 @@ Now with this client, you can send events from anywhere in your app. You can sen
 
 Sending this event, named `storefront/cart.checkout.completed`, to Inngest will do two things:
 
-1. Automatically run any [functions](/docs/learn/inngest-functions) that are triggered by this specific event, passing the event payload to the function's arguments.
+1. Automatically run any [functions](/docs/durable-execution/durable-workflows) that are triggered by this specific event, passing the event payload to the function's arguments.
 2. Store the event payload in Inngest cloud. You can find this in the **Events** tab of the dashboard.
 
 <Callout>
 
-💡 One event can trigger multiple functions, enabling you to consume a single event in multiple ways. This is different than traditional message queues where only one worker can consume a single message. Learn about [the fan-out approach here](/docs/guides/fan-out-jobs).
+💡 One event can trigger multiple functions, enabling you to consume a single event in multiple ways. This is different than traditional message queues where only one worker can consume a single message. Learn about [the fan-out approach here](/docs/durable-execution/guides-and-advanced/patterns/fan-out).
 
 </Callout>
 
 ## Setting an Event Key
 
-In production, your application will need an "Event Key" to send events to Inngest. This is a secret key that is used to authenticate your application and ensure that only your application can send events to a given [environment](/docs/platform/environments) in your Inngest account.
+In production, your application will need an "Event Key" to send events to Inngest. This is a secret key that is used to authenticate your application and ensure that only your application can send events to a given [environment](/docs/platform-and-operations/environments-and-branch-deploys) in your Inngest account.
 
-You can learn [how to create an Event Key here](/docs/events/creating-an-event-key). Once you have a key, you can set it in one of two ways:
+You can learn [how to create an Event Key here](/docs/platform-and-operations/keys-and-access). Once you have a key, you can set it in one of two ways:
 
 1. Set an `INNGEST_EVENT_KEY` environment variable with your Event Key. **This is the recommended approach.**
 2. Pass the Event Key to the `Inngest` constructor as the `eventKey` option:
@@ -175,7 +175,7 @@ Event keys are _not_ required in local development with the [Inngest Dev Server]
 
 The event payload is a JSON object that must contain a `name` and `data` property.
 
-Explore all events properties in the [Event payload format guide](/docs/features/events-triggers/event-format).
+Explore all events properties in the [Event payload format guide](/docs/durable-execution/guides-and-advanced/events-and-triggers/event-payloads-and-schemas).
 
 
 ## Sending multiple events at once
@@ -209,7 +209,7 @@ await inngest.send(events);
 
 ## Sending events from within functions
 
-You can also send events from within your functions using `step.sendEvent()` to, for example, trigger other functions. Learn more about [sending events from within functions](/docs/guides/sending-events-from-functions). Within functions, `step.sendEvent()` wraps the event sending request within a `step` to ensure reliable event delivery and prevent duplicate events from being sent. We recommend using `step.sendEvent()` instead of `inngest.send()` within functions.
+You can also send events from within your functions using `step.sendEvent()` to, for example, trigger other functions. Learn more about [sending events from within functions](/docs/durable-execution/primitives/step-sendevent). Within functions, `step.sendEvent()` wraps the event sending request within a `step` to ensure reliable event delivery and prevent duplicate events from being sent. We recommend using `step.sendEvent()` instead of `inngest.send()` within functions.
 
 ```ts
 export default inngest.createFunction(
@@ -275,7 +275,7 @@ await inngest_client.send(events);
 
 ## Sending events from within functions
 
-You can also send events from within your functions using `step.send_event()` to, for example, trigger other functions. Learn more about [sending events from within functions](/docs/guides/sending-events-from-functions). Within functions, `step.send_event()` wraps the event sending request within a `step` to ensure reliable event delivery and prevent duplicate events from being sent. We recommend using `step.send_event()` instead of `inngest.send()` within functions.
+You can also send events from within your functions using `step.send_event()` to, for example, trigger other functions. Learn more about [sending events from within functions](/docs/durable-execution/primitives/step-sendevent). Within functions, `step.send_event()` wraps the event sending request within a `step` to ensure reliable event delivery and prevent duplicate events from being sent. We recommend using `step.send_event()` instead of `inngest.send()` within functions.
 
 ```python
 import inngest
@@ -332,7 +332,7 @@ You can send events from any system or programming language with our API and an 
 
 {/* NOTE - We'll leave other SDKs here for now, but in time, instead we'll make this entire guide have Python and Go examples for each section above */}
 
-To send an event to a specific [branch environment](/docs/platform/environments#branch-environments), set the `x-inngest-env` header to the name of your branch environment, for example: `x-inngest-env: feature/my-branch`.
+To send an event to a specific [branch environment](/docs/platform-and-operations/environments-and-branch-deploys), set the `x-inngest-env` header to the name of your branch environment, for example: `x-inngest-env: feature/my-branch`.
 
 <CodeGroup tag="POST" label="inn.gs/e/:eventKey">
 
@@ -435,7 +435,7 @@ await inngest_client.send(
 ```
 </LanguageSection> 
 
-Learn more about this in the [handling idempotency guide](/docs/guides/handling-idempotency).
+Learn more about this in the [handling idempotency guide](/docs/durable-execution/guides-and-advanced/idempotency).
 
 <Callout variant="warning">
 💡 Deduplication prevents duplicate function runs for 24 hours from the first event.
@@ -453,7 +453,7 @@ For example, for two events like `storefront/item.imported` and `storefront/item
 
 ## Further reading
 
-* [Creating an Event Key](/docs/events/creating-an-event-key)
+* [Creating an Event Key](/docs/platform-and-operations/keys-and-access)
 * [TypeScript SDK Reference: Send events](/docs/reference/typescript/v4/events/send)
 * [Python SDK Reference: Send events](/docs/reference/python/client/send)
 * [Go SDK Reference: Send events](https://pkg.go.dev/github.com/inngest/inngestgo#Client)

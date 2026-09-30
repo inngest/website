@@ -1,0 +1,172 @@
+export const metaTitle = "Quick start | Agent Evals";
+export const description = "Build an online eval that links immediate checks and later feedback to the response variant that served a user.";
+
+# Agent Evals quick start
+> Build an online eval that links immediate checks and later feedback to the response variant that served a user.
+
+Build a support response experiment and measure whether the selected answer helped the user. You will group related work in a session, score an immediate check, compare two variants, and attach later feedback to the variant that served the answer.
+
+This example uses fixed responses so you can run it without an AI provider. Replace the response steps with your agent or workflow once you have the evaluation loop working.
+
+## Before you start
+
+- Use Node.js and the latest TypeScript SDK. Experiments and scoring require v4.8.0 or later, and scoring and deferred scoring are beta APIs.
+- Install the packages with `npm install inngest@latest express zod` and `npm install -D tsx @types/express`.
+- Use three terminals: one for your app, one for the Inngest Dev Server, and one for test requests.
+
+## 1. Create the app and scorer
+
+Save this as `index.ts`:
+
+```typescript
+import express from "express";
+import { randomUUID } from "node:crypto";
+import { Inngest, experiment } from "inngest";
+import { serve } from "inngest/express";
+import { createScorer, scoreMiddleware } from "inngest/experimental";
+import { z } from "zod";
+
+const inngest = new Inngest({
+  id: "support-evals-example",
+  middleware: [scoreMiddleware()],
+});
+
+const feedbackScorer = createScorer(
+  inngest,
+  {
+    id: "score-support-feedback",
+    schema: z.object({ ticketId: z.string() }),
+  },
+  async ({ event, step }) => {
+    const feedback = await step.waitForEvent("wait-for-feedback", {
+      event: "support/feedback.received",
+      timeout: "10m",
+      if: `async.data.ticketId == '${event.data.ticketId}'`,
+    });
+
+    if (!feedback) return null;
+    return { name: "user-helpful", value: feedback.data.helpful };
+  }
+);
+
+const answerTicket = inngest.createFunction(
+  {
+    id: "answer-support-ticket",
+    triggers: { event: "support/ticket.created" },
+  },
+  async ({ event, step, group, defer }) => {
+    const { result: answer, variant, experimentRef } =
+      await group.experiment("answer-style", {
+        variants: {
+          current: () =>
+            step.run("answer-current", () =>
+              "We received your request. Our team will reply soon."
+            ),
+          rewrite: () =>
+            step.run("answer-rewrite", () =>
+              `Thanks for writing about ${event.data.message}. We'll help you resolve it.`
+            ),
+        },
+        select: experiment.weighted({ current: 50, rewrite: 50 }),
+      });
+
+    await step.score("score-response-length", {
+      name: "under-120-characters",
+      value: answer.length <= 120,
+    });
+
+    defer("score-user-feedback", {
+      function: feedbackScorer,
+      data: { ticketId: event.data.ticketId },
+      experiment: experimentRef,
+    });
+
+    return { ticketId: event.data.ticketId, variant, answer };
+  }
+);
+
+const app = express();
+app.use(express.json());
+app.use(
+  "/api/inngest",
+  serve({ client: inngest, functions: [answerTicket, feedbackScorer] })
+);
+
+app.post("/ticket", async (req, res) => {
+  const ticketId = randomUUID();
+  const message = String(req.body.message ?? "I cannot sign in");
+  await inngest.send({
+    name: "support/ticket.created",
+    data: { ticketId, message },
+    meta: { sessions: { ticket_id: ticketId } },
+  });
+  res.json({ ticketId });
+});
+
+app.post("/feedback", async (req, res) => {
+  const ticketId = String(req.body.ticketId);
+  const helpful = req.body.helpful === true;
+  await inngest.send({
+    name: "support/feedback.received",
+    data: { ticketId, helpful },
+    meta: { sessions: { ticket_id: ticketId } },
+  });
+  res.json({ ticketId, helpful });
+});
+
+app.listen(3000);
+```
+
+The session ID links events and runs for one ticket. The `under-120-characters` score records a check known during the run. The scorer waits separately for the user’s answer, so the support function can finish. The `experimentRef` credits that later feedback to the selected response variant.
+
+## 2. Start both servers
+
+Run the app in one terminal:
+
+```bash
+INNGEST_DEV=1 npx tsx index.ts
+```
+
+Run the Dev Server in another:
+
+```bash
+npx --ignore-scripts=false inngest-cli@latest dev --no-discovery -u http://localhost:3000/api/inngest
+```
+
+Open `http://localhost:8288`. You should see `answer-support-ticket` and the scorer after the app syncs.
+
+## 3. Send a request and feedback
+
+Create a ticket:
+
+```bash
+curl -sS -X POST http://localhost:3000/ticket \
+  -H 'content-type: application/json' \
+  -d '{"message":"I cannot sign in"}'
+```
+
+Copy the `ticketId` from the response. Open the `answer-support-ticket` run in the Dev Server. Its result contains the selected `variant` and `answer`. Its trace shows the selected response step and the immediate score. Wait until the deferred scorer reaches `wait-for-feedback` before sending feedback.
+
+Send feedback before the scorer’s ten-minute wait expires. Replace `TICKET_ID` with the value you copied:
+
+```bash
+curl -sS -X POST http://localhost:3000/feedback \
+  -H 'content-type: application/json' \
+  -d '{"ticketId":"TICKET_ID","helpful":true}'
+```
+
+The scorer writes `user-helpful: true` for the original support run and its selected experiment variant. In the Inngest dashboard, open the environment that received these events and inspect the run trace and experiment results. Sessions may take a short time to appear in **AI → Sessions** because the search index updates asynchronously.
+
+## 4. Compare outcomes
+
+Send several tickets and feedback events. Use `helpful: false` for some outcomes. The experiment assigns each new run to one variant, while each run keeps its selected variant on retries. Compare the variants by the `user-helpful` score, then open individual traces to understand the results. A small number of test runs demonstrates attribution; it does not establish which variant is better.
+
+When a user or account must keep the same response across runs, replace `experiment.weighted(...)` with `experiment.bucket(accountId, { weights: { current: 50, rewrite: 50 } })` and supply a stable `accountId` in your event data. Variant callbacks can also contain several durable steps, so the same pattern can compare a larger workflow path.
+
+## Next steps
+
+- [Scores](/docs/agent-evals/scores) covers run, step, and external scores.
+- [Deferred scoring](/docs/agent-evals/deferred-scoring) covers scorers, timeouts, and writing several scores.
+- [Experiments](/docs/agent-evals/experiments) explains assignment strategies and attribution.
+- [Sessions](/docs/agent-evals/sessions) explains how to group and find related runs.
+- [Read results and roll out](/docs/agent-evals/guides/interpreting-results) shows how to compare variants before you ship.

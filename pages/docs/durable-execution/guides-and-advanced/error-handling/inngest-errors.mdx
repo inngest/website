@@ -1,0 +1,50 @@
+export const metaTitle = "Inngest errors";
+export const description = "Stop retrying a permanent error or delay the next attempt until a provider is ready.";
+
+# Inngest errors
+
+> Control whether a failed step retries and when its next attempt starts.
+
+Stop retrying a permanent error or delay the next attempt until a provider is ready. A standard error follows the default retry policy; `NonRetriableError` and `RetryAfterError` change that behavior.
+## Stop retries for a permanent error
+Throw `NonRetriableError` when the same input cannot succeed on another attempt, such as an ID that fails validation. It bypasses remaining retries for the function or step where you throw it. A failed step can still be caught by the function. See [Non-retriable errors](/docs/durable-execution/guides-and-advanced/error-handling/non-retriable-errors).
+## Retry when an upstream service is ready
+Throw `RetryAfterError` when a rate limit or temporary condition provides a useful delay. The second argument accepts milliseconds, a duration string such as `"30s"`, or a `Date`. If you throw a standard error instead, Inngest uses its normal backoff.
+This example uses the `inngest` client from the [Quick start](/docs/durable-execution/quick-start).
+```typescript
+import { NonRetriableError, RetryAfterError } from "inngest";
+
+export const fetchItem = inngest.createFunction(
+  {
+    id: "fetch-item",
+    triggers: { event: "store/item.requested" },
+  },
+  async ({ event, step }) => {
+    if (!event.data.itemId) {
+      throw new NonRetriableError("itemId is required");
+    }
+
+    return await step.run("fetch-item", async () => {
+      const response = await fetch(
+        `https://api.example.com/items/${event.data.itemId}`
+      );
+
+      if (response.status === 404) {
+        throw new NonRetriableError("item does not exist");
+      }
+      if (response.status === 429) {
+        throw new RetryAfterError("item API rate limit", "30s");
+      }
+      if (!response.ok) {
+        throw new Error(`item API returned ${response.status}`);
+      }
+
+      return response.json();
+    });
+  }
+);
+```
+Replace the URL with your service endpoint. If that service supplies a valid `Retry-After` value, pass an appropriate duration or time instead of the fixed `"30s"` shown here.
+## Handle an exhausted step
+After a step exhausts retries, it throws a `StepError` into the function. Use `try`/`catch` around that step to run a fallback or compensation step. If you do not catch it, the function fails. See [Rollbacks](/docs/durable-execution/guides-and-advanced/error-handling/rollbacks). Avoid treating every error as permanent; ordinary errors are appropriate when another attempt can succeed.
+The SDK also accepts an original `Error` as the optional `cause` of `NonRetriableError` or `RetryAfterError`. This preserves context for diagnosis.

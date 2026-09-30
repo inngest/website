@@ -80,7 +80,7 @@ const TABS: Tab[] = [
       </>
     ),
     ctaLabel: "Step Functions Docs",
-    ctaHref: "/docs/learn/inngest-functions",
+    ctaHref: "/docs/durable-execution/durable-workflows",
     graphic: <ReliabilityGraphic />,
   },
   {
@@ -90,7 +90,7 @@ const TABS: Tab[] = [
     title: "Control who gets what.",
     body: "Per-user concurrency limits, global throttles, and priority queuing for premium tiers — all in config. One user's burst can't exhaust your rate limits for everyone else.",
     ctaLabel: "Flow Control Docs",
-    ctaHref: "/docs/guides/flow-control",
+    ctaHref: "/docs/durable-execution/flow-control",
     graphic: <ScaleGraphic />,
   },
   {
@@ -100,7 +100,7 @@ const TABS: Tab[] = [
     title: "See everything.\nFix fast.",
     body: "Every step, every LLM prompt and response, every token cost — captured automatically in a live trace UI. See exactly what failed, replay it in bulk after a fix, and ship with confidence.",
     ctaLabel: "Observability & Traces Docs",
-    ctaHref: "/docs/platform/monitor/observability-metrics",
+    ctaHref: "/docs/platform-and-operations/metrics",
     graphic: <ObserveGraphic />,
   },
 ];

@@ -14,7 +14,7 @@ Using sleep methods can avoid the need to run multiple cron jobs or use addition
 
 `step.sleep` and `step.sleepUntil` tell Inngest to resume execution of your function at a future time. Your code doesn't need to be running during the sleep interval, allowing sleeps to be used in any environment, even serverless platforms.
 
-A Function paused by a sleeping Step doesn't affect your account capacity; i.e. it does not count against your plan's concurrency limit. A sleeping Function doesn't count against any [concurrency policy](/docs/guides/concurrency) you've set on the function, either.
+A Function paused by a sleeping Step doesn't affect your account capacity; i.e. it does not count against your plan's concurrency limit. A sleeping Function doesn't count against any [concurrency policy](/docs/durable-execution/flow-control/concurrency) you've set on the function, either.
 
 
 <LanguageSelector>

@@ -1,0 +1,510 @@
+import { Warning, LanguageSelector, LanguageSection } from "shared/Docs/mdx";
+
+export const metaTitle = "Cron Jobs, Schedules & Delayed Functions";
+export const description = "Run a daily report or send a reminder at a chosen time without keeping an app timer running.";
+
+# Schedules and delayed starts
+
+> Schedule recurring or future work without keeping an app timer running.
+
+Run a daily report or send a reminder at a chosen time without keeping an app timer running. Inngest stores the schedule or delay and starts the function when it is due. This works on any provider or platform, including serverless hosts, and survives server restarts and redeploys. You never manage a queue or backlog.
+
+## Run on a recurring schedule
+
+Use a cron trigger for work such as a daily report.
+
+```typescript
+import { cron } from "inngest";
+// Assumes `inngest` is your client and `buildReport` is defined elsewhere.
+
+export const dailyReport = inngest.createFunction(
+  {
+    id: "daily-report",
+    triggers: [cron("0 9 * * *")],
+  },
+  async ({ step }) => {
+    return step.run("build-report", buildReport);
+  }
+);
+```
+
+The basic cron expression runs at 09:00 UTC. A cron expression has five fields: minute, hour, day of month, month, and day of week. For example, `0 9 * * *` runs at 09:00 every day, `0 * * * *` runs at the start of every hour, and `0 12 * * 5` runs at 12:00 every Friday.
+
+Your functions must be [served](/docs/durable-execution/deploying-functions/serve) so Inngest can find and call them.
+
+## Run in a local timezone
+
+Prefix the expression with a timezone when the business schedule follows local time, for example `TZ=Europe/Paris 0 9 * * *`. Without a prefix, the schedule uses UTC.
+
+<Warning>
+**Check daylight saving changes for schedules near clock transitions.** Depending on the timezone and the schedule, a cron may run zero, one, or two times on the day clocks change. Inngest follows the underlying cron library and does not correct for daylight saving time.
+
+To reduce the risk, avoid schedules in the transition hour, such as `2:00 AM` in many US regions or `12:00 AM` in some other regions. Use `TZ=UTC` when you need consistent timing.
+</Warning>
+
+## Spread out runs with jitter
+
+A cron function fires at the exact scheduled time by default. When many cron functions share a schedule, they all fire at once. That can create load spikes on your system or on third-party APIs.
+
+Add a `jitter` to spread them out. Each occurrence then fires at a random time within the jitter window after the scheduled time. Jitter must be between 1 second and 5 minutes.
+
+<LanguageSelector>
+
+<LanguageSection show="typescript">
+
+```ts
+inngest.createFunction(
+  {
+    id: "hourly-sync",
+    triggers: [{ cron: "0 * * * *", jitter: "5m" }],
+  },
+  async ({ step }) => {
+    // Fires at a random time within 5 minutes after each hour
+  }
+);
+```
+
+</LanguageSection>
+<LanguageSection show="go">
+
+```go
+inngestgo.CreateFunction(
+    client,
+    inngestgo.FunctionOpts{ID: "hourly-sync"},
+    inngestgo.CronTriggerWithJitter("0 * * * *", 5*time.Minute),
+    func(ctx context.Context, input inngestgo.Input[any]) (any, error) {
+        // Fires at a random time within 5 minutes after each hour
+        return nil, nil
+    },
+)
+```
+
+</LanguageSection>
+<LanguageSection show="python">
+
+```python
+@inngest_client.create_function(
+    fn_id="hourly-sync",
+    trigger=inngest.TriggerCron(cron="0 * * * *", jitter="5m"),
+)
+async def hourly_sync(ctx: inngest.Context) -> None:
+    # Fires at a random time within 5 minutes after each hour
+    pass
+```
+
+</LanguageSection>
+</LanguageSelector>
+
+## Fan out large scheduled jobs
+
+A scheduled job that loops over many records can take a long time. Instead, use the cron function to send one event per record, then handle each record in a separate event-triggered function. These runs can execute in parallel. This is the [fan-out pattern](/docs/durable-execution/guides-and-advanced/patterns/fan-out).
+
+This weekly digest runs at 12:00 every Friday in the Paris timezone:
+
+<LanguageSelector>
+
+<LanguageSection show="typescript">
+
+See [`createFunction()`](/docs/reference/typescript/v4/functions/create) for all function options.
+
+```ts 
+import { Inngest, cron } from "inngest";
+
+const inngest = new Inngest({ id: "signup-flow" });
+
+// Assumes `db` and `emailClient` are your own database and email helpers.
+
+// This weekly digest function will run at 12:00pm on Friday in the Paris timezone
+export const prepareWeeklyDigest = inngest.createFunction(
+  { id: "prepare-weekly-digest", triggers: [cron("TZ=Europe/Paris 0 12 * * 5")] },
+  async ({ step }) => {
+    // Load all the users from your database:
+    const users = await step.run(
+      "load-users",
+      async () => await db.load("SELECT * FROM users")
+    );
+
+    // 💡 Since we want to send a weekly digest to each one of these users
+    // it may take a long time to iterate through each user and send an email.
+
+    // Instead, we'll use this scheduled function to send an event to Inngest
+    // for each user then handle the actual sending of the email in a separate
+    // function triggered by that event.
+
+    // ✨ This is known as a "fan-out" pattern ✨
+
+    // 1️⃣ First, we'll create an event object for every user return in the query:
+    const events = users.map((user) => {
+      return {
+        name: "app/send.weekly.digest",
+        data: {
+          user_id: user.id,
+          email: user.email,
+        },
+      };
+    });
+
+    // 2️⃣ Now, we'll send all events in a single batch:
+    await step.sendEvent("send-digest-events", events);
+
+    // This function can now quickly finish and the rest of the logic will
+    // be handled in the function below ⬇️
+  }
+);
+
+// This is a regular Inngest function that will send the actual email for
+// every event that is received (see the above function's step.sendEvent())
+
+// Since we are "fanning out" with events, these functions can all run in parallel
+export const sendWeeklyDigest = inngest.createFunction(
+  { id: "send-weekly-digest-email", triggers: { event: "app/send.weekly.digest" } },
+  async ({ event }) => {
+    // 3️⃣ We can now grab the email and user id from the event payload
+    const { email, user_id } = event.data;
+
+    // 4️⃣ Finally, we send the email itself:
+    await emailClient.send("weekly_digest", email, user_id);
+
+    // 🎇 That's it! - We've used two functions to reliably perform a scheduled
+    // task for a large list of users!
+  }
+);
+```
+
+</LanguageSection>
+<LanguageSection show="go">
+
+See [`CreateFunction()`](https://pkg.go.dev/github.com/inngest/inngestgo#CreateFunction) for all function options.
+
+```go
+package main
+
+import (
+	"context"
+
+	"github.com/inngest/inngestgo"
+	"github.com/inngest/inngestgo/step"
+)
+
+// Assumes `client`, `User`, `loadUsers`, and `emailClient` are defined elsewhere.
+func init() {
+	// This weekly digest function will run at 12:00pm on Friday in the Paris timezone
+	inngestgo.CreateFunction(
+		client,
+		inngestgo.FunctionOpts{ID: "prepare-weekly-digest"},
+		inngestgo.CronTrigger("TZ=Europe/Paris 0 12 * * 5"),
+		func(ctx context.Context, input inngestgo.Input[map[string]any]) (any, error) {
+			// Load all the users from your database:
+			users, err := step.Run(ctx, "load-users", func(ctx context.Context) ([]*User, error) {
+				return loadUsers()
+			})
+			if err != nil {
+				return nil, err
+			}
+
+			// 💡 Since we want to send a weekly digest to each one of these users
+			// it may take a long time to iterate through each user and send an email.
+
+			// Instead, we'll use this scheduled function to send an event to Inngest
+			// for each user then handle the actual sending of the email in a separate
+			// function triggered by that event.
+
+			// ✨ This is known as a "fan-out" pattern ✨
+
+			// 1️⃣ First, we'll create an event object for every user return in the query:
+			events := make([]inngestgo.Event, len(users))
+			for i, user := range users {
+				events[i] = inngestgo.Event{
+					Name: "app/send.weekly.digest",
+					Data: map[string]interface{}{
+						"user_id": user.ID,
+						"email":   user.Email,
+					},
+				}
+			}
+
+			// 2️⃣ Now, we'll send all events in a single batch:
+			_, err = step.SendMany(ctx, "send-digest-events", events)
+			if err != nil {
+				return nil, err
+			}
+
+			// This function can now quickly finish and the rest of the logic will
+			// be handled in the function below ⬇️
+			return nil, nil
+		},
+	)
+
+	// This is a regular Inngest function that will send the actual email for
+	// every event that is received (see the above function's step.SendMany())
+
+	// Since we are "fanning out" with events, these functions can all run in parallel
+	inngestgo.CreateFunction(
+		client,
+		inngestgo.FunctionOpts{ID: "send-weekly-digest-email"},
+		inngestgo.EventTrigger("app/send.weekly.digest", nil),
+		func(ctx context.Context, input inngestgo.Input[map[string]any]) (any, error) {
+			// 3️⃣ We can now grab the email and user id from the event payload
+			email := input.Event.Data["email"].(string)
+			userID := input.Event.Data["user_id"].(string)
+
+			// 4️⃣ Finally, we send the email itself:
+			err := emailClient.Send("weekly_digest", email, userID)
+			if err != nil {
+				return nil, err
+			}
+
+			// 🎇 That's it! - We've used two functions to reliably perform a scheduled
+			// task for a large list of users!
+			return nil, nil
+		},
+	)
+}
+```
+
+</LanguageSection>
+<LanguageSection show="python">
+
+See [`create_function()`](/docs/reference/python/functions/create) for all function options.
+
+```py
+import inngest
+
+inngest_client = inngest.Inngest(app_id="signup-flow")
+
+# Assumes `db` and `email_client` are your own database and email helpers.
+
+# This weekly digest function will run at 12:00pm on Friday in the Paris timezone
+@inngest_client.create_function(
+    fn_id="prepare-weekly-digest",
+    trigger=inngest.TriggerCron(cron="TZ=Europe/Paris 0 12 * * 5")
+)
+async def prepare_weekly_digest(ctx: inngest.Context) -> None:
+    # Load all the users from your database:
+    users = await ctx.step.run(
+        "load-users",
+        lambda: db.load("SELECT * FROM users")
+    )
+
+    # 💡 Since we want to send a weekly digest to each one of these users
+    # it may take a long time to iterate through each user and send an email.
+
+    # Instead, we'll use this scheduled function to send an event to Inngest
+    # for each user then handle the actual sending of the email in a separate
+    # function triggered by that event.
+
+    # ✨ This is known as a "fan-out" pattern ✨
+
+    # 1️⃣ First, we'll create an event object for every user return in the query:
+    events = [
+        inngest.Event(
+            name="app/send.weekly.digest",
+            data={
+                "user_id": user["id"],
+                "email": user["email"],
+            },
+        )
+        for user in users
+    ]
+
+    # 2️⃣ Now, we'll send all events in a single batch:
+    await ctx.step.send_event("send-digest-events", events)
+
+    # This function can now quickly finish and the rest of the logic will
+    # be handled in the function below ⬇️
+
+
+# This is a regular Inngest function that will send the actual email for
+# every event that is received (see the above function's step.send_event())
+
+# Since we are "fanning out" with events, these functions can all run in parallel
+@inngest_client.create_function(
+    fn_id="send-weekly-digest-email",
+    trigger=inngest.TriggerEvent(event="app/send.weekly.digest")
+)
+async def send_weekly_digest(ctx: inngest.Context) -> None:
+    # 3️⃣ We can now grab the email and user id from the event payload
+    email = ctx.event.data["email"]
+    user_id = ctx.event.data["user_id"]
+
+    # 4️⃣ Finally, we send the email itself:
+    await email_client.send("weekly_digest", email, user_id)
+
+    # 🎇 That's it! - We've used two functions to reliably perform a scheduled
+    # task for a large list of users!
+```
+
+</LanguageSection>
+</LanguageSelector>
+
+## Handle repeated failures
+
+On the free plan, Inngest pauses a function automatically after it fails 20 times in a row. Check failing cron functions so a scheduled job does not stop without notice.
+
+## Start once in the future
+
+Set an event's `ts` to a future Unix millisecond timestamp when nothing must happen before the start time.
+
+```typescript
+await inngest.send({
+  name: "notifications/reminder.due",
+  data: { reminderId: "rem_123" },
+  ts: Date.now() + 5 * 60 * 1000,
+});
+```
+
+The event starts matching functions at that time. A future `ts` does not delay a waiting run that matches the event.
+
+The function runs normally once it starts; the delay happens before the run, not inside it. Use this when you know the start time when you send the event. For a full walkthrough, see [Scheduling a one-off function](/docs/examples/scheduling-one-off-function).
+
+## Pause an existing run
+
+Use `step.sleep()` for a duration or `step.sleepUntil()` for a date when the run needs to do work before and after the pause. Inngest resumes the durable run after the wait; your host does not need to keep a process open.
+
+Your function controls its own timing, so the logic stays in one place. When a run reaches a sleep, it stops and tells Inngest when to call it again. Inngest then calls the function at the next step and skips completed work. This is how a sleep outlasts serverless timeouts, server restarts, and redeploys.
+
+### Sleep for a duration
+
+<LanguageSelector>
+
+<LanguageSection show="typescript">
+
+Use [`step.sleep()`](/docs/reference/typescript/v4/functions/step-sleep):
+
+```ts
+import { Inngest } from "inngest";
+
+const inngest = new Inngest({ id: "signup-flow" });
+
+export const fn = inngest.createFunction(
+  { id: "send-signup-email", triggers: { event: "app/user.created" } },
+  async ({ event, step }) => {
+    await step.sleep("wait-a-moment", "1 hour");
+    await step.run("do-some-work-in-the-future", async () => {
+      // This runs after 1 hour
+    });
+  }
+);
+```
+
+</LanguageSection>
+<LanguageSection show="go">
+
+Use [`step.Sleep()`](https://pkg.go.dev/github.com/inngest/inngestgo@v0.7.4/step#Sleep):
+
+```go
+!snippet:path=snippets/go/docs/functions/delayed_function.go
+```
+
+</LanguageSection>
+<LanguageSection show="python">
+
+Use [`step.sleep()`](/docs/reference/python/steps/sleep):
+
+```python
+import inngest
+from datetime import timedelta
+
+inngest_client = inngest.Inngest(app_id="signup-flow")
+
+@inngest_client.create_function(
+    fn_id="send-signup-email", 
+    trigger=inngest.TriggerEvent(event="app/user.created")
+)
+async def send_signup_email(ctx: inngest.Context):
+    
+    await ctx.step.sleep("wait-for-the-future", timedelta(hours=4))
+
+    async def future_work():
+        # Code here runs in the future automatically
+        pass
+
+    await ctx.step.run("do-some-work-in-the-future", future_work)
+```
+
+</LanguageSection>
+</LanguageSelector>
+
+### Sleep until a date
+
+You can pass an ISO date string or a timestamp from the event data, so the sender chooses when the run continues.
+
+<LanguageSelector>
+
+<LanguageSection show="typescript">
+
+Use [`step.sleepUntil()`](/docs/reference/typescript/v4/functions/step-sleep-until):
+
+```ts
+import { Inngest } from "inngest";
+
+const inngest = new Inngest({ id: "signup-flow" });
+
+export const fn = inngest.createFunction(
+  { id: "send-signup-email", triggers: { event: "app/user.created" } },
+  async ({ event, step }) => {
+    await step.sleepUntil("wait-for-iso-string", "2023-04-01T12:30:00");
+
+    // You can also sleep until a timestamp within the event data.  This lets you
+    // pass in a time for you to run the job:
+    await step.sleepUntil("wait-for-timestamp", event.data.run_at); // Assuming event.data.run_at is a timestamp.
+
+    await step.run("do-some-work-in-the-future", async () => {
+      // This runs at the specified time.
+    });
+  }
+);
+```
+
+</LanguageSection>
+<LanguageSection show="python">
+
+Use [`step.sleep_until()`](/docs/reference/python/steps/sleep-until):
+
+```python
+import datetime
+
+import inngest
+
+inngest_client = inngest.Inngest(app_id="signup-flow")
+
+# Assumes `sesclient` is your own email client.
+
+@inngest_client.create_function(
+    fn_id="send-signup-email", 
+    trigger=inngest.TriggerEvent(event="app/user.created")
+)
+async def send_signup_email(ctx: inngest.Context):
+    async def send_email():
+        await sesclient.send_email(
+            to=ctx.event.data["user_email"],
+            subject="Welcome to Inngest!",
+            message="..."
+        )
+    
+    await ctx.step.run("send-the-user-a-signup-email", send_email)
+    
+    await ctx.step.sleep_until(
+        "wait-for-the-future",
+        datetime.datetime(2023, 2, 1, 16, 30, tzinfo=datetime.timezone.utc),
+    )
+
+    async def future_work():
+        # Code here runs in the future automatically
+        pass
+
+    await ctx.step.run("do-some-work-in-the-future", future_work)
+```
+
+</LanguageSection>
+</LanguageSelector>
+
+See [step.sleep()](/docs/durable-execution/primitives/step-sleep) and [step.sleepUntil()](/docs/durable-execution/primitives/step-sleepuntil) for more detail.
+
+## Choose one
+
+- **Cron:** repeat on a calendar schedule.
+- **Future event `ts`:** start new work once at a known time.
+- **Sleep step:** continue the same run later.
+
+Check [Limits](/docs/durable-execution/limits) for current delay allowances.

@@ -1,0 +1,146 @@
+export const metaTitle = "Deferred Scoring | Evaluate After Completion";
+export const description = "Score outcomes that arrive after a run finishes with scorer functions that wait for the real signal.";
+
+# Deferred scoring
+
+> Score outcomes that arrive after a run finishes with scorer functions that wait for the real signal.
+
+Often you don't know how well a run went until later. A customer clicks "helpful" tomorrow. A ticket reopens next week. A fix ships that shows whether the agent pointed at the right files. A **deferred scorer** handles this: it runs as its own function, waits for the signal, and scores the run that started it. The original run finishes without waiting.
+
+Deferred scoring is a beta API. `createScorer` comes from `inngest/experimental` and may change before general availability.
+
+## Create a scorer
+
+Define a scorer with `createScorer()`. The optional `schema` validates the data the scorer receives. The handler can use any step tool, such as `step.waitForEvent()` or `step.run()`.
+
+```typescript
+import { createScorer } from "inngest/experimental";
+import { z } from "zod";
+import { inngest } from "./client";
+
+export const feedbackScorer = createScorer(
+  inngest,
+  {
+    id: "feedback-scorer",
+    schema: z.object({ ticketId: z.string() }),
+  },
+  async ({ event, step }) => {
+    const feedback = await step.waitForEvent("wait-for-feedback", {
+      event: "support/feedback.received",
+      timeout: "7d",
+      if: `async.data.ticketId == '${event.data.ticketId}'`,
+    });
+
+    if (!feedback) return null;
+    return { name: "customer-helpful", value: feedback.data.helpful };
+  }
+);
+```
+
+Return `{ name, value }` to write one score. Return `null` or `undefined` to write nothing. Register the scorer with your other functions:
+
+```typescript
+serve({ client: inngest, functions: [answerTicket, feedbackScorer] });
+```
+
+## Start the scorer from a run
+
+Call `defer()` from the function that produced the result. Pass the data the scorer needs; you don't pass the run ID.
+
+```typescript
+export const answerTicket = inngest.createFunction(
+  { id: "answer-ticket", triggers: { event: "support/ticket.created" } },
+  async ({ event, step, defer }) => {
+    const answer = await step.run("write-answer", () =>
+      writeAnswer(event.data.message)
+    );
+
+    defer("score-feedback", {
+      function: feedbackScorer,
+      data: { ticketId: event.data.ticketId },
+    });
+
+    return answer;
+  }
+);
+```
+
+`defer()` returns `void`; don't await a score from it. Each `defer()` ID must be unique within the run. When the scorer returns a score, Inngest attributes it to the run that called `defer()`.
+
+If the result came from an [experiment](/docs/agent-evals/experiments), pass the returned `experimentRef` so the score counts toward the variant that served it:
+
+```typescript
+defer("score-feedback", {
+  function: feedbackScorer,
+  data: { ticketId: event.data.ticketId },
+  experiment: experimentRef,
+});
+```
+
+## Send the signal
+
+The scorer above waits for `support/feedback.received`. Your app sends it when the customer responds:
+
+```typescript
+await inngest.send({
+  name: "support/feedback.received",
+  data: { ticketId: "tk_123", helpful: true },
+});
+```
+
+Inngest resumes the scorer whose `if` expression matches the event's `ticketId`. The scorer returns the score, and Inngest writes it for the original run.
+
+## How deferred scoring works
+
+- The scorer is a separate function run. Inngest schedules it when the parent run finishes, not when the signal arrives.
+- If the scorer waits with `step.waitForEvent()`, it pauses on its own. The parent run is never affected by the scorer's lifecycle, retries, or failures.
+- A wait only catches events sent after the wait starts. If feedback can arrive very quickly, send it after the parent run finishes, or score the run directly with its `runId`.
+- A scorer accepts normal function options such as `retries`, `concurrency`, and `throttle`. It can't use `onFailure` or event batching.
+- A scorer run and its steps count as executions. The score write is one more step.
+
+## Decide what a timeout means
+
+If the signal never arrives, the scorer's timeout path decides the result. Returning `null` records no score, which means the outcome is unknown. Returning `0` records a negative outcome. Pick one deliberately and keep it the same for every variant you compare. Most comparisons should treat missing feedback as missing, not as failure. See [Read results and roll out](/docs/agent-evals/guides/interpreting-results#let-later-outcomes-catch-up).
+
+## Write several scores
+
+To write more than one score, or to control attribution yourself, write the scores from the scorer and return nothing. The parent run and its variant are on `parents[0]`:
+
+```typescript
+export const reviewScorer = createScorer(
+  inngest,
+  { id: "review-scorer", schema: z.object({ ticketId: z.string() }) },
+  async ({ event, step, parents }) => {
+    const { runId, experiment } = parents[0];
+    const review = await step.waitForEvent("wait-for-review", {
+      event: "support/review.completed",
+      timeout: "14d",
+      if: `async.data.ticketId == '${event.data.ticketId}'`,
+    });
+    if (!review) return null;
+
+    await step.run("write-scores", async () => {
+      for (const [name, value] of Object.entries(review.data.scores)) {
+        if (experiment) {
+          await inngest.score.experiment({ name, value, experiment, runId });
+        } else {
+          await inngest.score({ name, value, runId });
+        }
+      }
+    });
+    return null;
+  }
+);
+```
+
+## Deferred or direct?
+
+- **Score directly** with [`step.score()`](/docs/agent-evals/scores) when you know the outcome before the function finishes: a guardrail passed, JSON parsed, or a tool returned the expected format.
+- **Score from another service** with [`inngest.score({ runId })`](/docs/agent-evals/scores#score-from-outside-the-run) when that service already receives the outcome and knows the run ID. This avoids a scorer run.
+- **Defer a scorer** when the outcome needs its own work: waiting for an event, calling a model judge, or checking an external system.
+
+## Next steps
+
+- [Score user feedback](/docs/agent-evals/guides/user-feedback) shows both the deferred and direct approaches.
+- [Experiments](/docs/agent-evals/experiments) credits deferred scores to variants.
+- [Reference](/docs/agent-evals/reference#deferred-scoring) lists every option.

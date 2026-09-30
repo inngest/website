@@ -21,7 +21,7 @@ const QUICKSTARTS: Quickstart[] = [
   {
     eyebrow: "Quickstart",
     title: "Node.js",
-    href: "/docs/getting-started/nodejs-quick-start",
+    href: "/docs/durable-execution/quick-start/typescript-quick-start",
   },
   {
     eyebrow: "Quickstart",

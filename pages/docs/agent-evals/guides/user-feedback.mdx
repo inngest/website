@@ -1,0 +1,126 @@
+export const metaTitle = "Score user feedback | Agent Evals";
+export const description = "Grade an agent on what actually happened: a thumbs-up, a resolved ticket, or ground truth that arrives after the run.";
+
+# Score user feedback
+> Grade an agent on what actually happened: a thumbs-up, a resolved ticket, or ground truth that arrives after the run.
+
+The most useful signal for an agent is whether the real-world outcome was good, and that usually isn't known when the run finishes. A support agent answers now; whether it resolved the ticket is known hours later. A triage agent cites the files it thinks caused an incident; whether it was right is known when the fix ships.
+
+Because Inngest ran the agent, you can attach the outcome to that original run whenever it arrives. This guide shows the two ways to do it:
+
+| Situation | Approach |
+| --- | --- |
+| Your app receives the outcome and knows the run ID | Score the run directly with `inngest.score({ runId })` |
+| The outcome needs waiting, matching, or computing | Defer a scorer with `createScorer()` and `defer()` |
+
+## Score a thumbs-up directly
+
+When your UI records a rating, it can score the run that produced the answer. Return the run ID with the answer, keep it in your UI, and send it back with the rating.
+
+The agent function returns its own run ID:
+
+```typescript {{ filename: "inngest/answer.ts" }}
+export const answerQuestion = inngest.createFunction(
+  { id: "answer-question", triggers: { event: "agent/question.asked" } },
+  async ({ event, step, runId }) => {
+    const answer = await step.run("answer", () => runAgent(event.data.question));
+    await step.run("save-answer", () =>
+      db.answers.insert({ id: event.data.answerId, runId, answer })
+    );
+    return { answer, runId };
+  }
+);
+```
+
+A small function scores the rating when it arrives:
+
+```typescript {{ filename: "inngest/feedback.ts" }}
+export const scoreRating = inngest.createFunction(
+  { id: "score-rating", triggers: { event: "agent/response.rated" } },
+  async ({ event, step }) => {
+    const { runId } = await step.run("load-answer", () =>
+      db.answers.get(event.data.answerId)
+    );
+
+    await inngest.score({
+      name: "human-feedback",
+      value: event.data.rating === "up",
+      runId,
+    });
+  }
+);
+```
+
+Pass the **original** `runId`. Without it, the score attaches to the `score-rating` run instead of the answer. You can also call `inngest.score()` from an API route; it doesn't need to run inside a function.
+
+## Defer a scorer that waits for ground truth
+
+When the outcome needs to be matched or computed, a deferred scorer is simpler: it waits for the outcome event and scores the run that started it, with no table mapping runs to outcomes.
+
+In this incident-triage example, the agent posts a root-cause analysis that cites files. The scorer waits for the fix to ship, then grades the cited files against the files the fix changed:
+
+```typescript {{ filename: "inngest/triage.ts" }}
+import { createScorer } from "inngest/experimental";
+import { z } from "zod";
+
+const jaccard = (a: string[], b: string[]) => {
+  const A = new Set(a);
+  const B = new Set(b);
+  const shared = [...A].filter((x) => B.has(x)).length;
+  return shared / (A.size + B.size - shared || 1);
+};
+
+export const triageScorer = createScorer(
+  inngest,
+  {
+    id: "triage-localization-scorer",
+    schema: z.object({ incidentId: z.string(), cited: z.array(z.string()) }),
+  },
+  async ({ event, step }) => {
+    const fix = await step.waitForEvent("wait-for-fix", {
+      event: "incident/fix.shipped",
+      timeout: "30d",
+      if: `async.data.incidentId == '${event.data.incidentId}'`,
+    });
+
+    if (!fix) return null; // No fix yet: the outcome is unknown.
+    return {
+      name: "localization",
+      value: jaccard(event.data.cited, fix.data.fixFiles),
+    };
+  }
+);
+
+export const triageIncident = inngest.createFunction(
+  { id: "triage-incident", triggers: { event: "incident/opened" } },
+  async ({ event, step, defer }) => {
+    const rca = await step.run("investigate", () => investigate(event.data));
+    await step.run("post-rca", () => postRca(event.data.incidentId, rca));
+
+    defer("score-localization", {
+      function: triageScorer,
+      data: { incidentId: event.data.incidentId, cited: rca.citedFiles },
+    });
+
+    return rca;
+  }
+);
+```
+
+Register both functions in `serve()`. The triage run finishes right away; the scorer waits up to 30 days. When `incident/fix.shipped` arrives, the `localization` score appears on the triage run, next to its trace. Set overlap gives partial credit, so the score shows *how* wrong the agent was, not only *that* it was wrong.
+
+## Score the whole conversation
+
+A conversation spans many runs. Scores attach to a run or a step, not to a session. To score a conversation outcome, such as "goal completed", score the run that produced the final answer, and add a [session](/docs/agent-evals/sessions) to every event in the conversation so you can inspect the other runs behind the score.
+
+## Tips
+
+- **Score the outcome, not a proxy.** Prefer "did the ticket resolve" over "did the answer look good".
+- **Decide what no response means.** Returning `null` on timeout records nothing; returning `0` records a failure. Most comparisons should treat silence as unknown.
+- **Keep names and ranges stable.** Map pass or fail to `1` or `0` and graded results to a fraction between 0 and 1.
+- **Credit experiment variants.** If the answer came from an experiment, pass `experiment: experimentRef` to `defer()`, or store the ref and use `inngest.score.experiment()`. See [Compare models and prompts](/docs/agent-evals/guides/compare-models-and-prompts).
+
+## Next steps
+
+- [Deferred scoring](/docs/agent-evals/deferred-scoring) covers scorer options and writing several scores.
+- [Read results and roll out](/docs/agent-evals/guides/interpreting-results) explains how to compare outcomes that arrive late.

@@ -1,0 +1,62 @@
+export const metaTitle = "Platform Guides | Manage, Monitor & Deploy";
+export const description = "Run durable functions, Sandboxes, Agent Evals, and Realtime in one account.";
+
+# Platform & operations
+
+> Operate workflows, Sandboxes, Agent Evals, and Realtime together from one Inngest account.
+
+Set up where your code runs, keep credentials safe, see what each run did, and recover when something fails.
+
+## See what happened
+
+Inngest records traces for every run without extra instrumentation. Start with [Observability](/docs/platform-and-operations/observability):
+
+- [Inspect events and runs](/docs/platform-and-operations/inspect-events-and-runs): trace a failed run back to its event and step.
+- [Traces](/docs/platform-and-operations/traces): follow each step, wait, and retry in one run.
+- [Metrics](/docs/platform-and-operations/metrics): spot changes in volume or failures.
+- [Insights](/docs/platform-and-operations/insights): query historical data with SQL.
+
+## Manage and recover
+
+Recover runs, stop work during an incident, and manage keys. See [Manage and recover](/docs/platform-and-operations/manage-and-recover):
+
+- [Rerun a run](/docs/platform-and-operations/rerun-a-run): recover one run.
+- [Replay runs in bulk](/docs/platform-and-operations/replay-runs-in-bulk): recover a selected set of runs.
+- [Bulk cancellation](/docs/durable-execution/guides-and-advanced/cancellation/bulk-cancellation): stop many existing runs at once.
+- [Pause and resume functions](/docs/platform-and-operations/pause-and-resume-functions): stop new runs during maintenance or an incident.
+- [Keys and access](/docs/platform-and-operations/keys-and-access): use an **event key** to send events, a **signing key** to secure requests between Inngest and your app, and an **API key** for the REST API.
+- [Rotate event and signing keys](/docs/platform-and-operations/rotate-event-and-signing-keys): replace a key without downtime.
+
+## Connect other services
+
+Trigger functions from database changes and send metrics to your monitoring stack. See [Integrations](/docs/platform-and-operations/integrations):
+
+- [Neon](/docs/platform-and-operations/integrations/neon): start functions when rows change in Neon Postgres.
+- [Datadog](/docs/platform-and-operations/integrations/datadog): send Inngest metrics to Datadog.
+- [Prometheus](/docs/platform-and-operations/integrations/prometheus): scrape Inngest metrics into Prometheus or Grafana.
+
+## Organize apps and environments
+
+- [Apps and syncs](/docs/platform-and-operations/apps-and-syncs): group the functions you deploy together. Keep each app ID stable so Inngest can track its functions across deploys.
+- [Environments and branch deploys](/docs/platform-and-operations/environments-and-branch-deploys): separate production, staging, and preview deployments, each with its own apps, events, and run history.
+- [Local Development](/docs/local-development): run and test functions on your machine.
+
+## Deploy and connect apps
+
+Your function code runs on your infrastructure, such as AWS, Google Cloud, Vercel, or Cloudflare. Inngest triggers runs and records their progress.
+
+- [Deploying functions](/docs/durable-execution/deploying-functions): serve an HTTP endpoint with `serve()`, or use Connect on a long-running worker.
+- [Cloud architecture and security](/docs/platform-and-operations/cloud-architecture-and-security): see where Inngest coordinates runs and how it protects the connection.
+- [Self-host Inngest](/docs/platform-and-operations/self-host-inngest): run the Inngest server on your own infrastructure. Check its feature scope first.
+
+## Control load
+
+- [Flow control](/docs/durable-execution/flow-control): set concurrency, throttling, or rate limits on the functions that need them.
+- [Limits](/docs/durable-execution/limits) and [pricing](https://www.inngest.com/pricing): check them before you go to production.
+- [Troubleshooting](/docs/durable-execution/troubleshooting): fix failed runs and apps that don't sync.
+
+## Related
+
+- [Sandboxes](/docs/sandboxes): run code in an isolated microVM within a durable run.
+- [Agent Evals](/docs/agent-evals): attach scores to runs and compare variants.
+- [Realtime](/docs/realtime): publish updates to connected clients.

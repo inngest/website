@@ -1,0 +1,96 @@
+export const metaTitle = "Versioning | Evolve Long-Running Functions";
+export const description = "Keep in-flight runs working when you deploy new function code.";
+
+# Versioning
+
+> Change workflows while preserving progress for runs already in flight.
+
+You can deploy new function code while runs are waiting or sleeping. When a run resumes, Inngest uses the current code and reuses results from completed steps whose IDs still match.
+
+## How Inngest handles versioning
+
+Each [step](/docs/durable-execution/primitives) has an ID. Inngest saves the result when the step completes. On resume, the SDK returns that result for the same step ID instead of running the step again. If it finds a new ID, it runs that step and saves its result. You do not need version markers for compatible changes.
+
+For steps inside loops, the SDK combines the step ID with an occurrence counter. This gives each pass through the loop its own saved result. See [durable execution concepts](/docs/durable-execution/concepts) for the execution model.
+
+## Evolving functions over time
+
+New runs use your latest code. For a run already in progress, the effect depends on what you change:
+
+| Change | Effect on an in-progress run |
+| --- | --- |
+| Add a step | Inngest runs it when the new code reaches it. |
+| Change a step's code and keep its ID | A completed step returns its saved result. A step that has not run uses the new code. |
+| Change a step's ID | Inngest treats it as a new step and runs it when reached. |
+| Remove a step | The new code no longer calls it. Its saved result remains unused. |
+| Reorder steps | Completed steps return their saved results by ID. The SDK may log an order warning. |
+
+For example, add `track-signup` between two existing steps:
+
+```ts
+await step.run("send-welcome-email", () => sendWelcomeEmail(event.data.email));
+await step.run("track-signup", () => analytics.track("user_signup_complete", event.data));
+await step.run("sync-to-crm", () => crm.contacts.create(event.data));
+```
+
+If a run completed the email and CRM steps before the deployment, it reuses those results and runs `track-signup`. The new step must not depend on a later step that has not run yet.
+
+### Change a step ID deliberately
+
+Changing `calculate-risk-score` to `calculate-risk-score-v2` makes an in-progress run execute the new step, even if it completed the old one:
+
+```ts
+const score = await step.run("calculate-risk-score-v2", () =>
+  calculateRiskScoreWithNewModel(user.profile)
+);
+```
+
+If that step writes to another system, the change can repeat a payment, email, or resource creation. Check [Idempotency](/docs/durable-execution/guides-and-advanced/idempotency) before changing its ID.
+
+## Major logic changes
+
+For a rewrite that cannot use the state of in-progress runs, create a function with a new ID. Keep the original function deployed until its runs finish. Give the functions mutually exclusive [trigger conditions](/docs/durable-execution/guides-and-advanced/events-and-triggers/event-and-trigger-concepts) so each new event starts only one function:
+
+```ts
+const CUTOVER_TS = 1704067200000;
+
+export const processUploadV1 = inngest.createFunction(
+  {
+    id: "process-upload",
+    triggers: { event: "file/uploaded", if: `event.ts < ${CUTOVER_TS}` },
+  },
+  async ({ event, step }) => {
+    await step.run("process-file", () => legacyProcessor(event.data.fileId));
+  }
+);
+
+export const processUploadV2 = inngest.createFunction(
+  {
+    id: "process-upload-v2",
+    triggers: { event: "file/uploaded", if: `event.ts >= ${CUTOVER_TS}` },
+  },
+  async ({ event, step }) => {
+    await step.run("process-file-v2", () => modernProcessor(event.data.fileId));
+  }
+);
+```
+
+The timestamp filters route new events. Runs that already started under `process-upload` continue there. Once those runs finish, you can remove the original function.
+
+If your producers set the event's [`v` field](/docs/durable-execution/guides-and-advanced/events-and-triggers/event-payloads-and-schemas), you can route on `event.v` instead. For example, send new events with `v: "2"`, then use `event.v != "2"` for the original function and `event.v == "2"` for the new one.
+
+## Best practices
+
+### Keep IDs stable and distinct
+
+Name each step for its job, such as `charge-customer-payment`. Avoid generic IDs such as `step-1` and IDs built from timestamps or input values. Keep the function ID when a change is compatible with in-progress runs.
+
+### Test a paused run
+
+Use the [Inngest Dev Server](/docs/durable-execution/guides-and-advanced/testing) to check both paths before deploying:
+
+1. Start a run and pause it with `step.sleep()`.
+2. Change the function code, then resume the run. Check which saved results it reuses and which steps it runs.
+3. Start a fresh run and confirm that it follows the new path.
+
+Check external side effects and event filters before deploying a change to step IDs or routing.

@@ -1,0 +1,90 @@
+import { Mermaid } from "src/shared/Docs/Mermaid";
+import { SdkSupport } from "src/shared/Docs/SdkSupport";
+
+export const metaTitle = "Overview | Sandboxes";
+export const description = "Run generated code or test a project in an isolated microVM while your durable function coordinates the job.";
+
+# Sandboxes overview
+
+> Run generated code or test a project in an isolated microVM while your durable function coordinates the job.
+
+<SdkSupport
+  feature="Sandboxes"
+  links={{
+    "Durable step.sandbox calls": "/docs/sandboxes/features/managed-lifecycle",
+    "Direct inngest.sandboxes client": "/docs/sandboxes/reference#choose-the-type-script-surface",
+    "Commands and background processes": "/docs/sandboxes/reference#commands-processes-and-files",
+    "Pause, resume, snapshot, and clone": "/docs/sandboxes/features/pause-and-resume",
+    "File upload and download": "/docs/sandboxes/reference#commands-processes-and-files",
+    "Workspace secrets": "/docs/sandboxes/features/secrets",
+    "SSH access": "/docs/sandboxes/features/ssh",
+    "S3-backed persistent mounts": "/docs/sandboxes/features/durable-filesystems",
+  }}
+  sdks={[
+    {
+      sdk: "typescript",
+      href: "/docs/sandboxes/reference",
+      status: "Beta",
+      features: {
+        "Durable step.sandbox calls": true,
+        "Direct inngest.sandboxes client": true,
+        "Commands and background processes": true,
+        "Pause, resume, snapshot, and clone": true,
+        "File upload and download": { supported: true, tag: "Direct client" },
+        "Workspace secrets": true,
+        "SSH access": { supported: false, tag: "Planned" },
+        "S3-backed persistent mounts": { supported: false, tag: "Planned" },
+      },
+      note: "Access-gated beta. The API can change before launch.",
+    },
+    { sdk: "python", planned: true },
+    { sdk: "go", planned: true },
+  ]}
+/>
+
+Run generated code or test a project in a fully isolated microVM while your durable function coordinates the job. Sandboxes boot in under a second. You can pause and resume the same Sandbox, or snapshot it and clone a new one. Inngest coordinates their lifecycle with the run and shows sandbox activity in the same trace. You can give code its own execution environment without building a separate service to start, stop, and track it.
+
+## Why use a Sandbox?
+
+For example, an agent can edit a repository and run its tests in a Sandbox. The durable function coordinates the task while the generated code runs in a separate microVM.
+
+A durable run can include steps, waits, and retries that span more than one request or process. Sandbox operations belong in that run. Inngest can coordinate the environment as the work advances and record what happened alongside the rest of the execution. This lets you inspect the code execution and the workflow that led to it in one place.
+
+## What you can do
+
+- **Boot quickly.** Start a microVM in under a second when work needs an isolated environment.
+- **Run code in isolation.** Keep code that needs its own environment apart from the function's runtime.
+- **Pause and continue.** Stop active work and continue when the job is ready.
+- **Snapshot and clone.** Save Sandbox state and start a new Sandbox from it. Pause and resume continue the original Sandbox. Files persist through these operations.
+- **Follow the work in a trace.** See sandbox activity with the steps and events of the durable run.
+
+The lifecycle depends on the API you use. With the low-level `step.sandbox.create()` API, your function calls create and destroy as durable operations and handles cleanup after permanent failure. A planned `step.sandbox.typescript` call will start a Sandbox, run TypeScript, and stop it automatically.
+
+## How Sandboxes fit into Inngest
+
+An Inngest function coordinates the job. It may call a Sandbox for isolated code execution, wait for another event, and continue later. The durable run provides the shared context for those actions. The trace connects the workflow and its Sandbox activity.
+
+<Mermaid
+  wide
+  label="A run executes a step, starts a Sandbox, runs two Sandbox command steps, and finishes with a result. One trace contains run activity and Sandbox activity."
+  chart={`flowchart TB
+  R["Run"] --> S["Step"]
+  S --> VM["Sandbox"]
+  VM --> C1["Step Sandbox cmd"]
+  C1 --> C2["Step Sandbox cmd"]
+  C2 --> F["Result finishes"]
+  F --> T["One trace"]
+  R -. "Run activity" .-> T
+  VM -. "Sandbox activity" .-> T
+  class R,S,C1,C2,F accent
+  class VM info`}
+/>
+
+Sandboxes provide an execution environment for work inside a run. They are separate from where you host an Inngest app's functions. Inngest [branch deploys](/docs/platform-and-operations/environments-and-branch-deploys) are different: they give a Git branch its own deployment preview and event data.
+
+## Next steps
+
+- [Quick start](/docs/sandboxes/quick-start) — run your first Sandbox.
+- [Features](/docs/sandboxes/features) — understand isolation, lifecycle controls, and traces.
+- [Guides](/docs/sandboxes/guides) — use Sandboxes in durable work.
+- [Limits](/docs/sandboxes/limits) and [Reference](/docs/sandboxes/reference) — check exact support, behavior, and API details.

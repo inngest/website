@@ -1,0 +1,52 @@
+export const metaTitle = "Usage Limits | Runs, Events & Retention";
+export const description = "Check the limits that affect your run, steps, events, and history before deployment.";
+
+# Durable Execution limits
+> Check platform and host limits before deploying a workflow.
+
+Check the limits that affect your run, steps, events, and history before deployment. Your hosting provider can impose separate request and runtime limits on the code you serve.
+
+## Plan-based limits
+These limits and included monthly allowances apply to Inngest Cloud. The [pricing page](https://www.inngest.com/pricing) lists billing and overage rates.
+
+| Measure | Free | Pro | Business | Enterprise |
+| --- | --- | --- | --- | --- |
+| Executions included per month | 50,000 | 1 million | 10 million | Custom |
+| Events ingested included per month | 500,000 | 5 million | 50 million | Custom |
+| Scores included per month | 10,000 | 50,000 | 250,000 | Custom |
+| Concurrent steps | 5 | 100 included | 500 | Custom |
+| Maximum event size | 256 KiB | 3 MiB | 3 MiB | Custom |
+| Queue depth | 100,000 | 1 million | 10 million | Custom |
+| Event batch capacity | 5 events | 100 events | 500 events | Custom |
+| Event batch timeout | 30 seconds | 5 minutes | 5 minutes | Custom |
+| Active workspaces per account | 3 | 10 | 10 | 50 |
+| Active apps per workspace | 5 | 10 | 10 | 250 |
+| Active functions per app | 100 | 500 | 500 | 1,000 |
+| Trace and log history | 24 hours | 7 days | 14 days | Up to 365 days |
+
+An **execution** is one function run or one step execution. A function run with five steps uses six executions.
+Only active resources count toward these workspace, app, and function limits. The functions-per-workspace value is the app limit multiplied by the function limit; it is not a separate limit.
+
+## Active branch deploys
+
+| Free | Pro | Business | Enterprise |
+| --- | --- | --- | --- |
+| 2 | 10 | 10 | Up to 250 |
+
+## Platform limits
+These limits apply across plans. Your function host can impose a shorter timeout or a smaller request limit.
+
+| Limit | Scope and value | Action |
+| --- | --- | --- |
+| Step sleep | Up to 1 year for `step.sleep()` or `step.sleepUntil()` | Keep the sleep within the supported duration. |
+| Step timeout | Up to 2 hours, subject to the function host's shorter timeout | Check the host's timeout. Split long work into steps where needed. |
+| Step return | 4 MiB of data returned by one step | Store large results outside step state and return a reference. |
+| Function run state | 32 MiB across event data, step data, function return data, and metadata | Keep large data outside run state. |
+| Steps per function | 1,000 steps | Process items within a step or fan out to more function runs. |
+| Event name | 256 characters | Shorten the event `name`. |
+| Events per send request | 5,000 events in `inngest.send(events)` or `step.sendEvent(events)` | Send more than 5,000 events in multiple requests. |
+| Event batch size | 10 MiB hard cap per configured event batch | The batch starts when it reaches this size, even before its count or timeout threshold. |
+
+## Flow control and serving
+A plan's **concurrent steps** allowance bounds active work. A function's rate limiting and throttling settings control how that function handles incoming work. Those controls do not add plan capacity. Check the applicable SDK reference for configuration values.
+When you run function code on your infrastructure, check the host's request size, concurrency, memory, and execution timeout. Provider plans and runtime modes differ. Confirm current numbers with your provider. Inngest's **2-hour step ceiling** does not extend a shorter host timeout. For HTTP serving, make sure your framework's body parser accepts the payload and run state you expect.

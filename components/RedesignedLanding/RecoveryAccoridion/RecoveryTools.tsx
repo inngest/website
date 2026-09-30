@@ -109,7 +109,7 @@ export default function TestRecoverTools() {
               className="w-auto px-5 py-2.5 text-sm"
               asChild
             >
-              <Link href="/docs/platform/replay?ref=homepage">Learn more</Link>
+              <Link href="/docs/platform-and-operations/replay-runs-in-bulk?ref=homepage">Learn more</Link>
             </Button>
           </div>
         </div>

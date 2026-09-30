@@ -11,7 +11,7 @@ export const description = "Delay function execution and cancel prior pending ru
 
 Debounce delays a function run for the given `period`, and reschedules functions for the given `period` any time new events are received while the debounce is active.  The function run starts after the specified `period` passes and no new events have been received.  Functions use the last event as their input data.
 
-See the [Debounce guide](/docs/guides/debounce) for more information about how this feature works.
+See the [Debounce guide](/docs/durable-execution/flow-control/debounce) for more information about how this feature works.
 
 ```ts
 export default inngest.createFunction(
@@ -46,7 +46,7 @@ export default inngest.createFunction(
         An optional unique key expression to apply the limit to. The expression is evaluated for each triggering event,
 	and allows you to debounce against event data.
 
-        Expressions are defined using the Common Expression Language (CEL) with the original event accessible using dot-notation. Read [our guide to writing expressions](/docs/guides/writing-expressions) for more info. Examples:
+        Expressions are defined using the Common Expression Language (CEL) with the original event accessible using dot-notation. Read [our guide to writing expressions](/docs/durable-execution/guides-and-advanced/writing-expressions) for more info. Examples:
 
         * Rate limit per customer id: `'event.data.customer_id'`
         * Rate limit per account and email address: `'event.data.account_id + "-" + event.user.email'`
@@ -63,6 +63,6 @@ export default inngest.createFunction(
 </Callout>
 
 <Callout variant="warning">
-  Debounce cannot be combined with [batching](/docs/guides/batching).
+  Debounce cannot be combined with [batching](/docs/durable-execution/flow-control/batching).
 </Callout>
 

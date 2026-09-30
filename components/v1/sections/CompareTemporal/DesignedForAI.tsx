@@ -55,7 +55,7 @@ return llm.complete(transcript) })
     title: "Human-in-the-loop",
     blurb:
       "A native primitive in Inngest. In Temporal, its an assembly of Signals, channels, and Slectors – pattern, not platform.",
-    href: "https://www.inngest.com/docs/ai-patterns/human-in-the-loop",
+    href: "https://www.inngest.com/docs/durable-execution/durable-agents/human-in-the-loop",
     code: `const decision
 = await step.waitForEvent('review', {
 event: 'agent/reviewed',

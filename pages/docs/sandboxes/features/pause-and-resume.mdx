@@ -1,0 +1,95 @@
+export const metaTitle = "Pause and resume | Sandboxes";
+export const description = "Pause a Sandbox when work needs to wait, then resume the same environment without rebuilding it.";
+
+# Pause and resume
+
+> Pause a Sandbox when work needs to wait, then resume the same environment without rebuilding it.
+
+Pause a Sandbox while a job waits for review, then resume it under the same ID without rebuilding its files. Inngest releases the live runtime while paused and restores its filesystem, memory, processes, environment, resources, network identity, and remaining runtime when it resumes.
+
+> **Experimental beta:** Sandboxes require access to the beta in Inngest Cloud and `inngest@4.20.0` or newer. The API and limits can change. Keep data that must outlive a Sandbox in external storage.
+
+## What pause preserves
+
+A Sandbox moves from `RUNNING` through `PAUSING` to `PAUSED`, then through `RESUMING` back to `RUNNING`. Both SDK methods wait for the stable state and return a new Sandbox object. The current beta allows one hour of active runtime per Sandbox. Time spent paused does not consume its remaining runtime.
+
+Pause uses a private checkpoint. It is a cold transition, so active external network connections can break. Reconnect those clients after resume. Commands, file operations, logs, and process operations require `RUNNING`. Use the object returned by `resume()` before you continue work.
+
+## Pause from server-side TypeScript
+
+Use `inngest.sandboxes` in a server route, worker, or script when you want to make the request immediately. The direct client does not make operations durable or retry them automatically. This example assumes you have created a shared Inngest client with the environment’s `INNGEST_SIGNING_KEY`.
+
+```typescript
+import type { Sandbox } from "inngest/experimental";
+import { inngest } from "./inngest/client";
+
+let sandbox: Sandbox | undefined;
+
+try {
+  sandbox = await inngest.sandboxes.create({
+    name: `paused-work-${crypto.randomUUID()}`,
+    vcpu: 1,
+    memoryMb: 1024,
+  });
+
+  await sandbox.commands.run(
+    "printf 'work in progress\n' > /tmp/progress.txt",
+  );
+
+  const paused = await sandbox.pause({ timeout: "5m" });
+  console.log(paused.status);
+
+  const running = await paused.resume({ timeout: "5m" });
+  sandbox = running;
+
+  console.log(running.id === paused.id);
+  console.log(running.status);
+
+  const result = await running.commands.run("cat /tmp/progress.txt");
+  console.log(result.stdout);
+} finally {
+  await sandbox?.destroy();
+}
+```
+
+The `timeout` bounds how long this SDK call waits for the transition. If the wait fails, the transition can still continue. Call `inngest.sandboxes.get(sandboxId)` to inspect the current state before retrying or starting other work. Keep the Sandbox ID if another request will resume it later. SDK objects are immutable views, so fetch a new object when you reconnect.
+
+## Pause inside an Inngest function
+
+Use `step.sandbox` when Sandbox work is part of a durable function. Add `sandboxMiddleware()` to the Inngest client, and give every Sandbox operation a stable step ID. Inngest records the operations as steps and handles safe retries.
+
+```typescript
+const sandbox = await step.sandbox.create("create-sandbox", {
+  name: `paused-work-${event.data.jobId}`,
+  vcpu: 1,
+  memoryMb: 1024,
+});
+
+await sandbox.commands.run(
+  "write-progress",
+  "printf 'work in progress\n' > /tmp/progress.txt",
+);
+
+const paused = await sandbox.pause("pause-sandbox", { timeout: "5m" });
+const running = await paused.resume("resume-sandbox", { timeout: "5m" });
+
+const result = await running.commands.run(
+  "read-progress",
+  "cat /tmp/progress.txt",
+);
+
+await running.destroy("destroy-sandbox");
+return result.stdout;
+```
+
+The function must keep cleanup in its workflow. The final Destroy step handles the successful path. If a permanent failure can leave a Sandbox behind, add an `onFailure` cleanup handler or a separate cleanup function that receives the Sandbox ID. Durable step results do not keep Sandbox files after Destroy.
+
+## Pause or snapshot?
+
+Use pause and resume to continue **one** Sandbox under its original ID. Use a user snapshot when you need a reusable artifact for a new Sandbox, and want to clone one or more copies of the sandbox. A snapshot can also be used to restore a sandbox to that point in time. See [Snapshots and restore](/docs/sandboxes/features/snapshots-and-restore) and [Cloning](/docs/sandboxes/features/cloning).
+
+## Before you rely on it
+
+- Pause does not coordinate your application’s shutdown. Save external work and plan to reconnect network clients.
+- The paused Sandbox remains a lifecycle resource. Destroy it when you no longer need it. Destroy removes its filesystem, processes, and retained output.
+- The beta does not set a permanent storage guarantee for pause checkpoints. Store lasting artifacts outside the Sandbox. For filesystem sharing across Sandboxes, see [Durable filesystems](/docs/sandboxes/features/durable-filesystems).

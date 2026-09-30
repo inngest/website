@@ -26,11 +26,11 @@ In a single FIFO queue, Tenant B's item can sit behind hundreds of items from Te
 
 With a key such as `event.data.tenant_id`, Inngest groups Tenant A and Tenant B into separate key queues. The scheduler can consider Tenant B's ready queue without first moving through Tenant A's backlog. This provides **best-effort fairness** between keys while continuing to enforce each tenant's limit.
 
-Key queues are part of the scheduling and execution system described in the [Inngest Cloud architecture](/docs/architecture?ref=docs-multi-tenancy) overview. You configure the key in your function; Inngest manages the queue grouping and scheduling.
+Key queues are part of the scheduling and execution system described in the [Inngest Cloud architecture](/docs/platform-and-operations/cloud-architecture-and-security?ref=docs-multi-tenancy) overview. You configure the key in your function; Inngest manages the queue grouping and scheduling.
 
 ## How flow control keys work
 
-Flow control features such as [concurrency](/docs/guides/concurrency?ref=docs-multi-tenancy) and [throttling](/docs/guides/throttling?ref=docs-multi-tenancy) accept an optional key expression. Inngest evaluates the expression for each item and applies the limit independently to each resulting value.
+Flow control features such as [concurrency](/docs/durable-execution/flow-control/concurrency?ref=docs-multi-tenancy) and [throttling](/docs/durable-execution/flow-control/throttling?ref=docs-multi-tenancy) accept an optional key expression. Inngest evaluates the expression for each item and applies the limit independently to each resulting value.
 
 For example, this function uses the tenant ID for both limits:
 
@@ -59,11 +59,11 @@ inngest.createFunction(
 
 If events contain `tenant_id` values of `tenant-a` and `tenant-b`, each tenant receives its own concurrency limit of five executing steps and its own throttle limit of 100 run starts per minute. A backlog for one tenant does not consume the other tenant's per-key limit.
 
-Choose a stable key that represents the resource or tenant you want to isolate, such as an account ID, workspace ID, or user ID. Keys are [expressions evaluated from event data](/docs/guides/writing-expressions?ref=docs-multi-tenancy), so the same function can create groups dynamically without you provisioning queues.
+Choose a stable key that represents the resource or tenant you want to isolate, such as an account ID, workspace ID, or user ID. Keys are [expressions evaluated from event data](/docs/durable-execution/guides-and-advanced/writing-expressions?ref=docs-multi-tenancy), so the same function can create groups dynamically without you provisioning queues.
 
 ## Ordering within each key
 
-Inngest applies [best-effort FIFO ordering](/docs/guides/concurrency?ref=docs-multi-tenancy#queue-ordering) within each key queue. Older work for a key is generally selected before newer work for that same key. Scheduling across different keys favors fairness rather than a single global FIFO order.
+Inngest applies [best-effort FIFO ordering](/docs/durable-execution/flow-control/concurrency?ref=docs-multi-tenancy#queue-ordering) within each key queue. Older work for a key is generally selected before newer work for that same key. Scheduling across different keys favors fairness rather than a single global FIFO order.
 
 If you change a function's key expression, already queued items remain grouped by the key value that was evaluated when they entered the queue. Their relative ordering stays stable. Only newly queued items are grouped using the new key expression.
 
@@ -71,6 +71,6 @@ Best-effort fairness and FIFO ordering are scheduling goals, not strict executio
 
 ## Next steps
 
-- [Configure multi-tenant concurrency](/docs/guides/concurrency?ref=docs-multi-tenancy#concurrency-keys-multi-tenant-concurrency)
-- [Configure throttling by key](/docs/guides/throttling?ref=docs-multi-tenancy#how-to-configure-throttling)
-- [Learn how queue items are scheduled and executed](/docs/architecture?ref=docs-multi-tenancy#from-event-to-function-execution)
+- [Configure multi-tenant concurrency](/docs/durable-execution/flow-control/concurrency?ref=docs-multi-tenancy#concurrency-keys-multi-tenant-concurrency)
+- [Configure throttling by key](/docs/durable-execution/flow-control/throttling?ref=docs-multi-tenancy#how-to-configure-throttling)
+- [Learn how queue items are scheduled and executed](/docs/platform-and-operations/cloud-architecture-and-security?ref=docs-multi-tenancy#from-event-to-function-execution)

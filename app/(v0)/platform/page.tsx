@@ -103,7 +103,7 @@ export default function Page() {
             title="Send events via SDK, API or Webhook"
             description="Send events from any application to our low latency Event API using JSON. Inngest can also receive webhooks directly from a provider."
             img="/assets/platform/events-send.svg"
-            href="/docs/events"
+            href="/docs/durable-execution/guides-and-advanced/events-and-triggers/send-events"
           />
           <FeatureCard
             title="Invoke, cancel, or resume with events"
@@ -111,11 +111,11 @@ export default function Page() {
             img="/assets/platform/wait-for-event.svg"
             href={[
               {
-                href: "/docs/guides/invoking-functions-directly",
+                href: "/docs/durable-execution/primitives/step-invoke",
                 text: "Invoke",
               },
               {
-                href: "/docs/guides/cancel-running-functions",
+                href: "/docs/durable-execution/guides-and-advanced/cancellation/bulk-cancellation",
                 text: "Cancel",
               },
               {
@@ -245,56 +245,56 @@ const flowControlFeatures = [
         the number of functions that can run concurrently for that key.
       </>
     ),
-    href: "/docs/guides/concurrency",
+    href: "/docs/durable-execution/flow-control/concurrency",
     icon: "/assets/platform/icon-concurrency.svg",
   },
   {
     title: "Global resource concurrency",
     description:
       "Limit concurrency across several functions for a specific resource, like OpenAI API calls.",
-    href: "/docs/guides/concurrency",
+    href: "/docs/durable-execution/flow-control/concurrency",
     icon: "/assets/platform/icon-concurrency-global.svg",
   },
   {
     title: "Throttling",
     description:
       "Limit the throughput of function execution over a period of time. Ideal for working around third-party API rate limits.",
-    href: "/docs/guides/throttling",
+    href: "/docs/durable-execution/flow-control/throttling",
     icon: "/assets/platform/icon-throttle.svg",
   },
   {
     title: "Prioritization",
     description:
       "Dynamically determine the execution order of functions based on any data. No separate queues required.",
-    href: "/docs/guides/priority",
+    href: "/docs/durable-execution/flow-control/priority",
     icon: "/assets/platform/icon-priority.svg",
   },
   {
     title: "Idempotency",
     description:
       "Prevent duplicate work with two different approaches to ensure functions are only run once.",
-    href: "/docs/guides/handling-idempotency",
+    href: "/docs/durable-execution/guides-and-advanced/idempotency",
     icon: "/assets/platform/icon-idempotency.svg",
   },
   {
     title: "Debounce",
     description:
       "Avoid unnecessary function invocations by adding debounce delays to functions.",
-    href: "/docs/guides/debounce",
+    href: "/docs/durable-execution/flow-control/debounce",
     icon: "/assets/platform/icon-debounce.svg",
   },
   {
     title: "Rate limiting",
     description:
       "Skip excessive function invocations by setting limits over a period for a specific resource key.",
-    href: "/docs/guides/rate-limiting",
+    href: "/docs/durable-execution/flow-control/rate-limiting",
     icon: "/assets/platform/icon-rate-limit.svg",
   },
   {
     title: "Batch processing",
     description:
       "Handle high load by processing events in batches. Ideal for bulk operations.",
-    href: "/docs/guides/batching",
+    href: "/docs/durable-execution/flow-control/batching",
     icon: "/assets/platform/icon-batch.svg",
   },
 ];
@@ -304,7 +304,7 @@ const durableExecutionFeatures = [
     title: "Serverless, servers, or both",
     description:
       "Functions can run on any serverless platform or any cloud provider. You deploy the code, Inngest handles the rest.",
-    href: "/docs/apps/cloud",
+    href: "/docs/platform-and-operations/apps-and-syncs",
   },
   {
     title: "Sleep, delay, schedule",
@@ -312,7 +312,7 @@ const durableExecutionFeatures = [
       "Functions can sleep or be scheduled for days, weeks, or months in the future.",
     href: [
       { href: "/docs/reference/typescript/v4/functions/step-sleep", text: "Sleep" },
-      { href: "/docs/guides/scheduled-functions", text: "Crons" },
+      { href: "/docs/durable-execution/guides-and-advanced/events-and-triggers/schedules-and-delayed-starts", text: "Crons" },
     ],
   },
   {
@@ -329,7 +329,7 @@ const durableExecutionFeatures = [
   {
     title: "Declarative job cancellation",
     description: `Cancel in-progress functions by sending events or via API without the need to track "job ids."`,
-    href: "/docs/guides/cancel-running-functions",
+    href: "/docs/durable-execution/guides-and-advanced/cancellation/bulk-cancellation",
   },
 ];
 
@@ -351,7 +351,7 @@ const platformFeatures = [
     title: "On-demand branch development environments",
     description:
       "Spin up a full development environment for every branch, automatically. Or create dedicated environments for testing.",
-    href: "/docs/platform/environments",
+    href: "/docs/platform-and-operations/environments-and-branch-deploys",
   },
   // TODO
 ];

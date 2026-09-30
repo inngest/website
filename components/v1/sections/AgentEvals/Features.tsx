@@ -49,7 +49,7 @@ const FEATURES: Feature[] = [
     icon: "/assets/v1/scale-instantly/workflows.svg",
     iconWidth: 32,
     iconHeight: 32,
-    href: "/docs/platform/monitor/traces?ref=agent-evals-features",
+    href: "/docs/platform-and-operations/traces?ref=agent-evals-features",
   },
   {
     title: "Datasets",
@@ -57,7 +57,7 @@ const FEATURES: Feature[] = [
     icon: "/assets/v1/scale-instantly/serverless.svg",
     iconWidth: 32,
     iconHeight: 20.52,
-    href: "/docs/platform/monitor/insights?ref=agent-evals-features",
+    href: "/docs/platform-and-operations/insights?ref=agent-evals-features",
   },
   {
     title: "Sessions",
@@ -65,7 +65,7 @@ const FEATURES: Feature[] = [
     icon: "/assets/v1/scale-instantly/events.svg",
     iconWidth: 21.65,
     iconHeight: 32,
-    href: "/docs/features/events-triggers/sessions?ref=agent-evals-features",
+    href: "/docs/agent-evals/sessions?ref=agent-evals-features",
   },
 ];
 

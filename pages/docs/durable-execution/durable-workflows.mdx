@@ -1,0 +1,219 @@
+import { Mermaid } from "src/shared/Docs/Mermaid";
+import { Callout } from "shared/Docs/mdx";
+
+export const metaTitle = "Durable Workflows | How Inngest Functions Run";
+export const description = "Run work in the background.";
+
+# Durable Workflows
+
+> Add reliable async work that survives failures, handles waits, and scales infinitely to your product.
+
+
+**Durable Workflows are the foundation of scalable async work**.  Agents, harnesses, transactions, and data processing all happen as a series of steps.  Each step can error, sleep, or wait for something to happen, and the workflow always continues.  Inngest saves completed steps, retries failed work, and resumes after waits.
+
+When you implement Inngest's Durable Workflows, you get:
+
+- **Recovery from failures.** Inngest retries failed steps and reuses the results of completed steps.
+- **Long waits without idle compute.** Pause for a delay or an external event, then resume the run when the wait ends.
+- **Control over load.** Set concurrency and other flow controls to protect the services your workflow calls.
+- **A trace of each run.** Inspect steps, waits, retries, and errors to understand what happened.
+- **Freedom to use your own compute.** Deploy the function on your current infrastructure while Inngest coordinates the run.
+
+
+## Anatomy of workflows:  runs, steps, and checkpoints
+
+A durable workflow is regular application code broken up into a series of steps.  For example, an agent harness is a series of LLM and tool calls in a loop, all modeled as a step.  Workflows all follow the same pattern:
+
+- A trigger starts a **run** of an Inngest function: an event, schedule, or webhook can be a trigger.
+- A **step** is a named unit of work inside that run, for example an LLM call or DB transaction.
+- When a step succeeds, Inngest stores its result as a **checkpoint**. Later steps can use that result.
+
+After a successful step, the function continues in the same handler. Inngest stores the result as a checkpoint; it does not restart the handler between ordinary steps. If the run waits or a later step fails, Inngest uses saved results for completed steps without running their callbacks again.   We inject state into a new execution of your workflow, picking up where it left off.
+
+### How a run checkpoints and continues
+
+<Mermaid
+  wide
+  label="An event, API call, or schedule triggers the function. Inngest starts the workflow. Step 1 saves a checkpoint, then Step 2 runs in the same handler before the run completes."
+  chart={`sequenceDiagram
+  participant Trigger as Trigger source
+  participant Inngest
+  participant Function as Your function
+  Trigger->>Inngest: Trigger function
+  Inngest->>Function: Start run
+  Function->>Function: Step 1 completes
+  Function-)Inngest: Save Step 1 checkpoint
+  Function->>Function: Step 2 runs in the same handler
+  Function-->>Inngest: Complete run`}
+/>
+
+If the run waits or Step 2 fails, Inngest uses the Step 1 checkpoint to resume without rerunning Step 1. A wait does not keep a worker running, and your compute will entirely pause during the wait.
+
+<hr />
+
+## An example workflow
+
+This TypeScript SDK v4 function processes an order. The functions `loadOrder`, `chargeOrder`, `sendReceipt`, and `refundOrder` represent your application code.
+
+```typescript
+import { inngest } from "./client";
+
+export const processOrder = inngest.createFunction(
+  {
+    id: "process-order",
+    // any time the `shop/order.placed` event is received, this will run.
+    triggers: { event: "shop/order.placed" }
+  },
+  async ({ event, step }) => {
+    const order = await step.run("load-order", () =>
+      loadOrder(event.data.orderId)
+    );
+    await step.run("charge-order", () => chargeOrder(order));
+    await step.run("send-receipt", () => sendReceipt(order));
+
+    // this will wait for the `shop/order.cancelled` event for up to 6 hours,
+    // and resume immediately when a matching event is received.  If an event
+    // isn't received within 6 hours, the function resumes and the `cancellation`
+    // variable is null.
+    //
+    // your compute is *not running* during this wait, and you do not need to handle
+    // any matching.
+    const cancellation = await step.waitForEvent("wait-for-cancellation", {
+      event: "shop/order.cancelled",
+      if: "event.data.orderId == async.data.orderId",
+      timeout: "6h",
+    });
+
+    if (cancellation !== null) {
+      // the order was cancelled, as we received a cancel event
+      await step.run("refund-order", () => refundOrder(order));
+      return { orderId: order.id, status: "cancelled" };
+    }
+
+    return { orderId: order.id };
+  }
+);
+```
+If `charge-order` fails, Inngest can retry it and reuse the saved `load-order` result. If `send-receipt` fails, both earlier results remain available. The run shows each step and its attempts.
+
+The wait resumes when a `shop/order.cancelled` event with the same `orderId` arrives. The workflow then refunds the order. If no matching event arrives within six hours, `step.waitForEvent()` returns `null` and the run completes without a refund. Make `refundOrder` idempotent because a refund can succeed before Inngest saves the step result and retries the step.
+
+<hr />
+
+## How Inngest resumes a run
+
+Inngest resumes a run by replaying your handler and returning saved step results, so completed work does not run again. This is the standard orchestration model.
+
+With [checkpointing](/docs/durable-execution/guides-and-advanced/checkpointing), the default in TypeScript SDK v4, steps run back to back in the same handler, as shown above. The SDK falls back to standard orchestration when a step retries or when steps run in parallel. Inngest also injects saved state into a new execution after a wait. Python doesn't support checkpointing, so it uses standard orchestration for every step.
+
+In standard orchestration, each step runs in a separate request to your app.
+
+<Callout variant="info" skipSearchCrawler>
+Code outside a step can run again each time the handler replays. Put non-deterministic logic, such as database or API calls, inside `step.run()` so it runs once and its result is saved.
+</Callout>
+
+### What each step gives you
+
+Inngest stores run state outside your function, so a run can resume on the same machine or a different one. Each step:
+
+- Runs and retries on its own.
+- Catches any error thrown inside it.
+- Doesn't run again once it succeeds.
+- Returns data that later steps can use.
+- Can run in sequence or in parallel with other steps.
+
+Breaking a long function into steps means a retry repeats only the step that failed. The SDKs use standard language features rather than a modified runtime, so your functions run in any environment, including serverless, without changes.
+
+### Walk through a run
+
+This function imports contacts from a CSV file in three steps:
+
+```typescript
+const fn = inngest.createFunction(
+  { id: "import-contacts", triggers: { event: "contacts/csv.uploaded" } },
+  // The function handler:
+  async ({ event, step }) => {
+    const rows = await step.run("parse-csv", async () => {
+      return await parseCsv(event.data.fileURI);
+    });
+
+    const normalizedRows = await step.run("normalize-raw-csv", async () => {
+      const normalizedColumnMapping = getNormalizedColumnNames();
+      return normalizeRows(rows, normalizedColumnMapping);
+    });
+
+    const results = await step.run("input-contacts", async () => {
+      return await importContacts(normalizedRows);
+    });
+
+    return { results };
+  }
+);
+```
+
+Under standard orchestration, the run goes like this.
+
+**The first request runs the first step:**
+
+1. Inngest calls your handler with only the `event` payload.
+2. The SDK reaches the `"parse-csv"` step. It has no saved result, so the SDK runs the step's callback and captures the result.
+3. The SDK stops the handler before it runs any more of your code. Each SDK stops the handler in its own way.
+4. The SDK hashes the step ID (`"parse-csv"`) to use as the step's state key, and includes the step's index (`0`) with the result.
+5. The SDK sends the result to Inngest, which saves it in the run's state store.
+
+**Later requests replay saved results (memoization):**
+
+6. Inngest calls your handler again with the `event` payload and the saved state of earlier steps as JSON.
+7. The SDK reaches `"parse-csv"` again and looks up its result in the state by the hash of the step ID.
+8. The SDK skips the callback and returns the saved result from `step.run()`. In this example, it becomes `rows`.
+9. The handler continues to the next step, `"normalize-raw-csv"`.
+10. The SDK runs that step and sends its result to Inngest, the same way as in steps 2 to 5.
+
+**A failed step retries without repeating earlier steps:**
+
+11. If a step such as `"input-contacts"` throws, the SDK stops the handler and catches the error.
+12. The SDK serializes the error and sends it to Inngest. Inngest records the attempt and saves the error in the state store.
+13. If attempts remain, Inngest retries. The handler replays with the saved state, so `"parse-csv"` and `"normalize-raw-csv"` return their saved results and only `"input-contacts"` runs again, following steps 6 to 10.
+14. If no attempts remain, the step throws an error into the handler. Catch it to run a fallback or compensation step, or let the run fail.
+
+Read [Error handling](/docs/durable-execution/guides-and-advanced/error-handling) to set retries and handle failed steps. Read [Versioning](/docs/durable-execution/guides-and-advanced/versioning) to learn how determinism works and how to change a function while runs are in progress.
+
+<hr />
+
+## Durable workflows vs Durable endpoints
+
+- **Durable workflow:** An event, schedule, webhook, or another function starts background work. Your API can return after sending an event while the workflow continues. Use it when the caller does not need to wait for the result, or if the workflow takes longer than 60 seconds.
+- **Durable Endpoint:**  An HTTP request starts the work, and the caller receives its result as an HTTP response.  This allows synchronous API requests to survive temporary step errors.  Endpoints are for lighter, synchronous functions where the caller needs a response and should last no longer than 60 seconds.
+
+Both use durable steps and traces. Read [Durable Endpoints](/docs/durable-execution/durable-endpoints) for the request and response path.
+
+
+## Compared to Temporal
+
+Teams often evaluate Temporal and Inngest when they build reliable, long-running workflows. Both provide durable execution. They differ in how you deploy, how a run rebuilds its state, and which controls are built in.
+
+- **Infrastructure.** Temporal runs as a Temporal Server cluster, self-hosted or on Temporal Cloud, with separate worker processes that poll for tasks. Inngest needs no separate infrastructure: your functions run on your current compute. Use [Serve](/docs/durable-execution/deploying-functions/serve) to expose functions over HTTP, including on serverless platforms, or [Connect](/docs/durable-execution/deploying-functions/connect) for persistent, worker-style deployments. Either way, Inngest handles orchestration, state, and retries, and you don't manage queues or task polling.
+- **Programming model.** Temporal replays the workflow function from the beginning against an internal event history to skip completed work, and workflow code must follow strict determinism rules. Inngest saves each step's result once and returns it when the handler replays. It uses standard language features, with no custom runtime rules.
+- **Flow control.** Inngest includes [concurrency](/docs/durable-execution/flow-control/concurrency), [priority](/docs/durable-execution/flow-control/priority), [throttling](/docs/durable-execution/flow-control/throttling), [debounce](/docs/durable-execution/flow-control/debounce), [rate limiting](/docs/durable-execution/flow-control/rate-limiting), and [idempotency](/docs/durable-execution/guides-and-advanced/idempotency). They work in every environment: local development, self-hosted, and cloud. Temporal has recently added priority and fairness for task queues. Fairness is a paid feature available only in Temporal Cloud.
+- **Self-hosting.** Inngest [self-hosts](/docs/self-hosting) as a single binary, with SQLite or Postgres as the backing store. Self-hosting Temporal means running several server components with a Cassandra or Postgres database, plus separate worker infrastructure.
+
+| | Inngest | Temporal |
+| --- | --- | --- |
+| **Infrastructure** | No separate infrastructure. Serve (serverless) or Connect (workers) on your compute. | Temporal Server cluster plus separate worker processes. |
+| **Programming model** | Step-based memoization with standard language primitives. | Deterministic replay with strict runtime rules. |
+| **Flow control** | Built in: [concurrency](/docs/durable-execution/flow-control/concurrency), [priority](/docs/durable-execution/flow-control/priority), [throttling](/docs/durable-execution/flow-control/throttling), [debounce](/docs/durable-execution/flow-control/debounce), [rate limiting](/docs/durable-execution/flow-control/rate-limiting). Available everywhere. | Priority and fairness for task queues. Fairness is paid and Temporal Cloud only. |
+| **Self-hosting** | [Single binary with SQLite or Postgres](/docs/self-hosting). | Multi-component cluster with Cassandra or Postgres. |
+| **Serverless support** | Native. Designed for serverless-first environments. | Requires persistent worker processes. Not serverless-native. |
+
+## Next steps
+
+- [Quick start](/docs/durable-execution/quick-start) builds and inspects a first run.
+- [Primitives](/docs/durable-execution/primitives) explains each operation.
+- [Best practices](/docs/durable-execution/best-practices) covers safe step boundaries and changes to running workflows.
+
+## Further reading
+
+- ["How we built a fair multi-tenant queuing system"](/blog/building-the-inngest-queue-pt-i-fairness-multi-tenancy)
+- ["Debouncing in Queueing Systems: Optimizing Efficiency in Asynchronous Workflows"](/blog/debouncing-in-queuing-systems-optimizing-efficiency-in-async-workflows)
+- ["Accidentally Quadratic: Evaluating trillions of event matches in real-time"](/blog/accidentally-quadratic-evaluating-trillions-of-event-matches-in-real-time)
+- ["Queues aren't the right abstraction"](/blog/queues-are-no-longer-the-right-abstraction)
