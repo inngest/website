@@ -18,8 +18,12 @@ export default function Home() {
     <PageShell>
       <div className="home-desktop-7">
         <Hero />
-        <div className="-mx-6 w-[calc(100%+3rem)] lg:-mx-8 lg:w-[calc(100%+4rem)]">
-          <LogoStrip contained />
+        <div className="relative -mx-6 w-[calc(100%+3rem)] lg:-mx-8 lg:w-[calc(100%+4rem)]">
+          <div
+            aria-hidden="true"
+            className="pointer-events-none absolute left-1/2 top-0 z-20 h-px w-screen -translate-x-1/2 bg-white/25"
+          />
+          <LogoStrip contained hideTopFade />
         </div>
         <div className="relative flex w-full flex-col items-center gap-12 lg:gap-24">
           <div className="relative w-full">
