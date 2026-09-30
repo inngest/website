@@ -1,8 +1,7 @@
 export const metaTitle = "Troubleshooting | Sandboxes";
 export const description = "Diagnose a failed Sandbox operation and decide whether it is safe to retry.";
 
-# Troubleshooting
-
+# Sandboxes troubleshooting
 > Diagnose a failed Sandbox operation and decide whether it is safe to retry.
 
 When a Sandbox operation fails, find its step in the run trace or inspect the direct SDK error. Check the resource’s current state before retrying: a lost response does not prove that a command or mutation failed. Keep the error `code`, `requestId`, and resource ID for investigation.

@@ -1,9 +1,89 @@
+import { SdkSupport } from "src/shared/Docs/SdkSupport";
+
 export const metaTitle = "Durable Execution";
 export const description = "Build background workflows and HTTP endpoints that keep their progress through failures and long waits.";
 
 # Durable Execution
 
 > Learn how durable execution survives failures and makes building long-running code simple.
+
+<SdkSupport
+  feature="Durable Execution"
+  sdks={[
+    {
+      sdk: "typescript",
+      href: "/docs/reference/typescript/v4/intro",
+      features: {
+        "step.run": true,
+        "Sleep and sleep until": true,
+        "Wait for event": true,
+        "Wait for signal": true,
+        "Invoke another function": true,
+        "Send events from a step": true,
+        "Parallel steps": true,
+        "AI inference step": true,
+        "step.fetch": true,
+        "defer": true,
+        "Experiments": true,
+        "Flow control": true,
+        "Cron triggers": true,
+        "Per-function failure handler": true,
+        "Checkpointing": { supported: true, tag: "Default" },
+        "Durable endpoints": { supported: true, tag: "Beta" },
+        "Connect workers": true,
+        "Middleware": true,
+      },
+    },
+    {
+      sdk: "python",
+      href: "/docs/reference/python",
+      features: {
+        "step.run": true,
+        "Sleep and sleep until": true,
+        "Wait for event": true,
+        "Wait for signal": false,
+        "Invoke another function": true,
+        "Send events from a step": true,
+        "Parallel steps": true,
+        "AI inference step": true,
+        "step.fetch": false,
+        "defer": false,
+        "Experiments": false,
+        "Flow control": true,
+        "Cron triggers": true,
+        "Per-function failure handler": true,
+        "Checkpointing": false,
+        "Durable endpoints": false,
+        "Connect workers": true,
+        "Middleware": true,
+      },
+    },
+    {
+      sdk: "go",
+      href: "https://pkg.go.dev/github.com/inngest/inngestgo",
+      features: {
+        "step.run": true,
+        "Sleep and sleep until": true,
+        "Wait for event": true,
+        "Wait for signal": true,
+        "Invoke another function": true,
+        "Send events from a step": true,
+        "Parallel steps": true,
+        "AI inference step": true,
+        "step.fetch": true,
+        "defer": false,
+        "Experiments": false,
+        "Flow control": true,
+        "Cron triggers": true,
+        "Per-function failure handler": false,
+        "Checkpointing": true,
+        "Durable endpoints": { supported: true, tag: "Beta" },
+        "Connect workers": true,
+        "Middleware": true,
+      },
+    },
+  ]}
+/>
 
 ## What is durable execution?
 

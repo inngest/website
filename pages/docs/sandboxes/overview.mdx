@@ -4,11 +4,12 @@ import { SdkSupport } from "src/shared/Docs/SdkSupport";
 export const metaTitle = "Overview | Sandboxes";
 export const description = "Run generated code or test a project in an isolated microVM while your durable function coordinates the job.";
 
-# Overview
+# Sandboxes overview
 
 > Run generated code or test a project in an isolated microVM while your durable function coordinates the job.
 
 <SdkSupport
+  feature="Sandboxes"
   sdks={[
     {
       sdk: "typescript",
@@ -26,6 +27,8 @@ export const description = "Run generated code or test a project in an isolated 
       },
       note: "Access-gated beta. The API can change before launch.",
     },
+    { sdk: "python", planned: true },
+    { sdk: "go", planned: true },
   ]}
 />
 
