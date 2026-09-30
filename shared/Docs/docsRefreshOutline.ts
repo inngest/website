@@ -311,6 +311,18 @@ export const docsRefreshOutline: DocsRefreshPage[] = [
                     title: "Working with loops",
                     href: "/docs/durable-execution/guides-and-advanced/patterns/working-with-loops",
                   },
+                  {
+                    title: "Agent tool loops",
+                    href: "/docs/durable-execution/guides-and-advanced/patterns/agent-tool-loops",
+                  },
+                  {
+                    title: "Human-in-the-loop",
+                    href: "/docs/durable-execution/guides-and-advanced/patterns/human-in-the-loop",
+                  },
+                  {
+                    title: "Sub-agent delegation",
+                    href: "/docs/durable-execution/guides-and-advanced/patterns/sub-agent-delegation",
+                  },
                 ],
               },
               {
@@ -342,6 +354,10 @@ export const docsRefreshOutline: DocsRefreshPage[] = [
               {
                 title: "Checkpointing",
                 href: "/docs/durable-execution/guides-and-advanced/checkpointing",
+              },
+              {
+                title: "Writing expressions",
+                href: "/docs/durable-execution/guides-and-advanced/writing-expressions",
               },
             ],
           },
@@ -602,6 +618,24 @@ export const docsRefreshOutline: DocsRefreshPage[] = [
               {
                 title: "Keys and access",
                 href: "/docs/platform-and-operations/keys-and-access",
+              },
+            ],
+          },
+          {
+            title: "Integrations",
+            href: "/docs/platform-and-operations/integrations",
+            children: [
+              {
+                title: "Neon",
+                href: "/docs/platform-and-operations/integrations/neon",
+              },
+              {
+                title: "Datadog",
+                href: "/docs/platform-and-operations/integrations/datadog",
+              },
+              {
+                title: "Prometheus",
+                href: "/docs/platform-and-operations/integrations/prometheus",
               },
             ],
           },

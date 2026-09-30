@@ -27,6 +27,14 @@ Recover runs, stop work during an incident, and manage keys. See [Manage and rec
 - [Keys and access](/docs/platform-and-operations/keys-and-access): use an **event key** to send events, a **signing key** to secure requests between Inngest and your app, and an **API key** for the REST API.
 - [Rotate event and signing keys](/docs/platform-and-operations/rotate-event-and-signing-keys): replace a key without downtime.
 
+## Connect other services
+
+Trigger functions from database changes and send metrics to your monitoring stack. See [Integrations](/docs/platform-and-operations/integrations):
+
+- [Neon](/docs/platform-and-operations/integrations/neon): start functions when rows change in Neon Postgres.
+- [Datadog](/docs/platform-and-operations/integrations/datadog): send Inngest metrics to Datadog.
+- [Prometheus](/docs/platform-and-operations/integrations/prometheus): scrape Inngest metrics into Prometheus or Grafana.
+
 ## Organize apps and environments
 
 - [Apps and syncs](/docs/platform-and-operations/apps-and-syncs): group the functions you deploy together. Keep each app ID stable so Inngest can track its functions across deploys.

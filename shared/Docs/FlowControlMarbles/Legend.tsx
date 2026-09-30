@@ -300,7 +300,9 @@ export function MarbleLegend({
     [model, counts]
   );
   const items = counts ? countItems(model, t) : fixed!;
-  const meters = Array.from(new Set(model.rows.flatMap((r) => r.meters)));
+  const meters = Array.from(
+    new Set(model.rows.flatMap((r) => r.meters.map((m) => m.kind)))
+  );
   return (
     <ul
       className="m-0 flex list-none flex-wrap gap-x-3 gap-y-1 p-0 text-[11px] text-subtle"

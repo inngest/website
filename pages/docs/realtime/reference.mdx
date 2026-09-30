@@ -103,6 +103,47 @@ await realtime.publish(
 
 See the [FastAPI example project](https://github.com/inngest/inngest-py/tree/main/examples/fast_api_realtime) and the [Python Realtime announcement](/blog/python-realtime?ref=docs-realtime-reference).
 
+## Go
+
+The Go SDK includes Realtime in the `github.com/inngest/inngestgo/realtime` package:
+
+- **`realtime.Publish(ctx, channel, topic, data)`** publishes raw bytes to a channel and topic. Channels and topics are plain strings, so encode your payload yourself, for example with `json.Marshal`. It works only inside an Inngest function. Outside a step, it publishes only the first time the function reaches that line, so replays and retries don't repeat it. Inside `step.Run()`, it publishes each time the step runs.
+- **`realtime.Subscribe(ctx, token)`** opens a WebSocket with a subscription token and returns a Go channel of `StreamItem` values. Check each item with `IsMessage()`, `IsChunk()`, or `IsErr()`. The channel closes when the connection or `ctx` ends.
+
+The Go SDK doesn't mint subscription tokens. Mint them in TypeScript or Python.
+
+```go
+import (
+	"context"
+	"encoding/json"
+
+	"github.com/inngest/inngestgo"
+	"github.com/inngest/inngestgo/realtime"
+	"github.com/inngest/inngestgo/step"
+)
+
+type ImportRequested struct {
+	UserID string `json:"userId"`
+}
+
+func processImport(ctx context.Context, input inngestgo.Input[ImportRequested]) (any, error) {
+	channel := "user:" + input.Event.Data.UserID
+
+	data, _ := json.Marshal(map[string]string{"message": "Started"})
+	if err := realtime.Publish(ctx, channel, "status", data); err != nil {
+		return nil, err
+	}
+
+	return step.Run(ctx, "import", func(ctx context.Context) (string, error) {
+		// Do the work, then report the result.
+		data, _ := json.Marshal(map[string]string{"message": "Complete"})
+		return "done", realtime.Publish(ctx, channel, "result", data)
+	})
+}
+```
+
+`Publish` and `Subscribe` connect to Inngest Cloud. To use the local Dev Server, call `realtime.PublishWithURL(ctx, "http://localhost:8288/v1/realtime/publish", ...)` and `realtime.SubscribeWithURL(ctx, "ws://localhost:8288/v1/realtime/connect", token)`.
+
 ## Earlier SDK versions
 
 If you maintain an app on TypeScript SDK v3 and `@inngest/realtime`, see the [archived v3 Realtime docs](/docs/reference/typescript/v3/realtime).

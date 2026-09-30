@@ -1,4 +1,4 @@
-import { Mermaid } from "src/shared/Docs/Mermaid";
+import { ArchitectureFlow } from "src/shared/Docs/ArchitectureFlow";
 
 export const metaTitle = "Cloud architecture and security";
 export const description = "See how Inngest Cloud turns an event into a run and where your function code executes.";
@@ -11,23 +11,7 @@ Inngest receives events, matches them to functions, and executes each function a
 
 ## From event to run
 
-<Mermaid
-  label="An event flows from the Event API in AWS through Pub/Sub to New Runs in Ashburn, which matches triggers and queues the run on a queue shard. Executors take queue items and invoke your SDK, which runs on your infrastructure over HTTP or Connect. The Invoke Function API skips Pub/Sub and trigger matching and starts one function directly."
-  chart={`flowchart TB
-  subgraph AWS["AWS us-east-2 (Ohio)"]
-    A["Event API"]:::accent --> P["Pub/Sub"]:::muted
-    I["Invoke Function API"]:::info
-  end
-  subgraph ASH["Inngest bare metal (Ashburn, VA)"]
-    N["New Runs<br/>trigger matching · flow control"]:::accent --> Q["Queue shard"]:::muted --> E["Executors"]:::accent
-  end
-  subgraph YOU["Your infrastructure"]
-    S(["Your SDK endpoint or Connect worker"]):::info
-  end
-  P --> N
-  I -. "fast invoke: skips Pub/Sub and matching" .-> Q
-  E -- "HTTP or Connect" --> S`}
-/>
+<ArchitectureFlow />
 
 1. The **Event API** receives and validates an event, associates it with the correct account and environment, and publishes it to Pub/Sub.
 2. The **New Runs** service consumes the event and checks for functions with matching triggers.
@@ -39,7 +23,7 @@ Inngest receives events, matches them to functions, and executes each function a
 
 The standard path is built for throughput: every event can fan out to many functions, and flow control applies before a run starts. When a single request needs to start or finish quickly, use a path that skips part of it:
 
-- **Fast invoke:** the [Invoke Function API](https://api-docs.inngest.com/v2/functions/InvokeFunction) starts one function directly. It skips Pub/Sub and trigger matching, so the run begins sooner. Use events for everything else, since they support fan-out, replay, and webhooks.
+- **Fast invoke:** the [Invoke Function API](https://api-docs.inngest.com/v2/functions/InvokeFunction) starts one function directly and hands it straight to the executors. It skips Pub/Sub, trigger matching, and the queue, so the run begins sooner. Use events for everything else, since they support fan-out, replay, and webhooks.
 - **Checkpointing:** [checkpointing](/docs/durable-execution/guides-and-advanced/checkpointing) runs consecutive steps back to back in your app, without a round trip to the executor after each one. It's on by default in the TypeScript v4 SDK.
 - **Durable Endpoints:** a [Durable Endpoint](/docs/durable-execution/durable-endpoints) runs inside your own API request and returns its response directly. Inngest stores step results asynchronously and only takes over when a step needs a retry or a wait.
 

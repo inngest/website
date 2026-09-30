@@ -37,6 +37,7 @@ import {
   slotsAt,
   waitReasonAt,
   type BandRow,
+  type Meter as MeterSpec,
   type Model,
   type Stage,
   type Token,
@@ -480,17 +481,20 @@ function Dots({
   n,
   value,
   fill,
+  maxW = 60,
 }: {
   x: number;
   y: number;
   n: number;
   value: number;
   fill: string;
+  /** Width available; more dots than fit become a bar with a count. */
+  maxW?: number;
 }) {
   const id = useId();
-  if (n > 6) {
+  if (n > 6 || n * 9 > maxW) {
     // Too many to draw one by one: a small bar with the count.
-    const w = 34;
+    const w = Math.max(14, Math.min(34, maxW - 22));
     const f = clamp01(value / n);
     return (
       <g>
@@ -1009,65 +1013,107 @@ const Capsule = memo(function Capsule({
   );
 });
 
+/** Label column width for a row's meters: fits the longest label. */
+const meterLabelW = (row: BandRow) =>
+  Math.ceil(
+    Math.max(0, ...row.meters.map((m) => (m.label ?? "").length)) * 5.2
+  ) + 5;
+
 function Meter({
   model,
   row,
-  x,
+  meter,
+  labeled,
+  gutter,
   y,
   t,
-  kind,
 }: {
   model: Model;
   row: BandRow;
-  x: number;
+  meter: MeterSpec;
+  labeled: boolean;
+  gutter: number;
   y: number;
   t: number;
-  kind: BandRow["meters"][number];
 }) {
   const { cfg, result } = model;
-  const key = row.group === "*" ? "*" : row.group;
-  switch (kind) {
+  const key = meter.tenant ?? "*";
+  const x = labeled ? meterLabelW(row) : 0;
+  const maxW = gutter - x - 6;
+  let dots: ReactNode = null;
+  switch (meter.kind) {
     case "slots": {
-      const { used, limit } = slotsAt(model, row, t);
-      return (
-        <Dots x={x} y={y} n={limit} value={used} fill={METER_FILL.slots} />
+      const { used, limit } = slotsAt(model, meter, t);
+      dots = (
+        <Dots
+          x={x}
+          y={y}
+          n={limit}
+          value={used}
+          fill={METER_FILL.slots}
+          maxW={maxW}
+        />
       );
+      break;
     }
     case "throttle":
-      return result.throttle ? (
-        <Dots
-          x={x}
-          y={y}
-          n={result.throttle.capacity}
-          value={gcraUnits(result.throttle, key, t)}
-          fill={METER_FILL.throttle}
-        />
-      ) : null;
+      if (result.throttle)
+        dots = (
+          <Dots
+            x={x}
+            y={y}
+            n={result.throttle.capacity}
+            value={gcraUnits(result.throttle, key, t)}
+            fill={METER_FILL.throttle}
+            maxW={maxW}
+          />
+        );
+      break;
     case "rateLimit":
-      return result.rateLimit ? (
-        <Dots
-          x={x}
-          y={y}
-          n={result.rateLimit.capacity}
-          value={gcraUnits(result.rateLimit, key, t)}
-          fill={METER_FILL.rateLimit}
-        />
-      ) : null;
+      if (result.rateLimit)
+        dots = (
+          <Dots
+            x={x}
+            y={y}
+            n={result.rateLimit.capacity}
+            value={gcraUnits(result.rateLimit, key, t)}
+            fill={METER_FILL.rateLimit}
+            maxW={maxW}
+          />
+        );
+      break;
     case "batch": {
       const c = collectingAt(model, row.group, t).find(
-        (x) => x.kind === "batch"
+        (b) => b.kind === "batch"
       );
-      return (
+      dots = (
         <Dots
           x={x}
           y={y}
           n={cfg.batching.maxSize}
           value={c ? c.count : 0}
           fill={METER_FILL.batch}
+          maxW={maxW}
         />
       );
+      break;
     }
   }
+  return (
+    <g>
+      {labeled && meter.label && (
+        <text
+          x={0}
+          y={y}
+          dy="0.35em"
+          className={clsx(MUTED_TEXT, "text-[9px]")}
+        >
+          {meter.label}
+        </text>
+      )}
+      {dots}
+    </g>
+  );
 }
 
 /** Live state inside the band: meters, locks, timers and "+N" badges. */
@@ -1077,14 +1123,16 @@ function BandLayer({ model, L, t }: { model: Model; L: Layout; t: number }) {
   const out: ReactNode[] = [];
   model.rows.forEach((row, j) => {
     const y = L.bandY(j);
+    const labeled = row.meters.some((m) => m.label);
     row.meters.forEach((m, mi) => {
       out.push(
         <Meter
-          key={`m${j}-${m}`}
+          key={`m${j}-${mi}`}
           model={model}
           row={row}
-          kind={m}
-          x={0}
+          meter={m}
+          labeled={labeled}
+          gutter={L.GUT}
           y={L.bandRowTop[j] + 26 + 11 * mi}
           t={t}
         />

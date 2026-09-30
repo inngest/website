@@ -44,14 +44,25 @@ export interface DiagramOptions {
   alwaysQueue?: boolean;
 }
 
+export interface Meter {
+  kind: MeterKind;
+  /** The concurrency constraint a slots meter reads. */
+  constraint?: number;
+  /** The tenant key the meter reads; unset for an unkeyed or shared key. */
+  tenant?: string;
+  /**
+   * Set when a row mixes scopes: a tenant id, "fn" for a function-wide
+   * limit, or "shared" for a key shared with other functions.
+   */
+  label?: string;
+}
+
 export interface BandRow {
   kind: "schedule" | "queue";
   /** Tenant id, or "*" for one row shared by every tenant. */
   group: string;
   label: string;
-  meters: MeterKind[];
-  /** The concurrency constraint the slots meter reads. */
-  constraint?: number;
+  meters: Meter[];
 }
 
 export interface Lane {
@@ -227,39 +238,58 @@ export function buildModel(
       });
   }
   const want = (m: MeterKind) => !opts.meters || opts.meters.includes(m);
-  // A meter shows only where its key matches the row: per-tenant rows read
-  // tenant-keyed limits, and a shared row reads unkeyed ones.
-  const fits = (tenantKeyed: boolean, g: string) => tenantKeyed === (g !== "*");
+  // Every limit gets a meter on each row it gates. A per-tenant limit on a
+  // shared row gets one meter per tenant; a function-wide or shared limit on
+  // per-tenant rows gets a meter on each. When a row mixes scopes, every
+  // meter in it is labeled.
   for (const row of rows) {
-    if (row.kind === "queue") {
-      const ci = cfg.concurrency.constraints.findIndex((c) =>
-        fits(c.key === "tenant", row.group)
-      );
-      if (ci >= 0 && want("slots")) {
-        row.meters.push("slots");
-        row.constraint = ci;
+    const perTenant = row.group !== "*";
+    const keyed = (
+      kind: MeterKind,
+      tenantKeyed: boolean,
+      extra: Partial<Meter> = {}
+    ) => {
+      if (!tenantKeyed) {
+        row.meters.push({
+          kind,
+          ...extra,
+          label: perTenant ? extra.label ?? "fn" : undefined,
+        });
+      } else if (perTenant) {
+        row.meters.push({ kind, ...extra, tenant: row.group });
+      } else {
+        for (const tn of tenants)
+          row.meters.push({
+            kind,
+            ...extra,
+            tenant: tn,
+            label: multi ? tn : undefined,
+          });
       }
-      if (
-        cfg.throttle.enabled &&
-        want("throttle") &&
-        fits(cfg.throttle.key === "tenant", row.group)
-      )
-        row.meters.push("throttle");
+    };
+    if (row.kind === "queue") {
+      if (want("slots"))
+        cfg.concurrency.constraints.forEach((c, i) =>
+          keyed("slots", c.key === "tenant", {
+            constraint: i,
+            label: c.key === "shared" ? "shared" : undefined,
+          })
+        );
+      if (cfg.throttle.enabled && want("throttle"))
+        keyed("throttle", cfg.throttle.key === "tenant");
     } else {
-      if (
-        cfg.rateLimit.enabled &&
-        want("rateLimit") &&
-        fits(cfg.rateLimit.key === "tenant", row.group)
-      )
-        row.meters.push("rateLimit");
-      if (
-        cfg.batching.enabled &&
-        want("batch") &&
-        fits(cfg.batching.key === "tenant", row.group)
-      )
-        row.meters.push("batch");
+      if (cfg.rateLimit.enabled && want("rateLimit"))
+        keyed("rateLimit", cfg.rateLimit.key === "tenant");
+      if (cfg.batching.enabled && want("batch"))
+        keyed("batch", cfg.batching.key === "tenant");
+    }
+    if (row.meters.some((m) => m.label)) {
+      for (const m of row.meters) m.label ??= m.tenant ?? "fn";
     }
   }
+  // Keys that don't match the row's scope are only labeled, never dropped:
+  // for lanes, a tenant-keyed limit groups lanes by tenant.
+  const fits = (tenantKeyed: boolean, g: string) => tenantKeyed === (g !== "*");
   const rowIndex = (kind: BandRow["kind"], group: string) =>
     rows.findIndex((r) => r.kind === kind && r.group === group);
 
@@ -565,12 +595,12 @@ export function waitReasonAt(run: SimRun, t: number): WaitReason {
   return first?.reason || "backlog";
 }
 
-/** Slots in use for a queue row's constraint, including other functions' load. */
-export function slotsAt(model: Model, row: BandRow, t: number) {
-  const c = model.cfg.concurrency.constraints[row.constraint ?? 0];
+/** Slots in use for a meter's constraint, including other functions' load. */
+export function slotsAt(model: Model, meter: Meter, t: number) {
+  const c = model.cfg.concurrency.constraints[meter.constraint ?? 0];
   let used = c.key === "shared" ? c.externalLoad : 0;
   for (const r of model.result.runs) {
-    if (row.group !== "*" && r.tenant !== row.group) continue;
+    if (c.key === "tenant" && r.tenant !== meter.tenant) continue;
     if (
       r.segments.some(
         (s) => s.kind === "run" && s.from <= t + EPS && t + EPS < s.to

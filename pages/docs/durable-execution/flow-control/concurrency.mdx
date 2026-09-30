@@ -1,7 +1,5 @@
 import { Compatibility } from "shared/Docs/mdx";
 import { FlowControlMarbles } from "src/shared/Docs/FlowControlMarbles";
-import Lottie from "lottie-react";
-import Concurrency from "components/RedesignedLanding/FlowAccoridion/Lottie/Concurrency.json";
 
 export const metaTitle = "Step concurrency";
 export const description = "Protect APIs and databases by limiting how many workflow steps execute at once.";
@@ -132,10 +130,6 @@ Concurrency works by limiting the number of steps executing at a single time. Wi
 
 ### Understanding step execution vs. function runs
 Because sleeping or waiting is common, concurrency does not limit the number of functions in progress. Instead, it limits the number of steps executing at any single time.
-
-The animation below shows how concurrency works in Inngest. You can see how different jobs queue up and flow through the system. When a limit is set, only that number of steps can execute at any given time. As steps complete, the next queued steps start executing.
-
-<Lottie animationData={Concurrency} loop={true} />
 
 The key insight is that your concurrency limit applies to active execution, not to the number of function runs in progress. Consider a function with a concurrency limit of 10:
 
