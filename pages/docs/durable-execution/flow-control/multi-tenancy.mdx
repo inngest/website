@@ -1,4 +1,5 @@
 import { Compatibility } from "shared/Docs/mdx";
+import { FlowControlMarbles } from "src/shared/Docs/FlowControlMarbles";
 export const metaTitle = "Multi-tenancy";
 export const description = "Apply limits per tenant so one tenant's workload does not consume capacity reserved for others.";
 
@@ -43,6 +44,8 @@ export const syncTenant = inngest.createFunction(
 );
 ```
 Replace the step body with your application work. For this function, each `tenant_id` has its own limit of five **executing steps** and its own throttle of 100 **run starts per minute**. A backlog for tenant A does not consume tenant B's per-key limit. Concurrency does not limit the number of function runs that are sleeping or waiting between steps.
+
+<FlowControlMarbles scenario="multi-tenancy" />
 
 Keys are Common Expression Language (CEL) expressions over the triggering event. Use a stable account, workspace, or tenant ID that appears on every relevant event. If two events for one tenant use different IDs, Inngest treats them as different keys and applies separate limits.
 

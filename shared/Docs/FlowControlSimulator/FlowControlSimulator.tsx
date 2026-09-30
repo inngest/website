@@ -25,42 +25,13 @@ import { Log } from "./Log";
 import { StatusStrip } from "./Status";
 import { Summary } from "./Summary";
 import { Timeline } from "./Timeline";
+import { decodeState, encodeState, SIMULATOR_PATH } from "./share";
 import { Button, IconButton, Select, Tabs } from "./ui";
 
-const PAGE_PATH = "/docs/durable-execution/flow-control/simulator";
 /** Playback always covers the whole timeline in roughly this many seconds. */
 const PLAYBACK_SECONDS = 20;
 
 type Tab = "settings" | "traffic" | "steps" | "log" | "code";
-
-function encodeState(presetId: string, cfg: SimConfig) {
-  try {
-    return btoa(JSON.stringify({ p: presetId, c: cfg }))
-      .replace(/\+/g, "-")
-      .replace(/\//g, "_")
-      .replace(/=+$/, "");
-  } catch {
-    return "";
-  }
-}
-
-function decodeState(s: string): { p: string; c: SimConfig } | null {
-  try {
-    const v = JSON.parse(atob(s.replace(/-/g, "+").replace(/_/g, "/")));
-    if (v?.c && Array.isArray(v.c.steps) && Array.isArray(v.c.tenants)) {
-      v.c.concurrency.enabled = true;
-      if (!v.c.concurrency.constraints?.length) {
-        v.c.concurrency.constraints = [
-          { limit: 5, key: "none", scope: "fn", externalLoad: 0 },
-        ];
-      }
-      return v;
-    }
-  } catch {
-    // Ignore malformed links.
-  }
-  return null;
-}
 
 export function FlowControlSimulator({
   preset = "basic",
@@ -177,7 +148,7 @@ export function FlowControlSimulator({
   }, []);
 
   const copyLink = () => {
-    const url = `${window.location.origin}${PAGE_PATH}?fc=${encodeState(
+    const url = `${window.location.origin}${SIMULATOR_PATH}?fc=${encodeState(
       presetId,
       cfg
     )}`;

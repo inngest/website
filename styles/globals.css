@@ -125,7 +125,9 @@ html.docs:has(.docs-callout) {
 .docs-callout {
   position: relative;
   isolation: isolate;
-  margin: 1.5rem 0;
+  /* Only set vertical margins so the prose column's centering still applies. */
+  margin-top: 1.5rem;
+  margin-bottom: 1.5rem;
   padding: 3rem 1.5rem;
   color: rgb(var(--color-foreground-base));
   background-color: rgb(var(--color-background-canvas-subtle) / 0.5);
@@ -140,27 +142,14 @@ html.docs:has(.docs-callout) {
 }
 
 @media (min-width: 1024px) {
+  /* Content lines up with the prose column. The band bleeds to both edges
+     with a clipped box-shadow, which adds no scrollable overflow; the fixed
+     sidebars sit on top of it. */
   .docs-callout {
-    margin-left: -4rem;
-    padding-left: 4rem;
-    background-color: transparent;
-  }
-
-  .docs-callout::before {
-    content: "";
-    position: absolute;
-    top: 0;
-    bottom: 0;
-    left: 0;
-    z-index: -1;
-    width: calc(100vw - 248px);
-    background-color: rgb(var(--color-background-canvas-subtle) / 0.5);
-  }
-}
-
-@media (min-width: 1280px) {
-  .docs-callout::before {
-    width: calc(100vw - 280px);
+    padding-left: 0;
+    padding-right: 0;
+    box-shadow: 0 0 0 100vmax rgb(var(--color-background-canvas-subtle) / 0.5);
+    clip-path: inset(0 -100vmax);
   }
 }
 

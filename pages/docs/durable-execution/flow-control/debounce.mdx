@@ -1,4 +1,5 @@
 import { Compatibility } from "shared/Docs/mdx";
+import { FlowControlMarbles } from "src/shared/Docs/FlowControlMarbles";
 export const metaTitle = "Debounce";
 export const description = "Handle a burst of updates once using its latest event.";
 
@@ -44,6 +45,8 @@ Replace the step body with your application work. The handler receives the **las
 2. Another matching event within that period restarts the wait.
 3. When the full period passes with no new matching event, Inngest starts one run using the last event received.
 4. If you set `timeout`, Inngest stops extending the wait once that maximum time passes and runs with the latest event.
+
+<FlowControlMarbles scenario="debounce" />
 
 The optional `key` is a Common Expression Language (CEL) expression string evaluated against each event. Each unique value gets an independent debounce period. In the example, updates for two accounts can settle and run separately. Without a key, matching events share the function's debounce period.
 

@@ -1,4 +1,5 @@
 import { Compatibility } from "shared/Docs/mdx";
+import { FlowControlMarbles } from "src/shared/Docs/FlowControlMarbles";
 export const metaTitle = "Singleton";
 export const description = "Prevent overlapping runs for the same key from duplicating work or overwriting results.";
 
@@ -11,6 +12,8 @@ export const description = "Prevent overlapping runs for the same key from dupli
 Keep two syncs for the same user from running at once. Singleton applies to the entire function run for that key; choose whether a new event skips its run or replaces the active run.
 
 Singleton controls the **whole function run**. A concurrency limit of `1` controls executing steps, so it does not provide the same run-level rule.
+
+<FlowControlMarbles scenario="singleton-skip" />
 
 ## Configure a singleton function
 
@@ -47,6 +50,8 @@ The required `key` is a Common Expression Language (CEL) expression string evalu
 | `cancel` | Inngest cancels the active run and starts a run for the new event. | The newest event should replace older work. |
 
 **Cancel mode:** Set `mode: "cancel"` in the example to use the second behavior. Cancellation does not undo steps that already completed. A currently executing `step.run` finishes before cancellation takes effect. During a rapid burst of matching events, cancel mode can skip some new runs rather than cancel each previous run.
+
+<FlowControlMarbles scenario="singleton-cancel" />
 
 A run that fails and is retrying still occupies its singleton slot. In skip mode, new matching runs stay skipped while the original run retries.
 
