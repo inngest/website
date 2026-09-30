@@ -3,8 +3,8 @@ import { baseConfig } from "../FlowControlSimulator/presets";
 
 export interface MarbleScenario {
   id: string;
-  /** Configuration snippet shown above the diagram. */
-  code: string;
+  /** Configuration snippets shown above the diagram. */
+  code: string[];
   /** What the animation shows. Also used as the diagram's accessible label. */
   caption: string;
   /** Gutter label for the flow control row. */
@@ -44,7 +44,7 @@ const limit = (n: number, key: "none" | "tenant" = "none") => ({
 export const MARBLE_SCENARIOS: MarbleScenario[] = [
   {
     id: "concurrency",
-    code: "concurrency: 2",
+    code: ["concurrency: 2"],
     caption:
       "Six events arrive 0.4s apart, and each run has one 2s step. Two steps execute at once. The other runs wait in the queue and start, oldest first, as slots open.",
     band: "Queue",
@@ -60,9 +60,9 @@ export const MARBLE_SCENARIOS: MarbleScenario[] = [
   },
   {
     id: "concurrency-sleep",
-    code: "concurrency: 2",
+    code: ["concurrency: 2"],
     caption:
-      "Each run executes a step, sleeps for 3s, then executes another step. Runs 1 and 2 release their slots while they sleep, so runs 3 and 4 can start. Four runs are in progress, but no more than two steps execute at once.",
+      "Each run executes a step, sleeps for 2s, then executes another step. A sleeping run releases its slot, so queued runs start while others sleep. When a run wakes and both slots are busy, its next step waits in the queue. Five runs are in progress, but no more than two steps execute at once.",
     band: "Queue",
     meter: "slots",
     lanes: "runs",
@@ -70,31 +70,31 @@ export const MARBLE_SCENARIOS: MarbleScenario[] = [
     config: make((c) => {
       c.steps = [
         { kind: "run", duration: 1.5 },
-        { kind: "sleep", duration: 3 },
+        { kind: "sleep", duration: 2 },
         { kind: "run", duration: 1.5 },
       ];
-      c.manual = events("A", [0, 0.3, 0.6, 0.9]);
+      c.manual = events("A", [0, 0.5, 1, 1.5, 2]);
       c.concurrency = limit(2);
     }),
   },
   {
     id: "throttling",
-    code: 'throttle: { limit: 2, period: "6s", burst: 1 }',
+    code: ['throttle: { limit: 2, period: "6s", burst: 1 }'],
     caption:
-      "Six events arrive within 1.5s. Three runs (limit + burst) start at once, then one run starts every 3s (period ÷ limit). The rest wait in the queue; none are dropped.",
+      "Six events arrive 0.5s apart. Three runs (limit + burst) start at once, then one run starts every 3s (period ÷ limit). The rest wait in the queue; none are dropped.",
     band: "Queue",
     meter: "throttle",
     lanes: "runs",
     preset: "throttling",
     config: make((c) => {
       c.steps = [{ kind: "run", duration: 1 }];
-      c.manual = events("A", [0, 0.3, 0.6, 0.9, 1.2, 1.5]);
+      c.manual = events("A", [0, 0.5, 1, 1.5, 2, 2.5]);
       c.throttle = { enabled: true, limit: 2, period: 6, burst: 1, key: "none" };
     }),
   },
   {
     id: "rate-limiting",
-    code: 'rateLimit: { limit: 1, period: "4s" }',
+    code: ['rateLimit: { limit: 1, period: "4s" }'],
     caption:
       "One run can start every 4s. Events that arrive before capacity recovers are skipped: they don't start a run, and they aren't queued for later.",
     band: "Rate limit",
@@ -109,7 +109,7 @@ export const MARBLE_SCENARIOS: MarbleScenario[] = [
   },
   {
     id: "batching",
-    code: 'batchEvents: { maxSize: 3, timeout: "4s" }',
+    code: ['batchEvents: { maxSize: 3, timeout: "4s" }'],
     caption:
       "The first batch starts as soon as it holds three events. The second batch holds only two, so it starts when the 4s timeout expires. Each batch is one run that receives every event in it.",
     band: "Batch",
@@ -124,7 +124,7 @@ export const MARBLE_SCENARIOS: MarbleScenario[] = [
   },
   {
     id: "singleton-skip",
-    code: 'singleton: { key: "event.data.user_id", mode: "skip" }',
+    code: ['singleton: { key: "event.data.user_id", mode: "skip" }'],
     caption:
       "All events are for one user. Run 1 holds the singleton lock for its whole duration, including the sleep, so events 2 and 3 are skipped. Event 4 arrives after run 1 completes and starts a new run.",
     band: "Singleton",
@@ -143,7 +143,7 @@ export const MARBLE_SCENARIOS: MarbleScenario[] = [
   },
   {
     id: "singleton-cancel",
-    code: 'singleton: { key: "event.data.user_id", mode: "cancel" }',
+    code: ['singleton: { key: "event.data.user_id", mode: "cancel" }'],
     caption:
       "Each new event cancels the active run and starts a new one. Run 1 is sleeping, so it's cancelled right away. Run 2 is executing a step, so the step finishes before the cancellation takes effect.",
     band: "Singleton",
@@ -162,7 +162,7 @@ export const MARBLE_SCENARIOS: MarbleScenario[] = [
   },
   {
     id: "debounce",
-    code: 'debounce: { period: "2s", timeout: "5s" }',
+    code: ['debounce: { period: "2s", timeout: "5s" }'],
     caption:
       "Each event restarts the 2s quiet period and replaces the pending event. The first burst settles, so a run starts with event 3. The steady stream never settles, so the 5s timeout starts a run with the latest event, 10.",
     band: "Debounce",
@@ -182,7 +182,10 @@ export const MARBLE_SCENARIOS: MarbleScenario[] = [
   },
   {
     id: "priority",
-    code: "concurrency: 1, priority: { run: \"… 'enterprise' ? 120 : 0\" }",
+    code: [
+      "concurrency: 1",
+      "priority: { run: \"event.data.tier == 'enterprise' ? 120 : 0\" }",
+    ],
     caption:
       "One step executes at a time. Enterprise runs have a priority factor of 120, so each one moves ahead of standard runs that were queued before it.",
     band: "Queue",
@@ -197,8 +200,8 @@ export const MARBLE_SCENARIOS: MarbleScenario[] = [
       ];
       c.steps = [{ kind: "run", duration: 1.5 }];
       c.manual = [
-        ...events("A", [0, 0.3, 0.6, 0.9, 1.2]),
-        ...events("E", [1.8, 3.2]),
+        ...events("A", [0, 0.5, 1, 1.5, 2]),
+        ...events("E", [2.4, 4.2]),
       ];
       c.priority = { enabled: true };
       c.concurrency = limit(1);
@@ -206,7 +209,7 @@ export const MARBLE_SCENARIOS: MarbleScenario[] = [
   },
   {
     id: "multi-tenancy",
-    code: 'concurrency: { limit: 2, key: "event.data.tenant_id" }',
+    code: ['concurrency: { limit: 2, key: "event.data.tenant_id" }'],
     caption:
       "Each tenant has its own limit of two executing steps. Tenant A's burst fills A's slots and builds a queue. Tenant B's runs start right away because A's backlog doesn't use B's slots.",
     band: "Queue",
@@ -223,8 +226,8 @@ export const MARBLE_SCENARIOS: MarbleScenario[] = [
       ];
       c.steps = [{ kind: "run", duration: 2 }];
       c.manual = [
-        ...events("A", [0, 0.3, 0.6, 0.9, 1.2, 1.5]),
-        ...events("B", [1, 3.5]),
+        ...events("A", [0, 0.4, 0.8, 1.2, 1.6, 2]),
+        ...events("B", [1, 3.6]),
       ];
       c.concurrency = limit(2, "tenant");
       c.keyQueues = true;

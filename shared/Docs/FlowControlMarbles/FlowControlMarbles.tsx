@@ -182,15 +182,19 @@ function stagePos(model: Model, L: Layout, tok: Token, s: Stage, t: number): Pt 
   switch (s.kind) {
     case "input":
       return {
-        x: L.x(tok.ev.t),
-        y: L.inY(model.tenants.indexOf(tok.ev.tenant)),
+        x: L.x(tok.ev!.t),
+        y: L.inY(model.tenants.indexOf(tok.tenant)),
       };
+    case "lane": {
+      const lane = model.laneOf.get(run!.id) ?? 0;
+      return { x: L.x(s.at ?? s.t) - L.R, y: L.laneY(lane) };
+    }
     case "collect": {
       if (run?.collect?.kind === "batch") {
         const arrived = run.eventIds.filter(
           (id) => model.result.events[id].t <= t + EPS
         );
-        const i = Math.max(0, arrived.indexOf(tok.ev.id));
+        const i = Math.max(0, arrived.indexOf(tok.ev!.id));
         return { x: slot(L, t, i, arrived.length), y: bandY };
       }
       return { x: slot(L, t, 0, 1), y: bandY };
@@ -203,13 +207,13 @@ function stagePos(model: Model, L: Layout, tok: Token, s: Stage, t: number): Pt 
       return { x: slot(L, s.t, 0, 1), y: bandY };
     case "start": {
       const lane = model.laneOf.get(run!.id) ?? 0;
-      return { x: L.x(run!.firstStartAt!) + L.R, y: L.laneY(lane) };
+      return { x: L.x(s.at ?? run!.firstStartAt!) + L.R, y: L.laneY(lane) };
     }
   }
 }
 
 interface TokenView {
-  key: number;
+  key: string;
   x: number;
   y: number;
   label: string;
@@ -278,7 +282,7 @@ function tokenView(
       break;
     }
   }
-  return { key: tok.ev.id, x, y, label: tok.label, look, opacity, scale, cross };
+  return { key: tok.key, x, y, label: tok.label, look, opacity, scale, cross };
 }
 
 // ---------------------------------------------------------------------------
@@ -424,7 +428,7 @@ function Diagram({ model, L, t, hatchId }: { model: Model; L: Layout; t: number;
   const { result, scenario, timing: T } = model;
   const R = L.R;
   const right = L.width - L.RIGHT;
-  const views = model.tokens
+  const views = [...model.tokens, ...model.stepTokens]
     .map((tok) => tokenView(model, L, tok, t))
     .filter(Boolean) as TokenView[];
   const step = model.domain <= 8 ? 1 : model.domain <= 16 ? 2 : 5;
@@ -514,17 +518,18 @@ function Diagram({ model, L, t, hatchId }: { model: Model; L: Layout; t: number;
 
       {/* Event marbles */}
       {model.tokens.map((tok) => {
-        if (t + EPS < tok.ev.t) return null;
-        const pop = ease(clamp01((t - tok.ev.t) / T.pop));
+        const ev = tok.ev!;
+        if (t + EPS < ev.t) return null;
+        const pop = ease(clamp01((t - ev.t) / T.pop));
         const rej = tok.stages.find((s) => s.kind === "reject");
         const rep = tok.stages.find((s) => s.kind === "replaced");
         const skipped = rej && t + EPS >= rej.t + T.move;
         const replaced = rep && t + EPS >= rep.t;
-        const x = L.x(tok.ev.t);
-        const y = L.inY(model.tenants.indexOf(tok.ev.tenant));
+        const x = L.x(ev.t);
+        const y = L.inY(model.tenants.indexOf(tok.tenant));
         const look = skipped ? LOOK.skipped : replaced ? LOOK.replaced : LOOK.event;
         return (
-          <g key={tok.ev.id}>
+          <g key={tok.key}>
             <Marble x={x} y={y} r={R} label={tok.label} look={look} scale={0.5 + 0.5 * pop} />
             {skipped && (
               <g>
@@ -960,9 +965,14 @@ export function FlowControlMarbles({ scenario: id }: { scenario: string }) {
       className="not-prose my-8 flex flex-col gap-3 rounded-xl bg-canvasSubtle p-3 leading-normal text-basis sm:p-4"
     >
       <div className="flex flex-wrap items-center gap-2">
-        <code className="min-w-0 max-w-full truncate rounded-md bg-canvasBase px-2 py-1 font-mono text-[11px] text-basis ring-1 ring-inset ring-carbon-200 dark:ring-carbon-700 sm:text-xs">
-          {scenario.code}
-        </code>
+        {scenario.code.map((c) => (
+          <code
+            key={c}
+            className="min-w-0 max-w-full truncate rounded-md bg-canvasBase px-2 py-1 font-mono text-[11px] text-basis ring-1 ring-inset ring-carbon-200 dark:ring-carbon-700 sm:text-xs"
+          >
+            {c}
+          </code>
+        ))}
         <div className="ml-auto flex items-center gap-0.5">
           <span className="mr-1 w-10 text-right font-mono text-[11px] tabular-nums text-muted" aria-hidden>
             {`${t.toFixed(1)}s`}

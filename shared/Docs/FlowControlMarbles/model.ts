@@ -23,6 +23,7 @@ export interface Timing {
 
 export type StageKind =
   | "input"
+  | "lane"
   | "collect"
   | "queue"
   | "reject"
@@ -34,13 +35,19 @@ export interface Stage {
   t: number;
   kind: StageKind;
   runId?: number;
-  /** For reject and replaced: the simulated time the decision happened. */
+  /**
+   * For reject and replaced: when the decision happened. For lane and start:
+   * the time whose x position the token sits at in the run's lane.
+   */
   at?: number;
 }
 
 export interface Token {
-  ev: SimEvent;
+  key: string;
+  /** The event, for tokens that start on an event row. */
+  ev?: SimEvent;
   label: string;
+  tenant: string;
   group: string;
   stages: Stage[];
 }
@@ -71,7 +78,10 @@ export interface Model {
   landAt: Map<number, number>;
   /** When a cancel was requested for a cancelled run. */
   cancelAt: Map<number, number>;
+  /** One per event: its path from the event row into the band and lanes. */
   tokens: Token[];
+  /** One per later step that waits for capacity: lane → queue → lane. */
+  stepTokens: Token[];
   queues: Map<string, QueueSnapshot[]>;
   groupOf: (tenant: string) => string;
   eventLabel: (ev: SimEvent) => string;
@@ -104,7 +114,7 @@ export function buildModel(
   const eventLabel = (ev: SimEvent) => (single ? String(ev.seq) : ev.label);
   const runLabel = (run: SimRun) => {
     const evs = run.eventIds.map((id) => result.events[id]);
-    if (run.collect?.kind === "batch") return evs.map(eventLabel).join("·");
+    if (run.collect?.kind === "batch") return evs.map(eventLabel).join(" ");
     const trig = result.events[run.triggerEventId];
     return trig ? eventLabel(trig) : run.label;
   };
@@ -180,7 +190,7 @@ export function buildModel(
         stages.push({ t: tVis, kind: "queue", runId: r.id });
         ts = Math.max(r.firstStartAt, tVis + T.move);
       }
-      stages.push({ t: ts, kind: "start", runId: r.id });
+      stages.push({ t: ts, kind: "start", runId: r.id, at: r.firstStartAt });
       landAt.set(r.id, Math.max(landAt.get(r.id) ?? 0, ts + T.move));
     };
 
@@ -220,36 +230,79 @@ export function buildModel(
           handoff(run, t1);
         }
     }
-    return { ev, label: eventLabel(ev), group: groupOf(ev.tenant), stages };
+    return {
+      key: `e${ev.id}`,
+      ev,
+      label: eventLabel(ev),
+      tenant: ev.tenant,
+      group: groupOf(ev.tenant),
+      stages,
+    };
   });
 
-  // Queue order over time, per group. Only runs waiting to start are queued;
-  // later steps of a run show as part of its lane.
+  // Later steps that wait for capacity go back to the queue, then return.
+  const stepTokens: Token[] = [];
+  for (const r of result.runs) {
+    if (r.firstStartAt === undefined) continue;
+    r.segments.forEach((seg, i) => {
+      if (seg.kind !== "wait" || seg.from < r.firstStartAt! - EPS) return;
+      if (seg.to - seg.from < EPS) return;
+      const stages: Stage[] = [
+        { t: seg.from, kind: "lane", runId: r.id, at: seg.from },
+        { t: seg.from, kind: "queue", runId: r.id },
+      ];
+      if (r.segments[i + 1]?.kind === "run") {
+        stages.push({
+          t: Math.max(seg.to, seg.from + T.move),
+          kind: "start",
+          runId: r.id,
+          at: seg.to,
+        });
+      }
+      stepTokens.push({
+        key: `s${r.id}-${i}`,
+        label: runLabel(r),
+        tenant: r.tenant,
+        group: groupOf(r.tenant),
+        stages,
+      });
+    });
+  }
+
+  // Queue order over time, per group: every run with a step waiting for
+  // capacity, ordered like the scheduler (start time minus priority).
   const queues = new Map<string, QueueSnapshot[]>();
   for (const g of groups) {
-    const waiting = result.runs.filter(
-      (r) =>
-        groupOf(r.tenant) === g &&
-        r.createdAt !== undefined &&
-        (r.firstStartAt === undefined || r.firstStartAt > r.createdAt + EPS)
-    );
-    const leave = (r: SimRun) =>
-      r.firstStartAt ?? r.endedAt ?? Number.POSITIVE_INFINITY;
-    const times = Array.from(
-      new Set(waiting.flatMap((r) => [r.createdAt!, leave(r)]))
-    )
+    const spans: { runId: number; from: number; to: number; score: number }[] =
+      [];
+    for (const r of result.runs) {
+      if (groupOf(r.tenant) !== g || r.createdAt === undefined) continue;
+      const score = r.createdAt - r.priority;
+      if (r.firstStartAt === undefined) {
+        spans.push({
+          runId: r.id,
+          from: r.createdAt,
+          to: r.endedAt ?? Number.POSITIVE_INFINITY,
+          score,
+        });
+        continue;
+      }
+      if (r.firstStartAt > r.createdAt + EPS)
+        spans.push({ runId: r.id, from: r.createdAt, to: r.firstStartAt, score });
+      for (const seg of r.segments) {
+        if (seg.kind === "wait" && seg.from >= r.firstStartAt - EPS)
+          spans.push({ runId: r.id, from: seg.from, to: seg.to, score });
+      }
+    }
+    const times = Array.from(new Set(spans.flatMap((x) => [x.from, x.to])))
       .filter((t) => Number.isFinite(t))
       .sort((a, b) => a - b);
     const snaps: QueueSnapshot[] = [{ t: -1, order: [] }];
     for (const t of times) {
-      const order = waiting
-        .filter((r) => r.createdAt! <= t + EPS && t + EPS < leave(r))
-        .sort(
-          (a, b) =>
-            a.createdAt! - a.priority - (b.createdAt! - b.priority) ||
-            a.id - b.id
-        )
-        .map((r) => r.id);
+      const order = spans
+        .filter((x) => x.from <= t + EPS && t + EPS < x.to)
+        .sort((a, b) => a.score - b.score || a.runId - b.runId)
+        .map((x) => x.runId);
       snaps.push({ t, order });
     }
     queues.set(g, snaps);
@@ -269,6 +322,7 @@ export function buildModel(
     landAt,
     cancelAt,
     tokens,
+    stepTokens,
     queues,
     groupOf,
     eventLabel,
