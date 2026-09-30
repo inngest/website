@@ -29,7 +29,7 @@ Debounce delays function execution until a series of events are no longer receiv
 ### Configuration reference
 
 * `period` - The time delay to delay execution. The period begins when the first matching event is received.
-* `key` - An optional [expression](/docs/guides/writing-expressions) using event data to apply each limit too. Each unique value of the `key` has its own limit, enabling you to rate limit function runs by any particular key, like a user ID.
+* `key` - An optional [expression](/docs/durable-execution/guides-and-advanced/writing-expressions) using event data to apply each limit too. Each unique value of the `key` has its own limit, enabling you to rate limit function runs by any particular key, like a user ID.
 * `timeout` - Optional. The maximum time that a debounce can be extended before running.
 
 ## How it works
@@ -48,7 +48,7 @@ If a `timeout` is provided, the function will always run after the `timeout` has
 
 ### Using a `key`
 
-When a `key` is added, a separate debounce period is applied for each unique value of the `key` expression. For example, if your `key` is set to `event.data.customer_id`, each customer would have their individual debounce period applied to functions run. Read [our guide to writing expressions](/docs/guides/writing-expressions) for more information.
+When a `key` is added, a separate debounce period is applied for each unique value of the `key` expression. For example, if your `key` is set to `event.data.customer_id`, each customer would have their individual debounce period applied to functions run. Read [our guide to writing expressions](/docs/durable-execution/guides-and-advanced/writing-expressions) for more information.
 
 ## Comparison to rate limiting
 

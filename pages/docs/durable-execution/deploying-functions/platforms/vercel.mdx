@@ -63,7 +63,7 @@ export const { GET, POST, PUT } = serve({
 </GuideSelector>
 
 <Tip>
-  We strongly recommend that you configure the `maxDuration` for your Inngest endpoint to ensure that your steps can successfully execute without timeouts. When using with [`checkpointing`](/docs/setup/checkpointing) (the default in our v4 SDK), you should set checkpointing's `maxRuntime` option to 20-40% below your `maxDuration` setting on Vercel. [See the Vercel docs for more information](https://vercel.com/docs/functions/configuring-functions/duration).
+  We strongly recommend that you configure the `maxDuration` for your Inngest endpoint to ensure that your steps can successfully execute without timeouts. When using with [`checkpointing`](/docs/durable-execution/guides-and-advanced/checkpointing) (the default in our v4 SDK), you should set checkpointing's `maxRuntime` option to 20-40% below your `maxDuration` setting on Vercel. [See the Vercel docs for more information](https://vercel.com/docs/functions/configuring-functions/duration).
 
   Note, when `streaming` is enabled, your function can execute well beyond the `maxDuration`. Learn more about [the streaming option here](/docs/reference/typescript/v4/serve/streaming).
 </Tip>
@@ -73,7 +73,7 @@ export const { GET, POST, PUT } = serve({
 Installing [Inngest's official Vercel integration](https://app.inngest.com/settings/integrations/vercel/connect) does 3 things:
 
 1. Automatically sets the required [`INNGEST_SIGNING_KEY`](/docs/sdk/environment-variables#inngest-signing-key) environment variable to securely communicate with Inngest's API ([docs](/docs/platform/signing-keys)).
-2. Automatically sets the [`INNGEST_EVENT_KEY`](/docs/sdk/environment-variables#inngest-event-key) environment variable to enable your application to send events ([docs](/docs/events/creating-an-event-key)).
+2. Automatically sets the [`INNGEST_EVENT_KEY`](/docs/sdk/environment-variables#inngest-event-key) environment variable to enable your application to send events ([docs](/docs/platform-and-operations/keys-and-access)).
 3. Automatically syncs your app to Inngest every time you deploy updated code to Vercel - no need to change your existing workflow!
 
 <ButtonDeploy href="https://app.inngest.com/settings/integrations/vercel/connect" type="vercel" label="Install the Inngest Vercel integration" />
@@ -142,7 +142,7 @@ If you prefer to set up a dedicated staging environment instead of using [branch
 
 1. Create a Vercel custom environment ([docs](https://vercel.com/docs/deployments/environments#custom-environments))
 2. Create an Inngest custom environment ([docs](/docs/platform/environments#custom-environments))
-3. Create an Inngest Event Key in your new custom environment with a memorable name like "Vercel - My app" ([docs](/docs/events/creating-an-event-key)). Copy this for later.
+3. Create an Inngest Event Key in your new custom environment with a memorable name like "Vercel - My app" ([docs](/docs/platform-and-operations/keys-and-access)). Copy this for later.
     <img src="/assets/docs/deploy/inngest-dash-staging-keys.png" className="max-w-sm my-1"/>
 4. Copy your Inngest [Signing Key](/docs/platform/signing-keys)
 5. In the Vercel project dashboard, add two new environment variables, `INNGEST_EVENT_KEY` and `INNGEST_SIGNING_KEY` using your two copied values, selecting only to use them for your new custom environment, e.g. "staging."
@@ -151,4 +151,4 @@ If you prefer to set up a dedicated staging environment instead of using [branch
 
 ## Manually syncing apps
 
-While we strongly recommend our Vercel integration, you can still use Inngest by manually telling Inngest that you've deployed updated functions. You can sync your app [via the Inngest UI](/docs/apps/cloud#sync-a-new-app-in-inngest-cloud) or [via our API with a curl request](/docs/apps/cloud#curl-command).
+While we strongly recommend our Vercel integration, you can still use Inngest by manually telling Inngest that you've deployed updated functions. You can sync your app [via the Inngest UI](/docs/platform-and-operations/apps-and-syncs#sync-a-new-app-in-inngest-cloud) or [via our API with a curl request](/docs/platform-and-operations/apps-and-syncs#curl-command).

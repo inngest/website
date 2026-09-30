@@ -62,6 +62,32 @@ export const docsRefreshOutline: DocsRefreshPage[] = [
       {
         title: "Get started",
         href: "/docs/getting-started",
+        children: [
+          {
+            title: "Next.js",
+            href: "/docs/getting-started/nextjs-quick-start",
+          },
+          {
+            title: "Express",
+            href: "/docs/getting-started/express-quick-start",
+          },
+          {
+            title: "Astro",
+            href: "/docs/getting-started/astro-quick-start",
+          },
+          {
+            title: "NestJS",
+            href: "/docs/getting-started/nestjs-quick-start",
+          },
+          {
+            title: "H3",
+            href: "/docs/getting-started/h3-quick-start",
+          },
+          {
+            title: "TanStack Start",
+            href: "/docs/getting-started/tanstack-start-quick-start",
+          },
+        ],
       },
     ],
   },
@@ -82,6 +108,12 @@ export const docsRefreshOutline: DocsRefreshPage[] = [
           {
             title: "Durable endpoints",
             href: "/docs/durable-execution/durable-endpoints",
+            children: [
+              {
+                title: "Streaming",
+                href: "/docs/durable-execution/durable-endpoints/streaming",
+              },
+            ],
           },
           {
             title: "Concepts",
@@ -158,6 +190,10 @@ export const docsRefreshOutline: DocsRefreshPage[] = [
                 title: "group.experiment",
                 href: "/docs/durable-execution/primitives/group-experiment",
                 monospace: true,
+              },
+              {
+                title: "Metadata",
+                href: "/docs/durable-execution/primitives/metadata",
               },
             ],
           },
@@ -280,6 +316,36 @@ export const docsRefreshOutline: DocsRefreshPage[] = [
               {
                 title: "Connect",
                 href: "/docs/durable-execution/deploying-functions/connect",
+              },
+              {
+                title: "Platforms",
+                href: "/docs/durable-execution/deploying-functions/platforms",
+                children: [
+                  {
+                    title: "Vercel",
+                    href: "/docs/durable-execution/deploying-functions/platforms/vercel",
+                  },
+                  {
+                    title: "Netlify",
+                    href: "/docs/durable-execution/deploying-functions/platforms/netlify",
+                  },
+                  {
+                    title: "Cloudflare Pages",
+                    href: "/docs/durable-execution/deploying-functions/platforms/cloudflare",
+                  },
+                  {
+                    title: "Render",
+                    href: "/docs/durable-execution/deploying-functions/platforms/render",
+                  },
+                  {
+                    title: "DigitalOcean",
+                    href: "/docs/durable-execution/deploying-functions/platforms/digital-ocean",
+                  },
+                  {
+                    title: "Provider limits",
+                    href: "/docs/durable-execution/deploying-functions/platforms/provider-limits",
+                  },
+                ],
               },
             ],
           },
@@ -454,52 +520,78 @@ export const docsRefreshOutline: DocsRefreshPage[] = [
         ],
       },
       {
-        title: "Online Evals",
-        href: "/docs/online-evals",
+        title: "Agent Evals",
+        href: "/docs/agent-evals",
         children: [
           {
             title: "Overview",
-            href: "/docs/online-evals/overview",
+            href: "/docs/agent-evals/overview",
           },
           {
             title: "Quick start",
-            href: "/docs/online-evals/quick-start",
+            href: "/docs/agent-evals/quick-start",
+          },
+          {
+            title: "Scores",
+            href: "/docs/agent-evals/scores",
+          },
+          {
+            title: "Deferred scoring",
+            href: "/docs/agent-evals/deferred-scoring",
+          },
+          {
+            title: "Experiments",
+            href: "/docs/agent-evals/experiments",
           },
           {
             title: "Sessions",
-            href: "/docs/online-evals/sessions",
-          },
-          {
-            title: "Outcomes and scoring",
-            href: "/docs/online-evals/outcomes-and-scoring",
-          },
-          {
-            title: "A/B testing",
-            href: "/docs/online-evals/a-b-testing",
-          },
-          {
-            title: "Interpreting results",
-            href: "/docs/online-evals/interpreting-results",
-          },
-          {
-            title: "Cost management",
-            href: "/docs/online-evals/cost-management",
+            href: "/docs/agent-evals/sessions",
           },
           {
             title: "Guides",
-            href: "/docs/online-evals/guides",
+            href: "/docs/agent-evals/guides",
+            children: [
+              {
+                title: "Score with an LLM judge",
+                href: "/docs/agent-evals/guides/llm-judge",
+              },
+              {
+                title: "Score user feedback",
+                href: "/docs/agent-evals/guides/user-feedback",
+              },
+              {
+                title: "Compare models and prompts",
+                href: "/docs/agent-evals/guides/compare-models-and-prompts",
+              },
+              {
+                title: "Roll out a workflow rewrite",
+                href: "/docs/agent-evals/guides/workflow-rewrite",
+              },
+              {
+                title: "Read results and roll out",
+                href: "/docs/agent-evals/guides/interpreting-results",
+              },
+              {
+                title: "Manage eval costs",
+                href: "/docs/agent-evals/guides/cost-management",
+              },
+            ],
           },
           {
             title: "Reference",
-            href: "/docs/online-evals/reference",
+            href: "/docs/agent-evals/reference",
           },
           {
             title: "Limits",
-            href: "/docs/online-evals/limits",
+            href: "/docs/agent-evals/limits",
           },
           {
             title: "Best practices",
-            href: "/docs/online-evals/best-practices",
+            href: "/docs/agent-evals/best-practices",
+          },
+          {
+            title: "Troubleshooting",
+            href: "/docs/agent-evals/troubleshooting",
           },
         ],
       },
@@ -557,13 +649,7 @@ export const docsRefreshOutline: DocsRefreshPage[] = [
       },
       {
         title: "SDKs & APIs",
-        href: "/docs/sdk/overview",
-        children: [
-          {
-            title: "Reference",
-            href: "/docs/sdk/overview/reference",
-          },
-        ],
+        href: "/docs/sdks",
       },
       {
         title: "Platform & operations",

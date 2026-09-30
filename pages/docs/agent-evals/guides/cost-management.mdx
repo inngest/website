@@ -1,7 +1,7 @@
-export const metaTitle = "Cost management";
+export const metaTitle = "Manage eval costs | Agent Evals";
 export const description = "Control eval spend by tracking scores, scoring executions, and external service costs separately.";
 
-# Cost management
+# Manage eval costs
 
 > Control eval spend by tracking scores, scoring executions, and external service costs separately.
 
@@ -11,17 +11,17 @@ If a scorer calls a paid model, choose which runs need that score in your applic
 
 | Usage | What to count |
 | --- | --- |
-| Inngest executions | Count the original function run and its steps. `group.experiment()` adds one selection step; only the selected variant runs, and its steps count separately. A deferred scorer is a separate function run with its own steps. |
+| Inngest executions | Count the original function run and its steps. `group.experiment()` adds one selection step; only the selected variant runs, and its steps count separately. Each `step.score()` call is one step. A deferred scorer is a separate function run with its own steps, plus one step for its score write. |
 | Inngest scores | Count each score you ingest, whether you write it during the original run, from another service, or from a deferred scorer. Pricing includes a monthly score quantity. You can continue ingesting scores under usage-based billing after that amount. |
 | Your services | Count model tokens or requests, other paid APIs, and the infrastructure where your functions run. A model judge is a separate model call even when it records only one Inngest score. |
 
-The [pricing page](https://www.inngest.com/pricing) defines the current plans, allowances, and metered units. Its execution estimate is **runs × (steps + 1)** for a function whose runs take the same number of steps. Add deferred scorer runs and their steps when you use them. The [step experiments guide](/docs/online-evals/a-b-testing) explains the extra selection step. Check [Inngest limits](/docs/durable-execution/limits) before increasing traffic or retention.
+The [pricing page](https://www.inngest.com/pricing) defines the current plans, allowances, and metered units. Its execution estimate is **runs × (steps + 1)** for a function whose runs take the same number of steps. Add deferred scorer runs and their steps when you use them. [Experiments](/docs/agent-evals/experiments#replay-and-step-usage) explains the extra selection step. Check [Inngest limits](/docs/durable-execution/limits) before increasing traffic or retention.
 
 ## Choose when to score
 
-Start with a real outcome you can observe, such as a resolved ticket or a user's rating. When the outcome arrives while the original run is active, [score that run](/docs/online-evals/outcomes-and-scoring). When another service receives the outcome later and has the original `runId`, it can [score that run directly](/docs/online-evals/reference). This can avoid running a separate scorer.
+Start with a real outcome you can observe, such as a resolved ticket or a user's rating. When the outcome arrives while the original run is active, [score that run](/docs/agent-evals/scores). When another service receives the outcome later and has the original `runId`, it can [score that run directly](/docs/agent-evals/scores#score-from-outside-the-run). This can avoid running a separate scorer.
 
-Use a [deferred scorer](/docs/online-evals/reference) when evaluation needs independent work or must wait for a later signal. It keeps the original run moving, but it adds a function run, any steps in that scorer, and any model or API calls the scorer makes. Decide which runs need that work before you call `defer()`. For example, score only tickets with a final resolution signal, or send a model judge only cases that need subjective review. Record how you selected cases so readers can interpret the resulting scores.
+Use a [deferred scorer](/docs/agent-evals/deferred-scoring) when evaluation needs independent work or must wait for a later signal. It keeps the original run moving, but it adds a function run, any steps in that scorer, and any model or API calls the scorer makes. Decide which runs need that work before you call `defer()`. For example, score only tickets with a final resolution signal, or send a model judge only cases that need subjective review. Record how you selected cases so readers can interpret the resulting scores.
 
 If you sample cases in your application, choose the sample before making the expensive evaluation call and keep the rule stable. Do not present a sampled score as a measure of all traffic unless the sample represents that traffic. Track the share of eligible runs that received a score. A cheap score from an observed outcome may be worth recording on every eligible run even when you sample costly model judgments.
 
@@ -39,4 +39,4 @@ Use [concurrency or throttling](/docs/durable-execution/flow-control) to keep sc
 
 For each cohort, record expected monthly original runs, average steps per run, experiment selections, scores per scored run, deferred scorer runs and steps, and model or API calls. Multiply each count by its own provider's published rate or allowance. Use [Inngest pricing](https://www.inngest.com/pricing) for Inngest units and the model or API provider's bill for its usage. Recheck the estimate after rollout against actual traffic, step counts, score volume, and provider bills.
 
-At launch, control score volume in your application by selecting which runs to score before you write a score or defer a scorer. Online Evals does not provide built-in score sampling or budget caps. Check your score usage against the current [pricing page](https://www.inngest.com/pricing), and track model and API costs with those providers.
+Agent Evals doesn't sample scores or cap score spend for you, so control score volume in your application by choosing which runs to score before you write a score or defer a scorer. Check your score usage against the current [pricing page](https://www.inngest.com/pricing), and track model and API costs with those providers.

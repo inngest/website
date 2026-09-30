@@ -3,26 +3,19 @@ import { Info, CodeGroup } from "src/shared/Docs/mdx";
 import GithubIcon from "shared/Icons/Github"
 
 export const metaTitle = "TypeScript SDK v4 | Inngest Reference";
-export const description = "Inngest TypeScript SDK v4: the latest release with improved type safety, native realtime, new step APIs, and updated middleware.";
+export const description = "Install the Inngest TypeScript SDK, create a client, and find the reference for functions, steps, serve, Realtime, and middleware.";
 
-# TypeScript SDK v4
+# TypeScript SDK
+
+> Install the TypeScript SDK, create a client, and find every API it offers.
 
 <Info>
-  Upgrading from v3? Check out the [migration guide](/docs/reference/typescript/v4/migrations/v3-to-v4).
+  This is the reference for TypeScript SDK v4. Upgrading from v3? See the [migration guide](/docs/reference/typescript/v4/migrations/v3-to-v4). Apps still on v3 can use the [v3 reference](/docs/reference/typescript/v3/intro).
 </Info>
 
-## Introduction
+The TypeScript SDK defines durable functions, sends events, and serves your functions from Node.js, Bun, Deno, and edge runtimes. It supports every Inngest feature, including [Realtime](/docs/realtime), [Sandboxes](/docs/sandboxes) (beta), and [Agent Evals](/docs/agent-evals). See [feature support](/docs/sdks#feature-support) to compare it with the other SDKs.
 
-Inngest is an event-driven durable execution platform that lets you write reliable background jobs, scheduled tasks, and multi-step workflows in TypeScript without any additional infrastructure. Simply define functions as code; Inngest handles retries, concurrency, rate limiting, and observability.
-
-The TypeScript SDK v4 delivers a major upgrade to speed and developer experience:
-- **Rewritten middleware** — Hooks are more intuitive, less overloaded, and enable new use cases.
-- **Better schemas** — Runtime event data validation with Standard Schema support (not just Zod!).
-- **Faster by default** — Parallel step optimization and checkpointing are both enabled by default, leading to fewer requests and lower latency.
-- **Improved logging** — Structured logging (Pino-style) and cleaner separation of internal vs. app logs.
-- **Cleaner API** — Triggers in the options object, lazy init for edge runtimes, and more compile-time safety.
-
-## Installing
+## Install
 
 <CodeGroup>
 ```shell {{ title: "npm" }}
@@ -34,21 +27,69 @@ pnpm add inngest
 ```shell {{ title: "yarn" }}
 yarn add inngest
 ```
+```shell {{ title: "bun" }}
+bun add inngest
+```
 </CodeGroup>
 
-## Build with v4
+## Create a client
 
-Start with the [client setup](/docs/reference/typescript/v4/client/create) and [function creation](/docs/reference/typescript/v4/functions/create) references, then use the v4 feature docs that match your application:
+Create one client for your app. Use it to define functions and send events:
 
-- [Checkpointing](/docs/setup/checkpointing) for low-latency resumptions across durable steps.
-- [Realtime](/docs/realtime) for publishing workflow progress to users.
-- [Durable Endpoints](/docs/learn/durable-endpoints) for durable HTTP responses and streaming APIs.
-- [Middleware](/docs/reference/typescript/v4/middleware/lifecycle) for cross-cutting concerns like observability, serialization, encryption, and Sentry.
-- [v3 to v4 migration guide](/docs/reference/typescript/v4/migrations/v3-to-v4) for upgrading existing TypeScript projects.
+```ts {{ title: "src/inngest/client.ts" }}
+import { Inngest } from "inngest";
+
+export const inngest = new Inngest({ id: "my-app" });
+```
+
+Next, [create a function](/docs/reference/typescript/v4/functions/create) and [serve it](/docs/reference/typescript/v4/serve) from your app. The [TypeScript quick start](/docs/durable-execution/quick-start/typescript-quick-start) walks through a full example.
+
+## Reference
+
+**Client and events**
+
+- [Create the client](/docs/reference/typescript/v4/client/create)
+- [Send events](/docs/reference/typescript/v4/events/send)
+- [Trigger helpers](/docs/reference/typescript/v4/functions/triggers)
+
+**Functions**
+
+- [Create a function](/docs/reference/typescript/v4/functions/create)
+- [Handling failures](/docs/reference/typescript/v4/functions/handling-failures) and [cancel on](/docs/reference/typescript/v4/functions/cancel-on)
+- Flow control: [concurrency](/docs/reference/typescript/v4/functions/concurrency), [rate limit](/docs/reference/typescript/v4/functions/rate-limit), [debounce](/docs/reference/typescript/v4/functions/debounce), [singleton](/docs/reference/typescript/v4/functions/singleton), and [priority](/docs/reference/typescript/v4/functions/run-priority)
+- [Referencing functions](/docs/reference/typescript/v4/functions/references) and [deferred functions](/docs/reference/typescript/v4/functions/deferred-functions)
+
+**Steps**
+
+- [`step.run()`](/docs/reference/typescript/v4/functions/step-run), [`step.sleep()`](/docs/reference/typescript/v4/functions/step-sleep), and [`step.sleepUntil()`](/docs/reference/typescript/v4/functions/step-sleep-until)
+- [`step.waitForEvent()`](/docs/reference/typescript/v4/functions/step-wait-for-event) and [`step.waitForSignal()`](/docs/reference/typescript/v4/functions/step-wait-for-signal)
+- [`step.invoke()`](/docs/reference/typescript/v4/functions/step-invoke), [`step.sendEvent()`](/docs/reference/typescript/v4/functions/step-send-event), and [`step.fetch()`](/docs/reference/typescript/v4/functions/fetch)
+- [`group.experiment()`](/docs/reference/typescript/v4/functions/group-experiment) and [scoring](/docs/reference/typescript/v4/functions/scoring) (beta)
+
+**Serve and run**
+
+- [Serve configuration](/docs/reference/typescript/v4/serve) and [framework handlers](/docs/learn/serving-inngest-functions)
+- [Streaming](/docs/reference/typescript/v4/serve/streaming) and [Durable Endpoints](/docs/reference/typescript/v4/durable-endpoints) (beta)
+- [Connect workers](/docs/durable-execution/deploying-functions/connect)
+
+**Realtime**
+
+- [Overview](/docs/reference/typescript/v4/realtime), [channels and topics](/docs/reference/typescript/v4/realtime/channels), [publishing](/docs/reference/typescript/v4/realtime/publishing), [subscribing](/docs/reference/typescript/v4/realtime/subscribing), and [`useRealtime`](/docs/reference/typescript/v4/realtime/use-realtime)
+
+**Middleware**
+
+- [Lifecycle](/docs/reference/typescript/v4/middleware/lifecycle) and [examples](/docs/reference/typescript/v4/middleware/examples)
+- [Custom serialization](/docs/reference/typescript/v4/middleware/serialization), [encryption](/docs/reference/typescript/v4/middleware/encryption), and [Sentry](/docs/reference/typescript/v4/middleware/sentry)
+
+**Develop and operate**
+
+- [Environment variables](/docs/sdk/environment-variables), [using TypeScript](/docs/typescript), and the [ESLint plugin](/docs/sdk/eslint)
+- [Testing](/docs/reference/typescript/v4/testing), [logging](/docs/reference/typescript/v4/logging), and [extended traces](/docs/reference/typescript/v4/extended-traces)
+- [Migrating from v3 to v4](/docs/reference/typescript/v4/migrations/v3-to-v4)
 
 ## Source code
 
-Our TypeScript SDK and its related packages are open source and available on Github: [<GithubIcon className="ml-2 inline-flex"/> inngest/inngest-js](https://github.com/inngest/inngest-js).
+The TypeScript SDK and its related packages are open source on GitHub: [<GithubIcon className="ml-2 inline-flex"/> inngest/inngest-js](https://github.com/inngest/inngest-js).
 
 ## Official libraries
 

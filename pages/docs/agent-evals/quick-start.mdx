@@ -1,7 +1,7 @@
-export const metaTitle = "Quick start | Online Evals";
+export const metaTitle = "Quick start | Agent Evals";
 export const description = "Build an online eval that links immediate checks and later feedback to the response variant that served a user.";
 
-# Online Evals quick start
+# Agent Evals quick start
 > Build an online eval that links immediate checks and later feedback to the response variant that served a user.
 
 Build a support response experiment and measure whether the selected answer helped the user. You will group related work in a session, score an immediate check, compare two variants, and attach later feedback to the variant that served the answer.
@@ -10,7 +10,7 @@ This example uses fixed responses so you can run it without an AI provider. Repl
 
 ## Before you start
 
-- Use Node.js and the latest TypeScript SDK v4. Scoring and deferred scoring are beta APIs. Sessions in sent events require SDK v4.7.0 or later; experiments and scoring require v4.8.0 or later.
+- Use Node.js and the latest TypeScript SDK. Experiments and scoring require v4.8.0 or later, and scoring and deferred scoring are beta APIs.
 - Install the packages with `npm install inngest@latest express zod` and `npm install -D tsx @types/express`.
 - Use three terminals: one for your app, one for the Inngest Dev Server, and one for test requests.
 
@@ -165,9 +165,8 @@ When a user or account must keep the same response across runs, replace `experim
 
 ## Next steps
 
-- [Sessions](/docs/online-evals/sessions) explains how to group and find related runs.
-- [Outcomes and scoring](/docs/online-evals/outcomes-and-scoring) covers direct, step, and external scores.
-- [Defer a score](/docs/online-evals/outcomes-and-scoring) covers slower evaluations and later product signals.
-- [A/B testing](/docs/online-evals/a-b-testing) explains selection, durable variants, and attribution.
-- [Interpreting results](/docs/online-evals/interpreting-results) shows how to compare a rollout.
-- [API reference](/docs/online-evals/reference) gives the exact API options.
+- [Scores](/docs/agent-evals/scores) covers run, step, and external scores.
+- [Deferred scoring](/docs/agent-evals/deferred-scoring) covers scorers, timeouts, and writing several scores.
+- [Experiments](/docs/agent-evals/experiments) explains assignment strategies and attribution.
+- [Sessions](/docs/agent-evals/sessions) explains how to group and find related runs.
+- [Read results and roll out](/docs/agent-evals/guides/interpreting-results) shows how to compare variants before you ship.

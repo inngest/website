@@ -158,7 +158,7 @@ export default function ShipInHours() {
             </a>
 
             <a
-              href="/docs/deploy/vercel?ref=homepage-fits-your-workflow"
+              href="/docs/durable-execution/deploying-functions/platforms/vercel?ref=homepage-fits-your-workflow"
               className="flex w-1/2 md:w-1/3 max-w-[140px] hover:scale-110 transition-all duration-150 opacity-50 hover:opacity-100"
             >
               <img
@@ -167,7 +167,7 @@ export default function ShipInHours() {
               />
             </a>
             <a
-              href="/docs/deploy/netlify?ref=homepage-fits-your-workflow"
+              href="/docs/durable-execution/deploying-functions/platforms/netlify?ref=homepage-fits-your-workflow"
               className="flex w-1/2 md:w-1/3 max-w-[140px] hover:scale-110 transition-all duration-150 opacity-50 hover:opacity-100"
             >
               <img
@@ -176,7 +176,7 @@ export default function ShipInHours() {
               />
             </a>
             <a
-              href="/docs/deploy/cloudflare?ref=homepage-fits-your-workflow"
+              href="/docs/durable-execution/deploying-functions/platforms/cloudflare?ref=homepage-fits-your-workflow"
               className="flex w-1/2 md:w-1/3 max-w-[140px] hover:scale-110 transition-all duration-150 opacity-50 hover:opacity-100"
             >
               <img

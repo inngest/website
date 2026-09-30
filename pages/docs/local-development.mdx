@@ -83,7 +83,7 @@ Open **Functions** and select **Invoke** to call one function with a JSON payloa
 
 Open **Runs** and select the new run. Inspect the steps, output, errors, and trace. Change the payload or your function code, then run it again. The Dev Server polls your app for function changes.
 
-You can also send an event from your application with `inngest.send()` while the app runs with `INNGEST_DEV=1`. If your app needs `INNGEST_EVENT_KEY` locally, the Dev Server accepts a dummy value. See [Get started](/docs/getting-started/nodejs-quick-start) for a complete TypeScript v4 example that creates and tests a function.
+You can also send an event from your application with `inngest.send()` while the app runs with `INNGEST_DEV=1`. If your app needs `INNGEST_EVENT_KEY` locally, the Dev Server accepts a dummy value. See [Get started](/docs/durable-execution/quick-start/typescript-quick-start) for a complete TypeScript v4 example that creates and tests a function.
 
 ## Configuration file
 
@@ -169,4 +169,4 @@ Common ports include `80` and `443`, `3000`–`3010` for Rails, Express, Next.js
 
 Set `INNGEST_DEV=1` **on the app process** and restart it. The TypeScript SDK defaults to cloud mode when you do not set a mode. If your Dev Server uses a different host or port, set `INNGEST_BASE_URL` in the app to its full URL, such as `http://localhost:8290`. Set these values on the app process, then restart it.
 
-The Dev Server supports local development and testing. When you deploy, connect your app to its Inngest environment. For a function you can run locally now, continue with [Get started](/docs/getting-started/nodejs-quick-start).
+The Dev Server supports local development and testing. When you deploy, connect your app to its Inngest environment. For a function you can run locally now, continue with [Get started](/docs/durable-execution/quick-start/typescript-quick-start).

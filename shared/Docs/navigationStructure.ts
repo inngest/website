@@ -421,8 +421,9 @@ const sectionReference: (NavGroup | NavLink)[] = [
   {
     title: "Go SDK",
     links: [
+      { title: "Introduction", href: `/docs/reference/go` },
       {
-        title: "Reference",
+        title: "Package reference",
         href: "https://pkg.go.dev/github.com/inngest/inngestgo",
       },
       {

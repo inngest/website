@@ -11,7 +11,12 @@ const inngest = new Inngest({
 const SDKS = new Set(["typescript", "python", "go"]);
 
 export async function POST(req: Request) {
-  let body: { feature?: unknown; sdk?: unknown; page?: unknown };
+  let body: {
+    feature?: unknown;
+    sdk?: unknown;
+    capability?: unknown;
+    page?: unknown;
+  };
   try {
     body = await req.json();
   } catch {
@@ -20,6 +25,8 @@ export async function POST(req: Request) {
 
   const feature = typeof body.feature === "string" ? body.feature.slice(0, 64) : "";
   const sdk = typeof body.sdk === "string" ? body.sdk : "";
+  const capability =
+    typeof body.capability === "string" ? body.capability.slice(0, 64) : undefined;
   const page = typeof body.page === "string" ? body.page.slice(0, 256) : "";
 
   if (!feature || !SDKS.has(sdk)) {
@@ -31,7 +38,7 @@ export async function POST(req: Request) {
 
   const event = {
     name: "website/docs.sdk-interest.requested",
-    data: { feature, sdk, page },
+    data: { feature, sdk, capability, page },
   };
 
   // Disable in development, matching the docs feedback route.

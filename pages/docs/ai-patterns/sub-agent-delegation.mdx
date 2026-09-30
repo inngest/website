@@ -4,7 +4,7 @@ export const description = "Delegate tasks to specialized sub-agents in your AI 
 
 # Delegate Tasks to Sub-Agents
 
-Delegation gives sub-agents their own context window, tools, and token budget. A sub-agent can be modeled as a separate Inngest function that runs its own [agent loop](/docs/ai-patterns/agent-tool-loops) — the parent either waits for a result or fires and forgets.
+Delegation gives sub-agents their own context window, tools, and token budget. A sub-agent can be modeled as a separate Inngest function that runs its own [agent loop](/docs/durable-execution/guides-and-advanced/patterns/agent-tool-loops) — the parent either waits for a result or fires and forgets.
 
 ## Define a sub-agent function
 
@@ -324,7 +324,7 @@ The task description and available tools are enough to specialize behavior.
 
 ## Next steps
 
-- [Build an Agent Tool Loop](/docs/ai-patterns/agent-tool-loops) — Build the agent loop that powers both parent and sub-agents.
-- [Pause for Human Approval](/docs/ai-patterns/human-in-the-loop) — Add approval gates before or after delegation with `step.waitForEvent()`.
+- [Build an Agent Tool Loop](/docs/durable-execution/guides-and-advanced/patterns/agent-tool-loops) — Build the agent loop that powers both parent and sub-agents.
+- [Pause for Human Approval](/docs/durable-execution/guides-and-advanced/patterns/human-in-the-loop) — Add approval gates before or after delegation with `step.waitForEvent()`.
 - [Three sub-agent patterns you need for your agentic system](/blog/three-patterns-you-need-for-agentic-systems) — sync, async, and scheduled delegation patterns in depth
 {/*- [Run Sub-Agents in Parallel](/docs/ai-patterns/parallelization) — Spawn multiple sub-agents simultaneously and aggregate results. - [Manage Context Across Agents](/docs/ai-patterns/context-management) — Strategies for managing token budgets across agent hierarchies.*/}

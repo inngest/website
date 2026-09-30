@@ -101,7 +101,7 @@ async function redirects() {
     },
     {
       source: "/features/sdk",
-      destination: "/docs/sdk/overview",
+      destination: "/docs/sdks",
       permanent: true,
     },
     {

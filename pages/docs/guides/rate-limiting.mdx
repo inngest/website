@@ -72,7 +72,7 @@ async def synchronize_data(ctx: inngest.Context):
 
 * `limit` - The maximum number of functions to run in the given time period.
 * `period` - The time period of which to set the limit. The period begins when the first matching event is received.
-* `key` - An optional [expression](/docs/guides/writing-expressions) using event data to apply each limit too. Each unique value of the `key` has its own limit, enabling you to rate limit function runs by any particular key, like a user ID.
+* `key` - An optional [expression](/docs/durable-execution/guides-and-advanced/writing-expressions) using event data to apply each limit too. Each unique value of the `key` has its own limit, enabling you to rate limit function runs by any particular key, like a user ID.
 
 <Callout>
   Any events received in excess of your `limit` are ignored. This means this is not the right approach if you need to process every single event sent to Inngest. Consider using [throttle](/docs/guides/throttling) instead.
@@ -126,7 +126,7 @@ For example, this means that for a `limit: 10` and `period: '60m'` (60 minutes),
 
 ### Using a `key`
 
-When a `key` is added, a separate limit is applied for each unique value of the `key` expression. For example, if your `key` is set to `event.data.customer_id`, each customer would have their individual rate limit applied to functions run meaning different users might have the same function run in same bucket time window, but two runs will not happen for the same `event.data.customer_id`. Read [our guide to writing expressions](/docs/guides/writing-expressions) for more information.
+When a `key` is added, a separate limit is applied for each unique value of the `key` expression. For example, if your `key` is set to `event.data.customer_id`, each customer would have their individual rate limit applied to functions run meaning different users might have the same function run in same bucket time window, but two runs will not happen for the same `event.data.customer_id`. Read [our guide to writing expressions](/docs/durable-execution/guides-and-advanced/writing-expressions) for more information.
 
 **Note** - To prevent duplicate events from triggering your function more than once in a 24 hour period, use [the `idempotency` option](/docs/guides/handling-idempotency#at-the-function-level-the-consumer) which is the equivalent to setting `rateLimit` with a `key`, a `limit` of `1`  and `period` of `24hr`.
 

@@ -9,6 +9,26 @@ export const description = "Build background workflows and HTTP endpoints that k
 
 <SdkSupport
   feature="Durable Execution"
+  links={{
+    "step.run": "/docs/durable-execution/primitives/step-run",
+    "Sleep and sleep until": "/docs/durable-execution/primitives/step-sleep",
+    "Wait for event": "/docs/durable-execution/primitives/step-waitforevent",
+    "Wait for signal": "/docs/durable-execution/primitives/step-waitforsignal",
+    "Invoke another function": "/docs/durable-execution/primitives/step-invoke",
+    "Send events from a step": "/docs/durable-execution/primitives/step-sendevent",
+    "Parallel steps": "/docs/durable-execution/primitives/group-parallel",
+    "AI inference step": "/docs/features/inngest-functions/steps-workflows/step-ai-orchestration",
+    "step.fetch": "/docs/examples/fetch",
+    "defer": "/docs/durable-execution/primitives/defer",
+    "Experiments": "/docs/durable-execution/primitives/group-experiment",
+    "Flow control": "/docs/durable-execution/flow-control",
+    "Cron triggers": "/docs/durable-execution/guides-and-advanced/events-and-triggers/schedules-and-delayed-starts",
+    "Per-function failure handler": "/docs/durable-execution/guides-and-advanced/error-handling/failure-handlers",
+    "Checkpointing": "/docs/durable-execution/guides-and-advanced/checkpointing",
+    "Durable endpoints": "/docs/durable-execution/durable-endpoints",
+    "Connect workers": "/docs/durable-execution/deploying-functions/connect",
+    "Middleware": "/docs/durable-execution/guides-and-advanced/middleware",
+  }}
   sdks={[
     {
       sdk: "typescript",
@@ -99,7 +119,7 @@ For example, an AI workflow can retrieve context, call an LLM, and validate the 
 - **See what happened.** Inspect steps, waits, retries, and failures in [Traces](/docs/platform-and-operations/traces).
 - **Run anywhere.**  Inngest orchestrates code on any compute and works on your current infrastructure.
 
-All functions can run code in [Sandboxes](/docs/sandboxes), measure outcomes with [Online Evals](/docs/online-evals), and publish progress through [Realtime](/docs/realtime). For framework setup and method signatures, use [SDKs & APIs](/docs/sdk/overview).
+All functions can run code in [Sandboxes](/docs/sandboxes), measure outcomes with [Agent Evals](/docs/agent-evals), and publish progress through [Realtime](/docs/realtime). For framework setup and method signatures, use [SDKs & APIs](/docs/sdks).
 
 <hr />
 

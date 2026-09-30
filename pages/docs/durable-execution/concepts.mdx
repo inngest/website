@@ -22,7 +22,7 @@ A payment may need approval before your app can charge a card. Inngest can start
   - **[Waits](/docs/features/inngest-functions/steps-workflows):** A step can wait until a time or another event. Waits suspend the function's compute and do not count toward concurrency.
 - **[Memoization](/docs/learn/how-functions-are-executed):** Serializing and storing a step output for use when the function replays.
 - **[Idempotency](/docs/guides/handling-idempotency):** An operation that has the same effect when repeated, such as a payment request that does not charge the card twice.
-- **[Expressions](/docs/guides/writing-expressions):** CEL conditions that can add logic to triggers and waits.
+- **[Expressions](/docs/durable-execution/guides-and-advanced/writing-expressions):** CEL conditions that can add logic to triggers and waits.
 - **Results:** The data that a function returns and Inngest stores as its result.
 - **[Flow control](/docs/guides/flow-control):** Rules for if and when functions run, such as concurrency, throttling, rate limiting, and debounce.
 - **[Errors vs failures](/docs/features/inngest-functions/error-retries/retries):** Inngest can retry errors. A step or function fails if every retry results in an error.

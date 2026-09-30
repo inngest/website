@@ -51,7 +51,7 @@ export const SDK_TITLE_TO_LANGUAGE: Record<string, SDKLanguage> = {
 export const SDK_HOME_PAGES: Record<SDKLanguage, string> = {
   typescript: `/docs/reference/typescript/${TS_STABLE}/intro`,
   python: "/docs/reference/python",
-  go: "/docs/reference/go/migrations/v0.8-to-v0.11", // Go has limited docs, this is first available page
+  go: "/docs/reference/go",
 };
 
 interface LanguageState {

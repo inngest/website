@@ -25,7 +25,7 @@ Send an event such as `billing/invoice.paid` with the invoice ID that downstream
 - `ts` records an event timestamp in Unix milliseconds. A future timestamp can schedule when event-triggered functions start.
 - `v` identifies a payload version.
 
-Use [Online Evals](/docs/online-evals) for sessions and outcome scores. Keep sensitive values out of event data unless you have chosen a suitable data protection strategy such as using [encryption via middleware](/docs/durable-execution/guides-and-advanced/middleware).
+Use [Agent Evals](/docs/agent-evals) for sessions and outcome scores. Keep sensitive values out of event data unless you have chosen a suitable data protection strategy such as using [encryption via middleware](/docs/durable-execution/guides-and-advanced/middleware).
 
 ## Name events for facts
 Prefer a domain and a past-tense action such as `account/user.created`. Use one convention across apps. Avoid names that describe which function should run, because more than one function may use the same event.

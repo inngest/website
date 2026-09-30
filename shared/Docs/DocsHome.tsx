@@ -498,7 +498,7 @@ export function UseCaseGrid() {
           illustration: <IllustrationSandbox />,
         },
         {
-          href: "/docs/online-evals/a-b-testing?ref=docs-home",
+          href: "/docs/agent-evals/experiments?ref=docs-home",
           title: "Evals and A/B tests",
           description:
             "Score real outcomes and compare prompts, models, and workflows.",
@@ -548,8 +548,8 @@ export function PlatformGrid({
       icon: <RiTerminalBoxLine className="h-5 w-5" />,
     },
     {
-      href: "/docs/online-evals",
-      title: "Online Evals",
+      href: "/docs/agent-evals",
+      title: "Agent Evals",
       description: "Score outcomes and compare changes to steps and workflows.",
       icon: <RiBarChartBoxLine className="h-5 w-5" />,
     },
@@ -612,7 +612,7 @@ const languages = [
 
 const frameworks = [
   { href: "/docs/getting-started/nextjs-quick-start", title: "Next.js" },
-  { href: "/docs/getting-started/nodejs-quick-start", title: "Node.js" },
+  { href: "/docs/durable-execution/quick-start/typescript-quick-start", title: "Node.js" },
   { href: "/docs/getting-started/express-quick-start", title: "Express" },
   {
     href: "/docs/getting-started/tanstack-start-quick-start",

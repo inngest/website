@@ -116,7 +116,7 @@ export const resourcesLinks: MenuProps = {
     },
     {
       title: "Node.js",
-      url: "/docs/getting-started/nodejs-quick-start?ref=nav",
+      url: "/docs/durable-execution/quick-start/typescript-quick-start?ref=nav",
       icon: RiNodejsFill,
       iconClassName: "w-4",
     },

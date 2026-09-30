@@ -126,8 +126,8 @@ async def record_api_calls(ctx: inngest.Context):
 
 * `maxSize` - The maximum number of events to add to a single batch.
 * `timeout` - The duration of time to wait to add events to a batch. If the batch is not full after this time, the function will be invoked with whatever events are in the current batch, regardless of size.
-* `key` - An optional [expression](/docs/guides/writing-expressions) using event data to batch events by. Each unique value of the `key` will receive its own batch, enabling you to batch events by any particular key, like a user ID.
-* `if` - An optional [boolean expression](/docs/guides/writing-expressions) using event data to conditionally batch events that evaluate to true on this expression. 
+* `key` - An optional [expression](/docs/durable-execution/guides-and-advanced/writing-expressions) using event data to batch events by. Each unique value of the `key` will receive its own batch, enabling you to batch events by any particular key, like a user ID.
+* `if` - An optional [boolean expression](/docs/durable-execution/guides-and-advanced/writing-expressions) using event data to conditionally batch events that evaluate to true on this expression. 
 
 
 <Callout>

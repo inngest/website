@@ -119,7 +119,7 @@ async ({ event, parents }) => {
 
 ## Sessions
 
-A deferred run automatically joins the [sessions](/docs/features/events-triggers/sessions?ref=docs-deferred-functions) of the run that deferred it, so the two appear together in the dashboard without you passing anything.
+A deferred run automatically joins the [sessions](/docs/agent-evals/sessions?ref=docs-deferred-functions) of the run that deferred it, so the two appear together in the dashboard without you passing anything.
 
 Pass `meta.sessions` to set a session on the deferred run explicitly:
 
@@ -135,13 +135,13 @@ defer("send-confirmation", {
 });
 ```
 
-Sessions set here take precedence over inherited ones. See the [sessions doc](/docs/features/events-triggers/sessions?ref=docs-deferred-functions) for more on how to use sessions.
+Sessions set here take precedence over inherited ones. See the [sessions doc](/docs/agent-evals/sessions?ref=docs-deferred-functions) for more on how to use sessions.
 
 ---
 
 ## Attributing scores to an experiment
 
-When the deferred function is an [LLM scorer](/docs/features/inngest-functions/steps-workflows/deferred-scoring), you can attribute its result to the [experiment variant](/docs/features/inngest-functions/steps-workflows/step-experiments) that produced the output being scored. Pass the `experimentRef` returned by `group.experiment()` as the `experiment` option:
+When the deferred function is an [LLM scorer](/docs/agent-evals/deferred-scoring), you can attribute its result to the [experiment variant](/docs/agent-evals/experiments) that produced the output being scored. Pass the `experimentRef` returned by `group.experiment()` as the `experiment` option:
 
 ```ts
 defer("score", {

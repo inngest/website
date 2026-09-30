@@ -145,7 +145,7 @@ await step.run("track-selected-variant", () =>
 
 `group.experiment()` returns the variant's `result`, the selected `variant` name, and an `experimentRef`. Destructure whichever you need.
 
-If the outcome is available during the run, pair the experiment with [scoring](/docs/features/inngest-functions/steps-workflows/scoring?ref=docs-patterns-run-experiments-in-production): pass the `experimentRef` to [`inngest.score.experiment()`](/docs/reference/typescript/v4/functions/scoring?ref=docs-patterns-run-experiments-in-production) to attach a score to the variant that ran. If the outcome arrives later, use a deferred scorer or your analytics system.
+If the outcome is available during the run, pair the experiment with [scoring](/docs/agent-evals/scores?ref=docs-patterns-run-experiments-in-production): pass the `experimentRef` to [`inngest.score.experiment()`](/docs/reference/typescript/v4/functions/scoring?ref=docs-patterns-run-experiments-in-production) to attach a score to the variant that ran. If the outcome arrives later, use a deferred scorer or your analytics system.
 
 ## Best practices
 
@@ -159,5 +159,5 @@ If the outcome is available during the run, pair the experiment with [scoring](/
 ## Related docs
 
 - [`group.experiment()` reference](/docs/reference/typescript/v4/functions/group-experiment?ref=docs-patterns-run-experiments-in-production)
-- [Score a function run](/docs/features/inngest-functions/steps-workflows/scoring?ref=docs-patterns-run-experiments-in-production)
+- [Score a function run](/docs/agent-evals/scores?ref=docs-patterns-run-experiments-in-production)
 - [Function versioning](/docs/learn/versioning?ref=docs-patterns-run-experiments-in-production)

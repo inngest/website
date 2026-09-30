@@ -16,7 +16,7 @@ A sync tells Inngest where your app runs and which functions it serves. Inngest 
 Sync an app in one of three ways:
 
 - **In the dashboard:** select the environment, open **Apps**, choose **Sync new app**, and paste the URL of your `serve()` endpoint, such as `https://my-app.com/api/inngest`.
-- **With a hosting integration:** the [Vercel](/docs/deploy/vercel) and [Netlify](/docs/deploy/netlify) integrations sync your app on every deploy.
+- **With a hosting integration:** the [Vercel](/docs/durable-execution/deploying-functions/platforms/vercel) and [Netlify](/docs/durable-execution/deploying-functions/platforms/netlify) integrations sync your app on every deploy.
 - **With the REST API:** call the [sync endpoint](https://api-docs.inngest.com/v2/apps/SyncApp) from your CI/CD pipeline.
 
 To sync with the REST API, you need an [API key](/docs/platform-and-operations/keys-and-access), your app's `serve()` URL, and your app ID (the Inngest client's `id`):

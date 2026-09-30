@@ -180,7 +180,7 @@ export function AIPage({
                     Orchestrate iterative tool calling loops with automatic
                     retries and full observability.{" "}
                     <Link
-                      href={`/docs/ai-patterns/agent-tool-loops?ref=${ref}`}
+                      href={`/docs/durable-execution/guides-and-advanced/patterns/agent-tool-loops?ref=${ref}`}
                       className="text-link"
                     >
                       Learn more →
@@ -195,7 +195,7 @@ export function AIPage({
                     Compose complex workflows by invoking child functions as
                     sub-agents, each with their own configuration.{" "}
                     <Link
-                      href={`/docs/ai-patterns/sub-agent-delegation?ref=${ref}`}
+                      href={`/docs/durable-execution/guides-and-advanced/patterns/sub-agent-delegation?ref=${ref}`}
                       className="text-link"
                     >
                       Learn more →
@@ -210,7 +210,7 @@ export function AIPage({
                     Pause agent execution to wait for human approval or input
                     before continuing.{" "}
                     <Link
-                      href={`/docs/ai-patterns/human-in-the-loop?ref=${ref}`}
+                      href={`/docs/durable-execution/guides-and-advanced/patterns/human-in-the-loop?ref=${ref}`}
                       className="text-link"
                     >
                       Learn more →
@@ -347,7 +347,7 @@ export default inngest.createFunction(
                 title: "AI agent patterns",
                 description:
                   "Learn how to build tool loops, sub-agents, and human-in-the-loop workflows.",
-                url: `/docs/ai-patterns/agent-tool-loops?ref=${ref}`,
+                url: `/docs/durable-execution/guides-and-advanced/patterns/agent-tool-loops?ref=${ref}`,
               },
               {
                 type: "blog",

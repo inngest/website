@@ -63,7 +63,7 @@ const PRIMITIVES: Primitive[] = [
     body: "Pause mid-workflow for review or approval — hours or days. State maintained automatically. No polling, no cron, no database hacks.",
     iconSrc: "/assets/v1/primitives/icon-4-human-loop.svg",
     iconWidth: 212,
-    href: "/docs/ai-patterns/human-in-the-loop",
+    href: "/docs/durable-execution/guides-and-advanced/patterns/human-in-the-loop",
   },
   {
     id: "no-timeout",

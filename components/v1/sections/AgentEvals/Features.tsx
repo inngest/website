@@ -65,7 +65,7 @@ const FEATURES: Feature[] = [
     icon: "/assets/v1/scale-instantly/events.svg",
     iconWidth: 21.65,
     iconHeight: 32,
-    href: "/docs/features/events-triggers/sessions?ref=agent-evals-features",
+    href: "/docs/agent-evals/sessions?ref=agent-evals-features",
   },
 ];
 

@@ -33,7 +33,7 @@ Because the Inngest engine tracks progress instead of the socket:
 
 > 💡 **The tradeoff:** there's no server-side session store. The browser holds the transcript and POSTs all of it on every `/api/chat` call. That keeps the server stateless, so any worker instance can pick up any request, and it keeps this example small. The cost is that the browser is the only copy of history.
 >
-> A real app would persist history (e.g. keyed by [sessionId](/docs/learn/agent-evals#add-session-context)) and send only the new message.
+> A real app would persist history (e.g. keyed by [sessionId](/docs/agent-evals/sessions)) and send only the new message.
 
 ## How to Implement Durable Token Streaming?
 

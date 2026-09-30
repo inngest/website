@@ -47,7 +47,7 @@ const STUDIES: CaseStudyItem[] = [
     body: <>Add this pattern to any experiment.</>,
     cta: {
       label: "Read the docs",
-      href: "/docs/examples/ai-eval-scorer-quickstart?ref=agent-evals-usecases",
+      href: "/docs/agent-evals/guides/llm-judge?ref=agent-evals-usecases",
     },
   },
   {

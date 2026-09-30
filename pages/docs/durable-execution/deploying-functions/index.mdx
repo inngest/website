@@ -38,7 +38,7 @@ Inngest functions are portable, so you can migrate between `serve()` and `connec
 
 ## Deploy on your infrastructure
 
-Your app runs the function code. Inngest triggers runs, tracks their progress, and calls back into your app when work can continue. You can host the app on AWS, Google Cloud, Vercel, Cloudflare, or another compatible runtime.
+Your app runs the function code. Inngest triggers runs, tracks their progress, and calls back into your app when work can continue. You can host the app on AWS, Google Cloud, Vercel, Cloudflare, or another compatible runtime. [Platforms](/docs/durable-execution/deploying-functions/platforms) has guides for Vercel, Netlify, Cloudflare Pages, Render, and DigitalOcean.
 
 1. **Define your functions in an Inngest app.** Keep the app ID stable across deployments. Register the functions you want this app to expose.
 2. **Choose a connection method.** Use [Serve](/docs/durable-execution/deploying-functions/serve) for an HTTP endpoint or [Connect](/docs/durable-execution/deploying-functions/connect) for a long-running worker.

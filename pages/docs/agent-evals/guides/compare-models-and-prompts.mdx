@@ -1,0 +1,100 @@
+export const metaTitle = "Compare models and prompts | Agent Evals";
+export const description = "Split production traffic between two answer strategies and compare them by the feedback each one earns.";
+
+# Compare models and prompts
+> Split production traffic between two answer strategies and compare them by the feedback each one earns.
+
+You have a new prompt or model and want to know whether it helps customers more than the current one. This guide sends each account to one of two strategies, records an immediate check, and credits later customer feedback to the variant that served the answer.
+
+## 1. Define the variants
+
+Put each strategy in a variant callback. `experiment.bucket()` keeps an account on the same strategy across tickets, so a customer doesn't bounce between styles:
+
+```typescript {{ filename: "inngest/answer.ts" }}
+import { experiment } from "inngest";
+import { inngest } from "./client";
+import { feedbackScorer } from "./scorers";
+
+export const answerTicket = inngest.createFunction(
+  { id: "answer-ticket", triggers: { event: "support/ticket.created" } },
+  async ({ event, step, group, defer }) => {
+    const { result: answer, experimentRef } = await group.experiment(
+      "answer-style",
+      {
+        variants: {
+          concise: () =>
+            step.run("answer-concise", () =>
+              answer({ prompt: CONCISE_PROMPT, ticket: event.data })
+            ),
+          detailed: () =>
+            step.run("answer-detailed", () =>
+              answer({ prompt: DETAILED_PROMPT, ticket: event.data })
+            ),
+        },
+        select: experiment.bucket(event.data.accountId, {
+          weights: { concise: 50, detailed: 50 },
+        }),
+      }
+    );
+
+    await step.run("send-answer", () => sendReply(event.data.ticketId, answer));
+
+    // Immediate check, credited to the variant.
+    await inngest.score.experiment({
+      name: "answer-valid",
+      value: isValidAnswer(answer),
+      experiment: experimentRef,
+    });
+
+    // Later outcome, credited to the same variant.
+    defer("score-feedback", {
+      function: feedbackScorer,
+      data: { ticketId: event.data.ticketId },
+      experiment: experimentRef,
+    });
+
+    return answer;
+  }
+);
+```
+
+To compare models instead of prompts, change the model in each callback. To compare providers, call a different SDK. Change one thing at a time so the result tells you which change mattered.
+
+## 2. Wait for feedback
+
+The scorer waits for the customer's rating and returns a score. Because `defer()` received the `experimentRef`, Inngest credits the score to the variant that served the answer:
+
+```typescript {{ filename: "inngest/scorers.ts" }}
+import { createScorer } from "inngest/experimental";
+import { z } from "zod";
+import { inngest } from "./client";
+
+export const feedbackScorer = createScorer(
+  inngest,
+  { id: "feedback-scorer", schema: z.object({ ticketId: z.string() }) },
+  async ({ event, step }) => {
+    const feedback = await step.waitForEvent("wait-for-feedback", {
+      event: "support/feedback.received",
+      timeout: "7d",
+      if: `async.data.ticketId == '${event.data.ticketId}'`,
+    });
+    if (!feedback) return null;
+    return { name: "customer-helpful", value: feedback.data.helpful };
+  }
+);
+```
+
+## 3. Compare the variants
+
+Open the experiment in the dashboard to see run counts and score aggregates for each variant, or read them with the `get_experiment` tool in the [Inngest MCP server](/docs/ai-dev-tools/mcp). Compare `customer-helpful` only after both variants have had the same seven days to collect feedback, and keep the count of runs still waiting beside every average. Open a few traces from each variant to see why answers scored the way they did.
+
+[Read results and roll out](/docs/agent-evals/guides/interpreting-results) walks through the comparison and the rollout decision.
+
+## 4. Ramp or roll back
+
+When the candidate meets your criteria, raise its weight in stages, for example `{ concise: 20, detailed: 80 }`, then `{ concise: 0, detailed: 100 }`. Changing bucket weights can move an account to the other variant. If an account must never switch back, store assignments in your database and select them with `experiment.custom()`. To stop the test quickly, pin the safe variant with `experiment.fixed("concise")`.
+
+## Next steps
+
+- [Experiments](/docs/agent-evals/experiments) explains every assignment strategy.
+- [Score with an LLM judge](/docs/agent-evals/guides/llm-judge) adds a model-graded score while you wait for feedback.

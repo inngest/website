@@ -20,7 +20,7 @@ Find the failure point, fix it, and confirm the next run works. Start with the e
 **Confirm:** The latest sync succeeds and the app shows the expected deployment URL and functions.
 ## Event is missing
 **Check:** Confirm the event sender completed its `inngest.send()` or `step.sendEvent()` call. Check the event key and destination environment. In local development, confirm the Dev Server is running and the SDK points to it.
-**Fix:** Use the event key for the intended environment, resend a test event, and inspect that environment's event history. Follow the [Workflows Quick start](/docs/durable-execution/quick-start) to send and inspect a local test event. Check the exact send method in the [Workflows Reference](/docs/sdk/overview/reference).
+**Fix:** Use the event key for the intended environment, resend a test event, and inspect that environment's event history. Follow the [Workflows Quick start](/docs/durable-execution/quick-start) to send and inspect a local test event. Check the exact send method in the [Workflows Reference](/docs/sdks#sdk-references).
 **Confirm:** The event appears in the intended environment with the name and data you sent.
 ## Event exists, but no run starts
 **Check:** Compare the event name with the deployed function trigger. Check any trigger condition. Confirm the app and function are active. If you reused an event ID, check whether event idempotency suppressed another run. For a scheduled function, inspect its deployed cron trigger instead of looking for a sent event.
@@ -49,5 +49,5 @@ Find the failure point, fix it, and confirm the next run works. Start with the e
 ## Related pages
 - [Quick start](/docs/durable-execution/quick-start) for a known working local workflow.
 - [Deploy functions](/docs/durable-execution/deploying-functions) for HTTP, Connect, and planned Inngest compute placement.
-- [Reference](/docs/sdk/overview/reference) for exact SDK methods and configuration.
+- [Reference](/docs/sdks#sdk-references) for exact SDK methods and configuration.
 - [Limits](/docs/durable-execution/limits) for plan and platform constraints.

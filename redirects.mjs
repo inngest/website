@@ -27,6 +27,71 @@ export const permanentRedirects = [
     "/docs/durable-execution/guides-and-advanced/middleware/overview",
     "/docs/durable-execution/guides-and-advanced/middleware",
   ],
+  // Pages copied into the docs refresh structure
+  [
+    "/docs/deploy/vercel",
+    "/docs/durable-execution/deploying-functions/platforms/vercel",
+  ],
+  [
+    "/docs/deploy/netlify",
+    "/docs/durable-execution/deploying-functions/platforms/netlify",
+  ],
+  [
+    "/docs/deploy/cloudflare",
+    "/docs/durable-execution/deploying-functions/platforms/cloudflare",
+  ],
+  [
+    "/docs/deploy/render",
+    "/docs/durable-execution/deploying-functions/platforms/render",
+  ],
+  [
+    "/docs/deploy/digital-ocean",
+    "/docs/durable-execution/deploying-functions/platforms/digital-ocean",
+  ],
+  [
+    "/docs/usage-limits/providers",
+    "/docs/durable-execution/deploying-functions/platforms/provider-limits",
+  ],
+  [
+    "/docs/learn/durable-endpoints/streaming",
+    "/docs/durable-execution/durable-endpoints/streaming",
+  ],
+  [
+    "/docs/features/inngest-functions/steps-workflows/step-metadata-how-to",
+    "/docs/durable-execution/primitives/metadata",
+  ],
+  [
+    "/docs/guides/writing-expressions",
+    "/docs/durable-execution/guides-and-advanced/writing-expressions",
+  ],
+  [
+    "/docs/ai-patterns/agent-tool-loops",
+    "/docs/durable-execution/guides-and-advanced/patterns/agent-tool-loops",
+  ],
+  [
+    "/docs/ai-patterns/human-in-the-loop",
+    "/docs/durable-execution/guides-and-advanced/patterns/human-in-the-loop",
+  ],
+  [
+    "/docs/ai-patterns/sub-agent-delegation",
+    "/docs/durable-execution/guides-and-advanced/patterns/sub-agent-delegation",
+  ],
+  [
+    "/docs/features/events-triggers/neon",
+    "/docs/platform-and-operations/integrations/neon",
+  ],
+  [
+    "/docs/platform/monitor/datadog-integration",
+    "/docs/platform-and-operations/integrations/datadog",
+  ],
+  [
+    "/docs/platform/monitor/prometheus-metrics-export-integration",
+    "/docs/platform-and-operations/integrations/prometheus",
+  ],
+  [
+    "/docs/getting-started/nodejs-quick-start",
+    "/docs/durable-execution/quick-start/typescript-quick-start",
+  ],
   // Legacy docs
   ["/docs/functions/testing-functions", "/docs/local-development"],
   ["/docs/what-is-inngest", "/docs"],
@@ -38,7 +103,7 @@ export const permanentRedirects = [
   ["/docs/cli/steps/", "/docs/learn/inngest-steps"],
   ["/docs/events/sources/sdks", "/docs/events"],
   ["/docs/deploying-fuctions", "/docs/apps/cloud"],
-  ["/docs/deploy", "/docs/apps/cloud"],
+  ["/docs/deploy", "/docs/durable-execution/deploying-functions/platforms"],
   ["/docs/functions/introduction", "/docs/functions"],
   ["/docs/how-inngest-works", "/docs"], // TODO/DOCS redirect this to new concepts page
   ["/docs/frameworks/cloudflare-pages", "/docs/sdk/serve#framework-cloudflare"],
@@ -53,7 +118,9 @@ export const permanentRedirects = [
     "/docs/reference/python/overview/quick-start",
     "/docs/getting-started/python-quick-start",
   ],
-  ["/docs/sdk/overview", "/docs"],
+  ["/docs/sdk/overview", "/docs/sdks"],
+  ["/docs/sdk/overview/reference", "/docs/sdks#sdk-references"],
+  ["/docs/sdks/reference", "/docs/sdks#sdk-references"],
   ["/docs/dev-server", "/docs/local-development"],
   ["/docs/guides/development-with-docker", "/docs/local-development"],
 
@@ -130,6 +197,29 @@ export const permanentRedirects = [
   [
     "/docs/features/realtime/subscribe",
     "/docs/realtime/guides/server-side-subscriptions",
+  ],
+
+  // Agent Evals moved to /docs/agent-evals
+  ["/docs/learn/agent-evals", "/docs/agent-evals/overview"],
+  // Pre-launch name of the section; shared in drafts and Notion.
+  ["/docs/online-evals", "/docs/agent-evals"],
+  ["/docs/online-evals/:any*", "/docs/agent-evals/:any*"],
+  [
+    "/docs/features/inngest-functions/steps-workflows/scoring",
+    "/docs/agent-evals/scores",
+  ],
+  [
+    "/docs/features/inngest-functions/steps-workflows/deferred-scoring",
+    "/docs/agent-evals/deferred-scoring",
+  ],
+  [
+    "/docs/features/inngest-functions/steps-workflows/step-experiments",
+    "/docs/agent-evals/experiments",
+  ],
+  ["/docs/features/events-triggers/sessions", "/docs/agent-evals/sessions"],
+  [
+    "/docs/examples/ai-eval-scorer-quickstart",
+    "/docs/agent-evals/guides/llm-judge",
   ],
 
   // Durable Endpoints rename

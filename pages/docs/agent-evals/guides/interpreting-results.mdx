@@ -1,11 +1,9 @@
-export const metaTitle = "Interpreting results";
+export const metaTitle = "Read results and roll out | Agent Evals";
 export const description = "Read variant assignments and outcome scores together to see whether a change helped users.";
 
-# Interpreting results
+# Read results and roll out
 
 > Read variant assignments and outcome scores together to see whether a change helped users.
-
-Scoring and deferred scoring are TypeScript SDK v4 beta APIs.
 
 Before sending more traffic to a new prompt or workflow path, compare its outcome scores with the current variant. The experiment records which variant ran; a score records what happened afterward. Inspect individual traces when a result looks surprising.
 
@@ -27,7 +25,7 @@ For each variant, record these facts for the same function, experiment, eligible
 | What is still unresolved? | Count outcomes that have not arrived or whose scorer is still waiting. |
 | Did the work stay healthy? | Inspect failures, latency, and the steps in the run traces alongside the product outcome. |
 
-A score average covers the scores that exist. It does not tell you what happened to runs without that score. If one variant has much less feedback, its apparent lead may reflect who responded, rather than better behavior. Keep the assignment and outcome counts beside every comparison. [Step experiments](/docs/online-evals/a-b-testing) explains selection and score attribution.
+A score average covers the scores that exist. It does not tell you what happened to runs without that score. If one variant has much less feedback, its apparent lead may reflect who responded, rather than better behavior. Keep the assignment and outcome counts beside every comparison. [Experiments](/docs/agent-evals/experiments#score-a-variant) explains score attribution.
 
 ## Let later outcomes catch up
 
@@ -35,7 +33,7 @@ A customer may respond after the original run finishes. A deferred scorer can wa
 
 Decide what a timeout means for your score. **No score** means the outcome is unknown or the scorer wrote nothing. **Zero** means your scoring rule recorded a negative result. Keep those cases separate unless your product definition explicitly treats no response as failure. If a scorer returns `null` or `undefined`, it writes no score.
 
-When a later function writes a score, check attribution before reading the aggregate. A score for an experiment needs the `experimentRef` returned by `group.experiment()`. A different run must also pass the **original** `runId`; otherwise the score attaches to the later run. A deferred scorer receives the parent run and variant when you pass the experiment reference to `defer()`.
+When a later function writes a score, check attribution before reading the aggregate: the score needs the `experimentRef` and, from a different run, the **original** `runId`. See [Score a variant](/docs/agent-evals/experiments#score-a-variant).
 
 ## Investigate individual results
 
@@ -49,7 +47,7 @@ Use the experiment view for variant counts and score aggregates, then open trace
 
 Set the outcome you want to improve, the operational limits you cannot exceed, and the amount of evidence you need **before** you inspect the comparison. There is no universal run count that makes a result conclusive. Check the number of assigned runs, the number with mature outcomes, the share still missing, and whether both variants served comparable users. A small canary proves the new path runs; it may give too little outcome data to show which path is better.
 
-If the candidate meets your outcome and operational criteria, increase its weight in stages and keep watching new runs and later scores. Runs that already selected a variant keep that choice on retries and replays. Changing bucket weights can change a user's future assignment; use a stored assignment with `experiment.custom()` when that must not happen. If quality worsens, use your existing assignment strategy to route new runs to the safe variant while you inspect the traces. [Run experiments in production](/docs/online-evals/a-b-testing) explains weighted, bucket, custom, and fixed selection.
+If the candidate meets your outcome and operational criteria, increase its weight in stages and keep watching new runs and later scores. Runs that already selected a variant keep that choice on retries and replays. Changing bucket weights can change a user's future assignment; use a stored assignment with `experiment.custom()` when that must not happen. If quality worsens, use your existing assignment strategy to route new runs to the safe variant while you inspect the traces. [Experiments](/docs/agent-evals/experiments#choose-an-assignment-strategy) explains weighted, bucket, custom, and fixed selection.
 
 ## If the comparison looks wrong
 
@@ -58,4 +56,8 @@ If the candidate meets your outcome and operational criteria, increase its weigh
 - **The split looks uneven.** Check the assigned run count and the selection strategy. Weighted selection varies across new runs; bucket selection depends on a present, stable key.
 - **Related runs are missing from a session.** Check the environment, session key and ID on the triggering events, then allow for indexing delay.
 
-Next, [review A/B testing](/docs/online-evals/a-b-testing), [learn how outcomes and scoring work](/docs/online-evals/outcomes-and-scoring), or [inspect sessions](/docs/online-evals/sessions).
+## Next steps
+
+- [Experiments](/docs/agent-evals/experiments) explains assignment strategies and attribution.
+- [Troubleshooting](/docs/agent-evals/troubleshooting) helps find missing or misattributed scores.
+- [Manage eval costs](/docs/agent-evals/guides/cost-management) explains what each comparison costs.

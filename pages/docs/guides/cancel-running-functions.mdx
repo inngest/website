@@ -19,7 +19,7 @@ while the [Bulk Cancellation UI](/docs/platform/manage/bulk-cancellation), avail
 
 You can also cancel functions in bulk via the [REST API](https://api-docs.inngest.com). This is useful if you have a large number of functions within a specific range that you need to cancel.
 
-With the `POST /cancellations` endpoint, you can cancel functions by specifying the `app_id`, `function_id`, and a `started_after` and `started_before` timestamp range. You can also optionally specify an `if` statement to only cancel functions that match a [given expression](/docs/guides/writing-expressions).
+With the `POST /cancellations` endpoint, you can cancel functions by specifying the `app_id`, `function_id`, and a `started_after` and `started_before` timestamp range. You can also optionally specify an `if` statement to only cancel functions that match a [given expression](/docs/durable-execution/guides-and-advanced/writing-expressions).
 
 <CodeGroup tag="POST" label="api.inngest.com/v1/cancellations">
 

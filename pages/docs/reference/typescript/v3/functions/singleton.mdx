@@ -42,7 +42,7 @@ export default inngest.createFunction(
       <Property name="key" type="string" required>
         A unique key expression to which the limit is applied. This expression is evaluated for each triggering event.
 
-        Expressions are defined using the Common Expression Language (CEL) with the original event accessible using dot-notation. Read [our guide to writing expressions](/docs/guides/writing-expressions) for more info. Examples:
+        Expressions are defined using the Common Expression Language (CEL) with the original event accessible using dot-notation. Read [our guide to writing expressions](/docs/durable-execution/guides-and-advanced/writing-expressions) for more info. Examples:
 
         * Ensure exclusive execution of a function per customer ID: `'event.data.customer_id'`
         * Ensure exclusive execution of a function per account and email address: `'event.data.account_id + "-" + event.user.email'`

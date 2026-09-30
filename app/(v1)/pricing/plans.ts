@@ -480,7 +480,7 @@ export const FEATURES: Feature[] = [
       [PLAN_NAMES.enterprise]: "No delay",
     },
     infoUrl:
-      "/docs/platform/monitor/prometheus-metrics-export-integration?ref=pricing",
+      "/docs/platform-and-operations/integrations/prometheus?ref=pricing",
     section: "observability",
   },
   {

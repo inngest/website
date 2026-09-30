@@ -60,7 +60,7 @@ export const QUICKSTARTS = [
   {
     eyebrow: "Quickstart",
     title: "Node.js",
-    href: "/docs/getting-started/nodejs-quick-start",
+    href: "/docs/durable-execution/quick-start/typescript-quick-start",
     logo: "/assets/v1/start-building/node.svg",
     invert: false,
   },

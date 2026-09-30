@@ -78,18 +78,21 @@ const PILL =
 export function SdkSupport({
   label = "SDK support",
   feature,
+  links,
   sdks,
 }: {
   label?: string;
   /** Feature name sent with interest requests, such as "Sandboxes". */
   feature?: string;
+  /** Capability name -> docs page. Rows with a link become clickable. */
+  links?: Record<string, string>;
   sdks: SdkSupportItem[];
 }) {
   return (
     <div className="not-prose -mt-8 mb-12 flex flex-wrap items-center gap-2 text-xs">
       <span className="font-medium text-muted">{label}</span>
       {sdks.map((item) => (
-        <SdkPill key={item.sdk} item={item} feature={feature} />
+        <SdkPill key={item.sdk} item={item} feature={feature} links={links} />
       ))}
     </div>
   );
@@ -98,9 +101,11 @@ export function SdkSupport({
 function SdkPill({
   item: { sdk, href, status, planned, features, note },
   feature,
+  links,
 }: {
   item: SdkSupportItem;
   feature?: string;
+  links?: Record<string, string>;
 }) {
   const { label: sdkLabel, Icon, color, size = 14, fit } = SDKS[sdk];
   const entries = features ? Object.entries(features) : [];
@@ -175,7 +180,14 @@ function SdkPill({
               )}
             </div>
 
-            {entries.length > 0 && <FeatureList entries={entries} />}
+            {entries.length > 0 && (
+              <FeatureList
+                entries={entries}
+                links={links}
+                sdk={sdk}
+                feature={feature}
+              />
+            )}
 
             {planned && (
               <p className="m-0 leading-5 text-muted">
@@ -200,13 +212,24 @@ function SdkPill({
   );
 }
 
-function FeatureList({ entries }: { entries: [string, SdkFeature][] }) {
+function FeatureList({
+  entries,
+  links,
+  sdk,
+  feature,
+}: {
+  entries: [string, SdkFeature][];
+  links?: Record<string, string>;
+  sdk: SdkId;
+  feature?: string;
+}) {
   return (
     <ul className="m-0 list-none space-y-1 p-0">
       {entries.map(([name, value]) => {
         const supported = typeof value === "boolean" ? value : value.supported;
         const tag = typeof value === "boolean" ? undefined : value.tag;
         const Mark = supported ? RiCheckLine : RiSubtractLine;
+        const href = links?.[name];
         return (
           <li
             key={name}
@@ -222,11 +245,29 @@ function FeatureList({ entries }: { entries: [string, SdkFeature][] }) {
                 supported ? "text-matcha-600 dark:text-matcha-400" : "text-muted"
               )}
             />
-            <span className="flex-1">{name}</span>
+            <span className="flex-1">
+              {href ? (
+                <Link
+                  href={href}
+                  className="text-inherit underline decoration-transparent underline-offset-2 transition-colors hover:text-basis hover:decoration-current"
+                >
+                  {name}
+                </Link>
+              ) : (
+                name
+              )}
+            </span>
             {tag && (
               <span className="mt-px shrink-0 rounded bg-surfaceSubtle px-1 py-px text-[10px] font-medium leading-4 text-muted">
                 {tag}
               </span>
+            )}
+            {!supported && (
+              <InlineInterest
+                feature={feature ?? "unknown"}
+                capability={name}
+                sdk={sdk}
+              />
             )}
             <span className="sr-only">
               {supported ? "(supported)" : "(not supported)"}
@@ -240,8 +281,10 @@ function FeatureList({ entries }: { entries: [string, SdkFeature][] }) {
 
 type RequestState = "idle" | "sending" | "sent" | "error";
 
-function InterestButton({ feature, sdk }: { feature: string; sdk: SdkId }) {
-  const storageKey = `sdk-interest:${feature}:${sdk}`;
+function useInterest(feature: string, sdk: SdkId, capability?: string) {
+  const storageKey = `sdk-interest:${feature}:${sdk}${
+    capability ? `:${capability}` : ""
+  }`;
   const [state, setState] = useState<RequestState>("idle");
 
   // Remember a sent request in this browser. Read after mount to avoid a
@@ -263,6 +306,7 @@ function InterestButton({ feature, sdk }: { feature: string; sdk: SdkId }) {
         body: JSON.stringify({
           feature,
           sdk,
+          capability,
           page: window.location.pathname,
         }),
       });
@@ -277,6 +321,48 @@ function InterestButton({ feature, sdk }: { feature: string; sdk: SdkId }) {
       setState("error");
     }
   };
+
+  return { state, request };
+}
+
+function InlineInterest({
+  feature,
+  capability,
+  sdk,
+}: {
+  feature: string;
+  capability: string;
+  sdk: SdkId;
+}) {
+  const { state, request } = useInterest(feature, sdk, capability);
+  if (state === "sent") {
+    return (
+      <span className="mt-px inline-flex shrink-0 items-center gap-0.5 text-[10px] font-medium leading-4 text-matcha-700 dark:text-matcha-300">
+        <RiCheckLine className="h-3 w-3" aria-hidden="true" />
+        Requested
+      </span>
+    );
+  }
+  return (
+    <button
+      type="button"
+      onClick={request}
+      disabled={state === "sending"}
+      title={`Request ${capability} in the ${SDKS[sdk].label} SDK`}
+      className={clsx(
+        "mt-px shrink-0 rounded border px-1.5 py-px text-[10px] font-medium leading-4 transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-matcha-500/40 disabled:opacity-60",
+        state === "error"
+          ? "border-ruby-500/40 text-ruby-600 dark:text-ruby-400"
+          : "border-subtle text-muted hover:border-matcha-500/50 hover:bg-matcha-500/10 hover:text-matcha-700 dark:hover:text-matcha-300"
+      )}
+    >
+      {state === "sending" ? "Sending…" : state === "error" ? "Retry" : "Request"}
+    </button>
+  );
+}
+
+function InterestButton({ feature, sdk }: { feature: string; sdk: SdkId }) {
+  const { state, request } = useInterest(feature, sdk);
 
   if (state === "sent") {
     return (

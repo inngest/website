@@ -59,7 +59,7 @@ inngest.createFunction(
 
 If events contain `tenant_id` values of `tenant-a` and `tenant-b`, each tenant receives its own concurrency limit of five executing steps and its own throttle limit of 100 run starts per minute. A backlog for one tenant does not consume the other tenant's per-key limit.
 
-Choose a stable key that represents the resource or tenant you want to isolate, such as an account ID, workspace ID, or user ID. Keys are [expressions evaluated from event data](/docs/guides/writing-expressions?ref=docs-multi-tenancy), so the same function can create groups dynamically without you provisioning queues.
+Choose a stable key that represents the resource or tenant you want to isolate, such as an account ID, workspace ID, or user ID. Keys are [expressions evaluated from event data](/docs/durable-execution/guides-and-advanced/writing-expressions?ref=docs-multi-tenancy), so the same function can create groups dynamically without you provisioning queues.
 
 ## Ordering within each key
 

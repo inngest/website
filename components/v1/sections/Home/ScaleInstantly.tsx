@@ -210,7 +210,7 @@ const OBSERVABILITY_CONTENT: TabContent = {
     {
       title: "Sessions",
       body: "Group multiple agent loops or turns as a single conversation, thread, or however you choose.",
-      href: "/docs/features/events-triggers/sessions?ref=homepage-agent-observability",
+      href: "/docs/agent-evals/sessions?ref=homepage-agent-observability",
       ...icon("serverless"),
     },
   ],

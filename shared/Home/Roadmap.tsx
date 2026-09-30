@@ -132,7 +132,7 @@ export default function Roadmap() {
             <li className="text-slate-200 bg-slate-900 rounded text-sm xl:text-base px-6 py-4">
               <a
                 className="text-indigo-400"
-                href="/docs/deploy/cloudflare?ref=features-sdk-roadmap"
+                href="/docs/durable-execution/deploying-functions/platforms/cloudflare?ref=features-sdk-roadmap"
               >
                 Cloudflare Pages
               </a>{" "}

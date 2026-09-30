@@ -44,12 +44,12 @@ const FEATURES: Feature[] = [
   {
     title: "Scoring",
     body: "Score runs or groups of runs in code—\nquality signals on every execution",
-    href: "/docs/features/inngest-functions/steps-workflows/scoring?ref=durable-execution",
+    href: "/docs/agent-evals/scores?ref=durable-execution",
   },
   {
     title: "Experiments",
     body: "Split traffic across variants and\ncompare scored outcomes in production",
-    href: "/docs/features/inngest-functions/steps-workflows/step-experiments?ref=durable-execution",
+    href: "/docs/agent-evals/experiments?ref=durable-execution",
   },
 ];
 

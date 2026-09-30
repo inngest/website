@@ -80,4 +80,4 @@ await inngest.score.experiment({
   experiment: experimentRef,
 });
 ```
-When another run scores a later outcome, save the original `experimentRef` and run ID with the result. Pass both to `inngest.score.experiment()` so the score attaches to the run and variant that produced it. You can also pass the ref to a deferred scorer through `defer()`. See [A/B testing](/docs/online-evals/a-b-testing) for the full path from selection to scoring.
+When another run scores a later outcome, save the original `experimentRef` and run ID with the result. Pass both to `inngest.score.experiment()` so the score attaches to the run and variant that produced it. You can also pass the ref to a deferred scorer through `defer()`. See [Experiments](/docs/agent-evals/experiments) for the full path from selection to scoring.

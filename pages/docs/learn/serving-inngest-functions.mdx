@@ -260,7 +260,7 @@ module.exports.main = main;
 ```
 </CodeGroup>
 
-Inngest functions can also be deployed to [DigitalOcean's App Platform or Droplets](/docs/deploy/digital-ocean).
+Inngest functions can also be deployed to [DigitalOcean's App Platform or Droplets](/docs/durable-execution/deploying-functions/platforms/digital-ocean).
 
 
 ### Framework: ElysiaJS
@@ -666,7 +666,7 @@ export default serve({
 
 #### Streaming
 
-Next.js Functions hosted on [Vercel](/docs/deploy/vercel) with Fluid compute can stream responses back to Inngest which can help you reach the maximum duration of 800s (13m20s) provided you are on a paid Vercel plan.
+Next.js Functions hosted on [Vercel](/docs/durable-execution/deploying-functions/platforms/vercel) with Fluid compute can stream responses back to Inngest which can help you reach the maximum duration of 800s (13m20s) provided you are on a paid Vercel plan.
 
 To enable this, add the `streaming: true` option to your serve handler:
 
@@ -813,7 +813,7 @@ See the [Remix example](https://github.com/inngest/inngest-js/tree/main/examples
 
 #### Streaming
 
-Remix Edge Functions hosted on [Vercel](/docs/deploy/vercel) can also stream responses back to Inngest, giving you a much higher request timeout of 15 minutes (up from 10 seconds on the Vercel Hobby plan!).
+Remix Edge Functions hosted on [Vercel](/docs/durable-execution/deploying-functions/platforms/vercel) can also stream responses back to Inngest, giving you a much higher request timeout of 15 minutes (up from 10 seconds on the Vercel Hobby plan!).
 
 To enable this, set your runtime to `"edge"` (see [Quickstart for Using Edge Functions | Vercel Docs](https://vercel.com/docs/concepts/functions/edge-functions/quickstart)) and add the `streaming: true` option to your serve handler:
 
@@ -1086,7 +1086,7 @@ After your app serves Inngest functions, choose the next step that matches where
 
 * Start from a framework guide, such as the [Next.js quick start](/docs/getting-started/nextjs-quick-start?ref=docs-serving-inngest-functions), [Express quick start](/docs/getting-started/express-quick-start?ref=docs-serving-inngest-functions), or [Python quick start](/docs/getting-started/python-quick-start?ref=docs-serving-inngest-functions).
 * Configure production secrets with [signing keys](/docs/platform/signing-keys?ref=docs-serving-inngest-functions) and [event keys](/docs/events/creating-an-event-key?ref=docs-serving-inngest-functions).
-* Deploy on Vercel with the [Vercel deployment guide](/docs/deploy/vercel?ref=docs-serving-inngest-functions), including `maxDuration` and streaming guidance for long-running work.
+* Deploy on Vercel with the [Vercel deployment guide](/docs/durable-execution/deploying-functions/platforms/vercel?ref=docs-serving-inngest-functions), including `maxDuration` and streaming guidance for long-running work.
 * Use [Connect](/docs/setup/connect?ref=docs-serving-inngest-functions) instead of `serve()` when you want worker-style execution over an outbound WebSocket connection.
 
 ## Reference
