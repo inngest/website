@@ -347,6 +347,7 @@ export function FlowControlSimulator({
           <Log
             result={result}
             t={t}
+            playing={playing}
             selectedRun={selectedRun}
             onSelectRun={setSelectedRun}
             onSeek={seek}
