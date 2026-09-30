@@ -153,6 +153,15 @@ html.docs:has(.docs-callout) {
   }
 }
 
+/* Tool pages with a full-width tool (the flow control simulator): the text
+   drops the prose column's max-width and centering so it lines up with the
+   tool instead of sitting in a narrow column beside it. */
+article.prose:has(.docs-wide-page) > * {
+  max-width: none;
+  margin-left: 0;
+  margin-right: 0;
+}
+
 * {
   transition: box-shadow .3s;
 }

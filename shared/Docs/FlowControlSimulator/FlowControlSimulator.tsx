@@ -197,7 +197,9 @@ export function FlowControlSimulator({
       ref={rootRef}
       className={clsx(
         "not-prose my-10 flex flex-col gap-4 rounded-2xl bg-canvasSubtle p-4 leading-normal text-basis sm:p-6",
-        variant === "page" && "lg:!mx-0 lg:!max-w-none"
+        // The page variant also widens the page's text to match; see
+        // .docs-wide-page in globals.css.
+        variant === "page" && "docs-wide-page lg:!mx-0 lg:!max-w-none"
       )}
     >
       {/* Header: fixed height so the timeline never moves. */}
