@@ -1,5 +1,6 @@
 "use client";
 
+import Link from "next/link";
 import { motion } from "motion/react";
 import CodeBlock, {
   type Line,
@@ -57,6 +58,8 @@ const CASES: {
   body: string;
   label: string;
   code: string;
+  /** The sandboxes docs page this case is drawn from. */
+  docsHref: string;
 }[] = [
   {
     id: "run-code",
@@ -64,6 +67,7 @@ const CASES: {
     title: "Run AI-generated code",
     body: "If you ask a question, and your agent writes Python to answer it, that script needs a machine. Each question gets its own sandbox: upload the file, run the code, and the output comes back as the next step.",
     label: "inngest/analyse-data.ts",
+    docsHref: "/docs/sandboxes/features/managed-lifecycle",
     code: `// One machine per run. Commands are steps.
 const sandbox = await step.sandbox.create(
   "create-sandbox",
@@ -85,6 +89,7 @@ const result = await sandbox.commands.run(
     title: "Score generated code",
     body: "A new prompt only counts if the code it writes still passes. Run each case in a sandbox, then score in the background so the result is credited to the prompt that wrote it.",
     label: "inngest/score-code.ts",
+    docsHref: "/docs/sandboxes/features/isolation-and-security",
     code: `// Run each case sandboxed. Score after.
 const result = await sandbox.commands.run(
   \`case-\${i}\`,
@@ -110,6 +115,7 @@ defer("score", {
     title: "Heavy jobs, off your servers",
     body: "A DuckDB pass, a media batch, or a build will swamp the server handling requests. Install the tools once, snapshot the environment, and clone a worker per file. Each file retries on its own.",
     label: "inngest/process-dataset.ts",
+    docsHref: "/docs/sandboxes/features/cloning",
     code: `// Install once, snapshot, clone per file.
 await builder.commands.run(
   "install",
@@ -213,6 +219,20 @@ function UseCaseCard({ item }: { item: typeof CASES[number] }) {
           {item.title}
         </h3>
         <p className="text-v1-body-lg-loose max-w-[460px]">{item.body}</p>
+        {/* "Read the docs →" — the site's text-cue vocabulary, linking to
+            the specific docs page this case is drawn from. */}
+        <Link
+          href={`${item.docsHref}?ref=sandboxes-use-cases`}
+          className="group/cta text-v1-label-md mt-2 inline-flex w-fit items-center uppercase text-v1-frost hover:text-v1-accent-salmon focus:outline-none focus-visible:text-v1-accent-salmon motion-safe:transition-colors motion-safe:duration-300"
+        >
+          <span>Read the docs</span>
+          <span
+            aria-hidden="true"
+            className="ml-2 inline-block group-hover/cta:translate-x-[6px] motion-safe:transition-transform motion-safe:duration-[400ms] motion-safe:ease-v1-in"
+          >
+            →
+          </span>
+        </Link>
       </div>
     </article>
   );

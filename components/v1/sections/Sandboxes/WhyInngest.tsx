@@ -21,14 +21,14 @@ const REASONS: {
     id: "same-service",
     title: "step.sandbox",
     body: "Create the machine from the function you already deploy. No second account, client, or product to keep in step with your app.",
-    href: "/docs/features/sandboxes?ref=sandboxes#run-a-command-in-an-inngest-function",
+    href: "/docs/sandboxes/features/managed-lifecycle?ref=sandboxes#use-a-sandbox-in-a-durable-function",
     icon: "/assets/v1/primitives/icon-6-local-env.svg",
   },
   {
     id: "durability",
     title: "Durability",
     body: "Commands are steps. A failed run retries and resumes with the rest of the function, instead of dying in a box you have to poll.",
-    href: "/docs/features/sandboxes/errors-and-retries?ref=sandboxes#understand-step-sandbox-replay",
+    href: "/docs/sandboxes/features/managed-lifecycle?ref=sandboxes#retries-and-uncertain-outcomes",
     icon: "/assets/v1/feature-cards/retries.svg",
   },
   {
@@ -49,14 +49,14 @@ const REASONS: {
     id: "tracing",
     title: "Debugging and tracing",
     body: "The sandbox sits on the trace beside the rest of the function. The code and the business logic around it are one place to debug.",
-    href: "/docs/platform/monitor/traces?ref=sandboxes",
+    href: "/docs/sandboxes/features/traces?ref=sandboxes",
     icon: "/assets/v1/feature-cards/observability.svg",
   },
   {
     id: "processes",
     title: "Background processes",
     body: "Start a worker or server in the sandbox and wait for it from the function. It keeps running after the call that started it returns.",
-    href: "/docs/features/sandboxes/managed-processes?ref=sandboxes",
+    href: "/docs/sandboxes/reference?ref=sandboxes#commands-processes-and-files",
     icon: "/assets/v1/primitives/icon-5-no-timeout.svg",
   },
 ];
