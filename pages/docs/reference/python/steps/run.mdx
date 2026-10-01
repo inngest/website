@@ -64,6 +64,8 @@ async def my_fn_with_args_and_kwargs(a: int, *, b: str) -> None:
 
 Use `@inngest.experimental.step("step-id")` to turn a Python function into a reusable step without passing `ctx` to it or wrapping each call in `ctx.step.run()`.
 
+Requires Python SDK `inngest>=0.5.14`.
+
 <Callout variant="warning">
 This API is experimental and may have breaking changes outside of semantic versioning.
 </Callout>
