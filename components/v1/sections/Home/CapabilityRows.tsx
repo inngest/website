@@ -83,9 +83,9 @@ const CAPABILITIES: Capability[] = [
  * know what happened → what to run → what's safe → what works — as
  * scroll-driven rows at lg+: copy left, that step's video right, a
  * step rail down the edge (the same "steps of a run" idea as the
- * hero's trace). Every video stays visible and playing; the row in
- * focus is full-contrast and the rest dim together. Below lg the rows
- * become stacked cards, video over copy.
+ * hero's trace). Every video stays visible; the row in focus is
+ * full-contrast and the only one playing, the rest dim together. Below
+ * lg the rows become stacked cards, video over copy.
  */
 export default function Capabilities() {
   const isDesktop = useIsDesktop();
@@ -198,11 +198,11 @@ function Eyebrow({ capability }: { capability: Capability }) {
 /**
  * One row in the desktop sequence: copy on the left, its own video on
  * the right, a rail dot between row and page edge. The row whose box
- * crosses the viewport's middle band is in focus; the others — copy
- * and video together — dim to 40%, so the eye lands on one story at a
- * time while every animation stays visible. Rows own their vertical
- * spacing (py) rather than using a flex gap so the rail segment each
- * row draws joins the next without a break.
+ * crosses the viewport's middle band is in focus: full-contrast and
+ * the only one whose video plays. The others — copy and video together
+ * — dim to 40% and hold on their first frame. Rows own their vertical
+ * spacing (96px between, as py) rather than using a flex gap so the
+ * rail segment each row draws joins the next without a break.
  */
 function Step({
   capability,
@@ -245,7 +245,7 @@ function Step({
     <li
       ref={ref}
       aria-current={isActive ? "step" : undefined}
-      className={cn("relative pl-10", !isFirst && "pt-5", !isLast && "pb-5")}
+      className={cn("relative pl-10", !isFirst && "pt-12", !isLast && "pb-12")}
     >
       {/* Rail segments: upper half (not on the first row) and lower half
           (not on the last), meeting under the dot at the row's centre. */}
@@ -310,7 +310,7 @@ function Step({
               src={capability.videoSrc}
               label={capability.label}
               startAt={capability.videoStart}
-              play
+              play={isActive}
               enabled={enabled}
             />
           )}
