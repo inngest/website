@@ -12,6 +12,29 @@ export const getOpenGraphImageURL = ({ title }: { title: string }) =>
     title
   )}&v=${openGraphImageVersion}`;
 
+/*
+ * The "Build for the lonng run" campaign card — black, with the mouth and
+ * tongue along the bottom, instead of the standard salmon one.
+ *
+ * Returned as a relative path on purpose: `generateMetadata` runs it
+ * through `getFullURL`, so on a preview deploy the scraper hits the
+ * preview host rather than production, which has neither the route's
+ * `theme` parameter nor the artwork until this ships.
+ */
+export const getLongRunOpenGraphImagePath = ({
+  title,
+  eyebrow,
+  city,
+}: {
+  title: string;
+  eyebrow: string;
+  /** Picks the runner: New York gets the pizza, San Francisco the cup. */
+  city: "nyc" | "sf";
+}) =>
+  `/api/og?title=${encodeURIComponent(title)}&eyebrow=${encodeURIComponent(
+    eyebrow
+  )}&theme=long-run&city=${city}&v=${openGraphImageVersion}`;
+
 export const getFullURL = (absolutePath: string) => {
   // On Vercel preview deploys, use the preview host so OG/Twitter scrapers
   // can fetch newly-deployed assets that aren't on production yet. Falls back

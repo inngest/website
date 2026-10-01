@@ -3,31 +3,32 @@ import {
   generateMetadata,
   getLongRunOpenGraphImagePath,
 } from "src/utils/social";
-import SfLongRun from "@/components/v1/pages/SfLongRun";
+import NycLongRun from "@/components/v1/pages/NycLongRun";
 
 /**
- * step.run/sf → inngest.com/sf-long-run.
+ * step.run/nyc → inngest.com/nyc-long-run.
  *
- * Publicly indexable: no robots block here, and the route is in the
- * sitemap. To pull it back out of search, add
- * `robots: { index: false, follow: false }` below and re-add the
- * "/sf-long-run" line to next-sitemap.config.js — both are needed,
+ * Not indexed yet, unlike the SF page: this one is still in review, so
+ * it sends `noindex, nofollow` and is excluded from the sitemap. To list
+ * it publicly, drop the robots block below and remove the
+ * "/nyc-long-run" line from next-sitemap.config.js — both are needed,
  * since a sitemap entry and a noindex tag contradict each other.
  */
 export const metadata: Metadata = {
   ...generateMetadata({
-    title: "Build for the lonng run · San Francisco",
+    title: "Build for the lonng run · New York City",
     // Campaign social card rather than the default salmon one.
     image: getLongRunOpenGraphImagePath({
       title: "Build for the lonng run.",
-      eyebrow: "San Francisco",
-      city: "sf",
+      eyebrow: "New York City",
+      city: "nyc",
     }),
     description:
       "Build apps and agents that run for days. Wrap functions in steps that pause for events, retry, fan-out, and handle everything production throws at you — without touching infra.",
   }),
+  robots: { index: false, follow: false },
 };
 
 export default function Page() {
-  return <SfLongRun />;
+  return <NycLongRun />;
 }

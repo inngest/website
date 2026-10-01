@@ -56,6 +56,7 @@ export const COLOR_TOKENS = {
   "1 60 246": { generic: "v1-accent-blue" },
   "1 51 245": { generic: "v1-accent-blue-gradient" },
   "11 221 72": { generic: "v1-accent-green" },
+  "252 196 63": { generic: "v1-accent-amber" }, // also globals.css honey-300
   "102 189 139": { generic: "v1-primary-intense" },
   "44 155 99": { generic: "v1-primary-moderate" },
   "2 122 72": { generic: "v1-primary-subtle" },

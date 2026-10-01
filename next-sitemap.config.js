@@ -106,6 +106,9 @@ module.exports = {
     // Pages with noindex set in code — sitemap + noindex is contradictory.
     "/content/ai-in-production-report-2026",
     "/content/ai-in-production-report-2026/*",
+    // NYC campaign page — still in review, noindex in its own metadata,
+    // so it must stay out of the sitemap. Remove this line to list it.
+    "/nyc-long-run",
     "/resources/access/*",
   ],
 };

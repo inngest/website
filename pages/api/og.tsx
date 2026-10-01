@@ -1,6 +1,7 @@
 import type { NextApiRequest } from "next";
 import { ImageResponse } from "@vercel/og";
 import Logo from "src/shared/Icons/Logo";
+import { getFullURL } from "src/utils/social";
 
 export const config = {
   runtime: "edge",
@@ -46,10 +47,30 @@ export default async function handler(req: NextApiRequest) {
     const len = (title || "").length;
     const isLongTitle = len > 40;
     const isVeryLongTitle = len > 70;
-    // 2026 salmon background — the logo is baked into the artwork
-    // (top-left); the title overlays bottom-left in white to match the
-    // static homepage card.
-    const backgroundImageURL = `${process.env.NEXT_PUBLIC_HOST}/assets/og-image-2026.png`;
+    // ?theme=long-run&city=<nyc|sf> — the "Build for the lonng run"
+    // campaign card (black, mouth and tongue along the bottom) instead of
+    // the standard salmon one. Each city has its own runner. An unknown
+    // city falls through to the salmon card rather than rendering the
+    // campaign layout over a missing background.
+    const longRunArtwork = {
+      nyc: "/assets/v1/long-run/og-nyc.png",
+      sf: "/assets/v1/long-run/og-sf.png",
+    }[searchParams.get("city") ?? ""];
+    const isLongRun =
+      searchParams.get("theme") === "long-run" && Boolean(longRunArtwork);
+    // ?eyebrow=<text> — small accent line above the title. Long-run only;
+    // the salmon card has no slot for it.
+    const eyebrow = searchParams.get("eyebrow")?.slice(0, 60);
+
+    // The logo is baked into both background artworks (top-left). On the
+    // salmon card the title overlays bottom-left in white, matching the
+    // static homepage card; on the long-run card it sits top-left, above
+    // the illustration.
+    const backgroundImageURL = isLongRun
+      ? // Preview-aware: the campaign artwork only exists on the deploy
+        // that added it, so a preview must not fetch it from production.
+        getFullURL(longRunArtwork!)
+      : `${process.env.NEXT_PUBLIC_HOST}/assets/og-image-2026.png`;
 
     const fontData = await loadInngestCDNFont("Whyte/ABCWhyte-Light.otf");
 
@@ -57,30 +78,59 @@ export default async function handler(req: NextApiRequest) {
       (
         <div
           style={{
-            backgroundColor: "rgb(255,87,51)", // salmon fallback
+            backgroundColor: isLongRun ? "rgb(16,16,16)" : "rgb(255,87,51)",
             backgroundImage: `url("${backgroundImageURL}")`,
             backgroundSize: "cover",
             height: "100%",
             width: "100%",
-            padding: "64px",
+            // The long-run artwork fills the bottom half, so its copy sits
+            // under the baked-in logo rather than at the foot of the card.
+            padding: isLongRun ? "120px 64px 64px" : "64px",
             display: "flex",
             alignItems: "flex-start",
-            justifyContent: "flex-end",
+            justifyContent: isLongRun ? "flex-start" : "flex-end",
             flexDirection: "column",
             flexWrap: "nowrap",
             fontFamily: "Whyte, sans-serif",
           }}
         >
+          {isLongRun && eyebrow && (
+            <div
+              style={{
+                fontSize: 28,
+                fontWeight: 300,
+                letterSpacing: "2px",
+                // v1 accent-green.
+                color: "rgb(11,221,72)",
+                textTransform: "uppercase",
+                marginBottom: 20,
+              }}
+            >
+              {eyebrow}
+            </div>
+          )}
           <div
             style={{
-              fontSize: isVeryLongTitle ? 56 : isLongTitle ? 72 : 92,
+              fontSize: isLongRun
+                ? isVeryLongTitle
+                  ? 48
+                  : isLongTitle
+                  ? 56
+                  : 72
+                : isVeryLongTitle
+                ? 56
+                : isLongTitle
+                ? 72
+                : 92,
               fontStyle: "normal",
               fontWeight: 300,
               letterSpacing: "-2.4px",
               color: "white",
               lineHeight: isVeryLongTitle ? 1.15 : isLongTitle ? 1.12 : 1.05,
               whiteSpace: "normal",
-              maxHeight: 420,
+              // Keep the title clear of the illustration on the long-run
+              // card; the salmon one can run the full height.
+              maxHeight: isLongRun ? 170 : 420,
               overflow: "hidden",
             }}
           >
