@@ -33,7 +33,7 @@ A support agent answers a customer ticket. The same pattern works for background
   SC --> C(["Compare variants"]):::accent`}
 />
 
-Here's that function. Each `step.run()` is saved, so a failed reply retries without reloading context or redrafting the answer. `group.experiment()` picks the answer strategy, `step.realtime.publish()` updates the customer, and `step.sandbox` runs diagnostics in an isolated VM. When the customer rates the answer days later, a [deferred scorer](/docs/agent-evals/deferred-scoring) credits that rating to the chosen variant. The Python and Go versions skip the features their SDKs don't support yet: Python has no Sandbox step, and Go drafts a single answer without an experiment or Sandbox.
+Here's that function. Each `step.run()` is saved, so a failed reply retries without reloading context or redrafting the answer. `group.experiment()` picks the answer strategy, `step.realtime.publish()` updates the customer, and `step.sandbox` runs diagnostics in an isolated VM. When the customer rates the answer days later, a [deferred scorer](/docs/agent-evals/deferred-scoring) credits that rating to the chosen variant (in TS). 
 
 <CodeGroup>
 ```ts {{ title: "TypeScript" }}
