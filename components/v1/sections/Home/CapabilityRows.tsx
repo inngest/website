@@ -302,7 +302,10 @@ function Step({
       aria-current={isActive ? "step" : undefined}
       className={cn(
         "relative pl-10",
-        !isFirst && "pt-[7.5rem]",
+        // The first row gets a small top pad so its copy clears the blue
+        // slab (which overlaps the row by 96px) and reads on dark; its
+        // video still rises into the blue.
+        isFirst ? "pt-12" : "pt-[7.5rem]",
         !isLast && "pb-[7.5rem]"
       )}
     >
@@ -320,15 +323,15 @@ function Step({
           className="absolute bottom-0 left-[5px] h-1/2 w-px bg-v1-frost/[0.12]"
         />
       )}
-      {/* Rail dot: salmon and lit while in focus, quiet frost once
-          passed, dim before. */}
+      {/* Rail dot: solid salmon while in focus, quiet frost once passed,
+          dim before. */}
       <span
         aria-hidden="true"
         className={cn(
           "border-v1-canvasBase absolute left-0 top-1/2 size-[11px] -translate-y-1/2 rounded-full border-2",
-          "motion-safe:transition-[background-color,box-shadow] motion-safe:duration-500",
+          "motion-safe:transition-colors motion-safe:duration-500",
           isActive
-            ? "bg-v1-accent-salmon shadow-[0_0_0_4px_rgb(var(--color-v1-salmon-200)/0.25),0_0_18px_rgb(var(--color-v1-salmon-200)/0.6)]"
+            ? "bg-v1-accent-salmon"
             : isPast
             ? "bg-v1-frost/60"
             : "bg-v1-frost/20"
