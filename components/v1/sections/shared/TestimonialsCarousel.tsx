@@ -84,6 +84,13 @@ interface TestimonialsCarouselProps {
    * loading in." Default false preserves live behavior.
    */
   disablePortraitReveal?: boolean;
+  /**
+   * Tighter vertical footprint: drops the reserved height of the quote
+   * column (which is what sets the rail's height, since the quote is
+   * the tallest element). For rails that sit between two heavier
+   * sections and shouldn't own a screen of their own.
+   */
+  compact?: boolean;
 }
 
 // Match the HowItWorks rail + Lifecycle tab nav cadence
@@ -98,6 +105,7 @@ export default function TestimonialsCarousel({
   directionMode = "auto",
   bylineStaggerMs = 80,
   disablePortraitReveal = false,
+  compact = false,
 }: TestimonialsCarouselProps) {
   const [active, setActive] = useState(0);
   // Auto-advance only while the carousel is on screen, so a user who
@@ -109,7 +117,7 @@ export default function TestimonialsCarousel({
   // so every rotation reads the same regardless of prev/next.
   const prevActiveRef = useRef(active);
   const [slideDirection, setSlideDirection] = useState<"left" | "right">(
-    directionMode === "always-left" ? "left" : "right",
+    directionMode === "always-left" ? "left" : "right"
   );
   useEffect(() => {
     if (active !== prevActiveRef.current) {
@@ -147,7 +155,14 @@ export default function TestimonialsCarousel({
           disableReveal={disablePortraitReveal}
         />
       </div>
-      <div className="flex flex-col justify-between gap-7 sm:min-h-[clamp(320px,32vw,460px)] sm:gap-[clamp(20px,3.5vw,45px)]">
+      <div
+        className={cn(
+          "flex flex-col justify-between gap-7",
+          compact
+            ? "sm:min-h-[clamp(240px,23vw,330px)] sm:gap-[clamp(16px,2.2vw,28px)]"
+            : "sm:min-h-[clamp(320px,32vw,460px)] sm:gap-[clamp(20px,3.5vw,45px)]"
+        )}
+      >
         <LogoNav slides={slides} activeIndex={active} onSelect={setActive} />
         <Quote
           slide={current}
@@ -155,6 +170,7 @@ export default function TestimonialsCarousel({
           activeKey={active}
           slideDirection={slideDirection}
           bylineStaggerMs={bylineStaggerMs}
+          compact={compact}
         />
         <PaginationRail
           active={active}
@@ -256,7 +272,7 @@ function Portrait({
         // 332/375 ratio (200 × 332/375 ≈ 177px), so the portrait stays
         // width-driven everywhere and never distorts.
         "max-w-[177px] sm:max-w-[clamp(220px,22vw,332px)]",
-        className,
+        className
       )}
     >
       <Image
@@ -276,7 +292,11 @@ function Portrait({
           sizes="332px"
           className="object-cover"
           style={{
-            animation: `${slideDirection === "right" ? "v1PortraitSlideInRight" : "v1PortraitSlideInLeft"} ${SLIDE_IN_MS}ms ${EASE_V1_WIPE} forwards`,
+            animation: `${
+              slideDirection === "right"
+                ? "v1PortraitSlideInRight"
+                : "v1PortraitSlideInLeft"
+            } ${SLIDE_IN_MS}ms ${EASE_V1_WIPE} forwards`,
             willChange: "transform",
           }}
         />
@@ -359,7 +379,7 @@ function LogoNav({
     if (!container) return;
     if (container.scrollWidth <= container.clientWidth) return;
     const el = container.querySelector<HTMLElement>(
-      `[data-logo-index="${activeIndex}"]`,
+      `[data-logo-index="${activeIndex}"]`
     );
     if (!el) return;
     const target =
@@ -462,8 +482,16 @@ function LogoButton({
 
 // Shared quote-paragraph styling — used by BOTH the visible quote and
 // the invisible height sizers so they wrap to identical heights.
-const QUOTE_TEXT_CLASS =
-  "text-pretty text-v1-frost font-whyte font-normal text-[16px] leading-[1.4] sm:text-[clamp(24px,2.5vw,36px)] sm:leading-[1.5]";
+// `compact` steps the quote down a size — the quote is the tallest
+// element in the rail, so it's the only lever that meaningfully shortens
+// the section.
+const quoteTextClass = (compact: boolean) =>
+  cn(
+    "text-pretty text-v1-frost font-whyte font-normal text-[16px] leading-[1.4] sm:leading-[1.5]",
+    compact
+      ? "sm:text-[clamp(20px,1.9vw,26px)]"
+      : "sm:text-[clamp(24px,2.5vw,36px)]"
+  );
 
 // Quote body. Below lg it's a single naturally-wrapping string; at lg+
 // it honours the designer-locked `quoteLines` breaks when provided.
@@ -497,12 +525,14 @@ function Quote({
   activeKey,
   slideDirection,
   bylineStaggerMs,
+  compact,
 }: {
   slide: Slide;
   slides: Slide[];
   activeKey: number;
   slideDirection: "left" | "right";
   bylineStaggerMs: number;
+  compact: boolean;
 }) {
   const { quote, quoteLines, tag, authorName, authorTitle, caseStudyHref } =
     slide.testimonial;
@@ -525,7 +555,7 @@ function Quote({
   const slideKeyframe =
     slideDirection === "right" ? "v1TextSlideInRight" : "v1TextSlideInLeft";
   return (
-    <div className="flex flex-col gap-[33px]">
+    <div className={cn("flex flex-col", compact ? "gap-6" : "gap-[33px]")}>
       {tag && (
         <span
           key={`tag-${activeKey}`}
@@ -550,7 +580,7 @@ function Quote({
           <p
             key={s.id}
             aria-hidden="true"
-            className={cn(QUOTE_TEXT_CLASS, "invisible [grid-area:1/1]")}
+            className={cn(quoteTextClass(compact), "invisible [grid-area:1/1]")}
           >
             <QuoteText
               quote={s.testimonial.quote}
@@ -561,7 +591,7 @@ function Quote({
         <div className="overflow-hidden [grid-area:1/1]">
           <p
             key={`q-${activeKey}`}
-            className={QUOTE_TEXT_CLASS}
+            className={quoteTextClass(compact)}
             aria-label={quote}
             style={{
               animation: hasSwitched
@@ -654,10 +684,7 @@ export function PaginationRail({
   const arrowBtn =
     "group inline-flex shrink-0 items-center justify-center rounded-full bg-v1-frost/[0.04] backdrop-blur-md text-v1-frost motion-safe:transition-[background-color,color] motion-safe:duration-300 motion-safe:ease-v1-in hover:bg-v1-frost/[0.12] focus-visible:bg-v1-frost/[0.12]";
   return (
-    <div
-      data-cursor-hide
-      className="flex items-center gap-6"
-    >
+    <div data-cursor-hide className="flex items-center gap-6">
       <button
         type="button"
         onClick={onPrev}
@@ -674,9 +701,7 @@ export function PaginationRail({
             key={i}
             className="relative h-1 flex-1 overflow-hidden bg-v1-frost/20"
           >
-            {i < active && (
-              <div className="absolute inset-0 bg-v1-frost" />
-            )}
+            {i < active && <div className="absolute inset-0 bg-v1-frost" />}
             {i === active && running && (
               <div
                 key={active}
@@ -701,4 +726,3 @@ export function PaginationRail({
     </div>
   );
 }
-

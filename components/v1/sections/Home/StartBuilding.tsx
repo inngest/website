@@ -1,7 +1,9 @@
 import { appendRef } from "@/utils/v1/ref";
+import { cn } from "@/utils/v1/cn";
 import HoverCardShell from "@/components/v1/sections/shared/HoverCardShell";
 import Section from "@/components/v1/sections/shared/Section";
 import SectionHeader from "@/components/v1/sections/shared/SectionHeader";
+import { HOME_SECTION_TITLE } from "@/components/v1/sections/shared/sectionTitle";
 
 interface Quickstart {
   eyebrow: string;
@@ -63,7 +65,7 @@ export default function StartBuilding({
         // title/subtitle align with the "QUICKSTART" eyebrow below.
         // Tighter title→subtitle gap than the default 48px v1-stack.
         className="!gap-5 lg:pl-4"
-        titleClassName={`text-balance ${titleClassName ?? ""}`}
+        titleClassName={cn(HOME_SECTION_TITLE, "text-balance", titleClassName)}
         title={title}
         body={body}
         // Larger heading-sm lead (not the default body-lg-loose);

@@ -6,6 +6,7 @@ import { appendRef } from "@/utils/v1/ref";
 import { reveals } from "@/utils/v1/reveals";
 import Section from "@/components/v1/sections/shared/Section";
 import SectionHeader from "@/components/v1/sections/shared/SectionHeader";
+import { HOME_SECTION_TITLE } from "@/components/v1/sections/shared/sectionTitle";
 import RegisterCue from "@/components/v1/sections/Events/RegisterCue";
 import {
   onCursorTiltMove,
@@ -14,9 +15,9 @@ import {
 } from "@/utils/v1/cursorFx";
 
 /**
- * Homepage "From background jobs to agents, in one codebase" — a
- * use-case band directly beneath the "Durability belongs in code"
- * section. Six clickable cards (title + body + "Learn more →" cue),
+ * Homepage "Make any code durable, observable, and improvable" — a
+ * use-case band above the "Durability belongs in code" section. Six
+ * clickable cards (title + body + "Learn more →" cue),
  * each linking to the matching docs/platform/uses page. Exists to give
  * crawlers + answer engines concrete use-case anchor text and internal
  * links (SEO/AEO), so the copy and hrefs are the payload here.
@@ -97,10 +98,11 @@ export default function UseCaseBand() {
     <Section aria-labelledby="home-use-cases-heading" className="relative">
       <SectionHeader
         id="home-use-cases-heading"
+        titleClassName={HOME_SECTION_TITLE}
         title={
           <>
-            From background jobs to agents,
-            <br className="hidden sm:inline" /> in one codebase.
+            Make any code durable,
+            <br className="hidden sm:inline" /> observable, and improvable.
           </>
         }
         body="Add durable functions to your existing code, to keep event-driven workflows, background jobs, and agents running. No infrastructure to provision or maintain."

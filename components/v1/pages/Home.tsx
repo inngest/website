@@ -1,8 +1,10 @@
 import PageShell from "@/components/v1/PageShell";
+import CapabilityRows, {
+  CapabilitiesHeading,
+} from "@/components/v1/sections/Home/CapabilityRows";
+import BluePixelBand from "@/components/v1/sections/Home/BluePixelBand";
 import Customers from "@/components/v1/sections/Home/Customers";
-import DurabilityInCode from "@/components/v1/sections/Home/DurabilityInCode";
 import Hero from "@/components/v1/sections/Home/Hero";
-import HowItWorks from "@/components/v1/sections/Home/HowItWorks";
 import ItDoesntHaveToBeHard from "@/components/v1/sections/Home/ItDoesntHaveToBeHard";
 import LogoMarquee from "@/components/v1/sections/Home/LogoMarquee";
 import LogoStrip from "@/components/v1/sections/Home/LogoStrip";
@@ -14,33 +16,25 @@ import UseCaseBand from "@/components/v1/sections/Home/UseCaseBand";
 export default function Home() {
   return (
     <PageShell>
-      {/* Preload the real hero LCP image (a CSS background, so it's
-          invisible to the browser's preload scanner). Mobile + desktop
-          variants are gated by media so only the matching one fetches. */}
-      <link
-        rel="preload"
-        as="image"
-        href="/assets/v1/hero/.compressed/inngest-hero-mobile.avif"
-        type="image/avif"
-        media="(max-width: 1023px)"
-        fetchPriority="high"
-      />
-      <link
-        rel="preload"
-        as="image"
-        href="/assets/v1/hero/.compressed/inngest-hero.avif?v=3"
-        type="image/avif"
-        media="(min-width: 1024px)"
-        fetchPriority="high"
-      />
-      <Hero />
-      <LogoStrip contained />
-      <Quote />
-      <DurabilityInCode />
-      <UseCaseBand />
+      <div className="home-desktop-7">
+        <div className="flex w-full flex-col gap-6 lg:gap-8">
+          <Hero />
+          <div className="-mx-6 w-[calc(100%+3rem)] lg:-mx-8 lg:w-[calc(100%+4rem)]">
+            <LogoStrip contained />
+          </div>
+        </div>
+        <div className="relative flex w-full flex-col items-center gap-12 lg:gap-24">
+          <div className="relative w-full">
+            <Quote />
+            <BluePixelBand />
+          </div>
+          <CapabilitiesHeading />
+        </div>
+        <CapabilityRows />
+      </div>
       <Customers />
+      <UseCaseBand />
       <ItDoesntHaveToBeHard />
-      <HowItWorks />
       <TrustedInBigLeagues />
       <StartBuilding />
       <LogoMarquee />
