@@ -1,0 +1,161 @@
+.visual svg {
+  font-size: 11px;
+  fill: currentColor;
+}
+.box {
+  fill: rgb(var(--color-background-canvas-base));
+  stroke: currentColor;
+  stroke-opacity: 0.25;
+}
+.line {
+  fill: none;
+  stroke: currentColor;
+  stroke-opacity: 0.3;
+  stroke-width: 2;
+}
+.muted {
+  fill: rgb(var(--color-foreground-subtle));
+}
+.success {
+  fill: rgb(var(--color-primary-intense));
+}
+.error {
+  fill: rgb(var(--color-tertiary-intense));
+}
+.sandboxRunning {
+  opacity: 0;
+  animation: sandboxRunning 8s infinite;
+}
+.sandboxCrash {
+  animation: sandboxCrash 8s infinite;
+}
+.boundary {
+  fill: none;
+  stroke: rgb(var(--color-primary-intense));
+  stroke-dasharray: 5 4;
+}
+.failedBox {
+  fill: rgb(var(--color-background-canvas-base));
+  stroke: rgb(var(--color-tertiary-intense));
+  stroke-width: 2;
+}
+.completeBox {
+  fill: rgb(var(--color-background-canvas-base));
+  stroke: rgb(var(--color-primary-intense));
+  stroke-width: 2;
+}
+.failure {
+  opacity: 0;
+  animation: failure 8s infinite;
+}
+.recovered {
+  animation: recovered 8s infinite;
+}
+.last {
+  animation: last 8s infinite;
+}
+.track {
+  fill: currentColor;
+  opacity: 0.08;
+}
+.bar {
+  fill: rgb(var(--color-primary-intense));
+  transform-origin: 102px center;
+  animation: grow 8s infinite;
+}
+.barA {
+  opacity: 0.5;
+}
+@keyframes failure {
+  0%,
+  19%,
+  55%,
+  100% {
+    opacity: 0;
+    transform: translateX(0);
+  }
+  20%,
+  54% {
+    opacity: 1;
+    transform: translateX(0);
+  }
+  23%,
+  29% {
+    transform: translateX(-3px);
+  }
+  26%,
+  32% {
+    transform: translateX(3px);
+  }
+  35% {
+    transform: translateX(0);
+  }
+}
+@keyframes recovered {
+  0%,
+  54% {
+    opacity: 0;
+  }
+  58%,
+  100% {
+    opacity: 1;
+  }
+}
+@keyframes sandboxRunning {
+  0%,
+  34% {
+    opacity: 1;
+  }
+  35%,
+  100% {
+    opacity: 0;
+  }
+}
+@keyframes sandboxCrash {
+  0%,
+  34% {
+    opacity: 0;
+    transform: translateX(0);
+  }
+  35%,
+  100% {
+    opacity: 1;
+    transform: translateX(0);
+  }
+  38%,
+  44% {
+    transform: translateX(-2px);
+  }
+  41%,
+  47% {
+    transform: translateX(2px);
+  }
+  50% {
+    transform: translateX(0);
+  }
+}
+@keyframes last {
+  0%,
+  70% {
+    opacity: 0;
+  }
+  76%,
+  100% {
+    opacity: 1;
+  }
+}
+@keyframes grow {
+  0%,
+  10% {
+    transform: scaleX(0.05);
+  }
+  60%,
+  100% {
+    transform: scaleX(1);
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .visual * {
+    animation: none;
+  }
+}

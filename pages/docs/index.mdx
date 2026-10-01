@@ -1,5 +1,6 @@
 import { CardGroup, Card } from "src/shared/Docs/mdx";
-import { WelcomeGrid, PlatformGrid, UseCaseGrid, StartBuilding } from "src/shared/Docs/DocsHome";
+import { StartBuilding } from "src/shared/Docs/DocsHome";
+import { ProductSection } from "src/shared/Docs/ProductSection";
 import InngestIcon from "src/shared/Icons/InngestIcon";
 import SkillsMDIcon from "src/shared/Icons/SkillsMD";
 import MCPIcon from "src/shared/Icons/MCP";
@@ -11,25 +12,67 @@ export const hidePageSidebar = true;
 
 # Introducing Inngest
 
-> Build durable, observable, failure-resistant code with sandboxing, agent evals, and A/B tests built in.
+> Keep work running through failures. Give agents a place to run code. Measure what works.
 
 Inngest is the platform for building durable workflows and agents that survive failures, without managing orchestration infrastructure. Write functions in your existing code and add steps. Inngest runs each step, saves its result, and retries failed work from the step that failed.
 
-<WelcomeGrid />
+[Quick start →](/docs/getting-started?ref=docs-home) · [SDK reference](/docs/reference?ref=docs-home) · [Coding with an AI agent](/docs/ai-dev-tools?ref=docs-home)
 
-## The Inngest platform
+<ProductSection kind="workflow">
 
-Durable execution, isolated Sandboxes, outcome scores, and live updates all share the same run, so you can follow the whole job in one trace.
+## Durable workflows
 
-<PlatformGrid />
+**An API failure shouldn't restart your whole job.**
 
-For example, a support agent can call tools and run code in a Sandbox while it answers a request. Inngest retries failed steps and records the work in a trace. When feedback arrives later, a score links it to the run and experiment variant, so you can compare the outcomes of agent changes.
+Break a background job or agent into steps. Inngest saves each completed step and automatically retries the one that fails. If sending a reply fails, the agent can retry sending without drafting the answer again.
 
-## Explore use cases
+[Build a durable workflow →](/docs/durable-execution?ref=docs-home)
 
-See how teams use Inngest to run agents, background jobs, generated code, and experiments in production.
+</ProductSection>
 
-<UseCaseGrid />
+<ProductSection kind="sandbox">
+
+## Sandboxes
+
+**Let agents run generated code in an isolated environment.**
+
+Run a script or test a repository in a microVM with its own filesystem and processes, isolated from your app and other Sandboxes. Your workflow controls the Sandbox, and its activity appears alongside the other steps in the same trace.
+
+[Run code in a Sandbox →](/docs/sandboxes?ref=docs-home)
+
+</ProductSection>
+
+<ProductSection kind="evals">
+
+## Agent Evals
+
+**A successful run doesn't always mean a useful answer.**
+
+Attach scores to agent runs and steps to measure the outcomes you care about. Record feedback immediately or when it arrives days later: a customer's rating can still be credited to the run that produced the answer.
+
+[Measure agent outcomes →](/docs/agent-evals?ref=docs-home)
+
+</ProductSection>
+
+<ProductSection kind="experiments">
+
+## A/B testing
+
+**Find out whether a new prompt or model actually helps.**
+
+Send a share of production traffic through a different prompt, model, or workflow. Inngest keeps each run's variant selection on retries and connects outcome scores to that variant, so you can compare results before choosing a version.
+
+[Compare variants with experiments →](/docs/agent-evals/experiments?ref=docs-home)
+
+</ProductSection>
+
+## One run, from execution to outcome
+
+A support agent can retry a failed API call, run diagnostics in a Sandbox, and collect a customer rating later. Follow that work in [one trace](/docs/platform-and-operations?ref=docs-home), with scores tied to the run and experiment variant that produced the answer.
+
+Use [Realtime](/docs/realtime?ref=docs-home) to show users progress as work happens, and [flow control](/docs/durable-execution/flow-control?ref=docs-home) to protect downstream services when traffic spikes.
+
+[See how it fits together, with code →](/docs/platform-overview?ref=docs-home)
 
 ## Start building
 
