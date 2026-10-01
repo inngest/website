@@ -80,12 +80,12 @@ const CAPABILITIES: Capability[] = [
  * right edge; the fill is what makes it hold at any viewport width.
  *
  * Below the header, the four capabilities are told as a sequence —
- * know what happened → what to run → what's safe → what works — in a
- * scroll-driven showcase at lg+: the steps scroll on the left beside a
- * step rail (the same "steps of a run" idea as the hero's trace), and
- * a sticky media stage on the right crossfades to the active step's
- * video. Only the active video plays. Below lg the showcase becomes
- * four stacked cards, video over copy.
+ * know what happened → what to run → what's safe → what works — as
+ * scroll-driven rows at lg+: copy left, that step's video right, a
+ * step rail down the edge (the same "steps of a run" idea as the
+ * hero's trace). Every video stays visible and playing; the row in
+ * focus is full-contrast and the rest dim together. Below lg the rows
+ * become stacked cards, video over copy.
  */
 export default function Capabilities() {
   const isDesktop = useIsDesktop();
@@ -112,32 +112,21 @@ export default function Capabilities() {
         />
       </div>
 
-      {/* Desktop: scroll-driven showcase. */}
-      <div className="relative mt-v1-stack hidden lg:mt-v1-stack-lg lg:grid lg:grid-cols-[minmax(0,5fr)_minmax(0,7fr)] lg:gap-x-16">
-        <ol className="relative list-none pl-0">
-          {/* Step rail: a hairline the dots sit on, running from the first
-              dot's centre to the last's (dots sit 15vh + 0.75rem inside the
-              first/last step, see Step). */}
-          <span
-            aria-hidden="true"
-            className="absolute bottom-[calc(15vh+0.75rem+5px)] left-[5px] top-[calc(15vh+0.75rem+5px)] w-px bg-v1-frost/[0.12]"
+      {/* Desktop: scroll-driven rows. Each row carries its own video; the
+          row in focus is full-contrast, the others dim as one. */}
+      <ol className="relative mt-v1-stack hidden list-none pl-0 lg:mt-v1-stack-lg lg:block">
+        {CAPABILITIES.map((capability, i) => (
+          <Step
+            key={capability.id}
+            capability={capability}
+            index={i}
+            isActive={i === active}
+            isPast={i < active}
+            onInView={() => setActive(i)}
+            enabled={isDesktop}
           />
-          {CAPABILITIES.map((capability, i) => (
-            <Step
-              key={capability.id}
-              capability={capability}
-              index={i}
-              isActive={i === active}
-              isPast={i < active}
-              onInView={() => setActive(i)}
-            />
-          ))}
-        </ol>
-
-        <div className="lg:sticky lg:top-[calc(50vh-13rem)] lg:self-start">
-          <Stage active={active} enabled={isDesktop} />
-        </div>
-      </div>
+        ))}
+      </ol>
 
       {/* Mobile / tablet: stacked cards. */}
       <ul className="relative mt-v1-stack flex list-none flex-col gap-6 pl-0 lg:hidden">
@@ -207,11 +196,13 @@ function Eyebrow({ capability }: { capability: Capability }) {
 }
 
 /**
- * One step in the desktop showcase. Each step is tall enough (70vh)
- * that scrolling paces through them one at a time; the step whose box
- * crosses the viewport's middle band becomes active and the stage
- * follows. The copy dims when inactive so the active step is the only
- * full-contrast text beside the stage.
+ * One row in the desktop sequence: copy on the left, its own video on
+ * the right, a rail dot between row and page edge. The row whose box
+ * crosses the viewport's middle band is in focus; the others — copy
+ * and video together — dim to 40%, so the eye lands on one story at a
+ * time while every animation stays visible. Rows own their vertical
+ * spacing (py) rather than using a flex gap so the rail segment each
+ * row draws joins the next without a break.
  */
 function Step({
   capability,
@@ -219,12 +210,14 @@ function Step({
   isActive,
   isPast,
   onInView,
+  enabled,
 }: {
   capability: Capability;
   index: number;
   isActive: boolean;
   isPast: boolean;
   onInView: () => void;
+  enabled: boolean;
 }) {
   const ref = useRef<HTMLLIElement>(null);
   const onInViewRef = useRef(onInView);
@@ -237,7 +230,7 @@ function Step({
       ([entry]) => {
         if (entry.isIntersecting) onInViewRef.current();
       },
-      // A thin band across the viewport's middle: whichever step
+      // A thin band across the viewport's middle: whichever row
       // overlaps it is the one the reader is looking at.
       { rootMargin: "-45% 0px -45% 0px", threshold: 0 }
     );
@@ -245,22 +238,31 @@ function Step({
     return () => io.disconnect();
   }, []);
 
-  const ease =
-    "motion-safe:transition-[color,opacity] motion-safe:duration-500 motion-safe:ease-v1-out";
+  const isFirst = index === 0;
+  const isLast = index === CAPABILITIES.length - 1;
 
   return (
     <li
       ref={ref}
       aria-current={isActive ? "step" : undefined}
-      className={cn(
-        "relative flex min-h-[70vh] flex-col justify-center pl-10",
-        index === 0 && "min-h-[50vh] justify-start pt-[15vh]",
-        index === CAPABILITIES.length - 1 &&
-          "min-h-[50vh] justify-end pb-[15vh]"
-      )}
+      className={cn("relative pl-10", !isFirst && "pt-5", !isLast && "pb-5")}
     >
-      {/* Rail dot: salmon and lit while active, quiet frost once passed,
-          dim before. Positioned on the hairline at the left edge. */}
+      {/* Rail segments: upper half (not on the first row) and lower half
+          (not on the last), meeting under the dot at the row's centre. */}
+      {!isFirst && (
+        <span
+          aria-hidden="true"
+          className="absolute left-[5px] top-0 h-1/2 w-px bg-v1-frost/[0.12]"
+        />
+      )}
+      {!isLast && (
+        <span
+          aria-hidden="true"
+          className="absolute bottom-0 left-[5px] h-1/2 w-px bg-v1-frost/[0.12]"
+        />
+      )}
+      {/* Rail dot: salmon and lit while in focus, quiet frost once
+          passed, dim before. */}
       <span
         aria-hidden="true"
         className={cn(
@@ -272,72 +274,49 @@ function Step({
             ? "bg-v1-frost/60"
             : "bg-v1-frost/20"
         )}
-        style={
-          index === 0
-            ? { top: "calc(15vh + 0.75rem)" }
-            : index === CAPABILITIES.length - 1
-            ? { top: "auto", bottom: "calc(15vh + 0.75rem)", transform: "none" }
-            : undefined
-        }
       />
+
       <div
         className={cn(
-          "flex max-w-[480px] flex-col gap-5",
-          ease,
+          "grid grid-cols-[minmax(0,5fr)_minmax(0,7fr)] items-center gap-x-12",
+          "motion-safe:transition-opacity motion-safe:duration-500 motion-safe:ease-v1-out",
           isActive ? "opacity-100" : "opacity-40"
         )}
       >
-        <div className="flex flex-col gap-3">
-          <Eyebrow capability={capability} />
-          <h3 className="font-v1Heading text-[clamp(2rem,3vw,2.75rem)] leading-[1.1] tracking-[-0.02em] text-v1-frost">
-            {capability.heading}
-          </h3>
+        <div className="flex max-w-[480px] flex-col gap-5">
+          <div className="flex flex-col gap-3">
+            <Eyebrow capability={capability} />
+            <h3 className="font-v1Heading text-[clamp(2rem,3vw,2.75rem)] leading-[1.1] tracking-[-0.02em] text-v1-frost">
+              {capability.heading}
+            </h3>
+          </div>
+          <p className="text-v1-body-lg-loose !text-v1-frost">
+            {capability.body}
+          </p>
+          <div className="pt-1">
+            <DocsCue
+              href={appendRef(capability.docsHref, `homepage-${capability.id}`)}
+            />
+          </div>
         </div>
-        <p className="text-v1-body-lg-loose !text-v1-frost">
-          {capability.body}
-        </p>
-        <div className="pt-1">
-          <DocsCue
-            href={appendRef(capability.docsHref, `homepage-${capability.id}`)}
-          />
-        </div>
-      </div>
-    </li>
-  );
-}
 
-/**
- * Sticky media stage. All four videos are mounted and stacked so the
- * swap is a crossfade rather than a reload; only the active one plays.
- */
-function Stage({ active, enabled }: { active: number; enabled: boolean }) {
-  return (
-    <GradientFrame
-      variant="charcoal"
-      className="rounded-[10px]"
-      innerClassName="relative aspect-video [background-color:rgb(var(--color-v1-bg-canvas-base)/0.85)]"
-    >
-      {CAPABILITIES.map((capability, i) => (
-        <div
-          key={capability.id}
-          aria-hidden={i !== active}
-          className={cn(
-            "absolute inset-0 motion-safe:transition-opacity motion-safe:duration-700 motion-safe:ease-v1-out",
-            i === active ? "opacity-100" : "opacity-0"
-          )}
+        <GradientFrame
+          variant="charcoal"
+          className="rounded-[10px]"
+          innerClassName="relative aspect-video [background-color:rgb(var(--color-v1-bg-canvas-base)/0.85)]"
         >
           {capability.videoSrc && (
             <RowVideo
               src={capability.videoSrc}
               label={capability.label}
               startAt={capability.videoStart}
-              play={i === active}
+              play
               enabled={enabled}
             />
           )}
-        </div>
-      ))}
-    </GradientFrame>
+        </GradientFrame>
+      </div>
+    </li>
   );
 }
 
