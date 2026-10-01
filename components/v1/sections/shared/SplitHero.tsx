@@ -113,6 +113,8 @@ export interface SplitHeroProps {
    *  pages). Last item is treated as the current page. Omit to render
    *  no breadcrumb. */
   breadcrumbs?: HeroBreadcrumbItem[];
+  /** Status chip beside the breadcrumb (e.g. an open-beta tag). */
+  badge?: ReactNode;
   headlineId: string;
   /** sr-only h1 text — the visible headline is split across columns. */
   srHeadline: string;
@@ -137,7 +139,8 @@ export interface SplitHeroProps {
   canvas: (api: { isDesktop: boolean }) => ReactNode;
   /** Left-panel + CTA colourway. Defaults to the salmon look. */
   palette?: HeroPalette;
-  docsHref?: string;
+  /** Pass `null` to hide the docs button (no public docs yet). */
+  docsHref?: string | null;
   signupHref?: string;
 }
 
@@ -151,9 +154,11 @@ export interface SplitHeroProps {
  */
 function HeroBreadcrumb({
   items,
+  badge,
   delayMs = 0,
 }: {
   items: HeroBreadcrumbItem[];
+  badge?: ReactNode;
   delayMs?: number;
 }) {
   return (
@@ -162,38 +167,42 @@ function HeroBreadcrumb({
       className="text-v1-label-md uppercase text-v1-frost"
       {...heroWordEntry(delayMs)}
     >
-      <ol className="flex flex-wrap items-center gap-2 pl-1">
-        {items.map((item, i) => {
-          const isLast = i === items.length - 1;
-          return (
-            <li key={i} className="flex items-center gap-2">
-              {i > 0 && (
-                <span aria-hidden="true" className="select-none">
-                  /
-                </span>
-              )}
-              {item.href && !isLast ? (
-                <Link
-                  href={item.href}
-                  className="transition-opacity duration-200 hover:opacity-70"
-                >
-                  {item.label}
-                </Link>
-              ) : (
-                <span aria-current={isLast ? "page" : undefined}>
-                  {item.label}
-                </span>
-              )}
-            </li>
-          );
-        })}
-      </ol>
+      <div className="flex flex-wrap items-center gap-x-3 gap-y-2">
+        <ol className="flex flex-wrap items-center gap-2 pl-1">
+          {items.map((item, i) => {
+            const isLast = i === items.length - 1;
+            return (
+              <li key={i} className="flex items-center gap-2">
+                {i > 0 && (
+                  <span aria-hidden="true" className="select-none">
+                    /
+                  </span>
+                )}
+                {item.href && !isLast ? (
+                  <Link
+                    href={item.href}
+                    className="transition-opacity duration-200 hover:opacity-70"
+                  >
+                    {item.label}
+                  </Link>
+                ) : (
+                  <span aria-current={isLast ? "page" : undefined}>
+                    {item.label}
+                  </span>
+                )}
+              </li>
+            );
+          })}
+        </ol>
+        {badge}
+      </div>
     </motion.nav>
   );
 }
 
 export default function SplitHero({
   breadcrumbs,
+  badge,
   headlineId,
   srHeadline,
   leftHeadlineLines,
@@ -256,7 +265,7 @@ export default function SplitHero({
         style={CURSOR_SPOTLIGHT_SEED}
         className={cn(
           "pointer-events-none absolute inset-y-0 left-0 w-full overflow-hidden lg:w-2/3",
-          pal.panel,
+          pal.panel
         )}
       >
         {/* Grain's baked directional lighting reads as a two-tone split
@@ -315,8 +324,8 @@ export default function SplitHero({
             versions take over. The breadcrumb, when present, sits above
             it with the same 24px gap as the desktop left column. */}
         <div className="flex flex-col gap-6 lg:hidden">
-          {breadcrumbs && breadcrumbs.length > 0 && (
-            <HeroBreadcrumb items={breadcrumbs} />
+          {((breadcrumbs && breadcrumbs.length > 0) || badge) && (
+            <HeroBreadcrumb items={breadcrumbs ?? []} badge={badge} />
           )}
           <motion.p
             aria-hidden="true"
@@ -331,14 +340,14 @@ export default function SplitHero({
             headline with a 24px gap, the whole column offset 162px from
             the top. */}
         <div className="hidden lg:flex lg:flex-col lg:gap-6 lg:pt-[162px]">
-          {breadcrumbs && breadcrumbs.length > 0 && (
-            <HeroBreadcrumb items={breadcrumbs} />
+          {((breadcrumbs && breadcrumbs.length > 0) || badge) && (
+            <HeroBreadcrumb items={breadcrumbs ?? []} badge={badge} />
           )}
           <p
             aria-hidden="true"
             className={cn(
               "text-v1-display-xs uppercase text-v1-frost lg:leading-[1] lg:tracking-[-0.01em] lg:[font-size:clamp(2.5rem,4.4vw,4rem)]",
-              leftHeadlineClassName,
+              leftHeadlineClassName
             )}
           >
             {leftHeadlineLines.map((line, i) => (
@@ -358,8 +367,8 @@ export default function SplitHero({
           <motion.p
             aria-hidden="true"
             className={cn(
-              "hidden text-v1-display-xs uppercase text-v1-frost lg:block lg:leading-[1] lg:tracking-[-0.01em] lg:[font-size:clamp(2.5rem,4.4vw,4rem)]",
-              rightHeadlineClassName,
+              "text-v1-display-xs hidden uppercase text-v1-frost lg:block lg:leading-[1] lg:tracking-[-0.01em] lg:[font-size:clamp(2.5rem,4.4vw,4rem)]",
+              rightHeadlineClassName
             )}
             {...heroWordEntry(320)}
           >
@@ -378,13 +387,15 @@ export default function SplitHero({
               ))}
             </p>
             <div className="flex flex-col gap-[23px] lg:flex-row lg:flex-nowrap lg:items-center">
-              <ButtonLink
-                href={docsHref}
-                variant={pal.readVariant}
-                className={pal.readClassName}
-              >
-                Read the docs
-              </ButtonLink>
+              {docsHref && (
+                <ButtonLink
+                  href={docsHref}
+                  variant={pal.readVariant}
+                  className={pal.readClassName}
+                >
+                  Read the docs
+                </ButtonLink>
+              )}
               <ButtonLink
                 href={signupHref}
                 prefetch={false}
