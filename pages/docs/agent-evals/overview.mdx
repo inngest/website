@@ -1,3 +1,4 @@
+import { CodeGroup, SdkUnsupported } from "shared/Docs/mdx";
 import { SdkSupport } from "src/shared/Docs/SdkSupport";
 import { ResourceGrid, Resource } from "src/shared/Docs/Resources";
 import { VideoCameraIcon } from "@heroicons/react/24/outline";
@@ -30,7 +31,18 @@ export const description = "Agent Evals connects outcome scores to the runs that
       },
       note: "Scoring and deferred scoring APIs may change before general availability.",
     },
-    { sdk: "python", planned: true },
+    {
+      sdk: "python",
+      href: "/docs/agent-evals/reference",
+      status: "Next release",
+      features: {
+        "Sessions on events": { supported: true, tag: "Next release" },
+        "Experiments and variants": { supported: true, tag: "Next release" },
+        "Run and step scores": { supported: true, tag: "Next release" },
+        "Deferred scoring": { supported: true, tag: "Next release" },
+      },
+      note: "Available in the Python SDK release after 0.5.19. No step.score(), createScorer(), or weighted and custom selectors yet.",
+    },
   ]}
 />
 
@@ -42,7 +54,8 @@ Inngest already records each durable run, its steps, and its [trace](/docs/platf
 
 Add `scoreMiddleware()` to your client, then record a score from inside a function:
 
-```typescript
+<CodeGroup>
+```typescript {{ title: "TypeScript" }}
 import { Inngest } from "inngest";
 import { scoreMiddleware } from "inngest/experimental";
 
@@ -67,6 +80,13 @@ export default inngest.createFunction(
   }
 );
 ```
+
+```python {{ title: "Python" }}
+!snippet:path=snippets/py/latest/evals/overview/score_first_run.py
+```
+
+<SdkUnsupported title="Go" feature="Scores" />
+</CodeGroup>
 
 `step.score()` is a durable step, so a retry or replay doesn't record the score twice. The score appears on the run's trace and in the function's [score trends](/docs/agent-evals/scores#where-scores-appear).
 

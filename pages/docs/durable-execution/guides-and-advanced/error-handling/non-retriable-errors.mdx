@@ -1,3 +1,4 @@
+import { CodeGroup } from "shared/Docs/mdx";
 export const metaTitle = "Non-retriable errors";
 export const description = "Use non-retriable errors to stop Inngest from retrying work that can't succeed with the same input, and decide whether to recover from the failed step.";
 
@@ -11,7 +12,8 @@ Throw `NonRetriableError` when the same work will fail again, such as an invalid
 
 This TypeScript v4 example uses the `inngest` client from the [Quick start](/docs/durable-execution/quick-start). Replace the URL with your service endpoint.
 
-```typescript
+<CodeGroup>
+```typescript {{ title: "TypeScript" }}
 import { NonRetriableError } from "inngest";
 
 export const loadOrder = inngest.createFunction(
@@ -38,6 +40,15 @@ export const loadOrder = inngest.createFunction(
 );
 ```
 
+```python {{ title: "Python" }}
+!snippet:path=snippets/py/latest/errors/non_retriable_errors/load_order.py
+```
+
+```go {{ title: "Go" }}
+!snippet:path=snippets/go/docs/errors/non_retriable_errors/load_order.go
+```
+</CodeGroup>
+
 If the API returns `404`, Inngest marks `load-order` failed without trying that step again. Other errors follow the configured [retry policy](/docs/durable-execution/guides-and-advanced/error-handling/retries). Use `404` this way only when the order cannot appear later.
 
 ## Decide whether the function fails
@@ -46,11 +57,21 @@ When a `step.run()` fails, it throws a `StepError` into the function, even if it
 
 Throwing `NonRetriableError` outside a step stops retries for the function itself. Use this for validation before any step runs:
 
-```typescript
+<CodeGroup>
+```typescript {{ title: "TypeScript" }}
 if (!event.data.orderId) {
   throw new NonRetriableError("orderId is required");
 }
 ```
+
+```python {{ title: "Python" }}
+!snippet:path=snippets/py/latest/errors/non_retriable_errors/validate.py
+```
+
+```go {{ title: "Go" }}
+!snippet:path=snippets/go/docs/errors/non_retriable_errors/validate.go
+```
+</CodeGroup>
 
 Do not catch a failed step and throw a standard `Error` unless you want the function code to retry. For a recovery example, see [Rollbacks](/docs/durable-execution/guides-and-advanced/error-handling/rollbacks).
 
@@ -58,8 +79,18 @@ Do not catch a failed step and throw a standard `Error` unless you want the func
 
 When you convert an error from your app, pass it as `cause` so the failure retains diagnostic context:
 
-```typescript
+<CodeGroup>
+```typescript {{ title: "TypeScript" }}
 throw new NonRetriableError("orderId is invalid", { cause: error });
 ```
+
+```python {{ title: "Python" }}
+!snippet:path=snippets/py/latest/errors/non_retriable_errors/cause.py
+```
+
+```go {{ title: "Go" }}
+!snippet:path=snippets/go/docs/errors/non_retriable_errors/cause.go
+```
+</CodeGroup>
 
 The TypeScript v4 constructor takes a message and an optional `{ cause }` object. Choose this error only after you know another attempt cannot succeed. It does not undo external calls that already completed.

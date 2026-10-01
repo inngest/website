@@ -33,7 +33,7 @@ Inngest creates a branch deploy on demand, the first time you send events to it 
 
 ## Configure a branch deploy
 
-Set the app's environment from the current branch, using [`INNGEST_ENV`](/docs/sdk/environment-variables#inngest-env) or the SDK client's `env` option. Supported hosts may detect the branch automatically. For a host that exposes a branch variable only at build time, pass that variable explicitly. Use the same branch value when sending events so the events reach the matching branch deploy.
+Set the app's environment from the current branch, using [`INNGEST_ENV`](/docs/sdk/environment-variables#inngest-env) or the SDK client's `env` option (`Env` in Go's `ClientOpts`). Supported hosts may detect the branch automatically. For a host that exposes a branch variable only at build time, pass that variable explicitly. Use the same branch value when sending events so the events reach the matching branch deploy.
 
 All branch deploys share the same event key and signing key. Set these once for every preview deployment, then set the environment from the branch:
 
@@ -58,6 +58,10 @@ inngest_client = inngest.Inngest(
     app_id="flask_example",
     env=os.getenv("BRANCH"),
 )
+```
+
+```go {{ title: "Go" }}
+!snippet:path=snippets/go/docs/platform/environments_and_branch_deploys/branch_env.go
 ```
 </CodeGroup>
 

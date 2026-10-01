@@ -2,7 +2,10 @@ module github.com/inngest/website/snippets/go/docs
 
 go 1.26.4
 
-require github.com/inngest/inngestgo v0.15.3
+require (
+	github.com/inngest/inngestgo v0.16.1
+	github.com/sashabaranov/go-openai v1.35.6
+)
 
 require (
 	github.com/coder/websocket v1.8.15 // indirect

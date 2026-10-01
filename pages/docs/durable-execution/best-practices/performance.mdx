@@ -1,3 +1,5 @@
+import { CodeGroup, SdkUnsupported } from "shared/Docs/mdx";
+
 export const metaTitle = "Improve Inngest Performance | Reduce Latency";
 export const description = "Reduce Inngest function latency and increase throughput. Find whether delays come from run start, the queue, your code, or step handoffs, then fix it.";
 
@@ -34,14 +36,15 @@ Use [events](/docs/durable-execution/guides-and-advanced/events-and-triggers) fo
 
 ## Keep checkpointing on
 
-[Checkpointing](/docs/durable-execution/guides-and-advanced/checkpointing) runs consecutive steps back to back without a round trip to Inngest after each one. It's on by default in the TypeScript v4 SDK.
+[Checkpointing](/docs/durable-execution/guides-and-advanced/checkpointing) runs consecutive steps back to back without a round trip to Inngest after each one. It's on by default in the TypeScript v4 SDK. In Go, enable it by setting `Checkpoint` on the client or function.
 
 - **Always-on servers:** Keep the defaults.
 - **Serverless hosts:** Set `checkpointing.maxRuntime` slightly below your host's request limit, so the SDK returns before the host stops the request.
 - **Buffering:** Keep `bufferedSteps: 1` unless measurements show you need fewer checkpoint requests. A higher value can lose completed steps if the server terminates, and those steps run again. Make their side effects idempotent first.
 - **Parallel steps** switch to standard orchestration while they run, so measure the whole run.
 
-```ts
+<CodeGroup>
+```ts {{ title: "TypeScript" }}
 export const inngest = new Inngest({
   id: "my-app",
   checkpointing: {
@@ -49,6 +52,13 @@ export const inngest = new Inngest({
   },
 });
 ```
+
+<SdkUnsupported title="Python" feature="Checkpointing">The Python SDK doesn't support checkpointing yet, so each step uses standard orchestration.</SdkUnsupported>
+
+```go {{ title: "Go" }}
+!snippet:path=snippets/go/docs/durable/performance/checkpointing.go
+```
+</CodeGroup>
 
 ## Use Connect for always-on workers
 

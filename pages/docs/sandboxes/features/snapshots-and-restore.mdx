@@ -1,3 +1,4 @@
+import { CodeGroup, SdkUnsupported } from "shared/Docs/mdx";
 export const metaTitle = "Snapshots and restore | Sandboxes";
 export const description = "Snapshot and restore Inngest Sandboxes: save a prepared environment, then clone new Sandboxes from that snapshot to skip repeated setup.";
 
@@ -19,7 +20,8 @@ The snapshot is a point-in-time, crash-consistent capture. Flush databases and o
 
 The direct client works in a server-side API route, worker, or script. This example assumes `sandbox` is a running sandbox:
 
-```typescript
+<CodeGroup>
+```typescript {{ title: "TypeScript" }}
 await sandbox.commands.run(
   "mkdir -p /work && printf 'prepared\\n' > /work/config.txt"
 );
@@ -43,6 +45,10 @@ try {
 }
 ```
 
+<SdkUnsupported title="Python" feature="Sandboxes" />
+<SdkUnsupported title="Go" feature="Sandboxes" />
+</CodeGroup>
+
 `sandbox.snapshot()` returns when the snapshot reaches `READY`. The REST API initially returns `202 CREATING` while it uploads the artifact. The SDK waits up to five minutes by default and at most five minutes. If the wait times out, snapshot creation continues. List or get the snapshot before you create another one.
 
 `snapshot.clone()` creates a new sandbox. It inherits the captured image, resources, environment, memory, and disk. The clone has a new UUID. It may start immediately or enter `STARTING`; the SDK waits for `RUNNING` by default. `runningTimeout` changes that wait. A timeout does not destroy the new sandbox.
@@ -53,7 +59,8 @@ Keep the snapshot while you need to make more clones. Delete it when finished, a
 
 Use `step.sandbox` when snapshot operations belong to a durable function. Give each operation a stable step ID. This example assumes `sandbox` is a running durable sandbox and `event.data.jobId` is stable:
 
-```typescript
+<CodeGroup>
+```typescript {{ title: "TypeScript" }}
 const snapshot = await sandbox.snapshot(
   "snapshot-prepared-sandbox",
   {},
@@ -75,6 +82,10 @@ await snapshot.delete("delete-snapshot");
 
 return result.stdout;
 ```
+
+<SdkUnsupported title="Python" feature="Sandboxes" />
+<SdkUnsupported title="Go" feature="Sandboxes" />
+</CodeGroup>
 
 Snapshot Create and its readiness wait are separate memoized steps. Let unexpected errors escape so Inngest can apply the operation's retry policy. If a function can fail permanently before cleanup, use an `onFailure` handler or another cleanup function that knows the sandbox ID. A JavaScript `finally` block around durable steps does not guarantee cleanup after permanent failure or cancellation.
 

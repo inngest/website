@@ -1,4 +1,4 @@
-import { CodeGroup, Row, Col, LanguageSelector, LanguageSection, Callout, VersionBadge } from "src/shared/Docs/mdx";
+import { CodeGroup, Row, Col, Callout, VersionBadge } from "src/shared/Docs/mdx";
 
 export const metaTitle = "Cancel Functions on Timeout";
 export const description = "Cancel Inngest function runs on timeout: limit how long a run can wait to start or keep executing, so runaway jobs don't consume resources indefinitely.";
@@ -7,7 +7,8 @@ export const description = "Cancel Inngest function runs on timeout: limit how l
 
 > Cancel runs that wait too long to start or take too long to finish.
 
-```javascript
+<CodeGroup>
+```ts {{ title: "TypeScript" }}
 import { inngest } from "./client";
 import { buildReport } from "./reports";
 
@@ -23,6 +24,15 @@ export const createReport = inngest.createFunction(
 );
 ```
 
+```python {{ title: "Python" }}
+!snippet:path=snippets/py/latest/cancellation/timeouts/create_report.py
+```
+
+```go {{ title: "Go" }}
+!snippet:path=snippets/go/docs/cancellation/timeouts/create_report.go
+```
+</CodeGroup>
+
 It's possible to force runs to cancel if they take too long to start, or if the runs execute for too long.  The `timeouts` configuration property allows you to automatically cancel functions based off of two timeout properties:
 
 - `timeouts.start`, which controls how long a function can stay "queued" before they start
@@ -31,17 +41,14 @@ It's possible to force runs to cancel if they take too long to start, or if the 
 
 In the following examples, we'll explore how to configure the timeout property and how this works.
 
-<LanguageSelector>
-
-
 ## `timeouts.start` - Adding timeouts to queued runs (before start)
 
 Runs may stay in the queue waiting to start due to concurrency backlogs, throttling configurations, or other delays. You can automatically cancel these runs if they are queued for too long prior to starting.
 
 The `timeouts.start` configuration property controls this timeout. This example forces runs to cancel if it takes over 10 seconds to successfully start the first step of a run:
 
-<LanguageSection show="typescript">
-```ts {{ title: "inngest/function.ts" }}
+<CodeGroup>
+```ts {{ title: "TypeScript", filename: "inngest/function.ts" }}
 const scheduleReminder = inngest.createFunction(
   {
     id: "schedule-reminder",
@@ -59,13 +66,15 @@ const scheduleReminder = inngest.createFunction(
   // ...
 );
 ```
-</LanguageSection>
 
-<LanguageSection show="go">
-```go {{ title: "inngest/function.go" }}
-!snippet:path=snippets/go/docs/functions/function_with_timeout_start.go
+```python {{ title: "Python", filename: "inngest/function.py" }}
+!snippet:path=snippets/py/latest/cancellation/timeouts/start_timeout.py
 ```
-</LanguageSection>
+
+```go {{ title: "Go", filename: "inngest/function.go" }}
+!snippet:path=snippets/go/docs/cancellation/timeouts/start_timeout.go
+```
+</CodeGroup>
 
 ## `timeouts.finish` - Adding timeouts to executing runs
 
@@ -73,8 +82,8 @@ You may want to limit the overall duration of a run after the run starts executi
 
 The `timeouts.finish` configuration property controls this timeout. This example forces runs to cancel if it takes over 30 seconds to finish, once started:
 
-<LanguageSection show="typescript">
-```ts {{ title: "inngest/function.ts" }}
+<CodeGroup>
+```ts {{ title: "TypeScript", filename: "inngest/function.ts" }}
 const scheduleReminder = inngest.createFunction(
   {
     id: "schedule-reminder",
@@ -94,15 +103,15 @@ const scheduleReminder = inngest.createFunction(
   // ...
 );
 ```
-</LanguageSection>
 
-<LanguageSection show="go">
-```go {{ title: "inngest/function.go" }}
-!snippet:path=snippets/go/docs/functions/function_with_timeout_start_finish.go
+```python {{ title: "Python", filename: "inngest/function.py" }}
+!snippet:path=snippets/py/latest/cancellation/timeouts/start_finish_timeout.py
 ```
-</LanguageSection>
 
-</LanguageSelector>
+```go {{ title: "Go", filename: "inngest/function.go" }}
+!snippet:path=snippets/go/docs/cancellation/timeouts/start_finish_timeout.go
+```
+</CodeGroup>
 
 ## Tips
 

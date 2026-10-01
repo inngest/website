@@ -1,5 +1,5 @@
 import { Mermaid } from "src/shared/Docs/Mermaid";
-import { Steps, Step } from "shared/Docs/mdx";
+import { CodeGroup, SdkUnsupported, Steps, Step } from "shared/Docs/mdx";
 import { PlatformGrid, StartBuilding } from "src/shared/Docs/DocsHome";
 
 export const metaTitle = "What is Inngest?";
@@ -35,9 +35,15 @@ A support agent answers a customer ticket. The same pattern works for background
 
 Here's that function in TypeScript. Each `step.run()` is saved, so a failed reply retries without reloading context or redrafting the answer. `group.experiment()` picks the answer strategy, `step.realtime.publish()` updates the customer, and `step.sandbox` runs diagnostics in an isolated VM. When the customer rates the answer days later, a [deferred scorer](/docs/agent-evals/deferred-scoring) credits that rating to the chosen variant.
 
-```ts
+<CodeGroup>
+```ts {{ title: "TypeScript" }}
 !snippet:path=snippets/ts/v4/platform-overview/support-agent.ts
 ```
+
+<SdkUnsupported title="Python" feature="Sandboxes">This example uses [Sandboxes](/docs/sandboxes), which the Python SDK doesn't support yet.</SdkUnsupported>
+
+<SdkUnsupported title="Go" feature="Sandboxes">This example uses [Sandboxes](/docs/sandboxes) and `group.experiment()`, which the Go SDK doesn't support yet.</SdkUnsupported>
+</CodeGroup>
 
 ## How Inngest works
 

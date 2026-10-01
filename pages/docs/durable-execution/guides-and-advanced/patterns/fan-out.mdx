@@ -1,3 +1,4 @@
+import { CodeGroup } from "shared/Docs/mdx";
 export const metaTitle = "Fan-Out Pattern | One Event, Many Functions";
 export const description = "Fan-out pattern in Inngest: trigger multiple independent functions from one event, so one failure doesn't stop the rest and producers stay decoupled.";
 
@@ -9,16 +10,30 @@ Send one signup event to start a welcome email and trial setup in separate runs.
 For example, a signup event can start a welcome email and a trial setup at the same time.
 ## Send one event
 Send the event after your app creates the user:
-```typescript
+
+<CodeGroup>
+```typescript {{ title: "TypeScript" }}
 await inngest.send({
   name: "app/user.signed_up",
   data: { userId: user.id, email: user.email },
 });
 ```
+
+```python {{ title: "Python" }}
+!snippet:path=snippets/py/latest/patterns/fan_out/send_event.py
+```
+
+```go {{ title: "Go" }}
+!snippet:path=snippets/go/docs/patterns/fan_out/send_event.go
+```
+</CodeGroup>
+
 The event starts every registered function whose trigger matches `app/user.signed_up`.
 ## Create independent functions
 This TypeScript v4 example uses the same typed event for both functions. Assume `inngest`, `sendWelcomeEmail`, and `createTrial` are defined by your app.
-```typescript
+
+<CodeGroup>
+```typescript {{ title: "TypeScript" }}
 import { eventType, staticSchema } from "inngest";
 
 const userSignedUp = eventType("app/user.signed_up", {
@@ -43,6 +58,16 @@ export const trialSetup = inngest.createFunction(
   }
 );
 ```
+
+```python {{ title: "Python" }}
+!snippet:path=snippets/py/latest/patterns/fan_out/functions.py
+```
+
+```go {{ title: "Go" }}
+!snippet:path=snippets/go/docs/patterns/fan_out/functions.go
+```
+</CodeGroup>
+
 Register both functions in your app. Inngest starts a separate run for each matching function. A failure in trial setup does not stop the welcome email. You can inspect and recover the failed run without rerunning the other function.
 ## Choose the right shape
 - **One event, several functions:** Use this pattern when the work has separate owners, retry needs, or destinations. Functions can live in different apps and use different language SDKs.

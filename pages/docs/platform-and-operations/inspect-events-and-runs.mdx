@@ -1,4 +1,4 @@
-import { Tip } from "src/shared/Docs/mdx";
+import { Tip, CodeGroup, SdkUnsupported } from "src/shared/Docs/mdx";
 
 export const metaTitle = "Inspect Events & Function Runs | Debugging";
 export const description = "Inspect events and function runs in the Inngest dashboard: trace a failure from its trigger event to the failed step, and view payloads and step output.";
@@ -52,11 +52,19 @@ Combine queries with `&&` or `||`. A new line works the same as `&&`.
 
 ### Search for errors
 
-A failed run stores its error as JSON on `output`. When the SDK supports it, the error has structured fields. For example, this TypeScript error:
+A failed run stores its error as JSON on `output`. When the SDK supports it, the error has structured fields. For example, this error:
 
-```typescript
+<CodeGroup>
+```typescript {{ title: "TypeScript" }}
 throw new NonRetriableError("Failed to import data");
 ```
+
+```python {{ title: "Python" }}
+!snippet:path=snippets/py/latest/platform/inspect_events_and_runs/non_retriable_error.py
+```
+
+<SdkUnsupported title="Go" feature="Structured error names">Go errors don't carry a type name such as `NonRetriableError` into the run output. Search on the error message instead.</SdkUnsupported>
+</CodeGroup>
 
 is stored as:
 
@@ -76,7 +84,8 @@ output.name == "NonRetriableError" && output.message == "Failed to import data"
 
 Custom error classes make failures easier to find by type:
 
-```typescript
+<CodeGroup>
+```typescript {{ title: "TypeScript" }}
 import { NonRetriableError } from "inngest";
 
 class UserNotFoundError extends NonRetriableError {
@@ -98,6 +107,13 @@ inngest.createFunction(
   }
 );
 ```
+
+```python {{ title: "Python" }}
+!snippet:path=snippets/py/latest/platform/inspect_events_and_runs/custom_error_class.py
+```
+
+<SdkUnsupported title="Go" feature="Structured error names">Go errors don't carry a type name into the run output. Include an identifying value in the error message and search on that instead.</SdkUnsupported>
+</CodeGroup>
 
 ```
 event.data.userId == "12345" && output.name == "UserNotFoundError"

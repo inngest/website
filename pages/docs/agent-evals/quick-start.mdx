@@ -1,3 +1,4 @@
+import { CodeGroup, SdkUnsupported } from "shared/Docs/mdx";
 export const metaTitle = "Quick start | Agent Evals";
 export const description = "Agent Evals quick start: build an online eval that scores AI responses with immediate checks and later user feedback, linked to the variant that served them.";
 
@@ -18,7 +19,8 @@ This example uses fixed responses so you can run it without an AI provider. Repl
 
 Save this as `index.ts`:
 
-```typescript
+<CodeGroup>
+```typescript {{ title: "TypeScript" }}
 import express from "express";
 import { randomUUID } from "node:crypto";
 import { Inngest, experiment } from "inngest";
@@ -116,6 +118,13 @@ app.post("/feedback", async (req, res) => {
 
 app.listen(3000);
 ```
+
+```python {{ title: "Python", filename: "main.py" }}
+!snippet:path=snippets/py/latest/evals/quick_start/main.py
+```
+
+<SdkUnsupported title="Go" feature="Agent Evals" />
+</CodeGroup>
 
 The session ID links events and runs for one ticket. The `under-120-characters` score records a check known during the run. The scorer waits separately for the user’s answer, so the support function can finish. The `experimentRef` credits that later feedback to the selected response variant.
 

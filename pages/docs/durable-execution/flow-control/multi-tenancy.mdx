@@ -1,4 +1,4 @@
-import { Compatibility } from "shared/Docs/mdx";
+import { CodeGroup, Compatibility } from "shared/Docs/mdx";
 import { FlowControlMarbles } from "src/shared/Docs/FlowControlMarbles";
 export const metaTitle = "Multi-tenant Flow Control with Keys";
 export const description = "Multi-tenant flow control in Inngest: apply concurrency and throttling limits per tenant with keys, so one customer's workload can't starve the others.";
@@ -17,7 +17,8 @@ Give each tenant its own concurrency and throttle limits so one busy tenant does
 
 This TypeScript v4 function uses the same stable tenant ID for concurrency and throttling:
 
-```typescript
+<CodeGroup>
+```typescript {{ title: "TypeScript" }}
 import { Inngest } from "inngest";
 
 const inngest = new Inngest({ id: "tenant-sync" });
@@ -43,6 +44,16 @@ export const syncTenant = inngest.createFunction(
   }
 );
 ```
+
+```python {{ title: "Python" }}
+!snippet:path=snippets/py/latest/flow_control/multi_tenancy/sync_tenant.py
+```
+
+```go {{ title: "Go" }}
+!snippet:path=snippets/go/docs/flow_control/multi_tenancy/sync_tenant.go
+```
+</CodeGroup>
+
 Replace the step body with your application work. For this function, each `tenant_id` has its own limit of five **executing steps** and its own throttle of 100 **run starts per minute**. A backlog for tenant A does not consume tenant B's per-key limit. Concurrency does not limit the number of function runs that are sleeping or waiting between steps.
 
 <FlowControlMarbles scenario="multi-tenancy" />

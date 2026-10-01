@@ -1,3 +1,4 @@
+import { CodeGroup } from "shared/Docs/mdx";
 export const metaTitle = "Logging Inside Inngest Functions";
 export const description = "Add structured logging to Inngest functions with the built-in logger, and find the log lines for one run in the dashboard, even after the function resumes.";
 
@@ -9,7 +10,9 @@ Find the log lines for one order or run without losing them when a function resu
 ## Log within the work you want to inspect
 The function handler can execute again as a run resumes. A plain log outside a step can therefore appear more than once. Put a log for a specific side effect inside the step that performs that work. In serverless environments, process shutdown can also prevent an ordinary logger from flushing.
 In TypeScript v4, use the function context's `logger`. It has `info`, `warn`, `error`, and `debug` methods. The default logger uses the console. Configure a structured logger on the Inngest client for production.
-```typescript
+
+<CodeGroup>
+```typescript {{ title: "TypeScript" }}
 const processOrder = inngest.createFunction(
   { id: "process-order", triggers: { event: "order/created" } },
   async ({ event, step, logger }) => {
@@ -20,6 +23,16 @@ const processOrder = inngest.createFunction(
   }
 );
 ```
+
+```python {{ title: "Python" }}
+!snippet:path=snippets/py/latest/advanced/logging/process_order.py
+```
+
+```go {{ title: "Go" }}
+!snippet:path=snippets/go/docs/advanced/logging/process_order.go
+```
+</CodeGroup>
+
 ## Keep useful context
 Include an order, customer, or request ID in structured fields. Use the run ID and trace to follow the execution path. Do not log secrets or full sensitive payloads. A logger that supports child loggers can add function, event, and run metadata automatically.
 ## Configure the logger

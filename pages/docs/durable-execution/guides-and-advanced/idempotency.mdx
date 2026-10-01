@@ -24,13 +24,23 @@ Start with the operation whose effect must occur once. Use a checkout ID for a p
 
 For example, send the same `id` when retrying delivery of a checkout event:
 
-```typescript
+<CodeGroup>
+```typescript {{ title: "TypeScript" }}
 await inngest.send({
   id: `checkout-completed-${checkoutId}`,
   name: "cart/checkout.completed",
   data: { checkoutId },
 });
 ```
+
+```python {{ title: "Python" }}
+!snippet:path=snippets/py/latest/advanced/idempotency/send_event_level.py
+```
+
+```go {{ title: "Go" }}
+!snippet:path=snippets/go/docs/advanced/idempotency/send_event_level.go
+```
+</CodeGroup>
 
 If several functions receive that event but only the payment function needs deduplication, set that function's `idempotency` expression from `event.data.checkoutId` instead of deduplicating the whole event. For the exact TypeScript, Go, or Python configuration, use the platform and language reference tab.
 
@@ -48,8 +58,7 @@ To prevent an event from being handled twice, you can set a unique event `id` wh
 
 
 <CodeGroup>
-
-```ts
+```ts {{ title: "TypeScript" }}
 const cartId = 'CGo5Q5ekAxilN92d27asEoDO';
 await inngest.send({
   id: `checkout-completed-${cartId}`, // <-- This is the idempotency key
@@ -61,29 +70,13 @@ await inngest.send({
 })
 ```
 
+```python {{ title: "Python" }}
+!snippet:path=snippets/py/latest/advanced/idempotency/send_cart_event.py
+```
 
 ```go {{ title: "Go" }}
-cart_id := "CGo5Q5ekAxilN92d27asEoDO"
-inngest.Send(context.Background(), inngestgo.Event{
-  ID: fmt.Sprintf("checkout-completed-%s", cart_id), // <-- This is the idempotency key
-  Name: "cart/checkout.completed",
-  Data: map[string]any{"email": "taylor@example.com", "cart_id": cart_id},
-})
+!snippet:path=snippets/go/docs/advanced/idempotency/send_cart_event.go
 ```
-
-
-```python {{ title: "Python" }}
-cart_id = 'CGo5Q5ekAxilN92d27asEoDO'
-await inngest.send({
-  id: f'checkout-completed-{cart_id}', // <-- This is the idempotency key
-  name: 'cart/checkout.completed',
-  data: {
-    email: 'taylor@example.com',
-    cart_id: cart_id
-  }
-})
-```
-
 </CodeGroup>
 
 | Event ID | Timestamp | Function |
@@ -143,7 +136,8 @@ We'll use the same example of an e-commerce store to demonstrate how this works.
   </Col>
   <Col>
 
-```ts {{ title: "Function definition with idempotency key"}}
+<CodeGroup>
+```ts {{ title: "TypeScript", filename: "Function definition with idempotency key" }}
 export const sendEmail = inngest.createFunction(
   {
     id: 'send-checkout-email',
@@ -156,6 +150,15 @@ export const sendEmail = inngest.createFunction(
   async  ({ event, step }) => { /* ... */ }
 })
 ```
+
+```python {{ title: "Python" }}
+!snippet:path=snippets/py/latest/advanced/idempotency/send_checkout_email.py
+```
+
+```go {{ title: "Go" }}
+!snippet:path=snippets/go/docs/advanced/idempotency/send_checkout_email.go
+```
+</CodeGroup>
 
   </Col>
 </Row>
@@ -198,7 +201,8 @@ In this case, you would want to set `idempotency` on the "Run generation" functi
 
   Both functions use the same event trigger, `ai/generation.requested` which contains a `promptHash` and a `userId` in the event payload.
 
-```ts {{ title: "Track requests function" }}
+<CodeGroup>
+```ts {{ title: "TypeScript", filename: "Track requests function" }}
 const trackRequests = inngest.createFunction(
   { id: 'track-requests', triggers: { event: 'ai/generation.requested' } },
   async ({ event, step }) => {
@@ -207,7 +211,17 @@ const trackRequests = inngest.createFunction(
 )
 ```
 
-```ts {{ title: "Run generation function" }}
+```python {{ title: "Python" }}
+!snippet:path=snippets/py/latest/advanced/idempotency/track_requests.py
+```
+
+```go {{ title: "Go" }}
+!snippet:path=snippets/go/docs/advanced/idempotency/track_requests.go
+```
+</CodeGroup>
+
+<CodeGroup>
+```ts {{ title: "TypeScript", filename: "Run generation function" }}
 const runGeneration = inngest.createFunction(
   {
     id: 'run-generation',
@@ -222,6 +236,15 @@ const runGeneration = inngest.createFunction(
   }
 )
 ```
+
+```python {{ title: "Python" }}
+!snippet:path=snippets/py/latest/advanced/idempotency/run_generation.py
+```
+
+```go {{ title: "Go" }}
+!snippet:path=snippets/go/docs/advanced/idempotency/run_generation.go
+```
+</CodeGroup>
 
 </details>
 

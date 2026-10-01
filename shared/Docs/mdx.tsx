@@ -49,6 +49,7 @@ export {
   LanguageSelector,
   LanguageSection,
   LanguageTitle,
+  SdkUnsupported,
 } from "./Code";
 export { DownloadLink } from "./DownloadLink";
 export { Unreleased } from "./Unreleased";

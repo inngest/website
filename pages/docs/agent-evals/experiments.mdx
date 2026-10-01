@@ -1,3 +1,4 @@
+import { CodeGroup, SdkUnsupported } from "shared/Docs/mdx";
 export const metaTitle = "Experiments | A/B Test AI Workflows";
 export const description = "A/B test prompts, models, and workflow variants on production traffic with group.experiment(), then credit each outcome to the variant that served it.";
 
@@ -13,7 +14,8 @@ Experiments require TypeScript SDK v4.8.0 or later. Scoring is a beta API. For t
 
 Put each version of the work in a variant callback and choose how to assign variants:
 
-```typescript
+<CodeGroup>
+```typescript {{ title: "TypeScript" }}
 import { experiment } from "inngest";
 
 export default inngest.createFunction(
@@ -47,6 +49,13 @@ export default inngest.createFunction(
 );
 ```
 
+```python {{ title: "Python" }}
+!snippet:path=snippets/py/latest/evals/experiments/run_experiment.py
+```
+
+<SdkUnsupported title="Go" feature="Experiments" />
+</CodeGroup>
+
 Only the selected callback runs. `group.experiment()` returns:
 
 - **`result`**: the selected callback's return value.
@@ -66,32 +75,60 @@ A callback can hold one step or several `step.*` calls that form a workflow path
 
 **Weighted** assigns each new run independently by relative weights. `{ current: 9, candidate: 1 }` and `{ current: 90, candidate: 10 }` give the same split. Selection is seeded by the run, so a run keeps its variant on retries, and new weights in a later deploy only affect new runs.
 
-```typescript
+<CodeGroup>
+```typescript {{ title: "TypeScript" }}
 select: experiment.weighted({ current: 90, candidate: 10 })
 ```
 
+<SdkUnsupported title="Python" feature="Weighted selection">Bucket on the run ID instead. Passing `ctx.run_id` and your weights to `experiment.bucket()` splits new runs by weight and keeps each run's variant on retries.</SdkUnsupported>
+
+<SdkUnsupported title="Go" feature="Experiments" />
+</CodeGroup>
+
 **Bucket** hashes a stable key, such as a user or account ID, so that key usually gets the same variant across runs. Pass a key that's always present: a `null` or `undefined` key hashes as an empty string, so all of those runs land in one bucket and the trace shows a warning. Changing bucket weights can move a key to a different variant.
 
-```typescript
+<CodeGroup>
+```typescript {{ title: "TypeScript" }}
 select: experiment.bucket(event.data.accountId, {
   weights: { current: 80, candidate: 20 },
 })
 ```
 
+```python {{ title: "Python" }}
+!snippet:path=snippets/py/latest/evals/experiments/selectors.py
+```
+
+<SdkUnsupported title="Go" feature="Experiments" />
+</CodeGroup>
+
 **Custom** reads the assignment from your own system. Use it to change routing without a deploy, as a kill switch, or when an account must never move back once assigned. The selector must return a declared variant name, or the run fails. Its result is memoized for the run.
 
-```typescript
+<CodeGroup>
+```typescript {{ title: "TypeScript" }}
 select: experiment.custom(async () => {
   const assignment = await rolloutTable.get(event.data.accountId);
   return assignment ?? "current";
 })
 ```
 
+<SdkUnsupported title="Python" feature="Custom selection">Load the assignment in a `ctx.step.run()` and pass the result to `experiment.fixed()`.</SdkUnsupported>
+
+<SdkUnsupported title="Go" feature="Experiments" />
+</CodeGroup>
+
 **Fixed** always selects one variant. Use it to pin a winner while you decide whether to remove the experiment.
 
-```typescript
+<CodeGroup>
+```typescript {{ title: "TypeScript" }}
 select: experiment.fixed("candidate")
 ```
+
+```python {{ title: "Python" }}
+!snippet:path=snippets/py/latest/evals/experiments/selectors_fixed.py
+```
+
+<SdkUnsupported title="Go" feature="Experiments" />
+</CodeGroup>
 
 ## Score a variant
 
@@ -103,7 +140,8 @@ Use the same score name and definition for every variant, so you compare the sam
 
 **From a later run or another service.** Store `experimentRef` and the original run ID with your application record. When the outcome arrives, pass both:
 
-```typescript
+<CodeGroup>
+```typescript {{ title: "TypeScript" }}
 await inngest.score.experiment({
   name: "invoice-paid",
   value: true,
@@ -111,6 +149,13 @@ await inngest.score.experiment({
   runId: saved.runId,
 });
 ```
+
+```python {{ title: "Python" }}
+!snippet:path=snippets/py/latest/evals/experiments/score_later.py
+```
+
+<SdkUnsupported title="Go" feature="Experiments" />
+</CodeGroup>
 
 Without the original `runId`, the score attaches to the later run and doesn't appear under the experiment.
 

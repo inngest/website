@@ -321,6 +321,17 @@ export const FEATURES: Feature[] = [
     },
   },
   {
+    name: "Maximum run length",
+    description: "Total lifetime of a function run, including sleeps and waits",
+    section: "comparison",
+    plans: {
+      [PLAN_NAMES.hobby]: "30 days",
+      [PLAN_NAMES.pro]: "90 days",
+      [PLAN_NAMES.business]: "366 days",
+      [PLAN_NAMES.enterprise]: "Custom",
+    },
+  },
+  {
     name: "Seats",
     description: "Develop with your entire team",
     section: "comparison",

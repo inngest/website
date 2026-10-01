@@ -1,3 +1,4 @@
+import { CodeGroup, SdkUnsupported } from "shared/Docs/mdx";
 export const metaTitle = "Traces | Sandboxes";
 export const description = "Sandbox traces show each command and operation in the same Inngest run trace as your function steps, so you can find failed or slow Sandbox work.";
 
@@ -19,7 +20,8 @@ A trace records the durable API operations. It does not make the Sandbox guest p
 
 The example uses the TypeScript v4 beta API. Configure `sandboxMiddleware()`, enable Sandbox beta access, and set `INNGEST_SIGNING_KEY` before running the example.
 
-```typescript
+<CodeGroup>
+```typescript {{ title: "TypeScript" }}
 const sandbox = await step.sandbox.create("create-sandbox", {
   name: `trace-${event.data.jobId}`,
   vcpu: 1,
@@ -40,6 +42,10 @@ return {
   stdout: result.stdout,
 };
 ```
+
+<SdkUnsupported title="Python" feature="Sandboxes" />
+<SdkUnsupported title="Go" feature="Sandboxes" />
+</CodeGroup>
 
 After the run, open its trace and follow the three step IDs. Select `run-command` to inspect the step result or an error. Select the run to inspect the function's returned Sandbox ID and command result. A command that exits with a nonzero code still returns a command result; it does not throw solely because of that exit code.
 

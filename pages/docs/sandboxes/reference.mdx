@@ -1,3 +1,5 @@
+import { CodeGroup, SdkUnsupported } from "shared/Docs/mdx";
+
 export const metaTitle = "Reference | Sandboxes";
 export const description = "Inngest Sandboxes API reference: current beta calls and constraints for creating Sandboxes, running commands, and managing their lifecycle.";
 
@@ -22,7 +24,8 @@ export const description = "Inngest Sandboxes API reference: current beta calls 
 
 Configure the middleware to add `step.sandbox`:
 
-```typescript
+<CodeGroup>
+```typescript {{ title: "TypeScript" }}
 import { Inngest } from "inngest";
 import { sandboxMiddleware } from "inngest/experimental";
 
@@ -32,13 +35,18 @@ export const inngest = new Inngest({
 });
 ```
 
+<SdkUnsupported title="Python" feature="Sandboxes" />
+<SdkUnsupported title="Go" feature="Sandboxes" />
+</CodeGroup>
+
 The direct `inngest.sandboxes` client does not require middleware. Both surfaces use the client's environment and signing-key configuration.
 
 ### Durable call shape
 
 Every `step.sandbox` operation takes a stable step ID first. Keep IDs stable across replays and deployments.
 
-```typescript
+<CodeGroup>
+```typescript {{ title: "TypeScript" }}
 const sandbox = await step.sandbox.create("create-sandbox", {
   name: `job-${event.data.jobId}`,
   vcpu: 1,
@@ -53,6 +61,10 @@ const result = await sandbox.commands.run(
 
 await sandbox.destroy("destroy-sandbox");
 ```
+
+<SdkUnsupported title="Python" feature="Sandboxes" />
+<SdkUnsupported title="Go" feature="Sandboxes" />
+</CodeGroup>
 
 Use a stable job-derived name. A matching active name and configuration returns the existing Sandbox; a conflicting configuration returns `sandbox_name_taken`. Completed calls replay from memoized step results. Step memoization does not preserve guest processes or files after the Sandbox ends.
 

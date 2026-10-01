@@ -1,3 +1,5 @@
+import { CodeGroup } from "shared/Docs/mdx";
+
 export const metaTitle = "Creating Inngest Middleware";
 export const description = "Create custom Inngest middleware with lifecycle hooks for function runs and steps, to add logging, auth, data transformation, or shared dependencies.";
 
@@ -8,7 +10,8 @@ export const description = "Create custom Inngest middleware with lifecycle hook
 Measure each `step.run()` or `step.sendEvent()` handler attempt with one TypeScript v4 middleware class. Register it on the client to cover its functions, or on one function for a narrower scope, and implement only the hook you need.
 ## Create a v4 middleware
 This example records how long each `step.run()` or `step.sendEvent()` handler attempt takes.
-```typescript
+<CodeGroup>
+```typescript {{ title: "TypeScript" }}
 import { Inngest, Middleware } from "inngest";
 
 class StepTimingMiddleware extends Middleware.BaseMiddleware {
@@ -36,7 +39,16 @@ export const inngest = new Inngest({
   middleware: [StepTimingMiddleware],
 });
 ```
-Register on the client to use it for that app's functions. Put `middleware: [StepTimingMiddleware]` in a function's options when only that function needs it. The SDK creates a new middleware instance per request.
+
+```python {{ title: "Python" }}
+!snippet:path=snippets/py/latest/middleware/creating_middleware/step_timing.py
+```
+
+```go {{ title: "Go" }}
+!snippet:path=snippets/go/docs/middleware/creating_middleware/step_timing.go
+```
+</CodeGroup>
+Register on the client to use it for that app's functions. Put `middleware: [StepTimingMiddleware]` in a function's options when only that function needs it (Python: `create_function(middleware=[...])`; Go registers middleware on the client only). The SDK creates a new middleware instance per request.
 ## Choose the right hook
 - Use `onRunStart`, `onRunComplete`, or step observation hooks for logging or metrics that only need to observe. Observable hook errors are logged and do not fail the run.
 - Use `wrapStepHandler` around a `step.run()` or `step.sendEvent()` handler attempt. Call `next()` to execute the handler and return its result.

@@ -1,4 +1,4 @@
-import { Warning, LanguageSelector, LanguageSection } from "shared/Docs/mdx";
+import { CodeGroup, Warning, LanguageSelector, LanguageSection } from "shared/Docs/mdx";
 
 export const metaTitle = "Cron Jobs, Schedules & Delayed Functions";
 export const description = "Schedule Inngest functions with cron jobs and timezone-aware recurring schedules, or delay a start to a specific time with event timestamps or sleepUntil.";
@@ -13,7 +13,8 @@ Run a daily report or send a reminder at a chosen time without keeping an app ti
 
 Use a cron trigger for work such as a daily report.
 
-```typescript
+<CodeGroup>
+```typescript {{ title: "TypeScript" }}
 import { cron } from "inngest";
 // Assumes `inngest` is your client and `buildReport` is defined elsewhere.
 
@@ -27,6 +28,15 @@ export const dailyReport = inngest.createFunction(
   }
 );
 ```
+
+```python {{ title: "Python" }}
+!snippet:path=snippets/py/latest/events/schedules_and_delayed_starts/daily_report.py
+```
+
+```go {{ title: "Go" }}
+!snippet:path=snippets/go/docs/events/schedules_and_delayed_starts/daily_report.go
+```
+</CodeGroup>
 
 The basic cron expression runs at 09:00 UTC. A cron expression has five fields: minute, hour, day of month, month, and day of week. For example, `0 9 * * *` runs at 09:00 every day, `0 * * * *` runs at the start of every hour, and `0 12 * * 5` runs at 12:00 every Friday.
 
@@ -345,13 +355,23 @@ On the free plan, Inngest pauses a function automatically after it fails 20 time
 
 Set an event's `ts` to a future Unix millisecond timestamp when nothing must happen before the start time.
 
-```typescript
+<CodeGroup>
+```typescript {{ title: "TypeScript" }}
 await inngest.send({
   name: "notifications/reminder.due",
   data: { reminderId: "rem_123" },
   ts: Date.now() + 5 * 60 * 1000,
 });
 ```
+
+```python {{ title: "Python" }}
+!snippet:path=snippets/py/latest/events/schedules_and_delayed_starts/delayed_start.py
+```
+
+```go {{ title: "Go" }}
+!snippet:path=snippets/go/docs/events/schedules_and_delayed_starts/delayed_start.go
+```
+</CodeGroup>
 
 The event starts matching functions at that time. A future `ts` does not delay a waiting run that matches the event.
 
@@ -494,6 +514,15 @@ async def send_signup_email(ctx: inngest.Context):
         pass
 
     await ctx.step.run("do-some-work-in-the-future", future_work)
+```
+
+</LanguageSection>
+<LanguageSection show="go">
+
+Use [`step.SleepUntil()`](https://pkg.go.dev/github.com/inngest/inngestgo/step#SleepUntil):
+
+```go
+!snippet:path=snippets/go/docs/events/schedules_and_delayed_starts/sleep_until.go
 ```
 
 </LanguageSection>

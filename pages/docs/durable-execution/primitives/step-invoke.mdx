@@ -1,3 +1,4 @@
+import { CodeGroup } from "shared/Docs/mdx";
 import { Compatibility } from "shared/Docs/mdx";
 export const metaTitle = "step.invoke() | Invoke Functions Directly";
 export const description = "Call another Inngest function with step.invoke() and wait for its return value. Compose durable workflows across functions and reuse existing logic.";
@@ -19,7 +20,8 @@ They are useful when:
 
 This example defines both functions in one app. The `invoke()` trigger validates and types the child function's input. Expose both functions through your Inngest handler or Connect worker.
 
-```typescript
+<CodeGroup>
+```typescript {{ title: "TypeScript" }}
 import { Inngest, eventType, invoke } from "inngest";
 import { z } from "zod";
 
@@ -76,13 +78,34 @@ export const prepareCheckout = inngest.createFunction(
 
 export const functions = [calculateTotal, prepareCheckout];
 ```
+
+```python {{ title: "Python" }}
+!snippet:path=snippets/py/latest/primitives/step_invoke/checkout.py
+```
+
+```go {{ title: "Go" }}
+!snippet:path=snippets/go/docs/primitives/step_invoke/checkout.go
+```
+</CodeGroup>
+
 Send `checkout/requested` with `orderId`, `subtotalCents`, and `shippingCents`. The parent returns the child's calculated total. Register both functions in the endpoint or worker that serves `functions`.
 
 ## API
 
-```ts
+<CodeGroup>
+```ts {{ title: "TypeScript" }}
 const result = await step.invoke(id, { function, data, timeout });
 ```
+
+```python {{ title: "Python" }}
+!snippet:path=snippets/py/latest/primitives/step_invoke/api.py
+```
+
+```go {{ title: "Go" }}
+!snippet:path=snippets/go/docs/primitives/step_invoke/api.go
+```
+</CodeGroup>
+
 
 - **`id`**: a stable step ID, not the ID of the function you're calling.
 - **`function`**: the function to call. To call a function in another app, use `referenceFunction({ appId, functionId })`.

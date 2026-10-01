@@ -1,3 +1,4 @@
+import { CodeGroup, SdkUnsupported } from "shared/Docs/mdx";
 import { Mermaid } from "src/shared/Docs/Mermaid";
 
 export const metaTitle = "Durable Agents";
@@ -56,9 +57,10 @@ When a run resumes, Inngest re-enters your function and returns each completed s
 
 ## An example agent
 
-This TypeScript function runs a tool-using agent with the Anthropic SDK. `tools` and `executeTool()` stand in for your tool definitions and code; any model provider works the same way.
+This function runs a tool-using agent with the Anthropic SDK (the Go version uses the `go-openai` client). `tools` and `executeTool()` stand in for your tool definitions and code; any model provider works the same way.
 
-```typescript
+<CodeGroup>
+```typescript {{ title: "TypeScript" }}
 import Anthropic from "@anthropic-ai/sdk";
 import { inngest } from "./client";
 
@@ -112,6 +114,15 @@ export const supportAgent = inngest.createFunction(
 );
 ```
 
+```python {{ title: "Python" }}
+!snippet:path=snippets/py/latest/agents/durable_agents/support_agent.py
+```
+
+```go {{ title: "Go" }}
+!snippet:path=snippets/go/docs/agents/durable_agents/support_agent.go
+```
+</CodeGroup>
+
 If a tool call fails, Inngest retries only that tool's step. The model responses and earlier tool results stay saved, so a failure on the sixth call doesn't repeat the first five. Step IDs can repeat inside a loop; Inngest tracks each occurrence in order. The `for` loop caps iterations so a confused model can't run forever.
 
 [Agent tool loops](/docs/durable-execution/durable-agents/agent-tool-loops) covers parallel tools, token budgets, stuck-loop detection, and context pruning.
@@ -122,7 +133,8 @@ If a tool call fails, Inngest retries only that tool's step. The model responses
 
 Some actions need a person to approve them first. `step.waitForEvent()` pauses the agent until a matching event arrives or a timeout passes. The run is suspended while it waits, so it holds no worker and no connection.
 
-```typescript
+<CodeGroup>
+```typescript {{ title: "TypeScript" }}
 const approval = await step.waitForEvent("wait-for-approval", {
   event: "agent/approval.response",
   if: "async.data.approvalId == event.data.approvalId",
@@ -133,6 +145,15 @@ if (!approval?.data.approved) {
   return { status: approval ? "rejected" : "timed_out" };
 }
 ```
+
+```python {{ title: "Python" }}
+!snippet:path=snippets/py/latest/agents/durable_agents/wait_for_approval.py
+```
+
+```go {{ title: "Go" }}
+!snippet:path=snippets/go/docs/agents/durable_agents/wait_for_approval.go
+```
+</CodeGroup>
 
 Your app sends `agent/approval.response` when the reviewer clicks approve or reject, and the agent continues with their answer. Handle all three outcomes: approved, rejected, and no response. Use `step.sleep()` or `step.sleepUntil()` when the agent should pause for a set time instead.
 
@@ -153,7 +174,8 @@ Because each agent is its own run, a failed sub-agent doesn't lose the parent's 
 
 Coding and data agents often need to run code the model wrote. Run it in a [Sandbox](/docs/sandboxes), an isolated Linux VM, instead of on your own servers. Each Sandbox call is a durable step, so a retry reuses the Sandbox instead of creating another.
 
-```typescript
+<CodeGroup>
+```typescript {{ title: "TypeScript" }}
 const sandbox = await step.sandbox.create("create-sandbox", {
   name: `agent-${event.data.taskId}`,
   vcpu: 1,
@@ -174,6 +196,10 @@ results.push({
 // After the loop:
 await sandbox.destroy("destroy-sandbox");
 ```
+
+<SdkUnsupported title="Python" feature="Sandboxes" />
+<SdkUnsupported title="Go" feature="Sandboxes" />
+</CodeGroup>
 
 A nonzero exit code comes back as a result, not an exception, so the model sees the error and can fix its code. Files and processes persist between tool calls. When the agent waits for approval, [pause](/docs/sandboxes/features/pause-and-resume) the Sandbox; paused time doesn't count toward its runtime. Sandboxes are in beta and you own cleanup: destroy the Sandbox on success and in a [failure handler](/docs/durable-execution/guides-and-advanced/error-handling/failure-handlers). See the [Sandboxes quick start](/docs/sandboxes/quick-start) to enable `step.sandbox`.
 
@@ -214,7 +240,8 @@ Every step result counts toward the run's state, which is capped at 32 MiB, and 
 
 A run ends when the agent answers. For a chat, make each user message its own run, and keep memory in your own store, keyed by the conversation or user ID:
 
-```typescript
+<CodeGroup>
+```typescript {{ title: "TypeScript" }}
 const history = await step.run("load-memory", () =>
   memory.load(event.data.conversationId)
 );
@@ -225,6 +252,15 @@ await step.run("save-memory", () =>
   memory.save(event.data.conversationId, { answer, summary })
 );
 ```
+
+```python {{ title: "Python" }}
+!snippet:path=snippets/py/latest/agents/durable_agents/memory.py
+```
+
+```go {{ title: "Go" }}
+!snippet:path=snippets/go/docs/agents/durable_agents/memory.go
+```
+</CodeGroup>
 
 Loading in a step means a resumed run uses the same history it started with, even if the store changed since. Saving in a step means a resumed run doesn't save again; make the save an upsert in case the step itself retries. Store summaries or facts the agent should keep, not only raw transcripts, so later turns start with less context.
 
@@ -237,7 +273,8 @@ Durable runs record what the agent did. [Agent Evals](/docs/agent-evals) adds wh
 3. **Test a change on real traffic.** Put the current and candidate prompt, model, or tool set in [`group.experiment()`](/docs/agent-evals/experiments) variants and credit each score to the variant that served it.
 4. **Read the results and roll out.** Compare scores by variant, open the traces behind low scores, and ramp the winner. See [Read results and roll out](/docs/agent-evals/guides/interpreting-results).
 
-```typescript
+<CodeGroup>
+```typescript {{ title: "TypeScript" }}
 const { result: answer, experimentRef } = await group.experiment("system-prompt", {
   variants: {
     current: () => runAgentLoop(step, { system: CURRENT_PROMPT, message }),
@@ -254,6 +291,13 @@ defer("score-feedback", {
   experiment: experimentRef,
 });
 ```
+
+```python {{ title: "Python" }}
+!snippet:path=snippets/py/latest/agents/durable_agents/experiment.py
+```
+
+<SdkUnsupported title="Go" feature="Experiments and deferred functions" />
+</CodeGroup>
 
 Each variant runs a whole agent loop, so the experiment compares complete trajectories, not single calls. Low scores point you to the traces that explain them; those traces become your next prompt fix or test case. After you fix a bug, [replay](/docs/platform-and-operations/replay-runs-in-bulk) the failed runs with the new code.
 

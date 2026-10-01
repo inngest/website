@@ -1,3 +1,4 @@
+import { CodeGroup } from "shared/Docs/mdx";
 import { Compatibility } from "shared/Docs/mdx";
 export const metaTitle = "step.sleep() | Pause a Function";
 export const description = "Pause an Inngest function for a set duration with step.sleep(), without blocking a thread or consuming compute while your durable workflow waits.";
@@ -16,7 +17,8 @@ They are useful when:
 
 ## Use `step.sleep`
 
-```typescript
+<CodeGroup>
+```typescript {{ title: "TypeScript" }}
 import { Inngest } from "inngest";
 
 const inngest = new Inngest({ id: "my-app" });
@@ -32,13 +34,34 @@ export const sendFollowUp = inngest.createFunction(
   }
 );
 ```
+
+```python {{ title: "Python" }}
+!snippet:path=snippets/py/latest/primitives/step_sleep/send_follow_up.py
+```
+
+```go {{ title: "Go", filename: 'main.go' }}
+!snippet:path=snippets/go/docs/primitives/step_sleep/send_follow_up.go
+```
+</CodeGroup>
+
 Replace `sendFollowUpEmail` with your application’s email function. The sleep pauses this run for 30 minutes. The following `step.run` sends the email as a retriable step.
 
 ## API
 
-```ts
+<CodeGroup>
+```ts {{ title: "TypeScript" }}
 await step.sleep(id, duration);
 ```
+
+```python {{ title: "Python" }}
+!snippet:path=snippets/py/latest/primitives/step_sleep/api.py
+```
+
+```go {{ title: "Go" }}
+!snippet:path=snippets/go/docs/primitives/step_sleep/api.go
+```
+</CodeGroup>
+
 
 - **`id`**: a stable step ID, such as `"wait-30-minutes"`.
 - **`duration`**: how long to wait, such as `"30m"`, `"3h"`, or `"2d"`.
@@ -53,7 +76,7 @@ A manual rerun from the beginning creates a new run and executes the sleep again
 
 ## Limits and common mistakes
 
-- A sleep can last up to one year. The Free plan allows up to seven days. Check the plan’s maximum function run length too; it is a separate limit.
+- A sleep can last up to one year, but the whole run, including every sleep, must finish within your plan's [maximum function run length](/docs/durable-execution/limits#plan-based-limits): 30 days on Free, 90 days on Pro, 366 days on Business, and custom on Enterprise.
 - Sleeping runs do not count toward account or function concurrency limits.
 - A long sleeping run can disappear from the Function Runs list after its plan’s trace and log history window. It still resumes on schedule. Search for its run ID to inspect it.
 - Use [step.sleepUntil](/docs/durable-execution/primitives/step-sleepuntil) when you have a date and time. Use [step.waitForEvent](/docs/durable-execution/primitives/step-waitforevent) when an external event should resume the run.

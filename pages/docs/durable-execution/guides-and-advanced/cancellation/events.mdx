@@ -1,3 +1,4 @@
+import { CodeGroup } from "shared/Docs/mdx";
 export const metaTitle = "Cancel Functions on Events";
 export const description = "Cancel Inngest functions on events with cancelOn: stop a sleeping or waiting run automatically when a matching event makes its remaining work unnecessary.";
 
@@ -9,7 +10,9 @@ Stop a scheduled or sleeping run when a change makes its remaining work unnecess
 
 ## Cancel a reminder when it is deleted
 This reminder function sleeps until the requested time. A deletion event with the same `reminderId` cancels the run before it sends the reminder.
-```typescript
+
+<CodeGroup>
+```typescript {{ title: "TypeScript" }}
 import { inngest } from "./client";
 import { sendReminder } from "./notifications";
 
@@ -36,6 +39,16 @@ export const scheduleReminder = inngest.createFunction(
   }
 );
 ```
+
+```python {{ title: "Python" }}
+!snippet:path=snippets/py/latest/cancellation/events/schedule_reminder.py
+```
+
+```go {{ title: "Go" }}
+!snippet:path=snippets/go/docs/cancellation/events/schedule_reminder.go
+```
+</CodeGroup>
+
 Let's break down how this works:
 
 1. Whenever the function is triggered, a cancellation listener is created which waits for an "tasks/reminder.deleted" event to be received.

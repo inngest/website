@@ -36,7 +36,13 @@ const languageNames = {
   go: "Go",
 };
 
-function getPanelTitle({ title, language }) {
+function getPanelTitle({
+  title,
+  language,
+}: {
+  title?: string;
+  language?: string;
+}): string {
   return title ?? languageNames[language] ?? "Code";
 }
 
@@ -148,6 +154,10 @@ function CodePanel({ tag, label, code, children }: CodePanelProps) {
     (childArray.find((c) => typeof c === "object" && c !== null) as any) ?? {
       props: {},
     };
+
+  if (child.type === SdkUnsupported) {
+    return <div className="group bg-codeEditor">{child}</div>;
+  }
 
   return (
     <div className="group bg-codeEditor">
@@ -309,6 +319,82 @@ function useTabGroupProps(availableLanguages) {
   };
 }
 
+function useHasMounted() {
+  const [hasMounted, setHasMounted] = useState(false);
+  useEffect(() => {
+    setHasMounted(true);
+  }, []);
+  return hasMounted;
+}
+
+const SDK_UNSUPPORTED_LABELS: Record<SDKLanguage, string> = {
+  typescript: "TypeScript",
+  python: "Python",
+  go: "Go",
+};
+
+/**
+ * A code tab for an SDK that doesn't support the feature yet. Use inside a
+ * `<CodeGroup>` so readers who picked that SDK in the nav see an explicit
+ * note instead of silently falling back to another language:
+ *
+ *   <SdkUnsupported title="Go" feature="Deferred work" />
+ */
+export function SdkUnsupported({
+  title,
+  sdk,
+  feature,
+  children,
+}: {
+  /** Tab title. Must be the SDK name ("Go", "Python") so nav matching works. */
+  title: string;
+  sdk?: SDKLanguage;
+  /** Feature name, used in the default copy. */
+  feature?: string;
+  /** Optional replacement copy, e.g. a suggested workaround. */
+  children?: React.ReactNode;
+}) {
+  const sdkId: SDKLanguage =
+    sdk ?? GUIDE_KEY_TO_SDK[title?.toLowerCase()] ?? "typescript";
+  const label = SDK_UNSUPPORTED_LABELS[sdkId];
+  return (
+    <div className="px-6 py-5 text-sm leading-6 text-subtle">
+      <p className="m-0 font-medium text-basis">
+        {feature ? `${feature} isn't` : "This isn't"} available in the {label}{" "}
+        SDK yet.
+      </p>
+      {children ? (
+        <div className="mt-2 [&_a]:text-breeze-600 dark:[&_a]:text-breeze-300 [&_p]:m-0">
+          {children}
+        </div>
+      ) : (
+        <p className="m-0 mt-2">
+          Select another language to see the example, or{" "}
+          <a
+            className="text-breeze-600 hover:text-breeze-500 dark:text-breeze-300"
+            href={`https://github.com/inngest/${
+              sdkId === "go" ? "inngestgo" : sdkId === "python" ? "inngest-py" : "inngest-js"
+            }/issues`}
+            target="_blank"
+            rel="noreferrer"
+          >
+            tell us you need it
+          </a>
+          .
+        </p>
+      )}
+    </div>
+  );
+}
+
+function isUnsupportedChild(child: unknown): boolean {
+  return (
+    React.isValidElement(child) &&
+    (child.type === SdkUnsupported ||
+      (child.props as { mdxType?: string })?.mdxType === "SdkUnsupported")
+  );
+}
+
 const CodeGroupContext = createContext(false);
 
 type CodeGroupProps = {
@@ -329,7 +415,15 @@ export function CodeGroup({
     getPanelTitle(child.props)
   );
   const [currentLanguage] = useLocalStorage("currentLanguage", null);
-  const { language: globalLanguage, setLanguage } = useLanguageStore();
+  const { language: storeLanguage, setLanguage } = useLanguageStore();
+  // The language store is persisted in localStorage and rehydrates
+  // synchronously on the client, so the first client render can disagree with
+  // the server-rendered TypeScript tab. React doesn't patch attribute
+  // mismatches during hydration, which left the TypeScript tab selected on
+  // page load. Render the server default until mounted, then switch to the
+  // language chosen in the nav.
+  const hasMounted = useHasMounted();
+  const globalLanguage: SDKLanguage = hasMounted ? storeLanguage : "typescript";
   const { preferredLanguages, addPreferredLanguage } =
     usePreferredLanguageStore();
   const { positionRef, preventLayoutShift } = usePreventLayoutShift();
@@ -338,23 +432,48 @@ export function CodeGroup({
   const Container: typeof Tab["Group"] | "div" = hasTabs ? Tab.Group : "div";
 
   // Compute selected index based on global language first, then preferences
-  const selectedIndex = useMemo(() => {
-    const childrenList: React.ReactElement<{ title: string }>[] =
-      Children.toArray(children) as React.ReactElement<{ title: string }>[];
+  const computedIndex = useMemo(() => {
+    const childrenList = Children.toArray(children) as React.ReactElement<{
+      title?: string;
+      language?: string;
+    }>[];
+    // Match on the rendered tab title, which falls back to the code block's
+    // language (e.g. a ```go block without a title renders as "Go").
+    const panelTitles = childrenList.map((child) =>
+      String(getPanelTitle(child.props ?? {})).toLowerCase()
+    );
 
     // First priority: match global language
     const matchingKeys = SDK_TO_GUIDE_KEY[globalLanguage] || [];
-    const globalMatchIndex = childrenList.findIndex((child) =>
-      matchingKeys.some((key) => child.props?.title?.toLowerCase() === key)
+    const globalMatchIndex = panelTitles.findIndex((title) =>
+      matchingKeys.includes(title)
     );
     if (globalMatchIndex !== -1) {
+      // If the reader's language doesn't support this feature, show a working
+      // example instead: prefer TypeScript, then the first supported tab. The
+      // "not available" tab stays visible for readers who click it.
+      if (isUnsupportedChild(childrenList[globalMatchIndex])) {
+        const isSupported = (i: number) => !isUnsupportedChild(childrenList[i]);
+        const tsIndex = panelTitles.findIndex(
+          (title, i) =>
+            SDK_TO_GUIDE_KEY.typescript.includes(title) && isSupported(i)
+        );
+        if (tsIndex !== -1) return tsIndex;
+        const firstSupported = childrenList.findIndex((_, i) => isSupported(i));
+        return firstSupported !== -1 ? firstSupported : globalMatchIndex;
+      }
       return globalMatchIndex;
+    }
+
+    // Before mount, always render the first tab so SSR and hydration agree.
+    if (!hasMounted) {
+      return 0;
     }
 
     // Second priority: localStorage currentLanguage
     if (currentLanguage) {
-      const localStorageIndex = childrenList.findIndex(
-        (child) => child.props?.title?.toLowerCase() === currentLanguage
+      const localStorageIndex = panelTitles.findIndex(
+        (title) => title === currentLanguage
       );
       if (localStorageIndex !== -1) {
         return localStorageIndex;
@@ -369,13 +488,29 @@ export function CodeGroup({
     return preferredIndex !== -1 ? preferredIndex : 0;
   }, [
     globalLanguage,
+    hasMounted,
     currentLanguage,
     children,
     languages,
     preferredLanguages,
   ]);
 
+  // Clicking an unsupported tab shows its note locally without changing the
+  // reader's global language (which would bounce every code group back to
+  // TypeScript). Any later language change clears the override.
+  const [manualIndex, setManualIndex] = useState<number | null>(null);
+  useEffect(() => {
+    setManualIndex(null);
+  }, [globalLanguage]);
+  const selectedIndex = manualIndex ?? computedIndex;
+
   const handleChange = (newSelectedIndex: number) => {
+    const childrenList = Children.toArray(children);
+    if (isUnsupportedChild(childrenList[newSelectedIndex])) {
+      setManualIndex(newSelectedIndex);
+      return;
+    }
+    setManualIndex(null);
     const selectedTitle = languages[newSelectedIndex];
     // A tab's title (e.g. "Go", "Python") may map to a global SDK language.
     // When it does, update the global language store, which is the top-priority
@@ -467,6 +602,7 @@ const GuideSelectorContext = createContext<{
 // Map language keys to SDKLanguage
 const GUIDE_KEY_TO_SDK: Record<string, SDKLanguage> = {
   typescript: "typescript",
+  javascript: "typescript",
   "typescript-middleware": "typescript",
   ts: "typescript",
   python: "python",
@@ -475,7 +611,7 @@ const GUIDE_KEY_TO_SDK: Record<string, SDKLanguage> = {
 };
 
 const SDK_TO_GUIDE_KEY: Record<SDKLanguage, string[]> = {
-  typescript: ["typescript", "ts", "typescript-middleware"],
+  typescript: ["typescript", "ts", "typescript-middleware", "javascript"],
   python: ["python", "py"],
   go: ["go"],
 };
