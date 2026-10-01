@@ -1,13 +1,13 @@
 "use client";
 
 import type { SVGProps } from "react";
-import Link from "next/link";
 import { motion } from "motion/react";
-import GradientFrame from "@/components/v1/sections/shared/GradientFrame";
+import HoverCardShell from "@/components/v1/sections/shared/HoverCardShell";
 import Section from "@/components/v1/sections/shared/Section";
 import SectionHeader from "@/components/v1/sections/shared/SectionHeader";
 import { V1_HEADER_CONTENT_MT } from "@/components/v1/sections/shared/sectionShell";
 import { reveals } from "@/utils/v1/reveals";
+import { cn } from "@/utils/v1/cn";
 
 const REASONS: { id: string; title: string; body: string; href: string }[] = [
   {
@@ -49,8 +49,10 @@ const REASONS: { id: string; title: string; body: string; href: string }[] = [
 ];
 
 /**
- * Why Inngest sandboxes, against a standalone sandbox service.
- * Each card links to the docs section for that capability.
+ * Why Inngest sandboxes, against a standalone sandbox service. Six
+ * hover cards on the open grain (no outer frame), each the whole-card
+ * link to its docs section, with the site's "See docs →" text cue —
+ * the same card vocabulary as the homepage use-case band.
  */
 export default function WhyInngest() {
   return (
@@ -68,42 +70,46 @@ export default function WhyInngest() {
         bodyClassName="max-w-[640px]"
       />
 
-      <GradientFrame
-        variant="black"
-        className={`${V1_HEADER_CONTENT_MT} rounded-[8px]`}
-        innerClassName="flex flex-col px-6 py-10 sm:px-8 lg:py-16 lg:pl-10 lg:pr-4"
+      <ul
+        className={cn(
+          V1_HEADER_CONTENT_MT,
+          "grid list-none grid-cols-1 gap-x-6 gap-y-6 pl-0 sm:grid-cols-2 lg:grid-cols-3"
+        )}
       >
-        <ul className="grid list-none grid-cols-1 gap-x-4 gap-y-10 pl-0 sm:grid-cols-2 sm:gap-y-12 lg:grid-cols-3 lg:gap-y-16">
-          {REASONS.map((reason, i) => (
-            <motion.li
-              key={reason.id}
-              {...reveals.item(i)}
-              className="flex list-none sm:pr-8 lg:pr-16"
+        {REASONS.map((reason, i) => (
+          <motion.li key={reason.id} {...reveals.item(i)} className="list-none">
+            <HoverCardShell
+              href={reason.href}
+              className="-mx-4 gap-6 px-4 pb-6 pt-5 sm:mx-0 sm:p-5"
             >
-              <Link
-                href={reason.href}
-                prefetch={false}
-                className="group flex h-full flex-col gap-6"
-              >
-                <ReasonIcon id={reason.id} />
+              <div className="flex flex-col gap-4">
+                <span className="flex h-7 items-center text-v1-frost group-hover:text-v1-accent-salmon motion-safe:transition-colors motion-safe:duration-300">
+                  <ReasonIcon id={reason.id} />
+                </span>
                 <h3
                   className={
                     reason.id === "same-service"
-                      ? "font-v1Mono text-[1.75rem] leading-none tracking-normal text-v1-frost group-hover:text-v1-accent-salmon motion-safe:transition-colors motion-safe:duration-200"
-                      : "text-v1-heading-sm text-v1-frost group-hover:text-v1-accent-salmon motion-safe:transition-colors motion-safe:duration-200"
+                      ? "font-v1Mono text-[1.5rem] leading-none tracking-normal text-v1-frost"
+                      : "text-v1-heading-sm text-v1-frost"
                   }
                 >
                   {reason.title}
                 </h3>
                 <p className="text-v1-body-sm">{reason.body}</p>
-                <span className="mt-auto inline-flex w-fit items-center gap-1 rounded border border-v1-frost/20 px-3 py-1 font-v1Mono text-[11px] uppercase tracking-[0.08em] text-v1-frost/70 group-hover:border-v1-accent-salmon group-hover:text-v1-accent-salmon motion-safe:transition-colors motion-safe:duration-200">
-                  See docs
+              </div>
+              <span className="text-v1-label-md mt-auto inline-flex w-fit items-center uppercase text-v1-frost group-hover:text-v1-accent-salmon motion-safe:transition-colors motion-safe:duration-300">
+                See docs
+                <span
+                  aria-hidden="true"
+                  className="ml-2 inline-block group-hover:translate-x-[6px] motion-safe:transition-transform motion-safe:duration-[400ms] motion-safe:ease-v1-in"
+                >
+                  →
                 </span>
-              </Link>
-            </motion.li>
-          ))}
-        </ul>
-      </GradientFrame>
+              </span>
+            </HoverCardShell>
+          </motion.li>
+        ))}
+      </ul>
     </Section>
   );
 }
@@ -119,7 +125,6 @@ function ReasonIcon({ id }: { id: string }) {
     strokeLinecap: "round",
     strokeLinejoin: "round",
     "aria-hidden": true,
-    className: "text-v1-frost",
   };
 
   switch (id) {

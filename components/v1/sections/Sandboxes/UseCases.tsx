@@ -7,12 +7,10 @@ import CodeBlock, {
   type TokenKind,
 } from "@/components/v1/sections/shared/CodeBlock";
 import { tokenizeCode } from "@/components/v1/sections/shared/codeHighlight";
-import GradientFrame from "@/components/v1/sections/shared/GradientFrame";
 import Section from "@/components/v1/sections/shared/Section";
 import SectionHeader from "@/components/v1/sections/shared/SectionHeader";
 import { V1_HEADER_CONTENT_MT } from "@/components/v1/sections/shared/sectionShell";
 import { reveals } from "@/utils/v1/reveals";
-import { cn } from "@/utils/v1/cn";
 
 const MUTED = "#7c7c7c";
 const TOKEN_COLORS: Partial<Record<TokenKind, string>> = {
@@ -50,6 +48,8 @@ function linesFrom(source: string): Line[] {
   });
 }
 
+// Code samples are reflowed onto ≤ 48-character lines so each one fits
+// a third-width card at 12px mono without wrapping.
 const CASES: {
   id: string;
   eyebrow: string;
@@ -57,7 +57,6 @@ const CASES: {
   body: string;
   label: string;
   code: string;
-  flip: boolean;
 }[] = [
   {
     id: "run-code",
@@ -65,19 +64,20 @@ const CASES: {
     title: "Run AI-generated code",
     body: "If you ask a question, and your agent writes Python to answer it, that script needs a machine. Each question gets its own sandbox: upload the file, run the code, and the output comes back as the next step.",
     label: "inngest/analyse-data.ts",
-    flip: false,
     code: `// One machine per run. The command is a step.
-const sandbox = await step.sandbox.create("create-sandbox", {
-  name: \`analyst-\${runId}\`,
-  vcpu: 1,
-  memoryMb: 1024,
-});
+const sandbox = await step.sandbox.create(
+  "create-sandbox",
+  {
+    name: \`analyst-\${runId}\`,
+    vcpu: 1,
+    memoryMb: 1024,
+  },
+);
 
-const result = await sandbox.commands.run("run-code", [
-  "python3",
-  "-c",
-  code,
-]);`,
+const result = await sandbox.commands.run(
+  "run-code",
+  ["python3", "-c", code],
+);`,
   },
   {
     id: "score-code",
@@ -85,13 +85,15 @@ const result = await sandbox.commands.run("run-code", [
     title: "Test and score generated code",
     body: "A new prompt only counts if the code it writes still passes. Run each case in a sandbox, then score in the background so the result is credited to the prompt that wrote it.",
     label: "inngest/score-code.ts",
-    flip: true,
-    code: `// Each case runs in the sandbox. Scoring happens after.
+    code: `// Each case runs in the sandbox. Scoring after.
 const result = await sandbox.commands.run(
   \`case-\${i}\`,
   'printf %s "$INPUT" | python3 -c "$CODE"',
   {
-    environment: { CODE: code, INPUT: test.stdin },
+    environment: {
+      CODE: code,
+      INPUT: test.stdin,
+    },
     timeout: "5s",
   },
 );
@@ -108,20 +110,32 @@ defer("score", {
     title: "Heavy jobs, off your servers",
     body: "A DuckDB pass, a media batch, or a build will swamp the server handling requests. Install the tools once, snapshot the environment, and clone a worker per file. Each file retries on its own.",
     label: "inngest/process-dataset.ts",
-    flip: false,
-    code: `// Install once, snapshot, then clone a worker per file.
-await builder.commands.run("install", "pip install --quiet duckdb", {
-  timeout: "5m",
-});
+    code: `// Install once, snapshot, clone per file.
+await builder.commands.run(
+  "install",
+  "pip install --quiet duckdb",
+  { timeout: "5m" },
+);
 
-const environment = await builder.snapshot("snapshot-environment");
+const environment = await builder.snapshot(
+  "snapshot-environment",
+);
 
-const worker = await environment.clone(\`clone-\${i}\`, {
-  name: \`dataset-\${runId}-\${i}\`,
-});`,
+const worker = await environment.clone(
+  \`clone-\${i}\`,
+  { name: \`dataset-\${runId}-\${i}\` },
+);`,
   },
 ];
 
+/**
+ * Use cases as a 1×3 row (stacked on mobile). Each column is a
+ * fixed-height media panel in the hero's brand-blue fill, with the code
+ * window top-aligned in it, then plain title + body on the page below.
+ * Equal panel heights (lg only — stacked panels size to their code)
+ * keep the three samples on one baseline even though they differ in
+ * length; 500px clears the tallest window (~456px) with 20px padding.
+ */
 export default function UseCases() {
   return (
     <Section aria-labelledby="sandboxes-usecases-heading" className="relative">
@@ -137,50 +151,55 @@ export default function UseCases() {
         body="A sandbox is a step. It retries, it shows up on the trace, and the same flow control you already use applies to the run."
         bodyClassName="max-w-[640px]"
       />
-      <div className={cn(V1_HEADER_CONTENT_MT, "flex flex-col gap-6 lg:gap-8")}>
-        {CASES.map((item) => (
-          <GradientFrame
-            key={item.id}
-            variant="charcoal"
-            className="rounded-md"
-            innerClassName={cn(
-              "grid grid-cols-1 items-center gap-x-4 gap-y-10 px-6 py-12 sm:gap-y-12 sm:px-8 sm:py-14 lg:gap-x-8 lg:px-8 lg:py-16",
-              item.flip
-                ? "lg:grid-cols-[minmax(0,7fr)_minmax(0,5fr)]"
-                : "lg:grid-cols-[minmax(0,5fr)_minmax(0,7fr)]"
-            )}
-          >
-            <SectionHeader
-              id={`sandboxes-${item.id}-heading`}
-              className={cn(
-                "lg:pr-4",
-                item.flip && "lg:order-2 lg:pl-4 lg:pr-0"
-              )}
-              eyebrow={item.eyebrow}
-              title={item.title}
-              titleClassName="[font-size:clamp(1.75rem,3vw,2.75rem)]"
-              body={item.body}
-              bodyClassName="max-w-[460px]"
-            />
-            <motion.div
-              {...reveals.body}
-              className={cn("min-w-0", item.flip && "lg:order-1")}
-            >
-              <CodeBlock
-                label={item.label}
-                lines={linesFrom(item.code)}
-                gutter={false}
-                animate={false}
-                caret={false}
-                fontSize="14px"
-                maxHeight="none"
-                maxWidth="100%"
-                tokenColors={TOKEN_COLORS}
-              />
-            </motion.div>
-          </GradientFrame>
+
+      <ul
+        className={`${V1_HEADER_CONTENT_MT} grid list-none grid-cols-1 gap-x-6 gap-y-12 pl-0 lg:grid-cols-3`}
+      >
+        {CASES.map((item, i) => (
+          <motion.li key={item.id} {...reveals.item(i)} className="list-none">
+            <UseCaseCard item={item} />
+          </motion.li>
         ))}
-      </div>
+      </ul>
     </Section>
+  );
+}
+
+function UseCaseCard({ item }: { item: typeof CASES[number] }) {
+  return (
+    <article className="flex h-full flex-col gap-6">
+      {/* Same brand-blue fill as the hero panel. The code window sits on
+          top of it. */}
+      <div className="relative flex w-full items-start justify-center overflow-hidden rounded-[10px] bg-v1-accent-blue p-4 sm:p-6 lg:h-[500px] lg:p-5">
+        {/* Floating code window — depth shadow so it reads as sitting on
+            the panel rather than printed on it. */}
+        <div className="relative z-10 w-full min-w-0 max-w-[560px] shadow-[0_28px_64px_-24px_rgb(0_0_0/0.85),0_8px_20px_-10px_rgb(0_0_0/0.6)]">
+          <CodeBlock
+            label={item.label}
+            lines={linesFrom(item.code)}
+            gutter={false}
+            animate={false}
+            caret={false}
+            fontSize="12px"
+            maxHeight="none"
+            maxWidth="100%"
+            tokenColors={TOKEN_COLORS}
+          />
+        </div>
+      </div>
+
+      <div className="flex flex-col gap-3">
+        <p className="text-v1-label-sm uppercase text-v1-accent-salmon">
+          {item.eyebrow}
+        </p>
+        <h3
+          id={`sandboxes-${item.id}-heading`}
+          className="text-v1-heading-sm text-v1-frost"
+        >
+          {item.title}
+        </h3>
+        <p className="text-v1-body-sm max-w-[460px]">{item.body}</p>
+      </div>
+    </article>
   );
 }
