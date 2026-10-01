@@ -78,12 +78,17 @@ export default function Hero() {
             ))}
           </h1>
 
-          <motion.p
-            {...entry(520)}
-            className="text-v1-body-lg-loose mt-10 max-w-[620px] !text-v1-frost/85"
-          >
-            {HERO.body}
-          </motion.p>
+          <div className="mt-10 flex max-w-[620px] flex-col gap-6">
+            {HERO.body.map((line, i) => (
+              <motion.p
+                key={line}
+                {...entry(520 + i * 80)}
+                className="text-v1-body-lg-loose !text-v1-frost/85"
+              >
+                {line}
+              </motion.p>
+            ))}
+          </div>
 
           <motion.div
             {...entry(640)}

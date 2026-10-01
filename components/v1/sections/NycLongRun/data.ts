@@ -17,7 +17,13 @@ export const HERO = {
   // "Built here, running here" is SF's line — Inngest is built there.
   // NYC gets the campaign line instead, which is true anywhere.
   eyebrowAccent: "Built for the lonng run.",
-  body: "If your code runs for minutes or days, it won't run straight through. Wrap functions in steps that automatically retry, pause, and fan out. Scale instantly, without thinking about infra.",
+  // Three paragraphs: the campaign line, then what goes wrong on a long
+  // run, then what Inngest does about it.
+  body: [
+    "26.2 is one kind of lonng run. Another happens in production.",
+    "Agents and workflows can run for hours, days, or weeks. When something fails along the way, the work that already finished shouldn't have to start over.",
+    "Inngest makes lonng-running work durable — checkpointing every step so failures can retry from where they happened instead of sending the whole run back to the starting line.",
+  ],
   cta: {
     label: "Start Free",
     // `/sign-up` is a site-wide redirect to NEXT_PUBLIC_SIGNUP_URL, so it
