@@ -48,7 +48,7 @@ function linesFrom(source: string): Line[] {
   });
 }
 
-// Code samples are reflowed onto ≤ 48-character lines so each one fits
+// Code samples are reflowed onto ≤ 44-character lines so each one fits
 // a third-width card at 12px mono without wrapping.
 const CASES: {
   id: string;
@@ -64,7 +64,7 @@ const CASES: {
     title: "Run AI-generated code",
     body: "If you ask a question, and your agent writes Python to answer it, that script needs a machine. Each question gets its own sandbox: upload the file, run the code, and the output comes back as the next step.",
     label: "inngest/analyse-data.ts",
-    code: `// One machine per run. The command is a step.
+    code: `// One machine per run. Commands are steps.
 const sandbox = await step.sandbox.create(
   "create-sandbox",
   {
@@ -85,7 +85,7 @@ const result = await sandbox.commands.run(
     title: "Test and score generated code",
     body: "A new prompt only counts if the code it writes still passes. Run each case in a sandbox, then score in the background so the result is credited to the prompt that wrote it.",
     label: "inngest/score-code.ts",
-    code: `// Each case runs in the sandbox. Scoring after.
+    code: `// Run each case sandboxed. Score after.
 const result = await sandbox.commands.run(
   \`case-\${i}\`,
   'printf %s "$INPUT" | python3 -c "$CODE"',
@@ -170,10 +170,11 @@ function UseCaseCard({ item }: { item: typeof CASES[number] }) {
     <article className="flex h-full flex-col gap-10">
       {/* Same brand-blue fill as the hero panel. The code window sits on
           top of it. */}
-      <div className="relative flex w-full items-start justify-center overflow-hidden rounded-[10px] bg-v1-accent-blue p-5 sm:p-8 lg:h-[540px] lg:p-8">
-        {/* Floating code window — depth shadow so it reads as sitting on
-            the panel rather than printed on it. */}
-        <div className="relative z-10 w-full min-w-0 max-w-[560px] shadow-[0_28px_64px_-24px_rgb(0_0_0/0.85),0_8px_20px_-10px_rgb(0_0_0/0.6)]">
+      <div className="relative flex w-full items-stretch justify-center overflow-hidden rounded-[10px] bg-v1-accent-blue p-5 sm:p-8 lg:h-[540px] lg:p-8">
+        {/* Floating code window — fills the panel's content box so all
+            three windows are the same size regardless of sample length;
+            depth shadow so it reads as sitting on the panel. */}
+        <div className="relative z-10 flex w-full min-w-0 max-w-[560px] shadow-[0_28px_64px_-24px_rgb(0_0_0/0.85),0_8px_20px_-10px_rgb(0_0_0/0.6)]">
           <CodeBlock
             label={item.label}
             lines={linesFrom(item.code)}
@@ -188,17 +189,19 @@ function UseCaseCard({ item }: { item: typeof CASES[number] }) {
         </div>
       </div>
 
-      <div className="flex flex-col gap-3">
-        <p className="text-v1-label-sm uppercase text-v1-accent-salmon">
+      {/* Copy: eyebrow → title 16, title → body 16 — the lockup rhythm
+          the section headers use, scaled to a column. */}
+      <div className="flex flex-col gap-4">
+        <p className="text-v1-eyebrow uppercase text-v1-accent-salmon">
           {item.eyebrow}
         </p>
         <h3
           id={`sandboxes-${item.id}-heading`}
-          className="text-v1-heading-sm text-v1-frost"
+          className="text-v1-heading-card text-balance text-v1-frost"
         >
           {item.title}
         </h3>
-        <p className="text-v1-body-sm max-w-[460px]">{item.body}</p>
+        <p className="text-v1-body-lg-loose max-w-[460px]">{item.body}</p>
       </div>
     </article>
   );
