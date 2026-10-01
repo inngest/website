@@ -16,7 +16,7 @@ export const HERO = {
   eyebrow: "New York City.",
   // "Built here, running here" is SF's line — Inngest is built there.
   // NYC gets the campaign line instead, which is true anywhere.
-  eyebrowAccent: "Built for the lonng run.",
+  eyebrowAccent: "Build for the lonng run.",
   // Three paragraphs: the campaign line, then what goes wrong on a long
   // run, then what Inngest does about it.
   body: [
