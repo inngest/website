@@ -184,25 +184,31 @@ const CAP_ICON_MASK = (src: string) => ({
  *  `currentColor`, so it takes the exact eyebrow colour. */
 function Eyebrow({ capability }: { capability: Capability }) {
   return (
-    <p className="flex items-center gap-2 text-v1-accent-salmon">
+    <p className="flex items-center gap-2.5 text-v1-accent-salmon">
       <span
         aria-hidden="true"
-        className="block h-4 w-5 shrink-0 bg-current"
+        className="block h-5 w-6 shrink-0 bg-current"
         style={CAP_ICON_MASK(capability.icon)}
       />
-      <span className="text-v1-label-sm uppercase">{capability.label}</span>
+      <span className="text-v1-eyebrow uppercase">{capability.label}</span>
     </p>
   );
 }
+
+// Parallax travel in px over a full viewport of scroll (see Step).
+const PARALLAX_MEDIA = 72;
+const PARALLAX_COPY = 20;
 
 /**
  * One row in the desktop sequence: copy on the left, its own video on
  * the right, a rail dot between row and page edge. The row whose box
  * crosses the viewport's middle band is in focus: full-contrast and
  * the only one whose video plays. The others — copy and video together
- * — dim to 40% and hold on their first frame. Rows own their vertical
- * spacing (96px between, as py) rather than using a flex gap so the
- * rail segment each row draws joins the next without a break.
+ * — dim to 40% and hold on their first frame. A light scroll parallax
+ * separates the video and copy planes (see the effect below). Rows own
+ * their vertical spacing (240px between, as py) rather than using a
+ * flex gap so the rail segment each row draws joins the next without a
+ * break.
  */
 function Step({
   capability,
@@ -220,8 +226,57 @@ function Step({
   enabled: boolean;
 }) {
   const ref = useRef<HTMLLIElement>(null);
+  const mediaRef = useRef<HTMLDivElement>(null);
+  const copyRef = useRef<HTMLDivElement>(null);
   const onInViewRef = useRef(onInView);
   onInViewRef.current = onInView;
+
+  // Parallax: as the row travels through the viewport, its video drifts
+  // against the scroll (up to ±PARALLAX_MEDIA px) while the copy drifts
+  // a little with it (±PARALLAX_COPY px, opposite sign), so the two
+  // planes separate and the row reads as having depth. Writes
+  // transforms straight to the DOM from a rAF-throttled scroll
+  // listener — no React state per frame. Skipped for reduced motion
+  // and while the row has no layout (below lg, where the list is
+  // display:none).
+  useEffect(() => {
+    const el = ref.current;
+    const media = mediaRef.current;
+    const copy = copyRef.current;
+    if (!el || !media || !copy) return;
+    if (window.matchMedia("(prefers-reduced-motion: reduce)").matches) return;
+
+    let frame = 0;
+    const update = () => {
+      frame = 0;
+      const rect = el.getBoundingClientRect();
+      if (rect.height === 0) return;
+      const vh = window.innerHeight || 1;
+      // -1 when the row's centre is a viewport below the middle, 0 when
+      // centred, +1 when a viewport above.
+      const p = Math.max(
+        -1,
+        Math.min(1, (vh / 2 - (rect.top + rect.height / 2)) / vh)
+      );
+      media.style.transform = `translate3d(0, ${(p * PARALLAX_MEDIA).toFixed(
+        1
+      )}px, 0)`;
+      copy.style.transform = `translate3d(0, ${(-p * PARALLAX_COPY).toFixed(
+        1
+      )}px, 0)`;
+    };
+    const onScroll = () => {
+      if (!frame) frame = requestAnimationFrame(update);
+    };
+    update();
+    window.addEventListener("scroll", onScroll, { passive: true });
+    window.addEventListener("resize", onScroll, { passive: true });
+    return () => {
+      window.removeEventListener("scroll", onScroll);
+      window.removeEventListener("resize", onScroll);
+      if (frame) cancelAnimationFrame(frame);
+    };
+  }, []);
 
   useEffect(() => {
     const el = ref.current;
@@ -245,7 +300,11 @@ function Step({
     <li
       ref={ref}
       aria-current={isActive ? "step" : undefined}
-      className={cn("relative pl-10", !isFirst && "pt-12", !isLast && "pb-12")}
+      className={cn(
+        "relative pl-10",
+        !isFirst && "pt-[7.5rem]",
+        !isLast && "pb-[7.5rem]"
+      )}
     >
       {/* Rail segments: upper half (not on the first row) and lower half
           (not on the last), meeting under the dot at the row's centre. */}
@@ -283,7 +342,10 @@ function Step({
           isActive ? "opacity-100" : "opacity-40"
         )}
       >
-        <div className="flex max-w-[480px] flex-col gap-5">
+        <div
+          ref={copyRef}
+          className="flex max-w-[480px] flex-col gap-5 motion-safe:[will-change:transform]"
+        >
           <div className="flex flex-col gap-3">
             <Eyebrow capability={capability} />
             <h3 className="font-v1Heading text-[clamp(2rem,3vw,2.75rem)] leading-[1.1] tracking-[-0.02em] text-v1-frost">
@@ -300,21 +362,23 @@ function Step({
           </div>
         </div>
 
-        <GradientFrame
-          variant="charcoal"
-          className="rounded-[10px]"
-          innerClassName="relative aspect-video [background-color:rgb(var(--color-v1-bg-canvas-base)/0.85)]"
-        >
-          {capability.videoSrc && (
-            <RowVideo
-              src={capability.videoSrc}
-              label={capability.label}
-              startAt={capability.videoStart}
-              play={isActive}
-              enabled={enabled}
-            />
-          )}
-        </GradientFrame>
+        <div ref={mediaRef} className="motion-safe:[will-change:transform]">
+          <GradientFrame
+            variant="charcoal"
+            className="rounded-[10px]"
+            innerClassName="relative aspect-video [background-color:rgb(var(--color-v1-bg-canvas-base)/0.85)]"
+          >
+            {capability.videoSrc && (
+              <RowVideo
+                src={capability.videoSrc}
+                label={capability.label}
+                startAt={capability.videoStart}
+                play={isActive}
+                enabled={enabled}
+              />
+            )}
+          </GradientFrame>
+        </div>
       </div>
     </li>
   );
