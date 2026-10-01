@@ -31,9 +31,9 @@ Here's how I architect for it now.
 
 Every unit of work should commit before the next one starts. The Go pipeline had concurrency and retries, and it still fell over every few nights because neither saved enough progress for the next attempt to pick up from. Retries without checkpoints just retry from the top.
 
-Split the work into steps small enough to finish reliably, and save each result somewhere durable. On the next attempt, completed steps return their saved result instead of running again. That's **memoization**, and it turns "start over" into "resume." A failure at step 40 retries step 40, and steps 1 through 39 stay done. Retrying the step, not the chain.
+Split the work into steps small enough to finish reliably, and save each result somewhere durable. On the next attempt, completed steps return their saved result instead of running again. That's **[memoization](/docs/durable-execution/primitives?ref=blog-long-running-workflows)**, and it turns "start over" into "resume." A failure at step 40 retries step 40, and steps 1 through 39 stay done. Retrying the step, not the chain.
 
-Steps with side effects need one more thing: an **idempotency key**, so a step that charged a card before its result was recorded doesn't charge it twice. Your agent just learned to spend money shows how this works with agent tools that move money.
+Steps with side effects need one more thing: an **[idempotency key](/docs/durable-execution/guides-and-advanced/idempotency?ref=blog-long-running-workflows)**, so a step that charged a card before its result was recorded doesn't charge it twice. [Your agent just learned to spend money](/blog/your-agent-just-learned-to-spend-money?ref=blog-long-running-workflows) shows how this works with agent tools that move money.
 
 ## State lives outside the process
 
@@ -45,15 +45,15 @@ When that pipeline's pod ran out of memory, its position in the dataset went wit
 
 ## Waiting should cost nothing
 
-A run waiting on a human, a webhook, or another system should hold its state and nothing else. Hand-rolled systems usually get this wrong: a paused job is still a running job, with a worker holding a thread, a connection, or a slot while it waits. These held jobs consume resources, blocking new processes from running. Park enough of them and the queue stalls, even though none of them is doing anything.
+A run waiting on [a human, a webhook, or another system](/docs/durable-execution/primitives/step-waitforevent?ref=blog-long-running-workflows) should hold its state and nothing else. Hand-rolled systems usually get this wrong: a paused job is still a running job, with a worker holding a thread, a connection, or a slot while it waits. These held jobs consume resources, blocking new processes from running. Park enough of them and the queue stalls, even though none of them is doing anything.
 
 A wait should release compute, then resume exactly where it paused when the signal arrives, whether that's in five seconds or next week.
 
 ## A million items should never be one job
 
-Massive workloads should **fan out**: a coordinator splits the work into chunks, each chunk becomes its own run, and flow control decides how fast those runs hit your systems.
+Massive workloads should **[fan out](/docs/durable-execution/guides-and-advanced/patterns/fan-out?ref=blog-long-running-workflows)**: a coordinator splits the work into chunks, each chunk becomes its own run, and [flow control](/platform/flow-control?ref=blog-long-running-workflows) decides how fast those runs hit your systems.
 
-The tempting design is one enormous run that loops over every record. On Inngest the limits rule it out: a function can have at most 1,000 steps, and a single send carries at most 5,000 events. 
+The tempting design is one enormous run that loops over every record. On Inngest the limits rule it out: [a function can have at most 1,000 steps](/docs/durable-execution/limits?ref=blog-long-running-workflows), and a single send carries at most 5,000 events. 
 
 Those limits are intentional: they describe the architecture you want anyway.
 
@@ -63,15 +63,15 @@ Fan-out buys isolation. One bad record stalls its own chunk instead of the whole
 
 A short step is cheap to retry and fits on any host. A long run is many short steps and waits strung together, with state saved between each one. The risk lives in the longest thing you ask a single process to survive, and steps keep that short.
 
-On Inngest, a step can run for up to 2 hours (your host may cut that shorter, looking at you, serverless platforms!), `step.sleep` can pause a run for up to a year (7 days on the Free plan), and a run can last up to 366 days. 
+On Inngest, a step can run for up to 2 hours (your host may cut that shorter, looking at you, [serverless platforms](/docs/durable-execution/deploying-functions/platforms/provider-limits?ref=blog-long-running-workflows)!), [`step.sleep`](/docs/durable-execution/primitives/step-sleep?ref=blog-long-running-workflows) can pause a run for up to a year (7 days on the Free plan), and a run can last up to 366 days. 
 
-Because progress is tracked by step ID, you can even deploy (and sync to Inngest!) mid-run: the run continues on your new code, and completed steps don't run again.
+Because progress is tracked by step ID, you can even [deploy (and sync to Inngest!) mid-run](/docs/durable-execution/guides-and-advanced/versioning?ref=blog-long-running-workflows): the run continues on your new code, and completed steps don't run again.
 
 ## What changed when I moved it to Inngest
 
 Everything above can be built by hand: a queue, a durable state store, a scheduler for waits, retry bookkeeping, flow control. The team had built half of it in Go, and it still failed in the middle of the night. Inngest ships those pieces as primitives, so you write the function instead of the plumbing.
 
-When I moved the pipeline to durable execution, the hand-rolled concurrency, throttling, and retry code went away. 
+When I moved the pipeline to [durable execution](/platform/durable-execution?ref=blog-long-running-workflows), the hand-rolled concurrency, throttling, and retry code went away. 
 
 The team stopped fighting Go concurrency and stopped holding valuable resource slots while work was paused. When a pod died, the next step ran on a healthy pod and picked up where the dead one stopped. Because completed steps were memoized, nothing got reworked. That saved the company a lot of time and money, and it changed what the morning looked like: finished runs instead of a pile of unprocessed data and broken SLAs.
 
