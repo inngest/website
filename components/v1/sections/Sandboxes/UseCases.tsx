@@ -49,7 +49,7 @@ function linesFrom(source: string): Line[] {
 }
 
 // Code samples are reflowed onto ≤ 44-character lines so each one fits
-// a third-width card at 12px mono without wrapping.
+// a third-width card at 11px mono without wrapping.
 const CASES: {
   id: string;
   eyebrow: string;
@@ -153,7 +153,7 @@ export default function UseCases() {
       />
 
       <ul
-        className={`${V1_HEADER_CONTENT_MT} grid list-none grid-cols-1 gap-x-6 gap-y-12 pl-0 lg:grid-cols-3`}
+        className={`${V1_HEADER_CONTENT_MT} grid list-none grid-cols-1 gap-x-10 gap-y-12 pl-0 lg:grid-cols-3`}
       >
         {CASES.map((item, i) => (
           <motion.li key={item.id} {...reveals.item(i)} className="list-none">
@@ -168,9 +168,10 @@ export default function UseCases() {
 function UseCaseCard({ item }: { item: typeof CASES[number] }) {
   return (
     <article className="flex h-full flex-col gap-10">
-      {/* Same brand-blue fill as the hero panel. The code window sits on
-          top of it. */}
-      <div className="relative flex w-full items-stretch justify-center overflow-hidden rounded-[10px] bg-v1-accent-blue p-5 sm:p-8 lg:h-[540px] lg:p-8">
+      {/* The hero's brand blue, mixed 70/30 with the page canvas so the
+          panel reads as a deeper, quieter blue beside the grain instead of
+          the fully saturated accent. The code window sits on top. */}
+      <div className="relative flex w-full items-stretch justify-center overflow-hidden rounded-[10px] p-5 [background-color:color-mix(in_srgb,rgb(var(--color-v1-accent-blue))_70%,rgb(var(--color-v1-bg-canvas-base)))] sm:p-8 lg:h-[540px] lg:p-10">
         {/* Floating code window — fills the panel's content box so all
             three windows are the same size regardless of sample length;
             depth shadow so it reads as sitting on the panel. */}
@@ -181,7 +182,7 @@ function UseCaseCard({ item }: { item: typeof CASES[number] }) {
             gutter={false}
             animate={false}
             caret={false}
-            fontSize="12px"
+            fontSize="11px"
             maxHeight="none"
             maxWidth="100%"
             tokenColors={TOKEN_COLORS}
