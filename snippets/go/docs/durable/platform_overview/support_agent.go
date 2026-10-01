@@ -39,7 +39,7 @@ func AnswerTicket(client inngestgo.Client) (inngestgo.ServableFunction, error) {
 
 			// Stream progress to the customer's browser.
 			_, err = step.Run(ctx, "drafted", func(ctx context.Context) (any, error) {
-				data, err := json.Marshal(map[string]string{"message": "Sending your answer…"})
+				data, err := json.Marshal(map[string]string{"message": "Checking your account…"})
 				if err != nil {
 					return nil, err
 				}
@@ -49,6 +49,8 @@ func AnswerTicket(client inngestgo.Client) (inngestgo.ServableFunction, error) {
 				return nil, err
 			}
 
+			// Sandboxes and experiments aren't available in Go yet, so this
+			// version drafts one answer and skips the diagnostics step.
 			_, err = step.Run(ctx, "send-reply", func(ctx context.Context) (any, error) {
 				return nil, sendReply(ctx, ticketID, answer)
 			})

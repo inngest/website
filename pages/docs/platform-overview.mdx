@@ -18,17 +18,22 @@ The rest of the platform builds on the same run. Sandboxes run code in isolation
 A support agent answers a customer ticket. The same pattern works for background jobs, data pipelines, and other workflows.
 
 <Mermaid
-  label="A ticket event starts a durable run. Inside the run, steps load context and draft an answer, Realtime streams progress to the customer's browser, and a final step sends the reply. If sending fails, only that step retries."
+  label="A ticket event starts a durable run. Inside the run, steps load context, select an experiment variant, draft an answer while streaming progress to the customer, run diagnostics in a Sandbox, and send a reply. Days later a customer rating triggers a deferred score that is credited to the run and its variant, so variants can be compared."
   chart={`flowchart TB
   E(["Ticket created"]):::muted --> S1
   subgraph RUN["Durable run"]
-    S1["Load context"]:::accent --> S2["Draft answer"]:::accent
-    S2 --> S3["Send reply"]:::accent
+    S1["Load context"]:::accent --> V["Pick variant: concise or detailed"]:::info
+    V --> S2["Draft answer"]:::accent
+    S2 --> SB["Run diagnostics in a Sandbox"]:::info
+    SB --> S3["Send reply"]:::accent
   end
-  S2 -. "Realtime" .-> U(["Customer's browser"]):::muted`}
+  S2 -. "Realtime" .-> U(["Customer's browser"]):::muted
+  S3 --> SC["Deferred score"]:::info
+  F(["Customer rates answer"]):::muted -. "days later" .-> SC
+  SC --> C(["Compare variants"]):::accent`}
 />
 
-Here's that function. Each step is saved, so a failed reply retries without reloading context or redrafting the answer. The Realtime publish updates the customer's browser while the run continues.
+Here's that function. Each `step.run()` is saved, so a failed reply retries without reloading context or redrafting the answer. `group.experiment()` picks the answer strategy, `step.realtime.publish()` updates the customer, and `step.sandbox` runs diagnostics in an isolated VM. When the customer rates the answer days later, a [deferred scorer](/docs/agent-evals/deferred-scoring) credits that rating to the chosen variant. The Python and Go versions skip the features their SDKs don't support yet: Python has no Sandbox step, and Go drafts a single answer without an experiment or Sandbox.
 
 <CodeGroup>
 ```ts {{ title: "TypeScript" }}
@@ -60,7 +65,7 @@ Here's that function. Each step is saved, so a failed reply retries without relo
     Use durable functions as [background workflows](/docs/durable-execution/durable-workflows) or as [durable endpoints](/docs/durable-execution/durable-endpoints) that return an HTTP response.
   </Step>
   <Step title="Sandboxes">
-    When a step needs its own execution environment, such as to run generated code or test a repository, run that work in a Sandbox. Each Sandbox is a microVM with its own filesystem and processes, isolated from your app and other Sandboxes. You can pause and resume a Sandbox, or snapshot it and clone a new one. Sandbox activity appears in the same run trace as the surrounding steps. For example, a support agent could run a diagnostic script in a Sandbox before it replies.
+    When a step needs its own execution environment, such as to run generated code or test a repository, run that work in a Sandbox. Each Sandbox is a microVM with its own filesystem and processes, isolated from your app and other Sandboxes. You can pause and resume a Sandbox, or snapshot it and clone a new one. Sandbox activity appears in the same run trace as the surrounding steps. In the example, the agent runs a diagnostic script in a Sandbox before it replies.
 
     Sandboxes run code *inside* a run. They aren't a way to host your Inngest functions. Read [Sandboxes](/docs/sandboxes) for lifecycle, isolation, and cleanup details.
   </Step>
@@ -71,10 +76,10 @@ Here's that function. Each step is saved, so a failed reply retries without relo
     - [Scores](/docs/agent-evals/scores) record a named number or true/false value for a run or step. Score right away, or defer the score until feedback arrives. A deferred score is credited to the original run.
     - [Experiments](/docs/agent-evals/experiments) use `group.experiment()` to select a variant for each run. A variant can be one step or a whole workflow path. Pass the experiment reference with a score so a later outcome counts toward the variant that produced it.
 
-    For example, a customer's rating of the support agent's answer can arrive days later and still be scored against the original run, so you can compare answer strategies, then open traces to see how each result was produced.
+    In the example, the customer's rating arrives days later. It's scored against the original run and its variant, so you can compare answer strategies, then open traces to see how each result was produced.
   </Step>
   <Step title="Realtime">
-    [Realtime](/docs/realtime) sends typed messages from a function to authorized clients, so users can follow work as it runs. Use `step.realtime.publish()` for state changes and final results so a retry doesn't send the message twice. Use `inngest.realtime.publish()` for frequent updates such as token streams. In the example, the customer sees a status update before the reply is sent.
+    [Realtime](/docs/realtime) sends typed messages from a function to authorized clients, so users can follow work as it runs. Use `step.realtime.publish()` for state changes and final results so a retry doesn't send the message twice. Use `inngest.realtime.publish()` for frequent updates such as token streams. In the example, the customer sees the agent's progress while it drafts an answer.
   </Step>
 </Steps>
 

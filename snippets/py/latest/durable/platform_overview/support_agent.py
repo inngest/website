@@ -1,6 +1,7 @@
 # !snippet:start
+# Requires the inngest release after 0.5.19 (for group.experiment).
 import inngest
-from inngest.experimental import realtime
+from inngest.experimental import experiment, realtime
 
 from .stubs import draft_answer, load_ticket_context, send_reply
 
@@ -20,10 +21,24 @@ async def answer_ticket(ctx: inngest.Context) -> None:
 
     context = await ctx.step.run("load-context", load_context)
 
-    async def draft() -> str:
-        return await draft_answer(context)
+    async def draft_concise() -> str:
+        return await draft_answer(context, "concise")
 
-    answer = await ctx.step.run("draft-answer", draft)
+    async def draft_detailed() -> str:
+        return await draft_answer(context, "detailed")
+
+    # Pick variant A or B, then draft the answer with that strategy.
+    selected = await ctx.group.experiment(
+        "answer-style",
+        variants={
+            "concise": lambda: ctx.step.run("draft-concise", draft_concise),
+            "detailed": lambda: ctx.step.run("draft-detailed", draft_detailed),
+        },
+        select=experiment.bucket(
+            ctx.run_id, weights={"concise": 50, "detailed": 50}
+        ),
+    )
+    answer = str(selected.result)
 
     # Stream progress to the customer's browser.
     async def publish_status() -> None:
@@ -31,11 +46,13 @@ async def answer_ticket(ctx: inngest.Context) -> None:
             client=inngest_client,
             channel=f"ticket:{ticket_id}",
             topic="status",
-            data={"message": "Sending your answer…"},
+            data={"message": "Checking your account…"},
         )
 
     await ctx.step.run("drafted", publish_status)
 
+    # Sandboxes aren't available in Python yet, so this version skips the
+    # diagnostics step.
     async def reply() -> None:
         await send_reply(ticket_id, answer)
 
