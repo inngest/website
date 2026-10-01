@@ -451,6 +451,9 @@ function DocsCue({ href }: { href: string }) {
   );
 }
 
+/** How far outside the viewport a video starts loading its source. */
+const ATTACH_MARGIN = "300px 0px";
+
 function isHls(src: string) {
   return /\.m3u8(\?.*)?$/i.test(src);
 }
@@ -480,17 +483,26 @@ function RowVideo({
   const [inView, setInView] = useState(false);
   const [ready, setReady] = useState(false);
 
-  // Attach the source (hls.js for .m3u8 where native HLS is missing)
-  // and observe visibility. Bound once per source.
+  // Attach the source lazily — only once the video is within
+  // ATTACH_MARGIN of the viewport — and observe visibility. Bound once
+  // per source. A display:none copy (the other breakpoint's layout)
+  // never intersects, so it never attaches a source even if `enabled`
+  // is briefly true during hydration (useIsDesktop reads false on the
+  // first client render).
   useEffect(() => {
     const video = ref.current;
     if (!video || !enabled) return;
     if (window.matchMedia("(prefers-reduced-motion: reduce)").matches) return;
 
     let hls: import("hls.js").default | undefined;
+    let attached = false;
     let cancelled = false;
 
     const attach = async () => {
+      if (attached) return;
+      attached = true;
+      // Native HLS (Safari, iOS, recent desktop Chrome) and plain MP4s
+      // go straight onto the element.
       if (!isHls(src) || video.canPlayType("application/vnd.apple.mpegurl")) {
         video.src = src;
         return;
@@ -501,6 +513,9 @@ function RowVideo({
         hls = new Hls({
           enableWorker: true,
           startPosition: startAt ?? -1,
+          // Pick the rendition for the player's rendered size, not the
+          // connection speed — these cards are never 1080p wide.
+          capLevelToPlayerSize: true,
         });
         hls.loadSource(src);
         hls.attachMedia(video);
@@ -508,7 +523,6 @@ function RowVideo({
         video.src = src;
       }
     };
-    void attach();
 
     const onReady = () => {
       // Park on the clip's first useful frame so a paused card never
@@ -524,19 +538,37 @@ function RowVideo({
     };
     video.addEventListener("loadeddata", onReady);
     if (startAt != null) video.addEventListener("ended", onEnded);
-    if (video.readyState >= 2) onReady();
 
-    const observer = new IntersectionObserver(
+    const loadObserver = new IntersectionObserver(
+      ([entry]) => {
+        if (entry.isIntersecting) void attach();
+      },
+      { rootMargin: ATTACH_MARGIN }
+    );
+    loadObserver.observe(video);
+
+    const playObserver = new IntersectionObserver(
       ([entry]) => setInView(entry.isIntersecting),
       { threshold: 0.25 }
     );
-    observer.observe(video);
+    playObserver.observe(video);
+
     return () => {
       cancelled = true;
-      observer.disconnect();
+      loadObserver.disconnect();
+      playObserver.disconnect();
       video.removeEventListener("loadeddata", onReady);
       video.removeEventListener("ended", onEnded);
       hls?.destroy();
+      // Detach whatever source was set directly (MP4 / native HLS) so
+      // the browser drops the connection and its buffer. hls.destroy()
+      // only covers the hls.js path.
+      if (attached) {
+        video.pause();
+        video.removeAttribute("src");
+        video.load();
+      }
+      setReady(false);
     };
   }, [src, startAt, enabled]);
 
