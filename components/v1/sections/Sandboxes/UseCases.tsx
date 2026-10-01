@@ -134,7 +134,7 @@ const worker = await environment.clone(
  * window top-aligned in it, then plain title + body on the page below.
  * Equal panel heights (lg only — stacked panels size to their code)
  * keep the three samples on one baseline even though they differ in
- * length; 500px clears the tallest window (~456px) with 20px padding.
+ * length; 540px clears the tallest window (~456px) with 32px padding.
  */
 export default function UseCases() {
   return (
@@ -167,10 +167,10 @@ export default function UseCases() {
 
 function UseCaseCard({ item }: { item: typeof CASES[number] }) {
   return (
-    <article className="flex h-full flex-col gap-6">
+    <article className="flex h-full flex-col gap-10">
       {/* Same brand-blue fill as the hero panel. The code window sits on
           top of it. */}
-      <div className="relative flex w-full items-start justify-center overflow-hidden rounded-[10px] bg-v1-accent-blue p-4 sm:p-6 lg:h-[500px] lg:p-5">
+      <div className="relative flex w-full items-start justify-center overflow-hidden rounded-[10px] bg-v1-accent-blue p-5 sm:p-8 lg:h-[540px] lg:p-8">
         {/* Floating code window — depth shadow so it reads as sitting on
             the panel rather than printed on it. */}
         <div className="relative z-10 w-full min-w-0 max-w-[560px] shadow-[0_28px_64px_-24px_rgb(0_0_0/0.85),0_8px_20px_-10px_rgb(0_0_0/0.6)]">
