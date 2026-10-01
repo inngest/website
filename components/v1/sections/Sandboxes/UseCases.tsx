@@ -189,6 +189,7 @@ function UseCaseCard({ item }: { item: typeof CASES[number] }) {
             label={item.label}
             lines={linesFrom(item.code)}
             gutter={false}
+            footer={false}
             animate={false}
             caret={false}
             fontSize="11px"
