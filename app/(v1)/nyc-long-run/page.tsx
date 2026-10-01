@@ -1,5 +1,8 @@
 import { type Metadata } from "next";
-import { generateMetadata } from "src/utils/social";
+import {
+  generateMetadata,
+  getLongRunOpenGraphImagePath,
+} from "src/utils/social";
 import NycLongRun from "@/components/v1/pages/NycLongRun";
 
 /**
@@ -14,6 +17,11 @@ import NycLongRun from "@/components/v1/pages/NycLongRun";
 export const metadata: Metadata = {
   ...generateMetadata({
     title: "Build for the lonng run · New York City",
+    // Campaign social card rather than the default salmon one.
+    image: getLongRunOpenGraphImagePath({
+      title: "Build for the lonng run.",
+      eyebrow: "New York City",
+    }),
     description:
       "Build apps and agents that run for days. Wrap functions in steps that pause for events, retry, fan-out, and handle everything production throws at you — without touching infra.",
   }),
