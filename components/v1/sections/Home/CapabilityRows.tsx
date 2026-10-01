@@ -250,7 +250,10 @@ function CapabilityCard({
               {capability.heading}
             </h3>
           </div>
-          <p className="text-v1-body-xs">{capability.body}</p>
+          {/* `!text-v1-frost`: the page-level body rule dims body tokens to
+              #B3B3B3 at (0,2,0) specificity; these cards read better in
+              full white against the dark frame. */}
+          <p className="text-v1-body-sm !text-v1-frost">{capability.body}</p>
           <div className="mt-auto pt-1">
             <DocsCue
               href={appendRef(capability.docsHref, `homepage-${capability.id}`)}
