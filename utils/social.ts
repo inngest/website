@@ -24,13 +24,16 @@ export const getOpenGraphImageURL = ({ title }: { title: string }) =>
 export const getLongRunOpenGraphImagePath = ({
   title,
   eyebrow,
+  city,
 }: {
   title: string;
   eyebrow: string;
+  /** Picks the runner: New York gets the pizza, San Francisco the cup. */
+  city: "nyc" | "sf";
 }) =>
   `/api/og?title=${encodeURIComponent(title)}&eyebrow=${encodeURIComponent(
     eyebrow
-  )}&theme=long-run&v=${openGraphImageVersion}`;
+  )}&theme=long-run&city=${city}&v=${openGraphImageVersion}`;
 
 export const getFullURL = (absolutePath: string) => {
   // On Vercel preview deploys, use the preview host so OG/Twitter scrapers

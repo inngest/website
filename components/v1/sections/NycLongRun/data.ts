@@ -211,10 +211,12 @@ export interface NycResource {
  */
 export const NYC_RESOURCES: NycResource[] = [
   {
-    id: "durable-workflow-engine",
+    id: "built-for-the-long-run",
     kind: "Blog",
-    title: "How a durable workflow engine works: you might not need a queue",
-    href: "/blog/how-durable-workflow-engines-work?ref=nyc-long-run-resources",
+    // Published title, copied exactly — the post spells it "long
+    // running", not the campaign's "lonng".
+    title: "All your workflows are about to be long running. Build for it.",
+    href: "/blog/all-your-workflows-are-about-to-be-long-running?ref=nyc-long-run-resources",
   },
   {
     id: "visual-primer",

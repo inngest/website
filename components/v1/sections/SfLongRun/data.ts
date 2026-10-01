@@ -219,10 +219,12 @@ export interface SfResource {
  */
 export const SF_RESOURCES: SfResource[] = [
   {
-    id: "durable-workflow-engine",
+    id: "built-for-the-long-run",
     kind: "Blog",
-    title: "How a durable workflow engine works: you might not need a queue",
-    href: "/blog/how-durable-workflow-engines-work?ref=sf-long-run-resources",
+    // Published title, copied exactly — the post spells it "long
+    // running", not the campaign's "lonng".
+    title: "All your workflows are about to be long running. Build for it.",
+    href: "/blog/all-your-workflows-are-about-to-be-long-running?ref=sf-long-run-resources",
   },
   {
     id: "visual-primer",

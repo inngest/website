@@ -21,6 +21,7 @@ export const metadata: Metadata = {
     image: getLongRunOpenGraphImagePath({
       title: "Build for the lonng run.",
       eyebrow: "New York City",
+      city: "nyc",
     }),
     description:
       "Build apps and agents that run for days. Wrap functions in steps that pause for events, retry, fan-out, and handle everything production throws at you — without touching infra.",

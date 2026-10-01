@@ -47,10 +47,17 @@ export default async function handler(req: NextApiRequest) {
     const len = (title || "").length;
     const isLongTitle = len > 40;
     const isVeryLongTitle = len > 70;
-    // ?theme=long-run — the "Build for the lonng run" campaign card
-    // (black, mouth and tongue along the bottom) instead of the standard
-    // salmon one. Anything else falls back to the default.
-    const isLongRun = searchParams.get("theme") === "long-run";
+    // ?theme=long-run&city=<nyc|sf> — the "Build for the lonng run"
+    // campaign card (black, mouth and tongue along the bottom) instead of
+    // the standard salmon one. Each city has its own runner. An unknown
+    // city falls through to the salmon card rather than rendering the
+    // campaign layout over a missing background.
+    const longRunArtwork = {
+      nyc: "/assets/v1/long-run/og-nyc.png",
+      sf: "/assets/v1/long-run/og-sf.png",
+    }[searchParams.get("city") ?? ""];
+    const isLongRun =
+      searchParams.get("theme") === "long-run" && Boolean(longRunArtwork);
     // ?eyebrow=<text> — small accent line above the title. Long-run only;
     // the salmon card has no slot for it.
     const eyebrow = searchParams.get("eyebrow")?.slice(0, 60);
@@ -62,7 +69,7 @@ export default async function handler(req: NextApiRequest) {
     const backgroundImageURL = isLongRun
       ? // Preview-aware: the campaign artwork only exists on the deploy
         // that added it, so a preview must not fetch it from production.
-        getFullURL("/assets/v1/long-run/og-nyc.png")
+        getFullURL(longRunArtwork!)
       : `${process.env.NEXT_PUBLIC_HOST}/assets/og-image-2026.png`;
 
     const fontData = await loadInngestCDNFont("Whyte/ABCWhyte-Light.otf");
