@@ -305,7 +305,7 @@ export const FEATURES: Feature[] = [
         getPlan(PLAN_NAMES.enterprise).cost.includedRuns
       }`,
     },
-    infoUrl: "/docs/learn/inngest-functions?ref=pricing",
+    infoUrl: "/docs/durable-execution/durable-workflows?ref=pricing",
     section: "platform",
   },
   {
@@ -343,7 +343,7 @@ export const FEATURES: Feature[] = [
         getPlan(PLAN_NAMES.enterprise).cost.additionalStepsPrice
       }`,
     },
-    infoUrl: "/docs/learn/inngest-functions?ref=pricing",
+    infoUrl: "/docs/durable-execution/durable-workflows?ref=pricing",
     section: "platform",
   },
   {
@@ -361,7 +361,7 @@ export const FEATURES: Feature[] = [
         getPlan(PLAN_NAMES.enterprise).cost.includedConcurrency
       }`,
     },
-    infoUrl: "/docs/guides/concurrency?ref=pricing",
+    infoUrl: "/docs/durable-execution/flow-control/concurrency?ref=pricing",
     section: "platform",
   },
   {
@@ -405,7 +405,7 @@ export const FEATURES: Feature[] = [
       [PLAN_NAMES.pro]: "3MiB",
       [PLAN_NAMES.enterprise]: "Custom",
     },
-    infoUrl: "/docs/usage-limits/inngest#payload-size?ref=pricing",
+    infoUrl: "/docs/durable-execution/limits?ref=pricing",
     section: "platform",
   },
   {
@@ -423,14 +423,14 @@ export const FEATURES: Feature[] = [
     name: "Function pausing",
     description: "Easily prevent issues during incidents",
     section: "recovery",
-    infoUrl: "/docs/guides/pause-functions?ref=pricing",
+    infoUrl: "/docs/platform-and-operations/pause-and-resume-functions?ref=pricing",
     all: true,
   },
   {
     name: "Function replay",
     description: "Replay paused or failed runs, in bulk, effortlessly",
     section: "recovery",
-    infoUrl: "/docs/platform/replay?ref=pricing",
+    infoUrl: "/docs/platform-and-operations/replay-runs-in-bulk?ref=pricing",
     all: true,
   },
   {
@@ -443,7 +443,7 @@ export const FEATURES: Feature[] = [
     name: "Bulk cancellation",
     description: "Easily manage issues across in progress runs",
     section: "recovery",
-    infoUrl: "/docs/platform/manage/bulk-cancellation?ref=pricing",
+    infoUrl: "/docs/durable-execution/guides-and-advanced/cancellation/bulk-cancellation?ref=pricing",
     all: true,
   },
   {
@@ -455,7 +455,7 @@ export const FEATURES: Feature[] = [
       [PLAN_NAMES.pro]: "5 minutes",
       [PLAN_NAMES.enterprise]: "20 seconds",
     },
-    infoUrl: "/docs/platform/monitor/observability-metrics?ref=pricing",
+    infoUrl: "/docs/platform-and-operations/metrics?ref=pricing",
     section: "observability",
   },
   {
@@ -467,7 +467,7 @@ export const FEATURES: Feature[] = [
       [PLAN_NAMES.pro]: "14 days",
       [PLAN_NAMES.enterprise]: "90 days",
     },
-    infoUrl: "/docs/platform/monitor/inspecting-function-runs?ref=pricing",
+    infoUrl: "/docs/platform-and-operations/inspect-events-and-runs?ref=pricing",
     section: "observability",
   },
   {
@@ -480,7 +480,7 @@ export const FEATURES: Feature[] = [
       [PLAN_NAMES.enterprise]: "No delay",
     },
     infoUrl:
-      "/docs/platform/monitor/prometheus-metrics-export-integration?ref=pricing",
+      "/docs/platform-and-operations/integrations/prometheus?ref=pricing",
     section: "observability",
   },
   {
@@ -503,7 +503,7 @@ export const FEATURES: Feature[] = [
       [PLAN_NAMES.pro]: "100",
       [PLAN_NAMES.enterprise]: "Custom",
     },
-    infoUrl: "/docs/guides/batching#configuration-reference?ref=pricing",
+    infoUrl: "/docs/durable-execution/flow-control/batching?ref=pricing",
     section: "data",
   },
   {
@@ -515,7 +515,7 @@ export const FEATURES: Feature[] = [
       [PLAN_NAMES.pro]: "120 seconds",
       [PLAN_NAMES.enterprise]: "20 minutes",
     },
-    infoUrl: "/docs/guides/batching#configuration-reference?ref=pricing",
+    infoUrl: "/docs/durable-execution/flow-control/batching?ref=pricing",
     section: "data",
   },
   {

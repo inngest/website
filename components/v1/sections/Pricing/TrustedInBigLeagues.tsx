@@ -19,7 +19,7 @@ import {
   onCursorSpotlightMove,
 } from "@/utils/v1/cursorFx";
 
-// "Trusted in the Big Leagues".
+// "Real customer savings".
 //
 // Three customer story cards share a hairline #7a7a7a border. Hover
 // reuses the exact Home/FeatureCards elevation stack:
@@ -36,6 +36,9 @@ interface CustomerCard {
   logoAlt: string;
   logoWidth: number;
   logoHeight: number;
+  /** Optional word beside the mark — used when the brand ships an
+      icon and a separate wordmark rather than one lockup SVG. */
+  logoWordmark?: string;
   /** Small lead-in line above the big callout. */
   eyebrow: string;
   /** The big, punchy callout statement. */
@@ -48,6 +51,28 @@ interface CustomerCard {
 
 const CARDS: CustomerCard[] = [
   {
+    id: "otto",
+    logoSrc: "/assets/v1/logos/otto.svg",
+    logoAlt: "Otto",
+    logoWidth: 127,
+    logoHeight: 42,
+    eyebrow: "Saved a month of work in",
+    callout: "4 hours",
+    href: "/customers/otto?ref=pricing",
+    featured: true,
+  },
+  {
+    id: "analogue",
+    logoSrc: "/assets/customers/analogue-logo-white.svg",
+    logoAlt: "Analogue",
+    logoWidth: 42,
+    logoHeight: 42,
+    logoWordmark: "Analogue",
+    eyebrow: "Deploy growth in 3 months",
+    callout: "9×",
+    href: "/customers/analogue?ref=pricing",
+  },
+  {
     id: "soundcloud",
     logoSrc: "/assets/customers/soundcloud-logo-white-horizontal.svg",
     logoAlt: "SoundCloud",
@@ -56,27 +81,6 @@ const CARDS: CustomerCard[] = [
     eyebrow: "Deployed within",
     callout: "1 week",
     href: "/customers/soundcloud?ref=pricing",
-  },
-  {
-    id: "fey",
-    logoSrc: "/assets/customers/fey/fey-icon-name.svg",
-    logoAlt: "Fey",
-    logoWidth: 110,
-    logoHeight: 45,
-    eyebrow: "Increased processing by",
-    callout: "50x",
-    href: "/customers/fey?ref=pricing",
-    featured: true,
-  },
-  {
-    id: "gitbook",
-    logoSrc: "/assets/customers/gitbook-logo-white.svg",
-    logoAlt: "GitBook",
-    logoWidth: 191,
-    logoHeight: 42,
-    eyebrow: "Solved",
-    callout: "Bi-directional synchronization",
-    href: "/customers/gitbook?ref=pricing",
   },
 ];
 
@@ -120,18 +124,12 @@ export default function TrustedInBigLeagues() {
   return (
     <Section
       aria-labelledby="pricing-trust-heading"
-      className="relative"
+      className="relative !pt-20 sm:!pt-24 lg:!pt-16"
       containerClassName="flex flex-col gap-v1-stack-lg"
     >
       <SectionHeader
         id="pricing-trust-heading"
-        title={
-          <>
-            Trusted in the
-            <br />
-            Big Leagues
-          </>
-        }
+        title="Real customer savings"
       />
 
       {/* All three cards default to the grey hairline-bordered surface.
@@ -317,25 +315,37 @@ function Card({
         )}
       />
 
-      {/* Logo container sized to the tallest logo in the row (Fey,
-          45.09 px). Each logo renders at its exact intrinsic
-          width × height so SoundCloud and GitBook don't get scaled
-          to match the container. */}
-      <div className="relative flex h-[45px] items-center lg:mt-6">
+      {/* Logo row — 52 px so the Analogue icon+wordmark lockup
+          matches Otto / SoundCloud visual mass. */}
+      <div
+        aria-label={card.logoAlt}
+        className="relative flex h-[52px] items-center gap-3 lg:mt-6"
+      >
         <Image
           src={card.logoSrc}
-          alt={card.logoAlt}
+          alt=""
           width={card.logoWidth}
           height={card.logoHeight}
           className="block max-w-none object-contain"
           style={{ width: card.logoWidth, height: card.logoHeight }}
         />
+        {card.logoWordmark ? (
+          <span
+            aria-hidden="true"
+            className="font-v1Body text-[32px] font-medium leading-none tracking-[-0.03em] text-v1-frost"
+          >
+            {card.logoWordmark}
+            <sup className="ml-0.5 text-[11px] font-normal leading-none tracking-normal">
+              ™
+            </sup>
+          </span>
+        ) : null}
       </div>
 
       {/* Headline + CTA — 32 px gap. */}
       <div className="relative flex w-full flex-col gap-8">
         <h3 className="flex flex-col gap-1.5 text-v1-frost">
-          <span className="text-v1-label-sm uppercase tracking-[0.05rem] text-v1-frost/60">
+          <span className="text-v1-label-md uppercase tracking-[0.05rem] text-v1-accent-salmon motion-safe:transition-colors motion-safe:duration-300 group-hover:text-white group-focus-within:text-white group-data-[force-hover]:text-white">
             {card.eyebrow}
           </span>
           <span className="font-v1Heading text-[32px] font-normal uppercase leading-[1.0] tracking-[-0.01em] text-balance sm:text-[38px]">

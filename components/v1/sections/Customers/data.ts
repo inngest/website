@@ -39,6 +39,14 @@ export const LOGO_HEIGHT = 24;
 
 export const STORIES: StoryCard[] = [
   {
+    id: "featured",
+    brand: "Featured",
+    logo: "https://cdn.inngest.com/customers/featured/04_Featured_Main%20Logo_White_RGB.png",
+    tags: ["AI", "Saas"],
+    title: "Featured's orchestration layer used to be eight people",
+    body: "How Connectively, HARO, and Featured run three brands and 2,500 articles a month on a team of seven — and where the reliable, boring layer underneath actually draws its lines.",
+  },
+  {
     id: "soundcloud",
     brand: "SoundCloud",
     logo: "/assets/customers/soundcloud-logo-white-horizontal.svg",

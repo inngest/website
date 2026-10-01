@@ -58,14 +58,16 @@ const Banner: React.FC<Props> = ({ href, children, className, target, rel }) => 
 export default function AnnouncementBanner() {
   return (
     <Banner
-      href="https://www.inngest.com/docs/learn/agent-evals#ship-your-first-eval-webinar-recording"
+      href="https://www.youtube.com/watch?v=pui1mW9sexM&ref=site-banner"
       target="_blank"
       rel="noopener noreferrer"
     >
-      <span className="font-normal underline underline-offset-2">
-        Build now: Outcome-based scoring for your workflow
-      </span>{" "}
-      →
+      <span className="inline-flex items-center gap-1.5">
+        <span className="font-normal underline underline-offset-2">
+          Watch our CodeTV episode on YouTube!
+        </span>
+        <span aria-hidden="true">📺</span>
+      </span>
     </Banner>
   );
 }

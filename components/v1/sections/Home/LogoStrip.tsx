@@ -41,8 +41,8 @@ interface CustomerLogo {
 }
 
 // Heights are optically cheated per logo: very wide wordmarks
-// (Soundcloud 8.4:1, ElevenLabs 7.7:1, BAERskin 7:1) render shorter,
-// compact marks (Cubic, Resend, Avoca ~4:1) render taller, so every
+// (Artisan 10.4:1, Soundcloud 8.4:1, ElevenLabs 7.7:1, BAERskin 7:1) render
+// shorter, compact marks (Cubic, Resend, Avoca ~4:1) render taller, so every
 // logo reads at roughly the same visual mass in the strip.
 const LOGOS: CustomerLogo[] = [
   { name: "Replit", src: "/assets/v1/logos/replit.svg", width: 116, height: 29, dy: 2 },
@@ -111,6 +111,12 @@ const LOGOS: CustomerLogo[] = [
     width: 153,
     height: 27,
     caseStudyHref: "/customers/outtake",
+  },
+  {
+    name: "Artisan",
+    src: "/assets/v1/logos/artisan.svg",
+    width: 230,
+    height: 22,
   },
 ];
 

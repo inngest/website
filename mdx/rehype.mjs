@@ -136,6 +136,43 @@ function rehypeAddMDXExports(getExports) {
   };
 }
 
+function rehypeDocsPageIntro() {
+  return (tree, file) => {
+    if (!file.path?.replaceAll("\\", "/").includes("/pages/docs/")) {
+      return;
+    }
+
+    const headingIndex = tree.children.findIndex(
+      (node) => node.type === "element" && node.tagName === "h1"
+    );
+    if (headingIndex === -1) {
+      return;
+    }
+
+    let quoteIndex = headingIndex + 1;
+    while (
+      tree.children[quoteIndex]?.type === "text" &&
+      !tree.children[quoteIndex].value.trim()
+    ) {
+      quoteIndex++;
+    }
+
+    const quote = tree.children[quoteIndex];
+    if (quote?.type !== "element" || quote.tagName !== "blockquote") {
+      return;
+    }
+
+    const heading = tree.children[headingIndex];
+    heading.properties["data-docs-page-heading"] = true;
+    tree.children.splice(headingIndex, quoteIndex - headingIndex + 1, {
+      type: "mdxJsxFlowElement",
+      name: "DocsPageHeading",
+      attributes: [],
+      children: [heading, ...quote.children],
+    });
+  };
+}
+
 function getSections(node) {
   let sections = [];
 
@@ -164,6 +201,7 @@ export const rehypePlugins = [
   rehypeShiki,
   rehypeSlugify,
   rehypeMdxTitle,
+  rehypeDocsPageIntro,
   [
     rehypeAddMDXExports,
     (tree) => ({

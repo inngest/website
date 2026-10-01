@@ -9,13 +9,12 @@ import {
 export const dynamic = "force-static";
 
 export async function GET() {
-  const learnDocs = topLevelNav.find((nav) => nav.title === "Learn")?.sectionLinks || [];
-  const referenceDocs = topLevelNav.find(
-    (nav) => nav.title === "Reference"
-  )?.sectionLinks || [];
-  const examplesDocs = topLevelNav.find(
-    (nav) => nav.title === "Examples"
-  )?.sectionLinks || [];
+  const sections = topLevelNav
+    .map(
+      (section) =>
+        `## ${section.title}\n\n${recursiveLinks(section.sectionLinks)}`
+    )
+    .join("\n\n");
 
   const overview = `# Inngest
 
@@ -26,17 +25,7 @@ export async function GET() {
 - [LLM integration context](${process.env.NEXT_PUBLIC_HOST}/llm-context.md)
 - [Blog index](${process.env.NEXT_PUBLIC_HOST}/blog.txt)
 
-## Learn
-
-${recursiveLinks(learnDocs)}
-
-## Reference
-
-${recursiveLinks(referenceDocs)}
-
-## Examples
-
-${recursiveLinks(examplesDocs)}
+${sections}
 
 `;
 
@@ -49,7 +38,11 @@ ${recursiveLinks(examplesDocs)}
 }
 
 function markdownUrl(path: string): string {
-  return `${process.env.NEXT_PUBLIC_HOST}/docs-markdown${path.replace(/^\/docs/, '')}`;
+  if (/^https?:\/\//.test(path)) return path;
+  return `${process.env.NEXT_PUBLIC_HOST}/docs-markdown${path.replace(
+    /^\/docs/,
+    ""
+  )}`;
 }
 
 function recursiveLinks(

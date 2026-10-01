@@ -4,6 +4,18 @@
 
 ^https://(www\.)?linkedin\.com/
 ^https://engineering\.linkedin\.com/
+^https://(www\.)?reddit\.com/
+^https://www\.producthunt\.com/
+^https://(www\.)?aomni\.com/
+^https://clickhouse\.com/
+^https://www\.youtube\.com/watch
+^https://inngestabot\.deno\.dev/?$
+^https://api/stock$
+^https://faas-sfo3-your-url\.doserverless\.co/
+^https://a-bucket\.s3\.us-west-2\.amazonaws\.com/
+^https://fonts-cdn\.inngest\.com/\$%7B
+^https://fonts\.googleapis\.com/css2\?family=\$
+^https://www\.youtube-nocookie\.com/embed/\$%7B
 ^https://(www\.)?x\.com/
 ^https://twitter\.com/
 ^https://t\.co/

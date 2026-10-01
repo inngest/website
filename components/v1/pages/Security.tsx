@@ -133,10 +133,24 @@ export default function Security() {
             </Body>
           </div>
 
+          <Group>
+            <H3>Data Processing Agreements</H3>
+            <Body>
+              <p>
+                Inngest offers a standard signed Data Processing Agreement (DPA)
+                to customers on paid plans.{" "}
+                <Link href="https://support.inngest.com/">
+                  File a support ticket
+                </Link>{" "}
+                to request one.
+              </p>
+            </Body>
+          </Group>
+
           <Body>
             <p>
               To read how we handle SDK and function security,{" "}
-              <Link href="/docs/learn/security?ref=security">read our docs on security</Link>
+              <Link href="/docs/platform-and-operations/cloud-architecture-and-security?ref=security">read our docs on security</Link>
               .
             </p>
           </Body>

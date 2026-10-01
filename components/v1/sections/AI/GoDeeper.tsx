@@ -52,7 +52,7 @@ const RESOURCES: Resource[] = [
     id: "durable-agents",
     title: "Building durable\nagents",
     body: BODY_PLACEHOLDER,
-    href: "/docs/learn/inngest-steps",
+    href: "/docs/durable-execution/primitives",
   },
   {
     id: "realtime-hitl",

@@ -97,7 +97,7 @@ export default function OrchestrationComparison() {
               Start building →
             </ButtonLink>
             <ButtonLink
-              href="/docs/guides/scheduled-functions?ref=scheduled-jobs-orchestration"
+              href="/docs/durable-execution/guides-and-advanced/events-and-triggers/schedules-and-delayed-starts?ref=scheduled-jobs-orchestration"
               variant="secondary"
             >
               Serverless cron docs

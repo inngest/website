@@ -2,23 +2,21 @@ const fs = require("node:fs");
 const path = require("node:path");
 const matter = require("gray-matter");
 
-// A page is "gated" (behind ?unreleased=<label>) if its source declares an
-// `unreleased` label — YAML frontmatter for blog posts, an `export const
-// unreleased` for docs/changelog MDX. Gated pages send noindex, so they must
-// stay out of the sitemap (sitemap + noindex is contradictory).
-function sourceIsGated(filePath) {
+// unreleased pages and blog posts with noindex stay out of the sitemap.
+// their robots metadata conflicts with a sitemap entry.
+function sourceIsExcludedFromSitemap(filePath) {
   try {
     const src = fs.readFileSync(filePath, "utf8");
-    if (matter(src).data.unreleased) return true;
+    const data = matter(src).data;
+    if (data.unreleased || data.noindex) return true;
     return /export\s+const\s+unreleased\s*=/.test(src);
   } catch {
     return false;
   }
 }
 
-// Map a sitemap URL back to the content file that backs it, for the three
-// surfaces that support gating. Returns null for everything else.
-function gatedSourceFor(urlPath) {
+// map a sitemap URL to the content file that controls its robots metadata.
+function contentSourceFor(urlPath) {
   const p = urlPath.replace(/\/+$/, "");
   const candidates = [];
   if (p.startsWith("/blog/")) {
@@ -38,14 +36,28 @@ function gatedSourceFor(urlPath) {
   return null;
 }
 
+// Every permanent redirect source is excluded from the sitemap, so old docs
+// pages that still have files on disk don't get listed next to their new pages.
+let redirectSources;
+async function getRedirectSources() {
+  if (!redirectSources) {
+    const { permanentRedirects } = await import("./redirects.mjs");
+    redirectSources = new Set(
+      permanentRedirects.map(([source]) => source.replace(/\/$/, ""))
+    );
+  }
+  return redirectSources;
+}
+
 /** @type {import('next-sitemap').IConfig} */
 module.exports = {
   siteUrl: "https://www.inngest.com",
-  // Drop pages gated behind ?unreleased=<label> — they're noindex, so the
-  // sitemap must not list them. Complements the static `exclude` list below.
+  // remove content with unreleased or noindex metadata from the sitemap.  the
+  // static exclude list covers routes whose metadata lives in code.
   transform: async (config, urlPath) => {
-    const src = gatedSourceFor(urlPath);
-    if (src && sourceIsGated(src)) return null;
+    if ((await getRedirectSources()).has(urlPath)) return null;
+    const src = contentSourceFor(urlPath);
+    if (src && sourceIsExcludedFromSitemap(src)) return null;
     return {
       loc: urlPath,
       changefreq: config.changefreq,
@@ -76,6 +88,21 @@ module.exports = {
     "/launch-week/*",
     "/ai-personalized-documentation",
     "/product/how-inngest-works",
+    // Docs pages copied to new paths (old files remain, redirected in redirects.mjs)
+    "/docs/guides/writing-expressions",
+    "/docs/ai-patterns/agent-tool-loops",
+    "/docs/ai-patterns/human-in-the-loop",
+    "/docs/ai-patterns/sub-agent-delegation",
+    "/docs/features/events-triggers/neon",
+    "/docs/platform/monitor/datadog-integration",
+    "/docs/platform/monitor/prometheus-metrics-export-integration",
+    "/docs/learn/agent-evals",
+    "/docs/learn/durable-agents",
+    "/docs/features/inngest-functions/steps-workflows/scoring",
+    "/docs/features/inngest-functions/steps-workflows/deferred-scoring",
+    "/docs/features/inngest-functions/steps-workflows/step-experiments",
+    "/docs/features/events-triggers/sessions",
+    "/docs/examples/ai-eval-scorer-quickstart",
     // Pages with noindex set in code — sitemap + noindex is contradictory.
     "/content/ai-in-production-report-2026",
     "/content/ai-in-production-report-2026/*",

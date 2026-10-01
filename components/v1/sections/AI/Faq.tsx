@@ -98,15 +98,17 @@ export default function Faq({
   faqs = FAQS,
   heading = "FAQ",
   refTag = "ai",
+  className,
 }: {
   faqs?: Faq[];
   heading?: string;
   refTag?: string;
+  className?: string;
 } = {}) {
   return (
     <Section
       aria-label="Frequently asked questions"
-      className="relative"
+      className={cn("relative", className)}
       containerClassName="grid grid-cols-1 gap-x-4 gap-y-12 lg:grid-cols-3 lg:items-start"
     >
       <motion.h2

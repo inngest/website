@@ -114,7 +114,7 @@ const INTEGRATIONS: Integration[] = [
         short transform to normalize the payload and you're done.
       </>
     ),
-    link: { label: "Docs", href: "/docs/platform/webhooks" },
+    link: { label: "Docs", href: "/docs/durable-execution/guides-and-advanced/events-and-triggers/receive-webhook-events" },
   },
 ];
 
