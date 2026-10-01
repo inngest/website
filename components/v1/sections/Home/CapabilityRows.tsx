@@ -114,7 +114,7 @@ export default function Capabilities() {
 
       {/* Desktop: scroll-driven rows. Each row carries its own video; the
           row in focus is full-contrast, the others dim as one. */}
-      <ol className="relative mt-v1-stack hidden list-none pl-0 lg:mt-v1-stack-lg lg:block">
+      <ol className="relative mt-v1-stack hidden list-none pl-0 lg:block">
         {CAPABILITIES.map((capability, i) => (
           <Step
             key={capability.id}
@@ -149,13 +149,13 @@ export default function Capabilities() {
  * `left-1/2 w-screen -translate-x-1/2` trick, then extends above the
  * header (through this section's top padding and the demo section's
  * bottom padding, plus a 96px bite into the video) and below it (the
- * header→content gap plus 96px into the first step / card).
+ * 48px header→content gap plus 96px into the first row / card).
  */
 function BlueSlab() {
   return (
     <div
       aria-hidden="true"
-      className="pointer-events-none absolute -bottom-[6rem] -top-[13rem] left-1/2 w-screen -translate-x-1/2 overflow-hidden bg-v1-accent-blue sm:-top-[16rem] lg:-bottom-[12rem] lg:-top-[26rem]"
+      className="pointer-events-none absolute -bottom-[6rem] -top-[13rem] left-1/2 w-screen -translate-x-1/2 overflow-hidden bg-v1-accent-blue sm:-top-[16rem] lg:-bottom-[9rem] lg:-top-[26rem]"
     >
       {/* eslint-disable-next-line @next/next/no-img-element */}
       <img
