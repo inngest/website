@@ -1,0 +1,86 @@
+---
+tags: ["Durable Execution", "Workflows & Orchestration", "Built for the Long Run"]
+heading: "All your workflows are about to be long running. Build for it."
+subtitle: "Long-running work fails in the middle. After rebuilding a pipeline that died most nights, here are the rules I architect by so one system can run one item or a million, for seconds or months."
+image: https://cdn.inngest.com/blog/All-your-workflows-are-about-to-be-long-running/long-running.png
+date: 2026-10-01
+author: Mitchell Alderson
+category: engineering
+---
+
+Every evening, 100,000 patient records were sent to a healthtech company I worked with. A pipeline transformed and matched them so the data would be clean and joined by morning. 
+
+It was hand-built in Go, with goroutines and channels for flow control and custom retry logic for when something upstream flaked, all sitting on NATS queues and Redis clusters: complicated, fragile infra that had nothing to do with the value the product provided to millions of medical patients.
+
+More often than not, the team came in to find it had died at a random point in the middle of the night. The retry logic hadn't worked, or a pod had run out of memory, or write queries had overwhelmed the database. Either way, the pipeline was completely lost as to where in the dataset it had stopped. The job's state lived in memory, and only the last finished item made it to a database, so there was no real "resume from here." There was only start over, and hope the next night went better.
+
+I was brought in to fix it.
+
+## What is long-running work?
+
+Long-running work in software is anything that can't finish in a single request, because there's too much to do or because it has to wait on something outside itself.
+
+That pipeline taught me what I now believe about almost every system I touch: your work is about to be long-running, and most of it is built as if it'll finish in one request. Agents loop for an unknown number of turns. Pipelines grow until they don't fit in a night. Approvals and webhooks make work wait for days.
+
+None of this is new. "Long-running" is having a moment because agents made everyone hit the problem at the same time, but anyone who has babysat a nightly batch has been fighting it for years. 
+Long-running work fails in the middle, and the default recovery is to start over from zero. The systems that survive don't have better retry logic. They're designed for the middle. The fix has always been architecture.
+
+Here's how I architect for it now.
+
+## Commit in steps, or you'll start over
+
+Every unit of work should commit before the next one starts. The Go pipeline had concurrency and retries, and it still fell over every few nights because neither saved enough progress for the next attempt to pick up from. Retries without checkpoints just retry from the top.
+
+Split the work into steps small enough to finish reliably, and save each result somewhere durable. On the next attempt, completed steps return their saved result instead of running again. That's **memoization**, and it turns "start over" into "resume." A failure at step 40 retries step 40, and steps 1 through 39 stay done. Retrying the step, not the chain.
+
+Steps with side effects need one more thing: an **idempotency key**, so a step that charged a card before its result was recorded doesn't charge it twice. Your agent just learned to spend money shows how this works with agent tools that move money.
+
+## State lives outside the process
+
+If your job's progress lives in memory, it dies when the process does. A request that finishes in a few hundred milliseconds almost never meets a deploy, a crashed node, or an out-of-memory kill. A job that runs all night eventually meets all of them.
+
+When that pipeline's pod ran out of memory, its position in the dataset went with it, and one checkpoint of the last finished item wasn't enough to trust. Nobody could answer "where did it stop?", so redoing everything was the only safe move. Keep orchestration and state outside the worker, and any healthy worker can pick the run back up.
+
+## Waiting should cost nothing
+
+A run waiting on a human, a webhook, or another system should hold its state and nothing else. Hand-rolled systems usually get this wrong: a paused job is still a running job, with a worker holding a thread, a connection, or a slot while it waits. These held jobs consume resources, blocking new processes from running. Park enough of them and the queue stalls, even though none of them is doing anything.
+
+A wait should release compute, then resume exactly where it paused when the signal arrives, whether that's in five seconds or next week.
+
+## A million items should never be one job
+
+Massive workloads should **fan out**: a coordinator splits the work into chunks, each chunk becomes its own run, and flow control decides how fast those runs hit your systems.
+
+The tempting design is one enormous run that loops over every record. On Inngest the limits rule it out: a function can have at most 1,000 steps, and a single send carries at most 5,000 events. 
+
+Those limits are intentional: they describe the architecture you want anyway.
+
+Fan-out buys isolation. One bad record stalls its own chunk instead of the whole night. A pod that dies takes one chunk's current step with it, and the rest of the pipeline keeps going. And no worker ever holds the whole dataset in memory, which is the out-of-memory failure solved by design, instead of by bigger pods.
+
+## Steps should be short. Runs can be long.
+
+A short step is cheap to retry and fits on any host. A long run is many short steps and waits strung together, with state saved between each one. The risk lives in the longest thing you ask a single process to survive, and steps keep that short.
+
+On Inngest, a step can run for up to 2 hours (your host may cut that shorter, looking at you, serverless platforms!), `step.sleep` can pause a run for up to a year (7 days on the Free plan), and a run can last up to 366 days. 
+
+Because progress is tracked by step ID, you can even deploy (and sync to Inngest!) mid-run: the run continues on your new code, and completed steps don't run again.
+
+## What changed when I moved it to Inngest
+
+Everything above can be built by hand: a queue, a durable state store, a scheduler for waits, retry bookkeeping, flow control. The team had built half of it in Go, and it still failed in the middle of the night. Inngest ships those pieces as primitives, so you write the function instead of the plumbing.
+
+When I moved the pipeline to durable execution, the hand-rolled concurrency, throttling, and retry code went away. 
+
+The team stopped fighting Go concurrency and stopped holding valuable resource slots while work was paused. When a pod died, the next step ran on a healthy pod and picked up where the dead one stopped. Because completed steps were memoized, nothing got reworked. That saved the company a lot of time and money, and it changed what the morning looked like: finished runs instead of a pile of unprocessed data and broken SLAs.
+
+## Is your longest job built for the middle?
+
+Here's the test I wish the team had run on that pipeline before the first bad morning. Take your longest job and answer four questions. Where does work commit? Where does state live? What holds compute while it waits? What happens if the process dies right now?
+
+If any answer is "in memory" or "we start over," that's where the middle will get you.
+
+Endurance runners will tell you the long run is where you find out what you've built.
+
+Software's the same.
+
+[Build something that doesn't start over →](https://app.inngest.com/sign-up)
