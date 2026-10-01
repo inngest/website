@@ -6,7 +6,7 @@ import { motion } from "motion/react";
 import { cn } from "@/utils/v1/cn";
 import { appendRef } from "@/utils/v1/ref";
 import { reveals } from "@/utils/v1/reveals";
-import { useMediaQuery } from "@/utils/v1/hooks/useMediaQuery";
+import { useIsDesktop } from "@/utils/v1/hooks/useIsDesktop";
 import GradientFrame from "@/components/v1/sections/shared/GradientFrame";
 import Section from "@/components/v1/sections/shared/Section";
 import SectionHeader from "@/components/v1/sections/shared/SectionHeader";
@@ -75,31 +75,22 @@ const CAPABILITIES: Capability[] = [
  * A brand-blue slab runs edge to edge behind the section header. It
  * starts inside the previous (demo) section's bottom padding, so the
  * demo video appears to rest on it, and ends partway down the first
- * row of cards, so the cards appear to rise out of it. The slab is a
- * solid `accent-blue` fill plus the Figma pixel-dissolve PNG anchored
- * at the right edge; the fill is what makes it hold at any viewport
- * width (the PNG alone is 1311px wide).
+ * step, so the content appears to rise out of it. The slab is a solid
+ * `accent-blue` fill plus the Figma pixel-dissolve PNG anchored at the
+ * right edge; the fill is what makes it hold at any viewport width.
  *
- * Below the header, the four capabilities are four full-width framed
- * cards, stacked. Each card is horizontal from md up — video on the
- * left at 16:9, copy centred beside it — so the copy column is wide
- * enough to set the body a size up and keep it to a few lines; on
- * mobile the media stacks above the copy. Same `GradientFrame` the
- * platform section uses, so the two product chapters share one
- * surface language.
+ * Below the header, the four capabilities are told as a sequence —
+ * know what happened → what to run → what's safe → what works — in a
+ * scroll-driven showcase at lg+: the steps scroll on the left beside a
+ * step rail (the same "steps of a run" idea as the hero's trace), and
+ * a sticky media stage on the right crossfades to the active step's
+ * video. Only the active video plays. Below lg the showcase becomes
+ * four stacked cards, video over copy.
  */
-/**
- * Desktop with a real pointer: one video at a time. The first card
- * (Observability) plays by default; hovering or focusing another card
- * hands playback to it, and leaving hands it back. Touch / narrow
- * viewports have no hover, so every in-view video plays.
- */
-const HOVER_PLAYBACK_MQ = "(min-width: 1024px) and (hover: hover)";
-
 export default function Capabilities() {
-  const hoverPlayback = useMediaQuery(HOVER_PLAYBACK_MQ);
-  const [hoveredId, setHoveredId] = useState<string | null>(null);
-  const activeId = hoveredId ?? CAPABILITIES[0].id;
+  const isDesktop = useIsDesktop();
+  const [active, setActive] = useState(0);
+
   return (
     <Section
       aria-labelledby="home-capabilities-heading"
@@ -121,21 +112,42 @@ export default function Capabilities() {
         />
       </div>
 
-      <ul className="relative mt-v1-stack flex flex-col gap-6 pl-0 lg:mt-v1-stack-lg">
+      {/* Desktop: scroll-driven showcase. */}
+      <div className="relative mt-v1-stack hidden lg:mt-v1-stack-lg lg:grid lg:grid-cols-[minmax(0,5fr)_minmax(0,7fr)] lg:gap-x-16">
+        <ol className="relative list-none pl-0">
+          {/* Step rail: a hairline the dots sit on, running from the first
+              dot's centre to the last's (dots sit 15vh + 0.75rem inside the
+              first/last step, see Step). */}
+          <span
+            aria-hidden="true"
+            className="absolute bottom-[calc(15vh+0.75rem+5px)] left-[5px] top-[calc(15vh+0.75rem+5px)] w-px bg-v1-frost/[0.12]"
+          />
+          {CAPABILITIES.map((capability, i) => (
+            <Step
+              key={capability.id}
+              capability={capability}
+              index={i}
+              isActive={i === active}
+              isPast={i < active}
+              onInView={() => setActive(i)}
+            />
+          ))}
+        </ol>
+
+        <div className="lg:sticky lg:top-[calc(50vh-13rem)] lg:self-start">
+          <Stage active={active} enabled={isDesktop} />
+        </div>
+      </div>
+
+      {/* Mobile / tablet: stacked cards. */}
+      <ul className="relative mt-v1-stack flex list-none flex-col gap-6 pl-0 lg:hidden">
         {CAPABILITIES.map((capability, i) => (
           <motion.li
             key={capability.id}
             {...reveals.item(i)}
             className="list-none"
           >
-            <CapabilityCard
-              capability={capability}
-              play={!hoverPlayback || activeId === capability.id}
-              onActivate={() => setHoveredId(capability.id)}
-              onDeactivate={() =>
-                setHoveredId((cur) => (cur === capability.id ? null : cur))
-              }
-            />
+            <StackedCard capability={capability} enabled={!isDesktop} />
           </motion.li>
         ))}
       </ul>
@@ -148,7 +160,7 @@ export default function Capabilities() {
  * `left-1/2 w-screen -translate-x-1/2` trick, then extends above the
  * header (through this section's top padding and the demo section's
  * bottom padding, plus a 96px bite into the video) and below it (the
- * header→grid gap plus 96px into the first card row).
+ * header→content gap plus 96px into the first step / card).
  */
 function BlueSlab() {
   return (
@@ -168,108 +180,207 @@ function BlueSlab() {
   );
 }
 
-function CapabilityCard({
+const CAP_ICON_MASK = (src: string) => ({
+  maskImage: `url(${src})`,
+  WebkitMaskImage: `url(${src})`,
+  maskSize: "contain",
+  WebkitMaskSize: "contain",
+  maskRepeat: "no-repeat",
+  WebkitMaskRepeat: "no-repeat",
+  maskPosition: "left center",
+  WebkitMaskPosition: "left center",
+});
+
+/** Icon + label row. The site line-art SVG is used as a CSS mask over
+ *  `currentColor`, so it takes the exact eyebrow colour. */
+function Eyebrow({ capability }: { capability: Capability }) {
+  return (
+    <p className="flex items-center gap-2 text-v1-accent-salmon">
+      <span
+        aria-hidden="true"
+        className="block h-4 w-5 shrink-0 bg-current"
+        style={CAP_ICON_MASK(capability.icon)}
+      />
+      <span className="text-v1-label-sm uppercase">{capability.label}</span>
+    </p>
+  );
+}
+
+/**
+ * One step in the desktop showcase. Each step is tall enough (70vh)
+ * that scrolling paces through them one at a time; the step whose box
+ * crosses the viewport's middle band becomes active and the stage
+ * follows. The copy dims when inactive so the active step is the only
+ * full-contrast text beside the stage.
+ */
+function Step({
   capability,
-  play,
-  onActivate,
-  onDeactivate,
+  index,
+  isActive,
+  isPast,
+  onInView,
 }: {
   capability: Capability;
-  play: boolean;
-  onActivate: () => void;
-  onDeactivate: () => void;
+  index: number;
+  isActive: boolean;
+  isPast: boolean;
+  onInView: () => void;
 }) {
+  const ref = useRef<HTMLLIElement>(null);
+  const onInViewRef = useRef(onInView);
+  onInViewRef.current = onInView;
+
+  useEffect(() => {
+    const el = ref.current;
+    if (!el) return;
+    const io = new IntersectionObserver(
+      ([entry]) => {
+        if (entry.isIntersecting) onInViewRef.current();
+      },
+      // A thin band across the viewport's middle: whichever step
+      // overlaps it is the one the reader is looking at.
+      { rootMargin: "-45% 0px -45% 0px", threshold: 0 }
+    );
+    io.observe(el);
+    return () => io.disconnect();
+  }, []);
+
+  const ease =
+    "motion-safe:transition-[color,opacity] motion-safe:duration-500 motion-safe:ease-v1-out";
+
   return (
-    // Hover/focus state: 4px lift + a neutral depth shadow with a 1px
-    // frost ring (the design system's card-hover token adds a salmon
-    // glow, which read as a red halo here, so this is the same depth
-    // stack without the tint). Applied as an arbitrary box-shadow
-    // property; Tailwind's shadow utility can't take a multi-layer
-    // value. Pointer handlers are mouse-only so a touch tap doesn't
-    // leave a card stuck active.
-    <div
-      className="group/cap h-full rounded-[10px] ease-v1-out focus-within:-translate-y-1 focus-within:[box-shadow:0_28px_72px_-20px_rgb(0_0_0/0.7),0_12px_32px_-14px_rgb(0_0_0/0.5),0_0_0_1px_rgb(255_255_255/0.18)] hover:-translate-y-1 hover:[box-shadow:0_28px_72px_-20px_rgb(0_0_0/0.7),0_12px_32px_-14px_rgb(0_0_0/0.5),0_0_0_1px_rgb(255_255_255/0.18)] motion-safe:transition-[transform,box-shadow] motion-safe:duration-300"
-      onPointerEnter={(e) => {
-        if (e.pointerType === "mouse") onActivate();
-      }}
-      onPointerLeave={(e) => {
-        if (e.pointerType === "mouse") onDeactivate();
-      }}
-      onFocus={onActivate}
-      onBlur={onDeactivate}
+    <li
+      ref={ref}
+      aria-current={isActive ? "step" : undefined}
+      className={cn(
+        "relative flex min-h-[70vh] flex-col justify-center pl-10",
+        index === 0 && "min-h-[50vh] justify-start pt-[15vh]",
+        index === CAPABILITIES.length - 1 &&
+          "min-h-[50vh] justify-end pb-[15vh]"
+      )}
     >
-      {/* An 85%-opaque canvas-colour base sits under the charcoal
-          gradient, which fades to transparent at one corner. Fully
-          transparent, the blue slab behind the top row fought the copy;
-          fully opaque, the cards lost their depth — 0.85 lets the slab
-          tint the surface faintly while the text stays legible. Written
-          as an arbitrary property so tailwind-merge doesn't treat it as
-          a conflict with the frame's gradient background class. */}
-      <GradientFrame
-        variant="charcoal"
-        className="h-full rounded-[10px]"
-        innerClassName="flex h-full flex-col [background-color:rgb(var(--color-v1-bg-canvas-base)/0.85)] md:flex-row"
+      {/* Rail dot: salmon and lit while active, quiet frost once passed,
+          dim before. Positioned on the hairline at the left edge. */}
+      <span
+        aria-hidden="true"
+        className={cn(
+          "border-v1-canvasBase absolute left-0 top-1/2 size-[11px] -translate-y-1/2 rounded-full border-2",
+          "motion-safe:transition-[background-color,box-shadow] motion-safe:duration-500",
+          isActive
+            ? "bg-v1-accent-salmon shadow-[0_0_0_4px_rgb(var(--color-v1-salmon-200)/0.25),0_0_18px_rgb(var(--color-v1-salmon-200)/0.6)]"
+            : isPast
+            ? "bg-v1-frost/60"
+            : "bg-v1-frost/20"
+        )}
+        style={
+          index === 0
+            ? { top: "calc(15vh + 0.75rem)" }
+            : index === CAPABILITIES.length - 1
+            ? { top: "auto", bottom: "calc(15vh + 0.75rem)", transform: "none" }
+            : undefined
+        }
+      />
+      <div
+        className={cn(
+          "flex max-w-[480px] flex-col gap-5",
+          ease,
+          isActive ? "opacity-100" : "opacity-40"
+        )}
       >
-        {/* Media column: a 16:9 box at every width. Side-by-side (md+)
-            it sets the card height and the copy centres beside it. */}
-        <div className="relative aspect-video w-full shrink-0 overflow-hidden border-b border-v1-frost/[0.08] bg-v1-surfaceElevated md:w-1/2 md:border-b-0 md:border-r">
-          {capability.videoSrc ? (
+        <div className="flex flex-col gap-3">
+          <Eyebrow capability={capability} />
+          <h3 className="font-v1Heading text-[clamp(2rem,3vw,2.75rem)] leading-[1.1] tracking-[-0.02em] text-v1-frost">
+            {capability.heading}
+          </h3>
+        </div>
+        <p className="text-v1-body-lg-loose !text-v1-frost">
+          {capability.body}
+        </p>
+        <div className="pt-1">
+          <DocsCue
+            href={appendRef(capability.docsHref, `homepage-${capability.id}`)}
+          />
+        </div>
+      </div>
+    </li>
+  );
+}
+
+/**
+ * Sticky media stage. All four videos are mounted and stacked so the
+ * swap is a crossfade rather than a reload; only the active one plays.
+ */
+function Stage({ active, enabled }: { active: number; enabled: boolean }) {
+  return (
+    <GradientFrame
+      variant="charcoal"
+      className="rounded-[10px]"
+      innerClassName="relative aspect-video [background-color:rgb(var(--color-v1-bg-canvas-base)/0.85)]"
+    >
+      {CAPABILITIES.map((capability, i) => (
+        <div
+          key={capability.id}
+          aria-hidden={i !== active}
+          className={cn(
+            "absolute inset-0 motion-safe:transition-opacity motion-safe:duration-700 motion-safe:ease-v1-out",
+            i === active ? "opacity-100" : "opacity-0"
+          )}
+        >
+          {capability.videoSrc && (
             <RowVideo
               src={capability.videoSrc}
               label={capability.label}
               startAt={capability.videoStart}
-              play={play}
+              play={i === active}
+              enabled={enabled}
             />
-          ) : (
-            <div className="flex h-full w-full items-center justify-center">
-              <span className="text-v1-body-sm">{capability.label} video</span>
-            </div>
           )}
         </div>
+      ))}
+    </GradientFrame>
+  );
+}
 
-        <div className="flex flex-1 flex-col justify-center gap-5 p-6 md:p-8 lg:p-12">
-          <div className="flex flex-col gap-3">
-            {/* Icon + label row. The icon is the site line-art SVG used
-                as a CSS mask over `currentColor`, so it takes the exact
-                eyebrow colour (an <img> can't be tinted). Label-sm (12px
-                mono) keeps the row quieter than the title. */}
-            <p className="flex items-center gap-2 text-v1-accent-salmon">
-              <span
-                aria-hidden="true"
-                className="block h-4 w-5 shrink-0 bg-current"
-                style={{
-                  maskImage: `url(${capability.icon})`,
-                  WebkitMaskImage: `url(${capability.icon})`,
-                  maskSize: "contain",
-                  WebkitMaskSize: "contain",
-                  maskRepeat: "no-repeat",
-                  WebkitMaskRepeat: "no-repeat",
-                  maskPosition: "left center",
-                  WebkitMaskPosition: "left center",
-                }}
-              />
-              <span className="text-v1-label-sm uppercase">
-                {capability.label}
-              </span>
-            </p>
-            <h3 className="text-v1-heading-card text-v1-frost">
-              {capability.heading}
-            </h3>
-          </div>
-          {/* `!text-v1-frost`: the page-level body rule dims body tokens to
-              #B3B3B3 at (0,2,0) specificity; these cards read better in
-              full white against the dark frame. */}
-          <p className="text-v1-body-lg-loose max-w-[560px] !text-v1-frost">
-            {capability.body}
-          </p>
-          <div className="pt-1">
-            <DocsCue
-              href={appendRef(capability.docsHref, `homepage-${capability.id}`)}
-            />
-          </div>
+/** Below lg: a plain stacked card, video over copy. Plays when in view. */
+function StackedCard({
+  capability,
+  enabled,
+}: {
+  capability: Capability;
+  enabled: boolean;
+}) {
+  return (
+    <GradientFrame
+      variant="charcoal"
+      className="h-full rounded-[10px]"
+      innerClassName="flex h-full flex-col [background-color:rgb(var(--color-v1-bg-canvas-base)/0.85)]"
+    >
+      <div className="relative aspect-video w-full overflow-hidden border-b border-v1-frost/[0.08] bg-v1-surfaceElevated">
+        {capability.videoSrc && (
+          <RowVideo
+            src={capability.videoSrc}
+            label={capability.label}
+            startAt={capability.videoStart}
+            play
+            enabled={enabled}
+          />
+        )}
+      </div>
+      <div className="flex flex-col gap-4 p-5 sm:p-6">
+        <div className="flex flex-col gap-3">
+          <Eyebrow capability={capability} />
+          <h3 className="text-v1-heading-sm text-v1-frost">
+            {capability.heading}
+          </h3>
         </div>
-      </GradientFrame>
-    </div>
+        <p className="text-v1-body-sm !text-v1-frost">{capability.body}</p>
+        <div className="pt-1">
+          <DocsCue
+            href={appendRef(capability.docsHref, `homepage-${capability.id}`)}
+          />
+        </div>
+      </div>
+    </GradientFrame>
   );
 }
 
@@ -303,13 +414,17 @@ function RowVideo({
   label,
   startAt,
   play,
+  enabled = true,
 }: {
   src: string;
   label: string;
   startAt?: number;
   /** External gate — the video only plays while this is true AND it is
-   *  in view. The grid flips it per card on hover (desktop). */
+   *  in view. The showcase flips it to the active step. */
   play: boolean;
+  /** False for the copy rendered at a breakpoint that is display:none,
+   *  so only one set of videos attaches a source and loads. */
+  enabled?: boolean;
 }) {
   const ref = useRef<HTMLVideoElement>(null);
   // Playback is driven from state, not refs, so every input change
@@ -323,7 +438,7 @@ function RowVideo({
   // and observe visibility. Bound once per source.
   useEffect(() => {
     const video = ref.current;
-    if (!video) return;
+    if (!video || !enabled) return;
     if (window.matchMedia("(prefers-reduced-motion: reduce)").matches) return;
 
     let hls: import("hls.js").default | undefined;
@@ -377,12 +492,12 @@ function RowVideo({
       video.removeEventListener("ended", onEnded);
       hls?.destroy();
     };
-  }, [src, startAt]);
+  }, [src, startAt, enabled]);
 
   // The one play/pause decision.
   useEffect(() => {
     const video = ref.current;
-    if (!video) return;
+    if (!video || !enabled) return;
     if (window.matchMedia("(prefers-reduced-motion: reduce)").matches) return;
     if (inView && play) {
       if (startAt != null && video.currentTime < startAt - 0.4) {
@@ -392,7 +507,7 @@ function RowVideo({
     } else {
       video.pause();
     }
-  }, [inView, play, ready, startAt]);
+  }, [inView, play, ready, startAt, enabled]);
 
   return (
     <div className="absolute inset-0">
