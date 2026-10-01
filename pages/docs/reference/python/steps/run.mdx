@@ -60,6 +60,36 @@ async def my_fn_with_args_and_kwargs(a: int, *, b: str) -> None:
     pass
 ```
 
+## Step decorator
+
+Use `@inngest.experimental.step("step-id")` to turn a Python function into a reusable step without passing `ctx` to it or wrapping each call in `ctx.step.run()`.
+
+<Callout variant="warning">
+This API is experimental and may have breaking changes outside of semantic versioning.
+</Callout>
+
+The decorator takes one required argument, `step_id`, with the same meaning as the ID passed to `step.run`. Choose a stable ID for each distinct step in your workflow. Positional and keyword arguments are passed through to the decorated function.
+
+### Usage
+
+The decorator works with both async and sync functions. Use `await` when calling an async decorated function from an async Inngest function, as shown below. For a sync Inngest function, decorate a regular `def` function and call it without `await`.
+
+```py
+!snippet:path=snippets/py/latest/primitives/step_run/decorator.py
+```
+
+### Execution behavior
+
+- **Inside an Inngest function:** the decorator calls `step.run` using the current execution context. The step gets the same retries and memoization as an explicit `ctx.step.run()` call. Return a JSON-serializable value.
+- **Outside an Inngest function:** the original function runs directly, without durable execution, memoization, or Inngest retries. You can reuse the function in other application code or call it in unit tests. Async functions still need to be awaited.
+- **Inside another step:** do not call a decorated function from a `step.run` handler or another decorated step. This would create nested steps, which are not supported. Call decorated steps from the Inngest function's body instead.
+
+For example, a direct call outside an Inngest function runs normally:
+
+```py
+!snippet:path=snippets/py/latest/primitives/step_run/decorator_outside_inngest.py
+```
+
 ## Retries
 
 Each `step.run()` call has its own independent retry counter. When a step raises an exception, it will be retried according to your function's retry configuration. The retry configuration applies to each individual step, not as a shared pool across all steps in your function.
