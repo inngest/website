@@ -1,7 +1,7 @@
 "use client";
 
 import Image from "next/image";
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useRef, useState, type ReactNode } from "react";
 import { AdvanceClick } from "@/components/v1/sections/shared/AdvanceClick";
 import ButtonLink from "@/components/v1/ButtonLink";
 import { CarouselArrow } from "@/components/v1/sections/shared/CarouselArrow";
