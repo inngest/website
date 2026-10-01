@@ -1,4 +1,4 @@
-import { Compatibility } from "shared/Docs/mdx";
+import { CodeGroup, Compatibility } from "shared/Docs/mdx";
 import { FlowControlMarbles } from "src/shared/Docs/FlowControlMarbles";
 export const metaTitle = "Rate Limiting | Skip Excess Events";
 export const description = "Rate limit Inngest functions by skipping events that exceed a limit over a time window. Protect services from abuse and third-party API quota exhaustion.";
@@ -19,7 +19,8 @@ Discard redundant webhook work once a start limit is reached. Inngest checks eac
 
 This TypeScript v4 function starts at most one run for each company within a four-hour period. The `key` expression reads `company_id` from the triggering event. Replace `syncCompanyRecord` with your application's synchronization code.
 
-```typescript
+<CodeGroup>
+```typescript {{ title: "TypeScript" }}
 import { Inngest } from "inngest";
 
 const inngest = new Inngest({ id: "customer-sync" });
@@ -41,6 +42,16 @@ export const syncCompany = inngest.createFunction(
   }
 );
 ```
+
+```python {{ title: "Python" }}
+!snippet:path=snippets/py/latest/flow_control/rate_limiting/sync_company.py
+```
+
+```go {{ title: "Go" }}
+!snippet:path=snippets/go/docs/flow_control/rate_limiting/sync_company.go
+```
+</CodeGroup>
+
 The `key` is a Common Expression Language (CEL) expression string, not a JavaScript callback. Each distinct value has its own limit. Without a `key`, the function uses one shared limit for all matching events.
 
 ## What happens to an excess event?

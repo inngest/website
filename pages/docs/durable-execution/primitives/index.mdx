@@ -1,3 +1,4 @@
+import { CodeGroup } from "shared/Docs/mdx";
 export const metaTitle = "Steps & Primitives | Durable Units of Work";
 export const description = "Inngest steps and durable primitives, like step.run, sleep, waitForEvent, and invoke. Each step is checkpointed and retriable so progress survives failures.";
 
@@ -25,13 +26,24 @@ To learn more about how steps run, see [Anatomy of workflows: runs, steps, and c
 
 Each `step.run()` call names the work and supplies a callback:
 
-```typescript
+<CodeGroup>
+```typescript {{ title: "TypeScript" }}
 const order = await step.run("load-order", () =>
   getOrder(event.data.orderId)
 );
 
 await step.run("send-receipt", () => sendReceipt(order));
 ```
+
+```python {{ title: "Python" }}
+!snippet:path=snippets/py/latest/primitives/index/anatomy.py
+```
+
+```go {{ title: "Go" }}
+!snippet:path=snippets/go/docs/primitives/index/anatomy.go
+```
+</CodeGroup>
+
 
 `"load-order"` is the step ID. Inngest runs the callback and saves its returned `order`. If `send-receipt` fails, Inngest retries it. When the handler runs again, the SDK returns the saved `order` without calling `getOrder` again. Code outside steps can run again.
 
@@ -87,6 +99,6 @@ Put side effects in steps so a resumed run can reuse completed results. Handle t
 - **Step result size:** 4 MiB per step. Store large results elsewhere and return a reference.
 - **Run state:** 32 MiB across event data, step results, and the function's return value.
 - **Step duration:** up to 2 hours, or less if your host has a shorter timeout.
-- **Sleeps:** up to 1 year with `step.sleep()` or `step.sleepUntil()`.
+- **Sleeps:** up to 1 year with `step.sleep()` or `step.sleepUntil()`, within your plan's maximum function run length (Free: 30 days, Pro: 90 days, Business: 366 days).
 
 See [Limits](/docs/durable-execution/limits) for every platform limit.

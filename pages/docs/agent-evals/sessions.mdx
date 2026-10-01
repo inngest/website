@@ -1,3 +1,4 @@
+import { CodeGroup, SdkUnsupported } from "shared/Docs/mdx";
 import { Callout } from "src/shared/Docs/mdx";
 
 export const metaTitle = "Inngest Sessions: Group Related Function Runs";
@@ -15,7 +16,8 @@ Sessions add metadata to events. They don't change which functions run, how even
 
 Put `sessions` in the event's top-level `meta` object:
 
-```typescript
+<CodeGroup>
+```typescript {{ title: "TypeScript" }}
 await inngest.send({
   name: "support/message.received",
   data: { ticketId: "ticket_42", messageId: "msg_17" },
@@ -27,6 +29,13 @@ await inngest.send({
 });
 ```
 
+```python {{ title: "Python" }}
+!snippet:path=snippets/py/latest/evals/sessions/send_session.py
+```
+
+<SdkUnsupported title="Go" feature="Sessions" />
+</CodeGroup>
+
 `ticket_id` is the **session key** and `ticket_42` is the **session ID**. Put the same pair on later events for that ticket. An event can carry up to five sessions, such as a `conversation_id` and a `user_id`.
 
 Webhook transforms can add sessions too. Return `meta.sessions` in the transformed event. See [Write a transform](/docs/durable-execution/guides-and-advanced/events-and-triggers/receive-webhook-events#write-a-transform).
@@ -37,13 +46,21 @@ Use one stable key for each kind of work you'll inspect later: `conversation_id`
 
 Put the changing ID in the value, not the key:
 
-```typescript
+<CodeGroup>
+```typescript {{ title: "TypeScript" }}
 // Do this
 meta: { sessions: { conversation_id: "conv_1234" } }
 
 // Not this
 meta: { sessions: { "conversation_id:conv_1234": "true" } }
 ```
+
+```python {{ title: "Python" }}
+!snippet:path=snippets/py/latest/evals/sessions/session_key.py
+```
+
+<SdkUnsupported title="Go" feature="Sessions" />
+</CodeGroup>
 
 Session IDs are opaque strings and can contain characters like `:` or `/`. Use IDs that are safe to show in the dashboard. Keep secrets and sensitive personal data out of session IDs.
 
@@ -56,7 +73,8 @@ Session IDs are opaque strings and can contain characters like `:` or `/`. Use I
 
 This event uses a string ID and a numeric ID:
 
-```typescript
+<CodeGroup>
+```typescript {{ title: "TypeScript" }}
 await inngest.send({
   name: "app/agent.step.completed",
   data: {
@@ -70,6 +88,13 @@ await inngest.send({
   },
 });
 ```
+
+```python {{ title: "Python" }}
+!snippet:path=snippets/py/latest/evals/sessions/numeric_session.py
+```
+
+<SdkUnsupported title="Go" feature="Sessions" />
+</CodeGroup>
 
 See [Limits](/docs/agent-evals/limits#session-metadata-limits) for the per-event and per-run limits.
 
@@ -108,7 +133,8 @@ An event can carry five sessions. When propagated and manual sessions together e
 
 Sessions you set manually always override propagated ones. Set a key to `null` to clear it without setting a new one:
 
-```typescript
+<CodeGroup>
+```typescript {{ title: "TypeScript" }}
 await step.invoke("summarize-conversation", {
   function: summarizeConversation,
   data: { conversationId: event.data.conversationId },
@@ -121,9 +147,17 @@ await step.invoke("summarize-conversation", {
 });
 ```
 
+```python {{ title: "Python" }}
+!snippet:path=snippets/py/latest/evals/sessions/override_key.py
+```
+
+<SdkUnsupported title="Go" feature="Sessions" />
+</CodeGroup>
+
 Set `meta.sessions` to `null` to clear every propagated session:
 
-```typescript
+<CodeGroup>
+```typescript {{ title: "TypeScript" }}
 await step.invoke("summarize-conversation", {
   function: summarizeConversation,
   data: { conversationId: event.data.conversationId },
@@ -133,16 +167,29 @@ await step.invoke("summarize-conversation", {
 });
 ```
 
+```python {{ title: "Python" }}
+!snippet:path=snippets/py/latest/evals/sessions/override_all.py
+```
+
+<SdkUnsupported title="Go" feature="Sessions" />
+</CodeGroup>
+
 ### Disable propagation
 
 Propagation is on by default. Turn it off for a client:
 
-```typescript
+<CodeGroup>
+```typescript {{ title: "TypeScript" }}
 const inngest = new Inngest({
   id: "my-app",
   sessionPropagation: false,
 });
 ```
+
+<SdkUnsupported title="Python" feature="Disabling session propagation">The Python client has no option to turn propagation off. Clear `ctx.sessions` in a run, or set an outgoing event's `sessions` meta to `None`.</SdkUnsupported>
+
+<SdkUnsupported title="Go" feature="Sessions" />
+</CodeGroup>
 
 Propagation through `inngest.send()` relies on async local storage. It doesn't work in runtimes without it, such as Cloudflare Workers with `nodejs_compat` turned off.
 
@@ -158,7 +205,8 @@ A [batched](/docs/durable-execution/flow-control/batching) run belongs to the se
 
 Use [middleware](/docs/durable-execution/guides-and-advanced/middleware) to validate, encrypt, or strip sessions before events are sent. This middleware stops an internal key from propagating to child runs:
 
-```typescript
+<CodeGroup>
+```typescript {{ title: "TypeScript" }}
 import { Middleware } from "inngest";
 import type { EventMeta } from "inngest";
 
@@ -183,6 +231,13 @@ export class SessionPolicy extends Middleware.BaseMiddleware {
   }
 }
 ```
+
+```python {{ title: "Python" }}
+!snippet:path=snippets/py/latest/evals/sessions/middleware.py
+```
+
+<SdkUnsupported title="Go" feature="Sessions" />
+</CodeGroup>
 
 ## Next steps
 

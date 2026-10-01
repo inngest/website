@@ -1,3 +1,4 @@
+import { CodeGroup, SdkUnsupported } from "shared/Docs/mdx";
 export const metaTitle = "Managed lifecycle | Sandboxes";
 export const description = "Managed Sandbox lifecycle: create Sandboxes, run commands, and clean up as durable steps in an Inngest function run, with retries handled for you.";
 
@@ -19,7 +20,8 @@ Use durable Sandbox steps when isolated code belongs to a longer function run. I
 
 Add the Sandbox middleware to a TypeScript v4 client. Each `step.sandbox` operation takes a stable step ID. This example creates a Sandbox, runs a command, and destroys the Sandbox on the successful path.
 
-```typescript
+<CodeGroup>
+```typescript {{ title: "TypeScript" }}
 import { Inngest } from "inngest";
 import { sandboxMiddleware } from "inngest/experimental";
 
@@ -53,6 +55,10 @@ export const runInSandbox = inngest.createFunction(
   },
 );
 ```
+
+<SdkUnsupported title="Python" feature="Sandboxes" />
+<SdkUnsupported title="Go" feature="Sandboxes" />
+</CodeGroup>
 
 Use a stable, Sandbox-safe job ID in the event. A completed step replays its result, including the Sandbox object returned by Create. This avoids creating another Sandbox when the function resumes after a later step. It does **not** keep the guest process or filesystem alive if the Sandbox itself is lost.
 

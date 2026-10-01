@@ -1,5 +1,5 @@
 import { Mermaid } from "src/shared/Docs/Mermaid";
-import { Callout } from "shared/Docs/mdx";
+import { Callout, CodeGroup } from "shared/Docs/mdx";
 
 export const metaTitle = "Durable Workflows | How Inngest Functions Run";
 export const description = "Durable workflows in Inngest: write TypeScript, Python, or Go functions that run in the background, checkpoint each step, and retry without redoing past work.";
@@ -55,7 +55,8 @@ If the run waits or Step 2 fails, Inngest uses the Step 1 checkpoint to resume w
 
 This TypeScript SDK v4 function processes an order. The functions `loadOrder`, `chargeOrder`, `sendReceipt`, and `refundOrder` represent your application code.
 
-```typescript
+<CodeGroup>
+```typescript {{ title: "TypeScript" }}
 import { inngest } from "./client";
 
 export const processOrder = inngest.createFunction(
@@ -94,9 +95,19 @@ export const processOrder = inngest.createFunction(
   }
 );
 ```
+
+```python {{ title: "Python" }}
+!snippet:path=snippets/py/latest/durable/durable_workflows/process_order.py
+```
+
+```go {{ title: "Go" }}
+!snippet:path=snippets/go/docs/durable/durable_workflows/process_order.go
+```
+</CodeGroup>
+
 If `charge-order` fails, Inngest can retry it and reuse the saved `load-order` result. If `send-receipt` fails, both earlier results remain available. The run shows each step and its attempts.
 
-The wait resumes when a `shop/order.cancelled` event with the same `orderId` arrives. The workflow then refunds the order. If no matching event arrives within six hours, `step.waitForEvent()` returns `null` and the run completes without a refund. Make `refundOrder` idempotent because a refund can succeed before Inngest saves the step result and retries the step.
+The wait resumes when a `shop/order.cancelled` event with the same `orderId` arrives. The workflow then refunds the order. If no matching event arrives within six hours, `step.waitForEvent()` returns `null` (`None` in Python; in Go, `step.WaitForEvent` returns `step.ErrEventNotReceived`) and the run completes without a refund. Make `refundOrder` idempotent because a refund can succeed before Inngest saves the step result and retries the step.
 
 <hr />
 
@@ -128,7 +139,8 @@ Breaking a long function into steps means a retry repeats only the step that fai
 
 This function imports contacts from a CSV file in three steps:
 
-```typescript
+<CodeGroup>
+```typescript {{ title: "TypeScript" }}
 const fn = inngest.createFunction(
   { id: "import-contacts", triggers: { event: "contacts/csv.uploaded" } },
   // The function handler:
@@ -150,6 +162,15 @@ const fn = inngest.createFunction(
   }
 );
 ```
+
+```python {{ title: "Python" }}
+!snippet:path=snippets/py/latest/durable/durable_workflows/import_contacts.py
+```
+
+```go {{ title: "Go" }}
+!snippet:path=snippets/go/docs/durable/durable_workflows/import_contacts.go
+```
+</CodeGroup>
 
 Under standard orchestration, the run goes like this.
 

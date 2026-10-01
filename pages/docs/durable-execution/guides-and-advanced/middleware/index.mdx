@@ -33,4 +33,4 @@ Check hook order and arguments before changing retries, step output, or event da
 
 - **TypeScript v4** uses middleware classes. The v3 `InngestMiddleware` API doesn't work in a v4 app.
 - **Python** has its own middleware lifecycle and versioned hooks.
-- **Go** support is planned.
+- **Go** has a [`middleware`](https://pkg.go.dev/github.com/inngest/inngestgo/middleware) package with `TransformInput`, `BeforeExecution`, `AfterExecution`, `TransformOutput`, and `OnPanic` hooks, registered on the client with `ClientOpts.Middleware`.

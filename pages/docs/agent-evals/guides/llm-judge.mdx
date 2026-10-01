@@ -1,3 +1,4 @@
+import { CodeGroup, SdkUnsupported } from "shared/Docs/mdx";
 export const metaTitle = "LLM-as-a-Judge Scoring | AI Eval Scorers";
 export const description = "Use an LLM as a judge to score AI agent answers against a rubric. Copy-paste scorer examples that record each verdict as a score on the Inngest run.";
 
@@ -17,7 +18,8 @@ A judge measures a model's opinion of the output. When you can observe the real 
 
 Save this as `inngest/scorers.ts`. The judge runs the model call as a durable step, so a retry reuses the verdict instead of paying for a new one:
 
-```typescript {{ filename: "inngest/scorers.ts" }}
+<CodeGroup>
+```typescript {{ title: "TypeScript", filename: "inngest/scorers.ts" }}
 import Anthropic from "@anthropic-ai/sdk";
 import type { GetStepTools } from "inngest";
 import { inngest } from "./client";
@@ -45,11 +47,19 @@ async function judge(step: Step, name: string, rubric: string) {
 }
 ```
 
+```python {{ title: "Python", filename: "scorers.py" }}
+!snippet:path=snippets/py/latest/evals/llm_judge/judge.py
+```
+
+<SdkUnsupported title="Go" feature="Scores" />
+</CodeGroup>
+
 ## 2. Define the rubrics
 
 Each judge is the shared function with a different rubric. Describe what `1` and `0` mean so the scale stays fixed:
 
-```typescript {{ filename: "inngest/scorers.ts" }}
+<CodeGroup>
+```typescript {{ title: "TypeScript", filename: "inngest/scorers.ts" }}
 export function scoreConciseness(step: Step, prompt: string, answer: string) {
   return judge(
     step,
@@ -79,13 +89,21 @@ where 1 = fully and directly answers the request and 0 = ignores or misunderstan
 }
 ```
 
+```python {{ title: "Python", filename: "scorers.py" }}
+!snippet:path=snippets/py/latest/evals/llm_judge/rubrics.py
+```
+
+<SdkUnsupported title="Go" feature="Scores" />
+</CodeGroup>
+
 Watch the two together. If helpfulness climbs while conciseness drops, the agent may be padding its way to better answers.
 
 ## 3. Add a deterministic check
 
 Not every score needs a model. An agent that calls the same tool with the same input twice is usually looping or retrying blindly. This check compares distinct calls to total calls and drops below `1` as soon as a call repeats:
 
-```typescript {{ filename: "inngest/scorers.ts" }}
+<CodeGroup>
+```typescript {{ title: "TypeScript", filename: "inngest/scorers.ts" }}
 export function scoreToolEfficiency(
   toolCalls: { name: string; input: unknown }[]
 ) {
@@ -95,13 +113,21 @@ export function scoreToolEfficiency(
 }
 ```
 
+```python {{ title: "Python", filename: "scorers.py" }}
+!snippet:path=snippets/py/latest/evals/llm_judge/tool_efficiency.py
+```
+
+<SdkUnsupported title="Go" feature="Scores" />
+</CodeGroup>
+
 When you have ground truth, such as a labeled category or the files a fix actually touched, score accuracy directly. Exact match fits a single label, set overlap (Jaccard) fits lists such as cited files, and a tolerance band fits numbers. Keep accuracy and judge scores under separate names so their trends don't blur.
 
 ## 4. Score the agent run
 
 Call the scorers after the agent finishes and record each result with `step.score()`:
 
-```typescript {{ filename: "inngest/functions.ts" }}
+<CodeGroup>
+```typescript {{ title: "TypeScript", filename: "inngest/functions.ts" }}
 import { inngest } from "./client";
 import { runAgent } from "./agent";
 import { scoreConciseness, scoreHelpfulness, scoreToolEfficiency } from "./scorers";
@@ -120,6 +146,13 @@ export const runAgentFn = inngest.createFunction(
   }
 );
 ```
+
+```python {{ title: "Python", filename: "functions.py" }}
+!snippet:path=snippets/py/latest/evals/llm_judge/functions.py
+```
+
+<SdkUnsupported title="Go" feature="Scores" />
+</CodeGroup>
 
 Each judge adds a model call and two steps to the run. Open a run's trace to see the judge steps, their verdicts, and the scores side by side.
 

@@ -1,3 +1,5 @@
+import { CodeGroup } from "shared/Docs/mdx";
+
 export const metaTitle = "Best practices | Durable Execution";
 export const description = "Durable execution best practices: keep Inngest workflows idempotent and safe to retry, deploy changes without breaking in-flight runs, and operate at scale.";
 
@@ -17,13 +19,23 @@ Your function runs its steps back to back until it needs to pause, such as for a
 - Never start a side effect outside a step. It repeats every time the run resumes.
 - Pause with [`step.sleep()`](/docs/durable-execution/primitives/step-sleep) and [`step.waitForEvent()`](/docs/durable-execution/primitives/step-waitforevent), not timers. Compute stops while the run waits.
 
-```ts
+<CodeGroup>
+```ts {{ title: "TypeScript" }}
 // Don't: runs again every time the function resumes
 await sendWelcomeEmail(user);
 
 // Do: runs once, and the result is saved
 await step.run("send-welcome-email", () => sendWelcomeEmail(user));
 ```
+
+```python {{ title: "Python" }}
+!snippet:path=snippets/py/latest/durable/best_practices/side_effects.py
+```
+
+```go {{ title: "Go" }}
+!snippet:path=snippets/go/docs/durable/best_practices/side_effects.go
+```
+</CodeGroup>
 
 ### Choose step boundaries deliberately
 
@@ -69,11 +81,21 @@ A request can succeed and then fail before Inngest records the step's result. Th
 - Derive the key from the business operation, not from the retry attempt.
 - Deduplicate incoming events and runs with [Idempotency](/docs/durable-execution/guides-and-advanced/idempotency).
 
-```ts
+<CodeGroup>
+```ts {{ title: "TypeScript" }}
 await step.run("charge-customer", () =>
   payments.charge({ amount, idempotencyKey: `order-${orderId}-charge` })
 );
 ```
+
+```python {{ title: "Python" }}
+!snippet:path=snippets/py/latest/durable/best_practices/idempotency_key.py
+```
+
+```go {{ title: "Go" }}
+!snippet:path=snippets/go/docs/durable/best_practices/idempotency_key.go
+```
+</CodeGroup>
 
 ### Separate permanent errors from temporary ones
 

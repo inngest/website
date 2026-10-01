@@ -1,3 +1,4 @@
+import { CodeGroup, SdkUnsupported } from "shared/Docs/mdx";
 export const metaTitle = "Deferred Scoring | Evaluate After Completion";
 export const description = "Score AI outputs after a run finishes. Deferred scorer functions wait for real outcomes, like user feedback, then attach scores to the original run.";
 
@@ -7,13 +8,14 @@ export const description = "Score AI outputs after a run finishes. Deferred scor
 
 Often you don't know how well a run went until later. A customer clicks "helpful" tomorrow. A ticket reopens next week. A fix ships that shows whether the agent pointed at the right files. A **deferred scorer** handles this: it runs as its own function, waits for the signal, and scores the run that started it. The original run finishes without waiting.
 
-Deferred scoring is a beta API. `createScorer` comes from `inngest/experimental` and may change before general availability.
+Deferred scoring is a beta API. `createScorer` comes from `inngest/experimental` and may change before general availability. In Python, define the scorer with `create_defer()` from `inngest.experimental` and write its score with `inngest_client.score()` or `inngest_client.score_experiment()`.
 
 ## Create a scorer
 
 Define a scorer with `createScorer()`. The optional `schema` validates the data the scorer receives. The handler can use any step tool, such as `step.waitForEvent()` or `step.run()`.
 
-```typescript
+<CodeGroup>
+```typescript {{ title: "TypeScript" }}
 import { createScorer } from "inngest/experimental";
 import { z } from "zod";
 import { inngest } from "./client";
@@ -37,17 +39,33 @@ export const feedbackScorer = createScorer(
 );
 ```
 
+```python {{ title: "Python" }}
+!snippet:path=snippets/py/latest/evals/deferred_scoring/scorer.py
+```
+
+<SdkUnsupported title="Go" feature="Deferred scoring" />
+</CodeGroup>
+
 Return `{ name, value }` to write one score. Return `null` or `undefined` to write nothing. Register the scorer with your other functions:
 
-```typescript
+<CodeGroup>
+```typescript {{ title: "TypeScript" }}
 serve({ client: inngest, functions: [answerTicket, feedbackScorer] });
 ```
+
+```python {{ title: "Python" }}
+!snippet:path=snippets/py/latest/evals/deferred_scoring/serve.py
+```
+
+<SdkUnsupported title="Go" feature="Deferred scoring" />
+</CodeGroup>
 
 ## Start the scorer from a run
 
 Call `defer()` from the function that produced the result. Pass the data the scorer needs; you don't pass the run ID.
 
-```typescript
+<CodeGroup>
+```typescript {{ title: "TypeScript" }}
 export const answerTicket = inngest.createFunction(
   { id: "answer-ticket", triggers: { event: "support/ticket.created" } },
   async ({ event, step, defer }) => {
@@ -65,11 +83,19 @@ export const answerTicket = inngest.createFunction(
 );
 ```
 
+```python {{ title: "Python" }}
+!snippet:path=snippets/py/latest/evals/deferred_scoring/answer.py
+```
+
+<SdkUnsupported title="Go" feature="Deferred scoring" />
+</CodeGroup>
+
 `defer()` returns `void`; don't await a score from it. Each `defer()` ID must be unique within the run. When the scorer returns a score, Inngest attributes it to the run that called `defer()`.
 
 If the result came from an [experiment](/docs/agent-evals/experiments), pass the returned `experimentRef` so the score counts toward the variant that served it:
 
-```typescript
+<CodeGroup>
+```typescript {{ title: "TypeScript" }}
 defer("score-feedback", {
   function: feedbackScorer,
   data: { ticketId: event.data.ticketId },
@@ -77,16 +103,31 @@ defer("score-feedback", {
 });
 ```
 
+```python {{ title: "Python" }}
+!snippet:path=snippets/py/latest/evals/deferred_scoring/defer_experiment.py
+```
+
+<SdkUnsupported title="Go" feature="Deferred scoring" />
+</CodeGroup>
+
 ## Send the signal
 
 The scorer above waits for `support/feedback.received`. Your app sends it when the customer responds:
 
-```typescript
+<CodeGroup>
+```typescript {{ title: "TypeScript" }}
 await inngest.send({
   name: "support/feedback.received",
   data: { ticketId: "tk_123", helpful: true },
 });
 ```
+
+```python {{ title: "Python" }}
+!snippet:path=snippets/py/latest/evals/deferred_scoring/send_signal.py
+```
+
+<SdkUnsupported title="Go" feature="Deferred scoring" />
+</CodeGroup>
 
 Inngest resumes the scorer whose `if` expression matches the event's `ticketId`. The scorer returns the score, and Inngest writes it for the original run.
 
@@ -106,7 +147,8 @@ If the signal never arrives, the scorer's timeout path decides the result. Retur
 
 To write more than one score, or to control attribution yourself, write the scores from the scorer and return nothing. The parent run and its variant are on `parents[0]`:
 
-```typescript
+<CodeGroup>
+```typescript {{ title: "TypeScript" }}
 export const reviewScorer = createScorer(
   inngest,
   { id: "review-scorer", schema: z.object({ ticketId: z.string() }) },
@@ -132,6 +174,13 @@ export const reviewScorer = createScorer(
   }
 );
 ```
+
+```python {{ title: "Python" }}
+!snippet:path=snippets/py/latest/evals/deferred_scoring/review_scorer.py
+```
+
+<SdkUnsupported title="Go" feature="Deferred scoring" />
+</CodeGroup>
 
 ## Deferred or direct?
 

@@ -86,22 +86,7 @@ export const processTask = inngest.createFunction(
 <LanguageSection show="python">
 
 ```python
-import datetime
-import inngest
-
-@inngest_client.create_function(
-    fn_id="process-task",
-    trigger=inngest.TriggerEvent(event="app/task.created"),
-)
-async def process_task(ctx: inngest.Context) -> dict[str, object]:
-    task_id = str(ctx.event.data["id"])
-
-    def handle_task() -> dict[str, object]:
-        return {"processed": True, "id": task_id}
-
-    result = await ctx.step.run("handle-task", handle_task)
-    await ctx.step.sleep("pause", datetime.timedelta(seconds=1))
-    return result
+!snippet:path=snippets/py/latest/durable/concepts/process_task.py
 ```
 
 </LanguageSection>
@@ -109,31 +94,7 @@ async def process_task(ctx: inngest.Context) -> dict[str, object]:
 <LanguageSection show="go">
 
 ```go
-type TaskData struct {
-    ID string `json:"id"`
-}
-
-type TaskEvent = inngestgo.GenericEvent[TaskData]
-
-func registerFunction(client inngestgo.Client) error {
-    _, err := inngestgo.CreateFunction(
-        client,
-        inngestgo.FunctionOpts{ID: "process-task"},
-        inngestgo.EventTrigger("app/task.created", nil),
-        func(ctx context.Context, input inngestgo.Input[TaskEvent]) (map[string]any, error) {
-            result, err := step.Run(ctx, "handle-task", func(ctx context.Context) (map[string]any, error) {
-                return map[string]any{"processed": true, "id": input.Event.Data.ID}, nil
-            })
-            if err != nil {
-                return nil, err
-            }
-
-            step.Sleep(ctx, "pause", time.Second)
-            return result, nil
-        },
-    )
-    return err
-}
+!snippet:path=snippets/go/docs/durable/concepts/process_task.go
 ```
 
 </LanguageSection>

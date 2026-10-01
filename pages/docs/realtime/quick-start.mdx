@@ -1,3 +1,4 @@
+import { CodeGroup, SdkUnsupported } from "shared/Docs/mdx";
 export const metaTitle = "Quick start | Realtime";
 export const description = "Inngest Realtime quick start: stream progress from a durable function to a signed-in user's browser with typed channels and a subscription token.";
 
@@ -22,13 +23,24 @@ npm install inngest zod
 
 A channel groups the messages for one user. The `status` and `result` topics each have a Zod schema, so a publish with the wrong shape fails.
 
-```typescript {{ filename: "src/inngest/client.ts" }}
+<CodeGroup>
+```typescript {{ title: "TypeScript", filename: "src/inngest/client.ts" }}
 import { Inngest } from "inngest";
 
 export const inngest = new Inngest({ id: "realtime-demo" });
 ```
 
-```typescript {{ filename: "src/inngest/channels.ts" }}
+```python {{ title: "Python", filename: "client.py" }}
+!snippet:path=snippets/py/latest/realtime/quick_start/client.py
+```
+
+```go {{ title: "Go", filename: "client.go" }}
+!snippet:path=snippets/go/docs/realtime/quick_start/client.go
+```
+</CodeGroup>
+
+<CodeGroup>
+```typescript {{ title: "TypeScript", filename: "src/inngest/channels.ts" }}
 import { realtime } from "inngest";
 import { z } from "zod";
 
@@ -41,11 +53,17 @@ export const progressChannel = realtime.channel({
 });
 ```
 
+<SdkUnsupported title="Python" feature="Typed channels and topics">Channels and topics are plain strings in Python. Pass them to `realtime.publish()` and `realtime.get_subscription_token()`.</SdkUnsupported>
+
+<SdkUnsupported title="Go" feature="Typed channels and topics">Channels and topics are plain strings in Go. Pass them to `realtime.Publish()` and encode payloads yourself, for example with `json.Marshal`.</SdkUnsupported>
+</CodeGroup>
+
 ## 2. Publish from a durable function
 
 The function publishes a status, waits three seconds, and publishes a result. `step.realtime.publish()` runs as a durable step, so a retry doesn't publish a completed message again.
 
-```typescript {{ filename: "src/inngest/functions.ts" }}
+<CodeGroup>
+```typescript {{ title: "TypeScript", filename: "src/inngest/functions.ts" }}
 import { inngest } from "./client";
 import { progressChannel } from "./channels";
 
@@ -65,6 +83,15 @@ export const showProgress = inngest.createFunction(
 );
 ```
 
+```python {{ title: "Python", filename: "functions.py" }}
+!snippet:path=snippets/py/latest/realtime/quick_start/functions.py
+```
+
+```go {{ title: "Go", filename: "functions.go" }}
+!snippet:path=snippets/go/docs/realtime/quick_start/functions.go
+```
+</CodeGroup>
+
 Register the function in your Next.js route:
 
 ```typescript {{ filename: "src/app/api/inngest/route.ts" }}
@@ -82,7 +109,8 @@ export const { GET, POST, PUT } = serve({
 
 The browser can't mint its own subscription token, so a server action mints it. Both actions read the user ID from the signed-in session. The token grants access to that user's channel and the two topics this page needs. Never accept a user ID or channel name from the browser here.
 
-```typescript {{ filename: "src/app/realtime/actions.ts" }}
+<CodeGroup>
+```typescript {{ title: "TypeScript", filename: "src/app/realtime/actions.ts" }}
 "use server";
 
 import { getClientSubscriptionToken } from "inngest/react";
@@ -108,6 +136,13 @@ export async function startDemo() {
   });
 }
 ```
+
+```python {{ title: "Python", filename: "actions.py" }}
+!snippet:path=snippets/py/latest/realtime/quick_start/actions.py
+```
+
+<SdkUnsupported title="Go" feature="Minting subscription tokens">Mint the token with the TypeScript or Python SDK. To start the run from Go, send `demo/progress.requested` with `client.Send()`.</SdkUnsupported>
+</CodeGroup>
 
 `getClientSubscriptionToken()` uses your signing key on the server and returns a small object that's safe to send to the browser. `useRealtime` calls `getProgressToken()` again whenever it reconnects, so the token never goes stale.
 

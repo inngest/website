@@ -1,3 +1,4 @@
+import { SdkUnsupported } from "shared/Docs/mdx";
 import { Callout, CodeGroup, Info } from "src/shared/Docs/mdx";
 
 export const metaTitle = "Stream AI Responses to Your UI | Realtime";
@@ -13,7 +14,8 @@ Users wait less when they can watch an answer appear. In this guide, an Inngest 
 
 Give each kind of update its own topic: `status` for progress, `tokens` for streamed output, and `result` for the final answer.
 
-```ts {{ filename: "inngest/channels.ts" }}
+<CodeGroup>
+```ts {{ title: "TypeScript", filename: "inngest/channels.ts" }}
 import { realtime, staticSchema } from "inngest";
 import { z } from "zod";
 
@@ -41,6 +43,11 @@ export const aiChannel = realtime.channel({
 });
 ```
 
+<SdkUnsupported title="Python" feature="Typed channels and topics">Channels and topics are plain strings in Python. Pass them to `realtime.publish()` and `realtime.get_subscription_token()`.</SdkUnsupported>
+
+<SdkUnsupported title="Go" feature="Typed channels and topics">Channels and topics are plain strings in Go. Pass them to `realtime.Publish()` and encode payloads yourself, for example with `json.Marshal`.</SdkUnsupported>
+</CodeGroup>
+
 The `tokens` topic uses `staticSchema<T>()` because token payloads are small and frequent. The other topics validate at runtime.
 
 ## 2. Publish from your function
@@ -50,7 +57,8 @@ The function uses both publish methods:
 - `inngest.realtime.publish()` sends each token immediately. If the step retries, some tokens can repeat, which costs less than making every token a durable step.
 - `step.realtime.publish()` sends the status and the final result as durable steps, so a retry never sends them twice.
 
-```ts {{ filename: "inngest/functions/generate.ts" }}
+<CodeGroup>
+```ts {{ title: "TypeScript", filename: "inngest/functions/generate.ts" }}
 import { OpenAI } from "openai";
 import { inngest } from "../client";
 import { aiChannel } from "../channels";
@@ -110,6 +118,15 @@ export default inngest.createFunction(
 );
 ```
 
+```python {{ title: "Python", filename: "generate.py" }}
+!snippet:path=snippets/py/latest/realtime/stream_ai_responses/generate.py
+```
+
+```go {{ title: "Go", filename: "generate.go" }}
+!snippet:path=snippets/go/docs/realtime/stream_ai_responses/generate.go
+```
+</CodeGroup>
+
 <Info>
   Call `inngest.realtime.publish()` inside `step.run()` for streamed output.
   Inngest then retries the stream as one unit. Your UI should tolerate
@@ -162,6 +179,12 @@ app.post("/api/ai-token", async (req, res) => {
   res.json(token);
 });
 ```
+
+```python {{ title: "Python" }}
+!snippet:path=snippets/py/latest/realtime/stream_ai_responses/token_route.py
+```
+
+<SdkUnsupported title="Go" feature="Minting subscription tokens">Mint tokens with the TypeScript or Python SDK.</SdkUnsupported>
 </CodeGroup>
 
 ## 4. Render the stream
@@ -239,7 +262,8 @@ export function AIStream({ threadId }: { threadId: string }) {
 
 The `threadId` links the function's publishes to the component's subscription. Create it before you send the event, render the component with the same value, and send the event once the connection is open so the first tokens aren't missed.
 
-```ts
+<CodeGroup>
+```ts {{ title: "TypeScript" }}
 const threadId = crypto.randomUUID();
 
 await inngest.send({
@@ -247,6 +271,15 @@ await inngest.send({
   data: { threadId, prompt: "Summarize the key points of this document..." },
 });
 ```
+
+```python {{ title: "Python" }}
+!snippet:path=snippets/py/latest/realtime/stream_ai_responses/send_event.py
+```
+
+```go {{ title: "Go" }}
+!snippet:path=snippets/go/docs/realtime/stream_ai_responses/send_event.go
+```
+</CodeGroup>
 
 ## Next steps
 

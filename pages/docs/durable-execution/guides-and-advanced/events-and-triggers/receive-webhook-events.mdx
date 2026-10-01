@@ -1,3 +1,5 @@
+import { CodeGroup } from "shared/Docs/mdx";
+
 export const metaTitle = "Consume Webhook Events | Setup Guide";
 export const description = "Receive webhook events with Inngest: give a provider a webhook URL, transform its payloads into events, and trigger durable functions automatically.";
 
@@ -191,7 +193,8 @@ You can also copy a webhook event from the dashboard and paste it into the Dev S
 ## Write a function for webhook events
 Trigger a function on the transformed event name. This function sends a welcome email when Clerk reports a new user:
 
-```ts {{ title: "Example: Send a welcome email when the clerk/user.created event is received"}}
+<CodeGroup>
+```ts {{ title: "TypeScript" }}
 inngest.createFunction(
   { id: "send-welcome-email", triggers: { event: "clerk/user.created" } },
   async ({ event, step }) => {
@@ -207,6 +210,15 @@ inngest.createFunction(
   }
 )
 ```
+
+```python {{ title: "Python" }}
+!snippet:path=snippets/py/latest/events/receive_webhook_events/send_welcome_email.py
+```
+
+```go {{ title: "Go" }}
+!snippet:path=snippets/go/docs/events/receive_webhook_events/send_welcome_email.go
+```
+</CodeGroup>
 ## Check trust before side effects
 Many providers sign webhook requests. A valid signature proves the request came from the provider and that nobody changed the data. Inngest does not check these signatures for you, so you must verify them manually in your function. Pass the raw body and the signature header through the transform, then verify the signature in the triggered function before it processes the data or runs any side effects. Follow the provider's signing instructions.
 
@@ -224,9 +236,10 @@ function transform(evt, headers, queryParams, raw) {
 };
 ```
 
-Then verify the signature in the function. This check is required: without it, your function trusts any request sent to the webhook URL. Throw a `NonRetriableError` on failure, since a retry can't fix a bad signature:
+Then verify the signature in the function. This check is required: without it, your function trusts any request sent to the webhook URL. Throw a `NonRetriableError` on failure (return `inngestgo.NoRetryError(err)` in Go), since a retry can't fix a bad signature:
 
-```ts
+<CodeGroup>
+```ts {{ title: "TypeScript" }}
 import { NonRetriableError } from "inngest";
 
 inngest.createFunction(
@@ -242,6 +255,15 @@ inngest.createFunction(
   }
 );
 ```
+
+```python {{ title: "Python" }}
+!snippet:path=snippets/py/latest/events/receive_webhook_events/stripe_charge_updated.py
+```
+
+```go {{ title: "Go" }}
+!snippet:path=snippets/go/docs/events/receive_webhook_events/stripe_charge_updated.go
+```
+</CodeGroup>
 ## Filter requests
 Set allow and deny lists for event names and IP addresses to control which events a webhook accepts.
 ## Route webhooks to branch environments

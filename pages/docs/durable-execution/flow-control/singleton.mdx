@@ -1,4 +1,4 @@
-import { Compatibility } from "shared/Docs/mdx";
+import { CodeGroup, Compatibility } from "shared/Docs/mdx";
 import { FlowControlMarbles } from "src/shared/Docs/FlowControlMarbles";
 export const metaTitle = "Singleton Functions | One Run at a Time";
 export const description = "Singleton functions ensure only one Inngest run executes at a time per key, preventing overlapping runs from duplicating work or overwriting results.";
@@ -19,7 +19,8 @@ Singleton controls the **whole function run**. A concurrency limit of `1` contro
 
 This TypeScript v4 function keeps one active sync run per user. If another `data-sync.start` event arrives for that user while the run is active, `mode: "skip"` skips the new run and lets the current run continue. Replace the step body with your synchronization code.
 
-```typescript
+<CodeGroup>
+```typescript {{ title: "TypeScript" }}
 import { Inngest } from "inngest";
 
 const inngest = new Inngest({ id: "customer-sync" });
@@ -40,6 +41,16 @@ export const syncUser = inngest.createFunction(
   }
 );
 ```
+
+```python {{ title: "Python" }}
+!snippet:path=snippets/py/latest/flow_control/singleton/sync_user.py
+```
+
+```go {{ title: "Go" }}
+!snippet:path=snippets/go/docs/flow_control/singleton/sync_user.go
+```
+</CodeGroup>
+
 The required `key` is a Common Expression Language (CEL) expression string evaluated against each triggering event. Different key values can have separate active runs. In this example, user A and user B can each have one active sync run.
 
 ## Choose what a new event does

@@ -1,4 +1,4 @@
-import { Compatibility } from "shared/Docs/mdx";
+import { CodeGroup, Compatibility } from "shared/Docs/mdx";
 import { FlowControlMarbles } from "src/shared/Docs/FlowControlMarbles";
 export const metaTitle = "Throttling | Limit Function Throughput";
 export const description = "Throttle Inngest functions to a maximum number of runs per time period. Smooth traffic bursts and respect third-party API rate limits without dropping events.";
@@ -15,7 +15,8 @@ Protect an API that accepts only a fixed number of requests per period. Throttli
 
 ## Set a throttle on a function
 
-```typescript
+<CodeGroup>
+```typescript {{ title: "TypeScript" }}
 import { Inngest } from "inngest";
 
 const inngest = new Inngest({ id: "my-app" });
@@ -39,6 +40,16 @@ export const summarize = inngest.createFunction(
   },
 );
 ```
+
+```python {{ title: "Python" }}
+!snippet:path=snippets/py/latest/flow_control/throttling/summarize.py
+```
+
+```go {{ title: "Go" }}
+!snippet:path=snippets/go/docs/flow_control/throttling/summarize.go
+```
+</CodeGroup>
+
 This function sets a separate throttle for each `user_id`. Replace the example step with the service call you need to pace. Inngest evaluates `key` against the triggering event. Without a key, the throttle applies to all runs of this function. Each function has its own throttle, even when two functions use the same key.
 
 ## Choose the settings

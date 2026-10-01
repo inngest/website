@@ -1,3 +1,4 @@
+import { SdkUnsupported } from "shared/Docs/mdx";
 import { Info, Warning, CodeGroup } from "src/shared/Docs/mdx";
 import { Mermaid } from "src/shared/Docs/Mermaid";
 
@@ -30,7 +31,8 @@ A browser can't subscribe to a Realtime channel on its own. Your server checks w
 
 Call `getClientSubscriptionToken()` on your server. It returns a `{ key, apiBaseUrl }` object that's safe to send to the browser.
 
-```ts {{ filename: "app/actions.ts" }}
+<CodeGroup>
+```ts {{ title: "TypeScript", filename: "app/actions.ts" }}
 "use server";
 
 import { getClientSubscriptionToken } from "inngest/react";
@@ -45,6 +47,13 @@ export async function fetchAIToken(threadId: string) {
 }
 ```
 
+```python {{ title: "Python" }}
+!snippet:path=snippets/py/latest/realtime/subscription_tokens/mint_token.py
+```
+
+<SdkUnsupported title="Go" feature="Minting subscription tokens">Mint tokens with the TypeScript or Python SDK.</SdkUnsupported>
+</CodeGroup>
+
 <Info>
   `getClientSubscriptionToken()` isn't React-specific. It runs on the server in
   any framework; the SDK exports it from `inngest/react` alongside
@@ -57,7 +66,8 @@ The server sets `apiBaseUrl` from `INNGEST_DEV`, so the browser connects to the 
 
 Anyone who holds a token can read every message on its channel and topics until the token expires. Check permissions in the code that mints it, where you still have the user's session.
 
-```ts {{ filename: "app/actions.ts" }}
+<CodeGroup>
+```ts {{ title: "TypeScript", filename: "app/actions.ts" }}
 "use server";
 
 import { getClientSubscriptionToken } from "inngest/react";
@@ -83,6 +93,13 @@ export async function fetchDocumentToken(documentId: string) {
   });
 }
 ```
+
+```python {{ title: "Python" }}
+!snippet:path=snippets/py/latest/realtime/subscription_tokens/authorize.py
+```
+
+<SdkUnsupported title="Go" feature="Minting subscription tokens">Mint tokens with the TypeScript or Python SDK.</SdkUnsupported>
+</CodeGroup>
 
 <Warning>
   Never pass an unchecked request parameter straight into your channel
@@ -215,6 +232,12 @@ export const getRealtimeToken = createServerFn({ method: "GET" })
     });
   });
 ```
+
+```python {{ title: "Python" }}
+!snippet:path=snippets/py/latest/realtime/subscription_tokens/fastapi_route.py
+```
+
+<SdkUnsupported title="Go" feature="Minting subscription tokens">Mint tokens with the TypeScript or Python SDK.</SdkUnsupported>
 </CodeGroup>
 
 ## Subscribe from the server without a token

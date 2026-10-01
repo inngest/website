@@ -1,0 +1,23 @@
+[project]
+name = "py-latest"
+version = "0.0.0"
+requires-python = ">=3.10"
+# Snippets for the current docs. Pinned to inngest-py main until the release
+# after 0.5.19 ships (sessions, scores, group.experiment and deferred
+# functions are merged but unreleased). Switch to "inngest>=0.5.20" then.
+dependencies = [
+    "fastapi>=0.128.0",
+    "flask>=3.1.3",
+    "inngest @ git+https://github.com/inngest/inngest-py@4d91c16#subdirectory=pkg/inngest",
+    "mypy==1.16.1",
+    "pydantic>=2.0.0",
+    "ruff==0.12.2",
+    "werkzeug>=3.1.6",
+]
+
+[tool.mypy]
+check_untyped_defs = true
+ignore_missing_imports = true
+
+[tool.ruff]
+line-length = 79

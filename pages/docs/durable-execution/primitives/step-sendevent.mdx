@@ -1,3 +1,4 @@
+import { CodeGroup } from "shared/Docs/mdx";
 import { Compatibility } from "shared/Docs/mdx";
 export const metaTitle = "Send Events from Inside a Function";
 export const description = "Use step.sendEvent() to send events from inside an Inngest function, triggering other workflows or fan-out work without resending after a retry.";
@@ -18,7 +19,8 @@ They are useful when:
 
 Call `step.sendEvent(stepId, event)` inside an Inngest function. Give the step a stable ID. The event needs a `name` and JSON `data`. Await the call before the function continues.
 
-```typescript
+<CodeGroup>
+```typescript {{ title: "TypeScript" }}
 import { Inngest } from "inngest";
 
 const inngest = new Inngest({ id: "orders" });
@@ -36,13 +38,34 @@ export const queueFulfillment = inngest.createFunction(
   }
 );
 ```
+
+```python {{ title: "Python" }}
+!snippet:path=snippets/py/latest/primitives/step_sendevent/queue_fulfillment.py
+```
+
+```go {{ title: "Go", filename: 'main.go' }}
+!snippet:path=snippets/go/docs/primitives/step_sendevent/queue_fulfillment.go
+```
+</CodeGroup>
+
 Any function triggered by `shop/fulfillment.requested` can process the order in its own run. The optional event `id` in this example prevents a second event with that ID from starting duplicate runs during the [24-hour deduplication window](/docs/durable-execution/guides-and-advanced/idempotency). Use a value specific to this event and business operation.
 
 ## API
 
-```ts
+<CodeGroup>
+```ts {{ title: "TypeScript" }}
 const { ids } = await step.sendEvent(id, events);
 ```
+
+```python {{ title: "Python" }}
+!snippet:path=snippets/py/latest/primitives/step_sendevent/api.py
+```
+
+```go {{ title: "Go" }}
+!snippet:path=snippets/go/docs/primitives/step_sendevent/api.go
+```
+</CodeGroup>
+
 
 - **`id`**: a stable step ID, such as `"send-fulfillment"`.
 - **`events`**: one event or an array. Each event needs a `name` and `data`.
