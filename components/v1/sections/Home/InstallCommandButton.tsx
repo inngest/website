@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import Button from "@/components/v1/Button";
 import { cn } from "@/utils/v1/cn";
 
 export const INSTALL_COMMAND = "npm install inngest";
@@ -41,8 +42,11 @@ function CopiedIcon() {
 }
 
 /**
- * Desktop - 7 install chip (504:1217): hug content, 2px #FEFEFE, 8px
- * radius, 16×12 padding, CircularXX Mono 12 / 1.44px tracking.
+ * "npm install inngest" copy chip. Rendered through the shared `Button`
+ * (secondary / outline variant) so it sits on the same height, type and
+ * hover vocabulary as every other CTA on the site — the outline floods
+ * salmon on hover like all secondary buttons do. Click copies the
+ * install command and swaps the label to "Copied" for two seconds.
  */
 export default function InstallCommandButton({
   className,
@@ -69,21 +73,21 @@ export default function InstallCommandButton({
   }
 
   return (
-    <button
+    <Button
       type="button"
+      variant="secondary"
       onClick={copy}
       aria-label={
         copied ? `Copied ${INSTALL_COMMAND}` : `Copy ${INSTALL_COMMAND}`
       }
-      className={cn(
-        "inline-flex h-11 shrink-0 items-center justify-center rounded-lg border-2 border-[#FEFEFE] px-4 py-3 font-v1Mono text-[12px] font-semibold uppercase leading-[1.3] tracking-[1.44px] text-white",
-        className
-      )}
+      // The install command is code — keep it in the mono face and
+      // don't uppercase it (the shared Button uppercases labels).
+      className={cn("font-v1Mono normal-case", className)}
     >
       <span className="grid">
         <span
           className={cn(
-            "col-start-1 row-start-1 inline-flex items-center gap-[9px]",
+            "col-start-1 row-start-1 inline-flex items-center gap-2.5",
             copied && "invisible"
           )}
         >
@@ -94,7 +98,7 @@ export default function InstallCommandButton({
         </span>
         <span
           className={cn(
-            "col-start-1 row-start-1 inline-flex items-center justify-center gap-[9px]",
+            "col-start-1 row-start-1 inline-flex items-center justify-center gap-2.5",
             !copied && "invisible"
           )}
         >
@@ -104,6 +108,6 @@ export default function InstallCommandButton({
           Copied
         </span>
       </span>
-    </button>
+    </Button>
   );
 }

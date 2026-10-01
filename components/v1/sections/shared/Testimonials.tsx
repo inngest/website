@@ -33,6 +33,13 @@ export interface TestimonialsProps extends Omit<CarouselProps, "slides"> {
   /** Render the animated brand-mark watermark behind the carousel
    *  (home / background-jobs layout). */
   watermark?: boolean;
+  /**
+   * Start the title + body at the carousel's quote column (the second
+   * column of its portrait/quote grid) instead of the container edge,
+   * so the heading lines up with the logos and quote below it. Full
+   * width on mobile where the carousel stacks.
+   */
+  alignHeadingToQuote?: boolean;
   /** Section padding/width classes; overrides the default. */
   className?: string;
 }
@@ -66,6 +73,7 @@ export default function Testimonials({
   body,
   titleClassName,
   watermark = false,
+  alignHeadingToQuote = false,
   className,
   ...carousel
 }: TestimonialsProps) {
@@ -92,12 +100,20 @@ export default function Testimonials({
     </motion.h2>
   ) : null;
 
-  const heading = body ? (
-    <div className="mb-8 lg:mb-14">
+  // With `alignHeadingToQuote` the lockup moves INTO the carousel grid
+  // (quote column, above the logos) and the portrait stretches to span
+  // title + quote, so the title's left edge meets the logos' and its
+  // top edge meets the portrait's. The grid's own row gap separates
+  // title from logos, so the lockup drops its bottom margin there.
+  const lockup = body ? (
+    <div className={cn(!alignHeadingToQuote && "mb-8 lg:mb-14")}>
       {titleEl}
       <motion.p
         {...reveals.body}
-        className="text-v1-body-lg-loose mt-5 max-w-[46rem] text-v1-frost"
+        className={cn(
+          "text-v1-body-lg-loose max-w-[46rem] text-v1-frost",
+          alignHeadingToQuote ? "mt-3" : "mt-5"
+        )}
       >
         {body}
       </motion.p>
@@ -105,12 +121,19 @@ export default function Testimonials({
   ) : (
     titleEl
   );
+  const heading = alignHeadingToQuote ? null : lockup;
 
   const labelProps = title
     ? { "aria-labelledby": headingId }
     : { "aria-label": "Customer testimonials" };
 
-  const carouselEl = <TestimonialsCarousel slides={slides} {...carousel} />;
+  const carouselEl = (
+    <TestimonialsCarousel
+      slides={slides}
+      {...carousel}
+      {...(alignHeadingToQuote && { header: lockup, portraitFill: true })}
+    />
+  );
 
   if (watermark) {
     return (

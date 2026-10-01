@@ -1,23 +1,25 @@
 "use client";
 
-import { useEffect, useRef } from "react";
+import { useEffect, useRef, useState } from "react";
 import Link from "next/link";
-import {
-  RiBox3Fill,
-  RiEyeFill,
-  RiFlaskFill,
-  RiWindyLine,
-  type RemixiconComponentType,
-} from "@remixicon/react";
+import { motion } from "motion/react";
 import { cn } from "@/utils/v1/cn";
 import { appendRef } from "@/utils/v1/ref";
+import { reveals } from "@/utils/v1/reveals";
+import { useMediaQuery } from "@/utils/v1/hooks/useMediaQuery";
+import GradientFrame from "@/components/v1/sections/shared/GradientFrame";
+import Section from "@/components/v1/sections/shared/Section";
+import SectionHeader from "@/components/v1/sections/shared/SectionHeader";
+import { HOME_SECTION_TITLE } from "@/components/v1/sections/shared/sectionTitle";
 
 interface Capability {
   id: string;
   label: string;
   heading: string;
   body: string;
-  icon: RemixiconComponentType;
+  /** Site line-art icon (white stroke) shown beside the label — same
+   *  family as the use-case band's icons. */
+  icon: string;
   videoSrc?: string;
   /** Seconds to skip at the start of the clip, including each loop. */
   videoStart?: number;
@@ -29,7 +31,7 @@ const CAPABILITIES: Capability[] = [
     id: "retries",
     label: "Observability",
     heading: "Know what happened",
-    icon: RiEyeFill,
+    icon: "/assets/v1/feature-cards/observability.svg",
     body: "No more bespoke instrumentation. Inngest executes your functions, so you get observability by default. Trace every background job, agent, and event from trigger to completion, and use that data to evaluate outcomes on real production traffic.",
     videoSrc:
       "https://cdn.inngest.com/homepage/june-2026-redesign-dashboard-tour-v2.mp4",
@@ -39,8 +41,8 @@ const CAPABILITIES: Capability[] = [
     id: "flow-control",
     label: "Flow control",
     heading: "Know what to run",
-    icon: RiWindyLine,
-    body: "Basic queues don't know what to do when with got multiple users competing for the same resource. Noisy neighbors, hand-rolled rate limits, wasted compute… Inngest’s Flow Control features ensure every user gets their fair share, without extra work.",
+    icon: "/assets/v1/primitives/icon-3-flow-control.svg",
+    body: "Basic queues don't know what to do when multiple users compete for the same resource. Noisy neighbors, hand-rolled rate limits, wasted compute… Inngest’s flow control ensures every user gets their fair share, without extra work.",
     videoSrc:
       "https://cdn.inngest.com/homepage/june-2026-flow-control-website.mp4",
     docsHref: "/docs/guides/flow-control",
@@ -49,7 +51,7 @@ const CAPABILITIES: Capability[] = [
     id: "sandboxes",
     label: "Sandboxes",
     heading: "Know what's safe",
-    icon: RiBox3Fill,
+    icon: "/assets/v1/primitives/icon-6-local-env.svg",
     body: "Sandboxes need durability too. Try a change without putting production traffic behind it. Run a new prompt, model, or code path in an isolated sandbox, on the same triggers and the same data as the real thing, and compare the results before you ship it to anyone.",
     videoSrc:
       "https://cdn.inngest.com/videos/homepage-sandbox-demo/sandbox-black/master.m3u8",
@@ -60,105 +62,224 @@ const CAPABILITIES: Capability[] = [
     id: "observability",
     label: "A/B Testing & Scoring",
     heading: "Know what works",
-    icon: RiFlaskFill,
+    icon: "/assets/v1/primitives/icon-4-human-loop.svg",
     body: "How do you know if your agent works? If you want to know which variant actually performed better, you used to have to stitch together data from multiple systems, implement human reviews, and build a layer of instrumentation on top. Inngest captures all of this data by default, so you can add scoring the same way you add retries.",
     videoSrc: "https://cdn.inngest.com/homepage/june-2026-score-website.mp4",
     docsHref: "/docs/learn/agent-evals",
   },
 ];
 
-export function CapabilitiesHeading() {
+/**
+ * Capabilities chapter — the homepage's one full-bleed colour moment.
+ *
+ * A brand-blue slab runs edge to edge behind the section header. It
+ * starts inside the previous (demo) section's bottom padding, so the
+ * demo video appears to rest on it, and ends partway down the first
+ * row of cards, so the cards appear to rise out of it. The slab is a
+ * solid `accent-blue` fill plus the Figma pixel-dissolve PNG anchored
+ * at the right edge; the fill is what makes it hold at any viewport
+ * width (the PNG alone is 1311px wide).
+ *
+ * Below the header, the four capabilities sit in a 2×2 grid of framed
+ * cards instead of four alternating rows. Each card is horizontal from
+ * md up (media left, copy right) so a row is only as tall as its copy
+ * and both rows fit a single screen together; on mobile the media
+ * stacks above the copy. Same `GradientFrame` the platform section
+ * uses, so the two product chapters share one surface language.
+ */
+/**
+ * Desktop with a real pointer: one video at a time. The first card
+ * (Observability) plays by default; hovering or focusing another card
+ * hands playback to it, and leaving hands it back. Touch / narrow
+ * viewports have no hover, so every in-view video plays.
+ */
+const HOVER_PLAYBACK_MQ = "(min-width: 1024px) and (hover: hover)";
+
+export default function Capabilities() {
+  const hoverPlayback = useMediaQuery(HOVER_PLAYBACK_MQ);
+  const [hoveredId, setHoveredId] = useState<string | null>(null);
+  const activeId = hoveredId ?? CAPABILITIES[0].id;
   return (
-    <section
+    <Section
       aria-labelledby="home-capabilities-heading"
-      className="relative z-10 flex w-full flex-col items-start lg:h-[360px] lg:pb-[160px] lg:pt-16"
+      className="relative"
+      containerClassName="relative"
     >
-      <h2
-        id="home-capabilities-heading"
-        className="v1-trim w-full max-w-[1120px] text-left font-whyte text-[clamp(2rem,6vw,72px)] font-light leading-[1.2] tracking-[-3px] text-white"
-      >
-        Everything queues can&rsquo;t do; everything you don&rsquo;t want to do.
-      </h2>
-    </section>
-  );
-}
-
-export default function CapabilityRows() {
-  return (
-    <>
-      {CAPABILITIES.map((capability, i) => (
-        <Row
-          key={capability.id}
-          capability={capability}
-          mediaFirst={i % 2 === 1}
+      <div className="relative">
+        <BlueSlab />
+        <SectionHeader
+          id="home-capabilities-heading"
+          title={
+            <>
+              Everything queues can&rsquo;t do; everything you don&rsquo;t want
+              to do.
+            </>
+          }
+          titleClassName={cn(HOME_SECTION_TITLE, "max-w-[1120px]")}
+          className="relative"
         />
-      ))}
-    </>
+      </div>
+
+      <ul className="relative mt-v1-stack grid grid-cols-1 gap-6 pl-0 lg:mt-v1-stack-lg lg:grid-cols-2">
+        {CAPABILITIES.map((capability, i) => (
+          <motion.li
+            key={capability.id}
+            {...reveals.item(i)}
+            className="list-none"
+          >
+            <CapabilityCard
+              capability={capability}
+              play={!hoverPlayback || activeId === capability.id}
+              onActivate={() => setHoveredId(capability.id)}
+              onDeactivate={() =>
+                setHoveredId((cur) => (cur === capability.id ? null : cur))
+              }
+            />
+          </motion.li>
+        ))}
+      </ul>
+    </Section>
   );
 }
 
-function Row({
+/**
+ * Full-bleed blue backdrop. Breaks out of the contained column with the
+ * `left-1/2 w-screen -translate-x-1/2` trick, then extends above the
+ * header (through this section's top padding and the demo section's
+ * bottom padding, plus a 96px bite into the video) and below it (the
+ * header→grid gap plus 96px into the first card row).
+ */
+function BlueSlab() {
+  return (
+    <div
+      aria-hidden="true"
+      className="pointer-events-none absolute -bottom-[6rem] -top-[13rem] left-1/2 w-screen -translate-x-1/2 overflow-hidden bg-v1-accent-blue sm:-top-[16rem] lg:-bottom-[12rem] lg:-top-[26rem]"
+    >
+      {/* eslint-disable-next-line @next/next/no-img-element */}
+      <img
+        src="/assets/v1/home/figma-blue-band.png"
+        alt=""
+        width={1311}
+        height={638}
+        className="absolute inset-y-0 right-0 h-full w-auto max-w-none object-cover object-right"
+      />
+    </div>
+  );
+}
+
+function CapabilityCard({
   capability,
-  mediaFirst,
+  play,
+  onActivate,
+  onDeactivate,
 }: {
   capability: Capability;
-  mediaFirst: boolean;
+  play: boolean;
+  onActivate: () => void;
+  onDeactivate: () => void;
 }) {
-  const Icon = capability.icon;
   return (
-    <div className="flex w-full flex-col items-center gap-16 lg:min-h-[339.6px] lg:flex-row">
-      <div
-        className={cn(
-          "flex w-full flex-col items-start gap-[46px] lg:max-w-[50%] lg:flex-1",
-          mediaFirst && "lg:order-2"
-        )}
+    // Hover/focus state: 4px lift + a neutral depth shadow with a 1px
+    // frost ring (the design system's card-hover token adds a salmon
+    // glow, which read as a red halo here, so this is the same depth
+    // stack without the tint). Applied as an arbitrary box-shadow
+    // property; Tailwind's shadow utility can't take a multi-layer
+    // value. Pointer handlers are mouse-only so a touch tap doesn't
+    // leave a card stuck active.
+    <div
+      className="group/cap h-full rounded-[10px] ease-v1-out focus-within:-translate-y-1 focus-within:[box-shadow:0_28px_72px_-20px_rgb(0_0_0/0.7),0_12px_32px_-14px_rgb(0_0_0/0.5),0_0_0_1px_rgb(255_255_255/0.18)] hover:-translate-y-1 hover:[box-shadow:0_28px_72px_-20px_rgb(0_0_0/0.7),0_12px_32px_-14px_rgb(0_0_0/0.5),0_0_0_1px_rgb(255_255_255/0.18)] motion-safe:transition-[transform,box-shadow] motion-safe:duration-300"
+      onPointerEnter={(e) => {
+        if (e.pointerType === "mouse") onActivate();
+      }}
+      onPointerLeave={(e) => {
+        if (e.pointerType === "mouse") onDeactivate();
+      }}
+      onFocus={onActivate}
+      onBlur={onDeactivate}
+    >
+      <GradientFrame
+        variant="charcoal"
+        className="h-full rounded-[10px]"
+        innerClassName="flex h-full flex-col md:flex-row"
       >
-        <div className="flex w-full flex-col items-start gap-6">
-          <p className="v1-trim flex items-center gap-2 font-v1Heading text-[20px] uppercase leading-[1.2] tracking-[-0.5px] text-v1-accent-salmon">
-            <Icon className="size-6 shrink-0 text-current" size={24} />
-            {capability.label}
-          </p>
-          <h3 className="v1-trim w-full font-v1Heading text-[clamp(1.75rem,4vw,48px)] uppercase leading-[0.95] tracking-[-1px] text-white">
-            {capability.heading}
-          </h3>
+        {/* Media column. Stacked: a 16:9 box. Side-by-side (md+): fills
+            the card's height, which the copy column sets — the video is
+            object-cover so the small height mismatch becomes a slight
+            crop rather than letterboxing. */}
+        <div className="relative aspect-video w-full shrink-0 overflow-hidden border-b border-v1-frost/[0.08] bg-v1-surfaceElevated md:aspect-auto md:w-[52%] md:self-stretch md:border-b-0 md:border-r">
+          {capability.videoSrc ? (
+            <RowVideo
+              src={capability.videoSrc}
+              label={capability.label}
+              startAt={capability.videoStart}
+              play={play}
+            />
+          ) : (
+            <div className="flex h-full w-full items-center justify-center">
+              <span className="text-v1-body-sm">{capability.label} video</span>
+            </div>
+          )}
         </div>
-        <div className="flex w-full flex-col items-start gap-4">
-          <p className="w-full font-v1Body text-[16px] leading-[1.5] text-[#CDCDCD]">
-            {capability.body}
-          </p>
-          <Link
-            href={appendRef(capability.docsHref, `homepage-${capability.id}`)}
-            className="inline-flex h-11 shrink-0 items-center justify-center rounded-lg border-2 border-[#FEFEFE] bg-transparent px-4 py-3 font-v1Mono text-[12px] font-semibold uppercase leading-[1.3] tracking-[1.44px] text-white hover:border-v1-accent-salmon hover:bg-v1-accent-salmon"
-          >
-            See docs
-          </Link>
-        </div>
-      </div>
 
-      <div
-        className={cn(
-          "w-full overflow-hidden bg-[#212121] lg:h-[339.6px] lg:flex-1",
-          mediaFirst && "lg:order-1"
-        )}
-      >
-        {capability.videoSrc ? (
-          <RowVideo
-            src={capability.videoSrc}
-            label={capability.label}
-            startAt={capability.videoStart}
-          />
-        ) : (
-          <div
-            className="flex w-full items-center justify-center bg-[#212121]"
-            style={{ aspectRatio: "608 / 339.6" }}
-          >
-            <span className="font-v1Body text-[14px] text-[#9B9B9B]">
-              {capability.label} video
-            </span>
+        <div className="flex flex-1 flex-col gap-4 p-5 lg:p-6">
+          <div className="flex flex-col gap-3">
+            {/* Icon + label row. The icon is the site line-art SVG used
+                as a CSS mask over `currentColor`, so it takes the exact
+                eyebrow colour (an <img> can't be tinted). Label-sm (12px
+                mono) keeps the row quieter than the title. */}
+            <p className="flex items-center gap-2 text-v1-accent-salmon">
+              <span
+                aria-hidden="true"
+                className="block h-4 w-5 shrink-0 bg-current"
+                style={{
+                  maskImage: `url(${capability.icon})`,
+                  WebkitMaskImage: `url(${capability.icon})`,
+                  maskSize: "contain",
+                  WebkitMaskSize: "contain",
+                  maskRepeat: "no-repeat",
+                  WebkitMaskRepeat: "no-repeat",
+                  maskPosition: "left center",
+                  WebkitMaskPosition: "left center",
+                }}
+              />
+              <span className="text-v1-label-sm uppercase">
+                {capability.label}
+              </span>
+            </p>
+            <h3 className="text-v1-heading-sm text-v1-frost">
+              {capability.heading}
+            </h3>
           </div>
-        )}
-      </div>
+          <p className="text-v1-body-xs">{capability.body}</p>
+          <div className="mt-auto pt-1">
+            <DocsCue
+              href={appendRef(capability.docsHref, `homepage-${capability.id}`)}
+            />
+          </div>
+        </div>
+      </GradientFrame>
     </div>
+  );
+}
+
+/**
+ * "See docs →" — the same text-cue vocabulary the lower page uses for
+ * card links (Learn more → / Get started → / See docs →).
+ */
+function DocsCue({ href }: { href: string }) {
+  return (
+    <Link
+      href={href}
+      className="group/cta text-v1-label-md inline-flex w-fit items-center uppercase text-v1-frost hover:text-v1-accent-salmon focus:outline-none focus-visible:text-v1-accent-salmon motion-safe:transition-colors motion-safe:duration-300"
+    >
+      <span>See docs</span>
+      <span
+        aria-hidden="true"
+        className="ml-2 inline-block group-hover/cta:translate-x-[6px] motion-safe:transition-transform motion-safe:duration-[400ms] motion-safe:ease-v1-in"
+      >
+        →
+      </span>
+    </Link>
   );
 }
 
@@ -170,13 +291,25 @@ function RowVideo({
   src,
   label,
   startAt,
+  play,
 }: {
   src: string;
   label: string;
   startAt?: number;
+  /** External gate — the video only plays while this is true AND it is
+   *  in view. The grid flips it per card on hover (desktop). */
+  play: boolean;
 }) {
   const ref = useRef<HTMLVideoElement>(null);
+  // Playback is driven from state, not refs, so every input change
+  // (scrolled into view, hover hand-off, media becoming ready) re-runs
+  // the single play/pause decision below. A play() issued before the
+  // media is ready can silently no-op; `ready` flipping retries it.
+  const [inView, setInView] = useState(false);
+  const [ready, setReady] = useState(false);
 
+  // Attach the source (hls.js for .m3u8 where native HLS is missing)
+  // and observe visibility. Bound once per source.
   useEffect(() => {
     const video = ref.current;
     if (!video) return;
@@ -184,11 +317,6 @@ function RowVideo({
 
     let hls: import("hls.js").default | undefined;
     let cancelled = false;
-
-    const cueStart = () => {
-      if (startAt == null || !Number.isFinite(video.duration)) return;
-      if (video.currentTime < startAt - 0.4) video.currentTime = startAt;
-    };
 
     const attach = async () => {
       if (!isHls(src) || video.canPlayType("application/vnd.apple.mpegurl")) {
@@ -208,49 +336,55 @@ function RowVideo({
         video.src = src;
       }
     };
-
     void attach();
 
-    let wantsPlay = false;
-    const tryPlay = () => {
-      if (!wantsPlay) return;
-      cueStart();
-      void video.play().catch(() => {});
+    const onReady = () => {
+      // Park on the clip's first useful frame so a paused card never
+      // shows black.
+      if (startAt != null && video.currentTime < startAt - 0.4) {
+        video.currentTime = startAt;
+      }
+      setReady(true);
     };
-
     const onEnded = () => {
       if (startAt == null) return;
       video.currentTime = startAt;
     };
-
-    video.addEventListener("loadedmetadata", tryPlay);
-    video.addEventListener("seeked", tryPlay);
+    video.addEventListener("loadeddata", onReady);
     if (startAt != null) video.addEventListener("ended", onEnded);
+    if (video.readyState >= 2) onReady();
 
     const observer = new IntersectionObserver(
-      ([entry]) => {
-        wantsPlay = entry.isIntersecting;
-        if (wantsPlay) tryPlay();
-        else video.pause();
-      },
+      ([entry]) => setInView(entry.isIntersecting),
       { threshold: 0.25 }
     );
     observer.observe(video);
     return () => {
       cancelled = true;
       observer.disconnect();
-      video.removeEventListener("loadedmetadata", tryPlay);
-      video.removeEventListener("seeked", tryPlay);
+      video.removeEventListener("loadeddata", onReady);
       video.removeEventListener("ended", onEnded);
       hls?.destroy();
     };
   }, [src, startAt]);
 
+  // The one play/pause decision.
+  useEffect(() => {
+    const video = ref.current;
+    if (!video) return;
+    if (window.matchMedia("(prefers-reduced-motion: reduce)").matches) return;
+    if (inView && play) {
+      if (startAt != null && video.currentTime < startAt - 0.4) {
+        video.currentTime = startAt;
+      }
+      void video.play().catch(() => {});
+    } else {
+      video.pause();
+    }
+  }, [inView, play, ready, startAt]);
+
   return (
-    <div
-      className="relative w-full overflow-hidden bg-[#212121]"
-      style={{ aspectRatio: "608 / 339.6" }}
-    >
+    <div className="absolute inset-0">
       <video
         ref={ref}
         className="block h-full w-full object-cover"

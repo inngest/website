@@ -108,7 +108,7 @@ export default function UseCaseBand() {
         body="Add durable functions to your existing code, to keep event-driven workflows, background jobs, and agents running. No infrastructure to provision or maintain."
         bodyClassName="max-w-[640px]"
       />
-      <ul className="mt-v1-stack grid grid-cols-1 gap-[10px] pl-0 sm:grid-cols-2 lg:grid-cols-3">
+      <ul className="mt-v1-stack grid grid-cols-1 gap-x-6 gap-y-8 pl-0 sm:grid-cols-2 lg:grid-cols-3">
         {USE_CASES.map((u, i) => (
           <motion.li key={u.id} {...reveals.item(i)} className="list-none">
             <UseCaseCard useCase={u} />
@@ -154,10 +154,8 @@ function UseCaseCard({ useCase }: { useCase: UseCase }) {
             className="block h-auto max-h-9 w-auto max-w-[44px] object-contain object-left"
           />
         </span>
-        <h3 className="font-v1Heading text-[24px] font-normal leading-[1.2] tracking-[-0.01em] text-v1-frost sm:text-[28px]">
-          {useCase.title}
-        </h3>
-        <p className="text-v1-body-sm text-v1-frost/80">{useCase.body}</p>
+        <h3 className="text-v1-heading-sm text-v1-frost">{useCase.title}</h3>
+        <p className="text-v1-body-sm">{useCase.body}</p>
       </div>
 
       <div className="relative">

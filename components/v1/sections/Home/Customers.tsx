@@ -4,9 +4,9 @@ import { HOME_TESTIMONIAL_SLIDES } from "@/components/v1/sections/shared/testimo
 
 /**
  * Home page testimonials section — the shared carousel with the home
- * slide deck and the brand-mark watermark backdrop. Padding is tighter
- * than the shared default: it sits between two dense sections, so the
- * full rhythm would leave the rail floating.
+ * slide deck and the brand-mark watermark backdrop, on the standard
+ * section rhythm. The title/body start at the quote column so they
+ * align with the logos and quote, and the portrait fills its column.
  */
 export default function Customers() {
   return (
@@ -17,8 +17,11 @@ export default function Customers() {
       body="Inngest is for any human or agent that wants to focus on what code does, not how it fails."
       watermark
       compact
-      portraitClassName="sm:mx-auto sm:max-w-[clamp(180px,19vw,280px)]"
-      className="px-6 pb-12 pt-10 lg:px-8 lg:pb-16 lg:pt-12"
+      alignHeadingToQuote
+      // Let the portrait fill its grid column (the shared Portrait caps
+      // itself at 332px otherwise), so it carries the same visual
+      // weight as the quote beside it.
+      portraitClassName="sm:max-w-none"
     />
   );
 }

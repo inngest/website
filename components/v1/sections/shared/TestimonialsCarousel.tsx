@@ -91,6 +91,20 @@ interface TestimonialsCarouselProps {
    * sections and shouldn't own a screen of their own.
    */
   compact?: boolean;
+  /**
+   * Optional heading lockup rendered INSIDE the grid, in the quote
+   * column above the logos (on mobile it stacks first). Lets a section
+   * title share the portrait's column structure so the portrait can
+   * span title + quote.
+   */
+  header?: ReactNode;
+  /**
+   * Stretch the portrait to the full height of the row(s) it shares
+   * with the quote column (and the header, if any) instead of the
+   * width-driven 332/375 box. Pair with `header` for a balanced
+   * two-column lockup.
+   */
+  portraitFill?: boolean;
 }
 
 // Match the HowItWorks rail + Lifecycle tab nav cadence
@@ -106,6 +120,8 @@ export default function TestimonialsCarousel({
   bylineStaggerMs = 80,
   disablePortraitReveal = false,
   compact = false,
+  header,
+  portraitFill = false,
 }: TestimonialsCarouselProps) {
   const [active, setActive] = useState(0);
   // Auto-advance only while the carousel is on screen, so a user who
@@ -144,12 +160,29 @@ export default function TestimonialsCarousel({
       onAdvance={next}
       ariaLabel="Show next testimonial"
       hideCursor
-      className="grid cursor-grab select-none grid-cols-1 gap-4 sm:grid-cols-[minmax(0,1fr)_minmax(0,2fr)] sm:items-center sm:gap-10 sm:gap-x-[clamp(16px,2vw,32px)]"
+      className={cn(
+        "grid cursor-grab select-none grid-cols-1 gap-4 sm:grid-cols-[minmax(0,1fr)_minmax(0,2fr)] sm:gap-10 sm:gap-x-[clamp(16px,2vw,32px)]",
+        portraitFill ? "sm:items-stretch" : "sm:items-center",
+        // With a header the grid is two rows at sm+: header top-right,
+        // quote bottom-right, portrait spanning both on the left.
+        header && "sm:grid-rows-[auto_1fr]"
+      )}
     >
-      <div className="py-6 sm:py-0">
+      {header && <div className="sm:col-start-2 sm:row-start-1">{header}</div>}
+      <div
+        className={cn(
+          "py-6 sm:py-0",
+          header && "sm:col-start-1 sm:row-span-2 sm:row-start-1",
+          portraitFill && "sm:flex"
+        )}
+      >
         <Portrait
           slide={current}
-          className={portraitClassName}
+          className={cn(
+            portraitClassName,
+            portraitFill &&
+              "sm:aspect-auto sm:max-w-none sm:flex-1 sm:self-stretch"
+          )}
           activeKey={active}
           slideDirection={slideDirection}
           disableReveal={disablePortraitReveal}
@@ -158,6 +191,7 @@ export default function TestimonialsCarousel({
       <div
         className={cn(
           "flex flex-col justify-between gap-7",
+          header && "sm:col-start-2 sm:row-start-2",
           compact
             ? "sm:min-h-[clamp(240px,23vw,330px)] sm:gap-[clamp(16px,2.2vw,28px)]"
             : "sm:min-h-[clamp(320px,32vw,460px)] sm:gap-[clamp(20px,3.5vw,45px)]"

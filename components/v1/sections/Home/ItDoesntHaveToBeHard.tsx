@@ -64,7 +64,7 @@ export default function ItDoesntHaveToBeHard() {
 
 function Copy() {
   return (
-    <div className="flex flex-col gap-v1-stack lg:pt-[65px]">
+    <div className="flex flex-col gap-v1-stack lg:pt-16">
       <motion.h2
         {...reveals.heading}
         aria-label="It doesn't have to be hard"

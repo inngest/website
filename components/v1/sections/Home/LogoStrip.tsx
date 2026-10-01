@@ -138,6 +138,13 @@ interface LogoStripProps {
    * Default (false) keeps the full-bleed behavior used on the home page.
    */
   contained?: boolean;
+  /**
+   * Optional mono label rendered above the marquee, left-aligned to the
+   * container (e.g. "Trusted in production by"). Gives the strip a
+   * caption so it reads as proof rather than as an unexplained row of
+   * logos.
+   */
+  label?: string;
 }
 
 function LogoMark({
@@ -206,7 +213,10 @@ function LogoMark({
   );
 }
 
-export default function LogoStrip({ contained = false }: LogoStripProps) {
+export default function LogoStrip({
+  contained = false,
+  label,
+}: LogoStripProps) {
   // Soft 120px fade at both horizontal edges so logos drift in/out of view
   // instead of hard-cutting. `[--mask]` keeps both the standard and the
   // legacy WebKit variant in one place.
@@ -260,12 +270,28 @@ export default function LogoStrip({ contained = false }: LogoStripProps) {
     </section>
   );
 
-  if (!contained) return strip;
+  const caption = label ? (
+    <p className="text-v1-label-sm uppercase text-v1-frost/60">{label}</p>
+  ) : null;
+
+  if (!contained)
+    return (
+      <>
+        {caption}
+        {strip}
+      </>
+    );
 
   // Centered to the shared page container so the row aligns with sibling
   // sections; the section's own overflow clips the marquee to this
-  // width and the edge gradient fades at the container boundary.
+  // width and the edge gradient fades at the container boundary. A
+  // hairline above separates the proof row from the hero copy.
   return (
-    <div className="mx-auto w-full max-w-[1440px] px-6 lg:px-8">{strip}</div>
+    <div className="mx-auto w-full max-w-[1440px] px-6 sm:px-9 lg:px-8">
+      <div className="border-t border-v1-frost/[0.08] pt-6 lg:pt-8">
+        {caption}
+        {strip}
+      </div>
+    </div>
   );
 }

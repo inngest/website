@@ -1,56 +1,81 @@
 "use client";
 
-import Link from "next/link";
 import { motion } from "motion/react";
 import { reveals } from "@/utils/v1/reveals";
+import ButtonLink from "@/components/v1/ButtonLink";
 import InstallCommandButton from "@/components/v1/sections/Home/InstallCommandButton";
+import GradientFrame from "@/components/v1/sections/shared/GradientFrame";
+import Section from "@/components/v1/sections/shared/Section";
+import { HOME_SECTION_TITLE } from "@/components/v1/sections/shared/sectionTitle";
+import { cn } from "@/utils/v1/cn";
 import HlsVideo from "@/shared/HlsVideo";
 
 const DX_DEMO_SRC =
   "https://cdn.inngest.com/videos/homepage-product-demo/hls/master.m3u8";
 
+/**
+ * Product demo — the first section after the hero, and the one
+ * centre-aligned lockup on the page: title → body → CTA pair, stacked
+ * on the centre axis above the demo video. The video sits in the same
+ * gradient-ring frame the "Scale instantly" section uses so the two
+ * product surfaces rhyme.
+ *
+ * `z-10` lifts the video above the next section's blue slab, which
+ * reaches up into this section's bottom padding so the video appears
+ * to rest on it.
+ */
 export default function Quote() {
   return (
-    <section
-      aria-label="The DX in Durable Execution"
-      className="relative z-10 flex w-full flex-col items-center justify-center gap-[46px]"
+    <Section
+      aria-labelledby="home-dx-heading"
+      className="relative z-10"
+      containerClassName="flex flex-col items-center gap-16"
     >
-      <h2 className="v1-trim w-full text-center font-whyte text-[clamp(2rem,6vw,72px)] font-light uppercase leading-[1.2] tracking-[-3px] text-white">
-        The DX in Durable Execution
-      </h2>
-      <motion.p
-        {...reveals.body}
-        className="w-full text-center font-v1Body text-[20px] leading-[1.5] text-[#CDCDCD]"
-      >
-        However it&rsquo;s written, wherever it runs&mdash;Inngest makes it
-        unbreakable. Start locally, scale instantly.
-      </motion.p>
-
-      <motion.div
-        {...reveals.body}
-        className="flex flex-row flex-wrap items-center justify-center gap-[14px]"
-      >
-        <InstallCommandButton label="Copy prompt to start locally" />
-        <Link
-          href="/pricing?ref=homepage-dx"
-          className="inline-flex h-11 shrink-0 items-center justify-center rounded-lg bg-v1-accent-salmon px-4 font-v1Mono text-[12px] font-semibold uppercase leading-[1.3] tracking-[1.44px] text-white"
+      <div className="flex w-full flex-col items-center gap-8 text-center">
+        {/* Centred lockup runs tighter than the left-aligned header
+            rhythm: title → body 24, body → buttons 32, lockup → video 64. */}
+        <div className="flex flex-col items-center gap-6">
+          <motion.h2
+            {...reveals.heading}
+            id="home-dx-heading"
+            className={cn(HOME_SECTION_TITLE, "max-w-[900px]")}
+          >
+            The DX in durable execution
+          </motion.h2>
+          <motion.p
+            {...reveals.body}
+            className="text-v1-body-lg-loose max-w-[560px]"
+          >
+            However it&rsquo;s written, wherever it runs, Inngest makes it
+            unbreakable. Start locally, scale instantly.
+          </motion.p>
+        </div>
+        <motion.div
+          {...reveals.item(2)}
+          className="flex flex-row flex-wrap items-center justify-center gap-4"
         >
-          Start Free in Cloud
-        </Link>
-      </motion.div>
+          <InstallCommandButton label="Copy prompt to start locally" />
+          <ButtonLink variant="accent" href="/pricing?ref=homepage-dx">
+            Start free in cloud
+          </ButtonLink>
+        </motion.div>
+      </div>
 
-      <motion.div
-        {...reveals.body}
-        className="aspect-video w-full overflow-hidden"
-      >
-        <HlsVideo
-          src={DX_DEMO_SRC}
-          loop
-          controls
-          autoPlay
-          className="block h-full w-full object-cover"
-        />
+      <motion.div {...reveals.body} className="w-full">
+        <GradientFrame
+          variant="black"
+          className="rounded-[10px]"
+          innerClassName="aspect-video"
+        >
+          <HlsVideo
+            src={DX_DEMO_SRC}
+            loop
+            controls
+            autoPlay
+            className="block h-full w-full object-cover"
+          />
+        </GradientFrame>
       </motion.div>
-    </section>
+    </Section>
   );
 }

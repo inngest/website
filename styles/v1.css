@@ -230,31 +230,6 @@
 }
 
 /*
- * Homepage Desktop - 7 frame: 80px padding, 96px section gap.
- * Canvas + grain stay on `.v1-page` / `.v1-page-bg` — do not paint an
- * opaque fill here or the homepage texture disappears.
- */
-.home-desktop-7 {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  isolation: isolate;
-  overflow: visible;
-  width: 100%;
-  max-width: 1440px;
-  margin-inline: auto;
-  padding: 40px 24px;
-  gap: 48px;
-}
-
-@media (min-width: 1024px) {
-  .home-desktop-7 {
-    padding: 72px 32px 80px;
-    gap: 96px;
-  }
-}
-
-/*
  * Shared "textured surface" treatment — adds a soft-light gradient +
  * grain overlay on top of any background colour, matching the Figma
  * design system's recurring sheen treatment (salmon CTAs, feature
