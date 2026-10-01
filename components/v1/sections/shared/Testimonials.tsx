@@ -1,6 +1,6 @@
 "use client";
 
-import { type ComponentProps, useId } from "react";
+import { type ComponentProps, type ReactNode, useId } from "react";
 import dynamic from "next/dynamic";
 import { motion } from "motion/react";
 import { cn } from "@/utils/v1/cn";
@@ -26,9 +26,20 @@ export interface TestimonialsProps extends Omit<CarouselProps, "slides"> {
    * use "\n" to control line breaks.
    */
   title?: string;
+  /** Optional subtitle under the title. Requires `title`. */
+  body?: ReactNode;
+  /** Override/extend the title type (e.g. homepage sentence-case). */
+  titleClassName?: string;
   /** Render the animated brand-mark watermark behind the carousel
    *  (home / background-jobs layout). */
   watermark?: boolean;
+  /**
+   * Start the title + body at the carousel's quote column (the second
+   * column of its portrait/quote grid) instead of the container edge,
+   * so the heading lines up with the logos and quote below it. Full
+   * width on mobile where the carousel stacks.
+   */
+  alignHeadingToQuote?: boolean;
   /** Section padding/width classes; overrides the default. */
   className?: string;
 }
@@ -48,8 +59,9 @@ export const EDGE_TESTIMONIALS_TITLE =
  * background-jobs, queues/flow-control, download-gate). Carousel
  * behaviour props (`portraitClassName`, `directionMode`,
  * `bylineStaggerMs`, `disablePortraitReveal`) pass straight through.
- * Set `watermark` for the brand-mark backdrop variant and `title` for a
- * heading above the rail (which also wires up `aria-labelledby`).
+ * Set `watermark` for the brand-mark backdrop variant and `title`
+ * (optionally with `body`) for a heading above the rail, which also
+ * wires up `aria-labelledby`.
  *
  * Pages whose heading differs from the standard testimonials title
  * (e.g. compare-to-temporal's `SectionHeading`) compose
@@ -58,34 +70,70 @@ export const EDGE_TESTIMONIALS_TITLE =
 export default function Testimonials({
   slides,
   title,
+  body,
+  titleClassName,
   watermark = false,
+  alignHeadingToQuote = false,
   className,
   ...carousel
 }: TestimonialsProps) {
   const headingId = useId();
 
-  const heading = title ? (
+  const titleEl = title ? (
     <motion.h2
       {...reveals.heading}
       id={headingId}
       // mb (not a wrapper gap) so the heading drops into both the
       // watermark and plain layouts; matches the home page's
-      // gap-2 / lg:gap-24 between title and rail.
+      // gap-2 / lg:gap-24 between title and rail. With a subtitle the
+      // margin moves to the lockup, which sets its own rhythm.
       // Ignore the forced "\n" on mobile (let the title wrap naturally
       // instead of breaking awkwardly after "agents"); honor the two-line
       // break only at lg+ where it fits cleanly.
-      className="mb-2 whitespace-normal font-v1Display uppercase leading-[1.25] tracking-[-0.01em] text-v1-frost lg:mb-24 lg:whitespace-pre-line"
-      style={{ fontSize: "clamp(2rem, 4.6vw, 4rem)" }}
+      className={cn(
+        "whitespace-normal font-v1Display uppercase leading-[1.25] tracking-[-0.01em] text-v1-frost [font-size:clamp(2rem,4.6vw,4rem)] lg:whitespace-pre-line",
+        !body && "mb-2 lg:mb-24",
+        titleClassName
+      )}
     >
       {title}
     </motion.h2>
   ) : null;
 
+  // With `alignHeadingToQuote` the lockup moves INTO the carousel grid
+  // (quote column, above the logos) and the portrait stretches to span
+  // title + quote, so the title's left edge meets the logos' and its
+  // top edge meets the portrait's. The grid's own row gap separates
+  // title from logos, so the lockup drops its bottom margin there.
+  const lockup = body ? (
+    <div className={cn(!alignHeadingToQuote && "mb-8 lg:mb-14")}>
+      {titleEl}
+      <motion.p
+        {...reveals.body}
+        className={cn(
+          "text-v1-body-lg-loose max-w-[46rem] text-v1-frost",
+          alignHeadingToQuote ? "mt-3" : "mt-5"
+        )}
+      >
+        {body}
+      </motion.p>
+    </div>
+  ) : (
+    titleEl
+  );
+  const heading = alignHeadingToQuote ? null : lockup;
+
   const labelProps = title
     ? { "aria-labelledby": headingId }
     : { "aria-label": "Customer testimonials" };
 
-  const carouselEl = <TestimonialsCarousel slides={slides} {...carousel} />;
+  const carouselEl = (
+    <TestimonialsCarousel
+      slides={slides}
+      {...carousel}
+      {...(alignHeadingToQuote && { header: lockup, portraitFill: true })}
+    />
+  );
 
   if (watermark) {
     return (
@@ -94,7 +142,7 @@ export default function Testimonials({
         <div
           className={cn(
             "relative z-10 mx-auto max-w-[1440px]",
-            className ?? DEFAULT_PADDING,
+            className ?? DEFAULT_PADDING
           )}
         >
           {heading}
@@ -109,7 +157,7 @@ export default function Testimonials({
       {...labelProps}
       className={cn(
         "relative mx-auto w-full max-w-[1440px]",
-        className ?? DEFAULT_PADDING,
+        className ?? DEFAULT_PADDING
       )}
     >
       {heading}

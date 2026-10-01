@@ -7,7 +7,7 @@ import { tweens, V1_CYCLE_MS } from "@/utils/v1/springs";
 import Link from "@/components/v1/Link";
 import GradientFrame from "@/components/v1/sections/shared/GradientFrame";
 import Section from "@/components/v1/sections/shared/Section";
-import { V1_SECTION_TITLE } from "@/components/v1/sections/shared/sectionTitle";
+import { HOME_SECTION_TITLE } from "@/components/v1/sections/shared/sectionTitle";
 import { cn } from "@/utils/v1/cn";
 import { appendRef } from "@/utils/v1/ref";
 import { useIsDesktop } from "@/utils/v1/hooks/useIsDesktop";
@@ -151,7 +151,7 @@ function TrustedBlock({
     <div className="flex flex-col gap-[52px]">
       <motion.h2
         {...reveals.heading}
-        className={cn("text-balance", V1_SECTION_TITLE)}
+        className={cn("text-balance", HOME_SECTION_TITLE)}
       >
         Scale instantly, improve constantly
       </motion.h2>
@@ -409,7 +409,7 @@ function CisoBlock() {
         {/* Secondary card title — display-xs (40px) at lg for a smaller
             hierarchy below the section h2; the 24px mobile size has no
             matching token, so it stays a bespoke step-down. */}
-        <h2 className="max-w-[290px] text-[24px] uppercase leading-[1.25] tracking-[-0.01em] text-v1-frost lg:text-v1-display-xs lg:max-w-none lg:text-balance">
+        <h2 className="max-w-[290px] font-v1Display text-[24px] leading-[1.25] tracking-[-0.03em] text-v1-frost lg:text-v1-display-xs lg:max-w-none lg:text-balance">
           Stuff your CISO needs to see
         </h2>
         {/* !tracking-normal overrides the token's baked-in -0.01em. */}
