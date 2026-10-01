@@ -41,6 +41,8 @@ If your job's progress lives in memory, it dies when the process does. A request
 
 When that pipeline's pod ran out of memory, its position in the dataset went with it, and one checkpoint of the last finished item wasn't enough to trust. Nobody could answer "where did it stop?", so redoing everything was the only safe move. Keep orchestration and state outside the worker, and any healthy worker can pick the run back up.
 
+![Inngest running outside the worker pods, holding orchestration and state so any healthy pod can resume a run](https://cdn.inngest.com/blog/All-your-workflows-are-about-to-be-long-running/inngest_outside_worker_pods_muted.png)
+
 ## Waiting should cost nothing
 
 A run waiting on a human, a webhook, or another system should hold its state and nothing else. Hand-rolled systems usually get this wrong: a paused job is still a running job, with a worker holding a thread, a connection, or a slot while it waits. These held jobs consume resources, blocking new processes from running. Park enough of them and the queue stalls, even though none of them is doing anything.
