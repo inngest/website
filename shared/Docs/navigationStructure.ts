@@ -1,13 +1,11 @@
 import {
-  HomeIcon,
   PlayIcon,
   LightBulbIcon,
   BookOpenIcon,
   CodeBracketIcon,
-  Squares2X2Icon,
 } from "@heroicons/react/24/outline";
-import { parse } from "node:path";
 import { TS_STABLE, type TSVersion } from "./LanguageStore";
+import { docsRefreshOutline, type DocsRefreshPage } from "./docsRefreshOutline";
 import PATTERN_SECTIONS, { PATTERNS } from "../Patterns/patternsData";
 
 function tsRef(version: TSVersion, path: string): string {
@@ -17,6 +15,7 @@ function tsRef(version: TSVersion, path: string): string {
 export type NavLink = {
   title: string;
   href: string;
+  planned?: boolean;
   className?: string;
   tag?: string;
   target?: string;
@@ -26,20 +25,27 @@ export type NavLink = {
 export type NavLinkGroup = {
   title: string;
   className?: string;
+  planned?: boolean;
 };
 
 export type NavGroup = {
   title: string;
   href?: string;
+  planned?: boolean;
   icon?: React.FC<React.SVGProps<SVGSVGElement>>;
   links: (NavGroup | NavLink | NavSection | NavLinkGroup)[];
   defaultOpen?: boolean;
+  /** Open by default when the current page isn't in any other collapsible group. */
+  openWhenIdle?: boolean;
+  /** Always-open top-level section with an icon header (Learn sidebar). */
+  section?: boolean;
   tag?: string;
   target?: string;
   unreleased?: string;
 };
 
 export type NavSection = NavLink & {
+  id: "docs" | "examples" | "sdk";
   icon?: React.FC<React.SVGProps<SVGSVGElement>>;
   matcher?: RegExp | Function;
   tag?: string;
@@ -415,8 +421,9 @@ const sectionReference: (NavGroup | NavLink)[] = [
   {
     title: "Go SDK",
     links: [
+      { title: "Introduction", href: `/docs/reference/go` },
       {
-        title: "Reference",
+        title: "Package reference",
         href: "https://pkg.go.dev/github.com/inngest/inngestgo",
       },
       {
@@ -462,475 +469,42 @@ const sectionReference: (NavGroup | NavLink)[] = [
   { title: "Self-hosting", href: `/docs/self-hosting` },
 ];
 
-const sectionLearn: (NavGroup | NavLink)[] = [
-  { title: "Home", href: "/docs" },
-  {
-    title: "Quick starts",
-    defaultOpen: true,
-    links: [
-      { title: "Next.js", href: "/docs/getting-started/nextjs-quick-start" },
-      {
-        title: "Node.js",
-        links: [
-          {
-            title: "Express",
-            href: "/docs/getting-started/express-quick-start",
-          },
-          { title: "Astro", href: "/docs/getting-started/astro-quick-start" },
-          { title: "H3", href: "/docs/getting-started/h3-quick-start" },
-          { title: "NestJS", href: "/docs/getting-started/nestjs-quick-start" },
-          {
-            title: "TanStack Start",
-            href: "/docs/getting-started/tanstack-start-quick-start",
-          },
-          {
-            title: "Other frameworks",
-            href: "/docs/getting-started/nodejs-quick-start",
-          },
-        ],
-      },
-      { title: "Python", href: "/docs/getting-started/python-quick-start" },
-    ],
-  },
-  {
-    title: "Concepts",
-    defaultOpen: true,
-    links: [
-      {
-        title: "How Durable execution works",
-        href: `/docs/learn/how-functions-are-executed`,
-      },
-      { title: "Cloud architecture", href: `/docs/architecture` },
-      {
-        title: "Durable Functions",
-        links: [
-          { title: "Overview", href: `/docs/learn/inngest-functions` },
-          {
-            title: "Serve Inngest Functions",
-            href: "/docs/learn/serving-inngest-functions",
-          },
-          {
-            title: "Triggering functions",
-            href: `/docs/features/events-triggers`,
-          },
-          {
-            title: "Deferred functions",
-            href: "/docs/features/inngest-functions/deferred-functions",
-            tag: "beta",
-          },
-          { title: "Idempotency", href: `/docs/guides/handling-idempotency` },
-          { title: "Logging", href: "/docs/guides/logging" },
-        ],
-      },
-      {
-        title: "Durable Endpoints",
-        links: [
-          { title: "Overview", href: `/docs/learn/durable-endpoints` },
-          {
-            title: "Streaming",
-            href: "/docs/learn/durable-endpoints/streaming",
-          },
-        ],
-      },
-      {
-        title: "Durable Agents",
-        href: `/docs/learn/durable-agents`,
-        // links: [
-        //   { title: "Overview", href: `/docs/learn/durable-agents` },
-        //   // Future "AI Observability" guide
-        //   // {
-        //   //   title: "AI Observability",
-        //   //   href: `/docs/learn/tbd`,
-        //   // },
-        // ],
-      },
-      {
-        title: "Steps",
-        links: [
-          { title: "Building with steps", href: `/docs/learn/inngest-steps` },
-          {
-            title: "Sleeping",
-            href: "/docs/features/inngest-functions/steps-workflows/sleeps",
-          },
-          {
-            title: "Wait for event",
-            href: "/docs/features/inngest-functions/steps-workflows/wait-for-event",
-          },
-          {
-            title: "Wait for signal",
-            href: "/docs/features/inngest-functions/steps-workflows/wait-for-signal",
-          },
-          {
-            title: "Invoke other functions",
-            href: `/docs/guides/invoking-functions-directly`,
-          },
-          {
-            title: "Step experiments",
-            href: "/docs/features/inngest-functions/steps-workflows/step-experiments",
-            tag: "new",
-          },
-          {
-            title: "Scoring",
-            href: "/docs/features/inngest-functions/steps-workflows/scoring",
-            tag: "beta",
-          },
-          {
-            title: "Deferred scoring",
-            href: "/docs/features/inngest-functions/steps-workflows/deferred-scoring",
-            tag: "beta",
-          },
-          {
-            title: "AI steps (LLM calls)",
-            href: "/docs/features/inngest-functions/steps-workflows/step-ai-orchestration",
-          },
-          { title: "Durable Fetch", href: tsRef("v4", "functions/fetch") },
-        ],
-      },
-      {
-        title: "Error handling",
-        links: [
-          { title: "Overview", href: `/docs/guides/error-handling` },
-          {
-            title: "Retries",
-            href: "/docs/features/inngest-functions/error-retries/retries",
-          },
-          {
-            title: "Rollbacks",
-            href: "/docs/features/inngest-functions/error-retries/rollbacks",
-          },
-          {
-            title: "Failure handlers",
-            href: "/docs/features/inngest-functions/error-retries/failure-handlers",
-          },
-          {
-            title: "Inngest errors",
-            href: "/docs/features/inngest-functions/error-retries/inngest-errors",
-          },
-        ],
-      },
-      {
-        title: "Flow control",
-        links: [
-          { title: "Overview", href: `/docs/guides/flow-control` },
-          { title: "Concurrency", href: `/docs/guides/concurrency` },
-          { title: "Throttling", href: `/docs/guides/throttling` },
-          { title: "Batching", href: `/docs/guides/batching` },
-          { title: "Rate limit", href: `/docs/guides/rate-limiting` },
-          { title: "Singleton", href: `/docs/guides/singleton` },
-          { title: "Debounce", href: `/docs/guides/debounce` },
-          { title: "Priority", href: `/docs/guides/priority` },
-        ],
-      },
-      { title: "Agent Evals", href: "/docs/learn/agent-evals", tag: "beta" },
-      {
-        title: "Cancellation",
-        links: [
-          {
-            title: "Overview",
-            href: `/docs/features/inngest-functions/cancellation`,
-          },
-          {
-            title: "Cancel on timeouts",
-            href: `/docs/features/inngest-functions/cancellation/cancel-on-timeouts`,
-          },
-          {
-            title: "Cancel on events",
-            href: `/docs/features/inngest-functions/cancellation/cancel-on-events`,
-          },
-          {
-            title: "Bulk cancellation",
-            href: `/docs/guides/cancel-running-functions`,
-          },
-        ],
-      },
-      {
-        title: "Realtime",
-        links: [
-          { title: "Overview", href: "/docs/features/realtime" },
-          {
-            title: "React hooks / Next.js",
-            href: "/docs/features/realtime/react-hooks",
-          },
-          // Page hidden for now given upcoming Durable token streaming pattern
-          // TODO - Revisit this page and pattern relationship after updated IA in summer 2026
-          // {
-          //   title: "Stream AI responses",
-          //   href: "/docs/features/realtime/stream-ai-responses",
-          // },
-          {
-            title: "Subscription tokens",
-            href: "/docs/features/realtime/subscription-tokens",
-          },
-        ],
-      },
-      {
-        title: "Environments and Apps",
-        href: "/docs/apps",
-        links: [
-          { title: "Overview", href: "/docs/apps" },
-          { title: "Environments", href: `/docs/platform/environments` },
-          { title: "Apps", href: `/docs/platform/manage/apps` },
-          { title: "Event keys", href: `/docs/events/creating-an-event-key` },
-          { title: "Signing keys", href: `/docs/platform/signing-keys` },
-        ],
-      },
-    ],
-  },
-  {
-    title: "Guides",
-    defaultOpen: true,
-    links: [
-      { title: "Local development", href: `/docs/local-development` },
-      {
-        title: "CLI",
-        tag: "new",
-        links: [
-          { title: "CLI reference", href: "/docs/cli" },
-          { title: "Debug with the CLI", href: "/docs/guides/debug-with-cli" },
-        ],
-      },
-      {
-        title: "Events and Triggers",
-        links: [
-          { title: "Overview", href: `/docs/features/events-triggers` },
-          { title: "Sending events", href: `/docs/events` },
-          {
-            title: "Event payload format",
-            href: `/docs/features/events-triggers/event-format`,
-          },
-          {
-            title: "Sessions",
-            href: `/docs/features/events-triggers/sessions`,
-            tag: "new",
-          },
-          {
-            title: "Writing expressions",
-            href: `/docs/guides/writing-expressions`,
-          },
-          {
-            title: "Consuming webhook events",
-            href: `/docs/platform/webhooks`,
-          },
-          { title: "Parallel steps", href: "/docs/guides/step-parallelism" },
-          { title: "Fan-out", href: `/docs/guides/fan-out-jobs` },
-          {
-            title: "Working with loops",
-            href: "/docs/guides/working-with-loops",
-          },
-          {
-            title: "Delayed functions",
-            href: `/docs/guides/delayed-functions`,
-          },
-          { title: "Cron functions", href: `/docs/guides/scheduled-functions` },
-          { title: "Background jobs", href: `/docs/guides/background-jobs` },
-          {
-            title: "Multiple triggers & wildcards",
-            href: `/docs/guides/multiple-triggers`,
-          },
-          {
-            title: "Sending events from functions",
-            href: `/docs/guides/sending-events-from-functions`,
-          },
-          {
-            title: "User-defined Workflows",
-            href: `/docs/guides/user-defined-workflows`,
-          },
-          {
-            title: "Mergent migration guide",
-            href: `/docs/guides/mergent-migration`,
-          },
-          {
-            title: "Workflow Kit",
-            links: [
-              { title: "Introduction", href: `/docs/reference/workflow-kit` },
-              {
-                title: "Creating Workflow Actions",
-                href: `/docs/reference/workflow-kit/actions`,
-              },
-              {
-                title: "Using the Workflow Engine",
-                href: `/docs/reference/workflow-kit/engine`,
-              },
-              {
-                title: "Workflow instance format",
-                href: `/docs/reference/workflow-kit/workflow-instance`,
-              },
-              {
-                title: "Components API (React)",
-                href: `/docs/reference/workflow-kit/components-api`,
-              },
-            ],
-          },
-        ],
-      },
-      {
-        title: "Agents",
-        links: [
-          {
-            title: "Agent tool loops",
-            href: `/docs/ai-patterns/agent-tool-loops`,
-          },
-          {
-            title: "Human-in-the-loop",
-            href: `/docs/ai-patterns/human-in-the-loop`,
-          },
-          {
-            title: "Sub-agents",
-            href: `/docs/ai-patterns/sub-agent-delegation`,
-          },
-          {
-            title: "CLI for coding agents",
-            href: `/docs/ai-patterns/cli-for-coding-agents`,
-            tag: "new",
-          },
-        ],
-      },
-      {
-        title: "Deploying",
-        defaultOpen: true,
-        links: [
-          { title: "Overview", href: `/docs/platform/deployment` },
-          { title: "Sync your app", href: `/docs/apps/cloud` },
-          {
-            title: "Connect (workers)",
-            href: `/docs/setup/connect`,
-          },
-          {
-            title: "Checkpointing",
-            href: `/docs/setup/checkpointing`,
-            tag: "new",
-          },
-          { title: "Self-hosting", href: `/docs/self-hosting` },
-          {
-            title: "Cloud providers",
-            links: [
-              { title: "Vercel", href: "/docs/deploy/vercel" },
-              {
-                title: "DigitalOcean",
-                href: "/docs/deploy/digital-ocean",
-                tag: "new",
-              },
-              { title: "Cloudflare Pages", href: `/docs/deploy/cloudflare` },
-              { title: "Netlify", href: `/docs/deploy/netlify` },
-              { title: "Render", href: `/docs/deploy/render` },
-              {
-                title: "Cloud Provider Usage Limits",
-                href: `/docs/usage-limits/providers`,
-              },
-            ],
-          },
-        ],
-      },
-      { title: "Optimizing Performance", href: `/docs/improve-performance` },
-      { title: "Versioning", href: `/docs/learn/versioning` },
-      { title: "Logging", href: "/docs/guides/logging" },
-      {
-        title: "Middleware",
-        links: [
-          { title: "Overview", href: `/docs/features/middleware` },
-          {
-            title: "Creating middleware",
-            href: `/docs/features/middleware/create`,
-          },
-          {
-            title: "Dependency Injection",
-            href: "/docs/features/middleware/dependency-injection",
-          },
-          {
-            title: "Encryption Middleware",
-            href: "/docs/features/middleware/encryption-middleware",
-          },
-          {
-            title: "Sentry Middleware",
-            href: "/docs/features/middleware/sentry-middleware",
-          },
-        ],
-      },
-    ],
-  },
-  {
-    title: "Platform",
-    links: [
-      {
-        title: "Manage",
-        links: [
-          {
-            title: "Rerun and Rerun From Step",
-            href: "/docs/platform/manage/rerun-function-runs",
-          },
-          { title: "Bulk replay", href: "/docs/platform/replay" },
-          {
-            title: "Bulk cancel",
-            href: "/docs/platform/manage/bulk-cancellation",
-          },
-          { title: "Pausing", href: "/docs/guides/pause-functions" },
-          {
-            title: "Rotating keys",
-            href: "/docs/platform/manage/rotating-keys",
-          },
-          { title: "API keys", href: "/docs/platform/api-keys" },
-        ],
-      },
-      {
-        title: "Monitor",
-        links: [
-          {
-            title: "Inspecting runs",
-            href: "/docs/platform/monitor/inspecting-function-runs",
-          },
-          { title: "Traces", href: "/docs/platform/monitor/traces" },
-          {
-            title: "Observability and metrics",
-            href: "/docs/platform/monitor/observability-metrics",
-          },
-          { title: "Insights", href: "/docs/platform/monitor/insights" },
-          { title: "AI overview", href: "/docs/platform/monitor/ai-overview" },
-          { title: "Events", href: "/docs/platform/monitor/inspecting-events" },
-        ],
-      },
-      {
-        title: "Integrations",
-        links: [
-          { title: "Neon", href: `/docs/features/events-triggers/neon` },
-          {
-            title: "Datadog",
-            href: "/docs/platform/monitor/datadog-integration",
-          },
-          {
-            title: "Prometheus",
-            href: "/docs/platform/monitor/prometheus-metrics-export-integration",
-          },
-        ],
-      },
-    ],
-  },
-  {
-    title: "AI",
-    links: [
-      { title: "AI development tools", href: "/docs/ai-dev-tools" },
-      {
-        title: "Agent Plugins and Skills",
-        href: "/docs/ai-dev-tools/agent-skills",
-      },
-      { title: "Inngest MCP", href: "/docs/ai-dev-tools/mcp" },
-      {
-        title: "AgentKit",
-        href: "https://agentkit.inngest.com",
-        target: "_blank",
-      },
-    ],
-  },
-  {
-    title: "Resources",
-    links: [
-      { title: "Security", href: "/docs/learn/security" },
-      { title: "Glossary", href: `/docs/learn/glossary` },
-      { title: "Release phases", href: `/docs/release-phases` },
-      { title: "FAQ", href: `/docs/faq` },
-      { title: "Limitations", href: `/docs/usage-limits/inngest` },
-    ],
-  },
-];
+function docsRefreshNav(page: DocsRefreshPage): NavGroup | NavLink {
+  if (page.section) {
+    return {
+      title: page.title,
+      section: true,
+      icon: page.icon as NavGroup["icon"],
+      links: [
+        ...(page.href ? [{ title: "Overview", href: page.href }] : []),
+        ...(page.children ?? []).map(docsRefreshNav),
+      ],
+    };
+  }
+
+  if (page.children?.length) {
+    const hasOverview = page.children.some(
+      (child) => child.title === "Overview"
+    );
+    return {
+      title: page.title,
+      ...(page.openWhenIdle ? { openWhenIdle: true } : {}),
+      links: [
+        ...(!hasOverview ? [{ title: "Overview", href: page.href }] : []),
+        ...page.children.map(docsRefreshNav),
+      ],
+    };
+  }
+
+  return {
+    title: page.title,
+    href: page.href,
+    className: page.monospace ? "font-mono" : undefined,
+  };
+}
+
+const sectionDocs: (NavGroup | NavLink)[] =
+  docsRefreshOutline.map(docsRefreshNav);
 
 const sectionExamples: NavGroup[] = [
   {
@@ -940,7 +514,7 @@ const sectionExamples: NavGroup[] = [
       { title: "AI Agents and RAG", href: `/docs/examples/ai-agents-and-rag` },
       {
         title: "AI Eval Scorer quickstart",
-        href: `/docs/examples/ai-eval-scorer-quickstart`,
+        href: `/docs/agent-evals/guides/llm-judge`,
       },
       {
         title: "AI Metadata quickstart",
@@ -1049,23 +623,25 @@ function recursiveLinkSearch(group: NavGroup, pathname) {
 }
 
 const matchers: Record<string, (pathname: string) => any> = {
-  docs: (pathname) => pathname === "/docs" || pathname === "/docs/",
+  docs: (pathname) =>
+    /^\/docs(\/|$)/.test(pathname) &&
+    !/^\/docs\/(examples|patterns|reference|sdk|cli)(\/|$)/.test(pathname) &&
+    pathname !== "/docs/typescript",
   examples: (pathname) =>
-    /^\/docs\/examples/.test(pathname) || linkSearch(sectionExamples, pathname),
+    /^\/docs\/(examples|patterns)(\/|$)/.test(pathname) ||
+    linkSearch(sectionExamples, pathname),
   reference: (pathname) =>
-    /^\/docs\/reference/.test(pathname) ||
+    /^\/docs\/(reference|sdk|cli)(\/|$)/.test(pathname) ||
+    pathname === "/docs/typescript" ||
     linkSearch(sectionReference, pathname),
-  learn: (pathname) => linkSearch(sectionLearn, pathname),
-  patterns: (pathname) => /^\/docs\/patterns/.test(pathname),
 };
-matchers.default = matchers.learn;
 
 export const menuTabs = [
   {
     title: "Documentation",
     icon: PlayIcon,
     href: "/docs",
-    matcher: matchers.default,
+    matcher: matchers.docs,
   },
   {
     title: "Examples",
@@ -1074,22 +650,7 @@ export const menuTabs = [
     matcher: matchers.examples,
   },
   {
-    title: "Patterns",
-    icon: Squares2X2Icon,
-    href: "/docs/patterns",
-    matcher: matchers.patterns,
-  },
-];
-
-export const sidebarMenuTabs = [
-  {
-    title: "Learn",
-    icon: BookOpenIcon,
-    href: "/docs",
-    matcher: matchers.learn,
-  },
-  {
-    title: "Reference",
+    title: "SDKs & APIs",
     icon: CodeBracketIcon,
     href: `/docs/reference/typescript/${TS_STABLE}/intro`,
     matcher: matchers.reference,
@@ -1114,31 +675,27 @@ const sectionPatterns: NavGroup[] = [
 
 export const topLevelNav = [
   {
-    title: "Learn",
+    id: "docs",
+    title: "Documentation",
     icon: BookOpenIcon,
     href: `/docs`,
-    sectionLinks: sectionLearn,
-    matcher: matchers.learn,
+    sectionLinks: sectionDocs,
+    matcher: matchers.docs,
   },
   {
-    title: "Patterns",
-    icon: Squares2X2Icon,
-    href: "/docs/patterns",
-    sectionLinks: sectionPatterns,
-    matcher: matchers.patterns,
+    id: "examples",
+    title: "Examples",
+    icon: LightBulbIcon,
+    href: "/docs/examples/",
+    sectionLinks: [...sectionExamples, ...sectionPatterns],
+    matcher: matchers.examples,
   },
   {
-    title: "Reference",
+    id: "sdk",
+    title: "SDKs & APIs",
     icon: CodeBracketIcon,
     href: `/docs/reference/typescript/${TS_STABLE}/intro`,
     matcher: matchers.reference,
     sectionLinks: sectionReference,
-  },
-  {
-    title: "Examples",
-    icon: LightBulbIcon,
-    href: "/docs/examples/",
-    sectionLinks: sectionExamples,
-    matcher: matchers.examples,
   },
 ];

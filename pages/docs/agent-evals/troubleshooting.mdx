@@ -1,0 +1,71 @@
+export const metaTitle = "Troubleshooting | Agent Evals";
+export const description = "Troubleshoot Agent Evals: find missing scores and user feedback by tracing them back to the original function run, session, and experiment variant.";
+
+# Agent Evals troubleshooting
+> Find missing scores and feedback by tracing them back to the original run and experiment variant.
+
+When a score is missing, open the original run trace first. Check the score call, session metadata, and selected variant to find where attribution stopped. The examples use TypeScript SDK v4 beta scoring APIs.
+
+## Setup errors
+
+- **`step.score()` is missing or throws.** Register `scoreMiddleware()` from `inngest/experimental` on the client: `middleware: [scoreMiddleware()]`.
+- **Experiments or scoring aren't available.** Upgrade to TypeScript SDK v4.8.0 or later.
+- **A score is rejected.** The value must be a finite number or boolean, and the name must be at most 128 bytes with no control characters or single quotes. See [Reference](/docs/agent-evals/reference#scores).
+
+## A score does not appear on the run
+
+**Check:** Did the application call `inngest.score()`, `inngest.score.experiment()`, or `step.score()` with a finite number or boolean value? A successful function run does not create a score by itself. Open the run trace and check the score name and whether the write belongs to the run or a step.
+
+**Fix:** Write the outcome explicitly. When you write it from another process or a later run, pass the original `runId`. When you use `step.score()`, install `scoreMiddleware()` on the client and give the step a unique ID. Use the same score name and definition across the runs you compare. [Reference](/docs/agent-evals/reference).
+
+**Check:** Was this run eligible for scoring? Application-controlled selective scoring may leave runs without a score by design. Compare the application's selection rule with the run you are inspecting. Agent Evals doesn't sample scores or cap score spend for you.
+
+## A deferred scorer ran but wrote no score
+
+**Check:** Find the scorer function in the same environment. Confirm that the app serves the scorer function, that the original run called `defer()`, and that the data passed to the scorer matches its schema. A deferred scorer runs separately from the original function.
+
+**Check:** Did the scorer return `{ name, value }`? Returning `null` or `undefined` writes no score. If it waits for an event, inspect the wait's event name, match expression, and timeout. A timeout path that returns `null` means the outcome is unknown; it does not mean the score is zero.
+
+**Fix:** Register the scorer with the served functions. Pass the expected data to `defer()`. Send the later event with the ID used by the wait expression, and set a timeout that fits the outcome window. Return a score only when your scoring rule has an outcome. [Deferred scoring](/docs/agent-evals/deferred-scoring) and [reference](/docs/agent-evals/reference).
+
+## A score appears on the wrong run or outside the experiment
+
+**Check:** A direct score without `runId` attaches to the current run. A later function that scores the original result must use the original run's ID. For an experiment, it also needs the `experimentRef` returned by the original `group.experiment()` call.
+
+**Check:** Did the run call `inngest.score.experiment()` inside `step.run()` without a `runId`? That writes a step score, which the experiment view doesn't show.
+
+**Fix:** Call `inngest.score.experiment()` in the function body, outside steps. Store `runId` and `experimentRef` with the business record that receives later feedback. Load both when the outcome arrives, then pass them to `inngest.score.experiment()`. If you call `defer()` from the original run, pass `experiment: experimentRef` so the returned score credits the selected variant. Check the experiment and run in the trace before comparing aggregates. [Reference](/docs/agent-evals/reference).
+
+## Related runs are missing from a session
+
+**Check:** Select the environment that received the events, then open **AI → Sessions**. Check that each triggering event has the same key and ID in top-level `meta.sessions`. A session groups runs for inspection; it does not make a score attach to another run.
+
+**Check:** If a child event should inherit the session, confirm the TypeScript SDK version and runtime. Automatic propagation starts in v4.18.0; `meta.sessions` on sent events starts in v4.7.0. An explicit child value can replace or clear a propagated value. A batched run combines sessions from its events, while child events inherit only sessions shared by every triggering event.
+
+**Fix:** Set the stable session key and ID on each event that starts related work. Set it explicitly on child events when propagation does not apply. Keep the ID safe to display. New runs and status changes may take a short time to appear because Sessions uses an asynchronous index; use the run view to inspect active work. [Sessions guide](/docs/agent-evals/sessions).
+
+## A variant did not run or the split looks wrong
+
+**Check:** Open the original run trace. `group.experiment()` selects one variant, then runs only that callback. Every callback must call at least one `step.*` tool; otherwise the SDK raises a `NonRetriableError`. Keep the experiment ID unique within the function and the variant names stable.
+
+**Check:** Compare assigned run counts before comparing scores. `experiment.weighted()` uses relative weights and independent run assignments, so small cohorts can look uneven. `experiment.bucket()` needs a present, stable user or account key; a missing key hashes an empty string and adds a warning. A run keeps its selected variant through retries and replays. Changing weights affects future assignments, and changing bucket weights can change a key's future assignment.
+
+**Fix:** Put each step or complete workflow path inside its own variant callback, with at least one durable step in every path. Use `weighted()` for a gradual rollout or a stable key with `bucket()` for recurring users. Use a stored assignment through `custom()` if a user must never switch variants. [Experiment reference](/docs/durable-execution/primitives/group-experiment) and [Experiments](/docs/agent-evals/experiments).
+
+## Results look late or incomplete
+
+**Check:** Separate assigned runs, scored runs, and runs still waiting for outcomes. A score average covers only runs with a score. A deferred scorer may still wait for a customer response, or its timeout path may write nothing. A score written from a later run may be attached to that later run if it lacks the original `runId`. Sessions search can lag because its index updates asynchronously.
+
+**Fix:** Compare variants over the same assignment window and give outcomes the same time to arrive. Inspect a few original traces and later scorer runs before treating a missing score as a negative outcome. Confirm attribution, then compare scores with the run counts. [Read results and roll out](/docs/agent-evals/guides/interpreting-results) explains the comparison.
+
+## Score usage rises faster than expected
+
+**Check:** Count score writes separately from original runs, experiment selection steps, deferred scorer runs, and any model or API calls. Check which runs your application chose to score and whether it wrote more than one named score per run. A deferred scorer is another function run.
+
+**Fix:** Apply a consistent eligibility or sampling rule in application code before expensive scoring. Track the number of assignments and scored outcomes for each variant so the sample remains interpretable. Scores use usage-based pricing; a monthly score allowance does not reject additional score writes. Check the current [pricing page](https://www.inngest.com/pricing) for rates and [Manage eval costs](/docs/agent-evals/guides/cost-management) for an estimate.
+
+## Related pages
+
+- [Scores](/docs/agent-evals/scores)
+- [Sessions](/docs/agent-evals/sessions)
+- [Experiments](/docs/agent-evals/experiments)

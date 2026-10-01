@@ -66,7 +66,7 @@ const mainFunction = inngest.createFunction(
             Optional event metadata for the invocation.
             <Properties nested={true}>
               <Property name="sessions" type="Record<string, string | number | null> | null">
-                [Sessions](/docs/features/events-triggers/sessions?ref=docs-reference-step-invoke) to add to or override on the invoked run, which otherwise inherits the calling run's sessions. A `null` value clears an inherited session for that key; setting `sessions` itself to `null` clears every inherited session. Numbers are normalized to strings.
+                [Sessions](/docs/agent-evals/sessions?ref=docs-reference-step-invoke) to add to or override on the invoked run, which otherwise inherits the calling run's sessions. A `null` value clears an inherited session for that key; setting `sessions` itself to `null` clears every inherited session. Numbers are normalized to strings.
               </Property>
             </Properties>
           </Property>
@@ -234,4 +234,4 @@ If the called function has a debounce configuration and is skipped, the step wil
 
 See [usage limits][usage-limits] for more details.
 
-[usage-limits]: /docs/usage-limits/inngest#functions
+[usage-limits]: /docs/durable-execution/limits#platform-limits

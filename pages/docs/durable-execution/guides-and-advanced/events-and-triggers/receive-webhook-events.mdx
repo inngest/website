@@ -1,0 +1,324 @@
+import { CodeGroup } from "shared/Docs/mdx";
+
+export const metaTitle = "Consume Webhook Events | Setup Guide";
+export const description = "Receive webhook events with Inngest: give a provider a webhook URL, transform its payloads into events, and trigger durable functions automatically.";
+
+# Receive webhook events
+
+> Turn provider webhooks into events that start durable functions without routing them through your app server.
+
+Give a provider an Inngest webhook URL so its request can start durable functions. Inngest receives and transforms the request, so your app server does not need a webhook handler for it. The transform runs on Inngest's servers, so it adds no load or cost to your infrastructure.
+
+Inngest can transform incoming webhooks, accept several content types, filter requests, and route branch deploys. Inngest does not verify provider webhook signatures. Your function must verify each request's signature itself, using the raw body and signature header that the transform passes through. See [Check trust before side effects](#check-trust-before-side-effects).
+
+Two terms help here:
+
+- **Provider**: the service that sends webhook events as HTTP POST requests, such as Stripe, GitHub, or Clerk.
+- **Consumer**: the URL that receives those requests. Each Inngest webhook is a consumer.
+
+You can create as many webhook URLs as you need, for example one for each provider, each with its own transform.
+## Create and connect a webhook
+1. Open **Manage → Webhooks** in the intended Inngest environment and click **Create Webhook**. Give the webhook a name and save it.
+2. Give the generated URL to the provider. Each provider configures webhook URLs differently. For example, Stripe asks you to enter developer mode first.
+3. Define a transform that returns an event `name` and `data`.
+4. Test the transform with a sample provider payload.
+5. Register a function whose trigger matches the transformed event name.
+For a Stripe style payload, a transform can preserve the provider event ID for deduplication:
+```javascript
+function transform(evt) {
+  return {
+    id: evt.id,
+    name: `stripe/${evt.type}`,
+    data: evt,
+  };
+}
+```
+Prefix provider event names so they do not collide with app events. A transform can also read request headers, query parameters, and the raw body when the provider format requires them.
+## Write a transform
+Most providers send JSON in the POST body. A transform reshapes that payload into the [Inngest event format](/docs/durable-execution/guides-and-advanced/events-and-triggers/event-payloads-and-schemas). The returned object must set `name` and `data`. It may also set `id` and `ts`. If you don't set `ts`, Inngest uses the time it received the request.
+
+A transform is a JavaScript function that takes these arguments:
+
+| Argument | Type | Description |
+| --- | --- | --- |
+| `evt` | object | The JSON payload from the POST body. |
+| `headers` | object | The request headers as key-value pairs. Names are canonicalized: the first character and any character after a hyphen are uppercase, and the rest are lowercase. See Go's [`CanonicalHeaderKey`](https://pkg.go.dev/net/http#CanonicalHeaderKey). |
+| `queryParams` | object | The parsed query string. Each value is an array, so one key can hold several values. |
+| `raw` | string | The raw request body. Pass it through so your function can [verify the signature](#check-trust-before-side-effects). |
+
+For example, [Clerk sends](https://clerk.com/docs/integrations/webhooks/overview#payload-structure) a payload like this:
+
+```json {{ title: "Example Clerk webhook payload"}}
+{
+  "type": "user.created",
+  "object": "event",
+  "data": {
+    "created_at": 1654012591514,
+    "external_id": "567772",
+    "first_name": "Example",
+    "id": "user_29w83sxmDNGwOuEthce5gg56FcC",
+    "last_name": "Example",
+    "last_sign_in_at": 1654012591514,
+    "object": "user",
+    "primary_email_address_id": "idn_29w83yL7CwVlJXylYLxcslromF1",
+    // ... simplified for example
+  },
+}
+```
+
+This transform:
+
+```ts
+function transform(evt, headers = {}, queryParams = {}) {
+  return {
+    name: `clerk/${evt.type}`,
+    data: evt.data,
+    // You can optionally set ts using data from the raw json payload
+    // to explicitly set the timestamp of the incoming event.
+    // If ts is not set, it will be automatically set to the time the request is received.
+  }
+}
+```
+
+Turns it into this Inngest event:
+
+```json {{ title: "Example Inngest event format"}}
+{
+  "name": "clerk/user.created",
+  "data": {
+    "created_at": 1654012591514,
+    "external_id": "567772",
+    "first_name": "Example",
+    "id": "user_29w83sxmDNGwOuEthce5gg56FcC",
+    "last_name": "Example",
+    "last_sign_in_at": 1654012591514,
+    "object": "user",
+    "primary_email_address_id": "idn_29w83yL7CwVlJXylYLxcslromF1",
+    // ... simplified for example
+  }
+}
+```
+
+Name events after the provider, such as `clerk/user.created` or `stripe/charge.failed`.
+## Transform examples
+Header names are canonicalized, so check that your transform uses the right case, such as `X-Github-Event`.
+
+**GitHub: read the event type from a header.** GitHub sends the event type in the `X-Github-Event` header:
+
+```js
+function transform(evt, headers = {}, queryParams = {}) {
+  const name = headers["X-Github-Event"];
+  return {
+    // Use the event as the data without modification
+    data: evt,
+    // Add an event name, prefixed with "github." based off of the X-Github-Event data
+    name: "github." + name.trim().replace("Event", "").toLowerCase(),
+  };
+}
+```
+
+**Stripe: deduplicate with the provider ID.** Stripe sends an `id` with every event. The Stripe transform [above](#create-and-connect-a-webhook) uses it as the Inngest event `id`, so Inngest drops duplicates. See [Idempotency](/docs/durable-execution/guides-and-advanced/idempotency).
+
+**Linear: build a useful event name.**
+
+```js
+function transform(evt, headers = {}, queryParams = {}) {
+  return {
+    // type (e.g. Issue) + action (e.g. create)
+    name: `linear/${evt.type.toLowerCase()}.${evt.action}`,
+    data: evt,
+  };
+}
+```
+
+**Intercom: set the `ts` field.** Intercom sends `created_at` in seconds, so convert it to milliseconds:
+
+```js
+function transform(evt, headers = {}, queryParams = {}) {
+  return {
+    name: `intercom/${evt.topic}`,
+    // the top level obj only contains webhook data, so we omit that
+    data: evt.data,
+    ts: evt.created_at * 1000,
+   };
+};
+```
+
+**Resend:**
+
+```js
+function transform(evt, headers = {}, queryParams = {}) {
+  return {
+    name: `resend/${evt.type}`,
+    data: evt.data,
+   };
+};
+```
+## Handle transform failures
+A transform that throws causes Inngest to reject the webhook request. If you catch the error and return a diagnostic event instead, the provider may treat the webhook as accepted and stop retrying. Choose the response based on whether the event can be processed safely.
+
+When a transform throws, Inngest returns a `400` response to the provider. When you catch the error, Inngest returns `200`. Most providers won't retry a `200`, so you must handle the failed event yourself, for example with a catch-all function that logs failed payloads.
+
+For complex transforms, wrap the logic in `try`/`catch` and return a separate event you can debug:
+
+```js
+function transform(evt, headers = {}, queryParams = {}) {
+  try {
+    return {
+      name: `slack/${evt.type}`,
+      data: {
+        // Example: this would throw an error if "item" was not defined
+        ts: evt.event.item.ts,
+      },
+    }
+  } catch (err) {
+    return {
+      name: 'slack/transform.failed',
+      data: {
+        error: String(err),
+        payload: evt
+      }
+    }
+  }
+}
+```
+## Test and inspect
+Use the dashboard transform preview before enabling production delivery. Paste a provider payload into the **Incoming Event JSON** editor to see the transformed event right away. If a provider doesn't publish sample payloads, use [TypedWebhook.tools](https://typedwebhook.tools/?ref=) to capture test webhooks and browse payloads.
+
+After the provider sends a request, inspect the resulting event and its linked run in the target environment. The **Events** tab lists every event received.
+## Develop locally
+For local development, send a copy of a cloud event to the Dev Server. Click **Send to Dev Server** anywhere the dashboard shows an event payload, and Inngest sends a copy to your [Dev Server](/docs/local-development) so you can test your functions.
+
+You can also copy a webhook event from the dashboard and paste it into the Dev Server's **Send test** button.
+## Write a function for webhook events
+Trigger a function on the transformed event name. This function sends a welcome email when Clerk reports a new user:
+
+<CodeGroup>
+```ts {{ title: "TypeScript" }}
+inngest.createFunction(
+  { id: "send-welcome-email", triggers: { event: "clerk/user.created" } },
+  async ({ event, step }) => {
+    const emailAddress = event.data.email_addresses[0].email_address;
+    await step.run('send-email', async () => {
+      return await resend.emails.send({
+        to: emailAddress,
+        from: "noreply@inngest.com",
+        subject: "Welcome to Inngest!",
+        react: WelcomeEmail(),
+      })
+    });
+  }
+)
+```
+
+```python {{ title: "Python" }}
+!snippet:path=snippets/py/latest/events/receive_webhook_events/send_welcome_email.py
+```
+
+```go {{ title: "Go" }}
+!snippet:path=snippets/go/docs/events/receive_webhook_events/send_welcome_email.go
+```
+</CodeGroup>
+## Check trust before side effects
+Many providers sign webhook requests. A valid signature proves the request came from the provider and that nobody changed the data. Inngest does not check these signatures for you, so you must verify them manually in your function. Pass the raw body and the signature header through the transform, then verify the signature in the triggered function before it processes the data or runs any side effects. Follow the provider's signing instructions.
+
+For Stripe, return the raw body and the `Stripe-Signature` header from the transform:
+
+```ts
+function transform(evt, headers, queryParams, raw) {
+  return {
+    name: `stripe/${evt.type}`,
+    data: {
+      raw,
+      sig: headers["Stripe-Signature"],
+    }
+  };
+};
+```
+
+Then verify the signature in the function. This check is required: without it, your function trusts any request sent to the webhook URL. Throw a `NonRetriableError` on failure (return `inngestgo.NoRetryError(err)` in Go), since a retry can't fix a bad signature:
+
+<CodeGroup>
+```ts {{ title: "TypeScript" }}
+import { NonRetriableError } from "inngest";
+
+inngest.createFunction(
+  { id: "stripe/charge.updated", triggers: { event: "stripe/charge.updated" } },
+  async ({ attempt, event, step }) => {
+    // Replace verifySig with the provider's verification method.
+    if (!verifySig(event.data.raw, event.data.sig, stripeSecret)) {
+      throw new NonRetriableError("failed signature verification");
+    }
+
+    // Now it's safe to use the event data.
+    const data = JSON.parse(event.data.raw);
+  }
+);
+```
+
+```python {{ title: "Python" }}
+!snippet:path=snippets/py/latest/events/receive_webhook_events/stripe_charge_updated.py
+```
+
+```go {{ title: "Go" }}
+!snippet:path=snippets/go/docs/events/receive_webhook_events/stripe_charge_updated.go
+```
+</CodeGroup>
+## Filter requests
+Set allow and deny lists for event names and IP addresses to control which events a webhook accepts.
+## Route webhooks to branch environments
+All branch environments share the same webhooks. Manage them on a [single page](https://app.inngest.com/env/branch/manage/webhooks).
+
+Name the target branch environment with an `x-inngest-env` query parameter or header. This command sends a webhook to the `branch-1` branch environment:
+
+```sh
+curl 'https://inn.gs/e/REDACTED?x-inngest-env=branch-1' -d '{"msg": "hi"}'
+```
+
+Use the branch environment's name, not the ID in its URL.
+
+If you don't name a branch environment, or it doesn't exist, the event goes to the [branch events page](https://app.inngest.com/env/branch/events) and triggers no functions.
+## Supported content types
+Webhooks accept these content types:
+
+- `application/json`
+- `application/x-www-form-urlencoded` (beta)
+- `multipart/form-data` (beta)
+
+For form and URL-encoded bodies, Inngest parses the fields into the `evt` argument and passes the original body as `raw`. Given this request:
+
+```sh
+curl https://inn.gs/e/REDACTED \
+  -H "content-type: application/x-www-form-urlencoded" \
+  -d "name=Alice&messages=hello&messages=world"
+```
+
+And this transform:
+```js
+function transform(json, headers, queryParams, raw) {
+  return {
+    name: "hi",
+    data: { json, raw },
+  };
+};
+```
+
+The event data is:
+```json
+{
+  "json": {
+    "messages": ["hello", "world"],
+    "name": ["Alice"]
+  },
+  "raw": "name=Alice&messages=hello&messages=world"
+}
+```
+
+The parsed values are always arrays of strings.
+## Manage webhooks with the REST API
+Create, update, and delete webhooks with the Inngest REST API. This lets you keep transforms in your codebase and sync them to Inngest.
+
+- [API: Webhooks](https://api-docs.inngest.com/v1/webhooks/ListWebhooks) documents the webhook endpoints.
+- [Demo: Webhook transform sync](https://github.com/inngest/webhook-transform-sync) shows how to test and sync webhooks from your codebase end to end.
+## Build webhook integrations
+Use **webhook intents** to build a webhook integration with any application. See [Build a webhook integration](/docs/platform/webhooks/build-an-integration).

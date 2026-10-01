@@ -26,7 +26,7 @@ In v4, checkpointing is enabled by default. No configuration is required for lon
 
 ### Max runtime for serverless environments
 
-If your app is deployed to serverless platforms like [Vercel](/docs/deploy/vercel), you should configure the `maxRuntime` option to slightly below your function's maximum duration. See [configuration](#configuration) for more information.
+If your app is deployed to serverless platforms like [Vercel](/docs/durable-execution/deploying-functions/platforms/vercel), you should configure the `maxRuntime` option to slightly below your function's maximum duration. See [configuration](#configuration) for more information.
 
 ```ts
 const inngest = new Inngest({
@@ -121,7 +121,7 @@ _, err := inngestgo.CreateFunction(
 
 ## How Does It Work?
 
-The [Inngest default execution model](/docs/learn/how-functions-are-executed) is a complete handoff to the Inngest Platform, where an HTTP request is performed to store the execution state upon each step completion, leading to inter-step latency.
+The [Inngest default execution model](/docs/durable-execution/durable-workflows) is a complete handoff to the Inngest Platform, where an HTTP request is performed to store the execution state upon each step completion, leading to inter-step latency.
 
 ![With and Without Checkpointing](/assets/docs/checkpointing/checkpointing_with_without.png)
 

@@ -1,0 +1,86 @@
+import GithubIcon from "shared/Icons/Github"
+
+export const metaTitle = "Go SDK | Inngest Reference";
+export const description = "Inngest Go SDK reference: install the SDK, create a client, serve durable functions, and find the full package documentation on pkg.go.dev.";
+
+# Go SDK
+
+> Install the Go SDK, create a client, and find the package reference.
+
+The Go SDK defines durable functions, sends events, and serves your functions from any `net/http` server. It also runs [Connect](/docs/durable-execution/deploying-functions/connect) workers and supports [checkpointing](/docs/durable-execution/guides-and-advanced/checkpointing). Some features are TypeScript-only for now; see [feature support](/docs/sdks#feature-support).
+
+The full API reference for every package is on [pkg.go.dev](https://pkg.go.dev/github.com/inngest/inngestgo).
+
+## Install
+
+```shell
+go get github.com/inngest/inngestgo@latest
+```
+
+## Create a client and serve functions
+
+Create one client for your app, define functions with it, and serve them over HTTP:
+
+```go {{ title: "main.go" }}
+package main
+
+import (
+	"context"
+	"log"
+	"net/http"
+
+	"github.com/inngest/inngestgo"
+	"github.com/inngest/inngestgo/step"
+)
+
+func main() {
+	client, err := inngestgo.NewClient(inngestgo.ClientOpts{AppID: "my-app"})
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	_, err = inngestgo.CreateFunction(
+		client,
+		inngestgo.FunctionOpts{ID: "process-task"},
+		inngestgo.EventTrigger("app/task.created", nil),
+		func(ctx context.Context, input inngestgo.Input[inngestgo.GenericEvent[map[string]any]]) (map[string]any, error) {
+			return step.Run(ctx, "handle-task", func(ctx context.Context) (map[string]any, error) {
+				return map[string]any{"processed": true}, nil
+			})
+		},
+	)
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	http.Handle("/api/inngest", client.Serve())
+	log.Fatal(http.ListenAndServe(":8080", nil))
+}
+```
+
+The [Go quick start](/docs/durable-execution/quick-start/go-quick-start) walks through a full example with the Dev Server.
+
+## Packages
+
+| Package | Use it for |
+| --- | --- |
+| [`inngestgo`](https://pkg.go.dev/github.com/inngest/inngestgo) | The client, functions, triggers, events, `Serve()`, and `Connect()` |
+| [`inngestgo/step`](https://pkg.go.dev/github.com/inngest/inngestgo/step) | Step tools such as `step.Run`, `step.Sleep`, `step.WaitForEvent`, and `step.Invoke` |
+| [`inngestgo/errors`](https://pkg.go.dev/github.com/inngest/inngestgo/errors) | Retry control, such as non-retriable errors |
+| [`inngestgo/pkg/checkpoint`](https://pkg.go.dev/github.com/inngest/inngestgo/pkg/checkpoint) | [Checkpointing](/docs/durable-execution/guides-and-advanced/checkpointing) configuration |
+| [`inngestgo/stephttp`](https://pkg.go.dev/github.com/inngest/inngestgo/stephttp) | [Durable Endpoints](/docs/durable-execution/durable-endpoints) (beta) |
+| [`inngestgo/realtime`](https://pkg.go.dev/github.com/inngest/inngestgo/realtime) | [Realtime](/docs/realtime/reference#go) publish and subscribe |
+
+## Guides
+
+- [Serve functions](/docs/durable-execution/deploying-functions/serve) and [Connect workers](/docs/durable-execution/deploying-functions/connect)
+- [Primitives and steps](/docs/durable-execution/primitives) and [flow control](/docs/durable-execution/flow-control)
+- [Environment variables](/docs/sdk/environment-variables): set `INNGEST_DEV`, `INNGEST_EVENT_KEY`, and `INNGEST_SIGNING_KEY` for local and production runs
+
+**Migrations**
+
+- [v0.15 to v0.16](/docs/reference/go/migrations/v0.16), [v0.8 to v0.11](/docs/reference/go/migrations/v0.8-to-v0.11), and [v0.7 to v0.8](/docs/reference/go/migrations/v0.7-to-v0.8)
+
+## Source code
+
+The Go SDK is open source on GitHub: [<GithubIcon className="ml-2 inline-flex"/> inngest/inngestgo](https://github.com/inngest/inngestgo).

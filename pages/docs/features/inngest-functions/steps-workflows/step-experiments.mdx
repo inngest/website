@@ -180,8 +180,8 @@ See the [scoring reference](/docs/reference/typescript/v4/functions/scoring?ref=
 
 An experiment tells you which variant ran. It does not decide which variant is best for you. Attach your own outcome signal:
 
-- Use [scoring](/docs/features/inngest-functions/steps-workflows/scoring?ref=docs-step-experiments) when the score is known during the run.
-- Use [deferred scoring](/docs/features/inngest-functions/steps-workflows/deferred-scoring?ref=docs-step-experiments) when the outcome arrives later.
+- Use [scoring](/docs/agent-evals/scores?ref=docs-step-experiments) when the score is known during the run.
+- Use [deferred scoring](/docs/agent-evals/deferred-scoring?ref=docs-step-experiments) when the outcome arrives later.
 
 - Emit analytics events from a `step.run()` when your team already uses an external analytics warehouse.
 
@@ -224,4 +224,4 @@ For AI model or prompt experiments, the `experimentRef` returned by `group.exper
 
 - [Run experiments in production](/docs/patterns/ai-evals/run-experiments-in-production?ref=docs-step-experiments)
 - [`group.experiment()` reference](/docs/reference/typescript/v4/functions/group-experiment?ref=docs-step-experiments)
-- [Function versioning](/docs/learn/versioning?ref=docs-step-experiments)
+- [Function versioning](/docs/durable-execution/guides-and-advanced/versioning?ref=docs-step-experiments)

@@ -55,7 +55,7 @@ Simply describe what you want to query in plain English, and Insights AI will:
 The generated query is automatically inserted into the SQL editor and executed, so you can see results immediately and further refine the query if needed.
 
 <Info>
-  Insights AI is built using Inngest's own [Realtime API](/docs/features/realtime), [AgentKit](https://agentkit.inngest.com), and durable execution with checkpointing.
+  Insights AI is built using Inngest's own [Realtime API](/docs/realtime), [AgentKit](https://agentkit.inngest.com), and durable execution with checkpointing.
 </Info>
 
 ## SQL Editor
@@ -97,7 +97,7 @@ Insights supports querying these data sources:
 | `received_at` | Unix timestamp (ms) | Unix timestamp in milliseconds when the event was received by Inngest |
 | `received_at_dt` | DateTime | The same time as `received_at` as a DateTime
 
-For more details on the event format, see the [Inngest Event Format documentation](/docs/features/events-triggers/event-format).
+For more details on the event format, see the [Inngest Event Format documentation](/docs/durable-execution/guides-and-advanced/events-and-triggers/event-payloads-and-schemas).
 
 ### Runs Table
 
@@ -163,7 +163,7 @@ The `steps` and `step_attempts` tables contain data about your functions' step e
 
 ### Extended Trace Spans Table
 
-The `extended_trace_spans` table contains [Extended Trace](/docs/platform/monitor/traces#extended-traces) spans emitted during your functions' step executions. This allows you to analyze performance inside of steps, debug failures, and track execution patterns.
+The `extended_trace_spans` table contains [Extended Trace](/docs/platform-and-operations/traces) spans emitted during your functions' step executions. This allows you to analyze performance inside of steps, debug failures, and track execution patterns.
 
 | Column | Type | Description |
 |--------|------|-------------|

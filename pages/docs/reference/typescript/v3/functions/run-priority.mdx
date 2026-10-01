@@ -11,7 +11,7 @@ export const description = "Dynamically adjust the execution order of function r
 
 You can prioritize specific function runs above other runs **within the same function**.
 
-See the [Priority guide](/docs/guides/priority) for more information about how this feature works.
+See the [Priority guide](/docs/durable-execution/flow-control/priority) for more information about how this feature works.
 
 ```ts
 export default inngest.createFunction(
@@ -42,7 +42,7 @@ export default inngest.createFunction(
         An expression which must return an integer between -600 and 600 (by default), with higher return
         values resulting in a higher priority.
 
-        Expressions are defined using the Common Expression Language (CEL) with the original event accessible using dot-notation. Read [our guide to writing expressions](/docs/guides/writing-expressions) for more info. Examples:
+        Expressions are defined using the Common Expression Language (CEL) with the original event accessible using dot-notation. Read [our guide to writing expressions](/docs/durable-execution/guides-and-advanced/writing-expressions) for more info. Examples:
 
         * Return the priority within an event directly: `event.data.priority` (where
 	  `event.data.priority` is an int within your account's range)

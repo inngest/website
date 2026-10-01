@@ -1,0 +1,67 @@
+import { CardGroup, Card, CodeGroup, DocsCallout } from "src/shared/Docs/mdx";
+
+export const metaTitle = "Get started";
+export const description = "Get started with Inngest: run your first durable workflow, Sandbox, online eval, or realtime update locally with the Inngest Dev Server in minutes.";
+
+# Get started
+
+> Run your first durable workflow, Sandbox, online eval, or live update.
+
+Start with the area you need first: durable functions coordinate work, sandboxes run code in isolation, agent evals connect outcomes to runs, and realtime sends progress to your users.
+
+## Start the Dev Server
+
+Every quick start runs locally against the Inngest Dev Server. It records your events and runs, and shows each run's trace at [http://localhost:8288](http://localhost:8288).
+
+<DocsCallout>
+
+Start the Dev Server with one of the commands below:
+
+<CodeGroup>
+```bash {{ title: "Bash installer" }}
+curl -sSfL https://cli.inngest.com/install.sh | sh
+inngest dev -u http://localhost:3000/api/inngest
+```
+```bash {{ title: "Brew" }}
+brew install inngest/tap/inngest
+inngest dev -u http://localhost:3000/api/inngest
+```
+```bash {{ title: "NPX" }}
+npx --ignore-scripts=false inngest-cli@latest dev
+
+# -u supplies the app URL when discovery does not find it.
+npx --ignore-scripts=false inngest-cli@latest dev -u http://localhost:3000/api/inngest
+```
+```bash {{ title: "Docker" }}
+docker run -p 8288:8288 -p 8289:8289 inngest/inngest \
+  inngest dev -u http://host.docker.internal:3000/api/inngest
+```
+</CodeGroup>
+
+</DocsCallout>
+
+## Pick a quick start
+
+<CardGroup cols={2}>
+  <Card href="/docs/durable-execution/quick-start" title="Build a durable workflow">
+    Send an event, run a saved step, and inspect the run locally. Choose TypeScript, Go, or Python.
+  </Card>
+
+  <Card href="/docs/sandboxes/quick-start" title="Run code in a Sandbox">
+    Create an isolated microVM, run a command, and inspect its output in the run trace. Sandbox beta access is required.
+  </Card>
+
+  <Card href="/docs/agent-evals/quick-start" title="Measure an outcome">
+    Score a response, compare variants, and connect later feedback to the run that served it. Scoring uses TypeScript SDK v4 beta APIs.
+  </Card>
+
+  <Card href="/docs/realtime/quick-start" title="Show live progress">
+    Publish updates from a durable function to a signed-in user's browser.
+  </Card>
+</CardGroup>
+
+## Choose a language for your first workflow
+
+The Durable Execution quick start has separate guides for [TypeScript](/docs/durable-execution/quick-start/typescript-quick-start), [Go](/docs/durable-execution/quick-start/go-quick-start), and [Python](/docs/durable-execution/quick-start/python-quick-start). Each sends the same event and shows the resulting run.
+
+Read [What is Inngest?](/docs/platform-overview) first if you want to see how these capabilities fit together before writing code.

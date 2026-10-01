@@ -1,0 +1,102 @@
+export const metaTitle = "useRealtime & React Hooks | Next.js Realtime";
+export const description = "Use the useRealtime React hook in Next.js or React to render live, typed updates from Inngest functions directly in your UI components.";
+
+# React hooks
+
+> Render live, typed updates in React with the useRealtime hook.
+
+The `useRealtime` hook from `inngest/react` connects a component to a Realtime channel. It fetches tokens, reconnects after drops, pauses in hidden tabs, and returns each topic's latest message with its type. You write the UI; the hook handles the connection.
+
+## Connect a component
+
+Pass the hook three things:
+
+1. A **channel instance** from your shared channel definition.
+2. The **topics** to receive, as a literal array with `as const`.
+3. A **token factory** that calls your server. See [Subscription tokens](/docs/realtime/guides/subscription-tokens).
+
+```tsx {{ filename: "app/job-progress.tsx" }}
+"use client";
+
+import { useRealtime } from "inngest/react";
+import { jobChannel } from "@/inngest/channels";
+import { fetchJobToken } from "./actions";
+
+export function JobProgress({ jobId }: { jobId: string }) {
+  const { connectionStatus, runStatus, messages, error, reset } = useRealtime({
+    channel: jobChannel({ jobId }),
+    topics: ["status", "logs"] as const,
+    token: () => fetchJobToken(jobId),
+  });
+
+  return (
+    <div>
+      <p>Connection: {connectionStatus}</p>
+      <p>Run: {runStatus}</p>
+      <p>Status: {messages.byTopic.status?.data.message ?? "Waiting"}</p>
+      <p>Log lines received: {messages.all.length}</p>
+      {error && <p>{error.message}</p>}
+      <button onClick={() => reset()}>Clear</button>
+    </div>
+  );
+}
+```
+
+## What the hook returns
+
+- **`connectionStatus`**: `idle`, `connecting`, `open`, `paused`, `closed`, or `error`.
+- **`runStatus`**: the publishing run's state: `unknown`, `running`, `completed`, `failed`, or `cancelled`.
+- **`messages.byTopic`**: the latest message for each topic, typed by that topic's schema.
+- **`messages.all`**: retained messages in order, up to `historyLimit`.
+- **`messages.last`** and **`messages.delta`**: the newest message and the batch delivered in the latest update.
+- **`result`**: the run's return value once it completes, when available.
+- **`error`**, **`isPaused`**, and **`pauseReason`**: the reason a connection stopped.
+- **`reset()`**: clears retained messages, result, and error.
+
+## Choose options
+
+| Option | Default | Use it to |
+| --- | --- | --- |
+| `enabled` | `true` | Wait to connect until you have an ID, such as `enabled: !!jobId`. |
+| `bufferInterval` | `0` | Batch renders every N milliseconds for fast streams. |
+| `historyLimit` | `100` | Cap `messages.all`. Set `null` to keep every message. |
+| `validate` | `true` | Validate incoming messages against topic schemas. |
+| `pauseOnHidden` | `true` | Pause while the browser tab is hidden. |
+| `autoCloseOnTerminal` | `true` | Close the connection when the run completes, fails, or is cancelled. |
+| `reconnect` | `true` | Reconnect automatically, backing off from `reconnectMinMs` (250) to `reconnectMaxMs` (5000). |
+| `key` | none | Change it to reset state and reconnect, for example when a job ID changes. |
+
+The [`useRealtime` reference](/docs/reference/typescript/v4/realtime/use-realtime) lists every option and return type.
+
+## Work with typed messages
+
+Pass a channel instance and a literal `topics` array, and TypeScript narrows each payload by topic:
+
+```tsx
+const { messages } = useRealtime({
+  channel,
+  topics: ["status", "artifact"] as const,
+  token: () => fetchJobToken(jobId),
+});
+
+messages.byTopic.status?.data.message;
+messages.byTopic.artifact?.data.title;
+```
+
+`messages.all` and `messages.delta` also include **run lifecycle messages**, which have `kind: "run"` and an untyped payload. Skip them before you check `topic`:
+
+```tsx
+for (const message of messages.delta) {
+  if (message.kind === "run") continue;
+
+  if (message.topic === "status") {
+    console.log(message.data.message);
+  }
+}
+```
+
+## Next steps
+
+- [Stream AI responses](/docs/realtime/guides/stream-ai-responses) renders a token stream with `bufferInterval` and `historyLimit`.
+- [Troubleshooting](/docs/realtime/troubleshooting#the-connection-closes-or-keeps-reconnecting) explains paused, closed, and error states.
+- [v3 hook docs](/docs/reference/typescript/v3/realtime/react-hooks) cover the archived `useInngestSubscription()` hook.

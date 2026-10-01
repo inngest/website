@@ -1,0 +1,28 @@
+export const metaTitle = "Limits | Sandboxes";
+export const description = "Inngest Sandboxes limits: supported Sandbox sizes and the current beta limits to plan around when you run isolated code from durable functions.";
+
+# Sandboxes limits
+> Choose a supported Sandbox size and plan tasks around the current beta limits.
+
+> **Access-gated beta.** These values describe the current Sandbox beta, not a launch guarantee. The API and limits can change without a compatibility period. Use the beta for evaluation and feedback, not production data you cannot recreate.
+
+Choose a supported Sandbox size before you start work, then check command output and runtime limits before running long jobs. These beta limits apply to Sandboxes; workflow limits are separate.
+
+| Limit | Current beta value and scope | If you reach it |
+| --- | --- | --- |
+| Access | Inngest Cloud environment with Sandbox beta access enabled. | `403 access_denied` means the environment lacks access. Ask Inngest to enable the beta. |
+| Size | Exact per-Sandbox pairs: **1 vCPU / 1,024 MiB**, **2 / 2,048 MiB**, or **4 / 4,096 MiB**. A clone inherits its snapshot's size. | Choose both values from one pair. Entitlement or capacity can still reject a supported size; contact Inngest for other sizes. |
+| Active name | 1–255 Unicode characters, unique among active Sandboxes in a workspace. | Reusing a name with the same configuration returns the existing Sandbox. Conflicting configuration returns `409 sandbox_name_taken`. |
+| Create readiness wait | TypeScript SDK waits **120 seconds by default**. `runningTimeout` changes the wait; `false` returns before readiness. | A wait timeout does not cancel Create or destroy the Sandbox. Get its state and clean up if needed. This is not a boot-time guarantee. |
+| Captured command | **30-second default; five-minute maximum** observation timeout per command. | A timeout can leave the command's effects uncertain. Check its effect before repeating a state-changing command. Use a managed process for longer work. |
+| Captured command output | Direct SDK and REST: **4 MiB combined** stdout and stderr. `step.sandbox`: **2 MiB retained tail** per step result. | Direct output over the cap returns `413 sandbox_exec_output_too_large`; the command may have run. The durable result reports truncation. Write large output to a file or external store. |
+| Managed-process wait | **30-second default; five-minute maximum** per wait. | The wait ends while the process can keep running. Get the process or wait again. |
+| Managed-process output | Approximately **512 KiB** per process across both streams; rings kept for the **newest 32 processes** in a Sandbox. `tailBytes` accepts **0–524,288 bytes**. | Older output can be evicted while metadata remains. Save important output externally. Live streams are best effort. |
+| File upload or download | **100 MiB per regular file**, through the direct SDK or REST. File transfer is unavailable through `step.sandbox` in the beta. | `413 sandbox_file_too_large` means the file is too large. Split it or use external storage. |
+| Snapshot readiness wait | TypeScript SDK waits up to **five minutes** for a new snapshot to become `READY`. | A timeout stops polling, not snapshot creation. List or Get recent snapshots before creating another. |
+| Snapshot quota and retention | Account-specific count and stored-byte quotas, with **no published numeric values**. Each snapshot has a server-defined `expiresAt`. | `403 sandbox_snapshot_limit_exceeded` means count or storage quota was reached. Delete unneeded snapshots or ask Inngest about your entitlement. Save permanent data elsewhere. |
+| Runtime, disk, and concurrent Sandbox quota | **One hour of active runtime per Sandbox** in the newer beta reference. Time spent paused does not count. Disk and concurrent-Sandbox quotas have no published numeric beta values. The beta does not expose user-configurable lifetime, disk size, or resizing. | Plan work within the active runtime. Check your beta entitlement with Inngest for disk and concurrent-Sandbox capacity. Destroy Sandboxes when work ends. |
+
+The beta uses one fixed image and the workspace's default egress-allowed network. It does not expose custom image, template, VPC, or public ingress selection. The beta also limits argument, environment, process specification, and JSON body sizes.
+
+A snapshot captures memory, disk, environment, image, and resources. A clone has a new Sandbox ID and captured filesystem. Pause and Resume preserve the same Sandbox ID and filesystem; a private pause checkpoint does not count as a user snapshot. Snapshots are crash-consistent, expire, and are not permanent storage. Destroy removes the Sandbox filesystem and process output.

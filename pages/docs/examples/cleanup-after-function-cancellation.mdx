@@ -10,7 +10,7 @@ export const description = "Execute cleanup code when an Inngest function run is
 
 When function runs are cancelled, you may want to perform some sort of post-cancellation code. This example will use the [`inngest/function.cancelled`](/docs/reference/system-events/inngest-function-cancelled) system event.
 
-Whether your function run is cancelled via [`cancelOn` event](/docs/features/inngest-functions/cancellation/cancel-on-events), [REST API](/docs/guides/cancel-running-functions) or [bulk cancellation](/docs/platform/manage/bulk-cancellation), this method will work the same.
+Whether your function run is cancelled via [`cancelOn` event](/docs/durable-execution/guides-and-advanced/cancellation/events), [REST API](/docs/durable-execution/guides-and-advanced/cancellation/bulk-cancellation) or [bulk cancellation](/docs/durable-execution/guides-and-advanced/cancellation/bulk-cancellation), this method will work the same.
 
 ## Quick snippet
 
@@ -106,7 +106,7 @@ Check the resources below to learn more about building email sequences with Inng
 }}/>
 
 <Resource resource={{
-  href: "/docs/features/inngest-functions/cancellation",
+  href: "/docs/durable-execution/guides-and-advanced/cancellation",
   name: "Guide: Function cancellation",
   icon: RiBracesFill,
   description: "Learn about the different ways to cancel a function run.",

@@ -10,7 +10,7 @@ Users start reading a long output sooner, they can stop the agent midway if it's
 Most implementations reach for WebSockets or SSE (Server-Sent Events) to push near-realtime updates from the agent to the app.
 
 But both depend on one fragile persistent connection: if the socket drops, the run dies with it. Lost progress, half-finished tool calls.
-This pattern keeps token streaming alive through a dropped connection, using [realtime connections](/docs/features/realtime?ref=patterns-durable-token-streaming) and [Inngest connect](/docs/setup/connect?ref=patterns-durable-token-streaming).
+This pattern keeps token streaming alive through a dropped connection, using [realtime connections](/docs/realtime?ref=patterns-durable-token-streaming) and [Inngest connect](/docs/durable-execution/deploying-functions/connect?ref=patterns-durable-token-streaming).
 
 ## Architecture
 
@@ -33,7 +33,7 @@ Because the Inngest engine tracks progress instead of the socket:
 
 > 💡 **The tradeoff:** there's no server-side session store. The browser holds the transcript and POSTs all of it on every `/api/chat` call. That keeps the server stateless, so any worker instance can pick up any request, and it keeps this example small. The cost is that the browser is the only copy of history.
 >
-> A real app would persist history (e.g. keyed by [sessionId](/docs/learn/agent-evals#add-session-context)) and send only the new message.
+> A real app would persist history (e.g. keyed by [sessionId](/docs/agent-evals/sessions)) and send only the new message.
 
 ## How to Implement Durable Token Streaming?
 
@@ -41,7 +41,7 @@ The full working [example is in the repo](https://github.com/inngest/agent-examp
 
 ### The Worker
 
-To cut latency, open a [direct websocket connection](/docs/setup/connect?ref=patterns-durable-token-streaming) from the worker to Inngest. Import and set up the `inngest/connect` package.
+To cut latency, open a [direct websocket connection](/docs/durable-execution/deploying-functions/connect?ref=patterns-durable-token-streaming) from the worker to Inngest. Import and set up the `inngest/connect` package.
 
 ```typescript
 import { connect } from "inngest/connect";
@@ -174,7 +174,7 @@ const result = await step.run(`llm-turn-${turn}`, async () => {
 
 ### The Browser
 
-The Next.js app imports the same `./inngest/channel` module the worker uses, then subscribes with the [inngest/react](/docs/features/realtime/react-hooks?ref=patterns-durable-token-streaming) package.
+The Next.js app imports the same `./inngest/channel` module the worker uses, then subscribes with the [inngest/react](/docs/realtime/guides/react-hooks?ref=patterns-durable-token-streaming) package.
 
 ```typescript
 import { getClientSubscriptionToken } from "inngest/react";

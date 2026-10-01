@@ -1,0 +1,74 @@
+import { CodeGroup } from "shared/Docs/mdx";
+export const metaTitle = "Cancel Functions on Events";
+export const description = "Cancel Inngest functions on events with cancelOn: stop a sleeping or waiting run automatically when a matching event makes its remaining work unnecessary.";
+
+# Events
+
+> Use events to automatically cancel running functions without any extra work.
+
+Stop a scheduled or sleeping run when a change makes its remaining work unnecessary. Define `cancelOn` on the function, then send a matching cancellation event.
+
+## Cancel a reminder when it is deleted
+This reminder function sleeps until the requested time. A deletion event with the same `reminderId` cancels the run before it sends the reminder.
+
+<CodeGroup>
+```typescript {{ title: "TypeScript" }}
+import { inngest } from "./client";
+import { sendReminder } from "./notifications";
+
+export const scheduleReminder = inngest.createFunction(
+  {
+    id: "schedule-reminder",
+    triggers: { event: "reminders/created" },
+    cancelOn: [
+      {
+        // The event name that cancels this function
+        event: "tasks/reminder.deleted", 
+        // Ensure the cancellation event (async) and the
+        // triggering event (event)'s reminderId are the same:
+        if: "async.data.reminderId == event.data.reminderId",
+        // only in the first 24h since the function was scheduled.
+        // this is optional.
+        timeout: "24h",
+      },
+    ],
+  },
+  async ({ event, step }) => {
+    await step.sleepUntil("wait-until-due", event.data.remindAt);
+    await step.run("send-reminder", () => sendReminder(event.data));
+  }
+);
+```
+
+```python {{ title: "Python" }}
+!snippet:path=snippets/py/latest/cancellation/events/schedule_reminder.py
+```
+
+```go {{ title: "Go" }}
+!snippet:path=snippets/go/docs/cancellation/events/schedule_reminder.go
+```
+</CodeGroup>
+
+Let's break down how this works:
+
+1. Whenever the function is triggered, a cancellation listener is created which waits for an "tasks/reminder.deleted" event to be received.
+2. The if statement tells Inngest that both the triggering event ("tasks/reminder.created") and the cancellation event ("tasks/reminder.deleted") have the same exact value for data.reminderId in each event payload. This makes sure that an event does not cancel a different reminder.
+
+## Expressions
+
+In the expression, `event` is the original `reminders/created` trigger and `async` is the later `reminders/deleted` event. Compare a stable identifier so one customer's event does not cancel another customer's run. Send the deletion event to Inngest when the reminder is removed.
+For a direct equality on one field, use `match: "data.reminderId"` instead of `if`. You cannot combine `match` and `if` in the same cancellation rule.
+
+## Tips
+
+- You can also optionally specify a timeout to only enable cancellation for a period of time.
+- You can configure multiple events to cancel a function, up to five.
+- You can write a more complex matching statement using the if field.
+- Bound the cancellation window by adding a timeout rule.
+- The canceled run emits `inngest/function.cancelled`.
+- Use [Timeouts](/docs/durable-execution/guides-and-advanced/cancellation/timeouts) for elapsed-time limits and [Bulk cancellation](/docs/durable-execution/guides-and-advanced/cancellation/bulk-cancellation) to stop a selected set of existing runs.
+
+## Limits
+
+- A function can listen for up to five cancellation events.
+- Cancellation takes effect between steps. It can stop the reminder while the run sleeps, but it cannot interrupt a `step.run` that has already begun sending it.

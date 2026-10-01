@@ -10,7 +10,7 @@ Durable execution runs your code across steps, retries, and time boundaries. Eac
 
 Inngest captures execution data for every function run. You get metrics, traces, event logs, and per-step timing without instrumenting your code.
 
-This page covers the metrics dashboard. For step-level execution detail, see [Traces](/docs/platform/monitor/traces). For querying raw event and run data with SQL, see [Insights](/docs/platform/monitor/insights). To wire OpenTelemetry in a Node.js / Express app and export spans to your collector alongside Inngest, see [OpenTelemetry in Node.js](/blog/opentelemetry-nodejs-tracing-express-inngest?ref=docs-observability-metrics).
+This page covers the metrics dashboard. For step-level execution detail, see [Traces](/docs/platform-and-operations/traces). For querying raw event and run data with SQL, see [Insights](/docs/platform-and-operations/insights). To wire OpenTelemetry in a Node.js / Express app and export spans to your collector alongside Inngest, see [OpenTelemetry in Node.js](/blog/opentelemetry-nodejs-tracing-express-inngest?ref=docs-observability-metrics).
 
 ## Function runs observability
 
@@ -28,7 +28,7 @@ Navigating to a Function displays the Function metrics page, composed of 7 chart
 
 ![Clicking on a Function leads us to the Function view, composed of 7 charts.](/assets/docs/platform/monitor/observability-metrics/function-view.png)
 
-All the above charts can be filtered based on a time range (ex: last 24 hours), a specific Function or [App](/docs/platform/manage/apps).
+All the above charts can be filtered based on a time range (ex: last 24 hours), a specific Function or [App](/docs/platform-and-operations/apps-and-syncs).
 
 Let's go over each chart in detail:
 
@@ -225,7 +225,7 @@ This chart is useful to assess the _Account Concurrency_ capacity of your accoun
 
 <Col>
 
-The _Account concurrency_ displays the **[concurrency](/docs/guides/concurrency) usage in time, at the account level**.
+The _Account concurrency_ displays the **[concurrency](/docs/durable-execution/flow-control/concurrency) usage in time, at the account level**.
 
 The red line illustrates the maximum concurrency capacity of the account.
 
@@ -233,7 +233,7 @@ The red line illustrates the maximum concurrency capacity of the account.
 
 **How to use this chart?**
 
-This chart is useful to quickly identify is some increase in _Backlog_ or drop in _Total run throughput_ is linked to your account's [concurrency capacity](/docs/guides/concurrency).
+This chart is useful to quickly identify is some increase in _Backlog_ or drop in _Total run throughput_ is linked to your account's [concurrency capacity](/docs/durable-execution/flow-control/concurrency).
 
 Each account gets a maximum concurrency capacity, computed by adding the total number of running steps across all applications.
 

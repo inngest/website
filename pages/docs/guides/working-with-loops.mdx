@@ -5,7 +5,7 @@ export const description = "Safely implement loops inside Inngest functions. Avo
 
 # Working with Loops in Inngest
 
-In Inngest each step in your function is executed as a separate HTTP request.  This means that for every step in your function, the function is re-entered, starting from the beginning, up to the point where the next step is executed. This [execution model](/docs/learn/how-functions-are-executed) helps in managing retries, timeouts, and ensures robustness in distributed systems.
+In Inngest each step in your function is executed as a separate HTTP request.  This means that for every step in your function, the function is re-entered, starting from the beginning, up to the point where the next step is executed. This [execution model](/docs/durable-execution/durable-workflows) helps in managing retries, timeouts, and ensures robustness in distributed systems.
 
 This page covers how to implement loops in your Inngest functions and avoid common pitfalls.
 
@@ -436,7 +436,7 @@ Read more about this use case in the [blog post](/blog/import-ecommerce-api-data
 
 ## Best practices: implementing loops in Inngest
 
-To ensure your loops run correctly within [Inngest's execution model](/docs/learn/how-functions-are-executed):
+To ensure your loops run correctly within [Inngest's execution model](/docs/durable-execution/durable-workflows):
 
 ### 1. Treat each loop iterations as a single step
 
@@ -452,6 +452,6 @@ When using `step.sleep` inside a loop, ensure it is combined with structuring th
 
 ## Next steps
 
-- Docs explanation: [Inngest execution model](/docs/learn/how-functions-are-executed).
-- Docs guide: [multi-step functions](/docs/learn/inngest-steps).
+- Docs explanation: [Inngest execution model](/docs/durable-execution/durable-workflows).
+- Docs guide: [multi-step functions](/docs/durable-execution/primitives).
 - Blog post: ["How to import 1000s of items from any E-commerce API in seconds with serverless functions"](/blog/import-ecommerce-api-data-in-seconds).

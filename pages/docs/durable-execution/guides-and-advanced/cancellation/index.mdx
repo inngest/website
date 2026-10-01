@@ -1,0 +1,22 @@
+export const metaTitle = "Function Cancellation | Stop In-Flight Runs";
+export const description = "Cancel in-flight Inngest function runs with cancellation events, timeouts, or bulk cancellation, so stale work like a deleted reminder never runs.";
+
+# Cancellation
+
+> Stop queued, sleeping, or active runs when their remaining work is no longer needed.
+
+When a customer deletes a scheduled reminder, cancel its run so it cannot send later. Inngest prevents queued and sleeping runs from continuing and stops active runs between steps. You can also cancel runs that time out or stop a group of runs after an incident.
+## Choose how to cancel
+- [Timeouts](/docs/durable-execution/guides-and-advanced/cancellation/timeouts) cancel a run that waits too long for its first step or exceeds its execution window. Set them in the function configuration.
+- [Events](/docs/durable-execution/guides-and-advanced/cancellation/events) cancel a run when a matching event arrives. Set `cancelOn` in the function configuration and match the event to the run it should stop.
+- [Bulk cancellation](/docs/durable-execution/guides-and-advanced/cancellation/bulk-cancellation) targets existing runs from the Dashboard or REST API. Use it when you need to stop many runs selected by function and time range.
+The first two rules travel with the function definition. Bulk cancellation is an operation against runs already in the environment.
+
+## How cancellation works
+Inngest can stop a queued run before it starts or stop a sleeping run before its next step. If a step is already executing, that step finishes. The run is then marked canceled and later steps do not run. Design an external side effect with this boundary in mind, as cancellation does not undo a call that already completed.
+
+Bulk cancellation does not prevent new runs from being enqueued. If the trigger keeps producing runs, pause the function or stop the source of new events as well.
+
+## Clean up after cancellation
+Inngest sends an `inngest/function.cancelled` system event for each canceled run, including cancellations caused by events, timeouts, the REST API, and bulk operations. The payload identifies the original function and run with `function_id` and `run_id`. Trigger a separate cleanup function from this event when you need to release a reservation or remove temporary data.
+A canceled run can be replayed from the Dashboard. Review its completed side effects before replaying it.

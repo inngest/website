@@ -26,16 +26,16 @@ export async function getStaticProps(): Promise<
 
 export default function LaunchWeek() {
   return (
-    <div className="home bg-slate-1000 bg-[url(/assets/launch-week/background-image.png)] bg-cover bg-fixed font-sans">
+    <div className="home font-sans bg-slate-1000 bg-[url(/assets/launch-week/background-image.png)] bg-cover bg-fixed">
       <Header />
       <Container className="py-8">
-        <div className="my-12 flex items-center justify-center tracking-tight">
-          <div className="rounded-md py-8 md:py-16">
+        <div className="my-12 tracking-tight flex items-center justify-center">
+          <div className="py-8 md:py-16 rounded-md">
             <div className="flex justify-center">
               <Logo fill={"#ffffff"} width={260} />
             </div>
-            <h1 className="mb-4 text-center text-5xl font-bold leading-tight text-white md:text-7xl md:leading-tight">
-              <span className="bg-gradient-to-br bg-gradient-to-r from-[#5EEAD4] via-[#A7F3D0] to-[#FDE68A] bg-clip-text text-transparent">
+            <h1 className="font-bold text-5xl md:text-7xl leading-tight md:leading-tight text-white text-center mb-4">
+              <span className="bg-clip-text text-transparent bg-gradient-to-br bg-gradient-to-r from-[#5EEAD4] via-[#A7F3D0] to-[#FDE68A]">
                 Launch Week
               </span>
             </h1>
@@ -57,7 +57,7 @@ export default function LaunchWeek() {
           image="/assets/blog/announcing-replay/featured-image.png"
           label="New"
           buttonHref="/blog/announcing-replay-the-death-of-the-dead-letter-queue"
-          docsHref="/docs/platform/replay"
+          docsHref="/docs/platform-and-operations/replay-runs-in-bulk"
           orientation="left"
         />
         <RowItem
@@ -66,7 +66,7 @@ export default function LaunchWeek() {
           image="/assets/blog/bulk-cancellation-api/featured-image.png"
           label="New"
           buttonHref="/blog/bulk-cancellation-api"
-          docsHref="/docs/guides/cancel-running-functions"
+          docsHref="/docs/durable-execution/guides-and-advanced/cancellation/bulk-cancellation"
           orientation="right"
         />
         <RowItem
@@ -93,7 +93,7 @@ export default function LaunchWeek() {
           image="/assets/blog/migrating-across-clouds-with-zero-downtime/featured-image.png"
           label="New"
           buttonHref="/blog/migrating-across-clouds-with-zero-downtime"
-          docsHref="/docs/apps/cloud"
+          docsHref="/docs/platform-and-operations/apps-and-syncs"
           orientation="left"
         />
 
@@ -123,7 +123,7 @@ export default function LaunchWeek() {
           image="/assets/blog/improved-error-handling/featured-image.png"
           label="New"
           buttonHref="/blog/improved-error-handling"
-          docsHref="/docs/guides/error-handling"
+          docsHref="/docs/durable-execution/guides-and-advanced/error-handling"
           orientation="right"
         />
 
@@ -153,7 +153,7 @@ export default function LaunchWeek() {
 
 function Heading({ title }) {
   return (
-    <h2 className="mt-4 text-center text-xl font-bold uppercase md:text-2xl">
+    <h2 className="text-xl md:text-2xl mt-4 text-center uppercase font-bold">
       {title}
     </h2>
   );
@@ -172,8 +172,8 @@ function RowItem({
   return (
     <div
       className={clsx(
-        "mx-auto my-16 grid max-w-[440px] grid-cols-1 items-center gap-8 md:mb-28 md:max-w-[1072px] md:grid-cols-2 md:gap-16 md:px-8",
-        blur === true && "pointer-events-none blur-lg"
+        "mx-auto md:px-8 my-16 md:mb-28 max-w-[440px] md:max-w-[1072px] grid grid-cols-1 md:grid-cols-2 items-center gap-8 md:gap-16",
+        blur === true && "blur-lg pointer-events-none"
       )}
     >
       <div
@@ -190,7 +190,7 @@ function RowItem({
             quality={95}
             alt={`Blog featured image for ${title}`}
             className={clsx(
-              "w-full max-w-[440px] rounded-lg	shadow-2xl",
+              "max-w-[440px] w-full shadow-2xl	rounded-lg",
               orientation === "right" && "md:order-2"
             )}
           />
@@ -203,7 +203,7 @@ function RowItem({
         )}
       >
         <span
-          className="inline-flex rounded-full border-2 border-transparent px-6 py-1 text-sm font-extrabold text-white"
+          className="inline-flex py-1 px-6 text-white font-extrabold text-sm border-2 border-transparent rounded-full"
           style={{
             background: `linear-gradient(#292e23, #292e23) padding-box,
                          linear-gradient(to right, #5EEAD4, #A7F3D0, #FDE68A) border-box`,
@@ -211,10 +211,10 @@ function RowItem({
         >
           {label}
         </span>
-        <div className="mb-8 mt-4">
+        <div className="mt-4 mb-8">
           <h3
             className={clsx(
-              "mb-2 text-xl font-extrabold leading-snug",
+              "mb-2 text-xl leading-snug font-extrabold",
               title.length > 30 ? "md:text-2xl" : "md:text-[32px]"
             )}
             // @ts-ignore
@@ -224,10 +224,10 @@ function RowItem({
           </h3>
           <p className="text-base md:text-lg">{subtitle}</p>
         </div>
-        <div className="flex flex-row flex-wrap items-center gap-x-10 gap-y-4">
+        <div className="flex flex-row gap-x-10 gap-y-4 items-center flex-wrap">
           <a
             href={`${buttonHref}?ref=launch-week`}
-            className="rounded-md bg-gradient-to-r from-[#5EEAD4] to-[#FDE68A] px-3 py-2 font-medium text-slate-950 shadow-sm transition-all hover:from-[#B0F4E9] hover:to-[#FBEDB7]"
+            className="px-3 py-2 text-slate-950 font-medium rounded-md shadow-sm bg-gradient-to-r from-[#5EEAD4] to-[#FDE68A] transition-all hover:from-[#B0F4E9] hover:to-[#FBEDB7]"
           >
             Read blog post
           </a>

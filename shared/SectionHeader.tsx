@@ -17,7 +17,7 @@ const SectionHeader = ({
     <>
       {pre && (
         <p
-          className={`text-lg leading-5 text-indigo-400 md:leading-7 ${
+          className={`text-indigo-400 text-lg leading-5 md:leading-7 ${
             center ? "text-center" : ""
           }`}
         >
@@ -25,7 +25,7 @@ const SectionHeader = ({
         </p>
       )}
       <h2
-        className={`mb-2 text-2xl font-medium tracking-tighter text-slate-50 md:mb-4 md:text-4xl xl:text-5xl ${
+        className={`text-slate-50 font-medium text-2xl md:text-4xl xl:text-5xl mb-2 md:mb-4 tracking-tighter ${
           center ? "text-center" : ""
         }`}
       >
@@ -33,7 +33,7 @@ const SectionHeader = ({
       </h2>
       {typeof lede === "string" ? (
         <p
-          className={`max-w-md text-sm leading-5 text-slate-200 md:text-base md:leading-7 lg:max-w-xl ${
+          className={`text-slate-200 max-w-md lg:max-w-xl text-sm md:text-base leading-5 md:leading-7 ${
             center ? "text-center" : ""
           }`}
         >
@@ -41,7 +41,7 @@ const SectionHeader = ({
         </p>
       ) : (
         <div
-          className={`max-w-md text-sm leading-5 text-slate-200 md:text-base md:leading-7 lg:max-w-xl ${
+          className={`text-slate-200 max-w-md lg:max-w-xl text-sm md:text-base leading-5 md:leading-7 ${
             center ? "text-center" : ""
           }`}
         >

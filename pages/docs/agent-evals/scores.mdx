@@ -1,0 +1,148 @@
+import { CodeGroup, SdkUnsupported } from "shared/Docs/mdx";
+export const metaTitle = "Score Function Runs | AI Evaluation";
+export const description = "Attach numeric or boolean quality scores to Inngest function runs and steps to measure whether AI workflows achieve the outcomes that matter in production.";
+
+# Scores
+
+> Record whether a run or step achieved the result that matters with named numeric or boolean scores.
+
+A completed support run tells you the function finished. A score tells you whether it worked: the answer passed a guardrail, the classification was correct, or the customer marked it helpful. Inngest attaches each named score to the run or step that produced the work, so you can open its trace when the score is bad.
+
+You can score a run without an experiment. When you do [compare variants](/docs/agent-evals/experiments), record the same score for every variant.
+
+## Choose what to score
+
+Give each score a stable name and a numeric or boolean value.
+
+- Use a **boolean** for a clear pass or fail, such as `guardrail-pass` or `json-valid`.
+- Use a **number** for a rate, rating, or measured quality, such as `resolution-quality`. Keep the range fixed. A 0 to 1 scale with higher meaning better is the easiest to compare.
+
+Decide what the name means before you compare runs. `ticket-resolved: 1` should mean the same thing in every run. Renaming a score starts a new, separate series.
+
+Technical checks and product outcomes answer different questions. A format check tells you right away whether an agent returned valid JSON. Customer feedback tells you later whether the answer helped. Track both when you need to explain *why* an outcome changed. Good immediate scores include:
+
+- guardrail pass or fail
+- JSON or schema validity
+- retrieval or model confidence
+- tool call success
+- accuracy against a known answer
+- an [LLM judge](/docs/agent-evals/guides/llm-judge) that runs inline
+
+## Score the current run
+
+Add `scoreMiddleware()` to the client, then call `step.score()` with a unique step ID, a name, and a value:
+
+<CodeGroup>
+```typescript {{ title: "TypeScript" }}
+import { Inngest } from "inngest";
+import { scoreMiddleware } from "inngest/experimental";
+
+const inngest = new Inngest({
+  id: "support",
+  middleware: [scoreMiddleware()],
+});
+
+export const answerTicket = inngest.createFunction(
+  { id: "answer-ticket", triggers: { event: "support/ticket.created" } },
+  async ({ event, step }) => {
+    const answer = await step.run("write-answer", () =>
+      writeAnswer(event.data.message)
+    );
+
+    await step.score("score-format-valid", {
+      name: "format-valid",
+      value: isValidAnswer(answer),
+    });
+
+    return answer;
+  }
+);
+```
+
+```python {{ title: "Python" }}
+!snippet:path=snippets/py/latest/evals/scores/score_current_run.py
+```
+
+<SdkUnsupported title="Go" feature="Scores" />
+</CodeGroup>
+
+`step.score()` runs as a memoized step. A retry or replay reuses the recorded write instead of scoring again. Each call counts as one step execution.
+
+Score only when you have the information the score needs. For example, record accuracy only for runs whose event carries a known answer, so unlabeled traffic doesn't lower the metric:
+
+<CodeGroup>
+```typescript {{ title: "TypeScript" }}
+if (event.data.knownTeam) {
+  await step.score("score-routing-accuracy", {
+    name: "routing-accuracy",
+    value: team === event.data.knownTeam ? 1 : 0,
+  });
+}
+```
+
+```python {{ title: "Python" }}
+!snippet:path=snippets/py/latest/evals/scores/score_conditional.py
+```
+
+<SdkUnsupported title="Go" feature="Scores" />
+</CodeGroup>
+
+## Score a specific step
+
+Call `inngest.score()` inside `step.run()` to attach the score to that step. The score appears on the step in the trace view:
+
+<CodeGroup>
+```typescript {{ title: "TypeScript" }}
+await step.run("call-model", async () => {
+  const result = await callModel(prompt);
+  await inngest.score({ name: "model-confidence", value: result.confidence });
+  return result;
+});
+```
+
+```python {{ title: "Python" }}
+!snippet:path=snippets/py/latest/evals/scores/score_step.py
+```
+
+<SdkUnsupported title="Go" feature="Scores" />
+</CodeGroup>
+
+You can also pass `stepId` to `step.score()` or `inngest.score()` to target a step by its ID.
+
+## Score from outside the run
+
+A customer may rate an answer after the run finishes. If the service that receives the rating knows the original run ID, it can score that run directly:
+
+<CodeGroup>
+```typescript {{ title: "TypeScript" }}
+await inngest.score({
+  name: "customer-helpful",
+  value: true,
+  runId: originalRunId,
+});
+```
+
+```python {{ title: "Python" }}
+!snippet:path=snippets/py/latest/evals/scores/score_outside_run.py
+```
+
+<SdkUnsupported title="Go" feature="Scores" />
+</CodeGroup>
+
+Pass `stepId` as well to score a specific step in that run. Save the run ID with your application record when the answer is produced, or put it on the event that carries the outcome. The [Score user feedback](/docs/agent-evals/guides/user-feedback) guide shows a complete example.
+
+When the outcome needs its own work, such as waiting for an event or calling a model, use a [deferred scorer](/docs/agent-evals/deferred-scoring) instead. It doesn't need the run ID.
+
+## Where scores appear
+
+- **Traces.** Each score appears on the run or step it targets, next to the execution timeline.
+- **Function dashboards.** Score aggregates over time show trends. A falling score after a prompt change tells you something broke; a stable score after a model swap tells you the change is safe.
+- **Experiment view.** Scores written with an `experimentRef` count toward the variant that served the run. See [Experiments](/docs/agent-evals/experiments#score-a-variant).
+
+In aggregates, `true` counts as `1` and `false` as `0`.
+
+## Next steps
+
+- [Deferred scoring](/docs/agent-evals/deferred-scoring) scores outcomes that arrive after the run.
+- [Experiments](/docs/agent-evals/experiments) credits scores to the variant that served a result.
+- [Reference](/docs/agent-evals/reference#scores) lists every option and validation rule.

@@ -1,0 +1,152 @@
+import { CardGroup, Card, LanguageSelector, LanguageSection } from "src/shared/Docs/mdx";
+
+export const metaTitle = "Concepts | Durable Execution";
+export const description = "Durable execution concepts: how Inngest events, triggers, runs, steps, and waits let your code checkpoint progress and resume after failures or pauses.";
+
+# Durable Execution concepts
+> See how triggers, runs, steps, and waits let your code continue after a failure or a long pause.
+
+Durable execution uses the same concepts for both workflows and endpoints. Learn the concepts before exploring how to build with Inngest.
+
+### Example
+
+A payment may need approval before your app can charge a card. Inngest can start the work now, pause it while approval is pending, and continue it later. The original server process does not need to continue running while the function pauses.
+
+**Every durable function has the following pattern:** trigger → run → steps → result.
+
+## Base concepts
+
+- **[Function](/docs/durable-execution/durable-workflows):** Either a workflow or endpoint that runs a series of steps.
+- **[Trigger](/docs/durable-execution/guides-and-advanced/events-and-triggers):** How a function starts. This may be an event, a schedule, an HTTP request, or an invocation through the REST API.
+- **[Steps](/docs/durable-execution/primitives):** Units of work whose outputs Inngest saves. A run can continue after a failed step without repeating completed steps.
+  - **[Waits](/docs/durable-execution/primitives):** A step can wait until a time or another event. Waits suspend the function's compute and do not count toward concurrency.
+- **[Memoization](/docs/durable-execution/durable-workflows):** Serializing and storing a step output for use when the function replays.
+- **[Idempotency](/docs/durable-execution/guides-and-advanced/idempotency):** An operation that has the same effect when repeated, such as a payment request that does not charge the card twice.
+- **[Expressions](/docs/durable-execution/guides-and-advanced/writing-expressions):** CEL conditions that can add logic to triggers and waits.
+- **Results:** The data that a function returns and Inngest stores as its result.
+- **[Flow control](/docs/durable-execution/flow-control):** Rules for if and when functions run, such as concurrency, throttling, rate limiting, and debounce.
+- **[Errors vs failures](/docs/durable-execution/guides-and-advanced/error-handling/retries):** Inngest can retry errors. A step or function fails if every retry results in an error.
+
+## Additional concepts
+
+- **[Apps](/docs/platform-and-operations/apps-and-syncs):** An app is a service that serves a set of functions.
+- **[Syncs](/docs/platform-and-operations/apps-and-syncs):** You register an app and its functions with Inngest so it knows which functions run for each trigger.
+- **[Traces](/docs/platform-and-operations/traces):** Show the path a function takes across steps, waits, retries, and the result.
+- **Lifecycles:** A function transitions from queued to running to resolved, either completed or failed. Lifecycles run for each status transition.
+
+Follow the [quick start](/docs/durable-execution/quick-start) to see these concepts in a working function.
+
+---
+
+## See a durable workflow
+
+This example shows a **workflow**: an event starts background work, a step saves a result, and a wait pauses the run. [Durable Endpoints](/docs/durable-execution/durable-endpoints) apply the same step model to an HTTP request.
+
+### The parts of a workflow
+
+<CardGroup cols={3}>
+  <Card title="Triggers" href="/docs/durable-execution/guides-and-advanced/events-and-triggers">
+    An event, schedule, webhook, or another function starts a run.
+  </Card>
+
+  <Card title="Steps" href="/docs/durable-execution/primitives">
+    Inngest saves completed results so a retry can continue without repeating those callbacks.
+  </Card>
+
+  <Card title="Flow control" href="/docs/durable-execution/flow-control">
+    Add rules when you need to limit starts or protect a service that the workflow calls.
+  </Card>
+</CardGroup>
+
+### The code
+
+Each snippet defines a `process-task` function triggered by `app/task.created`. The step returns the task ID, then the run pauses for one second before returning a result. The snippets assume you have created an Inngest client; the quick starts show client setup and how to serve the function.
+
+<LanguageSelector>
+
+<LanguageSection show="typescript">
+
+```typescript
+export const processTask = inngest.createFunction(
+  { id: "process-task", triggers: { event: "app/task.created" } },
+  async ({ event, step }) => {
+    const result = await step.run("handle-task", () => ({
+      processed: true,
+      id: event.data.id,
+    }));
+
+    await step.sleep("pause", "1s");
+    return result;
+  }
+);
+```
+
+</LanguageSection>
+
+<LanguageSection show="python">
+
+```python
+!snippet:path=snippets/py/latest/durable/concepts/process_task.py
+```
+
+</LanguageSection>
+
+<LanguageSection show="go">
+
+```go
+!snippet:path=snippets/go/docs/durable/concepts/process_task.go
+```
+
+</LanguageSection>
+
+</LanguageSelector>
+
+Inngest saves the `handle-task` result. If later work retries, the SDK returns that result instead of running the completed callback again. The one-second sleep pauses the run without keeping a process open. Code outside a step can run again when the function replays, so keep external side effects in steps and make retried operations safe to repeat.
+
+### What you can build
+
+<CardGroup cols={2}>
+  <Card title="Background jobs" href="/docs/durable-execution/durable-workflows">
+    Move slow work out of an HTTP request and let the run continue after the response.
+  </Card>
+
+  <Card title="Delayed work" href="/docs/durable-execution/guides-and-advanced/events-and-triggers/schedules-and-delayed-starts">
+    Start work at a future time or pause a run until it should continue.
+  </Card>
+
+  <Card title="Scheduled work" href="/docs/durable-execution/guides-and-advanced/events-and-triggers/schedules-and-delayed-starts">
+    Trigger recurring work from a cron schedule.
+  </Card>
+
+  <Card title="Multi-step workflows" href="/docs/durable-execution/primitives">
+    Save progress between operations so a failed step does not repeat completed steps.
+  </Card>
+</CardGroup>
+
+### Explore both durable function types
+
+<CardGroup cols={2}>
+  <Card title="Durable workflows" href="/docs/durable-execution/durable-workflows">
+    Coordinate background work started by an event, schedule, webhook, or another function.
+  </Card>
+
+  <Card title="Durable endpoints" href="/docs/durable-execution/durable-endpoints">
+    Keep the HTTP request and response model while Inngest recovers failed steps.
+  </Card>
+</CardGroup>
+
+### Build it in your language
+
+<CardGroup cols={3}>
+  <Card title="TypeScript" href="/docs/durable-execution/quick-start/typescript-quick-start">
+    Create and inspect this workflow with TypeScript SDK v4.
+  </Card>
+
+  <Card title="Python" href="/docs/durable-execution/quick-start/python-quick-start">
+    Create and inspect this workflow with the Python SDK.
+  </Card>
+
+  <Card title="Go" href="/docs/durable-execution/quick-start/go-quick-start">
+    Create and inspect this workflow with the Go SDK.
+  </Card>
+</CardGroup>

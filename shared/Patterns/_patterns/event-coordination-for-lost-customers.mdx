@@ -122,7 +122,7 @@ The function generates content, sends it for review, and pauses. When the review
 
 Once your cart abandonment flow is in production, you'll want to know how often it's actually sending reminders — and what share of carts are converting on their own.
 
-[Inngest Insights](/docs/platform/monitor/insights?ref=patterns) lets you query your run and step data directly with SQL. To see what percentage of cart abandonment flows ended in a reminder email versus a completed purchase:
+[Inngest Insights](/docs/platform-and-operations/insights?ref=patterns) lets you query your run and step data directly with SQL. To see what percentage of cart abandonment flows ended in a reminder email versus a completed purchase:
 
 ```sql
 SELECT
@@ -144,7 +144,7 @@ This gives you a direct read on how many carts needed a nudge versus converted w
 
 You can also use Insights AI to generate queries in plain English: open Insights in the dashboard and describe what you want to measure.
 
-→ [Insights documentation](/docs/platform/monitor/insights?ref=patterns)
+→ [Insights documentation](/docs/platform-and-operations/insights?ref=patterns)
 
 ## Alternative approaches
 
@@ -160,4 +160,4 @@ These approaches work but require more code, more distributed state to manage, a
 - [Reference: `step.waitForEvent()`](/docs/reference/typescript/v4/functions/step-wait-for-event?ref=patterns)
 - [Reference: `step.run()`](/docs/reference/typescript/v4/functions/step-run?ref=patterns)
 - [Reference: `step.sleep()`](/docs/reference/typescript/v4/functions/step-sleep?ref=patterns)
-- [Guide: Cancel running functions](/docs/guides/cancel-running-functions?ref=patterns)
+- [Guide: Cancel running functions](/docs/durable-execution/guides-and-advanced/cancellation/bulk-cancellation?ref=patterns)

@@ -13,7 +13,7 @@ Inngest provides a way to delay a function run to a specific time in the future.
 * You want to schedule work in the future based on user input.
 * You want to slightly delay execution of a non-urgent function for a few seconds or minutes.
 
-This page provides a quick example of how to delay a function run to a specific time in the future using the [event payload's](/docs/events#event-payload-format) `ts` field.
+This page provides a quick example of how to delay a function run to a specific time in the future using the [event payload's](/docs/durable-execution/guides-and-advanced/events-and-triggers/send-events) `ts` field.
 
 ## Quick Snippet
 
@@ -38,7 +38,7 @@ const sendReminder = inngest.createFunction(
 
 ### Triggering the function with a timestamp
 
-To trigger this function, you will send an event `"notifications/reminder.scheduled"` using `inngest.send()` with the necessary data. The `ts` field in the [event payload](/docs/events#event-payload-format) should be set to the time you want the function to run, in milliseconds since the Unix epoch. For example, to schedule a reminder for 5 minutes in the future:
+To trigger this function, you will send an event `"notifications/reminder.scheduled"` using `inngest.send()` with the necessary data. The `ts` field in the [event payload](/docs/durable-execution/guides-and-advanced/events-and-triggers/send-events) should be set to the time you want the function to run, in milliseconds since the Unix epoch. For example, to schedule a reminder for 5 minutes in the future:
 
 ```typescript
 await inngest.send({
@@ -58,7 +58,7 @@ await inngest.send({
 
 ### Alternatives
 
-Depending on your use case, you may want to consider using [scheduled functions (cron jobs)](/docs/guides/scheduled-functions) for scheduling periodic work or use [`step.sleepUntil()`](/docs/reference/typescript/v4/functions/step-sleep-until) to add mid-function delays for a layer time.
+Depending on your use case, you may want to consider using [scheduled functions (cron jobs)](/docs/durable-execution/guides-and-advanced/events-and-triggers/schedules-and-delayed-starts) for scheduling periodic work or use [`step.sleepUntil()`](/docs/reference/typescript/v4/functions/step-sleep-until) to add mid-function delays for a layer time.
 
 ## More context
 
@@ -67,7 +67,7 @@ Check the resources below to learn more about scheduling functions with Inngest.
 <ResourceGrid cols={2}>
 
 <Resource resource={{
-  href: "/docs/events",
+  href: "/docs/durable-execution/guides-and-advanced/events-and-triggers/send-events",
   name: "Guide: Sending events",
   icon: PencilSquareIcon,
   description: "Learn how to send events to trigger functions in Inngest.",
@@ -78,6 +78,6 @@ Check the resources below to learn more about scheduling functions with Inngest.
 
 ## Related concepts
 
-- [Scheduled functions (cron jobs)](/docs/guides/scheduled-functions)
+- [Scheduled functions (cron jobs)](/docs/durable-execution/guides-and-advanced/events-and-triggers/schedules-and-delayed-starts)
 - [`step.sleepUntil()`](/docs/reference/typescript/v4/functions/step-sleep-until)
 

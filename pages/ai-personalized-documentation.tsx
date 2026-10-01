@@ -2,6 +2,7 @@ import React, { useEffect, useState, useRef } from "react";
 import SyntaxHighlighter from "react-syntax-highlighter";
 import { atomOneDark as syntaxThemeDark } from "react-syntax-highlighter/dist/cjs/styles/hljs";
 
+
 import Header from "../shared/Header";
 import Footer from "../shared/Footer";
 import Container from "../shared/layout/Container";
@@ -105,20 +106,20 @@ export default function InngestGPT() {
         }}
       >
         <Container className="pb-16">
-          <h1 className="mt-12 text-center text-3xl font-semibold tracking-tight text-white md:mt-20 lg:text-5xl xl:mt-32">
+          <h1 className="text-3xl lg:text-5xl text-white mt-12 md:mt-20 xl:mt-32 font-semibold tracking-tight text-center">
             ✨ AI-Personalized Documentation ✨
           </h1>
-          <p className="m-auto mt-4 max-w-xl text-center text-indigo-200">
+          <p className="mt-4 text-indigo-200 max-w-xl text-center m-auto">
             Learn how to use the Inngest SDK with personalized code examples.
           </p>
 
-          <div className="mt-8 flex w-full flex-col justify-center gap-4 md:flex-row xl:mb-32">
+          <div className="w-full flex flex-col md:flex-row mt-8 justify-center gap-4 xl:mb-32">
             <Button
               href="/blog/ai-personalization-and-the-future-of-developer-docs?ref=inngestabot"
               variant="secondary"
             >
               Read how this page works
-              <ArrowRight className="-mr-1.5 transition-transform duration-150  group-hover:translate-x-1" />
+              <ArrowRight className="group-hover:translate-x-1 transition-transform duration-150  -mr-1.5" />
             </Button>
             <Button
               target="_blank"
@@ -129,26 +130,26 @@ export default function InngestGPT() {
             </Button>
           </div>
 
-          <div className="m-auto my-20 max-w-3xl">
-            <div className=" overflow-hidden rounded-lg bg-white shadow-lg">
-              <div className="w-full px-6 py-6">
+          <div className="max-w-3xl m-auto my-20">
+            <div className=" bg-white rounded-lg shadow-lg overflow-hidden">
+              <div className="py-6 px-6 w-full">
                 <textarea
                   disabled={loading}
                   placeholder="Create a function that..."
-                  className="h-52 w-full rounded-md border border-0 border-slate-700/30 font-medium text-slate-700 backdrop-blur-md focus:outline-none"
+                  className="border-0 backdrop-blur-md border border-slate-700/30 rounded-md text-slate-700 font-medium w-full h-52 focus:outline-none"
                   onChange={(e) => setMessage(e.target.value)}
                 />
               </div>
-              <div className="flex items-center justify-between bg-slate-100 px-4 py-2">
+              <div className="flex justify-between items-center px-4 py-2 bg-slate-100">
                 <span className="text-sm font-medium text-slate-700">
                   Powered by OpenAI
                 </span>
                 <a
                   onClick={onSubmit}
-                  className={`group inline-flex items-center gap-0.5 rounded-full py-2 pl-6 pr-5 text-sm font-medium text-white ${
+                  className={`group inline-flex items-center gap-0.5 rounded-full text-sm font-medium pl-6 pr-5 py-2 text-white ${
                     loading
                       ? "bg-slate-500"
-                      : "bg-indigo-500 text-white hover:bg-indigo-400"
+                      : "bg-indigo-500 hover:bg-indigo-400 text-white"
                   } transition-all`}
                 >
                   {loading ? (
@@ -156,7 +157,7 @@ export default function InngestGPT() {
                       <span>Generating</span>
                       <svg
                         aria-hidden="true"
-                        className="ml-3 h-4 w-4 animate-spin fill-white text-slate-400 dark:text-gray-600"
+                        className="w-4 h-4 ml-3 text-slate-400 animate-spin dark:text-gray-600 fill-white"
                         viewBox="0 0 100 101"
                         fill="none"
                         xmlns="http://www.w3.org/2000/svg"
@@ -178,16 +179,16 @@ export default function InngestGPT() {
               </div>
             </div>
             {error !== "" && (
-              <p className="m-auto mt-4 inline-flex justify-self-center rounded-full bg-red-50/90 px-4 py-1.5 text-center text-sm font-medium text-red-700 ">
+              <p className="text-center text-sm px-4 py-1.5 m-auto text-red-700 font-medium mt-4 bg-red-50/90 rounded-full inline-flex justify-self-center ">
                 {error}
               </p>
             )}
           </div>
 
-          <h4 className="mb-8 text-center text-base text-slate-100">
+          <h4 className="text-center mb-8 text-slate-100 text-base">
             Or use an example:
           </h4>
-          <div className="mb-10 grid gap-6  lg:grid-cols-3">
+          <div className="grid lg:grid-cols-3 gap-6  mb-10">
             {EXAMPLE_PROMPTS.map((prompt, i) => {
               return (
                 <PromptUI
@@ -201,8 +202,8 @@ export default function InngestGPT() {
             })}
           </div>
 
-          <p className="m-auto mb-10 flex max-w-[890px] flex-col items-center gap-2 rounded-lg border border-slate-100/20 py-2 pl-2 pr-4 text-center text-sm text-slate-200 md:flex-row md:text-left lg:mb-20 ">
-            <span className="mb-1 mt-2 flex-shrink-0 rounded bg-slate-100 px-2.5 py-1 text-sm font-medium tracking-tight text-slate-800 shadow  md:mb-0 md:mr-2 md:mt-0 ">
+          <p className="text-sm text-center md:text-left text-slate-200 mb-10 lg:mb-20 gap-2 rounded-lg border border-slate-100/20 py-2 flex flex-col items-center md:flex-row pr-4 pl-2 max-w-[890px] m-auto ">
+            <span className="bg-slate-100 mt-2 mb-1 md:mt-0 md:mb-0 md:mr-2 rounded px-2.5 py-1 text-sm font-medium tracking-tight  text-slate-800 shadow flex-shrink-0 ">
               Disclaimer
             </span>
             <span>
@@ -212,17 +213,17 @@ export default function InngestGPT() {
           </p>
 
           <div
-            className="flex scroll-mt-32 grid-cols-5 flex-col-reverse gap-12 lg:grid"
+            className="flex flex-col-reverse lg:grid grid-cols-5 gap-12 scroll-mt-32"
             ref={resultRef}
           >
-            <div className="col-span-2 overflow-hidden rounded-lg pb-4">
-              <p className="mb-4 px-4 text-lg font-medium  text-white">
+            <div className="rounded-lg pb-4 col-span-2 overflow-hidden">
+              <p className="text-lg text-white px-4 font-medium  mb-4">
                 Your history
               </p>
 
-              <div className="px-4 text-xs text-slate-700 ">
+              <div className="text-xs text-slate-700 px-4 ">
                 {history.length === 0 ? (
-                  <p className="text-sm leading-relaxed text-slate-300">
+                  <p className="text-slate-300 text-sm leading-relaxed">
                     You haven't submitted anything yet. Either use the form
                     above, or check out one of our examples.
                   </p>
@@ -269,14 +270,14 @@ const PromptUI = ({
 
   return (
     <div
-      className={`origin group/card origin-center cursor-pointer rounded-lg bg-slate-900 px-6 py-4 text-center text-sm text-slate-300 shadow-lg transition-all hover:scale-105 lg:px-8 lg:py-6  ${
-        isSelected && "scale-105 bg-slate-50"
+      className={`text-center rounded-lg text-slate-300 shadow-lg text-sm hover:scale-105 origin-center origin group/card transition-all cursor-pointer bg-slate-900 px-6 py-4 lg:px-8 lg:py-6  ${
+        isSelected && "bg-slate-50 scale-105"
       }`}
       onClick={() => onClick()}
     >
       {variant === "example" && (
         <p
-          className={`mb-4 text-lg font-semibold text-white ${
+          className={`font-semibold text-lg text-white mb-4 ${
             isSelected && "text-indigo-600"
           }`}
         >
@@ -285,18 +286,18 @@ const PromptUI = ({
       )}
       {variant === "history" && (
         <p
-          className={`text-left ${isSelected && "font-medium text-slate-800"}`}
+          className={`text-left ${isSelected && "text-slate-800 font-medium"}`}
         >
           {prompt.prompt}
         </p>
       )}
       {prompt.tags && (
-        <div className={`flex flex-wrap justify-center gap-2 transition-all`}>
+        <div className={`flex flex-wrap gap-2 transition-all justify-center`}>
           {prompt?.tags?.map((t) => (
             <span
               key={t}
-              className={`rounded bg-slate-800 px-2 py-1 text-xs font-medium text-slate-300 transition-all ${
-                isSelected && "bg-slate-200 text-slate-500"
+              className={`py-1 px-2 rounded bg-slate-800 text-slate-300 transition-all font-medium text-xs ${
+                isSelected && "text-slate-500 bg-slate-200"
               }`}
             >
               {t}
@@ -311,22 +312,22 @@ const PromptUI = ({
 const Output = ({ selected }: { selected: Selected }) => {
   return (
     <div className="col-span-3 col-start-3">
-      <div className="mt-8 overflow-hidden rounded-lg bg-white shadow-lg lg:mt-auto">
-        <p className="bg-slate-100 px-6 py-3 text-sm font-medium text-slate-600">
+      <div className="bg-white rounded-lg shadow-lg overflow-hidden mt-8 lg:mt-auto">
+        <p className="text-sm text-slate-600 font-medium bg-slate-100 py-3 px-6">
           Prompt
         </p>
-        <p className=" px-6 py-4 text-base leading-relaxed text-slate-600 lg:px-12 lg:py-6">
+        <p className=" text-slate-600 leading-relaxed text-base py-4 px-6 lg:py-6 lg:px-12">
           {selected.prompt}
         </p>
       </div>
 
-      <div className="mt-4 overflow-hidden rounded-lg bg-slate-900/80 lg:mt-8">
-        <h3 className="bg-slate-800/60 px-8 py-6 text-lg text-white">
+      <div className="bg-slate-900/80 rounded-lg overflow-hidden mt-4 lg:mt-8">
+        <h3 className="text-lg text-white py-6 px-8 bg-slate-800/60">
           Generated Inngest function
         </h3>
         <div className="p-4 lg:p-6">
-          <div className="overflow-hidden overflow-x-scroll rounded-lg border border-slate-800/60 bg-slate-950/80 shadow-lg backdrop-blur-md">
-            <h6 className="w-full border-b border-slate-800/50 bg-slate-950/50 py-1.5 text-center text-xs text-slate-300">
+          <div className="overflow-x-scroll bg-slate-950/80 backdrop-blur-md border border-slate-800/60 rounded-lg overflow-hidden shadow-lg">
+            <h6 className="text-slate-300 w-full bg-slate-950/50 text-center text-xs py-1.5 border-b border-slate-800/50">
               function.ts
             </h6>
             <SyntaxHighlighter
@@ -351,43 +352,43 @@ const Output = ({ selected }: { selected: Selected }) => {
               __html: markdownToHTML(selected.reply.description),
             }}
           ></p>
-          <div className="flex flex-col gap-4 border-t border-slate-800 pt-8">
+          <div className="border-t pt-8 border-slate-800 flex flex-col gap-4">
             <p className="text-white">Want to learn more?</p>
-            <div className="grid grid-cols-1 gap-4 xl:grid-cols-3">
+            <div className="grid grid-cols-1 xl:grid-cols-3 gap-4">
               <a
                 href="/docs/getting-started/nextjs-quick-start"
-                className="group block rounded-lg bg-slate-800 px-6 py-5 hover:bg-slate-700/80"
+                className="bg-slate-800 rounded-lg px-6 py-5 hover:bg-slate-700/80 group block"
               >
                 <h4 className="text-white">Quick start guide</h4>
-                <span className="mt-2 flex items-center text-sm text-indigo-400">
+                <span className="text-sm text-indigo-400 flex items-center mt-2">
                   Read the docs{" "}
-                  <ArrowRight className="-mr-1.5 transition-transform duration-150  group-hover:translate-x-1" />
+                  <ArrowRight className="group-hover:translate-x-1 transition-transform duration-150  -mr-1.5" />
                 </span>
               </a>
               <a
-                href="/docs/learn/inngest-functions"
-                className="group block rounded-lg bg-slate-800 px-6 py-5 hover:bg-slate-700/80"
+                href="/docs/durable-execution/durable-workflows"
+                className="bg-slate-800 rounded-lg px-6 py-5 hover:bg-slate-700/80 group block"
               >
                 <h4 className="text-white">Writing functions</h4>
-                <span className="mt-2 flex items-center text-sm text-indigo-400">
+                <span className="text-sm text-indigo-400 flex items-center mt-2">
                   Read the docs{" "}
-                  <ArrowRight className="-mr-1.5 transition-transform duration-150  group-hover:translate-x-1" />
+                  <ArrowRight className="group-hover:translate-x-1 transition-transform duration-150  -mr-1.5" />
                 </span>
               </a>
               <a
-                href="/docs/events"
-                className="group block rounded-lg bg-slate-800 px-6 py-5 hover:bg-slate-700/80"
+                href="/docs/durable-execution/guides-and-advanced/events-and-triggers/send-events"
+                className="bg-slate-800 rounded-lg px-6 py-5 hover:bg-slate-700/80 group block"
               >
                 <h4 className="text-white">Sending Events</h4>
-                <span className="mt-2 flex items-center text-sm text-indigo-400">
+                <span className="text-sm text-indigo-400 flex items-center mt-2">
                   Read the docs{" "}
-                  <ArrowRight className="-mr-1.5 transition-transform duration-150  group-hover:translate-x-1" />
+                  <ArrowRight className="group-hover:translate-x-1 transition-transform duration-150  -mr-1.5" />
                 </span>
               </a>
             </div>
           </div>
-          <h3 className="pb-2 pt-8 text-base text-white">References:</h3>
-          <ul className="ml-4 list-disc pb-8 text-slate-200">
+          <h3 className="text-base text-white pt-8 pb-2">References:</h3>
+          <ul className="list-disc text-slate-200 ml-4 pb-8">
             {selected.reply.references.map((r) => (
               <li key={r} className="">
                 <a className="text-indigo-400" href={r}>

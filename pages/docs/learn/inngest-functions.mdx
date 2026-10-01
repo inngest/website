@@ -18,7 +18,7 @@ export const description = "Inngest functions are durable, retriable units of ba
 
 Inngest functions are durable, retriable units of background logic that run on your own compute and are triggered by events, cron schedules, or webhooks. Use them for background jobs, scheduled work, and multi-step workflows that need automatic retries, step-level state, and observability without adding a queue or workflow engine.
 
-You write standard TypeScript, Python, or Go code, then expose functions with [`serve()`](/docs/learn/serving-inngest-functions) or [Connect](/docs/setup/connect) so Inngest can invoke and coordinate runs from the platform.
+You write standard TypeScript, Python, or Go code, then expose functions with [`serve()`](/docs/learn/serving-inngest-functions) or [Connect](/docs/durable-execution/deploying-functions/connect) so Inngest can invoke and coordinate runs from the platform.
 
 ## What are Inngest functions?
 
@@ -27,13 +27,13 @@ An Inngest function is a regular function wrapped with Inngest trigger and execu
 At a high level, an Inngest function has three core parts:
 
 <CardGroup cols={3}>
-  <Card title="Triggers" icon={<EventIcon className="text-basis h-4 w-4"/>} href={'/docs/features/events-triggers'}>
+  <Card title="Triggers" icon={<EventIcon className="text-basis h-4 w-4"/>} href={'/docs/durable-execution/guides-and-advanced/events-and-triggers'}>
     A list of Events, Cron schedules or webhook events that trigger Function runs.
   </Card>
-  <Card title="Flow Control" icon={<RiGitPullRequestFill className="rotate-90 text-basis h-4 w-4" />} href={'/docs/guides/flow-control'}>
+  <Card title="Flow Control" icon={<RiGitPullRequestFill className="rotate-90 text-basis h-4 w-4" />} href={'/docs/durable-execution/flow-control'}>
     Control how Function runs get distributed in time with Concurrency, Throttling and more.
   </Card>
-  <Card title="Steps" icon={<RiGuideFill className="text-basis h-4 w-4"/>} href={'/docs/learn/inngest-functions'}>
+  <Card title="Steps" icon={<RiGuideFill className="text-basis h-4 w-4"/>} href={'/docs/durable-execution/durable-workflows'}>
     Transform your Inngest Function into a workflow with retriable checkpoints.
   </Card>
 </CardGroup>
@@ -98,9 +98,9 @@ def sync_systems(ctx: inngest.ContextSync) -> None:
 {/* 
 Increase your Inngest Functions durability by leveraging:
 
-- **[Retries features](/docs/guides/error-handling)** - Configure a custom retry policy, handle rollbacks and idempotency.
-- **[Cancellation features](/docs/features/inngest-functions/cancellation)** - Dynamically or manually cancel in-progress runs to prevent unnecessary work.
-- **[Versioning best practices](/docs/learn/versioning)** - Strategies to gracefully introducing changes in your Inngest Functions.
+- **[Retries features](/docs/durable-execution/guides-and-advanced/error-handling)** - Configure a custom retry policy, handle rollbacks and idempotency.
+- **[Cancellation features](/docs/durable-execution/guides-and-advanced/cancellation)** - Dynamically or manually cancel in-progress runs to prevent unnecessary work.
+- **[Versioning best practices](/docs/durable-execution/guides-and-advanced/versioning)** - Strategies to gracefully introducing changes in your Inngest Functions.
  */}
 
 ## Using Inngest Functions
@@ -108,16 +108,16 @@ Increase your Inngest Functions durability by leveraging:
 Start using Inngest Functions by using the pattern that fits your use case:
 
 <CardGroup cols={2}>
-  <Card title="Background jobs" icon={<RiGuideFill className="text-basis h-4 w-4"/>} href={'/docs/guides/background-jobs'}>
+  <Card title="Background jobs" icon={<RiGuideFill className="text-basis h-4 w-4"/>} href={'/docs/patterns/jobs/keeping-your-api-fast'}>
     Run long-running tasks out of the critical path of a request.
   </Card>
-  <Card title="Delayed Functions" icon={<RiCalendarLine className="text-basis h-4 w-4"/>} href={'/docs/guides/delayed-functions'}>
+  <Card title="Delayed Functions" icon={<RiCalendarLine className="text-basis h-4 w-4"/>} href={'/docs/durable-execution/guides-and-advanced/events-and-triggers/schedules-and-delayed-starts'}>
     Schedule Functions that run in the future.
   </Card>
-  <Card title="Cron Functions" icon={<RiTimeLine className="text-basis h-4 w-4"/>} href={'/docs/guides/scheduled-functions'}>
+  <Card title="Cron Functions" icon={<RiTimeLine className="text-basis h-4 w-4"/>} href={'/docs/durable-execution/guides-and-advanced/events-and-triggers/schedules-and-delayed-starts'}>
     Build Inngest Functions as CRONs.
   </Card>
-  <Card title="Workflows" icon={<RiMistFill className="text-basis h-4 w-4"/>} href={'/docs/learn/inngest-steps'}>
+  <Card title="Workflows" icon={<RiMistFill className="text-basis h-4 w-4"/>} href={'/docs/durable-execution/primitives'}>
     Start creating workflows by leveraging Inngest Function Steps.
   </Card>
 </CardGroup>
@@ -128,10 +128,10 @@ Start using Inngest Functions by using the pattern that fits your use case:
 Functions and Steps are powered by Inngest's Durable Execution Engine. Learn about its inner working by reading the following guides:
 
 <CardGroup cols={1}>
-  <Card title="How Functions are executed" icon={<RiMistFill className="text-basis h-4 w-4"/>} href={'/docs/learn/how-functions-are-executed'}>
+  <Card title="How Functions are executed" icon={<RiMistFill className="text-basis h-4 w-4"/>} href={'/docs/durable-execution/durable-workflows'}>
     A deep dive into Inngest's Durable Execution Engine with a step-by-step workflow run example.
   </Card>
-  <Card title="Thinking in Steps" icon={<RiGuideFill className="text-basis h-4 w-4"/>} href={'/docs/learn/inngest-steps'}>
+  <Card title="Thinking in Steps" icon={<RiGuideFill className="text-basis h-4 w-4"/>} href={'/docs/durable-execution/primitives'}>
     Discover by example how steps enable more reliable and flexible functions with step-level error handling, conditional steps and waits.
   </Card>
 </CardGroup>

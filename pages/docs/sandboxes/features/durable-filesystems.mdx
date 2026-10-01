@@ -1,0 +1,31 @@
+export const metaTitle = "Durable filesystems | Sandboxes";
+export const description = "Durable filesystems keep a Sandbox's files through pause and resume, and copy them into new Sandboxes with snapshots, so work isn't lost.";
+
+# Durable filesystems
+
+> Keep a Sandbox’s files through pause and resume, and copy them into new Sandboxes with a snapshot.
+
+Pause and resume a Sandbox without losing its local files. When you snapshot it, each clone starts with the files captured on its disk. Use an S3-backed persistent mount when different Sandboxes need the same backing files.
+
+## Choose the right filesystem
+
+| Need | Use | What it gives you |
+| --- | --- | --- |
+| Keep a sandbox's own files as its work continues | The sandbox filesystem | Pause and resume keep the same files. A snapshot captures disk state, and a clone starts with that captured state. |
+| Let different sandboxes use the same files | An S3-backed persistent filesystem mount | A filesystem that spans sandbox boundaries. |
+
+A sandbox's own filesystem and a shared mount solve different problems. Use the sandbox filesystem for work that belongs to one sandbox, such as generated code, installed dependencies, or a working directory. Use an S3-backed persistent mount when separate sandboxes need access to the same files, such as shared inputs or artifacts.
+
+## Keep work across lifecycle changes
+
+**Pause and resume.** Pause a sandbox when work needs to wait. Its files remain available when the sandbox resumes.
+
+**Snapshot and clone.** A user snapshot captures the sandbox's filesystem. Create a new sandbox from that snapshot when you need the saved files. The original sandbox keeps running.
+
+**Clone.** Create another sandbox from a ready snapshot, including the filesystem state it captured. This lets you branch work from a prepared environment. Later writes to the original sandbox do not change that snapshot.
+
+A durable workflow can coordinate these operations and show sandbox activity in its trace. Keep the files your task needs as you pause, restore, or clone sandbox work. See [Snapshots and restore](/docs/sandboxes/features/snapshots-and-restore), [Cloning](/docs/sandboxes/features/cloning), and [Managed lifecycle](/docs/sandboxes/features/managed-lifecycle) for the related controls.
+
+## Share files across sandboxes
+
+S3-backed persistent filesystem mounts let separate sandboxes use a filesystem beyond any one sandbox's lifecycle. For example, one sandbox can prepare a dataset and other sandboxes can use that dataset in separate tasks. Mount setup, concurrent access, and write visibility need product confirmation before this page can give procedural guidance.

@@ -25,9 +25,9 @@ function getHierarchyLinks(
   return sections.reduce((acc, section) => {
     if (isNavGroup(section)) {
       if (hasNavGroupPath(section, currentPath)) {
-        const link = isNavLink(section.links[0])
-          ? section.links[0].href
-          : undefined;
+        const link =
+          section.href ??
+          (isNavLink(section.links[0]) ? section.links[0].href : undefined);
         if (
           !link ||
           (link &&
@@ -54,14 +54,14 @@ export function Breadcrumb() {
   );
 
   return hierarchyLinks ? (
-    <div className="text-sm flex flex-row mb-6">
+    <div className="mb-6 flex flex-row text-sm">
       {hierarchyLinks.map(({ title, href }, index) => (
         <React.Fragment key={index}>
           {!!index && (
             <span className="mx-1 text-gray-500">
               <ChevronRight
                 className={
-                  "dark:stroke-carbon-700 dark:fill-carbon-700 stroke-carbon-200 fill-carbon-200"
+                  "fill-carbon-200 stroke-carbon-200 dark:fill-carbon-700 dark:stroke-carbon-700"
                 }
               />
             </span>
@@ -70,13 +70,13 @@ export function Breadcrumb() {
             <Link
               href={href}
               className={
-                "text-carbon-600 dark:text-[#9B9B9B] dark:hover:text-carbon-50 no-underline font-normal"
+                "font-normal text-carbon-600 no-underline dark:text-[#9B9B9B] dark:hover:text-carbon-50"
               }
             >
               {title}
             </Link>
           ) : (
-            <span className={"text-[#2E2E2E] dark:text-carbon-50 font-medium"}>
+            <span className={"font-medium text-[#2E2E2E] dark:text-carbon-50"}>
               {title}
             </span>
           )}

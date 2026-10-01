@@ -38,7 +38,7 @@ Inngest Cloud runs across two nearby infrastructure footprints in the eastern Un
 
 For the standard event flow, the Event API accepts an event in AWS and publishes it to Pub/Sub. Scheduling and execution services in Ashburn consume the event, create and queue matching runs, and dispatch each queue item to the customer's SDK.
 
-The executor coordinates a run but does not host the customer's application code. HTTP functions run wherever the customer's endpoint is deployed, while [Inngest Connect](/docs/setup/connect?ref=docs-architecture) functions run on the customer's connected workers. Calls cross the regional boundary when that customer infrastructure is outside Ashburn.
+The executor coordinates a run but does not host the customer's application code. HTTP functions run wherever the customer's endpoint is deployed, while [Inngest Connect](/docs/durable-execution/deploying-functions/connect?ref=docs-architecture) functions run on the customer's connected workers. Calls cross the regional boundary when that customer infrastructure is outside Ashburn.
 
 ## Enterprise isolation
 

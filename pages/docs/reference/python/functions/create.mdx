@@ -28,7 +28,7 @@ The `create_function` decorator accepts a configuration and wraps a plain functi
 
 <Properties>
   <Property name="batch_events" type="Batch">
-    Configure how the function should consume batches of events ([reference](/docs/guides/batching))
+    Configure how the function should consume batches of events ([reference](/docs/durable-execution/flow-control/batching))
 
     <Properties nested collapse>
       <Property name="max_size" type="int" required>
@@ -42,7 +42,7 @@ The `create_function` decorator accepts a configuration and wraps a plain functi
   </Property>
 
   <Property name="cancel" type="Cancel">
-    Define an event that can be used to cancel a running or sleeping function ([guide](/docs/guides/cancel-running-functions))
+    Define an event that can be used to cancel a running or sleeping function ([guide](/docs/durable-execution/guides-and-advanced/cancellation/bulk-cancellation))
     <Properties nested collapse>
       <Property name="event" type="str" required>
         The event name which will be used to cancel
@@ -62,7 +62,7 @@ The `create_function` decorator accepts a configuration and wraps a plain functi
       <Property name="key" type="str">
         A unique key expression to apply the debounce to. The expression is evaluated for each triggering event.
 
-        Expressions are defined using the Common Expression Language (CEL) with the events accessible using dot-notation. Read [our guide to writing expressions](/docs/guides/writing-expressions) for more info. Examples:
+        Expressions are defined using the Common Expression Language (CEL) with the events accessible using dot-notation. Read [our guide to writing expressions](/docs/durable-execution/guides-and-advanced/writing-expressions) for more info. Examples:
 
         * Debounce per customer id: `'event.data.customer_id'`
         * Debounce per account and email address: `'event.data.account_id + "-" + event.user.email'`
@@ -111,7 +111,7 @@ The `create_function` decorator accepts a configuration and wraps a plain functi
       <Property name="key" type="str">
         A unique key expression to apply the limit to. The expression is evaluated for each triggering event.
 
-        Expressions are defined using the Common Expression Language (CEL) with the events accessible using dot-notation. Read [our guide to writing expressions](/docs/guides/writing-expressions) for more info. Examples:
+        Expressions are defined using the Common Expression Language (CEL) with the events accessible using dot-notation. Read [our guide to writing expressions](/docs/durable-execution/guides-and-advanced/writing-expressions) for more info. Examples:
 
         * Rate limit per customer id: `'event.data.customer_id'`
         * Rate limit per account and email address: `'event.data.account_id + "-" + event.user.email'`
@@ -141,7 +141,7 @@ The `create_function` decorator accepts a configuration and wraps a plain functi
       <Property name="key" type="str">
         A unique key expression to apply the limit to. The expression is evaluated for each triggering event.
 
-        Expressions are defined using the Common Expression Language (CEL) with the events accessible using dot-notation. Read [our guide to writing expressions](/docs/guides/writing-expressions) for more info. Examples:
+        Expressions are defined using the Common Expression Language (CEL) with the events accessible using dot-notation. Read [our guide to writing expressions](/docs/durable-execution/guides-and-advanced/writing-expressions) for more info. Examples:
 
         * Rate limit per customer id: `'event.data.customer_id'`
         * Rate limit per account and email address: `'event.data.account_id + "-" + event.user.email'`
@@ -155,9 +155,9 @@ The `create_function` decorator accepts a configuration and wraps a plain functi
   </Property>
 
   <Property name="idempotency" type="string">
-    A key expression used to prevent duplicate events from triggering a function more than once in 24 hours. [Read the idempotency guide here](/docs/guides/handling-idempotency).
+    A key expression used to prevent duplicate events from triggering a function more than once in 24 hours. [Read the idempotency guide here](/docs/durable-execution/guides-and-advanced/idempotency).
 
-    Expressions are defined using the Common Expression Language (CEL) with the original event accessible using dot-notation. Read [our guide to writing expressions](/docs/guides/writing-expressions) for more information.
+    Expressions are defined using the Common Expression Language (CEL) with the original event accessible using dot-notation. Read [our guide to writing expressions](/docs/durable-execution/guides-and-advanced/writing-expressions) for more information.
   </Property>
 
   <Property name="trigger" type="TriggerEvent | TriggerCron | list[TriggerEvent | TriggerCron]" required>
@@ -187,7 +187,7 @@ The `create_function` decorator accepts a configuration and wraps a plain functi
     A [unix-cron](https://crontab.guru/) compatible schedule string. <br/>Optional timezone prefix, e.g. `TZ=Europe/Paris 0 12 * * 5`.
   </Property>
   <Property name="jitter" type="str">
-    A duration string (e.g. `"30s"`, `"5m"`) that adds a random delay after the scheduled boundary. Each occurrence fires at a random time within the jitter window. Must be between `"1s"` and `"5m"`. See the [jitter guide](/docs/guides/scheduled-functions#adding-jitter) for details.
+    A duration string (e.g. `"30s"`, `"5m"`) that adds a random delay after the scheduled boundary. Each occurrence fires at a random time within the jitter window. Must be between `"1s"` and `"5m"`. See the [jitter guide](/docs/durable-execution/guides-and-advanced/events-and-triggers/schedules-and-delayed-starts) for details.
   </Property>
 </Properties>
 
@@ -210,7 +210,7 @@ async def fn(ctx: inngest.Context):
 ```
 
 For more information, see the [Multiple
-Triggers](/docs/guides/multiple-triggers) guide.
+Triggers](/docs/durable-execution/guides-and-advanced/events-and-triggers/event-and-trigger-concepts) guide.
 
 ---
 

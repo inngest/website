@@ -1,0 +1,13 @@
+export const metaTitle = "Patterns";
+export const description = "Durable workflow patterns in Inngest: fan out independent work from one event and process lists safely with loops, without losing control of each run.";
+
+# Patterns
+
+> Choose how to repeat work or start independent work without losing control of each run.
+
+Choose fan-out when independent tasks need separate runs and retries. Choose a loop when one function must process a list or paginated source while saving progress.
+- **Fan-out.** See [Fan-out](/docs/durable-execution/guides-and-advanced/patterns/fan-out). One event starts separate functions. Each function has its own run, retries, and history.
+- **Working with loops.** See [Working with loops](/docs/durable-execution/guides-and-advanced/patterns/working-with-loops). One function processes a sequence or paginated source. Each iteration can save progress in a step.
+AI agents use the same building blocks. See [Durable agents](/docs/durable-execution/durable-agents) for tool loops, human approval, and sub-agent delegation.
+
+For independent steps that belong to one run, use [step.run](/docs/durable-execution/primitives/step-run) with `Promise.all()` (`group.Parallel` in Go, `ctx.group.parallel` in Python).

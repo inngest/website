@@ -1,0 +1,43 @@
+import { CodeGroup } from "shared/Docs/mdx";
+
+export const metaTitle = "Serve functions";
+export const description = "Serve Inngest functions over HTTP with serve(): expose one endpoint in your web framework or serverless app so Inngest can invoke your durable functions.";
+
+# Serve functions
+
+> Add an HTTP endpoint to your app so Inngest can run its functions without a separate worker.
+
+Use `serve()` when your functions live in an existing web app, API route, or serverless deployment. Your app exposes one reachable endpoint, usually `/api/inngest`. Inngest calls that endpoint to run functions and steps. The handler also returns function metadata and registers definitions during an app sync.
+
+Your cloud provider runs the code, so its request duration, memory, and body-size limits still apply. [Connect](/docs/durable-execution/deploying-functions/connect) fits a long-running worker with outbound access.
+
+## Add the HTTP handler
+
+For TypeScript v4, import the handler for your framework and give it the client and the functions the app exposes. In Python, call your framework's `serve()` (such as `inngest.fast_api.serve` or `inngest.flask.serve`) with the app, client, and functions. In Go, mount `client.Serve()`, an `http.Handler` for every function created with the client:
+
+<CodeGroup>
+```typescript {{ title: "TypeScript" }}
+import { serve } from "inngest/next";
+import { inngest, functions } from "./inngest";
+
+export const { GET, POST, PUT } = serve({ client: inngest, functions });
+```
+
+```python {{ title: "Python" }}
+!snippet:path=snippets/py/latest/deploy/serve/serve_fastapi.py
+```
+
+```go {{ title: "Go" }}
+!snippet:path=snippets/go/docs/deploy/serve/serve.go
+```
+</CodeGroup>
+
+The endpoint uses `GET` for development metadata, `POST` for invocation, and `PUT` to sync function definitions. Export the route and methods required by your framework. In production, set `INNGEST_SIGNING_KEY` on the deployed app. After a deployment changes the functions, sync the app so Inngest sees the new definitions. Confirm the registered functions in the dashboard, then trigger a run. Configure the host to accept requests up to 4 MB.
+
+## Configure the handler
+
+The `serve()` handler requires `client` and `functions`. Set `serveOrigin` or `servePath` (`serve_origin` / `serve_path` in Python, `ServeOpts.Origin` / `ServeOpts.Path` with `client.ServeWithOpts()` in Go) when a proxy or host prevents the SDK from finding the public URL. Set `streaming` only when the framework and host support streamed responses and you need the host's longer execution window. Configure `signingKey`, `logger`, `baseUrl`, and `fetch` on the Inngest client.
+
+AWS Lambda and Google Cloud Run Functions use the documented HTTP handlers. Vercel has a deployment guide and an integration that can set keys and sync the app. Cloudflare Pages has a deployment guide; the HTTP handler reference also covers Cloudflare Workers. Enable Node.js compatibility for `AsyncLocalStorage` on Workers. If your provider is not listed, start with the HTTP handler and custom adapter guidance. Check its request and execution limits before deploying.
+
+For registration and deployment health, see [Apps and syncing](/docs/platform-and-operations/apps-and-syncs). For a comparison of connection methods, see [Deploying functions](/docs/durable-execution/deploying-functions).

@@ -1,0 +1,55 @@
+import { Compatibility } from "shared/Docs/mdx";
+import { Mermaid } from "src/shared/Docs/Mermaid";
+import { FlowControlSimulator } from "src/shared/Docs/FlowControlSimulator";
+
+export const metaTitle = "Flow Control | Concurrency, Throttling & More";
+export const description = "Control when Inngest runs and steps execute with flow control: concurrency limits, throttling, rate limiting, batching, debounce, priority, and singleton.";
+
+# Flow control
+
+> Protect dependent services and keep urgent work moving with controls on when runs and steps execute.
+
+<Compatibility endpoints={false} />
+
+Limit concurrent work, smooth bursts, discard excess runs, or move urgent work ahead in a queue. Inngest applies these controls when it schedules function runs and steps, so you can protect the services they call. Flow control applies to [durable workflows](/docs/durable-execution/durable-workflows). It doesn't currently apply to [durable endpoints](/docs/durable-execution/durable-endpoints).
+
+## Flow control types
+
+- [Step concurrency](/docs/durable-execution/flow-control/concurrency) caps steps executing at the same time. Waiting runs do not use a slot.
+- [Throttling](/docs/durable-execution/flow-control/throttling) limits how often runs start. Extra runs wait in the queue.
+- [Rate limiting](/docs/durable-execution/flow-control/rate-limiting) limits how often runs start and skips excess triggers. Use it when you can discard excess work.
+- [Batching](/docs/durable-execution/flow-control/batching) groups events into one run for bulk operations.
+- [Singleton](/docs/durable-execution/flow-control/singleton) keeps one run active for a chosen key.
+- [Debounce](/docs/durable-execution/flow-control/debounce) waits for a quiet period so a burst of updates starts one run.
+- [Priority](/docs/durable-execution/flow-control/priority) moves higher-value work ahead in the queue.
+- [Multi-tenancy](/docs/durable-execution/flow-control/multi-tenancy) applies limits by tenant key and reduces the effect of one tenant's backlog on another. Key-queue scheduling currently requires Enterprise access on request.
+
+## Flow control ordering
+
+Inngest applies flow control in three stages:
+
+1. **Before scheduling:** Rate limiting skips excess runs. Batching groups events before it schedules a run.
+2. **When scheduling:** Debounce and singleton control which unbatched runs enter the queue.
+3. **When executing:** Step concurrency limits how many steps execute at once.
+
+<Mermaid
+  label="Flow control order. Before scheduling, an exceeded rate limit skips a run, while batching collects events until the batch finalizes. A batch skips scheduling controls. Other eligible runs pass through debounce and singleton when scheduling. Concurrency and throttling apply when executing."
+  chart={`flowchart TB
+  T(["Event received"]):::muted --> B["<b>1. Before scheduling</b><br/>Rate limit · Batching"]:::accent
+  B -- "rate limited" --> X(["Run skipped"]):::warn
+  B -- "batched" --> BA["Collect events until the batch finalizes"]:::info
+  B -- "not batched" --> S["<b>2. When scheduling</b><br/>Debounce · Singleton"]:::accent
+  BA -- "skips step 2" --> Q(["Run queued"]):::muted
+  S --> Q
+  Q --> E["<b>3. When executing</b><br/>Concurrency · Throttling"]:::accent
+  E --> R(["Steps execute"]):::accent`}
+/>
+
+Flow control always operates in this order.  This has the following implications:
+
+- Rate limit skips scheduling runs altogether, meaning no other flow control runs.
+- Runs that are *batched* are grouped together, then are always scheduled once the batch finalizes.  This means that the “when scheduling” flow control operators are skipped for batched items.
+
+## Combine controls carefully
+
+Use a stable event-data key when limits should apply independently per customer or resource. Batching can work with concurrency, but it cannot be combined with rate limiting or priority. See each page for its exact behavior and constraints.

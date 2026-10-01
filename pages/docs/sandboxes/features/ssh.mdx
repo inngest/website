@@ -1,0 +1,33 @@
+export const metaTitle = "SSH | Sandboxes";
+export const description = "SSH access for Inngest Sandboxes (planned): how upcoming SSH support will let you connect to, inspect, and debug a running Sandbox environment.";
+
+# SSH
+
+> Learn how planned SSH access will let you inspect and debug a running Sandbox.
+
+Use SSH to inspect files or debug a process inside a running Sandbox. Your session reaches that Sandbox’s own filesystem and processes. SSH is planned for launch; the current beta does not provide a supported public connection path.
+
+## How a session fits into the Sandbox lifecycle
+
+1. Upload your SSH public key to Inngest.
+2. Create a Sandbox and wait until it is `RUNNING`.
+3. Connect with your matching private key and the Sandbox SSH address that Inngest provides. An expected address shape is `ssh <workload-id>@ssh.inngest.com`.
+4. Close the session when you finish. The Sandbox remains a separate resource until it is paused or destroyed.
+5. Reconnect after a pause and resume if you need interactive access again. Pause is a cold checkpoint and can interrupt external network sessions.
+
+SSH changes the same live environment that commands and managed processes use. A file you edit remains in the Sandbox filesystem while that filesystem exists. Pause and resume preserve the same Sandbox. A snapshot captures Sandbox state, and a clone creates a new Sandbox from that snapshot. See [Pause and resume](/docs/sandboxes/features/pause-and-resume), [Snapshots and restore](/docs/sandboxes/features/snapshots-and-restore), and [Cloning](/docs/sandboxes/features/cloning).
+
+## Access and isolation
+
+Only give SSH access to people and systems that should be able to change the Sandbox. A connected user can inspect its files and processes and can alter the work running there. The microVM isolates this environment from other Sandboxes.
+
+Use the Sandboxes SDK for repeatable application work. Use SSH when a person needs to inspect or debug a live Sandbox. If an Inngest function creates the Sandbox, its durable steps still record the SDK operations; an interactive SSH command is outside those steps unless the product explicitly records it.
+
+## Next
+
+- [Sandboxes quick start](/docs/sandboxes/quick-start)
+- [Isolation and security](/docs/sandboxes/features/isolation-and-security)
+- [Secrets](/docs/sandboxes/features/secrets)
+- [Sandboxes limits](/docs/sandboxes/limits)
+
+For deployment previews, see [branch deploys](/docs/platform-and-operations/environments-and-branch-deploys).

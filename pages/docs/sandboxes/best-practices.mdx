@@ -1,0 +1,67 @@
+export const metaTitle = "Best practices | Sandboxes";
+export const description = "Sandboxes best practices: run isolated code safely while keeping cleanup, retries, and results visible and reliable in your durable workflow.";
+
+# Sandboxes best practices
+> Run isolated code while keeping cleanup, retries, and results visible in your workflow.
+
+Run code that needs its own Linux environment in a Sandbox. Record important results outside the Sandbox and plan cleanup before you create it, because destroying the resource removes its local files and processes.
+
+> **Experimental beta.** Sandbox access is gated, and the API can change without a compatibility period. Use Sandboxes for evaluation and feedback. Do not use them for production workloads or data you cannot recreate.
+
+## Use the client that matches the work
+
+- Use `step.sandbox` inside an Inngest function when you want each Sandbox operation recorded as a durable step. Give every operation a stable step ID. Inngest can replay a completed step result and retry operations that are safe to repeat.
+- Use `inngest.sandboxes` in trusted server-side code when the request must happen immediately or you need file transfer, live logs, or live process output. The direct client does not automatically retry individual operations.
+- Keep the Sandbox client and `INNGEST_SIGNING_KEY` on the server. Do not put them in browser code.
+
+Durable steps record API results. They do not preserve a guest process, a live Sandbox, its filesystem, or its output after that resource is lost or destroyed.
+
+## Plan cleanup before creating a Sandbox
+
+Destroy a Sandbox when the work finishes. Destroy removes its processes, filesystem, and retained output.
+
+- With the direct client, keep the Sandbox ID and destroy it in `finally`.
+- Inside an Inngest function, make Destroy a normal step on the success path. Add an `onFailure` handler or a separate cleanup function when a permanently failed run must also release the Sandbox. A JavaScript `finally` block does not replace this failure cleanup.
+- If Create can wait for readiness, use `runningTimeout: false` when you need the Sandbox ID before the wait. Then call `waitUntilRunning` as a separate step. A readiness timeout does not destroy the Sandbox.
+- Store the Sandbox ID when another function or process must reconnect. Fetch the Sandbox by ID rather than storing a serialized SDK object.
+
+The planned `step.sandbox.typescript` convenience call will start a Sandbox, run TypeScript, and stop it automatically. Use the documented create, run, and destroy operations in beta examples.
+
+## Make retries safe
+
+Use stable step IDs for every `step.sandbox` operation. Keep the same logical ID when the function replays. Give Create a stable, job-specific Sandbox name and the same resources on retries; a repeated active name with the same resources returns that Sandbox. Changing the resources for an active name produces `sandbox_name_taken`.
+
+Treat `operation_ambiguous` as an unknown outcome, not as a failed Sandbox. Do not repeat a command or process start just because the response was lost.
+
+- For `exec`, check external effects or an application-defined completion marker before running the command again.
+- For `process.start`, list processes and compare the command and start time. If you cannot identify the process, stop and reconcile it before starting another.
+- For `process.signal`, get or wait for the process. Repeat the signal only if duplicate delivery is safe for that process.
+- For snapshot creation, list recent snapshots before trying again. Snapshot Create has no idempotency key.
+
+Let an unexpected ambiguous error escape an Inngest function. Catch it only when your function implements a clear reconciliation or operator-review path.
+
+## Save results outside the Sandbox
+
+Read command output, files, and artifacts that matter before Destroy. Captured commands have a five-minute observation limit. The direct client accepts up to 4 MiB across stdout and stderr; `step.sandbox` keeps at most 2 MiB and retains the tail when output is truncated. Check `result.output.truncated` before treating captured output as complete.
+
+Managed-process output is best effort. Each process retains about 512 KiB, only the newest 32 output rings remain, and slow stream consumers can miss chunks. Reconnecting a stream can repeat retained chunks. Persist important output to a file or external store rather than treating logs as the record of the job.
+
+Use external storage for any file that must survive independently of one Sandbox. Pause and snapshots preserve Sandbox state for their lifecycle, but snapshots expire and Destroy removes a Sandbox filesystem. For files shared across Sandboxes, the planned S3-backed persistent filesystem mount attaches the same backing path to each Sandbox, including a clone. Decide how writers coordinate before they modify shared files.
+
+## Use pause and snapshots for different tasks
+
+- **Pause and resume** when you need the same Sandbox later. Resume keeps its ID, filesystem, memory, environment, and remaining runtime. Wait for `RUNNING` before calling commands, files, logs, or processes.
+- **Snapshot and clone** when you need a new Sandbox from a prepared state. The clone gets a new Sandbox ID and inherits the captured image, resources, memory, environment, and disk. The source keeps running.
+- Do not treat either feature as a backup. User snapshots are crash-consistent, have a server-defined expiry, and count against account-specific quotas. Pause uses a private checkpoint for that Sandbox. Save irreplaceable data elsewhere.
+
+## Size the work to beta limits
+
+The current beta has one default image, a one-hour active runtime per Sandbox, and three exact CPU and memory pairs: 1 vCPU with 1024 MiB, 2 with 2048 MiB, or 4 with 4096 MiB. Paused time does not consume the remaining active runtime. Custom images, disk sizes, resizing, and a configurable TTL are not available through this beta API. A valid size can still fail when the account lacks access or capacity is unavailable. Beta limits can change.
+
+## Protect credentials and access
+
+Treat code inside a Sandbox as able to read its environment. The newer beta API lets fresh Sandbox Create select existing workspace secrets by exact name; it injects values throughout the guest. Select only what the task needs. Values printed to output or saved in files and snapshots are not automatically redacted. A clone restores captured secret values and cannot select new ones. See [Secrets](/docs/sandboxes/features/secrets).
+
+At launch, users will upload an SSH public key to Inngest and connect to a workload using an address shaped like `ssh <workload-id>@ssh.inngest.com`. Do not place private keys in the Sandbox.
+
+Sandboxes are separate VMs isolated from the host and from other Sandboxes. Egress is allowed by default. Review what a task can reach over the network before running generated or untrusted code.

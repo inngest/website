@@ -292,7 +292,7 @@ If the `serve` function does not support streaming then it throws an error. Prev
 
 "Optimized parallelism" significantly reduces the number of requests necessary to run parallel steps (steps in `Promise.all`, `Promise.allSettled`, etc.). This decrease in requests can dramatically improve CPU usage, memory usage, and function run duration.
 
-The primary downside is the change in `Promise.race` behavior. `Promise.race` will wait for *all* promises to settle before resolving. The correct "winner" is returned, but the `Promise.race` will *not* immediately resolve on the first winner. If you were relying on the early resolution behavior, use the new `group.parallel()` helper. This will disable optimized parallelism for groups of steps. Note that early resolution does not cancel the remaining steps; see the [step parallelism guide](/docs/guides/step-parallelism) for details:
+The primary downside is the change in `Promise.race` behavior. `Promise.race` will wait for *all* promises to settle before resolving. The correct "winner" is returned, but the `Promise.race` will *not* immediately resolve on the first winner. If you were relying on the early resolution behavior, use the new `group.parallel()` helper. This will disable optimized parallelism for groups of steps. Note that early resolution does not cancel the remaining steps; see the [step parallelism guide](/docs/durable-execution/primitives/group-parallel) for details:
 
 ```typescript
 // Old behavior (no longer works as expected with optimized parallelism)
@@ -314,7 +314,7 @@ If you'd like to disable optimized parallelism altogether at either the client o
 
 ### Checkpointing enabled by default
 
-[Checkpointing](/docs/setup/checkpointing) is now enabled by default for all functions. This means multiple steps can execute within a single request, resulting in dramatically lower latency and bandwidth usage.
+[Checkpointing](/docs/durable-execution/guides-and-advanced/checkpointing) is now enabled by default for all functions. This means multiple steps can execute within a single request, resulting in dramatically lower latency and bandwidth usage.
 
 If your functions run on serverless platforms, like Vercel, you should configure the `maxRuntime` option to slightly below your function's maximum duration:
 
@@ -341,7 +341,7 @@ const inngest = new Inngest({
   export default serve({ client: inngest, functions });
   ```
 
-  Learn more about configuring Vercel [here]().
+  Learn more about [configuring the maximum duration for Vercel Functions](https://vercel.com/docs/functions/configuring-functions/duration).
 </Warning>
 
 To disable checkpointing, set `checkpointing: false` on your client or on individual functions:

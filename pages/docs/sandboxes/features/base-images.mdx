@@ -1,0 +1,93 @@
+import { CodeGroup, SdkUnsupported } from "shared/Docs/mdx";
+
+export const metaTitle = "Base images | Sandboxes";
+export const description = "Sandbox base images come with Node.js, Python, Ruby, and common command-line tools preinstalled, so isolated code can start running right away.";
+
+# Base images
+
+> Start isolated work with Node.js, Python, Ruby, and common command-line tools already installed.
+
+> **Open beta.** The Sandbox API, image, and limits may change. Use this beta for evaluation and feedback.
+
+Run generated code or inspect a repository without building an image first. The beta Sandbox image includes Node.js, Python, Ruby, and common command-line tools. Check installed versions inside the Sandbox when your task depends on a specific version.
+
+## What the beta image includes
+
+The beta uses one fixed image for new Sandboxes. A Sandbox cloned from a snapshot starts with the captured image and filesystem changes.
+
+| Tool | Included |
+| --- | --- |
+| Node.js | Latest release as `node`, `npm`, and `npx`; LTS release as `node-lts`, `npm-lts`, and `npx-lts` |
+| Python | Python 3.14 |
+| Ruby | Ruby 4.0 |
+| Repository and network tools | Git, curl, OpenSSH, and CA certificates |
+| Shell and utilities | BusyBox `sh`, `grep`, `sed`, `awk`, `ripgrep`, `jq`, `find`, `tar`, and `gzip` |
+
+The image does **not** currently include Go, Rust, Java, Bun, or Deno. You cannot select a custom image or runtime in this beta. Exact installed versions can change when Inngest rebuilds the image. Check versions in the Sandbox if your task depends on them.
+
+## Inspect the image
+
+Run commands after the Sandbox reaches `RUNNING`. This example assumes you already have a Sandbox object from `inngest.sandboxes.create()`:
+
+<CodeGroup>
+```typescript {{ title: "TypeScript" }}
+const result = await sandbox.commands.run(
+  "node --version && python3 --version && ruby --version && git --version",
+  { timeout: "30s" },
+);
+
+console.log(result.stdout);
+console.error(result.stderr);
+console.log(result.exitCode);
+```
+
+<SdkUnsupported title="Python" feature="Sandboxes" />
+<SdkUnsupported title="Go" feature="Sandboxes" />
+</CodeGroup>
+
+Inside an Inngest function, use the same command through `step.sandbox` and give the operation a stable step ID:
+
+<CodeGroup>
+```typescript {{ title: "TypeScript" }}
+const result = await sandbox.commands.run(
+  "inspect-image",
+  "node --version && python3 --version && ruby --version && git --version",
+  { timeout: "30s" },
+);
+```
+
+<SdkUnsupported title="Python" feature="Sandboxes" />
+<SdkUnsupported title="Go" feature="Sandboxes" />
+</CodeGroup>
+
+A nonzero exit code appears in the result. It does not throw an SDK error.
+
+## Add dependencies for a task
+
+Install packages inside a running Sandbox when the task needs them. For example, create a project directory and install a Node package:
+
+<CodeGroup>
+```typescript {{ title: "TypeScript" }}
+await sandbox.commands.run(
+  "mkdir -p /tmp/project && cd /tmp/project && npm init -y && npm install lodash",
+  { timeout: "5m" },
+);
+```
+
+<SdkUnsupported title="Python" feature="Sandboxes" />
+<SdkUnsupported title="Go" feature="Sandboxes" />
+</CodeGroup>
+
+This changes **that Sandbox**, not the fixed base image. The files remain in the Sandbox across pause and resume. A snapshot captures its disk, so clones start with the installed files. Destroying the Sandbox removes its filesystem. User snapshots expire and are not permanent storage. For files shared across different Sandboxes, use S3-backed persistent filesystem mounts.
+
+## Choose a supported size
+
+Fresh Sandboxes accept these exact resource pairs:
+
+| `vcpu` | `memoryMb` |
+| --- | --- |
+| 1 | 1024 |
+| 2 | 2048 |
+| 4 | 4096 |
+
+Set both values from the same row. The API does not accept a size profile name. A snapshot clone inherits the snapshot's CPU and memory. Access or available capacity can still prevent a supported size from starting.

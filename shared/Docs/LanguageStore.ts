@@ -1,5 +1,5 @@
 import create from "zustand";
-import { persist } from "zustand/middleware";
+import { createJSONStorage, persist } from "zustand/middleware";
 
 export type SDKLanguage = "typescript" | "python" | "go";
 
@@ -51,7 +51,7 @@ export const SDK_TITLE_TO_LANGUAGE: Record<string, SDKLanguage> = {
 export const SDK_HOME_PAGES: Record<SDKLanguage, string> = {
   typescript: `/docs/reference/typescript/${TS_STABLE}/intro`,
   python: "/docs/reference/python",
-  go: "/docs/reference/go/migrations/v0.8-to-v0.11", // Go has limited docs, this is first available page
+  go: "/docs/reference/go",
 };
 
 interface LanguageState {
@@ -71,6 +71,7 @@ export const useLanguageStore = create<LanguageState>()(
     }),
     {
       name: "inngest-docs-language",
+      storage: createJSONStorage(() => window.localStorage),
     }
   )
 );
@@ -81,7 +82,7 @@ export const useLanguageStore = create<LanguageState>()(
 export function getLanguageFromPath(path: string): SDKLanguage | null {
   if (path.startsWith("/docs/reference/python")) return "python";
   if (path.startsWith("/docs/reference/go")) return "go";
-  if (path.startsWith("/docs/reference/typescript")) return "typescript";
+  if (path.startsWith("/docs/reference/typescript/intro")) return "typescript";
   // Some TypeScript reference pages aren't under /typescript
   if (path.startsWith("/docs/reference/")) return "typescript";
   return null;
@@ -117,8 +118,8 @@ export function getSdkVersionFromPath(path: string): TSVersion | null {
 
   // Versionless TypeScript reference paths map to stable
   if (
-    path === "/docs/reference/typescript" ||
-    path.startsWith("/docs/reference/typescript/")
+    path === "/docs/reference/typescript/intro" ||
+    path.startsWith("/docs/reference/typescript/intro")
   ) {
     return TS_STABLE;
   }

@@ -69,7 +69,7 @@ async function getRuns(eventId) {
 }
 ```
 
-We can now use the Event ID to fetch the status and output of the function run. The `getRuns` function will return an array of runs as events can trigger multiple runs via [fan-out](/docs/guides/fan-out-jobs). We'll consider that this event only triggers a single function:
+We can now use the Event ID to fetch the status and output of the function run. The `getRuns` function will return an array of runs as events can trigger multiple runs via [fan-out](/docs/durable-execution/guides-and-advanced/patterns/fan-out). We'll consider that this event only triggers a single function:
 
 ```typescript
 const runs = await getRuns("01HWAVEB858VPPX47Z65GR6P6R");
@@ -151,5 +151,5 @@ Check the resources below to learn more about working with the Inngest REST API.
 
 ## Related concepts
 
-- [Fan-out jobs](/docs/guides/fan-out-jobs)
+- [Fan-out jobs](/docs/durable-execution/guides-and-advanced/patterns/fan-out)
 

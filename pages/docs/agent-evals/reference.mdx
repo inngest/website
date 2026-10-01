@@ -1,0 +1,107 @@
+import { CodeGroup, SdkUnsupported } from "shared/Docs/mdx";
+export const metaTitle = "Reference | Agent Evals";
+export const description = "Agent Evals API reference for TypeScript SDK v4: connect runs to sessions, record scores, and compare variants with group.experiment() in production.";
+
+# Agent Evals reference
+> Connect runs to sessions, score outcomes, and compare variants with TypeScript SDK v4 APIs.
+
+Use the TypeScript SDK v4 calls here to group related runs, write scores, and attribute a score to an experiment variant. Check each signature and return value before adding it to a handler. Scoring and deferred scorers are beta APIs.
+
+## API map
+
+| Need | API | Key rule |
+| --- | --- | --- |
+| Find related runs | `event.meta.sessions` | Set named session IDs on the event that starts the runs. Sessions organize investigation; they do not alter triggers. |
+| Score a run or step | `inngest.score(options)` | Pass `runId` when writing outside the run. Pass `stepId` to place the score on a step. |
+| Write a durable score | `step.score(id, options)` | Add `scoreMiddleware()` to the client. Use a unique step ID in the run. |
+| Score an experiment variant | `inngest.score.experiment(options)` | Pass the `experimentRef`. Call it outside `step.run()`, or pass the original `runId`. |
+| Score later | `createScorer()` and `defer()` | Register a scorer function and trigger it from the originating run. |
+| Choose one variant | `group.experiment(id, options)` | Each variant callback must call a `step.*` tool. The selection survives retries. |
+
+## Sessions
+
+Set `meta.sessions` on an event to group runs by a stable external ID. The object key names the kind of session; the value identifies a conversation, ticket, job, or similar unit.
+
+<CodeGroup>
+```typescript {{ title: "TypeScript" }}
+await inngest.send({
+  name: "support/ticket.created",
+  data: { ticketId: "ticket_123" },
+  meta: { sessions: { ticket_id: "ticket_123" } },
+});
+```
+
+```python {{ title: "Python" }}
+!snippet:path=snippets/py/latest/evals/reference/sessions.py
+```
+
+<SdkUnsupported title="Go" feature="Sessions" />
+</CodeGroup>
+
+TypeScript SDK v4.7.0 and later support `meta.sessions`. An event can carry up to five session entries. Session IDs must be strings or finite numbers. Session search is indexed asynchronously, so recent runs can take time to appear. [Sessions](/docs/agent-evals/sessions) explains propagation and limits.
+
+## Scores
+
+`inngest.score({ name, value, runId?, stepId? })` writes a named score. Omit `runId` inside the run you want to score. Supply it when scoring from outside a function or from a different run. `stepId` attaches the score to a specific step. Called inside `step.run()`, it scores that step.
+
+The SDK validates every score before sending it:
+
+- `name` must be a non-empty string of at most 128 bytes (UTF-8), with no control characters or single quotes.
+- `value` must be a finite number or a boolean. Strings, objects, `NaN`, and `Infinity` are rejected. Aggregates count `true` as `1` and `false` as `0`.
+- `runId` and `stepId`, when given, must be non-empty strings.
+
+Use the same score name and meaning across runs when you compare results.
+
+<CodeGroup>
+```typescript {{ title: "TypeScript" }}
+await inngest.score({ name: "resolved", value: true });
+await inngest.score({
+  name: "resolved",
+  value: true,
+  runId: originalRunId,
+});
+```
+
+```python {{ title: "Python" }}
+!snippet:path=snippets/py/latest/evals/reference/scores.py
+```
+
+<SdkUnsupported title="Go" feature="Scores" />
+</CodeGroup>
+
+`step.score(id, { name, value, stepId? })` writes a memoized score from the current run as its own step. Register `scoreMiddleware()` from `inngest/experimental` on the client first; without it, the call fails with a `NonRetriableError`. Give each call a unique durable step ID. [Scores](/docs/agent-evals/scores) shows how to use it.
+
+## Deferred scoring
+
+`createScorer(client, { id, schema?, ...options }, handler)` defines a scorer function. Import it from `inngest/experimental` and register the function with your app. The optional `schema` validates the data passed to it, and `event.data` holds that data. Other options, such as `retries` and `concurrency`, work as they do for any function; `onFailure` and `batchEvents` aren't supported.
+
+The handler receives `event`, `step`, and `parents`. It can return `{ name, value, stepId? }` to write one score for the parent run and, when deferred with an experiment ref, for its variant. Return `null` or `undefined` to write no score. The SDK writes the returned score in a step named `score`.
+
+Inside the originating function, call `defer(id, { function, data, experiment? })`. The call starts the scorer separately and returns `void`; do not await a score result. Pass the selected `experimentRef` through `experiment` when its score should count toward a variant. The scorer receives the original run and experiment context in `parents[0]` when it needs to write several scores explicitly.
+
+[Deferred scoring](/docs/agent-evals/deferred-scoring) shows how to use these calls.
+
+## Experiments and attribution
+
+`group.experiment(id, { variants, select })` executes one named variant callback and returns `{ result, variant, experimentRef }`. Put one step or a whole workflow path inside each callback. Every callback must call at least one `step.*` tool. `experimentRef` has the shape `{ experimentName, variant }`.
+
+Import `experiment` from `inngest` for the supported selectors:
+
+- `experiment.weighted(weights)` splits new runs by relative weights.
+- `experiment.bucket(value, { weights? })` hashes a stable key for repeat assignment across runs.
+- `experiment.custom(fn)` uses an application-controlled assignment.
+- `experiment.fixed(variantName)` always picks one variant.
+
+The choice is memoized for the run. A retry or replay keeps the selected variant. TypeScript SDK v4.8.0 or later is required for experiments.
+
+`inngest.score.experiment({ name, value, experiment: experimentRef, runId?, stepId? })` credits a score to that variant. Call it in the function body, outside `step.run()`: inside a step without `runId`, it writes a step score that the experiment view doesn't show. When a later function writes the score, pass the **original run ID** as `runId`. Without it, the score attaches to the later run and does not appear under the original experiment. Store `experimentRef` and the original run ID with your application record when the outcome will arrive from another process.
+
+[Experiments](/docs/agent-evals/experiments) shows variant selection and attribution.
+
+## Availability and related reference
+
+These signatures describe TypeScript SDK v4. Check the linked public references for the current beta status and package version. Do not assume the same APIs exist in other SDKs. The Python SDK release after 0.5.19 adds `meta={"sessions": ...}` on events, `inngest_client.score()` and `score_experiment()` (both take `run_id`), `ctx.group.experiment()` with `experiment.bucket()` and `experiment.fixed()`, and deferred functions via `create_defer()` and `ctx.defer()`. It has no `step.score()`, `createScorer()`, `experiment.weighted()`, or `experiment.custom()`. The Go SDK doesn't support Agent Evals. Application code decides which runs to score; Agent Evals doesn't sample scores or cap score spend for you.
+
+- [Limits](/docs/agent-evals/limits) lists product limits and release constraints.
+- [Quick start](/docs/agent-evals/quick-start) shows the path from a run through a scored experiment.
+- [Troubleshooting](/docs/agent-evals/troubleshooting) helps investigate missing or misattributed scores.

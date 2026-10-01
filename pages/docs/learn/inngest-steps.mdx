@@ -7,7 +7,7 @@ import { LanguageSelector, LanguageSection } from "shared/Docs/mdx";
 
 # Inngest Steps
 
-Inngest steps are checkpointed, retriable units of work inside [Inngest functions](/docs/learn/inngest-functions) and [Durable Endpoints](/docs/learn/durable-endpoints). Put side effects, API calls, sleeps, waits, and function invocations in steps so Inngest can memoize results, retry failures independently, and resume long-running work from the last successful checkpoint.
+Inngest steps are checkpointed, retriable units of work inside [Inngest functions](/docs/durable-execution/durable-workflows) and [Durable Endpoints](/docs/durable-execution/durable-endpoints). Put side effects, API calls, sleeps, waits, and function invocations in steps so Inngest can memoize results, retry failures independently, and resume long-running work from the last successful checkpoint.
 
 Steps are the building blocks of durable execution. They let a function pause without holding compute, recover individual units of work after an error, and compose multi-step workflows from normal TypeScript, Python, or Go code.
 
@@ -21,7 +21,7 @@ On this page, you will learn about the benefits of using steps, and get an overv
 - **Independent testing**: each step can be tested and debugged independently from others.
 - **Improved code readability**: modular approach makes code easier to navigate and refactor.
 
-If you'd like to learn more about how Inngest steps are executed, check the ["How Inngest functions are executed"](/docs/learn/how-functions-are-executed) page.
+If you'd like to learn more about how Inngest steps are executed, check the ["How Inngest functions are executed"](/docs/durable-execution/durable-workflows) page.
 
 ## Anatomy of an Inngest Step
 
@@ -583,7 +583,7 @@ async def fn_2(ctx: inngest.Context) -> None:
 
 ### step.sendEvent() / step.send_event()
 
-This method sends events to Inngest to invoke functions with a matching event. Use `sendEvent()` when you want to trigger other functions, but you do not need to return the result. It is useful for example in [fan-out functions](/docs/guides/fan-out-jobs).
+This method sends events to Inngest to invoke functions with a matching event. Use `sendEvent()` when you want to trigger other functions, but you do not need to return the result. It is useful for example in [fan-out functions](/docs/durable-execution/guides-and-advanced/patterns/fan-out).
 
 <LanguageSection show="typescript">
 
@@ -630,5 +630,5 @@ async def fn(ctx: inngest.Context) -> list[str]:
 ## Further reading
 
 - [Quick Start](/docs/getting-started/nextjs-quick-start?ref=docs-inngest-steps): learn how to build complex workflows.
-- ["How Inngest functions are executed"](/docs/learn/how-functions-are-executed): Learn more about Inngest's execution model, including how steps are handled.
-- Docs guide: ["Multi-step functions"](/docs/learn/inngest-steps).
+- ["How Inngest functions are executed"](/docs/durable-execution/durable-workflows): Learn more about Inngest's execution model, including how steps are handled.
+- Docs guide: ["Multi-step functions"](/docs/durable-execution/primitives).

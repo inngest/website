@@ -1,0 +1,16 @@
+export const metaTitle = "Rerun a run";
+export const description = "Rerun a failed Inngest function run with its original trigger data after you fix the cause, without resending the event or rebuilding the payload.";
+
+# Rerun a run
+
+> Recover one failed run after fixing its cause, using the original trigger data.
+
+After fixing a failure, rerun the affected run with its original trigger data. Inngest creates a new run and trace using the function code available when that run starts.
+## Before you rerun
+Open the original trace. Check the failed step and every completed side effect. Use [Idempotency](/docs/durable-execution/guides-and-advanced/idempotency) to prevent repeated effects, and [Versioning](/docs/durable-execution/guides-and-advanced/versioning) to understand how a new deployment affects existing runs. A rerun from the beginning repeats the entire function. A rerun from a selected step restores saved outputs from earlier steps, then runs the selected step and later steps again. Some steps let you replace JSON-serializable input before rerunning.
+## In the dashboard
+1. Open the original run in **Runs**.
+2. Choose **Rerun** in its header to start from the beginning, or select a step and choose **Rerun from step**.
+3. Review the input and create the new run.
+4. Open the new trace. Check its results and repeated side effects against the original.
+Cron-triggered runs cannot be rerun. A step ID must identify one step in the original run for CLI or API rerun-from-step. Use [Replay runs in bulk](/docs/platform-and-operations/replay-runs-in-bulk) for many runs from one incident.

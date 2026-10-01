@@ -195,7 +195,7 @@ The `globalChannel` will be used to stream updates for all posts, and the `postC
 
 ## Human in the loop: Bi-directional workflows
 
-Combine Realtime with `waitForEvent()` to enable workflows that require user input, such as [review or approval steps](/docs/ai-patterns/human-in-the-loop). Here's how to send a message to the user and wait for their confirmation:
+Combine Realtime with `waitForEvent()` to enable workflows that require user input, such as [review or approval steps](/docs/durable-execution/durable-agents/human-in-the-loop). Here's how to send a message to the user and wait for their confirmation:
 
 ```ts {{ filename: "src/inngest/channels.ts" }}
 import { realtime } from "inngest";
@@ -269,14 +269,14 @@ The `confirmationId` links the published message to the reply event, ensuring th
 <ResourceGrid cols={2}>
 
 <Resource resource={{
-  href: "/docs/features/realtime",
+  href: "/docs/realtime",
   name: "Realtime documentation",
   description: "Learn more about streaming updates and real-time workflows with Inngest.",
   pattern: 1,
 }}/>
 
 <Resource resource={{
-  href: "/docs/features/realtime/react-hooks",
+  href: "/docs/realtime/guides/react-hooks",
   name: "Using Realtime with Next.js",
   description: "Learn how to use Realtime with Next.js.",
   pattern: 2,

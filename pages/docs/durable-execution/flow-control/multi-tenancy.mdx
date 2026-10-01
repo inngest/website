@@ -1,0 +1,81 @@
+import { CodeGroup, Compatibility } from "shared/Docs/mdx";
+import { FlowControlMarbles } from "src/shared/Docs/FlowControlMarbles";
+export const metaTitle = "Multi-tenant Flow Control with Keys";
+export const description = "Multi-tenant flow control in Inngest: apply concurrency and throttling limits per tenant with keys, so one customer's workload can't starve the others.";
+
+# Multi-tenancy
+
+> Apply limits per tenant so one tenant's workload does not consume capacity reserved for others.
+
+<Compatibility endpoints={false} />
+
+Give each tenant its own concurrency and throttle limits so one busy tenant does not consume another tenant's allowance. Use the same stable tenant ID in each key expression to keep those limits aligned.
+
+**Per-key limits and key-queue scheduling are distinct.** The TypeScript SDK lets you configure limits with a key expression. Inngest's separate key-queue scheduling feature reduces queue blocking between keys; it is currently available to Enterprise customers on request.
+
+## Set limits per tenant
+
+This TypeScript v4 function uses the same stable tenant ID for concurrency and throttling:
+
+<CodeGroup>
+```typescript {{ title: "TypeScript" }}
+import { Inngest } from "inngest";
+
+const inngest = new Inngest({ id: "tenant-sync" });
+
+export const syncTenant = inngest.createFunction(
+  {
+    id: "sync-tenant-data",
+    triggers: { event: "app/tenant.sync.requested" },
+    concurrency: {
+      key: "event.data.tenant_id",
+      limit: 5,
+    },
+    throttle: {
+      key: "event.data.tenant_id",
+      limit: 100,
+      period: "1m",
+    },
+  },
+  async ({ event, step }) => {
+    await step.run("sync-data", async () => {
+      console.log(event.data.tenant_id);
+    });
+  }
+);
+```
+
+```python {{ title: "Python" }}
+!snippet:path=snippets/py/latest/flow_control/multi_tenancy/sync_tenant.py
+```
+
+```go {{ title: "Go" }}
+!snippet:path=snippets/go/docs/flow_control/multi_tenancy/sync_tenant.go
+```
+</CodeGroup>
+
+Replace the step body with your application work. For this function, each `tenant_id` has its own limit of five **executing steps** and its own throttle of 100 **run starts per minute**. A backlog for tenant A does not consume tenant B's per-key limit. Concurrency does not limit the number of function runs that are sleeping or waiting between steps.
+
+<FlowControlMarbles scenario="multi-tenancy" />
+
+Keys are Common Expression Language (CEL) expressions over the triggering event. Use a stable account, workspace, or tenant ID that appears on every relevant event. If two events for one tenant use different IDs, Inngest treats them as different keys and applies separate limits.
+
+These limits are configured on a function. Concurrency defaults to function scope; throttling is applied per function. If you need a concurrency limit shared across functions or environments, use the documented `scope` option with a key.
+
+## How key queues help with backlogs
+
+Imagine tenant A has 1,000 queued items and has reached its limit. Tenant B has one ready item. In a single first-in, first-out queue, B's item can sit behind A's backlog even though B has available capacity.
+
+With key-queue scheduling enabled, Inngest groups queued work by the evaluated key. The scheduler can consider B's ready queue without walking through A's blocked items. It aims for fairness between keys and generally selects older work before newer work **within** a key.
+
+This ordering is best effort. It is not a guarantee that every tenant receives an equal share or that runs start in strict event order. Retries, available capacity, and other flow controls can change which item runs next.
+
+> **Availability:** Key-queue scheduling is currently available to Enterprise customers on request. Setting per-key limits in the function definition does not by itself confirm that this scheduling feature is enabled for your account.
+
+## Keep keys consistent
+
+- Use one stable identifier for each tenant across relevant events and functions.
+- Check that your event producer always sends that identifier before relying on per-key limits.
+- Keep the key expression stable when possible. If you change it, items already queued keep the key value assigned when they entered the queue; only new items use the new expression.
+- Enforce tenant authorization and data access in your application. A flow-control key separates limits and scheduling; it does not authorize a tenant to access data.
+

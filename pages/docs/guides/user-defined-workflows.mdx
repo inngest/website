@@ -22,7 +22,7 @@ Inngest's Workflow Kit ships as a full-stack package ([`@inngest/workflow-kit`](
 ## Use case: adding AI automation to a Next.js CMS application
 
 <CardGroup cols={1}>
-<Card href={'https://github.com/inngest/workflow-kit/tree/main/examples/nextjs-blog-cms#readme'} title={"Clone or deploy this use case"} icon={<GithubIcon className="text-basis h-4 w-4" />}>
+<Card href="https://github.com/inngest/workflow-kit/tree/main/examples/nextjs-blog-cms#readme" title={"Clone or deploy this use case"} icon={<GithubIcon className="text-basis h-4 w-4" />}>
   This use case is available a open-source Next.js demo on GitHub.
 </Card>
 </CardGroup>
@@ -125,7 +125,7 @@ name | `text`| _The name of the automation_
 description | `text`| _A short description of the automation_
 workflow | `jsonb`| _A [Workflow instance object](/docs/reference/workflow-kit/workflow-instance)_
 enabled | `boolean`|
-trigger | `text`| _The name of the [Inngest Event](/docs/features/events-triggers) triggering the workflow_
+trigger | `text`| _The name of the [Inngest Event](/docs/durable-execution/guides-and-advanced/events-and-triggers) triggering the workflow_
 created_at | `timestamp`|
 
 Once the `workflows` table created, we will add two [workflow instances](/docs/reference/workflow-kit/workflow-instance) records:
@@ -331,7 +331,7 @@ The complete implementation of all workflow actions are [available on GitHub](ht
 ### 5. Creating an Inngest Function
 
 With all the workflow action handlers of our automation tasks [implemented](https://github.com/inngest/workflow-kit/blob/main/examples/nextjs-blog-cms/lib/inngest/workflowActionHandlers.ts),
-we can create a [`Engine`](/docs/reference/workflow-kit/engine) instance and pass it to a dedicated [Inngest Function](/docs/learn/inngest-functions) that will run the automation when the `"blog-post.updated"` and `"blog-post.published"` events will be triggered:
+we can create a [`Engine`](/docs/reference/workflow-kit/engine) instance and pass it to a dedicated [Inngest Function](/docs/durable-execution/durable-workflows) that will run the automation when the `"blog-post.updated"` and `"blog-post.published"` events will be triggered:
 
 ```tsx {{ title: "lib/inngest/workflow.ts" }}
 import { Engine } from "@inngest/workflow-kit";
@@ -367,7 +367,7 @@ This guide demonstrated how quickly and easily user-defined workflows can be add
 
 
 <CardGroup cols={1}>
-<Card href={'https://github.com/inngest/workflow-kit/tree/main/examples/nextjs-blog-cms#readme'} title={"Step-by-step tutorial of setting up this demo"} icon={<GithubIcon className="text-basis h-4 w-4" />}>
+<Card href="https://github.com/inngest/workflow-kit/tree/main/examples/nextjs-blog-cms#readme" title={"Step-by-step tutorial of setting up this demo"} icon={<GithubIcon className="text-basis h-4 w-4" />}>
   This use case is available a open-source Next.js demo on GitHub.
 </Card>
 </CardGroup>

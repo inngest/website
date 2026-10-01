@@ -48,7 +48,7 @@ Let's break down how this works:
 1. Whenever the function is triggered, a cancellation listener is created which waits for an `"tasks/reminder.deleted"` event to be received.
 2. The `if` statement tells Inngest that both the triggering event (`"tasks/reminder.created"`) and the cancellation event (`"tasks/reminder.deleted"`) have the same exact value for `data.reminderId` in each event payload. This makes sure that an event does not cancel a different reminder.
 
-For more information on writing events, read our guide [on writing expressions](/docs/guides/writing-expressions).
+For more information on writing events, read our guide [on writing expressions](/docs/durable-execution/guides-and-advanced/writing-expressions).
 
 Here is an example of these two events which will be matched on the `data.reminderId` field:
 
@@ -133,7 +133,7 @@ Let's break down how this works:
 1. Whenever the function is triggered, a cancellation listener is created which waits for an `"tasks/reminder.deleted"` event to be received.
 2. The `if` statement tells Inngest that both the triggering event (`"tasks/reminder.created"`) and the cancellation event (`"tasks/reminder.deleted"`) have the same exact value for `data.reminderId` in each event payload. This makes sure that an event does not cancel a different reminder.
 
-For more information on writing events, read our guide [on writing expressions](/docs/guides/writing-expressions).
+For more information on writing events, read our guide [on writing expressions](/docs/durable-execution/guides-and-advanced/writing-expressions).
 
 Here is an example of these two events which will be matched on the `data.reminderId` field:
 
@@ -188,7 +188,7 @@ Let's break down how this works:
 1. Whenever the function is triggered, a cancellation listener is created which waits for an `"tasks/reminder.deleted"` event to be received.
 2. The `if` statement tells Inngest that both the triggering event (`"tasks/reminder.created"`) and the cancellation event (`"tasks/reminder.deleted"`) have the same exact value for `data.reminderId` in each event payload. This makes sure that an event does not cancel a different reminder.
 
-For more information on writing events, read our guide [on writing expressions](/docs/guides/writing-expressions).
+For more information on writing events, read our guide [on writing expressions](/docs/durable-execution/guides-and-advanced/writing-expressions).
 
 Here is an example of these two events which will be matched on the `data.reminderId` field:
 

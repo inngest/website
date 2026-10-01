@@ -18,25 +18,25 @@ Moving to production requires deploying your Inngest Functions on your favorite 
 
 
 <CardGroup cols={2}>
-  <Card title="Deploy on any platform or runtime" icon={<RiCloudLine className="text-basis h-5 w-5" />} href={'/docs/apps/cloud#sync-a-new-app-in-inngest-cloud'}>
+  <Card title="Deploy on any platform or runtime" icon={<RiCloudLine className="text-basis h-5 w-5" />} href={'/docs/platform-and-operations/apps-and-syncs'}>
     Inngest Functions can be deployed to any serverless cloud or container running on any server.
   </Card>
-  <Card title="Deploy with Vercel" icon={<VercelIcon className="text-basis"/>} href={'/docs/deploy/vercel'}>
+  <Card title="Deploy with Vercel" icon={<VercelIcon className="text-basis"/>} href={'/docs/durable-execution/deploying-functions/platforms/vercel'}>
     Use our Vercel Integration to deploy your Inngest Functions.
   </Card>
-  <Card title="Deploy with DigitalOcean" icon={<DigitalOceanIcon className="text-basis"/>} href={'/docs/deploy/digital-ocean'}>
+  <Card title="Deploy with DigitalOcean" icon={<DigitalOceanIcon className="text-basis"/>} href={'/docs/durable-execution/deploying-functions/platforms/digital-ocean'}>
     Deploy your Inngest Functions on DigitalOcean.
   </Card>
-  <Card title="Deploy with Cloudflare Pages" icon={<CloudflareIcon className="text-basis"/>} href={'/docs/deploy/cloudflare'}>
+  <Card title="Deploy with Cloudflare Pages" icon={<CloudflareIcon className="text-basis"/>} href={'/docs/durable-execution/deploying-functions/platforms/cloudflare'}>
     Deploy your Inngest Functions on Cloudflare Pages.
   </Card>
-  <Card title="Deploy with Render" icon={<RenderIcon className="text-basis"/>} href={'/docs/deploy/render'}>
+  <Card title="Deploy with Render" icon={<RenderIcon className="text-basis"/>} href={'/docs/durable-execution/deploying-functions/platforms/render'}>
     Deploy your Inngest Functions on Render.
   </Card>
-  <Card title="Connect workers to Inngest" icon={<RiServerLine className="text-basis h-5 w-5" />} href={'/docs/setup/connect'}>
+  <Card title="Connect workers to Inngest" icon={<RiServerLine className="text-basis h-5 w-5" />} href={'/docs/durable-execution/deploying-functions/connect'}>
     Use Connect for persistent worker-style deployments on long-running compute.
   </Card>
-  <Card title="Use checkpointing in production" icon={<RiCloudLine className="text-basis h-5 w-5" />} href={'/docs/setup/checkpointing'}>
+  <Card title="Use checkpointing in production" icon={<RiCloudLine className="text-basis h-5 w-5" />} href={'/docs/durable-execution/guides-and-advanced/checkpointing'}>
     Resume durable functions quickly across steps, retries, and deploys.
   </Card>
   <Card title="Self-host Inngest" icon={<RiServerLine className="text-basis h-5 w-5" />} href={'/docs/self-hosting'}>
@@ -44,7 +44,7 @@ Moving to production requires deploying your Inngest Functions on your favorite 
   </Card>
 </CardGroup>
 
-Most serverless and API-route deployments use the `serve()` HTTP handler. Long-running worker or container deployments can use [Connect](/docs/setup/connect), which keeps a persistent connection open to Inngest. If you need to run the execution engine on your own infrastructure, see [Self-hosting](/docs/self-hosting).
+Most serverless and API-route deployments use the `serve()` HTTP handler. Long-running worker or container deployments can use [Connect](/docs/durable-execution/deploying-functions/connect), which keeps a persistent connection open to Inngest. If you need to run the execution engine on your own infrastructure, see [Self-hosting](/docs/self-hosting).
 
 ## How Inngest handles Function Runs
 
@@ -58,6 +58,6 @@ The Inngest Platform hosts the Inngest Durable Execution Engine, responsible for
   alt={'The Inngest Platform communicates with your deployed Inngest Functions by sending requests to your application.'}
 />
 
-The Inngest Platform relies on [Event](/docs/events/creating-an-event-key) and [Signing Keys](/docs/platform/signing-keys), as well as [other security mechanisms](/docs/learn/security), to communicate securely and reliably with the Inngest SDK.
+The Inngest Platform relies on [Event](/docs/platform-and-operations/keys-and-access) and [Signing Keys](/docs/platform/signing-keys), as well as [other security mechanisms](/docs/platform-and-operations/cloud-architecture-and-security), to communicate securely and reliably with the Inngest SDK.
 
-Learn more on Inngest's Durable Execution Engine in our ["How Inngest Functions are executed" guide](/docs/learn/how-functions-are-executed).
+Learn more on Inngest's Durable Execution Engine in our ["How Inngest Functions are executed" guide](/docs/durable-execution/durable-workflows).

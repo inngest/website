@@ -1,0 +1,219 @@
+import { CodeGroup, SdkUnsupported } from "shared/Docs/mdx";
+export const metaTitle = "Quick start | Realtime";
+export const description = "Inngest Realtime quick start: stream progress from a durable function to a signed-in user's browser with typed channels and a subscription token.";
+
+# Realtime quick start
+> Show progress from a durable function in a signed-in user's browser.
+
+Build a Next.js page that shows a job's live status and final result. A button starts an Inngest function, which publishes two durable updates. Your server mints a subscription token for the signed-in user, and the page shows each update as it arrives.
+
+## Before you start
+
+You need a Next.js App Router project with TypeScript and a sign-in flow. If you haven't set up Inngest yet, complete the [TypeScript quick start](/docs/durable-execution/quick-start/typescript-quick-start) first.
+
+This example calls a `requireCurrentUser()` function from `@/lib/auth`. Implement it in your app so it returns a user with a string `id` and throws for unauthenticated requests.
+
+Install the SDK and Zod, which the channel uses to validate messages:
+
+```bash
+npm install inngest zod
+```
+
+## 1. Define the channel and topics
+
+A channel groups the messages for one user. The `status` and `result` topics each have a Zod schema, so a publish with the wrong shape fails.
+
+<CodeGroup>
+```typescript {{ title: "TypeScript", filename: "src/inngest/client.ts" }}
+import { Inngest } from "inngest";
+
+export const inngest = new Inngest({ id: "realtime-demo" });
+```
+
+```python {{ title: "Python", filename: "client.py" }}
+!snippet:path=snippets/py/latest/realtime/quick_start/client.py
+```
+
+```go {{ title: "Go", filename: "client.go" }}
+!snippet:path=snippets/go/docs/realtime/quick_start/client.go
+```
+</CodeGroup>
+
+<CodeGroup>
+```typescript {{ title: "TypeScript", filename: "src/inngest/channels.ts" }}
+import { realtime } from "inngest";
+import { z } from "zod";
+
+export const progressChannel = realtime.channel({
+  name: ({ userId }: { userId: string }) => "progress:" + userId,
+  topics: {
+    status: { schema: z.object({ message: z.string() }) },
+    result: { schema: z.object({ message: z.string() }) },
+  },
+});
+```
+
+<SdkUnsupported title="Python" feature="Typed channels and topics">Channels and topics are plain strings in Python. Pass them to `realtime.publish()` and `realtime.get_subscription_token()`.</SdkUnsupported>
+
+<SdkUnsupported title="Go" feature="Typed channels and topics">Channels and topics are plain strings in Go. Pass them to `realtime.Publish()` and encode payloads yourself, for example with `json.Marshal`.</SdkUnsupported>
+</CodeGroup>
+
+## 2. Publish from a durable function
+
+The function publishes a status, waits three seconds, and publishes a result. `step.realtime.publish()` runs as a durable step, so a retry doesn't publish a completed message again.
+
+<CodeGroup>
+```typescript {{ title: "TypeScript", filename: "src/inngest/functions.ts" }}
+import { inngest } from "./client";
+import { progressChannel } from "./channels";
+
+export const showProgress = inngest.createFunction(
+  { id: "show-progress", triggers: [{ event: "demo/progress.requested" }] },
+  async ({ event, step }) => {
+    const channel = progressChannel({ userId: event.data.userId });
+
+    await step.realtime.publish("started", channel.status, {
+      message: "Started",
+    });
+    await step.sleep("demo-wait", "3s");
+    await step.realtime.publish("finished", channel.result, {
+      message: "The work is complete.",
+    });
+  }
+);
+```
+
+```python {{ title: "Python", filename: "functions.py" }}
+!snippet:path=snippets/py/latest/realtime/quick_start/functions.py
+```
+
+```go {{ title: "Go", filename: "functions.go" }}
+!snippet:path=snippets/go/docs/realtime/quick_start/functions.go
+```
+</CodeGroup>
+
+Register the function in your Next.js route:
+
+```typescript {{ filename: "src/app/api/inngest/route.ts" }}
+import { serve } from "inngest/next";
+import { inngest } from "@/inngest/client";
+import { showProgress } from "@/inngest/functions";
+
+export const { GET, POST, PUT } = serve({
+  client: inngest,
+  functions: [showProgress],
+});
+```
+
+## 3. Mint a token on the server
+
+The browser can't mint its own subscription token, so a server action mints it. Both actions read the user ID from the signed-in session. The token grants access to that user's channel and the two topics this page needs. Never accept a user ID or channel name from the browser here.
+
+<CodeGroup>
+```typescript {{ title: "TypeScript", filename: "src/app/realtime/actions.ts" }}
+"use server";
+
+import { getClientSubscriptionToken } from "inngest/react";
+import { requireCurrentUser } from "@/lib/auth";
+import { inngest } from "@/inngest/client";
+import { progressChannel } from "@/inngest/channels";
+
+export async function getProgressToken() {
+  const user = await requireCurrentUser();
+
+  return getClientSubscriptionToken(inngest, {
+    channel: progressChannel({ userId: user.id }),
+    topics: ["status", "result"],
+  });
+}
+
+export async function startDemo() {
+  const user = await requireCurrentUser();
+
+  await inngest.send({
+    name: "demo/progress.requested",
+    data: { userId: user.id },
+  });
+}
+```
+
+```python {{ title: "Python", filename: "actions.py" }}
+!snippet:path=snippets/py/latest/realtime/quick_start/actions.py
+```
+
+<SdkUnsupported title="Go" feature="Minting subscription tokens">Mint the token with the TypeScript or Python SDK. To start the run from Go, send `demo/progress.requested` with `client.Send()`.</SdkUnsupported>
+</CodeGroup>
+
+`getClientSubscriptionToken()` uses your signing key on the server and returns a small object that's safe to send to the browser. `useRealtime` calls `getProgressToken()` again whenever it reconnects, so the token never goes stale.
+
+## 4. Subscribe and show the result
+
+The server page gets the current user and passes the ID to a client component. The component subscribes to the same channel the function publishes to. It enables the **Start work** button only after the connection opens, so the browser receives the first update.
+
+```tsx {{ filename: "src/app/realtime/page.tsx" }}
+import { requireCurrentUser } from "@/lib/auth";
+import { RealtimeDemo } from "./realtime-demo";
+
+export default async function Page() {
+  const user = await requireCurrentUser();
+  return <RealtimeDemo userId={user.id} />;
+}
+```
+
+```tsx {{ filename: "src/app/realtime/realtime-demo.tsx" }}
+"use client";
+
+import { useRealtime } from "inngest/react";
+import { progressChannel } from "@/inngest/channels";
+import { getProgressToken, startDemo } from "./actions";
+
+export function RealtimeDemo({ userId }: { userId: string }) {
+  const { connectionStatus, messages } = useRealtime({
+    channel: progressChannel({ userId }),
+    topics: ["status", "result"] as const,
+    token: () => getProgressToken(),
+  });
+
+  return (
+    <main>
+      <h1>Live progress</h1>
+      <p>Connection: {connectionStatus}</p>
+      <button
+        type="button"
+        disabled={connectionStatus !== "open"}
+        onClick={() => startDemo()}
+      >
+        Start work
+      </button>
+      <p>Status: {messages.byTopic.status?.data.message ?? "Waiting"}</p>
+      <p>Result: {messages.byTopic.result?.data.message ?? "Waiting"}</p>
+    </main>
+  );
+}
+```
+
+## Run it
+
+Start your app with the local Dev Server enabled:
+
+```bash
+INNGEST_DEV=1 npm run dev
+```
+
+In a second terminal, start the Dev Server:
+
+```bash
+npx --ignore-scripts=false inngest-cli@latest dev -u http://localhost:3000/api/inngest
+```
+
+Open `/realtime` while signed in and wait for `Connection: open`. Select **Start work**. The status changes to `Started`, and the result appears three seconds later. Open the [Dev Server](http://localhost:8288) to see the run and its two publish steps.
+
+When the run finishes, `useRealtime` closes the connection by default. Reload the page to run it again, or set `autoCloseOnTerminal: false` to keep the connection open.
+
+The channel name only routes messages; the session check in the token action controls who can read them. If one user can have several jobs running, use a channel per job and check that the user owns the job before you mint a token. See [Subscription tokens](/docs/realtime/guides/subscription-tokens).
+
+## Next steps
+
+- [Channels and topics](/docs/realtime/channels-and-topics) explains channel names and topic schemas.
+- [Stream AI responses](/docs/realtime/guides/stream-ai-responses) streams model output token by token.
+- [Reference](/docs/realtime/reference) lists the calls used here.

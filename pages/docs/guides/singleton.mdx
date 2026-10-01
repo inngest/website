@@ -30,12 +30,12 @@ Singleton Functions are useful when you want to ensure that only a single instan
 
 ### Singleton compared to concurrency:
 
-While [Concurrency](/docs/guides/concurrency) set to `1` ensures that only a single step of a given function is running at a time, Singleton Functions ensure that only a single run of a given function is happening at a time.
+While [Concurrency](/docs/durable-execution/flow-control/concurrency) set to `1` ensures that only a single step of a given function is running at a time, Singleton Functions ensure that only a single run of a given function is happening at a time.
 
 
 ### Singleton compared to Rate Limiting:
 
-[Rate Limiting](/docs/guides/rate-limiting) is similar to Singleton Functions, but it is designed to limit the number of runs started within a time period, whereas Singleton Functions are designed to ensure that only a single run of a function occurs over a given time window.
+[Rate Limiting](/docs/durable-execution/flow-control/rate-limiting) is similar to Singleton Functions, but it is designed to limit the number of runs started within a time period, whereas Singleton Functions are designed to ensure that only a single run of a function occurs over a given time window.
 
 Rate Limiting is useful for controlling the rate of execution of a function, while Singleton Functions are useful for ensuring that only a single run of a function occurs over a given time window.
 
@@ -70,7 +70,7 @@ Refer to the [reference documentation](/docs/reference/typescript/v4/functions/s
 ### Using a `key`
 
 When a `key` is added, the unique runs rule is applied for each unique value of the `key` expression. For example, if your `key` is set to `event.data.user_id`,
-each user would have their individual singleton rule applied to functions runs, ensuring that only a single run of the function is happening at a time for each user. Read [our guide to writing expressions](/docs/guides/writing-expressions) for more information.
+each user would have their individual singleton rule applied to functions runs, ensuring that only a single run of the function is happening at a time for each user. Read [our guide to writing expressions](/docs/durable-execution/guides-and-advanced/writing-expressions) for more information.
 
 
 ### Two modes: Skip vs Cancel
@@ -139,11 +139,11 @@ Singleton Functions can be combined with other flow control features, with the f
 
 | Flow control | Compatibility | Considerations |
 | --- | --- | --- |
-| [Debounce](/docs/guides/debounce) | ✅ | Can be used together without issues. |
-| [Rate limiting](/docs/guides/rate-limiting) | ✅ | Similar functionality but rate limiting operates over a predefined time window rather than function execution duration. |
-| [Throttling](/docs/guides/throttling) | ✅ | Similar functionality but throttling enqueues events over time rather than discarding/canceling them. |
-| [Concurrency](/docs/guides/concurrency) | ❌ | Singleton functions implicitly have a concurrency of 1. A concurrency setting can be set but should be used with caution. |
-| [Batching](/docs/guides/batching) | ❌ | Singleton isn't compatible with batching; function registration will fail if both are set. |
+| [Debounce](/docs/durable-execution/flow-control/debounce) | ✅ | Can be used together without issues. |
+| [Rate limiting](/docs/durable-execution/flow-control/rate-limiting) | ✅ | Similar functionality but rate limiting operates over a predefined time window rather than function execution duration. |
+| [Throttling](/docs/durable-execution/flow-control/throttling) | ✅ | Similar functionality but throttling enqueues events over time rather than discarding/canceling them. |
+| [Concurrency](/docs/durable-execution/flow-control/concurrency) | ❌ | Singleton functions implicitly have a concurrency of 1. A concurrency setting can be set but should be used with caution. |
+| [Batching](/docs/durable-execution/flow-control/batching) | ❌ | Singleton isn't compatible with batching; function registration will fail if both are set. |
 
 
 ## FAQ

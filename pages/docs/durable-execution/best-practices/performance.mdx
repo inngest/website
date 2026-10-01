@@ -1,0 +1,96 @@
+import { CodeGroup, SdkUnsupported } from "shared/Docs/mdx";
+
+export const metaTitle = "Improve Inngest Performance | Reduce Latency";
+export const description = "Reduce Inngest function latency and increase throughput. Find whether delays come from run start, the queue, your code, or step handoffs, then fix it.";
+
+# Performance
+
+> Find where a run spends its time, then fix that one bottleneck.
+
+Most latency comes from one of four places. Measure first, then change the setting that matches.
+
+## Find the bottleneck
+
+Open a representative run's [trace](/docs/platform-and-operations/traces) and compare where the time goes:
+
+| Where the time goes | What it looks like | Start with |
+| --- | --- | --- |
+| **Starting the run** | Delay between the trigger and the run being created | [Fast invoke](#start-latency-sensitive-runs-with-fast-invoke) |
+| **Queue delay** | The run or step waits before it starts executing | [Reduce queue delay](#reduce-queue-delay) |
+| **Handoff between steps** | Gaps between steps that finish quickly | [Checkpointing](#keep-checkpointing-on) and [Connect](#use-connect-for-always-on-workers) |
+| **Step duration** | One step takes most of the run | [Speed up slow steps](#speed-up-slow-steps) |
+
+Use [Metrics](/docs/platform-and-operations/metrics) to confirm the pattern across many runs, not just one.
+
+## Start latency-sensitive runs with fast invoke
+
+For real-time, latency-sensitive work, start runs with the [Invoke Function API](https://api-docs.inngest.com/v2/functions/InvokeFunction) instead of sending an event. It starts one function directly and skips event matching and queue lookup, so the run begins sooner. Requests authenticate with an [API key](/docs/platform-and-operations/keys-and-access).
+
+Use [events](/docs/durable-execution/guides-and-advanced/events-and-triggers) for all work that isn't latency-sensitive. They give you:
+
+- **An audit trail:** Inngest keeps a history of events, so you can [inspect](/docs/platform-and-operations/inspect-events-and-runs) what happened and which runs it started.
+- **Fan-out:** One event can start several functions, and the sender doesn't need to know about any of them.
+- **Webhooks:** [Receive provider webhooks](/docs/durable-execution/guides-and-advanced/events-and-triggers/receive-webhook-events) and turn them into events without writing an endpoint.
+- **Replay:** [Replay runs](/docs/platform-and-operations/replay-runs-in-bulk) from past events after you fix a bug.
+- **Event-driven controls:** [Batching](/docs/durable-execution/flow-control/batching), [debounce](/docs/durable-execution/flow-control/debounce), [`step.waitForEvent()`](/docs/durable-execution/primitives/step-waitforevent), and [cancel on events](/docs/durable-execution/guides-and-advanced/cancellation/events) all work from events.
+
+## Keep checkpointing on
+
+[Checkpointing](/docs/durable-execution/guides-and-advanced/checkpointing) runs consecutive steps back to back without a round trip to Inngest after each one. It's on by default in the TypeScript v4 SDK. In Go, enable it by setting `Checkpoint` on the client or function.
+
+- **Always-on servers:** Keep the defaults.
+- **Serverless hosts:** Set `checkpointing.maxRuntime` slightly below your host's request limit, so the SDK returns before the host stops the request.
+- **Buffering:** Keep `bufferedSteps: 1` unless measurements show you need fewer checkpoint requests. A higher value can lose completed steps if the server terminates, and those steps run again. Make their side effects idempotent first.
+- **Parallel steps** switch to standard orchestration while they run, so measure the whole run.
+
+<CodeGroup>
+```ts {{ title: "TypeScript" }}
+export const inngest = new Inngest({
+  id: "my-app",
+  checkpointing: {
+    maxRuntime: "50s", // Example only: use your host's actual limit
+  },
+});
+```
+
+<SdkUnsupported title="Python" feature="Checkpointing">The Python SDK doesn't support checkpointing yet, so each step uses standard orchestration.</SdkUnsupported>
+
+```go {{ title: "Go" }}
+!snippet:path=snippets/go/docs/durable/performance/checkpointing.go
+```
+</CodeGroup>
+
+## Use Connect for always-on workers
+
+With [Connect](/docs/durable-execution/deploying-functions/connect), your worker keeps an outbound connection to Inngest instead of receiving a new HTTP request for each step.
+
+- **Lowest handoff latency**, and no per-request duration limit on steps.
+- **Scale horizontally** by adding workers.
+- **Size each worker:** Set `maxWorkerConcurrency` to fit its CPU, memory, and connection pools.
+- Requires an always-on runtime. Use [`serve()`](/docs/durable-execution/deploying-functions/serve) on serverless hosts.
+
+More workers add capacity, but they don't remove function concurrency limits or a downstream bottleneck.
+
+## Reduce queue delay
+
+Queue delay means work is arriving faster than your limits let it start.
+
+- **Check your limits:** Compare function [concurrency](/docs/durable-execution/flow-control/concurrency) and [throttling](/docs/durable-execution/flow-control/throttling) with real host and downstream capacity.
+- **Raise a limit** only when the system it protects has room.
+- **Prioritize urgent work:** Use [priority](/docs/durable-execution/flow-control/priority) to start high-value runs first within a function. It doesn't add capacity.
+- **Isolate tenants:** Use a concurrency key so one customer's backlog doesn't delay others. See [Multi-tenancy](/docs/durable-execution/flow-control/multi-tenancy).
+
+## Speed up slow steps
+
+- **Profile the slow step:** Look at its code and external calls first.
+- **Run independent work in parallel** with [parallel steps](/docs/durable-execution/primitives/group-parallel).
+- **Add timeouts** to external calls so a hung provider fails fast and retries.
+- **Keep step results small.** Pass references to large data instead of the data itself. See [Limits](/docs/durable-execution/limits).
+- **Split a step only when it needs its own retry or trace**, not for speed.
+
+## Measure each change
+
+1. Record a baseline with a representative workload.
+2. Change one thing.
+3. Re-run the same workload and compare full runs, not single steps.
+4. Check failures and retries as well as latency.

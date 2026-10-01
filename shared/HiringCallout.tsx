@@ -3,7 +3,7 @@ export default function HiringCallout() {
   return (
     <Link
       href="/careers"
-      className="inline-flex rounded-full border border-subtle px-4 py-1 text-xs font-semibold text-basis transition-all duration-150 hover:border-primary-intense"
+      className="inline-flex py-1 px-4 font-semibold text-basis text-xs border border-subtle rounded-full hover:border-primary-intense transition-all duration-150"
     >
       We're hiring!
     </Link>

@@ -4,7 +4,7 @@ export const description = "Pause AI workflows for human review using step.waitF
 
 # Human-in-the-loop (HITL)
 
-Use [`step.waitForEvent()`](/docs/features/inngest-functions/steps-workflows/wait-for-event) to pause agent execution for human approval, then resume or abort based on the response.
+Use [`step.waitForEvent()`](/docs/durable-execution/primitives/step-waitforevent) to pause agent execution for human approval, then resume or abort based on the response.
 
 ## The basic pattern
 
@@ -233,7 +233,7 @@ if (!approval) {
 
 ## Add approval gates inside a tool loop
 
-To gate dangerous tools while letting safe tools (reading data, searching) run freely, check tool names against an approval list inside [the loop](/docs/ai-patterns/agent-tool-loops):
+To gate dangerous tools while letting safe tools (reading data, searching) run freely, check tool names against an approval list inside [the loop](/docs/durable-execution/durable-agents/agent-tool-loops):
 
 ```typescript
 const APPROVAL_REQUIRED_TOOLS = ["send_email", "delete_record", "run_sql", "deploy"];
@@ -374,8 +374,8 @@ Each gate is durable and independent. If the editorial reviewer approves at 2 AM
 
 ## Next steps
 
-- [Build an agent tool loop](/docs/ai-patterns/agent-tool-loops) with `step.run()`
-- [Delegate subtasks to child agents](/docs/ai-patterns/sub-agent-delegation) with `step.invoke()`
-- Learn more about [`step.waitForEvent()`](/docs/features/inngest-functions/steps-workflows/wait-for-event) in the reference docs
+- [Build an agent tool loop](/docs/durable-execution/durable-agents/agent-tool-loops) with `step.run()`
+- [Delegate subtasks to child agents](/docs/durable-execution/durable-agents/sub-agent-delegation) with `step.invoke()`
+- Learn more about [`step.waitForEvent()`](/docs/durable-execution/primitives/step-waitforevent) in the reference docs
 - [Combine this approach with our "realtime" feature](/docs/examples/realtime#human-in-the-loop-bi-directional-workflows) for approvals from the UI
 - [Why durable execution matters for HITL](/blog/durable-execution-key-to-harnessing-ai-agents?ref=docs-ai-patterns-human-in-the-loop) — how suspend/resume makes approval gates possible

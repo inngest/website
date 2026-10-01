@@ -63,7 +63,7 @@ https://app.inngest.com/intent/create-webhook?name=AcmeApp&redirect_uri=https%3A
   </Step>
 
   <Step>
-    When approved, Inngest will create a new webhook URL with the slugified name as an event prefix and the [default transform function](#default-webhook-transform) will be used to transform incoming webhook payloads into [the Inngest event format](/docs/features/events-triggers/event-format).
+    When approved, Inngest will create a new webhook URL with the slugified name as an event prefix and the [default transform function](#default-webhook-transform) will be used to transform incoming webhook payloads into [the Inngest event format](/docs/durable-execution/guides-and-advanced/events-and-triggers/event-payloads-and-schemas).
   </Step>
 
   <Step>
@@ -77,7 +77,7 @@ https://app.inngest.com/intent/create-webhook?name=AcmeApp&redirect_uri=https%3A
 
 ## Default webhook transform
 
-Inngest webhooks support [transform functions](/docs/platform/webhooks#defining-a-transform-function) which are used to transform incoming webhook payload JSON body into [the Inngest event format](/docs/features/events-triggers/event-format). The webhook intent creates a default transform automatically that supports the most common webhook payloads.
+Inngest webhooks support [transform functions](/docs/durable-execution/guides-and-advanced/events-and-triggers/receive-webhook-events) which are used to transform incoming webhook payload JSON body into [the Inngest event format](/docs/durable-execution/guides-and-advanced/events-and-triggers/event-payloads-and-schemas). The webhook intent creates a default transform automatically that supports the most common webhook payloads.
 
 ```javascript
 function transform(evt, headers = {}, queryParams = {}, raw = "") {

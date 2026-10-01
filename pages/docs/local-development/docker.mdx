@@ -1,0 +1,60 @@
+export const metaTitle = "Docker-based local development";
+export const description = "Run the Inngest Dev Server in Docker alongside your local app, so you can develop and test durable functions in a containerized environment.";
+
+# Docker-based local development
+
+> Run the Inngest Dev Server in Docker alongside your local app.
+
+Use the Inngest Docker image to run the Dev Server locally or in CI. You can run it as a standalone container or add it to a Docker Compose project. For the rest of the local development workflow, see [Local Development](/docs/local-development).
+
+## Docker image
+
+The [`inngest/inngest` image](https://hub.docker.com/r/inngest/inngest) is available on Docker Hub. Pull the latest image before you start. You can check [GitHub releases](https://github.com/inngest/inngest/releases) for available versions.
+
+```bash
+docker pull inngest/inngest
+```
+
+## Standalone Docker container
+
+Expose ports `8288` and `8289`, and pass your app's `serve()` URL to `inngest dev` with `-u`. This example assumes your app runs on your host machine at port `3000`:
+
+```bash
+docker run -p 8288:8288 -p 8289:8289 \
+  inngest/inngest \
+  inngest dev -u http://host.docker.internal:3000/api/inngest
+```
+
+`host.docker.internal` lets the container reach the app on your host machine. Use a different hostname if your Docker network requires one. Open [http://localhost:8288](http://localhost:8288) to use the Dev Server. Port `8289` supports [`connect()`](/docs/durable-execution/deploying-functions).
+
+If you decide to run the Dev Server on another port, you will need to set the **`INNGEST_BASE_URL`** environment variable in your app to point to the correct port. This value defaults to **`http://localhost:8288`**.
+
+## Docker Compose
+
+If your app already uses [Docker Compose](https://docs.docker.com/compose/), add the Dev Server as another service. This `docker-compose.yaml` example assumes your app is built from `./app` and exposes its `serve()` endpoint at `/api/inngest`:
+
+```yaml
+services:
+  app:
+    build: ./app
+    environment:
+      - INNGEST_DEV=1
+      - INNGEST_BASE_URL=http://inngest:8288
+    ports:
+      - '3000:3000'
+  inngest:
+    image: inngest/inngest
+    command: 'inngest dev -u http://app:3000/api/inngest'
+    ports:
+      - '8288:8288'
+      - '8289:8289'
+```
+
+In this example, we have two services: **`app`** and **`inngest`**. The **`app`** service is your application, and the **`inngest`** service is the Inngest Dev Server. There are a few key configurations to note:
+
+- The **`INNGEST_DEV=1`** environment variable tells the Inngest SDK it should connect to the Dev Server\*.
+- The **`INNGEST_BASE_URL=http://inngest:8288`** environment variable tells the Inngest SDK where the Dev Server is running. In our example, the **`inngest`** service is running on port **`8288`** (the default Dev Server port).
+- The **`command: 'inngest dev -u http://app:3000/api/inngest'`** command tells the Dev Server where to find your app within the Docker network. In this example, the **`app`** service is running on port **`3000`**.
+- The **`ports`** configuration exposes the Dev Server on port **`8288`** so you can view this on your host machine in the browser. It also exposes **`8289`** which is used for [**`connect()`**](/docs/durable-execution/deploying-functions).
+
+SDKs default to production, sending data to the cloud. Setting INNGEST_DEV=1 explicitly enables dev mode, which connects to the Dev Server and disables signature verification.

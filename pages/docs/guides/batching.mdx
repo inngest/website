@@ -10,7 +10,7 @@ Batching allows a function to process multiple events in a single run. This is u
 
 * Reducing the number of requests to an external API that supports batch operations.
 * Creating a batch of database writes to reduce the number of transactions.
-* Reducing the number of requests to your [Inngest app](/docs/apps) to improve performance or serverless costs.
+* Reducing the number of requests to your [Inngest app](/docs/platform-and-operations/apps-and-syncs) to improve performance or serverless costs.
 
 ## How to configure batching
 
@@ -126,8 +126,8 @@ async def record_api_calls(ctx: inngest.Context):
 
 * `maxSize` - The maximum number of events to add to a single batch.
 * `timeout` - The duration of time to wait to add events to a batch. If the batch is not full after this time, the function will be invoked with whatever events are in the current batch, regardless of size.
-* `key` - An optional [expression](/docs/guides/writing-expressions) using event data to batch events by. Each unique value of the `key` will receive its own batch, enabling you to batch events by any particular key, like a user ID.
-* `if` - An optional [boolean expression](/docs/guides/writing-expressions) using event data to conditionally batch events that evaluate to true on this expression. 
+* `key` - An optional [expression](/docs/durable-execution/guides-and-advanced/writing-expressions) using event data to batch events by. Each unique value of the `key` will receive its own batch, enabling you to batch events by any particular key, like a user ID.
+* `if` - An optional [boolean expression](/docs/durable-execution/guides-and-advanced/writing-expressions) using event data to conditionally batch events that evaluate to true on this expression. 
 
 
 <Callout>
@@ -152,7 +152,7 @@ Batching does not work with all other flow control features.
 
 ### Batching with Concurrency limits
 
-You can combine batching with [concurrency](/docs/guides/concurrency) limits. For example, setting `concurrency: { limit: 1 }` will process one batch at a time.
+You can combine batching with [concurrency](/docs/durable-execution/flow-control/concurrency) limits. For example, setting `concurrency: { limit: 1 }` will process one batch at a time.
 
 ### Batching with Custom Concurrency keys
 
@@ -165,7 +165,7 @@ For predictable behavior, **use the same key expression for both batching and co
 
 ### Incompatible flow control features
 
-You _cannot_ use batching with [idempotency](/docs/guides/handling-idempotency), [rate limiting](/docs/guides/rate-limiting), [cancellation events](/docs/guides/cancel-running-functions#cancel-with-events), or [priority](/docs/guides/priority).
+You _cannot_ use batching with [idempotency](/docs/durable-execution/guides-and-advanced/idempotency), [rate limiting](/docs/durable-execution/flow-control/rate-limiting), [cancellation events](/docs/durable-execution/guides-and-advanced/cancellation/bulk-cancellation), or [priority](/docs/durable-execution/flow-control/priority).
 
 ## Limitations
 

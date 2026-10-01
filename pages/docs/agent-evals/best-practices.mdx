@@ -1,0 +1,43 @@
+export const metaTitle = "Best practices | Agent Evals";
+export const description = "Agent Evals best practices: keep score definitions, experiment assignment, and run attribution consistent so production eval results stay reliable.";
+
+# Agent Evals best practices
+> Make experiment results useful by keeping score definitions, assignment, and run attribution consistent.
+
+Choose an outcome users care about, such as a resolved ticket, before you compare variants. Keep its score definition and run attribution stable so a difference in results reflects the change you tested.
+
+## Start with a clear outcome
+
+- **Name the outcome before the experiment.** Define each score's value and range. A score called `ticket-resolved` should mean the same thing for every variant and throughout the comparison.
+- **Track an immediate check and a later result when both matter.** A format or guardrail score explains whether the output met your rules. Customer feedback or a resolved ticket shows whether the work helped.
+- **Keep missing scores distinct from negative scores.** If feedback never arrives, a deferred scorer can return no score. Treat that run as missing outcome data when you review results.
+- **Score the work you want to judge.** Use a run score for an overall outcome. Attach a step score when a specific operation needs its own result. [Scores](/docs/agent-evals/scores) shows the TypeScript v4 APIs.
+
+## Keep related runs easy to inspect
+
+Add a session key such as `conversation_id` or `ticket_id` to the event when several runs contribute to one outcome. Use the same stable ID on related events. Sessions help you find the runs and their traces; they do not decide which functions run. Do not put secrets or sensitive personal data in session IDs. [Sessions](/docs/agent-evals/sessions) explains the metadata and limits.
+
+## Measure delayed results without blocking work
+
+Use `defer()` with a scorer when a result arrives after the original run, or when scoring itself takes time. Set a meaningful wait timeout and decide what the scorer returns if no signal arrives. The original run can finish while the scorer waits.
+
+When another process records the score, keep the original `runId` with the business record. Pass that ID when the later signal arrives. For an experiment, also keep the `experimentRef` returned by `group.experiment()` and pass both to `inngest.score.experiment()`. This credits the outcome to the run and variant that produced it. A score written from a different run without the original `runId` attaches to the later run instead. [Reference](/docs/agent-evals/reference) gives the exact calls.
+
+## Compare one change at a time
+
+Use `group.experiment()` for a single step or for a complete workflow path. Put each path in its variant callback, and call at least one `step.*` tool in every callback. Keep experiment IDs unique within a function and variant names stable so traces and scores remain understandable.
+
+Choose assignment for the user experience:
+
+- Use `experiment.weighted()` for independent assignment of new runs and gradual rollout.
+- Use `experiment.bucket()` with a stable user or account ID when people should usually stay on one variant. Changing weights can change future assignments for a key.
+- Use `experiment.custom()` with a stored assignment when an account must never move back or when a flag must change routing without a deploy.
+- Use `experiment.fixed()` to pin a known path during an override.
+
+The selected variant stays the same when that run retries or replays. Change weights gradually for new runs. Keep a safe path available and inspect errors, latency, and the outcome score while you increase traffic. [Experiments](/docs/agent-evals/experiments) shows step and workflow path examples.
+
+## Compare the same population
+
+Count assignments as well as scored outcomes. Check how many runs in each variant still wait for feedback, and compare the same time period and outcome definition. Look at the session and trace behind surprising scores before you declare a winner. A successful run or a small change in an early average does not establish a better user result.
+
+Control score volume in your application. Score every run when the outcome is cheap and necessary. For expensive checks, choose which runs to score in application code and apply the same selection rule to every variant. Keep the selected sample and total assignment counts so selective scoring does not hide missing outcomes. [Manage eval costs](/docs/agent-evals/guides/cost-management) covers this tradeoff.

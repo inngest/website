@@ -26,13 +26,13 @@ In addition to TLS encryption, all requests between the Inngest platforms and yo
 
 The Inngest SDKs all automatically verify the signature via the `serve` endpoint adapter. Every request includes a signature with an embedded timestamp as to reject old requests to prevent replay attacks.
 
-**It's important that the signing key is kept secret.** If your signing key is exposed, it puts the security of your endpoints at risk. Note that it's possible to [rotate signing keys](/docs/platform/manage/rotating-keys) with zero downtime.
+**It's important that the signing key is kept secret.** If your signing key is exposed, it puts the security of your endpoints at risk. Note that it's possible to [rotate signing keys](/docs/platform-and-operations/rotate-event-and-signing-keys) with zero downtime.
 
-Signing keys are also leveraged as an authentication mechanism to interact with the Inngest API for apps (e.g. checkpointing runs) as well as enabling [`connect` workers](/docs/setup/connect) to establish a connection with Inngest servers.
+Signing keys are also leveraged as an authentication mechanism to interact with the Inngest API for apps (e.g. checkpointing runs) as well as enabling [`connect` workers](/docs/durable-execution/deploying-functions/connect) to establish a connection with Inngest servers.
 
 ### API Keys
 
-For programmatic access to [the Inngest REST API](https://api-docs.inngest.com/), you can create [API keys](/docs/platform/api-keys), scoping them to a specific environment. We recommend using API keys if or when you are writing custom scripts, tooling, or performing actions in CI/CD pipelines.
+For programmatic access to [the Inngest REST API](https://api-docs.inngest.com/), you can create [API keys](/docs/platform-and-operations/keys-and-access), scoping them to a specific environment. We recommend using API keys if or when you are writing custom scripts, tooling, or performing actions in CI/CD pipelines.
 
 ### SAML
 
@@ -47,7 +47,7 @@ It's important to note that once SAML is enabled, users **must** sign in via SAM
 
 ### App syncing & function registration
 
-Functions are defined within your codebase and run on your own infrastructure. Inngest must "[sync](/docs/apps/cloud)" your application to read the current function configurations. For apps that use `serve` on public HTTP endpoints, Inngest syncs your application using one of two methods:
+Functions are defined within your codebase and run on your own infrastructure. Inngest must "[sync](/docs/platform-and-operations/apps-and-syncs)" your application to read the current function configurations. For apps that use `serve` on public HTTP endpoints, Inngest syncs your application using one of two methods:
 
 * **Direct sync**: Inngest sends a signed `PUT` request to your application's endpoint, your application's configuration including all function config is returned synchronously back to Inngest. This is the default method as of these SDK versions: TS [v3.31.0](https://github.com/inngest/inngest-js/releases/tag/inngest%403.31.0), Python [0.4.18](https://github.com/inngest/inngest-py/releases/tag/0.4.18).
 * **Indirect sync**: Prior to direct sync, indirect syncs were the default. They can still be used to initiate a sync from your server. The handshake would be initiated by sending a `PUT` request to your endpoint which would then serialize and send the app configuration to the Inngest API, authenticating with the signing key set in your application. The SDK only sends requests to `https://api.inngest.com` unless configured to work with a self-hosted Inngest server.
@@ -81,4 +81,4 @@ These IP ranges are used for all Inngest function invocations and webhook delive
 
 ### Key rotation
 
-Signing, event, and API keys can all be rotated using built in tools. If you need to rotate signing and event keys for your app, follow the steps in [this guide here](/docs/platform/manage/rotating-keys).
+Signing, event, and API keys can all be rotated using built in tools. If you need to rotate signing and event keys for your app, follow the steps in [this guide here](/docs/platform-and-operations/rotate-event-and-signing-keys).
