@@ -82,7 +82,7 @@ const result = await sandbox.commands.run(
   {
     id: "score-code",
     eyebrow: "Evals",
-    title: "Test and score generated code",
+    title: "Score generated code",
     body: "A new prompt only counts if the code it writes still passes. Run each case in a sandbox, then score in the background so the result is credited to the prompt that wrote it.",
     label: "inngest/score-code.ts",
     code: `// Run each case sandboxed. Score after.
