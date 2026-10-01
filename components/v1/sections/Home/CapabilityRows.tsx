@@ -197,15 +197,17 @@ function CapabilityCard({
       onFocus={onActivate}
       onBlur={onDeactivate}
     >
-      {/* An opaque canvas-colour base sits under the charcoal gradient,
-          which fades to transparent at one corner — without it the blue
-          slab behind the top row bleeds through the copy. Written as an
-          arbitrary property so tailwind-merge doesn't treat it as a
-          conflict with the frame's gradient background class. */}
+      {/* An 85%-opaque canvas-colour base sits under the charcoal
+          gradient, which fades to transparent at one corner. Fully
+          transparent, the blue slab behind the top row fought the copy;
+          fully opaque, the cards lost their depth — 0.85 lets the slab
+          tint the surface faintly while the text stays legible. Written
+          as an arbitrary property so tailwind-merge doesn't treat it as
+          a conflict with the frame's gradient background class. */}
       <GradientFrame
         variant="charcoal"
         className="h-full rounded-[10px]"
-        innerClassName="flex h-full flex-col [background-color:rgb(var(--color-v1-bg-canvas-base))] md:flex-row"
+        innerClassName="flex h-full flex-col [background-color:rgb(var(--color-v1-bg-canvas-base)/0.85)] md:flex-row"
       >
         {/* Media column. Stacked: a 16:9 box. Side-by-side (md+): fills
             the card's height, which the copy column sets — the video is
