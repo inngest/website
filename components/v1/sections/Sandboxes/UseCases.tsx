@@ -132,9 +132,10 @@ const worker = await environment.clone(
  * Use cases as a 1×3 row (stacked on mobile). Each column is a
  * fixed-height media panel in the hero's brand-blue fill, with the code
  * window top-aligned in it, then plain title + body on the page below.
- * Equal panel heights (lg only — stacked panels size to their code)
- * keep the three samples on one baseline even though they differ in
- * length; 540px clears the tallest window (~456px) with 32px padding.
+ * At lg the three columns share a subgrid, so the panel row is exactly
+ * as tall as the tallest code sample and the other two windows stretch
+ * to match — equal heights with no dead space and no fixed number.
+ * Stacked below lg, each panel sizes to its own code.
  */
 export default function UseCases() {
   return (
@@ -156,7 +157,14 @@ export default function UseCases() {
         className={`${V1_HEADER_CONTENT_MT} grid list-none grid-cols-1 gap-x-10 gap-y-12 pl-0 lg:grid-cols-3`}
       >
         {CASES.map((item, i) => (
-          <motion.li key={item.id} {...reveals.item(i)} className="list-none">
+          <motion.li
+            key={item.id}
+            {...reveals.item(i)}
+            // Subgrid at lg: each column spans the two parent rows (panel,
+            // copy), so row 1 is exactly as tall as the tallest panel and
+            // the other two panels stretch to match — no fixed height.
+            className="list-none lg:row-span-2 lg:grid lg:grid-rows-subgrid"
+          >
             <UseCaseCard item={item} />
           </motion.li>
         ))}
@@ -167,14 +175,15 @@ export default function UseCases() {
 
 function UseCaseCard({ item }: { item: typeof CASES[number] }) {
   return (
-    <article className="flex h-full flex-col gap-10">
+    <article className="flex h-full flex-col gap-10 lg:contents">
       {/* The hero's brand blue, mixed 70/30 with the page canvas so the
           panel reads as a deeper, quieter blue beside the grain instead of
           the fully saturated accent. The code window sits on top. */}
-      <div className="relative flex w-full items-stretch justify-center overflow-hidden rounded-[10px] p-5 [background-color:color-mix(in_srgb,rgb(var(--color-v1-accent-blue))_70%,rgb(var(--color-v1-bg-canvas-base)))] sm:p-8 lg:h-[540px] lg:p-10">
-        {/* Floating code window — fills the panel's content box so all
-            three windows are the same size regardless of sample length;
-            depth shadow so it reads as sitting on the panel. */}
+      <div className="relative flex w-full items-stretch justify-center overflow-hidden rounded-[10px] p-5 [background-color:color-mix(in_srgb,rgb(var(--color-v1-accent-blue))_70%,rgb(var(--color-v1-bg-canvas-base)))] sm:p-8 lg:p-10">
+        {/* Code window — stretches to the panel's content box, which the
+            subgrid row sets from the tallest sample, so all three windows
+            are the same size; depth shadow so it reads as sitting on the
+            panel. */}
         <div className="relative z-10 flex w-full min-w-0 max-w-[560px] shadow-[0_28px_64px_-24px_rgb(0_0_0/0.85),0_8px_20px_-10px_rgb(0_0_0/0.6)]">
           <CodeBlock
             label={item.label}
