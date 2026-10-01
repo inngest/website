@@ -25,7 +25,7 @@ At Banger.Show, we do a lot of background processing. Managing render states, ge
 We chose Inngest because there's no better way to handle background jobs if you're using Next.js **without a custom server**. **It's a primary "flow controller" for us**, even though we have a simple queue solution based on Redis to handle tasks on our infra. It allows us to orchestrate, observe, and abstract away lower-level processes, for example:
 
 - We don't have to delegate every post-render task to the video rendering machine, but we have some flow where the main server can receive render results from the workers and do something with them.
-- We can observe each [step](/docs/learn/inngest-steps) and its return data in the dashboard.
+- We can observe each [step](/docs/durable-execution/primitives) and its return data in the dashboard.
 - We can handle emergency cases when all of our infra goes down and we need to spin up some backup workers on AWS.
 
 ![A screenshot of the Banger app](/assets/blog/banger/banger-satisfied-screenshot.png)
@@ -41,7 +41,7 @@ Let's now dive into some parts of the video rendering pipeline.
 
 ### 1. Updating the render status
 
-The first step in the render pipeline is to update the render status and set user credits on hold. Here we are using the default Inngest [concurrency](/docs/guides/concurrency).
+The first step in the render pipeline is to update the render status and set user credits on hold. Here we are using the default Inngest [concurrency](/docs/durable-execution/flow-control/concurrency).
 
 
 ```js
@@ -374,6 +374,6 @@ export const renderVideo = inngest.createFunction(
 
 Inngest makes the difficult parts easy.
 
-For example, there's no simpler way to put it: I find the [`steps`](/docs/learn/inngest-steps) concept mindblowing. I wished something like this was available back in 2019 when I was just starting with BullMQ, Agenda.js, and other solutions. It's a really sweet abstraction. I also enjoy observability, so I can track each step and function run in one dashboard.
+For example, there's no simpler way to put it: I find the [`steps`](/docs/durable-execution/primitives) concept mindblowing. I wished something like this was available back in 2019 when I was just starting with BullMQ, Agenda.js, and other solutions. It's a really sweet abstraction. I also enjoy observability, so I can track each step and function run in one dashboard.
 
 _You can reach out to Igor on [Twitter](https://x.com/tequilafunks) or listen to his music on [Spotify](https://open.spotify.com/artist/66PsDRGGiij2rHAK21GUEB)._

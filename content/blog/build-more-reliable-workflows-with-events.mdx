@@ -11,7 +11,7 @@ category: engineering
 sidebarCta:
   text: "Retries, failure handlers, and rollbacks for production workflows."
   buttonLabel: "Reliability docs"
-  href: "/docs/guides/error-handling?ref=blog-build-more-reliable-workflows-with-events-sidebar"
+  href: "/docs/durable-execution/guides-and-advanced/error-handling?ref=blog-build-more-reliable-workflows-with-events-sidebar"
 faq:
   - question: "What is a fault-tolerant event-driven system?"
     answer: "A fault-tolerant event-driven system keeps processing events correctly when parts of the architecture fail. Events remain durable, handlers retry safely, and incomplete work can be recovered with tools like event replay instead of being lost."
@@ -118,7 +118,7 @@ What this gives you toward a fault-tolerant event-driven architecture:
 - `step.waitForEvent()` coordinates follow-up user actions via [event coordination](/patterns/event-coordination-for-lost-customers?ref=blog-build-more-reliable-workflows-with-events).
 - Step results, failures, and retries are visible in the Inngest dashboard for **observability**.
 
-Deploy the same functions [locally or to any supported platform](/docs/apps/cloud?ref=blog-build-more-reliable-workflows-with-events). More on step tools is in the [steps docs](/docs/learn/inngest-steps?ref=blog-build-more-reliable-workflows-with-events).
+Deploy the same functions [locally or to any supported platform](/docs/platform-and-operations/apps-and-syncs?ref=blog-build-more-reliable-workflows-with-events). More on step tools is in the [steps docs](/docs/durable-execution/primitives?ref=blog-build-more-reliable-workflows-with-events).
 
 ## How do idempotency and exactly-once processing protect workflows?
 
@@ -127,15 +127,15 @@ Most event buses and queues provide **at-least-once** delivery. Retries and dupl
 That requires:
 
 1. **Idempotent event processing** in your handlers (upserts, deterministic IDs, check-before-write).
-2. Platform help: Inngest [idempotency keys](/docs/guides/handling-idempotency?ref=blog-build-more-reliable-workflows-with-events) can prevent duplicate events from triggering the same function more than once within a window, and memoized steps avoid re-running successful side effects on retry.
+2. Platform help: Inngest [idempotency keys](/docs/durable-execution/guides-and-advanced/idempotency?ref=blog-build-more-reliable-workflows-with-events) can prevent duplicate events from triggering the same function more than once within a window, and memoized steps avoid re-running successful side effects on retry.
 
-Together, idempotency and step memoization let you design for **exactly-once** outcomes even when the transport retries. See [error handling and retries](/docs/guides/error-handling?ref=blog-build-more-reliable-workflows-with-events) for how failed steps retry without replaying completed work.
+Together, idempotency and step memoization let you design for **exactly-once** outcomes even when the transport retries. See [error handling and retries](/docs/durable-execution/guides-and-advanced/error-handling?ref=blog-build-more-reliable-workflows-with-events) for how failed steps retry without replaying completed work.
 
 ## How do dead letter queues and event replay recover from failures?
 
 A classic **dead letter queue (DLQ)** holds messages that exhausted retries. Someone must later inspect, fix, and reprocess them—often with custom scripts and incomplete context.
 
-**Event replay** is a stronger recovery model for fault-tolerant systems: keep the history of events and function runs, fix the bug or outage, then re-run the failed work over a time range. Inngest [Replay](/docs/platform/replay?ref=blog-build-more-reliable-workflows-with-events) does this in the product UI so you do not maintain a separate DLQ pipeline. For the product story behind that approach, see [Announcing Replay](/blog/announcing-replay-the-death-of-the-dead-letter-queue?ref=blog-build-more-reliable-workflows-with-events).
+**Event replay** is a stronger recovery model for fault-tolerant systems: keep the history of events and function runs, fix the bug or outage, then re-run the failed work over a time range. Inngest [Replay](/docs/platform-and-operations/replay-runs-in-bulk?ref=blog-build-more-reliable-workflows-with-events) does this in the product UI so you do not maintain a separate DLQ pipeline. For the product story behind that approach, see [Announcing Replay](/blog/announcing-replay-the-death-of-the-dead-letter-queue?ref=blog-build-more-reliable-workflows-with-events).
 
 Use automatic retries for transient faults; use event replay for incidents that last hours or days. Always pair replay with idempotent handlers so recovered runs do not duplicate side effects.
 
@@ -161,7 +161,7 @@ Use Insights for event analysis, run performance tracking, exports, and schema d
 
 ### Export metrics to Datadog
 
-Teams on Datadog can [export Inngest metrics](/docs/platform/monitor/datadog-integration?ref=blog-build-more-reliable-workflows-with-events) for centralized alerting (`inngest_function_run_scheduled_total`, `inngest_function_run_started_total`, `inngest_function_run_ended_total`, and more).
+Teams on Datadog can [export Inngest metrics](/docs/platform-and-operations/integrations/datadog?ref=blog-build-more-reliable-workflows-with-events) for centralized alerting (`inngest_function_run_scheduled_total`, `inngest_function_run_started_total`, `inngest_function_run_ended_total`, and more).
 
 ## FAQ: fault-tolerant event-driven architecture
 
@@ -186,8 +186,8 @@ Assume at-least-once delivery, write idempotent steps, and use Inngest idempoten
 For critical background work, you need guarantees and observability without a custom reliability stack.
 
 - [Sign up for Inngest](https://app.inngest.com/sign-up?ref=blog-reliable-workflows-with-events) (free to start)
-- Read the [error handling guide](/docs/guides/error-handling?ref=blog-build-more-reliable-workflows-with-events) and [idempotency guide](/docs/guides/handling-idempotency?ref=blog-build-more-reliable-workflows-with-events)
-- Learn [function replay](/docs/platform/replay?ref=blog-build-more-reliable-workflows-with-events)
+- Read the [error handling guide](/docs/durable-execution/guides-and-advanced/error-handling?ref=blog-build-more-reliable-workflows-with-events) and [idempotency guide](/docs/durable-execution/guides-and-advanced/idempotency?ref=blog-build-more-reliable-workflows-with-events)
+- Learn [function replay](/docs/platform-and-operations/replay-runs-in-bulk?ref=blog-build-more-reliable-workflows-with-events)
 - Join [Discord](/discord) if you want feedback on a production workflow
 
 The execution engine and SDKs are open source: [inngest/inngest](https://github.com/inngest/inngest), [inngest/inngest-js](https://github.com/inngest/inngest-js).

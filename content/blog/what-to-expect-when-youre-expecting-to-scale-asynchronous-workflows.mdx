@@ -40,7 +40,7 @@ So, I’m sharing what I found. In this post I cover each stage, top use cases w
 
 *What happens if this job fails halfway through a multi-step process? What if the external API I'm calling starts rejecting me? What if the data this job is processing changed while it was running? What if 10,000 events arrive in a burst and each one triggers a separate job?*
 
-**These questions are answered by [durable execution](https://www.inngest.com/docs/learn/how-functions-are-executed).** Where a basic queue gives you "run this function asynchronously," durable execution gives you [checkpointed](https://www.inngest.com/docs/setup/checkpointing) progress that survives failures, [automatic retries](https://www.inngest.com/docs/guides/error-handling), the ability to [pause long-running workflows](https://www.inngest.com/docs/guides/pause-functions), and sometimes—depending on your platform—the ability to control [how your functions execute relative to one another](https://www.inngest.com/docs/guides/flow-control): how many run in parallel, how fast they start, who wins, etc.
+**These questions are answered by [durable execution](/docs/durable-execution/durable-workflows).** Where a basic queue gives you "run this function asynchronously," durable execution gives you [checkpointed](/docs/durable-execution/guides-and-advanced/checkpointing) progress that survives failures, [automatic retries](/docs/durable-execution/guides-and-advanced/error-handling), the ability to [pause long-running workflows](/docs/platform-and-operations/pause-and-resume-functions), and sometimes—depending on your platform—the ability to control [how your functions execute relative to one another](/docs/durable-execution/flow-control): how many run in parallel, how fast they start, who wins, etc.
 
 [Inngest](https://www.inngest.com/) is a durable execution engine. So is Temporal, Azure Durable Functions, and AWS Step Functions. The category has gone mainstream, driven largely by AI workloads that are multi-step, non-deterministic, and need to survive LLM outages without re-executing expensive calls. Queues aren’t enough for these types of solutions. If you’re still reading, queues likely aren’t enough for yours.
 
@@ -58,30 +58,30 @@ If you squint, you can see 3 groups of features that move together at a similar 
 
 The baseline configuration for running async workloads in production. These are the blue lines in the above diagram. Usage scales with the number of functions in production (and number of teammates, number of deploys, time on platform—they all take on the same shape). But usage of these features tend to be much higher right out of the gate.
 
-- [Custom Retries](https://www.inngest.com/docs/guides/error-handling) — overriding the default retry count or backoff strategy
-- [Concurrency](https://www.inngest.com/docs/guides/concurrency#when-to-use-concurrency) — limiting parallel instances of a function, often scoped to a user or entity
-- [Cron](https://www.inngest.com/docs/guides/scheduled-functions) — scheduling recurring execution
+- [Custom Retries](/docs/durable-execution/guides-and-advanced/error-handling) — overriding the default retry count or backoff strategy
+- [Concurrency](/docs/durable-execution/flow-control/concurrency) — limiting parallel instances of a function, often scoped to a user or entity
+- [Cron](/docs/durable-execution/guides-and-advanced/events-and-triggers/schedules-and-delayed-starts) — scheduling recurring execution
 - [Invoke](https://www.inngest.com/docs/reference/typescript/v4/functions/step-invoke) — calling another function and waiting for the result
 
 #### **Tier 2 — Guardrails** *(protecting your functions at scale)*
 
 These are the Flow Control primitives that govern how work moves through your system, plus mechanisms that prevent event storms and stale state from accumulating damage. In terms of adoption, they cluster in the 12-20% range for early users and climb together to 45-55% at scale. This is the tier where teams start solving real production problems: API rate limits, stale data, event storms, bad deploys.
 
-- [Multi Trigger](https://www.inngest.com/docs/guides/multiple-triggers#multiple-triggers) — a single function responding to more than one event type
-- [Cancel](https://www.inngest.com/docs/features/inngest-functions/cancellation) — terminating an in-flight run when a newer event makes it obsolete
-- [Throttle](https://www.inngest.com/docs/guides/throttling) — capping how many new runs start per time window, queuing the rest
-- [Rate Limit](https://www.inngest.com/docs/guides/rate-limiting) — capping how many new runs start per time window, dropping the rest
-- [Debounce](https://www.inngest.com/docs/guides/debounce) — coalescing a burst of events into a single run after a quiet period
-- [Replay](https://www.inngest.com/docs/platform/replay) — reprocessing historical events through the current version of your code after a bad deploy or bug fix
+- [Multi Trigger](/docs/durable-execution/guides-and-advanced/events-and-triggers/event-and-trigger-concepts) — a single function responding to more than one event type
+- [Cancel](/docs/durable-execution/guides-and-advanced/cancellation) — terminating an in-flight run when a newer event makes it obsolete
+- [Throttle](/docs/durable-execution/flow-control/throttling) — capping how many new runs start per time window, queuing the rest
+- [Rate Limit](/docs/durable-execution/flow-control/rate-limiting) — capping how many new runs start per time window, dropping the rest
+- [Debounce](/docs/durable-execution/flow-control/debounce) — coalescing a burst of events into a single run after a quiet period
+- [Replay](/docs/platform-and-operations/replay-runs-in-bulk) — reprocessing historical events through the current version of your code after a bad deploy or bug fix
 - [Timeouts](https://www.inngest.com/docs/reference/typescript/v4/functions/step-invoke#timeout) — setting a hard ceiling on function or step duration
 
 #### **Tier 3 — Optimization** *(ensuring maximum efficiency at highest complexity)*
 
 Patterns that reshape how work enters and exits the system entirely. Adoption hugs the bottom of the graph at under 10% early and only reach 40% among the most mature accounts. These are power-user patterns that produce dramatic efficiency gains, but only at genuine scale.
 
-- [Batching](https://www.inngest.com/docs/guides/batching) — collecting multiple events and processing them together in one run
-- [Singleton](https://www.inngest.com/docs/guides/singleton) — ensuring only one instance of a function runs globally or per key
-- [Priority](https://www.inngest.com/docs/guides/priority) — assigning relative importance so higher-priority runs execute before lower-priority ones
+- [Batching](/docs/durable-execution/flow-control/batching) — collecting multiple events and processing them together in one run
+- [Singleton](/docs/durable-execution/flow-control/singleton) — ensuring only one instance of a function runs globally or per key
+- [Priority](/docs/durable-execution/flow-control/priority) — assigning relative importance so higher-priority runs execute before lower-priority ones
 
 # How to solve the challenges you face as you scale
 
@@ -282,7 +282,7 @@ For teams processing high-frequency webhooks, debounce can cut invocations by 80
 
 **When you know you need replay:** You ship a bug. It runs against production events for two hours before you catch it. You fix it, redeploy—and now what? With 5 functions, manually rerunning a handful of jobs is annoying but manageable. With 100, you need to identify which events were affected across dozens of functions, figure out which are safe to reprocess, and do it without triggering duplicate side effects downstream. That's a multi-hour incident without tooling.
 
-**If you're building this yourself:** You need an event store that retains raw payloads (not just job status), [idempotency keys](https://www.inngest.com/docs/guides/handling-idempotency#how-to-handle-idempotency-with-inngest) on every downstream side effect, and a reprocessing pipeline that can target specific time ranges and function versions. Most teams that attempt this discover the gaps during their first real incident, not before it.
+**If you're building this yourself:** You need an event store that retains raw payloads (not just job status), [idempotency keys](/docs/durable-execution/guides-and-advanced/idempotency) on every downstream side effect, and a reprocessing pipeline that can target specific time ranges and function versions. Most teams that attempt this discover the gaps during their first real incident, not before it.
 
 **How Inngest solves bad deploys:** Select a time range, pick a function, and reprocess every matching event through the current version of your code—no custom tooling, no manual job reconstruction.
 

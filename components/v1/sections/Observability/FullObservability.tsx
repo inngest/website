@@ -25,31 +25,31 @@ const FEATURES: Feature[] = [
     id: "metrics-dashboard",
     title: "Metrics Dashboard",
     body: "Check system health and drill down into the function causing problems without losing context.",
-    href: "/docs/platform-and-operations/metrics",
+    href: "/docs/platform-and-operations/metrics?ref=observability-features",
   },
   {
     id: "run-search",
     title: "Run search",
     body: "Filter across millions of runs with the same context your log stack uses: event payload, function output, user ID.",
-    href: "/docs/platform-and-operations/inspect-events-and-runs",
+    href: "/docs/platform-and-operations/inspect-events-and-runs?ref=observability-features",
   },
   {
     id: "waterfall-traces",
     title: "Waterfall traces",
     body: "Show every run, side by side, with the names you wrote in code. Timing, input, output, queue delay, retries—all in one place.",
-    href: "/docs/platform-and-operations/traces",
+    href: "/docs/platform-and-operations/traces?ref=observability-features",
   },
   {
     id: "replay",
     title: "Replay without Queues",
     body: "Forget dead-letter queues and manual ID tracking. Re-run jobs in bulk with one action.",
-    href: "/docs/platform-and-operations/replay-runs-in-bulk",
+    href: "/docs/platform-and-operations/replay-runs-in-bulk?ref=observability-features",
   },
   {
     id: "insights",
     title: "Insights",
     body: "Query event and run data without SQL. No exporting, no one-off scripts.",
-    href: "/docs/platform-and-operations/insights",
+    href: "/docs/platform-and-operations/insights?ref=observability-features",
   },
 ];
 

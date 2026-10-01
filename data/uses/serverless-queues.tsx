@@ -124,7 +124,7 @@ inngest.createFunction(
         title: "Running Background Jobs",
         description: "How to background jobs without the queues and workers.",
         type: "Guide",
-        href: "/docs/guides/background-jobs",
+        href: "/docs/patterns/jobs/keeping-your-api-fast",
       },
     ],
   },

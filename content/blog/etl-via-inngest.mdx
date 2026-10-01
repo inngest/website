@@ -187,7 +187,7 @@ But look at what's *not here*.
 
 Your support thread model goes back to representing a support thread, because the state of the *pipeline* is tracked by Inngest, not by your domain model.
 
-No retry logic. If the LLM call fails, Inngest retries *that step*. It doesn't re-fetch the replies. It doesn't re-run the whole function from scratch. Each `step.run` is a [checkpoint](https://www.inngest.com/docs/setup/checkpointing): if it succeeded, its result is saved, and the function picks up from where it left off. That margarita-ruining bug where failed retries duplicated data? Can't happen, because the `save-classification` step already completed and won't run again.
+No retry logic. If the LLM call fails, Inngest retries *that step*. It doesn't re-fetch the replies. It doesn't re-run the whole function from scratch. Each `step.run` is a [checkpoint](/docs/durable-execution/guides-and-advanced/checkpointing): if it succeeded, its result is saved, and the function picks up from where it left off. That margarita-ruining bug where failed retries duplicated data? Can't happen, because the `save-classification` step already completed and won't run again.
 
 No hand-rolled idempotency. No stuck job detection. No retry counter. No deduplication pass to clean up after your own retry logic.
 

@@ -65,13 +65,13 @@ Second, AI APIs are expensive. The scale they have costs money, so they can be e
 
 Third, AI APIs are flaky. Scale doesn't always work perfectly, so in their nascent state, these AI services can flake out constantly, so you need a way to retry calls to ensure that the flakiness doesn't cascade to your product and impact your users' experience.
 
-[Durable execution](/uses/durable-workflows?ref=blog-manage-capacity-ai) and [flow control](/docs/guides/flow-control?ref=blog-manage-capacity-ai) are required. Adding these allows you to run AI reliably while controlling costs and user experience.
+[Durable execution](/uses/durable-workflows?ref=blog-manage-capacity-ai) and [flow control](/docs/durable-execution/flow-control?ref=blog-manage-capacity-ai) are required. Adding these allows you to run AI reliably while controlling costs and user experience.
 
 ## Comply with API rate limits with throttling
 
 OpenAI has a [5k requests/minute rate limit](https://platform.openai.com/docs/guides/rate-limits/usage-tiers?context=tier-two) on the mid-tier level. This may seem like a lot initially, but it is easy to hit once you are seeing success.
 
-[Throttle](/docs/guides/throttling?ref=blog-manage-capacity-ai) can be used to flatten spikes in usage and ensure you don't hit the rate limits. Let's say OpenAI releases a new model, and all your users suddenly want a piece of the action. If everyone tries to access the service simultaneously, you get the problems outlined above, such as bumping up against the rate limits, leading to a poor user experience.
+[Throttle](/docs/durable-execution/flow-control/throttling?ref=blog-manage-capacity-ai) can be used to flatten spikes in usage and ensure you don't hit the rate limits. Let's say OpenAI releases a new model, and all your users suddenly want a piece of the action. If everyone tries to access the service simultaneously, you get the problems outlined above, such as bumping up against the rate limits, leading to a poor user experience.
 
 With throttle, you can limit the number of calls to a function over a set period. In this case, let's say the OpenAI API can only be called ten times per minute. We can define this limit on the function:
 
@@ -95,7 +95,7 @@ Here, the configuration ensures that only ten runs of this function will execute
 
 ## Smooth usage using concurrency
 
-[Concurrency](/docs/guides/concurrency?ref=blog-manage-capacity-ai) can also be used to flatten out spikes, but is a little different from throttle. Concurrency is about managing _capacity_ (concurrent work), while throttle is about managing _rate_. This is useful for preventing a single user from utilizing disproportionate amount of capacity. It also helps when you run your own self-hosted models and there is not specific rate limit, but you want to control how many concurrent calls can be made.
+[Concurrency](/docs/durable-execution/flow-control/concurrency?ref=blog-manage-capacity-ai) can also be used to flatten out spikes, but is a little different from throttle. Concurrency is about managing _capacity_ (concurrent work), while throttle is about managing _rate_. This is useful for preventing a single user from utilizing disproportionate amount of capacity. It also helps when you run your own self-hosted models and there is not specific rate limit, but you want to control how many concurrent calls can be made.
 
 Concurrency can be configured to be applied to different "scopes" within Inngest. You can control concurrency at the function scope (a single queue) or the account scope (across all functions and their queues).
 
@@ -202,7 +202,7 @@ The main function calls the two other functions, which each have their own throt
 
 Even if we keep within the rate limit, costs can swell if we're not careful about how we call the APIs. Bad actors can cause the first issue here. Users might spam your services, trying to access the AI APIs continually. This can be caught partly by the concurrency controls above, but if the API is returning quickly and you don't have high load, users might still be able to call the APIs frequently, increasing costs.
 
-[Debouncing](/docs/guides/debounce?ref=blog-manage-capacity-ai) is an easy answer to this. Debouncing controls how often a single function from a user can run in a set time period:
+[Debouncing](/docs/durable-execution/flow-control/debounce?ref=blog-manage-capacity-ai) is an easy answer to this. Debouncing controls how often a single function from a user can run in a set time period:
 
 ```ts
 inngest.createFunction(
@@ -225,7 +225,7 @@ This should be adjusted for realistic use on your product, but finding the right
 
 It's not always bad actors causing problems. As we said above, the AI fail whale often rears its head. If your product requires a single API call to complete, this isn't too much of a problem, cost-wise. But if you are LLM chaining or creating agents or RAG flows with multiple API calls, retrying this multi-step process can result in high costs as everything must be called again.
 
-We can fix that using chaining with durable execution. Every individual API call can become a separate run in a [multi-step process](https://www.inngest.com/docs/learn/inngest-steps?ref=blog-manage-capacity-ai). Using multi-step functions, you can:
+We can fix that using chaining with durable execution. Every individual API call can become a separate run in a [multi-step process](/docs/durable-execution/primitives?ref=blog-manage-capacity-ai). Using multi-step functions, you can:
 
 * Enhance the reliability of your code by retrying executable blocks.
 * Pause execution until an event matches specific rules.
@@ -308,7 +308,7 @@ inngest.createFunction({
 
 This ensures if a user triggers multiple AI generations rapidly, only the latest one executes—perfect for expensive AI operations.
 
-[Learn more](/docs/guides/singleton)
+[Learn more](/docs/durable-execution/flow-control/singleton)
 
 ## Prioritize paid users using priority keys
 
@@ -316,7 +316,7 @@ In all of the above examples, everyone is treated equally.
 
 In the future, our [AI overlords](https://www.youtube.com/watch?v=29ECwExc-_M) will be given priority, but until then paid users go to the head of the queue. As you build out AI services, you need a way for paid users to access your service ahead of others, especially with limited capacity.
 
-[Function run priority](/docs/guides/priority?ref=blog-manage-capacity-ai) allows you to do this. With function run priority, you set a priority key that can be used to prioritize specific user's jobs. Here, any user with an `'enterprise'` account type will have a higher priority, and their job will be executed ahead of any other job that has been enqueued in the last two minutes:
+[Function run priority](/docs/durable-execution/flow-control/priority?ref=blog-manage-capacity-ai) allows you to do this. With function run priority, you set a priority key that can be used to prioritize specific user's jobs. Here, any user with an `'enterprise'` account type will have a higher priority, and their job will be executed ahead of any other job that has been enqueued in the last two minutes:
 
 ```ts
 export default inngest.createFunction(
@@ -357,7 +357,7 @@ And if you have a paid account with v0.dev, you should have seen the benefits.
 
 ## Control Capacity for a Better User Experience
 
-v0.dev is an excellent example of what we are talking about here &mdash; a successful product that relies heavily on AI  and has to control capacity. Without using methods of [flow control](/docs/guides/flow-control?ref=blog-manage-capacity-ai), like throttling, concurrency, debouncing, chaining, and prioritization, there would only be two options:
+v0.dev is an excellent example of what we are talking about here &mdash; a successful product that relies heavily on AI  and has to control capacity. Without using methods of [flow control](/docs/durable-execution/flow-control?ref=blog-manage-capacity-ai), like throttling, concurrency, debouncing, chaining, and prioritization, there would only be two options:
 
 1. Vercel developers would have to build these functionalities from scratch, which would take time away from the core product and slow product development.
 2. The user experience would be worse as the product would stall from hitting rate limits and overuse, and paid users wouldn't be able to generate UIs quickly, making it less attractive for those users and, thus less attractive for Vercel to build.

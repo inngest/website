@@ -29,12 +29,12 @@ const FEATURES: Feature[] = [
   {
     title: "Metrics dashboard",
     body: "System health at the environment level",
-    href: "/docs/platform-and-operations/metrics?ref=durable-execution#function-metrics",
+    href: "/docs/platform-and-operations/metrics?ref=durable-execution#read-the-function-charts",
   },
   {
     title: "Run search",
     body: "Find the exact run for any user, org,\nor error pattern",
-    href: "/docs/platform-and-operations/inspect-events-and-runs?ref=durable-execution#searching-function-runs",
+    href: "/docs/platform-and-operations/inspect-events-and-runs?ref=durable-execution#search-runs",
   },
   {
     title: "Replay",

@@ -80,7 +80,7 @@ export default function AnySourcePath() {
           sub="(webhooks)"
           glyph={<OrbitsGlyph />}
           body="Point any provider at an Inngest webhook URL. Trigger functions that retry automatically."
-          href="/docs/platform/webhooks/build-an-integration"
+          href="/docs/platform/webhooks/build-an-integration?ref=webhooks-events-sources"
         />
         <Card
           align="right"
@@ -90,7 +90,7 @@ export default function AnySourcePath() {
           glyph={<SendGlyph />}
           body="Fire events from anywhere in your codebase. Trigger multiple functions in parallel."
           offsetSeam
-          href="/docs"
+          href="/docs?ref=webhooks-events-sources"
         />
       </ul>
     </Section>

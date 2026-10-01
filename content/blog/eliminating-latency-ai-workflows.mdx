@@ -28,7 +28,7 @@ Four things contribute to inter-step latency, and four things fix them. The post
 - **Constraint checking inline with the queue** creates O(n) churn under load. Separate it.
 - **Over-decomposed steps** multiply the cost of all of the above. Step at failure domain boundaries, not at every function call.
 
-Each section covers the general pattern, what it looks like on other platforms, and how Inngest handles it specifically. *If you're an Inngest user, [this doc](https://www.inngest.com/docs/improve-performance) might be especially helpful.*
+Each section covers the general pattern, what it looks like on other platforms, and how Inngest handles it specifically. *If you're an Inngest user, [this doc](/docs/durable-execution/best-practices/performance) might be especially helpful.*
 
 ## What causes latency between workflow steps?
 
@@ -69,7 +69,7 @@ If you're building on Temporal, the closest equivalent is local activities. Loca
 
 **How Inngest handles this:**
 
-[Checkpointing](https://www.inngest.com/docs/setup/checkpointing) in Inngest doesn't force that tradeoff. Every step still gets independent retries, timeouts, and full observability regardless of duration. Enable it and the SDK orchestrates steps on your server, executing them immediately while sending checkpoint messages to Inngest in the background. If something fails, the engine falls back to standard orchestration for retries.
+[Checkpointing](/docs/durable-execution/guides-and-advanced/checkpointing) in Inngest doesn't force that tradeoff. Every step still gets independent retries, timeouts, and full observability regardless of duration. Enable it and the SDK orchestrates steps on your server, executing them immediately while sending checkpoint messages to Inngest in the background. If something fails, the engine falls back to standard orchestration for retries.
 You get local-activity speed on the happy path and full durable-execution safety on the failure path, without splitting your steps into two categories.
 
 ```tsx
@@ -257,7 +257,7 @@ These are the factors that separate a platform you can use for AI agents from on
 
 ## Other Resources
 
-- [Performance documentation](/docs/improve-performance) for setup guides on checkpointing and Connect
+- [Performance documentation](/docs/durable-execution/best-practices/performance) for setup guides on checkpointing and Connect
 - [The Principles of Durable Execution](/blog/principles-of-durable-execution) for how durable execution works under the hood
 - [How we built a fair multi-tenant queue](/blog/building-the-inngest-queue-pt-i-fairness-multi-tenancy) for the queue architecture deep dive
 - [Durable Executions, Defined](https://journal.resonatehq.io/p/durable-executions-defined) by Dominik Tornow for a rigorous definition of what durable execution actually means

@@ -63,7 +63,7 @@ Let's cover another solution that increases the **max duration of your code to u
 ## Move your code into a Durable Function
 
 A piece of code that runs for a long time without returning a response synchronously is a good candidate for Durable Functions.  
-Durable Functions are the asynchronous counterpart to Vercel Functions, enabling you to run code asynchronously for extended periods while [streaming updates](/docs/features/realtime) of its progress.
+Durable Functions are the asynchronous counterpart to Vercel Functions, enabling you to run code asynchronously for extended periods while [streaming updates](/docs/realtime) of its progress.
 
 You can transform your existing Vercel Function into a [Durable Function](/blog/nextjs-serverless-vs-durable-functions) by leveraging Inngest's similar developer experience.  
 First, you'll need to move your existing code into an Inngest Function:
@@ -88,7 +88,7 @@ inngest.createFunction({
 );
 ```
 
-Finally, replace your Next.js API Route with the following [Inngest Function](/docs/learn/inngest-functions) invocation:
+Finally, replace your Next.js API Route with the following [Inngest Function](/docs/durable-execution/durable-workflows) invocation:
 
 ```typescript
 import { inngest } from '@lib/inngest/client' 
@@ -116,10 +116,10 @@ By combining Fluid Compute and Durable Functions, you can run your code for an e
 Running code for an extended period is only the tip of the iceberg when it comes to the benefits of Inngest Functions.  
 Inngest Functions also bring:
 
-- **[Realtime](/docs/features/realtime)**: to keep your users updated on the progress of their long-running request.  
-- **[Automatic retries](/docs/features/inngest-functions/error-retries/retries)**: handy when interacting with external APIs.  
-- **[Throttling and Concurrency](/docs/guides/flow-control)**: to avoid hitting third-party rate limits.  
-- **[Sleeps](/docs/features/inngest-functions/steps-workflows/sleeps):** useful when implementing user onboarding workflows or email drip campaigns.
+- **[Realtime](/docs/realtime)**: to keep your users updated on the progress of their long-running request.  
+- **[Automatic retries](/docs/durable-execution/guides-and-advanced/error-handling/retries)**: handy when interacting with external APIs.  
+- **[Throttling and Concurrency](/docs/durable-execution/flow-control)**: to avoid hitting third-party rate limits.  
+- **[Sleeps](/docs/durable-execution/primitives/step-sleep):** useful when implementing user onboarding workflows or email drip campaigns.
 
 Do you still want to keep your long-running code in a Vercel Function? There is one solution left.
 

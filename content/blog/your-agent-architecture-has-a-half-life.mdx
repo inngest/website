@@ -99,7 +99,7 @@ Three things the execution layer must do.
 
 An agent 45 minutes into a run shouldn't lose 45 minutes to a single failure.
 
-Agents handle longer-running tasks than ever. [Background agents](/blog/background-agents-are-here-your-orchestration-isnt-ready?ref=blog-your-agent-architecture-has-a-half-life) run for minutes to hours. A three-hour run can't hold state in memory or on disk. A failed API call 38 steps into [a loop](/docs/ai-patterns/agent-tool-loops?ref=blog-your-agent-architecture-has-a-half-life) should mean retry step 38, not restart from step 1.
+Agents handle longer-running tasks than ever. [Background agents](/blog/background-agents-are-here-your-orchestration-isnt-ready?ref=blog-your-agent-architecture-has-a-half-life) run for minutes to hours. A three-hour run can't hold state in memory or on disk. A failed API call 38 steps into [a loop](/docs/durable-execution/durable-agents/agent-tool-loops?ref=blog-your-agent-architecture-has-a-half-life) should mean retry step 38, not restart from step 1.
 
 State must live outside the process. Durable and external. Without it, you end up adding manual checkpoints or log-based state hydration that leaks into the rest of your harness.
 
@@ -133,7 +133,7 @@ All of these problems are infrastructure problems, not AI problems.
 
 ### Invocation and Coordination
 
-Agents need flexible invocation. Event-driven. Cron-scheduled. API-triggered. [Human-in-the-loop approvals](/docs/ai-patterns/human-in-the-loop?ref=blog-your-agent-architecture-has-a-half-life). And they need to coordinate with other agents, both synchronously and asynchronously.
+Agents need flexible invocation. Event-driven. Cron-scheduled. API-triggered. [Human-in-the-loop approvals](/docs/durable-execution/durable-agents/human-in-the-loop?ref=blog-your-agent-architecture-has-a-half-life). And they need to coordinate with other agents, both synchronously and asynchronously.
 
 Without proper orchestration primitives, your harness logic starts absorbing queues, workers, polling, backoff, and scheduling. It becomes a mess of bad abstractions.
 

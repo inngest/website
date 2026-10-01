@@ -16,7 +16,7 @@ With Inngest, we allow developers to build event-driven functions that are able 
 
 ## Dynamic Event Filtering
 
-This is the core of the challenge that we have with Inngest. Inngest allows developers to create event-driven functions that can wait for additional events that match specific [filter expressions](/docs/reference/typescript/v4/functions/step-wait-for-event#advanced-event-matching-with-if), or declare that functions should automatically be [be cancelled by specific events](/docs/guides/cancel-running-functions). The hard part is abstracted away from the developer with a line of code.
+This is the core of the challenge that we have with Inngest. Inngest allows developers to create event-driven functions that can wait for additional events that match specific [filter expressions](/docs/reference/typescript/v4/functions/step-wait-for-event#advanced-event-matching-with-if), or declare that functions should automatically be [be cancelled by specific events](/docs/durable-execution/guides-and-advanced/cancellation/bulk-cancellation). The hard part is abstracted away from the developer with a line of code.
 
 As an example, this code allows the developer to pause a function in the middle of execution to wait for an `app/onboarding.completed` event with a payload that matches the value of the `data.userId` exactly:
 
@@ -31,7 +31,7 @@ const onboardingCompleted = await step.waitForEvent(
     );
 ```
 
-While this looks very simple, this [matching expression](/docs/guides/writing-expressions) is created **dynamically at runtime**, so under the hood, the system must quickly update the internal event stream consumers to evaluate all events for a potential match. We run a [multi-tenant system](/blog/building-the-inngest-queue-pt-i-fairness-multi-tenancy), so each event needs to be evaluated against millions of potential matches.  Even worse:  every run of the function can create a new, unique expression, leading to an explosion of matching expressions.
+While this looks very simple, this [matching expression](/docs/durable-execution/guides-and-advanced/writing-expressions) is created **dynamically at runtime**, so under the hood, the system must quickly update the internal event stream consumers to evaluate all events for a potential match. We run a [multi-tenant system](/blog/building-the-inngest-queue-pt-i-fairness-multi-tenancy), so each event needs to be evaluated against millions of potential matches.  Even worse:  every run of the function can create a new, unique expression, leading to an explosion of matching expressions.
 
 This is where the complexity lies, these *ephemeral* event matchers must be quickly added, evaluated and removed just as quickly. With their short-lived nature, we also can't quite optimize the system with topics and thousands of stream consumers with filtering that spin up and down for each statement.
 

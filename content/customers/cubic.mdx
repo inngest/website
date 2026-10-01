@@ -54,8 +54,8 @@ Inngest's dashboard is critical in enabling cubic to operate its multi-agent sys
 <div className="w-5/6 flex-col self-center">
 
 
-- [**The Runs search**](https://www.inngest.com/docs/platform/monitor/inspecting-events#searching-events) enables cubic to find all Agent runs related to a specific Pull Request, as well as quickly filter Agent runs based on custom data (eg, token used).
-- [**The Traces view**](https://www.inngest.com/docs/platform/monitor/inspecting-function-runs) provides a detailed insight into a given Agent run, allowing for the inspection of its steps, outputs, and actions.
+- [**The Runs search**](/docs/platform-and-operations/inspect-events-and-runs#inspect-an-event) enables cubic to find all Agent runs related to a specific Pull Request, as well as quickly filter Agent runs based on custom data (eg, token used).
+- [**The Traces view**](/docs/platform-and-operations/inspect-events-and-runs) provides a detailed insight into a given Agent run, allowing for the inspection of its steps, outputs, and actions.
 
 </div>
 
@@ -82,12 +82,12 @@ A significant improvement involved splitting the 'Single, Do-Everything Agent' i
 - **Duplication Agent**: Flags repeated or copied code.
 - **Filtering Agent**: Designed to filter for false positives and confirm issues found.
 
-Inngest's [step APIs](https://www.inngest.com/docs/learn/inngest-steps) facilitated a smooth shift to a multi-agent system by offering built-in support for [parallel execution](https://www.inngest.com/docs/guides/step-parallelism) and enabling agents to connect through its [event-driven architecture](https://www.inngest.com/docs/features/events-triggers).
+Inngest's [step APIs](/docs/durable-execution/primitives) facilitated a smooth shift to a multi-agent system by offering built-in support for [parallel execution](/docs/durable-execution/primitives/group-parallel) and enabling agents to connect through its [event-driven architecture](/docs/durable-execution/guides-and-advanced/events-and-triggers).
 
 While improving the overall accuracy of the product, moving to a multi-agent system presented several challenges, where Inngest proved to be a valuable aid:
 
-- **Race conditions among multiple parallel Agents** were solved by leveraging Inngest's [idempotency feature](https://www.inngest.com/docs/guides/handling-idempotency)
-- **The intermittent serverless timeouts** were gracefully handled with [Inngest's timeout callbacks](https://www.inngest.com/docs/features/inngest-functions/cancellation/cancel-on-timeouts)
+- **Race conditions among multiple parallel Agents** were solved by leveraging Inngest's [idempotency feature](/docs/durable-execution/guides-and-advanced/idempotency)
+- **The intermittent serverless timeouts** were gracefully handled with [Inngest's timeout callbacks](/docs/durable-execution/guides-and-advanced/cancellation/timeouts)
 
 ### Building robust Agent tools with Flow Control
 
@@ -95,7 +95,7 @@ Another key milestone of the product overhaul involved transitioning from provid
 
 Tools connect Agents to third-party APIs and a secure sandbox environment, which comes with its set of external constraints, such as provisioning or rate limiting.
 
-Inngest's Flow Control features ensure that cubic Agents get reliable tools by [handling rate limits](https://www.inngest.com/docs/guides/throttling), spreading load evenly with [debouncing](https://www.inngest.com/docs/guides/debounce), and [prioritizing tasks](https://www.inngest.com/docs/guides/priority).
+Inngest's Flow Control features ensure that cubic Agents get reliable tools by [handling rate limits](/docs/durable-execution/flow-control/throttling), spreading load evenly with [debouncing](/docs/durable-execution/flow-control/debounce), and [prioritizing tasks](/docs/durable-execution/flow-control/priority).
 
 {/* Paul Sangle-Ferriere, cofounder and CPO of cubic, provides a detailed overview of cubic's Context Engineering architecture in the practical guide to Context Engineering. */}
 

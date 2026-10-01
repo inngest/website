@@ -53,7 +53,7 @@ From Clerk's webhook portal, you can now connect your account with Inngest in ju
 You could write your own webhook handler for Clerk, but using Inngest for webhook events has key benefits:
 
 * Manage concurrency with configurable limits to the exact level of concurrent events processed to avoid overwhelming your database or APIs, enabling you to operate and scale webhooks.Inngest is designed to handle high load so you don't need to worry about [the pitfalls of operating and scaling webhooks](/blog/building-webhooks-that-scale).
-* [Fan-out events to multiple functions](/docs/guides/fan-out-jobs) to run work in parallel, each with automatic retries. You can have two jobs.
+* [Fan-out events to multiple functions](/docs/durable-execution/guides-and-advanced/patterns/fan-out) to run work in parallel, each with automatic retries. You can have two jobs.
 * Create complex workflows that require multiple steps that are each automatically retried (a la transactions).
 * Delay certain tasks for hours or days with [`step.sleep()`](/docs/reference/typescript/v4/functions/step-sleep) or [`step.sleepUntil()`](/docs/reference/typescript/v4/functions/step-sleep-until).
 
@@ -134,7 +134,7 @@ As you might be able to see, there is a ton that you could do from here using al
 
 ## How do I get started?
 
-Once you set up the Inngest webhook with Clerk, you can run through [this Inngest quick start](/docs/getting-started/nextjs-quick-start?ref=blog-clerk-integration) or check out [example projects](https://github.com/inngest/inngest-js/tree/main/examples) for your framework of choice. If you want to learn more about Inngest webhooks, check out [the guide here](/docs/platform/webhooks).
+Once you set up the Inngest webhook with Clerk, you can run through [this Inngest quick start](/docs/getting-started/nextjs-quick-start?ref=blog-clerk-integration) or check out [example projects](https://github.com/inngest/inngest-js/tree/main/examples) for your framework of choice. If you want to learn more about Inngest webhooks, check out [the guide here](/docs/durable-execution/guides-and-advanced/events-and-triggers/receive-webhook-events).
 
 ## Enhanced webhook support
 

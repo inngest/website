@@ -10,7 +10,7 @@ category: engineering
 sidebarCta:
   text: "Fairness at scale. Per-tenant concurrency without the babysitting."
   buttonLabel: "Flow Control Docs"
-  href: "/docs/guides/flow-control?ref=blog-building-the-inngest-queue-pt-i-fairness-multi-tenancy-sidebar"
+  href: "/docs/durable-execution/flow-control?ref=blog-building-the-inngest-queue-pt-i-fairness-multi-tenancy-sidebar"
 ---
 
 In software development, queueing systems are important for reliability, and they're hard to build.  There's lots of debate around *how* to build a queueing system — with [Postgres](https://news.ycombinator.com/item?id=35526846) and [SKIP LOCKED](https://news.ycombinator.com/item?id=37636841) *always* cropping up.
@@ -74,7 +74,7 @@ There are a few extra nuances.  The function specifies its own concurrency limit
 
 All of this happens automatically, without provisioning queues or infrastructure, based off of our queueing system.  Here's what happens:
 
-- When an event is received, we *[idempotently](/docs/guides/handling-idempotency)* enqueue a job which calls the function handler. This has to be idempotent, as [event streams are *at least once*](/blog/message-bus-vs-queues), and we want a single function run for one event.
+- When an event is received, we *[idempotently](/docs/durable-execution/guides-and-advanced/idempotency)* enqueue a job which calls the function handler. This has to be idempotent, as [event streams are *at least once*](/blog/message-bus-vs-queues), and we want a single function run for one event.
 - Debounce complicates running functions: the job is scheduled with a 5 second delay (or whatever's in the function config), and any additional events delay the job again.
 - When the job becomes "visible", we ensure functions aren't beyond their concurrency limits and begin work by calling the function with the incoming event data.
 - Once a function runs a step, we store the step's result inside the function run's state and (worst case) enqueue *another* job for the next step. There's some nuance here for long-running servers, though we'll talk about that in an execution deep dive separately.

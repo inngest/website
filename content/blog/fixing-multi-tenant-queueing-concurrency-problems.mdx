@@ -68,7 +68,7 @@ This approach can be effective, but has other challenges:
 
 The Inngest platform has built-in support for easily defining concurrency limits that are automatically applied for each tenant.
 
-Compared to approaches that have to combine queue infrastructure management, custom worker logic, and state management, Inngest manages all infrastructure and has embedded [_flow control_](/docs/guides/flow-control) logic within the queue itself. This allows your system to have the best of both worlds: the simplicity of a multi-tenant system with the fairness of a single-tenant system.
+Compared to approaches that have to combine queue infrastructure management, custom worker logic, and state management, Inngest manages all infrastructure and has embedded [_flow control_](/docs/durable-execution/flow-control) logic within the queue itself. This allows your system to have the best of both worlds: the simplicity of a multi-tenant system with the fairness of a single-tenant system.
 
 ### How it works
 
@@ -135,9 +135,9 @@ export const combinedConcurrencyLimits = inngest.createFunction(
 
 Beyond using keys and combining concurrency limits, for additional control within your system, you might also consider:
 
-* **Setting concurrency limits that are shared across functions** - Concurrency limits can be shared across multiple functions by [specifying a `scope`](/docs/guides/concurrency#how-global-limits-work) which allows to combine limits across functions.
-* **Combining with other flow control methods** - Inngest's concurrency limits can be combined with other methods like [throttling](/docs/guides/throttling) and [prioritization](/docs/guides/priority), giving you even more control over your system's workload management.
+* **Setting concurrency limits that are shared across functions** - Concurrency limits can be shared across multiple functions by [specifying a `scope`](/docs/durable-execution/flow-control/concurrency#how-global-limits-work) which allows to combine limits across functions.
+* **Combining with other flow control methods** - Inngest's concurrency limits can be combined with other methods like [throttling](/docs/durable-execution/flow-control/throttling) and [prioritization](/docs/durable-execution/flow-control/priority), giving you even more control over your system's workload management.
 
 ## Give it a try
 
-Managing queues in multi-tenant systems can be complex, but with Inngest's built-in multi-tenant-aware concurrency controls, you can ensure a fair, efficient, and smooth experience in your applications. Learn more about how to implement concurrency limits in your functions by checking out the [Inngest Concurrency Documentation](/docs/guides/concurrency). For applying the same per-tenant model across many SaaS integrations, see [Have lots of SaaS integrations? You don't need lots of reliability models](/blog/have-lots-of-saas-integrations-you-dont-need-lots-of-reliability-models?ref=blog-fixing-multi-tenant-queueing-concurrency-problems).
+Managing queues in multi-tenant systems can be complex, but with Inngest's built-in multi-tenant-aware concurrency controls, you can ensure a fair, efficient, and smooth experience in your applications. Learn more about how to implement concurrency limits in your functions by checking out the [Inngest Concurrency Documentation](/docs/durable-execution/flow-control/concurrency). For applying the same per-tenant model across many SaaS integrations, see [Have lots of SaaS integrations? You don't need lots of reliability models](/blog/have-lots-of-saas-integrations-you-dont-need-lots-of-reliability-models?ref=blog-fixing-multi-tenant-queueing-concurrency-problems).

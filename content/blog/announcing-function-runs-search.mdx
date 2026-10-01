@@ -53,7 +53,7 @@ event.data.organizationId == "org_ab1fd2"
 output.verified == false
 ```
 
-Searching returns results in **milliseconds**, even with hundreds of millions of daily runs.  For more information, check out our [documentation on run search](/docs/platform/monitor/inspecting-function-runs#searching-function-runs?ref=blog-announcing-function-runs-search), and if you have any feedback, [join us on our Discord](/discord) (where you can chat with our engineering team about how we build things like this).
+Searching returns results in **milliseconds**, even with hundreds of millions of daily runs.  For more information, check out our [documentation on run search](/docs/platform-and-operations/inspect-events-and-runs?ref=blog-announcing-function-runs-search#search-runs), and if you have any feedback, [join us on our Discord](/discord) (where you can chat with our engineering team about how we build things like this).
 
 ## Tips: Make your Inngest Function runs searchable
 
@@ -184,13 +184,13 @@ For example, if a single run has a batch of 1000 events — all for different or
 
 ## Future of function runs searching
 
-Searching across function runs is just the beginning. Soon, once you search and filter your runs, we'll let you create [cancellations](/docs/platform/manage/bulk-cancellation?ref=blog-announcing-function-runs-search) and [replays](/docs/platform/replay?ref=blog-announcing-function-runs-search) using the same filter, allowing you to properly debug, handle, and resolve issues within a single intuitive UI (*join our beta program to get early access*).
+Searching across function runs is just the beginning. Soon, once you search and filter your runs, we'll let you create [cancellations](/docs/durable-execution/guides-and-advanced/cancellation/bulk-cancellation?ref=blog-announcing-function-runs-search) and [replays](/docs/platform-and-operations/replay-runs-in-bulk?ref=blog-announcing-function-runs-search) using the same filter, allowing you to properly debug, handle, and resolve issues within a single intuitive UI (*join our beta program to get early access*).
 
 Combining search and filtering with corrective actions is an incredibly powerful way to manage your backend stack, and that's why we believe observability should be a first-class part of your orchestration stack.
 
 ## Function runs search: under the hood
 
-Run search is built using the CEL expression engine, which we also use to power features like [`step.waitForEvent`](/docs/features/inngest-functions/steps-workflows/wait-for-event?ref=blog-announcing-function-runs-search).  To make CEL work with our tracing and logging backend, we have a multi-stage search pipeline:
+Run search is built using the CEL expression engine, which we also use to power features like [`step.waitForEvent`](/docs/durable-execution/primitives/step-waitforevent?ref=blog-announcing-function-runs-search).  To make CEL work with our tracing and logging backend, we have a multi-stage search pipeline:
 
 1. Normalize the search queries and validate the expressions
 2. Compile the expression into an AST
@@ -241,7 +241,7 @@ For teams using Datadog, you can now export all Inngest metrics for centralized 
 - `inngest_function_run_ended_total`
 - And more
 
-[Learn more](/docs/platform/monitor/datadog-integration) | [View changelog](https://www.inngest.com/changelog/2025-06-13-datadog-metrics-export)
+[Learn more](/docs/platform-and-operations/integrations/datadog) | [View changelog](https://www.inngest.com/changelog/2025-06-13-datadog-metrics-export)
 
 ### AI-assisted local development with MCP (October 2025)
 

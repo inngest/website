@@ -1,7 +1,7 @@
 export const title = "Singleton Functions: Cancel Mode";
 export const date = "2025-06-23";
 
-[Singleton Functions](/docs/guides/singleton) now supports a new `cancel` mode in addition to the existing `skip` mode.
+[Singleton Functions](/docs/durable-execution/flow-control/singleton) now supports a new `cancel` mode in addition to the existing `skip` mode.
 
 When using `mode: "cancel"`, new function runs will cancel any existing run with the same key and start fresh, ensuring only the most recent execution proceeds. This is particularly useful for scenarios where you want to process the latest data and can safely discard in-progress work.
 

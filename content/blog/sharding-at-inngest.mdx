@@ -13,7 +13,7 @@ category: engineering
 
 ## Inngest Architecture Primer
 
-Inngest enables developers to write [durable functions](/docs/learn/how-functions-are-executed) with [flow control](/docs/guides/flow-control). To reliably execute long-running functions, function state is stored within Inngest to resume and retry functions without losing execution progress. This state must be stored at low latency, but persisted indefinitely. Functions might execute for seconds or months. Function state, including user-generated output, can grow over time, yet we need to ensure consistently high performance. **On an average day, we serve hundreds of millions of events.**
+Inngest enables developers to write [durable functions](/docs/durable-execution/durable-workflows) with [flow control](/docs/durable-execution/flow-control). To reliably execute long-running functions, function state is stored within Inngest to resume and retry functions without losing execution progress. This state must be stored at low latency, but persisted indefinitely. Functions might execute for seconds or months. Function state, including user-generated output, can grow over time, yet we need to ensure consistently high performance. **On an average day, we serve hundreds of millions of events.**
 
 ![Inngest functions can be triggered by events.](/assets/blog/sharding-inngest/use-events-to-trigger-functions.jpg)
 

@@ -85,7 +85,7 @@ await fetch("http://localhost:9999/e/KEY", {
 });
 ```
 
-_Note - You can also use [one of our language SDKs](/docs/events) if you prefer_
+_Note - You can also use [one of our language SDKs](/docs/durable-execution/guides-and-advanced/events-and-triggers/send-events) if you prefer_
 
 You should now see the event in the DevServer's output and your new function should have run!
 

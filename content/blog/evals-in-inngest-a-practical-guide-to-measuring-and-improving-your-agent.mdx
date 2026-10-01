@@ -16,12 +16,12 @@ category: engineering
 sidebarCta:
   text: "Start with one metric. Score real outcomes in the execution layer you already have."
   buttonLabel: "Read the docs"
-  href: "/docs/learn/agent-evals?ref=blog-evals-in-inngest-a-practical-guide-to-measuring-and-improving-your-agent-sidebar"
+  href: "/docs/agent-evals/overview?ref=blog-evals-in-inngest-a-practical-guide-to-measuring-and-improving-your-agent-sidebar"
 ---
 
 If you're building agents in Inngest, you know your agent works. But does it *work*? As in… is it giving you the outcomes you'd expect? How do you know?
 
-That's where [evals](/docs/learn/agent-evals?ref=blog-evals-in-inngest-a-practical-guide-to-measuring-and-improving-your-agent) come in.
+That's where [evals](/docs/agent-evals/overview?ref=blog-evals-in-inngest-a-practical-guide-to-measuring-and-improving-your-agent) come in.
 
 My much smarter colleague Mitch Alderson just hosted a [Lightning Lab on shipping your first eval](/events/lightning-lab-ship-your-first-eval?ref=blog-evals-in-inngest-a-practical-guide-to-measuring-and-improving-your-agent), which was fantastic. If you want to watch, it's only 20 minutes!
 
@@ -50,7 +50,7 @@ And notice that these things don't have to be about AI, if that's not relevant t
 
 The webinar also shared a helpful set of starter categories for evals, including one you're probably already familiar with:
 
-- **[LLM-as-judge](/docs/examples/ai-eval-scorer-quickstart?ref=blog-evals-in-inngest-a-practical-guide-to-measuring-and-improving-your-agent):** use another model to grade tone, helpfulness, or similar subjective qualities
+- **[LLM-as-judge](/docs/agent-evals/guides/llm-judge?ref=blog-evals-in-inngest-a-practical-guide-to-measuring-and-improving-your-agent):** use another model to grade tone, helpfulness, or similar subjective qualities
 - **User intent:** measure whether the user took the action you wanted
 - **Tool calls:** track the number or pattern of tool calls
 - **Instruction following:** compare the output against what the user asked for
@@ -71,7 +71,7 @@ That matters because the usual blocker with evals is complexity. You would norma
 
 The example they used was about as practical as it gets.
 
-An agent returns an answer. The user clicks thumbs up or thumbs down. That click sends an event. Inngest ties that event back to the original run and [stores a score](/docs/features/inngest-functions/steps-workflows/scoring?ref=blog-evals-in-inngest-a-practical-guide-to-measuring-and-improving-your-agent).
+An agent returns an answer. The user clicks thumbs up or thumbs down. That click sends an event. Inngest ties that event back to the original run and [stores a score](/docs/agent-evals/scores?ref=blog-evals-in-inngest-a-practical-guide-to-measuring-and-improving-your-agent).
 
 That score can be as simple as:
 
@@ -86,7 +86,7 @@ That is where deferred scoring comes in.
 
 This was one of my favorite parts of the webinar because so many people still don't know about [`defer`](/blog/announcing-defer?ref=blog-evals-in-inngest-a-practical-guide-to-measuring-and-improving-your-agent) in Inngest.
 
-Instead of forcing the score to happen immediately when the agent responds, you let the [scoring function](/docs/features/inngest-functions/steps-workflows/deferred-scoring?ref=blog-evals-in-inngest-a-practical-guide-to-measuring-and-improving-your-agent) wait for a later event. In the demo, that later event was user feedback. Once the event happened, the score was recorded against the original agent run.
+Instead of forcing the score to happen immediately when the agent responds, you let the [scoring function](/docs/agent-evals/deferred-scoring?ref=blog-evals-in-inngest-a-practical-guide-to-measuring-and-improving-your-agent) wait for a later event. In the demo, that later event was user feedback. Once the event happened, the score was recorded against the original agent run.
 
 That pattern opens up a lot of possibilities.
 
@@ -156,13 +156,13 @@ The narrower the metric, the easier it is to implement and trust.
 
 In the webinar, the scoring function was wrapped in an Inngest primitive and attached to the existing agent flow.
 
-The important takeaway was not the exact syntax. It was that the [scoring logic](/docs/features/inngest-functions/steps-workflows/scoring?ref=blog-evals-in-inngest-a-practical-guide-to-measuring-and-improving-your-agent) lives close to the agent execution, and you can add it without rebuilding your whole app.
+The important takeaway was not the exact syntax. It was that the [scoring logic](/docs/agent-evals/scores?ref=blog-evals-in-inngest-a-practical-guide-to-measuring-and-improving-your-agent) lives close to the agent execution, and you can add it without rebuilding your whole app.
 
 ### 3. Use deferred scoring when the signal happens later
 
 If the score depends on user behavior after the response, do not try to fake it at response time.
 
-Wait for the event that actually matters, then [record the score](/docs/features/inngest-functions/steps-workflows/deferred-scoring?ref=blog-evals-in-inngest-a-practical-guide-to-measuring-and-improving-your-agent).
+Wait for the event that actually matters, then [record the score](/docs/agent-evals/deferred-scoring?ref=blog-evals-in-inngest-a-practical-guide-to-measuring-and-improving-your-agent).
 
 This is probably the key pattern to understand if you want evals to be useful in real products.
 
@@ -188,7 +188,7 @@ That same pattern can work for:
 - context windows
 - tool access patterns
 
-The score becomes much more useful when it helps you [compare two real options](/docs/features/inngest-functions/steps-workflows/step-experiments?ref=blog-evals-in-inngest-a-practical-guide-to-measuring-and-improving-your-agent).
+The score becomes much more useful when it helps you [compare two real options](/docs/agent-evals/experiments?ref=blog-evals-in-inngest-a-practical-guide-to-measuring-and-improving-your-agent).
 
 ### 6. Add more metrics over time
 
@@ -259,7 +259,7 @@ That is a much more useful way to think about evals than waiting until you have 
 
 ## Next steps
 
-- [Agent Evals docs](/docs/learn/agent-evals?ref=blog-evals-in-inngest-a-practical-guide-to-measuring-and-improving-your-agent) — scoring, deferred scoring, sessions, traces, and experiments
+- [Agent Evals docs](/docs/agent-evals/overview?ref=blog-evals-in-inngest-a-practical-guide-to-measuring-and-improving-your-agent) — scoring, deferred scoring, sessions, traces, and experiments
 - [Score agents on real outcomes](/docs/patterns/ai-evals/score-agents-on-real-outcomes?ref=blog-evals-in-inngest-a-practical-guide-to-measuring-and-improving-your-agent) — wait for the product signal, then attach the score
-- [AI eval scorer examples](/docs/examples/ai-eval-scorer-quickstart?ref=blog-evals-in-inngest-a-practical-guide-to-measuring-and-improving-your-agent) — copy-paste starting points for judges, guardrails, and user feedback
+- [AI eval scorer examples](/docs/agent-evals/guides/llm-judge?ref=blog-evals-in-inngest-a-practical-guide-to-measuring-and-improving-your-agent) — copy-paste starting points for judges, guardrails, and user feedback
 - [Watch the Lightning Lab recording](/events/lightning-lab-ship-your-first-eval?ref=blog-evals-in-inngest-a-practical-guide-to-measuring-and-improving-your-agent) — 20 minutes on shipping your first eval

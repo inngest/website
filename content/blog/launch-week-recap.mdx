@@ -65,7 +65,7 @@ The API comes with selective cancellation. You can define an expression directly
 
 We have officially released our [Python](/docs/reference/python) and [Go](https://pkg.go.dev/github.com/inngest/inngestgo) SDK betas with enough feature compatibility to be ready for most use cases. We also published our [SDK spec](https://github.com/inngest/inngest/blob/main/docs/SDK_SPEC.md) so anyone could learn more about how it works, or even contribute.
 
-This is another step towards becoming a truly language-agnostic reliability layer for everyone. Two months ago we added [`step.invoke()`](/docs/guides/invoking-functions-directly), which allows you to invoke any Inngest function from within another function. With these two new SDKs, you can now use Inngest in multi-language systems -- if you're curious to see an example, check this [Node and Python app](https://github.com/inngest/inngest-multi-lang).
+This is another step towards becoming a truly language-agnostic reliability layer for everyone. Two months ago we added [`step.invoke()`](/docs/durable-execution/primitives/step-invoke), which allows you to invoke any Inngest function from within another function. With these two new SDKs, you can now use Inngest in multi-language systems -- if you're curious to see an example, check this [Node and Python app](https://github.com/inngest/inngest-multi-lang).
 
 ➡️ Read ["Cross-Language support with new SDKs"](/blog/cross-language-support-with-new-sdks) blog post.
 
@@ -89,7 +89,7 @@ We made it easier to migrate across clouds with zero downtime, and minimal effor
 
 Inngest Apps map directly to your projects or services. When you serve your functions using our serve API handler, you are hosting a new Inngest App. With Inngest Apps, your dashboard reflects your code organization better.
 
-➡️ Read [Inngest App guide](/docs/apps) in our docs.
+➡️ Read [Inngest App guide](/docs/platform-and-operations/apps-and-syncs) in our docs.
 
 
 ## Integration with Clerk

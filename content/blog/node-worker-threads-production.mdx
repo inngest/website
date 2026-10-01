@@ -9,10 +9,10 @@ image: /assets/blog/node-worker-threads-production/cover.png
 sidebarCta:
   text: "Background jobs in NodeJS. Production-ready without managing infra."
   buttonLabel: "Node.js Quick Start"
-  href: "/docs/getting-started/nodejs-quick-start?ref=blog-node-worker-threads-production-sidebar"
+  href: "/docs/durable-execution/quick-start/typescript-quick-start?ref=blog-node-worker-threads-production-sidebar"
 ---
 
-In a [previous post](/blog/node-worker-threads?ref=blog-node-worker-threads-production), we wrote about why we moved [Inngest Connect](/docs/setup/connect?ref=blog-node-worker-threads-production) internals into a Node.js worker thread.
+In a [previous post](/blog/node-worker-threads?ref=blog-node-worker-threads-production), we wrote about why we moved [Inngest Connect](/docs/durable-execution/deploying-functions/connect?ref=blog-node-worker-threads-production) internals into a Node.js worker thread.
 
 The short version: Connect maintains a persistent WebSocket connection between a user's app and Inngest. That connection sends heartbeats so the server knows the worker is alive. If user code monopolizes the main thread, the heartbeat timer can't fire. The server assumes the worker died, even though the process is still running.
 

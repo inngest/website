@@ -36,7 +36,7 @@ Initially, the team used Google Cloud Composer — a platform that, designed for
 
 > The technology we were using before was a lot harder and wasn't as efficient. It was difficult to work with events, it required Python (when Fey's tech stack is JavaScript), and deploying was more annoying since it didn't integrate to Vercel. Inngest made it much easier and as a result, we now get much faster data updates in our application.
 
-The team discovered Inngest by coincidence and quickly saw the potential benefits. Using the Inngest SDK could simplify the hard parts of their problems: it was easier to define pipeline stages as steps and re-usable functions then combine via [function invocation](/docs/guides/invoking-functions-directly).
+The team discovered Inngest by coincidence and quickly saw the potential benefits. Using the Inngest SDK could simplify the hard parts of their problems: it was easier to define pipeline stages as steps and re-usable functions then combine via [function invocation](/docs/durable-execution/primitives/step-invoke).
 
 As a result, their codebase also significantly simplified and because all of the jobs now lived in a single TypeScript codebase, sharing code, packages, or database helper methods prevented repeated work. Additionally, Inngest's Vercel integration enabled a fully-automated and stress free deployment process.
 

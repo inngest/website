@@ -14,7 +14,7 @@ Durable execution is a crucial layer of fault tolerance that shields application
 
 Still, durability has always meant background work: critical workflows running async, safely away from user-facing code. **But that creates a tradeoff**: AI products ship fast with fragile streaming endpoints, while reliable payment processing or integrations take weeks to harden with queues and workers.
 
-It is time for a new approach. [**Durable Endpoints**](https://www.inngest.com/docs/learn/durable-endpoints?ref=durable-endpoints-article) makes API endpoints unbreakable, with low latency, minimal API, and no infrastructure work.
+It is time for a new approach. [**Durable Endpoints**](/docs/durable-execution/durable-endpoints?ref=durable-endpoints-article) makes API endpoints unbreakable, with low latency, minimal API, and no infrastructure work.
 
 ## What are Durable Endpoints?
 
@@ -55,10 +55,10 @@ We're seeing a need for a shift: **durability is moving from background workflow
 
 Durable Endpoints are low-latency and unbreakable API endpoints, with:
 
-- **Zero wasted keystrokes:** Wrap code in [`step.run()`](https://www.inngest.com/docs/learn/inngest-steps?ref=durable-endpoints-article), and you're done. No queues to configure, no workers to deploy.
+- **Zero wasted keystrokes:** Wrap code in [`step.run()`](/docs/durable-execution/primitives?ref=durable-endpoints-article), and you're done. No queues to configure, no workers to deploy.
 - **Automatic recovery:** Steps checkpoint as they complete. Failures retry from the last successful step, not from scratch.
 - **Built-in observability:** See exactly what's running, what failed, and why. No instrumentation required.
-- **Low latency by design:** Powered by [Checkpointing](https://www.inngest.com/blog/introducing-checkpointing?ref=durable-endpoints-article) for fast execution. Add [real-time streaming](https://www.inngest.com/docs/features/realtime?ref=durable-endpoints-article) when you need it.
+- **Low latency by design:** Powered by [Checkpointing](https://www.inngest.com/blog/introducing-checkpointing?ref=durable-endpoints-article) for fast execution. Add [real-time streaming](/docs/realtime?ref=durable-endpoints-article) when you need it.
 - **Works with your existing code:** No architectural overhaul. Add durability incrementally where it matters.
 
 ## **See it in action: A Durable DeepResearch in a few hours**
@@ -92,7 +92,7 @@ Durable Endpoints is available now in public beta. Getting started takes minutes
 2. Wrap your endpoint handler with `inngest.endpoint()` from `inngest/edge` for Bun or `inngest/next` for Next.js
 3. Use `step.run()` for operations that need durability
 
-[**Read the Durable Endpoints documentation**](https://www.inngest.com/docs/learn/durable-endpoints?ref=durable-endpoints-article)
+[**Read the Durable Endpoints documentation**](/docs/durable-execution/durable-endpoints?ref=durable-endpoints-article)
 
 <hr/>
 

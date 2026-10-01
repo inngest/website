@@ -16,7 +16,7 @@ author: Mitchell Alderson
 sidebarCta:
   text: "You're already running agents in prod. Learn how to ship your first eval."
   buttonLabel: "Watch the recording"
-  href: "https://www.inngest.com/docs/learn/agent-evals#ship-your-first-eval-webinar-recording"
+  href: "/docs/agent-evals/overview"
 ---
 
 AI agents excel at breaking things. They're non-deterministic: the same input can produce different outputs, some with bad consequences.
@@ -111,7 +111,7 @@ const { result: brief, variant, experimentRef } = await group.experiment(
 
 Running evals in the execution layer also lets you use product signals as scores: the real outcome, not a proxy for it.
 
-After the code agent ran, did the user accept the answer? Did the PR get merged? Often that outcome doesn't arrive at request time, which is where [deferred scoring](/docs/features/inngest-functions/steps-workflows/deferred-scoring?ref=blog-online-vs-offline-ai-evals-when-to-use-each) comes in: the eval durably waits for the real result to land, days later if that's how long it takes, then scores against it.
+After the code agent ran, did the user accept the answer? Did the PR get merged? Often that outcome doesn't arrive at request time, which is where [deferred scoring](/docs/agent-evals/deferred-scoring?ref=blog-online-vs-offline-ai-evals-when-to-use-each) comes in: the eval durably waits for the real result to land, days later if that's how long it takes, then scores against it.
 
 Each outcome is just an event sent to the scoring function, easily combined with more traditional scorers. The `waitForEvent` step below pauses for up to a week without holding a process open.
 
