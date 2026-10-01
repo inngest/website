@@ -100,8 +100,9 @@ export function Layout({
 
   const siteTitle = `Inngest Docs`;
   const preferredTitle: string = metaTitle || title || siteTitle;
+  // The docs home sets its full title, so it skips the " - Inngest Docs" suffix.
   const pageTitle =
-    preferredTitle === siteTitle
+    preferredTitle === siteTitle || isDocsOverview
       ? preferredTitle
       : `${preferredTitle} - ${siteTitle}`;
   const metaDescription =

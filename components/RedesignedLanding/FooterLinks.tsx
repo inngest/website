@@ -53,7 +53,7 @@ export const navigation = {
     { name: "Blog", href: "/blog?ref=footer-links" },
     { name: "Changelog", href: "/changelog?ref=footer-links" },
     { name: "About", href: "/about?ref=footer-links" },
-    { name: "Careers", href: "/careers?ref=footer-links" },
+    { name: "Careers", href: "/about?ref=footer-links" },
   ],
   community: [
     {

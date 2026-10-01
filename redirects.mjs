@@ -166,6 +166,8 @@ export const permanentRedirects = [
   ["/docs/functions/testing-functions", "/docs/local-development"],
   ["/docs/what-is-inngest", "/docs"],
   ["/docs/reference/functions/retries", "/docs/features/inngest-functions/error-retries/inngest-errors"],
+  ["/docs/reference/functions/concurrency", "/docs/durable-execution/flow-control/concurrency"],
+  ["/docs/reference/functions/idempotency", "/docs/durable-execution/guides-and-advanced/idempotency"],
   ["/docs/creating-an-event-key", "/docs/platform-and-operations/keys-and-access"],
   ["/docs/event-format-and-structure", "/docs/reference/typescript/v4/events/send"],
   ["/docs/events/event-format-and-structure", "/docs/reference/typescript/v4/events/send"],
