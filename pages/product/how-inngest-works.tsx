@@ -34,7 +34,7 @@ export default function HowInngestWorks() {
         }}
       >
         <Container>
-          <h1 className="text-3xl lg:text-5xl text-white mt-12 md:mt-20 font-semibold tracking-tight">
+          <h1 className="mt-12 text-3xl font-semibold tracking-tight text-white md:mt-20 lg:text-5xl">
             How Inngest Works
           </h1>
           <p className="text-xl text-slate-100">Learn the basics of Inngest</p>
@@ -55,12 +55,12 @@ export default function HowInngestWorks() {
             <div className="flex items-center justify-center">
               <HowInngestWorksGraphic />
             </div>
-            <div className="mb-12 mx-auto max-w-2xl flex flex-col gap-8 text-lg font-medium">
+            <div className="mx-auto mb-12 flex max-w-2xl flex-col gap-8 text-lg font-medium">
               <p>
                 The lifecycle of a background job starts in your application
                 with an event.
               </p>
-              <ol className="flex flex-col gap-4 list-decimal">
+              <ol className="flex list-decimal flex-col gap-4">
                 <li>
                   Your application uses the Inngest SDK to{" "}
                   <InlineHighlight>
@@ -107,7 +107,7 @@ export default function HowInngestWorks() {
 
 function InlineHighlight({ children }: { children: React.ReactNode }) {
   return (
-    <span className="italic text-indigo-300 underline underline-offset-4 decoration-2	decoration-indigo-200/50">
+    <span className="italic text-indigo-300 underline decoration-indigo-200/50 decoration-2	underline-offset-4">
       {children}
     </span>
   );

@@ -10,9 +10,7 @@ import {
   getPatternSections,
   getSection,
 } from "../../../../../shared/Patterns/patternsData";
-import {
-  MarkdownRender,
-} from "../../../../../shared/Patterns/MarkdownRender";
+import { MarkdownRender } from "../../../../../shared/Patterns/MarkdownRender";
 import AgentView from "../../../../../shared/Patterns/AgentView";
 import { patternMarkdown } from "../../../../../shared/Patterns/markdown";
 import "../../../../../shared/Patterns/patterns-docs.css";
@@ -27,7 +25,11 @@ type PatternFrontmatter = {
 // Turn any YouTube URL (watch, youtu.be, embed) into a privacy-enhanced embed.
 function youtubeEmbedUrl(url?: string): string | null {
   if (!url) return null;
-  const res = [/[?&]v=([\w-]{11})/, /youtu\.be\/([\w-]{11})/, /\/embed\/([\w-]{11})/];
+  const res = [
+    /[?&]v=([\w-]{11})/,
+    /youtu\.be\/([\w-]{11})/,
+    /\/embed\/([\w-]{11})/,
+  ];
   for (const re of res) {
     const m = url.match(re);
     if (m) return `https://www.youtube-nocookie.com/embed/${m[1]}`;
@@ -36,7 +38,9 @@ function youtubeEmbedUrl(url?: string): string | null {
 }
 
 export const getStaticPaths: GetStaticPaths = async () => ({
-  paths: PATTERNS.map((p) => ({ params: { category: p.category, slug: p.slug } })),
+  paths: PATTERNS.map((p) => ({
+    params: { category: p.category, slug: p.slug },
+  })),
   fallback: false,
 });
 
@@ -51,7 +55,8 @@ export const getStaticProps: GetStaticProps = async (ctx) => {
 
   // `getPatternSections()` excludes unreleased patterns, so a public pattern's
   // prev/next never links to a gated sibling server-side.
-  const patterns = getPatternSections().find((s) => s.id === category)?.patterns ?? [];
+  const patterns =
+    getPatternSections().find((s) => s.id === category)?.patterns ?? [];
   const i = patterns.findIndex((p) => p.slug === slug);
   const prev = i > 0 ? patterns[i - 1] : null;
   const next = i >= 0 && i < patterns.length - 1 ? patterns[i + 1] : null;
@@ -138,7 +143,11 @@ export default function PatternPage({
       <div className="md-prose">
         <span className="cat-eyebrow mono">
           <span className="cat-eyebrow-dot" />
-          <Link href={`/docs/patterns/${category}`} className="md-link" style={{ border: 0 }}>
+          <Link
+            href={`/docs/patterns/${category}`}
+            className="md-link"
+            style={{ border: 0 }}
+          >
             {sectionName}
           </Link>
         </span>
@@ -164,7 +173,10 @@ export default function PatternPage({
 
       <div className="pat-nav">
         {prev ? (
-          <Link className="pat-nav-card" href={`/docs/patterns/${category}/${prev.slug}`}>
+          <Link
+            className="pat-nav-card"
+            href={`/docs/patterns/${category}/${prev.slug}`}
+          >
             <span className="pat-nav-dir mono">← Previous</span>
             <span className="pat-nav-title">{prev.title}</span>
           </Link>

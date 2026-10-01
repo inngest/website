@@ -16,7 +16,11 @@ import "../../../../shared/Patterns/patterns-docs.css";
 function Arrow({ s = 14 }: { s?: number }) {
   return (
     <svg width={s} height={s} viewBox="0 0 14 14" fill="none" aria-hidden>
-      <path d="M3 7 L11 7 M7 3 L11 7 L7 11" stroke="currentColor" strokeWidth="1.4" />
+      <path
+        d="M3 7 L11 7 M7 3 L11 7 L7 11"
+        stroke="currentColor"
+        strokeWidth="1.4"
+      />
     </svg>
   );
 }
@@ -97,7 +101,9 @@ export default function CategoryPage({ category }: { category: string }) {
             className="cat-row"
             href={`/docs/patterns/${section.id}/${p.slug}`}
           >
-            <span className="cat-row-num mono">{String(i + 1).padStart(2, "0")}</span>
+            <span className="cat-row-num mono">
+              {String(i + 1).padStart(2, "0")}
+            </span>
             <span className="cat-row-body">
               <span className="cat-row-title">{p.title}</span>
               <span className="cat-row-sub">{p.subtitle}</span>

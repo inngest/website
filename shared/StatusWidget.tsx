@@ -110,7 +110,7 @@ export function StatusIcon({ className = "" }: { className?: string }) {
   return (
     <span className={`${className} inline-flex items-center justify-center`}>
       <span
-        className={`inline-flex m-auto w-2 h-2 rounded-full`}
+        className={`m-auto inline-flex h-2 w-2 rounded-full`}
         style={{ backgroundColor: statusColor[status.impact] }}
         title={`${status.description} - Status updated at ${status.updated_at}`}
       ></span>
@@ -129,11 +129,11 @@ export default function StatusWidget({
       href={status.url}
       target="_blank"
       rel="noopener noreferrer"
-      className={`${className} text-slate-200 font-medium bg-canvasSubtle hover:bg-canvasMuted transition-all rounded text-sm px-4 py-2 inline-flex items-center`}
+      className={`${className} inline-flex items-center rounded bg-canvasSubtle px-4 py-2 text-sm font-medium text-slate-200 transition-all hover:bg-canvasMuted`}
       title={`Status updated at ${status.updated_at}`}
     >
       <span
-        className={`inline-flex w-2 h-2 mr-2 rounded-full`}
+        className={`mr-2 inline-flex h-2 w-2 rounded-full`}
         style={{ backgroundColor: statusColor[status.impact] }}
       ></span>
       {status.description}
