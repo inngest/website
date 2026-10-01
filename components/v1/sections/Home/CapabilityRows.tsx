@@ -80,12 +80,13 @@ const CAPABILITIES: Capability[] = [
  * at the right edge; the fill is what makes it hold at any viewport
  * width (the PNG alone is 1311px wide).
  *
- * Below the header, the four capabilities sit in a 2×2 grid of framed
- * cards instead of four alternating rows. Each card is horizontal from
- * md up (media left, copy right) so a row is only as tall as its copy
- * and both rows fit a single screen together; on mobile the media
- * stacks above the copy. Same `GradientFrame` the platform section
- * uses, so the two product chapters share one surface language.
+ * Below the header, the four capabilities are four full-width framed
+ * cards, stacked. Each card is horizontal from md up — video on the
+ * left at 16:9, copy centred beside it — so the copy column is wide
+ * enough to set the body a size up and keep it to a few lines; on
+ * mobile the media stacks above the copy. Same `GradientFrame` the
+ * platform section uses, so the two product chapters share one
+ * surface language.
  */
 /**
  * Desktop with a real pointer: one video at a time. The first card
@@ -120,7 +121,7 @@ export default function Capabilities() {
         />
       </div>
 
-      <ul className="relative mt-v1-stack grid grid-cols-1 gap-6 pl-0 lg:mt-v1-stack-lg lg:grid-cols-2">
+      <ul className="relative mt-v1-stack flex flex-col gap-6 pl-0 lg:mt-v1-stack-lg">
         {CAPABILITIES.map((capability, i) => (
           <motion.li
             key={capability.id}
@@ -209,11 +210,9 @@ function CapabilityCard({
         className="h-full rounded-[10px]"
         innerClassName="flex h-full flex-col [background-color:rgb(var(--color-v1-bg-canvas-base)/0.85)] md:flex-row"
       >
-        {/* Media column. Stacked: a 16:9 box. Side-by-side (md+): fills
-            the card's height, which the copy column sets — the video is
-            object-cover so the small height mismatch becomes a slight
-            crop rather than letterboxing. */}
-        <div className="relative aspect-video w-full shrink-0 overflow-hidden border-b border-v1-frost/[0.08] bg-v1-surfaceElevated md:aspect-auto md:w-[52%] md:self-stretch md:border-b-0 md:border-r">
+        {/* Media column: a 16:9 box at every width. Side-by-side (md+)
+            it sets the card height and the copy centres beside it. */}
+        <div className="relative aspect-video w-full shrink-0 overflow-hidden border-b border-v1-frost/[0.08] bg-v1-surfaceElevated md:w-1/2 md:border-b-0 md:border-r">
           {capability.videoSrc ? (
             <RowVideo
               src={capability.videoSrc}
@@ -228,7 +227,7 @@ function CapabilityCard({
           )}
         </div>
 
-        <div className="flex flex-1 flex-col gap-4 p-5 lg:p-6">
+        <div className="flex flex-1 flex-col justify-center gap-5 p-6 md:p-8 lg:p-12">
           <div className="flex flex-col gap-3">
             {/* Icon + label row. The icon is the site line-art SVG used
                 as a CSS mask over `currentColor`, so it takes the exact
@@ -253,15 +252,17 @@ function CapabilityCard({
                 {capability.label}
               </span>
             </p>
-            <h3 className="text-v1-heading-sm text-v1-frost">
+            <h3 className="text-v1-heading-card text-v1-frost">
               {capability.heading}
             </h3>
           </div>
           {/* `!text-v1-frost`: the page-level body rule dims body tokens to
               #B3B3B3 at (0,2,0) specificity; these cards read better in
               full white against the dark frame. */}
-          <p className="text-v1-body-sm !text-v1-frost">{capability.body}</p>
-          <div className="mt-auto pt-1">
+          <p className="text-v1-body-lg-loose max-w-[560px] !text-v1-frost">
+            {capability.body}
+          </p>
+          <div className="pt-1">
             <DocsCue
               href={appendRef(capability.docsHref, `homepage-${capability.id}`)}
             />
