@@ -91,6 +91,20 @@ export interface ConcurrencyConstraint {
   scope: Scope;
   /** Slots of a shared key held by other functions (shared key only). */
   externalLoad: number;
+  /**
+   * Changes to the limit over time, in seconds, sorted by `at`. Bursty
+   * concurrency raises the account limit for a while; the rule is unchanged.
+   */
+  limitChanges?: { at: number; limit: number }[];
+}
+
+/** A constraint's limit at time t, in seconds. */
+export function limitAt(c: ConcurrencyConstraint, t: number) {
+  let limit = c.limit;
+  for (const change of c.limitChanges ?? []) {
+    if (change.at <= t + 1e-9) limit = change.limit;
+  }
+  return limit;
 }
 
 export interface SimConfig {
@@ -128,6 +142,11 @@ export interface SimConfig {
   concurrency: { enabled: boolean; constraints: ConcurrencyConstraint[] };
   startTimeout: { enabled: boolean; seconds: number };
   keyQueues: boolean;
+  /**
+   * Stop at this time, in seconds, leaving queued and running work
+   * unfinished. Without it, the simulation runs until all work is done.
+   */
+  until?: number;
 }
 
 export type ControlId =
@@ -605,6 +624,7 @@ export function simulate(cfg: SimConfig): SimResult {
     const c = constraints[i];
     return c.key === "tenant" ? tenant : c.key === "shared" ? "shared" : "fn";
   };
+  const cLimit = (i: number, ms: number) => limitAt(constraints[i], sec(ms));
   const cUsed = (i: number, key: string) =>
     (active[i].get(key) || 0) +
     (constraints[i].key === "shared" ? constraints[i].externalLoad : 0);
@@ -847,8 +867,7 @@ export function simulate(cfg: SimConfig): SimResult {
     const slotText = constraints.length
       ? ` Slots: ${keys
           .map(
-            (k, i) =>
-              `${cUsed(i, k)}/${constraints[i].limit} for ${describeKey(i, k)}`
+            (k, i) => `${cUsed(i, k)}/${cLimit(i, t)} for ${describeKey(i, k)}`
           )
           .join(", ")}.`
       : "";
@@ -886,7 +905,7 @@ export function simulate(cfg: SimConfig): SimResult {
       return { reason: "throttle" };
     }
     for (let i = 0; i < constraints.length; i++) {
-      if (cUsed(i, cKey(i, row.tenant)) >= constraints[i].limit) {
+      if (cUsed(i, cKey(i, row.tenant)) >= cLimit(i, now)) {
         return { reason: "concurrency", constraint: i };
       }
     }
@@ -945,7 +964,7 @@ export function simulate(cfg: SimConfig): SimResult {
           `Run ${row.label}${stepText} waits for a slot: ${cUsed(
             i,
             cKey(i, row.tenant)
-          )}/${constraints[i].limit} steps executing for ${describeKey(
+          )}/${cLimit(i, t)} steps executing for ${describeKey(
             i,
             cKey(i, row.tenant)
           )}.`,
@@ -1020,12 +1039,28 @@ export function simulate(cfg: SimConfig): SimResult {
   let ei = 0;
   let t = 0;
   let truncated = false;
+  const horizon = cfg.until === undefined ? undefined : qMs(cfg.until);
   for (; ; t += TICK_MS) {
+    if (horizon !== undefined && t >= horizon) break;
     if (t > MAX_SIM_MS) {
       truncated = true;
       t = MAX_SIM_MS;
       break;
     }
+
+    // 0. Limit changes, such as a burst starting or ending.
+    constraints.forEach((c, i) => {
+      for (const change of c.limitChanges ?? []) {
+        if (qMs(change.at) !== t) continue;
+        const target =
+          c.key === "tenant" ? "each key" : describeKey(i, cKey(i, "*"));
+        L(
+          t,
+          "info",
+          `The concurrency limit for ${target} is now ${change.limit}.`
+        );
+      }
+    });
 
     // 1. Finish executing steps.
     if (executing.length) {
