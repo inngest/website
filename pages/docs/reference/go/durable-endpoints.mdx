@@ -1,0 +1,108 @@
+export const metaTitle = "Durable Endpoints | Go SDK Reference";
+export const description = "Set up Durable Endpoints in the Inngest Go SDK: run net/http handlers as Inngest functions with stephttp, using Handle, Middleware, or Start.";
+
+# Durable Endpoints in Go
+
+> Run `net/http` handlers as Inngest functions with the `stephttp` package.
+
+[Durable Endpoints](/docs/durable-execution/durable-endpoints) (beta) run a `net/http` handler as an Inngest function. The handler calls `step.Run` and the other step tools, and Inngest records each request as a run with a trace. The client gets the handler's response directly, with no wait for Inngest. You don't need a client or `Serve()` for Durable Endpoints. The [`stephttp`](https://pkg.go.dev/github.com/inngest/inngestgo/stephttp) package handles requests from Inngest itself.
+
+## Set up the provider
+
+Create one provider when the process starts with `stephttp.Setup`, and use it for every handler:
+
+```go {{ title: "steps.go" }}
+!snippet:path=snippets/go/docs/endpoints/durable_endpoints/setup_provider.go
+```
+
+`Setup` reads `INNGEST_SIGNING_KEY`, `INNGEST_SIGNING_KEY_FALLBACK`, `INNGEST_ENV`, and `INNGEST_DEV` from the environment. Set `INNGEST_DEV=1` to send runs to the local [Dev Server](/docs/local-development). You can also set each value in `stephttp.SetupOpts.Optional`.
+
+Next, [choose how handlers become functions](#choose-how-handlers-become-functions), and [wait for runs at shutdown](#wait-for-runs-at-shutdown).
+
+## Choose how handlers become functions
+
+The provider can turn a handler into a Durable Endpoint in three ways, depending on your setup:
+
+| Method | Use it when |
+| --- | --- |
+| `Handle` and `HandleFunc` | You register each route yourself. Every request to the route is a function. |
+| `Middleware` and `Configure` | You want one setup for a whole router, such as chi or a wrapped `http.ServeMux`. Each handler opts in with `Configure`. |
+| `Start` | The provider can't wrap the handler, for example a route that generated code registers. |
+
+### Wrap handlers with `Handle` or `HandleFunc`
+
+`Handle` wraps an `http.Handler` and `HandleFunc` wraps a handler function. Both take the function's [`FnOpts`](#configure-a-function):
+
+```go {{ title: "orders.go" }}
+!snippet:path=snippets/go/docs/endpoints/durable_endpoints/order_endpoint.go
+```
+
+The function ID is the route pattern, `POST /api/orders`.
+
+### Add middleware to a router
+
+Put `Middleware` in front of many handlers. A handler behind it is a function only after it calls `stephttp.Configure`. Until then, its steps run with no run and the request makes no calls to Inngest:
+
+```go {{ title: "router.go" }}
+!snippet:path=snippets/go/docs/endpoints/durable_endpoints/middleware_configure.go
+```
+
+Call `Configure` on the handler's first line, before it reads the request body. Behind `Middleware`, the request body is copied only from the point where the handler calls `Configure`. If a handler must read the body first, for example a GraphQL handler that parses the operation name, set `MiddlewareOpts.RecordRequestBodies` on the routes that need it. This copies every request body behind the middleware.
+
+An async step such as `step.Sleep` in a handler that hasn't called `Configure` returns a 500, because no run exists to continue it.
+
+### Start a function inside a handler
+
+Call `Start` on the first line of a handler that the provider can't wrap. Use the `w` and `r` that it returns for the rest of the handler, and always `defer end()`:
+
+```go {{ title: "credits.go" }}
+!snippet:path=snippets/go/docs/endpoints/durable_endpoints/start_handler.go
+```
+
+Without `defer end()`, a finished run isn't sent to Inngest, and an async step or a resume request from Inngest panics up to `net/http`. If Inngest resumes a run whose saved steps can't load, `Start` writes a 500 so that Inngest sends the request again. The handler still runs, but its steps don't execute, its request context is cancelled, and its writes are dropped.
+
+## Wait for runs at shutdown
+
+Each finished run is sent to Inngest in the background after the response. Call `Wait` when the process shuts down, after the server stops accepting requests. A run that is still being sent when the process exits is lost:
+
+```go {{ title: "shutdown.go" }}
+!snippet:path=snippets/go/docs/endpoints/durable_endpoints/shutdown.go
+```
+
+## Configure a function
+
+`FnOpts` configures one function. `Handle`, `HandleFunc`, and `Start` take it at the start, and `stephttp.Configure` changes it during a request. `Configure` only changes the fields that its function sets:
+
+```go
+stephttp.Configure(r.Context(), func(o *stephttp.FnOpts) {
+	o.ID = "gql/" + operationName
+	o.OmitResponseBody = true
+})
+```
+
+| Field | Description |
+| --- | --- |
+| `ID` | The function ID. If empty, this is the `http.ServeMux` pattern that routed the request, such as `POST /users/{id}`. |
+| `TrackAllRequests` | Create a run for every request, even when the handler runs no steps. By default, only requests that run a step create a run. |
+| `OmitRequestBody` | Don't store the request body with the run. Set it in `Handle`, `HandleFunc`, or `Start` so that a body with secrets is never copied. |
+| `OmitResponseBody` | Don't store the response body with the run. `Configure` can change it before the response is written, for example to store only errors. |
+| `MaxRequestBodySize`, `MaxResponseBodySize` | The number of body bytes stored with the run. Both default to 1 MiB. The handler always reads the full request, and the client always gets the full response. |
+| `AsyncResponse` | The response the client gets when the run goes async. See [runs and async steps](#runs-and-async-steps). |
+
+Set `ID` when a router other than `http.ServeMux` routes the request, such as chi, or when generated code calls the handler. Without a pattern, Inngest builds the ID from the method and path, and each value in a path such as `/users/123` creates a separate function. The SDK logs a warning once when this happens.
+
+A change to `ID` after the run starts doesn't apply. `Configure` does nothing in a handler that the provider doesn't wrap.
+
+## Runs and async steps
+
+A request gets a run when its first step runs, or at the start when `TrackAllRequests` is set. A request without a run sends no `x-run-id` header and makes no call to Inngest.
+
+An async step, such as `step.Sleep` or `step.WaitForEvent`, makes the run continue in Inngest. The client gets the function's `AsyncResponse`:
+
+| Type | Response |
+| --- | --- |
+| `stephttp.AsyncResponseRedirect{}` | Default. A `303` redirect to an Inngest URL that waits for the run and returns its result. Set `URL` to redirect to your own URL instead. |
+| `stephttp.AsyncResponseToken{}` | A JSON body with `run_id` and `token`, which a client can use to fetch the result. |
+| `stephttp.AsyncResponseCustom(handler)` | Your own `http.HandlerFunc` writes the response. |
+
+Set a default for every function with `stephttp.SetupOpts.Optional.DefaultAsyncResponse`. See [requesting a Durable Endpoint](/docs/durable-execution/durable-endpoints#handling-errors-or-async-waits) for how clients follow the redirect.

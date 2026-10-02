@@ -46,6 +46,43 @@ inngest.fast_api.serve(app, inngest_client, [process_task])
 
 The [Python quick start](/docs/durable-execution/quick-start/python-quick-start) walks through a full example with the Dev Server.
 
+## Define steps
+
+Steps are the units of work Inngest retries and memoizes. The Python SDK gives you two ways to write them.
+
+**Imperative:** call `ctx.step.run()` with a step ID and a handler inside your function.
+
+```python
+@inngest_client.create_function(
+    fn_id="greet-user",
+    trigger=inngest.TriggerEvent(event="app/greet-user"),
+)
+async def greet_user(ctx: inngest.Context) -> str:
+    async def prepare_greeting() -> str:
+        return f"Welcome, {ctx.event.data['name']}!"
+
+    return await ctx.step.run("prepare-greeting", prepare_greeting)
+```
+
+**Decorator (experimental):** decorate a function with `step` from `inngest.experimental`. Calls inside an Inngest function run as steps; calls anywhere else run the function directly.
+
+```python
+from inngest.experimental import step
+
+@step("prepare-greeting")
+async def prepare_greeting(name: str) -> str:
+    return f"Welcome, {name}!"
+
+@inngest_client.create_function(
+    fn_id="greet-user",
+    trigger=inngest.TriggerEvent(event="app/greet-user"),
+)
+async def greet_user(ctx: inngest.Context) -> str:
+    return await prepare_greeting(str(ctx.event.data["name"]))
+```
+
+Both produce the same step. Use `ctx.step.run()` for logic specific to one function; use the decorator for steps you share across functions or also call from regular code. See [choosing `step.run` or the decorator](/docs/reference/python/steps/run?ref=docs-reference-python#choosing-step-run-or-the-decorator).
+
 ## Reference
 
 **Client and events**
@@ -63,7 +100,7 @@ The [Python quick start](/docs/durable-execution/quick-start/python-quick-start)
 - [`wait_for_event`](/docs/reference/python/steps/wait-for-event)
 - [`invoke`](/docs/reference/python/steps/invoke), [`invoke_by_id`](/docs/reference/python/steps/invoke_by_id), and [`send_event`](/docs/reference/python/steps/send-event)
 - [`parallel`](/docs/reference/python/steps/parallel)
-- [Step decorator (experimental)](/docs/reference/python/steps/run?ref=docs-reference-python#step-decorator): turn a Python function into a reusable step
+- [`@step` decorator](/docs/reference/python/steps/run?ref=docs-reference-python#step-decorator) (experimental): turn a Python function into a reusable step
 
 **Middleware**
 
