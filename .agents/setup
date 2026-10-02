@@ -16,7 +16,7 @@ step() {
 }
 
 install_node() (
-  local architecture archive checksum_file download_dir version
+  local architecture archive checksum_file install_dir version work_dir
 
   case "$(uname -m)" in
     x86_64) architecture="x64" ;;
@@ -27,9 +27,10 @@ install_node() (
       ;;
   esac
 
-  download_dir="$(mktemp -d)"
-  trap 'rm -rf "$download_dir"' EXIT
-  checksum_file="$download_dir/SHASUMS256.txt"
+  mkdir -p "$(dirname "$node_home")"
+  work_dir="$(mktemp -d "$(dirname "$node_home")/.node-v22-install.XXXXXX")"
+  trap 'rm -rf "$work_dir"' EXIT
+  checksum_file="$work_dir/SHASUMS256.txt"
 
   curl --fail --silent --show-error --location \
     https://nodejs.org/dist/latest-v22.x/SHASUMS256.txt \
@@ -47,13 +48,18 @@ install_node() (
   version="${version%-linux-*}"
   curl --fail --silent --show-error --location \
     "https://nodejs.org/dist/v${version}/${archive}" \
-    --output "$download_dir/$archive"
-  (cd "$download_dir" && grep "  $archive$" SHASUMS256.txt | sha256sum --check --status)
+    --output "$work_dir/$archive"
+  (cd "$work_dir" && grep "  $archive$" SHASUMS256.txt | sha256sum --check --status)
+
+  install_dir="$work_dir/node"
+  mkdir -p "$install_dir"
+  tar --extract --xz --file "$work_dir/$archive" \
+    --directory "$install_dir" --strip-components=1
+  "$install_dir/bin/node" --version >/dev/null
+  test -x "$install_dir/bin/corepack"
 
   rm -rf "$node_home"
-  mkdir -p "$node_home"
-  tar --extract --xz --file "$download_dir/$archive" \
-    --directory "$node_home" --strip-components=1
+  mv "$install_dir" "$node_home"
 )
 
 if [[ ! -x "$node_home/bin/node" ]] || \
@@ -61,8 +67,16 @@ if [[ ! -x "$node_home/bin/node" ]] || \
   step "Install Node.js 22" install_node
 fi
 
-if ! grep -Fqx "$profile_marker" "$HOME/.bash_profile" 2>/dev/null; then
-  cat >> "$HOME/.bash_profile" <<'EOF'
+profile_file="$HOME/.profile"
+for candidate in "$HOME/.bash_profile" "$HOME/.bash_login" "$HOME/.profile"; do
+  if [[ -e "$candidate" ]]; then
+    profile_file="$candidate"
+    break
+  fi
+done
+
+if ! grep -Fqx "$profile_marker" "$profile_file" 2>/dev/null; then
+  cat >> "$profile_file" <<'EOF'
 
 # inngest-website Node.js 22
 export PATH="$HOME/.local/share/node-v22/bin:$PATH"
@@ -70,8 +84,8 @@ EOF
 fi
 
 export PATH="$node_home/bin:$PATH"
-package_manager="$(node --print \
-  "require('$repo_root/package.json').packageManager")"
+package_manager="$(cd "$repo_root" && \
+  node --print "require('./package.json').packageManager")"
 
 step "Activate Corepack" corepack enable --install-directory "$node_home/bin"
 step "Prepare $package_manager" corepack prepare "$package_manager" --activate
