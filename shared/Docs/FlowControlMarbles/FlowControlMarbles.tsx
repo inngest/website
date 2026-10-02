@@ -24,7 +24,7 @@ import { getMarbleScenario } from "./scenarios";
 const END_HOLD_MS = 2200;
 
 /** Loops while on screen. With reduced motion, rests on the final state. */
-function useLoop(domain: number, realDuration: number) {
+export function useLoop(domain: number, realDuration: number) {
   const rootRef = useRef<HTMLElement>(null);
   const [t, setT] = useState(0);
   const tRef = useRef(0);
@@ -182,7 +182,7 @@ export function FlowControlMarbles({ scenario: id }: { scenario: string }) {
   );
 }
 
-function ControlButton({
+export function ControlButton({
   label,
   onClick,
   children,

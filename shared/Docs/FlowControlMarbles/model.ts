@@ -1,10 +1,12 @@
-import type {
-  GcraSeries,
-  SimConfig,
-  SimEvent,
-  SimResult,
-  SimRun,
-  WaitReason,
+import {
+  limitAt,
+  type ConcurrencyConstraint,
+  type GcraSeries,
+  type SimConfig,
+  type SimEvent,
+  type SimResult,
+  type SimRun,
+  type WaitReason,
 } from "../FlowControlSimulator/engine";
 import { fmtT } from "../FlowControlSimulator/derive";
 
@@ -18,6 +20,18 @@ export const MAX_STACK = 4;
 const DENSE_AT = 36;
 
 export type MeterKind = "slots" | "throttle" | "rateLimit" | "batch";
+
+/** Burst capacity: lanes from `from` on, available from `on` to `off`. */
+export interface Burst {
+  from: number;
+  on: number;
+  off: number;
+}
+
+/** The highest limit a constraint reaches, including scheduled changes. */
+export function peakLimit(c: ConcurrencyConstraint) {
+  return Math.max(c.limit, ...(c.limitChanges ?? []).map((ch) => ch.limit));
+}
 
 export interface DiagramOptions {
   /** Seconds of simulated time the x axis covers. */
@@ -42,6 +56,17 @@ export interface DiagramOptions {
   meters?: MeterKind[];
   /** Keep a queue row even when nothing waits. */
   alwaysQueue?: boolean;
+  /** Axis unit. The engine runs in seconds; "m" labels them as minutes. */
+  unit?: "s" | "m";
+  /** Output lane labels, in order, in place of the defaults. */
+  laneLabels?: string[];
+  /**
+   * Lanes from `from` on are burst capacity above the plan limit. The burst
+   * is on from `on` to `off` (domain time), where they're tinted.
+   */
+  burst?: Burst;
+  /** Events at one instant stack up to this many before a "+N" pill. */
+  maxStack?: number;
 }
 
 export interface Meter {
@@ -127,6 +152,9 @@ export interface Model {
   timing: Timing;
   /** Many events: small dots, no labels. */
   dense: boolean;
+  unit: "s" | "m";
+  burst?: Burst;
+  maxStack: number;
   tenants: string[];
   /** Stack position of events that share an instant, by event id. */
   stack: Map<number, { i: number; n: number }>;
@@ -293,6 +321,7 @@ export function buildModel(
   const rowIndex = (kind: BandRow["kind"], group: string) =>
     rows.findIndex((r) => r.kind === kind && r.group === group);
 
+  const maxStack = opts.maxStack ?? MAX_STACK;
   // Event stacks --------------------------------------------------------------
   const stack = new Map<number, { i: number; n: number }>();
   const rowDepth = tenants.map((tenant) => {
@@ -309,7 +338,7 @@ export function buildModel(
       ids.forEach((id, i) => stack.set(id, { i, n: ids.length }));
       depth = Math.max(depth, ids.length);
     });
-    return Math.min(depth, MAX_STACK);
+    return Math.min(depth, maxStack);
   });
 
   // Output lanes: pack runs by their active interval, per group ----------------
@@ -350,7 +379,7 @@ export function buildModel(
     // empty lanes are noise.
     const wanted =
       opts.minLanes ??
-      (slotMode && laneConstraint && slotBound ? laneConstraint.limit : 1);
+      (slotMode && laneConstraint && slotBound ? peakLimit(laneConstraint) : 1);
     const overflow = ends.length > cap;
     const count = overflow
       ? cap
@@ -374,6 +403,9 @@ export function buildModel(
     }
     local.forEach((j, id) => laneOf.set(id, base + Math.min(j, count - 1)));
   }
+  opts.laneLabels?.forEach((label, i) => {
+    if (lanes[i]) lanes[i].label = label;
+  });
 
   // When a cancel was requested. Singleton cancels move the lock right away,
   // even if the old run's executing step finishes later.
@@ -551,6 +583,9 @@ export function buildModel(
     realDuration,
     timing: T,
     dense,
+    unit: opts.unit ?? "s",
+    maxStack,
+    burst: opts.burst,
     tenants,
     stack,
     rowDepth,
@@ -608,7 +643,7 @@ export function slotsAt(model: Model, meter: Meter, t: number) {
     )
       used++;
   }
-  return { used, limit: c.limit };
+  return { used, limit: limitAt(c, t) };
 }
 
 /** Fractional GCRA capacity available at t. */
