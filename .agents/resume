@@ -1,0 +1,6 @@
+#!/usr/bin/env bash
+set -euo pipefail
+
+# This project has no wake-time authentication or backing services to repair.
+# Long-running preview processes are supervised through .amp/services.yaml.
+exit 0
