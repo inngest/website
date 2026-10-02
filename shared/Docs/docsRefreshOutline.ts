@@ -224,6 +224,11 @@ export const docsRefreshOutline: DocsRefreshPage[] = [
                 href: "/docs/durable-execution/flow-control/concurrency",
               },
               {
+                title: "Bursty concurrency",
+                href: "/docs/durable-execution/flow-control/bursty-concurrency",
+                unreleased: "bursty-concurrency",
+              },
+              {
                 title: "Throttling",
                 href: "/docs/durable-execution/flow-control/throttling",
               },
