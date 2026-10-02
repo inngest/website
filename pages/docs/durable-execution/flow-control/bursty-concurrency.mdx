@@ -27,7 +27,7 @@ By running “surprise” work rather building a backlog, Inngest lets you:
 
 Bursty concurrency is rolling out to all users across October 2026.
 
-Concurrency limits you set yourself remain during a burst. [Function-level concurrency](/docs/durable-execution/flow-control/concurrency) still protects rate-limited APIs, and [priority](/docs/durable-execution/flow-control/priority) still keeps your biggest customers fast.
+Concurrency limits you set yourself remain during a burst. [Function-level concurrency](/docs/durable-execution/flow-control/concurrency) still protects downstream services from too many simultaneous requests. [Throttling](/docs/durable-execution/flow-control/throttling) protects APIs with per-period rate limits, and [priority](/docs/durable-execution/flow-control/priority) still keeps your biggest customers fast.
 
 ## Example
 
