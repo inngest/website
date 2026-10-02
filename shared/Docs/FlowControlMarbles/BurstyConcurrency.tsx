@@ -17,13 +17,13 @@ import { buildModel } from "./model";
 /** Scaled down from the docs example: a plan limit of 2 instead of 100. */
 const PLAN_LIMIT = 2;
 const PEAK = PLAN_LIMIT * 3;
-/** Minutes on the axis. The burst is on from 25% to 75% of the way in. */
-const DOMAIN = 20;
-const BURST_ON = DOMAIN * 0.25;
-const BURST_OFF = DOMAIN * 0.75;
-const STEP_MINUTES = 2;
+/** Minutes on the axis. The burst budget is available for the first hour. */
+const DOMAIN = 80;
+const BURST_ON = 0;
+const BURST_OFF = 60;
+const STEP_MINUTES = 8;
 /** A step arrives this often: twice as fast as the plan limit can run them. */
-const EVERY_MINUTES = 0.5;
+const EVERY_MINUTES = 2;
 
 /**
  * Bursty concurrency is the step concurrency rule with the account limit
@@ -58,19 +58,12 @@ function config(): SimConfig {
   return c;
 }
 
-const fmtMin = (m: number) => `${Number(m.toFixed(1))}m`;
-
-const CAPTION = `Scaled down: the plan limit here is ${PLAN_LIMIT} concurrency slots, so a burst can reach ${PEAK}. A step arrives every ${
-  EVERY_MINUTES * 60
-} seconds, twice as fast as ${PLAN_LIMIT} slots can run them, so a backlog builds. When the burst turns on at ${fmtMin(
-  BURST_ON
-)}, the backlog starts at once and new steps run without waiting. When it turns off at ${fmtMin(
-  BURST_OFF
-)}, the limit drops back to ${PLAN_LIMIT}: running steps finish, and the backlog builds again.`;
+const CAPTION =
+  "The plan limit is 2 concurrency slots, and bursty concurrency raises the limit to 6 slots. One step arrives every 2 minutes and runs for 8 minutes. While burst capacity is available, steps start without waiting. After the 60-minute burst budget is exhausted, the limit returns to 2 slots and a backlog builds.";
 
 /**
  * The bursty concurrency page's simulator: steady work above the plan limit,
- * with the ceiling raised to 3x for the middle half of the timeline.
+ * with the ceiling raised to 3x until the one-hour budget is exhausted.
  */
 export function BurstyConcurrencySimulator() {
   const sim = useMemo(() => {
@@ -86,7 +79,7 @@ export function BurstyConcurrencySimulator() {
         i < PLAN_LIMIT ? `Slot ${i + 1}` : `Burst ${i - PLAN_LIMIT + 1}`
       ),
       burst: { from: PLAN_LIMIT, on: BURST_ON, off: BURST_OFF },
-      meters: ["slots"],
+      meters: [],
       alwaysQueue: true,
       tenantNames: { I: "Steps" },
     });
@@ -123,7 +116,7 @@ export function BurstyConcurrencySimulator() {
           />
           {on
             ? `Burst on: up to ${PEAK} slots`
-            : `Burst off: ${PLAN_LIMIT} slots`}
+            : `Burst budget exhausted: ${PLAN_LIMIT} slots`}
         </span>
         <div className="ml-auto flex items-center gap-0.5">
           <span

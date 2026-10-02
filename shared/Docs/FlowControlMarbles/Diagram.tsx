@@ -613,7 +613,8 @@ function BurstRegion({
   const x1 = Math.min(right, L.x(off));
   const edges: { x: number; label: string }[] = [];
   if (on > EPS) edges.push({ x: x0, label: "burst on" });
-  if (off < model.domain - EPS) edges.push({ x: x1, label: "burst off" });
+  if (off < model.domain - EPS)
+    edges.push({ x: x1, label: "burst budget exhausted" });
   return (
     <g className="pointer-events-none">
       <rect
