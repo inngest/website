@@ -5,13 +5,13 @@ export const description = "Use bursty concurrency to temporarily run up to thre
 
 ## Concurrency Limit
 
-[Concurrency](/docs/durable-execution/flow-control/concurrency) is the number of steps actively executing at once.
+[Concurrency](/docs/durable-execution/flow-control/concurrency?ref=docs-bursty-concurrency) is the number of steps actively executing at once.
 
 Your account concurrency limit is the amount of work that can run at the same time. If your account concurrency limit is 100 concurrency slots, work will fan out across the slots until each is filled. Then a backlog builds.
 
 ![Concurrency slots filling before additional work builds a backlog](/assets/docs/durable-execution/flow-control/bursty-concurrency/concurrency-queue.gif)
 
-Your plan determines your concurrency limit. See the [billing page in the dashboard for your concurrency](https://app.inngest.com/billing) limit or [pricing](/pricing).
+Your plan determines your concurrency limit. See the [billing page in the dashboard for your concurrency](https://app.inngest.com/billing) limit or [pricing](/pricing?ref=docs-bursty-concurrency).
 
 Concurrency slots are shared across all steps, regardless of environment or function.
 
@@ -26,7 +26,7 @@ By running “surprise” work rather than building a backlog, Inngest lets you:
 
 Bursty concurrency is rolling out to all users across October 2026.
 
-Flow control that you set yourself remains during a burst. [Function-level concurrency](/docs/durable-execution/flow-control/concurrency) protects downstream services from too many simultaneous requests. [Throttling](/docs/durable-execution/flow-control/throttling) protects APIs with per-period rate limits, and [priority](/docs/durable-execution/flow-control/priority) keeps your biggest customers fast.
+Flow control that you set yourself remains during a burst. [Function-level concurrency](/docs/durable-execution/flow-control/concurrency?ref=docs-bursty-concurrency) protects downstream services from too many simultaneous requests. [Throttling](/docs/durable-execution/flow-control/throttling?ref=docs-bursty-concurrency) protects APIs with per-period rate limits, and [priority](/docs/durable-execution/flow-control/priority?ref=docs-bursty-concurrency) keeps your biggest customers fast.
 
 ## Example
 
