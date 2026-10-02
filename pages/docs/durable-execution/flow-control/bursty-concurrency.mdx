@@ -27,7 +27,7 @@ By running “surprise” work rather than building a backlog, Inngest lets you:
 
 Bursty concurrency is rolling out to all users across October 2026.
 
-Concurrency limits you set yourself remain during a burst. [Function-level concurrency](/docs/durable-execution/flow-control/concurrency) still protects downstream services from too many simultaneous requests. [Throttling](/docs/durable-execution/flow-control/throttling) protects APIs with per-period rate limits, and [priority](/docs/durable-execution/flow-control/priority) still keeps your biggest customers fast.
+Flow control that you set yourself remains during a burst. [Function-level concurrency](/docs/durable-execution/flow-control/concurrency) protects downstream services from too many simultaneous requests. [Throttling](/docs/durable-execution/flow-control/throttling) protects APIs with per-period rate limits, and [priority](/docs/durable-execution/flow-control/priority) keeps your biggest customers fast.
 
 ## Example
 
@@ -37,7 +37,7 @@ Previously, you would have processed the first 100 concurrently while the next 1
 
 ## How the burst budget works
 
-Pro and above accounts get one hour of burst per month. The burst budget is measured in whole minutes. Each whole minute in which your account uses concurrency above its plan limit consumes one minute of the burst budget. Spend 30m today and the other 30m next week: you decide. When you’ve exhausted the burst budget, you return to your plan limit, until the burst budget refills.
+Pro and above accounts get one hour of burst per month. The burst budget is measured in whole minutes. Each minute in which you use concurrency above your account concurrencyy limit consumes one whole minute of the burst budget. Spend 30m today and the other 30m next week: you decide. When you’ve exhausted the burst budget, you return to your plan limit, until the burst budget refills.
 
 The burst budget refills monthly at a fixed time.
 
