@@ -1,0 +1,81 @@
+#!/usr/bin/env bash
+set -euo pipefail
+
+repo_root="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
+node_home="$HOME/.local/share/node-v22"
+profile_marker="# inngest-website Node.js 22"
+
+step() {
+  local label="$1"
+  shift
+  local started=$SECONDS
+
+  printf '==> %s\n' "$label"
+  "$@"
+  printf '<== %s (%ss)\n' "$label" "$((SECONDS - started))"
+}
+
+install_node() (
+  local architecture archive checksum_file download_dir version
+
+  case "$(uname -m)" in
+    x86_64) architecture="x64" ;;
+    aarch64 | arm64) architecture="arm64" ;;
+    *)
+      printf 'Unsupported architecture: %s\n' "$(uname -m)" >&2
+      return 1
+      ;;
+  esac
+
+  download_dir="$(mktemp -d)"
+  trap 'rm -rf "$download_dir"' EXIT
+  checksum_file="$download_dir/SHASUMS256.txt"
+
+  curl --fail --silent --show-error --location \
+    https://nodejs.org/dist/latest-v22.x/SHASUMS256.txt \
+    --output "$checksum_file"
+  archive="$(awk -v architecture="$architecture" \
+    '$2 ~ ("^node-v[0-9.]+-linux-" architecture "\\.tar\\.xz$") { print $2; exit }' \
+    "$checksum_file")"
+
+  if [[ -z "$archive" ]]; then
+    printf 'Could not find a Node.js 22 archive for %s\n' "$architecture" >&2
+    return 1
+  fi
+
+  version="${archive#node-v}"
+  version="${version%-linux-*}"
+  curl --fail --silent --show-error --location \
+    "https://nodejs.org/dist/v${version}/${archive}" \
+    --output "$download_dir/$archive"
+  (cd "$download_dir" && grep "  $archive$" SHASUMS256.txt | sha256sum --check --status)
+
+  rm -rf "$node_home"
+  mkdir -p "$node_home"
+  tar --extract --xz --file "$download_dir/$archive" \
+    --directory "$node_home" --strip-components=1
+)
+
+if [[ ! -x "$node_home/bin/node" ]] || \
+  [[ "$($node_home/bin/node --version)" != v22.* ]]; then
+  step "Install Node.js 22" install_node
+fi
+
+if ! grep -Fqx "$profile_marker" "$HOME/.bash_profile" 2>/dev/null; then
+  cat >> "$HOME/.bash_profile" <<'EOF'
+
+# inngest-website Node.js 22
+export PATH="$HOME/.local/share/node-v22/bin:$PATH"
+EOF
+fi
+
+export PATH="$node_home/bin:$PATH"
+package_manager="$(node --print \
+  "require('$repo_root/package.json').packageManager")"
+
+step "Activate Corepack" corepack enable --install-directory "$node_home/bin"
+step "Prepare $package_manager" corepack prepare "$package_manager" --activate
+step "Install workspace dependencies" \
+  pnpm --dir "$repo_root" install --frozen-lockfile
+
+printf 'Ready: Node.js %s, pnpm %s\n' "$(node --version)" "$(pnpm --version)"
