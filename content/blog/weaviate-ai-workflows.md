@@ -25,7 +25,7 @@ Our Dinner Generator workflow relies on three datasets available on Huggingface:
 - `Thefoodprocessor/ingredients_alternatives`: a dataset of recipe and matching ingredients alternatives for known allergies
 - `Thefoodprocessor/wine_type`: a list of pairs of recipes and wine pairings
 
-Once those datasets are loaded into our Weaviate cluster, our workflow is triggered with an [Inngest Event](/docs/features/events-triggers?utm_source=weaviate&utm_content=article&utm_campaign=workflow-dinner-generator) with the following properties:
+Once those datasets are loaded into our Weaviate cluster, our workflow is triggered with an [Inngest Event](/docs/durable-execution/guides-and-advanced/events-and-triggers?utm_source=weaviate&utm_content=article&utm_campaign=workflow-dinner-generator&ref=blog-weaviate-ai-workflows) with the following properties:
 
 ```json
 {

@@ -123,13 +123,13 @@ await inngest.send({
         description:
           "A step-by-step guide to learn how to build with Inngest in less than 5 minutes.",
         type: "Tutorial",
-        href: "/docs/getting-started/nodejs-quick-start",
+        href: "/docs/durable-execution/quick-start/typescript-quick-start",
       },
       {
         title: "Running Background Jobs",
         description: "How to background jobs without the queues and workers.",
         type: "Guide",
-        href: "/docs/guides/background-jobs",
+        href: "/docs/patterns/jobs/keeping-your-api-fast",
       },
       {
         title: "Using TypeScript with Inngest",

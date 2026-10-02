@@ -93,7 +93,7 @@ The **`ctx.step.sleep("wait-1-hour", datetime.timedelta(hours=1))`** call does
 
 ## **How Inngest Handles Retries, Delays, and Multi-Step Workflows in Python**
 
-The real power of Inngest's Python SDK is the **`step`** API. Every call to **`ctx.step.run()`** is **individually retried and memoized**. If your function crashes halfway through a 10-step pipeline, Inngest replays from the failing step. Earlier results are retrieved from the run history, not re-executed. See **[how Inngest executes functions](/docs/learn/how-functions-are-executed?ref=blog-inngest-python-sdk-durable-background-jobs-for-fastapi-flask-and-django)** for the full execution model.
+The real power of Inngest's Python SDK is the **`step`** API. Every call to **`ctx.step.run()`** is **individually retried and memoized**. If your function crashes halfway through a 10-step pipeline, Inngest replays from the failing step. Earlier results are retrieved from the run history, not re-executed. See **[how Inngest executes functions](/docs/durable-execution/durable-workflows?ref=blog-inngest-python-sdk-durable-background-jobs-for-fastapi-flask-and-django)** for the full execution model.
 
 ```python
 import datetime
@@ -204,7 +204,7 @@ async def process_export(ctx: inngest.Context) -> None:
     ...
 ```
 
-**Note:** Concurrency keys use the same expression syntax as event matching: **`event.data.user_id`** references a field on the triggering event's data payload. You can scope limits per-user, per-tenant, or per-resource with **[flow control](/docs/guides/flow-control?ref=blog-inngest-python-sdk-durable-background-jobs-for-fastapi-flask-and-django)**, including the same **[per-tenant concurrency patterns](/blog/fixing-multi-tenant-queueing-concurrency-problems?ref=blog-inngest-python-sdk-durable-background-jobs-for-fastapi-flask-and-django)** used in multi-customer platforms.
+**Note:** Concurrency keys use the same expression syntax as event matching: **`event.data.user_id`** references a field on the triggering event's data payload. You can scope limits per-user, per-tenant, or per-resource with **[flow control](/docs/durable-execution/flow-control?ref=blog-inngest-python-sdk-durable-background-jobs-for-fastapi-flask-and-django)**, including the same **[per-tenant concurrency patterns](/blog/fixing-multi-tenant-queueing-concurrency-problems?ref=blog-inngest-python-sdk-durable-background-jobs-for-fastapi-flask-and-django)** used in multi-customer platforms.
 
 ## **Triggering Background Jobs from Anywhere in Your Python App**
 
@@ -310,7 +310,7 @@ AI workflows (calling an LLM, processing the response, storing results, triggeri
 
 ### **You're processing webhooks from third-party services**
 
-Stripe, GitHub, Shopify, Twilio: webhook-driven workflows often need to do several things in sequence after an event arrives (validate, update records, send notifications, trigger follow-up logic). With Inngest, you send the incoming webhook payload as an event and handle the rest in a durable step function, or use **[Inngest as a webhook consumer](/docs/platform/webhooks?ref=blog-inngest-python-sdk-durable-background-jobs-for-fastapi-flask-and-django)** directly. If your Python backend processes webhooks and you want that processing to be reliable and observable, Inngest is the right tool.
+Stripe, GitHub, Shopify, Twilio: webhook-driven workflows often need to do several things in sequence after an event arrives (validate, update records, send notifications, trigger follow-up logic). With Inngest, you send the incoming webhook payload as an event and handle the rest in a durable step function, or use **[Inngest as a webhook consumer](/docs/durable-execution/guides-and-advanced/events-and-triggers/receive-webhook-events?ref=blog-inngest-python-sdk-durable-background-jobs-for-fastapi-flask-and-django)** directly. If your Python backend processes webhooks and you want that processing to be reliable and observable, Inngest is the right tool.
 
 ### **You're already on FastAPI and want background tasks that actually retry**
 
@@ -344,7 +344,7 @@ In-flight function runs resume from their last completed step after the new depl
 
 ### **Is there a limit on how large my event payload can be?**
 
-Yes — event payload size is plan-dependent: 256KiB on Free, 512KiB on Basic, 3MiB on Pro, and custom limits on Enterprise (see [usage limits](/docs/usage-limits/inngest?ref=blog-inngest-python-sdk-durable-background-jobs-for-fastapi-flask-and-django)). For larger data — images, documents, bulk records — store the data in S3 or your database and pass a reference ID in the event payload instead. Steps can then fetch the full data as needed.
+Yes — event payload size is plan-dependent: 256KiB on Free, 512KiB on Basic, 3MiB on Pro, and custom limits on Enterprise (see [usage limits](/docs/durable-execution/limits?ref=blog-inngest-python-sdk-durable-background-jobs-for-fastapi-flask-and-django)). For larger data — images, documents, bulk records — store the data in S3 or your database and pass a reference ID in the event payload instead. Steps can then fetch the full data as needed.
 
 ### **Can I use Inngest alongside an existing Celery setup during migration?**
 

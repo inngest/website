@@ -21,21 +21,21 @@ It's now even easier for Vercel users to get started with Inngest. We're excited
 
 ### AI workflows and agent orchestration
 
-Inngest enables developers to build stateful AI workflows using Vercel’s serverless functions. With Inngest's flexible SDK, you can define workflows using [“steps”](/docs/learn/inngest-functions?ref=blog-vercel-marketplace) that chain together LLM calls, database operations, and tool executions. Inngest handles the orchestration of long-running workflows by automatically splitting execution across multiple serverless invocations and combining the results into a single cohesive response.
+Inngest enables developers to build stateful AI workflows using Vercel’s serverless functions. With Inngest's flexible SDK, you can define workflows using [“steps”](/docs/durable-execution/durable-workflows?ref=blog-vercel-marketplace) that chain together LLM calls, database operations, and tool executions. Inngest handles the orchestration of long-running workflows by automatically splitting execution across multiple serverless invocations and combining the results into a single cohesive response.
 
 Try our [AgentKit](https://agentkit.inngest.com/) SDK with Inngest to build AI agents that reason, research, and route work to other agents.
 
 ### Handle failures with automatic retries
 
-Every Inngest function is automatically retried to gracefully handle issues including the occasional error, third-party API outages, or flaky LLM responses. Inngest's [durable execution engine](/docs/learn/how-functions-are-executed?ref=blog-vercel-marketplace) ensures that only failed steps are re-run, while successful ones are never repeated.
+Every Inngest function is automatically retried to gracefully handle issues including the occasional error, third-party API outages, or flaky LLM responses. Inngest's [durable execution engine](/docs/durable-execution/durable-workflows?ref=blog-vercel-marketplace) ensures that only failed steps are re-run, while successful ones are never repeated.
 
 ### Realtime updates
 
-Use Inngest's [Realtime feature](/docs/features/realtime?ref=blog-vercel-marketplace) to stream data from background workflows to the browser, enabling interactive applications and live status updates. Easily integrate it using our [our React hooks and Next.js examples](/docs/features/realtime/react-hooks?ref=blog-vercel-marketplace).
+Use Inngest's [Realtime feature](/docs/realtime?ref=blog-vercel-marketplace) to stream data from background workflows to the browser, enabling interactive applications and live status updates. Easily integrate it using our [our React hooks and Next.js examples](/docs/realtime/guides/react-hooks?ref=blog-vercel-marketplace).
 
 ### Branch environments
 
-Inngest automatically creates a new, isolated environment for every Vercel preview deployment, giving each team member a completely isolated full-stack test environment for every pull request. Branch environments are created instantly and on-demand whenever you deploy your Vercel project. [Learn more about branch environments](/docs/platform/environments?ref=blog-vercel-marketplace#branch-environments).
+Inngest automatically creates a new, isolated environment for every Vercel preview deployment, giving each team member a completely isolated full-stack test environment for every pull request. Branch environments are created instantly and on-demand whenever you deploy your Vercel project. [Learn more about branch environments](/docs/platform-and-operations/environments-and-branch-deploys?ref=blog-vercel-marketplace#use-branch-deploys-for-preview-deployments).
 
 ## Setting up Inngest
 
@@ -55,7 +55,7 @@ To connect a project, you can either select the “Projects” tab or click the 
 
 <AutoplayVideo src={"https://cdn.inngest.com/blog/vercel-partner-marketplace/vercel-connect-project.mp4"} />
 
-Follow the rest of the Getting started guide and when you next deploy your project to Vercel, your [app will automatically sync with Inngest](/docs/platform/manage/apps?ref=blog-vercel-marketplace) and functions will be ready to be triggered! You can always open the Inngest dashboard by clicking the “**Open in Inngest**” button at the top right.
+Follow the rest of the Getting started guide and when you next deploy your project to Vercel, your [app will automatically sync with Inngest](/docs/platform-and-operations/apps-and-syncs?ref=blog-vercel-marketplace) and functions will be ready to be triggered! You can always open the Inngest dashboard by clicking the “**Open in Inngest**” button at the top right.
 
 ![Inngest dashboard](/assets/blog/vercel-partner-marketplace/inngest-dashboard.png)
 

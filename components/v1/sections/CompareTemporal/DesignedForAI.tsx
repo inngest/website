@@ -43,7 +43,7 @@ const SLIDES: Slide[] = [
     title: "Step memoization",
     blurb:
       "Completed steps aren’t re-executed on retry. Temporal retries the whole activity — there’s no per-step cache.",
-    href: "https://www.inngest.com/docs/learn/versioning#step-based-memoization",
+    href: "/docs/durable-execution/guides-and-advanced/versioning?ref=compare-to-temporal-designed-for-ai",
     code: `const summary = await
 step.run('summarize', async () => {
 return llm.complete(transcript) })
@@ -55,7 +55,7 @@ return llm.complete(transcript) })
     title: "Human-in-the-loop",
     blurb:
       "A native primitive in Inngest. In Temporal, its an assembly of Signals, channels, and Slectors – pattern, not platform.",
-    href: "https://www.inngest.com/docs/durable-execution/durable-agents/human-in-the-loop",
+    href: "/docs/durable-execution/durable-agents/human-in-the-loop?ref=compare-to-temporal-designed-for-ai",
     code: `const decision
 = await step.waitForEvent('review', {
 event: 'agent/reviewed',
@@ -68,7 +68,7 @@ Selector, and handler — all manual.`,
     title: "Per-user concurrency and rate limiting",
     blurb:
       "Temporal has no built-in rate limiting. Concurrency is worker-level, not per-user. Both require custom code.",
-    href: "https://www.inngest.com/docs/guides/concurrency",
+    href: "/docs/durable-execution/flow-control/concurrency?ref=compare-to-temporal-designed-for-ai",
     chart: true,
   },
   {
@@ -76,7 +76,7 @@ Selector, and handler — all manual.`,
     title: "Step-level observability",
     blurb:
       "Temporal shows workflow history, Inngest breaks execution into segment — queue delay, step timing, flow control — so you know exactly what happened, and why.",
-    href: "https://www.inngest.com/docs/platform/monitor/observability-metrics",
+    href: "/docs/platform-and-operations/metrics?ref=compare-to-temporal-designed-for-ai",
     segments: true,
   },
 ];

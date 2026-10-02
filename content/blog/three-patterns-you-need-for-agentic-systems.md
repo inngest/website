@@ -44,7 +44,7 @@ Sub-agents can cover a variety of use cases in any agentic system. Sometimes the
 
 ![Sub-agent architecture diagram](/assets/blog/three-patterns-you-need-for-agentic-systems/utah-sub-agents.png)
 
-Every agentic system needs all three and they all have their own purpose and considerations. For implementation details, see the [sub-agent delegation guide](/docs/ai-patterns/sub-agent-delegation?ref=blog-three-patterns-you-need-for-agentic-systems). Let's dive into each of them.
+Every agentic system needs all three and they all have their own purpose and considerations. For implementation details, see the [sub-agent delegation guide](/docs/durable-execution/durable-agents/sub-agent-delegation?ref=blog-three-patterns-you-need-for-agentic-systems). Let's dive into each of them.
 
 ## Pattern 1: Sync — "Do this and wait"
 
@@ -63,7 +63,7 @@ const subResult = await step.invoke("sub-agent", {
 toolResult = { result: subResult?.response || "(No response)" };
 ```
 
-Within [our system](/docs/guides/invoking-functions-directly), `step.invoke()` is function-to-function RPC with durability. The parent checkpoints before invoking, so it won't re-invoke on retry. If the sub-agent crashes, Inngest retries it. The parent just waits.
+Within [our system](/docs/durable-execution/primitives/step-invoke?ref=blog-three-patterns-you-need-for-agentic-systems), `step.invoke()` is function-to-function RPC with durability. The parent checkpoints before invoking, so it won't re-invoke on retry. If the sub-agent crashes, Inngest retries it. The parent just waits.
 
 **The tradeoff:** The result enters the parent's context window. But it's a summary, not the full trajectory: that 90%+ reduction means the parent can delegate many times before context becomes an issue.
 

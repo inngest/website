@@ -17,7 +17,7 @@ teaser:
 sidebarCta:
   text: "How durable execution works. Code that runs to completion, every time."
   buttonLabel: "Read the docs"
-  href: "/docs/learn/how-functions-are-executed?ref=blog-principles-of-durable-execution-sidebar"
+  href: "/docs/durable-execution/durable-workflows?ref=blog-principles-of-durable-execution-sidebar"
 ---
 import Blockquote from "src/shared/Blog/Blockquote";
 
@@ -104,12 +104,12 @@ Inngest is a powerful durable execution solution that simplifies complex workflo
 When function is executed, Inngest:
 
 * **Schedules the function:** Assigns the function to a worker. [Learn more about serving functions](/docs/learn/serving-inngest-functions)
-* **Executes the function:** Runs the function and handles any exceptions. [See how functions are executed](/docs/learn/how-functions-are-executed)
-* **Manages state:** Stores intermediate results and ensures consistency. For latency-sensitive workloads, checkpointing enables near-zero inter-step latency while maintaining durability. [Learn about checkpointing](/docs/setup/checkpointing)
-* **Retries failures:** Automatically retries failed functions with exponential backoff. [Read about error handling](/docs/guides/error-handling)
-* **Scales dynamically:** Adjusts resources to handle varying workloads. [Explore the platform](/docs/platform)
+* **Executes the function:** Runs the function and handles any exceptions. [See how functions are executed](/docs/durable-execution/durable-workflows?ref=blog-principles-of-durable-execution)
+* **Manages state:** Stores intermediate results and ensures consistency. For latency-sensitive workloads, checkpointing enables near-zero inter-step latency while maintaining durability. [Learn about checkpointing](/docs/durable-execution/guides-and-advanced/checkpointing?ref=blog-principles-of-durable-execution)
+* **Retries failures:** Automatically retries failed functions with exponential backoff. [Read about error handling](/docs/durable-execution/guides-and-advanced/error-handling?ref=blog-principles-of-durable-execution)
+* **Scales dynamically:** Adjusts resources to handle varying workloads. [Explore the platform](/docs/platform-and-operations?ref=blog-principles-of-durable-execution)
 
-**A simple example** (reference: [Inngest documentation](/docs/learn/inngest-functions?ref=blog-principles-of-durable-execution))
+**A simple example** (reference: [Inngest documentation](/docs/durable-execution/durable-workflows?ref=blog-principles-of-durable-execution))
 
 ```ts
 export default inngest.createFunction(
@@ -156,10 +156,10 @@ Start building durable workflows with Inngest in just a few minutes. Follow thes
 
 1. **Sign up:** [Create a free account](https://app.inngest.com/sign-up?ref=blog-principles-of-durable-execution) or [sign-up for a demo](/contact?ref=blog-principles-of-durable-execution)
 2. **Install the SDK:** Follow the [documentation](/docs?ref=blog-principles-of-durable-execution) to install the SDK in your preferred language
-3. **Write your first function:** Use [Inngest functions](/docs/learn/inngest-functions?ref=blog-principles-of-durable-execution) to define durable functions and workflows, triggered by events.
-4. **Learn about steps:** Steps are the building blocks of workflows in Inngest. Get familiar with [how they work](/docs/learn/inngest-steps?ref=blog-principles-of-durable-execution).
+3. **Write your first function:** Use [Inngest functions](/docs/durable-execution/durable-workflows?ref=blog-principles-of-durable-execution) to define durable functions and workflows, triggered by events.
+4. **Learn about steps:** Steps are the building blocks of workflows in Inngest. Get familiar with [how they work](/docs/durable-execution/primitives?ref=blog-principles-of-durable-execution).
 5. **Run & orchestrate your workflows**: [Serve your Inngest functions](/docs/learn/serving-inngest-functions?ref=blog-principles-of-durable-execution) via an HTTP endpoint to get started.
-6. **Monitor and recover:** Use the Inngest [dashboard](/docs/platform/monitor/observability-metrics?ref=blog-principles-of-durable-execution) to monitor, debug and recover from production issues.
+6. **Monitor and recover:** Use the Inngest [dashboard](/docs/platform-and-operations/metrics?ref=blog-principles-of-durable-execution) to monitor, debug and recover from production issues.
 
 Inngest's SDKs provide simple primitives that enable every developer to learn and deploy durable workflows quickly.
 

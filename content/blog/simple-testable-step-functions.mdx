@@ -91,7 +91,7 @@ In this example we're defining a function that's triggered by an Auth0 event (re
 
 Step functions here try to avoid complexity:  in this example they simply say the step they run after, and an optional expression which will be evaluated to conditionally run based off of the event data *and* the output of previous steps.
 
-If you’re interested you can [dive straight into our docs for more info](/docs/learn/inngest-steps).
+If you’re interested you can [dive straight into our docs for more info](/docs/durable-execution/primitives?ref=blog-simple-testable-step-functions).
 
 ## Locally test step functions
 
@@ -138,13 +138,13 @@ Webhooks now support multiple content types and programmatic management:
 
 ### Promise.all functionality ✅ (Launched)
 
-You can now run steps in parallel using `Promise.all()`, allowing you to run steps only after many previous steps have finished. This enables true parallelism for serverless functions. [Learn more](/docs/guides/step-parallelism)
+You can now run steps in parallel using `Promise.all()`, allowing you to run steps only after many previous steps have finished. This enables true parallelism for serverless functions. [Learn more](/docs/durable-execution/primitives/group-parallel?ref=blog-simple-testable-step-functions)
 
 ### Enhanced debugging and observability ✅ (Launched)
 
 Inngest now provides comprehensive tracing capabilities:
 - **Built-in Traces**: Available in both the dashboard and DevServer, showing function execution timeline, step timing, logs, and retry attempts
-- **Extended Traces (November 2025)**: OpenTelemetry-powered traces capturing database queries, HTTP requests, and third-party library calls. [Read blog post](/blog/introducing-extended-traces) | [Learn more](/docs/platform/monitor/traces#extended-traces)
+- **Extended Traces (November 2025)**: OpenTelemetry-powered traces capturing database queries, HTTP requests, and third-party library calls. [Read blog post](/blog/introducing-extended-traces) | [Learn more](/docs/platform-and-operations/traces?ref=blog-simple-testable-step-functions)
 
 ## Future plans
 

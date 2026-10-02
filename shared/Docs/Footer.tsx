@@ -238,7 +238,7 @@ function SmallPrint() {
       </div>
       {IS_HIRING && (
         <a
-          href="/careers"
+          href="/about?ref=docs-footer"
           className="text-xs text-slate-600 dark:text-slate-400"
         >
           We're hiring!

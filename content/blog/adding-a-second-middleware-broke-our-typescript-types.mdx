@@ -44,9 +44,9 @@ It was obvious that something suspicious was going, so I slipped into a detectiv
 
 ## Two should just be one, twice
 
-A crucial piece of context is that when an Inngest function runs, the result of every [`step.run`](/docs/reference/typescript/v4/functions/step-run?ref=blog-adding-a-second-middleware-broke-our-typescript-types) is serialized to JSON and stored, so the step can be [memoized across retries](/docs/learn/inngest-steps?ref=blog-adding-a-second-middleware-broke-our-typescript-types). Your function returns a `Date` *but* what comes back on replay is a string.
+A crucial piece of context is that when an Inngest function runs, the result of every [`step.run`](/docs/reference/typescript/v4/functions/step-run?ref=blog-adding-a-second-middleware-broke-our-typescript-types) is serialized to JSON and stored, so the step can be [memoized across retries](/docs/durable-execution/primitives?ref=blog-adding-a-second-middleware-broke-our-typescript-types). Your function returns a `Date` *but* what comes back on replay is a string.
 
-[Middleware](/docs/features/middleware?ref=blog-adding-a-second-middleware-broke-our-typescript-types) can transform step outputs, so each middleware carries a static output transform. The default transform is `Jsonify` and those transforms compose, so two middleware means `Jsonify<Jsonify<T>>`.
+[Middleware](/docs/durable-execution/guides-and-advanced/middleware?ref=blog-adding-a-second-middleware-broke-our-typescript-types) can transform step outputs, so each middleware carries a static output transform. The default transform is `Jsonify` and those transforms compose, so two middleware means `Jsonify<Jsonify<T>>`.
 
 At runtime this is obviously fine: serializing already-serialized data is a no-op. 
 
@@ -206,7 +206,7 @@ Property access forces resolution. If your type-level tests only assert equality
 4. If a type transform can compose with itself, test the composition: `f(f(x))` should equal `f(x)`.
 5. Assert type tests through property access, not just `IsEqual` on aliases; equality of deferred types is weaker than it looks.
 
-The part I like best about the fix is how little there is to it. One `Exclude`, and a whole category of silent type corruption stops being possible: in [middleware stacks](/docs/features/middleware?ref=blog-adding-a-second-middleware-broke-our-typescript-types), in `step.invoke`, in compositions nobody has written yet. `Jsonify` goes back to being the boring part of the [TypeScript SDK](/blog/typescript-sdk-v4.0?ref=blog-adding-a-second-middleware-broke-our-typescript-types).
+The part I like best about the fix is how little there is to it. One `Exclude`, and a whole category of silent type corruption stops being possible: in [middleware stacks](/docs/durable-execution/guides-and-advanced/middleware?ref=blog-adding-a-second-middleware-broke-our-typescript-types), in `step.invoke`, in compositions nobody has written yet. `Jsonify` goes back to being the boring part of the [TypeScript SDK](/blog/typescript-sdk-v4.0?ref=blog-adding-a-second-middleware-broke-our-typescript-types).
 
 And boring is the win condition. A boring type is one nobody ever has to learn anything about: no loophole to remember, no poisoned key sets, no folklore about how many middleware are safe to stack. The detective costume goes back in the closet.
 

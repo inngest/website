@@ -50,7 +50,7 @@ Five primitives show up underneath every pattern:
 
 These primitives don't encode an agent pattern. They encode execution guarantees. You compose them into whatever pattern you need today and recompose them when the pattern changes tomorrow. I went deeper on specific composition patterns in [Three sub-agent patterns you need for your agentic systems](/blog/three-patterns-you-need-for-agentic-systems?ref=blog-background-agents-are-here). Delegation, fan-out, and orchestrator-worker all rely on these same primitives underneath.
 
-A ReAct loop, a planning agent, and a multi-agent delegation pattern all reduce to the same `step.run()` and `step.invoke()` calls. [Agent loops](/docs/ai-patterns/agent-tool-loops?ref=blog-background-agents-are-here), [HITL](/docs/ai-patterns/human-in-the-loop?ref=blog-background-agents-are-here), and [delegation](/docs/ai-patterns/sub-agent-delegation?ref=blog-background-agents-are-here) can just be built on these primitives.
+A ReAct loop, a planning agent, and a multi-agent delegation pattern all reduce to the same `step.run()` and `step.invoke()` calls. [Agent loops](/docs/durable-execution/durable-agents/agent-tool-loops?ref=blog-background-agents-are-here), [HITL](/docs/durable-execution/durable-agents/human-in-the-loop?ref=blog-background-agents-are-here), and [delegation](/docs/durable-execution/durable-agents/sub-agent-delegation?ref=blog-background-agents-are-here) can just be built on these primitives.
 
 ## The background agent gap
 

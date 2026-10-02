@@ -215,7 +215,7 @@ is unique to [Inngest](https://www.inngest.com)):
 - User-defined [rate limiting](/docs/reference/typescript/v4/functions/rate-limit) is applied for each function
 - User-defined debounces are applied for each function
 - Function-based idempotency is checked and applied
-- Events are bundled into batches, if a function opts in to [event batching](https://www.inngest.com/docs/guides/batching)
+- Events are bundled into batches, if a function opts in to [event batching](/docs/durable-execution/flow-control/batching?ref=blog-how-durable-workflow-engines-work)
 
 From there, these workflow engines work as expected:  it pushes a job into a queue so that workflows
 can be executed reliably.

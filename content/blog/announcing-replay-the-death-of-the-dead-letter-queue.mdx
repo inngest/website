@@ -47,7 +47,7 @@ Similar to queues, event streams can enable teams to run asynchronous code with 
 
 Similar to queues, you need to implement a strategy for recovery with your historical events. You'll want to replay the events between two timestamps from the span of your incident. This will be some sort of script or API that you might create to re-publish events or, if supported, you can set up your consumer to read from an offset for a given timestamp.
 
-The difference between events streams and message queues here is that some of your jobs may have already completed successfully during this time range. This means that you're likely to re-run work unnecessarily. This is one of the many reasons why [idempotency](/docs/guides/handling-idempotency) is extremely important in systems like this. Your code must be idempotent: if it re-runs, it shouldn't cause a different result or duplicated results.
+The difference between events streams and message queues here is that some of your jobs may have already completed successfully during this time range. This means that you're likely to re-run work unnecessarily. This is one of the many reasons why [idempotency](/docs/durable-execution/guides-and-advanced/idempotency?ref=blog-announcing-replay-the-death-of-the-dead-letter-queue) is extremely important in systems like this. Your code must be idempotent: if it re-runs, it shouldn't cause a different result or duplicated results.
 
 While event streams can make it relatively straightforward to set up an archive, your recovery strategy will not create itself. Teams committing heavily in event-driven architectures or [event sourcing](https://martinfowler.com/eaaDev/EventSourcing.html) may invest in tooling early on in their adoption.This, however, takes effort and proper testing. Again, similar to queues, many teams may not build or rehearse this until they actually need it, leaving them prone to stressful situations and more work to recover from incidents.
 
@@ -71,7 +71,7 @@ Combined together, we can easily query for all jobs between two timestamps and f
 
 ![A graphic of a selected group of failed functions and a button with the text Replay Functions written on it](/assets/blog/announcing-replay/button-graphic.png)
 
-We call this **Replay**. In other words, it's peace of mind that comes with every single Inngest plan, including the free tier. You can use Replay today in every Inngest account or learn how to use this feature in [our guide](https://www.inngest.com/docs/platform/replay).
+We call this **Replay**. In other words, it's peace of mind that comes with every single Inngest plan, including the free tier. You can use Replay today in every Inngest account or learn how to use this feature in [our guide](/docs/platform-and-operations/replay-runs-in-bulk?ref=blog-announcing-replay-the-death-of-the-dead-letter-queue).
 
 Once you try it, we would love to hear what you think. Share your feedback or [reach out on Discord!](/discord)
 
@@ -79,7 +79,7 @@ Once you try it, we would love to hear what you think. Share your feedback or [r
 
 We are only getting started.
 
-In the future, we plan to expand Replay to event-replay which will make system-wide recovery simpler than ever before, especially in the case of systems relying heavily on [fan-out jobs](/docs/guides/fan-out-jobs).
+In the future, we plan to expand Replay to event-replay which will make system-wide recovery simpler than ever before, especially in the case of systems relying heavily on [fan-out jobs](/docs/durable-execution/guides-and-advanced/patterns/fan-out?ref=blog-announcing-replay-the-death-of-the-dead-letter-queue).
 
 If you want to stay up to date with our product releases, [subscribe to our newsletter](/newsletter) or [follow us on Twitter](https://twitter.com/inngest).
 

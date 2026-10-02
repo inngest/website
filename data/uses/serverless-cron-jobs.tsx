@@ -97,19 +97,19 @@ inngest.createFunction(
         description:
           "How to create a schedule function using a crontab syntax.",
         type: "Guide",
-        href: "/docs/guides/scheduled-functions",
+        href: "/docs/durable-execution/guides-and-advanced/events-and-triggers/schedules-and-delayed-starts",
       },
       {
         title: "Enqueue future jobs",
         description: "How to schedule your code to run at a specific time.",
         type: "Guide",
-        href: "/docs/guides/delayed-functions",
+        href: "/docs/durable-execution/guides-and-advanced/events-and-triggers/schedules-and-delayed-starts",
       },
       {
         title: "Writing scheduled functions",
         description: "Learn how to define scheduled functions.",
         type: "Docs",
-        href: "/docs/functions#writing-a-scheduled-function",
+        href: "/docs/durable-execution/durable-workflows",
       },
     ],
   },

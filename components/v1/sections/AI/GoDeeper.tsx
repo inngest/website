@@ -46,19 +46,19 @@ const RESOURCES: Resource[] = [
     id: "agents-rag",
     title: "AI agents and RAG",
     body: BODY_PLACEHOLDER,
-    href: "/docs/agent-kit",
+    href: "/docs/examples/ai-agents-and-rag",
   },
   {
     id: "durable-agents",
     title: "Building durable\nagents",
     body: BODY_PLACEHOLDER,
-    href: "/docs/durable-execution/primitives",
+    href: "/docs/durable-execution/durable-agents",
   },
   {
     id: "realtime-hitl",
     title: "Realtime and\nHuman-in-the-loop",
     body: BODY_PLACEHOLDER,
-    href: "/docs/guides/human-in-the-loop",
+    href: "/docs/durable-execution/durable-agents/human-in-the-loop",
   },
 ];
 

@@ -38,7 +38,7 @@ export default function Patterns() {
           <li className="text-slate-200 flex text-sm md:w-1/2 md:mb-2">
             <HomePatternsCheck />{" "}
             <a
-              href="/docs/patterns/running-functions-in-parallel?ref=homepage-patterns"
+              href="/docs/patterns/events/running-functions-in-parallel?ref=homepage-patterns"
               className="ml-2 text-slate-200 flex items-bottom group hover:text-white transition-colors"
             >
               Running functions in parallel
@@ -48,7 +48,7 @@ export default function Patterns() {
           <li className="text-slate-200 flex text-sm md:w-1/2">
             <HomePatternsCheck />{" "}
             <a
-              href="/docs/patterns/reliably-run-critical-workflows?ref=homepage-patterns"
+              href="/docs/patterns/durable/reliably-run-critical-workflows?ref=homepage-patterns"
               className="ml-2 text-slate-200 flex items-bottom group hover:text-white transition-colors"
             >
               Reliably run critical workflows
@@ -58,7 +58,7 @@ export default function Patterns() {
           <li className="text-slate-200 flex text-sm md:w-1/2">
             <HomePatternsCheck />{" "}
             <a
-              href="/docs/patterns/event-coordination-for-lost-customers?ref=homepage-patterns"
+              href="/docs/patterns/events/event-coordination-for-lost-customers?ref=homepage-patterns"
               className="ml-2 text-slate-200 flex items-bottom group hover:text-white transition-colors"
             >
               Building flows for lost customers

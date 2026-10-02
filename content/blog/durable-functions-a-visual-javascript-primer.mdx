@@ -143,7 +143,7 @@ In this workflow, after scheduling the shipment, the workflow enters a wait stat
 💡 To summarize, our Durable Function approach enhances the efficiency and reliability of long-running tasks compared to the traditional approach:
 
 - **Robust State Management**: Each step in a Durable Function is capable of maintaining its state between executions. This prevents the need to restart tasks from the beginning if they fail, minimizing the risk of duplication or inconsistent results.
-- **Advanced Error Handling**: Durable Functions are equipped with built-in mechanisms for [error detection and automatic retries](/docs/guides/error-handling?ref=blog-what-are-durable-functions), which can be tuned to address specific recovery scenarios. This not only improves the reliability of task execution but also reduces the manual oversight that was required with the traditional approach.
+- **Advanced Error Handling**: Durable Functions are equipped with built-in mechanisms for [error detection and automatic retries](/docs/durable-execution/guides-and-advanced/error-handling?ref=blog-what-are-durable-functions), which can be tuned to address specific recovery scenarios. This not only improves the reliability of task execution but also reduces the manual oversight that was required with the traditional approach.
 - **Efficient Long-Running Process Management**: Each task within a Durable Function is treated as a modular step that can independently handle long durations of activity. This modularity allows for more scalable and manageable processes, overcoming the limitations of traditional background jobs that are typically optimized for shorter tasks.
 - **Enhanced Scalability**: As the complexity and number of tasks grow within an application, Durable Functions provide a scalable framework that simplifies monitoring and managing these tasks. The independent steps ensure that the performance and stability of one does not affect others, which is a common challenge with traditional background jobs.
 
@@ -153,7 +153,7 @@ In this workflow, after scheduling the shipment, the workflow enters a wait stat
 
 ### Under the hood
 
-Durable Functions provide these features automatically, but how do they work behind the scenes? Let's explore what happens when we run our e-commerce code snippet step-by-step using Inngest's [Durable Execution Engine](/docs/learn/how-functions-are-executed?ref=blog-what-are-durable-functions) and SDK.
+Durable Functions provide these features automatically, but how do they work behind the scenes? Let's explore what happens when we run our e-commerce code snippet step-by-step using Inngest's [Durable Execution Engine](/docs/durable-execution/durable-workflows?ref=blog-what-are-durable-functions) and SDK.
 
 Before we start, we first need to understand that:
 

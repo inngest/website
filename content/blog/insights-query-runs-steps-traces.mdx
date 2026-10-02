@@ -36,7 +36,7 @@ Insights now supports four tables:
 
 **`steps` and `step_attempts`** — The individual steps inside your runs. `steps` gives you the latest attempt per step; `step_attempts` gives you every retry. If a specific step is slow, failing, or being retried more than expected, this is where you look.
 
-**`extended_trace_spans`** — OpenTelemetry spans emitted during step execution. For teams using [Extended Traces](/docs/platform/monitor/traces#extended-traces?ref=blog-insights-query-runs-steps-traces), this brings that data into SQL — query by span name, service, or scope to find exactly where inside a step things went wrong.
+**`extended_trace_spans`** — OpenTelemetry spans emitted during step execution. For teams using [Extended Traces](/docs/platform-and-operations/traces?ref=blog-insights-query-runs-steps-traces), this brings that data into SQL — query by span name, service, or scope to find exactly where inside a step things went wrong.
 
 Before today, Insights told you what triggered your workflows. Now it tells you everything that happened inside them.
 
@@ -64,7 +64,7 @@ We've also expanded the supported function set — arithmetic, string, date/time
 
 ## Two new sidebar tools
 
-**Insights AI** is now integrated directly into the sidebar. Describe what you want in plain English, and it identifies the relevant events, writes the query, runs it, and summarizes the results. It's built on Inngest's own [Realtime](/docs/features/realtime?ref=blog-insights-query-runs-steps-traces) API and durable execution with [checkpointing](/docs/setup/checkpointing?ref=blog-insights-query-runs-steps-traces) — a working example of what you can build with Inngest.
+**Insights AI** is now integrated directly into the sidebar. Describe what you want in plain English, and it identifies the relevant events, writes the query, runs it, and summarizes the results. It's built on Inngest's own [Realtime](/docs/realtime?ref=blog-insights-query-runs-steps-traces) API and durable execution with [checkpointing](/docs/durable-execution/guides-and-advanced/checkpointing?ref=blog-insights-query-runs-steps-traces) — a working example of what you can build with Inngest.
 
 **Schema Explorer** shows you the available tables and the structure of each event type's `data` payload. Click any field to copy it into your query. Your schema, next to your editor, always current. [Learn more about Schema Explorer](/blog/insights-schema-explorer-shared-queries?ref=blog-insights-query-runs-steps-traces).
 
@@ -73,5 +73,5 @@ We've also expanded the supported function set — arithmetic, string, date/time
 Insights is available in the Inngest dashboard, with pre-built query templates to help you hit the ground running.
 
 - **[Open Insights](https://app.inngest.com/env/production/insights?ref=blog-insights-query-runs-steps-traces)** in the dashboard.
-- **[Read the docs](/docs/platform/monitor/insights?ref=blog-insights-query-runs-steps-traces)** to see what's queryable and explore example queries.
+- **[Read the docs](/docs/platform-and-operations/insights?ref=blog-insights-query-runs-steps-traces)** to see what's queryable and explore example queries.
 - **[View a Pattern](/docs/patterns/events/event-coordination-for-lost-customers?ref=blog-insights-query-runs-steps-traces)** to see how Insights helps measure event coordination flows.

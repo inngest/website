@@ -97,8 +97,8 @@ Here's how it works:
 While this guide focuses on two primary use cases requiring background jobs, improving the user experience or scaling your web applications is a wider topic involving other concepts such as scalability with Flow Control, recovery tactics for production use cases, and more.
 
 [Inngest](/docs?ref=blogpost-nextjs-bg-jobs-realtime) is an orchestration engine enabling developers to build, operate, and scale background jobs and workflows.
-Its TypeScript SDK provides features ranging from simple background jobs to more [advanced scalable workflows designed for scale](/docs/learn/inngest-functions?ref=blogpost-nextjs-bg-jobs-realtime).
-In addition to its SDKs, Inngest also provides a platform offering [observability](/docs/platform/monitor/observability-metrics?ref=blogpost-nextjs-bg-jobs-realtime) (charts & usage), [recovery tools](/docs/platform/replay?ref=blogpost-nextjs-bg-jobs-realtime) (bulk cancellations, job replays), and integrations with other platforms like [Vercel](https://vercel.com/marketplace/inngest). Finally, Inngest's Realtime feature provides an API to send real-time updates to users for long-running background jobs.
+Its TypeScript SDK provides features ranging from simple background jobs to more [advanced scalable workflows designed for scale](/docs/durable-execution/durable-workflows?ref=blogpost-nextjs-bg-jobs-realtime).
+In addition to its SDKs, Inngest also provides a platform offering [observability](/docs/platform-and-operations/metrics?ref=blogpost-nextjs-bg-jobs-realtime) (charts & usage), [recovery tools](/docs/platform-and-operations/replay-runs-in-bulk?ref=blogpost-nextjs-bg-jobs-realtime) (bulk cancellations, job replays), and integrations with other platforms like [Vercel](https://vercel.com/marketplace/inngest). Finally, Inngest's Realtime feature provides an API to send real-time updates to users for long-running background jobs.
 
 You can install and configure Inngest in your Next.js app in under 5 minutes [by following this quickstart](/docs/getting-started/nextjs-quick-start?ref=blogpost-nextjs-bg-jobs-realtime).
 
@@ -155,7 +155,7 @@ Implementing this feature directly in a Next.js API Route comes with many drawba
 
 For this reason, we will implement this feature using a background job,
 - Enabling the user to leave the page after submitting the file and getting notified by email when the import is complete
-- Enforcing automatic isolated [retries](/docs/features/inngest-functions/error-retries/retries?ref=blogpost-nextjs-bg-jobs-realtime), making the import and AI processing more resilient
+- Enforcing automatic isolated [retries](/docs/durable-execution/guides-and-advanced/error-handling/retries?ref=blogpost-nextjs-bg-jobs-realtime), making the import and AI processing more resilient
 
 First, let's update the existing `POST /api/contacts` API Route to trigger the background job:
 
@@ -182,7 +182,7 @@ export async function POST(req: NextRequest) {
 <aside className="max-w-[65ch] m-auto bg-indigo-900/20 text-indigo-100 leading-relaxed rounded-lg py-0 px-6  my-12 border border-indigo-900/50">
   **Inngest background jobs are triggered using events**
 
-  You can see events as arguments of background jobs. `inngest.send()` is used to [send an event](/docs/guides/sending-events-from-functions?ref=blogpost-nextjs-bg-jobs-realtime) to Inngest which will enqueue an execution of our `contact-import` background job.
+  You can see events as arguments of background jobs. `inngest.send()` is used to [send an event](/docs/durable-execution/primitives/step-sendevent?ref=blogpost-nextjs-bg-jobs-realtime) to Inngest which will enqueue an execution of our `contact-import` background job.
 </aside>
 
 Let's now implement the `contact-import` background job.
@@ -280,7 +280,7 @@ export const contactImport = inngest.createFunction(
 <aside className="max-w-[65ch] m-auto bg-indigo-900/20 text-indigo-100 leading-relaxed rounded-lg py-0 px-6  my-12 border border-indigo-900/50">
   **Inngest background jobs are composed of steps**
 
-  The [`step.run()`](/docs/learn/inngest-steps?ref=blogpost-nextjs-bg-jobs-realtime) block present in the `contact-import` background job helps in dividing our background job into individual retriable units. When a step fails, this enables Inngest to recover your background job from where it failed, without re-running all the steps.
+  The [`step.run()`](/docs/durable-execution/primitives?ref=blogpost-nextjs-bg-jobs-realtime) block present in the `contact-import` background job helps in dividing our background job into individual retriable units. When a step fails, this enables Inngest to recover your background job from where it failed, without re-running all the steps.
   This prevents any unwanted duplicate database inserts or costly LLM requests.
 </aside>
 
@@ -296,7 +296,7 @@ To keep the user informed of the progress of the batch email sending, our `campa
 
 ### Configuring Inngest Realtime
 
-[Inngest Realtime](/docs/features/realtime?ref=blogpost-nextjs-bg-jobs-realtime) provides a simple API to stream updates from background jobs to React components.
+[Inngest Realtime](/docs/realtime?ref=blogpost-nextjs-bg-jobs-realtime) provides a simple API to stream updates from background jobs to React components.
 
 First, let's update our Inngest client configuration by adding the `@inngest/realtime` middleware:
 
@@ -346,7 +346,7 @@ export const campaignSendChannel = channel(
 <aside className="max-w-[65ch] m-auto bg-indigo-900/20 text-indigo-100 leading-relaxed rounded-lg py-0 px-6  my-12 border border-indigo-900/50">
   **Inngest Realtime: channels and topics**
 
-  [Inngest Realtime](/docs/features/realtime?ref=blogpost-nextjs-bg-jobs-realtime) enables you to send real-time updates from background jobs to React components using 2 concepts: channels and topics.
+  [Inngest Realtime](/docs/realtime?ref=blogpost-nextjs-bg-jobs-realtime) enables you to send real-time updates from background jobs to React components using 2 concepts: channels and topics.
 
   - Channels contain different types of messages belonging to the same background job, for example: a batch sending of emails for a given campaign.
   - Topics are different types of messages belonging to a given channel.
@@ -508,10 +508,10 @@ export async function fetchSubscriptionToken(
 
   Inngest Realtime requires you to create a Server Action to securely fetch a subscription token from the server.
 
-  This subscription token is later used by the [`useInngestSubscription()`](/docs/features/realtime/react-hooks?ref=blogpost-nextjs-bg-jobs-realtime) React hook to subscribe to live updates.
+  This subscription token is later used by the [`useInngestSubscription()`](/docs/realtime/guides/react-hooks?ref=blogpost-nextjs-bg-jobs-realtime) React hook to subscribe to live updates.
 </aside>
 
-Let's now add the [`useInngestSubscription()`](/docs/features/realtime/react-hooks?ref=blogpost-nextjs-bg-jobs-realtime) hook to our Next.js page to subscribe to live updates:
+Let's now add the [`useInngestSubscription()`](/docs/realtime/guides/react-hooks?ref=blogpost-nextjs-bg-jobs-realtime) hook to our Next.js page to subscribe to live updates:
 
 ```tsx app/campaign/[id]/page.tsx
 "use client";
@@ -602,11 +602,11 @@ Now navigate back to the home page, and click on the "Create Campaign" button. C
 
 In this article, we explored how to implement real-time updates for background jobs in a Next.js application using Inngest Realtime. The main concepts covered include:
 
-- **[Background Jobs](/docs/guides/background-jobs?ref=blogpost-nextjs-bg-jobs-realtime)**: Offloading long-running or resource-intensive tasks (like sending email campaigns) to run asynchronously in the background, improving user experience and scalability.
-- **[Inngest Realtime](/docs/features/realtime?ref=blogpost-nextjs-bg-jobs-realtime)**: Leveraging Inngest's real-time capabilities to send live updates from background jobs to the frontend, enabling users to see progress and results as they happen.
-- **[Channels and Topics](/docs/features/realtime?ref=blogpost-nextjs-bg-jobs-realtime)**: Organizing real-time messages using channels (grouping messages for a specific background job) and topics (categorizing message types within a channel).
-- **[Subscription Tokens](/docs/features/realtime/react-hooks?ref=blogpost-nextjs-bg-jobs-realtime)**: Securely generating tokens on the server to allow clients to subscribe to specific channels and topics, ensuring only authorized access to updates.
-- **[React Integration](/docs/features/realtime/react-hooks?ref=blogpost-nextjs-bg-jobs-realtime)**: Using the `useInngestSubscription` hook in React components to subscribe to updates, and updating the UI in response to new messages from background jobs.
+- **[Background Jobs](/docs/patterns/jobs/keeping-your-api-fast?ref=blogpost-nextjs-bg-jobs-realtime)**: Offloading long-running or resource-intensive tasks (like sending email campaigns) to run asynchronously in the background, improving user experience and scalability.
+- **[Inngest Realtime](/docs/realtime?ref=blogpost-nextjs-bg-jobs-realtime)**: Leveraging Inngest's real-time capabilities to send live updates from background jobs to the frontend, enabling users to see progress and results as they happen.
+- **[Channels and Topics](/docs/realtime?ref=blogpost-nextjs-bg-jobs-realtime)**: Organizing real-time messages using channels (grouping messages for a specific background job) and topics (categorizing message types within a channel).
+- **[Subscription Tokens](/docs/realtime/guides/react-hooks?ref=blogpost-nextjs-bg-jobs-realtime)**: Securely generating tokens on the server to allow clients to subscribe to specific channels and topics, ensuring only authorized access to updates.
+- **[React Integration](/docs/realtime/guides/react-hooks?ref=blogpost-nextjs-bg-jobs-realtime)**: Using the `useInngestSubscription` hook in React components to subscribe to updates, and updating the UI in response to new messages from background jobs.
 
 By combining these concepts, you can build responsive, user-friendly applications that keep users informed about the status of their background processes in real time.
 
@@ -693,4 +693,4 @@ To subscribe to multiple channels, create multiple subscription tokens and call 
 
 **Q: How do I handle errors or retries in the background job and reflect them in the UI?**
 
-Inngest offers multiple ways to handle errors, as described [in this guide](/docs/guides/error-handling).
+Inngest offers multiple ways to handle errors, as described [in this guide](/docs/durable-execution/guides-and-advanced/error-handling?ref=blog-background-jobs-realtime-nextjs).

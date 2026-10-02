@@ -72,7 +72,7 @@ This category is still new. Which is why we often see folks type "job queue" int
 
 **Trigger.dev** models work as named tasks in TypeScript, and on Cloud, runs those tasks for you: managed compute, warm workers, checkpoints for long waits.
 
-**Inngest** models work as durable functions split into steps, triggered by events, schedules, calls from other functions, or a [wrapped endpoint](/docs/learn/durable-endpoints?ref=blog-best-job-queue-alternatives) (useful when the code can't be rearchitected). Functions run on your own infra—anywhere, while Inngest handles scheduling, retries, and flow control, with deep observability throughout.
+**Inngest** models work as durable functions split into steps, triggered by events, schedules, calls from other functions, or a [wrapped endpoint](/docs/durable-execution/durable-endpoints?ref=blog-best-job-queue-alternatives) (useful when the code can't be rearchitected). Functions run on your own infra—anywhere, while Inngest handles scheduling, retries, and flow control, with deep observability throughout.
 
 Same family, four different shapes. What they agree on: your "background job" became a process. Steps, waits, retries, something worth watching and recovering, not a single fire-and-forget call.
 
@@ -94,7 +94,7 @@ This table is about the work itself, not your infrastructure. What are your back
 | **Customer onboarding & KYC** | Verify email, poll DNS, multi-step signup over 72h | No | State across steps, scheduled re-checks, cancel on churn | **Inngest**, **Temporal**; see [Resend case study](/customers/resend?ref=blog-best-job-queue-alternatives) |
 | **Payments & billing sagas** | Charge, refund, compensate, strict correctness | No | Saga semantics, long-lived, auditable history | **Temporal** (classic fit); **Restate** |
 | **Scheduled & cron work** | Nightly reports, cleanup, recurring sync | Yes: Celery Beat, BullMQ repeats, Sidekiq-cron | Cron plus durable multi-step runs and observability | Libraries for simple cron; **Inngest** / **Trigger.dev** when the scheduled job is a workflow |
-| **Multi-tenant SaaS workloads** | Per-customer jobs, noisy neighbors, API rate limits | Painful: fairness is DIY | Native throttle, concurrency keys, debounce per tenant | **Inngest** [flow control](/docs/guides/flow-control?ref=blog-best-job-queue-alternatives) |
+| **Multi-tenant SaaS workloads** | Per-customer jobs, noisy neighbors, API rate limits | Painful: fairness is DIY | Native throttle, concurrency keys, debounce per tenant | **Inngest** [flow control](/docs/durable-execution/flow-control?ref=blog-best-job-queue-alternatives) |
 | **High-volume event ingestion** | Firehose of events, stream processing | Brokers yes: **SQS**, **Kafka**, **RabbitMQ** | When ingestion triggers multi-step workflows per event | Broker for delivery; **Inngest** / engines when each message starts a process |
 
 Rule of thumb: one function, one outcome, a library will do it. Steps, waits, humans, tenants, or multi-day runs — shortlist a durable engine and move to the constraints table below.
@@ -148,7 +148,7 @@ Make no mistake, durable execution platforms are still *very* capable of handlin
 | **Trigger.dev** | TS jobs, especially long runs | Cloud: little. Self-host: Postgres/Redis/workers | Durable tasks | TypeScript-first | Strong on Cloud | **Yes (Cloud)** |
 | **Temporal** | Complex, long-lived, polyglot workflows | Temporal Cloud or cluster + workers | Workflow replay | Go, Java, TS, Python, .NET, more | Workers are the model | Server optional; **you still run workers** |
 | **Restate** | Durable handlers, virtual objects, lean ops | Restate Cloud or single binary + your services | Journaled execution | TS, Python, Java, Kotlin, Go, Rust | Possible; you still run handlers | Orchestration managed; **handlers on your infra** |
-| **Inngest** | Event-driven jobs, workflows, and legacy endpoints you can't rearchitect | Cloud or [self-hosted](/docs/self-hosting?ref=blog-best-job-queue-alternatives) control plane; **functions on your compute** | Durable [steps](/docs/learn/how-functions-are-executed?ref=blog-best-job-queue-alternatives) | TypeScript, Python, Go | Strong (HTTP invoke) | **Not yet** — we don't run your job compute |
+| **Inngest** | Event-driven jobs, workflows, and legacy endpoints you can't rearchitect | Cloud or [self-hosted](/docs/self-hosting?ref=blog-best-job-queue-alternatives) control plane; **functions on your compute** | Durable [steps](/docs/durable-execution/durable-workflows?ref=blog-best-job-queue-alternatives) | TypeScript, Python, Go | Strong (HTTP invoke) | **Not yet** — we don't run your job compute |
 
 ## Why traditional job queues fall short
 
@@ -211,7 +211,7 @@ This is the comparison we hear most from Next.js and Node teams.
 
 Pick BullMQ if Redis is already in your stack, you want open source with no per-run bill, you need raw queue primitives, and someone on the team is willing to operate workers in production.
 
-Pick Inngest if you don't want to run a broker, you need [multi-step functions](/docs/features/inngest-functions/steps-workflows?ref=blog-best-job-queue-alternatives) with per-step retries, you're deploying somewhere workers are painful to run, you're working with non-deterministic workflows, or you need deep observability to quickly troubleshoot what went wrong.
+Pick Inngest if you don't want to run a broker, you need [multi-step functions](/docs/durable-execution/primitives?ref=blog-best-job-queue-alternatives) with per-step retries, you're deploying somewhere workers are painful to run, you're working with non-deterministic workflows, or you need deep observability to quickly troubleshoot what went wrong.
 
 > Almost used BullMQ because that's what everyone uses. Tried Inngest for the message queue instead. Zero broker setup, just functions that trigger when they should. Honestly the best infra decision I've made in months.
 
@@ -264,7 +264,7 @@ Before Trigger.dev and its peers, "background jobs" for a TypeScript team meant 
 
 Worth being precise about what that means: Trigger.dev Cloud runs your tasks. You define tasks in code; Trigger.dev owns queueing, the execution environment, and observability. For AI workloads, video processing, or anything that outlives a serverless timeout, "someone else runs the workers" is often the actual buying criterion.
 
-Inngest doesn't offer managed compute today. Your functions run on the app you already deploy, serverless via HTTP invoke or long-running via [Connect](/docs/setup/connect?ref=blog-best-job-queue-alternatives), while Inngest handles orchestration, state, and [flow control](/docs/guides/flow-control?ref=blog-best-job-queue-alternatives). If the job is "run this somewhere else so I don't have to," Trigger.dev is the direct answer. If the job is "run this in my VPC, on the same deploy as my API," it isn't.
+Inngest doesn't offer managed compute today. Your functions run on the app you already deploy, serverless via HTTP invoke or long-running via [Connect](/docs/durable-execution/deploying-functions/connect?ref=blog-best-job-queue-alternatives), while Inngest handles orchestration, state, and [flow control](/docs/durable-execution/flow-control?ref=blog-best-job-queue-alternatives). If the job is "run this somewhere else so I don't have to," Trigger.dev is the direct answer. If the job is "run this in my VPC, on the same deploy as my API," it isn't.
 
 Trigger.dev is Apache 2.0 and self-hostable: Postgres, Redis, worker containers. Self-hosting buys you data residency and control; Cloud buys you warm starts, autoscaling, and checkpoints. Inngest can be [self-hosted](/docs/self-hosting?ref=blog-best-job-queue-alternatives) too — some third-party "Inngest alternatives" posts claiming otherwise just haven't been updated in a while. Self-hosting either platform is an ops decision, not a statement of values.
 
@@ -346,7 +346,7 @@ Restate is built for teams who want journal-and-replay guarantees and write sema
 
 Pick Restate when the programming model clicks for you: handlers, objects, journaled replay, and you'd rather have that shape than Inngest's event-plus-function-plus-step model. Restate fits teams building durable services or agent runtimes where the unit of work is a handler or an object, not an event fanning out to five functions.
 
-Pick Inngest when you want event-driven fan-out (when `user.created` fires, run these five functions), [flow control](/docs/guides/flow-control?ref=blog-best-job-queue-alternatives) built for multi-tenant SaaS (concurrency keys, throttle, debounce), and functions that live next to the Next.js or Python app you're already shipping on Vercel or Render.
+Pick Inngest when you want event-driven fan-out (when `user.created` fires, run these five functions), [flow control](/docs/durable-execution/flow-control?ref=blog-best-job-queue-alternatives) built for multi-tenant SaaS (concurrency keys, throttle, debounce), and functions that live next to the Next.js or Python app you're already shipping on Vercel or Render.
 
 We don't have a Restate-versus-Inngest customer bake-off to point to. That's a gap in our social proof, not a knock on Restate, which runs in production in banking, fintech, and AI infrastructure, and belongs on any honest Inngest alternatives list.
 
@@ -354,16 +354,16 @@ We don't have a Restate-versus-Inngest customer bake-off to point to. That's a g
 
 **Work:** event-driven background work, onboarding, multi-tenant SaaS, AI tool chains — inside the app you already deploy, when compute has to stay on your infra.
 
-Inngest is a durable execution platform for [background jobs](/docs/guides/background-jobs?ref=blog-best-job-queue-alternatives), scheduled work, and workflows written as functions in your own repo. The control plane, Cloud or self-hosted, schedules and retries. Compute stays yours. That matches the multi-tenant SaaS, AI agent, and onboarding rows in the job-to-be-done table, whenever "compute must stay on your infra" is also true.
+Inngest is a durable execution platform for [background jobs](/docs/patterns/jobs/keeping-your-api-fast?ref=blog-best-job-queue-alternatives), scheduled work, and workflows written as functions in your own repo. The control plane, Cloud or self-hosted, schedules and retries. Compute stays yours. That matches the multi-tenant SaaS, AI agent, and onboarding rows in the job-to-be-done table, whenever "compute must stay on your infra" is also true.
 
 ### What Inngest changed
 
 Inngest sits in the same post-queue generation as Trigger.dev, Temporal, and Restate, tuned for one specific job: event-driven application logic on the compute you already have.
 
 - **Events, not just named tasks.** Send `invoice.paid` or `user.signed_up`; functions subscribe to events instead of only being invoked by name. That matches how product code already thinks about what happened.
-- **Not locked to one entry point.** Events, schedules, and calls from other functions all trigger a function, and the same durability wraps an existing endpoint in place via [durable endpoints](/docs/learn/durable-endpoints?ref=blog-best-job-queue-alternatives), so legacy code you can't rearchitect still gets retries.
-- **Steps with automatic retry.** Split a function into [steps](/docs/features/inngest-functions/steps-workflows?ref=blog-best-job-queue-alternatives) and each one persists independently. A failure on step four doesn't rerun steps one through three.
-- **Flow control as a first-class feature, not a workaround.** [Concurrency](/docs/guides/concurrency?ref=blog-best-job-queue-alternatives), [throttle](/docs/guides/throttling?ref=blog-best-job-queue-alternatives), [debounce](/docs/guides/debounce?ref=blog-best-job-queue-alternatives), and [priority](/docs/guides/priority?ref=blog-best-job-queue-alternatives) without provisioning a separate queue per tenant or API. [Analogue](/customers/analogue?ref=blog-best-job-queue-alternatives) came back to Inngest after Faktory specifically for these primitives, not for raw speed.
+- **Not locked to one entry point.** Events, schedules, and calls from other functions all trigger a function, and the same durability wraps an existing endpoint in place via [durable endpoints](/docs/durable-execution/durable-endpoints?ref=blog-best-job-queue-alternatives), so legacy code you can't rearchitect still gets retries.
+- **Steps with automatic retry.** Split a function into [steps](/docs/durable-execution/primitives?ref=blog-best-job-queue-alternatives) and each one persists independently. A failure on step four doesn't rerun steps one through three.
+- **Flow control as a first-class feature, not a workaround.** [Concurrency](/docs/durable-execution/flow-control/concurrency?ref=blog-best-job-queue-alternatives), [throttle](/docs/durable-execution/flow-control/throttling?ref=blog-best-job-queue-alternatives), [debounce](/docs/durable-execution/flow-control/debounce?ref=blog-best-job-queue-alternatives), and [priority](/docs/durable-execution/flow-control/priority?ref=blog-best-job-queue-alternatives) without provisioning a separate queue per tenant or API. [Analogue](/customers/analogue?ref=blog-best-job-queue-alternatives) came back to Inngest after Faktory specifically for these primitives, not for raw speed.
 - **Serverless-native invocation.** Functions run as HTTP handlers on the deploy you already have. No separate worker fleet required for most teams on Vercel or similar platforms.
 
 That's a different shape entirely than Trigger.dev's managed compute, Temporal's workflow workers, or Restate's handler-and-object model. Inngest is strongest when the job is "add durable, observable background work to the app I'm already shipping."
@@ -413,7 +413,7 @@ Both, depending on how you use it. It's a [durable execution](/blog/principles-o
 
 ### Trigger.dev vs Inngest, which should I pick?
 
-Trigger.dev if you want managed job compute or prefer their task model. Inngest if functions need to run on your infra, you want event-driven fan-out, or multi-tenant [flow control](/docs/guides/flow-control?ref=blog-best-job-queue-alternatives) matters to you out of the box. Plenty of teams evaluate both, and they should.
+Trigger.dev if you want managed job compute or prefer their task model. Inngest if functions need to run on your infra, you want event-driven fan-out, or multi-tenant [flow control](/docs/durable-execution/flow-control?ref=blog-best-job-queue-alternatives) matters to you out of the box. Plenty of teams evaluate both, and they should.
 
 ### Is BullMQ still enough in 2026?
 

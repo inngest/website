@@ -168,7 +168,7 @@ inngest.createFunction(
 
 ## Checkpointing enabled by default
 
-[Checkpointing](/docs/setup/checkpointing) is now enabled by default for all functions. With checkpointing, steps execute eagerly within a single request and checkpoint their progress back to Inngest as they complete — dramatically reducing inter-step latency. This is especially impactful for real-time AI workflows with many sequential steps.
+[Checkpointing](/docs/durable-execution/guides-and-advanced/checkpointing?ref=blog-typescript-sdk-v4) is now enabled by default for all functions. With checkpointing, steps execute eagerly within a single request and checkpoint their progress back to Inngest as they complete — dramatically reducing inter-step latency. This is especially impactful for real-time AI workflows with many sequential steps.
 
 No configuration is needed. To opt out, set `checkpointing: false` on your client or individual functions.
 

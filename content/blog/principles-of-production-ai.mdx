@@ -64,12 +64,12 @@ As more companies release AI applications to production, many turn to AI workflo
 
 ### AI Workflows as steps: reliability and caching included
 
-One successful approach to operating AI workflows in production relies on [Durable Workflows](/docs/learn/inngest-functions) like Inngest.
+One successful approach to operating AI workflows in production relies on [Durable Workflows](/docs/durable-execution/durable-workflows?ref=blog-principles-of-production-ai) like Inngest.
 Durable Workflows enable you to build AI workflows composed of retriable and linked steps (like chains) benefiting from three essential features:
 
-- [**Automatic retries**](https://www.inngest.com/docs/guides/error-handling) are crucial for reliably interacting with LLM models and tools at scale.
+- [**Automatic retries**](/docs/durable-execution/guides-and-advanced/error-handling?ref=blog-principles-of-production-ai) are crucial for reliably interacting with LLM models and tools at scale.
 - **Embedded Caching**: preventing any duplicate costly LLM costs during retries
-- [**Concurrency, Throttling, and Rate limiting**](https://www.inngest.com/docs/guides/flow-control) are essential to scale user requests and protect your application from abuse.
+- [**Concurrency, Throttling, and Rate limiting**](/docs/durable-execution/flow-control?ref=blog-principles-of-production-ai) are essential to scale user requests and protect your application from abuse.
 
 ![AI Workflows running on Inngest benefits from automatic retries and caching, prevent unnecessary LLM calls.](/assets/blog/principles-of-production-ai/2.png)
 
@@ -83,7 +83,7 @@ AI applications often operate in SaaS and are used by multiple users from differ
 In this setting, it is crucial to ensure that each AI Workflow evolves in its own tenant **without any side effects from a surge of usage and with distinct data isolation**.
 
 AI workflows built with Inngest rely on a queuing mechanism, **making it easy to add multitenancy capabilities**.
-Restricting the number of invocation of our AI workflows per user is achieved with a simple [`throttle` configuration](/docs/guides/throttling):
+Restricting the number of invocation of our AI workflows per user is achieved with a simple [`throttle` configuration](/docs/durable-execution/flow-control/throttling?ref=blog-principles-of-production-ai):
 
 ```py
 @inngest_client.create_function(

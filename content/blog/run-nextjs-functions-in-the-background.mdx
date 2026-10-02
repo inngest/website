@@ -103,8 +103,8 @@ Great! You've done all the hard work already. You can always add or remove funct
 
 Your scheduled functions are ready to go, but there is one last step. Inngest doesn't yet know where your app's code is running or what schedule to run it on. For your platform, you'll need to set this up:
 
-* [Vercel](/docs/deploy/vercel?ref=blog-run-nextjs-functions-in-the-background)
-* [Netlify](/docs/deploy/netlify?ref=blog-run-nextjs-functions-in-the-background)
+* [Vercel](/docs/durable-execution/deploying-functions/platforms/vercel?ref=blog-run-nextjs-functions-in-the-background)
+* [Netlify](/docs/durable-execution/deploying-functions/platforms/netlify?ref=blog-run-nextjs-functions-in-the-background)
 
 Once that's done Inngest will be able to call your functions running on Vercel or Netlfiy as needed!
 
@@ -134,7 +134,7 @@ The first step is **choosing your event message** to send to your background fun
 }
 ```
 
-To start, we'll send this event in our existing `/api/signup` route defined in the following file. We'll use the [Inngest SDK](https://github.com/inngest/inngest-js) (`npm install inngest`) to send our event with the data captured during signup with an `INNGEST_EVENT_KEY` [that you can create here](/docs/events/creating-an-event-key?ref=blog-run-nextjs-functions-in-the-background):
+To start, we'll send this event in our existing `/api/signup` route defined in the following file. We'll use the [Inngest SDK](https://github.com/inngest/inngest-js) (`npm install inngest`) to send our event with the data captured during signup with an `INNGEST_EVENT_KEY` [that you can create here](/docs/platform-and-operations/keys-and-access?ref=blog-run-nextjs-functions-in-the-background):
 
 ```js twoslash title="/pages/api/signup.js"
 import { Inngest } from "inngest";

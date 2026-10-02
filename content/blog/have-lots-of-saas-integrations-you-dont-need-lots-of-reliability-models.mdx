@@ -49,7 +49,7 @@ You write a Salesforce sync job, a HubSpot sync job, a Slack sync job — and ea
 
 You try to solve it once, upfront, with a config-driven system that's supposed to handle any provider. This usually works until it doesn't — the first provider with a weird auth flow or a non-standard rate limit header breaks the abstraction, and now you're writing provider-specific escape hatches inside a framework that was supposed to prevent exactly that.
 
-Either way, you end up with the same failure mode: one tenant's bad connection or rate-limited API affects every other tenant sharing that pipeline, because [concurrency](/docs/guides/concurrency?ref=blog-have-lots-of-saas-integrations-you-dont-need-lots-of-reliability-models) and [retries](/docs/guides/error-handling?ref=blog-have-lots-of-saas-integrations-you-dont-need-lots-of-reliability-models) were never scoped per customer to begin with.
+Either way, you end up with the same failure mode: one tenant's bad connection or rate-limited API affects every other tenant sharing that pipeline, because [concurrency](/docs/durable-execution/flow-control/concurrency?ref=blog-have-lots-of-saas-integrations-you-dont-need-lots-of-reliability-models) and [retries](/docs/durable-execution/guides-and-advanced/error-handling?ref=blog-have-lots-of-saas-integrations-you-dont-need-lots-of-reliability-models) were never scoped per customer to begin with.
 
 ## One Reliability Model, Many Provider-Specific Functions
 
@@ -76,7 +76,7 @@ await inngest.send({
 
 A customer with five connected tools sends five events, each handled independently. If Salesforce is slow today, it doesn't touch the Slack sync.
 
-Inside the function, the provider-specific parts sit in [steps](/docs/features/inngest-functions/steps-workflows?ref=blog-have-lots-of-saas-integrations-you-dont-need-lots-of-reliability-models), and the reliability configuration wraps all of them:
+Inside the function, the provider-specific parts sit in [steps](/docs/durable-execution/primitives?ref=blog-have-lots-of-saas-integrations-you-dont-need-lots-of-reliability-models), and the reliability configuration wraps all of them:
 
 ```ts
 export const syncProviderData = inngest.createFunction(
@@ -117,7 +117,7 @@ export const syncProviderData = inngest.createFunction(
 
 ### Scoping Concurrency Per Tenant to Prevent Noisy-Neighbor Failures
 
-Concurrency here is layered via [flow control](/docs/guides/flow-control?ref=blog-have-lots-of-saas-integrations-you-dont-need-lots-of-reliability-models), and the tenant key is the important layer. The keyed limit says: at most one sync in flight per tenant, so customer #492's slow Salesforce sync can't eat capacity meant for customer #493's Slack sync. The unkeyed limit is the global ceiling that protects your own infrastructure.
+Concurrency here is layered via [flow control](/docs/durable-execution/flow-control?ref=blog-have-lots-of-saas-integrations-you-dont-need-lots-of-reliability-models), and the tenant key is the important layer. The keyed limit says: at most one sync in flight per tenant, so customer #492's slow Salesforce sync can't eat capacity meant for customer #493's Slack sync. The unkeyed limit is the global ceiling that protects your own infrastructure.
 
 Teams running this in production almost always use both — a keyed limit of 1 for fairness, a function-wide cap in the hundreds for throughput. Hand-rolled queue setups tend to have only the global one, which is usually why ["one bad customer breaks it for everyone"](/blog/multi-tenant-ai-platform-flow-control?ref=blog-have-lots-of-saas-integrations-you-dont-need-lots-of-reliability-models) shows up in the first place.
 

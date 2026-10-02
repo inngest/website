@@ -10,7 +10,7 @@ category: engineering
 sidebarCta:
   text: "Fair, multi-tenant scale. Add concurrency and throttling in one line."
   buttonLabel: "Flow Control Guide"
-  href: "/docs/guides/flow-control?ref=blog-multi-tenant-ai-platform-flow-control-sidebar"
+  href: "/docs/durable-execution/flow-control?ref=blog-multi-tenant-ai-platform-flow-control-sidebar"
 ---
 
 If you have an AI platform that serves many customers, or maybe more specifically—if every customer request hits the same OpenAI bill—this blog is for you. Regardless of your business model, your pipeline probably looks the same: **Long-running, non-deterministic, multi-step pipelines, where every step depends on 1-7 external providers that could fail for any number of reasons.** Which means, your product _is_ your pipeline.
@@ -31,7 +31,7 @@ If any of these look like something you're building, your unit economics are at 
 
 So, of course you're using something to ensure pipeline durability—retries, reliability. Maybe a basic queue, maybe something more. But you might be missing the most important piece.
 
-OpenAI, Anthropic, a transcription provider, your vector DB—none of them meter capacity per-customer. Every request your platform makes is competing with every other request your platform makes, all the time. Without a way to [control flow](/docs/guides/flow-control?ref=blog-multi-tenant-ai-platform-flow-control), your largest customer's upload won't just slow _them_ down, it will slow _everyone_ down. And if your customers can't rely on you for timely turnaround, they'll just go somewhere else.
+OpenAI, Anthropic, a transcription provider, your vector DB—none of them meter capacity per-customer. Every request your platform makes is competing with every other request your platform makes, all the time. Without a way to [control flow](/docs/durable-execution/flow-control?ref=blog-multi-tenant-ai-platform-flow-control), your largest customer's upload won't just slow _them_ down, it will slow _everyone_ down. And if your customers can't rely on you for timely turnaround, they'll just go somewhere else.
 
 Retries don't solve this problem. The thing that decides whether you survive contact with real, chaotic, irrational, and really just bursty customer use is **flow control**—specifically, the ability to slice and shape concurrency at a per-tenant level. This post is about why, and how Inngest helps.
 
@@ -47,7 +47,7 @@ When a single customer pushes a giant batch of work, your other customers should
 
 But in practice, it's harder to get right. The default behavior of every job queue and most workflow engines is **global FIFO**—work runs in roughly the order it arrived, against a shared pool of capacity. When a massive customer on your transcription platform drops 80 hours of audio at 9am Monday, their jobs fill the queue, and saturate your OpenAI TPM ceiling. Every other customer waits behind them. Not ideal.
 
-With Inngest, you can declare [concurrency](/docs/guides/concurrency?ref=blog-multi-tenant-ai-platform-flow-control) partitions on the function itself:
+With Inngest, you can declare [concurrency](/docs/durable-execution/flow-control/concurrency?ref=blog-multi-tenant-ai-platform-flow-control) partitions on the function itself:
 
 ```ts
 concurrency: { key: "event.data.projectId", limit: 10 }
@@ -75,7 +75,7 @@ As you sign more customers, your COGS per customer should be predictable and for
 
 But AI platforms insert a lot of variability: Demand spikes. You hit your OpenAI TPM ceiling. Requests start returning 429s. Now you have a retry storm—cascading failures that consume retry budget without making progress, while you pay for every failed token.
 
-The fix is provider-aware flow control: [throttle](/docs/guides/throttling?ref=blog-multi-tenant-ai-platform-flow-control), [rate-limit](/docs/guides/rate-limiting?ref=blog-multi-tenant-ai-platform-flow-control), and env-scoped concurrency lanes that match each upstream's actual capacity. Fast providers get wide lanes (`limit: 15`). Slow providers get narrow lanes (`limit: 5`). A global ceiling caps total throughput against your overall quota.
+The fix is provider-aware flow control: [throttle](/docs/durable-execution/flow-control/throttling?ref=blog-multi-tenant-ai-platform-flow-control), [rate-limit](/docs/durable-execution/flow-control/rate-limiting?ref=blog-multi-tenant-ai-platform-flow-control), and env-scoped concurrency lanes that match each upstream's actual capacity. Fast providers get wide lanes (`limit: 15`). Slow providers get narrow lanes (`limit: 5`). A global ceiling caps total throughput against your overall quota.
 
 With Inngest, this lives on the function definition as `throttle`, `rateLimit`, and env-scoped `concurrency` keyed on the provider. You can route work to provider-specific pools declaratively, and change the routing when quotas change without re-architecting anything. Your provider quotas become part of your runtime topology, modeled as first-class objects.
 
@@ -89,7 +89,7 @@ In practice, AI pipelines run in a black box. A step doesn't return 200 or 500�
 2. You change a prompt to improve one extraction, but then discover it degraded a different extraction across 30% of pipelines.
 3. An agent loop calls the wrong tool. You need to know _why_ it made that decision, with full step context.
 
-With Inngest, you get all that necessary observability by default, since every step of every run is captured automatically, with [replay](/docs/platform/replay?ref=blog-multi-tenant-ai-platform-flow-control). Without this, every escalation is a forensic exercise that takes half a day.
+With Inngest, you get all that necessary observability by default, since every step of every run is captured automatically, with [replay](/docs/platform-and-operations/replay-runs-in-bulk?ref=blog-multi-tenant-ai-platform-flow-control). Without this, every escalation is a forensic exercise that takes half a day.
 
 ## **Why Inngest**
 

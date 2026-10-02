@@ -11,7 +11,7 @@ category: product-updates
 
 We are thrilled to release Batch Keys, a powerful addition to _Event Batching_. This new feature allows developers to group work units by leveraging [Inngest's efficient event-matching engine](https://www.inngest.com/blog/accidentally-quadratic-evaluating-trillions-of-event-matches-in-real-time), unlocking new advanced use cases such as Batch User Notifications or more efficient processing of large volumes of events.
 
-[*Event Batching*](https://www.inngest.com/docs/guides/batching), released a few months ago, has been widely adopted by developers and teams using Inngest to build highly scalable features such as ETL, notification systems, and third-party integrations. This feature enabled applications dealing with considerable throughput of events to group similar events in batches to create aggregates, reducing the number of requests to third-party APIs.
+[*Event Batching*](/docs/durable-execution/flow-control/batching?ref=blog-announcing-batch-keys), released a few months ago, has been widely adopted by developers and teams using Inngest to build highly scalable features such as ETL, notification systems, and third-party integrations. This feature enabled applications dealing with considerable throughput of events to group similar events in batches to create aggregates, reducing the number of requests to third-party APIs.
 
 ![Diagram comparing event processing without and with event batching. Without event batching: multiple function runs trigger the external API, causing a "429 Too Many Requests" error. With event batching: events are grouped into a single function run, successfully sending one request to the external API, resulting in a "200 OK" response.](/assets/blog/announcing-batch-keys/batch-keys-1.jpg)
 
