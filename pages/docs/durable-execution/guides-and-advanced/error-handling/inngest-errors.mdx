@@ -1,3 +1,4 @@
+import { CodeGroup } from "shared/Docs/mdx";
 export const metaTitle = "Handle Inngest Errors | Retry or Fail Fast";
 export const description = "Inngest error types: throw NonRetriableError to stop retrying permanent failures, or RetryAfterError to delay the next attempt until a provider is ready.";
 
@@ -11,7 +12,9 @@ Throw `NonRetriableError` when the same input cannot succeed on another attempt,
 ## Retry when an upstream service is ready
 Throw `RetryAfterError` when a rate limit or temporary condition provides a useful delay. The second argument accepts milliseconds, a duration string such as `"30s"`, or a `Date`. If you throw a standard error instead, Inngest uses its normal backoff.
 This example uses the `inngest` client from the [Quick start](/docs/durable-execution/quick-start).
-```typescript
+
+<CodeGroup>
+```typescript {{ title: "TypeScript" }}
 import { NonRetriableError, RetryAfterError } from "inngest";
 
 export const fetchItem = inngest.createFunction(
@@ -44,6 +47,16 @@ export const fetchItem = inngest.createFunction(
   }
 );
 ```
+
+```python {{ title: "Python" }}
+!snippet:path=snippets/py/latest/errors/inngest_errors/fetch_item.py
+```
+
+```go {{ title: "Go" }}
+!snippet:path=snippets/go/docs/errors/inngest_errors/fetch_item.go
+```
+</CodeGroup>
+
 Replace the URL with your service endpoint. If that service supplies a valid `Retry-After` value, pass an appropriate duration or time instead of the fixed `"30s"` shown here.
 ## Handle an exhausted step
 After a step exhausts retries, it throws a `StepError` into the function. Use `try`/`catch` around that step to run a fallback or compensation step. If you do not catch it, the function fails. See [Rollbacks](/docs/durable-execution/guides-and-advanced/error-handling/rollbacks). Avoid treating every error as permanent; ordinary errors are appropriate when another attempt can succeed.

@@ -1,3 +1,4 @@
+import { CodeGroup, SdkUnsupported } from "shared/Docs/mdx";
 import { Mermaid } from "src/shared/Docs/Mermaid";
 
 export const metaTitle = "Durable Endpoints | Durable HTTP Workflows";
@@ -52,9 +53,10 @@ redirects the client to a new URL to wait for the run to complete.  Inngest reco
 
 ## An example Durable Endpoint
 
-This TypeScript v4 example wraps a Next.js POST handler with `inngest.endpoint()` and reads a JSON body. Replace the application functions with your own code.
+This TypeScript v4 example wraps a Next.js POST handler with `inngest.endpoint()` and reads a JSON body. In Go, wrap a `net/http` handler with a `stephttp` provider. See [Durable Endpoints in Go](/docs/reference/go/durable-endpoints) for provider setup, router middleware, and shutdown. Replace the application functions with your own code.
 
-```typescript
+<CodeGroup>
+```typescript {{ title: "TypeScript" }}
 import { Inngest, step } from "inngest";
 import { endpointAdapter } from "inngest/next";
 import { NextRequest } from "next/server";
@@ -80,13 +82,21 @@ export const POST = inngest.endpoint(async (req: NextRequest) => {
   return Response.json({ orderId, reservation });
 });
 ```
+
+<SdkUnsupported title="Python" feature="Durable Endpoints" />
+
+```go {{ title: "Go" }}
+!snippet:path=snippets/go/docs/endpoints/durable_endpoints/order_endpoint.go
+```
+</CodeGroup>
+
 Send a JSON body such as `{ "orderId": "123" }` to this route. If `reserve-inventory` fails, Inngest retries that step without rerunning `load-order`. Make operations with external effects safe to retry, because the step that fails can run again.
 
 <hr />
 
 ## Current support and limits
 
-- Durable Endpoints are beta, and are available in TypeScript and Go.
+- Durable Endpoints are beta, and are available in TypeScript and Go. Go requires `inngestgo` v0.16.5 or later for the API shown here.
 - Workflow flow control such as concurrency and rate limits does not currently apply to Durable Endpoints.
 - `defer` and `group.experiment` don't work in Durable Endpoints. All other [primitives](/docs/durable-execution/primitives#workflow-and-endpoint-support) do.
 - [Streaming](/docs/durable-execution/durable-endpoints/streaming) is in developer preview.

@@ -1,3 +1,4 @@
+import { CodeGroup, SdkUnsupported } from "shared/Docs/mdx";
 export const metaTitle = "Roll out a workflow rewrite | Agent Evals";
 export const description = "Safely roll out a rewritten AI workflow: canary it on a small share of production runs, score both versions side by side, and ramp up when results hold.";
 
@@ -10,7 +11,8 @@ A rewrite rarely changes one step. It changes how several steps work together. `
 
 Each callback runs a complete path. Only the selected path runs; the other callback is skipped:
 
-```typescript {{ filename: "inngest/invoice.ts" }}
+<CodeGroup>
+```typescript {{ title: "TypeScript", filename: "inngest/invoice.ts" }}
 import { experiment } from "inngest";
 import { inngest } from "./client";
 
@@ -59,13 +61,21 @@ export default inngest.createFunction(
 );
 ```
 
+```python {{ title: "Python", filename: "invoice.py" }}
+!snippet:path=snippets/py/latest/evals/workflow_rewrite/invoice.py
+```
+
+<SdkUnsupported title="Go" feature="Experiments" />
+</CodeGroup>
+
 Weights are relative: `99:1` sends about one new run in a hundred through the rewrite. Put every side effect, such as sending the invoice, inside a step so a replay doesn't repeat it.
 
 ## 2. Score the real outcome later
 
 A valid invoice is useful, but payment or a customer correction shows whether the rewrite worked. When your payment webhook fires, load the saved values and score the original run:
 
-```typescript {{ filename: "inngest/payments.ts" }}
+<CodeGroup>
+```typescript {{ title: "TypeScript", filename: "inngest/payments.ts" }}
 export const scorePayment = inngest.createFunction(
   { id: "score-invoice-paid", triggers: { event: "billing/invoice.paid" } },
   async ({ event, step }) => {
@@ -82,6 +92,13 @@ export const scorePayment = inngest.createFunction(
   }
 );
 ```
+
+```python {{ title: "Python", filename: "payments.py" }}
+!snippet:path=snippets/py/latest/evals/workflow_rewrite/payments.py
+```
+
+<SdkUnsupported title="Go" feature="Experiments" />
+</CodeGroup>
 
 Passing the original `runId` places the score under the experiment. Without it, the score attaches to the `score-invoice-paid` run.
 

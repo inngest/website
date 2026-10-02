@@ -1,3 +1,4 @@
+import { CodeGroup } from "shared/Docs/mdx";
 export const metaTitle = "Step Rollbacks on Failure";
 export const description = "Step rollbacks in Inngest undo side effects when a step fails after all retries, like releasing reserved inventory when a payment keeps failing.";
 
@@ -9,7 +10,9 @@ If charging an order still fails after retries, release its inventory reservatio
 ## Add a compensating step
 This TypeScript v4 example reserves inventory, tries to charge an order, and releases the reservation if charging still fails. The three called functions represent your application's integrations.
 It uses the `inngest` client from the [Quick start](/docs/durable-execution/quick-start).
-```typescript
+
+<CodeGroup>
+```typescript {{ title: "TypeScript" }}
 export const fulfillOrder = inngest.createFunction(
   {
     id: "fulfill-order",
@@ -32,6 +35,16 @@ export const fulfillOrder = inngest.createFunction(
   }
 );
 ```
+
+```python {{ title: "Python" }}
+!snippet:path=snippets/py/latest/errors/rollbacks/fulfill_order.py
+```
+
+```go {{ title: "Go" }}
+!snippet:path=snippets/go/docs/errors/rollbacks/fulfill_order.go
+```
+</CodeGroup>
+
 Inngest retries `charge-order` before the `catch` block runs. If it still fails, `release-inventory` is its own durable, retriable step. Rethrowing the error leaves the function failed after compensation; returning instead would let the function continue. Give reservation, charge, and release operations stable IDs so each can be called again safely.
 ## Choose recovery or compensation
 - **Fallback.** Call another service in a new step, then continue when its result satisfies the workflow.

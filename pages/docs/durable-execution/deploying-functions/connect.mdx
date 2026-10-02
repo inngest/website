@@ -214,6 +214,12 @@ No signing or event keys are required in local development mode.
       appVersion: process.env.FLY_MACHINE_VERSION,
     })
     ```
+    ```python {{ title: "Python" }}
+    !snippet:path=snippets/py/latest/deploy/connect/app_version.py
+    ```
+    ```go {{ title: "Go" }}
+    !snippet:path=snippets/go/docs/deploy/connect/app_version.go
+    ```
     </CodeGroup>
   </Step>
   <Step title="Set the instance id (recommended)">
@@ -255,6 +261,12 @@ No signing or event keys are required in local development mode.
       instanceId: process.env.FLY_MACHINE_ID,
     })
     ```
+    ```python {{ title: "Python" }}
+    !snippet:path=snippets/py/latest/deploy/connect/instance_id.py
+    ```
+    ```go {{ title: "Go" }}
+    !snippet:path=snippets/go/docs/deploy/connect/instance_id.go
+    ```
     </CodeGroup>
   </Step>
   <Step title="Set the max concurrency (recommended)">
@@ -267,6 +279,12 @@ No signing or event keys are required in local development mode.
       apps: [...],
       maxWorkerConcurrency: 10,
     })
+    ```
+    ```python {{ title: "Python" }}
+    !snippet:path=snippets/py/latest/deploy/connect/max_worker_concurrency.py
+    ```
+    ```go {{ title: "Go" }}
+    !snippet:path=snippets/go/docs/deploy/connect/max_worker_concurrency.go
     ```
     </CodeGroup>
   </Step>
@@ -289,6 +307,7 @@ As a connect worker is a long-running process, it's important to understand the 
     * The worker begins sending and receiving "heartbeat" messages to Inngest to ensure the connection is still active.
     * The worker will automatically reconnect if the connection is lost.
 
+    <CodeGroup>
     ```ts {{ title: "TypeScript" }}
     // The connect promise will resolve when the connection is ACTIVE
     const connection = await connect({
@@ -297,6 +316,13 @@ As a connect worker is a long-running process, it's important to understand the 
     console.log(`The worker connection is: ${connection.state}`)
     // The worker connection is: ACTIVE
     ```
+    ```python {{ title: "Python" }}
+    !snippet:path=snippets/py/latest/deploy/connect/active_state.py
+    ```
+    ```go {{ title: "Go" }}
+    !snippet:path=snippets/go/docs/deploy/connect/active_state.go
+    ```
+    </CodeGroup>
   </Step>
   <Step>
     `RECONNECTING` - The worker is reconnecting to Inngest after a connection was lost.
@@ -323,6 +349,9 @@ As a connect worker is a long-running process, it's important to understand the 
       handleShutdownSignals: ['SIGTERM'],
     })
     ```
+    ```python {{ title: "Python" }}
+    !snippet:path=snippets/py/latest/deploy/connect/shutdown_signals.py
+    ```
     ```go
     // The Go SDK must receive a Context object that will be notified
     // when the correct signals are received. Use signal.NotifyContext:
@@ -339,21 +368,37 @@ As a connect worker is a long-running process, it's important to understand the 
 
     You can manually close the connection with the `close` method on the connection object:
 
+    <CodeGroup>
     ```ts
     await connection.close()
     // Connection is now closed
     ```
+    ```python {{ title: "Python" }}
+    !snippet:path=snippets/py/latest/deploy/connect/close.py
+    ```
+    ```go {{ title: "Go" }}
+    !snippet:path=snippets/go/docs/deploy/connect/close.go
+    ```
+    </CodeGroup>
   </Step>
   <Step>
     `CLOSED` - The worker's WebSocket connection has closed.
 
     By this stage, all in-flight steps will be flushed via the HTTP API as the WebSocket connection is closed, ensuring that no in-progress steps are lost.
 
+    <CodeGroup>
     ```ts {{ title: "TypeScript" }}
     // The `closed` promise will resolve when the connection is "CLOSED"
     await connection.closed
     // Connection is now closed
     ```
+    ```python {{ title: "Python" }}
+    !snippet:path=snippets/py/latest/deploy/connect/closed.py
+    ```
+    ```go {{ title: "Go" }}
+    !snippet:path=snippets/go/docs/deploy/connect/closed.go
+    ```
+    </CodeGroup>
   </Step>
 </Steps>
 
@@ -466,6 +511,12 @@ console.log("Worker: Shut down");
 
 // Stop the HTTP server
 await server.stop();
+```
+```python {{ title: "Python" }}
+!snippet:path=snippets/py/latest/deploy/connect/health_check.py
+```
+```go {{ title: "Go" }}
+!snippet:path=snippets/go/docs/deploy/connect/health_check.go
 ```
 </CodeGroup>
 
@@ -616,12 +667,20 @@ If you are [self-hosting](/docs/self-hosting?ref=docs-connect) Inngest, you need
 
 Depending on your network configuration, you may need to set the gateway URL that the SDK uses to connect.
 
+<CodeGroup>
 ```ts
 const connection = await connect({
   apps: [...],
   gatewayUrl: "ws://my-cluster-host:8289/v0/connect",
 })
 ```
+```python {{ title: "Python" }}
+!snippet:path=snippets/py/latest/deploy/connect/gateway_url.py
+```
+```go {{ title: "Go" }}
+!snippet:path=snippets/go/docs/deploy/connect/gateway_url.go
+```
+</CodeGroup>
 
 <hr />
 

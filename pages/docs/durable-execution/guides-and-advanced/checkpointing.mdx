@@ -1,4 +1,4 @@
-import { Info, Tip, Warning, CodeGroup, LanguageSelector, LanguageSection } from "shared/Docs/mdx";
+import { Info, Tip, Warning, CodeGroup, LanguageSelector, LanguageSection, SdkUnsupported } from "shared/Docs/mdx";
 
 export const metaTitle = "Checkpointing for Durable Functions"
 export const description = "Learn how Inngest checkpointing saves function execution state between steps so runs can recover from failures without re-executing completed work."
@@ -99,21 +99,24 @@ go get github.com/inngest/inngestgo/pkg/checkpoint
 2. Set `Checkpoint` on your function options:
 
 ```go
-import (
-  "github.com/inngest/inngestgo"
-  "github.com/inngest/inngestgo/pkg/checkpoint"
-)
-
-_, err := inngestgo.CreateFunction(
-  client,
-  inngestgo.FunctionOpts{
-    ID:         "my-function",
-    Name:       "My Function",
-    Checkpoint: checkpoint.ConfigSafe,
-  },
-  // ... triggers and handler
-)
+!snippet:path=snippets/go/docs/advanced/checkpointing/enable.go
 ```
+
+### Max runtime for serverless environments
+
+Set `MaxRuntime` slightly below your platform's maximum duration. Setting `Checkpoint` on `ClientOpts` applies it to every function in the app, and a function's own `Checkpoint` option overrides it:
+
+```go
+!snippet:path=snippets/go/docs/advanced/checkpointing/max_runtime.go
+```
+
+</LanguageSection>
+
+<LanguageSection show="python">
+
+<CodeGroup>
+<SdkUnsupported title="Python" feature="Checkpointing" />
+</CodeGroup>
 
 </LanguageSection>
 

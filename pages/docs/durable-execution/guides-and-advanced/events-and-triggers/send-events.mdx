@@ -33,7 +33,8 @@ inngest_client = inngest.Inngest(app_id="acme-storefront-app")
 
 ## Send one event
 
-```typescript
+<CodeGroup>
+```typescript {{ title: "TypeScript" }}
 import { Inngest } from "inngest";
 
 const inngest = new Inngest({ id: "billing-app" });
@@ -43,6 +44,15 @@ const { ids } = await inngest.send({
   data: { invoiceId: "inv_123", customerId: "cus_456" },
 });
 ```
+
+```python {{ title: "Python" }}
+!snippet:path=snippets/py/latest/events/send_events/send_one_event.py
+```
+
+```go {{ title: "Go" }}
+!snippet:path=snippets/go/docs/events/send_events/send_one_event.go
+```
+</CodeGroup>
 
 The returned event ID lets you find the event in the dashboard. A matching trigger starts its function. One event may start several functions. Unlike a traditional message queue, where one worker consumes each message, every function that matches the event runs. See [Fan-out](/docs/durable-execution/guides-and-advanced/patterns/fan-out).
 
@@ -124,20 +134,34 @@ import inngest
 # It is not recommended to hard-code your Event Key in your code.
 inngest_client = inngest.Inngest(app_id="your-app-id", event_key="xyz...")
 ```
+
+```go {{ title: "Go" }}
+!snippet:path=snippets/go/docs/events/send_events/event_key.go
+```
 </CodeGroup>
 
 You don't need an Event Key in local development. Events go to the [Inngest Dev Server](/docs/local-development) without one.
 
 ## Send from a function
 
-Use `step.sendEvent()` inside a durable function. This records the send as a step and prevents replay of that completed step from sending the event again. Use it instead of `inngest.send()` inside functions. In Python, use `step.send_event()`. See [`step.sendEvent()`](/docs/durable-execution/primitives/step-sendevent) for details.
+Use `step.sendEvent()` inside a durable function. This records the send as a step and prevents replay of that completed step from sending the event again. Use it instead of `inngest.send()` inside functions. In Python, use `step.send_event()`; in Go, use `step.Send()` or `step.SendMany()`. See [`step.sendEvent()`](/docs/durable-execution/primitives/step-sendevent) for details.
 
-```typescript
+<CodeGroup>
+```typescript {{ title: "TypeScript" }}
 await step.sendEvent("notify-accounting", {
   name: "billing/invoice.paid",
   data: { invoiceId: event.data.invoiceId },
 });
 ```
+
+```python {{ title: "Python" }}
+!snippet:path=snippets/py/latest/events/send_events/step_send_event.py
+```
+
+```go {{ title: "Go" }}
+!snippet:path=snippets/go/docs/events/send_events/step_send_event.go
+```
+</CodeGroup>
 
 A full function in each SDK:
 
@@ -166,6 +190,10 @@ from src.inngest.client import inngest_client
 )
 async def fn(ctx: inngest.Context) -> list[str]:
     return await ctx.step.send_event("send", inngest.Event(name="foo"))
+```
+
+```go {{ title: "Go" }}
+!snippet:path=snippets/go/docs/events/send_events/user_onboarding.go
 ```
 </CodeGroup>
 
@@ -228,6 +256,10 @@ events = [
   for item in importedItems
 ]
 await inngest_client.send(events);
+```
+
+```go {{ title: "Go" }}
+!snippet:path=snippets/go/docs/events/send_events/send_imported_items.go
 ```
 </CodeGroup>
 

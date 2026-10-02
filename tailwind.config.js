@@ -320,6 +320,7 @@ module.exports = {
           "accent-blue-gradient":
             "rgb(var(--color-v1-blue-gradient) / <alpha-value>)",
           "accent-green": "rgb(var(--color-v1-green-200) / <alpha-value>)",
+          "accent-amber": "rgb(var(--color-v1-amber-200) / <alpha-value>)",
 
           // Status
           "status-completed":

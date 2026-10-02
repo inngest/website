@@ -1,4 +1,4 @@
-import { Compatibility } from "shared/Docs/mdx";
+import { CodeGroup, Compatibility } from "shared/Docs/mdx";
 import { FlowControlMarbles } from "src/shared/Docs/FlowControlMarbles";
 export const metaTitle = "Run Priority | Push Critical Work First";
 export const description = "Prioritize Inngest function runs with a CEL expression over event data, moving urgent queued work ahead of routine runs without managing separate queues.";
@@ -19,7 +19,8 @@ Priority changes **which queued run starts next within a function**. It does not
 
 The `priority.run` value is a Common Expression Language expression evaluated from the triggering event. It returns an integer factor in seconds. This TypeScript v4 example gives enterprise requests a factor of `120` and other requests `0`:
 
-```typescript
+<CodeGroup>
+```typescript {{ title: "TypeScript" }}
 import { Inngest } from "inngest";
 
 const inngest = new Inngest({ id: "summaries" });
@@ -40,6 +41,16 @@ export const generateSummary = inngest.createFunction(
   }
 );
 ```
+
+```python {{ title: "Python" }}
+!snippet:path=snippets/py/latest/flow_control/priority/generate_summary.py
+```
+
+```go {{ title: "Go" }}
+!snippet:path=snippets/go/docs/flow_control/priority/generate_summary.go
+```
+</CodeGroup>
+
 Replace the example step with your summary work. The concurrency limit creates a backlog when one step is executing, so priority can affect which queued run starts when that slot opens.
 
 ## What the factor means

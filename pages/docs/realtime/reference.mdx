@@ -1,3 +1,4 @@
+import { CodeGroup, SdkUnsupported } from "shared/Docs/mdx";
 export const metaTitle = "Reference | Realtime";
 export const description = "Inngest Realtime API reference: every call for defining channels, publishing messages, minting subscription tokens, and subscribing from clients.";
 
@@ -29,7 +30,8 @@ This page summarizes each Realtime call and links to its full reference. Realtim
 
 Each topic property on a channel instance is a `TopicRef` with `channel`, `topic`, and `config` fields. Pass it to a publish call.
 
-```typescript
+<CodeGroup>
+```typescript {{ title: "TypeScript" }}
 import { realtime } from "inngest";
 import { z } from "zod";
 
@@ -44,6 +46,11 @@ const job = jobChannel({ jobId: "job-123" });
 const statusTopic = job.status;
 ```
 
+<SdkUnsupported title="Python" feature="Typed channels and topics">Channels and topics are plain strings in Python. Pass them to `realtime.publish()` and `realtime.get_subscription_token()`.</SdkUnsupported>
+
+<SdkUnsupported title="Go" feature="Typed channels and topics">Channels and topics are plain strings in Go. Pass them to `realtime.Publish()` and encode payloads yourself, for example with `json.Marshal`.</SdkUnsupported>
+</CodeGroup>
+
 Use the same channel definition in publishers, token routes, and subscribers. [Channels and topics](/docs/realtime/channels-and-topics) explains naming and schemas.
 
 ## Publish messages
@@ -53,7 +60,8 @@ Use the same channel definition in publishers, token routes, and subscribers. [C
 
 The payload must match the topic schema. Use a durable publish for final results and state changes. Use an immediate publish for token streams and other updates where a repeat on retry is acceptable.
 
-```typescript
+<CodeGroup>
+```typescript {{ title: "TypeScript" }}
 await step.realtime.publish("job-complete", job.status, {
   message: "Complete",
 });
@@ -62,6 +70,15 @@ await inngest.realtime.publish(job.status, {
   message: "Processing",
 });
 ```
+
+```python {{ title: "Python" }}
+!snippet:path=snippets/py/latest/realtime/reference/publish.py
+```
+
+```go {{ title: "Go" }}
+!snippet:path=snippets/go/docs/realtime/reference/publish.go
+```
+</CodeGroup>
 
 ## Mint a browser token
 
@@ -112,33 +129,7 @@ The Go SDK includes Realtime in the `github.com/inngest/inngestgo/realtime` pack
 The Go SDK doesn't mint subscription tokens. Mint them in TypeScript or Python.
 
 ```go
-import (
-	"context"
-	"encoding/json"
-
-	"github.com/inngest/inngestgo"
-	"github.com/inngest/inngestgo/realtime"
-	"github.com/inngest/inngestgo/step"
-)
-
-type ImportRequested struct {
-	UserID string `json:"userId"`
-}
-
-func processImport(ctx context.Context, input inngestgo.Input[ImportRequested]) (any, error) {
-	channel := "user:" + input.Event.Data.UserID
-
-	data, _ := json.Marshal(map[string]string{"message": "Started"})
-	if err := realtime.Publish(ctx, channel, "status", data); err != nil {
-		return nil, err
-	}
-
-	return step.Run(ctx, "import", func(ctx context.Context) (string, error) {
-		// Do the work, then report the result.
-		data, _ := json.Marshal(map[string]string{"message": "Complete"})
-		return "done", realtime.Publish(ctx, channel, "result", data)
-	})
-}
+!snippet:path=snippets/go/docs/realtime/reference/import.go
 ```
 
 `Publish` and `Subscribe` connect to Inngest Cloud. To use the local Dev Server, call `realtime.PublishWithURL(ctx, "http://localhost:8288/v1/realtime/publish", ...)` and `realtime.SubscribeWithURL(ctx, "ws://localhost:8288/v1/realtime/connect", token)`.

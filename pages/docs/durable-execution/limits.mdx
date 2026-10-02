@@ -23,8 +23,11 @@ These limits and included monthly allowances apply to Inngest Cloud. The [pricin
 | Active apps per workspace | 5 | 10 | 10 | 250 |
 | Active functions per app | 100 | 500 | 500 | 1,000 |
 | Trace and log history | 24 hours | 7 days | 14 days | Up to 365 days |
+| Maximum function run length, including sleeps | 30 days | 90 days | 366 days | Custom |
 
 An **execution** is one function run or one step execution. A function run with five steps uses six executions.
+**Maximum function run length** is the total time from when a run starts to when it finishes, including time spent in `step.sleep()`, `step.sleepUntil()`, and `step.waitForEvent()`. On the Free plan, a run can sleep for up to 30 days in total.
+
 Only active resources count toward these workspace, app, and function limits. The functions-per-workspace value is the app limit multiplied by the function limit; it is not a separate limit.
 
 ## Active branch deploys
@@ -38,7 +41,7 @@ These limits apply across plans. Your function host can impose a shorter timeout
 
 | Limit | Scope and value | Action |
 | --- | --- | --- |
-| Step sleep | Up to 1 year for `step.sleep()` or `step.sleepUntil()` | Keep the sleep within the supported duration. |
+| Step sleep | Up to 1 year for `step.sleep()` or `step.sleepUntil()`, within your plan's maximum function run length | Keep the run's total length, including every sleep, within your plan's limit. |
 | Step timeout | Up to 2 hours, subject to the function host's shorter timeout | Check the host's timeout. Split long work into steps where needed. |
 | Step return | 4 MiB of data returned by one step | Store large results outside step state and return a reference. |
 | Function run state | 32 MiB across event data, step data, function return data, and metadata | Keep large data outside run state. |

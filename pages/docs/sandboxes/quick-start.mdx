@@ -1,3 +1,5 @@
+import { CodeGroup, SdkUnsupported } from "shared/Docs/mdx";
+
 export const metaTitle = "Quick start | Sandboxes";
 export const description = "Inngest Sandboxes quick start: run your first isolated Sandbox from a durable function and inspect its command output in the run trace.";
 
@@ -32,7 +34,8 @@ Add the Sandbox middleware to your shared Inngest client. This makes `step.sandb
 
 `inngest/client.ts`
 
-```typescript
+<CodeGroup>
+```typescript {{ title: "TypeScript" }}
 import { Inngest } from "inngest";
 import { sandboxMiddleware } from "inngest/experimental";
 
@@ -42,6 +45,10 @@ export const inngest = new Inngest({
 });
 ```
 
+<SdkUnsupported title="Python" feature="Sandboxes" />
+<SdkUnsupported title="Go" feature="Sandboxes" />
+</CodeGroup>
+
 Keep your existing app ID if you are adding this to an app you already use.
 
 ## 3. Create a function that runs one command
@@ -50,7 +57,8 @@ Add this function to your server-side project. The command prints one line to st
 
 `inngest/functions/run-in-sandbox.ts`
 
-```typescript
+<CodeGroup>
+```typescript {{ title: "TypeScript" }}
 import { inngest } from "../client";
 
 export const runInSandbox = inngest.createFunction(
@@ -86,6 +94,10 @@ export const runInSandbox = inngest.createFunction(
   },
 );
 ```
+
+<SdkUnsupported title="Python" feature="Sandboxes" />
+<SdkUnsupported title="Go" feature="Sandboxes" />
+</CodeGroup>
 
 Register `runInSandbox` in the `functions` array of your existing `serve()` handler. Deploy or connect the app to the Cloud environment with Sandbox beta access.
 

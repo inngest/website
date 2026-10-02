@@ -1,3 +1,4 @@
+import { CodeGroup, SdkUnsupported } from "shared/Docs/mdx";
 import { Compatibility } from "shared/Docs/mdx";
 export const metaTitle = "Parallel Steps | Run Steps Concurrently";
 export const description = "Run Inngest steps in parallel to cut total runtime. Independent steps execute concurrently, and the workflow continues once all of their results are ready.";
@@ -6,7 +7,7 @@ export const description = "Run Inngest steps in parallel to cut total runtime. 
 
 <Compatibility />
 
-Run independent steps at the same time and continue when all their results are ready. Use `Promise.all()` in TypeScript or `ctx.group.parallel()` in Python.
+Run independent steps at the same time and continue when all their results are ready. Use `Promise.all()` in TypeScript, `ctx.group.parallel()` in Python, or `group.Parallel()` in Go.
 
 Parallel steps are useful when:
 
@@ -16,9 +17,10 @@ Parallel steps are useful when:
 
 Parallel steps work on every host and platform. On serverless platforms, each step runs in its own execution, so steps run truly in parallel without shared state. On a single long-running server, such as one Express process, the parallel steps share that single-threaded Node.js process.
 
-## TypeScript: collect every result
+## Collect every result
 
-```typescript
+<CodeGroup>
+```typescript {{ title: "TypeScript" }}
 import { Inngest } from "inngest";
 
 const inngest = new Inngest({ id: "parallel-example" });
@@ -35,16 +37,29 @@ export const getValues = inngest.createFunction(
   }
 );
 ```
+
+```python {{ title: "Python" }}
+!snippet:path=snippets/py/latest/primitives/group_parallel/get_values.py
+```
+
+```go {{ title: "Go", filename: 'main.go' }}
+!snippet:path=snippets/go/docs/primitives/group_parallel/get_values.go
+```
+</CodeGroup>
+
 Both steps can run concurrently. The function continues when both results are ready. Inngest runs parallel steps efficiently by default, so you don't need `group.parallel()` here. Use `Promise.allSettled()` when you need the outcome of every step, including failures.
 
-## TypeScript: start steps, then await them together
+In Python, `ctx.group.parallel()` takes a tuple of no-argument callables and returns a tuple of their results. Use it for Python steps instead of `asyncio.gather()`, which does not support Inngest's step execution model. In Go, `group.Parallel()` takes step callbacks and returns their results, in order, with any errors.
+
+## Start steps, then await them together
 
 You can also create each step first and await them later:
 
 1. Call [`step.run()`](/docs/durable-execution/primitives/step-run) without `await`. It returns an unresolved promise.
 2. Pass the promises to `Promise.all()`. Inngest then runs the steps in parallel, in separate executions.
 
-```ts 
+<CodeGroup>
+```ts {{ title: "TypeScript" }}
 import { Inngest } from "inngest";
 
 const inngest = new Inngest({ id: "signup-flow" });
@@ -77,75 +92,32 @@ export const fn = inngest.createFunction(
 );
 ```
 
+```python {{ title: "Python" }}
+!snippet:path=snippets/py/latest/primitives/group_parallel/post_payment_flow.py
+```
+
+```go {{ title: "Go" }}
+!snippet:path=snippets/go/docs/primitives/group_parallel/post_payment_flow.go
+```
+</CodeGroup>
+
+
 When every step finishes, Inngest collects each step's result and calls the function again with all results available.
 
-## Python: run steps together
+### Python sync functions
 
-```python
-import inngest
+In a synchronous function, use `inngest.ContextSync` and call `ctx.group.parallel()` without `await`:
 
-inngest_client = inngest.Inngest(app_id="parallel-example")
-
-@inngest_client.create_function(
-    fn_id="get-values",
-    trigger=inngest.TriggerEvent(event="app/value.requested"),
-)
-async def get_values(ctx: inngest.Context) -> dict[str, str]:
-    first, second = await ctx.group.parallel(
-        (
-            lambda: ctx.step.run("first", lambda: "one"),
-            lambda: ctx.step.run("second", lambda: "two"),
-        )
-    )
-    return {"first": first, "second": second}
-```
-`ctx.group.parallel()` takes a tuple of no-argument callables and returns a tuple of their results. It also works in synchronous functions without `await`. Use it for Python steps instead of `asyncio.gather()`, which does not support Inngest's step execution model.
-
-### Async functions
-
-Use `inngest.Context` and `await ctx.group.parallel()`:
-
-```py
-@client.create_function(
-  fn_id="my-fn",
-  trigger=inngest.TriggerEvent(event="my-event"),
-)
-async def fn(ctx: inngest.Context) -> None:
-  user_id = ctx.event.data["user_id"]
-
-  (updated_user, sent_email) = await ctx.group.parallel(
-    (
-      lambda: ctx.step.run("update-user", update_user, user_id),
-      lambda: ctx.step.run("send-email", send_email, user_id),
-    )
-  )
-```
-
-### Sync functions
-
-Use `inngest.ContextSync` and call `ctx.group.parallel()` without `await`:
-
-```py
-@client.create_function(
-  fn_id="my-fn",
-  trigger=inngest.TriggerEvent(event="my-event"),
-)
-def fn(ctx: inngest.ContextSync) -> None:
-  user_id = ctx.event.data["user_id"]
-
-  (updated_user, sent_email) = ctx.group.parallel(
-    (
-      lambda: ctx.step.run("update-user", update_user, user_id),
-      lambda: ctx.step.run("send-email", send_email, user_id),
-    )
-  )
+```python {{ title: "Python" }}
+!snippet:path=snippets/py/latest/primitives/group_parallel/post_payment_flow_sync.py
 ```
 
 ## Split a job into chunks
 
 Split large input into chunks, process each chunk in its own step, then combine the results. For example, you can split a long text, summarize each chunk with an LLM API, and then summarize the summaries:
 
-```ts 
+<CodeGroup>
+```ts {{ title: "TypeScript" }}
 import { Inngest } from "inngest";
 
 const inngest = new Inngest({ id: "signup-flow" });
@@ -169,6 +141,16 @@ export const fn = inngest.createFunction(
 );
 ```
 
+```python {{ title: "Python" }}
+!snippet:path=snippets/py/latest/primitives/group_parallel/summarize_text.py
+```
+
+```go {{ title: "Go" }}
+!snippet:path=snippets/go/docs/primitives/group_parallel/summarize_text.go
+```
+</CodeGroup>
+
+
 Give each step a stable ID, such as one based on the chunk index. Each chunk retries on its own. You get every result in one place, without creating separate jobs, polling their status, or merging their state yourself.
 
 ## Choose parallel steps or fan-out
@@ -189,7 +171,8 @@ Both patterns run work in parallel. They differ in these ways:
 
 Use a race when one completed step can satisfy the request. A bare `Promise.race()` waits for all parallel steps under the default optimization. Wrap the race in `group.parallel()` to continue when the first step settles.
 
-```typescript
+<CodeGroup>
+```typescript {{ title: "TypeScript" }}
 const winner = await group.parallel(async () =>
   Promise.race([
     step.run("read-cache", async () => ({ source: "cache", value: "cached value" })),
@@ -197,6 +180,12 @@ const winner = await group.parallel(async () =>
   ])
 );
 ```
+
+<SdkUnsupported title="Python" feature="Continuing after the first step settles">`parallel_mode=inngest.ParallelMode.RACE` changes when branches advance, but `ctx.group.parallel()` still waits for and returns every result.</SdkUnsupported>
+
+<SdkUnsupported title="Go" feature="Continuing after the first step settles">`group.ParallelWithOpts()` with `ParallelMode: enums.ParallelModeRace` changes when branches advance, but still waits for and returns every result.</SdkUnsupported>
+</CodeGroup>
+
 
 > **Losing steps are not cancelled.**
 

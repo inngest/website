@@ -1,3 +1,5 @@
+import { CodeGroup, SdkUnsupported } from "shared/Docs/mdx";
+
 export const metaTitle = "Base images | Sandboxes";
 export const description = "Sandbox base images come with Node.js, Python, Ruby, and common command-line tools preinstalled, so isolated code can start running right away.";
 
@@ -27,7 +29,8 @@ The image does **not** currently include Go, Rust, Java, Bun, or Deno. You canno
 
 Run commands after the Sandbox reaches `RUNNING`. This example assumes you already have a Sandbox object from `inngest.sandboxes.create()`:
 
-```typescript
+<CodeGroup>
+```typescript {{ title: "TypeScript" }}
 const result = await sandbox.commands.run(
   "node --version && python3 --version && ruby --version && git --version",
   { timeout: "30s" },
@@ -38,9 +41,14 @@ console.error(result.stderr);
 console.log(result.exitCode);
 ```
 
+<SdkUnsupported title="Python" feature="Sandboxes" />
+<SdkUnsupported title="Go" feature="Sandboxes" />
+</CodeGroup>
+
 Inside an Inngest function, use the same command through `step.sandbox` and give the operation a stable step ID:
 
-```typescript
+<CodeGroup>
+```typescript {{ title: "TypeScript" }}
 const result = await sandbox.commands.run(
   "inspect-image",
   "node --version && python3 --version && ruby --version && git --version",
@@ -48,18 +56,27 @@ const result = await sandbox.commands.run(
 );
 ```
 
+<SdkUnsupported title="Python" feature="Sandboxes" />
+<SdkUnsupported title="Go" feature="Sandboxes" />
+</CodeGroup>
+
 A nonzero exit code appears in the result. It does not throw an SDK error.
 
 ## Add dependencies for a task
 
 Install packages inside a running Sandbox when the task needs them. For example, create a project directory and install a Node package:
 
-```typescript
+<CodeGroup>
+```typescript {{ title: "TypeScript" }}
 await sandbox.commands.run(
   "mkdir -p /tmp/project && cd /tmp/project && npm init -y && npm install lodash",
   { timeout: "5m" },
 );
 ```
+
+<SdkUnsupported title="Python" feature="Sandboxes" />
+<SdkUnsupported title="Go" feature="Sandboxes" />
+</CodeGroup>
 
 This changes **that Sandbox**, not the fixed base image. The files remain in the Sandbox across pause and resume. A snapshot captures its disk, so clones start with the installed files. Destroying the Sandbox removes its filesystem. User snapshots expire and are not permanent storage. For files shared across different Sandboxes, use S3-backed persistent filesystem mounts.
 

@@ -1,5 +1,5 @@
 import { Mermaid } from "src/shared/Docs/Mermaid";
-import { Steps, Step } from "shared/Docs/mdx";
+import { CodeGroup, Steps, Step } from "shared/Docs/mdx";
 import { PlatformGrid, StartBuilding } from "src/shared/Docs/DocsHome";
 
 export const metaTitle = "What is Inngest?";
@@ -33,11 +33,21 @@ A support agent answers a customer ticket. The same pattern works for background
   SC --> C(["Compare variants"]):::accent`}
 />
 
-Here's that function in TypeScript. Each `step.run()` is saved, so a failed reply retries without reloading context or redrafting the answer. `group.experiment()` picks the answer strategy, `step.realtime.publish()` updates the customer, and `step.sandbox` runs diagnostics in an isolated VM. When the customer rates the answer days later, a [deferred scorer](/docs/agent-evals/deferred-scoring) credits that rating to the chosen variant.
+Here's that function. Each `step.run()` is saved, so a failed reply retries without reloading context or redrafting the answer. `group.experiment()` picks the answer strategy, `step.realtime.publish()` updates the customer, and `step.sandbox` runs diagnostics in an isolated VM. When the customer rates the answer days later, a [deferred scorer](/docs/agent-evals/deferred-scoring) credits that rating to the chosen variant (in TS). 
 
-```ts
+<CodeGroup>
+```ts {{ title: "TypeScript" }}
 !snippet:path=snippets/ts/v4/platform-overview/support-agent.ts
 ```
+
+```python {{ title: "Python" }}
+!snippet:path=snippets/py/latest/durable/platform_overview/support_agent.py
+```
+
+```go {{ title: "Go" }}
+!snippet:path=snippets/go/docs/durable/platform_overview/support_agent.go
+```
+</CodeGroup>
 
 ## How Inngest works
 

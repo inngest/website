@@ -1,3 +1,4 @@
+import { CodeGroup, SdkUnsupported } from "shared/Docs/mdx";
 import { Compatibility } from "shared/Docs/mdx";
 export const metaTitle = "step.waitForSignal() | Wait for a Signal";
 export const description = "Pause an Inngest function with step.waitForSignal() and resume one run when a named signal arrives. Ideal for human-in-the-loop and approval workflows.";
@@ -26,7 +27,8 @@ Use [step.waitForEvent](/docs/durable-execution/primitives/step-waitforevent) fo
 
 Give each waiting run a distinct signal name. The sender must use the same name. The example uses a request ID to connect an approval to its waiting run.
 
-```typescript
+<CodeGroup>
+```typescript {{ title: "TypeScript" }}
 const approveRequest = inngest.createFunction(
   {
     id: "approve-request",
@@ -51,19 +53,43 @@ const approveRequest = inngest.createFunction(
   }
 );
 ```
+
+<SdkUnsupported title="Python" feature="step.waitForSignal">Use [`ctx.step.wait_for_event`](/docs/durable-execution/primitives/step-waitforevent) with a match on the request ID instead.</SdkUnsupported>
+
+```go {{ title: "Go" }}
+!snippet:path=snippets/go/docs/primitives/step_waitforsignal/approve_request.go
+```
+</CodeGroup>
+
 From the code that receives the approval, send the matching signal:
 
-```typescript
+<CodeGroup>
+```typescript {{ title: "TypeScript" }}
 await inngest.sendSignal({
   signal: `approval/${requestId}`,
   data: { approved: true },
 });
 ```
+
+<SdkUnsupported title="Python" feature="Sending signals" />
+
+<SdkUnsupported title="Go" feature="Sending signals" />
+</CodeGroup>
+
 ## API
 
-```ts
+<CodeGroup>
+```ts {{ title: "TypeScript" }}
 const result = await step.waitForSignal(id, { signal, timeout });
 ```
+
+<SdkUnsupported title="Python" feature="step.waitForSignal">Use [`ctx.step.wait_for_event`](/docs/durable-execution/primitives/step-waitforevent) with a match on the request ID instead.</SdkUnsupported>
+
+```go {{ title: "Go" }}
+!snippet:path=snippets/go/docs/primitives/step_waitforsignal/api.go
+```
+</CodeGroup>
+
 
 - **`id`**: a stable step ID.
 - **`signal`**: a unique name for this wait, such as `` `approval/${requestId}` ``.

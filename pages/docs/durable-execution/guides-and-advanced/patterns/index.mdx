@@ -10,4 +10,4 @@ Choose fan-out when independent tasks need separate runs and retries. Choose a l
 - **Working with loops.** See [Working with loops](/docs/durable-execution/guides-and-advanced/patterns/working-with-loops). One function processes a sequence or paginated source. Each iteration can save progress in a step.
 AI agents use the same building blocks. See [Durable agents](/docs/durable-execution/durable-agents) for tool loops, human approval, and sub-agent delegation.
 
-For independent steps that belong to one run, use [step.run](/docs/durable-execution/primitives/step-run) with `Promise.all()`.
+For independent steps that belong to one run, use [step.run](/docs/durable-execution/primitives/step-run) with `Promise.all()` (`group.Parallel` in Go, `ctx.group.parallel` in Python).

@@ -1,3 +1,4 @@
+import { CodeGroup, SdkUnsupported } from "shared/Docs/mdx";
 export const metaTitle = "Pause and resume | Sandboxes";
 export const description = "Pause an Inngest Sandbox while work waits, then resume the same environment later with its files intact, without rebuilding it from scratch.";
 
@@ -19,7 +20,8 @@ Pause uses a private checkpoint. It is a cold transition, so active external net
 
 Use `inngest.sandboxes` in a server route, worker, or script when you want to make the request immediately. The direct client does not make operations durable or retry them automatically. This example assumes you have created a shared Inngest client with the environment’s `INNGEST_SIGNING_KEY`.
 
-```typescript
+<CodeGroup>
+```typescript {{ title: "TypeScript" }}
 import type { Sandbox } from "inngest/experimental";
 import { inngest } from "./inngest/client";
 
@@ -52,13 +54,18 @@ try {
 }
 ```
 
+<SdkUnsupported title="Python" feature="Sandboxes" />
+<SdkUnsupported title="Go" feature="Sandboxes" />
+</CodeGroup>
+
 The `timeout` bounds how long this SDK call waits for the transition. If the wait fails, the transition can still continue. Call `inngest.sandboxes.get(sandboxId)` to inspect the current state before retrying or starting other work. Keep the Sandbox ID if another request will resume it later. SDK objects are immutable views, so fetch a new object when you reconnect.
 
 ## Pause inside an Inngest function
 
 Use `step.sandbox` when Sandbox work is part of a durable function. Add `sandboxMiddleware()` to the Inngest client, and give every Sandbox operation a stable step ID. Inngest records the operations as steps and handles safe retries.
 
-```typescript
+<CodeGroup>
+```typescript {{ title: "TypeScript" }}
 const sandbox = await step.sandbox.create("create-sandbox", {
   name: `paused-work-${event.data.jobId}`,
   vcpu: 1,
@@ -81,6 +88,10 @@ const result = await running.commands.run(
 await running.destroy("destroy-sandbox");
 return result.stdout;
 ```
+
+<SdkUnsupported title="Python" feature="Sandboxes" />
+<SdkUnsupported title="Go" feature="Sandboxes" />
+</CodeGroup>
 
 The function must keep cleanup in its workflow. The final Destroy step handles the successful path. If a permanent failure can leave a Sandbox behind, add an `onFailure` cleanup handler or a separate cleanup function that receives the Sandbox ID. Durable step results do not keep Sandbox files after Destroy.
 

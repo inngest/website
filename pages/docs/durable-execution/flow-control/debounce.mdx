@@ -1,4 +1,4 @@
-import { Compatibility } from "shared/Docs/mdx";
+import { CodeGroup, Compatibility } from "shared/Docs/mdx";
 import { FlowControlMarbles } from "src/shared/Docs/FlowControlMarbles";
 export const metaTitle = "Debounce | Deduplicate Events Over Time";
 export const description = "Debounce Inngest functions to handle a burst of events once. A sliding time window runs the function with the latest event and skips redundant work.";
@@ -17,7 +17,8 @@ Wait until a user stops editing a record, then process only the latest update. E
 
 This TypeScript v4 function waits five minutes after the most recent `company/updated` event for an account. Each new event for that account restarts the five-minute wait. The optional ten-minute `timeout` stops a continuous stream from postponing the run indefinitely.
 
-```typescript
+<CodeGroup>
+```typescript {{ title: "TypeScript" }}
 import { Inngest } from "inngest";
 
 const inngest = new Inngest({ id: "customer-sync" });
@@ -39,6 +40,15 @@ export const syncCompany = inngest.createFunction(
   }
 );
 ```
+
+```python {{ title: "Python" }}
+!snippet:path=snippets/py/latest/flow_control/debounce/sync_company.py
+```
+
+```go {{ title: "Go" }}
+!snippet:path=snippets/go/docs/flow_control/debounce/sync_company.go
+```
+</CodeGroup>
 
 Replace the step body with your application work. The handler receives the **last event** in the burst, not the first event and not an array of every event.
 

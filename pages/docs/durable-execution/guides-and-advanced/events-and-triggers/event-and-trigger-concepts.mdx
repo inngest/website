@@ -22,7 +22,8 @@ A cron schedule starts a run without an app-sent event. A function may also star
 An event can also resolve a waiting run or cancel a matching run. It is useful for approval, follow-up, and stop signals as well as for starting new runs.
 ## Match an event before starting a run
 A trigger can match one event name or an event family. Add a trigger `if` condition when only some events should start a run. Inngest evaluates the condition before it starts the function. The condition uses Common Expression Language (CEL), and it must return `true` or `false`.
-```typescript
+<CodeGroup>
+```typescript {{ title: "TypeScript" }}
 import { eventType, staticSchema } from "inngest";
 import { inngest } from "./client";
 
@@ -38,7 +39,17 @@ export const largeOrder = inngest.createFunction(
   async ({ event }) => processOrder(event.data)
 );
 ```
-In the expression, `event` is the incoming event. Test the condition against representative payloads. A JavaScript `if` inside the handler chooses what a run does **after** it starts; a trigger `if` decides whether the run starts at all.
+
+```python {{ title: "Python" }}
+!snippet:path=snippets/py/latest/events/event_and_trigger_concepts/trigger_if.py
+```
+
+```go {{ title: "Go" }}
+!snippet:path=snippets/go/docs/events/event_and_trigger_concepts/trigger_if.go
+```
+</CodeGroup>
+
+In the expression, `event` is the incoming event. Test the condition against representative payloads. An `if` statement inside the handler chooses what a run does **after** it starts; a trigger `if` decides whether the run starts at all.
 An event can match several functions. Check overlapping triggers before deploying so one event does not start unintended work.
 ## Start one function from several triggers
 
@@ -60,6 +71,19 @@ inngest.createFunction(
   },
 );
 ```
+```py {{ title: "Python" }}
+@inngest_client.create_function(
+    fn_id="resync-user-data",
+    trigger=[
+        inngest.TriggerEvent(event="user.created"),
+        inngest.TriggerEvent(event="user.updated"),
+        inngest.TriggerCron(cron="0 5 * * *")
+    ],
+)
+async def my_handler(ctx: inngest.Context) -> None:
+    # ...
+    pass
+```
 ```go {{ title: "Go" }}
 inngestgo.CreateFunction(
 	client,
@@ -74,19 +98,6 @@ inngestgo.CreateFunction(
 		return nil, nil
 	},
 )
-```
-```py {{ title: "Python" }}
-@inngest_client.create_function(
-    fn_id="resync-user-data",
-    trigger=[
-        inngest.TriggerEvent(event="user.created"),
-        inngest.TriggerEvent(event="user.updated"),
-        inngest.TriggerCron(cron="0 5 * * *")
-    ],
-)
-def my_handler(ctx: inngest.Context) -> None:
-    # ...
-    pass
 ```
 </CodeGroup>
 
@@ -123,6 +134,9 @@ async ({ event }) => {
     // `inngest/function.invoked` (step.invoke) event
   }
 }
+```
+```python {{ title: "Python" }}
+!snippet:path=snippets/py/latest/events/event_and_trigger_concepts/event_name.py
 ```
 ```go {{ title: "Go" }}
 func(ctx context.Context, input inngestgo.Input[map[string]any]) (any, error) {

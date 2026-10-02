@@ -1,3 +1,4 @@
+import { CodeGroup, SdkUnsupported } from "shared/Docs/mdx";
 import { Callout, VersionBadge } from "src/shared/Docs/mdx";
 
 
@@ -30,7 +31,8 @@ In this example, we'll create an HTTP endpoint that generates a haiku and then t
 
 Import `step` from `inngest` and `stream` from `inngest/experimental/durable-endpoints`, then use `stream.push()` or `stream.pipe()` inside your endpoint handler:
 
-```typescript
+<CodeGroup>
+```typescript {{ title: "TypeScript" }}
 import Anthropic from "@anthropic-ai/sdk";
 import { step } from "inngest";
 import { stream } from "inngest/experimental/durable-endpoints";
@@ -78,6 +80,10 @@ export const GET = inngest.endpoint(async () => {
   return new Response("\nDone!");
 });
 ```
+
+<SdkUnsupported title="Python" feature="Durable Endpoints streaming" />
+<SdkUnsupported title="Go" feature="Durable Endpoints streaming" />
+</CodeGroup>
 
 ### Client
 
@@ -136,10 +142,15 @@ export default function Generate() {
 
 Send a single chunk of data to the client as an SSE event.
 
-```typescript
+<CodeGroup>
+```typescript {{ title: "TypeScript" }}
 stream.push("Loading...");
 stream.push({ progress: 50, message: "Halfway there" });
 ```
+
+<SdkUnsupported title="Python" feature="Durable Endpoints streaming" />
+<SdkUnsupported title="Go" feature="Durable Endpoints streaming" />
+</CodeGroup>
 
 - Accepts any JSON-serializable value.
 - Fire-and-forget. Does not block execution or return a value.
@@ -153,15 +164,21 @@ Pipe a stream source to the client and resolve with the concatenated text of all
 
 The simplest case is piping a `ReadableStream`, like a `fetch` response body:
 
-```typescript
+<CodeGroup>
+```typescript {{ title: "TypeScript" }}
 const response = await fetch("https://api.example.com/stream");
 const text = await stream.pipe(response.body);
 // `text` contains the full response; the client received it chunk by chunk
 ```
 
+<SdkUnsupported title="Python" feature="Durable Endpoints streaming" />
+<SdkUnsupported title="Go" feature="Durable Endpoints streaming" />
+</CodeGroup>
+
 When you need to transform or filter chunks before they're sent, pass an async generator function. Each `yield` sends one chunk to the client:
 
-```typescript
+<CodeGroup>
+```typescript {{ title: "TypeScript" }}
 const text = await stream.pipe(async function* () {
   for await (const event of response) {
     // Only yield the parts you want the client to see
@@ -171,6 +188,10 @@ const text = await stream.pipe(async function* () {
   }
 });
 ```
+
+<SdkUnsupported title="Python" feature="Durable Endpoints streaming" />
+<SdkUnsupported title="Go" feature="Durable Endpoints streaming" />
+</CodeGroup>
 
 `pipe()` accepts three source types:
 

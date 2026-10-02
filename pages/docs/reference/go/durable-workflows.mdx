@@ -1,0 +1,136 @@
+export const metaTitle = "Durable Workflows | Go SDK Reference";
+export const description = "Write durable workflows with the Inngest Go SDK: create functions, set event and cron triggers, run steps, handle errors and retries, and configure flow control.";
+
+# Durable Workflows in Go
+
+> Create functions that run steps in the background, triggered by events or schedules.
+
+A [durable workflow](/docs/durable-execution/durable-workflows) is an Inngest function that runs in the background. An event or a schedule starts a run, and each step saves its result so that a retry or a wait doesn't repeat finished work. In Go, you create one with `inngestgo.CreateFunction`, then [serve it over HTTP or connect a worker](#serve-or-connect-your-functions) so that Inngest can run it.
+
+## Create a function
+
+`CreateFunction` takes the client, the function's options, a trigger, and a handler:
+
+```go {{ title: "process_order.go" }}
+!snippet:path=snippets/go/docs/durable/durable_workflows/process_order.go
+```
+
+`FunctionOpts.ID` is required and must stay the same across deploys, because Inngest uses it to find the function's runs. `CreateFunction` registers the function with the client, so `client.Serve()` serves it with no extra step.
+
+### The handler
+
+The handler has the signature `func(ctx context.Context, input inngestgo.Input[T]) (any, error)`. `T` is the type of the event's `data` field, and the SDK decodes the event into it:
+
+| Field | Description |
+| --- | --- |
+| `input.Event` | The event that started the run. `input.Event.Data` has type `T`. |
+| `input.Events` | Every event in the run. This has more than one event when the function uses [batching](/docs/durable-execution/flow-control/batching). |
+| `input.InputCtx` | The run's context, such as `RunID`, `FunctionID`, and `Attempt`. |
+
+Use `any` or `map[string]any` as `T` when the function doesn't read event data, for example a cron function. The value the handler returns is the run's output, and an error fails the current attempt.
+
+Always pass the `ctx` that the handler receives to step tools. Steps use it to find the run's saved state.
+
+## Serve or connect your functions
+
+Inngest runs your functions in one of two ways. Both use the same client and functions, so you can switch later without changing your function code.
+
+| Option | How it works | Use it when |
+| --- | --- | --- |
+| [Serve](/docs/durable-execution/deploying-functions/serve) | Inngest sends an HTTP request to an endpoint in your app for each step. | Your app runs an HTTP server, including serverless platforms. |
+| [Connect](/docs/durable-execution/deploying-functions/connect) | Your worker opens a WebSocket to Inngest and receives work over it. | You run long-lived workers, or can't expose a public endpoint. |
+
+### Serve over HTTP
+
+Mount `client.Serve()` on any `net/http` server, usually at `/api/inngest`:
+
+```go {{ title: "main.go" }}
+!snippet:path=snippets/go/docs/reference/durable_workflows/serve_functions.go
+```
+
+In production, set `INNGEST_SIGNING_KEY` so the handler can verify requests from Inngest, then [sync your app](/docs/platform-and-operations/apps-and-syncs) with its URL. Use `client.ServeWithOpts` to change options such as the path that Inngest calls.
+
+### Connect a worker
+
+Call `inngestgo.Connect` with the clients to run. It returns once the connection is active:
+
+```go {{ title: "worker.go" }}
+!snippet:path=snippets/go/docs/reference/durable_workflows/connect_worker.go
+```
+
+A Connect worker syncs itself when it connects, so you don't sync it by URL. Set `INNGEST_SIGNING_KEY` in production. See [Connect](/docs/durable-execution/deploying-functions/connect) for instance IDs, worker concurrency, and health checks.
+
+For local development, set `INNGEST_DEV=1` and run the [Dev Server](/docs/local-development) with either option.
+
+## Triggers
+
+| Trigger | Starts a run |
+| --- | --- |
+| `inngestgo.EventTrigger(name, expression)` | For each event named `name`. Pass a [CEL expression](/docs/durable-execution/guides-and-advanced/writing-expressions), such as `inngestgo.StrPtr("event.data.plan != 'free'")`, to filter events, or `nil` for every event. |
+| `inngestgo.CronTrigger(cron)` | On a [schedule](/docs/durable-execution/guides-and-advanced/events-and-triggers/schedules-and-delayed-starts). Prefix the expression with `TZ=` to set a time zone. |
+| `inngestgo.CronTriggerWithJitter(cron, jitter)` | On a schedule, with each run delayed by a random amount up to `jitter`. |
+| `inngestgo.MultipleTriggers{...}` | For any of the triggers in the list. |
+
+```go {{ title: "sync_account.go" }}
+!snippet:path=snippets/go/docs/reference/durable_workflows/triggers.go
+```
+
+Send events that trigger functions with `client.Send` or `client.SendMany`. See [sending events](/docs/durable-execution/guides-and-advanced/events-and-triggers/send-events).
+
+## Steps
+
+Step tools are in the [`step`](https://pkg.go.dev/github.com/inngest/inngestgo/step) package. Each one takes the handler's `ctx` and a step ID:
+
+| Step tool | Description |
+| --- | --- |
+| [`step.Run`](/docs/durable-execution/primitives/step-run) | Run code, such as an API call or a database write, and save its result. A failed step retries on its own. |
+| [`step.Sleep`](/docs/durable-execution/primitives/step-sleep) | Pause the run for a duration. |
+| [`step.SleepUntil`](/docs/durable-execution/primitives/step-sleepuntil) | Pause the run until a time. |
+| [`step.WaitForEvent`](/docs/durable-execution/primitives/step-waitforevent) | Pause until a matching event arrives. On timeout, it returns `step.ErrEventNotReceived`. |
+| [`step.WaitForSignal`](/docs/durable-execution/primitives/step-waitforsignal) | Pause until one run receives a unique signal. |
+| [`step.Invoke`](/docs/durable-execution/primitives/step-invoke) | Run another function and wait for its result. |
+| [`step.Send`](/docs/durable-execution/primitives/step-sendevent), `step.SendMany` | Send events as a step, so a retry doesn't send them again. |
+| `step.Fetch`, `step.Infer` | Make an HTTP request or an AI inference call that Inngest runs for you, so your function doesn't wait on it. |
+| [`group.Parallel`](/docs/durable-execution/primitives/group-parallel) | Run steps in parallel. It's in the [`group`](https://pkg.go.dev/github.com/inngest/inngestgo/group) package. |
+
+A sleep or wait doesn't keep your process running. Inngest calls your function again when the wait ends, and finished steps return their saved results without running again. Put code with side effects inside a step so that it runs once.
+
+## Errors and retries
+
+When a step or the handler returns an error, Inngest retries it with backoff. By default, each step retries 4 times. Set `FunctionOpts.Retries` to change this. The [`errors`](https://pkg.go.dev/github.com/inngest/inngestgo/errors) package controls retries for one error:
+
+- `errors.NoRetryError(err)` fails the step or run with no more retries.
+- `errors.RetryAtError(err, at)` retries at a time that you choose, for example when an API sends a `Retry-After` header.
+
+```go {{ title: "build_report.go" }}
+!snippet:path=snippets/go/docs/reference/durable_workflows/errors_retries.go
+```
+
+When a step runs out of retries, `step.Run` returns the error to the handler. Return it to fail the run, or handle it, for example to [roll back](/docs/durable-execution/guides-and-advanced/error-handling/rollbacks) earlier steps. See [error handling](/docs/durable-execution/guides-and-advanced/error-handling) for failure handlers and more.
+
+## Function options
+
+`FunctionOpts` configures retries, flow control, cancellation, and timeouts:
+
+```go {{ title: "charge_invoice.go" }}
+!snippet:path=snippets/go/docs/reference/durable_workflows/function_options.go
+```
+
+| Field | Type | Description |
+| --- | --- | --- |
+| `ID` | `string` | Required. The function ID. |
+| `Name` | `string` | A name for the dashboard. |
+| `Retries` | `*int` | The number of retries for each step. See [retries](/docs/durable-execution/guides-and-advanced/error-handling/retries). |
+| `Concurrency` | `*ConfigConcurrency` | Limits on running runs (`Fn`) or steps (`Step`), with an optional key. See [concurrency](/docs/durable-execution/flow-control/concurrency). |
+| `Throttle` | `*ConfigThrottle` | Limit how often runs start, and queue the rest. See [throttling](/docs/durable-execution/flow-control/throttling). |
+| `RateLimit` | `*ConfigRateLimit` | Limit how often runs start, and skip the rest. See [rate limiting](/docs/durable-execution/flow-control/rate-limiting). |
+| `Debounce` | `*ConfigDebounce` | Wait for events to stop before a run starts. See [debounce](/docs/durable-execution/flow-control/debounce). |
+| `BatchEvents` | `*ConfigBatchEvents` | Start one run for many events. See [batching](/docs/durable-execution/flow-control/batching). |
+| `Singleton` | `*ConfigSingleton` | Allow one run at a time for each key. See [singleton](/docs/durable-execution/flow-control/singleton). |
+| `Priority` | `*ConfigPriority` | Run some runs before others. See [priority](/docs/durable-execution/flow-control/priority). |
+| `Idempotency` | `*string` | A CEL expression. Only one run starts for each value in 24 hours. See [idempotency](/docs/durable-execution/guides-and-advanced/idempotency). |
+| `Cancel` | `[]ConfigCancel` | Events that cancel a run. See [cancel on events](/docs/durable-execution/guides-and-advanced/cancellation/events). |
+| `Timeouts` | `*ConfigTimeouts` | Cancel a run that doesn't start or finish in time. See [timeouts](/docs/durable-execution/guides-and-advanced/cancellation/timeouts). |
+| `Checkpoint` | `*checkpoint.Config` | Run steps with less latency between them. See [checkpointing](/docs/durable-execution/guides-and-advanced/checkpointing). |
+
+Each `Config*` type is in the `inngestgo` package. See [pkg.go.dev](https://pkg.go.dev/github.com/inngest/inngestgo#FunctionOpts) for every field.

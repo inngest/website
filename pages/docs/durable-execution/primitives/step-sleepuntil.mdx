@@ -1,3 +1,4 @@
+import { CodeGroup } from "shared/Docs/mdx";
 import { Compatibility } from "shared/Docs/mdx";
 export const metaTitle = "step.sleepUntil() | Pause Until a Date";
 export const description = "Use step.sleepUntil() to pause an Inngest function until a specific date and time, then resume the workflow without keeping a process running.";
@@ -24,7 +25,8 @@ Pass a `Date` or an ISO 8601 string with a time zone, such as `2026-10-01T16:30:
 
 This function waits until the timestamp supplied by the event, then runs the reminder action. The event sender supplies `remindAt` as an ISO 8601 timestamp with a time zone.
 
-```typescript
+<CodeGroup>
+```typescript {{ title: "TypeScript" }}
 import { Inngest } from "inngest";
 
 const inngest = new Inngest({ id: "reminders" });
@@ -49,6 +51,16 @@ export const sendScheduledReminder = inngest.createFunction(
   }
 );
 ```
+
+```python {{ title: "Python" }}
+!snippet:path=snippets/py/latest/primitives/step_sleepuntil/send_scheduled_reminder.py
+```
+
+```go {{ title: "Go", filename: 'main.go' }}
+!snippet:path=snippets/go/docs/primitives/step_sleepuntil/send_scheduled_reminder.go
+```
+</CodeGroup>
+
 Replace the example request with your reminder service. Check its response and make the action safe to retry before using it in production.
 
 ## What happens while the function waits
@@ -57,7 +69,7 @@ Inngest pauses the run and resumes it at the scheduled time. Your code uses no c
 
 ## Limits and pitfalls
 
-- A sleep can last up to one year. The Free plan allows up to seven days. Your plan also sets a maximum total function run length, so check both limits before scheduling a long wait.
+- A sleep can last up to one year, but the whole run, including every sleep, must finish within your plan's [maximum function run length](/docs/durable-execution/limits#plan-based-limits): 30 days on Free, 90 days on Pro, 366 days on Business, and custom on Enterprise.
 - Validate timestamps before calling `step.sleepUntil()`. Include an explicit time zone to avoid scheduling for an unintended local time.
 - Use `await`. Omitting it can prevent the function from sleeping correctly.
 - Keep the step ID stable when you change the function. Inngest uses it to match saved state across versions.

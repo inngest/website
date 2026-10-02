@@ -1,3 +1,4 @@
+import { CodeGroup, SdkUnsupported } from "shared/Docs/mdx";
 export const metaTitle = "Score Function Runs | AI Evaluation";
 export const description = "Attach numeric or boolean quality scores to Inngest function runs and steps to measure whether AI workflows achieve the outcomes that matter in production.";
 
@@ -31,7 +32,8 @@ Technical checks and product outcomes answer different questions. A format check
 
 Add `scoreMiddleware()` to the client, then call `step.score()` with a unique step ID, a name, and a value:
 
-```typescript
+<CodeGroup>
+```typescript {{ title: "TypeScript" }}
 import { Inngest } from "inngest";
 import { scoreMiddleware } from "inngest/experimental";
 
@@ -57,11 +59,19 @@ export const answerTicket = inngest.createFunction(
 );
 ```
 
+```python {{ title: "Python" }}
+!snippet:path=snippets/py/latest/evals/scores/score_current_run.py
+```
+
+<SdkUnsupported title="Go" feature="Scores" />
+</CodeGroup>
+
 `step.score()` runs as a memoized step. A retry or replay reuses the recorded write instead of scoring again. Each call counts as one step execution.
 
 Score only when you have the information the score needs. For example, record accuracy only for runs whose event carries a known answer, so unlabeled traffic doesn't lower the metric:
 
-```typescript
+<CodeGroup>
+```typescript {{ title: "TypeScript" }}
 if (event.data.knownTeam) {
   await step.score("score-routing-accuracy", {
     name: "routing-accuracy",
@@ -70,11 +80,19 @@ if (event.data.knownTeam) {
 }
 ```
 
+```python {{ title: "Python" }}
+!snippet:path=snippets/py/latest/evals/scores/score_conditional.py
+```
+
+<SdkUnsupported title="Go" feature="Scores" />
+</CodeGroup>
+
 ## Score a specific step
 
 Call `inngest.score()` inside `step.run()` to attach the score to that step. The score appears on the step in the trace view:
 
-```typescript
+<CodeGroup>
+```typescript {{ title: "TypeScript" }}
 await step.run("call-model", async () => {
   const result = await callModel(prompt);
   await inngest.score({ name: "model-confidence", value: result.confidence });
@@ -82,19 +100,34 @@ await step.run("call-model", async () => {
 });
 ```
 
+```python {{ title: "Python" }}
+!snippet:path=snippets/py/latest/evals/scores/score_step.py
+```
+
+<SdkUnsupported title="Go" feature="Scores" />
+</CodeGroup>
+
 You can also pass `stepId` to `step.score()` or `inngest.score()` to target a step by its ID.
 
 ## Score from outside the run
 
 A customer may rate an answer after the run finishes. If the service that receives the rating knows the original run ID, it can score that run directly:
 
-```typescript
+<CodeGroup>
+```typescript {{ title: "TypeScript" }}
 await inngest.score({
   name: "customer-helpful",
   value: true,
   runId: originalRunId,
 });
 ```
+
+```python {{ title: "Python" }}
+!snippet:path=snippets/py/latest/evals/scores/score_outside_run.py
+```
+
+<SdkUnsupported title="Go" feature="Scores" />
+</CodeGroup>
 
 Pass `stepId` as well to score a specific step in that run. Save the run ID with your application record when the answer is produced, or put it on the event that carries the outcome. The [Score user feedback](/docs/agent-evals/guides/user-feedback) guide shows a complete example.
 

@@ -1,3 +1,4 @@
+import { CodeGroup, SdkUnsupported } from "shared/Docs/mdx";
 import { Callout, Compatibility } from "shared/Docs/mdx";
 export const metaTitle = "defer() | Deferred Background Functions";
 export const description = "Use defer() to launch fire-and-forget background work from inside an Inngest function, starting follow-up tasks without delaying the current run.";
@@ -17,14 +18,15 @@ They are useful when:
 - The current run does not need the follow-up function's result.
 
 <Callout variant="info">
-  Deferred functions are in beta and available in the TypeScript SDK only. `createDefer` is imported from `inngest/experimental`, and the API may change before GA.
+  Deferred functions are in beta and available in the TypeScript SDK and in the Python SDK release after 0.5.19. `createDefer` is imported from `inngest/experimental` (`create_defer` from `inngest.experimental` in Python), and the API may change before GA. The Go SDK doesn't support them.
 </Callout>
 
 ## Start follow-up work
 
 Define the target with `createDefer` from `inngest/experimental`. Register it alongside your other functions in `serve()`, then call `defer` from an Inngest function handler. Add a schema when you want the SDK to type and validate the payload.
 
-```typescript
+<CodeGroup>
+```typescript {{ title: "TypeScript" }}
 import { createDefer } from "inngest/experimental";
 import { z } from "zod";
 import { inngest } from "./client";
@@ -51,13 +53,30 @@ export const orderPlaced = inngest.createFunction(
   }
 );
 ```
+
+```python {{ title: "Python" }}
+!snippet:path=snippets/py/latest/primitives/defer/start_follow_up.py
+```
+
+<SdkUnsupported title="Go" feature="Deferred functions">Use [`step.Send`](/docs/durable-execution/primitives/step-sendevent) to trigger a follow-up function instead.</SdkUnsupported>
+</CodeGroup>
+
 The parent keeps running. Inngest starts the deferred run when the parent finalizes. Give each `defer` call a unique ID within its parent run.
 
 ## API
 
-```ts
+<CodeGroup>
+```ts {{ title: "TypeScript" }}
 const handle = defer(id, { function, data });
 ```
+
+```python {{ title: "Python" }}
+!snippet:path=snippets/py/latest/primitives/defer/api.py
+```
+
+<SdkUnsupported title="Go" feature="Deferred functions">Use [`step.Send`](/docs/durable-execution/primitives/step-sendevent) to trigger a follow-up function instead.</SdkUnsupported>
+</CodeGroup>
+
 
 - **`id`**: a stable ID for this call.
 - **`function`**: the function created with `createDefer`.
@@ -91,7 +110,8 @@ A deferred function is a regular Inngest function. It gets its own retries, conc
 - It adds `schema`, which describes the payload callers send.
 - It accepts the other `createFunction` options, such as `concurrency`, `throttle`, and `rateLimit`. `onFailure` and `batchEvents` are not supported yet.
 
-```ts
+<CodeGroup>
+```ts {{ title: "TypeScript" }}
 import { createDefer } from "inngest/experimental";
 import { z } from "zod";
 import { inngest } from "./client";
@@ -110,14 +130,31 @@ export const sendEmail = createDefer(
 );
 ```
 
+```python {{ title: "Python" }}
+!snippet:path=snippets/py/latest/primitives/defer/define_deferred.py
+```
+
+<SdkUnsupported title="Go" feature="Deferred functions">Use [`step.Send`](/docs/durable-execution/primitives/step-sendevent) to trigger a follow-up function instead.</SdkUnsupported>
+</CodeGroup>
+
+
 Register it in your serve handler alongside your other functions:
 
-```ts
+<CodeGroup>
+```ts {{ title: "TypeScript" }}
 import { serve } from "inngest/next"; // or your framework's adapter
 
 // myFunctions: the other Inngest functions your app already serves
 serve({ client: inngest, functions: [...myFunctions, sendEmail] });
 ```
+
+```python {{ title: "Python" }}
+!snippet:path=snippets/py/latest/primitives/defer/serve_functions.py
+```
+
+<SdkUnsupported title="Go" feature="Deferred functions">Use [`step.Send`](/docs/durable-execution/primitives/step-sendevent) to trigger a follow-up function instead.</SdkUnsupported>
+</CodeGroup>
+
 
 ## Call `defer`
 
@@ -125,12 +162,21 @@ serve({ client: inngest, functions: [...myFunctions, sendEmail] });
 
 You can also call `defer` inside `step.run()`:
 
-```ts
+<CodeGroup>
+```ts {{ title: "TypeScript" }}
 // Inside a handler that destructures { defer, step }; `to` and `body` are your payload values
 await step.run("notify", async () => {
   defer("send-confirmation", { function: sendEmail, data: { to, body } });
 });
 ```
+
+```python {{ title: "Python" }}
+!snippet:path=snippets/py/latest/primitives/defer/defer_in_step.py
+```
+
+<SdkUnsupported title="Go" feature="Deferred functions">Use [`step.Send`](/docs/durable-execution/primitives/step-sendevent) to trigger a follow-up function instead.</SdkUnsupported>
+</CodeGroup>
+
 
 The ID must be unique within the parent run. Unlike step IDs, Inngest does not append an index to tell duplicate IDs apart. A call with a duplicate ID is logged and skipped.
 
@@ -148,11 +194,20 @@ Call-site validation must be synchronous because `defer(...)` is synchronous. If
 
 You don't need to pass the parent's ID yourself. The SDK passes it through for you. Read it from `parents` on the handler context. Each entry has the parent's `fnSlug` and `runId`:
 
-```ts
+<CodeGroup>
+```ts {{ title: "TypeScript" }}
 async ({ event, parents }) => {
   const { fnSlug, runId } = parents[0];
 }
 ```
+
+```python {{ title: "Python" }}
+!snippet:path=snippets/py/latest/primitives/defer/parents.py
+```
+
+<SdkUnsupported title="Go" feature="Deferred functions">Use [`step.Send`](/docs/durable-execution/primitives/step-sendevent) to trigger a follow-up function instead.</SdkUnsupported>
+</CodeGroup>
+
 
 ## Group runs with sessions
 
@@ -160,7 +215,8 @@ A deferred run joins the [sessions](/docs/agent-evals/sessions) of the run that 
 
 To set a session on the deferred run yourself, pass `meta.sessions`:
 
-```ts
+<CodeGroup>
+```ts {{ title: "TypeScript" }}
 defer("send-confirmation", {
   function: sendEmail,
   data: { to: event.data.email, body: "Thanks for your order!" },
@@ -172,13 +228,22 @@ defer("send-confirmation", {
 });
 ```
 
+```python {{ title: "Python" }}
+!snippet:path=snippets/py/latest/primitives/defer/sessions.py
+```
+
+<SdkUnsupported title="Go" feature="Deferred functions">Use [`step.Send`](/docs/durable-execution/primitives/step-sendevent) to trigger a follow-up function instead.</SdkUnsupported>
+</CodeGroup>
+
+
 Sessions you set here win over inherited ones. To clear inherited sessions or turn off inheritance, see the [`defer` reference](/docs/reference/typescript/v4/functions/deferred-functions#sessions) and [Sessions](/docs/agent-evals/sessions).
 
 ## Credit scores to an experiment
 
 When the deferred function is an [LLM scorer](/docs/agent-evals/deferred-scoring), you can credit its score to the [experiment variant](/docs/agent-evals/experiments) that produced the output. Pass the `experimentRef` returned by [`group.experiment()`](/docs/durable-execution/primitives/group-experiment) as the `experiment` option:
 
-```ts
+<CodeGroup>
+```ts {{ title: "TypeScript" }}
 // feedbackScorer is a scorer created with createScorer;
 // experimentRef comes from `await group.experiment(...)` earlier in this run
 defer("score", {
@@ -188,6 +253,14 @@ defer("score", {
 });
 ```
 
+```python {{ title: "Python" }}
+!snippet:path=snippets/py/latest/primitives/defer/experiment_credit.py
+```
+
+<SdkUnsupported title="Go" feature="Deferred functions">Use [`step.Send`](/docs/durable-execution/primitives/step-sendevent) to trigger a follow-up function instead.</SdkUnsupported>
+</CodeGroup>
+
+
 The deferred handler sees the variant on `parents[0].experiment` as `{ experimentName, variant }`. Later scores then credit the variant that served the result. See [Scores](/docs/agent-evals/scores) for other ways to record outcomes.
 
 ## Cancel a deferred run
@@ -196,7 +269,8 @@ The deferred handler sees the variant on `parents[0].experiment` as `{ experimen
 
 For example, a data-sync function defers an expensive LLM job to judge the results. Midway through, it finds the import was too small to be worth judging:
 
-```ts
+<CodeGroup>
+```ts {{ title: "TypeScript" }}
 // judgeResults is a deferred function; syncData and MINIMUM_ROWS_WORTH_JUDGING are your own code
 async ({ event, defer, step }) => {
   const scoring = defer("judge-results", {
@@ -211,6 +285,14 @@ async ({ event, defer, step }) => {
   }
 }
 ```
+
+```python {{ title: "Python" }}
+!snippet:path=snippets/py/latest/primitives/defer/abort.py
+```
+
+<SdkUnsupported title="Go" feature="Deferred functions">Use [`step.Send`](/docs/durable-execution/primitives/step-sendevent) to trigger a follow-up function instead.</SdkUnsupported>
+</CodeGroup>
+
 
 If you know the answer before you call `defer(...)`, skip the call instead. Use `abort()` when the defer is already registered, for example in an earlier step or in shared code you don't control.
 
@@ -242,7 +324,7 @@ If you keep a sandbox after the main work, pass its ID to a deferred cleanup fun
 
 ## Limits
 
-- Deferred functions are currently beta and available in the TypeScript SDK.
+- Deferred functions are currently beta and available in the TypeScript SDK and the Python SDK release after 0.5.19. Python's `create_defer` has no `schema` option; validate `ctx.event.data` in the handler.
 - Invalid `defer` calls, including synchronous payload validation failures, are logged and skipped while the parent continues.
 - `defer` does not yet work with [encryption middleware](/docs/durable-execution/guides-and-advanced/middleware/encryption-middleware), so deferred payloads are not encrypted. Do not send data that requires that middleware in a deferred payload. Support is planned.
 

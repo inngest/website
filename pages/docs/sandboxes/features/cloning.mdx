@@ -1,3 +1,5 @@
+import { CodeGroup, SdkUnsupported } from "shared/Docs/mdx";
+
 export const metaTitle = "Cloning | Sandboxes";
 export const description = "Clone Inngest Sandboxes: prepare an environment once, snapshot it, and start separate isolated jobs from the same saved state without rebuilding.";
 
@@ -19,7 +21,8 @@ A snapshot is crash-consistent. Flush databases and other important application 
 
 This example uses the server-side direct client. It prepares a sandbox, waits for the snapshot to become ready, and starts a clone.
 
-```typescript
+<CodeGroup>
+```typescript {{ title: "TypeScript" }}
 const builder = await inngest.sandboxes.create({
   name: `builder-${crypto.randomUUID()}`,
   vcpu: 2,
@@ -57,13 +60,18 @@ try {
 }
 ```
 
+<SdkUnsupported title="Python" feature="Sandboxes" />
+<SdkUnsupported title="Go" feature="Sandboxes" />
+</CodeGroup>
+
 Use `try`/`finally` around direct-client work so cleanup also runs when a command fails. Destroy every clone and the source when you finish with them. Delete the snapshot when you no longer need to make clones. Destroying a sandbox removes its filesystem and processes.
 
 ## Clone inside an Inngest function
 
 Add stable step IDs when sandbox work belongs to a durable function. The example assumes you created and prepared `builder` with `step.sandbox.create()`.
 
-```typescript
+<CodeGroup>
+```typescript {{ title: "TypeScript" }}
 const snapshot = await builder.snapshot(
   "snapshot-builder",
   {},
@@ -85,6 +93,10 @@ await snapshot.delete("delete-snapshot");
 
 return result.stdout;
 ```
+
+<SdkUnsupported title="Python" feature="Sandboxes" />
+<SdkUnsupported title="Go" feature="Sandboxes" />
+</CodeGroup>
 
 Each durable sandbox operation uses its own step ID. Destroy the source sandbox when its work ends. If a function fails permanently before cleanup, use an Inngest `onFailure` handler or a separate cleanup function; a JavaScript `finally` block around durable steps does not guarantee cleanup after permanent failure.
 

@@ -1,3 +1,4 @@
+import { CodeGroup, SdkUnsupported } from "shared/Docs/mdx";
 export const metaTitle = "Compare models and prompts | Agent Evals";
 export const description = "Compare AI models and prompts in production: split live traffic between two variants and measure which one earns better user feedback and scores.";
 
@@ -10,7 +11,8 @@ You have a new prompt or model and want to know whether it helps customers more 
 
 Put each strategy in a variant callback. `experiment.bucket()` keeps an account on the same strategy across tickets, so a customer doesn't bounce between styles:
 
-```typescript {{ filename: "inngest/answer.ts" }}
+<CodeGroup>
+```typescript {{ title: "TypeScript", filename: "inngest/answer.ts" }}
 import { experiment } from "inngest";
 import { inngest } from "./client";
 import { feedbackScorer } from "./scorers";
@@ -58,13 +60,21 @@ export const answerTicket = inngest.createFunction(
 );
 ```
 
+```python {{ title: "Python", filename: "answer.py" }}
+!snippet:path=snippets/py/latest/evals/compare_models_and_prompts/answer.py
+```
+
+<SdkUnsupported title="Go" feature="Experiments" />
+</CodeGroup>
+
 To compare models instead of prompts, change the model in each callback. To compare providers, call a different SDK. Change one thing at a time so the result tells you which change mattered.
 
 ## 2. Wait for feedback
 
 The scorer waits for the customer's rating and returns a score. Because `defer()` received the `experimentRef`, Inngest credits the score to the variant that served the answer:
 
-```typescript {{ filename: "inngest/scorers.ts" }}
+<CodeGroup>
+```typescript {{ title: "TypeScript", filename: "inngest/scorers.ts" }}
 import { createScorer } from "inngest/experimental";
 import { z } from "zod";
 import { inngest } from "./client";
@@ -83,6 +93,13 @@ export const feedbackScorer = createScorer(
   }
 );
 ```
+
+```python {{ title: "Python", filename: "scorers.py" }}
+!snippet:path=snippets/py/latest/evals/compare_models_and_prompts/scorers.py
+```
+
+<SdkUnsupported title="Go" feature="Deferred scoring" />
+</CodeGroup>
 
 ## 3. Compare the variants
 

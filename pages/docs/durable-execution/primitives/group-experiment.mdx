@@ -1,3 +1,4 @@
+import { CodeGroup, SdkUnsupported } from "shared/Docs/mdx";
 import { Compatibility } from "shared/Docs/mdx";
 export const metaTitle = "group.experiment() | A/B Test Workflows";
 export const description = "group.experiment() runs one of several workflow variants on real traffic and keeps each run's choice stable through retries, for A/B tests in production.";
@@ -15,13 +16,14 @@ They are useful when:
 - You want the same user or account to receive a consistent variant across runs.
 - You need to score outcomes and compare the variants that produced them.
 
-`group.experiment()` is in beta. It requires TypeScript SDK v4.8.0 or later. You don't need a separate package or feature-flag service.
+`group.experiment()` is in beta. It requires TypeScript SDK v4.8.0 or later. In Python, `ctx.group.experiment()` requires the release after 0.5.19 and supports the `fixed` and `bucket` selectors. You don't need a separate package or feature-flag service.
 
 ## Run an experiment
 
 Import the `experiment` helper from `inngest`. Then call `group.experiment()` in your function handler. The handler receives `group` alongside `event` and `step`.
 
-```typescript
+<CodeGroup>
+```typescript {{ title: "TypeScript" }}
 import { experiment } from "inngest";
 
 const { result, variant, experimentRef } = await group.experiment(
@@ -35,6 +37,14 @@ const { result, variant, experimentRef } = await group.experiment(
   }
 );
 ```
+
+```python {{ title: "Python" }}
+!snippet:path=snippets/py/latest/primitives/group_experiment/run_experiment.py
+```
+
+<SdkUnsupported title="Go" feature="group.experiment" />
+</CodeGroup>
+
 Only the selected callback runs. `result` contains its return value, `variant` names the selected path, and `experimentRef` lets you credit a score to that path. Each callback must call at least one `step.*` method. Put side effects inside steps because code outside steps can run again on replay.
 
 ## How selection works
@@ -49,7 +59,8 @@ Each `group.experiment()` call counts as one step in your run and billing metric
 
 Use the same API when each variant has several steps. Only the selected path runs:
 
-```typescript
+<CodeGroup>
+```typescript {{ title: "TypeScript" }}
 const { result, experimentRef } = await group.experiment("invoice-engine", {
   variants: {
     current: async () => {
@@ -70,6 +81,14 @@ const { result, experimentRef } = await group.experiment("invoice-engine", {
   select: experiment.weighted({ current: 99, rewrite: 1 }),
 });
 ```
+
+```python {{ title: "Python" }}
+!snippet:path=snippets/py/latest/primitives/group_experiment/invoice_engine.py
+```
+
+<SdkUnsupported title="Go" feature="group.experiment" />
+</CodeGroup>
+
 `group.experiment()` records one selection step. It also meters each step the selected path runs. Give each experiment a unique, stable ID within a function, and keep variant names stable so traces and outcome comparisons remain clear.
 
 ## Choose a variant
@@ -83,9 +102,18 @@ const { result, experimentRef } = await group.experiment("invoice-engine", {
 
 Each new run gets its own assignment. Weights are relative, so `{ control: 9, candidate: 1 }` and `{ control: 90, candidate: 10 }` give the same split.
 
-```typescript
+<CodeGroup>
+```typescript {{ title: "TypeScript" }}
 select: experiment.weighted({ control: 90, candidate: 10 })
 ```
+
+```python {{ title: "Python" }}
+!snippet:path=snippets/py/latest/primitives/group_experiment/select_weighted.py
+```
+
+<SdkUnsupported title="Go" feature="group.experiment" />
+</CodeGroup>
+
 
 Selection is seeded by the run ID, so a run keeps its variant on retries. New weights in a later deploy only affect new selections. Because the seed is the run, not the user, one user can get different variants across runs.
 
@@ -93,11 +121,20 @@ Selection is seeded by the run ID, so a run keeps its variant on retries. New we
 
 Pass a stable value, such as a user, account, or tenant ID. Inngest hashes it to a variant, so a user doesn't see a different experience each time they trigger the function.
 
-```typescript
+<CodeGroup>
+```typescript {{ title: "TypeScript" }}
 select: experiment.bucket(event.data.userId, {
   weights: { control: 80, candidate: 20 },
 })
 ```
+
+```python {{ title: "Python" }}
+!snippet:path=snippets/py/latest/primitives/group_experiment/select_bucket.py
+```
+
+<SdkUnsupported title="Go" feature="group.experiment" />
+</CodeGroup>
+
 
 Pass a present, stable key to `experiment.bucket()`; a missing key sends those runs to the same bucket. Changing bucket weights can change a user's future assignment. If a user must never switch back, store the assignment and use `experiment.custom()`.
 
@@ -105,12 +142,21 @@ Pass a present, stable key to `experiment.bucket()`; a missing key sends those r
 
 Use a feature flag, rollout table, entitlement, or stored migration assignment. The selector can be sync or async, and its result is memoized for the run.
 
-```typescript
+<CodeGroup>
+```typescript {{ title: "TypeScript" }}
 select: experiment.custom(async () => {
   const assignment = await rolloutTable.get(event.data.accountId);
   return assignment ?? "control";
 })
 ```
+
+```python {{ title: "Python" }}
+!snippet:path=snippets/py/latest/primitives/group_experiment/select_custom.py
+```
+
+<SdkUnsupported title="Go" feature="group.experiment" />
+</CodeGroup>
+
 
 Its selector must return a name in `variants`. An unknown name fails the run.
 
@@ -118,9 +164,18 @@ Its selector must return a name in `variants`. An unknown name fails the run.
 
 Always select the same variant. Use it for a manual override, to test one path, or to pin a winner while you remove the experiment.
 
-```typescript
+<CodeGroup>
+```typescript {{ title: "TypeScript" }}
 select: experiment.fixed("candidate")
 ```
+
+```python {{ title: "Python" }}
+!snippet:path=snippets/py/latest/primitives/group_experiment/select_fixed.py
+```
+
+<SdkUnsupported title="Go" feature="group.experiment" />
+</CodeGroup>
+
 
 ## Use the result and variant name
 
@@ -132,7 +187,8 @@ select: experiment.fixed("candidate")
 
 If your team already uses an analytics warehouse, record the variant from a step:
 
-```typescript
+<CodeGroup>
+```typescript {{ title: "TypeScript" }}
 const { result, variant, experimentRef } = await group.experiment("copy-style", {
   variants: {
     short: () => step.run("short-copy", () => generateShortCopy(event.data)),
@@ -155,19 +211,36 @@ await step.run("track-experiment", () =>
 return result;
 ```
 
+```python {{ title: "Python" }}
+!snippet:path=snippets/py/latest/primitives/group_experiment/copy_style.py
+```
+
+<SdkUnsupported title="Go" feature="group.experiment" />
+</CodeGroup>
+
+
 ## Score the served variant
 
 An experiment tells you which variant ran. It doesn't decide which one is best. Attach your own outcome signal with a score.
 
 The returned `experimentRef` identifies the served variant. If the outcome is available during this run, pass the ref to `inngest.score.experiment()`:
 
-```typescript
+<CodeGroup>
+```typescript {{ title: "TypeScript" }}
 await inngest.score.experiment({
   name: "invoice-valid",
   value: validateInvoice(result),
   experiment: experimentRef,
 });
 ```
+
+```python {{ title: "Python" }}
+!snippet:path=snippets/py/latest/primitives/group_experiment/score_experiment.py
+```
+
+<SdkUnsupported title="Go" feature="group.experiment" />
+</CodeGroup>
+
 When another run scores a later outcome, save the original `experimentRef` and run ID with the result. Pass both to `inngest.score.experiment()` so the score attaches to the run and variant that produced it. You can also pass the ref to a deferred scorer through `defer()`. See [Experiments](/docs/agent-evals/experiments) for the full path from selection to scoring.
 
 For score types and attribution rules, see [Scores](/docs/agent-evals/scores), [Deferred scoring](/docs/agent-evals/deferred-scoring), and the [scoring reference](/docs/reference/typescript/v4/functions/scoring).

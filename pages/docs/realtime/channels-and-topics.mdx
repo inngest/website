@@ -1,3 +1,4 @@
+import { CodeGroup, SdkUnsupported } from "shared/Docs/mdx";
 export const metaTitle = "Realtime Channels & Topics";
 export const description = "Define Inngest Realtime channels and topics to give every live update from your functions a clear destination and a typed, predictable message shape.";
 
@@ -13,7 +14,8 @@ For example, a document import can publish `status` and `result` messages to a c
 
 Use `realtime.channel()` from `inngest`. Give the channel a name and give every topic a `schema`.
 
-```typescript
+<CodeGroup>
+```typescript {{ title: "TypeScript" }}
 import { realtime } from "inngest";
 import { z } from "zod";
 
@@ -36,9 +38,15 @@ export const documentChannel = realtime.channel({
 });
 ```
 
+<SdkUnsupported title="Python" feature="Typed channels and topics">Channels and topics are plain strings in Python. Pass them to `realtime.publish()` and `realtime.get_subscription_token()`.</SdkUnsupported>
+
+<SdkUnsupported title="Go" feature="Typed channels and topics">Channels and topics are plain strings in Go. Pass them to `realtime.Publish()` and encode payloads yourself, for example with `json.Marshal`.</SdkUnsupported>
+</CodeGroup>
+
 Call the factory with a document ID to get a channel instance. Its `status` and `result` properties are **topic references**. You pass a topic reference to a publish call, and it carries the channel name, topic name, and schema.
 
-```typescript
+<CodeGroup>
+```typescript {{ title: "TypeScript" }}
 const document = documentChannel({ documentId: "abc123" });
 
 const channelName = document.name;
@@ -46,13 +54,19 @@ const statusChannel = document.status.channel;
 const statusTopic = document.status.topic;
 ```
 
+<SdkUnsupported title="Python" feature="Typed channels and topics">Channels and topics are plain strings in Python. Pass them to `realtime.publish()` and `realtime.get_subscription_token()`.</SdkUnsupported>
+
+<SdkUnsupported title="Go" feature="Typed channels and topics">Channels and topics are plain strings in Go. Pass them to `realtime.Publish()` and encode payloads yourself, for example with `json.Marshal`.</SdkUnsupported>
+</CodeGroup>
+
 A message published to `document:abc123` reaches only subscribers of `document:abc123`. A subscriber of `document:def456` never sees it.
 
 ## Fixed and parameterized channels
 
 Use a **fixed name** for a shared stream such as system alerts. `realtime.channel()` returns the channel instance directly.
 
-```typescript
+<CodeGroup>
+```typescript {{ title: "TypeScript" }}
 export const alertsChannel = realtime.channel({
   name: "system:alerts",
   topics: {
@@ -62,6 +76,11 @@ export const alertsChannel = realtime.channel({
   },
 });
 ```
+
+<SdkUnsupported title="Python" feature="Typed channels and topics">Channels and topics are plain strings in Python. Pass them to `realtime.publish()` and `realtime.get_subscription_token()`.</SdkUnsupported>
+
+<SdkUnsupported title="Go" feature="Typed channels and topics">Channels and topics are plain strings in Go. Pass them to `realtime.Publish()` and encode payloads yourself, for example with `json.Marshal`.</SdkUnsupported>
+</CodeGroup>
 
 Use a **name function** when each document, session, job, or user needs its own stream. Pass your app's identifier when you publish or subscribe. The identifier is yours to choose; it doesn't have to be an Inngest run ID.
 
@@ -77,7 +96,8 @@ A [Standard Schema](https://github.com/standard-schema/standard-schema) validato
 
 For type checking without runtime validation, use `staticSchema<T>()`:
 
-```typescript
+<CodeGroup>
+```typescript {{ title: "TypeScript" }}
 import { realtime, staticSchema } from "inngest";
 
 export const metricsChannel = realtime.channel({
@@ -90,6 +110,11 @@ export const metricsChannel = realtime.channel({
 });
 ```
 
+<SdkUnsupported title="Python" feature="Typed channels and topics">Channels and topics are plain strings in Python. Pass them to `realtime.publish()` and `realtime.get_subscription_token()`.</SdkUnsupported>
+
+<SdkUnsupported title="Go" feature="Typed channels and topics">Channels and topics are plain strings in Go. Pass them to `realtime.Publish()` and encode payloads yourself, for example with `json.Marshal`.</SdkUnsupported>
+</CodeGroup>
+
 `staticSchema<T>()` skips runtime validation, which suits small, high-volume payloads such as streamed tokens. You can mix runtime and type-only schemas on different topics in the same channel.
 
 ## Share the definition
@@ -98,7 +123,8 @@ Put the channel definition in a shared module, such as `src/inngest/channels.ts`
 
 Use a topic reference to publish to a specific channel and topic:
 
-```typescript
+<CodeGroup>
+```typescript {{ title: "TypeScript" }}
 import { inngest } from "./client";
 import { documentChannel } from "./channels";
 
@@ -109,6 +135,15 @@ await inngest.realtime.publish(document.status, {
   progress: 50,
 });
 ```
+
+```python {{ title: "Python" }}
+!snippet:path=snippets/py/latest/realtime/channels_and_topics/publish_status.py
+```
+
+```go {{ title: "Go" }}
+!snippet:path=snippets/go/docs/realtime/channels_and_topics/publish_status.go
+```
+</CodeGroup>
 
 This immediate publish suits frequent progress updates. For a state change that a retry must not publish twice, use `step.realtime.publish()` inside the function. See [Durable and immediate publishing](/docs/realtime/overview#durable-and-immediate-publishing).
 

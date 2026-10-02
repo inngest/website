@@ -1,3 +1,4 @@
+import { CodeGroup } from "shared/Docs/mdx";
 export const metaTitle = "Versioning | Evolve Long-Running Functions";
 export const description = "Version Inngest functions safely: deploy new code while in-flight runs keep working, and see how deploys affect sleeping and waiting function runs.";
 
@@ -27,11 +28,21 @@ New runs use your latest code. For a run already in progress, the effect depends
 
 For example, add `track-signup` between two existing steps:
 
-```ts
+<CodeGroup>
+```ts {{ title: "TypeScript" }}
 await step.run("send-welcome-email", () => sendWelcomeEmail(event.data.email));
 await step.run("track-signup", () => analytics.track("user_signup_complete", event.data));
 await step.run("sync-to-crm", () => crm.contacts.create(event.data));
 ```
+
+```python {{ title: "Python" }}
+!snippet:path=snippets/py/latest/advanced/versioning/add_step.py
+```
+
+```go {{ title: "Go" }}
+!snippet:path=snippets/go/docs/advanced/versioning/add_step.go
+```
+</CodeGroup>
 
 If a run completed the email and CRM steps before the deployment, it reuses those results and runs `track-signup`. The new step must not depend on a later step that has not run yet.
 
@@ -39,11 +50,21 @@ If a run completed the email and CRM steps before the deployment, it reuses thos
 
 Changing `calculate-risk-score` to `calculate-risk-score-v2` makes an in-progress run execute the new step, even if it completed the old one:
 
-```ts
+<CodeGroup>
+```ts {{ title: "TypeScript" }}
 const score = await step.run("calculate-risk-score-v2", () =>
   calculateRiskScoreWithNewModel(user.profile)
 );
 ```
+
+```python {{ title: "Python" }}
+!snippet:path=snippets/py/latest/advanced/versioning/change_step_id.py
+```
+
+```go {{ title: "Go" }}
+!snippet:path=snippets/go/docs/advanced/versioning/change_step_id.go
+```
+</CodeGroup>
 
 If that step writes to another system, the change can repeat a payment, email, or resource creation. Check [Idempotency](/docs/durable-execution/guides-and-advanced/idempotency) before changing its ID.
 
@@ -51,7 +72,8 @@ If that step writes to another system, the change can repeat a payment, email, o
 
 For a rewrite that cannot use the state of in-progress runs, create a function with a new ID. Keep the original function deployed until its runs finish. Give the functions mutually exclusive [trigger conditions](/docs/durable-execution/guides-and-advanced/events-and-triggers/event-and-trigger-concepts) so each new event starts only one function:
 
-```ts
+<CodeGroup>
+```ts {{ title: "TypeScript" }}
 const CUTOVER_TS = 1704067200000;
 
 export const processUploadV1 = inngest.createFunction(
@@ -74,6 +96,15 @@ export const processUploadV2 = inngest.createFunction(
   }
 );
 ```
+
+```python {{ title: "Python" }}
+!snippet:path=snippets/py/latest/advanced/versioning/cutover.py
+```
+
+```go {{ title: "Go" }}
+!snippet:path=snippets/go/docs/advanced/versioning/cutover.go
+```
+</CodeGroup>
 
 The timestamp filters route new events. Runs that already started under `process-upload` continue there. Once those runs finish, you can remove the original function.
 
