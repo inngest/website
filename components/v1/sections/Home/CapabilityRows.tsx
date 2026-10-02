@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useRef, useState } from "react";
+import Image from "next/image";
 import Link from "next/link";
 import { motion } from "motion/react";
 import { cn } from "@/utils/v1/cn";
@@ -157,8 +158,10 @@ function BlueSlab() {
       aria-hidden="true"
       className="pointer-events-none absolute -bottom-[6rem] -top-[13rem] left-1/2 w-screen -translate-x-1/2 overflow-hidden bg-v1-accent-blue sm:-top-[16rem] lg:-bottom-[9rem] lg:-top-[26rem]"
     >
-      {/* eslint-disable-next-line @next/next/no-img-element */}
-      <img
+      {/* next/image: lazy by default (so React doesn't emit a preload for
+          this below-the-fold texture) and served by the Vercel image
+          optimizer as WebP (~100 KB) instead of the 1.5 MB source PNG. */}
+      <Image
         src="/assets/v1/home/figma-blue-band.png"
         alt=""
         width={1311}
