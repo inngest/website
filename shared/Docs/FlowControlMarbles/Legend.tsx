@@ -19,6 +19,30 @@ const dot = (look: Look) => (
 );
 
 const SWATCH = {
+  burst: (
+    <svg width={20} height={14} viewBox="0 0 20 14" aria-hidden>
+      <rect
+        x={0.5}
+        y={1.5}
+        width={19}
+        height={11}
+        rx={3}
+        className="fill-breeze-100 dark:fill-breeze-500/20"
+      />
+    </svg>
+  ),
+  planLimit: (
+    <svg width={20} height={14} viewBox="0 0 20 14" aria-hidden>
+      <line
+        x1={0.5}
+        x2={19.5}
+        y1={7}
+        y2={7}
+        className="stroke-carbon-400 dark:stroke-carbon-500"
+        strokeDasharray="3 2"
+      />
+    </svg>
+  ),
   event: dot(LOOK.event),
   replaced: dot(LOOK.replaced),
   collect: dot(LOOK.collect),
@@ -183,6 +207,10 @@ function resultItems(model: Model): Item[] {
       label: "Cancelled",
       swatch: SWATCH.cancelled,
     });
+  if (model.burst) {
+    items.push({ key: "plan", label: "Plan limit", swatch: SWATCH.planLimit });
+    items.push({ key: "burst", label: "Burst capacity", swatch: SWATCH.burst });
+  }
   return items;
 }
 

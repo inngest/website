@@ -26,7 +26,6 @@ import {
 } from "./looks";
 import {
   EPS,
-  MAX_STACK,
   clamp01,
   collectingAt,
   ease,
@@ -61,7 +60,8 @@ export function layoutFor(model: Model, width: number) {
   const RIGHT = 12;
   const IN_H = dense ? 22 : compact ? 26 : 30;
   const LANE_H = 2 * R + (dense ? 6 : compact ? 8 : 10);
-  const AXIS_H = 18;
+  // A burst adds a row under the ticks for its on and off labels.
+  const AXIS_H = model.burst ? 30 : 18;
   const top = 4;
   const plotLeft = GUT + R + 4;
   const plotRight = width - RIGHT - 8;
@@ -107,7 +107,7 @@ export function layoutFor(model: Model, width: number) {
     /** An event marble's center. Events at one instant stack vertically. */
     evY: (tenantIndex: number, eventId: number) => {
       const st = model.stack.get(eventId) ?? { i: 0, n: 1 };
-      const n = Math.min(st.n, MAX_STACK);
+      const n = Math.min(st.n, model.maxStack);
       const i = Math.min(st.i, n - 1);
       return inY(tenantIndex) + (i - (n - 1) / 2) * STACK;
     },
@@ -592,6 +592,72 @@ function LockGlyph({
 // Layers
 // ---------------------------------------------------------------------------
 
+/**
+ * Burst capacity above the plan limit: a dashed divider at the limit, and a
+ * tinted band over the burst lanes for the time the burst is on. The on and
+ * off labels sit under the axis, where running steps can't cover them.
+ */
+function BurstRegion({
+  model,
+  L,
+  right,
+}: {
+  model: Model;
+  L: Layout;
+  right: number;
+}) {
+  const { from, on, off } = model.burst!;
+  const top = L.lanesTop + from * L.LANE_H;
+  const bottom = L.lanesTop + model.lanes.length * L.LANE_H;
+  const x0 = Math.max(L.GUT, L.x(on));
+  const x1 = Math.min(right, L.x(off));
+  const edges: { x: number; label: string }[] = [];
+  if (on > EPS) edges.push({ x: x0, label: "burst on" });
+  if (off < model.domain - EPS)
+    edges.push({ x: x1, label: "burst budget exhausted" });
+  return (
+    <g className="pointer-events-none">
+      <rect
+        x={x0}
+        y={top}
+        width={Math.max(0, x1 - x0)}
+        height={bottom - top}
+        className="fill-breeze-100/60 dark:fill-breeze-500/10"
+      />
+      {edges.map((e) => (
+        <g key={e.label}>
+          <line
+            x1={e.x}
+            x2={e.x}
+            y1={top}
+            y2={L.axisTop}
+            className="stroke-breeze-500 dark:stroke-breeze-400"
+            strokeWidth={1}
+            strokeDasharray="3 3"
+          />
+          <text
+            x={e.x}
+            y={L.axisTop + 26}
+            textAnchor="middle"
+            className="fill-breeze-700 text-[10px] font-medium dark:fill-breeze-200"
+          >
+            {e.label}
+          </text>
+        </g>
+      ))}
+      <line
+        x1={L.GUT}
+        x2={right}
+        y1={top}
+        y2={top}
+        className="stroke-carbon-400 dark:stroke-carbon-500"
+        strokeWidth={1}
+        strokeDasharray="4 3"
+      />
+    </g>
+  );
+}
+
 /** Rows, lines, labels and the axis: redrawn only on resize. */
 const StaticLayer = memo(function StaticLayer({
   model,
@@ -690,24 +756,30 @@ const StaticLayer = memo(function StaticLayer({
         height={L.axisTop - L.lanesTop + 22}
         className="fill-transparent"
       />
-      {model.lanes.map((lane, k) => (
-        <g key={k} className="pointer-events-none">
-          {lane.label && (
-            <text
-              x={0}
-              y={L.laneY(k)}
-              dy="0.35em"
-              className={clsx(
-                lane.overflow ? MUTED_TEXT : GUTTER_TEXT,
-                "text-[11px] font-medium"
-              )}
-            >
-              {lane.label}
-            </text>
-          )}
-          <Arrow x1={L.GUT} x2={right} y={L.laneY(k)} className={LANE_LINE} />
-        </g>
-      ))}
+      {model.burst && model.burst.from < model.lanes.length && (
+        <BurstRegion model={model} L={L} right={right} />
+      )}
+      {model.lanes.map((lane, k) => {
+        const burstLane = !!model.burst && k >= model.burst.from;
+        return (
+          <g key={k} className="pointer-events-none">
+            {lane.label && (
+              <text
+                x={0}
+                y={L.laneY(k)}
+                dy="0.35em"
+                className={clsx(
+                  lane.overflow || burstLane ? MUTED_TEXT : GUTTER_TEXT,
+                  "text-[11px] font-medium"
+                )}
+              >
+                {lane.label}
+              </text>
+            )}
+            <Arrow x1={L.GUT} x2={right} y={L.laneY(k)} className={LANE_LINE} />
+          </g>
+        );
+      })}
 
       {ticks.map((v) => (
         <g key={v} className="pointer-events-none">
@@ -724,7 +796,7 @@ const StaticLayer = memo(function StaticLayer({
             textAnchor="middle"
             className={clsx(MUTED_TEXT, "text-[10px] tabular-nums")}
           >
-            {fmtT(v)}
+            {model.unit === "m" ? `${v}m` : fmtT(v)}
           </text>
         </g>
       ))}
@@ -1547,11 +1619,9 @@ export function MarbleDiagram({
           const future = t + EPS < ev.t;
           if (future && !showFuture) return null;
           const st = model.stack.get(ev.id) ?? { i: 0, n: 1 };
-          if (st.n > MAX_STACK && st.i > MAX_STACK - 1) return null;
-          const more =
-            st.n > MAX_STACK && st.i === MAX_STACK - 1
-              ? st.n - MAX_STACK + 1
-              : 0;
+          const cap = model.maxStack;
+          if (st.n > cap && st.i > cap - 1) return null;
+          const more = st.n > cap && st.i === cap - 1 ? st.n - cap + 1 : 0;
           const rej = tok.stages.find((s) => s.kind === "reject" && !s.inQueue);
           const rep = tok.stages.find((s) => s.kind === "replaced");
           const skipped = !!rej && t + EPS >= rej.t + T.move;
