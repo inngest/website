@@ -63,7 +63,7 @@ const subResult = await step.invoke("sub-agent", {
 toolResult = { result: subResult?.response || "(No response)" };
 ```
 
-Within [our system](/docs/durable-execution/primitives/step-invoke), `step.invoke()` is function-to-function RPC with durability. The parent checkpoints before invoking, so it won't re-invoke on retry. If the sub-agent crashes, Inngest retries it. The parent just waits.
+Within [our system](/docs/durable-execution/primitives/step-invoke?ref=blog-three-patterns-you-need-for-agentic-systems), `step.invoke()` is function-to-function RPC with durability. The parent checkpoints before invoking, so it won't re-invoke on retry. If the sub-agent crashes, Inngest retries it. The parent just waits.
 
 **The tradeoff:** The result enters the parent's context window. But it's a summary, not the full trajectory: that 90%+ reduction means the parent can delegate many times before context becomes an issue.
 

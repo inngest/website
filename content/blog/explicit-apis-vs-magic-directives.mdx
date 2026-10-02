@@ -21,7 +21,7 @@ Before we get to some of the architectural decisions, let’s just do a high lev
 
 **Vercel WDK** is a durability framework. It makes individual async functions survive crashes and deployments, and uses build-time transformation (`"use workflow"`) to compile your code into isolated routes with state persistence. You must use Vercel as your compute layer.
 
-**Inngest** is a compute and language agnostic orchestration platform. It’s built around events triggering functions, with a queue managing execution. You write step functions ([`step.run`](/docs/durable-execution/primitives)) that explicitly define steps with IDs, while Inngest handles coordination across concurrent runs with built-in flow control, observability, and recovery tools.
+**Inngest** is a compute and language agnostic orchestration platform. It’s built around events triggering functions, with a queue managing execution. You write step functions ([`step.run`](/docs/durable-execution/primitives?ref=blog-explicit-apis-vs-magic-directives)) that explicitly define steps with IDs, while Inngest handles coordination across concurrent runs with built-in flow control, observability, and recovery tools.
 
 For context, here's our TS SDK - which works on every platform and runtime (including Bun and Deno): [https://github.com/inngest/inngest-js](https://github.com/inngest/inngest-js)
 
@@ -81,7 +81,7 @@ export default inngest.createFunction(
 
 There's no transformation layer—`step.run()` is a function call to Inngest's execution engine. Each step has an explicit ID that becomes its state key. This means you can refactor code, add logging, even rewrite in a different language, and running workflows continue correctly as long as step IDs stay the same.
 
-Functions react to events rather than direct calls. Send an `order/created` event and this function runs. Multiple functions can react to the same event, enabling natural [fan-out](/docs/durable-execution/guides-and-advanced/patterns/fan-out) without tight coupling.
+Functions react to events rather than direct calls. Send an `order/created` event and this function runs. Multiple functions can react to the same event, enabling natural [fan-out](/docs/durable-execution/guides-and-advanced/patterns/fan-out?ref=blog-explicit-apis-vs-magic-directives) without tight coupling.
 
 ## Why We Switched to Explicit APIs
 
@@ -229,7 +229,7 @@ The concurrency model is explicit, typed, and sits alongside your function defin
 
 **With directives:** Configuration is scattered or implicit, making it harder to reason about behavior under load.
 
-**With explicit APIs:** Concurrency is easy to understand.  [Here's how we do it.](/docs/durable-execution/flow-control/concurrency)
+**With explicit APIs:** Concurrency is easy to understand.  [Here's how we do it.](/docs/durable-execution/flow-control/concurrency?ref=blog-explicit-apis-vs-magic-directives)
 
 ### Scenario 2: Rate Limiting External APIs
 
@@ -254,7 +254,7 @@ All functions targeting the same API share a rate limit. Configured explicitly i
 
 **With directives:** Rate limiting isn't part of the visible API.
 
-**With explicit APIs:** Rate limit is a single line config.  [Here's how we do it.](/docs/durable-execution/flow-control/rate-limiting)
+**With explicit APIs:** Rate limit is a single line config.  [Here's how we do it.](/docs/durable-execution/flow-control/rate-limiting?ref=blog-explicit-apis-vs-magic-directives)
 
 ### Scenario 3: Fan-Out Event Processing
 
@@ -283,7 +283,7 @@ Inngest's event-driven architecture makes fan-out a first-class pattern.
 
 **With directives:** You'd need to manually orchestrate calling multiple workflow functions.
 
-**With explicit APIs:**  You can set up any sorts of triggers, [and have functions automatically run whenever matching events are received](/docs/durable-execution/guides-and-advanced/patterns/fan-out).
+**With explicit APIs:**  You can set up any sorts of triggers, [and have functions automatically run whenever matching events are received](/docs/durable-execution/guides-and-advanced/patterns/fan-out?ref=blog-explicit-apis-vs-magic-directives).
 
 ### Scenario 4: Human-in-the-Loop Approvals
 
@@ -308,7 +308,7 @@ if (result.data.approved) {
 
 **With directives:** The webhook/callback mechanism isn't clear from the code structure.
 
-**With explicit APIs:** [You can declaratively resume functions any time matching events are received](/docs/durable-execution/primitives/step-waitforevent)
+**With explicit APIs:** [You can declaratively resume functions any time matching events are received](/docs/durable-execution/primitives/step-waitforevent?ref=blog-explicit-apis-vs-magic-directives)
 
 ### Scenario 5: Conditional Step Execution
 
@@ -376,7 +376,7 @@ const workflowEngine = new Engine({
 
 You need to cancel a workflow...  maybe an appointment was cancelled or changed.
 
-**With Inngest:** [You can add cancellation clauses to workflow definitions, and cancellations happen automatically](/docs/durable-execution/guides-and-advanced/cancellation/events):
+**With Inngest:** [You can add cancellation clauses to workflow definitions, and cancellations happen automatically](/docs/durable-execution/guides-and-advanced/cancellation/events?ref=blog-explicit-apis-vs-magic-directives):
 
 ```tsx
 

@@ -21,7 +21,7 @@ Frameworks have embraced this space providing some great tooling to both render 
 
 At the onset of the Jamstack paradigm, most APIs were likely run on separate backend servers, whether a container, droplet or some other PaaS. The advent of serverless and innovation on the front-end platform side pushed developers to drop the long running services and embrace functions-as-a-service (FaaS) platforms to write their synchronous API endpoints. Serverless functions are simpler to reason about for developers and FaaS platforms enabled developers to not have to worry about managing uptime and removed some overhead for thinking about scaling a backend.
 
-This is where the Jamstack started to embrace backend development and became more of a true "stack." Frameworks like [Next.js](/docs/learn/serving-inngest-functions#framework-next-js) and platforms like [Vercel](/blog/vercel-integration) & [Netlify](/docs/durable-execution/deploying-functions/platforms/netlify) embraced this demand and started seamlessly integrating FaaS into their previously front-end app hosting services.
+This is where the Jamstack started to embrace backend development and became more of a true "stack." Frameworks like [Next.js](/docs/learn/serving-inngest-functions#framework-next-js) and platforms like [Vercel](/blog/vercel-integration) & [Netlify](/docs/durable-execution/deploying-functions/platforms/netlify?ref=blog-completing-the-jamstack) embraced this demand and started seamlessly integrating FaaS into their previously front-end app hosting services.
 
 ### APIs → Serverless databases and services
 
@@ -59,7 +59,7 @@ What would this solution look like [for modern developers](/blog/modern-serverle
 
 ## Meet Inngest
 
-With Inngest, we've created a platform with these principles to enable developers to run any sort of asynchronous workloads all driven by event data. Any developer can [send events from ther application](/docs/durable-execution/guides-and-advanced/events-and-triggers/send-events) or a third party webhook then [define a function using our SDK](/docs/durable-execution/durable-workflows) that will run every time that event is received by Inngest. You can [deploy your code](/docs/platform-and-operations/apps-and-syncs) to several platforms and Inngest will call your code remotely and securely, on-demand. There are no queues or workers to configure - just write functions and send events! Get full event history, logs, metrics and TypeScript Type generation right out of the box.
+With Inngest, we've created a platform with these principles to enable developers to run any sort of asynchronous workloads all driven by event data. Any developer can [send events from ther application](/docs/durable-execution/guides-and-advanced/events-and-triggers/send-events?ref=blog-completing-the-jamstack) or a third party webhook then [define a function using our SDK](/docs/durable-execution/durable-workflows?ref=blog-completing-the-jamstack) that will run every time that event is received by Inngest. You can [deploy your code](/docs/platform-and-operations/apps-and-syncs?ref=blog-completing-the-jamstack) to several platforms and Inngest will call your code remotely and securely, on-demand. There are no queues or workers to configure - just write functions and send events! Get full event history, logs, metrics and TypeScript Type generation right out of the box.
 
 We've had Jamstack developers and non-Jamstackers tell us that we're filling a clear need in their stack - [read out docs to give us a try](/docs) and let us know what you think!
 

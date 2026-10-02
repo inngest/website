@@ -20,7 +20,7 @@ Let's answer these questions with some examples and comparisons!
 
 Let's start with the most widespread one: rate limiting. You've probably encountered this term while working with public APIs such as OpenAI or Shopify API. Both leverage rate limiting to control the external usage of their API by limiting the number of requests per hour or day — additional requests above this limit are rejected.
 
-The same reasoning applies when developing your [Inngest Functions](/docs/durable-execution/durable-workflows). For example, consider an Inngest Function, part of a CRM product that frequently scrapes and stores company information. Companies might be updated often, and scraping is a costly operation unrelated to the order of events.
+The same reasoning applies when developing your [Inngest Functions](/docs/durable-execution/durable-workflows?ref=blog-rate-limit-debouncing-throttling-explained). For example, consider an Inngest Function, part of a CRM product that frequently scrapes and stores company information. Companies might be updated often, and scraping is a costly operation unrelated to the order of events.
 
 Here is how Rate Limiting operates for a maximum of 1 call per minute:
 
@@ -28,7 +28,7 @@ Here is how Rate Limiting operates for a maximum of 1 call per minute:
 
 *In case of a surge of company updates, our Inngest Function will be rate-limited (not run), preventing costly and unnecessary scraping operations.*
 
-Adding a [Rate Limit](/docs/durable-execution/flow-control/rate-limiting) configuration guarantees that our company scraping function will only run when companies get updated and at a maximum of every 4 hours:
+Adding a [Rate Limit](/docs/durable-execution/flow-control/rate-limiting?ref=blog-rate-limit-debouncing-throttling-explained) configuration guarantees that our company scraping function will only run when companies get updated and at a maximum of every 4 hours:
 
 ```tsx
 export default inngest.createFunction(
@@ -51,19 +51,19 @@ export default inngest.createFunction(
 
 ### The many flavors of Rate Limiting
 
-[Rate Limiting](/docs/durable-execution/flow-control/rate-limiting) is implemented following an algorithm. The simplest one is a “fixed window” approach where you can make a set number of requests (say 100) during a given time window (like one minute). If you exceed that limit within the window, you're blocked. Once the time resets, you get a fresh set of 100 requests.
+[Rate Limiting](/docs/durable-execution/flow-control/rate-limiting?ref=blog-rate-limit-debouncing-throttling-explained) is implemented following an algorithm. The simplest one is a “fixed window” approach where you can make a set number of requests (say 100) during a given time window (like one minute). If you exceed that limit within the window, you're blocked. Once the time resets, you get a fresh set of 100 requests.
 
 Public APIs like [the Shopify API](https://shopify.dev/docs/api/usage/rate-limits#the-leaky-bucket-algorithm) rely on the **[Leaky Bucket algorithm](https://en.wikipedia.org/wiki/Leaky_bucket)**. Picture a bucket with a small hole at the bottom. You can add water (requests) as fast as you want, but it only leaks out (processes) steadily. The excess is discarded if the bucket overflows (too many requests).
 
-**Inngest Functions benefits from a more flexible algorithm** that allows bursts but still enforces a steady overall rate: the **[Generic Cell Rate Algorithm (GCRA)](/docs/durable-execution/flow-control/rate-limiting)**. This algorithm is like a hybrid of fixed window and Leaky Bucket algorithms. It controls traffic by spacing out requests, ensuring they happen regularly, **resulting in [more fairness](https://www.inngest.com/blog/fixing-multi-tenant-queueing-concurrency-problems) in Rate Limiting**.
+**Inngest Functions benefits from a more flexible algorithm** that allows bursts but still enforces a steady overall rate: the **[Generic Cell Rate Algorithm (GCRA)](/docs/durable-execution/flow-control/rate-limiting?ref=blog-rate-limit-debouncing-throttling-explained)**. This algorithm is like a hybrid of fixed window and Leaky Bucket algorithms. It controls traffic by spacing out requests, ensuring they happen regularly, **resulting in [more fairness](https://www.inngest.com/blog/fixing-multi-tenant-queueing-concurrency-problems) in Rate Limiting**.
 
 ### When should I use Rate Limiting?
 
-[Rate Limiting](/docs/durable-execution/flow-control/rate-limiting) is a good fit to protect the Inngest Functions that routinely perform costly operations. Good examples are Functions that won't be a good fit for a [CRON](/docs/durable-execution/guides-and-advanced/events-and-triggers/schedules-and-delayed-starts), as they only need to run when something is happening (not at each occurrence) and are costly to run (for example, AI summaries, aggregations, synchronizing data, or scraping).
+[Rate Limiting](/docs/durable-execution/flow-control/rate-limiting?ref=blog-rate-limit-debouncing-throttling-explained) is a good fit to protect the Inngest Functions that routinely perform costly operations. Good examples are Functions that won't be a good fit for a [CRON](/docs/durable-execution/guides-and-advanced/events-and-triggers/schedules-and-delayed-starts?ref=blog-rate-limit-debouncing-throttling-explained), as they only need to run when something is happening (not at each occurrence) and are costly to run (for example, AI summaries, aggregations, synchronizing data, or scraping).
 
 ## Debouncing
 
-[Debouncing](/docs/durable-execution/flow-control/debounce) could be seen as the mirror of rate limiting, providing the same protection against spikes of invocations but behaving differently by permanently preserving the last occurrence of the given window (with Inngest, the last Event).
+[Debouncing](/docs/durable-execution/flow-control/debounce?ref=blog-rate-limit-debouncing-throttling-explained) could be seen as the mirror of rate limiting, providing the same protection against spikes of invocations but behaving differently by permanently preserving the last occurrence of the given window (with Inngest, the last Event).
 
 For example, an Inngest Function computing AI suggestions based on a document change is costly and likely to be triggered often. In that scenario, we might want to avoid unnecessary runs and limit our AI work to run every minute with the latest Event received:
 
@@ -73,7 +73,7 @@ Here is how Debouncing operates for a maximum of 1 call per minute:
 
 *Our Inngest Function is called every minute only if a triggering event is received during this time window. You will notice that contrary to rate limiting, only the last received event triggers a Function run.*
 
-Adding a [debouncing window](/docs/durable-execution/flow-control/debounce) of 1 minute ensures that our AI workflow will only be triggered by the last event received in a 1-minute window of document updates:
+Adding a [debouncing window](/docs/durable-execution/flow-control/debounce?ref=blog-rate-limit-debouncing-throttling-explained) of 1 minute ensures that our AI workflow will only be triggered by the last event received in a 1-minute window of document updates:
 
 ```tsx
 export default inngest.createFunction(
@@ -97,15 +97,15 @@ export default inngest.createFunction(
 
 ### When should I use Debouncing?
 
-Popular use cases are [webhooks](/docs/durable-execution/guides-and-advanced/events-and-triggers/receive-webhook-events), any [Inngest Function](/docs/durable-execution/durable-workflows) reacting to use actions, or AI workflows.
+Popular use cases are [webhooks](/docs/durable-execution/guides-and-advanced/events-and-triggers/receive-webhook-events?ref=blog-rate-limit-debouncing-throttling-explained), any [Inngest Function](/docs/durable-execution/durable-workflows?ref=blog-rate-limit-debouncing-throttling-explained) reacting to use actions, or AI workflows.
 
 The above scenarios occur in a usage-intensive environment where the event triggering the function matters for the Function's execution (ex, the AI workflow needs the latest up-to-date occurrence).
 
 ## Throttling
 
-Interestingly, Throttling is the [Flow Control](/docs/durable-execution/flow-control) feature for dealing with third-party API rate limiting. Instead of dropping unwanted Function runs like Rate limiting and Debouncing, [Throttling](/docs/durable-execution/flow-control/throttling) will buffer the queued Function runs to match the configured frequency and time window.
+Interestingly, Throttling is the [Flow Control](/docs/durable-execution/flow-control?ref=blog-rate-limit-debouncing-throttling-explained) feature for dealing with third-party API rate limiting. Instead of dropping unwanted Function runs like Rate limiting and Debouncing, [Throttling](/docs/durable-execution/flow-control/throttling?ref=blog-rate-limit-debouncing-throttling-explained) will buffer the queued Function runs to match the configured frequency and time window.
 
-A good example would be an [Inngest Function](/docs/durable-execution/durable-workflows) performing some AI enrichment as part of an ETL pipeline. As events arrive, our Inngest Function needs to match OpenAI's API rate limit by reducing the frequency of runs.
+A good example would be an [Inngest Function](/docs/durable-execution/durable-workflows?ref=blog-rate-limit-debouncing-throttling-explained) performing some AI enrichment as part of an ETL pipeline. As events arrive, our Inngest Function needs to match OpenAI's API rate limit by reducing the frequency of runs.
 
 Here is how Throttling operates for a maximum of 3 calls per minute:
 
@@ -115,7 +115,7 @@ _Throttling keeps in queue Function runs that exceed that configured frequency a
 
 ### When should I use Throttling?
 
-[Throttling](/docs/durable-execution/flow-control/throttling) is the go-to solution when dealing with third-party API rate limits. You can configure Throttling by matching its configuration with the target API's rate limit. For example, an Inngest Function relying on Resend might benefit from a Throttling of [2 calls per second](https://resend.com/docs/api-reference/introduction#rate-limit).
+[Throttling](/docs/durable-execution/flow-control/throttling?ref=blog-rate-limit-debouncing-throttling-explained) is the go-to solution when dealing with third-party API rate limits. You can configure Throttling by matching its configuration with the target API's rate limit. For example, an Inngest Function relying on Resend might benefit from a Throttling of [2 calls per second](https://resend.com/docs/api-reference/introduction#rate-limit).
 
 ## Conclusion — a takeaway cheatsheet
 
@@ -170,4 +170,4 @@ async ({ event }) => {
 
 Unlike rate limiting (which controls frequency) or debouncing (which delays execution), Singleton Functions ensure mutual exclusion—only one run per key executes at a time.
 
-[Learn more about Singleton Functions](/docs/durable-execution/flow-control/singleton) | [View changelog](https://www.inngest.com/changelog/2025-06-06-singleton-functions)
+[Learn more about Singleton Functions](/docs/durable-execution/flow-control/singleton?ref=blog-rate-limit-debouncing-throttling-explained) | [View changelog](https://www.inngest.com/changelog/2025-06-06-singleton-functions)

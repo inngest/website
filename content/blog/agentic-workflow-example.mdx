@@ -143,7 +143,7 @@ The code then transforms these actions into a format using [Inngest's Workflow K
 While developing this demo, we realized that `o1-mini` struggled to output a deterministic and simple JSON structure for model call actions. Switching back to `o1-preview` solved this problem.
 </Callout>
 
-Our `o1-preview` call and the processing of its results is wrapped as an Inngest Function, enabling it to run without duration limitation in the background and matching `o1-preview`'s [API Rate limits](https://x.com/OpenAIDevs/status/1841176573527077235) by leveraging [throttling](/docs/durable-execution/flow-control/throttling):
+Our `o1-preview` call and the processing of its results is wrapped as an Inngest Function, enabling it to run without duration limitation in the background and matching `o1-preview`'s [API Rate limits](https://x.com/OpenAIDevs/status/1841176573527077235) by leveraging [throttling](/docs/durable-execution/flow-control/throttling?ref=blog-agentic-workflow-example):
 
 ```typescript lib/inngest/functions/generateImportWorkflow.ts
 // imports ...

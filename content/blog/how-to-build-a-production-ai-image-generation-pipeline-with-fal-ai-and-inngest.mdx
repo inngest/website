@@ -25,7 +25,7 @@ For production workloads, fal.ai's recommended approach is their [queue API](htt
 
 But it also creates a natural coordination challenge: the user's request starts in one HTTP call and the result arrives in a separate webhook later.
 
-[step.waitForEvent](/docs/durable-execution/primitives/step-waitforevent) is how Inngest bridges that gap. The function submits to fal.ai, suspends at zero cost, and resumes the moment the webhook result arrives — with no polling, no state table, and no correlation logic to write.
+[step.waitForEvent](/docs/durable-execution/primitives/step-waitforevent?ref=blog-how-to-build-a-production-ai-image-generation-pipeline-with-fal-ai-and-inngest) is how Inngest bridges that gap. The function submits to fal.ai, suspends at zero cost, and resumes the moment the webhook result arrives — with no polling, no state table, and no correlation logic to write.
 
 ## Setting Up the fal.ai Webhook Handler
 
@@ -159,13 +159,13 @@ Each `step.run` is a checkpoint. The result of every step is memoized once it co
 
 ### **Per-user fairness comes from one line of config.**
 
-The `concurrency` key in the function config gives each user their own virtual queue. A user submitting a 500-image batch doesn't delay anyone else's real-time request — Inngest manages per-user queuing dynamically without any additional infrastructure. This is the noisy neighbor problem that every multi-tenant image app runs into eventually. There's a [detailed writeup on how Inngest solves it](https://www.inngest.com/blog/fixing-multi-tenant-queueing-concurrency-problems), and the [concurrency documentation](/docs/durable-execution/flow-control/concurrency) covers stacked limits, plan-tier differentiation, and scope options.
+The `concurrency` key in the function config gives each user their own virtual queue. A user submitting a 500-image batch doesn't delay anyone else's real-time request — Inngest manages per-user queuing dynamically without any additional infrastructure. This is the noisy neighbor problem that every multi-tenant image app runs into eventually. There's a [detailed writeup on how Inngest solves it](https://www.inngest.com/blog/fixing-multi-tenant-queueing-concurrency-problems), and the [concurrency documentation](/docs/durable-execution/flow-control/concurrency?ref=blog-how-to-build-a-production-ai-image-generation-pipeline-with-fal-ai-and-inngest) covers stacked limits, plan-tier differentiation, and scope options.
 
 ### **Observability comes free from the step model.**
 
 Because each step is a named checkpoint, the Inngest dashboard shows a full execution trace for every job: which steps ran, what each returned, how long each took, and exactly where something failed. When a user reports a stuck generation you can see immediately whether the fal.ai job is still in flight, the S3 upload failed, or everything completed. No extra instrumentation needed. [SoundCloud uses this same pattern](https://www.inngest.com/customers/soundcloud) for their video generation pipelines, and execution visibility was central to why they moved to Inngest.
 
-Understanding why step-level memoization works this way is worth reading in depth — the [durable execution documentation](/docs/durable-execution/durable-workflows) and the [principles of durable execution](https://www.inngest.com/blog/principles-of-durable-execution) both go deep on the model.
+Understanding why step-level memoization works this way is worth reading in depth — the [durable execution documentation](/docs/durable-execution/durable-workflows?ref=blog-how-to-build-a-production-ai-image-generation-pipeline-with-fal-ai-and-inngest) and the [principles of durable execution](https://www.inngest.com/blog/principles-of-durable-execution) both go deep on the model.
 
 ## How This Pattern Scales With Your Product
 

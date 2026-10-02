@@ -57,7 +57,7 @@ One confession: the 8-card batch size and the 120ms publish stagger inside each 
 
 ### How Inngest Realtime Works: Typed Streaming from Step to UI
 
-The other reason Inngest earns its keep here is [Realtime](/docs/realtime). Every intermediate result — each card, each salt score, each bracket signal — is published the instant its step resolves, so the UI fills in as the function runs rather than waiting for the whole thing to finish.
+The other reason Inngest earns its keep here is [Realtime](/docs/realtime?ref=blog-how-i-built-an-mtg-deck-analyzer-with-tanstack-start-and-inngest). Every intermediate result — each card, each salt score, each bracket signal — is published the instant its step resolves, so the UI fills in as the function runs rather than waiting for the whole thing to finish.
 
 The way it works: your function publishes to a named channel as each step completes, and your frontend subscribes to that channel. There's no polling, no manually managed WebSocket connection, no separate pub/sub infrastructure. Inngest handles the transport; you just declare what you want to publish and subscribe to.
 

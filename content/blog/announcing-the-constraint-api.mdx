@@ -13,7 +13,7 @@ sidebarCta:
   href: "/sign-up?ref=blog-announcing-the-constraint-api-sidebar"
 ---
 
-**Inngest's [flow control](/docs/durable-execution/flow-control) features (for example [concurrency](/docs/durable-execution/flow-control/concurrency), [throttling](/docs/durable-execution/flow-control/throttling), and [rate limiting](/docs/durable-execution/flow-control/rate-limiting)) are some of the most powerful tools we offer. They let developers tailor function scheduling and execution to their business needs without building multi-tenant rate limiting infrastructure themselves. Today, I'm excited to share how we rebuilt the system behind these features from the ground up: the Constraint API.**
+**Inngest's [flow control](/docs/durable-execution/flow-control?ref=blog-announcing-the-constraint-api) features (for example [concurrency](/docs/durable-execution/flow-control/concurrency?ref=blog-announcing-the-constraint-api), [throttling](/docs/durable-execution/flow-control/throttling?ref=blog-announcing-the-constraint-api), and [rate limiting](/docs/durable-execution/flow-control/rate-limiting?ref=blog-announcing-the-constraint-api)) are some of the most powerful tools we offer. They let developers tailor function scheduling and execution to their business needs without building multi-tenant rate limiting infrastructure themselves. Today, I'm excited to share how we rebuilt the system behind these features from the ground up: the Constraint API.**
 
 ## Why we built this
 
@@ -53,7 +53,7 @@ The Constraint API is not a user-facing change — your function configurations,
 
 - **Lower latency.** Constraint checks are now optimized for sub-10ms end-to-end performance. Because the Constraint API can tell the system exactly _when_ capacity will be available, we avoid unnecessary work. Instead of repeatedly peeking at partitions and discovering there's no capacity, the system now defers intelligently, reducing load across the board.
 - **Greater scale.** The Constraint API can be sharded independently of the queue, allowing us to scale constraint enforcement based on actual demand. We can distribute constraint state across multiple backing stores without affecting queue operations.
-- **Flow control for Durable Endpoints.** With constraints extracted into a standalone service, [Durable Endpoints](/docs/durable-execution/durable-endpoints) can now enforce rate limits, throttling, and concurrency — the same flow control you already use for background functions.
+- **Flow control for Durable Endpoints.** With constraints extracted into a standalone service, [Durable Endpoints](/docs/durable-execution/durable-endpoints?ref=blog-announcing-the-constraint-api) can now enforce rate limits, throttling, and concurrency — the same flow control you already use for background functions.
 - **Better visibility.** Because every capacity decision flows through a single API, we can expose far more detailed information about constraint state. You'll be able to see exactly which constraints are limiting your functions and when capacity is available.
 
 ## Looking ahead: FoundationDB and the next-generation queue

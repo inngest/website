@@ -54,13 +54,13 @@ We've also changed the way the dev server works under the hood. It now better ma
 ### 2025 Updates
 
 **Checkpointing: Near-zero latency for durable workflows (December 2025)**  
-Enable checkpointing to achieve near-zero inter-step latency while maintaining durability. Results show 50% reduction in workflow duration. [View changelog](https://www.inngest.com/changelog/2025-12-10-checkpointing) | [Learn more](/docs/durable-execution/guides-and-advanced/checkpointing)
+Enable checkpointing to achieve near-zero inter-step latency while maintaining durability. Results show 50% reduction in workflow duration. [View changelog](https://www.inngest.com/changelog/2025-12-10-checkpointing) | [Learn more](/docs/durable-execution/guides-and-advanced/checkpointing?ref=blog-release-v0-5-0)
 
 **Dev Server MCP (October 2025)**  
 AI-assisted development workflows with Model Context Protocol. Connect Claude Code, Cursor, and other AI assistants to test and debug functions locally. [View changelog](https://www.inngest.com/changelog/2025-10-27-dev-server-mcp) | [Learn more](/docs/ai-dev-tools/mcp)
 
 **New webhook content types (August 2025)**  
-Support for `x-www-form-urlencoded` and `multipart/form-data` content types. [View changelog](https://www.inngest.com/changelog/2025-08-27-new-webhook-content-types) | [Learn more](/docs/durable-execution/guides-and-advanced/events-and-triggers/receive-webhook-events)
+Support for `x-www-form-urlencoded` and `multipart/form-data` content types. [View changelog](https://www.inngest.com/changelog/2025-08-27-new-webhook-content-types) | [Learn more](/docs/durable-execution/guides-and-advanced/events-and-triggers/receive-webhook-events?ref=blog-release-v0-5-0)
 
 **Realtime support for Python (September 2025)**  
 Build interactive applications that push updates from durable workflows to the browser. [View changelog](https://www.inngest.com/changelog/2025-09-26-python-realtime-beta) | [Read blog](/blog/announcing-realtime)
@@ -78,19 +78,19 @@ Query your events with SQL directly in the Inngest dashboard. [View changelog](h
 Make any API endpoint durable and observable with step.run. Available in Go SDK, TypeScript coming soon. [View changelog](https://www.inngest.com/changelog/2025-09-22-step-run-in-apis-golang) | [Read blog](/blog/launch-week-day-1-unbreakable-apis)
 
 **Advanced Event Search (July 2025)**  
-Advanced event filters using CEL expressions. [View changelog](https://www.inngest.com/changelog/2025-07-23-event-search) | [Learn more](/docs/platform-and-operations/inspect-events-and-runs)
+Advanced event filters using CEL expressions. [View changelog](https://www.inngest.com/changelog/2025-07-23-event-search) | [Learn more](/docs/platform-and-operations/inspect-events-and-runs?ref=blog-release-v0-5-0)
 
 **Singleton Functions: Cancel Mode (June 2025)**  
-New `cancel` mode for Singleton Functions to cancel existing runs and start fresh. [View changelog](https://www.inngest.com/changelog/2025-06-23-singleton-functions-cancel-mode) | [Learn more](/docs/durable-execution/flow-control/singleton)
+New `cancel` mode for Singleton Functions to cancel existing runs and start fresh. [View changelog](https://www.inngest.com/changelog/2025-06-23-singleton-functions-cancel-mode) | [Learn more](/docs/durable-execution/flow-control/singleton?ref=blog-release-v0-5-0)
 
 **Introducing Connect (June 2025)**  
-Persistent outbound connections for lower latency, elastic scaling, and simpler long-running steps. Ideal for container runtimes. [View changelog](https://www.inngest.com/changelog/2025-06-20-connect) | [Learn more](/docs/durable-execution/deploying-functions/connect)
+Persistent outbound connections for lower latency, elastic scaling, and simpler long-running steps. Ideal for container runtimes. [View changelog](https://www.inngest.com/changelog/2025-06-20-connect) | [Learn more](/docs/durable-execution/deploying-functions/connect?ref=blog-release-v0-5-0)
 
 **Datadog metrics export (June 2025)**  
-Export Inngest metrics to Datadog for centralized monitoring and alerting. [View changelog](https://www.inngest.com/changelog/2025-06-13-datadog-metrics-export) | [Learn more](/docs/platform-and-operations/integrations/datadog)
+Export Inngest metrics to Datadog for centralized monitoring and alerting. [View changelog](https://www.inngest.com/changelog/2025-06-13-datadog-metrics-export) | [Learn more](/docs/platform-and-operations/integrations/datadog?ref=blog-release-v0-5-0)
 
 **Singleton Functions (June 2025)**  
-Exclusive execution control for Inngest functions. [View changelog](https://www.inngest.com/changelog/2025-06-06-singleton-functions) | [Learn more](/docs/durable-execution/flow-control/singleton)
+Exclusive execution control for Inngest functions. [View changelog](https://www.inngest.com/changelog/2025-06-06-singleton-functions) | [Learn more](/docs/durable-execution/flow-control/singleton?ref=blog-release-v0-5-0)
 
 **Realtime Updates (May 2025)**  
 Stream updates from Inngest functions to users with secure, low-latency delivery. [View changelog](https://www.inngest.com/changelog/2025-05-19-realtime) | [Read blog](/blog/announcing-realtime)
@@ -99,7 +99,7 @@ Stream updates from Inngest functions to users with secure, low-latency delivery
 Make durable HTTP requests within functions by offloading to the Inngest platform. [View changelog](https://www.inngest.com/changelog/2025-05-09-step-fetch) | [Read blog](/blog/announcing-step-fetch)
 
 **Prometheus metrics export (February 2025)**  
-Export Inngest metrics to Prometheus for existing monitoring systems. [View changelog](https://www.inngest.com/changelog/2025-02-11-prometheus-metrics-export) | [Learn more](/docs/platform-and-operations/integrations/prometheus)
+Export Inngest metrics to Prometheus for existing monitoring systems. [View changelog](https://www.inngest.com/changelog/2025-02-11-prometheus-metrics-export) | [Learn more](/docs/platform-and-operations/integrations/prometheus?ref=blog-release-v0-5-0)
 
 **Webhook management API (February 2025)**  
 Programmatically create, update, and delete webhooks via REST API. [View changelog](https://www.inngest.com/changelog/2025-02-11-webhooks-api) | [Learn more](https://api-docs.inngest.com/v1/webhooks/ListWebhooks)

@@ -270,7 +270,7 @@ To answer those questions, let's have a look under the hood.
 
 ## Durable Functions: under the hood
 
-Durable Function are composed of 2 main components: [Triggers](/docs/durable-execution/guides-and-advanced/events-and-triggers) and [Steps](/docs/durable-execution/durable-workflows).
+Durable Function are composed of 2 main components: [Triggers](/docs/durable-execution/guides-and-advanced/events-and-triggers?ref=blog-nextjs-serverless-vs-durable-functions) and [Steps](/docs/durable-execution/durable-workflows?ref=blog-nextjs-serverless-vs-durable-functions).
 
 Let's start with how Durable Functions get triggered.
 
@@ -288,7 +288,7 @@ Our domain verification Durable Function starts when an `account/verify-domain` 
 
 **The Durable Execution Engine:  how events trigger Durable Functions runs**
 
-Events are sent to a[ Durable Execution Engine (for example, Inngest)](/docs/durable-execution/durable-workflows), which triggers Durable Function runs and manages their steps (like React manages Components and their state).
+Events are sent to a[ Durable Execution Engine (for example, Inngest)](/docs/durable-execution/durable-workflows?ref=blog-nextjs-serverless-vs-durable-functions), which triggers Durable Function runs and manages their steps (like React manages Components and their state).
 
 To be managed by the Durable Execution Engine, the Durable Functions are exposed over HTTP via a dedicated Next.js API Route:
 
@@ -320,7 +320,7 @@ Yet, our workflow still has a last blindspot: a high number of domain verificati
 
 Adding logic to handle this scenario with the CRON code would result in more complexity, not with a Durable Function.
 
-Durable Functions provide [Flow Control](/docs/durable-execution/flow-control) features such as [Rate Limit](/docs/durable-execution/flow-control/rate-limiting), [Priority](/docs/durable-execution/flow-control/priority), or [Throttle](/docs/durable-execution/flow-control/throttling) configuration to help control how runs span in time and avoid reaching the rate limit of third-party API.
+Durable Functions provide [Flow Control](/docs/durable-execution/flow-control?ref=blog-nextjs-serverless-vs-durable-functions) features such as [Rate Limit](/docs/durable-execution/flow-control/rate-limiting?ref=blog-nextjs-serverless-vs-durable-functions), [Priority](/docs/durable-execution/flow-control/priority?ref=blog-nextjs-serverless-vs-durable-functions), or [Throttle](/docs/durable-execution/flow-control/throttling?ref=blog-nextjs-serverless-vs-durable-functions) configuration to help control how runs span in time and avoid reaching the rate limit of third-party API.
 
 Let's add the following line to our Durable Function to add some Throttling configuration:
 

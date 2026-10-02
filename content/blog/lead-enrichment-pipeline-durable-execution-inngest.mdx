@@ -51,10 +51,10 @@ If RevOps teams are already using infrastructure tooling with an attempt to ensu
 
 The gap is the same in both cases: fast execution or a coherent workflow model, but not both.
 
-Inngest is built around [**durable functions**](/docs/durable-execution/durable-workflows)—code that checkpoints after each [step](https://www.inngest.com/docs/reference/typescript/v4/functions/step-run) and resumes from the last successful point after any failure. Three things set it apart for this workload:
+Inngest is built around [**durable functions**](/docs/durable-execution/durable-workflows?ref=blog-lead-enrichment-pipeline-durable-execution-inngest)—code that checkpoints after each [step](https://www.inngest.com/docs/reference/typescript/v4/functions/step-run) and resumes from the last successful point after any failure. Three things set it apart for this workload:
 
 - **No provisioning overhead.** Functions are invoked via HTTP. When work arrives, it executes—no container to spin up, no agent to initialize. Overhead per execution is in the milliseconds, not competing with your actual processing time.
-- **Steps are individually retried and cached.** If firmographic enrichment succeeds but LLM qualification fails, only that step retries. You're not re-calling providers you already paid for. On [replay](/docs/platform-and-operations/replay-runs-in-bulk), completed steps return their cached results—your GPT-4o-mini call happens exactly once per lead.
+- **Steps are individually retried and cached.** If firmographic enrichment succeeds but LLM qualification fails, only that step retries. You're not re-calling providers you already paid for. On [replay](/docs/platform-and-operations/replay-runs-in-bulk?ref=blog-lead-enrichment-pipeline-durable-execution-inngest), completed steps return their cached results—your GPT-4o-mini call happens exactly once per lead.
 - **Concurrency is a control surface, not a capacity limit.** You configure how many steps execute in parallel; Inngest queues everything beyond that and processes it continuously. The limit applies only to *actively executing* steps—runs sleeping or waiting between steps don't consume a slot. Enterprise customers run between 1,000 and 10,000 concurrent steps as a baseline.
 
 ## How to build a durable lead enrichment pipeline
@@ -63,7 +63,7 @@ Let’s start at the source; how you structure the pipeline depends on where enr
 
 #### **If you're calling enrichment providers directly**
 
-Inngest coordinates those API calls—waterfall sequencing, per-provider [concurrency keys](/docs/durable-execution/flow-control/concurrency) to respect rate limits, and independent retry logic per step so a failed Apollo call doesn't re-run a successful Clearbit call. 
+Inngest coordinates those API calls—waterfall sequencing, per-provider [concurrency keys](/docs/durable-execution/flow-control/concurrency?ref=blog-lead-enrichment-pipeline-durable-execution-inngest) to respect rate limits, and independent retry logic per step so a failed Apollo call doesn't re-run a successful Clearbit call. 
 
 #### **If enrichment is already handled upstream**
 
@@ -210,7 +210,7 @@ The concurrency keys do two things: the global limit controls aggregate throughp
 
 **On Vercel,** scaling isn't something you manage. Configure concurrency limits in Inngest, send events, and Vercel handles instance count automatically. The constraint you're managing is your Inngest limit and your downstream API rate limits—not infrastructure capacity.
 
-**On Render, Railway, or self-hosted infrastructure,** use the `connect` [worker model](/docs/durable-execution/deploying-functions/connect). Each worker declares its [`maxWorkerConcurrency`](/docs/durable-execution/deploying-functions/connect#worker-concurrency); Inngest distributes load across workers automatically. Scale your autoscaling group on Inngest backlog depth rather than CPU—a worker handling two-second API calls won't peg CPU, so CPU is a lagging signal. Backlog depth reflects actual work waiting.
+**On Render, Railway, or self-hosted infrastructure,** use the `connect` [worker model](/docs/durable-execution/deploying-functions/connect?ref=blog-lead-enrichment-pipeline-durable-execution-inngest). Each worker declares its [`maxWorkerConcurrency`](/docs/durable-execution/deploying-functions/connect?ref=blog-lead-enrichment-pipeline-durable-execution-inngest#worker-concurrency); Inngest distributes load across workers automatically. Scale your autoscaling group on Inngest backlog depth rather than CPU—a worker handling two-second API calls won't peg CPU, so CPU is a lagging signal. Backlog depth reflects actual work waiting.
 
 ### What debugging looks like
 
