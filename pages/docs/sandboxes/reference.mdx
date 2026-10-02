@@ -87,7 +87,7 @@ Use a stable job-derived name. A matching active name and configuration returns 
 
 Commands, files, logs, and process operations require `RUNNING`. Create waits for `RUNNING` by default, up to 120 seconds. Set `runningTimeout: false` to get the Sandbox ID immediately, then call `waitUntilRunning` separately. A readiness timeout stops the wait; it does not cancel Create or destroy the Sandbox. SDK objects show the state observed by that request; Get or a lifecycle call returns a new object.
 
-Pause and Resume keep the same Sandbox ID, filesystem, memory, environment, and remaining runtime. The current beta allows one hour of active runtime per Sandbox; time spent paused does not consume it. Pause can interrupt external connections. There is no in-place restore from a user snapshot.
+Pause and Resume keep the same Sandbox ID, filesystem, memory, environment, and remaining runtime. The current beta allows one hour of active runtime per Sandbox; time spent paused does not consume it. The runtime timeout requests an automatic Pause; see [Runtime expiry](/docs/sandboxes/limits#runtime-expiry) for the state transition and effects on running commands and processes. Pause can interrupt external connections. There is no in-place restore from a user snapshot.
 
 ## Commands, processes, and files
 
