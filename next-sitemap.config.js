@@ -73,6 +73,9 @@ module.exports = {
     "/docs-markdown/*",
     "/api/*",
     "*/download-gate-form*",
+    // Campaign page still in review — noindex is set on the route too,
+    // and a sitemap entry would contradict it.
+    "/build-long-run",
     // Pages that have been redirected — keep these out of the sitemap.
     // The 301 redirects are defined in next.config.mjs (permanentRedirects).
     // next-sitemap finds the underlying page files and would include these URLs
