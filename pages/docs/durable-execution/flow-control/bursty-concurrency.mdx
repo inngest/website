@@ -1,3 +1,5 @@
+import { BurstyConcurrencySimulator } from "src/shared/Docs/FlowControlMarbles";
+
 export const metaTitle = "Bursty Concurrency";
 export const description = "Use bursty concurrency to temporarily run up to three times your plan's concurrency limit during unexpected spikes in work.";
 
@@ -9,7 +11,7 @@ export const description = "Use bursty concurrency to temporarily run up to thre
 
 Your account concurrency limit is the amount of work that can run at the same time. If your account concurrency limit is 100 concurrency slots, work will fan out across the slots until each is filled. Then a backlog builds.
 
-![Concurrency slots filling before additional work builds a backlog](/assets/docs/durable-execution/flow-control/bursty-concurrency/concurrency-queue.gif)
+<BurstyConcurrencySimulator />
 
 Your plan determines your concurrency limit. See the [billing page in the dashboard for your concurrency](https://app.inngest.com/billing) limit or [pricing](/pricing?ref=docs-bursty-concurrency).
 
