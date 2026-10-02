@@ -167,8 +167,8 @@ export const NYC_CAMPAIGN_CARDS: NycCampaignCard[] = [
     detail: "October 17 · Abingdon Square Park · 9 AM",
     cta: { label: "Founders RC", href: "https://foundersrc.com/" },
     image: {
-      src: "/assets/v1/nyc-long-run/run-club.jpg",
-      alt: "Runners heading up a cobbled street together.",
+      src: "/assets/v1/nyc-long-run/skyline-run.webp",
+      alt: "A runner on the waterfront, facing the Manhattan skyline.",
     },
   },
   {
@@ -176,7 +176,12 @@ export const NYC_CAMPAIGN_CARDS: NycCampaignCard[] = [
     title: "Marathon weekend.",
     body: "The city fills up with people doing something unreasonable for an unreasonably long time. We'll be out there for it.",
     pending: "November 1 · Details to come",
-    mediaNote: "Campaign photo — marathon weekend",
+    image: {
+      src: "/assets/v1/nyc-long-run/campaign-posters.webp",
+      // Describes what the picture shows, not an event that happened —
+      // this is campaign artwork, not documentation of a placement.
+      alt: "Three Build for the Lonng Run posters side by side on a brick wall, a runner blurring past them.",
+    },
   },
 ];
 

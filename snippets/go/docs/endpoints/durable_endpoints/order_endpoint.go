@@ -10,12 +10,9 @@ import (
 	"github.com/inngest/inngestgo/stephttp"
 )
 
-func RegisterRoutes(mux *http.ServeMux) {
-	provider := stephttp.Setup(stephttp.SetupOpts{
-		Domain: "api.example.com", // your API's domain
-	})
-
-	mux.HandleFunc("POST /api/orders", provider.ServeHTTP(handleOrder))
+// steps is the provider from stephttp.Setup, created once at startup.
+func RegisterRoutes(mux *http.ServeMux, steps stephttp.Provider) {
+	mux.HandleFunc("POST /api/orders", steps.HandleFunc(stephttp.FnOpts{}, handleOrder))
 }
 
 func handleOrder(w http.ResponseWriter, r *http.Request) {

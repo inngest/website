@@ -19,7 +19,7 @@ export const TOPICS = [
 ] as const;
 
 export const SORTS = ["DATE", "ALPHABETICAL"] as const;
-export type Sort = (typeof SORTS)[number];
+export type Sort = typeof SORTS[number];
 
 export interface EventItem {
   id: string;
@@ -221,8 +221,46 @@ const CODETV_HACKATHON: EventItem = {
   cta: "View challenge",
 };
 
-/** Open-ended happenings (hackathons, challenges) that aren't a dated upcoming session. */
-export const CURRENT: EventItem[] = [CODETV_HACKATHON];
+// "Build for the Lonng Run" city campaigns. Each card points at the
+// city's landing page, which carries the individual dated events. Both
+// run through the end of November — `endsAt` keeps them in
+// "Current Events" until then instead of going "past" on day one.
+const SF_LONG_RUN: EventItem = {
+  id: "sf-long-run",
+  title: "Build for the Lonng Run: San Francisco",
+  date: "October 1 – November 30, 2026",
+  startsAt: "2026-10-01T00:00:00-07:00",
+  endsAt: "2026-11-30T23:59:59-08:00",
+  location: "SAN FRANCISCO, CA",
+  topics: ["Events"],
+  excerpt:
+    "Find our campaign drink at Corgi Café, run with us, and keep the lonng run going with San Francisco builders.",
+  href: "/sf-long-run?ref=events",
+  image: "/assets/v1/sf-long-run/corgi-cup.png",
+  cta: "See where we're running",
+};
+
+const NYC_LONG_RUN: EventItem = {
+  id: "nyc-long-run",
+  title: "Build for the Lonng Run: New York City",
+  date: "October 1 – November 30, 2026",
+  startsAt: "2026-10-01T00:00:00-04:00",
+  endsAt: "2026-11-30T23:59:59-05:00",
+  location: "NEW YORK, NY",
+  topics: ["Events"],
+  excerpt:
+    "Join Founders Run Club for a morning run, then find us out there for marathon weekend. All paces welcome.",
+  href: "/nyc-long-run?ref=events",
+  image: "/assets/v1/nyc-long-run/campaign-posters.webp",
+  cta: "See where we're running",
+};
+
+/** Open-ended happenings (hackathons, challenges, campaigns) that aren't a dated upcoming session. */
+export const CURRENT: EventItem[] = [
+  CODETV_HACKATHON,
+  SF_LONG_RUN,
+  NYC_LONG_RUN,
+];
 
 export const ALL_EVENTS: EventItem[] = sortEventsByDate([
   {
@@ -410,6 +448,8 @@ export const ALL_EVENTS: EventItem[] = sortEventsByDate([
     imagePosition: "left center",
   },
   CODETV_HACKATHON,
+  SF_LONG_RUN,
+  NYC_LONG_RUN,
 ]);
 
 // ─── Event detail page (/events/sample) ────────────────────────

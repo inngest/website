@@ -1,7 +1,10 @@
 import { appendRef } from "@/utils/v1/ref";
+import { cn } from "@/utils/v1/cn";
+import type { ReactNode } from "react";
 import HoverCardShell from "@/components/v1/sections/shared/HoverCardShell";
 import Section from "@/components/v1/sections/shared/Section";
 import SectionHeader from "@/components/v1/sections/shared/SectionHeader";
+import { HOME_SECTION_TITLE } from "@/components/v1/sections/shared/sectionTitle";
 
 interface Quickstart {
   eyebrow: string;
@@ -9,24 +12,28 @@ interface Quickstart {
   href: string;
 }
 
-// Three language quickstarts, each linking to its docs getting-started
-// guide. (Replaces the old language-picker tablist that swapped one
-// language's Quickstart/AI/Non-AI trio in and out.)
+// Three quickstarts, each linking to its docs getting-started guide.
+// The eyebrow names the SDK language — the one thing that differs
+// between cards — rather than repeating "Quickstart" three times.
 const QUICKSTARTS: Quickstart[] = [
   {
-    eyebrow: "Quickstart",
+    eyebrow: "TypeScript",
     title: "Next.js",
     href: "/docs/getting-started/nextjs-quick-start",
   },
   {
-    eyebrow: "Quickstart",
+    eyebrow: "TypeScript",
     title: "Node.js",
     href: "/docs/durable-execution/quick-start/typescript-quick-start",
   },
   {
-    eyebrow: "Quickstart",
-    title: "Python",
-    href: "/docs/reference/python",
+    // The Python quickstart walks through a FastAPI app (and links the
+    // Flask/Django examples), so the card names the framework like its
+    // TypeScript siblings — and links to the quickstart, not the API
+    // reference.
+    eyebrow: "Python",
+    title: "FastAPI",
+    href: "/docs/getting-started/python-quick-start",
   },
 ];
 
@@ -38,19 +45,25 @@ export default function StartBuilding({
   refTag = "home-start-building",
   // The SF campaign page sets these; the homepage keeps its wording.
   title = "Start Building",
-  body = "Pick a template",
+  body = "Pick a quickstart",
   // The shared section title is uppercase; the SF design sets this
   // heading in sentence case, so it passes `normal-case`.
   titleClassName,
   // Extra classes on the <Section> box — lets a consuming page override
   // the shared vertical rhythm.
   className,
+  // Optional CTA row rendered below the title + lead (title → lead →
+  // buttons reads in order at every width). The homepage passes its
+  // closing "Start free" / "Read the docs" pair here so the page ends
+  // on a conversion step; other consumers leave it out.
+  actions,
 }: {
   refTag?: string;
   title?: string;
   body?: string;
   titleClassName?: string;
   className?: string;
+  actions?: ReactNode;
 } = {}) {
   return (
     <Section
@@ -60,12 +73,17 @@ export default function StartBuilding({
     >
       <SectionHeader
         // Inset at lg to match the cards' px-4 content offset, so the
-        // title/subtitle align with the "QUICKSTART" eyebrow below.
+        // title/subtitle align with the language eyebrow below.
         // Tighter title→subtitle gap than the default 48px v1-stack.
         className="!gap-5 lg:pl-4"
-        titleClassName={`text-balance ${titleClassName ?? ""}`}
+        titleClassName={cn(HOME_SECTION_TITLE, "text-balance", titleClassName)}
         title={title}
         body={body}
+        actions={
+          actions ? (
+            <div className="flex flex-wrap items-center gap-4">{actions}</div>
+          ) : undefined
+        }
         // Larger heading-sm lead (not the default body-lg-loose);
         // frost since it reads as a sub-heading.
         bodyClassName="text-v1-heading-sm text-v1-frost"

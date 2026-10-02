@@ -45,7 +45,13 @@ interface CustomerLogo {
 // shorter, compact marks (Cubic, Resend, Avoca ~4:1) render taller, so every
 // logo reads at roughly the same visual mass in the strip.
 const LOGOS: CustomerLogo[] = [
-  { name: "Replit", src: "/assets/v1/logos/replit.svg", width: 116, height: 29, dy: 2 },
+  {
+    name: "Replit",
+    src: "/assets/v1/logos/replit.svg",
+    width: 116,
+    height: 29,
+    dy: 2,
+  },
   {
     name: "Cubic",
     src: "/assets/v1/logos/cubic.svg",
@@ -132,6 +138,13 @@ interface LogoStripProps {
    * Default (false) keeps the full-bleed behavior used on the home page.
    */
   contained?: boolean;
+  /**
+   * Optional mono label rendered above the marquee, left-aligned to the
+   * container (e.g. "Trusted in production by"). Gives the strip a
+   * caption so it reads as proof rather than as an unexplained row of
+   * logos.
+   */
+  label?: string;
 }
 
 function LogoMark({
@@ -149,11 +162,13 @@ function LogoMark({
       width={logo.width}
       height={logo.height}
       style={{
-        height: `clamp(${Math.round(logo.height * 0.6)}px, 4vw, ${logo.height}px)`,
+        height: `clamp(${Math.round(logo.height * 0.6)}px, 4vw, ${
+          logo.height
+        }px)`,
         width: "auto",
         transform: logo.dy ? `translateY(${logo.dy}px)` : undefined,
       }}
-      className="shrink-0 opacity-70 motion-safe:transition-opacity motion-safe:duration-300 motion-safe:ease-v1-out group-hover/logo:opacity-100"
+      className="shrink-0 opacity-70 group-hover/logo:opacity-100 motion-safe:transition-opacity motion-safe:duration-300 motion-safe:ease-v1-out"
     />
   );
 
@@ -175,9 +190,7 @@ function LogoMark({
     <Link
       href={href}
       className={className}
-      aria-label={
-        decorative ? undefined : `${logo.name} — Read the case study`
-      }
+      aria-label={decorative ? undefined : `${logo.name} — Read the case study`}
       tabIndex={decorative ? -1 : undefined}
     >
       {img}
@@ -192,7 +205,7 @@ function LogoMark({
       />
       <span
         role="tooltip"
-        className="pointer-events-none absolute left-1/2 top-[calc(100%+8px)] z-10 -translate-x-1/2 whitespace-nowrap rounded-full bg-v1-surfaceElevated px-2.5 py-1 font-v1Label text-[10px] uppercase leading-none tracking-wide text-v1-frost opacity-0 shadow-[0_0_0_1px_rgb(var(--color-v1-border-subtle))] motion-safe:transition-opacity motion-safe:duration-200 motion-safe:ease-v1-out group-hover/logo:opacity-100 group-focus-visible/logo:opacity-100 sm:text-[11px]"
+        className="pointer-events-none absolute left-1/2 top-[calc(100%+8px)] z-10 -translate-x-1/2 whitespace-nowrap rounded-full bg-v1-surfaceElevated px-2.5 py-1 font-v1Label text-[10px] uppercase leading-none tracking-wide text-v1-frost opacity-0 shadow-[0_0_0_1px_rgb(var(--color-v1-border-subtle))] group-hover/logo:opacity-100 group-focus-visible/logo:opacity-100 motion-safe:transition-opacity motion-safe:duration-200 motion-safe:ease-v1-out sm:text-[11px]"
       >
         Read the case study
       </span>
@@ -200,7 +213,10 @@ function LogoMark({
   );
 }
 
-export default function LogoStrip({ contained = false }: LogoStripProps) {
+export default function LogoStrip({
+  contained = false,
+  label,
+}: LogoStripProps) {
   // Soft 120px fade at both horizontal edges so logos drift in/out of view
   // instead of hard-cutting. `[--mask]` keeps both the standard and the
   // legacy WebKit variant in one place.
@@ -210,7 +226,7 @@ export default function LogoStrip({ contained = false }: LogoStripProps) {
   const strip = (
     <section
       aria-label="Trusted by"
-      className="group/strip relative mt-2.5 overflow-hidden py-10 lg:mt-0 lg:py-14"
+      className="group/strip relative mt-0 overflow-hidden py-8 lg:flex lg:h-[110px] lg:items-center lg:py-0"
       // The horizontal edge gradient lives on this fixed-width clip window —
       // NOT on the moving track — so the 120px fade maps to the visible left/
       // right edges. On the track the mask would scroll with it and the fade
@@ -222,7 +238,7 @@ export default function LogoStrip({ contained = false }: LogoStripProps) {
           top 96px; horizontal edge mask is applied on the section. */}
       <span
         aria-hidden="true"
-        className="pointer-events-none absolute inset-x-0 top-0 z-0 h-24 bg-gradient-to-b from-v1-canvasBase/40 to-transparent"
+        className="from-v1-canvasBase/40 pointer-events-none absolute inset-x-0 top-0 z-0 h-24 bg-gradient-to-b to-transparent"
       />
       {/* Pause is gated to hovering an actual logo (`group/strip:has(.logo-item:hover)`)
           rather than anywhere in the section, so passive cursor
@@ -234,9 +250,7 @@ export default function LogoStrip({ contained = false }: LogoStripProps) {
           second copy butts seamlessly against the first at every loop reset
           — a single flex-gap row would leave a half-gap of empty space at
           the seam since the duplicated track has one fewer gap than logos. */}
-      <div
-        className="relative flex w-max items-center motion-safe:animate-[v1-logo-marquee_40s_linear_infinite] motion-safe:group-[:has(.logo-item:hover)]/strip:[animation-play-state:paused]"
-      >
+      <div className="relative flex w-max items-center motion-safe:animate-[v1-logo-marquee_40s_linear_infinite] motion-safe:group-[:has(.logo-item:hover)]/strip:[animation-play-state:paused]">
         {[0, 1].map((copy) => (
           <div
             key={copy}
@@ -256,14 +270,28 @@ export default function LogoStrip({ contained = false }: LogoStripProps) {
     </section>
   );
 
-  if (!contained) return strip;
+  const caption = label ? (
+    <p className="text-v1-label-sm uppercase text-v1-frost/60">{label}</p>
+  ) : null;
+
+  if (!contained)
+    return (
+      <>
+        {caption}
+        {strip}
+      </>
+    );
 
   // Centered to the shared page container so the row aligns with sibling
   // sections; the section's own overflow clips the marquee to this
-  // width and the edge gradient fades at the container boundary.
+  // width and the edge gradient fades at the container boundary. A
+  // hairline above separates the proof row from the hero copy.
   return (
-    <div className="mx-auto w-full max-w-[1440px] px-6 lg:px-8">
-      {strip}
+    <div className="mx-auto w-full max-w-[1440px] px-6 sm:px-9 lg:px-8">
+      <div className="border-t border-v1-frost/[0.08] pt-6 lg:pt-8">
+        {caption}
+        {strip}
+      </div>
     </div>
   );
 }

@@ -423,6 +423,18 @@ const sectionReference: (NavGroup | NavLink)[] = [
     links: [
       { title: "Introduction", href: `/docs/reference/go` },
       {
+        title: "Durable Workflows",
+        href: `/docs/reference/go/durable-workflows`,
+      },
+      {
+        title: "Durable Endpoints",
+        href: `/docs/reference/go/durable-endpoints`,
+      },
+      {
+        title: "Development and production",
+        href: `/docs/reference/go/dev-and-production`,
+      },
+      {
         title: "Package reference",
         href: "https://pkg.go.dev/github.com/inngest/inngestgo",
       },
