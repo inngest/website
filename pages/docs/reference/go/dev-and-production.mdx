@@ -1,0 +1,73 @@
+import { Callout } from "src/shared/Docs/mdx";
+
+export const metaTitle = "Development and Production | Go SDK Reference";
+export const description = "Run the Inngest Go SDK against the local Dev Server or Inngest Cloud. Turn on dev mode with INNGEST_DEV, and set signing and event keys for production.";
+
+# Development and production
+
+> Run your app against the local Dev Server, then deploy it to Inngest Cloud.
+
+The Go SDK runs in one of two modes:
+
+- **Dev mode** connects to the local [Dev Server](/docs/local-development). Use it on your machine and in CI.
+- **Cloud mode** connects to Inngest Cloud. This is the default, so a deployed app never trusts unsigned requests by accident.
+
+## Turn on dev mode
+
+Set the `INNGEST_DEV` environment variable, then start the Dev Server:
+
+```shell
+INNGEST_DEV=1 go run .
+```
+
+```shell
+npx --ignore-scripts=false inngest-cli@latest dev -u http://localhost:8080/api/inngest
+```
+
+`INNGEST_DEV=1` uses the Dev Server at `http://127.0.0.1:8288`. To use a Dev Server at another address, set `INNGEST_DEV` to its URL, for example `INNGEST_DEV=http://192.168.1.254:8288`.
+
+<Callout variant="warning">
+Any value turns on dev mode, including `0` and `false`. To use cloud mode, leave `INNGEST_DEV` unset.
+</Callout>
+
+To choose the mode in code instead, set `ClientOpts.Dev`. It overrides `INNGEST_DEV`:
+
+```go
+!snippet:path=snippets/go/docs/reference/dev_and_production/dev_mode_option.go
+```
+
+[Durable Endpoints](/docs/reference/go/durable-endpoints) read only `INNGEST_DEV`, because `stephttp.Setup` doesn't use the client. To point a provider at another Inngest API, set `stephttp.SetupOpts.Optional.BaseURL`.
+
+## What changes between modes
+
+| | Dev mode | Cloud mode |
+| --- | --- | --- |
+| Inngest API and event API | The Dev Server, `http://127.0.0.1:8288` by default | `https://api.inngest.com` and `https://inn.gs` |
+| Requests from Inngest | Not verified | Must have a valid signature from your signing key |
+| Signing key | Not needed | Required to serve functions, connect workers, and run Durable Endpoints |
+| Event key | Not needed to send events | Required to send events |
+| Unauthenticated syncs | Allowed | Rejected unless `ServeOpts.EnableUnauthedSync` is set |
+
+## Deploy to production
+
+Before you deploy, set these environment variables, and make sure that `INNGEST_DEV` isn't set:
+
+| Variable | Description |
+| --- | --- |
+| `INNGEST_SIGNING_KEY` | Verifies requests from Inngest and authenticates syncs. Find it in your environment's [signing key settings](https://app.inngest.com/env/production/manage/signing-key). |
+| `INNGEST_SIGNING_KEY_FALLBACK` | Optional. The previous signing key, so that requests keep working while you [rotate keys](/docs/platform-and-operations/signing-keys#rotation). |
+| `INNGEST_EVENT_KEY` | Sends events with `client.Send` and `step.Send`. Create one in your environment's [event keys](https://app.inngest.com/env/production/manage/keys). |
+| `INNGEST_ENV` | Optional. The [branch environment](/docs/platform-and-operations/environments#branch-environments) to use, for example in preview deploys. |
+
+You can also set each value in `inngestgo.ClientOpts`, such as `SigningKey` and `EventKey`. A value set in code takes the place of its environment variable.
+
+Then make your functions available to Inngest:
+
+- **Serve:** deploy the app and [sync it](/docs/platform-and-operations/apps-and-syncs) with the URL of your `client.Serve()` endpoint.
+- **Connect:** start your workers. Each worker syncs itself when it connects.
+
+See [serve or connect your functions](/docs/reference/go/durable-workflows#serve-or-connect-your-functions) for both setups, and [environment variables](/docs/sdk/environment-variables) for every variable the SDK reads.
+
+## Self-hosting
+
+To use a [self-hosted Inngest server](/docs/self-hosting), run in cloud mode and set `INNGEST_BASE_URL` to the server's URL. To use separate hosts for the API and events, set `INNGEST_API_BASE_URL` and `INNGEST_EVENT_API_BASE_URL`, or `ClientOpts.APIBaseURL` and `ClientOpts.EventAPIBaseURL`.
