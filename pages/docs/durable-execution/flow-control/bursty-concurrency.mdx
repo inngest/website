@@ -1,0 +1,48 @@
+export const metaTitle = "Bursty Concurrency";
+export const description = "Use bursty concurrency to temporarily run up to three times your plan's concurrency limit during unexpected spikes in work.";
+export const unreleased = "bursty-concurrency";
+
+# Bursty Concurrency
+
+## Concurrency Limit
+
+[Concurrency](/docs/durable-execution/flow-control/concurrency) is the number of steps actively executing at once.
+
+The concurrency limit is the amount of work that can run at the same time. If your concurrency limit is 100 concurrency slots, work will fan out across the slots until each is filled. Then a backlog builds.
+
+![Concurrency slots filling before additional work builds a backlog](/assets/docs/durable-execution/flow-control/bursty-concurrency/concurrency-queue.gif)
+
+Your plan determines your concurrency limit. See the [billing page in the dashboard for your concurrency](https://app.inngest.com/billing) limit or [pricing](/pricing).
+
+Concurrency slots are shared across all steps, regardless of environment or function.
+
+## Bursty Concurrency
+
+Bursty concurrency allows pro and above users to burst 3x past their concurrency limit, for one hour, once a month.
+
+By running “surprise” work rather building a backlog, Inngest lets you:
+
+1. Keep things moving when unexpected events occur.
+2. Better assess what your monthly concurrency should be set to
+
+Bursty concurrency is rolling out to all users across October 2026.
+
+Concurrency limits you set yourself remain during a burst. [Function-level concurrency](/docs/durable-execution/flow-control/concurrency) still protects rate-limited APIs, and [priority](/docs/durable-execution/flow-control/priority) still keeps your biggest customers fast.
+
+## Example
+
+Imagine you are on a plan with a concurrency limit of 100 and normally utilize around 30 concurrency slots. You receive an import that fans out to 250 concurrent steps across 20 minutes.
+
+Previously, you processed the first 100 concurrently, and wait on the next 150. With bursty concurrency, you immediately burst to 300 concurrency slots (3 \* the plan limit of 100), and all 250 steps are processed at once.
+
+## How the burst budget works
+
+Pro and above accounts get one hour of burst per month. The burst budget is measured in whole minutes. You spend one whole minute for each minute you utilize burst concurrency. Spend 30m today and the other 30m next week: you decide. When you’ve exhausted the burst budget, you return to your plan limit, until the burst budget refills.
+
+The burst budget refills monthly at a fixed time.
+
+Inngest will send email notifications to admins when 25%, 50%, 75%, and 100% of the budget has been exhausted.
+
+## What to do with that number
+
+Occasional bursting means that bursty concurrency is doing its job. If notifications keep arriving, or you exhaust the burst budget, your workload has outgrown your concurrency limit. Upgrade to the peak you burst to, from billing. If that peak is above 1,000, the Pro maximum, talk to us about Enterprise.
