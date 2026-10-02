@@ -12,7 +12,7 @@ Pause a Sandbox while a job waits for review, then resume it under the same ID w
 
 ## What pause preserves
 
-A Sandbox moves from `RUNNING` through `PAUSING` to `PAUSED`, then through `RESUMING` back to `RUNNING`. Both SDK methods wait for the stable state and return a new Sandbox object. The current beta allows one hour of active runtime per Sandbox. Time spent paused does not consume its remaining runtime.
+A Sandbox moves from `RUNNING` through `PAUSING` to `PAUSED`, then through `RESUMING` back to `RUNNING`. Both SDK methods wait for the stable state and return a new Sandbox object. The current beta allows one hour of active runtime per Sandbox. Time spent paused does not consume its remaining runtime. The runtime timeout requests an automatic Pause; see [Runtime expiry](/docs/sandboxes/limits#runtime-expiry) for the state transition and effects on running commands and processes.
 
 Pause uses a private checkpoint. It is a cold transition, so active external network connections can break. Reconnect those clients after resume. Commands, file operations, logs, and process operations require `RUNNING`. Use the object returned by `resume()` before you continue work.
 
