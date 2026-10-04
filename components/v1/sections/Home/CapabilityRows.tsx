@@ -466,8 +466,12 @@ function DocsCue({ href }: { href: string }) {
   );
 }
 
-/** How far outside the viewport a video starts loading its source. */
-const ATTACH_MARGIN = "300px 0px";
+/** How far outside the viewport a video starts loading its source.
+ * One viewport height ahead, so a quick scroll rarely outruns the first
+ * frame. The first capability row sits well over two viewports down at
+ * common sizes (≈2580px at 1440×900, ≈2200px at 375×812), so none of
+ * these clips load on first paint. */
+const ATTACH_MARGIN = "100% 0px";
 
 function isHls(src: string) {
   return /\.m3u8(\?.*)?$/i.test(src);
