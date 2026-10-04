@@ -24,6 +24,10 @@ interface Capability {
   videoSrc?: string;
   /** Seconds to skip at the start of the clip, including each loop. */
   videoStart?: number;
+  /** Still of the clip's first shown frame (at `videoStart` if set),
+   *  painted under the video so the card is never an empty box while
+   *  the clip loads, or when autoplay is blocked / reduced motion is on. */
+  videoPoster?: string;
   docsHref: string;
 }
 
@@ -36,6 +40,7 @@ const CAPABILITIES: Capability[] = [
     body: "No more bespoke instrumentation. Inngest executes your functions, so you get observability by default. Trace every background job, agent, and event from trigger to completion, and use that data to evaluate outcomes on real production traffic.",
     videoSrc:
       "https://cdn.inngest.com/homepage/june-2026-redesign-dashboard-tour-v2.mp4",
+    videoPoster: "/assets/v1/home/posters/observability.webp",
     docsHref: "/docs/platform/monitor/traces",
   },
   {
@@ -46,6 +51,7 @@ const CAPABILITIES: Capability[] = [
     body: "Basic queues don't know what to do when multiple users compete for the same resource. Noisy neighbors, hand-rolled rate limits, wasted compute… Inngest’s flow control ensures every user gets their fair share, without extra work.",
     videoSrc:
       "https://cdn.inngest.com/homepage/june-2026-flow-control-website.mp4",
+    videoPoster: "/assets/v1/home/posters/flow-control.webp",
     docsHref: "/docs/guides/flow-control",
   },
   {
@@ -57,6 +63,7 @@ const CAPABILITIES: Capability[] = [
     videoSrc:
       "https://cdn.inngest.com/videos/homepage-sandbox-demo/sandbox-black/master.m3u8",
     videoStart: 3,
+    videoPoster: "/assets/v1/home/posters/sandbox.webp",
     docsHref: "/docs",
   },
   {
@@ -66,6 +73,7 @@ const CAPABILITIES: Capability[] = [
     icon: "/assets/v1/primitives/icon-4-human-loop.svg",
     body: "How do you know if your agent works? If you want to know which variant actually performed better, you used to have to stitch together data from multiple systems, implement human reviews, and build a layer of instrumentation on top. Inngest captures all of this data by default, so you can add scoring the same way you add retries.",
     videoSrc: "https://cdn.inngest.com/homepage/june-2026-score-website.mp4",
+    videoPoster: "/assets/v1/home/posters/scoring.webp",
     docsHref: "/docs/learn/agent-evals",
   },
 ];
@@ -379,6 +387,8 @@ function Step({
                 src={capability.videoSrc}
                 label={capability.label}
                 startAt={capability.videoStart}
+                poster={capability.videoPoster}
+                posterSizes="(min-width: 1024px) 50vw, 100vw"
                 play={isActive}
                 enabled={enabled}
               />
@@ -410,6 +420,8 @@ function StackedCard({
             src={capability.videoSrc}
             label={capability.label}
             startAt={capability.videoStart}
+            poster={capability.videoPoster}
+            posterSizes="100vw"
             play
             enabled={enabled}
           />
@@ -465,12 +477,18 @@ function RowVideo({
   src,
   label,
   startAt,
+  poster,
+  posterSizes,
   play,
   enabled = true,
 }: {
   src: string;
   label: string;
   startAt?: number;
+  /** Still shown under the video until its first frame paints. */
+  poster?: string;
+  /** `sizes` for the poster's responsive srcset. */
+  posterSizes?: string;
   /** External gate — the video only plays while this is true AND it is
    *  in view. The showcase flips it to the active step. */
   play: boolean;
@@ -592,9 +610,24 @@ function RowVideo({
 
   return (
     <div className="absolute inset-0">
+      {/* A lazy next/image rather than the <video poster> attribute: it
+          gets a responsive WebP from the Vercel optimizer, and copies
+          inside the other breakpoint's display:none layout never load.
+          The video sits above it (relative, later in DOM) and is
+          transparent until it has a frame to paint. */}
+      {poster && (
+        <Image
+          src={poster}
+          alt=""
+          aria-hidden="true"
+          fill
+          sizes={posterSizes}
+          className="object-cover"
+        />
+      )}
       <video
         ref={ref}
-        className="block h-full w-full object-cover"
+        className="relative block h-full w-full object-cover"
         aria-label={`${label} in the Inngest dashboard`}
         loop={startAt == null}
         muted
