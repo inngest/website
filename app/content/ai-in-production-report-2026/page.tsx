@@ -10,7 +10,7 @@ import { HeroGreenPanel } from "./HeroGreenPanel";
 import { ParallaxCard } from "./ParallaxCard";
 import { ScrollToFormButton } from "./ScrollToFormButton";
 import { FindingCTA } from "./FindingCTA";
-import { ScrollIndicator } from "./ScrollIndicator";
+import { ScrollDownCue } from "./ScrollDownCue";
 import { StickyDownloadCTA } from "./StickyDownloadCTA";
 
 const PAGE_TITLE = "AI in Production: The 2026 Benchmark Report";
@@ -61,7 +61,6 @@ export default function Page() {
     <>
       <style>{`.page-banner { display: none; }`}</style>
     <div className="bg-[#212121] text-basis">
-      <ScrollIndicator />
       <StickyDownloadCTA />
       {/* Hero is pinned on desktop; content scrolls up over it. On mobile,
           the hero scrolls normally so logos + form remain accessible. */}
@@ -135,6 +134,7 @@ function Hero() {
               asset="ai-in-production-report-2026"
               redirectTo={CONTENT_ASSETS["ai-in-production-report-2026"].redirectTo}
             />
+            <ScrollDownCue />
           </div>
 
         </div>
