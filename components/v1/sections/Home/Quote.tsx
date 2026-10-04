@@ -1,5 +1,6 @@
 "use client";
 
+import Image from "next/image";
 import { motion } from "motion/react";
 import { reveals } from "@/utils/v1/reveals";
 import ButtonLink from "@/components/v1/ButtonLink";
@@ -12,6 +13,7 @@ import HlsVideo from "@/shared/HlsVideo";
 
 const DX_DEMO_SRC =
   "https://cdn.inngest.com/videos/homepage-product-demo/hls/master.m3u8";
+const DX_DEMO_POSTER = "/assets/v1/home/posters/demo.webp";
 
 /**
  * Product demo — the first section after the hero, and the one
@@ -65,14 +67,25 @@ export default function Quote() {
         <GradientFrame
           variant="black"
           className="rounded-[10px]"
-          innerClassName="aspect-video"
+          innerClassName="relative aspect-video"
         >
+          {/* Still of the demo's first frame under the video, so the
+              frame isn't empty while the stream loads (or if autoplay
+              is blocked). Lazy, and served as WebP by next/image. */}
+          <Image
+            src={DX_DEMO_POSTER}
+            alt=""
+            aria-hidden="true"
+            fill
+            sizes="(min-width: 1280px) 1280px, 100vw"
+            className="object-cover"
+          />
           <HlsVideo
             src={DX_DEMO_SRC}
             loop
             controls
             autoPlay
-            className="block h-full w-full object-cover"
+            className="relative block h-full w-full object-cover"
           />
         </GradientFrame>
       </motion.div>

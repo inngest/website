@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useRef, useState } from "react";
+import Image from "next/image";
 import Link from "next/link";
 import { motion } from "motion/react";
 import { cn } from "@/utils/v1/cn";
@@ -23,6 +24,10 @@ interface Capability {
   videoSrc?: string;
   /** Seconds to skip at the start of the clip, including each loop. */
   videoStart?: number;
+  /** Still of the clip's first shown frame (at `videoStart` if set),
+   *  painted under the video so the card is never an empty box while
+   *  the clip loads, or when autoplay is blocked / reduced motion is on. */
+  videoPoster?: string;
   docsHref: string;
 }
 
@@ -35,6 +40,7 @@ const CAPABILITIES: Capability[] = [
     body: "No more bespoke instrumentation. Inngest executes your functions, so you get observability by default. Trace every background job, agent, and event from trigger to completion, and use that data to evaluate outcomes on real production traffic.",
     videoSrc:
       "https://cdn.inngest.com/homepage/june-2026-redesign-dashboard-tour-v2.mp4",
+    videoPoster: "/assets/v1/home/posters/observability.webp",
     docsHref: "/docs/platform/monitor/traces",
   },
   {
@@ -45,6 +51,7 @@ const CAPABILITIES: Capability[] = [
     body: "Basic queues don't know what to do when multiple users compete for the same resource. Noisy neighbors, hand-rolled rate limits, wasted compute… Inngest’s flow control ensures every user gets their fair share, without extra work.",
     videoSrc:
       "https://cdn.inngest.com/homepage/june-2026-flow-control-website.mp4",
+    videoPoster: "/assets/v1/home/posters/flow-control.webp",
     docsHref: "/docs/guides/flow-control",
   },
   {
@@ -56,6 +63,7 @@ const CAPABILITIES: Capability[] = [
     videoSrc:
       "https://cdn.inngest.com/videos/homepage-sandbox-demo/sandbox-black/master.m3u8",
     videoStart: 3,
+    videoPoster: "/assets/v1/home/posters/sandbox.webp",
     docsHref: "/docs",
   },
   {
@@ -65,6 +73,7 @@ const CAPABILITIES: Capability[] = [
     icon: "/assets/v1/primitives/icon-4-human-loop.svg",
     body: "How do you know if your agent works? If you want to know which variant actually performed better, you used to have to stitch together data from multiple systems, implement human reviews, and build a layer of instrumentation on top. Inngest captures all of this data by default, so you can add scoring the same way you add retries.",
     videoSrc: "https://cdn.inngest.com/homepage/june-2026-score-website.mp4",
+    videoPoster: "/assets/v1/home/posters/scoring.webp",
     docsHref: "/docs/learn/agent-evals",
   },
 ];
@@ -157,8 +166,10 @@ function BlueSlab() {
       aria-hidden="true"
       className="pointer-events-none absolute -bottom-[6rem] -top-[13rem] left-1/2 w-screen -translate-x-1/2 overflow-hidden bg-v1-accent-blue sm:-top-[16rem] lg:-bottom-[9rem] lg:-top-[26rem]"
     >
-      {/* eslint-disable-next-line @next/next/no-img-element */}
-      <img
+      {/* next/image: lazy by default (so React doesn't emit a preload for
+          this below-the-fold texture) and served by the Vercel image
+          optimizer as WebP (~100 KB) instead of the 1.5 MB source PNG. */}
+      <Image
         src="/assets/v1/home/figma-blue-band.png"
         alt=""
         width={1311}
@@ -376,6 +387,8 @@ function Step({
                 src={capability.videoSrc}
                 label={capability.label}
                 startAt={capability.videoStart}
+                poster={capability.videoPoster}
+                posterSizes="(min-width: 1024px) 50vw, 100vw"
                 play={isActive}
                 enabled={enabled}
               />
@@ -407,6 +420,8 @@ function StackedCard({
             src={capability.videoSrc}
             label={capability.label}
             startAt={capability.videoStart}
+            poster={capability.videoPoster}
+            posterSizes="100vw"
             play
             enabled={enabled}
           />
@@ -451,6 +466,13 @@ function DocsCue({ href }: { href: string }) {
   );
 }
 
+/** How far outside the viewport a video starts loading its source.
+ * One viewport height ahead, so a quick scroll rarely outruns the first
+ * frame. The first capability row sits well over two viewports down at
+ * common sizes (≈2580px at 1440×900, ≈2200px at 375×812), so none of
+ * these clips load on first paint. */
+const ATTACH_MARGIN = "100% 0px";
+
 function isHls(src: string) {
   return /\.m3u8(\?.*)?$/i.test(src);
 }
@@ -459,12 +481,18 @@ function RowVideo({
   src,
   label,
   startAt,
+  poster,
+  posterSizes,
   play,
   enabled = true,
 }: {
   src: string;
   label: string;
   startAt?: number;
+  /** Still shown under the video until its first frame paints. */
+  poster?: string;
+  /** `sizes` for the poster's responsive srcset. */
+  posterSizes?: string;
   /** External gate — the video only plays while this is true AND it is
    *  in view. The showcase flips it to the active step. */
   play: boolean;
@@ -480,17 +508,26 @@ function RowVideo({
   const [inView, setInView] = useState(false);
   const [ready, setReady] = useState(false);
 
-  // Attach the source (hls.js for .m3u8 where native HLS is missing)
-  // and observe visibility. Bound once per source.
+  // Attach the source lazily — only once the video is within
+  // ATTACH_MARGIN of the viewport — and observe visibility. Bound once
+  // per source. A display:none copy (the other breakpoint's layout)
+  // never intersects, so it never attaches a source even if `enabled`
+  // is briefly true during hydration (useIsDesktop reads false on the
+  // first client render).
   useEffect(() => {
     const video = ref.current;
     if (!video || !enabled) return;
     if (window.matchMedia("(prefers-reduced-motion: reduce)").matches) return;
 
     let hls: import("hls.js").default | undefined;
+    let attached = false;
     let cancelled = false;
 
     const attach = async () => {
+      if (attached) return;
+      attached = true;
+      // Native HLS (Safari, iOS, recent desktop Chrome) and plain MP4s
+      // go straight onto the element.
       if (!isHls(src) || video.canPlayType("application/vnd.apple.mpegurl")) {
         video.src = src;
         return;
@@ -501,6 +538,9 @@ function RowVideo({
         hls = new Hls({
           enableWorker: true,
           startPosition: startAt ?? -1,
+          // Pick the rendition for the player's rendered size, not the
+          // connection speed — these cards are never 1080p wide.
+          capLevelToPlayerSize: true,
         });
         hls.loadSource(src);
         hls.attachMedia(video);
@@ -508,7 +548,6 @@ function RowVideo({
         video.src = src;
       }
     };
-    void attach();
 
     const onReady = () => {
       // Park on the clip's first useful frame so a paused card never
@@ -524,19 +563,37 @@ function RowVideo({
     };
     video.addEventListener("loadeddata", onReady);
     if (startAt != null) video.addEventListener("ended", onEnded);
-    if (video.readyState >= 2) onReady();
 
-    const observer = new IntersectionObserver(
+    const loadObserver = new IntersectionObserver(
+      ([entry]) => {
+        if (entry.isIntersecting) void attach();
+      },
+      { rootMargin: ATTACH_MARGIN }
+    );
+    loadObserver.observe(video);
+
+    const playObserver = new IntersectionObserver(
       ([entry]) => setInView(entry.isIntersecting),
       { threshold: 0.25 }
     );
-    observer.observe(video);
+    playObserver.observe(video);
+
     return () => {
       cancelled = true;
-      observer.disconnect();
+      loadObserver.disconnect();
+      playObserver.disconnect();
       video.removeEventListener("loadeddata", onReady);
       video.removeEventListener("ended", onEnded);
       hls?.destroy();
+      // Detach whatever source was set directly (MP4 / native HLS) so
+      // the browser drops the connection and its buffer. hls.destroy()
+      // only covers the hls.js path.
+      if (attached) {
+        video.pause();
+        video.removeAttribute("src");
+        video.load();
+      }
+      setReady(false);
     };
   }, [src, startAt, enabled]);
 
@@ -557,9 +614,24 @@ function RowVideo({
 
   return (
     <div className="absolute inset-0">
+      {/* A lazy next/image rather than the <video poster> attribute: it
+          gets a responsive WebP from the Vercel optimizer, and copies
+          inside the other breakpoint's display:none layout never load.
+          The video sits above it (relative, later in DOM) and is
+          transparent until it has a frame to paint. */}
+      {poster && (
+        <Image
+          src={poster}
+          alt=""
+          aria-hidden="true"
+          fill
+          sizes={posterSizes}
+          className="object-cover"
+        />
+      )}
       <video
         ref={ref}
-        className="block h-full w-full object-cover"
+        className="relative block h-full w-full object-cover"
         aria-label={`${label} in the Inngest dashboard`}
         loop={startAt == null}
         muted
