@@ -9,21 +9,24 @@ import { tweens } from "@/utils/v1/springs";
 import { cn } from "@/utils/v1/cn";
 
 /**
- * /platform/sandboxes hero — the real Sandboxes playground, embedded.
+ * /platform/sandboxes hero — the Sandboxes playground, embedded and
+ * abbreviated.
  *
  * The playground (inngest/sandboxes-playground) is a separate app served
- * under /try-sandboxes through a rewrite, so the same-origin iframe below
- * IS the product demo, 1:1: choose a command or a failure to inject,
- * press Run, watch the Inngest run and its trace unfold, click steps,
- * read the output, switch to the code tabs. The `?embed=1` flag asks the
- * playground to drop its own header, sidebar, page chrome and control
- * bar, start the run by itself, report its content height so the frame
- * fits without a scrollbar, and restart when this page posts
+ * under /try-sandboxes through a rewrite, so the iframe below IS the
+ * product: a real Inngest run with its trace unfolding, steps you can
+ * click for input/output, and the command output underneath. Its hero
+ * embed level (`?embed=hero`) keeps just that — trace plus outcome — and
+ * paints no background of its own, so the frame takes on this card's
+ * surface instead of reading as a second app pasted onto the page. It
+ * also reports its content height so the frame fits without a scrollbar,
+ * starts the run by itself, and restarts when this page posts
  * `try-sandboxes:replay`.
  *
- * Above the embed: a compact headline block on the brand-blue panel and
- * a segmented control that swaps which scenario the frame shows, plus a
- * link to the full playground for that scenario.
+ * Everything the visitor controls lives in the card's own title bar:
+ * which scenario plays, a one-line caption for it, replay, and the link
+ * to the full playground. The card breaks out of the brand-blue headline
+ * panel so headline and demo read as one composition.
  */
 
 const SIGNUP_URL = "/sign-up?ref=sandboxes";
@@ -43,25 +46,31 @@ const SCENARIOS = [
   {
     id: "create",
     label: "Create a sandbox",
-    blurb:
-      "Create a microVM, run a command, destroy it. Four steps, one trace.",
+    short: "Create",
+    caption:
+      "A microVM created, a command run, the VM destroyed. Four steps, one trace.",
   },
   {
     id: "durability",
-    label: "Durability",
-    blurb: "Crash mid-run. Retry. Same sandbox, no lost work.",
+    label: "Survive a crash",
+    short: "Crash",
+    caption:
+      "The function dies mid-run. The retry picks up the same sandbox; no work is lost.",
   },
   {
     id: "ci",
-    label: "CI pipeline",
-    blurb:
-      "One machine per job, cloned from a snapshot. Jobs that pass never rerun.",
+    label: "Run a CI pipeline",
+    short: "CI",
+    caption:
+      "One machine per job, cloned from a snapshot. Jobs that already passed never rerun.",
   },
 ] as const;
 type ScenarioId = typeof SCENARIOS[number]["id"];
 
-const FRAME_MIN_H = 720;
-const FRAME_MAX_H = 1400;
+// The frame follows the playground's reported content height inside
+// these bounds; past the max the playground scrolls inside the frame.
+const FRAME_MIN_H = 360;
+const FRAME_MAX_H = 680;
 
 const entry = (delayMs: number) => ({
   initial: { opacity: 0, y: 14 },
@@ -79,7 +88,7 @@ export default function Hero() {
     () => SCENARIOS.find((s) => s.id === scenario) ?? SCENARIOS[0],
     [scenario]
   );
-  const frameSrc = `${PLAYGROUND_BASE}/${current.id}?embed=1`;
+  const frameSrc = `${PLAYGROUND_BASE}/${current.id}?embed=hero`;
   const fullHref = `/try-sandboxes/${current.id}?ref=sandboxes-hero`;
 
   // Tell the fixed header there is a blue panel under it (see heroNav).
@@ -89,8 +98,7 @@ export default function Hero() {
     return () => clearHeroPanel(token);
   }, []);
 
-  // The playground posts its content height in embed mode; size the
-  // frame to it (clamped) so the demo never needs its own scrollbar.
+  // Size the frame to the playground's reported content height (clamped).
   useEffect(() => {
     const onMessage = (e: MessageEvent) => {
       if (e.source !== frameRef.current?.contentWindow) return;
@@ -123,10 +131,11 @@ export default function Hero() {
       aria-labelledby="sandboxes-hero-headline"
       className="relative w-full overflow-hidden bg-v1-canvasBase"
     >
-      {/* Brand-blue panel behind the headline block, edge to edge. */}
+      {/* Brand-blue panel behind the headline; the demo card breaks out of
+          its bottom edge. */}
       <div
         aria-hidden="true"
-        className="pointer-events-none absolute inset-x-0 top-0 h-[560px] overflow-hidden bg-v1-accent-blue lg:h-[520px]"
+        className="pointer-events-none absolute inset-x-0 top-0 h-[560px] overflow-hidden bg-v1-accent-blue lg:h-[600px]"
       >
         {/* eslint-disable-next-line @next/next/no-img-element */}
         <img
@@ -136,7 +145,7 @@ export default function Hero() {
         />
       </div>
 
-      <div className="relative z-10 mx-auto flex w-full max-w-[1440px] flex-col px-6 pt-[104px] sm:px-9 lg:px-8 lg:pt-[128px]">
+      <div className="relative z-10 mx-auto flex w-full max-w-[1440px] flex-col px-6 pt-[104px] sm:px-9 lg:px-8 lg:pt-[120px]">
         {/* Headline block */}
         <div className="grid grid-cols-1 gap-8 lg:grid-cols-[minmax(0,7fr)_minmax(0,5fr)] lg:items-end lg:gap-x-16">
           <div className="flex flex-col gap-6">
@@ -162,10 +171,9 @@ export default function Hero() {
             </h1>
           </div>
           <motion.div {...entry(320)} className="flex flex-col gap-6 lg:pb-2">
-            <p className="text-v1-body-lg max-w-[480px] !text-v1-frost">
+            <p className="text-v1-body-lg max-w-[460px] !text-v1-frost">
               Your sandbox is a durable step, as easy to set up as any other.
-              When it fails, or has to wait, you don&rsquo;t lose the run. Try
-              it below: everything plays in your browser.
+              When it fails, or has to wait, you don&rsquo;t lose the run.
             </p>
             <div className="flex flex-col gap-[23px] sm:flex-row sm:items-center">
               <ButtonLink href={SIGNUP_URL} prefetch={false} variant="primary">
@@ -182,16 +190,16 @@ export default function Hero() {
           </motion.div>
         </div>
 
-        {/* Scenario control + full-playground link */}
+        {/* The demo card: title bar with the controls, then the playground. */}
         <motion.div
           {...entry(440)}
-          className="mt-12 flex flex-col gap-4 lg:mt-16 lg:flex-row lg:items-end lg:justify-between"
+          className="mb-16 mt-10 overflow-hidden rounded-[10px] border border-v1-frost/[0.14] bg-v1-surfaceBase shadow-[0_40px_120px_-40px_rgb(0_0_0/0.9)] lg:mb-24 lg:mt-14"
         >
-          <div className="flex flex-col gap-3">
+          <div className="flex flex-wrap items-center gap-x-6 gap-y-3 border-b border-v1-subtle px-4 py-3 sm:px-5">
             <div
               role="tablist"
               aria-label="Playground scenarios"
-              className="flex flex-wrap gap-2"
+              className="inline-flex gap-1 rounded-md border border-v1-subtle bg-v1-canvasBase p-1"
             >
               {SCENARIOS.map((s) => {
                 const active = s.id === scenario;
@@ -203,80 +211,80 @@ export default function Hero() {
                     aria-selected={active}
                     onClick={() => select(s.id)}
                     className={cn(
-                      "text-v1-label-sm h-9 rounded-md border px-3 uppercase focus:outline-none focus-visible:ring-2 focus-visible:ring-v1-frost/60 motion-safe:transition-colors motion-safe:duration-200",
+                      "text-v1-label-sm h-8 rounded-[4px] px-3 uppercase focus:outline-none focus-visible:ring-2 focus-visible:ring-v1-frost/60 motion-safe:transition-colors motion-safe:duration-200",
                       active
-                        ? "border-v1-frost bg-v1-frost text-v1-jetBlack"
-                        : "border-v1-frost/50 text-v1-frost hover:border-v1-frost"
+                        ? "bg-v1-frost text-v1-jetBlack"
+                        : "text-v1-frost/70 hover:bg-v1-frost/10 hover:text-v1-frost"
                     )}
                   >
-                    {s.label}
+                    <span className="sm:hidden">{s.short}</span>
+                    <span className="hidden sm:inline">{s.label}</span>
                   </button>
                 );
               })}
             </div>
             <p
               key={current.id}
-              className="text-v1-body-sm max-w-[560px] !text-v1-frost/80 motion-safe:animate-v1-nav-pop"
+              className="text-v1-body-sm order-last min-w-0 basis-full !text-v1-subtle motion-safe:animate-v1-nav-pop xl:order-none xl:flex-1 xl:basis-0 xl:truncate"
             >
-              {current.blurb}
+              {current.caption}
             </p>
-          </div>
-          <div className="text-v1-label-md flex flex-wrap items-center gap-x-6 gap-y-2 uppercase text-v1-frost">
-            <button
-              type="button"
-              onClick={replay}
-              className="group/cta inline-flex items-center gap-2 hover:opacity-70 focus:outline-none focus-visible:underline motion-safe:transition-opacity motion-safe:duration-200"
-            >
-              <span
-                aria-hidden="true"
-                className="inline-block group-hover/cta:-rotate-90 motion-safe:transition-transform motion-safe:duration-300"
+            <div className="text-v1-label-sm ml-auto flex items-center gap-5 uppercase text-v1-frost">
+              <button
+                type="button"
+                onClick={replay}
+                className="group/cta inline-flex items-center gap-2 hover:opacity-70 focus:outline-none focus-visible:underline motion-safe:transition-opacity motion-safe:duration-200"
               >
-                ↻
-              </span>
-              Replay
-            </button>
-            <a
-              href={fullHref}
-              className="group/cta inline-flex w-fit items-center hover:opacity-70 motion-safe:transition-opacity motion-safe:duration-200"
-            >
-              Open the full playground
-              <span
-                aria-hidden="true"
-                className="ml-2 inline-block group-hover/cta:translate-x-[6px] motion-safe:transition-transform motion-safe:duration-[400ms] motion-safe:ease-v1-in"
+                <span
+                  aria-hidden="true"
+                  className="inline-block group-hover/cta:-rotate-90 motion-safe:transition-transform motion-safe:duration-300"
+                >
+                  ↻
+                </span>
+                Replay
+              </button>
+              <a
+                href={fullHref}
+                className="group/cta inline-flex items-center hover:opacity-70 motion-safe:transition-opacity motion-safe:duration-200"
               >
-                →
-              </span>
-            </a>
+                <span className="hidden sm:inline">Full playground</span>
+                <span className="sm:hidden">Playground</span>
+                <span
+                  aria-hidden="true"
+                  className="ml-2 inline-block group-hover/cta:translate-x-[6px] motion-safe:transition-transform motion-safe:duration-[400ms] motion-safe:ease-v1-in"
+                >
+                  →
+                </span>
+              </a>
+            </div>
           </div>
-        </motion.div>
 
-        {/* The playground, embedded. The frame is the product demo. */}
-        <motion.div
-          {...entry(520)}
-          className="relative mb-14 mt-6 overflow-hidden rounded-[10px] border border-v1-frost/[0.12] bg-v1-surfaceBase shadow-[0_40px_120px_-40px_rgb(0_0_0/0.9)] lg:mb-20"
-          style={{ height: frameH }}
-        >
-          {/* Placeholder until the frame has painted. */}
           <div
-            aria-hidden="true"
-            className={cn(
-              "pointer-events-none absolute inset-0 flex items-center justify-center bg-v1-surfaceBase motion-safe:transition-opacity motion-safe:duration-500",
-              loaded ? "opacity-0" : "opacity-100"
-            )}
+            className="relative motion-safe:transition-[height] motion-safe:duration-300 motion-safe:ease-v1-in"
+            style={{ height: frameH }}
           >
-            <span className="text-v1-label-sm uppercase text-v1-frost/40">
-              Loading the playground…
-            </span>
+            {/* Placeholder until the frame has painted. */}
+            <div
+              aria-hidden="true"
+              className={cn(
+                "pointer-events-none absolute inset-0 z-10 flex items-center justify-center bg-v1-surfaceBase motion-safe:transition-opacity motion-safe:duration-500",
+                loaded ? "opacity-0" : "opacity-100"
+              )}
+            >
+              <span className="text-v1-label-sm uppercase text-v1-frost/40">
+                Loading the run…
+              </span>
+            </div>
+            <iframe
+              key={frameSrc}
+              ref={frameRef}
+              src={frameSrc}
+              title={`Sandboxes playground: ${current.label}`}
+              onLoad={() => setLoaded(true)}
+              className="block h-full w-full bg-transparent"
+              allow="clipboard-write"
+            />
           </div>
-          <iframe
-            key={frameSrc}
-            ref={frameRef}
-            src={frameSrc}
-            title={`Sandboxes playground: ${current.label}`}
-            onLoad={() => setLoaded(true)}
-            className="block h-full w-full"
-            allow="clipboard-write"
-          />
         </motion.div>
       </div>
     </section>
