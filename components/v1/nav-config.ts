@@ -19,6 +19,8 @@ export interface NavMenuItem {
   description?: string;
   /** Leading 24×24 glyph (Platform / Use Cases rows). */
   icon?: NavIconName;
+  /** Compact status chip beside the label (e.g. "Open beta"). */
+  tag?: string;
 }
 
 export interface NavMenuColumn {
@@ -92,6 +94,13 @@ const PLATFORM_MENU: NavMenu = {
       href: "/platform/agent-evals",
       description: "Choose the best variant",
       icon: "agent-evals",
+    },
+    {
+      label: "Sandboxes",
+      href: "/platform/sandboxes",
+      description: "Run code in isolation",
+      icon: "sandboxes",
+      tag: "Open beta",
     },
   ],
   promo: {
@@ -227,16 +236,35 @@ const OPEN_SOURCE_MENU: NavMenu = {
   compact: true,
   items: [
     { label: "inngest/inngest", href: "https://github.com/inngest/inngest" },
-    { label: "inngest/inngest-js", href: "https://github.com/inngest/inngest-js" },
-    { label: "inngest/inngest-py", href: "https://github.com/inngest/inngest-py" },
-    { label: "inngest/inngestgo", href: "https://github.com/inngest/inngestgo" },
-    { label: "inngest/inngest-kt", href: "https://github.com/inngest/inngest-kt" },
-    { label: "inngest/agent-kit", href: "https://github.com/inngest/agent-kit" },
+    {
+      label: "inngest/inngest-js",
+      href: "https://github.com/inngest/inngest-js",
+    },
+    {
+      label: "inngest/inngest-py",
+      href: "https://github.com/inngest/inngest-py",
+    },
+    {
+      label: "inngest/inngestgo",
+      href: "https://github.com/inngest/inngestgo",
+    },
+    {
+      label: "inngest/inngest-kt",
+      href: "https://github.com/inngest/inngest-kt",
+    },
+    {
+      label: "inngest/agent-kit",
+      href: "https://github.com/inngest/agent-kit",
+    },
   ],
 };
 
 export const NAV_PRIMARY: NavItem[] = [
-  { label: "Platform", href: "/platform/durable-execution", menu: PLATFORM_MENU },
+  {
+    label: "Platform",
+    href: "/platform/durable-execution",
+    menu: PLATFORM_MENU,
+  },
   { label: "Use Cases", href: "/ai", menu: USE_CASES_MENU },
   { label: "Customers", href: "/customers" },
   { label: "Resources", href: "/blog", menu: RESOURCES_MENU },
