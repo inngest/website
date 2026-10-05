@@ -254,6 +254,7 @@ export default function Hero() {
   const [hovering, setHovering] = useState(false);
   const [reduced, setReduced] = useState(false);
   const frameRef = useRef<HTMLIFrameElement>(null);
+  const uncoverTimer = useRef<number | undefined>(undefined);
 
   const chapter = useMemo(
     () => CHAPTERS.find((c) => c.id === chapterId) ?? CHAPTERS[0],
@@ -308,6 +309,7 @@ export default function Hero() {
 
   const select = (id: ChapterId) => {
     if (id === chapterId) return;
+    window.clearTimeout(uncoverTimer.current);
     setLoaded(false);
     setFrameH(FRAME_MIN_H);
     setRunState("idle");
@@ -510,8 +512,12 @@ export default function Hero() {
               <div
                 aria-hidden="true"
                 className={cn(
-                  "pointer-events-none absolute inset-0 z-10 flex items-center justify-center bg-v1-surfaceBase motion-safe:transition-opacity motion-safe:duration-500",
-                  loaded ? "opacity-0" : "opacity-100"
+                  "pointer-events-none absolute inset-0 z-10 flex items-center justify-center bg-v1-surfaceBase",
+                  // Appears at once when a chapter switches; only the
+                  // uncover fades.
+                  loaded
+                    ? "opacity-0 motion-safe:transition-opacity motion-safe:duration-500"
+                    : "opacity-100"
                 )}
               >
                 <span className="text-v1-label-sm uppercase text-v1-frost/40">
@@ -523,7 +529,18 @@ export default function Hero() {
                 ref={frameRef}
                 src={frameSrc}
                 title={`Sandboxes playground: ${chapter.title}`}
-                onLoad={() => setLoaded(true)}
+                // The placeholder clears on the frame's first message
+                // (see the message effect), not on load: the load event
+                // fires while the playground still shows its full shell,
+                // before it switches to embed mode. If no message comes
+                // (an older playground build), the fallback uncovers it.
+                onLoad={() => {
+                  window.clearTimeout(uncoverTimer.current);
+                  uncoverTimer.current = window.setTimeout(
+                    () => setLoaded(true),
+                    4000
+                  );
+                }}
                 className="absolute inset-0 block h-full w-full bg-transparent"
                 allow="clipboard-write"
               />
