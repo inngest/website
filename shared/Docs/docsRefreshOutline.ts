@@ -1,5 +1,5 @@
 import type React from "react";
-import { RiBox3Line } from "@remixicon/react";
+import { RiBox3Line, RiFlaskLine } from "@remixicon/react";
 import IconWave from "../Icons/Wave";
 
 export type DocsRefreshPage = {
@@ -750,6 +750,35 @@ export const docsRefreshOutline: DocsRefreshPage[] = [
           {
             title: "Self-host Inngest",
             href: "/docs/platform-and-operations/self-host-inngest",
+          },
+        ],
+      },
+    ],
+  },
+  {
+    title: "Labs",
+    section: true,
+    icon: RiFlaskLine,
+    children: [
+      {
+        title: "About Labs",
+        href: "/docs/labs",
+      },
+      {
+        title: "Inngest CI",
+        href: "/docs/labs/ci",
+        children: [
+          {
+            title: "Overview",
+            href: "/docs/labs/ci/overview",
+          },
+          {
+            title: "Quick start",
+            href: "/docs/labs/ci/quick-start",
+          },
+          {
+            title: "Reference",
+            href: "/docs/labs/ci/reference",
           },
         ],
       },

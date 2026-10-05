@@ -1,0 +1,114 @@
+import { Mermaid } from "src/shared/Docs/Mermaid";
+import { Info } from "shared/Docs/mdx";
+
+export const metaTitle = "Overview | Inngest CI";
+export const description = "Inngest CI overview: pipelines, jobs, and machines. A pipeline is a durable function, each job runs on its own Sandbox, and one run is one trace.";
+
+# Inngest CI overview
+
+> A pipeline is a durable function, each job runs on its own Sandbox, and one run is one trace.
+
+<Info>
+  Inngest CI is an Inngest Labs project: early, moving fast, and shaped by your feedback. [What's Labs?](/docs/labs)
+</Info>
+
+Inngest CI is a lab built on [Sandboxes](/docs/sandboxes/overview), [traces](/docs/platform-and-operations/traces), and [flow control](/docs/durable-execution/flow-control). You describe a pipeline in TypeScript. Inngest starts it when something happens, runs each job on its own machine, saves each finished command, and retries failed steps without rerunning work that passed.
+
+## How a run works
+
+This pipeline runs on every pull request. `base` installs dependencies once. `lint` and `test` each start from a copy of the `base` machine and run in parallel.
+
+```typescript {{ title: "ci/pipelines.ts" }}
+import { github, checkout, from, $ } from "@inngest/ci";
+import { ci } from "./client";
+
+export const pr = ci.pipeline(
+  {
+    id: "pr",
+    on: github.pullRequest(),
+    singleton: { key: "event.data.pull_request.number", mode: "cancel" },
+  },
+  async () => {
+    await Promise.all([lint(), test()]);
+  },
+);
+
+const base = ci.job("base", async () => {
+  await checkout();
+  await $`pnpm install`;
+});
+
+const lint = ci.job("lint", async () => {
+  await from(base);
+  await $`pnpm lint`;
+});
+
+const test = ci.job("test", async () => {
+  await from(base);
+  await $`pnpm test`.retries(1);
+});
+```
+
+`base` runs once, however many jobs start from it. If `pnpm test` exits with a non-zero code, `.retries(1)` runs it again on the same machine, and each attempt is its own step in the trace. If it still fails, the `test` check fails and the run ends. Inngest does not retry a run because a command failed.
+
+If a step fails for another reason, such as a GitHub API 503, Inngest retries that step and replays the saved results. `base`, `lint`, and every finished command do not run again.
+
+<Mermaid
+  wide
+  label="A pull request triggers the pr pipeline. The base job runs on its own machine and Inngest snapshots it. The lint and test jobs start in parallel on copies of that snapshot. The test command fails and runs again on the same machine, while base and lint do not rerun. Every job reports a check, and the whole run is one trace."
+  chart={`flowchart TB
+  E(["Pull request"]):::muted --> P
+  subgraph TRACE["One trace"]
+    P["pr pipeline"]:::accent --> B["base: checkout, pnpm install"]:::info
+    B --> SNAP["Snapshot of base"]:::muted
+    SNAP --> L["lint: pnpm lint"]:::info
+    SNAP --> T["test: pnpm test"]:::info
+    T -. "exit 1" .-> R["Retry pnpm test on the same machine"]:::muted
+  end
+  L --> CL(["Check: pr / lint"]):::muted
+  T --> CT(["Check: pr / test"]):::muted`}
+/>
+
+## Concepts
+
+- A **pipeline** runs when something happens and calls jobs. It is one Inngest function, so every flow control option works on it.
+- A **trigger** starts a pipeline and types its `event`. Triggers include GitHub pull requests and pushes, comments, the merge queue, cron, and manual events.
+- A **job** is a unit of work with its own machine and its own check. You call it like a function.
+- A **command** is a shell command that runs on the job's machine with `` $`…` ``. Each command is a step, so a retry skips commands that already finished.
+- A **machine** is a Sandbox: an ephemeral Linux microVM. A job gets one when it runs its first command.
+
+Only commands run on the machine. The rest of your handler runs in your app, like any Inngest function.
+
+## Reuse work between jobs
+
+`from(job)` starts the current job on a copy of another job's machine. The parent runs once, however many jobs start from it, and each child gets its own isolated copy. Use it to install dependencies once and build on that machine.
+
+A job's `cache` can skip a job when nothing it depends on has changed. When a job's cache key is unchanged, Inngest restores its saved machine instead of running it. See [Reference](/docs/labs/ci/reference#caching).
+
+## See the result
+
+Every run opens in the Inngest dashboard as one trace: the pipeline, each job, each command, and the Sandbox steps behind them.
+
+![The trace of the example pr pipeline in the Inngest Dev Server: pipeline and job checks, cache lookups, then the base job creating its machine, checking out the repository and installing dependencies](/assets/docs/labs/ci/trace.png)
+
+On GitHub, the same run appears as one check for the pipeline and one for each job:
+
+```
+✕ pr             test: `pnpm test` exited with 1
+✓ pr / base      Passed in 41s
+✓ pr / lint      Passed in 22s
+✕ pr / test      `pnpm test` exited with 1
+```
+
+In dev mode, the same transitions print to your terminal.
+
+## Use Inngest steps inside a job
+
+A job is an Inngest function body, so the Inngest step API works inside it. Wrap side effects in `step.run`, because code outside a command can run again when the run resumes. `step.waitForEvent`, `step.sleep`, and `step.invoke` work too, and a wait holds no worker.
+
+## Next steps
+
+- [Quick start](/docs/labs/ci/quick-start) runs this pipeline on the Dev Server.
+- [Reference](/docs/labs/ci/reference) lists every option, trigger, and command method.
+- [Sandboxes overview](/docs/sandboxes/overview) explains the machines that run each job.
+- [Durable steps](/docs/durable-execution/primitives/step-run) explains how Inngest saves and retries work.
