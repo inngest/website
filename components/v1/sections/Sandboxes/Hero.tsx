@@ -1,12 +1,6 @@
 "use client";
 
-import {
-  useEffect,
-  useMemo,
-  useRef,
-  useState,
-  type CSSProperties,
-} from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { motion } from "motion/react";
 import ButtonLink from "@/components/v1/ButtonLink";
 import StatusTag from "@/components/v1/StatusTag";
@@ -138,11 +132,7 @@ const PILL_CLASS: Record<StepStatus, string> = {
   failed: "text-white bg-v1-accent-salmon",
 };
 
-/**
- * The function, with each step's lines lit by the playground's report.
- * The pane has a fixed height and follows the running step the way an
- * editor follows execution, so the lit lines are always in view.
- */
+/** The function, in full, with each step's lines lit by the playground's report. */
 function CodePane({
   chapter,
   steps,
@@ -150,7 +140,6 @@ function CodePane({
   chapter: Chapter;
   steps: StepReport[];
 }) {
-  const preRef = useRef<HTMLPreElement>(null);
   // Group consecutive lines of the same step so the pill sits once, on
   // the group's first line, and the wash covers the whole call.
   const groups = useMemo(() => {
@@ -163,30 +152,6 @@ function CodePane({
     return out;
   }, [chapter]);
 
-  const runningIndex = groups.findIndex((g) => {
-    if (!g.step) return false;
-    const st = stepStatus(g.step, steps).status;
-    return st === "running" || st === "waiting" || st === "failed";
-  });
-
-  useEffect(() => {
-    const pre = preRef.current;
-    if (!pre) return;
-    const el =
-      runningIndex >= 0
-        ? (pre.children[runningIndex] as HTMLElement | undefined)
-        : undefined;
-    const top = el
-      ? el.offsetTop - pre.clientHeight / 2 + el.offsetHeight / 2
-      : 0;
-    pre.scrollTo({
-      top: Math.max(0, top),
-      behavior: window.matchMedia("(prefers-reduced-motion: reduce)").matches
-        ? "auto"
-        : "smooth",
-    });
-  }, [runningIndex]);
-
   return (
     <div className="flex h-full min-w-0 flex-col">
       <div className="text-v1-label-sm flex h-11 shrink-0 items-center gap-2 border-b border-v1-subtle px-4 uppercase text-v1-muted sm:px-5">
@@ -196,10 +161,7 @@ function CodePane({
         />
         {chapter.file}
       </div>
-      <pre
-        ref={preRef}
-        className="scrollbar-none relative min-w-0 flex-1 overflow-auto py-3 font-v1Mono text-[12px] leading-[20px] text-v1-frost/90"
-      >
+      <pre className="scrollbar-none relative min-w-0 flex-1 overflow-x-auto py-3 font-v1Mono text-[12px] leading-[20px] text-v1-frost/90">
         {groups.map((g, gi) => {
           const st = g.step ? stepStatus(g.step, steps) : null;
           const status = st?.status ?? "pending";
@@ -391,7 +353,7 @@ export default function Hero() {
 
       <div className="relative z-10 mx-auto flex w-full max-w-[1440px] flex-col px-6 pb-16 pt-[104px] sm:px-9 lg:px-8 lg:pb-24 lg:pt-[120px]">
         {/* Copy and CTAs, centred */}
-        <div className="mx-auto flex w-full max-w-[760px] flex-col items-center gap-8 text-center">
+        <div className="mx-auto flex w-full max-w-[1040px] flex-col items-center gap-8 text-center">
           <div className="flex flex-col items-center gap-6">
             <motion.div
               {...entry(0)}
@@ -415,7 +377,7 @@ export default function Hero() {
             {...entry(320)}
             className="flex flex-col items-center gap-6"
           >
-            <p className="text-v1-body-lg max-w-[560px] !text-v1-frost">
+            <p className="text-v1-body-lg max-w-[760px] !text-v1-frost">
               Create microVMs inside your Inngest functions. They retry, resume
               after a crash, and show up in the trace like every other step.
               Watch one run:
@@ -522,14 +484,11 @@ export default function Hero() {
             </a>
           </div>
 
-          <div
-            className="grid grid-cols-1 lg:grid-cols-[minmax(0,5fr)_minmax(0,7fr)]"
-            style={{ "--stage-h": `${frameH}px` } as CSSProperties}
-          >
-            <div className="h-[260px] border-b border-v1-subtle lg:h-[var(--stage-h)] lg:border-b-0 lg:border-r">
+          <div className="grid grid-cols-1 lg:grid-cols-[minmax(0,5fr)_minmax(0,7fr)]">
+            <div className="border-b border-v1-subtle lg:border-b-0 lg:border-r">
               <CodePane key={chapter.id} chapter={chapter} steps={steps} />
             </div>
-            <div className="relative min-h-[var(--stage-h)] lg:h-[var(--stage-h)]">
+            <div className="relative" style={{ minHeight: frameH }}>
               {/* Placeholder until the frame has painted. */}
               <div
                 aria-hidden="true"
