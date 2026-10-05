@@ -1,35 +1,29 @@
 export const metaTitle = "Inngest Labs";
-export const description = "Inngest Labs is where we build new projects on the Inngest platform in the open: early, fast-moving, and shaped by your feedback.";
+export const description = "Try new projects built on the Inngest platform. Inngest Labs releases early, open source tools that you can use today, such as Inngest CI.";
 
 # Inngest Labs
 
-> Projects we build on the Inngest platform, in the open, to find out whether they are worth keeping.
+> New projects built on Inngest that you can use today, while they are still taking shape.
 
-Labs is the home for ideas built on top of Inngest. Each lab starts with one person who believes an idea is valuable and sprints on it. We ship it early so you can use it, tell us what works, and help us decide what happens next.
+Labs is where Inngest ships what it is building next. Each lab is a real project on the platform you already use, released early so you can try it, build with it, and see where it goes. Labs projects use [Sandboxes](/docs/sandboxes), [traces](/docs/platform-and-operations/traces), and [flow control](/docs/durable-execution/flow-control), so what you already know about Inngest carries over.
 
-## Why Labs exists
+## Why try a lab
 
-Labs lets us ship fast without whole-company planning. A lab uses the platform you already use, including [Sandboxes](/docs/sandboxes), [traces](/docs/platform-and-operations/traces), and [flow control](/docs/durable-execution/flow-control), so a new idea can reach you quickly. In return, you see it while the design is still open.
+- **Get new capabilities first.** Labs projects solve problems that the platform does not cover yet, such as running CI pipelines as durable functions.
+- **Build on what you know.** Labs use the same runs, traces, and controls as the rest of Inngest.
+- **Your usage matters.** The way people use a lab decides what it becomes.
 
 ## What to expect
 
-- **Early design.** Labs projects are young. APIs may change between 0.x releases.
-- **Fast movement.** The person building a lab reads the feedback and changes the project in response.
-- **A decision.** A lab either **graduates** into the platform or is **retired**.
-
-If a lab graduates, it moves into the main docs as part of the platform. If a lab is retired, we give notice and a migration note, and the code stays open source.
-
-## Shape what we build
-
-Tell us what worked, what did not, and what is missing. The most useful feedback describes the job you were trying to do and where the lab got in the way.
-
-- Open an issue or start a thread on the [inngest-js repository](https://github.com/inngest/inngest-js/issues). {/* TODO(feedback-link): replace with the final feedback destination */}
+- **Fast movement.** Labs change quickly. APIs may change between 0.x releases, so pin the version you use.
+- **A path forward.** A lab can become part of the platform, and then it moves into the main docs. A lab can also be retired. In that case you get notice and a migration path.
+- **Open source.** Lab code stays open source, whatever happens next.
 
 ## Current labs
 
-| Lab | What it does | Built on | Since | Feedback |
-| --- | --- | --- | --- | --- |
-| [Inngest CI](/docs/labs/ci) | Write CI pipelines in TypeScript and run each job on its own Sandbox. | [Sandboxes](/docs/sandboxes), [Traces](/docs/platform-and-operations/traces), [Flow control](/docs/durable-execution/flow-control) | `@inngest/ci` 0.1.0 | [Issues](https://github.com/inngest/inngest-js/issues) {/* TODO(feedback-link) */} |
+| Lab | What it does | Built on | Since |
+| --- | --- | --- | --- |
+| [Inngest CI](/docs/labs/ci) | Write CI pipelines in TypeScript and run each job on its own Sandbox. | [Sandboxes](/docs/sandboxes), [Traces](/docs/platform-and-operations/traces), [Flow control](/docs/durable-execution/flow-control) | `@inngest/ci` 0.1.0 |
 
 ## Next steps
 
