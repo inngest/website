@@ -172,7 +172,7 @@ function CodePane({
                     className={cn(
                       "mt-[7px] inline-block h-1.5 w-1.5 rounded-full motion-safe:transition-colors motion-safe:duration-500",
                       status === "running" || status === "waiting"
-                        ? "bg-v1-accent-salmon motion-safe:animate-pulse"
+                        ? "bg-v1-accent-blue motion-safe:animate-pulse"
                         : status === "done" || status === "memoized"
                         ? "bg-[rgb(var(--color-v1-status-completed-text))]"
                         : status === "failed"
@@ -205,12 +205,6 @@ function CodePane({
                   </div>
                 ))}
               </div>
-              {(status === "running" || status === "waiting") && (
-                <span
-                  aria-hidden="true"
-                  className="absolute inset-y-0 left-0 w-[2px] bg-v1-accent-salmon"
-                />
-              )}
             </div>
           );
         })}
