@@ -23,7 +23,7 @@ Built by hand, that's a state table, a queue that re-triggers the next chunk, re
 
 ## With Inngest
 
-Each `step.run` in an Inngest function is a unit of work whose result is saved as a checkpoint the moment it finishes. In the TypeScript SDK, consecutive steps run back to back in the same request. Tell the SDK how long that request is allowed to last, and it hands the run off before your host cuts it off:
+Each `step.run` in an Inngest function is a unit of work, and Inngest saves its result as a checkpoint the moment it finishes. In the TypeScript SDK, consecutive steps run back to back in the same request. Tell the SDK how long that request is allowed to last, and it hands the run off before your host cuts it off:
 
 ```typescript
 import { Inngest } from "inngest";
@@ -100,7 +100,7 @@ Limits to plan around: each step is bounded by your host's timeout, up to 2 hour
 
 ## Alternative approaches
 
-- **Raise the host's max duration.** Quick, and sometimes enough. It moves the ceiling without removing it, and a job that crosses the new limit still loses everything.
+- **Raise the host's max duration.** Quick, and enough when the job reliably finishes under the new limit.
 - **Move the job to a container or long-running worker.** No request ceiling, but you now run the queue, the worker fleet, and the state handling, and every deploy can interrupt jobs in flight.
 - **Chain invocations yourself.** Save state to a database at the end of each chunk and enqueue the next one. It works, and you've rebuilt checkpointing, per-chunk retries, and run tracing by hand.
 
