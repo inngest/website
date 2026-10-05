@@ -47,15 +47,17 @@ const SUBINK = "#2E2C28";
 const NOISE_BG =
   "url(\"data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='220' height='220'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='2' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E\")";
 
-// In production /try-sandboxes is rewritten to the playground deployment,
-// so the frame is same-origin. Local dev has no rewrite configured, so it
-// falls back to the live site (cross-origin: the demo still plays, but
-// the parent can't read the frame).
+// The playground is proxied under /try-sandboxes by a rewrite that only
+// exists where TRY_SANDBOXES_ORIGIN is configured (production). Preview
+// deployments and local dev have no rewrite, so they use the live site's
+// proxy instead; the frame is then cross-origin, which the postMessage
+// protocol doesn't mind. NEXT_PUBLIC_TRY_SANDBOXES_BASE overrides both
+// (local dev against a local playground).
 const PLAYGROUND_BASE =
   process.env.NEXT_PUBLIC_TRY_SANDBOXES_BASE ??
-  (process.env.NODE_ENV === "development"
-    ? "https://www.inngest.com/try-sandboxes"
-    : "/try-sandboxes");
+  (process.env.NEXT_PUBLIC_VERCEL_ENV === "production"
+    ? "/try-sandboxes"
+    : "https://www.inngest.com/try-sandboxes");
 
 // The frame follows the playground's settled content height inside these
 // bounds; past the max the playground keeps its newest rows in view.
@@ -277,7 +279,7 @@ export default function Hero() {
     [chapterId]
   );
   const frameSrc = `${PLAYGROUND_BASE}/${chapter.id}?embed=hero`;
-  const fullHref = "/try-sandboxes?ref=sandboxes-hero";
+  const fullHref = `${PLAYGROUND_BASE}?ref=sandboxes-hero`;
 
   // Tell the fixed header there is an ivory panel under it (see heroNav).
   useEffect(() => {
