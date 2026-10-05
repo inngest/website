@@ -103,7 +103,7 @@ A few things to note:
 
 **Text response means done.** When the LLM responds with text and no tool calls, the turn is over. No explicit "done" signal needed.
 
-For a step-by-step walkthrough of this pattern, see the [agent tool loop guide](/docs/ai-patterns/agent-tool-loops?ref=blog-your-agent-needs-a-harness-not-a-framework).
+For a step-by-step walkthrough of this pattern, see the [agent tool loop guide](/docs/durable-execution/durable-agents/agent-tool-loops?ref=blog-your-agent-needs-a-harness-not-a-framework).
 
 ## You don't need to build your own tools
 
@@ -254,7 +254,7 @@ When a user sends a new message while the agent is mid-run, what should happen? 
 
 **Opportunity in streaming or mid-loop realtime updates**
 
-Each Inngest step is atomic — it runs, produces a result, and that result is persisted. This project doesn't yet include streaming or leverage [Inngest's realtime](/docs/features/realtime?ref=blog-your-agent-needs-a-harness-not-a-framework) functionality. Telegram and Slack support individual events, but we'd like to layer on a web app and a TUI for this project to explore how to optionally send mid-loop progress updates to a client that supports streaming. There's more to come in future iterations.
+Each Inngest step is atomic — it runs, produces a result, and that result is persisted. This project doesn't yet include streaming or leverage [Inngest's realtime](/docs/realtime?ref=blog-your-agent-needs-a-harness-not-a-framework) functionality. Telegram and Slack support individual events, but we'd like to layer on a web app and a TUI for this project to explore how to optionally send mid-loop progress updates to a client that supports streaming. There's more to come in future iterations.
 
 ## What we're exploring next
 
@@ -262,7 +262,7 @@ Utah's a personal single-player harness that runs locally on your machine or a s
 
 To make it multi-player, we're going to explore [swappable sandboxes, external state and memory](/blog/your-agent-architecture-has-a-half-life?ref=blog-your-agent-needs-a-harness-not-a-framework). This would enable Utah to run on serverless if someone wanted to.
 
-There are a lot of fun UX things we'd like to add built on the Inngest API and our Insights feature to build session monitoring for coding sessions. We will also explore using `step.waitForEvent()` to create [human-in-the-loop approval flows](/docs/ai-patterns/human-in-the-loop?ref=blog-your-agent-needs-a-harness-not-a-framework) when more input is needed.
+There are a lot of fun UX things we'd like to add built on the Inngest API and our Insights feature to build session monitoring for coding sessions. We will also explore using `step.waitForEvent()` to create [human-in-the-loop approval flows](/docs/durable-execution/durable-agents/human-in-the-loop?ref=blog-your-agent-needs-a-harness-not-a-framework) when more input is needed.
 
 The last piece that we're exploring to make this truly “universally triggered” is [enabling Utah to write itself](/blog/agent-loop-architecture?ref=blog-your-agent-needs-a-harness-not-a-framework) — building new agents and workflows, creating new webhooks, and monitoring itself via API. If you're interested, share some ideas on the GitHub repo.
 

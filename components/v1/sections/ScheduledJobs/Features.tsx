@@ -22,13 +22,13 @@ const FEATURES: Feature[] = [
     id: "fan-out-at-scale",
     title: "Fan-out at scale",
     body: <>One cron fans out to many jobs—each with its own retries.</>,
-    docsHref: "/docs/guides/fan-out-jobs",
+    docsHref: "/docs/durable-execution/guides-and-advanced/patterns/fan-out?ref=scheduled-jobs-features",
   },
   {
     id: "serverless-first",
     title: "Infrastructure-agnostic",
     body: <>Runs on your existing deploy. No workers to manage.</>,
-    docsHref: "/docs/platform/deployment",
+    docsHref: "/docs/durable-execution/deploying-functions?ref=scheduled-jobs-features",
   },
   {
     id: "schedule-in-timezones",
@@ -39,25 +39,25 @@ const FEATURES: Feature[] = [
         DST handled for you.
       </>
     ),
-    docsHref: "/docs/guides/scheduled-functions",
+    docsHref: "/docs/durable-execution/guides-and-advanced/events-and-triggers/schedules-and-delayed-starts?ref=scheduled-jobs-features",
   },
   {
     id: "cancel-before-firing",
     title: "Cancel before firing",
     body: <>Cancel a sleeping run when a matching event arrives.</>,
-    docsHref: "/docs/features/inngest-functions/cancellation/cancel-on-events",
+    docsHref: "/docs/durable-execution/guides-and-advanced/cancellation/events?ref=scheduled-jobs-features",
   },
   {
     id: "mix-cron-and-events",
     title: "Mix cron and events",
     body: <>Same function: run on a schedule, or trigger on demand.</>,
-    docsHref: "/docs/features/events-triggers",
+    docsHref: "/docs/durable-execution/guides-and-advanced/events-and-triggers?ref=scheduled-jobs-features",
   },
   {
     id: "full-visibility",
     title: "Full visibility",
     body: <>Step-level traces and failure reasons for every run.</>,
-    docsHref: "/docs/platform/monitor/inspecting-function-runs",
+    docsHref: "/docs/platform-and-operations/inspect-events-and-runs?ref=scheduled-jobs-features",
   },
 ];
 

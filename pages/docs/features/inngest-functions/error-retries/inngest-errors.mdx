@@ -1,6 +1,6 @@
 import { Callout, CodeGroup, Properties, Property, Row, Col, VersionBadge, LanguageSelector, LanguageSection } from "src/shared/Docs/mdx";
 
-export const metaTitle = "Inngest Error Types | RetryAfterError & NonRetryableError"
+export const metaTitle = "RetryAfterError & NonRetriableError Reference"
 export const description = "Inngest SDK error classes: RetryAfterError to control retry timing, NonRetryableError to stop retries immediately, and step-level error handling."
 export const hidePageSidebar = true;
 
@@ -15,7 +15,7 @@ Inngest automatically handles errors and retries for you. You can use standard e
 
 <LanguageSection show="typescript">
 
-All `Error` objects are handled by Inngest and [retried automatically](/docs/features/inngest-functions/error-retries/retries). This includes all standard errors like `TypeError` and custom errors that extend the `Error` class. You can throw errors in the function handler or within a step.
+All `Error` objects are handled by Inngest and [retried automatically](/docs/durable-execution/guides-and-advanced/error-handling/retries). This includes all standard errors like `TypeError` and custom errors that extend the `Error` class. You can throw errors in the function handler or within a step.
 
 ```typescript
 export default inngest.createFunction(
@@ -42,7 +42,7 @@ export default inngest.createFunction(
 
 <LanguageSection show="python">
 
-All thrown Errors are handled by Inngest and [retried automatically](/docs/features/inngest-functions/error-retries/retries). This includes all standard errors like `ValueError` and custom errors that extend the `Exception` class. You can throw errors in the function handler or within a step.
+All thrown Errors are handled by Inngest and [retried automatically](/docs/durable-execution/guides-and-advanced/error-handling/retries). This includes all standard errors like `ValueError` and custom errors that extend the `Exception` class. You can throw errors in the function handler or within a step.
 
 ```python
 @client.create_function(
@@ -62,7 +62,7 @@ async def fn_async(ctx: inngest.Context) -> None:
 
 <LanguageSection show="go">
 
-All Errors returned by your Inngest Functions are handled by Inngest and [retried automatically](/docs/features/inngest-functions/error-retries/retries). 
+All Errors returned by your Inngest Functions are handled by Inngest and [retried automatically](/docs/durable-execution/guides-and-advanced/error-handling/retries). 
 
 ```go
 import (

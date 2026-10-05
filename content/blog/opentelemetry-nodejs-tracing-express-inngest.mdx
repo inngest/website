@@ -10,12 +10,12 @@ category: engineering
 sidebarCta:
   text: "Step timelines, OTel spans, and queue delays in every function run."
   buttonLabel: "Traces docs"
-  href: "/docs/platform/monitor/traces?ref=blog-opentelemetry-nodejs-tracing-express-inngest-sidebar"
+  href: "/docs/platform-and-operations/traces?ref=blog-opentelemetry-nodejs-tracing-express-inngest-sidebar"
 ---
 
 [OpenTelemetry](https://opentelemetry.io/docs/languages/js/) is the standard way to collect traces, metrics, and logs in Node.js. This guide shows how to set up **OpenTelemetry in Node.js** with Express, export spans over OTLP, and extend those traces into background workflows with Inngest.
 
-You will install `@opentelemetry/sdk-node` and `@opentelemetry/exporter-trace-otlp-http`, wire them to Jaeger or any OTLP collector, and link API requests to durable workflow spans you can inspect in [Inngest Traces](/docs/platform/monitor/traces?ref=blog-opentelemetry-nodejs-tracing-express-inngest) and [Observability & Metrics](/docs/platform/monitor/observability-metrics?ref=blog-opentelemetry-nodejs-tracing-express-inngest).
+You will install `@opentelemetry/sdk-node` and `@opentelemetry/exporter-trace-otlp-http`, wire them to Jaeger or any OTLP collector, and link API requests to durable workflow spans you can inspect in [Inngest Traces](/docs/platform-and-operations/traces?ref=blog-opentelemetry-nodejs-tracing-express-inngest) and [Observability & Metrics](/docs/platform-and-operations/metrics?ref=blog-opentelemetry-nodejs-tracing-express-inngest).
 
 <Callout>
 The tutorial source code is [available on GitHub](https://github.com/inngest/nodejs-opentelemetry-example).
@@ -47,7 +47,7 @@ What each package does:
 - **`@opentelemetry/exporter-trace-otlp-http`** — Sends spans to Jaeger, Grafana Tempo, Honeycomb, or any OTLP-compatible collector over HTTP.
 - **`@opentelemetry/auto-instrumentations-node`** — Auto-instruments Express, HTTP, and common libraries (optional but recommended).
 - **Express** — Serves the example API.
-- **Inngest** — Durable background workflows with [Extended Traces](/docs/platform/monitor/traces?ref=blog-opentelemetry-nodejs-tracing-express-inngest#extended-traces).
+- **Inngest** — Durable background workflows with [Extended Traces](/docs/platform-and-operations/traces?ref=blog-opentelemetry-nodejs-tracing-express-inngest).
 
 ### Configure `@opentelemetry/sdk-node`
 
@@ -149,7 +149,7 @@ With `@opentelemetry/sdk-node` and auto-instrumentations, Express handlers and o
 
 ## Trace background workflows with Inngest Extended Traces
 
-Update the Express API to start an onboarding workflow when a user is created. Inngest lets you write [durable workflows](/docs/learn/inngest-functions?ref=blog-opentelemetry-nodejs-tracing-express-inngest) without standing up Redis, workers, or queues yourself:
+Update the Express API to start an onboarding workflow when a user is created. Inngest lets you write [durable workflows](/docs/durable-execution/durable-workflows?ref=blog-opentelemetry-nodejs-tracing-express-inngest) without standing up Redis, workers, or queues yourself:
 
 ```js
 // workflow.js
@@ -194,7 +194,7 @@ export const userOnboarding = inngest.createFunction(
 );
 ```
 
-Inngest [Extended Traces](/docs/platform/monitor/traces?ref=blog-opentelemetry-nodejs-tracing-express-inngest#extended-traces) capture workflow steps, database queries, and HTTP requests as OpenTelemetry spans. Full setup options (including `@inngest/otel`) are in the [OpenTelemetry example docs](/docs/examples/open-telemetry?ref=blog-opentelemetry-nodejs-tracing-express-inngest).
+Inngest [Extended Traces](/docs/platform-and-operations/traces?ref=blog-opentelemetry-nodejs-tracing-express-inngest) capture workflow steps, database queries, and HTTP requests as OpenTelemetry spans. Full setup options (including `@inngest/otel`) are in the [OpenTelemetry example docs](/docs/examples/open-telemetry?ref=blog-opentelemetry-nodejs-tracing-express-inngest).
 
 Trigger the workflow from `POST /users`:
 
@@ -307,7 +307,7 @@ To visualize Express and Inngest spans locally, run [Jaeger](https://www.jaegert
 
     ![Jaeger UI showing OpenTelemetry traces for a Node.js Express API and Inngest workflow spans](/assets/blog/opentelemetry-nodejs-tracing-express-inngest/jaeger-ui.png)
 
-6. **Bonus:** open the [Inngest Dev Server](/docs/local-development?ref=blog-opentelemetry-nodejs-tracing-express-inngest) at `http://127.0.0.1:8288/runs` to inspect the same run with step-level [Traces](/docs/platform/monitor/traces?ref=blog-opentelemetry-nodejs-tracing-express-inngest):
+6. **Bonus:** open the [Inngest Dev Server](/docs/local-development?ref=blog-opentelemetry-nodejs-tracing-express-inngest) at `http://127.0.0.1:8288/runs` to inspect the same run with step-level [Traces](/docs/platform-and-operations/traces?ref=blog-opentelemetry-nodejs-tracing-express-inngest):
 
     ![Inngest DevServer traces view showing OpenTelemetry spans for Node.js background workflows](/assets/blog/opentelemetry-nodejs-tracing-express-inngest/inngest-devserver.png)
 
@@ -315,8 +315,8 @@ To visualize Express and Inngest spans locally, run [Jaeger](https://www.jaegert
 
 OpenTelemetry covers process-level spans. Inngest adds product observability on top:
 
-- **[Traces](/docs/platform/monitor/traces?ref=blog-opentelemetry-nodejs-tracing-express-inngest)** — Interactive timeline per function run: queue delay, step duration, HTTP phases, retries, and Extended Traces / OTel spans.
-- **[Observability & Metrics](/docs/platform/monitor/observability-metrics?ref=blog-opentelemetry-nodejs-tracing-express-inngest)** — Function volume, failure rate, and latency charts across apps without extra instrumentation.
+- **[Traces](/docs/platform-and-operations/traces?ref=blog-opentelemetry-nodejs-tracing-express-inngest)** — Interactive timeline per function run: queue delay, step duration, HTTP phases, retries, and Extended Traces / OTel spans.
+- **[Observability & Metrics](/docs/platform-and-operations/metrics?ref=blog-opentelemetry-nodejs-tracing-express-inngest)** — Function volume, failure rate, and latency charts across apps without extra instrumentation.
 
 Use Jaeger (or your collector) for fleet-wide search; use Inngest when you need to debug a specific durable run end to end.
 
@@ -413,6 +413,6 @@ Use Inngest with Extended Traces so each `step.run()` and nested HTTP/DB work ap
 ## Next steps
 
 - [Sign up for Inngest](https://app.inngest.com/sign-up?ref=blog-opentelemetry-nodejs-tracing-express-inngest) and connect Extended Traces in a few minutes
-- Read [Traces](/docs/platform/monitor/traces?ref=blog-opentelemetry-nodejs-tracing-express-inngest) and [Observability & Metrics](/docs/platform/monitor/observability-metrics?ref=blog-opentelemetry-nodejs-tracing-express-inngest)
+- Read [Traces](/docs/platform-and-operations/traces?ref=blog-opentelemetry-nodejs-tracing-express-inngest) and [Observability & Metrics](/docs/platform-and-operations/metrics?ref=blog-opentelemetry-nodejs-tracing-express-inngest)
 - Follow the full [OpenTelemetry + Inngest setup guide](/docs/examples/open-telemetry?ref=blog-opentelemetry-nodejs-tracing-express-inngest)
 - Clone the [example repo](https://github.com/inngest/nodejs-opentelemetry-example) and run the Jaeger walkthrough locally

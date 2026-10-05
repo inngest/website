@@ -1,6 +1,6 @@
 import { Callout, CodeGroup, Properties, Property, Row, Col, VersionBadge } from "src/shared/Docs/mdx";
 
-export const metaTitle = "Inngest Python Client | inngest.Inngest() Reference"
+export const metaTitle = "Python Client | inngest.Inngest() Reference"
 export const description = "Initialize with your app ID, API key, and environment settings to send events and register functions."
 
 # Inngest client
@@ -27,7 +27,7 @@ inngest_client = inngest.Inngest(
     A unique identifier for your application. We recommend a hyphenated slug.
   </Property>
   <Property name="env" type="str">
-    The environment name. Required only when using [Branch Environments](/docs/platform/environments).
+    The environment name. Required only when using [Branch Environments](/docs/platform-and-operations/environments-and-branch-deploys).
   </Property>
   <Property name="event_api_base_url" type="str">
     Override the default base URL for sending events (`https://inn.gs/`). See also the [`INNGEST_EVENT_API_BASE_URL`](/docs/reference/python/overview/env-vars#inngest-event-api-base-url) environment variable.

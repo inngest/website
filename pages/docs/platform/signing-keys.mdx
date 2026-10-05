@@ -1,12 +1,12 @@
 import { Callout } from "src/shared/Docs/mdx";
 
 
-export const metaTitle = "Inngest Signing Keys | Secure Function Communication"
+export const metaTitle = "Inngest Signing Keys | Secure Requests"
 export const description = "Signing keys authenticate requests between Inngest and your server, preventing unauthorized invocations and replay attacks. Learn how to set and rotate them."
 
 # Signing keys
 
-Inngest uses signing keys to secure communication between Inngest and your servers. The signing key is a _secret_ pre-shared key unique to each [environment](/docs/platform/environments). The signing key adds the following security features:
+Inngest uses signing keys to secure communication between Inngest and your servers. The signing key is a _secret_ pre-shared key unique to each [environment](/docs/platform-and-operations/environments-and-branch-deploys). The signing key adds the following security features:
 
 * **Serve endpoint authentication** - All requests sent to your server are signed with the signing key, ensuring that they originate from Inngest. Inngest SDKs reject all requests that are not authenticated with the signing key.
 * **API authentication** - Requests sent to the Inngest API are signed with the signing key, ensuring that they originate from your server. The Inngest API rejects all requests that are not authenticated with the signing key. For example, when syncing functions with Inngest, the SDK sends function configuration to Inngest's API with the signing key as a bearer token.
@@ -60,7 +60,7 @@ During initial setup, the Vercel integration automatically sets this key, but th
 
 ## Signing keys and branch environments
 
-All [branch environments](/docs/platform/environments#configuring-branch-environments) within your account share a signing key. This enables you to set a single environment variable for preview environments in platforms like [Vercel](/docs/deploy/vercel) or [Netlify](/docs/deploy/netlify) and each platform can dynamically specify the correct branch environment through secondary environment variables.
+All [branch environments](/docs/platform-and-operations/environments-and-branch-deploys) within your account share a signing key. This enables you to set a single environment variable for preview environments in platforms like [Vercel](/docs/durable-execution/deploying-functions/platforms/vercel) or [Netlify](/docs/durable-execution/deploying-functions/platforms/netlify) and each platform can dynamically specify the correct branch environment through secondary environment variables.
 
 ## Further reading
 

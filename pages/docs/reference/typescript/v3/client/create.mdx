@@ -1,6 +1,6 @@
 import { Info, Callout, Properties, Property, Row, Col, CodeGroup, VersionBadge } from "src/shared/Docs/mdx";
 
-export const metaTitle = "Create the Inngest Client | TypeScript SDK v3 Reference"
+export const metaTitle = "Inngest Client | TypeScript SDK v3"
 export const description = "Configure your app ID, API key, event schemas, logger, and environment settings for the Inngest client."
 
 # Create the Inngest Client
@@ -40,10 +40,10 @@ const inngest = new Inngest({
     Override the default (`https://inn.gs/`) base URL for sending events. See also the [`INNGEST_BASE_URL`](/docs/sdk/environment-variables#inngest-base-url) environment variable.
   </Property>
     <Property name="env" type="string">
-    The environment name. Required only when using [Branch Environments](/docs/platform/environments).
+    The environment name. Required only when using [Branch Environments](/docs/platform-and-operations/environments-and-branch-deploys).
   </Property>
   <Property name="eventKey" type="string">
-    An Inngest [Event Key](/docs/events/creating-an-event-key). Alternatively, set the [`INNGEST_EVENT_KEY`](/docs/sdk/environment-variables#inngest-event-key) environment variable.
+    An Inngest [Event Key](/docs/platform-and-operations/keys-and-access). Alternatively, set the [`INNGEST_EVENT_KEY`](/docs/sdk/environment-variables#inngest-event-key) environment variable.
   </Property>
   <Property name="fetch" type="Fetch API compatible interface">
     Override the default
@@ -57,10 +57,10 @@ const inngest = new Inngest({
     signature verification, or force Cloud mode with `false`. Alternatively, set [`INNGEST_DEV`](/docs/sdk/environment-variables#inngest-dev).
   </Property>
   <Property name="logger" type="Logger" version="v2.0.0+">
-    A logger object that provides the following interfaces (`.info()`, `.warn()`, `.error()`, `.debug()`). Defaults to using `console` if not provided. Overwrites [`INNGEST_LOG_LEVEL`](/docs/sdk/environment-variables#inngest-log-level) if set. See [logging guide](/docs/guides/logging) for more details.
+    A logger object that provides the following interfaces (`.info()`, `.warn()`, `.error()`, `.debug()`). Defaults to using `console` if not provided. Overwrites [`INNGEST_LOG_LEVEL`](/docs/sdk/environment-variables#inngest-log-level) if set. See [logging guide](/docs/durable-execution/guides-and-advanced/logging) for more details.
   </Property>
   <Property name="middleware" type="array" version="v2.0.0+">
-    A stack of [middleware](/docs/features/middleware) to add to the client.
+    A stack of [middleware](/docs/durable-execution/guides-and-advanced/middleware) to add to the client.
   </Property>
   <Property name="schemas" type="EventSchemas" version="v2.0.0+">
     Event payload types. See [Defining Event Payload Types](#defining-event-payload-types).

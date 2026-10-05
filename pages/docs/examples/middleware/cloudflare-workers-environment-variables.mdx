@@ -9,7 +9,7 @@ Cloudflare Workers does not set environment variables a global object like Node.
 
 This means accessing environment variables within Inngest function handlers isn't possible without explicitly passing them through from the worker event handler to the Inngest function handler.
 
-We can accomplish this by use the [middleware](/docs/features/middleware) feature for Workers or when using [Hono](/docs/learn/serving-inngest-functions#framework-hono).
+We can accomplish this by use the [middleware](/docs/durable-execution/guides-and-advanced/middleware) feature for Workers or when using [Hono](/docs/learn/serving-inngest-functions#framework-hono).
 
 ## Creating middleware
 

@@ -1,0 +1,70 @@
+import { CodeGroup, Compatibility } from "shared/Docs/mdx";
+import { FlowControlMarbles } from "src/shared/Docs/FlowControlMarbles";
+export const metaTitle = "Throttling | Limit Function Throughput";
+export const description = "Throttle Inngest functions to a maximum number of runs per time period. Smooth traffic bursts and respect third-party API rate limits without dropping events.";
+
+# Throttling
+
+> Smooth traffic bursts by queueing runs until your service has capacity.
+
+<Compatibility endpoints={false} />
+
+Protect an API that accepts only a fixed number of requests per period. Throttling queues runs above the start limit and starts them as capacity becomes available, so burst traffic does not discard work.
+
+<FlowControlMarbles scenario="throttling" />
+
+## Set a throttle on a function
+
+<CodeGroup>
+```typescript {{ title: "TypeScript" }}
+import { Inngest } from "inngest";
+
+const inngest = new Inngest({ id: "my-app" });
+
+export const summarize = inngest.createFunction(
+  {
+    id: "summarize",
+    triggers: { event: "ai/summary.requested" },
+    throttle: {
+      limit: 1,
+      period: "5s",
+      burst: 2,
+      key: "event.data.user_id",
+    },
+  },
+  async ({ event, step }) => {
+    return step.run("record-request", () => ({
+      userId: String(event.data.user_id),
+      textLength: String(event.data.text).length,
+    }));
+  },
+);
+```
+
+```python {{ title: "Python" }}
+!snippet:path=snippets/py/latest/flow_control/throttling/summarize.py
+```
+
+```go {{ title: "Go" }}
+!snippet:path=snippets/go/docs/flow_control/throttling/summarize.go
+```
+</CodeGroup>
+
+This function sets a separate throttle for each `user_id`. Replace the example step with the service call you need to pace. Inngest evaluates `key` against the triggering event. Without a key, the throttle applies to all runs of this function. Each function has its own throttle, even when two functions use the same key.
+
+## Choose the settings
+
+- `limit` sets the number of runs allowed to start during `period`.
+- `period` accepts 1 second through 7 days, with one-second granularity.
+- `burst` allows additional run starts in a short burst on top of `limit`. Within a period, at most `limit + burst` runs may start.
+- `key` is an optional expression. Each distinct result gets its own limit.
+
+Inngest spreads run starts over time and starts queued runs in first-in, first-out order. When the throttle has no capacity, the run waits in the queue; it is not discarded. A large backlog can outlive the time in which the work is useful, so set a start timeout when delayed runs should expire.
+
+## Pick the right control
+
+Throttling limits **new run starts**, not the steps inside a run. If each run makes several requests to a provider, account for those requests when choosing the start rate. For a cap on executing steps, use [Step concurrency](/docs/durable-execution/flow-control/concurrency). If excess events should be skipped rather than queued, use [Rate limiting](/docs/durable-execution/flow-control/rate-limiting).
+
+## Check the result
+
+Send several events with the same `user_id`, then inspect their run start times in the Inngest dashboard. Send an event with a different `user_id` to see the independent keyed limit. If starts lag longer than expected, check the backlog, `burst`, and any start timeout.

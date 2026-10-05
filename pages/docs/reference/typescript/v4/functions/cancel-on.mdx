@@ -1,7 +1,7 @@
 import { Info, Callout, CodeGroup, Properties, Property, Row, Col, VersionBadge } from "src/shared/Docs/mdx";
 import { InformationCircleIcon } from '@heroicons/react/24/outline'
 
-export const metaTitle = "cancelOn | Auto-Cancel on Events (TypeScript SDK v4)"
+export const metaTitle = "cancelOn | Cancel on Events (SDK v4)"
 export const description = "Auto-cancel in-flight runs when a matching event arrives, with optional CEL expression filtering."
 
 # Cancel on
@@ -35,7 +35,7 @@ The API for this is similar to the [`step.waitForEvent()`](/docs/reference/types
 
 ## How to use `cancelOn`
 
-The most common use case for cancellation is to cancel a function's execution if a specific field in the incoming event matches the same field in the triggering event. For example, you might want to cancel a sync event for a user if that user is deleted. For this, you need to specify a `match` [expression](/docs/guides/writing-expressions). Let's look at an example function and two events.
+The most common use case for cancellation is to cancel a function's execution if a specific field in the incoming event matches the same field in the triggering event. For example, you might want to cancel a sync event for a user if that user is deleted. For this, you need to specify a `match` [expression](/docs/durable-execution/guides-and-advanced/writing-expressions). Let's look at an example function and two events.
 
 This function specifies it will `cancelOn` the `"app/user.deleted"` event only when it and the original `"app/user.created"` event have the same `data.userId` value:
 
@@ -79,7 +79,7 @@ And this is an example of an event that would cancel the function as it and the 
 }
 ```
 
-Match expressions can be simple equalities or be more complex. Read [our guide to writing expressions](/docs/guides/writing-expressions) for more info.
+Match expressions can be simple equalities or be more complex. Read [our guide to writing expressions](/docs/durable-execution/guides-and-advanced/writing-expressions) for more info.
 
 <Callout Icon={InformationCircleIcon}>
   Functions are cancelled _between steps_, meaning that if there is a `step.run` currently executing, it will finish before the function is cancelled.
@@ -97,12 +97,12 @@ Match expressions can be simple equalities or be more complex. Read [our guide t
         The event that will be used to cancel. This can be a string event name (e.g. `"app/user.deleted"`) or an event object created with `eventType()`
       </Property>
       <Property name="match" type="string">
-        The property to match the event trigger and the cancelling event, using dot-notation, for example, `data.userId`. Read [our guide to writing expressions](/docs/guides/writing-expressions) for more info.
+        The property to match the event trigger and the cancelling event, using dot-notation, for example, `data.userId`. Read [our guide to writing expressions](/docs/durable-execution/guides-and-advanced/writing-expressions) for more info.
       </Property>
       <Property name="if" type="string">
         An expression on which to conditionally match the original event trigger (`event`) and the wait event (`async`). Cannot be combined with `match`.
 
-        Expressions are defined using the Common Expression Language (CEL) with the events accessible using dot-notation. Read our [guide to writing expressions](/docs/guides/writing-expressions) for more info. Examples:
+        Expressions are defined using the Common Expression Language (CEL) with the events accessible using dot-notation. Read our [guide to writing expressions](/docs/durable-execution/guides-and-advanced/writing-expressions) for more info. Examples:
 
         * `event.data.userId == async.data.userId && async.data.billing_plan == 'pro'`
       </Property>

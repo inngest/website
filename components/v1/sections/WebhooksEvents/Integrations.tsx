@@ -57,7 +57,7 @@ const INTEGRATIONS: Integration[] = [
         send welcome email, start trial, all in parallel.
       </>
     ),
-    link: { label: "Read guide", href: "/docs/guides/clerk-webhook-events" },
+    link: { label: "Read guide", href: "/docs/guides/clerk-webhook-events?ref=webhooks-events-integrations" },
   },
   {
     id: "github",
@@ -88,7 +88,7 @@ const INTEGRATIONS: Integration[] = [
         campaigns and clean your lists automatically.
       </>
     ),
-    link: { label: "Read guide", href: "/docs/guides/resend-webhook-events#resend-webhooks" },
+    link: { label: "Read guide", href: "/docs/guides/resend-webhook-events?ref=webhooks-events-integrations#resend-webhooks" },
   },
   {
     id: "shopify",
@@ -114,7 +114,7 @@ const INTEGRATIONS: Integration[] = [
         short transform to normalize the payload and you're done.
       </>
     ),
-    link: { label: "Docs", href: "/docs/platform/webhooks" },
+    link: { label: "Docs", href: "/docs/durable-execution/guides-and-advanced/events-and-triggers/receive-webhook-events?ref=webhooks-events-integrations" },
   },
 ];
 

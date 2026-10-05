@@ -22,7 +22,7 @@ const FAQS: FaqType[] = [
     ],
     answer:
       "Yes — Inngest covers the same surface as Sidekiq, BullMQ, Celery, and similar tools, while adding step-level checkpointing, native traces, and built-in concurrency/throttling. You point Inngest at your existing functions and delete the queue + worker plumbing.",
-    link: { label: "Migration guide", href: "/docs/learn/migrating" },
+    link: { label: "Migration guide", href: "/docs/durable-execution/quick-start" },
   },
   {
     id: "serverless",

@@ -7,7 +7,7 @@ import { motion } from "framer-motion";
 import * as mdxComponents from "src/shared/Docs/mdx";
 import { Footer } from "./Footer";
 import { Home } from "./Home";
-import { Header } from "./Header";
+import { DocsLogo, Header } from "./Header";
 import Logo from "../Icons/Logo";
 import { Navigation, PageSidebar, ActiveSectionProvider } from "./Navigation";
 import { useUnreleasedLabels } from "./Unreleased";
@@ -94,13 +94,15 @@ export function Layout({
   const unreleasedLabels = useUnreleasedLabels();
   const gated = !!unreleased && !unreleasedLabels.has(unreleased);
   const noRightSidebar = hidePageSidebar || gated;
+  const isDocsOverview = router.pathname === "/docs";
   const sdkLanguage = getLanguageFromPath(router.asPath) || SDK_ALL;
   const sdkVersion = getSdkVersionFromPath(router.asPath) || SDK_ALL;
 
   const siteTitle = `Inngest Docs`;
   const preferredTitle: string = metaTitle || title || siteTitle;
+  // The docs home sets its full title, so it skips the " - Inngest Docs" suffix.
   const pageTitle =
-    preferredTitle === siteTitle
+    preferredTitle === siteTitle || isDocsOverview
       ? preferredTitle
       : `${preferredTitle} - ${siteTitle}`;
   const metaDescription =
@@ -251,8 +253,12 @@ export function Layout({
               {/* @ts-ignore */}
               <motion.header
                 layoutScroll
-                className="fixed inset-y-0 left-0 z-40 mt-14 contents overflow-y-auto  border-r border-subtle py-4 pb-8 pl-4 pr-3 lg:block lg:w-[248px] xl:w-[280px]"
+                className="fixed inset-y-0 left-0 z-40 contents overflow-y-auto border-r border-subtle bg-canvasBase pb-8 pl-4 pr-3 lg:block lg:w-[248px] xl:w-[280px]"
               >
+                {/* Full-height sidebar: the logo sits in the top bar's row. */}
+                <div className="sticky top-0 z-10 -mr-3 mb-4 hidden h-14 items-center bg-canvasBase pl-2 lg:flex">
+                  <DocsLogo />
+                </div>
                 <Navigation className="hidden lg:block" />
               </motion.header>
 
@@ -260,7 +266,7 @@ export function Layout({
                 // @ts-ignore
                 <motion.nav
                   layoutScroll
-                  className="fixed inset-y-0 right-0 z-40 mt-14 hidden w-60 overflow-y-auto px-6 pb-12 pt-16 xl:block 2xl:w-96 2xl:px-10"
+                  className="fixed inset-y-0 right-0 z-40 mt-14 hidden w-60 overflow-y-auto bg-canvasBase px-6 pb-12 pt-16 xl:block 2xl:w-96 2xl:px-10"
                 >
                   <div className="pt-2">
                     <PageSidebar />
@@ -272,9 +278,9 @@ export function Layout({
 
               <div
                 className={clsx(
-                  "relative px-4 pt-14 sm:px-6 lg:px-8 xl:pl-8 xl:pr-16",
-                  noRightSidebar && "xl:mr-32 2xl:mr-10",
-                  !noRightSidebar && "xl:mr-40 2xl:mr-80"
+                  "relative px-4 pt-14 sm:px-6 lg:pl-16 lg:pr-8 xl:pr-16",
+                  noRightSidebar && !isDocsOverview && "xl:mr-32 2xl:mr-10",
+                  (!noRightSidebar || isDocsOverview) && "xl:mr-40 2xl:mr-80"
                 )}
               >
                 <main className="pt-6 lg:pt-8 xl:pr-8">
@@ -294,7 +300,10 @@ export function Layout({
                       </Link>
                     </div>
                   ) : (
-                    <Prose as="article">
+                    <Prose
+                      as="article"
+                      className={isDocsOverview ? "pt-5" : ""}
+                    >
                       <Breadcrumb />
                       {children}
                       <div

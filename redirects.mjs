@@ -18,33 +18,181 @@ export const TS_STABLE_VERSION = "v4";
 
 // All permanent redirects (source -> destination)
 export const permanentRedirects = [
+  // Docs refresh: old pages -> their new pages (final mapping)
+  ["/docs/apps", "/docs/platform-and-operations/apps-and-syncs"],
+  ["/docs/apps/cloud", "/docs/platform-and-operations/apps-and-syncs"],
+  ["/docs/architecture", "/docs/platform-and-operations/cloud-architecture-and-security"],
+  ["/docs/events", "/docs/durable-execution/guides-and-advanced/events-and-triggers/send-events"],
+  ["/docs/events/creating-an-event-key", "/docs/platform-and-operations/keys-and-access"],
+  ["/docs/features/events-triggers", "/docs/durable-execution/guides-and-advanced/events-and-triggers"],
+  ["/docs/features/events-triggers/event-format", "/docs/durable-execution/guides-and-advanced/events-and-triggers/event-payloads-and-schemas"],
+  ["/docs/features/inngest-functions/cancellation", "/docs/durable-execution/guides-and-advanced/cancellation"],
+  ["/docs/features/inngest-functions/cancellation/cancel-on-events", "/docs/durable-execution/guides-and-advanced/cancellation/events"],
+  ["/docs/features/inngest-functions/cancellation/cancel-on-timeouts", "/docs/durable-execution/guides-and-advanced/cancellation/timeouts"],
+  ["/docs/features/inngest-functions/deferred-functions", "/docs/durable-execution/primitives/defer"],
+  ["/docs/features/inngest-functions/error-retries/failure-handlers", "/docs/durable-execution/guides-and-advanced/error-handling/failure-handlers"],
+  ["/docs/features/inngest-functions/error-retries/retries", "/docs/durable-execution/guides-and-advanced/error-handling/retries"],
+  ["/docs/features/inngest-functions/error-retries/rollbacks", "/docs/durable-execution/guides-and-advanced/error-handling/rollbacks"],
+  ["/docs/features/inngest-functions/steps-workflows/sleeps", "/docs/durable-execution/primitives/step-sleep"],
+  ["/docs/features/inngest-functions/steps-workflows/wait-for-event", "/docs/durable-execution/primitives/step-waitforevent"],
+  ["/docs/features/inngest-functions/steps-workflows/wait-for-signal", "/docs/durable-execution/primitives/step-waitforsignal"],
+  ["/docs/features/middleware", "/docs/durable-execution/guides-and-advanced/middleware"],
+  ["/docs/features/middleware/create", "/docs/durable-execution/guides-and-advanced/middleware/creating-middleware"],
+  ["/docs/features/middleware/sentry-middleware", "/docs/durable-execution/guides-and-advanced/middleware/sentry-middleware"],
+  ["/docs/guides", "/docs/durable-execution/guides-and-advanced"],
+  ["/docs/guides/background-jobs", "/docs/patterns/jobs/keeping-your-api-fast"],
+  ["/docs/guides/batching", "/docs/durable-execution/flow-control/batching"],
+  ["/docs/guides/cancel-running-functions", "/docs/durable-execution/guides-and-advanced/cancellation/bulk-cancellation"],
+  ["/docs/guides/concurrency", "/docs/durable-execution/flow-control/concurrency"],
+  ["/docs/guides/debounce", "/docs/durable-execution/flow-control/debounce"],
+  ["/docs/guides/delayed-functions", "/docs/durable-execution/guides-and-advanced/events-and-triggers/schedules-and-delayed-starts"],
+  ["/docs/guides/error-handling", "/docs/durable-execution/guides-and-advanced/error-handling"],
+  ["/docs/guides/fan-out-jobs", "/docs/durable-execution/guides-and-advanced/patterns/fan-out"],
+  ["/docs/guides/flow-control", "/docs/durable-execution/flow-control"],
+  ["/docs/guides/handling-idempotency", "/docs/durable-execution/guides-and-advanced/idempotency"],
+  ["/docs/guides/invoking-functions-directly", "/docs/durable-execution/primitives/step-invoke"],
+  ["/docs/guides/logging", "/docs/durable-execution/guides-and-advanced/logging"],
+  ["/docs/guides/multi-tenancy", "/docs/durable-execution/flow-control/multi-tenancy"],
+  ["/docs/guides/multiple-triggers", "/docs/durable-execution/guides-and-advanced/events-and-triggers/event-and-trigger-concepts"],
+  ["/docs/guides/pause-functions", "/docs/platform-and-operations/pause-and-resume-functions"],
+  ["/docs/guides/priority", "/docs/durable-execution/flow-control/priority"],
+  ["/docs/guides/rate-limiting", "/docs/durable-execution/flow-control/rate-limiting"],
+  ["/docs/guides/scheduled-functions", "/docs/durable-execution/guides-and-advanced/events-and-triggers/schedules-and-delayed-starts"],
+  ["/docs/guides/sending-events-from-functions", "/docs/durable-execution/primitives/step-sendevent"],
+  ["/docs/guides/singleton", "/docs/durable-execution/flow-control/singleton"],
+  ["/docs/guides/step-parallelism", "/docs/durable-execution/primitives/group-parallel"],
+  ["/docs/guides/throttling", "/docs/durable-execution/flow-control/throttling"],
+  ["/docs/guides/working-with-loops", "/docs/durable-execution/guides-and-advanced/patterns/working-with-loops"],
+  ["/docs/improve-performance", "/docs/durable-execution/best-practices/performance"],
+  ["/docs/learn/durable-endpoints", "/docs/durable-execution/durable-endpoints"],
+  ["/docs/learn/how-functions-are-executed", "/docs/durable-execution/durable-workflows"],
+  ["/docs/learn/inngest-functions", "/docs/durable-execution/durable-workflows"],
+  ["/docs/learn/inngest-steps", "/docs/durable-execution/primitives"],
+  ["/docs/learn/security", "/docs/platform-and-operations/cloud-architecture-and-security"],
+  ["/docs/learn/versioning", "/docs/durable-execution/guides-and-advanced/versioning"],
+  ["/docs/platform", "/docs/platform-and-operations"],
+  ["/docs/platform/api-keys", "/docs/platform-and-operations/keys-and-access"],
+  ["/docs/platform/deployment", "/docs/durable-execution/deploying-functions"],
+  ["/docs/platform/environments", "/docs/platform-and-operations/environments-and-branch-deploys"],
+  ["/docs/platform/manage/apps", "/docs/platform-and-operations/apps-and-syncs"],
+  ["/docs/platform/manage/bulk-cancellation", "/docs/durable-execution/guides-and-advanced/cancellation/bulk-cancellation"],
+  ["/docs/platform/manage/rotating-keys", "/docs/platform-and-operations/rotate-event-and-signing-keys"],
+  ["/docs/platform/monitor/insights", "/docs/platform-and-operations/insights"],
+  ["/docs/platform/monitor/inspecting-events", "/docs/platform-and-operations/inspect-events-and-runs"],
+  ["/docs/platform/monitor/inspecting-function-runs", "/docs/platform-and-operations/inspect-events-and-runs"],
+  ["/docs/platform/monitor/observability-metrics", "/docs/platform-and-operations/metrics"],
+  ["/docs/platform/monitor/traces", "/docs/platform-and-operations/traces"],
+  ["/docs/platform/replay", "/docs/platform-and-operations/replay-runs-in-bulk"],
+  ["/docs/platform/webhooks", "/docs/durable-execution/guides-and-advanced/events-and-triggers/receive-webhook-events"],
+  ["/docs/reference/rest-api", "https://api-docs.inngest.com"],
+  ["/docs/setup/checkpointing", "/docs/durable-execution/guides-and-advanced/checkpointing"],
+  ["/docs/setup/connect", "/docs/durable-execution/deploying-functions/connect"],
+  ["/docs/usage-limits/inngest", "/docs/durable-execution/limits"],
+  // Overview pages merged into their parent section pages
+  [
+    "/docs/durable-execution/guides-and-advanced/error-handling/overview",
+    "/docs/durable-execution/guides-and-advanced/error-handling",
+  ],
+  [
+    "/docs/durable-execution/guides-and-advanced/middleware/overview",
+    "/docs/durable-execution/guides-and-advanced/middleware",
+  ],
+  // Pages copied into the docs refresh structure
+  [
+    "/docs/deploy/vercel",
+    "/docs/durable-execution/deploying-functions/platforms/vercel",
+  ],
+  [
+    "/docs/deploy/netlify",
+    "/docs/durable-execution/deploying-functions/platforms/netlify",
+  ],
+  [
+    "/docs/deploy/cloudflare",
+    "/docs/durable-execution/deploying-functions/platforms/cloudflare",
+  ],
+  [
+    "/docs/deploy/render",
+    "/docs/durable-execution/deploying-functions/platforms/render",
+  ],
+  [
+    "/docs/deploy/digital-ocean",
+    "/docs/durable-execution/deploying-functions/platforms/digital-ocean",
+  ],
+  [
+    "/docs/usage-limits/providers",
+    "/docs/durable-execution/deploying-functions/platforms/provider-limits",
+  ],
+  [
+    "/docs/learn/durable-endpoints/streaming",
+    "/docs/durable-execution/durable-endpoints/streaming",
+  ],
+  [
+    "/docs/features/inngest-functions/steps-workflows/step-metadata-how-to",
+    "/docs/durable-execution/primitives/metadata",
+  ],
+  [
+    "/docs/guides/writing-expressions",
+    "/docs/durable-execution/guides-and-advanced/writing-expressions",
+  ],
+  [
+    "/docs/ai-patterns/agent-tool-loops",
+    "/docs/durable-execution/durable-agents/agent-tool-loops",
+  ],
+  [
+    "/docs/ai-patterns/human-in-the-loop",
+    "/docs/durable-execution/durable-agents/human-in-the-loop",
+  ],
+  [
+    "/docs/ai-patterns/sub-agent-delegation",
+    "/docs/durable-execution/durable-agents/sub-agent-delegation",
+  ],
+  [
+    "/docs/features/events-triggers/neon",
+    "/docs/platform-and-operations/integrations/neon",
+  ],
+  [
+    "/docs/platform/monitor/datadog-integration",
+    "/docs/platform-and-operations/integrations/datadog",
+  ],
+  [
+    "/docs/platform/monitor/prometheus-metrics-export-integration",
+    "/docs/platform-and-operations/integrations/prometheus",
+  ],
+  [
+    "/docs/getting-started/nodejs-quick-start",
+    "/docs/durable-execution/quick-start/typescript-quick-start",
+  ],
   // Legacy docs
   ["/docs/functions/testing-functions", "/docs/local-development"],
   ["/docs/what-is-inngest", "/docs"],
-  ["/docs/reference/functions/retries", "/docs/functions/retries"],
-  ["/docs/creating-an-event-key", "/docs/events/creating-an-event-key"],
-  ["/docs/event-format-and-structure", "/docs/reference/events/send"],
-  ["/docs/events/event-format-and-structure", "/docs/reference/events/send"],
-  ["/docs/writing-and-running-fuctions", "/docs/functions"], //typo
-  ["/docs/cli/steps/", "/docs/learn/inngest-steps"],
-  ["/docs/events/sources/sdks", "/docs/events"],
-  ["/docs/deploying-fuctions", "/docs/apps/cloud"],
-  ["/docs/deploy", "/docs/apps/cloud"],
-  ["/docs/functions/introduction", "/docs/functions"],
+  ["/docs/reference/functions/retries", "/docs/features/inngest-functions/error-retries/inngest-errors"],
+  ["/docs/reference/functions/concurrency", "/docs/durable-execution/flow-control/concurrency"],
+  ["/docs/reference/functions/idempotency", "/docs/durable-execution/guides-and-advanced/idempotency"],
+  ["/docs/creating-an-event-key", "/docs/platform-and-operations/keys-and-access"],
+  ["/docs/event-format-and-structure", "/docs/reference/typescript/v4/events/send"],
+  ["/docs/events/event-format-and-structure", "/docs/reference/typescript/v4/events/send"],
+  ["/docs/writing-and-running-fuctions", "/docs/durable-execution/durable-workflows"], //typo
+  ["/docs/cli/steps/", "/docs/durable-execution/primitives"],
+  ["/docs/events/sources/sdks", "/docs/durable-execution/guides-and-advanced/events-and-triggers/send-events"],
+  ["/docs/deploying-fuctions", "/docs/platform-and-operations/apps-and-syncs"],
+  ["/docs/deploy", "/docs/durable-execution/deploying-functions/platforms"],
+  ["/docs/functions/introduction", "/docs/durable-execution/durable-workflows"],
   ["/docs/how-inngest-works", "/docs"], // TODO/DOCS redirect this to new concepts page
-  ["/docs/frameworks/cloudflare-pages", "/docs/sdk/serve#framework-cloudflare"],
-  ["/docs/frameworks/express", "/docs/sdk/serve#framework-express"],
-  ["/docs/frameworks/nextjs", "/docs/sdk/serve#framework-next-js"],
-  ["/docs/frameworks/redwoodjs", "/docs/sdk/serve#framework-redwood"],
-  ["/docs/sdk/reference/serve", "/docs/reference/serve"],
-  ["/docs/events/webhooks", "/docs/platform/webhooks"],
-  ["/docs/functions/retries", "/docs/reference/typescript/functions/errors"],
-  ["/docs/functions/cancellation", "/docs/guides/cancel-running-functions"],
+  ["/docs/frameworks/cloudflare-pages", "/docs/learn/serving-inngest-functions#framework-cloudflare"],
+  ["/docs/frameworks/express", "/docs/learn/serving-inngest-functions#framework-express"],
+  ["/docs/frameworks/nextjs", "/docs/learn/serving-inngest-functions#framework-next-js"],
+  ["/docs/frameworks/redwoodjs", "/docs/learn/serving-inngest-functions#framework-redwood"],
+  ["/docs/sdk/reference/serve", "/docs/reference/typescript/v4/serve"],
+  ["/docs/events/webhooks", "/docs/durable-execution/guides-and-advanced/events-and-triggers/receive-webhook-events"],
+  ["/docs/functions/retries", "/docs/features/inngest-functions/error-retries/inngest-errors"],
+  ["/docs/functions/cancellation", "/docs/durable-execution/guides-and-advanced/cancellation/bulk-cancellation"],
   [
     "/docs/reference/python/overview/quick-start",
     "/docs/getting-started/python-quick-start",
   ],
-  ["/docs/sdk/overview", "/docs"],
+  ["/docs/sdk/overview", "/docs/sdks"],
+  ["/docs/sdk/overview/reference", "/docs/sdks#sdk-references"],
+  ["/docs/sdks/reference", "/docs/sdks#sdk-references"],
   ["/docs/dev-server", "/docs/local-development"],
   ["/docs/guides/development-with-docker", "/docs/local-development"],
 
@@ -56,20 +204,20 @@ export const permanentRedirects = [
   ["/uses/user-journey-automation", "/blog/lifecycle-emails-with-resend"],
 
   // new IA
-  ["/docs/security", "/docs/learn/security"],
-  ["/docs/functions", "/docs/learn/inngest-functions"],
-  ["/docs/functions/multi-step", "/docs/learn/inngest-steps"],
-  ["/docs/guides/multi-step-functions", "/docs/learn/inngest-steps"],
+  ["/docs/security", "/docs/platform-and-operations/cloud-architecture-and-security"],
+  ["/docs/functions", "/docs/durable-execution/durable-workflows"],
+  ["/docs/functions/multi-step", "/docs/durable-execution/primitives"],
+  ["/docs/guides/multi-step-functions", "/docs/durable-execution/primitives"],
   [
     "/docs/features/inngest-functions/steps-workflows/fetch",
     "/docs/reference/typescript/functions/fetch",
   ],
-  ["/docs/guides/enqueueing-future-jobs", "/docs/guides/delayed-functions"],
-  ["/docs/steps", "/docs/learn/inngest-steps"],
-  ["/docs/features/inngest-functions", "/docs/learn/inngest-functions"],
+  ["/docs/guides/enqueueing-future-jobs", "/docs/durable-execution/guides-and-advanced/events-and-triggers/schedules-and-delayed-starts"],
+  ["/docs/steps", "/docs/durable-execution/primitives"],
+  ["/docs/features/inngest-functions", "/docs/durable-execution/durable-workflows"],
   [
     "/docs/features/inngest-functions/steps-workflows",
-    "/docs/learn/inngest-functions",
+    "/docs/durable-execution/primitives",
   ],
   ["/blog/banger", "/blog/banger-video-rendering-pipeline"],
   [
@@ -86,10 +234,10 @@ export const permanentRedirects = [
     "/docs/reference/typescript/functions/errors",
     "/docs/features/inngest-functions/error-retries/inngest-errors",
   ],
-  ["/docs/reference/middleware/overview", "/docs/features/middleware"],
+  ["/docs/reference/middleware/overview", "/docs/durable-execution/guides-and-advanced/middleware"],
   [
     "/docs/reference/middleware/create",
-    "/docs/features/middleware/create?guide=typescript",
+    "/docs/durable-execution/guides-and-advanced/middleware/creating-middleware?guide=typescript",
   ],
   [
     "/docs/reference/middleware/typescript",
@@ -103,10 +251,66 @@ export const permanentRedirects = [
 
   ["/docs/agent-kit/:any*", "https://agentkit.inngest.com"],
 
-  ["/docs/features/realtime/nextjs", "/docs/features/realtime/react-hooks"],
+  // Realtime moved to /docs/realtime
+  ["/docs/features/realtime", "/docs/realtime"],
+  ["/docs/features/realtime/nextjs", "/docs/realtime/guides/react-hooks"],
+  [
+    "/docs/features/realtime/react-hooks",
+    "/docs/realtime/guides/react-hooks",
+  ],
+  [
+    "/docs/features/realtime/subscription-tokens",
+    "/docs/realtime/guides/subscription-tokens",
+  ],
+  [
+    "/docs/features/realtime/stream-ai-responses",
+    "/docs/realtime/guides/stream-ai-responses",
+  ],
+  [
+    "/docs/features/realtime/subscribe",
+    "/docs/realtime/guides/server-side-subscriptions",
+  ],
+
+  // Durable agents moved under Durable Execution
+  ["/docs/learn/durable-agents", "/docs/durable-execution/durable-agents"],
+  [
+    "/docs/durable-execution/guides-and-advanced/patterns/agent-tool-loops",
+    "/docs/durable-execution/durable-agents/agent-tool-loops",
+  ],
+  [
+    "/docs/durable-execution/guides-and-advanced/patterns/human-in-the-loop",
+    "/docs/durable-execution/durable-agents/human-in-the-loop",
+  ],
+  [
+    "/docs/durable-execution/guides-and-advanced/patterns/sub-agent-delegation",
+    "/docs/durable-execution/durable-agents/sub-agent-delegation",
+  ],
+
+  // Agent Evals moved to /docs/agent-evals
+  ["/docs/learn/agent-evals", "/docs/agent-evals/overview"],
+  // Pre-launch name of the section; shared in drafts and Notion.
+  ["/docs/online-evals", "/docs/agent-evals"],
+  ["/docs/online-evals/:any*", "/docs/agent-evals/:any*"],
+  [
+    "/docs/features/inngest-functions/steps-workflows/scoring",
+    "/docs/agent-evals/scores",
+  ],
+  [
+    "/docs/features/inngest-functions/steps-workflows/deferred-scoring",
+    "/docs/agent-evals/deferred-scoring",
+  ],
+  [
+    "/docs/features/inngest-functions/steps-workflows/step-experiments",
+    "/docs/agent-evals/experiments",
+  ],
+  ["/docs/features/events-triggers/sessions", "/docs/agent-evals/sessions"],
+  [
+    "/docs/examples/ai-eval-scorer-quickstart",
+    "/docs/agent-evals/guides/llm-judge",
+  ],
 
   // Durable Endpoints rename
-  ["/docs/learn/rest-endpoints", "/docs/learn/durable-endpoints"],
+  ["/docs/learn/rest-endpoints", "/docs/durable-execution/durable-endpoints"],
 
   // Metadata reference moved to /reference/typescript/functions/metadata
   [
@@ -193,9 +397,9 @@ export const permanentRedirects = [
   ["/docs/sdk/migration", "/docs/reference/typescript/v3/migrations/v2-to-v3"],
   [
     "/patterns/cancelling-scheduled-functions",
-    "/docs/guides/cancel-running-functions",
+    "/docs/durable-execution/guides-and-advanced/cancellation/bulk-cancellation",
   ],
-  ["/patterns/running-code-on-a-schedule", "/docs/guides/scheduled-functions"],
+  ["/patterns/running-code-on-a-schedule", "/docs/durable-execution/guides-and-advanced/events-and-triggers/schedules-and-delayed-starts"],
 
   // run-experiments-in-production moved from the Durable Workflows category to
   // the new AI Evals category (per Lauren's IA feedback). Old category URL is

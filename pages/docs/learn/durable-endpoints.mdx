@@ -8,7 +8,7 @@ export const description = "Make any HTTP endpoint durable with automatic retrie
 
 # Durable Endpoints <VersionBadge version="Beta" />
 
-Durable Endpoints let you build or transform your API into fault-tolerant endpoints simply by wrapping your critical logic into [durable steps](/docs/learn/inngest-steps).
+Durable Endpoints let you build or transform your API into fault-tolerant endpoints simply by wrapping your critical logic into [durable steps](/docs/durable-execution/primitives).
 
 Durable Endpoints behave like normal endpoints. The mental model stays the same: request, response. But each step brings you tracing, observability, and retry logic from the point of failure.
 
@@ -167,11 +167,11 @@ If `process` fails, the endpoint will retry from that step. `enrich-data` won't 
 
 ### Using Steps
 
-Durable Endpoints support all the same step methods as Inngest functions. See the [Steps documentation](/docs/learn/inngest-steps) for the full reference:
+Durable Endpoints support all the same step methods as Inngest functions. See the [Steps documentation](/docs/durable-execution/primitives) for the full reference:
 
-- [`step.run()`](/docs/learn/inngest-steps#step-run): Reliably execute the provided block by retrying upon failure
-- [`step.sleep()`](/docs/learn/inngest-steps#step-sleep): Pause execution for a duration
-- [`step.waitForEvent()`](/docs/learn/inngest-steps#step-wait-for-event-step-wait-for-event): Wait for an external event
+- [`step.run()`](/docs/durable-execution/primitives): Reliably execute the provided block by retrying upon failure
+- [`step.sleep()`](/docs/durable-execution/primitives): Pause execution for a duration
+- [`step.waitForEvent()`](/docs/durable-execution/primitives): Wait for an external event
 
 </LanguageSection>
 
@@ -296,7 +296,7 @@ fetch(`/api/your-durable-endpoint`)
 
 Durable Endpoints can stream data back to clients in real-time using Server-Sent Events (SSE). Stream LLM tokens, progress updates, or any other data while keeping full durability guarantees. If a step fails and retries, streamed data from that step is automatically rolled back on the client.
 
-Read the [full guide](/docs/learn/durable-endpoints/streaming?ref=docs-durable-endpoints) for setup, client integration, rollback semantics, and more.
+Read the [full guide](/docs/durable-execution/durable-endpoints/streaming?ref=docs-durable-endpoints) for setup, client integration, rollback semantics, and more.
 
 ## Limitations
 
@@ -336,6 +336,6 @@ The following demos are also available to check out and run locally with the Inn
 ## Further Reference
 
 - [Durable Endpoint - TypeScript SDK Reference](/docs/reference/typescript/durable-endpoints)
-- [Steps Overview](/docs/learn/inngest-steps)
+- [Steps Overview](/docs/durable-execution/primitives)
 
 </LanguageSelector>

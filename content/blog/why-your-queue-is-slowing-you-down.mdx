@@ -36,9 +36,9 @@ Traditional queues like Kafka, RabbitMQ, and Amazon SQS lack built-in traffic co
 
 It's like trying to manually control a busy intersection with a LED stick. As applications evolve and scale, flow control becomes essential - something traditional queues don't offer out of the box. You're left to figure out how to implement solutions within these queues like native throttling, rate limiting, and job prioritization yourself across your workflows which can easily lead to bottlenecks, performance issues, and a lot of extra work.
 
-Luckily, with Inngest's native [flow control](/docs/guides/flow-control?ref=blog-why-your-queue-is-slowing-you-down), you can say goodbye to the manual work associated with managing traffic flow. Inngest offers built-in throttling, debouncing, and dynamic prioritization, ensuring your system runs smoothly, efficiently, and fairly, even under heavy load.
+Luckily, with Inngest's native [flow control](/docs/durable-execution/flow-control?ref=blog-why-your-queue-is-slowing-you-down), you can say goodbye to the manual work associated with managing traffic flow. Inngest offers built-in throttling, debouncing, and dynamic prioritization, ensuring your system runs smoothly, efficiently, and fairly, even under heavy load.
 
-Inngest also offers Singleton Functions (released June 2025), which ensure exclusive execution when only the most recent run matters—like live dashboards or real-time sync operations. [Learn more](/docs/guides/singleton)
+Inngest also offers Singleton Functions (released June 2025), which ensure exclusive execution when only the most recent run matters—like live dashboards or real-time sync operations. [Learn more](/docs/durable-execution/flow-control/singleton?ref=blog-why-your-queue-is-slowing-you-down)
 
 ## Problem 3: Sharing the sandbox (and dealing with noisy neighbors)
 
@@ -58,7 +58,7 @@ Traditional queues also lack robust job management and recovery capabilities. Wh
 
 With RabbitMQ and Kafka, you're left to your own devices to track job progress, handle errors, and implement retries. And while on SQS you can get some monitoring with CloudWatch, it still requires custom solutions for job tracking and cancellation.
 
-This lack of lifecycle management across jobs can lead to inefficiencies and wasted resources as jobs run unnecessarily or fail without a safety net. Inngest's native job management enhances your application by treating jobs as foundational elements, giving you greater control and visibility. Easily track statuses, cancel, re-run, and monitor jobs from start to finish, all within a single platform. Inngest also automates state management and recovery, ensuring reliable execution without manual intervention. Use Inngest's declarative [cancellation](/docs/features/inngest-functions/cancellation?ref=blog-why-your-queue-is-slowing-you-down), to automatically cancel functions based on system events, streamline your workflows and reduce operational overhead.
+This lack of lifecycle management across jobs can lead to inefficiencies and wasted resources as jobs run unnecessarily or fail without a safety net. Inngest's native job management enhances your application by treating jobs as foundational elements, giving you greater control and visibility. Easily track statuses, cancel, re-run, and monitor jobs from start to finish, all within a single platform. Inngest also automates state management and recovery, ensuring reliable execution without manual intervention. Use Inngest's declarative [cancellation](/docs/durable-execution/guides-and-advanced/cancellation?ref=blog-why-your-queue-is-slowing-you-down), to automatically cancel functions based on system events, streamline your workflows and reduce operational overhead.
 
 ## Problem 5: The black box of queues
 
@@ -70,7 +70,7 @@ For instance, while SQS integrates with Amazon CloudWatch, it's lackluster offer
 
 Similarly, RabbitMQ and Kafka offer basic metrics, but often fall short when it comes to tracking latency or identifying bottlenecks in complex workflows. With RabbitMQ, you're often limited to basic metrics like message counts and queue lengths. While Kafka provides some metrics on consumer lag and partition offsets, it lacks deeper insights into message processing times and potential bottlenecks. To gain a clearer picture of your system's performance, you may need to rely on additional plugins or third-party tools like Prometheus or Confluent Control Center. All this extra tooling can add significant overhead and complexity to applications, making them harder to maintain and optimize.
 
-With Inngest's comprehensive [observability & metrics](/docs/platform/monitor/observability-metrics?ref=blog-why-your-queue-is-slowing-you-down) dashboard, you can say goodbye to the black box. Gain deep insights into workflow performance and issues, allowing you to troubleshoot faster, identify bottlenecks, and continuously optimize your system.
+With Inngest's comprehensive [observability & metrics](/docs/platform-and-operations/metrics?ref=blog-why-your-queue-is-slowing-you-down) dashboard, you can say goodbye to the black box. Gain deep insights into workflow performance and issues, allowing you to troubleshoot faster, identify bottlenecks, and continuously optimize your system.
 
 ## Upgrade your queues with Inngest
 

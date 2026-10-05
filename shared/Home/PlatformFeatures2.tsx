@@ -37,7 +37,7 @@ export default function PlatformFeatures() {
               any extra work.
             </p>
             <a
-              href="/docs/platform/environments"
+              href="/docs/platform-and-operations/environments-and-branch-deploys"
               className="mt-4 font-medium text-slate-200 underline decoration-dotted underline-offset-4 decoration-slate-50/30 hover:text-white hover:decoration-white/50"
             >
               Learn more →
@@ -131,7 +131,7 @@ export default function PlatformFeatures() {
             </p>
 
             <a
-              href="/docs/platform/replay"
+              href="/docs/platform-and-operations/replay-runs-in-bulk"
               className="mt-4 font-medium text-slate-200 underline decoration-dotted underline-offset-4 decoration-slate-50/30 hover:text-white hover:decoration-white/50"
             >
               Learn more →

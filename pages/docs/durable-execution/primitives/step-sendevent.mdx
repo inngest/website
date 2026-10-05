@@ -1,0 +1,94 @@
+import { CodeGroup } from "shared/Docs/mdx";
+import { Compatibility } from "shared/Docs/mdx";
+export const metaTitle = "Send Events from Inside a Function";
+export const description = "Use step.sendEvent() to send events from inside an Inngest function, triggering other workflows or fan-out work without resending after a retry.";
+
+# `step.sendEvent`
+
+<Compatibility />
+
+`step.sendEvent()` publishes an event from inside a durable function. Inngest saves a completed send as a step, so the sender can retry later work without sending that event again.
+
+They are useful when:
+
+- You want other functions to start after a step completes.
+- Several independent functions should react to the same event.
+- The sender does not need to wait for those functions to finish.
+
+## Send an event
+
+Call `step.sendEvent(stepId, event)` inside an Inngest function. Give the step a stable ID. The event needs a `name` and JSON `data`. Await the call before the function continues.
+
+<CodeGroup>
+```typescript {{ title: "TypeScript" }}
+import { Inngest } from "inngest";
+
+const inngest = new Inngest({ id: "orders" });
+
+export const queueFulfillment = inngest.createFunction(
+  { id: "queue-fulfillment", triggers: { event: "shop/order.accepted" } },
+  async ({ event, step }) => {
+    const { ids } = await step.sendEvent("publish-fulfillment-request", {
+      id: `fulfillment-request-${event.data.orderId}`,
+      name: "shop/fulfillment.requested",
+      data: { orderId: event.data.orderId },
+    });
+
+    return { eventId: ids[0] };
+  }
+);
+```
+
+```python {{ title: "Python" }}
+!snippet:path=snippets/py/latest/primitives/step_sendevent/queue_fulfillment.py
+```
+
+```go {{ title: "Go", filename: 'main.go' }}
+!snippet:path=snippets/go/docs/primitives/step_sendevent/queue_fulfillment.go
+```
+</CodeGroup>
+
+Any function triggered by `shop/fulfillment.requested` can process the order in its own run. The optional event `id` in this example prevents a second event with that ID from starting duplicate runs during the [24-hour deduplication window](/docs/durable-execution/guides-and-advanced/idempotency). Use a value specific to this event and business operation.
+
+## API
+
+<CodeGroup>
+```ts {{ title: "TypeScript" }}
+const { ids } = await step.sendEvent(id, events);
+```
+
+```python {{ title: "Python" }}
+!snippet:path=snippets/py/latest/primitives/step_sendevent/api.py
+```
+
+```go {{ title: "Go" }}
+!snippet:path=snippets/go/docs/primitives/step_sendevent/api.go
+```
+</CodeGroup>
+
+
+- **`id`**: a stable step ID, such as `"send-fulfillment"`.
+- **`events`**: one event or an array. Each event needs a `name` and `data`.
+- **Returns** the IDs of the sent events, not the results of any functions they trigger.
+
+See the [`step.sendEvent` reference](/docs/reference/typescript/functions/step-send-event) for every option.
+
+## Failures and duplicate work
+
+`step.sendEvent` is a durable step. Inngest records a successful send so resuming the function does not repeat that completed step. If the send errors, normal step retry handling applies. A batched send reports partial success when only some events are accepted. Do not assume a failed batch sent zero events. Catch a failed step after retries if the function can recover, or let the error fail the run.
+
+A stable step ID protects a completed step within its run. An event `id` protects consumers when the same event is submitted again, including from another run. Event deduplication lasts 24 hours. Keep receiving functions idempotent when their own side effects can be retried.
+
+## When to use it
+
+- Use `step.sendEvent` for independent work, bulk fan-out, or one event that should trigger several functions. Await it even when the receiving work is asynchronous.
+- Use [step.invoke](/docs/durable-execution/primitives/step-invoke) when this function needs a specific function's result before it can continue.
+- Use `inngest.send` outside an Inngest function. Inside a function, `step.sendEvent` also ties the send to the run's trace.
+
+## Limits
+
+One call can send at most 5,000 events. Event size depends on the account plan, and event names can be at most 256 characters. Check the current usage limits before batching large payloads.
+
+## Next
+
+Read Sending events from functions for fan-out patterns, Event payloads for fields, and [step.invoke](/docs/durable-execution/primitives/step-invoke) for dependent work.

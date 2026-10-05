@@ -159,7 +159,7 @@ The infrastructure you hoped would speed you up is now slowing you down.
 
 Growing frustrated with the complexity, one of your engineers starts looking for a simpler solution. After some research, they stumble across Inngest's Flow Control .
 
-[Flow Control](/docs/guides/flow-control) in Inngest lets you manage **how and when your functions run**. You can control things like **resource usage** (CPU, concurrency), **event execution order**, how functions behave in a **queue**, and **how often** they run per event.
+[Flow Control](/docs/durable-execution/flow-control?ref=blog-kafka-achilles) in Inngest lets you manage **how and when your functions run**. You can control things like **resource usage** (CPU, concurrency), **event execution order**, how functions behave in a **queue**, and **how often** they run per event.
 
 The team realizes that everything the team was trying to build manually, rate limiting, deduplication, retries, and prioritization, is already handled natively within Inngest.
 
@@ -226,7 +226,7 @@ The team is shipping faster. Bugs related to duplicate resume processing have di
 
 Kafka is powerful, no doubt, but for most teams, especially those building product workflows, it's too much. You end up writing glue code, managing extra infrastructure, and solving problems that have already been solved a hundred times.
 
-Inngest's [Flow Control](/docs/guides/flow-control)  gives you those same capabilities, **without the overhead**. You get [retries](/docs/features/inngest-functions/error-retries/retries), [rate limiting](/docs/guides/debounce), [debouncing](/docs/guides/debounce), [throttling](/docs/guides/throttling), [prioritization](/docs/guides/priority), and more,  all built-in, all configurable, and all production-ready.
+Inngest's [Flow Control](/docs/durable-execution/flow-control?ref=blog-kafka-achilles)  gives you those same capabilities, **without the overhead**. You get [retries](/docs/durable-execution/guides-and-advanced/error-handling/retries?ref=blog-kafka-achilles), [rate limiting](/docs/durable-execution/flow-control/rate-limiting?ref=blog-kafka-achilles), [debouncing](/docs/durable-execution/flow-control/debounce?ref=blog-kafka-achilles), [throttling](/docs/durable-execution/flow-control/throttling?ref=blog-kafka-achilles), [prioritization](/docs/durable-execution/flow-control/priority?ref=blog-kafka-achilles), and more,  all built-in, all configurable, and all production-ready.
 
 So if you're spending more time managing queues than delivering features, maybe it's time to ask a better question:
 
@@ -266,4 +266,4 @@ async ({ event }) => {
 
 Unlike rate limiting (which controls frequency) or debouncing (which delays execution), Singleton Functions ensure mutual exclusion—only one run per key executes at a time.
 
-[Learn more about Singleton Functions](/docs/guides/singleton) | [View changelog](https://www.inngest.com/changelog/2025-06-06-singleton-functions)
+[Learn more about Singleton Functions](/docs/durable-execution/flow-control/singleton?ref=blog-kafka-achilles) | [View changelog](https://www.inngest.com/changelog/2025-06-06-singleton-functions)

@@ -1,0 +1,105 @@
+import { CodeGroup, SdkUnsupported } from "shared/Docs/mdx";
+import { Compatibility } from "shared/Docs/mdx";
+export const metaTitle = "step.waitForSignal() | Wait for a Signal";
+export const description = "Pause an Inngest function with step.waitForSignal() and resume one run when a named signal arrives. Ideal for human-in-the-loop and approval workflows.";
+
+
+# `step.waitForSignal`
+
+<Compatibility />
+
+`step.waitForSignal()` pauses one run until a signal with its name arrives or the wait times out. You can resume that run directly when its specific answer is ready.
+
+They are useful when:
+
+- A callback belongs to one waiting run.
+- You need to resume a run as soon as its response arrives.
+- You want to address a wait by a unique signal name.
+
+## Why choose a signal?
+
+- **Resume one run directly.** A unique signal name addresses one active wait.
+- **Resume sooner.** The signal API is transactional; event delivery is eventually consistent.
+
+Use [step.waitForEvent](/docs/durable-execution/primitives/step-waitforevent) for most waits. An event can resume multiple runs, trigger other functions, and provide a stored record for audit and Insights. Choose a signal when one run needs a direct, latency-sensitive response.
+
+## Wait for a signal
+
+Give each waiting run a distinct signal name. The sender must use the same name. The example uses a request ID to connect an approval to its waiting run.
+
+<CodeGroup>
+```typescript {{ title: "TypeScript" }}
+const approveRequest = inngest.createFunction(
+  {
+    id: "approve-request",
+    triggers: { event: "app/approval.requested" },
+  },
+  async ({ event, step }) => {
+    const signal = `approval/${event.data.requestId}`;
+
+    const approval = await step.waitForSignal<{ approved: boolean }>(
+      "wait-for-approval",
+      {
+        signal,
+        timeout: "3d",
+        onConflict: "fail",
+      }
+    );
+
+    if (approval === null) return { status: "timed-out" };
+    if (!approval.data.approved) return { status: "rejected" };
+
+    return { status: "approved" };
+  }
+);
+```
+
+<SdkUnsupported title="Python" feature="step.waitForSignal">Use [`ctx.step.wait_for_event`](/docs/durable-execution/primitives/step-waitforevent) with a match on the request ID instead.</SdkUnsupported>
+
+```go {{ title: "Go" }}
+!snippet:path=snippets/go/docs/primitives/step_waitforsignal/approve_request.go
+```
+</CodeGroup>
+
+From the code that receives the approval, send the matching signal:
+
+<CodeGroup>
+```typescript {{ title: "TypeScript" }}
+await inngest.sendSignal({
+  signal: `approval/${requestId}`,
+  data: { approved: true },
+});
+```
+
+<SdkUnsupported title="Python" feature="Sending signals" />
+
+<SdkUnsupported title="Go" feature="Sending signals" />
+</CodeGroup>
+
+## API
+
+<CodeGroup>
+```ts {{ title: "TypeScript" }}
+const result = await step.waitForSignal(id, { signal, timeout });
+```
+
+<SdkUnsupported title="Python" feature="step.waitForSignal">Use [`ctx.step.wait_for_event`](/docs/durable-execution/primitives/step-waitforevent) with a match on the request ID instead.</SdkUnsupported>
+
+```go {{ title: "Go" }}
+!snippet:path=snippets/go/docs/primitives/step_waitforsignal/api.go
+```
+</CodeGroup>
+
+
+- **`id`**: a stable step ID.
+- **`signal`**: a unique name for this wait, such as `` `approval/${requestId}` ``.
+- **`timeout`**: how long to wait, such as `"1h"`.
+- **Returns** an object with the signal's `data`, or `null` if the timeout expires.
+
+Send a signal with `inngest.sendSignal({ signal, data })` from your app, or `step.sendSignal()` from another function. Signals are currently experimental. See the [`step.waitForSignal` reference](/docs/reference/typescript/functions/step-wait-for-signal) for every option.
+
+## Handle duplicate names, timeouts, and cancellation
+
+`onConflict: "fail"` fails this run if another active wait uses the same signal name. `onConflict: "replace"` gives the name to the new wait; the earlier wait stays pending until its timeout. Use a request or run identifier in the signal name so unrelated runs do not compete.
+
+A signal timeout resumes the function with `null`. Check that result before reading `data`. Cancelling the function run is a separate action: it stops subsequent work rather than returning a timeout value to this code. Use cancellation when you need to stop the run instead of returning a timeout value.

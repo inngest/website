@@ -3,7 +3,16 @@ import Image, { ImageProps } from "next/image";
 import Zoom from "react-medium-image-zoom";
 import "react-medium-image-zoom/dist/styles.css";
 
-import { h1, h2, h3, h4, a, code, pre } from "./shared/Docs/mdx";
+import {
+  h1,
+  h2,
+  h3,
+  h4,
+  a,
+  code,
+  pre,
+  DocsPageHeading,
+} from "./shared/Docs/mdx";
 
 export function useMDXComponents(components: MDXComponents): MDXComponents {
   return {
@@ -26,6 +35,7 @@ export function useMDXComponents(components: MDXComponents): MDXComponents {
     ),
     code,
     pre,
+    DocsPageHeading,
     ...components,
   };
 }

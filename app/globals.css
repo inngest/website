@@ -4,6 +4,16 @@
 @tailwind components;
 @tailwind utilities;
 
+@layer base {
+  :where(h1, h2, h3, h4, h5, h6) {
+    text-wrap: balance;
+  }
+
+  :where(p, li, blockquote, figcaption) {
+    text-wrap: pretty;
+  }
+}
+
 @supports (font-variation-settings: normal) {
   html {
     font-family: CircularXX, Inter, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto;

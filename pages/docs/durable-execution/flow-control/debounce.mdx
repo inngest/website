@@ -1,0 +1,82 @@
+import { CodeGroup, Compatibility } from "shared/Docs/mdx";
+import { FlowControlMarbles } from "src/shared/Docs/FlowControlMarbles";
+export const metaTitle = "Debounce | Deduplicate Events Over Time";
+export const description = "Debounce Inngest functions to handle a burst of events once. A sliding time window runs the function with the latest event and skips redundant work.";
+
+# Debounce
+
+> Handle a burst of updates once using its latest event.
+
+<Compatibility endpoints={false} />
+
+Wait until a user stops editing a record, then process only the latest update. Each matching event restarts the quiet period for its key, so the function runs once for the burst.
+
+<FlowControlMarbles scenario="debounce" />
+
+## Configure a quiet period
+
+This TypeScript v4 function waits five minutes after the most recent `company/updated` event for an account. Each new event for that account restarts the five-minute wait. The optional ten-minute `timeout` stops a continuous stream from postponing the run indefinitely.
+
+<CodeGroup>
+```typescript {{ title: "TypeScript" }}
+import { Inngest } from "inngest";
+
+const inngest = new Inngest({ id: "customer-sync" });
+
+export const syncCompany = inngest.createFunction(
+  {
+    id: "sync-company",
+    triggers: { event: "company/updated" },
+    debounce: {
+      key: "event.data.account_id",
+      period: "5m",
+      timeout: "10m",
+    },
+  },
+  async ({ event, step }) => {
+    await step.run("process-latest-update", async () => {
+      console.log(event.data.account_id);
+    });
+  }
+);
+```
+
+```python {{ title: "Python" }}
+!snippet:path=snippets/py/latest/flow_control/debounce/sync_company.py
+```
+
+```go {{ title: "Go" }}
+!snippet:path=snippets/go/docs/flow_control/debounce/sync_company.go
+```
+</CodeGroup>
+
+Replace the step body with your application work. The handler receives the **last event** in the burst, not the first event and not an array of every event.
+
+The optional `key` is a Common Expression Language (CEL) expression string evaluated against each event. Each unique value gets an independent debounce period. In the example, updates for two accounts can settle and run separately. Without a key, matching events share the function's debounce period.
+
+## How the wait changes
+
+1. The first matching event starts a debounce period.
+2. Another matching event within that period restarts the wait. The new event replaces the pending one.
+3. When the full period passes with no new matching event, Inngest starts one run using the last event received.
+4. If you set `timeout`, Inngest stops extending the wait once that maximum time passes and runs with the latest event. The next matching event starts a new debounce period.
+
+## Choose the right behavior
+
+| Need | Use | Which event runs? |
+| --- | --- | --- |
+| Wait for updates to stop, then use the latest state | Debounce | The last event in the burst |
+| Start work when an event arrives and skip events beyond a limit | [Rate limiting](/docs/durable-execution/flow-control/rate-limiting) | An event admitted under the limit |
+
+Debounce delays the run. Rate limiting does not wait for a quiet period. If you need to process **every** event, neither behavior fits; consider [throttling](/docs/durable-execution/flow-control/throttling), which queues excess runs.
+
+## Configuration and limits
+
+| Option | Meaning |
+| --- | --- |
+| `period` | Required quiet period. TypeScript v4 permits `1s` through `7d` (`168h`). |
+| `key` | Optional CEL expression that creates a separate debounce period per value. |
+| `timeout` | Optional maximum time that incoming events can keep extending the wait. |
+
+Debounce cannot be combined with [batching](/docs/durable-execution/flow-control/batching). Debounce keeps one latest event; batching collects multiple events for one run.
+

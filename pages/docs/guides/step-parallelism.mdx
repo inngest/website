@@ -194,7 +194,7 @@ async def fn(ctx: inngest.Context) -> None:
 
 Race mode changes *when* Inngest re-invokes your function: as soon as any step in the group settles, instead of waiting for all of them. The losing steps are *not* cancelled and continue to run.
 
-This is most visible with [`step.waitForEvent()`](/docs/features/inngest-functions/steps-workflows/wait-for-event). A losing `waitForEvent` remains an active server-side pause, so the run stays in a `Running` state until that wait reaches its own `timeout`, even though your function code proceeded past the race earlier. Because the losing wait's timeout bounds the run's lifetime, use the tightest `waitForEvent` timeout that works for your use case when racing waits.
+This is most visible with [`step.waitForEvent()`](/docs/durable-execution/primitives/step-waitforevent). A losing `waitForEvent` remains an active server-side pause, so the run stays in a `Running` state until that wait reaches its own `timeout`, even though your function code proceeded past the race earlier. Because the losing wait's timeout bounds the run's lifetime, use the tightest `waitForEvent` timeout that works for your use case when racing waits.
 
 ## Chunking jobs
 
@@ -231,7 +231,7 @@ Currently, the total data returned from **all** steps must be under 4MB (eg. a s
 
 ## Parallelism vs fan-out
 
-Another technique similar to parallelism is fan-out ([read the guide here](/docs/guides/fan-out-jobs)):  when one function sends events to trigger other functions.  Here are the key differences:
+Another technique similar to parallelism is fan-out ([read the guide here](/docs/durable-execution/guides-and-advanced/patterns/fan-out)):  when one function sends events to trigger other functions.  Here are the key differences:
 
 - Both patterns run jobs in parallel
 - You can access the output of steps ran in parallel within your function, whereas with fan-out you cannot

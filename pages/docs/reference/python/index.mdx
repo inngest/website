@@ -1,20 +1,125 @@
 import GithubIcon from "shared/Icons/Github"
 
-export const metaTitle = "Inngest Python SDK Reference"
-export const description = "Full reference for the Inngest Python SDK: creating functions, sending events, step methods, middleware, environment variables, and framework integrations."
+export const metaTitle = "Python SDK | Inngest Reference";
+export const description = "Install the Inngest Python SDK, create a client, and find the reference for functions, steps, events, middleware, and configuration.";
 
 # Python SDK
 
-## Installing
+> Install the Python SDK, create a client, and find every API it offers.
+
+The Python SDK defines durable functions, sends events, and serves your functions from FastAPI, Flask, or Django. It also runs [Connect](/docs/durable-execution/deploying-functions/connect) workers. Some features are TypeScript-only for now; see [feature support](/docs/sdks#feature-support).
+
+## Install
+
+The SDK needs Python 3.10 or newer.
 
 ```shell
 pip install inngest
 ```
 
-## Quick start guide
+## Create a client and serve functions
 
-Read the Python [quick start guide](/docs/getting-started/python-quick-start) to learn how to add Inngest to a FastAPI app and run an Inngest function.
+Create one client for your app, define functions with it, and serve them from your web framework. This example uses FastAPI:
+
+```python {{ title: "main.py" }}
+import logging
+
+from fastapi import FastAPI
+import inngest
+import inngest.fast_api
+
+inngest_client = inngest.Inngest(
+    app_id="my-app",
+    logger=logging.getLogger("uvicorn"),
+)
+
+@inngest_client.create_function(
+    fn_id="process-task",
+    trigger=inngest.TriggerEvent(event="app/task.created"),
+)
+async def process_task(ctx: inngest.Context) -> dict[str, object]:
+    return await ctx.step.run("handle-task", lambda: {"processed": True})
+
+app = FastAPI()
+inngest.fast_api.serve(app, inngest_client, [process_task])
+```
+
+The [Python quick start](/docs/durable-execution/quick-start/python-quick-start) walks through a full example with the Dev Server.
+
+## Define steps
+
+Steps are the units of work Inngest retries and memoizes. The Python SDK gives you two ways to write them.
+
+**Imperative:** call `ctx.step.run()` with a step ID and a handler inside your function.
+
+```python
+@inngest_client.create_function(
+    fn_id="greet-user",
+    trigger=inngest.TriggerEvent(event="app/greet-user"),
+)
+async def greet_user(ctx: inngest.Context) -> str:
+    async def prepare_greeting() -> str:
+        return f"Welcome, {ctx.event.data['name']}!"
+
+    return await ctx.step.run("prepare-greeting", prepare_greeting)
+```
+
+**Decorator (experimental):** decorate a function with `step` from `inngest.experimental`. Calls inside an Inngest function run as steps; calls anywhere else run the function directly.
+
+```python
+from inngest.experimental import step
+
+@step("prepare-greeting")
+async def prepare_greeting(name: str) -> str:
+    return f"Welcome, {name}!"
+
+@inngest_client.create_function(
+    fn_id="greet-user",
+    trigger=inngest.TriggerEvent(event="app/greet-user"),
+)
+async def greet_user(ctx: inngest.Context) -> str:
+    return await prepare_greeting(str(ctx.event.data["name"]))
+```
+
+Both produce the same step. Use `ctx.step.run()` for logic specific to one function; use the decorator for steps you share across functions or also call from regular code. See [choosing `step.run` or the decorator](/docs/reference/python/steps/run?ref=docs-reference-python#choosing-step-run-or-the-decorator).
+
+## Reference
+
+**Client and events**
+
+- [Inngest client](/docs/reference/python/client/overview)
+- [Send events](/docs/reference/python/client/send)
+
+**Functions**
+
+- [Create a function](/docs/reference/python/functions/create): triggers, retries, flow control, and cancellation options
+
+**Steps**
+
+- [`run`](/docs/reference/python/steps/run), [`sleep`](/docs/reference/python/steps/sleep), and [`sleep_until`](/docs/reference/python/steps/sleep-until)
+- [`wait_for_event`](/docs/reference/python/steps/wait-for-event)
+- [`invoke`](/docs/reference/python/steps/invoke), [`invoke_by_id`](/docs/reference/python/steps/invoke_by_id), and [`send_event`](/docs/reference/python/steps/send-event)
+- [`parallel`](/docs/reference/python/steps/parallel)
+- [`@step` decorator](/docs/reference/python/steps/run?ref=docs-reference-python#step-decorator) (experimental): turn a Python function into a reusable step
+
+**Middleware**
+
+- [Overview](/docs/reference/python/middleware/overview) and [lifecycle](/docs/reference/python/middleware/lifecycle)
+
+**Configuration**
+
+- [Environment variables](/docs/reference/python/overview/env-vars)
+- [Production mode](/docs/reference/python/overview/prod-mode)
+
+**Guides**
+
+- [Testing](/docs/reference/python/guides/testing), [Pydantic](/docs/reference/python/guides/pydantic), and [Modal](/docs/reference/python/guides/modal)
+- [Realtime in Python](/docs/realtime/reference#python) (beta)
+
+**Migrations**
+
+- [v0.4 to v0.5](/docs/reference/python/migrations/v0.4-to-v0.5) and [v0.3 to v0.4](/docs/reference/python/migrations/v0.3-to-v0.4)
 
 ## Source code
 
-Our Python SDK is open source and available on Github: [<GithubIcon className="ml-2 inline-flex"/> inngest/inngest-py](https://github.com/inngest/inngest-py).
+The Python SDK is open source on GitHub: [<GithubIcon className="ml-2 inline-flex"/> inngest/inngest-py](https://github.com/inngest/inngest-py). Releases are published to [PyPI](https://pypi.org/project/inngest/).

@@ -47,6 +47,16 @@ async function redirects() {
   return [
     ...blogRedirects,
     {
+      source: "/docs/durable-execution/guides-and-advanced/deploying-functions",
+      destination: "/docs/durable-execution/deploying-functions",
+      permanent: true,
+    },
+    {
+      source: "/docs/durable-execution/guides-and-advanced/max-runtime-for-serverless-environments",
+      destination: "/docs/durable-execution/guides-and-advanced/checkpointing",
+      permanent: true,
+    },
+    {
       // /sales-inquiry-form renamed to /contact
       source: "/sales-inquiry-form",
       destination: "/contact",
@@ -86,17 +96,17 @@ async function redirects() {
     {
       // From the UI's source editing page:
       source: "/docs/event-webhooks",
-      destination: "/docs/events/webhooks",
+      destination: "/docs/durable-execution/guides-and-advanced/events-and-triggers/receive-webhook-events",
       permanent: true,
     },
     {
       source: "/features/sdk",
-      destination: "/docs/sdk/overview",
+      destination: "/docs/sdks",
       permanent: true,
     },
     {
       source: "/features/step-functions",
-      destination: "/docs/learn/inngest-steps",
+      destination: "/docs/durable-execution/primitives",
       permanent: true,
     },
 
@@ -228,12 +238,24 @@ function touchFilesWithString(str, { dir = "./pages", ext = "mdx" } = {}) {
 /** @type {import('next').NextConfig} */
 
 async function rewrites() {
+  // The Sandboxes playground (inngest/sandboxes-playground) is a separate
+  // deployment served under /try-sandboxes. It bakes in that base path, so a
+  // single prefix rewrite proxies its pages and its _next assets alike. Gated
+  // on the env var so builds without it configured are unaffected.
+  const trySandboxesOrigin = process.env.TRY_SANDBOXES_ORIGIN;
+  const trySandboxes = trySandboxesOrigin
+    ? [
+        { source: "/try-sandboxes", destination: `${trySandboxesOrigin}/try-sandboxes` },
+        { source: "/try-sandboxes/:path*", destination: `${trySandboxesOrigin}/try-sandboxes/:path*` },
+      ]
+    : [];
   return {
     // beforeFiles run before page/filesystem matching, so these intercept the
     // raw-markdown URLs before the dynamic /docs/patterns/[category]/[slug]
     // pages would 404 on them. Segment counts don't collide: index (3) /
     // category (4) / pattern (5).
     beforeFiles: [
+      ...trySandboxes,
       {
         source: "/docs/patterns/md",
         destination: "/api/patterns/md",
@@ -310,6 +332,19 @@ const nextConfig = {
         pathname: "/assets/**",
       },
     ],
+  },
+  // Content read at runtime via dynamic paths (utils/markdown.ts uses
+  // turbopackIgnore so it doesn't trace the whole project).
+  outputFileTracingIncludes: {
+    "/blog": ["./content/blog/**/*"],
+    "/blog/**/*": ["./content/blog/**/*"],
+    "/blog-markdown/**/*": ["./content/blog/**/*"],
+    "/resources/access/**/*": ["./content/blog/**/*"],
+    "/changelog": ["./content/changelog/**/*"],
+    "/changelog/**/*": ["./content/changelog/**/*"],
+    "/api/rss.xml": ["./content/blog/**/*", "./content/changelog/**/*"],
+    "/api/patterns/**/*": ["./shared/Patterns/_patterns/**/*"],
+    "/docs/patterns/**/*": ["./shared/Patterns/_patterns/**/*"],
   },
   outputFileTracingExcludes: {
     "*": ["./.git/*", "./public/**/*", "./.pnpm-store/*"],

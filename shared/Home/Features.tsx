@@ -112,7 +112,7 @@ const content = [
     ),
     ctas: [
       {
-        href: "/docs/guides/cancel-running-functions",
+        href: "/docs/durable-execution/guides-and-advanced/cancellation/bulk-cancellation",
         text: "Learn about cancellation",
       },
     ],
@@ -163,7 +163,7 @@ const content = [
     ),
     ctas: [
       {
-        href: "/docs/guides/batching",
+        href: "/docs/durable-execution/flow-control/batching",
         text: "Learn about batching",
       },
     ],
@@ -180,7 +180,7 @@ const content = [
     ),
     ctas: [
       {
-        href: "/docs/platform/replay",
+        href: "/docs/platform-and-operations/replay-runs-in-bulk",
         text: "Learn about replay",
       },
     ],

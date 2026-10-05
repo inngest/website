@@ -1,0 +1,96 @@
+import { CodeGroup, SdkUnsupported } from "shared/Docs/mdx";
+export const metaTitle = "Managed lifecycle | Sandboxes";
+export const description = "Managed Sandbox lifecycle: create Sandboxes, run commands, and clean up as durable steps in an Inngest function run, with retries handled for you.";
+
+# Managed lifecycle
+
+> Coordinate Sandbox creation, commands, and cleanup as durable steps in a function run.
+
+> **Access-gated beta.** The low-level TypeScript API below follows the access-gated Sandbox beta. The planned `step.sandbox.typescript` helper has no published call shape yet.
+
+Use durable Sandbox steps when isolated code belongs to a longer function run. Inngest records each operation’s result, so a resumed function can continue after completed steps. The API you choose determines which lifecycle and cleanup actions your function must handle.
+
+| API | What Inngest handles | What you handle |
+| --- | --- | --- |
+| `step.sandbox.create()` and other low-level steps | Durable operation results, safe retries, readiness polling by default, and step failures | When to pause, resume, snapshot, clone, and destroy the Sandbox; cleanup after permanent failure |
+| `inngest.sandboxes` | Immediate Sandbox requests and bounded readiness polling | Retries, cancellation, and cleanup in your server process |
+| Planned `step.sandbox.typescript` | Starts a Sandbox, runs TypeScript, and stops the Sandbox in one call | Planned; no beta API |
+
+## Use a Sandbox in a durable function
+
+Add the Sandbox middleware to a TypeScript v4 client. Each `step.sandbox` operation takes a stable step ID. This example creates a Sandbox, runs a command, and destroys the Sandbox on the successful path.
+
+<CodeGroup>
+```typescript {{ title: "TypeScript" }}
+import { Inngest } from "inngest";
+import { sandboxMiddleware } from "inngest/experimental";
+
+const inngest = new Inngest({
+  id: "sandbox-lifecycle",
+  middleware: [sandboxMiddleware()],
+});
+
+export const runInSandbox = inngest.createFunction(
+  {
+    id: "run-in-sandbox",
+    triggers: { event: "sandbox/job.requested" },
+  },
+  async ({ event, step }) => {
+    const sandbox = await step.sandbox.create("create-sandbox", {
+      name: `job-${event.data.jobId}`,
+      vcpu: 1,
+      memoryMb: 1024,
+      runningTimeout: "60s",
+    });
+
+    const result = await sandbox.commands.run(
+      "run-command",
+      ["node", "-e", "console.log('done')"],
+      { timeout: "30s" },
+    );
+
+    await sandbox.destroy("destroy-sandbox");
+
+    return { exitCode: result.exitCode, stdout: result.stdout };
+  },
+);
+```
+
+<SdkUnsupported title="Python" feature="Sandboxes" />
+<SdkUnsupported title="Go" feature="Sandboxes" />
+</CodeGroup>
+
+Use a stable, Sandbox-safe job ID in the event. A completed step replays its result, including the Sandbox object returned by Create. This avoids creating another Sandbox when the function resumes after a later step. It does **not** keep the guest process or filesystem alive if the Sandbox itself is lost.
+
+Create waits for `RUNNING` by default. If readiness times out, the Sandbox may still exist. When cleanup needs an ID even if readiness fails, create with `runningTimeout: false`, then call `sandbox.waitUntilRunning("wait-for-sandbox", { timeout: "60s" })` as a separate step.
+
+## Clean up after failure
+
+The example's Destroy step runs only if execution reaches it. If the function fails after all retries, use an `onFailure` handler or a separate cleanup function that can retrieve the Sandbox ID. Store the ID somewhere that handler can read after Create. The failure handler runs as a separate function; a JavaScript `finally` block in the main function does not replace this cleanup path.
+
+For immediate server-side calls through `inngest.sandboxes`, use `try/finally` and call `sandbox?.destroy()` in `finally`. The direct client has no durable step replay.
+
+Destroy removes the Sandbox filesystem, processes, and retained process output. Persist artifacts outside the Sandbox before destroying it. Destroy may first return `TERMINATING`; teardown continues after the API accepts the request.
+
+## Pause, resume, and reuse state
+
+Pause releases the live runtime into a private checkpoint. Resume returns the **same** Sandbox ID with its filesystem, memory, and remaining runtime. The current beta allows one hour of active runtime per Sandbox; time spent paused does not consume it. Use the returned running Sandbox before making another command, file, log, or process call.
+
+A user snapshot keeps a copy of memory, disk, environment, image, and resource settings while the source Sandbox continues running. Clone creates a **new** Sandbox ID from a ready snapshot. Snapshot creation and readiness are separate phases. A wait timeout does not cancel the snapshot being created.
+
+The Sandbox filesystem persists through pause and resume, and a snapshot clone receives the captured filesystem. S3-backed persistent filesystem mounts can share a backing path across different Sandboxes, including clones; those mounts are a separate storage choice from the Sandbox’s private filesystem.
+
+## Retries and uncertain outcomes
+
+Let unexpected `step.sandbox` errors escape the function. Inngest retries operations the middleware marks safe and records a failure when retries are exhausted or an operation is unsafe to repeat. An `operation_ambiguous` error means a command, process start, or signal may have happened without a confirmed response. Inspect the Sandbox or the operation's external effect before deciding whether to repeat it.
+
+A durable step records the operation result; it does not promise that a Sandbox, guest process, or retained output survives a lost runtime. Inspect the current Sandbox state with Get when work resumes after a long wait or external interruption.
+
+Sandbox operations used as durable steps appear with the function's other steps in its run trace.
+
+## One-call TypeScript execution
+
+A planned `step.sandbox.typescript` call will start a Sandbox, run TypeScript, and stop it automatically. This planned path is for one isolated task that does not keep a Sandbox between steps.
+
+This page describes isolated microVM Sandboxes. Deployment preview environments are called **branch deploys**.
+

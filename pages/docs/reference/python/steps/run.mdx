@@ -60,10 +60,77 @@ async def my_fn_with_args_and_kwargs(a: int, *, b: str) -> None:
     pass
 ```
 
+## Step decorator
+
+Decorate a Python function with `step` from `inngest.experimental` to turn it into a reusable step. You don't pass `ctx` to it or wrap each call in `ctx.step.run()`.
+
+Requires Python SDK `inngest>=0.5.14`. Import it with `from inngest.experimental import step` (or `import inngest.experimental`); `import inngest` alone doesn't load the `experimental` module.
+
+<Callout variant="warning">
+This API is experimental and may have breaking changes outside of semantic versioning.
+</Callout>
+
+The decorator takes one required argument, `step_id`, with the same meaning as the ID passed to `step.run`. Choose a stable ID for each distinct step in your workflow. Positional and keyword arguments are passed through to the decorated function.
+
+### Usage
+
+The decorator works with both async and sync functions. Match the decorated function to the Inngest function that calls it:
+
+- In an `async def` Inngest function, decorate an `async def` function and `await` the call, as shown below.
+- In a `def` (sync) Inngest function, decorate a `def` function and call it without `await`.
+
+```py
+!snippet:path=snippets/py/latest/primitives/step_run/decorator.py
+```
+
+### Execution behavior
+
+- **Inside an Inngest function:** the decorator calls `step.run` using the current execution context. The step gets the same retries and memoization as an explicit `ctx.step.run()` call. Return a JSON-serializable value.
+- **Outside an Inngest function:** the original function runs directly, without durable execution, memoization, or Inngest retries. You can reuse the function in other application code or call it in unit tests. Async functions still need to be awaited.
+- **Inside another step:** do not call a decorated function from a `step.run` handler or another decorated step. This would create nested steps, which are not supported. Call decorated steps from the Inngest function's body instead.
+- **Called more than once:** calling the same decorated function several times in one run (for example, in a loop) works like reusing a `step.run` ID. The SDK adds a counter to each repeat, so every call is its own memoized step.
+
+<Callout variant="warning">
+Don't call a sync (`def`) decorated function from an async Inngest function. Inside an async function the call returns an un-awaited coroutine instead of the result, so the step never runs, and type checkers won't flag it because the decorator keeps the original return type.
+</Callout>
+
+For example, a direct call outside an Inngest function runs normally:
+
+```py
+!snippet:path=snippets/py/latest/primitives/step_run/decorator_outside_inngest.py
+```
+
+### Choosing `step.run` or the decorator
+
+Both create the same kind of step: the same retries, memoization, and trace in the dashboard. They differ in where the step boundary is written down.
+
+| | `ctx.step.run()` | `@step` decorator |
+| --- | --- | --- |
+| Step boundary | At the call site, in the Inngest function | On the function definition |
+| Step ID | Chosen per call | Fixed by the decorator |
+| Passing `ctx` | Handler can close over `ctx` and local variables | No `ctx` needed; pass data as arguments |
+| Keyword arguments | Need `functools.partial` | Passed through directly |
+| Same call outside Inngest | No, the call needs `ctx` | Yes, runs as a normal function |
+| Stability | Stable API | Experimental |
+
+Use `ctx.step.run()` when:
+
+- The step is a few lines specific to one function, or needs local variables from the function body.
+- The same logic runs as different steps, with different IDs, in different places.
+- You want a stable API.
+
+Use the decorator when:
+
+- A unit of work (charge a card, call an LLM, sync a record) is shared by several Inngest functions and should always be a step with the same ID.
+- The same function is also called from regular application code or unit tests, where it should run directly.
+- You want Inngest function bodies to read as plain Python calls.
+
+You can mix both styles in one function.
+
 ## Retries
 
 Each `step.run()` call has its own independent retry counter. When a step raises an exception, it will be retried according to your function's retry configuration. The retry configuration applies to each individual step, not as a shared pool across all steps in your function.
 
 For example, if your function is configured with `retries=4`, each `step.run()` will be retried up to 4 times independently (5 total attempts including the initial attempt). If you have multiple steps in your function, each step gets its own full set of retries.
 
-Learn more about [configuring retries](/docs/features/inngest-functions/error-retries/retries).
+Learn more about [configuring retries](/docs/durable-execution/guides-and-advanced/error-handling/retries).

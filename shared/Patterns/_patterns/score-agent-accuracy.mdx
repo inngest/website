@@ -9,7 +9,7 @@ Agents fail quietly. A misrouted ticket, a wrong extracted value, or a fix that 
 
 When you have ground truth (a labeled category, an expected value, the set of files a fix actually touched), accuracy is the most direct score you can record. You compare what the agent produced against the known answer and attach a `0`–`1` score to the run.
 
-Inngest records the score where the run already executed, so it sits next to the trace, inputs, and outputs that produced it. The known answer can be available at runtime, or it can arrive later as an outcome event. When it arrives later, you [score the run by its ID](/docs/features/inngest-functions/steps-workflows/scoring?ref=docs-patterns-score-agent-accuracy) instead of guessing at runtime.
+Inngest records the score where the run already executed, so it sits next to the trace, inputs, and outputs that produced it. The known answer can be available at runtime, or it can arrive later as an outcome event. When it arrives later, you [score the run by its ID](/docs/agent-evals/scores?ref=docs-patterns-score-agent-accuracy) instead of guessing at runtime.
 
 Use this pattern when you have a labeled set, a golden answer, or a verifiable result the agent should match: classification, extraction, routing, or file localization.
 
@@ -78,7 +78,7 @@ export default inngest.createFunction(
 
 `step.score()` attaches the score to the current run. The first argument is a stable step `id`, which memoizes the score across retries and replays the same way `step.run()` IDs do; `name` is the series the score aggregates under in dashboards. Swap `exactMatch` for `jaccard` or `tolerance` when the answer is a set or a number.
 
-When the correct answer only emerges after the run finishes (a human corrects the output, a downstream system confirms the result), move the check into a [deferred scorer](/docs/features/inngest-functions/steps-workflows/deferred-scoring?ref=docs-patterns-score-agent-accuracy) that waits for the outcome event and scores the original run by its ID.
+When the correct answer only emerges after the run finishes (a human corrects the output, a downstream system confirms the result), move the check into a [deferred scorer](/docs/agent-evals/deferred-scoring?ref=docs-patterns-score-agent-accuracy) that waits for the outcome event and scores the original run by its ID.
 
 ## Best practices
 
@@ -90,7 +90,7 @@ When the correct answer only emerges after the run finishes (a human corrects th
 
 ## Related docs
 
-- [Score a function run](/docs/features/inngest-functions/steps-workflows/scoring?ref=docs-patterns-score-agent-accuracy)
-- [Build a deferred scorer](/docs/features/inngest-functions/steps-workflows/deferred-scoring?ref=docs-patterns-score-agent-accuracy) for outcomes that arrive after the run
+- [Score a function run](/docs/agent-evals/scores?ref=docs-patterns-score-agent-accuracy)
+- [Build a deferred scorer](/docs/agent-evals/deferred-scoring?ref=docs-patterns-score-agent-accuracy) for outcomes that arrive after the run
 - [`inngest.score()` reference](/docs/reference/typescript/v4/functions/scoring?ref=docs-patterns-score-agent-accuracy)
 - [Run experiments in production](/docs/patterns/ai-evals/run-experiments-in-production?ref=docs-patterns-score-agent-accuracy)

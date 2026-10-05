@@ -1,0 +1,51 @@
+import { CodeGroup } from "shared/Docs/mdx";
+export const metaTitle = "Automatic Retries | Config & Behavior";
+export const description = "Inngest retries failed functions and steps automatically with exponential backoff, reusing completed step results. Configure retry counts or disable retries.";
+
+# Retries
+
+> Keep workflows moving through temporary failures without repeating completed steps.
+
+When a service times out, Inngest retries the failed work and reuses completed step results. Each `step.run()` has its own retry counter, so one failing step does not restart earlier completed steps.
+## Set the retry count
+The default is four retries after the initial attempt. Set `retries` on the function to change that count; `retries: 0` disables retries. TypeScript SDK v4 accepts values from 0 to 20.
+
+<CodeGroup>
+```typescript {{ title: "TypeScript" }}
+import { Inngest } from "inngest";
+
+const inngest = new Inngest({ id: "billing-app" });
+
+export const recordInvoice = inngest.createFunction(
+  {
+    id: "record-invoice",
+    triggers: { event: "billing/invoice.created" },
+    retries: 4,
+  },
+  async ({ event, step }) => {
+    const invoice = await step.run("load-invoice", () =>
+      loadInvoice(event.data.invoiceId)
+    );
+
+    await step.run("record-invoice", () =>
+      recordInvoiceInLedger(invoice, event.data.invoiceId)
+    );
+  }
+);
+```
+
+```python {{ title: "Python" }}
+!snippet:path=snippets/py/latest/errors/retries/record_invoice.py
+```
+
+```go {{ title: "Go" }}
+!snippet:path=snippets/go/docs/errors/retries/record_invoice.go
+```
+</CodeGroup>
+
+`loadInvoice` and `recordInvoiceInLedger` stand for functions in your app. The `retries` setting applies independently to each `step.run()`. If `load-invoice` succeeds and `record-invoice` fails, Inngest reuses the saved first result while retrying the second step. An error thrown outside a named step can also cause a function retry.
+## Decide when to retry
+Throw a standard error when another attempt can succeed, such as a temporary network error. Inngest uses backoff with jitter by default. Use `RetryAfterError` when a rate-limited API supplies a retry time. Use `NonRetriableError` for permanent invalid input. See [Non-retriable errors](/docs/durable-execution/guides-and-advanced/error-handling/non-retriable-errors) and [Inngest errors](/docs/durable-execution/guides-and-advanced/error-handling/inngest-errors).
+The handler receives a zero-indexed `attempt` value. It starts at `0`, increases with retries, and resets after a successful step. Prefer the run trace when you need to inspect which step retried.
+## Keep side effects safe
+A retry can call an external API again when the first call succeeded but its response was lost. Use the same idempotency key for every attempt of an operation. In the example, `event.data.invoiceId` can identify one ledger write if your ledger enforces uniqueness. A named step preserves a completed result; it cannot undo a duplicate write that occurred before Inngest received the step result.

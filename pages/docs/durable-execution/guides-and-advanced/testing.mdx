@@ -1,0 +1,38 @@
+import { CodeGroup, SdkUnsupported } from "shared/Docs/mdx";
+export const metaTitle = "Testing Inngest Functions";
+export const description = "Test Inngest functions before you deploy, so sleeps, waits, retries, and code changes in your durable workflows don't surprise you in production.";
+
+# Testing
+
+> Catch workflow errors and verify behavior across waits, retries, and code changes before deployment.
+
+Test a workflow before deployment so waits, retries, and code changes do not surprise you in production. Check the function's decisions and the paths that resume after a pause or failure.
+## Test the smallest useful path
+Unit test business logic without running a workflow when possible. Then test the workflow's event input, step calls, outputs, and error paths. Mock external APIs so a test can assert the business decision without charging a card or sending a message.
+For TypeScript v4, `@inngest/test` uses `InngestTestEngine` to run a function or stop at a step. It works with Jest-compatible assertions. Mock steps that pause execution, including sleep and `waitForEvent`.
+
+<CodeGroup>
+```typescript {{ title: "TypeScript" }}
+import { InngestTestEngine } from "@inngest/test";
+import { helloWorld } from "./helloWorld";
+
+const testEngine = new InngestTestEngine({ function: helloWorld });
+const { result } = await testEngine.execute();
+expect(result).toEqual("Hello World!");
+```
+
+```python {{ title: "Python" }}
+!snippet:path=snippets/py/latest/advanced/testing/test_hello_world.py
+```
+
+<SdkUnsupported title="Go" feature="Test engine">
+The Go SDK has no test engine. Test your handler with `go test` by calling it directly: outside an Inngest run, `step.Run` executes its callback immediately, but steps that pause the run, such as `step.Sleep` and `step.WaitForEvent`, panic.
+</SdkUnsupported>
+</CodeGroup>
+
+Pass test events and mock step results for a function that needs them. Use `executeStep("step-id")` when you need to check one checkpoint. Check the platform and language reference for exact SDK test APIs.
+## Exercise durable behavior locally
+Use the Dev Server to send a real test event and inspect the run. Test one success path, a transient failure that retries, a permanent failure, a wait that times out, and cancellation where applicable. For a version change, leave a run waiting, change the code, and inspect how the run resumes. See [Versioning](/docs/durable-execution/guides-and-advanced/versioning).
+## Check integrations before launch
+In a test environment, verify event filters, function registration, credentials, provider timeouts, and external idempotency keys. Check that a duplicate event or a retry cannot repeat a payment or other one-time effect. See [Idempotency](/docs/durable-execution/guides-and-advanced/idempotency).
+Use [Local Development](/docs/local-development) for local setup and the SDK reference for exact API details.

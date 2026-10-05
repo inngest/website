@@ -36,7 +36,7 @@ const STUDIES: CaseStudyItem[] = [
       </>
     ),
     logo: { src: "/assets/v1/webhooks-events/integrations/Clerk.png", alt: "Clerk", width: 110, height: 32 },
-    cta: { label: "Read the Clerk webhook guide", href: "/docs/guides/clerk-webhook-events" },
+    cta: { label: "Read the Clerk webhook guide", href: "/docs/guides/clerk-webhook-events?ref=webhooks-events-use-cases" },
   },
   {
     id: "resend-email",
@@ -50,7 +50,7 @@ const STUDIES: CaseStudyItem[] = [
       </>
     ),
     logo: { src: "/assets/v1/logos/resend.svg", alt: "Resend", width: 96, height: 24 },
-    cta: { label: "Read the Resend webhook guide", href: "/docs/guides/resend-webhook-events" },
+    cta: { label: "Read the Resend webhook guide", href: "/docs/guides/resend-webhook-events?ref=webhooks-events-use-cases" },
   },
   {
     id: "cart-abandonment",
@@ -79,7 +79,7 @@ const STUDIES: CaseStudyItem[] = [
       </>
     ),
     logo: { src: "/assets/v1/logos/replit.svg", alt: "Replit", width: 112, height: 28 },
-    cta: { label: "Read the events & triggers docs", href: "/docs/features/events-triggers" },
+    cta: { label: "Read the events & triggers docs", href: "/docs/durable-execution/guides-and-advanced/events-and-triggers?ref=webhooks-events-use-cases" },
   },
 ];
 

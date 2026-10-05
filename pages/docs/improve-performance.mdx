@@ -16,7 +16,7 @@ Checkpointing is a performance optimization for Inngest functions that executes 
 
 ### Differences in Execution Models
 
-The [Inngest default execution model](/docs/learn/how-functions-are-executed) is a complete handoff to the Inngest Platform, where an HTTP request is performed to store the execution state upon each step completion, leading to inter-step latency.
+The [Inngest default execution model](/docs/durable-execution/durable-workflows) is a complete handoff to the Inngest Platform, where an HTTP request is performed to store the execution state upon each step completion, leading to inter-step latency.
 
 Checkpointing uses the SDK to orchestrate steps and run them on the client side, resulting in the immediate execution of subsequent synchronous steps (ex, `step.run()`) in a function. As steps execute, checkpointing requests are sent to Inngest to keep track of progress when an async step is met (ex, `step.sleep()`).
 
@@ -86,7 +86,7 @@ _, err := inngestgo.CreateFunction(
 
 </LanguageSelector>
 
-Read [the detailed checkpointing guide](/docs/setup/checkpointing) for more information.
+Read [the detailed checkpointing guide](/docs/durable-execution/guides-and-advanced/checkpointing) for more information.
 
 ---
 
@@ -119,4 +119,4 @@ Key features include:
 
 ### Getting Started with Connect
 
-For full setup instructions, requirements, deployment guides, and lifecycle management, see the [Connect documentation](/docs/setup/connect).
+For full setup instructions, requirements, deployment guides, and lifecycle management, see the [Connect documentation](/docs/durable-execution/deploying-functions/connect).

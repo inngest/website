@@ -97,7 +97,7 @@ You've now successfully implemented fan-out in our application. Each function wi
 
 Other benefits of fan-out include:
 
-* **Bulk Replay**: If a third-party API goes down for a period of time (for example, your email provider), you can use [Replay](/docs/platform/replay) to selectively re-run all functions that failed, without having to re-run all sign-up flow functions.
+* **Bulk Replay**: If a third-party API goes down for a period of time (for example, your email provider), you can use [Replay](/docs/platform-and-operations/replay-runs-in-bulk) to selectively re-run all functions that failed, without having to re-run all sign-up flow functions.
 * **Testing**: Each function can be tested in isolation, without having to run the entire sign-up flow.
 * **New features or refactors**: As each function is independent, you can add new functions or refactor existing ones without having to edit unrelated code.
 * **Trigger functions in different codebases**: If you have multiple codebases, even using different programming languages (for example [Python](/docs/reference/python) or [Go](https://pkg.go.dev/github.com/inngest/inngestgo)), you can trigger functions in both codebases from a single event.
@@ -125,7 +125,7 @@ You've now successfully implemented fan-out in our application. Each function wi
 
 Other benefits of fan-out include:
 
-* **Bulk Replay**: If a third-party API goes down for a period of time (for example, your email provider), you can use [Replay](/docs/platform/replay) to selectively re-run all functions that failed, without having to re-run all sign-up flow functions.
+* **Bulk Replay**: If a third-party API goes down for a period of time (for example, your email provider), you can use [Replay](/docs/platform-and-operations/replay-runs-in-bulk) to selectively re-run all functions that failed, without having to re-run all sign-up flow functions.
 * **Testing**: Each function can be tested in isolation, without having to run the entire sign-up flow.
 * **New features or refactors**: As each function is independent, you can add new functions or refactor existing ones without having to edit unrelated code.
 * **Trigger functions in different codebases**: If you have multiple codebases, even using different programming languages (for example [TypeScript](/docs/reference/typescript/intro) or [Python](/docs/reference/python)), you can trigger functions in both codebases from a single event.
@@ -161,7 +161,7 @@ You've now successfully implemented fan-out in our application. Each function wi
 
 Other benefits of fan-out include:
 
-* **Bulk Replay**: If a third-party API goes down for a period of time (for example, your email provider), you can use [Replay](/docs/platform/replay) to selectively re-run all functions that failed, without having to re-run all sign-up flow functions.
+* **Bulk Replay**: If a third-party API goes down for a period of time (for example, your email provider), you can use [Replay](/docs/platform-and-operations/replay-runs-in-bulk) to selectively re-run all functions that failed, without having to re-run all sign-up flow functions.
 * **Testing**: Each function can be tested in isolation, without having to run the entire sign-up flow.
 * **New features or refactors**: As each function is independent, you can add new functions or refactor existing ones without having to edit unrelated code.
 * **Trigger functions in different codebases**: If you have multiple codebases, even using different programming languages (for example [TypeScript](/docs/reference/typescript/intro) or [Go](https://pkg.go.dev/github.com/inngest/inngestgo)), you can trigger functions in both codebases from a single event.
@@ -172,6 +172,6 @@ Other benefits of fan-out include:
 
 ## Further reading
 
-* [Sending events](/docs/events)
-* [Invoking functions from within functions](/docs/guides/invoking-functions-directly)
-* [Sending events from functions](/docs/guides/sending-events-from-functions)
+* [Sending events](/docs/durable-execution/guides-and-advanced/events-and-triggers/send-events)
+* [Invoking functions from within functions](/docs/durable-execution/primitives/step-invoke)
+* [Sending events from functions](/docs/durable-execution/primitives/step-sendevent)

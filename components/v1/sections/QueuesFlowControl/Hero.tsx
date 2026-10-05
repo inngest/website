@@ -25,7 +25,7 @@ export default function Hero() {
         "and beyond basic queuing to ensure every user gets",
         "their fair share, without any additional infrastructure.",
       ]}
-      docsHref="/docs/guides/flow-control?ref=queues-flow-control"
+      docsHref="/docs/durable-execution/flow-control?ref=queues-flow-control"
       signupHref="/sign-up?ref=queues-flow-control"
       canvas={({ isDesktop }) =>
         isDesktop && (

@@ -5,6 +5,16 @@
 @tailwind components;
 @tailwind utilities;
 
+@layer base {
+  :where(h1, h2, h3, h4, h5, h6) {
+    text-wrap: balance;
+  }
+
+  :where(p, li, blockquote, figcaption) {
+    text-wrap: pretty;
+  }
+}
+
 /** Standard **/
 
 @supports (font-variation-settings: normal) {
@@ -106,6 +116,50 @@ html.docs.dark li code, html.docs.dark p code {
   background: rgba(255,255,255,0.2);
   padding: 0.1em 0.3em 0.15em;
   border-radius: 3px;
+}
+
+html.docs:has(.docs-callout) {
+  overflow-x: clip;
+}
+
+.docs-callout {
+  position: relative;
+  isolation: isolate;
+  /* Only set vertical margins so the prose column's centering still applies. */
+  margin-top: 1.5rem;
+  margin-bottom: 1.5rem;
+  padding: 3rem 1.5rem;
+  color: rgb(var(--color-foreground-base));
+  background-color: rgb(var(--color-background-canvas-subtle) / 0.5);
+}
+
+.docs-callout > :first-child {
+  margin-top: 0;
+}
+
+.docs-callout > :last-child {
+  margin-bottom: 0;
+}
+
+@media (min-width: 1024px) {
+  /* Content lines up with the prose column. The band bleeds to both edges
+     with a clipped box-shadow, which adds no scrollable overflow; the fixed
+     sidebars sit on top of it. */
+  .docs-callout {
+    padding-left: 0;
+    padding-right: 0;
+    box-shadow: 0 0 0 100vmax rgb(var(--color-background-canvas-subtle) / 0.5);
+    clip-path: inset(0 -100vmax);
+  }
+}
+
+/* Tool pages with a full-width tool (the flow control simulator): the text
+   drops the prose column's max-width and centering so it lines up with the
+   tool instead of sitting in a narrow column beside it. */
+article.prose:has(.docs-wide-page) > * {
+  max-width: none;
+  margin-left: 0;
+  margin-right: 0;
 }
 
 * {

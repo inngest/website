@@ -1,0 +1,109 @@
+export const metaTitle = "Python Quick Start | FastAPI Workflows";
+export const description = "Python quick start for Inngest: build a durable workflow with FastAPI and the Python SDK, run it locally, and inspect each step in the Dev Server.";
+
+# Python quick start
+
+> Build a durable workflow in FastAPI and inspect its steps locally.
+
+Send a task event from a FastAPI app, run a retriable step, then inspect the one-second pause and completed run in the local Dev Server. You need no Inngest account for this exercise.
+
+## Before you start
+
+Install Python 3.10 or newer. Keep one terminal for the app and another for the Inngest Dev Server. Create and activate a virtual environment:
+
+```bash
+mkdir inngest-python-quickstart
+cd inngest-python-quickstart
+python -m venv .venv
+source .venv/bin/activate
+pip install fastapi inngest uvicorn
+```
+
+## 1. Define and serve a workflow
+
+Create `main.py`:
+
+```python
+import datetime
+import logging
+
+from fastapi import FastAPI
+import inngest
+import inngest.fast_api
+
+inngest_client = inngest.Inngest(
+    app_id="quickstart-python",
+    logger=logging.getLogger("uvicorn"),
+)
+
+@inngest_client.create_function(
+    fn_id="process-task",
+    trigger=inngest.TriggerEvent(event="app/task.created"),
+)
+async def process_task(ctx: inngest.Context) -> dict[str, object]:
+    task_id = str(ctx.event.data["id"])
+
+    def handle_task() -> dict[str, object]:
+        return {"processed": True, "id": task_id}
+
+    result = await ctx.step.run("handle-task", handle_task)
+    await ctx.step.sleep("pause", datetime.timedelta(seconds=1))
+    return {"message": f"Task {task_id} complete", "result": result}
+
+app = FastAPI()
+inngest.fast_api.serve(app, inngest_client, [process_task])
+
+@app.post("/api/create-task")
+async def create_task() -> dict[str, list[str]]:
+    ids = await inngest_client.send(
+        inngest.Event(name="app/task.created", data={"id": "task_002"})
+    )
+    return {"eventIds": ids}
+```
+The `app/task.created` event starts `process-task`. `ctx.step.run()` saves the result of `handle-task`, and `ctx.step.sleep()` pauses the run without keeping a worker busy. The FastAPI integration serves `/api/inngest` for the Dev Server.
+
+Start the app:
+
+```bash
+INNGEST_DEV=1 uvicorn main:app --reload
+```
+Leave it running on port `8000`.
+
+## 2. Start the Dev Server
+
+In a second terminal, install the [Inngest CLI](/docs/local-development) and point it at your app:
+
+```bash
+curl -sSfL https://cli.inngest.com/install.sh | sh
+inngest dev -u http://localhost:8000/api/inngest
+```
+Open [http://localhost:8288](http://localhost:8288). In **Apps**, find `quickstart-python`. In **Functions**, find `process-task`.
+
+## 3. Trigger and inspect a run
+
+In **Functions**, open `process-task` and choose **Invoke**. Enter:
+
+```json
+{"data":{"id":"task_001"}}
+```
+Open **Runs** and select the new run. You should see `handle-task`, the one-second pause, and a result whose message is `Task task_001 complete`. The trace shows the event, step output, and execution timeline.
+
+## 4. Send an event from the app
+
+The app also exposes a route that sends an event. In a third terminal, run:
+
+```bash
+curl -X POST http://localhost:8000/api/create-task
+```
+The route returns an event ID. Open **Runs** again to see the run for `task_002`.
+
+## See a retry
+
+To see step retries, add `if task_id == "retry-demo": raise RuntimeError("temporary failure")` at the start of `handle_task()`, before its return. Invoke the function with `{"data":{"id":"retry-demo"}}`. The trace shows the failed step attempts. Remove that line when you finish.
+
+## Next steps
+
+- Read [Durable Workflows](/docs/durable-execution/durable-workflows) to understand runs and saved steps.
+- Read [Primitives](/docs/durable-execution/primitives) for step primitives.
+- Use the Python SDK reference for exact APIs and [Deploying functions](/docs/durable-execution/deploying-functions) when you deploy.
+

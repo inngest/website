@@ -5,7 +5,7 @@ export const metaTitle = "Sync Your Inngest App After Deploy"
 export const description = "Learn how to sync your Inngest app with the platform after each deploy, so your functions are always up to date in production and branch environments."
 
 # Syncing an Inngest App
-After deploying your code to a hosting platform, it is time to go to production and inform Inngest about your apps and functions. Check what [Inngest Apps](/docs/apps) are if you haven't done it yet.
+After deploying your code to a hosting platform, it is time to go to production and inform Inngest about your apps and functions. Check what [Inngest Apps](/docs/platform-and-operations/apps-and-syncs) are if you haven't done it yet.
 
 ## Sync a new app in Inngest Cloud
 
@@ -49,8 +49,8 @@ You can synchronize your app with Inngest using three methods:
 ### Automatically using an integration
 
 <ButtonCol>
-<ButtonDeploy href="/docs/deploy/vercel?ref=docs-app" type="vercel" label="Learn how to install our official Vercel integration" />
-<ButtonDeploy href="/docs/deploy/netlify?ref=docs-app" type="netlify" label="Learn how to install our official Netlify integration" />
+<ButtonDeploy href="/docs/durable-execution/deploying-functions/platforms/vercel?ref=docs-app" type="vercel" label="Learn how to install our official Vercel integration" />
+<ButtonDeploy href="/docs/durable-execution/deploying-functions/platforms/netlify?ref=docs-app" type="netlify" label="Learn how to install our official Netlify integration" />
 </ButtonCol>
 
 ### Programmatically
@@ -58,7 +58,7 @@ You can synchronize your app with Inngest using three methods:
 Use the [Inngest REST API](https://api-docs.inngest.com/v2/apps/SyncApp) to programmatically sync your app. This is particularly useful when syncing from a CI/CD pipeline.
 
 Before you send the request, you'll need 3 things:
-1. An [API key](/docs/platform/api-keys).
+1. An [API key](/docs/platform-and-operations/keys-and-access).
 2. The URL for your app's Inngest endpoint (e.g. `https://my-app.com/api/inngest`).
 3. Your app's ID (this is the Inngest client's ID).
 
@@ -135,7 +135,7 @@ If your app location changes, enable the "Override" switch and edit the URL befo
 <details>
   <summary id="duplicated-apps"><h3 className="inline-block my-2">Why do I have duplicated apps?</h3></summary>
 
-- Each app ID is considered a persistent identifier. [Since the app ID is determined by the ID passed to the serve handler from the Inngest client](/docs/apps#apps-in-sdk), changing that ID will result in Inngest not recognizing the app ID during the next sync. As a result, Inngest will create a new app.
+- Each app ID is considered a persistent identifier. [Since the app ID is determined by the ID passed to the serve handler from the Inngest client](/docs/platform-and-operations/apps-and-syncs), changing that ID will result in Inngest not recognizing the app ID during the next sync. As a result, Inngest will create a new app.
 
 </details>
 

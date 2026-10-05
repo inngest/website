@@ -115,7 +115,7 @@ Because each step is a separate HTTP invocation, you only need each step under t
 
 ![A diagram showing how long a function could run for](/assets/blog/vercel-long-running-background-functions/steps-timing.png)
 
-As you can see — it's just JavaScript. The Inngest SDK's [`step.run`](/docs/learn/inngest-steps) wraps each part of the function. With automatic retries built in, you can run long background jobs reliably.
+As you can see — it's just JavaScript. The Inngest SDK's [`step.run`](/docs/durable-execution/primitives?ref=blog-long-running-functions-vercel) wraps each part of the function. With automatic retries built in, you can run long background jobs reliably.
 
 ### How to deploy your functions
 
@@ -200,7 +200,7 @@ inngest.createFunction(
 )
 ```
 
-[Check out our docs to explore what else you can do →](/docs/learn/inngest-steps?ref=blog-long-running-functions-vercel)
+[Check out our docs to explore what else you can do →](/docs/durable-execution/primitives?ref=blog-long-running-functions-vercel)
 
 ## What are you going to build?
 

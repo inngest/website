@@ -24,7 +24,7 @@ const QUICKSTARTS: Quickstart[] = [
   {
     eyebrow: "TypeScript",
     title: "Node.js",
-    href: "/docs/getting-started/nodejs-quick-start",
+    href: "/docs/durable-execution/quick-start/typescript-quick-start",
   },
   {
     // The Python quickstart walks through a FastAPI app (and links the

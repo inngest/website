@@ -26,14 +26,14 @@ To understand how self-hosting works, it's valuable to understand the architectu
 
 ![Inngest system architecture diagram](/assets/docs/self-hosting/system-architecture-2024-09-23.png)
 
-* **Event API** - Receives events from SDKs via HTTP requests. Authenticates client requests via [Event Keys](/docs/events/creating-an-event-key?ref=docs-self-hosting). The Event API publishes event payloads to an internal event stream.
+* **Event API** - Receives events from SDKs via HTTP requests. Authenticates client requests via [Event Keys](/docs/platform-and-operations/keys-and-access?ref=docs-self-hosting). The Event API publishes event payloads to an internal event stream.
 * **Event stream** - Acts as buffer between the _Event API_ and the _Runner_.
 * **Runner** - Consumes incoming events and performs several actions:
   * Scheduling of new “function runs” (aka jobs) given the event type, creating initial run state in the _State store_ database. Runs are added to queues given the function's flow control configuration.
-  * Resume functions paused via [`waitForEvent`](/docs/features/inngest-functions/steps-workflows/wait-for-event?ref=docs-self-hosting) with matching expressions.
-  * Cancels running functions with matching [`cancelOn`](/docs/features/inngest-functions/cancellation/cancel-on-events?ref=docs-self-hosting) expressions
+  * Resume functions paused via [`waitForEvent`](/docs/durable-execution/primitives/step-waitforevent?ref=docs-self-hosting) with matching expressions.
+  * Cancels running functions with matching [`cancelOn`](/docs/durable-execution/guides-and-advanced/cancellation/events?ref=docs-self-hosting) expressions
   * Writes ingested events to a database for historical record and future replay.
-* **Queue** - A multi-tenant aware, multi-tier queue designed for fairness and various [flow control](/docs/guides/flow-control?ref=docs-self-hosting) methods (concurrency, throttling, prioritization, debouncing, rate limiting) and [batching](/docs/guides/batching?ref=docs-self-hosting).
+* **Queue** - A multi-tenant aware, multi-tier queue designed for fairness and various [flow control](/docs/durable-execution/flow-control?ref=docs-self-hosting) methods (concurrency, throttling, prioritization, debouncing, rate limiting) and [batching](/docs/durable-execution/flow-control/batching?ref=docs-self-hosting).
 * **Executor** - Responsible for executing functions, from initial execution, step execution, writing incremental function run state to the _State store_, and retries after failures.
 * **State store (database)** - Persists data for pending and ongoing function runs. Data includes initial triggering event(s), step output and step errors.
 * **Database** - Persists system data and history including Apps, Functions, Events, Function run results.
@@ -100,7 +100,7 @@ Check out our [self-hosting docs](https://www.inngest.com/docs/self-hosting) for
 
 As mentioned above, there are some upcoming features that will be added or improved upon to make self-hosting more flexible and extensive.
 
-* Event key and signing key management \- [Event keys](https://www.inngest.com/docs/events/creating-an-event-key) and [signing keys](https://www.inngest.com/docs/platform/signing-keys) are used to authenticate client applications that use Inngest SDKs or send events via HTTP. Future releases will add management via the bundled dashboard UI and APIs.
+* Event key and signing key management \- [Event keys](/docs/platform-and-operations/keys-and-access?ref=blog-inngest-1-0-announcing-self-hosting-support) and [signing keys](https://www.inngest.com/docs/platform/signing-keys) are used to authenticate client applications that use Inngest SDKs or send events via HTTP. Future releases will add management via the bundled dashboard UI and APIs.
 * Multi-node Inngest server support \- At initial release, the `inngest start` command runs all services in a single process. In a future release, the command will support starting one or more services (API, Executor, etc.) instead of all services in a single process.
 
 What do you want to see? Submit your ideas via our [support platform](https://support.inngest.com/).

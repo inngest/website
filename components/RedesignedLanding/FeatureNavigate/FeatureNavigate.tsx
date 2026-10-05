@@ -87,7 +87,7 @@ export default function FeatureNavigate() {
                 </CardContent>
                 <CardFooter>
                   <Button className="bg-stone-900" variant="outline" asChild>
-                    <Link href="/docs/platform/deployment?ref=homepage-deploy">
+                    <Link href="/docs/durable-execution/deploying-functions?ref=homepage-deploy">
                       Start Deploying <ArrowRightIcon />
                     </Link>
                   </Button>
@@ -114,7 +114,7 @@ export default function FeatureNavigate() {
                   </CardContent>
                   <CardFooter className="pl-6 xl:pl-0">
                     <Button className="bg-stone-900" variant="outline" asChild>
-                      <Link href="/docs/guides/error-handling?ref=homepage-fault-tolerance">
+                      <Link href="/docs/durable-execution/guides-and-advanced/error-handling?ref=homepage-fault-tolerance">
                         Learn about Error Handling <ArrowRightIcon />
                       </Link>
                     </Button>
@@ -147,7 +147,7 @@ export default function FeatureNavigate() {
                   </CardContent>
                   <CardFooter className="pl-6 md:pl-0">
                     <Button className="bg-stone-900" variant="outline" asChild>
-                      <Link href="/docs/platform/monitor/observability-metrics?ref=homepage-observability">
+                      <Link href="/docs/platform-and-operations/metrics?ref=homepage-observability">
                         Learn about Observability <ArrowRightIcon />
                       </Link>
                     </Button>

@@ -287,7 +287,7 @@ export const FEATURES: Feature[] = [
       },
       [PLAN_NAMES.enterprise]: "Custom",
     },
-    infoUrl: "/docs/learn/inngest-functions?ref=pricing",
+    infoUrl: "/docs/durable-execution/durable-workflows?ref=pricing",
     section: "platform",
   },
   {
@@ -303,7 +303,7 @@ export const FEATURES: Feature[] = [
       },
       [PLAN_NAMES.enterprise]: "500 included",
     },
-    infoUrl: "/docs/guides/concurrency?ref=pricing-comparison-table",
+    infoUrl: "/docs/durable-execution/flow-control/concurrency?ref=pricing-comparison-table",
     section: "platform",
   },
   {
@@ -374,7 +374,7 @@ export const FEATURES: Feature[] = [
       [PLAN_NAMES.enterprise]: "Custom",
     },
     infoUrl:
-      "/docs/guides/sending-events-from-functions?ref=pricing-comparison-table",
+      "/docs/durable-execution/primitives/step-sendevent?ref=pricing-comparison-table",
     section: "events",
   },
   {
@@ -426,7 +426,7 @@ export const FEATURES: Feature[] = [
       [PLAN_NAMES.pro]: "1000",
       [PLAN_NAMES.enterprise]: "1000",
     },
-    infoUrl: "/docs/features/realtime?ref=pricing",
+    infoUrl: "/docs/realtime?ref=pricing",
     section: "connectivity",
   },
   {
@@ -446,7 +446,7 @@ export const FEATURES: Feature[] = [
       [PLAN_NAMES.pro]: "15 minutes",
       [PLAN_NAMES.enterprise]: "1 minute",
     },
-    infoUrl: "/docs/platform/monitor/observability-metrics?ref=pricing",
+    infoUrl: "/docs/platform-and-operations/metrics?ref=pricing",
     section: "observability",
   },
   {
@@ -457,7 +457,7 @@ export const FEATURES: Feature[] = [
       [PLAN_NAMES.pro]: "7 days",
       [PLAN_NAMES.enterprise]: "90 days",
     },
-    infoUrl: "/docs/platform/monitor/inspecting-function-runs?ref=pricing",
+    infoUrl: "/docs/platform-and-operations/inspect-events-and-runs?ref=pricing",
     section: "observability",
   },
   {

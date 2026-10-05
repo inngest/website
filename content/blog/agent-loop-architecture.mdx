@@ -35,7 +35,7 @@ Think about what happens when you run an agent loop on a server. The process wil
 
 You don't know. It starts over. Re-fetches data it already had. Re-calls the LLM for decisions it already made. Sends a duplicate notification. Spawns a duplicate sub-agent. You wake up to three identical Slack messages and a confused team.
 
-The fix isn't "better error handling" — it's an execution model where [each step is checkpointed](/docs/learn/inngest-steps?ref=blog-agent-loop-architecture), each decision is persisted, and recovery means resuming from the last successful step.
+The fix isn't "better error handling" — it's an execution model where [each step is checkpointed](/docs/durable-execution/primitives?ref=blog-agent-loop-architecture), each decision is persisted, and recovery means resuming from the last successful step.
 
 ## The agent loop architecture in three layers
 
@@ -43,7 +43,7 @@ Three layers. Each one maps to a concrete primitive.
 
 ### Layer 1: The Loop
 
-A loop is a [cron](/docs/guides/scheduled-functions?ref=blog-agent-loop-architecture) plus a decision-maker. It runs on a schedule (or a trigger), evaluates state, and decides what to do next.
+A loop is a [cron](/docs/durable-execution/guides-and-advanced/events-and-triggers/schedules-and-delayed-starts?ref=blog-agent-loop-architecture) plus a decision-maker. It runs on a schedule (or a trigger), evaluates state, and decides what to do next.
 
 This is Van Horn's definition made concrete: what cron never had is the decision in the middle. The agent decides, not you. The cron is the heartbeat. The LLM is the decision-maker. Steps are the durable execution that checkpoint progress.
 
@@ -163,7 +163,7 @@ export const incidentTriage = inngest.createFunction(
 );
 ```
 
-The [`onFailure`](/docs/features/inngest-functions/error-retries/failure-handlers?ref=blog-agent-loop-architecture) handler fires after all retries are exhausted. It posts to an ops channel so someone knows. The event is preserved, nothing is lost. The next scheduled run picks up where the failed one couldn't.
+The [`onFailure`](/docs/durable-execution/guides-and-advanced/error-handling/failure-handlers?ref=blog-agent-loop-architecture) handler fires after all retries are exhausted. It posts to an ops channel so someone knows. The event is preserved, nothing is lost. The next scheduled run picks up where the failed one couldn't.
 
 Durable orchestration must give you step-level retries for transient errors and failure handling hooks for non-recoverable errors. Without this, things break (as they do), and you find out hours or days later.
 
@@ -238,7 +238,7 @@ The "review" is a function. It reads run history, checks whether incidents corre
 
 Taking this a degree further, the agent can use `onFailure` hooks to trigger itself to evaluate a given failure. It's a feedback loop that keeps improving.
 
-**What about conflicts?** [Flow controls](/docs/guides/flow-control?ref=blog-agent-loop-architecture) — specifically, [concurrency controls](/docs/guides/concurrency?ref=blog-agent-loop-architecture) or [singletons](/docs/guides/singleton?ref=blog-agent-loop-architecture) — handle the simple case (`concurrency: [{ limit: 1, key: "event.data.service" }]`), meaning only one incident triage runs at a time per service. But the deeper question is: what if two health checks both detect issues in the same service simultaneously? The orchestrator queues them. The second triage waits until the first completes. No duplicate alerts, no race conditions. This isn't theoretical. It's the same concurrency primitive you'd use in any job queue.
+**What about conflicts?** [Flow controls](/docs/durable-execution/flow-control?ref=blog-agent-loop-architecture) — specifically, [concurrency controls](/docs/durable-execution/flow-control/concurrency?ref=blog-agent-loop-architecture) or [singletons](/docs/durable-execution/flow-control/singleton?ref=blog-agent-loop-architecture) — handle the simple case (`concurrency: [{ limit: 1, key: "event.data.service" }]`), meaning only one incident triage runs at a time per service. But the deeper question is: what if two health checks both detect issues in the same service simultaneously? The orchestrator queues them. The second triage waits until the first completes. No duplicate alerts, no race conditions. This isn't theoretical. It's the same concurrency primitive you'd use in any job queue.
 
 The agent isn't just executing tasks. It's building infrastructure for itself. Each skill persists beyond the conversation that created it. Kill the agent process and restart it. The skills keep running. Swap the underlying model. The skills keep running. The agent is ephemeral — its output is durable.
 
@@ -248,7 +248,7 @@ The agent isn't just executing tasks. It's building infrastructure for itself. E
 
 This matters because if the developer can't see what the agent deployed, debug what broke, and audit what ran at 3am, the whole architecture is a major liability.
 
-The orchestration engine stores every run, every step, every input, every output, every retry. A skill the agent deployed last Tuesday that failed at 4am? You can see exactly which step failed, what the input was, what error it threw, and how many times it retried before giving up. [Full traces down to the step level](/docs/platform/monitor/traces?ref=blog-agent-loop-architecture) are the output of the orchestration engine itself.
+The orchestration engine stores every run, every step, every input, every output, every retry. A skill the agent deployed last Tuesday that failed at 4am? You can see exactly which step failed, what the input was, what error it threw, and how many times it retried before giving up. [Full traces down to the step level](/docs/platform-and-operations/traces?ref=blog-agent-loop-architecture) are the output of the orchestration engine itself.
 
 This isn't a dashboard bolted on after the fact. It's inherent to durable execution. Every `step.run()` is a checkpoint. Every checkpoint is observable. When the thing that wrote the code isn't a human, observability isn't a nice-to-have — it's the trust layer.
 

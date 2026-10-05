@@ -1,0 +1,39 @@
+export const metaTitle = "Agent Evals | Score AI Agents & Workflows";
+export const description = "Evaluate AI agents and workflows in production with Agent Evals. Link outcome scores to durable runs to see whether a change actually helped users.";
+
+# Agent Evals
+
+> Find out whether your agent or workflow helped users by linking outcome scores to durable runs.
+
+**Agent Evals** measures AI agents and workflows on production traffic. You attach scores to the runs that produced a result, wait for outcomes that arrive later, and compare prompts, models, or whole workflow paths by what happened to users. There's no separate eval pipeline: scores live next to the run, steps, and trace that Inngest already records.
+
+### Benefits:
+
+- **Score what matters.** Record a guardrail, an LLM judge, or a real product outcome such as a resolved ticket.
+- **Wait for the real signal.** A deferred scorer waits days for feedback without keeping the original run open.
+- **Compare changes safely.** Send a share of traffic through a new prompt, model, or workflow and credit each outcome to the variant that served it.
+- **Explain every score.** Open the trace behind a bad score to see the model calls, tool calls, and errors that produced it.
+
+<hr />
+
+## How it works
+
+1. **Score a run.** `step.score()` records a named number or boolean on the run or step.
+2. **Defer scores that come later.** `defer()` starts a scorer that waits for feedback or another event, then scores the original run.
+3. **Compare variants.** `group.experiment()` selects one variant per run. Pass its `experimentRef` with a score so the outcome counts toward that variant.
+4. **Group related runs.** Session IDs on events tie together the runs behind one conversation, ticket, or job.
+
+Read the [Overview](/docs/agent-evals/overview) for a worked example and a guide to choosing the right tool.
+
+## Language support
+
+Agent Evals uses the TypeScript SDK. Sessions require v4.7.0 or later. Experiments and scoring require v4.8.0 or later. Scoring and deferred scoring are beta APIs and may change before general availability. Python support is planned.
+
+<hr />
+
+## Next steps
+
+- [Quick start](/docs/agent-evals/quick-start) builds a scored experiment you can run locally without an AI provider.
+- [Scores](/docs/agent-evals/scores), [Deferred scoring](/docs/agent-evals/deferred-scoring), [Experiments](/docs/agent-evals/experiments), and [Sessions](/docs/agent-evals/sessions) explain each part.
+- [Guides](/docs/agent-evals/guides) cover LLM judges, user feedback, model comparisons, rollouts, and costs.
+- [Reference](/docs/agent-evals/reference), [Limits](/docs/agent-evals/limits), and [Troubleshooting](/docs/agent-evals/troubleshooting) help you ship and operate evals.

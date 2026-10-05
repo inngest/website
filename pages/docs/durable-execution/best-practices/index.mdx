@@ -1,0 +1,174 @@
+import { CodeGroup } from "shared/Docs/mdx";
+
+export const metaTitle = "Best practices | Durable Execution";
+export const description = "Durable execution best practices: keep Inngest workflows idempotent and safe to retry, deploy changes without breaking in-flight runs, and operate at scale.";
+
+# Durable Execution best practices
+> Build workflows that resume safely, fit available capacity, and stay understandable after deployment.
+
+Use this page as a checklist while you design and review durable functions. For latency tuning, see [Performance](/docs/durable-execution/best-practices/performance).
+
+## Steps
+
+### Put every side effect in a step
+
+Your function runs its steps back to back until it needs to pause, such as for a sleep or a retry. When it resumes, the handler runs again from the top: completed steps return their saved result, but code outside a step runs again. See [How functions are executed](/docs/durable-execution/durable-workflows).
+
+- Wrap database writes, API calls, emails, and payments in [`step.run()`](/docs/durable-execution/primitives/step-run).
+- Keep pure calculations outside steps. Re-running them is harmless.
+- Never start a side effect outside a step. It repeats every time the run resumes.
+- Pause with [`step.sleep()`](/docs/durable-execution/primitives/step-sleep) and [`step.waitForEvent()`](/docs/durable-execution/primitives/step-waitforevent), not timers. Compute stops while the run waits.
+
+<CodeGroup>
+```ts {{ title: "TypeScript" }}
+// Don't: runs again every time the function resumes
+await sendWelcomeEmail(user);
+
+// Do: runs once, and the result is saved
+await step.run("send-welcome-email", () => sendWelcomeEmail(user));
+```
+
+```python {{ title: "Python" }}
+!snippet:path=snippets/py/latest/durable/best_practices/side_effects.py
+```
+
+```go {{ title: "Go" }}
+!snippet:path=snippets/go/docs/durable/best_practices/side_effects.go
+```
+</CodeGroup>
+
+### Choose step boundaries deliberately
+
+Draw a boundary wherever you want to retry, inspect, or change an action on its own.
+
+- **Too few steps:** one step for a long process hides which action failed, and a retry repeats all of it.
+- **Too many steps:** one step per item in a large loop can hit step [limits](/docs/durable-execution/limits).
+- **Large collections:** process bounded batches per step, or [fan out](/docs/durable-execution/guides-and-advanced/patterns/fan-out) to separate functions when each item needs its own retries. See [Working with loops](/docs/durable-execution/guides-and-advanced/patterns/working-with-loops).
+
+### Keep step IDs stable
+
+Inngest matches saved results to step IDs, including across deployments.
+
+- Use short, descriptive, unique IDs, such as `charge-customer`.
+- Don't build IDs from timestamps or input values, or from labels you plan to rename.
+- Keep the ID when you change a step's implementation.
+- Treat changes to step IDs, order, or branching as behavior changes for live runs.
+
+Before deploying those changes:
+
+- Start a run that waits or sleeps, deploy the new code locally, and check how it resumes.
+- For a major rewrite, create a function with a new ID and route new events to it. Keep the old function until its runs finish, and make sure one event can't start both.
+
+See [Versioning](/docs/durable-execution/guides-and-advanced/versioning) for the full procedure.
+
+## Run state
+
+Step results, event data, and the function's return value all count toward a run's persisted state.
+
+- Return only what later steps need.
+- Store large files and documents in your own storage, and pass a reference between steps.
+- Don't return the same large object from several steps, or copy it into event data.
+- Bound loop output: split large collections into batches or child functions instead of accumulating every result in one run.
+- Check [Limits](/docs/durable-execution/limits) before choosing payload sizes, batch sizes, and concurrency.
+
+## Retries and failures
+
+### Make external calls idempotent
+
+A request can succeed and then fail before Inngest records the step's result. The retry sends that request again.
+
+- Give payments, emails, provisioning, and database writes an idempotency key, or another way to detect a previous success.
+- Derive the key from the business operation, not from the retry attempt.
+- Deduplicate incoming events and runs with [Idempotency](/docs/durable-execution/guides-and-advanced/idempotency).
+
+<CodeGroup>
+```ts {{ title: "TypeScript" }}
+await step.run("charge-customer", () =>
+  payments.charge({ amount, idempotencyKey: `order-${orderId}-charge` })
+);
+```
+
+```python {{ title: "Python" }}
+!snippet:path=snippets/py/latest/durable/best_practices/idempotency_key.py
+```
+
+```go {{ title: "Go" }}
+!snippet:path=snippets/go/docs/durable/best_practices/idempotency_key.go
+```
+</CodeGroup>
+
+### Separate permanent errors from temporary ones
+
+- Let temporary failures, such as timeouts and provider errors, [retry](/docs/durable-execution/guides-and-advanced/error-handling/retries).
+- Throw [`NonRetriableError`](/docs/durable-execution/guides-and-advanced/error-handling/non-retriable-errors) for invalid input or anything another attempt can't fix.
+- Add a [failure handler](/docs/durable-execution/guides-and-advanced/error-handling/failure-handlers) for alerts or cleanup after retries run out.
+- Use [rollbacks](/docs/durable-execution/guides-and-advanced/error-handling/rollbacks) to undo earlier steps, and make that compensation idempotent too.
+
+See [Error handling](/docs/durable-execution/guides-and-advanced/error-handling) for the full recovery path.
+
+## Deadlines and cancellation
+
+- Set a start [timeout](/docs/durable-execution/guides-and-advanced/cancellation/timeouts) when queued work becomes useless after a while.
+- Set a finish timeout when the whole run must end by a deadline.
+- Give every wait a timeout, and handle the case where the signal never arrives.
+- [Cancel on an event](/docs/durable-execution/guides-and-advanced/cancellation/events) when a business change makes the remaining work unnecessary. Match on a stable ID so one run can't cancel another.
+- Cancellation takes effect between steps, not in the middle of one:
+  - Set timeouts on external calls inside your steps.
+  - Clean up resources that can outlive a cancelled run.
+
+See [Cancellation](/docs/durable-execution/guides-and-advanced/cancellation), including [bulk cancellation](/docs/durable-execution/guides-and-advanced/cancellation/bulk-cancellation).
+
+## Capacity and downstream services
+
+- Set [concurrency](/docs/durable-execution/flow-control/concurrency) to match the database, provider, or tenant you need to protect.
+- Add a concurrency key when each customer can run independently but needs its own cap. See [Multi-tenancy](/docs/durable-execution/flow-control/multi-tenancy).
+- Use [throttling](/docs/durable-execution/flow-control/throttling) or [rate limiting](/docs/durable-execution/flow-control/rate-limiting) when an external API has a request budget.
+- Watch queue delay as well as run duration. A backlog grows when work arrives faster than you can complete it.
+
+With [Connect](/docs/durable-execution/deploying-functions/connect) workers:
+
+- Set `maxWorkerConcurrency` to fit each worker's CPU, memory, and connection pool. It applies alongside function and account concurrency limits.
+- Give each worker a distinct `instanceId` so Inngest tracks its capacity separately.
+- Test burst behavior before raising concurrency.
+
+See [Flow control](/docs/durable-execution/flow-control) for every control and how they combine.
+
+## Middleware and sensitive data
+
+- Use [middleware](/docs/durable-execution/guides-and-advanced/middleware) for behavior several functions share, such as logging context, dependency setup, and error reporting.
+- Register it on the client for all functions, or on one function for a narrower scope.
+- Make sure hooks don't repeat external actions on retries and resumes.
+
+For end-to-end encryption, use [Encryption middleware](/docs/durable-execution/guides-and-advanced/middleware/encryption-middleware):
+
+- It encrypts step data and function output before they reach Inngest.
+- By default, only `event.data.encrypted` is encrypted in events. Put sensitive event values there.
+- Keep the key in your secret store, and plan rotation around runs that still need older data.
+
+## Deploy and observe
+
+Before you deploy:
+
+- Choose [`serve()`](/docs/durable-execution/deploying-functions/serve) for HTTP and serverless hosts, or [Connect](/docs/durable-execution/deploying-functions/connect) for long-running workers. See [Deploying functions](/docs/durable-execution/deploying-functions).
+- Confirm the endpoint or worker can reach Inngest, has the right [keys](/docs/platform-and-operations/keys-and-access), and has capacity for its configured concurrency.
+- Check your host's request duration limit before relying on a long step.
+- With Connect, check that the worker is active before marking it ready, and set an app version to track rolling deployments.
+
+After you deploy:
+
+- Open a test run's [trace](/docs/platform-and-operations/traces). Check step results, retries, and queue delay.
+- Watch failure rates and latency in [Metrics](/docs/platform-and-operations/metrics).
+- Keep the run ID when you investigate a customer report.
+- Use a [logger](/docs/durable-execution/guides-and-advanced/logging) that keeps run context, so retries don't produce confusing duplicate logs.
+
+## Before you ship
+
+- Can each external action retry without a duplicate charge, message, or resource?
+- Will runs that started before this deployment resume with the intended step IDs and branches?
+- Are step results and event payloads within [limits](/docs/durable-execution/limits)?
+- Do timeouts and cancellation stop work once it no longer has value?
+- Do retries, failure handlers, and cleanup leave external systems in a known state?
+- Does your middleware and encryption cover the sensitive data you intend to protect?
+- Does concurrency protect your slowest downstream service and each Connect worker?
+- Can you find a failed run and understand it from its trace and logs?
+- Have you [tested](/docs/durable-execution/guides-and-advanced/testing) the failure paths, not only the happy path?

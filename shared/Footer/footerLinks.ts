@@ -76,7 +76,7 @@ const footerLinks = [
       },
       {
         label: "Careers",
-        url: "/careers?ref=footer",
+        url: "/about?ref=footer",
         callout: IS_HIRING ? "We're hiring!" : undefined,
       },
       {

@@ -34,21 +34,21 @@ const TOPICS: Topic[] = [
     title: "Guardrails for scale",
     body: "Set concurrency, ensure fairness, and handle every blip, burst, and bounce without babysitting.",
     visualization: <ThroughputChart />,
-    docsHref: "/docs/guides/flow-control",
+    docsHref: "/docs/durable-execution/flow-control",
   },
   {
     id: "troubleshoot",
     title: "Faster troubleshooting",
     body: "Store and track everything that happens in your product inside your own OLAP environment.",
     visualization: <SqlBlock />,
-    docsHref: "/docs/platform/replay",
+    docsHref: "/docs/platform-and-operations/replay-runs-in-bulk",
   },
   {
     id: "traces",
     title: "Traces, metrics, evals",
     body: "Step-level insights and scores for every run and session.",
     visualization: <TraceWaterfall />,
-    docsHref: "/docs/platform/monitor/inspecting-function-runs",
+    docsHref: "/docs/platform-and-operations/inspect-events-and-runs",
   },
 ];
 

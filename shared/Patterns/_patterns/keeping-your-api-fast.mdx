@@ -1,5 +1,6 @@
 ---
 title: Keeping your API fast
+metaTitle: "Background Jobs | Keep Your API Fast"
 subtitle: Offload LLM calls, data processing, and other heavy work from the request path into reliable background functions.
 pattern: jobs
 tags: [Performance, AI]
@@ -74,7 +75,7 @@ export const processDocument = inngest.createFunction(
 );
 ```
 
-Functions can be [deployed in several ways](/docs/apps/cloud?ref=patterns) that fit your current stack or needs.
+Functions can be [deployed in several ways](/docs/platform-and-operations/apps-and-syncs?ref=patterns) that fit your current stack or needs.
 
 ## Alternative approaches
 
@@ -84,6 +85,6 @@ Functions can be [deployed in several ways](/docs/apps/cloud?ref=patterns) that 
 
 ## Additional Resources
 
-* [Docs: Sending Events](/docs/events?ref=patterns)
-* [Docs: Writing Functions](/docs/learn/inngest-functions?ref=patterns)
-* [Patterns: Flash sales and bursty workflows](/docs/patterns/flash-sales-and-bursty-workflows?ref=patterns)
+* [Docs: Sending Events](/docs/durable-execution/guides-and-advanced/events-and-triggers/send-events?ref=patterns)
+* [Docs: Writing Functions](/docs/durable-execution/durable-workflows?ref=patterns)
+* [Patterns: Flash sales and bursty workflows](/docs/patterns/flow/flash-sales-and-bursty-workflows?ref=patterns)

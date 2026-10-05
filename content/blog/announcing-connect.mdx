@@ -15,7 +15,7 @@ Additionally, some customers scaling large applications with Inngest were also l
 
 After a few weeks of private alpha, we are happy to rollout Connect as a [Developer Preview](/docs/release-phases#developer-preview) in our TypeScript, Python and Go SDKs.
 
-[Connect](/docs/setup/connect) is drop-in replacement to [`serve()`](/docs/learn/serving-inngest-functions) to connect your application to Inngest over one or multiple outbound persistent connections, **dramatically improving the latency and scalability of your functions**.
+[Connect](/docs/durable-execution/deploying-functions/connect?ref=blog-announcing-connect) is drop-in replacement to [`serve()`](/docs/learn/serving-inngest-functions) to connect your application to Inngest over one or multiple outbound persistent connections, **dramatically improving the latency and scalability of your functions**.
 
 
 This new deployment method relying the [WebSocket protocol](https://en.wikipedia.org/wiki/WebSocket#:~:text=WebSocket%20is%20a%20computer%20communications,as%20RFC%206455%20in%202011.) brings:
@@ -63,7 +63,7 @@ const handleSignupFunction = inngest.createFunction(
 })();
 ```
 
-_Find examples in Go and Python in the [Connect documentation page](/docs/setup/connect)_
+_Find examples in Go and Python in the [Connect documentation page](/docs/durable-execution/deploying-functions/connect?ref=blog-announcing-connect)_
 
 
 Once your application deployed using Connect, each active connection get listed as workers in the Inngest Platform, bringing you full visibility
@@ -78,5 +78,5 @@ Beyond observability, Connect also brings a finer control over production deploy
 
 If your application is running on servers, or if you are looking for a finer horizontal scaling control or lower latency, give Connect a try and [share your feedback during our developer preview](/discord)!
 
-The [Connect documentation](/docs/setup/connect) will drive you from setup to advanced deployment configuration 🚀
+The [Connect documentation](/docs/durable-execution/deploying-functions/connect?ref=blog-announcing-connect) will drive you from setup to advanced deployment configuration 🚀
 

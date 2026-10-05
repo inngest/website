@@ -1,0 +1,163 @@
+import { CodeGroup, SdkUnsupported } from "shared/Docs/mdx";
+import { SdkSupport } from "src/shared/Docs/SdkSupport";
+import { ResourceGrid, Resource } from "src/shared/Docs/Resources";
+import { VideoCameraIcon } from "@heroicons/react/24/outline";
+import HlsVideo from "src/shared/HlsVideo";
+
+export const metaTitle = "Agent Evals | Evaluate AI in Production";
+export const description = "Agent Evals connects outcome scores to the runs that produced them, so you can evaluate AI agents and compare prompt, model, or code changes in production.";
+
+# Agent Evals overview
+
+> Connect outcome scores to the runs that produced them so you can compare changes using production results.
+
+<SdkSupport
+  feature="Agent Evals"
+  links={{
+    "Sessions on events": "/docs/agent-evals/sessions",
+    "Experiments and variants": "/docs/agent-evals/experiments",
+    "Run and step scores": "/docs/agent-evals/scores",
+    "Deferred scoring": "/docs/agent-evals/deferred-scoring",
+  }}
+  sdks={[
+    {
+      sdk: "typescript",
+      href: "/docs/agent-evals/reference",
+      features: {
+        "Sessions on events": { supported: true, tag: "v4.7+" },
+        "Experiments and variants": { supported: true, tag: "v4.8+" },
+        "Run and step scores": { supported: true, tag: "v4.8+ Beta" },
+        "Deferred scoring": { supported: true, tag: "v4.8+ Beta" },
+      },
+      note: "Scoring and deferred scoring APIs may change before general availability.",
+    },
+    {
+      sdk: "python",
+      href: "/docs/agent-evals/reference",
+      status: "Next release",
+      features: {
+        "Sessions on events": { supported: true, tag: "Next release" },
+        "Experiments and variants": { supported: true, tag: "Next release" },
+        "Run and step scores": { supported: true, tag: "Next release" },
+        "Deferred scoring": { supported: true, tag: "Next release" },
+      },
+      note: "Available in the Python SDK release after 0.5.19. No step.score(), createScorer(), or weighted and custom selectors yet.",
+    },
+  ]}
+/>
+
+A support answer can pass every code check and still fail to help the customer. Agent Evals lets you score the result that matters, link it to the run that produced the answer, and compare changes using those outcomes.
+
+Inngest already records each durable run, its steps, and its [trace](/docs/platform-and-operations/traces). Agent Evals adds outcome signals to those runs, including signals that arrive days after the work finishes. When a score is bad, you open the execution behind it instead of guessing from a final output.
+
+## Score your first run
+
+Add `scoreMiddleware()` to your client, then record a score from inside a function:
+
+<CodeGroup>
+```typescript {{ title: "TypeScript" }}
+import { Inngest } from "inngest";
+import { scoreMiddleware } from "inngest/experimental";
+
+export const inngest = new Inngest({
+  id: "support-agent",
+  middleware: [scoreMiddleware()],
+});
+
+export default inngest.createFunction(
+  { id: "answer-support-ticket", triggers: { event: "support/ticket.created" } },
+  async ({ event, step }) => {
+    const answer = await step.run("generate-answer", () =>
+      generateAnswer(event.data.message)
+    );
+
+    await step.score("score-answer-valid", {
+      name: "answer-valid",
+      value: validateAnswer(answer),
+    });
+
+    return answer;
+  }
+);
+```
+
+```python {{ title: "Python" }}
+!snippet:path=snippets/py/latest/evals/overview/score_first_run.py
+```
+
+<SdkUnsupported title="Go" feature="Scores" />
+</CodeGroup>
+
+`step.score()` is a durable step, so a retry or replay doesn't record the score twice. The score appears on the run's trace and in the function's [score trends](/docs/agent-evals/scores#where-scores-appear).
+
+## Grow from one score to a full eval
+
+Most teams start with a single score and add the other parts as their questions get harder. Each part answers a new question:
+
+1. **[Scores](/docs/agent-evals/scores): is this result good?** `step.score()` records a named number or boolean on a run or step. Use it for checks you can make right away, such as a guardrail, a validation, or an LLM judge.
+2. **[Deferred scoring](/docs/agent-evals/deferred-scoring): did it help later?** `defer()` starts a scorer that waits for feedback, a review, or a conversion, then scores the run that started it. The original run doesn't stay open while it waits.
+3. **[Experiments](/docs/agent-evals/experiments): is the change better?** `group.experiment()` picks one variant per run and keeps it on retries. Pass the returned `experimentRef` with a score so the outcome counts toward the variant that served it.
+4. **[Sessions](/docs/agent-evals/sessions): what else happened?** A session ID on your events groups the runs behind one conversation, ticket, or job, so you can inspect everything that led to an outcome.
+
+### Example: a support agent
+
+A support agent answers tickets, and you're testing a new answer strategy against the current one:
+
+- An experiment sends each ticket through one of the two strategies.
+- The agent checks its answer and records `answer-valid` with `step.score()`.
+- The agent defers a scorer that waits for the customer's rating. When the rating arrives, the scorer records `customer-helped` on the original run and credits the variant that served it.
+- A `ticket_id` session collects every run for the ticket, including follow-ups.
+
+In the experiment view, you compare both scores for each variant: **did the agent produce a valid answer**, and **did the answer help the customer?**
+
+## Choose the right tool
+
+| Goal | Use |
+| --- | --- |
+| Score a guardrail, validation check, model confidence, or inline LLM judge | [`step.score()`](/docs/agent-evals/scores) |
+| Wait for user feedback, ticket resolution, conversion, or review before scoring | [Deferred scoring](/docs/agent-evals/deferred-scoring) |
+| Score a past run from another service that already knows the outcome | [`inngest.score()` with `runId`](/docs/agent-evals/scores#score-from-outside-the-run) |
+| Compare prompts, models, providers, tools, or workflow rewrites | [Experiments](/docs/agent-evals/experiments) |
+| Keep a user, account, or tenant on the same variant while testing | [`experiment.bucket()`](/docs/agent-evals/experiments#choose-an-assignment-strategy) |
+| Find all runs for one conversation, ticket, import, or agent task | [Sessions](/docs/agent-evals/sessions) |
+| Grade answers with a model | [Score with an LLM judge](/docs/agent-evals/guides/llm-judge) |
+
+## Where results appear
+
+| Surface | Use it to |
+| --- | --- |
+| [Traces](/docs/platform-and-operations/traces) | Inspect a run's steps, model calls, tool calls, errors, the selected variant, and its scores. |
+| [Function dashboard](/docs/agent-evals/scores#where-scores-appear) | Watch score trends over time. A drop after a prompt change tells you something broke. |
+| [Experiment view](/docs/agent-evals/experiments#score-a-variant) | Compare run counts and score aggregates for each variant. |
+| [**AI → Sessions**](/docs/agent-evals/sessions#inspect-related-runs) | Find every run related to a conversation, ticket, or job. |
+| [Insights](/docs/platform-and-operations/insights) | Query historical events, runs, and steps with SQL. |
+| [Extended Traces](/docs/reference/typescript/v4/extended-traces) | Capture spans from your model SDKs, databases, and HTTP calls inside each step with OpenTelemetry. |
+| [Inngest MCP](/docs/ai-dev-tools/mcp) | Read experiment run counts and score aggregates from a coding agent. |
+
+## Watch it in action
+
+<HlsVideo
+  src="https://cdn.inngest.com/videos/first_evals_webinar/master.m3u8"
+  loop={false}
+  controls
+  autoPlay={false}
+  className="my-6 w-full rounded-[8px] border border-[rgba(124,124,124,0.35)]"
+/>
+
+<ResourceGrid cols={1}>
+
+<Resource resource={{
+  href: "https://youtu.be/ZPysQAlXUrc",
+  name: 'Video: "Score outcomes, not output"',
+  icon: VideoCameraIcon,
+  description: "Score functions with step.score(), track outcomes from product signals, and evaluate full agent trajectories.",
+  pattern: 1,
+}}/>
+
+</ResourceGrid>
+
+## Next steps
+
+- [Quick start](/docs/agent-evals/quick-start) builds a scored experiment with later feedback.
+- [Guides](/docs/agent-evals/guides) cover LLM judges, user feedback, model comparisons, and rollouts.
+- [Reference](/docs/agent-evals/reference) lists every SDK call and attribution rule.

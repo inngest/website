@@ -46,7 +46,7 @@ Luckily, we have Inngest.
 
 Instead of each tool maintaining its own NetBox sync, tools now emit events describing what happened. An Inngest app receives those events and owns all the coordination logic: data transformation, NetBox writes, resource scheduling, error handling.
 
-This workflow system is built with our [Go SDK](https://pkg.go.dev/github.com/inngest/inngestgo) using the [Connect](/docs/setup/connect?ref=blog-event-driven-infrastructure-inventory-inngest-netbox) method. The design is compact: 4 functions total, with 2 doing the primary work.
+This workflow system is built with our [Go SDK](https://pkg.go.dev/github.com/inngest/inngestgo) using the [Connect](/docs/durable-execution/deploying-functions/connect?ref=blog-event-driven-infrastructure-inventory-inngest-netbox) method. The design is compact: 4 functions total, with 2 doing the primary work.
 
 - `ANSIBLE: handle facts` processes hardware and VM data collected by Ansible playbook runs and upserts the corresponding resources into NetBox.
 - `VM: Schedule` handles placement of virtual resources onto bare metal. Once placed in NetBox, the virtualization system (built around `libvirt`) picks up the assignment and provisions accordingly.
@@ -309,7 +309,7 @@ Inngest retries make the workflow a lot smoother by backing off when it fails, a
 
 2. **Reruns after deploying fixes.**
 
-When we introduced a bug in the inventory upsert logic, the Inngest UI showed which runs failed and why. After deploying the fix, we [reran the failed runs](/docs/platform/replay?ref=blog-event-driven-infrastructure-inventory-inngest-netbox) from the dashboard. They reprocessed to completion using the original event payloads. No need to trigger fresh Ansible runs or manually reconcile state.
+When we introduced a bug in the inventory upsert logic, the Inngest UI showed which runs failed and why. After deploying the fix, we [reran the failed runs](/docs/platform-and-operations/replay-runs-in-bulk?ref=blog-event-driven-infrastructure-inventory-inngest-netbox) from the dashboard. They reprocessed to completion using the original event payloads. No need to trigger fresh Ansible runs or manually reconcile state.
 
 Both of these reduce the operational burden of maintaining an internal tool that doesn't justify heavy investment in reliability engineering.
 

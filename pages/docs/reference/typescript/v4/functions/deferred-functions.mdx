@@ -1,6 +1,6 @@
 import { Callout, Properties, Property, Row, Col, CodeGroup, VersionBadge } from "src/shared/Docs/mdx";
 
-export const metaTitle = "Deferred Functions | Fire-and-Forget Background Tasks"
+export const metaTitle = "Deferred Functions | TypeScript SDK v4"
 export const description = "Trigger independent background tasks with typed data without waiting for a return value."
 
 # Deferred Functions
@@ -25,7 +25,7 @@ Use deferred functions for work that should happen *because of* a run, not *as p
 | `step.sendEvent(...)`           | No                  | Yes (any matching fn)     |
 | `defer(id, { function, data })` | No                  | Yes (single typed target) |
 
-A common use case is an [LLM scorer](/docs/features/inngest-functions/steps-workflows/deferred-scoring) that runs against the output of an agent run.
+A common use case is an [LLM scorer](/docs/agent-evals/deferred-scoring) that runs against the output of an agent run.
 
 ---
 
@@ -132,7 +132,7 @@ await step.run("notify", async () => {
         Event metadata shared with the deferred run.
         <Properties nested>
           <Property name="sessions" type="Record<string, string | number | null> | null">
-            [Sessions](/docs/features/events-triggers/sessions?ref=docs-reference-deferred-functions) to add to or override on the deferred run. Manually set sessions take precedence over sessions inherited from the calling run. A `null` value clears an inherited session for that key; setting `sessions` itself to `null` clears every inherited session. Numbers are normalized to strings.
+            [Sessions](/docs/agent-evals/sessions?ref=docs-reference-deferred-functions) to add to or override on the deferred run. Manually set sessions take precedence over sessions inherited from the calling run. A `null` value clears an inherited session for that key; setting `sessions` itself to `null` clears every inherited session. Numbers are normalized to strings.
           </Property>
         </Properties>
       </Property>
@@ -174,7 +174,7 @@ Call-site validation must be synchronous because `defer(...)` itself is sync. If
 
 ## Sessions
 
-A deferred run inherits the [sessions](/docs/features/events-triggers/sessions?ref=docs-reference-deferred-functions) of the run that called `defer(...)`, so the two are grouped together in the dashboard. Pass `meta.sessions` to add or override sessions on the deferred run:
+A deferred run inherits the [sessions](/docs/agent-evals/sessions?ref=docs-reference-deferred-functions) of the run that called `defer(...)`, so the two are grouped together in the dashboard. Pass `meta.sessions` to add or override sessions on the deferred run:
 
 ```ts
 defer("score", {
@@ -201,7 +201,7 @@ defer("score", {
 `defer(...)` is fire-and-forget, so a bad call should not derail the surrounding handler.
 
 - **Call-site errors** (for example, a synchronous schema failure, or an invalid `meta.sessions` value) are logged via the internal logger and the call is silently skipped. The parent run continues normally and the deferred function does not fire.
-- **Receiver-side errors** (the deferred run reading invalid `event.data`, or the handler throwing) fail the deferred run itself with normal retry semantics.
+- **Receiver-side errors** fail the deferred run itself, never the parent. If `event.data` fails schema validation, the deferred run fails without retries. If the handler throws, the run retries with normal retry semantics.
 
 ---
 

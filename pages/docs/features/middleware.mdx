@@ -16,7 +16,7 @@ Middleware allows your code to run at various points in an Inngest client's life
 This can be used for a wide range of uses:
 
 <CardGroup cols={2}>
-  <Card title="Custom observability" icon={<RiFileSearchLine className="text-basis h-4 w-4"/>} href={'/docs/features/middleware/create'}>
+  <Card title="Custom observability" icon={<RiFileSearchLine className="text-basis h-4 w-4"/>} href={'/docs/durable-execution/guides-and-advanced/middleware/creating-middleware'}>
     Add custom logging, tracing or helpers to your Inngest Functions.
   </Card>
   <Card title="Dependency Injection" icon={<RiPlugLine className="text-basis h-4 w-4" />} href={'/docs/features/middleware/dependency-injection'}>
@@ -25,7 +25,7 @@ This can be used for a wide range of uses:
   <Card title="Encryption Middleware" icon={<RiEyeOffLine className="text-basis h-4 w-4" />} href={'/docs/features/middleware/encryption-middleware'}>
     End-to-end encryption for events, step output, and function output.
   </Card>
-  <Card title="Sentry Middleware" icon={<RiMistFill className="text-basis h-4 w-4"/>} href={'/docs/features/middleware/sentry-middleware'}>
+  <Card title="Sentry Middleware" icon={<RiMistFill className="text-basis h-4 w-4"/>} href={'/docs/durable-execution/guides-and-advanced/middleware/sentry-middleware'}>
     Quickly setup Sentry for your Inngest Functions.
   </Card>
 </CardGroup>
@@ -101,4 +101,4 @@ async def fn(ctx: inngest.Context):
 ```
 </CodeGroup>
 
-Learn more about the Middleware hooks and their execution order in ["Creating a Middleware"](/docs/features/middleware/create).
+Learn more about the Middleware hooks and their execution order in ["Creating a Middleware"](/docs/durable-execution/guides-and-advanced/middleware/creating-middleware).

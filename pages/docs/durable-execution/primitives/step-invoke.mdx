@@ -1,0 +1,132 @@
+import { CodeGroup } from "shared/Docs/mdx";
+import { Compatibility } from "shared/Docs/mdx";
+export const metaTitle = "step.invoke() | Invoke Functions Directly";
+export const description = "Call another Inngest function with step.invoke() and wait for its return value. Compose durable workflows across functions and reuse existing logic.";
+
+# `step.invoke`
+
+<Compatibility />
+
+`step.invoke()` starts another Inngest function and waits for its result. The called function runs separately with its own steps and retries, so you can reuse it without copying its logic into the parent.
+
+They are useful when:
+
+- Several workflows need the same function.
+- One workflow needs another function's result before continuing.
+- You want separate retry settings for a part of the work.
+- One function would exceed the 1,000-step limit. Move part of the work into an invoked function, which has its own step limit.
+
+## Call a function and await its result
+
+This example defines both functions in one app. The `invoke()` trigger validates and types the child function's input. Expose both functions through your Inngest handler or Connect worker.
+
+<CodeGroup>
+```typescript {{ title: "TypeScript" }}
+import { Inngest, eventType, invoke } from "inngest";
+import { z } from "zod";
+
+export const inngest = new Inngest({ id: "checkout-app" });
+
+const checkoutRequested = eventType("checkout/requested", {
+  schema: z.object({
+    orderId: z.string(),
+    subtotalCents: z.number(),
+    shippingCents: z.number(),
+  }),
+});
+
+export const calculateTotal = inngest.createFunction(
+  {
+    id: "calculate-total",
+    triggers: [
+      invoke({
+        schema: z.object({
+          subtotalCents: z.number(),
+          shippingCents: z.number(),
+        }),
+      }),
+    ],
+  },
+  async ({ event }) => {
+    return {
+      totalCents: event.data.subtotalCents + event.data.shippingCents,
+    };
+  }
+);
+
+export const prepareCheckout = inngest.createFunction(
+  {
+    id: "prepare-checkout",
+    triggers: [checkoutRequested],
+  },
+  async ({ event, step }) => {
+    const total = await step.invoke("calculate-total", {
+      function: calculateTotal,
+      data: {
+        subtotalCents: event.data.subtotalCents,
+        shippingCents: event.data.shippingCents,
+      },
+      timeout: "5m",
+    });
+
+    return {
+      orderId: event.data.orderId,
+      totalCents: total.totalCents,
+    };
+  }
+);
+
+export const functions = [calculateTotal, prepareCheckout];
+```
+
+```python {{ title: "Python" }}
+!snippet:path=snippets/py/latest/primitives/step_invoke/checkout.py
+```
+
+```go {{ title: "Go" }}
+!snippet:path=snippets/go/docs/primitives/step_invoke/checkout.go
+```
+</CodeGroup>
+
+Send `checkout/requested` with `orderId`, `subtotalCents`, and `shippingCents`. The parent returns the child's calculated total. Register both functions in the endpoint or worker that serves `functions`.
+
+## API
+
+<CodeGroup>
+```ts {{ title: "TypeScript" }}
+const result = await step.invoke(id, { function, data, timeout });
+```
+
+```python {{ title: "Python" }}
+!snippet:path=snippets/py/latest/primitives/step_invoke/api.py
+```
+
+```go {{ title: "Go" }}
+!snippet:path=snippets/go/docs/primitives/step_invoke/api.go
+```
+</CodeGroup>
+
+
+- **`id`**: a stable step ID, not the ID of the function you're calling.
+- **`function`**: the function to call. To call a function in another app, use `referenceFunction({ appId, functionId })`.
+- **`data`**: the input to pass to the function.
+- **`timeout`**: how long to wait for the result, such as `"1h"`.
+- **Returns** the called function's return value.
+
+See the [`step.invoke` reference](/docs/reference/typescript/functions/step-invoke) for every option.
+
+## Return values, failures, and timeouts
+
+The child returns JSON-serializable data to the parent. Keep that result small enough for the step payload and run state limits.
+
+The child runs as an independent Inngest function and uses its own retry settings. If the child exhausts its retries, Inngest cannot find it, or the invocation times out, `step.invoke()` throws a `NonRetriableError` in the parent. Catch that error if the parent can recover. Set an explicit timeout that fits the work and the parent's deadline. **A timed-out child keeps running.** Do not assume the timeout cancels its work. If the child function is rate limited and skipped, the invocation fails. If it is debounced and skipped, the invocation fails when its timeout is reached. Choose a meaningful timeout for a debounced child.
+
+## Choose the right primitive
+
+- Use `step.invoke()` when the parent needs one called function's return value or the child needs its own function configuration.
+- Use [step.run](/docs/durable-execution/primitives/step-run) when work belongs in the current function and does not need a separate function.
+- Use [step.sendEvent](/docs/durable-execution/primitives/step-sendevent) when the parent needs to trigger work but does not need the other function's result. An event can trigger multiple functions.
+
+## Next
+
+Read [Primitives](/docs/durable-execution/primitives) for the other ways to pause and resume work.

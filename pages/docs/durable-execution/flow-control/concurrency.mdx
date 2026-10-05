@@ -1,0 +1,344 @@
+import { CodeGroup, Compatibility } from "shared/Docs/mdx";
+import { FlowControlMarbles } from "src/shared/Docs/FlowControlMarbles";
+
+export const metaTitle = "Concurrency Control | Limit Parallel Steps";
+export const description = "Limit how many steps run at once across Inngest functions. Set global or key-scoped concurrency limits to protect APIs, databases, and downstream services.";
+
+# Step concurrency
+
+> Protect APIs and databases by limiting how many workflow steps execute at once.
+
+<Compatibility endpoints={false} />
+
+Limit the number of steps executing at once. Inngest queues steps above the concurrency limit and starts them when capacity opens, allowing you to protect your resources from sudden spikes of activity.
+
+<FlowControlMarbles scenario="concurrency" />
+
+## What a concurrency limit counts
+
+Before Inngest starts a step, it checks every concurrency limit on the function. If a limit has no free slot, the step waits in a queue. When an executing step finishes or a run starts waiting, Inngest can use the free slot to start another eligible step.
+
+### What counts towards concurrency
+
+- All code execution (including inside steps and outside of steps) uses a concurrency slot
+- Each request counts as a single slot.  For example, 3 parallel steps uses 3 concurrency slots.
+
+A limit counts **steps executing code**, not all function runs in progress. For example, a limit of 10 can coexist with hundreds of paused runs, but only 10 steps from those runs execute at once. If one run sleeps, another queued step can use its slot. When the sleeping run resumes, its next step must wait for a free slot if the limit is full.
+
+Use concurrency when simultaneous work is the constraint, such as database connections or calls to a service that slows under parallel load. Use [Throttling](/docs/durable-execution/flow-control/throttling) to control how quickly runs start over time. Use [Rate limiting](/docs/durable-execution/flow-control/rate-limiting) when excess events should be skipped.
+
+### What does not count towards concurrency
+- `step.sleep()`, `step.sleepUntil()`, `step.waitForEvent()`, and `step.invoke()` do not use a slot while they wait.
+
+<FlowControlMarbles scenario="concurrency-sleep" />
+
+## Limit one function
+
+Set `concurrency` in the function configuration. This TypeScript v4 example lets at most 10 steps from this function execute at once. Replace the example step body with the work whose parallel load you need to control.
+
+<CodeGroup>
+```typescript {{ title: "TypeScript" }}
+import { Inngest } from "inngest";
+
+const inngest = new Inngest({ id: "imports" });
+
+export const processImport = inngest.createFunction(
+  {
+    id: "process-import",
+    triggers: { event: "imports/requested" },
+    concurrency: 10,
+  },
+  async ({ event, step }) => {
+    return step.run("normalize-import-id", () =>
+      String(event.data.importId).toUpperCase()
+    );
+  }
+);
+```
+
+```python {{ title: "Python" }}
+!snippet:path=snippets/py/latest/flow_control/concurrency/process_import.py
+```
+
+```go {{ title: "Go" }}
+!snippet:path=snippets/go/docs/flow_control/concurrency/process_import.go
+```
+</CodeGroup>
+
+When all 10 slots are occupied, later steps wait in Inngest's queue. A numeric value is shorthand for `{ limit: 10 }`.
+
+## Give each account its own limit
+
+Add a `key` expression to apply the limit separately to each evaluated value:
+
+<CodeGroup>
+```typescript {{ title: "TypeScript" }}
+concurrency: {
+  limit: 2,
+  key: "event.data.accountId",
+}
+```
+
+```python {{ title: "Python" }}
+!snippet:path=snippets/py/latest/flow_control/concurrency/key_limit.py
+```
+
+```go {{ title: "Go" }}
+!snippet:path=snippets/go/docs/flow_control/concurrency/key_limit.go
+```
+</CodeGroup>
+
+With this configuration, steps for one account do not use another account's two slots. Choose a stable key that identifies the resource you want to protect. The key is a Common Expression Language expression over the triggering event, not a JavaScript callback. See [Multi-tenancy](/docs/durable-execution/flow-control/multi-tenancy) for scheduling and fairness between keys.
+
+## Share a limit across functions
+
+The default `fn` scope applies within one function. Use `env` to share capacity across functions in one environment or `account` to share it across environments. Both require a `key`. A fixed key is a quoted string inside the expression:
+
+<CodeGroup>
+```typescript {{ title: "TypeScript" }}
+concurrency: {
+  scope: "account",
+  key: '"external-api"',
+  limit: 20,
+}
+```
+
+```python {{ title: "Python" }}
+!snippet:path=snippets/py/latest/flow_control/concurrency/account_scope.py
+```
+
+```go {{ title: "Go" }}
+!snippet:path=snippets/go/docs/flow_control/concurrency/account_scope.go
+```
+</CodeGroup>
+
+Configure every function that uses the shared capacity with the same scope, key, and limit. Keep those settings in a shared constant so the functions agree on the ceiling.
+
+Functions with the same `account` key can set different limits, but each function checks the shared active count against its own limit. If one function sets 5 and another sets 50, the first waits when five steps use the shared key, while the second may start more work. The higher limit can delay work from the first function. Use one shared limit when both functions must respect the same ceiling.
+
+A function can have **up to two** concurrency constraints. For example, combine a shared API ceiling with a per-account ceiling:
+
+<CodeGroup>
+```typescript {{ title: "TypeScript" }}
+concurrency: [
+  { scope: "account", key: '"external-api"', limit: 20 },
+  { key: "event.data.accountId", limit: 2 },
+]
+```
+
+```python {{ title: "Python" }}
+!snippet:path=snippets/py/latest/flow_control/concurrency/multiple_limits.py
+```
+
+```go {{ title: "Go" }}
+!snippet:path=snippets/go/docs/flow_control/concurrency/multiple_limits.go
+```
+</CodeGroup>
+
+A step starts only when it fits both limits. If one step needs its own ceiling, move that work to a separate function with its own concurrency setting and call it with `step.invoke()`.
+
+The order of the constraints does not change which steps can start. You can use two keys with the same scope if they evaluate to different strings.
+
+## Limit customer imports
+
+Use a customer ID as the key when processing steps for the same customer must not execute together:
+
+<CodeGroup>
+```typescript {{ title: "TypeScript" }}
+export const processCustomerImport = inngest.createFunction(
+  {
+    id: "process-customer-import",
+    triggers: { event: "csv/file.uploaded" },
+    concurrency: { limit: 1, key: "event.data.customerId" },
+  },
+  async ({ event, step }) => {
+    await step.run("process-file", () => processFile(event.data.fileURI));
+  }
+);
+```
+
+```python {{ title: "Python" }}
+!snippet:path=snippets/py/latest/flow_control/concurrency/customer_import.py
+```
+
+```go {{ title: "Go" }}
+!snippet:path=snippets/go/docs/flow_control/concurrency/customer_import.go
+```
+</CodeGroup>
+
+Replace `processFile` with your import implementation. Inngest can execute imports for different customers at the same time. For one customer, only one step executes at once. A waiting step in one import does not reserve that customer's slot, so this setting does not guarantee that whole imports run one after another.
+
+## Queue behavior and limits
+
+- Within a function and key, Inngest selects queued work in best-effort FIFO order. Retries can affect that order. Across keys or functions, the scheduler also considers capacity and fairness, so execution order is not guaranteed.
+- Changing a key expression affects new work. Already queued work retains the value assigned when it entered the queue.
+- A value of `0` or `undefined` sets no concurrency limit. The highest allowed limit depends on your plan.
+- A low limit can build a backlog. Set a [start timeout](/docs/durable-execution/guides-and-advanced/cancellation/timeouts) when queued work becomes useless after a deadline.
+
+The `key` is a CEL expression that evaluates to a string. For a separate limit per user and import, use `event.data.userId + "-" + event.data.importId`. For a fixed shared limit, use a quoted string expression such as `'"external-api"'`.
+
+A separate key-queue scheduling feature is available to Enterprise customers on request. Check its availability before promising best-effort fairness between tenants.
+
+## How concurrency works
+Concurrency works by limiting the number of steps executing at a single time. Within Inngest, execution is defined as "an SDK running code". Calling step.sleep, step.sleepUntil, step.waitForEvent, or step.invoke does not count towards capacity limits, as the SDK doesn't execute code while those steps wait.
+
+### Understanding step execution vs. function runs
+Because sleeping or waiting is common, concurrency does not limit the number of functions in progress. Instead, it limits the number of steps executing at any single time.
+
+The key insight is that your concurrency limit applies to active execution, not to the number of function runs in progress. Consider a function with a concurrency limit of 10:
+
+- You could have hundreds of function runs in progress
+- But only 10 steps can be actively executing code at once
+- When a function run calls step.sleep("wait", "1h"), it releases its execution slot
+- That slot becomes available for other steps to use
+**What counts against concurrency:**
+
+- step.run() - while the step's code is executing
+**What does NOT count against concurrency:**
+
+- step.sleep() / step.sleepUntil() - while sleeping
+- step.waitForEvent() - while waiting for an event
+- step.invoke() - while waiting for the invoked function to complete
+- Time between steps - when Inngest is coordinating the next step
+### Queue ordering
+Within the same function and flow control key, queues use best-effort FIFO ordering from oldest to newest jobs. Ordering across different keys or functions is not guaranteed because the scheduler also considers capacity and fairness. This means Inngest generally prioritizes older work within a key while preventing one key's backlog from blocking other keys.
+
+If you change a key expression, existing jobs retain the key that was evaluated when they entered the queue. Only new jobs are grouped using the new expression. Learn more about multi-tenancy and flow control keys.
+
+### Additional information
+- The order of keys does not matter. Concurrency is limited by any key that reaches its limits.
+- You can specify multiple keys for the same scope, as long as the resulting key evaluates to a different string.
+## Concurrency control across specific steps in a function
+You might need to set a different concurrency limit for a single step in a function. For example, within an AI flow you may have 10 pre-processing steps which can run with higher limits, and a single AI call with much lower limits.
+
+To control concurrency on individual steps, extract the step into a new function with its own concurrency controls, and invoke the new function using step.invoke. This lets you combine concurrency controls and manage "flow control" in a clean, composable manner.
+
+## How global limits work
+While two functions can share different account scoped limits, we strongly recommend that you use a global const with a single shared limit.
+
+You may write two functions that define different levels for an 'account' scoped concurrency limit. For example, function A may limit the "ai" capacity to 5, while function B limits the "ai" capacity to 50:
+
+<CodeGroup>
+```typescript {{ title: "TypeScript" }}
+inngest.createFunction(
+  {
+    id: "func-a",
+    concurrency: {
+      scope: "account",
+      key: `"openai"`,
+      limit: 5,
+    },
+    triggers: { event: "ai/summary.requested" },
+  },
+  async ({ event, step }) => {
+  }
+);
+
+inngest.createFunction(
+  {
+    id: "func-b",
+    concurrency: {
+      scope: "account",
+      key: `"openai"`,
+      limit: 50,
+    },
+    triggers: { event: "ai/summary.requested" },
+  },
+  async ({ event, step }) => {
+  }
+);
+```
+
+```python {{ title: "Python" }}
+!snippet:path=snippets/py/latest/flow_control/concurrency/global_limits.py
+```
+
+```go {{ title: "Go" }}
+!snippet:path=snippets/go/docs/flow_control/concurrency/global_limits.go
+```
+</CodeGroup>
+
+This works in Inngest and is not a conflict. Instead, function A is limited any time there are 5 or more functions running in the 'openai' queue. Function B, however, is limited when there are 50 or more items in the queue. This means that function B has more capacity than function A, though both are limited and compete on the same virtual queue.
+
+Because functions are FIFO, function runs are more likely to be worked on the older their jobs get (as the backlog grows). If function A's jobs stay in the backlog longer than function B's jobs, it's likely that their jobs will be worked on as soon as capacity is free. That said, function B will almost always have capacity before function A and may block function A's work.
+
+While this works we strongly recommend that you use global constants for env or account level scopes, giving functions the same limit.
+
+## Limitations
+- Concurrency limits the number of steps executing at a single time. It does not yet perform rate limiting over a given period of time.
+- Functions can specify up to 2 concurrency constraints at once
+- The maximum concurrency limit is defined by your account's plan
+- Ordering within the same function and flow control key is best-effort FIFO (with the exception of retries).
+- Ordering across different keys or functions is not guaranteed. The scheduler also considers capacity and fairness.
+## Concurrency reference
+### `limit`
+
+| Name | Type | Required |
+| --- | --- | --- |
+| `limit` | `number` | required |
+
+The maximum number of concurrently running steps. A value of 0 or undefined is the equivalent of not setting a limit. The maximum value is dictated by your account's plan.
+
+### `scope`
+
+| Name | Type | Required |
+| --- | --- | --- |
+| `scope` | `'account' \| 'env' \| 'fn'` | optional |
+
+The scope for the concurrency limit, which impacts whether concurrency is managed on an individual function, across an environment, or across your entire account.
+
+- fn (default): only the runs of this function affects the concurrency limit
+- env: all runs within the same environment that share the same evaluated key value will affect the concurrency limit. This requires setting a key which evaluates to a virtual queue name.
+- account: every run that shares the same evaluated key value will affect the concurrency limit, across every environment. This requires setting a key which evaluates to a virtual queue name.
+Each SDK exposes these enums in the idiomatic manner of a given language, though the meanings of the enums are the same across all languages.
+
+### `key`
+
+| Name | Type | Required |
+| --- | --- | --- |
+| `key` | `string` | optional |
+
+An expression which evaluates to a string given the triggering event. The string returned from the expression is used as the concurrency queue name. A key is required when setting an env or account level scope.
+
+Expressions are defined using the Common Expression Language (CEL) with the original event accessible using dot-notation. Read our guide to writing expressions for more info. Examples:
+
+- Limit concurrency to n (via limit) per customer id: 'event.data.customer_id'
+- Limit concurrency to n per user, per import id: 'event.data.user_id + "-" + event.data.import_id'
+- Limit globally using a specific string: '"global-quoted-key"' (wrapped in quotes, as the expression is evaluated as a language)
+## Further examples
+### Restricting parallel import jobs for a customer id
+In this hypothetical system, customers can upload .csv files which each need to be processed and imported. We want to limit each customer to only one import job at a time so no two jobs are writing to a customer's data at a given time. We do this by setting a limit: 1 and a concurrency key to the customerId which is included in every single event payload.
+
+Inngest ensures that the concurrency (1) applies to each unique value for event.data.customerId. This allows different customers to have steps executing at the same exact time, but no given customer can have two steps executing at once!
+
+<CodeGroup>
+```typescript {{ title: "TypeScript" }}
+export const send = inngest.createFunction(
+  {
+    name: "Process customer csv import",
+    id: "process-customer-csv-import",
+    concurrency: {
+      limit: 1,
+      key: `event.data.customerId`, // You can use any piece of data from the event payload
+    },
+    triggers: { event: "csv/file.uploaded" },
+  },
+  async ({ event, step }) => {
+    await step.run("process-file", async () => {
+      const file = await bucket.fetch(event.data.fileURI);
+      // ...
+    });
+
+    return { message: "success" };
+  }
+);
+```
+
+```python {{ title: "Python" }}
+!snippet:path=snippets/py/latest/flow_control/concurrency/csv_import.py
+```
+
+```go {{ title: "Go" }}
+!snippet:path=snippets/go/docs/flow_control/concurrency/csv_import.go
+```
+</CodeGroup>

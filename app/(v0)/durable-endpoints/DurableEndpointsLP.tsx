@@ -224,7 +224,7 @@ function Hero({
       variant: "default",
     },
     {
-      href: `/docs/learn/durable-endpoints?ref=${ref}`,
+      href: `/docs/durable-execution/durable-endpoints?ref=${ref}`,
       text: "Read the docs",
       variant: "outline",
     },

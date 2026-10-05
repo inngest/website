@@ -5,7 +5,7 @@ export const metaTitle = "AI Eval Scorer Quickstart Examples"
 export const description = "Copy-paste scorer examples for evaluating AI outputs with Inngest: inline guardrails, LLM-as-a-judge, deferred user-feedback scorers, and experiment variant scoring."
 
 # AI Eval Scorer Quickstart Examples
-Get started on [Agent Evals](/docs/learn/agent-evals) quickly with some basic scoring functions. This example guide has a few of the most common ways to score an AI agent without setting up proprietary datasets or [scoring on outcomes](/docs/patterns/ai-evals/score-agents-on-real-outcomes). 
+Get started on [Agent Evals](/docs/agent-evals/overview) quickly with some basic scoring functions. This example guide has a few of the most common ways to score an AI agent without setting up proprietary datasets or [scoring on outcomes](/docs/patterns/ai-evals/score-agents-on-real-outcomes). 
 
 These examples are in no way close to the limit of what you can do with Inngest agent evals, and by adding in additional outcome signals or your own proprietary scoring functions, you can create an extremely robust solution that measures your agents on real data and outcomes, and even run split [experiments with different logic](/docs/patterns/ai-evals/run-experiments-in-production).
 
@@ -127,7 +127,7 @@ export function scoreToolEfficiency(
 
 With the scorers defined, wire them into the function that runs your agent, in this example `/inngest/functions.ts` , or wherever your Inngest function lives. Each score is written with `step.score`, so it's a memoized step attached directly to the run: retried like any other step, and queryable in Insights alongside cost and execution data.
 
-These three run inline, right after the agent finishes. When the signal you care about doesn't exist yet at runtime, such as a user accepting the suggestion or a ticket actually closing, that's the job of [deferred scoring](/docs/features/inngest-functions/steps-workflows/deferred-scoring?ref=docs-patterns-score-agents-on-real-outcomes).
+These three run inline, right after the agent finishes. When the signal you care about doesn't exist yet at runtime, such as a user accepting the suggestion or a ticket actually closing, that's the job of [deferred scoring](/docs/agent-evals/deferred-scoring?ref=docs-patterns-score-agents-on-real-outcomes).
 
 ```tsx
 import type Anthropic from "@anthropic-ai/sdk";
@@ -166,7 +166,7 @@ export const runAgentFn = inngest.createFunction(
 
 Check the resources below to learn more about building agent evals with Inngest.
 
-- [Step Experiments](/docs/features/inngest-functions/steps-workflows/step-experiments?ref=docs-examples-ai-eval-scorer)
-- [Scoring](/docs/features/inngest-functions/steps-workflows/scoring?ref=docs-examples-ai-eval-scorer)
-- [Deferred Scoring](/docs/features/inngest-functions/steps-workflows/deferred-scoring?ref=docs-examples-ai-eval-scorer)
+- [Step Experiments](/docs/agent-evals/experiments?ref=docs-examples-ai-eval-scorer)
+- [Scoring](/docs/agent-evals/scores?ref=docs-examples-ai-eval-scorer)
+- [Deferred Scoring](/docs/agent-evals/deferred-scoring?ref=docs-examples-ai-eval-scorer)
 - [Scoring on Outcomes](/docs/patterns/ai-evals/score-agents-on-real-outcomes?ref=docs-examples-ai-eval-scorer)

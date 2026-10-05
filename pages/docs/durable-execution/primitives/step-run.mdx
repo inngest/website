@@ -1,0 +1,70 @@
+import { CodeGroup } from "shared/Docs/mdx";
+import { Compatibility } from "shared/Docs/mdx";
+export const metaTitle = "step.run() | Retriable Durable Steps";
+export const description = "step.run() defines a durable, retriable step in an Inngest function. Failed work retries on its own, while steps that already completed are never repeated.";
+
+# `step.run`
+
+<Compatibility />
+
+`step.run()` makes one operation a durable step that Inngest can retry if it fails. Inngest saves a completed step's result, so later retries can continue without repeating that work.
+
+They are useful when:
+
+- You call an external API or write to a database.
+- Later steps need the result of earlier work.
+- You want to retry one failed operation without repeating completed steps.
+
+## Run two steps
+
+This function loads a task, then processes it. The client import assumes you have created an Inngest client in `./client`. Replace `loadTask` and `processTaskRecord` with your application's functions.
+
+<CodeGroup>
+```typescript {{ title: "TypeScript" }}
+import { inngest } from "./client";
+
+export const processTask = inngest.createFunction(
+  { id: "process-task", triggers: { event: "app/task.created" } },
+  async ({ event, step }) => {
+    const task = await step.run("load-task", () =>
+      loadTask(event.data.taskId)
+    );
+
+    return step.run("process-task", () => processTaskRecord(task));
+  }
+);
+```
+
+```python {{ title: "Python" }}
+!snippet:path=snippets/py/latest/primitives/step_run/process_task.py
+```
+
+```go {{ title: "Go" }}
+!snippet:path=snippets/go/docs/primitives/step_run/process_task.go
+```
+</CodeGroup>
+
+If `process-task` fails, Inngest retries that step. The completed `load-task` result stays saved, so the retry does not call `loadTask` again.
+
+## Retries and side effects
+
+If the handler throws, Inngest retries this step according to the function's `retries` setting. Each `step.run` call has its own retry count. By default, a step gets one initial attempt and up to four retries. A completed earlier step keeps its saved result.
+
+Put database writes and API calls inside `step.run` so a resumed function does not repeat completed work. A failed attempt can still have changed an external system before it threw or timed out. Use an idempotency key, an upsert, or another duplicate-safe operation for effects that a retry could repeat. Use a non-retriable error for a permanent failure; catch an exhausted step failure when the workflow can recover or compensate.
+
+## Results and limits
+
+Inngest serializes returned values as JSON. Return only the data later work needs; for example, return a record ID instead of an entire record. Current platform limits are:
+
+- 4 MiB step results
+- 32 MiB total function run state
+- 1,000 steps per function
+- A step can run for up to two hours, subject to the hosting provider's shorter timeout
+
+## Next
+
+- [`step.run` reference](/docs/reference/typescript/functions/step-run) for every option.
+- [Primitives](/docs/durable-execution/primitives) for sleeps, waits, events, and invocations.
+- [Error handling and retries](/docs/durable-execution/guides-and-advanced/error-handling) for failure and recovery patterns.
+- [Handling idempotency](/docs/durable-execution/guides-and-advanced/idempotency) for duplicate-safe side effects.
+- [Limits](/docs/durable-execution/limits) for step and run limits.

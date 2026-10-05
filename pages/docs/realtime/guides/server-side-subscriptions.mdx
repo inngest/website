@@ -1,0 +1,114 @@
+import { CodeGroup, SdkUnsupported } from "shared/Docs/mdx";
+export const metaTitle = "Subscribe to Realtime Channels | Server-Side";
+export const description = "Subscribe to Inngest Realtime channels from server code, forward messages to clients over Server-Sent Events, or react to them in a background worker.";
+
+# Server-side subscriptions
+
+> Read Realtime messages in server code, forward them over Server-Sent Events, or react to them in a worker.
+
+Subscribe from your server when a browser can't hold a WebSocket, when you want to forward updates through an existing HTTP response, or when another service needs to react to a function's progress. Server code that has your Inngest client authenticates with its signing key, so it doesn't need a subscription token. In Go, `realtime.Subscribe()` takes a subscription token instead, and the Python SDK doesn't support subscribing yet.
+
+## Read a stream
+
+`inngest.realtime.subscribe()` returns a readable stream of typed messages. Iterate it with `for await`.
+
+<CodeGroup>
+```ts {{ title: "TypeScript" }}
+import { inngest } from "./inngest/client";
+import { jobChannel } from "./inngest/channels";
+
+const stream = await inngest.realtime.subscribe({
+  channel: jobChannel({ jobId: "job_123" }),
+  topics: ["status", "result"],
+});
+
+for await (const message of stream) {
+  if (message.kind === "run") continue;
+  console.log(message.topic, message.data);
+}
+```
+
+<SdkUnsupported title="Python" feature="Server-side subscriptions" />
+
+```go {{ title: "Go" }}
+!snippet:path=snippets/go/docs/realtime/server_side_subscriptions/read_stream.go
+```
+</CodeGroup>
+
+`subscribe({ app: inngest, channel, topics })` from `inngest/realtime` does the same when you pass the client as an argument.
+
+## Handle messages with a callback
+
+Pass `onMessage` to receive each message in a callback instead of a stream. The call returns a subscription handle. Pass `onError` to catch connection errors.
+
+<CodeGroup>
+```ts {{ title: "TypeScript" }}
+const subscription = await inngest.realtime.subscribe({
+  channel: jobChannel({ jobId: "job_123" }),
+  topics: ["status"],
+  onMessage: (message) => {
+    console.log(message.data);
+  },
+  onError: (err) => {
+    console.error("Realtime subscription failed", err);
+  },
+});
+
+// Later, when you no longer need updates:
+subscription.close();
+```
+
+<SdkUnsupported title="Python" feature="Server-side subscriptions" />
+
+```go {{ title: "Go" }}
+!snippet:path=snippets/go/docs/realtime/server_side_subscriptions/callback.go
+```
+</CodeGroup>
+
+Close every subscription when its consumer finishes so the connection doesn't stay open.
+
+## Forward updates with Server-Sent Events
+
+`getEncodedStream()` returns bytes you can return as a `text/event-stream` response. This route starts a function and streams its updates back in the same response.
+
+<CodeGroup>
+```ts {{ title: "TypeScript", filename: "app/api/hello-world/route.ts" }}
+import { inngest } from "@/inngest/client";
+import { helloChannel } from "@/inngest/channels";
+
+export async function POST() {
+  const uuid = crypto.randomUUID();
+  const channel = helloChannel({ uuid });
+
+  // Subscribe first so the stream includes the function's first update.
+  const stream = await inngest.realtime.subscribe({
+    channel,
+    topics: ["logs"],
+  });
+
+  await inngest.send({ name: "hello-world/hello", data: { uuid } });
+
+  return new Response(stream.getEncodedStream(), {
+    headers: {
+      "Content-Type": "text/event-stream",
+      "Cache-Control": "no-cache",
+      Connection: "keep-alive",
+    },
+  });
+}
+```
+
+<SdkUnsupported title="Python" feature="Server-side subscriptions" />
+
+<SdkUnsupported title="Go" feature="Server-Sent Events forwarding">`realtime.Subscribe()` needs a subscription token for the channel, and the Go SDK can't mint one per request. Mint the token with the TypeScript or Python SDK.</SdkUnsupported>
+</CodeGroup>
+
+Authorize the caller in this route, just as you would before you mint a token. The route reads with your signing key, so it can read any channel.
+
+The stream also offers `getJsonStream()` for a stream of parsed messages and `close()` to end the subscription.
+
+## Next steps
+
+- [Subscribing reference](/docs/reference/typescript/v4/realtime/subscribing) lists every option and message field.
+- [Subscription tokens](/docs/realtime/guides/subscription-tokens) covers browser subscriptions.
+- [Troubleshooting](/docs/realtime/troubleshooting#a-server-side-subscriber-receives-nothing) helps when a server subscriber receives nothing.

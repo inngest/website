@@ -131,7 +131,7 @@ Creates a durable endpoint handler that can use step primitives for checkpointin
 
 ## Available Step Methods
 
-Within a Durable Endpoint handler, you have access to all step methods: see [Available Step Methods](/docs/learn/inngest-steps#available-step-methods).
+Within a Durable Endpoint handler, you have access to all step methods: see [Available Step Methods](/docs/durable-execution/primitives).
 
 For example:
 
@@ -286,13 +286,13 @@ Bun.serve({
 
 Requests will now be redirected to `/wait`.
 
-To stream data to the client during execution, see [streaming](#streaming) below or the full [streaming guide](/docs/learn/durable-endpoints/streaming).
+To stream data to the client during execution, see [streaming](#streaming) below or the full [streaming guide](/docs/durable-execution/durable-endpoints/streaming).
 
 ---
 
 ## Streaming <VersionBadge version="Developer Preview" />
 
-Durable Endpoints can stream data back to clients in real-time using Server-Sent Events (SSE). For a full guide covering concepts, examples, and rollback semantics, see [the guide](/docs/learn/durable-endpoints/streaming).
+Durable Endpoints can stream data back to clients in real-time using Server-Sent Events (SSE). For a full guide covering concepts, examples, and rollback semantics, see [the guide](/docs/durable-execution/durable-endpoints/streaming).
 
 ### Server: `stream.push()` and `stream.pipe()`
 

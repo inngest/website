@@ -79,21 +79,21 @@ export const resourcesLinks: MenuProps = {
     {
       title: "Functions",
       description: "Learn about writing durable functions using steps",
-      url: "/docs/learn/inngest-functions?ref=nav",
+      url: "/docs/durable-execution/durable-workflows?ref=nav",
       icon: IconCompiling,
       iconBg: "bg-honey-800/30",
     },
     {
       title: "Flow control",
       description: "Concurrency, throttling, prioritization, and more",
-      url: "/docs/guides/flow-control?ref=nav",
+      url: "/docs/durable-execution/flow-control?ref=nav",
       icon: IconGuide,
       iconBg: "bg-purplehaze-800/30",
     },
     {
       title: "Events & triggers",
       description: "How to trigger functions with events, crons, or webhooks",
-      url: "/docs/features/events-triggers?ref=nav",
+      url: "/docs/durable-execution/guides-and-advanced/events-and-triggers?ref=nav",
       icon: IconPower,
       iconBg: "bg-ruby-800/30",
     },
@@ -116,7 +116,7 @@ export const resourcesLinks: MenuProps = {
     },
     {
       title: "Node.js",
-      url: "/docs/getting-started/nodejs-quick-start?ref=nav",
+      url: "/docs/durable-execution/quick-start/typescript-quick-start?ref=nav",
       icon: RiNodejsFill,
       iconClassName: "w-4",
     },

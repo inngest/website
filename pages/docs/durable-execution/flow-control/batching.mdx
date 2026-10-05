@@ -1,0 +1,133 @@
+import { CodeGroup, Compatibility } from "shared/Docs/mdx";
+import { FlowControlMarbles } from "src/shared/Docs/FlowControlMarbles";
+export const metaTitle = "Batch Processing Events";
+export const description = "Batch process events in Inngest to cut API calls and database writes. Configure batch size, timeout, and key-based grouping to handle many events in one run.";
+
+# Batching
+
+> Reduce API calls and database writes by processing many events in one run.
+
+<Compatibility endpoints={false} />
+
+Group activity events by account and send one bulk write for each batch. Inngest collects matching events and passes them to one function run as `events`, reducing calls to your database or API.
+
+<FlowControlMarbles scenario="batching" />
+
+## Create a batch
+
+Set `batchEvents.maxSize` and `batchEvents.timeout`. This TypeScript v4 example groups events by account and handles up to five events per run. Replace the log call with your bulk API or database write.
+
+<CodeGroup>
+```typescript {{ title: "TypeScript" }}
+import { Inngest } from "inngest";
+
+const inngest = new Inngest({ id: "activity" });
+
+export const recordActivity = inngest.createFunction(
+  {
+    id: "record-activity",
+    triggers: { event: "activity/recorded" },
+    batchEvents: {
+      maxSize: 5,
+      timeout: "5s",
+      key: "event.data.accountId",
+    },
+  },
+  async ({ events, step }) => {
+    const rows = events.map(({ data }) => ({
+      accountId: String(data.accountId),
+      action: String(data.action),
+    }));
+
+    return step.run("write-batch", async () => {
+      console.info(rows);
+      return rows.length;
+    });
+  }
+);
+```
+
+```python {{ title: "Python" }}
+!snippet:path=snippets/py/latest/flow_control/batching/record_activity.py
+```
+
+```go {{ title: "Go" }}
+!snippet:path=snippets/go/docs/flow_control/batching/record_activity.go
+```
+</CodeGroup>
+
+Use `events` (`input.Events` in Go, `ctx.events` in Python) for every event in the batch. The singular `event` argument does not contain the full batch.
+
+## When the function starts
+
+Inngest opens a batch when the first matching event arrives. It starts one run when the batch reaches `maxSize`, its `timeout` expires, or the combined event data reaches the 10 MiB hard cap. A batch can contain fewer than `maxSize` events.
+
+The optional `key` is a Common Expression Language expression over each incoming event. Each distinct value gets its own batch. Use it to keep one account's events together. The optional `if` expression batches only events for which it evaluates to true. Events that do not match, or cannot produce a boolean result, run immediately.
+
+<CodeGroup>
+```typescript {{ title: "TypeScript" }}
+batchEvents: {
+  maxSize: 5,
+  timeout: "5s",
+  key: "event.data.accountId",
+  if: 'event.data.plan == "free"',
+}
+```
+
+```python {{ title: "Python" }}
+!snippet:path=snippets/py/latest/flow_control/batching/batch_if.py
+```
+
+```go {{ title: "Go" }}
+!snippet:path=snippets/go/docs/flow_control/batching/batch_if.go
+```
+</CodeGroup>
+
+Choose a batch size your handler can process within its memory and execution limits. Keep steps that write a whole batch safe to retry.
+
+## Combine with concurrency
+
+You can use [Step concurrency](/docs/durable-execution/flow-control/concurrency) to cap how many batches execute together. For example, `concurrency: { limit: 1 }` lets only one batch from this function execute at a time.
+
+If concurrency also uses a `key`, Inngest evaluates that key from the **first event in the batch**. Use the same key expression for batching and concurrency. Otherwise, a mixed batch can consume a slot for the first event's key even though it also contains events for other keys.
+
+<CodeGroup>
+```typescript {{ title: "TypeScript" }}
+batchEvents: {
+  maxSize: 5,
+  timeout: "5s",
+  key: "event.data.accountId",
+},
+concurrency: {
+  limit: 1,
+  key: "event.data.accountId",
+},
+```
+
+```python {{ title: "Python" }}
+!snippet:path=snippets/py/latest/flow_control/batching/batch_with_concurrency.py
+```
+
+```go {{ title: "Go" }}
+!snippet:path=snippets/go/docs/flow_control/batching/batch_with_concurrency.go
+```
+</CodeGroup>
+
+This configuration runs at most one batch per account at a time. Different accounts can use their own slots.
+
+## Features you cannot combine
+
+Batching cannot be combined on the same function with **idempotency**, **rate limiting**, **cancellation events**, or **priority**. [Debounce](/docs/durable-execution/flow-control/debounce) also cannot be combined with batching. Put work that needs an incompatible control in a separate function.
+
+## Plan limits
+
+The [pricing page](https://www.inngest.com/pricing) is the source for current plan limits:
+
+| Plan | Events in one batch | Maximum batch timeout |
+| --- | --- | --- |
+| Free | 5 | 30 seconds |
+| Pro | 100 | 5 minutes |
+| Business | 500 | 5 minutes |
+| Enterprise | Custom | Custom |
+
+The 10 MiB batch size hard cap still applies. A batch starts when it reaches that cap, even if it has not reached `maxSize` or `timeout`.

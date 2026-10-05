@@ -1,0 +1,22 @@
+export const metaTitle = "Features | Sandboxes";
+export const description = "Inngest Sandboxes features: isolated microVMs, base images, snapshots, cloning, durable filesystems, secrets, pause and resume, and traces.";
+
+# Sandboxes features
+> Run code in an isolated microVM and follow Sandbox operations in the same trace as your durable function.
+
+Use a Sandbox when generated code needs its own Linux environment. Inngest records Sandbox operations with your durable function steps, so you can inspect and retry the surrounding work. Pause and resume continue the same Sandbox; snapshot and clone start a new one from saved state.
+
+## Explore the features
+
+- [Base images](/docs/sandboxes/features/base-images) — Choose the environment your sandbox work starts in.
+- [Pause and resume](/docs/sandboxes/features/pause-and-resume) — Pause sandbox work and continue it later.
+- [Snapshots and restore](/docs/sandboxes/features/snapshots-and-restore) — Capture a Sandbox state and clone a new one from it.
+- [Cloning](/docs/sandboxes/features/cloning) — Create another sandbox from an existing state.
+- [Durable filesystems](/docs/sandboxes/features/durable-filesystems) — Keep a sandbox's files through pause, snapshot, restore, and clone. Use S3-backed persistent mounts to share filesystems across sandboxes.
+- [SSH](/docs/sandboxes/features/ssh) — Access a sandbox for interactive work. SSH is planned for the initial launch.
+- [Secrets](/docs/sandboxes/features/secrets) — Give sandbox work credentials. Secrets are planned for the initial launch.
+- [Managed lifecycle](/docs/sandboxes/features/managed-lifecycle) — Let the durable run coordinate sandbox start, stop, and retries.
+- [Isolation and security](/docs/sandboxes/features/isolation-and-security) — Understand the microVM isolation boundary.
+- [Traces](/docs/sandboxes/features/traces) — See sandbox activity alongside the rest of a durable run.
+
+For deployment previews, see [branch deploys](/docs/platform-and-operations/environments-and-branch-deploys).

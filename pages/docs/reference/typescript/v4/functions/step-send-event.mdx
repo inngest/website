@@ -1,13 +1,13 @@
 import { Info, Callout, Properties, Property, Row, Col, CodeGroup, VersionBadge } from "src/shared/Docs/mdx";
 
 
-export const metaTitle = "step.sendEvent() | Send Events from a Step (SDK v4)"
+export const metaTitle = "step.sendEvent() | TypeScript SDK v4"
 export const description = "Send events from inside a function step using step.sendEvent() in TypeScript SDK v4. Events are sent atomically as part of the step lifecycle."
 
 # Send Event
 
 
-Use to send event(s) reliably within your function. Use this instead of [`inngest.send()`](/docs/reference/typescript/v4/events/send) to ensure reliable event delivery from within functions. This is especially useful when [creating functions that fan-out](/docs/guides/fan-out-jobs).
+Use to send event(s) reliably within your function. Use this instead of [`inngest.send()`](/docs/reference/typescript/v4/events/send) to ensure reliable event delivery from within functions. This is especially useful when [creating functions that fan-out](/docs/durable-execution/guides-and-advanced/patterns/fan-out).
 
 ```ts
 export default inngest.createFunction(
@@ -47,7 +47,7 @@ To send events from outside of the context of a function, use [`inngest.send()`]
 
         [See the documentation for `inngest.send()`](/docs/reference/typescript/v4/events/send#inngest-send-event-payload-event-payload-promise) for the event payload format.
 
-        Events sent from within a run inherit the run's [sessions](/docs/features/events-triggers/sessions?ref=docs-reference-step-send-event). Use `meta.sessions` on the payload to add or override them.
+        Events sent from within a run inherit the run's [sessions](/docs/agent-evals/sessions?ref=docs-reference-step-send-event). Use `meta.sessions` on the payload to add or override them.
       </Property>
     </Properties>
   </Col>

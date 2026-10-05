@@ -2,6 +2,7 @@ package events
 
 import (
 	"context"
+	"fmt"
 
 	"github.com/inngest/inngestgo"
 )
@@ -39,7 +40,11 @@ func sendManyEventsShowReturnedIds() {
 		Data: data,
 	})
 
-	_, err = client.SendMany(ctx, events)
+	ids, err := client.SendMany(ctx, events)
+	if err != nil {
+		panic(err)
+	}
+	fmt.Println(ids)
 
 	//   ids = [
 	//     "01HQ8PTAESBZPBDS8JTRZZYY3S",

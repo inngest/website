@@ -1,6 +1,6 @@
 import { CodeGroup, CardGroup, Card, VersionBadge, Callout } from "src/shared/Docs/mdx";
 
-export const metaTitle = "step.fetch() | Durable HTTP Requests (TypeScript SDK v4)"
+export const metaTitle = "step.fetch() | Durable HTTP Requests"
 export const description = "Make retryable, checkpointed HTTP requests using step.fetch() in TypeScript SDK v4. Automatic retries on failure without re-executing prior steps."
 
 # Fetch: performing API requests or fetching data <VersionBadge version="TypeScript only" />
@@ -59,7 +59,7 @@ export const retrieveTextFile = inngest.createFunction(
 
 ### `step.fetch()` observability
 
-All `step.fetch()` calls are visible in your [Inngest Traces](/docs/platform/monitor/observability-metrics), allowing you to monitor and debug your HTTP requests:
+All `step.fetch()` calls are visible in your [Inngest Traces](/docs/platform-and-operations/metrics), allowing you to monitor and debug your HTTP requests:
 
 ![Inngest Traces showing a step.fetch() call](/assets/blog/announcing-step-fetch/step-fetch-trace.png)
 

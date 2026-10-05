@@ -36,12 +36,26 @@ function contentSourceFor(urlPath) {
   return null;
 }
 
+// Every permanent redirect source is excluded from the sitemap, so old docs
+// pages that still have files on disk don't get listed next to their new pages.
+let redirectSources;
+async function getRedirectSources() {
+  if (!redirectSources) {
+    const { permanentRedirects } = await import("./redirects.mjs");
+    redirectSources = new Set(
+      permanentRedirects.map(([source]) => source.replace(/\/$/, ""))
+    );
+  }
+  return redirectSources;
+}
+
 /** @type {import('next-sitemap').IConfig} */
 module.exports = {
   siteUrl: "https://www.inngest.com",
   // remove content with unreleased or noindex metadata from the sitemap.  the
   // static exclude list covers routes whose metadata lives in code.
   transform: async (config, urlPath) => {
+    if ((await getRedirectSources()).has(urlPath)) return null;
     const src = contentSourceFor(urlPath);
     if (src && sourceIsExcludedFromSitemap(src)) return null;
     return {
@@ -74,9 +88,27 @@ module.exports = {
     "/launch-week/*",
     "/ai-personalized-documentation",
     "/product/how-inngest-works",
+    // Docs pages copied to new paths (old files remain, redirected in redirects.mjs)
+    "/docs/guides/writing-expressions",
+    "/docs/ai-patterns/agent-tool-loops",
+    "/docs/ai-patterns/human-in-the-loop",
+    "/docs/ai-patterns/sub-agent-delegation",
+    "/docs/features/events-triggers/neon",
+    "/docs/platform/monitor/datadog-integration",
+    "/docs/platform/monitor/prometheus-metrics-export-integration",
+    "/docs/learn/agent-evals",
+    "/docs/learn/durable-agents",
+    "/docs/features/inngest-functions/steps-workflows/scoring",
+    "/docs/features/inngest-functions/steps-workflows/deferred-scoring",
+    "/docs/features/inngest-functions/steps-workflows/step-experiments",
+    "/docs/features/events-triggers/sessions",
+    "/docs/examples/ai-eval-scorer-quickstart",
     // Pages with noindex set in code — sitemap + noindex is contradictory.
     "/content/ai-in-production-report-2026",
     "/content/ai-in-production-report-2026/*",
+    // NYC campaign page — still in review, noindex in its own metadata,
+    // so it must stay out of the sitemap. Remove this line to list it.
+    "/nyc-long-run",
     "/resources/access/*",
   ],
 };

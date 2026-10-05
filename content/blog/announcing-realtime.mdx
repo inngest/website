@@ -10,13 +10,13 @@ author: Charly Poly
 category: product-updates
 ---
 
-We are thrilled to announce a new developer preview: [**Realtime**](/docs/features/realtime).
+We are thrilled to announce a new developer preview: [**Realtime**](/docs/realtime?ref=blog-announcing-realtime).
 
 This feature allows you to stream updates from your Inngest functions to your users using a new `publish()` method available in the Inngest TypeScript and Go SDKs.
 
 Realtime updates are now a core requirement for any web application, especially when long-running tasks are involved. The rise of AI patterns such as AI Agents has further emphasized the need for such features among the many developers building AI applications with Inngest.
 
-With Realtime, you can keep your users informed of a specific task's progress (e.g., a long-running AI Agent execution), or even of multiple tasks at once (e.g., a workflow involving multiple Inngest functions). Enable bi-directional communication between your users and your Inngest functions by combining Realtime with [`waitForEvent()`](/docs/features/inngest-functions/steps-workflows/wait-for-event) (e.g., a Human in the Loop).
+With Realtime, you can keep your users informed of a specific task's progress (e.g., a long-running AI Agent execution), or even of multiple tasks at once (e.g., a workflow involving multiple Inngest functions). Enable bi-directional communication between your users and your Inngest functions by combining Realtime with [`waitForEvent()`](/docs/durable-execution/primitives/step-waitforevent?ref=blog-announcing-realtime) (e.g., a Human in the Loop).
 
 ## `publish()`: a flexible and fully typed Realtime API
 
@@ -90,7 +90,7 @@ export default function Home() {
 ```
 
 
-_Realtime can also be subscribed directly from the server [using the `subscribe()` function](/docs/features/realtime#subscribe-from-the-backend)._
+_Realtime can also be subscribed directly from the server [using the `subscribe()` function](/docs/realtime?ref=blog-announcing-realtime)._
 
 
 Realtime is built upon [Inngest's protocol](/blog/durable-functions-a-visual-javascript-primer), ensuring secure, low-latency and at-most-once delivery of messages.
@@ -242,7 +242,7 @@ You will find the complete source code of the above examples in the [Realtime ex
 ## Give us your feedback
 
 Realtime is now available as a developer preview in the Inngest TypeScript and Go SDKs.
-Some details including APIs are still subject to change during this period. Read more about the [developer preview here](/docs/features/realtime#developer-preview).
+Some details including APIs are still subject to change during this period. Read more about the [developer preview here](/docs/realtime?ref=blog-announcing-realtime).
 
 
 We are excited to see what you will build with Realtime and look forward to [your feedback](/discord)!

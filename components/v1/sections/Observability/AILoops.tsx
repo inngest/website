@@ -12,7 +12,7 @@ import { reveals } from "@/utils/v1/reveals";
 // holding the diagram illustration (723x219 SVG)
 // on the left, plus the eyebrow/heading/body/CTA copy column on the right.
 
-const SEE_DOCS_URL = "/docs/platform/monitor/insights?ref=observability-ai";
+const SEE_DOCS_URL = "/docs/platform-and-operations/insights?ref=observability-ai";
 const DIAGRAM_SRC = "/assets/v1/observability/ai-loops-diagram.svg";
 
 export default function AILoops() {

@@ -11,7 +11,7 @@ primaryCTA: "report2026"
 sidebarCta:
   text: "Engineer agent context. Build durable agents that hold state."
   buttonLabel: "Read the docs"
-  href: "/docs/learn/durable-agents?ref=blog-context-engineering-in-practice-sidebar"
+  href: "/docs/durable-execution/durable-agents?ref=blog-context-engineering-in-practice-sidebar"
 ---
 
 A lot has been written about Context Engineering theory and its principles, with few examples. At Inngest, we are fortunate to experience context engineering in practice through our exchanges with our [community](http://inngest.com/discord) and [customers](http://inngest.com/customers), which include leading AI products such as [Outtake](/customers/outtake), [Replit](/blog/inngest-replit-vibe-code-ai-agents), and 11x.
@@ -115,9 +115,9 @@ To cope with all these challenges, our AI Research Assistant retrieves the data 
 
 Quickly retrieving data from multiple external APIs is achieved with:
 
-- **Durable execution** by creating [Inngest workflows that automatically retry upon failures](/docs/guides/error-handling)
-- **[Rate Limit configuration](/docs/guides/rate-limiting)** to cope with 3rd party API usage limits (*ex, ArXiv allows 1 request per second*)
-- **Parallelized data** fetching [using Inngest steps](/docs/guides/step-parallelism)
+- **Durable execution** by creating [Inngest workflows that automatically retry upon failures](/docs/durable-execution/guides-and-advanced/error-handling?ref=blog-context-engineering-in-practice)
+- **[Rate Limit configuration](/docs/durable-execution/flow-control/rate-limiting?ref=blog-context-engineering-in-practice)** to cope with 3rd party API usage limits (*ex, ArXiv allows 1 request per second*)
+- **Parallelized data** fetching [using Inngest steps](/docs/durable-execution/primitives/group-parallel?ref=blog-context-engineering-in-practice)
 
 All of the above may seem like a lot of work, but it really is just a few lines of code:
 

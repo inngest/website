@@ -30,7 +30,7 @@ export default function AnyCode() {
         bodyClassName="max-w-[640px]"
         actions={
           <ButtonLink
-            href="/docs/runtimes?ref=durable-execution"
+            href="/docs/durable-execution/deploying-functions?ref=durable-execution"
             variant="primary"
           >
             See Docs

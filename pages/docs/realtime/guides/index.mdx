@@ -1,0 +1,32 @@
+export const metaTitle = "Guides | Realtime";
+export const description = "Inngest Realtime guides: authorize viewers with subscription tokens, render updates with React hooks, stream AI output, and subscribe from your server.";
+
+# Realtime guides
+> Authorize viewers, render updates in React, stream AI output, and subscribe from your server.
+
+These guides build on the [Quick start](/docs/realtime/quick-start). Each one covers a single task from start to finish.
+
+- [Subscription tokens](/docs/realtime/guides/subscription-tokens) authorizes each viewer on your server and scopes the browser to one channel and its topics.
+- [React hooks](/docs/realtime/guides/react-hooks) renders typed messages with `useRealtime` and explains its options.
+- [Stream AI responses](/docs/realtime/guides/stream-ai-responses) shows a model's answer token by token and publishes the final result as a durable step.
+- [Server-side subscriptions](/docs/realtime/guides/server-side-subscriptions) reads messages in server code and forwards them over Server-Sent Events.
+
+## Ask a person to approve work
+
+A function can pause until a person approves or rejects its work. Realtime shows the request; an event carries the decision back.
+
+1. Publish the review request to a channel the reviewer can read.
+2. Wait with [`step.waitForEvent()`](/docs/durable-execution/primitives/step-waitforevent), matching on a request ID and setting a timeout.
+3. When the reviewer acts, your app sends a confirmation event with the same request ID, and the function continues.
+
+Authorize the reviewer before you mint their subscription token and again before you accept the confirmation event. See [Human in the loop](/docs/durable-execution/durable-agents/human-in-the-loop) for a complete example.
+
+## More examples
+
+[Realtime examples](/docs/examples/realtime) include single-run subscriptions, multi-channel fanout, and human-in-the-loop flows.
+
+## Next steps
+
+- [Channels and topics](/docs/realtime/channels-and-topics) explains channel names, topics, and schemas.
+- [Reference](/docs/realtime/reference) lists every Realtime API.
+- [Troubleshooting](/docs/realtime/troubleshooting) helps diagnose connection and delivery problems.

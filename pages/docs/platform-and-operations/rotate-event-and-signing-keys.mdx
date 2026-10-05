@@ -1,0 +1,17 @@
+export const metaTitle = "Rotate Signing & Event Keys | Security Guide";
+export const description = "Rotate Inngest signing keys and event keys without downtime. Follow the rotation sequence to replace an exposed key without disconnecting deployed apps.";
+
+# Rotate event and signing keys
+
+> Rotate event and signing keys while keeping your deployed apps connected.
+
+Rotate an exposed key without disconnecting your deployed apps. Add the new signing key and keep the old key as a fallback in every app that shares the environment before you complete rotation.
+1. Select the environment in the dashboard.
+2. Create a new signing key.
+3. Deploy the new key as `INNGEST_SIGNING_KEY` and the old key as `INNGEST_SIGNING_KEY_FALLBACK` to every app in that environment.
+4. Create replacement event keys. Copy any event or IP filters from the old keys.
+5. Deploy the new `INNGEST_EVENT_KEY` to every sender that uses each key.
+6. Restart or redeploy the affected apps. Verify all deployments use the new credentials.
+7. Promote the new signing key in the dashboard, then resync the apps.
+8. Delete the old event keys. Remove the fallback signing key after it is no longer valid.
+The fallback permits both signing keys during rollout on supported SDK versions. Confirm your SDK supports fallback signing keys before rotating. Vercel’s initial integration setup does not rotate its environment variable for you; update it yourself.

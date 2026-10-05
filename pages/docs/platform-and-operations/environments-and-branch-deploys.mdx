@@ -1,0 +1,116 @@
+import { CodeGroup } from "shared/Docs/mdx";
+
+export const metaTitle = "Environments | Branch, Staging & Production";
+export const description = "Use separate Inngest environments for production, staging, and branch deploys, each with its own event keys, signing keys, and registered functions.";
+
+# Environments and branch deploys
+
+> Keep production traffic separate from tests and preview changes with branch deploys.
+
+Keep test events and runs out of production by using separate environments. Each environment has its own apps, functions, event history, and credentials.
+
+## Pick the right environment
+
+- **Production** runs live traffic.
+- **Custom environments** support shared staging, QA, or canary work.
+- **Branch deploys** give preview deployments for code branches their own isolated work. They are deployment previews, not Inngest Sandboxes microVMs.
+- **Local development** uses the [Dev Server](/docs/local-development) on your machine.
+
+A single environment can contain several apps. Select the environment in the dashboard before inspecting its apps, events, or runs.
+
+## What environments share and isolate
+
+- Data stays inside its environment. Two environments can have event types or functions with the same name, but their data and logs stay separate.
+- Each environment has its own [event keys and signing keys](/docs/platform-and-operations/keys-and-access). Use them to send events to that environment and sync apps with it.
+- You can sync several apps with each environment.
+- Usage counts toward your bill in every environment except local development.
+
+## Use branch deploys for preview deployments
+
+Branch deploys give each non-production Git branch its own isolated sandbox. They work with hosts that create a preview deployment per branch, such as Vercel or Netlify. A typical workflow runs from local development, to a branch deploy for each preview, to production.
+
+Inngest creates a branch deploy on demand, the first time you send events to it or sync functions with it. You do not need to create one in the dashboard.
+
+## Configure a branch deploy
+
+Set the app's environment from the current branch, using [`INNGEST_ENV`](/docs/sdk/environment-variables#inngest-env) or the SDK client's `env` option (`Env` in Go's `ClientOpts`). Supported hosts may detect the branch automatically. For a host that exposes a branch variable only at build time, pass that variable explicitly. Use the same branch value when sending events so the events reach the matching branch deploy.
+
+All branch deploys share the same event key and signing key. Set these once for every preview deployment, then set the environment from the branch:
+
+<CodeGroup>
+```ts {{ title: "TypeScript" }}
+const inngest = new Inngest({
+  id: "my-app",
+  env: process.env.BRANCH,
+});
+// Alternatively, you can set the INNGEST_ENV environment variable in your app
+
+// Pass the client to the serve handler to complete the setup
+serve({ client: inngest, functions: [myFirstFunction, mySecondFunction] });
+```
+
+```python {{ title: "Python" }}
+import os
+
+import inngest
+
+inngest_client = inngest.Inngest(
+    app_id="flask_example",
+    env=os.getenv("BRANCH"),
+)
+```
+
+```go {{ title: "Go" }}
+!snippet:path=snippets/go/docs/platform/environments_and_branch_deploys/branch_env.go
+```
+</CodeGroup>
+
+`INNGEST_ENV` or an explicit `env` option always overrides automatic detection.
+
+### Hosts the SDK detects automatically
+
+On these hosts the SDK reads the branch and sets `env` for you:
+
+- **[Vercel](/docs/durable-execution/deploying-functions/platforms/vercel)** uses `VERCEL_GIT_COMMIT_REF`. This works with the Inngest Vercel integration.
+
+### Hosts that need an explicit branch variable
+
+Some hosts expose the branch only at build time. On these, set `env` to the host's branch variable, as in the example above:
+
+- **[Netlify](/docs/durable-execution/deploying-functions/platforms/netlify)** uses `BRANCH` ([Netlify docs](https://docs.netlify.com/configure-builds/environment-variables/#git-metadata)).
+- **[Cloudflare Pages](/docs/durable-execution/deploying-functions/platforms/cloudflare)** uses `CF_PAGES_BRANCH` ([Cloudflare docs](https://developers.cloudflare.com/pages/platform/build-configuration/#environment-variables)).
+- **Railway** uses `RAILWAY_GIT_BRANCH` ([Railway docs](https://docs.railway.app/develop/variables#railway-provided-variables)).
+- **[Render](/docs/durable-execution/deploying-functions/platforms/render)** uses `RENDER_GIT_BRANCH` ([Render docs](https://render.com/docs/environment-variables#all-services)).
+
+For other hosts, see the [platform guides](/docs/durable-execution/deploying-functions/platforms).
+
+## Send events to a branch deploy
+
+Branch deploys share an event key, so you only need to set `env` in the SDK. The SDK's `send()` method then routes events to the matching branch deploy.
+
+If you send events without an SDK, add the `x-inngest-env` header to the request with the branch name, for example `x-inngest-env: feature/my-branch`. See the [`send()` reference](/docs/reference/typescript/v4/events/send) for more on sending events.
+
+## Archive branch deploys
+
+Branch deploys archive three days after their latest deployment. Each deployment pushes the archive date back another three days. Archiving stops functions from triggering and does not delete their data.
+
+To turn off auto-archive for a branch deploy, use its toggle on the [environments page](https://app.inngest.com/env). You can also archive or unarchive a branch deploy there at any time.
+
+## Turn off branch deploys on Vercel
+
+To stop creating branch deploys from Vercel previews, delete the "Preview" Inngest environment variables in your Vercel project settings.
+
+## Create a custom environment
+
+Use a custom environment for a shared non-production stage such as staging, QA, or canary. Create one from the [environments page](https://app.inngest.com/env), or go straight to [Create environment](https://app.inngest.com/create-environment).
+
+- Each custom environment has its own keys, event history, and functions.
+- Deploy several apps to one environment to mirror production.
+- Create as many environments as you need.
+- Custom environments run at a lower priority than production, so latency may be higher.
+
+To pair an Inngest custom environment with a Vercel custom environment, see [Setting up a staging environment](/docs/durable-execution/deploying-functions/platforms/vercel#setting-up-a-staging-environment).
+
+## Switch environments in the dashboard
+
+Use the environment switcher in the dashboard's top navigation to move between environments. Choose **View All Environments** to see [every environment](https://app.inngest.com/env) at once.

@@ -1,0 +1,82 @@
+import { CodeGroup } from "shared/Docs/mdx";
+import { Compatibility } from "shared/Docs/mdx";
+export const metaTitle = "step.sleep() | Pause a Function";
+export const description = "Pause an Inngest function for a set duration with step.sleep(), without blocking a thread or consuming compute while your durable workflow waits.";
+
+# `step.sleep`
+
+<Compatibility />
+
+`step.sleep()` pauses a run for a duration you choose. Inngest resumes it after the delay without keeping your function process running.
+
+They are useful when:
+
+- You need to send a follow-up after a set delay.
+- You want to give an external system time to finish work.
+- You need to space out steps without keeping a process active.
+
+## Use `step.sleep`
+
+<CodeGroup>
+```typescript {{ title: "TypeScript" }}
+import { Inngest } from "inngest";
+
+const inngest = new Inngest({ id: "my-app" });
+
+export const sendFollowUp = inngest.createFunction(
+  { id: "send-follow-up", triggers: { event: "app/user.signed-up" } },
+  async ({ event, step }) => {
+    await step.sleep("wait-before-follow-up", "30m");
+
+    await step.run("send-follow-up", () =>
+      sendFollowUpEmail(event.data.email)
+    );
+  }
+);
+```
+
+```python {{ title: "Python" }}
+!snippet:path=snippets/py/latest/primitives/step_sleep/send_follow_up.py
+```
+
+```go {{ title: "Go", filename: 'main.go' }}
+!snippet:path=snippets/go/docs/primitives/step_sleep/send_follow_up.go
+```
+</CodeGroup>
+
+Replace `sendFollowUpEmail` with your application’s email function. The sleep pauses this run for 30 minutes. The following `step.run` sends the email as a retriable step.
+
+## API
+
+<CodeGroup>
+```ts {{ title: "TypeScript" }}
+await step.sleep(id, duration);
+```
+
+```python {{ title: "Python" }}
+!snippet:path=snippets/py/latest/primitives/step_sleep/api.py
+```
+
+```go {{ title: "Go" }}
+!snippet:path=snippets/go/docs/primitives/step_sleep/api.go
+```
+</CodeGroup>
+
+
+- **`id`**: a stable step ID, such as `"wait-30-minutes"`.
+- **`duration`**: how long to wait, such as `"30m"`, `"3h"`, or `"2d"`.
+
+See the [`step.sleep` reference](/docs/reference/typescript/functions/step-sleep) for every option.
+
+## Resuming, retrying, and rerunning
+
+Inngest schedules the next execution when the sleep ends. Your code does not keep running during the delay. Completed steps retain their state, so a later step failure can retry without repeating earlier completed work. Keep database writes and API calls in `step.run` so those actions also have durable step boundaries.
+
+A manual rerun from the beginning creates a new run and executes the sleep again. A rerun from a later step restores earlier step state and starts at the selected step. Review any side effects that will run again.
+
+## Limits and common mistakes
+
+- A sleep can last up to one year, but the whole run, including every sleep, must finish within your plan's [maximum function run length](/docs/durable-execution/limits#plan-based-limits): 30 days on Free, 90 days on Pro, 366 days on Business, and custom on Enterprise.
+- Sleeping runs do not count toward account or function concurrency limits.
+- A long sleeping run can disappear from the Function Runs list after its plan’s trace and log history window. It still resumes on schedule. Search for its run ID to inspect it.
+- Use [step.sleepUntil](/docs/durable-execution/primitives/step-sleepuntil) when you have a date and time. Use [step.waitForEvent](/docs/durable-execution/primitives/step-waitforevent) when an external event should resume the run.

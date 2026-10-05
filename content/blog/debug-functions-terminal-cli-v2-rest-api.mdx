@@ -77,7 +77,7 @@ The docs are also available in LLM-friendly format at [`api-docs.inngest.com/llm
 
 ## API keys
 
-The CLI commands and v2 API authenticate with [API keys](/docs/platform/api-keys?ref=blog-debug-functions-terminal-cli-v2-rest-api)—a new key type, separate from your [signing key](/docs/platform/signing-keys?ref=blog-debug-functions-terminal-cli-v2-rest-api) and [event keys](/docs/events/creating-an-event-key?ref=blog-debug-functions-terminal-cli-v2-rest-api). Where signing keys are used by your app to communicate with Inngest, API keys are for programmatic access from outside your app: scripts, pipelines, tooling, agents.
+The CLI commands and v2 API authenticate with [API keys](/docs/platform-and-operations/keys-and-access?ref=blog-debug-functions-terminal-cli-v2-rest-api)—a new key type, separate from your [signing key](/docs/platform/signing-keys?ref=blog-debug-functions-terminal-cli-v2-rest-api) and [event keys](/docs/platform-and-operations/keys-and-access?ref=blog-debug-functions-terminal-cli-v2-rest-api). Where signing keys are used by your app to communicate with Inngest, API keys are for programmatic access from outside your app: scripts, pipelines, tooling, agents.
 
 Create one in the dashboard under Settings → API Keys, scoped to the environment you want to target. Then:
 
@@ -85,7 +85,7 @@ Create one in the dashboard under Settings → API Keys, scoped to the environme
 export INNGEST_API_KEY=sk-inn-api-...
 ```
 
-The CLI picks it up automatically. No extra configuration needed. See the [API key docs](/docs/platform/api-keys?ref=blog-debug-functions-terminal-cli-v2-rest-api) for details.
+The CLI picks it up automatically. No extra configuration needed. See the [API key docs](/docs/platform-and-operations/keys-and-access?ref=blog-debug-functions-terminal-cli-v2-rest-api) for details.
 
 ## Get started
 
@@ -93,6 +93,6 @@ The CLI picks it up automatically. No extra configuration needed. See the [API k
 - [Debug a function run from your terminal](/docs/examples/fetch-run-status-and-output?ref=blog-debug-functions-terminal-cli-v2-rest-api)
 - [Use the CLI with coding agents](/docs/ai-dev-tools/agent-skills?ref=blog-debug-functions-terminal-cli-v2-rest-api)
 - [REST API docs](https://api-docs.inngest.com)
-- [API keys](/docs/platform/api-keys?ref=blog-debug-functions-terminal-cli-v2-rest-api)
+- [API keys](/docs/platform-and-operations/keys-and-access?ref=blog-debug-functions-terminal-cli-v2-rest-api)
 
 More commands are coming soon, including `get-functions` and `get-app` to improve agent experience. Stay tuned!

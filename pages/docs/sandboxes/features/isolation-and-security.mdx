@@ -1,0 +1,47 @@
+export const metaTitle = "Isolation and security | Sandboxes";
+export const description = "Sandbox isolation and security: run generated or untrusted code in a separate Linux microVM with its own files, processes, and network identity.";
+
+# Isolation and security
+
+> Run generated code in a separate Linux microVM with its own files, processes, and network identity.
+
+Run generated code or repository checks in a separate Linux microVM so that code cannot share your function’s process. Each Sandbox has its own filesystem, processes, environment variables, compute resources, and network identity. When you call it through `step.sandbox`, Inngest records the operation beside the function steps.
+
+This page describes the current access-gated beta and the planned launch capabilities separately. The beta is for evaluation, not production workloads or data you cannot recreate.
+
+## What belongs to one Sandbox
+
+| Resource | What a Sandbox contains |
+| --- | --- |
+| Files and processes | A Sandbox has its own filesystem and running processes. Destroying it removes the live filesystem, processes, and retained process output. |
+| Environment | Sandbox-level environment values apply to commands and processes unless those operations override them. Code inside the Sandbox can read those values. |
+| Compute | A Sandbox has its own CPU and memory allocation. The beta offers fixed resource pairs. |
+| Network | A Sandbox has a network identity. The beta creates it in the workspace's default egress-only VPC. The beta API does not expose public ingress or custom VPC selection. |
+
+**Confirmed for launch:** Each Sandbox runs as a separate VM with complete isolation from the host and other Sandboxes. Sandboxes cannot send traffic to one another. This lets you run untrusted code away from your function process and from other Sandbox workloads.
+
+## Keep credentials in trusted server code
+
+Create and control Sandboxes from trusted server-side code. The TypeScript client and REST API use an Inngest signing key. Keep `INNGEST_SIGNING_KEY` on the server. Do not put the Sandbox client or signing key in browser code.
+
+The current beta can select existing workspace secrets by exact name when it creates a fresh Sandbox. Inngest injects each value as a guest environment variable with that name. Code anywhere in the Sandbox can read selected values. The API sends names rather than values, but output, files, and snapshots are not automatically redacted. A clone restores secret values captured in its snapshot; it cannot select new secrets. Rotation does not revoke values already delivered to a running or paused Sandbox. See [Secrets](/docs/sandboxes/features/secrets) for setup and lifecycle details.
+
+## Understand the network boundary
+
+The current beta uses the workspace's default egress-only VPC. The API does not expose public ingress or custom VPC selection. Treat any outbound access available to the Sandbox as access that code inside it can use. Validate untrusted URLs before passing them to tools such as Git.
+
+**Planned for launch:** SSH access will use public keys uploaded to Inngest and a Sandbox SSH address provided to the user. The current beta docs do not define an SSH connection contract.
+
+**Confirmed for launch:** Outbound network access is allowed by default. Sandboxes cannot send traffic to one another.
+
+## Treat snapshots and clones as copies of sensitive state
+
+A beta snapshot captures memory, disk, environment, image, and resources. The source Sandbox keeps running. Cloning the snapshot creates a new Sandbox with a new ID. Pause and Resume keep the same Sandbox ID and restore its filesystem, memory, environment, resources, and network identity.
+
+Review the files and environment before taking a snapshot. A clone receives the captured state, including any data left in memory or on disk. Snapshots expire at a server-defined time and are not permanent storage. Destroying a live Sandbox removes its live filesystem and processes.
+
+**Planned for launch:** S3-backed persistent filesystem mounts let separate Sandboxes share a backing path. A clone with such a mount shares that path.
+
+## Sandboxes and branch deploys
+
+Sandboxes run code in isolated microVMs. [Branch deploys](/docs/platform-and-operations/environments-and-branch-deploys) provide deployment environments for testing changes to Inngest apps.

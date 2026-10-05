@@ -35,12 +35,12 @@ export default function Flexibility() {
               {
                 src: "/assets/brand-logos/vercel-white.svg",
                 name: "Vercel",
-                href: "/docs/deploy/vercel?ref=homepage-platforms",
+                href: "/docs/durable-execution/deploying-functions/platforms/vercel?ref=homepage-platforms",
               },
               {
                 src: "/assets/brand-logos/netlify-logo.svg",
                 name: "Netlify",
-                href: "/docs/deploy/netlify?ref=homepage-platforms",
+                href: "/docs/durable-execution/deploying-functions/platforms/netlify?ref=homepage-platforms",
               },
               {
                 src: "/assets/brand-logos/aws-white.svg",

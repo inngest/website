@@ -1,0 +1,16 @@
+export const metaTitle = "API Keys, Event Keys & Signing Keys";
+export const description = "Manage Inngest API keys, event keys, and signing keys, giving each integration only the credential it needs to send events or call the REST API.";
+
+# Keys and access
+
+> Choose the right credential for each integration and keep it out of source control.
+
+Give each integration only the credential it needs to send events, serve functions, or call the REST API. Store keys in your host's secret store so browser code and source control do not expose them.
+## Which key do you need?
+- **Event key** lets an application send events to an environment. Configure `INNGEST_EVENT_KEY` in the sender. Use separate keys per application when you want independent filters and rotation.
+- **Signing key** secures communication between Inngest and an app's served endpoint or Connect worker. Configure `INNGEST_SIGNING_KEY` in the deployed app. Signing keys belong to an environment.
+- **API key** authenticates scripts and CI against the REST API. Organization admins can create, rename, and delete these keys and scope them to an environment.
+Do not expose an event key in browser code. Send browser requests through your own API or edge function. The local Dev Server does not require a signing key; see the local development guide for the correct mode.
+## Create and manage keys
+Select the environment before opening its Event Keys or Signing Keys pages. Create an API key from the account's API Keys page. Record which app or script uses each key, then remove unused keys.
+For rotation without interruption, follow the [key rotation procedure](/docs/platform-and-operations/rotate-event-and-signing-keys) and check the SDK version requirements.

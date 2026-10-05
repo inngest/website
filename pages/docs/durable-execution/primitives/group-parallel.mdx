@@ -1,0 +1,294 @@
+import { CodeGroup, SdkUnsupported } from "shared/Docs/mdx";
+import { Compatibility } from "shared/Docs/mdx";
+export const metaTitle = "Parallel Steps | Run Steps Concurrently";
+export const description = "Run Inngest steps in parallel to cut total runtime. Independent steps execute concurrently, and the workflow continues once all of their results are ready.";
+
+# Parallel steps
+
+<Compatibility />
+
+Run independent steps at the same time and continue when all their results are ready. Use `Promise.all()` in TypeScript, `ctx.group.parallel()` in Python, or `group.Parallel()` in Go.
+
+Parallel steps are useful when:
+
+- You need several independent results before the function can continue.
+- You want each operation to keep its own step result and retries.
+- You want to split a large job into chunks and combine the results.
+
+Parallel steps work on every host and platform. On serverless platforms, each step runs in its own execution, so steps run truly in parallel without shared state. On a single long-running server, such as one Express process, the parallel steps share that single-threaded Node.js process.
+
+## Collect every result
+
+<CodeGroup>
+```typescript {{ title: "TypeScript" }}
+import { Inngest } from "inngest";
+
+const inngest = new Inngest({ id: "parallel-example" });
+
+export const getValues = inngest.createFunction(
+  { id: "get-values", triggers: { event: "app/values.requested" } },
+  async ({ step }) => {
+    const [profile, orders] = await Promise.all([
+      step.run("load-profile", async () => ({ id: "user-123" })),
+      step.run("load-orders", async () => [{ id: "order-456" }]),
+    ]);
+
+    return { profile, orders };
+  }
+);
+```
+
+```python {{ title: "Python" }}
+!snippet:path=snippets/py/latest/primitives/group_parallel/get_values.py
+```
+
+```go {{ title: "Go", filename: 'main.go' }}
+!snippet:path=snippets/go/docs/primitives/group_parallel/get_values.go
+```
+</CodeGroup>
+
+Both steps can run concurrently. The function continues when both results are ready. Inngest runs parallel steps efficiently by default, so you don't need `group.parallel()` here. Use `Promise.allSettled()` when you need the outcome of every step, including failures.
+
+In Python, `ctx.group.parallel()` takes a tuple of no-argument callables and returns a tuple of their results. Use it for Python steps instead of `asyncio.gather()`, which does not support Inngest's step execution model. In Go, `group.Parallel()` takes step callbacks and returns their results, in order, with any errors.
+
+## Start steps, then await them together
+
+You can also create each step first and await them later:
+
+1. Call [`step.run()`](/docs/durable-execution/primitives/step-run) without `await`. It returns an unresolved promise.
+2. Pass the promises to `Promise.all()`. Inngest then runs the steps in parallel, in separate executions.
+
+<CodeGroup>
+```ts {{ title: "TypeScript" }}
+import { Inngest } from "inngest";
+
+const inngest = new Inngest({ id: "signup-flow" });
+
+// `sendEmail()` and `db` are your app's own helpers.
+
+export const fn = inngest.createFunction(
+  { id: "post-payment-flow", triggers: { event: "stripe/charge.created" } },
+  async ({ event, step }) => {
+    // These steps are not `awaited` and run in parallel when Promise.all
+    // is invoked.
+    const sendEmailStep = step.run("confirmation-email", async () => {
+      const emailID = await sendEmail(event.data.email);
+      return emailID;
+    });
+
+    const updateUser = step.run("update-user", async () => {
+      return db.updateUserWithCharge(event);
+    });
+
+    // Run both steps in parallel.  Once complete, Promise.all will return all
+    // parallelized state here.
+    //
+    // This ensures that all steps complete as fast as possible, and we still have
+    // access to each step's data once they're complete.
+    const [emailID, updates] = await Promise.all([sendEmailStep, updateUser]);
+
+    return { emailID, updates };
+  }
+);
+```
+
+```python {{ title: "Python" }}
+!snippet:path=snippets/py/latest/primitives/group_parallel/post_payment_flow.py
+```
+
+```go {{ title: "Go" }}
+!snippet:path=snippets/go/docs/primitives/group_parallel/post_payment_flow.go
+```
+</CodeGroup>
+
+
+When every step finishes, Inngest collects each step's result and calls the function again with all results available.
+
+### Python sync functions
+
+In a synchronous function, use `inngest.ContextSync` and call `ctx.group.parallel()` without `await`:
+
+```python {{ title: "Python" }}
+!snippet:path=snippets/py/latest/primitives/group_parallel/post_payment_flow_sync.py
+```
+
+## Split a job into chunks
+
+Split large input into chunks, process each chunk in its own step, then combine the results. For example, you can split a long text, summarize each chunk with an LLM API, and then summarize the summaries:
+
+<CodeGroup>
+```ts {{ title: "TypeScript" }}
+import { Inngest } from "inngest";
+
+const inngest = new Inngest({ id: "signup-flow" });
+
+// `splitTextIntoChunks()`, `summarizeChunk()`, and `summarizeSummaries()`
+// are your app's own helpers.
+
+export const fn = inngest.createFunction(
+  { id: "summarize-text", triggers: { event: "app/text.summarize" } },
+  async ({ event, step }) => {
+    const chunks = splitTextIntoChunks(event.data.text);
+
+    const summaries = await Promise.all(
+      chunks.map((chunk, index) =>
+        step.run(`summarize-chunk-${index}`, () => summarizeChunk(chunk))
+      )
+    );
+
+    await step.run("summarize-summaries", () => summarizeSummaries(summaries));
+  }
+);
+```
+
+```python {{ title: "Python" }}
+!snippet:path=snippets/py/latest/primitives/group_parallel/summarize_text.py
+```
+
+```go {{ title: "Go" }}
+!snippet:path=snippets/go/docs/primitives/group_parallel/summarize_text.go
+```
+</CodeGroup>
+
+
+Give each step a stable ID, such as one based on the chunk index. Each chunk retries on its own. You get every result in one place, without creating separate jobs, polling their status, or merging their state yourself.
+
+## Choose parallel steps or fan-out
+
+Use `Promise.all()` for independent steps whose results the current function needs. For many input items, map each item to a `step.run()` with a stable ID, then aggregate the results after `Promise.all()` resolves. Each step retries independently. If the work exceeds one run's step or state limits, send events to child functions instead; fan-out gives each child its own run and failure history.
+
+Both patterns run work in parallel. They differ in these ways:
+
+| | Parallel steps | [Fan-out](/docs/durable-execution/guides-and-advanced/patterns/fan-out) |
+| --- | --- | --- |
+| Results | The function can read every step's output. | The sending function can't read the child functions' output. |
+| Scale | Up to 1,000 steps per function. | As many function runs as you send events for. |
+| Failures | If a step fails after all retries, the whole function fails. | Each child function fails on its own and you can retry it on its own. |
+| Replay | Not applicable. | You can replay the events, for example to test functions locally. |
+| Code layout | All related logic stays in one function. | Logic is split across several functions. |
+
+## Continue after the first step settles
+
+Use a race when one completed step can satisfy the request. A bare `Promise.race()` waits for all parallel steps under the default optimization. Wrap the race in `group.parallel()` to continue when the first step settles.
+
+<CodeGroup>
+```typescript {{ title: "TypeScript" }}
+const winner = await group.parallel(async () =>
+  Promise.race([
+    step.run("read-cache", async () => ({ source: "cache", value: "cached value" })),
+    step.run("read-source", async () => ({ source: "source", value: "fresh value" })),
+  ])
+);
+```
+
+<SdkUnsupported title="Python" feature="Continuing after the first step settles">`parallel_mode=inngest.ParallelMode.RACE` changes when branches advance, but `ctx.group.parallel()` still waits for and returns every result.</SdkUnsupported>
+
+<SdkUnsupported title="Go" feature="Continuing after the first step settles">`group.ParallelWithOpts()` with `ParallelMode: enums.ParallelModeRace` changes when branches advance, but still waits for and returns every result.</SdkUnsupported>
+</CodeGroup>
+
+
+> **Losing steps are not cancelled.**
+
+Race mode changes when Inngest calls your function again: as soon as any step in the group settles, instead of after all of them. The losing steps keep running.
+
+If the first step rejects, the race rejects. A losing [`step.waitForEvent()`](/docs/durable-execution/primitives/step-waitforevent) stays active until its timeout and can keep the run in a Running state, even after your code has moved past the race. The losing wait's timeout sets how long the run lasts, so use the shortest timeout that fits the workflow.
+
+In Python, `parallel_mode=inngest.ParallelMode.RACE` changes when branches advance. It does not make `ctx.group.parallel()` return only the first result, and it can send more requests to your app.
+
+## Optimize parallel step performance
+
+Inngest optimizes parallel steps by default. Each parallel step needs one request to your app instead of two. With many parallel steps, such as hundreds, this cuts:
+
+- The number of HTTP requests to your app.
+- Ingress bandwidth.
+- CPU time spent parsing requests.
+
+### TypeScript
+
+The optimization is on by default in v4. You can turn it off with `optimizeParallelism: false` on the client or the function, but this option is deprecated. It also stops [checkpointing](/docs/durable-execution/guides-and-advanced/checkpointing) from resuming after parallel steps. Parallel steps always switch to standard orchestration while they run. With the default setting, the SDK can usually switch back to checkpointing afterward.
+
+Know these effects of the optimization:
+
+- **`Promise.race()` waits for every step.** Use `group.parallel()` for early resolution, as shown in [Continue after the first step settles](#continue-after-the-first-step-settles).
+- **Sequential steps in different branches interleave.** A later step in a fast branch can wait for a step in a slow branch:
+
+```ts
+const sleep = (ms: number) => new Promise((resolve) => setTimeout(resolve, ms));
+
+const stepOrder: string[] = [];
+
+export const fn = inngest.createFunction(
+  { id: "fn-1", triggers: { event: "event-1" } },
+  async ({ step }) => {
+    await Promise.all([
+      (async () => {
+        await step.run("fast.1", async () => {
+          stepOrder.push("fast.1");
+        });
+        await step.run("fast.2", async () => {
+          stepOrder.push("fast.2");
+        });
+      })(),
+      (async () => {
+        await step.run("slow.1", async () => {
+          await sleep(1000);
+          stepOrder.push("slow.1");
+        });
+        await step.run("slow.2", async () => {
+          await sleep(1000);
+          stepOrder.push("slow.2");
+        });
+      })(),
+    ]);
+
+    // With optimizeParallelism: ['fast.1', 'slow.1', 'fast.2', 'slow.2']
+    // Without optimizeParallelism: ['fast.1', 'fast.2', 'slow.1', 'slow.2']
+  }
+);
+```
+
+### Python
+
+Python always optimizes parallel steps by default. It has no `Promise.race()` equivalent to worry about. If sequential steps in one branch must not wait for other branches, opt out for a single group with `parallel_mode`:
+
+```py
+import inngest
+import asyncio
+
+@inngest_client.create_function(
+    fn_id="my-fn",
+    trigger=inngest.TriggerEvent(event="my-event"),
+)
+async def fn(ctx: inngest.Context) -> None:
+    async def fast_group() -> None:
+        await ctx.step.run("a", lambda: asyncio.sleep(1))
+        await ctx.step.run("b", lambda: asyncio.sleep(1))
+
+    async def slow_group() -> None:
+        await ctx.step.run("x", lambda: asyncio.sleep(10))
+        await ctx.step.run("y", lambda: asyncio.sleep(10))
+
+    # Using RACE mode makes steps run in expected order: a, b, x, y
+    await ctx.group.parallel(
+        (fast_group, slow_group), 
+        parallel_mode=inngest.ParallelMode.RACE
+    )
+```
+
+- **Default (optimized):** steps run in the order `a`, `x`, `b`, `y`. The results are still correct, but `b` doesn't start until `x` finishes.
+- **`parallel_mode=inngest.ParallelMode.RACE`:** steps run in the order `a`, `b`, `x`, `y`, at the cost of more requests to your app.
+
+## Limits
+
+- A function can have up to 1,000 steps, including parallel steps.
+- One step can return up to 4 MiB of data.
+- All run state, including event data, step results, and function return data, must stay under 32 MiB.
+
+Store large results outside step state and return a reference. If you need more steps, fan out to more function runs. See [Limits](/docs/durable-execution/limits) for every value.
+
+## Related pages
+
+- [Primitives](/docs/durable-execution/primitives) for other workflow operations.
+- [step.run](/docs/durable-execution/primitives/step-run) for retriable work inside a parallel group.
+- [Fan-out](/docs/durable-execution/guides-and-advanced/patterns/fan-out) to split work across many function runs.
+- [Checkpointing](/docs/durable-execution/guides-and-advanced/checkpointing) for how parallel steps affect checkpointed runs.

@@ -35,7 +35,7 @@ The critical difference between an agent loop and a traditional workflow DAG is 
 
 This is what makes agents powerful. It's also what makes them challenging to run reliably — and it's why the durability mechanism matters.
 
-→ [Guide: Agent tool loops](/docs/ai-patterns/agent-tool-loops)
+→ [Guide: Agent tool loops](/docs/durable-execution/durable-agents/agent-tool-loops)
 
 ## How Durability Works: Memoization and Deterministic Replay
 
@@ -51,13 +51,13 @@ Every time a step completes — an LLM call, a tool invocation, any side effect 
 
 This is what makes the model work for agents specifically. The execution doesn't need to be pre-declared: steps are defined at runtime, as the agent decides what to do. But on replay, those decisions are reproduced exactly, because the inputs that drove them (prior step results - the agent's state) are replayed exactly. Non-deterministic code on the first run. Deterministic replay on recovery.
 
-→ [Concept: How Inngest Durability Works](/docs/learn/how-functions-are-executed)
+→ [Concept: How Inngest Durability Works](/docs/durable-execution/durable-workflows)
 
 ## Core Primitives
 
 Inngest provides a small set of primitives that give agents durability without requiring you to redesign how they work. Each primitive wraps a specific kind of operation, making it checkpointed, retryable, and resumable.
 
-**[`step.run()`](/docs/learn/inngest-steps)** wraps any operation that has a side effect — an LLM call, a tool invocation, a database write, an API request. The result is memoized: if the step succeeds, it's never re-executed. If it fails, it's retried according to your configured policy. This is the building block that makes each iteration of the agent loop durable.
+**[`step.run()`](/docs/durable-execution/primitives)** wraps any operation that has a side effect — an LLM call, a tool invocation, a database write, an API request. The result is memoized: if the step succeeds, it's never re-executed. If it fails, it's retried according to your configured policy. This is the building block that makes each iteration of the agent loop durable.
 
 ```tsx
 const result = await step.run("search-documents", async () => {
@@ -65,11 +65,11 @@ const result = await step.run("search-documents", async () => {
 });
 ```
 
-**[`step.waitForEvent()`](/docs/features/inngest-functions/steps-workflows/wait-for-event)** pauses execution until an external signal arrives. The agent suspends completely — no process, no connection, no resources held. When the matching event is received (a human approval, a webhook callback, a message from another agent), execution resumes with the event data. This is what makes human-in-the-loop and inter-agent coordination possible without polling or timeouts.
+**[`step.waitForEvent()`](/docs/durable-execution/primitives/step-waitforevent)** pauses execution until an external signal arrives. The agent suspends completely — no process, no connection, no resources held. When the matching event is received (a human approval, a webhook callback, a message from another agent), execution resumes with the event data. This is what makes human-in-the-loop and inter-agent coordination possible without polling or timeouts.
 
-**[`step.invoke()`](/docs/guides/invoking-functions-directly?guide=python)** calls another Inngest function or sub-agent and waits for its result. This is how you compose agents — an orchestrator agent can delegate sub-tasks to sub-agents, each running with their own durability guarantees, and collect the results.
+**[`step.invoke()`](/docs/durable-execution/primitives/step-invoke?guide=python)** calls another Inngest function or sub-agent and waits for its result. This is how you compose agents — an orchestrator agent can delegate sub-tasks to sub-agents, each running with their own durability guarantees, and collect the results.
 
-**[`step.sleep()` and `step.sleepUntil()`](/docs/features/inngest-functions/steps-workflows/sleeps)** pause execution for a duration or until a specific time. Like `waitForEvent`, the agent fully suspends. You can sleep for five seconds or five days — the cost is the same (zero), because no process is running while the agent waits.
+**[`step.sleep()` and `step.sleepUntil()`](/docs/durable-execution/primitives/step-sleep)** pause execution for a duration or until a specific time. Like `waitForEvent`, the agent fully suspends. You can sleep for five seconds or five days — the cost is the same (zero), because no process is running while the agent waits.
 
 {/* Link to sessions guide tomorrow */}
 **Sessions** - Agents often span multiple runs. Conversations have multiple turns, sub-agents are fanned-out, and replies can be decoupled. Sessions enable all runs to be grouped in any way that match your application: conversation ids, project ids, or ticket ids. Use one or more session ID to create the full picture of your system.
@@ -86,19 +86,19 @@ With durable agents, the pattern is simple. The agent runs until it needs human 
 
 This is where durability becomes more than a reliability feature — it changes what agents can *do*. Workflows that span hours or days, that cross the boundary between automated and manual work, become straightforward to build. The agent doesn't care if the human takes 30 seconds or 3 days. It's not waiting. It's suspended.
 
-→ [Guide: Human-in-the-Loop](/docs/ai-patterns/human-in-the-loop)
+→ [Guide: Human-in-the-Loop](/docs/durable-execution/durable-agents/human-in-the-loop)
 
 ## Multi-Agent Coordination
 
 Real systems rarely have a single agent doing everything. You may opt to use sub-agents to isolate context or create specialized agents with their own subset of tools. Coordinating multiple agents is an architecture problem, and durability is central to solving it well.
 
-A durable agent can invoke other agents using `step.invoke()`, fan out parallel work, and collect results — the classic orchestrator-worker pattern. But because each agent is independently durable, the failure characteristics are fundamentally better than a single monolithic agent. If the code-review agent fails, the search agent's completed work isn't lost. The orchestrator can retry the failed sub-agent, [gracefully recover](/docs/features/inngest-functions/error-retries/failure-handlers), or surface the partial results.
+A durable agent can invoke other agents using `step.invoke()`, fan out parallel work, and collect results — the classic orchestrator-worker pattern. But because each agent is independently durable, the failure characteristics are fundamentally better than a single monolithic agent. If the code-review agent fails, the search agent's completed work isn't lost. The orchestrator can retry the failed sub-agent, [gracefully recover](/docs/durable-execution/guides-and-advanced/error-handling/failure-handlers), or surface the partial results.
 
 This independence also means agents can communicate asynchronously through events. One agent can emit an event that wakes up another agent that's been suspended, waiting for exactly that signal. You can build pipelines, fan-out/fan-in patterns, and feedback loops — all with durability at every stage.
 
 The key insight is that durability makes coordination *safe*. Without it, multi-agent systems are brittle: a failure in one agent cascades unpredictably, and recovering coordinated state across multiple processes is a nightmare. With durability, each agent's progress is preserved independently, and the coordination layer can reason about what succeeded, what failed, and what to do about it.
 
-→ [Guide: Sub-agent delegation](/docs/ai-patterns/sub-agent-delegation)
+→ [Guide: Sub-agent delegation](/docs/durable-execution/durable-agents/sub-agent-delegation)
 
 ## Error Handling & Recovery
 
@@ -112,7 +112,7 @@ When an agent run does fail completely, the checkpointed state is still there. Y
 
 The design philosophy is that failure should be *granular*. The blast radius of a single API timeout shouldn't be an entire agent run. Each step is its own unit of failure, with its own retry policy and its own recovery path.
 
-→ [Guide: Error Handling](/docs/guides/error-handling)
+→ [Guide: Error Handling](/docs/durable-execution/guides-and-advanced/error-handling)
 
 ## Observability & Debugging
 
@@ -124,7 +124,7 @@ This trace is the single most important debugging tool for production agents. Wh
 
 At scale, these traces become the foundation for understanding agent behavior in aggregate — which tools fail most often, where agents get stuck in loops, how long different operations take, and where you're spending the most tokens. Observability isn't an add-on for durable agents. It's built into how they work.
 
-→ [Guide: Tracing & Observability](/docs/platform/monitor/traces)
+→ [Guide: Tracing & Observability](/docs/platform-and-operations/traces)
 
 ---
 
@@ -132,9 +132,9 @@ At scale, these traces become the foundation for understanding agent behavior in
 
 Start building with the core primitives, or go deeper on the patterns:
 
-- [Steps](/docs/learn/inngest-steps) — how to leverage step-level durability
-- [Human-in-the-Loop](/docs/ai-patterns/human-in-the-loop) — building agents that collaborate with humans
-- [Multi-Agent Patterns](/docs/ai-patterns/sub-agent-delegation) — orchestrating multiple agents
-- [Error Handling](/docs/guides/error-handling) — retry policies, failure handlers, and recovery
-- [Tracing & Observability](/docs/platform/monitor/traces) — debugging and monitoring agents in production
-- [How Inngest Durability Works](/docs/learn/how-functions-are-executed) — the architecture behind durable execution
+- [Steps](/docs/durable-execution/primitives) — how to leverage step-level durability
+- [Human-in-the-Loop](/docs/durable-execution/durable-agents/human-in-the-loop) — building agents that collaborate with humans
+- [Multi-Agent Patterns](/docs/durable-execution/durable-agents/sub-agent-delegation) — orchestrating multiple agents
+- [Error Handling](/docs/durable-execution/guides-and-advanced/error-handling) — retry policies, failure handlers, and recovery
+- [Tracing & Observability](/docs/platform-and-operations/traces) — debugging and monitoring agents in production
+- [How Inngest Durability Works](/docs/durable-execution/durable-workflows) — the architecture behind durable execution

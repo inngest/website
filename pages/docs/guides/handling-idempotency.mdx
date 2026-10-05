@@ -88,7 +88,7 @@ Some other key points to note:
 {/* TODO - Link to revised fan-out guide above when complete */}
 
 <Callout>
-  **Tip** - If you are using Inngest's [webhook transforms](/docs/platform/webhooks#defining-a-transform-function), you can set the `id` in the transform to ensure that the event is idempotent.
+  **Tip** - If you are using Inngest's [webhook transforms](/docs/durable-execution/guides-and-advanced/events-and-triggers/receive-webhook-events), you can set the `id` in the transform to ensure that the event is idempotent.
 </Callout>
 
 <Callout variant="warning">
@@ -106,7 +106,7 @@ TODO - Highlight the importance of the uniqueness of the event ID across events 
 
 You might prefer to ensure idempotency at the function level or you may not be able to control the event that is being sent (from a webhook). The [function's `idempotency` config option](/docs/reference/typescript/v4/functions/create#inngest-create-function-configuration-trigger-handler-inngest-function) allows you to do this.
 
-Each function's `idempotency` key is defined as a [CEL expression](/docs/guides/writing-expressions) that is evaluated with the event payload's data. The expression is used to generate a unique string key which idempotently prevents duplicate execution of the function.
+Each function's `idempotency` key is defined as a [CEL expression](/docs/durable-execution/guides-and-advanced/writing-expressions) that is evaluated with the event payload's data. The expression is used to generate a unique string key which idempotently prevents duplicate execution of the function.
 
 Each unique expression will only trigger one function execution **per 24 hour period**. After 24 hours, a new event that generates the same unique expression will trigger another function execution.
 
@@ -160,7 +160,7 @@ Combining two or more properties together is a good way to ensure the level of u
 * **User signup:** You only want to send a welcome email once per user, so you'd set `idempotency` to `event.data.userId` in case there your API sends duplicate events.
 * **Organization team invite:** A user may be part of multiple organizations in your app. You only want to send a team invite email once per user/organization combination, so you'd set `idempotency` to `event.data.userId + "-" + event.data.organizationId`.
 
-For more information on writing CEL expressions, read [our guide](/docs/guides/writing-expressions).
+For more information on writing CEL expressions, read [our guide](/docs/durable-execution/guides-and-advanced/writing-expressions).
 
 <Callout>
   💡 If you want to control when a function is executed over a period of time you might prefer:

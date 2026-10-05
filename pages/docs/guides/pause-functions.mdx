@@ -14,7 +14,7 @@ It's important to understand what happens when a function is paused.
 
 **You can resume the function at any time.** No deployment or sync is required to resume your function. After you resume the function, new events will trigger it as usual.
 
-**Events received while the function was paused will not be reprocessed automatically** after you resume the function. Use [Replay](/docs/platform/replay) to process events that were received while the function was paused.
+**Events received while the function was paused will not be reprocessed automatically** after you resume the function. Use [Replay](/docs/platform-and-operations/replay-runs-in-bulk) to process events that were received while the function was paused.
 
 **Paused functions do not count toward your plan's concurrency limit.** Note that events received while a function is paused are still subject to your plan's history limit.
 
@@ -60,4 +60,4 @@ You'll see a preview of the number of runs to be replayed:
 
 Remember that your plan's history limit still applies to events received while a function is paused. This means that if, for example, you're using Inngest's free plan, you will only be able to replay events from the last 3 days, regardless of how long your function was paused.
 
-See our [Replay guide](/docs/platform/replay) for more information.
+See our [Replay guide](/docs/platform-and-operations/replay-runs-in-bulk) for more information.

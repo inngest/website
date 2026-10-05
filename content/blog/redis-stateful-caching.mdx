@@ -53,7 +53,7 @@ The main question for the cache layer was simple: what can we cache safely? Once
 
 Events that trigger a function run are written once and never change. Step inputs and outputs are written once per step and never change as well. These can be cached freely and never need invalidation. They live on the proxy node's local cache until the node is recycled.
 
-The execution stack and run metadata are mutable. They change with each step execution. We route reads for these directly to Redis. We considered caching the stack with validation against metadata, but the stack is capped at [1000 entries (the maximum number of steps a run can have)](https://www.inngest.com/docs/usage-limits/inngest#number-of-steps-per-function) and fetching it directly from Redis proved cheap enough in practice. The added complexity wasn't really worth it.
+The execution stack and run metadata are mutable. They change with each step execution. We route reads for these directly to Redis. We considered caching the stack with validation against metadata, but the stack is capped at [1000 entries (the maximum number of steps a run can have)](/docs/durable-execution/limits?ref=blog-redis-stateful-caching) and fetching it directly from Redis proved cheap enough in practice. The added complexity wasn't really worth it.
 
 *[ fig. 4 ] — Cache routing: immutable vs. mutable state*
 

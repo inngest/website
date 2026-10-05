@@ -15,7 +15,7 @@ import {
 Steps are fundamental building blocks of Inngest, turning your Inngest Functions into reliable workflows that can runs for months and recover from failures.
 
 <CardGroup cols={1}>
-  <Card title="Thinking in Steps" icon={<RiGuideFill className="text-basis h-4 w-4" />} href={'/docs/learn/inngest-steps'}>
+  <Card title="Thinking in Steps" icon={<RiGuideFill className="text-basis h-4 w-4" />} href={'/docs/durable-execution/primitives'}>
     Discover by example how steps enable more reliable and flexible functions with step-level error handling, conditional steps and waits.
   </Card>
 </CardGroup>
@@ -24,19 +24,19 @@ Steps are fundamental building blocks of Inngest, turning your Inngest Functions
 Once you are familiar with Steps, start adding new capabilities to your Inngest Functions: 
 
 <CardGroup cols={2}>
-  <Card title="Add sleeps" icon={<RiCalendarLine className="text-basis h-4 w-4" />} href={'/docs/features/inngest-functions/steps-workflows/sleeps'}>
+  <Card title="Add sleeps" icon={<RiCalendarLine className="text-basis h-4 w-4" />} href={'/docs/durable-execution/primitives/step-sleep'}>
     Enable your Inngest Functions to pause by waiting from minutes to months.
   </Card>
-  <Card title="Wait for events" icon={<EventIcon className="text-basis h-4 w-4"/>} href={'/docs/features/inngest-functions/steps-workflows/wait-for-event'}>
+  <Card title="Wait for events" icon={<EventIcon className="text-basis h-4 w-4"/>} href={'/docs/durable-execution/primitives/step-waitforevent'}>
     Write functions that react to incoming events.
   </Card>
-  <Card title="Loop over steps" icon={<RiGuideFill className="text-basis h-4 w-4" />} href={'/docs/guides/working-with-loops'}>
+  <Card title="Loop over steps" icon={<RiGuideFill className="text-basis h-4 w-4" />} href={'/docs/durable-execution/guides-and-advanced/patterns/working-with-loops'}>
     Iterate over large datasets by looping with steps.
   </Card>
-  <Card title="Parallelize steps" icon={<RiGitForkFill className="rotate-90 text-basis h-4 w-4" />} href={'/docs/guides/step-parallelism'}>
+  <Card title="Parallelize steps" icon={<RiGitForkFill className="rotate-90 text-basis h-4 w-4" />} href={'/docs/durable-execution/primitives/group-parallel'}>
     Discover how to apply the map-reduce pattern with Steps.
   </Card>
-  <Card title="Run step experiments" icon={<RiGitForkFill className="text-basis h-4 w-4" />} href={'/docs/features/inngest-functions/steps-workflows/step-experiments'}>
+  <Card title="Run step experiments" icon={<RiGitForkFill className="text-basis h-4 w-4" />} href={'/docs/agent-evals/experiments'}>
     Compare variants inside durable functions using `group.experiment()`.
   </Card>
 </CardGroup>
@@ -84,7 +84,7 @@ def sync_systems(ctx: inngest.ContextSync) -> None:
 ```
 </CodeGroup>
 
-Each step execution relies on a communication with Inngest's [Durable Execution Engine](/docs/learn/how-functions-are-executed) which is responsible to:
+Each step execution relies on a communication with Inngest's [Durable Execution Engine](/docs/durable-execution/durable-workflows) which is responsible to:
 
 - Invoking Functions with the correct steps state (current step + previous steps data)
 - Gather each step result and schedule the next step to perform
@@ -102,7 +102,7 @@ This architecture powers the durability of Inngest Functions with retriable step
 Explore the following guide for a step-by-step overview of a complete workflow run:
 
 <CardGroup cols={1}>
-  <Card title="How Functions are executed" icon={<RiGuideFill className="text-basis h-4 w-4" />} href={'/docs/learn/how-functions-are-executed'}>
+  <Card title="How Functions are executed" icon={<RiGuideFill className="text-basis h-4 w-4" />} href={'/docs/durable-execution/durable-workflows'}>
     A deep dive into Inngest's Durable Execution Engine with a step-by-step workflow run example.
   </Card>
 </CardGroup>

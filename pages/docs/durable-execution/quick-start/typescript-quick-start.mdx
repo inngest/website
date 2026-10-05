@@ -1,0 +1,210 @@
+import { Col } from "src/shared/Docs/mdx";
+
+export const metaTitle = "Node.js & TypeScript Quick Start";
+export const description = "Get started with Inngest in Node.js and TypeScript: set up the serve handler, write a durable background function, and run it locally in under 10 minutes.";
+
+# TypeScript quick start
+
+> Build a durable TypeScript workflow on Node.js, Bun, or Deno with your framework of choice.
+
+Send a task event from a Next.js app, run a saved step, then inspect the one-second pause and completed run in the local Dev Server. You need no Inngest account for this exercise.
+
+The TypeScript SDK v4 works across Node.js, Bun, and Deno and with any framework. This quick start uses the Next.js App Router for a complete example. If you use another framework, choose its [HTTP handler](#use-another-framework) when you reach step 3.
+
+> **Using a coding agent?** Paste the instruction below into it. The agent should build and verify the same workflow taught on this page.
+
+```plaintext
+In this Next.js App Router project,
+add an Inngest TypeScript v4 workflow. Reuse any existing Inngest client or serve route. Create a process-task function triggered by app/task.created. Use step.run("handle-task") to return the event ID and step.sleep("pause", "1s") to pause the run. Serve the function at /api/inngest and add a POST /api/create-task route that sends a sample event. Start the app with INNGEST_DEV=1 and start the Dev Server against the actual serve URL. Trigger the function, inspect its run, and report the files changed, commands run, and observed result.
+```
+
+<hr />
+
+### Supported frameworks
+
+**While this guide uses NextJS**, Inngest supports **all** major frameworks and runs across Node, Bun, and Deno:
+
+<div className="grid gap-x-6 md:grid-cols-3">
+
+<Col>
+* [Astro](/docs/learn/serving-inngest-functions#framework-astro)
+* [AWS Lambda](/docs/learn/serving-inngest-functions#framework-aws-lambda)
+* [Bun](/docs/learn/serving-inngest-functions#bun-serve)
+* [Cloudflare Pages](/docs/learn/serving-inngest-functions#framework-cloudflare-pages-functions)
+* [Cloudflare Workers](/docs/learn/serving-inngest-functions#framework-cloudflare-workers)
+* [DigitalOcean Functions](/docs/learn/serving-inngest-functions#framework-digital-ocean-functions)
+* [ElysiaJS](/docs/learn/serving-inngest-functions#framework-elysia-js)
+* [Express](/docs/learn/serving-inngest-functions#framework-express)
+</Col>
+
+<Col>
+* [Fastify](/docs/learn/serving-inngest-functions#framework-fastify)
+* [Firebase Cloud Functions](/docs/learn/serving-inngest-functions#framework-firebase-cloud-functions)
+* [Fresh (Deno)](/docs/learn/serving-inngest-functions#framework-fresh-deno)
+* [Google Cloud Run Functions](/docs/learn/serving-inngest-functions#framework-google-cloud-run-functions)
+* [H3](/docs/learn/serving-inngest-functions#framework-h3)
+* [Hono](/docs/learn/serving-inngest-functions#framework-hono)
+* [Koa](/docs/learn/serving-inngest-functions#framework-koa)
+* [NestJS](/docs/learn/serving-inngest-functions#framework-nest-js)
+</Col>
+
+<Col>
+* [Next.js](/docs/learn/serving-inngest-functions#framework-next-js)
+* [Nitro](/docs/learn/serving-inngest-functions#framework-nitro)
+* [Nuxt](/docs/learn/serving-inngest-functions#framework-nuxt)
+* [Redwood](/docs/learn/serving-inngest-functions#framework-redwood)
+* [Remix](/docs/learn/serving-inngest-functions#framework-remix)
+* [Supabase Edge Functions](/docs/learn/serving-inngest-functions#framework-supabase-edge-functions)
+* [SvelteKit](/docs/learn/serving-inngest-functions#framework-svelte-kit)
+* [TanStack Start](/docs/learn/serving-inngest-functions#framework-tanstack-start)
+</Col>
+
+</div>
+
+If your framework is not listed, [create a custom handler](/docs/learn/serving-inngest-functions#custom-frameworks).
+
+<hr />
+
+## Before you start
+
+Install Node.js and npm. Have a Next.js App Router project ready. To create one, run:
+
+```bash
+npx create-next-app@latest \
+  --ts --eslint --tailwind \
+  --src-dir --app --import-alias='@/*' \
+  inngest-guide
+
+cd inngest-guide
+```
+Run the rest of the commands from the project directory. Keep one terminal open for your app and another for the Inngest Dev Server.
+
+## 1. Install the SDK
+
+```bash
+npm install inngest
+```
+Create `src/inngest/client.ts`:
+
+```typescript
+import { Inngest } from "inngest";
+
+export const inngest = new Inngest({ id: "my-app" });
+```
+This creates a new inngest client locally, which groups the functions hosted in one service.  See [Apps and syncs](/docs/platform-and-operations/apps-and-syncs).
+
+## 2. Define a function
+
+Create `src/inngest/functions.ts`:
+
+```typescript
+import { inngest } from "./client";
+
+export const processTask = inngest.createFunction(
+  { id: "process-task", triggers: { event: "app/task.created" } },
+  async ({ event, step }) => {
+    const result = await step.run("handle-task", () => {
+      return { processed: true, id: event.data.id };
+    });
+
+    await step.sleep("pause", "1s");
+
+    return { message: `Task ${event.data.id} complete`, result };
+  }
+);
+```
+The event starts a function run. `step.run()` saves the step result and retries the step if it throws an error. `step.sleep()` pauses the run without keeping your request open. In a real app, the `handle-task` step could process a file, call a service, or write to a database.
+
+## 3. Serve the function
+
+Create `src/app/api/inngest/route.ts`:
+
+```typescript
+import { serve } from "inngest/next";
+import { inngest } from "../../../inngest/client";
+import { processTask } from "../../../inngest/functions";
+
+export const { GET, POST, PUT } = serve({
+  client: inngest,
+  functions: [processTask],
+});
+```
+This route lets Inngest discover and execute the functions you register in the `functions` array. Start your Next.js app:
+
+```bash
+INNGEST_DEV=1 npm run dev
+```
+Leave it running. `INNGEST_DEV=1` directs the v4 SDK to the local Dev Server.
+
+## 4. Start the Dev Server
+
+In the second terminal, run:
+
+```bash
+npx --ignore-scripts=false inngest-cli@latest dev -u http://localhost:3000/api/inngest
+```
+Open [http://localhost:8288](http://localhost:8288). The **Apps** view should show `my-app`, and the **Functions** view should show `process-task`. If Next.js chose another port, change `3000` in the Dev Server command to match it.
+
+## 5. Trigger and inspect a run
+
+Open [Functions](http://localhost:8288/functions), find `process-task`, and click **Invoke**. Enter:
+
+```json
+{
+  "data": {
+    "id": "task_001"
+  }
+}
+```
+Click **Invoke Function**, then open **Runs**. Open the new run. You should see the `handle-task` step, the one-second pause, and a completed result:
+
+```json
+{
+  "message": "Task task_001 complete",
+  "result": {
+    "processed": true,
+    "id": "task_001"
+  }
+}
+```
+The run view shows the event, each step, its output, and the execution timeline. This is where you inspect a workflow when it behaves differently from what you expected.
+
+## 6. Send the event from your app
+
+The Dev Server's **Invoke** button is useful for testing. In an app, send the event from a route or another point where work begins. Create `src/app/api/create-task/route.ts`:
+
+```typescript
+import { NextResponse } from "next/server";
+import { inngest } from "../../../inngest/client";
+
+export async function POST() {
+  await inngest.send({
+    name: "app/task.created",
+    data: { id: "task_002" },
+  });
+
+  return NextResponse.json({ message: "Event sent" });
+}
+```
+In a third terminal, call the route:
+
+```bash
+curl -X POST http://localhost:3000/api/create-task
+```
+The response confirms that the route sent the event. Open **Runs** in the Dev Server to see the new `process-task` run and its result for `task_002`.
+
+## See a retry
+
+In `src/inngest/functions.ts`, add this line at the start of the `handle-task` callback, before its `return`:
+
+```typescript
+if (event.data.id === "retry-demo") throw new Error("Temporary failure");
+```
+Invoke `process-task` again with `{"data":{"id":"retry-demo"}}`. Open the run and inspect the failed step's attempts. Inngest retries the failed step; the run fails after its attempts are exhausted because the example keeps throwing. Remove the line when you finish. Successful steps from a longer workflow keep their saved results instead of running again when a later step retries.
+
+## Next steps
+
+- [How durable execution works](/docs/durable-execution/concepts) explains why runs can resume after a pause or failure.
+- Run a step explains saved results and retries.
+- [Error handling and retries](/docs/durable-execution/guides-and-advanced/error-handling) shows how to recover from real failures and keep side effects safe.
+- [Deploy your functions](/docs/durable-execution/deploying-functions) covers hosting paths.

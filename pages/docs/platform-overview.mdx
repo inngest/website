@@ -1,0 +1,107 @@
+import { Mermaid } from "src/shared/Docs/Mermaid";
+import { CodeGroup, Steps, Step } from "shared/Docs/mdx";
+import { PlatformGrid, StartBuilding } from "src/shared/Docs/DocsHome";
+
+export const metaTitle = "What is Inngest?";
+export const description = "What is Inngest? A durable execution platform that makes your code reliable, with Sandboxes, Agent Evals, and Realtime tied to one run and trace.";
+
+# What is Inngest?
+
+> Durable functions for agents and workflows, with isolated code execution, live progress, and outcome scoring built in.
+
+Inngest makes your code durable. You write functions in your existing app and break the work into steps. Inngest runs each step, saves its result, and retries failed work from the step that failed. Every run has a trace that shows what ran, what waited, and what failed.
+
+The rest of the platform builds on the same run. Sandboxes run code in isolation inside it, Realtime streams its progress to users, and Agent Evals connect later feedback to it. Together, they let you see what ran, recover from failures, run untrusted code safely, and measure whether each change actually helped.
+
+## An example run
+
+A support agent answers a customer ticket. The same pattern works for background jobs, data pipelines, and other workflows.
+
+<Mermaid
+  label="A ticket event starts a durable run. Inside the run, steps load context, select an experiment variant, draft an answer while streaming progress to the customer, run diagnostics in a Sandbox, and send a reply. Days later a customer rating triggers a deferred score that is credited to the run and its variant, so variants can be compared."
+  chart={`flowchart TB
+  E(["Ticket created"]):::muted --> S1
+  subgraph RUN["Durable run"]
+    S1["Load context"]:::accent --> V["Pick variant: concise or detailed"]:::info
+    V --> S2["Draft answer"]:::accent
+    S2 --> SB["Run diagnostics in a Sandbox"]:::info
+    SB --> S3["Send reply"]:::accent
+  end
+  S2 -. "Realtime" .-> U(["Customer's browser"]):::muted
+  S3 --> SC["Deferred score"]:::info
+  F(["Customer rates answer"]):::muted -. "days later" .-> SC
+  SC --> C(["Compare variants"]):::accent`}
+/>
+
+Here's that function. Each `step.run()` is saved, so a failed reply retries without reloading context or redrafting the answer. `group.experiment()` picks the answer strategy, `step.realtime.publish()` updates the customer, and `step.sandbox` runs diagnostics in an isolated VM. When the customer rates the answer days later, a [deferred scorer](/docs/agent-evals/deferred-scoring) credits that rating to the chosen variant (in TS). 
+
+<CodeGroup>
+```ts {{ title: "TypeScript" }}
+!snippet:path=snippets/ts/v4/platform-overview/support-agent.ts
+```
+
+```python {{ title: "Python" }}
+!snippet:path=snippets/py/latest/durable/platform_overview/support_agent.py
+```
+
+```go {{ title: "Go" }}
+!snippet:path=snippets/go/docs/durable/platform_overview/support_agent.go
+```
+</CodeGroup>
+
+## How Inngest works
+
+<Steps>
+  <Step title="Durable Execution">
+    An event, schedule, or API request starts a run. Inngest records completed steps, resumes after waits, retries failed work from where the function left off, and controls how much work runs at once. In the example, if the reply fails to send, only that step runs again.
+
+    - [Events and triggers](/docs/durable-execution/guides-and-advanced/events-and-triggers) start work from events, schedules, webhooks, or another function.
+    - [Steps](/docs/durable-execution/primitives) save progress so retries skip completed work.
+    - [Retries](/docs/durable-execution/guides-and-advanced/error-handling/retries) recover failed work automatically.
+    - [Wait for events](/docs/durable-execution/primitives/step-waitforevent) or [sleep until later](/docs/durable-execution/primitives/step-sleep) without keeping compute running.
+    - [Flow control](/docs/durable-execution/flow-control) limits concurrency and throughput to protect downstream services.
+    - [Idempotency](/docs/durable-execution/guides-and-advanced/idempotency) prevents duplicate events from repeating work.
+
+    Use durable functions as [background workflows](/docs/durable-execution/durable-workflows) or as [durable endpoints](/docs/durable-execution/durable-endpoints) that return an HTTP response.
+  </Step>
+  <Step title="Sandboxes">
+    When a step needs its own execution environment, such as to run generated code or test a repository, run that work in a Sandbox. Each Sandbox is a microVM with its own filesystem and processes, isolated from your app and other Sandboxes. You can pause and resume a Sandbox, or snapshot it and clone a new one. Sandbox activity appears in the same run trace as the surrounding steps. In the example, the agent runs a diagnostic script in a Sandbox before it replies.
+
+    Sandboxes run code *inside* a run. They aren't a way to host your Inngest functions. Read [Sandboxes](/docs/sandboxes) for lifecycle, isolation, and cleanup details.
+  </Step>
+  <Step title="Agent Evals">
+    A run can succeed and still fail to help the customer. Agent Evals connect outcome scores to the runs that produced them, so you can judge changes by their results:
+
+    - [Sessions](/docs/agent-evals/sessions) group related runs, such as every run for one ticket.
+    - [Scores](/docs/agent-evals/scores) record a named number or true/false value for a run or step. Score right away, or defer the score until feedback arrives. A deferred score is credited to the original run.
+    - [Experiments](/docs/agent-evals/experiments) use `group.experiment()` to select a variant for each run. A variant can be one step or a whole workflow path. Pass the experiment reference with a score so a later outcome counts toward the variant that produced it.
+
+    In the example, the customer's rating arrives days later. It's scored against the original run and its variant, so you can compare answer strategies, then open traces to see how each result was produced.
+  </Step>
+  <Step title="Realtime">
+    [Realtime](/docs/realtime) sends typed messages from a function to authorized clients, so users can follow work as it runs. Use `step.realtime.publish()` for state changes and final results so a retry doesn't send the message twice. Use `inngest.realtime.publish()` for frequent updates such as token streams. In the example, the customer sees the agent's progress while it drafts an answer.
+  </Step>
+</Steps>
+
+## Where your code runs
+
+Your functions run on your own infrastructure, in any cloud or on your servers. Inngest calls them through an [HTTP `serve()` endpoint](/docs/durable-execution/deploying-functions/serve), or they connect to Inngest as a [Connect worker](/docs/durable-execution/deploying-functions/connect). Inngest coordinates durable execution while your code runs where it already lives. Use Inngest Cloud, or [self-host Inngest](/docs/self-hosting).
+
+[Sandboxes](/docs/sandboxes) are different: they run on securely isolated VMs that Inngest manages, so you don't host or scale that infrastructure yourself. Your function starts and controls them as steps in its run.
+
+## Explore the platform
+
+<PlatformGrid refParam="platform-overview" />
+
+## Start building
+
+Pick your language to build your first durable function. Use [Local Development](/docs/local-development) to run and inspect it on your machine with the Dev Server.
+
+<StartBuilding refParam="platform-overview" />
+
+## Next steps
+
+- [Concepts](/docs/durable-execution/concepts) defines runs, triggers, steps, waits, and retries.
+- [Glossary](/docs/learn/glossary) explains the terms used across the docs.
+- [Deploying functions](/docs/durable-execution/deploying-functions) compares HTTP serving and Connect.
+- [Platform and operations](/docs/platform-and-operations) covers traces, replay, environments, and keys.
