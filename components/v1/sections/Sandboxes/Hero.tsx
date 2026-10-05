@@ -1,6 +1,12 @@
 "use client";
 
-import { useEffect, useMemo, useRef, useState } from "react";
+import {
+  useEffect,
+  useMemo,
+  useRef,
+  useState,
+  type CSSProperties,
+} from "react";
 import { motion } from "motion/react";
 import ButtonLink from "@/components/v1/ButtonLink";
 import StatusTag from "@/components/v1/StatusTag";
@@ -50,8 +56,8 @@ const PLAYGROUND_BASE =
 
 // The frame follows the playground's settled content height inside these
 // bounds; past the max the playground keeps its newest rows in view.
-const FRAME_MIN_H = 420;
-const FRAME_MAX_H = 760;
+const FRAME_MIN_H = 440;
+const FRAME_MAX_H = 560;
 // Pause on a finished run before the next chapter starts.
 const DWELL_MS = 6000;
 
@@ -112,9 +118,9 @@ function pillText(s: { status: StepStatus; durationMs?: number }) {
     case "done":
       return s.durationMs !== undefined ? formatMs(s.durationMs) : "Done";
     case "memoized":
-      return "Replayed 0 ms";
+      return "Replayed";
     case "failed":
-      return "Failed, retrying";
+      return "Retrying";
     default:
       return "";
   }
@@ -132,7 +138,11 @@ const PILL_CLASS: Record<StepStatus, string> = {
   failed: "text-white bg-v1-accent-salmon",
 };
 
-/** The function, with each step's lines lit by the playground's report. */
+/**
+ * The function, with each step's lines lit by the playground's report.
+ * The pane has a fixed height and follows the running step the way an
+ * editor follows execution, so the lit lines are always in view.
+ */
 function CodePane({
   chapter,
   steps,
@@ -140,6 +150,7 @@ function CodePane({
   chapter: Chapter;
   steps: StepReport[];
 }) {
+  const preRef = useRef<HTMLPreElement>(null);
   // Group consecutive lines of the same step so the pill sits once, on
   // the group's first line, and the wash covers the whole call.
   const groups = useMemo(() => {
@@ -152,8 +163,32 @@ function CodePane({
     return out;
   }, [chapter]);
 
+  const runningIndex = groups.findIndex((g) => {
+    if (!g.step) return false;
+    const st = stepStatus(g.step, steps).status;
+    return st === "running" || st === "waiting" || st === "failed";
+  });
+
+  useEffect(() => {
+    const pre = preRef.current;
+    if (!pre) return;
+    const el =
+      runningIndex >= 0
+        ? (pre.children[runningIndex] as HTMLElement | undefined)
+        : undefined;
+    const top = el
+      ? el.offsetTop - pre.clientHeight / 2 + el.offsetHeight / 2
+      : 0;
+    pre.scrollTo({
+      top: Math.max(0, top),
+      behavior: window.matchMedia("(prefers-reduced-motion: reduce)").matches
+        ? "auto"
+        : "smooth",
+    });
+  }, [runningIndex]);
+
   return (
-    <div className="flex min-w-0 flex-col">
+    <div className="flex h-full min-w-0 flex-col">
       <div className="text-v1-label-sm flex h-11 shrink-0 items-center gap-2 border-b border-v1-subtle px-4 uppercase text-v1-muted sm:px-5">
         <span
           aria-hidden="true"
@@ -161,7 +196,10 @@ function CodePane({
         />
         {chapter.file}
       </div>
-      <pre className="scrollbar-none min-w-0 flex-1 overflow-x-auto py-3 font-v1Mono text-[12px] leading-[20px] text-v1-frost/90">
+      <pre
+        ref={preRef}
+        className="scrollbar-none relative min-w-0 flex-1 overflow-auto py-3 font-v1Mono text-[11.5px] leading-[20px] text-v1-frost/90"
+      >
         {groups.map((g, gi) => {
           const st = g.step ? stepStatus(g.step, steps) : null;
           const status = st?.status ?? "pending";
@@ -170,7 +208,7 @@ function CodePane({
             <div
               key={gi}
               className={cn(
-                "relative grid grid-cols-[28px_minmax(0,1fr)] pr-4 motion-safe:transition-colors motion-safe:duration-500 lg:grid-cols-[132px_minmax(0,1fr)]",
+                "relative grid grid-cols-[28px_minmax(0,1fr)] pr-4 motion-safe:transition-colors motion-safe:duration-500 lg:grid-cols-[88px_minmax(0,1fr)]",
                 status === "running" || status === "waiting"
                   ? "bg-v1-frost/[0.05]"
                   : status === "failed"
@@ -333,11 +371,11 @@ export default function Hero() {
       aria-labelledby="sandboxes-hero-headline"
       className="relative w-full overflow-hidden bg-v1-canvasBase"
     >
-      {/* Brand-blue panel behind the headline; the stage breaks out of
-          its bottom edge. */}
+      {/* Brand-blue panel behind the hero; the stage breaks out of its
+          bottom edge. */}
       <div
         aria-hidden="true"
-        className="pointer-events-none absolute inset-x-0 top-0 h-[600px] overflow-hidden bg-v1-accent-blue lg:h-[640px]"
+        className="pointer-events-none absolute inset-x-0 bottom-[160px] top-0 overflow-hidden bg-v1-accent-blue lg:bottom-[200px]"
       >
         {/* eslint-disable-next-line @next/next/no-img-element */}
         <img
@@ -347,9 +385,9 @@ export default function Hero() {
         />
       </div>
 
-      <div className="relative z-10 mx-auto flex w-full max-w-[1440px] flex-col px-6 pt-[104px] sm:px-9 lg:px-8 lg:pt-[120px]">
-        {/* Headline block */}
-        <div className="grid grid-cols-1 gap-8 lg:grid-cols-[minmax(0,7fr)_minmax(0,5fr)] lg:items-end lg:gap-x-16">
+      <div className="relative z-10 mx-auto grid w-full max-w-[1440px] grid-cols-1 gap-y-10 px-6 pb-16 pt-[104px] sm:px-9 lg:grid-cols-[minmax(0,4fr)_minmax(0,8fr)] lg:gap-x-10 lg:px-8 lg:pb-24 lg:pt-[120px] xl:gap-x-14">
+        {/* Copy and CTAs */}
+        <div className="flex flex-col gap-8 lg:pt-2">
           <div className="flex flex-col gap-6">
             <motion.div
               {...entry(0)}
@@ -362,7 +400,7 @@ export default function Hero() {
             </motion.div>
             <h1
               id="sandboxes-hero-headline"
-              className="text-v1-display-xs uppercase text-v1-frost lg:leading-[0.98] lg:tracking-[-0.015em] lg:[font-size:clamp(3rem,5.4vw,5.25rem)]"
+              className="text-v1-display-xs uppercase text-v1-frost lg:leading-[0.98] lg:tracking-[-0.015em] lg:[font-size:clamp(2.75rem,4.4vw,4.25rem)]"
             >
               <motion.span className="block" {...entry(60)}>
                 A sandbox
@@ -372,11 +410,11 @@ export default function Hero() {
               </motion.span>
             </h1>
           </div>
-          <motion.div {...entry(320)} className="flex flex-col gap-6 lg:pb-2">
-            <p className="text-v1-body-lg max-w-[460px] !text-v1-frost">
+          <motion.div {...entry(320)} className="flex flex-col gap-6">
+            <p className="text-v1-body-lg max-w-[420px] !text-v1-frost">
               Create microVMs inside your Inngest functions. They retry, resume
               after a crash, and show up in the trace like every other step.
-              Below: a real run, replayed.
+              Watch one run:
             </p>
             <div className="flex flex-col gap-[23px] sm:flex-row sm:items-center">
               <ButtonLink href={SIGNUP_URL} prefetch={false} variant="primary">
@@ -393,18 +431,101 @@ export default function Hero() {
           </motion.div>
         </div>
 
-        {/* The stage: code | live trace, and the chapter rail. */}
+        {/* The stage: chapters on top, then the code and its live trace. */}
         <motion.div
           {...entry(440)}
           onPointerEnter={() => setHovering(true)}
           onPointerLeave={() => setHovering(false)}
-          className="mb-16 mt-10 overflow-hidden rounded-[10px] border border-v1-frost/[0.14] bg-v1-surfaceBase shadow-[0_40px_120px_-40px_rgb(0_0_0/0.9)] lg:mb-24 lg:mt-14"
+          className="flex min-w-0 flex-col overflow-hidden rounded-[10px] border border-v1-frost/[0.14] bg-v1-surfaceBase shadow-[0_40px_120px_-40px_rgb(0_0_0/0.9)]"
         >
-          <div className="grid grid-cols-1 lg:grid-cols-[minmax(0,5fr)_minmax(0,7fr)]">
-            <div className="border-b border-v1-subtle lg:border-b-0 lg:border-r">
+          <div className="flex items-stretch border-b border-v1-subtle">
+            <div
+              role="tablist"
+              aria-label="Chapters"
+              className="scrollbar-none flex min-w-0 flex-1 overflow-x-auto"
+            >
+              {CHAPTERS.map((c, i) => {
+                const active = c.id === chapterId;
+                return (
+                  <button
+                    key={c.id}
+                    type="button"
+                    role="tab"
+                    aria-selected={active}
+                    title={active ? "Replay this chapter" : undefined}
+                    onClick={() => {
+                      setManual(true);
+                      if (active) replay();
+                      else select(c.id);
+                    }}
+                    className={cn(
+                      "group/ch relative flex min-w-[7rem] flex-1 items-center gap-2.5 px-4 py-3.5 text-left focus:outline-none focus-visible:bg-v1-frost/[0.06] motion-safe:transition-colors motion-safe:duration-200 sm:px-5 lg:min-w-0",
+                      i > 0 && "border-l border-v1-subtle",
+                      active
+                        ? "text-v1-frost"
+                        : "text-v1-muted hover:bg-v1-frost/[0.03] hover:text-v1-frost"
+                    )}
+                  >
+                    <span
+                      className={cn(
+                        "text-v1-label-sm tabular-nums",
+                        active ? "text-v1-accent-salmon" : "text-v1-frost/40"
+                      )}
+                    >
+                      {i + 1}
+                    </span>
+                    <span className="text-v1-label-sm truncate uppercase">
+                      <span className="sm:hidden">{c.short}</span>
+                      <span className="hidden sm:inline">{c.title}</span>
+                    </span>
+                    {active && (
+                      <span
+                        aria-hidden="true"
+                        className="ml-auto hidden text-v1-frost/40 group-hover/ch:text-v1-frost lg:inline"
+                      >
+                        ↻
+                      </span>
+                    )}
+                    {/* Progress: the share of this run's steps that have finished. */}
+                    <span
+                      aria-hidden="true"
+                      className={cn(
+                        "absolute inset-x-0 bottom-[-1px] h-[2px] origin-left bg-v1-frost motion-safe:transition-transform motion-safe:duration-500 motion-safe:ease-v1-in",
+                        active ? "opacity-100" : "opacity-0"
+                      )}
+                      style={{
+                        transform: `scaleX(${
+                          runState === "complete" ? 1 : progress
+                        })`,
+                      }}
+                    />
+                  </button>
+                );
+              })}
+            </div>
+            <a
+              href={fullHref}
+              title="Open the full playground"
+              className="group/cta text-v1-label-sm hidden shrink-0 items-center gap-2 border-l border-v1-subtle px-5 uppercase text-v1-frost hover:bg-v1-frost/[0.03] motion-safe:transition-colors motion-safe:duration-200 md:flex"
+            >
+              <span className="hidden xl:inline">Full playground</span>
+              <span
+                aria-hidden="true"
+                className="inline-block group-hover/cta:translate-x-[6px] motion-safe:transition-transform motion-safe:duration-[400ms] motion-safe:ease-v1-in"
+              >
+                →
+              </span>
+            </a>
+          </div>
+
+          <div
+            className="grid grid-cols-1 lg:grid-cols-2"
+            style={{ "--stage-h": `${frameH}px` } as CSSProperties}
+          >
+            <div className="h-[260px] border-b border-v1-subtle lg:h-[var(--stage-h)] lg:border-b-0 lg:border-r">
               <CodePane key={chapter.id} chapter={chapter} steps={steps} />
             </div>
-            <div className="relative" style={{ minHeight: frameH }}>
+            <div className="relative min-h-[var(--stage-h)] lg:h-[var(--stage-h)]">
               {/* Placeholder until the frame has painted. */}
               <div
                 aria-hidden="true"
@@ -427,93 +548,6 @@ export default function Hero() {
                 allow="clipboard-write"
               />
             </div>
-          </div>
-
-          {/* Chapter rail */}
-          <div className="flex items-stretch border-t border-v1-subtle">
-            <div
-              role="tablist"
-              aria-label="Chapters"
-              className="scrollbar-none flex min-w-0 flex-1 overflow-x-auto"
-            >
-              {CHAPTERS.map((c, i) => {
-                const active = c.id === chapterId;
-                return (
-                  <button
-                    key={c.id}
-                    type="button"
-                    role="tab"
-                    aria-selected={active}
-                    title={active ? "Replay this chapter" : undefined}
-                    onClick={() => {
-                      setManual(true);
-                      if (active) replay();
-                      else select(c.id);
-                    }}
-                    className={cn(
-                      "group/ch relative flex min-w-[8.5rem] flex-1 flex-col gap-1.5 px-4 pb-4 pt-3 text-left focus:outline-none focus-visible:bg-v1-frost/[0.06] motion-safe:transition-colors motion-safe:duration-200 sm:px-5 lg:min-w-0",
-                      i > 0 && "border-l border-v1-subtle",
-                      active
-                        ? "text-v1-frost"
-                        : "text-v1-muted hover:bg-v1-frost/[0.03] hover:text-v1-frost"
-                    )}
-                  >
-                    <span className="text-v1-label-sm flex items-center gap-2.5 uppercase">
-                      <span
-                        className={cn(
-                          "tabular-nums",
-                          active ? "text-v1-accent-salmon" : "text-v1-frost/40"
-                        )}
-                      >
-                        {i + 1}
-                      </span>
-                      <span className="sm:hidden">{c.short}</span>
-                      <span className="hidden sm:inline">{c.title}</span>
-                      {active && (
-                        <span
-                          aria-hidden="true"
-                          className="ml-auto hidden text-v1-frost/40 group-hover/ch:text-v1-frost lg:inline"
-                        >
-                          ↻
-                        </span>
-                      )}
-                    </span>
-                    <span className="text-v1-body-sm hidden !text-v1-subtle xl:block">
-                      {c.line}
-                    </span>
-                    {/* Progress: the share of this run's steps that have finished. */}
-                    <span
-                      aria-hidden="true"
-                      className="absolute inset-x-0 bottom-0 h-[2px] bg-v1-frost/[0.08]"
-                    >
-                      <span
-                        className={cn(
-                          "block h-full origin-left bg-v1-frost motion-safe:transition-transform motion-safe:duration-500 motion-safe:ease-v1-in",
-                          active ? "opacity-100" : "opacity-0"
-                        )}
-                        style={{
-                          transform: `scaleX(${
-                            runState === "complete" ? 1 : progress
-                          })`,
-                        }}
-                      />
-                    </span>
-                  </button>
-                );
-              })}
-            </div>
-            <a
-              href={fullHref}
-              className="group/cta text-v1-label-sm hidden shrink-0 items-center gap-2 border-l border-v1-subtle px-5 uppercase text-v1-frost hover:bg-v1-frost/[0.03] motion-safe:transition-colors motion-safe:duration-200 md:flex"
-            >
-              Full playground
-              <span
-                aria-hidden="true"
-                className="inline-block group-hover/cta:translate-x-[6px] motion-safe:transition-transform motion-safe:duration-[400ms] motion-safe:ease-v1-in"
-              >
-                →
-              </span>
-            </a>
           </div>
         </motion.div>
       </div>
