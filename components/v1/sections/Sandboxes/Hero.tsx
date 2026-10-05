@@ -4,29 +4,35 @@ import { useEffect, useMemo, useRef, useState } from "react";
 import { motion } from "motion/react";
 import ButtonLink from "@/components/v1/ButtonLink";
 import StatusTag from "@/components/v1/StatusTag";
+import {
+  renderTokens,
+  tokenizeCode,
+} from "@/components/v1/sections/shared/codeHighlight";
 import { setHeroPanel, clearHeroPanel } from "@/utils/v1/heroNav";
 import { tweens } from "@/utils/v1/springs";
 import { cn } from "@/utils/v1/cn";
+import { CHAPTERS, type Chapter, type ChapterId } from "./heroChapters";
 
 /**
- * /platform/sandboxes hero — the Sandboxes playground, embedded and
- * abbreviated.
+ * /platform/sandboxes hero.
  *
- * The playground (inngest/sandboxes-playground) is a separate app served
- * under /try-sandboxes through a rewrite, so the iframe below IS the
- * product: a real Inngest run with its trace unfolding, steps you can
- * click for input/output, and the command output underneath. Its hero
- * embed level (`?embed=hero`) keeps just that — trace plus outcome — and
- * paints no background of its own, so the frame takes on this card's
- * surface instead of reading as a second app pasted onto the page. It
- * also reports its content height so the frame fits without a scrollbar,
- * starts the run by itself, and restarts when this page posts
- * `try-sandboxes:replay`.
+ * Thesis: a sandbox is a step. The stage proves it live: the function as
+ * you would write it on the left, the playground's replay of a real run
+ * of that function on the right, and each step's lines light up at the
+ * moment its trace row runs, finishes, is replayed from memory after a
+ * crash, or fails.
  *
- * Everything the visitor controls lives in the card's own title bar:
- * which scenario plays, a one-line caption for it, replay, and the link
- * to the full playground. The card breaks out of the brand-blue headline
- * panel so headline and demo read as one composition.
+ * The playground (inngest/sandboxes-playground) is served under
+ * /try-sandboxes through a rewrite and framed in its hero embed level
+ * (`?embed=hero`): trace plus outcome only, no background of its own,
+ * autostart. It posts `try-sandboxes:height` (content height, flagged
+ * unsettled while a run plays) and `try-sandboxes:run` (run state plus
+ * every step's status), and restarts on `try-sandboxes:replay`.
+ *
+ * The three chapters are the playground's own sequence (Scenario 1 of 3)
+ * and play through in order: when a run finishes the next chapter starts
+ * after a pause, unless the viewer has chosen one or is pointing at the
+ * stage. Clicking the active chapter replays it.
  */
 
 const SIGNUP_URL = "/sign-up?ref=sandboxes";
@@ -42,35 +48,26 @@ const PLAYGROUND_BASE =
     ? "https://www.inngest.com/try-sandboxes"
     : "/try-sandboxes");
 
-const SCENARIOS = [
-  {
-    id: "create",
-    label: "Create a sandbox",
-    short: "Create",
-    caption:
-      "A microVM created, a command run, the VM destroyed. Four steps, one trace.",
-  },
-  {
-    id: "durability",
-    label: "Survive a crash",
-    short: "Crash",
-    caption:
-      "The function dies mid-run. The retry picks up the same sandbox; no work is lost.",
-  },
-  {
-    id: "ci",
-    label: "Run a CI pipeline",
-    short: "CI",
-    caption:
-      "One machine per job, cloned from a snapshot. Jobs that already passed never rerun.",
-  },
-] as const;
-type ScenarioId = typeof SCENARIOS[number]["id"];
+// The frame follows the playground's settled content height inside these
+// bounds; past the max the playground keeps its newest rows in view.
+const FRAME_MIN_H = 420;
+const FRAME_MAX_H = 760;
+// Pause on a finished run before the next chapter starts.
+const DWELL_MS = 6000;
 
-// The frame follows the playground's reported content height inside
-// these bounds; past the max the playground scrolls inside the frame.
-const FRAME_MIN_H = 360;
-const FRAME_MAX_H = 680;
+type StepStatus =
+  | "pending"
+  | "running"
+  | "waiting"
+  | "done"
+  | "memoized"
+  | "failed";
+interface StepReport {
+  id: string;
+  status: StepStatus;
+  durationMs?: number;
+}
+type RunState = "idle" | "running" | "complete";
 
 const entry = (delayMs: number) => ({
   initial: { opacity: 0, y: 14 },
@@ -78,18 +75,184 @@ const entry = (delayMs: number) => ({
   transition: { ...tweens.entry, delay: delayMs / 1000 },
 });
 
+function formatMs(ms: number) {
+  if (ms < 1000) return `${Math.round(ms)} ms`;
+  if (ms < 60_000) return `${(ms / 1000).toFixed(ms < 10_000 ? 1 : 0)} s`;
+  return `${Math.floor(ms / 60_000)}m ${Math.round((ms % 60_000) / 1000)}s`;
+}
+
+/**
+ * Status of a code line's step. CI lines name a job and match every step
+ * under it (`lint › node lint.mjs`), so statuses are folded: anything
+ * running wins, then a failure, done once every step seen is done, and a
+ * job with some steps done and more to come is in progress.
+ */
+function stepStatus(key: string, steps: StepReport[]) {
+  const matches = steps.filter(
+    (s) => s.id === key || s.id.startsWith(`${key} `)
+  );
+  if (matches.length === 0) return { status: "pending" as const };
+  if (matches.length === 1) return matches[0];
+  if (matches.some((s) => s.status === "running" || s.status === "waiting"))
+    return { status: "running" as const };
+  if (matches.some((s) => s.status === "failed"))
+    return { status: "failed" as const };
+  if (matches.every((s) => s.status === "done" || s.status === "memoized"))
+    return { status: "done" as const };
+  if (matches.some((s) => s.status === "done" || s.status === "memoized"))
+    return { status: "running" as const };
+  return { status: "pending" as const };
+}
+
+function pillText(s: { status: StepStatus; durationMs?: number }) {
+  switch (s.status) {
+    case "running":
+    case "waiting":
+      return "Running";
+    case "done":
+      return s.durationMs !== undefined ? formatMs(s.durationMs) : "Done";
+    case "memoized":
+      return "Replayed 0 ms";
+    case "failed":
+      return "Failed, retrying";
+    default:
+      return "";
+  }
+}
+
+const PILL_CLASS: Record<StepStatus, string> = {
+  pending: "opacity-0 -translate-x-1",
+  running:
+    "text-v1-accent-salmon-light bg-v1-accent-salmon/[0.16] [box-shadow:inset_0_0_0_1px_rgb(var(--color-v1-salmon-200)/0.45)]",
+  waiting:
+    "text-v1-accent-salmon-light bg-v1-accent-salmon/[0.16] [box-shadow:inset_0_0_0_1px_rgb(var(--color-v1-salmon-200)/0.45)]",
+  done: "text-[rgb(var(--color-v1-status-completed-text))] bg-[rgb(var(--color-v1-status-completed-text)/0.14)] [box-shadow:inset_0_0_0_1px_rgb(var(--color-v1-status-completed-text)/0.4)]",
+  memoized:
+    "text-v1-frost bg-v1-frost/[0.12] [box-shadow:inset_0_0_0_1px_rgb(var(--color-v1-frost)/0.35)]",
+  failed: "text-white bg-v1-accent-salmon",
+};
+
+/** The function, with each step's lines lit by the playground's report. */
+function CodePane({
+  chapter,
+  steps,
+}: {
+  chapter: Chapter;
+  steps: StepReport[];
+}) {
+  // Group consecutive lines of the same step so the pill sits once, on
+  // the group's first line, and the wash covers the whole call.
+  const groups = useMemo(() => {
+    const out: { step?: string; lines: Chapter["code"] }[] = [];
+    for (const line of chapter.code) {
+      const last = out[out.length - 1];
+      if (last && last.step === line.step && line.step) last.lines.push(line);
+      else out.push({ step: line.step, lines: [line] });
+    }
+    return out;
+  }, [chapter]);
+
+  return (
+    <div className="flex min-w-0 flex-col">
+      <div className="text-v1-label-sm flex h-11 shrink-0 items-center gap-2 border-b border-v1-subtle px-4 uppercase text-v1-muted sm:px-5">
+        <span
+          aria-hidden="true"
+          className="h-1.5 w-1.5 rounded-full bg-v1-frost/40"
+        />
+        {chapter.file}
+      </div>
+      <pre className="scrollbar-none min-w-0 flex-1 overflow-x-auto py-3 font-v1Mono text-[12px] leading-[20px] text-v1-frost/90">
+        {groups.map((g, gi) => {
+          const st = g.step ? stepStatus(g.step, steps) : null;
+          const status = st?.status ?? "pending";
+          const lit = status !== "pending";
+          return (
+            <div
+              key={gi}
+              className={cn(
+                "relative grid grid-cols-[28px_minmax(0,1fr)] pr-4 motion-safe:transition-colors motion-safe:duration-500 lg:grid-cols-[132px_minmax(0,1fr)]",
+                status === "running" || status === "waiting"
+                  ? "bg-v1-frost/[0.05]"
+                  : status === "failed"
+                  ? "bg-v1-accent-salmon/[0.08]"
+                  : ""
+              )}
+            >
+              {/* Gutter: the step's status, aligned with its first line. */}
+              <div className="relative flex items-start justify-end pr-3 lg:pr-4">
+                {st && (
+                  <>
+                    <span
+                      aria-hidden="true"
+                      className={cn(
+                        "mt-[7px] inline-block h-1.5 w-1.5 rounded-full motion-safe:transition-colors motion-safe:duration-500 lg:hidden",
+                        status === "running" || status === "waiting"
+                          ? "bg-v1-accent-salmon"
+                          : status === "done" || status === "memoized"
+                          ? "bg-[rgb(var(--color-v1-status-completed-text))]"
+                          : status === "failed"
+                          ? "bg-v1-accent-salmon"
+                          : "bg-v1-frost/20"
+                      )}
+                    />
+                    <span
+                      className={cn(
+                        "mt-[1px] hidden h-[18px] max-w-full items-center gap-1.5 truncate rounded-full px-2 text-[10px] uppercase leading-none tracking-[0.06em] motion-safe:transition-[opacity,transform,background-color,color] motion-safe:duration-300 lg:inline-flex",
+                        PILL_CLASS[status]
+                      )}
+                    >
+                      {(status === "running" || status === "waiting") && (
+                        <span className="h-1.5 w-1.5 rounded-full bg-current motion-safe:animate-pulse" />
+                      )}
+                      {pillText(st)}
+                    </span>
+                  </>
+                )}
+              </div>
+              <div
+                className={cn(
+                  "min-w-0 motion-safe:transition-opacity motion-safe:duration-500",
+                  g.step && !lit && steps.length > 0 ? "opacity-60" : ""
+                )}
+              >
+                {g.lines.map((line, li) => (
+                  <div key={li} className="whitespace-pre">
+                    {renderTokens(tokenizeCode(line.text))}
+                  </div>
+                ))}
+              </div>
+              {(status === "running" || status === "waiting") && (
+                <span
+                  aria-hidden="true"
+                  className="absolute inset-y-0 left-0 w-[2px] bg-v1-accent-salmon"
+                />
+              )}
+            </div>
+          );
+        })}
+      </pre>
+    </div>
+  );
+}
+
 export default function Hero() {
-  const [scenario, setScenario] = useState<ScenarioId>("create");
+  const [chapterId, setChapterId] = useState<ChapterId>("create");
   const [frameH, setFrameH] = useState(FRAME_MIN_H);
   const [loaded, setLoaded] = useState(false);
+  const [runState, setRunState] = useState<RunState>("idle");
+  const [steps, setSteps] = useState<StepReport[]>([]);
+  // The viewer picked a chapter: stop advancing on their behalf.
+  const [manual, setManual] = useState(false);
+  const [hovering, setHovering] = useState(false);
+  const [reduced, setReduced] = useState(false);
   const frameRef = useRef<HTMLIFrameElement>(null);
 
-  const current = useMemo(
-    () => SCENARIOS.find((s) => s.id === scenario) ?? SCENARIOS[0],
-    [scenario]
+  const chapter = useMemo(
+    () => CHAPTERS.find((c) => c.id === chapterId) ?? CHAPTERS[0],
+    [chapterId]
   );
-  const frameSrc = `${PLAYGROUND_BASE}/${current.id}?embed=hero`;
-  const fullHref = `/try-sandboxes/${current.id}?ref=sandboxes-hero`;
+  const frameSrc = `${PLAYGROUND_BASE}/${chapter.id}?embed=hero`;
+  const fullHref = `/try-sandboxes/${chapter.id}?ref=sandboxes-hero`;
 
   // Tell the fixed header there is a blue panel under it (see heroNav).
   useEffect(() => {
@@ -98,10 +261,11 @@ export default function Hero() {
     return () => clearHeroPanel(token);
   }, []);
 
-  // Size the frame to the playground's reported content height (clamped).
-  // Reports flagged unsettled arrive while a run is playing, when the
-  // trace adds a row every few hundred ms; those are skipped so the frame
-  // resizes once when the run finishes instead of jumping along with it.
+  useEffect(() => {
+    setReduced(window.matchMedia("(prefers-reduced-motion: reduce)").matches);
+  }, []);
+
+  // Messages from the playground: content height and run state.
   useEffect(() => {
     const onMessage = (e: MessageEvent) => {
       if (e.source !== frameRef.current?.contentWindow) return;
@@ -109,26 +273,34 @@ export default function Hero() {
         type?: string;
         height?: number;
         settled?: boolean;
+        state?: RunState;
+        steps?: StepReport[];
       } | null;
-      if (d?.type !== "try-sandboxes:height" || typeof d.height !== "number")
-        return;
-      if (d.settled === false) return;
-      // Only grow within one load: the idle plan state is shorter than
-      // the finished trace, and shrinking in between would jump too.
-      const next = Math.round(
-        Math.min(FRAME_MAX_H, Math.max(FRAME_MIN_H, d.height))
-      );
-      setFrameH((h) => Math.max(h, next));
+      if (d?.type === "try-sandboxes:height" && typeof d.height === "number") {
+        // Unsettled reports arrive while a run plays and the trace adds a
+        // row every few hundred ms; skip them, and only grow within one
+        // load, so the frame moves once when the run finishes.
+        if (d.settled === false) return;
+        const next = Math.round(
+          Math.min(FRAME_MAX_H, Math.max(FRAME_MIN_H, d.height))
+        );
+        setFrameH((h) => Math.max(h, next));
+      } else if (d?.type === "try-sandboxes:run" && d.state) {
+        setRunState(d.state);
+        setSteps(Array.isArray(d.steps) ? d.steps : []);
+      }
     };
     window.addEventListener("message", onMessage);
     return () => window.removeEventListener("message", onMessage);
   }, []);
 
-  const select = (id: ScenarioId) => {
-    if (id === scenario) return;
+  const select = (id: ChapterId) => {
+    if (id === chapterId) return;
     setLoaded(false);
     setFrameH(FRAME_MIN_H);
-    setScenario(id);
+    setRunState("idle");
+    setSteps([]);
+    setChapterId(id);
   };
 
   const replay = () => {
@@ -138,16 +310,34 @@ export default function Hero() {
     );
   };
 
+  // Play the chapters through: when a run finishes, dwell, then advance.
+  useEffect(() => {
+    if (runState !== "complete" || manual || hovering || reduced) return;
+    const t = window.setTimeout(() => {
+      const i = CHAPTERS.findIndex((c) => c.id === chapterId);
+      select(CHAPTERS[(i + 1) % CHAPTERS.length].id);
+    }, DWELL_MS);
+    return () => window.clearTimeout(t);
+    // `select` only reads state captured here.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [runState, manual, hovering, reduced, chapterId]);
+
+  const progress =
+    steps.length === 0
+      ? 0
+      : steps.filter((s) => s.status === "done" || s.status === "memoized")
+          .length / steps.length;
+
   return (
     <section
       aria-labelledby="sandboxes-hero-headline"
       className="relative w-full overflow-hidden bg-v1-canvasBase"
     >
-      {/* Brand-blue panel behind the headline; the demo card breaks out of
+      {/* Brand-blue panel behind the headline; the stage breaks out of
           its bottom edge. */}
       <div
         aria-hidden="true"
-        className="pointer-events-none absolute inset-x-0 top-0 h-[560px] overflow-hidden bg-v1-accent-blue lg:h-[600px]"
+        className="pointer-events-none absolute inset-x-0 top-0 h-[600px] overflow-hidden bg-v1-accent-blue lg:h-[640px]"
       >
         {/* eslint-disable-next-line @next/next/no-img-element */}
         <img
@@ -172,20 +362,21 @@ export default function Hero() {
             </motion.div>
             <h1
               id="sandboxes-hero-headline"
-              className="text-v1-display-xs uppercase text-v1-frost lg:leading-[1] lg:tracking-[-0.01em] lg:[font-size:clamp(2.5rem,4vw,4rem)]"
+              className="text-v1-display-xs uppercase text-v1-frost lg:leading-[0.98] lg:tracking-[-0.015em] lg:[font-size:clamp(3rem,5.4vw,5.25rem)]"
             >
               <motion.span className="block" {...entry(60)}>
-                A sandbox in your function.
+                A sandbox
               </motion.span>
               <motion.span className="block" {...entry(180)}>
-                Not another service.
+                is a step.
               </motion.span>
             </h1>
           </div>
           <motion.div {...entry(320)} className="flex flex-col gap-6 lg:pb-2">
             <p className="text-v1-body-lg max-w-[460px] !text-v1-frost">
-              Your sandbox is a durable step, as easy to set up as any other.
-              When it fails, or has to wait, you don&rsquo;t lose the run.
+              Create microVMs inside your Inngest functions. They retry, resume
+              after a crash, and show up in the trace like every other step.
+              Below: a real run, replayed.
             </p>
             <div className="flex flex-col gap-[23px] sm:flex-row sm:items-center">
               <ButtonLink href={SIGNUP_URL} prefetch={false} variant="primary">
@@ -202,100 +393,127 @@ export default function Hero() {
           </motion.div>
         </div>
 
-        {/* The demo card: title bar with the controls, then the playground. */}
+        {/* The stage: code | live trace, and the chapter rail. */}
         <motion.div
           {...entry(440)}
+          onPointerEnter={() => setHovering(true)}
+          onPointerLeave={() => setHovering(false)}
           className="mb-16 mt-10 overflow-hidden rounded-[10px] border border-v1-frost/[0.14] bg-v1-surfaceBase shadow-[0_40px_120px_-40px_rgb(0_0_0/0.9)] lg:mb-24 lg:mt-14"
         >
-          <div className="flex flex-wrap items-center gap-x-6 gap-y-3 border-b border-v1-subtle px-4 py-3 sm:px-5">
+          <div className="grid grid-cols-1 lg:grid-cols-[minmax(0,5fr)_minmax(0,7fr)]">
+            <div className="border-b border-v1-subtle lg:border-b-0 lg:border-r">
+              <CodePane key={chapter.id} chapter={chapter} steps={steps} />
+            </div>
+            <div className="relative" style={{ minHeight: frameH }}>
+              {/* Placeholder until the frame has painted. */}
+              <div
+                aria-hidden="true"
+                className={cn(
+                  "pointer-events-none absolute inset-0 z-10 flex items-center justify-center bg-v1-surfaceBase motion-safe:transition-opacity motion-safe:duration-500",
+                  loaded ? "opacity-0" : "opacity-100"
+                )}
+              >
+                <span className="text-v1-label-sm uppercase text-v1-frost/40">
+                  Loading the run…
+                </span>
+              </div>
+              <iframe
+                key={frameSrc}
+                ref={frameRef}
+                src={frameSrc}
+                title={`Sandboxes playground: ${chapter.title}`}
+                onLoad={() => setLoaded(true)}
+                className="absolute inset-0 block h-full w-full bg-transparent"
+                allow="clipboard-write"
+              />
+            </div>
+          </div>
+
+          {/* Chapter rail */}
+          <div className="flex items-stretch border-t border-v1-subtle">
             <div
               role="tablist"
-              aria-label="Playground scenarios"
-              className="inline-flex gap-1 rounded-md border border-v1-subtle bg-v1-canvasBase p-1"
+              aria-label="Chapters"
+              className="scrollbar-none flex min-w-0 flex-1 overflow-x-auto"
             >
-              {SCENARIOS.map((s) => {
-                const active = s.id === scenario;
+              {CHAPTERS.map((c, i) => {
+                const active = c.id === chapterId;
                 return (
                   <button
-                    key={s.id}
+                    key={c.id}
                     type="button"
                     role="tab"
                     aria-selected={active}
-                    onClick={() => select(s.id)}
+                    title={active ? "Replay this chapter" : undefined}
+                    onClick={() => {
+                      setManual(true);
+                      if (active) replay();
+                      else select(c.id);
+                    }}
                     className={cn(
-                      "text-v1-label-sm h-8 rounded-[4px] px-3 uppercase focus:outline-none focus-visible:ring-2 focus-visible:ring-v1-frost/60 motion-safe:transition-colors motion-safe:duration-200",
+                      "group/ch relative flex min-w-[8.5rem] flex-1 flex-col gap-1.5 px-4 pb-4 pt-3 text-left focus:outline-none focus-visible:bg-v1-frost/[0.06] motion-safe:transition-colors motion-safe:duration-200 sm:px-5 lg:min-w-0",
+                      i > 0 && "border-l border-v1-subtle",
                       active
-                        ? "bg-v1-frost text-v1-jetBlack"
-                        : "text-v1-frost/70 hover:bg-v1-frost/10 hover:text-v1-frost"
+                        ? "text-v1-frost"
+                        : "text-v1-muted hover:bg-v1-frost/[0.03] hover:text-v1-frost"
                     )}
                   >
-                    <span className="sm:hidden">{s.short}</span>
-                    <span className="hidden sm:inline">{s.label}</span>
+                    <span className="text-v1-label-sm flex items-center gap-2.5 uppercase">
+                      <span
+                        className={cn(
+                          "tabular-nums",
+                          active ? "text-v1-accent-salmon" : "text-v1-frost/40"
+                        )}
+                      >
+                        {i + 1}
+                      </span>
+                      <span className="sm:hidden">{c.short}</span>
+                      <span className="hidden sm:inline">{c.title}</span>
+                      {active && (
+                        <span
+                          aria-hidden="true"
+                          className="ml-auto hidden text-v1-frost/40 group-hover/ch:text-v1-frost lg:inline"
+                        >
+                          ↻
+                        </span>
+                      )}
+                    </span>
+                    <span className="text-v1-body-sm hidden !text-v1-subtle xl:block">
+                      {c.line}
+                    </span>
+                    {/* Progress: the share of this run's steps that have finished. */}
+                    <span
+                      aria-hidden="true"
+                      className="absolute inset-x-0 bottom-0 h-[2px] bg-v1-frost/[0.08]"
+                    >
+                      <span
+                        className={cn(
+                          "block h-full origin-left bg-v1-frost motion-safe:transition-transform motion-safe:duration-500 motion-safe:ease-v1-in",
+                          active ? "opacity-100" : "opacity-0"
+                        )}
+                        style={{
+                          transform: `scaleX(${
+                            runState === "complete" ? 1 : progress
+                          })`,
+                        }}
+                      />
+                    </span>
                   </button>
                 );
               })}
             </div>
-            <p
-              key={current.id}
-              className="text-v1-body-sm order-last min-w-0 basis-full !text-v1-subtle motion-safe:animate-v1-nav-pop xl:order-none xl:flex-1 xl:basis-0 xl:truncate"
+            <a
+              href={fullHref}
+              className="group/cta text-v1-label-sm hidden shrink-0 items-center gap-2 border-l border-v1-subtle px-5 uppercase text-v1-frost hover:bg-v1-frost/[0.03] motion-safe:transition-colors motion-safe:duration-200 md:flex"
             >
-              {current.caption}
-            </p>
-            <div className="text-v1-label-sm ml-auto flex items-center gap-5 uppercase text-v1-frost">
-              <button
-                type="button"
-                onClick={replay}
-                className="group/cta inline-flex items-center gap-2 hover:opacity-70 focus:outline-none focus-visible:underline motion-safe:transition-opacity motion-safe:duration-200"
+              Full playground
+              <span
+                aria-hidden="true"
+                className="inline-block group-hover/cta:translate-x-[6px] motion-safe:transition-transform motion-safe:duration-[400ms] motion-safe:ease-v1-in"
               >
-                <span
-                  aria-hidden="true"
-                  className="inline-block group-hover/cta:-rotate-90 motion-safe:transition-transform motion-safe:duration-300"
-                >
-                  ↻
-                </span>
-                Replay
-              </button>
-              <a
-                href={fullHref}
-                className="group/cta inline-flex items-center hover:opacity-70 motion-safe:transition-opacity motion-safe:duration-200"
-              >
-                <span className="hidden sm:inline">Full playground</span>
-                <span className="sm:hidden">Playground</span>
-                <span
-                  aria-hidden="true"
-                  className="ml-2 inline-block group-hover/cta:translate-x-[6px] motion-safe:transition-transform motion-safe:duration-[400ms] motion-safe:ease-v1-in"
-                >
-                  →
-                </span>
-              </a>
-            </div>
-          </div>
-
-          <div
-            className="relative motion-safe:transition-[height] motion-safe:duration-300 motion-safe:ease-v1-in"
-            style={{ height: frameH }}
-          >
-            {/* Placeholder until the frame has painted. */}
-            <div
-              aria-hidden="true"
-              className={cn(
-                "pointer-events-none absolute inset-0 z-10 flex items-center justify-center bg-v1-surfaceBase motion-safe:transition-opacity motion-safe:duration-500",
-                loaded ? "opacity-0" : "opacity-100"
-              )}
-            >
-              <span className="text-v1-label-sm uppercase text-v1-frost/40">
-                Loading the run…
+                →
               </span>
-            </div>
-            <iframe
-              key={frameSrc}
-              ref={frameRef}
-              src={frameSrc}
-              title={`Sandboxes playground: ${current.label}`}
-              onLoad={() => setLoaded(true)}
-              className="block h-full w-full bg-transparent"
-              allow="clipboard-write"
-            />
+            </a>
           </div>
         </motion.div>
       </div>
