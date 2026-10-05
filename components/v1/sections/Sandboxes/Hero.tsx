@@ -343,7 +343,7 @@ export default function Hero() {
   return (
     <section
       aria-labelledby="sandboxes-hero-headline"
-      className="relative w-full overflow-hidden bg-v1-canvasBase"
+      className="relative w-full overflow-hidden"
     >
       {/* Ivory panel behind the hero; the stage breaks out of its bottom
           edge onto the dark canvas. */}
