@@ -38,6 +38,14 @@ import { CHAPTERS, type Chapter, type ChapterId } from "./heroChapters";
 const SIGNUP_URL = "/sign-up?ref=sandboxes";
 const DOCS_URL = "/docs/sandboxes?ref=sandboxes";
 
+// The ivory hero band, as on /compare-to-temporal: ivory with a fine
+// fractal-noise grain, ink headline, warm dark gray copy.
+const IVORY = "#F3F1EA";
+const INK = "#1A1A1A";
+const SUBINK = "#2E2C28";
+const NOISE_BG =
+  "url(\"data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='220' height='220'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='2' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E\")";
+
 // In production /try-sandboxes is rewritten to the playground deployment,
 // so the frame is same-origin. Local dev has no rewrite configured, so it
 // falls back to the live site (cross-origin: the demo still plays, but
@@ -254,10 +262,10 @@ export default function Hero() {
   const frameSrc = `${PLAYGROUND_BASE}/${chapter.id}?embed=hero`;
   const fullHref = `/try-sandboxes/${chapter.id}?ref=sandboxes-hero`;
 
-  // Tell the fixed header there is a blue panel under it (see heroNav).
+  // Tell the fixed header there is an ivory panel under it (see heroNav).
   useEffect(() => {
     const token = {};
-    setHeroPanel("blue", token);
+    setHeroPanel("ivory", token);
     return () => clearHeroPanel(token);
   }, []);
 
@@ -337,17 +345,16 @@ export default function Hero() {
       aria-labelledby="sandboxes-hero-headline"
       className="relative w-full overflow-hidden bg-v1-canvasBase"
     >
-      {/* Brand-blue panel behind the hero; the stage breaks out of its
-          bottom edge. */}
+      {/* Ivory panel behind the hero; the stage breaks out of its bottom
+          edge onto the dark canvas. */}
       <div
         aria-hidden="true"
-        className="pointer-events-none absolute inset-x-0 bottom-[200px] top-0 overflow-hidden bg-v1-accent-blue lg:bottom-[260px]"
+        className="pointer-events-none absolute inset-x-0 bottom-[200px] top-0 overflow-hidden lg:bottom-[260px]"
+        style={{ backgroundColor: IVORY }}
       >
-        {/* eslint-disable-next-line @next/next/no-img-element */}
-        <img
-          src="/assets/v1/ai-hero/grain.webp"
-          alt=""
-          className="pointer-events-none absolute inset-0 hidden h-full w-full object-cover mix-blend-soft-light lg:block"
+        <span
+          className="pointer-events-none absolute inset-0 mix-blend-soft-light"
+          style={{ backgroundImage: NOISE_BG, opacity: 0.45 }}
         />
       </div>
 
@@ -357,16 +364,18 @@ export default function Hero() {
           <div className="flex flex-col items-center gap-6">
             <motion.div
               {...entry(0)}
-              className="text-v1-label-md flex flex-wrap items-center justify-center gap-x-3 gap-y-2 uppercase text-v1-frost"
+              className="text-v1-label-md flex flex-wrap items-center justify-center gap-x-3 gap-y-2 uppercase"
+              style={{ color: SUBINK }}
             >
               <span>Sandboxes</span>
-              <StatusTag size="md" tone="frost">
+              <StatusTag size="md" tone="accent">
                 Open beta
               </StatusTag>
             </motion.div>
             <h1
               id="sandboxes-hero-headline"
-              className="text-v1-display-xs uppercase text-v1-frost lg:leading-[0.98] lg:tracking-[-0.015em] lg:[font-size:clamp(3rem,5.4vw,5.25rem)]"
+              className="text-v1-display-xs uppercase lg:leading-[0.98] lg:tracking-[-0.015em] lg:[font-size:clamp(3rem,5.4vw,5.25rem)]"
+              style={{ color: INK }}
             >
               <motion.span className="block" {...entry(60)}>
                 A sandbox is a step.
@@ -377,19 +386,27 @@ export default function Hero() {
             {...entry(320)}
             className="flex flex-col items-center gap-6"
           >
-            <p className="text-v1-body-lg max-w-[760px] !text-v1-frost">
+            <p
+              className="text-v1-body-lg max-w-[760px]"
+              style={{ color: SUBINK }}
+            >
               Create microVMs inside your Inngest functions. They retry, resume
               after a crash, and show up in the trace like every other step.
               Watch one run:
             </p>
             <div className="flex flex-col gap-[23px] sm:flex-row sm:items-center sm:justify-center">
-              <ButtonLink href={SIGNUP_URL} prefetch={false} variant="primary">
+              <ButtonLink
+                href={SIGNUP_URL}
+                prefetch={false}
+                variant="accent"
+                className="!w-full sm:!w-auto"
+              >
                 Build for free
               </ButtonLink>
               <ButtonLink
                 href={DOCS_URL}
-                variant="primary"
-                className="!border-v1-jetBlack !bg-v1-jetBlack !text-v1-frost !shadow-none hover:!border-v1-accent-salmon hover:!bg-v1-accent-salmon"
+                variant="secondaryLight"
+                className="!w-full sm:!w-auto"
               >
                 Read the docs
               </ButtonLink>
@@ -402,7 +419,7 @@ export default function Hero() {
           {...entry(440)}
           onPointerEnter={() => setHovering(true)}
           onPointerLeave={() => setHovering(false)}
-          className="mt-12 flex min-w-0 flex-col overflow-hidden rounded-[10px] border border-v1-frost/[0.14] bg-v1-surfaceBase shadow-[0_40px_120px_-40px_rgb(0_0_0/0.9)] lg:mt-16"
+          className="mt-12 flex min-w-0 flex-col overflow-hidden rounded-[10px] border border-v1-frost/[0.14] bg-v1-surfaceBase shadow-[0_40px_120px_-40px_rgb(0_0_0/0.6)] lg:mt-16"
         >
           <div className="flex items-stretch border-b border-v1-subtle">
             <div
