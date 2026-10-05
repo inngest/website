@@ -35,7 +35,7 @@ import { CHAPTERS, type Chapter, type ChapterId } from "./heroChapters";
  * stage. Clicking the active chapter replays it.
  */
 
-const SIGNUP_URL = "/sign-up?ref=sandboxes";
+const PRICING_URL = "/pricing?ref=sandboxes";
 const DOCS_URL = "/docs/sandboxes?ref=sandboxes";
 
 // The ivory hero band, as on /compare-to-temporal: ivory with a fine
@@ -396,12 +396,11 @@ export default function Hero() {
             </p>
             <div className="flex flex-col gap-[23px] sm:flex-row sm:items-center sm:justify-center">
               <ButtonLink
-                href={SIGNUP_URL}
-                prefetch={false}
+                href={PRICING_URL}
                 variant="accent"
                 className="!w-full sm:!w-auto"
               >
-                Build for free
+                Learn more
               </ButtonLink>
               <ButtonLink
                 href={DOCS_URL}
