@@ -293,6 +293,14 @@ const nextConfig = {
   },
   redirects,
   rewrites,
+  async headers() {
+    return [
+      {
+        source: "/.well-known/openai-apps-challenge",
+        headers: [{ key: "Content-Type", value: "text/plain; charset=utf-8" }],
+      },
+    ];
+  },
   reactStrictMode: true,
   pageExtensions: ["js", "jsx", "ts", "tsx", "mdx"],
   // next-mdx-remote ships a pre-bundled CJS build that, in the App Router
