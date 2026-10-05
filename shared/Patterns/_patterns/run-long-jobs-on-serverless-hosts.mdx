@@ -1,0 +1,113 @@
+---
+title: Run long jobs on serverless hosts
+subtitle: Keep agents and multi-step jobs running past your host's request limit, without moving off serverless.
+pattern: durable
+tags: [Durability, Serverless, AI]
+---
+
+Serverless hosts put a ceiling on how long a single request can run. That's fine for request handlers, but plenty of real work doesn't fit: an AI agent making a chain of model and tool calls, a data import that walks thousands of records, a workflow that waits on a person to approve something. Raising the timeout only moves the failure point. When a job crosses it, everything the job had done so far is lost, and a retry starts from the top.
+
+The fix is to stop treating the job as one request. Break it into pieces that each fit under the ceiling, save the result of every piece, and resume from the last saved piece when a request ends, whether that's a timeout, a crash, or a deploy.
+
+## What this requires
+
+Running a job longer than your host allows means building a few things around it:
+
+- **A way to split the job** into units of work that each finish well under the host's limit.
+- **Saved progress**, so a timeout, crash, or deploy resumes the job instead of restarting it.
+- **A handoff before the ceiling**, so the job yields cleanly instead of getting killed mid-write.
+- **A way to wait** on time, people, or outside events without holding a request open.
+- **An escape hatch** for the rare unit of work that can't fit under the limit at all.
+
+Built by hand, that's a state table, a queue that re-triggers the next chunk, retry logic per chunk, a sweeper for jobs that went quiet, and your own tracing to see where any given run is.
+
+## With Inngest
+
+Each `step.run` in an Inngest function is a unit of work whose result is saved as a checkpoint the moment it finishes. In the TypeScript SDK, consecutive steps run back to back in the same request. Tell the SDK how long that request is allowed to last, and it hands the run off before your host cuts it off:
+
+```typescript
+import { Inngest } from "inngest";
+
+export const inngest = new Inngest({
+  id: "my-app",
+  checkpointing: {
+    // Set slightly below your host's request limit.
+    // Example only: use your host's actual ceiling.
+    maxRuntime: "110s",
+  },
+});
+```
+
+When a request reaches `maxRuntime`, the SDK returns, and the next request picks up at the next step with every finished step's result already saved. The Python SDK doesn't support checkpointing yet, so there each step runs in its own request. Either way, the run as a whole can last far longer than any single request.
+
+Here's an agent example for a serverless host. Model calls are steps, slow HTTP calls go through `step.fetch`, and the review pause uses `step.waitForEvent`, so no request stays open while the agent waits:
+
+```typescript
+import { generateText } from "ai";
+import { inngest } from "./client";
+
+export const researchAgent = inngest.createFunction(
+  { id: "research-agent", retries: 3, triggers: [{ event: "agent/research.requested" }] },
+  async ({ event, step }) => {
+    // Each model call is its own step: saved when it finishes, retried alone if it fails.
+    const plan = await step.run("plan", async () => {
+      const { text } = await generateText({
+        model: plannerModel,
+        prompt: event.data.question,
+        maxRetries: 0, // Let Inngest own retries
+      });
+      return parsePlan(text);
+    });
+
+    const sources = [];
+    for (const source of plan.sources) {
+      // step.fetch hands the request to Inngest, so a slow API
+      // doesn't hold your serverless request open.
+      const res = await step.fetch(source.url);
+      sources.push(await res.json());
+    }
+
+    if (plan.needsReview) {
+      // The run stops executing here. Nothing is running while it waits.
+      const review = await step.waitForEvent("wait-for-review", {
+        event: "agent/research.reviewed",
+        timeout: "3d",
+        if: "async.data.requestId == event.data.requestId",
+      });
+      if (!review) return { status: "expired" };
+    }
+
+    return step.run("write-report", async () => {
+      const { text } = await generateText({
+        model: writerModel,
+        prompt: buildReportPrompt(event.data.question, sources),
+        maxRetries: 0,
+      });
+      return text;
+    });
+  }
+);
+```
+
+If one source fails, only that fetch retries. If a deploy lands while the agent waits for review, the run resumes on the new code with the plan and sources already saved.
+
+Two things to watch:
+
+- **Turn off retries inside AI SDKs.** If the AI SDK retries on its own while Inngest also retries the step, the combined retry time can run past your host's limit, and the timeout shows up as a confusing internal server error. Set `maxRetries: 0` and let the step retry.
+- **Every step still has to fit under the host's limit.** Checkpointing hands off *between* steps, not in the middle of one. If a single unit of work can't finish in time, split it into smaller steps, or run that function on a long-lived worker with [Connect](/docs/durable-execution/deploying-functions/connect?ref=patterns), where step execution isn't bound by HTTP timeouts. Connect needs a long-running server, so it isn't a serverless option.
+
+Limits to plan around: each step is bounded by your host's timeout, up to 2 hours on Inngest. A function can have up to 1,000 steps and 32 MiB of run state. `step.sleep` can pause a run for up to a year, within your plan's [maximum function run length](/docs/durable-execution/limits?ref=patterns) (30 days on the Free plan).
+
+## Alternative approaches
+
+- **Raise the host's max duration.** Quick, and sometimes enough. It moves the ceiling without removing it, and a job that crosses the new limit still loses everything.
+- **Move the job to a container or long-running worker.** No request ceiling, but you now run the queue, the worker fleet, and the state handling, and every deploy can interrupt jobs in flight.
+- **Chain invocations yourself.** Save state to a database at the end of each chunk and enqueue the next one. It works, and you've rebuilt checkpointing, per-chunk retries, and run tracing by hand.
+
+## Additional Resources
+
+* [Docs: Checkpointing](/docs/durable-execution/guides-and-advanced/checkpointing?ref=patterns)
+* [Docs: Durable Workflows](/docs/durable-execution/durable-workflows?ref=patterns)
+* [Docs: step.fetch](/docs/reference/typescript/v4/functions/fetch?ref=patterns)
+* [Docs: Performance](/docs/durable-execution/best-practices/performance?ref=patterns)
+* [Patterns: Keeping your API fast](/docs/patterns/jobs/keeping-your-api-fast?ref=patterns)
