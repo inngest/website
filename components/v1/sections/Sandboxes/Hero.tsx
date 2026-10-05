@@ -162,14 +162,12 @@ function CodePane({
 
   return (
     <div className="flex h-full min-w-0 flex-col">
-      <div className="text-v1-label-sm flex h-11 shrink-0 items-center gap-2 border-b border-v1-subtle px-4 uppercase text-v1-muted sm:px-5">
-        <span
-          aria-hidden="true"
-          className="h-1.5 w-1.5 rounded-full bg-v1-frost/40"
-        />
+      {/* File label: lowercase and quiet, so it reads as a filename and
+          not as a third row of tabs under the chapter bar. */}
+      <div className="flex h-10 shrink-0 items-center px-4 font-v1Mono text-[11px] lowercase tracking-normal text-v1-frost/45 sm:px-5">
         {chapter.file}
       </div>
-      <pre className="scrollbar-none relative min-w-0 flex-1 overflow-x-auto py-3 font-v1Mono text-[12px] leading-[20px] text-v1-frost/90">
+      <pre className="scrollbar-none relative min-w-0 flex-1 overflow-x-auto pb-4 pt-1 font-v1Mono text-[12px] leading-[20px] text-v1-frost/90">
         {groups.map((g, gi) => {
           const st = g.step ? stepStatus(g.step, steps) : null;
           const status = st?.status ?? "pending";
