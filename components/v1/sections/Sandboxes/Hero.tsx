@@ -36,7 +36,7 @@ import {
  * stage. Clicking the active chapter replays it.
  */
 
-const PRICING_URL = "/pricing?ref=sandboxes";
+const SIGNUP_URL = "/sign-up?ref=sandboxes";
 const DOCS_URL = "/docs/sandboxes?ref=sandboxes";
 
 // The ivory hero band, as on /compare-to-temporal: ivory with a fine
@@ -277,7 +277,7 @@ export default function Hero() {
     [chapterId]
   );
   const frameSrc = `${PLAYGROUND_BASE}/${chapter.id}?embed=hero`;
-  const fullHref = `/try-sandboxes/${chapter.id}?ref=sandboxes-hero`;
+  const fullHref = "/try-sandboxes?ref=sandboxes-hero";
 
   // Tell the fixed header there is an ivory panel under it (see heroNav).
   useEffect(() => {
@@ -414,11 +414,11 @@ export default function Hero() {
             </p>
             <div className="flex flex-col gap-[23px] sm:flex-row sm:items-center sm:justify-center">
               <ButtonLink
-                href={PRICING_URL}
+                href={SIGNUP_URL}
                 variant="accent"
                 className="!w-full sm:!w-auto"
               >
-                Learn more
+                Get started
               </ButtonLink>
               <ButtonLink
                 href={DOCS_URL}
