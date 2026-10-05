@@ -83,12 +83,6 @@ const entry = (delayMs: number) => ({
   transition: { ...tweens.entry, delay: delayMs / 1000 },
 });
 
-function formatMs(ms: number) {
-  if (ms < 1000) return `${Math.round(ms)} ms`;
-  if (ms < 60_000) return `${(ms / 1000).toFixed(ms < 10_000 ? 1 : 0)} s`;
-  return `${Math.floor(ms / 60_000)}m ${Math.round((ms % 60_000) / 1000)}s`;
-}
-
 /**
  * Status of a code line's step. CI lines name a job and match every step
  * under it (`lint › node lint.mjs`), so statuses are folded: anything
@@ -112,32 +106,17 @@ function stepStatus(key: string, steps: StepReport[]) {
   return { status: "pending" as const };
 }
 
-function pillText(s: { status: StepStatus; durationMs?: number }) {
-  switch (s.status) {
-    case "running":
-    case "waiting":
-      return "Running";
-    case "done":
-      return s.durationMs !== undefined ? formatMs(s.durationMs) : "Done";
-    case "memoized":
-      return "Replayed";
-    case "failed":
-      return "Retrying";
-    default:
-      return "";
-  }
-}
-
-const PILL_CLASS: Record<StepStatus, string> = {
-  pending: "opacity-0 -translate-x-1",
-  running:
-    "text-v1-accent-salmon-light bg-v1-accent-salmon/[0.16] [box-shadow:inset_0_0_0_1px_rgb(var(--color-v1-salmon-200)/0.45)]",
-  waiting:
-    "text-v1-accent-salmon-light bg-v1-accent-salmon/[0.16] [box-shadow:inset_0_0_0_1px_rgb(var(--color-v1-salmon-200)/0.45)]",
-  done: "text-[rgb(var(--color-v1-status-completed-text))] bg-[rgb(var(--color-v1-status-completed-text)/0.14)] [box-shadow:inset_0_0_0_1px_rgb(var(--color-v1-status-completed-text)/0.4)]",
-  memoized:
-    "text-v1-frost bg-v1-frost/[0.12] [box-shadow:inset_0_0_0_1px_rgb(var(--color-v1-frost)/0.35)]",
-  failed: "text-white bg-v1-accent-salmon",
+// Only the states the trace cannot put into words get a label: the
+// crash ("Retrying") and the retry skipping saved steps ("Replayed").
+const EXCEPTION_PILL: Partial<
+  Record<StepStatus, { text: string; className: string }>
+> = {
+  failed: { text: "Retrying", className: "bg-v1-accent-salmon text-white" },
+  memoized: {
+    text: "Replayed",
+    className:
+      "bg-v1-frost/[0.12] text-v1-frost [box-shadow:inset_0_0_0_1px_rgb(var(--color-v1-frost)/0.35)]",
+  },
 };
 
 /** The function, in full, with each step's lines lit by the playground's report. */
@@ -176,7 +155,7 @@ function CodePane({
             <div
               key={gi}
               className={cn(
-                "relative grid grid-cols-[28px_minmax(0,1fr)] pr-4 motion-safe:transition-colors motion-safe:duration-500 lg:grid-cols-[108px_minmax(0,1fr)]",
+                "relative grid grid-cols-[36px_minmax(0,1fr)] pr-4 motion-safe:transition-colors motion-safe:duration-500",
                 status === "running" || status === "waiting"
                   ? "bg-v1-frost/[0.05]"
                   : status === "failed"
@@ -184,37 +163,36 @@ function CodePane({
                   : ""
               )}
             >
-              {/* Gutter: the step's status, aligned with its first line. */}
-              <div className="relative flex items-start justify-end pr-3 lg:pr-4">
+              {/* Gutter: a dot per step, aligned with its first line. The
+                  trace next door carries status and duration in full. */}
+              <div className="flex items-start justify-center">
                 {st && (
-                  <>
-                    <span
-                      aria-hidden="true"
-                      className={cn(
-                        "mt-[7px] inline-block h-1.5 w-1.5 rounded-full motion-safe:transition-colors motion-safe:duration-500 lg:hidden",
-                        status === "running" || status === "waiting"
-                          ? "bg-v1-accent-salmon"
-                          : status === "done" || status === "memoized"
-                          ? "bg-[rgb(var(--color-v1-status-completed-text))]"
-                          : status === "failed"
-                          ? "bg-v1-accent-salmon"
-                          : "bg-v1-frost/20"
-                      )}
-                    />
-                    <span
-                      className={cn(
-                        "mt-[1px] hidden h-[18px] max-w-full items-center gap-1.5 truncate rounded-full px-2 text-[10px] uppercase leading-none tracking-[0.06em] motion-safe:transition-[opacity,transform,background-color,color] motion-safe:duration-300 lg:inline-flex",
-                        PILL_CLASS[status]
-                      )}
-                    >
-                      {(status === "running" || status === "waiting") && (
-                        <span className="h-1.5 w-1.5 rounded-full bg-current motion-safe:animate-pulse" />
-                      )}
-                      {pillText(st)}
-                    </span>
-                  </>
+                  <span
+                    aria-hidden="true"
+                    className={cn(
+                      "mt-[7px] inline-block h-1.5 w-1.5 rounded-full motion-safe:transition-colors motion-safe:duration-500",
+                      status === "running" || status === "waiting"
+                        ? "bg-v1-accent-salmon motion-safe:animate-pulse"
+                        : status === "done" || status === "memoized"
+                        ? "bg-[rgb(var(--color-v1-status-completed-text))]"
+                        : status === "failed"
+                        ? "bg-v1-accent-salmon"
+                        : "bg-v1-frost/20"
+                    )}
+                  />
                 )}
               </div>
+              {/* Exceptional state, at the end of the step's first line. */}
+              {st && EXCEPTION_PILL[status] && (
+                <span
+                  className={cn(
+                    "absolute right-3 top-[1px] inline-flex h-[18px] items-center rounded-full px-2 text-[10px] uppercase leading-none tracking-[0.06em] motion-safe:animate-v1-nav-pop",
+                    EXCEPTION_PILL[status].className
+                  )}
+                >
+                  {EXCEPTION_PILL[status].text}
+                </span>
+              )}
               <div
                 className={cn(
                   "min-w-0 motion-safe:transition-opacity motion-safe:duration-500",
