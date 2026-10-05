@@ -99,15 +99,26 @@ export default function Hero() {
   }, []);
 
   // Size the frame to the playground's reported content height (clamped).
+  // Reports flagged unsettled arrive while a run is playing, when the
+  // trace adds a row every few hundred ms; those are skipped so the frame
+  // resizes once when the run finishes instead of jumping along with it.
   useEffect(() => {
     const onMessage = (e: MessageEvent) => {
       if (e.source !== frameRef.current?.contentWindow) return;
-      const d = e.data as { type?: string; height?: number } | null;
+      const d = e.data as {
+        type?: string;
+        height?: number;
+        settled?: boolean;
+      } | null;
       if (d?.type !== "try-sandboxes:height" || typeof d.height !== "number")
         return;
-      setFrameH(
-        Math.round(Math.min(FRAME_MAX_H, Math.max(FRAME_MIN_H, d.height)))
+      if (d.settled === false) return;
+      // Only grow within one load: the idle plan state is shorter than
+      // the finished trace, and shrinking in between would jump too.
+      const next = Math.round(
+        Math.min(FRAME_MAX_H, Math.max(FRAME_MIN_H, d.height))
       );
+      setFrameH((h) => Math.max(h, next));
     };
     window.addEventListener("message", onMessage);
     return () => window.removeEventListener("message", onMessage);
@@ -116,6 +127,7 @@ export default function Hero() {
   const select = (id: ScenarioId) => {
     if (id === scenario) return;
     setLoaded(false);
+    setFrameH(FRAME_MIN_H);
     setScenario(id);
   };
 
