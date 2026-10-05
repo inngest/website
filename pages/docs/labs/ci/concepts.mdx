@@ -1,0 +1,107 @@
+import { Info } from "shared/Docs/mdx";
+
+export const metaTitle = "Concepts | Inngest CI";
+export const description = "Inngest CI concepts: pipelines, triggers, jobs, commands, machines, reusing work with from(), caching, and checks, each with a short code example.";
+
+# Inngest CI concepts
+
+> Learn the parts of a pipeline: what starts it, what it calls, where commands run, and how results are reported.
+
+<Info>
+  Inngest CI is an Inngest Labs project: early, moving fast, and shaped by your feedback. [What's Labs?](/docs/labs)
+</Info>
+
+Every Inngest CI run follows the same pattern: trigger → pipeline → jobs → commands → checks. Each section below defines one part with the smallest code that shows it. The [quick start](/docs/labs/ci/quick-start) puts them together in a working pipeline.
+
+## Pipeline
+
+A **pipeline** runs when something happens and calls jobs. It is one Inngest function, so every [flow control](/docs/durable-execution/flow-control) option works on it. See [Pipelines and triggers](/docs/labs/ci/pipelines).
+
+```typescript {{ title: "TypeScript" }}
+export const pr = ci.pipeline(
+  {
+    id: "pr",
+    on: github.pullRequest(),
+  },
+  async () => {
+    await test();
+  },
+);
+```
+
+## Trigger
+
+A **trigger** starts a pipeline and types its `event`. Triggers include GitHub pull requests and pushes, comments, the merge queue, cron, and manual events. See [Triggers](/docs/labs/ci/pipelines#triggers).
+
+```typescript {{ title: "TypeScript" }}
+on: [github.pullRequest(), github.push({ branches: ["main"] })]
+```
+
+## Job
+
+A **job** is a unit of work with its own machine and its own check. You call it like a function, and it returns its handler's value. See [Jobs](/docs/labs/ci/jobs).
+
+```typescript {{ title: "TypeScript" }}
+const test = ci.job("test", async () => {
+  await checkout();
+  await $`pnpm test`;
+});
+```
+
+## Command
+
+A **command** is a shell command that runs on the job's machine with `$`. Each command is a step, so a retry skips commands that already finished. See [Commands](/docs/labs/ci/commands).
+
+```typescript {{ title: "TypeScript" }}
+await $`pnpm test`.retries(1);
+```
+
+## Machine
+
+A **machine** is a [Sandbox](/docs/sandboxes/overview): an ephemeral Linux microVM. A job gets one when it runs its first command. Only commands run on the machine. The rest of your handler runs in your app. See [Machines](/docs/labs/ci/machines).
+
+```typescript {{ title: "TypeScript" }}
+const build = ci.job({ id: "build", machine: { vcpu: 4 } }, async () => {
+  await checkout();
+  await $`pnpm build`;
+});
+```
+
+## Starting from another job
+
+`from(job)` starts the current job on a copy of another job's machine. The parent runs once, however many jobs start from it. See [Start a job from another job](/docs/labs/ci/machines#start-a-job-from-another-job).
+
+```typescript {{ title: "TypeScript" }}
+const lint = ci.job("lint", async () => {
+  await from(base);
+  await $`pnpm lint`;
+});
+```
+
+## Cache
+
+A job's **cache** skips the job when nothing it depends on has changed. Inngest restores the saved machine instead of running the job again. See [Caching](/docs/labs/ci/caching).
+
+```typescript {{ title: "TypeScript" }}
+const base = ci.job(
+  { id: "base", cache: { key: files("pnpm-lock.yaml") } },
+  async () => {
+    await checkout();
+    await $`pnpm install`;
+  },
+);
+```
+
+## Check
+
+A **check** reports a pipeline or a job on GitHub. Each pipeline gets one check, and each job gets one. You can add a summary or annotations from code. See [Checks and reports](/docs/labs/ci/checks-and-reports).
+
+```typescript {{ title: "TypeScript" }}
+await report.summary("Coverage: **91%**");
+```
+
+## Next steps
+
+- [Pipelines and triggers](/docs/labs/ci/pipelines) covers pipeline options, triggers, and skipping a run.
+- [Reference](/docs/labs/ci/reference) lists every option and command method.
+- [Durable Execution concepts](/docs/durable-execution/concepts) explain the runs, steps, and retries that pipelines build on.

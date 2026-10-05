@@ -1,0 +1,96 @@
+import { Info, Warning } from "shared/Docs/mdx";
+
+export const metaTitle = "Machines and from() | Inngest CI";
+export const description = "Inngest CI machines are Sandboxes that run a job's commands. Use from() to start a job on a copy of another job's machine and reuse work such as installed dependencies.";
+
+# Machines and `from()`
+
+> Run each job on its own Sandbox, and start a job from another job's machine to reuse its work.
+
+<Info>
+  Inngest CI is an Inngest Labs project: early, moving fast, and shaped by your feedback. [What's Labs?](/docs/labs)
+</Info>
+
+A machine is a [Sandbox](/docs/sandboxes/overview): an ephemeral Linux microVM. Each job gets one on its first command, and only [commands](/docs/labs/ci/commands) run on it. The rest of your handler runs in your app.
+
+| `vcpu` | Memory |
+| --- | --- |
+| 1 | 1 GiB |
+| 2 (default) | 2 GiB |
+| 4 | 4 GiB |
+
+Set `machine` on a job, on its pipeline, or on `createCi` for every job. The first one set wins in that order.
+
+- Commands run in `/work` by default, which is where `checkout()` puts the repository.
+- `checkout()` clones the commit that triggered the run with a short-lived token that never appears in the trace. Locally it uploads your working tree.
+- Inngest pauses a machine when its job finishes and destroys every machine when the pipeline ends.
+
+## Start a job from another job
+
+`from(job)` starts the current job on a copy of another job's machine, like a Docker layer. Use it when several jobs need the same setup, such as installed dependencies, so the setup runs once.
+
+```typescript {{ title: "TypeScript" }}
+const base = ci.job("base", async () => {
+  await checkout();
+  await $`pnpm install`;
+});
+
+const build = ci.job("build", async () => {
+  await from(base);
+  await $`pnpm build`;
+});
+
+const test = ci.job("test", async () => {
+  await from(build);
+  await $`pnpm test`;
+});
+```
+
+The parent runs once, however many jobs start from it, and each child gets its own isolated copy. Each job builds on the snapshot of the one before it.
+
+### What happens under the hood
+
+When a job finishes, Inngest pauses its machine. When another job calls `from()`, Inngest snapshots the parent's machine and starts the child from a clone of that snapshot, so installed files and built output are already there. The snapshot and clone come from [Sandbox snapshots and restore](/docs/sandboxes/features/snapshots-and-restore).
+
+If a snapshot is not available, the job runs the parent's commands again on its own machine. The result is the same, but every child repeats the parent's work.
+
+- `from()` returns the parent's result. Pass the parent's input as the second argument when it takes one.
+- Call `from()` before the job's first command, and once per job.
+- `await base()` runs `base` on its own machine. `await from(base)` runs it and then starts this job from where it finished.
+- Choose the parent at runtime with `await from((await changed("docs/**")) ? docsBase : base)`.
+
+When a parent has a [cache key](/docs/labs/ci/caching), an unchanged key skips the parent and restores its saved machine instead.
+
+## Use a second machine
+
+`sandbox(name)` creates another machine for the job. It is destroyed with the pipeline and appears under the job in the trace.
+
+```typescript {{ title: "TypeScript" }}
+const e2e = ci.job("e2e", async () => {
+  await checkout();
+
+  const probe = await sandbox("probe", { vcpu: 1 });
+  await probe.$`pnpm dlx serve -l 3000`.background();
+  await probe.waitForPort(3000);
+
+  await $`pnpm exec playwright test`;
+});
+```
+
+Plain `$` still runs on the job's own machine, and an extra machine starts empty.
+
+<Warning>
+  Machines cannot reach each other yet. Run servers your tests call on the job's own machine and use `127.0.0.1`.
+</Warning>
+
+| If the work... | Use |
+| --- | --- |
+| Is independent | Separate jobs |
+| Builds on earlier work | Separate jobs with `from()` |
+| Needs a second machine alive at the same time | One job with `sandbox()` |
+
+## Next steps
+
+- [Caching](/docs/labs/ci/caching) skips a job when its inputs have not changed.
+- [Jobs](/docs/labs/ci/jobs) covers how jobs are called and combined.
+- [Reference](/docs/labs/ci/reference#machines) lists `checkout()` options and machine sizes.

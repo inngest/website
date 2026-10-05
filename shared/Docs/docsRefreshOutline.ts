@@ -777,6 +777,36 @@ export const docsRefreshOutline: DocsRefreshPage[] = [
             href: "/docs/labs/ci/quick-start",
           },
           {
+            title: "Concepts",
+            href: "/docs/labs/ci/concepts",
+            children: [
+              {
+                title: "Pipelines and triggers",
+                href: "/docs/labs/ci/pipelines",
+              },
+              {
+                title: "Jobs",
+                href: "/docs/labs/ci/jobs",
+              },
+              {
+                title: "Commands",
+                href: "/docs/labs/ci/commands",
+              },
+              {
+                title: "Machines and from()",
+                href: "/docs/labs/ci/machines",
+              },
+              {
+                title: "Caching",
+                href: "/docs/labs/ci/caching",
+              },
+              {
+                title: "Checks and reports",
+                href: "/docs/labs/ci/checks-and-reports",
+              },
+            ],
+          },
+          {
             title: "Reference",
             href: "/docs/labs/ci/reference",
           },

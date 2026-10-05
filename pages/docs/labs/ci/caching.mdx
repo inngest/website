@@ -1,0 +1,73 @@
+import { Info, Warning } from "shared/Docs/mdx";
+
+export const metaTitle = "Caching | Inngest CI";
+export const description = "Cache an Inngest CI job by its inputs so unchanged work is skipped and its machine is restored, with refresh schedules, scopes, and cache stores.";
+
+# Caching
+
+> Skip a job when nothing it depends on has changed, and restore its machine instead.
+
+<Info>
+  Inngest CI is an Inngest Labs project: early, moving fast, and shaped by your feedback. [What's Labs?](/docs/labs)
+</Info>
+
+A job's `cache` reuses its last result when its key is unchanged. A job that started a machine is restored from its snapshot, so `from(base)` clones the saved machine without running `base` again.
+
+```typescript {{ title: "TypeScript" }}
+const base = ci.job(
+  {
+    id: "base",
+    cache: {
+      key: files("pnpm-lock.yaml", ".nvmrc"),
+      refresh: [{ cron: "0 3 * * *" }],
+    },
+  },
+  async () => {
+    await checkout();
+    await $`pnpm install`;
+  },
+);
+```
+
+## Choose the key
+
+A key is `files()`, a string, or an array of them. `files()` hashes the matched files in the git tree for the run's commit. Locally it hashes the working tree.
+
+```typescript {{ title: "TypeScript" }}
+key: files("migrations/**", "seeds/**")
+key: [files("go.mod", "go.sum"), "go1.25"]
+```
+
+The first run of a job always misses. A job without a machine caches its result, and a reused job shows as passed on its check.
+
+## Chains of cached jobs
+
+A cached job also depends on the cached jobs it starts [`from()`](/docs/labs/ci/machines#start-a-job-from-another-job). When a parent changes its key, the child's entry is stale and the child runs again, through the whole chain of cached parents.
+
+An uncached parent has no key and never invalidates its children. Add its files to the child's key when the child depends on them.
+
+## Refresh ahead of time
+
+`refresh` takes triggers that rebuild the cache on a schedule, so pull requests do not pay for it. Set `repo` on the pipeline so a cron has a repository to check out. `scope` is `"branch"` by default: a pull request reads entries from its base branch and writes its own. `"global"` shares one entry set.
+
+## Cache stores
+
+Entries live in a `CacheStore`. The default is `memoryCacheStore()`, which lasts as long as the process. `fileCacheStore(dir)` writes JSON files, and you can pass your own `{ get, set }` object.
+
+```typescript {{ title: "TypeScript" }}
+export const ci = createCi(inngest, {
+  cacheStore: fileCacheStore(".inngest/ci-cache"),
+});
+```
+
+<Warning>
+  There is no hosted cache store yet. A memory store on a serverless deploy misses on every cold start, so use a file store on shared storage or your own store.
+</Warning>
+
+Do not cache tests that call the network.
+
+## Next steps
+
+- [Machines and from()](/docs/labs/ci/machines) explains the snapshots a cached job restores.
+- [Checks and reports](/docs/labs/ci/checks-and-reports) shows how a reused job appears on its check.
+- [Reference](/docs/labs/ci/reference#caching) lists every cache option.

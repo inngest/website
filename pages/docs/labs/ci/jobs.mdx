@@ -1,0 +1,90 @@
+import { Info } from "shared/Docs/mdx";
+
+export const metaTitle = "Jobs | Inngest CI";
+export const description = "Inngest CI jobs: units of work with their own machine and check, how a pipeline calls and combines them, matrices, and steps inside a job.";
+
+# Jobs
+
+> Split a pipeline into units of work that each run on their own machine and report their own check.
+
+<Info>
+  Inngest CI is an Inngest Labs project: early, moving fast, and shaped by your feedback. [What's Labs?](/docs/labs)
+</Info>
+
+A job is a function you define with `ci.job()` and call from a pipeline or another job. Each job gets its own [machine](/docs/labs/ci/machines) and its own check on GitHub.
+
+## Define and call a job
+
+```typescript {{ title: "TypeScript" }}
+const test = ci.job("test", async () => {
+  await checkout();
+  await $`pnpm test`;
+
+  return { passed: true };
+});
+
+const build = ci.job({ id: "build", machine: { vcpu: 4 } }, async () => {
+  await checkout();
+  await $`pnpm build`;
+});
+```
+
+- A job returns its handler's value.
+- A job runs once per run for each ID. A second call returns the first call's result, so two callers share one run.
+- The machine starts on the job's first [command](/docs/labs/ci/commands). A job with no commands never gets one.
+- When a command fails, the job's check fails and the pipeline ends.
+
+Run jobs in sequence with `await`, or in parallel with `Promise.all`:
+
+```typescript {{ title: "TypeScript" }}
+await Promise.all([lint(), test()]);
+await deploy();
+```
+
+Jobs never share a machine. To build on another job's work, use [`from()`](/docs/labs/ci/machines#start-a-job-from-another-job).
+
+## Run a job for every combination
+
+`ci.matrix` runs a job for every combination of its axes. Each combination is its own job with its own check and retries.
+
+```typescript {{ title: "TypeScript" }}
+const compat = ci.matrix(
+  {
+    id: "compat",
+    axes: { node: ["20", "22", "24"], db: ["sqlite", "postgres"] },
+    exclude: [{ node: "20", db: "postgres" }],
+    concurrency: 3,
+  },
+  async ({ node, db }) => {
+    await from(base);
+    await $`pnpm test`.env({ NODE_VERSION: node, TEST_DATABASE: db });
+  },
+);
+```
+
+Call `compat()` to run every combination, or `compat({ node: "22" })` to run only the matching ones. [Reference](/docs/labs/ci/reference#ci-matrix) covers `include`, `failFast`, and per-combination options.
+
+## Use Inngest steps in a job
+
+A job is an Inngest function body, so the [step API](/docs/durable-execution/primitives) works inside it. Wrap side effects in `step.run`, because code outside a command can run again when the run resumes.
+
+```typescript {{ title: "TypeScript" }}
+import { step } from "inngest";
+
+const migrations = ci.job("migrations", async () => {
+  const db = await step.run("create-db-branch", async () => {
+    return neon.branches.create({ parent: "main" });
+  });
+
+  await checkout();
+  await $`pnpm db:migrate`.env({ DATABASE_URL: db.url });
+});
+```
+
+`step.waitForEvent`, `step.sleep`, and `step.invoke` work too, and a wait holds no worker.
+
+## Next steps
+
+- [Commands](/docs/labs/ci/commands) covers what runs inside a job.
+- [Machines](/docs/labs/ci/machines) covers where a job runs and how to start from another job.
+- [Reference](/docs/labs/ci/reference#ci-job) lists every job option.

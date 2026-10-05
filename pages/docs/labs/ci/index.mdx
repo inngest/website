@@ -6,7 +6,7 @@ export const description = "Inngest CI is an Inngest Labs project: write CI pipe
 
 # Inngest CI
 
-> Write CI pipelines in TypeScript and run every job on its own Inngest Sandbox.
+> Write your CI in TypeScript, run it on Inngest, and debug every run as one trace.
 
 <SdkSupport
   feature="Inngest CI"
@@ -24,26 +24,27 @@ export const description = "Inngest CI is an Inngest Labs project: write CI pipe
   Inngest CI is an Inngest Labs project: early, moving fast, and shaped by your feedback. [What's Labs?](/docs/labs)
 </Info>
 
-`@inngest/ci` turns TypeScript functions into CI pipelines. Inngest runs each pipeline as a durable function and each job on its own [Sandbox](/docs/sandboxes/overview), an ephemeral microVM. One run produces one trace that covers the pipeline, its jobs, and every command.
+`@inngest/ci` replaces config-driven YAML with TypeScript. Inngest runs each pipeline as a durable function and each job on its own [Sandbox](/docs/sandboxes/overview), an ephemeral microVM. One run produces one trace that covers the pipeline, its jobs, and every command.
 
 ## What you can do
 
-- **Write plain TypeScript, not YAML.** Use `if`, loops, `Promise.all`, types, and your own SDKs.
-- **Keep finished work.** Inngest saves finished commands and steps, so a retry does not rerun work that already passed.
-- **Start a job from another job.** `from()` starts a job on a copy of another job's machine, like a Docker layer.
-- **Run the same code locally.** Run a pipeline against the Dev Server with your uncommitted changes.
-- **Get GitHub checks.** Each pipeline gets one check, and each job gets one.
-- **Control how pipelines run.** Cancel superseded runs, cap concurrency, debounce, throttle, and rate limit pipelines with Inngest [flow control](/docs/durable-execution/flow-control).
+- **Write plain TypeScript, not YAML.** Use `if`, loops, `Promise.all`, and your own functions. See [Pipelines and triggers](/docs/labs/ci/pipelines).
+- **Keep finished work.** A retry does not rerun jobs or commands that already passed. See [Commands](/docs/labs/ci/commands#retries).
+- **Start a job from another job.** [`from()`](/docs/labs/ci/machines#start-a-job-from-another-job) starts a job on a copy of another job's machine, like a Docker layer. [Caching](/docs/labs/ci/caching) skips jobs whose inputs are unchanged.
+- **Run the same code locally.** Run a pipeline against the Dev Server with your uncommitted changes. See the [quick start](/docs/labs/ci/quick-start#5-run-locally).
+- **Get GitHub checks.** Each pipeline gets one check, and each job gets one. See [Checks and reports](/docs/labs/ci/checks-and-reports).
+- **Control how pipelines run.** Cancel superseded runs, cap concurrency, debounce, throttle, and rate limit pipelines with Inngest [flow control](/docs/labs/ci/pipelines#flow-control).
 
 ## Start here
 
-- [Overview](/docs/labs/ci/overview) explains pipelines, jobs, machines, and how a run becomes one trace.
+- [Overview](/docs/labs/ci/overview) lists what Inngest CI gives you and shows a run.
+- [Concepts](/docs/labs/ci/concepts) defines pipelines, triggers, jobs, commands, machines, caching, and checks.
 - [Quick start](/docs/labs/ci/quick-start) runs a pipeline on the Dev Server.
 - [Reference](/docs/labs/ci/reference) lists options, triggers, command methods, and limits.
 
 ## Next steps
 
-- [About Labs](/docs/labs) explains what a lab is and how to send feedback.
+- [About Labs](/docs/labs) explains what a lab is.
 - [Sandboxes](/docs/sandboxes/overview) covers the microVMs that run every job.
 - [Flow control](/docs/durable-execution/flow-control) covers the options a pipeline accepts.
 - [Example project](https://github.com/inngest/inngest-js/tree/main/examples/ci-pipelines) has pipelines, matrices, caching, and GitHub checks.

@@ -31,7 +31,7 @@ export const description = "Inngest CI reference: pipeline and job options, trig
 
 ## `ci.pipeline`
 
-A **pipeline** runs when something happens and calls jobs. It is one Inngest function, so every Inngest flow control option works on it.
+A [**pipeline**](/docs/labs/ci/pipelines) runs when something happens and calls jobs. It is one Inngest function, so every Inngest flow control option works on it.
 
 ```typescript {{ title: "TypeScript" }}
 import { github } from "@inngest/ci";
@@ -85,7 +85,7 @@ if (touched === false) {
 
 ## Triggers
 
-A **trigger** starts a pipeline and types its `event`.
+A [**trigger**](/docs/labs/ci/pipelines#triggers) starts a pipeline and types its `event`.
 
 | Trigger | Runs when |
 | --- | --- |
@@ -123,7 +123,7 @@ export const merged = ci.pipeline(
 
 ## `ci.job`
 
-A **job** is a unit of work with its own machine and its own check. Call it like a function.
+A [**job**](/docs/labs/ci/jobs) is a unit of work with its own machine and its own check. Call it like a function.
 
 ```typescript {{ title: "TypeScript" }}
 const test = ci.job("test", async () => {
@@ -158,7 +158,7 @@ const build = ci.job({ id: "build", machine: { vcpu: 4 } }, async () => {
 
 ## Commands
 
-`` $`…` `` runs a command on the job's machine. A non-zero exit code throws `CommandFailedError`.
+[`` $`…` ``](/docs/labs/ci/commands) runs a command on the job's machine. A non-zero exit code throws `CommandFailedError`.
 
 ```typescript {{ title: "TypeScript" }}
 await $`pnpm test`;
@@ -225,7 +225,7 @@ const test = ci.job("test", async () => {
 
 ## Machines
 
-A **machine** is a Sandbox: an ephemeral Linux microVM. Each job gets one on its first command.
+A [**machine**](/docs/labs/ci/machines) is a Sandbox: an ephemeral Linux microVM. Each job gets one on its first command.
 
 | `vcpu` | Memory |
 | --- | --- |
@@ -244,7 +244,7 @@ Set `machine` on a job, on its pipeline, or on `createCi` for every job. The fir
 
 ## `from`
 
-`from(job)` starts the current job on a copy of another job's machine, like a Docker layer. The parent runs once, however many jobs start from it, and each child gets its own isolated copy.
+[`from(job)`](/docs/labs/ci/machines#start-a-job-from-another-job) starts the current job on a copy of another job's machine, like a Docker layer. The parent runs once, however many jobs start from it, and each child gets its own isolated copy.
 
 ```typescript {{ title: "TypeScript" }}
 const base = ci.job("base", async () => {
@@ -339,7 +339,7 @@ Call `compat()` to run every combination, or `compat({ node: "22" })` to run onl
 
 ## Caching
 
-A job's `cache` reuses its last result when nothing it depends on has changed.
+A job's [`cache`](/docs/labs/ci/caching) reuses its last result when nothing it depends on has changed.
 
 ```typescript {{ title: "TypeScript" }}
 const base = ci.job(
@@ -389,7 +389,7 @@ export const ci = createCi(inngest, {
 
 ## Checks and reports
 
-Checks are automatic: one for the pipeline and one for each job. Require the pipeline check in branch protection.
+[Checks](/docs/labs/ci/checks-and-reports) are automatic: one for the pipeline and one for each job. Require the pipeline check in branch protection.
 
 | State | Check |
 | --- | --- |
@@ -537,7 +537,7 @@ const migrations = ci.job("migrations", async () => {
 
 ## Next steps
 
-- [Overview](/docs/labs/ci/overview) explains how pipelines, jobs, and machines fit together.
+- [Concepts](/docs/labs/ci/concepts) defines pipelines, triggers, jobs, commands, and machines.
 - [Quick start](/docs/labs/ci/quick-start) runs a pipeline on the Dev Server.
 - [Flow control](/docs/durable-execution/flow-control) covers the options a pipeline accepts.
 - [Sandboxes limits](/docs/sandboxes/limits) list the limits that apply to machines.
