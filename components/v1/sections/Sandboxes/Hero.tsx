@@ -4,14 +4,15 @@ import { useEffect, useMemo, useRef, useState } from "react";
 import { motion } from "motion/react";
 import ButtonLink from "@/components/v1/ButtonLink";
 import StatusTag from "@/components/v1/StatusTag";
-import {
-  renderTokens,
-  tokenizeCode,
-} from "@/components/v1/sections/shared/codeHighlight";
 import { setHeroPanel, clearHeroPanel } from "@/utils/v1/heroNav";
 import { tweens } from "@/utils/v1/springs";
 import { cn } from "@/utils/v1/cn";
-import { CHAPTERS, type Chapter, type ChapterId } from "./heroChapters";
+import {
+  CHAPTERS,
+  type Chapter,
+  type ChapterId,
+  type CodeLine,
+} from "./heroChapters";
 
 /**
  * /platform/sandboxes hero.
@@ -119,6 +120,32 @@ const EXCEPTION_PILL: Partial<
   },
 };
 
+// Grey monochrome, as the homepage hero sets its code.
+const CODE_GREY = "#9B9B9B";
+
+type CallState = "idle" | "running" | "failed" | "done";
+
+/** One code line; the step call, when the line has one, in display type. */
+function CodeText({ line, state }: { line: CodeLine; state: CallState }) {
+  if (!line.call || !line.text.includes(line.call)) return <>{line.text}</>;
+  const at = line.text.indexOf(line.call);
+  const before = line.text.slice(0, at);
+  const after = line.text.slice(at + line.call.length);
+  const dot = line.call.lastIndexOf(".");
+  const obj = dot >= 0 ? line.call.slice(0, dot + 1) : "";
+  const name = dot >= 0 ? line.call.slice(dot + 1) : line.call;
+  return (
+    <>
+      {before}
+      <span className={cn("sbx-call", `sbx-call--${state}`)}>
+        {obj && <span className="sbx-call-obj">{obj}</span>}
+        {name}
+      </span>
+      {after}
+    </>
+  );
+}
+
 /** The function, in full, with each step's lines lit by the playground's report. */
 function CodePane({
   chapter,
@@ -127,6 +154,13 @@ function CodePane({
   chapter: Chapter;
   steps: StepReport[];
 }) {
+  // Blur-in on mount (the pane is keyed by chapter, so on every switch).
+  const [entered, setEntered] = useState(false);
+  useEffect(() => {
+    const id = window.setTimeout(() => setEntered(true), 40);
+    return () => window.clearTimeout(id);
+  }, []);
+
   // Group consecutive lines of the same step so the pill sits once, on
   // the group's first line, and the wash covers the whole call.
   const groups = useMemo(() => {
@@ -146,21 +180,33 @@ function CodePane({
       <div className="flex h-10 shrink-0 items-center px-4 font-v1Mono text-[11px] lowercase tracking-normal text-v1-frost/45 sm:px-5">
         {chapter.file}
       </div>
-      <pre className="scrollbar-none relative min-w-0 flex-1 overflow-x-auto pb-4 pt-1 font-v1Mono text-[12px] leading-[20px] text-v1-frost/90">
+      <pre
+        className={cn(
+          "sbx-code scrollbar-none relative min-w-0 flex-1 overflow-x-auto pb-4 pt-1 font-v1Mono text-[12px] leading-[20px]",
+          entered && "sbx-code--in"
+        )}
+        style={{ color: CODE_GREY }}
+      >
         {groups.map((g, gi) => {
           const st = g.step ? stepStatus(g.step, steps) : null;
           const status = st?.status ?? "pending";
           const lit = status !== "pending";
+          const callState: CallState =
+            status === "running" || status === "waiting"
+              ? "running"
+              : status === "failed"
+              ? "failed"
+              : status === "done" || status === "memoized"
+              ? "done"
+              : "idle";
           return (
             <div
               key={gi}
               className={cn(
-                "relative grid grid-cols-[36px_minmax(0,1fr)] pr-4 motion-safe:transition-colors motion-safe:duration-500",
-                status === "running" || status === "waiting"
-                  ? "bg-v1-frost/[0.05]"
-                  : status === "failed"
-                  ? "bg-v1-accent-salmon/[0.08]"
-                  : ""
+                "relative grid grid-cols-[36px_minmax(0,1fr)]",
+                g.step && "sbx-block",
+                g.step && callState === "running" && "sbx-block--running",
+                g.step && callState === "failed" && "sbx-block--failed"
               )}
             >
               {/* Gutter: a dot per step, aligned with its first line. The
@@ -201,7 +247,7 @@ function CodePane({
               >
                 {g.lines.map((line, li) => (
                   <div key={li} className="whitespace-pre">
-                    {renderTokens(tokenizeCode(line.text))}
+                    <CodeText line={line} state={callState} />
                   </div>
                 ))}
               </div>

@@ -18,6 +18,9 @@ export interface CodeLine {
   text: string;
   /** Step id (or `job` prefix for CI) this line belongs to. */
   step?: string;
+  /** The step call on this line (`step.sandbox.create`), set in display
+   *  type and lit while the step runs, as on the homepage hero. */
+  call?: string;
 }
 
 export interface Chapter {
@@ -45,6 +48,7 @@ export const CHAPTERS: readonly Chapter[] = [
       { text: "  async ({ step }) => {" },
       {
         text: "    const created = await step.sandbox.create(",
+        call: "step.sandbox.create",
         step: "create-sandbox",
       },
       { text: '      "create-sandbox",', step: "create-sandbox" },
@@ -52,12 +56,14 @@ export const CHAPTERS: readonly Chapter[] = [
       { text: "    );", step: "create-sandbox" },
       {
         text: "    const sandbox = await created.waitUntilRunning(",
+        call: "created.waitUntilRunning",
         step: "wait-running",
       },
       { text: '      "wait-running",', step: "wait-running" },
       { text: "    );", step: "wait-running" },
       {
         text: "    const result = await sandbox.commands.run(",
+        call: "sandbox.commands.run",
         step: "run-command",
       },
       { text: '      "run-command",', step: "run-command" },
@@ -65,6 +71,7 @@ export const CHAPTERS: readonly Chapter[] = [
       { text: "    );", step: "run-command" },
       {
         text: '    await sandbox.destroy("destroy-sandbox");',
+        call: "sandbox.destroy",
         step: "destroy-sandbox",
       },
       { text: "    return result.stdout;" },
@@ -86,6 +93,7 @@ export const CHAPTERS: readonly Chapter[] = [
       { text: "  async ({ step, attempt }) => {" },
       {
         text: "    const created = await step.sandbox.create(",
+        call: "step.sandbox.create",
         step: "create-sandbox",
       },
       { text: '      "create-sandbox",', step: "create-sandbox" },
@@ -93,11 +101,16 @@ export const CHAPTERS: readonly Chapter[] = [
       { text: "    );", step: "create-sandbox" },
       {
         text: "    const sandbox = await created.waitUntilRunning(",
+        call: "created.waitUntilRunning",
         step: "wait-running",
       },
       { text: '      "wait-running",', step: "wait-running" },
       { text: "    );", step: "wait-running" },
-      { text: "    await sandbox.commands.run(", step: "write-marker" },
+      {
+        text: "    await sandbox.commands.run(",
+        call: "sandbox.commands.run",
+        step: "write-marker",
+      },
       { text: '      "write-marker",', step: "write-marker" },
       {
         text: '      `echo "attempt ${attempt + 1}" > /tmp/marker`,',
@@ -106,6 +119,7 @@ export const CHAPTERS: readonly Chapter[] = [
       { text: "    );", step: "write-marker" },
       {
         text: '    await step.run("flaky-after-create", () => {',
+        call: "step.run",
         step: "flaky-after-create",
       },
       {
@@ -119,16 +133,19 @@ export const CHAPTERS: readonly Chapter[] = [
       { text: "    });", step: "flaky-after-create" },
       {
         text: '    await sandbox.commands.run("run-hello",',
+        call: "sandbox.commands.run",
         step: "run-hello",
       },
       { text: '      `echo "hello from $(hostname)"`);', step: "run-hello" },
       {
         text: "    const marker = await sandbox.commands.run(",
+        call: "sandbox.commands.run",
         step: "read-marker",
       },
       { text: '      "read-marker", "cat /tmp/marker");', step: "read-marker" },
       {
         text: '    await sandbox.destroy("destroy-sandbox");',
+        call: "sandbox.destroy",
         step: "destroy-sandbox",
       },
       { text: "    return marker.stdout; // attempt 1: same sandbox" },
@@ -143,28 +160,40 @@ export const CHAPTERS: readonly Chapter[] = [
     line: "Five machines cloned from one snapshot run in parallel. Jobs that passed never rerun.",
     file: "inngest/ci-pipeline.ts",
     code: [
-      { text: 'const setup = ci.job("setup", async () => {', step: "setup" },
+      {
+        text: 'const setup = ci.job("setup", async () => {',
+        call: "ci.job",
+        step: "setup",
+      },
       { text: "  await $`tar -x -C /work/app`;", step: "setup" },
       {
         text: "  return { node: (await $`node --version`).stdout };",
         step: "setup",
       },
       { text: "});", step: "setup" },
-      { text: 'const lint = ci.job("lint", async () => {', step: "lint" },
+      {
+        text: 'const lint = ci.job("lint", async () => {',
+        call: "ci.job",
+        step: "lint",
+      },
       {
         text: "  await from(setup); // a clone of setup's machine",
         step: "lint",
       },
       { text: '  await $`node lint.mjs`.cwd("/work/app");', step: "lint" },
       { text: "});", step: "lint" },
-      { text: 'const test = ci.job("test", async () => {', step: "test" },
+      {
+        text: 'const test = ci.job("test", async () => {',
+        call: "ci.job",
+        step: "test",
+      },
       { text: "  await from(setup);", step: "test" },
       {
         text: '  await $`node --test`.cwd("/work/app").retries(1);',
         step: "test",
       },
       { text: "});", step: "test" },
-      { text: "const compat = ci.matrix(", step: "compat" },
+      { text: "const compat = ci.matrix(", call: "ci.matrix", step: "compat" },
       {
         text: '  { id: "compat", axes: { runtime: ["node", "node-lts"] } },',
         step: "compat",
