@@ -31,7 +31,6 @@
     "v1:extract-events-dots": "node scripts/extract-events-dots.mjs",
     "v1:extract-qfc-dots": "node scripts/extract-queues-flow-control-dots.mjs",
     "v1:extract-ae-dots": "node scripts/extract-agent-evals-dots.mjs",
-    "v1:extract-sandboxes-dots": "node scripts/extract-sandboxes-dots.mjs",
     "v1:optimize-team-sphere": "node scripts/optimize-team-sphere-svg.mjs",
     "video:hls": "bash scripts/hls-transcode.sh",
     "prettier": "prettier --write --trailing-comma es5 \"pages/**/*.tsx\" \"pages/**/*.js\" \"shared/*.tsx\" \"shared/*.js\"",

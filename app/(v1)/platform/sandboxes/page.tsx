@@ -1,11 +1,6 @@
 import { type Metadata } from "next";
 import { generateMetadata } from "src/utils/social";
 import Sandboxes from "@/components/v1/pages/Sandboxes";
-import sandboxesDotsData from "@/public/assets/v1/sandboxes-hero/dots.json";
-
-// SandboxesDotsCanvas reads this manifest on mount; inline it in the
-// SSR HTML so the field can pour in on the first frame.
-const SANDBOXES_DOTS_JSON = JSON.stringify(sandboxesDotsData);
 
 export const metadata: Metadata = generateMetadata({
   title: "Sandboxes - Durable machines for code that has to run",
@@ -14,14 +9,5 @@ export const metadata: Metadata = generateMetadata({
 });
 
 export default function Page() {
-  return (
-    <>
-      <script
-        id="sandboxes-dots-data"
-        type="application/json"
-        dangerouslySetInnerHTML={{ __html: SANDBOXES_DOTS_JSON }}
-      />
-      <Sandboxes />
-    </>
-  );
+  return <Sandboxes />;
 }
