@@ -56,7 +56,7 @@ const PLAYGROUND_BASE =
 
 // The frame follows the playground's settled content height inside these
 // bounds; past the max the playground keeps its newest rows in view.
-const FRAME_MIN_H = 440;
+const FRAME_MIN_H = 420;
 const FRAME_MAX_H = 560;
 // Pause on a finished run before the next chapter starts.
 const DWELL_MS = 6000;
@@ -198,7 +198,7 @@ function CodePane({
       </div>
       <pre
         ref={preRef}
-        className="scrollbar-none relative min-w-0 flex-1 overflow-auto py-3 font-v1Mono text-[11.5px] leading-[20px] text-v1-frost/90"
+        className="scrollbar-none relative min-w-0 flex-1 overflow-auto py-3 font-v1Mono text-[12px] leading-[20px] text-v1-frost/90"
       >
         {groups.map((g, gi) => {
           const st = g.step ? stepStatus(g.step, steps) : null;
@@ -208,7 +208,7 @@ function CodePane({
             <div
               key={gi}
               className={cn(
-                "relative grid grid-cols-[28px_minmax(0,1fr)] pr-4 motion-safe:transition-colors motion-safe:duration-500 lg:grid-cols-[88px_minmax(0,1fr)]",
+                "relative grid grid-cols-[28px_minmax(0,1fr)] pr-4 motion-safe:transition-colors motion-safe:duration-500 lg:grid-cols-[108px_minmax(0,1fr)]",
                 status === "running" || status === "waiting"
                   ? "bg-v1-frost/[0.05]"
                   : status === "failed"
@@ -307,6 +307,10 @@ export default function Hero() {
   useEffect(() => {
     const onMessage = (e: MessageEvent) => {
       if (e.source !== frameRef.current?.contentWindow) return;
+      // The frame is in the server-rendered HTML, so its load event can
+      // fire before React attaches onLoad; any message from it means it
+      // has painted.
+      setLoaded(true);
       const d = e.data as {
         type?: string;
         height?: number;
@@ -375,7 +379,7 @@ export default function Hero() {
           bottom edge. */}
       <div
         aria-hidden="true"
-        className="pointer-events-none absolute inset-x-0 bottom-[160px] top-0 overflow-hidden bg-v1-accent-blue lg:bottom-[200px]"
+        className="pointer-events-none absolute inset-x-0 bottom-[200px] top-0 overflow-hidden bg-v1-accent-blue lg:bottom-[260px]"
       >
         {/* eslint-disable-next-line @next/next/no-img-element */}
         <img
@@ -385,38 +389,38 @@ export default function Hero() {
         />
       </div>
 
-      <div className="relative z-10 mx-auto grid w-full max-w-[1440px] grid-cols-1 gap-y-10 px-6 pb-16 pt-[104px] sm:px-9 lg:grid-cols-[minmax(0,4fr)_minmax(0,8fr)] lg:gap-x-10 lg:px-8 lg:pb-24 lg:pt-[120px] xl:gap-x-14">
-        {/* Copy and CTAs */}
-        <div className="flex flex-col gap-8 lg:pt-2">
-          <div className="flex flex-col gap-6">
+      <div className="relative z-10 mx-auto flex w-full max-w-[1440px] flex-col px-6 pb-16 pt-[104px] sm:px-9 lg:px-8 lg:pb-24 lg:pt-[120px]">
+        {/* Copy and CTAs, centred */}
+        <div className="mx-auto flex w-full max-w-[760px] flex-col items-center gap-8 text-center">
+          <div className="flex flex-col items-center gap-6">
             <motion.div
               {...entry(0)}
-              className="text-v1-label-md flex flex-wrap items-center gap-x-3 gap-y-2 uppercase text-v1-frost"
+              className="text-v1-label-md flex flex-wrap items-center justify-center gap-x-3 gap-y-2 uppercase text-v1-frost"
             >
-              <span className="pl-1">Sandboxes</span>
+              <span>Sandboxes</span>
               <StatusTag size="md" tone="frost">
                 Open beta
               </StatusTag>
             </motion.div>
             <h1
               id="sandboxes-hero-headline"
-              className="text-v1-display-xs uppercase text-v1-frost lg:leading-[0.98] lg:tracking-[-0.015em] lg:[font-size:clamp(2.75rem,4.4vw,4.25rem)]"
+              className="text-v1-display-xs uppercase text-v1-frost lg:leading-[0.98] lg:tracking-[-0.015em] lg:[font-size:clamp(3rem,5.4vw,5.25rem)]"
             >
               <motion.span className="block" {...entry(60)}>
-                A sandbox
-              </motion.span>
-              <motion.span className="block" {...entry(180)}>
-                is a step.
+                A sandbox is a step.
               </motion.span>
             </h1>
           </div>
-          <motion.div {...entry(320)} className="flex flex-col gap-6">
-            <p className="text-v1-body-lg max-w-[420px] !text-v1-frost">
+          <motion.div
+            {...entry(320)}
+            className="flex flex-col items-center gap-6"
+          >
+            <p className="text-v1-body-lg max-w-[560px] !text-v1-frost">
               Create microVMs inside your Inngest functions. They retry, resume
               after a crash, and show up in the trace like every other step.
               Watch one run:
             </p>
-            <div className="flex flex-col gap-[23px] sm:flex-row sm:items-center">
+            <div className="flex flex-col gap-[23px] sm:flex-row sm:items-center sm:justify-center">
               <ButtonLink href={SIGNUP_URL} prefetch={false} variant="primary">
                 Build for free
               </ButtonLink>
@@ -436,7 +440,7 @@ export default function Hero() {
           {...entry(440)}
           onPointerEnter={() => setHovering(true)}
           onPointerLeave={() => setHovering(false)}
-          className="flex min-w-0 flex-col overflow-hidden rounded-[10px] border border-v1-frost/[0.14] bg-v1-surfaceBase shadow-[0_40px_120px_-40px_rgb(0_0_0/0.9)]"
+          className="mt-12 flex min-w-0 flex-col overflow-hidden rounded-[10px] border border-v1-frost/[0.14] bg-v1-surfaceBase shadow-[0_40px_120px_-40px_rgb(0_0_0/0.9)] lg:mt-16"
         >
           <div className="flex items-stretch border-b border-v1-subtle">
             <div
@@ -519,7 +523,7 @@ export default function Hero() {
           </div>
 
           <div
-            className="grid grid-cols-1 lg:grid-cols-2"
+            className="grid grid-cols-1 lg:grid-cols-[minmax(0,5fr)_minmax(0,7fr)]"
             style={{ "--stage-h": `${frameH}px` } as CSSProperties}
           >
             <div className="h-[260px] border-b border-v1-subtle lg:h-[var(--stage-h)] lg:border-b-0 lg:border-r">
