@@ -3,6 +3,10 @@
 import { useEffect, useState } from "react";
 import Button from "@/components/v1/Button";
 import { cn } from "@/utils/v1/cn";
+import {
+  trackInstallCopy,
+  type InstallCtaPlacement,
+} from "@/utils/v1/trackInstallCopy";
 
 export const INSTALL_COMMAND = "npm install inngest";
 
@@ -51,9 +55,12 @@ function CopiedIcon() {
 export default function InstallCommandButton({
   className,
   label = INSTALL_COMMAND,
+  placement,
 }: {
   className?: string;
   label?: string;
+  /** Analytics placement — see utils/v1/trackInstallCopy.ts. */
+  placement: InstallCtaPlacement;
 }) {
   const [copied, setCopied] = useState(false);
 
@@ -67,8 +74,18 @@ export default function InstallCommandButton({
     try {
       await navigator.clipboard.writeText(INSTALL_COMMAND);
       setCopied(true);
+      trackInstallCopy({
+        placement,
+        command: INSTALL_COMMAND,
+        status: "success",
+      });
     } catch {
       setCopied(false);
+      trackInstallCopy({
+        placement,
+        command: INSTALL_COMMAND,
+        status: "failed",
+      });
     }
   }
 
@@ -77,6 +94,8 @@ export default function InstallCommandButton({
       type="button"
       variant="secondary"
       onClick={copy}
+      data-cta="npm-install"
+      data-cta-placement={placement}
       aria-label={
         copied ? `Copied ${INSTALL_COMMAND}` : `Copy ${INSTALL_COMMAND}`
       }

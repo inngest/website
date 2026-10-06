@@ -107,6 +107,7 @@ export default function Hero() {
             <InstallButton
               label={HERO.installCta.label}
               command={HERO.installCta.command}
+              placement="long_run_hero"
               className="w-full sm:w-auto"
             />
           </motion.div>
