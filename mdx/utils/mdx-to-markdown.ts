@@ -126,7 +126,7 @@ function transformJsxElement(node: MdxJsxElement): RootContent[] | null {
       const el = child as unknown as MdxJsxElement;
       return !(
         el.type === "mdxJsxFlowElement" &&
-        (el.name === "Annotation" || el.name === "Flow")
+        (el.name === "Annotation" || el.name === "Trace")
       );
     });
   }

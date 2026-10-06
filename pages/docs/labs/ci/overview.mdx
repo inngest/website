@@ -1,4 +1,4 @@
-import { Info, AnnotatedCode, Annotation, Flow, FlowNode, FlowEdge } from "shared/Docs/mdx";
+import { Info, AnnotatedCode, Annotation, Trace, TraceRow, TraceBar, TraceMarker } from "shared/Docs/mdx";
 
 export const metaTitle = "Overview | Inngest CI";
 export const description = "Inngest CI overview: write CI pipelines in TypeScript instead of YAML, retry only failed work, reuse work between jobs, run locally, and debug each run as one trace.";
@@ -39,7 +39,10 @@ export const pr = ci.pipeline(
     singleton: { key: "event.data.pull_request.number", mode: "cancel" },
   },
   async () => {
-    await Promise.all([lint(), test()]);
+    await Promise.all([
+      lint(),
+      test(),
+    ]);
   },
 );
 
@@ -59,54 +62,65 @@ const test = ci.job("test", async () => {
 });
 ```
 
-<Annotation lines="4-13" nodes="pr">
-A **pipeline** is one Inngest function. It starts when the trigger fires and calls jobs like ordinary async functions, so every [flow control](/docs/labs/ci/pipelines#flow-control) option works on it.
+<Annotation id="local" lines="2" tease="runs locally" title="Run it on your machine" href="/docs/labs/ci/quick-start#5-run-locally" linkText="Quick start">
+The same pipeline runs against the Inngest Dev Server with your uncommitted changes, so you can check CI before you push.
 </Annotation>
 
-<Annotation lines="7" nodes="event">
-`github.pullRequest()` starts a run when a pull request opens, is pushed to, or reopens. Pass `types` to change which actions start it. See [triggers](/docs/labs/ci/reference#triggers).
+<Annotation id="pipeline" lines="4-16" tease="a TypeScript function" title="A pipeline is a function" nodes="pr,done" href="/docs/labs/ci/pipelines" linkText="Pipelines and triggers">
+No YAML and no DSL: a pipeline is TypeScript that lives in your repository, next to your business logic. It imports the same helpers and SDKs your app already uses.
 </Annotation>
 
-<Annotation lines="8" nodes="pr">
-`singleton` allows one run per pull request, keyed by the pull request number. With `mode: "cancel"`, a new push cancels the run still going for the old commit, so you never wait on superseded work. [Singleton](/docs/durable-execution/flow-control/singleton)
+<Annotation id="trigger" lines="7" tease="typed trigger" title="Typed triggers" nodes="event" href="/docs/labs/ci/pipelines#triggers" linkText="Triggers">
+Choose the trigger in code and `event` is typed from it: the pull request number, branch and head commit, with autocomplete.
 </Annotation>
 
-<Annotation lines="11" nodes="lint,test">
-`Promise.all` starts both jobs at once. Each job gets its own machine, so `lint` and `test` run in parallel instead of queuing on one runner. Calling a job is an ordinary function call, so loops and `if` work too.
+<Annotation id="singleton" lines="8" tease="cancels stale runs" title="Flow control built in" nodes="pr" href="/docs/labs/ci/pipelines#flow-control" linkText="Flow control">
+One line replaces concurrency groups and cancel-in-progress settings: a new push cancels the run still going for that pull request. Concurrency, throttling and debounce work the same way.
 </Annotation>
 
-<Annotation lines="15-18" nodes="base,snapshot">
-`base` checks out the repository and installs dependencies once. When the job finishes, Inngest pauses its machine so other jobs can start from a snapshot of it. [Machines](/docs/labs/ci/reference#machines)
+<Annotation id="parallel" lines="11-14" tease="native JavaScript" title="Orchestrate with native JavaScript" nodes="lintWait,testWait,lintRun,testRun" href="/docs/labs/ci/jobs" linkText="Jobs">
+No dependency graph to declare: `Promise.all` runs jobs in parallel, `await` runs them in order, and an `if` skips what a change does not need.
 </Annotation>
 
-<Annotation lines="21,26" nodes="snapshot">
-`from(base)` starts this job on a copy of the `base` machine, with the checkout and install already done, like a Docker layer. `base` does not run again, however many jobs start from it. See [Start a job from another job](/docs/labs/ci/machines#start-a-job-from-another-job) and [`from`](/docs/labs/ci/reference#from).
+<Annotation id="base" lines="18-21" tease="installs once" title="Build once, share it" nodes="base" href="/docs/labs/ci/machines" linkText="Machines and from()">
+No cache keys to tune. `base` checks out and installs once, and every job that starts from it gets a copy of that machine.
 </Annotation>
 
-<Annotation lines="27" nodes="test">
-`.retries(1)` runs `pnpm test` again on the same machine if it exits non-zero. Only the command retries, not the job, and each attempt is its own step in the trace. If it still fails, the `test` check fails and the run ends. See [Retries](/docs/labs/ci/commands#retries).
+<Annotation id="from" lines="24,29" tease="copy of base" title="Start where `base` finished" nodes="lintWait,testWait,base" href="/docs/labs/ci/machines#start-a-job-from-another-job" linkText="Start a job from another job">
+Waits for the one `base` build, then starts this job on a copy of its machine, already checked out and installed.
 </Annotation>
 
-<Annotation lines="15,20,25" nodes="checks">
-Each job reports its own GitHub check, and the pipeline reports one more. See [Checks and reports](/docs/labs/ci/checks-and-reports).
+<Annotation id="lint" lines="23-26" pill="none" title="`lint`" nodes="lintWait,lintRun" href="/docs/labs/ci/jobs" linkText="Jobs">
+Runs on its own copy of `base`, with no repeated checkout or install.
 </Annotation>
 
-<Flow label="A pull request triggers the pr pipeline. The base job runs on its own machine and Inngest snapshots it. The lint and test jobs start in parallel from that snapshot. Each job reports a GitHub check.">
-  <FlowNode id="event" kind="external" at="1,0">Pull request</FlowNode>
-  <FlowNode id="pr" kind="pipeline" at="1,1">pr pipeline</FlowNode>
-  <FlowNode id="base" kind="job" at="1,2">base job</FlowNode>
-  <FlowNode id="snapshot" kind="platform" at="1,3">snapshot of base</FlowNode>
-  <FlowNode id="lint" kind="job" at="0,4">lint job</FlowNode>
-  <FlowNode id="test" kind="job" at="2,4">test job</FlowNode>
-  <FlowNode id="checks" kind="platform" at="1,5">GitHub checks</FlowNode>
-  <FlowEdge from="event" to="pr" />
-  <FlowEdge from="pr" to="base" />
-  <FlowEdge from="base" to="snapshot" dashed />
-  <FlowEdge from="snapshot" to="lint" dashed />
-  <FlowEdge from="snapshot" to="test" dashed />
-  <FlowEdge from="lint" to="checks" dashed />
-  <FlowEdge from="test" to="checks" dashed />
-</Flow>
+<Annotation id="test" lines="28-31" pill="30" tease="retries alone" title="Retries that keep passed work" nodes="testWait,testRun" href="/docs/labs/ci/commands#retries" linkText="Retries">
+If `pnpm test` fails it runs again on the same machine. Nothing that already passed runs again, so you never rerun all of CI.
+</Annotation>
+
+<Annotation id="done" lines="11-14" pill="none" title="One trace for the whole run" nodes="lintRun,testRun,done" href="#see-the-result" linkText="See the result">
+When both jobs pass the run completes, and its trace shows every job, command and retry in one place.
+</Annotation>
+
+<Trace label="Trace of one run: a pull request starts the pr pipeline. base checks out and installs once. lint and test wait for base, then start in parallel on copies of its machine. The run passes when both finish.">
+  <TraceRow name="pr">
+    <TraceBar id="event" span="0-15" kind="event" note="trigger">pull request</TraceBar>
+    <TraceBar id="pr" span="15.5-87" kind="pipeline" note="pipeline">pr</TraceBar>
+    <TraceBar id="done" span="87.5-100" kind="result" note="done">passed ✓</TraceBar>
+  </TraceRow>
+  <TraceRow name="lint">
+    <TraceBar id="lintWait" span="17-45.5" kind="wait" note="from">from(base)</TraceBar>
+    <TraceBar id="lintRun" span="46.5-67" kind="job" note="lint">pnpm lint</TraceBar>
+  </TraceRow>
+  <TraceRow name="test">
+    <TraceBar id="testWait" span="17-45.5" kind="wait" note="from">from(base)</TraceBar>
+    <TraceBar id="testRun" span="46.5-87" kind="job" note="test">pnpm test · retries 1</TraceBar>
+  </TraceRow>
+  <TraceRow name="base" caption="runs once">
+    <TraceBar id="base" span="19-45.5" kind="job" note="base">checkout · pnpm install</TraceBar>
+  </TraceRow>
+  <TraceMarker at="46" rows="lint-base" node="base">copy of base</TraceMarker>
+</Trace>
 
 </AnnotatedCode>
 

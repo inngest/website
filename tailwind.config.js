@@ -515,6 +515,19 @@ module.exports = {
         "v1-wipe": "cubic-bezier(0.7, 0, 0.15, 1)",
       },
       keyframes: {
+        // Annotated code: note pills glow in turn every few seconds until
+        // the reader opens a note; note cards fade in.
+        "ac-pulse": {
+          "0%": { boxShadow: "0 0 0 0 rgb(var(--color-matcha-500) / 0)" },
+          "6%": { boxShadow: "0 0 0 4px rgb(var(--color-matcha-500) / 0.45)" },
+          "23%, 100%": {
+            boxShadow: "0 0 0 0 rgb(var(--color-matcha-500) / 0)",
+          },
+        },
+        "ac-card": {
+          "0%": { opacity: "0", transform: "translateY(4px)" },
+          "100%": { opacity: "1", transform: "translateY(0)" },
+        },
         wiggle: {
           "0%, 100%": { transform: "rotate(-4deg)" },
           "50%": { transform: "rotate(4deg)" },
@@ -532,6 +545,8 @@ module.exports = {
         },
       },
       animation: {
+        "ac-pulse": "ac-pulse 6s ease-out infinite both",
+        "ac-card": "ac-card 160ms ease-out",
         "v1-nav-pop": "v1-nav-pop 180ms cubic-bezier(0.2, 0.8, 0.2, 1) both",
       },
       // v1 z-index scale. Names map intent → number so the stacking

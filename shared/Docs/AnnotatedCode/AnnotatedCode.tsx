@@ -5,22 +5,35 @@ import {
   isValidElement,
   useCallback,
   useEffect,
+  useId,
   useMemo,
   useRef,
   useState,
+  type CSSProperties,
   type ReactElement,
   type ReactNode,
 } from "react";
+import Link from "next/link";
 import clsx from "clsx";
 
 import { CodeGroupHeader, CopyButton } from "../Code";
 import { useUnreleasedLabels } from "../Unreleased";
-import { FlowDiagram, readFlow } from "./Diagram";
+import {
+  BAR_H,
+  barBox,
+  readTrace,
+  rowTop,
+  Trace,
+  traceHeight,
+  TraceTimeline,
+  type TraceSpec,
+} from "./Trace";
 
-export { Flow, FlowNode, FlowEdge } from "./Diagram";
+export { Trace, TraceRow, TraceBar, TraceMarker } from "./Trace";
 
 /**
- * Annotated code: a normal fenced code block whose lines carry notes.
+ * Annotated code: a normal fenced code block whose lines carry notes, and an
+ * optional trace timeline linked to them.
  *
  *   <AnnotatedCode>
  *
@@ -28,71 +41,146 @@ export { Flow, FlowNode, FlowEdge } from "./Diagram";
  *   …clean code…
  *   ```
  *
- *   <Annotation lines="8" nodes="pr">Why `singleton` is here.</Annotation>
+ *   <Annotation id="singleton" lines="8" tease="cancels stale runs"
+ *     title="Flow control built in" nodes="pr"
+ *     href="/docs/…" linkText="Flow control">
+ *   Why `singleton` is here.
+ *   </Annotation>
  *
- *   <Flow label="…">…</Flow>
+ *   <Trace label="…">…</Trace>
  *
  *   </AnnotatedCode>
  *
+ * A note opens from its pill at the end of a line, or from a trace bar whose
+ * `note` is its id. While it is open its lines and bars stay lit and the rest
+ * fades. The pills pulse every few seconds until the reader opens one.
+ *
  * The fence is untouched, so the plain block is always the fallback: it is
  * what renders until the feature is switched on (see `label`) and what the
- * markdown export prints, followed by the notes as a numbered list.
+ * markdown export prints.
  */
 export function Annotation(_props: {
-  /** "8", "6-8" or "15-18,20-23": every range this note covers. */
+  /** Referenced by a trace bar's `note`. */
+  id: string;
+  /** "8", "6-8" or "15-18,20-23": every line this note lights. */
   lines: string;
-  /** Diagram node ids this note is about (comma separated). */
+  /** Lines that get a pill: defaults to each range's first line; "none" for none. */
+  pill?: string;
+  /** Short words on the pill. */
+  tease?: string;
+  /** Card heading; backticks render as code. */
+  title: string;
+  /** Trace bar ids this note lights (comma separated). */
   nodes?: string;
+  href?: string;
+  linkText?: string;
   children: ReactNode;
 }) {
   return null;
 }
 
-type Range = [number, number];
 type Note = {
   id: string;
-  n: number;
-  ranges: Range[];
+  lines: Set<number>;
+  first: number;
+  last: number;
+  pills: number[];
   nodes: string[];
+  tease: string;
+  title: string;
+  href?: string;
+  linkText?: string;
   body: ReactNode;
+  length: number;
 };
 
-function parseRanges(lines: string): Range[] {
+type Open = {
+  active: string | null;
+  from: "code" | "node" | null;
+  node: string | null;
+  pinned: boolean;
+};
+
+const CLOSED: Open = { active: null, from: null, node: null, pinned: false };
+
+const ROW = 22;
+const PAD_Y = 14;
+const CARD_W = 300;
+const SIDE_GAP = 24;
+const CLOSE_DELAY = 250;
+const DIM = "opacity-[.32]";
+
+function parseRanges(lines: string) {
   return lines
     .split(",")
     .map((part) => {
       const [a, b] = part.trim().split("-").map(Number);
-      return [a, b ?? a] as Range;
+
+      return [a, b ?? a] as [number, number];
     })
     .filter(([a, b]) => {
       return Number.isFinite(a) && Number.isFinite(b);
     });
 }
 
-function describeRanges(ranges: Range[]) {
-  const parts = ranges.map(([a, b]) => {
-    return a === b ? `${a}` : `${a}-${b}`;
-  });
-  return `${
-    ranges.length === 1 && ranges[0][0] === ranges[0][1] ? "Line" : "Lines"
-  } ${parts.join(", ")}`;
+function list(value?: string) {
+  return String(value ?? "")
+    .split(",")
+    .map((s) => {
+      return s.trim();
+    })
+    .filter(Boolean);
 }
 
-function inRange(line: number, ranges: Range[]) {
-  return ranges.some(([a, b]) => {
-    return line >= a && line <= b;
-  });
-}
+function textLength(node: ReactNode): number {
+  return Children.toArray(node).reduce<number>((sum, child) => {
+    if (typeof child === "string" || typeof child === "number") {
+      return sum + String(child).length;
+    }
 
-function size(ranges: Range[]) {
-  return ranges.reduce((sum, [a, b]) => {
-    return sum + (b - a + 1);
+    if (isValidElement(child)) {
+      return sum + textLength((child.props as any).children);
+    }
+
+    return sum;
   }, 0);
 }
 
-const LINE_H = 20;
-const PAD_Y = 16;
-const BASE_GUTTER = 36;
+function readNote(el: ReactElement): Note {
+  const props = el.props as any;
+  const ranges = parseRanges(String(props.lines));
+  const lines = new Set<number>();
+
+  ranges.forEach(([a, b]) => {
+    for (let n = a; n <= b; n += 1) {
+      lines.add(n);
+    }
+  });
+
+  const pills =
+    props.pill === "none"
+      ? []
+      : props.pill
+      ? list(props.pill).map(Number)
+      : ranges.map(([a]) => {
+          return a;
+        });
+
+  return {
+    id: String(props.id),
+    lines,
+    first: Math.min(...lines),
+    last: Math.max(...lines),
+    pills,
+    nodes: list(props.nodes),
+    tease: props.tease ?? "",
+    title: String(props.title ?? ""),
+    href: props.href,
+    linkText: props.linkText,
+    body: props.children,
+    length: String(props.title ?? "").length + textLength(props.children),
+  };
+}
 
 export function AnnotatedCode({
   children,
@@ -126,84 +214,133 @@ function Annotated({
   const codeProps = codeEl.props as any;
   const codeChild = Children.toArray(codeProps.children).find(isValidElement);
   const html: string = String((codeChild?.props as any)?.children ?? "");
+
   const lines = useMemo(() => {
     const out = html.split("\n");
-    if (out.length > 1 && out[out.length - 1].trim() === "") {
+
+    // The fence ends with a newline, which highlights as an empty last line
+    // (sometimes wrapped in empty spans).
+    while (
+      out.length > 1 &&
+      out[out.length - 1].replace(/<[^>]*>/g, "").trim() === ""
+    ) {
       out.pop();
     }
+
     return out;
   }, [html]);
 
-  const notes: Note[] = useMemo(() => {
+  const notes = useMemo(() => {
     return parts
       .filter((p) => {
-        return (p.type as any) === Annotation || (p.props as any)?.lines;
+        return p.type === Annotation;
       })
-      .map((p, i) => {
-        const props = p.props as any;
-        return {
-          id: `note-${i + 1}`,
-          n: i + 1,
-          ranges: parseRanges(String(props.lines)),
-          nodes: String(props.nodes ?? "")
-            .split(",")
-            .map((s) => s.trim())
-            .filter(Boolean),
-          body: props.children,
-        };
-      });
+      .map(readNote);
   }, [parts]);
 
-  const flowEl = parts.find((p) => {
-    return (
-      typeof (p.props as any)?.label === "string" && !(p.props as any).code
-    );
-  });
   const spec = useMemo(() => {
-    return flowEl ? readFlow(flowEl) : null;
-  }, [flowEl]);
+    return readTrace(
+      parts.find((p) => {
+        return p.type === Trace;
+      })
+    );
+  }, [parts]);
 
-  const [active, setActive] = useState<string | null>(null);
-  const [hoverNode, setHoverNode] = useState<string | null>(null);
-  const [showAll, setShowAll] = useState(false);
-  const [wide, setWide] = useState(false);
-  const [scrollX, setScrollX] = useState(0);
+  // Line number → the note whose pill sits on it, and each pill's place in
+  // reading order for the staggered pulse.
+  const pillAt = useMemo(() => {
+    const map = new Map<number, Note>();
+
+    notes.forEach((note) => {
+      note.pills.forEach((n) => {
+        map.set(n, note);
+      });
+    });
+
+    return map;
+  }, [notes]);
+
+  const pillOrder = useMemo(() => {
+    return [...pillAt.keys()].sort((a, b) => {
+      return a - b;
+    });
+  }, [pillAt]);
+
+  const id = useId();
+  const codeCardId = `${id}-code-note`;
+  const traceCardId = `${id}-trace-note`;
+
+  const [open, setOpenState] = useState<Open>(CLOSED);
+  const [touched, setTouched] = useState(false);
+  const [layout, setLayout] = useState({ width: 0, room: 0 });
+  const openRef = useRef(open);
   const root = useRef<HTMLDivElement>(null);
   const timer = useRef<number | undefined>(undefined);
 
-  useEffect(() => {
-    const el = root.current;
-    if (!el) {
-      return;
-    }
-    const measure = () => {
-      setWide(el.getBoundingClientRect().width >= 960);
-    };
-    measure();
-    const ro = new ResizeObserver(measure);
-    ro.observe(el);
-    return () => {
-      ro.disconnect();
-    };
+  const setOpen = useCallback((next: Open) => {
+    openRef.current = next;
+    setOpenState(next);
   }, []);
 
-  // Open quickly, close a beat later, so moving between a line and its note
-  // never flickers.
-  const schedule = useCallback((id: string | null) => {
-    window.clearTimeout(timer.current);
-    timer.current = window.setTimeout(
-      () => {
-        setActive(id);
-      },
-      id ? 60 : 140
-    );
-  }, []);
-  const cancel = useCallback(() => {
+  const cancelClose = useCallback(() => {
     window.clearTimeout(timer.current);
   }, []);
+
+  // Leaving a pill, line or bar waits a moment so the pointer can reach the
+  // card; entering the card or a lit line cancels the close.
+  const closeSoon = useCallback(
+    (from: "code" | "node") => {
+      cancelClose();
+
+      timer.current = window.setTimeout(() => {
+        const current = openRef.current;
+
+        if (current.from === from && !current.pinned) {
+          setOpen(CLOSED);
+        }
+      }, CLOSE_DELAY);
+    },
+    [cancelClose, setOpen]
+  );
+
   useEffect(() => {
     return () => {
       window.clearTimeout(timer.current);
+    };
+  }, []);
+
+  // Notes sit beside the block when the page has room to its right (up to
+  // the docs sidebar), otherwise below the lines they describe.
+  useEffect(() => {
+    const el = root.current;
+
+    if (!el) {
+      return;
+    }
+
+    const measure = () => {
+      const rect = el.getBoundingClientRect();
+      const sidebar = document
+        .querySelector("[data-docs-sidebar]")
+        ?.getBoundingClientRect();
+      const limit =
+        sidebar && sidebar.width > 0
+          ? sidebar.left
+          : document.documentElement.clientWidth;
+
+      setLayout({ width: rect.width, room: limit - rect.right - SIDE_GAP });
+    };
+
+    measure();
+
+    const observer = new ResizeObserver(measure);
+
+    observer.observe(el);
+    window.addEventListener("resize", measure);
+
+    return () => {
+      observer.disconnect();
+      window.removeEventListener("resize", measure);
     };
   }, []);
 
@@ -211,298 +348,468 @@ function Annotated({
   useEffect(() => {
     const onDown = (e: PointerEvent) => {
       if (root.current && !root.current.contains(e.target as Node)) {
-        setActive(null);
+        setOpen(CLOSED);
       }
     };
+
     document.addEventListener("pointerdown", onDown);
+
     return () => {
       document.removeEventListener("pointerdown", onDown);
     };
-  }, []);
+  }, [setOpen]);
 
-  // Innermost note (smallest span) wins for a hovered line.
-  const noteForLine = useCallback(
-    (line: number) => {
-      const hits = notes.filter((n) => {
-        return inRange(line, n.ranges);
+  const noteById = useCallback(
+    (noteId: string | null) => {
+      return notes.find((note) => {
+        return note.id === noteId;
       });
-      hits.sort((a, b) => {
-        return size(a.ranges) - size(b.ranges);
-      });
-      return hits[0]?.id ?? null;
     },
     [notes]
   );
 
-  const activeNote = notes.find((n) => {
-    return n.id === active;
-  });
-  const highlightedNotes = new Set<string>(
-    hoverNode
-      ? notes
-          .filter((n) => {
-            return n.nodes.includes(hoverNode);
-          })
-          .map((n) => {
-            return n.id;
-          })
-      : active
-      ? [active]
-      : []
-  );
-  const highlightedNodes = new Set<string>(
-    hoverNode ? [hoverNode] : activeNote?.nodes ?? []
-  );
+  const openFromPill = (note: Note) => {
+    cancelClose();
+    setTouched(true);
 
-  const total = lines.length;
-  const slotOf = (note: Note) => {
-    return notes.filter((o) => {
-      return o.n < note.n && o.ranges[0][0] === note.ranges[0][0];
-    }).length;
+    if (!openRef.current.pinned) {
+      setOpen({ active: note.id, from: "code", node: null, pinned: false });
+    }
   };
-  const GUTTER =
-    BASE_GUTTER +
-    18 *
-      Math.max(
-        0,
-        ...notes.map((n) => {
-          return slotOf(n);
-        })
-      );
-  const bodyH = total * LINE_H + PAD_Y * 2;
 
-  const code = (
-    <div className="relative min-w-0">
-      <div
-        className="overflow-x-auto"
-        onScroll={(e) => {
-          setScrollX(e.currentTarget.scrollLeft);
-        }}
-        onMouseOver={(e) => {
-          const el = (e.target as HTMLElement).closest("[data-line]");
-          if (!el) {
-            return;
-          }
-          const id = noteForLine(Number(el.getAttribute("data-line")));
-          if (id) {
-            schedule(id);
-          } else {
-            schedule(null);
-          }
-        }}
-        onMouseLeave={() => {
-          schedule(null);
-        }}
-      >
-        <pre
-          className="relative m-0 min-w-max py-4 text-xs leading-[20px] text-basis"
-          style={{ paddingLeft: GUTTER, paddingRight: 24 }}
-          aria-label={codeProps.title ? `Code: ${codeProps.title}` : "Code"}
-        >
-          {notes.map((note) => {
-            const on = highlightedNotes.has(note.id);
-            return note.ranges.map(([a, b], i) => {
-              return (
-                <span
-                  key={`${note.id}-${i}`}
-                  aria-hidden="true"
-                  data-outline={note.id}
-                  className={clsx(
-                    "pointer-events-none absolute right-2 rounded-[5px] border border-dashed transition duration-150 motion-reduce:transition-none",
-                    on
-                      ? "border-[rgb(var(--color-foreground-base))] bg-[rgb(var(--color-foreground-base)/0.06)] opacity-100"
-                      : showAll
-                      ? "border-carbon-400/60 opacity-60"
-                      : "border-transparent opacity-0"
-                  )}
-                  style={{
-                    left: GUTTER - 8,
-                    top: PAD_Y + (a - 1) * LINE_H - 2,
-                    height: (b - a + 1) * LINE_H + 4,
-                  }}
-                />
-              );
-            });
-          })}
-          <code className="relative block">
-            {lines.map((line, i) => {
-              return (
-                <span
-                  key={i}
-                  data-line={i + 1}
-                  className="block h-[20px] whitespace-pre"
-                  dangerouslySetInnerHTML={{ __html: line || " " }}
-                />
-              );
-            })}
-          </code>
-        </pre>
-      </div>
+  const togglePin = (note: Note) => {
+    const current = openRef.current;
+    const same = current.pinned && current.active === note.id;
 
-      <div className="pointer-events-none absolute inset-0">
-        {notes.map((note) => {
-          const [start] = note.ranges[0];
-          const end = Math.max(...note.ranges.map(([, b]) => b));
-          const open = active === note.id;
-          const below = end <= total * 0.55;
-          const slot = slotOf(note);
-          return (
-            <div
-              key={note.id}
-              onBlur={(e) => {
-                if (!e.currentTarget.contains(e.relatedTarget as Node)) {
-                  schedule(null);
-                }
-              }}
-              onKeyDown={(e) => {
-                if (e.key === "Escape") {
-                  setActive(null);
-                }
-              }}
-            >
-              <button
-                type="button"
-                aria-expanded={open}
-                aria-controls={`${note.id}-body`}
-                aria-label={`Note ${note.n} on ${describeRanges(
-                  note.ranges
-                ).toLowerCase()}`}
-                onMouseEnter={() => {
-                  schedule(note.id);
-                }}
-                onFocus={() => {
-                  cancel();
-                  setActive(note.id);
-                }}
-                onClick={() => {
-                  cancel();
-                  setActive(open ? null : note.id);
-                }}
-                className={clsx(
-                  "pointer-events-auto absolute flex h-4 w-4 items-center justify-center rounded-full border text-[10px] font-medium leading-none transition duration-150 focus:outline-none focus-visible:ring-2 focus-visible:ring-breeze-500 motion-reduce:transition-none",
-                  open || highlightedNotes.has(note.id)
-                    ? "border-[rgb(var(--color-foreground-base))] bg-[rgb(var(--color-foreground-base))] text-[rgb(var(--color-background-canvas-base))]"
-                    : "border-carbon-400 text-subtle hover:border-[rgb(var(--color-foreground-base))] hover:text-basis"
-                )}
-                style={{
-                  left: 8 + slot * 18,
-                  transform: `translateX(${-scrollX}px)`,
-                  top: PAD_Y + (start - 1) * LINE_H + 2,
-                }}
-              >
-                {note.n}
-              </button>
-              <div
-                id={`${note.id}-body`}
-                role="note"
-                onMouseEnter={cancel}
-                onMouseLeave={() => {
-                  schedule(null);
-                }}
-                className={clsx(
-                  "absolute z-20 w-[min(24rem,calc(100%-3rem))] rounded-md border border-muted bg-surfaceBase p-3 text-[13px] leading-5 text-basis shadow-lg transition-[opacity,transform,visibility] duration-150 ease-out motion-reduce:transform-none motion-reduce:transition-none",
-                  "[&_a]:text-breeze-600 dark:[&_a]:text-breeze-300 [&_code]:rounded [&_code]:bg-canvasSubtle [&_code]:px-1 [&_code]:text-xs [&_p]:m-0",
-                  open
-                    ? "pointer-events-auto visible translate-y-0 opacity-100"
-                    : clsx(
-                        "pointer-events-none invisible opacity-0",
-                        below ? "translate-y-1" : "-translate-y-1"
-                      )
-                )}
-                style={
-                  below
-                    ? { left: GUTTER, top: PAD_Y + end * LINE_H + 8 }
-                    : {
-                        left: GUTTER,
-                        bottom: bodyH - (PAD_Y + (start - 1) * LINE_H) + 8,
-                      }
-                }
-              >
-                <span className="mb-1 block font-mono text-[11px] text-subtle">
-                  {describeRanges(note.ranges)}
-                </span>
-                {note.body}
-              </div>
-            </div>
-          );
-        })}
-      </div>
-    </div>
-  );
+    cancelClose();
+    setTouched(true);
+    setOpen(
+      same
+        ? CLOSED
+        : { active: note.id, from: "code", node: null, pinned: true }
+    );
+  };
+
+  const enterBar = (bar: TraceSpec["bars"][number]) => {
+    if (!bar.note) {
+      return;
+    }
+
+    const current = openRef.current;
+
+    cancelClose();
+    setTouched(true);
+
+    // A bar the open note already lights keeps that note.
+    if (
+      current.from === "node" &&
+      noteById(current.active)?.nodes.includes(bar.id)
+    ) {
+      return;
+    }
+
+    setOpen({ active: bar.note, from: "node", node: bar.id, pinned: false });
+  };
+
+  const active = noteById(open.active);
+  const litNodes = new Set(active?.nodes ?? []);
+  const side = layout.room >= CARD_W;
+  const cardWidth = side ? CARD_W : Math.min(400, layout.width - 72);
+
+  let codeCardStyle: CSSProperties | null = null;
+
+  if (active && open.from === "code") {
+    codeCardStyle = side
+      ? {
+          left: layout.width + SIDE_GAP,
+          top: PAD_Y + (active.first - 1) * ROW - 6,
+          width: CARD_W,
+        }
+      : {
+          left: 56,
+          top: PAD_Y + active.last * ROW + 8,
+          width: cardWidth,
+        };
+  }
+
+  const traceH = spec ? traceHeight(spec) : 0;
+  let traceCardStyle: CSSProperties | null = null;
+  const bar = spec?.bars.find((b) => {
+    return b.id === open.node;
+  });
+
+  if (active && open.from === "node" && spec && bar) {
+    traceCardStyle = side
+      ? {
+          left: layout.width + SIDE_GAP,
+          top: Math.max(0, rowTop(bar.row) - 6),
+          width: CARD_W,
+        }
+      : clearSpot(spec, bar, layout.width, traceH, cardWidth, active.length);
+  }
 
   return (
-    <figure
+    <div
       ref={root}
-      className="not-prose relative my-6 rounded-md border border-subtle bg-codeEditor"
+      className="not-prose relative my-6 [--ac-lift:rgba(15,23,42,.35)] dark:[--ac-lift:rgba(0,0,0,.6)]"
       data-annotated-code
+      onKeyDown={(e) => {
+        if (e.key === "Escape") {
+          setOpen(CLOSED);
+        }
+      }}
     >
-      <div className="relative">
-        <CodeGroupHeader
-          title={codeProps.title}
-          filename={codeProps.title}
-          hasTabs={false}
-        >
-          {null}
-        </CodeGroupHeader>
-        <CopyButton code={codeProps.code} />
-      </div>
-      <div
-        className={clsx(
-          "grid",
-          wide && spec ? "grid-cols-[minmax(0,1fr)_320px]" : "grid-cols-1"
-        )}
-      >
-        {code}
-        {spec && (
-          <div
-            className={clsx(
-              "border-subtle p-4",
-              wide ? "border-l" : "border-t"
-            )}
+      <figure className="relative m-0 rounded-md border border-subtle bg-codeEditor">
+        <div className="relative">
+          <CodeGroupHeader
+            title={codeProps.title}
+            filename={codeProps.title}
+            hasTabs={false}
           >
-            <div className={clsx(!wide && "mx-auto max-w-[360px]")}>
-              <FlowDiagram
-                spec={spec}
-                highlighted={highlightedNodes}
-                onHover={(id) => {
-                  setActive(null);
-                  setHoverNode(id);
-                }}
-                onFocusNode={setHoverNode}
-              />
-            </div>
+            {null}
+          </CodeGroupHeader>
+          <CopyButton code={codeProps.code} />
+        </div>
+
+        <div className="relative">
+          <div className="overflow-x-auto">
+            <pre
+              className="m-0 min-w-max px-2 text-xs text-basis"
+              style={{ paddingTop: PAD_Y, paddingBottom: PAD_Y }}
+              aria-label={codeProps.title ? `Code: ${codeProps.title}` : "Code"}
+            >
+              <code className="block">
+                {lines.map((line, i) => {
+                  const n = i + 1;
+                  const lit = !!active?.lines.has(n);
+                  const top = lit && !active?.lines.has(n - 1);
+                  const bottom = lit && !active?.lines.has(n + 1);
+                  const pill = pillAt.get(n);
+
+                  return (
+                    <span
+                      key={n}
+                      data-line={n}
+                      onMouseEnter={lit ? cancelClose : undefined}
+                      onMouseLeave={
+                        lit
+                          ? () => {
+                              closeSoon("code");
+                            }
+                          : undefined
+                      }
+                      className={clsx(
+                        "relative flex items-center whitespace-pre transition-[opacity,background-color,box-shadow] duration-200 motion-reduce:transition-none",
+                        active && !lit && DIM,
+                        lit && "z-[1] bg-white dark:bg-white/[0.05]"
+                      )}
+                      style={{
+                        height: ROW,
+                        borderRadius: `${top ? 8 : 0}px ${top ? 8 : 0}px ${
+                          bottom ? 8 : 0
+                        }px ${bottom ? 8 : 0}px`,
+                        boxShadow: lit
+                          ? [
+                              top && "0 -6px 12px -10px var(--ac-lift)",
+                              bottom && "0 10px 18px -12px var(--ac-lift)",
+                            ]
+                              .filter(Boolean)
+                              .join(",") || undefined
+                          : undefined,
+                      }}
+                    >
+                      <span
+                        aria-hidden="true"
+                        className="w-9 shrink-0 select-none pr-5 text-right text-muted"
+                      >
+                        {n}
+                      </span>
+                      <span dangerouslySetInnerHTML={{ __html: line || " " }} />
+                      {pill && (
+                        <Pill
+                          note={pill}
+                          on={open.active === pill.id && open.from === "code"}
+                          pulse={touched ? null : pillOrder.indexOf(n)}
+                          controls={codeCardId}
+                          onEnter={() => {
+                            openFromPill(pill);
+                          }}
+                          onBlur={() => {
+                            closeSoon("code");
+                          }}
+                          onClick={() => {
+                            togglePin(pill);
+                          }}
+                        />
+                      )}
+                    </span>
+                  );
+                })}
+              </code>
+            </pre>
           </div>
-        )}
-      </div>
-      <figcaption className="flex items-center gap-3 border-t border-subtle px-4 py-2 text-xs text-subtle">
-        <span>
-          Hover or focus a numbered marker, a highlighted line, or a diagram
-          node.
-        </span>
-        <button
-          type="button"
-          aria-pressed={showAll}
-          onClick={() => {
-            setShowAll((v) => !v);
+
+          {active && codeCardStyle && (
+            <NoteCard
+              id={codeCardId}
+              note={active}
+              style={codeCardStyle}
+              onEnter={cancelClose}
+              onLeave={() => {
+                closeSoon("code");
+              }}
+            />
+          )}
+        </div>
+      </figure>
+
+      {spec && (
+        <div
+          role="group"
+          aria-label={spec.label}
+          className="relative mt-5 rounded-md border border-subtle bg-codeEditor"
+          style={{ height: traceH }}
+          onMouseLeave={() => {
+            closeSoon("node");
           }}
-          className="ml-auto shrink-0 rounded border border-muted px-2 py-0.5 text-basis hover:border-contrast focus:outline-none focus-visible:ring-2 focus-visible:ring-breeze-500"
+          onBlur={(e) => {
+            if (!e.currentTarget.contains(e.relatedTarget as Node)) {
+              closeSoon("node");
+            }
+          }}
         >
-          Outline all notes
-        </button>
-      </figcaption>
+          {layout.width > 0 && (
+            <TraceTimeline
+              spec={spec}
+              width={layout.width}
+              highlighted={litNodes}
+              dimmed={!!active}
+              onEnterBar={enterBar}
+            />
+          )}
+
+          {active && traceCardStyle && (
+            <NoteCard
+              id={traceCardId}
+              note={active}
+              style={traceCardStyle}
+              onEnter={cancelClose}
+              onLeave={() => {
+                closeSoon("node");
+              }}
+            />
+          )}
+        </div>
+      )}
+
       <div className="sr-only">
-        <h4>Code annotations</h4>
-        <ol>
+        <h4>Code notes</h4>
+        <ul>
           {notes.map((note) => {
             return (
               <li key={note.id}>
-                {describeRanges(note.ranges)}: {note.body}
+                <Inline text={note.title} />: {note.body}
               </li>
             );
           })}
-        </ol>
-        {spec && <p>Diagram: {spec.label}</p>}
+        </ul>
       </div>
-    </figure>
+    </div>
+  );
+}
+
+/**
+ * Where a trace note goes when there is no room beside the block: next to
+ * the bar without covering anything in the timeline (below, above, right,
+ * left), then any clear spot in it, else under it.
+ */
+function clearSpot(
+  spec: TraceSpec,
+  bar: TraceSpec["bars"][number],
+  width: number,
+  height: number,
+  cardWidth: number,
+  textLength: number
+): CSSProperties {
+  const h = 64 + Math.ceil(textLength / 42) * 21;
+  const gap = 10;
+  const anchor = barBox(bar, width);
+  const taken = [
+    ...spec.bars.map((b) => {
+      return barBox(b, width);
+    }),
+    { x: 0, y: 0, w: 90, h: height },
+  ];
+
+  const clampX = (x: number) => {
+    return Math.min(Math.max(x, 8), width - cardWidth - 8);
+  };
+
+  const clampY = (y: number) => {
+    return Math.min(Math.max(y, 8), height - h - 8);
+  };
+
+  const fits = (c: { x: number; y: number }) => {
+    const inside =
+      c.x >= 8 &&
+      c.x + cardWidth <= width - 8 &&
+      c.y >= 8 &&
+      c.y + h <= height - 8;
+
+    return (
+      inside &&
+      !taken.some((r) => {
+        return (
+          c.x < r.x + r.w &&
+          c.x + cardWidth > r.x &&
+          c.y < r.y + r.h &&
+          c.y + h > r.y
+        );
+      })
+    );
+  };
+
+  const candidates = [
+    { x: clampX(anchor.x), y: anchor.y + BAR_H + gap },
+    { x: clampX(anchor.x), y: anchor.y - h - gap },
+    { x: anchor.x + anchor.w + gap, y: clampY(anchor.y - 8) },
+    { x: anchor.x - cardWidth - gap, y: clampY(anchor.y - 8) },
+  ];
+
+  for (let y = 8; y + h <= height - 8; y += 12) {
+    for (let x = 8; x + cardWidth <= width - 8; x += 24) {
+      candidates.push({ x, y });
+    }
+  }
+
+  const spot = candidates.find(fits) ?? {
+    x: clampX(anchor.x),
+    y: height + 12,
+  };
+
+  return { left: spot.x, top: spot.y, width: cardWidth };
+}
+
+function NoteIcon() {
+  return (
+    <svg
+      width="12"
+      height="12"
+      viewBox="0 0 16 16"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth="1.6"
+      strokeLinecap="round"
+      strokeLinejoin="round"
+      aria-hidden="true"
+    >
+      <path d="M2.5 3.5h11v7h-6l-3 2.5v-2.5h-2z" />
+    </svg>
+  );
+}
+
+function Pill({
+  note,
+  on,
+  pulse,
+  controls,
+  onEnter,
+  onBlur,
+  onClick,
+}: {
+  note: Note;
+  on: boolean;
+  /** Place in the staggered pulse, or null once the reader opened a note. */
+  pulse: number | null;
+  controls: string;
+  onEnter: () => void;
+  onBlur: () => void;
+  onClick: () => void;
+}) {
+  return (
+    <button
+      type="button"
+      aria-label={`Note: ${note.title.split("`").join("")}`}
+      aria-expanded={on}
+      aria-controls={controls}
+      onMouseEnter={onEnter}
+      onFocus={onEnter}
+      onBlur={onBlur}
+      onClick={onClick}
+      className={clsx(
+        "ml-3.5 inline-flex h-5 shrink-0 items-center gap-[5px] rounded-full border pl-1.5 pr-2 font-sans text-[11.5px] font-medium leading-none transition-colors duration-150 focus:outline-none focus-visible:ring-2 focus-visible:ring-matcha-500 motion-reduce:transition-none",
+        on
+          ? "border-matcha-500/50 bg-matcha-500/10 text-matcha-700 dark:text-matcha-300"
+          : "border-muted bg-canvasBase text-subtle hover:text-basis",
+        pulse !== null && "animate-ac-pulse motion-reduce:animate-none"
+      )}
+      style={
+        pulse !== null
+          ? { animationDelay: `${300 + pulse * 140}ms` }
+          : undefined
+      }
+    >
+      <NoteIcon />
+      {note.tease && <span>{note.tease}</span>}
+    </button>
+  );
+}
+
+function Inline({ text }: { text: string }) {
+  return (
+    <>
+      {text.split("`").map((part, i) => {
+        return i % 2 === 1 ? <code key={i}>{part}</code> : part;
+      })}
+    </>
+  );
+}
+
+function NoteCard({
+  id,
+  note,
+  style,
+  onEnter,
+  onLeave,
+}: {
+  id: string;
+  note: Note;
+  style: CSSProperties;
+  onEnter: () => void;
+  onLeave: () => void;
+}) {
+  return (
+    <div
+      id={id}
+      role="note"
+      onMouseEnter={onEnter}
+      onMouseLeave={onLeave}
+      onFocus={onEnter}
+      onBlur={(e) => {
+        if (!e.currentTarget.contains(e.relatedTarget as Node)) {
+          onLeave();
+        }
+      }}
+      className={clsx(
+        "absolute z-20 box-border animate-ac-card rounded-xl border border-subtle bg-surfaceBase px-4 pb-3.5 pt-3 text-left shadow-[0_18px_40px_-14px_rgba(15,23,42,.3)] motion-reduce:animate-none dark:shadow-[0_18px_40px_-14px_rgba(0,0,0,.7)]",
+        "[&_code]:rounded [&_code]:bg-canvasSubtle [&_code]:px-[5px] [&_code]:py-px [&_code]:font-mono [&_code]:text-[0.92em]"
+      )}
+      style={style}
+    >
+      <div className="text-sm font-semibold text-basis">
+        <Inline text={note.title} />
+      </div>
+      <div className="mt-1 text-[13.5px] leading-[1.55] text-subtle [&_a]:text-matcha-600 dark:[&_a]:text-matcha-400 [&_p]:m-0">
+        {note.body}
+      </div>
+      {note.href && (
+        <Link
+          href={note.href}
+          className="mt-2 inline-block text-[13px] font-medium text-matcha-600 hover:text-matcha-700 dark:text-matcha-400 dark:hover:text-matcha-300"
+        >
+          {note.linkText ?? "Read more"} →
+        </Link>
+      )}
+    </div>
   );
 }

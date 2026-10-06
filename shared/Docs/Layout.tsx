@@ -266,6 +266,7 @@ export function Layout({
                 // @ts-ignore
                 <motion.nav
                   layoutScroll
+                  data-docs-sidebar
                   className="fixed inset-y-0 right-0 z-40 mt-14 hidden w-60 overflow-y-auto bg-canvasBase px-6 pb-12 pt-16 xl:block 2xl:w-96 2xl:px-10"
                 >
                   <div className="pt-2">
