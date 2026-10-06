@@ -81,6 +81,14 @@ if (touched === false) {
 
 `changed()` reads the pull request files, or the push range, before any machine starts. When it cannot tell what changed, it returns `true` so nothing is skipped by mistake, and notes it on the check. That happens when the run has no repository or no GitHub credentials, when it has no pull request or push range (a cron, a manual run, a merge group, or a push that creates a branch), when a local run cannot find its base branch, and when a compare hits GitHub's 300-file cap.
 
+Pass patterns as arguments, or an object with `include` and `ignore`. A file counts when it matches an `include` pattern and no `ignore` pattern. Without `include`, every file is included. Patterns support `**`, `*`, `?`, and `{a,b}`.
+
+```typescript {{ title: "TypeScript" }}
+if (await changed({ include: ["docs/**"], ignore: ["docs/**/*.png"] })) {
+  await docsSite();
+}
+```
+
 ## Triggers
 
 A [**trigger**](/docs/labs/ci/pipelines#triggers) starts a pipeline and types its `event`.
@@ -334,6 +342,27 @@ Call `compat()` to run every combination, or `compat({ node: "22" })` to run onl
 - `machine` and `cache` accept a value or a function of the combination. `check` applies to every combination.
 - With `failFast` off, failures are thrown together as an `AggregateError` after every combination finishes.
 
+### Split files across jobs
+
+`shard({ total, index, files }, fn)` calls `fn` with this shard's share of `files`: every `total`-th file, starting at `index`. Use it in a matrix to split a test suite across machines. It throws `CiUsageError` outside a job.
+
+```typescript {{ title: "TypeScript" }}
+import { $, from, shard } from "@inngest/ci";
+
+const unit = ci.matrix(
+  { id: "unit", axes: { shard: ["0", "1", "2", "3"] } },
+  async ({ shard: index }) => {
+    await from(base);
+
+    const tests = await $.sh`find src -name '*.test.ts'`.lines();
+
+    await shard({ total: 4, index: Number(index), files: tests }, async (files) => {
+      await $`pnpm vitest run ${files}`;
+    });
+  },
+);
+```
+
 ## Caching
 
 A job's [`cache`](/docs/labs/ci/caching) reuses its last result when nothing it depends on has changed. The input a job is called with is part of its cache identity, so the same key with a different input is a different entry.
@@ -556,6 +585,12 @@ const migrations = ci.job("migrations", async () => {
 | `CommandFailedError` | A command exits with a non-zero code and you did not call `.nothrow()`. |
 | `CommandTimeoutError` | A command passes its `.timeout()`. |
 | `CiUsageError` | The API is used in a way it does not support, such as `$` outside a job or `checkout()` in a run with no repository. |
+
+Import the classes from `@inngest/ci` to check for them with `instanceof`.
+
+- `CommandFailedError` has `command` (the arguments as an array), `exitCode`, `stdoutTail` and `stderrTail` (the end of each stream), and `jobPath` (the job that ran it). Its message is the command, its exit code, and the end of stderr.
+- `CommandTimeoutError` has `command`, `timeout` (the duration you set), and `jobPath`.
+- A `CiUsageError` fails the run without retrying, because a retry would fail the same way.
 
 ## Next steps
 
