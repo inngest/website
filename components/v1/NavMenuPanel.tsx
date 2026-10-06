@@ -2,6 +2,7 @@ import Image from "next/image";
 
 import Link from "@/components/v1/Link";
 import NavIcon from "@/components/v1/NavIcons";
+import StatusTag from "@/components/v1/StatusTag";
 import { WipeLabel } from "@/components/v1/sections/shared/WipeLabel";
 import { appendRef } from "@/utils/v1/ref";
 import type {
@@ -49,10 +50,10 @@ export default function NavMenuPanel({
         "relative isolate w-full overflow-clip rounded-[6px] bg-carbon-1000",
         PANEL_BORDER,
         hasPromo
-          ? "flex gap-6 xl:gap-14 px-6 xl:px-8 py-8"
+          ? "flex gap-6 px-6 py-8 xl:gap-14 xl:px-8"
           : compact
-            ? "px-8 py-5"
-            : "px-8 pt-8 pb-10",
+          ? "px-8 py-5"
+          : "px-8 pb-10 pt-8",
         "items-start"
       )}
     >
@@ -92,7 +93,7 @@ function MenuItemList({
   return (
     <ul
       className={cn(
-        "flex flex-col shrink-0",
+        "flex shrink-0 flex-col",
         compact ? "gap-4" : "gap-8",
         fill && "w-full",
         // Promo menus (Platform, Use Cases): pin the text column to a
@@ -114,11 +115,8 @@ function MenuColumns({ columns }: { columns: NavMenuColumn[] }) {
   return (
     <div className="flex flex-1 shrink-0 items-start justify-center gap-6">
       {columns.map((column) => (
-        <div
-          key={column.heading}
-          className="flex flex-1 flex-col"
-        >
-          <p className="!text-[0.75rem] mb-4 text-v1-label-md uppercase text-carbon-200">
+        <div key={column.heading} className="flex flex-1 flex-col">
+          <p className="text-v1-label-md mb-4 !text-[0.75rem] uppercase text-carbon-200">
             {column.heading}
           </p>
           <div className="flex flex-col gap-7">
@@ -159,7 +157,7 @@ function MenuRow({
       {item.icon && (
         <NavIcon
           name={item.icon}
-          className="shrink-0 text-v1-frost motion-safe:transition-colors motion-safe:duration-300 motion-safe:ease-v1-out group-hover/navrow:text-v1-accent-salmon"
+          className="shrink-0 text-v1-frost group-hover/navrow:text-v1-accent-salmon motion-safe:transition-colors motion-safe:duration-300 motion-safe:ease-v1-out"
         />
       )}
       <span
@@ -168,7 +166,7 @@ function MenuRow({
         {/* 24px line-box (matches the icon height) with the cap-trimmed
             title centred, so the glyph aligns center-to-center with the
             title text rather than hanging below it. */}
-        <span className="flex h-6 items-center">
+        <span className="flex h-6 items-center gap-2">
           <WipeLabel
             className={cn(
               "text-v1-heading-xs text-white",
@@ -177,11 +175,12 @@ function MenuRow({
           >
             {item.label}
           </WipeLabel>
+          {item.tag && <StatusTag>{item.tag}</StatusTag>}
         </span>
         {item.description && (
           <span
             className={cn(
-              "!text-[0.875rem] text-v1-body-sm text-v1-frost/70",
+              "text-v1-body-sm !text-[0.875rem] text-v1-frost/70",
               fill ? "w-full" : "whitespace-nowrap"
             )}
           >
@@ -218,10 +217,12 @@ function NavPromoCard({ promo }: { promo: NavPromo }) {
         />
       </div>
       <div className="flex h-[140px] flex-col justify-center gap-5 px-5 pb-6 pt-5">
-        <WipeLabel className="!text-[1rem] text-v1-heading-xs text-white">
+        <WipeLabel className="text-v1-heading-xs !text-[1rem] text-white">
           {promo.title}
         </WipeLabel>
-        <p className="!text-[0.875rem] text-v1-body-sm text-v1-frost/70">{promo.description}</p>
+        <p className="text-v1-body-sm !text-[0.875rem] text-v1-frost/70">
+          {promo.description}
+        </p>
       </div>
     </div>
   );

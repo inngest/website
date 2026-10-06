@@ -38,6 +38,10 @@ const COLUMN_PLATFORM: FooterColumnDef = {
       href: "/platform/agent-evals",
       noPrefetch: true,
     },
+    {
+      label: "Sandboxes",
+      href: "/platform/sandboxes",
+    },
   ],
 };
 
@@ -84,7 +88,10 @@ const COLUMN_COMMUNITY: FooterColumnDef = {
     { label: "Github", href: "https://github.com/inngest/inngest" },
     { label: "Discord", href: "https://www.inngest.com/discord" },
     { label: "Bluesky", href: "https://bsky.app/profile/inngest.com" },
-    { label: "LinkedIn", href: "https://www.linkedin.com/company/inngest-inc/" },
+    {
+      label: "LinkedIn",
+      href: "https://www.linkedin.com/company/inngest-inc/",
+    },
   ],
 };
 
@@ -217,7 +224,9 @@ function StatusBadge({ variant }: { variant: "inline" | "full" }) {
       className={wrapperClass}
     >
       <span aria-hidden="true" className="size-2 bg-v1-accent-green" />
-      <span className="text-v1-body-sm text-v1-frost">All systems operational</span>
+      <span className="text-v1-body-sm text-v1-frost">
+        All systems operational
+      </span>
     </a>
   );
 }

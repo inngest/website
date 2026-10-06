@@ -1597,3 +1597,81 @@ button:focus-visible .v1-wipe-reveal {
     animation: none;
   }
 }
+
+/* ---------- Sandboxes / Hero code pane ----------
+ * The homepage hero's code treatment, inside the Sandboxes stage: grey
+ * monochrome code, the step calls set in display type, the running call
+ * breathing with a glow, the active step as a rounded row wash, one jolt
+ * when a step fails. Running is brand blue here (the gutter dot is too);
+ * failure is salmon. */
+.sbx-code {
+  filter: blur(11px);
+  opacity: 0.28;
+  transition: filter 1.2s cubic-bezier(0.2, 0.8, 0.2, 1), opacity 1.2s ease;
+}
+.sbx-code--in {
+  filter: blur(0);
+  opacity: 1;
+}
+
+.sbx-block {
+  margin: 4px 10px 4px 0;
+  padding: 4px 10px;
+  border-radius: 8px;
+  transition: background-color 420ms cubic-bezier(0.2, 0.8, 0.2, 1);
+}
+.sbx-block--running {
+  background-color: rgb(var(--color-v1-blue-200) / 0.12);
+}
+.sbx-block--failed {
+  background-color: rgb(var(--color-v1-salmon-200) / 0.18);
+  animation: hero-step-shake 420ms cubic-bezier(0.36, 0.07, 0.19, 0.97) 1;
+}
+
+.sbx-call {
+  display: inline-block;
+  font-size: 1.15em;
+  font-weight: 700;
+  line-height: 20px;
+  color: #fff;
+  transition: color 320ms cubic-bezier(0.2, 0.8, 0.2, 1),
+    text-shadow 320ms cubic-bezier(0.2, 0.8, 0.2, 1);
+}
+.sbx-call-obj {
+  color: rgb(var(--color-v1-blue-200));
+  transition: color 320ms cubic-bezier(0.2, 0.8, 0.2, 1);
+}
+.sbx-call--idle,
+.sbx-call--idle .sbx-call-obj {
+  color: rgb(var(--color-v1-text-subtle));
+}
+.sbx-call--running {
+  animation: sbx-call-breathe 1.1s ease-in-out infinite;
+}
+.sbx-call--failed {
+  text-shadow: 0 0 12px rgb(var(--color-v1-salmon-200) / 0.7);
+}
+.sbx-call--failed .sbx-call-obj {
+  color: rgb(var(--color-v1-salmon-200));
+}
+@keyframes sbx-call-breathe {
+  0%,
+  100% {
+    text-shadow: 0 0 10px rgb(var(--color-v1-blue-200) / 0.55);
+  }
+  50% {
+    text-shadow: 0 0 18px rgb(var(--color-v1-blue-200) / 0.95);
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .sbx-code,
+  .sbx-code--in {
+    filter: none;
+    opacity: 1;
+    transition: none;
+  }
+  .sbx-call--running,
+  .sbx-block--failed {
+    animation: none;
+  }
+}
