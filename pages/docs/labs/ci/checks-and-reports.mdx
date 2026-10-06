@@ -50,19 +50,26 @@ await report.annotate([
 
 ## Read the trace
 
-Every run also opens in the Inngest dashboard as one trace. It lists steps in the order they ran, and each step name starts with its job:
+Every run also opens in the Inngest dashboard as one trace, grouped the way you wrote the pipeline. Each job is one row.
 
-| Step | What it is |
-| --- | --- |
-| `base › machine` | The job's Sandbox starting, followed by `base › machine › setup` |
-| `base › checkout` | The repository clone |
-| `test › pnpm test` | A command. Retries are `test › pnpm test #attempt-1`, `#attempt-2`, and so on, and a repeated command gets `#2` |
-| `github › check:test:start` | A GitHub check update |
-| `cache:key`, `cache:lookup` | Cache lookups |
+```typescript {{ title: "TypeScript" }}
+const test = ci.job({ id: "test", name: "Unit tests" }, async () => {
+  await from(base);
+  await $`pnpm test`.retries(1);
+});
+```
 
-A job called a second time in the same run starts its steps with `test (2)`, and has its own check.
+- **Collapsed:** one row per job, tagged `JOB`, showing its `name`, or its `id` when it has none. A muted `S1` or `S2` badge marks the [Sandbox](/docs/sandboxes/overview) a job runs on. A second Sandbox from [`sandbox("api")`](/docs/labs/ci/machines#extra-machines) shows its own badge on its row.
+- **Expanded job:** Start sandbox (or "Start sandbox from `base`" with [`from()`](/docs/labs/ci/machines#start-a-job-from-another-job)), your commands as `$ pnpm test` rows or their [`.as()`](/docs/labs/ci/commands#options) names, your own `step.run` steps by name, then Save sandbox.
+- **Expanded command:** Start process, Wait, Poll process, and Read output, or "Run and read output" for a short captured command. Each retry is Attempt 1, Attempt 2, and so on, and a failed command ends in "Exited with code N".
+- **Top level:** a GitHub group holds the check updates, and "Clean up sandboxes" comes last.
+- **Dimmed rows:** the work CI does for you is dimmed so your own rows stand out. Failures are never dimmed. Select a dimmed step and the step panel shows "Added by @inngest/ci@<version>".
 
-[Commands](/docs/labs/ci/commands#options) shows how `.as()` renames a command step. A GitHub "Re-run" on a check sends a new pull request or push event for the commit, so pipelines on those triggers run again. Passed jobs are reused only when they have a [cache](/docs/labs/ci/caching) key.
+A job called a second time in the same run shows as `test (2)` and has its own check.
+
+[Commands](/docs/labs/ci/commands#options) shows how `.as()` renames a command row. A GitHub "Re-run" on a check sends a new pull request or push event for the commit, so pipelines on those triggers run again. Passed jobs are reused only when they have a [cache](/docs/labs/ci/caching) key.
+
+<!-- TODO: replace with a grouped-trace screenshot from the demo -->
 
 ![The trace of the example pr pipeline in the Inngest Dev Server: pipeline and job checks, cache lookups, then the base job creating its machine, checking out the repository and installing dependencies](/assets/docs/labs/ci/trace.png)
 

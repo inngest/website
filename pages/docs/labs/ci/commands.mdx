@@ -25,7 +25,7 @@ const test = ci.job("test", async () => {
 
 ## Retries
 
-`.retries(n)` runs a failed command up to `n` more times on the same machine. Each attempt is its own step in the trace.
+`.retries(n)` runs a failed command up to `n` more times on the same machine. Each attempt shows as Attempt 1, Attempt 2, and so on under the command in the [trace](/docs/labs/ci/checks-and-reports#read-the-trace).
 
 ```typescript {{ title: "TypeScript" }}
 await $`pnpm test`.retries(2);
@@ -47,7 +47,7 @@ const sha = await $`git rev-parse HEAD`.text();
 
 - `.nothrow()` returns the result with its exit code instead of throwing.
 - `.env()`, `.cwd()`, and `.timeout()` set the environment, directory, and time limit.
-- `.as(name)` replaces the command text in the step name, as in `test › e2e`.
+- `.as(name)` replaces the command text in the trace row, as in `e2e` instead of `$ pnpm exec playwright test`.
 - `.text()`, `.lines()`, and `.json()` return stdout in a convenient shape.
 
 [Reference](/docs/labs/ci/reference#commands) lists every method, the result fields, and `.background()`.

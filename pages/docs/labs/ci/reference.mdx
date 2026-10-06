@@ -154,10 +154,13 @@ const build = ci.job({ id: "build", machine: { vcpu: 4 } }, async () => {
 | Option | Type | Required |
 | --- | --- | --- |
 | `id` | `string` | Yes |
+| `name` | `string` | No |
 | `machine` | `{ vcpu?: 1 \| 2 \| 4 }` | No |
 | `cache` | `{ key?, refresh?, scope? }` | No |
 | `check` | `false`, or `{ name? }` | No |
 | `keepOnFailure` | Duration, such as `"24h"` | No |
+
+`name` is what the [trace](/docs/labs/ci/checks-and-reports#read-the-trace) calls the job. Defaults to `id`.
 
 `keepOnFailure` snapshots the machine when the job fails. The snapshot ID appears in the pipeline check's summary, under **Kept machines**. It takes a duration, but the duration is ignored today: the snapshot keeps the platform's default retention.
 
@@ -274,7 +277,7 @@ Each job builds on the snapshot of the one before it. When a job's [cache key](#
 
 ## Extra machines
 
-`sandbox(name, { vcpu })` creates another machine for the job right away, with the job's machine settings unless you pass others. It is destroyed with the pipeline. Its steps are named `<job> › <name> › machine`.
+`sandbox(name, { vcpu })` creates another machine for the job right away, with the job's machine settings unless you pass others. It is destroyed with the pipeline. It appears in the job's trace with its own `S2` badge.
 
 ```typescript {{ title: "TypeScript" }}
 const e2e = ci.job("e2e", async () => {
