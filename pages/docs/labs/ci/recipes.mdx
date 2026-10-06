@@ -16,8 +16,8 @@ export const description = "Inngest CI recipes: start services and wait for them
 | Task | Code | Learn more |
 | --- | --- | --- |
 | Start a server | `` const server = await $`pnpm start`.background() `` | [Reference](/docs/labs/ci/reference#commands) |
-| Wait for a port | `await probe.waitForPort(3000)` | [Machines](/docs/labs/ci/machines#use-a-second-machine) |
-| Wait for a health check | `await probe.waitForHttp("http://127.0.0.1:3000/health")` | [Machines](/docs/labs/ci/machines#use-a-second-machine) |
+| Wait for a port | `await waitForPort(3000)` | [Reference](/docs/labs/ci/reference#extra-machines) |
+| Wait for a health check | `await waitForHttp("http://127.0.0.1:3000/health")` | [Reference](/docs/labs/ci/reference#extra-machines) |
 | Read server logs | `await server.output()` | [Reference](/docs/labs/ci/reference#commands) |
 | Stop a server | `await server.kill()` | [Reference](/docs/labs/ci/reference#commands) |
 | Wait for other checks | `await github.waitForChecks({ names: ["vercel"] })` | [Reference](/docs/labs/ci/reference#github-api-and-helpers) |

@@ -119,6 +119,18 @@ function transformJsxElement(node: MdxJsxElement): RootContent[] | null {
     return node.children;
   }
 
+  // Annotated code is gated behind ?unreleased=annotated-code, which this
+  // converter cannot see, so export only the plain code block until it ships.
+  if (name === "AnnotatedCode") {
+    return node.children.filter((child) => {
+      const el = child as unknown as MdxJsxElement;
+      return !(
+        el.type === "mdxJsxFlowElement" &&
+        (el.name === "Annotation" || el.name === "Flow")
+      );
+    });
+  }
+
   // Callout components: Note, Tip, Warning, Info, Callout
   if (["Note", "Tip", "Warning", "Info", "Callout"].includes(name)) {
     const textContent = toString(node).trim();

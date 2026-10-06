@@ -287,6 +287,7 @@ const e2e = ci.job("e2e", async () => {
 - Plain `$` still runs on the job's own machine.
 - An extra machine starts empty. `checkout()` runs on the job's machine only.
 - `ExtraMachine` has `$`, `$.sh`, `waitForPort()`, and `waitForHttp()`.
+- `waitForPort` and `waitForHttp` are also top-level exports of `@inngest/ci`. They run on the job's own machine: `import { waitForPort, waitForHttp } from "@inngest/ci"`.
 
 <Warning>
   Machines cannot reach each other yet. Run servers your tests call on the job's own machine and use `127.0.0.1`.

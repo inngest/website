@@ -51,6 +51,13 @@ export {
   LanguageTitle,
   SdkUnsupported,
 } from "./Code";
+export {
+  AnnotatedCode,
+  Annotation,
+  Flow,
+  FlowNode,
+  FlowEdge,
+} from "./AnnotatedCode/AnnotatedCode";
 export { DownloadLink } from "./DownloadLink";
 export { Unreleased } from "./Unreleased";
 

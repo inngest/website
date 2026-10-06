@@ -1,4 +1,4 @@
-import { Info } from "shared/Docs/mdx";
+import { Info, AnnotatedCode, Annotation, Flow, FlowNode, FlowEdge } from "shared/Docs/mdx";
 
 export const metaTitle = "Overview | Inngest CI";
 export const description = "Inngest CI overview: write CI pipelines in TypeScript instead of YAML, retry only failed work, reuse work between jobs, run locally, and debug each run as one trace.";
@@ -25,6 +25,8 @@ Inngest CI replaces config-driven YAML with code. You write pipelines and jobs a
 ## How a run works
 
 This pipeline runs on every pull request. `base` installs dependencies once. `lint` and `test` each start from a copy of the `base` machine and run in parallel.
+
+<AnnotatedCode>
 
 ```typescript {{ title: "ci/pipelines.ts" }}
 import { github, checkout, from, $ } from "@inngest/ci";
@@ -57,11 +59,60 @@ const test = ci.job("test", async () => {
 });
 ```
 
+<Annotation lines="4-13" nodes="pr">
+A **pipeline** is one Inngest function. It starts when the trigger fires and calls jobs like ordinary async functions, so every [flow control](/docs/labs/ci/pipelines#flow-control) option works on it.
+</Annotation>
+
+<Annotation lines="7" nodes="event">
+`github.pullRequest()` starts a run when a pull request opens, is pushed to, or reopens. Pass `types` to change which actions start it. See [triggers](/docs/labs/ci/reference#triggers).
+</Annotation>
+
+<Annotation lines="8" nodes="pr">
+`singleton` allows one run per pull request, keyed by the pull request number. With `mode: "cancel"`, a new push cancels the run still going for the old commit, so you never wait on superseded work. [Singleton](/docs/durable-execution/flow-control/singleton)
+</Annotation>
+
+<Annotation lines="11" nodes="lint,test">
+`Promise.all` starts both jobs at once. Each job gets its own machine, so `lint` and `test` run in parallel instead of queuing on one runner. Calling a job is an ordinary function call, so loops and `if` work too.
+</Annotation>
+
+<Annotation lines="15-18" nodes="base,snapshot">
+`base` checks out the repository and installs dependencies once. When the job finishes, Inngest pauses its machine so other jobs can start from a snapshot of it. [Machines](/docs/labs/ci/reference#machines)
+</Annotation>
+
+<Annotation lines="21,26" nodes="snapshot">
+`from(base)` starts this job on a copy of the `base` machine, with the checkout and install already done, like a Docker layer. `base` does not run again, however many jobs start from it. See [Start a job from another job](/docs/labs/ci/machines#start-a-job-from-another-job) and [`from`](/docs/labs/ci/reference#from).
+</Annotation>
+
+<Annotation lines="27" nodes="test">
+`.retries(1)` runs `pnpm test` again on the same machine if it exits non-zero. Only the command retries, not the job, and each attempt is its own step in the trace. If it still fails, the `test` check fails and the run ends. See [Retries](/docs/labs/ci/commands#retries).
+</Annotation>
+
+<Annotation lines="15,20,25" nodes="checks">
+Each job reports its own GitHub check, and the pipeline reports one more. See [Checks and reports](/docs/labs/ci/checks-and-reports).
+</Annotation>
+
+<Flow label="A pull request triggers the pr pipeline. The base job runs on its own machine and Inngest snapshots it. The lint and test jobs start in parallel from that snapshot. Each job reports a GitHub check.">
+  <FlowNode id="event" kind="external" at="1,0">Pull request</FlowNode>
+  <FlowNode id="pr" kind="pipeline" at="1,1">pr pipeline</FlowNode>
+  <FlowNode id="base" kind="job" at="1,2">base job</FlowNode>
+  <FlowNode id="snapshot" kind="platform" at="1,3">snapshot of base</FlowNode>
+  <FlowNode id="lint" kind="job" at="0,4">lint job</FlowNode>
+  <FlowNode id="test" kind="job" at="2,4">test job</FlowNode>
+  <FlowNode id="checks" kind="platform" at="1,5">GitHub checks</FlowNode>
+  <FlowEdge from="event" to="pr" />
+  <FlowEdge from="pr" to="base" />
+  <FlowEdge from="base" to="snapshot" dashed />
+  <FlowEdge from="snapshot" to="lint" dashed />
+  <FlowEdge from="snapshot" to="test" dashed />
+  <FlowEdge from="lint" to="checks" dashed />
+  <FlowEdge from="test" to="checks" dashed />
+</Flow>
+
+</AnnotatedCode>
+
 `base` runs once, however many jobs start from it. If `pnpm test` exits with a non-zero code, `.retries(1)` runs it again on the same machine, and each attempt is its own step in the trace. If it still fails, the `test` check fails and the run ends. Inngest does not retry a run because a command failed.
 
 If a step fails for another reason, such as a GitHub API 503, Inngest retries that step and replays the saved results. `base`, `lint`, and every finished command do not run again.
-
-{/* TODO(annotated-example) */}
 
 ## Concepts
 
