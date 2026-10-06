@@ -370,8 +370,6 @@ key: [files("go.mod", "go.sum"), "go1.25"]
 - A job without a machine caches its result. Reused jobs show as passed.
 - Do not cache tests that call the network.
 
-Cache entries live in memory for as long as your app's process runs. A miss rebuilds the job, so a restart, a cold start on a serverless deploy, or a second instance of your app only means the job runs again. Entries are not shared between processes.
-
 ## Checks and reports
 
 [Checks](/docs/labs/ci/checks-and-reports) are automatic: one for the pipeline and one for each job. Require the pipeline check in branch protection.

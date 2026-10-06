@@ -50,10 +50,6 @@ An uncached parent has no key and never invalidates its children. Add its files 
 
 `refresh` takes triggers that rebuild the cache on a schedule, so pull requests do not pay for it. Set `repo` on the pipeline so a cron has a repository to check out. `scope` is `"branch"` by default: a pull request reads entries from its base branch and writes its own, and its scope can never collide with a branch name. `"global"` shares one entry set.
 
-## Where entries live
-
-Cache entries live in memory for as long as your app's process runs. A miss rebuilds the job, so a restart, a cold start on a serverless deploy, or a second instance of your app only means the job runs again. Entries are not shared between processes.
-
 Do not cache tests that call the network.
 
 ## Next steps
