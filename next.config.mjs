@@ -287,12 +287,27 @@ async function rewrites() {
   };
 }
 
+/**
+ * The Sandboxes playground proxied under /try-sandboxes is framed inside
+ * the Sandboxes hero, so team members signed in to Vercel saw the Vercel
+ * Toolbar's floating button inside the demo on the production page. This
+ * header asks Vercel not to inject the toolbar on those responses.
+ */
+async function headers() {
+  const skipToolbar = [{ key: "x-vercel-skip-toolbar", value: "1" }];
+  return [
+    { source: "/try-sandboxes", headers: skipToolbar },
+    { source: "/try-sandboxes/:path*", headers: skipToolbar },
+  ];
+}
+
 const nextConfig = {
   env: {
     NEXT_PUBLIC_TS_STABLE: TS_STABLE_VERSION,
   },
   redirects,
   rewrites,
+  headers,
   reactStrictMode: true,
   pageExtensions: ["js", "jsx", "ts", "tsx", "mdx"],
   // next-mdx-remote ships a pre-bundled CJS build that, in the App Router
