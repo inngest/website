@@ -564,6 +564,24 @@ export default function Hero() {
             </div>
           </div>
         </motion.div>
+
+        {/* Below the stage: hand the controls over. */}
+        <motion.div
+          {...entry(600)}
+          className="mt-8 flex flex-col items-center gap-4 text-center sm:flex-row sm:justify-center sm:gap-6 lg:mt-10"
+        >
+          <p className="text-v1-body-md max-w-[440px] !text-v1-subtle">
+            Want the controls? Pick a command, inject a failure, and read every
+            step&rsquo;s input and output.
+          </p>
+          <ButtonLink
+            href={fullHref}
+            variant="secondary"
+            className="!w-full sm:!w-auto"
+          >
+            Open the playground
+          </ButtonLink>
+        </motion.div>
       </div>
     </section>
   );
