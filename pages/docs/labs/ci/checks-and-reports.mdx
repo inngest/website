@@ -1,4 +1,4 @@
-import { Info } from "shared/Docs/mdx";
+import { Info, Unreleased } from "shared/Docs/mdx";
 
 export const metaTitle = "Checks and reports | Inngest CI";
 export const description = "Inngest CI reports one GitHub check for each pipeline and one for each job. Add summaries and annotations with report, and read the same run as one trace.";
@@ -60,7 +60,13 @@ Every run also opens in the Inngest dashboard as one trace. It lists steps in th
 | `github › check:test:start` | A GitHub check update |
 | `cache:key`, `cache:lookup` | Cache lookups |
 
-[Commands](/docs/labs/ci/commands#options) shows how `.as()` renames a command step. A GitHub "Re-run" on a check sends a new pull request or push event for the commit, so pipelines on those triggers run again. Passed jobs are reused only when they have a [cache](/docs/labs/ci/caching) key.
+[Commands](/docs/labs/ci/commands#options) shows how `.as()` renames a command step.
+
+<Unreleased label="step-spans">
+
+A newer trace groups these steps into one row per job and command. [Read CI traces](/docs/labs/ci/traces) explains it.
+
+</Unreleased> A GitHub "Re-run" on a check sends a new pull request or push event for the commit, so pipelines on those triggers run again. Passed jobs are reused only when they have a [cache](/docs/labs/ci/caching) key.
 
 ![The trace of the example pr pipeline in the Inngest Dev Server: pipeline and job checks, cache lookups, then the base job creating its machine, checking out the repository and installing dependencies](/assets/docs/labs/ci/trace.png)
 
