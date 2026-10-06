@@ -47,7 +47,8 @@ Use the Inngest CLI to inspect function runs and traces:
 - Invoke locally: `npx inngest-cli@latest api invoke-function <app_id> <function_id> --data '{...}'`
 
 Output is JSON. Use jq to filter.
-Cloud commands use the stored OAuth login. Set --env to the intended environment.
+Cloud commands use the stored OAuth login unless INNGEST_API_KEY or an explicit key flag overrides it.
+Set --env to the intended environment.
 If access is denied, ask the user to review the session's permissions.
 ```
 
