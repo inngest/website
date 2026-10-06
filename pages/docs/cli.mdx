@@ -27,24 +27,26 @@ npm install -g inngest-cli
 
 ## Quick start
 
-Set your API key and start inspecting runs:
+Sign in with OAuth and start inspecting Cloud runs:
 
 ```bash
-export INNGEST_API_KEY=sk-inn-api-...
+inngest login
 ```
+
+Complete the browser approval and choose the access you need. These examples inspect `production`; replace it with your environment's slug.
 
 ```bash
 # Get a function run
-inngest api get-function-run 01KTCTWT8XDEGWDMVX3Q9M69ND
+inngest api --prod --env production get-function-run 01KTCTWT8XDEGWDMVX3Q9M69ND
 
 # Get runs triggered by an event
-inngest api get-event-runs 01KTCTWSZJEKAFEDA4F9GYHFQW --include-output --limit 5
+inngest api --prod --env production get-event-runs 01KTCTWSZJEKAFEDA4F9GYHFQW --include-output --limit 5
 
-# Invoke a function
+# Invoke a function locally
 inngest api invoke-function my-app my-function --data '{"message": "hello"}'
 
 # Fetch a full trace
-inngest api get-function-trace 01KTCTWT8XDEGWDMVX3Q9M69ND --include-output
+inngest api --prod --env production get-function-trace 01KTCTWT8XDEGWDMVX3Q9M69ND --include-output
 ```
 
 The CLI auto-generates commands from the Inngest v2 REST API. Every API endpoint is available as a subcommand under `inngest api`.
@@ -53,16 +55,42 @@ The CLI auto-generates commands from the Inngest v2 REST API. Every API endpoint
 
 ## Authentication
 
-The CLI accepts environment-scoped API keys. These are separate from signing keys and can be scoped to a specific environment.
+### OAuth (recommended)
 
-Create an API key in the [Inngest dashboard](https://app.inngest.com) under Settings > API Keys. Environment-scoped keys automatically target the right environment without any extra configuration.
+Run `inngest login` and complete the browser approval. Choose your account, environment access, permissions, and session duration. Use read permissions to inspect data, and grant write permissions only for operations you need to perform.
 
-Auth precedence:
+The CLI stores credentials in your operating system's credential store and refreshes access tokens automatically. OAuth scopes limit the operations the session can perform, and your current account role also limits its access.
+
+```bash
+inngest auth status
+inngest logout
+```
+
+`auth status` shows the current login. `logout` revokes the session and removes its local credentials. Use `inngest login --force` to sign in again with different permissions. Use `inngest login --no-browser` to open the displayed approval URL manually.
+
+If no operating system credential store is available, `inngest login --insecure-storage` explicitly opts into a plaintext file readable only by your user. Use this only in a trusted environment.
+
+### API keys (optional)
+
+For CI or unattended scripts, create an [API key](/docs/platform-and-operations/keys-and-access?ref=docs-cli) in the dashboard with the required permissions and environment access:
+
+```bash
+export INNGEST_API_KEY=sk-inn-api-...
+```
+
+API keys override the stored OAuth login. Unset `INNGEST_API_KEY` and remove explicit key flags when switching to OAuth.
+
+### Credential precedence
+
+For API commands, the CLI checks credentials in this order:
 
 1. `--api-key` flag (explicit override)
 2. `INNGEST_API_KEY` environment variable
-3. `INNGEST_SIGNING_KEY` environment variable (fallback)
-4. Dev server: no auth required
+3. `--signing-key` flag
+4. Stored OAuth login for the target API host
+5. `INNGEST_SIGNING_KEY` environment variable (fallback)
+
+The local Dev Server does not require authentication.
 
 ---
 
@@ -75,7 +103,7 @@ The CLI targets your local dev server by default. Use `--prod` to hit Inngest Cl
 inngest api get-function-run 01ABC123
 
 # Inngest Cloud
-inngest api --prod get-function-run 01ABC123
+inngest api --prod --env production get-function-run 01ABC123
 
 # Custom API host
 inngest api --api-host http://localhost:8288 get-function-run 01ABC123
@@ -86,6 +114,8 @@ Target resolution:
 1. `--api-host` or `--api-port` flags
 2. `--prod` flag
 3. Default: local dev server
+
+Signing in does not change the target: use `--prod` for Cloud. For environment-specific requests with a session or key that allows all environments, select an environment with `--env <slug>` or `INNGEST_ENV`. A session or key bound to one environment uses that environment and cannot access another one.
 
 ---
 
@@ -118,6 +148,7 @@ Common flags:
 - `--include-output` includes step and run output in the response
 - `--limit N` limits the number of results
 - `--prod` targets Inngest Cloud instead of the dev server
+- `--env <slug>` selects a Cloud environment within your granted access
 
 ---
 
@@ -127,10 +158,10 @@ The CLI outputs compact JSON by default. Pipe to jq or other tools:
 
 ```bash
 # Get just the status
-inngest api --prod get-function-run 01ABC123 | jq '.data.status'
+inngest api --prod --env production get-function-run 01ABC123 | jq '.data.status'
 
 # Pretty print
-inngest api --prod get-function-run 01ABC123 | jq .
+inngest api --prod --env production get-function-run 01ABC123 | jq .
 ```
 
 ---

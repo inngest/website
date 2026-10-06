@@ -13,6 +13,11 @@ import SectionHeader from "@/components/v1/sections/shared/SectionHeader";
 import { V1_HEADER_CONTENT_MT } from "@/components/v1/sections/shared/sectionShell";
 import { reveals } from "@/utils/v1/reveals";
 
+// Same ivory and fractal-noise grain as the hero band (see Hero.tsx).
+const IVORY = "#F3F1EA";
+const NOISE_BG =
+  "url(\"data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='220' height='220'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='2' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E\")";
+
 const MUTED = "#7c7c7c";
 const TOKEN_COLORS: Partial<Record<TokenKind, string>> = {
   kw: "#fb5536",
@@ -182,10 +187,17 @@ export default function UseCases() {
 function UseCaseCard({ item }: { item: typeof CASES[number] }) {
   return (
     <article className="flex h-full flex-col gap-10 lg:contents">
-      {/* The hero's brand blue, mixed 70/30 with the page canvas so the
-          panel reads as a deeper, quieter blue beside the grain instead of
-          the fully saturated accent. The code window sits on top. */}
-      <div className="relative flex w-full items-stretch justify-center overflow-hidden rounded-[10px] p-5 [background-color:color-mix(in_srgb,rgb(var(--color-v1-accent-blue))_70%,rgb(var(--color-v1-bg-canvas-base)))] sm:p-8 lg:p-10">
+      {/* The hero's ivory band, grain included, so the panels and the hero
+          share one surface. The code window sits on top. */}
+      <div
+        className="relative flex w-full items-stretch justify-center overflow-hidden rounded-[10px] p-5 sm:p-8 lg:p-10"
+        style={{ backgroundColor: IVORY }}
+      >
+        <span
+          aria-hidden="true"
+          className="pointer-events-none absolute inset-0 mix-blend-soft-light"
+          style={{ backgroundImage: NOISE_BG, opacity: 0.45 }}
+        />
         {/* Code window — stretches to the panel's content box, which the
             subgrid row sets from the tallest sample, so all three windows
             are the same size; depth shadow so it reads as sitting on the

@@ -203,7 +203,10 @@ export default function Header() {
   // compact) header needs dark nav items instead of frost. Scoped to
   // md+ in CSS (the mobile bar stays a solid black band). Reverts to
   // frost the moment the header collapses to its dark compact pill.
-  const inkNav = !compact && pathname === "/compare-to-temporal";
+  // Heroes announce an ivory panel through heroNav; the compare page's
+  // hero predates that signal, so its path is still listed here.
+  const inkNav =
+    !compact && (pathname === "/compare-to-temporal" || heroPanel === "ivory");
 
   const registerTrigger = (label: string) => (el: HTMLElement | null) => {
     if (el) triggerRefs.current.set(label, el);
