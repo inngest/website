@@ -46,7 +46,7 @@ const test = ci.job("test", async () => {
 });
 ```
 
-The parent runs once, however many jobs start from it, and each child gets its own isolated copy. Each job builds on the snapshot of the one before it.
+The parent runs once, however many jobs start from it, and each child gets its own isolated copy. If the pipeline already called the parent directly, `from()` uses that run. `from()` shares a job's machine within one run. To reuse it across runs, give the parent a [`cache`](/docs/labs/ci/caching) key. Each job builds on the snapshot of the one before it.
 
 ### What happens under the hood
 

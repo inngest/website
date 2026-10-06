@@ -28,7 +28,7 @@ const build = ci.job({ id: "build", machine: { vcpu: 4 } }, async () => {
 ```
 
 - A job has no return value. Call it for its commands and its check.
-- A job runs once per run for each ID. A second call waits for the first, even with a different input, so two callers share one run.
+- Each call runs the job again, on a new machine with its own check. A second call to `test` shows as `test (2)`. To share one build between jobs, use `from()`.
 - The machine starts on the job's first [command](/docs/labs/ci/commands). A job with no commands never gets one.
 - When a command fails, the job's check fails and the pipeline ends.
 
