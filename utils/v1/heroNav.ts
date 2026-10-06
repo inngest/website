@@ -26,7 +26,9 @@ import { useSyncExternalStore } from "react";
  * set (effect teardown/setup ordering across route commits isn't
  * guaranteed).
  */
-export type HeroPanel = "salmon" | "blue" | null;
+// `ivory` = a light hero (see CompareTemporal/Hero, Sandboxes/Hero): the
+// transparent header switches its nav items to ink while over it.
+export type HeroPanel = "salmon" | "blue" | "ivory" | null;
 
 let current: HeroPanel = null;
 let owner: object | null = null;
