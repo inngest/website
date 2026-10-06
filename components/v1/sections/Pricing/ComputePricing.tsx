@@ -106,10 +106,10 @@ export default function ComputePricing() {
                 </span>
               </div>
             </div>
-            <span className="text-right font-v1Mono text-[13px] tabular-nums text-v1-frost/70">
+            <span className="text-right font-v1Mono text-[12px] leading-[1.4] tabular-nums text-v1-frost/80">
               {usd(row.rate.perSecond, 6)}
             </span>
-            <span className="text-right font-v1Mono text-[13px] tabular-nums text-v1-frost">
+            <span className="text-right font-v1Mono text-[12px] leading-[1.4] tabular-nums text-v1-frost/80">
               {usd(row.rate.perHour, 4)}
             </span>
           </div>
