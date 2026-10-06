@@ -24,7 +24,7 @@ npx inngest-cli@latest login
 
 Complete the browser approval yourself. Choose your account, environment access, permissions, and session duration. Grant read access to the resources the agent needs to inspect, such as apps, functions, events, and runs. Add write access only if it needs to change Cloud data.
 
-The CLI stores the OAuth credentials in your operating system's credential store and refreshes access tokens automatically. The agent's CLI commands use that login. OAuth scopes restrict each operation to the approved permissions and your current account role; see [scopes and permissions](/docs/reference/rest-api?ref=docs-cli-for-coding-agents#scopes-and-permissions).
+The CLI stores the OAuth credentials in your operating system's credential store and refreshes access tokens automatically. The agent's CLI commands use that login. OAuth scopes restrict each operation to the approved permissions and your current account role.
 
 Use `npx inngest-cli@latest auth status` to check the login and `npx inngest-cli@latest logout` to revoke it. For a terminal without a browser, use `login --no-browser` and open the displayed URL yourself.
 

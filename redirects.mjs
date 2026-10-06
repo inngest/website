@@ -84,6 +84,7 @@ export const permanentRedirects = [
   ["/docs/platform/monitor/traces", "/docs/platform-and-operations/traces"],
   ["/docs/platform/replay", "/docs/platform-and-operations/replay-runs-in-bulk"],
   ["/docs/platform/webhooks", "/docs/durable-execution/guides-and-advanced/events-and-triggers/receive-webhook-events"],
+  ["/docs/reference/rest-api", "https://api-docs.inngest.com"],
   ["/docs/setup/checkpointing", "/docs/durable-execution/guides-and-advanced/checkpointing"],
   ["/docs/setup/connect", "/docs/durable-execution/deploying-functions/connect"],
   ["/docs/usage-limits/inngest", "/docs/durable-execution/limits"],

@@ -4,33 +4,3 @@ export const description = "REST API reference for the Inngest platform: create 
 # REST API
 
 You can view our REST API docs at our API reference portal: [https://api-docs.inngest.com](https://api-docs.inngest.com).
-
-## Authentication
-
-REST API v2 accepts OAuth access tokens and API keys as Bearer tokens in the `Authorization` header. For interactive use, sign in with OAuth through the [Inngest CLI](/docs/cli?ref=docs-rest-api#authentication) or [Cloud MCP](/docs/ai-dev-tools/mcp?ref=docs-rest-api#connect-to-inngest-cloud). The client handles the sign-in flow and credentials.
-
-[API keys](/docs/platform-and-operations/keys-and-access?ref=docs-rest-api) remain an option for CI, scripts, and other unattended integrations. Signing keys are also supported by the REST API for applications that already use them to communicate with Inngest; Cloud MCP does not accept signing keys.
-
-## Scopes and permissions
-
-OAuth approval lets you choose the account, environment access, permissions, and session duration. Permissions use the form `resource:read:operation` or `resource:write:operation`. A scope such as `runs:read:*` grants all read operations for runs, including fetching a run and its trace. `functions:write:invoke` is the permission required to invoke a function.
-
-Each OAuth request must satisfy all of these checks:
-
-- The session grants the permission required by the endpoint.
-- Your current account role allows that permission.
-- The requested environment is within the session's environment access.
-
-New API keys also enforce their configured permissions and environment access. Choose read access for inspection and add write access only where needed. OAuth sessions cannot be granted credential-management permissions for API keys, event keys, or signing keys.
-
-These authorization checks also apply to CLI commands and MCP tools that call REST API v2. A valid token alone does not grant access to every operation. A request without the required permission returns `403 Forbidden`; an invalid, expired, or revoked token returns `401 Unauthorized`.
-
-## Select an environment
-
-For environment-specific requests with credentials that allow all environments, send the environment slug in the `X-Inngest-Env` header, for example:
-
-```text
-X-Inngest-Env: production
-```
-
-The CLI exposes this as `--env production` or `INNGEST_ENV`; MCP tools accept `env: "production"`. Credentials bound to one environment use that environment and cannot access another one. Selecting an environment does not expand your permissions.
