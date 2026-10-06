@@ -21,7 +21,7 @@ const test = ci.job("test", async () => {
 });
 ```
 
-`$` runs without a shell. The template's text is split on spaces and quotes are not parsed, so pass a value with spaces as an interpolation. Each interpolated value becomes one argument with no quoting. Arrays spread into several arguments, and `false`, `null`, and `undefined` are dropped. `$.sh` runs `/bin/sh -c` and escapes interpolated values, for pipes and `&&`.
+`$` runs without a shell. The template's text is split on spaces and quotes are not parsed, so pass a value with spaces as an interpolation. Each interpolated value becomes one argument with no quoting, unless it follows text with no space, as in `--filter=${pkg}`, where it joins that argument. Arrays spread into several arguments, and `false`, `null`, and `undefined` are dropped. `$.sh` runs `/bin/sh -c` and escapes interpolated values, for pipes and `&&`.
 
 ## Retries
 

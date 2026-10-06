@@ -63,7 +63,7 @@ When a parent has a [cache key](/docs/labs/ci/caching), an unchanged key skips t
 
 ## Use a second machine
 
-`sandbox(name)` creates another machine for the job. It is destroyed with the pipeline and appears under the job in the trace.
+`sandbox(name, { vcpu })` creates another machine for the job right away, with the job's machine settings unless you pass others. It is destroyed with the pipeline and appears under the job in the trace.
 
 ```typescript {{ title: "TypeScript" }}
 const e2e = ci.job("e2e", async () => {
