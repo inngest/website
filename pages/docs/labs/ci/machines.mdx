@@ -1,0 +1,105 @@
+import { Info, Warning } from "shared/Docs/mdx";
+
+export const metaTitle = "Machines and from() | Inngest CI";
+export const description = "Inngest CI machines are Sandboxes that run a job's commands. Use from() to start a job on a copy of another job's machine and reuse work such as installed dependencies.";
+
+# Machines and `from()`
+
+> Run each job on its own Sandbox, and start a job from another job's machine to reuse its work.
+
+<Info>
+  Inngest CI is an Inngest Labs project: early, moving fast, and shaped by your feedback. [What's Labs?](/docs/labs?ref=docs-labs-ci-machines)
+</Info>
+
+A machine is a [Sandbox](/docs/sandboxes/overview?ref=docs-labs-ci-machines): an ephemeral Linux microVM. Each job gets one on its first command, and only [commands](/docs/labs/ci/commands?ref=docs-labs-ci-machines) run on it. The rest of your handler runs in your app.
+
+| `vcpu` | Memory |
+| --- | --- |
+| 1 | 1 GiB |
+| 2 (default) | 2 GiB |
+| 4 | 4 GiB |
+
+Set `machine` on a job, on its pipeline, or on `createCi` for every job. The first one set wins in that order.
+
+- Commands run in `/work` by default, which is where `checkout()` puts the repository.
+- `checkout()` clones the commit that triggered the run with a short-lived token that never appears in the trace. Locally it uploads your working tree without its `.git` folder.
+- Inngest pauses a machine when its job passes and destroys every machine when the pipeline ends.
+
+## Start a job from another job
+
+`from(job)` starts the current job on a copy of another job's machine, like a Docker layer. Use it when several jobs need the same setup, such as installed dependencies, so the setup runs once.
+
+```typescript {{ title: "TypeScript" }}
+const base = ci.job("base", async () => {
+  await checkout();
+  await $`pnpm install`;
+});
+
+const build = ci.job("build", async () => {
+  await from(base);
+  await $`pnpm build`;
+});
+
+const test = ci.job("test", async () => {
+  await from(build);
+  await $`pnpm test`;
+});
+```
+
+The parent runs once, however many jobs start from it, and each child gets its own isolated copy. If the pipeline already called the parent directly, `from()` uses that run. `from()` shares a job's machine within one run. To reuse it across runs, give the parent a [`cache`](/docs/labs/ci/caching?ref=docs-labs-ci-machines) key. Each job builds on the snapshot of the one before it.
+
+### What happens under the hood
+
+When a job finishes, Inngest pauses its machine. When another job calls `from()`, Inngest snapshots the parent's machine and starts the child from a clone of that snapshot, so installed files and built output are already there. The snapshot and clone come from [Sandbox snapshots and restore](/docs/sandboxes/features/snapshots-and-restore?ref=docs-labs-ci-machines).
+
+If a snapshot is not available, the job runs the parent's commands again on its own machine. The result is the same, but every child repeats the parent's work.
+
+- `from()` resolves once the copy is ready. Pass the parent's input as the second argument when it takes one.
+- Call `from()` before the job's first command, and once per job.
+- `await base()` runs `base` on its own machine. `await from(base)` runs it and then starts this job from where it finished.
+- Choose the parent at runtime with `await from((await changed("docs/**")) ? docsBase : base)`.
+
+When a parent has a [cache key](/docs/labs/ci/caching?ref=docs-labs-ci-machines), an unchanged key skips the parent and restores its saved machine instead.
+
+## Use a second machine
+
+`sandbox(name, { vcpu })` creates another machine for the job right away, with the job's machine settings unless you pass others. It is destroyed with the pipeline and appears under the job in the trace.
+
+```typescript {{ title: "TypeScript" }}
+const verify = ci.job("verify", async () => {
+  await checkout();
+
+  const clean = await sandbox("clean", { vcpu: 1 });
+
+  await Promise.all([
+    $`pnpm test`,
+    clean.$.sh`npm install -g my-cli@next && my-cli --version`,
+  ]);
+});
+```
+
+This runs the tests on the job's machine while a clean machine checks that the published `next` build installs.
+
+Plain `$` still runs on the job's own machine, and an extra machine starts empty.
+
+<Warning>
+  Machines cannot reach each other yet. Run a server or database your tests call on the job's own machine, in the background, and use `127.0.0.1`:
+
+  ```typescript
+  await $`pnpm start`.background();
+  await waitForPort(3000);
+  await $`pnpm exec playwright test`;
+  ```
+</Warning>
+
+| If the work... | Use |
+| --- | --- |
+| Is independent | Separate jobs |
+| Builds on earlier work | Separate jobs with `from()` |
+| Needs a second machine alive at the same time | One job with `sandbox()` |
+
+## Next steps
+
+- [Caching](/docs/labs/ci/caching?ref=docs-labs-ci-machines) skips a job when its inputs have not changed.
+- [Jobs](/docs/labs/ci/jobs?ref=docs-labs-ci-machines) covers how jobs are called and combined.
+- [Reference](/docs/labs/ci/reference?ref=docs-labs-ci-machines#machines) lists `checkout()` options and machine sizes.

@@ -1,0 +1,158 @@
+import { Info } from "shared/Docs/mdx";
+
+export const metaTitle = "Quick start | Inngest CI";
+export const description = "Inngest CI quick start: write a pipeline in TypeScript, run it on the Inngest Dev Server, and read the checks and trace for the run.";
+
+# Inngest CI quick start
+
+> Write a pipeline, run it on the Dev Server with your uncommitted changes, and read the result in one trace.
+
+<Info>
+  Inngest CI is an Inngest Labs project: early, moving fast, and shaped by your feedback. [What's Labs?](/docs/labs?ref=docs-labs-ci-quick-start)
+</Info>
+
+Run a pipeline with a shared `base` job and parallel `lint` and `test` jobs. Checks print to your terminal, and the run opens in the Dev Server as one trace.
+
+## Before you start
+
+You need:
+
+- Node.js 20 or newer.
+- `inngest` 4.22.0 or newer, within 4.x.
+- An Inngest account with access to [Sandboxes](/docs/sandboxes/overview?ref=docs-labs-ci-quick-start).
+- A git repository with `lint` and `test` scripts in `package.json`.
+- The Inngest CLI, signed in once:
+
+```bash
+npx inngest-cli@latest login
+```
+
+## 1. Install the packages
+
+```bash
+npm install @inngest/ci inngest
+```
+
+## 2. Create the client
+
+`ci/client.ts`
+
+```typescript {{ title: "TypeScript" }}
+import { Inngest } from "inngest";
+import { createCi } from "@inngest/ci";
+
+export const inngest = new Inngest({ id: "my-app" });
+export const ci = createCi(inngest);
+```
+
+By default, `createCi` prints checks to the terminal with `consoleReporter()`. To report checks on GitHub, see [Run on GitHub](/docs/labs/ci/reference?ref=docs-labs-ci-quick-start#run-on-github).
+
+## 3. Write a pipeline
+
+`ci/pipelines.ts`
+
+```typescript {{ title: "TypeScript" }}
+import { github, checkout, from, $ } from "@inngest/ci";
+import { ci } from "./client";
+
+export const pr = ci.pipeline(
+  {
+    id: "pr",
+    on: github.pullRequest(),
+    singleton: { key: "event.data.pull_request.number", mode: "cancel" },
+  },
+  async () => {
+    await Promise.all([lint(), test()]);
+  },
+);
+
+const base = ci.job("base", async () => {
+  await checkout();
+  await $`pnpm install`;
+});
+
+const lint = ci.job("lint", async () => {
+  await from(base);
+  await $`pnpm lint`;
+});
+
+const test = ci.job("test", async () => {
+  await from(base);
+  await $`pnpm test`.retries(1);
+});
+```
+
+`base` installs dependencies once. `lint` and `test` each start from a copy of the `base` machine and run in parallel. If `pnpm test` fails, `.retries(1)` runs it again on the same machine without rerunning `base` or `lint`.
+
+## 4. Serve the pipelines
+
+`ci/server.ts`
+
+```typescript {{ title: "TypeScript" }}
+import { createServer } from "inngest/node";
+import { inngest, ci } from "./client";
+import "./pipelines";
+
+const server = createServer({ client: inngest, functions: ci.functions() });
+
+server.listen(3000);
+```
+
+`ci.functions()` returns your pipelines plus the functions CI needs behind the scenes: machine cleanup, cache refreshes, and GitHub check re-runs.
+
+## 5. Run locally
+
+Start the Dev Server and your app in two terminals:
+
+```bash
+npx inngest-cli@latest dev
+```
+
+```bash
+INNGEST_DEV=1 npx tsx ci/server.ts
+```
+
+Send a pull request event built from your current checkout:
+
+`ci/send.ts`
+
+```typescript {{ title: "TypeScript" }}
+import { fixtures } from "@inngest/ci";
+import { inngest } from "./client";
+
+async function main() {
+  await inngest.send(await fixtures.pullRequest());
+}
+
+main();
+```
+
+```bash
+INNGEST_DEV=1 npx tsx ci/send.ts
+```
+
+`checkout()` uploads your working tree, including uncommitted changes and excluding ignored files. The upload is limited to 100 MiB and has no `.git` folder, so git commands on the machine only work in runs from GitHub.
+
+## 6. Inspect the result
+
+Your server terminal prints each check as it changes:
+
+```
+[pr] … pr / test
+[pr] ✕ pr / test  `pnpm test` exited with 1  → http://localhost:8288/run?runID=01J…
+```
+
+Open the run link in the Dev Server. The trace lists every step in order. Steps start with their job, as in `test › pnpm test`, and each retry of a command is its own step. [Read the trace](/docs/labs/ci/checks-and-reports?ref=docs-labs-ci-quick-start#read-the-trace) lists the step names.
+
+## Cleanup and current behavior
+
+- Inngest destroys every machine when the pipeline ends. A separate function destroys machines left behind by a run that failed or was cancelled.
+- The Dev Server runs commands on Sandboxes in your Inngest account, so you need `inngest login`. There is no local Sandbox runtime yet.
+- Output from a command arrives when the command ends, not while it runs.
+
+## Next steps
+
+- [Concepts](/docs/labs/ci/concepts?ref=docs-labs-ci-quick-start) defines pipelines, triggers, jobs, commands, and machines.
+- [Pipelines and triggers](/docs/labs/ci/pipelines?ref=docs-labs-ci-quick-start), [Jobs](/docs/labs/ci/jobs?ref=docs-labs-ci-quick-start), and [Caching](/docs/labs/ci/caching?ref=docs-labs-ci-quick-start) cover what to build next.
+- [Reference](/docs/labs/ci/reference?ref=docs-labs-ci-quick-start) lists every option and running on GitHub.
+- [Example project](https://github.com/inngest/inngest-js/tree/main/examples/ci-pipelines) is a runnable app with matrices, caching, and GitHub checks.

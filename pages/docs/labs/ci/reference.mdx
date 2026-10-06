@@ -1,0 +1,608 @@
+import { Info, Warning } from "shared/Docs/mdx";
+
+export const metaTitle = "Reference | Inngest CI";
+export const description = "Inngest CI reference: pipeline and job options, triggers, command methods, machines, matrices, caching, checks, and GitHub helpers in @inngest/ci.";
+
+# Inngest CI reference
+
+> Options, triggers, command methods, and limits for `@inngest/ci`.
+
+<Info>
+  Inngest CI is an Inngest Labs project: early, moving fast, and shaped by your feedback. [What's Labs?](/docs/labs?ref=docs-labs-ci-reference) APIs may change between 0.x releases.
+</Info>
+
+## `createCi`
+
+`createCi(inngest, options)` returns the client you use to define pipelines, jobs, and matrices.
+
+| Option | Type | Required |
+| --- | --- | --- |
+| `github` | `githubApp()`, `githubToken()`, or `consoleReporter()` | No |
+| `machine` | `{ vcpu?: 1 \| 2 \| 4 }` | No |
+| `runUrl` | `(ctx: { runId, functionId }) => string` | No |
+
+- `github` sets how pipelines report to GitHub. It defaults to `consoleReporter()`, which prints checks to the Inngest logger. Pass `githubApp()` or `githubToken()` to report checks on GitHub.
+- `machine` is the default machine for every job.
+- `runUrl` builds the link shown on checks.
+
+`ci.functions()` returns your pipelines plus the functions CI needs behind the scenes: machine cleanup, cache refreshes, and GitHub check re-runs. Pass it to `serve()` or `createServer()`.
+
+## `ci.pipeline`
+
+A [**pipeline**](/docs/labs/ci/pipelines?ref=docs-labs-ci-reference) runs when something happens and calls jobs. It is one Inngest function, so every Inngest flow control option works on it.
+
+```typescript {{ title: "TypeScript" }}
+import { github } from "@inngest/ci";
+import { ci } from "./client";
+
+export const pr = ci.pipeline(
+  {
+    id: "pr",
+    on: github.pullRequest(),
+    singleton: { key: "event.data.pull_request.number", mode: "cancel" },
+    concurrency: {
+      key: "event.data.repository.owner.login",
+      limit: 20,
+      scope: "account",
+    },
+  },
+  async ({ event }) => {
+    await test();
+    await deploy(event.data.pull_request.head.sha);
+  },
+);
+```
+
+The handler receives `event`, `events`, `runId`, `pipelineId`, `repo`, `attempt`, and `logger`. `repo` is `undefined` for triggers that carry no repository, such as a cron.
+
+| Option | Type | Required |
+| --- | --- | --- |
+| `id` | `string` | Yes |
+| `on` | A trigger, or an array of triggers | Yes |
+| `check` | `false`, or `{ name?, jobs? }` | No |
+| `machine` | `{ vcpu?: 1 \| 2 \| 4 }` | No |
+| `repo` | `string` | No |
+
+- `id` is unique in the app. It names the function, the run, and the check.
+- `check: false` turns off all checks. `check: { jobs: false }` keeps the pipeline check and drops the job checks.
+- `machine` is the default machine for the pipeline's jobs. A job's own `machine` overrides it.
+- `repo` (`"owner/name"`) gives crons and manual runs a repository to check out. `ci.pipeline()` throws if it is not in that form, and, with GitHub credentials, resolves the repository, its default branch, and its head commit for cron and manual runs.
+- Flow control options: `concurrency`, `throttle`, `rateLimit`, `debounce`, `priority`, `singleton`, `idempotency`, `batchEvents`, `timeouts`, `cancelOn`, `retries`, `name`, and `description`. See [flow control](/docs/durable-execution/flow-control?ref=docs-labs-ci-reference).
+
+Return `ci.skip(reason)` to end a run early. The check completes as success with the reason, so a required check never waits.
+
+```typescript {{ title: "TypeScript" }}
+const touched = await changed("src/**", "package.json");
+
+if (touched === false) {
+  return ci.skip("nothing that affects the build changed");
+}
+```
+
+`changed()` reads the pull request files, or the push range, before any machine starts. When it cannot tell what changed, it returns `true` so nothing is skipped by mistake, and notes it on the check. That happens when the run has no repository or no GitHub credentials, when it has no pull request or push range (a cron, a manual run, a merge group, or a push that creates a branch), when a local run cannot find its base branch, and when a compare hits GitHub's 300-file cap.
+
+Pass patterns as arguments, or an object with `include` and `ignore`. A file counts when it matches an `include` pattern and no `ignore` pattern. Without `include`, every file is included. Patterns support `**`, `*`, `?`, and `{a,b}`.
+
+```typescript {{ title: "TypeScript" }}
+if (await changed({ include: ["docs/**"], ignore: ["docs/**/*.png"] })) {
+  await docsSite();
+}
+```
+
+## Triggers
+
+A [**trigger**](/docs/labs/ci/pipelines?ref=docs-labs-ci-reference#triggers) starts a pipeline and types its `event`.
+
+| Trigger | Runs when |
+| --- | --- |
+| `github.pullRequest({ branches, types, repo })` | A pull request opens, is pushed to, or reopens. `types` changes the actions. |
+| `github.push({ branches, tags, repo })` | Commits are pushed. Deleted branches are excluded. |
+| `github.comment({ command, minPermission, repo })` | A comment starts with `command`. |
+| `github.mergeGroup({ repo })` | The merge queue asks for checks. |
+| `github.checkSuite({ branch, repo })` | A check suite completes. |
+| `{ cron: "0 3 * * *" }` | The schedule fires. |
+| `ci.manual({ schema, pipelineId })` | An event named `ci/manual.<pipelineId>` arrives. Without `pipelineId`, any `ci/manual.*` event. |
+
+Pass an array for several triggers. `event.data` is typed by the triggers you pass:
+
+```typescript {{ title: "TypeScript" }}
+export const merged = ci.pipeline(
+  {
+    id: "merged",
+    on: github.pullRequest({ types: ["closed"] }),
+  },
+  async ({ event }) => {
+    if (event.data.pull_request.merged === false) {
+      return ci.skip("closed without merging");
+    }
+
+    await release();
+  },
+);
+```
+
+- `pullRequest()` defaults to `opened`, `synchronize`, and `reopened`.
+- `push()` matches `branches` and `tags` by exact name, so `tags: ["v*"]` does not match `v1.0.0`.
+- A pipeline has at most 10 triggers, and `pullRequest()` uses one for each type.
+- `comment({ minPermission })` checks the author after the run starts. A user without the permission gets a reply and a neutral check. With several `comment()` triggers, each command keeps its own `minPermission`.
+- Several triggers give a union type. Narrow it with `"pull_request" in event.data`.
+- A cron has no typed `event.data`. `ci.manual({ schema })` types it from any Standard Schema validator, such as Zod.
+
+## `ci.job`
+
+A [**job**](/docs/labs/ci/jobs?ref=docs-labs-ci-reference) is a unit of work with its own machine and its own check. Call it like a function.
+
+```typescript {{ title: "TypeScript" }}
+const test = ci.job("test", async () => {
+  await checkout();
+  await $`pnpm install`;
+  await $`pnpm test`;
+});
+
+const build = ci.job({ id: "build", machine: { vcpu: 4 } }, async () => {
+  await checkout();
+  await $`pnpm build`;
+});
+```
+
+- A job has no return value. Call it for its commands and its check.
+- Each call runs the job again, on a new machine with its own check. A second call to `test` shows as `test (2)`. To share one build between jobs, use `from()`.
+- The machine starts on the job's first command. A job with no commands never gets one.
+- Jobs never share a machine. To reuse work, use [`from()`](#from).
+- When a command fails, the job's check fails and the pipeline ends.
+
+| Option | Type | Required |
+| --- | --- | --- |
+| `id` | `string` | Yes |
+| `machine` | `{ vcpu?: 1 \| 2 \| 4 }` | No |
+| `cache` | `{ key?, refresh?, scope? }` | No |
+| `check` | `false`, or `{ name? }` | No |
+| `keepOnFailure` | Duration, such as `"24h"` | No |
+
+`keepOnFailure` snapshots the machine when the job fails. The snapshot ID appears in the pipeline check's summary, under **Kept machines**. It takes a duration, but the duration is ignored today: the snapshot keeps the platform's default retention.
+
+Durations such as `"10m"` or `"1h30m"` are parsed strictly, with the units `ms`, `s`, `m`, `h`, `d`, and `w`. A malformed value throws `CiUsageError`.
+
+## Commands
+
+[`` $`…` ``](/docs/labs/ci/commands?ref=docs-labs-ci-reference) runs a command on the job's machine. A non-zero exit code throws `CommandFailedError`.
+
+```typescript {{ title: "TypeScript" }}
+await $`pnpm test`;
+await $`pnpm --filter ${pkg} test`;
+await $`pnpm test ${bail && ["--bail", "1"]}`;
+```
+
+Each interpolated value becomes one argument with no quoting, unless it follows text with no space, as in `--filter=${pkg}`, where it joins that argument. Arrays spread into several arguments, and `false`, `null`, and `undefined` are dropped.
+
+Options chain:
+
+```typescript {{ title: "TypeScript" }}
+await $`pnpm test`.retries(2);
+await $`pnpm lint`.nothrow();
+await $`pnpm test`.env({ CI: "true" });
+await $`pnpm test`.cwd("/work/app");
+await $`pnpm test`.timeout("10m");
+await $`pnpm exec playwright test`.as("e2e");
+
+const sha = await $`git rev-parse HEAD`.text();
+const tracked = await $`git ls-files`.lines();
+const meta = await $`cat package.json`.json<{ name: string }>();
+
+await $.sh`pnpm build && pnpm test | tee test.log`;
+```
+
+| Method | Does |
+| --- | --- |
+| `.retries(n)` | Runs the command up to `n` more times on the same machine. Each attempt is a step. |
+| `.nothrow()` | Returns the result with its exit code instead of throwing. |
+| `.env(vars)` | Sets environment variables for this command. |
+| `.cwd(path)` | Sets the directory. The default is `/work`. |
+| `.timeout(duration)` | Throws `CommandTimeoutError` after the duration. |
+| `.onTimeout(fn)` | Runs `fn` when the timeout hits, then throws. |
+| `.background()` | Starts the command and returns a process with `id`, `exited()`, `kill(signal?)`, and `output({ tailBytes? })`. |
+| `.as(name)` | Replaces the command text in the step name. |
+| `.text()`, `.lines()`, `.json()` | Returns stdout as a trimmed string, an array of lines, or parsed JSON. |
+
+- `$` runs without a shell. `$.sh` runs `/bin/sh -c` and escapes interpolated values.
+- A result holds `exitCode`, `stdout`, `stderr`, `truncated`, and `durationMs`. `stdout` and `stderr` keep the last 64 KiB. `durationMs` is missing when the Sandbox API does not time the command, which today is any command with a timeout of 5 minutes or less.
+- `$` outside a job throws `CiUsageError`.
+- `.background()` returns once the process starts. `kill()` sends `SIGTERM` unless you pass a signal number, `output()` reads the last 64 KiB by default, and `exited()` polls for exit. It ignores `.retries()`, `.timeout()`, and `.nothrow()`.
+- Output arrives when the command ends. A `.timeout()` of 5 minutes or less is exact. A longer one is approximate because Inngest polls for exit.
+
+Any function can run commands. It uses the calling job's machine:
+
+```typescript {{ title: "TypeScript" }}
+export async function install() {
+  await checkout();
+  await $`pnpm install --frozen-lockfile`;
+}
+
+const test = ci.job("test", async () => {
+  await install();
+  await $`pnpm test`;
+});
+```
+
+## Machines
+
+A [**machine**](/docs/labs/ci/machines?ref=docs-labs-ci-reference) is a Sandbox: an ephemeral Linux microVM. Each job gets one on its first command.
+
+| `vcpu` | Memory |
+| --- | --- |
+| 1 | 1 GiB |
+| 2 (default) | 2 GiB |
+| 4 | 4 GiB |
+
+Set `machine` on a job, on its pipeline, or on `createCi` for every job. The first one set wins in that order, and the default is 2 vCPUs.
+
+- Inngest pauses a machine when its job passes, so a later `from()` can snapshot it, and destroys every machine when the pipeline ends.
+- Only `$` runs on the machine. The rest of your handler runs in your app.
+- Commands run in `/work` by default, which is where `checkout()` puts the repository.
+- `checkout()` clones the commit that triggered the run with a short-lived token that never appears in the trace. Locally it uploads your working tree.
+
+`checkout()` options are `ref`, `submodules`, `history` (`"shallow"` or `"full"`), and `path`. `history` defaults to `"shallow"`, which skips file contents until they are needed, and `path` defaults to `/work`. Commands after a `checkout({ path })` run in that path. A local checkout uploads your working tree without its `.git` folder and ignores `ref`, `submodules`, and `history`. `checkout()` throws `CiUsageError` when the run has no repository, so set `repo` on the pipeline. On a machine that already has a checkout, such as one started `from()` a cached job, it moves that checkout to this run's commit and keeps ignored files like `node_modules`. In a local run, files you deleted since the snapshot stay.
+
+## `from`
+
+[`from(job)`](/docs/labs/ci/machines?ref=docs-labs-ci-reference#start-a-job-from-another-job) starts the current job on a copy of another job's machine, like a Docker layer. The parent runs once, however many jobs start from it, and each child gets its own isolated copy. If the pipeline already called the parent directly, `from()` uses that run. `from()` shares a job's machine within one run. To reuse it across runs, give the parent a [`cache`](/docs/labs/ci/caching?ref=docs-labs-ci-reference) key.
+
+```typescript {{ title: "TypeScript" }}
+const base = ci.job("base", async () => {
+  await checkout();
+  await $`pnpm install`;
+});
+
+const build = ci.job("build", async () => {
+  await from(base);
+  await $`pnpm build`;
+});
+
+const test = ci.job("test", async () => {
+  await from(build);
+  await $`pnpm test`;
+});
+```
+
+Each job builds on the snapshot of the one before it. When a job's [cache key](#caching) is unchanged, Inngest skips the job and restores its saved machine. When a cached job's key changes, it runs again, and so does every cached job that starts from it, directly or through other cached jobs.
+
+- `from()` resolves once the copy is ready. Pass the parent's input as the second argument when it takes one.
+- Call `from()` before the job's first command, and once per job.
+- `await base()` runs `base` on its own machine. `await from(base)` runs it and then starts this job from where it finished.
+- Choose the parent at runtime with `await from((await changed("docs/**")) ? docsBase : base)`.
+- If a snapshot is not available, the job runs the parent's commands again on its own machine. Every child repeats the parent's work in that case.
+
+## Extra machines
+
+`sandbox(name, { vcpu })` creates another machine for the job right away, with the job's machine settings unless you pass others. It is destroyed with the pipeline. Its steps are named `<job> › <name> › machine`.
+
+```typescript {{ title: "TypeScript" }}
+const verify = ci.job("verify", async () => {
+  await checkout();
+
+  const clean = await sandbox("clean", { vcpu: 1 });
+
+  await Promise.all([
+    $`pnpm test`,
+    clean.$.sh`npm install -g my-cli@next && my-cli --version`,
+  ]);
+});
+```
+
+This runs the tests on the job's machine while a clean machine checks that the published `next` build installs.
+
+- Plain `$` still runs on the job's own machine.
+- An extra machine starts empty. `checkout()` runs on the job's machine only.
+- `ExtraMachine` has `$`, `$.sh`, `waitForPort()`, and `waitForHttp()`.
+- `waitForPort` and `waitForHttp` are also top-level exports of `@inngest/ci`. They run on the job's own machine: `import { waitForPort, waitForHttp } from "@inngest/ci"`.
+- `waitForPort(port, { timeout })` and `waitForHttp(url, { timeout, status })` wait up to `2m` by default, and `waitForHttp` waits for status `200`. When they give up they throw `CommandFailedError`.
+
+<Warning>
+  Machines cannot reach each other yet. Run a server or database your tests call on the job's own machine, in the background, and use `127.0.0.1`:
+
+  ```typescript
+  await $`pnpm start`.background();
+  await waitForPort(3000);
+  await $`pnpm exec playwright test`;
+  ```
+</Warning>
+
+| If the work... | Use |
+| --- | --- |
+| Is independent | Separate jobs |
+| Builds on earlier work | Separate jobs with `from()` |
+| Needs a second machine alive at the same time | One job with `sandbox()` |
+
+## `ci.matrix`
+
+`ci.matrix` runs a job for every combination of its axes. Each combination is its own job, with its own machine and check.
+
+```typescript {{ title: "TypeScript" }}
+export const nightly = ci.pipeline(
+  { id: "nightly", on: { cron: "0 3 * * *" }, repo: "my-org/my-app" },
+  async () => {
+    await compat();
+  },
+);
+
+const compat = ci.matrix(
+  {
+    id: "compat",
+    axes: { node: ["20", "22", "24"], db: ["sqlite", "postgres"] },
+    exclude: [{ node: "20", db: "postgres" }],
+    concurrency: 3,
+  },
+  async ({ node, db }) => {
+    await from(base);
+    await $`npx -y node@${node} --test`.env({ TEST_DATABASE: db });
+  },
+);
+```
+
+Call `compat()` to run every combination, or `compat({ node: "22" })` to run only the matching ones.
+
+- Job IDs come from the values, such as `compat (node:22, db:sqlite)`. Adding a value does not change the others.
+- `exclude` removes combinations and `include` adds extra ones.
+- `concurrency` limits how many run at once. The default is all of them.
+- `failFast` is off by default. When it is on, the first failure ends the matrix, and running combinations are not cancelled.
+- `machine` and `cache` accept a value or a function of the combination. `check` applies to every combination.
+- With `failFast` off, failures are thrown together as an `AggregateError` after every combination finishes.
+
+### Split files across jobs
+
+`shard({ total, index, files }, fn)` calls `fn` with this shard's share of `files`: every `total`-th file, starting at `index`. Use it in a matrix to split a test suite across machines. It throws `CiUsageError` outside a job.
+
+```typescript {{ title: "TypeScript" }}
+import { $, from, shard } from "@inngest/ci";
+
+const unit = ci.matrix(
+  { id: "unit", axes: { shard: ["0", "1", "2", "3"] } },
+  async ({ shard: index }) => {
+    await from(base);
+
+    const tests = await $.sh`find src -name '*.test.ts'`.lines();
+
+    await shard({ total: 4, index: Number(index), files: tests }, async (files) => {
+      await $`pnpm vitest run ${files}`;
+    });
+  },
+);
+```
+
+## Caching
+
+A job's [`cache`](/docs/labs/ci/caching?ref=docs-labs-ci-reference) skips the job when nothing it depends on has changed. The input a job is called with is part of its cache identity, so the same key with a different input is a different entry.
+
+```typescript {{ title: "TypeScript" }}
+const base = ci.job(
+  {
+    id: "base",
+    cache: {
+      key: files("pnpm-lock.yaml", ".nvmrc"),
+      refresh: [{ cron: "0 3 * * *" }],
+    },
+  },
+  async () => {
+    await checkout();
+    await $`pnpm install`;
+  },
+);
+```
+
+- `key` is what the job depends on. If the key is unchanged since the last successful run, the job does not run. A job that started a machine is restored from its snapshot, and `from(base)` clones the saved machine.
+- A restored machine keeps the checkout from the commit it was built on. Call `checkout()` again after `from()` to move to this run's commit. It keeps installed dependencies and build output.
+- `refresh` takes triggers that rebuild the cache ahead of time, so pull requests do not pay for it. Set `repo` on a pipeline so a cron has a repository to check out.
+- `scope` is `"branch"` by default. A pull request reads entries from its base branch and writes its own, and its scope can never collide with a branch name. `"global"` shares one entry set.
+
+A key is `files()`, a string, an array of them, or an async function that returns a string:
+
+```typescript {{ title: "TypeScript" }}
+key: files("pnpm-lock.yaml")
+key: files("migrations/**", "seeds/**")
+key: [files("go.mod", "go.sum"), "go1.25"]
+```
+
+- `files()` hashes the matched files in the git tree for the run's commit. Locally it hashes the working tree.
+- A cached job also depends on the cached jobs it starts `from()`. When one of them changes its key, or the input it was called with, the child's entry is stale and the job runs again. This holds up the whole chain of cached parents. An uncached parent has no key and never invalidates its children, so add its files to the child's key when the child depends on them.
+- The first run of a job always misses.
+- A cached job without a machine is skipped. Reused jobs show as passed.
+- Do not cache tests that call the network.
+
+## Checks and reports
+
+[Checks](/docs/labs/ci/checks-and-reports?ref=docs-labs-ci-reference) are automatic: one for the pipeline and one for each job. Require the pipeline check in branch protection.
+
+| State | Check |
+| --- | --- |
+| Running | In progress, with the current command |
+| Retrying a command | In progress, with the attempt count and the last error |
+| Run will be retried | In progress, with `Retrying (attempt N of M)` |
+| Passed | Success, with the duration |
+| Reused from cache | Success, with `Restored, built …` or `Passed at <sha>, no changes since` |
+| Failed | Failure, with the command, the output tail, and annotations |
+| Timed out | Timed out |
+| Cancelled by a failure elsewhere | Cancelled |
+| Returned `ci.skip()` | Success, with the reason |
+| Job never called | No check |
+
+`report` adds to the current job's check. Outside a job it targets the pipeline check.
+
+```typescript {{ title: "TypeScript" }}
+await report.summary(`Coverage: **${coverage}%**`);
+
+await report.annotate([
+  { path: "src/queue.ts", line: 42, message: "Flaky retry here" },
+]);
+```
+
+- `report.summary(markdown)` stacks sections. Inngest truncates a summary at 65,000 bytes, under GitHub's limit of 65,535 bytes, and adds a note pointing to the trace.
+- `report.annotate(annotations)` puts annotations on the diff. Inngest sends them in batches of 50, the GitHub limit per request. Entries without a `path` or a `message` are dropped.
+- While a run will be retried, its checks show `Retrying (attempt N of M)` and complete only on success or the final attempt. Command failures, timeouts, usage errors, and matrix failures made only of those are deterministic, so they fail once.
+- A GitHub "Re-run" on a pipeline or job check, or "Re-run all" on the check suite, sends a new event for the checked commit, so pipelines on pull request and push triggers run again. On a pull request it sends a `pull_request.synchronize`. Otherwise it sends a `push`, only when the branch's head is the checked commit. Pipelines on other triggers do not run again. Passed jobs are reused only when they have a `cache` key.
+
+## Run on GitHub
+
+In production, pipelines start from GitHub webhooks and report checks as a GitHub App.
+
+1. Create a GitHub App with these repository permissions: Checks (read and write), Commit statuses (read and write), Contents (read, or read and write to create releases or use `github.forcePushRef()`), Actions (read, for `github.waitForWorkflow()`), Pull requests (read and write), Issues (read and write), Metadata (read).
+2. Subscribe the app to these events: push, pull request, check run, check suite, issue comment, merge group, and workflow run.
+3. In the Inngest dashboard, create a webhook and paste the output of `githubWebhookTransform` into its transform. Use the webhook URL as the app's webhook URL.
+
+   ```bash
+   node --input-type=module -e "import { githubWebhookTransform as t } from '@inngest/ci'; console.log(t)"
+   ```
+
+4. Install the app on your repositories.
+5. Set `GITHUB_APP_ID` and `GITHUB_APP_PRIVATE_KEY`, then pass the provider to `createCi`.
+
+`ci/client.ts`
+
+```typescript {{ title: "TypeScript" }}
+import { Inngest } from "inngest";
+import { createCi, githubApp } from "@inngest/ci";
+
+export const inngest = new Inngest({ id: "my-app" });
+export const ci = createCi(inngest, {
+  github: githubApp({
+    appId: process.env.GITHUB_APP_ID,
+    privateKey: process.env.GITHUB_APP_PRIVATE_KEY,
+  }),
+});
+```
+
+- `githubApp()` reports checks with the Checks API. `githubToken()` reports commit statuses instead, with no summaries or annotations.
+- `githubApp()` with no arguments reads `GITHUB_APP_ID` and `GITHUB_APP_PRIVATE_KEY`, and falls back to `GITHUB_INSTALLATION_ID` when an event carries no installation. `githubToken()` reads `GITHUB_TOKEN`.
+- In dev mode checks print to the terminal. Set `INNGEST_CI_GITHUB=live` to send real checks from the Dev Server.
+
+<Warning>
+  Inngest does not verify webhook signatures yet. Keep the webhook URL secret.
+</Warning>
+
+## GitHub API and helpers
+
+`github.rest` exposes every Octokit REST method, with each call recorded as a step.
+
+```typescript {{ title: "TypeScript" }}
+const release = ci.job("release", async () => {
+  const created = await github.rest.repos.createRelease({
+    tag_name: "v1.4.0",
+    generate_release_notes: true,
+  });
+
+  await github.rest.git.updateRef({
+    ref: "heads/next",
+    sha: github.repo().sha,
+    force: true,
+  });
+
+  console.log(created.html_url);
+});
+```
+
+- `owner` and `repo` default to the run's repository.
+- A call returns the response `data`. Results are JSON, so dates are strings. Keep them small.
+- A rate limit retries after the reset time, other 4xx errors do not retry, and 5xx errors retry.
+- Streaming methods are not supported. Use `github.octokit()` inside `step.run`.
+- Inside `step.run`, or outside a pipeline, calls run directly.
+- Use `github.rest.with({ id })` to give a call a step ID of your choice.
+
+| Helper | Does |
+| --- | --- |
+| `github.stickyComment(key, body)` | Creates one pull request comment and updates it on later runs. |
+| `github.upsertPullRequest({ head, base, title, body })` | Opens a pull request or updates the open one. |
+| `github.forcePushRef(ref, sha)` | Moves or creates a branch or tag. |
+| `github.canUser(login, permission)` | Checks a user's permission on the repository. |
+| `github.waitForChecks({ names, sha, timeout })` | Waits for other checks on a commit, with no machine. The default timeout is `1h`. |
+| `github.waitForWorkflow({ workflow, sha, timeout })` | Waits for a GitHub Actions workflow run. |
+| `github.paginate(method, params)` | Fetches every page of a list method, typed. |
+| `github.graphql(query, variables)` | Runs a GraphQL query. |
+| `github.repo()` | Returns `owner`, `repo`, `sha`, `number`, and `ref`. |
+| `github.token()` | Returns a short-lived installation token. `step.run` only. |
+| `github.octokit()` | Returns a plain Octokit client. `step.run` only. |
+
+<Warning>
+  `github.waitForChecks()` can miss a check that finishes between the lookup and the wait. That name then times out.
+</Warning>
+
+## Run metadata
+
+Inngest tags every pipeline run with metadata of the kind `userland.inngest-ci`, so it can tell a run is a CI run. Commands, output, and secrets are never recorded.
+
+When the run starts:
+
+```json
+{
+  "package": "@inngest/ci",
+  "version": "0.1.0",
+  "local": false,
+  "repo": "my-org/my-app",
+  "ref": "feature",
+  "sha": "abc1234",
+  "pullRequest": 7
+}
+```
+
+`local` is `true` for any run on the Dev Server. `repo`, `ref`, `sha`, and `pullRequest` are left out when the run has none. `apis` holds every counter listed below, including zeros.
+
+When the run ends:
+
+```json
+{
+  "conclusion": "success",
+  "jobs": { "total": 3, "passed": 2, "failed": 0, "cached": 1, "skipped": 0, "cancelled": 0 },
+  "apis": { "from": 1, "matrix": 1, "cache": 1, "commands": 6, "githubRest": 0 }
+}
+```
+
+`apis` counts the run's calls to `from`, `matrix`, `cache`, `sandbox`, `checkout`, `changed`, `report`, `githubRest`, `githubHelpers`, `waitForChecks`, `waitForWorkflow`, `waitFor`, `commands`, `background`, `shard`, and `skip`.
+
+CI's own steps also carry a `{ job, kind }` tag, where `kind` is `job`, `check`, or `cache`.
+
+## Steps inside jobs
+
+A job is an Inngest function body, so the full Inngest step API works inside it. Import `step` from `inngest`.
+
+```typescript {{ title: "TypeScript" }}
+import { step } from "inngest";
+
+const migrations = ci.job("migrations", async () => {
+  const db = await step.run("create-db-branch", async () => {
+    return neon.branches.create({ parent: "main" });
+  });
+
+  await checkout();
+  await $`pnpm install`;
+  await $`pnpm db:migrate`.env({ DATABASE_URL: db.url });
+
+  await step.run("delete-db-branch", async () => {
+    return neon.branches.delete(db.id);
+  });
+});
+```
+
+- Commands are steps and do not rerun. Other code in a job can run again when the run resumes, so wrap side effects in `step.run`.
+- Step IDs are scoped to the job, so two jobs can use the same ID.
+- `step.waitForEvent`, `step.sleep`, and `step.invoke` work, and a wait holds no worker.
+- Throw `RetryAfterError` from `inngest` to retry a step after a delay.
+
+## Errors
+
+| Error | Thrown when |
+| --- | --- |
+| `CommandFailedError` | A command exits with a non-zero code and you did not call `.nothrow()`. |
+| `CommandTimeoutError` | A command passes its `.timeout()`. |
+| `CiUsageError` | The API is used in a way it does not support, such as `$` outside a job or `checkout()` in a run with no repository. |
+
+Import the classes from `@inngest/ci` to check for them with `instanceof`.
+
+- `CommandFailedError` has `command` (the arguments as an array), `exitCode`, `stdoutTail` and `stderrTail` (the end of each stream), and `jobPath` (the job that ran it). Its message is the command, its exit code, and the end of stderr.
+- `CommandTimeoutError` has `command`, `timeout` (the duration you set), and `jobPath`.
+- A `CiUsageError` fails the run without retrying, because a retry would fail the same way.
+
+## Next steps
+
+- [Concepts](/docs/labs/ci/concepts?ref=docs-labs-ci-reference) defines pipelines, triggers, jobs, commands, and machines.
+- [Recipes](/docs/labs/ci/recipes?ref=docs-labs-ci-reference) lists common tasks with the code for each.
+- [Quick start](/docs/labs/ci/quick-start?ref=docs-labs-ci-reference) runs a pipeline on the Dev Server.
+- [Flow control](/docs/durable-execution/flow-control?ref=docs-labs-ci-reference) covers the options a pipeline accepts.
+- [Sandboxes limits](/docs/sandboxes/limits?ref=docs-labs-ci-reference) list the limits that apply to machines.

@@ -51,6 +51,14 @@ export {
   LanguageTitle,
   SdkUnsupported,
 } from "./Code";
+export {
+  AnnotatedCode,
+  Annotation,
+  Trace,
+  TraceRow,
+  TraceBar,
+  TraceMarker,
+} from "./AnnotatedCode/AnnotatedCode";
 export { DownloadLink } from "./DownloadLink";
 export { Unreleased } from "./Unreleased";
 

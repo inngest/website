@@ -119,6 +119,57 @@ function transformJsxElement(node: MdxJsxElement): RootContent[] | null {
     return node.children;
   }
 
+  // Annotated code: the plain code block, then its notes as a list. The
+  // trace timeline is visual only (its notes are already in the list).
+  if (name === "AnnotatedCode") {
+    const isEl = (child: RootContent, elName: string) => {
+      const el = child as unknown as MdxJsxElement;
+      return el.type === "mdxJsxFlowElement" && el.name === elName;
+    };
+
+    const code = node.children.filter((child) => {
+      return !isEl(child, "Annotation") && !isEl(child, "Trace");
+    });
+
+    const notes = node.children
+      .filter((child) => {
+        return isEl(child, "Annotation");
+      })
+      .map((child) => {
+        const el = child as unknown as MdxJsxElement;
+        const title = (getAttr(el, "title") ?? "")
+          .split("`")
+          .map((part, i) => {
+            return i % 2 === 1 ? inlineCode(part) : text(part);
+          });
+        // The first paragraph joins the title's line; anything after it
+        // (more paragraphs, lists, code) follows as its own blocks.
+        const [first, ...rest] = el.children;
+        const lead = first?.type === "paragraph" ? first.children : [];
+        const blocks = first?.type === "paragraph" ? rest : el.children;
+        const lines = (getAttr(el, "lines") ?? "").split(",").join(", ");
+        const where = /[-,]/.test(lines) ? `lines ${lines}` : `line ${lines}`;
+        const href = getAttr(el, "href");
+        const more: PhrasingContent[] = href
+          ? [text(" "), link(href, [text(getAttr(el, "linkText") ?? href)])]
+          : [];
+
+        if (blocks.length === 0) {
+          return listItem([
+            paragraph([strong(title), text(` (${where}): `), ...lead, ...more]),
+          ]);
+        }
+
+        return listItem([
+          paragraph([strong(title), text(` (${where}): `), ...lead]),
+          ...blocks,
+          ...(more.length ? [paragraph(more.slice(1))] : []),
+        ]);
+      });
+
+    return notes.length ? [...code, list(notes)] : code;
+  }
+
   // Callout components: Note, Tip, Warning, Info, Callout
   if (["Note", "Tip", "Warning", "Info", "Callout"].includes(name)) {
     const textContent = toString(node).trim();

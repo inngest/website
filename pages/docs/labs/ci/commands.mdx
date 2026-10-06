@@ -1,0 +1,77 @@
+import { Info } from "shared/Docs/mdx";
+
+export const metaTitle = "Commands | Inngest CI";
+export const description = "Run shell commands in an Inngest CI job with the $ template tag, retry a failed command without rerunning passed work, and read output, env, and timeouts.";
+
+# Commands
+
+> Run shell commands on a job's machine, with retries that skip work that already passed.
+
+<Info>
+  Inngest CI is an Inngest Labs project: early, moving fast, and shaped by your feedback. [What's Labs?](/docs/labs?ref=docs-labs-ci-commands)
+</Info>
+
+`$` runs a command on the job's machine. A non-zero exit code throws `CommandFailedError`, which fails the job.
+
+```typescript {{ title: "TypeScript" }}
+const test = ci.job("test", async () => {
+  await checkout();
+  await $`pnpm install`;
+  await $`pnpm --filter ${pkg} test`;
+});
+```
+
+`$` runs without a shell. The template's text is split on spaces and quotes are not parsed, so pass a value with spaces as an interpolation. Each interpolated value becomes one argument with no quoting, unless it follows text with no space, as in `--filter=${pkg}`, where it joins that argument. Arrays spread into several arguments, and `false`, `null`, and `undefined` are dropped. `$.sh` runs `/bin/sh -c` and escapes interpolated values, for pipes and `&&`.
+
+## Retries
+
+`.retries(n)` runs a failed command up to `n` more times on the same machine. Each attempt is its own step in the trace.
+
+```typescript {{ title: "TypeScript" }}
+await $`pnpm test`.retries(2);
+```
+
+Each command is a step. If the run resumes after a failure elsewhere, such as a GitHub API 503, Inngest replays the saved results and does not run finished commands again. Inngest does not retry a whole run because a command failed. If a command still fails after its retries, the job's check fails and the run ends.
+
+## Options
+
+Options chain onto the command:
+
+```typescript {{ title: "TypeScript" }}
+await $`pnpm lint`.nothrow();
+await $`pnpm test`.env({ CI: "true" }).timeout("10m");
+await $`pnpm exec playwright test`.as("e2e");
+
+const sha = await $`git rev-parse HEAD`.text();
+```
+
+- `.nothrow()` returns the result with its exit code instead of throwing.
+- `.env()`, `.cwd()`, and `.timeout()` set the environment, directory, and time limit.
+- `.as(name)` replaces the command text in the step name, as in `test › e2e`.
+- `.text()`, `.lines()`, and `.json()` return stdout in a convenient shape.
+
+[Reference](/docs/labs/ci/reference?ref=docs-labs-ci-commands#commands) lists every method, the result fields, and `.background()`.
+
+## Share commands between jobs
+
+Any function can run commands. It uses the calling job's machine:
+
+```typescript {{ title: "TypeScript" }}
+export async function install() {
+  await checkout();
+  await $`pnpm install --frozen-lockfile`;
+}
+
+const test = ci.job("test", async () => {
+  await install();
+  await $`pnpm test`;
+});
+```
+
+`$` outside a job throws `CiUsageError`. Output arrives when the command ends, not while it runs.
+
+## Next steps
+
+- [Machines](/docs/labs/ci/machines?ref=docs-labs-ci-commands) covers where commands run.
+- [Jobs](/docs/labs/ci/jobs?ref=docs-labs-ci-commands) covers how commands group into units of work.
+- [Reference](/docs/labs/ci/reference?ref=docs-labs-ci-commands#commands) lists every command method.

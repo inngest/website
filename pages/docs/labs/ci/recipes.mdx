@@ -1,0 +1,71 @@
+import { Info } from "shared/Docs/mdx";
+
+export const metaTitle = "Recipes | Inngest CI";
+export const description = "Inngest CI recipes: start services and wait for them, speed up tests, work with pull requests, react to changes and triggers, and debug failed jobs.";
+
+# Recipes
+
+> Common Inngest CI tasks, with the code for each and the page that explains it.
+
+<Info>
+  Inngest CI is an Inngest Labs project: early, moving fast, and shaped by your feedback. [What's Labs?](/docs/labs?ref=docs-labs-ci-recipes)
+</Info>
+
+## Services and waiting
+
+| Task | Code | Learn more |
+| --- | --- | --- |
+| Start a server | `` const server = await $`pnpm start`.background() `` | [Reference](/docs/labs/ci/reference?ref=docs-labs-ci-recipes#commands) |
+| Wait for a port | `await waitForPort(3000)` | [Reference](/docs/labs/ci/reference?ref=docs-labs-ci-recipes#extra-machines) |
+| Wait for a health check | `await waitForHttp("http://127.0.0.1:3000/health")` | [Reference](/docs/labs/ci/reference?ref=docs-labs-ci-recipes#extra-machines) |
+| Read server logs | `await server.output()` | [Reference](/docs/labs/ci/reference?ref=docs-labs-ci-recipes#commands) |
+| Stop a server | `await server.kill()` | [Reference](/docs/labs/ci/reference?ref=docs-labs-ci-recipes#commands) |
+| Wait for other checks | `await github.waitForChecks({ names: ["vercel"] })` | [Reference](/docs/labs/ci/reference?ref=docs-labs-ci-recipes#github-api-and-helpers) |
+| Wait for an Actions workflow | `await github.waitForWorkflow({ workflow: "npm_test.yml" })` | [Reference](/docs/labs/ci/reference?ref=docs-labs-ci-recipes#github-api-and-helpers) |
+| Run another pipeline | `await step.invoke("contracts", { function: contracts, data: { sha } })` | [Jobs](/docs/labs/ci/jobs?ref=docs-labs-ci-recipes#use-inngest-steps-in-a-job) |
+
+## Tests
+
+| Task | Code | Learn more |
+| --- | --- | --- |
+| Build once, test many | `await from(build)` | [Machines](/docs/labs/ci/machines?ref=docs-labs-ci-recipes#start-a-job-from-another-job) |
+| Skip unchanged tests | `cache: { key: files("src/**", "test/**") }` | [Caching](/docs/labs/ci/caching?ref=docs-labs-ci-recipes) |
+| Retry a flaky command | `` await $`pnpm test`.retries(2) `` | [Commands](/docs/labs/ci/commands?ref=docs-labs-ci-recipes#retries) |
+| Test every Node version | `ci.matrix` over `axes: { node: ["20", "22"] }` | [Jobs](/docs/labs/ci/jobs?ref=docs-labs-ci-recipes#run-a-job-for-every-combination) |
+| Dump state when a command hangs | `` await $`pnpm test`.timeout("10m").onTimeout(async () => { return $`ps auxf`; }) `` | [Reference](/docs/labs/ci/reference?ref=docs-labs-ci-recipes#commands) |
+
+## Pull requests
+
+| Task | Code | Learn more |
+| --- | --- | --- |
+| Post a sticky comment | `` await github.stickyComment("preview", `Preview: ${url}`) `` | [Reference](/docs/labs/ci/reference?ref=docs-labs-ci-recipes#github-api-and-helpers) |
+| Annotate the diff | `await report.annotate([{ path, line, message }])` | [Checks and reports](/docs/labs/ci/checks-and-reports?ref=docs-labs-ci-recipes#add-a-summary-or-annotations) |
+| Add a check summary | `await report.summary("**Coverage:** 91%")` | [Checks and reports](/docs/labs/ci/checks-and-reports?ref=docs-labs-ci-recipes#add-a-summary-or-annotations) |
+| Open or update a pull request | `await github.upsertPullRequest({ head: "release/next", title, body })` | [Reference](/docs/labs/ci/reference?ref=docs-labs-ci-recipes#github-api-and-helpers) |
+| Alert on a broken main | A pipeline on `github.checkSuite({ branch: "main" })` | [Pipelines](/docs/labs/ci/pipelines?ref=docs-labs-ci-recipes#triggers) |
+
+## Changes and triggers
+
+| Task | Code | Learn more |
+| --- | --- | --- |
+| Run on changed files | `if (await changed("docs/**")) { await docsSite(); }` | [Pipelines](/docs/labs/ci/pipelines?ref=docs-labs-ci-recipes#skip-a-run) |
+| Skip a whole run | `return ci.skip("nothing changed")` | [Pipelines](/docs/labs/ci/pipelines?ref=docs-labs-ci-recipes#skip-a-run) |
+| Watch another repository | `on: github.push({ repo: "inngest/inngestgo", branches: ["main"] })` | [Pipelines](/docs/labs/ci/pipelines?ref=docs-labs-ci-recipes#triggers) |
+| Slash commands | `on: github.comment({ command: "/prerelease", minPermission: "write" })` | [Pipelines](/docs/labs/ci/pipelines?ref=docs-labs-ci-recipes#triggers) |
+| Typed manual runs | `on: ci.manual({ pipelineId: "deploy", schema })` | [Reference](/docs/labs/ci/reference?ref=docs-labs-ci-recipes#triggers) |
+| Move a branch with no machine | `await github.forcePushRef("heads/next", sha)` | [Reference](/docs/labs/ci/reference?ref=docs-labs-ci-recipes#github-api-and-helpers) |
+| Cancel superseded runs | `singleton: { key: "event.data.pull_request.number", mode: "cancel" }` | [Pipelines](/docs/labs/ci/pipelines?ref=docs-labs-ci-recipes#flow-control) |
+
+## Debugging
+
+| Task | Code | Learn more |
+| --- | --- | --- |
+| Keep a failed machine | `ci.job({ id: "test", keepOnFailure: "24h" }, fn)` | [Reference](/docs/labs/ci/reference?ref=docs-labs-ci-recipes#ci-job) |
+| Name a command in the trace | `` await $`pnpm test`.as("unit tests") `` | [Commands](/docs/labs/ci/commands?ref=docs-labs-ci-recipes#options) |
+| Turn off a job's check | `ci.job({ id: "notify", check: false }, fn)` | [Checks and reports](/docs/labs/ci/checks-and-reports?ref=docs-labs-ci-recipes) |
+| Rename the pipeline check | `check: { name: "CI" }` | [Pipelines](/docs/labs/ci/pipelines?ref=docs-labs-ci-recipes) |
+
+## Next steps
+
+- [Concepts](/docs/labs/ci/concepts?ref=docs-labs-ci-recipes) defines the parts these recipes use.
+- [Reference](/docs/labs/ci/reference?ref=docs-labs-ci-recipes) lists every option.
