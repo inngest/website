@@ -102,7 +102,7 @@ export default function ComputePricing() {
         {RATE_ROWS.map((row) => (
           <div
             key={row.key}
-            className="group/rate grid grid-cols-[minmax(0,1.4fr)_minmax(0,1fr)_minmax(0,1fr)] items-center gap-x-4 border-b border-v1-strong/[0.4] px-4 py-2.5 sm:px-5"
+            className="grid grid-cols-[minmax(0,1.4fr)_minmax(0,1fr)_minmax(0,1fr)] items-center gap-x-4 border-b border-v1-strong/[0.4] px-4 py-2.5 sm:px-5"
           >
             <div className="flex min-w-0 items-center gap-2.5">
               <span className="hidden size-7 shrink-0 items-center justify-center rounded border border-v1-strong/[0.4] bg-v1-surfaceElevated text-v1-frost sm:flex">
@@ -117,10 +117,10 @@ export default function ComputePricing() {
                 </span>
               </div>
             </div>
-            <span className={`text-right font-v1Mono text-[12px] leading-[1.4] tabular-nums text-v1-frost opacity-[0.45] group-hover/rate:opacity-100 ${PRICE_FADE}`}>
+            <span className="text-right font-v1Mono text-[12px] leading-[1.4] tabular-nums text-v1-frost">
               {usd(row.rate.perSecond, 6)}
             </span>
-            <span className={`text-right font-v1Mono text-[12px] leading-[1.4] tabular-nums text-v1-frost opacity-[0.45] group-hover/rate:opacity-100 ${PRICE_FADE}`}>
+            <span className="text-right font-v1Mono text-[12px] leading-[1.4] tabular-nums text-v1-frost">
               {usd(row.rate.perHour, 4)}
             </span>
           </div>

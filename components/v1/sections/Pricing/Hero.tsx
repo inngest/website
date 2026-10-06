@@ -53,6 +53,7 @@ const FEATURE_CATEGORIES = [
   "Observability",
   "Security",
   "Support",
+  "Sandboxes",
 ] as const;
 
 // Inline style for every overlay span that extends with the surface.
@@ -376,29 +377,20 @@ function PlanCard({
         </ButtonLink>
       </div>
 
-      {/* Equal-height category rows so Platform / Events / … start on
-          the same rhythm in every card. Empty categories still take a
-          slot at lg (hidden on mobile). */}
-      <div className="relative z-10 flex flex-1 flex-col gap-[18px]">
+      {/* Category groups stack naturally; empty categories are skipped so
+          later groups (e.g. Sandboxes) sit right under the previous one. */}
+      <div className="relative z-10 flex flex-1 flex-col gap-9">
         {FEATURE_CATEGORIES.map((category) => {
           const items = plan.features.filter(
             (feature) => feature.category === category,
           );
-          if (items.length === 0) {
-            return (
-              <div
-                key={category}
-                aria-hidden="true"
-                className="hidden lg:block lg:flex-1"
-              />
-            );
-          }
+          if (items.length === 0) return null;
           return (
             <div
               key={category}
-              className="flex flex-1 flex-col gap-1.5 text-v1-frost"
+              className="flex flex-col gap-1.5 text-v1-frost"
             >
-              <p className="text-v1-label-sm uppercase tracking-[0.06em] text-v1-frost/40">
+              <p className="pb-1 text-v1-label-sm uppercase tracking-[0.06em] text-v1-frost/40">
                 {category}
               </p>
               <ul className="flex flex-col gap-3">
