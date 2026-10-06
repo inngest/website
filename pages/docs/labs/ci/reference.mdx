@@ -18,16 +18,14 @@ export const description = "Inngest CI reference: pipeline and job options, trig
 | Option | Type | Required |
 | --- | --- | --- |
 | `github` | `githubApp()`, `githubToken()`, or `consoleReporter()` | No |
-| `cacheStore` | `CacheStore` | No |
 | `machine` | `{ vcpu?: 1 \| 2 \| 4 }` | No |
 | `runUrl` | `(ctx: { runId, functionId }) => string` | No |
 
-- `github` sets how pipelines report to GitHub. In dev mode it defaults to `consoleReporter()`. Otherwise it defaults to no reporting.
-- `cacheStore` is where cache entries live. It defaults to `memoryCacheStore()`.
+- `github` sets how pipelines report to GitHub. It defaults to `consoleReporter()`, which prints checks to the Inngest logger. Pass `githubApp()` or `githubToken()` to report checks on GitHub.
 - `machine` is the default machine for every job.
 - `runUrl` builds the link shown on checks.
 
-`ci.functions()` returns your pipelines plus the functions CI needs behind the scenes: machine cleanup and cache refreshes. Pass it to `serve()` or `createServer()`.
+`ci.functions()` returns your pipelines plus the functions CI needs behind the scenes: machine cleanup, cache refreshes, and GitHub check re-runs. Pass it to `serve()` or `createServer()`.
 
 ## `ci.pipeline`
 
@@ -68,7 +66,7 @@ The handler receives `event`, `events`, `runId`, `pipelineId`, `repo`, `attempt`
 - `id` is unique in the app. It names the function, the run, and the check.
 - `check: false` turns off all checks. `check: { jobs: false }` keeps the pipeline check and drops the job checks.
 - `machine` is the default machine for the pipeline's jobs. A job's own `machine` overrides it.
-- `repo` (`"owner/name"`) gives crons and manual runs a repository to check out. Inngest validates it when the pipeline registers, and resolves the repository, its default branch, and its head commit for cron and manual runs.
+- `repo` (`"owner/name"`) gives crons and manual runs a repository to check out. `ci.pipeline()` throws if it is not in that form, and resolves the repository, its default branch, and its head commit for cron and manual runs.
 - Flow control options: `concurrency`, `throttle`, `rateLimit`, `debounce`, `priority`, `singleton`, `idempotency`, `batchEvents`, `timeouts`, `cancelOn`, `retries`, `name`, and `description`. See [flow control](/docs/durable-execution/flow-control).
 
 Return `ci.skip(reason)` to end a run early. The check completes as success with the reason, so a required check never waits.
@@ -81,7 +79,7 @@ if (touched === false) {
 }
 ```
 
-`changed()` reads the pull request files, or the push range, before any machine starts. When it cannot tell what changed, it returns `true` so nothing is skipped by mistake, and notes it on the check. That happens when the run has no repository, when the base cannot be found, and when a compare hits GitHub's 300-file cap.
+`changed()` reads the pull request files, or the push range, before any machine starts. When it cannot tell what changed, it returns `true` so nothing is skipped by mistake, and notes it on the check. That happens when the run has no repository or no GitHub credentials, when it has no pull request or push range (a cron, a manual run, a merge group, or a push that creates a branch), when a local run cannot find its base branch, and when a compare hits GitHub's 300-file cap.
 
 ## Triggers
 
@@ -154,7 +152,7 @@ const build = ci.job({ id: "build", machine: { vcpu: 4 } }, async () => {
 | `check` | `false`, or `{ name? }` | No |
 | `keepOnFailure` | Duration, such as `"24h"` | No |
 
-`keepOnFailure` snapshots the machine when the job fails. The snapshot ID appears on the job check and in the pipeline summary. It takes a duration, but the duration is ignored today: the snapshot keeps the platform's default retention.
+`keepOnFailure` snapshots the machine when the job fails. The snapshot ID appears in the pipeline check's summary, under **Kept machines**. It takes a duration, but the duration is ignored today: the snapshot keeps the platform's default retention.
 
 Durations such as `"10m"` or `"1h30m"` are parsed strictly, with the units `ms`, `s`, `m`, `h`, `d`, and `w`. A malformed value throws `CiUsageError`.
 
@@ -231,12 +229,12 @@ A [**machine**](/docs/labs/ci/machines) is a Sandbox: an ephemeral Linux microVM
 
 Set `machine` on a job, on its pipeline, or on `createCi` for every job. The first one set wins in that order, and the default is 2 vCPUs.
 
-- Inngest pauses a machine when its job finishes, so a later `from()` can snapshot it, and destroys every machine when the pipeline ends.
+- Inngest pauses a machine when its job passes, so a later `from()` can snapshot it, and destroys every machine when the pipeline ends.
 - Only `$` runs on the machine. The rest of your handler runs in your app.
 - Commands run in `/work` by default, which is where `checkout()` puts the repository.
 - `checkout()` clones the commit that triggered the run with a short-lived token that never appears in the trace. Locally it uploads your working tree.
 
-`checkout()` options are `ref`, `submodules`, `history` (`"shallow"` or `"full"`), and `path`. `history` defaults to `"shallow"`, which skips file contents until they are needed, and `path` defaults to `/work`. Commands after a `checkout({ path })` run in that path. A local checkout uploads your working tree and ignores `ref`, `submodules`, and `history`. `checkout()` throws `CiUsageError` when the run has no repository, so set `repo` on the pipeline.
+`checkout()` options are `ref`, `submodules`, `history` (`"shallow"` or `"full"`), and `path`. `history` defaults to `"shallow"`, which skips file contents until they are needed, and `path` defaults to `/work`. Commands after a `checkout({ path })` run in that path. A local checkout uploads your working tree without its `.git` folder and ignores `ref`, `submodules`, and `history`. `checkout()` throws `CiUsageError` when the run has no repository, so set `repo` on the pipeline.
 
 ## `from`
 
@@ -358,7 +356,7 @@ const base = ci.job(
 - `refresh` takes triggers that rebuild the cache ahead of time, so pull requests do not pay for it. Set `repo` on a pipeline so a cron has a repository to check out.
 - `scope` is `"branch"` by default. A pull request reads entries from its base branch and writes its own, and its scope can never collide with a branch name. `"global"` shares one entry set.
 
-A key is `files()`, a string, or an array of them:
+A key is `files()`, a string, an array of them, or an async function that returns a string:
 
 ```typescript {{ title: "TypeScript" }}
 key: files("pnpm-lock.yaml")
@@ -372,17 +370,7 @@ key: [files("go.mod", "go.sum"), "go1.25"]
 - A job without a machine caches its result. Reused jobs show as passed.
 - Do not cache tests that call the network.
 
-Entries live in a `CacheStore`. The default is `memoryCacheStore()`, which lasts as long as the process. `fileCacheStore(dir)` writes JSON files, `.inngest/ci-cache` by default. Pass your own `{ get, set }` object to keep entries anywhere:
-
-```typescript {{ title: "TypeScript" }}
-export const ci = createCi(inngest, {
-  cacheStore: fileCacheStore(".inngest/ci-cache"),
-});
-```
-
-<Warning>
-  There is no hosted cache store yet. A memory store on a serverless deploy misses on every cold start, so use a file store on shared storage or your own store.
-</Warning>
+Cache entries live in memory for as long as your app's process runs. A miss rebuilds the job, so a restart, a cold start on a serverless deploy, or a second instance of your app only means the job runs again. Entries are not shared between processes.
 
 ## Checks and reports
 
@@ -414,7 +402,7 @@ await report.annotate([
 - `report.summary(markdown)` stacks sections. Inngest truncates a summary at 65,000 bytes, under GitHub's limit of 65,535 bytes, and links to the trace.
 - `report.annotate(annotations)` puts annotations on the diff. Inngest sends them in batches of 50, the GitHub limit per request. Entries without a `path` or a `message` are dropped.
 - While a run will be retried, its checks show `Retrying (attempt N of M)` and complete only on success or the final attempt. Command failures, timeouts, usage errors, and matrix failures made only of those are deterministic, so they fail once.
-- A GitHub "Re-run" on a pipeline or job check, or "Re-run all" on the check suite, restarts only the pipeline that owns the check. On a pull request it sends the pull request again. Otherwise it sends a push again only when the branch's head is the checked commit. Passed jobs are reused only when they have a `cache` key.
+- A GitHub "Re-run" on a pipeline or job check, or "Re-run all" on the check suite, sends the triggering event again, so every pipeline it triggers runs again. On a pull request it sends the pull request again as `synchronize`. Otherwise it sends a push again only when the branch's head is the checked commit. Passed jobs are reused only when they have a `cache` key.
 
 ## Run on GitHub
 

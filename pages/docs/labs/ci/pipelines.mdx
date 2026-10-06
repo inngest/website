@@ -70,7 +70,7 @@ if (touched === false) {
 }
 ```
 
-When `changed()` cannot tell what changed, it returns `true` so nothing is skipped by mistake. That happens when the run has no repository, when the base cannot be found, and when a compare hits GitHub's 300-file cap.
+When `changed()` cannot tell what changed, it returns `true` so nothing is skipped by mistake. That happens when the run has no repository or no GitHub credentials, when it has no pull request or push range (a cron, a manual run, a merge group, or a push that creates a branch), when a local run cannot find its base branch, and when a compare hits GitHub's 300-file cap.
 
 ## Flow control
 

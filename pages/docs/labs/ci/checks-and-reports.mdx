@@ -50,7 +50,7 @@ await report.annotate([
 
 ## Read the trace
 
-Every run also opens in the Inngest dashboard as one trace: the pipeline, each job, each command, and the Sandbox steps behind them. A GitHub "Re-run" on a check restarts only the pipeline that owns it. Passed jobs are reused only when they have a [cache](/docs/labs/ci/caching) key.
+Every run also opens in the Inngest dashboard as one trace: the pipeline, each job, each command, and the Sandbox steps behind them. A GitHub "Re-run" on a check sends the pull request or push again, so every pipeline it triggers runs again. Passed jobs are reused only when they have a [cache](/docs/labs/ci/caching) key.
 
 ![The trace of the example pr pipeline in the Inngest Dev Server: pipeline and job checks, cache lookups, then the base job creating its machine, checking out the repository and installing dependencies](/assets/docs/labs/ci/trace.png)
 

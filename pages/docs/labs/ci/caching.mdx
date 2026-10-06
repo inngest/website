@@ -1,7 +1,7 @@
 import { Info, Warning } from "shared/Docs/mdx";
 
 export const metaTitle = "Caching | Inngest CI";
-export const description = "Cache an Inngest CI job by its inputs so unchanged work is skipped and its machine is restored, with refresh schedules, scopes, and cache stores.";
+export const description = "Cache an Inngest CI job by its inputs so unchanged work is skipped and its machine is restored, with refresh schedules and scopes.";
 
 # Caching
 
@@ -31,7 +31,7 @@ const base = ci.job(
 
 ## Choose the key
 
-A key is `files()`, a string, or an array of them. `files()` hashes the matched files in the git tree for the run's commit. Locally it hashes the working tree.
+A key is `files()`, a string, an array of them, or an async function that returns a string. `files()` hashes the matched files in the git tree for the run's commit. Locally it hashes the working tree.
 
 ```typescript {{ title: "TypeScript" }}
 key: files("migrations/**", "seeds/**")
@@ -50,19 +50,9 @@ An uncached parent has no key and never invalidates its children. Add its files 
 
 `refresh` takes triggers that rebuild the cache on a schedule, so pull requests do not pay for it. Set `repo` on the pipeline so a cron has a repository to check out. `scope` is `"branch"` by default: a pull request reads entries from its base branch and writes its own, and its scope can never collide with a branch name. `"global"` shares one entry set.
 
-## Cache stores
+## Where entries live
 
-Entries live in a `CacheStore`. The default is `memoryCacheStore()`, which lasts as long as the process. `fileCacheStore(dir)` writes JSON files, and you can pass your own `{ get, set }` object.
-
-```typescript {{ title: "TypeScript" }}
-export const ci = createCi(inngest, {
-  cacheStore: fileCacheStore(".inngest/ci-cache"),
-});
-```
-
-<Warning>
-  There is no hosted cache store yet. A memory store on a serverless deploy misses on every cold start, so use a file store on shared storage or your own store.
-</Warning>
+Cache entries live in memory for as long as your app's process runs. A miss rebuilds the job, so a restart, a cold start on a serverless deploy, or a second instance of your app only means the job runs again. Entries are not shared between processes.
 
 Do not cache tests that call the network.
 

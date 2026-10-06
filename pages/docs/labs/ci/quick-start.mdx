@@ -18,7 +18,7 @@ Run a pipeline with a shared `base` job and parallel `lint` and `test` jobs. Che
 You need:
 
 - Node.js 20 or newer.
-- `inngest` 4.22.0 or newer.
+- `inngest` 4.22.0 or newer, within 4.x.
 - An Inngest account with access to [Sandboxes](/docs/sandboxes/overview).
 - A git repository with `lint` and `test` scripts in `package.json`.
 - The Inngest CLI, signed in once:
@@ -45,7 +45,7 @@ export const inngest = new Inngest({ id: "my-app" });
 export const ci = createCi(inngest);
 ```
 
-In dev mode, `createCi` prints checks to the terminal with `consoleReporter()`. To report checks on GitHub, see [Run on GitHub](/docs/labs/ci/reference#run-on-github).
+By default, `createCi` prints checks to the terminal with `consoleReporter()`. To report checks on GitHub, see [Run on GitHub](/docs/labs/ci/reference#run-on-github).
 
 ## 3. Write a pipeline
 
@@ -98,7 +98,7 @@ const server = createServer({ client: inngest, functions: ci.functions() });
 server.listen(3000);
 ```
 
-`ci.functions()` returns your pipelines plus the functions CI needs behind the scenes: machine cleanup and cache refreshes.
+`ci.functions()` returns your pipelines plus the functions CI needs behind the scenes: machine cleanup, cache refreshes, and GitHub check re-runs.
 
 ## 5. Run locally
 
@@ -131,7 +131,7 @@ main();
 INNGEST_DEV=1 npx tsx ci/send.ts
 ```
 
-`checkout()` uploads your working tree, including uncommitted changes and excluding ignored files. The upload is limited to 100 MiB.
+`checkout()` uploads your working tree, including uncommitted changes and excluding ignored files. The upload is limited to 100 MiB and has no `.git` folder, so git commands on the machine only work in runs from GitHub.
 
 ## 6. Inspect the result
 

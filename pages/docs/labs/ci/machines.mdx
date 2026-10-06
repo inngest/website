@@ -22,8 +22,8 @@ A machine is a [Sandbox](/docs/sandboxes/overview): an ephemeral Linux microVM. 
 Set `machine` on a job, on its pipeline, or on `createCi` for every job. The first one set wins in that order.
 
 - Commands run in `/work` by default, which is where `checkout()` puts the repository.
-- `checkout()` clones the commit that triggered the run with a short-lived token that never appears in the trace. Locally it uploads your working tree.
-- Inngest pauses a machine when its job finishes and destroys every machine when the pipeline ends.
+- `checkout()` clones the commit that triggered the run with a short-lived token that never appears in the trace. Locally it uploads your working tree without its `.git` folder.
+- Inngest pauses a machine when its job passes and destroys every machine when the pipeline ends.
 
 ## Start a job from another job
 
