@@ -169,8 +169,8 @@ function readNote(el: ReactElement): Note {
   return {
     id: String(props.id),
     lines,
-    first: Math.min(...lines),
-    last: Math.max(...lines),
+    first: Math.min(...Array.from(lines)),
+    last: Math.max(...Array.from(lines)),
     pills,
     nodes: list(props.nodes),
     tease: props.tease ?? "",
@@ -261,7 +261,7 @@ function Annotated({
   }, [notes]);
 
   const pillOrder = useMemo(() => {
-    return [...pillAt.keys()].sort((a, b) => {
+    return Array.from(pillAt.keys()).sort((a, b) => {
       return a - b;
     });
   }, [pillAt]);
