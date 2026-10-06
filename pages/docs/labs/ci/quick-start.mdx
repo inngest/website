@@ -8,7 +8,7 @@ export const description = "Inngest CI quick start: write a pipeline in TypeScri
 > Write a pipeline, run it on the Dev Server with your uncommitted changes, and read the result in one trace.
 
 <Info>
-  Inngest CI is an Inngest Labs project: early, moving fast, and shaped by your feedback. [What's Labs?](/docs/labs)
+  Inngest CI is an Inngest Labs project: early, moving fast, and shaped by your feedback. [What's Labs?](/docs/labs?ref=docs-labs-ci-quick-start)
 </Info>
 
 Run a pipeline with a shared `base` job and parallel `lint` and `test` jobs. Checks print to your terminal, and the run opens in the Dev Server as one trace.
@@ -19,7 +19,7 @@ You need:
 
 - Node.js 20 or newer.
 - `inngest` 4.22.0 or newer, within 4.x.
-- An Inngest account with access to [Sandboxes](/docs/sandboxes/overview).
+- An Inngest account with access to [Sandboxes](/docs/sandboxes/overview?ref=docs-labs-ci-quick-start).
 - A git repository with `lint` and `test` scripts in `package.json`.
 - The Inngest CLI, signed in once:
 
@@ -45,7 +45,7 @@ export const inngest = new Inngest({ id: "my-app" });
 export const ci = createCi(inngest);
 ```
 
-By default, `createCi` prints checks to the terminal with `consoleReporter()`. To report checks on GitHub, see [Run on GitHub](/docs/labs/ci/reference#run-on-github).
+By default, `createCi` prints checks to the terminal with `consoleReporter()`. To report checks on GitHub, see [Run on GitHub](/docs/labs/ci/reference?ref=docs-labs-ci-quick-start#run-on-github).
 
 ## 3. Write a pipeline
 
@@ -142,7 +142,7 @@ Your server terminal prints each check as it changes:
 [pr] ✕ pr / test  `pnpm test` exited with 1  → http://localhost:8288/run?runID=01J…
 ```
 
-Open the run link in the Dev Server. The trace lists every step in order. Steps start with their job, as in `test › pnpm test`, and each retry of a command is its own step. [Read the trace](/docs/labs/ci/checks-and-reports#read-the-trace) lists the step names.
+Open the run link in the Dev Server. The trace lists every step in order. Steps start with their job, as in `test › pnpm test`, and each retry of a command is its own step. [Read the trace](/docs/labs/ci/checks-and-reports?ref=docs-labs-ci-quick-start#read-the-trace) lists the step names.
 
 ## Cleanup and current behavior
 
@@ -152,7 +152,7 @@ Open the run link in the Dev Server. The trace lists every step in order. Steps 
 
 ## Next steps
 
-- [Concepts](/docs/labs/ci/concepts) defines pipelines, triggers, jobs, commands, and machines.
-- [Pipelines and triggers](/docs/labs/ci/pipelines), [Jobs](/docs/labs/ci/jobs), and [Caching](/docs/labs/ci/caching) cover what to build next.
-- [Reference](/docs/labs/ci/reference) lists every option and running on GitHub.
+- [Concepts](/docs/labs/ci/concepts?ref=docs-labs-ci-quick-start) defines pipelines, triggers, jobs, commands, and machines.
+- [Pipelines and triggers](/docs/labs/ci/pipelines?ref=docs-labs-ci-quick-start), [Jobs](/docs/labs/ci/jobs?ref=docs-labs-ci-quick-start), and [Caching](/docs/labs/ci/caching?ref=docs-labs-ci-quick-start) cover what to build next.
+- [Reference](/docs/labs/ci/reference?ref=docs-labs-ci-quick-start) lists every option and running on GitHub.
 - [Example project](https://github.com/inngest/inngest-js/tree/main/examples/ci-pipelines) is a runnable app with matrices, caching, and GitHub checks.

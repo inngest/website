@@ -93,6 +93,37 @@ Some content here.`;
     assert.ok(!result.includes("A run"));
   });
 
+  it("should keep lists and code inside an annotation", async () => {
+    const input = [
+      "<AnnotatedCode>",
+      "",
+      "```typescript",
+      "const a = 1;",
+      "```",
+      "",
+      '<Annotation id="rich" lines="1" title="Rich" href="/docs/rich" linkText="More">',
+      "First paragraph.",
+      "",
+      "- one",
+      "- two",
+      "",
+      "```bash",
+      "pnpm test",
+      "```",
+      "</Annotation>",
+      "",
+      "</AnnotatedCode>",
+    ].join("\n");
+
+    const result = await convertMdxToMarkdown(input);
+
+    assert.ok(result.includes("**Rich** (line 1): First paragraph."));
+    assert.ok(result.includes("one"));
+    assert.ok(result.includes("two"));
+    assert.ok(result.includes("pnpm test"));
+    assert.ok(result.includes("[More](/docs/rich)"));
+  });
+
   it("should convert Step components with titles to headings", async () => {
     const input = `<Step title="First Step">
 Do something here.

@@ -8,10 +8,10 @@ export const description = "Define an Inngest CI pipeline, choose what starts it
 > Define what starts a pipeline, which jobs it calls, and how runs are limited.
 
 <Info>
-  Inngest CI is an Inngest Labs project: early, moving fast, and shaped by your feedback. [What's Labs?](/docs/labs)
+  Inngest CI is an Inngest Labs project: early, moving fast, and shaped by your feedback. [What's Labs?](/docs/labs?ref=docs-labs-ci-pipelines)
 </Info>
 
-A pipeline is one Inngest function. Its handler is plain TypeScript that calls [jobs](/docs/labs/ci/jobs), so it can branch, loop, and run jobs in parallel. Inngest starts a run when one of its triggers fires.
+A pipeline is one Inngest function. Its handler is plain TypeScript that calls [jobs](/docs/labs/ci/jobs?ref=docs-labs-ci-pipelines), so it can branch, loop, and run jobs in parallel. Inngest starts a run when one of its triggers fires.
 
 ## Define a pipeline
 
@@ -30,7 +30,7 @@ export const pr = ci.pipeline(
 );
 ```
 
-The `id` names the function, the run, and the check. The handler receives `event`, `events`, `runId`, `pipelineId`, `repo`, `attempt`, and `logger`. Serve pipelines with `ci.functions()`, as the [quick start](/docs/labs/ci/quick-start#4-serve-the-pipelines) shows.
+The `id` names the function, the run, and the check. The handler receives `event`, `events`, `runId`, `pipelineId`, `repo`, `attempt`, and `logger`. Serve pipelines with `ci.functions()`, as the [quick start](/docs/labs/ci/quick-start?ref=docs-labs-ci-pipelines#4-serve-the-pipelines) shows.
 
 ## Triggers
 
@@ -56,7 +56,7 @@ export const merged = ci.pipeline(
 - `github.comment()` runs on a comment such as `/deploy`, and `github.mergeGroup()` runs for the merge queue.
 - `{ cron }` runs on a schedule, and `ci.manual()` runs on an event you send.
 
-[Reference](/docs/labs/ci/reference#triggers) lists every trigger and its options.
+[Reference](/docs/labs/ci/reference?ref=docs-labs-ci-pipelines#triggers) lists every trigger and its options.
 
 ## Skip a run
 
@@ -74,7 +74,7 @@ When `changed()` cannot tell what changed, it returns `true` so nothing is skipp
 
 ## Flow control
 
-Pipeline options accept every Inngest [flow control](/docs/durable-execution/flow-control) setting. To cancel a run when a newer one starts for the same pull request, use `singleton`:
+Pipeline options accept every Inngest [flow control](/docs/durable-execution/flow-control?ref=docs-labs-ci-pipelines) setting. To cancel a run when a newer one starts for the same pull request, use `singleton`:
 
 ```typescript {{ title: "TypeScript" }}
 export const pr = ci.pipeline(
@@ -98,6 +98,6 @@ Use `concurrency` to cap how many pipelines run at once. `throttle`, `rateLimit`
 
 ## Next steps
 
-- [Jobs](/docs/labs/ci/jobs) covers the units of work a pipeline calls.
-- [Checks and reports](/docs/labs/ci/checks-and-reports) covers how a pipeline reports to GitHub.
-- [Reference](/docs/labs/ci/reference#ci-pipeline) lists every pipeline option.
+- [Jobs](/docs/labs/ci/jobs?ref=docs-labs-ci-pipelines) covers the units of work a pipeline calls.
+- [Checks and reports](/docs/labs/ci/checks-and-reports?ref=docs-labs-ci-pipelines) covers how a pipeline reports to GitHub.
+- [Reference](/docs/labs/ci/reference?ref=docs-labs-ci-pipelines#ci-pipeline) lists every pipeline option.

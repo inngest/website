@@ -59,7 +59,7 @@ export { Trace, TraceRow, TraceBar, TraceMarker } from "./Trace";
  * what renders behind an unreleased `label`, and what the markdown export
  * prints, followed by the notes as a list.
  */
-export function Annotation(_props: {
+export type AnnotationProps = {
   /** Referenced by a trace bar's `note`. */
   id: string;
   /** "8", "6-8" or "15-18,20-23": every line this note lights. */
@@ -75,9 +75,18 @@ export function Annotation(_props: {
   href?: string;
   linkText?: string;
   children: ReactNode;
-}) {
+};
+
+export function Annotation(_props: AnnotationProps) {
   return null;
 }
+
+/** What MDX passes for a fenced code block: its source and highlighted HTML. */
+type CodeBlockProps = {
+  code?: string;
+  title?: string;
+  children?: ReactNode;
+};
 
 type Note = {
   id: string;
@@ -139,7 +148,9 @@ function textLength(node: ReactNode): number {
     }
 
     if (isValidElement(child)) {
-      return sum + textLength((child.props as any).children);
+      return (
+        sum + textLength((child.props as { children?: ReactNode }).children)
+      );
     }
 
     return sum;
@@ -147,7 +158,7 @@ function textLength(node: ReactNode): number {
 }
 
 function readNote(el: ReactElement): Note {
-  const props = el.props as any;
+  const props = el.props as AnnotationProps;
   const ranges = parseRanges(String(props.lines));
   const lines = new Set<number>();
 
@@ -198,7 +209,7 @@ export function AnnotatedCode({
 
   const parts = Children.toArray(children).filter(isValidElement);
   const codeEl = parts.find((c) => {
-    return typeof (c.props as any)?.code === "string";
+    return typeof (c.props as CodeBlockProps).code === "string";
   });
 
   if (!enabled || !codeEl) {
@@ -215,9 +226,11 @@ function Annotated({
   parts: ReactElement[];
   codeEl: ReactElement;
 }) {
-  const codeProps = codeEl.props as any;
+  const codeProps = codeEl.props as CodeBlockProps;
   const codeChild = Children.toArray(codeProps.children).find(isValidElement);
-  const html: string = String((codeChild?.props as any)?.children ?? "");
+  const html: string = String(
+    (codeChild?.props as { children?: ReactNode } | undefined)?.children ?? ""
+  );
 
   const lines = useMemo(() => {
     const out = html.split("\n");

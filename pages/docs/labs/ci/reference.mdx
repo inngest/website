@@ -8,7 +8,7 @@ export const description = "Inngest CI reference: pipeline and job options, trig
 > Options, triggers, command methods, and limits for `@inngest/ci`.
 
 <Info>
-  Inngest CI is an Inngest Labs project: early, moving fast, and shaped by your feedback. [What's Labs?](/docs/labs) APIs may change between 0.x releases.
+  Inngest CI is an Inngest Labs project: early, moving fast, and shaped by your feedback. [What's Labs?](/docs/labs?ref=docs-labs-ci-reference) APIs may change between 0.x releases.
 </Info>
 
 ## `createCi`
@@ -29,7 +29,7 @@ export const description = "Inngest CI reference: pipeline and job options, trig
 
 ## `ci.pipeline`
 
-A [**pipeline**](/docs/labs/ci/pipelines) runs when something happens and calls jobs. It is one Inngest function, so every Inngest flow control option works on it.
+A [**pipeline**](/docs/labs/ci/pipelines?ref=docs-labs-ci-reference) runs when something happens and calls jobs. It is one Inngest function, so every Inngest flow control option works on it.
 
 ```typescript {{ title: "TypeScript" }}
 import { github } from "@inngest/ci";
@@ -67,7 +67,7 @@ The handler receives `event`, `events`, `runId`, `pipelineId`, `repo`, `attempt`
 - `check: false` turns off all checks. `check: { jobs: false }` keeps the pipeline check and drops the job checks.
 - `machine` is the default machine for the pipeline's jobs. A job's own `machine` overrides it.
 - `repo` (`"owner/name"`) gives crons and manual runs a repository to check out. `ci.pipeline()` throws if it is not in that form, and, with GitHub credentials, resolves the repository, its default branch, and its head commit for cron and manual runs.
-- Flow control options: `concurrency`, `throttle`, `rateLimit`, `debounce`, `priority`, `singleton`, `idempotency`, `batchEvents`, `timeouts`, `cancelOn`, `retries`, `name`, and `description`. See [flow control](/docs/durable-execution/flow-control).
+- Flow control options: `concurrency`, `throttle`, `rateLimit`, `debounce`, `priority`, `singleton`, `idempotency`, `batchEvents`, `timeouts`, `cancelOn`, `retries`, `name`, and `description`. See [flow control](/docs/durable-execution/flow-control?ref=docs-labs-ci-reference).
 
 Return `ci.skip(reason)` to end a run early. The check completes as success with the reason, so a required check never waits.
 
@@ -91,7 +91,7 @@ if (await changed({ include: ["docs/**"], ignore: ["docs/**/*.png"] })) {
 
 ## Triggers
 
-A [**trigger**](/docs/labs/ci/pipelines#triggers) starts a pipeline and types its `event`.
+A [**trigger**](/docs/labs/ci/pipelines?ref=docs-labs-ci-reference#triggers) starts a pipeline and types its `event`.
 
 | Trigger | Runs when |
 | --- | --- |
@@ -130,7 +130,7 @@ export const merged = ci.pipeline(
 
 ## `ci.job`
 
-A [**job**](/docs/labs/ci/jobs) is a unit of work with its own machine and its own check. Call it like a function.
+A [**job**](/docs/labs/ci/jobs?ref=docs-labs-ci-reference) is a unit of work with its own machine and its own check. Call it like a function.
 
 ```typescript {{ title: "TypeScript" }}
 const test = ci.job("test", async () => {
@@ -165,7 +165,7 @@ Durations such as `"10m"` or `"1h30m"` are parsed strictly, with the units `ms`,
 
 ## Commands
 
-[`` $`…` ``](/docs/labs/ci/commands) runs a command on the job's machine. A non-zero exit code throws `CommandFailedError`.
+[`` $`…` ``](/docs/labs/ci/commands?ref=docs-labs-ci-reference) runs a command on the job's machine. A non-zero exit code throws `CommandFailedError`.
 
 ```typescript {{ title: "TypeScript" }}
 await $`pnpm test`;
@@ -226,7 +226,7 @@ const test = ci.job("test", async () => {
 
 ## Machines
 
-A [**machine**](/docs/labs/ci/machines) is a Sandbox: an ephemeral Linux microVM. Each job gets one on its first command.
+A [**machine**](/docs/labs/ci/machines?ref=docs-labs-ci-reference) is a Sandbox: an ephemeral Linux microVM. Each job gets one on its first command.
 
 | `vcpu` | Memory |
 | --- | --- |
@@ -245,7 +245,7 @@ Set `machine` on a job, on its pipeline, or on `createCi` for every job. The fir
 
 ## `from`
 
-[`from(job)`](/docs/labs/ci/machines#start-a-job-from-another-job) starts the current job on a copy of another job's machine, like a Docker layer. The parent runs once, however many jobs start from it, and each child gets its own isolated copy. If the pipeline already called the parent directly, `from()` uses that run. `from()` shares a job's machine within one run. To reuse it across runs, give the parent a [`cache`](/docs/labs/ci/caching) key.
+[`from(job)`](/docs/labs/ci/machines?ref=docs-labs-ci-reference#start-a-job-from-another-job) starts the current job on a copy of another job's machine, like a Docker layer. The parent runs once, however many jobs start from it, and each child gets its own isolated copy. If the pipeline already called the parent directly, `from()` uses that run. `from()` shares a job's machine within one run. To reuse it across runs, give the parent a [`cache`](/docs/labs/ci/caching?ref=docs-labs-ci-reference) key.
 
 ```typescript {{ title: "TypeScript" }}
 const base = ci.job("base", async () => {
@@ -298,7 +298,13 @@ This runs the tests on the job's machine while a clean machine checks that the p
 - `waitForPort(port, { timeout })` and `waitForHttp(url, { timeout, status })` wait up to `2m` by default, and `waitForHttp` waits for status `200`. When they give up they throw `CommandFailedError`.
 
 <Warning>
-  Machines cannot reach each other yet. Run servers your tests call on the job's own machine and use `127.0.0.1`.
+  Machines cannot reach each other yet. Run a server or database your tests call on the job's own machine, in the background, and use `127.0.0.1`:
+
+  ```typescript
+  await $`pnpm start`.background();
+  await waitForPort(3000);
+  await $`pnpm exec playwright test`;
+  ```
 </Warning>
 
 | If the work... | Use |
@@ -328,7 +334,7 @@ const compat = ci.matrix(
   },
   async ({ node, db }) => {
     await from(base);
-    await $`pnpm test`.env({ NODE_VERSION: node, TEST_DATABASE: db });
+    await $`npx -y node@${node} --test`.env({ TEST_DATABASE: db });
   },
 );
 ```
@@ -365,7 +371,7 @@ const unit = ci.matrix(
 
 ## Caching
 
-A job's [`cache`](/docs/labs/ci/caching) skips the job when nothing it depends on has changed. The input a job is called with is part of its cache identity, so the same key with a different input is a different entry.
+A job's [`cache`](/docs/labs/ci/caching?ref=docs-labs-ci-reference) skips the job when nothing it depends on has changed. The input a job is called with is part of its cache identity, so the same key with a different input is a different entry.
 
 ```typescript {{ title: "TypeScript" }}
 const base = ci.job(
@@ -404,7 +410,7 @@ key: [files("go.mod", "go.sum"), "go1.25"]
 
 ## Checks and reports
 
-[Checks](/docs/labs/ci/checks-and-reports) are automatic: one for the pipeline and one for each job. Require the pipeline check in branch protection.
+[Checks](/docs/labs/ci/checks-and-reports?ref=docs-labs-ci-reference) are automatic: one for the pipeline and one for each job. Require the pipeline check in branch protection.
 
 | State | Check |
 | --- | --- |
@@ -595,8 +601,8 @@ Import the classes from `@inngest/ci` to check for them with `instanceof`.
 
 ## Next steps
 
-- [Concepts](/docs/labs/ci/concepts) defines pipelines, triggers, jobs, commands, and machines.
-- [Recipes](/docs/labs/ci/recipes) lists common tasks with the code for each.
-- [Quick start](/docs/labs/ci/quick-start) runs a pipeline on the Dev Server.
-- [Flow control](/docs/durable-execution/flow-control) covers the options a pipeline accepts.
-- [Sandboxes limits](/docs/sandboxes/limits) list the limits that apply to machines.
+- [Concepts](/docs/labs/ci/concepts?ref=docs-labs-ci-reference) defines pipelines, triggers, jobs, commands, and machines.
+- [Recipes](/docs/labs/ci/recipes?ref=docs-labs-ci-reference) lists common tasks with the code for each.
+- [Quick start](/docs/labs/ci/quick-start?ref=docs-labs-ci-reference) runs a pipeline on the Dev Server.
+- [Flow control](/docs/durable-execution/flow-control?ref=docs-labs-ci-reference) covers the options a pipeline accepts.
+- [Sandboxes limits](/docs/sandboxes/limits?ref=docs-labs-ci-reference) list the limits that apply to machines.

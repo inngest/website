@@ -8,18 +8,18 @@ export const description = "Inngest CI overview: write CI pipelines in TypeScrip
 > Write your CI in TypeScript, run it on Inngest, and debug every run as one trace.
 
 <Info>
-  Inngest CI is an Inngest Labs project: early, moving fast, and shaped by your feedback. [What's Labs?](/docs/labs)
+  Inngest CI is an Inngest Labs project: early, moving fast, and shaped by your feedback. [What's Labs?](/docs/labs?ref=docs-labs-ci-overview)
 </Info>
 
-Inngest CI is CI written in TypeScript, in your repo next to your app. Pipelines start on any Inngest event, from a GitHub push to a cron or your own app, and each job runs on its own [Sandbox](/docs/sandboxes/overview).
+Inngest CI is CI written in TypeScript, in your repo next to your app. Pipelines start on any Inngest event, from a GitHub push to a cron or your own app, and each job runs on its own [Sandbox](/docs/sandboxes/overview?ref=docs-labs-ci-overview).
 
-- **TypeScript all the way down.** Use `if`, loops, and `Promise.all`, and import your app's own code. [Pipelines →](/docs/labs/ci/pipelines)
+- **TypeScript all the way down.** Use `if`, loops, and `Promise.all`, and import your app's own code. [Pipelines →](/docs/labs/ci/pipelines?ref=docs-labs-ci-overview)
 - **One trace per run.** Every job, command, and retry in one place. [See a run →](#see-the-result)
-- **Retries that keep passed work.** Only the failed command runs again. [Retries →](/docs/labs/ci/commands#retries)
-- **Build once, reuse it.** Start jobs from another job's machine, and cache the slow ones. [Machines →](/docs/labs/ci/machines#start-a-job-from-another-job)
-- **Runs locally.** Test CI against your uncommitted changes. [Quick start →](/docs/labs/ci/quick-start#5-run-locally)
-- **Flow control.** Cancel stale runs, cap concurrency, and debounce. [Flow control →](/docs/labs/ci/pipelines#flow-control)
-- **GitHub checks.** One per pipeline, and one per job. [Checks →](/docs/labs/ci/checks-and-reports)
+- **Retries that keep passed work.** Only the failed command runs again. [Retries →](/docs/labs/ci/commands?ref=docs-labs-ci-overview#retries)
+- **Build once, reuse it.** Start jobs from another job's machine, and cache the slow ones. [Machines →](/docs/labs/ci/machines?ref=docs-labs-ci-overview#start-a-job-from-another-job)
+- **Runs locally.** Test CI against your uncommitted changes. [Quick start →](/docs/labs/ci/quick-start?ref=docs-labs-ci-overview#5-run-locally)
+- **Flow control.** Cancel stale runs, cap concurrency, and debounce. [Flow control →](/docs/labs/ci/pipelines?ref=docs-labs-ci-overview#flow-control)
+- **GitHub checks.** One per pipeline, and one per job. [Checks →](/docs/labs/ci/checks-and-reports?ref=docs-labs-ci-overview)
 
 ## How a run works
 
@@ -61,39 +61,39 @@ const test = ci.job("test", async () => {
 });
 ```
 
-<Annotation id="local" lines="2" tease="runs locally" title="Run it on your machine" href="/docs/labs/ci/quick-start#5-run-locally" linkText="Quick start">
+<Annotation id="local" lines="2" tease="runs locally" title="Run it on your machine" href="/docs/labs/ci/quick-start?ref=docs-labs-ci-overview#5-run-locally" linkText="Quick start">
 The same pipeline runs against the Inngest Dev Server with your uncommitted changes, so you can check CI before you push.
 </Annotation>
 
-<Annotation id="pipeline" lines="4-16" tease="a TypeScript function" title="A pipeline is a function" nodes="pr,done" href="/docs/labs/ci/pipelines" linkText="Pipelines and triggers">
+<Annotation id="pipeline" lines="4-16" tease="a TypeScript function" title="A pipeline is a function" nodes="pr,done" href="/docs/labs/ci/pipelines?ref=docs-labs-ci-overview" linkText="Pipelines and triggers">
 A pipeline is TypeScript that lives in your repository, next to your business logic. It imports the same helpers and SDKs your app already uses.
 </Annotation>
 
-<Annotation id="trigger" lines="7" tease="typed trigger" title="Typed triggers" nodes="event" href="/docs/labs/ci/pipelines#triggers" linkText="Triggers">
+<Annotation id="trigger" lines="7" tease="typed trigger" title="Typed triggers" nodes="event" href="/docs/labs/ci/pipelines?ref=docs-labs-ci-overview#triggers" linkText="Triggers">
 Choose the trigger in code and `event` is typed from it: the pull request number, branch and head commit, with autocomplete.
 </Annotation>
 
-<Annotation id="singleton" lines="8" tease="cancels stale runs" title="Flow control built in" nodes="pr" href="/docs/labs/ci/pipelines#flow-control" linkText="Flow control">
+<Annotation id="singleton" lines="8" tease="cancels stale runs" title="Flow control built in" nodes="pr" href="/docs/labs/ci/pipelines?ref=docs-labs-ci-overview#flow-control" linkText="Flow control">
 One line replaces concurrency groups and cancel-in-progress settings: a new push cancels the run still going for that pull request. Concurrency, throttling and debounce work the same way.
 </Annotation>
 
-<Annotation id="parallel" lines="11-14" tease="native JavaScript" title="Orchestrate with native JavaScript" nodes="lintWait,testWait,lintRun,testRun" href="/docs/labs/ci/jobs" linkText="Jobs">
+<Annotation id="parallel" lines="11-14" tease="native JavaScript" title="Orchestrate with native JavaScript" nodes="lintWait,testWait,lintRun,testRun" href="/docs/labs/ci/jobs?ref=docs-labs-ci-overview" linkText="Jobs">
 No dependency graph to declare: `Promise.all` runs jobs in parallel, `await` runs them in order, and an `if` skips what a change does not need.
 </Annotation>
 
-<Annotation id="base" lines="18-21" tease="installs once" title="Build once, share it" nodes="base" href="/docs/labs/ci/machines" linkText="Machines and from()">
+<Annotation id="base" lines="18-21" tease="installs once" title="Build once, share it" nodes="base" href="/docs/labs/ci/machines?ref=docs-labs-ci-overview" linkText="Machines and from()">
 No cache keys to tune. `base` checks out and installs once, and every job that starts from it gets a copy of that machine.
 </Annotation>
 
-<Annotation id="from" lines="24,29" tease="copy of base" title="Start where `base` finished" nodes="lintWait,testWait,base" href="/docs/labs/ci/machines#start-a-job-from-another-job" linkText="Start a job from another job">
+<Annotation id="from" lines="24,29" tease="copy of base" title="Start where `base` finished" nodes="lintWait,testWait,base" href="/docs/labs/ci/machines?ref=docs-labs-ci-overview#start-a-job-from-another-job" linkText="Start a job from another job">
 Waits for the one `base` build, then starts this job on a copy of its machine, already checked out and installed.
 </Annotation>
 
-<Annotation id="lint" lines="23-26" pill="none" title="`lint`" nodes="lintWait,lintRun" href="/docs/labs/ci/jobs" linkText="Jobs">
+<Annotation id="lint" lines="23-26" pill="none" title="`lint`" nodes="lintWait,lintRun" href="/docs/labs/ci/jobs?ref=docs-labs-ci-overview" linkText="Jobs">
 Runs on its own copy of `base`, with no repeated checkout or install.
 </Annotation>
 
-<Annotation id="test" lines="28-31" pill="30" tease="retries alone" title="Retries that keep passed work" nodes="testWait,testRun" href="/docs/labs/ci/commands#retries" linkText="Retries">
+<Annotation id="test" lines="28-31" pill="30" tease="retries alone" title="Retries that keep passed work" nodes="testWait,testRun" href="/docs/labs/ci/commands?ref=docs-labs-ci-overview#retries" linkText="Retries">
 If `pnpm test` fails it runs again on the same machine. Nothing that already passed runs again, so you never rerun all of CI.
 </Annotation>
 
@@ -129,11 +129,11 @@ If a step fails for another reason, such as a GitHub API 503, Inngest retries th
 
 ## Concepts
 
-A **pipeline** runs when a **trigger** fires and calls **jobs**. Each job runs **commands** on its own **machine** and reports a **check**. [Concepts](/docs/labs/ci/concepts) defines each part with a short example.
+A **pipeline** runs when a **trigger** fires and calls **jobs**. Each job runs **commands** on its own **machine** and reports a **check**. [Concepts](/docs/labs/ci/concepts?ref=docs-labs-ci-overview) defines each part with a short example.
 
 ## See the result
 
-Every run opens in the Inngest dashboard as one trace. Its steps start with their job, as in `base › checkout`, and cover each command, the Sandbox steps behind them, and GitHub checks. [Step names](/docs/labs/ci/checks-and-reports#read-the-trace) lists them.
+Every run opens in the Inngest dashboard as one trace. Its steps start with their job, as in `base › checkout`, and cover each command, the Sandbox steps behind them, and GitHub checks. [Step names](/docs/labs/ci/checks-and-reports?ref=docs-labs-ci-overview#read-the-trace) lists them.
 
 ![The trace of the example pr pipeline in the Inngest Dev Server: pipeline and job checks, cache lookups, then the base job creating its machine, checking out the repository and installing dependencies](/assets/docs/labs/ci/trace.png)
 
@@ -146,12 +146,12 @@ On GitHub, the same run appears as one check for the pipeline and one for each j
 ✕ pr / test      `pnpm test` exited with 1
 ```
 
-In dev mode, the same transitions print to your terminal. See [Checks and reports](/docs/labs/ci/checks-and-reports).
+In dev mode, the same transitions print to your terminal. See [Checks and reports](/docs/labs/ci/checks-and-reports?ref=docs-labs-ci-overview).
 
 ## Next steps
 
-- [Quick start](/docs/labs/ci/quick-start) runs this pipeline on the Dev Server.
-- [Concepts](/docs/labs/ci/concepts) defines pipelines, triggers, jobs, commands, and machines.
-- [Reference](/docs/labs/ci/reference) lists every option, trigger, and command method.
-- [Sandboxes overview](/docs/sandboxes/overview) explains the machines that run each job.
-- [Durable steps](/docs/durable-execution/primitives/step-run) explains how Inngest saves and retries work.
+- [Quick start](/docs/labs/ci/quick-start?ref=docs-labs-ci-overview) runs this pipeline on the Dev Server.
+- [Concepts](/docs/labs/ci/concepts?ref=docs-labs-ci-overview) defines pipelines, triggers, jobs, commands, and machines.
+- [Reference](/docs/labs/ci/reference?ref=docs-labs-ci-overview) lists every option, trigger, and command method.
+- [Sandboxes overview](/docs/sandboxes/overview?ref=docs-labs-ci-overview) explains the machines that run each job.
+- [Durable steps](/docs/durable-execution/primitives/step-run?ref=docs-labs-ci-overview) explains how Inngest saves and retries work.

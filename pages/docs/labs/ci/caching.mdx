@@ -8,7 +8,7 @@ export const description = "Cache an Inngest CI job by its inputs so unchanged w
 > Skip a job when nothing it depends on has changed, and restore its machine instead.
 
 <Info>
-  Inngest CI is an Inngest Labs project: early, moving fast, and shaped by your feedback. [What's Labs?](/docs/labs)
+  Inngest CI is an Inngest Labs project: early, moving fast, and shaped by your feedback. [What's Labs?](/docs/labs?ref=docs-labs-ci-caching)
 </Info>
 
 A job's `cache` skips the job when its key is unchanged. A job that started a machine is restored from its snapshot, so `from(base)` clones the saved machine without running `base` again.
@@ -52,7 +52,7 @@ A job's input is part of its cache identity, so the same key with a different in
 
 ## Chains of cached jobs
 
-A cached job also depends on the cached jobs it starts [`from()`](/docs/labs/ci/machines#start-a-job-from-another-job). When a parent changes its key, or the input it was called with, the child's entry is stale and the child runs again, through the whole chain of cached parents.
+A cached job also depends on the cached jobs it starts [`from()`](/docs/labs/ci/machines?ref=docs-labs-ci-caching#start-a-job-from-another-job). When a parent changes its key, or the input it was called with, the child's entry is stale and the child runs again, through the whole chain of cached parents.
 
 An uncached parent has no key and never invalidates its children. Add its files to the child's key when the child depends on them.
 
@@ -64,6 +64,6 @@ Do not cache tests that call the network.
 
 ## Next steps
 
-- [Machines and from()](/docs/labs/ci/machines) explains the snapshots a cached job restores.
-- [Checks and reports](/docs/labs/ci/checks-and-reports) shows how a reused job appears on its check.
-- [Reference](/docs/labs/ci/reference#caching) lists every cache option.
+- [Machines and from()](/docs/labs/ci/machines?ref=docs-labs-ci-caching) explains the snapshots a cached job restores.
+- [Checks and reports](/docs/labs/ci/checks-and-reports?ref=docs-labs-ci-caching) shows how a reused job appears on its check.
+- [Reference](/docs/labs/ci/reference?ref=docs-labs-ci-caching#caching) lists every cache option.
