@@ -13,13 +13,13 @@ export const description = "Inngest CI overview: write CI pipelines in TypeScrip
 
 Inngest CI is CI written in TypeScript, in your repo next to your app. Pipelines start on GitHub events, and each job runs on its own [Sandbox](/docs/sandboxes/overview).
 
-- **TypeScript all the way down.** Use `if`, loops, and `Promise.all` in [pipelines](/docs/labs/ci/pipelines), and import your app's own code.
-- **One trace per run.** Every job, command, and retry, [in one place](#see-the-result).
-- **Retries that keep passed work.** Only the [failed command](/docs/labs/ci/commands#retries) runs again.
-- **Build once, reuse it.** Start jobs [from another job's machine](/docs/labs/ci/machines#start-a-job-from-another-job), and [cache](/docs/labs/ci/caching) the slow ones.
-- **Runs locally.** Test CI against your uncommitted changes on the [Dev Server](/docs/labs/ci/quick-start#5-run-locally).
-- **Flow control.** [Cancel stale runs](/docs/labs/ci/pipelines#flow-control), cap concurrency, and debounce.
-- **GitHub checks.** [One per pipeline](/docs/labs/ci/checks-and-reports), and one per job.
+- **TypeScript all the way down.** Use `if`, loops, and `Promise.all`, and import your app's own code. [Pipelines →](/docs/labs/ci/pipelines)
+- **One trace per run.** Every job, command, and retry in one place. [See a run →](#see-the-result)
+- **Retries that keep passed work.** Only the failed command runs again. [Retries →](/docs/labs/ci/commands#retries)
+- **Build once, reuse it.** Start jobs from another job's machine, and cache the slow ones. [Machines →](/docs/labs/ci/machines#start-a-job-from-another-job)
+- **Runs locally.** Test CI against your uncommitted changes. [Quick start →](/docs/labs/ci/quick-start#5-run-locally)
+- **Flow control.** Cancel stale runs, cap concurrency, and debounce. [Flow control →](/docs/labs/ci/pipelines#flow-control)
+- **GitHub checks.** One per pipeline, and one per job. [Checks →](/docs/labs/ci/checks-and-reports)
 
 ## How a run works
 
