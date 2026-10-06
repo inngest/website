@@ -56,8 +56,8 @@ export { Trace, TraceRow, TraceBar, TraceMarker } from "./Trace";
  * fades. The pills pulse every few seconds until the reader opens one.
  *
  * The fence is untouched, so the plain block is always the fallback: it is
- * what renders until the feature is switched on (see `label`) and what the
- * markdown export prints.
+ * what renders behind an unreleased `label`, and what the markdown export
+ * prints, followed by the notes as a list.
  */
 export function Annotation(_props: {
   /** Referenced by a trace bar's `note`. */
@@ -184,13 +184,17 @@ function readNote(el: ReactElement): Note {
 
 export function AnnotatedCode({
   children,
-  label = "annotated-code",
+  label,
 }: {
   children: ReactNode;
-  /** `?unreleased=<label>` value that turns the annotated version on. */
+  /**
+   * Optional `?unreleased=<label>` value: when set, the annotated version
+   * only shows with that label, and the plain block otherwise.
+   */
   label?: string;
 }) {
-  const enabled = useUnreleasedLabels().has(label);
+  const labels = useUnreleasedLabels();
+  const enabled = !label || labels.has(label);
 
   const parts = Children.toArray(children).filter(isValidElement);
   const codeEl = parts.find((c) => {

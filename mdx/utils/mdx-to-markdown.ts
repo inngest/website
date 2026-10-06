@@ -119,16 +119,50 @@ function transformJsxElement(node: MdxJsxElement): RootContent[] | null {
     return node.children;
   }
 
-  // Annotated code is gated behind ?unreleased=annotated-code, which this
-  // converter cannot see, so export only the plain code block until it ships.
+  // Annotated code: the plain code block, then its notes as a list. The
+  // trace timeline is visual only (its notes are already in the list).
   if (name === "AnnotatedCode") {
-    return node.children.filter((child) => {
+    const isEl = (child: RootContent, elName: string) => {
       const el = child as unknown as MdxJsxElement;
-      return !(
-        el.type === "mdxJsxFlowElement" &&
-        (el.name === "Annotation" || el.name === "Trace")
-      );
+      return el.type === "mdxJsxFlowElement" && el.name === elName;
+    };
+
+    const code = node.children.filter((child) => {
+      return !isEl(child, "Annotation") && !isEl(child, "Trace");
     });
+
+    const notes = node.children
+      .filter((child) => {
+        return isEl(child, "Annotation");
+      })
+      .map((child) => {
+        const el = child as unknown as MdxJsxElement;
+        const title = (getAttr(el, "title") ?? "")
+          .split("`")
+          .map((part, i) => {
+            return i % 2 === 1 ? inlineCode(part) : text(part);
+          });
+        const body = el.children.flatMap((c) => {
+          return c.type === "paragraph" ? c.children : [];
+        });
+        const lines = (getAttr(el, "lines") ?? "").split(",").join(", ");
+        const where = /[-,]/.test(lines) ? `lines ${lines}` : `line ${lines}`;
+        const href = getAttr(el, "href");
+        const more: PhrasingContent[] = href
+          ? [text(" "), link(href, [text(getAttr(el, "linkText") ?? href)])]
+          : [];
+
+        return listItem([
+          paragraph([
+            strong(title),
+            text(` (${where}): `),
+            ...body,
+            ...more,
+          ]),
+        ]);
+      });
+
+    return notes.length ? [...code, list(notes)] : code;
   }
 
   // Callout components: Note, Tip, Warning, Info, Callout
