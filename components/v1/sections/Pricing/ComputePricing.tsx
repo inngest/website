@@ -19,6 +19,13 @@ const RATES = {
 const CPU_SIZES = [1, 2, 4, 8, 16] as const;
 const RAM_RATIOS = [1, 2, 4, 8] as const;
 
+// Default machine: 2 vCPU / 4 GB RAM — highlighted until another size
+// is hovered.
+const DEFAULT_SIZE = "2-4";
+
+const PRICE_FADE =
+  "motion-safe:transition-opacity motion-safe:duration-150";
+
 const RATE_ROWS = [
   {
     key: "cpu",
@@ -46,6 +53,10 @@ function usd(v: number, digits: number): string {
 
 export default function ComputePricing() {
   const [showSizes, setShowSizes] = useState(false);
+  // Hovered machine size ("cpu-gb"). The default size stays highlighted
+  // until another size is hovered.
+  const [hoveredSize, setHoveredSize] = useState<string | null>(null);
+  const activeSize = hoveredSize ?? DEFAULT_SIZE;
   const panelId = `compute-sizes-${useId()}`;
 
   return (
@@ -91,7 +102,7 @@ export default function ComputePricing() {
         {RATE_ROWS.map((row) => (
           <div
             key={row.key}
-            className="grid grid-cols-[minmax(0,1.4fr)_minmax(0,1fr)_minmax(0,1fr)] items-center gap-x-4 border-b border-v1-strong/[0.4] px-4 py-2.5 sm:px-5"
+            className="group/rate grid grid-cols-[minmax(0,1.4fr)_minmax(0,1fr)_minmax(0,1fr)] items-center gap-x-4 border-b border-v1-strong/[0.4] px-4 py-2.5 sm:px-5"
           >
             <div className="flex min-w-0 items-center gap-2.5">
               <span className="hidden size-7 shrink-0 items-center justify-center rounded border border-v1-strong/[0.4] bg-v1-surfaceElevated text-v1-frost sm:flex">
@@ -106,10 +117,10 @@ export default function ComputePricing() {
                 </span>
               </div>
             </div>
-            <span className="text-right font-v1Mono text-[12px] leading-[1.4] tabular-nums text-v1-frost/80">
+            <span className={`text-right font-v1Mono text-[12px] leading-[1.4] tabular-nums text-v1-frost opacity-30 group-hover/rate:opacity-100 ${PRICE_FADE}`}>
               {usd(row.rate.perSecond, 6)}
             </span>
-            <span className="text-right font-v1Mono text-[12px] leading-[1.4] tabular-nums text-v1-frost/80">
+            <span className={`text-right font-v1Mono text-[12px] leading-[1.4] tabular-nums text-v1-frost opacity-30 group-hover/rate:opacity-100 ${PRICE_FADE}`}>
               {usd(row.rate.perHour, 4)}
             </span>
           </div>
@@ -126,7 +137,7 @@ export default function ComputePricing() {
           <span className="flex items-center gap-1.5">
             <Chevron isOpen={showSizes} />
             <span className="text-v1-body-xs text-v1-frost/80">
-              {showSizes ? "Hide example sizes" : "Show example sizes"}
+              {showSizes ? "Hide machine sizes" : "Show machine sizes"}
             </span>
           </span>
           <span className="hidden text-[12px] text-v1-frost/50 sm:inline">
@@ -137,7 +148,7 @@ export default function ComputePricing() {
         <div
           id={panelId}
           role="region"
-          aria-label="Example sandbox sizes"
+          aria-label="Machine sizes"
           className={cn(
             "grid motion-safe:transition-[grid-template-rows,opacity] motion-safe:duration-300",
             showSizes ? "grid-rows-[1fr] opacity-100" : "grid-rows-[0fr] opacity-0",
@@ -151,12 +162,30 @@ export default function ComputePricing() {
                     Hourly cost by vCPU count and memory per vCPU
                   </caption>
                   <thead>
+                    <tr>
+                      <td aria-hidden="true" />
+                      <th
+                        scope="colgroup"
+                        colSpan={RAM_RATIOS.length}
+                        className="px-3 pb-0 pt-2 text-right font-normal last:pr-4 sm:last:pr-5"
+                      >
+                        <span className="inline-flex w-full items-center gap-2 text-[11px] uppercase tracking-[0.04em] text-v1-frost/60">
+                          <span
+                            aria-hidden="true"
+                            className="h-px flex-1 bg-v1-strong/[0.4]"
+                          />
+                          <span>
+                            RAM per <span className="normal-case">vCPU</span>
+                          </span>
+                        </span>
+                      </th>
+                    </tr>
                     <tr className="border-b border-v1-strong/[0.4]">
                       <th
                         scope="col"
                         className="py-2 pl-4 pr-3 text-[11px] font-normal uppercase tracking-[0.04em] text-v1-frost/60 sm:pl-5"
                       >
-                        vCPU
+                        <span className="normal-case">vCPU</span>
                       </th>
                       {RAM_RATIOS.map((r) => (
                         <th
@@ -164,12 +193,13 @@ export default function ComputePricing() {
                           scope="col"
                           className="px-3 py-2 text-right text-[11px] font-normal uppercase tracking-[0.04em] text-v1-frost/60 last:pr-4 sm:last:pr-5"
                         >
-                          {r} GB / vCPU
+                          {r}×
+                          <span className="sr-only"> RAM ({r} GB per vCPU)</span>
                         </th>
                       ))}
                     </tr>
                   </thead>
-                  <tbody>
+                  <tbody onMouseLeave={() => setHoveredSize(null)}>
                     {CPU_SIZES.map((cpu) => (
                       <tr
                         key={cpu}
@@ -188,12 +218,21 @@ export default function ComputePricing() {
                         </th>
                         {RAM_RATIOS.map((r) => {
                           const gb = cpu * r;
+                          const key = `${cpu}-${gb}`;
+                          const active = key === activeSize;
                           return (
                             <td
                               key={r}
+                              onMouseEnter={() => setHoveredSize(key)}
                               className="px-3 py-2 text-right last:pr-4 sm:last:pr-5"
                             >
-                              <div className="flex items-baseline justify-end gap-2">
+                              <div
+                                className={cn(
+                                  "flex items-baseline justify-end gap-2",
+                                  PRICE_FADE,
+                                  active ? "opacity-100" : "opacity-30",
+                                )}
+                              >
                                 <span className="text-[12px] text-v1-frost/50">
                                   {gb} GB
                                 </span>
