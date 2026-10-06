@@ -145,7 +145,7 @@ export interface CampaignCard {
 }
 
 /**
- * "Learn more" cards: two blog posts and the agent example repo. A card
+ * "Learn more" cards: a blog post, a docs pattern, and the agent example repo. A card
  * with no `image` shows a labelled placeholder from `mediaNote`.
  */
 export const LR_CAMPAIGN_CARDS: CampaignCard[] = [
@@ -163,16 +163,17 @@ export const LR_CAMPAIGN_CARDS: CampaignCard[] = [
     },
   },
   {
-    id: "blog-dead-last",
-    title: "Durable execution for dummies*",
-    body: "Or anyone not used to building infrastructure around their production product.",
+    id: "docs-long-jobs-on-serverless",
+    title: "Run long jobs on serverless hosts",
+    body: "Keep agents and multi-step jobs running past your host’s request limit, without moving off serverless.",
     cta: {
-      label: "Read the blog",
-      href: "/blog/what-dead-fcking-last-taught-me-about-durable-execution?ref=long-run-learn-more",
+      label: "Read the docs",
+      href: "/docs/patterns/durable/run-long-jobs-on-serverless-hosts?ref=long-run-learn-more",
     },
     image: {
-      src: "/assets/v1/long-run/dead-last-blog.webp",
-      alt: "Lauren Craigie, Head of Marketing at Inngest, on a trail run.",
+      // The docs page's generated social card (shared/Docs/Layout.tsx).
+      src: "/api/og?title=Run%20long%20jobs%20on%20serverless%20hosts&v=5",
+      alt: "Run long jobs on serverless hosts",
     },
   },
   {
