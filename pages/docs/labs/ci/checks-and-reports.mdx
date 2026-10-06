@@ -8,10 +8,10 @@ export const description = "Inngest CI reports one GitHub check for each pipelin
 > See each pipeline and job as a GitHub check, and add summaries and annotations from code.
 
 <Info>
-  Inngest CI is an Inngest Labs project: early, moving fast, and shaped by your feedback. [What's Labs?](/docs/labs)
+  Inngest CI is an Inngest Labs project: early, moving fast, and shaped by your feedback. [What's Labs?](/docs/labs?ref=docs-labs-ci-checks-and-reports)
 </Info>
 
-Checks are automatic: one for the pipeline and one for each [job](/docs/labs/ci/jobs). Require the pipeline check in branch protection.
+Checks are automatic: one for the pipeline and one for each [job](/docs/labs/ci/jobs?ref=docs-labs-ci-checks-and-reports). Require the pipeline check in branch protection.
 
 ```
 ✕ pr             test: `pnpm test` exited with 1
@@ -62,13 +62,13 @@ Every run also opens in the Inngest dashboard as one trace. It lists steps in th
 
 A job called a second time in the same run starts its steps with `test (2)`, and has its own check.
 
-[Commands](/docs/labs/ci/commands#options) shows how `.as()` renames a command step. A GitHub "Re-run" on a check sends a new pull request or push event for the commit, so pipelines on those triggers run again. Passed jobs are reused only when they have a [cache](/docs/labs/ci/caching) key.
+[Commands](/docs/labs/ci/commands?ref=docs-labs-ci-checks-and-reports#options) shows how `.as()` renames a command step. A GitHub "Re-run" on a check sends a new pull request or push event for the commit, so pipelines on those triggers run again. Passed jobs are reused only when they have a [cache](/docs/labs/ci/caching?ref=docs-labs-ci-checks-and-reports) key.
 
 ![The trace of the example pr pipeline in the Inngest Dev Server: pipeline and job checks, cache lookups, then the base job creating its machine, checking out the repository and installing dependencies](/assets/docs/labs/ci/trace.png)
 
-In dev mode, checks print to your terminal. To report on GitHub, see [Run on GitHub](/docs/labs/ci/reference#run-on-github).
+In dev mode, checks print to your terminal. To report on GitHub, see [Run on GitHub](/docs/labs/ci/reference?ref=docs-labs-ci-checks-and-reports#run-on-github).
 
 ## Next steps
 
-- [Reference](/docs/labs/ci/reference#checks-and-reports) lists every check state and report limit.
-- [Pipelines and triggers](/docs/labs/ci/pipelines) covers `ci.skip()` and check options.
+- [Reference](/docs/labs/ci/reference?ref=docs-labs-ci-checks-and-reports#checks-and-reports) lists every check state and report limit.
+- [Pipelines and triggers](/docs/labs/ci/pipelines?ref=docs-labs-ci-checks-and-reports) covers `ci.skip()` and check options.

@@ -142,9 +142,11 @@ function transformJsxElement(node: MdxJsxElement): RootContent[] | null {
           .map((part, i) => {
             return i % 2 === 1 ? inlineCode(part) : text(part);
           });
-        const body = el.children.flatMap((c) => {
-          return c.type === "paragraph" ? c.children : [];
-        });
+        // The first paragraph joins the title's line; anything after it
+        // (more paragraphs, lists, code) follows as its own blocks.
+        const [first, ...rest] = el.children;
+        const lead = first?.type === "paragraph" ? first.children : [];
+        const blocks = first?.type === "paragraph" ? rest : el.children;
         const lines = (getAttr(el, "lines") ?? "").split(",").join(", ");
         const where = /[-,]/.test(lines) ? `lines ${lines}` : `line ${lines}`;
         const href = getAttr(el, "href");
@@ -152,13 +154,16 @@ function transformJsxElement(node: MdxJsxElement): RootContent[] | null {
           ? [text(" "), link(href, [text(getAttr(el, "linkText") ?? href)])]
           : [];
 
+        if (blocks.length === 0) {
+          return listItem([
+            paragraph([strong(title), text(` (${where}): `), ...lead, ...more]),
+          ]);
+        }
+
         return listItem([
-          paragraph([
-            strong(title),
-            text(` (${where}): `),
-            ...body,
-            ...more,
-          ]),
+          paragraph([strong(title), text(` (${where}): `), ...lead]),
+          ...blocks,
+          ...(more.length ? [paragraph(more.slice(1))] : []),
         ]);
       });
 

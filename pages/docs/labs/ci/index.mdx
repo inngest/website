@@ -21,14 +21,14 @@ export const description = "Inngest CI is an Inngest Labs project: write CI pipe
 />
 
 <Info>
-  Inngest CI is an Inngest Labs project: early, moving fast, and shaped by your feedback. [What's Labs?](/docs/labs)
+  Inngest CI is an Inngest Labs project: early, moving fast, and shaped by your feedback. [What's Labs?](/docs/labs?ref=docs-labs-ci)
 </Info>
 
-`@inngest/ci` replaces config-driven YAML with TypeScript. Inngest runs each pipeline as a durable function and each job on its own [Sandbox](/docs/sandboxes/overview), an ephemeral microVM. One run produces one trace that covers the pipeline, its jobs, and every command.
+`@inngest/ci` is CI written in TypeScript. Inngest runs each pipeline as a durable function and each job on its own [Sandbox](/docs/sandboxes/overview?ref=docs-labs-ci), an ephemeral microVM. One run produces one trace that covers the pipeline, its jobs, and every command.
 
 ## What you can do
 
-- **Write plain TypeScript, not YAML.** Use `if`, loops, `Promise.all`, and your own functions. See [Pipelines and triggers](/docs/labs/ci/pipelines).
+- **Write plain TypeScript.** Use `if`, loops, `Promise.all`, and your own functions. See [Pipelines and triggers](/docs/labs/ci/pipelines).
 - **Keep finished work.** A retry does not rerun jobs or commands that already passed. See [Commands](/docs/labs/ci/commands#retries).
 - **Start a job from another job.** [`from()`](/docs/labs/ci/machines#start-a-job-from-another-job) starts a job on a copy of another job's machine, like a Docker layer. [Caching](/docs/labs/ci/caching) skips jobs whose inputs are unchanged.
 - **Run the same code locally.** Run any pipeline or job on real Sandboxes with your uncommitted changes, before you push. See [Run CI locally](/docs/labs/ci/local).
@@ -45,7 +45,7 @@ export const description = "Inngest CI is an Inngest Labs project: write CI pipe
 
 ## Next steps
 
-- [About Labs](/docs/labs) explains what a lab is.
-- [Sandboxes](/docs/sandboxes/overview) covers the microVMs that run every job.
-- [Flow control](/docs/durable-execution/flow-control) covers the options a pipeline accepts.
+- [About Labs](/docs/labs?ref=docs-labs-ci) explains what a lab is.
+- [Sandboxes](/docs/sandboxes/overview?ref=docs-labs-ci) covers the microVMs that run every job.
+- [Flow control](/docs/durable-execution/flow-control?ref=docs-labs-ci) covers the options a pipeline accepts.
 - [Example project](https://github.com/inngest/inngest-js/tree/main/examples/ci-pipelines) has pipelines, matrices, caching, and GitHub checks.

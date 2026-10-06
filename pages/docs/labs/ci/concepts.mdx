@@ -8,14 +8,14 @@ export const description = "Inngest CI concepts: pipelines, triggers, jobs, comm
 > Learn the parts of a pipeline: what starts it, what it calls, where commands run, and how results are reported.
 
 <Info>
-  Inngest CI is an Inngest Labs project: early, moving fast, and shaped by your feedback. [What's Labs?](/docs/labs)
+  Inngest CI is an Inngest Labs project: early, moving fast, and shaped by your feedback. [What's Labs?](/docs/labs?ref=docs-labs-ci-concepts)
 </Info>
 
-Every Inngest CI run follows the same pattern: trigger → pipeline → jobs → commands → checks. Each section below defines one part with the smallest code that shows it. The [quick start](/docs/labs/ci/quick-start) puts them together in a working pipeline.
+Every Inngest CI run follows the same pattern: trigger → pipeline → jobs → commands → checks. Each section below defines one part with the smallest code that shows it. The [quick start](/docs/labs/ci/quick-start?ref=docs-labs-ci-concepts) puts them together in a working pipeline.
 
 ## Pipeline
 
-A **pipeline** runs when something happens and calls jobs. It is one Inngest function, so every [flow control](/docs/durable-execution/flow-control) option works on it. See [Pipelines and triggers](/docs/labs/ci/pipelines).
+A **pipeline** runs when something happens and calls jobs. It is one Inngest function, so every [flow control](/docs/durable-execution/flow-control?ref=docs-labs-ci-concepts) option works on it. See [Pipelines and triggers](/docs/labs/ci/pipelines?ref=docs-labs-ci-concepts).
 
 ```typescript {{ title: "TypeScript" }}
 export const pr = ci.pipeline(
@@ -31,7 +31,7 @@ export const pr = ci.pipeline(
 
 ## Trigger
 
-A **trigger** starts a pipeline and types its `event`. Triggers include GitHub pull requests and pushes, comments, the merge queue, cron, and manual events. See [Triggers](/docs/labs/ci/pipelines#triggers).
+A **trigger** starts a pipeline and types its `event`. Triggers include GitHub pull requests and pushes, comments, the merge queue, cron, and manual events. See [Triggers](/docs/labs/ci/pipelines?ref=docs-labs-ci-concepts#triggers).
 
 ```typescript {{ title: "TypeScript" }}
 on: [github.pullRequest(), github.push({ branches: ["main"] })]
@@ -39,7 +39,7 @@ on: [github.pullRequest(), github.push({ branches: ["main"] })]
 
 ## Job
 
-A **job** is a unit of work with its own machine and its own check. You call it like a function, and it resolves when the job finishes. See [Jobs](/docs/labs/ci/jobs).
+A **job** is a unit of work with its own machine and its own check. You call it like a function, and it resolves when the job finishes. See [Jobs](/docs/labs/ci/jobs?ref=docs-labs-ci-concepts).
 
 ```typescript {{ title: "TypeScript" }}
 const test = ci.job("test", async () => {
@@ -50,7 +50,7 @@ const test = ci.job("test", async () => {
 
 ## Command
 
-A **command** is a shell command that runs on the job's machine with `$`. Each command is a step, so a retry skips commands that already finished. See [Commands](/docs/labs/ci/commands).
+A **command** is a shell command that runs on the job's machine with `$`. Each command is a step, so a retry skips commands that already finished. See [Commands](/docs/labs/ci/commands?ref=docs-labs-ci-concepts).
 
 ```typescript {{ title: "TypeScript" }}
 await $`pnpm test`.retries(1);
@@ -58,7 +58,7 @@ await $`pnpm test`.retries(1);
 
 ## Machine
 
-A **machine** is a [Sandbox](/docs/sandboxes/overview): an ephemeral Linux microVM. A job gets one when it runs its first command. Only commands run on the machine. The rest of your handler runs in your app. See [Machines](/docs/labs/ci/machines).
+A **machine** is a [Sandbox](/docs/sandboxes/overview?ref=docs-labs-ci-concepts): an ephemeral Linux microVM. A job gets one when it runs its first command. Only commands run on the machine. The rest of your handler runs in your app. See [Machines](/docs/labs/ci/machines?ref=docs-labs-ci-concepts).
 
 ```typescript {{ title: "TypeScript" }}
 const build = ci.job({ id: "build", machine: { vcpu: 4 } }, async () => {
@@ -69,7 +69,7 @@ const build = ci.job({ id: "build", machine: { vcpu: 4 } }, async () => {
 
 ## Starting from another job
 
-`from(job)` starts the current job on a copy of another job's machine. The parent runs once, however many jobs start from it. See [Start a job from another job](/docs/labs/ci/machines#start-a-job-from-another-job).
+`from(job)` starts the current job on a copy of another job's machine. The parent runs once, however many jobs start from it. See [Start a job from another job](/docs/labs/ci/machines?ref=docs-labs-ci-concepts#start-a-job-from-another-job).
 
 ```typescript {{ title: "TypeScript" }}
 const lint = ci.job("lint", async () => {
@@ -80,7 +80,7 @@ const lint = ci.job("lint", async () => {
 
 ## Cache
 
-A job's **cache** skips the job when nothing it depends on has changed. Inngest restores the saved machine instead of running the job again. See [Caching](/docs/labs/ci/caching).
+A job's **cache** skips the job when nothing it depends on has changed. Inngest restores the saved machine instead of running the job again. See [Caching](/docs/labs/ci/caching?ref=docs-labs-ci-concepts).
 
 ```typescript {{ title: "TypeScript" }}
 const base = ci.job(
@@ -92,9 +92,11 @@ const base = ci.job(
 );
 ```
 
+Jobs that start from a cached `base` call `checkout()` again, so they test this run's commit.
+
 ## Check
 
-A **check** reports a pipeline or a job on GitHub. Each pipeline gets one check, and each job gets one. You can add a summary or annotations from code. See [Checks and reports](/docs/labs/ci/checks-and-reports).
+A **check** reports a pipeline or a job on GitHub. Each pipeline gets one check, and each job gets one. You can add a summary or annotations from code. See [Checks and reports](/docs/labs/ci/checks-and-reports?ref=docs-labs-ci-concepts).
 
 ```typescript {{ title: "TypeScript" }}
 await report.summary("Coverage: **91%**");
@@ -102,6 +104,6 @@ await report.summary("Coverage: **91%**");
 
 ## Next steps
 
-- [Pipelines and triggers](/docs/labs/ci/pipelines) covers pipeline options, triggers, and skipping a run.
-- [Reference](/docs/labs/ci/reference) lists every option and command method.
-- [Durable Execution concepts](/docs/durable-execution/concepts) explain the runs, steps, and retries that pipelines build on.
+- [Pipelines and triggers](/docs/labs/ci/pipelines?ref=docs-labs-ci-concepts) covers pipeline options, triggers, and skipping a run.
+- [Reference](/docs/labs/ci/reference?ref=docs-labs-ci-concepts) lists every option and command method.
+- [Durable Execution concepts](/docs/durable-execution/concepts?ref=docs-labs-ci-concepts) explain the runs, steps, and retries that pipelines build on.

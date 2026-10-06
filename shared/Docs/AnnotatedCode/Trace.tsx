@@ -23,26 +23,30 @@ export function Trace(_props: { label: string; children?: ReactNode }) {
   return null;
 }
 
-export function TraceRow(_props: {
+export type TraceRowProps = {
   name: string;
   /** Small text under the row name, such as "runs once". */
   caption?: string;
   children?: ReactNode;
-}) {
+};
+
+export function TraceRow(_props: TraceRowProps) {
   return null;
 }
 
-export function TraceBar(_props: {
+export type TraceBarProps = {
   id: string;
   span: string;
   kind: TraceKind;
   note?: string;
   children: ReactNode;
-}) {
+};
+
+export function TraceBar(_props: TraceBarProps) {
   return null;
 }
 
-export function TraceMarker(_props: {
+export type TraceMarkerProps = {
   /** Position on the 0-100 time axis. */
   at: string;
   /** "first-last" row names the line spans. */
@@ -50,7 +54,9 @@ export function TraceMarker(_props: {
   /** Bar id that lights the marker when highlighted. */
   node?: string;
   children?: ReactNode;
-}) {
+};
+
+export function TraceMarker(_props: TraceMarkerProps) {
   return null;
 }
 
@@ -103,9 +109,8 @@ export function readTrace(trace: ReactNode): TraceSpec | null {
       return;
     }
 
-    const p = child.props as any;
-
     if (child.type === TraceRow) {
+      const p = child.props as TraceRowProps;
       const row = spec.rows.length;
 
       spec.rows.push({ name: p.name, caption: p.caption });
@@ -115,7 +120,7 @@ export function readTrace(trace: ReactNode): TraceSpec | null {
           return;
         }
 
-        const b = bar.props as any;
+        const b = bar.props as TraceBarProps;
         const [start, end] = String(b.span).split("-").map(Number);
 
         spec.bars.push({
@@ -129,6 +134,8 @@ export function readTrace(trace: ReactNode): TraceSpec | null {
         });
       });
     } else if (child.type === TraceMarker) {
+      const p = child.props as TraceMarkerProps;
+
       markers.push({
         at: p.at,
         rows: p.rows,
