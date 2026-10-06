@@ -30,7 +30,7 @@ const build = ci.job({ id: "build", machine: { vcpu: 4 } }, async () => {
 ```
 
 - A job returns its handler's value.
-- A job runs once per run for each ID. A second call returns the first call's result, so two callers share one run.
+- A job runs once per run for each ID. A second call returns the first call's result, even with a different input, so two callers share one run.
 - The machine starts on the job's first [command](/docs/labs/ci/commands). A job with no commands never gets one.
 - When a command fails, the job's check fails and the pipeline ends.
 
@@ -45,7 +45,7 @@ Jobs never share a machine. To build on another job's work, use [`from()`](/docs
 
 ## Run a job for every combination
 
-`ci.matrix` runs a job for every combination of its axes. Each combination is its own job with its own check and retries.
+`ci.matrix` runs a job for every combination of its axes. Each combination is its own job, with its own machine and check.
 
 ```typescript {{ title: "TypeScript" }}
 const compat = ci.matrix(

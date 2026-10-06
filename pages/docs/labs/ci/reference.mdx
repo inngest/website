@@ -25,7 +25,9 @@ export const description = "Inngest CI reference: pipeline and job options, trig
 - `machine` is the default machine for every job.
 - `runUrl` builds the link shown on checks.
 
-`ci.functions()` returns your pipelines plus the functions CI needs behind the scenes: machine cleanup, cache refreshes, and GitHub check re-runs. Pass it to `serve()` or `createServer()`.
+`ci.functions()` returns your pipelines plus the functions CI needs behind the scenes: machine cleanup, cache builds and refreshes, GitHub check re-runs, and running single jobs locally. Pass it to `serve()` or `createServer()`.
+
+`ci.local` is `true` in a run started by [`inngest-ci`](/docs/labs/ci/local). Use it to skip releases and deploys from a laptop: `if (ci.local) { return ci.skip("local run"); }`.
 
 ## `ci.pipeline`
 
@@ -66,7 +68,7 @@ The handler receives `event`, `events`, `runId`, `pipelineId`, `repo`, `attempt`
 - `id` is unique in the app. It names the function, the run, and the check.
 - `check: false` turns off all checks. `check: { jobs: false }` keeps the pipeline check and drops the job checks.
 - `machine` is the default machine for the pipeline's jobs. A job's own `machine` overrides it.
-- `repo` (`"owner/name"`) gives crons and manual runs a repository to check out. `ci.pipeline()` throws if it is not in that form, and resolves the repository, its default branch, and its head commit for cron and manual runs.
+- `repo` (`"owner/name"`) gives crons and manual runs a repository to check out. `ci.pipeline()` throws if it is not in that form, and, with GitHub credentials, resolves the repository, its default branch, and its head commit for cron and manual runs.
 - Flow control options: `concurrency`, `throttle`, `rateLimit`, `debounce`, `priority`, `singleton`, `idempotency`, `batchEvents`, `timeouts`, `cancelOn`, `retries`, `name`, and `description`. See [flow control](/docs/durable-execution/flow-control).
 
 Return `ci.skip(reason)` to end a run early. The check completes as success with the reason, so a required check never waits.
@@ -93,7 +95,7 @@ A [**trigger**](/docs/labs/ci/pipelines#triggers) starts a pipeline and types it
 | `github.mergeGroup({ repo })` | The merge queue asks for checks. |
 | `github.checkSuite({ branch, repo })` | A check suite completes. |
 | `{ cron: "0 3 * * *" }` | The schedule fires. |
-| `ci.manual({ schema, pipelineId })` | An event named `ci/manual.<pipelineId>` arrives. |
+| `ci.manual({ schema, pipelineId })` | An event named `ci/manual.<pipelineId>` arrives. Without `pipelineId`, any `ci/manual.*` event. |
 
 Pass an array for several triggers. `event.data` is typed by the triggers you pass:
 
@@ -114,6 +116,7 @@ export const merged = ci.pipeline(
 ```
 
 - `pullRequest()` defaults to `opened`, `synchronize`, and `reopened`.
+- `push()` matches `branches` and `tags` by exact name, so `tags: ["v*"]` does not match `v1.0.0`.
 - A pipeline has at most 10 triggers, and `pullRequest()` uses one for each type.
 - `comment({ minPermission })` checks the author after the run starts. A user without the permission gets a reply and a neutral check. With several `comment()` triggers, each command keeps its own `minPermission`.
 - Several triggers give a union type. Narrow it with `"pull_request" in event.data`.
@@ -139,7 +142,7 @@ const build = ci.job({ id: "build", machine: { vcpu: 4 } }, async () => {
 ```
 
 - A job returns its handler's value.
-- A job runs once per run for each ID. A second call returns the first call's result, so two callers share one run.
+- A job runs once per run for each ID. A second call returns the first call's result, even with a different input, so two callers share one run.
 - The machine starts on the job's first command. A job with no commands never gets one.
 - Jobs never share a machine. To reuse work, use [`from()`](#from).
 - When a command fails, the job's check fails and the pipeline ends.
@@ -151,8 +154,11 @@ const build = ci.job({ id: "build", machine: { vcpu: 4 } }, async () => {
 | `cache` | `{ key?, refresh?, scope? }` | No |
 | `check` | `false`, or `{ name? }` | No |
 | `keepOnFailure` | Duration, such as `"24h"` | No |
+| `input` | A Standard Schema, such as a Zod object | No |
 
 `keepOnFailure` snapshots the machine when the job fails. The snapshot ID appears in the pipeline check's summary, under **Kept machines**. It takes a duration, but the duration is ignored today: the snapshot keeps the platform's default retention.
+
+`input` takes any Standard Schema, such as Zod. The handler gets the validated value, a mismatch throws `CiUsageError`, and [`inngest-ci`](/docs/labs/ci/local#give-inputs) asks for it field by field.
 
 Durations such as `"10m"` or `"1h30m"` are parsed strictly, with the units `ms`, `s`, `m`, `h`, `d`, and `w`. A malformed value throws `CiUsageError`.
 
@@ -166,7 +172,7 @@ await $`pnpm --filter ${pkg} test`;
 await $`pnpm test ${bail && ["--bail", "1"]}`;
 ```
 
-Each interpolated value becomes one argument with no quoting. Arrays spread into several arguments, and `false`, `null`, and `undefined` are dropped.
+Each interpolated value becomes one argument with no quoting, unless it follows text with no space, as in `--filter=${pkg}`, where it joins that argument. Arrays spread into several arguments, and `false`, `null`, and `undefined` are dropped.
 
 Options chain:
 
@@ -267,7 +273,7 @@ Each job builds on the snapshot of the one before it. When a job's [cache key](#
 
 ## Extra machines
 
-`sandbox(name)` creates another machine for the job. It is destroyed with the pipeline and appears under the job in the trace.
+`sandbox(name, { vcpu })` creates another machine for the job right away, with 2 vCPUs unless you set `vcpu`. It is destroyed with the pipeline and appears under the job in the trace.
 
 ```typescript {{ title: "TypeScript" }}
 const e2e = ci.job("e2e", async () => {
@@ -286,6 +292,7 @@ const e2e = ci.job("e2e", async () => {
 - An extra machine starts empty. `checkout()` runs on the job's machine only.
 - `ExtraMachine` has `$`, `$.sh`, `waitForPort()`, and `waitForHttp()`.
 - `waitForPort` and `waitForHttp` are also top-level exports of `@inngest/ci`. They run on the job's own machine: `import { waitForPort, waitForHttp } from "@inngest/ci"`.
+- `waitForPort(port, { timeout })` and `waitForHttp(url, { timeout, status })` wait up to `2m` by default, and `waitForHttp` waits for status `200`. When they give up they throw `CommandFailedError`.
 
 <Warning>
   Machines cannot reach each other yet. Run servers your tests call on the job's own machine and use `127.0.0.1`.
@@ -299,7 +306,7 @@ const e2e = ci.job("e2e", async () => {
 
 ## `ci.matrix`
 
-`ci.matrix` runs a job for every combination of its axes. Each combination is its own job with its own check and retries.
+`ci.matrix` runs a job for every combination of its axes. Each combination is its own job, with its own machine and check.
 
 ```typescript {{ title: "TypeScript" }}
 export const nightly = ci.pipeline(
@@ -329,7 +336,7 @@ Call `compat()` to run every combination, or `compat({ node: "22" })` to run onl
 - `exclude` removes combinations and `include` adds extra ones.
 - `concurrency` limits how many run at once. The default is all of them.
 - `failFast` is off by default. When it is on, the first failure ends the matrix, and running combinations are not cancelled.
-- `machine`, `cache`, and `check` accept a value or a function of the combination.
+- `machine` and `cache` accept a value or a function of the combination. `check` applies to every combination.
 - With `failFast` off, failures are thrown together as an `AggregateError` after every combination finishes.
 
 ## Caching
@@ -381,7 +388,7 @@ key: [files("go.mod", "go.sum"), "go1.25"]
 | Retrying a command | In progress, with the attempt count and the last error |
 | Run will be retried | In progress, with `Retrying (attempt N of M)` |
 | Passed | Success, with the duration |
-| Reused from cache | Success, with `Restored, built …` or `Passed at <sha>, no changes since` |
+| Reused from cache | Success, with `Cached <time> ago by <event>` when the machine is restored, or `Passed at <sha>, no changes since` |
 | Failed | Failure, with the command, the output tail, and annotations |
 | Timed out | Timed out |
 | Cancelled by a failure elsewhere | Cancelled |
@@ -398,16 +405,16 @@ await report.annotate([
 ]);
 ```
 
-- `report.summary(markdown)` stacks sections. Inngest truncates a summary at 65,000 bytes, under GitHub's limit of 65,535 bytes, and links to the trace.
+- `report.summary(markdown)` stacks sections. Inngest truncates a summary at 65,000 bytes, under GitHub's limit of 65,535 bytes, and adds a note pointing to the trace.
 - `report.annotate(annotations)` puts annotations on the diff. Inngest sends them in batches of 50, the GitHub limit per request. Entries without a `path` or a `message` are dropped.
 - While a run will be retried, its checks show `Retrying (attempt N of M)` and complete only on success or the final attempt. Command failures, timeouts, usage errors, and matrix failures made only of those are deterministic, so they fail once.
-- A GitHub "Re-run" on a pipeline or job check, or "Re-run all" on the check suite, sends the triggering event again, so every pipeline it triggers runs again. On a pull request it sends the pull request again as `synchronize`. Otherwise it sends a push again only when the branch's head is the checked commit. Passed jobs are reused only when they have a `cache` key.
+- A GitHub "Re-run" on a pipeline or job check, or "Re-run all" on the check suite, sends a new event for the checked commit, so pipelines on pull request and push triggers run again. On a pull request it sends a `pull_request.synchronize`. Otherwise it sends a `push`, only when the branch's head is the checked commit. Pipelines on other triggers do not run again. Passed jobs are reused only when they have a `cache` key.
 
 ## Run on GitHub
 
 In production, pipelines start from GitHub webhooks and report checks as a GitHub App.
 
-1. Create a GitHub App with these repository permissions: Checks (read and write), Commit statuses (read and write), Contents (read), Pull requests (read and write), Issues (read and write), Metadata (read).
+1. Create a GitHub App with these repository permissions: Checks (read and write), Commit statuses (read and write), Contents (read, or read and write to create releases or use `github.forcePushRef()`), Actions (read, for `github.waitForWorkflow()`), Pull requests (read and write), Issues (read and write), Metadata (read).
 2. Subscribe the app to these events: push, pull request, check run, check suite, issue comment, merge group, and workflow run.
 3. In the Inngest dashboard, create a webhook and paste the output of `githubWebhookTransform` into its transform. Use the webhook URL as the app's webhook URL.
 
@@ -434,6 +441,7 @@ export const ci = createCi(inngest, {
 ```
 
 - `githubApp()` reports checks with the Checks API. `githubToken()` reports commit statuses instead, with no summaries or annotations.
+- `githubApp()` with no arguments reads `GITHUB_APP_ID` and `GITHUB_APP_PRIVATE_KEY`, and falls back to `GITHUB_INSTALLATION_ID` when an event carries no installation. `githubToken()` reads `GITHUB_TOKEN`.
 - In dev mode checks print to the terminal. Set `INNGEST_CI_GITHUB=live` to send real checks from the Dev Server.
 
 <Warning>
@@ -504,7 +512,7 @@ When the run starts:
 }
 ```
 
-`repo`, `ref`, `sha`, and `pullRequest` are left out when the run has none.
+`local` is `true` for any run on the Dev Server. `repo`, `ref`, `sha`, and `pullRequest` are left out when the run has none. `apis` holds every counter listed below, including zeros.
 
 When the run ends:
 

@@ -26,7 +26,7 @@ Checks are automatic: one for the pipeline and one for each [job](/docs/labs/ci/
 | Retrying a command | In progress, with the attempt count and the last error |
 | Run will be retried | In progress, with `Retrying (attempt N of M)` |
 | Passed | Success, with the duration |
-| Reused from cache | Success, with `Restored, built …` or `Passed at <sha>, no changes since` |
+| Reused from cache | Success, with `Cached <time> ago by <event>` when the machine is restored, or `Passed at <sha>, no changes since` |
 | Failed | Failure, with the command, the output tail, and annotations |
 | Returned `ci.skip()` | Success, with the reason |
 
@@ -50,7 +50,7 @@ await report.annotate([
 
 ## Read the trace
 
-Every run also opens in the Inngest dashboard as one trace: the pipeline, each job, each command, and the Sandbox steps behind them. A GitHub "Re-run" on a check sends the pull request or push again, so every pipeline it triggers runs again. Passed jobs are reused only when they have a [cache](/docs/labs/ci/caching) key.
+Every run also opens in the Inngest dashboard as one trace: the pipeline, each job, each command, and the Sandbox steps behind them. A GitHub "Re-run" on a check sends a new pull request or push event for the commit, so pipelines on those triggers run again. Passed jobs are reused only when they have a [cache](/docs/labs/ci/caching) key.
 
 ![The trace of the example pr pipeline in the Inngest Dev Server: pipeline and job checks, cache lookups, then the base job creating its machine, checking out the repository and installing dependencies](/assets/docs/labs/ci/trace.png)
 
