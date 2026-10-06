@@ -277,7 +277,7 @@ Each job builds on the snapshot of the one before it. When a job's [cache key](#
 
 ## Extra machines
 
-`sandbox(name, { vcpu })` creates another machine for the job right away, with the job's machine settings unless you pass others. It is destroyed with the pipeline. It appears in the job's trace with its own `S2` badge.
+`sandbox(name, { vcpu })` creates another machine for the job right away, with the job's machine settings unless you pass others. It is destroyed with the pipeline. It appears in the job's trace with its own sandbox badge, numbered after the job's own.
 
 ```typescript {{ title: "TypeScript" }}
 const e2e = ci.job("e2e", async () => {

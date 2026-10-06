@@ -59,7 +59,7 @@ const test = ci.job({ id: "test", name: "Unit tests" }, async () => {
 });
 ```
 
-- **Collapsed:** one row per job, tagged `JOB`, showing its `name`, or its `id` when it has none. A muted `S1` or `S2` badge marks the [Sandbox](/docs/sandboxes/overview) a job runs on. A second Sandbox from [`sandbox("api")`](/docs/labs/ci/machines#extra-machines) shows its own badge on its row.
+- **Collapsed:** one row per job, tagged `JOB`, showing its `name`, or its `id` when it has none. A muted `S1`, `S2`, … badge marks the [Sandbox](/docs/sandboxes/overview) a job runs on, numbered top to bottom. A second Sandbox from [`sandbox("api")`](/docs/labs/ci/machines#extra-machines) shows its own badge on its row.
 - **Expanded job:** Start sandbox (or "Start sandbox from `base`" with [`from()`](/docs/labs/ci/machines#start-a-job-from-another-job)), your commands as `$ pnpm test` rows or their [`.as()`](/docs/labs/ci/commands#options) names, your own `step.run` steps by name, then Save sandbox.
 - **Expanded command:** Start process, Wait, Poll process, and Read output, or "Run and read output" for a short captured command. Each retry is Attempt 1, Attempt 2, and so on, and a failed command ends in "Exited with code N".
 - **Top level:** a GitHub group holds the check updates, and "Clean up sandboxes" comes last.
