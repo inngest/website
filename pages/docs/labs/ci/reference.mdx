@@ -201,7 +201,7 @@ await $.sh`pnpm build && pnpm test | tee test.log`;
 | `.timeout(duration)` | Throws `CommandTimeoutError` after the duration. |
 | `.onTimeout(fn)` | Runs `fn` when the timeout hits, then throws. |
 | `.background()` | Starts the command and returns a process with `id`, `exited()`, `kill(signal?)`, and `output({ tailBytes? })`. |
-| `.as(name)` | Names the step in the trace. |
+| `.as(name)` | Replaces the command text in the step name. |
 | `.text()`, `.lines()`, `.json()` | Returns stdout as a trimmed string, an array of lines, or parsed JSON. |
 
 - `$` runs without a shell. `$.sh` runs `/bin/sh -c` and escapes interpolated values.
@@ -274,7 +274,7 @@ Each job builds on the snapshot of the one before it. When a job's [cache key](#
 
 ## Extra machines
 
-`sandbox(name, { vcpu })` creates another machine for the job right away, with the job's machine settings unless you pass others. It is destroyed with the pipeline and appears under the job in the trace.
+`sandbox(name, { vcpu })` creates another machine for the job right away, with the job's machine settings unless you pass others. It is destroyed with the pipeline. Its steps are named `<job> › <name> › machine`.
 
 ```typescript {{ title: "TypeScript" }}
 const e2e = ci.job("e2e", async () => {
