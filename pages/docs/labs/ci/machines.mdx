@@ -54,7 +54,7 @@ When a job finishes, Inngest pauses its machine. When another job calls `from()`
 
 If a snapshot is not available, the job runs the parent's commands again on its own machine. The result is the same, but every child repeats the parent's work.
 
-- `from()` returns the parent's result. Pass the parent's input as the second argument when it takes one.
+- `from()` resolves once the copy is ready. Pass the parent's input as the second argument when it takes one.
 - Call `from()` before the job's first command, and once per job.
 - `await base()` runs `base` on its own machine. `await from(base)` runs it and then starts this job from where it finished.
 - Choose the parent at runtime with `await from((await changed("docs/**")) ? docsBase : base)`.

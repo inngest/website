@@ -39,7 +39,7 @@ on: [github.pullRequest(), github.push({ branches: ["main"] })]
 
 ## Job
 
-A **job** is a unit of work with its own machine and its own check. You call it like a function, and it returns its handler's value. See [Jobs](/docs/labs/ci/jobs).
+A **job** is a unit of work with its own machine and its own check. You call it like a function, and it resolves when the job finishes. See [Jobs](/docs/labs/ci/jobs).
 
 ```typescript {{ title: "TypeScript" }}
 const test = ci.job("test", async () => {

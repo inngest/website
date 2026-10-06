@@ -19,8 +19,6 @@ A job is a function you define with `ci.job()` and call from a pipeline or anoth
 const test = ci.job("test", async () => {
   await checkout();
   await $`pnpm test`;
-
-  return { passed: true };
 });
 
 const build = ci.job({ id: "build", machine: { vcpu: 4 } }, async () => {
@@ -29,8 +27,8 @@ const build = ci.job({ id: "build", machine: { vcpu: 4 } }, async () => {
 });
 ```
 
-- A job returns its handler's value.
-- A job runs once per run for each ID. A second call returns the first call's result, even with a different input, so two callers share one run.
+- A job has no return value. Call it for its commands and its check.
+- A job runs once per run for each ID. A second call waits for the first, even with a different input, so two callers share one run.
 - The machine starts on the job's first [command](/docs/labs/ci/commands). A job with no commands never gets one.
 - When a command fails, the job's check fails and the pipeline ends.
 
