@@ -245,7 +245,7 @@ Set `machine` on a job, on its pipeline, or on `createCi` for every job. The fir
 
 ## `from`
 
-[`from(job)`](/docs/labs/ci/machines#start-a-job-from-another-job) starts the current job on a copy of another job's machine, like a Docker layer. The parent runs once, however many jobs start from it, and each child gets its own isolated copy. If the pipeline already called the parent directly, `from()` uses that run.
+[`from(job)`](/docs/labs/ci/machines#start-a-job-from-another-job) starts the current job on a copy of another job's machine, like a Docker layer. The parent runs once, however many jobs start from it, and each child gets its own isolated copy. If the pipeline already called the parent directly, `from()` uses that run. `from()` shares a job's machine within one run. To reuse it across runs, give the parent a [`cache`](/docs/labs/ci/caching) key.
 
 ```typescript {{ title: "TypeScript" }}
 const base = ci.job("base", async () => {
