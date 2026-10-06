@@ -11,16 +11,15 @@ export const description = "Inngest CI overview: write CI pipelines in TypeScrip
   Inngest CI is an Inngest Labs project: early, moving fast, and shaped by your feedback. [What's Labs?](/docs/labs)
 </Info>
 
-Inngest CI replaces config-driven YAML with code. You write pipelines and jobs as TypeScript functions in your repository, and Inngest starts them when something happens on GitHub, runs each job on its own [Sandbox](/docs/sandboxes/overview), and reports the result as GitHub checks and one trace. With Inngest CI you get:
+Inngest CI replaces YAML with TypeScript that lives in your repo. Pipelines start on GitHub events, and each job runs on its own [Sandbox](/docs/sandboxes/overview).
 
-- **CI in TypeScript.** Plain code with `if`, loops, `Promise.all`, and your own functions, with no YAML. [Pipelines and triggers](/docs/labs/ci/pipelines)
-- **One trace per run.** Debug every job, command, and step in one place. [See the result](#see-the-result)
-- **Retries that keep passed work.** A failed command retries alone. Passed jobs and commands never rerun, so you do not rerun all of CI. [Retries](/docs/labs/ci/commands#retries)
-- **Reuse work between jobs.** Start a job from another job's machine, or cache a job by its inputs. [Machines and from()](/docs/labs/ci/machines#start-a-job-from-another-job), [Caching](/docs/labs/ci/caching)
-- **Readable by people and agents.** The code reads as intent, while Inngest handles waits, events, retries, and fan-out. CI lives next to your app and reuses its code and SDKs. [Concepts](/docs/labs/ci/concepts)
-- **Run it locally.** Run the same code on the Dev Server with your uncommitted changes. [Quick start](/docs/labs/ci/quick-start#5-run-locally)
-- **Flow control.** Cancel superseded runs, cap concurrency, debounce, and throttle. [Flow control](/docs/labs/ci/pipelines#flow-control)
-- **GitHub checks.** One check for each pipeline and one for each job. [Checks and reports](/docs/labs/ci/checks-and-reports)
+- [**Plain TypeScript**](/docs/labs/ci/pipelines). `if`, loops, and `Promise.all`, next to your app's code.
+- [**One trace per run**](#see-the-result). Every job, command, and retry in one place.
+- [**Retries that keep passed work**](/docs/labs/ci/commands#retries). Only the failed command runs again.
+- [**Build once, reuse it**](/docs/labs/ci/machines#start-a-job-from-another-job). Start jobs from another job's machine, and [cache](/docs/labs/ci/caching) the slow ones.
+- [**Runs locally**](/docs/labs/ci/quick-start#5-run-locally). Test CI against your uncommitted changes.
+- [**Flow control**](/docs/labs/ci/pipelines#flow-control). Cancel stale runs, cap concurrency, debounce.
+- [**GitHub checks**](/docs/labs/ci/checks-and-reports). One per pipeline, one per job.
 
 ## How a run works
 
