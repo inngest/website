@@ -9,20 +9,26 @@ Coding agents like Claude Code, Cursor, and Codex can use the Inngest CLI to pul
 ## Prerequisites
 
 - Inngest CLI: `npx inngest-cli@latest`
-- An environment-scoped API key set as `INNGEST_API_KEY`
+- An Inngest account for Cloud access
 - A coding agent that can run shell commands
 
 ---
 
-## 1. Give the agent your API key
+## 1. Sign in with OAuth
 
-Set the API key in your environment so the agent's shell commands can access it:
+Run this in the environment where your coding agent runs shell commands:
 
 ```bash
-export INNGEST_API_KEY=sk-inn-api-...
+npx inngest-cli@latest login
 ```
 
-For Claude Code, add it to your project's `.env` or pass it in your shell profile. The agent inherits the environment.
+Complete the browser approval yourself. Choose your account, environment access, permissions, and session duration. Grant read access to the resources the agent needs to inspect, such as apps, functions, events, and runs. Add write access only if it needs to change Cloud data.
+
+The CLI stores the OAuth credentials in your operating system's credential store and refreshes access tokens automatically. The agent's CLI commands use that login. OAuth scopes restrict each operation to the approved permissions and your current account role; see [scopes and permissions](/docs/reference/rest-api?ref=docs-cli-for-coding-agents#scopes-and-permissions).
+
+Use `npx inngest-cli@latest auth status` to check the login and `npx inngest-cli@latest logout` to revoke it. For a terminal without a browser, use `login --no-browser` and open the displayed URL yourself.
+
+API keys remain an option for CI or unattended agents: set `INNGEST_API_KEY` to a key with the required access. An API key overrides the stored OAuth login, so unset `INNGEST_API_KEY` when switching to OAuth. See [CLI authentication](/docs/cli?ref=docs-cli-for-coding-agents#authentication) for details. Local Dev Server commands do not require Cloud authentication.
 
 ---
 
@@ -35,12 +41,14 @@ Tell the agent how to use the CLI. Add this to your project's `CLAUDE.md`, `.cur
 
 Use the Inngest CLI to inspect function runs and traces:
 
-- Get a run: `npx inngest-cli@latest api --prod get-function-run <run_id>`
-- Get a trace: `npx inngest-cli@latest api --prod get-function-trace <run_id> --include-output`
-- Get runs from an event: `npx inngest-cli@latest api --prod get-event-runs <event_id> --include-output --limit 5`
+- Get a run: `npx inngest-cli@latest api --prod --env production get-function-run <run_id>`
+- Get a trace: `npx inngest-cli@latest api --prod --env production get-function-trace <run_id> --include-output`
+- Get runs from an event: `npx inngest-cli@latest api --prod --env production get-event-runs <event_id> --include-output --limit 5`
 - Invoke locally: `npx inngest-cli@latest api invoke-function <app_id> <function_id> --data '{...}'`
 
 Output is JSON. Use jq to filter.
+Cloud commands use the stored OAuth login. Set --env to the intended environment.
+If access is denied, ask the user to review the session's permissions.
 ```
 
 The agent now knows to reach for the CLI when it needs execution context.
@@ -56,7 +64,7 @@ When a function fails, point the agent at the run ID:
 The agent runs:
 
 ```bash
-npx inngest-cli@latest api --prod get-function-trace 01ABC123 --include-output
+npx inngest-cli@latest api --prod --env production get-function-trace 01ABC123 --include-output
 ```
 
 It reads the trace, identifies the failing step, sees the error output, and proposes a fix with real context instead of guessing.

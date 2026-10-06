@@ -20,7 +20,7 @@ You can configure both servers in the same MCP client. Use the Dev Server while 
 
 | MCP server | Use it for | Endpoint | Authentication |
 | --- | --- | --- | --- |
-| **Inngest Cloud** | Deployed apps, functions, events, runs, traces, environments, Insights, sessions, webhooks, and experiments | `https://api.inngest.com/mcp` | Inngest API key |
+| **Inngest Cloud** | Deployed apps, functions, events, runs, traces, environments, Insights, sessions, webhooks, and experiments | `https://api.inngest.com/mcp` | OAuth (recommended) or an API key |
 | **Dev Server** | Apps, functions, events, and runs on your local machine, plus embedded Inngest docs | `http://127.0.0.1:8288/mcp` | None |
 
 <Callout variant="warning">
@@ -29,17 +29,75 @@ Some Cloud MCP tools change data, including tools that send events, invoke funct
 
 ## Connect to Inngest Cloud
 
-### 1. Create an API key
+Use OAuth to sign in through your browser and choose the access your coding agent needs. You do not need to create or copy an API key.
 
-Create an [Inngest API key](/docs/platform-and-operations/keys-and-access) in the Cloud dashboard, then make it available to your MCP client:
+### 1. Add Cloud MCP to your client
+
+<CodeGroup>
+
+```bash {{ title: "Claude Code" }}
+claude mcp add --transport http inngest-cloud https://api.inngest.com/mcp
+```
+
+```bash {{ title: "Codex" }}
+codex mcp add inngest-cloud --url https://api.inngest.com/mcp
+codex mcp login inngest-cloud
+```
+
+```json {{ title: "Cursor" }}
+{
+  "mcpServers": {
+    "inngest-cloud": {
+      "url": "https://api.inngest.com/mcp",
+      "auth": {
+        "CLIENT_ID": "inngest-mcp-static"
+      }
+    }
+  }
+}
+```
+
+</CodeGroup>
+
+In Claude Code, run `/mcp`, select `inngest-cloud`, and authenticate. In Cursor, add the configuration to `.cursor/mcp.json` or `~/.cursor/mcp.json`, reload Cursor, and use its sign-in flow. Cursor uses the static `auth.CLIENT_ID` above for OAuth.
+
+The [Cloud MCP setup page](https://app.inngest.com/mcp/setup) also has client configuration and the live tool list.
+
+### 2. Approve access
+
+In your browser, choose the Inngest account, environment access, permissions, and session duration. Grant read access for inspection and debugging; add write access only for resources the agent needs to change.
+
+OAuth scopes limit which operations a session can perform. Every tool call must be allowed by both the session's granted permissions and your current account role, within the selected environment access. For details and scope examples, see [REST API authorization](/docs/reference/rest-api?ref=docs-mcp#scopes-and-permissions).
+
+If you previously configured an API key, remove the `Authorization` header or `--bearer-token-env-var` setting before signing in with OAuth.
+
+### 3. Try Cloud MCP
+
+Ask your coding agent to complete a task such as:
+
+```text
+List my Inngest environments, then show the apps in production.
+```
+
+```text
+In production, find recent failed runs for my billing app and explain the first failed step.
+```
+
+```text
+In production, show the available Insights tables, then query event volume for the past 24 hours.
+```
+
+### Alternative: use an API key
+
+For clients without OAuth support or unattended workflows, create an [Inngest API key](/docs/platform-and-operations/keys-and-access?ref=docs-mcp) in the Cloud dashboard, then make it available to your MCP client:
 
 ```bash
 export INNGEST_API_KEY=sk-inn-api-...
 ```
 
-Cloud MCP accepts API keys, not signing keys. Keep the key out of source control and use the narrowest access that your work needs.
+For key-based authentication, Cloud MCP accepts API keys, not signing keys. Keep the key out of source control and use the narrowest access that your work needs.
 
-### 2. Add Cloud MCP to your client
+Add the key to your client's configuration:
 
 <CodeGroup>
 
@@ -68,24 +126,6 @@ codex mcp add inngest-cloud \
 ```
 
 </CodeGroup>
-
-You can also open the [Cloud MCP setup page](https://app.inngest.com/mcp/setup) to copy client configuration and see the live tool list.
-
-### 3. Try Cloud MCP
-
-Ask your coding agent to complete a task such as:
-
-```text
-List my Inngest environments, then show the apps in production.
-```
-
-```text
-Find recent failed runs for my billing app and explain the first failed step.
-```
-
-```text
-Show the available Insights tables, then query event volume for the past 24 hours.
-```
 
 ## Connect to the Dev Server
 
@@ -147,6 +187,8 @@ Search the Inngest docs for rate limiting examples.
 
 MCP clients receive the live tool list and each tool's input schema when they connect. The tables below summarize the current tools. Because eligible REST API v2 endpoints become MCP tools automatically, your client's tool list is the source of truth if it differs from this page.
 
+A listed tool may require permissions your session does not have. OAuth sessions cannot access credential-management tools such as `fetch_account_event_keys` and `fetch_account_signing_keys`.
+
 ### Tools available in Cloud and the Dev Server
 
 | Tool | What it does |
@@ -202,7 +244,7 @@ For exact parameters and response shapes, inspect the schema shown by your MCP c
 
 ## Target a Cloud environment
 
-Cloud tools accept an optional `env` argument. Your agent sends it when it calls a tool; it is not part of the MCP server setup. With account-scoped credentials, omit `env` to use the production environment or pass an environment slug to select another environment. An environment-scoped API key can only access its assigned environment.
+Cloud tools accept an `env` argument. Your agent sends it when it calls a tool; it is not part of the MCP server setup. If your OAuth session or API key allows all environments, pass an environment slug, such as `production`, for environment-specific operations. A session or key bound to one environment uses that environment and cannot access another one.
 
 Be explicit in prompts that might affect data:
 
@@ -235,9 +277,19 @@ In the staging environment, send an app/order.created event with orderId test-12
 
 **Cloud MCP returns `401 Unauthorized`**
 
-- Confirm the client sends `Authorization: Bearer $INNGEST_API_KEY`.
-- Use an Inngest API key that starts with `sk-inn-api-`; signing keys are not supported.
-- Restart the MCP client after changing its environment variables.
+- For OAuth, sign in again through your MCP client if the session has expired or been revoked.
+- Remove any old API-key configuration if you intend to use OAuth.
+- For API-key authentication, confirm the client sends `Authorization: Bearer $INNGEST_API_KEY` and restart it after changing environment variables. Signing keys are not supported.
+
+**Cloud MCP returns `403 Forbidden` or `insufficient_scope`**
+
+- Check that the session grants the read or write permission needed by the tool.
+- Check your current account role and the session's environment access. Signing in again cannot grant permissions your role does not allow.
+- If you need more access, authenticate again and approve the required permissions.
+
+**A tool reports that an environment is required**
+
+- Pass `env`, such as `production` or `staging`, when your session or key allows all environments.
 
 **The Dev Server MCP endpoint is not found**
 
