@@ -102,7 +102,7 @@ If `pnpm test` fails it runs again on the same machine. Nothing that already pas
 When both jobs pass the run completes, and its trace shows every job, command and retry in one place.
 </Annotation>
 
-<Trace label="Trace of one run: a pull request starts the pr pipeline. base checks out and installs once. lint and test wait for base, then start in parallel on copies of its machine. The run passes when both finish.">
+<Trace label="Simplified timeline of one run: a pull request starts the pr pipeline. base checks out and installs once. lint and test wait for base, then start in parallel on copies of its machine. The run passes when both finish.">
   <TraceRow name="pr">
     <TraceBar id="event" span="0-15" kind="event" note="trigger">pull request</TraceBar>
     <TraceBar id="pr" span="15.5-87" kind="pipeline" note="pipeline">pr</TraceBar>
@@ -134,7 +134,7 @@ A **pipeline** runs when a **trigger** fires and calls **jobs**. Each job runs *
 
 ## See the result
 
-Every run opens in the Inngest dashboard as one trace: the pipeline, each job, each command, and the Sandbox steps behind them.
+Every run opens in the Inngest dashboard as one trace. Its steps start with their job, as in `base › checkout`, and cover each command, the Sandbox steps behind them, and GitHub checks. [Step names](/docs/labs/ci/checks-and-reports#read-the-trace) lists them.
 
 ![The trace of the example pr pipeline in the Inngest Dev Server: pipeline and job checks, cache lookups, then the base job creating its machine, checking out the repository and installing dependencies](/assets/docs/labs/ci/trace.png)
 

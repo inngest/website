@@ -47,7 +47,7 @@ const sha = await $`git rev-parse HEAD`.text();
 
 - `.nothrow()` returns the result with its exit code instead of throwing.
 - `.env()`, `.cwd()`, and `.timeout()` set the environment, directory, and time limit.
-- `.as(name)` names the step in the trace.
+- `.as(name)` replaces the command text in the step name, as in `test › e2e`.
 - `.text()`, `.lines()`, and `.json()` return stdout in a convenient shape.
 
 [Reference](/docs/labs/ci/reference#commands) lists every method, the result fields, and `.background()`.
