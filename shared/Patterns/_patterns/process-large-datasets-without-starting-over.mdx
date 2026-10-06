@@ -1,0 +1,219 @@
+---
+title: Process large datasets without starting over
+subtitle: Use steps, fan-out, flow control, and waits to run jobs that take hours or days, survive crashes and deploys, and never redo finished work.
+pattern: durable
+tags: [Durability, Fan-out, Flow Control]
+---
+
+If you run nightly imports, backfills, data pipelines, or any job that works through more records than fit in one request, you've probably seen it fail partway through and start over from zero. A pod runs out of memory, a deploy restarts the process, or the database chokes under load, and the job's progress is gone with it. These four primitives let a job commit progress as it goes, split into pieces that fail independently, and pace itself against your systems, without writing checkpointing or retry logic by hand.
+
+## Which primitive do you need?
+
+| Symptom | Primitive | What it does |
+|---|---|---|
+| A crash or deploy restarts the whole job from the beginning | **Steps** | Saves each step's result so a retry resumes where it failed |
+| One job loops over every record, hits limits, or runs out of memory | **Fan-out** | Splits the work into chunks, each running as its own function run |
+| Parallel chunks overwhelm your database or an upstream API | **Concurrency and throttle** | Caps how many chunks run at once and how fast new ones start |
+| The job pauses for an approval or webhook and ties up a worker | **Waits** | Holds the run's state without holding compute |
+
+Most large jobs need the first three together. Add waits when the job depends on something outside it.
+
+### Steps vs. fan-out: when it's not obvious
+
+Steps divide *one run* into units that each commit. Fan-out divides *the job* into many runs. A single function can have at most 1,000 steps, so if the number of steps grows with your dataset, fan out. Each run should do a bounded amount of work no matter how big the input gets.
+
+---
+
+## Primitive 1: Steps
+
+**You need this if:** Your job fails partway through and the only safe recovery is to run it again from the start.
+
+**Without steps:** Progress lives in the process. When the process dies, the job can't tell what finished, so it redoes everything, including work that already wrote to your database.
+
+```typescript
+import { inngest } from "./client";
+
+export const processRecordPage = inngest.createFunction(
+  {
+    id: "process-record-page",
+    triggers: [{ event: "records/page.ready" }],
+    retries: 5,
+  },
+  async ({ event, step }) => {
+    const { page, pageSize } = event.data;
+
+    // Load, transform, and stage this page. If a later step fails,
+    // this one is not re-run: its result is memoized.
+    const transformed = await step.run("transform-page", async () => {
+      return await transformAndStage(page, pageSize); // returns a count
+    });
+
+    // Match the staged records. A failure here retries only this step.
+    const matched = await step.run("match-page", async () => {
+      return await matchStaged(page, pageSize); // returns a count
+    });
+
+    return { page, transformed, matched };
+  }
+);
+```
+
+**Adapt it:**
+
+- Make each step a unit of work that's safe to retry by itself. If a step writes to an external system, make the write idempotent (upsert, or pass an idempotency key) so a retry after a partial write doesn't duplicate data.
+- Return small values from steps, like counts or IDs, never the dataset itself. Step results are stored as run state, so write the data to your own storage and pass references.
+- `retries` applies to each step independently. A step that fails five times fails the run; steps that already completed stay completed.
+- Deploying mid-run is safe: completed steps are matched by ID and skipped on the new code. Renaming a step's ID makes it a new step, so it runs again. See [Versioning](/docs/durable-execution/guides-and-advanced/versioning?ref=patterns).
+
+---
+
+## Primitive 2: Fan-out
+
+**You need this if:** Your dataset is large or growing, and a single run that loops over every record would exceed step limits, run out of memory, or let one bad record block everything.
+
+**Without fan-out:** One giant run holds the whole job. A single failure stalls all of it, and no worker can process the data without loading more of it than it should.
+
+```typescript
+import { inngest } from "./client";
+
+const PAGE_SIZE = 500;
+const MAX_EVENTS_PER_SEND = 5_000; // max events per send
+
+export const nightlyImport = inngest.createFunction(
+  {
+    id: "nightly-import",
+    triggers: [{ cron: "0 1 * * *" }],
+  },
+  async ({ step }) => {
+    // Count only. The coordinator never loads the records themselves.
+    const total = await step.run("count-records", async () => {
+      return await countPendingRecords();
+    });
+
+    const pages = Math.ceil(total / PAGE_SIZE);
+    const events = Array.from({ length: pages }, (_, page) => ({
+      name: "records/page.ready",
+      data: { page, pageSize: PAGE_SIZE },
+    }));
+
+    // Each send is its own memoized step, so a crash here won't re-send
+    // pages that were already dispatched.
+    for (let i = 0; i < events.length; i += MAX_EVENTS_PER_SEND) {
+      await step.sendEvent(
+        `fan-out-pages-${i}`,
+        events.slice(i, i + MAX_EVENTS_PER_SEND)
+      );
+    }
+
+    return { total, pages };
+  }
+);
+```
+
+Each `records/page.ready` event starts a run of `processRecordPage` from Primitive 1. Every page retries on its own, and a failure on one page never touches the others.
+
+**Adapt it:**
+
+- Size `PAGE_SIZE` so one page comfortably finishes within a step. Smaller pages mean cheaper retries and less memory per worker; larger pages mean fewer runs.
+- Put identifiers or ranges in the event, not record data. Event payloads should stay small.
+- A single `step.sendEvent` call accepts up to 5,000 events, so chunk larger sends as shown.
+- If you need to act after every page finishes, have each worker report completion (for example, by incrementing a counter in your database) and trigger a final step when the count reaches `pages`.
+
+---
+
+## Primitive 3: Concurrency and throttle
+
+**You need this if:** Your fan-out produces hundreds or thousands of runs, and running them all at once would exhaust database connections or trip an upstream API's rate limit.
+
+**Without flow control:** Every page starts at once, your database slows down for everything else, and the upstream API answers with 429s that turn into retries that make it worse.
+
+```typescript
+export const processRecordPage = inngest.createFunction(
+  {
+    id: "process-record-page",
+    triggers: [{ event: "records/page.ready" }],
+    retries: 5,
+    concurrency: [
+      { limit: 50 }, // pages in flight against your database
+    ],
+    throttle: {
+      limit: 100, // page runs started per minute
+      period: "1m", // stays under the upstream API limit
+    },
+  },
+  async ({ event, step }) => {
+    // ...same steps as Primitive 1
+  }
+);
+```
+
+**Adapt it:**
+
+- Use concurrency for what your database or worker pool can handle at once. Use throttle for a published rate limit, with 10-20% headroom.
+- Add a `key` (for example, `event.data.tenantId`) if one tenant's import shouldn't starve another's.
+- Waiting runs queue and start as capacity frees up, so the job still completes; it just paces itself. For the full set of flow control options, see [Flash sales and bursty workflows](/docs/patterns/flow/flash-sales-and-bursty-workflows?ref=patterns).
+
+---
+
+## Primitive 4: Waits
+
+**You need this if:** Part of the job depends on something outside it, like a human approval, a webhook, or another system finishing, and today a worker sits idle until it arrives.
+
+**Without waits:** A paused job is still a running job. It holds a thread, a connection, or a worker slot for as long as it waits, and enough of them stall the queue behind them.
+
+```typescript
+import { inngest } from "./client";
+
+export const reviewImport = inngest.createFunction(
+  {
+    id: "review-import",
+    triggers: [{ event: "records/import.finished" }],
+  },
+  async ({ event, step }) => {
+    const report = await step.run("build-report", async () => {
+      return await buildImportReport(event.data.importId); // returns { id, ... }
+    });
+
+    // Holds state, not compute. Returns null if the timeout passes first.
+    const approval = await step.waitForEvent("wait-for-approval", {
+      event: "records/import.approved",
+      timeout: "3d",
+      match: "data.importId",
+    });
+
+    if (!approval) {
+      await step.run("escalate", async () => {
+        await escalate(report.id);
+      });
+      return;
+    }
+
+    await step.run("publish-import", async () => {
+      await publishImport(event.data.importId);
+    });
+  }
+);
+```
+
+**Adapt it:**
+
+- `match` pairs the waiting run with the right event. Use a field both events share, like an import or order ID.
+- Always handle the timeout (`null`) case. A wait that can't time out is a run that can stay open until its maximum duration.
+- Use `step.sleep` or `step.sleepUntil` instead when the wait is for a time, not an event.
+
+---
+
+## How long can a job run?
+
+Keep each step short and let the run be long. A step can run for up to 2 hours (your hosting platform may cap it lower). `step.sleep` can pause a run for up to a year, within your plan's [maximum function run length](/docs/durable-execution/limits?ref=patterns): 30 days on the Free plan, up to 366 days on higher plans, with every sleep and wait counting toward it.
+
+---
+
+## Additional Resources
+
+* [Docs: Fan-out](/docs/durable-execution/guides-and-advanced/patterns/fan-out?ref=patterns)
+* [Docs: Working with loops](/docs/durable-execution/guides-and-advanced/patterns/working-with-loops?ref=patterns)
+* [Docs: Flow Control reference](/docs/durable-execution/flow-control?ref=patterns)
+* [Docs: Versioning](/docs/durable-execution/guides-and-advanced/versioning?ref=patterns)
+* [Docs: Usage limits](/docs/durable-execution/limits?ref=patterns)
+* [Blog: All your workflows are about to be long running. Build for it.](/blog/all-your-workflows-are-about-to-be-long-running?ref=patterns)
