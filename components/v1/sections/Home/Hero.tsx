@@ -59,7 +59,7 @@ export default function Hero() {
             </p>
 
             <div className="flex flex-row flex-wrap items-center gap-4">
-              <InstallCommandButton />
+              <InstallCommandButton placement="homepage_hero" />
               <ButtonLink
                 variant="accent"
                 href={`${

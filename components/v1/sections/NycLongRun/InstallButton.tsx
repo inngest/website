@@ -3,6 +3,10 @@
 import { useEffect, useState } from "react";
 import Button from "@/components/v1/Button";
 import { cn } from "@/utils/v1/cn";
+import {
+  trackInstallCopy,
+  type InstallCtaPlacement,
+} from "@/utils/v1/trackInstallCopy";
 
 /**
  * "NPM Install" CTA — copies the install command to the clipboard.
@@ -20,10 +24,13 @@ import { cn } from "@/utils/v1/cn";
 export default function InstallButton({
   label,
   command,
+  placement,
   className,
 }: {
   label: string;
   command: string;
+  /** Analytics placement — see utils/v1/trackInstallCopy.ts. */
+  placement: InstallCtaPlacement;
   className?: string;
 }) {
   const [state, setState] = useState<"idle" | "copied" | "failed">("idle");
@@ -40,6 +47,7 @@ export default function InstallButton({
       if (navigator.clipboard?.writeText) {
         await navigator.clipboard.writeText(command);
         setState("copied");
+        trackInstallCopy({ placement, command, status: "success" });
         return;
       }
       const ta = document.createElement("textarea");
@@ -52,8 +60,14 @@ export default function InstallButton({
       const ok = document.execCommand("copy");
       document.body.removeChild(ta);
       setState(ok ? "copied" : "failed");
+      trackInstallCopy({
+        placement,
+        command,
+        status: ok ? "success" : "failed",
+      });
     } catch {
       setState("failed");
+      trackInstallCopy({ placement, command, status: "failed" });
     }
   }
 
@@ -61,6 +75,8 @@ export default function InstallButton({
     <div className={cn("relative", className)}>
       <Button
         onClick={copy}
+        data-cta="npm-install"
+        data-cta-placement={placement}
         variant="secondary"
         className="!w-full !border-v1-accent-green/50 !font-v1Mono !text-v1-accent-green hover:!border-v1-accent-green hover:!bg-v1-accent-green/10 sm:!w-auto"
       >
