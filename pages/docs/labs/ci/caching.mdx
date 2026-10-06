@@ -38,17 +38,17 @@ key: files("migrations/**", "seeds/**")
 key: [files("go.mod", "go.sum"), "go1.25"]
 ```
 
-The first run of a job always misses. A job without a machine caches its result, and a reused job shows as passed on its check.
+A job's input is part of its cache identity, so the same key with a different input is a different entry. The first run of a job always misses. A job without a machine caches its result, and a reused job shows as passed on its check.
 
 ## Chains of cached jobs
 
-A cached job also depends on the cached jobs it starts [`from()`](/docs/labs/ci/machines#start-a-job-from-another-job). When a parent changes its key, the child's entry is stale and the child runs again, through the whole chain of cached parents.
+A cached job also depends on the cached jobs it starts [`from()`](/docs/labs/ci/machines#start-a-job-from-another-job). When a parent changes its key, or the input it was called with, the child's entry is stale and the child runs again, through the whole chain of cached parents.
 
 An uncached parent has no key and never invalidates its children. Add its files to the child's key when the child depends on them.
 
 ## Refresh ahead of time
 
-`refresh` takes triggers that rebuild the cache on a schedule, so pull requests do not pay for it. Set `repo` on the pipeline so a cron has a repository to check out. `scope` is `"branch"` by default: a pull request reads entries from its base branch and writes its own. `"global"` shares one entry set.
+`refresh` takes triggers that rebuild the cache on a schedule, so pull requests do not pay for it. Set `repo` on the pipeline so a cron has a repository to check out. `scope` is `"branch"` by default: a pull request reads entries from its base branch and writes its own, and its scope can never collide with a branch name. `"global"` shares one entry set.
 
 ## Cache stores
 

@@ -70,6 +70,8 @@ if (touched === false) {
 }
 ```
 
+When `changed()` cannot tell what changed, it returns `true` so nothing is skipped by mistake. That happens when the run has no repository, when the base cannot be found, and when a compare hits GitHub's 300-file cap.
+
 ## Flow control
 
 Pipeline options accept every Inngest [flow control](/docs/durable-execution/flow-control) setting. To cancel a run when a newer one starts for the same pull request, use `singleton`:

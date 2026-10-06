@@ -810,6 +810,10 @@ export const docsRefreshOutline: DocsRefreshPage[] = [
             title: "Reference",
             href: "/docs/labs/ci/reference",
           },
+          {
+            title: "Recipes",
+            href: "/docs/labs/ci/recipes",
+          },
         ],
       },
     ],

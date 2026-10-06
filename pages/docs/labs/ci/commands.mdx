@@ -1,4 +1,4 @@
-import { Info, Warning } from "shared/Docs/mdx";
+import { Info } from "shared/Docs/mdx";
 
 export const metaTitle = "Commands | Inngest CI";
 export const description = "Run shell commands in an Inngest CI job with the $ template tag, retry a failed command without rerunning passed work, and read output, env, and timeouts.";
@@ -49,11 +49,6 @@ const sha = await $`git rev-parse HEAD`.text();
 - `.env()`, `.cwd()`, and `.timeout()` set the environment, directory, and time limit.
 - `.as(name)` names the step in the trace.
 - `.text()`, `.lines()`, and `.json()` return stdout in a convenient shape.
-- `.withSecret(name, value)` passes an environment variable and masks it in output.
-
-<Warning>
-  `.withSecret()` hides the value from the trace and from check output. Code running on the machine can still read it.
-</Warning>
 
 [Reference](/docs/labs/ci/reference#commands) lists every method, the result fields, and `.background()`.
 

@@ -24,10 +24,13 @@ Checks are automatic: one for the pipeline and one for each [job](/docs/labs/ci/
 | --- | --- |
 | Running | In progress, with the current command |
 | Retrying a command | In progress, with the attempt count and the last error |
+| Run will be retried | In progress, with `Retrying (attempt N of M)` |
 | Passed | Success, with the duration |
 | Reused from cache | Success, with `Restored, built …` or `Passed at <sha>, no changes since` |
 | Failed | Failure, with the command, the output tail, and annotations |
 | Returned `ci.skip()` | Success, with the reason |
+
+While a run will be retried, checks stay in progress and complete only on success or the final attempt. Command failures, timeouts, usage errors, and matrix failures made only of those fail once.
 
 Set `check: false` on a pipeline to turn checks off, or `check: { jobs: false }` to keep only the pipeline check.
 
@@ -47,7 +50,7 @@ await report.annotate([
 
 ## Read the trace
 
-Every run also opens in the Inngest dashboard as one trace: the pipeline, each job, each command, and the Sandbox steps behind them. A GitHub "Re-run" on a check restarts the whole pipeline. Passed jobs are reused only when they have a [cache](/docs/labs/ci/caching) key.
+Every run also opens in the Inngest dashboard as one trace: the pipeline, each job, each command, and the Sandbox steps behind them. A GitHub "Re-run" on a check restarts only the pipeline that owns it. Passed jobs are reused only when they have a [cache](/docs/labs/ci/caching) key.
 
 ![The trace of the example pr pipeline in the Inngest Dev Server: pipeline and job checks, cache lookups, then the base job creating its machine, checking out the repository and installing dependencies](/assets/docs/labs/ci/trace.png)
 
