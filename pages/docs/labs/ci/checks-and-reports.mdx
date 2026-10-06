@@ -69,9 +69,7 @@ A job called a second time in the same run shows as `test (2)` and has its own c
 
 [Commands](/docs/labs/ci/commands#options) shows how `.as()` renames a command row. A GitHub "Re-run" on a check sends a new pull request or push event for the commit, so pipelines on those triggers run again. Passed jobs are reused only when they have a [cache](/docs/labs/ci/caching) key.
 
-<!-- TODO: replace with a grouped-trace screenshot from the demo -->
-
-![The trace of the example pr pipeline in the Inngest Dev Server: pipeline and job checks, cache lookups, then the base job creating its machine, checking out the repository and installing dependencies](/assets/docs/labs/ci/trace.png)
+![The trace of a pr pipeline in the Inngest Dev Server: a GitHub group, the base and test jobs as one row each, and the test job expanded to show it starting from base, a second api sandbox, a retried command with a failed first attempt, and Save sandbox](/assets/docs/labs/ci/trace.png)
 
 In dev mode, checks print to your terminal. To report on GitHub, see [Run on GitHub](/docs/labs/ci/reference#run-on-github).
 

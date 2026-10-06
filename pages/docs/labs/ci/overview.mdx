@@ -136,7 +136,7 @@ A **pipeline** runs when a **trigger** fires and calls **jobs**. Each job runs *
 
 Every run opens in the Inngest dashboard as one trace with one row per job. Expand a job to see its commands, each retry as an attempt, and the Sandbox work CI does for you, dimmed. [Read the trace](/docs/labs/ci/checks-and-reports#read-the-trace) explains every row.
 
-![The trace of the example pr pipeline in the Inngest Dev Server: pipeline and job checks, cache lookups, then the base job creating its machine, checking out the repository and installing dependencies](/assets/docs/labs/ci/trace.png)
+![The trace of a pr pipeline in the Inngest Dev Server: a GitHub group, the base and test jobs as one row each, and the test job expanded to show it starting from base, a second api sandbox, a retried command with a failed first attempt, and Save sandbox](/assets/docs/labs/ci/trace.png)
 
 On GitHub, the same run appears as one check for the pipeline and one for each job:
 
