@@ -354,7 +354,8 @@ const base = ci.job(
 
 - `key` is what the job depends on. If the key is unchanged since the last successful run, the job does not run. A job that started a machine is restored from its snapshot, and `from(base)` clones the saved machine.
 - `refresh` takes triggers that rebuild the cache ahead of time, so pull requests do not pay for it. Set `repo` on a pipeline so a cron has a repository to check out.
-- `scope` is `"branch"` by default. A pull request reads entries from its base branch and writes its own, and its scope can never collide with a branch name. `"global"` shares one entry set.
+- `scope` is `"branch"` by default: a pull request reads its own entries and its base branch's and writes only its own, and a push reads and writes its branch's. `"global"` shares one set of entries across every branch.
+- Inngest keeps a cached job's machine as a snapshot and finds it again by its key, so CI on GitHub, teammates, and local runs all share it. Entries expire with their snapshot and are rebuilt by the next run that needs one.
 
 A key is `files()`, a string, an array of them, or an async function that returns a string:
 
@@ -366,7 +367,7 @@ key: [files("go.mod", "go.sum"), "go1.25"]
 
 - `files()` hashes the matched files in the git tree for the run's commit. Locally it hashes the working tree.
 - A cached job also depends on the cached jobs it starts `from()`. When one of them changes its key, or the input it was called with, the child's entry is stale and the job runs again. This holds up the whole chain of cached parents. An uncached parent has no key and never invalidates its children, so add its files to the child's key when the child depends on them.
-- The first run of a job always misses.
+- The first run with a new key always misses.
 - A job without a machine caches its result. Reused jobs show as passed.
 - Do not cache tests that call the network.
 
