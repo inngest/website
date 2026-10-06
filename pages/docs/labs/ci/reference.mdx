@@ -27,7 +27,7 @@ export const description = "Inngest CI reference: pipeline and job options, trig
 
 `ci.functions()` returns your pipelines plus the functions CI needs behind the scenes: machine cleanup, cache builds and refreshes, GitHub check re-runs, and running single jobs locally. Pass it to `serve()` or `createServer()`.
 
-`ci.local` is `true` in a run started by [`inngest-ci`](/docs/labs/ci/local). Use it to skip releases and deploys from a laptop: `if (ci.local) { return ci.skip("local run"); }`.
+`ci.local` is `true` in a run started by [`inngest-ci`](/docs/labs/ci/local?ref=docs-labs-ci-reference). Use it to skip releases and deploys from a laptop: `if (ci.local) { return ci.skip("local run"); }`.
 
 ## `ci.pipeline`
 
@@ -164,7 +164,7 @@ const build = ci.job({ id: "build", machine: { vcpu: 4 } }, async () => {
 
 `keepOnFailure` snapshots the machine when the job fails. The snapshot ID appears in the pipeline check's summary, under **Kept machines**. It takes a duration, but the duration is ignored today: the snapshot keeps the platform's default retention.
 
-`input` takes any Standard Schema, such as Zod. The handler gets the validated value, a mismatch throws `CiUsageError`, and [`inngest-ci`](/docs/labs/ci/local#give-inputs) asks for it field by field.
+`input` takes any Standard Schema, such as Zod. The handler gets the validated value, a mismatch throws `CiUsageError`, and [`inngest-ci`](/docs/labs/ci/local?ref=docs-labs-ci-reference#give-inputs) asks for it field by field.
 
 Durations such as `"10m"` or `"1h30m"` are parsed strictly, with the units `ms`, `s`, `m`, `h`, `d`, and `w`. A malformed value throws `CiUsageError`.
 
@@ -244,7 +244,7 @@ Set `machine` on a job, on its pipeline, or on `createCi` for every job. The fir
 - Inngest pauses a machine when its job passes, so a later `from()` can snapshot it, and destroys every machine when the pipeline ends.
 - Only `$` runs on the machine. The rest of your handler runs in your app.
 - Commands run in `/work` by default, which is where `checkout()` puts the repository.
-- `checkout()` clones the commit that triggered the run with a short-lived token that never appears in the trace. Locally it uploads your working tree.
+- `checkout()` clones the commit that triggered the run, or updates an existing checkout to it with a short-lived token that never appears in the trace. Locally it uploads your working tree.
 
 `checkout()` options are `ref`, `submodules`, `history` (`"shallow"` or `"full"`), and `path`. `history` defaults to `"shallow"`, which skips file contents until they are needed, and `path` defaults to `/work`. Commands after a `checkout({ path })` run in that path. A local checkout uploads your working tree without its `.git` folder and ignores `ref`, `submodules`, and `history`. `checkout()` throws `CiUsageError` when the run has no repository, so set `repo` on the pipeline. On a machine that already has a checkout, such as one started `from()` a cached job, it moves that checkout to this run's commit and keeps ignored files like `node_modules`. In a local run, files you deleted since the snapshot stay.
 

@@ -41,7 +41,7 @@ const test = ci.job("test", async () => {
 
 ## Shared by every run
 
-Inngest keeps a cached job's machine as a snapshot and finds it again by its cache key, so every run shares it: CI on GitHub, your teammates, and your [local runs](/docs/labs/ci/local) alike. Build `base` once, and every run with the same key starts from it.
+Inngest keeps a cached job's machine as a snapshot and finds it again by its cache key, so every run shares it: CI on GitHub, your teammates, and your [local runs](/docs/labs/ci/local?ref=docs-labs-ci-caching) alike. Build `base` once, and every run with the same key starts from it.
 
 - A pull request reads its own entries and its base branch's, and writes only its own, so one pull request never changes what another one reuses.
 - A push to a branch reads and writes that branch's entries.

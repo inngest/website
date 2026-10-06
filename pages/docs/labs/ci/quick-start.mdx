@@ -113,7 +113,7 @@ npx inngest-ci pr
 
 `inngest-ci` starts a Dev Server and `ci/server.ts`, sends a pull request event built from your current branch, and runs `pr` on Sandboxes. `checkout()` uploads your working tree, including uncommitted changes and excluding ignored files, so there is nothing to commit or push.
 
-[Run CI locally](/docs/labs/ci/local) covers the picker, running one job, inputs, and matrices.
+[Run CI locally](/docs/labs/ci/local?ref=docs-labs-ci-quick-start) covers the picker, running one job, inputs, and matrices.
 
 ## 6. Inspect the result
 
@@ -130,7 +130,7 @@ Your terminal draws each job as it runs:
           `pnpm test` exited with 1
 ```
 
-Press `enter` to open the run in the Dev Server. The trace lists every step in order. Steps start with their job, as in `test › pnpm test`, and each retry of a command is its own step. [Read the trace](/docs/labs/ci/checks-and-reports#read-the-trace) lists the step names.
+Press `enter` to open the run in the Dev Server. The trace lists every step in order. Steps start with their job, as in `test › pnpm test`, and each retry of a command is its own step. [Read the trace](/docs/labs/ci/checks-and-reports?ref=docs-labs-ci-quick-start#read-the-trace) lists the step names.
 
 ## Cleanup and current behavior
 

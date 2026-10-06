@@ -22,7 +22,7 @@ A machine is a [Sandbox](/docs/sandboxes/overview?ref=docs-labs-ci-machines): an
 Set `machine` on a job, on its pipeline, or on `createCi` for every job. The first one set wins in that order.
 
 - Commands run in `/work` by default, which is where `checkout()` puts the repository.
-- `checkout()` clones the commit that triggered the run with a short-lived token that never appears in the trace. Locally it uploads your working tree without its `.git` folder.
+- `checkout()` clones the commit that triggered the run, or updates an existing checkout to it with a short-lived token that never appears in the trace. Locally it uploads your working tree without its `.git` folder.
 - Inngest pauses a machine when its job passes and destroys every machine when the pipeline ends.
 
 ## Start a job from another job
@@ -46,7 +46,7 @@ const test = ci.job("test", async () => {
 });
 ```
 
-The parent runs once, however many jobs start from it, and each child gets its own isolated copy. If the pipeline already called the parent directly, `from()` uses that run. `from()` shares a job's machine within one run. To reuse it across runs, give the parent a [`cache`](/docs/labs/ci/caching#shared-by-every-run) key, and every run and machine shares it. Each job builds on the snapshot of the one before it.
+The parent runs once, however many jobs start from it, and each child gets its own isolated copy. If the pipeline already called the parent directly, `from()` uses that run. `from()` shares a job's machine within one run. To reuse it across runs, give the parent a [`cache`](/docs/labs/ci/caching?ref=docs-labs-ci-machines#shared-by-every-run) key, and every run and machine shares it. Each job builds on the snapshot of the one before it.
 
 ### What happens under the hood
 

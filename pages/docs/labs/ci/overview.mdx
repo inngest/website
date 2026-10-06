@@ -13,13 +13,13 @@ export const description = "Inngest CI overview: write CI pipelines in TypeScrip
 
 Inngest CI is CI written in TypeScript, in your repo next to your app. Pipelines start on any Inngest event, from a GitHub push to a cron or your own app, and each job runs on its own [Sandbox](/docs/sandboxes/overview?ref=docs-labs-ci-overview).
 
-- **TypeScript all the way down.** Use `if`, loops, and `Promise.all`, and import your app's own code. [Pipelines →](/docs/labs/ci/pipelines)
+- **TypeScript all the way down.** Use `if`, loops, and `Promise.all`, and import your app's own code. [Pipelines →](/docs/labs/ci/pipelines?ref=docs-labs-ci-overview)
 - **One trace per run.** Every job, command, and retry in one place. [See a run →](#see-the-result)
-- **Retries that keep passed work.** Only the failed command runs again. [Retries →](/docs/labs/ci/commands#retries)
-- **Build once, reuse it.** Start jobs from another job's machine, and cache the slow ones. [Machines →](/docs/labs/ci/machines#start-a-job-from-another-job)
-- **Runs locally.** One command runs any pipeline or job on real Sandboxes with your uncommitted changes. [Run CI locally →](/docs/labs/ci/local)
-- **Flow control.** Cancel stale runs, cap concurrency, and debounce. [Flow control →](/docs/labs/ci/pipelines#flow-control)
-- **GitHub checks.** One per pipeline, and one per job. [Checks →](/docs/labs/ci/checks-and-reports)
+- **Retries that keep passed work.** Only the failed command runs again. [Retries →](/docs/labs/ci/commands?ref=docs-labs-ci-overview#retries)
+- **Build once, reuse it.** Start jobs from another job's machine, and cache the slow ones. [Machines →](/docs/labs/ci/machines?ref=docs-labs-ci-overview#start-a-job-from-another-job)
+- **Runs locally.** One command runs any pipeline or job on real Sandboxes with your uncommitted changes. [Run CI locally →](/docs/labs/ci/local?ref=docs-labs-ci-overview)
+- **Flow control.** Cancel stale runs, cap concurrency, and debounce. [Flow control →](/docs/labs/ci/pipelines?ref=docs-labs-ci-overview#flow-control)
+- **GitHub checks.** One per pipeline, and one per job. [Checks →](/docs/labs/ci/checks-and-reports?ref=docs-labs-ci-overview)
 
 ## How a run works
 
@@ -61,7 +61,7 @@ const test = ci.job("test", async () => {
 });
 ```
 
-<Annotation id="local" lines="2" tease="runs locally" title="Run it on your machine" href="/docs/labs/ci/local" linkText="Run CI locally">
+<Annotation id="local" lines="2" tease="runs locally" title="Run it on your machine" href="/docs/labs/ci/local?ref=docs-labs-ci-overview" linkText="Run CI locally">
 `npx inngest-ci pr` runs this pipeline on real Sandboxes with your uncommitted changes, so you can check CI before you push.
 </Annotation>
 
