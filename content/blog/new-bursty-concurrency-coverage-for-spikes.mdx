@@ -18,7 +18,7 @@ Concurrent steps (or slots, or runs) in [durable execution](/docs/learn/how-func
 
 If you want to know how it works, or how to increase your concurrency, read on!
 
-## What concurrency means in Inngest
+## What does concurrency mean in Inngest?
 
 [Concurrency](/docs/durable-execution/flow-control/concurrency?ref=blog-new-bursty-concurrency-coverage-for-spikes) is the number of steps actively executing at once. It decides how fast work gets done: whether a thousand simultaneous report requests finish in a minute, or the last one waits twenty.
 
@@ -26,7 +26,7 @@ Important note: runs that have wait-for steps don't count. A run that's sleeping
 
 ![A queue of function runs beside three empty concurrency slots, with a concurrency limit of 3](/assets/blog/new-bursty-concurrency-coverage-for-spikes/concurrency-queue.gif)
 
-## Why concurrency spikes
+## Why does concurrency spike?
 
 Concurrency climbs when work arrives faster than it finishes. It's a totally normal function of growing products, and usually a sign your product is being used, not a sign something is wrong!
 
@@ -48,7 +48,7 @@ Inngest also used to behave similarly—if you hit the concurrency limit you've 
 
 ![Before bursty concurrency, a spike stays capped at the account limit and extra runs wait](/assets/blog/new-bursty-concurrency-coverage-for-spikes/concurrency-before.gif)
 
-## How bursty concurrency works
+## How does bursty concurrency work?
 
 Imagine an account with a plan limit of 100 and normal load around 30. Now imagine that account gets an import that fans out to 250 concurrent steps for 20 minutes.
 
@@ -65,7 +65,7 @@ This makes a few things better:
 - **You'll get notified when you're close to exhausting the hour.** Notifications at 25%, 50%, 75%, and 100% of the budget, so upgrading is a planned decision.
 - **Free every month.** A burst helps avoid slowdowns, but it's really a tool to ensure you can right-size your concurrency limit going forward. You will never be charged for a burst, or for concurrency that you didn't add yourself in the app.
 
-## How the burst budget works
+## How does the burst budget work?
 
 Pro and above accounts get one hour of burst per month, which we hope will be helpful in sussing out what's a fluke and what needs real attention.
 
@@ -74,7 +74,7 @@ Pro and above accounts get one hour of burst per month, which we hope will be he
 - **Refill:** Bursts are reset every month, at a time unique to your account.
 - **Notifications:** Admins will receive an email at 25%, 50%, 75%, and 100% of the burst, but you can also monitor in the app.
 
-## What to do with that number
+## What should you do with that number?
 
 If you burst rarely, and don't go past your temporary 3x ceiling, you likely don't have to add concurrency. If it happens every month, or you "spend" your 60 minutes before month end, your workload has likely outgrown your limit. Add concurrency on your [billing page](https://app.inngest.com/billing). If your peak is ever above 1,000, it's likely you would benefit from [Enterprise pricing](/pricing?ref=blog-new-bursty-concurrency-coverage-for-spikes).
 
