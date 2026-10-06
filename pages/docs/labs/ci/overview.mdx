@@ -18,7 +18,7 @@ Inngest CI replaces config-driven YAML with code. You write pipelines and jobs a
 - **Retries that keep passed work.** A failed command retries alone. Passed jobs and commands never rerun, so you do not rerun all of CI. [Retries](/docs/labs/ci/commands#retries)
 - **Reuse work between jobs.** Start a job from another job's machine, or cache a job by its inputs. [Machines and from()](/docs/labs/ci/machines#start-a-job-from-another-job), [Caching](/docs/labs/ci/caching)
 - **Readable by people and agents.** The code reads as intent, while Inngest handles waits, events, retries, and fan-out. CI lives next to your app and reuses its code and SDKs. [Concepts](/docs/labs/ci/concepts)
-- **Run it locally.** Run the same code on the Dev Server with your uncommitted changes. [Quick start](/docs/labs/ci/quick-start#5-run-locally)
+- **Run it locally.** One command runs any pipeline or job on real Sandboxes with your uncommitted changes. [Run CI locally](/docs/labs/ci/local)
 - **Flow control.** Cancel superseded runs, cap concurrency, debounce, and throttle. [Flow control](/docs/labs/ci/pipelines#flow-control)
 - **GitHub checks.** One check for each pipeline and one for each job. [Checks and reports](/docs/labs/ci/checks-and-reports)
 
@@ -62,8 +62,8 @@ const test = ci.job("test", async () => {
 });
 ```
 
-<Annotation id="local" lines="2" tease="runs locally" title="Run it on your machine" href="/docs/labs/ci/quick-start#5-run-locally" linkText="Quick start">
-The same pipeline runs against the Inngest Dev Server with your uncommitted changes, so you can check CI before you push.
+<Annotation id="local" lines="2" tease="runs locally" title="Run it on your machine" href="/docs/labs/ci/local" linkText="Run CI locally">
+`npx inngest-ci pr` runs this pipeline on real Sandboxes with your uncommitted changes, so you can check CI before you push.
 </Annotation>
 
 <Annotation id="pipeline" lines="4-16" tease="a TypeScript function" title="A pipeline is a function" nodes="pr,done" href="/docs/labs/ci/pipelines" linkText="Pipelines and triggers">

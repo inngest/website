@@ -31,7 +31,7 @@ export const description = "Inngest CI is an Inngest Labs project: write CI pipe
 - **Write plain TypeScript, not YAML.** Use `if`, loops, `Promise.all`, and your own functions. See [Pipelines and triggers](/docs/labs/ci/pipelines).
 - **Keep finished work.** A retry does not rerun jobs or commands that already passed. See [Commands](/docs/labs/ci/commands#retries).
 - **Start a job from another job.** [`from()`](/docs/labs/ci/machines#start-a-job-from-another-job) starts a job on a copy of another job's machine, like a Docker layer. [Caching](/docs/labs/ci/caching) skips jobs whose inputs are unchanged.
-- **Run the same code locally.** Run a pipeline against the Dev Server with your uncommitted changes. See the [quick start](/docs/labs/ci/quick-start#5-run-locally).
+- **Run the same code locally.** Run any pipeline or job on real Sandboxes with your uncommitted changes, before you push. See [Run CI locally](/docs/labs/ci/local).
 - **Get GitHub checks.** Each pipeline gets one check, and each job gets one. See [Checks and reports](/docs/labs/ci/checks-and-reports).
 - **Control how pipelines run.** Cancel superseded runs, cap concurrency, debounce, throttle, and rate limit pipelines with Inngest [flow control](/docs/labs/ci/pipelines#flow-control).
 
@@ -40,6 +40,7 @@ export const description = "Inngest CI is an Inngest Labs project: write CI pipe
 - [Overview](/docs/labs/ci/overview) lists what Inngest CI gives you and shows a run.
 - [Concepts](/docs/labs/ci/concepts) defines pipelines, triggers, jobs, commands, machines, caching, and checks.
 - [Quick start](/docs/labs/ci/quick-start) runs a pipeline on the Dev Server.
+- [Run CI locally](/docs/labs/ci/local) runs any pipeline or job from your terminal.
 - [Reference](/docs/labs/ci/reference) lists options, triggers, command methods, and limits.
 
 ## Next steps
