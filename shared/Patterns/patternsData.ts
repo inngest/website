@@ -179,6 +179,13 @@ export const PATTERNS: PatternIndexItem[] = [
   },
   {
     category: "durable",
+    slug: "run-long-jobs-on-serverless-hosts",
+    title: "Run long jobs on serverless hosts",
+    subtitle:
+      "Keep agents and multi-step jobs running past your host's request limit, without moving off serverless.",
+  },
+  {
+    category: "durable",
     slug: "durable-token-streaming",
     title: "Durable token streaming",
     subtitle:

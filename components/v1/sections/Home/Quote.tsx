@@ -56,7 +56,10 @@ export default function Quote() {
           {...reveals.item(2)}
           className="flex flex-row flex-wrap items-center justify-center gap-4"
         >
-          <InstallCommandButton label="Copy prompt to start locally" />
+          <InstallCommandButton
+            label="Copy prompt to start locally"
+            placement="homepage_dx"
+          />
           <ButtonLink variant="accent" href="/pricing?ref=homepage-dx">
             Start free in cloud
           </ButtonLink>

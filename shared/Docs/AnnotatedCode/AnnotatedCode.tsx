@@ -59,7 +59,7 @@ export { Trace, TraceRow, TraceBar, TraceMarker } from "./Trace";
  * what renders behind an unreleased `label`, and what the markdown export
  * prints, followed by the notes as a list.
  */
-export function Annotation(_props: {
+export type AnnotationProps = {
   /** Referenced by a trace bar's `note`. */
   id: string;
   /** "8", "6-8" or "15-18,20-23": every line this note lights. */
@@ -75,9 +75,18 @@ export function Annotation(_props: {
   href?: string;
   linkText?: string;
   children: ReactNode;
-}) {
+};
+
+export function Annotation(_props: AnnotationProps) {
   return null;
 }
+
+/** What MDX passes for a fenced code block: its source and highlighted HTML. */
+type CodeBlockProps = {
+  code?: string;
+  title?: string;
+  children?: ReactNode;
+};
 
 type Note = {
   id: string;
@@ -139,7 +148,9 @@ function textLength(node: ReactNode): number {
     }
 
     if (isValidElement(child)) {
-      return sum + textLength((child.props as any).children);
+      return (
+        sum + textLength((child.props as { children?: ReactNode }).children)
+      );
     }
 
     return sum;
@@ -147,7 +158,7 @@ function textLength(node: ReactNode): number {
 }
 
 function readNote(el: ReactElement): Note {
-  const props = el.props as any;
+  const props = el.props as AnnotationProps;
   const ranges = parseRanges(String(props.lines));
   const lines = new Set<number>();
 
@@ -198,7 +209,7 @@ export function AnnotatedCode({
 
   const parts = Children.toArray(children).filter(isValidElement);
   const codeEl = parts.find((c) => {
-    return typeof (c.props as any)?.code === "string";
+    return typeof (c.props as CodeBlockProps).code === "string";
   });
 
   if (!enabled || !codeEl) {
@@ -215,9 +226,11 @@ function Annotated({
   parts: ReactElement[];
   codeEl: ReactElement;
 }) {
-  const codeProps = codeEl.props as any;
+  const codeProps = codeEl.props as CodeBlockProps;
   const codeChild = Children.toArray(codeProps.children).find(isValidElement);
-  const html: string = String((codeChild?.props as any)?.children ?? "");
+  const html: string = String(
+    (codeChild?.props as { children?: ReactNode } | undefined)?.children ?? ""
+  );
 
   const lines = useMemo(() => {
     const out = html.split("\n");
@@ -438,18 +451,31 @@ function Annotated({
 
   const traceH = spec ? traceHeight(spec) : 0;
   let traceCardStyle: CSSProperties | null = null;
+  // With no clear spot in the timeline, the note goes under it, in the page's
+  // flow, so it pushes the next paragraph down instead of covering it.
+  let traceCardBelow = false;
   const bar = spec?.bars.find((b) => {
     return b.id === open.node;
   });
 
   if (active && open.from === "node" && spec && bar) {
-    traceCardStyle = side
-      ? {
-          left: layout.width + SIDE_GAP,
-          top: Math.max(0, rowTop(bar.row) - 6),
-          width: CARD_W,
-        }
-      : clearSpot(spec, bar, layout.width, traceH, cardWidth, active.length);
+    if (side) {
+      traceCardStyle = {
+        left: layout.width + SIDE_GAP,
+        top: Math.max(0, rowTop(bar.row) - 6),
+        width: CARD_W,
+      };
+    } else {
+      traceCardStyle = clearSpot(
+        spec,
+        bar,
+        layout.width,
+        traceH,
+        cardWidth,
+        active.length
+      );
+      traceCardBelow = traceCardStyle === null;
+    }
   }
 
   return (
@@ -568,42 +594,57 @@ function Annotated({
       </figure>
 
       {spec && (
-        <div
-          role="group"
-          aria-label={spec.label}
-          className="relative mt-5 rounded-md border border-subtle bg-codeEditor"
-          style={{ height: traceH }}
-          onMouseLeave={() => {
-            closeSoon("node");
-          }}
-          onBlur={(e) => {
-            if (!e.currentTarget.contains(e.relatedTarget as Node)) {
+        <>
+          <div
+            role="group"
+            aria-label={spec.label}
+            className="relative mt-5 rounded-md border border-subtle bg-codeEditor"
+            style={{ height: traceH }}
+            onMouseLeave={() => {
               closeSoon("node");
-            }
-          }}
-        >
-          {layout.width > 0 && (
-            <TraceTimeline
-              spec={spec}
-              width={layout.width}
-              highlighted={litNodes}
-              dimmed={!!active}
-              onEnterBar={enterBar}
-            />
-          )}
+            }}
+            onBlur={(e) => {
+              if (!e.currentTarget.contains(e.relatedTarget as Node)) {
+                closeSoon("node");
+              }
+            }}
+          >
+            {layout.width > 0 && (
+              <TraceTimeline
+                spec={spec}
+                width={layout.width}
+                highlighted={litNodes}
+                dimmed={!!active}
+                onEnterBar={enterBar}
+              />
+            )}
 
-          {active && traceCardStyle && (
+            {active && traceCardStyle && (
+              <NoteCard
+                id={traceCardId}
+                note={active}
+                style={traceCardStyle}
+                onEnter={cancelClose}
+                onLeave={() => {
+                  closeSoon("node");
+                }}
+              />
+            )}
+          </div>
+
+          {active && traceCardBelow && (
             <NoteCard
               id={traceCardId}
               note={active}
-              style={traceCardStyle}
+              inFlow
+              style={{ width: cardWidth }}
               onEnter={cancelClose}
               onLeave={() => {
                 closeSoon("node");
               }}
             />
           )}
-        </div>
+        </>
       )}
 
       <div className="sr-only">
@@ -625,7 +666,8 @@ function Annotated({
 /**
  * Where a trace note goes when there is no room beside the block: next to
  * the bar without covering anything in the timeline (below, above, right,
- * left), then any clear spot in it, else under it.
+ * left), then any clear spot in it. `null` when nothing fits, so the
+ * caller puts it under the timeline.
  */
 function clearSpot(
   spec: TraceSpec,
@@ -634,7 +676,7 @@ function clearSpot(
   height: number,
   cardWidth: number,
   textLength: number
-): CSSProperties {
+): CSSProperties | null {
   const h = 64 + Math.ceil(textLength / 42) * 21;
   const gap = 10;
   const anchor = barBox(bar, width);
@@ -686,10 +728,11 @@ function clearSpot(
     }
   }
 
-  const spot = candidates.find(fits) ?? {
-    x: clampX(anchor.x),
-    y: height + 12,
-  };
+  const spot = candidates.find(fits);
+
+  if (!spot) {
+    return null;
+  }
 
   return { left: spot.x, top: spot.y, width: cardWidth };
 }
@@ -773,12 +816,15 @@ function NoteCard({
   id,
   note,
   style,
+  inFlow,
   onEnter,
   onLeave,
 }: {
   id: string;
   note: Note;
   style: CSSProperties;
+  /** In the page's flow, under the timeline, instead of over it. */
+  inFlow?: boolean;
   onEnter: () => void;
   onLeave: () => void;
 }) {
@@ -795,7 +841,8 @@ function NoteCard({
         }
       }}
       className={clsx(
-        "absolute z-20 box-border animate-ac-card rounded-xl border border-subtle bg-surfaceBase px-4 pb-3.5 pt-3 text-left shadow-[0_18px_40px_-14px_rgba(15,23,42,.3)] motion-reduce:animate-none dark:shadow-[0_18px_40px_-14px_rgba(0,0,0,.7)]",
+        inFlow ? "relative mt-3" : "absolute z-20",
+        "box-border animate-ac-card rounded-xl border border-subtle bg-surfaceBase px-4 pb-3.5 pt-3 text-left shadow-[0_18px_40px_-14px_rgba(15,23,42,.3)] motion-reduce:animate-none dark:shadow-[0_18px_40px_-14px_rgba(0,0,0,.7)]",
         "[&_code]:rounded [&_code]:bg-canvasSubtle [&_code]:px-[5px] [&_code]:py-px [&_code]:font-mono [&_code]:text-[0.92em]"
       )}
       style={style}

@@ -21,8 +21,21 @@ Choose a supported Sandbox size before you start work, then check command output
 | File upload or download | **100 MiB per regular file**, through the direct SDK or REST. File transfer is unavailable through `step.sandbox` in the beta. | `413 sandbox_file_too_large` means the file is too large. Split it or use external storage. |
 | Snapshot readiness wait | TypeScript SDK waits up to **five minutes** for a new snapshot to become `READY`. | A timeout stops polling, not snapshot creation. List or Get recent snapshots before creating another. |
 | Snapshot quota and retention | Account-specific count and stored-byte quotas, with **no published numeric values**. Each snapshot has a server-defined `expiresAt`. | `403 sandbox_snapshot_limit_exceeded` means count or storage quota was reached. Delete unneeded snapshots or ask Inngest about your entitlement. Save permanent data elsewhere. |
-| Runtime, disk, and concurrent Sandbox quota | **One hour of active runtime per Sandbox** in the newer beta reference. Time spent paused does not count. Disk and concurrent-Sandbox quotas have no published numeric beta values. The beta does not expose user-configurable lifetime, disk size, or resizing. | Plan work within the active runtime. Check your beta entitlement with Inngest for disk and concurrent-Sandbox capacity. Destroy Sandboxes when work ends. |
+| Runtime, disk, and concurrent Sandbox quota | **One hour of active runtime per Sandbox** in the newer beta reference. Time spent paused does not count. Disk and concurrent-Sandbox quotas have no published numeric beta values. The beta does not expose user-configurable lifetime, disk size, or resizing. | The runtime timeout requests an automatic Pause; see [Runtime expiry](#runtime-expiry). Check your beta entitlement with Inngest for disk and concurrent-Sandbox capacity. Destroy Sandboxes when work ends. |
 
 The beta uses one fixed image and the workspace's default egress-allowed network. It does not expose custom image, template, VPC, or public ingress selection. The beta also limits argument, environment, process specification, and JSON body sizes.
 
 A snapshot captures memory, disk, environment, image, and resources. A clone has a new Sandbox ID and captured filesystem. Pause and Resume preserve the same Sandbox ID and filesystem; a private pause checkpoint does not count as a user snapshot. Snapshots are crash-consistent, expire, and are not permanent storage. Destroy removes the Sandbox filesystem and process output.
+
+## Runtime expiry
+
+When a Sandbox reaches its entitled runtime, Inngest requests an automatic **Pause**. The normal transition is `RUNNING` → `PAUSING` → `PAUSED`. Reaching the runtime limit does not itself destroy the Sandbox or mark it `FAILED`. The timeout and pause run asynchronously and can be retried, so the state change is not guaranteed to occur at the exact second the limit is reached.
+
+Pause saves memory and disk in a private checkpoint and releases the live runtime. The Sandbox keeps its ID and can be resumed while its checkpoint is retained. Pause checkpoints have a separate retention period and are not permanent storage.
+
+Work running at the time of the pause depends on how it was started:
+
+- A captured command started with `commands.run()` can be terminated when Pause closes its exec connection. The call can fail without returning a final exit code or complete output. Inspect files or an application-defined completion marker after Resume before repeating work with external effects.
+- A background process started with `processes.start()` is independent of its start request. Its captured state can continue after Resume, but active wait, output-stream, and external network connections can break. Reconnect and inspect the process after the Sandbox is running again.
+
+Use Get to inspect the current state, and wait for Resume to return `RUNNING` before issuing commands, files, logs, or process calls. See [Pause and resume](/docs/sandboxes/features/pause-and-resume). Save lasting artifacts externally and destroy the Sandbox when you no longer need it.

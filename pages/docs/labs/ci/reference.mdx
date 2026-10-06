@@ -8,7 +8,7 @@ export const description = "Inngest CI reference: pipeline and job options, trig
 > Options, triggers, command methods, and limits for `@inngest/ci`.
 
 <Info>
-  Inngest CI is an Inngest Labs project: early, moving fast, and shaped by your feedback. [What's Labs?](/docs/labs) APIs may change between 0.x releases.
+  Inngest CI is an Inngest Labs project: early, moving fast, and shaped by your feedback. [What's Labs?](/docs/labs?ref=docs-labs-ci-reference) APIs may change between 0.x releases.
 </Info>
 
 ## `createCi`
@@ -29,7 +29,7 @@ export const description = "Inngest CI reference: pipeline and job options, trig
 
 ## `ci.pipeline`
 
-A [**pipeline**](/docs/labs/ci/pipelines) runs when something happens and calls jobs. It is one Inngest function, so every Inngest flow control option works on it.
+A [**pipeline**](/docs/labs/ci/pipelines?ref=docs-labs-ci-reference) runs when something happens and calls jobs. It is one Inngest function, so every Inngest flow control option works on it.
 
 ```typescript {{ title: "TypeScript" }}
 import { github } from "@inngest/ci";
@@ -67,7 +67,7 @@ The handler receives `event`, `events`, `runId`, `pipelineId`, `repo`, `attempt`
 - `check: false` turns off all checks. `check: { jobs: false }` keeps the pipeline check and drops the job checks.
 - `machine` is the default machine for the pipeline's jobs. A job's own `machine` overrides it.
 - `repo` (`"owner/name"`) gives crons and manual runs a repository to check out. `ci.pipeline()` throws if it is not in that form, and, with GitHub credentials, resolves the repository, its default branch, and its head commit for cron and manual runs.
-- Flow control options: `concurrency`, `throttle`, `rateLimit`, `debounce`, `priority`, `singleton`, `idempotency`, `batchEvents`, `timeouts`, `cancelOn`, `retries`, `name`, and `description`. See [flow control](/docs/durable-execution/flow-control).
+- Flow control options: `concurrency`, `throttle`, `rateLimit`, `debounce`, `priority`, `singleton`, `idempotency`, `batchEvents`, `timeouts`, `cancelOn`, `retries`, `name`, and `description`. See [flow control](/docs/durable-execution/flow-control?ref=docs-labs-ci-reference).
 
 Return `ci.skip(reason)` to end a run early. The check completes as success with the reason, so a required check never waits.
 
@@ -91,7 +91,7 @@ if (await changed({ include: ["docs/**"], ignore: ["docs/**/*.png"] })) {
 
 ## Triggers
 
-A [**trigger**](/docs/labs/ci/pipelines#triggers) starts a pipeline and types its `event`.
+A [**trigger**](/docs/labs/ci/pipelines?ref=docs-labs-ci-reference#triggers) starts a pipeline and types its `event`.
 
 | Trigger | Runs when |
 | --- | --- |
@@ -130,7 +130,7 @@ export const merged = ci.pipeline(
 
 ## `ci.job`
 
-A [**job**](/docs/labs/ci/jobs) is a unit of work with its own machine and its own check. Call it like a function.
+A [**job**](/docs/labs/ci/jobs?ref=docs-labs-ci-reference) is a unit of work with its own machine and its own check. Call it like a function.
 
 ```typescript {{ title: "TypeScript" }}
 const test = ci.job("test", async () => {
@@ -160,7 +160,7 @@ const build = ci.job({ id: "build", machine: { vcpu: 4 } }, async () => {
 | `check` | `false`, or `{ name? }` | No |
 | `keepOnFailure` | Duration, such as `"24h"` | No |
 
-`name` is what the [trace](/docs/labs/ci/checks-and-reports#read-the-trace) calls the job. Defaults to `id`.
+`name` is what the [trace](/docs/labs/ci/checks-and-reports?ref=docs-labs-ci-reference#read-the-trace) calls the job. Defaults to `id`.
 
 `keepOnFailure` snapshots the machine when the job fails. The snapshot ID appears in the pipeline check's summary, under **Kept machines**. It takes a duration, but the duration is ignored today: the snapshot keeps the platform's default retention.
 
@@ -168,7 +168,7 @@ Durations such as `"10m"` or `"1h30m"` are parsed strictly, with the units `ms`,
 
 ## Commands
 
-[`` $`…` ``](/docs/labs/ci/commands) runs a command on the job's machine. A non-zero exit code throws `CommandFailedError`.
+[`` $`…` ``](/docs/labs/ci/commands?ref=docs-labs-ci-reference) runs a command on the job's machine. A non-zero exit code throws `CommandFailedError`.
 
 ```typescript {{ title: "TypeScript" }}
 await $`pnpm test`;
@@ -229,7 +229,7 @@ const test = ci.job("test", async () => {
 
 ## Machines
 
-A [**machine**](/docs/labs/ci/machines) is a Sandbox: an ephemeral Linux microVM. Each job gets one on its first command.
+A [**machine**](/docs/labs/ci/machines?ref=docs-labs-ci-reference) is a Sandbox: an ephemeral Linux microVM. Each job gets one on its first command.
 
 | `vcpu` | Memory |
 | --- | --- |
@@ -244,11 +244,11 @@ Set `machine` on a job, on its pipeline, or on `createCi` for every job. The fir
 - Commands run in `/work` by default, which is where `checkout()` puts the repository.
 - `checkout()` clones the commit that triggered the run with a short-lived token that never appears in the trace. Locally it uploads your working tree.
 
-`checkout()` options are `ref`, `submodules`, `history` (`"shallow"` or `"full"`), and `path`. `history` defaults to `"shallow"`, which skips file contents until they are needed, and `path` defaults to `/work`. Commands after a `checkout({ path })` run in that path. A local checkout uploads your working tree without its `.git` folder and ignores `ref`, `submodules`, and `history`. `checkout()` throws `CiUsageError` when the run has no repository, so set `repo` on the pipeline.
+`checkout()` options are `ref`, `submodules`, `history` (`"shallow"` or `"full"`), and `path`. `history` defaults to `"shallow"`, which skips file contents until they are needed, and `path` defaults to `/work`. Commands after a `checkout({ path })` run in that path. A local checkout uploads your working tree without its `.git` folder and ignores `ref`, `submodules`, and `history`. `checkout()` throws `CiUsageError` when the run has no repository, so set `repo` on the pipeline. On a machine that already has a checkout, such as one started `from()` a cached job, it moves that checkout to this run's commit and keeps ignored files like `node_modules`. In a local run, files you deleted since the snapshot stay.
 
 ## `from`
 
-[`from(job)`](/docs/labs/ci/machines#start-a-job-from-another-job) starts the current job on a copy of another job's machine, like a Docker layer. The parent runs once, however many jobs start from it, and each child gets its own isolated copy. If the pipeline already called the parent directly, `from()` uses that run. `from()` shares a job's machine within one run. To reuse it across runs, give the parent a [`cache`](/docs/labs/ci/caching) key.
+[`from(job)`](/docs/labs/ci/machines?ref=docs-labs-ci-reference#start-a-job-from-another-job) starts the current job on a copy of another job's machine, like a Docker layer. The parent runs once, however many jobs start from it, and each child gets its own isolated copy. If the pipeline already called the parent directly, `from()` uses that run. `from()` shares a job's machine within one run. To reuse it across runs, give the parent a [`cache`](/docs/labs/ci/caching?ref=docs-labs-ci-reference) key.
 
 ```typescript {{ title: "TypeScript" }}
 const base = ci.job("base", async () => {
@@ -280,17 +280,19 @@ Each job builds on the snapshot of the one before it. When a job's [cache key](#
 `sandbox(name, { vcpu })` creates another machine for the job right away, with the job's machine settings unless you pass others. It is destroyed with the pipeline. It appears in the job's trace with its own sandbox badge, numbered after the job's own.
 
 ```typescript {{ title: "TypeScript" }}
-const e2e = ci.job("e2e", async () => {
+const verify = ci.job("verify", async () => {
   await checkout();
 
-  const probe = await sandbox("probe", { vcpu: 1 });
-  await probe.$`pnpm dlx serve -l 3000`.background();
-  await probe.waitForPort(3000);
-  await probe.waitForHttp("http://127.0.0.1:3000");
+  const clean = await sandbox("clean", { vcpu: 1 });
 
-  await $`pnpm exec playwright test`;
+  await Promise.all([
+    $`pnpm test`,
+    clean.$.sh`npm install -g my-cli@next && my-cli --version`,
+  ]);
 });
 ```
+
+This runs the tests on the job's machine while a clean machine checks that the published `next` build installs.
 
 - Plain `$` still runs on the job's own machine.
 - An extra machine starts empty. `checkout()` runs on the job's machine only.
@@ -299,7 +301,13 @@ const e2e = ci.job("e2e", async () => {
 - `waitForPort(port, { timeout })` and `waitForHttp(url, { timeout, status })` wait up to `2m` by default, and `waitForHttp` waits for status `200`. When they give up they throw `CommandFailedError`.
 
 <Warning>
-  Machines cannot reach each other yet. Run servers your tests call on the job's own machine and use `127.0.0.1`.
+  Machines cannot reach each other yet. Run a server or database your tests call on the job's own machine, in the background, and use `127.0.0.1`:
+
+  ```typescript
+  await $`pnpm start`.background();
+  await waitForPort(3000);
+  await $`pnpm exec playwright test`;
+  ```
 </Warning>
 
 | If the work... | Use |
@@ -329,7 +337,7 @@ const compat = ci.matrix(
   },
   async ({ node, db }) => {
     await from(base);
-    await $`pnpm test`.env({ NODE_VERSION: node, TEST_DATABASE: db });
+    await $`npx -y node@${node} --test`.env({ TEST_DATABASE: db });
   },
 );
 ```
@@ -366,7 +374,7 @@ const unit = ci.matrix(
 
 ## Caching
 
-A job's [`cache`](/docs/labs/ci/caching) skips the job when nothing it depends on has changed. The input a job is called with is part of its cache identity, so the same key with a different input is a different entry.
+A job's [`cache`](/docs/labs/ci/caching?ref=docs-labs-ci-reference) skips the job when nothing it depends on has changed. The input a job is called with is part of its cache identity, so the same key with a different input is a different entry.
 
 ```typescript {{ title: "TypeScript" }}
 const base = ci.job(
@@ -385,6 +393,7 @@ const base = ci.job(
 ```
 
 - `key` is what the job depends on. If the key is unchanged since the last successful run, the job does not run. A job that started a machine is restored from its snapshot, and `from(base)` clones the saved machine.
+- A restored machine keeps the checkout from the commit it was built on. Call `checkout()` again after `from()` to move to this run's commit. It keeps installed dependencies and build output.
 - `refresh` takes triggers that rebuild the cache ahead of time, so pull requests do not pay for it. Set `repo` on a pipeline so a cron has a repository to check out.
 - `scope` is `"branch"` by default. A pull request reads entries from its base branch and writes its own, and its scope can never collide with a branch name. `"global"` shares one entry set.
 
@@ -404,7 +413,7 @@ key: [files("go.mod", "go.sum"), "go1.25"]
 
 ## Checks and reports
 
-[Checks](/docs/labs/ci/checks-and-reports) are automatic: one for the pipeline and one for each job. Require the pipeline check in branch protection.
+[Checks](/docs/labs/ci/checks-and-reports?ref=docs-labs-ci-reference) are automatic: one for the pipeline and one for each job. Require the pipeline check in branch protection.
 
 | State | Check |
 | --- | --- |
@@ -595,8 +604,8 @@ Import the classes from `@inngest/ci` to check for them with `instanceof`.
 
 ## Next steps
 
-- [Concepts](/docs/labs/ci/concepts) defines pipelines, triggers, jobs, commands, and machines.
-- [Recipes](/docs/labs/ci/recipes) lists common tasks with the code for each.
-- [Quick start](/docs/labs/ci/quick-start) runs a pipeline on the Dev Server.
-- [Flow control](/docs/durable-execution/flow-control) covers the options a pipeline accepts.
-- [Sandboxes limits](/docs/sandboxes/limits) list the limits that apply to machines.
+- [Concepts](/docs/labs/ci/concepts?ref=docs-labs-ci-reference) defines pipelines, triggers, jobs, commands, and machines.
+- [Recipes](/docs/labs/ci/recipes?ref=docs-labs-ci-reference) lists common tasks with the code for each.
+- [Quick start](/docs/labs/ci/quick-start?ref=docs-labs-ci-reference) runs a pipeline on the Dev Server.
+- [Flow control](/docs/durable-execution/flow-control?ref=docs-labs-ci-reference) covers the options a pipeline accepts.
+- [Sandboxes limits](/docs/sandboxes/limits?ref=docs-labs-ci-reference) list the limits that apply to machines.

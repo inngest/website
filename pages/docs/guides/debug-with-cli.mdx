@@ -9,7 +9,17 @@ This guide walks you through finding a failed run, pulling its trace, and identi
 ## Prerequisites
 
 - Inngest CLI: `npx inngest-cli@latest`
-- An API key set as `INNGEST_API_KEY` (create one in the [Inngest dashboard](https://app.inngest.com) under Settings > API Keys)
+- An Inngest account with access to the Cloud environment you want to inspect
+
+Sign in with OAuth:
+
+```bash
+npx inngest-cli@latest login
+```
+
+In the browser, choose your account and environment access, then grant read access to runs for this guide. OAuth limits the CLI to the approved permissions and your current account role. API keys are also supported for unattended scripts; see [CLI authentication](/docs/cli?ref=docs-debug-with-cli#authentication).
+
+The examples below select `production` explicitly. Replace it with your environment's slug. Local Dev Server commands do not require Cloud authentication.
 
 ---
 
@@ -18,7 +28,7 @@ This guide walks you through finding a failed run, pulling its trace, and identi
 You have a run ID from a log, alert, or the dashboard. Fetch the summary:
 
 ```bash
-npx inngest-cli@latest api --prod get-function-run 01KTCTWT8XDEGWDMVX3Q9M69ND
+npx inngest-cli@latest api --prod --env production get-function-run 01KTCTWT8XDEGWDMVX3Q9M69ND
 ```
 
 The response shows the run's status, function, timing, and trigger:
@@ -48,7 +58,7 @@ The run failed. Pull the trace to see which step broke.
 The trace shows every step in the run with its status, timing, and output:
 
 ```bash
-npx inngest-cli@latest api --prod get-function-trace 01KTCTWT8XDEGWDMVX3Q9M69ND --include-output
+npx inngest-cli@latest api --prod --env production get-function-trace 01KTCTWT8XDEGWDMVX3Q9M69ND --include-output
 ```
 
 The response is a tree of spans. Each span is a step. Look for the one with a failed status:
@@ -97,7 +107,7 @@ The `create-shipment` step failed with a 503 from the shipping API. The `validat
 Extract just the failed steps:
 
 ```bash
-npx inngest-cli@latest api --prod get-function-trace 01KTCTWT8XDEGWDMVX3Q9M69ND --include-output \
+npx inngest-cli@latest api --prod --env production get-function-trace 01KTCTWT8XDEGWDMVX3Q9M69ND --include-output \
   | jq '[.data.rootSpan.children[] | select(.status == "FAILED")]'
 ```
 

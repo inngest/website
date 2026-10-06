@@ -14,6 +14,7 @@ import Button from "@/components/v1/Button";
 import { GITHUB_STARS_LABEL, GithubMark } from "@/components/v1/GithubStars";
 import Link from "@/components/v1/Link";
 import Logo from "@/components/v1/Logo";
+import StatusTag from "@/components/v1/StatusTag";
 import {
   NAV_PRIMARY,
   NAV_SECONDARY,
@@ -163,12 +164,7 @@ export default function MobileMenu({ isOpen, onClose }: MobileMenuProps) {
                   </Button>
                 );
               })}
-              <Button
-                asChild
-                variant="secondary"
-                size="lg"
-                className="!w-full"
-              >
+              <Button asChild variant="secondary" size="lg" className="!w-full">
                 <a href={appendRef(SIGN_IN_URL, "nav")} onClick={onClose}>
                   Sign in
                 </a>
@@ -247,8 +243,9 @@ function PrimaryRow({ item, isExpanded, onToggle, onNavigate }: RowProps) {
                         })}
                         className="flex min-h-[44px] flex-col justify-center py-1.5"
                       >
-                        <span className="font-v1Body text-[16px] text-v1-frost">
+                        <span className="flex items-center gap-2 font-v1Body text-[16px] text-v1-frost">
                           {sub.label}
+                          {sub.tag && <StatusTag>{sub.tag}</StatusTag>}
                         </span>
                         {sub.description && (
                           <span className="font-v1Body text-[13px] text-v1-frost/60">

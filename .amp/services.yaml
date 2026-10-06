@@ -1,0 +1,9 @@
+services:
+  website:
+    command: pnpm dev
+    health: /
+    agent: control
+    portal:
+      url: /
+      title: Inngest Website
+      description: Preview the marketing website and documentation.

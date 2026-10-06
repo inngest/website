@@ -10,7 +10,7 @@ export const description = "Inngest Sandboxes API reference: current beta calls 
 
 ## Before you call the beta API
 
-- Use a trusted server-side Node.js 20+ runtime with the standard Fetch API and `inngest@4.20.0` or newer for the original beta API. The newer secret-selection contract is documented for SDK 4.21.
+- Use a trusted server-side Node.js 20+ runtime with the standard Fetch API and `inngest@4.21.1` or newer. Version 4.21.1 includes fixes for snapshot and list response validation required by these guides.
 - Enable Sandboxes beta access for the Inngest environment and set `INNGEST_SIGNING_KEY`. A `403 access_denied` response means access is not enabled.
 - Keep the signing key and Sandbox client out of browser code.
 - The beta uses the default runtime image. Fresh Sandboxes accept exactly `1 vCPU / 1024 MiB`, `2 / 2048`, or `4 / 4096`. A clone inherits its snapshot's resources.
@@ -87,7 +87,7 @@ Use a stable job-derived name. A matching active name and configuration returns 
 
 Commands, files, logs, and process operations require `RUNNING`. Create waits for `RUNNING` by default, up to 120 seconds. Set `runningTimeout: false` to get the Sandbox ID immediately, then call `waitUntilRunning` separately. A readiness timeout stops the wait; it does not cancel Create or destroy the Sandbox. SDK objects show the state observed by that request; Get or a lifecycle call returns a new object.
 
-Pause and Resume keep the same Sandbox ID, filesystem, memory, environment, and remaining runtime. The current beta allows one hour of active runtime per Sandbox; time spent paused does not consume it. Pause can interrupt external connections. There is no in-place restore from a user snapshot.
+Pause and Resume keep the same Sandbox ID, filesystem, memory, environment, and remaining runtime. The current beta allows one hour of active runtime per Sandbox; time spent paused does not consume it. The runtime timeout requests an automatic Pause; see [Runtime expiry](/docs/sandboxes/limits#runtime-expiry) for the state transition and effects on running commands and processes. Pause can interrupt external connections. There is no in-place restore from a user snapshot.
 
 ## Commands, processes, and files
 

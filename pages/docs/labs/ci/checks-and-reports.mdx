@@ -8,10 +8,10 @@ export const description = "Inngest CI reports one GitHub check for each pipelin
 > See each pipeline and job as a GitHub check, and add summaries and annotations from code.
 
 <Info>
-  Inngest CI is an Inngest Labs project: early, moving fast, and shaped by your feedback. [What's Labs?](/docs/labs)
+  Inngest CI is an Inngest Labs project: early, moving fast, and shaped by your feedback. [What's Labs?](/docs/labs?ref=docs-labs-ci-checks-and-reports)
 </Info>
 
-Checks are automatic: one for the pipeline and one for each [job](/docs/labs/ci/jobs). Require the pipeline check in branch protection.
+Checks are automatic: one for the pipeline and one for each [job](/docs/labs/ci/jobs?ref=docs-labs-ci-checks-and-reports). Require the pipeline check in branch protection.
 
 ```
 ✕ pr             test: `pnpm test` exited with 1
@@ -59,21 +59,21 @@ const test = ci.job({ id: "test", name: "Unit tests" }, async () => {
 });
 ```
 
-- **Collapsed:** one row per job, tagged `JOB`, showing its `name`, or its `id` when it has none. A muted `S1`, `S2`, … badge marks the [Sandbox](/docs/sandboxes/overview) a job runs on, numbered top to bottom. A second Sandbox from [`sandbox("api")`](/docs/labs/ci/machines#extra-machines) shows its own badge on its row.
-- **Expanded job:** Start sandbox (or "Start sandbox from `base`" with [`from()`](/docs/labs/ci/machines#start-a-job-from-another-job)), your commands as `$ pnpm test` rows or their [`.as()`](/docs/labs/ci/commands#options) names, your own `step.run` steps by name, then Save sandbox.
+- **Collapsed:** one row per job, tagged `JOB`, showing its `name`, or its `id` when it has none. A muted `S1`, `S2`, … badge marks the [Sandbox](/docs/sandboxes/overview?ref=docs-labs-ci-checks-and-reports) a job runs on, numbered top to bottom. A second Sandbox from [`sandbox("api")`](/docs/labs/ci/machines?ref=docs-labs-ci-checks-and-reports#extra-machines) shows its own badge on its row.
+- **Expanded job:** Start sandbox (or "Start sandbox from `base`" with [`from()`](/docs/labs/ci/machines?ref=docs-labs-ci-checks-and-reports#start-a-job-from-another-job)), your commands as `$ pnpm test` rows or their [`.as()`](/docs/labs/ci/commands?ref=docs-labs-ci-checks-and-reports#options) names, your own `step.run` steps by name, then Save sandbox.
 - **Expanded command:** Start process, Wait, Poll process, and Read output, or "Run and read output" for a short captured command. Each retry is Attempt 1, Attempt 2, and so on, and a failed command ends in "Exited with code N".
 - **Top level:** a GitHub group holds the check updates, and "Clean up sandboxes" comes last.
 - **Dimmed rows:** the work CI does for you is dimmed so your own rows stand out. Failures are never dimmed. Select a dimmed step and the step panel shows "Added by @inngest/ci@<version>".
 
 A job called a second time in the same run shows as `test (2)` and has its own check.
 
-[Commands](/docs/labs/ci/commands#options) shows how `.as()` renames a command row. A GitHub "Re-run" on a check sends a new pull request or push event for the commit, so pipelines on those triggers run again. Passed jobs are reused only when they have a [cache](/docs/labs/ci/caching) key.
+[Commands](/docs/labs/ci/commands?ref=docs-labs-ci-checks-and-reports#options) shows how `.as()` renames a command row. A GitHub "Re-run" on a check sends a new pull request or push event for the commit, so pipelines on those triggers run again. Passed jobs are reused only when they have a [cache](/docs/labs/ci/caching?ref=docs-labs-ci-checks-and-reports) key.
 
 ![The trace of a pr pipeline in the Inngest Dev Server: a GitHub group, the base and test jobs as one row each, and the test job expanded to show it starting from base, a second api sandbox, a retried command with a failed first attempt, and Save sandbox](/assets/docs/labs/ci/trace.png)
 
-In dev mode, checks print to your terminal. To report on GitHub, see [Run on GitHub](/docs/labs/ci/reference#run-on-github).
+In dev mode, checks print to your terminal. To report on GitHub, see [Run on GitHub](/docs/labs/ci/reference?ref=docs-labs-ci-checks-and-reports#run-on-github).
 
 ## Next steps
 
-- [Reference](/docs/labs/ci/reference#checks-and-reports) lists every check state and report limit.
-- [Pipelines and triggers](/docs/labs/ci/pipelines) covers `ci.skip()` and check options.
+- [Reference](/docs/labs/ci/reference?ref=docs-labs-ci-checks-and-reports#checks-and-reports) lists every check state and report limit.
+- [Pipelines and triggers](/docs/labs/ci/pipelines?ref=docs-labs-ci-checks-and-reports) covers `ci.skip()` and check options.

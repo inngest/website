@@ -8,10 +8,10 @@ export const description = "Inngest CI jobs: units of work with their own machin
 > Split a pipeline into units of work that each run on their own machine and report their own check.
 
 <Info>
-  Inngest CI is an Inngest Labs project: early, moving fast, and shaped by your feedback. [What's Labs?](/docs/labs)
+  Inngest CI is an Inngest Labs project: early, moving fast, and shaped by your feedback. [What's Labs?](/docs/labs?ref=docs-labs-ci-jobs)
 </Info>
 
-A job is a function you define with `ci.job()` and call from a pipeline or another job. Each job gets its own [machine](/docs/labs/ci/machines) and its own check on GitHub.
+A job is a function you define with `ci.job()` and call from a pipeline or another job. Each job gets its own [machine](/docs/labs/ci/machines?ref=docs-labs-ci-jobs) and its own check on GitHub.
 
 ## Define and call a job
 
@@ -27,10 +27,10 @@ const build = ci.job({ id: "build", machine: { vcpu: 4 } }, async () => {
 });
 ```
 
-- `name` is what the [trace](/docs/labs/ci/checks-and-reports#read-the-trace) calls the job. Defaults to `id`.
+- `name` is what the [trace](/docs/labs/ci/checks-and-reports?ref=docs-labs-ci-jobs#read-the-trace) calls the job. Defaults to `id`.
 - A job has no return value. Call it for its commands and its check.
 - Each call runs the job again, on a new machine with its own check. A second call to `test` shows as `test (2)`. To share one build between jobs, use `from()`.
-- The machine starts on the job's first [command](/docs/labs/ci/commands). A job with no commands never gets one.
+- The machine starts on the job's first [command](/docs/labs/ci/commands?ref=docs-labs-ci-jobs). A job with no commands never gets one.
 - When a command fails, the job's check fails and the pipeline ends.
 
 Run jobs in sequence with `await`, or in parallel with `Promise.all`:
@@ -40,7 +40,7 @@ await Promise.all([lint(), test()]);
 await deploy();
 ```
 
-Jobs never share a machine. To build on another job's work, use [`from()`](/docs/labs/ci/machines#start-a-job-from-another-job).
+Jobs never share a machine. To build on another job's work, use [`from()`](/docs/labs/ci/machines?ref=docs-labs-ci-jobs#start-a-job-from-another-job).
 
 ## Run a job for every combination
 
@@ -56,16 +56,16 @@ const compat = ci.matrix(
   },
   async ({ node, db }) => {
     await from(base);
-    await $`pnpm test`.env({ NODE_VERSION: node, TEST_DATABASE: db });
+    await $`npx -y node@${node} --test`.env({ TEST_DATABASE: db });
   },
 );
 ```
 
-Call `compat()` to run every combination, or `compat({ node: "22" })` to run only the matching ones. [Reference](/docs/labs/ci/reference#ci-matrix) covers `include`, `failFast`, and per-combination options.
+Call `compat()` to run every combination, or `compat({ node: "22" })` to run only the matching ones. [Reference](/docs/labs/ci/reference?ref=docs-labs-ci-jobs#ci-matrix) covers `include`, `failFast`, and per-combination options.
 
 ## Use Inngest steps in a job
 
-A job is an Inngest function body, so the [step API](/docs/durable-execution/primitives) works inside it. Wrap side effects in `step.run`, because code outside a command can run again when the run resumes.
+A job is an Inngest function body, so the [step API](/docs/durable-execution/primitives?ref=docs-labs-ci-jobs) works inside it. Wrap side effects in `step.run`, because code outside a command can run again when the run resumes.
 
 ```typescript {{ title: "TypeScript" }}
 import { step } from "inngest";
@@ -84,6 +84,6 @@ const migrations = ci.job("migrations", async () => {
 
 ## Next steps
 
-- [Commands](/docs/labs/ci/commands) covers what runs inside a job.
-- [Machines](/docs/labs/ci/machines) covers where a job runs and how to start from another job.
-- [Reference](/docs/labs/ci/reference#ci-job) lists every job option.
+- [Commands](/docs/labs/ci/commands?ref=docs-labs-ci-jobs) covers what runs inside a job.
+- [Machines](/docs/labs/ci/machines?ref=docs-labs-ci-jobs) covers where a job runs and how to start from another job.
+- [Reference](/docs/labs/ci/reference?ref=docs-labs-ci-jobs#ci-job) lists every job option.

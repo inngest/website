@@ -141,7 +141,9 @@ export default function CodeBlock({
     : DEFAULT_TOKEN_COLOR;
   return (
     <div
-      className={`flex w-full min-w-0 flex-1 overflow-hidden rounded-md p-[1px]${lgUncapHeight ? " lg:max-h-none" : ""}${className ? ` ${className}` : ""}`}
+      className={`flex w-full min-w-0 flex-1 overflow-hidden rounded-md p-[1px]${
+        lgUncapHeight ? " lg:max-h-none" : ""
+      }${className ? ` ${className}` : ""}`}
       style={{
         background: FRAME_GRADIENT,
         maxWidth,
@@ -159,8 +161,13 @@ export default function CodeBlock({
                 aria-hidden="true"
                 className="block size-2 shrink-0 bg-v1-steel"
               />
-              <span className="text-v1-label-md min-w-0 flex-1 truncate text-v1-alwaysWhite">
-                {label}
+              {/* The label token is cap-trimmed; clipping on a padded
+                  wrapper (not the trimmed span itself) keeps descenders
+                  like the "y" in "analyse" from being cut off. */}
+              <span className="min-w-0 flex-1 truncate py-1">
+                <span className="text-v1-label-md text-v1-alwaysWhite">
+                  {label}
+                </span>
               </span>
             </div>
             <div
@@ -172,7 +179,9 @@ export default function CodeBlock({
         )}
 
         <div
-          className={`flex min-h-0 w-full flex-1 items-start gap-[10px] overflow-y-auto bg-v1-surfaceBase px-[22px] py-4${lgUncapHeight ? " lg:overflow-visible" : ""}`}
+          className={`flex min-h-0 w-full flex-1 items-start gap-[10px] overflow-y-auto bg-v1-surfaceBase px-[22px] py-4${
+            lgUncapHeight ? " lg:overflow-visible" : ""
+          }`}
         >
           {gutter && (
             <div
@@ -343,8 +352,7 @@ function Typewriter({
   // when only unrelated state changes.
   const groups = useMemo(() => {
     const out: Array<
-      | { kind: "br" }
-      | { kind: "text"; tokenKind: TokenKind; text: string }
+      { kind: "br" } | { kind: "text"; tokenKind: TokenKind; text: string }
     > = [];
     for (let i = 0; i < Math.min(visible, flat.length); i++) {
       const c = flat[i];
@@ -368,9 +376,7 @@ function Typewriter({
   for (let i = 0; i < groups.length; i++) {
     const g = groups[i];
     if (g.kind === "br") {
-      lineNodes.push(
-        <div key={lineIdx++}>{buffer.length ? buffer : " "}</div>
-      );
+      lineNodes.push(<div key={lineIdx++}>{buffer.length ? buffer : " "}</div>);
       buffer = [];
     } else {
       buffer.push(
