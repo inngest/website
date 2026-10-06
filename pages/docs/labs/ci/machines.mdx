@@ -46,7 +46,7 @@ const test = ci.job("test", async () => {
 });
 ```
 
-The parent runs once, however many jobs start from it, and each child gets its own isolated copy. Each job builds on the snapshot of the one before it.
+The parent runs once, however many jobs start from it, and each child gets its own isolated copy. If the pipeline already called the parent directly, `from()` uses that run. `from()` shares a job's machine within one run. To reuse it across runs, give the parent a [`cache`](/docs/labs/ci/caching#shared-by-every-run) key, and every run and machine shares it. Each job builds on the snapshot of the one before it.
 
 ### What happens under the hood
 
@@ -54,7 +54,7 @@ When a job finishes, Inngest pauses its machine. When another job calls `from()`
 
 If a snapshot is not available, the job runs the parent's commands again on its own machine. The result is the same, but every child repeats the parent's work.
 
-- `from()` returns the parent's result. Pass the parent's input as the second argument when it takes one.
+- `from()` resolves once the copy is ready. Pass the parent's input as the second argument when it takes one.
 - Call `from()` before the job's first command, and once per job.
 - `await base()` runs `base` on its own machine. `await from(base)` runs it and then starts this job from where it finished.
 - Choose the parent at runtime with `await from((await changed("docs/**")) ? docsBase : base)`.

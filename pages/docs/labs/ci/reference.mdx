@@ -144,13 +144,11 @@ const test = ci.job("test", async () => {
 const build = ci.job({ id: "build", machine: { vcpu: 4 } }, async () => {
   await checkout();
   await $`pnpm build`;
-
-  return { builtAt: Date.now() };
 });
 ```
 
-- A job returns its handler's value.
-- A job runs once per run for each ID. A second call returns the first call's result, even with a different input, so two callers share one run.
+- A job has no return value. Call it for its commands and its check.
+- Each call runs the job again, on a new machine with its own check. A second call to `test` shows as `test (2)`. To share one build between jobs, use `from()`.
 - The machine starts on the job's first command. A job with no commands never gets one.
 - Jobs never share a machine. To reuse work, use [`from()`](#from).
 - When a command fails, the job's check fails and the pipeline ends.
@@ -208,7 +206,7 @@ await $.sh`pnpm build && pnpm test | tee test.log`;
 | `.timeout(duration)` | Throws `CommandTimeoutError` after the duration. |
 | `.onTimeout(fn)` | Runs `fn` when the timeout hits, then throws. |
 | `.background()` | Starts the command and returns a process with `id`, `exited()`, `kill(signal?)`, and `output({ tailBytes? })`. |
-| `.as(name)` | Names the step in the trace. |
+| `.as(name)` | Replaces the command text in the step name. |
 | `.text()`, `.lines()`, `.json()` | Returns stdout as a trimmed string, an array of lines, or parsed JSON. |
 
 - `$` runs without a shell. `$.sh` runs `/bin/sh -c` and escapes interpolated values.
@@ -252,7 +250,7 @@ Set `machine` on a job, on its pipeline, or on `createCi` for every job. The fir
 
 ## `from`
 
-[`from(job)`](/docs/labs/ci/machines#start-a-job-from-another-job) starts the current job on a copy of another job's machine, like a Docker layer. The parent runs once, however many jobs start from it, and each child gets its own isolated copy.
+[`from(job)`](/docs/labs/ci/machines#start-a-job-from-another-job) starts the current job on a copy of another job's machine, like a Docker layer. The parent runs once, however many jobs start from it, and each child gets its own isolated copy. If the pipeline already called the parent directly, `from()` uses that run. `from()` shares a job's machine within one run. To reuse it across runs, give the parent a [`cache`](/docs/labs/ci/caching) key.
 
 ```typescript {{ title: "TypeScript" }}
 const base = ci.job("base", async () => {
@@ -273,7 +271,7 @@ const test = ci.job("test", async () => {
 
 Each job builds on the snapshot of the one before it. When a job's [cache key](#caching) is unchanged, Inngest skips the job and restores its saved machine. When a cached job's key changes, it runs again, and so does every cached job that starts from it, directly or through other cached jobs.
 
-- `from()` returns the parent's result. Pass the parent's input as the second argument when it takes one.
+- `from()` resolves once the copy is ready. Pass the parent's input as the second argument when it takes one.
 - Call `from()` before the job's first command, and once per job.
 - `await base()` runs `base` on its own machine. `await from(base)` runs it and then starts this job from where it finished.
 - Choose the parent at runtime with `await from((await changed("docs/**")) ? docsBase : base)`.
@@ -281,7 +279,7 @@ Each job builds on the snapshot of the one before it. When a job's [cache key](#
 
 ## Extra machines
 
-`sandbox(name, { vcpu })` creates another machine for the job right away, with the job's machine settings unless you pass others. It is destroyed with the pipeline and appears under the job in the trace.
+`sandbox(name, { vcpu })` creates another machine for the job right away, with the job's machine settings unless you pass others. It is destroyed with the pipeline. Its steps are named `<job> › <name> › machine`.
 
 ```typescript {{ title: "TypeScript" }}
 const e2e = ci.job("e2e", async () => {
@@ -370,7 +368,7 @@ const unit = ci.matrix(
 
 ## Caching
 
-A job's [`cache`](/docs/labs/ci/caching) reuses its last result when nothing it depends on has changed. The input a job is called with is part of its cache identity, so the same key with a different input is a different entry.
+A job's [`cache`](/docs/labs/ci/caching) skips the job when nothing it depends on has changed. The input a job is called with is part of its cache identity, so the same key with a different input is a different entry.
 
 ```typescript {{ title: "TypeScript" }}
 const base = ci.job(
@@ -404,7 +402,7 @@ key: [files("go.mod", "go.sum"), "go1.25"]
 - `files()` hashes the matched files in the git tree for the run's commit. Locally it hashes the working tree.
 - A cached job also depends on the cached jobs it starts `from()`. When one of them changes its key, or the input it was called with, the child's entry is stale and the job runs again. This holds up the whole chain of cached parents. An uncached parent has no key and never invalidates its children, so add its files to the child's key when the child depends on them.
 - The first run with a new key always misses.
-- A job without a machine caches its result. Reused jobs show as passed.
+- A cached job that runs no commands has no machine to snapshot, so it runs again every time. Reused jobs show as `Cached <time> ago`.
 - Do not cache tests that call the network.
 
 ## Checks and reports
@@ -417,7 +415,7 @@ key: [files("go.mod", "go.sum"), "go1.25"]
 | Retrying a command | In progress, with the attempt count and the last error |
 | Run will be retried | In progress, with `Retrying (attempt N of M)` |
 | Passed | Success, with the duration |
-| Reused from cache | Success, with `Cached <time> ago by <event>` when the machine is restored, or `Passed at <sha>, no changes since` |
+| Reused from cache | Success, with `Cached <time> ago` when the machine is restored, or `Passed at <sha>, no changes since` |
 | Failed | Failure, with the command, the output tail, and annotations |
 | Timed out | Timed out |
 | Cancelled by a failure elsewhere | Cancelled |
@@ -494,7 +492,7 @@ const release = ci.job("release", async () => {
     force: true,
   });
 
-  return created.html_url;
+  console.log(created.html_url);
 });
 ```
 
