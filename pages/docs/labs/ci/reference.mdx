@@ -146,7 +146,7 @@ const build = ci.job({ id: "build", machine: { vcpu: 4 } }, async () => {
 ```
 
 - A job has no return value. Call it for its commands and its check.
-- A job runs once per run for each ID. A second call waits for the first, even with a different input, so two callers share one run.
+- Each call runs the job again, on a new machine with its own check. A second call to `test` shows as `test (2)`. To share one build between jobs, use `from()`.
 - The machine starts on the job's first command. A job with no commands never gets one.
 - Jobs never share a machine. To reuse work, use [`from()`](#from).
 - When a command fails, the job's check fails and the pipeline ends.
@@ -245,7 +245,7 @@ Set `machine` on a job, on its pipeline, or on `createCi` for every job. The fir
 
 ## `from`
 
-[`from(job)`](/docs/labs/ci/machines#start-a-job-from-another-job) starts the current job on a copy of another job's machine, like a Docker layer. The parent runs once, however many jobs start from it, and each child gets its own isolated copy.
+[`from(job)`](/docs/labs/ci/machines#start-a-job-from-another-job) starts the current job on a copy of another job's machine, like a Docker layer. The parent runs once, however many jobs start from it, and each child gets its own isolated copy. If the pipeline already called the parent directly, `from()` uses that run.
 
 ```typescript {{ title: "TypeScript" }}
 const base = ci.job("base", async () => {
