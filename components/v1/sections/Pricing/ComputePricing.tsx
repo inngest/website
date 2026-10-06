@@ -117,10 +117,10 @@ export default function ComputePricing() {
                 </span>
               </div>
             </div>
-            <span className={`text-right font-v1Mono text-[12px] leading-[1.4] tabular-nums text-v1-frost opacity-30 group-hover/rate:opacity-100 ${PRICE_FADE}`}>
+            <span className={`text-right font-v1Mono text-[12px] leading-[1.4] tabular-nums text-v1-frost opacity-[0.45] group-hover/rate:opacity-100 ${PRICE_FADE}`}>
               {usd(row.rate.perSecond, 6)}
             </span>
-            <span className={`text-right font-v1Mono text-[12px] leading-[1.4] tabular-nums text-v1-frost opacity-30 group-hover/rate:opacity-100 ${PRICE_FADE}`}>
+            <span className={`text-right font-v1Mono text-[12px] leading-[1.4] tabular-nums text-v1-frost opacity-[0.45] group-hover/rate:opacity-100 ${PRICE_FADE}`}>
               {usd(row.rate.perHour, 4)}
             </span>
           </div>
@@ -230,7 +230,7 @@ export default function ComputePricing() {
                                 className={cn(
                                   "flex items-baseline justify-end gap-2",
                                   PRICE_FADE,
-                                  active ? "opacity-100" : "opacity-30",
+                                  active ? "opacity-100" : "opacity-[0.45]",
                                 )}
                               >
                                 <span className="text-[12px] text-v1-frost/50">
