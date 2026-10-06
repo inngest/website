@@ -24,11 +24,11 @@ export const description = "Inngest CI is an Inngest Labs project: write CI pipe
   Inngest CI is an Inngest Labs project: early, moving fast, and shaped by your feedback. [What's Labs?](/docs/labs)
 </Info>
 
-`@inngest/ci` replaces config-driven YAML with TypeScript. Inngest runs each pipeline as a durable function and each job on its own [Sandbox](/docs/sandboxes/overview), an ephemeral microVM. One run produces one trace that covers the pipeline, its jobs, and every command.
+`@inngest/ci` is CI written in TypeScript. Inngest runs each pipeline as a durable function and each job on its own [Sandbox](/docs/sandboxes/overview), an ephemeral microVM. One run produces one trace that covers the pipeline, its jobs, and every command.
 
 ## What you can do
 
-- **Write plain TypeScript, not YAML.** Use `if`, loops, `Promise.all`, and your own functions. See [Pipelines and triggers](/docs/labs/ci/pipelines).
+- **Write plain TypeScript.** Use `if`, loops, `Promise.all`, and your own functions. See [Pipelines and triggers](/docs/labs/ci/pipelines).
 - **Keep finished work.** A retry does not rerun jobs or commands that already passed. See [Commands](/docs/labs/ci/commands#retries).
 - **Start a job from another job.** [`from()`](/docs/labs/ci/machines#start-a-job-from-another-job) starts a job on a copy of another job's machine, like a Docker layer. [Caching](/docs/labs/ci/caching) skips jobs whose inputs are unchanged.
 - **Run the same code locally.** Run a pipeline against the Dev Server with your uncommitted changes. See the [quick start](/docs/labs/ci/quick-start#5-run-locally).

@@ -1,7 +1,7 @@
 import { Info, AnnotatedCode, Annotation, Trace, TraceRow, TraceBar, TraceMarker } from "shared/Docs/mdx";
 
 export const metaTitle = "Overview | Inngest CI";
-export const description = "Inngest CI overview: write CI pipelines in TypeScript instead of YAML, retry only failed work, reuse work between jobs, run locally, and debug each run as one trace.";
+export const description = "Inngest CI overview: write CI pipelines in TypeScript, retry only failed work, reuse work between jobs, run locally, and debug each run as one trace.";
 
 # Inngest CI overview
 
@@ -11,15 +11,15 @@ export const description = "Inngest CI overview: write CI pipelines in TypeScrip
   Inngest CI is an Inngest Labs project: early, moving fast, and shaped by your feedback. [What's Labs?](/docs/labs)
 </Info>
 
-Inngest CI replaces YAML with TypeScript that lives in your repo. Pipelines start on GitHub events, and each job runs on its own [Sandbox](/docs/sandboxes/overview).
+Inngest CI is CI written in TypeScript, in your repo next to your app. Pipelines start on GitHub events, and each job runs on its own [Sandbox](/docs/sandboxes/overview).
 
-- [**Plain TypeScript**](/docs/labs/ci/pipelines). `if`, loops, and `Promise.all`, next to your app's code.
-- [**One trace per run**](#see-the-result). Every job, command, and retry in one place.
-- [**Retries that keep passed work**](/docs/labs/ci/commands#retries). Only the failed command runs again.
-- [**Build once, reuse it**](/docs/labs/ci/machines#start-a-job-from-another-job). Start jobs from another job's machine, and [cache](/docs/labs/ci/caching) the slow ones.
-- [**Runs locally**](/docs/labs/ci/quick-start#5-run-locally). Test CI against your uncommitted changes.
-- [**Flow control**](/docs/labs/ci/pipelines#flow-control). Cancel stale runs, cap concurrency, debounce.
-- [**GitHub checks**](/docs/labs/ci/checks-and-reports). One per pipeline, one per job.
+- **TypeScript all the way down.** Use `if`, loops, and `Promise.all` in [pipelines](/docs/labs/ci/pipelines), and import your app's own code.
+- **One trace per run.** Every job, command, and retry, [in one place](#see-the-result).
+- **Retries that keep passed work.** Only the [failed command](/docs/labs/ci/commands#retries) runs again.
+- **Build once, reuse it.** Start jobs [from another job's machine](/docs/labs/ci/machines#start-a-job-from-another-job), and [cache](/docs/labs/ci/caching) the slow ones.
+- **Runs locally.** Test CI against your uncommitted changes on the [Dev Server](/docs/labs/ci/quick-start#5-run-locally).
+- **Flow control.** [Cancel stale runs](/docs/labs/ci/pipelines#flow-control), cap concurrency, and debounce.
+- **GitHub checks.** [One per pipeline](/docs/labs/ci/checks-and-reports), and one per job.
 
 ## How a run works
 
@@ -66,7 +66,7 @@ The same pipeline runs against the Inngest Dev Server with your uncommitted chan
 </Annotation>
 
 <Annotation id="pipeline" lines="4-16" tease="a TypeScript function" title="A pipeline is a function" nodes="pr,done" href="/docs/labs/ci/pipelines" linkText="Pipelines and triggers">
-No YAML and no DSL: a pipeline is TypeScript that lives in your repository, next to your business logic. It imports the same helpers and SDKs your app already uses.
+A pipeline is TypeScript that lives in your repository, next to your business logic. It imports the same helpers and SDKs your app already uses.
 </Annotation>
 
 <Annotation id="trigger" lines="7" tease="typed trigger" title="Typed triggers" nodes="event" href="/docs/labs/ci/pipelines#triggers" linkText="Triggers">
