@@ -66,16 +66,19 @@ When a parent has a [cache key](/docs/labs/ci/caching), an unchanged key skips t
 `sandbox(name, { vcpu })` creates another machine for the job right away, with the job's machine settings unless you pass others. It is destroyed with the pipeline and appears under the job in the trace.
 
 ```typescript {{ title: "TypeScript" }}
-const e2e = ci.job("e2e", async () => {
+const verify = ci.job("verify", async () => {
   await checkout();
 
-  const probe = await sandbox("probe", { vcpu: 1 });
-  await probe.$`pnpm dlx serve -l 3000`.background();
-  await probe.waitForPort(3000);
+  const clean = await sandbox("clean", { vcpu: 1 });
 
-  await $`pnpm exec playwright test`;
+  await Promise.all([
+    $`pnpm test`,
+    clean.$.sh`npm install -g my-cli@next && my-cli --version`,
+  ]);
 });
 ```
+
+This runs the tests on the job's machine while a clean machine checks that the published `next` build installs.
 
 Plain `$` still runs on the job's own machine, and an extra machine starts empty.
 
