@@ -241,7 +241,7 @@ Set `machine` on a job, on its pipeline, or on `createCi` for every job. The fir
 - Commands run in `/work` by default, which is where `checkout()` puts the repository.
 - `checkout()` clones the commit that triggered the run with a short-lived token that never appears in the trace. Locally it uploads your working tree.
 
-`checkout()` options are `ref`, `submodules`, `history` (`"shallow"` or `"full"`), and `path`. `history` defaults to `"shallow"`, which skips file contents until they are needed, and `path` defaults to `/work`. Commands after a `checkout({ path })` run in that path. A local checkout uploads your working tree without its `.git` folder and ignores `ref`, `submodules`, and `history`. `checkout()` throws `CiUsageError` when the run has no repository, so set `repo` on the pipeline.
+`checkout()` options are `ref`, `submodules`, `history` (`"shallow"` or `"full"`), and `path`. `history` defaults to `"shallow"`, which skips file contents until they are needed, and `path` defaults to `/work`. Commands after a `checkout({ path })` run in that path. A local checkout uploads your working tree without its `.git` folder and ignores `ref`, `submodules`, and `history`. `checkout()` throws `CiUsageError` when the run has no repository, so set `repo` on the pipeline. On a machine that already has a checkout, such as one started `from()` a cached job, it moves that checkout to this run's commit and keeps ignored files like `node_modules`. In a local run, files you deleted since the snapshot stay.
 
 ## `from`
 
@@ -384,6 +384,7 @@ const base = ci.job(
 ```
 
 - `key` is what the job depends on. If the key is unchanged since the last successful run, the job does not run. A job that started a machine is restored from its snapshot, and `from(base)` clones the saved machine.
+- A restored machine keeps the checkout from the commit it was built on. Call `checkout()` again after `from()` to move to this run's commit. It keeps installed dependencies and build output.
 - `refresh` takes triggers that rebuild the cache ahead of time, so pull requests do not pay for it. Set `repo` on a pipeline so a cron has a repository to check out.
 - `scope` is `"branch"` by default. A pull request reads entries from its base branch and writes its own, and its scope can never collide with a branch name. `"global"` shares one entry set.
 

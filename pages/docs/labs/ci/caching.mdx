@@ -29,6 +29,16 @@ const base = ci.job(
 );
 ```
 
+A restored machine has the checkout from the commit it was built on. Jobs that start from it call `checkout()` again to move to this run's commit, and keep the installed dependencies:
+
+```typescript {{ title: "TypeScript" }}
+const test = ci.job("test", async () => {
+  await from(base);
+  await checkout();
+  await $`pnpm test`;
+});
+```
+
 ## Choose the key
 
 A key is `files()`, a string, an array of them, or an async function that returns a string. `files()` hashes the matched files in the git tree for the run's commit. Locally it hashes the working tree.

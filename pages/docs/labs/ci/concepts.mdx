@@ -92,6 +92,8 @@ const base = ci.job(
 );
 ```
 
+Jobs that start from a cached `base` call `checkout()` again, so they test this run's commit.
+
 ## Check
 
 A **check** reports a pipeline or a job on GitHub. Each pipeline gets one check, and each job gets one. You can add a summary or annotations from code. See [Checks and reports](/docs/labs/ci/checks-and-reports).
