@@ -1,5 +1,6 @@
 import PageShell from "@/components/v1/PageShell";
 import ComparisonTable from "@/components/v1/sections/Pricing/ComparisonTable";
+import ComputePricing from "@/components/v1/sections/Pricing/ComputePricing";
 import Faq from "@/components/v1/sections/Pricing/Faq";
 import Hero from "@/components/v1/sections/Pricing/Hero";
 import HowItWorks from "@/components/v1/sections/Pricing/HowItWorks";
@@ -14,6 +15,7 @@ export default function Pricing() {
       <div className="overflow-x-clip">
         <Hero />
         <SavingsQuote />
+        <ComputePricing />
         <PricingCalculator />
         <ComparisonTable />
         <TrustedInBigLeagues />
