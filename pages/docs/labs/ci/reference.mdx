@@ -241,7 +241,7 @@ A [**machine**](/docs/labs/ci/machines?ref=docs-labs-ci-reference) is a Sandbox:
 
 Set `machine` on a job, on its pipeline, or on `createCi` for every job. The first one set wins in that order, and the default is 2 vCPUs.
 
-- Inngest pauses a machine when its job passes, so a later `from()` can snapshot it, and destroys every machine when the pipeline ends.
+- Inngest destroys every machine when the pipeline ends.
 - Only `$` runs on the machine. The rest of your handler runs in your app.
 - Commands run in `/work` by default, which is where `checkout()` puts the repository.
 - `checkout()` clones the commit that triggered the run, or updates an existing checkout to it with a short-lived token that never appears in the trace. Locally it uploads your working tree.
