@@ -39,7 +39,7 @@ await Promise.all([lint(), test()]);
 await deploy();
 ```
 
-`Promise.all` ends the pipeline at the first failure. To see every job's result, use `Promise.allSettled`. The pipeline still fails if any job did:
+`Promise.all` ends the pipeline at the first failure. `Promise.allSettled` lets every job run and report, and the pipeline only fails if your code throws, so use `Promise.all` when every job must pass:
 
 ```typescript {{ title: "TypeScript" }}
 await Promise.allSettled([lint(), test(), typecheck()]);
