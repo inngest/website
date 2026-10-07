@@ -5,7 +5,7 @@ pattern: durable
 tags: [Durability, Fan-out, Flow Control]
 ---
 
-If you run nightly imports, backfills, data pipelines, or any job that works through more records than fit in one request, you've probably seen it fail partway through and start over from zero. A pod runs out of memory, a deploy restarts the process, or the database chokes under load, and the job's progress is gone with it. These four primitives let a job commit progress as it goes, split into pieces that fail independently, and pace itself against your systems, without writing checkpointing or retry logic by hand.
+If you run nightly imports, backfills, data pipelines, or any job that works through more records than fit in one request, you've probably seen it fail partway through and start over from zero. A pod runs out of memory, a deploy restarts the process, or the database chokes under load, and the job's progress is gone with it. These four primitives let a job commit progress as it goes, split into pieces that fail independently, and pace itself against your systems, so you don't have to write checkpointing or retry logic by hand.
 
 ## Which primitive do you need?
 
@@ -13,7 +13,7 @@ If you run nightly imports, backfills, data pipelines, or any job that works thr
 |---|---|---|
 | A crash or deploy restarts the whole job from the beginning | **Steps** | Saves each step's result so a retry resumes where it failed |
 | One job loops over every record, hits limits, or runs out of memory | **Fan-out** | Splits the work into chunks, each running as its own function run |
-| Parallel chunks overwhelm your database or an upstream API | **Concurrency and throttle** | Caps how many chunks run at once and how fast new ones start |
+| Parallel chunks overwhelm your database or an upstream API | **Concurrency and throttle** | Caps how much work runs at once and how fast new runs start |
 | The job pauses for an approval or webhook and ties up a worker | **Waits** | Holds the run's state without holding compute |
 
 Most large jobs need the first three together. Add waits when the job depends on something outside it.
@@ -62,7 +62,7 @@ export const processRecordPage = inngest.createFunction(
 
 - Make each step a unit of work that's safe to retry by itself. If a step writes to an external system, make the write idempotent (upsert, or pass an idempotency key) so a retry after a partial write doesn't duplicate data.
 - Return small values from steps, like counts or IDs, never the dataset itself. Step results are stored as run state, so write the data to your own storage and pass references.
-- `retries` applies to each step independently. A step that fails five times fails the run; steps that already completed stay completed.
+- `retries` applies to each step independently. A step that exhausts its retries fails the run; steps that already completed stay completed.
 - Deploying mid-run is safe: completed steps are matched by ID and skipped on the new code. Renaming a step's ID makes it a new step, so it runs again. See [Versioning](/docs/durable-execution/guides-and-advanced/versioning?ref=patterns).
 
 ---
@@ -127,6 +127,8 @@ Each `records/page.ready` event starts a run of `processRecordPage` from Primiti
 
 **Without flow control:** Every page starts at once, your database slows down for everything else, and the upstream API answers with 429s that turn into retries that make it worse.
 
+This is the same worker from Primitive 1, with flow control added to its configuration.
+
 ```typescript
 export const processRecordPage = inngest.createFunction(
   {
@@ -134,7 +136,7 @@ export const processRecordPage = inngest.createFunction(
     triggers: [{ event: "records/page.ready" }],
     retries: 5,
     concurrency: [
-      { limit: 50 }, // pages in flight against your database
+      { limit: 50 }, // at most 50 steps executing at once, across all pages
     ],
     throttle: {
       limit: 100, // page runs started per minute
@@ -151,7 +153,7 @@ export const processRecordPage = inngest.createFunction(
 
 - Use concurrency for what your database or worker pool can handle at once. Use throttle for a published rate limit, with 10-20% headroom.
 - Add a `key` (for example, `event.data.tenantId`) if one tenant's import shouldn't starve another's.
-- Waiting runs queue and start as capacity frees up, so the job still completes; it just paces itself. For the full set of flow control options, see [Flash sales and bursty workflows](/docs/patterns/flow/flash-sales-and-bursty-workflows?ref=patterns).
+- Runs over the limit queue and start as capacity frees up, so the job still finishes, just at a pace your systems can take. For the full set of flow control options, see [Flash sales and bursty workflows](/docs/patterns/flow/flash-sales-and-bursty-workflows?ref=patterns).
 
 ---
 
@@ -198,14 +200,14 @@ export const reviewImport = inngest.createFunction(
 **Adapt it:**
 
 - `match` pairs the waiting run with the right event. Use a field both events share, like an import or order ID.
-- Always handle the timeout (`null`) case. A wait that can't time out is a run that can stay open until its maximum duration.
+- Always handle the timeout (`null`) case. If you don't, the code after the wait runs as if the approval arrived.
 - Use `step.sleep` or `step.sleepUntil` instead when the wait is for a time, not an event.
 
 ---
 
 ## How long can a job run?
 
-Keep each step short and let the run be long. A step can run for up to 2 hours (your hosting platform may cap it lower). `step.sleep` can pause a run for up to a year, within your plan's [maximum function run length](/docs/durable-execution/limits?ref=patterns): 30 days on the Free plan, up to 366 days on higher plans, with every sleep and wait counting toward it.
+Keep each step short and let the run be long. A step can run for up to 2 hours (your hosting platform may cap it lower). `step.sleep` can pause a run for up to a year (30 days on the Free plan). A function run can last up to 366 days, depending on plan. See [Usage limits](/docs/durable-execution/limits?ref=patterns) for the current numbers.
 
 ---
 
