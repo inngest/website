@@ -1,0 +1,16 @@
+export const title = "Bursty Concurrency: spikes run up to 3x your limit";
+export const date = "2026-10-06";
+
+We've added bursty concurrency for Pro and above accounts. When steps need more concurrency than your account limit, Inngest raises that limit to 3x for up to 60 minutes a month.
+
+![Three bursts raise a concurrency limit of 100 toward a ceiling of 300 and use up the monthly hour](/assets/blog/new-bursty-concurrency-coverage-for-spikes/bursty-concurrency.gif)
+
+- **Size** — Each burst starts at 3x your account concurrency limit.
+- **Counting** — The budget is 60 minutes. Each minute in which steps run above your limit spends one minute, however many steps start.
+- **Refill** — The budget resets every month, at a time unique to your account.
+- **Notifications** — Admins receive an email at 25%, 50%, 75%, and 100% of the budget.
+- **Billing** — Bursts are not charged. Add concurrency on your [billing page](https://app.inngest.com/billing) if you use the full hour.
+
+[Function-level concurrency](/docs/durable-execution/flow-control/concurrency?ref=changelog-bursty-concurrency#limit-one-function) you set overrides a burst, so a function with its own limit does not burst.
+
+[Read the blog post](/blog/new-bursty-concurrency-coverage-for-spikes?ref=changelog-bursty-concurrency) · [Bursty concurrency in the docs](/docs/durable-execution/flow-control/bursty-concurrency?ref=changelog-bursty-concurrency)

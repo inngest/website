@@ -1,0 +1,12 @@
+export const title = "Scoped access: read or write for MCP, the CLI, and the API";
+export const date = "2026-10-06";
+
+MCP, the CLI, and API keys now support read and write permissions.
+
+For Cloud MCP and the CLI, sign in with OAuth and approve the account, environment access, permissions, and session duration. Read permissions allow inspection. Write permissions allow changes. A call must also be allowed by your account role. OAuth sessions cannot read event keys or signing keys. Run `inngest login --force` to sign in again with different permissions.
+
+API keys are for CI and unattended jobs. Organization admins create them in the dashboard with the same permissions, and can limit a key to one environment. `INNGEST_API_KEY` overrides a stored OAuth login.
+
+A call without the required permission returns `403` or `insufficient_scope`.
+
+[MCP docs](/docs/ai-dev-tools/mcp?ref=changelog-scoped-access) · [CLI authentication](/docs/cli?ref=changelog-scoped-access#authentication) · [Keys and access](/docs/platform-and-operations/keys-and-access?ref=changelog-scoped-access)
