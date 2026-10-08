@@ -186,6 +186,13 @@ export const PATTERNS: PatternIndexItem[] = [
   },
   {
     category: "durable",
+    slug: "process-large-datasets-without-starting-over",
+    title: "Process large datasets without starting over",
+    subtitle:
+      "Use steps, fan-out, flow control, and waits to run jobs that take hours or days, survive crashes and deploys, and never redo finished work.",
+  },
+  {
+    category: "durable",
     slug: "durable-token-streaming",
     title: "Durable token streaming",
     subtitle:

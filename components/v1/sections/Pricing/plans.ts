@@ -49,7 +49,8 @@ export interface Plan {
       | "Events"
       | "Observability"
       | "Security"
-      | "Support";
+      | "Support"
+      | "Sandboxes";
     value?: string;
     text: string;
     note?: string;
@@ -151,6 +152,8 @@ export const PLANS: Plan[] = [
       { category: "Observability", value: "15 minute", text: "metrics granularity" },
       { category: "Observability", text: "Datadog / advanced observability add-on" },
       { category: "Security", text: "HIPAA add-on" },
+      { category: "Sandboxes", value: "100", text: "concurrent sandboxes" },
+      { category: "Sandboxes", value: "24 hour", text: "max duration" },
     ],
     badge: "POPULAR",
   },
@@ -198,6 +201,8 @@ export const PLANS: Plan[] = [
       { category: "Observability", value: "1 minute", text: "metrics granularity" },
       { category: "Observability", text: "Datadog / advanced observability add-on" },
       { category: "Security", text: "HIPAA add-on" },
+      { category: "Sandboxes", value: "1,000", text: "concurrent sandboxes" },
+      { category: "Sandboxes", value: "24 hour", text: "max duration" },
     ],
   },
   {
@@ -247,6 +252,8 @@ export const PLANS: Plan[] = [
       { category: "Security", text: "HIPAA included" },
       { category: "Support", text: "Dedicated Slack channel" },
       { category: "Support", text: "Dedicated account management" },
+      { category: "Sandboxes", value: "Custom", text: "concurrent sandboxes" },
+      { category: "Sandboxes", value: "Custom", text: "max duration" },
     ],
   },
 ];
@@ -282,6 +289,7 @@ export const FEATURE_SECTIONS: FeatureSection[] = [
   { key: "events", name: "Events" },
   { key: "realtime", name: "Realtime" },
   { key: "observability", name: "Observability" },
+  { key: "sandboxes", name: "Sandboxes" },
 ];
 
 export const FEATURES: Feature[] = [
@@ -531,6 +539,28 @@ export const FEATURES: Feature[] = [
       [PLAN_NAMES.pro]: "$300",
       [PLAN_NAMES.business]: "$300",
       [PLAN_NAMES.enterprise]: true,
+    },
+  },
+  {
+    name: "Max sandbox duration",
+    description: "Longest a single sandbox can run",
+    section: "sandboxes",
+    plans: {
+      [PLAN_NAMES.hobby]: false,
+      [PLAN_NAMES.pro]: "24 hours",
+      [PLAN_NAMES.business]: "24 hours",
+      [PLAN_NAMES.enterprise]: "Custom",
+    },
+  },
+  {
+    name: "Concurrent sandboxes",
+    description: "Sandboxes running at the same time",
+    section: "sandboxes",
+    plans: {
+      [PLAN_NAMES.hobby]: false,
+      [PLAN_NAMES.pro]: "100",
+      [PLAN_NAMES.business]: "1,000",
+      [PLAN_NAMES.enterprise]: "Custom",
     },
   },
 ];

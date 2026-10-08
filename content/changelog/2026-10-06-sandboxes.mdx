@@ -1,0 +1,22 @@
+export const title = "Sandboxes: isolated microVMs from any function";
+export const date = "2026-10-06";
+
+Sandboxes are now in public beta for Pro and higher accounts on the TypeScript SDK. `step.sandbox` starts an isolated microVM from inside a function, in under a second, and runs commands in it. Create, commands, and destroy are durable steps on the run trace.
+
+Add `sandboxMiddleware()` from `inngest/experimental` on a client at `inngest` 4.21.1 or newer:
+
+```typescript
+const sandbox = await step.sandbox.create("create-sandbox", {
+  name: `job-${event.data.jobId}`,
+  vcpu: 1,
+  memoryMb: 1024,
+});
+
+const result = await sandbox.commands.run("run-tests", "npm test");
+
+await sandbox.destroy("destroy-sandbox");
+```
+
+A Sandbox is one of three sizes: 1 vCPU with 1 GB of RAM, 2 with 2 GB, or 4 with 4 GB. CPU is **$0.000011** per second and RAM is **$0.000003** per GB per second, charged while the Sandbox is running. Each Sandbox has one hour of active runtime, and paused time does not count. Destroy the Sandbox when you are done with it.
+
+[Read the Sandboxes docs](/docs/sandboxes?ref=changelog-sandboxes) · [Quick start](/docs/sandboxes/quick-start?ref=changelog-sandboxes) · [Try the Sandbox playground](/try-sandboxes?ref=changelog-sandboxes)

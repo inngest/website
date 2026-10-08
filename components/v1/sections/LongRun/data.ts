@@ -145,8 +145,8 @@ export interface CampaignCard {
 }
 
 /**
- * "Learn more" cards: a blog post, a docs pattern, and the agent example repo. A card
- * with no `image` shows a labelled placeholder from `mediaNote`.
+ * "Learn more" cards: a blog post and two docs patterns. A card with no
+ * `image` shows a labelled placeholder from `mediaNote`.
  */
 export const LR_CAMPAIGN_CARDS: CampaignCard[] = [
   {
@@ -177,16 +177,17 @@ export const LR_CAMPAIGN_CARDS: CampaignCard[] = [
     },
   },
   {
-    id: "agent-example",
-    title: "Start with one example",
-    body: "Build an agent to complete long running data analytics tasks.",
+    id: "docs-large-datasets",
+    title: "Process large datasets without starting over",
+    body: "Run jobs that take hours or days, survive crashes and deploys, and never redo finished work.",
     cta: {
-      label: "Get the repo",
-      href: "https://github.com/inngest/agent-examples/tree/main/token-streaming-agent",
+      label: "Read the docs",
+      href: "/docs/patterns/durable/process-large-datasets-without-starting-over?ref=long-run-learn-more",
     },
     image: {
-      src: "/assets/v1/long-run/agent-examples-repo.webp",
-      alt: "The token-streaming-agent folder in the inngest/agent-examples repo on GitHub.",
+      // The docs page's generated social card (shared/Docs/Layout.tsx).
+      src: "/api/og?title=Process%20large%20datasets%20without%20starting%20over&v=5",
+      alt: "Process large datasets without starting over",
     },
   },
 ];
