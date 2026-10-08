@@ -31,7 +31,10 @@ npx inngest-cli@latest login
 
 ```bash
 npm install @inngest/ci inngest
+npm install --save-dev inngest-cli tsx
 ```
+
+`inngest-cli` is the Dev Server that local runs use, version 1.45.1 or newer. `tsx` runs `ci/server.ts`.
 
 ## 2. Create the client
 
@@ -95,54 +98,39 @@ import "./pipelines";
 
 const server = createServer({ client: inngest, functions: ci.functions() });
 
-server.listen(3000);
+server.listen(Number(process.env.PORT ?? 3000));
 ```
 
-`ci.functions()` returns your pipelines plus the functions CI needs behind the scenes: machine cleanup, cache refreshes, and GitHub check re-runs.
+Listen on `PORT`: local runs start your server on a free port.
+
+`ci.functions()` returns your pipelines plus the functions CI needs behind the scenes: machine cleanup, cache builds and refreshes, GitHub check re-runs, and running single jobs locally.
 
 ## 5. Run locally
 
-Start the Dev Server and your app in two terminals:
-
 ```bash
-npx inngest-cli@latest dev
+npx inngest-ci pr
 ```
 
-```bash
-INNGEST_DEV=1 npx tsx ci/server.ts
-```
+`inngest-ci` starts a Dev Server and `ci/server.ts`, sends a pull request event built from your current branch, and runs `pr` on Sandboxes. `checkout()` uploads your working tree, including uncommitted changes and excluding ignored files, so there is nothing to commit or push.
 
-Send a pull request event built from your current checkout:
-
-`ci/send.ts`
-
-```typescript {{ title: "TypeScript" }}
-import { fixtures } from "@inngest/ci";
-import { inngest } from "./client";
-
-async function main() {
-  await inngest.send(await fixtures.pullRequest());
-}
-
-main();
-```
-
-```bash
-INNGEST_DEV=1 npx tsx ci/send.ts
-```
-
-`checkout()` uploads your working tree, including uncommitted changes and excluding ignored files. The upload is limited to 100 MiB and has no `.git` folder, so git commands on the machine only work in runs from GitHub.
+[Run CI locally](/docs/labs/ci/local?ref=docs-labs-ci-quick-start) covers the picker, running one job, inputs, and matrices.
 
 ## 6. Inspect the result
 
-Your server terminal prints each check as it changes:
+Your terminal draws each job as it runs:
 
 ```
-[pr] … pr / test
-[pr] ✕ pr / test  `pnpm test` exited with 1  → http://localhost:8288/run?runID=01J…
+  inngest-ci pr  pull_request.opened · my-branch @ 70f798f + uncommitted
+  Dev Server  http://127.0.0.1:24288
+
+  ✕ pr                                                       58s
+  └─ ✓ base     $ pnpm install                               31s
+     ├─ ✓ lint  $ pnpm lint                                  12s
+     └─ ✕ test  $ pnpm test · attempt 2                      27s
+          `pnpm test` exited with 1
 ```
 
-Open the run link in the Dev Server. The trace has one row per job. Expand `test` to see `$ pnpm test`, with each retry as Attempt 1, Attempt 2, and a failed run ending in "Exited with code 1". [Read the trace](/docs/labs/ci/checks-and-reports?ref=docs-labs-ci-quick-start#read-the-trace) explains every row.
+Press `enter` to open the run in the Dev Server. The trace has one row per job. Expand `test` to see `$ pnpm test`, with each retry as Attempt 1, Attempt 2, and a failed run ending in "Exited with code 1". [Read the trace](/docs/labs/ci/checks-and-reports?ref=docs-labs-ci-quick-start#read-the-trace) explains every row.
 
 ## Cleanup and current behavior
 

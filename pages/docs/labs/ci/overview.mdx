@@ -17,7 +17,7 @@ Inngest CI is CI written in TypeScript, in your repo next to your app. Pipelines
 - **One trace per run.** Every job, command, and retry in one place. [See a run →](#see-the-result)
 - **Retries that keep passed work.** Only the failed command runs again. [Retries →](/docs/labs/ci/commands?ref=docs-labs-ci-overview#retries)
 - **Build once, reuse it.** Start jobs from another job's machine, and cache the slow ones. [Machines →](/docs/labs/ci/machines?ref=docs-labs-ci-overview#start-a-job-from-another-job)
-- **Runs locally.** Test CI against your uncommitted changes. [Quick start →](/docs/labs/ci/quick-start?ref=docs-labs-ci-overview#5-run-locally)
+- **Runs locally.** One command runs any pipeline or job on real Sandboxes with your uncommitted changes. [Run CI locally →](/docs/labs/ci/local?ref=docs-labs-ci-overview)
 - **Flow control.** Cancel stale runs, cap concurrency, and debounce. [Flow control →](/docs/labs/ci/pipelines?ref=docs-labs-ci-overview#flow-control)
 - **GitHub checks.** One per pipeline, and one per job. [Checks →](/docs/labs/ci/checks-and-reports?ref=docs-labs-ci-overview)
 
@@ -61,8 +61,8 @@ const test = ci.job("test", async () => {
 });
 ```
 
-<Annotation id="local" lines="2" tease="runs locally" title="Run it on your machine" href="/docs/labs/ci/quick-start?ref=docs-labs-ci-overview#5-run-locally" linkText="Quick start">
-The same pipeline runs against the Inngest Dev Server with your uncommitted changes, so you can check CI before you push.
+<Annotation id="local" lines="2" tease="runs locally" title="Run it on your machine" href="/docs/labs/ci/local?ref=docs-labs-ci-overview" linkText="Run CI locally">
+`npx inngest-ci pr` runs this pipeline on real Sandboxes with your uncommitted changes, so you can check CI before you push.
 </Annotation>
 
 <Annotation id="pipeline" lines="4-16" tease="a TypeScript function" title="A pipeline is a function" nodes="pr,done" href="/docs/labs/ci/pipelines?ref=docs-labs-ci-overview" linkText="Pipelines and triggers">

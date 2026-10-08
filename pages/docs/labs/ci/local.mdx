@@ -1,0 +1,278 @@
+import { Info } from "shared/Docs/mdx";
+
+export const metaTitle = "Run CI locally | Inngest CI";
+export const description = "Run Inngest CI pipelines and jobs from your terminal with inngest-ci: real Sandboxes, your uncommitted changes, guided inputs, matrix selection, and one trace per run.";
+
+# Run CI locally
+
+> Run any pipeline or job on real Sandboxes against your uncommitted changes, before you push.
+
+<Info>
+  Inngest CI is an Inngest Labs project: early, moving fast, and shaped by your feedback. [What's Labs?](/docs/labs?ref=docs-labs-ci-local)
+</Info>
+
+```bash
+npx inngest-ci
+```
+
+`inngest-ci` ships with `@inngest/ci`. It starts a Dev Server and your app, sends the event, and draws every job live. You get the same pipelines, the same Sandboxes, and the same trace as CI on GitHub, with nothing to commit or push.
+
+```
+  inngest-ci pr  pull_request.opened · my-branch @ 70f798f + uncommitted
+  Dev Server  http://127.0.0.1:24288
+
+  ◐ pr                                                       41s
+  └─ ✓ base     cached                                       0.8s
+     ├─ ✓ lint  $ pnpm lint                                  22s
+     └─ ◐ test  $ pnpm test                                  41s
+```
+
+Press `enter` on a run or job to open its trace in your browser.
+
+## Before you start
+
+- `@inngest/ci` installed, with a server that serves `ci.functions()`. The [quick start](/docs/labs/ci/quick-start?ref=docs-labs-ci-local) sets this up.
+- The Inngest Dev Server, `inngest-cli` 1.45.1 or newer, in your project or on your `PATH`:
+
+  ```bash
+  npm install --save-dev inngest-cli
+  ```
+
+- An Inngest account with access to [Sandboxes](/docs/sandboxes/overview?ref=docs-labs-ci-local), signed in once:
+
+  ```bash
+  npx inngest-cli@latest login
+  ```
+
+Add a script so everyone on the team runs it the same way:
+
+```json {{ title: "package.json" }}
+{
+  "scripts": {
+    "ci": "inngest-ci"
+  }
+}
+```
+
+## Pick what to run
+
+Run `inngest-ci` with no target to pick from your pipelines, jobs, and matrices. Select several to run them in parallel.
+
+```bash
+pnpm run ci
+```
+
+| Key | Does |
+| --- | --- |
+| `↑` `↓` | Moves. |
+| `space` | Selects. On a matrix, an axis, or a value, it selects everything under it. |
+| `→` `←` | Opens and closes a matrix and its axes. |
+| `enter` | Runs the selection, or the highlighted row if nothing is selected. |
+| `q`, `esc` | Quits. |
+
+The first time, `inngest-ci` finds the file that serves `ci.functions()` and how to start it, shows what it found, and asks you to confirm. It saves the answer to `inngest.json` and offers to add `.inngest/` to `.gitignore`. See [Configure](#configure).
+
+## Run a pipeline or job
+
+Name a pipeline or job to run it directly:
+
+```bash
+pnpm run ci pr
+pnpm run ci lint
+pnpm run ci release --event push
+```
+
+- A pipeline runs on an event built from your checkout: your current branch and `HEAD` against `main`.
+- `--event` picks the trigger when a pipeline has several, such as `push` or `pull_request.synchronize`. In a terminal, `inngest-ci` asks instead.
+- A job runs alone, on its own machine, including the jobs it starts [`from()`](/docs/labs/ci/machines?ref=docs-labs-ci-local#start-a-job-from-another-job).
+- If a pipeline and a job share a name, pass `--pipeline <id>` or `--job <id>`.
+- A pipeline whose trigger filter does not match your checkout, such as a push to `main` from another branch, starts no run, and `inngest-ci` says so.
+- Cron triggers cannot run locally yet. Give the pipeline a [`ci.manual()`](/docs/labs/ci/reference?ref=docs-labs-ci-local#triggers) trigger to run it on demand.
+
+To run without prompts, such as from a script or an agent, pass `--no-interactive` and every value the run needs as flags. It prints one line per change and ends with the command to reopen each run. This is also the default when there is no terminal.
+
+```bash
+pnpm run ci pr --event pull_request.opened --no-interactive
+```
+
+| Exit code | Meaning |
+| --- | --- |
+| `0` | Every run passed. |
+| `1` | A run failed or was cancelled. |
+| `2` | Setup failed, such as a missing config, an unknown target, or no Sandbox access. The message says what to change. |
+
+## Give inputs
+
+A target that needs data asks for it field by field, from its schema: the data of a [`ci.manual({ schema })`](/docs/labs/ci/reference?ref=docs-labs-ci-local#triggers) trigger, a comment's text, or the input of a job with an `input` schema.
+
+```typescript {{ title: "ci/jobs/build.ts" }}
+import { $, checkout } from "@inngest/ci";
+import { z } from "zod";
+import { ci } from "../client";
+
+export const build = ci.job(
+  {
+    id: "build",
+    input: z.object({ target: z.enum(["web", "api"]) }),
+  },
+  async ({ target }) => {
+    await checkout();
+    await $`pnpm build --target ${target}`;
+  },
+);
+```
+
+```
+  build · input
+
+  target  1 of 1 · required
+› web
+  api
+
+  ↑↓ move · enter pick · esc cancel
+```
+
+- Each field shows its description, its default, and whether it is required. An enum or a union of literals is a list, and a boolean is yes or no.
+- At the end, the form shows the finished JSON. Choose to run it, edit a field, or start over.
+- The schema can come from any library that writes JSON Schema, such as Zod 4. Fields it cannot describe take a line of JSON.
+
+Pass the same data as flags to skip the form. Flags are checked against the schema, and a mismatch lists the fields it wants.
+
+```bash
+pnpm run ci build --input '{"target":"web"}'
+pnpm run ci deploy --data '{"env":"preview"}'
+pnpm run ci prerelease --data '{"body":"/prerelease"}'
+```
+
+### Save inputs as fixtures
+
+After a run with typed data, `inngest-ci` offers to save it as a fixture. Next time, the prompt offers each saved fixture, to run as it is or to start the form from.
+
+```bash
+pnpm run ci deploy --fixture nightly-api
+```
+
+`--fixture` runs a saved input without asking. A flag still wins over the fixture for the same field. Fixtures are JSON files in `.inngest/ci/fixtures/<target>/<name>.json`.
+
+## Choose matrix combinations
+
+In the picker, a [matrix](/docs/labs/ci/jobs?ref=docs-labs-ci-local#run-a-job-for-every-combination) is a tree of its axes and their values. Select a value to run every combination that has it. `●` is all selected, `◐` some, and `○` none.
+
+```
+  ◐ compat   2/4 combinations
+    ◐ os: *
+      ● linux
+      ○ mac
+    ● node: *
+      ● 20
+      ● 22
+```
+
+The count is out of the combinations the matrix really runs, so `exclude` and `include` count. On the command line, pass `--<axis> <value>`, and repeat an axis for several values. With no axis flags, every combination runs.
+
+```bash
+pnpm run ci compat --node 22
+pnpm run ci compat --node 20 --node 22 --os linux
+```
+
+## What a local run does
+
+- **A Dev Server of its own.** Each run starts a fresh Dev Server and your app on free ports, so it never clashes with an `inngest dev` you already have open or another `inngest-ci` in a second terminal. Both stop when you quit.
+- **Your uncommitted changes.** `checkout()` uploads your working tree, including uncommitted and untracked files and excluding ignored ones. A job that starts from another job's machine, or from a [cached](/docs/labs/ci/caching?ref=docs-labs-ci-local) one, gets only the files that changed since. Uploads are limited to 100 MiB.
+- **Real Sandboxes.** Every job runs on a [Sandbox](/docs/sandboxes/overview?ref=docs-labs-ci-local) in your Inngest account, exactly as on GitHub.
+- **Checks in your terminal.** Each pipeline and job check shows in the live view instead of on GitHub.
+- **Cache keys from your working tree.** [`files()`](/docs/labs/ci/caching?ref=docs-labs-ci-local#choose-the-key) hashes your local files, so an uncommitted change to `pnpm-lock.yaml` rebuilds `base`.
+
+The machine gets your files without the `.git` folder, so git commands on the machine only work in runs from GitHub.
+
+### Skip work that must not run from a laptop
+
+`ci.local` is `true` in a run started by `inngest-ci`. Use it to skip releases, deploys, and anything else with side effects outside the run.
+
+```typescript {{ title: "ci/pipelines/release.ts" }}
+import { github } from "@inngest/ci";
+import { ci } from "../client";
+import { publish } from "../jobs/publish";
+import { test } from "../jobs/test";
+
+export const release = ci.pipeline(
+  {
+    id: "release",
+    on: github.push({ branches: ["main"] }),
+  },
+  async () => {
+    await test();
+
+    if (ci.local) {
+      return ci.skip("not publishing from a local run");
+    }
+
+    await publish();
+  },
+);
+```
+
+## Reopen a run
+
+When the runs end, the Dev Server stays up so traces still open. Press `q` to clean up and exit, or, after a run you chose in the picker, `r` to pick again. Every session prints how to reopen its runs later:
+
+```bash
+npx inngest-ci open            # the latest run
+npx inngest-ci open 01KABC...  # a run by ID
+```
+
+`open` starts a Dev Server on the database of the session that ran it, without your app, and opens the run in your browser. It stays up until `Ctrl-C`. A new session clears out sessions that ended more than 10 minutes earlier.
+
+## Configure
+
+`inngest-ci` reads the `ci` key of `inngest.json` in your project root, and writes it for you the first time. Edit it to change how your app starts.
+
+```json {{ title: "inngest.json" }}
+{
+  "ci": {
+    "start": "tsx server.ts",
+    "path": "/api/inngest"
+  }
+}
+```
+
+| Key | Default | Does |
+| --- | --- | --- |
+| `start` | | The command that serves your app. It must listen on `PORT`. |
+| `path` | `/api/inngest` | Where your app serves Inngest. |
+| `dir` | `.inngest/ci` | Where runs keep their Dev Server data, fixtures, and logs. |
+| `devServer.bin` | | The path to a Dev Server binary. |
+
+- With no `start`, `inngest-ci` looks for `ci/server.ts`, `ci/server.mts`, `ci/server.js`, or `ci/server.mjs`.
+- Your app starts with `PORT` and `INNGEST_DEV=1` set.
+- Logs are in `.inngest/ci/logs/dev-server.log` and `.inngest/ci/logs/app.log`.
+- The Dev Server is the first of: `INNGEST_CI_DEV_SERVER_BIN`, `devServer.bin`, `inngest-cli` installed in your project, then `inngest-cli` or `inngest` on your `PATH`.
+
+## Common errors
+
+| Error | Fix |
+| --- | --- |
+| `the local Dev Server isn't logged in` | Run `npx inngest-cli@latest login`, then `inngest-ci` again. |
+| `your login isn't tied to a single environment` | Run `npx inngest-cli@latest login --force` and pick one development environment. |
+| `Your Inngest account can't use Sandboxes yet` | Ask Inngest to enable [Sandbox access](/docs/sandboxes/limits?ref=docs-labs-ci-local) for your environment. |
+| `inngest-cli 1.40.0 is too old` | Update it with `npm install --save-dev inngest-cli@latest`. |
+| `Could not find a Dev Server` | Install `inngest-cli` in your project or globally. |
+| `No command to start your app` | Run `inngest-ci` in a terminal to set it up, or add `start` to `inngest.json`. |
+
+If a run cannot start your app, `inngest-ci` shows the end of its log and offers to run setup again.
+
+## Run it from Claude Code
+
+The `inngest-ci` plugin for Claude Code shows your local runs above the prompt, one line each, and teaches Claude to set up, run, and debug your CI.
+
+```
+/plugin marketplace add inngest/inngest-claude-code-plugin
+/plugin install inngest-ci@inngest-claude-code-plugin
+```
+
+## Next steps
+
+- [Quick start](/docs/labs/ci/quick-start?ref=docs-labs-ci-local) writes a first pipeline to run.
+- [Caching](/docs/labs/ci/caching?ref=docs-labs-ci-local) explains how local runs share cached jobs with CI.
+- [Reference](/docs/labs/ci/reference?ref=docs-labs-ci-local) lists every option and trigger.
+- [Example project](https://github.com/inngest/inngest-js/tree/main/examples/ci-pipelines) runs every command on this page with `pnpm run ci`.

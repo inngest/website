@@ -40,6 +40,12 @@ await Promise.all([lint(), test()]);
 await deploy();
 ```
 
+`Promise.all` ends the pipeline at the first failure. To let every job run and report, use `Promise.allSettled`. The pipeline then fails only if your code throws:
+
+```typescript {{ title: "TypeScript" }}
+await Promise.allSettled([lint(), test(), typecheck()]);
+```
+
 Jobs never share a machine. To build on another job's work, use [`from()`](/docs/labs/ci/machines?ref=docs-labs-ci-jobs#start-a-job-from-another-job).
 
 ## Run a job for every combination

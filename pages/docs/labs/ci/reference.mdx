@@ -25,7 +25,9 @@ export const description = "Inngest CI reference: pipeline and job options, trig
 - `machine` is the default machine for every job.
 - `runUrl` builds the link shown on checks.
 
-`ci.functions()` returns your pipelines plus the functions CI needs behind the scenes: machine cleanup, cache refreshes, and GitHub check re-runs. Pass it to `serve()` or `createServer()`.
+`ci.functions()` returns your pipelines plus the functions CI needs behind the scenes: machine cleanup, cache builds and refreshes, GitHub check re-runs, and running single jobs locally. Pass it to `serve()` or `createServer()`.
+
+`ci.local` is `true` in a run started by [`inngest-ci`](/docs/labs/ci/local?ref=docs-labs-ci-reference). Use it to skip releases and deploys from a laptop: `if (ci.local) { return ci.skip("local run"); }`.
 
 ## `ci.pipeline`
 
@@ -159,10 +161,13 @@ const build = ci.job({ id: "build", machine: { vcpu: 4 } }, async () => {
 | `cache` | `{ key?, refresh?, scope? }` | No |
 | `check` | `false`, or `{ name? }` | No |
 | `keepOnFailure` | Duration, such as `"24h"` | No |
+| `input` | A Standard Schema, such as a Zod object | No |
 
 `name` is what the [trace](/docs/labs/ci/checks-and-reports?ref=docs-labs-ci-reference#read-the-trace) calls the job. Defaults to `id`.
 
 `keepOnFailure` snapshots the machine when the job fails. The snapshot ID appears in the pipeline check's summary, under **Kept machines**. It takes a duration, but the duration is ignored today: the snapshot keeps the platform's default retention.
+
+`input` takes any Standard Schema, such as Zod. The handler gets the validated value, a mismatch throws `CiUsageError`, and [`inngest-ci`](/docs/labs/ci/local?ref=docs-labs-ci-reference#give-inputs) asks for it field by field.
 
 Durations such as `"10m"` or `"1h30m"` are parsed strictly, with the units `ms`, `s`, `m`, `h`, `d`, and `w`. A malformed value throws `CiUsageError`.
 
@@ -239,10 +244,10 @@ A [**machine**](/docs/labs/ci/machines?ref=docs-labs-ci-reference) is a Sandbox:
 
 Set `machine` on a job, on its pipeline, or on `createCi` for every job. The first one set wins in that order, and the default is 2 vCPUs.
 
-- Inngest pauses a machine when its job passes, so a later `from()` can snapshot it, and destroys every machine when the pipeline ends.
+- Inngest destroys every machine when the pipeline ends.
 - Only `$` runs on the machine. The rest of your handler runs in your app.
 - Commands run in `/work` by default, which is where `checkout()` puts the repository.
-- `checkout()` clones the commit that triggered the run with a short-lived token that never appears in the trace. Locally it uploads your working tree.
+- `checkout()` clones the commit that triggered the run, or updates an existing checkout to it with a short-lived token that never appears in the trace. Locally it uploads your working tree.
 
 `checkout()` options are `ref`, `submodules`, `history` (`"shallow"` or `"full"`), and `path`. `history` defaults to `"shallow"`, which skips file contents until they are needed, and `path` defaults to `/work`. Commands after a `checkout({ path })` run in that path. A local checkout uploads your working tree without its `.git` folder and ignores `ref`, `submodules`, and `history`. `checkout()` throws `CiUsageError` when the run has no repository, so set `repo` on the pipeline. On a machine that already has a checkout, such as one started `from()` a cached job, it moves that checkout to this run's commit and keeps ignored files like `node_modules`. In a local run, files you deleted since the snapshot stay.
 
@@ -395,7 +400,8 @@ const base = ci.job(
 - `key` is what the job depends on. If the key is unchanged since the last successful run, the job does not run. A job that started a machine is restored from its snapshot, and `from(base)` clones the saved machine.
 - A restored machine keeps the checkout from the commit it was built on. Call `checkout()` again after `from()` to move to this run's commit. It keeps installed dependencies and build output.
 - `refresh` takes triggers that rebuild the cache ahead of time, so pull requests do not pay for it. Set `repo` on a pipeline so a cron has a repository to check out.
-- `scope` is `"branch"` by default. A pull request reads entries from its base branch and writes its own, and its scope can never collide with a branch name. `"global"` shares one entry set.
+- `scope` is `"branch"` by default: a pull request reads its own entries and its base branch's and writes only its own, and a push reads and writes its branch's. `"global"` shares one set of entries across every branch.
+- Inngest keeps a cached job's machine as a snapshot and finds it again by its key, so CI on GitHub, teammates, and local runs all share it. Entries expire with their snapshot and are rebuilt by the next run that needs one.
 
 A key is `files()`, a string, an array of them, or an async function that returns a string:
 
@@ -407,8 +413,8 @@ key: [files("go.mod", "go.sum"), "go1.25"]
 
 - `files()` hashes the matched files in the git tree for the run's commit. Locally it hashes the working tree.
 - A cached job also depends on the cached jobs it starts `from()`. When one of them changes its key, or the input it was called with, the child's entry is stale and the job runs again. This holds up the whole chain of cached parents. An uncached parent has no key and never invalidates its children, so add its files to the child's key when the child depends on them.
-- The first run of a job always misses.
-- A cached job without a machine is skipped. Reused jobs show as passed.
+- The first run with a new key always misses.
+- A cached job that runs no commands has no machine to snapshot, so it runs again every time. Reused jobs show as `Cached <time> ago`.
 - Do not cache tests that call the network.
 
 ## Checks and reports
@@ -421,7 +427,7 @@ key: [files("go.mod", "go.sum"), "go1.25"]
 | Retrying a command | In progress, with the attempt count and the last error |
 | Run will be retried | In progress, with `Retrying (attempt N of M)` |
 | Passed | Success, with the duration |
-| Reused from cache | Success, with `Restored, built …` or `Passed at <sha>, no changes since` |
+| Reused from cache | Success, with `Cached <time> ago` when the machine is restored, or `Passed at <sha>, no changes since` |
 | Failed | Failure, with the command, the output tail, and annotations |
 | Timed out | Timed out |
 | Cancelled by a failure elsewhere | Cancelled |

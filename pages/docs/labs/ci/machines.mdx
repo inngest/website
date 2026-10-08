@@ -22,8 +22,8 @@ A machine is a [Sandbox](/docs/sandboxes/overview?ref=docs-labs-ci-machines): an
 Set `machine` on a job, on its pipeline, or on `createCi` for every job. The first one set wins in that order.
 
 - Commands run in `/work` by default, which is where `checkout()` puts the repository.
-- `checkout()` clones the commit that triggered the run with a short-lived token that never appears in the trace. Locally it uploads your working tree without its `.git` folder.
-- Inngest pauses a machine when its job passes and destroys every machine when the pipeline ends.
+- `checkout()` clones the commit that triggered the run, or updates an existing checkout to it with a short-lived token that never appears in the trace. Locally it uploads your working tree without its `.git` folder.
+- Inngest destroys every machine when the pipeline ends.
 
 ## Start a job from another job
 
@@ -46,17 +46,17 @@ const test = ci.job("test", async () => {
 });
 ```
 
-The parent runs once, however many jobs start from it, and each child gets its own isolated copy. If the pipeline already called the parent directly, `from()` uses that run. `from()` shares a job's machine within one run. To reuse it across runs, give the parent a [`cache`](/docs/labs/ci/caching?ref=docs-labs-ci-machines) key. Each job builds on the snapshot of the one before it.
+The parent runs once in a run of its own, however many jobs start from it, and each child gets its own isolated copy. Calling a job directly always runs it again, so a job you both call and start from runs twice. `from()` shares a job's machine within one pipeline run. To reuse it across runs, give the parent a [`cache`](/docs/labs/ci/caching?ref=docs-labs-ci-machines#shared-by-every-run) key, and every run and machine shares it. Each job builds on the snapshot of the one before it.
 
 ### What happens under the hood
 
-When a job finishes, Inngest pauses its machine. When another job calls `from()`, Inngest snapshots the parent's machine and starts the child from a clone of that snapshot, so installed files and built output are already there. The snapshot and clone come from [Sandbox snapshots and restore](/docs/sandboxes/features/snapshots-and-restore?ref=docs-labs-ci-machines).
+The first `from()` of a parent builds it in its own run, with its own trace, and snapshots its machine. Every child starts from a clone of that snapshot, so installed files and built output are already there. The snapshot and clone come from [Sandbox snapshots and restore](/docs/sandboxes/features/snapshots-and-restore?ref=docs-labs-ci-machines).
 
 If a snapshot is not available, the job runs the parent's commands again on its own machine. The result is the same, but every child repeats the parent's work.
 
 - `from()` resolves once the copy is ready. Pass the parent's input as the second argument when it takes one.
 - Call `from()` before the job's first command, and once per job.
-- `await base()` runs `base` on its own machine. `await from(base)` runs it and then starts this job from where it finished.
+- `await base()` runs `base` on its own machine. `await from(base)` builds it, or reuses this run's build, and starts this job from where it finished.
 - Choose the parent at runtime with `await from((await changed("docs/**")) ? docsBase : base)`.
 
 When a parent has a [cache key](/docs/labs/ci/caching?ref=docs-labs-ci-machines), an unchanged key skips the parent and restores its saved machine instead.

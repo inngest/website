@@ -1,7 +1,7 @@
 import { Info, Warning } from "shared/Docs/mdx";
 
 export const metaTitle = "Caching | Inngest CI";
-export const description = "Cache an Inngest CI job by its inputs so unchanged work is skipped and its machine is restored, with refresh schedules and scopes.";
+export const description = "Cache an Inngest CI job by its inputs so unchanged work is skipped and its machine is restored, shared by CI, teammates, and local runs, with refresh schedules and scopes.";
 
 # Caching
 
@@ -39,16 +39,24 @@ const test = ci.job("test", async () => {
 });
 ```
 
+## Shared by every run
+
+Inngest keeps a cached job's machine as a snapshot and finds it again by its cache key, so every run shares it: CI on GitHub, your teammates, and your [local runs](/docs/labs/ci/local?ref=docs-labs-ci-caching) alike. Build `base` once, and every run with the same key starts from it.
+
+- A pull request reads its own entries and its base branch's, and writes only its own, so one pull request never changes what another one reuses.
+- A push to a branch reads and writes that branch's entries.
+- Entries expire with their snapshot. The next run that needs one builds it again.
+
 ## Choose the key
 
-A key is `files()`, a string, an array of them, or an async function that returns a string. `files()` hashes the matched files in the git tree for the run's commit. Locally it hashes the working tree.
+A key is `files()`, a string, an array of them, or an async function that returns a string. `files()` hashes the matched files in the git tree for the run's commit. Locally it hashes your working tree, so an uncommitted change to a matched file is a new key.
 
 ```typescript {{ title: "TypeScript" }}
 key: files("migrations/**", "seeds/**")
 key: [files("go.mod", "go.sum"), "go1.25"]
 ```
 
-A job's input is part of its cache identity, so the same key with a different input is a different entry. The first run of a job always misses. A cached job without a machine is skipped, and a reused job shows as passed on its check.
+A job's input is part of its cache identity, so the same key with a different input is a different entry. The first run with a new key always misses. A cached job that runs no commands has no machine to snapshot, so it runs again every time. A reused job shows as `Cached <time> ago` on its check.
 
 ## Chains of cached jobs
 
@@ -58,9 +66,11 @@ An uncached parent has no key and never invalidates its children. Add its files 
 
 ## Refresh ahead of time
 
-`refresh` takes triggers that rebuild the cache on a schedule, so pull requests do not pay for it. Set `repo` on the pipeline so a cron has a repository to check out. `scope` is `"branch"` by default: a pull request reads entries from its base branch and writes its own, and its scope can never collide with a branch name. `"global"` shares one entry set.
+`refresh` takes triggers that rebuild the cache on a schedule, so pull requests do not pay for it. Set `repo` on the pipeline so a cron has a repository to check out.
 
-Do not cache tests that call the network.
+## Share across branches
+
+`scope` is `"branch"` by default, which reads and writes entries as described in [Shared by every run](#shared-by-every-run). Set `scope: "global"` to share one set of entries across every branch and pull request.
 
 ## Next steps
 

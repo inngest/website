@@ -26,7 +26,7 @@ Checks are automatic: one for the pipeline and one for each [job](/docs/labs/ci/
 | Retrying a command | In progress, with the attempt count and the last error |
 | Run will be retried | In progress, with `Retrying (attempt N of M)` |
 | Passed | Success, with the duration |
-| Reused from cache | Success, with `Restored, built …` or `Passed at <sha>, no changes since` |
+| Reused from cache | Success, with `Cached <time> ago` when the machine is restored, or `Passed at <sha>, no changes since` |
 | Failed | Failure, with the command, the output tail, and annotations |
 | Returned `ci.skip()` | Success, with the reason |
 
@@ -59,7 +59,7 @@ const test = ci.job({ id: "test", name: "Unit tests" }, async () => {
 });
 ```
 
-- **Collapsed:** one row per job, tagged `JOB`, showing its `name`, or its `id` when it has none. A muted `S1`, `S2`, … badge marks the [Sandbox](/docs/sandboxes/overview?ref=docs-labs-ci-checks-and-reports) a job runs on, numbered top to bottom. A second Sandbox from [`sandbox("api")`](/docs/labs/ci/machines?ref=docs-labs-ci-checks-and-reports#extra-machines) shows its own badge on its row.
+- **Collapsed:** one row per job, tagged `JOB`, showing its `name`, or its `id` when it has none. A muted `S1`, `S2`, … badge marks the [Sandbox](/docs/sandboxes/overview?ref=docs-labs-ci-checks-and-reports) a job runs on, numbered top to bottom. A second Sandbox from [`sandbox("api")`](/docs/labs/ci/machines?ref=docs-labs-ci-checks-and-reports#use-a-second-machine) shows its own badge on its row.
 - **Expanded job:** Start sandbox (or "Start sandbox from `base`" with [`from()`](/docs/labs/ci/machines?ref=docs-labs-ci-checks-and-reports#start-a-job-from-another-job)), your commands as `$ pnpm test` rows or their [`.as()`](/docs/labs/ci/commands?ref=docs-labs-ci-checks-and-reports#options) names, your own `step.run` steps by name, then Save sandbox.
 - **Expanded command:** Start process, Wait, Poll process, and Read output, or "Run and read output" for a short captured command. Each retry is Attempt 1, Attempt 2, and so on, and a failed command ends in "Exited with code N".
 - **Top level:** a GitHub group holds the check updates, and "Clean up sandboxes" comes last.
