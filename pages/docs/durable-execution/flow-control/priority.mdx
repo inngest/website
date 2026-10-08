@@ -1,4 +1,4 @@
-import { CodeGroup, Compatibility } from "shared/Docs/mdx";
+import { CodeGroup, Compatibility, Callout } from "shared/Docs/mdx";
 import { FlowControlMarbles } from "src/shared/Docs/FlowControlMarbles";
 export const metaTitle = "Run Priority | Push Critical Work First";
 export const description = "Prioritize Inngest function runs with a CEL expression over event data, moving urgent queued work ahead of routine runs without managing separate queues.";
@@ -59,11 +59,15 @@ Replace the example step with your summary work. The concurrency limit creates a
 | --- | --- |
 | `120` | Moves a new run ahead of runs queued within the preceding 120 seconds, while they remain queued. |
 | `0` | Uses the normal queue position. |
-| `-120` | Moves the new run later in the queue by 120 seconds. |
+| `-120` | Delays the new run by 120 seconds, even if nothing else is queued. |
 
 Positive factors pull a run forward. Negative factors push it back. The default allowed range is **-600 to 600 seconds**. Inngest clips values outside your account's allowed bounds. An invalid expression evaluates to `0`.
 
-Priority only matters when work is waiting. Combine it with [Step concurrency](/docs/durable-execution/flow-control/concurrency) or another control that creates a backlog. Available capacity and other flow-control constraints still determine when a run can start. Use a scheduling primitive when you need a specific future start time.
+<Callout variant="warning">
+  A positive factor only matters when work is waiting, but a negative factor is a fixed delay. A run with a factor of `-60` is not eligible to start until 60 seconds after it was enqueued, even on an idle queue. The factor applies to the run's start and its steps, not to sleeps or waits for events. To make some runs wait behind others only when the queue is busy, give the other runs a positive factor instead.
+</Callout>
+
+Combine priority with [Step concurrency](/docs/durable-execution/flow-control/concurrency) or another control that creates a backlog to get ordering under load. Available capacity and other flow-control constraints still determine when a run can start. Use a scheduling primitive when you need a specific future start time.
 
 ## Limits
 
