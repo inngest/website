@@ -13,7 +13,7 @@ A run is only as reliable as the work inside it—including the sandbox used to 
 
 Today's sandboxes live outside the [durable execution](/docs/learn/how-functions-are-executed?ref=blog-sandboxes-are-a-durability-problem) chain. They can't see the run that called them, so they pause on idle timers instead of the run's waits, and retrying a failed operation is left to your code. We’re changing that. [Inngest Sandboxes](/platform/sandboxes?ref=blog-sandboxes-are-a-durability-problem) are now in open beta for every [Pro plan](/pricing?ref=blog-sandboxes-are-a-durability-problem) and above: isolated microVMs you create as steps inside your existing functions, where your durability primitives are already defined.
 
-Set one up in minutes, in any existing TypeScript app: just add `sandboxMiddleware()` to your Inngest client and call `step.sandbox.create()` in a function. There's no second account, API key, or client to set up, and the first run lands on the [trace](/docs/sandboxes/features/traces?ref=blog-sandboxes-are-a-durability-problem) you already use. To see it work before writing any code, open the [playground](/try-sandboxes?ref=blog-sandboxes-are-a-durability-problem): pick a command, inject a failure, and watch the step retry.
+Set one up in minutes, in any existing TypeScript app: just add `sandboxMiddleware()` to your Inngest client and call `step.sandbox.create()` in a function. There's no second account, API key, or client to set up, and the first run lands on the [trace](/docs/sandboxes/features/traces?ref=blog-sandboxes-are-a-durability-problem) you already use. To see it work before writing any code, open the [playground](https://www.inngest.com/try-sandboxes?ref=blog-sandboxes-are-a-durability-problem): pick a command, inject a failure, and watch the step retry.
 
 ## A sandbox is a step
 
@@ -153,4 +153,4 @@ SSH, persistent mounts, and a one-call TypeScript helper come next. SSH gives yo
 
 Cleanup is your function's job during the beta. `step.sandbox.create()` doesn't destroy the machine for you, so make Destroy the last step on the success path and add an `onFailure` handler for runs that fail permanently.
 
-The fastest way in is the [playground](/try-sandboxes?ref=blog-sandboxes-are-a-durability-problem). Open it to inject a failure and watch a Sandbox step retry, then follow the [quick start](/docs/sandboxes/quick-start?ref=blog-sandboxes-are-a-durability-problem) to add one to your app.
+The fastest way in is the [playground](https://www.inngest.com/try-sandboxes?ref=blog-sandboxes-are-a-durability-problem). Open it to inject a failure and watch a Sandbox step retry, then follow the [quick start](/docs/sandboxes/quick-start?ref=blog-sandboxes-are-a-durability-problem) to add one to your app.
