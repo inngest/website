@@ -137,7 +137,7 @@ function Snippet({ code }: { code: string }) {
     <Highlight code={code} language="tsx" theme={themes.github}>
       {({ tokens }) => {
         return (
-          <pre className="m-0 overflow-x-auto rounded-md bg-canvasSubtle px-2 py-2 font-mono text-[11px] leading-[1.55]">
+          <pre className="m-0 h-full overflow-x-auto rounded-md bg-canvasSubtle px-2 py-2 font-mono text-[11px] leading-[1.55]">
             {tokens.map((line, i) => {
               return (
                 <div key={i}>
@@ -226,8 +226,20 @@ function Chain({ scenario, t }: { scenario: ChainScenario; t: number }) {
     return { node, at: nodeAt(node, t) };
   });
 
+  // On wider screens, one grid: every snippet in the top row at one height,
+  // every box in the row under it, and the arrows between the boxes. Stacked
+  // on phones, where grid placement is ignored.
+  const columns = nodes
+    .map(() => {
+      return "minmax(0, 1fr)";
+    })
+    .join(" 1.5rem ");
+
   return (
-    <div className="flex flex-col items-stretch gap-2 sm:flex-row sm:items-end">
+    <div
+      className="flex flex-col gap-2 sm:grid sm:gap-x-0"
+      style={{ gridTemplateColumns: columns }}
+    >
       <style>{FLASH_KEYFRAMES}</style>
       {nodes.map(({ node, at }, i) => {
         const look = STATE[at.state];
@@ -238,8 +250,16 @@ function Chain({ scenario, t }: { scenario: ChainScenario; t: number }) {
 
         return (
           <div key={node.id} className="contents">
-            <div className="flex min-w-0 flex-1 flex-col gap-2">
+            <div
+              className="min-w-0"
+              style={{ gridRow: 1, gridColumn: i * 2 + 1 }}
+            >
               <Snippet code={node.code} />
+            </div>
+            <div
+              className="min-w-0"
+              style={{ gridRow: 2, gridColumn: i * 2 + 1 }}
+            >
               <div
                 className={`relative h-[84px] rounded-lg bg-canvasBase px-3 py-2.5 ring-2 ring-inset transition-shadow duration-300 motion-reduce:transition-none ${look.ring}`}
               >
@@ -282,7 +302,10 @@ function Chain({ scenario, t }: { scenario: ChainScenario; t: number }) {
               </div>
             </div>
             {next && (
-              <div className="flex shrink-0 items-center justify-center sm:h-[84px] sm:w-5">
+              <div
+                className="flex items-center justify-center"
+                style={{ gridRow: 2, gridColumn: i * 2 + 2 }}
+              >
                 <RiArrowRightLine
                   className={`h-4 w-4 rotate-90 transition-colors sm:rotate-0 ${
                     flowing
