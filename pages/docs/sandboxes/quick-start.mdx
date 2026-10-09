@@ -14,7 +14,7 @@ You need:
 
 - An existing server-side TypeScript Inngest app and a function handler connected to an Inngest Cloud environment. If you need an app, start with the [Node.js quick start](/docs/durable-execution/quick-start/typescript-quick-start).
 - A Node.js 20 or newer server runtime with the standard Fetch API.
-- An Inngest Cloud account on a Pro, Business, or Enterprise plan. Sandboxes are not available on the Free plan; if Create returns `403 access_denied`, [upgrade your plan](https://app.inngest.com/billing/plans).
+- An Inngest Cloud account on Pro or above. If Create returns `403 access_denied`, your plan does not include Sandboxes; [upgrade your plan](https://app.inngest.com/billing/plans).
 - `inngest` version 4.21.1 or newer.
 - Your environment's signing key set as `INNGEST_SIGNING_KEY` in your **server** environment. Keep it out of browser code and source control.
 
