@@ -797,8 +797,12 @@ export const docsRefreshOutline: DocsRefreshPage[] = [
                 href: "/docs/labs/ci/commands",
               },
               {
-                title: "Machines and from()",
+                title: "Machines",
                 href: "/docs/labs/ci/machines",
+              },
+              {
+                title: "Base images",
+                href: "/docs/labs/ci/base-images",
               },
               {
                 title: "Caching",

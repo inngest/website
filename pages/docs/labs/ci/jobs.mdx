@@ -29,7 +29,7 @@ const build = ci.job({ id: "build", machine: { vcpu: 4 } }, async () => {
 
 - `name` is what the [trace](/docs/labs/ci/checks-and-reports?ref=docs-labs-ci-jobs#read-the-trace) calls the job. Defaults to `id`.
 - A job has no return value. Call it for its commands and its check.
-- Each call runs the job again, on a new machine with its own check. A second call to `test` shows as `test (2)`. To share one build between jobs, use `from()`.
+- Each call runs the job again, on a new machine with its own check. A second call to `test` shows as `test (2)`. To share one build between jobs, start them `from` it.
 - The machine starts on the job's first [command](/docs/labs/ci/commands?ref=docs-labs-ci-jobs). A job with no commands never gets one.
 - When a command fails, the job's check fails and the pipeline ends.
 
@@ -46,7 +46,7 @@ await deploy();
 await Promise.allSettled([lint(), test(), typecheck()]);
 ```
 
-Jobs never share a machine. To build on another job's work, use [`from()`](/docs/labs/ci/machines?ref=docs-labs-ci-jobs#start-a-job-from-another-job).
+Jobs never share a machine. To build on another job's work, use the [`from` option](/docs/labs/ci/base-images?ref=docs-labs-ci-jobs#start-a-job-from-another-job).
 
 ## Run a job for every combination
 
@@ -59,9 +59,9 @@ const compat = ci.matrix(
     axes: { node: ["20", "22", "24"], db: ["sqlite", "postgres"] },
     exclude: [{ node: "20", db: "postgres" }],
     concurrency: 3,
+    from: base,
   },
   async ({ node, db }) => {
-    await from(base);
     await $`npx -y node@${node} --test`.env({ TEST_DATABASE: db });
   },
 );

@@ -1,17 +1,18 @@
-import { Info, Warning } from "shared/Docs/mdx";
+import { Info, Tip } from "shared/Docs/mdx";
+import { CiBuilds } from "src/shared/Docs/CiBuilds";
 
 export const metaTitle = "Caching | Inngest CI";
-export const description = "Cache an Inngest CI job by its inputs so unchanged work is skipped and its machine is restored, shared by CI, teammates, and local runs, with refresh schedules and scopes.";
+export const description = "Cache an Inngest CI job by its inputs so unchanged work is skipped and its machine is reused by every run, with warming ahead of time, a maximum age, and rebuilds on demand.";
 
 # Caching
 
-> Skip a job when nothing it depends on has changed, and restore its machine instead.
+> Skip a job when nothing it depends on has changed, and start from its machine instead.
 
 <Info>
   Inngest CI is an Inngest Labs project: early, moving fast, and shaped by your feedback. [What's Labs?](/docs/labs?ref=docs-labs-ci-caching)
 </Info>
 
-A job's `cache` skips the job when its key is unchanged. A job that started a machine is restored from its snapshot, so `from(base)` clones the saved machine without running `base` again.
+Give a job a `cache` key, and its machine is kept as a snapshot under that key. Jobs that start [`from`](/docs/labs/ci/base-images?ref=docs-labs-ci-caching) it reuse the snapshot until the key changes, so `pnpm install` runs once per lockfile instead of once per run.
 
 ```typescript {{ title: "TypeScript" }}
 const base = ci.job(
@@ -19,7 +20,8 @@ const base = ci.job(
     id: "base",
     cache: {
       key: files("pnpm-lock.yaml", ".nvmrc"),
-      refresh: [{ cron: "0 3 * * *" }],
+      warm: [{ cron: "0 3 * * *" }],
+      maxAge: "7d",
     },
   },
   async () => {
@@ -27,25 +29,24 @@ const base = ci.job(
     await $`pnpm install`;
   },
 );
-```
 
-A restored machine has the checkout from the commit it was built on. Jobs that start from it call `checkout()` again to move to this run's commit, and keep the installed dependencies:
-
-```typescript {{ title: "TypeScript" }}
-const test = ci.job("test", async () => {
-  await from(base);
+const test = ci.job({ id: "test", from: base }, async () => {
   await checkout();
   await $`pnpm test`;
 });
 ```
 
+A reused machine has the checkout from the commit it was built on. `test` calls `checkout()` to move to this run's commit and keeps the installed dependencies. A reused job shows as `Cached <time> ago` on its check.
+
 ## Shared by every run
 
-Inngest keeps a cached job's machine as a snapshot and finds it again by its cache key, so every run shares it: CI on GitHub, your teammates, and your [local runs](/docs/labs/ci/local?ref=docs-labs-ci-caching) alike. Build `base` once, and every run with the same key starts from it.
+Snapshots are found by name, so every run shares them: CI on GitHub, your teammates, and your [local runs](/docs/labs/ci/local?ref=docs-labs-ci-caching) alike. Build `base` once, and every run with the same key starts from it.
 
-- A pull request reads its own entries and its base branch's, and writes only its own, so one pull request never changes what another one reuses.
-- A push to a branch reads and writes that branch's entries.
-- Entries expire with their snapshot. The next run that needs one builds it again.
+- A pull request reads its own snapshots and its base branch's, and writes only its own, so one pull request never changes what another one reuses.
+- A push to a branch reads and writes that branch's snapshots.
+- A local run reads the shared ones and writes its own, so your laptop never changes what CI reuses.
+
+When many runs need the same missing snapshot at once, it's built once and they all start from it. [Base images](/docs/labs/ci/base-images?ref=docs-labs-ci-caching#built-once-then-reused) shows how.
 
 ## Choose the key
 
@@ -54,26 +55,70 @@ A key is `files()`, a string, an array of them, or an async function that return
 ```typescript {{ title: "TypeScript" }}
 key: files("migrations/**", "seeds/**")
 key: [files("go.mod", "go.sum"), "go1.25"]
+key: files("schema.graphql", { repo: "acme/api", ref: "main" })
 ```
 
-A job's input is part of its cache identity, so the same key with a different input is a different entry. The first run with a new key always misses. A cached job that runs no commands has no machine to snapshot, so it runs again every time. A reused job shows as `Cached <time> ago` on its check.
+`files()` can hash another repository: pass `repo`, and optionally `ref`, to rebuild when a file there changes.
 
-## Chains of cached jobs
+A snapshot's name holds more than the key. It also holds the job's input and the snapshot the job started from, so:
 
-A cached job also depends on the cached jobs it starts [`from()`](/docs/labs/ci/machines?ref=docs-labs-ci-caching#start-a-job-from-another-job). When a parent changes its key, or the input it was called with, the child's entry is stale and the child runs again, through the whole chain of cached parents.
+- The same key with a different input is a different snapshot.
+- A cached job rebuilds when anything it starts from changes, all the way up its chain. [See it in action](/docs/labs/ci/base-images?ref=docs-labs-ci-caching#chains-rebuild-from-the-change-down).
+- A job on a parent with no `cache` rebuilds every run, since that parent is built fresh each time. Cache the parent too.
 
-An uncached parent has no key and never invalidates its children. Add its files to the child's key when the child depends on them.
+The first run with a new key always builds. A cached job that runs no commands has no machine to keep, so it runs every time.
 
-## Refresh ahead of time
+## Warm the cache ahead of time
 
-`refresh` takes triggers that rebuild the cache on a schedule, so pull requests do not pay for it. Set `repo` on the pipeline so a cron has a repository to check out.
+Without `warm`, a snapshot is built the first time a run needs it, and that run's jobs wait for the build. `warm` takes triggers that build it ahead of time instead, so pull requests find it ready:
+
+```typescript {{ title: "TypeScript" }}
+cache: {
+  key: files("pnpm-lock.yaml"),
+  warm: [github.push({ branches: ["main"] }), { cron: "0 3 * * *" }],
+},
+```
+
+<CiBuilds scenario="just-in-time" />
+
+A warm run does nothing when the snapshot is already there, so warming often is cheap. A cron has no repository of its own, so set `repo` on the pipeline. `warm` builds the job without an input; a job that takes one is built the first time each input is needed.
+
+When a run had to wait for a build, its summary says so, and tells you whether `warm` would help:
+
+```text
+built just in time: `base` (add `cache.warm` to build it ahead of time)
+built just in time: `base` (not warmed for these inputs yet)
+```
+
+## Set a maximum age
+
+`maxAge` rebuilds a snapshot once it's older than the age you give, even when its key hasn't changed. Use it for setup that drifts without a file changing, like `apt-get upgrade` or `latest` tags.
+
+```typescript {{ title: "TypeScript" }}
+cache: { key: files("Dockerfile.ci"), maxAge: "1d" },
+```
+
+Ages are written like `"30m"`, `"1h30m"` or `"7d"`. The rebuild takes the same name, and cached jobs that start from it rebuild on the new snapshot. Without `maxAge`, a snapshot is reused until its key changes or it expires.
+
+## Rebuild on demand
+
+Send `invalidateEvent()` to throw away a job's snapshots, for example after rotating a credential baked into the image. Running jobs carry on, and the next run that needs the job rebuilds it.
+
+```typescript {{ title: "TypeScript" }}
+import { invalidateEvent } from "@inngest/ci";
+
+await inngest.send(invalidateEvent("base"));
+await inngest.send(invalidateEvent(base, { scope: "main" }));
+```
+
+Without `scope`, every branch's snapshots of the job are removed. Pass a branch, `pr:<number>`, `global`, or `local` to remove only that scope's.
 
 ## Share across branches
 
-`scope` is `"branch"` by default, which reads and writes entries as described in [Shared by every run](#shared-by-every-run). Set `scope: "global"` to share one set of entries across every branch and pull request.
+`scope` is `"branch"` by default, which reads and writes snapshots as described in [Shared by every run](#shared-by-every-run). Set `scope: "global"` to share one set across every branch and pull request.
 
 ## Next steps
 
-- [Machines and from()](/docs/labs/ci/machines?ref=docs-labs-ci-caching) explains the snapshots a cached job restores.
+- [Base images](/docs/labs/ci/base-images?ref=docs-labs-ci-caching) shows how jobs start from cached snapshots.
 - [Checks and reports](/docs/labs/ci/checks-and-reports?ref=docs-labs-ci-caching) shows how a reused job appears on its check.
 - [Reference](/docs/labs/ci/reference?ref=docs-labs-ci-caching#caching) lists every cache option.

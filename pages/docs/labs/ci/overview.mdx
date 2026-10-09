@@ -16,7 +16,7 @@ Inngest CI is CI written in TypeScript, in your repo next to your app. Pipelines
 - **TypeScript all the way down.** Use `if`, loops, and `Promise.all`, and import your app's own code. [Pipelines →](/docs/labs/ci/pipelines?ref=docs-labs-ci-overview)
 - **One trace per run.** Every job, command, and retry in one place. [See a run →](#see-the-result)
 - **Retries that keep passed work.** Only the failed command runs again. [Retries →](/docs/labs/ci/commands?ref=docs-labs-ci-overview#retries)
-- **Build once, reuse it.** Start jobs from another job's machine, and cache the slow ones. [Machines →](/docs/labs/ci/machines?ref=docs-labs-ci-overview#start-a-job-from-another-job)
+- **Build once, reuse it.** Start jobs from another job's machine, and cache the slow ones. [Base images →](/docs/labs/ci/base-images?ref=docs-labs-ci-overview#start-a-job-from-another-job)
 - **Runs locally.** One command runs any pipeline or job on real Sandboxes with your uncommitted changes. [Run CI locally →](/docs/labs/ci/local?ref=docs-labs-ci-overview)
 - **Flow control.** Cancel stale runs, cap concurrency, and debounce. [Flow control →](/docs/labs/ci/pipelines?ref=docs-labs-ci-overview#flow-control)
 - **GitHub checks.** One per pipeline, and one per job. [Checks →](/docs/labs/ci/checks-and-reports?ref=docs-labs-ci-overview)
@@ -28,7 +28,7 @@ This pipeline runs on every pull request. `base` installs dependencies once. `li
 <AnnotatedCode>
 
 ```typescript {{ title: "ci/pipelines.ts" }}
-import { github, checkout, from, $ } from "@inngest/ci";
+import { github, checkout, $ } from "@inngest/ci";
 import { ci } from "./client";
 
 export const pr = ci.pipeline(
@@ -50,13 +50,11 @@ const base = ci.job("base", async () => {
   await $`pnpm install`;
 });
 
-const lint = ci.job("lint", async () => {
-  await from(base);
+const lint = ci.job({ id: "lint", from: base }, async () => {
   await $`pnpm lint`;
 });
 
-const test = ci.job("test", async () => {
-  await from(base);
+const test = ci.job({ id: "test", from: base }, async () => {
   await $`pnpm test`.retries(1);
 });
 ```
@@ -81,19 +79,19 @@ One line replaces concurrency groups and cancel-in-progress settings: a new push
 No dependency graph to declare: `Promise.all` runs jobs in parallel, `await` runs them in order, and an `if` skips what a change does not need.
 </Annotation>
 
-<Annotation id="base" lines="18-21" tease="installs once" title="Build once, share it" nodes="base" href="/docs/labs/ci/machines?ref=docs-labs-ci-overview" linkText="Machines and from()">
+<Annotation id="base" lines="18-21" tease="installs once" title="Build once, share it" nodes="base" href="/docs/labs/ci/machines?ref=docs-labs-ci-overview" linkText="Machines">
 No cache keys to tune. `base` checks out and installs once, and every job that starts from it gets a copy of that machine.
 </Annotation>
 
-<Annotation id="from" lines="24,29" tease="copy of base" title="Start where `base` finished" nodes="lintWait,testWait,base" href="/docs/labs/ci/machines?ref=docs-labs-ci-overview#start-a-job-from-another-job" linkText="Start a job from another job">
+<Annotation id="from" lines="23,27" tease="copy of base" title="Start where `base` finished" nodes="lintWait,testWait,base" href="/docs/labs/ci/base-images?ref=docs-labs-ci-overview#start-a-job-from-another-job" linkText="Start a job from another job">
 Waits for the one `base` build, then starts this job on a copy of its machine, already checked out and installed.
 </Annotation>
 
-<Annotation id="lint" lines="23-26" pill="none" title="`lint`" nodes="lintWait,lintRun" href="/docs/labs/ci/jobs?ref=docs-labs-ci-overview" linkText="Jobs">
+<Annotation id="lint" lines="23-25" pill="none" title="`lint`" nodes="lintWait,lintRun" href="/docs/labs/ci/jobs?ref=docs-labs-ci-overview" linkText="Jobs">
 Runs on its own copy of `base`, with no repeated checkout or install.
 </Annotation>
 
-<Annotation id="test" lines="28-31" pill="30" tease="retries alone" title="Retries that keep passed work" nodes="testWait,testRun" href="/docs/labs/ci/commands?ref=docs-labs-ci-overview#retries" linkText="Retries">
+<Annotation id="test" lines="27-29" pill="30" tease="retries alone" title="Retries that keep passed work" nodes="testWait,testRun" href="/docs/labs/ci/commands?ref=docs-labs-ci-overview#retries" linkText="Retries">
 If `pnpm test` fails it runs again on the same machine. Nothing that already passed runs again, so you never rerun all of CI.
 </Annotation>
 

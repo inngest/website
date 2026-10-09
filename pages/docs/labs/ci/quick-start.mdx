@@ -55,7 +55,7 @@ By default, `createCi` prints checks to the terminal with `consoleReporter()`. T
 `ci/pipelines.ts`
 
 ```typescript {{ title: "TypeScript" }}
-import { github, checkout, from, $ } from "@inngest/ci";
+import { github, checkout, $ } from "@inngest/ci";
 import { ci } from "./client";
 
 export const pr = ci.pipeline(
@@ -74,13 +74,11 @@ const base = ci.job("base", async () => {
   await $`pnpm install`;
 });
 
-const lint = ci.job("lint", async () => {
-  await from(base);
+const lint = ci.job({ id: "lint", from: base }, async () => {
   await $`pnpm lint`;
 });
 
-const test = ci.job("test", async () => {
-  await from(base);
+const test = ci.job({ id: "test", from: base }, async () => {
   await $`pnpm test`.retries(1);
 });
 ```
@@ -103,7 +101,7 @@ server.listen(Number(process.env.PORT ?? 3000));
 
 Listen on `PORT`: local runs start your server on a free port.
 
-`ci.functions()` returns your pipelines plus the functions CI needs behind the scenes: machine cleanup, cache builds and refreshes, GitHub check re-runs, and running single jobs locally.
+`ci.functions()` returns your pipelines plus the functions CI needs behind the scenes: machine cleanup, cache builds and warming, GitHub check re-runs, and running single jobs locally.
 
 ## 5. Run locally
 

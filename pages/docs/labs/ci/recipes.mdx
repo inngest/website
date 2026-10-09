@@ -28,7 +28,7 @@ export const description = "Inngest CI recipes: start services and wait for them
 
 | Task | Code | Learn more |
 | --- | --- | --- |
-| Build once, test many | `await from(build)` | [Machines](/docs/labs/ci/machines?ref=docs-labs-ci-recipes#start-a-job-from-another-job) |
+| Build once, test many | `ci.job({ id: "test", from: build }, fn)` | [Base images](/docs/labs/ci/base-images?ref=docs-labs-ci-recipes#start-a-job-from-another-job) |
 | Skip unchanged tests | `cache: { key: files("src/**", "test/**") }` | [Caching](/docs/labs/ci/caching?ref=docs-labs-ci-recipes) |
 | Retry a flaky command | `` await $`pnpm test`.retries(2) `` | [Commands](/docs/labs/ci/commands?ref=docs-labs-ci-recipes#retries) |
 | Test every Node version | `ci.matrix` over `axes: { node: ["20", "22"] }` | [Jobs](/docs/labs/ci/jobs?ref=docs-labs-ci-recipes#run-a-job-for-every-combination) |

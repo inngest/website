@@ -1,11 +1,11 @@
 import { Info, Warning } from "shared/Docs/mdx";
 
-export const metaTitle = "Machines and from() | Inngest CI";
-export const description = "Inngest CI machines are Sandboxes that run a job's commands. Use from() to start a job on a copy of another job's machine and reuse work such as installed dependencies.";
+export const metaTitle = "Machines | Inngest CI";
+export const description = "Inngest CI machines are Sandboxes that run a job's commands. Size them per job, start them from a base image, and add a second machine when a job needs two at once.";
 
-# Machines and `from()`
+# Machines
 
-> Run each job on its own Sandbox, and start a job from another job's machine to reuse its work.
+> Run each job on its own Sandbox, sized for its work.
 
 <Info>
   Inngest CI is an Inngest Labs project: early, moving fast, and shaped by your feedback. [What's Labs?](/docs/labs?ref=docs-labs-ci-machines)
@@ -22,44 +22,21 @@ A machine is a [Sandbox](/docs/sandboxes/overview?ref=docs-labs-ci-machines): an
 Set `machine` on a job, on its pipeline, or on `createCi` for every job. The first one set wins in that order.
 
 - Commands run in `/work` by default, which is where `checkout()` puts the repository.
-- `checkout()` clones the commit that triggered the run, or updates an existing checkout to it with a short-lived token that never appears in the trace. Locally it uploads your working tree without its `.git` folder.
+- `checkout()` clones the commit that triggered the run, or updates an existing checkout to it with a short-lived token that never appears in the trace. Pass `repo` or `ref` to check out another repository or commit. Locally, plain `checkout()` uploads your working tree without its `.git` folder, and only the files that changed since the machine's last upload.
 - Inngest destroys every machine when the pipeline ends.
 
-## Start a job from another job
+## Start from a machine that's set up
 
-`from(job)` starts the current job on a copy of another job's machine, like a Docker layer. Use it when several jobs need the same setup, such as installed dependencies, so the setup runs once.
+Set [`from`](/docs/labs/ci/base-images?ref=docs-labs-ci-machines) on a job to start it on a copy of another job's machine, another app's, or a snapshot you captured. Setup like installing dependencies then runs once, not in every job.
 
 ```typescript {{ title: "TypeScript" }}
-const base = ci.job("base", async () => {
+const test = ci.job({ id: "test", from: base }, async () => {
   await checkout();
-  await $`pnpm install`;
-});
-
-const build = ci.job("build", async () => {
-  await from(base);
-  await $`pnpm build`;
-});
-
-const test = ci.job("test", async () => {
-  await from(build);
   await $`pnpm test`;
 });
 ```
 
-The parent runs once in a run of its own, however many jobs start from it, and each child gets its own isolated copy. Calling a job directly always runs it again, so a job you both call and start from runs twice. `from()` shares a job's machine within one pipeline run. To reuse it across runs, give the parent a [`cache`](/docs/labs/ci/caching?ref=docs-labs-ci-machines#shared-by-every-run) key, and every run and machine shares it. Each job builds on the snapshot of the one before it.
-
-### What happens under the hood
-
-The first `from()` of a parent builds it in its own run, with its own trace, and snapshots its machine. Every child starts from a clone of that snapshot, so installed files and built output are already there. The snapshot and clone come from [Sandbox snapshots and restore](/docs/sandboxes/features/snapshots-and-restore?ref=docs-labs-ci-machines).
-
-If a snapshot is not available, the job runs the parent's commands again on its own machine. The result is the same, but every child repeats the parent's work.
-
-- `from()` resolves once the copy is ready. Pass the parent's input as the second argument when it takes one.
-- Call `from()` before the job's first command, and once per job.
-- `await base()` runs `base` on its own machine. `await from(base)` builds it, or reuses this run's build, and starts this job from where it finished.
-- Choose the parent at runtime with `await from((await changed("docs/**")) ? docsBase : base)`.
-
-When a parent has a [cache key](/docs/labs/ci/caching?ref=docs-labs-ci-machines), an unchanged key skips the parent and restores its saved machine instead.
+The copy is a clone of a [Sandbox snapshot](/docs/sandboxes/features/snapshots-and-restore?ref=docs-labs-ci-machines), so installed files and built output are already there. If a snapshot can't be taken or started, the job runs the parent's commands on its own machine instead: the result is the same, but slower.
 
 ## Use a second machine
 
@@ -95,11 +72,12 @@ Plain `$` still runs on the job's own machine, and an extra machine starts empty
 | If the work... | Use |
 | --- | --- |
 | Is independent | Separate jobs |
-| Builds on earlier work | Separate jobs with `from()` |
+| Builds on earlier work | Separate jobs with `from` |
 | Needs a second machine alive at the same time | One job with `sandbox()` |
 
 ## Next steps
 
+- [Base images](/docs/labs/ci/base-images?ref=docs-labs-ci-machines) starts jobs from a machine that's already set up.
 - [Caching](/docs/labs/ci/caching?ref=docs-labs-ci-machines) skips a job when its inputs have not changed.
 - [Jobs](/docs/labs/ci/jobs?ref=docs-labs-ci-machines) covers how jobs are called and combined.
 - [Reference](/docs/labs/ci/reference?ref=docs-labs-ci-machines#machines) lists `checkout()` options and machine sizes.

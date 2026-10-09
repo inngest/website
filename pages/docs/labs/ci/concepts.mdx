@@ -1,7 +1,7 @@
 import { Info } from "shared/Docs/mdx";
 
 export const metaTitle = "Concepts | Inngest CI";
-export const description = "Inngest CI concepts: pipelines, triggers, jobs, commands, machines, reusing work with from(), caching, and checks, each with a short code example.";
+export const description = "Inngest CI concepts: pipelines, triggers, jobs, commands, machines, reusing work with from, caching, and checks, each with a short code example.";
 
 # Inngest CI concepts
 
@@ -69,11 +69,10 @@ const build = ci.job({ id: "build", machine: { vcpu: 4 } }, async () => {
 
 ## Starting from another job
 
-`from(job)` starts the current job on a copy of another job's machine. The parent runs once, however many jobs start from it. See [Start a job from another job](/docs/labs/ci/machines?ref=docs-labs-ci-concepts#start-a-job-from-another-job).
+The `from` job option starts a job on a copy of another job's machine. The parent runs once, however many jobs start from it. See [Start a job from another job](/docs/labs/ci/base-images?ref=docs-labs-ci-concepts#start-a-job-from-another-job).
 
 ```typescript {{ title: "TypeScript" }}
-const lint = ci.job("lint", async () => {
-  await from(base);
+const lint = ci.job({ id: "lint", from: base }, async () => {
   await $`pnpm lint`;
 });
 ```

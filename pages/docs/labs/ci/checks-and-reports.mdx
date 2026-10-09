@@ -53,14 +53,13 @@ await report.annotate([
 Every run also opens in the Inngest dashboard as one trace, grouped the way you wrote the pipeline. Each job is one row.
 
 ```typescript {{ title: "TypeScript" }}
-const test = ci.job({ id: "test", name: "Unit tests" }, async () => {
-  await from(base);
+const test = ci.job({ id: "test", name: "Unit tests", from: base }, async () => {
   await $`pnpm test`.retries(1);
 });
 ```
 
 - **Collapsed:** one row per job, tagged `JOB`, showing its `name`, or its `id` when it has none. A muted `S1`, `S2`, … badge marks the [Sandbox](/docs/sandboxes/overview?ref=docs-labs-ci-checks-and-reports) a job runs on, numbered top to bottom. A second Sandbox from [`sandbox("api")`](/docs/labs/ci/machines?ref=docs-labs-ci-checks-and-reports#use-a-second-machine) shows its own badge on its row.
-- **Expanded job:** Start sandbox (or "Start sandbox from `base`" with [`from()`](/docs/labs/ci/machines?ref=docs-labs-ci-checks-and-reports#start-a-job-from-another-job)), your commands as `$ pnpm test` rows or their [`.as()`](/docs/labs/ci/commands?ref=docs-labs-ci-checks-and-reports#options) names, your own `step.run` steps by name, then Save sandbox.
+- **Expanded job:** Start sandbox (or "Start sandbox from `base`" with [`from`](/docs/labs/ci/base-images?ref=docs-labs-ci-checks-and-reports#start-a-job-from-another-job)), your commands as `$ pnpm test` rows or their [`.as()`](/docs/labs/ci/commands?ref=docs-labs-ci-checks-and-reports#options) names, your own `step.run` steps by name, then Save sandbox.
 - **Expanded command:** Start process, Wait, Poll process, and Read output, or "Run and read output" for a short captured command. Each retry is Attempt 1, Attempt 2, and so on, and a failed command ends in "Exited with code N".
 - **Top level:** a GitHub group holds the check updates, and "Clean up sandboxes" comes last.
 - **Dimmed rows:** the work CI does for you is dimmed so your own rows stand out. Failures are never dimmed. Select a dimmed step and the step panel shows "Added by @inngest/ci@<version>".
