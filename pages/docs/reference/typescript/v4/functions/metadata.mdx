@@ -30,28 +30,30 @@ This makes `step.metadata()` available inside function handlers and `inngest.met
 
 ## `step.metadata(memoId)`
 
-Creates a step that attaches metadata to the current run. Like `step.run("my-id", ...)` or `step.sleep("my-id", ...)`, the `memoId` is a unique step ID that ensures the update runs exactly once, even if the function re-executes.
+Creates a step that attaches metadata to the current run. Like `step.run("my-id", ...)` or `step.sleep("my-id", ...)`, the `memoId` is a unique step ID that ensures the write runs exactly once, even if the function re-executes.
 
 | Method | Signature | Description |
 |--------|-----------|-------------|
 | `.run(id?)` | `(id?: string) => MetadataBuilder` | Scope to a run. Omit `id` for the current run. |
 | `.step(id?)` | `(id?: string) => MetadataBuilder` | Scope to a step. Omit `id` for the current step. Defaults to the current or latest attempt. |
 | `.span(id)` | `(id: string) => MetadataBuilder` | Scope to an extended trace span. |
-| `.update(values, kind?)` | `(values: Record<string, unknown>, kind?: string) => Promise<void>` | Send the metadata update. `kind` defaults to `"default"`. |
-| `.do(fn)` | `(fn: (builder: MetadataBuilder) => Promise<void>) => Promise<void>` | Batch multiple updates in a single memoized step. |
+| `.set(values, kind?)` | `(values: Record<string, unknown>, kind?: string) => Promise<void>` | Set the metadata for `kind` on the target, replacing any values previously written for that kind. `kind` defaults to `"default"`. |
+| `.update(values, kind?)` | `(values: Record<string, unknown>, kind?: string) => Promise<void>` | **Deprecated.** Use `.set()`. See [`.update()` (deprecated)](#update-deprecated). |
+| `.do(fn)` | `(fn: (builder: MetadataBuilder) => Promise<void>) => Promise<void>` | Send multiple writes in a single memoized step. |
 
 ## `inngest.metadata`
 
 The client-level metadata builder. Same scoping methods as `step.metadata()`, but without `.do()`. Can be called inside `step.run()`, in the function body, or from external contexts.
 
-When called inside a `step.run()` callback, the metadata update is batched with the step's output. This makes it durable without creating an additional step.
+When called inside a `step.run()` callback, the metadata write is batched with the step's output. This makes it durable without creating an additional step.
 
 | Method | Signature | Description |
 |--------|-----------|-------------|
 | `.run(id?)` | `(id?: string) => MetadataBuilder` | Scope to a run. |
 | `.step(id?)` | `(id?: string) => MetadataBuilder` | Scope to a step. Defaults to the current or latest attempt. |
 | `.span(id)` | `(id: string) => MetadataBuilder` | Scope to an extended trace span. |
-| `.update(values, kind?)` | `(values: Record<string, unknown>, kind?: string) => Promise<void>` | Send the metadata update. |
+| `.set(values, kind?)` | `(values: Record<string, unknown>, kind?: string) => Promise<void>` | Set the metadata for `kind` on the target, replacing any values previously written for that kind. |
+| `.update(values, kind?)` | `(values: Record<string, unknown>, kind?: string) => Promise<void>` | **Deprecated.** Use `.set()`. See [`.update()` (deprecated)](#update-deprecated). |
 
 ## Scoping
 
@@ -63,26 +65,26 @@ Metadata attaches at different levels of granularity. Builder methods narrow the
 | `step` | `.step(id?)` | Attached to a specific step attempt | Inside `step.run()` |
 | `extended_trace` | `.span(id)` | Attached to an extended trace span | Never (must be explicit) |
 
-When you call `.update()` without setting a scope, the builder auto-detects: inside `step.run()` it defaults to the current step's attempt; outside `step.run()` it defaults to `run` scope.
+When you call `.set()` without setting a scope, the builder auto-detects: inside `step.run()` it defaults to the current step's attempt; outside `step.run()` it defaults to `run` scope.
 
 Metadata is always attached at the step attempt level. When a step retries, each attempt gets its own metadata. Previous attempts' metadata is preserved.
 
 ## Custom kinds
 
-The second argument to `.update()` specifies a metadata **kind**. Kinds are used to group related metadata together. When multiple updates share the same kind and scope, their values are merged.
+The second argument to `.set()` specifies a metadata **kind**. Kinds are used to group related metadata together.
 
 ```ts
 // Default kind: stored as "userland.default", displayed as "User Metadata"
-await step.metadata("id-1").update({ status: "processing" });
+await step.metadata("id-1").set({ status: "processing" });
 
 // Custom kind: stored as "userland.billing", displayed as "User Metadata (billing)"
-await step.metadata("id-2").update(
+await step.metadata("id-2").set(
   { invoiceId: "inv_123", total: 99.99 },
   "billing",
 );
 
 // Another custom kind: stored as "userland.analytics", displayed as "User Metadata (analytics)"
-await step.metadata("id-3").update(
+await step.metadata("id-3").set(
   { source: "organic", campaign: "spring-2025" },
   "analytics",
 );
@@ -95,6 +97,44 @@ await step.metadata("id-3").update(
 | `"analytics"` | `userland.analytics` | User Metadata (analytics) |
 
 The `inngest.*` namespace is reserved for system use. Custom kinds must not use this prefix.
+
+## Writes replace values by kind
+
+Each write replaces all of the values for its kind on its target (a run, step, or span). The latest write for a kind wins. Keys from earlier writes to the same kind are not kept.
+
+```ts
+await step.metadata("status-1").set({ status: "processing", attempt: 1 });
+await step.metadata("status-2").set({ status: "done" });
+// The run's "default" metadata is now { status: "done" }
+```
+
+To keep values together, send everything for a kind in a single `.set()` call. To write values independently, give each group its own kind:
+
+```ts
+await step.metadata("status").set({ status: "done" }, "status");
+await step.metadata("attempts").set({ attempt: 1 }, "attempts");
+// Both kinds are kept
+```
+
+## `.update()` (deprecated)
+
+<Warning>
+  `.update()` is deprecated. Use `.set()` instead.
+</Warning>
+
+`.update(values, kind?)` takes the same arguments as `.set()` and its writes also replace the values for that kind on the target. The only difference is that calls to `.update()` for the same kind and target within a single step are merged into one write before they are sent:
+
+```ts
+await step.metadata("progress").do(async (builder) => {
+  await builder.update({ phase: "started" });
+  await builder.update({ initiator: "system" });
+  // Sent as one write: { phase: "started", initiator: "system" }
+});
+```
+
+Calls in different steps, and calls sent through the Inngest API (for example, targeting another run, another step, or a span, or calling `inngest.metadata` from outside a function), are not merged. Each one replaces the values written by the previous one.
+
+To migrate, replace `.update()` with `.set()`. If you relied on separate `.update()` calls adding keys to the same kind, combine the values into a single `.set()` call, or split them into separate kinds.
 
 ## Built-in metadata kinds
 
@@ -116,7 +156,7 @@ Metadata is subject to the following size limits, enforced server-side:
 
 | Limit | Maximum size | Description |
 |-------|-------------|-------------|
-| **Per update** | **64 KB** | Maximum size of a single metadata update (span) |
+| **Per write** | **64 KB** | Maximum size of a single metadata write (span) |
 | **Per run** | **1 MB** | Cumulative size of all metadata across the entire function run |
 
 ### How size is calculated
@@ -145,6 +185,6 @@ When a size limit is exceeded, the server returns an HTTP `413` error:
 ## Limitations
 
 - **TypeScript SDK only.** Python and Go SDK support is planned but not yet available.
-- **Merge-only.** The only supported operation is `merge`, which combines values of the same kind. You cannot delete or replace individual metadata keys.
+- **Replace-only.** Each write replaces all of the values for its kind on its target. You cannot update or delete individual metadata keys, so send the full set of values for a kind each time.
 - **Unique memoization IDs.** Each `step.metadata(memoId)` creates a step in the run. The `memoId` must be unique within the function, just like any other step ID.
 - **Server-side enforcement.** Size limits are enforced by the server, not the SDK. Exceeding limits returns HTTP 413 errors that surface as exceptions in your function.
