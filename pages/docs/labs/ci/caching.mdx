@@ -64,9 +64,19 @@ A snapshot's name holds more than the key. It also holds the job's input and the
 
 - The same key with a different input is a different snapshot.
 - A cached job rebuilds when anything it starts from changes, all the way up its chain. [See it in action](/docs/labs/ci/base-images?ref=docs-labs-ci-caching#chains-rebuild-from-the-change-down).
-- A job on a parent with no `cache` rebuilds every run, since that parent is built fresh each time. Cache the parent too.
+- A job on a parent with no `cache` rebuilds every run, since that parent is built fresh each time. Cache the parent too. The run's summary and the job's row in the trace warn when this happens.
 
 The first run with a new key always builds. A cached job that runs no commands has no machine to keep, so it runs every time.
+
+### Rebuild when your CI code changes
+
+A key covers the files your commands read, not the code of the job itself. To rebuild when you change how the job builds, add your CI code to the key:
+
+```typescript {{ title: "TypeScript" }}
+key: [files("pnpm-lock.yaml"), files("ci/**")],
+```
+
+Any change under `ci/` then rebuilds the job, including the helpers it calls. A `cache` with no `key` at all is reused until its input or parent changes, it passes its [`maxAge`](#set-a-maximum-age), or you [rebuild it on demand](#rebuild-on-demand).
 
 ## Warm the cache ahead of time
 
