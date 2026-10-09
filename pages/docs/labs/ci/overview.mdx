@@ -16,7 +16,7 @@ Inngest CI is CI written in TypeScript, in your repo next to your app. Pipelines
 - **TypeScript all the way down.** Use `if`, loops, and `Promise.all`, and import your app's own code. [Pipelines →](/docs/labs/ci/pipelines?ref=docs-labs-ci-overview)
 - **One trace per run.** Every job, command, and retry in one place. [See a run →](#see-the-result)
 - **Retries that keep passed work.** Only the failed command runs again. [Retries →](/docs/labs/ci/commands?ref=docs-labs-ci-overview#retries)
-- **Build once, reuse it.** Start jobs from another job's machine, and cache the slow ones. [Base images →](/docs/labs/ci/base-images?ref=docs-labs-ci-overview#start-a-job-from-another-job)
+- **Build once, reuse it.** Start jobs from another job's machine, and cache the slow ones. [Base images →](/docs/labs/ci/base-images?ref=docs-labs-ci-overview#another-job)
 - **Runs locally.** One command runs any pipeline or job on real Sandboxes with your uncommitted changes. [Run CI locally →](/docs/labs/ci/local?ref=docs-labs-ci-overview)
 - **Flow control.** Cancel stale runs, cap concurrency, and debounce. [Flow control →](/docs/labs/ci/pipelines?ref=docs-labs-ci-overview#flow-control)
 - **GitHub checks.** One per pipeline, and one per job. [Checks →](/docs/labs/ci/checks-and-reports?ref=docs-labs-ci-overview)
@@ -83,7 +83,7 @@ No dependency graph to declare: `Promise.all` runs jobs in parallel, `await` run
 No cache keys to tune. `base` checks out and installs once, and every job that starts from it gets a copy of that machine.
 </Annotation>
 
-<Annotation id="from" lines="23,27" tease="copy of base" title="Start where `base` finished" nodes="lintWait,testWait,base" href="/docs/labs/ci/base-images?ref=docs-labs-ci-overview#start-a-job-from-another-job" linkText="Start a job from another job">
+<Annotation id="from" lines="23,27" tease="copy of base" title="Start where `base` finished" nodes="lintWait,testWait,base" href="/docs/labs/ci/base-images?ref=docs-labs-ci-overview#another-job" linkText="Start a job from another job">
 Waits for the one `base` build, then starts this job on a copy of its machine, already checked out and installed.
 </Annotation>
 

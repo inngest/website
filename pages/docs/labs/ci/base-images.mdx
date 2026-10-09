@@ -1,24 +1,33 @@
-import { Info, Tip, Warning } from "shared/Docs/mdx";
+import { Info, AnnotatedCode, Annotation } from "shared/Docs/mdx";
 import { CiBuilds } from "src/shared/Docs/CiBuilds";
 
 export const metaTitle = "Base images | Inngest CI";
-export const description = "Start Inngest CI jobs from a machine that's already set up: another job's, another app's, or a snapshot you captured. Each is built once and shared by every run.";
+export const description = "Start Inngest CI jobs on a machine that's already set up: another job's, another app's, an Inngest image, or your own. Each is built once and shared by every run.";
 
 # Base images
 
-> Start a job on a machine that's already set up, so dependencies are installed and output is built before its first command.
+> Start a job on a machine that's already set up.
 
 <Info>
   Inngest CI is an Inngest Labs project: early, moving fast, and shaped by your feedback. [What's Labs?](/docs/labs?ref=docs-labs-ci-base-images)
 </Info>
 
-Set `from` on a job to start it on a copy of another machine. That machine is its base image, and it can be:
+Set `from` on a job to start it with dependencies installed and output built. A base is built once and every run shares it.
 
-- **Another job** in your app, like a `base` job that installs dependencies.
-- **A job in another app**, like a shared toolchain image your platform team owns.
-- **A snapshot you captured** from a [Sandbox](/docs/sandboxes/overview?ref=docs-labs-ci-base-images).
+| `from` | Starts from |
+| --- | --- |
+| `base` | [Another job in this app](#another-job) |
+| `base.with(input)` | [Another job, built with an input](#another-job) |
+| `image.inngest("base")` | [An image Inngest maintains](#an-inngest-image) |
+| `image.custom("name")` | [Your published image or named snapshot](#your-own-image) |
+| `image.job("app/job")` | [A job in another app](#another-app-s-job) |
 
-```typescript {{ title: "TypeScript" }}
+<AnnotatedCode>
+
+```typescript {{ title: "ci/jobs.ts" }}
+import { checkout, files, image, $ } from "@inngest/ci";
+import { ci } from "./client";
+
 const base = ci.job(
   { id: "base", cache: { key: files("pnpm-lock.yaml") } },
   async () => {
@@ -27,114 +36,120 @@ const base = ci.job(
   },
 );
 
-const build = ci.job(
-  { id: "build", from: base, cache: { key: files("src/**") } },
-  async () => {
-    await checkout();
-    await $`pnpm build`;
-  },
-);
-
-const test = ci.job({ id: "test", from: build }, async () => {
+const test = ci.job({ id: "test", from: base }, async () => {
   await checkout();
   await $`pnpm test`;
 });
-```
 
-`test` starts with dependencies installed and the project built. When nothing has changed, neither `base` nor `build` runs again: every run, on any branch and on your laptop, starts from the same snapshots.
-
-## Start a job from another job
-
-`from: base` starts the job on its own copy of `base`'s machine, like a Docker layer. The parent runs once in a run of its own however many jobs start from it, and each child gets an isolated copy, so jobs can't affect each other.
-
-- A copy has the checkout from the commit it was built on. Call `checkout()` again to move it to this run's commit; only the changes are applied.
-- Calling a job directly always runs it, so a job you both call and start from runs twice.
-- A parent that takes an input is named with `.with()`: `from: build.with("web")`.
-- To pick the parent from the job's own input, pass a function: `from: ({ input }) => build.with(input.target)`.
-- A matrix takes `from` too, and every combination starts from it:
-
-```typescript {{ title: "TypeScript" }}
-const compat = ci.matrix(
-  { id: "compat", axes: { node: ["20", "22"] }, from: base },
-  async ({ node }) => {
-    await checkout();
-    await $`pnpm test`.env({ NODE_VERSION: node });
-  },
-);
-```
-
-`from` is checked when your app starts: a parent that isn't defined, an input that doesn't match the parent's `input` schema, or a chain that starts from itself throws before any run. A `from` function is checked when it runs. To choose between parents at run time, define both jobs and call the one you need from the pipeline.
-
-## Built once, then reused
-
-A cached job's snapshot is named after everything that went into it: its [cache key](/docs/labs/ci/caching?ref=docs-labs-ci-base-images#choose-the-key), its input, and the exact snapshot it started from. A job looks its parent up by that name before it starts.
-
-<CiBuilds scenario="cold" />
-
-When the name is found, the job starts from it straight away, with nothing to build and nothing to wait for:
-
-<CiBuilds scenario="warm" />
-
-A missing name is built once, however many jobs and runs ask for it at the same moment. Builds of one name take turns and look the name up again when they start, so the first one builds it and the rest start from its snapshot:
-
-<CiBuilds scenario="herd" />
-
-## Chains rebuild from the change down
-
-Because each name includes the snapshot its job started from, a change anywhere in a chain gives every job after it a new name. Those jobs miss and rebuild in order, and the jobs above the change are still reused. A job never starts from a snapshot built on an older parent.
-
-<CiBuilds scenario="invalidate" />
-
-Give the parent of a cached job a `cache` too. A parent without one is built fresh in every run, so its children never find a snapshot to reuse.
-
-## Start from a snapshot you captured
-
-`image.custom(name)` starts a job from the newest ready snapshot with that name. Capture one from any Sandbox with `sandbox.snapshot({ name })`, for example a machine with your toolchain or a large dataset on it.
-
-```typescript {{ title: "TypeScript" }}
-const agent = ci.job(
-  { id: "agent", from: image.custom("agent-deps") },
+const e2e = ci.job(
+  { id: "e2e", from: image.custom("playwright") },
   async () => {
     await checkout();
-    await $`pnpm test:agent`;
+    await $`npx playwright test`;
   },
 );
 ```
 
-Capture it again under the same name to update it. A cached job on a captured image is keyed on that snapshot, so the next run rebuilds it on the new one.
+<Annotation id="key" lines="5" tease="once per lockfile" title="Built once per key" href="/docs/labs/ci/caching?ref=docs-labs-ci-base-images" linkText="Caching">
+`base` runs again only when `pnpm-lock.yaml` changes. Every other run starts from its snapshot.
+</Annotation>
 
-To start every job without a `from` on an image, set it on `createCi`:
+<Annotation id="from" lines="12" tease="copy of base" title="Start from another job" href="#another-job" linkText="Another job">
+`test` starts on its own copy of `base`'s machine, with dependencies already installed.
+</Annotation>
+
+<Annotation id="checkout" lines="13" tease="only the changes" title="Catch up to this commit" href="/docs/labs/ci/machines?ref=docs-labs-ci-base-images" linkText="Machines">
+The copy has the checkout `base` was built on. `checkout()` moves it to this run's commit and keeps `node_modules`.
+</Annotation>
+
+<Annotation id="custom" lines="18" tease="your image" title="Start from your own image" href="#your-own-image" linkText="Your own image">
+A browser toolchain you published or captured once, used by any job that needs it.
+</Annotation>
+
+</AnnotatedCode>
+
+## Another job
+
+```typescript {{ title: "TypeScript" }}
+const test = ci.job({ id: "test", from: base }, fn);
+const web = ci.job({ id: "web", from: build.with("web") }, fn);
+const app = ci.job({ id: "app", from: ({ input }) => build.with(input) }, fn);
+```
+
+- The parent runs once in its own run, however many jobs start from it. Each child gets its own copy.
+- Give the parent a [`cache`](/docs/labs/ci/caching?ref=docs-labs-ci-base-images) to share it across runs. Without one, it's rebuilt every run.
+- `ci.matrix()` takes `from` too.
+- A missing parent, a bad input, or a job that starts from itself fails when your app starts.
+
+## An Inngest image
+
+```typescript {{ title: "TypeScript" }}
+const lint = ci.job({ id: "lint", from: image.inngest("base") }, fn);
+```
+
+`base` has Node.js, Python, Ruby and common tools. [See what's included](/docs/sandboxes/features/base-images?ref=docs-labs-ci-base-images). Jobs without `from` start on it.
+
+## Your own image
+
+```typescript {{ title: "TypeScript" }}
+const e2e = ci.job({ id: "e2e", from: image.custom("playwright") }, fn);
+```
+
+`image.custom()` uses the image published to your workspace with that name, or else the [snapshot you captured](/docs/sandboxes/features/snapshots-and-restore?ref=docs-labs-ci-base-images) under it:
+
+```typescript {{ title: "TypeScript" }}
+await sandbox.snapshot({ name: "playwright" });
+```
+
+Cached jobs on it rebuild when you publish or capture a new one.
+
+## Another app's job
+
+```typescript {{ title: "TypeScript" }}
+const test = ci.job({ id: "test", from: image.job("platform/node-base") }, fn);
+```
+
+The other app builds its job once, from the commit it's deployed from, for every app that asks.
+
+- Both apps run `@inngest/ci` in the same Inngest environment.
+- The other app must be deployed from Vercel, Netlify, Render, Railway, GitHub Actions, or a git checkout, so it knows its repository.
+
+## Every job
 
 ```typescript {{ title: "TypeScript" }}
 const ci = createCi(inngest, { from: image.custom("agent-deps") });
 ```
 
-Names starting with `ci/` belong to CI's own snapshots, so capture yours under another name.
+Jobs without their own `from` start on it.
 
-## Start from another app's job
+## How it works
 
-`image.job("app/job")` starts a job from a job defined in another app, such as a base image your platform team owns and every service builds on. Pass an input as the second argument when the job takes one.
+A cached job's snapshot is named after its [key](/docs/labs/ci/caching?ref=docs-labs-ci-base-images#choose-the-key), its input, and the exact snapshot it started from. Jobs look their base up by that name before they start.
 
-```typescript {{ title: "TypeScript" }}
-const test = ci.job(
-  { id: "test", from: image.job("platform/node-base") },
-  async () => {
-    await checkout();
-    await $`pnpm test`;
-  },
-);
-```
+### Built once, then reused
 
-The owning app looks the job up and builds it if it's missing, once for every app that asks, from the commit it's deployed from. Your job starts from the result. When the owner changes the job, everything built on it rebuilds.
+<CiBuilds scenario="cold" />
+
+<CiBuilds scenario="warm" />
+
+Runs that miss at the same time share one build:
+
+<CiBuilds scenario="herd" />
+
+### Chains rebuild from the change down
+
+A new parent snapshot means a new name for every job after it, so nothing starts from a stale parent:
+
+<CiBuilds scenario="invalidate" />
+
+### Across apps
 
 <CiBuilds scenario="cross-app" />
 
-- Both apps must run `@inngest/ci` in the same Inngest environment.
-- The owning app reads its repository and commit from its host: Vercel, Netlify, Render, Railway, GitHub Actions, or a git checkout. A job that calls `files()` or `checkout()` fails with an error naming the job when the deployment doesn't say which repository it came from.
-- A chain of `image.job()` calls that comes back to a job already in it fails instead of waiting forever.
+If a snapshot can't be taken or started, the job runs its parent's commands on its own machine instead. Same result, just slower.
 
 ## Next steps
 
-- [Caching](/docs/labs/ci/caching?ref=docs-labs-ci-base-images) covers keys, warming, `maxAge`, and rebuilding on demand.
-- [Machines](/docs/labs/ci/machines?ref=docs-labs-ci-base-images) covers machine sizes and extra machines.
-- [Reference](/docs/labs/ci/reference?ref=docs-labs-ci-base-images#from) lists every form `from` takes.
+- [Caching](/docs/labs/ci/caching?ref=docs-labs-ci-base-images): keys, warming, `maxAge`, and rebuilding on demand.
+- [Machines](/docs/labs/ci/machines?ref=docs-labs-ci-base-images): sizes and extra machines.
+- [Reference](/docs/labs/ci/reference?ref=docs-labs-ci-base-images#from): every form `from` takes.

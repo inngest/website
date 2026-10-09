@@ -6,6 +6,7 @@ import {
   RiPlayFill,
   RiRestartLine,
 } from "@remixicon/react";
+import { Highlight, themes } from "prism-react-renderer";
 import {
   ControlButton,
   useLoop,
@@ -20,60 +21,75 @@ import {
   type TimelineScenario,
 } from "./scenarios";
 
-/** What a node shows in each state. A hue always means the same thing. */
-const STATE: Record<NodeState, { label: string; ring: string; pill: string }> =
-  {
-    idle: {
-      label: "",
-      ring: "ring-carbon-200 dark:ring-carbon-700",
-      pill: "",
-    },
-    waiting: {
-      label: "waiting",
-      ring: "ring-carbon-300 dark:ring-carbon-600",
-      pill: "bg-carbon-100 text-carbon-700 dark:bg-carbon-800 dark:text-carbon-200",
-    },
-    lookup: {
-      label: "looking up",
-      ring: "ring-breeze-400 dark:ring-breeze-500",
-      pill: "bg-breeze-100 text-breeze-800 dark:bg-breeze-500/20 dark:text-breeze-200",
-    },
-    hit: {
-      label: "hit · reused",
-      ring: "ring-matcha-500",
-      pill: "bg-matcha-100 text-matcha-800 dark:bg-matcha-500/20 dark:text-matcha-200",
-    },
-    miss: {
-      label: "miss",
-      ring: "ring-honey-400",
-      pill: "bg-honey-100 text-honey-900 dark:bg-honey-500/20 dark:text-honey-200",
-    },
-    building: {
-      label: "building",
-      ring: "ring-honey-500",
-      pill: "bg-honey-100 text-honey-900 dark:bg-honey-500/20 dark:text-honey-200",
-    },
-    ready: {
-      label: "snapshot ready",
-      ring: "ring-matcha-500",
-      pill: "bg-matcha-100 text-matcha-800 dark:bg-matcha-500/20 dark:text-matcha-200",
-    },
-    changed: {
-      label: "new name",
-      ring: "ring-purplehaze-400",
-      pill: "bg-purplehaze-100 text-purplehaze-800 dark:bg-purplehaze-500/20 dark:text-purplehaze-200",
-    },
-    running: {
-      label: "running",
-      ring: "ring-breeze-500",
-      pill: "bg-breeze-100 text-breeze-800 dark:bg-breeze-500/20 dark:text-breeze-200",
-    },
-    passed: {
-      label: "passed",
-      ring: "ring-matcha-500",
-      pill: "bg-matcha-100 text-matcha-800 dark:bg-matcha-500/20 dark:text-matcha-200",
-    },
-  };
+/**
+ * What a node shows in each state. A hue always means the same thing: blue is
+ * work in progress, honey a build, green a usable snapshot, purple a new name.
+ */
+const STATE: Record<
+  NodeState,
+  { label: string; dot: string; ring: string; active: boolean }
+> = {
+  idle: {
+    label: "",
+    dot: "bg-carbon-300 dark:bg-carbon-600",
+    ring: "ring-carbon-200 dark:ring-carbon-700",
+    active: false,
+  },
+  waiting: {
+    label: "waiting",
+    dot: "bg-carbon-400 dark:bg-carbon-500",
+    ring: "ring-carbon-300 dark:ring-carbon-600",
+    active: false,
+  },
+  lookup: {
+    label: "looking up",
+    dot: "bg-breeze-500",
+    ring: "ring-breeze-400 dark:ring-breeze-500",
+    active: true,
+  },
+  hit: {
+    label: "found",
+    dot: "bg-matcha-500",
+    ring: "ring-matcha-500",
+    active: false,
+  },
+  miss: {
+    label: "not found",
+    dot: "bg-honey-500",
+    ring: "ring-honey-400",
+    active: false,
+  },
+  building: {
+    label: "building",
+    dot: "bg-honey-500",
+    ring: "ring-honey-500",
+    active: true,
+  },
+  ready: {
+    label: "snapshot ready",
+    dot: "bg-matcha-500",
+    ring: "ring-matcha-500",
+    active: false,
+  },
+  changed: {
+    label: "new name",
+    dot: "bg-purplehaze-500",
+    ring: "ring-purplehaze-400",
+    active: false,
+  },
+  running: {
+    label: "running",
+    dot: "bg-breeze-500",
+    ring: "ring-breeze-500",
+    active: true,
+  },
+  passed: {
+    label: "passed",
+    dot: "bg-matcha-500",
+    ring: "ring-matcha-500",
+    active: false,
+  },
+};
 
 const BAR: Record<BarKind, string> = {
   lookup:
@@ -86,9 +102,67 @@ const BAR: Record<BarKind, string> = {
   run: "bg-breeze-500 text-white dark:bg-breeze-400 dark:text-carbon-1000",
 };
 
+/** Token colours from the theme tokens, so code reads in light and dark. */
+const tokenClass = (types: string[]): string => {
+  if (types.includes("comment")) {
+    return "text-subtle italic";
+  }
+
+  if (types.includes("string") || types.includes("template-string")) {
+    return "text-matcha-700 dark:text-matcha-300";
+  }
+
+  if (types.includes("keyword")) {
+    return "text-purplehaze-600 dark:text-purplehaze-300";
+  }
+
+  if (types.includes("function")) {
+    return "text-breeze-600 dark:text-breeze-300";
+  }
+
+  if (types.includes("number") || types.includes("boolean")) {
+    return "text-honey-700 dark:text-honey-300";
+  }
+
+  if (types.includes("punctuation") || types.includes("operator")) {
+    return "text-muted";
+  }
+
+  return "text-basis";
+};
+
+/** A short, highlighted snippet: the code a part of the diagram is about. */
+function Snippet({ code }: { code: string }) {
+  return (
+    <Highlight code={code} language="tsx" theme={themes.github}>
+      {({ tokens }) => {
+        return (
+          <pre className="m-0 overflow-x-auto rounded-md bg-canvasSubtle px-2 py-2 font-mono text-[11px] leading-[1.55]">
+            {tokens.map((line, i) => {
+              return (
+                <div key={i}>
+                  {line.map((token, j) => {
+                    return (
+                      <span key={j} className={tokenClass(token.types)}>
+                        {token.content}
+                      </span>
+                    );
+                  })}
+                  {line.length === 0 ? "\n" : null}
+                </div>
+              );
+            })}
+          </pre>
+        );
+      }}
+    </Highlight>
+  );
+}
+
 /** Where a node is at time `t`: the latest of its events, with names and notes carried forward. */
 function nodeAt(node: ChainNode, t: number) {
   let state: NodeState = "idle";
+  let since = 0;
   let name: string | undefined;
   let note: string | undefined;
   let changedAt = -1;
@@ -99,6 +173,7 @@ function nodeAt(node: ChainNode, t: number) {
     }
 
     state = event.state;
+    since = event.at;
 
     if (event.name !== undefined) {
       if (name !== undefined && event.name !== name) {
@@ -115,13 +190,36 @@ function nodeAt(node: ChainNode, t: number) {
 
   return {
     state,
+    since,
     name,
     note,
     nameJustChanged: changedAt >= 0 && t - changedAt < 1.4,
   };
 }
 
+/** A status dot: pulses while the node is busy. */
+function StatusDot({ state }: { state: NodeState }) {
+  const look = STATE[state];
+
+  return (
+    <span className="relative flex h-2.5 w-2.5 shrink-0">
+      {look.active && (
+        <span
+          className={`absolute inline-flex h-full w-full animate-ping rounded-full opacity-60 motion-reduce:hidden ${look.dot}`}
+        />
+      )}
+      <span
+        className={`relative inline-flex h-2.5 w-2.5 rounded-full ${look.dot}`}
+      />
+    </span>
+  );
+}
+
 const FLOWING: NodeState[] = ["lookup", "building", "waiting", "miss"];
+
+/** The flash a node gives when its state changes, in that state's colour. */
+const FLASH_KEYFRAMES =
+  "@keyframes ci-builds-flash { from { opacity: 0.35; } to { opacity: 0; } }";
 
 function Chain({ scenario, t }: { scenario: ChainScenario; t: number }) {
   const nodes = scenario.nodes.map((node) => {
@@ -129,7 +227,8 @@ function Chain({ scenario, t }: { scenario: ChainScenario; t: number }) {
   });
 
   return (
-    <div className="flex flex-col items-stretch gap-2 sm:flex-row sm:items-center">
+    <div className="flex flex-col items-stretch gap-2 sm:flex-row sm:items-end">
+      <style>{FLASH_KEYFRAMES}</style>
       {nodes.map(({ node, at }, i) => {
         const look = STATE[at.state];
         const next = nodes[i + 1];
@@ -139,49 +238,51 @@ function Chain({ scenario, t }: { scenario: ChainScenario; t: number }) {
 
         return (
           <div key={node.id} className="contents">
-            <div
-              className={`min-w-0 flex-1 rounded-lg bg-canvasBase px-3 py-2.5 ring-2 ring-inset transition-shadow duration-300 motion-reduce:transition-none ${look.ring}`}
-            >
-              <div className="flex items-center gap-2">
-                {node.app && (
-                  <span className="rounded bg-canvasMuted px-1.5 py-0.5 text-[10px] font-medium uppercase tracking-wide text-muted">
-                    {node.app}
-                  </span>
-                )}
-                <span className="font-mono text-[13px] font-semibold text-basis">
-                  {node.id}
-                </span>
-                {look.label && (
-                  <span
-                    className={`ml-auto whitespace-nowrap rounded-full px-2 py-0.5 text-[11px] font-medium ${
-                      look.pill
-                    } ${
-                      at.state === "building" || at.state === "lookup"
-                        ? "animate-pulse motion-reduce:animate-none"
-                        : ""
-                    }`}
-                  >
-                    {look.label}
-                  </span>
-                )}
-              </div>
+            <div className="flex min-w-0 flex-1 flex-col gap-2">
+              <Snippet code={node.code} />
               <div
-                className={`mt-1 truncate font-mono text-[11px] transition-colors duration-500 motion-reduce:transition-none ${
-                  at.nameJustChanged
-                    ? "text-purplehaze-600 dark:text-purplehaze-300"
-                    : "text-muted"
-                }`}
+                className={`relative h-[84px] rounded-lg bg-canvasBase px-3 py-2.5 ring-2 ring-inset transition-shadow duration-300 motion-reduce:transition-none ${look.ring}`}
               >
-                {node.kind === "cached"
-                  ? at.name ?? " "
-                  : "no cache: runs every time"}
-              </div>
-              <div className="mt-0.5 h-4 truncate text-[11px] text-subtle">
-                {at.note ?? ""}
+                {at.since > 0 && (
+                  <span
+                    key={`${at.state}-${at.since}`}
+                    aria-hidden
+                    className={`pointer-events-none absolute inset-0 rounded-lg opacity-0 motion-reduce:hidden ${look.dot}`}
+                    style={{ animation: "ci-builds-flash 0.9s ease-out" }}
+                  />
+                )}
+                <div className="relative flex items-center gap-2">
+                  {node.app && (
+                    <span className="rounded bg-canvasMuted px-1.5 py-0.5 text-[10px] font-medium uppercase tracking-wide text-muted">
+                      {node.app}
+                    </span>
+                  )}
+                  <span className="truncate font-mono text-[13px] font-semibold text-basis">
+                    {node.id}
+                  </span>
+                  <span className="ml-auto flex items-center gap-1.5 whitespace-nowrap text-[11px] text-muted">
+                    {look.label}
+                    <StatusDot state={at.state} />
+                  </span>
+                </div>
+                <div
+                  className={`relative mt-1 truncate font-mono text-[11px] transition-colors duration-500 motion-reduce:transition-none ${
+                    at.nameJustChanged
+                      ? "text-purplehaze-600 dark:text-purplehaze-300"
+                      : "text-muted"
+                  }`}
+                >
+                  {node.kind === "cached"
+                    ? at.name ?? " "
+                    : "no cache: runs every time"}
+                </div>
+                <div className="relative mt-0.5 h-4 truncate text-[11px] text-subtle">
+                  {at.note ?? ""}
+                </div>
               </div>
             </div>
             {next && (
-              <div className="flex shrink-0 flex-col items-center justify-center text-[10px] text-muted sm:w-16">
+              <div className="flex shrink-0 items-center justify-center sm:h-[84px] sm:w-5">
                 <RiArrowRightLine
                   className={`h-4 w-4 rotate-90 transition-colors sm:rotate-0 ${
                     flowing
@@ -189,9 +290,6 @@ function Chain({ scenario, t }: { scenario: ChainScenario; t: number }) {
                       : "text-carbon-300 dark:text-carbon-600"
                   }`}
                 />
-                {scenario.edge && (
-                  <span className="font-mono">{scenario.edge}</span>
-                )}
               </div>
             )}
           </div>
@@ -233,46 +331,51 @@ function TimelineBar({
 
 function Timeline({ scenario, t }: { scenario: TimelineScenario; t: number }) {
   return (
-    <div className="flex flex-col gap-2">
-      {scenario.lanes.map((lane) => {
-        return (
-          <div
-            key={lane.label}
-            className="grid grid-cols-1 gap-1 sm:grid-cols-[10rem_1fr] sm:items-center sm:gap-2"
-          >
-            <div className="truncate text-[11px] font-medium text-subtle sm:text-xs">
-              {lane.label}
+    <div className="flex flex-col gap-3">
+      <Snippet code={scenario.code} />
+      <div className="flex flex-col gap-2">
+        {scenario.lanes.map((lane) => {
+          return (
+            <div
+              key={lane.label}
+              className="grid grid-cols-1 gap-1 sm:grid-cols-[10rem_1fr] sm:items-center sm:gap-2"
+            >
+              <div className="truncate text-[11px] font-medium text-subtle sm:text-xs">
+                {lane.label}
+              </div>
+              <div className="relative h-6 rounded bg-canvasSubtle">
+                {lane.bars.map((bar) => {
+                  return (
+                    <TimelineBar
+                      key={`${bar.start}-${bar.label}`}
+                      bar={bar}
+                      t={t}
+                      domain={scenario.domain}
+                    />
+                  );
+                })}
+                {lane.done && t >= lane.done.at && (
+                  <span
+                    className="absolute inset-y-0 ml-1.5 flex items-center whitespace-nowrap font-mono text-[11px] font-semibold text-basis"
+                    style={{
+                      left: `${(lane.done.at / scenario.domain) * 100}%`,
+                    }}
+                  >
+                    {lane.done.label}
+                  </span>
+                )}
+              </div>
             </div>
-            <div className="relative h-6 rounded bg-canvasSubtle">
-              {lane.bars.map((bar) => {
-                return (
-                  <TimelineBar
-                    key={`${bar.start}-${bar.label}`}
-                    bar={bar}
-                    t={t}
-                    domain={scenario.domain}
-                  />
-                );
-              })}
-              {lane.done && t >= lane.done.at && (
-                <span
-                  className="absolute inset-y-0 ml-1.5 flex items-center whitespace-nowrap font-mono text-[11px] font-semibold text-basis"
-                  style={{ left: `${(lane.done.at / scenario.domain) * 100}%` }}
-                >
-                  {lane.done.label}
-                </span>
-              )}
-            </div>
+          );
+        })}
+        <div className="grid grid-cols-1 gap-2 sm:grid-cols-[10rem_1fr]">
+          <span className="hidden sm:block" />
+          <div className="relative h-px bg-carbon-200 dark:bg-carbon-700">
+            <span
+              className="absolute -top-1 h-2 w-0.5 rounded bg-carbon-500 dark:bg-carbon-400"
+              style={{ left: `${Math.min(t / scenario.domain, 1) * 100}%` }}
+            />
           </div>
-        );
-      })}
-      <div className="grid grid-cols-1 gap-2 sm:grid-cols-[10rem_1fr]">
-        <span className="hidden sm:block" />
-        <div className="relative h-px bg-carbon-200 dark:bg-carbon-700">
-          <span
-            className="absolute -top-1 h-2 w-0.5 rounded bg-carbon-500 dark:bg-carbon-400"
-            style={{ left: `${Math.min(t / scenario.domain, 1) * 100}%` }}
-          />
         </div>
       </div>
     </div>
@@ -282,8 +385,8 @@ function Timeline({ scenario, t }: { scenario: TimelineScenario; t: number }) {
 /**
  * An animated diagram of how Inngest CI finds and builds the snapshots jobs
  * start from: chains of cached jobs, invalidation, warming and builds shared
- * by many runs. It plays while on screen and rests on its last frame with
- * reduced motion.
+ * by many runs. Each part sits under the code it's about. It plays while on
+ * screen and rests on its last frame with reduced motion.
  */
 export function CiBuilds({ scenario: id }: { scenario: string }) {
   const scenario = getScenario(id);
@@ -302,35 +405,10 @@ export function CiBuilds({ scenario: id }: { scenario: string }) {
   return (
     <figure
       ref={rootRef}
-      className="not-prose my-8 flex flex-col gap-3 rounded-xl bg-canvasSubtle p-3 leading-normal text-basis sm:p-4"
+      className="not-prose my-8 flex flex-col gap-2 rounded-xl bg-canvasSubtle p-3 leading-normal text-basis sm:p-4"
     >
-      <div className="flex flex-wrap items-center gap-2">
-        {scenario.code.map((c) => {
-          return (
-            <code
-              key={c}
-              className="min-w-0 max-w-full truncate rounded-md bg-canvasBase px-2 py-1 font-mono text-[11px] text-basis ring-1 ring-inset ring-carbon-200 dark:ring-carbon-700 sm:text-xs"
-            >
-              {c}
-            </code>
-          );
-        })}
-        <div className="ml-auto flex items-center gap-0.5">
-          <ControlButton label={playing ? "Pause" : "Play"} onClick={toggle}>
-            {playing ? (
-              <RiPauseFill className="h-3.5 w-3.5" />
-            ) : (
-              <RiPlayFill className="h-3.5 w-3.5" />
-            )}
-          </ControlButton>
-          <ControlButton label="Replay" onClick={replay}>
-            <RiRestartLine className="h-3.5 w-3.5" />
-          </ControlButton>
-        </div>
-      </div>
-
       <div
-        className="rounded-lg bg-canvasBase p-2 sm:p-3"
+        className="rounded-lg bg-canvasBase p-2"
         role="img"
         aria-label={scenario.caption}
       >
@@ -341,8 +419,20 @@ export function CiBuilds({ scenario: id }: { scenario: string }) {
         )}
       </div>
 
-      <figcaption className="m-0 text-xs leading-relaxed text-subtle">
-        {scenario.caption}
+      <figcaption className="m-0 flex items-start gap-2 text-xs leading-relaxed text-subtle">
+        <span className="flex-1">{scenario.caption}</span>
+        <span className="-my-1 flex shrink-0 items-center gap-0.5">
+          <ControlButton label={playing ? "Pause" : "Play"} onClick={toggle}>
+            {playing ? (
+              <RiPauseFill className="h-3.5 w-3.5" />
+            ) : (
+              <RiPlayFill className="h-3.5 w-3.5" />
+            )}
+          </ControlButton>
+          <ControlButton label="Replay" onClick={replay}>
+            <RiRestartLine className="h-3.5 w-3.5" />
+          </ControlButton>
+        </span>
       </figcaption>
     </figure>
   );

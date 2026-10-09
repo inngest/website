@@ -23,7 +23,52 @@ The beta uses one fixed image for new Sandboxes. A Sandbox cloned from a snapsho
 | Repository and network tools | Git, curl, OpenSSH, and CA certificates |
 | Shell and utilities | BusyBox `sh`, `grep`, `sed`, `awk`, `ripgrep`, `jq`, `find`, `tar`, and `gzip` |
 
-The image does **not** currently include Go, Rust, Java, Bun, or Deno. You cannot select a custom image or runtime in this beta. Exact installed versions can change when Inngest rebuilds the image. Check versions in the Sandbox if your task depends on them.
+The image does **not** currently include Go, Rust, Java, Bun, or Deno. To use your own image, see [Choose an image](#choose-an-image). Exact installed versions can change when Inngest rebuilds the image. Check versions in the Sandbox if your task depends on them.
+
+Inngest CI jobs start from images the same way: [Base images](/docs/labs/ci/base-images?ref=docs-sandboxes-base-images).
+
+## Choose an image
+
+Pass `from` when you create a Sandbox:
+
+<CodeGroup>
+```typescript {{ title: "TypeScript" }}
+import { image } from "inngest";
+
+const sandbox = await inngest.sandboxes.create({
+  name: "agent-1",
+  vcpu: 2,
+  memoryMb: 2048,
+  from: image.inngest("base"),
+});
+```
+
+<SdkUnsupported title="Python" feature="Sandboxes" />
+<SdkUnsupported title="Go" feature="Sandboxes" />
+</CodeGroup>
+
+- `image.inngest(name)` is an image Inngest maintains. Today that is `base`, the default image on this page. Omit `from` to use it.
+- `image.custom(ref)` is an image of yours. Inngest looks for an image published to your workspace with that name first: `"my-image"`, `"my-image:v1"`, or `"my-image@sha256:<hex>"`. Otherwise it uses the newest ready snapshot you captured under that name with `sandbox.snapshot({ name })`. See [Name a snapshot](/docs/sandboxes/features/snapshots-and-restore?ref=docs-sandboxes-base-images#name-a-snapshot).
+
+<CodeGroup>
+```typescript {{ title: "TypeScript" }}
+const sandbox = await inngest.sandboxes.create({
+  name: "agent-2",
+  vcpu: 2,
+  memoryMb: 2048,
+  from: image.custom("my-image:v1"),
+});
+
+console.log(sandbox.imageDigest);
+```
+
+<SdkUnsupported title="Python" feature="Sandboxes" />
+<SdkUnsupported title="Go" feature="Sandboxes" />
+</CodeGroup>
+
+The image is resolved once, when the Sandbox is created. Creating the same Sandbox name again returns the original Sandbox and image, even if a tag has moved. Use a new Sandbox name to pick up an updated tag.
+
+`imageDigest` (for example `sha256:...`) says exactly which image the Sandbox started from.
 
 ## Inspect the image
 

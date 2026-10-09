@@ -46,7 +46,7 @@ await deploy();
 await Promise.allSettled([lint(), test(), typecheck()]);
 ```
 
-Jobs never share a machine. To build on another job's work, use the [`from` option](/docs/labs/ci/base-images?ref=docs-labs-ci-jobs#start-a-job-from-another-job).
+Jobs never share a machine. To build on another job's work, use the [`from` option](/docs/labs/ci/base-images?ref=docs-labs-ci-jobs#another-job).
 
 ## Run a job for every combination
 

@@ -55,6 +55,31 @@ try {
 
 Keep the snapshot while you need to make more clones. Delete it when finished, and destroy each clone when its work ends. The source sandbox remains separate and needs its own cleanup.
 
+## Name a snapshot
+
+Pass `name` to find the snapshot again later, for example to use the newest one as the starting image for new sandboxes.
+
+<CodeGroup>
+```typescript {{ title: "TypeScript" }}
+const snapshot = await sandbox.snapshot({ name: "node-deps" });
+
+const { items } = await inngest.sandboxes.snapshots.list({
+  name: "node-deps",
+});
+```
+
+<SdkUnsupported title="Python" feature="Sandboxes" />
+<SdkUnsupported title="Go" feature="Sandboxes" />
+</CodeGroup>
+
+- `snapshots.list({ name })` returns only snapshots with exactly that name, newest first.
+- Inside a function, use `sandbox.snapshot(stepId, { name })` and `step.sandbox.snapshots.list(stepId, { name })`.
+- A name is held by one `CREATING` or unexpired `READY` snapshot at a time. Reusing a held name fails with `sandbox_snapshot_name_taken`.
+- Names are case-sensitive, up to 255 characters, with no control characters and no leading or trailing whitespace.
+- The name appears as `name` on the snapshot.
+
+To start new sandboxes from a named snapshot, see [Base images](/docs/sandboxes/features/base-images?ref=docs-sandboxes-snapshots-and-restore).
+
 ## Use snapshots inside an Inngest function
 
 Use `step.sandbox` when snapshot operations belong to a durable function. Give each operation a stable step ID. This example assumes `sandbox` is a running durable sandbox and `event.data.jobId` is stable:

@@ -20,7 +20,7 @@ export interface NodeEvent {
   state: NodeState;
   /** The snapshot name from here on. */
   name?: string;
-  /** A short line under the state, from here on. */
+  /** A short line under the name, from here on. */
   note?: string;
 }
 
@@ -28,6 +28,8 @@ export interface ChainNode {
   id: string;
   /** "cached" jobs have a snapshot name, plain jobs only run. */
   kind: "cached" | "job";
+  /** The job's definition, shown above its box. */
+  code: string;
   /** The app the job is defined in, shown when jobs span apps. */
   app?: string;
   events: NodeEvent[];
@@ -35,7 +37,6 @@ export interface ChainNode {
 
 export interface ChainScenario {
   type: "chain";
-  code: string[];
   caption: string;
   /** Length of the script, in seconds. */
   domain: number;
@@ -43,8 +44,6 @@ export interface ChainScenario {
   realDuration: number;
   /** Parents first: each node starts from the one before it. */
   nodes: ChainNode[];
-  /** What the arrows between nodes say. */
-  edge?: string;
 }
 
 export type BarKind =
@@ -72,7 +71,8 @@ export interface Lane {
 
 export interface TimelineScenario {
   type: "timeline";
-  code: string[];
+  /** The code the timeline is about, shown above it. */
+  code: string;
   caption: string;
   domain: number;
   realDuration: number;
@@ -84,22 +84,38 @@ export type Scenario = ChainScenario | TimelineScenario;
 const INSTALL = "ci/main/install/7c41e2";
 const BUILD = "ci/main/build/a90f3d";
 
+const installCode = `ci.job({
+  id: "install",
+  cache: {
+    key: files("pnpm-lock.yaml"),
+  },
+}, ...)`;
+
+const buildCode = `ci.job({
+  id: "build",
+  from: install,
+  cache: {
+    key: files("src/**"),
+  },
+}, ...)`;
+
+const testCode = `ci.job({
+  id: "test",
+  from: build,
+}, ...)`;
+
 const scenarios: Record<string, Scenario> = {
   cold: {
     type: "chain",
-    code: [
-      'install: cache: { key: files("pnpm-lock.yaml") }',
-      "build: from: install, cache: { key }",
-      "test: from: build",
-    ],
     caption:
-      "The first run. test looks build up, and build looks install up. Neither has a snapshot under its name yet, so each is built once, in order, and test starts from build's snapshot.",
+      "First run: nothing is found by name, so each link is built once, in order.",
     domain: 9,
     realDuration: 9,
     nodes: [
       {
         id: "install",
         kind: "cached",
+        code: installCode,
         events: [
           { at: 0, state: "idle" },
           { at: 0.4, state: "lookup", name: INSTALL },
@@ -111,17 +127,19 @@ const scenarios: Record<string, Scenario> = {
       {
         id: "build",
         kind: "cached",
+        code: buildCode,
         events: [
           { at: 0, state: "idle" },
           { at: 0.4, state: "lookup", name: BUILD },
           { at: 1.2, state: "miss", note: "waits for install" },
-          { at: 3.6, state: "building" },
+          { at: 3.6, state: "building", note: undefined },
           { at: 5.6, state: "ready" },
         ],
       },
       {
         id: "test",
         kind: "job",
+        code: testCode,
         events: [
           { at: 0, state: "waiting" },
           { at: 5.8, state: "running" },
@@ -133,19 +151,14 @@ const scenarios: Record<string, Scenario> = {
 
   warm: {
     type: "chain",
-    code: [
-      'install: cache: { key: files("pnpm-lock.yaml") }',
-      "build: from: install, cache: { key }",
-      "test: from: build",
-    ],
-    caption:
-      "Every run after that. Each name is looked up and found, so nothing is built: test starts straight from build's snapshot, with dependencies installed and output built.",
+    caption: "Every run after: both names are found, so nothing is built.",
     domain: 4.5,
     realDuration: 5,
     nodes: [
       {
         id: "install",
         kind: "cached",
+        code: installCode,
         events: [
           { at: 0, state: "idle", name: INSTALL },
           { at: 0.4, state: "lookup" },
@@ -155,6 +168,7 @@ const scenarios: Record<string, Scenario> = {
       {
         id: "build",
         kind: "cached",
+        code: buildCode,
         events: [
           { at: 0, state: "idle", name: BUILD },
           { at: 0.4, state: "lookup" },
@@ -164,6 +178,7 @@ const scenarios: Record<string, Scenario> = {
       {
         id: "test",
         kind: "job",
+        code: testCode,
         events: [
           { at: 0, state: "waiting" },
           { at: 1.4, state: "running" },
@@ -175,26 +190,22 @@ const scenarios: Record<string, Scenario> = {
 
   invalidate: {
     type: "chain",
-    code: [
-      "pnpm-lock.yaml changed",
-      "install's key → new name",
-      "build starts from install → new name",
-    ],
     caption:
-      "A change at the top of a chain. install's key changes, so its name does. build's name includes the snapshot it starts from, so it changes too, even though build's own key didn't. Both miss and rebuild; nothing stale is ever started from.",
+      "pnpm-lock.yaml changes: install gets a new name, so build does too. Both rebuild.",
     domain: 9.5,
     realDuration: 10,
     nodes: [
       {
         id: "install",
         kind: "cached",
+        code: installCode,
         events: [
           { at: 0, state: "ready", name: INSTALL },
           {
             at: 1,
             state: "changed",
             name: "ci/main/install/e03b9a",
-            note: "pnpm-lock.yaml changed",
+            note: "lockfile changed",
           },
           { at: 2.6, state: "lookup", note: undefined },
           { at: 3.2, state: "miss" },
@@ -205,13 +216,14 @@ const scenarios: Record<string, Scenario> = {
       {
         id: "build",
         kind: "cached",
+        code: buildCode,
         events: [
           { at: 0, state: "ready", name: BUILD },
           {
             at: 1.8,
             state: "changed",
             name: "ci/main/build/5d27c1",
-            note: "starts from a new install",
+            note: "new install",
           },
           { at: 2.6, state: "lookup", note: undefined },
           { at: 3.2, state: "miss", note: "waits for install" },
@@ -222,6 +234,7 @@ const scenarios: Record<string, Scenario> = {
       {
         id: "test",
         kind: "job",
+        code: testCode,
         events: [
           { at: 0, state: "idle" },
           { at: 2.6, state: "waiting" },
@@ -234,17 +247,19 @@ const scenarios: Record<string, Scenario> = {
 
   "cross-app": {
     type: "chain",
-    code: ['test: from: image.job("platform/node-base")'],
     caption:
-      "Starting from another app's job. web asks platform for node-base. platform looks it up under its own name, builds it once from its deployed commit if it's missing, and web's test starts from the snapshot.",
+      "web asks platform for node-base. platform builds it once, and web's test starts from it.",
     domain: 6.5,
     realDuration: 7,
-    edge: "image.job",
     nodes: [
       {
         id: "node-base",
         kind: "cached",
         app: "platform",
+        code: `ci.job({
+  id: "node-base",
+  cache: { key: ... },
+}, ...)`,
         events: [
           { at: 0, state: "idle" },
           {
@@ -262,6 +277,10 @@ const scenarios: Record<string, Scenario> = {
         id: "test",
         kind: "job",
         app: "web",
+        code: `ci.job({
+  id: "test",
+  from: image.job("platform/node-base"),
+}, ...)`,
         events: [
           { at: 0, state: "waiting" },
           { at: 4, state: "running" },
@@ -273,9 +292,15 @@ const scenarios: Record<string, Scenario> = {
 
   "just-in-time": {
     type: "timeline",
-    code: ['cache: { key, warm: [{ cron: "0 3 * * *" }] }'],
+    code: `ci.job({
+  id: "install",
+  cache: {
+    key: files("pnpm-lock.yaml"),
+    warm: [{ cron: "0 3 * * *" }],
+  },
+}, ...)`,
     caption:
-      "Without warm, the first pull request after a change pays for the build while its jobs wait. With warm, a cron builds it ahead of time, so the pull request finds it and starts right away.",
+      "Without warm, the pull request waits for the build. With it, the build already happened overnight.",
     domain: 9,
     realDuration: 9,
     lanes: [
@@ -311,9 +336,10 @@ const scenarios: Record<string, Scenario> = {
 
   herd: {
     type: "timeline",
-    code: ["three pull requests push at once"],
+    code: `ci.job({ id: "test", from: install }, ...)
+// three pull requests push at once`,
     caption:
-      "Runs that all miss at once. Each asks for the build, but builds of one name take turns and look the name up again when they start, so the first builds it and the others find its snapshot.",
+      "Three runs miss at once. install is built once, and the other two find it.",
     domain: 7.5,
     realDuration: 8,
     lanes: [

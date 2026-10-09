@@ -84,7 +84,7 @@ pnpm run ci release --event push
 
 - A pipeline runs on an event built from your checkout: your current branch and `HEAD` against `main`.
 - `--event` picks the trigger when a pipeline has several, such as `push` or `pull_request.synchronize`. In a terminal, `inngest-ci` asks instead.
-- A job runs alone, on its own machine, including the jobs it starts [`from`](/docs/labs/ci/base-images?ref=docs-labs-ci-local#start-a-job-from-another-job).
+- A job runs alone, on its own machine, including the jobs it starts [`from`](/docs/labs/ci/base-images?ref=docs-labs-ci-local#another-job).
 - If a pipeline and a job share a name, pass `--pipeline <id>` or `--job <id>`.
 - A pipeline whose trigger filter does not match your checkout, such as a push to `main` from another branch, starts no run, and `inngest-ci` says so.
 - Cron triggers cannot run locally yet. Give the pipeline a [`ci.manual()`](/docs/labs/ci/reference?ref=docs-labs-ci-local#triggers) trigger to run it on demand.

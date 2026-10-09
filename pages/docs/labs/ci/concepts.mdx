@@ -69,7 +69,7 @@ const build = ci.job({ id: "build", machine: { vcpu: 4 } }, async () => {
 
 ## Starting from another job
 
-The `from` job option starts a job on a copy of another job's machine. The parent runs once, however many jobs start from it. See [Start a job from another job](/docs/labs/ci/base-images?ref=docs-labs-ci-concepts#start-a-job-from-another-job).
+The `from` job option starts a job on a copy of another job's machine. The parent runs once, however many jobs start from it. See [Start a job from another job](/docs/labs/ci/base-images?ref=docs-labs-ci-concepts#another-job).
 
 ```typescript {{ title: "TypeScript" }}
 const lint = ci.job({ id: "lint", from: base }, async () => {

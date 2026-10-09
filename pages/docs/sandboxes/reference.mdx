@@ -13,7 +13,7 @@ export const description = "Inngest Sandboxes API reference: current beta calls 
 - Use a trusted server-side Node.js 20+ runtime with the standard Fetch API and `inngest@4.21.1` or newer. Version 4.21.1 includes fixes for snapshot and list response validation required by these guides.
 - Enable Sandboxes beta access for the Inngest environment and set `INNGEST_SIGNING_KEY`. A `403 access_denied` response means access is not enabled.
 - Keep the signing key and Sandbox client out of browser code.
-- The beta uses the default runtime image. Fresh Sandboxes accept exactly `1 vCPU / 1024 MiB`, `2 / 2048`, or `4 / 4096`. A clone inherits its snapshot's resources.
+- Fresh Sandboxes start from the `base` image unless you set `from`. Fresh Sandboxes accept exactly `1 vCPU / 1024 MiB`, `2 / 2048`, or `4 / 4096`. A clone inherits its snapshot's resources.
 
 ## Choose the TypeScript surface
 
@@ -66,6 +66,8 @@ await sandbox.destroy("destroy-sandbox");
 <SdkUnsupported title="Go" feature="Sandboxes" />
 </CodeGroup>
 
+Create options include `from`, the image to start from: `image.inngest("base")` (the default) or `image.custom(ref)`, both imported from `inngest`. The image is resolved once at Create, and the Sandbox's `imageDigest` records it. See [Choose an image](/docs/sandboxes/features/base-images?ref=docs-sandboxes-reference#choose-an-image).
+
 Use a stable job-derived name. A matching active name and configuration returns the existing Sandbox; a conflicting configuration returns `sandbox_name_taken`. Completed calls replay from memoized step results. Step memoization does not preserve guest processes or files after the Sandbox ends.
 
 ## Operation index
@@ -97,6 +99,8 @@ Pause and Resume keep the same Sandbox ID, filesystem, memory, environment, and 
 - Fresh Sandbox Create can select existing workspace secrets with `secrets: ["SECRET_NAME"]`. The SDK and REST API send names, and Inngest injects their values under the same environment variable names. Snapshot clones restore captured values and cannot select new secrets. See [Secrets](/docs/sandboxes/features/secrets).
 
 ## Snapshots and clones
+
+`sandbox.snapshot({ name })` optionally names the snapshot; `snapshots.list({ name })` returns snapshots with exactly that name, newest first. A name is held by one `CREATING` or unexpired `READY` snapshot at a time, or Create fails with `sandbox_snapshot_name_taken`. See [Name a snapshot](/docs/sandboxes/features/snapshots-and-restore?ref=docs-sandboxes-reference#name-a-snapshot).
 
 `sandbox.snapshot()` captures memory, disk, environment, image, and resources while the source Sandbox remains running. The SDK waits for `READY` by default, up to five minutes. A timeout stops polling; snapshot creation may continue. `snapshot.clone()` creates a **new Sandbox ID** from a READY snapshot. A clone inherits the captured resources, filesystem, memory, and environment. Snapshots are crash-consistent and expire at a server-defined time. Flush application state before taking one.
 
