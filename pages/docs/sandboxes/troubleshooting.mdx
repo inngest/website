@@ -17,9 +17,9 @@ When a Sandbox operation fails, find its step in the run trace or inspect the di
 
 ## Create returns `403 access_denied`
 
-**Check:** Confirm that the call targets the intended Inngest Cloud environment, that Sandbox beta access is enabled there, and that server-side code uses that environment’s `INNGEST_SIGNING_KEY`. Keep the key out of browser code.
+**Check:** Confirm that the account is on Pro or above, that the call targets the intended Inngest Cloud environment, and that server-side code uses that environment’s `INNGEST_SIGNING_KEY`. Keep the key out of browser code.
 
-**Fix:** Ask the Inngest team to enable Sandbox beta access for that environment. Then retry Create. Changing the Sandbox name or size does not grant access.
+**Fix:** If the account is on a plan below Pro, [upgrade your plan](https://app.inngest.com/billing/plans), then retry Create. Changing the Sandbox name or size does not grant access.
 
 ## Create rejects a size or cannot place the Sandbox
 

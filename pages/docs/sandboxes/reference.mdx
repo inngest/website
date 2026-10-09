@@ -11,7 +11,7 @@ export const description = "Inngest Sandboxes API reference: current beta calls 
 ## Before you call the beta API
 
 - Use a trusted server-side Node.js 20+ runtime with the standard Fetch API and `inngest@4.21.1` or newer. Version 4.21.1 includes fixes for snapshot and list response validation required by these guides.
-- Enable Sandboxes beta access for the Inngest environment and set `INNGEST_SIGNING_KEY`. A `403 access_denied` response means access is not enabled.
+- Use an Inngest Cloud account on Pro or above and set `INNGEST_SIGNING_KEY`. A `403 access_denied` response means the account's plan does not include Sandboxes; [upgrade your plan](https://app.inngest.com/billing/plans).
 - Keep the signing key and Sandbox client out of browser code.
 - The beta uses the default runtime image. Fresh Sandboxes accept exactly `1 vCPU / 1024 MiB`, `2 / 2048`, or `4 / 4096`. A clone inherits its snapshot's resources.
 

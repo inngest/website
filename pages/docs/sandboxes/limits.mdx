@@ -10,7 +10,7 @@ Choose a supported Sandbox size before you start work, then check command output
 
 | Limit | Current beta value and scope | If you reach it |
 | --- | --- | --- |
-| Access | Inngest Cloud environment with Sandbox beta access enabled. | `403 access_denied` means the environment lacks access. Ask Inngest to enable the beta. |
+| Access | Inngest Cloud account on Pro or above. | `403 access_denied` means the account's plan does not include Sandboxes. [Upgrade your plan](https://app.inngest.com/billing/plans). |
 | Size | Exact per-Sandbox pairs: **1 vCPU / 1,024 MiB**, **2 / 2,048 MiB**, or **4 / 4,096 MiB**. A clone inherits its snapshot's size. | Choose both values from one pair. Entitlement or capacity can still reject a supported size; contact Inngest for other sizes. |
 | Active name | 1–255 Unicode characters, unique among active Sandboxes in a workspace. | Reusing a name with the same configuration returns the existing Sandbox. Conflicting configuration returns `409 sandbox_name_taken`. |
 | Create readiness wait | TypeScript SDK waits **120 seconds by default**. `runningTimeout` changes the wait; `false` returns before readiness. | A wait timeout does not cancel Create or destroy the Sandbox. Get its state and clean up if needed. This is not a boot-time guarantee. |
