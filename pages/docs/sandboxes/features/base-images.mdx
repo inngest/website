@@ -48,7 +48,7 @@ const sandbox = await inngest.sandboxes.create({
 </CodeGroup>
 
 - `image.inngest(name)` is an image Inngest maintains. Today that is `base`, the default image on this page. Omit `from` to use it.
-- `image.custom(ref)` is an image of yours. Inngest looks for an image published to your workspace with that name first: `"my-image"`, `"my-image:v1"`, or `"my-image@sha256:<hex>"`. Otherwise it uses the newest ready snapshot you captured under that name with `sandbox.snapshot({ name })`. See [Name a snapshot](/docs/sandboxes/features/snapshots-and-restore?ref=docs-sandboxes-base-images#name-a-snapshot).
+- `image.custom(ref)` is an image published to your workspace: `"my-image"`, `"my-image:v1"`, or `"my-image@sha256:<hex>"`.
 
 <CodeGroup>
 ```typescript {{ title: "TypeScript" }}
@@ -69,6 +69,17 @@ console.log(sandbox.imageDigest);
 The image is resolved once, when the Sandbox is created. Creating the same Sandbox name again returns the original Sandbox and image, even if a tag has moved. Use a new Sandbox name to pick up an updated tag.
 
 `imageDigest` (for example `sha256:...`) says exactly which image the Sandbox started from.
+
+### Image or snapshot?
+
+| | Image | [Snapshot](/docs/sandboxes/features/snapshots-and-restore?ref=docs-sandboxes-base-images) |
+| --- | --- | --- |
+| Starts | Fresh, from a filesystem | Where the source left off: memory, processes, and files |
+| Size, environment, secrets | Yours to set | The source's |
+| Lasts | Until you delete it | Until it expires |
+| Use it for | A base you reuse across many runs | Fanning out from one prepared machine, or keeping a running process like an open browser |
+
+A common pattern uses both: build an image with your toolchain, start a Sandbox from it, get it ready, then snapshot it and clone that for each task.
 
 ## Inspect the image
 

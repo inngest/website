@@ -78,7 +78,7 @@ const { items } = await inngest.sandboxes.snapshots.list({
 - Names are case-sensitive, up to 255 characters, with no control characters and no leading or trailing whitespace.
 - The name appears as `name` on the snapshot.
 
-To start new sandboxes from a named snapshot, see [Base images](/docs/sandboxes/features/base-images?ref=docs-sandboxes-snapshots-and-restore).
+Find a named snapshot with `snapshots.list({ name })` and `clone()` it. For a base you reuse across many runs, use an image instead: [Image or snapshot?](/docs/sandboxes/features/base-images?ref=docs-sandboxes-snapshots-and-restore#image-or-snapshot)
 
 ## Use snapshots inside an Inngest function
 

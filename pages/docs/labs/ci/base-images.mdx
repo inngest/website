@@ -19,7 +19,8 @@ Set `from` on a job to start it with dependencies installed and output built. A 
 | `base` | [Another job in this app](#another-job) |
 | `base.with(input)` | [Another job, built with an input](#another-job) |
 | `image.inngest("base")` | [An image Inngest maintains](#an-inngest-image) |
-| `image.custom("name")` | [Your published image or named snapshot](#your-own-image) |
+| `image.custom("name")` | [An image published to your workspace](#your-own-image) |
+| `image.snapshot("name")` | [A sandbox snapshot you captured](#a-snapshot) |
 | `image.job("app/job")` | [A job in another app](#another-app-s-job) |
 
 <AnnotatedCode>
@@ -63,7 +64,7 @@ The copy has the checkout `base` was built on. `checkout()` moves it to this run
 </Annotation>
 
 <Annotation id="custom" lines="18" tease="your image" title="Start from your own image" href="#your-own-image" linkText="Your own image">
-A browser toolchain you published or captured once, used by any job that needs it.
+A browser toolchain image your team publishes, used by any job that needs it.
 </Annotation>
 
 </AnnotatedCode>
@@ -95,13 +96,23 @@ const lint = ci.job({ id: "lint", from: image.inngest("base") }, fn);
 const e2e = ci.job({ id: "e2e", from: image.custom("playwright") }, fn);
 ```
 
-`image.custom()` uses the image published to your workspace with that name, or else the [snapshot you captured](/docs/sandboxes/features/snapshots-and-restore?ref=docs-labs-ci-base-images) under it:
+An image published to your workspace, like a browser toolchain your team maintains. Use an image for a base you reuse across many runs: each job starts fresh on it, at its own size.
+
+Cached jobs on it rebuild when you publish a new version.
+
+## A snapshot
 
 ```typescript {{ title: "TypeScript" }}
-await sandbox.snapshot({ name: "playwright" });
+const e2e = ci.job({ id: "e2e", from: image.snapshot("browser-ready") }, fn);
 ```
 
-Cached jobs on it rebuild when you publish or capture a new one.
+A [snapshot you captured](/docs/sandboxes/features/snapshots-and-restore?ref=docs-labs-ci-base-images) from a sandbox, with its memory and running processes:
+
+```typescript {{ title: "TypeScript" }}
+await sandbox.snapshot({ name: "browser-ready" });
+```
+
+Use a snapshot to start exactly where a machine left off, like a browser already open. Snapshots expire, so for a long-lived base, use an image.
 
 ## Another app's job
 

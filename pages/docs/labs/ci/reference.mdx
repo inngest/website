@@ -292,7 +292,9 @@ Each job builds on the snapshot of the one before it. When a job's [cache key](#
 | `base` | The job `base`. |
 | `build.with("web")` | The job `build`, run with that input. |
 | `({ input }) => build.with(input)` | A parent that depends on this job's own input. |
-| `image.custom("name")` | A sandbox you captured under that name. |
+| `image.inngest("base")` | An image Inngest maintains. |
+| `image.custom("name")` | An image published to your workspace. |
+| `image.snapshot("name")` | A sandbox snapshot you captured under that name. |
 | `image.job("app/job", input?)` | A job another app defines. |
 
 - The parent must be defined on the same CI client. A job or `job.with(input)` is checked when the app boots, and its input must pass the parent's `input` schema. A function is checked when the job runs.
@@ -302,7 +304,11 @@ Each job builds on the snapshot of the one before it. When a job's [cache key](#
 
 ### Base images
 
-`image.custom(name)` starts from the newest ready snapshot with exactly that name. `name` cannot be empty, contain whitespace, or start with `ci/`.
+`image.inngest(name)` starts from an image Inngest maintains, such as `base`.
+
+`image.custom(ref)` starts from an image published to your workspace: `"name"`, `"name:tag"`, or `"name@sha256:<hex>"`.
+
+`image.snapshot(name)` starts from the snapshot with exactly that name, including its memory and running processes. `name` cannot be empty, contain whitespace, or start with `ci/`.
 
 `image.job("app/job", input?)` starts from a job another app in the same Inngest environment defines. `input` is the job's input, when it takes one.
 
