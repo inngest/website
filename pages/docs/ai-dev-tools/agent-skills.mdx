@@ -13,7 +13,7 @@ export const description = "Install Inngest plugins and skills for Claude Code, 
 Inngest provides official plugins and [agent skills](https://agentskills.io) for AI coding agents like Claude Code, Codex, Cursor, and Windsurf. They give your agent current guidance for building reliable applications with Inngest — from initial setup to advanced flow control and realtime updates.
 
 <Callout>
-  Use the Claude Code or Codex plugin for the best experience. Each plugin packages Inngest skills with local dev server MCP wiring so your agent can write code and inspect running functions in one loop.
+  The Claude Code plugin is available now from Anthropic's directory. It includes coding skills and an Inngest Cloud MCP connection with OAuth. The Codex plugin is coming soon and is currently in review.
 </Callout>
 
 To compare skills, MCP, the CLI, and LLM-ready docs, see [AI and MCP](/docs/ai-dev-tools).
@@ -22,8 +22,8 @@ To compare skills, MCP, the CLI, and LLM-ready docs, see [AI and MCP](/docs/ai-d
 
 | AI tool | Recommended install | What it includes |
 | --- | --- | --- |
-| **Claude Code** | Inngest Claude Code plugin | Core Inngest skills, MCP config for the local dev server, and an eval harness |
-| **Codex** | Inngest Codex plugin bundle | Codex skills, Codex plugin metadata, MCP config, copyable examples, local marketplace metadata, and an eval harness |
+| **Claude Code** | [Inngest Claude Code plugin](#claude-code-plugin) | Coding skills, Cloud MCP with OAuth, and commands for connection recovery, run debugging, and codebase audits |
+| **Codex** | [Coming soon](#codex-plugin-coming-soon) | Plugin in review; portable skills and standalone MCP are available today |
 | **Cursor, Windsurf, and other agents** | Standalone `inngest-skills` repository | The core skill content in a portable format |
 
 ## Why use Inngest plugins?
@@ -35,21 +35,63 @@ A model's training data can be outdated or incomplete. Inngest plugins give your
 - **Step-by-step guidance:** structured instructions for setup, steps, flow control, and realtime.
 - **Repository audits:** guidance for finding durability gaps in an existing codebase before changing it.
 
-## Install
+## Claude Code plugin
+
+### Install in the CLI
+
+Run this in your terminal to install the published plugin from Anthropic's directory:
 
 <CodeGroup>
 
-```bash {{ title: "Claude Code" }}
-/plugin marketplace add inngest/inngest-claude-code-plugin
-/plugin install inngest@inngest-claude-code-plugin
+```bash {{ title: "Terminal" }}
+claude plugin install inngest@anthropic-plugin-directory
 ```
 
-```text {{ title: "Codex" }}
-git clone https://github.com/inngest/inngest-codex-plugin.git
-
-# In Codex:
-/plugin install /absolute/path/to/inngest-codex-plugin/plugins/inngest
+```text {{ title: "Inside Claude Code" }}
+/plugin install inngest@anthropic-plugin-directory
 ```
+
+</CodeGroup>
+
+Start a new Claude Code session, run `/mcp`, and select `plugin:inngest:inngest-cloud` to sign in. Complete OAuth in your browser with the Inngest account and permissions you want Claude to use.
+
+### Install in Claude desktop
+
+In [Claude's directory](https://claude.ai/directory), find and add **Inngest**. Open the plugin's **Connectors** tab, add the Inngest connector if needed, then connect your Inngest account.
+
+On Team and Enterprise plans, an Owner must add the connector for the organization before members can connect. See [Claude's bundled connector guide](https://claude.com/docs/plugins/overview#bundled-connectors).
+
+Plugins added through Claude's directory also sync to Claude Code when you sign in with the same Claude account. Use either that synced install or the CLI install above; a separate local install can take precedence over the synced copy.
+
+### Try the plugin
+
+```text
+Use the Inngest plugin to show my account and environments.
+```
+
+The plugin also includes these Claude Code commands:
+
+| Command | Use it to |
+| --- | --- |
+| `/inngest:connect` | Diagnose the connection, recover sign-in, and verify your account and environments |
+| `/inngest:debug-run` | Investigate a run by ID and explain the failing step |
+| `/inngest:audit` | Find durability gaps in an existing codebase |
+
+If Cloud tools are unavailable in Claude Code, run `/inngest:connect` and follow its recovery steps. In Claude chat, use the plugin's **Connectors** tab to sign in.
+
+The plugin already includes Cloud MCP. Avoid adding a second manual Cloud connection. For local development, add the optional [Dev Server MCP connection](/docs/ai-dev-tools/mcp#connect-to-the-dev-server).
+
+## Codex plugin (coming soon)
+
+The Inngest Codex plugin is currently in review. Directory installation instructions will be available here once it is published.
+
+In the meantime, use [portable skills](#portable-skills) and [standalone Inngest MCP](/docs/ai-dev-tools/mcp) with Codex.
+
+## Portable skills
+
+For agents that support skills, install the shared Inngest skills directly:
+
+<CodeGroup>
 
 ```bash {{ title: "Skills.sh" }}
 npx skills add inngest/inngest-skills
@@ -76,16 +118,19 @@ For other agents, reference the [standalone skills repository](https://github.co
 | **inngest-middleware** | Create middleware for cross-cutting concerns | Middleware lifecycle, dependency injection, built-in middleware |
 | **inngest-realtime** | Stream workflow updates to users | Realtime channels, subscription tokens, React hooks, SSE consumers |
 
-## Additional Codex plugin skills
+## Additional skills
 
-The Codex plugin adds skills that are tuned for repository-scale agent work:
+The Claude Code plugin also includes skills for Cloud operations and working with existing codebases:
 
 | Skill | Description | What it covers |
 | --- | --- | --- |
 | **inngest-brownfield-audit** | Audit an existing codebase before changing it | Framework detection, existing Inngest usage, webhooks, cron jobs, queues, long-running routes, polling loops, AI agents, and safe first integration slices |
 | **inngest-agents** | Build durable AI agents with Inngest and AgentKit | Model calls, tool calls, human approval, realtime progress, retries, and provider flow control |
 | **inngest-v3-v4-migration** | Upgrade TypeScript SDK v3 projects to v4 | Trigger syntax, typed events, serve options, `step.invoke`, native realtime, local dev mode, and mixed v3/v4 cleanup |
-| **inngest-api** | Operate Inngest through the alpha API CLI | Account, environment, webhook, app sync, function invocation, run, and trace operations |
+| **inngest-cloud** | Inspect and operate Inngest Cloud through OAuth MCP | Environments, apps, functions, events, runs, traces, and Insights |
+| **inngest-cli** | Run the CLI and local Dev Server | Local development, testing, MCP setup, and self-hosted workflows |
+| **inngest-api-cli** | Operate Inngest through the API CLI | Account, environment, webhook, app sync, function invocation, run, and trace operations |
+| **inngest-api** | Use the REST API v2 directly | OpenAPI discovery, authentication, and raw HTTP requests |
 
 ## Language support
 
@@ -105,7 +150,7 @@ This enables a complete write, test, and debug loop powered by your coding agent
 
 ## Resources
 
-Both plugins share their core skills with [`inngest/inngest-skills`](https://github.com/inngest/inngest-skills), so every install stays aligned. The Codex plugin adds Codex-specific skills, examples, and evals.
+The plugins share their core skills with [`inngest/inngest-skills`](https://github.com/inngest/inngest-skills).
 
 <ResourceGrid cols={3}>
 
@@ -113,15 +158,15 @@ Both plugins share their core skills with [`inngest/inngest-skills`](https://git
   href: "https://github.com/inngest/inngest-claude-code-plugin",
   name: "Claude Code plugin",
   icon: ComputerDesktopIcon,
-  description: "Official Inngest plugin for Claude Code with skills and dev-server MCP wiring.",
+  description: "Official Inngest plugin for Claude Code with coding skills and Cloud MCP with OAuth.",
   pattern: 1,
 }}/>
 
 <Resource resource={{
   href: "https://github.com/inngest/inngest-codex-plugin",
-  name: "Codex plugin",
+  name: "Codex plugin (coming soon)",
   icon: ComputerDesktopIcon,
-  description: "Official Inngest plugin for Codex with skills, examples, evals, and dev-server MCP wiring.",
+  description: "Inngest's Codex plugin source. Directory publication is currently in review.",
   pattern: 1,
 }}/>
 
