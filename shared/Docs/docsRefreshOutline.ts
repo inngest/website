@@ -470,6 +470,14 @@ export const docsRefreshOutline: DocsRefreshPage[] = [
             href: "/docs/sandboxes/features",
             children: [
               {
+                title: "Run code",
+                href: "/docs/sandboxes/features/run-code",
+              },
+              {
+                title: "Exit codes and errors",
+                href: "/docs/sandboxes/features/exit-codes",
+              },
+              {
                 title: "Base images",
                 href: "/docs/sandboxes/features/base-images",
               },
@@ -500,6 +508,18 @@ export const docsRefreshOutline: DocsRefreshPage[] = [
               {
                 title: "Managed lifecycle",
                 href: "/docs/sandboxes/features/managed-lifecycle",
+              },
+              {
+                title: "Run-owned Sandboxes",
+                href: "/docs/sandboxes/features/run-owned",
+              },
+              {
+                title: "Tools and code mode",
+                href: "/docs/sandboxes/features/tools",
+              },
+              {
+                title: "Sandbox functions and agents",
+                href: "/docs/sandboxes/features/sandbox-functions",
               },
               {
                 title: "Isolation and security",

@@ -23,7 +23,7 @@ import {
 
 /**
  * What a node shows in each state. A hue always means the same thing: blue is
- * work in progress, honey a build, green a usable snapshot, purple a new name.
+ * work in progress, honey a build, green a usable image, purple a new name.
  */
 const STATE: Record<
   NodeState,
@@ -66,7 +66,7 @@ const STATE: Record<
     active: true,
   },
   ready: {
-    label: "snapshot ready",
+    label: "image ready",
     dot: "bg-matcha-500",
     ring: "ring-matcha-500",
     active: false,
@@ -406,8 +406,8 @@ function Timeline({ scenario, t }: { scenario: TimelineScenario; t: number }) {
 }
 
 /**
- * An animated diagram of how Inngest CI finds and builds the snapshots jobs
- * start from: chains of cached jobs, invalidation, warming and builds shared
+ * An animated diagram of how Inngest CI finds and builds the images jobs
+ * start from: chains of cached jobs, invalidation, refreshing and builds shared
  * by many runs. Each part sits under the code it's about. It plays while on
  * screen and rests on its last frame with reduced motion.
  */

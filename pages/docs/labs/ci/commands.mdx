@@ -11,7 +11,7 @@ export const description = "Run shell commands in an Inngest CI job with the $ t
   Inngest CI is an Inngest Labs project: early, moving fast, and shaped by your feedback. [What's Labs?](/docs/labs?ref=docs-labs-ci-commands)
 </Info>
 
-`$` runs a command on the job's machine. A non-zero exit code throws `CommandFailedError`, which fails the job.
+`$` runs a command on the job's machine. A non-zero exit code throws `CommandFailedError`, which fails the job. [Sandboxes](/docs/sandboxes/features/exit-codes?ref=docs-labs-ci-commands) follow the same rule, so a command behaves the same in a job and in your own functions.
 
 ```typescript {{ title: "TypeScript" }}
 const test = ci.job("test", async () => {

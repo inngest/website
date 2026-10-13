@@ -18,7 +18,7 @@ export type NodeState =
 export interface NodeEvent {
   at: number;
   state: NodeState;
-  /** The snapshot name from here on. */
+  /** The image name from here on. */
   name?: string;
   /** A short line under the name, from here on. */
   note?: string;
@@ -26,7 +26,7 @@ export interface NodeEvent {
 
 export interface ChainNode {
   id: string;
-  /** "cached" jobs have a snapshot name, plain jobs only run. */
+  /** "cached" jobs have an image name, plain jobs only run. */
   kind: "cached" | "job";
   /** The job's definition, shown above its box. */
   code: string;
@@ -296,16 +296,16 @@ const scenarios: Record<string, Scenario> = {
   id: "install",
   cache: {
     key: files("pnpm-lock.yaml"),
-    warm: [{ cron: "0 3 * * *" }],
+    refresh: [{ cron: "0 3 * * *" }],
   },
 }, ...)`,
     caption:
-      "Without warm, the pull request waits for the build. With it, the build already happened overnight.",
+      "Without refresh, the pull request waits for the build. With it, the build already happened overnight.",
     domain: 9,
     realDuration: 9,
     lanes: [
       {
-        label: "Pull request, not warmed",
+        label: "Pull request, not refreshed",
         bars: [
           { start: 0.3, end: 0.8, kind: "miss", label: "miss" },
           {
@@ -319,12 +319,12 @@ const scenarios: Record<string, Scenario> = {
         done: { at: 7.6, label: "done" },
       },
       {
-        label: "warm: 3am cron",
+        label: "refresh: 3am cron",
         bars: [{ start: 0, end: 0.3, kind: "warm", label: "" }],
         done: { at: 0.3, label: "built overnight" },
       },
       {
-        label: "Pull request, warmed",
+        label: "Pull request, refreshed",
         bars: [
           { start: 0.3, end: 0.8, kind: "hit", label: "hit" },
           { start: 0.8, end: 2.8, kind: "run", label: "test" },

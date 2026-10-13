@@ -30,6 +30,10 @@ export const description = "Inngest CI recipes: start services and wait for them
 | --- | --- | --- |
 | Build once, test many | `ci.job({ id: "test", from: build }, fn)` | [Base images](/docs/labs/ci/base-images?ref=docs-labs-ci-recipes#another-job) |
 | Skip unchanged tests | `cache: { key: files("src/**", "test/**") }` | [Caching](/docs/labs/ci/caching?ref=docs-labs-ci-recipes) |
+| Have the cache ready before pull requests | `cache: { key: files("pnpm-lock.yaml"), refresh: [{ cron: "0 3 * * *" }] }` | [Caching](/docs/labs/ci/caching?ref=docs-labs-ci-recipes#refresh-the-cache-ahead-of-time) |
+| Rebuild a cache on demand | `await inngest.send(invalidateEvent("base"))` | [Caching](/docs/labs/ci/caching?ref=docs-labs-ci-recipes#rebuild-on-demand) |
+| Start from another app's job | `ci.job({ id: "test", from: image.job("platform/node-base") }, fn)` | [Base images](/docs/labs/ci/base-images?ref=docs-labs-ci-recipes#another-app-s-job) |
+| Test against another repository | `await checkout({ repo: "acme/api", ref: "main" })` | [Machines](/docs/labs/ci/machines?ref=docs-labs-ci-recipes) |
 | Retry a flaky command | `` await $`pnpm test`.retries(2) `` | [Commands](/docs/labs/ci/commands?ref=docs-labs-ci-recipes#retries) |
 | Test every Node version | `ci.matrix` over `axes: { node: ["20", "22"] }` | [Jobs](/docs/labs/ci/jobs?ref=docs-labs-ci-recipes#run-a-job-for-every-combination) |
 | Dump state when a command hangs | `` await $`pnpm test`.timeout("10m").onTimeout(async () => { return $`ps auxf`; }) `` | [Reference](/docs/labs/ci/reference?ref=docs-labs-ci-recipes#commands) |

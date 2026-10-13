@@ -4,14 +4,17 @@ export const description = "Inngest Sandboxes guides: run isolated code, preserv
 # Sandboxes guides
 > Run isolated code, preserve work across lifecycle changes, and inspect failures in one durable run.
 
-Start with the TypeScript quick start to run a command in a Sandbox. Then use these guides to preserve files across lifecycle changes, inspect failures in the run trace, and clean up resources after work ends.
+Start with the TypeScript quick start to run code in a Sandbox. Then use these guides to keep one Sandbox across statements, give agents tools, preserve files across lifecycle changes, and inspect failures in the run trace.
 
-> **Access-gated beta.** The current TypeScript APIs support Sandbox creation, commands, and cleanup. You can select existing workspace secrets when you create a Sandbox. SSH and S3-backed persistent mounts are planned for launch.
+SSH and S3-backed persistent mounts are planned for launch.
 
 ## Start and run
 
-- [Run your first Sandbox](/docs/sandboxes/quick-start). Create a Sandbox in a durable TypeScript function, run one command, inspect its result, and destroy it.
-- **Run code and commands.** Use [Managed lifecycle](/docs/sandboxes/features/managed-lifecycle) for `step.sandbox` inside a function. The immediate `inngest.sandboxes` client supports command inputs, captured output, and timeouts. A planned `step.sandbox.typescript` helper will start, run TypeScript, and stop a Sandbox in one call.
+- [Run your first Sandbox](/docs/sandboxes/quick-start). Run Python in a durable TypeScript function, get the result as a value, and inspect the trace.
+- [Run code](/docs/sandboxes/features/run-code). Use `step.sandbox.python`, `ts`, and `sh` with `input`, a `runtime`, and a result schema.
+- [Keep one Sandbox for several statements](/docs/sandboxes/features/managed-lifecycle). Use `await using` or `group.sandbox()`. The immediate `inngest.sandboxes` client supports command inputs, captured output, and timeouts.
+- [Let Sandbox code call your functions](/docs/sandboxes/features/tools). Declare tools that run as durable steps, and use code mode to give an LLM one tool that writes code against them.
+- [Give an agent a Sandbox](/docs/sandboxes/features/sandbox-functions). Turn `sandbox.fn` into tools for the AI SDK, Anthropic, OpenAI, or MCP, and run the agent loop in your function.
 - **Move files and manage processes.** The beta APIs support file upload and download, background processes, retained output, and live output. File transfer and live streams currently use the direct server-side client.
 
 ## Keep or branch your work
@@ -28,5 +31,6 @@ Start with the TypeScript quick start to run a command in a Sandbox. Then use th
 
 ## Recover and clean up
 
+- **Handle failures.** [Exit codes and errors](/docs/sandboxes/features/exit-codes) explains how a failed command fails its step, how to allow exit codes, and how to read the failure.
 - **Handle retries and uncertain outcomes.** [Managed lifecycle](/docs/sandboxes/features/managed-lifecycle) explains safe step retries and `operation_ambiguous`. Inspect the current Sandbox or external effect before repeating a command that may already have run.
-- **Clean up after success and failure.** The beta `step.sandbox.create()` flow needs an explicit Destroy step and a failure cleanup path when a permanently failed run could leave a Sandbox. Direct `inngest.sandboxes` calls need application cleanup, such as `try/finally`.
+- **Clean up.** [Run-owned Sandboxes](/docs/sandboxes/features/run-owned) are cleaned up when the run ends. Direct `inngest.sandboxes` calls need application cleanup, such as `try/finally`.

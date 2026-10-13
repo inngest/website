@@ -9,8 +9,6 @@ export const description = "Clone Inngest Sandboxes: prepare an environment once
 
 If several jobs need the same dependencies, prepare one Sandbox, snapshot it, and clone a separate Sandbox for each job. Each clone starts from the captured state with its own Sandbox ID.
 
-> **Beta:** Sandboxes are an access-gated, experimental feature. The API can change.
-
 ## What a clone contains
 
 A user snapshot captures the source sandbox's memory, disk, environment, image, and CPU and memory configuration. The source keeps running while Inngest creates the snapshot. Each clone starts from that captured state with a **new sandbox ID** and inherits the snapshot's resource size and environment. The files in the source filesystem are part of the captured disk state.
@@ -88,9 +86,6 @@ const result = await clone.commands.run(
   "node -p \"require('/tmp/project/node_modules/lodash').VERSION\"",
 );
 
-await clone.destroy("destroy-clone");
-await snapshot.delete("delete-snapshot");
-
 return result.stdout;
 ```
 
@@ -98,7 +93,7 @@ return result.stdout;
 <SdkUnsupported title="Go" feature="Sandboxes" />
 </CodeGroup>
 
-Each durable sandbox operation uses its own step ID. Destroy the source sandbox when its work ends. If a function fails permanently before cleanup, use an Inngest `onFailure` handler or a separate cleanup function; a JavaScript `finally` block around durable steps does not guarantee cleanup after permanent failure.
+Each durable sandbox operation uses its own step ID. The source, the snapshot, and every clone are [owned by the run](/docs/sandboxes/features/run-owned?ref=docs-sandboxes-cloning) and cleaned up when it ends. A clone's owner is its own run, not the snapshot's. Call `destroy` to release one sooner.
 
 ## Readiness, expiry, and limits
 
@@ -106,7 +101,7 @@ Snapshot creation and clone startup are separate. The REST API can return a snap
 
 `snapshot.clone()` returns a clone that is already `RUNNING`, or waits for a `STARTING` clone to reach `RUNNING`. The default readiness wait is up to 120 seconds. Set `runningTimeout` to change that bound. A readiness timeout does not destroy the new sandbox, so track and clean it up.
 
-Snapshots have a server-defined `expiresAt`. They are not permanent storage and use account-specific count and storage quotas. The exact retention period and quotas are still being finalized for launch. The beta supports resource pairs of 1 vCPU / 1024 MB, 2 vCPU / 2048 MB, and 4 vCPU / 4096 MB; clones inherit the snapshot's pair.
+Snapshots have a server-defined `expiresAt`. They are not permanent storage and use account-specific count and storage quotas. Fresh sandboxes accept resource pairs of 1 vCPU / 1024 MB, 2 vCPU / 2048 MB, and 4 vCPU / 4096 MB; clones inherit the snapshot's pair.
 
 ## Clone or pause?
 

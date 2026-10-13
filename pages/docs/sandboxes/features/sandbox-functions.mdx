@@ -1,0 +1,161 @@
+import { AnnotatedCode, Annotation } from "shared/Docs/mdx";
+
+export const metaTitle = "Sandbox functions and agents | Sandboxes";
+export const description = "Define code that runs in a Sandbox once, call it like a function, and hand it to an LLM as a tool with adapters for the AI SDK, Anthropic, OpenAI, and MCP.";
+
+# Sandbox functions and agents
+
+> Define code that runs in a Sandbox once, call it like a function, and give it to an agent as a tool.
+
+`sandbox.fn` turns code, a runtime, and a schema into a typed function. Call it from your Inngest functions, or call `.tool()` to hand the same definition to an LLM. Each call is a [SANDBOX group](/docs/sandboxes/features/traces?ref=docs-sandboxes-sandbox-functions) of durable steps with its own cleanup.
+
+<AnnotatedCode>
+
+```typescript {{ title: "inngest/sandbox/run-sql.ts" }}
+import { sandbox } from "inngest/experimental";
+import { z } from "zod";
+
+export const runSql = sandbox.fn({
+  name: "run_sql",
+  description: "Run a SQL query against a CSV the user uploaded.",
+  runtime: "python@3.12",
+  schema: {
+    input: z.object({ csvUrl: z.string().url(), query: z.string() }),
+    output: z.object({ rows: z.array(z.record(z.unknown())) }),
+  },
+  code: `
+    import duckdb
+    rows = duckdb.sql(f"SELECT * FROM read_csv('{csvUrl}') WHERE {query}").fetchall()
+    return {"rows": rows}
+  `,
+});
+```
+
+<Annotation id="def" lines="5-7" tease="name and description" title="A named, described function" href="#define-a-function" linkText="Define a function">
+The name and description are what an LLM reads when you use the function as a tool.
+</Annotation>
+
+<Annotation id="schema" lines="8-11" tease="typed in and out" title="Input and output schemas" href="#define-a-function" linkText="Define a function">
+`input` keys become variables in your code. `output` types and validates the returned value.
+</Annotation>
+
+<Annotation id="code" lines="12-16" tease="runs in the Sandbox" title="Code with a top-level return" href="/docs/sandboxes/features/run-code?ref=docs-sandboxes-sandbox-functions#return-a-value" linkText="Return a value">
+The same rules as the [runners](/docs/sandboxes/features/run-code?ref=docs-sandboxes-sandbox-functions): input as globals, top-level `return`, any `runtime`.
+</Annotation>
+
+</AnnotatedCode>
+
+## Define a function
+
+`sandbox.fn` takes `name`, `runtime`, `schema`, and `code`, plus any [shared Sandbox option](/docs/sandboxes/features/run-code?ref=docs-sandboxes-sandbox-functions#options-every-entry-point-shares) and `tools`. `description` is optional, but it's what a model reads when the function becomes a tool.
+
+Tools declared on the definition are the default for every call, and a call can add more with `{ tools }`, as described in [Tools](/docs/sandboxes/features/tools?ref=docs-sandboxes-sandbox-functions).
+
+## Call it
+
+Import `step` from `inngest` and call the function with a step ID and its input:
+
+```typescript {{ title: "TypeScript" }}
+import { step } from "inngest";
+import { runSql } from "../sandbox/run-sql";
+
+const result = await runSql("q1", { csvUrl, query: "region = 'EMEA'" });
+```
+
+- The call is validated against `schema.input` before a Sandbox starts.
+- The return value is typed from `schema.output`.
+- A non-zero exit fails the step. Pass `{ exitCodes }` to allow others, as in [Exit codes and errors](/docs/sandboxes/features/exit-codes?ref=docs-sandboxes-sandbox-functions).
+
+## Give it to an LLM
+
+`.tool()` returns one neutral tool with a name, a description, a JSON Schema for the input, and a `run` that calls the function as durable steps. An adapter turns it into what your agent stack expects:
+
+| Stack | Adapter | Who runs the tool |
+| --- | --- | --- |
+| Vercel AI SDK | `toAiSdk` | The SDK, inside `generateText`. |
+| Anthropic | `toAnthropic` | You: pass `definitions` in, and `execute` returns `tool_result` blocks. |
+| OpenAI | `toOpenAI` | You: `execute` returns `role: "tool"` messages. |
+| MCP | `toMcp` | An MCP server you start. |
+
+```typescript {{ title: "TypeScript" }}
+import { generateText, stepCountIs } from "ai";
+import { anthropic } from "@ai-sdk/anthropic";
+import { toAiSdk } from "@inngest/sandbox-tools/ai-sdk";
+
+const { text } = await generateText({
+  model: anthropic("claude-sonnet-4-5"),
+  tools: toAiSdk({ runSql, runPython }),
+  stopWhen: stepCountIs(8),
+  prompt: "Which region grew fastest in Q3?",
+});
+```
+
+Every adapter turns the same cases into results the model can act on:
+
+| Case | The model sees | In Inngest |
+| --- | --- | --- |
+| Input fails validation | An error with the issues, so it can correct the call. | No Sandbox starts. |
+| The code exits non-zero | The message, exit code, and the end of stderr. | The step is red. |
+| Infrastructure failure | Nothing until retries run out, then an error. | Normal step retries. |
+| Output is large | The start and end, with a marker like `[41,208 chars omitted]`. | The full output is kept. |
+
+## The agent loop
+
+Run the loop in your function. Each model call is a step, and each tool call is a Sandbox group, so nothing nests and a retry repeats only what failed.
+
+```typescript {{ title: "inngest/functions/analyst.ts" }}
+import { agentLoop, toAnthropic } from "@inngest/sandbox-tools";
+
+export const analyst = inngest.createFunction(
+  { id: "analyst", triggers: { event: "analyst/ask" } },
+  async ({ event }) => {
+    return agentLoop({
+      adapter: toAnthropic,
+      tools: [runSql, runPython],
+      maxTurns: 8,
+      model: (messages, defs) => {
+        return anthropic.messages.create({ model: "claude-sonnet-4-5", max_tokens: 2048, tools: defs, messages });
+      },
+      messages: [{ role: "user", content: event.data.question }],
+    });
+  },
+);
+```
+
+- **A replay never calls the model again.** Each model call is saved, so the tool-call IDs are the same on every retry.
+- **Tool calls run in parallel.** Each one is its own group, named after the model's tool-use ID.
+- **A failed tool call retries alone.** The model and the earlier tools don't run again.
+
+```text {{ title: "Trace" }}
+llm-0      step.run · 1.8s
+run_sql    SANDBOX · toolu_01
+  create     0.4s
+  exec       1.1s
+  destroy    0.1s
+llm-1      step.run · 2.2s
+```
+
+Turn on checkpointing for agent functions to cut the round trips between turns. If your agent code already runs inside a `step.run`, the same tool runs directly without steps, but the whole step is then the retry unit. Keep the loop at function level when you can.
+
+Messages travel through step output, so they must be JSON, and a long transcript needs trimming or summarising between turns.
+
+## Ready-made tools
+
+`@inngest/sandbox-tools` ships tools built from `sandbox.fn`:
+
+| Tool | Does |
+| --- | --- |
+| `run_python` | Runs code on a pinned scientific stack. Returns stdout, stderr, and files written to `/out`. |
+| `run_sql` | Loads a CSV or Parquet file into DuckDB and runs one query. Read-only by default. |
+| `fetch_and_parse` | Fetches a URL and returns markdown or a CSS-selected extract. |
+| `render_chart` | Takes data and a chart spec and returns a PNG. |
+| `run_tests` | Clones a repo at a ref, runs a command, and returns pass and fail counts. |
+| `read_output` | Reads a slice of an earlier truncated result. |
+
+Use them as they are, wrap them, or read them as examples.
+
+## Next steps
+
+- [Tools](/docs/sandboxes/features/tools?ref=docs-sandboxes-sandbox-functions): let Sandbox code call your functions, and code mode.
+- [Run code](/docs/sandboxes/features/run-code?ref=docs-sandboxes-sandbox-functions): the runners `sandbox.fn` is built on.
+- [Traces](/docs/sandboxes/features/traces?ref=docs-sandboxes-sandbox-functions): how a tool call renders.

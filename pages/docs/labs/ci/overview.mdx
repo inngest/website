@@ -17,6 +17,7 @@ Inngest CI is CI written in TypeScript, in your repo next to your app. Pipelines
 - **One trace per run.** Every job, command, and retry in one place. [See a run →](#see-the-result)
 - **Retries that keep passed work.** Only the failed command runs again. [Retries →](/docs/labs/ci/commands?ref=docs-labs-ci-overview#retries)
 - **Build once, reuse it.** Start jobs from another job's machine, and cache the slow ones. [Base images →](/docs/labs/ci/base-images?ref=docs-labs-ci-overview#another-job)
+- **Nothing left behind.** Cached jobs become shared images, and everything else a run creates is cleaned up when it ends. [Run-owned Sandboxes →](/docs/sandboxes/features/run-owned?ref=docs-labs-ci-overview)
 - **Runs locally.** One command runs any pipeline or job on real Sandboxes with your uncommitted changes. [Run CI locally →](/docs/labs/ci/local?ref=docs-labs-ci-overview)
 - **Flow control.** Cancel stale runs, cap concurrency, and debounce. [Flow control →](/docs/labs/ci/pipelines?ref=docs-labs-ci-overview#flow-control)
 - **GitHub checks.** One per pipeline, and one per job. [Checks →](/docs/labs/ci/checks-and-reports?ref=docs-labs-ci-overview)

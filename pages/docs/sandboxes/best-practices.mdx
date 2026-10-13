@@ -6,8 +6,6 @@ export const description = "Sandboxes best practices: run isolated code safely w
 
 Run code that needs its own Linux environment in a Sandbox. Record important results outside the Sandbox and plan cleanup before you create it, because destroying the resource removes its local files and processes.
 
-> **Experimental beta.** Sandbox access is gated, and the API can change without a compatibility period. Use Sandboxes for evaluation and feedback. Do not use them for production workloads or data you cannot recreate.
-
 ## Use the client that matches the work
 
 - Use `step.sandbox` inside an Inngest function when you want each Sandbox operation recorded as a durable step. Give every operation a stable step ID. Inngest can replay a completed step result and retry operations that are safe to repeat.
@@ -16,16 +14,18 @@ Run code that needs its own Linux environment in a Sandbox. Record important res
 
 Durable steps record API results. They do not preserve a guest process, a live Sandbox, its filesystem, or its output after that resource is lost or destroyed.
 
-## Plan cleanup before creating a Sandbox
+## Let the run clean up
 
-Destroy a Sandbox when the work finishes. Destroy removes its processes, filesystem, and retained output.
+Destroy removes a Sandbox's processes, filesystem, and retained output.
 
+- Inside an Inngest function, Sandboxes and snapshots belong to the run and are cleaned up when it ends. Use `await using` or `group.sandbox()` to end one earlier. You don't need an `onFailure` handler. See [Run-owned Sandboxes](/docs/sandboxes/features/run-owned).
+- Prefer a runner, such as `step.sandbox.python()`, when one statement is enough. It creates and destroys its own Sandbox.
+- Let failures fail. A command that exits non-zero stops the function. Use `exitCodes` only where the code is information.
 - With the direct client, keep the Sandbox ID and destroy it in `finally`.
-- Inside an Inngest function, make Destroy a normal step on the success path. Add an `onFailure` handler or a separate cleanup function when a permanently failed run must also release the Sandbox. A JavaScript `finally` block does not replace this failure cleanup.
 - If Create can wait for readiness, use `runningTimeout: false` when you need the Sandbox ID before the wait. Then call `waitUntilRunning` as a separate step. A readiness timeout does not destroy the Sandbox.
 - Store the Sandbox ID when another function or process must reconnect. Fetch the Sandbox by ID rather than storing a serialized SDK object.
 
-The planned `step.sandbox.typescript` convenience call will start a Sandbox, run TypeScript, and stop it automatically. Use the documented create, run, and destroy operations in beta examples.
+Keep credentials out of `input`, `env`, and code, because they appear in the trace. Use `secrets`, and use [tools](/docs/sandboxes/features/tools) so sandbox code can use a credential without holding it.
 
 ## Make retries safe
 
@@ -54,13 +54,13 @@ Use external storage for any file that must survive independently of one Sandbox
 - **Snapshot and clone** when you need a new Sandbox from a prepared state. The clone gets a new Sandbox ID and inherits the captured image, resources, memory, environment, and disk. The source keeps running.
 - Do not treat either feature as a backup. User snapshots are crash-consistent, have a server-defined expiry, and count against account-specific quotas. Pause uses a private checkpoint for that Sandbox. Save irreplaceable data elsewhere.
 
-## Size the work to beta limits
+## Size the work to the limits
 
-The current beta has one default image, a one-hour active runtime per Sandbox, and three exact CPU and memory pairs: 1 vCPU with 1024 MiB, 2 with 2048 MiB, or 4 with 4096 MiB. Paused time does not consume the remaining active runtime. Custom images, disk sizes, resizing, and a configurable TTL are not available through this beta API. A valid size can still fail when the account lacks access or capacity is unavailable. Beta limits can change.
+Sandboxes have a one-hour active runtime per Sandbox, and three exact CPU and memory pairs: 1 vCPU with 1024 MiB, 2 with 2048 MiB, or 4 with 4096 MiB. Paused time does not consume the remaining active runtime. Custom images, disk sizes, resizing, and a configurable TTL are not available through this beta API. A valid size can still fail when the account lacks access or capacity is unavailable. Beta limits can change.
 
 ## Protect credentials and access
 
-Treat code inside a Sandbox as able to read its environment. The newer beta API lets fresh Sandbox Create select existing workspace secrets by exact name; it injects values throughout the guest. Select only what the task needs. Values printed to output or saved in files and snapshots are not automatically redacted. A clone restores captured secret values and cannot select new ones. See [Secrets](/docs/sandboxes/features/secrets).
+Treat code inside a Sandbox as able to read its environment. Fresh Sandbox Create can select existing workspace secrets by exact name; it injects values throughout the guest. Select only what the task needs. Values printed to output or saved in files and snapshots are not automatically redacted. A clone restores captured secret values and cannot select new ones. See [Secrets](/docs/sandboxes/features/secrets).
 
 At launch, users will upload an SSH public key to Inngest and connect to a workload using an address shaped like `ssh <workload-id>@ssh.inngest.com`. Do not place private keys in the Sandbox.
 

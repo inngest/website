@@ -7,13 +7,11 @@ export const description = "Sandbox base images come with Node.js, Python, Ruby,
 
 > Start isolated work with Node.js, Python, Ruby, and common command-line tools already installed.
 
-> **Open beta.** The Sandbox API, image, and limits may change. Use this beta for evaluation and feedback.
+Run generated code or inspect a repository without building an image first. The base image includes Node.js, Python, Ruby, and common command-line tools. To pin a language version, pick a [runtime image](#runtime-images).
 
-Run generated code or inspect a repository without building an image first. The beta Sandbox image includes Node.js, Python, Ruby, and common command-line tools. Check installed versions inside the Sandbox when your task depends on a specific version.
+## What the base image includes
 
-## What the beta image includes
-
-The beta uses one fixed image for new Sandboxes. A Sandbox cloned from a snapshot starts with the captured image and filesystem changes.
+New Sandboxes start from the base image unless you choose another. A Sandbox cloned from a snapshot starts with the captured image and filesystem changes.
 
 | Tool | Included |
 | --- | --- |
@@ -23,7 +21,7 @@ The beta uses one fixed image for new Sandboxes. A Sandbox cloned from a snapsho
 | Repository and network tools | Git, curl, OpenSSH, and CA certificates |
 | Shell and utilities | BusyBox `sh`, `grep`, `sed`, `awk`, `ripgrep`, `jq`, `find`, `tar`, and `gzip` |
 
-The image does **not** currently include Go, Rust, Java, Bun, or Deno. To use your own image, see [Choose an image](#choose-an-image). Exact installed versions can change when Inngest rebuilds the image. Check versions in the Sandbox if your task depends on them.
+The base image does **not** include Go, Rust, Java, Bun, or Deno. For Deno and Bun, use a [runtime image](#runtime-images). To use your own image, see [Choose an image](#choose-an-image). Exact installed versions can change when Inngest rebuilds the image. Check versions in the Sandbox if your task depends on them.
 
 Inngest CI jobs start from images the same way: [Base images](/docs/labs/ci/base-images?ref=docs-sandboxes-base-images).
 
@@ -47,7 +45,7 @@ const sandbox = await inngest.sandboxes.create({
 <SdkUnsupported title="Go" feature="Sandboxes" />
 </CodeGroup>
 
-- `image.inngest(name)` is an image Inngest maintains. Today that is `base`, the default image on this page. Omit `from` to use it.
+- `image.inngest(name)` is an image Inngest maintains: `base`, the default, or one of the [runtime images](#runtime-images). Omit `from` to use `base`.
 - `image.custom(ref)` is an image published to your workspace: `"my-image"`, `"my-image:v1"`, or `"my-image@sha256:<hex>"`.
 
 <CodeGroup>
@@ -70,13 +68,33 @@ The image is resolved once, when the Sandbox is created. Creating the same Sandb
 
 `imageDigest` (for example `sha256:...`) says exactly which image the Sandbox started from.
 
+### Runtime images
+
+Each runtime image is the base image plus one language runtime at a pinned version. The runners pick one for you with `runtime`, and `from` names it directly.
+
+| `runtime` | `from` | Adds |
+| --- | --- | --- |
+| `"node@20"` | `image.inngest("node-20")` | Node.js 20 |
+| `"node@22"` | `image.inngest("node-22")` | Node.js 22, which runs TypeScript directly |
+| `"node@24"` | `image.inngest("node-24")` | Node.js 24 |
+| `"python@3.11"`, `"python@3.12"`, `"python@3.13"` | `image.inngest("python-3.12")`, and so on | Python at that version |
+| `"deno"` | `image.inngest("deno")` | Deno |
+| `"bun"` | `image.inngest("bun")` | Bun |
+
+```typescript {{ title: "TypeScript" }}
+await step.sandbox.python("ml", code, { runtime: "python@3.12" });
+await step.sandbox.ts("edge", code, { from: image.inngest("deno") });
+```
+
+Nothing installs at run time, so the version is exact and starts fast. [Run code](/docs/sandboxes/features/run-code?ref=docs-sandboxes-base-images#choose-a-runtime) shows the runners. Inngest CI jobs can start from the same images: [Base images](/docs/labs/ci/base-images?ref=docs-sandboxes-base-images).
+
 ### Image or snapshot?
 
 | | Image | [Snapshot](/docs/sandboxes/features/snapshots-and-restore?ref=docs-sandboxes-base-images) |
 | --- | --- | --- |
 | Starts | Fresh, from a filesystem | Where the source left off: memory, processes, and files |
 | Size, environment, secrets | Yours to set | The source's |
-| Lasts | Until you delete it | Until it expires |
+| Lasts | Until you delete it | Until it expires, or until the [run that owns it](/docs/sandboxes/features/run-owned?ref=docs-sandboxes-base-images) ends |
 | Use it for | A base you reuse across many runs | Fanning out from one prepared machine, or keeping a running process like an open browser |
 
 A common pattern uses both: build an image with your toolchain, start a Sandbox from it, get it ready, then snapshot it and clone that for each task.
@@ -116,7 +134,7 @@ const result = await sandbox.commands.run(
 <SdkUnsupported title="Go" feature="Sandboxes" />
 </CodeGroup>
 
-A nonzero exit code appears in the result. It does not throw an SDK error.
+Through `step.sandbox`, a non-zero exit code fails the step. See [Exit codes and errors](/docs/sandboxes/features/exit-codes?ref=docs-sandboxes-base-images).
 
 ## Add dependencies for a task
 

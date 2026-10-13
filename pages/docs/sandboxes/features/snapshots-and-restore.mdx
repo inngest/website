@@ -8,8 +8,6 @@ export const description = "Snapshot and restore Inngest Sandboxes: save a prepa
 
 Prepare dependencies or files once, then snapshot the Sandbox and clone it for separate jobs. Each clone gets its own Sandbox ID and a copy of the captured local filesystem.
 
-> **Experimental beta.** Sandboxes require beta access and `inngest@4.21.1` or newer. Snapshot APIs and limits can change. Do not use snapshots as permanent storage.
-
 ## What a snapshot captures
 
 A user snapshot captures the sandbox's memory, disk, environment, image, and CPU and memory configuration. Files on the sandbox filesystem carry into each clone. An S3-backed persistent mount attaches the same backing path to each clone, so mounted files can be shared across Sandboxes. The source sandbox keeps running after you create the snapshot.
@@ -53,7 +51,7 @@ try {
 
 `snapshot.clone()` creates a new sandbox. It inherits the captured image, resources, environment, memory, and disk. The clone has a new UUID. It may start immediately or enter `STARTING`; the SDK waits for `RUNNING` by default. `runningTimeout` changes that wait. A timeout does not destroy the new sandbox.
 
-Keep the snapshot while you need to make more clones. Delete it when finished, and destroy each clone when its work ends. The source sandbox remains separate and needs its own cleanup.
+Keep the snapshot while you need to make more clones. With the direct client, delete it when finished and destroy each clone when its work ends. Inside a function, the run does this for you. The source sandbox remains separate.
 
 ## Name a snapshot
 
@@ -80,6 +78,12 @@ const { items } = await inngest.sandboxes.snapshots.list({
 
 Find a named snapshot with `snapshots.list({ name })` and `clone()` it. For a base you reuse across many runs, use an image instead: [Image or snapshot?](/docs/sandboxes/features/base-images?ref=docs-sandboxes-snapshots-and-restore#image-or-snapshot)
 
+## Snapshots belong to the run
+
+A snapshot you take inside a function is owned by the current run and is deleted when the run ends, so a fan-out that snapshots once and clones per task leaves nothing behind. Pass `owner: "persistent"` to keep one for later runs, or `owner: { runId }` to tie it to another active run. A snapshot's owner is never inherited from the Sandbox it came from. See [Run-owned Sandboxes](/docs/sandboxes/features/run-owned?ref=docs-sandboxes-snapshots-and-restore#snapshots-follow-the-same-rule).
+
+In the [trace](/docs/sandboxes/features/traces?ref=docs-sandboxes-snapshots-and-restore#tools-and-snapshots), a snapshot is one **SNAPSHOT** group, and each clone is a SANDBOX group that names its source.
+
 ## Use snapshots inside an Inngest function
 
 Use `step.sandbox` when snapshot operations belong to a durable function. Give each operation a stable step ID. This example assumes `sandbox` is a running durable sandbox and `event.data.jobId` is stable:
@@ -102,9 +106,6 @@ const result = await clone.commands.run(
   "cat /work/config.txt"
 );
 
-await clone.destroy("destroy-clone");
-await snapshot.delete("delete-snapshot");
-
 return result.stdout;
 ```
 
@@ -112,7 +113,7 @@ return result.stdout;
 <SdkUnsupported title="Go" feature="Sandboxes" />
 </CodeGroup>
 
-Snapshot Create and its readiness wait are separate memoized steps. Let unexpected errors escape so Inngest can apply the operation's retry policy. If a function can fail permanently before cleanup, use an `onFailure` handler or another cleanup function that knows the sandbox ID. A JavaScript `finally` block around durable steps does not guarantee cleanup after permanent failure or cancellation.
+Snapshot Create and its readiness wait are separate memoized steps. Let unexpected errors escape so Inngest can apply the operation's retry policy. The clone and the snapshot are cleaned up when the run ends. Call `clone.destroy("destroy-clone")` or `snapshot.delete("delete-snapshot")` to release them sooner.
 
 ## Restore or resume?
 

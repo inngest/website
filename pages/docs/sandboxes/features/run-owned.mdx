@@ -1,0 +1,83 @@
+import { Mermaid } from "src/shared/Docs/Mermaid";
+
+export const metaTitle = "Run-owned Sandboxes | Sandboxes";
+export const description = "Sandboxes and snapshots your function creates belong to its run and are cleaned up when the run ends, however it ends. Pick another active run as owner, or opt out with persistent.";
+
+# Run-owned Sandboxes and snapshots
+
+> Sandboxes and snapshots your run creates are cleaned up when it ends, however it ends.
+
+Every Sandbox and snapshot created inside a function belongs to the run that created it. When that run completes, fails, is cancelled, or times out, Inngest destroys what it still owns. You never write cleanup code, and a Sandbox can't be left running because a deploy crashed or a handler was killed.
+
+<Mermaid
+  wide
+  label="A run creates a Sandbox and a snapshot. Both belong to the run. When the run ends, in any state, both are cleaned up."
+  chart={`flowchart LR
+  R["Run starts"] --> S["Create Sandbox"]
+  R --> P["Create snapshot"]
+  S --> O["Owned by the run"]
+  P --> O
+  O --> E["Run ends: completed, failed, cancelled, or timed out"]
+  E --> C["Sandbox destroyed, snapshot deleted"]
+  class R,E accent
+  class C info`}
+/>
+
+## What you get
+
+- **No leaks.** A failed build, a cancelled run, and a crashed deploy all clean up the same way.
+- **No cleanup functions.** There's no `onFailure` handler to write and no Sandbox ID to store for later.
+- **Safe retries.** A function that retries keeps its Sandbox between attempts, because the run hasn't ended.
+- **Early cleanup when you want it.** `await using`, `group.sandbox()`, and `destroy()` end a Sandbox sooner. See [Managed lifecycle](/docs/sandboxes/features/managed-lifecycle?ref=docs-sandboxes-run-owned).
+
+```typescript {{ title: "TypeScript" }}
+const sb = await step.sandbox.create("scratch");
+await sb.python("work", code);
+```
+
+This function doesn't destroy `scratch`. It's destroyed when the run ends.
+
+## Choose the owner
+
+`owner` is an option on `step.sandbox.create()`, `group.sandbox()`, the runners, and `snapshot()`.
+
+| `owner` | Cleaned up | Use it for |
+| --- | --- | --- |
+| Omitted | When the current run ends. | Almost everything. |
+| `{ runId }` | When that run ends. | Work that should outlive this run but not run forever, such as a Sandbox a longer-lived run will use. |
+| `"persistent"` | Only when you destroy it. | A Sandbox or snapshot that outlives every run. |
+
+```typescript {{ title: "TypeScript" }}
+const shared = await step.sandbox.create("shared", {
+  owner: { runId: event.data.coordinatorRunId },
+});
+
+const base = await step.sandbox.create("long-lived", { owner: "persistent" });
+```
+
+- The run you name must be active in the same environment. Naming a run that already ended, or one that doesn't exist, fails the create with `sandbox_owner_run_not_active`, so a Sandbox is never created that nothing would clean up.
+- `await using` on a `persistent` Sandbox still destroys it at the end of the scope, because you asked for that.
+- Outside a function, `inngest.sandboxes.create()` has no run, so Sandboxes there are `persistent` as before. Pass `owner: { runId }` to attach one to a run.
+
+## Snapshots follow the same rule
+
+A snapshot taken inside a function is owned by the current run and deleted when it ends, so a pipeline that snapshots to fan out leaves nothing behind.
+
+```typescript {{ title: "TypeScript" }}
+const snapshot = await sb.snapshot("prepared");
+const clones = await Promise.all(
+  tasks.map((task) => snapshot.clone(`clone-${task.id}`)),
+);
+```
+
+- A snapshot's owner is never inherited. A Sandbox cloned from a snapshot belongs to its own run, and the other way around, so a snapshot you keep for later survives the Sandbox that produced it.
+- Take a snapshot that other runs should find with `owner: "persistent"`. It's held until it expires or you delete it.
+- Snapshots are deleted after the Sandboxes that were cloned from them, so cleanup never has to wait on a clone.
+
+Inngest CI uses this for the machines it starts from: [an uncached parent job is a run-owned snapshot](/docs/labs/ci/base-images?ref=docs-sandboxes-run-owned#how-it-works), gone as soon as the run finishes.
+
+## Next steps
+
+- [Managed lifecycle](/docs/sandboxes/features/managed-lifecycle?ref=docs-sandboxes-run-owned): end a Sandbox earlier than the run.
+- [Snapshots and restore](/docs/sandboxes/features/snapshots-and-restore?ref=docs-sandboxes-run-owned): capture and clone a Sandbox.
+- [Limits](/docs/sandboxes/limits?ref=docs-sandboxes-run-owned): how many Sandboxes a run can own at once.

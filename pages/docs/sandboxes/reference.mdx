@@ -1,17 +1,17 @@
 import { CodeGroup, SdkUnsupported } from "shared/Docs/mdx";
 
 export const metaTitle = "Reference | Sandboxes";
-export const description = "Inngest Sandboxes API reference: current beta calls and constraints for creating Sandboxes, running commands, and managing their lifecycle.";
+export const description = "Inngest Sandboxes API reference: the runners, handles, shared options, tools, exit codes, ownership, and lifecycle calls for creating Sandboxes and running commands.";
 
 # Sandboxes reference
-> Find the current beta API calls and constraints for creating, running, and managing Sandboxes.
+> Find the API calls and options for running code, creating Sandboxes, and managing their lifecycle.
 
-> **Access-gated beta.** The TypeScript and REST contracts can change without a compatibility period. Use this reference to evaluate the current API. See the [Limits](/docs/sandboxes/limits) page for resource and output limits.
+See the [Limits](/docs/sandboxes/limits) page for resource and output limits.
 
-## Before you call the beta API
+## Before you call the API
 
-- Use a trusted server-side Node.js 20+ runtime with the standard Fetch API and `inngest@4.21.1` or newer. Version 4.21.1 includes fixes for snapshot and list response validation required by these guides.
-- Enable Sandboxes beta access for the Inngest environment and set `INNGEST_SIGNING_KEY`. A `403 access_denied` response means access is not enabled.
+- Use a trusted server-side Node.js 20.5+ runtime with the standard Fetch API and the current `inngest` v4 package. `await using` needs `lib: ["esnext.disposable"]` in your `tsconfig.json`.
+- Enable Sandboxes for the Inngest environment and set `INNGEST_SIGNING_KEY`. A `403 access_denied` response means access is not enabled.
 - Keep the signing key and Sandbox client out of browser code.
 - Fresh Sandboxes start from the `base` image unless you set `from`. Fresh Sandboxes accept exactly `1 vCPU / 1024 MiB`, `2 / 2048`, or `4 / 4096`. A clone inherits its snapshot's resources.
 
@@ -47,7 +47,7 @@ Every `step.sandbox` operation takes a stable step ID first. Keep IDs stable acr
 
 <CodeGroup>
 ```typescript {{ title: "TypeScript" }}
-const sandbox = await step.sandbox.create("create-sandbox", {
+await using sandbox = await step.sandbox.create("create-sandbox", {
   name: `job-${event.data.jobId}`,
   vcpu: 1,
   memoryMb: 1024,
@@ -58,8 +58,6 @@ const result = await sandbox.commands.run(
   ["npm", "test"],
   { cwd: "/workspace/repo", timeout: "5m" },
 );
-
-await sandbox.destroy("destroy-sandbox");
 ```
 
 <SdkUnsupported title="Python" feature="Sandboxes" />
@@ -69,6 +67,78 @@ await sandbox.destroy("destroy-sandbox");
 Create options include `from`, the image to start from: `image.inngest("base")` (the default) or `image.custom(ref)`, both imported from `inngest`. The image is resolved once at Create, and the Sandbox's `imageDigest` records it. See [Choose an image](/docs/sandboxes/features/base-images?ref=docs-sandboxes-reference#choose-an-image).
 
 Use a stable job-derived name. A matching active name and configuration returns the existing Sandbox; a conflicting configuration returns `sandbox_name_taken`. Completed calls replay from memoized step results. Step memoization does not preserve guest processes or files after the Sandbox ends.
+
+## Runners
+
+Runners create a Sandbox, run code, return the result, and destroy the Sandbox in one durable statement. See [Run code](/docs/sandboxes/features/run-code).
+
+| Call | Returns |
+| --- | --- |
+| `step.sandbox.python<T>(id, code, options?)` | The `return` value, as `T`. |
+| `step.sandbox.ts<T>(id, code, options?)` | The `return` value, as `T`. |
+| `step.sandbox.sh(id, command, options?)` | `stdout` as a string. |
+| `step.sandbox.run(id, spec)` | A `SandboxResult`. |
+
+The same names are methods on a handle from `step.sandbox.create()` or the `sb` in `group.sandbox()`. A handle also has the shell template `` sb.$`…` ``, with `.id()`, `.exitCodes()`, `.timeout()`, `.env()`, `.quiet()`, `.text()`, and `.json()`.
+
+```typescript {{ title: "TypeScript" }}
+type SandboxOptions = {
+  from?: SandboxImage;
+  vcpu?: number;
+  memoryMb?: number;
+  timeout?: DurationLike;
+  env?: Record<string, string>;
+  secrets?: string[];
+  owner?: "persistent" | { runId: string };
+};
+
+type CommandOptions = {
+  cwd?: string;
+  env?: Record<string, string>;
+  timeout?: DurationLike;
+  exitCodes?: number[] | "any";
+};
+
+type RunnerOptions = SandboxOptions &
+  CommandOptions & {
+    input?: Record<string, JSONValue>;
+    runtime?: string;
+    files?: Record<string, string | Uint8Array>;
+    schema?: { output?: StandardSchema };
+    tools?: Record<string, Tool | ((...args: any[]) => unknown)>;
+  };
+
+type SandboxResult = {
+  ok: boolean;
+  exitCode: number;
+  stdout: string;
+  stderr: string;
+  result?: unknown;
+  truncated: boolean;
+  durationMs: number;
+};
+```
+
+- `SandboxOptions` is shared by `step.sandbox.create()`, `group.sandbox()`, the runners, and Inngest CI machine options. `group.sandbox()` takes an ID or `SandboxOptions & { id: string }`.
+- `runtime` and `from` are exclusive. `runtime` maps to an [image Inngest maintains](/docs/sandboxes/features/base-images#runtime-images).
+- `exitCodes` defaults to `[0]`. Any other exit code fails the step. See [Exit codes and errors](/docs/sandboxes/features/exit-codes).
+- `owner` defaults to the current run. See [Run-owned Sandboxes](/docs/sandboxes/features/run-owned).
+- `tools` makes host functions callable from the code. See [Tools](/docs/sandboxes/features/tools).
+- `getCommandError(err)` returns `{ command, exitCode, stdoutTail, stderrTail, truncated }` for a failed command, and `getSandboxError(err)` returns the `SandboxError` fields.
+
+## Functions and tools
+
+| Call | Does |
+| --- | --- |
+| `sandbox.fn({ name, description?, runtime, schema, code, tools? })` | Defines a typed function. Call it as `fn(id, input, options?)`. |
+| `fn.tool()` | Returns a neutral tool for an LLM. |
+| `tool({ description?, input?, output?, timeout?, run })` | Defines a host tool that sandbox code can call. `run` receives `(input, ctx)`. |
+| `sandbox.codeTool({ language, timeout?, tools })` | Defines one LLM tool that writes code against your tools. |
+| `describeTools(tools, language)` | Returns the typed declaration the sandbox code sees. |
+| `toAiSdk`, `toAnthropic`, `toOpenAI`, `toMcp` | Adapters in `@inngest/sandbox-tools`. |
+| `agentLoop({ adapter, tools, model, messages, maxTurns? })` | Runs the model and tool loop in your function. |
+
+`ctx` is `{ idempotencyKey, sandbox: { id }, signal }`. See [Sandbox functions and agents](/docs/sandboxes/features/sandbox-functions).
 
 ## Operation index
 
@@ -93,7 +163,7 @@ Pause and Resume keep the same Sandbox ID, filesystem, memory, environment, and 
 
 ## Commands, processes, and files
 
-- `commands.run` waits for one command and returns `stdout`, `stderr`, `exitCode`, and output-truncation metadata. A nonzero exit code is a result, not an SDK exception. A string command runs through `/bin/sh -c`; an argv array preserves argument boundaries. The observation timeout defaults to 30 seconds and caps at five minutes.
+- `commands.run` waits for one command and returns `stdout`, `stderr`, `exitCode`, and output-truncation metadata. Through `step.sandbox`, an exit code outside `exitCodes` (default `[0]`) fails the step. Through the direct client, a non-zero exit code is a result, not an exception. A string command runs through `/bin/sh -c`; an argv array preserves argument boundaries. The observation timeout defaults to 30 seconds and caps at five minutes.
 - `processes.start` starts a background process. The returned process has a public UUID. Use `list`, `get`, `getOutput`, `signal`, and `wait` to manage it. Wait observes the process; its timeout does not stop it. Retained output is bounded, and live streams can miss or replay chunks.
 - The direct client uploads or downloads one complete regular file at an absolute path, up to 100 MiB. Upload replaces the file. The beta has no directory-list, append, rename, or recursive-transfer API. Files persist across Pause and Resume but end when the Sandbox is destroyed.
 - Fresh Sandbox Create can select existing workspace secrets with `secrets: ["SECRET_NAME"]`. The SDK and REST API send names, and Inngest injects their values under the same environment variable names. Snapshot clones restore captured values and cannot select new secrets. See [Secrets](/docs/sandboxes/features/secrets).
@@ -119,7 +189,7 @@ A private Pause checkpoint serves only Resume of the same Sandbox. It is not a u
 
 Captured-command timeout and output-limit errors may also mean the command ran. Create, Destroy, Pause, Resume, snapshot Delete, and identical file upload are safe to repeat after an unconfirmed availability failure under the beta contract. Let unexpected durable step errors escape unless the function has a deliberate reconciliation path.
 
-The caller owns cleanup in this beta. Use `finally` for direct calls. Destroy the Sandbox on a function's successful path and use an `onFailure` cleanup path when permanent failure must release it. A JavaScript `finally` block around durable steps does not guarantee cleanup after permanent failure.
+Inside a function, Sandboxes and snapshots belong to the run and are cleaned up when it ends. `await using` and `group.sandbox()` end one sooner. With the direct client, the caller owns cleanup: use `finally`, or pass `owner: { runId }`.
 
 ## Limits
 

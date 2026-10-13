@@ -48,6 +48,30 @@ await Promise.allSettled([lint(), test(), typecheck()]);
 
 Jobs never share a machine. To build on another job's work, use the [`from` option](/docs/labs/ci/base-images?ref=docs-labs-ci-jobs#another-job).
 
+## Define a job inside a pipeline
+
+A job doesn't have to live at the top of a file. Define it inside a pipeline function, and it builds in the run that defined it, which is handy when the job depends on how the pipeline was called:
+
+```typescript {{ title: "TypeScript" }}
+export const release = ci.pipeline({ id: "release", on: github.push({ branches: ["main"] }) }, async () => {
+  const build = ci.job(
+    { id: "build", cache: { key: files("pnpm-lock.yaml") } },
+    async () => {
+      await checkout();
+      await $`pnpm install && pnpm build`;
+    },
+  );
+
+  const publish = ci.job({ id: "publish", from: build }, async () => {
+    await $`pnpm publish`;
+  });
+
+  await publish();
+});
+```
+
+Defining the same job ID twice in one run throws `CiUsageError`. A cached inline job is still published as an image, so later runs reuse it.
+
 ## Run a job for every combination
 
 `ci.matrix` runs a job for every combination of its axes. Each combination is its own job, with its own machine and check.

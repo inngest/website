@@ -1,60 +1,90 @@
-import { CodeGroup, SdkUnsupported } from "shared/Docs/mdx";
 export const metaTitle = "Traces | Sandboxes";
-export const description = "Sandbox traces show each command and operation in the same Inngest run trace as your function steps, so you can find failed or slow Sandbox work.";
+export const description = "Each Sandbox statement is one SANDBOX group in the run trace. Expand it to see create, commands, tool calls, snapshots, and destroy, and find failed or slow work at a glance.";
 
 # Traces
 
-> Find failed or slow Sandbox operations alongside the other steps in a function run.
+> See every Sandbox statement as one row in the run trace, and expand it to find what failed or ran slowly.
 
-Open the function trace to find which Sandbox operation slowed or failed a job. Each `step.sandbox` call is a durable step: Inngest records its result for replay and applies that operation’s retry classification. Guest commands and files still have their own lifecycle.
+Open the function trace to follow the work. A Sandbox runner, a `group.sandbox()` callback, and a `sandbox.fn` call each render as one **SANDBOX** group, collapsed to a single row with its size, its exit code, and its duration. Expand the group to see the phases inside.
 
-## What appears in the trace
-
-Open the function run in the Inngest dashboard or Dev Server. The trace shows the steps alongside the rest of the function. Select a step to inspect its timing, input, output, error details, and retry attempts.
-
-Give each Sandbox operation a stable, descriptive step ID. For example, `create-sandbox`, `run-command`, and `destroy-sandbox` make the sequence readable and let you identify the operation that failed. A retry appears as another attempt for that step. Completed steps return their recorded results when the function replays.
-
-A trace records the durable API operations. It does not make the Sandbox guest process, filesystem, or output durable.
-
-## Try it in a function
-
-The example uses the TypeScript v4 beta API. Configure `sandboxMiddleware()`, enable Sandbox beta access, and set `INNGEST_SIGNING_KEY` before running the example.
-
-<CodeGroup>
-```typescript {{ title: "TypeScript" }}
-const sandbox = await step.sandbox.create("create-sandbox", {
-  name: `trace-${event.data.jobId}`,
-  vcpu: 1,
-  memoryMb: 1024,
-});
-
-const result = await sandbox.commands.run(
-  "run-command",
-  "printf 'hello from the sandbox\\n'",
-  { timeout: "30s" },
-);
-
-await sandbox.destroy("destroy-sandbox");
-
-return {
-  sandboxId: sandbox.id,
-  exitCode: result.exitCode,
-  stdout: result.stdout,
-};
+```text {{ title: "Collapsed" }}
+sum      SANDBOX · python · exit 0 · 2 vCPU / 2 GB · 4.1s
+ls       SANDBOX · sh · exit 0 · 3.2s
+parse    SANDBOX · ts · exit 1 · red · 5.6s
 ```
 
-<SdkUnsupported title="Python" feature="Sandboxes" />
-<SdkUnsupported title="Go" feature="Sandboxes" />
-</CodeGroup>
+```text {{ title: "Expanded: a command that exits 1" }}
+SANDBOX  parse · node@22 · 2 vCPU / 2 GB · 5.6s
+  create     ok
+  run        exit 1 not in exitCodes: step failed, no retries
+  destroy    ran because the failure was final
+```
 
-After the run, open its trace and follow the three step IDs. Select `run-command` to inspect the step result or an error. Select the run to inspect the function's returned Sandbox ID and command result. A command that exits with a nonzero code still returns a command result; it does not throw solely because of that exit code.
+## What the rows tell you
 
-The example destroys the Sandbox on the successful path. For a function that can fail permanently, add an `onFailure` cleanup strategy. A JavaScript `finally` block around durable steps does not guarantee cleanup after permanent failure or cancellation. See [Managed lifecycle](/docs/sandboxes/features/managed-lifecycle).
+- **One statement, one row.** `step.sandbox.python("sum", …)` is one row, however many steps it takes inside.
+- **Red means failed.** A command that exits with a code you didn't allow is red, with the exit code on the row and the end of stderr in the error. A group that holds a red child is red too, so a green destroy never hides it. See [Exit codes and errors](/docs/sandboxes/features/exit-codes?ref=docs-sandboxes-traces).
+- **Create and destroy are quiet.** They show inside the group, dimmed, since you didn't write them.
+- **Retries show as attempts.** A retried step appears as another attempt on its row, and completed steps return their saved results when the function replays.
 
-## When calls do not become durable steps
+Select a row to inspect its timing, input, output, and error.
 
-`inngest.sandboxes` makes immediate server-side requests. It does not memoize each operation as a step or add a separate step to the run trace. Use `step.sandbox` when the operation belongs to a durable function run. Use the direct client for immediate calls, live streams, or file transfer.
+## Several statements in one Sandbox
+
+With `await using` or `group.sandbox()`, every statement in the scope is a row inside one group:
+
+```text {{ title: "Trace" }}
+SANDBOX  build-check · node-22 · 4 vCPU / 2 GB · 38s
+  create
+  git clone ...     exit 0
+  npm ci            exit 0
+  npm test          exit 1 · allowed by exitCodes · green
+  destroy
+```
+
+A `step.run` inside the scope lands in the same group. A step outside the scope appears after the group closes.
+
+## Tools and snapshots
+
+[Tool](/docs/sandboxes/features/tools?ref=docs-sandboxes-traces) calls show as their own rows, because they run your code:
+
+```text {{ title: "Trace" }}
+SANDBOX  churn-report
+  create
+  exec                    exit 0 · 2 waits, folded in
+  tool listCustomers      #1
+  tool sendSlack          #2
+  tool sendSlack          #3
+  destroy
+```
+
+The waits Inngest uses to collect requests fold into the `exec` row as states, such as waiting on two tools, replied, and exited. If you never call a tool, the group has the same rows as a run without `tools`.
+
+A [snapshot](/docs/sandboxes/features/snapshots-and-restore?ref=docs-sandboxes-traces) is a **SNAPSHOT** group, with its upload and ready phases inside. A clone is a SANDBOX group that names the snapshot it started from.
+
+## Agents
+
+A [code mode](/docs/sandboxes/features/tools?ref=docs-sandboxes-traces#code-mode) or `sandbox.fn` tool call is a collapsed group in the agent's trace, between the model calls:
+
+```text {{ title: "Trace" }}
+FUNCTION  support-agent
+  llm-0       step.run
+  run_code    SANDBOX · 4 tool calls · 3.1s
+  llm-1       step.run
+```
+
+## Calls that are not durable steps
+
+`inngest.sandboxes` makes immediate server-side requests. It doesn't add steps to a trace. Use `step.sandbox` when the work belongs to a function run, and the direct client for live streams, file transfer, and scripts.
+
+A trace records durable operations. It doesn't make a guest process, file, or output durable.
 
 ## Protect trace data
 
-The current trace view displays step inputs, outputs, and errors. Keep credentials out of command strings, captured output, and returned values. The beta can inject selected workspace secrets into the Sandbox environment, but it does not automatically redact values printed to command output or files.
+The trace shows step inputs, outputs, and errors, including the `input` you pass to a runner and the tail of failed output. Keep credentials out of command strings, `input`, and returned values. Use [`secrets`](/docs/sandboxes/features/secrets?ref=docs-sandboxes-traces), which Inngest injects without writing them into a step. Output is not redacted automatically.
+
+## Next steps
+
+- [Run code](/docs/sandboxes/features/run-code?ref=docs-sandboxes-traces): the statements that produce these groups.
+- [Managed lifecycle](/docs/sandboxes/features/managed-lifecycle?ref=docs-sandboxes-traces): scopes and cleanup.
+- [Inngest CI traces](/docs/labs/ci/checks-and-reports?ref=docs-sandboxes-traces#read-the-trace): the same groups for jobs, commands, and sandboxes in a pipeline.

@@ -9,19 +9,21 @@ When an agent needs to run generated code or test a repository, put that work in
 
 ## What you can do
 
+- **Run code in one statement.** Python, TypeScript, or shell, with your data as variables and a typed value back.
 - **Run code in isolation.** Each Sandbox runs in a separate VM, isolated from the host and other Sandboxes. Sandboxes cannot send traffic directly to one another; outbound network access is allowed by default.
 - **Start quickly and keep your work.** Sandboxes boot in under a second. Pause and resume the same Sandbox, or capture a snapshot and clone it into a new Sandbox. Its filesystem persists through those operations.
 - **Share files when tasks need them.** S3-backed persistent mounts let different Sandboxes use the same backing path.
-- **Follow the whole job.** See Sandbox operations alongside function steps, waits, and retries in a run trace.
+- **Call your functions from the Sandbox.** Tools run in your function as durable steps, so credentials stay out of the Sandbox.
+- **Never leak one.** Sandboxes and snapshots your run creates are cleaned up when it ends.
+- **Follow the whole job.** See each Sandbox statement alongside function steps, waits, and retries in a run trace.
 
-A durable function can start a Sandbox, run code, wait for another event, and continue later. The lifecycle depends on the API. The beta's low-level `step.sandbox.create()` path requires your function to destroy the Sandbox and handle cleanup after permanent failure. A planned higher-level `step.sandbox.typescript` call will start a Sandbox, run TypeScript, and stop it automatically; its exact API is still being specified.
+A durable function can start a Sandbox, run code, wait for another event, and continue later. The lifecycle follows the API. A runner such as `step.sandbox.python()` creates, runs, and destroys in one statement. `step.sandbox.create()` with `await using` keeps one Sandbox for several statements, and whatever is left when the run ends is cleaned up for you.
 
 ## Start here
 
 - [Overview](/docs/sandboxes/overview) explains how Sandboxes fit into durable execution.
-- [Quick start](/docs/sandboxes/quick-start) runs a command with the access-gated TypeScript beta.
-- [Features](/docs/sandboxes/features) covers lifecycle, filesystems, SSH, secrets, isolation, and traces.
+- [Quick start](/docs/sandboxes/quick-start) runs Python in a Sandbox from a durable function.
+- [Run code](/docs/sandboxes/features/run-code) covers the runners, inputs, return values, and runtimes.
+- [Features](/docs/sandboxes/features) covers running code, exit codes, lifecycle, tools, filesystems, secrets, isolation, and traces.
 - [Guides](/docs/sandboxes/guides) shows how to use Sandboxes in a durable job.
-- [Reference](/docs/sandboxes/reference) and [Limits](/docs/sandboxes/limits) give the current API and beta limits.
-
-**Access-gated beta.** The TypeScript Sandbox beta is intended for evaluation.
+- [Reference](/docs/sandboxes/reference) and [Limits](/docs/sandboxes/limits) give the API and the limits.

@@ -27,7 +27,7 @@ Set `machine` on a job, on its pipeline, or on `createCi` for every job. The fir
 
 ## Start from a machine that's set up
 
-Set [`from`](/docs/labs/ci/base-images?ref=docs-labs-ci-machines) on a job to start it on a copy of another job's machine, another app's, or a snapshot you captured. Setup like installing dependencies then runs once, not in every job.
+Set [`from`](/docs/labs/ci/base-images?ref=docs-labs-ci-machines) on a job to start it on a copy of another job's machine, another app's, or an image. Setup like installing dependencies then runs once, not in every job.
 
 ```typescript {{ title: "TypeScript" }}
 const test = ci.job({ id: "test", from: base }, async () => {
@@ -36,7 +36,7 @@ const test = ci.job({ id: "test", from: base }, async () => {
 });
 ```
 
-The copy is a clone of a [Sandbox snapshot](/docs/sandboxes/features/snapshots-and-restore?ref=docs-labs-ci-machines), so installed files and built output are already there. If a snapshot can't be taken or started, the job runs the parent's commands on its own machine instead: the result is the same, but slower.
+A cached parent is an [image](/docs/sandboxes/features/base-images?ref=docs-labs-ci-machines) that every run shares, and an uncached parent is a [snapshot that belongs to the run](/docs/sandboxes/features/run-owned?ref=docs-labs-ci-machines) and is cleaned up when it ends. Either way, installed files and built output are already there. If the image or snapshot can't be started, the job runs the parent's commands on its own machine instead: the result is the same, but slower.
 
 ## Use a second machine
 

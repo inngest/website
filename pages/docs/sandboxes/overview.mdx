@@ -11,7 +11,11 @@ export const description = "Inngest Sandboxes overview: run generated code or te
 <SdkSupport
   feature="Sandboxes"
   links={{
+    "Run Python, TypeScript, and shell": "/docs/sandboxes/features/run-code",
     "Durable step.sandbox calls": "/docs/sandboxes/features/managed-lifecycle",
+    "Automatic cleanup": "/docs/sandboxes/features/run-owned",
+    "Tools and code mode": "/docs/sandboxes/features/tools",
+    "Agent tools": "/docs/sandboxes/features/sandbox-functions",
     "Direct inngest.sandboxes client": "/docs/sandboxes/reference#choose-the-type-script-surface",
     "Commands and background processes": "/docs/sandboxes/reference#commands-processes-and-files",
     "Pause, resume, snapshot, and clone": "/docs/sandboxes/features/pause-and-resume",
@@ -24,9 +28,13 @@ export const description = "Inngest Sandboxes overview: run generated code or te
     {
       sdk: "typescript",
       href: "/docs/sandboxes/reference",
-      status: "Beta",
+      status: "Stable",
       features: {
+        "Run Python, TypeScript, and shell": true,
         "Durable step.sandbox calls": true,
+        "Automatic cleanup": true,
+        "Tools and code mode": true,
+        "Agent tools": true,
         "Direct inngest.sandboxes client": true,
         "Commands and background processes": true,
         "Pause, resume, snapshot, and clone": true,
@@ -35,14 +43,17 @@ export const description = "Inngest Sandboxes overview: run generated code or te
         "SSH access": { supported: false, tag: "Planned" },
         "S3-backed persistent mounts": { supported: false, tag: "Planned" },
       },
-      note: "Access-gated beta. The API can change before launch.",
     },
     { sdk: "python", planned: true },
     { sdk: "go", planned: true },
   ]}
 />
 
-Run generated code or test a project in a fully isolated microVM while your durable function coordinates the job. Sandboxes boot in under a second. You can pause and resume the same Sandbox, or snapshot it and clone a new one. Inngest coordinates their lifecycle with the run and shows sandbox activity in the same trace. You can give code its own execution environment without building a separate service to start, stop, and track it.
+Run generated code or test a project in a fully isolated microVM while your durable function coordinates the job. One statement boots a Sandbox, runs Python, TypeScript, or shell, returns the result as a value, and cleans up. Sandboxes boot in under a second. You can pause and resume the same Sandbox, or snapshot it and clone a new one. Inngest ties their lifecycle to the run and shows sandbox activity in the same trace, so you can give code its own execution environment without building a separate service to start, stop, and track it.
+
+```typescript {{ title: "TypeScript" }}
+const total = await step.sandbox.python<number>("sum", "return sum(xs)", { input: { xs } });
+```
 
 ## Why use a Sandbox?
 
@@ -52,13 +63,18 @@ A durable run can include steps, waits, and retries that span more than one requ
 
 ## What you can do
 
+- **Run code in one statement.** [Python, TypeScript, and shell runners](/docs/sandboxes/features/run-code?ref=docs-sandboxes-overview) take your data as variables and return a typed value.
 - **Boot quickly.** Start a microVM in under a second when work needs an isolated environment.
 - **Run code in isolation.** Keep code that needs its own environment apart from the function's runtime.
+- **Fail loudly.** A command that exits non-zero fails its step and shows red. [Allow the codes that are information](/docs/sandboxes/features/exit-codes?ref=docs-sandboxes-overview).
+- **Call your functions from the Sandbox.** [Tools](/docs/sandboxes/features/tools?ref=docs-sandboxes-overview) run in your function, as durable steps, with your credentials.
+- **Give an LLM a Sandbox.** [Sandbox functions](/docs/sandboxes/features/sandbox-functions?ref=docs-sandboxes-overview) become tools for the AI SDK, Anthropic, OpenAI, and MCP.
+- **Never leak one.** [Sandboxes and snapshots your run creates are cleaned up when it ends](/docs/sandboxes/features/run-owned?ref=docs-sandboxes-overview), however it ends.
 - **Pause and continue.** Stop active work and continue when the job is ready.
 - **Snapshot and clone.** Save Sandbox state and start a new Sandbox from it. Pause and resume continue the original Sandbox. Files persist through these operations.
-- **Follow the work in a trace.** See sandbox activity with the steps and events of the durable run.
+- **Follow the work in a trace.** See each statement as one [SANDBOX group](/docs/sandboxes/features/traces?ref=docs-sandboxes-overview) with the steps and events of the durable run.
 
-The lifecycle depends on the API you use. With the low-level `step.sandbox.create()` API, your function calls create and destroy as durable operations and handles cleanup after permanent failure. A planned `step.sandbox.typescript` call will start a Sandbox, run TypeScript, and stop it automatically.
+The lifecycle follows the API you use. A runner such as `step.sandbox.python()` creates and destroys its own Sandbox. `step.sandbox.create()` returns a handle you can use with `await using`, and `group.sandbox()` wraps a callback. Anything still alive when the run ends is cleaned up.
 
 ## How Sandboxes fit into Inngest
 

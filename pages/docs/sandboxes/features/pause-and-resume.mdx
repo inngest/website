@@ -8,11 +8,9 @@ export const description = "Pause an Inngest Sandbox while work waits, then resu
 
 Pause a Sandbox while a job waits for review, then resume it under the same ID without rebuilding its files. Inngest releases the live runtime while paused and restores its filesystem, memory, processes, environment, resources, network identity, and remaining runtime when it resumes.
 
-> **Experimental beta:** Sandboxes require access to the beta in Inngest Cloud and `inngest@4.21.1` or newer. The API and limits can change. Keep data that must outlive a Sandbox in external storage.
-
 ## What pause preserves
 
-A Sandbox moves from `RUNNING` through `PAUSING` to `PAUSED`, then through `RESUMING` back to `RUNNING`. Both SDK methods wait for the stable state and return a new Sandbox object. The current beta allows one hour of active runtime per Sandbox. Time spent paused does not consume its remaining runtime. The runtime timeout requests an automatic Pause; see [Runtime expiry](/docs/sandboxes/limits#runtime-expiry) for the state transition and effects on running commands and processes.
+A Sandbox moves from `RUNNING` through `PAUSING` to `PAUSED`, then through `RESUMING` back to `RUNNING`. Both SDK methods wait for the stable state and return a new Sandbox object. Each Sandbox allows one hour of active runtime per Sandbox. Time spent paused does not consume its remaining runtime. The runtime timeout requests an automatic Pause; see [Runtime expiry](/docs/sandboxes/limits#runtime-expiry) for the state transition and effects on running commands and processes.
 
 Pause uses a private checkpoint. It is a cold transition, so active external network connections can break. Reconnect those clients after resume. Commands, file operations, logs, and process operations require `RUNNING`. Use the object returned by `resume()` before you continue work.
 
@@ -85,7 +83,6 @@ const result = await running.commands.run(
   "cat /tmp/progress.txt",
 );
 
-await running.destroy("destroy-sandbox");
 return result.stdout;
 ```
 
@@ -93,7 +90,7 @@ return result.stdout;
 <SdkUnsupported title="Go" feature="Sandboxes" />
 </CodeGroup>
 
-The function must keep cleanup in its workflow. The final Destroy step handles the successful path. If a permanent failure can leave a Sandbox behind, add an `onFailure` cleanup handler or a separate cleanup function that receives the Sandbox ID. Durable step results do not keep Sandbox files after Destroy.
+The Sandbox belongs to the run, so it stays paused while the function waits, and it's [cleaned up when the run ends](/docs/sandboxes/features/run-owned?ref=docs-sandboxes-pause-and-resume). Call `running.destroy("destroy-sandbox")` to release it sooner. Durable step results do not keep Sandbox files after Destroy.
 
 ## Pause or snapshot?
 
@@ -103,4 +100,4 @@ Use pause and resume to continue **one** Sandbox under its original ID. Use a us
 
 - Pause does not coordinate your application’s shutdown. Save external work and plan to reconnect network clients.
 - The paused Sandbox remains a lifecycle resource. Destroy it when you no longer need it. Destroy removes its filesystem, processes, and retained output.
-- The beta does not set a permanent storage guarantee for pause checkpoints. Store lasting artifacts outside the Sandbox. For filesystem sharing across Sandboxes, see [Durable filesystems](/docs/sandboxes/features/durable-filesystems).
+- Pause checkpoints are not permanent storage for pause checkpoints. Store lasting artifacts outside the Sandbox. For filesystem sharing across Sandboxes, see [Durable filesystems](/docs/sandboxes/features/durable-filesystems).

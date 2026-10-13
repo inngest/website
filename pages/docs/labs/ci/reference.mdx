@@ -25,7 +25,7 @@ export const description = "Inngest CI reference: pipeline and job options, trig
 - `machine` is the default machine for every job.
 - `runUrl` builds the link shown on checks.
 
-`ci.functions()` returns your pipelines plus the functions CI needs behind the scenes: machine cleanup, cache builds and warming, GitHub check re-runs, and running single jobs locally. Pass it to `serve()` or `createServer()`.
+`ci.functions()` returns your pipelines plus the functions CI needs behind the scenes: cache builds and refreshing, GitHub check re-runs, and running single jobs locally. Pass it to `serve()` or `createServer()`.
 
 `ci.local` is `true` in a run started by [`inngest-ci`](/docs/labs/ci/local?ref=docs-labs-ci-reference). Use it to skip releases and deploys from a laptop: `if (ci.local) { return ci.skip("local run"); }`.
 
@@ -159,7 +159,7 @@ const build = ci.job({ id: "build", machine: { vcpu: 4 } }, async () => {
 | `name` | `string` | No |
 | `from` | A job, `job.with(input)`, `({ input }) => job.with(input)`, or an image | No |
 | `machine` | `{ vcpu?: 1 \| 2 \| 4 }` | No |
-| `cache` | `{ key?, warm?, scope?, maxAge? }` | No |
+| `cache` | `{ key?, refresh?, scope?, maxAge? }` | No |
 | `check` | `false`, or `{ name? }` | No |
 | `keepOnFailure` | Duration, such as `"24h"` | No |
 | `input` | A Standard Schema, such as a Zod object | No |
@@ -168,7 +168,7 @@ const build = ci.job({ id: "build", machine: { vcpu: 4 } }, async () => {
 
 `from` is the job or image this job starts on. See [`from`](#from).
 
-`keepOnFailure` snapshots the machine when the job fails. The snapshot ID appears in the pipeline check's summary, under **Kept machines**. It takes a duration, but the duration is ignored today: the snapshot keeps the platform's default retention.
+`keepOnFailure` snapshots the machine when the job fails. The snapshot ID appears in the pipeline check's summary, under **Kept machines**. It takes a duration, such as `"24h"`, for how long the snapshot is kept, and the snapshot is yours to restore until then.
 
 `input` takes any Standard Schema, such as Zod. The handler gets the validated value, a mismatch throws `CiUsageError`, and [`inngest-ci`](/docs/labs/ci/local?ref=docs-labs-ci-reference#give-inputs) asks for it field by field. `job.with(input)` returns the job with an input, for another job to start `from`.
 
@@ -262,8 +262,9 @@ Set `machine` on a job, on its pipeline, or on `createCi` for every job. The fir
 | `history` | `"shallow"`, which skips file contents until they are needed. |
 | `path` | `/work`. Commands after a `checkout({ path })` run in that path. |
 
+- `repo` and `ref` can name any repository and ref the GitHub installation can read. A ref is resolved to a commit once per run, so every job and replay sees the same one. `repo` picks what is cloned with your credentials, so never take it from untrusted event data.
 - `checkout({ repo })` works when the trigger has no repository, such as a cron. Otherwise `checkout()` throws `CiUsageError`, so pass `repo` or set it on the pipeline.
-- Locally, plain `checkout()` uploads your working tree without its `.git` folder and ignores `submodules` and `history`. Passing `ref` or another `repo` does a real clone.
+- Locally, plain `checkout()` uploads your working tree without its `.git` folder, and after the first upload only the files that changed. It ignores `submodules` and `history`. Passing `ref` or another `repo` does a real clone.
 - On a machine that already has a checkout, such as one started `from` a cached job, `checkout()` moves that checkout to this run's commit and keeps ignored files like `node_modules`. In a local run, files you deleted since the snapshot stay.
 
 ## `from`
@@ -285,7 +286,7 @@ const test = ci.job({ id: "test", from: build }, async () => {
 });
 ```
 
-Each job builds on the snapshot of the one before it. When a job's [cache key](#caching) is unchanged, Inngest skips the job and restores its saved machine. When a cached job's key changes, it runs again, and so does every cached job that starts from it, directly or through other cached jobs.
+Each job builds on the machine of the one before it. When a job's [cache key](#caching) is unchanged, Inngest skips the job and restores its saved machine. When a cached job's key changes, it runs again, and so does every cached job that starts from it, directly or through other cached jobs.
 
 | `from` | Starts from |
 | --- | --- |
@@ -294,21 +295,20 @@ Each job builds on the snapshot of the one before it. When a job's [cache key](#
 | `({ input }) => build.with(input)` | A parent that depends on this job's own input. |
 | `image.inngest("base")` | An image Inngest maintains. |
 | `image.custom("name")` | An image published to your workspace. |
-| `image.snapshot("name")` | A sandbox snapshot you captured under that name. |
 | `image.job("app/job", input?)` | A job another app defines. |
 
 - The parent must be defined on the same CI client. A job or `job.with(input)` is checked when the app boots, and its input must pass the parent's `input` schema. A function is checked when the job runs.
 - A job that ends up starting from itself, through any number of parents, fails with the cycle in its message.
 - To choose the parent at run time, define two jobs and choose which to call in the pipeline.
-- If a snapshot is not available, the job runs the parent's commands again on its own machine. Every child repeats the parent's work in that case.
+- A cached parent is published as an image and shared by every run. An uncached parent is built as a snapshot that belongs to the run and is cleaned up when the run ends.
+- If the image or snapshot is not available, the job runs the parent's commands again on its own machine. Every child repeats the parent's work in that case.
+- Jobs defined inside a pipeline function build in the run that defined them.
 
 ### Base images
 
 `image.inngest(name)` starts from an image Inngest maintains, such as `base`.
 
 `image.custom(ref)` starts from an image published to your workspace: `"name"`, `"name:tag"`, or `"name@sha256:<hex>"`.
-
-`image.snapshot(name)` starts from the snapshot with exactly that name, including its memory and running processes. `name` cannot be empty, contain whitespace, or start with `ci/`.
 
 `image.job("app/job", input?)` starts from a job another app in the same Inngest environment defines. `input` is the job's input, when it takes one.
 
@@ -432,7 +432,7 @@ const base = ci.job(
     id: "base",
     cache: {
       key: files("pnpm-lock.yaml", ".nvmrc"),
-      warm: [{ cron: "0 3 * * *" }],
+      refresh: [{ cron: "0 3 * * *" }],
       maxAge: "1d",
     },
   },
@@ -443,12 +443,12 @@ const base = ci.job(
 );
 ```
 
-- `key` is what the job depends on. If the key is unchanged since the last successful run, the job does not run. A job that started a machine is restored from its snapshot, and a job that starts `from` it clones the saved machine.
+- `key` is what the job depends on. If the key is unchanged since the last successful run, the job does not run. A job that started a machine is restored from its image, and a job that starts `from` it boots on the saved machine.
 - A restored machine keeps the checkout from the commit it was built on. Call `checkout()` again in a job that starts `from` it to move to this run's commit. It keeps installed dependencies and build output.
-- `warm` takes triggers that rebuild the cache ahead of time, so pull requests do not pay for it. Set `repo` on a pipeline so a cron has a repository to check out.
-- `maxAge` is a duration such as `"1d"`. A snapshot older than that, counted from when it was taken, is a miss and the job builds again. Without it, a snapshot is reused until its key changes or it expires.
+- `refresh` takes triggers that build the cache ahead of time, so pull requests do not pay for it. Set `repo` on a pipeline so a cron has a repository to check out. A run that had to build just in time says so on the job's row and in the summary.
+- `maxAge` is a duration such as `"1d"`: a string, milliseconds, or a `Temporal.Duration`. `durationToMs` from `inngest` converts one. An image older than that, counted from when it was built, is a miss and the job builds again. Without it, an image is reused until its key changes. A malformed or zero value fails when the app boots.
 - `scope` is `"branch"` by default: a pull request reads its own entries and its base branch's and writes only its own, and a push reads and writes its branch's. `"global"` shares one set of entries across every branch.
-- Inngest keeps a cached job's machine as a snapshot and finds it again by its key, so CI on GitHub, teammates, and local runs all share it. Entries expire with their snapshot and are rebuilt by the next run that needs one.
+- Inngest publishes a cached job's machine as an image and finds it again by its key, so CI on GitHub, teammates, and local runs all share it. Images don't expire. They are rebuilt when the key changes, past `maxAge`, or after `invalidateEvent`. Runs that need the same missing image at the same time share one build.
 
 A key is `files()`, a string, an array of them, or an async function that returns a string:
 
@@ -462,7 +462,7 @@ key: [files("go.mod", "go.sum"), "go1.25"]
 - `files(...patterns, { repo?, ref? })` takes a final options object. `repo` is another repository as `owner/name`, and `ref` is the branch, tag, or commit to read at. `ref` defaults to the run's commit, or to the repository's default branch when `repo` is another repository.
 - A cached job also depends on the cached jobs it starts `from`. When one of them changes its key, or the input it was called with, the child's entry is stale and the job runs again. This holds up the whole chain of cached parents. An uncached parent is built fresh in every run, so a cached job that starts from it runs every time. Give the parent a `cache` too.
 - The first run with a new key always misses.
-- A cached job that runs no commands has no machine to snapshot, so it runs again every time. Reused jobs show as `Cached <time> ago`.
+- A cached job that runs no commands has no machine to publish, so it runs again every time. Reused jobs show as `Cached <time> ago`.
 - Do not cache tests that call the network.
 
 ## Checks and reports
@@ -646,7 +646,7 @@ const migrations = ci.job("migrations", async () => {
 
 | Error | Thrown when |
 | --- | --- |
-| `CommandFailedError` | A command exits with a non-zero code and you did not call `.nothrow()`. |
+| `CommandFailedError` | A command exits with a non-zero code and you did not call `.nothrow()`. Sandboxes follow the same rule: a non-zero exit [fails its step](/docs/sandboxes/features/exit-codes). |
 | `CommandTimeoutError` | A command passes its `.timeout()`. |
 | `CiUsageError` | The API is used in a way it does not support, such as `$` outside a job or `checkout()` in a run with no repository. |
 
