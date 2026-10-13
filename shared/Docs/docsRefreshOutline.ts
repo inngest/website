@@ -514,6 +514,10 @@ export const docsRefreshOutline: DocsRefreshPage[] = [
                 href: "/docs/sandboxes/features/run-owned",
               },
               {
+                title: "Metadata",
+                href: "/docs/sandboxes/features/metadata",
+              },
+              {
                 title: "Tools and code mode",
                 href: "/docs/sandboxes/features/tools",
               },

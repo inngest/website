@@ -54,6 +54,14 @@ const clones = await Promise.all(
 
 Owners aren't inherited between a snapshot and its clones.
 
+## Find by run
+
+Inngest tags owned resources with `inngest.run_id`. [Metadata →](/docs/sandboxes/features/metadata?ref=docs-sandboxes-run-owned)
+
+```typescript {{ title: "TypeScript" }}
+await inngest.sandboxes.list({ metadata: { "inngest.run_id": runId } });
+```
+
 ## How it works
 
 - When the run ends in any state, Inngest destroys what it still owns.
