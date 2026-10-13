@@ -76,13 +76,14 @@ await step.sandbox.python("a", code, {
     typed: tool({ input: z.object({ id: z.string() }), output: Customer, run: ({ id }) => load(id) }),
     lookup: runSql.tool(),
   },
+  toolOptions: { toolTimeout: "30s", maxCalls: 100, waitWindow: "20s" },
 });
 ```
 
 - A plain function takes untyped positional arguments. `tool()` adds names, types, and validation.
 - `sandboxFn.tool()` runs a [sandbox function](/docs/sandboxes/features/sandbox-functions?ref=docs-sandboxes-tools).
-- `run` gets `(input, ctx)`.
-- `timeout` defaults to `"30s"`.
+- `run` gets `(input, ctx)`. `ctx.idempotencyKey` is stable across retries. `ctx.signal` aborts at `toolTimeout`.
+- `toolOptions` defaults are shown. A command with tools may run 5 minutes.
 - Works on [runners](/docs/sandboxes/features/run-code?ref=docs-sandboxes-tools), `create()`, `group.sandbox()`, and `sandbox.fn`, not `sb.$`.
 
 On `commands.run`, import the stub yourself:
@@ -135,7 +136,7 @@ SANDBOX  churn-report
 ```
 
 - Calls found together run in parallel, up to 8 at a time.
-- A failed step retries, then raises `ToolError`. Limit: 100 calls per run.
+- A tool that throws is retried, then raises `ToolError` in the code. Limit: `maxCalls` per command.
 
 ## Code mode
 

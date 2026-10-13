@@ -19,7 +19,8 @@ export const description = "Inngest Sandboxes limits: supported Sandbox sizes an
 | Snapshot wait | Up to **5 min** for `READY`. | Polling stops, creation continues. List before retrying. |
 | Snapshot quota | Account-specific, unpublished. Each has `expiresAt`. | `403 sandbox_snapshot_limit_exceeded`. Delete old snapshots. |
 | Runner code and input | **8 MiB** combined. | Fails before create. Pass big data with `files`. |
-| Tool calls | **100** per runner call, **8** parallel. Request **256 KiB**, reply **1 MiB**, **30 s** default `timeout`. | The Sandbox gets a `ToolError`. |
+| Tool calls | **100** per command (`maxCalls`), **8** parallel. Request **256 KiB**, reply **1 MiB**, **30 s** `toolTimeout`. | The Sandbox gets a `ToolError`. |
+| Owned resources | Sandboxes and snapshots a run owns are cleaned up when it ends. | [Run-owned](/docs/sandboxes/features/run-owned?ref=docs-sandboxes-limits) |
 | Runtime | **1 hour** of active runtime per Sandbox. Paused time is free. | Automatic pause. [Runtime expiry](#runtime-expiry) |
 | Disk and concurrency | Unpublished. No configurable lifetime, disk, or resizing. | Ask Inngest about your entitlement. |
 

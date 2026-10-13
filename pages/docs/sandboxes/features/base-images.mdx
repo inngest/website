@@ -17,13 +17,11 @@ export const description = "Sandbox base images come with Node.js, Python, Ruby,
 ```typescript {{ title: "TypeScript" }}
 import { image } from "inngest";
 
-const base = await inngest.sandboxes.create({
-  name: "agent-1",
+const base = await step.sandbox.create("agent-1", {
   from: image.inngest("base"),
 });
 
-const custom = await inngest.sandboxes.create({
-  name: "agent-2",
+const custom = await step.sandbox.create("agent-2", {
   from: image.custom("my-image:v1"),
 });
 console.log(custom.imageDigest);
@@ -31,19 +29,19 @@ console.log(custom.imageDigest);
 await step.sandbox.python("ml", code, { runtime: "python@3.12" });
 ```
 
-<Annotation id="inngest" lines="5" tease="maintained by Inngest" title="Inngest images" href="#choose-an-image" linkText="Choose an image">
+<Annotation id="inngest" lines="4" tease="maintained by Inngest" title="Inngest images" href="#choose-an-image" linkText="Choose an image">
 `base` is the default. Omit `from` to use it.
 </Annotation>
 
-<Annotation id="custom" lines="10" tease="published to your workspace" title="Custom images" href="#choose-an-image" linkText="Choose an image">
+<Annotation id="custom" lines="8" tease="published to your workspace" title="Custom images" href="#choose-an-image" linkText="Choose an image">
 Name, `name:tag`, or `name@sha256:<hex>`.
 </Annotation>
 
-<Annotation id="digest" lines="12" tease="exact image" title="Image digest" href="#choose-an-image" linkText="Choose an image">
+<Annotation id="digest" lines="10" tease="exact image" title="Image digest" href="#choose-an-image" linkText="Choose an image">
 Shows exactly which image started.
 </Annotation>
 
-<Annotation id="runtime" lines="14" tease="pin a language" title="Runtime images" href="#runtime-images" linkText="Runtime images">
+<Annotation id="runtime" lines="12" tease="pin a language" title="Runtime images" href="#runtime-images" linkText="Runtime images">
 `runtime` picks a pinned language image.
 </Annotation>
 
@@ -54,6 +52,7 @@ Shows exactly which image started.
 - Node.js (`node`, `node-lts`), Python 3.14, Ruby 4.0.
 - Git, curl, OpenSSH, BusyBox, `ripgrep`, `jq`, `tar`.
 - No Go, Rust, Java, Bun, or Deno. Bun and Deno have [runtime images](#runtime-images).
+- Check versions with `await sb.sh("versions", "node --version && python3 --version")`.
 
 ## Choose an image
 

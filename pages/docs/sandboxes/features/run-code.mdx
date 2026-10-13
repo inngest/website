@@ -157,24 +157,26 @@ type SandboxResult = {
 
 ```typescript {{ title: "TypeScript" }}
 type RunnerOptions = {
-  input?: Record<string, unknown>;
+  input?: Record<string, JSONValue>;
   runtime?: string;
-  from?: Image;
+  from?: SandboxImage;
   vcpu?: number;
   memoryMb?: number;
-  files?: Files;
+  files?: Record<string, string | Uint8Array>;
   env?: Record<string, string>;
   secrets?: string[];
   cwd?: string;
-  timeout?: string;
+  timeout?: SandboxDuration;
   exitCodes?: number[] | "any";
-  schema?: { output: StandardSchema };
-  tools?: Tools;
-  owner?: string;
+  schema?: { input?: StandardSchemaV1; output?: StandardSchemaV1 };
+  tools?: SandboxTools;
+  toolOptions?: SandboxToolOptions;
+  owner?: "persistent" | { runId: string };
 };
 ```
 
 - Defaults: `vcpu` 2, `memoryMb` 2048, `timeout` `"30s"` up to `"5m"`. See [limits](/docs/sandboxes/limits?ref=docs-sandboxes-run-code).
+- `from` is [`image.inngest()` or `image.custom()`](/docs/sandboxes/features/base-images?ref=docs-sandboxes-run-code#choose-an-image).
 - [`tools`](/docs/sandboxes/features/tools?ref=docs-sandboxes-run-code) and [`owner`](/docs/sandboxes/features/run-owned?ref=docs-sandboxes-run-code) have their own pages.
 
 ## How it works

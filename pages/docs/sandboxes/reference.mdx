@@ -73,13 +73,17 @@ The same methods exist on a handle from `step.sandbox.create()` or `group.sandbo
 
 ```typescript {{ title: "TypeScript" }}
 type CreateOptions = {
+  name?: string;
   from?: SandboxImage;
   vcpu?: number;
   memoryMb?: number;
-  timeout?: DurationLike;
+  timeout?: SandboxDuration;
+  runningTimeout?: SandboxDuration | false;
   env?: Record<string, string>;
   secrets?: string[];
   owner?: "persistent" | { runId: string };
+  tools?: SandboxTools;
+  toolOptions?: SandboxToolOptions;
 };
 
 type GroupSandboxOptions = CreateOptions & { id: string };
@@ -94,10 +98,11 @@ type RunnerOptions = {
   env?: Record<string, string>;
   secrets?: string[];
   cwd?: string;
-  timeout?: DurationLike;
+  timeout?: SandboxDuration;
   exitCodes?: number[] | "any";
-  schema?: { output?: StandardSchema };
-  tools?: Record<string, Tool | ((...args: any[]) => unknown)>;
+  schema?: { input?: StandardSchemaV1; output?: StandardSchemaV1 };
+  tools?: SandboxTools;
+  toolOptions?: SandboxToolOptions;
   owner?: "persistent" | { runId: string };
 };
 
@@ -125,7 +130,7 @@ type SandboxResult = {
 ```typescript {{ title: "TypeScript" }}
 sandbox.fn({ name, description?, runtime, schema, code, tools? }); // call as fn(id, input, options?)
 fn.tool(); // neutral tool for an LLM
-tool({ description?, input?, output?, timeout?, run }); // run receives (input, ctx)
+tool({ description?, input?, output?, run }); // run receives (input, ctx)
 sandbox.codeTool({ language, timeout?, tools }); // one LLM tool that writes code against your tools
 describeTools(tools, language); // typed declaration the code sees
 agentLoop({ adapter, tools, model, messages, maxTurns? }); // model and tool loop in your function
@@ -143,7 +148,7 @@ inngest.sandboxes.create(options);
 inngest.sandboxes.list(options?);
 inngest.sandboxes.get(id);
 
-sandbox.waitUntilRunning(options?);
+sandbox.waitUntilRunning({ timeout });
 sandbox.destroy();
 sandbox.pause(options?);
 sandbox.resume(options?);

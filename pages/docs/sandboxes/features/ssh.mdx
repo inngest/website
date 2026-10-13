@@ -18,6 +18,7 @@ ssh <workload-id>@ssh.inngest.com
 ## How it works
 
 - Upload a public key, create a Sandbox, wait for `RUNNING`, then connect.
+- SSH commands are not durable steps.
 - Closing the session leaves the Sandbox running until it is paused or destroyed.
 - Reconnect after a resume. Pause can interrupt network sessions.
 - Only give access to people who should be able to change the Sandbox.

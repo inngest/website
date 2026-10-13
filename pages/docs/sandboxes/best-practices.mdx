@@ -23,7 +23,7 @@ export const description = "Sandboxes best practices: run isolated code safely w
 ```typescript {{ title: "TypeScript" }}
 const sb = await step.sandbox.create("work", { runningTimeout: false });
 
-await sb.waitUntilRunning("ready");
+await sb.waitUntilRunning("ready", { timeout: "2m" });
 ```
 
 ## Make retries safe

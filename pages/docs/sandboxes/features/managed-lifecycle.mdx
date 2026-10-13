@@ -57,13 +57,17 @@ Failing clone or install stops the function. Failing tests are information here.
 
 ```typescript {{ title: "TypeScript" }}
 type CreateOptions = {
-  from?: Image;
+  name?: string;
+  from?: SandboxImage;
   vcpu?: number;
   memoryMb?: number;
-  timeout?: string;
+  timeout?: SandboxDuration;
+  runningTimeout?: SandboxDuration | false;
   env?: Record<string, string>;
   secrets?: string[];
-  owner?: string | { runId: string };
+  owner?: "persistent" | { runId: string };
+  tools?: SandboxTools;
+  toolOptions?: SandboxToolOptions;
 };
 ```
 

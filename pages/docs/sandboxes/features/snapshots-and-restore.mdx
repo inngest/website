@@ -51,7 +51,7 @@ The direct client drops the step IDs and needs manual cleanup.
 const snapshot = await sandbox.snapshot({ name: "node-deps" }, { timeout: "5m" });
 
 try {
-  const clone = await snapshot.clone({ runningTimeout: "2m" });
+  const clone = await snapshot.clone({ name: "prepared-1", runningTimeout: "2m" });
   await clone.destroy();
 } finally {
   await snapshot.delete();
