@@ -27,7 +27,23 @@ You can configure both servers in the same MCP client. Use the Dev Server while 
 Some Cloud MCP tools change data, including tools that send events, invoke functions, rerun or cancel runs, sync apps, and manage environments or webhooks. Review a tool call before you approve it, especially in production.
 </Callout>
 
+## Claude Code plugin
+
+The published Inngest plugin bundles Cloud MCP with coding skills and connection recovery. Install it from your terminal:
+
+```bash
+claude plugin install inngest@anthropic-plugin-directory
+```
+
+Start a new Claude Code session, run `/mcp`, and select `plugin:inngest:inngest-cloud` to sign in. See the [plugin guide](/docs/ai-dev-tools/agent-skills#claude-code-plugin) for desktop installation, commands, and recovery steps.
+
+If you use the plugin, Cloud MCP is already configured; skip the standalone Cloud setup below. You can still add the local Dev Server separately.
+
+The [Codex plugin is coming soon](/docs/ai-dev-tools/agent-skills#codex-plugin-coming-soon) and is currently in review. Codex users can connect directly with the instructions below.
+
 ## Connect to Inngest Cloud
+
+Use this standalone setup for MCP clients without the Inngest plugin.
 
 Use OAuth to sign in through your browser and choose the access your coding agent needs. You do not need to create or copy an API key.
 
