@@ -78,7 +78,7 @@ Register `runInSandbox` in your `serve()` handler, then send this event:
 ```typescript {{ title: "TypeScript" }}
 await using sb = await step.sandbox.create("work");
 
-await sb.$`npm init -y && npm install lodash`;
+await sb.$.sh`npm init -y && npm install lodash`;
 const version = await sb.$`node -p "require('lodash').VERSION"`.text();
 ```
 

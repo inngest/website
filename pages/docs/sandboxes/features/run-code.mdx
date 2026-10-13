@@ -11,7 +11,7 @@ export const description = "Run Python, TypeScript, or shell in an isolated Sand
 - **Data in, value out.** Keys become variables, `return` sends JSON back. [Pass data in →](#pass-data-in)
 - **Typed results.** Validate the value with Zod, Valibot, or ArkType. [Type the result →](#type-the-result)
 - **Pick the runtime.** Node, Deno, Bun, or Python, at an exact version. [Choose a runtime →](#choose-a-runtime)
-- **Safe shell.** Interpolated values are quoted for you. [The `$` template →](#the-template)
+- **Safe commands.** Interpolated values never reach a shell unquoted. [The `$` template →](#the-template)
 
 <AnnotatedCode>
 
@@ -129,12 +129,14 @@ Also `node@20`, `node@24`, `python@3.11`, `python@3.12`. Each is a [runtime imag
 await using sb = await step.sandbox.create("repo");
 
 await sb.$`git clone --depth 1 ${url} /work/repo`;
-const files = await sb.$`ls /work/repo | head -5`.text();
+const files = await sb.$.sh`ls /work/repo | head -5`.text();
 const pkg = await sb.$`cat /work/repo/package.json`.json();
-const tests = await sb.$`cd /work/repo && npm test`.exitCodes([0, 1]).timeout("4m");
+const tests = await sb.$.sh`cd /work/repo && npm test`.exitCodes([0, 1]).timeout("4m");
 ```
 
-- Also `.id()`, `.env()`, `.quiet()`. Use `.id("clone")` for a stable row name.
+- `` sb.$`…` `` runs the command directly, with no shell. Each `${value}` is one argument.
+- `` sb.$.sh`…` `` runs `/bin/sh -c`, with values quoted, for pipes and `&&`.
+- Both chain `.timeout()`, `.env()`, `.retries()`, and `.exitCodes()`. Also `.id()` and `.quiet()`.
 - Non-zero exits stop the run, as in [Exit codes](/docs/sandboxes/features/exit-codes?ref=docs-sandboxes-run-code).
 
 ## The full result

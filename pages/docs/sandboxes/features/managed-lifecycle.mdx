@@ -26,9 +26,9 @@ export const buildCheck = inngest.createFunction(
     });
 
     await sb.$`git clone --depth 1 ${event.data.url} /work/repo`;
-    await sb.$`cd /work/repo && npm ci`.timeout("5m");
+    await sb.$.sh`cd /work/repo && npm ci`.timeout("5m");
 
-    const tests = await sb.$`cd /work/repo && npm test`.exitCodes("any");
+    const tests = await sb.$.sh`cd /work/repo && npm test`.exitCodes("any");
 
     return { passed: tests.ok, tail: tests.stdout.slice(-2000) };
   },
@@ -84,8 +84,8 @@ async ({ step, event }) => {
   {
     await using sb = await step.sandbox.create("review", { from: image.inngest("node-22") });
     await sb.$`git clone --depth 1 ${repo.url} /work/r`;
-    await sb.$`cd /work/r && npx eslint .`.exitCodes("any");
-    files = (await sb.$`cd /work/r && git diff --name-only`.text()).split("\n");
+    await sb.$.sh`cd /work/r && npx eslint .`.exitCodes("any");
+    files = (await sb.$.sh`cd /work/r && git diff --name-only`.text()).split("\n");
   }
 
   await step.run("notify", () => notify(repo.id, files));
@@ -102,17 +102,21 @@ Without `await using`, it lasts until the run ends, or until `await sb.destroy("
 ## Group a callback
 
 ```typescript {{ title: "TypeScript" }}
+import { $ } from "inngest/experimental";
+
 const out = await group.sandbox("run", (sb) => sb.python("main", "return 6 * 7"));
 
 const report = await group.sandbox(
   { id: "build-check", from: image.inngest("node-22"), vcpu: 4, secrets: ["NPM_TOKEN"] },
   async (sb) => {
-    await sb.$`git clone --depth 1 ${url} /work/repo`;
-    const tests = await sb.$`cd /work/repo && npm test`.exitCodes("any");
+    await $`git clone --depth 1 ${url} /work/repo`;
+    const tests = await $.sh`cd /work/repo && npm test`.exitCodes("any");
     return { passed: tests.ok, tail: tests.stdout.slice(-2000) };
   },
 );
 ```
+
+A bare `$` inside the callback runs on the group's Sandbox. Outside a group it throws.
 
 Destroyed when the callback returns or throws. One `SANDBOX` group in the [trace](/docs/sandboxes/features/traces?ref=docs-sandboxes-managed-lifecycle).
 
