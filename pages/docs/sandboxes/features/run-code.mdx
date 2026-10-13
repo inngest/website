@@ -185,20 +185,26 @@ type SandboxResult = {
 - `result` holds the `return` value for Python and TypeScript, and is absent for shell.
 - `truncated` is `true` when the output was long enough that the start was cut.
 
-## Options every entry point shares
+## Options
 
-A runner, `step.sandbox.create()`, `group.sandbox()`, and the machine options of [Inngest CI](/docs/labs/ci/machines?ref=docs-sandboxes-run-code) all accept the same machine options, so a size, an image, or a secret works the same everywhere:
+Runners on `step.sandbox` take the options below. A runner creates its own Sandbox, so it takes the machine options too.
 
 | Option | Default | Does |
 | --- | --- | --- |
-| `from` | Base image | The [image](/docs/sandboxes/features/base-images?ref=docs-sandboxes-run-code) to start from. |
+| `input` | None | JSON values that become [variables](#pass-data-in) in the code. |
+| `runtime` | Base image | The [language and version](#choose-a-runtime). |
+| `from` | Base image | The [image](/docs/sandboxes/features/base-images?ref=docs-sandboxes-run-code) to start from. Exclusive with `runtime`. |
 | `vcpu`, `memoryMb` | `2`, `2048` | Machine size, from a [supported pair](/docs/sandboxes/limits?ref=docs-sandboxes-run-code). |
-| `timeout` | `"30s"` | Default time limit per command, up to `"5m"`. |
-| `env` | None | Environment variables. |
-| `secrets` | None | Workspace [secret](/docs/sandboxes/features/secrets?ref=docs-sandboxes-run-code) names, injected by Inngest. |
+| `files` | None | Files uploaded before the code runs. |
+| `env`, `secrets` | None | Environment variables, and workspace [secret](/docs/sandboxes/features/secrets?ref=docs-sandboxes-run-code) names that Inngest injects. |
+| `cwd` | `/` | Working directory. |
+| `timeout` | `"30s"` | Time limit, up to `"5m"`. |
+| `exitCodes` | `[0]` | The [exit codes that count as success](/docs/sandboxes/features/exit-codes?ref=docs-sandboxes-run-code). |
+| `schema` | None | `{ output }`, to [type the result](#type-the-result). |
+| `tools` | None | Functions the code can [call](/docs/sandboxes/features/tools?ref=docs-sandboxes-run-code). |
 | `owner` | The current run | Who [cleans the Sandbox up](/docs/sandboxes/features/run-owned?ref=docs-sandboxes-run-code). |
 
-Runners add `input`, `runtime`, `files`, `schema`, `tools`, and `exitCodes`. Per-command options are `cwd`, `env`, `timeout`, and `exitCodes`.
+The same methods on a Sandbox you created, such as `sb.python()`, run in that Sandbox, so they take the per-command options: `input`, `cwd`, `env`, `timeout`, `exitCodes`, `schema`, and `tools`.
 
 ## Next steps
 

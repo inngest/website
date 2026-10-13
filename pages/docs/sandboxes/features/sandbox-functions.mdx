@@ -47,7 +47,7 @@ The same rules as the [runners](/docs/sandboxes/features/run-code?ref=docs-sandb
 
 ## Define a function
 
-`sandbox.fn` takes `name`, `runtime`, `schema`, and `code`, plus any [shared Sandbox option](/docs/sandboxes/features/run-code?ref=docs-sandboxes-sandbox-functions#options-every-entry-point-shares) and `tools`. `description` is optional, but it's what a model reads when the function becomes a tool.
+`sandbox.fn` takes `name`, `runtime`, `schema`, and `code`, plus `tools` and the machine options a [runner](/docs/sandboxes/features/run-code?ref=docs-sandboxes-sandbox-functions#options) takes, such as `vcpu`, `from`, and `secrets`. `description` is optional, but it's what a model reads when the function becomes a tool.
 
 Tools declared on the definition are the default for every call, and a call can add more with `{ tools }`, as described in [Tools](/docs/sandboxes/features/tools?ref=docs-sandboxes-sandbox-functions).
 

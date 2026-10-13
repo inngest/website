@@ -1,7 +1,7 @@
 import { CodeGroup, SdkUnsupported } from "shared/Docs/mdx";
 
 export const metaTitle = "Reference | Sandboxes";
-export const description = "Inngest Sandboxes API reference: the runners, handles, shared options, tools, exit codes, ownership, and lifecycle calls for creating Sandboxes and running commands.";
+export const description = "Inngest Sandboxes API reference: the runners, handles, options, tools, exit codes, ownership, and lifecycle calls for creating Sandboxes and running commands.";
 
 # Sandboxes reference
 > Find the API calls and options for running code, creating Sandboxes, and managing their lifecycle.
@@ -82,7 +82,7 @@ Runners create a Sandbox, run code, return the result, and destroy the Sandbox i
 The same names are methods on a handle from `step.sandbox.create()` or the `sb` in `group.sandbox()`. A handle also has the shell template `` sb.$`…` ``, with `.id()`, `.exitCodes()`, `.timeout()`, `.env()`, `.quiet()`, `.text()`, and `.json()`.
 
 ```typescript {{ title: "TypeScript" }}
-type SandboxOptions = {
+type CreateOptions = {
   from?: SandboxImage;
   vcpu?: number;
   memoryMb?: number;
@@ -92,21 +92,24 @@ type SandboxOptions = {
   owner?: "persistent" | { runId: string };
 };
 
-type CommandOptions = {
-  cwd?: string;
+type GroupSandboxOptions = CreateOptions & { id: string };
+
+type RunnerOptions = {
+  input?: Record<string, JSONValue>;
+  runtime?: string;
+  from?: SandboxImage;
+  vcpu?: number;
+  memoryMb?: number;
+  files?: Record<string, string | Uint8Array>;
   env?: Record<string, string>;
+  secrets?: string[];
+  cwd?: string;
   timeout?: DurationLike;
   exitCodes?: number[] | "any";
+  schema?: { output?: StandardSchema };
+  tools?: Record<string, Tool | ((...args: any[]) => unknown)>;
+  owner?: "persistent" | { runId: string };
 };
-
-type RunnerOptions = SandboxOptions &
-  CommandOptions & {
-    input?: Record<string, JSONValue>;
-    runtime?: string;
-    files?: Record<string, string | Uint8Array>;
-    schema?: { output?: StandardSchema };
-    tools?: Record<string, Tool | ((...args: any[]) => unknown)>;
-  };
 
 type SandboxResult = {
   ok: boolean;
@@ -119,7 +122,7 @@ type SandboxResult = {
 };
 ```
 
-- `SandboxOptions` is shared by `step.sandbox.create()`, `group.sandbox()`, the runners, and Inngest CI machine options. `group.sandbox()` takes an ID or `SandboxOptions & { id: string }`.
+- `step.sandbox.create(id, options?)` takes `CreateOptions`. `group.sandbox()` takes an ID or `GroupSandboxOptions`, which is the create options plus `id`. Each runner takes `RunnerOptions`. Inngest CI jobs have their own `machine` option, described in [Machines](/docs/labs/ci/machines).
 - `runtime` and `from` are exclusive. `runtime` maps to an [image Inngest maintains](/docs/sandboxes/features/base-images#runtime-images).
 - `exitCodes` defaults to `[0]`. Any other exit code fails the step. See [Exit codes and errors](/docs/sandboxes/features/exit-codes).
 - `owner` defaults to the current run. See [Run-owned Sandboxes](/docs/sandboxes/features/run-owned).

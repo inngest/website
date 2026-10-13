@@ -37,8 +37,8 @@ export const buildCheck = inngest.createFunction(
 `await using` destroys the Sandbox when the function leaves this scope, by returning or by throwing.
 </Annotation>
 
-<Annotation id="options" lines="7-9" tease="size, image, secrets" title="Machine options" href="/docs/sandboxes/features/run-code?ref=docs-sandboxes-managed-lifecycle#options-every-entry-point-shares" linkText="Shared options">
-The same options as every other entry point: an image, a size, secrets.
+<Annotation id="options" lines="7-9" tease="size, image, secrets" title="Machine options" href="#create-options" linkText="Create options">
+An image, a size, and secrets, set when you create the Sandbox.
 </Annotation>
 
 <Annotation id="state" lines="12-13" tease="state carries over" title="One Sandbox, many statements" href="/docs/sandboxes/features/run-code?ref=docs-sandboxes-managed-lifecycle#the-template" linkText="The $ template">
@@ -50,6 +50,19 @@ A failing `git clone` or `npm ci` stops the function. Failing tests are informat
 </Annotation>
 
 </AnnotatedCode>
+
+## Create options
+
+`step.sandbox.create(id, options?)` takes:
+
+| Option | Default | Does |
+| --- | --- | --- |
+| `from` | Base image | The [image](/docs/sandboxes/features/base-images?ref=docs-sandboxes-managed-lifecycle) to start from, such as `image.inngest("node-22")`. |
+| `vcpu`, `memoryMb` | `2`, `2048` | Machine size, from a [supported pair](/docs/sandboxes/limits?ref=docs-sandboxes-managed-lifecycle). |
+| `timeout` | `"30s"` | Default time limit per command, up to `"5m"`. |
+| `env` | None | Environment variables. |
+| `secrets` | None | Workspace [secret](/docs/sandboxes/features/secrets?ref=docs-sandboxes-managed-lifecycle) names that Inngest injects. |
+| `owner` | The current run | Who [cleans the Sandbox up](/docs/sandboxes/features/run-owned?ref=docs-sandboxes-managed-lifecycle). |
 
 ## End it where you want
 
@@ -103,7 +116,7 @@ const report = await group.sandbox(
 );
 ```
 
-- The first argument is an ID, or an object with the ID and any [shared option](/docs/sandboxes/features/run-code?ref=docs-sandboxes-managed-lifecycle#options-every-entry-point-shares).
+- The first argument is an ID, or an object with the ID plus the [create options](#create-options).
 - The callback's return value is the value of the whole call.
 - A `step.run` inside the callback lands in the same group.
 
