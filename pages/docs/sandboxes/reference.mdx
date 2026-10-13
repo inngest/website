@@ -81,7 +81,6 @@ type CreateOptions = {
   runningTimeout?: SandboxDuration | false;
   env?: Record<string, string>;
   secrets?: string[];
-  metadata?: Record<string, string>;
   owner?: "persistent" | { runId: string };
   tools?: SandboxTools;
   toolOptions?: SandboxToolOptions;
@@ -122,7 +121,6 @@ type SandboxResult = {
 - CI jobs use `machine` instead. [Machines →](/docs/labs/ci/machines)
 - `runtime` and `from` are exclusive. `runtime` maps to an [image Inngest maintains](/docs/sandboxes/features/base-images#runtime-images).
 - `exitCodes` defaults to `[0]`. [Exit codes →](/docs/sandboxes/features/exit-codes?ref=docs-sandboxes-reference)
-- `metadata` is immutable after create. `list({ metadata })` matches every pair. [Metadata](/docs/sandboxes/features/metadata?ref=docs-sandboxes-reference)
 - `owner` defaults to the current run. [Run-owned →](/docs/sandboxes/features/run-owned?ref=docs-sandboxes-reference)
 - `tools` exposes host functions to the code. [Tools →](/docs/sandboxes/features/tools?ref=docs-sandboxes-reference)
 - `getCommandError(err)` returns `{ command, exitCode, stdoutTail, stderrTail, truncated }`. `getSandboxError(err)` returns the `SandboxError` fields.
@@ -190,7 +188,7 @@ await sandbox.pause("pause", options);
 
 ## Snapshots and clones
 
-- `sandbox.snapshot({ name, metadata })` names and tags a snapshot. `snapshots.list({ name })` returns exact matches, newest first.
+- `sandbox.snapshot({ name })` names a snapshot. `snapshots.list({ name })` returns exact matches, newest first.
 - A held name fails with `sandbox_snapshot_name_taken`. [Name a snapshot →](/docs/sandboxes/features/snapshots-and-restore?ref=docs-sandboxes-reference#name-a-snapshot)
 - Snapshots capture memory, disk, environment, image, and resources. The SDK waits up to five minutes for `READY`.
 - `snapshot.clone()` makes a new Sandbox ID with the captured state.
