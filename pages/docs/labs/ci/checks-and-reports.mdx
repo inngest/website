@@ -1,17 +1,18 @@
-import { Info } from "shared/Docs/mdx";
+import { AnnotatedCode, Annotation } from "shared/Docs/mdx";
 
 export const metaTitle = "Checks and reports | Inngest CI";
 export const description = "Inngest CI reports one GitHub check for each pipeline and one for each job. Add summaries and annotations with report, and read the same run as one trace.";
 
 # Checks and reports
 
-> See each pipeline and job as a GitHub check, and add summaries and annotations from code.
+> See each pipeline and job as a GitHub check, and read every run as one trace.
 
-<Info>
-  Inngest CI is an Inngest Labs project: early, moving fast, and shaped by your feedback. [What's Labs?](/docs/labs?ref=docs-labs-ci-checks-and-reports)
-</Info>
+- **A check per job.** Plus one for the pipeline. [Checks →](#checks)
+- **Summaries and annotations.** Add them from code. [Add a summary →](#add-a-summary-or-annotations)
+- **One trace per run.** Every job, command, and retry. [Read the trace →](#read-the-trace)
+- **Terminal checks locally.** The same states print in dev mode. [Run on GitHub →](/docs/labs/ci/reference?ref=docs-labs-ci-checks-and-reports#run-on-github)
 
-Checks are automatic: one for the pipeline and one for each [job](/docs/labs/ci/jobs?ref=docs-labs-ci-checks-and-reports). Require the pipeline check in branch protection.
+## Checks
 
 ```
 ✕ pr             test: `pnpm test` exited with 1
@@ -20,23 +21,16 @@ Checks are automatic: one for the pipeline and one for each [job](/docs/labs/ci/
 ✕ pr / test      `pnpm test` exited with 1
 ```
 
-| State | Check |
-| --- | --- |
-| Running | In progress, with the current command |
-| Retrying a command | In progress, with the attempt count and the last error |
-| Run will be retried | In progress, with `Retrying (attempt N of M)` |
-| Passed | Success, with the duration |
-| Reused from cache | Success, with `Cached <time> ago` when the machine is restored, or `Passed at <sha>, no changes since` |
-| Failed | Failure, with the command, the output tail, and annotations |
-| Returned `ci.skip()` | Success, with the reason |
-
-While a run will be retried, checks stay in progress and complete only on success or the final attempt. Command failures, timeouts, usage errors, and matrix failures made only of those fail once.
-
-Set `check: false` on a pipeline to turn checks off, or `check: { jobs: false }` to keep only the pipeline check.
+```typescript {{ title: "TypeScript" }}
+ci.pipeline({ id: "pr", on, check: false }, fn);
+ci.pipeline({ id: "pr", on, check: { jobs: false } }, fn);
+ci.pipeline({ id: "pr", on, check: { name: "CI" } }, fn);
+ci.job({ id: "notify", check: false }, fn);
+```
 
 ## Add a summary or annotations
 
-`report` adds to the current job's check. Outside a job it targets the pipeline check.
+<AnnotatedCode>
 
 ```typescript {{ title: "TypeScript" }}
 await report.summary(`Coverage: **${coverage}%**`);
@@ -46,35 +40,37 @@ await report.annotate([
 ]);
 ```
 
-`report.summary()` stacks sections, and `report.annotate()` puts annotations on the diff.
+<Annotation id="summary" lines="1" tease="stacks sections" title="Summary" href="/docs/labs/ci/reference?ref=docs-labs-ci-checks-and-reports#checks-and-reports" linkText="Report limits">
+Adds a section to the current job's check.
+</Annotation>
+
+<Annotation id="annotate" lines="3-5" tease="on the diff" title="Annotations" href="/docs/labs/ci/reference?ref=docs-labs-ci-checks-and-reports#checks-and-reports" linkText="Report limits">
+Marks lines on the pull request diff.
+</Annotation>
+
+</AnnotatedCode>
+
+Outside a job, `report` targets the pipeline check.
 
 ## Read the trace
 
-Every run also opens in the Inngest dashboard as one trace, grouped the way you wrote the pipeline. Each job is one row.
-
 ```typescript {{ title: "TypeScript" }}
 const test = ci.job({ id: "test", name: "Unit tests", from: base }, async () => {
-  await $`pnpm test`.retries(1);
+  await $`pnpm test`.as("unit tests").retries(1);
 });
 ```
 
-- **Collapsed:** one row per job, tagged `JOB`, showing its `name`, or its `id` when it has none. A muted `S1`, `S2`, … badge marks the [Sandbox](/docs/sandboxes/overview?ref=docs-labs-ci-checks-and-reports) a job runs on, numbered top to bottom. A second Sandbox from [`sandbox("api")`](/docs/labs/ci/machines?ref=docs-labs-ci-checks-and-reports#use-a-second-machine) shows its own badge on its row.
-- **Expanded job:** Start sandbox (or "Start sandbox from `base`" with [`from`](/docs/labs/ci/base-images?ref=docs-labs-ci-checks-and-reports#another-job)), your commands as `$ pnpm test` rows or their [`.as()`](/docs/labs/ci/commands?ref=docs-labs-ci-checks-and-reports#options) names, your own `step.run` steps by name, then Save sandbox.
-- **Expanded command:** Start process, Wait, Poll process, and Read output, or "Run and read output" for a short captured command. Each retry is Attempt 1, Attempt 2, and so on, and a failed command ends in "Exited with code N".
-- **Groups and spans:** jobs, commands, sandboxes, and snapshots are each their own span or group, with a readable name instead of an internal step ID. Select any of them to see where it came from: the job that asked for it, the `from` it started on, or the cache build that made it.
-- **Cached and built work:** a job that starts from a cached image shows the image's name and whether it was found or built just in time. A parent that wasn't cached shows as a snapshot that belongs to the run.
-- **Top level:** a GitHub group holds the check updates.
-- **Dimmed rows:** the work CI does for you is dimmed so your own rows stand out. Failures are never dimmed. Select a dimmed step and the step panel shows `Added by @inngest/ci@<version>`.
-
-A job called a second time in the same run shows as `test (2)` and has its own check.
-
-[Commands](/docs/labs/ci/commands?ref=docs-labs-ci-checks-and-reports#options) shows how `.as()` renames a command row. A GitHub "Re-run" on a check sends a new pull request or push event for the commit, so pipelines on those triggers run again. Passed jobs are reused only when they have a [cache](/docs/labs/ci/caching?ref=docs-labs-ci-checks-and-reports) key.
+- **Job row.** Tagged `JOB` with its `name`, or `id`. An `S1`, `S2` badge marks each [Sandbox](/docs/labs/ci/machines?ref=docs-labs-ci-checks-and-reports#use-a-second-machine).
+- **Expanded job.** Start sandbox, your commands, your `step.run` steps, Save sandbox.
+- **Expanded command.** Each retry is an attempt. A failure ends in "Exited with code N".
+- **Cached work.** Shows the image and whether it was found or built just in time.
+- **Dimmed rows.** Work CI does for you. Failures are never dimmed.
 
 ![The trace of a pr pipeline in the Inngest Dev Server: a GitHub group, the base and test jobs as one row each, and the test job expanded to show it starting from base, a second api sandbox, a retried command with a failed first attempt, and Save sandbox](/assets/docs/labs/ci/trace.png)
 
-In dev mode, checks print to your terminal. To report on GitHub, see [Run on GitHub](/docs/labs/ci/reference?ref=docs-labs-ci-checks-and-reports#run-on-github).
+## How it works
 
-## Next steps
-
-- [Reference](/docs/labs/ci/reference?ref=docs-labs-ci-checks-and-reports#checks-and-reports) lists every check state and report limit.
-- [Pipelines and triggers](/docs/labs/ci/pipelines?ref=docs-labs-ci-checks-and-reports) covers `ci.skip()` and check options.
+- A job called twice shows as `test (2)` with its own check.
+- While a run will be retried, checks stay in progress.
+- A GitHub "Re-run" sends a new event. Passed jobs are reused only with a [cache](/docs/labs/ci/caching?ref=docs-labs-ci-checks-and-reports).
+- `ci.skip()` completes as success with the reason. [Pipelines →](/docs/labs/ci/pipelines?ref=docs-labs-ci-checks-and-reports#skip-a-run)

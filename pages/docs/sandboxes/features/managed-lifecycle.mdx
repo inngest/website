@@ -7,7 +7,9 @@ export const description = "Create a Sandbox in a durable function and let Innge
 
 > Create a Sandbox, run several statements in it, and have it cleaned up without writing cleanup code.
 
-A Sandbox you create inside a function belongs to that run. Use `await using` or `group.sandbox()` to end it exactly where you want, and leave the rest to the run: whatever is still alive when the run ends is destroyed, however the run ends. There is no `onFailure` handler to write and no Sandbox ID to store.
+- **End it where you want.** `await using` destroys it at scope end. [End it →](#end-it-where-you-want)
+- **Or wrap a callback.** `group.sandbox()` works in every runtime. [Group a callback →](#group-a-callback)
+- **Leftovers are cleaned up.** [Cleanup →](#what-cleanup-does-for-you)
 
 <AnnotatedCode>
 
@@ -34,47 +36,41 @@ export const buildCheck = inngest.createFunction(
 ```
 
 <Annotation id="using" lines="6" tease="destroyed at scope end" title="await using" href="#end-it-where-you-want" linkText="End it where you want">
-`await using` destroys the Sandbox when the function leaves this scope, by returning or by throwing.
+Destroyed when the function leaves this scope, even by throwing.
 </Annotation>
 
 <Annotation id="options" lines="7-9" tease="size, image, secrets" title="Machine options" href="#create-options" linkText="Create options">
-An image, a size, and secrets, set when you create the Sandbox.
+Image, size, and secrets, set at create.
 </Annotation>
 
 <Annotation id="state" lines="12-13" tease="state carries over" title="One Sandbox, many statements" href="/docs/sandboxes/features/run-code?ref=docs-sandboxes-managed-lifecycle#the-template" linkText="The $ template">
-The clone from the first statement is still there for `npm ci`. Each statement is its own durable step.
+The clone is still there for `npm ci`. Each statement is a durable step.
 </Annotation>
 
 <Annotation id="exit" lines="15" tease="1 is data here" title="Failures stop the run" href="/docs/sandboxes/features/exit-codes?ref=docs-sandboxes-managed-lifecycle" linkText="Exit codes">
-A failing `git clone` or `npm ci` stops the function. Failing tests are information here, so this call allows any exit code.
+Failing clone or install stops the function. Failing tests are information here.
 </Annotation>
 
 </AnnotatedCode>
 
 ## Create options
 
-`step.sandbox.create(id, options?)` takes:
+```typescript {{ title: "TypeScript" }}
+type CreateOptions = {
+  from?: Image;
+  vcpu?: number;
+  memoryMb?: number;
+  timeout?: string;
+  env?: Record<string, string>;
+  secrets?: string[];
+  owner?: string | { runId: string };
+};
+```
 
-| Option | Default | Does |
-| --- | --- | --- |
-| `from` | Base image | The [image](/docs/sandboxes/features/base-images?ref=docs-sandboxes-managed-lifecycle) to start from, such as `image.inngest("node-22")`. |
-| `vcpu`, `memoryMb` | `2`, `2048` | Machine size, from a [supported pair](/docs/sandboxes/limits?ref=docs-sandboxes-managed-lifecycle). |
-| `timeout` | `"30s"` | Default time limit per command, up to `"5m"`. |
-| `env` | None | Environment variables. |
-| `secrets` | None | Workspace [secret](/docs/sandboxes/features/secrets?ref=docs-sandboxes-managed-lifecycle) names that Inngest injects. |
-| `owner` | The current run | Who [cleans the Sandbox up](/docs/sandboxes/features/run-owned?ref=docs-sandboxes-managed-lifecycle). |
+- Defaults: `vcpu` 2, `memoryMb` 2048 ([limits](/docs/sandboxes/limits?ref=docs-sandboxes-managed-lifecycle)), `timeout` `"30s"`.
+- See [images](/docs/sandboxes/features/base-images?ref=docs-sandboxes-managed-lifecycle), [secrets](/docs/sandboxes/features/secrets?ref=docs-sandboxes-managed-lifecycle), and [owners](/docs/sandboxes/features/run-owned?ref=docs-sandboxes-managed-lifecycle).
 
 ## End it where you want
-
-`step.sandbox.create()` returns a handle that works with `await using`.
-
-| You write | The Sandbox is destroyed |
-| --- | --- |
-| `await using sb = await step.sandbox.create(...)` | When the scope ends. |
-| `const sb = await step.sandbox.create(...)` | When the run ends. Call `await sb.destroy("done")` to end it sooner. |
-| `step.sandbox.create(..., { owner: "persistent" })` | Only when you destroy it. See [Run-owned Sandboxes](/docs/sandboxes/features/run-owned?ref=docs-sandboxes-managed-lifecycle). |
-
-Forgetting `await using` is safe, because the run still cleans up. Use it to give a Sandbox a precise lifetime, and use a block to end it before the function carries on:
 
 ```typescript {{ title: "TypeScript" }}
 async ({ step, event }) => {
@@ -93,15 +89,13 @@ async ({ step, event }) => {
 }
 ```
 
-The Sandbox is gone at the closing brace, before `notify` runs.
+Without `await using`, it lasts until the run ends, or until `await sb.destroy("done")`.
 
 <Info>
-  `await using` needs `lib: ["esnext.disposable"]` (or `esnext`) in your `tsconfig.json` and Node.js 20.5 or newer. Without it, use `group.sandbox()` below.
+  `await using` needs `lib: ["esnext.disposable"]` and Node.js 20.5 or newer. Otherwise use `group.sandbox()`.
 </Info>
 
 ## Group a callback
-
-`group.sandbox()` runs a callback with a Sandbox and destroys it when the callback returns or throws. It works in every runtime, and it renders as one `SANDBOX` group in the [trace](/docs/sandboxes/features/traces?ref=docs-sandboxes-managed-lifecycle).
 
 ```typescript {{ title: "TypeScript" }}
 const out = await group.sandbox("run", (sb) => sb.python("main", "return 6 * 7"));
@@ -116,39 +110,18 @@ const report = await group.sandbox(
 );
 ```
 
-- The first argument is an ID, or an object with the ID plus the [create options](#create-options).
-- The callback's return value is the value of the whole call.
-- A `step.run` inside the callback lands in the same group.
+Destroyed when the callback returns or throws. One `SANDBOX` group in the [trace](/docs/sandboxes/features/traces?ref=docs-sandboxes-managed-lifecycle).
 
 ## What cleanup does for you
 
-- **Success.** The Sandbox is destroyed when the scope ends.
-- **A failure that ends the run.** The Sandbox is destroyed at once, so a failed build doesn't hold a machine.
-- **A failure that will be retried.** The Sandbox stays, and the retry finds its files where it left them.
-- **Cancellation, timeouts, or a crashed deploy.** The Sandbox is destroyed when the run ends. You don't register anything.
+- **Success or final failure.** Destroyed at once.
+- **A failure that will retry.** Kept, so the retry finds its files.
+- **Cancel, timeout, or crash.** Destroyed when the run ends. See [Run-owned](/docs/sandboxes/features/run-owned?ref=docs-sandboxes-managed-lifecycle).
 
-The same applies to [snapshots](/docs/sandboxes/features/snapshots-and-restore?ref=docs-sandboxes-managed-lifecycle) you take inside a function. [Run-owned Sandboxes](/docs/sandboxes/features/run-owned?ref=docs-sandboxes-managed-lifecycle) explains the guarantee and how to opt out.
 
-Destroying removes the filesystem, processes, and retained output. Save anything you need before the scope ends.
+## How it works
 
-## Retries and uncertain outcomes
-
-Let unexpected `step.sandbox` errors escape the function. Inngest retries the operations that are safe to repeat and records a failure when retries run out or an operation can't be repeated. A retry repeats only the step that failed, in the same Sandbox, so earlier statements don't run again.
-
-An `operation_ambiguous` error means a command, process start, or signal may have happened without a confirmed response. Inspect the Sandbox or the command's external effect before repeating it. A command's exit code is not an infrastructure error: see [Exit codes and errors](/docs/sandboxes/features/exit-codes?ref=docs-sandboxes-managed-lifecycle).
-
-A durable step records the operation's result. It doesn't keep a guest process or file alive if the Sandbox itself is lost, so call Get when work resumes after a long wait.
-
-## Pause, resume, and reuse state
-
-Pause releases the live runtime into a private checkpoint. Resume returns the **same** Sandbox ID with its filesystem, memory, and remaining runtime. A snapshot keeps a copy of the Sandbox while it keeps running, and a clone starts a **new** Sandbox from it. See [Pause and resume](/docs/sandboxes/features/pause-and-resume?ref=docs-sandboxes-managed-lifecycle) and [Snapshots and restore](/docs/sandboxes/features/snapshots-and-restore?ref=docs-sandboxes-managed-lifecycle).
-
-Outside a function, `inngest.sandboxes` makes immediate calls and has no run to own anything, so you manage the lifecycle: destroy in `finally`.
-
-Deployment previews are called **branch deploys**. This page is about isolated microVM Sandboxes.
-
-## Next steps
-
-- [Run code](/docs/sandboxes/features/run-code?ref=docs-sandboxes-managed-lifecycle): the runners and the `$` template.
-- [Run-owned Sandboxes](/docs/sandboxes/features/run-owned?ref=docs-sandboxes-managed-lifecycle): what "cleaned up when the run ends" covers.
-- [Traces](/docs/sandboxes/features/traces?ref=docs-sandboxes-managed-lifecycle): how a Sandbox group renders.
+- A retry repeats only the failed step, in the same Sandbox.
+- `operation_ambiguous` means inspect before repeating.
+- [Pause](/docs/sandboxes/features/pause-and-resume?ref=docs-sandboxes-managed-lifecycle) resumes the same ID. A [clone](/docs/sandboxes/features/snapshots-and-restore?ref=docs-sandboxes-managed-lifecycle) is new.
+- Outside a function, destroy in `finally`.

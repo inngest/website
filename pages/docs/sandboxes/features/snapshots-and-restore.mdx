@@ -1,130 +1,75 @@
-import { CodeGroup, SdkUnsupported } from "shared/Docs/mdx";
+import { AnnotatedCode, Annotation } from "shared/Docs/mdx";
+
 export const metaTitle = "Snapshots and restore | Sandboxes";
 export const description = "Snapshot and restore Inngest Sandboxes: save a prepared environment, then clone new Sandboxes from that snapshot to skip repeated setup.";
 
 # Snapshots and restore
 
-> Reuse a prepared Sandbox by cloning new environments from its snapshot.
+> Save a prepared Sandbox and clone new ones from it.
 
-Prepare dependencies or files once, then snapshot the Sandbox and clone it for separate jobs. Each clone gets its own Sandbox ID and a copy of the captured local filesystem.
+- **Skip setup.** Install once, clone for every job. [Cloning →](/docs/sandboxes/features/cloning?ref=docs-sandboxes-snapshots-and-restore)
+- **Name it.** Find the newest snapshot later with `snapshots.list({ name })`. [Name a snapshot →](#name-a-snapshot)
+- **Keep it past the run.** Pass `owner: "persistent"`. [Run-owned →](/docs/sandboxes/features/run-owned?ref=docs-sandboxes-snapshots-and-restore#snapshots-follow-the-same-rule)
+- **See it in the trace.** One SNAPSHOT group per snapshot. [Traces →](/docs/sandboxes/features/traces?ref=docs-sandboxes-snapshots-and-restore#tools-and-snapshots)
 
-## What a snapshot captures
+<AnnotatedCode>
 
-A user snapshot captures the sandbox's memory, disk, environment, image, and CPU and memory configuration. Files on the sandbox filesystem carry into each clone. An S3-backed persistent mount attaches the same backing path to each clone, so mounted files can be shared across Sandboxes. The source sandbox keeps running after you create the snapshot.
-
-The snapshot is a point-in-time, crash-consistent capture. Flush databases and other important application state first. The snapshot does not coordinate with your application to finish writes. It also does not provide permanent storage. Each snapshot has a server-defined `expiresAt` and counts against account-specific snapshot limits.
-
-## Create and clone a snapshot
-
-The direct client works in a server-side API route, worker, or script. This example assumes `sandbox` is a running sandbox:
-
-<CodeGroup>
-```typescript {{ title: "TypeScript" }}
-await sandbox.commands.run(
-  "mkdir -p /work && printf 'prepared\\n' > /work/config.txt"
+```typescript {{ title: "inngest/functions/prepared.ts" }}
+const snapshot = await sandbox.snapshot(
+  "snapshot-prepared",
+  { name: "node-deps" },
+  { timeout: "5m" },
 );
 
-const snapshot = await sandbox.snapshot({}, { timeout: "5m" });
+const clone = await snapshot.clone("clone-prepared", {
+  name: `prepared-${event.data.jobId}`,
+  runningTimeout: "2m",
+});
+
+const { items } = await step.sandbox.snapshots.list("find", {
+  name: "node-deps",
+});
+```
+
+<Annotation id="snapshot" lines="1-5" tease="waits for READY" title="Snapshot" href="#how-it-works" linkText="How it works">
+Captures memory, disk, environment, and image. The source keeps running.
+</Annotation>
+
+<Annotation id="clone" lines="7-10" tease="new Sandbox ID" title="Clone" href="/docs/sandboxes/features/cloning?ref=docs-sandboxes-snapshots-and-restore" linkText="Cloning">
+Starts a new Sandbox from the snapshot.
+</Annotation>
+
+<Annotation id="list" lines="12-14" tease="newest first" title="Find by name" href="#name-a-snapshot" linkText="Name a snapshot">
+Returns only exact name matches.
+</Annotation>
+
+</AnnotatedCode>
+
+The direct client drops the step IDs and needs manual cleanup.
+
+```typescript {{ title: "TypeScript" }}
+const snapshot = await sandbox.snapshot({ name: "node-deps" }, { timeout: "5m" });
 
 try {
-  const clone = await snapshot.clone({
-    name: `prepared-${crypto.randomUUID()}`,
-    runningTimeout: "2m",
-  });
-
-  try {
-    const result = await clone.commands.run("cat /work/config.txt");
-    console.log(result.stdout);
-  } finally {
-    await clone.destroy();
-  }
+  const clone = await snapshot.clone({ runningTimeout: "2m" });
+  await clone.destroy();
 } finally {
   await snapshot.delete();
 }
 ```
 
-<SdkUnsupported title="Python" feature="Sandboxes" />
-<SdkUnsupported title="Go" feature="Sandboxes" />
-</CodeGroup>
-
-`sandbox.snapshot()` returns when the snapshot reaches `READY`. The REST API initially returns `202 CREATING` while it uploads the artifact. The SDK waits up to five minutes by default and at most five minutes. If the wait times out, snapshot creation continues. List or get the snapshot before you create another one.
-
-`snapshot.clone()` creates a new sandbox. It inherits the captured image, resources, environment, memory, and disk. The clone has a new UUID. It may start immediately or enter `STARTING`; the SDK waits for `RUNNING` by default. `runningTimeout` changes that wait. A timeout does not destroy the new sandbox.
-
-Keep the snapshot while you need to make more clones. With the direct client, delete it when finished and destroy each clone when its work ends. Inside a function, the run does this for you. The source sandbox remains separate.
-
 ## Name a snapshot
 
-Pass `name` to find the snapshot again later, for example to use the newest one as the starting image for new sandboxes.
+- One `CREATING` or unexpired `READY` snapshot holds a name. Reuse fails with `sandbox_snapshot_name_taken`.
+- Names are case-sensitive, up to 255 characters, with no control characters or edge whitespace.
+- For a base reused across many runs, use an image. [Image or snapshot? →](/docs/sandboxes/features/base-images?ref=docs-sandboxes-snapshots-and-restore#image-or-snapshot)
 
-<CodeGroup>
-```typescript {{ title: "TypeScript" }}
-const snapshot = await sandbox.snapshot({ name: "node-deps" });
+## How it works
 
-const { items } = await inngest.sandboxes.snapshots.list({
-  name: "node-deps",
-});
-```
-
-<SdkUnsupported title="Python" feature="Sandboxes" />
-<SdkUnsupported title="Go" feature="Sandboxes" />
-</CodeGroup>
-
-- `snapshots.list({ name })` returns only snapshots with exactly that name, newest first.
-- Inside a function, use `sandbox.snapshot(stepId, { name })` and `step.sandbox.snapshots.list(stepId, { name })`.
-- A name is held by one `CREATING` or unexpired `READY` snapshot at a time. Reusing a held name fails with `sandbox_snapshot_name_taken`.
-- Names are case-sensitive, up to 255 characters, with no control characters and no leading or trailing whitespace.
-- The name appears as `name` on the snapshot.
-
-Find a named snapshot with `snapshots.list({ name })` and `clone()` it. For a base you reuse across many runs, use an image instead: [Image or snapshot?](/docs/sandboxes/features/base-images?ref=docs-sandboxes-snapshots-and-restore#image-or-snapshot)
-
-## Snapshots belong to the run
-
-A snapshot you take inside a function is owned by the current run and is deleted when the run ends, so a fan-out that snapshots once and clones per task leaves nothing behind. Pass `owner: "persistent"` to keep one for later runs, or `owner: { runId }` to tie it to another active run. A snapshot's owner is never inherited from the Sandbox it came from. See [Run-owned Sandboxes](/docs/sandboxes/features/run-owned?ref=docs-sandboxes-snapshots-and-restore#snapshots-follow-the-same-rule).
-
-In the [trace](/docs/sandboxes/features/traces?ref=docs-sandboxes-snapshots-and-restore#tools-and-snapshots), a snapshot is one **SNAPSHOT** group, and each clone is a SANDBOX group that names its source.
-
-## Use snapshots inside an Inngest function
-
-Use `step.sandbox` when snapshot operations belong to a durable function. Give each operation a stable step ID. This example assumes `sandbox` is a running durable sandbox and `event.data.jobId` is stable:
-
-<CodeGroup>
-```typescript {{ title: "TypeScript" }}
-const snapshot = await sandbox.snapshot(
-  "snapshot-prepared-sandbox",
-  {},
-  { timeout: "5m" }
-);
-
-const clone = await snapshot.clone("clone-prepared-sandbox", {
-  name: `prepared-${event.data.jobId}`,
-  runningTimeout: "2m",
-});
-
-const result = await clone.commands.run(
-  "read-prepared-file",
-  "cat /work/config.txt"
-);
-
-return result.stdout;
-```
-
-<SdkUnsupported title="Python" feature="Sandboxes" />
-<SdkUnsupported title="Go" feature="Sandboxes" />
-</CodeGroup>
-
-Snapshot Create and its readiness wait are separate memoized steps. Let unexpected errors escape so Inngest can apply the operation's retry policy. The clone and the snapshot are cleaned up when the run ends. Call `clone.destroy("destroy-clone")` or `snapshot.delete("delete-snapshot")` to release them sooner.
-
-## Restore or resume?
-
-A **clone** starts a new sandbox from a ready user snapshot. Use it to repeat work from the same prepared state or branch into independent runs. It does not overwrite the source sandbox.
-
-**Pause and resume** preserve the original sandbox ID. Pause uses a private checkpoint; resume restores the same sandbox's filesystem, memory, environment, resources, and remaining runtime. Private pause checkpoints do not appear in the user snapshot list or count against user snapshot quota. See [Pause and resume](/docs/sandboxes/features/pause-and-resume) for the lifecycle guide.
-
-Restore means either resuming a paused sandbox with the same ID or cloning a user snapshot into a new sandbox. There is no separate operation that replaces an existing sandbox with a user snapshot. See [Cloning](/docs/sandboxes/features/cloning) for more on independent sandbox copies.
-
-## Find and manage snapshots
-
-Use `inngest.sandboxes.snapshots.list()` and `get(snapshotId)` from the direct client, or `step.sandbox.snapshots.list(stepId)` and `get(stepId, snapshotId)` in a function. A snapshot can be `CREATING`, `READY`, `DELETING`, `DELETED`, `FAILED`, or `LOST`. Clone only a `READY` snapshot.
-
-Snapshot Create has no idempotency key. If a request returns `operation_ambiguous`, a snapshot may still be creating. List recent snapshots and reconcile before sending another Create. Snapshot count or storage quota can also reject creation. The beta guide does not publish fixed quota or retention values; check `expiresAt` on each snapshot.
+- A snapshot is crash-consistent. Flush databases first.
+- It expires at a server-defined `expiresAt` and counts against account quotas.
+- Statuses are `CREATING`, `READY`, `DELETING`, `DELETED`, `FAILED`, and `LOST`. Clone only `READY`.
+- The SDK waits up to five minutes for `READY`. A timeout does not stop creation, so list before retrying.
+- Create has no idempotency key. After `operation_ambiguous`, list recent snapshots first.
+- A snapshot taken in a function belongs to the run. Its owner is never inherited from the source.
+- There is no in-place restore. Clone, or [pause and resume →](/docs/sandboxes/features/pause-and-resume?ref=docs-sandboxes-snapshots-and-restore)

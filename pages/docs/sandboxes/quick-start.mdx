@@ -1,37 +1,26 @@
-import { CodeGroup, SdkUnsupported } from "shared/Docs/mdx";
+import { AnnotatedCode, Annotation } from "shared/Docs/mdx";
 
 export const metaTitle = "Quick start | Sandboxes";
 export const description = "Inngest Sandboxes quick start: run Python, TypeScript, and shell in isolated Sandboxes from a durable function, and inspect each statement in the run trace.";
 
 # Sandboxes quick start
-> Run your first Sandbox from a durable function and inspect it in the run trace.
 
-Run Python in an isolated Linux Sandbox, get its result back as a value, and see the run in the trace. Inngest creates the Sandbox, destroys it, and cleans up if the run fails.
+> Run Python in an isolated Sandbox from a durable function and read the trace.
 
-## Before you start
+## What you need
 
-You need:
-
-- An existing server-side TypeScript Inngest app connected to an Inngest Cloud environment. If you need an app, start with the [Node.js quick start](/docs/durable-execution/quick-start/typescript-quick-start).
+- A TypeScript Inngest app connected to an Inngest Cloud environment. [Node.js quick start →](/docs/durable-execution/quick-start/typescript-quick-start)
 - Node.js 20.5 or newer.
-- Your environment's signing key set as `INNGEST_SIGNING_KEY` in your **server** environment. Keep it out of browser code and source control.
+- `INNGEST_SIGNING_KEY` set in your **server** environment only.
+- SDK v4. [Migrate from v3 →](/docs/reference/typescript/v4/migrations/v3-to-v4)
 
-## 1. Install the SDK
-
-> **Upgrading from SDK v3?** Sandboxes require the TypeScript SDK v4. Follow the [v3 to v4 migration guide](/docs/reference/typescript/v4/migrations/v3-to-v4) first.
+## Install and enable
 
 ```bash
 npm install inngest@latest
 ```
 
-## 2. Enable Sandbox steps
-
-Add the Sandbox middleware to your shared Inngest client. This makes `step.sandbox` available inside functions.
-
-`inngest/client.ts`
-
-<CodeGroup>
-```typescript {{ title: "TypeScript" }}
+```typescript {{ title: "inngest/client.ts" }}
 import { Inngest } from "inngest";
 import { sandboxMiddleware } from "inngest/experimental";
 
@@ -41,20 +30,11 @@ export const inngest = new Inngest({
 });
 ```
 
-<SdkUnsupported title="Python" feature="Sandboxes" />
-<SdkUnsupported title="Go" feature="Sandboxes" />
-</CodeGroup>
+## Run code
 
-Keep your existing app ID if you're adding this to an app you already use.
+<AnnotatedCode>
 
-## 3. Run code in a Sandbox
-
-This function runs a Python snippet on data from the event and returns the result. The `input` keys become variables in the code, and a top-level `return` sends the value back.
-
-`inngest/functions/run-in-sandbox.ts`
-
-<CodeGroup>
-```typescript {{ title: "TypeScript" }}
+```typescript {{ title: "inngest/functions/run-in-sandbox.ts" }}
 import { inngest } from "../client";
 
 export const runInSandbox = inngest.createFunction(
@@ -73,41 +53,27 @@ export const runInSandbox = inngest.createFunction(
 );
 ```
 
-<SdkUnsupported title="Python" feature="Sandboxes" />
-<SdkUnsupported title="Go" feature="Sandboxes" />
-</CodeGroup>
+<Annotation id="input" lines="6-10" tease="input becomes variables" title="Input and return" href="/docs/sandboxes/features/run-code?ref=docs-sandboxes-quick-start" linkText="Run code">
+`input` keys become variables, and `return` sends a typed value back.
+</Annotation>
 
-Register `runInSandbox` in the `functions` array of your `serve()` handler. Each statement boots its own Sandbox, runs, and destroys it. There's nothing to clean up.
+<Annotation id="sh" lines="12" tease="shell too" title="Shell" href="/docs/sandboxes/features/run-code?ref=docs-sandboxes-quick-start" linkText="Run code">
+Each statement boots, runs, and destroys its own Sandbox.
+</Annotation>
 
-## 4. Trigger your function
+</AnnotatedCode>
 
-Send this event to the same environment from the Inngest dashboard or your app:
-
-```json
-{
-  "name": "sandbox/demo.requested",
-  "data": { "values": [3, 5, 10] }
-}
-```
-
-## 5. Inspect the result
-
-Open the function run in Inngest. It returns a result like this:
+Register `runInSandbox` in your `serve()` handler, then send this event:
 
 ```json
-{
-  "stats": { "mean": 6, "n": 3 },
-  "listing": "Linux ... \nbin\ndev\netc\n..."
-}
+{ "name": "sandbox/demo.requested", "data": { "values": [3, 5, 10] } }
 ```
 
-Open the trace. Each statement is one **SANDBOX** group, collapsed to a row with its runtime, exit code, and duration. Expand `stats` to see `create`, `run`, and `destroy`. See [Traces](/docs/sandboxes/features/traces).
+```json
+{ "stats": { "mean": 6, "n": 3 }, "listing": "Linux ... \nbin\ndev\netc\n..." }
+```
 
-Now make a command fail. Change the second statement to `step.sandbox.sh("list", "ls /missing")`. The row turns red, the exit code is on it, and the function ends. [Exit codes and errors](/docs/sandboxes/features/exit-codes) shows how to allow codes that are information.
-
-## Keep one Sandbox for several statements
-
-To install something once and use it in later statements, create a Sandbox. With `await using`, it's destroyed when the function leaves the scope, and if you leave that off it's destroyed when the run ends:
+## Keep one Sandbox
 
 ```typescript {{ title: "TypeScript" }}
 await using sb = await step.sandbox.create("work");
@@ -116,11 +82,13 @@ await sb.$`npm init -y && npm install lodash`;
 const version = await sb.$`node -p "require('lodash').VERSION"`.text();
 ```
 
-## Continue from here
+## What you can do
 
-- [Run code](/docs/sandboxes/features/run-code) covers inputs, return values, runtimes, and schemas.
-- [Managed lifecycle](/docs/sandboxes/features/managed-lifecycle) covers `await using` and `group.sandbox()`.
-- [Tools](/docs/sandboxes/features/tools) lets Sandbox code call your functions.
-- [Sandboxes limits](/docs/sandboxes/limits) and [reference](/docs/sandboxes/reference) hold the exact API and bounds.
+- **Break it.** Run `ls /missing` and the row turns red. [Exit codes →](/docs/sandboxes/features/exit-codes?ref=docs-sandboxes-quick-start)
+- **Read the trace.** Each statement is one SANDBOX group. [Traces →](/docs/sandboxes/features/traces?ref=docs-sandboxes-quick-start)
+- **Reuse a Sandbox.** `await using` or `group.sandbox()`. [Managed lifecycle →](/docs/sandboxes/features/managed-lifecycle?ref=docs-sandboxes-quick-start)
 
-A Sandbox is an isolated Linux environment for code in a run. A [branch deploy](/docs/platform-and-operations/environments-and-branch-deploys) is a deployment preview for a Git branch.
+## How it works
+
+- Each statement is a durable step with its own Sandbox.
+- Without `await using`, a Sandbox is destroyed when the run ends.

@@ -1,4 +1,4 @@
-import { Info, Tip } from "shared/Docs/mdx";
+import { AnnotatedCode, Annotation } from "shared/Docs/mdx";
 import { CiBuilds } from "src/shared/Docs/CiBuilds";
 
 export const metaTitle = "Caching | Inngest CI";
@@ -6,15 +6,16 @@ export const description = "Cache an Inngest CI job by its inputs so unchanged w
 
 # Caching
 
-> Skip a job when nothing it depends on has changed, and start from its machine instead.
+> Skip a job when nothing it depends on has changed.
 
-<Info>
-  Inngest CI is an Inngest Labs project: early, moving fast, and shaped by your feedback. [What's Labs?](/docs/labs?ref=docs-labs-ci-caching)
-</Info>
+- **Install once per lockfile.** The machine is published as an image. [Choose the key →](#choose-the-key)
+- **Ready before the PR.** Build ahead on push or cron. [Refresh →](#refresh-the-cache-ahead-of-time)
+- **Shared by everyone.** CI, teammates, and local runs. [How it works →](#how-it-works)
+- **Rebuild on demand.** Send one event. [Rebuild →](#rebuild-on-demand)
 
-Give a job a `cache` key, and its machine is published as an image named by that key. Jobs that start [`from`](/docs/labs/ci/base-images?ref=docs-labs-ci-caching) it boot on that image until the key changes, so `pnpm install` runs once per lockfile instead of once per run. Images don't expire, so a cache ends only when its key changes, it passes its `maxAge`, or you rebuild it.
+<AnnotatedCode>
 
-```typescript {{ title: "TypeScript" }}
+```typescript {{ title: "ci/jobs.ts" }}
 const base = ci.job(
   {
     id: "base",
@@ -36,51 +37,36 @@ const test = ci.job({ id: "test", from: base }, async () => {
 });
 ```
 
-A reused machine has the checkout from the commit it was built on. `test` calls `checkout()` to move to this run's commit and keeps the installed dependencies. A reused job shows as `Cached <time> ago` on its check.
+<Annotation id="key" lines="5" tease="hash of files" title="The key" href="#choose-the-key" linkText="Choose the key">
+A new hash builds a new image.
+</Annotation>
 
-## Shared by every run
+<Annotation id="refresh" lines="6" tease="built ahead" title="Refresh" href="#refresh-the-cache-ahead-of-time" linkText="Refresh ahead">
+Builds the image nightly, so pull requests find it ready.
+</Annotation>
 
-Images are found by name, so every run shares them: CI on GitHub, your teammates, and your [local runs](/docs/labs/ci/local?ref=docs-labs-ci-caching) alike. Build `base` once, and every run with the same key starts from it.
+<Annotation id="maxage" lines="7" tease="rebuild after 7 days" title="Maximum age" href="#set-a-maximum-age" linkText="Max age">
+Rebuilds even when the key is unchanged.
+</Annotation>
 
-- A pull request reads its own images and its base branch's, and writes only its own, so one pull request never changes what another one reuses.
-- A push to a branch reads and writes that branch's images.
-- A local run reads the shared ones and writes its own, so your laptop never changes what CI reuses.
+<Annotation id="from" lines="16-19" tease="boots on the image" title="Reuse it" href="/docs/labs/ci/base-images?ref=docs-labs-ci-caching" linkText="Base images">
+`checkout()` moves to this run's commit. The check shows `Cached <time> ago`.
+</Annotation>
 
-When many runs need the same missing image at once, they share one build: the first run builds it and every other run, on any branch or machine, waits for it and starts from the result. [Base images](/docs/labs/ci/base-images?ref=docs-labs-ci-caching#built-once-then-reused) shows how.
+</AnnotatedCode>
 
 ## Choose the key
-
-A key is `files()`, a string, an array of them, or an async function that returns a string. `files()` hashes the matched files in the git tree for the run's commit. Locally it hashes your working tree, so an uncommitted change to a matched file is a new key.
 
 ```typescript {{ title: "TypeScript" }}
 key: files("migrations/**", "seeds/**")
 key: [files("go.mod", "go.sum"), "go1.25"]
 key: files("schema.graphql", { repo: "acme/api", ref: "main" })
+key: [files("pnpm-lock.yaml"), files("ci/**")]
 ```
 
-`files()` can hash another repository: pass `repo`, and optionally `ref`, to rebuild when a file there changes.
-
-An image's name holds more than the key. It also holds the job's input and the image the job started from, so:
-
-- The same key with a different input is a different image.
-- A cached job rebuilds when anything it starts from changes, all the way up its chain. [See it in action](/docs/labs/ci/base-images?ref=docs-labs-ci-caching#chains-rebuild-from-the-change-down).
-- A job on a parent with no `cache` rebuilds every run, since that parent is built fresh each time. Cache the parent too. The run's summary and the job's row in the trace warn when this happens.
-
-The first run with a new key always builds. A cached job that runs no commands has no machine to keep, so it runs every time.
-
-### Rebuild when your CI code changes
-
-A key covers the files your commands read, not the code of the job itself. To rebuild when you change how the job builds, add your CI code to the key:
-
-```typescript {{ title: "TypeScript" }}
-key: [files("pnpm-lock.yaml"), files("ci/**")],
-```
-
-Any change under `ci/` then rebuilds the job, including the helpers it calls. A `cache` with no `key` at all is reused until its input or parent changes, it passes its [`maxAge`](#set-a-maximum-age), or you [rebuild it on demand](#rebuild-on-demand).
+A key is `files()`, a string, an array of them, or an async function returning a string. Locally, `files()` hashes your working tree.
 
 ## Refresh the cache ahead of time
-
-Without `refresh`, an image is built the first time a run needs it, and that run's jobs wait for the build. `refresh` takes triggers that build it ahead of time instead, so pull requests find it ready:
 
 ```typescript {{ title: "TypeScript" }}
 cache: {
@@ -91,28 +77,21 @@ cache: {
 
 <CiBuilds scenario="just-in-time" />
 
-A refresh run does nothing when the image is already there, so refreshing often is cheap. A cron has no repository of its own, so set `repo` on the pipeline. `refresh` builds the job without an input; a job that takes one is built the first time each input is needed.
-
-When a run had to wait for a build, the job's row in the trace and the run's summary say so, and tell you whether `refresh` would help:
+Set `repo` on the pipeline for a cron. The trace warns when a run built just in time:
 
 ```text
 built just in time: `base` (add `cache.refresh` to build it ahead of time)
-built just in time: `base` (its refresh triggers haven't built it for these inputs yet)
 ```
 
 ## Set a maximum age
-
-`maxAge` rebuilds an image once it's older than the age you give, even when its key hasn't changed. Use it for setup that drifts without a file changing, like `apt-get upgrade` or `latest` tags.
 
 ```typescript {{ title: "TypeScript" }}
 cache: { key: files("Dockerfile.ci"), maxAge: "1d" },
 ```
 
-Ages are durations: `"30m"`, `"1h30m"`, `"7d"`, a number of milliseconds, or a `Temporal.Duration`. `durationToMs` from `inngest` converts any of them to milliseconds. A malformed or zero `maxAge` fails when your app boots, with the field named. The rebuild takes the same name, and cached jobs that start from it rebuild on the new image. Without `maxAge`, an image is reused until its key changes.
+Durations: `"30m"`, `"1h30m"`, `"7d"`, milliseconds, or a `Temporal.Duration`.
 
 ## Rebuild on demand
-
-Send `invalidateEvent()` to throw away a job's images, for example after rotating a credential baked into the image. Running jobs carry on, and the next run that needs the job rebuilds it.
 
 ```typescript {{ title: "TypeScript" }}
 import { invalidateEvent } from "@inngest/ci";
@@ -121,14 +100,22 @@ await inngest.send(invalidateEvent("base"));
 await inngest.send(invalidateEvent(base, { scope: "main" }));
 ```
 
-Without `scope`, every branch's images of the job are removed. Pass a branch, `pr:<number>`, `global`, or `local` to remove only that scope's.
+`scope` takes a branch, `pr:<number>`, `global`, or `local`. Without it, every scope is cleared.
 
 ## Share across branches
 
-`scope` is `"branch"` by default, which reads and writes images as described in [Shared by every run](#shared-by-every-run). Set `scope: "global"` to share one set across every branch and pull request.
+```typescript {{ title: "TypeScript" }}
+cache: { key: files("pnpm-lock.yaml"), scope: "global" }
+```
 
-## Next steps
+The default is `"branch"`.
 
-- [Base images](/docs/labs/ci/base-images?ref=docs-labs-ci-caching) shows how jobs start from cached images.
-- [Checks and reports](/docs/labs/ci/checks-and-reports?ref=docs-labs-ci-caching) shows how a reused job appears on its check.
-- [Reference](/docs/labs/ci/reference?ref=docs-labs-ci-caching#caching) lists every cache option.
+## How it works
+
+- Images are found by name: key, input, and parent image. Parents with no `cache` rebuild every run.
+- A pull request reads its own and its base branch's images, and writes only its own.
+- A local run reads shared images and writes its own.
+- Runs missing the same image share one build. [See it →](/docs/labs/ci/base-images?ref=docs-labs-ci-caching#built-once-then-reused)
+- A key with no changes never expires unless `maxAge` says so.
+
+[Reference →](/docs/labs/ci/reference?ref=docs-labs-ci-caching#caching)

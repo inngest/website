@@ -1,4 +1,4 @@
-import { Info, AnnotatedCode, Annotation } from "shared/Docs/mdx";
+import { AnnotatedCode, Annotation } from "shared/Docs/mdx";
 import { CiBuilds } from "src/shared/Docs/CiBuilds";
 
 export const metaTitle = "Base images | Inngest CI";
@@ -8,19 +8,10 @@ export const description = "Start Inngest CI jobs on a machine that's already se
 
 > Start a job on a machine that's already set up.
 
-<Info>
-  Inngest CI is an Inngest Labs project: early, moving fast, and shaped by your feedback. [What's Labs?](/docs/labs?ref=docs-labs-ci-base-images)
-</Info>
-
-Set `from` on a job to start it with dependencies installed and output built. A cached base is published as an image, built once, and shared by every run. An uncached base is built for the run that needs it and cleaned up when the run ends.
-
-| `from` | Starts from |
-| --- | --- |
-| `base` | [Another job in this app](#another-job) |
-| `base.with(input)` | [Another job, built with an input](#another-job) |
-| `image.inngest("base")` | [An image Inngest maintains](#an-inngest-image) |
-| `image.custom("name")` | [An image published to your workspace](#your-own-image) |
-| `image.job("app/job")` | [A job in another app](#another-app-s-job) |
+- **Install once.** Every job starts from a copy of `base`. [Another job →](#another-job)
+- **Share across runs.** A cached parent becomes an image. [Caching →](/docs/labs/ci/caching?ref=docs-labs-ci-base-images)
+- **Bring your own.** Start from an Inngest or custom image. [Images →](#an-inngest-image)
+- **Reuse another app's job.** One build, many apps. [Another app →](#another-app-s-job)
 
 <AnnotatedCode>
 
@@ -51,19 +42,19 @@ const e2e = ci.job(
 ```
 
 <Annotation id="key" lines="5" tease="once per lockfile" title="Built once per key" href="/docs/labs/ci/caching?ref=docs-labs-ci-base-images" linkText="Caching">
-`base` runs again only when `pnpm-lock.yaml` changes. Every other run starts from its image.
+`base` reruns only when the lockfile changes.
 </Annotation>
 
 <Annotation id="from" lines="12" tease="copy of base" title="Start from another job" href="#another-job" linkText="Another job">
-`test` boots on `base`'s image, with dependencies already installed.
+`test` boots on `base`'s image with dependencies installed.
 </Annotation>
 
 <Annotation id="checkout" lines="13" tease="only the changes" title="Catch up to this commit" href="/docs/labs/ci/machines?ref=docs-labs-ci-base-images" linkText="Machines">
-The copy has the checkout `base` was built on. `checkout()` moves it to this run's commit and keeps `node_modules`.
+`checkout()` moves to this run's commit and keeps `node_modules`.
 </Annotation>
 
 <Annotation id="custom" lines="18" tease="your image" title="Start from your own image" href="#your-own-image" linkText="Your own image">
-A browser toolchain image your team publishes, used by any job that needs it.
+An image your team publishes to your workspace.
 </Annotation>
 
 </AnnotatedCode>
@@ -74,22 +65,19 @@ A browser toolchain image your team publishes, used by any job that needs it.
 const test = ci.job({ id: "test", from: base }, fn);
 const web = ci.job({ id: "web", from: build.with("web") }, fn);
 const app = ci.job({ id: "app", from: ({ input }) => build.with(input) }, fn);
+const matrix = ci.matrix({ id: "m", axes, from: base }, fn);
 ```
 
-- The parent runs once in its own run, however many jobs start from it. Each child gets its own copy.
-- Give the parent a [`cache`](/docs/labs/ci/caching?ref=docs-labs-ci-base-images) to share it across runs as an image. A cached parent's children can set their own `machine` size and secrets, because they boot fresh from the image.
-- Without a `cache`, the parent is built for this run and kept as a snapshot that belongs to it. [Sandboxes and snapshots a run creates are cleaned up when it ends](/docs/sandboxes/features/run-owned?ref=docs-labs-ci-base-images), however it ends, so there's nothing for CI to leave behind.
-- `ci.matrix()` takes `from` too.
-- A missing parent, a bad input, or a job that starts from itself fails when your app starts. A cycle names its path, like `a → b → a`.
-- A job defined inside a pipeline function, rather than at the top of a file, builds in the run that defined it. Defining the same job ID twice in a run throws `CiUsageError`.
+Add a [`cache`](/docs/labs/ci/caching?ref=docs-labs-ci-base-images) to share the parent across runs. Without one, the parent is a [run-owned snapshot](/docs/sandboxes/features/run-owned?ref=docs-labs-ci-base-images) cleaned up when the run ends.
 
 ## An Inngest image
 
 ```typescript {{ title: "TypeScript" }}
 const lint = ci.job({ id: "lint", from: image.inngest("base") }, fn);
+const old = ci.job({ id: "old", from: image.inngest("node-22") }, fn);
 ```
 
-`base` has Node.js, Python, Ruby and common tools. [See what's included](/docs/sandboxes/features/base-images?ref=docs-labs-ci-base-images). Jobs without `from` start on it. Pin a language version with a [runtime image](/docs/sandboxes/features/base-images?ref=docs-labs-ci-base-images#runtime-images), such as `image.inngest("node-22")`.
+Jobs without `from` start on `base`. [Runtime images →](/docs/sandboxes/features/base-images?ref=docs-labs-ci-base-images#runtime-images)
 
 ## Your own image
 
@@ -97,20 +85,13 @@ const lint = ci.job({ id: "lint", from: image.inngest("base") }, fn);
 const e2e = ci.job({ id: "e2e", from: image.custom("playwright") }, fn);
 ```
 
-An image published to your workspace, like a browser toolchain your team maintains. Use an image for a base you reuse across many runs: each job starts fresh on it, at its own size.
-
-Cached jobs on it rebuild when you publish a new version.
-
 ## Another app's job
 
 ```typescript {{ title: "TypeScript" }}
 const test = ci.job({ id: "test", from: image.job("platform/node-base") }, fn);
 ```
 
-The other app builds its job once, from the commit it's deployed from, as an image every app that asks shares.
-
-- Both apps run `@inngest/ci` in the same Inngest environment.
-- The other app must be deployed from Vercel, Netlify, Render, Railway, GitHub Actions, or a git checkout, so it knows its repository.
+Both apps share one Inngest environment.
 
 ## Every job
 
@@ -118,11 +99,11 @@ The other app builds its job once, from the commit it's deployed from, as an ima
 const ci = createCi(inngest, { from: image.custom("agent-deps") });
 ```
 
-Jobs without their own `from` start on it.
-
 ## How it works
 
-A cached job's image is named after its [key](/docs/labs/ci/caching?ref=docs-labs-ci-base-images#choose-the-key), its input, and the exact image it started from. Jobs look their base up by that name before they start.
+- A cached job's image is named by its [key](/docs/labs/ci/caching?ref=docs-labs-ci-base-images#choose-the-key), input, and parent image.
+- A missing image makes the job run its parent's commands itself: same result, slower.
+- A bad parent or cycle (`a → b → a`) fails at app start.
 
 ### Built once, then reused
 
@@ -130,24 +111,12 @@ A cached job's image is named after its [key](/docs/labs/ci/caching?ref=docs-lab
 
 <CiBuilds scenario="warm" />
 
-Runs that miss at the same time share one build, even across pipelines, branches, and apps:
-
 <CiBuilds scenario="herd" />
 
 ### Chains rebuild from the change down
-
-A new parent image means a new name for every job after it, so nothing starts from a stale parent:
 
 <CiBuilds scenario="invalidate" />
 
 ### Across apps
 
 <CiBuilds scenario="cross-app" />
-
-If an image or snapshot can't be started, the job runs its parent's commands on its own machine instead. Same result, just slower.
-
-## Next steps
-
-- [Caching](/docs/labs/ci/caching?ref=docs-labs-ci-base-images): keys, `refresh`, `maxAge`, and rebuilding on demand.
-- [Machines](/docs/labs/ci/machines?ref=docs-labs-ci-base-images): sizes and extra machines.
-- [Reference](/docs/labs/ci/reference?ref=docs-labs-ci-base-images#from): every form `from` takes.

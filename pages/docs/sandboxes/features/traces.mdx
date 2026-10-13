@@ -5,7 +5,12 @@ export const description = "Each Sandbox statement is one SANDBOX group in the r
 
 > See every Sandbox statement as one row in the run trace, and expand it to find what failed or ran slowly.
 
-Open the function trace to follow the work. A Sandbox runner, a `group.sandbox()` callback, and a `sandbox.fn` call each render as one **SANDBOX** group, collapsed to a single row with its size, its exit code, and its duration. Expand the group to see the phases inside.
+- **One statement, one row.** Size, exit code, and duration on the row. [Collapsed and expanded →](#collapsed-and-expanded)
+- **Red means failed.** The exit code and stderr tail are on the row. [Exit codes →](/docs/sandboxes/features/exit-codes?ref=docs-sandboxes-traces)
+- **One group per scope.** [One Sandbox →](#several-statements-in-one-sandbox)
+- **Tools and snapshots.** Each shows as its own row. [Tools and snapshots →](#tools-and-snapshots)
+
+## Collapsed and expanded
 
 ```text {{ title: "Collapsed" }}
 sum      SANDBOX · python · exit 0 · 2 vCPU / 2 GB · 4.1s
@@ -20,18 +25,9 @@ SANDBOX  parse · node@22 · 2 vCPU / 2 GB · 5.6s
   destroy    ran because the failure was final
 ```
 
-## What the rows tell you
-
-- **One statement, one row.** `step.sandbox.python("sum", …)` is one row, however many steps it takes inside.
-- **Red means failed.** A command that exits with a code you didn't allow is red, with the exit code on the row and the end of stderr in the error. A group that holds a red child is red too, so a green destroy never hides it. See [Exit codes and errors](/docs/sandboxes/features/exit-codes?ref=docs-sandboxes-traces).
-- **Create and destroy are quiet.** They show inside the group, dimmed, since you didn't write them.
-- **Retries show as attempts.** A retried step appears as another attempt on its row, and completed steps return their saved results when the function replays.
-
-Select a row to inspect its timing, input, output, and error.
+Retries show as attempts. Select a row for input, output, and error.
 
 ## Several statements in one Sandbox
-
-With `await using` or `group.sandbox()`, every statement in the scope is a row inside one group:
 
 ```text {{ title: "Trace" }}
 SANDBOX  build-check · node-22 · 4 vCPU / 2 GB · 38s
@@ -42,11 +38,7 @@ SANDBOX  build-check · node-22 · 4 vCPU / 2 GB · 38s
   destroy
 ```
 
-A `step.run` inside the scope lands in the same group. A step outside the scope appears after the group closes.
-
 ## Tools and snapshots
-
-[Tool](/docs/sandboxes/features/tools?ref=docs-sandboxes-traces) calls show as their own rows, because they run your code:
 
 ```text {{ title: "Trace" }}
 SANDBOX  churn-report
@@ -58,33 +50,13 @@ SANDBOX  churn-report
   destroy
 ```
 
-The waits Inngest uses to collect requests fold into the `exec` row as states, such as waiting on two tools, replied, and exited. If you never call a tool, the group has the same rows as a run without `tools`.
+- [Tool](/docs/sandboxes/features/tools?ref=docs-sandboxes-traces) calls are rows. Waits fold into `exec`.
+- A [snapshot](/docs/sandboxes/features/snapshots-and-restore?ref=docs-sandboxes-traces) is a **SNAPSHOT** group.
 
-A [snapshot](/docs/sandboxes/features/snapshots-and-restore?ref=docs-sandboxes-traces) is a **SNAPSHOT** group, with its upload and ready phases inside. A clone is a SANDBOX group that names the snapshot it started from.
+## How it works
 
-## Agents
+- `step.sandbox` adds durable steps. `inngest.sandboxes` adds no rows.
+- Traces show `input` and output unredacted. Use [`secrets`](/docs/sandboxes/features/secrets?ref=docs-sandboxes-traces).
+- A [code mode](/docs/sandboxes/features/tools?ref=docs-sandboxes-traces#code-mode) call is a group between model calls.
 
-A [code mode](/docs/sandboxes/features/tools?ref=docs-sandboxes-traces#code-mode) or `sandbox.fn` tool call is a collapsed group in the agent's trace, between the model calls:
-
-```text {{ title: "Trace" }}
-FUNCTION  support-agent
-  llm-0       step.run
-  run_code    SANDBOX · 4 tool calls · 3.1s
-  llm-1       step.run
-```
-
-## Calls that are not durable steps
-
-`inngest.sandboxes` makes immediate server-side requests. It doesn't add steps to a trace. Use `step.sandbox` when the work belongs to a function run, and the direct client for live streams, file transfer, and scripts.
-
-A trace records durable operations. It doesn't make a guest process, file, or output durable.
-
-## Protect trace data
-
-The trace shows step inputs, outputs, and errors, including the `input` you pass to a runner and the tail of failed output. Keep credentials out of command strings, `input`, and returned values. Use [`secrets`](/docs/sandboxes/features/secrets?ref=docs-sandboxes-traces), which Inngest injects without writing them into a step. Output is not redacted automatically.
-
-## Next steps
-
-- [Run code](/docs/sandboxes/features/run-code?ref=docs-sandboxes-traces): the statements that produce these groups.
-- [Managed lifecycle](/docs/sandboxes/features/managed-lifecycle?ref=docs-sandboxes-traces): scopes and cleanup.
-- [Inngest CI traces](/docs/labs/ci/checks-and-reports?ref=docs-sandboxes-traces#read-the-trace): the same groups for jobs, commands, and sandboxes in a pipeline.
+[Inngest CI traces →](/docs/labs/ci/checks-and-reports?ref=docs-sandboxes-traces#read-the-trace)

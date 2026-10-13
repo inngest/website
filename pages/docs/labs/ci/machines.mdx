@@ -1,4 +1,4 @@
-import { Info, Warning } from "shared/Docs/mdx";
+import { AnnotatedCode, Annotation, Warning } from "shared/Docs/mdx";
 
 export const metaTitle = "Machines | Inngest CI";
 export const description = "Inngest CI machines are Sandboxes that run a job's commands. Size them per job, start them from a base image, and add a second machine when a job needs two at once.";
@@ -7,43 +7,14 @@ export const description = "Inngest CI machines are Sandboxes that run a job's c
 
 > Run each job on its own Sandbox, sized for its work.
 
-<Info>
-  Inngest CI is an Inngest Labs project: early, moving fast, and shaped by your feedback. [What's Labs?](/docs/labs?ref=docs-labs-ci-machines)
-</Info>
+- **Right-sized.** 1, 2, or 4 vCPU per job, pipeline, or app. [Reference →](/docs/labs/ci/reference?ref=docs-labs-ci-machines#machines)
+- **Start set up.** Boot from another job's machine. [Base images →](/docs/labs/ci/base-images?ref=docs-labs-ci-machines)
+- **A second machine.** Test a clean install. [Second machine →](#use-a-second-machine)
 
-A machine is a [Sandbox](/docs/sandboxes/overview?ref=docs-labs-ci-machines): an ephemeral Linux microVM. Each job gets one on its first command, and only [commands](/docs/labs/ci/commands?ref=docs-labs-ci-machines) run on it. The rest of your handler runs in your app.
+<AnnotatedCode>
 
-| `vcpu` | Memory |
-| --- | --- |
-| 1 | 1 GiB |
-| 2 (default) | 2 GiB |
-| 4 | 4 GiB |
-
-Set `machine` on a job, on its pipeline, or on `createCi` for every job. The first one set wins in that order.
-
-- Commands run in `/work` by default, which is where `checkout()` puts the repository.
-- `checkout()` clones the commit that triggered the run, or updates an existing checkout to it with a short-lived token that never appears in the trace. Pass `repo` or `ref` to check out another repository or commit. Locally, plain `checkout()` uploads your working tree without its `.git` folder, and only the files that changed since the machine's last upload.
-- Inngest destroys every machine when the pipeline ends.
-
-## Start from a machine that's set up
-
-Set [`from`](/docs/labs/ci/base-images?ref=docs-labs-ci-machines) on a job to start it on a copy of another job's machine, another app's, or an image. Setup like installing dependencies then runs once, not in every job.
-
-```typescript {{ title: "TypeScript" }}
-const test = ci.job({ id: "test", from: base }, async () => {
-  await checkout();
-  await $`pnpm test`;
-});
-```
-
-A cached parent is an [image](/docs/sandboxes/features/base-images?ref=docs-labs-ci-machines) that every run shares, and an uncached parent is a [snapshot that belongs to the run](/docs/sandboxes/features/run-owned?ref=docs-labs-ci-machines) and is cleaned up when it ends. Either way, installed files and built output are already there. If the image or snapshot can't be started, the job runs the parent's commands on its own machine instead: the result is the same, but slower.
-
-## Use a second machine
-
-`sandbox(name, { vcpu })` creates another machine for the job right away, with the job's machine settings unless you pass others. It is destroyed with the pipeline and appears under the job in the trace.
-
-```typescript {{ title: "TypeScript" }}
-const verify = ci.job("verify", async () => {
+```typescript {{ title: "ci/jobs.ts" }}
+const verify = ci.job({ id: "verify", machine: { vcpu: 4 } }, async () => {
   await checkout();
 
   const clean = await sandbox("clean", { vcpu: 1 });
@@ -55,29 +26,52 @@ const verify = ci.job("verify", async () => {
 });
 ```
 
-This runs the tests on the job's machine while a clean machine checks that the published `next` build installs.
+<Annotation id="size" lines="1" tease="vcpu 1, 2, or 4" title="Machine size" href="/docs/labs/ci/reference?ref=docs-labs-ci-machines#machines" linkText="Sizes">
+Defaults to 2 vCPU and 2 GiB.
+</Annotation>
 
-Plain `$` still runs on the job's own machine, and an extra machine starts empty.
+<Annotation id="checkout" lines="2" tease="clones the commit" title="Checkout" href="/docs/labs/ci/reference?ref=docs-labs-ci-machines#machines" linkText="Options">
+Clones the triggering commit into `/work`.
+</Annotation>
+
+<Annotation id="second" lines="4" tease="starts empty" title="Second machine" href="#use-a-second-machine" linkText="Second machine">
+A clean machine, destroyed with the pipeline.
+</Annotation>
+
+<Annotation id="run" lines="6-9" tease="two machines at once" title="Run on both" href="#use-a-second-machine" linkText="Second machine">
+Plain `$` runs on the job's own machine.
+</Annotation>
+
+</AnnotatedCode>
+
+## Start from a machine that's set up
+
+```typescript {{ title: "TypeScript" }}
+const test = ci.job({ id: "test", from: base }, async () => {
+  await checkout();
+  await $`pnpm test`;
+});
+```
+
+[Base images →](/docs/labs/ci/base-images?ref=docs-labs-ci-machines)
+
+## Use a second machine
 
 <Warning>
-  Machines cannot reach each other yet. Run a server or database your tests call on the job's own machine, in the background, and use `127.0.0.1`:
-
-  ```typescript
-  await $`pnpm start`.background();
-  await waitForPort(3000);
-  await $`pnpm exec playwright test`;
-  ```
+  Machines cannot reach each other yet. Run servers on the job's machine and use `127.0.0.1`.
 </Warning>
 
-| If the work... | Use |
-| --- | --- |
-| Is independent | Separate jobs |
-| Builds on earlier work | Separate jobs with `from` |
-| Needs a second machine alive at the same time | One job with `sandbox()` |
+```typescript {{ title: "TypeScript" }}
+await $`pnpm start`.background();
+await waitForPort(3000);
+await $`pnpm exec playwright test`;
+```
 
-## Next steps
 
-- [Base images](/docs/labs/ci/base-images?ref=docs-labs-ci-machines) starts jobs from a machine that's already set up.
-- [Caching](/docs/labs/ci/caching?ref=docs-labs-ci-machines) skips a job when its inputs have not changed.
-- [Jobs](/docs/labs/ci/jobs?ref=docs-labs-ci-machines) covers how jobs are called and combined.
-- [Reference](/docs/labs/ci/reference?ref=docs-labs-ci-machines#machines) lists `checkout()` options and machine sizes.
+## How it works
+
+- A machine is a [Sandbox](/docs/sandboxes/overview?ref=docs-labs-ci-machines): an ephemeral microVM.
+- It starts on the first command. Only commands run on it.
+- `machine` on a job beats the pipeline, which beats `createCi`.
+- Machines are destroyed when the pipeline ends.
+- Locally, `checkout()` uploads your working tree.

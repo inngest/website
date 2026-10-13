@@ -2,35 +2,32 @@ export const metaTitle = "Guides | Sandboxes";
 export const description = "Inngest Sandboxes guides: run isolated code, preserve work across pauses and restarts, and inspect failures, all inside one durable function run.";
 
 # Sandboxes guides
-> Run isolated code, preserve work across lifecycle changes, and inspect failures in one durable run.
 
-Start with the TypeScript quick start to run code in a Sandbox. Then use these guides to keep one Sandbox across statements, give agents tools, preserve files across lifecycle changes, and inspect failures in the run trace.
-
-SSH and S3-backed persistent mounts are planned for launch.
+> Run isolated code, keep your work, and inspect failures in one durable run.
 
 ## Start and run
 
-- [Run your first Sandbox](/docs/sandboxes/quick-start). Run Python in a durable TypeScript function, get the result as a value, and inspect the trace.
-- [Run code](/docs/sandboxes/features/run-code). Use `step.sandbox.python`, `ts`, and `sh` with `input`, a `runtime`, and a result schema.
-- [Keep one Sandbox for several statements](/docs/sandboxes/features/managed-lifecycle). Use `await using` or `group.sandbox()`. The immediate `inngest.sandboxes` client supports command inputs, captured output, and timeouts.
-- [Let Sandbox code call your functions](/docs/sandboxes/features/tools). Declare tools that run as durable steps, and use code mode to give an LLM one tool that writes code against them.
-- [Give an agent a Sandbox](/docs/sandboxes/features/sandbox-functions). Turn `sandbox.fn` into tools for the AI SDK, Anthropic, OpenAI, or MCP, and run the agent loop in your function.
-- **Move files and manage processes.** The beta APIs support file upload and download, background processes, retained output, and live output. File transfer and live streams currently use the direct server-side client.
+- [Run your first Sandbox](/docs/sandboxes/quick-start). Python in a durable function.
+- [Run code](/docs/sandboxes/features/run-code). `python`, `ts`, and `sh` with `input` and a schema.
+- [Keep one Sandbox](/docs/sandboxes/features/managed-lifecycle). `await using` or `group.sandbox()`.
+- [Call your functions](/docs/sandboxes/features/tools). Tools run as durable steps.
+- [Give an agent a Sandbox](/docs/sandboxes/features/sandbox-functions). `sandbox.fn` as AI SDK, Anthropic, OpenAI, or MCP tools.
+- [Move files and run processes](/docs/sandboxes/reference#commands-processes-and-files). Direct client.
 
 ## Keep or branch your work
 
-- [Pause and resume](/docs/sandboxes/features/pause-and-resume). Continue the same Sandbox later with its filesystem, memory, and Sandbox ID.
-- [Create a snapshot](/docs/sandboxes/features/snapshots-and-restore) and [clone it](/docs/sandboxes/features/cloning). Save a prepared state and start a new Sandbox from it. Cloning does not replace the original Sandbox.
-- [Share files across Sandboxes](/docs/sandboxes/features/durable-filesystems). Learn when a Sandbox filesystem survives pause or appears in a snapshot clone, and when to use an S3-backed persistent mount. A clone attaches the same backing path for a shared mount.
+- [Pause and resume](/docs/sandboxes/features/pause-and-resume). Same Sandbox, same ID.
+- [Snapshots](/docs/sandboxes/features/snapshots-and-restore) and [cloning](/docs/sandboxes/features/cloning). New Sandboxes from saved state.
+- [Durable filesystems](/docs/sandboxes/features/durable-filesystems). Share files across Sandboxes.
 
 ## Access and inspect
 
-- [Connect over SSH](/docs/sandboxes/features/ssh). SSH is planned for launch and will use an uploaded public key and Sandbox address.
-- [Use Sandbox secrets](/docs/sandboxes/features/secrets). Select existing workspace secrets by exact name when creating a fresh Sandbox. Code throughout that Sandbox can read the injected values, and output is not automatically redacted.
-- [Inspect Sandbox steps in a trace](/docs/sandboxes/features/traces). Find the operation, result, error, and retry attempt in the function run.
+- [SSH](/docs/sandboxes/features/ssh). Planned for launch.
+- [Secrets](/docs/sandboxes/features/secrets). Select workspace secrets by name.
+- [Traces](/docs/sandboxes/features/traces). Find the operation, result, and retry.
 
 ## Recover and clean up
 
-- **Handle failures.** [Exit codes and errors](/docs/sandboxes/features/exit-codes) explains how a failed command fails its step, how to allow exit codes, and how to read the failure.
-- **Handle retries and uncertain outcomes.** [Managed lifecycle](/docs/sandboxes/features/managed-lifecycle) explains safe step retries and `operation_ambiguous`. Inspect the current Sandbox or external effect before repeating a command that may already have run.
-- **Clean up.** [Run-owned Sandboxes](/docs/sandboxes/features/run-owned) are cleaned up when the run ends. Direct `inngest.sandboxes` calls need application cleanup, such as `try/finally`.
+- [Exit codes and errors](/docs/sandboxes/features/exit-codes). Fail loud, allow what is expected.
+- [Managed lifecycle](/docs/sandboxes/features/managed-lifecycle). Safe retries and `operation_ambiguous`.
+- [Run-owned Sandboxes](/docs/sandboxes/features/run-owned). Direct calls need `try/finally`.

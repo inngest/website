@@ -2,41 +2,35 @@ export const metaTitle = "Limits | Sandboxes";
 export const description = "Inngest Sandboxes limits: supported Sandbox sizes and the limits to plan around when you run isolated code from durable functions.";
 
 # Sandboxes limits
-> Choose a supported Sandbox size and plan tasks around the limits.
 
-Choose a supported Sandbox size before you start work, then check command output and runtime limits before running long jobs. These limits apply to Sandboxes; workflow limits are separate.
+> Choose a supported size and plan around the limits.
 
-| Limit | Value and scope | If you reach it |
+| Limit | Value | If you reach it |
 | --- | --- | --- |
-| Access | Inngest Cloud environment with Sandboxes enabled. | `403 access_denied` means the environment lacks access. Ask Inngest to enable Sandboxes. |
-| Size | Exact per-Sandbox pairs: **1 vCPU / 1,024 MiB**, **2 / 2,048 MiB**, or **4 / 4,096 MiB**. A clone inherits its snapshot's size. | Choose both values from one pair. Entitlement or capacity can still reject a supported size; contact Inngest for other sizes. |
-| Active name | 1–255 Unicode characters, unique among active Sandboxes in a workspace. | Reusing a name with the same configuration returns the existing Sandbox. Conflicting configuration returns `409 sandbox_name_taken`. |
-| Create readiness wait | TypeScript SDK waits **120 seconds by default**. `runningTimeout` changes the wait; `false` returns before readiness. | A wait timeout does not cancel Create or destroy the Sandbox. Get its state and clean up if needed. This is not a boot-time guarantee. |
-| Captured command | **30-second default; five-minute maximum** observation timeout per command. | A timeout can leave the command's effects uncertain. Check its effect before repeating a state-changing command. Use a managed process for longer work. |
-| Captured command output | Direct SDK and REST: **4 MiB combined** stdout and stderr. `step.sandbox`: **2 MiB retained tail** per step result. | Direct output over the cap returns `413 sandbox_exec_output_too_large`; the command may have run. The durable result reports truncation. Write large output to a file or external store. |
-| Managed-process wait | **30-second default; five-minute maximum** per wait. | The wait ends while the process can keep running. Get the process or wait again. |
-| Managed-process output | Approximately **512 KiB** per process across both streams; rings kept for the **newest 32 processes** in a Sandbox. `tailBytes` accepts **0–524,288 bytes**. | Older output can be evicted while metadata remains. Save important output externally. Live streams are best effort. |
-| File upload or download | **100 MiB per regular file**, through the direct SDK or REST. File transfer is unavailable through `step.sandbox`, except `files` on a runner. | `413 sandbox_file_too_large` means the file is too large. Split it or use external storage. |
-| Snapshot readiness wait | TypeScript SDK waits up to **five minutes** for a new snapshot to become `READY`. | A timeout stops polling, not snapshot creation. List or Get recent snapshots before creating another. |
-| Snapshot quota and retention | Account-specific count and stored-byte quotas, with **no published numeric values**. Each snapshot has a server-defined `expiresAt`. | `403 sandbox_snapshot_limit_exceeded` means count or storage quota was reached. Delete unneeded snapshots or ask Inngest about your entitlement. Save permanent data elsewhere. |
-| Runner code and input | **8 MiB combined** for the code and `input` of one runner call. | The call fails before a Sandbox is created. Pass large data with `files`. |
-| Tool calls | **100 per runner call** by default, **8 in parallel**. A request is limited to **256 KiB** and a reply to **1 MiB**. Each call has a **30-second** default `timeout`. | The Sandbox gets a `ToolError`. Write large data to a file. |
-| Owned resources | Sandboxes and snapshots a run owns are cleaned up when it ends. | See [Run-owned Sandboxes](/docs/sandboxes/features/run-owned). |
-| Runtime, disk, and concurrent Sandbox quota | **One hour of active runtime per Sandbox.** Time spent paused does not count. Disk and concurrent-Sandbox quotas have no published numeric values. Sandboxes do not expose user-configurable lifetime, disk size, or resizing. | The runtime timeout requests an automatic Pause; see [Runtime expiry](#runtime-expiry). Check your entitlement with Inngest for disk and concurrent-Sandbox capacity. Destroy Sandboxes when work ends. |
+| Access | Cloud environment with Sandboxes enabled. | `403 access_denied`. Ask Inngest to enable it. |
+| Size | **1 vCPU / 1,024 MiB**, **2 / 2,048**, or **4 / 4,096**. Clones inherit. | Pick one pair. Capacity can still reject. |
+| Active name | 1-255 characters, unique per workspace. | Same config returns the Sandbox. Else `409 sandbox_name_taken`. |
+| Create readiness wait | **120 s** default. `runningTimeout` changes it. `false` skips it. | Timeout does not destroy the Sandbox. Get it and clean up. |
+| Captured command | **30 s** default, **5 min** max. | Effects may be uncertain. Use a managed process for longer work. |
+| Captured output | Direct and REST: **4 MiB**. `step.sandbox`: **2 MiB** tail. | `413 sandbox_exec_output_too_large`. Write to a file. |
+| Process wait | **30 s** default, **5 min** max. | The process keeps running. Wait again. |
+| Process output | About **512 KiB** per process. Newest **32** kept. `tailBytes` 0-524,288. | Old output is evicted. Save it elsewhere. |
+| File transfer | **100 MiB** per file, direct client or REST. Runners accept `files`. | `413 sandbox_file_too_large`. Split it. |
+| Snapshot wait | Up to **5 min** for `READY`. | Polling stops, creation continues. List before retrying. |
+| Snapshot quota | Account-specific, unpublished. Each has `expiresAt`. | `403 sandbox_snapshot_limit_exceeded`. Delete old snapshots. |
+| Runner code and input | **8 MiB** combined. | Fails before create. Pass big data with `files`. |
+| Tool calls | **100** per runner call, **8** parallel. Request **256 KiB**, reply **1 MiB**, **30 s** default `timeout`. | The Sandbox gets a `ToolError`. |
+| Runtime | **1 hour** of active runtime per Sandbox. Paused time is free. | Automatic pause. [Runtime expiry](#runtime-expiry) |
+| Disk and concurrency | Unpublished. No configurable lifetime, disk, or resizing. | Ask Inngest about your entitlement. |
 
-Sandboxes start from the base image, a runtime image, or an image published to your workspace, and use the workspace's default egress-allowed network. They do not expose VPC or public ingress selection. Inngest also limits argument, environment, process specification, and JSON body sizes.
-
-A snapshot captures memory, disk, environment, image, and resources. A clone has a new Sandbox ID and captured filesystem. Pause and Resume preserve the same Sandbox ID and filesystem; a private pause checkpoint does not count as a user snapshot. Snapshots are crash-consistent, expire, and are not permanent storage. Destroy removes the Sandbox filesystem and process output.
+Argument, environment, process spec, and JSON body sizes are also capped.
 
 ## Runtime expiry
 
-When a Sandbox reaches its entitled runtime, Inngest requests an automatic **Pause**. The normal transition is `RUNNING` → `PAUSING` → `PAUSED`. Reaching the runtime limit does not itself destroy the Sandbox or mark it `FAILED`. The timeout and pause run asynchronously and can be retried, so the state change is not guaranteed to occur at the exact second the limit is reached.
-
-Pause saves memory and disk in a private checkpoint and releases the live runtime. The Sandbox keeps its ID and can be resumed while its checkpoint is retained. Pause checkpoints have a separate retention period and are not permanent storage.
-
-Work running at the time of the pause depends on how it was started:
-
-- A captured command started with `commands.run()` can be terminated when Pause closes its exec connection. The call can fail without returning a final exit code or complete output. Inspect files or an application-defined completion marker after Resume before repeating work with external effects.
-- A background process started with `processes.start()` is independent of its start request. Its captured state can continue after Resume, but active wait, output-stream, and external network connections can break. Reconnect and inspect the process after the Sandbox is running again.
-
-Use Get to inspect the current state, and wait for Resume to return `RUNNING` before issuing commands, files, logs, or process calls. See [Pause and resume](/docs/sandboxes/features/pause-and-resume). Save lasting artifacts externally and destroy the Sandbox when you no longer need it.
+- At the limit, Inngest requests an automatic **Pause**: `RUNNING`, `PAUSING`, `PAUSED`.
+- The Sandbox is not destroyed or `FAILED`. Resume while its checkpoint is retained.
+- The pause is asynchronous, so the change may lag the exact second.
+- `commands.run()` can be cut off with no exit code. Check a marker after resume before repeating.
+- `processes.start()` survives, but waits, streams, and network connections break. Reconnect.
+- Wait for `RUNNING` before commands, files, logs, or processes. [Pause and resume →](/docs/sandboxes/features/pause-and-resume?ref=docs-sandboxes-limits)
+- Save lasting artifacts elsewhere. Destroy when done.

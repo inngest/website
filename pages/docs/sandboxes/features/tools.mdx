@@ -7,7 +7,10 @@ export const description = "Let code in a Sandbox call functions in your Inngest
 
 > Let code in a Sandbox call your functions, with your credentials, as durable steps.
 
-A tool is a function in your Inngest function that code in the Sandbox can call. The code runs in isolation, and the tool runs where your database clients, API keys, and local variables already are. The Sandbox only gets a small stub that asks your function to run it, so credentials never enter the Sandbox.
+- **Credentials stay yours.** The Sandbox sees a stub, never a secret. [Declare tools →](#declare-tools)
+- **Typed for the code.** Declarations come from your schemas. [Call a tool →](#call-a-tool-from-the-sandbox)
+- **Every call is a step.** Saved, retried, and visible in the trace. [Durable steps →](#every-call-is-a-durable-step)
+- **One tool for an LLM.** The model writes a program against all your tools. [Code mode →](#code-mode)
 
 <AnnotatedCode>
 
@@ -51,41 +54,38 @@ const report = await step.sandbox.python(
 ```
 
 <Annotation id="call" lines="8,12" tease="await tools.x(...)" title="Call tools like functions" href="#call-a-tool-from-the-sandbox" linkText="Call a tool">
-Code in the Sandbox calls `tools.listCustomers(...)` as an async function. Parallel calls work with `asyncio.gather` and `Promise.all`.
+Async calls, parallel with `asyncio.gather` or `Promise.all`.
 </Annotation>
 
 <Annotation id="declare" lines="18-25" tease="a closure in your function" title="Tools run in your function" href="#declare-tools" linkText="Declare tools">
-`run` is an ordinary closure. It uses your `db` client and anything else in scope. None of it is sent to the Sandbox.
+`run` closes over your `db`. Nothing is sent to the Sandbox.
 </Annotation>
 
 <Annotation id="idem" lines="29-30" tease="safe on retry" title="Each call is a durable step" href="#every-call-is-a-durable-step" linkText="Durable steps">
-A call's result is saved. If the run retries, the Slack message isn't posted twice. `ctx.idempotencyKey` is stable across retries for your own API calls.
+Saved results mean no double post. `ctx.idempotencyKey` is stable across retries.
 </Annotation>
 
 </AnnotatedCode>
 
-## Why tools
-
-- **Your credentials stay yours.** The Slack token, the database, and the retry policy live in your function. The Sandbox sees a stub, not a secret.
-- **Every call is durable.** Each call is a step, so it's saved, retried on failure, and shown in the [trace](/docs/sandboxes/features/traces?ref=docs-sandboxes-tools).
-- **It works with any code.** Python or TypeScript, written by you or by an LLM, with any model or none.
-
 ## Declare tools
 
-Pass `tools` to a runner. Each tool is a plain function or a `tool()` with a schema.
+```typescript {{ title: "TypeScript" }}
+await step.sandbox.python("a", code, {
+  tools: {
+    quick: (msg) => post(msg),
+    typed: tool({ input: z.object({ id: z.string() }), output: Customer, run: ({ id }) => load(id) }),
+    lookup: runSql.tool(),
+  },
+});
+```
 
-| Form | The Sandbox sees | Use it for |
-| --- | --- | --- |
-| A plain function: `sendSlack: (msg) => post(msg)` | Positional JSON arguments, untyped. | Quick scripts. |
-| `tool({ input, output, run })` | Named arguments, generated types, validation on both sides, and the description as a docstring. | Anything an LLM writes code against. |
-| `sandboxFn.tool()` | The same, and the call runs a [sandbox function](/docs/sandboxes/features/sandbox-functions?ref=docs-sandboxes-tools). | Code that calls a library function. |
+- A plain function takes untyped positional arguments. `tool()` adds names, types, and validation.
+- `sandboxFn.tool()` runs a [sandbox function](/docs/sandboxes/features/sandbox-functions?ref=docs-sandboxes-tools).
+- `run` gets `(input, ctx)`.
+- `timeout` defaults to `"30s"`.
+- Works on [runners](/docs/sandboxes/features/run-code?ref=docs-sandboxes-tools), `create()`, `group.sandbox()`, and `sandbox.fn`, not `sb.$`.
 
-- `input` and `output` take any [Standard Schema](https://standardschema.dev). With `input` declared, the call takes named arguments: keyword-only in Python, one object in TypeScript.
-- A bad call is rejected before any step is created, and the Sandbox gets a `ToolError`.
-- `timeout` sets the limit per call and defaults to `"30s"`. Throw `NonRetriableError` in `run` to skip retries.
-- `run` receives `(input, ctx)`. `ctx.idempotencyKey` is stable across retries, `ctx.sandbox.id` names the caller, and `ctx.signal` fires at the timeout.
-
-`tools` is accepted by the [runners](/docs/sandboxes/features/run-code?ref=docs-sandboxes-tools), as a default on `step.sandbox.create()` and `group.sandbox()`, and on `sandbox.fn`. A call's own `tools` merge over the default. It isn't available on `sb.$` or `sb.sh`, because a shell line has no language to host a stub. Run a script that needs tools through a runner. On `commands.run`, the script imports the stub itself:
+On `commands.run`, import the stub yourself:
 
 ```python {{ title: "Python" }}
 from inngest_tools import tools
@@ -94,10 +94,6 @@ customer = await tools.getCustomer("cus_1")
 ```
 
 ## Call a tool from the Sandbox
-
-Inside the Sandbox, every tool lives on one global, `tools`. It can't clash with built-ins or your `input` keys.
-
-Inngest generates a typed declaration for each language from your schemas:
 
 ```python {{ title: "Python" }}
 class Customer(TypedDict):
@@ -124,13 +120,9 @@ declare const tools: {
 };
 ```
 
-`describeTools(tools, "python")` returns the same text, so a model that writes the code sees exactly what it can call.
-
-A tool that throws raises `ToolError` in the Sandbox, which the code can catch. If it isn't caught, the command exits non-zero and [`exitCodes`](/docs/sandboxes/features/exit-codes?ref=docs-sandboxes-tools) decides the row colour, as for any command.
+`describeTools(tools, "python")` returns this text. An uncaught `ToolError` follows [`exitCodes`](/docs/sandboxes/features/exit-codes?ref=docs-sandboxes-tools).
 
 ## Every call is a durable step
-
-Each call is its own step, shown in the trace. A run that never calls a tool costs the same as a run without `tools`.
 
 ```text {{ title: "Trace" }}
 SANDBOX  churn-report
@@ -143,14 +135,9 @@ SANDBOX  churn-report
 ```
 
 - Calls found together run in parallel, up to 8 at a time.
-- A tool step that fails is retried like any step. When retries run out, or it throws `NonRetriableError`, the Sandbox gets a `ToolError`.
-- A reply is limited to 1 MiB, and a request to 256 KiB. Over the limit, the code gets a `ToolError` that says to write large data to a file.
-- A run can make 100 tool calls by default.
-- The runner's `timeout` covers the whole run, tool time included. It defaults to five minutes when `tools` is set.
+- A failed step retries, then raises `ToolError`. Limit: 100 calls per run.
 
 ## Code mode
-
-Code mode gives an LLM one tool that writes code against all your others. Instead of ten round trips to call ten tools, the model writes a short program and runs it once.
 
 ```typescript {{ title: "inngest/functions/support-agent.ts" }}
 import { sandbox } from "inngest/experimental";
@@ -177,12 +164,6 @@ export const supportAgent = inngest.createFunction(
 );
 ```
 
-The model sees one tool, `run_code`, whose description is the typed API of your real functions. It can chain ten calls in one turn, and your schemas reject bad arguments before a step exists.
-
-<Tip>
-  The model's code is untrusted, and your tools are the boundary. Expose only what the agent should be able to do, and use `ctx.idempotencyKey` for side effects.
-</Tip>
-
 ```text {{ title: "Trace" }}
 FUNCTION  support-agent
   llm-0        step.run: the model writes the code
@@ -190,10 +171,13 @@ FUNCTION  support-agent
   llm-1        step.run: the model answers
 ```
 
-Expand `run_code` to see the exec and each tool call. The agent loop runs in your function, so every model call and every tool call is a step. [Sandbox functions and agents](/docs/sandboxes/features/sandbox-functions?ref=docs-sandboxes-tools#the-agent-loop) shows the loop.
+The model sees one typed `run_code` tool. Ten calls take one turn. [The agent loop →](/docs/sandboxes/features/sandbox-functions?ref=docs-sandboxes-tools#the-agent-loop)
 
-## Next steps
+<Tip>
+  The model's code is untrusted. Expose only what the agent should do.
+</Tip>
 
-- [Run code](/docs/sandboxes/features/run-code?ref=docs-sandboxes-tools): the runners that accept `tools`.
-- [Sandbox functions and agents](/docs/sandboxes/features/sandbox-functions?ref=docs-sandboxes-tools): reusable functions and adapters for agent stacks.
-- [Exit codes and errors](/docs/sandboxes/features/exit-codes?ref=docs-sandboxes-tools): when a tool error ends the command.
+## How it works
+
+A tool runs in your function and the Sandbox only gets a stub. Each call is a step, so replays never repeat it.
+

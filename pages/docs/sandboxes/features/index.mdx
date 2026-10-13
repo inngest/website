@@ -2,26 +2,21 @@ export const metaTitle = "Features | Sandboxes";
 export const description = "Inngest Sandboxes features: isolated microVMs, base images, snapshots, cloning, durable filesystems, secrets, pause and resume, and traces.";
 
 # Sandboxes features
-> Run code in an isolated microVM and follow Sandbox operations in the same trace as your durable function.
 
-Use a Sandbox when generated code needs its own Linux environment. Inngest records Sandbox operations with your durable function steps, so you can inspect and retry the surrounding work. Pause and resume continue the same Sandbox; snapshot and clone start a new one from saved state.
+> Run code in an isolated microVM and follow it in the same trace as your durable function.
 
-## Explore the features
-
-- [Run code](/docs/sandboxes/features/run-code) — Run Python, TypeScript, or shell in one statement and get the result back as a value.
-- [Exit codes and errors](/docs/sandboxes/features/exit-codes) — A failed command fails its step. Allow the exit codes that are information.
-- [Base images](/docs/sandboxes/features/base-images) — Choose the environment your sandbox work starts in.
-- [Pause and resume](/docs/sandboxes/features/pause-and-resume) — Pause sandbox work and continue it later.
-- [Snapshots and restore](/docs/sandboxes/features/snapshots-and-restore) — Capture a Sandbox state and clone a new one from it.
-- [Cloning](/docs/sandboxes/features/cloning) — Create another sandbox from an existing state.
-- [Durable filesystems](/docs/sandboxes/features/durable-filesystems) — Keep a sandbox's files through pause, snapshot, restore, and clone. Use S3-backed persistent mounts to share filesystems across sandboxes.
-- [SSH](/docs/sandboxes/features/ssh) — Access a sandbox for interactive work. SSH is planned for the initial launch.
-- [Secrets](/docs/sandboxes/features/secrets) — Select existing workspace secrets when creating a fresh sandbox.
-- [Managed lifecycle](/docs/sandboxes/features/managed-lifecycle) — Create a sandbox, run several statements in it, and have it destroyed at the end of a scope.
-- [Run-owned Sandboxes](/docs/sandboxes/features/run-owned) — Sandboxes and snapshots your run creates are cleaned up when it ends.
-- [Tools and code mode](/docs/sandboxes/features/tools) — Let sandbox code call your functions as durable steps, with your credentials.
-- [Sandbox functions and agents](/docs/sandboxes/features/sandbox-functions) — Define sandbox code once, call it like a function, and give it to an LLM as a tool.
-- [Isolation and security](/docs/sandboxes/features/isolation-and-security) — Understand the microVM isolation boundary.
-- [Traces](/docs/sandboxes/features/traces) — See each sandbox statement as one group alongside the rest of a durable run.
-
-For deployment previews, see [branch deploys](/docs/platform-and-operations/environments-and-branch-deploys).
+- [Run code](/docs/sandboxes/features/run-code).
+- [Exit codes and errors](/docs/sandboxes/features/exit-codes).
+- [Base images](/docs/sandboxes/features/base-images).
+- [Pause and resume](/docs/sandboxes/features/pause-and-resume).
+- [Snapshots and restore](/docs/sandboxes/features/snapshots-and-restore).
+- [Cloning](/docs/sandboxes/features/cloning).
+- [Durable filesystems](/docs/sandboxes/features/durable-filesystems).
+- [SSH](/docs/sandboxes/features/ssh).
+- [Secrets](/docs/sandboxes/features/secrets).
+- [Managed lifecycle](/docs/sandboxes/features/managed-lifecycle).
+- [Run-owned Sandboxes](/docs/sandboxes/features/run-owned).
+- [Tools and code mode](/docs/sandboxes/features/tools).
+- [Sandbox functions and agents](/docs/sandboxes/features/sandbox-functions).
+- [Isolation and security](/docs/sandboxes/features/isolation-and-security).
+- [Traces](/docs/sandboxes/features/traces).

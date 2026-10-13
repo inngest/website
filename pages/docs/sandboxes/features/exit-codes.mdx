@@ -5,9 +5,12 @@ export const description = "A Sandbox command that exits non-zero fails its step
 
 # Exit codes and errors
 
-> A failed command stops your function and shows red in the trace. Allow the exit codes that carry information.
+> A failed command stops your function and shows red in the trace. Allow the codes that are information.
 
-A command that exits non-zero fails its step. A failed `npm ci` stops the sequence instead of letting the build run anyway, and the row is red in the [trace](/docs/sandboxes/features/traces?ref=docs-sandboxes-exit-codes), so the code that reads right is also the code that behaves right.
+- **Fail loud by default.** A bad `npm ci` stops the run. [How it works →](#how-it-works)
+- **Allow the codes you expect.** `grep` exiting `1` is an answer, not an error. [Allow exit codes →](#allow-exit-codes)
+- **Read why it failed.** Command, exit code, and output tails. [Read the failure →](#read-the-failure)
+- **Same rule in CI.** `$` throws, `.nothrow()` returns. [Inngest CI →](/docs/labs/ci/commands?ref=docs-sandboxes-exit-codes)
 
 <AnnotatedCode>
 
@@ -33,75 +36,35 @@ try {
 }
 ```
 
-<Annotation id="default" lines="5" tease="fails on non-zero" title="Throws by default" href="#what-happens-on-a-non-zero-exit" linkText="Default behavior">
-Only exit `0` is a success. Any other code fails the step, and the function ends unless you catch the error.
+<Annotation id="default" lines="5" tease="fails on non-zero" title="Throws by default" href="#how-it-works" linkText="How it works">
+Only exit `0` succeeds.
 </Annotation>
 
-<Annotation id="allow" lines="7-9" tease="1 is information" title="Allow specific exit codes" href="#allow-exit-codes" linkText="Allow exit codes">
-`grep` exits `1` for "no match". List the codes that are fine, and `hit.ok` tells you which one you got.
+<Annotation id="allow" lines="7-9" tease="1 is information" title="Allow specific codes" href="#allow-exit-codes" linkText="Allow exit codes">
+`1` is "no match". `hit.ok` is `false` for it.
 </Annotation>
 
 <Annotation id="any" lines="11" tease="never throws" title="Inspect it yourself" href="#allow-exit-codes" linkText="Allow exit codes">
-`"any"` never throws on an exit code. You get the result and decide.
+Never throws on an exit code.
 </Annotation>
 
 <Annotation id="read" lines="16" tease="read the details" title="Read what failed" href="#read-the-failure" linkText="Read the failure">
-`getCommandError` returns the command, exit code, and the end of stdout and stderr.
+Command, exit code, and output tails.
 </Annotation>
 
 </AnnotatedCode>
 
-## What happens on a non-zero exit
-
-- The command's step fails with a non-retriable error. Re-running a deterministic failure would only repeat it, and could repeat a side effect such as `npm publish`.
-- The row is red and shows the exit code. The enclosing group rolls up to red, so a green cleanup step never hides the failure.
-- A failure is saved like any step error. When the function replays, the same error is thrown again and nothing runs a second time.
-- When the failure is final, the Sandbox is cleaned up at once. See [Managed lifecycle](/docs/sandboxes/features/managed-lifecycle?ref=docs-sandboxes-exit-codes).
-
-| Case | Result | Row | Retries |
-| --- | --- | --- | --- |
-| Exit is in `exitCodes` (default `[0]`) | The step resolves with the full result. | Green | None needed |
-| Exit is not in `exitCodes` | The step fails with the command, exit code, and output tails. | Red | None |
-| `exitCodes: "any"` | The step resolves with the result. | Green | None needed |
-| The command times out | `sandbox_exec_timed_out`. | Red | None |
-| Capacity or a lost connection | A retryable `SandboxError`. | Red per attempt | Your function's retry settings |
-| The outcome is unknown | `operation_ambiguous`. The command may already have run. | Red | None |
-
 ## Allow exit codes
-
-`exitCodes` lists the codes that count as success. The default is `[0]`.
 
 ```typescript {{ title: "TypeScript" }}
 const result = await sb.sh("diff", "diff -q a.txt b.txt", { exitCodes: [0, 1] });
 
-if (!result.ok) {
-  await step.run("changed", () => noteChange());
-}
+const hit = await sb.$`grep ${needle} log`.exitCodes([0, 1]);
 ```
 
-- `ok` on the result is `true` only for exit `0`, so `exitCodes: [0, 1]` lets you tell the two apart.
-- `"any"` never throws on an exit code. Timeouts and infrastructure errors still fail the step.
-- It works the same on `sh`, `python`, `ts`, `run`, `commands.run`, [`$`](/docs/sandboxes/features/run-code?ref=docs-sandboxes-exit-codes#the-template), and [`sandbox.fn`](/docs/sandboxes/features/sandbox-functions?ref=docs-sandboxes-exit-codes). On `$`, chain it: `` sb.$`grep ${x} log`.exitCodes([0, 1]) ``.
+Works on `sh`, `python`, `ts`, `run`, `commands.run`, [`$`](/docs/sandboxes/features/run-code?ref=docs-sandboxes-exit-codes#the-template), and [`sandbox.fn`](/docs/sandboxes/features/sandbox-functions?ref=docs-sandboxes-exit-codes).
 
 ## Read the failure
-
-A step failure reaches your function as a `StepError`, so `instanceof` can't tell a failed command from any other failure. `getCommandError(err)` reads the details:
-
-```typescript {{ title: "TypeScript" }}
-type CommandError = {
-  command: string;
-  exitCode: number;
-  stdoutTail: string;
-  stderrTail: string;
-  truncated: boolean;
-};
-
-function getCommandError(err: unknown): CommandError | undefined;
-```
-
-It returns `undefined` for errors that aren't failed commands. For infrastructure errors such as timeouts, use `getSandboxError(err)`, which returns the `code`, `retryable`, and `ambiguous` fields.
-
-Use it in a `catch`, or in an `onFailure` handler to report why a run failed:
 
 ```typescript {{ title: "TypeScript" }}
 const fn = inngest.createFunction(
@@ -110,6 +73,7 @@ const fn = inngest.createFunction(
     triggers: { event: "repo/pushed" },
     onFailure: async ({ error, step }) => {
       const failure = getCommandError(error);
+      // { command, exitCode, stdoutTail, stderrTail, truncated } | undefined
       await step.run("comment", () => postComment(failure?.stderrTail));
     },
   },
@@ -119,12 +83,12 @@ const fn = inngest.createFunction(
 );
 ```
 
-## Same rule in Inngest CI
+`getSandboxError(err)` covers timeouts and capacity: `code`, `retryable`, `ambiguous`.
 
-[Inngest CI](/docs/labs/ci/commands?ref=docs-sandboxes-exit-codes) runs on Sandboxes and follows the same rule: `$` throws on a non-zero exit, and `.nothrow()` returns the result with its exit code instead.
+## How it works
 
-## Next steps
+- A non-zero exit fails the step without retries, so `npm publish` never repeats.
+- The row and its group go red, and replays throw the same error.
+- Timeouts are `sandbox_exec_timed_out`. An unknown outcome is `operation_ambiguous`.
 
-- [Run code](/docs/sandboxes/features/run-code?ref=docs-sandboxes-exit-codes): the runners and the `$` template.
-- [Traces](/docs/sandboxes/features/traces?ref=docs-sandboxes-exit-codes): how a failed command looks in a run.
-- [Troubleshooting](/docs/sandboxes/troubleshooting?ref=docs-sandboxes-exit-codes): timeouts and ambiguous outcomes.
+[Run code →](/docs/sandboxes/features/run-code?ref=docs-sandboxes-exit-codes)

@@ -1,4 +1,4 @@
-import { Mermaid } from "src/shared/Docs/Mermaid";
+import { AnnotatedCode, Annotation } from "shared/Docs/mdx";
 import { SdkSupport } from "src/shared/Docs/SdkSupport";
 
 export const metaTitle = "Overview | Sandboxes";
@@ -6,7 +6,7 @@ export const description = "Inngest Sandboxes overview: run generated code or te
 
 # Sandboxes overview
 
-> Run generated code or test a project in an isolated microVM while your durable function coordinates the job.
+> Run generated code in an isolated microVM while your durable function coordinates the job.
 
 <SdkSupport
   feature="Sandboxes"
@@ -49,59 +49,41 @@ export const description = "Inngest Sandboxes overview: run generated code or te
   ]}
 />
 
-Run generated code or test a project in a fully isolated microVM while your durable function coordinates the job. One statement boots a Sandbox, runs Python, TypeScript, or shell, returns the result as a value, and cleans up. Sandboxes boot in under a second. You can pause and resume the same Sandbox, or snapshot it and clone a new one. Inngest ties their lifecycle to the run and shows sandbox activity in the same trace, so you can give code its own execution environment without building a separate service to start, stop, and track it.
-
-```typescript {{ title: "TypeScript" }}
-const total = await step.sandbox.python<number>("sum", "return sum(xs)", { input: { xs } });
-```
-
-## Why use a Sandbox?
-
-For example, an agent can edit a repository and run its tests in a Sandbox. The durable function coordinates the task while the generated code runs in a separate microVM.
-
-A durable run can include steps, waits, and retries that span more than one request or process. Sandbox operations belong in that run. Inngest can coordinate the environment as the work advances and record what happened alongside the rest of the execution. This lets you inspect the code execution and the workflow that led to it in one place.
-
 ## What you can do
 
-- **Run code in one statement.** [Python, TypeScript, and shell runners](/docs/sandboxes/features/run-code?ref=docs-sandboxes-overview) take your data as variables and return a typed value.
-- **Boot quickly.** Start a microVM in under a second when work needs an isolated environment.
-- **Run code in isolation.** Keep code that needs its own environment apart from the function's runtime.
-- **Fail loudly.** A command that exits non-zero fails its step and shows red. [Allow the codes that are information](/docs/sandboxes/features/exit-codes?ref=docs-sandboxes-overview).
-- **Call your functions from the Sandbox.** [Tools](/docs/sandboxes/features/tools?ref=docs-sandboxes-overview) run in your function, as durable steps, with your credentials.
-- **Give an LLM a Sandbox.** [Sandbox functions](/docs/sandboxes/features/sandbox-functions?ref=docs-sandboxes-overview) become tools for the AI SDK, Anthropic, OpenAI, and MCP.
-- **Never leak one.** [Sandboxes and snapshots your run creates are cleaned up when it ends](/docs/sandboxes/features/run-owned?ref=docs-sandboxes-overview), however it ends.
-- **Pause and continue.** Stop active work and continue when the job is ready.
-- **Snapshot and clone.** Save Sandbox state and start a new Sandbox from it. Pause and resume continue the original Sandbox. Files persist through these operations.
-- **Follow the work in a trace.** See each statement as one [SANDBOX group](/docs/sandboxes/features/traces?ref=docs-sandboxes-overview) with the steps and events of the durable run.
+- **Run code in one statement.** Python, TypeScript, or shell, with a typed value back. [Run code →](/docs/sandboxes/features/run-code?ref=docs-sandboxes-overview)
+- **Fail loudly.** A non-zero exit fails its step and shows red. [Exit codes →](/docs/sandboxes/features/exit-codes?ref=docs-sandboxes-overview)
+- **Call your functions from the Sandbox.** Tools run as durable steps with your credentials. [Tools →](/docs/sandboxes/features/tools?ref=docs-sandboxes-overview)
+- **Give an LLM a Sandbox.** Works with the AI SDK, Anthropic, OpenAI, and MCP. [Agents →](/docs/sandboxes/features/sandbox-functions?ref=docs-sandboxes-overview)
+- **Never leak one.** Whatever your run creates is cleaned up when it ends. [Run-owned →](/docs/sandboxes/features/run-owned?ref=docs-sandboxes-overview)
+- **Snapshot and clone.** Files persist across pause, snapshot, and clone. [Snapshots →](/docs/sandboxes/features/snapshots-and-restore?ref=docs-sandboxes-overview)
 
-The lifecycle follows the API you use. A runner such as `step.sandbox.python()` creates and destroys its own Sandbox. `step.sandbox.create()` returns a handle you can use with `await using`, and `group.sandbox()` wraps a callback. Anything still alive when the run ends is cleaned up.
+<AnnotatedCode>
 
-## How Sandboxes fit into Inngest
+```typescript {{ title: "inngest/functions/review.ts" }}
+const total = await step.sandbox.python<number>("sum", "return sum(xs)", {
+  input: { xs },
+});
 
-An Inngest function coordinates the job. It may call a Sandbox for isolated code execution, wait for another event, and continue later. The durable run provides the shared context for those actions. The trace connects the workflow and its Sandbox activity.
+await using sb = await step.sandbox.create("work");
 
-<Mermaid
-  wide
-  label="A run executes a step, starts a Sandbox, runs two Sandbox command steps, and finishes with a result. One trace contains run activity and Sandbox activity."
-  chart={`flowchart TB
-  R["Run"] --> S["Step"]
-  S --> VM["Sandbox"]
-  VM --> C1["Step Sandbox cmd"]
-  C1 --> C2["Step Sandbox cmd"]
-  C2 --> F["Result finishes"]
-  F --> T["One trace"]
-  R -. "Run activity" .-> T
-  VM -. "Sandbox activity" .-> T
-  class R,S,C1,C2,F accent
-  class VM info`}
-/>
+await sb.sh("test", "npm test");
+```
 
-Sandboxes provide an execution environment for work inside a run. They are separate from where you host an Inngest app's functions. Inngest [branch deploys](/docs/platform-and-operations/environments-and-branch-deploys) are different: they give a Git branch its own deployment preview and event data.
+<Annotation id="runner" lines="1-3" tease="one statement" title="Runner" href="/docs/sandboxes/features/run-code?ref=docs-sandboxes-overview" linkText="Run code">
+Creates, runs, and destroys its own Sandbox.
+</Annotation>
 
-## Next steps
+<Annotation id="handle" lines="5-7" tease="keep one Sandbox" title="Handle" href="/docs/sandboxes/features/managed-lifecycle?ref=docs-sandboxes-overview" linkText="Managed lifecycle">
+`await using` destroys it at scope end.
+</Annotation>
 
-- [Quick start](/docs/sandboxes/quick-start) — run your first Sandbox.
-- [Features](/docs/sandboxes/features) — understand isolation, lifecycle controls, and traces.
-- [Guides](/docs/sandboxes/guides) — use Sandboxes in durable work.
-- [Limits](/docs/sandboxes/limits) and [Reference](/docs/sandboxes/reference) — check exact support, behavior, and API details.
-- [Inngest CI](/docs/labs/ci) is an Inngest Labs project built on Sandboxes: write CI pipelines in TypeScript and run each job on its own Sandbox.
+</AnnotatedCode>
+
+## How it works
+
+- A Sandbox is a Linux microVM, separate from where your functions are hosted.
+- Each operation is a step in the durable run, so one trace shows both.
+- Anything still alive when the run ends is cleaned up.
+
+[Inngest CI →](/docs/labs/ci) runs each pipeline job on its own Sandbox.
