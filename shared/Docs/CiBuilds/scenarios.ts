@@ -61,6 +61,8 @@ export interface Bar {
   end: number;
   kind: BarKind;
   label: string;
+  /** Drawn in full from its start, rather than growing. */
+  instant?: boolean;
 }
 
 export interface Lane {
@@ -180,11 +182,11 @@ const scenarios: Record<string, Scenario> = {
     realDuration: 10,
     lanes: [
       {
-        label: "Run 1 · install",
+        label: "Pipeline run 1 · install",
         bars: [{ start: 0.2, end: 3.4, kind: "build", label: "build" }],
       },
       {
-        label: "Run 1 · test",
+        label: "Pipeline run 1 · test",
         bars: [
           { start: 0.2, end: 3.4, kind: "wait", label: "waits" },
           { start: 3.4, end: 5, kind: "run", label: "test" },
@@ -192,16 +194,62 @@ const scenarios: Record<string, Scenario> = {
         done: { at: 5, label: "passed" },
       },
       {
-        label: "Run 2 · install",
+        label: "Pipeline run 2 · install",
         bars: [{ start: 5.6, end: 8.8, kind: "build", label: "build again" }],
       },
       {
-        label: "Run 2 · test",
+        label: "Pipeline run 2 · test",
         bars: [
           { start: 5.6, end: 8.8, kind: "wait", label: "waits" },
           { start: 8.8, end: 10.4, kind: "run", label: "test" },
         ],
         done: { at: 10.4, label: "passed" },
+      },
+    ],
+  },
+
+  "warn-uncached": {
+    type: "timeline",
+    caption:
+      "A job that others start from, with no cache, is rebuilt in every pipeline run.",
+    domain: 5,
+    realDuration: 5,
+    lanes: [
+      {
+        label: "Pipeline warnings",
+        bars: [
+          {
+            start: 0,
+            end: 5,
+            instant: true,
+            kind: "warn",
+            label:
+              "rebuilt every pipeline run: `install` (add `cache` to keep it across pipeline runs)",
+          },
+        ],
+      },
+    ],
+  },
+
+  "warn-jit": {
+    type: "timeline",
+    caption:
+      "A cached job with no refresh is built by the pipeline run that needs it, which waits.",
+    domain: 5,
+    realDuration: 5,
+    lanes: [
+      {
+        label: "Pipeline warnings",
+        bars: [
+          {
+            start: 0,
+            end: 5,
+            instant: true,
+            kind: "warn",
+            label:
+              "built just in time: `install` (add `cache.refresh` to build it ahead of time)",
+          },
+        ],
       },
     ],
   },
@@ -213,19 +261,19 @@ const scenarios: Record<string, Scenario> = {
   cache: { key: files("package-lock.json") },
 }, ...)`,
     caption:
-      "The first run with a new lockfile builds install and warns. The second run finds it.",
+      "The first pipeline run builds install. The second finds it and starts at once.",
     domain: 11,
     realDuration: 10,
     lanes: [
       {
-        label: "Run 1 · install",
+        label: "Pipeline run 1 · install",
         bars: [
           { start: 0.2, end: 1.1, kind: "miss", label: "miss" },
-          { start: 1.1, end: 4.2, kind: "warn", label: "built just in time" },
+          { start: 1.1, end: 4.2, kind: "build", label: "build" },
         ],
       },
       {
-        label: "Run 1 · test",
+        label: "Pipeline run 1 · test",
         bars: [
           { start: 1.1, end: 4.2, kind: "wait", label: "waits" },
           { start: 4.2, end: 5.7, kind: "run", label: "test" },
@@ -233,11 +281,11 @@ const scenarios: Record<string, Scenario> = {
         done: { at: 5.7, label: "passed" },
       },
       {
-        label: "Run 2 · install",
+        label: "Pipeline run 2 · install",
         bars: [{ start: 6.3, end: 7.2, kind: "hit", label: "found" }],
       },
       {
-        label: "Run 2 · test",
+        label: "Pipeline run 2 · test",
         bars: [{ start: 7.2, end: 8.7, kind: "run", label: "test" }],
         done: { at: 8.7, label: "passed" },
       },
@@ -254,7 +302,7 @@ const scenarios: Record<string, Scenario> = {
   },
 }, ...)`,
     caption:
-      "The 3am cron builds install ahead of time. The pull request finds it and starts at once.",
+      "The 3am cron builds install ahead of time. The next pipeline run finds it and starts at once.",
     domain: 9,
     realDuration: 9,
     lanes: [
@@ -264,11 +312,11 @@ const scenarios: Record<string, Scenario> = {
         done: { at: 3.6, label: "cached" },
       },
       {
-        label: "Pull request · install",
+        label: "Pipeline run · install",
         bars: [{ start: 4.6, end: 5.5, kind: "hit", label: "found" }],
       },
       {
-        label: "Pull request · test",
+        label: "Pipeline run · test",
         bars: [{ start: 5.5, end: 7.5, kind: "run", label: "test" }],
         done: { at: 7.5, label: "passed" },
       },
@@ -278,14 +326,14 @@ const scenarios: Record<string, Scenario> = {
   many: {
     type: "timeline",
     code: `ci.job({ id: "test", from: install }, ...)
-// four pull requests push at once`,
+// five pipeline runs start at once`,
     caption:
-      "Four runs ask for the same build. It happens once, and all four resume together.",
+      "Five pipeline runs ask for the same build. It happens once, and all five resume together.",
     domain: 8,
     realDuration: 8,
     lanes: [
       {
-        label: "Run 1",
+        label: "Pipeline run 1",
         bars: [
           { start: 0.2, end: 1.1, kind: "miss", label: "miss" },
           { start: 1.1, end: 4.4, kind: "wait", label: "waits for the build" },
@@ -293,7 +341,7 @@ const scenarios: Record<string, Scenario> = {
         ],
       },
       {
-        label: "Run 2",
+        label: "Pipeline run 2",
         bars: [
           { start: 0.3, end: 1.2, kind: "miss", label: "miss" },
           { start: 1.2, end: 4.4, kind: "wait", label: "waits for the build" },
@@ -301,7 +349,7 @@ const scenarios: Record<string, Scenario> = {
         ],
       },
       {
-        label: "Run 3",
+        label: "Pipeline run 3",
         bars: [
           { start: 0.4, end: 1.3, kind: "miss", label: "miss" },
           { start: 1.3, end: 4.4, kind: "wait", label: "waits for the build" },
@@ -309,7 +357,7 @@ const scenarios: Record<string, Scenario> = {
         ],
       },
       {
-        label: "Run 4",
+        label: "Pipeline run 4",
         bars: [
           { start: 0.5, end: 1.4, kind: "miss", label: "miss" },
           { start: 1.4, end: 4.4, kind: "wait", label: "waits for the build" },
@@ -317,11 +365,19 @@ const scenarios: Record<string, Scenario> = {
         ],
       },
       {
+        label: "Pipeline run 5",
+        bars: [
+          { start: 0.6, end: 1.5, kind: "miss", label: "miss" },
+          { start: 1.5, end: 4.4, kind: "wait", label: "waits for the build" },
+          { start: 4.4, end: 7.6, kind: "run", label: "test" },
+        ],
+      },
+      {
         label: "The one build",
         bars: [
           { start: 0.7, end: 4.3, kind: "build", label: "install, built once" },
         ],
-        done: { at: 4.3, label: "shared with all four" },
+        done: { at: 4.3, label: "shared with all five" },
       },
     ],
   },

@@ -336,7 +336,9 @@ function TimelineBar({
     return null;
   }
 
-  const shown = Math.min(t, bar.end) - bar.start;
+  const shown = bar.instant
+    ? bar.end - bar.start
+    : Math.min(t, bar.end) - bar.start;
   const left = (bar.start / domain) * 100;
   const width = (Math.max(shown, 0.02) / domain) * 100;
 
