@@ -1,4 +1,5 @@
 import { CiBuilds } from "shared/Docs/CiBuilds";
+import { AnnotatedCode, Annotation } from "shared/Docs/mdx";
 
 export const metaTitle = "Base images & caching | Inngest CI";
 export const description = "Start Inngest CI jobs from a machine that's already set up: another job, a Docker image, or an Inngest image. Reuse it within a pipeline run, cache it across pipeline runs, and build it ahead of time.";
@@ -26,17 +27,33 @@ For anything heavier, we probably don't want every job repeating the same setup.
 
 `from` points a job at another job. It starts on a copy of that job's machine, with everything it installed still in place.
 
+<AnnotatedCode>
+
 ```typescript {{ title: "ci/jobs.ts" }}
 const install = ci.job({ id: "install" }, async () => {
   await checkout();
-  await $`npm ci`; // ← runs once
+  await $`npm ci`;
 });
 
 const test = ci.job({ id: "test", from: install }, async () => {
-  await checkout(); // ← moves to this commit, keeps node_modules
-  await $`npm test`; // ← nothing to install
+  await checkout();
+  await $`npm test`;
 });
 ```
+
+<Annotation id="once" lines="3" tease="runs once" title="Runs once">
+`npm ci` runs once, in the job everything else starts from.
+</Annotation>
+
+<Annotation id="moves" lines="7" tease="moves to this commit" title="Moves to this commit">
+Keeps `node_modules`.
+</Annotation>
+
+<Annotation id="nothing" lines="8" tease="nothing to install" title="Nothing to install">
+The install is already in the snapshot.
+</Annotation>
+
+</AnnotatedCode>
 
 When a pipeline run needs `install`, Inngest runs it once and snapshots its machine. Every job that starts from it begins from that snapshot.
 
@@ -58,11 +75,13 @@ Inngest warns you when that happens:
 
 Give the job a `cache` key, and its snapshot is kept as a **base image** for later pipeline runs to start from.
 
+<AnnotatedCode>
+
 ```typescript {{ title: "ci/jobs.ts" }}
 const install = ci.job(
   {
     id: "install",
-    cache: { key: files("package-lock.json") }, // ← rebuild only when this changes
+    cache: { key: files("package-lock.json") },
   },
   async () => {
     await checkout();
@@ -70,6 +89,12 @@ const install = ci.job(
   },
 );
 ```
+
+<Annotation id="key" lines="4" tease="rebuild on change" title="Rebuild only when this changes">
+The base image is rebuilt only when `package-lock.json` changes.
+</Annotation>
+
+</AnnotatedCode>
 
 The first pipeline run builds it, and later ones start from it straight away.
 
@@ -83,15 +108,23 @@ When `package-lock.json` changes, the key changes and the base image is rebuilt.
 
 Rather than letting a pipeline run wait, rebuild the base image in the background. `refresh` takes any trigger: a schedule, a push, or your own event.
 
+<AnnotatedCode>
+
 ```typescript {{ title: "ci/jobs.ts" }}
 cache: {
   key: files("package-lock.json"),
   refresh: [
     { cron: "0 3 * * *" },
     github.push({ branches: ["main"] }),
-  ], // ← rebuild in the background
+  ],
 },
 ```
+
+<Annotation id="refresh" lines="6" tease="rebuild in background" title="Rebuild in the background">
+The base image is rebuilt in the background, so pipeline runs never wait.
+</Annotation>
+
+</AnnotatedCode>
 
 <CiBuilds scenario="refresh" />
 
@@ -107,17 +140,29 @@ When several pipeline runs need the same base image at the same moment, only one
 
 `from` works the same wherever the job lives.
 
+<AnnotatedCode>
+
 ```typescript {{ title: "ci/jobs.ts" }}
 import { image } from "@inngest/ci";
 import { install } from "./install";
 
-const test = ci.job({ id: "test", from: install }, fn); // ← in this pipeline, or imported from elsewhere in your app
+const test = ci.job({ id: "test", from: install }, fn);
 
 const web = ci.job(
-  { id: "web", from: image.job("platform/install") }, // ← a job in another app
+  { id: "web", from: image.job("platform/install") },
   fn,
 );
 ```
+
+<Annotation id="same" lines="4" tease="this pipeline or elsewhere" title="In this pipeline, or elsewhere">
+The job can be in this pipeline, or imported from elsewhere in your app.
+</Annotation>
+
+<Annotation id="other" lines="7" tease="another app" title="A job in another app">
+Points at a job from a different app.
+</Annotation>
+
+</AnnotatedCode>
 
 <CiBuilds scenario="cross-app" />
 
@@ -141,14 +186,34 @@ install
 
 Sometimes you just want a ready-made machine and no job:
 
+<AnnotatedCode>
+
 ```typescript {{ title: "ci/jobs.ts" }}
 import { image } from "@inngest/ci";
 
-const a = ci.job({ id: "a", from: image.docker("node:22") }, fn); // ← any Docker Hub image, pulled once and kept
-const b = ci.job({ id: "b", from: image.inngest("node") }, fn); // ← one of Inngest's runtime images
-const c = ci.job({ id: "c", from: image.custom("ghcr.io/acme/ci") }, fn); // ← your own registry
-const d = ci.job({ id: "d", from: image.snapshot("my-snapshot") }, fn); // ← a snapshot you saved by name
+const a = ci.job({ id: "a", from: image.docker("node:22") }, fn);
+const b = ci.job({ id: "b", from: image.inngest("node") }, fn);
+const c = ci.job({ id: "c", from: image.custom("ghcr.io/acme/ci") }, fn);
+const d = ci.job({ id: "d", from: image.snapshot("my-snapshot") }, fn);
 ```
+
+<Annotation id="docker" lines="3" tease="Docker Hub" title="Any Docker Hub image">
+Pulled once and kept.
+</Annotation>
+
+<Annotation id="inngest" lines="4" tease="Inngest image" title="Inngest's runtime image">
+One of Inngest's runtime images.
+</Annotation>
+
+<Annotation id="custom" lines="5" tease="your registry" title="Your own registry">
+Pulled from your own registry.
+</Annotation>
+
+<Annotation id="snapshot" lines="6" tease="saved by name" title="A snapshot by name">
+A snapshot you saved by name.
+</Annotation>
+
+</AnnotatedCode>
 
 These are used exactly as they are. Nothing is built or refreshed for you, so for anything you'd otherwise set up with commands, start from a job.
 
