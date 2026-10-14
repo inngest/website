@@ -133,12 +133,18 @@ await step.sandbox.python("a", code, {
 - `toolOptions` defaults are shown. A command with tools may run 5 minutes.
 - Works on [runners](/docs/sandboxes/features/run-code?ref=docs-sandboxes-tools), `create()`, and `group.sandbox()`, not `sb.$`.
 
-On `commands.run`, import the stub yourself:
+On `commands.run`, import the stub yourself. On runners, `tools` is already a global.
 
 ```python {{ title: "Python" }}
 from inngest_tools import tools
 
 customer = await tools.getCustomer("cus_1")
+```
+
+```javascript {{ title: "Node" }}
+const { tools } = require("inngest_tools");
+
+tools.getCustomer("cus_1").then(console.log);
 ```
 
 ## Tools that run steps
