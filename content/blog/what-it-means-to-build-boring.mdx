@@ -1,0 +1,189 @@
+---
+tags: ["AI & Agents", "Durable Execution", "Observability & Debugging", "Queues & Flow Control", "Workflows & Orchestration"]
+heading: "What it means to build boring"
+subtitle: "Predictable, uneventful, boring. Durable software keeps going without you, and observable software shows you exactly what happened."
+image: /assets/blog/what-it-means-to-build-boring/featured-image.jpg
+showSubtitle: true
+date: "2026-10-13T12:00:00.000Z"
+author: Lauren Craigie
+category: engineering
+---
+
+Sisyphus was sentenced to push a rock up a hill. It was meant as a punishment, but the more I work in this market the more I read that situation as *delightfully predictable.* That's what Camus meant when he said we should imagine Sisyphus happy (more or less). He's happy because he's stopped wondering what could happen. He knows. And he knows what comes next.
+
+Minus the undertones of futility… this sounds like a perfectly predictable paradise!
+
+It's how we want the software we build to be—predictable. Uneventful. *Boring*.
+
+But we don't talk a lot about boring software anymore in a venture-fueled hellscape. We only talk about potential. So what does it mean to build "boring" software, when AI makes anything possible? I think it's simply software that is:
+
+- **[Durable](/docs/durable-execution/durable-workflows?ref=blog-what-it-means-to-build-boring):** Keeps going no matter what—without intervention
+- **[Observable](/docs/platform-and-operations/traces?ref=blog-what-it-means-to-build-boring):** Shows you exactly what happened, so you don't have to wonder
+
+If you have those two pieces you have most of what you need to take unmitigated chaos off the table. That's what this blog is about.
+
+## Hope is undefined behavior
+
+In software, hope isn't a good thing: "I hope my code behaves how I expect." "I hope my product can handle a million users the day I go viral on product hunt." We don't want to be hoping for things related to code.
+
+Durability work removes those uncertainties one at a time. We can't stop the rock from rolling, but we can decide, in advance, what happens after every fall. Building a durable system doesn't mean you'll map every potential event—it just means that universe of possibilities are reasonably well grouped and accounted for. It's building confidence that your code can withstand anything.
+
+## An agent is a workflow with one more unreliable dependency
+
+Most teams already know how to make agents reliable—they just aren't connecting the dots yet. More than 100k developers use Inngest. Many use it as their "AI engine"—the workflows behind the agents they sell to customers. But plenty use it for payments, onboarding, data pipelines, and other rote platform work. For whatever reason, many in the second group don't realize the APIs they use to make their data pipelines durable are the same they could be using to make agents durable.
+
+Why? Because agents feel unpredictable, and unwieldy—their magic is in their non-determinism. That's sort of the whole point.
+
+But we don't need to take away non-determinism to determine how our products should behave when something along the agent chain changes—whether it's expected like a human input, or unexpected like a failed LLM call.
+
+To visualize what I mean, imagine you're the code around a model call. To you, the call looks like any other flaky dependency. It's slow, it costs money, it's sometimes unavailable, and you can't predict exactly what comes back. The same is true of a payment processor, a partner's webhook, or a person asked for an approval.
+
+## How you do anything is how you do everything
+
+For Inngest, the technique for handling expected events and mitigating unexpected ones has always been the same: put the call in a [step](/docs/durable-execution/primitives/step-run?ref=blog-what-it-means-to-build-boring), record what came back, and decide what to do with every kind of answer, including no answer.
+
+```tsx
+const charge = await step.run("charge-card", () => stripe.charge(order));
+const plan = await step.run("draft-plan", () => model.plan(ticket));
+```
+
+Those two lines—one payment workflow and one AI workflow—get the same treatment. Both run, retry on failure, and are recorded once. The only extra bit an agent adds is that the model picks the next step. *But isn't that just branching on data, which we've always been able to do in code?* The model chooses among paths; it doesn't invent them.
+
+So you can't predict what the model will say, but you can predict everywhere it's allowed to go. Separating these two problems is important.
+
+## Where the non-determinism goes
+
+The goal isn't to make a model deterministic, the goal is to make the *run* deterministic. Once a step's result is recorded, it's a fact. The model says something, and the run proceeds from there. If the process crashes and resumes, it replays from that record instead of asking the model again.
+
+This splits "are agents reliable?" into two separate questions. The first is whether the answer was *good*, which is about models, prompts, and [evals](/docs/agent-evals/overview?ref=blog-what-it-means-to-build-boring), and gets answered by [scoring](/docs/agent-evals/scores?ref=blog-what-it-means-to-build-boring) real runs. The second is whether the run finished on a path you defined.
+
+I like to think of this as "did it work, or did it werk?" *(no one agrees with me that this is an appropriate way of condensing this topic. Nevertheless I persist.)*
+
+The latter is an infrastructure question, the same one we've already answered for queues and cron jobs decades ago. When people say agents are unreliable they usually mean both at once—but only the first one is new.
+
+## How Inngest makes a run boring
+
+So let's talk about that second question—whether your agent works (retries, fans out, waits, etc). Every feature in Inngest exists to make your code boring. Here are the ones that matter most for agents, and the "surprise" each one eliminates.
+
+### What happens if a step fails?
+
+**It [retries](/docs/durable-execution/guides-and-advanced/error-handling/retries?ref=blog-what-it-means-to-build-boring) (just that step, not the whole workflow).** Completed steps are already recorded, so a run that fails on step seven resumes at step seven.
+
+Under the hood, this works by memoization. When a step fails, Inngest calls your function again from the top—but every step that already finished returns its saved result instantly instead of running.
+
+![A retry only re-runs the step that failed](/assets/blog/what-it-means-to-build-boring/memoized-retry.jpg)
+
+*You also get to decide which failures are worth retrying.* Retries back off between attempts, so a rate-limited model API gets room to recover. A bad input that will never succeed can throw a [`NonRetriableError`](/docs/durable-execution/guides-and-advanced/error-handling/non-retriable-errors?ref=blog-what-it-means-to-build-boring) and stop immediately. And when an API tells you exactly when to come back, [`RetryAfterError`](/docs/durable-execution/guides-and-advanced/error-handling/inngest-errors?ref=blog-what-it-means-to-build-boring) waits that long.
+
+```tsx
+const plan = await step.run("draft-plan", async () => {
+  const res = await model.plan(ticket);
+  if (!res.valid) throw new NonRetriableError("Ticket is missing required fields");
+  return res;
+});
+```
+
+When retries run out, the failure goes to an [`onFailure`](/docs/durable-execution/guides-and-advanced/error-handling/failure-handlers?ref=blog-what-it-means-to-build-boring) handler you wrote—refund the customer, page someone, mark the ticket for a human. *Even giving up is a path you defined.*
+
+### What happens if the work is wide?
+
+**You [fan it out](/docs/durable-execution/guides-and-advanced/patterns/fan-out?ref=blog-what-it-means-to-build-boring), and each piece fails on its own.** Summarizing 4,000 tickets in one long loop means one bad ticket can sink the other 3,999—and every retry starts the batch over. Sending one event per ticket gives each its own run, its own retries, and its own record.
+
+```tsx
+await step.sendEvent("fan-out", tickets.map((t) => ({
+  name: "ticket/summarize",
+  data: { ticketId: t.id },
+})));
+```
+
+Child runs progress in parallel, on their own schedule, and you see exactly which ones didn't make it, and why.
+
+![Each ticket gets its own run, so one failure stays one failure](/assets/blog/what-it-means-to-build-boring/fan-out.jpg)
+
+Fan-out also works one level up. Because Inngest is event-driven, a single event can trigger any number of functions—so "ticket created" can kick off a summarizer agent, a routing agent, and a billing check without any of them knowing the others exist.
+
+And when the parent actually needs the answer back, [`step.invoke`](/docs/durable-execution/primitives/step-invoke?ref=blog-what-it-means-to-build-boring) calls another function and waits for its result. That's how you split a big agent into smaller ones—a planner that invokes a researcher that invokes a writer—while each keeps its own retries and its own trace.
+
+### What happens if two runs collide?
+
+**[Singleton](/docs/durable-execution/flow-control/singleton?ref=blog-what-it-means-to-build-boring) makes sure they can't.** Agents hold state: a branch, a draft, a conversation. Two runs editing the same repo at once is a race condition with a model attached—each one confidently overwriting the other's work. With singleton, only one run per key exists at a time.
+
+```tsx
+inngest.createFunction(
+  { id: "triage-repo", singleton: { key: "event.data.repoId", mode: "skip" } },
+  { event: "repo/issue.opened" },
+  async ({ event, step }) => { /* ... */ }
+);
+```
+
+The mode is where you decide what "collide" means for your product. `skip` ignores new triggers while a run is in progress—right for a triage agent that will pick up the new issue on its next pass anyway. `cancel` stops the current run and starts fresh with the newest event—right for a drafting agent where the user just changed their request and the old draft is already stale.
+
+![Singleton keeps one run per key; the mode decides which trigger wins](/assets/blog/what-it-means-to-build-boring/singleton-modes.jpg)
+
+[Concurrency](/docs/durable-execution/flow-control/concurrency?ref=blog-what-it-means-to-build-boring) keys cover the softer version of the same problem. Instead of exactly one run, you allow a fixed number per key—say, five per customer—so one customer's burst can't starve everyone else's agents. Extra work waits in line instead of failing.
+
+```tsx
+{ id: "support-agent", concurrency: { limit: 5, key: "event.data.accountId" } }
+```
+
+**One detail that matters a lot for agents:** concurrency counts steps that are actively running, not runs that are asleep or waiting on a person. An agent paused for a three-day approval isn't holding onto a slot unnecessarily.
+
+### What happens if it goes too fast?
+
+**[Flow control](/docs/durable-execution/flow-control?ref=blog-what-it-means-to-build-boring) makes the pace manageable.** [Throttling](/docs/durable-execution/flow-control/throttling?ref=blog-what-it-means-to-build-boring), [rate limits](/docs/durable-execution/flow-control/rate-limiting?ref=blog-what-it-means-to-build-boring), and [debounce](/docs/durable-execution/flow-control/debounce?ref=blog-what-it-means-to-build-boring) each cap how often work starts, per key. They don't put a ceiling on what an agent can spend—they just buy more time: when something starts looping or a trigger fires a thousand times, the damage accrues at a rate a human can notice and stop.
+
+The difference between them is what happens to the extra work:
+
+- **[Throttle](/docs/durable-execution/flow-control/throttling?ref=blog-what-it-means-to-build-boring)** queues it. Ten runs a minute per account means the eleventh waits for the next minute—nothing is lost, it just slows down. Good for staying under a model provider's limits.
+- **[Rate limit](/docs/durable-execution/flow-control/rate-limiting?ref=blog-what-it-means-to-build-boring)** drops it. The eleventh event in the window is skipped. Good for things that are pointless to repeat, like re-indexing a document that was just indexed.
+- **[Debounce](/docs/durable-execution/flow-control/debounce?ref=blog-what-it-means-to-build-boring)** waits for things to settle. A user editing a prompt fires twenty events in a minute; debounce runs once, after they stop, with the latest one. Good for anything that reacts to typing, syncing, or webhooks that arrive in bursts.
+- **[Priority](/docs/durable-execution/flow-control/priority?ref=blog-what-it-means-to-build-boring)** reorders the line. A paying customer's agent can jump ahead of a free-tier backfill without either one changing its code.
+
+```tsx
+{
+  id: "reindex-docs",
+  throttle: { limit: 10, period: "1m", key: "event.data.accountId" },
+  debounce: { period: "30s", key: "event.data.docId" },
+}
+```
+
+None of these make a runaway agent impossible. But they do make it slow enough to catch.
+
+### What happens when it needs human input?
+
+**The run waits, without holding anything open.** [`step.waitForEvent`](/docs/durable-execution/primitives/step-waitforevent?ref=blog-what-it-means-to-build-boring) pauses until a matching event arrives or a timeout passes, whether that's thirty seconds or two weeks. Both outcomes are paths you wrote.
+
+```tsx
+const approval = await step.waitForEvent("wait-for-approval", {
+  event: "plan/approved",
+  timeout: "3d",
+  if: "async.data.planId == event.data.planId",
+});
+if (!approval) return await step.run("escalate", () => escalate(plan));
+```
+
+Waiting is free because nothing is actually running. The run's state lives in its recorded steps, so there's no process sitting idle, no open connection, no server you're paying to keep warm. When the approval lands, Inngest picks the run back up at the next line as if no time had passed. If your deploy rolled out three times in between, it doesn't matter.
+
+The same mechanic covers time. [`step.sleep("follow-up", "7d")`](/docs/durable-execution/primitives/step-sleep?ref=blog-what-it-means-to-build-boring) lets an agent check back on a ticket next week without a cron job, a database flag, or a second system to keep in sync.
+
+The reverse case is covered too. [`cancelOn`](/docs/durable-execution/guides-and-advanced/cancellation/events?ref=blog-what-it-means-to-build-boring) ends a run cleanly when something upstream makes it pointless, like a customer closing the ticket the agent is still working on. The agent stops spending tokens on a question nobody's asking anymore.
+
+### What happens when you need to know what happened?
+
+**You read it, because durability came by default.** To resume a run, Inngest has to record every step's input, output, timing, and retries. That record is the [trace](/docs/platform-and-operations/traces?ref=blog-what-it-means-to-build-boring)—which means you get observability by default. *It's also what you score when you want to know whether the answers were any good.*
+
+For model calls, [`step.ai.wrap`](/docs/features/inngest-functions/steps-workflows/step-ai-orchestration?ref=blog-what-it-means-to-build-boring) puts the prompt and the response in that same record, next to the payment step and the database write. When an agent does something strange, you don't reconstruct it from scattered logs. You open the run and read what the model was given, what it said, and which path the code took next.
+
+The record also makes fixing things boring. Say a bad deploy broke the summarizer and 300 runs failed overnight. You ship the fix, then [replay](/docs/platform-and-operations/replay-runs-in-bulk?ref=blog-what-it-means-to-build-boring) those 300 runs with their original events—no backfill script, no guessing which tickets were affected, because the record already knows.
+
+## Boring is a delegation problem.
+
+Structure doesn't defeat the point of an agent; it's what lets you hand an agent more work. How much you trust anything, whether a colleague, a vendor, or a program, depends on how well you can predict what it does when things go badly. An agent whose every failure lands on a path you chose can take on more work, for longer, with less watching.
+
+If you're ready to give Inngest a shot for your agent workflows, the [dev server](/docs/local-development?ref=blog-what-it-means-to-build-boring) is open source, and Cloud has a pretty generous [free tier](https://app.inngest.com/sign-up?ref=blog-what-it-means-to-build-boring). Get started today:
+
+```bash
+npm install inngest
+```
+
+Then follow the [quick start](/docs/durable-execution/quick-start?ref=blog-what-it-means-to-build-boring).
