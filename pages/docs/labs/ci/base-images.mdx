@@ -1,5 +1,5 @@
-import { CiBuilds } from "shared/Docs/CiBuilds";
-import { AnnotatedCode, Annotation } from "shared/Docs/mdx";
+import { CiBuilds, CiFlow } from "shared/Docs/CiBuilds";
+import { AnnotatedCode, Annotation, ScreenshotNeeded } from "shared/Docs/mdx";
 
 export const metaTitle = "Base images & caching | Inngest CI";
 export const description = "Start Inngest CI jobs from a machine that's already set up: another job, a Docker image, or an Inngest image. Reuse it within a pipeline run, cache it across pipeline runs, and build it ahead of time.";
@@ -35,18 +35,20 @@ const install = ci.job({ id: "install" }, async () => {
   await $`npm ci`;
 });
 
-const test = ci.job({ id: "test", from: install }, async () => {
-  await checkout();
-  await $`npm test`;
-});
+const test = ci.job(
+  {
+    id: "test",
+    from: install,
+  },
+  async () => {
+    await checkout();
+    await $`npm test`;
+  },
+);
 ```
 
-<Annotation id="once" lines="3" tease="runs once" title="Runs once">
-`npm ci` runs once, in the job everything else starts from.
-</Annotation>
-
-<Annotation id="nothing" lines="6-8" tease="nothing to install" title="Nothing to install">
-The install is already in the snapshot.
+<Annotation id="from" lines="9" tease="starts from install" title="Starts from install's machine">
+`install` runs once. `test` starts on a copy of its machine, with nothing left to install.
 </Annotation>
 
 </AnnotatedCode>
@@ -65,7 +67,9 @@ That snapshot only lasts for the pipeline run, though. Push again, and `install`
 
 Inngest warns you when that happens:
 
-<CiBuilds scenario="warn-uncached" />
+<ScreenshotNeeded>
+the "rebuilt every pipeline run" warning on a trace (feature planned)
+</ScreenshotNeeded>
 
 ## Keep it across pipeline runs with `cache`
 
@@ -138,8 +142,6 @@ When several pipeline runs need the same base image at the same moment, only one
 
 `from` works the same wherever the job lives. Inside one app, `from: install` is enough. To start from a job in another app, point at it by app and job id.
 
-<div className="grid gap-x-4 lg:grid-cols-2">
-
 <AnnotatedCode highlight>
 
 ```typescript {{ title: "platform/ci/jobs.ts" }}
@@ -166,8 +168,6 @@ The job lives in the `platform` app, with its own cache.
 <AnnotatedCode highlight>
 
 ```typescript {{ title: "web/ci/jobs.ts" }}
-import { image } from "@inngest/ci";
-
 const test = ci.job(
   {
     id: "test",
@@ -180,15 +180,13 @@ const test = ci.job(
 );
 ```
 
-<Annotation id="web" lines="6" tease="from platform" title="A job in another app">
+<Annotation id="web" lines="4" tease="from platform" title="A job in another app">
 Starts from `node-base` in the `platform` app.
 </Annotation>
 
 </AnnotatedCode>
 
-</div>
-
-<CiBuilds scenario="cross-app" />
+<CiFlow />
 
 Every job that isn't inline is built in its own run, with its own trace. The pipeline run's "Wait for a build of `install`" row links straight to it, so a slow or failed build is easy to look into on its own.
 
@@ -219,11 +217,11 @@ Pulled once and kept.
 One of Inngest's runtime images.
 </Annotation>
 
-<Annotation id="custom" lines="5" tease="your registry" title="Your own registry">
+<Annotation id="custom" lines="5" tease="registry" title="Your own registry">
 Pulled from your own registry.
 </Annotation>
 
-<Annotation id="snapshot" lines="6" tease="saved by name" title="A snapshot by name">
+<Annotation id="snapshot" lines="6" tease="by name" title="A snapshot by name">
 A snapshot you saved by name.
 </Annotation>
 
