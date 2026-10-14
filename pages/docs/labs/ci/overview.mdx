@@ -16,7 +16,7 @@ export const description = "Inngest CI overview: write CI pipelines in TypeScrip
 - **Write plain TypeScript.** `if`, loops, and `Promise.all`. [Pipelines →](/docs/labs/ci/pipelines?ref=docs-labs-ci-overview)
 - **Debug one trace per run.** Every job, command, and retry. [See a run →](#see-the-result)
 - **Retry only what failed.** Passed work never reruns. [Retries →](/docs/labs/ci/commands?ref=docs-labs-ci-overview#retries)
-- **Build once, reuse it.** Start jobs from another job's machine. [Base images →](/docs/labs/ci/base-images?ref=docs-labs-ci-overview#another-job)
+- **Build once, reuse it.** Start jobs from another job's machine. [Base images →](/docs/labs/ci/base-images?ref=docs-labs-ci-overview#start-from-a-job)
 - **Run it locally.** Real Sandboxes, your uncommitted changes. [Run locally →](/docs/labs/ci/local?ref=docs-labs-ci-overview)
 
 <AnnotatedCode>
@@ -77,7 +77,7 @@ A new push cancels the run still going.
 Checks out and installs once.
 </Annotation>
 
-<Annotation id="from" lines="23,27" tease="copy of base" title="Start from base" nodes="lintWait,testWait,base" href="/docs/labs/ci/base-images?ref=docs-labs-ci-overview#another-job" linkText="Base images">
+<Annotation id="from" lines="23,27" tease="copy of base" title="Start from base" nodes="lintWait,testWait,base" href="/docs/labs/ci/base-images?ref=docs-labs-ci-overview#start-from-a-job" linkText="Base images">
 Starts on a copy of the `base` machine.
 </Annotation>
 

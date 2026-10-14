@@ -72,5 +72,5 @@ const test = ci.job({ id: "test", name: "Unit tests", from: base }, async () => 
 
 - A job called twice shows as `test (2)` with its own check.
 - While a run will be retried, checks stay in progress.
-- A GitHub "Re-run" sends a new event. Passed jobs are reused only with a [cache](/docs/labs/ci/caching?ref=docs-labs-ci-checks-and-reports).
+- A GitHub "Re-run" sends a new event. Passed jobs are reused only with a [cache](/docs/labs/ci/base-images?ref=docs-labs-ci-checks-and-reports#add-a-cache-key).
 - `ci.skip()` completes as success with the reason. [Pipelines →](/docs/labs/ci/pipelines?ref=docs-labs-ci-checks-and-reports#skip-a-run)
