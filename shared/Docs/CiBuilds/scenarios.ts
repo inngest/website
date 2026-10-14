@@ -53,6 +53,7 @@ export type BarKind =
   | "wait"
   | "build"
   | "warm"
+  | "warn"
   | "run";
 
 export interface Bar {
@@ -72,7 +73,7 @@ export interface Lane {
 export interface TimelineScenario {
   type: "timeline";
   /** The code the timeline is about, shown above it. */
-  code: string;
+  code?: string;
   caption: string;
   domain: number;
   realDuration: number;
@@ -81,170 +82,7 @@ export interface TimelineScenario {
 
 export type Scenario = ChainScenario | TimelineScenario;
 
-const INSTALL = "ci/main/install/7c41e2";
-const BUILD = "ci/main/build/a90f3d";
-
-const installCode = `ci.job({
-  id: "install",
-  cache: {
-    key: files("pnpm-lock.yaml"),
-  },
-}, ...)`;
-
-const buildCode = `ci.job({
-  id: "build",
-  from: install,
-  cache: {
-    key: files("src/**"),
-  },
-}, ...)`;
-
-const testCode = `ci.job({
-  id: "test",
-  from: build,
-}, ...)`;
-
 const scenarios: Record<string, Scenario> = {
-  cold: {
-    type: "chain",
-    caption:
-      "First run: nothing is found by name, so each link is built once, in order.",
-    domain: 9,
-    realDuration: 9,
-    nodes: [
-      {
-        id: "install",
-        kind: "cached",
-        code: installCode,
-        events: [
-          { at: 0, state: "idle" },
-          { at: 0.4, state: "lookup", name: INSTALL },
-          { at: 1.2, state: "miss" },
-          { at: 1.5, state: "building" },
-          { at: 3.5, state: "ready" },
-        ],
-      },
-      {
-        id: "build",
-        kind: "cached",
-        code: buildCode,
-        events: [
-          { at: 0, state: "idle" },
-          { at: 0.4, state: "lookup", name: BUILD },
-          { at: 1.2, state: "miss", note: "waits for install" },
-          { at: 3.6, state: "building", note: undefined },
-          { at: 5.6, state: "ready" },
-        ],
-      },
-      {
-        id: "test",
-        kind: "job",
-        code: testCode,
-        events: [
-          { at: 0, state: "waiting" },
-          { at: 5.8, state: "running" },
-          { at: 7.5, state: "passed" },
-        ],
-      },
-    ],
-  },
-
-  warm: {
-    type: "chain",
-    caption: "Every run after: both names are found, so nothing is built.",
-    domain: 4.5,
-    realDuration: 5,
-    nodes: [
-      {
-        id: "install",
-        kind: "cached",
-        code: installCode,
-        events: [
-          { at: 0, state: "idle", name: INSTALL },
-          { at: 0.4, state: "lookup" },
-          { at: 1.1, state: "hit" },
-        ],
-      },
-      {
-        id: "build",
-        kind: "cached",
-        code: buildCode,
-        events: [
-          { at: 0, state: "idle", name: BUILD },
-          { at: 0.4, state: "lookup" },
-          { at: 1.1, state: "hit" },
-        ],
-      },
-      {
-        id: "test",
-        kind: "job",
-        code: testCode,
-        events: [
-          { at: 0, state: "waiting" },
-          { at: 1.4, state: "running" },
-          { at: 3.1, state: "passed" },
-        ],
-      },
-    ],
-  },
-
-  invalidate: {
-    type: "chain",
-    caption:
-      "pnpm-lock.yaml changes: install gets a new name, so build does too. Both rebuild.",
-    domain: 9.5,
-    realDuration: 10,
-    nodes: [
-      {
-        id: "install",
-        kind: "cached",
-        code: installCode,
-        events: [
-          { at: 0, state: "ready", name: INSTALL },
-          {
-            at: 1,
-            state: "changed",
-            name: "ci/main/install/e03b9a",
-            note: "lockfile changed",
-          },
-          { at: 2.6, state: "lookup", note: undefined },
-          { at: 3.2, state: "miss" },
-          { at: 3.4, state: "building" },
-          { at: 5, state: "ready" },
-        ],
-      },
-      {
-        id: "build",
-        kind: "cached",
-        code: buildCode,
-        events: [
-          { at: 0, state: "ready", name: BUILD },
-          {
-            at: 1.8,
-            state: "changed",
-            name: "ci/main/build/5d27c1",
-            note: "new install",
-          },
-          { at: 2.6, state: "lookup", note: undefined },
-          { at: 3.2, state: "miss", note: "waits for install" },
-          { at: 5.1, state: "building", note: undefined },
-          { at: 6.7, state: "ready" },
-        ],
-      },
-      {
-        id: "test",
-        kind: "job",
-        code: testCode,
-        events: [
-          { at: 0, state: "idle" },
-          { at: 2.6, state: "waiting" },
-          { at: 6.9, state: "running" },
-          { at: 8.2, state: "passed" },
-        ],
-      },
-    ],
-  },
-
   "cross-app": {
     type: "chain",
     caption:
@@ -290,57 +128,160 @@ const scenarios: Record<string, Scenario> = {
     ],
   },
 
-  "just-in-time": {
+  "parent-once": {
     type: "timeline",
-    code: `ci.job({
-  id: "install",
-  cache: {
-    key: files("pnpm-lock.yaml"),
-    refresh: [{ cron: "0 3 * * *" }],
-  },
-}, ...)`,
     caption:
-      "Without refresh, the pull request waits for the build. With it, the build already happened overnight.",
+      "install runs once and is snapshotted. lint, test, and e2e each start from that snapshot.",
     domain: 9,
     realDuration: 9,
     lanes: [
       {
-        label: "Pull request, not refreshed",
+        label: "install",
         bars: [
-          { start: 0.3, end: 0.8, kind: "miss", label: "miss" },
-          {
-            start: 0.8,
-            end: 5.6,
-            kind: "build",
-            label: "build install while test waits",
-          },
-          { start: 5.6, end: 7.6, kind: "run", label: "test" },
+          { start: 0.2, end: 3.4, kind: "build", label: "runs once" },
+          { start: 3.4, end: 3.9, kind: "warm", label: "snapshot" },
         ],
-        done: { at: 7.6, label: "done" },
       },
       {
-        label: "refresh: 3am cron",
-        bars: [{ start: 0, end: 0.3, kind: "warm", label: "" }],
-        done: { at: 0.3, label: "built overnight" },
+        label: "lint",
+        bars: [
+          { start: 0.2, end: 3.9, kind: "wait", label: "waits for install" },
+          { start: 3.9, end: 4.4, kind: "warm", label: "from install" },
+          { start: 4.4, end: 5.8, kind: "run", label: "lint" },
+        ],
+        done: { at: 5.8, label: "passed" },
       },
       {
-        label: "Pull request, refreshed",
+        label: "test",
         bars: [
-          { start: 0.3, end: 0.8, kind: "hit", label: "hit" },
-          { start: 0.8, end: 2.8, kind: "run", label: "test" },
+          { start: 0.2, end: 3.9, kind: "wait", label: "waits for install" },
+          { start: 3.9, end: 4.4, kind: "warm", label: "from install" },
+          { start: 4.4, end: 7, kind: "run", label: "test" },
         ],
-        done: { at: 2.8, label: "done" },
+        done: { at: 7, label: "passed" },
+      },
+      {
+        label: "e2e",
+        bars: [
+          { start: 0.2, end: 3.9, kind: "wait", label: "waits for install" },
+          { start: 3.9, end: 4.4, kind: "warm", label: "from install" },
+          { start: 4.4, end: 8.2, kind: "run", label: "e2e" },
+        ],
+        done: { at: 8.2, label: "passed" },
       },
     ],
   },
 
-  herd: {
+  "two-runs": {
+    type: "timeline",
+    caption:
+      "Without a cache, each pipeline run builds install again, then throws it away.",
+    domain: 11,
+    realDuration: 10,
+    lanes: [
+      {
+        label: "Run 1 · install",
+        bars: [{ start: 0.2, end: 3.4, kind: "build", label: "build" }],
+      },
+      {
+        label: "Run 1 · test",
+        bars: [
+          { start: 0.2, end: 3.4, kind: "wait", label: "waits" },
+          { start: 3.4, end: 5, kind: "run", label: "test" },
+        ],
+        done: { at: 5, label: "passed" },
+      },
+      {
+        label: "Run 2 · install",
+        bars: [{ start: 5.6, end: 8.8, kind: "build", label: "build again" }],
+      },
+      {
+        label: "Run 2 · test",
+        bars: [
+          { start: 5.6, end: 8.8, kind: "wait", label: "waits" },
+          { start: 8.8, end: 10.4, kind: "run", label: "test" },
+        ],
+        done: { at: 10.4, label: "passed" },
+      },
+    ],
+  },
+
+  "cache-key": {
+    type: "timeline",
+    code: `ci.job({
+  id: "install",
+  cache: { key: files("package-lock.json") },
+}, ...)`,
+    caption:
+      "The first run with a new lockfile builds install and warns. The second run finds it.",
+    domain: 11,
+    realDuration: 10,
+    lanes: [
+      {
+        label: "Run 1 · install",
+        bars: [
+          { start: 0.2, end: 0.7, kind: "miss", label: "miss" },
+          { start: 0.7, end: 3.9, kind: "warn", label: "built just in time" },
+        ],
+      },
+      {
+        label: "Run 1 · test",
+        bars: [
+          { start: 0.7, end: 3.9, kind: "wait", label: "waits" },
+          { start: 3.9, end: 5.4, kind: "run", label: "test" },
+        ],
+        done: { at: 5.4, label: "passed" },
+      },
+      {
+        label: "Run 2 · install",
+        bars: [{ start: 6, end: 6.5, kind: "hit", label: "found" }],
+      },
+      {
+        label: "Run 2 · test",
+        bars: [{ start: 6.5, end: 8, kind: "run", label: "test" }],
+        done: { at: 8, label: "passed" },
+      },
+    ],
+  },
+
+  refresh: {
+    type: "timeline",
+    code: `ci.job({
+  id: "install",
+  cache: {
+    key: files("package-lock.json"),
+    refresh: [{ cron: "0 3 * * *" }],
+  },
+}, ...)`,
+    caption:
+      "The 3am cron builds install ahead of time. The pull request finds it and starts at once.",
+    domain: 9,
+    realDuration: 9,
+    lanes: [
+      {
+        label: "Background · install",
+        bars: [{ start: 0.2, end: 3.6, kind: "build", label: "built at 3am" }],
+        done: { at: 3.6, label: "cached" },
+      },
+      {
+        label: "Pull request · install",
+        bars: [{ start: 4.6, end: 5.1, kind: "hit", label: "found" }],
+      },
+      {
+        label: "Pull request · test",
+        bars: [{ start: 5.1, end: 7.2, kind: "run", label: "test" }],
+        done: { at: 7.2, label: "passed" },
+      },
+    ],
+  },
+
+  many: {
     type: "timeline",
     code: `ci.job({ id: "test", from: install }, ...)
-// three pull requests push at once`,
+// four pull requests push at once`,
     caption:
-      "Three runs miss at once. install is built once, and the other two find it.",
-    domain: 7.5,
+      "Four runs ask for the same build. It happens once, and all four resume together.",
+    domain: 8,
     realDuration: 8,
     lanes: [
       {
@@ -355,24 +296,32 @@ const scenarios: Record<string, Scenario> = {
         label: "Run 2",
         bars: [
           { start: 0.3, end: 0.7, kind: "miss", label: "miss" },
-          { start: 0.7, end: 4.6, kind: "wait", label: "waits its turn" },
-          { start: 4.6, end: 6.4, kind: "run", label: "test" },
+          { start: 0.7, end: 4.4, kind: "wait", label: "waits for the build" },
+          { start: 4.4, end: 6.5, kind: "run", label: "test" },
         ],
       },
       {
         label: "Run 3",
         bars: [
           { start: 0.4, end: 0.8, kind: "miss", label: "miss" },
-          { start: 0.8, end: 4.8, kind: "wait", label: "waits its turn" },
-          { start: 4.8, end: 6.6, kind: "run", label: "test" },
+          { start: 0.8, end: 4.4, kind: "wait", label: "waits for the build" },
+          { start: 4.4, end: 6.8, kind: "run", label: "test" },
         ],
       },
       {
-        label: "Build of install",
+        label: "Run 4",
         bars: [
-          { start: 0.7, end: 4.3, kind: "build", label: "built once" },
-          { start: 4.4, end: 5.4, kind: "hit", label: "found ×2" },
+          { start: 0.5, end: 0.9, kind: "miss", label: "miss" },
+          { start: 0.9, end: 4.4, kind: "wait", label: "waits for the build" },
+          { start: 4.4, end: 7.2, kind: "run", label: "test" },
         ],
+      },
+      {
+        label: "The one build",
+        bars: [
+          { start: 0.7, end: 4.3, kind: "build", label: "install, built once" },
+        ],
+        done: { at: 4.3, label: "shared with all four" },
       },
     ],
   },

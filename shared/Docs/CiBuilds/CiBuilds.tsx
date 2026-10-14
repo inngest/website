@@ -99,6 +99,7 @@ const BAR: Record<BarKind, string> = {
   wait: "bg-[repeating-linear-gradient(135deg,theme(colors.carbon.100)_0_6px,theme(colors.carbon.200)_6px_12px)] text-carbon-700 dark:bg-[repeating-linear-gradient(135deg,theme(colors.carbon.800)_0_6px,theme(colors.carbon.700)_6px_12px)] dark:text-carbon-200",
   build: "bg-honey-400 text-honey-900 dark:bg-honey-500 dark:text-carbon-1000",
   warm: "bg-purplehaze-300 text-purplehaze-900 dark:bg-purplehaze-500 dark:text-white",
+  warn: "bg-honey-300 text-honey-900 outline outline-2 -outline-offset-2 outline-honey-600 dark:bg-honey-500 dark:text-carbon-1000",
   run: "bg-breeze-500 text-white dark:bg-breeze-400 dark:text-carbon-1000",
 };
 
@@ -355,7 +356,7 @@ function TimelineBar({
 function Timeline({ scenario, t }: { scenario: TimelineScenario; t: number }) {
   return (
     <div className="flex flex-col gap-3">
-      <Snippet code={scenario.code} />
+      {scenario.code && <Snippet code={scenario.code} />}
       <div className="flex flex-col gap-2">
         {scenario.lanes.map((lane) => {
           return (
