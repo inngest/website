@@ -1,122 +1,250 @@
-import { AnnotatedCode, Annotation } from "shared/Docs/mdx";
 import { CiBuilds } from "src/shared/Docs/CiBuilds";
 
-export const metaTitle = "Base images | Inngest CI";
-export const description = "Start Inngest CI jobs on a machine that's already set up: another job's, another app's, an Inngest image, or your own. Each is built once and shared by every run.";
+export const metaTitle = "Base images & caching | Inngest CI";
+export const description = "Start Inngest CI jobs from a machine that's already set up: another job, a Docker image, or an Inngest image. Reuse it within a run, cache it across runs, and build it ahead of time.";
 
-# Base images
+# Base images & caching
 
-> Start a job on a machine that's already set up.
+> Start every job from a machine that's already set up, and keep it ready across runs.
 
-- **Install once.** Every job starts from a copy of `base`. [Another job →](#another-job)
-- **Share across runs.** A cached parent becomes an image. [Caching →](/docs/labs/ci/caching?ref=docs-labs-ci-base-images)
-- **Bring your own.** Start from an Inngest or custom image. [Images →](#an-inngest-image)
-- **Reuse another app's job.** One build, many apps. [Another app →](#another-app-s-job)
+Every job starts from something, usually another job. Reuse is automatic within a run. A `cache` makes it last across runs.
 
-<AnnotatedCode>
+- **Start from a job.** `from: install` copies its machine. [Start from a job →](#start-from-a-job)
+- **Cache it.** One option keeps the machine for every later run. [Add a cache key →](#add-a-cache-key)
+- **Build ahead.** Pipelines start with nothing to wait for. [Keep it fresh →](#keep-it-fresh)
+- **Bring an image.** Docker, Inngest, or your own. [Start from an image →](#start-from-an-image)
 
 ```typescript {{ title: "ci/jobs.ts" }}
-import { checkout, files, image, $ } from "@inngest/ci";
-import { ci } from "./client";
-
-const base = ci.job(
-  { id: "base", cache: { key: files("pnpm-lock.yaml") } },
+const install = ci.job(
+  {
+    id: "install",
+    cache: {
+      key: files("package-lock.json"),
+      refresh: [{ cron: "0 3 * * *" }],
+    },
+  },
   async () => {
     await checkout();
-    await $`pnpm install`;
+    await $`npm ci`;
   },
 );
 
-const test = ci.job({ id: "test", from: base }, async () => {
+const test = ci.job({ id: "test", from: install }, async () => {
   await checkout();
-  await $`pnpm test`;
+  await $`npm test`;
 });
-
-const e2e = ci.job(
-  { id: "e2e", from: image.custom("playwright") },
-  async () => {
-    await checkout();
-    await $`npx playwright test`;
-  },
-);
 ```
 
-<Annotation id="key" lines="5" tease="once per lockfile" title="Built once per key" href="/docs/labs/ci/caching?ref=docs-labs-ci-base-images" linkText="Caching">
-`base` reruns only when the lockfile changes.
-</Annotation>
-
-<Annotation id="from" lines="12" tease="copy of base" title="Start from another job" href="#another-job" linkText="Another job">
-`test` boots on `base`'s image with dependencies installed.
-</Annotation>
-
-<Annotation id="checkout" lines="13" tease="only the changes" title="Catch up to this commit" href="/docs/labs/ci/machines?ref=docs-labs-ci-base-images" linkText="Machines">
-`checkout()` moves to this run's commit and keeps `node_modules`.
-</Annotation>
-
-<Annotation id="custom" lines="18" tease="your image" title="Start from your own image" href="#your-own-image" linkText="Your own image">
-An image your team publishes to your workspace.
-</Annotation>
-
-</AnnotatedCode>
-
-## Another job
+## No `from`
 
 ```typescript {{ title: "TypeScript" }}
-const test = ci.job({ id: "test", from: base }, fn);
+const lint = ci.job({ id: "lint" }, async () => {
+  await checkout();
+  await $`npx eslint .`;
+});
+```
+
+- A job without `from` starts on Inngest's default image, fresh every run.
+- It includes Node.js, Python 3.14, and Ruby 4.0.
+- It includes Git, curl, OpenSSH, BusyBox, `ripgrep`, `jq`, and `tar`.
+- It has no Go, Rust, Java, Bun, or Deno. [Runtime images →](/docs/sandboxes/features/base-images?ref=docs-labs-ci-base-images#runtime-images)
+
+That's fine for small jobs. Install-heavy jobs should start from one that has already installed.
+
+## Start from a job
+
+```typescript {{ title: "TypeScript" }}
+const test = ci.job({ id: "test", from: install }, async () => {
+  await checkout();
+  await $`npm test`;
+});
+```
+
+`from` takes a TypeScript reference. `checkout()` moves the copy to this run's commit and keeps `node_modules`.
+
+The job can live anywhere.
+
+```typescript {{ title: "Inline in a pipeline" }}
+export const pr = ci.pipeline({ id: "pr", on: github.pullRequest() }, async () => {
+  const install = ci.job({ id: "install" }, async () => {
+    await checkout();
+    await $`npm ci`;
+  });
+
+  const lint = ci.job({ id: "lint", from: install }, async () => {
+    await $`npx eslint .`;
+  });
+
+  await lint();
+});
+```
+
+```typescript {{ title: "Elsewhere in your app" }}
+import { install } from "./install";
+
+const test = ci.job({ id: "test", from: install }, fn);
 const web = ci.job({ id: "web", from: build.with("web") }, fn);
 const app = ci.job({ id: "app", from: ({ input }) => build.with(input) }, fn);
-const matrix = ci.matrix({ id: "m", axes, from: base }, fn);
+const matrix = ci.matrix({ id: "m", axes, from: install }, fn);
 ```
 
-Add a [`cache`](/docs/labs/ci/caching?ref=docs-labs-ci-base-images) to share the parent across runs. Without one, the parent is a [run-owned snapshot](/docs/sandboxes/features/run-owned?ref=docs-labs-ci-base-images) cleaned up when the run ends.
+```typescript {{ title: "In another app" }}
+import { image } from "@inngest/ci";
 
-## An Inngest image
-
-```typescript {{ title: "TypeScript" }}
-const lint = ci.job({ id: "lint", from: image.inngest("base") }, fn);
-const old = ci.job({ id: "old", from: image.inngest("node-22") }, fn);
-```
-
-Jobs without `from` start on `base`. [Runtime images →](/docs/sandboxes/features/base-images?ref=docs-labs-ci-base-images#runtime-images)
-
-## Your own image
-
-```typescript {{ title: "TypeScript" }}
-const e2e = ci.job({ id: "e2e", from: image.custom("playwright") }, fn);
-```
-
-## Another app's job
-
-```typescript {{ title: "TypeScript" }}
 const test = ci.job({ id: "test", from: image.job("platform/node-base") }, fn);
 ```
 
-Both apps share one Inngest environment.
+<CiBuilds scenario="cross-app" />
 
-## Every job
+Both apps share one Inngest environment. Everything below applies wherever the job lives.
+
+### Its own run
+
+A cached or shared job that needs building gets its own run and trace. The pipeline links to it.
+
+```text {{ title: "Trace of the pr run" }}
+test
+  Build install in its own run     41s    view run →
+  $ npm test                       12s
+```
+
+```text {{ title: "Trace of the build run" }}
+install
+  Start sandbox
+  checkout
+  $ npm ci
+  Save sandbox
+```
+
+## In one run
+
+The parent runs once and is snapshotted. Every child in this run starts from that snapshot.
+
+<CiBuilds scenario="parent-once" />
+
+The snapshot is for this run only. It's cleaned up when the run ends. [Run-owned snapshots →](/docs/sandboxes/features/run-owned?ref=docs-labs-ci-base-images)
+
+## Across runs
+
+Without a cache, the next run builds the parent again.
+
+<CiBuilds scenario="two-runs" />
+
+The fix is one option.
+
+## Add a cache key
+
+```typescript {{ title: "TypeScript" }}
+const install = ci.job(
+  { id: "install", cache: { key: files("package-lock.json") } },
+  async () => {
+    await checkout();
+    await $`npm ci`;
+  },
+);
+```
+
+The machine is saved as a base image. Runs with the same key start from it.
+
+<CiBuilds scenario="cache-key" />
+
+A new key builds a new image. The key can be a mix:
+
+```typescript {{ title: "TypeScript" }}
+key: files("migrations/**", "seeds/**")
+key: [files("go.mod", "go.sum"), "go1.25"]
+key: files("schema.graphql", { repo: "acme/api", ref: "main" })
+```
+
+A key is `files()`, a string, an array of them, or an async function returning a string. Locally, `files()` hashes your working tree.
+
+### Built when asked
+
+An image is built the first time something needs it. That run builds it and waits. The trace says so:
+
+```text {{ title: "Trace row: Wait for a build of install" }}
+Wait for a build of install                              38s
+  `install` had no usable cached snapshot for these inputs, so it was
+  built while the jobs that start from it waited.
+  Add `cache.refresh` to build it ahead of time.
+```
+
+```text {{ title: "Run warnings" }}
+built just in time: `install` (add `cache.refresh` to build it ahead of time)
+```
+
+Some pipeline run always pays for a new key. The next section moves that cost out of your pipelines.
+
+## Keep it fresh
+
+```typescript {{ title: "TypeScript" }}
+cache: {
+  key: files("package-lock.json"),
+  refresh: [github.push({ branches: ["main"] }), { cron: "0 3 * * *" }],
+},
+```
+
+Rebuild ahead of time, so no pipeline waits.
+
+<CiBuilds scenario="refresh" />
+
+Any [trigger](/docs/labs/ci/pipelines?ref=docs-labs-ci-base-images#triggers) works: a [cron](/docs/guides/scheduled-functions?ref=docs-labs-ci-base-images), a push, or your own events. Set `repo` on the pipeline for a cron.
+
+### Maximum age
+
+```typescript {{ title: "TypeScript" }}
+cache: { key: files("Dockerfile.ci"), maxAge: "1d" },
+```
+
+An image older than `maxAge` is rebuilt, even when the key is unchanged. Durations: `"30m"`, `"1h30m"`, `"7d"`, milliseconds, or a `Temporal.Duration`.
+
+### Rebuild on demand
+
+```typescript {{ title: "TypeScript" }}
+import { invalidateEvent } from "@inngest/ci";
+
+await inngest.send(invalidateEvent("install"));
+await inngest.send(invalidateEvent(install, { scope: "main" }));
+```
+
+`scope` takes a branch, `pr:<number>`, `global`, or `local`. Without it, every scope is cleared. The next run, or the next `refresh`, builds again.
+
+### Share across branches
+
+```typescript {{ title: "TypeScript" }}
+cache: { key: files("package-lock.json"), scope: "global" }
+```
+
+The default is `"branch"`: a pull request reads its own and its base branch's images, and writes only its own.
+
+## Many runs at once
+
+<CiBuilds scenario="many" />
+
+Runs that miss the same image share one build. Each asks for it and waits. When it finishes, all of them resume in parallel.
+
+## Start from an image
+
+```typescript {{ title: "TypeScript" }}
+import { image } from "@inngest/ci";
+
+const lint = ci.job({ id: "lint", from: image.inngest("node-22") }, fn);
+const api = ci.job({ id: "api", from: image.docker("node:22") }, fn);
+const e2e = ci.job({ id: "e2e", from: image.custom("playwright") }, fn);
+const agent = ci.job({ id: "agent", from: image.snapshot("agent-deps") }, fn);
+```
+
+- `image.inngest(name)` is an image Inngest maintains. `base` is the default.
+- `image.docker(ref)` pulls from Docker Hub and caches the result as a base image.
+- `image.custom(ref)` is an image published to your workspace: `name`, `name:tag`, or `name@sha256:<hex>`.
+- `image.snapshot(name)` is a sandbox you captured with `sandbox.snapshot({ name })`.
+
+These are manual. Nothing is built or kept fresh for you, except `image.docker`, which pulls once and caches the pull.
+
+Give every job the same image with `createCi`:
 
 ```typescript {{ title: "TypeScript" }}
 const ci = createCi(inngest, { from: image.custom("agent-deps") });
 ```
 
-## How it works
-
-- A cached job's image is named by its [key](/docs/labs/ci/caching?ref=docs-labs-ci-base-images#choose-the-key), input, and parent image.
-- A missing image makes the job run its parent's commands itself: same result, slower.
-- A bad parent or cycle (`a → b → a`) fails at app start.
-
-### Built once, then reused
-
-<CiBuilds scenario="cold" />
-
-<CiBuilds scenario="warm" />
-
-<CiBuilds scenario="herd" />
-
-### Chains rebuild from the change down
-
-<CiBuilds scenario="invalidate" />
-
-### Across apps
-
-<CiBuilds scenario="cross-app" />
+[Reference →](/docs/labs/ci/reference?ref=docs-labs-ci-base-images#from)
