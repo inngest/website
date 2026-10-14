@@ -14,6 +14,45 @@ export const description = "Let code in a Sandbox call functions in your Inngest
 
 <AnnotatedCode>
 
+```typescript {{ title: "inngest/functions/refund-disputed.ts" }}
+export const refundDisputed = inngest.createFunction(
+  { id: "refund-disputed", triggers: [{ event: "billing/refund" }] },
+  async ({ event, step }) => {
+    const stripe = new Stripe(process.env.STRIPE_KEY!);
+
+    const refund = async (chargeId: string) => {
+      return (await stripe.refunds.create({ charge: chargeId })).status;
+    };
+
+    return step.sandbox.python(
+      "pick",
+      `
+for c in charges:
+    if c["disputed"]:
+        await tools.refund(c["id"])
+`,
+      { input: { charges: event.data.charges }, tools: { refund } },
+    );
+  },
+);
+```
+
+<Annotation id="key" lines="4" tease="stays in your app" title="Credentials stay yours" href="#declare-tools" linkText="Declare tools">
+The Stripe key never enters the Sandbox.
+</Annotation>
+
+<Annotation id="call" lines="15" tease="runs back in your function" title="Each call is a step" href="#every-call-is-a-durable-step" linkText="Durable steps">
+A flaky Stripe call retries without re-running the Python. A replay never refunds twice.
+</Annotation>
+
+<Annotation id="plain" lines="17" tease="a plain function" title="Zero ceremony" href="#plain-function-or-toolstep" linkText="Plain or tool.step">
+Called positionally from Python, still a durable step.
+</Annotation>
+
+</AnnotatedCode>
+
+<AnnotatedCode>
+
 ```typescript {{ title: "inngest/functions/churn-report.ts" }}
 import { step } from "inngest";
 import { tool } from "inngest/experimental";
@@ -67,6 +106,16 @@ Saved results mean no double post. `ctx.idempotencyKey` is stable across retries
 
 </AnnotatedCode>
 
+## Plain function or `tool.step()`
+
+| Use | When | You get |
+| --- | --- | --- |
+| Plain function | Trusted code you wrote, where both sides know the signature | Positional JSON arguments, no setup, still a durable step |
+| `tool.step()` | An LLM or other untrusted code calls it | Discovery and validation at the boundary |
+| `tool.step()` | Python keyword arguments | Names the Sandbox can see. JS can't read a plain function's parameter names |
+
+In code mode, `describeTools` lists a plain function as `name(...args)` with no schema, and warns. Upgrade the tools a model needs.
+
 ## Declare tools
 
 ```typescript {{ title: "TypeScript" }}
@@ -80,7 +129,6 @@ await step.sandbox.python("a", code, {
 });
 ```
 
-- A plain function takes untyped positional arguments. `tool.step()` adds names, types, and validation.
 - `run` gets `(input, ctx)`. `ctx.idempotencyKey` is stable across retries. `ctx.signal` aborts at `toolTimeout`.
 - `toolOptions` defaults are shown. A command with tools may run 5 minutes.
 - Works on [runners](/docs/sandboxes/features/run-code?ref=docs-sandboxes-tools), `create()`, and `group.sandbox()`, not `sb.$`.
