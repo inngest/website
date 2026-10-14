@@ -132,42 +132,42 @@ const scenarios: Record<string, Scenario> = {
     type: "timeline",
     caption:
       "install runs once and is snapshotted. lint, test, and e2e each start from that snapshot.",
-    domain: 9,
+    domain: 10,
     realDuration: 9,
     lanes: [
       {
         label: "install",
         bars: [
           { start: 0.2, end: 3.4, kind: "build", label: "runs once" },
-          { start: 3.4, end: 3.9, kind: "warm", label: "snapshot" },
+          { start: 3.4, end: 4.3, kind: "warm", label: "snapshot" },
         ],
       },
       {
         label: "lint",
         bars: [
-          { start: 0.2, end: 3.9, kind: "wait", label: "waits for install" },
-          { start: 3.9, end: 4.4, kind: "warm", label: "from install" },
-          { start: 4.4, end: 5.8, kind: "run", label: "lint" },
+          { start: 0.2, end: 4.3, kind: "wait", label: "waits for install" },
+          { start: 4.3, end: 5.1, kind: "warm", label: "copy" },
+          { start: 5.1, end: 6.5, kind: "run", label: "lint" },
         ],
-        done: { at: 5.8, label: "passed" },
+        done: { at: 6.5, label: "passed" },
       },
       {
         label: "test",
         bars: [
-          { start: 0.2, end: 3.9, kind: "wait", label: "waits for install" },
-          { start: 3.9, end: 4.4, kind: "warm", label: "from install" },
-          { start: 4.4, end: 7, kind: "run", label: "test" },
+          { start: 0.2, end: 4.3, kind: "wait", label: "waits for install" },
+          { start: 4.3, end: 5.1, kind: "warm", label: "copy" },
+          { start: 5.1, end: 7.7, kind: "run", label: "test" },
         ],
-        done: { at: 7, label: "passed" },
+        done: { at: 7.7, label: "passed" },
       },
       {
         label: "e2e",
         bars: [
-          { start: 0.2, end: 3.9, kind: "wait", label: "waits for install" },
-          { start: 3.9, end: 4.4, kind: "warm", label: "from install" },
-          { start: 4.4, end: 8.2, kind: "run", label: "e2e" },
+          { start: 0.2, end: 4.3, kind: "wait", label: "waits for install" },
+          { start: 4.3, end: 5.1, kind: "warm", label: "copy" },
+          { start: 5.1, end: 8.9, kind: "run", label: "e2e" },
         ],
-        done: { at: 8.2, label: "passed" },
+        done: { at: 8.9, label: "passed" },
       },
     ],
   },
@@ -220,26 +220,26 @@ const scenarios: Record<string, Scenario> = {
       {
         label: "Run 1 · install",
         bars: [
-          { start: 0.2, end: 0.7, kind: "miss", label: "miss" },
-          { start: 0.7, end: 3.9, kind: "warn", label: "built just in time" },
+          { start: 0.2, end: 1.1, kind: "miss", label: "miss" },
+          { start: 1.1, end: 4.2, kind: "warn", label: "built just in time" },
         ],
       },
       {
         label: "Run 1 · test",
         bars: [
-          { start: 0.7, end: 3.9, kind: "wait", label: "waits" },
-          { start: 3.9, end: 5.4, kind: "run", label: "test" },
+          { start: 1.1, end: 4.2, kind: "wait", label: "waits" },
+          { start: 4.2, end: 5.7, kind: "run", label: "test" },
         ],
-        done: { at: 5.4, label: "passed" },
+        done: { at: 5.7, label: "passed" },
       },
       {
         label: "Run 2 · install",
-        bars: [{ start: 6, end: 6.5, kind: "hit", label: "found" }],
+        bars: [{ start: 6.3, end: 7.2, kind: "hit", label: "found" }],
       },
       {
         label: "Run 2 · test",
-        bars: [{ start: 6.5, end: 8, kind: "run", label: "test" }],
-        done: { at: 8, label: "passed" },
+        bars: [{ start: 7.2, end: 8.7, kind: "run", label: "test" }],
+        done: { at: 8.7, label: "passed" },
       },
     ],
   },
@@ -265,12 +265,12 @@ const scenarios: Record<string, Scenario> = {
       },
       {
         label: "Pull request · install",
-        bars: [{ start: 4.6, end: 5.1, kind: "hit", label: "found" }],
+        bars: [{ start: 4.6, end: 5.5, kind: "hit", label: "found" }],
       },
       {
         label: "Pull request · test",
-        bars: [{ start: 5.1, end: 7.2, kind: "run", label: "test" }],
-        done: { at: 7.2, label: "passed" },
+        bars: [{ start: 5.5, end: 7.5, kind: "run", label: "test" }],
+        done: { at: 7.5, label: "passed" },
       },
     ],
   },
@@ -287,32 +287,32 @@ const scenarios: Record<string, Scenario> = {
       {
         label: "Run 1",
         bars: [
-          { start: 0.2, end: 0.6, kind: "miss", label: "miss" },
-          { start: 0.6, end: 4.4, kind: "wait", label: "waits for the build" },
+          { start: 0.2, end: 1.1, kind: "miss", label: "miss" },
+          { start: 1.1, end: 4.4, kind: "wait", label: "waits for the build" },
           { start: 4.4, end: 6.2, kind: "run", label: "test" },
         ],
       },
       {
         label: "Run 2",
         bars: [
-          { start: 0.3, end: 0.7, kind: "miss", label: "miss" },
-          { start: 0.7, end: 4.4, kind: "wait", label: "waits for the build" },
+          { start: 0.3, end: 1.2, kind: "miss", label: "miss" },
+          { start: 1.2, end: 4.4, kind: "wait", label: "waits for the build" },
           { start: 4.4, end: 6.5, kind: "run", label: "test" },
         ],
       },
       {
         label: "Run 3",
         bars: [
-          { start: 0.4, end: 0.8, kind: "miss", label: "miss" },
-          { start: 0.8, end: 4.4, kind: "wait", label: "waits for the build" },
+          { start: 0.4, end: 1.3, kind: "miss", label: "miss" },
+          { start: 1.3, end: 4.4, kind: "wait", label: "waits for the build" },
           { start: 4.4, end: 6.8, kind: "run", label: "test" },
         ],
       },
       {
         label: "Run 4",
         bars: [
-          { start: 0.5, end: 0.9, kind: "miss", label: "miss" },
-          { start: 0.9, end: 4.4, kind: "wait", label: "waits for the build" },
+          { start: 0.5, end: 1.4, kind: "miss", label: "miss" },
+          { start: 1.4, end: 4.4, kind: "wait", label: "waits for the build" },
           { start: 4.4, end: 7.2, kind: "run", label: "test" },
         ],
       },
