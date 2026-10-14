@@ -81,10 +81,9 @@ await step.sandbox.python("a", code, {
 ```
 
 - A plain function takes untyped positional arguments. `tool.step()` adds names, types, and validation.
-- `sandboxFn.tool()` runs a [sandbox function](/docs/sandboxes/features/sandbox-functions?ref=docs-sandboxes-tools).
 - `run` gets `(input, ctx)`. `ctx.idempotencyKey` is stable across retries. `ctx.signal` aborts at `toolTimeout`.
 - `toolOptions` defaults are shown. A command with tools may run 5 minutes.
-- Works on [runners](/docs/sandboxes/features/run-code?ref=docs-sandboxes-tools), `create()`, `group.sandbox()`, and `sandbox.fn`, not `sb.$`.
+- Works on [runners](/docs/sandboxes/features/run-code?ref=docs-sandboxes-tools), `create()`, and `group.sandbox()`, not `sb.$`.
 
 On `commands.run`, import the stub yourself:
 
@@ -208,7 +207,7 @@ FUNCTION  support-agent
   llm-1        step.run: the model answers
 ```
 
-The model sees one typed `run_code` tool. Ten calls take one turn. [The agent loop →](/docs/sandboxes/features/sandbox-functions?ref=docs-sandboxes-tools#the-agent-loop)
+The model sees one typed `run_code` tool. Ten calls take one turn.
 
 <Tip>
   The model's code is untrusted. Expose only what the agent should do.

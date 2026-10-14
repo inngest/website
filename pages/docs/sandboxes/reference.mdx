@@ -128,8 +128,6 @@ type SandboxResult = {
 ## Functions and tools
 
 ```typescript {{ title: "TypeScript" }}
-sandbox.fn({ name, description?, runtime, schema, code, tools? }); // call as fn(id, input, options?)
-fn.tool(); // neutral tool for an LLM
 tool.step({ description?, input?, output?, run }); // one durable step; run receives (input, ctx)
 tool.group({ description?, input?, output?, run }); // runs as a group; use step from "inngest"
 sandbox.codeTool({ language, timeout?, tools }); // one LLM tool that writes code against your tools
@@ -138,7 +136,7 @@ agentLoop({ adapter, tools, model, messages, maxTurns? }); // model and tool loo
 ```
 
 - Adapters in `@inngest/sandbox-tools`: `toAiSdk`, `toAnthropic`, `toOpenAI`, `toMcp`.
-- `ctx` is `{ idempotencyKey, sandbox: { id }, signal }`. [Sandbox functions →](/docs/sandboxes/features/sandbox-functions?ref=docs-sandboxes-reference)
+- `ctx` is `{ idempotencyKey, sandbox: { id }, signal }`. [Tools →](/docs/sandboxes/features/tools?ref=docs-sandboxes-reference)
 
 ## Operation index
 

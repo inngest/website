@@ -518,7 +518,7 @@ export const docsRefreshOutline: DocsRefreshPage[] = [
                 href: "/docs/sandboxes/features/tools",
               },
               {
-                title: "Sandbox functions and agents",
+                title: "Reusable sandbox functions",
                 href: "/docs/sandboxes/features/sandbox-functions",
               },
               {
