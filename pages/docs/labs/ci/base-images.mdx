@@ -190,9 +190,9 @@ Starts from `node-base` in the `platform` app.
 
 <CiBuilds scenario="cross-app" />
 
-Every job that isn't inline is built in its own run, with its own trace, linked from the pipeline run. That makes a slow or failed build easy to look into on its own.
+Every job that isn't inline is built in its own run, with its own trace. The pipeline run's "Wait for a build of `install`" row links straight to it, so a slow or failed build is easy to look into on its own.
 
-![The pipeline run waiting on the build of install, with the ci/build.done event it matched](/assets/docs/labs/ci/base-images-build-link.png)
+![The "Wait for a build of install" row in the pipeline run, with the ci/build.done event it matched](/assets/docs/labs/ci/base-images-build-link.png)
 
 ![The build's own run trace: record run details, the install job, clean up sandboxes, and telling the runs waiting on a build](/assets/docs/labs/ci/base-images-build-run.png)
 
