@@ -176,28 +176,6 @@ const scenarios: Record<string, Scenario> = {
     ],
   },
 
-  "warn-jit": {
-    caption:
-      "A cached job with no refresh is built by the pipeline run that needs it, which waits.",
-    domain: 5,
-    realDuration: 5,
-    lanes: [
-      {
-        label: "Pipeline warnings",
-        bars: [
-          {
-            start: 0,
-            end: 5,
-            instant: true,
-            kind: "warn",
-            label:
-              "built just in time: `install` (add `cache.refresh` to build it ahead of time)",
-          },
-        ],
-      },
-    ],
-  },
-
   "cache-key": {
     caption:
       "The first pipeline run builds install. The second finds it and starts at once.",

@@ -100,9 +100,7 @@ The first pipeline run builds it, and later ones start from it straight away.
 
 When `package-lock.json` changes, the key changes and the base image is rebuilt. That also happens just in time: the next pipeline run that needs it builds it and waits. You'll see that in the trace:
 
-{/* SCREENSHOT PLACEHOLDER: replace this visual with a real screenshot of the "built just in time" warning on the install row, from a real CI run. */}
-
-<CiBuilds scenario="warn-jit" />
+![The "built just in time" warning on the Look up cache step of a pipeline run trace: install had no usable cached snapshot, so it was built while the jobs that start from it waited](/assets/docs/labs/ci/base-images-jit-warning.png)
 
 ## Build it ahead of time with `cache.refresh`
 
@@ -194,11 +192,9 @@ Starts from `node-base` in the `platform` app.
 
 Every job that isn't inline is built in its own run, with its own trace, linked from the pipeline run. That makes a slow or failed build easy to look into on its own.
 
-{/* SCREENSHOT PLACEHOLDER (a): the "built just in time" warning on the install row of a real pipeline run trace. */}
+![The pipeline run waiting on the build of install, with the ci/build.done event it matched](/assets/docs/labs/ci/base-images-build-link.png)
 
-{/* SCREENSHOT PLACEHOLDER (b): a pipeline trace row that links to the build's own run ("Build install in its own run", with the view run link). */}
-
-{/* SCREENSHOT PLACEHOLDER (c): the build's own run trace (Start sandbox, checkout, npm ci, Save sandbox). */}
+![The build's own run trace: record run details, the install job, clean up sandboxes, and telling the runs waiting on a build](/assets/docs/labs/ci/base-images-build-run.png)
 
 ## Start from an image directly
 
