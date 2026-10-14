@@ -22,23 +22,15 @@ export interface Bar {
   instant?: boolean;
 }
 
-export type Tone = "saved" | "baseline";
+export type Tone = "saved" | "neutral";
 
 export interface Timer {
   /** What the counter reads when the group finishes. */
   seconds: number;
-  /** Green when the run saved time, amber when it paid for its own build. */
+  /** Green when the run saved time, neutral when it did its own build. */
   tone: Tone;
-  /** A pill beside the counter, shown once the group finishes. */
-  note: string;
-}
-
-export interface Summary {
-  tone: Tone;
-  /** The bold lead, e.g. "1 build instead of 5". */
-  headline: string;
-  /** What it adds up to, e.g. "saved ~11m of build time". */
-  detail: string;
+  /** A green pill beside the counter, shown once the group finishes. */
+  note?: string;
 }
 
 export interface Lane {
@@ -64,8 +56,6 @@ export interface Scenario {
   domain: number;
   realDuration: number;
   lanes: Lane[];
-  /** Shown under the pipeline runs once the scenario finishes. */
-  summary?: Summary;
 }
 
 /** What a pipeline run waits for when it has to build install itself. */
@@ -97,7 +87,7 @@ const cacheSaved = BUILD_SECONDS - CACHED_SECONDS;
 
 const sharedRuns = 5;
 
-const sharedSaved = (sharedRuns - 1) * BUILD_SECONDS;
+const sharedNote = `${formatTime(BUILD_SECONDS)} build time saved`;
 
 const scenarios: Record<string, Scenario> = {
   "parent-once": {
@@ -148,18 +138,11 @@ const scenarios: Record<string, Scenario> = {
       "Without a cache, each pipeline run builds install again, then throws it away.",
     domain: 11,
     realDuration: 10,
-    summary: {
-      tone: "baseline",
-      headline: "2 builds, nothing shared",
-      detail: `${formatTime(BUILD_SECONDS)} each, ${formatSaved(
-        2 * BUILD_SECONDS
-      )} of build time`,
-    },
     lanes: [
       {
         label: "install",
         group: "Pipeline run 1",
-        timer: { seconds: BUILD_SECONDS, tone: "baseline", note: "own build" },
+        timer: { seconds: BUILD_SECONDS, tone: "neutral" },
         bars: [{ start: 0.2, end: 3.4, kind: "build", label: "build" }],
       },
       {
@@ -174,7 +157,7 @@ const scenarios: Record<string, Scenario> = {
       {
         label: "install",
         group: "Pipeline run 2",
-        timer: { seconds: BUILD_SECONDS, tone: "baseline", note: "own build" },
+        timer: { seconds: BUILD_SECONDS, tone: "neutral" },
         bars: [{ start: 5.6, end: 8.8, kind: "build", label: "build again" }],
       },
       {
@@ -194,16 +177,11 @@ const scenarios: Record<string, Scenario> = {
       "The first pipeline run builds install. The second finds it and starts at once.",
     domain: 11,
     realDuration: 10,
-    summary: {
-      tone: "saved",
-      headline: "1 build instead of 2",
-      detail: `saved ${formatSaved(cacheSaved)} on pipeline run 2`,
-    },
     lanes: [
       {
         label: "install",
         group: "Pipeline run 1",
-        timer: { seconds: BUILD_SECONDS, tone: "baseline", note: "built it" },
+        timer: { seconds: BUILD_SECONDS, tone: "neutral" },
         bars: [
           { start: 0.2, end: 1.1, kind: "miss", label: "miss" },
           { start: 1.1, end: 4.2, kind: "build", label: "build" },
@@ -242,11 +220,6 @@ const scenarios: Record<string, Scenario> = {
       "The 3am cron builds install ahead of time. The next pipeline run finds it and starts at once.",
     domain: 9,
     realDuration: 9,
-    summary: {
-      tone: "saved",
-      headline: "Built at 3am, not on the clock",
-      detail: `saved ${formatSaved(cacheSaved)} on the pipeline run`,
-    },
     lanes: [
       {
         label: "install",
@@ -278,16 +251,11 @@ const scenarios: Record<string, Scenario> = {
       "Five pipeline runs ask for the same build. It happens once, and all five resume together.",
     domain: 8,
     realDuration: 8,
-    summary: {
-      tone: "saved",
-      headline: `1 build instead of ${sharedRuns}`,
-      detail: `saved ~${Math.round(sharedSaved / 60)}m of build time`,
-    },
     lanes: [
       {
         label: "test",
         group: "Pipeline run 1",
-        timer: { seconds: 190, tone: "saved", note: "shared build" },
+        timer: { seconds: 190, tone: "saved", note: sharedNote },
         bars: [
           { start: 0.2, end: 1.1, kind: "miss", label: "miss" },
           { start: 1.1, end: 4.4, kind: "wait", label: "waits for the build" },
@@ -297,7 +265,7 @@ const scenarios: Record<string, Scenario> = {
       {
         label: "test",
         group: "Pipeline run 2",
-        timer: { seconds: 193, tone: "saved", note: "shared build" },
+        timer: { seconds: 193, tone: "saved", note: sharedNote },
         bars: [
           { start: 0.3, end: 1.2, kind: "miss", label: "miss" },
           { start: 1.2, end: 4.4, kind: "wait", label: "waits for the build" },
@@ -307,7 +275,7 @@ const scenarios: Record<string, Scenario> = {
       {
         label: "test",
         group: "Pipeline run 3",
-        timer: { seconds: 196, tone: "saved", note: "shared build" },
+        timer: { seconds: 196, tone: "saved", note: sharedNote },
         bars: [
           { start: 0.4, end: 1.3, kind: "miss", label: "miss" },
           { start: 1.3, end: 4.4, kind: "wait", label: "waits for the build" },
@@ -317,7 +285,7 @@ const scenarios: Record<string, Scenario> = {
       {
         label: "test",
         group: "Pipeline run 4",
-        timer: { seconds: 201, tone: "saved", note: "shared build" },
+        timer: { seconds: 201, tone: "saved", note: sharedNote },
         bars: [
           { start: 0.5, end: 1.4, kind: "miss", label: "miss" },
           { start: 1.4, end: 4.4, kind: "wait", label: "waits for the build" },
@@ -327,7 +295,7 @@ const scenarios: Record<string, Scenario> = {
       {
         label: "test",
         group: "Pipeline run 5",
-        timer: { seconds: 205, tone: "saved", note: "shared build" },
+        timer: { seconds: 205, tone: "saved", note: sharedNote },
         bars: [
           { start: 0.6, end: 1.5, kind: "miss", label: "miss" },
           { start: 1.5, end: 4.4, kind: "wait", label: "waits for the build" },

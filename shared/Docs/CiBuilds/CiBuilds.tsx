@@ -17,23 +17,18 @@ import {
   type BarKind,
   type Lane,
   type Scenario,
-  type Summary,
   type Timer,
   type Tone,
 } from "./scenarios";
 
-const TONE: Record<Tone, { digits: string; pill: string; panel: string }> = {
+const TONE: Record<Tone, { digits: string; pill: string }> = {
   saved: {
     digits: "text-matcha-700 dark:text-matcha-400",
     pill: "bg-matcha-200 text-matcha-900 dark:bg-matcha-500/25 dark:text-matcha-300",
-    panel:
-      "bg-matcha-100 text-matcha-900 ring-matcha-300 dark:bg-matcha-500/10 dark:text-matcha-200 dark:ring-matcha-500/40",
   },
-  baseline: {
-    digits: "text-honey-700 dark:text-honey-400",
-    pill: "bg-honey-200 text-honey-900 dark:bg-honey-500/25 dark:text-honey-300",
-    panel:
-      "bg-honey-100 text-honey-900 ring-honey-300 dark:bg-honey-500/10 dark:text-honey-200 dark:ring-honey-500/40",
+  neutral: {
+    digits: "text-basis",
+    pill: "",
   },
 };
 
@@ -110,9 +105,10 @@ function groupLanes(lanes: Lane[]) {
 
 /**
  * A fake elapsed-time counter for a pipeline run. It counts up while the
- * group's bars play. A run that built for itself is amber, a run that saved
- * time turns green. A pill beside the digits says why once it finishes. The
- * digits have a fixed width and the pill holds its space, so nothing shifts.
+ * group's bars play. A run that built for itself stays neutral, a run that
+ * saved time turns green. A green pill beside the digits says how much once it
+ * finishes. The digits have a fixed width and the pill holds its space, so
+ * nothing shifts.
  */
 function RunTimer({
   timer,
@@ -133,36 +129,24 @@ function RunTimer({
 
   return (
     <span className="ml-auto flex items-center gap-2 normal-case tracking-normal">
+      {timer.note && (
+        <span
+          className={`rounded-full px-2 py-0.5 text-[11px] font-semibold ${
+            TONE.saved.pill
+          } ${finished ? "" : "invisible"}`}
+          aria-hidden={!finished}
+        >
+          {timer.note}
+        </span>
+      )}
       <span
-        className={`rounded-full px-2 py-0.5 text-[11px] font-semibold ${
-          TONE[timer.tone].pill
-        } ${finished ? "" : "invisible"}`}
-        aria-hidden={!finished}
-      >
-        {timer.note}
-      </span>
-      <span
-        className={`min-w-[4ch] text-right font-mono text-xl font-bold tabular-nums leading-none sm:text-2xl ${
+        className={`min-w-[4ch] text-right font-mono text-lg font-semibold tabular-nums leading-none sm:text-xl ${
           TONE[timer.tone].digits
         }`}
       >
         {formatTime(timer.seconds * progress)}
       </span>
     </span>
-  );
-}
-
-function SummaryRow({ summary, shown }: { summary: Summary; shown: boolean }) {
-  return (
-    <div
-      className={`flex flex-wrap items-baseline justify-between gap-x-4 gap-y-0.5 rounded-md px-3 py-2 text-sm ring-1 ring-inset ${
-        TONE[summary.tone].panel
-      } ${shown ? "" : "invisible"}`}
-      aria-hidden={!shown}
-    >
-      <span className="font-semibold">{summary.headline}</span>
-      <span className="font-mono text-xs font-semibold">{summary.detail}</span>
-    </div>
   );
 }
 
@@ -217,14 +201,6 @@ function LaneRow({
 function Timeline({ scenario, t }: { scenario: Scenario; t: number }) {
   const groups = groupLanes(scenario.lanes);
 
-  const finishedAt = Math.max(
-    ...scenario.lanes.flatMap((lane) => {
-      return lane.bars.map((bar) => {
-        return bar.end;
-      });
-    })
-  );
-
   return (
     <div className="flex flex-col gap-2">
       {groups.map((group, i) => {
@@ -267,9 +243,6 @@ function Timeline({ scenario, t }: { scenario: Scenario; t: number }) {
           </div>
         );
       })}
-      {scenario.summary && (
-        <SummaryRow summary={scenario.summary} shown={t >= finishedAt} />
-      )}
       <div className="grid grid-cols-1 gap-2 sm:grid-cols-[7rem_1fr] sm:px-2">
         <span className="hidden sm:block" />
         <div className="relative h-px bg-carbon-200 dark:bg-carbon-700">
