@@ -27,7 +27,7 @@ For anything heavier, we probably don't want every job repeating the same setup.
 
 `from` points a job at another job. It starts on a copy of that job's machine, with everything it installed still in place.
 
-<AnnotatedCode>
+<AnnotatedCode highlight>
 
 ```typescript {{ title: "ci/jobs.ts" }}
 const install = ci.job({ id: "install" }, async () => {
@@ -45,11 +45,7 @@ const test = ci.job({ id: "test", from: install }, async () => {
 `npm ci` runs once, in the job everything else starts from.
 </Annotation>
 
-<Annotation id="moves" lines="7" tease="moves to this commit" title="Moves to this commit">
-Keeps `node_modules`.
-</Annotation>
-
-<Annotation id="nothing" lines="8" tease="nothing to install" title="Nothing to install">
+<Annotation id="nothing" lines="6-8" tease="nothing to install" title="Nothing to install">
 The install is already in the snapshot.
 </Annotation>
 
@@ -75,13 +71,15 @@ Inngest warns you when that happens:
 
 Give the job a `cache` key, and its snapshot is kept as a **base image** for later pipeline runs to start from.
 
-<AnnotatedCode>
+<AnnotatedCode highlight>
 
 ```typescript {{ title: "ci/jobs.ts" }}
 const install = ci.job(
   {
     id: "install",
-    cache: { key: files("package-lock.json") },
+    cache: {
+      key: files("package-lock.json"),
+    },
   },
   async () => {
     await checkout();
@@ -90,7 +88,7 @@ const install = ci.job(
 );
 ```
 
-<Annotation id="key" lines="4" tease="rebuild on change" title="Rebuild only when this changes">
+<Annotation id="key" lines="4-6" tease="rebuild on change" title="Rebuild only when this changes">
 The base image is rebuilt only when `package-lock.json` changes.
 </Annotation>
 
@@ -102,13 +100,15 @@ The first pipeline run builds it, and later ones start from it straight away.
 
 When `package-lock.json` changes, the key changes and the base image is rebuilt. That also happens just in time: the next pipeline run that needs it builds it and waits. You'll see that in the trace:
 
+{/* SCREENSHOT PLACEHOLDER: replace this visual with a real screenshot of the "built just in time" warning on the install row, from a real CI run. */}
+
 <CiBuilds scenario="warn-jit" />
 
 ## Build it ahead of time with `cache.refresh`
 
 Rather than letting a pipeline run wait, rebuild the base image in the background. `refresh` takes any trigger: a schedule, a push, or your own event.
 
-<AnnotatedCode>
+<AnnotatedCode highlight>
 
 ```typescript {{ title: "ci/jobs.ts" }}
 cache: {
@@ -120,7 +120,7 @@ cache: {
 },
 ```
 
-<Annotation id="refresh" lines="6" tease="rebuild in background" title="Rebuild in the background">
+<Annotation id="refresh" lines="3-6" tease="rebuild in background" title="Rebuild in the background">
 The base image is rebuilt in the background, so pipeline runs never wait.
 </Annotation>
 
@@ -138,49 +138,67 @@ When several pipeline runs need the same base image at the same moment, only one
 
 ## Jobs from anywhere
 
-`from` works the same wherever the job lives.
+`from` works the same wherever the job lives. Inside one app, `from: install` is enough. To start from a job in another app, point at it by app and job id.
 
-<AnnotatedCode>
+<div className="grid gap-x-4 lg:grid-cols-2">
 
-```typescript {{ title: "ci/jobs.ts" }}
-import { image } from "@inngest/ci";
-import { install } from "./install";
+<AnnotatedCode highlight>
 
-const test = ci.job({ id: "test", from: install }, fn);
-
-const web = ci.job(
-  { id: "web", from: image.job("platform/install") },
-  fn,
+```typescript {{ title: "platform/ci/jobs.ts" }}
+const nodeBase = ci.job(
+  {
+    id: "node-base",
+    cache: {
+      key: files("package-lock.json"),
+    },
+  },
+  async () => {
+    await checkout();
+    await $`npm ci`;
+  },
 );
 ```
 
-<Annotation id="same" lines="4" tease="this pipeline or elsewhere" title="In this pipeline, or elsewhere">
-The job can be in this pipeline, or imported from elsewhere in your app.
-</Annotation>
-
-<Annotation id="other" lines="7" tease="another app" title="A job in another app">
-Points at a job from a different app.
+<Annotation id="platform" lines="4-6" tease="cached in platform" title="Built and cached in platform">
+The job lives in the `platform` app, with its own cache.
 </Annotation>
 
 </AnnotatedCode>
+
+<AnnotatedCode highlight>
+
+```typescript {{ title: "web/ci/jobs.ts" }}
+import { image } from "@inngest/ci";
+
+const test = ci.job(
+  {
+    id: "test",
+    from: image.job("platform/node-base"),
+  },
+  async () => {
+    await checkout();
+    await $`npm test`;
+  },
+);
+```
+
+<Annotation id="web" lines="6" tease="from platform" title="A job in another app">
+Starts from `node-base` in the `platform` app.
+</Annotation>
+
+</AnnotatedCode>
+
+</div>
 
 <CiBuilds scenario="cross-app" />
 
 Every job that isn't inline is built in its own run, with its own trace, linked from the pipeline run. That makes a slow or failed build easy to look into on its own.
 
-```text {{ title: "Trace of the pipeline run" }}
-test
-  Build install in its own run     41s    view run →
-  $ npm test                       12s
-```
+{/* SCREENSHOT PLACEHOLDER (a): the "built just in time" warning on the install row of a real pipeline run trace. */}
 
-```text {{ title: "Trace of the build run" }}
-install
-  Start sandbox
-  checkout
-  $ npm ci
-  Save sandbox
-```
+{/* SCREENSHOT PLACEHOLDER (b): a pipeline trace row that links to the build's own run ("Build install in its own run", with the view run link). */}
+
+{/* SCREENSHOT PLACEHOLDER (c): the build's own run trace (Start sandbox, checkout, npm ci, Save sandbox). */}
 
 ## Start from an image directly
 
