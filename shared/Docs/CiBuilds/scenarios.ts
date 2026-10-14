@@ -22,12 +22,21 @@ export interface Bar {
   instant?: boolean;
 }
 
+export interface Timer {
+  /** What the counter reads when the group finishes. */
+  seconds: number;
+  /** Shown in green with the saving, e.g. "2m faster". Omit for the baseline. */
+  faster?: string;
+}
+
 export interface Lane {
   label: string;
   /** Lanes with the same group sit together in one labelled box. */
   group?: string;
   /** On a group's first lane: what links it to the group above. */
   link?: string;
+  /** On a group's first lane: a fake elapsed-time counter in its header. */
+  timer?: Timer;
   bars: Bar[];
   /** Shown at the end of the lane once the time passes. */
   done?: { at: number; label: string };
@@ -41,39 +50,6 @@ export interface Scenario {
 }
 
 const scenarios: Record<string, Scenario> = {
-  "cross-app": {
-    caption:
-      "web's test needs node-base from platform. platform builds it in its own pipeline run, and web's test starts from it.",
-    domain: 7,
-    realDuration: 7,
-    lanes: [
-      {
-        label: "node-base",
-        group: "platform app · its own build run",
-        bars: [
-          { start: 0.8, end: 1.6, kind: "miss", label: "miss" },
-          { start: 1.6, end: 4.2, kind: "build", label: "build" },
-        ],
-        done: { at: 4.2, label: "cached" },
-      },
-      {
-        label: "test",
-        group: "web app · pipeline run",
-        link: "web asks platform for node-base",
-        bars: [
-          {
-            start: 0.4,
-            end: 4.2,
-            kind: "wait",
-            label: "waits for platform's build",
-          },
-          { start: 4.2, end: 5.8, kind: "run", label: "test" },
-        ],
-        done: { at: 5.8, label: "passed" },
-      },
-    ],
-  },
-
   "parent-once": {
     caption:
       "install runs once and is snapshotted. lint, test, and e2e each start from that snapshot.",
@@ -126,6 +102,7 @@ const scenarios: Record<string, Scenario> = {
       {
         label: "install",
         group: "Pipeline run 1",
+        timer: { seconds: 161 },
         bars: [{ start: 0.2, end: 3.4, kind: "build", label: "build" }],
       },
       {
@@ -140,6 +117,7 @@ const scenarios: Record<string, Scenario> = {
       {
         label: "install",
         group: "Pipeline run 2",
+        timer: { seconds: 161 },
         bars: [{ start: 5.6, end: 8.8, kind: "build", label: "build again" }],
       },
       {
@@ -154,28 +132,6 @@ const scenarios: Record<string, Scenario> = {
     ],
   },
 
-  "warn-uncached": {
-    caption:
-      "A job that others start from, with no cache, is rebuilt in every pipeline run.",
-    domain: 5,
-    realDuration: 5,
-    lanes: [
-      {
-        label: "Pipeline warnings",
-        bars: [
-          {
-            start: 0,
-            end: 5,
-            instant: true,
-            kind: "warn",
-            label:
-              "rebuilt every pipeline run: `install` (add `cache` to keep it across pipeline runs)",
-          },
-        ],
-      },
-    ],
-  },
-
   "cache-key": {
     caption:
       "The first pipeline run builds install. The second finds it and starts at once.",
@@ -185,6 +141,7 @@ const scenarios: Record<string, Scenario> = {
       {
         label: "install",
         group: "Pipeline run 1",
+        timer: { seconds: 161 },
         bars: [
           { start: 0.2, end: 1.1, kind: "miss", label: "miss" },
           { start: 1.1, end: 4.2, kind: "build", label: "build" },
@@ -202,6 +159,7 @@ const scenarios: Record<string, Scenario> = {
       {
         label: "install",
         group: "Pipeline run 2",
+        timer: { seconds: 41, faster: "2m faster" },
         bars: [{ start: 6.3, end: 7.2, kind: "hit", label: "found" }],
       },
       {
@@ -228,6 +186,7 @@ const scenarios: Record<string, Scenario> = {
       {
         label: "install",
         group: "Pipeline run",
+        timer: { seconds: 41, faster: "2m faster" },
         bars: [{ start: 4.6, end: 5.5, kind: "hit", label: "found" }],
       },
       {
@@ -248,6 +207,7 @@ const scenarios: Record<string, Scenario> = {
       {
         label: "test",
         group: "Pipeline run 1",
+        timer: { seconds: 190 },
         bars: [
           { start: 0.2, end: 1.1, kind: "miss", label: "miss" },
           { start: 1.1, end: 4.4, kind: "wait", label: "waits for the build" },
@@ -257,6 +217,7 @@ const scenarios: Record<string, Scenario> = {
       {
         label: "test",
         group: "Pipeline run 2",
+        timer: { seconds: 193 },
         bars: [
           { start: 0.3, end: 1.2, kind: "miss", label: "miss" },
           { start: 1.2, end: 4.4, kind: "wait", label: "waits for the build" },
@@ -266,6 +227,7 @@ const scenarios: Record<string, Scenario> = {
       {
         label: "test",
         group: "Pipeline run 3",
+        timer: { seconds: 196 },
         bars: [
           { start: 0.4, end: 1.3, kind: "miss", label: "miss" },
           { start: 1.3, end: 4.4, kind: "wait", label: "waits for the build" },
@@ -275,6 +237,7 @@ const scenarios: Record<string, Scenario> = {
       {
         label: "test",
         group: "Pipeline run 4",
+        timer: { seconds: 201 },
         bars: [
           { start: 0.5, end: 1.4, kind: "miss", label: "miss" },
           { start: 1.4, end: 4.4, kind: "wait", label: "waits for the build" },
@@ -284,6 +247,7 @@ const scenarios: Record<string, Scenario> = {
       {
         label: "test",
         group: "Pipeline run 5",
+        timer: { seconds: 205 },
         bars: [
           { start: 0.6, end: 1.5, kind: "miss", label: "miss" },
           { start: 1.5, end: 4.4, kind: "wait", label: "waits for the build" },

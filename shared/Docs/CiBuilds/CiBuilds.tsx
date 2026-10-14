@@ -16,6 +16,7 @@ import {
   type BarKind,
   type Lane,
   type Scenario,
+  type Timer,
 } from "./scenarios";
 
 const BAR: Record<BarKind, string> = {
@@ -64,7 +65,12 @@ function TimelineBar({
 
 /** Lanes in the order given, split wherever the group changes. */
 function groupLanes(lanes: Lane[]) {
-  const groups: { name?: string; link?: string; lanes: Lane[] }[] = [];
+  const groups: {
+    name?: string;
+    link?: string;
+    timer?: Timer;
+    lanes: Lane[];
+  }[] = [];
 
   lanes.forEach((lane) => {
     const last = groups[groups.length - 1];
@@ -72,11 +78,56 @@ function groupLanes(lanes: Lane[]) {
     if (last && last.name !== undefined && last.name === lane.group) {
       last.lanes.push(lane);
     } else {
-      groups.push({ name: lane.group, link: lane.link, lanes: [lane] });
+      groups.push({
+        name: lane.group,
+        link: lane.link,
+        timer: lane.timer,
+        lanes: [lane],
+      });
     }
   });
 
   return groups;
+}
+
+function formatTime(seconds: number) {
+  const whole = Math.floor(seconds);
+
+  return `${Math.floor(whole / 60)}:${String(whole % 60).padStart(2, "0")}`;
+}
+
+/**
+ * A fake elapsed-time counter for a pipeline run. It counts up while the
+ * group's bars play. The slow baseline is plain, a faster run turns green and
+ * shows what it saved once it finishes.
+ */
+function RunTimer({
+  timer,
+  lanes,
+  t,
+}: {
+  timer: Timer;
+  lanes: Lane[];
+  t: number;
+}) {
+  const bars = lanes.flatMap((lane) => {
+    return lane.bars;
+  });
+  const from = Math.min(...bars.map((bar) => bar.start));
+  const to = Math.max(...bars.map((bar) => bar.end));
+  const progress = Math.min(Math.max((t - from) / (to - from), 0), 1);
+  const finished = progress >= 1;
+
+  return (
+    <span
+      className={`ml-auto font-mono text-[11px] font-semibold normal-case tabular-nums tracking-normal ${
+        timer.faster ? "text-matcha-700 dark:text-matcha-400" : "text-basis"
+      }`}
+    >
+      {formatTime(timer.seconds * progress)}
+      {timer.faster && finished && ` · ${timer.faster}`}
+    </span>
+  );
 }
 
 function LaneRow({
@@ -151,8 +202,11 @@ function Timeline({ scenario, t }: { scenario: Scenario; t: number }) {
               </div>
             )}
             <div className="flex flex-col gap-2 rounded-md p-2 ring-1 ring-inset ring-carbon-200 dark:ring-carbon-700">
-              <div className="text-[11px] font-semibold uppercase tracking-wide text-muted">
+              <div className="flex items-center gap-2 text-[11px] font-semibold uppercase tracking-wide text-muted">
                 {group.name}
+                {group.timer && (
+                  <RunTimer timer={group.timer} lanes={group.lanes} t={t} />
+                )}
               </div>
               {rows}
             </div>
@@ -175,7 +229,8 @@ function Timeline({ scenario, t }: { scenario: Scenario; t: number }) {
 /**
  * An animated trace of how Inngest CI finds and builds the images jobs start
  * from: cache hits and misses, refreshing and builds shared by many pipeline
- * runs. Pipeline runs sit in separate labelled boxes. It plays while on screen
+ * runs. Pipeline runs sit in separate labelled boxes, each with a fake
+ * elapsed-time counter that shows the time saved. It plays while on screen
  * and rests on its last frame with reduced motion.
  */
 export function CiBuilds({ scenario: id }: { scenario: string }) {
