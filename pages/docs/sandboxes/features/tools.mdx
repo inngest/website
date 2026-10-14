@@ -32,7 +32,7 @@ const report = await step.sandbox.python(
   `,
   {
     tools: {
-      listCustomers: tool({
+      listCustomers: tool.step({
         description: "List customers on a plan",
         input: z.object({ plan: z.enum(["free", "pro"]) }),
         output: z.array(Customer),
@@ -41,7 +41,7 @@ const report = await step.sandbox.python(
         },
       }),
 
-      sendSlack: tool({
+      sendSlack: tool.step({
         input: z.object({ channel: z.string(), text: z.string() }),
         run: ({ channel, text }, ctx) => {
           return slack.post(channel, text, { idempotencyKey: ctx.idempotencyKey });
@@ -73,14 +73,14 @@ Saved results mean no double post. `ctx.idempotencyKey` is stable across retries
 await step.sandbox.python("a", code, {
   tools: {
     quick: (msg) => post(msg),
-    typed: tool({ input: z.object({ id: z.string() }), output: Customer, run: ({ id }) => load(id) }),
+    typed: tool.step({ input: z.object({ id: z.string() }), output: Customer, run: ({ id }) => load(id) }),
     lookup: runSql.tool(),
   },
   toolOptions: { toolTimeout: "30s", maxCalls: 100, waitWindow: "20s" },
 });
 ```
 
-- A plain function takes untyped positional arguments. `tool()` adds names, types, and validation.
+- A plain function takes untyped positional arguments. `tool.step()` adds names, types, and validation.
 - `sandboxFn.tool()` runs a [sandbox function](/docs/sandboxes/features/sandbox-functions?ref=docs-sandboxes-tools).
 - `run` gets `(input, ctx)`. `ctx.idempotencyKey` is stable across retries. `ctx.signal` aborts at `toolTimeout`.
 - `toolOptions` defaults are shown. A command with tools may run 5 minutes.
@@ -93,6 +93,42 @@ from inngest_tools import tools
 
 customer = await tools.getCustomer("cus_1")
 ```
+
+## Tools that run steps
+
+`tool.group()` runs its body as a group. Use the global `step`, not a parameter.
+
+```typescript {{ title: "TypeScript" }}
+import { step } from "inngest";
+import { tool } from "inngest/experimental";
+
+const customerReport = tool.group({
+  input: z.object({ id: z.string() }),
+  run: async ({ id }) => {
+    const [orders, tickets] = await Promise.all([
+      step.run("orders", () => db.orders.forCustomer(id)),
+      step.run("tickets", () => db.tickets.forCustomer(id)),
+    ]);
+
+    return { orders, tickets };
+  },
+});
+
+const requestApproval = tool.group({
+  input: z.object({ orderId: z.string() }),
+  run: async ({ orderId }) => {
+    const reply = await step.waitForEvent("approval", {
+      event: "app/approval.decided",
+      timeout: "1h",
+      match: "data.orderId",
+    });
+
+    return { approved: reply?.data.approved ?? false };
+  },
+});
+```
+
+The Sandbox sees one call and one result. `step.invoke` works too.
 
 ## Call a tool from the Sandbox
 

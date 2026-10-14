@@ -130,7 +130,8 @@ type SandboxResult = {
 ```typescript {{ title: "TypeScript" }}
 sandbox.fn({ name, description?, runtime, schema, code, tools? }); // call as fn(id, input, options?)
 fn.tool(); // neutral tool for an LLM
-tool({ description?, input?, output?, run }); // run receives (input, ctx)
+tool.step({ description?, input?, output?, run }); // one durable step; run receives (input, ctx)
+tool.group({ description?, input?, output?, run }); // runs as a group; use step from "inngest"
 sandbox.codeTool({ language, timeout?, tools }); // one LLM tool that writes code against your tools
 describeTools(tools, language); // typed declaration the code sees
 agentLoop({ adapter, tools, model, messages, maxTurns? }); // model and tool loop in your function
