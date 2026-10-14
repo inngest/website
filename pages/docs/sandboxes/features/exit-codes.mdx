@@ -10,7 +10,7 @@ export const description = "A Sandbox command that exits non-zero fails its step
 - **Fail loud by default.** A bad `npm ci` stops the run. [How it works →](#how-it-works)
 - **Allow the codes you expect.** `grep` exiting `1` is an answer, not an error. [Allow exit codes →](#allow-exit-codes)
 - **Read why it failed.** Command, exit code, and output tails. [Read the failure →](#read-the-failure)
-- **Same rule in CI.** `$` throws, `.nothrow()` returns. [Inngest CI →](/docs/labs/ci/commands?ref=docs-sandboxes-exit-codes)
+- **Same rule in CI.** `$` throws, `$({ exitCodes: "any" })` returns. [Inngest CI →](/docs/labs/ci/commands?ref=docs-sandboxes-exit-codes)
 
 <AnnotatedCode>
 
@@ -59,7 +59,7 @@ Command, exit code, and output tails.
 ```typescript {{ title: "TypeScript" }}
 const result = await sb.sh("diff", "diff -q a.txt b.txt", { exitCodes: [0, 1] });
 
-const hit = await sb.$`grep ${needle} log`.exitCodes([0, 1]);
+const hit = await sb.$({ exitCodes: [0, 1] })`grep ${needle} log`;
 ```
 
 Works on `sh`, `python`, `ts`, `run`, `commands.run`, [`$`](/docs/sandboxes/features/run-code?ref=docs-sandboxes-exit-codes#the-template), and [`sandbox.fn`](/docs/sandboxes/features/sandbox-functions?ref=docs-sandboxes-exit-codes).

@@ -56,7 +56,7 @@ Outside a job, `report` targets the pipeline check.
 
 ```typescript {{ title: "TypeScript" }}
 const test = ci.job({ id: "test", name: "Unit tests", from: base }, async () => {
-  await $`pnpm test`.as("unit tests").retries(1);
+  await $({ id: "unit tests", retries: 1 })`pnpm test`;
 });
 ```
 

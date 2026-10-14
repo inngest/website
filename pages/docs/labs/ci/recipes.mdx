@@ -32,10 +32,13 @@ cache: { key: files("pnpm-lock.yaml"), refresh: [{ cron: "0 3 * * *" }] }
 await inngest.send(invalidateEvent("base"));
 
 await checkout({ repo: "acme/api", ref: "main" });
-await $`pnpm test`.retries(2);
-await $`pnpm test`.timeout("10m").onTimeout(async () => {
-  return $`ps auxf`;
-});
+await $({ retries: 2 })`pnpm test`;
+await $({
+  timeout: "10m",
+  onTimeout: async () => {
+    return $`ps auxf`;
+  },
+})`pnpm test`;
 ci.matrix({ id: "node", axes: { node: ["20", "22"] } }, fn);
 ```
 
@@ -80,7 +83,7 @@ ci.job({ id: "test", keepOnFailure: "24h" }, fn);
 ci.job({ id: "notify", check: false }, fn);
 ci.pipeline({ id, on, check: { name: "CI" } }, fn);
 
-await $`pnpm test`.as("unit tests");
+await $({ id: "unit tests" })`pnpm test`;
 ```
 
 [Job options](/docs/labs/ci/reference?ref=docs-labs-ci-recipes#ci-job) · [Checks](/docs/labs/ci/checks-and-reports?ref=docs-labs-ci-recipes)

@@ -26,9 +26,9 @@ export const buildCheck = inngest.createFunction(
     });
 
     await sb.$`git clone --depth 1 ${event.data.url} /work/repo`;
-    await sb.$.sh`cd /work/repo && npm ci`.timeout("5m");
+    await sb.$.sh({ timeout: "5m" })`cd /work/repo && npm ci`;
 
-    const tests = await sb.$.sh`cd /work/repo && npm test`.exitCodes("any");
+    const tests = await sb.$.sh({ exitCodes: "any" })`cd /work/repo && npm test`;
 
     return { passed: tests.ok, tail: tests.stdout.slice(-2000) };
   },
@@ -84,7 +84,7 @@ async ({ step, event }) => {
   {
     await using sb = await step.sandbox.create("review", { from: image.inngest("node-22") });
     await sb.$`git clone --depth 1 ${repo.url} /work/r`;
-    await sb.$.sh`cd /work/r && npx eslint .`.exitCodes("any");
+    await sb.$.sh({ exitCodes: "any" })`cd /work/r && npx eslint .`;
     files = (await sb.$.sh`cd /work/r && git diff --name-only`.text()).split("\n");
   }
 
@@ -110,7 +110,7 @@ const report = await group.sandbox(
   { id: "build-check", from: image.inngest("node-22"), vcpu: 4, secrets: ["NPM_TOKEN"] },
   async (sb) => {
     await $`git clone --depth 1 ${url} /work/repo`;
-    const tests = await $.sh`cd /work/repo && npm test`.exitCodes("any");
+    const tests = await $.sh({ exitCodes: "any" })`cd /work/repo && npm test`;
     return { passed: tests.ok, tail: tests.stdout.slice(-2000) };
   },
 );

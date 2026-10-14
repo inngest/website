@@ -49,7 +49,7 @@ const lint = ci.job({ id: "lint", from: base }, async () => {
 });
 
 const test = ci.job({ id: "test", from: base }, async () => {
-  await $`pnpm test`.retries(1);
+  await $({ retries: 1 })`pnpm test`;
 });
 ```
 

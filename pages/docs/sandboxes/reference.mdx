@@ -69,7 +69,7 @@ step.sandbox.sh(id, command, options?); // stdout string
 step.sandbox.run(id, spec); // SandboxResult
 ```
 
-The same methods exist on a handle from `step.sandbox.create()` or `group.sandbox()`. A handle also has `` sb.$`…` `` (direct argv) and `` sb.$.sh`…` `` (`/bin/sh -c`, values quoted), with `.id()`, `.exitCodes()`, `.timeout()`, `.retries()`, `.env()`, `.quiet()`, `.text()`, and `.json()`. A bare `$` from `inngest/experimental` runs on the enclosing `group.sandbox()` Sandbox and throws outside one. [Run code →](/docs/sandboxes/features/run-code?ref=docs-sandboxes-reference)
+The same methods exist on a handle from `step.sandbox.create()` or `group.sandbox()`. A handle also has `` sb.$`…` `` (direct argv) and `` sb.$.sh`…` `` (`/bin/sh -c`, values quoted), and takes options as a call, `` sb.$({ id, exitCodes, timeout, retries, env, cwd, quiet })`…` ``. Results have `.text()` and `.json()`. A bare `$` from `inngest/experimental` runs on the enclosing `group.sandbox()` Sandbox and throws outside one. [Run code →](/docs/sandboxes/features/run-code?ref=docs-sandboxes-reference)
 
 ```typescript {{ title: "TypeScript" }}
 type CreateOptions = {

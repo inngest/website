@@ -131,12 +131,12 @@ await using sb = await step.sandbox.create("repo");
 await sb.$`git clone --depth 1 ${url} /work/repo`;
 const files = await sb.$.sh`ls /work/repo | head -5`.text();
 const pkg = await sb.$`cat /work/repo/package.json`.json();
-const tests = await sb.$.sh`cd /work/repo && npm test`.exitCodes([0, 1]).timeout("4m");
+const tests = await sb.$.sh({ exitCodes: [0, 1], timeout: "4m" })`cd /work/repo && npm test`;
 ```
 
 - `` sb.$`…` `` runs the command directly, with no shell. Each `${value}` is one argument.
 - `` sb.$.sh`…` `` runs `/bin/sh -c`, with values quoted, for pipes and `&&`.
-- Both chain `.timeout()`, `.env()`, `.retries()`, and `.exitCodes()`. Also `.id()` and `.quiet()`.
+- Pass options by calling `$` first: `timeout`, `env`, `cwd`, `retries`, `exitCodes`, `id`, and `quiet`. Keep the configured tag to reuse it: `const repo$ = sb.$({ cwd: "/work/repo" })`.
 - Non-zero exits stop the run, as in [Exit codes](/docs/sandboxes/features/exit-codes?ref=docs-sandboxes-run-code).
 
 ## The full result

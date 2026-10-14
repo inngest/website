@@ -39,7 +39,7 @@ const test = ci.job("test", async () => {
 A shell command on the job's machine. [Commands →](/docs/labs/ci/commands?ref=docs-labs-ci-concepts)
 
 ```typescript {{ title: "TypeScript" }}
-await $`pnpm test`.retries(1);
+await $({ retries: 1 })`pnpm test`;
 ```
 
 ## Machine

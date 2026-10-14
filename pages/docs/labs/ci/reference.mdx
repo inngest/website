@@ -140,19 +140,19 @@ await $`pnpm test --filter=${pkg}`; // joins the argument when it follows text w
 await $`pnpm test ${bail && ["--bail", "1"]}`; // arrays spread; false, null, undefined drop
 await $.sh`pnpm build && pnpm test | tee test.log`; // /bin/sh -c, values escaped
 
-await $`pnpm test`.retries(2); // up to 2 more runs on the same machine; each attempt is a step
-await $`pnpm lint`.nothrow(); // return the result instead of throwing
-await $`pnpm test`.env({ CI: "true" });
-await $`pnpm test`.cwd("/work/app"); // default /work
-await $`pnpm test`.timeout("10m"); // throws CommandTimeoutError
-await $`pnpm test`.timeout("10m").onTimeout(async () => $`ps auxf`); // runs fn, then throws
-await $`pnpm exec playwright test`.as("e2e"); // names the step
+await $({ retries: 2 })`pnpm test`; // up to 2 more runs on the same machine; each attempt is a step
+await $({ exitCodes: "any" })`pnpm lint`; // "any" returns the result instead of throwing
+await $({ env: { CI: "true" } })`pnpm test`;
+await $({ cwd: "/work/app" })`pnpm test`; // default /work
+await $({ timeout: "10m" })`pnpm test`; // throws CommandTimeoutError
+await $({ timeout: "10m", onTimeout: async () => $`ps auxf` })`pnpm test`; // runs fn, then throws
+await $({ id: "e2e" })`pnpm exec playwright test`; // names the step
 
 const sha = await $`git rev-parse HEAD`.text();
 const tracked = await $`git ls-files`.lines();
 const meta = await $`cat package.json`.json<{ name: string }>();
 
-const server = await $`pnpm start`.background(); // ignores retries, timeout, nothrow
+const server = await $`pnpm start`.background(); // ignores retries, timeout, exitCodes
 server.id;
 await server.exited(); // polls for exit
 await server.output({ tailBytes: 65536 });
@@ -170,7 +170,7 @@ type CommandResult = {
 ```
 
 - `$` outside a job throws `CiUsageError`.
-- Output arrives when the command ends. A `.timeout()` of 5 minutes or less is exact, and a longer one is approximate.
+- Output arrives when the command ends. A `timeout` of 5 minutes or less is exact, and a longer one is approximate.
 - Any function can run commands on the calling job's machine.
 
 ## Machines
@@ -282,7 +282,7 @@ const compat = ci.matrix(
     check: false, // applies to every combination
   },
   async ({ node, db }) => {
-    await $`npx -y node@${node} --test`.env({ TEST_DATABASE: db });
+    await $({ env: { TEST_DATABASE: db } })`npx -y node@${node} --test`;
   },
 );
 
@@ -464,7 +464,7 @@ const migrations = ci.job("migrations", async () => {
 
   await checkout();
   await $`pnpm install`;
-  await $`pnpm db:migrate`.env({ DATABASE_URL: db.url });
+  await $({ env: { DATABASE_URL: db.url } })`pnpm db:migrate`;
 
   await step.run("delete-db-branch", async () => {
     return neon.branches.delete(db.id);
@@ -482,8 +482,8 @@ const migrations = ci.job("migrations", async () => {
 ```typescript {{ title: "TypeScript" }}
 import { CommandFailedError, CommandTimeoutError, CiUsageError } from "@inngest/ci";
 
-class CommandFailedError { command: string[]; exitCode: number; stdoutTail: string; stderrTail: string; jobPath: string } // non-zero exit without .nothrow()
-class CommandTimeoutError { command: string[]; timeout: string; jobPath: string } // past .timeout()
+class CommandFailedError { command: string[]; exitCode: number; stdoutTail: string; stderrTail: string; jobPath: string } // non-zero exit outside exitCodes
+class CommandTimeoutError { command: string[]; timeout: string; jobPath: string } // past timeout
 class CiUsageError {} // unsupported use, such as $ outside a job; fails the run without retrying
 ```
 

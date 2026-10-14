@@ -86,7 +86,7 @@ const compat = ci.matrix(
     from: base,
   },
   async ({ node, db }) => {
-    await $`npx -y node@${node} --test`.env({ TEST_DATABASE: db });
+    await $({ env: { TEST_DATABASE: db } })`npx -y node@${node} --test`;
   },
 );
 
@@ -105,7 +105,7 @@ const migrations = ci.job("migrations", async () => {
   });
 
   await checkout();
-  await $`pnpm db:migrate`.env({ DATABASE_URL: db.url });
+  await $({ env: { DATABASE_URL: db.url } })`pnpm db:migrate`;
 });
 ```
 
