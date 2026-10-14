@@ -3,49 +3,6 @@
  * timed states, in seconds, that the diagram plays and loops.
  */
 
-export type NodeState =
-  | "idle"
-  | "waiting"
-  | "lookup"
-  | "hit"
-  | "miss"
-  | "building"
-  | "ready"
-  | "changed"
-  | "running"
-  | "passed";
-
-export interface NodeEvent {
-  at: number;
-  state: NodeState;
-  /** The image name from here on. */
-  name?: string;
-  /** A short line under the name, from here on. */
-  note?: string;
-}
-
-export interface ChainNode {
-  id: string;
-  /** "cached" jobs have an image name, plain jobs only run. */
-  kind: "cached" | "job";
-  /** The job's definition, shown above its box. */
-  code: string;
-  /** The app the job is defined in, shown when jobs span apps. */
-  app?: string;
-  events: NodeEvent[];
-}
-
-export interface ChainScenario {
-  type: "chain";
-  caption: string;
-  /** Length of the script, in seconds. */
-  domain: number;
-  /** How long one loop takes on screen, in seconds. */
-  realDuration: number;
-  /** Parents first: each node starts from the one before it. */
-  nodes: ChainNode[];
-}
-
 export type BarKind =
   | "lookup"
   | "hit"
@@ -67,71 +24,57 @@ export interface Bar {
 
 export interface Lane {
   label: string;
+  /** Lanes with the same group sit together in one labelled box. */
+  group?: string;
+  /** On a group's first lane: what links it to the group above. */
+  link?: string;
   bars: Bar[];
   /** Shown at the end of the lane once the time passes. */
   done?: { at: number; label: string };
 }
 
-export interface TimelineScenario {
-  type: "timeline";
-  /** The code the timeline is about, shown above it. */
-  code?: string;
+export interface Scenario {
   caption: string;
   domain: number;
   realDuration: number;
   lanes: Lane[];
 }
 
-export type Scenario = ChainScenario | TimelineScenario;
-
 const scenarios: Record<string, Scenario> = {
   "cross-app": {
-    type: "chain",
     caption:
-      "web asks platform for node-base. platform builds it once, and web's test starts from it.",
-    domain: 6.5,
+      "web's test needs node-base from platform. platform builds it in its own pipeline run, and web's test starts from it.",
+    domain: 7,
     realDuration: 7,
-    nodes: [
+    lanes: [
       {
-        id: "node-base",
-        kind: "cached",
-        app: "platform",
-        code: `ci.job({
-  id: "node-base",
-  cache: { key: ... },
-}, ...)`,
-        events: [
-          { at: 0, state: "idle" },
-          {
-            at: 0.6,
-            state: "lookup",
-            name: "ci/main/node-base/41d0b8",
-            note: "asked by web",
-          },
-          { at: 1.3, state: "miss", note: undefined },
-          { at: 1.5, state: "building" },
-          { at: 3.7, state: "ready" },
+        label: "node-base",
+        group: "platform app · its own build run",
+        bars: [
+          { start: 0.8, end: 1.6, kind: "miss", label: "miss" },
+          { start: 1.6, end: 4.2, kind: "build", label: "build" },
         ],
+        done: { at: 4.2, label: "cached" },
       },
       {
-        id: "test",
-        kind: "job",
-        app: "web",
-        code: `ci.job({
-  id: "test",
-  from: image.job("platform/node-base"),
-}, ...)`,
-        events: [
-          { at: 0, state: "waiting" },
-          { at: 4, state: "running" },
-          { at: 5.6, state: "passed" },
+        label: "test",
+        group: "web app · pipeline run",
+        link: "web asks platform for node-base",
+        bars: [
+          {
+            start: 0.4,
+            end: 4.2,
+            kind: "wait",
+            label: "waits for platform's build",
+          },
+          { start: 4.2, end: 5.8, kind: "run", label: "test" },
         ],
+        done: { at: 5.8, label: "passed" },
       },
     ],
   },
 
   "parent-once": {
-    type: "timeline",
     caption:
       "install runs once and is snapshotted. lint, test, and e2e each start from that snapshot.",
     domain: 10,
@@ -175,18 +118,19 @@ const scenarios: Record<string, Scenario> = {
   },
 
   "two-runs": {
-    type: "timeline",
     caption:
       "Without a cache, each pipeline run builds install again, then throws it away.",
     domain: 11,
     realDuration: 10,
     lanes: [
       {
-        label: "Pipeline run 1 · install",
+        label: "install",
+        group: "Pipeline run 1",
         bars: [{ start: 0.2, end: 3.4, kind: "build", label: "build" }],
       },
       {
-        label: "Pipeline run 1 · test",
+        label: "test",
+        group: "Pipeline run 1",
         bars: [
           { start: 0.2, end: 3.4, kind: "wait", label: "waits" },
           { start: 3.4, end: 5, kind: "run", label: "test" },
@@ -194,11 +138,13 @@ const scenarios: Record<string, Scenario> = {
         done: { at: 5, label: "passed" },
       },
       {
-        label: "Pipeline run 2 · install",
+        label: "install",
+        group: "Pipeline run 2",
         bars: [{ start: 5.6, end: 8.8, kind: "build", label: "build again" }],
       },
       {
-        label: "Pipeline run 2 · test",
+        label: "test",
+        group: "Pipeline run 2",
         bars: [
           { start: 5.6, end: 8.8, kind: "wait", label: "waits" },
           { start: 8.8, end: 10.4, kind: "run", label: "test" },
@@ -209,7 +155,6 @@ const scenarios: Record<string, Scenario> = {
   },
 
   "warn-uncached": {
-    type: "timeline",
     caption:
       "A job that others start from, with no cache, is rebuilt in every pipeline run.",
     domain: 5,
@@ -232,7 +177,6 @@ const scenarios: Record<string, Scenario> = {
   },
 
   "warn-jit": {
-    type: "timeline",
     caption:
       "A cached job with no refresh is built by the pipeline run that needs it, which waits.",
     domain: 5,
@@ -255,25 +199,22 @@ const scenarios: Record<string, Scenario> = {
   },
 
   "cache-key": {
-    type: "timeline",
-    code: `ci.job({
-  id: "install",
-  cache: { key: files("package-lock.json") },
-}, ...)`,
     caption:
       "The first pipeline run builds install. The second finds it and starts at once.",
     domain: 11,
     realDuration: 10,
     lanes: [
       {
-        label: "Pipeline run 1 · install",
+        label: "install",
+        group: "Pipeline run 1",
         bars: [
           { start: 0.2, end: 1.1, kind: "miss", label: "miss" },
           { start: 1.1, end: 4.2, kind: "build", label: "build" },
         ],
       },
       {
-        label: "Pipeline run 1 · test",
+        label: "test",
+        group: "Pipeline run 1",
         bars: [
           { start: 1.1, end: 4.2, kind: "wait", label: "waits" },
           { start: 4.2, end: 5.7, kind: "run", label: "test" },
@@ -281,11 +222,13 @@ const scenarios: Record<string, Scenario> = {
         done: { at: 5.7, label: "passed" },
       },
       {
-        label: "Pipeline run 2 · install",
+        label: "install",
+        group: "Pipeline run 2",
         bars: [{ start: 6.3, end: 7.2, kind: "hit", label: "found" }],
       },
       {
-        label: "Pipeline run 2 · test",
+        label: "test",
+        group: "Pipeline run 2",
         bars: [{ start: 7.2, end: 8.7, kind: "run", label: "test" }],
         done: { at: 8.7, label: "passed" },
       },
@@ -293,30 +236,25 @@ const scenarios: Record<string, Scenario> = {
   },
 
   refresh: {
-    type: "timeline",
-    code: `ci.job({
-  id: "install",
-  cache: {
-    key: files("package-lock.json"),
-    refresh: [{ cron: "0 3 * * *" }],
-  },
-}, ...)`,
     caption:
       "The 3am cron builds install ahead of time. The next pipeline run finds it and starts at once.",
     domain: 9,
     realDuration: 9,
     lanes: [
       {
-        label: "Background · install",
+        label: "install",
+        group: "Background build",
         bars: [{ start: 0.2, end: 3.6, kind: "build", label: "built at 3am" }],
         done: { at: 3.6, label: "cached" },
       },
       {
-        label: "Pipeline run · install",
+        label: "install",
+        group: "Pipeline run",
         bars: [{ start: 4.6, end: 5.5, kind: "hit", label: "found" }],
       },
       {
-        label: "Pipeline run · test",
+        label: "test",
+        group: "Pipeline run",
         bars: [{ start: 5.5, end: 7.5, kind: "run", label: "test" }],
         done: { at: 7.5, label: "passed" },
       },
@@ -324,16 +262,14 @@ const scenarios: Record<string, Scenario> = {
   },
 
   many: {
-    type: "timeline",
-    code: `ci.job({ id: "test", from: install }, ...)
-// five pipeline runs start at once`,
     caption:
       "Five pipeline runs ask for the same build. It happens once, and all five resume together.",
     domain: 8,
     realDuration: 8,
     lanes: [
       {
-        label: "Pipeline run 1",
+        label: "test",
+        group: "Pipeline run 1",
         bars: [
           { start: 0.2, end: 1.1, kind: "miss", label: "miss" },
           { start: 1.1, end: 4.4, kind: "wait", label: "waits for the build" },
@@ -341,7 +277,8 @@ const scenarios: Record<string, Scenario> = {
         ],
       },
       {
-        label: "Pipeline run 2",
+        label: "test",
+        group: "Pipeline run 2",
         bars: [
           { start: 0.3, end: 1.2, kind: "miss", label: "miss" },
           { start: 1.2, end: 4.4, kind: "wait", label: "waits for the build" },
@@ -349,7 +286,8 @@ const scenarios: Record<string, Scenario> = {
         ],
       },
       {
-        label: "Pipeline run 3",
+        label: "test",
+        group: "Pipeline run 3",
         bars: [
           { start: 0.4, end: 1.3, kind: "miss", label: "miss" },
           { start: 1.3, end: 4.4, kind: "wait", label: "waits for the build" },
@@ -357,7 +295,8 @@ const scenarios: Record<string, Scenario> = {
         ],
       },
       {
-        label: "Pipeline run 4",
+        label: "test",
+        group: "Pipeline run 4",
         bars: [
           { start: 0.5, end: 1.4, kind: "miss", label: "miss" },
           { start: 1.4, end: 4.4, kind: "wait", label: "waits for the build" },
@@ -365,7 +304,8 @@ const scenarios: Record<string, Scenario> = {
         ],
       },
       {
-        label: "Pipeline run 5",
+        label: "test",
+        group: "Pipeline run 5",
         bars: [
           { start: 0.6, end: 1.5, kind: "miss", label: "miss" },
           { start: 1.5, end: 4.4, kind: "wait", label: "waits for the build" },
@@ -373,7 +313,8 @@ const scenarios: Record<string, Scenario> = {
         ],
       },
       {
-        label: "The one build",
+        label: "install",
+        group: "The one shared build",
         bars: [
           { start: 0.7, end: 4.3, kind: "build", label: "install, built once" },
         ],
