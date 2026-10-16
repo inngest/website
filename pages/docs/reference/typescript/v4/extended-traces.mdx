@@ -1,4 +1,4 @@
-import { Info, Callout, Note, CardGroup, Card } from "src/shared/Docs/mdx";
+import { Info, Callout, Note, CardGroup, Card, Unreleased } from "src/shared/Docs/mdx";
 import { RiBarChart2Fill } from "@remixicon/react";
 
 
@@ -16,6 +16,14 @@ If you want Inngest to set up OpenTelemetry for you, use [`@inngest/otel`](https
 ## Basic Usage
 
 Use this path when your application does not already configure OpenTelemetry. Install and use `@inngest/otel` to set up a Node.js OpenTelemetry provider and common instrumentations before your application code starts, and `extendedTracesMiddleware()` attaches to that provider.
+
+<Unreleased label="ai-middleware">
+
+<Note>
+  `aiMiddleware()` bundles this middleware with scoring and step metadata; see the [quick start](/docs/examples/open-telemetry?ref=docs-extended-traces#quick-start). If you already use `extendedTracesMiddleware()`, replace it with the bundle rather than registering both — two instances attach two span processors and export every span twice.
+</Note>
+
+</Unreleased>
 
 Preload it before your application:
 
@@ -124,6 +132,12 @@ The options are:
 - `"createProvider"` (deprecated): Only attempt to create a provider. Use `@inngest/otel` instead.
 - `"off"`: Do nothing
 
+<Unreleased label="ai-middleware">
+
+When configured via `aiMiddleware({ traces: { ... } })`, only `"extendProvider"` (its default) and `"off"` are available; there is no `instrumentations` option.
+
+</Unreleased>
+
 If you only use `extendedTracesMiddleware()` to extend an existing provider, you do not need to call it before other application code. The provider and instrumentation setup remains owned by your existing OpenTelemetry configuration.
 
 ### Manually extend
@@ -195,3 +209,9 @@ const sdk = new NodeSDK({
 
 sdk.start();
 ```
+
+<Unreleased label="ai-middleware">
+
+With the bundle, the equivalent is `aiMiddleware({ traces: { behaviour: "off" } })`.
+
+</Unreleased>
