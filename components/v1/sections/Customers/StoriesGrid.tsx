@@ -37,10 +37,16 @@ export default function StoriesGrid() {
 
   return (
     <section
-      aria-label="Customer stories"
-      className="relative mx-auto w-full max-w-[1440px] px-6 pb-20 text-v1-frost sm:pb-[100px] lg:px-8 lg:pb-40"
+      aria-labelledby="customers-stories-heading"
+      className="relative mx-auto w-full max-w-[1440px] px-6 pb-20 pt-4 text-v1-frost sm:pb-[100px] sm:pt-6 lg:px-8 lg:pb-40 lg:pt-8"
     >
-      <div className="mb-8 flex items-center justify-between sm:mb-10">
+      <h2
+        id="customers-stories-heading"
+        className="text-v1-heading-sm mb-6 text-v1-frost sm:mb-8"
+      >
+        Customer stories
+      </h2>
+      <div className="mb-8 flex items-center gap-8 sm:mb-10">
         <CategoryDropdown selected={categories} onChange={setCategories} />
         <SortByDropdown selected={sort} onChange={setSort} />
       </div>
@@ -51,11 +57,7 @@ export default function StoriesGrid() {
       ) : (
         <ul className="grid list-none grid-cols-1 gap-6 pl-0 sm:grid-cols-2 lg:grid-cols-3">
           {sorted.map((s, i) => (
-            <motion.li
-              key={s.id}
-              {...reveals.item(i)}
-              className="list-none"
-            >
+            <motion.li key={s.id} {...reveals.item(i)} className="list-none">
               <StoryCard
                 href={STORY_HREF(s.id)}
                 logo={s.logo}
