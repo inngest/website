@@ -327,13 +327,39 @@ ci.job(
     key.devServer; // this job's named key parts, resolved once
     cache; // "miss" | "refresh" | "rebuild", when the job has a cache
     from.key.devServer; // key parts of everything it started from, nearest wins
-    from.ancestry; // [{ id, key }, ...] each job above it, nearest first
+    from.ancestry; // [{ id, key, output, $ }, ...] each job above it, nearest first
   },
 );
 ```
 
 - `from` carries the parent's resolved key whether the parent was built, found cached, or belongs to another app's `image.job()`.
 - A matrix handler also gets `matrix`, its combination of the axes.
+
+## Job outputs
+
+Return an object from a job to hand data and commands to the jobs that start `from` it.
+
+```typescript {{ title: "TypeScript" }}
+const base = ci.job({ id: "base", cache: { key: files("pnpm-lock.yaml") } }, async () => {
+  await $`pnpm install`;
+
+  return {
+    pnpmVersion: await $`pnpm --version`.text(),
+    devServer: $`inngest-cli dev`,
+  };
+});
+
+const test = ci.job({ id: "test", from: base }, async ({ from }) => {
+  from.output.pnpmVersion; // data, typed from base's return
+  await from.$.devServer.background(); // commands run on this job's machine
+});
+```
+
+- Data is on `from.output` and commands are on `from.$`, both merged up the chain with the nearest job winning a name. Write `from.$.devServer` rather than destructuring `$`, so it never shadows the `$` you import and the command's source stays visible.
+- Hovering or jumping to a definition on `from.output.x` or `from.$.x` lands on the property in the parent's `return`.
+- A cached job gives the same output every time it is reused, without running.
+- A command in an output is a command, not a process: nothing the parent started is running in the child. A command you `await` in the return value runs while the parent builds.
+- Outputs are stored in the image with each command's environment, so keep secrets out of both.
 
 ## Caching
 
