@@ -144,21 +144,22 @@ export interface SfCampaignCard {
 /**
  * SF programming.
  *
- * Only the Corgi Café start date is confirmed. The run club and the
- * community event have no confirmed date, venue or registration page, so
- * they carry a "details coming soon" state and NO call to action — an
- * inactive button is worse than no button, and a fabricated date on a
- * public page is worse than both.
+ * Corgi Café and the Marina Green Innhouse are confirmed, with Luma
+ * registration pages, so they carry live CTAs. The run club has no
+ * confirmed date, venue or registration page yet, so it carries a
+ * "details coming soon" state and NO call to action — an inactive
+ * button is worse than no button, and a fabricated date on a public
+ * page is worse than both.
  *
- * LAUNCH DEPENDENCY: run-club date + destination, community event date /
- * venue / format + Luma registration URL. Each is a one-line edit here.
+ * LAUNCH DEPENDENCY: run-club date + destination. A one-line edit here.
  */
 export const SF_CAMPAIGN_CARDS: SfCampaignCard[] = [
   {
     id: "corgi-cafe",
     title: "The Lonng Run.",
     body: "Find our campaign drink at Corgi Café and follow the lonng run from your cup to your code.",
-    detail: "Starting October 1.",
+    detail: "October 21 · Corgi Café · 12–2 PM",
+    cta: { label: "Register", href: "https://luma.com/inngest-2gu5" },
     image: {
       src: "/assets/v1/sf-long-run/corgi-cup.png",
       alt: "The campaign drink at Corgi Café.",
@@ -180,7 +181,8 @@ export const SF_CAMPAIGN_CARDS: SfCampaignCard[] = [
     id: "community",
     title: "Keep the lonng run going.",
     body: "Join us for another opportunity to connect with San Francisco builders.",
-    pending: "Date and venue TBD",
+    detail: "October 22 · Marina Green Field · 8–10 AM",
+    cta: { label: "Register", href: "https://luma.com/inngest-mgvz" },
     image: {
       src: "/assets/v1/sf-long-run/innhouse.png",
       alt: "Developers working together at an Inngest community event.",
