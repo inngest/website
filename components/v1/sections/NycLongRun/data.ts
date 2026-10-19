@@ -164,11 +164,11 @@ export const NYC_CAMPAIGN_CARDS: NycCampaignCard[] = [
     id: "founders-run-club",
     title: "Run with us.",
     body: "Join Founders Run Club for an easy morning run with people who ship for a living. All paces welcome.",
-    detail: "October 17 · Abingdon Square Park · 9 AM",
+    detail: "Past event · October 17 · Abingdon Square Park",
     cta: { label: "Founders RC", href: "https://foundersrc.com/" },
     image: {
-      src: "/assets/v1/nyc-long-run/skyline-run.webp",
-      alt: "A runner on the waterfront, facing the Manhattan skyline.",
+      src: "/assets/v1/nyc-long-run/run-club.webp",
+      alt: "The Founders Run Club group in Abingdon Square Park, arms raised in front of the statue.",
     },
   },
   {
