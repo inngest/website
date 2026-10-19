@@ -144,21 +144,19 @@ export interface SfCampaignCard {
 /**
  * SF programming.
  *
- * Only the Corgi Café start date is confirmed. The run club and the
- * community event have no confirmed date, venue or registration page, so
- * they carry a "details coming soon" state and NO call to action — an
- * inactive button is worse than no button, and a fabricated date on a
- * public page is worse than both.
- *
- * LAUNCH DEPENDENCY: run-club date + destination, community event date /
- * venue / format + Luma registration URL. Each is a one-line edit here.
+ * Corgi Café and the Marina Green Innhouse are confirmed, with Luma
+ * registration pages, so they carry live CTAs. Only list events that are
+ * on the calendar: an unconfirmed one can use `pending` (a "details
+ * coming soon" line and NO call to action), but a run club with no date
+ * is left off until it has one.
  */
 export const SF_CAMPAIGN_CARDS: SfCampaignCard[] = [
   {
     id: "corgi-cafe",
     title: "The Lonng Run.",
-    body: "Find our campaign drink at Corgi Café and follow the lonng run from your cup to your code.",
-    detail: "Starting October 1.",
+    body: "Find our campaign drink at Corgi Café. The first 50 drinks are on us. Register to claim yours, then follow the lonng run from your cup to your code.",
+    detail: "October 21 · Corgi Café · 12–2 PM",
+    cta: { label: "Register", href: "https://luma.com/inngest-2gu5" },
     image: {
       src: "/assets/v1/sf-long-run/corgi-cup.png",
       alt: "The campaign drink at Corgi Café.",
@@ -166,26 +164,16 @@ export const SF_CAMPAIGN_CARDS: SfCampaignCard[] = [
     mediaNote: "Approved campaign drink photo — cup or sleeve artwork",
   },
   {
-    id: "run-club",
-    title: "Run with us.",
-    body: "Join the Inngest community for a run in San Francisco. All paces welcome.",
-    pending: "Date TBD",
+    id: "community",
+    title: "The Lonng Run Coffee Club.",
+    body: "Free coffee and a little post-run fuel, 7–10 AM on October 22 at Marina Green Field. Out for your morning miles or just passing through? Grab a coffee on us.",
+    detail: "October 22 · Marina Green Field · 7–10 AM",
+    cta: { label: "Register", href: "https://luma.com/inngest-mgvz" },
     image: {
       src: "/assets/v1/sf-long-run/sf-run.png",
       alt: "The San Francisco bay, looking toward the Golden Gate Bridge.",
     },
-    mediaNote: "Campaign photo — San Francisco run",
-  },
-  {
-    id: "community",
-    title: "Keep the lonng run going.",
-    body: "Join us for another opportunity to connect with San Francisco builders.",
-    pending: "Date and venue TBD",
-    image: {
-      src: "/assets/v1/sf-long-run/innhouse.png",
-      alt: "Developers working together at an Inngest community event.",
-    },
-    mediaNote: "Campaign photo — community event",
+    mediaNote: "Campaign photo — Marina Green",
   },
 ];
 
