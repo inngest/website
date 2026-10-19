@@ -181,7 +181,7 @@ export const SF_CAMPAIGN_CARDS: SfCampaignCard[] = [
     id: "community",
     title: "Keep the lonng run going.",
     body: "Join us for another opportunity to connect with San Francisco builders.",
-    detail: "October 22 · Marina Green Field · 8–10 AM",
+    detail: "October 22 · Marina Green Field · 7–10 AM",
     cta: { label: "Register", href: "https://luma.com/inngest-mgvz" },
     image: {
       src: "/assets/v1/sf-long-run/innhouse.png",
