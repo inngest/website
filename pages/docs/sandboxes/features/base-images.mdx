@@ -15,7 +15,7 @@ export const description = "Sandbox base images come with Node.js, Python, Ruby,
 <AnnotatedCode>
 
 ```typescript {{ title: "TypeScript" }}
-import { image } from "inngest";
+import { image } from "inngest/experimental";
 
 const base = await step.sandbox.create("agent-1", {
   from: image.inngest("base"),

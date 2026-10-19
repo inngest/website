@@ -14,7 +14,7 @@ export const description = "Create a Sandbox in a durable function and let Innge
 <AnnotatedCode>
 
 ```typescript {{ title: "inngest/functions/build-check.ts" }}
-import { image } from "inngest";
+import { image } from "inngest/experimental";
 
 export const buildCheck = inngest.createFunction(
   { id: "build-check", triggers: { event: "repo/pushed" } },
