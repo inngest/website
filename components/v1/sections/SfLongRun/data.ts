@@ -154,7 +154,7 @@ export const SF_CAMPAIGN_CARDS: SfCampaignCard[] = [
   {
     id: "corgi-cafe",
     title: "The Lonng Run.",
-    body: "Find our campaign drink at Corgi Café and follow the lonng run from your cup to your code.",
+    body: "Find our campaign drink at Corgi Café. The first 50 drinks are on us. Register to claim yours, then follow the lonng run from your cup to your code.",
     detail: "October 21 · Corgi Café · 12–2 PM",
     cta: { label: "Register", href: "https://luma.com/inngest-2gu5" },
     image: {
