@@ -1,14 +1,14 @@
 import { AnnotatedCode, Annotation, Warning } from "shared/Docs/mdx";
 
 export const metaTitle = "Machines | Inngest CI";
-export const description = "Inngest CI machines are Sandboxes that run a job's commands. Size them per job, start them from a base image, and add a second machine when a job needs two at once.";
+export const description = "Inngest CI machines are Sandboxes that run a job's commands. Size them per job and add a second machine when a job needs two at once.";
 
 # Machines
 
 > Run each job on its own Sandbox, sized for its work.
 
 - **Right-sized.** 1, 2, or 4 vCPU per job, pipeline, or app. [Reference →](/docs/labs/ci/reference?ref=docs-labs-ci-machines#machines)
-- **Start set up.** Boot from another job's machine. [Base images →](/docs/labs/ci/base-images?ref=docs-labs-ci-machines)
+- **Start set up.** Boot from a job or image. [Base images & caching →](/docs/labs/ci/base-images?ref=docs-labs-ci-machines)
 - **A second machine.** Test a clean install. [Second machine →](#use-a-second-machine)
 
 <AnnotatedCode>
@@ -44,16 +44,15 @@ Plain `$` runs on the job's own machine.
 
 </AnnotatedCode>
 
-## Start from a machine that's set up
+## Choose a size
 
 ```typescript {{ title: "TypeScript" }}
-const test = ci.job({ id: "test", from: base }, async () => {
-  await checkout();
-  await $`pnpm test`;
-});
+machine: { vcpu: 1 } // 1 GiB
+machine: { vcpu: 2 } // 2 GiB, default
+machine: { vcpu: 4 } // 4 GiB
 ```
 
-[Base images →](/docs/labs/ci/base-images?ref=docs-labs-ci-machines)
+Set it on a job, a pipeline, or `createCi`. The first one set wins, in that order.
 
 ## Use a second machine
 

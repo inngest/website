@@ -203,7 +203,7 @@ await checkout({
 
 ## `from`
 
-[`from`](/docs/labs/ci/base-images?ref=docs-labs-ci-reference) on [`ci.job`](#ci-job) and [`ci.matrix`](#ci-matrix) starts a job on a copy of another job's machine.
+[`from`](/docs/labs/ci/base-images?ref=docs-labs-ci-reference#start-from-a-job) on [`ci.job`](#ci-job) and [`ci.matrix`](#ci-matrix) starts a job on a copy of another job's machine.
 
 ```typescript {{ title: "TypeScript" }}
 const base = ci.job("base", async () => {
@@ -217,11 +217,13 @@ const test = ci.job({ id: "test", from: build }, fn);
 from: build.with("web") // the job, run with that input
 from: ({ input }) => build.with(input) // parent depends on this job's input
 from: image.inngest("base") // an image Inngest maintains
+from: image.docker("node:22") // pulled from Docker Hub, cached as a base image
 from: image.custom("name") // "name", "name:tag", or "name@sha256:<hex>"
+from: image.snapshot("name") // a sandbox you captured by name
 from: image.job("app/job", input) // a job another app defines; input optional
 ```
 
-- The parent runs once per run, however many jobs start from it. Add a [`cache`](/docs/labs/ci/caching?ref=docs-labs-ci-reference) to share it across runs.
+- The parent runs once per run, however many jobs start from it. Add a [`cache`](/docs/labs/ci/base-images?ref=docs-labs-ci-reference#add-a-cache-key) to share it across runs.
 - A cached parent is an image. An uncached one is a run-owned snapshot, cleaned up when the run ends.
 - A missing image or snapshot makes each child repeat the parent's commands.
 - The parent must use the same CI client. A job or `with(input)` is checked at boot against the parent's `input` schema, and a function when the job runs.
@@ -235,7 +237,7 @@ await inngest.send(invalidateEvent("node-base")); // ci/base-image.invalidate; j
 await inngest.send(invalidateEvent(base, { scope: "main" })); // branch, pr:<n>, global, or local
 ```
 
-Without `scope`, every scope is cleared. [Rebuild on demand →](/docs/labs/ci/caching?ref=docs-labs-ci-reference#rebuild-on-demand)
+Without `scope`, every scope is cleared. [Rebuild on demand →](/docs/labs/ci/base-images?ref=docs-labs-ci-reference#rebuild-on-demand)
 
 ## Extra machines
 
@@ -312,7 +314,7 @@ const unit = ci.matrix(
 
 ## Caching
 
-A job's [`cache`](/docs/labs/ci/caching?ref=docs-labs-ci-reference) skips it when nothing it depends on changed. Its input is part of the identity.
+A job's [`cache`](/docs/labs/ci/base-images?ref=docs-labs-ci-reference#add-a-cache-key) skips it when nothing it depends on changed. Its input is part of the identity.
 
 ```typescript {{ title: "TypeScript" }}
 cache: {

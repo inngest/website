@@ -67,7 +67,7 @@ pnpm run ci pr --event pull_request.opened --no-interactive
 ```
 
 - `--event` picks a trigger. `--pipeline` or `--job` resolves a name clash.
-- A job runs alone, with its [`from`](/docs/labs/ci/base-images?ref=docs-labs-ci-local#another-job) parents.
+- A job runs alone, with its [`from`](/docs/labs/ci/base-images?ref=docs-labs-ci-local#start-from-a-job) parents.
 - Cron cannot run locally. Add a [`ci.manual()`](/docs/labs/ci/reference?ref=docs-labs-ci-local#triggers) trigger.
 
 ```
@@ -211,7 +211,7 @@ No command to start your app  run inngest-ci in a terminal to set it up, or add 
 - Each run starts its own Dev Server and app on free ports.
 - `checkout()` uploads your working tree without `.git`, up to 100 MiB. Later jobs upload only changes.
 - Jobs run on real [Sandboxes](/docs/sandboxes/overview?ref=docs-labs-ci-local), and checks print in your terminal.
-- [`files()`](/docs/labs/ci/caching?ref=docs-labs-ci-local#choose-the-key) hashes local files, so an uncommitted lockfile change rebuilds `base`.
+- [`files()`](/docs/labs/ci/base-images?ref=docs-labs-ci-local#add-a-cache-key) hashes local files, so an uncommitted lockfile change rebuilds `base`.
 - Sessions older than 10 minutes are cleared by the next one.
 
 [Example project →](https://github.com/inngest/inngest-js/tree/main/examples/ci-pipelines)

@@ -64,8 +64,8 @@ Shows exactly which image started.
 
 ```typescript {{ title: "TypeScript" }}
 await step.sandbox.python("ml", code, { runtime: "python@3.12" });
-await step.sandbox.ts("edge", code, { from: image.inngest("deno") });
-await step.sandbox.ts("n22", code, { runtime: "node@22" });
+await step.sandbox.typescript("edge", code, { from: image.inngest("deno") });
+await step.sandbox.typescript("n22", code, { runtime: "node@22" });
 ```
 
 - `node@20`, `22`, `24` and `python@3.11` to `3.13` map to `node-20`, `python-3.11`, and so on.

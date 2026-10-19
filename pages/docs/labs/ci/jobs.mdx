@@ -42,7 +42,7 @@ Each call gets a new machine.
 Ends the pipeline on the first failure.
 </Annotation>
 
-<Annotation id="order" lines="12" tease="then deploy" title="In order" href="/docs/labs/ci/base-images?ref=docs-labs-ci-jobs#another-job" linkText="Use from">
+<Annotation id="order" lines="12" tease="then deploy" title="In order" href="/docs/labs/ci/base-images?ref=docs-labs-ci-jobs#start-from-a-job" linkText="Use from">
 Runs after both pass.
 </Annotation>
 
@@ -54,7 +54,7 @@ Every job reports its check.
 
 ## Define and call a job
 
-Jobs never share a machine. Use [`from`](/docs/labs/ci/base-images?ref=docs-labs-ci-jobs#another-job) to build on one.
+Jobs never share a machine. Use [`from`](/docs/labs/ci/base-images?ref=docs-labs-ci-jobs#start-from-a-job) to build on one.
 
 ```typescript {{ title: "TypeScript" }}
 export const release = ci.pipeline({ id: "release", on: github.push({ branches: ["main"] }) }, async () => {

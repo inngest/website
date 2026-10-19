@@ -518,7 +518,7 @@ export const docsRefreshOutline: DocsRefreshPage[] = [
                 href: "/docs/sandboxes/features/tools",
               },
               {
-                title: "Sandbox functions and agents",
+                title: "Reusable sandbox functions",
                 href: "/docs/sandboxes/features/sandbox-functions",
               },
               {
@@ -821,12 +821,8 @@ export const docsRefreshOutline: DocsRefreshPage[] = [
                 href: "/docs/labs/ci/machines",
               },
               {
-                title: "Base images",
+                title: "Base images & caching",
                 href: "/docs/labs/ci/base-images",
-              },
-              {
-                title: "Caching",
-                href: "/docs/labs/ci/caching",
               },
               {
                 title: "Checks and reports",

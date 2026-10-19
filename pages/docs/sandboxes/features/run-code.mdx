@@ -63,7 +63,7 @@ Validates the returned value and types it.
 ```typescript {{ title: "TypeScript" }}
 const total = await step.sandbox.python<number>("sum", "return sum(range(10))");
 const listing = await step.sandbox.sh("ls", "ls -la /work");
-const count = await step.sandbox.ts<number>("count", "return JSON.parse(raw).items.length", {
+const count = await step.sandbox.typescript<number>("count", "return JSON.parse(raw).items.length", {
   input: { raw: payload },
 });
 
@@ -71,7 +71,7 @@ await using sb = await step.sandbox.create("many");
 await sb.python("a", "return 1");
 ```
 
-`python` and `ts` return the `return` value, `sh` returns `stdout`, and `run` returns the [full result](#the-full-result). Created Sandboxes share the method names.
+`python` and `typescript` return the `return` value, `sh` returns `stdout`, and `run` returns the [full result](#the-full-result). Created Sandboxes share the method names.
 
 ## Pass data in
 
@@ -89,7 +89,7 @@ const label = await step.sandbox.python<string>(
 ## Return a value
 
 ```typescript {{ title: "TypeScript" }}
-await step.sandbox.ts("a", `const total = rows.length; return { total };`, { input: { rows } });
+await step.sandbox.typescript("a", `const total = rows.length; return { total };`, { input: { rows } });
 await step.sandbox.python("b", `total = len(rows)\nreturn {"total": total}`, { input: { rows } });
 ```
 
@@ -115,9 +115,9 @@ Any [Standard Schema](https://standardschema.dev) works. A failing value fails t
 ## Choose a runtime
 
 ```typescript {{ title: "TypeScript" }}
-await step.sandbox.ts("node", code, { runtime: "node@22" });
-await step.sandbox.ts("edge", code, { runtime: "deno" });
-await step.sandbox.ts("fast", code, { runtime: "bun" });
+await step.sandbox.typescript("node", code, { runtime: "node@22" });
+await step.sandbox.typescript("edge", code, { runtime: "deno" });
+await step.sandbox.typescript("fast", code, { runtime: "bun" });
 await step.sandbox.python("ml", code, { runtime: "python@3.13" });
 ```
 

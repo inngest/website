@@ -62,7 +62,7 @@ const result = await sb.sh("diff", "diff -q a.txt b.txt", { exitCodes: [0, 1] })
 const hit = await sb.$({ exitCodes: [0, 1] })`grep ${needle} log`;
 ```
 
-Works on `sh`, `python`, `ts`, `run`, `commands.run`, [`$`](/docs/sandboxes/features/run-code?ref=docs-sandboxes-exit-codes#the-template), and [`sandbox.fn`](/docs/sandboxes/features/sandbox-functions?ref=docs-sandboxes-exit-codes).
+Works on `sh`, `python`, `typescript`, `run`, `commands.run`, and [`$`](/docs/sandboxes/features/run-code?ref=docs-sandboxes-exit-codes#the-template).
 
 ## Read the failure
 
