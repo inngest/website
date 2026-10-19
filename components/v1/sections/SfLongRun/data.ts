@@ -165,8 +165,8 @@ export const SF_CAMPAIGN_CARDS: SfCampaignCard[] = [
   },
   {
     id: "community",
-    title: "Keep the lonng run going.",
-    body: "Join us for another opportunity to connect with San Francisco builders.",
+    title: "The Lonng Run Coffee Club.",
+    body: "Free coffee and a little post-run fuel, 7–10 AM on October 22 at Marina Green Field. Out for your morning miles or just passing through? Grab a coffee on us.",
     detail: "October 22 · Marina Green Field · 7–10 AM",
     cta: { label: "Register", href: "https://luma.com/inngest-mgvz" },
     image: {
