@@ -120,7 +120,7 @@ The mode is where you decide what "collide" means for your product. `skip` ignor
 
 ![Singleton keeps one run per key; the mode decides which trigger wins](/assets/blog/what-it-means-to-build-boring/singleton-modes.jpg)
 
-[Concurrency](/docs/durable-execution/flow-control/concurrency?ref=blog-what-it-means-to-build-boring) keys cover the softer version of the same problem. Instead of exactly one run, you allow a fixed number per key—say, five per customer—so one customer's burst can't starve everyone else's agents. Extra work waits in line instead of failing.
+[Concurrency](/docs/durable-execution/flow-control/concurrency?ref=blog-what-it-means-to-build-boring) keys cover the softer version of the same problem. Instead of exactly one run, you allow a fixed number per key—say, five per customer—so [one customer's burst can't starve everyone else's agents](/blog/long-running-jobs-shouldnt-be-first-come-first-served?ref=blog-what-it-means-to-build-boring). Extra work waits in line instead of failing.
 
 ```tsx
 { id: "support-agent", concurrency: { limit: 5, key: "event.data.accountId" } }
