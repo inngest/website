@@ -90,9 +90,9 @@ export const build = ci.job(
     id: "build",
     input: z.object({ target: z.enum(["web", "api"]) }),
   },
-  async ({ target }) => {
+  async ({ input }) => {
     await checkout();
-    await $`pnpm build --target ${target}`;
+    await $`pnpm build --target ${input.target}`;
   },
 );
 ```

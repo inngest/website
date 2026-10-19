@@ -85,8 +85,8 @@ const compat = ci.matrix(
     concurrency: 3,
     from: base,
   },
-  async ({ node, db }) => {
-    await $({ env: { TEST_DATABASE: db } })`npx -y node@${node} --test`;
+  async ({ matrix }) => {
+    await $({ env: { TEST_DATABASE: matrix.db } })`npx -y node@${matrix.node} --test`;
   },
 );
 

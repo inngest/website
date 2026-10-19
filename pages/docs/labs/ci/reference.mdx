@@ -118,8 +118,8 @@ const build = ci.job(
     keepOnFailure: "24h", // snapshot the machine on failure; ID in the pipeline summary under Kept machines
     input: z.object({ target: z.string() }), // Standard Schema; mismatch throws CiUsageError
   },
-  async ({ target }) => {
-    await $`pnpm build --target ${target}`;
+  async ({ input }) => {
+    await $`pnpm build --target ${input.target}`;
   },
 );
 ```
@@ -283,8 +283,8 @@ const compat = ci.matrix(
     machine: ({ node }) => ({ vcpu: 2 }), // value or function; cache too
     check: false, // applies to every combination
   },
-  async ({ node, db }) => {
-    await $({ env: { TEST_DATABASE: db } })`npx -y node@${node} --test`;
+  async ({ matrix }) => {
+    await $({ env: { TEST_DATABASE: matrix.db } })`npx -y node@${matrix.node} --test`;
   },
 );
 
@@ -302,15 +302,38 @@ import { $, shard } from "@inngest/ci";
 
 const unit = ci.matrix(
   { id: "unit", axes: { shard: ["0", "1", "2", "3"] }, from: base },
-  async ({ shard: index }) => {
+  async ({ matrix }) => {
     const tests = await $.sh`find src -name '*.test.ts'`.lines();
 
-    await shard({ total: 4, index: Number(index), files: tests }, async (files) => {
+    await shard({ total: 4, index: Number(matrix.shard), files: tests }, async (files) => {
       await $`pnpm vitest run ${files}`;
     });
   },
 );
 ```
+
+## Handler context
+
+Every job and matrix handler gets one context object.
+
+```typescript {{ title: "TypeScript" }}
+ci.job(
+  {
+    id: "test",
+    from: base,
+    cache: { key: { deps: files("pnpm-lock.yaml"), devServer: latestDevServer } },
+  },
+  async ({ id, key, cache, input, from, repo, run }) => {
+    key.devServer; // this job's named key parts, resolved once
+    cache; // "miss" | "refresh" | "rebuild", when the job has a cache
+    from.key.devServer; // key parts of everything it started from, nearest wins
+    from.ancestry; // [{ id, key }, ...] each job above it, nearest first
+  },
+);
+```
+
+- `from` carries the parent's resolved key whether the parent was built, found cached, or belongs to another app's `image.job()`.
+- A matrix handler also gets `matrix`, its combination of the axes.
 
 ## Caching
 
@@ -318,7 +341,7 @@ A job's [`cache`](/docs/labs/ci/base-images?ref=docs-labs-ci-reference#add-a-cac
 
 ```typescript {{ title: "TypeScript" }}
 cache: {
-  key: files("pnpm-lock.yaml", ".nvmrc"), // string | files() | array | async () => string
+  key: files("pnpm-lock.yaml", ".nvmrc"), // string | files() | async () => string | array | { name: part }
   refresh: [{ cron: "0 3 * * *" }], // triggers that build ahead of time
   maxAge: "1d", // string | ms | Temporal.Duration; malformed or zero fails at boot
   scope: "branch", // or "global"
