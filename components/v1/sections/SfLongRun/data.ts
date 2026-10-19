@@ -145,13 +145,10 @@ export interface SfCampaignCard {
  * SF programming.
  *
  * Corgi Café and the Marina Green Innhouse are confirmed, with Luma
- * registration pages, so they carry live CTAs. The run club has no
- * confirmed date, venue or registration page yet, so it carries a
- * "details coming soon" state and NO call to action — an inactive
- * button is worse than no button, and a fabricated date on a public
- * page is worse than both.
- *
- * LAUNCH DEPENDENCY: run-club date + destination. A one-line edit here.
+ * registration pages, so they carry live CTAs. Only list events that are
+ * on the calendar: an unconfirmed one can use `pending` (a "details
+ * coming soon" line and NO call to action), but a run club with no date
+ * is left off until it has one.
  */
 export const SF_CAMPAIGN_CARDS: SfCampaignCard[] = [
   {
@@ -167,27 +164,16 @@ export const SF_CAMPAIGN_CARDS: SfCampaignCard[] = [
     mediaNote: "Approved campaign drink photo — cup or sleeve artwork",
   },
   {
-    id: "run-club",
-    title: "Run with us.",
-    body: "Join the Inngest community for a run in San Francisco. All paces welcome.",
-    pending: "Date TBD",
-    image: {
-      src: "/assets/v1/sf-long-run/sf-run.png",
-      alt: "The San Francisco bay, looking toward the Golden Gate Bridge.",
-    },
-    mediaNote: "Campaign photo — San Francisco run",
-  },
-  {
     id: "community",
     title: "Keep the lonng run going.",
     body: "Join us for another opportunity to connect with San Francisco builders.",
     detail: "October 22 · Marina Green Field · 7–10 AM",
     cta: { label: "Register", href: "https://luma.com/inngest-mgvz" },
     image: {
-      src: "/assets/v1/sf-long-run/innhouse.png",
-      alt: "Developers working together at an Inngest community event.",
+      src: "/assets/v1/sf-long-run/sf-run.png",
+      alt: "The San Francisco bay, looking toward the Golden Gate Bridge.",
     },
-    mediaNote: "Campaign photo — community event",
+    mediaNote: "Campaign photo — Marina Green",
   },
 ];
 
