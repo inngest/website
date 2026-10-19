@@ -47,7 +47,7 @@ Say you run a reporting product with an Inngest function called `generate-report
 
 With one shared queue, the runs are processed in the order they arrived. Acme's five runs take every slot, and Globex waits behind a burst that has nothing to do with it. This is the [noisy neighbor problem](/blog/fixing-multi-tenant-queueing-concurrency-problems?ref=blog-long-running-jobs-shouldnt-be-first-come-first-served).
 
-![Animation titled Concurrency keys. Acme sends 5 events and Globex sends 2. Without a key, Globex waits in one shared queue behind all of Acme's runs. With a key on account ID, Acme and Globex each get their own queue, so Globex runs right away and finishes first, while Acme's burst clears one run at a time.](/assets/blog/long-running-jobs-shouldnt-be-first-come-first-served/concurrency-keys.jpg)
+![Animation titled Concurrency keys. Acme sends 5 events and Globex sends 2. Without a key, Globex waits in one shared queue behind all of Acme's runs. With a key on account ID, Acme and Globex each get their own queue, so Globex runs right away and finishes first, while Acme's burst clears one run at a time.](/assets/blog/long-running-jobs-shouldnt-be-first-come-first-served/concurrency-keys.gif)
 
 Figure 1 · Concurrency keys. Each box is one run, labeled by account (A for Acme, G for Globex). Runs move from Events to Queue to Running to Done. Outlined boxes are waiting; solid boxes are running.
 
@@ -102,7 +102,7 @@ Now a different problem. Your enterprise customers pay for faster report turnaro
 
 A key wouldn't help here. Splitting by plan would set aside capacity for enterprise customers whether they need it or not. You want enterprise requests to move up the line whenever there is one. That's what priority does.
 
-![Animation titled Priority. Free-plan runs arrive every 10 seconds into a queue with one slot. An enterprise run arrives at 65 seconds and joins the back. With priority of 30 seconds, it is treated as arriving at 35 seconds and moves ahead of the 40s and 50s runs, which are pushed back. It starts 5th with priority and 7th without.](/assets/blog/long-running-jobs-shouldnt-be-first-come-first-served/priority.jpg)
+![Animation titled Priority. Free-plan runs arrive every 10 seconds into a queue with one slot. An enterprise run arrives at 65 seconds and joins the back. With priority of 30 seconds, it is treated as arriving at 35 seconds and moves ahead of the 40s and 50s runs, which are pushed back. It starts 5th with priority and 7th without.](/assets/blog/long-running-jobs-shouldnt-be-first-come-first-served/priority.gif)
 
 Figure 2 · Priority. Each box is one run, labeled with the time its event arrived. Grey boxes are free-plan runs and the salmon box is an enterprise run. The front of the queue is on the right, next to Running.
 
