@@ -110,11 +110,14 @@ export function MdxImage({
   if (typeof src !== "string") return null;
 
   const pathname = decodeURIComponent(src.split(/[?#]/)[0] ?? "");
-  const isSvg = pathname.toLowerCase().endsWith(".svg");
+  const lowerPath = pathname.toLowerCase();
+  const isSvg = lowerPath.endsWith(".svg");
+  const isGif = lowerPath.endsWith(".gif");
   const dimensions = getLocalImageDimensions(src);
 
-  // next/image does not optimize SVGs; use a native img with intrinsic size.
-  if (isSvg || !dimensions) {
+  // next/image does not optimize SVGs, and it flattens animated GIFs to one
+  // frame. Serve both as a native img so the file plays as authored.
+  if (isSvg || isGif || !dimensions) {
     return (
       <img
         {...props}
