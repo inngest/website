@@ -77,12 +77,12 @@ export const release = ci.pipeline({ id: "release", on: github.push({ branches: 
 ## Run a job for every combination
 
 ```typescript {{ title: "TypeScript" }}
-const compat = ci.matrix(
+const compat = ci.job(
   {
     id: "compat",
-    axes: { node: ["20", "22", "24"], db: ["sqlite", "postgres"] },
+    matrix: { node: ["20", "22", "24"], db: ["sqlite", "postgres"] },
     exclude: [{ node: "20", db: "postgres" }],
-    concurrency: 3,
+    maxParallel: 3,
     from: base,
   },
   async ({ matrix }) => {

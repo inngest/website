@@ -203,7 +203,7 @@ await checkout({
 
 ## `from`
 
-[`from`](/docs/labs/ci/base-images?ref=docs-labs-ci-reference#start-from-a-job) on [`ci.job`](#ci-job) and [`ci.matrix`](#ci-matrix) starts a job on a copy of another job's machine.
+[`from`](/docs/labs/ci/base-images?ref=docs-labs-ci-reference#start-from-a-job) on [`ci.job`](#ci-job), including a [matrix job](#matrix-jobs), starts a job on a copy of another job's machine.
 
 ```typescript {{ title: "TypeScript" }}
 const base = ci.job("base", async () => {
@@ -268,16 +268,18 @@ await waitForHttp("http://127.0.0.1:3000/health", { timeout: "2m", status: 200 }
   Machines cannot reach each other yet. Run servers on the job's machine in the background and use `127.0.0.1`.
 </Warning>
 
-## `ci.matrix`
+## Matrix jobs
+
+Give a job a `matrix` to run it once per combination.
 
 ```typescript {{ title: "TypeScript" }}
-const compat = ci.matrix(
+const compat = ci.job(
   {
     id: "compat",
-    axes: { node: ["20", "22", "24"], db: ["sqlite", "postgres"] },
+    matrix: { node: ["20", "22", "24"], db: ["sqlite", "postgres"] },
     exclude: [{ node: "20", db: "postgres" }],
     include: [{ node: "24", db: "mysql" }],
-    concurrency: 3, // default: all at once
+    maxParallel: 3, // default: all at once
     failFast: false, // true: first failure ends the matrix; running ones are not cancelled
     from: base, // job | image | function of the combination
     machine: ({ node }) => ({ vcpu: 2 }), // value or function; cache too
@@ -300,8 +302,8 @@ await compat({ node: "22" });
 ```typescript {{ title: "TypeScript" }}
 import { $, shard } from "@inngest/ci";
 
-const unit = ci.matrix(
-  { id: "unit", axes: { shard: ["0", "1", "2", "3"] }, from: base },
+const unit = ci.job(
+  { id: "unit", matrix: { shard: ["0", "1", "2", "3"] }, from: base },
   async ({ matrix }) => {
     const tests = await $.sh`find src -name '*.test.ts'`.lines();
 
@@ -314,7 +316,7 @@ const unit = ci.matrix(
 
 ## Handler context
 
-Every job and matrix handler gets one context object.
+Every job handler gets one context object.
 
 ```typescript {{ title: "TypeScript" }}
 ci.job(
@@ -333,7 +335,7 @@ ci.job(
 ```
 
 - `from` carries the parent's resolved key whether the parent was built, found cached, or belongs to another app's `image.job()`.
-- A matrix handler also gets `matrix`, its combination of the axes.
+- A job with a `matrix` also gets `matrix`, its combination of the axes.
 
 ## Job outputs
 
