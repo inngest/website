@@ -39,7 +39,7 @@ await $({
     return $`ps auxf`;
   },
 })`pnpm test`;
-ci.job({ id: "node", matrix: { node: ["20", "22"] } }, fn);
+ci.job({ id: "node", matrix: { axes: { node: ["20", "22"] } } }, fn);
 ```
 
 [Base images](/docs/labs/ci/base-images?ref=docs-labs-ci-recipes#start-from-a-job) · [Caching](/docs/labs/ci/base-images?ref=docs-labs-ci-recipes#add-a-cache-key) · [Retries](/docs/labs/ci/commands?ref=docs-labs-ci-recipes#retries) · [Matrix](/docs/labs/ci/jobs?ref=docs-labs-ci-recipes#run-a-job-for-every-combination)

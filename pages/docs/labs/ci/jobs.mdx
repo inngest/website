@@ -80,9 +80,11 @@ export const release = ci.pipeline({ id: "release", on: github.push({ branches: 
 const compat = ci.job(
   {
     id: "compat",
-    matrix: { node: ["20", "22", "24"], db: ["sqlite", "postgres"] },
-    exclude: [{ node: "20", db: "postgres" }],
-    maxParallel: 3,
+    matrix: {
+      axes: { node: ["20", "22", "24"], db: ["sqlite", "postgres"] },
+      exclude: [{ node: "20", db: "postgres" }],
+      concurrency: 3,
+    },
     from: base,
   },
   async ({ matrix }) => {

@@ -276,11 +276,13 @@ Give a job a `matrix` to run it once per combination.
 const compat = ci.job(
   {
     id: "compat",
-    matrix: { node: ["20", "22", "24"], db: ["sqlite", "postgres"] },
-    exclude: [{ node: "20", db: "postgres" }],
-    include: [{ node: "24", db: "mysql" }],
-    maxParallel: 3, // default: all at once
-    failFast: false, // true: first failure ends the matrix; running ones are not cancelled
+    matrix: {
+      axes: { node: ["20", "22", "24"], db: ["sqlite", "postgres"] },
+      exclude: [{ node: "20", db: "postgres" }],
+      include: [{ node: "24", db: "mysql" }],
+      concurrency: 3, // default: all at once
+      failFast: false, // true: first failure ends the matrix; running ones are not cancelled
+    },
     from: base, // job | image | function of the combination
     machine: ({ node }) => ({ vcpu: 2 }), // value or function; cache too
     check: false, // applies to every combination
@@ -303,7 +305,7 @@ await compat({ node: "22" });
 import { $, shard } from "@inngest/ci";
 
 const unit = ci.job(
-  { id: "unit", matrix: { shard: ["0", "1", "2", "3"] }, from: base },
+  { id: "unit", matrix: { axes: { shard: ["0", "1", "2", "3"] } }, from: base },
   async ({ matrix }) => {
     const tests = await $.sh`find src -name '*.test.ts'`.lines();
 
