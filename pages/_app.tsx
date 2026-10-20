@@ -40,9 +40,10 @@ type DefaultProps = PageProps & DocsLayoutProps & CaseStudyLayoutProps;
 function MyApp({ Component, pageProps }: AppProps<DefaultProps>) {
   const router = useRouter();
   const { anonymousID, existing } = useAnonymousID();
-  // Capture/persist first-touch attribution (utm_*, ref, landing_url, referrer).
-  // The hook is a no-op on subsequent visits because the cookie already exists.
-  useFirstTouch();
+  const campaign = new URLSearchParams(
+    router.asPath.split("?")[1]?.split("#")[0]
+  ).get("utm_campaign");
+  useFirstTouch(campaign);
 
   // Temp Layout swapping before we move to "app" dir
   // Use router.pathname (not asPath) to check for 404 so the layout is
