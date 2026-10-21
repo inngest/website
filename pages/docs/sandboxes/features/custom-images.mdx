@@ -1,0 +1,280 @@
+export const metaTitle = "Custom images | Sandboxes";
+export const description =
+  "Build a Docker image locally, upload its saved archive, and launch an Inngest Sandbox from the published image.";
+
+# Custom images
+
+Use a custom image when your sandbox needs application code, dependencies, or
+tools that are not in the default image. Build the image with Docker locally,
+upload a saved image archive, and wait for Inngest to publish it. Then select
+that image when creating a sandbox.
+
+Image selection and image building are separate operations. The SDK's
+`image.custom()` helper selects an already-published image; it does not run
+`docker build`, upload a Dockerfile, or pull from a container registry.
+
+## Before you start
+
+You need:
+
+- Docker with support for building `linux/amd64` images;
+- Bash, `curl`, `jq`, and `shasum` for the upload examples;
+- your workspace's signing key in `INNGEST_SIGNING_KEY`; and
+- Inngest SDK 4.25 or newer for the image-selection examples.
+
+The build APIs use the same signing key and workspace scope as the Sandbox
+APIs. Include `X-Inngest-Env` when explicitly selecting another environment.
+Use the same workspace for uploading and launching the image.
+
+Run the shell examples below in the same Bash session:
+
+```sh
+set -euo pipefail
+
+API="https://api.inngest.com/v2"
+IMAGE_NAME="my-python"
+IMAGE_TAG="v1"
+ARCHIVE="image.tar"
+
+API_HEADERS=(-H "Authorization: Bearer $INNGEST_SIGNING_KEY")
+if [[ -n "${INNGEST_ENV:-}" ]]; then
+  API_HEADERS+=(-H "X-Inngest-Env: $INNGEST_ENV")
+fi
+```
+
+## 1. Build a Docker image
+
+For example, create a small Python application in `app.py`:
+
+```python
+from flask import Flask
+import os
+
+app = Flask(__name__)
+
+@app.get("/")
+def hello():
+    return f"hello from {os.environ['APP_ENV']}\n"
+
+if __name__ == "__main__":
+    app.run(host="0.0.0.0", port=8080)
+```
+
+Create a `Dockerfile` in the same directory:
+
+```text
+FROM python:3.12-slim
+WORKDIR /app
+RUN pip install --no-cache-dir flask==3.0.3 requests==2.32.3
+COPY app.py .
+ENV APP_ENV=custom-image
+CMD ["python", "app.py"]
+```
+
+Build for `linux/amd64`, including when your development machine uses a
+different architecture:
+
+```sh
+docker build --platform linux/amd64 -t "$IMAGE_NAME:$IMAGE_TAG" .
+docker save "$IMAGE_NAME:$IMAGE_TAG" --output "$ARCHIVE"
+```
+
+Use `docker save`, not `docker export`. The upload must contain one saved
+image, including its layers and image configuration. Do not upload a
+multi-platform image index or a Docker build context.
+
+The image name and tag used in the next step determine the published
+reference. A local Docker tag alone does not publish an image to Inngest.
+
+## 2. Create an upload
+
+Measure and hash the exact archive you will upload:
+
+```sh
+UPLOAD_SIZE_BYTES=$(wc -c < "$ARCHIVE" | tr -d '[:space:]')
+UPLOAD_SHA256=$(shasum -a 256 "$ARCHIVE" | cut -d ' ' -f 1)
+
+jq -n \
+  --arg tag "$IMAGE_TAG" \
+  --argjson size "$UPLOAD_SIZE_BYTES" \
+  --arg sha "$UPLOAD_SHA256" \
+  '{tag: $tag, architecture: "amd64", uploadSizeBytes: $size, uploadSha256: $sha}' \
+  > build-request.json
+
+curl --fail-with-body --silent --show-error \
+  --request POST "$API/builds/$IMAGE_NAME" \
+  "${API_HEADERS[@]}" \
+  --header "Content-Type: application/json" \
+  --data-binary @build-request.json \
+  --output build-upload.json
+
+BUILD_ID=$(jq -er '.data.id' build-upload.json)
+```
+
+Success returns HTTP 201. The response includes:
+
+| Field                   | Meaning                                   |
+| ----------------------- | ----------------------------------------- |
+| `data.id`               | Build ID for Commit and Get               |
+| `data.name`, `data.tag` | Published image name and tag              |
+| `data.status`           | Initially `pending`                       |
+| `uploadUrl`             | Signed URL for uploading the archive      |
+| `uploadHeaders`         | Headers to send unchanged with the upload |
+| `expiresAt`             | Deadline for using the signed upload URL  |
+
+`uploadSha256` must be 64 lowercase hexadecimal characters, **without** a
+`sha256:` prefix. It is the checksum of the uploaded archive, not the
+published image's artifact digest. Do not modify the archive after hashing it.
+
+## 3. Upload the archive and commit
+
+Send the archive to the signed URL using every returned upload header:
+
+```sh
+UPLOAD_URL=$(jq -er '.uploadUrl' build-upload.json)
+UPLOAD_HEADERS=()
+while IFS=$'\t' read -r key value; do
+  UPLOAD_HEADERS+=(-H "$key: $value")
+done < <(jq -r '.uploadHeaders // {} | to_entries[] | [.key, .value] | @tsv' build-upload.json)
+
+curl --fail-with-body --silent --show-error \
+  --request PUT "$UPLOAD_URL" \
+  "${UPLOAD_HEADERS[@]}" \
+  --upload-file "$ARCHIVE"
+```
+
+The upload goes directly to storage. Do not attach your Inngest signing key
+to this request. Treat the signed URL as a temporary credential and do not
+publish `build-upload.json`.
+
+After the upload succeeds, commit it using the same image name and build ID:
+
+```sh
+curl --fail-with-body --silent --show-error \
+  --request POST "$API/builds/$IMAGE_NAME/$BUILD_ID/commit" \
+  "${API_HEADERS[@]}" \
+  --header "Content-Type: application/json" \
+  --data '{}' \
+  --output build-status.json
+```
+
+Commit normally returns HTTP 202 with `data.status: "uploaded"`. The build
+continues asynchronously; a successful upload or Commit does not mean the
+image is ready to launch. Commit verifies the upload and starts conversion of
+the saved image. It does not run your Dockerfile remotely.
+
+## 4. Wait for the image to be ready
+
+Poll the build by ID with a bounded wait:
+
+```sh
+for attempt in {1..120}; do
+  curl --fail-with-body --silent --show-error \
+    "$API/builds/$BUILD_ID" \
+    "${API_HEADERS[@]}" \
+    --output build-status.json
+
+  status=$(jq -er '.data.status' build-status.json)
+  case "$status" in
+    ready) break ;;
+    failed) jq '.data' build-status.json; exit 1 ;;
+    pending|uploaded) sleep 5 ;;
+    *) printf 'Unexpected build status: %s\n' "$status" >&2; exit 1 ;;
+  esac
+done
+
+if [[ "$status" != ready ]]; then
+  printf 'Stopped waiting; inspect build %s before starting another.\n' "$BUILD_ID" >&2
+  exit 1
+fi
+
+jq '.data | {name, tag, status, artifactDigest}' build-status.json
+```
+
+The example waits for about ten minutes. Reaching that local deadline does
+not cancel the build. Keep its ID and inspect it again before starting another
+upload. `uploaded` covers conversion and publication; there is no separate
+`building` status. A failed build includes `data.error`.
+
+The published reference is `my-python:v1`. Save its `artifactDigest` when you
+need to identify the exact artifact independently of a tag.
+
+## 5. Launch a sandbox from the image
+
+Use the published image from trusted server-side code:
+
+```ts
+import { Inngest } from "inngest";
+import { image } from "inngest/experimental";
+
+const inngest = new Inngest({ id: "custom-image-demo", isDev: false });
+
+const sandbox = await inngest.sandboxes.create({
+  name: `python-${crypto.randomUUID()}`,
+  vcpu: 2,
+  memoryMb: 2048,
+  from: image.custom("my-python:v1"),
+  runningTimeout: "3m",
+});
+
+try {
+  const result = await sandbox.commands.run([
+    "python3",
+    "-c",
+    "import os, flask, requests; print(os.environ['APP_ENV'])",
+  ]);
+  console.log(result.stdout); // custom-image
+  console.log(sandbox.imageRef, sandbox.imageDigest);
+} finally {
+  await sandbox.destroy();
+}
+```
+
+Inside an Inngest function, use the same `from` option with
+`step.sandbox.create("create-python", options)` and add stable step IDs to
+command and cleanup calls. With REST, set `"image": "my-python:v1"` on
+`POST /v2/sandboxes`.
+
+Image files, installed packages, and Dockerfile `ENV` values are included in
+the published image. Do not bake credentials into a Dockerfile or an image
+layer; use [workspace secrets](/docs/sandboxes/features/secrets) at launch.
+
+## Inspect, cancel, and rebuild
+
+| Method | Route                         | Purpose                                          |
+| ------ | ----------------------------- | ------------------------------------------------ |
+| `GET`  | `/v2/builds`                  | List builds in the current workspace             |
+| `GET`  | `/v2/builds/{buildId}`        | Inspect a build and its error or artifact digest |
+| `POST` | `/v2/builds/{buildId}/cancel` | Cancel unfinished work                           |
+
+Cancellation can be inspected as `failed` with a cancellation error. It does
+not remove an image that was already published. Build logs are not currently
+exposed through these APIs.
+
+To change an image, build and save a new local version, then repeat the upload
+flow. Prefer a new tag such as `v2` when you want to keep versions distinct.
+Existing sandboxes keep their pinned artifact; publishing another version
+does not update them. Use a new sandbox name to launch the new version.
+
+## Limits and failure handling
+
+- One `linux/amd64` image per archive; `architecture` must be `amd64`.
+- Uploads must be between 1 byte and 5 GiB. Expanded image data also has a
+  5 GiB limit, so a small compressed archive can still fail conversion.
+- Image names are workspace-local. Use a name such as `my-python`, not an
+  `inngest/` name or a container registry URL.
+- At most ten unfinished builds are allowed per workspace. Builds use
+  temporary sandbox capacity and count against account runtime concurrency.
+- Invalid input returns `400 invalid_field_format`. Commit can return
+  `400 image_upload_invalid` if the upload is missing or does not match its
+  declaration. A checksum mismatch can also reject the storage upload or fail
+  the asynchronous build; inspect both the PUT response and build status.
+- A missing or workspace-hidden build returns `404 image_build_not_found`.
+- Too many unfinished builds returns `429 rate_limited`.
+- If an API response is lost, inspect existing builds rather than repeatedly
+  creating new uploads. Preserve the build ID once you receive it.
+
+See [image selection](/docs/sandboxes/features/base-images#select-a-published-image)
+for tags and digest references, and
+[troubleshooting](/docs/sandboxes/troubleshooting) for sandbox
+launch and runtime errors.

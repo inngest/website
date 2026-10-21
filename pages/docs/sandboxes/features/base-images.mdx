@@ -13,7 +13,7 @@ Run generated code or inspect a repository without building an image first. The 
 
 ## What the beta image includes
 
-The beta uses one fixed image for new Sandboxes. A Sandbox cloned from a snapshot starts with the captured image and filesystem changes.
+New Sandboxes use the default image unless you select a published image. A Sandbox cloned from a snapshot starts with the captured image and filesystem changes.
 
 | Tool | Included |
 | --- | --- |
@@ -23,7 +23,22 @@ The beta uses one fixed image for new Sandboxes. A Sandbox cloned from a snapsho
 | Repository and network tools | Git, curl, OpenSSH, and CA certificates |
 | Shell and utilities | BusyBox `sh`, `grep`, `sed`, `awk`, `ripgrep`, `jq`, `find`, `tar`, and `gzip` |
 
-The image does **not** currently include Go, Rust, Java, Bun, or Deno. You cannot select a custom image or runtime in this beta. Exact installed versions can change when Inngest rebuilds the image. Check versions in the Sandbox if your task depends on them.
+The default image does **not** currently include Go, Rust, Java, Bun, or Deno. Exact installed versions can change when Inngest rebuilds the image. Check versions in the Sandbox if your task depends on them.
+
+## Select a published image
+
+In SDK 4.25 or newer, import `image` from `inngest/experimental` and set
+`from: image.custom("my-image:v1")` when creating a Sandbox. Use
+`from: image.inngest("base")` to select the platform base image explicitly.
+With REST, set `"image": "my-image:v1"` on `POST /v2/sandboxes`.
+
+An untagged name uses `latest`. To pin an exact artifact, use
+`my-image@sha256:<digest>` with its 64-character lowercase hexadecimal digest.
+Tags can move; existing Sandboxes keep their resolved image. Snapshot clones
+inherit the captured image and cannot override it.
+
+To build and publish your own application code, dependencies, or runtimes,
+follow [Custom images](/docs/sandboxes/features/custom-images).
 
 ## Inspect the image
 
