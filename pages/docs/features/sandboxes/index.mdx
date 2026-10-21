@@ -1,7 +1,8 @@
 import { Callout } from "src/shared/Docs/mdx";
 
-export const metaTitle = "Inngest Sandboxes"
-export const description = "Run isolated commands, manage files, and operate background processes with the Inngest TypeScript SDK or REST API."
+export const metaTitle = "Inngest Sandboxes";
+export const description =
+  "Run isolated commands, manage files and background processes, snapshot state, and pause live environments with Inngest Sandboxes.";
 
 # Sandboxes
 
@@ -10,12 +11,13 @@ commands, working with files, and managing background processes.
 
 You can use a sandbox in two ways:
 
-| Surface | Use it when | Execution model |
-| --- | --- | --- |
+| Surface             | Use it when                                              | Execution model                                     |
+| ------------------- | -------------------------------------------------------- | --------------------------------------------------- |
 | `inngest.sandboxes` | Server-side code needs a live sandbox client immediately | Calls the Sandbox REST API from the current process |
-| `step.sandbox` | An Inngest function needs memoized sandbox operations | Runs each operation as an ordinary `step.run` step |
+| `step.sandbox`      | An Inngest function needs memoized sandbox operations    | Runs each operation as an ordinary `step.run` step  |
 
-Both surfaces use sandbox UUIDs as identity and return immutable snapshots.
+Both surfaces use sandbox UUIDs as identity and return immutable objects that
+describe the state observed by that request.
 Use `get()` to fetch current state or `waitUntilRunning()` to wait for startup.
 
 <Callout variant="warning">
@@ -28,7 +30,7 @@ Use `get()` to fetch current state or `waitUntilRunning()` to wait for startup.
 
 You need:
 
-- the TypeScript SDK version that includes Sandboxes;
+- Inngest SDK 4.20 or newer;
 - Sandbox access enabled for your account;
 - an Inngest signing key in `INNGEST_SIGNING_KEY`; and
 - a server runtime with the standard Fetch API.
@@ -53,6 +55,46 @@ environment, headers, and Fetch implementation also apply to sandbox requests.
 The opt-in middleware enables `step.sandbox`; `inngest.sandboxes` itself does
 not require middleware.
 
+## Base image
+
+Omitting an image selection uses the platform's default Linux image. It includes Node.js latest (`node`,
+`npm`, `npx`) and LTS (`node-lts`, `npm-lts`, `npx-lts`), Python 3.14, Ruby
+4.0, Git, curl, OpenSSH, CA certificates, BusyBox `sh`, and common
+command-line tools including `grep`, `sed`, `awk`, `ripgrep`, `jq`, `find`,
+`tar`, and `gzip`.
+
+Go, Rust, Java, Bun, and Deno are not preinstalled. Exact runtime versions may
+change when the default image is rebuilt. Install application dependencies
+inside the sandbox and use a snapshot when you want to reuse that prepared
+environment.
+
+The REST API also accepts a published image reference. SDK
+4.25 or newer exposes the same selection through `from: image.inngest("base")`
+or `from: image.custom(reference)`, with `image` imported from
+`inngest/experimental`. These helpers select an already-published image; they
+do not build one. See the [SDK reference](/docs/reference/typescript/v4/sandboxes#select-a-published-image).
+
+Follow [Custom images](/docs/features/sandboxes/custom-images) to build with Docker,
+upload a saved archive, and launch from the published image.
+
+## Supported sandbox sizes
+
+New sandboxes currently support these exact resource configurations:
+
+| `vcpu` |          `memoryMb` |
+| -----: | ------------------: |
+|      1 |    1024, 2048, 4096 |
+|      2 |    2048, 4096, 8192 |
+|      4 |   4096, 8192, 16384 |
+|      8 |  8192, 16384, 32768 |
+|     16 | 16384, 32768, 65536 |
+
+Choose one memory value from the same row as the CPU count. `memoryMb` is in
+MiB: each supported CPU count accepts 1, 2, or 4 GiB per vCPU. There is no
+public profile selector or resize operation. Capacity and account limits still
+apply; a valid size is not a reservation. A sandbox cloned from a snapshot
+inherits the snapshot's resource configuration.
+
 ## Run a command directly
 
 Use `inngest.sandboxes` in an API route, server action, worker, script, or
@@ -67,29 +109,41 @@ let sandbox: Sandbox | undefined;
 try {
   sandbox = await inngest.sandboxes.create({
     name: `analysis-${crypto.randomUUID()}`,
-    vcpu: 2,
-    memoryMb: 512,
+    vcpu: 1,
+    memoryMb: 1024,
     runningTimeout: "60s",
   });
 
-  const result = await sandbox.commands.run({
-    command: ["/bin/sh", "-c", "printf 'hello from the sandbox\n'"],
-    timeout: "30s",
-  });
+  const result = await sandbox.commands.run(
+    "printf 'hello from the sandbox\n'",
+    {
+      timeout: "30s",
+    }
+  );
 
-  console.log(new TextDecoder().decode(result.stdout));
+  console.log(result.stdout);
   console.log("exit code:", result.exitCode);
 } finally {
   await sandbox?.destroy();
 }
 ```
 
-Commands are argument vectors, not shell strings. `command[0]` must be an
-absolute executable path. Invoke a shell explicitly when you need pipes,
-redirection, glob expansion, or multiple statements.
+A command string runs through `/bin/sh -c`, so pipes, redirection, variables,
+quoting, and chaining work normally. The SDK passes the complete string to the
+shell unchanged.
 
-Command output is returned as `Uint8Array`, so it is safe for text and binary
-data.
+Use an argv array when you need exact argument boundaries without a shell:
+
+```ts
+await sandbox.commands.run(["git", "status", "--short"]);
+```
+
+Bare executable names use `PATH`. A relative path containing `/` is resolved
+from `cwd`; an absolute path is used as-is.
+
+Captured command output is returned as UTF-8 strings. Invalid or truncated
+UTF-8 sequences are represented by the Unicode replacement character. Use the
+filesystem APIs when you need arbitrary binary data.
 
 ## Run a command in an Inngest function
 
@@ -107,15 +161,16 @@ export const inspectFilesystem = inngest.createFunction(
   async ({ event, step }) => {
     const sandbox = await step.sandbox.create("create-sandbox", {
       name: `inspect-${event.data.jobId}`,
-      vcpu: 2,
-      memoryMb: 512,
+      vcpu: 1,
+      memoryMb: 1024,
       runningTimeout: "60s",
     });
 
-    const result = await sandbox.commands.run("inspect-files", {
-      command: ["/bin/sh", "-c", "find / -maxdepth 2 -type f"],
-      timeout: "1m",
-    });
+    const result = await sandbox.commands.run(
+      "inspect-files",
+      "find / -maxdepth 2 -type f",
+      { timeout: "1m" }
+    );
 
     if (result.output.truncated) {
       console.warn("Command output was truncated", result.output);
@@ -125,10 +180,10 @@ export const inspectFilesystem = inngest.createFunction(
 
     return {
       sandboxId: sandbox.id,
-      files: new TextDecoder().decode(result.stdout),
+      files: result.stdout,
       exitCode: result.exitCode,
     };
-  },
+  }
 );
 ```
 
@@ -142,21 +197,64 @@ You can pass `{ id, name }` when the step should have a separate display name:
 ```ts
 await sandbox.commands.run(
   { id: "run-tests", name: "Run tests" },
+  "printf 'tests passed\n'",
   {
-    command: ["/bin/sh", "-c", "printf 'tests passed\n'"],
     cwd: "/",
     timeout: "5m",
-  },
+  }
 );
 ```
 
-`step.sandbox` uses ordinary `step.run` memoization. A completed step is not
-sent again on replay. Like any external mutation inside `step.run`, an
-operation can happen twice if the REST request commits and the function
-process stops before Inngest persists the step result.
+`step.sandbox` follows standard `step.run` retry and memoization semantics.
+A completed operation is reconstructed from its memoized result on replay. As
+with any external mutation inside `step.run`, a process crash after an unsafe
+operation succeeds but before its result is persisted can allow that operation
+to run again.
 
-Avoid racing mutating sandbox steps. Cancelling a losing promise cannot prove
-that its external operation did not happen.
+## Preserve or suspend a sandbox
+
+Create a user snapshot when you want a reusable point-in-time image that can
+produce new sandboxes:
+
+```ts
+const snapshot = await sandbox.snapshot();
+const clone = await snapshot.clone({
+  name: `prepared-${crypto.randomUUID()}`,
+});
+```
+
+`snapshot()` waits until the snapshot is `READY`. `clone()` creates a new
+sandbox with its own UUID while restoring the captured memory, disk,
+environment, image, and resources.
+
+Pause when you want to suspend the same sandbox and resume it later:
+
+```ts
+const paused = await sandbox.pause({ timeout: "5m" });
+const running = await paused.resume({ timeout: "5m" });
+
+console.log(running.id === sandbox.id); // true
+```
+
+Pause and resume preserve the sandbox identity and do not consume its
+remaining runtime while it is paused. Both calls wait for the stable state and
+return a new immutable Sandbox object.
+
+Inside an Inngest function, add stable step IDs:
+
+```ts
+const snapshot = await sandbox.snapshot("snapshot-sandbox");
+const clone = await snapshot.clone("clone-snapshot", {
+  name: `prepared-${event.data.jobId}`,
+});
+
+const paused = await sandbox.pause("pause-sandbox", { timeout: "5m" });
+const resumed = await paused.resume("resume-sandbox", { timeout: "5m" });
+```
+
+Read [Snapshots](/docs/features/sandboxes/snapshots) and
+[Pause and resume](/docs/features/sandboxes/pause-and-resume) before using
+either lifecycle in production-like workflows.
 
 ## Choose a command or managed process
 
@@ -180,12 +278,12 @@ Use `processes.start()` when:
 
 ```ts
 const process = await sandbox.processes.start({
-  command: ["/bin/sh", "-c", "while :; do sleep 1; done"],
+  command: "while :; do sleep 1; done",
   cwd: "/",
 });
 
-console.log(process.id);    // Public UUID
-console.log(process.pid);   // PID inside the sandbox
+console.log(process.id); // Public UUID
+console.log(process.pid); // PID inside the sandbox
 console.log(process.state); // "RUNNING"
 ```
 
@@ -193,7 +291,7 @@ On `step.sandbox`, add the step ID:
 
 ```ts
 const process = await sandbox.processes.start("start-worker", {
-  command: ["/bin/sh", "-c", "while :; do sleep 1; done"],
+  command: "while :; do sleep 1; done",
   cwd: "/",
 });
 ```
@@ -201,23 +299,101 @@ const process = await sandbox.processes.start("start-worker", {
 Read [Managed processes](/docs/features/sandboxes/managed-processes) before
 using a process as a long-lived service.
 
-## Environment variables replace the guest environment
+## Work with files
 
-For commands and managed processes, `environment` replaces the inherited
-environment. It is not merged.
+Use the direct client to transfer regular files, including binary data:
 
 ```ts
-await sandbox.commands.run({
-  command: ["/usr/bin/env"],
+await sandbox.files.upload({
+  path: "/tmp/input.txt",
+  data: "hello from the application\n",
+});
+
+const response = await sandbox.files.download({ path: "/tmp/input.txt" });
+console.log(await response.text());
+```
+
+Paths must be absolute. Upload atomically replaces the whole destination
+file; it does not append. Both directions have a 100 MiB file limit. Use
+commands to create directories, list files, rename, or delete them. Keep
+important data outside the sandbox before destroying it.
+
+In SDK 4.25, the durable client also has `files.write(step, options)`
+and `files.read(step, path)` for small files. These helpers memoize data in
+steps and are not streaming file transfers. See the
+[SDK reference](/docs/reference/typescript/v4/sandboxes#durable-files).
+
+## Environment variables are layered
+
+Every process begins with guest defaults such as `PATH`, `HOME`, and
+`container`. Values supplied when creating the sandbox override matching
+defaults. Command- or process-specific values then override matching sandbox
+values.
+
+```ts
+await sandbox.commands.run(["env"], {
   environment: {
-    PATH: "/usr/local/bin:/usr/bin:/bin",
     CI: "true",
   },
 });
 ```
 
-If `environment` is omitted or empty, the guest supplies its default
-environment.
+Environment variables are ordinary guest configuration and are visible to
+code running in the sandbox. Do not put credentials directly in
+`environment`.
+
+Set sandbox-level `environment` on fresh Create for values every command
+should inherit. Keys must be non-empty and contain neither `=` nor NUL;
+values cannot contain NUL. Sandbox-level configuration is limited to 256
+entries and 64 KiB of `KEY=value` data, including selected secrets. Clones
+restore captured values rather than accepting a new environment.
+
+## Select workspace secrets at launch
+
+For credentials, select existing workspace secrets by exact name when creating
+a fresh sandbox:
+
+```ts
+const sandbox = await inngest.sandboxes.create({
+  name: `agent-${crypto.randomUUID()}`,
+  vcpu: 1,
+  memoryMb: 1024,
+  secrets: ["OPENAI_API_KEY"],
+});
+```
+
+The secret value is exposed inside the sandbox as `OPENAI_API_KEY` and is
+inherited by commands and managed processes. The SDK sends the name, not the
+value. Snapshot clones cannot select new secrets.
+
+Read [Secrets](/docs/features/sandboxes/secrets) before using credentials in a
+sandbox. In particular, Sandbox output is not automatically redacted, and
+snapshots can retain values already delivered to the guest.
+
+## Lifecycle and timeouts
+
+Runtime operations require `RUNNING`. Create can initially return `STARTING`;
+the SDK waits for `RUNNING` unless `runningTimeout: false` is set. Sandbox
+objects do not update in place. Get the sandbox again to inspect current
+state, including `FAILED` and its optional error information.
+
+Each timeout controls a different operation:
+
+| Option                               | What it bounds                                                            |
+| ------------------------------------ | ------------------------------------------------------------------------- |
+| Create `runningTimeout`              | Startup observation; 120 seconds by default, at most five minutes         |
+| Command `timeout`                    | Captured command observation; 30 seconds by default, at most five minutes |
+| Process Wait `timeout`               | Waiting for a terminal process state; it does not stop the process        |
+| Snapshot, Pause, or Resume `timeout` | SDK readiness observation; five minutes by default and maximum            |
+
+A local timeout does not destroy the sandbox or prove that a remote operation
+was cancelled. A command may have executed after its response was lost or its
+observation timed out. Do not rerun commands with side effects blindly.
+
+There is no public Create option for a sandbox TTL or idle timeout. Do not
+use `runningTimeout` as a lifetime limit. Paused sandboxes have a separate
+server-defined retention period, currently 24 hours by default; resume before
+it expires. See [Pause and resume](/docs/features/sandboxes/pause-and-resume).
 
 ## Always clean up
 
@@ -251,6 +427,8 @@ retained output, and filesystem.
 
 - [TypeScript SDK reference](/docs/reference/typescript/v4/sandboxes)
 - [Managed processes](/docs/features/sandboxes/managed-processes)
+- [Snapshots](/docs/features/sandboxes/snapshots)
+- [Pause and resume](/docs/features/sandboxes/pause-and-resume)
 - [Errors and retries](/docs/features/sandboxes/errors-and-retries)
 - [Limitations](/docs/features/sandboxes/limitations)
 - [REST API v2 reference](/docs/reference/rest/v2/sandboxes)

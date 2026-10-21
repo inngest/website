@@ -30,9 +30,8 @@ Direct:
 
 ```ts
 const process = await sandbox.processes.start({
-  command: ["/bin/sh", "-c", "while :; do sleep 1; done"],
+  command: "while :; do sleep 1; done",
   environment: {
-    PATH: "/usr/local/bin:/usr/bin:/bin",
     PORT: "8080",
   },
   cwd: "/",
@@ -43,9 +42,8 @@ Inside an Inngest function:
 
 ```ts
 const process = await sandbox.processes.start("start-worker", {
-  command: ["/bin/sh", "-c", "while :; do sleep 1; done"],
+  command: "while :; do sleep 1; done",
   environment: {
-    PATH: "/usr/local/bin:/usr/bin:/bin",
     PORT: "8080",
   },
   cwd: "/",
@@ -57,7 +55,7 @@ Start returns only after the target process is confirmed `RUNNING`:
 ```ts
 console.log(process.id);      // Public UUID
 console.log(process.pid);     // PID inside the sandbox
-console.log(process.command); // Original argument vector
+console.log(process.command); // Normalized argument vector
 console.log(process.state);   // "RUNNING"
 ```
 
@@ -66,48 +64,61 @@ The platform generates the public process UUID before dispatch. Internal
 
 ### Command rules
 
-`command` is an argument vector:
+Pass a string for shell syntax:
 
 ```ts
-command: ["/usr/bin/git", "status", "--short"]
+command: "printf 'build complete\n' > /tmp/build.log"
 ```
 
-It is not parsed by a shell. To use shell syntax, invoke a shell explicitly:
+The SDK sends the complete string unchanged as:
 
 ```ts
-command: [
-  "/bin/sh",
-  "-c",
-  "printf 'build complete\n' > /tmp/build.log",
-]
+["/bin/sh", "-c", "printf 'build complete\n' > /tmp/build.log"]
 ```
 
-The executable in `command[0]` must be absolute. See
+Use an argv array when exact argument boundaries matter and shell expansion is
+not wanted:
+
+```ts
+command: ["git", "status", "--short"]
+```
+
+Bare executable names use the effective `PATH`. A path containing `/` is used
+directly, so a relative path is resolved from `cwd`. See
 [Errors and retries](/docs/features/sandboxes/errors-and-retries#validation-and-size-limits)
 for argument, environment, and encoded-size limits.
 
 ### Environment behavior
 
-`environment` replaces the process environment. It is not merged.
+Process environment is layered in this order:
+
+1. guest defaults;
+2. sandbox values supplied to Create; and
+3. process-specific values supplied to Start.
+
+Later values override matching earlier keys. Other keys are retained.
 
 If it is omitted or empty, the current guest default is:
 
 ```text
 PATH=/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin
-HOME=/
-TERM=linux
+HOME=/root
 container=simcity
 ```
 
-For a non-empty environment, include every variable the process needs.
-Environment keys must be non-empty and cannot contain `=` or NUL.
+Interactive TTY processes also receive `TERM=linux`. Environment keys must be
+non-empty and cannot contain `=` or NUL. Process-specific values are ordinary
+configuration and are visible to code in the guest. A process inherits
+workspace secrets selected when its sandbox was created, and a process value
+with the same key overrides the inherited value for that process. See
+[Secrets](/docs/features/sandboxes/secrets).
 
 ### Working directory
 
 An omitted or empty `cwd` uses `/`. The client accepts relative paths, but
 absolute paths are clearer and more portable.
 
-## Start can be ambiguous or duplicated
+## Start can be ambiguous
 
 A connection can fail after the node accepts Start but before the caller
 receives the UUID and PID. The API reports:
@@ -126,11 +137,6 @@ second Start can create another process.
 
 Direct REST and `inngest.sandboxes` do not have a persisted
 `Idempotency-Key` intent.
-
-`step.sandbox` uses ordinary `step.run` at-least-once behavior. A persisted
-result is replayed without another Start, but a process can be started twice
-if Start succeeds and the function process stops before the step result is
-persisted.
 
 ## List and get processes
 
@@ -229,12 +235,13 @@ await process.signal("stop-worker", {
 | Option | Default | Meaning |
 | --- | ---: | --- |
 | `signal` | Required | Numeric Unix signal from 1 through 64 |
-| `includeChildren` | `false` | Also signal processes in the managed process's cgroup |
+| `includeChildren` | SDK: `true`; REST: `false` | Also signal processes in the managed process's cgroup |
 
 Use signal 15 (`SIGTERM`) for graceful shutdown and signal 9 (`SIGKILL`) when
-the process must stop immediately. Currently, set `includeChildren: true` only
-with `SIGKILL`. Descendant delivery with other signals can make the target's
-terminal state unobservable and produce `LOST`.
+the process must stop immediately. Pass `includeChildren` explicitly. Use
+`false` for graceful signals. Currently, use `true` only with `SIGKILL`;
+descendant delivery with other signals can make the target's terminal state
+unobservable and produce `LOST`.
 
 Signalling an already-terminal process succeeds without changing it. A
 missing process returns `sandbox_process_not_found`.

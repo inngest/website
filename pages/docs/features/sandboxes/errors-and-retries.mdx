@@ -1,7 +1,8 @@
 import { Callout } from "src/shared/Docs/mdx";
 
-export const metaTitle = "Sandbox errors and retries"
-export const description = "Handle Sandbox validation, availability failures, ambiguous mutations, retries, and stream errors safely."
+export const metaTitle = "Sandbox errors and retries";
+export const description =
+  "Handle Sandbox validation, availability failures, ambiguous mutations, retries, and stream errors safely.";
 
 # Sandbox errors and retries
 
@@ -41,6 +42,7 @@ class SandboxError extends Error {
   status?: number;
   sandboxId?: string;
   processId?: string;
+  snapshotId?: string;
   ambiguous: boolean;
   retryable: boolean;
   requestId?: string;
@@ -69,32 +71,45 @@ exactly-once dispatch.
 
 ## Error reference
 
-| HTTP | Code | Typical condition | Guidance |
-| ---: | --- | --- | --- |
-| 400 | `invalid_request` | Invalid JSON or unknown fields | Fix the request |
-| 400 | `missing_field` | Required field omitted | Fix the request |
-| 400 | `invalid_field_format` | Invalid UUID, command, signal, timeout, cursor, path, mode, or tail size | Fix the request |
-| 401 | `authorization_header_missing` | Missing authorization | Fix credentials |
-| 401 | `invalid_api_key` | Invalid API key | Rotate or replace credentials |
-| 403 | `access_denied` | Sandbox access is not enabled | Request access |
-| 404 | `sandbox_not_found` | Sandbox missing or hidden by workspace scope | Re-check the target |
-| 404 | `sandbox_file_not_found` | Sandbox or regular file missing | Re-check the target |
-| 404 | `sandbox_process_not_found` | Process missing | Re-check the target |
-| 404 | `sandbox_process_output_not_retained` | Process exists but output was evicted | Output cannot be recovered through this API |
-| 409 | `sandbox_name_taken` | Active sandbox name is already used | Choose another name or use the existing sandbox |
-| 409 | `invalid_request` | Sandbox is not in the required state | Get and inspect current state |
-| 409 | `operation_ambiguous` | The result of the operation in `SandboxError.action` is unknown | Follow the action-specific recovery guidance below |
-| 413 | `sandbox_exec_output_too_large` | Direct output exceeded 4 MiB | Command may have run; do not retry blindly |
-| 413 | `sandbox_file_too_large` | File exceeds 100 MiB | Reduce or split the file |
-| 429 | `rate_limited` | Request rejected by rate limit | Retry with bounded backoff |
-| 500 | `internal_error` | Unexpected failure | Retry only when the operation is proven safe |
-| 503 | `compute_unavailable` | Operation was rejected before dispatch or is safe to repeat | Safe reads and safe-to-repeat mutations can retry |
-| 504 | `sandbox_exec_timed_out` | Exec observation timed out | Command may have run; do not retry blindly |
-| 504 | `sandbox_process_wait_timed_out` | Wait observation timed out | Process continues; waiting again is safe |
+| HTTP | Code                                  | Typical condition                                                        | Guidance                                                       |
+| ---: | ------------------------------------- | ------------------------------------------------------------------------ | -------------------------------------------------------------- |
+|  400 | `invalid_request`                     | Invalid JSON or unknown fields                                           | Fix the request                                                |
+|  400 | `missing_field`                       | Required field omitted                                                   | Fix the request                                                |
+|  400 | `invalid_field_format`                | Invalid UUID, command, signal, timeout, cursor, path, mode, or tail size | Fix the request                                                |
+|  401 | `authorization_header_missing`        | Missing authorization                                                    | Fix credentials                                                |
+|  401 | `invalid_api_key`                     | Invalid signing key or environment                                       | Rotate or replace credentials                                  |
+|  403 | `access_denied`                       | Sandbox access is not enabled                                            | Request access                                                 |
+|  403 | `sandbox_snapshot_limit_exceeded`     | Account snapshot count or storage quota reached                          | Delete snapshots or request more capacity                      |
+|  404 | `sandbox_not_found`                   | Sandbox missing or hidden by workspace scope                             | Re-check the target                                            |
+|  404 | `sandbox_file_not_found`              | Sandbox or regular file missing                                          | Re-check the target                                            |
+|  404 | `sandbox_process_not_found`           | Process missing                                                          | Re-check the target                                            |
+|  404 | `sandbox_process_output_not_retained` | Process exists but output was evicted                                    | Output cannot be recovered through this API                    |
+|  404 | `sandbox_snapshot_not_found`          | Snapshot missing or hidden by workspace scope                            | Re-check the target                                            |
+|  404 | `sandbox_image_not_found`             | Published image missing or not visible in this workspace                 | Check the reference and workspace                              |
+|  409 | `sandbox_name_taken`                  | Active sandbox name is already used                                      | Choose another name or use the existing sandbox                |
+|  409 | `sandbox_snapshot_name_taken`         | A CREATING or unexpired READY snapshot holds the name                    | List by name and inspect the existing snapshot                 |
+|  409 | `sandbox_image_not_ready`             | Selected image is not ready to launch                                    | Check the image's availability                                 |
+|  409 | `sandbox_snapshot_not_ready`          | Snapshot is not READY for the requested operation                        | Poll Get or inspect its terminal state                         |
+|  409 | `invalid_request`                     | Sandbox is not in the required state                                     | Get and inspect current state                                  |
+|  409 | `operation_ambiguous`                 | The result of the operation in `SandboxError.action` is unknown          | Follow the action-specific recovery guidance below             |
+|  413 | `sandbox_exec_output_too_large`       | Direct output exceeded 4 MiB                                             | Command may have run; do not retry blindly                     |
+|  413 | `sandbox_file_too_large`              | File exceeds 100 MiB                                                     | Reduce or split the file                                       |
+|  429 | `rate_limited`                        | Request rejected by rate limit                                           | Retry with bounded backoff                                     |
+|  429 | `sandbox_concurrency_limit_exceeded`  | Account runtime concurrency limit reached                                | Destroy or pause unneeded sandboxes, or request a higher limit |
+|  500 | `internal_error`                      | Unexpected failure                                                       | Retry only when the operation is proven safe                   |
+|  503 | `compute_unavailable`                 | Operation was rejected before dispatch or is safe to repeat              | Safe reads and safe-to-repeat mutations can retry              |
+|  504 | `sandbox_exec_timed_out`              | Exec observation timed out                                               | Command may have run; do not retry blindly                     |
+|  504 | `sandbox_process_wait_timed_out`      | Wait observation timed out                                               | Process continues; waiting again is safe                       |
 
 `sandbox_exec_output_too_large`, `sandbox_exec_timed_out`, and
 `operation_ambiguous` all produce `SandboxError.ambiguous === true` and
 `retryable === false`.
+
+SDK snapshot readiness polling can also throw
+`sandbox_snapshot_wait_timed_out`. The snapshot continues creating; list or
+get snapshots before deciding what to do next. This is a client-side observation
+timeout, not a failed snapshot result. Waiting again is safe, but the SDK does
+not automatically extend the requested deadline.
 
 ## Reads and mutations
 
@@ -105,21 +120,31 @@ Safe reads do not modify sandbox state:
 - retained process output
 - sandbox and process streams
 - file download
+- List and Get snapshot
 
 Mutations can have external effects:
 
 - Create sandbox
 - captured Exec
 - Destroy sandbox
+- Pause and Resume sandbox
 - Start process
 - Signal process
 - file upload
+- Create and Delete snapshot
 
 Not every mutation has the same retry behavior. Repeating the same Create
 request recovers the matching active sandbox, Destroy records durable teardown
 intent, and uploading the same bytes and mode to the same path produces the
 same file. Captured Exec, process Start, and arbitrary process Signal can
 produce an additional side effect when repeated.
+
+Snapshot Create has no idempotency key. If its response is uncertain, list
+snapshots and reconcile recent resources before considering another Create.
+
+Pause and Resume are state-based, safe-to-repeat transitions. A repeated Pause
+continues an existing pause or returns the already paused sandbox. A repeated
+Resume continues an existing resume or returns the already running sandbox.
 
 ## Retry safe reads
 
@@ -182,17 +207,20 @@ reconciliation, or operator-review path.
 
 Use `SandboxError.action` to choose the recovery path:
 
-| Action | What may have happened | Recovery |
-| --- | --- | --- |
-| `exec` | The command may have run, but its captured result was not confirmed | Inspect the command's external effects or an application-defined completion marker. Do not run it again automatically. |
-| `process.start` | A process may be running, but its generated UUID may not have reached the caller | List processes and compare command and start time. If the process cannot be identified confidently, stop and require operator or application-level reconciliation. |
-| `process.signal` | The signal may have been delivered | Get or wait for the process. Send another signal only when duplicate delivery is safe for that signal and application. |
+| Action            | What may have happened                                                           | Recovery                                                                                                                                                           |
+| ----------------- | -------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| `exec`            | The command may have run, but its captured result was not confirmed              | Inspect the command's external effects or an application-defined completion marker. Do not run it again automatically.                                             |
+| `process.start`   | A process may be running, but its generated UUID may not have reached the caller | List processes and compare command and start time. If the process cannot be identified confidently, stop and require operator or application-level reconciliation. |
+| `process.signal`  | The signal may have been delivered                                               | Get or wait for the process. Send another signal only when duplicate delivery is safe for that signal and application.                                             |
+| `snapshot.create` | Snapshot capture may have started, but its UUID may not have reached the caller  | List recent snapshots and reconcile by source, creation time, and state. Do not create another blindly.                                                            |
 
-Create, Destroy, and file upload do not use `operation_ambiguous` for an
-unconfirmed response. Create is safe to repeat with the same active name and
-resources, Destroy records teardown intent before contacting the node, and an
-identical upload produces the same file. The SDK reports these failures as
-retryable availability errors.
+Create, Destroy, Pause, Resume, snapshot Delete, and file upload do not use
+`operation_ambiguous` for an unconfirmed response. Create is safe to repeat
+with the same active name and full Create intent; secret selection order does
+not matter, but the resolved secret identities do. Lifecycle transitions are
+state-idempotent, Destroy records teardown intent before contacting the node,
+and an identical upload produces the same file. The SDK reports these failures
+as retryable availability errors.
 
 `sandbox_exec_output_too_large` and `sandbox_exec_timed_out` use more specific
 codes, but they are also ambiguous: the command may have run even though its
@@ -200,67 +228,61 @@ complete result was not observed.
 
 Reconciliation is application policy. The SDK does not guess.
 
-## Understand `step.sandbox` replay
-
-`step.sandbox` uses ordinary `step.run` memoization:
-
-1. The step handler sends the REST request.
-2. The SDK converts the response to JSON-safe data.
-3. Inngest persists the result.
-4. Replay reconstructs the Sandbox object from that result.
-
-If a REST operation commits and the function process stops before the result is
-persisted, Inngest can run the handler again. There is no sandbox-specific
-executor fence.
-
-An observed `operation_ambiguous` is non-retriable. A process crash cannot
-report that error. Create and Destroy tolerate the ordinary at-least-once step
-window. Captured Exec, process Start, and arbitrary process Signal require
-application-level idempotency or reconciliation when duplicate execution is
-unacceptable.
-
 ## Validation and size limits
 
 ### Sandbox
 
-| Value | Limit |
-| --- | --- |
-| Name | 1–63 lowercase letters, digits, `_`, or `-` |
-| vCPU | Positive unsigned 32-bit integer |
-| Memory | Positive unsigned 32-bit integer in MiB |
-| List page | Default 50, maximum 250 |
-| Create JSON body | 1 MiB |
+| Value                                          | Limit                                                                      |
+| ---------------------------------------------- | -------------------------------------------------------------------------- |
+| Name                                           | 1–255 Unicode code points; no control characters or surrounding whitespace |
+| Resource configuration                         | 1, 2, 4, 8, or 16 vCPUs with 1024, 2048, or 4096 MiB per vCPU              |
+| Secret name                                    | 1–256 UTF-8 bytes; no surrounding Unicode whitespace, `=`, CR, LF, or NUL  |
+| Literal environment keys plus selected secrets | Maximum 256 entries and 64 KiB of resolved `KEY=value` data                |
+| List page                                      | Default 50, maximum 250                                                    |
+| Create JSON body                               | 1 MiB                                                                      |
 
-Entitlements or capacity can impose lower effective resource limits.
+The API rejects unsupported resource combinations with
+`400 invalid_field_format`; retrying the same size will not help. The SDK's
+local positive-integer validation does not replace this server validation.
+Entitlements or available capacity can still reject a supported pair. See the
+[size table](/docs/features/sandboxes#supported-sandbox-sizes).
+
+Secret names are exact and case-sensitive. A selection cannot contain
+duplicates or overlap keys in the Create request's `environment` object.
+Unknown or archived secret names reject Create. Snapshot clones cannot include
+`secrets`.
 
 ### Commands and process Start
 
-| Value | Limit |
-| --- | --- |
-| Argument count | 1–128 |
-| Sum of argument UTF-8 bytes | 32 KiB |
-| Environment entries | 256 |
+| Value                                      | Limit  |
+| ------------------------------------------ | ------ |
+| Argument count                             | 1–128  |
+| Sum of argument UTF-8 bytes                | 32 KiB |
+| Environment entries                        | 256    |
 | Sum of environment `KEY=value` UTF-8 bytes | 64 KiB |
-| Working-directory UTF-8 bytes | 4096 |
-| Encoded process specification | 96 KiB |
-| JSON body | 1 MiB |
+| Working-directory UTF-8 bytes              | 4096   |
+| Encoded process specification              | 96 KiB |
+| JSON body                                  | 1 MiB  |
 
 Additional rules:
 
-- `command[0]` must be absolute;
+- a bare `command[0]` is resolved through the effective guest `PATH`;
+- a `command[0]` containing `/` is used as supplied and can be relative to
+  `cwd`;
 - arguments, keys, values, and `cwd` cannot contain NUL;
 - environment keys must be non-empty and cannot contain `=`;
 - the SDK rejects invalid Unicode surrogate sequences; and
-- `environment` replaces rather than merges with the guest environment.
+- command environment variables override sandbox variables, which override
+  guest defaults.
 
 ### Captured Exec
 
-| Value | Limit |
-| --- | --- |
-| Default timeout | 30 seconds |
-| Maximum timeout | 5 minutes |
-| Direct REST combined stdout and stderr | 4 MiB |
-| `step.sandbox` retained stdout and stderr | 2 MiB |
+| Value                                     | Limit      |
+| ----------------------------------------- | ---------- |
+| Default timeout                           | 30 seconds |
+| Maximum timeout                           | 5 minutes  |
+| Direct REST combined stdout and stderr    | 4 MiB      |
+| `step.sandbox` retained stdout and stderr | 2 MiB      |
 
 The middleware applies the 2 MiB durable limit after a successful REST
 response. Larger results succeed with deterministic tail truncation and report
@@ -268,26 +290,35 @@ original and retained byte counts.
 
 ### Managed processes
 
-| Value | Limit |
-| --- | --- |
-| Process List page | Default 50, maximum 250 |
-| Signal | Integer 1–64 |
-| Wait default timeout | 30 seconds |
-| Wait maximum timeout | 5 minutes |
-| Retained output per process | Approximately 512 KiB |
-| Output rings retained | Newest 32 |
-| `tailBytes` | 0–524,288 |
+| Value                       | Limit                   |
+| --------------------------- | ----------------------- |
+| Process List page           | Default 50, maximum 250 |
+| Signal                      | Integer 1–64            |
+| Wait default timeout        | 30 seconds              |
+| Wait maximum timeout        | 5 minutes               |
+| Retained output per process | Approximately 512 KiB   |
+| Output rings retained       | Newest 32               |
+| `tailBytes`                 | 0–524,288               |
 
 There is no process runtime timeout. Stop a process with a signal.
 
 ### Files
 
-| Value | Limit |
-| --- | --- |
-| File size | 100 MiB |
-| Path | Absolute, no NUL, at most 4096 bytes |
-| Upload mode | Octal `0001`–`0777`; default `0644` |
-| File type | Regular files only |
+| Value       | Limit                                |
+| ----------- | ------------------------------------ |
+| File size   | 100 MiB                              |
+| Path        | Absolute, no NUL, at most 4096 bytes |
+| Upload mode | Octal `0001`–`0777`; default `0644`  |
+| File type   | Regular files only                   |
+
+### Snapshots
+
+| Value                | Limit                      |
+| -------------------- | -------------------------- |
+| Snapshot Create body | 4 KiB; empty or `{}` only  |
+| Snapshot List page   | Default 50, maximum 250    |
+| Retention            | Server-defined `expiresAt` |
+| Count and storage    | Account-specific quotas    |
 
 ## Stream errors after HTTP 200
 

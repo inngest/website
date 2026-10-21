@@ -1,9 +1,15 @@
 import { Callout } from "src/shared/Docs/mdx";
 
-export const metaTitle = "TypeScript Sandbox SDK reference"
-export const description = "Reference for inngest.sandboxes and step.sandbox lifecycle, command, file, log, and managed-process methods."
+export const metaTitle = "TypeScript Sandbox SDK reference";
+export const description =
+  "Reference for inngest.sandboxes and step.sandbox lifecycle, snapshot, command, file, log, and managed-process methods.";
 
 # TypeScript Sandbox SDK
+
+Snapshot, clone, Pause, and Resume require Inngest SDK 4.20 or newer. Sandbox
+secret selection requires Inngest SDK 4.21 or newer. Named snapshots require
+SDK 4.23 or newer. The image-selection, durable file, scoped cleanup, and
+code-runner examples below use the published SDK 4.25 API.
 
 The TypeScript SDK exposes two clients over the same sandbox resources:
 
@@ -19,30 +25,34 @@ const inngest = new Inngest({
 // Direct REST-backed client
 await inngest.sandboxes.create({
   name: "direct-sandbox",
-  vcpu: 2,
-  memoryMb: 512,
+  vcpu: 1,
+  memoryMb: 1024,
 });
 
 // Memoized middleware-backed step client
 await step.sandbox.create("step-id", {
   name: "durable-sandbox",
-  vcpu: 2,
-  memoryMb: 512,
+  vcpu: 1,
+  memoryMb: 1024,
 });
 ```
 
-| Operation | `inngest.sandboxes` | `step.sandbox` |
-| --- | :---: | :---: |
-| Create, List, Get, Destroy | Yes | Yes |
-| Captured Exec | Yes | Yes |
-| Start, List, Get, Signal, Wait process | Yes | Yes |
-| Retained process output | Yes | Yes |
-| Sandbox log stream | Yes | No |
-| Live process output stream | Yes | No |
-| File upload and download | Yes | No |
+| Operation                                     | `inngest.sandboxes` |       `step.sandbox`        |
+| --------------------------------------------- | :-----------------: | :-------------------------: |
+| Create, List, Get, Destroy                    |         Yes         |             Yes             |
+| Pause and Resume                              |         Yes         |             Yes             |
+| Snapshot Create, List, Get, Delete, and Clone |         Yes         |             Yes             |
+| Captured Exec                                 |         Yes         |             Yes             |
+| Start, List, Get, Signal, Wait process        |         Yes         |             Yes             |
+| Retained process output                       |         Yes         |             Yes             |
+| Sandbox log stream                            |         Yes         |             No              |
+| Live process output stream                    |         Yes         |             No              |
+| File upload and download                      |         Yes         |             No              |
+| Small-file read and write                     | Via upload/download | Yes (examples use SDK 4.25) |
 
-Live streams and file bodies cannot be reconstructed from memoized JSON step
-state, so they are deliberately excluded from `step.sandbox`.
+Live streams and Fetch `Response` bodies cannot be reconstructed from memoized
+JSON step state. Durable file helpers instead serialize small files into step
+data; they do not expose the direct upload/download interface.
 
 `sandboxMiddleware()` is required only for the durable `step.sandbox` surface.
 The direct `inngest.sandboxes` client works without it.
@@ -62,13 +72,16 @@ interface SandboxResource {
   status:
     | "PENDING"
     | "STARTING"
+    | "PAUSING"
     | "RUNNING"
     | "PAUSED"
+    | "RESUMING"
     | "TERMINATING"
     | "TERMINATED"
     | "FAILED";
   vpcId: string;
   imageRef: string;
+  imageDigest?: string;
   resources: {
     vcpu: number;
     memoryMb: number;
@@ -83,22 +96,51 @@ interface SandboxResource {
 `id` and `vpcId` are canonical lowercase UUIDs. Timestamps are RFC 3339
 strings.
 
-Create currently chooses the workspace's default egress-only VPC and default
-image. `vpcId` and `imageRef` describe the created resource; they are not
-Create options.
+SDK Create chooses the workspace's default egress-only VPC and, unless you
+select an image, the default image. `vpcId` and `imageRef` describe the created
+resource; they are not SDK Create options. SDK 4.25 adds `from` and `image`
+for selecting an already-published image. `imageDigest`, when present, is the
+pinned launch artifact, in `sha256:<hex>` form.
 
-Sandbox objects are immutable snapshots:
+Sandbox objects are immutable views of the state observed by a request:
 
 ```ts
 const sandbox = await inngest.sandboxes.get(sandboxId);
 
 if (sandbox) {
-  console.log(Object.isFrozen(sandbox));           // true
+  console.log(Object.isFrozen(sandbox)); // true
   console.log(Object.isFrozen(sandbox.resources)); // true
 }
 ```
 
-Each Get returns a new object. It never mutates an earlier snapshot.
+Each Get returns a new object. It never mutates an earlier result.
+
+## Snapshot resource
+
+```ts
+interface SandboxSnapshotResource {
+  id: string;
+  name?: string;
+  sourceImageId: string;
+  status: "CREATING" | "READY" | "DELETING" | "DELETED" | "FAILED" | "LOST";
+  compatibilityId?: string;
+  resources: {
+    vcpu: number;
+    memoryMb: number;
+  };
+  memoryPackCount: number;
+  diskPackCount: number;
+  storedBytes: number;
+  createdAt: string;
+  updatedAt: string;
+  expiresAt: string;
+  error?: string;
+}
+```
+
+`READY` snapshots include `compatibilityId` and an immutable image digest in
+`sourceImageId`. `error` can be present on a failed snapshot. Every snapshot
+has a server-defined expiration time.
 
 ## Process resource
 
@@ -107,13 +149,7 @@ interface SandboxProcessResource {
   id: string;
   command: readonly string[];
   pid?: number;
-  state:
-    | "STARTING"
-    | "RUNNING"
-    | "EXITED"
-    | "KILLED"
-    | "FAILED"
-    | "LOST";
+  state: "STARTING" | "RUNNING" | "EXITED" | "KILLED" | "FAILED" | "LOST";
   exitCode?: number;
   terminationSignal?: number;
   startedAt?: string;
@@ -165,26 +201,113 @@ Keep it in trusted server-side code.
 ```ts
 const sandbox = await inngest.sandboxes.create({
   name: "agent_job-42",
-  vcpu: 2,
-  memoryMb: 512,
+  vcpu: 1,
+  memoryMb: 1024,
+  environment: {
+    APP_ENV: "beta",
+  },
+  secrets: ["OPENAI_API_KEY"],
 });
 ```
 
-| Option | Required | Meaning |
-| --- | :---: | --- |
-| `name` | Yes | 1–63 lowercase letters, digits, `_`, or `-` |
-| `vcpu` | Yes | Positive integer virtual CPU count |
-| `memoryMb` | Yes | Positive integer memory in MiB |
+| Option           | Required | Meaning                                                                         |
+| ---------------- | :------: | ------------------------------------------------------------------------------- |
+| `name`           |   Yes    | 1–255 Unicode characters; no control characters or surrounding whitespace       |
+| `vcpu`           |   Yes    | Virtual CPU count from a supported resource configuration                       |
+| `memoryMb`       |   Yes    | Memory in MiB from the same supported configuration                             |
+| `environment`    |    No    | Literal values inherited by commands and processes                              |
+| `secrets`        |    No    | Exact workspace secret names injected under the same environment variable names |
+| `from`           |    No    | SDK 4.25+: image made with `image.inngest()` or `image.custom()`                |
+| `image`          |    No    | SDK 4.25+: published reference string; alternative to `from`                    |
+| `runningTimeout` |    No    | Wait bound; defaults to `"120s"`; `false` returns immediately                   |
 
-An active name must be unique in the workspace.
+New sandboxes currently support these exact pairs:
 
-Create returns a full `Sandbox`:
+| `vcpu` |          `memoryMb` |
+| -----: | ------------------: |
+|      1 |    1024, 2048, 4096 |
+|      2 |    2048, 4096, 8192 |
+|      4 |   4096, 8192, 16384 |
+|      8 |  8192, 16384, 32768 |
+|     16 | 16384, 32768, 65536 |
 
-- HTTP 201 becomes `RUNNING`;
-- HTTP 202 becomes `STARTING`.
+The SDK does not accept a profile name. Choose one memory value from the
+CPU's row. The SDK validates positive integers; the API additionally rejects
+unsupported pairs with `400 invalid_field_format`. Valid sizes remain subject
+to capacity and account limits. Clones inherit the snapshot's resource
+configuration.
 
-The SDK does not poll a `STARTING` sandbox. Call `inngest.sandboxes.get()` or
-`step.sandbox.get()` with a bound.
+Names are case-sensitive. An active name must be unique in the workspace.
+Creating the same active name with the same fresh-Create intent returns the
+existing sandbox. Secret selection is compared by resolved identity and is
+order-independent. A conflicting request throws `sandbox_name_taken`.
+
+Create waits for `RUNNING` for up to 120 seconds by default. It does not
+redispatch Create while waiting. Set an explicit duration up to five minutes,
+or opt out:
+
+```ts
+const accepted = await inngest.sandboxes.create({
+  ...options,
+  runningTimeout: false,
+});
+```
+
+With `false`, the returned object can be `STARTING` or `RUNNING`. Call
+`accepted.waitUntilRunning({ timeout: "30s" })` to wait later without repeating
+Create.
+
+#### Select a published image
+
+In SDK 4.25 or newer, use the image helpers from `inngest/experimental`:
+
+```ts
+import { image } from "inngest/experimental";
+
+const sandbox = await inngest.sandboxes.create({
+  name: `job-${crypto.randomUUID()}`,
+  vcpu: 2,
+  memoryMb: 4096,
+  from: image.inngest("base"),
+});
+```
+
+Use `image.custom("my-image:v1")` only for an image already published and
+accessible to your workspace. The helpers select an image; they do not build,
+upload, or pull an arbitrary image from a container registry. Follow
+[Custom images](/docs/features/sandboxes/custom-images) for the Docker
+build, archive upload, and publication flow.
+
+Alternatively, `image: "inngest/base:latest"` accepts a published reference
+string. Supply either `from` or `image`, never both. Accepted references are
+`name`, `name:tag`, `name@sha256:<hex>`, or `sha256:<hex>`, with 64 lowercase
+hex characters in a digest. A name without a tag uses `latest`. Omit both
+options for the default image; do not pass `image: "default"` or an empty
+string. Snapshot clones cannot override the image.
+
+Create resolves the image once for a new sandbox. Retrying the same active
+name and configuration returns its original artifact even if the tag moved.
+Use a new sandbox name to pick up a moved tag, or a digest to pin an artifact.
+Selection still depends on image access and compatible runtime capacity.
+
+#### Launch secrets
+
+`secrets` is an array of exact, case-sensitive names from the authenticated
+workspace. The SDK sends only those names. Each resolved value becomes a
+sandbox-level environment variable under the same name and is inherited by
+commands and managed processes.
+
+Names must be unique, must be valid environment keys, and cannot overlap keys
+in `environment`. Literal environment keys and selected secret names share the
+256-entry and 64 KiB resolved environment limits. The SDK validates the
+selection before dispatch.
+
+Secret selection is available only for a fresh Create. A
+`SandboxCreateFromSnapshotOptions` request cannot include `environment` or
+`secrets`; the clone restores the values captured by its snapshot.
+
+Read [Secrets](/docs/features/sandboxes/secrets) for rotation, delivery,
+snapshot, and redaction behavior.
 
 ### `list(options?)`
 
@@ -205,10 +328,10 @@ do {
 } while (cursor);
 ```
 
-| Option | Default | Limits |
-| --- | ---: | --- |
-| `cursor` | None | Use only a cursor returned by the previous page |
-| `limit` | 50 | 1–250 |
+| Option   | Default | Limits                                          |
+| -------- | ------: | ----------------------------------------------- |
+| `cursor` |    None | Use only a cursor returned by the previous page |
+| `limit`  |      50 | 1–250                                           |
 
 ```ts
 interface SandboxListResult<TSandbox> {
@@ -258,13 +381,105 @@ type SandboxDestroyResult =
 `TERMINATED` means teardown completed synchronously. A missing sandbox throws
 `sandbox_not_found`.
 
-### `sandbox.commands.run(options)`
+### `sandbox.pause(options?)` and `sandbox.resume(options?)`
 
 ```ts
-const result = await sandbox.commands.run({
-  command: ["/bin/sh", "-c", "printf 'tests passed\n'"],
+const paused = await sandbox.pause({ timeout: "5m" });
+const running = await paused.resume({ timeout: "5m" });
+```
+
+Both methods dispatch the lifecycle operation once, poll Get, and return a new
+Sandbox object only after reaching `PAUSED` or `RUNNING`. The timeout defaults
+to five minutes and cannot exceed five minutes.
+
+Direct calls can use `signal?: AbortSignal`. Aborting stops local waiting; it
+does not prove the remote transition was cancelled. Get the sandbox by ID to
+reconcile current state.
+
+Pause and Resume preserve the same sandbox ID and network identity. Time spent
+paused does not consume its remaining runtime. See
+[Pause and resume](/docs/features/sandboxes/pause-and-resume).
+
+### Snapshots
+
+Create a crash-consistent snapshot of a `RUNNING` sandbox:
+
+```ts
+const snapshot = await sandbox.snapshot({}, { timeout: "5m" });
+```
+
+The first argument accepts an optional `name` in SDK 4.23 or newer:
+
+```ts
+const snapshot = await sandbox.snapshot({ name: "prepared-runtime" });
+const page = await inngest.sandboxes.snapshots.list({
+  name: "prepared-runtime",
+});
+```
+
+Snapshot names use the sandbox name rules. A `CREATING` or unexpired `READY`
+snapshot holds its name in the workspace. A repeated Create with that name
+throws `sandbox_snapshot_name_taken`; it is not an idempotent lookup. List by
+exact name to reconcile, and use the UUID for Get, Clone, and Delete.
+
+The second argument
+accepts `timeout?: SandboxDuration` and `signal?: AbortSignal`. The timeout
+defaults to five minutes and begins after Create returns. Create is dispatched
+once, then the SDK polls Get from the current invocation until the snapshot
+reaches `READY`. A timeout stops observation but does not cancel snapshot
+creation or its background upload.
+
+Clone a ready snapshot into a new sandbox:
+
+```ts
+const clone = await snapshot.clone({
+  name: `prepared-${crypto.randomUUID()}`,
+  runningTimeout: "2m",
+});
+```
+
+Snapshot creation and clone startup use separate waits. After the snapshot is
+`READY`, the clone gets a new sandbox UUID and restores the captured memory,
+disk, environment, image, and resources. A clone returned as `RUNNING` resolves
+immediately. If Create returns `STARTING`, the SDK waits up to `runningTimeout`,
+which defaults to 120 seconds and can be at most five minutes.
+
+List and Get are exposed on the top-level collection:
+
+```ts
+const page = await inngest.sandboxes.snapshots.list({
+  cursor,
+  limit: 50,
+});
+
+const current = await inngest.sandboxes.snapshots.get(snapshotId);
+```
+
+They use the same cursor and page shapes as Sandbox List. Get returns `null`
+for a missing or workspace-hidden snapshot.
+
+Delete is permanent:
+
+```ts
+await snapshot.delete();
+```
+
+See [Sandbox snapshots](/docs/features/sandboxes/snapshots) for consistency,
+retention, and ambiguity behavior.
+
+### `sandbox.commands.run(command, options?)`
+
+```ts
+import type { SandboxCommand } from "inngest/experimental";
+
+const command: SandboxCommand = "npm test";
+```
+
+`SandboxCommand` is `string | readonly string[]`.
+
+```ts
+const result = await sandbox.commands.run("printf 'tests passed\n'", {
   environment: {
-    PATH: "/usr/local/bin:/usr/bin:/bin",
     CI: "true",
   },
   cwd: "/",
@@ -272,12 +487,29 @@ const result = await sandbox.commands.run({
 });
 ```
 
-| Option | Default | Meaning |
-| --- | ---: | --- |
-| `command` | Required | Argument vector; item 0 must be absolute |
-| `environment` | Guest default | Replaces the complete process environment |
-| `cwd` | `/` | Working directory inside the sandbox |
-| `timeout` | 30 seconds | Positive duration, at most five minutes |
+| Argument or option |    Default | Meaning                                       |
+| ------------------ | ---------: | --------------------------------------------- |
+| `command`          |   Required | Shell string or direct argv array             |
+| `environment`      |  Inherited | Overrides matching sandbox environment values |
+| `cwd`              |        `/` | Working directory inside the sandbox          |
+| `timeout`          | 30 seconds | Positive duration, at most five minutes       |
+
+A string is passed unchanged as `["/bin/sh", "-c", command]`. The shell owns
+quoting, variables, pipes, redirects, and chaining. An argv array bypasses the
+shell:
+
+```ts
+await sandbox.commands.run(["git", "commit", "-m", "hello world"]);
+```
+
+Bare executable names use the effective `PATH`. Paths containing `/` are used
+directly and can be absolute or relative to `cwd`.
+
+Guest defaults are retained. Sandbox Create values override those defaults,
+and command values override matching sandbox values. These values are visible
+inside the guest. Put ordinary configuration in `environment`; select
+credentials through Create's `secrets` option. Command values can override an
+inherited secret for that command. Output is not automatically redacted.
 
 Numeric durations are milliseconds. Strings accept forms such as `"500ms"`,
 `"30s"`, and `"5m"`. `Temporal.Duration` is also supported, except calendar
@@ -302,8 +534,8 @@ type SandboxCommandOutputMetadata =
     };
 
 interface SandboxCommandResult {
-  stdout: Uint8Array;
-  stderr: Uint8Array;
+  stdout: string;
+  stderr: string;
   exitCode: number;
   output: SandboxCommandOutputMetadata;
 }
@@ -311,7 +543,8 @@ interface SandboxCommandResult {
 
 The direct client accepts up to 4 MiB across stdout and stderr and reports
 `output: { truncated: false }`. A non-zero exit code is a successful result,
-not an exception.
+not an exception. Invalid or truncated UTF-8 sequences in captured output are
+represented by the Unicode replacement character.
 
 ### `sandbox.logs.stream(options?)`
 
@@ -351,11 +584,11 @@ const uploaded = await sandbox.files.upload({
 });
 ```
 
-| Option | Default | Meaning |
-| --- | ---: | --- |
-| `path` | Required | Absolute path inside the sandbox |
-| `data` | Required | Fetch-compatible `BodyInit` |
-| `mode` | `0o644` | Permission bits from `0o001` through `0o777` |
+| Option |  Default | Meaning                                      |
+| ------ | -------: | -------------------------------------------- |
+| `path` | Required | Absolute path inside the sandbox             |
+| `data` | Required | Fetch-compatible `BodyInit`                  |
+| `mode` |  `0o644` | Permission bits from `0o001` through `0o777` |
 
 Uploads are limited to 100 MiB. A successful upload atomically replaces a
 regular file. It cannot replace `/`, a directory, symlink, device, socket, or
@@ -386,9 +619,9 @@ Only regular files up to 100 MiB are downloadable.
 
 ```ts
 const process = await sandbox.processes.start({
-  command: ["/bin/sh", "-c", "while :; do sleep 1; done"],
+  command: "while :; do sleep 1; done",
   environment: {
-    PATH: "/usr/local/bin:/usr/bin:/bin",
+    PORT: "8080",
   },
   cwd: "/",
 });
@@ -438,6 +671,9 @@ const stream = await process.streamOutput({ tailBytes: 8 * 1024 });
 See [Managed processes](/docs/features/sandboxes/managed-processes) for state,
 signal, Wait, retention, and streaming semantics.
 
+The SDK defaults `includeChildren` to `true`; pass it explicitly when signal
+delivery semantics matter. The REST API defaults the same field to `false`.
+
 ## Step client: `step.sandbox`
 
 Each operation that communicates with the API adds a stable step ID as its
@@ -446,29 +682,44 @@ first argument:
 ```ts
 const sandbox = await step.sandbox.create("create-sandbox", {
   name: "agent_job-42",
-  vcpu: 2,
-  memoryMb: 512,
+  vcpu: 1,
+  memoryMb: 1024,
+  secrets: ["OPENAI_API_KEY"],
 });
 
 const page = await step.sandbox.list("list-sandboxes", { limit: 50 });
 const loaded = await step.sandbox.get("get-sandbox", sandbox.id);
 
-const result = await sandbox.commands.run("run-command", {
-  command: ["/bin/true"],
+const paused = await sandbox.pause("pause-sandbox", { timeout: "5m" });
+const resumed = await paused.resume("resume-sandbox", { timeout: "5m" });
+
+const snapshot = await resumed.snapshot(
+  "create-snapshot",
+  {},
+  { timeout: "5m" }
+);
+const snapshotPage = await step.sandbox.snapshots.list("list-snapshots", {
+  limit: 50,
+});
+const loadedSnapshot = await step.sandbox.snapshots.get(
+  "get-snapshot",
+  snapshot.id
+);
+const clone = await snapshot.clone("clone-snapshot", {
+  name: `prepared-${crypto.randomUUID()}`,
 });
 
+const result = await sandbox.commands.run("run-command", ["true"]);
+
 const process = await sandbox.processes.start("start-process", {
-  command: ["/bin/sh", "-c", "while :; do sleep 1; done"],
+  command: "while :; do sleep 1; done",
   cwd: "/",
 });
 
 const processPage = await sandbox.processes.list("list-processes", {
   limit: 50,
 });
-const loadedProcess = await sandbox.processes.get(
-  "get-process",
-  process.id,
-);
+const loadedProcess = await sandbox.processes.get("get-process", process.id);
 
 await process.signal("stop-process", {
   signal: 15,
@@ -492,9 +743,17 @@ Complete signatures:
 step.sandbox.create(step, options)
 step.sandbox.list(step, options?)
 step.sandbox.get(step, sandboxId)
+step.sandbox.snapshots.list(step, options?)
+step.sandbox.snapshots.get(step, snapshotId)
 
 sandbox.destroy(step)
-sandbox.commands.run(step, options)
+sandbox.pause(step, options?)
+sandbox.resume(step, options?)
+sandbox.snapshot(step, options?, waitOptions?)
+sandbox.snapshots.create(step, options?, waitOptions?)
+sandbox.commands.run(step, command, options?)
+sandbox.files.write(step, { path, data })
+sandbox.files.read(step, path)
 sandbox.processes.start(step, options)
 sandbox.processes.list(step, options?)
 sandbox.processes.get(step, processId)
@@ -502,28 +761,135 @@ sandbox.processes.get(step, processId)
 process.signal(step, options)
 process.wait(step, options?)
 process.getOutput(step, options?)
+
+snapshot.waitUntilReady(step, options)
+snapshot.clone(step, options, waitOptions?)
+snapshot.delete(step)
 ```
 
 `step` is a string ID or `{ id, name? }`.
 
+### Durable files
+
+In SDK 4.25, write UTF-8 text or a `Uint8Array` and read bytes through
+memoized steps:
+
+```ts
+await sandbox.files.write("write-input", {
+  path: "/tmp/input.txt",
+  data: "hello from a step\n",
+});
+
+const bytes = await sandbox.files.read("read-result", "/tmp/result.txt");
+const text = new TextDecoder().decode(bytes);
+```
+
+These are not aliases for the direct streaming APIs. `write()` returns no
+value; `read()` returns a `Uint8Array`. Paths and regular-file restrictions
+are the same as direct transfers. Read rejects files larger than 2 MiB, and
+both helpers must fit within Inngest step payload limits after serialization.
+Keep files comfortably below those limits; use direct transfers for larger
+files. A replayed Read returns its memoized bytes rather than reading a
+possibly changed file again.
+
+### Scoped cleanup
+
+SDK 4.24 or newer supports explicit resource management for sandbox creation:
+
+```ts
+await using sandbox = await step.sandbox.create("create-sandbox", {
+  name: `job-${event.data.jobId}`,
+  vcpu: 1,
+  memoryMb: 1024,
+});
+
+await sandbox.commands.run("run-job", "printf 'done\n'");
+```
+
+When the scope ends, disposal attempts Destroy in a memoized
+`create-sandbox:destroy` step. Reserve that ID rather than using it for another
+operation. Disposal runs on errors too, including before a function retry;
+use explicit lifecycle steps when later attempts must keep using the sandbox.
+Your TypeScript and runtime must support `await using`.
+
+### Run a code snippet
+
+In SDK 4.25 or newer, `step.sandbox.python()` and
+`step.sandbox.typescript()` create a sandbox, run a snippet, and clean it up:
+
+```ts
+const result = await step.sandbox.python<{ total: number }>(
+  "sum-values",
+  "return {'total': sum(values)}",
+  { input: { values: [2, 5, 9] } }
+);
+```
+
+Each `input` key is available as a global in the snippet. Use a top-level
+`return` for a JSON-compatible result. `schema.output` accepts a Standard
+Schema validator when you need runtime result validation; a TypeScript type
+argument alone does not validate the result. Options also accept command
+settings such as `cwd` and `timeout`, and optional fresh-sandbox settings
+such as `vcpu`, `memoryMb`, `environment`, and `secrets`.
+
+The TypeScript runner requires Node.js 22.13 or newer in the selected image.
+A non-zero snippet exit fails the step; it is not a successful command result
+with a non-zero `exitCode`.
+
+### Call application tools from sandbox code
+
+SDK 4.25 adds experimental `tools` to durable `commands.run()` and the Python
+and TypeScript runners. Tools run in your application, not in the sandbox.
+Expose only operations that sandbox code should be allowed to invoke:
+
+```ts
+const result = await step.sandbox.python(
+  "format-label",
+  "return await tools.label('report')",
+  { tools: { label: (name: string) => `Ready: ${name}` } }
+);
+```
+
+Each tool call is a durable step with normal retries and memoization. Plain
+functions take positional JSON arguments. For validated named arguments, use
+`tool.step({ input, output, run })` from `inngest/experimental` with Standard
+Schema validators. Its context includes an `idempotencyKey` stable across
+retries; pass it to external APIs that support deduplicating writes.
+
+`tool.group()` lets the tool body run multiple Inngest steps. An Inngest
+function or function reference can also be a tool: named arguments become
+its event data, and its result is returned to the caller.
+
+Runners expose `tools` automatically. For a script run through
+`commands.run()`, Python imports `tools` from `inngest_tools`; Node uses
+`const { tools } = require("inngest_tools")`. A failed tool raises a
+`ToolError` in sandbox code after its step retries are exhausted.
+
+`toolOptions` defaults to 100 calls per command, a 30-second tool timeout,
+and a 20-second wait window. The wait window is an observation interval, not
+the command lifetime. A command with tools defaults to five minutes when
+`timeout` is omitted. The direct client does not expose this durable tool
+bridge.
+
 ### Replay and retries
 
-The opt-in Sandbox middleware wraps each call in an ordinary `step.run`. The handler
-calls `inngest.sandboxes`, converts the result to JSON-safe data, and returns
-it for memoization.
+The opt-in Sandbox middleware follows standard `step.run` retry and
+memoization semantics.
 
 - Retriable `SandboxError` becomes an ordinary retriable step error.
 - Non-retryable `SandboxError` becomes `NonRetriableError`.
 - `SandboxValidationError` becomes `NonRetriableError`.
 
-On replay, a completed step reconstructs the Sandbox object from its memoized result.
+On replay, a completed step reconstructs the Sandbox object from its memoized
+result. An observed `operation_ambiguous` is non-retriable. As with an external
+mutation inside `step.run`, a process crash after an unsafe operation succeeds
+but before its result is persisted can allow that operation to run again.
 
-There is no sandbox-specific executor opcode or dispatch fence. A mutation can
-happen twice if REST commits and the function process stops before the result
-is persisted. Create and Destroy tolerate a repeated request. Captured Exec,
-process Start, and arbitrary process Signal require application-level
-idempotency or reconciliation when duplicates are unacceptable. An observed
-`operation_ambiguous` is non-retriable.
+Snapshot Create and its readiness wait use separate memoized steps, so replaying
+or retrying readiness observation does not create another snapshot. The
+readiness step polls while the current SDK invocation remains active; it is not
+an executor-owned sleep or notification. Pause and Resume are safe-to-repeat
+lifecycle transitions and do not redispatch after a completed step is replayed.
 
 ### Durable captured-output limit
 
@@ -548,24 +914,26 @@ if (result.output.truncated) {
 `step.sandbox` deliberately does not expose:
 
 ```ts
-sandbox.logs
-sandbox.files
-process.streamOutput()
+sandbox.logs;
+sandbox.files.upload();
+sandbox.files.download();
+process.streamOutput();
 ```
 
-Use `inngest.sandboxes` for live streams and file bodies.
+Use `inngest.sandboxes` for live streams and Fetch file bodies. Use the durable
+`files.write()` and `files.read()` helpers only for small serialized files.
 
-## Decode binary output
+## Decode streamed output
 
-All command, log, and process output is `Uint8Array`.
+Captured command output is already decoded as UTF-8:
 
 ```ts
-const stdout = new TextDecoder().decode(result.stdout);
+console.log(result.stdout);
 ```
 
-For streaming UTF-8, reuse a decoder so split multi-byte characters are
-handled correctly. Use one decoder per stream when stdout and stderr are
-decoded separately.
+Log and managed-process output remains byte-safe `Uint8Array`. For streaming
+UTF-8, reuse a decoder so split multi-byte characters are handled correctly.
+Use one decoder per stream when stdout and stderr are decoded separately.
 
 ## Handle errors
 
@@ -587,7 +955,9 @@ the resulting retry or reconciliation policy.
 `operation_ambiguous` means an unsafe-to-repeat operation may have completed
 without a confirmed result; it is not a sandbox or process state. Use `action`
 to follow the operation-specific recovery guidance in the error guide. Create,
-Destroy, and identical file uploads use retryable availability errors instead.
+Destroy, Pause, Resume, snapshot Delete, and identical file uploads use
+retryable availability errors instead. Snapshot Create can be ambiguous;
+reconcile snapshot List before creating another.
 
 Read [Sandbox errors and retries](/docs/features/sandboxes/errors-and-retries)
 before implementing retry logic.
