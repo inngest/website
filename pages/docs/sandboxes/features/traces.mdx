@@ -1,5 +1,4 @@
-import { VersionBadge } from "shared/Docs/mdx";
-import { CodeGroup, SdkUnsupported } from "shared/Docs/mdx";
+import { CodeGroup, SdkUnsupported, VersionBadge, ImageTheme } from "shared/Docs/mdx";
 export const metaTitle = "Traces | Sandboxes";
 export const description = "Sandbox traces show each command and operation in the same Inngest run trace as your function steps, so you can find failed or slow Sandbox work.";
 
@@ -12,6 +11,22 @@ Open the function trace to find which Sandbox operation slowed or failed a job. 
 ## What appears in the trace
 
 Open the function run in the Inngest dashboard or Dev Server. The trace shows the steps alongside the rest of the function. Select a step to inspect its timing, input, output, error details, and retry attempts.
+
+Each command is one step, collapsed to its ID and duration:
+
+<ImageTheme
+  dark={"/assets/docs/sandboxes/sandbox-trace-collapsed-dark.webp"}
+  light={"/assets/docs/sandboxes/sandbox-trace-collapsed-light.webp"}
+  alt={"A run trace with the steps create-sandbox, install, build, test, lint, and destroy-sandbox on a timeline."}
+/>
+
+Select a command to see what ran. Its Metadata tab shows the command, exit code, and Sandbox, and the header shows its timing. A nonzero exit code is a result, so the step still completes:
+
+<ImageTheme
+  dark={"/assets/docs/sandboxes/sandbox-trace-expanded-dark.webp"}
+  light={"/assets/docs/sandboxes/sandbox-trace-expanded-light.webp"}
+  alt={"The lint step selected. Its metadata lists action exec, the command, exit_code 1, method commands.run, and the Sandbox ID and name."}
+/>
 
 Give each Sandbox operation a stable, descriptive step ID. For example, `create-sandbox`, `run-command`, and `destroy-sandbox` make the sequence readable and let you identify the operation that failed. A retry appears as another attempt for that step. Completed steps return their recorded results when the function replays.
 
