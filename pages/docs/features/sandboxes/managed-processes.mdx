@@ -1,7 +1,8 @@
 import { Callout } from "src/shared/Docs/mdx";
 
-export const metaTitle = "Managed processes in Inngest Sandboxes"
-export const description = "Start, list, inspect, signal, wait for, and read output from background processes in an Inngest Sandbox."
+export const metaTitle = "Managed processes in Inngest Sandboxes";
+export const description =
+  "Start, list, inspect, signal, wait for, and read output from background processes in an Inngest Sandbox.";
 
 # Managed processes
 
@@ -53,10 +54,10 @@ const process = await sandbox.processes.start("start-worker", {
 Start returns only after the target process is confirmed `RUNNING`:
 
 ```ts
-console.log(process.id);      // Public UUID
-console.log(process.pid);     // PID inside the sandbox
+console.log(process.id); // Public UUID
+console.log(process.pid); // PID inside the sandbox
 console.log(process.command); // Normalized argument vector
-console.log(process.state);   // "RUNNING"
+console.log(process.state); // "RUNNING"
 ```
 
 The platform generates the public process UUID before dispatch. Internal
@@ -67,20 +68,20 @@ The platform generates the public process UUID before dispatch. Internal
 Pass a string for shell syntax:
 
 ```ts
-command: "printf 'build complete\n' > /tmp/build.log"
+command: "printf 'build complete\n' > /tmp/build.log";
 ```
 
 The SDK sends the complete string unchanged as:
 
 ```ts
-["/bin/sh", "-c", "printf 'build complete\n' > /tmp/build.log"]
+["/bin/sh", "-c", "printf 'build complete\n' > /tmp/build.log"];
 ```
 
 Use an argv array when exact argument boundaries matter and shell expansion is
 not wanted:
 
 ```ts
-command: ["git", "status", "--short"]
+command: ["git", "status", "--short"];
 ```
 
 Bare executable names use the effective `PATH`. A path containing `/` is used
@@ -200,14 +201,14 @@ STARTING -> RUNNING -> EXITED
 STARTING ---------> FAILED
 ```
 
-| State | Meaning |
-| --- | --- |
-| `STARTING` | The helper launched but the target was not confirmed |
-| `RUNNING` | The target process is running |
-| `EXITED` | The target exited normally; `exitCode` is present |
-| `KILLED` | The target ended because of a signal; `terminationSignal` is present |
-| `FAILED` | Setup or exec failed before the target ran |
-| `LOST` | The helper died and target status became unobservable |
+| State      | Meaning                                                              |
+| ---------- | -------------------------------------------------------------------- |
+| `STARTING` | The helper launched but the target was not confirmed                 |
+| `RUNNING`  | The target process is running                                        |
+| `EXITED`   | The target exited normally; `exitCode` is present                    |
+| `KILLED`   | The target ended because of a signal; `terminationSignal` is present |
+| `FAILED`   | Setup or exec failed before the target ran                           |
+| `LOST`     | The helper died and target status became unobservable                |
 
 Start itself returns only `RUNNING`. Other states are observed through List,
 Get or Wait.
@@ -232,9 +233,9 @@ await process.signal("stop-worker", {
 });
 ```
 
-| Option | Default | Meaning |
-| --- | ---: | --- |
-| `signal` | Required | Numeric Unix signal from 1 through 64 |
+| Option            |                    Default | Meaning                                               |
+| ----------------- | -------------------------: | ----------------------------------------------------- |
+| `signal`          |                   Required | Numeric Unix signal from 1 through 64                 |
 | `includeChildren` | SDK: `true`; REST: `false` | Also signal processes in the managed process's cgroup |
 
 Use signal 15 (`SIGTERM`) for graceful shutdown and signal 9 (`SIGKILL`) when
@@ -350,8 +351,8 @@ follows new output. It never reconnects automatically. Cancelling the
 `ReadableStream` aborts the HTTP request.
 
 <Callout variant="warning">
-  A slow consumer can miss live chunks. Frames have no sequence number,
-  resume token, or dropped-chunk marker.
+  A slow consumer can miss live chunks. Frames have no sequence number, resume
+  token, or dropped-chunk marker.
 </Callout>
 
 Manual reconnection can replay retained chunks and create duplicates.
@@ -368,9 +369,9 @@ Managed-process output is best effort:
 
 The API distinguishes:
 
-| Condition | Error code |
-| --- | --- |
-| Process does not exist | `sandbox_process_not_found` |
+| Condition                                 | Error code                            |
+| ----------------------------------------- | ------------------------------------- |
+| Process does not exist                    | `sandbox_process_not_found`           |
 | Process exists but its output was evicted | `sandbox_process_output_not_retained` |
 
 Persist important results to a file or external store before destroying the
