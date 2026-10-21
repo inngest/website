@@ -1,10 +1,16 @@
 import { CodeGroup, SdkUnsupported } from "shared/Docs/mdx";
 
 export const metaTitle = "Reference | Sandboxes";
-export const description = "Inngest Sandboxes API reference: current beta calls and constraints for creating Sandboxes, running commands, and managing their lifecycle.";
+export const description =
+  "Inngest Sandboxes API reference: current beta calls and constraints for creating Sandboxes, running commands, and managing their lifecycle.";
 
 # Sandboxes reference
+
 > Find the current beta API calls and constraints for creating, running, and managing Sandboxes.
+
+For the full contracts, see the [TypeScript SDK reference](/docs/reference/typescript/v4/sandboxes)
+and [REST API reference](/docs/reference/rest/v2/sandboxes), including published
+image selection, file transfers, and lifecycle operations.
 
 > **Access-gated beta.** The TypeScript and REST contracts can change without a compatibility period. Use this reference to evaluate the current API. See the [Limits](/docs/sandboxes/limits) page for resource and output limits.
 
@@ -17,10 +23,10 @@ export const description = "Inngest Sandboxes API reference: current beta calls 
 
 ## Choose the TypeScript surface
 
-| Surface | Use it for | Behavior |
-| --- | --- | --- |
-| `step.sandbox` | Sandbox work inside an Inngest function | Each call is a durable step with a stable step ID. It memoizes the API result and applies step retry classification. |
-| `inngest.sandboxes` | API routes, workers, and trusted server scripts | Calls run immediately. The caller owns retries, cancellation, and cleanup. |
+| Surface             | Use it for                                      | Behavior                                                                                                             |
+| ------------------- | ----------------------------------------------- | -------------------------------------------------------------------------------------------------------------------- |
+| `step.sandbox`      | Sandbox work inside an Inngest function         | Each call is a durable step with a stable step ID. It memoizes the API result and applies step retry classification. |
+| `inngest.sandboxes` | API routes, workers, and trusted server scripts | Calls run immediately. The caller owns retries, cancellation, and cleanup.                                           |
 
 Configure the middleware to add `step.sandbox`:
 
@@ -54,12 +60,13 @@ const sandbox = await step.sandbox.create("create-sandbox", {
 });
 
 const result = await sandbox.commands.run(
-  "run-tests",
-  ["npm", "test"],
-  { cwd: "/workspace/repo", timeout: "5m" },
+"run-tests",
+["npm", "test"],
+{ cwd: "/workspace/repo", timeout: "5m" },
 );
 
 await sandbox.destroy("destroy-sandbox");
+
 ```
 
 <SdkUnsupported title="Python" feature="Sandboxes" />
@@ -120,3 +127,4 @@ The caller owns cleanup in this beta. Use `finally` for direct calls. Destroy th
 ## Limits
 
 Check [Limits](/docs/sandboxes/limits) for resource, file, output, and quota limits.
+```

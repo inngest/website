@@ -516,6 +516,40 @@ export const docsRefreshOutline: DocsRefreshPage[] = [
             href: "/docs/sandboxes/guides",
           },
           {
+            title: "API guides",
+            href: "/docs/features/sandboxes",
+            children: [
+              {
+                title: "Custom images",
+                href: "/docs/features/sandboxes/custom-images",
+              },
+              {
+                title: "Managed processes",
+                href: "/docs/features/sandboxes/managed-processes",
+              },
+              {
+                title: "Secrets",
+                href: "/docs/features/sandboxes/secrets",
+              },
+              {
+                title: "Snapshots",
+                href: "/docs/features/sandboxes/snapshots",
+              },
+              {
+                title: "Pause and resume",
+                href: "/docs/features/sandboxes/pause-and-resume",
+              },
+              {
+                title: "Errors and retries",
+                href: "/docs/features/sandboxes/errors-and-retries",
+              },
+              {
+                title: "Limitations",
+                href: "/docs/features/sandboxes/limitations",
+              },
+            ],
+          },
+          {
             title: "Reference",
             href: "/docs/sandboxes/reference",
           },
