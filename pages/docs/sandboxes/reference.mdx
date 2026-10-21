@@ -1,4 +1,4 @@
-import { CodeGroup, SdkUnsupported } from "shared/Docs/mdx";
+import { CodeGroup, SdkUnsupported, VersionBadge } from "shared/Docs/mdx";
 
 export const metaTitle = "Reference | Sandboxes";
 export const description = "Inngest Sandboxes API reference: current beta calls and constraints for creating Sandboxes, running commands, and managing their lifecycle.";
@@ -103,19 +103,20 @@ Pause and Resume keep the same Sandbox ID, filesystem, memory, environment, and 
 
 A private Pause checkpoint serves only Resume of the same Sandbox. It is not a user snapshot and cannot be cloned. The planned S3-backed persistent filesystem mount shares its backing path across Sandboxes and clones.
 
-## Experimental surface
+## Experimental surface <VersionBadge version="v4.25.0+" />
 
-These need `inngest@4.25.0` or newer, unless noted. They can change.
+These can change. Versions are noted where they differ.
 
 | API | Use it for |
 | --- | --- |
 | `step.sandbox.python`, `step.sandbox.typescript` | Create a Sandbox, run code, return a result, and destroy the Sandbox. Options: `input`, `schema.output`, `tools`, `cwd`, `timeout`, and any create option. See [Managed lifecycle](/docs/sandboxes/features/managed-lifecycle#run-python-or-typescript-in-one-call). |
 | `tools`, `toolOptions` on `commands.run` and the runners | Let Sandbox code call your functions as durable steps. See [Tools](/docs/sandboxes/features/tools). |
 | `tool.step()`, `tool.group()` from `inngest/experimental` | Declare a tool with typed input and output, or a tool whose body is a group of steps. |
+| `toolDefinitions(tools)` <VersionBadge version="v4.26.0+" /> | Turn tools into `{ name, description, input_schema }` for a model API. See [Tools](/docs/sandboxes/features/tools#give-the-tools-to-a-model). |
 | `image.inngest()`, `image.custom()` from `inngest/experimental` | Choose the image with `from`. See [Base images](/docs/sandboxes/features/base-images#choose-an-image). |
-| `group.sandbox(id, callback)` (4.24.0) | Run a callback with a fresh Sandbox and destroy it afterwards. |
+| `group.sandbox(id, callback)` <VersionBadge version="v4.24.0+" /> | Run a callback with a fresh Sandbox and destroy it afterwards. |
 
-Stable additions: `await using` scopes a durable Sandbox to a block (4.24.0), and durations accept compound strings such as `"4m30s"` (4.24.0).
+Stable additions <VersionBadge version="v4.24.0+" />: `await using` scopes a durable Sandbox to a block, and durations accept compound strings such as `"4m30s"`.
 
 ## Errors and cleanup
 

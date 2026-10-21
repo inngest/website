@@ -1,4 +1,4 @@
-import { CodeGroup, SdkUnsupported } from "shared/Docs/mdx";
+import { CodeGroup, SdkUnsupported, VersionBadge } from "shared/Docs/mdx";
 
 export const metaTitle = "Base images | Sandboxes";
 export const description = "Sandbox base images come with Node.js, Python, Ruby, and common command-line tools preinstalled, so isolated code can start running right away.";
@@ -25,9 +25,9 @@ New Sandboxes start from this image unless you [choose another](#choose-an-image
 
 The image does **not** currently include Go, Rust, Java, Bun, or Deno. Exact installed versions can change when Inngest rebuilds the image. Check versions in the Sandbox if your task depends on them.
 
-## Choose an image
+## Choose an image <VersionBadge version="v4.25.0+" />
 
-Pass `from` to start a Sandbox from an Inngest image or an image published to your workspace. `image.inngest()` and `image.custom()` are experimental, exported from `inngest/experimental`, and need `inngest@4.25.0` or newer.
+Pass `from` to start a Sandbox from an Inngest image or an image published to your workspace. `image.inngest()` and `image.custom()` are experimental and exported from `inngest/experimental`.
 
 <CodeGroup>
 ```typescript {{ title: "TypeScript" }}

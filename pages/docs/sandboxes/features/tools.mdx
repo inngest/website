@@ -1,12 +1,12 @@
-import { CodeGroup, SdkUnsupported } from "shared/Docs/mdx";
+import { CodeGroup, SdkUnsupported, VersionBadge } from "shared/Docs/mdx";
 export const metaTitle = "Tools | Sandboxes";
 export const description = "Sandbox tools let code running in an isolated Sandbox call functions in your app. Each call is a durable, retried step that runs with your credentials.";
 
-# Tools
+# Tools <VersionBadge version="v4.25.0+" />
 
 > Let code in a Sandbox call back into your app. Each call is a durable step that runs with your credentials.
 
-> **Experimental.** Tools need `inngest@4.25.0` or newer, and `tool` is exported from `inngest/experimental`. The API can change.
+> **Experimental.** `tool` is exported from `inngest/experimental`. The API can change.
 
 - **Keep credentials out of the Sandbox.** The tool runs in your function, so the Sandbox never sees your keys.
 - **Get durable calls.** Every call is its own step: retried, memoized, and visible in the trace.
@@ -192,3 +192,27 @@ await sandbox.commands.run("agent", "node agent.js", {
 - A request from the Sandbox can be 256 KiB, and a reply 1 MiB.
 - A command with tools can run for 5 minutes when you set no `timeout`.
 - Arguments arrive from the Sandbox, so validate them with `tool.step()` when the code is untrusted.
+
+## Give the tools to a model <VersionBadge version="v4.26.0+" />
+
+`toolDefinitions(tools)` (experimental, from `inngest/experimental`) returns `{ name, description, input_schema }` for each tool, ready for a model API. No hand-written JSON Schema.
+
+<CodeGroup>
+```typescript {{ title: "TypeScript" }}
+import { toolDefinitions } from "inngest/experimental";
+
+await anthropic.messages.create({
+  model,
+  max_tokens: 1024,
+  messages,
+  tools: toolDefinitions({ getCustomer }),
+});
+```
+
+<SdkUnsupported title="Python" feature="Sandboxes" />
+<SdkUnsupported title="Go" feature="Sandboxes" />
+</CodeGroup>
+
+- For OpenAI, map each definition to `{ type: "function", name, description, parameters: input_schema }`.
+- Declare tools with `tool.step()` or `tool.group()` and an object `input` schema. Schemas come from Zod 4 or any library that implements Standard JSON Schema; other schemas throw.
+- A tool without an `input` schema takes any object.

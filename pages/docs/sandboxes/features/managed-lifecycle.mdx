@@ -1,4 +1,4 @@
-import { CodeGroup, SdkUnsupported } from "shared/Docs/mdx";
+import { CodeGroup, SdkUnsupported, VersionBadge } from "shared/Docs/mdx";
 export const metaTitle = "Managed lifecycle | Sandboxes";
 export const description = "Managed Sandbox lifecycle: create Sandboxes, run commands, and clean up as durable steps in an Inngest function run, with retries handled for you.";
 
@@ -88,7 +88,7 @@ A durable step records the operation result; it does not promise that a Sandbox,
 
 Sandbox operations used as durable steps appear with the function's other steps in its run trace.
 
-## Run Python or TypeScript in one call
+## Run Python or TypeScript in one call <VersionBadge version="v4.25.0+" />
 
 `step.sandbox.python` and `step.sandbox.typescript` create a Sandbox, run your code, and destroy it. A top-level `return` gives the result back. Each key of `input` becomes a variable.
 
@@ -121,11 +121,11 @@ const total = await step.sandbox.typescript(
 - The first argument is a step ID or step options, such as `{ id: "stats", name: "Compute the mean" }`.
 - Pass [`tools`](/docs/sandboxes/features/tools) to let the code call your functions, plus any `step.sandbox.create()` option such as `image` or `secrets`.
 
-These runners are experimental and need `inngest@4.25.0` or newer.
+These runners are experimental.
 
-## Scope a Sandbox to a block
+## Scope a Sandbox to a block <VersionBadge version="v4.24.0+" />
 
-`await using` destroys the Sandbox when the block exits. It needs `inngest@4.24.0` or newer.
+`await using` destroys the Sandbox when the block exits.
 
 <CodeGroup>
 ```typescript {{ title: "TypeScript" }}

@@ -1,4 +1,4 @@
-import { CodeGroup, SdkUnsupported } from "shared/Docs/mdx";
+import { CodeGroup, SdkUnsupported, VersionBadge } from "shared/Docs/mdx";
 export const metaTitle = "Snapshots and restore | Sandboxes";
 export const description = "Snapshot and restore Inngest Sandboxes: save a prepared environment, then clone new Sandboxes from that snapshot to skip repeated setup.";
 
@@ -97,9 +97,9 @@ A **clone** starts a new sandbox from a ready user snapshot. Use it to repeat wo
 
 Restore means either resuming a paused sandbox with the same ID or cloning a user snapshot into a new sandbox. There is no separate operation that replaces an existing sandbox with a user snapshot. See [Cloning](/docs/sandboxes/features/cloning) for more on independent sandbox copies.
 
-## Name a snapshot
+## Name a snapshot <VersionBadge version="v4.23.0+" />
 
-Give a snapshot a name, then find it by that name. Needs `inngest@4.23.0` or newer.
+Give a snapshot a name, then find it by that name.
 
 <CodeGroup>
 ```typescript {{ title: "TypeScript" }}

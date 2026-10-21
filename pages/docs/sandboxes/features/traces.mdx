@@ -1,3 +1,4 @@
+import { VersionBadge } from "shared/Docs/mdx";
 import { CodeGroup, SdkUnsupported } from "shared/Docs/mdx";
 export const metaTitle = "Traces | Sandboxes";
 export const description = "Sandbox traces show each command and operation in the same Inngest run trace as your function steps, so you can find failed or slow Sandbox work.";
@@ -59,4 +60,4 @@ The example destroys the Sandbox on the successful path. For a function that can
 
 ## Protect trace data
 
-The current trace view displays step inputs, outputs, and errors. Keep credentials out of command strings, captured output, and returned values. The beta can inject selected workspace secrets into the Sandbox environment, but it does not automatically redact values printed to command output or files.
+The trace view displays step inputs, outputs, and errors. Environment values you pass to `step.sandbox` calls (`create`, `commands.run`, `processes.start`) are not recorded: the trace keeps only the variable names <VersionBadge version="v4.26.0+" />. Command strings, captured output, and returned values are recorded as they are, so keep credentials out of them. The beta can inject selected workspace secrets into the Sandbox environment, but it does not automatically redact values printed to command output or files.
