@@ -12,7 +12,7 @@ import {
 const MILESTONES = [9, 12];
 
 /**
- * Completion rewards, "solid days" style: a twelve-stamp card that
+ * Completion rewards, after [solidcore]'s "solidays" challenge: a twelve-stamp card that
  * fills as lessons are marked done, with the 9 and 12 milestones called
  * out, then what each tier earns.
  */
