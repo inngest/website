@@ -1,8 +1,7 @@
 import { CodeGroup, SdkUnsupported } from "shared/Docs/mdx";
 
 export const metaTitle = "Base images | Sandboxes";
-export const description =
-  "Sandbox base images come with Node.js, Python, Ruby, and common command-line tools preinstalled, so isolated code can start running right away.";
+export const description = "Sandbox base images come with Node.js, Python, Ruby, and common command-line tools preinstalled, so isolated code can start running right away.";
 
 # Base images
 
@@ -16,20 +15,30 @@ Run generated code or inspect a repository without building an image first. The 
 
 New Sandboxes use the default image unless you select a published image. A Sandbox cloned from a snapshot starts with the captured image and filesystem changes.
 
-| Tool                         | Included                                                                                        |
-| ---------------------------- | ----------------------------------------------------------------------------------------------- |
-| Node.js                      | Latest release as `node`, `npm`, and `npx`; LTS release as `node-lts`, `npm-lts`, and `npx-lts` |
-| Python                       | Python 3.14                                                                                     |
-| Ruby                         | Ruby 4.0                                                                                        |
-| Repository and network tools | Git, curl, OpenSSH, and CA certificates                                                         |
-| Shell and utilities          | BusyBox `sh`, `grep`, `sed`, `awk`, `ripgrep`, `jq`, `find`, `tar`, and `gzip`                  |
+| Tool | Included |
+| --- | --- |
+| Node.js | Latest release as `node`, `npm`, and `npx`; LTS release as `node-lts`, `npm-lts`, and `npx-lts` |
+| Python | Python 3.14 |
+| Ruby | Ruby 4.0 |
+| Repository and network tools | Git, curl, OpenSSH, and CA certificates |
+| Shell and utilities | BusyBox `sh`, `grep`, `sed`, `awk`, `ripgrep`, `jq`, `find`, `tar`, and `gzip` |
 
 The default image does **not** currently include Go, Rust, Java, Bun, or Deno. Exact installed versions can change when Inngest rebuilds the image. Check versions in the Sandbox if your task depends on them.
 
-For your own application code, dependencies, or runtimes, follow
-[Custom images](/docs/features/sandboxes/custom-images). Build with Docker,
-upload the saved image archive, and select the published image with
-`from: image.custom("my-image:v1")` in SDK 4.25 or newer.
+## Select a published image
+
+In SDK 4.25 or newer, import `image` from `inngest/experimental` and set
+`from: image.custom("my-image:v1")` when creating a Sandbox. Use
+`from: image.inngest("base")` to select the platform base image explicitly.
+With REST, set `"image": "my-image:v1"` on `POST /v2/sandboxes`.
+
+An untagged name uses `latest`. To pin an exact artifact, use
+`my-image@sha256:<digest>` with its 64-character lowercase hexadecimal digest.
+Tags can move; existing Sandboxes keep their resolved image. Snapshot clones
+inherit the captured image and cannot override it.
+
+To build and publish your own application code, dependencies, or runtimes,
+follow [Custom images](/docs/sandboxes/features/custom-images).
 
 ## Inspect the image
 
@@ -45,8 +54,7 @@ const result = await sandbox.commands.run(
 console.log(result.stdout);
 console.error(result.stderr);
 console.log(result.exitCode);
-
-````
+```
 
 <SdkUnsupported title="Python" feature="Sandboxes" />
 <SdkUnsupported title="Go" feature="Sandboxes" />
@@ -61,7 +69,7 @@ const result = await sandbox.commands.run(
   "node --version && python3 --version && ruby --version && git --version",
   { timeout: "30s" },
 );
-````
+```
 
 <SdkUnsupported title="Python" feature="Sandboxes" />
 <SdkUnsupported title="Go" feature="Sandboxes" />
@@ -89,8 +97,12 @@ This changes **that Sandbox**, not the fixed base image. The files remain in the
 
 ## Choose a supported size
 
-Fresh Sandboxes accept 1, 2, 4, 8, or 16 vCPUs with 1024, 2048, or 4096 MiB
-per vCPU. Choose a pair from the [supported size table](/docs/features/sandboxes#supported-sandbox-sizes).
-The API does not accept a size profile name. A snapshot clone inherits the
-snapshot's CPU and memory. Access or available capacity can still prevent a
-supported size from starting.
+Fresh Sandboxes accept these exact resource pairs:
+
+| `vcpu` | `memoryMb` |
+| --- | --- |
+| 1 | 1024 |
+| 2 | 2048 |
+| 4 | 4096 |
+
+Set both values from the same row. The API does not accept a size profile name. A snapshot clone inherits the snapshot's CPU and memory. Access or available capacity can still prevent a supported size from starting.

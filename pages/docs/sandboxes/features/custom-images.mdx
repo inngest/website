@@ -1,4 +1,4 @@
-export const metaTitle = "Custom sandbox images";
+export const metaTitle = "Custom images | Sandboxes";
 export const description =
   "Build a Docker image locally, upload its saved archive, and launch an Inngest Sandbox from the published image.";
 
@@ -237,7 +237,7 @@ command and cleanup calls. With REST, set `"image": "my-python:v1"` on
 
 Image files, installed packages, and Dockerfile `ENV` values are included in
 the published image. Do not bake credentials into a Dockerfile or an image
-layer; use [workspace secrets](/docs/features/sandboxes/secrets) at launch.
+layer; use [workspace secrets](/docs/sandboxes/features/secrets) at launch.
 
 ## Inspect, cancel, and rebuild
 
@@ -274,7 +274,7 @@ does not update them. Use a new sandbox name to launch the new version.
 - If an API response is lost, inspect existing builds rather than repeatedly
   creating new uploads. Preserve the build ID once you receive it.
 
-See [image selection](/docs/reference/typescript/v4/sandboxes#select-a-published-image)
+See [image selection](/docs/sandboxes/features/base-images#select-a-published-image)
 for tags and digest references, and
-[errors and retries](/docs/features/sandboxes/errors-and-retries) for sandbox
+[troubleshooting](/docs/sandboxes/troubleshooting) for sandbox
 launch and runtime errors.
