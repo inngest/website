@@ -134,6 +134,26 @@ Open the function run in Inngest. A successful run returns a result like this, w
 
 Inspect the run's steps. You should find `create-sandbox`, `run-command`, and `destroy-sandbox` in the durable execution record. The first creates and waits for a running Sandbox, the second captures the command result, and the third destroys the Sandbox on the successful path. Open the trace to inspect the steps and any failure.
 
+## Or run code in one call
+
+With `inngest@4.25.0` or newer, `step.sandbox.python` and `step.sandbox.typescript` (experimental) create the Sandbox, run your code, return its result, and destroy the Sandbox.
+
+<CodeGroup>
+```typescript {{ title: "TypeScript" }}
+const mean = await step.sandbox.python(
+  "mean",
+  `import statistics
+return statistics.mean(values)`,
+  { input: { values: [1, 2, 3, 4] } },
+);
+```
+
+<SdkUnsupported title="Python" feature="Sandboxes" />
+<SdkUnsupported title="Go" feature="Sandboxes" />
+</CodeGroup>
+
+See [Managed lifecycle](/docs/sandboxes/features/managed-lifecycle#run-python-or-typescript-in-one-call) for typed results and [Tools](/docs/sandboxes/features/tools) for calling your app from the code.
+
 ## Cleanup and beta behavior
 
 This example explicitly destroys the Sandbox after the command succeeds. **Durable Sandbox steps do not automatically guarantee cleanup after a permanent function failure.** For a workflow where a leaked Sandbox matters, add an Inngest `onFailure` handler or a separate deferred cleanup function that receives the Sandbox ID. A JavaScript `finally` block inside the function is not a substitute for cleanup after a permanently failed run.

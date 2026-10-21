@@ -14,6 +14,8 @@ Open the function run in the Inngest dashboard or Dev Server. The trace shows th
 
 Give each Sandbox operation a stable, descriptive step ID. For example, `create-sandbox`, `run-command`, and `destroy-sandbox` make the sequence readable and let you identify the operation that failed. A retry appears as another attempt for that step. Completed steps return their recorded results when the function replays.
 
+Each step carries `inngest.sandbox` metadata that names the action and the machine, command, process, or snapshot involved. A snapshot shows as one group, "Create snapshot" and "Wait for snapshot". `group.sandbox()`, `step.sandbox.python`, and `step.sandbox.typescript` show the Sandbox's whole lifetime as one group, with the create, run, and destroy steps inside. Each [tool](/docs/sandboxes/features/tools) call is its own step.
+
 A trace records the durable API operations. It does not make the Sandbox guest process, filesystem, or output durable.
 
 ## Try it in a function

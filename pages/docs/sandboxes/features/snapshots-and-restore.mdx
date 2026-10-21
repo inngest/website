@@ -97,6 +97,23 @@ A **clone** starts a new sandbox from a ready user snapshot. Use it to repeat wo
 
 Restore means either resuming a paused sandbox with the same ID or cloning a user snapshot into a new sandbox. There is no separate operation that replaces an existing sandbox with a user snapshot. See [Cloning](/docs/sandboxes/features/cloning) for more on independent sandbox copies.
 
+## Name a snapshot
+
+Give a snapshot a name, then find it by that name. Needs `inngest@4.23.0` or newer.
+
+<CodeGroup>
+```typescript {{ title: "TypeScript" }}
+const snapshot = await sandbox.snapshot({ name: "deps-installed" });
+
+const found = await inngest.sandboxes.snapshots.list({ name: "deps-installed" });
+```
+
+<SdkUnsupported title="Python" feature="Sandboxes" />
+<SdkUnsupported title="Go" feature="Sandboxes" />
+</CodeGroup>
+
+A name is held by one `CREATING` or unexpired `READY` snapshot at a time. Reusing it fails with `sandbox_snapshot_name_taken`. Names follow the Sandbox name rules: case-sensitive, up to 255 characters, no control characters, and no leading or trailing whitespace. In a function, `step.sandbox.snapshots.list(stepId, { name })` takes the same option.
+
 ## Find and manage snapshots
 
 Use `inngest.sandboxes.snapshots.list()` and `get(snapshotId)` from the direct client, or `step.sandbox.snapshots.list(stepId)` and `get(stepId, snapshotId)` in a function. A snapshot can be `CREATING`, `READY`, `DELETING`, `DELETED`, `FAILED`, or `LOST`. Clone only a `READY` snapshot.

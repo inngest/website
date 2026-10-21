@@ -11,7 +11,7 @@ Start with the TypeScript quick start to run a command in a Sandbox. Then use th
 ## Start and run
 
 - [Run your first Sandbox](/docs/sandboxes/quick-start). Create a Sandbox in a durable TypeScript function, run one command, inspect its result, and destroy it.
-- **Run code and commands.** Use [Managed lifecycle](/docs/sandboxes/features/managed-lifecycle) for `step.sandbox` inside a function. The immediate `inngest.sandboxes` client supports command inputs, captured output, and timeouts. A planned `step.sandbox.typescript` helper will start, run TypeScript, and stop a Sandbox in one call.
+- **Run code and commands.** Use [Managed lifecycle](/docs/sandboxes/features/managed-lifecycle) for `step.sandbox` inside a function. The immediate `inngest.sandboxes` client supports command inputs, captured output, and timeouts. [`step.sandbox.python` and `step.sandbox.typescript`](/docs/sandboxes/features/managed-lifecycle#run-python-or-typescript-in-one-call) start a Sandbox, run code, and clean up in one call. [Tools](/docs/sandboxes/features/tools) let that code call your functions.
 - **Move files and manage processes.** The beta APIs support file upload and download, background processes, retained output, and live output. File transfer and live streams currently use the direct server-side client.
 
 ## Keep or branch your work

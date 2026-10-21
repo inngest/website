@@ -13,7 +13,7 @@ Run generated code or inspect a repository without building an image first. The 
 
 ## What the beta image includes
 
-The beta uses one fixed image for new Sandboxes. A Sandbox cloned from a snapshot starts with the captured image and filesystem changes.
+New Sandboxes start from this image unless you [choose another](#choose-an-image). A Sandbox cloned from a snapshot starts with the captured image and filesystem changes.
 
 | Tool | Included |
 | --- | --- |
@@ -23,7 +23,41 @@ The beta uses one fixed image for new Sandboxes. A Sandbox cloned from a snapsho
 | Repository and network tools | Git, curl, OpenSSH, and CA certificates |
 | Shell and utilities | BusyBox `sh`, `grep`, `sed`, `awk`, `ripgrep`, `jq`, `find`, `tar`, and `gzip` |
 
-The image does **not** currently include Go, Rust, Java, Bun, or Deno. You cannot select a custom image or runtime in this beta. Exact installed versions can change when Inngest rebuilds the image. Check versions in the Sandbox if your task depends on them.
+The image does **not** currently include Go, Rust, Java, Bun, or Deno. Exact installed versions can change when Inngest rebuilds the image. Check versions in the Sandbox if your task depends on them.
+
+## Choose an image
+
+Pass `from` to start a Sandbox from an Inngest image or an image published to your workspace. `image.inngest()` and `image.custom()` are experimental, exported from `inngest/experimental`, and need `inngest@4.25.0` or newer.
+
+<CodeGroup>
+```typescript {{ title: "TypeScript" }}
+import { image } from "inngest/experimental";
+
+await step.sandbox.create("build", {
+  name: "build",
+  vcpu: 2,
+  memoryMb: 2048,
+  from: image.inngest("base"),
+});
+
+await step.sandbox.create("custom", {
+  name: "custom",
+  vcpu: 2,
+  memoryMb: 2048,
+  from: image.custom("my-image:v1"),
+});
+```
+
+<SdkUnsupported title="Python" feature="Sandboxes" />
+<SdkUnsupported title="Go" feature="Sandboxes" />
+</CodeGroup>
+
+- Reference a custom image by name, `name:tag`, or `name@sha256:<hex>`. A name without a tag uses `latest`.
+- The image must already be published to your workspace. Create does not build or upload one.
+- Create resolves the image once. A retry of the same Sandbox keeps its original image, even if the tag has moved; use a new Sandbox name to pick up an update.
+- A Sandbox's `imageRef` and `imageDigest` show what it started from.
+- A snapshot clone keeps its source image and cannot select another.
+- `inngest.sandboxes.create()` takes the same `from`, or a plain `image` string such as `"my-image:v1"`.
 
 ## Inspect the image
 
