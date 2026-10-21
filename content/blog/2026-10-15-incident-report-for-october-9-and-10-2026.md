@@ -1,7 +1,6 @@
 ---
 focus: false
 featured: false
-hide: true
 heading: "Incident report for October 9 and 10, 2026 - Cross-data-center network and database connection failures"
 subtitle: A report on two incidents that disrupted function execution, and the changes we are making to remove this class of failure.
 image: /assets/blog/incident-post-mortem.svg
