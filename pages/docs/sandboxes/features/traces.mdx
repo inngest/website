@@ -12,20 +12,34 @@ Open the function trace to find which Sandbox operation slowed or failed a job. 
 
 Open the function run in the Inngest dashboard or Dev Server. The trace shows the steps alongside the rest of the function. Select a step to inspect its timing, input, output, error details, and retry attempts.
 
-Each command is one step, collapsed to its ID and duration:
+Each command is one row, tagged with `import { CodeGroup, SdkUnsupported, VersionBadge, ImageTheme } from "shared/Docs/mdx";
+export const metaTitle = "Traces | Sandboxes";
+export const description = "Sandbox traces show each command and operation in the same Inngest run trace as your function steps, so you can find failed or slow Sandbox work.";
+
+# Traces
+
+> Find failed or slow Sandbox operations alongside the other steps in a function run.
+
+Open the function trace to find which Sandbox operation slowed or failed a job. Each `step.sandbox` call is a durable step: Inngest records its result for replay and applies that operation’s retry classification. Guest commands and files still have their own lifecycle.
+
+## What appears in the trace
+
+Open the function run in the Inngest dashboard or Dev Server. The trace shows the steps alongside the rest of the function. Select a step to inspect its timing, input, output, error details, and retry attempts.
+
+ and named after the command it ran <VersionBadge version="v4.26.0+" />. Sandbox operations such as creating or destroying show as plain names, like "Create sandbox":
 
 <ImageTheme
   dark={"/assets/docs/sandboxes/sandbox-trace-collapsed-dark.webp"}
   light={"/assets/docs/sandboxes/sandbox-trace-collapsed-light.webp"}
-  alt={"A run trace with the steps create-sandbox, install, build, test, lint, and destroy-sandbox on a timeline."}
+  alt={"A run trace with the rows Create sandbox, write-script, python3 --version, python3 /tmp/analyze.py, write-report, cat /tmp/report.md, and Destroy sandbox on a timeline. The command rows carry a $ tag."}
 />
 
-Select a command to see what ran. Its Metadata tab shows the command, exit code, and Sandbox, and the header shows its timing. A nonzero exit code is a result, so the step still completes:
+Expand a command row and select its step to see what ran. Its Metadata tab shows the command, exit code, and Sandbox, and the header shows its timing. A nonzero exit code is a result, so the step still completes:
 
 <ImageTheme
   dark={"/assets/docs/sandboxes/sandbox-trace-expanded-dark.webp"}
   light={"/assets/docs/sandboxes/sandbox-trace-expanded-light.webp"}
-  alt={"The lint step selected. Its metadata lists action exec, the command, exit_code 1, method commands.run, and the Sandbox ID and name."}
+  alt={"The analyze step selected under the python3 /tmp/analyze.py row. Its metadata lists action exec, the command, exit_code 2, method commands.run, and the Sandbox ID and name."}
 />
 
 Give each Sandbox operation a stable, descriptive step ID. For example, `create-sandbox`, `run-command`, and `destroy-sandbox` make the sequence readable and let you identify the operation that failed. A retry appears as another attempt for that step. Completed steps return their recorded results when the function replays.
