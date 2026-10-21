@@ -111,6 +111,8 @@ module.exports = {
     "/nyc-long-run",
     // step.run campaign page — noindex until it's reviewed.
     "/long-run",
+    // Holiday campaign page — noindex until it's reviewed.
+    "/12-days-of-workflows",
     "/resources/access/*",
   ],
 };
