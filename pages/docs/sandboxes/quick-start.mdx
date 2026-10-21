@@ -1,4 +1,4 @@
-import { CodeGroup, SdkUnsupported, VersionBadge } from "shared/Docs/mdx";
+import { CodeGroup, SdkUnsupported } from "shared/Docs/mdx";
 
 export const metaTitle = "Quick start | Sandboxes";
 export const description = "Inngest Sandboxes quick start: run your first isolated Sandbox from a durable function and inspect its command output in the run trace.";
@@ -133,26 +133,6 @@ Open the function run in Inngest. A successful run returns a result like this, w
 ```
 
 Inspect the run's steps. You should find `create-sandbox`, `run-command`, and `destroy-sandbox` in the durable execution record. The first creates and waits for a running Sandbox, the second captures the command result, and the third destroys the Sandbox on the successful path. Open the trace to inspect the steps and any failure.
-
-## Or run code in one call <VersionBadge version="v4.25.0+" />
-
-Use `step.sandbox.python` and `step.sandbox.typescript` (experimental) create the Sandbox, run your code, return its result, and destroy the Sandbox.
-
-<CodeGroup>
-```typescript {{ title: "TypeScript" }}
-const mean = await step.sandbox.python(
-  "mean",
-  `import statistics
-return statistics.mean(values)`,
-  { input: { values: [1, 2, 3, 4] } },
-);
-```
-
-<SdkUnsupported title="Python" feature="Sandboxes" />
-<SdkUnsupported title="Go" feature="Sandboxes" />
-</CodeGroup>
-
-See [Managed lifecycle](/docs/sandboxes/features/managed-lifecycle#run-python-or-typescript-in-one-call) for typed results and [Tools](/docs/sandboxes/features/tools) for calling your app from the code.
 
 ## Cleanup and beta behavior
 
