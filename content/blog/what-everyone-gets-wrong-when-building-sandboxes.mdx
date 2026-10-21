@@ -1,0 +1,116 @@
+---
+tags: ["AI & Agents", "Company & Product News", "Durable Execution", "Engineering"]
+heading: "What everyone gets wrong when building sandboxes"
+subtitle: "One warm pool boots before we know the workload, then hotplugs into any customer, size, and network."
+showSubtitle: true
+image: /assets/blog/what-everyone-gets-wrong-when-building-sandboxes/featured-image.jpg
+date: "2026-10-21T12:00:00.000Z"
+author: Tony Holdstock-Brown
+category: engineering
+sidebarCta:
+  text: "Real compute, as a durable step in the function you already run."
+  buttonLabel: "Sandboxes quick start"
+  href: "/docs/sandboxes/quick-start?ref=blog-what-everyone-gets-wrong-when-building-sandboxes-sidebar"
+---
+
+[Durable execution](/docs/durable-execution?ref=blog-what-everyone-gets-wrong-when-building-sandboxes) is how you orchestrate agents. It handles state, retries, waits, and long-running loops, so an agent can run for hours without you babysitting it. And agents increasingly orchestrate something themselves: **sandboxes.** They clone repos, write and run code, execute tests, and spin up sub-agents, and each of these needs an [isolated place to run](/docs/sandboxes/features/isolation-and-security?ref=blog-what-everyone-gets-wrong-when-building-sandboxes).
+
+If durable execution is already coordinating the agent, and the agent is already coordinating sandboxes, the next step is obvious: make [sandboxes](/docs/sandboxes/overview?ref=blog-what-everyone-gets-wrong-when-building-sandboxes) part of the platform. You shouldn't need a second vendor, a second set of credentials, and a second dashboard to give your agent somewhere to run code.
+
+We went in with three constraints:
+
+- **Latency.** Sandboxes have to start and be ready to run commands in milliseconds.
+- **Power.** Sandboxes should be real compute, not a toy. That means VPC networking, SSH, real linux, plus the ability to run Docker images as microVMs.
+- **DX.** They should be incredibly easy to write, use, and manage.
+
+If you read into those constraints, they describe something bigger than sandboxes: **a modern compute primitive** that starts in milliseconds, is easy to use, and can power sandboxes, serverless functions, hosted Inngest workers, managed containers, and regular VMs.
+
+We've built that foundation, and we're launching it with [Sandboxes](/blog/sandboxes-are-a-durability-problem?ref=blog-what-everyone-gets-wrong-when-building-sandboxes) first. Here's what using one looks like:
+
+```tsx
+export const runInSandbox = inngest.createFunction(
+  { id: "run-in-sandbox", triggers: { event: "agent/task.requested" } },
+  async ({ event, step }) => {
+    const sandbox = await step.sandbox.create("create-sandbox");
+
+    const result = await sandbox.commands.run("run-tests", "npm test", {
+      timeout: "5m",
+    });
+
+    await sandbox.destroy("destroy-sandbox");
+    return result;
+  },
+);
+```
+
+Every sandbox operation is a [durable step](/docs/sandboxes/features/managed-lifecycle?ref=blog-what-everyone-gets-wrong-when-building-sandboxes). It's retried, recorded, and shown in the [same trace](/docs/sandboxes/features/traces?ref=blog-what-everyone-gets-wrong-when-building-sandboxes) as the rest of your function. The rest of this post is a high-level look at how it works under the hood.
+
+## Building for speed
+
+If you want sandboxes that start fast, the industry's paved path leans one of two ways:
+
+1. **Kubernetes running gVisor.** Containers with a user-space kernel in between for isolation. This is the approach Modal took early on.
+2. **MicroVMs with Firecracker.** Pioneered by AWS for Lambda: a minimal VMM that boots a real VM in a fraction of a second.
+
+We weren't happy with either.
+
+**Kubernetes doesn't give us the power we need.** It's a great container scheduler, but sandboxes stretch it past what it was designed for. Putting each workload in its own isolated network, let alone a customer's VPC, means fighting the pod networking model. Snapshotting a running workload, including memory, processes, open TCP connections, *and* the filesystem, and restoring it somewhere else isn't a first-class operation. The checkpoint tooling that does exist is bolted on, and it was never built to be the core loop of a product that runs millions of things a second.
+
+**Firecracker is too minimal for what we're building.** That's not a criticism. Minimalism is the point of Firecracker, and it's why it's such a good fit for Lambda: boot a VM, run a short-lived function, throw it away. We want to do more with a VM than that:
+
+- **No CPU hotplug.** You can't resize a running VM's vCPUs.
+- **No virtio-fs.** You can't share a host filesystem into the guest; everything comes in as a block device.
+- **No device passthrough.** There's no VFIO, so there's no path to GPUs or raw NVMe devices in the future.
+- **Network hotplug is only just arriving**, in developer preview.
+
+Why does this matter? Because of how fast boots actually work.
+
+## If you want millisecond speed, get off the critical path
+
+Most warm pools are built for a specific function, template, or image. Ours boot before we know whose workload they'll get. The benefit of this is real speed: one pool that can serve every customer, size, and network.
+
+The catch is that the moment a sandbox runs, we have to turn a generic pre-warmed VM into *this* customer's VM. But that's not hard for Inngest:
+
+- **Hotplug the network card** to place it into that customer's VPC.
+- **Hotplug CPUs** to resize it to the requested shape. Pool VMs stay small, and we don't need a separate pool for every size.
+- **Mount the workload over virtio-fs**: the user's image layers, code, and volumes, without building a block device per request.
+
+With these three, we avoid needing a warm pool per customer, per network, per size, per image. This wouldn't have scaled, and definitely wouldn't let you run a 1 vCPU sandbox and a 16 vCPU VM from the same fleet.
+
+## Cloud-hypervisor, and the networking problem
+
+If we want real compute with VPCs that can run containers, we need real VMs. And if they need to be fast, we need microVMs with a full-featured hypervisor.
+
+With these constraints, we're left with, essentially, cloud-hypervisor. It's built from the same rust-vmm components as Firecracker, but it ships the features we need: CPU, memory, and device hotplug, virtio-fs, VFIO passthrough, and snapshot/restore.
+
+Networking further limits us. Running sandboxes, functions, and VMs inside a real VPC with east-west connectivity *while still booting in under 250ms* is hard.
+
+The standard approach gives each VM a TAP interface wired into a bridge on the host. TAP interfaces are slow to bring up at scale: creating and configuring each one takes kernel-wide locks, so they're created one at a time. If you want to bring up 1,000 sandboxes in a second on a single machine, they queue behind each other, and refilling the warm pool becomes the bottleneck. That straight up misses our requirements.
+
+So we built our own infrastructure layer.
+
+## A high-level overview of our sandbox architecture
+
+**A custom control plane.** We wrote our own control plane to manage cloud-hypervisor VMMs. It exposes a secretless, encrypted, internal API for orchestrating workloads. No customer credentials are ever stored on our control plane hosts.
+
+**Warm pools of snapshotted VMs.** The control plane builds pools of VMs, each snapshotted after boot, ready to accept any user's workload across any base image or Dockerfile. On assignment, the VM is restored, hotplugged into shape, and handed over.
+
+**A custom networking stack.** Instead of a TAP-and-bridge per VM, our networking runs as eBPF programs in the kernel's datapath, skipping the kernel's networking stack entirely. Tenant isolation comes from VXLAN: each VPC gets its own VNI, and tagging happens in eBPF at line rate instead of through per-VM bridges and interfaces. That means we handle the things the kernel normally does for us, including ARP, DHCP, DNS, and the mapping of MACs to VNIs, so that every workload lives in its own isolated VM while traffic is processed as close to line rate as possible.
+
+**ZFS for storage and snapshots.** Every VM's storage runs on ZFS. Snapshotting a VM captures everything. We pause your machine, snapshot all of its state in cloud-hypervisor, take an instant copy-on-write ZFS snapshot, then resume. The result is largely cheap and consistent (modulo fsync annoyances), since memory and disk are captured at the same moment.
+
+## Where this goes: durable sandboxes
+
+Cheap, consistent snapshots unlock the thing we're most excited about: **durable sandboxes,** which we're currently working on.
+
+Using our stack, we can snapshot the VM at every command, **so you can rewind a sandbox to any point in time**.
+
+Combined with durable execution, you could trace an agent's activity across its entire VM: what it ran, what changed on disk, and what the machine looked like at each step. You could also fork from any of those points.
+
+## What's next
+
+The same foundation powers the rest of the roadmap: serverless functions, managed containers, and regular long-running VMs, all on one fleet, all starting in milliseconds.
+
+There's a ton more to cover: how we manage booting and warm pools, and how SSH works into sandboxes that have no internet connectivity and are truly sandboxed. We'll dive into those in follow-up posts. VPC networking is opt-in and launches soon, once we've built out the UI and logs around it.
+
+For now, we're excited to launch Sandboxes: real compute, built into our SDK, that anyone can use without breaking the bank. Check out the [quick start](/docs/sandboxes/quick-start?ref=blog-what-everyone-gets-wrong-when-building-sandboxes) and [pricing](/pricing?ref=blog-what-everyone-gets-wrong-when-building-sandboxes).
