@@ -71,14 +71,14 @@ const sendWelcomeEmail = inngest.createFunction(
   { id: 'send-welcome-email', triggers: { event: 'app/user.signup' } },
   async ({ event, step }) => {
     await step.run('send-email', async () => {
-      await sendEmail({ email: event.data.user.email, template: 'welcome');
+      await sendEmail({ email: event.data.user.email, template: 'welcome' });
     });
   }
 )
 
 const startStripeTrial = inngest.createFunction(
   { id: 'start-stripe-trial', triggers: { event: 'app/user.signup' } },
-  async ({ event }) => {
+  async ({ event, step }) => {
     const customer = await step.run('create-customer', async () => {
       return await stripe.customers.create({ email: event.data.user.email });
     });
