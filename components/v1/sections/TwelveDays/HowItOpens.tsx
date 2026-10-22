@@ -1,6 +1,7 @@
 "use client";
 
 import { motion } from "motion/react";
+import ButtonLink from "@/components/v1/ButtonLink";
 import { reveals } from "@/utils/v1/reveals";
 import {
   COLORS,
@@ -41,6 +42,15 @@ export default function HowItOpens() {
           >
             {HOW_IT_OPENS.body}
           </motion.p>
+          <motion.div {...reveals.body}>
+            <ButtonLink
+              href={HOW_IT_OPENS.cta.href}
+              variant="primary"
+              className="!w-full !border-[#ECFE08] !bg-[#ECFE08] !text-[#010101] hover:!bg-white sm:!w-auto"
+            >
+              {HOW_IT_OPENS.cta.label}
+            </ButtonLink>
+          </motion.div>
         </div>
         <motion.pre
           {...reveals.item(0)}

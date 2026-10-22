@@ -7,6 +7,7 @@ import {
   DAYS,
   MACHINE,
   unlockAt,
+  unlockLabel,
 } from "@/components/v1/sections/TwelveDays/data";
 import {
   POSTER_EYEBROW,
@@ -124,7 +125,9 @@ export default function Machine({ now }: { now: Date | null }) {
     log(
       "end",
       next
-        ? `Run complete. ${stages.length} of 12 stages. Stage ${next.day} unlocks Dec ${next.day}.`
+        ? `Run complete. ${stages.length} of 12 stages. Stage ${
+            next.day
+          } unlocks ${unlockLabel(next.day)}.`
         : "Run complete. All 12 stages. Ridiculous."
     );
   };
@@ -186,8 +189,14 @@ export default function Machine({ now }: { now: Date | null }) {
           <h2 id="twelve-days-machine-heading" className={POSTER_TITLE}>
             {MACHINE.title}
           </h2>
+          <p className="font-v1Label text-[clamp(18px,2.4vw,28px)] uppercase leading-[1.15] text-[#0BDD48]">
+            {MACHINE.subtitle}
+          </p>
           <p className="max-w-[640px] text-[18px] leading-[28px] text-white/80">
             {MACHINE.body}
+          </p>
+          <p className="max-w-[640px] text-[15px] italic leading-[22px] text-white/60">
+            {MACHINE.aside}
           </p>
         </div>
 
@@ -259,7 +268,7 @@ export default function Machine({ now }: { now: Date | null }) {
                       <span>Stage {d.day}</span>
                       <span>
                         {!isUnlocked
-                          ? `Dec ${d.day}`
+                          ? unlockLabel(d.day, true)
                           : s === "done"
                           ? "✓"
                           : s === "failed"

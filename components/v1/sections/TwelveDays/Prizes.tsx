@@ -2,6 +2,7 @@
 
 import Image from "next/image";
 import { motion } from "motion/react";
+import ButtonLink from "@/components/v1/ButtonLink";
 import { reveals } from "@/utils/v1/reveals";
 import { COLORS, DAYS, PRIZES } from "@/components/v1/sections/TwelveDays/data";
 import {
@@ -37,6 +38,21 @@ export default function Prizes({ done }: { done: number[] }) {
           >
             {PRIZES.title}
           </motion.h2>
+          <motion.p
+            {...reveals.body}
+            className="max-w-[620px] text-[18px] leading-[28px] sm:text-[20px] sm:leading-[30px]"
+          >
+            {PRIZES.body}
+          </motion.p>
+          <motion.div {...reveals.body}>
+            <ButtonLink
+              href={PRIZES.cta.href}
+              variant="primary"
+              className="!w-full !border-[#010101] !bg-[#010101] !text-white hover:!bg-white hover:!text-[#010101] sm:!w-auto"
+            >
+              {PRIZES.cta.label}
+            </ButtonLink>
+          </motion.div>
         </div>
 
         {/* Stamp card. */}
@@ -77,9 +93,6 @@ export default function Prizes({ done }: { done: number[] }) {
               );
             })}
           </ol>
-          <p className="text-[14px] leading-[20px] text-[#010101]/70">
-            {PRIZES.signIn}
-          </p>
         </motion.div>
 
         <ul className="grid list-none grid-cols-1 gap-6 pl-0 md:grid-cols-3">

@@ -74,7 +74,7 @@ export default function SongSoFar({ now }: { now: Date | null }) {
         <div className="min-h-[120px]">
           {now === null ? null : latest === 0 ? (
             <h2 id="twelve-days-song-heading" className={POSTER_TITLE}>
-              The first verse drops December 1.
+              {SONG.locked}
             </h2>
           ) : (
             <>

@@ -1,6 +1,7 @@
 "use client";
 
 import { motion, useReducedMotion } from "motion/react";
+import ButtonLink from "@/components/v1/ButtonLink";
 import { reveals } from "@/utils/v1/reveals";
 import { COLORS, FINALE } from "@/components/v1/sections/TwelveDays/data";
 import { Chip, POSTER_TITLE } from "@/components/v1/sections/TwelveDays/poster";
@@ -15,8 +16,9 @@ export default function Finale() {
 
   return (
     <section
+      id="finale"
       aria-labelledby="twelve-days-finale-heading"
-      className="relative w-full overflow-hidden"
+      className="relative w-full scroll-mt-20 overflow-hidden"
       style={{ backgroundColor: COLORS.salmon, color: COLORS.ink }}
     >
       <div className="mx-auto grid w-full max-w-[1440px] grid-cols-1 gap-12 px-6 py-16 sm:px-9 sm:py-20 lg:grid-cols-[minmax(0,1fr)_380px] lg:items-center lg:px-8 lg:py-24">
@@ -48,6 +50,16 @@ export default function Finale() {
               {p}
             </motion.p>
           ))}
+          <motion.div {...reveals.body}>
+            <ButtonLink
+              href={FINALE.cta.href}
+              prefetch={false}
+              variant="primary"
+              className="!w-full !border-[#010101] !bg-[#010101] !text-white hover:!bg-white hover:!text-[#010101] sm:!w-auto"
+            >
+              {FINALE.cta.label}
+            </ButtonLink>
+          </motion.div>
         </div>
 
         <motion.div

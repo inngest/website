@@ -6,11 +6,13 @@ import Link from "next/link";
 import { motion, useInView, useReducedMotion } from "motion/react";
 import {
   CALENDAR,
+  CALENDAR_ID,
   COLORS,
   DAYS,
   DOOR_FACES,
   DOOR_ORDER,
   unlockAt,
+  unlockLabel,
   type WorkflowDay,
 } from "@/components/v1/sections/TwelveDays/data";
 import {
@@ -24,7 +26,8 @@ import {
 
 /**
  * The advent calendar: twelve doors, scattered like a real one, each
- * hinged on its left edge. A door's day unlocks at midnight Pacific.
+ * hinged on its left edge. A door unlocks at midnight Eastern on its
+ * date (weekdays, December 3–18).
  * Today's door glows and waits to be held open (it creaks wider the
  * longer you hold); earlier days swing open on their own, in a stagger
  * the first time the grid scrolls into view.
@@ -65,8 +68,9 @@ export default function AdventCalendar({
 
   return (
     <section
+      id={CALENDAR_ID}
       aria-labelledby="twelve-days-calendar-heading"
-      className="relative w-full overflow-hidden text-white"
+      className="relative w-full scroll-mt-20 overflow-hidden text-white"
       style={{ backgroundColor: COLORS.blue }}
     >
       <div className="relative mx-auto flex w-full max-w-[1440px] flex-col gap-12 px-6 py-16 sm:px-9 sm:py-20 lg:px-8 lg:py-24">
@@ -77,6 +81,9 @@ export default function AdventCalendar({
           <h2 id="twelve-days-calendar-heading" className={POSTER_TITLE}>
             {CALENDAR.title}
           </h2>
+          <p className="font-v1Label text-[clamp(18px,2.4vw,28px)] uppercase leading-[1.15]">
+            {CALENDAR.subtitle}
+          </p>
           <p className="max-w-[560px] text-[18px] leading-[28px] text-white/85">
             {CALENDAR.body}
           </p>
@@ -224,11 +231,7 @@ function Door({
     ? -5
     : 0;
 
-  const opensOn = unlockAt(day.day).toLocaleDateString("en-US", {
-    month: "short",
-    day: "numeric",
-    timeZone: "America/Los_Angeles",
-  });
+  const opensOn = unlockLabel(day.day);
 
   return (
     <div className="relative min-h-[460px] [perspective:2000px]">
@@ -242,7 +245,7 @@ function Door({
               </p>
               {done && (
                 <span className="rounded-full bg-[#0BDD48] px-2 py-0.5 font-v1Label text-[12px] uppercase">
-                  Done
+                  {CALENDAR.completed}
                 </span>
               )}
             </div>
@@ -329,7 +332,7 @@ function Door({
             ? `Day ${day.day} is ready. Press and hold to open.`
             : unlocked
             ? `Day ${day.day}: ${day.gift}`
-            : `Day ${day.day}, opens ${opensOn} at midnight Pacific`
+            : `Day ${day.day}, opens ${opensOn} at midnight Eastern`
         }
         aria-disabled={!open && !needsHold}
         tabIndex={open ? -1 : 0}
@@ -404,7 +407,7 @@ function Door({
             />
           )}
           <span className="relative flex items-center justify-between font-v1Label text-[14px] uppercase">
-            <span>Dec</span>
+            <span>Day</span>
             <span>{needsHold ? "Today" : unlocked ? "Open" : "Locked"}</span>
           </span>
           <span
@@ -416,7 +419,9 @@ function Door({
           {needsHold ? (
             <span className="relative flex flex-col gap-2">
               <span className="font-v1Label text-[13px] uppercase">
-                {hold > 0 ? "Keep holding…" : "Press and hold to open"}
+                {hold > 0
+                  ? "Keep holding…"
+                  : `Open Day ${day.day} · press and hold`}
               </span>
               <span className="block h-3 w-full overflow-hidden rounded-full border-[3px] border-[#010101] bg-white">
                 <span

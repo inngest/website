@@ -108,22 +108,31 @@ export default function Hero({ now }: { now: Date | null }) {
             <motion.span
               {...entry(320)}
               aria-hidden="true"
-              className={`${POSTER_HUGE} block`}
+              // "Workflows" is too long for the poster size: scaled to
+              // fill the text column's width instead.
+              className={`${POSTER_HUGE} block !text-[12.4vw] lg:!text-[min(8.4vw,121px)]`}
             >
               {HERO.titleBottom}
             </motion.span>
           </h1>
 
           <motion.p
+            {...entry(400)}
+            className="mt-8 max-w-[620px] font-sans text-[22px] font-black leading-[1.15] sm:text-[26px]"
+          >
+            {HERO.tagline}
+          </motion.p>
+
+          <motion.p
             {...entry(440)}
-            className="mt-8 max-w-[560px] text-[18px] leading-[28px] sm:text-[20px] sm:leading-[30px]"
+            className="mt-4 max-w-[560px] text-[18px] leading-[28px] sm:text-[20px] sm:leading-[30px]"
           >
             {HERO.body}
           </motion.p>
 
           <motion.div
             {...entry(540)}
-            className="mt-8 flex flex-col items-stretch gap-4 sm:flex-row sm:items-center sm:gap-6"
+            className="mt-8 flex flex-col items-stretch gap-4 sm:flex-row sm:items-center"
           >
             <ButtonLink
               href={HERO.cta.href}
@@ -133,12 +142,23 @@ export default function Hero({ now }: { now: Date | null }) {
             >
               {HERO.cta.label}
             </ButtonLink>
-            {/* Reserves its line before the clock mounts so nothing jumps.
-                Not a live region: it ticks every second. */}
-            <p className="min-h-[20px] font-v1Label text-[15px] uppercase">
-              {line}
-            </p>
+            <ButtonLink
+              href={HERO.secondaryCta.href}
+              prefetch={false}
+              variant="primary"
+              className="!w-full !border-[#010101] !bg-transparent !text-[#010101] hover:!bg-[#010101] hover:!text-white sm:!w-auto"
+            >
+              {HERO.secondaryCta.label}
+            </ButtonLink>
           </motion.div>
+          {/* Reserves its line before the clock mounts so nothing jumps.
+              Not a live region: it ticks every second. */}
+          <motion.p
+            {...entry(600)}
+            className="mt-5 min-h-[20px] font-v1Label text-[15px] uppercase"
+          >
+            {line}
+          </motion.p>
         </div>
 
         {/* The contraption: rat on a wheel, a hand, a mug, a mouth. */}

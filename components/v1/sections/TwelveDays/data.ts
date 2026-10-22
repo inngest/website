@@ -4,25 +4,47 @@
  *
  * Copy for inngest.com/12-days-of-workflows. Twelve short video lessons,
  * one Inngest primitive each, behind an advent calendar whose doors
- * unlock at midnight Pacific. Ends with a live CodeTV episode building a
- * Rube Goldberg machine out of all twelve.
+ * unlock at midnight Eastern, one per weekday from December 3 to 18.
+ * Ends with a live CodeTV episode building a Rube Goldberg machine out
+ * of all twelve.
  *
- * DRAFT: the lesson list, dates and prizes are placeholders until the
- * lineup (Mitch), shoot schedule and budget are final. Everything the
+ * DRAFT: copy is Lauren's review draft. CodeTV participation, merch
+ * thresholds and giveaway mechanics stay provisional until approved,
+ * and the lesson list waits on the final lineup (Mitch). Everything the
  * page says lives here so those land as data edits, not layout changes.
  */
 
 const REF = "12-days-of-workflows";
 
-/** Year the calendar runs. Bump this (and nothing else) to rerun it. */
+/** Year the calendar runs. */
 export const YEAR = 2026;
 
+/** Doors unlock at midnight here; dates on the page are shown in it. */
+export const TIMEZONE = "America/New_York";
+
 /**
- * Midnight Pacific on December `day`. December is always PST (UTC-8),
- * so the offset is fixed rather than looked up.
+ * The December date each door opens: weekdays only, December 3–18.
+ * These are 2026's weekdays, so rerunning the calendar in another year
+ * means updating `YEAR` and this list together.
+ */
+export const UNLOCK_DATES = [3, 4, 7, 8, 9, 10, 11, 14, 15, 16, 17, 18];
+
+/**
+ * Midnight Eastern on door `day`'s date. December is always EST
+ * (UTC-5), so the offset is fixed rather than looked up.
  */
 export function unlockAt(day: number): Date {
-  return new Date(`${YEAR}-12-${String(day).padStart(2, "0")}T00:00:00-08:00`);
+  const date = String(UNLOCK_DATES[day - 1]).padStart(2, "0");
+  return new Date(`${YEAR}-12-${date}T00:00:00-05:00`);
+}
+
+/** "December 9" (or "Dec 9" with `short`) for the date door `day` opens. */
+export function unlockLabel(day: number, short = false): string {
+  return unlockAt(day).toLocaleDateString("en-US", {
+    month: short ? "short" : "long",
+    day: "numeric",
+    timeZone: TIMEZONE,
+  });
 }
 
 /** Campaign colours, sampled from the poster art. */
@@ -214,13 +236,15 @@ export const UNLOCK_FUNCTION = `inngest.createFunction(
   {
     id: "open-todays-door",
     triggers: {
-      cron: "TZ=America/Los_Angeles 0 0 1-12 12 *",
+      // Midnight Eastern, every weekday in December.
+      cron: "TZ=America/New_York 0 0 * 12 1-5",
     },
   },
   async ({ step }) => {
     const day = await step.run("which-door", () =>
-      new Date().getDate()
+      calendar.doorFor(new Date())
     );
+    if (!day) return; // Outside December 3–18.
     await step.run("open-door", () =>
       calendar.open(day)
     );
@@ -228,62 +252,87 @@ export const UNLOCK_FUNCTION = `inngest.createFunction(
 );`;
 
 export const HERO = {
-  chips: ["Inngest × CodeTV", "12 lessons", "Dec 1–12"],
-  // Set like the posters: a huge line, a mono line, a huge line.
-  // Read as one heading: "12 days of weird workflows that refuse to
-  // stop running".
+  chips: ["Inngest × CodeTV", "December 3–18"],
+  // Set like the posters: a huge line, a mono line, a huge line. Read
+  // as one heading (`label`).
   titleTop: "12 Days",
-  titleMid: "of weird workflows that refuse to stop",
-  titleBottom: "Running",
-  label: "The 12 Days of Workflows",
-  body: "Twelve short video lessons, one Inngest primitive a day. A new door unlocks every night at midnight Pacific, opened by a cron job you can watch run. Finish the run for merch and raffle entries.",
-  cta: { label: "Start Free", href: `/sign-up?ref=${REF}` },
+  titleMid: "of",
+  titleBottom: "Workflows",
+  label: "12 Days of Workflows",
+  tagline:
+    "Twelve doors. Twelve weird workflows. One very long-running holiday season.",
+  body: "A new door opens every weekday at midnight Eastern. Behind each: a bite-sized video, a real code example, and another way to make your workflows keep running when things get weird.",
+  cta: { label: "Explore the calendar", href: "#calendar" },
+  secondaryCta: { label: "Start building free", href: `/sign-up?ref=${REF}` },
 } as const;
 
+/** Section id the hero's "Explore the calendar" jumps to. */
+export const CALENDAR_ID = "calendar";
+
+// Two-sentence headlines are split: the first sentence is the poster
+// title, the second a smaller line under it.
 export const CALENDAR = {
   eyebrow: "The calendar",
   title: "No peeking.",
-  body: "Doors open at midnight Pacific. Each one is a lesson, from 30 seconds to 4 minutes, plus the code and the docs.",
+  subtitle: "The workflows are still wrapping themselves.",
+  body: "One new workflow unlocks every weekday, December 3–18. Come back for a short lesson, runnable code, and the docs to make it your own. Miss a day? Catch up whenever you like.",
+  completed: "Completed ✓",
 } as const;
 
 export const HOW_IT_OPENS = {
   eyebrow: "How the doors open",
   title: "A cron job. Obviously.",
-  body: "Every night at midnight, an Inngest function wakes up and opens the next door. When the calendar opens, you'll be able to watch it run live in the Inngest dashboard.",
+  body: "No elves working overtime. Every midnight Eastern, an Inngest function opens the next door. Watch the schedule in action and see how a little orchestration keeps the season running.",
+  cta: {
+    label: "See how it works",
+    href: `/docs/guides/scheduled-functions?ref=${REF}`,
+  },
 } as const;
 
-/** Completion rewards. Amounts and designs are still being decided. */
+/**
+ * Completion rewards. Still to confirm before launch: raffle mechanics
+ * per lesson, merch inventory and selection at 9 of 12, the rules for
+ * the 12 of 12 piece, and eligibility, limits and official rules
+ * (legal note to add once they're final).
+ */
 export const PRIZES = {
   eyebrow: "Finish the run",
-  title: "Solid days get merch.",
+  title: "The nice list has a progress bar.",
+  body: "Sign in with your Inngest account to save your progress. Every completed lesson brings you closer to exclusive holiday merch and raffle entries.",
   items: [
     {
       kicker: "Every lesson",
-      title: "One raffle entry.",
-      body: "Each lesson you finish is another entry in the Inngest credits raffle.",
+      title: "Another raffle entry.",
+      body: "Each lesson you complete adds another entry to the raffle.",
     },
     {
       kicker: "9 of 12",
-      title: "Exclusive merch.",
-      body: "Finish nine lessons for limited-run merch, drawn by an artist we're commissioning for the campaign.",
+      title: "Holiday merch.",
+      body: "Complete nine lessons to become eligible for exclusive holiday merch.",
     },
     {
       kicker: "12 of 12",
       title: "The full set.",
-      body: "Every door, every lesson. The complete-run piece, with the artist's signature on the back of the neck.",
+      body: "Complete the full set for a chance at a special-edition piece.",
     },
   ],
-  signIn:
-    "Sign in with your Inngest account when the calendar opens so your lessons count.",
+  cta: {
+    label: "Sign in and start collecting",
+    href: `${
+      process.env.NEXT_PUBLIC_SIGNIN_URL ?? "https://app.inngest.com/sign-in"
+    }?ref=${REF}`,
+  },
 } as const;
 
 export const FINALE = {
-  chips: ["Live on CodeTV", "Date TBD"],
-  title: ["The finale:", "one ridiculous machine."],
+  chips: ["Live on CodeTV"],
+  title: ["Twelve workflows walk", "into one machine."],
   body: [
-    "After the twelfth door, we build a Rube Goldberg machine out of all twelve primitives, live on CodeTV.",
-    "Raffle and hackathon winners get announced on the stream.",
+    "After the final door opens, join Inngest and CodeTV for a live build: one gloriously overengineered Rube Goldberg machine powered by the primitives you've explored along the way.",
   ],
+  // TODO: registration link and date are still TBD; this anchor is a
+  // placeholder until then.
+  cta: { label: "Save your spot", href: "#finale" },
   video: "/assets/v1/12-days/cat-vertical.mp4",
   videoLabel:
     "Animated poster: an eyeball rolls down a ramp into a bowl balanced on someone's head, under the words Keep all your weird workflows running.",
@@ -291,6 +340,13 @@ export const FINALE = {
 
 export const SONG = {
   eyebrow: "The song so far",
+  locked: "The first verse drops December 3.",
+} as const;
+
+export const CLOSING = {
+  title: "All is calm. Your workflows are still running.",
+  body: "Make something weird. Make it durable. Build for the long run.",
+  cta: { label: "Start building free", href: `/sign-up?ref=${REF}` },
 } as const;
 
 /**
@@ -302,8 +358,10 @@ export const SONG = {
 export const MACHINE = {
   eyebrow: "Build the machine",
   title: "One ridiculous run.",
-  body: "Every door you open adds a stage. Run the machine, then crash it halfway. Finished steps stay finished, so it resumes from where it fell over instead of starting again.",
-  locked: "The machine comes alive December 1.",
+  subtitle: "Twelve moving parts.",
+  body: "Every new door adds a stage to our increasingly questionable holiday contraption. Run it. Break it halfway. Watch Inngest pick up where it left off—without rerunning completed steps.",
+  aside: "Because even holiday chaos deserves durable execution.",
+  locked: "The machine comes alive December 3.",
   steps: {
     1: { step: 'step.run("send-welcome")', done: "Email queued", ms: 212 },
     2: {

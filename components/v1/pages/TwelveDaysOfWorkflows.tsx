@@ -1,8 +1,10 @@
 "use client";
 
+import ButtonLink from "@/components/v1/ButtonLink";
 import PageShell from "@/components/v1/PageShell";
 import StartBuilding from "@/components/v1/sections/Home/StartBuilding";
 import AdventCalendar from "@/components/v1/sections/TwelveDays/AdventCalendar";
+import { CLOSING } from "@/components/v1/sections/TwelveDays/data";
 import Finale from "@/components/v1/sections/TwelveDays/Finale";
 import Hero from "@/components/v1/sections/TwelveDays/Hero";
 import Machine from "@/components/v1/sections/TwelveDays/Machine";
@@ -20,7 +22,7 @@ import {
  *
  * Hero → the advent calendar → the playable machine → the song so far
  * → how the doors open (the cron job) → finish-the-run prizes → the
- * live CodeTV finale → quick starts.
+ * live CodeTV finale → closing quick starts.
  *
  * One clock for the whole page, so the hero countdown, the doors and
  * the song all flip at the same instant at midnight.
@@ -41,9 +43,15 @@ export default function TwelveDaysOfWorkflows() {
         <Finale />
         <StartBuilding
           refTag="12-days-of-workflows-start-building"
-          title="Start building."
+          title={CLOSING.title}
+          body={CLOSING.body}
           titleClassName="normal-case"
           className="!py-16 sm:!py-20 lg:!py-24"
+          actions={
+            <ButtonLink variant="primary" href={CLOSING.cta.href}>
+              {CLOSING.cta.label}
+            </ButtonLink>
+          }
         />
       </div>
     </PageShell>
