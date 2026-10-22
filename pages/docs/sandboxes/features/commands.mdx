@@ -52,7 +52,7 @@ Pipes, `&&`, redirects, and shell builtins need a shell, so use `$.sh`.
 <CodeGroup>
 ```typescript {{ title: "TypeScript" }}
 await sb.$.sh`ls ${dir} | wc -l`;      // quoted for you
-await sb.$.sh`ls "${dir}"`;            // throws: a value can't go inside quotes
+await sb.$.sh`ls "${dir}"`;            // throws: no values inside quotes or after a backslash
 ```
 
 <SdkUnsupported title="Python" feature="Sandboxes" />
@@ -70,7 +70,7 @@ The result is a promise with helpers. Awaiting it directly gives `{ stdout, stde
 ```typescript {{ title: "TypeScript" }}
 const sha = await sb.$`git rev-parse HEAD`.text();       // trimmed stdout
 const files = await sb.$`git ls-files`.lines();          // string[], [] when empty
-const pkg = await sb.$`cat package.json`.json<Pkg>();   // parsed stdout
+const pkg = await sb.$`cat package.json`.json<{ name: string }>();   // parsed stdout
 const { stdout, stderr, exitCode } = await sb.$`node -v`;
 ```
 
@@ -107,15 +107,15 @@ await sb.$({ id: "install" }).sh`pnpm install`;
 | `env` | Environment for this command, over the Sandbox's. Values are kept out of the trace. |
 | `timeout` | How long it may run. Defaults to `5m`. [Longer is fine](#long-running-commands). Takes any [duration](/docs/sandboxes/reference#durations). |
 | `exitCodes` | The exit codes that are not failures. Defaults to `[0]`; `"any"` allows all. |
-| `id` | The step ID of the commands that `$` runs. Defaults to the command text. Repeats are numbered for you. |
+| `id` | The step ID of the commands run by that `$({ id })`, not kept if you call it again. Defaults to the command text. Repeats are numbered for you. |
 
 A configured `$` can be reused for many commands, and calling it again merges: `run({ cwd: "/other" })` keeps `env` and `exitCodes`.
 
-`commands.run` takes `exitCodes` too, <VersionBadge version="v4.26.0+" /> but defaults to `"any"`, so there the exit code comes back as data. It can't be combined with `tools`.
+`commands.run` takes `exitCodes` too, but defaults to `"any"`, so there the exit code comes back as data. It can't be combined with `tools`.
 
 ## Handle failures
 
-A command that exits with a code not in `exitCodes` fails its step and is not retried. A program that isn't found fails the same way. Read the details with `getCommandError`.
+A command that exits with a code not in `exitCodes` fails its step and is not retried. A program that isn't found also fails the step. Read the details with `getCommandError`.
 
 <CodeGroup>
 ```typescript {{ title: "TypeScript" }}
@@ -144,11 +144,11 @@ try {
 
 | Field | Value |
 | --- | --- |
-| `type` | `"failed"` for a disallowed exit, or `"timeout"` for a command stopped at its timeout. |
+| `type` | `"failed"` for a disallowed exit or a process that ended without one, or `"timeout"` for a command stopped at its timeout. |
 | `message` | The error message. |
 | `command` | The command text. |
 | `exitCode` | The exit code, when it exited. |
-| `stdoutTail`, `stderrTail` | The last 8 KiB of each stream. |
+| `stdoutTail`, `stderrTail` | The last 8 KiB of each stream. Both are empty when a command with a timeout of 5m or less times out. |
 
 The error reaches your handler as a `StepError`, so check it with `getCommandError`, not `instanceof`. To treat an exit as success, allow it with `exitCodes`.
 
@@ -165,7 +165,7 @@ await sb.$({ timeout: "2h" }).sh`pnpm test:e2e`;
 <SdkUnsupported title="Go" feature="Sandboxes" />
 </CodeGroup>
 
-- Output is the last 512 KiB, across both streams.
+- Output is the last 512 KiB.
 - Each wait counts against the run's step limit: 24 hours is about 288 steps.
 - A command that times out is killed, and fails with `type: "timeout"`.
 

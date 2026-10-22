@@ -20,7 +20,7 @@ Each command is one row, tagged with `[$]` and named after the command it ran <V
   alt={"A run trace with the rows Create sandbox, write-script, python3 --version, python3 /tmp/analyze.py, write-report, cat /tmp/report.md, and Destroy sandbox on a timeline. The command rows carry a $ tag."}
 />
 
-Expand a command row and select its step to see what ran. Its Metadata tab shows the command, exit code, and Sandbox, and the header shows its timing. A nonzero exit code is a result, so the step still completes:
+Expand a command row and select its step to see what ran. Its Metadata tab shows the command, exit code, and Sandbox, and the header shows its timing. With `commands.run`, a nonzero exit code is a result, so the step still completes. A `$` command fails its step on one unless `exitCodes` allows it:
 
 <ImageTheme
   dark={"/assets/docs/sandboxes/sandbox-trace-expanded-dark.webp"}
