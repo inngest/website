@@ -6,7 +6,7 @@ export const description = "Run commands in a Sandbox with $, a tagged template 
 
 > Run a command in a Sandbox as one durable step, then read its output as text, lines, or JSON.
 
-> **Experimental.** `getCommandError` is exported from `inngest/experimental`. The API can change.
+> **Experimental.** `getCommandError` is exported from `inngest/experimental`, and `group.sandbox` is experimental. The API can change.
 
 - **Write commands like a script.** Each interpolated value is one argument, so there is no quoting to get wrong.
 - **Read output directly.** `.text()`, `.lines()`, and `.json()`.
@@ -59,6 +59,8 @@ await sb.$.sh`ls "${dir}"`;            // throws: no values inside quotes or aft
 <SdkUnsupported title="Go" feature="Sandboxes" />
 </CodeGroup>
 
+In `$` and `$.sh`:
+
 - Arrays spread into several arguments: `` $`rm ${files}` ``.
 - `null`, `undefined`, and `false` are dropped: `` $`npm test ${verbose && "--verbose"}` ``.
 
@@ -107,7 +109,7 @@ await sb.$({ id: "install" }).sh`pnpm install`;
 | `env` | Environment for this command, over the Sandbox's. Values are kept out of the trace. |
 | `timeout` | How long it may run. Defaults to `5m`. [Longer is fine](#long-running-commands). Takes any [duration](/docs/sandboxes/reference#durations). |
 | `exitCodes` | The exit codes that are not failures. Defaults to `[0]`; `"any"` allows all. |
-| `id` | The step ID of the commands run by that `$({ id })`, not kept if you call it again. Defaults to the command text. Repeats are numbered for you. |
+| `id` | The step ID for commands run by that `$({ id })`; later `$()` calls do not inherit it. Defaults to the command text; repeats are numbered. |
 
 A configured `$` can be reused for many commands, and calling it again merges: `run({ cwd: "/other" })` keeps `env` and `exitCodes`.
 
@@ -150,7 +152,7 @@ try {
 | `exitCode` | The exit code, when it exited. |
 | `stdoutTail`, `stderrTail` | The last 8 KiB of each stream. Both are empty when a command with a timeout of 5m or less times out. |
 
-The error reaches your handler as a `StepError`, so check it with `getCommandError`, not `instanceof`. To treat an exit as success, allow it with `exitCodes`.
+The error reaches your handler as a `StepError` (a `NonRetriableError` for a timeout of 5m or less), so check it with `getCommandError`, not `instanceof`. To treat an exit as success, allow it with `exitCodes`.
 
 ## Long-running commands
 
