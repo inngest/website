@@ -86,15 +86,15 @@ const { stdout, stderr, exitCode } = await sb.$`node -v`;
 
 <CodeGroup>
 ```typescript {{ title: "TypeScript" }}
-const run = sb.$({
+const work$ = sb.$({
   cwd: "/work",
   env: { NODE_ENV: "test", API_TOKEN: token },
   timeout: "10m",
   exitCodes: [0, 1],
 });
 
-await run`pnpm lint`;
-await run.sh`pnpm test | tee out.log`;
+await work$`pnpm lint`;
+await work$.sh`pnpm test | tee out.log`;
 
 await sb.$({ id: "install" }).sh`pnpm install`;
 ```
@@ -111,7 +111,7 @@ await sb.$({ id: "install" }).sh`pnpm install`;
 | `exitCodes` | The exit codes that are not failures. Defaults to `[0]`; `"any"` allows all. |
 | `id` | The step ID for commands run by that `$({ id })`; later `$()` calls do not inherit it. Defaults to the command text; repeats are numbered. |
 
-A configured `$` can be reused for many commands, and calling it again merges: `run({ cwd: "/other" })` keeps `env` and `exitCodes`.
+A configured `$` can be reused for many commands, and calling it again merges: `work$({ cwd: "/other" })` keeps `env` and `exitCodes`.
 
 `commands.run` takes `exitCodes` too, but defaults to `"any"`, so there the exit code comes back as data. It can't be combined with `tools`.
 
