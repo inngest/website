@@ -9,9 +9,8 @@ import { trackPageView } from "src/utils/tracking";
 
 export function PageViews() {
   const { anonymousID, existing } = useAnonymousID();
-  // Capture/persist first-touch attribution (utm_*, ref, landing_url, referrer).
-  // The hook is a no-op on subsequent visits because the cookie already exists.
-  useFirstTouch();
+  const campaign = useSearchParams().get("utm_campaign");
+  useFirstTouch(campaign);
 
   return (
     <Script
@@ -48,4 +47,3 @@ export function PageViews() {
     />
   );
 }
-
