@@ -340,6 +340,10 @@ export const docsRefreshOutline: DocsRefreshPage[] = [
                 href: "/docs/durable-execution/deploying-functions/connect",
               },
               {
+                title: "Move from Dev Server to Cloud",
+                href: "/docs/durable-execution/deploying-functions/move-to-inngest-cloud",
+              },
+              {
                 title: "Platforms",
                 href: "/docs/durable-execution/deploying-functions/platforms",
                 children: [
