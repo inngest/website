@@ -8,6 +8,7 @@ import {
   CALENDAR,
   CALENDAR_ID,
   COLORS,
+  PRIZES,
   DAYS,
   DOOR_FACES,
   DOOR_ORDER,
@@ -19,6 +20,10 @@ import {
   formatCountdown,
   useOpenedDoors,
 } from "@/components/v1/sections/TwelveDays/useCalendarClock";
+import {
+  doorId,
+  useSignInHref,
+} from "@/components/v1/sections/TwelveDays/useCheckIn";
 import {
   POSTER_EYEBROW,
   POSTER_TITLE,
@@ -39,10 +44,13 @@ export default function AdventCalendar({
   now,
   done,
   onToggleDone,
+  signedOut,
 }: {
   now: Date | null;
   done: number[];
   onToggleDone: (day: number) => void;
+  /** Nobody signed in: finished lessons offer sign-in to count. */
+  signedOut: boolean;
 }) {
   const gridRef = useRef<HTMLUListElement>(null);
   // Doors wait to pop until someone can see them, so the stagger isn't
@@ -107,7 +115,11 @@ export default function AdventCalendar({
             const unlocked =
               now !== null && unlockAt(day.day).getTime() <= now.getTime();
             return (
-              <li key={day.day} className="list-none">
+              <li
+                key={day.day}
+                id={doorId(day.day)}
+                className="h-full scroll-mt-24 list-none"
+              >
                 <Door
                   day={day}
                   unlocked={unlocked}
@@ -119,6 +131,7 @@ export default function AdventCalendar({
                   onOpened={() => markOpened(day.day)}
                   done={done.includes(day.day)}
                   onToggleDone={() => onToggleDone(day.day)}
+                  signedOut={signedOut}
                   countdown={
                     now && day.day === nextDay
                       ? formatCountdown(
@@ -158,6 +171,7 @@ function Door({
   countdown,
   done,
   onToggleDone,
+  signedOut,
 }: {
   day: WorkflowDay;
   unlocked: boolean;
@@ -168,8 +182,10 @@ function Door({
   countdown: string | null;
   done: boolean;
   onToggleDone: () => void;
+  signedOut: boolean;
 }) {
   const reduceMotion = useReducedMotion();
+  const signInHref = useSignInHref(day.day);
   const face = DOOR_FACES[(day.day - 1) % DOOR_FACES.length];
   const [open, setOpen] = useState(false);
   const [rattle, setRattle] = useState(0);
@@ -234,9 +250,11 @@ function Door({
   const opensOn = unlockLabel(day.day);
 
   return (
-    <div className="relative min-h-[460px] [perspective:2000px]">
-      {/* Behind the door. Only exists once the day has unlocked. */}
-      <div className="absolute inset-0 overflow-hidden rounded-xl border-[3px] border-[#010101] bg-white text-[#010101] shadow-[6px_6px_0_#010101]">
+    <div className="relative h-full [perspective:2000px]">
+      {/* Behind the door. Only exists once the day has unlocked. In
+          normal flow, so a long lesson makes its door (and its row)
+          taller instead of being clipped; the door covers it. */}
+      <div className="relative h-full min-h-[460px] overflow-hidden rounded-xl border-[3px] border-[#010101] bg-white text-[#010101] shadow-[6px_6px_0_#010101]">
         {unlocked && (
           <div className="flex h-full flex-col gap-3 p-5">
             <div className="flex items-center justify-between">
@@ -244,7 +262,7 @@ function Door({
                 Lesson {day.day} · {day.primitive}
               </p>
               {done && (
-                <span className="rounded-full bg-[#0BDD48] px-2 py-0.5 font-v1Label text-[12px] uppercase">
+                <span className="shrink-0 whitespace-nowrap rounded-full bg-[#0BDD48] px-2 py-0.5 font-v1Label text-[12px] uppercase">
                   {CALENDAR.completed}
                 </span>
               )}
@@ -274,10 +292,22 @@ function Door({
             <p className="text-[14px] leading-[20px] text-[#010101]/75">
               {day.body}
             </p>
-            <pre className="overflow-x-auto rounded-md bg-[#010101] p-3 font-v1Mono text-[12px] leading-[18px] text-[#0BDD48]">
+            <pre className="shrink-0 overflow-x-auto rounded-md bg-[#010101] p-3 font-v1Mono text-[12px] leading-[18px] text-[#0BDD48]">
               <code>{day.code}</code>
             </pre>
-            <div className="mt-auto flex items-center justify-between gap-3 pt-1">
+            {done && signedOut && (
+              <a
+                href={signInHref}
+                className="mt-auto font-v1Label text-[12px] uppercase underline underline-offset-4"
+              >
+                {PRIZES.signInToCount} <span aria-hidden="true">→</span>
+              </a>
+            )}
+            <div
+              className={`${
+                done && signedOut ? "" : "mt-auto "
+              }flex items-center justify-between gap-3 pt-1`}
+            >
               <Link
                 href={day.docs.href}
                 className="inline-flex items-center gap-2 font-v1Label text-[13px] uppercase underline-offset-4 hover:underline"

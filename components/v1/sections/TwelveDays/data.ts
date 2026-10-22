@@ -316,12 +316,10 @@ export const PRIZES = {
       body: "Complete the full set for a chance at a special-edition piece.",
     },
   ],
-  cta: {
-    label: "Sign in and start collecting",
-    href: `${
-      process.env.NEXT_PUBLIC_SIGNIN_URL ?? "https://app.inngest.com/sign-in"
-    }?ref=${REF}`,
-  },
+  // Links through sign-in and back to the calendar (useSignInHref).
+  cta: { label: "Sign in and start collecting" },
+  /** On a finished lesson, when nobody is signed in. */
+  signInToCount: "Sign in to count it",
 } as const;
 
 export const FINALE = {

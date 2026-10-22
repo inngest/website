@@ -9,6 +9,7 @@ import {
   POSTER_EYEBROW,
   POSTER_TITLE,
 } from "@/components/v1/sections/TwelveDays/poster";
+import { useSignInHref } from "@/components/v1/sections/TwelveDays/useCheckIn";
 
 const MILESTONES = [9, 12];
 
@@ -19,6 +20,7 @@ const MILESTONES = [9, 12];
  */
 export default function Prizes({ done }: { done: number[] }) {
   const count = done.length;
+  const signInHref = useSignInHref();
 
   return (
     <section
@@ -46,7 +48,7 @@ export default function Prizes({ done }: { done: number[] }) {
           </motion.p>
           <motion.div {...reveals.body}>
             <ButtonLink
-              href={PRIZES.cta.href}
+              href={signInHref}
               variant="primary"
               className="!w-full !border-[#010101] !bg-[#010101] !text-white hover:!bg-white hover:!text-[#010101] sm:!w-auto"
             >
