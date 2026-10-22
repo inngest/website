@@ -1,0 +1,186 @@
+import { CodeGroup, SdkUnsupported, VersionBadge, AnnotatedCode, Annotation } from "shared/Docs/mdx";
+export const metaTitle = "Commands | Sandboxes";
+export const description = "Run commands in a Sandbox with $, a tagged template that makes each command one durable step with typed output, exit-code checks, and readable failures.";
+
+# Commands <VersionBadge version="v4.26.0+" />
+
+> Run a command in a Sandbox as one durable step, then read its output as text, lines, or JSON.
+
+> **Experimental.** `getCommandError` is exported from `inngest/experimental`. The API can change.
+
+- **Write commands like a script.** Each interpolated value is one argument, so there is no quoting to get wrong.
+- **Read output directly.** `.text()`, `.lines()`, and `.json()`.
+- **Fail loudly.** A command that exits with an unexpected code fails its step, with the output attached.
+- **Run for hours.** A long command is still one row in the trace.
+
+## Run a command
+
+Every Sandbox has a `$`. Each command is one step.
+
+<AnnotatedCode>
+
+```typescript {{ title: "TypeScript" }}
+await group.sandbox("build", async (sb) => {
+  await sb.$`git clone --depth 1 ${repoUrl} /work`;
+
+  const sha = await sb.$({ cwd: "/work" })`git rev-parse HEAD`.text();
+
+  await sb.$({ cwd: "/work", timeout: "20m" }).sh`pnpm install && pnpm test`;
+});
+```
+
+<Annotation id="argv" lines="2" tease="one argument each" title="No shell, no quoting" href="#run-a-command" linkText="Run a command">
+The text splits on whitespace and each `${value}` is exactly one argument, so a URL with spaces or quotes can't change the command. The first word is looked up on the Sandbox's `PATH`.
+</Annotation>
+
+<Annotation id="options" lines="4" tease="options" title="Options before the command" href="#set-options" linkText="Set options">
+`$({ ... })` returns a `$` with those options set. Use it once, or keep it for many commands.
+</Annotation>
+
+<Annotation id="sh" lines="6" tease="a shell" title="`$.sh` runs a shell script" href="#use-a-shell" linkText="Use a shell">
+Pipes, `&&`, redirects, and shell builtins need a shell, so use `$.sh`.
+</Annotation>
+
+</AnnotatedCode>
+
+`group` comes from the function's arguments. `$` is also on the Sandbox from `step.sandbox.create()`. See [Managed lifecycle](/docs/sandboxes/features/managed-lifecycle#scope-a-sandbox-to-a-block).
+
+## Use a shell
+
+`` $.sh`...` `` runs the script with `/bin/sh -c`. Interpolated values are quoted for you, so put them on their own.
+
+<CodeGroup>
+```typescript {{ title: "TypeScript" }}
+await sb.$.sh`ls ${dir} | wc -l`;      // quoted for you
+await sb.$.sh`ls "${dir}"`;            // throws: a value can't go inside quotes
+```
+
+<SdkUnsupported title="Python" feature="Sandboxes" />
+<SdkUnsupported title="Go" feature="Sandboxes" />
+</CodeGroup>
+
+- Arrays spread into several arguments: `` $`rm ${files}` ``.
+- `null`, `undefined`, and `false` are dropped: `` $`npm test ${verbose && "--verbose"}` ``.
+
+## Read the output
+
+The result is a promise with helpers. Awaiting it directly gives `{ stdout, stderr, exitCode, output }`.
+
+<CodeGroup>
+```typescript {{ title: "TypeScript" }}
+const sha = await sb.$`git rev-parse HEAD`.text();       // trimmed stdout
+const files = await sb.$`git ls-files`.lines();          // string[], [] when empty
+const pkg = await sb.$`cat package.json`.json<Pkg>();   // parsed stdout
+const { stdout, stderr, exitCode } = await sb.$`node -v`;
+```
+
+<SdkUnsupported title="Python" feature="Sandboxes" />
+<SdkUnsupported title="Go" feature="Sandboxes" />
+</CodeGroup>
+
+`.json()` fails the step without retrying when the output is not JSON, naming the command.
+
+## Set options
+
+<CodeGroup>
+```typescript {{ title: "TypeScript" }}
+const run = sb.$({
+  cwd: "/work",
+  env: { NODE_ENV: "test", API_TOKEN: token },
+  timeout: "10m",
+  exitCodes: [0, 1],
+});
+
+await run`pnpm lint`;
+await run.sh`pnpm test | tee out.log`;
+
+await sb.$({ id: "install" }).sh`pnpm install`;
+```
+
+<SdkUnsupported title="Python" feature="Sandboxes" />
+<SdkUnsupported title="Go" feature="Sandboxes" />
+</CodeGroup>
+
+| Option | Does |
+| --- | --- |
+| `cwd` | The working directory. |
+| `env` | Environment for this command, over the Sandbox's. Values are kept out of the trace. |
+| `timeout` | How long it may run. Defaults to `5m`. [Longer is fine](#long-running-commands). Takes any [duration](/docs/sandboxes/reference#durations). |
+| `exitCodes` | The exit codes that are not failures. Defaults to `[0]`; `"any"` allows all. |
+| `id` | The step ID of the commands that `$` runs. Defaults to the command text. Repeats are numbered for you. |
+
+A configured `$` can be reused for many commands, and calling it again merges: `run({ cwd: "/other" })` keeps `env` and `exitCodes`.
+
+`commands.run` takes `exitCodes` too, <VersionBadge version="v4.26.0+" /> but defaults to `"any"`, so there the exit code comes back as data. It can't be combined with `tools`.
+
+## Handle failures
+
+A command that exits with a code not in `exitCodes` fails its step and is not retried. A program that isn't found fails the same way. Read the details with `getCommandError`.
+
+<CodeGroup>
+```typescript {{ title: "TypeScript" }}
+import { getCommandError } from "inngest/experimental";
+
+try {
+  await sb.$`pnpm test`;
+} catch (error) {
+  const failure = getCommandError(error);
+
+  if (failure) {
+    console.log(failure.type);        // "failed" or "timeout"
+    console.log(failure.exitCode);    // 1 (not set for a timeout)
+    console.log(failure.stderrTail);  // last 8 KiB of stderr
+  }
+
+  throw error;
+}
+```
+
+<SdkUnsupported title="Python" feature="Sandboxes" />
+<SdkUnsupported title="Go" feature="Sandboxes" />
+</CodeGroup>
+
+`getCommandError` returns a plain object, or `undefined` for any other error:
+
+| Field | Value |
+| --- | --- |
+| `type` | `"failed"` for a disallowed exit, or `"timeout"` for a command stopped at its timeout. |
+| `message` | The error message. |
+| `command` | The command text. |
+| `exitCode` | The exit code, when it exited. |
+| `stdoutTail`, `stderrTail` | The last 8 KiB of each stream. |
+
+The error reaches your handler as a `StepError`, so check it with `getCommandError`, not `instanceof`. To treat an exit as success, allow it with `exitCodes`.
+
+## Long-running commands
+
+A timeout over five minutes runs the command as a process that the steps follow, with one wait step per five minutes. It is still one `[$]` row in the trace.
+
+<CodeGroup>
+```typescript {{ title: "TypeScript" }}
+await sb.$({ timeout: "2h" }).sh`pnpm test:e2e`;
+```
+
+<SdkUnsupported title="Python" feature="Sandboxes" />
+<SdkUnsupported title="Go" feature="Sandboxes" />
+</CodeGroup>
+
+- Output is the last 512 KiB, across both streams.
+- Each wait counts against the run's step limit: 24 hours is about 288 steps.
+- A command that times out is killed, and fails with `type: "timeout"`.
+
+## In the trace
+
+Each command is one row tagged `[$]` and named after the command. See [Traces](/docs/sandboxes/features/traces#what-appears-in-the-trace).
+
+`env` values are redacted from the trace, but the command text and step ID are not. Pass secrets in `env` rather than interpolating them into the command. See [Secrets](/docs/sandboxes/features/secrets).
+
+<CodeGroup>
+```typescript {{ title: "TypeScript" }}
+await sb.$({ env: { NPM_TOKEN: token } }).sh`pnpm publish`;   // token stays out of the trace
+await sb.$`npm login --token ${token}`;                       // token is in the command text
+```
+
+<SdkUnsupported title="Python" feature="Sandboxes" />
+<SdkUnsupported title="Go" feature="Sandboxes" />
+</CodeGroup>

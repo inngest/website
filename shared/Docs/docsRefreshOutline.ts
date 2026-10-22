@@ -502,6 +502,10 @@ export const docsRefreshOutline: DocsRefreshPage[] = [
                 href: "/docs/sandboxes/features/managed-lifecycle",
               },
               {
+                title: "Commands",
+                href: "/docs/sandboxes/features/commands",
+              },
+              {
                 title: "Tools",
                 href: "/docs/sandboxes/features/tools",
               },

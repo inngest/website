@@ -92,7 +92,7 @@ Pause and Resume keep the same Sandbox ID, filesystem, memory, environment, and 
 
 ## Commands, processes, and files
 
-- `commands.run` waits for one command and returns `stdout`, `stderr`, `exitCode`, and output-truncation metadata. A nonzero exit code is a result, not an SDK exception. A string command runs through `/bin/sh -c`; an argv array preserves argument boundaries. The observation timeout defaults to 30 seconds and caps at five minutes.
+- `commands.run` waits for one command and returns `stdout`, `stderr`, `exitCode`, and output-truncation metadata. A nonzero exit code is a result, not an SDK exception, unless you pass `exitCodes` (see [Commands](/docs/sandboxes/features/commands#set-options)). A string command runs through `/bin/sh -c`; an argv array preserves argument boundaries. The observation timeout defaults to 30 seconds and caps at five minutes.
 - `processes.start` starts a background process. The returned process has a public UUID. Use `list`, `get`, `getOutput`, `signal`, and `wait` to manage it. Wait observes the process; its timeout does not stop it. Retained output is bounded, and live streams can miss or replay chunks.
 - The direct client uploads or downloads one complete regular file at an absolute path, up to 100 MiB. Upload replaces the file. The beta has no directory-list, append, rename, or recursive-transfer API. Files persist across Pause and Resume but end when the Sandbox is destroyed.
 - Fresh Sandbox Create can select existing workspace secrets with `secrets: ["SECRET_NAME"]`. The SDK and REST API send names, and Inngest injects their values under the same environment variable names. Snapshot clones restore captured values and cannot select new secrets. See [Secrets](/docs/sandboxes/features/secrets).
@@ -139,6 +139,7 @@ These can change. Versions are noted where they differ.
 | API | Use it for |
 | --- | --- |
 | `step.sandbox.python`, `step.sandbox.typescript` | Create a Sandbox, run code, return a result, and destroy the Sandbox. Options: `input`, `schema.output`, `tools`, `cwd`, `timeout`, and any create option. See [Managed lifecycle](/docs/sandboxes/features/managed-lifecycle#run-python-or-typescript-in-one-call). |
+| `sandbox.$` <VersionBadge version="v4.26.0+" />, `getCommandError`, `exitCodes` on `commands.run` | Run commands as tagged templates with `.text()`, `.lines()` and `.json()`, and read failures. See [Commands](/docs/sandboxes/features/commands). |
 | `tools`, `toolOptions` on `commands.run` and the runners | Let Sandbox code call your functions as durable steps. See [Tools](/docs/sandboxes/features/tools). |
 | `tool.step()`, `tool.group()` from `inngest/experimental` | Declare a tool with typed input and output, or a tool whose body is a group of steps. |
 | `toolDefinitions(tools)` <VersionBadge version="v4.26.0+" /> | Turn tools into `{ name, description, input_schema }` for a model API. See [Tools](/docs/sandboxes/features/tools#give-the-tools-to-a-model). |

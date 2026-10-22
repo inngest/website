@@ -12,21 +12,7 @@ Open the function trace to find which Sandbox operation slowed or failed a job. 
 
 Open the function run in the Inngest dashboard or Dev Server. The trace shows the steps alongside the rest of the function. Select a step to inspect its timing, input, output, error details, and retry attempts.
 
-Each command is one row, tagged with `import { CodeGroup, SdkUnsupported, VersionBadge, ImageTheme } from "shared/Docs/mdx";
-export const metaTitle = "Traces | Sandboxes";
-export const description = "Sandbox traces show each command and operation in the same Inngest run trace as your function steps, so you can find failed or slow Sandbox work.";
-
-# Traces
-
-> Find failed or slow Sandbox operations alongside the other steps in a function run.
-
-Open the function trace to find which Sandbox operation slowed or failed a job. Each `step.sandbox` call is a durable step: Inngest records its result for replay and applies that operation’s retry classification. Guest commands and files still have their own lifecycle.
-
-## What appears in the trace
-
-Open the function run in the Inngest dashboard or Dev Server. The trace shows the steps alongside the rest of the function. Select a step to inspect its timing, input, output, error details, and retry attempts.
-
- and named after the command it ran <VersionBadge version="v4.26.0+" />. Sandbox operations such as creating or destroying show as plain names, like "Create sandbox":
+Each command is one row, tagged with `[$]` and named after the command it ran <VersionBadge version="v4.26.0+" />. Sandbox operations such as creating or destroying show as plain names, like "Create sandbox":
 
 <ImageTheme
   dark={"/assets/docs/sandboxes/sandbox-trace-collapsed-dark.webp"}

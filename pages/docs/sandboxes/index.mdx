@@ -14,6 +14,7 @@ When an agent needs to run generated code or test a repository, put that work in
 - **Share files when tasks need them.** S3-backed persistent mounts let different Sandboxes use the same backing path.
 - **Follow the whole job.** See Sandbox operations alongside function steps, waits, and retries in a run trace.
 - **Run Python or TypeScript in one call.** `step.sandbox.python` and `step.sandbox.typescript` start a Sandbox, run your code, return a typed result, and clean up. [Managed lifecycle](/docs/sandboxes/features/managed-lifecycle#run-python-or-typescript-in-one-call)
+- **Run commands like a script.** `sb.$` runs a command as one step and returns text, lines, or JSON. [Commands](/docs/sandboxes/features/commands)
 - **Let sandboxed code call your app.** Tools run your functions as durable steps with your credentials. [Tools](/docs/sandboxes/features/tools)
 - **Start from your own image.** Choose `image.inngest()` or `image.custom()` when creating a Sandbox. [Base images](/docs/sandboxes/features/base-images)
 
