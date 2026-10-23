@@ -107,8 +107,6 @@ export const confirmOrder = inngest.createFunction(
 );
 ```
 
-{/* TODO CODE: replace the three calls with your real clients; keep the shape. Consider a before/after showing the same work as one 90-second step vs. three short ones */}
-
 Graceful shutdown is the other half of "short steps." Whatever your deployment model, the termination grace period on your pods has to outlast your longest step, or the kill lands mid-flight and that step retries elsewhere. Short steps make that number small. With connect, the SDK handles the drain: on SIGTERM it stops accepting new steps, lets in-flight ones finish, and flushes results over HTTP after the socket closes. With serve, that's your HTTP server's drain behavior, and you should check it actually waits.
 
 ```yaml
@@ -119,15 +117,11 @@ spec:
 
 The ungraceful case, an OOM kill or a lost node with a step mid-flight, is the one a grace period can't help with. There, the platform notices the worker is gone and re-sends the step to another one. Which brings the whole thing back to step size: the platform's part of "fail fast" is already fast. Yours is how much work a single step is carrying when it dies.
 
-{/* TODO: no docs source for a re-send time on a dead worker ("within milliseconds" was cut). Ask engineering whether to state a figure, and whether it differs for serve vs connect. */}
-
 Fast failures and short steps mean more retries, and more retries mean more chances to run a side effect twice. Hold that thought; it's the last section.
 
 ## How do you deploy workers without taking every function down?
 
-The 5pm bug from the opening had one root cause that had nothing to do with the bug: a single version of the worker fleet was serving 100% of the critical path, and rolling back meant a hotfix.
-
-{/* TODO: the opening no longer mentions a 5pm bug. Either add it to the intro or reword this line. */}
+When a deploy ships a bug, what turns it into an outage usually has nothing to do with the bug: a single version of the worker fleet is serving 100% of the critical path, and rolling back means a hotfix.
 
 Two rules. Never have one version serving all of it during a deploy, and never be more than one action away from the previous version.
 
@@ -243,18 +237,17 @@ This is where `timeouts.start` earns its keep: shedding work that's been queued 
 
 ## Measure queue time, not success rate
 
-Queue time on the critical path is the metric that would have predicted the flash-sale miss, and it's missing from most dashboards. Success rate reads 100% the whole time, because every run eventually completes.
+Queue time on the critical path is the metric that predicts a flash-sale miss, and it's missing from most dashboards. Success rate reads 100% the whole time, because every run eventually completes.
 
 Steady-state concurrency sits well under the ceiling. [The ceiling only bites in short bursts](/blog/new-bursty-concurrency-coverage-for-spikes?ref=blog-the-queue-is-durable-your-worker-is-not), and averages hide it completely. If you size headroom from average concurrency, you'll size it wrong; size it from p99 queue time during your last spike.
 
-{/* TODO TABLE: fill from a real spike. Decide how you're pulling queue time: dashboard, a Traces query, or scheduled-minus-started from the export */}
+Pull each of these for steady state and for your last two-minute burst, and compare:
 
-|                    | Steady state | Burst (2 min) | What it tells you                              |
-| ------------------ | ------------ | ------------- | ---------------------------------------------- |
-| Concurrent steps   | TBD          | TBD           | Whether the ceiling is ever the constraint     |
-| Queue time p50     | TBD          | TBD           | Normal path is fine                            |
-| Queue time p99     | TBD          | TBD           | The number that predicts the missed booking    |
-| Step-ended errors  | TBD          | TBD           | Whether the burst is also breaking your code   |
+| Signal | Where to read it | What it tells you |
+| --- | --- | --- |
+| Concurrent steps | `inngest_steps_running` | Whether the ceiling is ever the constraint |
+| Scheduled vs started | `inngest_function_run_scheduled_total` vs `inngest_function_run_started_total` | Whether work is queuing on the critical path |
+| Step-ended errors | `inngest_sdk_req_ended_total` by `status` | Whether the burst is also breaking your code |
 
 Headroom has two ceilings, and people plan for one. Account concurrency is the first. The second is the worker itself: by default a connect worker accepts as many concurrent steps as Inngest sends it, so a burst that fits comfortably under your account limit can still OOM a single pod. [Cap steps per worker](/docs/durable-execution/deploying-functions/connect?ref=blog-the-queue-is-durable-your-worker-is-not#worker-concurrency) and scale pods, not the cap.
 
@@ -268,8 +261,6 @@ await connect({
 ```
 
 When a worker hits its cap it rejects the step, Inngest re-enqueues it, and the rejection does not count against the function's retries. So "All workers are at capacity" in the dashboard is telling you to add pods. The footgun: two pods with the same `instanceId` share one cap. Copy-pasted config will do this to you.
-
-{/* TODO docs: the "All workers are at capacity" error and the note that cap rejections don't count against retries only exist on the legacy setup/connect page. Restore that Info box on /docs/durable-execution/deploying-functions/connect. */}
 
 Serve has no per-worker knob. Your cap is the load balancer's per-target limit and your process's own concurrency, with function-level `concurrency` as the outer ceiling.
 
@@ -317,4 +308,4 @@ Run this against your own system this week. Not the platform's uptime, your work
 7. What was p99 queue time on the critical path during your last spike?
 8. Would every side effect in that path survive running twice?
 
-If you want one place to start, pull p99 queue time on your order path from your last spike and check whether you'd have missed the booking. That number tells you which of the other seven to do first.
+If you want one place to start, pull p99 queue time on your order path from your last spike and check whether your order confirmations went out late. That number tells you which of the other seven to do first.
