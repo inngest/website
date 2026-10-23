@@ -1,4 +1,4 @@
-import { CodeGroup, SdkUnsupported } from "shared/Docs/mdx";
+import { CodeGroup, SdkUnsupported, VersionBadge } from "shared/Docs/mdx";
 
 export const metaTitle = "Reference | Sandboxes";
 export const description = "Inngest Sandboxes API reference: current beta calls and constraints for creating Sandboxes, running commands, and managing their lifecycle.";
@@ -116,6 +116,150 @@ A private Pause checkpoint serves only Resume of the same Sandbox. It is not a u
 Captured-command timeout and output-limit errors may also mean the command ran. Create, Destroy, Pause, Resume, snapshot Delete, and identical file upload are safe to repeat after an unconfirmed availability failure under the beta contract. Let unexpected durable step errors escape unless the function has a deliberate reconciliation path.
 
 The caller owns cleanup in this beta. Use `finally` for direct calls. Destroy the Sandbox on a function's successful path and use an `onFailure` cleanup path when permanent failure must release it. A JavaScript `finally` block around durable steps does not guarantee cleanup after permanent failure.
+
+## Coding-agent primitives <VersionBadge version="v4.26.0+" />
+
+> **Experimental.** These APIs come from `inngest/experimental` and can change without a compatibility period.
+
+Three building blocks for a coding agent that works in a Sandbox:
+
+- `agent.loop(options)` runs a model with tools until the model stops calling them. Each model call is one step, and each tool call is one step (or a group of steps for `tool.group()`). A replay reuses completed turns, so a crash never repeats a model call or a tool call.
+- `sandbox.tools.code(options?)` returns `read`, `write`, `edit`, `search`, and `run` tools that work in a durable Sandbox.
+- `repo(sandbox, options)` clones a git repository into the Sandbox and returns the code tools plus a `push` tool. The token stays out of the Sandbox.
+
+<CodeGroup>
+```typescript {{ title: "TypeScript" }}
+import { agent, repo } from "inngest/experimental";
+
+const sandbox = await step.sandbox.create("create-sandbox", {
+  name: `coder-${runId}`,
+  vcpu: 2,
+  memoryMb: 2048,
+});
+
+const checkout = await repo(sandbox, {
+  repo: event.data.repo, // "owner/name" or any git URL
+  token: process.env.GITHUB_TOKEN,
+});
+
+const { text, stopped, turns } = await agent.loop({
+  model: claude, // see "Connect a model" below
+  system: "You are a careful engineer. Run the code to check it works, then push a branch.",
+  prompt: `The repository is in ${checkout.path}. Task: ${event.data.task}`,
+  tools: checkout.tools,
+});
+
+await sandbox.destroy("destroy-sandbox");
+```
+
+<SdkUnsupported title="Python" feature="Agent primitives" />
+<SdkUnsupported title="Go" feature="Agent primitives" />
+</CodeGroup>
+
+### `agent.loop()` options
+
+| Option | Default | Description |
+| --- | --- | --- |
+| `model` | Required | The function that calls your model. See [Connect a model](#connect-a-model). |
+| `prompt` | Required | The first user message. |
+| `tools` | Required | Tools the model can call, defined with `tool.step()` or `tool.group()`, or from `sandbox.tools.code()` or `repo()`. |
+| `system` | None | The system prompt. |
+| `id` | `"agent"` | Prefix of the loop's step IDs. Set a distinct ID when one function runs the loop more than once. |
+| `maxTurns` | `40` | The most model calls to make. |
+| `maxToolOutput` | `8000` | The most characters of one tool result the model sees. Longer results keep their start and end. |
+| `parallelTools` | `true` | Run the tool calls of one reply at the same time. Set `false` for tools that change the same state. |
+| `history` | None | The `history` of an earlier result, to continue its conversation. |
+| `steer` | None | `(turn) => Promise<string[] \| undefined>`. Runs between model calls, after the tool results. Returned strings reach the model as user messages. It runs in your function, so read messages from a durable log with steps. |
+| `wrapUp` | None | Text sent on the last turn, with tool calls forbidden, so the model writes its answer. |
+| `context` | `{ maxChars: 200_000 }` | Once the conversation passes `maxChars`, old tool results are shortened (oldest first) before they're sent to the model. The last few messages are always sent whole, and the returned `history` keeps everything. Set `false` to send the whole conversation. |
+| `onTurn` | None | Called after each model call with `{ turn, stepId, text, toolCalls, usage }`. It runs on every execution, so put side effects in steps with IDs that include `turn`. An error fails the run. |
+| `onToolResult` | None | Called when a tool call finishes with `{ turn, call, output, isError, stepId, ms }`. Put side effects in steps; their IDs are scoped to the call. |
+
+The loop returns `{ text, stopped, turns, history, usage, toolCalls }`. `stopped` is `"done"` when the model replied without calling a tool, or `"maxTurns"`. `usage` adds up the `input` and `output` tokens your model function reported.
+
+When a tool fails, has an unknown name, or gets arguments that don't match its input schema, the model gets an error result and can react; the run continues. To return a failure without throwing, return `agent.toolError(body)` from the tool. The model gets `body` as an error result.
+
+### Connect a model
+
+`agent.loop()` has no provider built in. `agent.model(fn)` types a function that calls your model SDK. The loop calls it once per turn, inside a step, so a failure retries. Throw a `NonRetriableError` when a retry can't help, such as a bad request.
+
+The function receives `{ system, messages, tools, turn, maxTurns, toolChoice }`. `tools` already has the `name`, `description`, and `input_schema` shape that model APIs take. `toolChoice` is `"none"` on a `wrapUp` turn. In `messages`, a `user` message has text `content`, an `assistant` message is the `message` you returned earlier, unchanged, and a `tool` message holds one entry in `results` (`toolCallId`, `name`, `input`, `content`, and `isError` when the tool failed) per call of the previous reply.
+
+Return `{ message, toolCalls, text?, usage? }`. `message` is the assistant reply, stored as returned (it must be JSON), so provider-specific parts such as thinking blocks go back to the model untouched. `toolCalls` is a list of `{ id, name, input }`; a reply with no tool calls ends the loop.
+
+<CodeGroup>
+```typescript {{ title: "TypeScript" }}
+import Anthropic from "@anthropic-ai/sdk";
+import { agent } from "inngest/experimental";
+
+const anthropic = new Anthropic();
+
+export const claude = agent.model(async ({ system, messages, tools }) => {
+  const reply = await anthropic.messages.create({
+    model: "claude-sonnet-5-5",
+    max_tokens: 8192,
+    system,
+    tools,
+    messages: messages.map((message) => {
+      if (message.role !== "tool") {
+        return message as Anthropic.MessageParam;
+      }
+
+      return {
+        role: "user",
+        content: message.results.map((result) => ({
+          type: "tool_result" as const,
+          tool_use_id: result.toolCallId,
+          content: result.content,
+          is_error: result.isError,
+        })),
+      };
+    }),
+  });
+
+  return {
+    message: { role: "assistant", content: reply.content },
+    text: reply.content.flatMap((b) => (b.type === "text" ? [b.text] : [])).join("\n"),
+    toolCalls: reply.content.filter((b) => b.type === "tool_use"),
+    usage: { input: reply.usage.input_tokens, output: reply.usage.output_tokens },
+  };
+});
+```
+
+<SdkUnsupported title="Python" feature="Agent primitives" />
+<SdkUnsupported title="Go" feature="Agent primitives" />
+</CodeGroup>
+
+### `sandbox.tools.code()`
+
+Returns tools for a model to work on code in a durable Sandbox. Each call is one or more Sandbox command steps, named after what they run.
+
+| Tool | What it does |
+| --- | --- |
+| `read` | Reads a file with line numbers. `from` and `to` select a range (default lines 1–400). |
+| `write` | Creates or overwrites a file. |
+| `edit` | Replaces exact text: `old_string` must match once, or set `replace_all`. It reads, changes, and writes the file from your app, so the Sandbox needs nothing installed. |
+| `search` | Searches file contents with a regular expression, using `rg` when available and `grep` otherwise. |
+| `run` | Runs a shell command and returns the exit code, stdout, and stderr. A nonzero exit is a result the model sees, not an error. |
+
+| Option | Default | Description |
+| --- | --- | --- |
+| `cwd` | `"/work"` | Where relative paths and commands start. |
+| `timeout` | `"5m"` | The longest one command may run. |
+| `only` | All tools | Return only these tools, such as `["read", "search"]`. |
+
+### `repo()`
+
+`repo(sandbox, options)` clones a repository into a durable Sandbox and returns `{ path, sha, push, tools }`. `tools` holds the code tools working in `path` plus `push`, which pushes a local branch to the remote under the same name. `push(branch)` does the same from your code. The token is only in the environment of the clone and push commands; it's never in a command argument, a URL, or git config, so the model's own commands can't read it. A failed clone or push fails without retrying.
+
+| Option | Default | Description |
+| --- | --- | --- |
+| `repo` | Required | A GitHub `owner/name`, or any git URL or path. |
+| `ref` | The default branch | Branch, tag, or commit to check out. |
+| `path` | `"/work"` | Where to check out. |
+| `token` | None | A string, or a function that returns one, used to clone and push over HTTPS. Without it, only public repositories can be cloned. |
+
+`checkout.tools` is a plain object, so you can remove a tool or add your own, such as a `tool.step()` that opens a pull request from your app: `tools: { ...checkout.tools, openPullRequest }`.
 
 ## Limits
 
