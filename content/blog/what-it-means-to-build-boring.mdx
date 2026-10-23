@@ -162,7 +162,7 @@ const approval = await step.waitForEvent("wait-for-approval", {
 if (!approval) return await step.run("escalate", () => escalate(plan));
 ```
 
-Waiting is free because nothing is actually running. The run's state lives in its recorded steps, so there's no process sitting idle, no open connection, no server you're paying to keep warm. When the approval lands, Inngest picks the run back up at the next line as if no time had passed. If your deploy rolled out three times in between, it doesn't matter.
+Waiting is free because nothing is actually running. The run's state lives in its recorded steps, so there's no process sitting idle, no open connection, no server you're paying to keep warm. When the approval lands, Inngest picks the run back up at the next line as if no time had passed. If [your deploy rolled out three times](/blog/the-queue-is-durable-your-worker-is-not?ref=blog-what-it-means-to-build-boring) in between, it doesn't matter.
 
 The same mechanic covers time. [`step.sleep("follow-up", "7d")`](/docs/durable-execution/primitives/step-sleep?ref=blog-what-it-means-to-build-boring) lets an agent check back on a ticket next week without a cron job, a database flag, or a second system to keep in sync.
 

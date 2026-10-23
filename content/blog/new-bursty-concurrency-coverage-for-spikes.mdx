@@ -9,7 +9,7 @@ author: Lauren Craigie
 category: product-updates
 ---
 
-Concurrent steps (or slots, or runs) in [durable execution](/docs/learn/how-functions-are-executed?ref=blog-new-bursty-concurrency-coverage-for-spikes) refer to the amount of work that can run at the same time. If your concurrency is set to 100, work will fan out across all of them until filled, and a backlog builds. That's great if you're averaging ~50 concurrent runs at any given time, but not so great if a sudden burst takes you well over that ceiling.
+Concurrent steps (or slots, or runs) in [durable execution](/docs/learn/how-functions-are-executed?ref=blog-new-bursty-concurrency-coverage-for-spikes) refer to the amount of work that can run at the same time. If your concurrency is set to 100, work will fan out across all of them until filled, and a backlog builds. That's great if you're averaging ~50 concurrent runs at any given time, but not so great if [a sudden burst takes you well over that ceiling](/blog/the-queue-is-durable-your-worker-is-not?ref=blog-new-bursty-concurrency-coverage-for-spikes).
 
 **Bursty concurrency changes what happens at that limit.** Starting today, Inngest will burst you 3x past your capacity ceiling (as set by your current plan), for a total of one hour, every month. By running "surprise" work rather than letting it build a backlog, Inngest lets you:
 
