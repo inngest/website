@@ -1,0 +1,25 @@
+export const title = "aiMiddleware: scoring, metadata, and Extended Traces in one bundle";
+export const date = "2026-08-11";
+export const unreleased = "ai-middleware";
+
+`aiMiddleware()` enables the TypeScript SDK's experimental AI features in one place: scoring (`step.score()`), step metadata (`step.metadata()`), and Extended Traces (`ctx.tracer`). Each previously needed its own middleware from `inngest/experimental`; one call now covers all three.
+
+```ts
+import { Inngest } from "inngest";
+import { aiMiddleware } from "inngest/experimental";
+
+export const inngest = new Inngest({
+  id: "my-app",
+  middleware: [...aiMiddleware()],
+});
+```
+
+Extended Traces attach to your registered OpenTelemetry provider by default; pass `traces: { behaviour: "off" }` to leave your provider untouched. Add your own middleware alongside the spread: `middleware: [...aiMiddleware(), myMiddleware]`.
+
+If you already use `scoreMiddleware()`, `metadataMiddleware()`, or `extendedTracesMiddleware()`, replace them with the bundle rather than adding it alongside them. In particular, running `extendedTracesMiddleware()` and `aiMiddleware()` together attaches two span processors to your provider, so every span is exported twice. Options you passed to `extendedTracesMiddleware()` move to the bundle's `traces` option: `extendedTracesMiddleware({ behaviour: "off" })` becomes `aiMiddleware({ traces: { behaviour: "off" } })`. The deprecated `"auto"` and `"createProvider"` behaviours are not part of the bundle; use [`@inngest/otel`](https://www.npmjs.com/package/@inngest/otel) to set up a provider instead.
+
+Available now in beta: `npm install inngest@latest`.
+
+- [OpenTelemetry setup and quick start](/docs/examples/open-telemetry?ref=changelog-ai-middleware)
+- [Extended Traces reference](/docs/reference/typescript/v4/extended-traces?ref=changelog-ai-middleware)
+- [Score a function run](/docs/features/inngest-functions/steps-workflows/scoring?ref=changelog-ai-middleware)
