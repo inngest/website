@@ -48,28 +48,41 @@ export function useSignInHref(day?: number): string {
 /**
  * Sends completed lessons to the check-in API. `signedOut` flips on when
  * the API says nobody is signed in, so lessons can offer sign-in; the
- * browser's own progress is kept either way.
+ * browser's own progress is kept either way. `failed` lists lessons
+ * whose check-in didn't reach the server (an error or no connection),
+ * so they can say so and offer a retry instead of looking saved.
  */
 export function useCheckIn() {
   const [signedOut, setSignedOut] = useState(false);
+  const [failed, setFailed] = useState<number[]>([]);
 
   const checkIn = useCallback(async (days: number[]) => {
     if (days.length === 0) return;
+    const without = (prev: number[]) => prev.filter((d) => !days.includes(d));
+    let ok = false;
     try {
       const res = await fetch("/api/12-days/check-in", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ days }),
       });
-      if (res.status === 401) setSignedOut(true);
-      else if (res.ok) setSignedOut(false);
+      if (res.status === 401) {
+        // Not a failure: the lesson offers sign-in instead.
+        setSignedOut(true);
+        setFailed(without);
+        return;
+      }
+      ok = res.ok;
+      if (ok) setSignedOut(false);
     } catch {
-      // Offline: progress stays in the browser and syncs on the next
-      // return from sign-in.
+      // No connection: falls through as a failure.
     }
+    setFailed((prev) =>
+      ok ? without(prev) : [...without(prev), ...days].sort((a, b) => a - b)
+    );
   }, []);
 
-  return { checkIn, signedOut };
+  return { checkIn, signedOut, failed };
 }
 
 /**

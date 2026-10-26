@@ -26,7 +26,13 @@ export async function GET(req: Request) {
   const dates = date ? [date] : await checkInDates();
   const rows = (await Promise.all(dates.map(checkInsOn))).flat();
 
-  const cell = (v: string | number) => `"${String(v).replace(/"/g, '""')}"`;
+  const cell = (v: string | number) => {
+    // A leading = + - @ (or tab / CR) would run as a formula when the
+    // CSV is opened in a spreadsheet; an apostrophe keeps it as text.
+    const text =
+      typeof v === "string" && /^[=+\-@\t\r]/.test(v) ? `'${v}` : String(v);
+    return `"${text.replace(/"/g, '""')}"`;
+  };
   const csv = [
     ["date", "email", "user_id", "lesson", "lessons_completed"].join(","),
     ...rows.map((r) =>

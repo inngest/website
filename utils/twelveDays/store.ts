@@ -4,17 +4,55 @@ import { TIMEZONE } from "@/components/v1/sections/TwelveDays/data";
 /**
  * Check-in storage for the 12 Days of Workflows, in Upstash Redis.
  *
- * Keys, all prefixed `12dow:`:
- * - `user:{id}:days`  set of lesson days the user has completed
- * - `users`           hash of user id → email
- * - `date:{date}`     set of `{id}:{day}` checked in on that Eastern date
- * - `dates`           set of every date that has a check-in
+ * Keys, all prefixed `{12dow}:` (the hash tag keeps them in one slot so
+ * the check-in script can touch them together):
+ * - `user:{id}:days`        set of lesson days the user has completed
+ * - `user:{id}:milestones`  set of milestones already claimed
+ * - `checkin:{id}:{day}`    the first result of recording that check-in
+ * - `users`                 hash of user id → email
+ * - `date:{date}`           set of `{id}:{day}` checked in on that date
+ * - `dates`                 set of every date that has a check-in
  *
  * Reads the Vercel Marketplace integration's `KV_REST_API_*` variables,
  * falling back to Upstash's own `UPSTASH_REDIS_REST_*` names.
  */
 
-const PREFIX = "12dow:";
+const PREFIX = "{12dow}:";
+
+/** Lesson counts that unlock a reward (see PRIZES on the page). */
+export const MILESTONES = [9, 12];
+
+/**
+ * Records one check-in atomically: the lesson, the email, the date
+ * indexes, and any milestone reached for the first time, then saves
+ * that result under the check-in's key. Run again for the same check-in
+ * (a retry, a resend) it returns the saved result instead, so a retry
+ * can neither skip the date records nor lose a milestone.
+ *
+ * KEYS: result, days, milestones, users, date, dates
+ * ARGV: userId, email, day, dateMember, date, ...milestones
+ * Returns "added|total|claimed,milestones".
+ */
+const RECORD_CHECK_IN = `
+local saved = redis.call('GET', KEYS[1])
+if saved then return saved end
+local added = redis.call('SADD', KEYS[2], ARGV[3])
+if added == 1 then
+  redis.call('HSET', KEYS[4], ARGV[1], ARGV[2])
+  redis.call('SADD', KEYS[5], ARGV[4])
+  redis.call('SADD', KEYS[6], ARGV[5])
+end
+local total = redis.call('SCARD', KEYS[2])
+local claimed = {}
+for i = 6, #ARGV do
+  if total >= tonumber(ARGV[i]) and redis.call('SADD', KEYS[3], ARGV[i]) == 1 then
+    table.insert(claimed, ARGV[i])
+  end
+end
+local result = added .. '|' .. total .. '|' .. table.concat(claimed, ',')
+redis.call('SET', KEYS[1], result)
+return result
+`;
 
 let client: Redis | null = null;
 
@@ -46,8 +84,8 @@ export interface CheckInRecord {
 }
 
 /**
- * Record one completed lesson. Safe to repeat: a lesson already on the
- * user's set is reported back as not new and changes nothing.
+ * Record one completed lesson. Safe to repeat: see RECORD_CHECK_IN.
+ * `milestones` lists the ones this check-in claimed for the first time.
  */
 export async function recordCheckIn({
   userId,
@@ -59,19 +97,34 @@ export async function recordCheckIn({
   email: string;
   day: number;
   at: Date;
-}): Promise<{ isNew: boolean; total: number }> {
-  const r = redis();
-  const added = await r.sadd(`${PREFIX}user:${userId}:days`, day);
-  if (added === 1) {
-    const date = easternDate(at);
-    await Promise.all([
-      r.hset(`${PREFIX}users`, { [userId]: email }),
-      r.sadd(`${PREFIX}date:${date}`, `${userId}:${day}`),
-      r.sadd(`${PREFIX}dates`, date),
-    ]);
-  }
-  const total = await r.scard(`${PREFIX}user:${userId}:days`);
-  return { isNew: added === 1, total };
+}): Promise<{ isNew: boolean; total: number; milestones: number[] }> {
+  const date = easternDate(at);
+  const raw = await redis().eval<string[], string | number>(
+    RECORD_CHECK_IN,
+    [
+      `${PREFIX}checkin:${userId}:${day}`,
+      `${PREFIX}user:${userId}:days`,
+      `${PREFIX}user:${userId}:milestones`,
+      `${PREFIX}users`,
+      `${PREFIX}date:${date}`,
+      `${PREFIX}dates`,
+    ],
+    [
+      userId,
+      email,
+      String(day),
+      `${userId}:${day}`,
+      date,
+      ...MILESTONES.map(String),
+    ]
+  );
+
+  const [added, total, claimed] = String(raw).split("|");
+  return {
+    isNew: added === "1",
+    total: Number(total),
+    milestones: claimed ? claimed.split(",").map(Number) : [],
+  };
 }
 
 /** Every check-in recorded on an Eastern date, with each user's total. */

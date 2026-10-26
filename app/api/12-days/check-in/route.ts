@@ -6,6 +6,7 @@ import {
   type LessonCompletedData,
 } from "@/utils/twelveDays/functions";
 import { getCheckInUser } from "@/utils/twelveDays/identity";
+import { signCheckIn } from "@/utils/twelveDays/signature";
 
 export const runtime = "nodejs";
 
@@ -50,15 +51,26 @@ export async function POST(req: Request) {
     );
   }
 
-  const events = days.map((day) => {
-    const data: LessonCompletedData = {
-      checkInId: `${user.id}:${day}`,
-      userId: user.id,
-      email: user.email,
-      day,
-    };
-    return { id: `12dow-${data.checkInId}`, name: LESSON_COMPLETED, data };
-  });
+  let events: { id: string; name: string; data: LessonCompletedData }[];
+  try {
+    events = days.map((day) => {
+      const fields = {
+        checkInId: `${user.id}:${day}`,
+        userId: user.id,
+        email: user.email,
+        day,
+      };
+      const data = { ...fields, signature: signCheckIn(fields) };
+      return { id: `12dow-${data.checkInId}`, name: LESSON_COMPLETED, data };
+    });
+  } catch (error) {
+    // No signing secret configured: refuse rather than send unsigned.
+    console.error("12 Days check-in can't be signed", error);
+    return NextResponse.json(
+      { error: "Check-ins are not configured" },
+      { status: 503 }
+    );
+  }
 
   // Skipped in development unless a local Dev Server is running.
   if (process.env.NODE_ENV === "development" && !process.env.INNGEST_DEV) {

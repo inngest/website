@@ -38,7 +38,7 @@ import {
 export default function TwelveDaysOfWorkflows() {
   const now = useCalendarClock();
   const { done, toggle } = useLessonProgress();
-  const { checkIn, signedOut } = useCheckIn();
+  const { checkIn, signedOut, failed } = useCheckIn();
   // The clock and stored progress load in the same first pass.
   useSyncCheckIns({ ready: now !== null, done, checkIn });
 
@@ -57,6 +57,8 @@ export default function TwelveDaysOfWorkflows() {
           done={done}
           onToggleDone={toggleDone}
           signedOut={signedOut}
+          failed={failed}
+          onRetry={(day) => checkIn([day])}
         />
         <Machine now={now} />
         <SongSoFar now={now} />

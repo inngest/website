@@ -1,5 +1,6 @@
 "use client";
 
+import { useEffect, useRef } from "react";
 import Image from "next/image";
 import {
   motion,
@@ -8,6 +9,7 @@ import {
   useSpring,
 } from "motion/react";
 import ButtonLink from "@/components/v1/ButtonLink";
+import { clearHeroPanel, setHeroPanel } from "@/utils/v1/heroNav";
 import { tweens } from "@/utils/v1/springs";
 import {
   COLORS,
@@ -55,6 +57,14 @@ export default function Hero({ now }: { now: Date | null }) {
   // The contraption leans toward the cursor, a few degrees at most.
   const tiltX = useSpring(useMotionValue(0), { stiffness: 120, damping: 14 });
   const tiltY = useSpring(useMotionValue(0), { stiffness: 120, damping: 14 });
+  // Tell the fixed header it sits on salmon, so its nav-hover wipe goes
+  // dark instead of vanishing (same signal SplitHero publishes).
+  const heroToken = useRef<object>({});
+  useEffect(() => {
+    const token = heroToken.current;
+    setHeroPanel("salmon", token);
+    return () => clearHeroPanel(token);
+  }, []);
 
   return (
     <section

@@ -320,6 +320,8 @@ export const PRIZES = {
   cta: { label: "Sign in and start collecting" },
   /** On a finished lesson, when nobody is signed in. */
   signInToCount: "Sign in to count it",
+  /** On a finished lesson whose check-in didn't reach the server. */
+  checkInFailed: "Couldn't save · Retry",
 } as const;
 
 export const FINALE = {

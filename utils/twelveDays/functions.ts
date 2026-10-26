@@ -1,4 +1,5 @@
-import { Inngest } from "inngest";
+import { Inngest, NonRetriableError } from "inngest";
+import { isValidCheckIn } from "@/utils/twelveDays/signature";
 import {
   checkInsOn,
   easternDate,
@@ -27,16 +28,18 @@ export interface LessonCompletedData {
   userId: string;
   email: string;
   day: number;
+  /** HMAC from the check-in route (see utils/twelveDays/signature). */
+  signature: string;
 }
 
-/** Lesson counts that unlock a reward (see PRIZES on the page). */
-const MILESTONES = [9, 12];
-
 /**
- * Records a completed lesson. Retries and double clicks are safe: the
- * function is idempotent per check-in, and the store ignores a lesson
- * the user already has. Crossing 9 or 12 lessons emits a milestone event
- * for the merch and raffle follow-up (nothing consumes it yet).
+ * Records a completed lesson. Only events signed by the check-in route
+ * count, since the event key is public. One run per user at a time, and
+ * the store saves each check-in atomically and replays its first result
+ * on retry, so catch-up batches and retries can't lose records or
+ * double up. A milestone (9 or 12 lessons) the store claims for the
+ * first time emits an event for the merch and raffle follow-up (nothing
+ * consumes it yet).
  */
 export const recordLessonCompleted = inngest.createFunction(
   {
@@ -44,9 +47,18 @@ export const recordLessonCompleted = inngest.createFunction(
     name: "12 Days: record lesson check-in",
     triggers: { event: LESSON_COMPLETED },
     idempotency: "event.data.checkInId",
+    concurrency: { limit: 1, key: "event.data.userId" },
   },
   async ({ event, step }) => {
     const data = event.data as LessonCompletedData;
+
+    if (
+      !Number.isInteger(data.day) ||
+      data.checkInId !== `${data.userId}:${data.day}` ||
+      !isValidCheckIn(data, data.signature)
+    ) {
+      throw new NonRetriableError("Unsigned or invalid check-in event");
+    }
 
     const result = await step.run("record-check-in", () =>
       recordCheckIn({
@@ -57,15 +69,16 @@ export const recordLessonCompleted = inngest.createFunction(
       })
     );
 
-    if (result.isNew && MILESTONES.includes(result.total)) {
-      await step.sendEvent("milestone-reached", {
-        name: MILESTONE_REACHED,
-        data: {
-          userId: data.userId,
-          email: data.email,
-          lessons: result.total,
-        },
-      });
+    if (result.milestones.length > 0) {
+      await step.sendEvent(
+        "milestone-reached",
+        result.milestones.map((lessons) => ({
+          // Stable ids, so even a resend can't announce a milestone twice.
+          id: `12dow-milestone-${data.userId}-${lessons}`,
+          name: MILESTONE_REACHED,
+          data: { userId: data.userId, email: data.email, lessons },
+        }))
+      );
     }
 
     return result;

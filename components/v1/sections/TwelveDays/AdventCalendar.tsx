@@ -45,12 +45,17 @@ export default function AdventCalendar({
   done,
   onToggleDone,
   signedOut,
+  failed,
+  onRetry,
 }: {
   now: Date | null;
   done: number[];
   onToggleDone: (day: number) => void;
   /** Nobody signed in: finished lessons offer sign-in to count. */
   signedOut: boolean;
+  /** Lessons whose check-in didn't reach the server. */
+  failed: number[];
+  onRetry: (day: number) => void;
 }) {
   const gridRef = useRef<HTMLUListElement>(null);
   // Doors wait to pop until someone can see them, so the stagger isn't
@@ -132,6 +137,8 @@ export default function AdventCalendar({
                   done={done.includes(day.day)}
                   onToggleDone={() => onToggleDone(day.day)}
                   signedOut={signedOut}
+                  failed={failed.includes(day.day)}
+                  onRetry={() => onRetry(day.day)}
                   countdown={
                     now && day.day === nextDay
                       ? formatCountdown(
@@ -172,6 +179,8 @@ function Door({
   done,
   onToggleDone,
   signedOut,
+  failed,
+  onRetry,
 }: {
   day: WorkflowDay;
   unlocked: boolean;
@@ -183,6 +192,8 @@ function Door({
   done: boolean;
   onToggleDone: () => void;
   signedOut: boolean;
+  failed: boolean;
+  onRetry: () => void;
 }) {
   const reduceMotion = useReducedMotion();
   const signInHref = useSignInHref(day.day);
@@ -256,7 +267,13 @@ function Door({
           taller instead of being clipped; the door covers it. */}
       <div className="relative h-full min-h-[460px] overflow-hidden rounded-xl border-[3px] border-[#010101] bg-white text-[#010101] shadow-[6px_6px_0_#010101]">
         {unlocked && (
-          <div className="flex h-full flex-col gap-3 p-5">
+          // Out of the tab order and hidden from screen readers until
+          // the door swings open, but still taking up its space.
+          <div
+            className="flex h-full flex-col gap-3 p-5"
+            inert={!open}
+            aria-hidden={!open}
+          >
             <div className="flex items-center justify-between">
               <p className="font-v1Label text-[13px] uppercase">
                 Lesson {day.day} · {day.primitive}
@@ -295,17 +312,25 @@ function Door({
             <pre className="shrink-0 overflow-x-auto rounded-md bg-[#010101] p-3 font-v1Mono text-[12px] leading-[18px] text-[#0BDD48]">
               <code>{day.code}</code>
             </pre>
-            {done && signedOut && (
+            {done && failed ? (
+              <button
+                type="button"
+                onClick={onRetry}
+                className="mt-auto self-start font-v1Label text-[12px] uppercase text-[#C42A1E] underline underline-offset-4"
+              >
+                {PRIZES.checkInFailed}
+              </button>
+            ) : done && signedOut ? (
               <a
                 href={signInHref}
                 className="mt-auto font-v1Label text-[12px] uppercase underline underline-offset-4"
               >
                 {PRIZES.signInToCount} <span aria-hidden="true">→</span>
               </a>
-            )}
+            ) : null}
             <div
               className={`${
-                done && signedOut ? "" : "mt-auto "
+                done && (failed || signedOut) ? "" : "mt-auto "
               }flex items-center justify-between gap-3 pt-1`}
             >
               <Link
