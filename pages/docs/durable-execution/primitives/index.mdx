@@ -53,6 +53,27 @@ A function ID identifies the function; a step ID identifies work within its run.
 
 A step does not make an external action exactly once. If a provider accepts a request but its response is lost, the step can retry the action. Use an idempotency key for writes, payments, and messages that must not happen twice. See [Idempotency](/docs/durable-execution/guides-and-advanced/idempotency).
 
+### Step IDs and display names
+
+In TypeScript, a string passed as the first argument to a step is shorthand for `{ id: string }`. That ID identifies the step's saved state and also appears as its name in the UI unless you provide a separate `name`.
+
+For example, this step uses `"load-order"` as both its ID and display name:
+
+```ts
+const order = await step.run("load-order", () => getOrder(event.data.orderId));
+```
+
+To change only its display name, keep the ID and use the object form instead:
+
+```ts
+const order = await step.run(
+  { id: "load-order", name: "Load order details" },
+  () => getOrder(event.data.orderId)
+);
+```
+
+Reuse the same stable step ID across function runs. Do not generate a random ID each time the function executes: a resumed run needs the same ID to find its saved result. Changing `name` leaves that identity unchanged; changing `id` can cause completed work to run again in an active run.
+
 ## Step primitives
 
 - [step.run](/docs/durable-execution/primitives/step-run) — Run code, such as an API call or database write, as a retriable step. Use it when the workflow must keep the result or retry the work on failure.
