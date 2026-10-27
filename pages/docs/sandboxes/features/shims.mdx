@@ -15,7 +15,7 @@ export const description = "Command shims make a program in a Sandbox call your 
 
 ## Clone a private repository
 
-Pass `shims` to a command. `tool.shim.gitCredentials` answers git's login prompt with a token you mint, so a plain `git clone` of a private repository works.
+Pass `shims` to a command. `tool.shim.gitCredentials` answers git's credential request with a token you mint, so a plain `git clone` of a private repository works.
 
 <CodeGroup>
 ```typescript {{ title: "TypeScript" }}
@@ -74,9 +74,10 @@ await sb.commands.run("deploy", "fly deploy", {
 </CodeGroup>
 
 - **Anything the command starts is covered.** A script that runs `sh -c 'fly deploy'`, or `npm` calling `git`, reaches the shim too.
-- **One shim per program.** Passing the same name twice throws, and so does a second `tool.shim.hostEnv()` or a variable named by two shims. Names the shims rely on (`sh`, `env`, `cat`) cannot be shimmed, and `PATH`, `IFS` and `INNGEST_*` cannot be injected.
+- **One shim per program.** Passing the same name twice throws, and so does a second `tool.shim.hostEnv()` or a variable named by two shims.
+- **Some names are reserved.** Names the shims rely on (`sh`, `env`, `cat`) cannot be shimmed, and `PATH`, `IFS` and `INNGEST_*` cannot be injected.
 - **Outside the command, nothing changes.** A daemon started earlier or another container runs the real program.
-- **Shims work with [tools](/docs/sandboxes/features/tools).** A command can have both `tools` and `shims` (`env` is taken by `hostEnv` and `injectEnv`, `inngestShim` by handler shims), and `exitCodes` (default `[0]`) is checked on the final result.
+- **Shims work with [tools](/docs/sandboxes/features/tools).** A command can have both `tools` and `shims` (do not name your own tools `env` or `inngestShim`; shims use them), and `exitCodes` is checked on the final result (`$` defaults to `[0]`, `commands.run` to `"any"`).
 
 ## Inject an environment variable
 
@@ -173,7 +174,7 @@ The handler receives:
 | `name` | The program that was run, such as `terraform`. |
 | `cwd` | The working directory of the call. |
 | `stdin` | Text from stdin. Empty unless the shim sets `stdin: true` next to `handle`, which is for programs that are given input, since reading a pipe nobody writes to would hang. |
-| `signal` | Aborts when the command ends or times out. |
+| `signal` | Aborts when the call times out. |
 | `idempotencyKey`, `runId` | The same values on every retry, for APIs that deduplicate writes. |
 | `run(change?)` | Run the real program. `change` can set `argv`, `env` for this one process, or `stdin`. |
 | `reply(code, { stdout, stderr })` | End with this exit code (0 to 255) and output. Text or `Uint8Array`. |
@@ -240,7 +241,7 @@ fly,git-credential-inngest,terraform
 - **Tokens are not stored in the run.** They pass through the Sandbox, so they sit in a file under `/inngest/tools` until the Sandbox is destroyed, and the Sandbox service sees them. Destroy the Sandbox when the run ends.
 - **A request is at most 256 KiB, and a reply 1 MiB.** `stdin` is text up to 128 KiB, and a call has up to 512 arguments.
 - **Handler shims, including `tool.shim.gitCredentials`, need x86_64.** Inject-only shims work anywhere.
-- **Each call is a round trip to your app.** Shim programs that run once per command, not a loop of `git status`. For fixed answers that do not need your app, use `local`, shown above.
+- **Each call is a round trip to your app.** Shim programs that run once per command, not ones called in a loop such as `git status`. For fixed answers that do not need your app, use `local`, shown above.
 - **A command with shims can run longer than five minutes.** Set `timeout`. Each wait counts against the run's step limit, like [long-running commands](/docs/sandboxes/features/commands#long-running-commands).
 
 ## How it works
