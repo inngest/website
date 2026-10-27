@@ -1,6 +1,6 @@
 import { CodeGroup, SdkUnsupported } from "shared/Docs/mdx";
 export const metaTitle = "Command shims | Sandboxes";
-export const description = "Command shims make a program in a Sandbox call your app first. Your function runs it as called, changes it, adds a short-lived credential, refuses it, or answers for it, while plain git, fly, npm and terraform keep working.";
+export const description = "Command shims make a program in a Sandbox call your app first, so plain git, fly, npm and terraform run with short-lived credentials, changed arguments, or your own answer.";
 
 # Command shims
 
@@ -11,7 +11,7 @@ export const description = "Command shims make a program in a Sandbox call your 
 - **Give short-lived credentials.** Code runs `git push` or `fly deploy` as usual; your app adds a token for that one call.
 - **Keep your commands as they are.** Nothing in the Sandbox is rewritten to use a new API.
 - **Decide per call.** Run the program as called, change its arguments, refuse it, or answer for it.
-- **Keep tokens out of the run.** A value minted for a shim is never stored as step data or shown in the trace.
+- **Keep tokens out of the run.** A value minted for a shim is never stored as step data or shown in the trace. It does pass through the Sandbox (see [Limits](#limits)).
 
 ## Clone a private repository
 
@@ -77,7 +77,7 @@ await sb.commands.run("deploy", "fly deploy", {
 - **One shim per program.** Passing the same name twice throws, and so does a second `tool.shim.hostEnv()` or a variable named by two shims.
 - **Some names are reserved.** Names the shims rely on (`sh`, `env`, `cat`) cannot be shimmed, and `PATH`, `IFS` and `INNGEST_*` cannot be injected.
 - **Outside the command, nothing changes.** A daemon started earlier or another container runs the real program.
-- **Shims work with [tools](/docs/sandboxes/features/tools).** A command can have both `tools` and `shims` (do not name your own tools `env` or `inngestShim`; shims use them), and `exitCodes` is checked on the final result (`$` defaults to `[0]`, `commands.run` to `"any"`).
+- **Shims work with [tools](/docs/sandboxes/features/tools).** A command can have both `tools` and `shims` (shims use the tool names `env` and `inngestShim`, so do not name your own tools that), and `exitCodes` is checked on the final result (`$` defaults to `[0]`, `commands.run` to `"any"`).
 
 ## Inject an environment variable
 
@@ -98,7 +98,7 @@ await sb.$({
 </CodeGroup>
 
 - **A function is called on every start.** The token is fresh each time.
-- **A string is used as is.** Read it from your app's environment; a step's return value is stored with the run.
+- **A string is used as is.** Read it from your app's environment, not from a step's return value, which is stored with the run.
 - **The variable is set for that program only.** It is not in the Sandbox's environment, though code can read its value with `inngest-tool env NAME`.
 - **No handler to write.** An inject-only shim is a few lines of `sh`.
 
