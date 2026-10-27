@@ -1,5 +1,6 @@
 import { serve } from "inngest/next";
-import { inngest, twelveDaysFunctions } from "@/utils/twelveDays/functions";
+import { inngest } from "@/utils/twelveDays/client";
+import { twelveDaysFunctions } from "@/utils/twelveDays/functions";
 
 export const runtime = "nodejs";
 

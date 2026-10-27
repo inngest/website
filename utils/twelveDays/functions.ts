@@ -1,5 +1,14 @@
-import { Inngest, NonRetriableError } from "inngest";
+import { NonRetriableError } from "inngest";
 import { DAYS, REF, unlockAt } from "@/components/v1/sections/TwelveDays/data";
+import {
+  CHECK_IN_RECORDED,
+  inngest,
+  LESSON_COMPLETED,
+  MILESTONE_REACHED,
+  type LessonCompletedData,
+  type Participant,
+} from "@/utils/twelveDays/client";
+import { doorFunctions } from "@/utils/twelveDays/doors";
 import {
   segmentWriteKey,
   sendToSegment,
@@ -13,35 +22,6 @@ import {
 } from "@/utils/twelveDays/store";
 
 /**
- * Inngest functions for the 12 Days of Workflows check-ins, served from
- * /api/inngest.
- *
- * Its own app id rather than "website": the website's other clients only
- * send events, and serving under that id could clash with whatever
- * already handles them.
- */
-export const inngest = new Inngest({
-  id: "website-campaigns",
-  eventKey: process.env.NEXT_PUBLIC_INNGEST_KEY,
-});
-
-/**
- * Sent by app.inngest.com's check-in endpoint, which knows who is
- * signed in (see HANDOFF.md). The website's event key is public, so it
- * needs a filter in Inngest that blocks this name; otherwise anyone
- * could send one.
- */
-export const LESSON_COMPLETED = "app/12-days.lesson.completed";
-export const MILESTONE_REACHED = "website/12-days.milestone.reached";
-
-export interface LessonCompletedData {
-  /** Inngest account user id. */
-  userId: string;
-  email: string;
-  day: number;
-}
-
-/**
  * Records a completed lesson. One run per user at a time, and the store
  * saves each check-in atomically and replays its first result on a
  * resend or retry, so catch-up batches can't lose records or double
@@ -49,10 +29,10 @@ export interface LessonCompletedData {
  * emits an event for the merch and raffle follow-up (nothing consumes
  * it yet).
  *
- * Then tells Segment, which passes it on to Customer.io and Attio for
- * the reminder-email list: an identify with `twelve_days_joined` and the
- * lesson count, and a `12 Days Lesson Completed` track (plus
- * `12 Days Milestone Reached` for a new milestone).
+ * Then tracks `12 Days Lesson Completed` in Segment (plus
+ * `12 Days Milestone Reached` for a new milestone), which passes it on
+ * to Customer.io and Attio, and asks for the person's Segment profile
+ * to catch up (see syncSegmentProfile).
  */
 export const recordLessonCompleted = inngest.createFunction(
   {
@@ -101,27 +81,18 @@ export const recordLessonCompleted = inngest.createFunction(
       );
     }
 
-    const segment = await step.run("send-to-segment", async () => {
+    await step.sendEvent("check-in-recorded", {
+      name: CHECK_IN_RECORDED,
+      data: { userId: data.userId, email: data.email },
+    });
+
+    const segment = await step.run("track-in-segment", async () => {
       const writeKey = segmentWriteKey();
       if (!writeKey) return "skipped: no Segment write key";
 
-      // Read fresh, so a late resend of an early lesson can't set the
-      // count back to what it was then.
-      const lessons = await lessonCount(data.userId);
       const timestamp = at.toISOString();
       const lesson = DAYS.find((d) => d.day === data.day);
       const batch: SegmentMessage[] = [
-        {
-          type: "identify",
-          userId: data.userId,
-          messageId: `12dow-identify-${data.userId}-${data.day}`,
-          timestamp,
-          traits: {
-            email: data.email,
-            twelve_days_joined: true,
-            twelve_days_lessons_completed: lessons,
-          },
-        },
         {
           type: "track",
           event: "12 Days Lesson Completed",
@@ -132,7 +103,7 @@ export const recordLessonCompleted = inngest.createFunction(
             email: data.email,
             lesson: data.day,
             lesson_primitive: lesson?.primitive,
-            lessons_completed: lessons,
+            lessons_completed: result.total,
             campaign: REF,
           },
         },
@@ -152,6 +123,48 @@ export const recordLessonCompleted = inngest.createFunction(
     });
 
     return { ...result, segment };
+  }
+);
+
+/**
+ * Updates the person's Segment profile (and so Customer.io and Attio):
+ * `twelve_days_joined`, which the reminder-email list filters on, and
+ * their lesson count. Debounced per person, because the page sends
+ * every lesson finished in the browser at once after sign-in; one
+ * update after the burst settles is enough. The count is read fresh,
+ * so it's always the latest.
+ */
+export const syncSegmentProfile = inngest.createFunction(
+  {
+    id: "12-days-sync-segment-profile",
+    name: "12 Days: update Segment profile",
+    triggers: { event: CHECK_IN_RECORDED },
+    debounce: { key: "event.data.userId", period: "10s", timeout: "2m" },
+  },
+  async ({ event, step }) => {
+    const { userId, email } = event.data as Participant;
+
+    return step.run("identify", async () => {
+      const writeKey = segmentWriteKey();
+      if (!writeKey) return "skipped: no Segment write key";
+
+      const lessons = await lessonCount(userId);
+      await sendToSegment(writeKey, [
+        {
+          type: "identify",
+          userId,
+          // One update per count, so a repeat of the same one is dropped.
+          messageId: `12dow-identify-${userId}-${lessons}`,
+          timestamp: new Date().toISOString(),
+          traits: {
+            email,
+            twelve_days_joined: true,
+            twelve_days_lessons_completed: lessons,
+          },
+        },
+      ]);
+      return `identified with ${lessons} lessons`;
+    });
   }
 );
 
@@ -213,4 +226,9 @@ export const postDailyCheckIns = inngest.createFunction(
   }
 );
 
-export const twelveDaysFunctions = [recordLessonCompleted, postDailyCheckIns];
+export const twelveDaysFunctions = [
+  recordLessonCompleted,
+  syncSegmentProfile,
+  postDailyCheckIns,
+  ...doorFunctions,
+];

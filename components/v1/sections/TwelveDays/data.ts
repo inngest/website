@@ -226,29 +226,35 @@ export const DOOR_FACES = [
 ];
 
 /**
- * The cron function that opens the doors, shown on the page.
- *
- * NOT WIRED UP YET: the page currently unlocks doors from the visitor's
- * clock (see useCalendarClock). Making this real needs a serve endpoint
- * on the website, somewhere to store which doors are open, and a public
- * dashboard view to link to.
+ * The cron function that opens the doors, shown on the page: a trimmed
+ * copy of `openTodaysDoor` in utils/twelveDays/doors.ts, which really
+ * runs. Keep the two in step. (The doors themselves unlock from the
+ * visitor's clock, see useCalendarClock; the function sends everyone's
+ * "Day N is open" email.)
  */
 export const UNLOCK_FUNCTION = `inngest.createFunction(
   {
-    id: "open-todays-door",
-    triggers: {
+    id: "12-days-open-todays-door",
+    triggers: [
       // Midnight Eastern, every weekday in December.
-      cron: "TZ=America/New_York 0 0 * 12 1-5",
-    },
+      { cron: "TZ=America/New_York 0 0 * 12 1-5" },
+    ],
   },
   async ({ step }) => {
     const day = await step.run("which-door", () =>
-      calendar.doorFor(new Date())
+      doorFor(new Date())
     );
     if (!day) return; // Outside December 3–18.
-    await step.run("open-door", () =>
-      calendar.open(day)
+
+    const people = await step.run("list-participants",
+      () => participants()
     );
+    // Fan out: one run per person sleeps until 9 AM,
+    // emails them, then waits for the lesson.
+    await step.sendEvent("fan-out", people.map((p) => ({
+      name: "website/12-days.door.opened",
+      data: { ...p, day },
+    })));
   }
 );`;
 

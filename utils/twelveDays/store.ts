@@ -127,6 +127,31 @@ export async function recordCheckIn({
   };
 }
 
+/** Everyone who has checked in at least once: the email list. */
+export async function participants(): Promise<
+  { userId: string; email: string }[]
+> {
+  const users =
+    (await redis().hgetall<Record<string, string>>(`${PREFIX}users`)) ?? {};
+  return Object.entries(users).map(([userId, email]) => ({
+    userId,
+    email: String(email),
+  }));
+}
+
+/** The email a participant checked in with, or null if they haven't. */
+export async function participantEmail(userId: string): Promise<string | null> {
+  return redis().hget<string>(`${PREFIX}users`, userId);
+}
+
+/** Whether a user has completed lesson `day`. */
+export async function hasCompleted(
+  userId: string,
+  day: number
+): Promise<boolean> {
+  return (await redis().sismember(`${PREFIX}user:${userId}:days`, day)) === 1;
+}
+
 /** How many lessons a user has completed so far. */
 export async function lessonCount(userId: string): Promise<number> {
   return redis().scard(`${PREFIX}user:${userId}:days`);

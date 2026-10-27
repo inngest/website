@@ -86,19 +86,48 @@ Vercel preview hosts (`*.vercel.app`) are a different site, so the cookie isn't 
 
 ## 5. Blocking fake events
 
-The website's Inngest event key (`NEXT_PUBLIC_INNGEST_KEY`) ships to browsers, so anyone could use it to send `app/12-days.lesson.completed` themselves. In the Inngest dashboard, add a filter on that key that **denies `app/12-days.lesson.completed`**. Only the app's server key should be able to send it.
+The website's Inngest event key (`NEXT_PUBLIC_INNGEST_KEY`) ships to browsers, so anyone could use it to send the campaign's events themselves, including ones that send email. In the Inngest dashboard, add a filter on that key that **denies** all of these (the list is in `utils/twelveDays/client.ts`):
 
-## 6. Segment, Customer.io and Attio
+- `app/12-days.lesson.completed`
+- `website/12-days.check-in.recorded`
+- `website/12-days.milestone.reached`
+- `website/12-days.door.opened`
+- `website/12-days.door.open-requested`
+- `website/12-days.email.requested`
+- `website/12-days.emails.paused`
+
+Only the app's server key and the website's own functions should send them. As a second line of defense, the email sender only mails people who have checked in, at the address they checked in with.
+
+## 6. Segment, Customer.io and Attio (for Pat)
 
 For each check-in, the website sends Segment (server side, `utils/twelveDays/segment.ts`):
 
-- `identify` with `userId` = the event's `userId`, and traits `email`, `twelve_days_joined: true` and `twelve_days_lessons_completed`.
 - `track` `12 Days Lesson Completed` with `email`, `lesson`, `lesson_primitive`, `lessons_completed` and `campaign: "12-days-of-workflows"`.
 - `track` `12 Days Milestone Reached` with `lessons` (9 or 12), the first time someone gets there.
+- `identify` with `userId` = the event's `userId`, and traits `email`, `twelve_days_joined: true` and `twelve_days_lessons_completed`. Debounced: one update after a burst of check-ins.
 
 **`userId` must be the same id the app uses when it identifies people in Segment.** Otherwise Customer.io and Attio get a second profile for the same person. Tell us if the app identifies by something else.
 
-On the Segment side: make sure these traits and events go on to the Customer.io and Attio destinations. In Customer.io, build a segment of people with `twelve_days_joined` for the daily "Day N unlocked" broadcasts; in Attio, a "12 Days of Workflows" list from the same trait.
+On the Segment side: make sure these traits and events go on to the Customer.io and Attio destinations. In Attio, build a "12 Days of Workflows" list from `twelve_days_joined`. Customer.io can use the same trait for later sends (livestream, buildathon).
+
+## 7. The daily emails run in Inngest (for Pat)
+
+The "Day N is open" emails aren't scheduled in Customer.io. Inngest decides who gets what and when (`utils/twelveDays/doors.ts`); Customer.io only sends, through its transactional API, so templates, delivery and unsubscribes stay there.
+
+1. **Midnight Eastern on each unlock weekday:** a cron finds today's door and fans out one run per participant (everyone who has checked in at least once).
+2. **9 AM Eastern:** each run emails "Day N is open", unless that person already did the lesson overnight.
+3. **6 PM Eastern:** if they still haven't done it, one nudge. The run waits for their check-in event, so finishing the lesson cancels the nudge.
+4. All sends go through one function throttled to 50 a second, under Customer.io's transactional limit.
+
+**Kill switch:** sending `website/12-days.emails.paused` from the Inngest dashboard cancels every waiting email and nudge. Use it if a template goes out wrong.
+
+**To test a door before December 3**, send `website/12-days.door.open-requested` with `{ "day": 1 }`. The 9 AM and 6 PM times are still that door's real December dates, so the runs sleep until then.
+
+What Customer.io needs:
+
+- Two **transactional messages**, "door open" and "nudge", with "send to unsubscribed" off. Their Liquid data: `{{ trigger.day }}`, `{{ trigger.primitive }}`, `{{ trigger.gift }}` and `{{ trigger.lesson_url }}`, a link back to that lesson with a ref tag.
+- People are identified by `id` = the same Inngest user id as in Segment.
+- In Vercel: `CUSTOMERIO_APP_API_KEY`, `CUSTOMERIO_12DOW_DOOR_MESSAGE_ID`, `CUSTOMERIO_12DOW_NUDGE_MESSAGE_ID`, and `CUSTOMERIO_API_HOST=https://api-eu.customer.io` only for an EU workspace. Until they're set, sends are skipped and the run says why.
 
 ## Testing
 
