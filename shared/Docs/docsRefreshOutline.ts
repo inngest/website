@@ -510,6 +510,10 @@ export const docsRefreshOutline: DocsRefreshPage[] = [
                 href: "/docs/sandboxes/features/tools",
               },
               {
+                title: "Command shims",
+                href: "/docs/sandboxes/features/shims",
+              },
+              {
                 title: "Isolation and security",
                 href: "/docs/sandboxes/features/isolation-and-security",
               },
