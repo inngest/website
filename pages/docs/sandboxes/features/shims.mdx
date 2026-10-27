@@ -4,11 +4,11 @@ export const description = "Command shims make a program in a Sandbox call your 
 
 # Command shims
 
-> Make any program in a Sandbox call your app first, so code can run `git`, `fly` or `npm` without holding the keys.
+> Make any program in a Sandbox call your app first, so code can run `git`, `fly` or `npm` without holding long-lived keys.
 
 > **Experimental.** `tool` is exported from `inngest/experimental`. The API can change.
 
-- **Give credentials without exposing them.** Code runs `git push` or `fly deploy` as usual; your app adds a token for that one call.
+- **Give short-lived credentials.** Code runs `git push` or `fly deploy` as usual; your app adds a token for that one call.
 - **Keep your commands as they are.** Nothing in the Sandbox is rewritten to use a new API.
 - **Decide per call.** Run the program as called, change its arguments, refuse it, or answer for it.
 - **Keep tokens out of the run.** A value minted for a shim is never stored as step data or shown in the trace.
@@ -96,7 +96,7 @@ await sb.$({
 </CodeGroup>
 
 - **A function is called on every start.** The token is fresh each time.
-- **A string is used as is.** Read it from your app's environment, not from a step's return value.
+- **A string is used as is.** Read it from your app's environment; a step's return value is stored with the run.
 - **The variable is set for that program only.** It is not in the Sandbox's environment, though code can read its value with `inngest-tool env NAME`.
 - **No handler to write.** An inject-only shim is a few lines of `sh`.
 
@@ -229,13 +229,13 @@ $ echo $INNGEST_SHIMS
 fly,git-credential-inngest,terraform
 ```
 
-- **`inngest-tool shims`** lists the `env` values first, then every shim in the order passed, and the values `inngest-tool env` can read, one line each. Descriptions come from `tool.shim(name, { description, handle })`, or are generated.
+- **`inngest-tool shims`** prints one line per entry: the `env` line first (the values `inngest-tool env` can read), then each shim in the order passed. Descriptions come from `tool.shim(name, { description, handle })`, or are generated.
 - **`INNGEST_SHIMS`** holds the shimmed program names, comma separated, for scripts.
-- **Programs that only inject need nothing from the agent.** Only `inngest-tool env NAME` is something it asks for, and the `env` line lists the names a `hostEnv` shim allows.
+- **Inject-only shims need nothing from the agent.** It only needs `inngest-tool env NAME` for names a `hostEnv` shim lists.
 
 ## Limits
 
-- **A shim is a convenience, not a boundary.** Shims sit first on `PATH`, so code can run `/usr/bin/git` directly, and any code in the Sandbox can read what a handler returns. For a guarantee, give the Sandbox no credentials and close its network.
+- **A shim is a convenience, not a boundary.** Shims sit first on `PATH`, so code can run `/usr/bin/git` directly, and any code in the Sandbox can read the tokens a shim hands out. For a guarantee, give the Sandbox no credentials and close its network.
 - **Tokens are not stored in the run.** They pass through the Sandbox, so they sit in a file under `/inngest/tools` until the Sandbox is destroyed, and the Sandbox service sees them. Destroy the Sandbox when the run ends.
 - **A request is at most 256 KiB, and a reply 1 MiB.** `stdin` is text.
 - **Handler shims, including `tool.shim.gitCredentials`, need x86_64.** Inject-only shims work anywhere.
