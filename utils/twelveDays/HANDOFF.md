@@ -16,7 +16,7 @@ The 12 Days of Workflows calendar at `inngest.com/12-days-of-workflows` records 
 
    (`redirect_url` is URL-encoded in the real link.) After sign-in the app sends them back to `redirect_url`. The page resends every lesson finished in that browser, which now gets `201`.
 
-Recording, the daily Slack list and the CSV export run in the website's Inngest functions (`utils/twelveDays/functions.ts`), triggered by the app's event.
+Recording, the daily Slack list, the CSV export and the Segment calls (which reach Customer.io and Attio for the reminder emails) run in the website's Inngest functions (`utils/twelveDays/functions.ts`), triggered by the app's event.
 
 ## 1. The endpoint
 
@@ -87,6 +87,18 @@ Vercel preview hosts (`*.vercel.app`) are a different site, so the cookie isn't 
 ## 5. Blocking fake events
 
 The website's Inngest event key (`NEXT_PUBLIC_INNGEST_KEY`) ships to browsers, so anyone could use it to send `app/12-days.lesson.completed` themselves. In the Inngest dashboard, add a filter on that key that **denies `app/12-days.lesson.completed`**. Only the app's server key should be able to send it.
+
+## 6. Segment, Customer.io and Attio
+
+For each check-in, the website sends Segment (server side, `utils/twelveDays/segment.ts`):
+
+- `identify` with `userId` = the event's `userId`, and traits `email`, `twelve_days_joined: true` and `twelve_days_lessons_completed`.
+- `track` `12 Days Lesson Completed` with `email`, `lesson`, `lesson_primitive`, `lessons_completed` and `campaign: "12-days-of-workflows"`.
+- `track` `12 Days Milestone Reached` with `lessons` (9 or 12), the first time someone gets there.
+
+**`userId` must be the same id the app uses when it identifies people in Segment.** Otherwise Customer.io and Attio get a second profile for the same person. Tell us if the app identifies by something else.
+
+On the Segment side: make sure these traits and events go on to the Customer.io and Attio destinations. In Customer.io, build a segment of people with `twelve_days_joined` for the daily "Day N unlocked" broadcasts; in Attio, a "12 Days of Workflows" list from the same trait.
 
 ## Testing
 

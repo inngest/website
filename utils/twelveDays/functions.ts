@@ -1,8 +1,14 @@
 import { Inngest, NonRetriableError } from "inngest";
-import { DAYS, unlockAt } from "@/components/v1/sections/TwelveDays/data";
+import { DAYS, REF, unlockAt } from "@/components/v1/sections/TwelveDays/data";
+import {
+  segmentWriteKey,
+  sendToSegment,
+  type SegmentMessage,
+} from "@/utils/twelveDays/segment";
 import {
   checkInsOn,
   easternDate,
+  lessonCount,
   recordCheckIn,
 } from "@/utils/twelveDays/store";
 
@@ -42,6 +48,11 @@ export interface LessonCompletedData {
  * up. A milestone (9 or 12 lessons) the store claims for the first time
  * emits an event for the merch and raffle follow-up (nothing consumes
  * it yet).
+ *
+ * Then tells Segment, which passes it on to Customer.io and Attio for
+ * the reminder-email list: an identify with `twelve_days_joined` and the
+ * lesson count, and a `12 Days Lesson Completed` track (plus
+ * `12 Days Milestone Reached` for a new milestone).
  */
 export const recordLessonCompleted = inngest.createFunction(
   {
@@ -90,7 +101,57 @@ export const recordLessonCompleted = inngest.createFunction(
       );
     }
 
-    return result;
+    const segment = await step.run("send-to-segment", async () => {
+      const writeKey = segmentWriteKey();
+      if (!writeKey) return "skipped: no Segment write key";
+
+      // Read fresh, so a late resend of an early lesson can't set the
+      // count back to what it was then.
+      const lessons = await lessonCount(data.userId);
+      const timestamp = at.toISOString();
+      const lesson = DAYS.find((d) => d.day === data.day);
+      const batch: SegmentMessage[] = [
+        {
+          type: "identify",
+          userId: data.userId,
+          messageId: `12dow-identify-${data.userId}-${data.day}`,
+          timestamp,
+          traits: {
+            email: data.email,
+            twelve_days_joined: true,
+            twelve_days_lessons_completed: lessons,
+          },
+        },
+        {
+          type: "track",
+          event: "12 Days Lesson Completed",
+          userId: data.userId,
+          messageId: `12dow-lesson-${data.userId}-${data.day}`,
+          timestamp,
+          properties: {
+            email: data.email,
+            lesson: data.day,
+            lesson_primitive: lesson?.primitive,
+            lessons_completed: lessons,
+            campaign: REF,
+          },
+        },
+        ...result.milestones.map(
+          (m): SegmentMessage => ({
+            type: "track",
+            event: "12 Days Milestone Reached",
+            userId: data.userId,
+            messageId: `12dow-milestone-${data.userId}-${m}`,
+            timestamp,
+            properties: { email: data.email, lessons: m, campaign: REF },
+          })
+        ),
+      ];
+      await sendToSegment(writeKey, batch);
+      return `sent ${batch.length}`;
+    });
+
+    return { ...result, segment };
   }
 );
 

@@ -127,6 +127,11 @@ export async function recordCheckIn({
   };
 }
 
+/** How many lessons a user has completed so far. */
+export async function lessonCount(userId: string): Promise<number> {
+  return redis().scard(`${PREFIX}user:${userId}:days`);
+}
+
 /** Every check-in recorded on an Eastern date, with each user's total. */
 export async function checkInsOn(
   date: string
