@@ -73,9 +73,9 @@ await sb.commands.run("deploy", "fly deploy", {
 </CodeGroup>
 
 - **Anything the command starts is covered.** A script that runs `sh -c 'fly deploy'`, or `npm` calling `git`, reaches the shim too.
-- **One shim per program.** Passing the same name twice throws, and so does a second `tool.shim.hostEnv()`. Names the shims rely on (`sh`, `env`, `cat`) cannot be shimmed, and `PATH`, `IFS` and `INNGEST_*` cannot be injected.
+- **One shim per program.** Passing the same name twice throws, and so does a second `tool.shim.hostEnv()` or a variable named by two shims. Names the shims rely on (`sh`, `env`, `cat`) cannot be shimmed, and `PATH`, `IFS` and `INNGEST_*` cannot be injected.
 - **Outside the command, nothing changes.** A daemon started earlier or another container runs the real program.
-- **Shims work with [tools](/docs/sandboxes/features/tools).** A command can have both `tools` and `shims`, and `exitCodes` (default `[0]`) is checked on the final result.
+- **Shims work with [tools](/docs/sandboxes/features/tools).** A command can have both `tools` and `shims` (the tool names `env` and `inngestShim` are taken), and `exitCodes` (default `[0]`) is checked on the final result.
 
 ## Inject an environment variable
 
@@ -102,7 +102,7 @@ await sb.$({
 
 ## Let code ask for a value
 
-`tool.shim.hostEnv` lists the values code may read with `inngest-tool env NAME`. Everything else is refused, and your app's environment is never exposed.
+`tool.shim.hostEnv` lists the values code may read with `inngest-tool env NAME`. Names you do not list (other than variables set by `injectEnv`) are refused, and your app's environment is never exposed.
 
 <CodeGroup>
 ```typescript {{ title: "TypeScript" }}
@@ -110,11 +110,11 @@ await sb.$({
   shims: [
     tool.shim.hostEnv({
       REGION: "iad",
-      FLY_API_TOKEN: mintFlyToken,
+      DEPLOY_TOKEN: mintFlyToken,
       GH_TOKEN: { mint: mintGhToken, ttl: 600_000, scope: repo },
     }),
   ],
-}).sh`TOKEN=$(inngest-tool -r env FLY_API_TOKEN) ./deploy.sh`;
+}).sh`TOKEN=$(inngest-tool -r env DEPLOY_TOKEN) ./deploy.sh`;
 ```
 
 <SdkUnsupported title="Python" feature="Sandboxes" />
@@ -122,7 +122,7 @@ await sb.$({
 </CodeGroup>
 
 - **A string is returned as is.** `REGION` always reads `iad`.
-- **A function mints on every read.** Each `inngest-tool env FLY_API_TOKEN` gets a new token.
+- **A function mints on every read.** Each `inngest-tool env DEPLOY_TOKEN` gets a new token.
 - **`{ mint, ttl, scope }` is shared.** One read mints, and reads for the next `ttl` milliseconds get the same value. The cache is per run and per `scope`, so give commands that mint different things for one name (a token per repository) different scopes.
 - **`inngest-tool env` returns a string for one name** and an array for several. Without `-r` a string prints JSON-quoted; `-r` prints it as is, without a trailing newline.
 - **A list of names reads your app's environment.** `tool.shim.hostEnv(["REGION"])` reads `process.env.REGION` and fails if it is not set.
@@ -212,7 +212,6 @@ const git = tool.shim("git", {
 
 - **Your function has no access to the Sandbox's files.** `git push` needs the working tree, so give git a [credential](#clone-a-private-repository) and let it run, rather than replying from your app.
 - **A `reply()` prints when the call ends.** There is no streaming, and stdin is read only when the shim sets `stdin: true`, so prompts such as `gh auth login` do not work.
-- **Fixed answers need no call.** `stdin: true` sends stdin to your function.
 - **A retried step runs your function again.** Keep handlers safe to repeat and mint a new token each time.
 
 ## For agents writing code in the Sandbox
@@ -230,7 +229,7 @@ $ echo $INNGEST_SHIMS
 fly,git-credential-inngest,terraform
 ```
 
-- **`inngest-tool shims`** lists every shim and the values `inngest-tool env` can read, one line each. Descriptions come from `tool.shim(name, { description, handle })`, or are generated.
+- **`inngest-tool shims`** lists every shim, in the order passed, and the values `inngest-tool env` can read, one line each. Descriptions come from `tool.shim(name, { description, handle })`, or are generated.
 - **`INNGEST_SHIMS`** holds the shimmed program names, comma separated, for scripts.
 - **Programs that only inject need nothing from the agent.** Only `inngest-tool env NAME` is something it asks for, and the list shows which names exist.
 
@@ -239,10 +238,10 @@ fly,git-credential-inngest,terraform
 - **A shim is a convenience, not a boundary.** Shims sit first on `PATH`, so code can run `/usr/bin/git` directly, and any code in the Sandbox can read what a handler returns. For a guarantee, give the Sandbox no credentials and close its network.
 - **Tokens are not stored in the run.** They pass through the Sandbox, so they sit in a file under `/inngest/tools` until the Sandbox is destroyed, and the Sandbox service sees them. Destroy the Sandbox when the run ends.
 - **A request is at most 256 KiB, and a reply 1 MiB.** `stdin` is text.
-- **A program that must be shimmed with a handler needs x86_64.** Inject-only shims work anywhere.
+- **Handler shims, including `tool.shim.gitCredentials`, need x86_64.** Inject-only shims work anywhere.
 - **Each call is a round trip to your app.** Shim programs that run once per command, not a loop of `git status`. For fixed answers that do not need your app, use `local`, shown above.
 - **A command with shims can run longer than five minutes.** Set `timeout`. Each wait counts against the run's step limit, like [long-running commands](/docs/sandboxes/features/commands#long-running-commands).
 
 ## How it works
 
-A command with shims starts with a temporary directory first on `PATH`. Each shimmed program in it is a small launcher that calls your handler through the same channel [tools](/docs/sandboxes/features/tools) use, then either starts the real program or prints your reply. Handler shims use a small static binary, `inngest-tool`, that ships in the `inngest` npm package. The SDK uploads it to a Sandbox only when it is not already there.
+A command with shims starts with a temporary directory first on `PATH`. Each shimmed program in it is a symlink to `inngest-tool` (or, for inject-only shims, a few lines of `sh`) that calls your handler through the same channel [tools](/docs/sandboxes/features/tools) use, then either starts the real program or prints your reply. Handler shims use a small static binary, `inngest-tool`, that ships in the `inngest` npm package. The SDK uploads it to a Sandbox only when it is not already there.
