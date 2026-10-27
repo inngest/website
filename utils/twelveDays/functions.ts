@@ -21,6 +21,12 @@ export const inngest = new Inngest({
 
 export const LESSON_COMPLETED = "website/12-days.lesson.completed";
 export const MILESTONE_REACHED = "website/12-days.milestone.reached";
+/**
+ * Someone signed in (or signed up) from the calendar. Data: userId,
+ * email, newAccount, ref, anonymousId. Nothing consumes it yet; it's
+ * there for campaign attribution.
+ */
+export const SIGNED_IN = "website/12-days.signed-in";
 
 export interface LessonCompletedData {
   /** `{userId}:{day}`: one check-in per person per lesson. */

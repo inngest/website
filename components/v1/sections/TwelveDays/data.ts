@@ -14,7 +14,8 @@
  * page says lives here so those land as data edits, not layout changes.
  */
 
-const REF = "12-days-of-workflows";
+/** Ref tag for links on this page, and for sign-ins it starts. */
+export const REF = "12-days-of-workflows";
 
 /** Year the calendar runs. */
 export const YEAR = 2026;

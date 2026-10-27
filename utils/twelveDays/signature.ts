@@ -8,7 +8,8 @@ import { createHmac, timingSafeEqual } from "node:crypto";
  * signature proves it came from the route, after its sign-in and unlock
  * checks.
  *
- * Uses `TWELVE_DAYS_EVENT_SECRET`, which only the server has.
+ * Uses `TWELVE_DAYS_EVENT_SECRET`, which only the server has (the
+ * session cookie is signed with it too; see session.ts).
  */
 
 export interface SignedFields {
@@ -18,7 +19,7 @@ export interface SignedFields {
   day: number;
 }
 
-function secret(): string {
+export function websiteSecret(): string {
   const value = process.env.TWELVE_DAYS_EVENT_SECRET;
   if (!value) throw new Error("TWELVE_DAYS_EVENT_SECRET is not set");
   return value;
@@ -32,7 +33,7 @@ function digest(fields: SignedFields): Buffer {
     fields.email,
     fields.day,
   ]);
-  return createHmac("sha256", secret()).update(payload).digest();
+  return createHmac("sha256", websiteSecret()).update(payload).digest();
 }
 
 export function signCheckIn(fields: SignedFields): string {

@@ -1,19 +1,21 @@
 "use client";
 
 import { useCallback, useEffect, useState } from "react";
+import { REF } from "@/components/v1/sections/TwelveDays/data";
 
 const PAGE_PATH = "/12-days-of-workflows";
-const REF = "12-days-of-workflows";
 
 /** Element id of a lesson's door, for `#day-5` links. */
 export const doorId = (day: number) => `day-${day}`;
 
 /**
  * Query param the app's sign-in page reads to send people back.
- * TODO(app team): confirm the name, and allow inngest.com (and preview
- * hosts) as return destinations.
+ * TODO(app team): confirm the name (utils/twelveDays/HANDOFF.md).
  */
 const SIGN_IN_RETURN_PARAM = "redirect_url";
+
+/** The sign-in pass the app adds to the return trip. */
+const PASS_PARAM = "pass";
 
 /** Set on the return trip from sign-in so the page syncs progress. */
 const RETURN_PARAM = "checkin";
@@ -91,9 +93,12 @@ export function useCheckIn() {
  * anyone is signed in. Resends are harmless, since each check-in only
  * counts once.
  *
- * Back from sign-in (`?checkin=1&door=5#day-5`) it also scrolls to the
- * lesson they left from, then tidies the params so a reload doesn't
- * repeat it. Waits for the clock and stored progress to load (`ready`).
+ * Back from sign-in (`?checkin=1&door=5&pass=…#day-5`) it first trades
+ * the app's sign-in pass for a session, so the sync counts. It also
+ * scrolls to the lesson they left from and tidies the params, so the
+ * pass doesn't linger in the address bar or history and a reload
+ * doesn't repeat any of it. Waits for the clock and stored progress to
+ * load (`ready`).
  */
 export function useSyncCheckIns({
   ready,
@@ -110,17 +115,40 @@ export function useSyncCheckIns({
     if (!ready || handled) return;
     setHandled(true);
 
-    checkIn(done);
-
     const url = new URL(window.location.href);
-    if (!url.searchParams.has(RETURN_PARAM)) return;
-
+    const pass = url.searchParams.get(PASS_PARAM);
+    const returning = url.searchParams.has(RETURN_PARAM);
     const day = Number(url.searchParams.get(DOOR_PARAM));
-    const target = document.getElementById(day ? doorId(day) : "calendar");
-    target?.scrollIntoView({ block: "center" });
 
-    url.searchParams.delete(RETURN_PARAM);
-    url.searchParams.delete(DOOR_PARAM);
-    window.history.replaceState(null, "", url.toString());
+    if (pass || returning) {
+      url.searchParams.delete(PASS_PARAM);
+      url.searchParams.delete(RETURN_PARAM);
+      url.searchParams.delete(DOOR_PARAM);
+      window.history.replaceState(null, "", url.toString());
+    }
+
+    if (returning) {
+      const target = document.getElementById(day ? doorId(day) : "calendar");
+      target?.scrollIntoView({ block: "center" });
+    }
+
+    (pass ? redeemPass(pass) : Promise.resolve()).then(() => checkIn(done));
   }, [ready, handled, done, checkIn]);
+}
+
+/**
+ * Trades the sign-in pass for the website's session cookie. A pass that
+ * doesn't work (expired, already used) leaves them signed out, and the
+ * check-ins that follow offer sign-in again.
+ */
+async function redeemPass(pass: string): Promise<void> {
+  try {
+    await fetch("/api/12-days/session", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ pass }),
+    });
+  } catch {
+    // No connection: same as a pass that didn't work.
+  }
 }
