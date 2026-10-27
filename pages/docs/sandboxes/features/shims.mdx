@@ -24,10 +24,10 @@ import { tool } from "inngest/experimental";
 await sb.$({
   shims: [
     tool.shim.gitCredentials({
-      "github.com": async ({ path }) => {
+      "github.com": async () => {
         return {
           username: "x-access-token",
-          password: await installationToken(path),
+          password: await installationToken("acme/private"),
         };
       },
     }),
@@ -40,7 +40,7 @@ await sb.$({
 </CodeGroup>
 
 - **Git asks, your function answers.** This includes `npm ci` installing a git dependency, because `npm` runs `git`.
-- **Mint a token for one repository.** `path` is the repository path when git sends it. Use a token that expires quickly.
+- **Mint a token for one repository.** Use a token that expires quickly. git sends `path` only when told to (`credential.useHttpPath`), so scope by the repository your function knows about.
 - **Other hosts get nothing.** A host you did not list gets no credential, and git fails as it normally would.
 - **Nothing is written to `~/.gitconfig`.** The setting applies to this command only.
 
@@ -52,20 +52,19 @@ await sb.$({
 
 <CodeGroup>
 ```typescript {{ title: "TypeScript" }}
-const deploy$ = sb.$({
-  cwd: "/work",
-  shims: [
-    tool.shim.injectEnv("fly", { FLY_API_TOKEN: () => mintDeployToken(app) }),
-  ],
-});
+const mintFlyToken = async () => {
+  return mintDeployToken(app);
+};
+
+const fly = tool.shim.injectEnv("fly", { FLY_API_TOKEN: mintFlyToken });
+
+const deploy$ = sb.$({ cwd: "/work", shims: [fly] });
 
 await deploy$.sh`fly deploy`;
 
 await sb.commands.run("deploy", "fly deploy", {
   cwd: "/work",
-  shims: [
-    tool.shim.injectEnv("fly", { FLY_API_TOKEN: () => mintDeployToken(app) }),
-  ],
+  shims: [fly],
 });
 ```
 
@@ -74,9 +73,9 @@ await sb.commands.run("deploy", "fly deploy", {
 </CodeGroup>
 
 - **Anything the command starts is covered.** A script that runs `sh -c 'fly deploy'`, or `npm` calling `git`, reaches the shim too.
-- **One shim per program.** Passing the same name twice throws.
+- **One shim per program.** Passing the same name twice throws, and so does a second `tool.shim.hostEnv()`. Names the shims rely on (`sh`, `env`, `cat`) cannot be shimmed, and `PATH`, `IFS` and `INNGEST_*` cannot be injected.
 - **Outside the command, nothing changes.** A daemon started earlier or another container runs the real program.
-- **Shims work with [tools](/docs/sandboxes/features/tools).** A command can have both `tools` and `shims`, and `exitCodes` applies as usual.
+- **Shims work with [tools](/docs/sandboxes/features/tools).** A command can have both `tools` and `shims`, and `exitCodes` (default `[0]`) is checked on the final result.
 
 ## Inject an environment variable
 
@@ -86,7 +85,7 @@ await sb.commands.run("deploy", "fly deploy", {
 ```typescript {{ title: "TypeScript" }}
 await sb.$({
   shims: [
-    tool.shim.injectEnv("fly", { FLY_API_TOKEN: () => mintDeployToken(app) }),
+    tool.shim.injectEnv("fly", { FLY_API_TOKEN: mintFlyToken }),
     tool.shim.injectEnv("npm", { NODE_AUTH_TOKEN: process.env.NPM_PUBLISH_TOKEN! }),
   ],
 }).sh`fly deploy && npm publish`;
@@ -98,7 +97,7 @@ await sb.$({
 
 - **A function is called on every start.** The token is fresh each time.
 - **A string is used as is.** Read it from your app's environment, not from a step's return value.
-- **The variable is set for that program only.** It is not in the Sandbox's environment.
+- **The variable is set for that program only.** It is not in the Sandbox's environment, though code can still read the name with `inngest-tool env`.
 - **No handler to write.** An inject-only shim is a few lines of `sh`.
 
 ## Let code ask for a value
@@ -111,8 +110,8 @@ await sb.$({
   shims: [
     tool.shim.hostEnv({
       REGION: "iad",
-      FLY_API_TOKEN: () => mintDeployToken(app),
-      GH_TOKEN: { mint: () => ghToken(repo), ttl: 600_000, scope: repo },
+      FLY_API_TOKEN: mintFlyToken,
+      GH_TOKEN: { mint: mintGhToken, ttl: 600_000, scope: repo },
     }),
   ],
 }).sh`TOKEN=$(inngest-tool -r env FLY_API_TOKEN) ./deploy.sh`;
@@ -125,12 +124,12 @@ await sb.$({
 - **A string is returned as is.** `REGION` always reads `iad`.
 - **A function mints on every read.** Each `inngest-tool env FLY_API_TOKEN` gets a new token.
 - **`{ mint, ttl, scope }` is shared.** One read mints, and reads for the next `ttl` milliseconds get the same value. The cache is per run and per `scope`, so give commands that mint different things for one name (a token per repository) different scopes.
-- **`inngest-tool env` returns a string for one name** and an array for several. `-r` prints it without a trailing newline.
+- **`inngest-tool env` returns a string for one name** and an array for several. Without `-r` a string prints JSON-quoted; `-r` prints it as is, without a trailing newline.
 - **A list of names reads your app's environment.** `tool.shim.hostEnv(["REGION"])` reads `process.env.REGION` and fails if it is not set.
 
 ## Write your own shim
 
-`tool.shim(name, handler)` runs your function whenever code runs that program. Return one of two things: `run()` to start the real program, or `reply()` to end the call with your own exit code and output.
+`tool.shim(name, handler)` runs your function whenever code runs that program. Return `run()` to start the real program, `reply()` to end the call with your own exit code and output, or `refuse()`. Returning nothing is `run()`.
 
 <CodeGroup>
 ```typescript {{ title: "TypeScript" }}
@@ -195,8 +194,25 @@ const terraform = tool.shim("terraform", {
 <SdkUnsupported title="Go" feature="Sandboxes" />
 </CodeGroup>
 
+`local` answers a first argument inside the Sandbox, with no call to your app:
+
+<CodeGroup>
+```typescript {{ title: "TypeScript" }}
+const git = tool.shim("git", {
+  local: { "--version": { exit: 0, stdout: "git version 2.50.0\n" } },
+  handle: ({ run }) => {
+    return run();
+  },
+});
+```
+
+<SdkUnsupported title="Python" feature="Sandboxes" />
+<SdkUnsupported title="Go" feature="Sandboxes" />
+</CodeGroup>
+
 - **Your function has no access to the Sandbox's files.** `git push` needs the working tree, so give git a [credential](#clone-a-private-repository) and let it run, rather than replying from your app.
-- **Output arrives when the program exits.** There is no streaming and no terminal, so prompts such as `gh auth login` do not work.
+- **A `reply()` prints when the call ends.** There is no streaming, and stdin is read only when the shim sets `stdin: true`, so prompts such as `gh auth login` do not work.
+- **Fixed answers need no call.** `stdin: true` sends stdin to your function.
 - **A retried step runs your function again.** Keep handlers safe to repeat and mint a new token each time.
 
 ## For agents writing code in the Sandbox
@@ -224,7 +240,7 @@ fly,git-credential-inngest,terraform
 - **Tokens are not stored in the run.** They pass through the Sandbox, so they sit in a file under `/inngest/tools` until the Sandbox is destroyed, and the Sandbox service sees them. Destroy the Sandbox when the run ends.
 - **A request is at most 256 KiB, and a reply 1 MiB.** `stdin` is text.
 - **A program that must be shimmed with a handler needs x86_64.** Inject-only shims work anywhere.
-- **Calls take about a quarter of a second.** Shim programs that run once per command, not a loop of `git status`. Use the shim's `local` option for fixed answers that do not need your app.
+- **Each call is a round trip to your app.** Shim programs that run once per command, not a loop of `git status`. For fixed answers that do not need your app, use `local`, shown above.
 - **A command with shims can run longer than five minutes.** Set `timeout`. Each wait counts against the run's step limit, like [long-running commands](/docs/sandboxes/features/commands#long-running-commands).
 
 ## How it works
