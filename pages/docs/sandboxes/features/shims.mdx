@@ -172,7 +172,7 @@ The handler receives:
 | `argv` | The arguments the code passed, without the program name. |
 | `name` | The program that was run, such as `terraform`. |
 | `cwd` | The working directory of the call. |
-| `stdin` | Text from stdin. Empty unless the shim sets `stdin: true`. |
+| `stdin` | Text from stdin. Empty unless the shim sets `stdin: true` next to `handle`, which is for programs that are given input, since reading a pipe nobody writes to would hang. |
 | `signal` | Aborts when the command ends or times out. |
 | `idempotencyKey`, `runId` | The same values on every retry, for APIs that deduplicate writes. |
 | `run(change?)` | Run the real program. `change` can set `argv`, `env` for this one process, or `stdin`. |
@@ -185,7 +185,6 @@ To add a description that agents can read, pass an object:
 ```typescript {{ title: "TypeScript" }}
 const terraform = tool.shim("terraform", {
   description: "plan runs; apply is refused",
-  stdin: true,
   handle: ({ argv, run, refuse }) => {
     return argv[0] === "apply" ? refuse("use a pull request") : run();
   },
