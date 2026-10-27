@@ -239,6 +239,24 @@ Image files, installed packages, and Dockerfile `ENV` values are included in
 the published image. Do not bake credentials into a Dockerfile or an image
 layer; use [workspace secrets](/docs/sandboxes/features/secrets) at launch.
 
+## How the image's command runs
+
+A sandbox starts the image's `ENTRYPOINT` and `CMD` the way `docker run`
+does, with the image's `ENV` and `WORKDIR`:
+
+- If the image sets a command, that command owns the sandbox's lifetime. When
+  it exits, with any exit code, the sandbox stops and becomes `TERMINATED`.
+  The Flask example above keeps running because its server never exits.
+- Many base images default to a command that exits right away. For example,
+  `alpine` runs `/bin/sh`, so a sandbox from an unchanged `alpine` image
+  stops right after it boots. To run commands in a sandbox, give the image a
+  long-running command such as a server or `CMD ["tail", "-f", "/dev/null"]`.
+- If the image sets neither `ENTRYPOINT` nor `CMD`, the sandbox stays
+  `RUNNING` until you stop or destroy it, like the default image.
+
+Commands run as `root`. A Dockerfile `USER` instruction is recorded but not
+applied yet.
+
 ## Inspect, cancel, and rebuild
 
 | Method | Route                         | Purpose                                          |
@@ -270,6 +288,8 @@ does not update them. Use a new sandbox name to launch the new version.
   declaration. A checksum mismatch can also reject the storage upload or fail
   the asynchronous build; inspect both the PUT response and build status.
 - A missing or workspace-hidden build returns `404 image_build_not_found`.
+- Committing or cancelling a build that already finished returns
+  `409 image_build_finished`.
 - Too many unfinished builds returns `429 rate_limited`.
 - If an API response is lost, inspect existing builds rather than repeatedly
   creating new uploads. Preserve the build ID once you receive it.

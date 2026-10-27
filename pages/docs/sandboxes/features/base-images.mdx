@@ -21,7 +21,7 @@ New Sandboxes use the default image unless you select a published image. A Sandb
 | Python | Python 3.14 |
 | Ruby | Ruby 4.0 |
 | Repository and network tools | Git, curl, OpenSSH, and CA certificates |
-| Shell and utilities | BusyBox `sh`, `grep`, `sed`, `awk`, `ripgrep`, `jq`, `find`, `tar`, and `gzip` |
+| Operating system and utilities | Debian 13 slim with GNU `grep`, `sed`, `awk`, `find`, `diff`, `tar`, and `gzip`, plus `ripgrep` and `jq` |
 
 The default image does **not** currently include Go, Rust, Java, Bun, or Deno. Exact installed versions can change when Inngest rebuilds the image. Check versions in the Sandbox if your task depends on them.
 
@@ -97,12 +97,12 @@ This changes **that Sandbox**, not the fixed base image. The files remain in the
 
 ## Choose a supported size
 
-Fresh Sandboxes accept these exact resource pairs:
+Fresh Sandboxes accept 1, 2, or 4 vCPU with 1, 2, or 4 GiB of memory per vCPU. `memoryMb` is measured in MiB:
 
-| `vcpu` | `memoryMb` |
+| `vcpu` | Allowed `memoryMb` values |
 | --- | --- |
-| 1 | 1024 |
-| 2 | 2048 |
-| 4 | 4096 |
+| 1 | 1024, 2048, 4096 |
+| 2 | 2048, 4096, 8192 |
+| 4 | 4096, 8192, 16384 |
 
-Set both values from the same row. The API does not accept a size profile name. A snapshot clone inherits the snapshot's CPU and memory. Access or available capacity can still prevent a supported size from starting.
+Other sizes are not available. The API does not accept a size profile name. A snapshot clone inherits the snapshot's CPU and memory. Access or available capacity can still prevent a supported size from starting; missing capacity returns `503 compute_unavailable`.
