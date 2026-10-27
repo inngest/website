@@ -1,3 +1,5 @@
+import { Callout } from "shared/Docs/mdx";
+
 export const metaTitle = "Usage Limits | Runs, Events & Retention";
 export const description = "Inngest usage limits by plan: concurrency, event payload size, steps per function, run timeouts, log retention, and event history. Check before you deploy.";
 
@@ -8,6 +10,18 @@ Check the limits that affect your run, steps, events, and history before deploym
 
 ## Plan-based limits
 These limits and included monthly allowances apply to Inngest Cloud. The [pricing page](https://www.inngest.com/pricing) lists billing and overage rates.
+
+<Callout variant="info">
+
+**Execution counting correction — effective October 20, 2026**
+
+We fixed an issue where we undercounted executions in runs with checkpointing. This issue has been present since the launch of checkpointing. Accounts using checkpointing may now see higher reported execution usage even if their workloads have not changed.
+
+Free accounts may reach their execution cap sooner. Paid accounts may incur execution overage charges faster.
+
+No action is required from you.
+
+</Callout>
 
 | Measure | Free | Pro | Business | Enterprise |
 | --- | --- | --- | --- | --- |
