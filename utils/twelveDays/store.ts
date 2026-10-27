@@ -12,7 +12,6 @@ import { TIMEZONE } from "@/components/v1/sections/TwelveDays/data";
  * - `users`                 hash of user id → email
  * - `date:{date}`           set of `{id}:{day}` checked in on that date
  * - `dates`                 set of every date that has a check-in
- * - `pass:{id}`             a sign-in pass already traded for a session
  *
  * Reads the Vercel Marketplace integration's `KV_REST_API_*` variables,
  * falling back to Upstash's own `UPSTASH_REDIS_REST_*` names.
@@ -164,20 +163,4 @@ export async function checkInsOn(
 export async function checkInDates(): Promise<string[]> {
   const dates = await redis().smembers(`${PREFIX}dates`);
   return dates.sort();
-}
-
-/**
- * Marks a sign-in pass as used. False when it already was, so a pass
- * leaked from a URL can't sign anyone else in. Kept only until the pass
- * would have expired anyway.
- */
-export async function claimPass(
-  passId: string,
-  ttlSeconds: number
-): Promise<boolean> {
-  const set = await redis().set(`${PREFIX}pass:${passId}`, 1, {
-    nx: true,
-    ex: Math.max(1, Math.ceil(ttlSeconds)),
-  });
-  return set === "OK";
 }

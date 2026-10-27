@@ -9,13 +9,22 @@ const PAGE_PATH = "/12-days-of-workflows";
 export const doorId = (day: number) => `day-${day}`;
 
 /**
+ * The app's check-in endpoint. The app knows who is signed in, so it
+ * records check-ins itself; the browser sends the app's login cookie
+ * along (inngest.com and app.inngest.com are the same site). Spec for
+ * the app team: utils/twelveDays/HANDOFF.md.
+ */
+const CHECK_IN_URL =
+  process.env.NEXT_PUBLIC_TWELVE_DAYS_CHECK_IN_URL ??
+  `${
+    process.env.NEXT_PUBLIC_APP_HOST ?? "https://app.inngest.com"
+  }/api/12-days/check-in`;
+
+/**
  * Query param the app's sign-in page reads to send people back.
  * TODO(app team): confirm the name (utils/twelveDays/HANDOFF.md).
  */
 const SIGN_IN_RETURN_PARAM = "redirect_url";
-
-/** The sign-in pass the app adds to the return trip. */
-const PASS_PARAM = "pass";
 
 /** Set on the return trip from sign-in so the page syncs progress. */
 const RETURN_PARAM = "checkin";
@@ -48,11 +57,12 @@ export function useSignInHref(day?: number): string {
 }
 
 /**
- * Sends completed lessons to the check-in API. `signedOut` flips on when
- * the API says nobody is signed in, so lessons can offer sign-in; the
- * browser's own progress is kept either way. `failed` lists lessons
- * whose check-in didn't reach the server (an error or no connection),
- * so they can say so and offer a retry instead of looking saved.
+ * Sends completed lessons to the app's check-in endpoint. `signedOut`
+ * flips on when the app says nobody is signed in, so lessons can offer
+ * sign-in; the browser's own progress is kept either way. `failed`
+ * lists lessons whose check-in didn't reach the app (an error or no
+ * connection), so they can say so and offer a retry instead of looking
+ * saved.
  */
 export function useCheckIn() {
   const [signedOut, setSignedOut] = useState(false);
@@ -63,8 +73,10 @@ export function useCheckIn() {
     const without = (prev: number[]) => prev.filter((d) => !days.includes(d));
     let ok = false;
     try {
-      const res = await fetch("/api/12-days/check-in", {
+      const res = await fetch(CHECK_IN_URL, {
         method: "POST",
+        // Sends the app's login cookie with the request.
+        credentials: "include",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ days }),
       });
@@ -93,12 +105,9 @@ export function useCheckIn() {
  * anyone is signed in. Resends are harmless, since each check-in only
  * counts once.
  *
- * Back from sign-in (`?checkin=1&door=5&pass=…#day-5`) it first trades
- * the app's sign-in pass for a session, so the sync counts. It also
- * scrolls to the lesson they left from and tidies the params, so the
- * pass doesn't linger in the address bar or history and a reload
- * doesn't repeat any of it. Waits for the clock and stored progress to
- * load (`ready`).
+ * Back from sign-in (`?checkin=1&door=5#day-5`) it also scrolls to the
+ * lesson they left from, then tidies the params so a reload doesn't
+ * repeat it. Waits for the clock and stored progress to load (`ready`).
  */
 export function useSyncCheckIns({
   ready,
@@ -115,40 +124,17 @@ export function useSyncCheckIns({
     if (!ready || handled) return;
     setHandled(true);
 
+    checkIn(done);
+
     const url = new URL(window.location.href);
-    const pass = url.searchParams.get(PASS_PARAM);
-    const returning = url.searchParams.has(RETURN_PARAM);
+    if (!url.searchParams.has(RETURN_PARAM)) return;
+
     const day = Number(url.searchParams.get(DOOR_PARAM));
+    const target = document.getElementById(day ? doorId(day) : "calendar");
+    target?.scrollIntoView({ block: "center" });
 
-    if (pass || returning) {
-      url.searchParams.delete(PASS_PARAM);
-      url.searchParams.delete(RETURN_PARAM);
-      url.searchParams.delete(DOOR_PARAM);
-      window.history.replaceState(null, "", url.toString());
-    }
-
-    if (returning) {
-      const target = document.getElementById(day ? doorId(day) : "calendar");
-      target?.scrollIntoView({ block: "center" });
-    }
-
-    (pass ? redeemPass(pass) : Promise.resolve()).then(() => checkIn(done));
+    url.searchParams.delete(RETURN_PARAM);
+    url.searchParams.delete(DOOR_PARAM);
+    window.history.replaceState(null, "", url.toString());
   }, [ready, handled, done, checkIn]);
-}
-
-/**
- * Trades the sign-in pass for the website's session cookie. A pass that
- * doesn't work (expired, already used) leaves them signed out, and the
- * check-ins that follow offer sign-in again.
- */
-async function redeemPass(pass: string): Promise<void> {
-  try {
-    await fetch("/api/12-days/session", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ pass }),
-    });
-  } catch {
-    // No connection: same as a pass that didn't work.
-  }
 }

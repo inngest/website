@@ -1,10 +1,12 @@
-# 12 Days of Workflows: sign-in handoff (app team spec)
+# 12 Days of Workflows: check-in endpoint (app team spec)
 
-The 12 Days of Workflows calendar at `inngest.com/12-days-of-workflows` records which lessons each Inngest user completes. People sign in on the app; the website needs to learn who they are when they come back. This page is what the app has to do. The website side is already built.
+The 12 Days of Workflows calendar at `inngest.com/12-days-of-workflows` records which lessons each Inngest user completes. The app already knows who is signed in, so the website sends check-ins straight to the app. This page is what the app has to build. The website side is done.
 
 ## The flow
 
-1. On a lesson, a signed-out visitor clicks **Sign in to count it**. The website sends them to:
+1. Someone clicks **Mark done** on a lesson. The page calls the app's endpoint with the user's app login cookie attached (`fetch(..., { credentials: "include" })`). inngest.com and app.inngest.com are the same site, so the browser sends the cookie.
+2. **Signed in:** the app sends one Inngest event per lesson and answers `201`.
+3. **Signed out:** the app answers `401`. The lesson shows **Sign in to count it**, which goes to:
 
    ```
    https://app.inngest.com/sign-in
@@ -12,96 +14,92 @@ The 12 Days of Workflows calendar at `inngest.com/12-days-of-workflows` records 
      &ref=12-days-of-workflows
    ```
 
-   (`redirect_url` is URL-encoded in the real link.)
+   (`redirect_url` is URL-encoded in the real link.) After sign-in the app sends them back to `redirect_url`. The page resends every lesson finished in that browser, which now gets `201`.
 
-2. They sign in or sign up however they like: Google, GitHub, email.
-3. **The app** creates a sign-in pass and sends them to the `redirect_url` with `pass=<token>` added to its query string, before the `#` fragment:
+Recording, the daily Slack list and the CSV export run in the website's Inngest functions (`utils/twelveDays/functions.ts`), triggered by the app's event.
 
-   ```
-   https://www.inngest.com/12-days-of-workflows?checkin=1&door=5&pass=eyJhbGciOi...#day-5
-   ```
+## 1. The endpoint
 
-4. The page removes `pass` from the address bar and posts it to `/api/12-days/session`. The website checks it, sets its own session cookie, and records the sign-in. Check-ins work from then on.
+`POST https://app.inngest.com/api/12-days/check-in`. The website calls `${NEXT_PUBLIC_APP_HOST}/api/12-days/check-in` by default; tell us if the path should differ.
 
-## What the app needs to do
+Request body:
 
-### 1. Accept the return address
+```json
+{ "days": [1, 2, 5] }
+```
 
-- Read the return address from the sign-in URL. The website uses `redirect_url`; tell us if it should be something else (it's `SIGN_IN_RETURN_PARAM` in `components/v1/sections/TwelveDays/useCheckIn.ts`).
-- Keep it, and `ref`, through the whole sign-in, including the round trip to Google or GitHub and through sign-up.
-- Only follow return addresses on these hosts:
-  - `www.inngest.com` and `inngest.com`
-  - `website-git-*-inngest.vercel.app` (preview builds), if you want previews to work
-  - `localhost:3001` in development only
-- Only add a pass when the return path is `/12-days-of-workflows`.
+`days` is every lesson to check in, often several at once when the page syncs after sign-in. Resends are normal and harmless.
 
-### 2. Create the pass
+| Case                                                     | Response                                                  |
+| -------------------------------------------------------- | --------------------------------------------------------- |
+| No valid app session                                     | `401`                                                     |
+| `days` missing, empty, or has anything but integers 1–12 | `400`                                                     |
+| Otherwise                                                | Send the events, then `201` with `{ "checkedIn": [...] }` |
 
-An HS256 JWT signed with `TWELVE_DAYS_HANDOFF_SECRET`, a secret the app and the website share (set the same value in both).
+Check the session **before** validating `days`, so a signed-out visitor always gets `401`. The page treats `401` as "offer sign-in" and anything else that isn't `2xx` as "couldn't save, retry".
 
-| Claim         | Value                                                       |
-| ------------- | ----------------------------------------------------------- |
-| `iss`         | `"app.inngest.com"`                                         |
-| `aud`         | `"12-days-of-workflows"`                                    |
-| `sub`         | The Inngest account **user id** (stable; not the email)     |
-| `email`       | The user's primary email                                    |
-| `jti`         | A random id, unique per pass (UUID is fine)                 |
-| `iat`         | Issued-at, seconds since the epoch                          |
-| `exp`         | Expiry; at most 10 minutes after `iat`. 5 minutes suggested |
-| `new_account` | `true` if this sign-in created the account, else `false`    |
+There's no need to check whether a lesson's door is open. The website's function does that, using the unlock times in `components/v1/sections/TwelveDays/data.ts`.
 
-The website rejects a pass with any other algorithm, a bad signature, the wrong `iss` or `aud`, an `exp` more than 10 minutes after `iat`, or one that has expired (60 seconds' clock drift is allowed). Each `jti` works once.
+## 2. The event
 
-Example in Node:
+One event per day, sent from the app's server:
 
 ```ts
-import { randomUUID } from "node:crypto";
-import jwt from "jsonwebtoken";
-
-const pass = jwt.sign(
-  { email: user.email, new_account: isNewAccount },
-  process.env.TWELVE_DAYS_HANDOFF_SECRET,
-  {
-    algorithm: "HS256",
-    issuer: "app.inngest.com",
-    audience: "12-days-of-workflows",
-    subject: user.id,
-    jwtid: randomUUID(),
-    expiresIn: "5m",
-  }
+await inngest.send(
+  days.map((day) => ({
+    // Same id for the same person and lesson, so resends collapse.
+    id: `12dow-${user.id}:${day}`,
+    name: "app/12-days.lesson.completed",
+    data: { userId: user.id, email: user.email, day },
+  }))
 );
 ```
 
-### 3. Keep the `ref` for sign-up attribution
+- `userId`: the stable Inngest account user id, not the email.
+- `email`: the user's primary email.
+- Send it to the **same Inngest environment** as the website's `NEXT_PUBLIC_INNGEST_KEY` (production), where the `website-campaigns` app is synced.
 
-The sign-in link carries `ref=12-days-of-workflows`. For a new account, save it wherever the app keeps sign-up attribution today, so campaign sign-ups show up there too. The website also sends its own `website/12-days.signed-in` event (below), so this is about the app's own reporting.
+## 3. CORS
 
-## What the website does with it
+The call comes from another origin, carries a cookie, and has a JSON body, so the browser sends a preflight `OPTIONS` request first. Both the preflight and the real response, **including the `401`**, need:
 
-- `POST /api/12-days/session` checks the pass (`utils/twelveDays/pass.ts`) and marks its `jti` used in Redis.
-- It sets an httpOnly `12dow_session` cookie on `/api/12-days`, signed with a website-only secret and valid for 45 days (`utils/twelveDays/session.ts`). The check-in route reads it (`utils/twelveDays/identity.ts`).
-- It sends `website/12-days.signed-in` with `userId`, `email`, `newAccount`, `ref` and `anonymousId`. `anonymousId` is the website's `inngest_anonymous_id` cookie, which joins the account to its earlier anonymous visits.
+```
+Access-Control-Allow-Origin: https://www.inngest.com   (echo the request's Origin if it's allowed; never "*")
+Access-Control-Allow-Credentials: true
+Access-Control-Allow-Methods: POST, OPTIONS
+Access-Control-Allow-Headers: Content-Type
+Vary: Origin
+```
 
-## Secrets
+Allowed origins: `https://www.inngest.com`, `https://inngest.com`, and `http://localhost:3001` in development only. Without these headers on the `401`, the page can't read it and shows "Couldn't save" instead of the sign-in prompt.
 
-| Variable                     | Where               | Used for                                       |
-| ---------------------------- | ------------------- | ---------------------------------------------- |
-| `TWELVE_DAYS_HANDOFF_SECRET` | App **and** website | Signing and checking the sign-in pass          |
-| `TWELVE_DAYS_EVENT_SECRET`   | Website only        | Signing check-in events and the session cookie |
+**The app's login has to travel as a cookie** on this request, sent for `SameSite=Lax` or `None` same-site requests. If the app's session lives somewhere the browser won't send automatically, tell us and we'll switch to a redirect: **Mark done** would send people to an app page that records the check-in and redirects straight back.
 
-Generate the shared one with `openssl rand -hex 32` and share it through the password manager, not Slack.
+Vercel preview hosts (`*.vercel.app`) are a different site, so the cookie isn't sent from them. Test against production or a local website pointed at a local or staging app (below).
 
-## Testing before the app is ready
+## 4. Sign-in return trip
 
-With `TWELVE_DAYS_HANDOFF_SECRET` and `TWELVE_DAYS_EVENT_SECRET` set locally, make a pass and open the page with it:
+- Read the return address from `redirect_url` (tell us if the app uses another name; it's `SIGN_IN_RETURN_PARAM` in `components/v1/sections/TwelveDays/useCheckIn.ts`).
+- Keep it, and `ref`, through the whole sign-in, including the round trip to Google or GitHub and through sign-up.
+- Only follow return addresses on `www.inngest.com`, `inngest.com`, and `localhost:3001` in development.
+- For new accounts, save `ref=12-days-of-workflows` wherever the app keeps sign-up attribution, so campaign sign-ups show up there.
+
+## 5. Blocking fake events
+
+The website's Inngest event key (`NEXT_PUBLIC_INNGEST_KEY`) ships to browsers, so anyone could use it to send `app/12-days.lesson.completed` themselves. In the Inngest dashboard, add a filter on that key that **denies `app/12-days.lesson.completed`**. Only the app's server key should be able to send it.
+
+## Testing
+
+Point a local website at the app with `NEXT_PUBLIC_TWELVE_DAYS_CHECK_IN_URL` (or `NEXT_PUBLIC_APP_HOST`), sign in to the app in the same browser, and mark a lesson done. Doors only count once open, so use December dates or watch the function reject early ones (`Lesson N isn't open yet`).
+
+The endpoint by itself:
 
 ```bash
-node -e '
-const c = require("crypto"), now = Math.floor(Date.now() / 1000);
-const b = (o) => Buffer.from(JSON.stringify(o)).toString("base64url");
-const h = b({ alg: "HS256", typ: "JWT" });
-const p = b({ iss: "app.inngest.com", aud: "12-days-of-workflows", sub: "user_test", email: "you@inngest.com", jti: c.randomUUID(), iat: now, exp: now + 300, new_account: false });
-const s = c.createHmac("sha256", process.env.TWELVE_DAYS_HANDOFF_SECRET).update(h + "." + p).digest("base64url");
-console.log("http://localhost:3001/12-days-of-workflows?checkin=1&door=1&pass=" + h + "." + p + "." + s + "#day-1");
-'
+curl -i -X POST https://app.inngest.com/api/12-days/check-in \
+  -H 'Origin: https://www.inngest.com' \
+  -H 'Content-Type: application/json' \
+  -H 'Cookie: <your app session cookie>' \
+  -d '{"days":[1]}'
 ```
+
+Expect `201` with the CORS headers, and `401` (still with the CORS headers) without the cookie.

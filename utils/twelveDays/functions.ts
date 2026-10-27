@@ -1,5 +1,5 @@
 import { Inngest, NonRetriableError } from "inngest";
-import { isValidCheckIn } from "@/utils/twelveDays/signature";
+import { DAYS, unlockAt } from "@/components/v1/sections/TwelveDays/data";
 import {
   checkInsOn,
   easternDate,
@@ -19,51 +19,54 @@ export const inngest = new Inngest({
   eventKey: process.env.NEXT_PUBLIC_INNGEST_KEY,
 });
 
-export const LESSON_COMPLETED = "website/12-days.lesson.completed";
-export const MILESTONE_REACHED = "website/12-days.milestone.reached";
 /**
- * Someone signed in (or signed up) from the calendar. Data: userId,
- * email, newAccount, ref, anonymousId. Nothing consumes it yet; it's
- * there for campaign attribution.
+ * Sent by app.inngest.com's check-in endpoint, which knows who is
+ * signed in (see HANDOFF.md). The website's event key is public, so it
+ * needs a filter in Inngest that blocks this name; otherwise anyone
+ * could send one.
  */
-export const SIGNED_IN = "website/12-days.signed-in";
+export const LESSON_COMPLETED = "app/12-days.lesson.completed";
+export const MILESTONE_REACHED = "website/12-days.milestone.reached";
 
 export interface LessonCompletedData {
-  /** `{userId}:{day}`: one check-in per person per lesson. */
-  checkInId: string;
+  /** Inngest account user id. */
   userId: string;
   email: string;
   day: number;
-  /** HMAC from the check-in route (see utils/twelveDays/signature). */
-  signature: string;
 }
 
 /**
- * Records a completed lesson. Only events signed by the check-in route
- * count, since the event key is public. One run per user at a time, and
- * the store saves each check-in atomically and replays its first result
- * on retry, so catch-up batches and retries can't lose records or
- * double up. A milestone (9 or 12 lessons) the store claims for the
- * first time emits an event for the merch and raffle follow-up (nothing
- * consumes it yet).
+ * Records a completed lesson. One run per user at a time, and the store
+ * saves each check-in atomically and replays its first result on a
+ * resend or retry, so catch-up batches can't lose records or double
+ * up. A milestone (9 or 12 lessons) the store claims for the first time
+ * emits an event for the merch and raffle follow-up (nothing consumes
+ * it yet).
  */
 export const recordLessonCompleted = inngest.createFunction(
   {
     id: "12-days-record-lesson-completed",
     name: "12 Days: record lesson check-in",
     triggers: { event: LESSON_COMPLETED },
-    idempotency: "event.data.checkInId",
     concurrency: { limit: 1, key: "event.data.userId" },
   },
   async ({ event, step }) => {
     const data = event.data as LessonCompletedData;
+    const at = new Date(event.ts ?? Date.now());
 
     if (
+      typeof data.userId !== "string" ||
+      !data.userId ||
+      typeof data.email !== "string" ||
       !Number.isInteger(data.day) ||
-      data.checkInId !== `${data.userId}:${data.day}` ||
-      !isValidCheckIn(data, data.signature)
+      data.day < 1 ||
+      data.day > DAYS.length
     ) {
-      throw new NonRetriableError("Unsigned or invalid check-in event");
+      throw new NonRetriableError("Invalid check-in event");
+    }
+    // A door that hasn't opened can't be completed yet.
+    if (unlockAt(data.day).getTime() > at.getTime()) {
+      throw new NonRetriableError(`Lesson ${data.day} isn't open yet`);
     }
 
     const result = await step.run("record-check-in", () =>
@@ -71,7 +74,7 @@ export const recordLessonCompleted = inngest.createFunction(
         userId: data.userId,
         email: data.email,
         day: data.day,
-        at: new Date(event.ts ?? Date.now()),
+        at,
       })
     );
 
