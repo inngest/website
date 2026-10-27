@@ -186,11 +186,11 @@ await sandbox.commands.run("agent", "node agent.js", {
 | --- | --- | --- |
 | `toolTimeout` | 30 seconds | How long one `tool.step()` may run before its step fails. |
 | `maxCalls` | 100 | Tool calls allowed in one command before it is stopped. |
-| `waitWindow` | 20 seconds | The longest one wait step blocks before a fresh one continues. |
+| `waitWindow` | 20 seconds, or 60 seconds when `timeout` is over 5 minutes | The longest one wait step blocks before a fresh one continues. At most 240 seconds. |
 
 - Tool names start with a letter, then letters, digits, or `_`, up to 64 characters.
 - A request from the Sandbox can be 256 KiB, and a reply 1 MiB.
-- A command with tools can run for 5 minutes when you set no `timeout`.
+- A command with tools runs for 5 minutes unless you set `timeout`. A longer `timeout` works, however long, and the steps follow the command in windows.
 - Arguments arrive from the Sandbox, so validate them with `tool.step()` when the code is untrusted.
 
 ## Give the tools to a model <VersionBadge version="v4.26.0+" />

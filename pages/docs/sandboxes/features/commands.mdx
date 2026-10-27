@@ -113,7 +113,7 @@ await sb.$({ id: "install" }).sh`pnpm install`;
 
 A configured `$` can be reused for many commands, and calling it again merges: `work$({ cwd: "/other" })` keeps `env` and `exitCodes`.
 
-`commands.run` takes `exitCodes` too, but defaults to `"any"`, so there the exit code comes back as data. It can't be combined with `tools`.
+`commands.run` takes `exitCodes` too, but defaults to `"any"`, so there the exit code comes back as data. It can be combined with `tools` and `shims`; a disallowed exit is then checked on the final result.
 
 ## Handle failures
 
