@@ -65,6 +65,7 @@ await sb.$({
 - **`origin` is your `remote`.** `git clone` accepts only that URL, and the clone's `origin` is set to it.
 - **Supported forms.** `git clone [--depth N] [-b BRANCH] <url> [dir]`, `git fetch [origin]` and `git push [-u] [origin] [src[:dst]]`, with `git -C <dir>` in front.
 - **Not supported.** Force pushes, deleting refs, other remotes and `git pull` (use `git fetch` and `git merge`) are refused with a message.
+- **Pushes your policy cannot fully check are refused.** That means more than 500 new commits, more than one ref at once, a path with characters git prints in quotes, and history the host cannot read. Global git options other than `-C` are refused too.
 - **Everything else runs the real git** in the Sandbox with no round trip: `git status`, `git commit`, `git diff`.
 - **Your app needs `git` and `tar`.** Clones and pushes are staged in a temporary directory there.
 - **Size.** A push sends the history reachable from the pushed branch, up to `maxBytes` (128 MiB by default). Raise `toolTimeout` for big repositories; it defaults to 30 seconds.
