@@ -24,10 +24,10 @@ import { tool } from "inngest/experimental";
 await sb.$({
   shims: [
     tool.shim.gitCredentials({
-      "github.com": async ({ path }) => {
+      "github.com": async () => {
         return {
           username: "x-access-token",
-          password: await installationToken(path ?? "acme/private"),
+          password: await installationToken("acme/private"),
         };
       },
     }),
@@ -40,10 +40,10 @@ await sb.$({
 </CodeGroup>
 
 - **Git asks, your function answers.** This includes `npm ci` installing a git dependency, because `npm` runs `git`.
-- **Mint a token for one repository.** Use a token that expires quickly. git sends `path` only when told to (`credential.useHttpPath`), so scope by the repository your function knows about.
+- **Mint a token for one repository.** git does not scope it; whatever you mint does. Keep it short-lived. The handler also receives `host` and, only if you run git with `-c credential.useHttpPath=true`, the repository `path`.
 - **Set `expiresAt` to make git drop the token.** Return it in epoch seconds with `username` and `password`.
 - **Other hosts get nothing.** A host you did not list gets no credential, and git fails as it normally would.
-- **Nothing is written to `~/.gitconfig`.** The setting applies to this command only.
+- **Nothing is written to `~/.gitconfig`.** The shim sets `GIT_CONFIG_COUNT` and `GIT_CONFIG_KEY_*` / `GIT_CONFIG_VALUE_*` for the command, so do not set those in `env`.
 
 > **The code can read the token.** Git receives it, so `git credential fill` prints it. Scope it to one repository and let it expire. To keep a token out of the Sandbox entirely, use a [tool](/docs/sandboxes/features/secrets#let-a-tool-do-it).
 
@@ -238,7 +238,7 @@ fly,git-credential-inngest,terraform
 
 - **A shim is a convenience, not a boundary.** Shims sit first on `PATH`, so code can run `/usr/bin/git` directly, and any code in the Sandbox can read the tokens a shim hands out. For a guarantee, give the Sandbox no credentials and close its network.
 - **Tokens are not stored in the run.** They pass through the Sandbox, so they sit in a file under `/inngest/tools` until the Sandbox is destroyed, and the Sandbox service sees them. Destroy the Sandbox when the run ends.
-- **A request is at most 256 KiB, and a reply 1 MiB.** `stdin` is text.
+- **A request is at most 256 KiB, and a reply 1 MiB.** `stdin` is text up to 128 KiB, and a call has up to 512 arguments.
 - **Handler shims, including `tool.shim.gitCredentials`, need x86_64.** Inject-only shims work anywhere.
 - **Each call is a round trip to your app.** Shim programs that run once per command, not a loop of `git status`. For fixed answers that do not need your app, use `local`, shown above.
 - **A command with shims can run longer than five minutes.** Set `timeout`. Each wait counts against the run's step limit, like [long-running commands](/docs/sandboxes/features/commands#long-running-commands).
