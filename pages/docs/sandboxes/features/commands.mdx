@@ -156,7 +156,7 @@ The error reaches your handler as a `StepError` (a `NonRetriableError` for a tim
 
 ## Long-running commands
 
-A timeout over five minutes runs the command as a process that the steps follow, with one wait step per five minutes. It is still one `[$]` row in the trace.
+A timeout over five minutes runs the command as a process that the steps follow, with one wait step per five minutes. With `tools` or `shims`, each wait step lasts one [`waitWindow`](/docs/sandboxes/features/tools#limits-and-options) instead. It is still one `[$]` row in the trace.
 
 <CodeGroup>
 ```typescript {{ title: "TypeScript" }}
