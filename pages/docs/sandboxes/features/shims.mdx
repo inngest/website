@@ -97,7 +97,7 @@ await sb.$({
 
 - **A function is called on every start.** The token is fresh each time.
 - **A string is used as is.** Read it from your app's environment, not from a step's return value.
-- **The variable is set for that program only.** It is not in the Sandbox's environment, though code can still read the name with `inngest-tool env`.
+- **The variable is set for that program only.** It is not in the Sandbox's environment, though code can read its value with `inngest-tool env NAME`.
 - **No handler to write.** An inject-only shim is a few lines of `sh`.
 
 ## Let code ask for a value
@@ -220,7 +220,7 @@ Shims are transparent. An agent runs `fly deploy` and it works. The one hint to 
 
 ```sh
 $ inngest-tool shims
-env: values to read with inngest-tool env NAME: REGION, FLY_API_TOKEN
+env: values to read with inngest-tool env NAME: REGION, DEPLOY_TOKEN, GH_TOKEN
 fly: runs with FLY_API_TOKEN set by the host
 git-credential-inngest: git logins for github.com, minted by the host for each operation
 terraform: plan runs; apply is refused
@@ -229,9 +229,9 @@ $ echo $INNGEST_SHIMS
 fly,git-credential-inngest,terraform
 ```
 
-- **`inngest-tool shims`** lists every shim, in the order passed, and the values `inngest-tool env` can read, one line each. Descriptions come from `tool.shim(name, { description, handle })`, or are generated.
+- **`inngest-tool shims`** lists the `env` values first, then every shim in the order passed, and the values `inngest-tool env` can read, one line each. Descriptions come from `tool.shim(name, { description, handle })`, or are generated.
 - **`INNGEST_SHIMS`** holds the shimmed program names, comma separated, for scripts.
-- **Programs that only inject need nothing from the agent.** Only `inngest-tool env NAME` is something it asks for, and the list shows which names exist.
+- **Programs that only inject need nothing from the agent.** Only `inngest-tool env NAME` is something it asks for, and the `env` line lists the names a `hostEnv` shim allows.
 
 ## Limits
 
