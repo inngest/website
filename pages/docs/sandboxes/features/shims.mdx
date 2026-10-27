@@ -24,10 +24,10 @@ import { tool } from "inngest/experimental";
 await sb.$({
   shims: [
     tool.shim.gitCredentials({
-      "github.com": async () => {
+      "github.com": async ({ path }) => {
         return {
           username: "x-access-token",
-          password: await installationToken("acme/private"),
+          password: await installationToken(path ?? "acme/private"),
         };
       },
     }),
@@ -41,6 +41,7 @@ await sb.$({
 
 - **Git asks, your function answers.** This includes `npm ci` installing a git dependency, because `npm` runs `git`.
 - **Mint a token for one repository.** Use a token that expires quickly. git sends `path` only when told to (`credential.useHttpPath`), so scope by the repository your function knows about.
+- **Set `expiresAt` to make git drop the token.** Return it in epoch seconds with `username` and `password`.
 - **Other hosts get nothing.** A host you did not list gets no credential, and git fails as it normally would.
 - **Nothing is written to `~/.gitconfig`.** The setting applies to this command only.
 
@@ -75,7 +76,7 @@ await sb.commands.run("deploy", "fly deploy", {
 - **Anything the command starts is covered.** A script that runs `sh -c 'fly deploy'`, or `npm` calling `git`, reaches the shim too.
 - **One shim per program.** Passing the same name twice throws, and so does a second `tool.shim.hostEnv()` or a variable named by two shims. Names the shims rely on (`sh`, `env`, `cat`) cannot be shimmed, and `PATH`, `IFS` and `INNGEST_*` cannot be injected.
 - **Outside the command, nothing changes.** A daemon started earlier or another container runs the real program.
-- **Shims work with [tools](/docs/sandboxes/features/tools).** A command can have both `tools` and `shims` (the tool names `env` and `inngestShim` are taken), and `exitCodes` (default `[0]`) is checked on the final result.
+- **Shims work with [tools](/docs/sandboxes/features/tools).** A command can have both `tools` and `shims` (`env` is taken by `hostEnv` and `injectEnv`, `inngestShim` by handler shims), and `exitCodes` (default `[0]`) is checked on the final result.
 
 ## Inject an environment variable
 
@@ -123,7 +124,7 @@ await sb.$({
 
 - **A string is returned as is.** `REGION` always reads `iad`.
 - **A function mints on every read.** Each `inngest-tool env DEPLOY_TOKEN` gets a new token.
-- **`{ mint, ttl, scope }` is shared.** One read mints, and reads for the next `ttl` milliseconds get the same value. The cache is per run and per `scope`, so give commands that mint different things for one name (a token per repository) different scopes.
+- **`{ mint, ttl, scope }` is shared.** One read mints, and reads for the next `ttl` milliseconds get the same value. The cache is per run, name and `scope`, so give commands that mint different things for one name (a token per repository) different scopes.
 - **`inngest-tool env` returns a string for one name** and an array for several. Without `-r` a string prints JSON-quoted; `-r` prints it as is, without a trailing newline.
 - **A list of names reads your app's environment.** `tool.shim.hostEnv(["REGION"])` reads `process.env.REGION` and fails if it is not set.
 
@@ -178,12 +179,13 @@ The handler receives:
 | `reply(code, { stdout, stderr })` | End with this exit code (0 to 255) and output. Text or `Uint8Array`. |
 | `refuse(message)` | Print `<name>: <message>` on stderr and exit 126. |
 
-Returning nothing is the same as `run()`, so a handler that only logs is a one-liner. To add a description that agents can read, pass an object:
+To add a description that agents can read, pass an object:
 
 <CodeGroup>
 ```typescript {{ title: "TypeScript" }}
 const terraform = tool.shim("terraform", {
   description: "plan runs; apply is refused",
+  stdin: true,
   handle: ({ argv, run, refuse }) => {
     return argv[0] === "apply" ? refuse("use a pull request") : run();
   },
