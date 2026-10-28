@@ -19,7 +19,7 @@ Here's what that line protects against, how work on the far side of it runs, and
 
 ## Why doesn't raising the serverless timeout fix long-running jobs?
 
-Raising the timeout moves the cliff further out and leaves it exactly as tall: a job that crosses it still loses everything it's done. And you rarely fail at the ceiling itself. If your platform kills requests at two minutes, your job doesn't die at 2:00. It dies at 1:58 on the afternoon your model provider is slow, halfway through writing to three systems. A hard ceiling means your real budget is whatever you're confident you'll finish under, with margin, on a bad day.
+A hard ceiling means your real budget is whatever you're confident you'll finish under, with margin, on a bad day.
 
 For most request handlers, that number is easy to estimate. For an agent it's close to impossible. Runtime depends on how many tool calls the model decides to make, how long each model call takes today, whether a subagent goes down a rabbit hole, and whether anything has to wait on a person. You can't budget a number you can't predict.
 
