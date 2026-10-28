@@ -8,7 +8,7 @@ import { Chip, POSTER_TITLE } from "@/components/v1/sections/TwelveDays/poster";
 
 /**
  * The finale: a live CodeTV episode building a Rube Goldberg machine
- * from all twelve primitives. The animated "keep all your weird
+ * out of everything behind the doors. The animated "keep all your weird
  * workflows running" poster loops beside it.
  */
 export default function Finale() {

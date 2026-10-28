@@ -12,10 +12,12 @@ import {
   DOOR_FACES,
   DOOR_ORDER,
   REF,
+  SIGNUP,
   unlockAt,
   unlockLabel,
   type WorkflowDay,
 } from "@/components/v1/sections/TwelveDays/data";
+import EmailSignup from "@/components/v1/sections/TwelveDays/EmailSignup";
 import {
   formatCountdown,
   useOpenedDoors,
@@ -88,6 +90,12 @@ export default function AdventCalendar({
           <p className="max-w-[560px] text-[18px] leading-[28px] text-white/85">
             {CALENDAR.body}
           </p>
+          <div className="flex flex-col gap-3">
+            <p className="font-v1Label text-[14px] uppercase">
+              {SIGNUP.prompt}
+            </p>
+            <EmailSignup />
+          </div>
           {/* The step.run rat, leaping over the heading. */}
           <Image
             src="/assets/v1/12-days/rat.webp"

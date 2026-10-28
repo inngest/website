@@ -8,8 +8,8 @@
  * Ends with a live CodeTV episode building a Rube Goldberg machine out
  * of all twelve.
  *
- * DRAFT: copy is Lauren's review draft. CodeTV participation, merch
- * thresholds and giveaway mechanics stay provisional until approved,
+ * DRAFT: copy is Lauren's review draft. CodeTV participation and the
+ * finale details stay provisional until approved,
  * and the lesson list waits on the final lineup (Mitch). Everything the
  * page says lives here so those land as data edits, not layout changes.
  */
@@ -290,49 +290,22 @@ export const HOW_IT_OPENS = {
   },
 } as const;
 
-/**
- * Completion rewards. Still to confirm before launch: raffle mechanics
- * per lesson, merch inventory and selection at 9 of 12, the rules for
- * the 12 of 12 piece, and eligibility, limits and official rules
- * (legal note to add once they're final).
- */
-export const PRIZES = {
-  eyebrow: "Finish the run",
-  title: "The nice list has a progress bar.",
-  body: "Get an email when each door opens. Every completed lesson brings you closer to exclusive holiday merch and raffle entries.",
-  items: [
-    {
-      kicker: "Every lesson",
-      title: "Another raffle entry.",
-      body: "Each lesson you complete adds another entry to the raffle.",
-    },
-    {
-      kicker: "9 of 12",
-      title: "Holiday merch.",
-      body: "Complete nine lessons to become eligible for exclusive holiday merch.",
-    },
-    {
-      kicker: "12 of 12",
-      title: "The full set.",
-      body: "Complete the full set for a chance at a special-edition piece.",
-    },
-  ],
-  /** The email sign-up (EmailSignup.tsx). */
-  signup: {
-    label: "Email address",
-    placeholder: "you@company.com",
-    button: "Email me each door",
-    sending: "Signing you up…",
-    sent: "You're on the list. See you at the next door.",
-    failed: "That didn't go through. Try again?",
-  },
+/** The email sign-up in the calendar (EmailSignup.tsx). */
+export const SIGNUP = {
+  prompt: "Get an email when each door opens.",
+  label: "Email address",
+  placeholder: "you@company.com",
+  button: "Email me each door",
+  sending: "Signing you up…",
+  sent: "You're on the list. See you at the next door.",
+  failed: "That didn't go through. Try again?",
 } as const;
 
 export const FINALE = {
   chips: ["Live on CodeTV"],
   title: ["Twelve workflows walk", "into one machine."],
   body: [
-    "After the final door opens, join Inngest and CodeTV for a live build: one gloriously overengineered Rube Goldberg machine powered by the primitives you've explored along the way.",
+    "After the last door opens, join Inngest and CodeTV live as we build one gloriously overengineered Rube Goldberg machine out of everything behind the doors.",
   ],
   // TODO: registration link and date are still TBD; this anchor is a
   // placeholder until then.

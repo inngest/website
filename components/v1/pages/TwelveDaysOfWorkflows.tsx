@@ -9,7 +9,6 @@ import Finale from "@/components/v1/sections/TwelveDays/Finale";
 import Hero from "@/components/v1/sections/TwelveDays/Hero";
 import Machine from "@/components/v1/sections/TwelveDays/Machine";
 import HowItOpens from "@/components/v1/sections/TwelveDays/HowItOpens";
-import Prizes from "@/components/v1/sections/TwelveDays/Prizes";
 import SongSoFar from "@/components/v1/sections/TwelveDays/SongSoFar";
 import {
   useCalendarClock,
@@ -20,15 +19,16 @@ import {
  * inngest.com/12-days-of-workflows — the Inngest × CodeTV holiday
  * campaign, in the Build for the Lonng Run brand.
  *
- * Hero → the advent calendar → the playable machine → the song so far
- * → how the doors open (the cron job) → finish-the-run prizes → the
- * live CodeTV finale → closing quick starts.
+ * Hero → the advent calendar → the live CodeTV finale → the playable
+ * machine → the song so far → how the doors open (the cron job) →
+ * closing quick starts.
  *
  * One clock for the whole page, so the hero countdown, the doors and
  * the song all flip at the same instant at midnight.
  *
- * Progress lives in this browser only; there's no sign-in. The email
- * sign-up in Prizes is how people hear about each new door.
+ * "Mark done" is a personal checklist kept in this browser only;
+ * there's no sign-in. The email sign-up in the calendar is how people
+ * hear about each new door.
  */
 export default function TwelveDaysOfWorkflows() {
   const now = useCalendarClock();
@@ -39,11 +39,10 @@ export default function TwelveDaysOfWorkflows() {
       <div className="overflow-x-clip">
         <Hero now={now} />
         <AdventCalendar now={now} done={done} onToggleDone={toggle} />
+        <Finale />
         <Machine now={now} />
         <SongSoFar now={now} />
         <HowItOpens />
-        <Prizes done={done} />
-        <Finale />
         <StartBuilding
           refTag="12-days-of-workflows-start-building"
           title={CLOSING.title}

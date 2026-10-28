@@ -3,7 +3,7 @@
 import { useEffect, useState, type FormEvent } from "react";
 import { analytics } from "@/utils/segment";
 import { readFirstTouch } from "src/shared/firstTouch";
-import { PRIZES, REF } from "@/components/v1/sections/TwelveDays/data";
+import { REF, SIGNUP } from "@/components/v1/sections/TwelveDays/data";
 
 /** Segment event Customer.io builds the 12 Days email list from. */
 export const SUBSCRIBED_EVENT = "12 Days Subscribed";
@@ -85,9 +85,9 @@ export default function EmailSignup() {
     return (
       <p
         role="status"
-        className="font-v1Label text-[16px] uppercase leading-[1.3]"
+        className="font-v1Label text-[16px] uppercase leading-[1.3] text-[#ECFE08]"
       >
-        {PRIZES.signup.sent}
+        {SIGNUP.sent}
       </p>
     );
   }
@@ -98,7 +98,7 @@ export default function EmailSignup() {
       className="flex w-full max-w-[620px] flex-col gap-3 sm:flex-row"
     >
       <label htmlFor="twelve-days-email" className="sr-only">
-        {PRIZES.signup.label}
+        {SIGNUP.label}
       </label>
       <input
         id="twelve-days-email"
@@ -107,22 +107,22 @@ export default function EmailSignup() {
         autoComplete="email"
         value={email}
         onChange={(e) => setEmail(e.target.value)}
-        placeholder={PRIZES.signup.placeholder}
-        className="h-12 min-w-0 flex-1 rounded-full border-[3px] border-[#010101] bg-white px-5 text-[16px] text-[#010101] placeholder:text-[#010101]/50 focus-visible:outline focus-visible:outline-4 focus-visible:outline-offset-2 focus-visible:outline-[#0035F1]"
+        placeholder={SIGNUP.placeholder}
+        className="h-12 min-w-0 flex-1 rounded-full border-[3px] border-[#010101] bg-white px-5 text-[16px] text-[#010101] placeholder:text-[#010101]/50 focus-visible:outline focus-visible:outline-4 focus-visible:outline-offset-2 focus-visible:outline-[#ECFE08]"
       />
       <button
         type="submit"
         disabled={status === "sending"}
-        className="h-12 shrink-0 rounded-full border-[3px] border-[#010101] bg-[#010101] px-6 font-v1Label text-[14px] uppercase text-white hover:bg-white hover:text-[#010101] disabled:opacity-60"
+        className="h-12 shrink-0 rounded-full border-[3px] border-[#010101] bg-[#010101] px-6 font-v1Label text-[14px] uppercase text-white hover:bg-white hover:text-[#010101] focus-visible:outline focus-visible:outline-4 focus-visible:outline-offset-2 focus-visible:outline-[#ECFE08] disabled:opacity-60"
       >
-        {status === "sending" ? PRIZES.signup.sending : PRIZES.signup.button}
+        {status === "sending" ? SIGNUP.sending : SIGNUP.button}
       </button>
       {status === "failed" && (
         <p
           role="alert"
-          className="font-v1Label text-[12px] uppercase text-[#C42A1E] sm:self-center"
+          className="font-v1Label text-[12px] uppercase text-[#ECFE08] sm:self-center"
         >
-          {PRIZES.signup.failed}
+          {SIGNUP.failed}
         </p>
       )}
     </form>
