@@ -239,7 +239,7 @@ This is where `timeouts.start` earns its keep: shedding work that's been queued 
 
 Queue time on the critical path is the metric that predicts a flash-sale miss, and it's missing from most dashboards. Success rate reads 100% the whole time, because every run eventually completes.
 
-Steady-state concurrency sits well under the ceiling. [The ceiling only bites in short bursts](/blog/new-bursty-concurrency-coverage-for-spikes?ref=blog-the-queue-is-durable-your-worker-is-not), and averages hide it completely. If you size headroom from average concurrency, you'll size it wrong; size it from p99 queue time during your last spike.
+Steady-state concurrency sits well under the ceiling. [The ceiling only bites in short bursts](/blog/new-bursty-concurrency-coverage-for-spikes?ref=blog-the-queue-is-durable-your-worker-is-not), and averages hide it completely. If you [size headroom from average concurrency](/blog/how-to-know-when-you-need-more-concurrency?ref=blog-the-queue-is-durable-your-worker-is-not), you'll size it wrong; size it from p99 queue time during your last spike.
 
 Pull each of these for steady state and for your last two-minute burst, and compare:
 
