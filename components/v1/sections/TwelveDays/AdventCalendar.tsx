@@ -18,6 +18,7 @@ import {
   type WorkflowDay,
 } from "@/components/v1/sections/TwelveDays/data";
 import EmailSignup from "@/components/v1/sections/TwelveDays/EmailSignup";
+import { handleStartFreeClick } from "@/utils/v1/startFreeCta";
 import {
   formatCountdown,
   useOpenedDoors,
@@ -298,9 +299,13 @@ function Door({
             <pre className="shrink-0 overflow-x-auto rounded-md bg-[#010101] p-3 font-v1Mono text-[12px] leading-[18px] text-[#0BDD48]">
               <code>{day.code}</code>
             </pre>
-            {/* Sign-ups from each door are attributed to its day. */}
+            {/* Sign-ups from each door are attributed to its day, and carry
+                the visitor id so Customer.io can tie them to email sign-ups. */}
             <a
               href={`/sign-up?ref=${REF}-day-${day.day}`}
+              onClick={handleStartFreeClick(
+                `/sign-up?ref=${REF}-day-${day.day}`
+              )}
               className="mt-auto self-start font-v1Label text-[12px] uppercase underline underline-offset-4"
             >
               {CALENDAR.tryIt} <span aria-hidden="true">→</span>

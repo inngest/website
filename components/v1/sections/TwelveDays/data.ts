@@ -14,7 +14,7 @@
  * page says lives here so those land as data edits, not layout changes.
  */
 
-/** Ref tag for links on this page. Each door's sign-up adds `-day-N`. */
+/** Ref tag for links on this page. Each door's sign-up and docs links add `-day-N`. */
 export const REF = "12-days-of-workflows";
 
 /** Year the calendar runs. */
@@ -82,7 +82,7 @@ export const DAYS: WorkflowDay[] = [
     code: `await step.run("send-welcome", () =>\n  email.send(user)\n);`,
     docs: {
       label: "Background jobs",
-      href: `/docs/guides/background-jobs?ref=${REF}`,
+      href: `/docs/guides/background-jobs?ref=${REF}-day-1`,
     },
   },
   {
@@ -93,7 +93,7 @@ export const DAYS: WorkflowDay[] = [
     code: `await step.sleep("wait-a-day", "1d");`,
     docs: {
       label: "Sleeps",
-      href: `/docs/features/inngest-functions/steps-workflows/sleeps?ref=${REF}`,
+      href: `/docs/features/inngest-functions/steps-workflows/sleeps?ref=${REF}-day-2`,
     },
   },
   {
@@ -104,7 +104,7 @@ export const DAYS: WorkflowDay[] = [
     code: `await step.waitForEvent("approval", {\n  event: "app/expense.approved",\n  timeout: "3d",\n});`,
     docs: {
       label: "Wait for event",
-      href: `/docs/features/inngest-functions/steps-workflows/wait-for-event?ref=${REF}`,
+      href: `/docs/features/inngest-functions/steps-workflows/wait-for-event?ref=${REF}-day-3`,
     },
   },
   {
@@ -115,7 +115,7 @@ export const DAYS: WorkflowDay[] = [
     code: `await step.sendEvent("fan-out",\n  users.map((u) => ({\n    name: "app/user.nudge",\n    data: u,\n  }))\n);`,
     docs: {
       label: "Fan-out jobs",
-      href: `/docs/guides/fan-out-jobs?ref=${REF}`,
+      href: `/docs/guides/fan-out-jobs?ref=${REF}-day-4`,
     },
   },
   {
@@ -126,7 +126,7 @@ export const DAYS: WorkflowDay[] = [
     code: `triggers: {\n  cron: "TZ=America/Los_Angeles 0 9 * * 1",\n}`,
     docs: {
       label: "Scheduled functions",
-      href: `/docs/guides/scheduled-functions?ref=${REF}`,
+      href: `/docs/guides/scheduled-functions?ref=${REF}-day-5`,
     },
   },
   {
@@ -137,7 +137,7 @@ export const DAYS: WorkflowDay[] = [
     code: `throttle: {\n  limit: 6,\n  period: "1m",\n  key: "event.data.user_id",\n}`,
     docs: {
       label: "Throttling",
-      href: `/docs/guides/throttling?ref=${REF}`,
+      href: `/docs/guides/throttling?ref=${REF}-day-6`,
     },
   },
   {
@@ -148,7 +148,7 @@ export const DAYS: WorkflowDay[] = [
     code: `batchEvents: {\n  maxSize: 100,\n  timeout: "7s",\n}`,
     docs: {
       label: "Batching",
-      href: `/docs/guides/batching?ref=${REF}`,
+      href: `/docs/guides/batching?ref=${REF}-day-7`,
     },
   },
   {
@@ -159,7 +159,7 @@ export const DAYS: WorkflowDay[] = [
     code: `await step.ai.wrap("draft-reply",\n  generateText,\n  { model, prompt }\n);`,
     docs: {
       label: "AI orchestration",
-      href: `/docs/features/inngest-functions/steps-workflows/step-ai-orchestration?ref=${REF}`,
+      href: `/docs/features/inngest-functions/steps-workflows/step-ai-orchestration?ref=${REF}-day-8`,
     },
   },
   {
@@ -170,7 +170,7 @@ export const DAYS: WorkflowDay[] = [
     code: `debounce: {\n  key: "event.data.customer_id",\n  period: "9s",\n}`,
     docs: {
       label: "Debounce",
-      href: `/docs/guides/debounce?ref=${REF}`,
+      href: `/docs/guides/debounce?ref=${REF}-day-9`,
     },
   },
   {
@@ -181,7 +181,7 @@ export const DAYS: WorkflowDay[] = [
     code: `cancelOn: [{\n  event: "app/order.cancelled",\n  match: "data.orderId",\n}]`,
     docs: {
       label: "Cancel on events",
-      href: `/docs/features/inngest-functions/cancellation/cancel-on-events?ref=${REF}`,
+      href: `/docs/features/inngest-functions/cancellation/cancel-on-events?ref=${REF}-day-10`,
     },
   },
   {
@@ -192,7 +192,7 @@ export const DAYS: WorkflowDay[] = [
     code: `concurrency: {\n  limit: 11,\n  key: "event.data.tenant_id",\n}`,
     docs: {
       label: "Concurrency",
-      href: `/docs/guides/concurrency?ref=${REF}`,
+      href: `/docs/guides/concurrency?ref=${REF}-day-11`,
     },
   },
   {
@@ -203,7 +203,7 @@ export const DAYS: WorkflowDay[] = [
     code: `new Inngest({\n  id: "my-app",\n  checkpointing: {\n    maxRuntime: "800s",\n  },\n});`,
     docs: {
       label: "Checkpointing",
-      href: `/docs/setup/checkpointing?ref=${REF}`,
+      href: `/docs/setup/checkpointing?ref=${REF}-day-12`,
     },
   },
 ];
