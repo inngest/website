@@ -1,0 +1,135 @@
+---
+title: "Built for the Lonng Run: How Ordinal scaled social orchestration to 1K enterprises with just two engineers."
+companyName: Ordinal
+logo: /assets/customers/ordinal-logo-white.svg
+companyIndustry: Social media
+companyUseCase: Multi-channel publishing, coordinated engagement, analytics sync, customer webhooks, CRM sync, failure alerting
+quote:
+  text: >-
+    Inngest let us outsource all the infrastructure under our orchestration, to
+    continue to scale Ordinal with just two engineers. Defining what needs to
+    happen in code just makes sense to me.
+  attribution:
+    name: Francisco Delgado
+    title: Co-founder
+  avatar: /assets/customers/ordinal-francisco-delgado.jpg
+companyURL: "https://www.tryordinal.com"
+companyDescription: Social media orchestration for B2B teams
+ogImage: /assets/blog/ordinal-customer-story/featured-image.jpg
+---
+
+How do companies like Clay, Zapier, and Profound run their social media programs?
+
+With Ordinal. Ordinal is social media orchestration for B2B teams that want the benefits of founder-led marketing without the arguments that usually come with it. Most social scheduling tools spread the work across several platforms. Ordinal puts planning, exec approval flows, coordinated team engagement, and real-time analytics in one place. It has more than 1,000 enterprise customers and runs over a million background executions a month, so it may be surprising that its entire engineering team is just two people.
+
+Co-founder Francisco Delgado is one of them.
+
+This is how Inngest helped a bootstrapped team build, scale, and create a new category of social media management without ever touching infrastructure.
+
+|  |  |
+| --- | --- |
+| **Company** | Ordinal |
+| **Description** | Social media orchestration for B2B teams |
+| **Stack** | Next.js on Vercel, Supabase, Axiom (logging), Knock (notifications) |
+| **Inngest Plan** | Pro |
+| **Use Cases** | Multi-channel publishing, coordinated engagement, analytics sync, customer webhooks, CRM sync, failure alerting |
+| **Engineering Team** | 2 |
+| **Using Inngest Since** | 2023 |
+| **Monthly Executions** | 1.33M |
+| **Execution Growth (30 days)** | +52% |
+| **Production Functions** | 66 workflows, plus 23 failure handlers |
+
+## Who is Francisco?
+
+You can't tell the story of Ordinal and Inngest without the engineer who found and implemented it. Francisco is a career software engineer, but prior to using Inngest, he had never, "touched or even thought about" workflow orchestration.
+
+> I'm a product engineer—I think the most useful way to think about engineering is as a means to an end. What excites me is a user saying, "Wow, this saves me 30 minutes a day." Everything else is just a tool for making that happen.
+
+While orchestration would become a key component of the Ordinal platform, it wasn't something Francisco or his co-founder Jeffrey really needed to consider in the early days—a basic queue was enough, at first. That changed when the market began to crowd—Ordinal would need to become more than a basic scheduling tool.
+
+## The problem: A bootstrapped team running orchestration on a five-minute cron
+
+It didn't take long for Francisco to realize scheduling is the easy part. Users wanted help outside that chain—with ideation, writing, approvals, engagement—the workflows that either needed multiple tools and people, or just never got done.
+
+This revelation came at a time when Ordinal was already up against its limits in its current form: running on a Vercel cron job that woke up every five minutes and published whatever was due. As more users joined, this process began to fray.
+
+It was time to think bigger. Francisco and Jeffrey began to pursue a bigger vision—something that would actually replace the entire social engagement chain for marketers and founders alike. This new direction required a new level of orchestration—something that could embrace dependencies, withstand failures, and get the timing just right.
+
+But with only two engineers… they had to be picky about the solution they would choose. It had to alleviate work, not add more.
+
+## The solution: Background jobs he doesn't have to think about
+
+It started with a fan-out.
+
+Having never managed orchestration infrastructure himself, Francisco didn't know exactly what he was looking for. There was no wish list of features—just an opinion about how he wanted his product to work.
+
+> All I knew is that I needed to have one job kick off multiple jobs. In the new version of Ordinal, one scheduled post on LinkedIn could have multiple approval flows, scheduled comments, and delayed team engagement. We were going to be connecting a lot of previously disconnected workflows. For awhile I was publishing via a cron job, but started to wonder how to handle all this other "stuff" without it consuming every day.
+
+Fan-outs brought Francisco to Inngest. One migrated function kept him there for the next three years.
+
+> I found Inngest when looking for a fan-out solution, but wanted to take it slow. I thought, let me try one function to start. But that's all it took. I could see in code exactly what I wanted my workflow to do. I could just define the event—like whether a post is scheduled or unscheduled or canceled—and then those to trigger different things. **That just made sense to me. I thought, this is exactly what I need.**
+
+Today Ordinal's architecture follows that same idea. Now, when a user schedules a post, they can decide where it's going, and how much engagement to add. One event, `post.scheduled`, fans out to a dedicated publisher for each channel. Each publisher only handles the events meant for its channel, and each has its own retries and failure handling. Comments and teammate engagement work the same way: each is its own job that can retry or fail without affecting the others.
+
+![How Ordinal orchestrates on Inngest: one event starts many durable jobs, and a failure handler alerts Slack](/assets/customers/ordinal/orchestration.png)
+
+Within a month, Francisco moved all of his functions over to Inngest, further reducing the amount of time he had to think about orchestration. Inngest wasn't another system to manage, it was one he could (mostly) happily forget about.
+
+## Reliability without an infra team
+
+When a social tool breaks, it breaks in public. Ordinal's worst case is a customer's post not going out, or going out twice. Ordinal's function settings show how Francisco guards against both.
+
+![Functions using each Inngest feature, including 23 failure handlers](/assets/customers/ordinal/features.png)
+
+Every publishing function uses the same three-part guard:
+
+- **Debounce** absorbs a burst of last-minute edits, so the post goes out once in its final form.
+- **Singleton** ensures only one publish per post can run at a time, so nothing goes out twice.
+- **Cancel-on-event** stops a run mid-flight if the post is unscheduled or pulled.
+
+Fourteen sync and integration workers use **concurrency limits**, so Ordinal can fan out across thousands of customer accounts without breaking the API limits of LinkedIn, Meta, or X. Steps retry up to four times. Francisco marks which errors are worth retrying and which should stop immediately. When a main-path function still fails, failure handlers send a Slack alert to the team.
+
+This can happen when errors are passed from LinkedIn, Meta, or X. The team spots when these happen in Slack, and can follow up quickly, and directly. For a company selling reliable scheduling, he wants the team to feel it when that promise slips.
+
+> I do find this as a best practice, just given what we do. **We should feel the pain when what we're selling to our customers (reliable scheduling) isn't working.**
+
+Each of these settings replaces something the team would otherwise have to build and maintain: per-post locking, an edit-debounce layer, per-provider rate-limit queues, a cron scheduler, retry and dead-letter handling, an alerting pipeline, and webhook delivery. At Francisco's last company, that was months of work for an infrastructure team. At Ordinal, it's a few lines of configuration on each function.
+
+Under the old cron, he could hardly tell what was running. Now every run has a known start time, duration, and set of steps, though he rarely needs them. He reads logs in Axiom and only opens Inngest to debug. Even then, he can skip the dashboard and use Inngest's MCP server. It's simple enough that Ordinal's support team can ask questions about Inngest runs without knowing anything about functions or traces.
+
+## Built for the long run: How Inngest's event model lets Ordinal keep expanding without re-architecting
+
+Ordinal's use of Inngest grew in three phases, each tied to a product bet. **Each new capability became new functions, not new infrastructure.**
+
+![Live production functions by use case, from October 2023 through October 2026](/assets/customers/ordinal/functions-by-use-case.png)
+
+### Phase 1: Make it work (2023)
+
+The first problem Ordinal had to solve was a basic one—schedule posts on time, no matter what. On the old cron, a single LinkedIn timeout could quietly drop the post and nobody would know. So Francisco started small, moving coordinated engagement for LinkedIn, X, and Instagram into Inngest functions built from steps that retry on their own. A few months later he added a failure handler to each one, so if a job still failed after its retries, the team heard about it in Slack instead of from a customer. Every customer-facing function Ordinal has shipped since has one.
+
+*Inngest features used: [steps](/docs/features/inngest-functions/steps-workflows?ref=ordinal-case-study), [retries](/docs/features/inngest-functions/error-retries/retries?ref=ordinal-case-study), [singleton](/docs/durable-execution/flow-control/singleton?ref=ordinal-case-study), [failure handlers](/docs/durable-execution/guides-and-advanced/error-handling/failure-handlers?ref=ordinal-case-study)*
+
+### Phase 2: Make it scale (2024)
+
+With engagement running reliably, customers wanted to reach every channel their audience used. On the cron, each new network would have meant more conditions in the scheduler. On Inngest it meant one new function listening for the same `post.scheduled` event. Webflow came first, then Threads and TikTok, and by December Ordinal was publishing to ten networks. It went from 7 functions to 19 in a single quarter without changing a line of the scheduler, and every new publisher carried the same three protections against a missed or duplicate post.
+
+*Inngest features used: [fan-out](/docs/guides/fan-out-jobs?ref=ordinal-case-study), [debounce](/docs/durable-execution/flow-control/debounce?ref=ordinal-case-study), [singleton](/docs/durable-execution/flow-control/singleton?ref=ordinal-case-study), [cancel on event](/docs/features/inngest-functions/cancellation/cancel-on-events?ref=ordinal-case-study), [failure handlers](/docs/durable-execution/guides-and-advanced/error-handling/failure-handlers?ref=ordinal-case-study)*
+
+### Phase 3: Make it smooth (2025–2026)
+
+Success brought the next problem: fairness. As accounts grew, the nightly analytics job had to process a customer with one profile and a customer with a huge company page in the same run, so the biggest accounts set the pace for everyone. Ordinal broke that job into a separate run for each account. Concurrency keys made sure each integration syncs once at a time, under a shared cap, and throttling kept the whole fan-out within LinkedIn's and Meta's API limits. Once the internal work was fair, Ordinal could open it up, and the same pattern now powers the webhooks and API that customers build on.
+
+*Inngest features used: [cron](/docs/guides/scheduled-functions?ref=ordinal-case-study), [fan-out](/docs/guides/fan-out-jobs?ref=ordinal-case-study), [concurrency](/docs/durable-execution/flow-control/concurrency?ref=ordinal-case-study), [throttling](/docs/durable-execution/flow-control/throttling?ref=ordinal-case-study), [debounce](/docs/durable-execution/flow-control/debounce?ref=ordinal-case-study), [cancel on event](/docs/features/inngest-functions/cancellation/cancel-on-events?ref=ordinal-case-study)*
+
+## The result: 1M+ executions a month, still two engineers
+
+Three years ago, Ordinal's whole backend was a cron job that woke up every five minutes and hoped nothing had gone wrong since the last run. Today, that same two-person team runs more than a million executions a month across a dozen social networks and thousands of customer accounts.
+
+- **1.33 million executions a month**, up 52% in the last 30 days, with the number of steps per run growing even faster. Francisco hadn't noticed the jump until we asked about it.
+- **From 4 production functions to 66**, plus 23 failure handlers. That's more than 40 functions for each of Ordinal's two engineers to look after, and in practice they rarely have to.
+- **Several production deploys every working day.** Ordinal shipped 360 to 480 deploys a quarter through 2026.
+- **About 27 functions retired along the way.** These were one-off backfills, experiments, and earlier designs replaced by better ones. When a workflow costs a few lines of code to create and nothing to delete, a two-person team can try things in production that would otherwise need a planning cycle.
+
+![Executions, trailing 30 days, from late August through October 2026](/assets/customers/ordinal/executions.png)
+
+*Want your engineers building product instead of infrastructure? [Get started with Inngest](/pricing?ref=ordinal-case-study).*
