@@ -15,10 +15,6 @@ import {
   useCalendarClock,
   useLessonProgress,
 } from "@/components/v1/sections/TwelveDays/useCalendarClock";
-import {
-  useCheckIn,
-  useSyncCheckIns,
-} from "@/components/v1/sections/TwelveDays/useCheckIn";
 
 /**
  * inngest.com/12-days-of-workflows — the Inngest × CodeTV holiday
@@ -31,35 +27,18 @@ import {
  * One clock for the whole page, so the hero countdown, the doors and
  * the song all flip at the same instant at midnight.
  *
- * Marking a lesson done also checks it in for the signed-in Inngest
- * user; signed out, the lesson offers sign-in and the trip back syncs
- * everything finished in this browser.
+ * Progress lives in this browser only; there's no sign-in. The email
+ * sign-up in Prizes is how people hear about each new door.
  */
 export default function TwelveDaysOfWorkflows() {
   const now = useCalendarClock();
   const { done, toggle } = useLessonProgress();
-  const { checkIn, signedOut, failed } = useCheckIn();
-  // The clock and stored progress load in the same first pass.
-  useSyncCheckIns({ ready: now !== null, done, checkIn });
-
-  const toggleDone = (day: number) => {
-    // Undo only changes this browser; a check-in stays recorded.
-    if (!done.includes(day)) checkIn([day]);
-    toggle(day);
-  };
 
   return (
     <PageShell>
       <div className="overflow-x-clip">
         <Hero now={now} />
-        <AdventCalendar
-          now={now}
-          done={done}
-          onToggleDone={toggleDone}
-          signedOut={signedOut}
-          failed={failed}
-          onRetry={(day) => checkIn([day])}
-        />
+        <AdventCalendar now={now} done={done} onToggleDone={toggle} />
         <Machine now={now} />
         <SongSoFar now={now} />
         <HowItOpens />

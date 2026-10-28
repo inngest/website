@@ -8,10 +8,10 @@ import {
   CALENDAR,
   CALENDAR_ID,
   COLORS,
-  PRIZES,
   DAYS,
   DOOR_FACES,
   DOOR_ORDER,
+  REF,
   unlockAt,
   unlockLabel,
   type WorkflowDay,
@@ -20,10 +20,6 @@ import {
   formatCountdown,
   useOpenedDoors,
 } from "@/components/v1/sections/TwelveDays/useCalendarClock";
-import {
-  doorId,
-  useSignInHref,
-} from "@/components/v1/sections/TwelveDays/useCheckIn";
 import {
   POSTER_EYEBROW,
   POSTER_TITLE,
@@ -44,18 +40,10 @@ export default function AdventCalendar({
   now,
   done,
   onToggleDone,
-  signedOut,
-  failed,
-  onRetry,
 }: {
   now: Date | null;
   done: number[];
   onToggleDone: (day: number) => void;
-  /** Nobody signed in: finished lessons offer sign-in to count. */
-  signedOut: boolean;
-  /** Lessons whose check-in didn't reach the server. */
-  failed: number[];
-  onRetry: (day: number) => void;
 }) {
   const gridRef = useRef<HTMLUListElement>(null);
   // Doors wait to pop until someone can see them, so the stagger isn't
@@ -122,7 +110,7 @@ export default function AdventCalendar({
             return (
               <li
                 key={day.day}
-                id={doorId(day.day)}
+                id={`day-${day.day}`}
                 className="h-full scroll-mt-24 list-none"
               >
                 <Door
@@ -136,9 +124,6 @@ export default function AdventCalendar({
                   onOpened={() => markOpened(day.day)}
                   done={done.includes(day.day)}
                   onToggleDone={() => onToggleDone(day.day)}
-                  signedOut={signedOut}
-                  failed={failed.includes(day.day)}
-                  onRetry={() => onRetry(day.day)}
                   countdown={
                     now && day.day === nextDay
                       ? formatCountdown(
@@ -178,9 +163,6 @@ function Door({
   countdown,
   done,
   onToggleDone,
-  signedOut,
-  failed,
-  onRetry,
 }: {
   day: WorkflowDay;
   unlocked: boolean;
@@ -191,12 +173,8 @@ function Door({
   countdown: string | null;
   done: boolean;
   onToggleDone: () => void;
-  signedOut: boolean;
-  failed: boolean;
-  onRetry: () => void;
 }) {
   const reduceMotion = useReducedMotion();
-  const signInHref = useSignInHref(day.day);
   const face = DOOR_FACES[(day.day - 1) % DOOR_FACES.length];
   const [open, setOpen] = useState(false);
   const [rattle, setRattle] = useState(0);
@@ -312,27 +290,14 @@ function Door({
             <pre className="shrink-0 overflow-x-auto rounded-md bg-[#010101] p-3 font-v1Mono text-[12px] leading-[18px] text-[#0BDD48]">
               <code>{day.code}</code>
             </pre>
-            {done && failed ? (
-              <button
-                type="button"
-                onClick={onRetry}
-                className="mt-auto self-start font-v1Label text-[12px] uppercase text-[#C42A1E] underline underline-offset-4"
-              >
-                {PRIZES.checkInFailed}
-              </button>
-            ) : done && signedOut ? (
-              <a
-                href={signInHref}
-                className="mt-auto font-v1Label text-[12px] uppercase underline underline-offset-4"
-              >
-                {PRIZES.signInToCount} <span aria-hidden="true">→</span>
-              </a>
-            ) : null}
-            <div
-              className={`${
-                done && (failed || signedOut) ? "" : "mt-auto "
-              }flex items-center justify-between gap-3 pt-1`}
+            {/* Sign-ups from each door are attributed to its day. */}
+            <a
+              href={`/sign-up?ref=${REF}-day-${day.day}`}
+              className="mt-auto self-start font-v1Label text-[12px] uppercase underline underline-offset-4"
             >
+              {CALENDAR.tryIt} <span aria-hidden="true">→</span>
+            </a>
+            <div className="flex items-center justify-between gap-3 pt-1">
               <Link
                 href={day.docs.href}
                 className="inline-flex items-center gap-2 font-v1Label text-[13px] uppercase underline-offset-4 hover:underline"

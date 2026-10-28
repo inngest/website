@@ -48,8 +48,7 @@ const PROGRESS_KEY = "12-days-of-workflows:done";
 
 /**
  * Which lessons this visitor has marked done. Lives in this browser
- * only: it's a convenience until sign-in with an Inngest account makes
- * raffle entries count, so every read and write is allowed to fail.
+ * only, so every read and write is allowed to fail.
  */
 export function useLessonProgress() {
   const [done, setDone] = useState<number[]>([]);

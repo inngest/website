@@ -14,7 +14,7 @@
  * page says lives here so those land as data edits, not layout changes.
  */
 
-/** Ref tag for links on this page, and for sign-ins it starts. */
+/** Ref tag for links on this page. Each door's sign-up adds `-day-N`. */
 export const REF = "12-days-of-workflows";
 
 /** Year the calendar runs. */
@@ -226,35 +226,27 @@ export const DOOR_FACES = [
 ];
 
 /**
- * The cron function that opens the doors, shown on the page: a trimmed
- * copy of `openTodaysDoor` in utils/twelveDays/doors.ts, which really
- * runs. Keep the two in step. (The doors themselves unlock from the
- * visitor's clock, see useCalendarClock; the function sends everyone's
- * "Day N is open" email.)
+ * The cron function that opens the doors, shown on the page.
+ *
+ * NOT WIRED UP: the page unlocks doors from the visitor's clock (see
+ * useCalendarClock), so nothing has to run on a server.
  */
 export const UNLOCK_FUNCTION = `inngest.createFunction(
   {
-    id: "12-days-open-todays-door",
-    triggers: [
+    id: "open-todays-door",
+    triggers: {
       // Midnight Eastern, every weekday in December.
-      { cron: "TZ=America/New_York 0 0 * 12 1-5" },
-    ],
+      cron: "TZ=America/New_York 0 0 * 12 1-5",
+    },
   },
   async ({ step }) => {
     const day = await step.run("which-door", () =>
-      doorFor(new Date())
+      calendar.doorFor(new Date())
     );
     if (!day) return; // Outside December 3–18.
-
-    const people = await step.run("list-participants",
-      () => participants()
+    await step.run("open-door", () =>
+      calendar.open(day)
     );
-    // Fan out: one run per person sleeps until 9 AM,
-    // emails them, then waits for the lesson.
-    await step.sendEvent("fan-out", people.map((p) => ({
-      name: "website/12-days.door.opened",
-      data: { ...p, day },
-    })));
   }
 );`;
 
@@ -284,6 +276,8 @@ export const CALENDAR = {
   subtitle: "The workflows are still wrapping themselves.",
   body: "One new workflow unlocks every weekday, December 3–18. Come back for a short lesson, runnable code, and the docs to make it your own. Miss a day? Catch up whenever you like.",
   completed: "Completed ✓",
+  /** Each door's sign-up link. */
+  tryIt: "Try it free",
 } as const;
 
 export const HOW_IT_OPENS = {
@@ -305,7 +299,7 @@ export const HOW_IT_OPENS = {
 export const PRIZES = {
   eyebrow: "Finish the run",
   title: "The nice list has a progress bar.",
-  body: "Sign in with your Inngest account to save your progress. Every completed lesson brings you closer to exclusive holiday merch and raffle entries.",
+  body: "Get an email when each door opens. Every completed lesson brings you closer to exclusive holiday merch and raffle entries.",
   items: [
     {
       kicker: "Every lesson",
@@ -323,12 +317,15 @@ export const PRIZES = {
       body: "Complete the full set for a chance at a special-edition piece.",
     },
   ],
-  // Links through sign-in and back to the calendar (useSignInHref).
-  cta: { label: "Sign in and start collecting" },
-  /** On a finished lesson, when nobody is signed in. */
-  signInToCount: "Sign in to count it",
-  /** On a finished lesson whose check-in didn't reach the server. */
-  checkInFailed: "Couldn't save · Retry",
+  /** The email sign-up (EmailSignup.tsx). */
+  signup: {
+    label: "Email address",
+    placeholder: "you@company.com",
+    button: "Email me each door",
+    sending: "Signing you up…",
+    sent: "You're on the list. See you at the next door.",
+    failed: "That didn't go through. Try again?",
+  },
 } as const;
 
 export const FINALE = {
