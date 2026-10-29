@@ -57,7 +57,7 @@ export const reviewer = agents.agent(
         model: claude,
         system:
           "Review the pull request checked out in /work/app. Run its tests and read the changed files. Report problems first, with file and line.",
-        prompt: message.content ?? "",
+        prompt: message,
         tools: sandboxTools,
         ...control,
       });

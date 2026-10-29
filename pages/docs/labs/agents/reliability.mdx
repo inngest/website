@@ -29,7 +29,7 @@ export const budgeted = agents.agent(
 
     const result = await agent.loop({
       model: claude,
-      prompt: message?.content ?? "",
+      prompt: message ?? "",
       maxTurns: 10,
       ...control,
     });
@@ -157,7 +157,7 @@ export const resume = agents.agent(
     }
 
     for await (const message of inbox) {
-      console.log(message.content);
+      console.log(message.name);
     }
   },
 );
@@ -213,7 +213,7 @@ export const recovering = agents.agent(
   },
   async ({ inbox }) => {
     for await (const message of inbox) {
-      console.log(message.content);
+      console.log(message.name);
     }
   },
 );

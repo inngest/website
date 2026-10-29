@@ -29,7 +29,7 @@ export const triage = agents.agent(
     for await (const message of inbox) {
       const result = await agent.loop({
         model: claude,
-        prompt: message.content ?? "",
+        prompt: message,
         ...control,
       });
 

@@ -23,7 +23,7 @@ export const support = agents.agent(
     for await (const message of inbox) {
       const result = await agent.loop({
         model: claude,
-        prompt: message.content ?? "",
+        prompt: message,
         history: (await kv.thread.get(history)) ?? [],
         ...control,
       });
@@ -84,7 +84,7 @@ export const account = agents.agent({ id: "account" }, async ({ inbox }) => {
     await agent.loop({
       model: claude,
       system: `What we know about this customer: ${known.join("; ")}`,
-      prompt: message.content ?? "",
+      prompt: message,
     });
   }
 });
@@ -169,8 +169,8 @@ export const billing = agents.agent(
   },
   async ({ inbox }) => {
     const message = await inbox.next();
-    if (message?.kind === "request") {
-      await message.reply({ refundable: message.payload.orderId !== "" });
+    if (message?.name === "agent/request") {
+      await message.reply({ refundable: message.data.payload.orderId !== "" });
     }
   },
 );
@@ -180,11 +180,10 @@ export const billing = agents.agent(
 import { agents } from "../client";
 import { billing } from "./billing";
 
-export const refunds = agents.agent({ id: "refunds" }, async ({ inbox }) => {
-  const message = await inbox.next();
+export const refunds = agents.agent({ id: "refunds" }, async () => {
   const answer = await billing
     .thread("acct-9")
-    .request({ orderId: message?.content ?? "" }, { timeout: "5m" });
+    .request({ orderId: "A-100" }, { timeout: "5m" });
 
   return answer?.refundable ? "refund" : "no refund";
 });

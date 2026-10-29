@@ -22,7 +22,7 @@ export const support = agents.agent(
     for await (const message of inbox) {
       await agent.loop({
         model: claude,
-        prompt: message.content ?? "",
+        prompt: message,
         ...control,
       });
     }
@@ -42,19 +42,21 @@ Lets steering and stop messages reach the running turn.
 
 ## Read messages
 
-Every message has a `kind`. A `user` message starts the next turn, a `steer` message redirects the current one, and a `request` waits for a reply. `stop` never reaches the inbox.
+Every message is a plain event: `{ id, name, data, ts, seq }`. `agent/message` starts the next turn, `agent/steer` redirects the current one, and `agent/request` waits for a reply. `agent/stop` never reaches the inbox.
 
-```typescript {{ title: "inngest/agents/kinds.ts" }}
+```typescript {{ title: "inngest/agents/names.ts" }}
 import { agents } from "../client";
 
-export const kinds = agents.agent({ id: "kinds" }, async ({ inbox }) => {
+export const names = agents.agent({ id: "names" }, async ({ inbox }) => {
   for await (const message of inbox) {
-    if (message.kind === "steer") {
-      console.log("redirect", message.content);
-    }
+    switch (message.name) {
+      case "agent/steer":
+        console.log("redirect", message.data.text);
+        break;
 
-    if (message.kind === "request") {
-      await message.reply({ seen: message.payload });
+      case "agent/request":
+        await message.reply({ seen: message.data.payload });
+        break;
     }
   }
 });
@@ -64,7 +66,7 @@ export const kinds = agents.agent({ id: "kinds" }, async ({ inbox }) => {
 
 ## Steer a running turn
 
-Send a `steer` message while the agent works. With `...control` in the loop, it joins the next model call. Stopping works the same way.
+Send an `agent/steer` event while the agent works. With `...control` in the loop, it joins the next model call. Stopping works the same way.
 
 ```typescript {{ title: "app/steer.ts" }}
 import { support } from "../inngest/agents/support";
@@ -144,13 +146,13 @@ export const collect = inngest.createFunction(
 - The newest request wins: `inbox.of(type).unread()`, then take the last.
 - Never block: `inbox.next({ timeout: 0 })`.
 - New instructions mid-turn: `steer` with `...control`.
-- Plain user messages to join the turn too: `foldMessages: "all"`.
+- `agent/message` events to join the turn too: `foldMessages: "all"`.
 - Acknowledge a message that reaches a busy thread: `onArrival`.
 - Listen to another event: an `inbox` source in the config, or `inbox.listen()`.
 
 ## Options
 
-`onArrival` runs for each message that reaches a busy thread, in its own function, so it never waits for the turn. `foldMessages: "all"` also folds `user` messages into the running turn; the default is `"steer"`.
+`onArrival` runs for each message that reaches a busy thread, in its own function, so it never waits for the turn. `foldMessages: "all"` also folds `agent/message` events into the running turn; the default is `"steer"`.
 
 <AnnotatedCode>
 
@@ -161,23 +163,23 @@ export const ack = agents.agent(
   {
     id: "ack",
     foldMessages: "all",
-    onArrival: async ({ thread, message, step }) => {
+    onArrival: async ({ thread, event, step }) => {
       await step.sendEvent("ack", {
         name: "support/ack",
-        data: { thread, kind: message.kind },
+        data: { thread, name: event.name },
       });
     },
   },
   async ({ inbox }) => {
     for await (const message of inbox) {
-      console.log(message.content);
+      console.log(message.name, message.data);
     }
   },
 );
 ```
 
 <Annotation id="fold" lines="6" tease='default "steer"' title="foldMessages" href="#gotchas" linkText="Gotchas">
-Folds `user` messages into the running turn too.
+Folds `agent/message` events into the running turn too.
 </Annotation>
 
 <Annotation id="arrival" lines="7-12" tease="runs in its own function" title="onArrival" href="#how-it-works" linkText="How it works">

@@ -43,9 +43,6 @@ export const coder = agents.agent(
     on: {
       event: codingRequested,
       thread: '"coder:" + event.data.repo + ":" + event.data.task',
-      message: (event) => {
-        return event.data.task;
-      },
     },
     sandboxes: { work: workbench },
   },
@@ -70,9 +67,8 @@ export const coder = agents.agent(
 
     const result = await agent.loop({
       model: claude,
-      system:
-        "Make the change on a branch named agent/<short-name>, run the tests, then push the branch. Say which branch you pushed.",
-      prompt: `${message?.content ?? ""}\nThe repo is at ${checkout.path}`,
+      system: `Make the change on a branch named agent/<short-name>, run the tests, then push the branch. Say which branch you pushed. The repo is at ${checkout.path}`,
+      prompt: message ?? "",
       tools: checkout.tools,
       ...control,
     });
@@ -82,19 +78,19 @@ export const coder = agents.agent(
 );
 ```
 
-<Annotation id="trigger" lines="16-22" tease="a typed task" title="Start from an event" href="/docs/labs/agents/agents-and-triggers?ref=docs-labs-agents-recipes-coding-agent" linkText="Agents and triggers">
+<Annotation id="trigger" lines="16-19" tease="a typed task" title="Start from an event" href="/docs/labs/agents/agents-and-triggers?ref=docs-labs-agents-recipes-coding-agent" linkText="Agents and triggers">
 The thread is the repository plus the task, so a repeat request joins the same run.
 </Annotation>
 
-<Annotation id="checkout" lines="30-42" tease="clone with a read token" title="Check out and push from the host" href="/docs/labs/agents/sandboxes-and-code?ref=docs-labs-agents-recipes-coding-agent" linkText="Sandboxes and code">
+<Annotation id="checkout" lines="27-39" tease="clone with a read token" title="Check out and push from the host" href="/docs/labs/agents/sandboxes-and-code?ref=docs-labs-agents-recipes-coding-agent" linkText="Sandboxes and code">
 The sandbox holds a read token. Pushes go through your policy and a write token on your host.
 </Annotation>
 
-<Annotation id="tools" lines="49" tease="code tools plus push" title="Tools" href="/docs/labs/agents/sandboxes-and-code?ref=docs-labs-agents-recipes-coding-agent" linkText="Sandboxes and code">
+<Annotation id="tools" lines="45" tease="code tools plus push" title="Tools" href="/docs/labs/agents/sandboxes-and-code?ref=docs-labs-agents-recipes-coding-agent" linkText="Sandboxes and code">
 Read, write, edit, search and run in the checkout, plus `push`.
 </Annotation>
 
-<Annotation id="return" lines="53" tease="the run's result" title="Return" href="/docs/labs/agents/teams-of-agents?ref=docs-labs-agents-recipes-coding-agent" linkText="Teams of agents">
+<Annotation id="return" lines="49" tease="the run's result" title="Return" href="/docs/labs/agents/teams-of-agents?ref=docs-labs-agents-recipes-coding-agent" linkText="Teams of agents">
 A caller that uses `agent.invoke` gets this value back.
 </Annotation>
 

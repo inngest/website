@@ -23,14 +23,11 @@ export const support = agents.agent(
     on: {
       event: ticketOpened,
       thread: '"ticket:" + event.data.ticketId',
-      message: (event) => {
-        return event.data.subject;
-      },
     },
   },
   async ({ inbox, control }) => {
     for await (const message of inbox) {
-      await agent.loop({ model: claude, prompt: message.content ?? "", ...control });
+      await agent.loop({ model: claude, prompt: message, ...control });
     }
   },
 );
@@ -44,8 +41,8 @@ Each `support/ticket.opened` event starts the agent.
 Same key, same conversation. It is a string expression, not a function.
 </Annotation>
 
-<Annotation id="message" lines="12-14" tease="the first message" title="First message" href="/docs/labs/agents/inboxes?ref=docs-labs-agents-agents-and-triggers" linkText="Inboxes">
-Arrives as `message.content` in the inbox.
+<Annotation id="message" lines="16" tease="the first message" title="First message" href="/docs/labs/agents/inboxes?ref=docs-labs-agents-agents-and-triggers" linkText="Inboxes">
+Arrives in the inbox as the event itself. The model reads its `data` as JSON.
 </Annotation>
 
 </AnnotatedCode>
@@ -65,8 +62,7 @@ await inngest.send(
   agentMessage.create({
     agent: "support/support",
     thread: "ticket:T-1",
-    kind: "user",
-    content: "Or send the event yourself",
+    text: "Or send the event yourself",
   }),
 );
 ```
@@ -109,7 +105,7 @@ export const digest = agents.agent(
 
 ## Combine triggers
 
-Give `on` a list. Each trigger types its own `message` from its own event, and `trigger.name` narrows the body.
+Give `on` a list. Each trigger types its own event, and `trigger.name` narrows the body.
 
 ```typescript {{ title: "inngest/agents/watcher.ts" }}
 import { agents } from "../client";
@@ -170,9 +166,6 @@ export const options = agents.agent(
       event: ticketOpened,
       thread: '"ticket:" + event.data.ticketId',
       if: 'event.data.priority == "high"',
-      message: (event) => {
-        return event.data.subject;
-      },
     },
   },
   async ({ trigger }) => {
@@ -181,7 +174,7 @@ export const options = agents.agent(
 );
 ```
 
-`thread` has no default for events: without it, every event is a new thread. `if` is a CEL expression over `event`. `message` defaults to no first message.
+`thread` has no default for events: without it, every event is a new thread. `if` is a CEL expression over `event`. The event reaches the inbox as it was sent, and `agent.loop()` words it for the model.
 
 ## Gotchas
 
@@ -193,7 +186,7 @@ export const options = agents.agent(
 ## How it works
 
 - `agents.agent()` registers an Inngest function. `agents.functions()` returns all of them.
-- A message is an `agent/message` event. A start event is turned into the first message.
+- Everything in the inbox is a plain event. A start event is the first one.
 - One run is live per thread.
 
 ## Recipes and reference

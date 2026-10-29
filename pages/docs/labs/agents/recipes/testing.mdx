@@ -134,7 +134,7 @@ export function createApp(options: AppOptions) {
       for await (const message of inbox) {
         const result = await agent.loop({
           model: options.model,
-          prompt: message.content ?? "",
+          prompt: message,
           tools: { lookup },
           ...control,
         });

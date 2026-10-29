@@ -141,10 +141,10 @@ export const support = agents.agent(
   },
   async ({ inbox, control, sandboxTools, thread }) => {
     for await (const message of inbox) {
-      if (message.kind === "user") {
+      if (message.name === "agent/message") {
         const result = await agent.loop({
           model: claude,
-          prompt: message.content ?? "",
+          prompt: message,
           tools: { ...sandboxTools, lookup_order: lookupOrder },
           ...control,
         });
@@ -162,10 +162,9 @@ What `onArrival` receives.
 
 | Field | Description |
 | --- | --- |
-| `message` | The [thread message](#thread-messages) that arrived. |
 | `thread` | The thread key. |
 | `ref` | The agent's address. |
-| `event` | The event that carried the message: `{ id?, name, data }`. |
+| `event` | The [event](#thread-messages) that arrived: `{ id?, name, data }`. |
 | `step` | The function's step tools, so each post is a durable step. |
 | `logger` | The function's logger. |
 
@@ -175,7 +174,7 @@ The second argument of `agents.agent()`. It receives the function context of the
 
 | Field | Type | Description |
 | --- | --- | --- |
-| `event` | `{ name, data: ThreadMessage }` | The event that started the run. `data.event` is the trigger event. |
+| `event` | `{ name, data: AgentStartData }` | The event that started the run. `data.event` is the trigger event. |
 | `trigger` | trigger event or `undefined` | The `on` event that started the run, typed from `on`. `undefined` when a plain thread message started it. |
 | `depth` | `number` | How many agents deep this run is when `agent.invoke()` started it: 1 for an agent a function that is not an agent invoked, 2 for the next. `0` when anything else started it, including a later run of an invoked agent's thread. |
 | `thread` | [`ThreadHandle`](#thread-handles) | The handle of this run's thread. |
@@ -196,7 +195,7 @@ Name the types of a body with one bag, `AgentBody<{ event?, output?, request?, r
 
 | Field | Description |
 | --- | --- |
-| `steer()` | Returns the steering messages that arrived during a turn, for the next model call. |
+| `steer()` | Returns the steering events that arrived during a turn, for the next model call. |
 | `stop()` | Returns `true` when a stop message arrived. |
 | `onTurn(turn)` | Records the turn, usage, and summary for `thread.state()`. If you pass your own `onTurn`, put `...control` first and call `control.onTurn(turn)` from yours. |
 | `budget()` | The reason the budget is spent, or `undefined`. |
@@ -238,18 +237,18 @@ Stop messages are skipped while the agent waits for its next message.
 
 ### Thread messages
 
-A `ThreadInboxMessage` is the event it was made from, flat (`id`, `name`, `data`, `ts`, `seq`), with the fields of a thread message beside it.
+A `ThreadInboxMessage` is a plain event: `id`, `name`, `data`, `ts`, `seq`. `switch (message.name)` narrows `data`. Every thread event also has `agent` and `thread` in `data`.
 
-| `kind` | Fields | Meaning |
+| `name` | `data` | Meaning |
 | --- | --- | --- |
-| `"user"` | `content?` | Starts the next turn. |
-| `"steer"` | `content` | Folded into the turn that is running. |
-| `"stop"` | `when: "nextTurn"` | Asks the thread to stop. Never starts a run. |
-| `"request"` | `payload`, `replyTo`, `from?` | A question from another thread. |
+| `agent/message` | `text` | Starts the next turn. |
+| `agent/steer` | `text` | Folded into the turn that is running. |
+| `agent/stop` | `when: "nextTurn"` | Asks the thread to stop. Never starts a run. |
+| `agent/request` | `payload`, `replyTo`, `from?` | A question from another thread. |
 
-Every message also has `agent`, `thread`, and `event?` (the trigger event). `message.reply(data)` answers a `"request"` as a step; it throws for other kinds.
+Events from your triggers and inbox sources arrive as they were sent. `message.reply(data)` exists on `agent/request` messages only, and answers as a step.
 
-Types: `ThreadMessage`, `ThreadUserMessage`, `ThreadSteerMessage`, `ThreadStopMessage`, `ThreadRequestMessage`, `ThreadInbox`, `ThreadInboxMessage`.
+Types: `AgentMessageData`, `AgentSteerData`, `AgentStopData`, `AgentRequestData`, `ThreadInbox`, `ThreadInboxMessage`.
 
 ### InboxSource
 
@@ -258,7 +257,6 @@ Types: `ThreadMessage`, `ThreadUserMessage`, `ThreadSteerMessage`, `ThreadStopMe
 | `event` | `string \| EventType` | The event. |
 | `thread` | CEL `string` | Maps the event to the thread key. |
 | `if` | CEL `string` | The event must match. At least one of `thread` and `if` is required. |
-| `message` | `(event) => string` | Text for the model when folded into a turn. Default: name and data as JSON. |
 
 `ThreadListener` has `stop()` and is `AsyncDisposable`.
 
@@ -280,11 +278,11 @@ interface ThreadOptions {
 | Member | Description |
 | --- | --- |
 | `agent`, `key`, `session` | Identity of the thread. |
-| `send(message)` | Starts the next turn, and a run if none is live. A step inside a function. |
-| `steer(message)` | Folds into the turn that is running. |
-| `stop({ when })` | `"nextTurn"` stops before the next model call. `"now"` cancels the live run through the API. Returns `{ stopped }`; `false` when nothing was live. |
+| `send(text)` | Sends `agent/message`: starts the next turn, and a run if none is live. A step inside a function. |
+| `steer(text)` | Sends `agent/steer`: folds into the turn that is running. |
+| `stop({ when })` | Sends `agent/stop`. `"nextTurn"` stops before the next model call. `"now"` cancels the live run through the API. Returns `{ stopped }`; `false` when nothing was live. |
 | `state()` | Returns `ThreadState`. Works when no run is live. |
-| `request(payload, options?)` | Asks and waits for the reply. Inside a function only. `options.timeout` default `"1h"`. Resolves to the reply or `null` on timeout. |
+| `request(payload, options?)` | Sends `agent/request` and waits for the reply. Inside a function only. `options.timeout` default `"1h"`. Resolves to the reply or `null` on timeout. |
 
 ```typescript {{ title: "inngest/threads.ts" }}
 import { getThread, listThreads } from "inngest/experimental/agents";
@@ -344,8 +342,8 @@ Experimental: the Insights query is unverified on Inngest Cloud, and the Dev Ser
 | --- | --- |
 | `"event/name"` | A plain event name (no wildcard, not `agent/message`). |
 | `eventType(...)` | Types and validates the event data. |
-| `{ event, if?, thread?, session?, message? }` | `ThreadEventTrigger`. `if` filters. `message(event)` gives the text of the message. |
-| `{ cron, jitter?, thread?, session?, message? }` | `ThreadCronTrigger`. One thread per agent unless `thread` is set. |
+| `{ event, if?, thread?, session? }` | `ThreadEventTrigger`. `if` filters. |
+| `{ cron, jitter?, thread?, session? }` | `ThreadCronTrigger`. One thread per agent unless `thread` is set. |
 | `invoke(schema)` | Makes the agent callable with `agent.invoke()`. |
 | `slack.thread(...)`, `github.thread(...)` | [Channel triggers](#slack-and-github). |
 
@@ -379,7 +377,8 @@ agent.loop(options: AgentLoopOptions): Promise<AgentLoopResult>
 | Option | Type | Default | Description |
 | --- | --- | --- | --- |
 | `model` | `AgentModel` | required | Called once per turn. |
-| `prompt` | `string` | required | The first user message. |
+| `prompt` | `string \| AgentContentBlock[] \| AgentEvent` | required | The first user message. An event, such as an inbox message, goes through `format`. |
+| `format` | `(event) => string \| AgentContentBlock[]` | `data.text` of `agent/message` and `agent/steer`; JSON of `{ event, data }` otherwise | What the model sees for an event. |
 | `tools` | tools record | none | Tools the model can call. |
 | `id` | `string` | `"agent"` | Prefix of step IDs. A second loop with the same prefix in one run gets `-2`, a third `-3`. |
 | `system` | `string` | none | System prompt. |
@@ -388,7 +387,7 @@ agent.loop(options: AgentLoopOptions): Promise<AgentLoopResult>
 | `parallelTools` | `boolean` | `true` | Run the tool calls of one reply at once. |
 | `maxTurns` | `number` | `40` | Most model calls. |
 | `history` | `AgentMessage[]` | none | History of an earlier result, to continue. |
-| `steer` | `(turn) => Promise<string[] \| undefined>` | none | Strings returned reach the model as user messages. |
+| `steer` | `(turn) => Promise<AgentInput[] \| undefined>` | none | Text, blocks or events returned reach the model as user messages. |
 | `stop` | `(turn) => Promise<boolean>` | none | `true` ends the loop with `stopped: "stopped"`. |
 | `budget` | `(turn) => string \| undefined` | none | A reason ends the loop with `stopped: "budget"`. |
 | `wrapUp` | `string` | none | Text for the last turn, with no tool use allowed. |
@@ -840,6 +839,6 @@ Framework scores (`AgentScoreName`): `agent.model_ms`, `agent.tool_calls`, `agen
 
 | Export | Description |
 | --- | --- |
-| `agentMessage` | The event type of every thread message, `"agent/message"`, with a typed schema. `agentMessage.create(message)` builds one. |
+| `agentMessage`, `agentSteer`, `agentStop`, `agentRequest` | The event types of the thread events, with typed schemas. `agentMessage.create({ agent, thread, text })` builds one. |
 | `agentMessageEvent` | The string `"agent/message"`. |
 | `skillsBake` | Event type `"agent/skills.bake"`, sent when a sandbox misses a baked skills snapshot. See [Sandboxes reference](/docs/labs/agents/reference-sandboxes?ref=docs-labs-agents-reference#skills). |

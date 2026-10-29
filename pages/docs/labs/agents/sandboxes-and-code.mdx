@@ -23,7 +23,7 @@ export const coder = agents.agent(
     for await (const message of inbox) {
       await agent.loop({
         model: claude,
-        prompt: message.content ?? "",
+        prompt: message,
         tools: sandboxTools,
         ...control,
       });
@@ -108,7 +108,7 @@ export const pairer = agents.agent(
   { id: "pairer", sandboxes: { work: project } },
   async ({ inbox, sandboxes, sandboxTools, control }) => {
     for await (const message of inbox) {
-      await agent.loop({ model: claude, prompt: message.content ?? "", tools: sandboxTools, ...control });
+      await agent.loop({ model: claude, prompt: message, tools: sandboxTools, ...control });
 
       await sandboxes.work.recycle();
     }

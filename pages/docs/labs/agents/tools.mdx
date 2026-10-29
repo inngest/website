@@ -46,7 +46,7 @@ import { refund } from "../tools/refund";
 
 export const billing = agents.agent({ id: "billing" }, async ({ inbox, control }) => {
   for await (const message of inbox) {
-    await agent.loop({ model: claude, prompt: message.content ?? "", tools: { getOrder, refund }, ...control });
+    await agent.loop({ model: claude, prompt: message, tools: { getOrder, refund }, ...control });
   }
 });
 ```
@@ -182,7 +182,7 @@ export const releaseWatcher = agents.agent(
   async ({ inbox, inboxTools }) => {
     const message = await inbox.next();
 
-    await agent.loop({ model: claude, prompt: message?.content ?? "", tools: { ...inboxTools } });
+    await agent.loop({ model: claude, prompt: message ?? "", tools: { ...inboxTools } });
   },
 );
 ```

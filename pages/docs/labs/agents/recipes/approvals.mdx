@@ -113,7 +113,7 @@ export const merger = agents.agent(
         model: claude,
         system:
           "Merge the pull request the user names, but only if it can merge.",
-        prompt: message.content ?? "",
+        prompt: message,
         tools: {
           findPullRequest,
           mergePullRequest: mergePullRequest(main),

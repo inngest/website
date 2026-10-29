@@ -40,7 +40,8 @@ export const fixer = agents.agent(
 
       await agent.loop({
         model: claude,
-        prompt: `${message.content ?? ""}\nThe repo is at ${checkout.path}`,
+        system: `The repo is at ${checkout.path}`,
+        prompt: message,
         tools: checkout.tools,
         ...control,
       });
@@ -181,7 +182,7 @@ export const pushOnly = agents.agent(
 
       await agent.loop({
         model: claude,
-        prompt: message.content ?? "",
+        prompt: message,
         tools: {
           ...sandboxTools,
           git_push: gitPushTool(sandbox, {
@@ -236,7 +237,7 @@ export const hostPusher = agents.agent(
 
       await agent.loop({
         model: claude,
-        prompt: message.content ?? "",
+        prompt: message,
         tools: checkout.tools,
         ...control,
       });

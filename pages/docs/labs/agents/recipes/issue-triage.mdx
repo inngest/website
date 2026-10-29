@@ -33,20 +33,15 @@ export const triage = agents.agent(
     on: {
       event: issueOpened,
       thread: '"issue:" + event.data.repo + "#" + string(int(event.data.number))',
-      message: (event) => {
-        return `${event.data.title}\n\n${event.data.body}`;
-      },
     },
   },
-  async ({ inbox, trigger, control }) => {
-    const issue = `${trigger?.data.repo}#${trigger?.data.number}`;
-
+  async ({ inbox, control }) => {
     for await (const message of inbox) {
       await agent.loop({
         model: claude,
         system:
           "Triage new issues. Search for similar open issues, then label the issue and comment once. Link duplicates.",
-        prompt: `Issue ${issue}\n\n${message.content ?? ""}`,
+        prompt: message,
         tools: { findSimilar, applyTriage },
         ...control,
       });
@@ -55,15 +50,11 @@ export const triage = agents.agent(
 );
 ```
 
-<Annotation id="event" lines="11-17" tease="a typed event starts it" title="Start from an event" href="/docs/labs/agents/agents-and-triggers?ref=docs-labs-agents-recipes-issue-triage" linkText="Agents and triggers">
-Your webhook route sends `github/issue.opened`. `thread` names the thread after the issue.
+<Annotation id="event" lines="11-14" tease="a typed event starts it" title="Start from an event" href="/docs/labs/agents/agents-and-triggers?ref=docs-labs-agents-recipes-issue-triage" linkText="Agents and triggers">
+Your webhook route sends `github/issue.opened`. `thread` names the thread after the issue, and the model reads the event as JSON.
 </Annotation>
 
-<Annotation id="trigger" lines="20" tease="the event itself" title="Read the trigger" href="/docs/labs/agents/agents-and-triggers?ref=docs-labs-agents-recipes-issue-triage" linkText="Agents and triggers">
-`trigger.data` is typed from the event.
-</Annotation>
-
-<Annotation id="tools" lines="28" tease="search, then act" title="Two tools" href="/docs/labs/agents/tools?ref=docs-labs-agents-recipes-issue-triage" linkText="Tools">
+<Annotation id="tools" lines="23" tease="search, then act" title="Two tools" href="/docs/labs/agents/tools?ref=docs-labs-agents-recipes-issue-triage" linkText="Tools">
 The model searches first, then labels and comments in one call.
 </Annotation>
 

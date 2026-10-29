@@ -49,7 +49,7 @@ export const lead = agents.agent(
       model: claude,
       system:
         "Split the request. Ask the researcher for facts and the coder for code, then combine their answers.",
-      prompt: message?.content ?? "",
+      prompt: message ?? "",
       tools: { research, code },
       ...control,
     });

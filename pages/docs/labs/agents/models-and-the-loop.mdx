@@ -23,7 +23,7 @@ export const triage = agents.agent({ id: "triage" }, async ({ inbox }) => {
   const result = await agent.loop({
     model: claude,
     system: "You answer questions about orders.",
-    prompt: message?.content ?? "",
+    prompt: message ?? "",
     tools: { getOrder },
   });
 
@@ -120,7 +120,7 @@ export const followUp = agents.agent({ id: "follow-up" }, async ({ inbox }) => {
   let history: AgentMessage[] = [];
 
   for await (const message of inbox) {
-    const result = await agent.loop({ model: claude, prompt: message.content ?? "", history });
+    const result = await agent.loop({ model: claude, prompt: message, history });
 
     history = result.history;
   }
@@ -143,7 +143,7 @@ export const long = agents.agent({ id: "long" }, async ({ inbox }) => {
 
   const result = await agent.loop({
     model: claude,
-    prompt: message?.content ?? "",
+    prompt: message ?? "",
     compaction: { maxTokens: 700_000, keep: 8 },
   });
 
