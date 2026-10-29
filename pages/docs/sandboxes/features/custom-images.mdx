@@ -4,10 +4,14 @@ export const description =
 
 # Custom images
 
-Use a custom image when your sandbox needs application code, dependencies, or
+> Build an image with Docker, publish it to your workspace, and start Sandboxes with your code and dependencies already installed.
+
+> **Open beta.** The image build API, Sandbox API, and limits may change. Use this beta for evaluation and feedback.
+
+Use a custom image when your Sandbox needs application code, dependencies, or
 tools that are not in the default image. Build the image with Docker locally,
 upload a saved image archive, and wait for Inngest to publish it. Then select
-that image when creating a sandbox.
+that image when creating a Sandbox.
 
 Image selection and image building are separate operations. The SDK's
 `image.custom()` helper selects an already-published image; it does not run
@@ -199,7 +203,7 @@ upload. `uploaded` covers conversion and publication; there is no separate
 The published reference is `my-python:v1`. Save its `artifactDigest` when you
 need to identify the exact artifact independently of a tag.
 
-## 5. Launch a sandbox from the image
+## 5. Launch a Sandbox from the image
 
 Use the published image from trusted server-side code:
 
@@ -241,17 +245,17 @@ layer; use [workspace secrets](/docs/sandboxes/features/secrets) at launch.
 
 ## How the image's command runs
 
-A sandbox starts the image's `ENTRYPOINT` and `CMD` the way `docker run`
+A Sandbox starts the image's `ENTRYPOINT` and `CMD` the way `docker run`
 does, with the image's `ENV` and `WORKDIR`:
 
-- If the image sets a command, that command owns the sandbox's lifetime. When
-  it exits, with any exit code, the sandbox stops and becomes `TERMINATED`.
+- If the image sets a command, that command owns the Sandbox's lifetime. When
+  it exits, with any exit code, the Sandbox stops and becomes `TERMINATED`.
   The Flask example above keeps running because its server never exits.
 - Many base images default to a command that exits right away. For example,
-  `alpine` runs `/bin/sh`, so a sandbox from an unchanged `alpine` image
-  stops right after it boots. To run commands in a sandbox, give the image a
+  `alpine` runs `/bin/sh`, so a Sandbox from an unchanged `alpine` image
+  stops right after it boots. To run commands in a Sandbox, give the image a
   long-running command such as a server or `CMD ["tail", "-f", "/dev/null"]`.
-- If the image sets neither `ENTRYPOINT` nor `CMD`, the sandbox stays
+- If the image sets neither `ENTRYPOINT` nor `CMD`, the Sandbox stays
   `RUNNING` until you stop or destroy it, like the default image.
 
 Commands run as `root`. A Dockerfile `USER` instruction is recorded but not
@@ -271,8 +275,8 @@ exposed through these APIs.
 
 To change an image, build and save a new local version, then repeat the upload
 flow. Prefer a new tag such as `v2` when you want to keep versions distinct.
-Existing sandboxes keep their pinned artifact; publishing another version
-does not update them. Use a new sandbox name to launch the new version.
+Existing Sandboxes keep their pinned artifact; publishing another version
+does not update them. Use a new Sandbox name to launch the new version.
 
 ## Limits and failure handling
 
@@ -282,7 +286,7 @@ does not update them. Use a new sandbox name to launch the new version.
 - Image names are workspace-local. Use a name such as `my-python`, not an
   `inngest/` name or a container registry URL.
 - At most ten unfinished builds are allowed per workspace. Builds use
-  temporary sandbox capacity and count against account runtime concurrency.
+  temporary Sandbox capacity and count against account runtime concurrency.
 - Invalid input returns `400 invalid_field_format`. Commit can return
   `400 image_upload_invalid` if the upload is missing or does not match its
   declaration. A checksum mismatch can also reject the storage upload or fail
@@ -296,5 +300,5 @@ does not update them. Use a new sandbox name to launch the new version.
 
 See [image selection](/docs/sandboxes/features/base-images#select-a-published-image)
 for tags and digest references, and
-[troubleshooting](/docs/sandboxes/troubleshooting) for sandbox
+[troubleshooting](/docs/sandboxes/troubleshooting) for Sandbox
 launch and runtime errors.
