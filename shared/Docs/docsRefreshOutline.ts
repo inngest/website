@@ -797,6 +797,10 @@ export const docsRefreshOutline: DocsRefreshPage[] = [
             href: "/docs/labs/ci/quick-start",
           },
           {
+            title: "Project structure",
+            href: "/docs/labs/ci/structure",
+          },
+          {
             title: "Run CI locally",
             href: "/docs/labs/ci/local",
           },

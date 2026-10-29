@@ -13,7 +13,7 @@ export const description = "Inngest CI machines are Sandboxes that run a job's c
 
 <AnnotatedCode>
 
-```typescript {{ title: "ci/jobs.ts" }}
+```typescript {{ title: "ci/jobs/verify.ts" }}
 const verify = ci.job({ id: "verify", machine: { vcpu: 4 } }, async () => {
   await checkout();
 
@@ -46,7 +46,7 @@ Plain `$` runs on the job's own machine.
 
 ## Choose a size
 
-```typescript {{ title: "TypeScript" }}
+```typescript {{ title: "ci/jobs/build.ts" }}
 machine: { vcpu: 1 } // 1 GiB
 machine: { vcpu: 2 } // 2 GiB, default
 machine: { vcpu: 4 } // 4 GiB
@@ -60,7 +60,7 @@ Set it on a job, a pipeline, or `createCi`. The first one set wins, in that orde
   Machines cannot reach each other yet. Run servers on the job's machine and use `127.0.0.1`.
 </Warning>
 
-```typescript {{ title: "TypeScript" }}
+```typescript {{ title: "ci/jobs/e2e.ts" }}
 await $`pnpm start`.background();
 await waitForPort(3000);
 await $`pnpm exec playwright test`;

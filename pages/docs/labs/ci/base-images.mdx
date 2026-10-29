@@ -14,7 +14,7 @@ A lot of CI time goes on redoing work that's already been done: installing depen
 
 Each job runs on a fresh machine with Node, Python, git and the usual tools, which is enough for a quick job like this:
 
-```typescript {{ title: "ci/jobs.ts" }}
+```typescript {{ title: "ci/jobs/lint.ts" }}
 const lint = ci.job({ id: "lint" }, async () => {
   await checkout();
   await $`npx eslint .`;
@@ -27,15 +27,24 @@ For anything heavier, we probably don't want every job repeating the same setup.
 
 `from` points a job at another job. It starts on a copy of that job's machine, with everything it installed still in place.
 
-<AnnotatedCode highlight>
+```typescript {{ title: "ci/jobs/install.ts" }}
+import { $, checkout } from "@inngest/ci";
+import { ci } from "../client";
 
-```typescript {{ title: "ci/jobs.ts" }}
-const install = ci.job({ id: "install" }, async () => {
+export const install = ci.job({ id: "install" }, async () => {
   await checkout();
   await $`npm ci`;
 });
+```
 
-const test = ci.job(
+<AnnotatedCode highlight>
+
+```typescript {{ title: "ci/jobs/test.ts" }}
+import { $, checkout } from "@inngest/ci";
+import { ci } from "../client";
+import { install } from "./install";
+
+export const test = ci.job(
   {
     id: "test",
     from: install,
@@ -47,7 +56,7 @@ const test = ci.job(
 );
 ```
 
-<Annotation id="from" lines="9" tease="starts from install" title="Starts from install's machine">
+<Annotation id="from" lines="8" tease="starts from install" title="Starts from install's machine">
 `install` runs once. `test` starts on a copy of its machine, with nothing left to install.
 </Annotation>
 
@@ -77,7 +86,7 @@ Give the job a `cache` key, and its snapshot is kept as a **base image** for lat
 
 <AnnotatedCode highlight>
 
-```typescript {{ title: "ci/jobs.ts" }}
+```typescript {{ title: "ci/jobs/install.ts" }}
 const install = ci.job(
   {
     id: "install",
@@ -112,7 +121,7 @@ Rather than letting a pipeline run wait, rebuild the base image in the backgroun
 
 <AnnotatedCode highlight>
 
-```typescript {{ title: "ci/jobs.ts" }}
+```typescript {{ title: "ci/jobs/install.ts" }}
 cache: {
   key: files("package-lock.json"),
   refresh: [
@@ -144,7 +153,7 @@ When several pipeline runs need the same base image at the same moment, only one
 
 <AnnotatedCode highlight>
 
-```typescript {{ title: "platform/ci/jobs.ts" }}
+```typescript {{ title: "platform/ci/jobs/node-base.ts" }}
 const nodeBase = ci.job(
   {
     id: "node-base",
@@ -167,7 +176,7 @@ The job lives in the `platform` app, with its own cache.
 
 <AnnotatedCode highlight>
 
-```typescript {{ title: "web/ci/jobs.ts" }}
+```typescript {{ title: "web/ci/jobs/test.ts" }}
 const test = ci.job(
   {
     id: "test",
@@ -200,7 +209,7 @@ Sometimes you just want a ready-made machine and no job:
 
 <AnnotatedCode>
 
-```typescript {{ title: "ci/jobs.ts" }}
+```typescript {{ title: "ci/jobs/images.ts" }}
 import { image } from "@inngest/ci";
 
 const a = ci.job({ id: "a", from: image.docker("node:22") }, fn);
