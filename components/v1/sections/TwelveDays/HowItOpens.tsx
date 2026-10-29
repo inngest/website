@@ -1,7 +1,7 @@
 "use client";
 
 import { motion } from "motion/react";
-import ButtonLink from "@/components/v1/ButtonLink";
+import Link from "next/link";
 import { reveals } from "@/utils/v1/reveals";
 import {
   COLORS,
@@ -9,6 +9,7 @@ import {
   UNLOCK_FUNCTION,
 } from "@/components/v1/sections/TwelveDays/data";
 import {
+  buttonClass,
   POSTER_EYEBROW,
   POSTER_TITLE,
 } from "@/components/v1/sections/TwelveDays/poster";
@@ -43,13 +44,12 @@ export default function HowItOpens() {
             {HOW_IT_OPENS.body}
           </motion.p>
           <motion.div {...reveals.body}>
-            <ButtonLink
+            <Link
               href={HOW_IT_OPENS.cta.href}
-              variant="primary"
-              className="!w-full !border-[#ECFE08] !bg-[#ECFE08] !text-[#010101] hover:!bg-white sm:!w-auto"
+              className={buttonClass("lime") + " w-full sm:w-auto"}
             >
               {HOW_IT_OPENS.cta.label}
-            </ButtonLink>
+            </Link>
           </motion.div>
         </div>
         <motion.pre

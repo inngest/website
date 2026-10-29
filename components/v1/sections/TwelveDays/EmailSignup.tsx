@@ -4,6 +4,7 @@ import { useEffect, useState, type FormEvent } from "react";
 import { analytics } from "@/utils/segment";
 import { readFirstTouch } from "src/shared/firstTouch";
 import { REF, SIGNUP } from "@/components/v1/sections/TwelveDays/data";
+import { buttonClass } from "@/components/v1/sections/TwelveDays/poster";
 
 /** Segment event Customer.io builds the 12 Days email list from. */
 export const SUBSCRIBED_EVENT = "12 Days Subscribed";
@@ -108,12 +109,12 @@ export default function EmailSignup() {
         value={email}
         onChange={(e) => setEmail(e.target.value)}
         placeholder={SIGNUP.placeholder}
-        className="h-12 min-w-0 flex-1 rounded-full border-[3px] border-[#010101] bg-white px-5 text-[16px] text-[#010101] placeholder:text-[#010101]/50 focus-visible:outline focus-visible:outline-4 focus-visible:outline-offset-2 focus-visible:outline-[#ECFE08]"
+        className="h-[42px] min-w-0 flex-1 rounded-md border-2 border-[#010101] bg-white px-5 text-[16px] text-[#010101] placeholder:text-[#010101]/50 focus-visible:outline focus-visible:outline-4 focus-visible:outline-offset-2 focus-visible:outline-[#ECFE08]"
       />
       <button
         type="submit"
         disabled={status === "sending"}
-        className="h-12 shrink-0 rounded-full border-[3px] border-[#010101] bg-[#010101] px-6 font-v1Label text-[14px] uppercase text-white hover:bg-white hover:text-[#010101] focus-visible:outline focus-visible:outline-4 focus-visible:outline-offset-2 focus-visible:outline-[#ECFE08] disabled:opacity-60"
+        className={buttonClass("ink")}
       >
         {status === "sending" ? SIGNUP.sending : SIGNUP.button}
       </button>

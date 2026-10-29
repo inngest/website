@@ -2,13 +2,8 @@
 
 import { useEffect, useRef } from "react";
 import Image from "next/image";
-import {
-  motion,
-  useMotionValue,
-  useReducedMotion,
-  useSpring,
-} from "motion/react";
-import ButtonLink from "@/components/v1/ButtonLink";
+import Link from "next/link";
+import { motion } from "motion/react";
 import { clearHeroPanel, setHeroPanel } from "@/utils/v1/heroNav";
 import { tweens } from "@/utils/v1/springs";
 import {
@@ -19,6 +14,7 @@ import {
 } from "@/components/v1/sections/TwelveDays/data";
 import { formatCountdown } from "@/components/v1/sections/TwelveDays/useCalendarClock";
 import {
+  buttonClass,
   Chip,
   POSTER_HUGE,
   POSTER_MONO,
@@ -53,10 +49,6 @@ function status(now: Date | null): string | null {
  */
 export default function Hero({ now }: { now: Date | null }) {
   const line = status(now);
-  const reduceMotion = useReducedMotion();
-  // The contraption leans toward the cursor, a few degrees at most.
-  const tiltX = useSpring(useMotionValue(0), { stiffness: 120, damping: 14 });
-  const tiltY = useSpring(useMotionValue(0), { stiffness: 120, damping: 14 });
   // Tell the fixed header it sits on salmon, so its nav-hover wipe goes
   // dark instead of vanishing (same signal SplitHero publishes).
   const heroToken = useRef<object>({});
@@ -71,16 +63,6 @@ export default function Hero({ now }: { now: Date | null }) {
       aria-labelledby="twelve-days-hero-heading"
       className="relative w-full overflow-hidden"
       style={{ backgroundColor: COLORS.salmon, color: COLORS.ink }}
-      onPointerMove={(e) => {
-        if (reduceMotion || e.pointerType !== "mouse") return;
-        const r = e.currentTarget.getBoundingClientRect();
-        tiltY.set(((e.clientX - r.left) / r.width - 0.5) * 12);
-        tiltX.set(-((e.clientY - r.top) / r.height - 0.5) * 8);
-      }}
-      onPointerLeave={() => {
-        tiltX.set(0);
-        tiltY.set(0);
-      }}
     >
       <div className="relative mx-auto grid w-full max-w-[1440px] grid-cols-1 gap-x-10 px-6 pb-16 pt-24 sm:px-9 lg:grid-cols-[minmax(0,1fr)_minmax(0,34%)] lg:px-8 lg:pb-0 lg:pt-36">
         <div className="flex flex-col lg:pb-24">
@@ -144,22 +126,20 @@ export default function Hero({ now }: { now: Date | null }) {
             {...entry(540)}
             className="mt-8 flex flex-col items-stretch gap-4 sm:flex-row sm:items-center"
           >
-            <ButtonLink
+            <Link
               href={HERO.cta.href}
               prefetch={false}
-              variant="primary"
-              className="!w-full !border-[#010101] !bg-[#010101] !text-white hover:!bg-white hover:!text-[#010101] sm:!w-auto"
+              className={buttonClass("ink")}
             >
               {HERO.cta.label}
-            </ButtonLink>
-            <ButtonLink
+            </Link>
+            <Link
               href={HERO.secondaryCta.href}
               prefetch={false}
-              variant="primary"
-              className="!w-full !border-[#010101] !bg-transparent !text-[#010101] hover:!bg-[#010101] hover:!text-white sm:!w-auto"
+              className={buttonClass("outline")}
             >
               {HERO.secondaryCta.label}
-            </ButtonLink>
+            </Link>
           </motion.div>
           {/* Reserves its line before the clock mounts so nothing jumps.
               Not a live region: it ticks every second. */}
@@ -174,19 +154,17 @@ export default function Hero({ now }: { now: Date | null }) {
         {/* The contraption: rat on a wheel, a hand, a mug, a mouth. */}
         <motion.div
           {...entry(380)}
-          className="relative mx-auto mt-12 w-full max-w-[360px] self-end [perspective:1200px] lg:mt-0 lg:max-w-none"
+          className="relative mx-auto mt-12 w-full max-w-[360px] self-end lg:mt-0 lg:max-w-none"
         >
-          <motion.div style={{ rotateX: tiltX, rotateY: tiltY }}>
-            <Image
-              src="/assets/v1/12-days/contraption.webp"
-              alt="A rat in a green vest running on a wheel, which tips a hand to pour coffee from a green mug into a wide-open mouth."
-              width={760}
-              height={1499}
-              priority
-              sizes="(max-width: 1024px) 360px, 34vw"
-              className="h-auto w-full"
-            />
-          </motion.div>
+          <Image
+            src="/assets/v1/12-days/contraption.webp"
+            alt="A rat in a green vest running on a wheel, which tips a hand to pour coffee from a green mug into a wide-open mouth."
+            width={760}
+            height={1499}
+            priority
+            sizes="(max-width: 1024px) 360px, 34vw"
+            className="h-auto w-full"
+          />
         </motion.div>
       </div>
     </section>

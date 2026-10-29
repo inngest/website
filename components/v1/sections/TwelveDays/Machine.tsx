@@ -10,6 +10,7 @@ import {
   unlockLabel,
 } from "@/components/v1/sections/TwelveDays/data";
 import {
+  buttonClass,
   POSTER_EYEBROW,
   POSTER_TITLE,
 } from "@/components/v1/sections/TwelveDays/poster";
@@ -370,28 +371,14 @@ function MachineButton({
   tone: "green" | "lime" | "salmon" | "ghost";
   disabled?: boolean;
 }) {
-  const bg =
-    tone === "green"
-      ? COLORS.green
-      : tone === "lime"
-      ? COLORS.lime
-      : tone === "salmon"
-      ? COLORS.salmon
-      : "transparent";
   return (
-    <motion.button
+    <button
       type="button"
       onClick={onClick}
       disabled={disabled}
-      whileTap={{ scale: 0.96, x: 3, y: 3 }}
-      className="rounded-full border-[3px] px-5 py-2.5 font-v1Label text-[14px] uppercase shadow-[4px_4px_0_#ffffff] disabled:cursor-not-allowed disabled:opacity-40"
-      style={{
-        backgroundColor: bg,
-        borderColor: tone === "ghost" ? "#FFFFFF" : COLORS.ink,
-        color: tone === "ghost" ? "#FFFFFF" : COLORS.ink,
-      }}
+      className={buttonClass(tone)}
     >
       {children}
-    </motion.button>
+    </button>
   );
 }

@@ -17,6 +17,7 @@ import {
   unlockLabel,
   type WorkflowDay,
 } from "@/components/v1/sections/TwelveDays/data";
+import { buttonClass } from "@/components/v1/sections/TwelveDays/poster";
 import EmailSignup from "@/components/v1/sections/TwelveDays/EmailSignup";
 import { handleStartFreeClick } from "@/utils/v1/startFreeCta";
 import {
@@ -192,7 +193,6 @@ function Door({
   // away. Recorded once, idempotently, so StrictMode's double effect run
   // doesn't flip it.
   const unlockedWhenSeen = useRef<boolean | null>(null);
-  const [hover, setHover] = useState(false);
   // Hold-to-open progress, 0 to 1.
   const [hold, setHold] = useState(0);
   const holdFrame = useRef<number | null>(null);
@@ -237,25 +237,20 @@ function Door({
     return () => window.clearTimeout(id);
   }, [unlocked, canPop, open, needsHold, staggerIndex]);
 
-  // Closed doors creak when hovered: today's door the most, a locked one
-  // barely. Holding pulls today's door wider.
-  const ajar = needsHold
-    ? -(hover ? 10 : 4) - hold * 26
-    : !unlocked && hover
-    ? -5
-    : 0;
+  // Holding today's door lifts its shutter a little, as a preview.
+  const lift = needsHold ? hold * 14 : 0;
 
   const opensOn = unlockLabel(day.day);
 
   return (
-    <div className="relative h-full [perspective:2000px]">
+    <div className="relative h-full">
       {/* Behind the door. Only exists once the day has unlocked. In
           normal flow, so a long lesson makes its door (and its row)
-          taller instead of being clipped; the door covers it. */}
+          taller instead of being clipped; the shutter covers it. */}
       <div className="relative h-full min-h-[460px] overflow-hidden rounded-xl border-[3px] border-[#010101] bg-white text-[#010101] shadow-[6px_6px_0_#010101]">
         {unlocked && (
           // Out of the tab order and hidden from screen readers until
-          // the door swings open, but still taking up its space.
+          // the shutter rolls up, but still taking up its space.
           <div
             className="flex h-full flex-col gap-3 p-5"
             inert={!open}
@@ -321,7 +316,7 @@ function Door({
                 type="button"
                 onClick={onToggleDone}
                 aria-pressed={done}
-                className="shrink-0 rounded-full border-2 border-[#010101] px-3 py-1 font-v1Label text-[12px] uppercase hover:bg-[#010101] hover:text-white"
+                className={buttonClass("outline", "sm")}
               >
                 {done ? "Undo" : "Mark done"}
               </button>
@@ -330,7 +325,7 @@ function Door({
         )}
       </div>
 
-      {/* Confetti puff the moment the door swings. */}
+      {/* Confetti puff the moment the shutter goes up. */}
       {open && !reduceMotion && (
         <div
           aria-hidden="true"
@@ -357,143 +352,135 @@ function Door({
         </div>
       )}
 
-      {/* The door. Hinged on the left; swings out toward the viewer. */}
-      <motion.button
-        type="button"
-        aria-label={
-          needsHold
-            ? `Day ${day.day} is ready. Press and hold to open.`
-            : unlocked
-            ? `Day ${day.day}: ${day.gift}`
-            : `Day ${day.day}, opens ${opensOn} at midnight Eastern`
-        }
-        aria-disabled={!open && !needsHold}
-        tabIndex={open ? -1 : 0}
-        onClick={() => {
-          if (!open && !needsHold) setRattle((n) => n + 1);
-        }}
-        onPointerEnter={() => setHover(true)}
-        onPointerLeave={() => {
-          setHover(false);
-          stopHold();
-        }}
-        onPointerDown={startHold}
-        onPointerUp={stopHold}
-        onPointerCancel={stopHold}
-        onKeyDown={(e) => {
-          if ((e.key === " " || e.key === "Enter") && !e.repeat) {
-            e.preventDefault();
-            startHold();
+      {/* The door: a roll-up locker shutter. Clipped to its own tile, so
+          rolling up reveals the day behind it without covering the
+          doors next to it. */}
+      <div className="pointer-events-none absolute inset-0 z-10 overflow-hidden rounded-xl">
+        <motion.button
+          type="button"
+          aria-label={
+            needsHold
+              ? `Day ${day.day} is ready. Press and hold to open.`
+              : unlocked
+              ? `Day ${day.day}: ${day.gift}`
+              : `Day ${day.day}, opens ${opensOn} at midnight Eastern`
           }
-        }}
-        onKeyUp={(e) => {
-          if (e.key === " " || e.key === "Enter") stopHold();
-        }}
-        // Stop the long-press menu on touch screens while holding.
-        onContextMenu={(e) => needsHold && e.preventDefault()}
-        className="absolute inset-0 z-10 rounded-xl [transform-style:preserve-3d] focus-visible:outline focus-visible:outline-4 focus-visible:outline-offset-4 focus-visible:outline-[#ECFE08]"
-        style={{
-          transformOrigin: "left center",
-          pointerEvents: open ? "none" : "auto",
-          touchAction: needsHold ? "none" : undefined,
-          WebkitUserSelect: "none",
-          userSelect: "none",
-        }}
-        initial={false}
-        animate={
-          open
-            ? reduceMotion
-              ? { opacity: 0 }
-              : { rotateY: -96 }
-            : { rotateY: reduceMotion ? 0 : ajar, opacity: 1 }
-        }
-        transition={
-          reduceMotion
-            ? { duration: 0.2 }
-            : hold > 0
-            ? { duration: 0 }
-            : { type: "spring", stiffness: 140, damping: 14, mass: 0.9 }
-        }
-      >
-        {/* Front face. */}
-        <motion.span
-          key={rattle}
-          className="absolute inset-0 flex flex-col justify-between overflow-hidden rounded-xl border-[3px] border-[#010101] p-5 text-left shadow-[6px_6px_0_#010101] [backface-visibility:hidden]"
-          style={{
-            backgroundColor: face.bg,
-            color: face.bg === COLORS.ink ? "#FFFFFF" : COLORS.ink,
+          aria-disabled={!open && !needsHold}
+          tabIndex={open ? -1 : 0}
+          onClick={() => {
+            if (!open && !needsHold) setRattle((n) => n + 1);
           }}
-          // A locked door rattles in its frame when tapped.
+          onPointerLeave={stopHold}
+          onPointerDown={startHold}
+          onPointerUp={stopHold}
+          onPointerCancel={stopHold}
+          onKeyDown={(e) => {
+            if ((e.key === " " || e.key === "Enter") && !e.repeat) {
+              e.preventDefault();
+              startHold();
+            }
+          }}
+          onKeyUp={(e) => {
+            if (e.key === " " || e.key === "Enter") stopHold();
+          }}
+          // Stop the long-press menu on touch screens while holding.
+          onContextMenu={(e) => needsHold && e.preventDefault()}
+          className="absolute inset-0 rounded-xl focus-visible:outline focus-visible:outline-4 focus-visible:outline-offset-[-7px] focus-visible:outline-[#ECFE08]"
+          style={{
+            pointerEvents: open ? "none" : "auto",
+            touchAction: needsHold ? "none" : undefined,
+            WebkitUserSelect: "none",
+            userSelect: "none",
+          }}
+          initial={false}
           animate={
-            rattle && !reduceMotion ? { x: [0, -6, 6, -4, 4, 0] } : undefined
+            open
+              ? reduceMotion
+                ? { opacity: 0 }
+                : { y: "-101%" }
+              : { y: reduceMotion ? 0 : `-${lift}%`, opacity: 1 }
           }
-          transition={{ duration: 0.4 }}
+          transition={
+            reduceMotion
+              ? { duration: 0.2 }
+              : hold > 0
+              ? { duration: 0 }
+              : open
+              ? { duration: 0.6, ease: [0.65, 0, 0.35, 1] }
+              : { duration: 0.25 }
+          }
         >
-          {/* Today's door glows until it's opened. */}
-          {needsHold && !reduceMotion && (
-            <motion.span
-              aria-hidden="true"
-              className="pointer-events-none absolute inset-0 rounded-[9px] border-[6px]"
-              style={{ borderColor: COLORS.lime }}
-              animate={{ opacity: [0.25, 1, 0.25] }}
-              transition={{ duration: 1.4, repeat: Infinity }}
-            />
-          )}
-          <span className="relative flex items-center justify-between font-v1Label text-[14px] uppercase">
-            <span>Day</span>
-            <span>{needsHold ? "Today" : unlocked ? "Open" : "Locked"}</span>
-          </span>
-          <span
-            className="relative font-sans text-[160px] font-black leading-[0.8] tracking-[-0.05em] sm:text-[180px]"
-            style={{ color: face.num }}
+          {/* Front face, with the shutter's slats. */}
+          <motion.span
+            key={rattle}
+            className="absolute inset-0 flex flex-col justify-between overflow-hidden rounded-xl border-[3px] border-[#010101] p-5 pb-12 text-left"
+            style={{
+              backgroundColor: face.bg,
+              backgroundImage:
+                "repeating-linear-gradient(to bottom, transparent 0 26px, rgb(1 1 1 / 0.14) 26px 29px)",
+              color: face.bg === COLORS.ink ? "#FFFFFF" : COLORS.ink,
+            }}
+            // A locked shutter rattles in its frame when tapped.
+            animate={
+              rattle && !reduceMotion ? { y: [0, -6, 0, -3, 0] } : undefined
+            }
+            transition={{ duration: 0.4 }}
           >
-            {day.day}
-          </span>
-          {needsHold ? (
-            <span className="relative flex flex-col gap-2">
-              <span className="font-v1Label text-[13px] uppercase">
-                {hold > 0
-                  ? "Keep holding…"
-                  : `Open Day ${day.day} · press and hold`}
-              </span>
-              <span className="block h-3 w-full overflow-hidden rounded-full border-[3px] border-[#010101] bg-white">
-                <span
-                  className="block h-full"
-                  style={{
-                    width: `${hold * 100}%`,
-                    backgroundColor: COLORS.green,
-                  }}
-                />
-              </span>
+            {/* Today's door glows until it's opened. */}
+            {needsHold && !reduceMotion && (
+              <motion.span
+                aria-hidden="true"
+                className="pointer-events-none absolute inset-0 rounded-[9px] border-[6px]"
+                style={{ borderColor: COLORS.lime }}
+                animate={{ opacity: [0.25, 1, 0.25] }}
+                transition={{ duration: 1.4, repeat: Infinity }}
+              />
+            )}
+            <span className="relative flex items-center justify-between font-v1Label text-[14px] uppercase">
+              <span>Day</span>
+              <span>{needsHold ? "Today" : unlocked ? "Open" : "Locked"}</span>
             </span>
-          ) : (
-            <span className="relative font-v1Label text-[13px] uppercase">
-              {countdown
-                ? `Opens in ${countdown}`
-                : unlocked
-                ? "Opening…"
-                : `Opens ${opensOn}`}
+            <span
+              className="relative font-sans text-[160px] font-black leading-[0.8] tracking-[-0.05em] sm:text-[180px]"
+              style={{ color: face.num }}
+            >
+              {day.day}
             </span>
-          )}
-          {/* Door knob. */}
-          <span
-            aria-hidden="true"
-            className="absolute right-5 top-1/2 h-5 w-5 -translate-y-1/2 rounded-full border-[3px] border-[#010101]"
-            style={{ backgroundColor: COLORS.lime }}
-          />
-        </motion.span>
-
-        {/* Inside of the door, seen once it's swung open. */}
-        <span
-          aria-hidden="true"
-          className="absolute inset-0 rounded-xl border-[3px] border-[#010101] [backface-visibility:hidden] [transform:rotateY(180deg)]"
-          style={{
-            backgroundColor: face.bg,
-            backgroundImage:
-              "linear-gradient(rgb(0 0 0 / 0.4), rgb(0 0 0 / 0.4))",
-          }}
-        />
-      </motion.button>
+            {needsHold ? (
+              <span className="relative flex flex-col gap-2">
+                <span className="font-v1Label text-[13px] uppercase">
+                  {hold > 0
+                    ? "Keep holding…"
+                    : `Open Day ${day.day} · press and hold`}
+                </span>
+                <span className="block h-3 w-full overflow-hidden rounded-full border-[3px] border-[#010101] bg-white">
+                  <span
+                    className="block h-full"
+                    style={{
+                      width: `${hold * 100}%`,
+                      backgroundColor: COLORS.green,
+                    }}
+                  />
+                </span>
+              </span>
+            ) : (
+              <span className="relative font-v1Label text-[13px] uppercase">
+                {countdown
+                  ? `Opens in ${countdown}`
+                  : unlocked
+                  ? "Opening…"
+                  : `Opens ${opensOn}`}
+              </span>
+            )}
+            {/* Pull handle along the bottom edge. */}
+            <span
+              aria-hidden="true"
+              className="absolute bottom-4 left-1/2 h-4 w-20 -translate-x-1/2 rounded-full border-[3px] border-[#010101]"
+              style={{ backgroundColor: COLORS.lime }}
+            />
+          </motion.span>
+        </motion.button>
+      </div>
     </div>
   );
 }

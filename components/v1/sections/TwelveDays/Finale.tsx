@@ -1,10 +1,14 @@
 "use client";
 
 import { motion, useReducedMotion } from "motion/react";
-import ButtonLink from "@/components/v1/ButtonLink";
+import Link from "next/link";
 import { reveals } from "@/utils/v1/reveals";
 import { COLORS, FINALE } from "@/components/v1/sections/TwelveDays/data";
-import { Chip, POSTER_TITLE } from "@/components/v1/sections/TwelveDays/poster";
+import {
+  buttonClass,
+  Chip,
+  POSTER_TITLE,
+} from "@/components/v1/sections/TwelveDays/poster";
 
 /**
  * The finale: a live CodeTV episode building a Rube Goldberg machine
@@ -51,14 +55,13 @@ export default function Finale() {
             </motion.p>
           ))}
           <motion.div {...reveals.body}>
-            <ButtonLink
+            <Link
               href={FINALE.cta.href}
               prefetch={false}
-              variant="primary"
-              className="!w-full !border-[#010101] !bg-[#010101] !text-white hover:!bg-white hover:!text-[#010101] sm:!w-auto"
+              className={buttonClass("ink") + " w-full sm:w-auto"}
             >
               {FINALE.cta.label}
-            </ButtonLink>
+            </Link>
           </motion.div>
         </div>
 

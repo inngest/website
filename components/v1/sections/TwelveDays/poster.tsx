@@ -39,3 +39,42 @@ export function Chip({
     </span>
   );
 }
+
+export type ButtonTone =
+  | "ink"
+  | "outline"
+  | "white"
+  | "lime"
+  | "green"
+  | "salmon"
+  | "ghost";
+
+const BUTTON_TONES: Record<ButtonTone, string> = {
+  ink: "border-[#010101] bg-[#010101] text-white hover:bg-white hover:text-[#010101]",
+  outline:
+    "border-[#010101] bg-transparent text-[#010101] hover:bg-[#010101] hover:text-white",
+  white:
+    "border-[#010101] bg-white text-[#010101] hover:bg-[#010101] hover:text-white",
+  lime: "border-[#ECFE08] bg-[#ECFE08] text-[#010101] hover:border-white hover:bg-white",
+  green:
+    "border-[#0BDD48] bg-[#0BDD48] text-[#010101] hover:border-white hover:bg-white",
+  salmon:
+    "border-[#F55C50] bg-[#F55C50] text-[#010101] hover:border-white hover:bg-white",
+  ghost:
+    "border-white bg-transparent text-white hover:bg-white hover:text-[#010101]",
+};
+
+/**
+ * The one button style on this page: the site Button's shape and type
+ * (rounded-md, uppercase label, 42px tall) in the campaign's colours.
+ * Hover only swaps colours; nothing moves.
+ */
+export function buttonClass(tone: ButtonTone, size: "md" | "sm" = "md") {
+  return (
+    "inline-flex shrink-0 items-center justify-center whitespace-nowrap rounded-md border-2 font-v1Label font-semibold uppercase tracking-[0.05rem] focus-visible:outline focus-visible:outline-4 focus-visible:outline-offset-2 focus-visible:outline-[#ECFE08] disabled:cursor-not-allowed disabled:opacity-50 motion-safe:transition-colors motion-safe:duration-200 " +
+    (size === "md"
+      ? "h-[42px] min-w-[124px] px-5 text-[12px] "
+      : "h-8 px-3 text-[12px] ") +
+    BUTTON_TONES[tone]
+  );
+}

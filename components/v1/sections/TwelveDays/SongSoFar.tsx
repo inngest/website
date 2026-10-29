@@ -10,6 +10,7 @@ import {
   unlockAt,
 } from "@/components/v1/sections/TwelveDays/data";
 import {
+  buttonClass,
   POSTER_EYEBROW,
   POSTER_TITLE,
 } from "@/components/v1/sections/TwelveDays/poster";
@@ -81,7 +82,7 @@ export default function SongSoFar({ now }: { now: Date | null }) {
               <button
                 type="button"
                 onClick={() => setSinging(singing === null ? -1 : null)}
-                className="mb-6 rounded-full border-[3px] border-[#010101] bg-white px-5 py-2.5 font-v1Label text-[14px] uppercase shadow-[4px_4px_0_#010101] active:translate-x-[3px] active:translate-y-[3px] active:shadow-none"
+                className={buttonClass("white") + " mb-6"}
               >
                 {singing === null ? "🎤 Sing it" : "■ Stop"}
               </button>
