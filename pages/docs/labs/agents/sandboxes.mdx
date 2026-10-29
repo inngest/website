@@ -9,7 +9,8 @@ export const description = "Inngest Agents sandboxes: give an agent an isolated 
 
 - **Code tools in one line.** `read`, `write`, `edit`, `search` and `run`. [Define a sandbox →](#define-a-sandbox)
 - **Created when needed.** Or as the run starts. [Start →](#start-lazily-or-eagerly)
-- **Files outlive the run.** Restored from a snapshot. [Persistence →](#keep-files-between-runs)
+- **Files outlive the run.** The sandbox pauses and the next run resumes it. [Persistence →](#keep-files-between-runs)
+- **Share a shell.** `cd` and `export` carry over between commands. [Shell →](#share-a-shell)
 - **Prepared once.** Setup code and skills from git. [Setup and skills →](#set-up-and-add-skills)
 - **Code that calls your app.** Scripts use your tools. [Run code →](#let-code-call-your-tools)
 
@@ -64,7 +65,7 @@ export const coder = agents.agent(
     for await (const message of inbox) {
       await agent.loop({
         model: claude,
-        prompt: message.data.content ?? "",
+        prompt: message.content ?? "",
         tools: sandboxTools,
         ...control,
       });
@@ -98,7 +99,7 @@ export const reader = sandbox({
 
 ## Choose the code tools
 
-`sandbox.tools.code()` takes `cwd` (default `/work`), `timeout` (default 5 minutes) and `only`. `run_code` joins when you pass `tools`.
+`sandbox.tools.code()` takes `cwd` (default `/work`), `timeout` (default 5 minutes), `session` (default `true`) and `only`. `run_code` joins when you pass `tools`.
 
 ## Start lazily or eagerly
 
@@ -130,7 +131,7 @@ export const reviewer = agents.agent(
     for await (const message of inbox) {
       await agent.loop({
         model: claude,
-        prompt: message.data.content ?? "",
+        prompt: message.content ?? "",
         tools: {
           work_run: sandboxTools.work_run,
           view_read: sandboxTools.view_read,
@@ -156,9 +157,9 @@ Keep it pure.
 
 ## Keep files between runs
 
-A sandbox belongs to its thread. The first call restores it from the thread's newest snapshot, and the run's end saves it again.
+A sandbox belongs to its thread. When the run ends the sandbox is paused, and the thread's next run resumes it with its disk as it was: a checkout, `node_modules`, anything.
 
-Only files survive, not processes. `recycle()` saves and destroys a sandbox now, and the next call restores it.
+If it cannot be paused, or is gone by the next run, the thread falls back to its newest snapshot, then to a fresh sandbox. `recycle()` sets it aside now, and the next call brings it back.
 
 ```typescript {{ title: "inngest/agents/pairer.ts" }}
 import { agent } from "inngest/experimental/agents";
@@ -172,7 +173,7 @@ export const pairer = agents.agent(
     for await (const message of inbox) {
       await agent.loop({
         model: claude,
-        prompt: message.data.content ?? "",
+        prompt: message.content ?? "",
         tools: sandboxTools,
         ...control,
       });
@@ -183,7 +184,70 @@ export const pairer = agents.agent(
 );
 ```
 
-Recycle while the thread waits, so an idle sandbox costs nothing. See [Snapshots](/docs/sandboxes/features/snapshots-and-restore?ref=docs-labs-agents-sandboxes).
+Recycle while the thread waits, so an idle sandbox costs nothing. Processes do not survive a snapshot. See [Snapshots](/docs/sandboxes/features/snapshots-and-restore?ref=docs-labs-agents-sandboxes).
+
+Set `idle: "snapshot"` on the binding to save a snapshot and destroy the sandbox instead of holding it paused.
+
+```typescript {{ title: "inngest/agents/archivist.ts" }}
+import { agent } from "inngest/experimental/agents";
+import { agents } from "../client";
+import { claude } from "../models/claude";
+import { project } from "../sandboxes/project";
+
+export const archivist = agents.agent(
+  {
+    id: "archivist",
+    sandboxes: { work: { sandbox: project, idle: "snapshot" } },
+  },
+  async ({ inbox, sandboxTools, control }) => {
+    for await (const message of inbox) {
+      await agent.loop({
+        model: claude,
+        prompt: message.content ?? "",
+        tools: sandboxTools,
+        ...control,
+      });
+    }
+  },
+);
+```
+
+## Share a shell
+
+The `run` tool remembers where it is. A `cd` in one call applies to the next, and so do exported variables. Pass `session: false` to `sandbox.tools.code()` to start every command fresh.
+
+In your own code, `sandbox.shell()` gives the same for `$`.
+
+```typescript {{ title: "inngest/agents/stepper.ts" }}
+import { agent } from "inngest/experimental/agents";
+import { agents } from "../client";
+import { claude } from "../models/claude";
+import { project } from "../sandboxes/project";
+
+export const stepper = agents.agent(
+  { id: "stepper", sandboxes: { work: project } },
+  async ({ sandboxes, sandboxTools, inbox, control }) => {
+    const work = await sandboxes.work.get();
+    const sh = work.shell({ cwd: "/work", env: { CI: "1" } });
+
+    await sh.$`cd app`;
+    await sh.$`export NODE_ENV=test`;
+
+    const tests = await sh.$`npm test`.text();
+
+    for await (const message of inbox) {
+      await agent.loop({
+        model: claude,
+        prompt: `${message.content ?? ""}\n${tests} (in ${sh.cwd})`,
+        tools: sandboxTools,
+        ...control,
+      });
+    }
+  },
+);
+```
+
+Only the working directory and exported variables carry over, not functions, aliases or unexported variables. A command that fails leaves the session as it was.
 
 ## Set up and add skills
 
@@ -318,7 +382,9 @@ export const waitForApproval = tool.group({
 });
 ```
 
-While it waits the script exits, then runs again from the top with earlier calls answered from a journal. Read the clock with `tools.now()`. [Inbox tools](/docs/labs/agents/tools?ref=docs-labs-agents-sandboxes#let-the-model-listen-for-events) work here too, and [Run code](/docs/sandboxes/features/run-code?ref=docs-labs-agents-sandboxes) covers the sandbox side.
+While it waits the script exits, then runs again from the top with earlier calls answered from a journal. Read the clock with `tools.now()`.
+
+[Inbox tools](/docs/labs/agents/tools?ref=docs-labs-agents-sandboxes#let-the-model-listen-for-events) work here too, and [Run code](/docs/sandboxes/features/run-code?ref=docs-labs-agents-sandboxes) covers the sandbox side.
 
 ## Use sandboxes in a plain function
 
@@ -366,7 +432,8 @@ Without a thread `recycle()` throws. Close the sandbox yourself.
 ## How it works
 
 - The sandbox is created in one durable step, so every call shares it.
-- A run's end snapshots a used sandbox, then destroys it. A function cleans up cancelled runs.
+- A run's end pauses a used sandbox (`idle: "snapshot"` saves a snapshot and destroys it instead). A function cleans up cancelled runs the same way.
+- A shell session works by reading the final directory and exported variables off each command's result, so a replay rebuilds it without touching the sandbox.
 - `"bake"` skills boot from a fetch the first time a ref moves, while `agents.functions()` serves the function that builds the snapshot.
 - Skills come from public GitHub repositories.
 

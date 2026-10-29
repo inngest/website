@@ -186,6 +186,8 @@ The second argument of `agents.agent()`. It receives the function context of the
 | `restarts` | `number` | How many times this run continued in another process. |
 | `control` | object | Spread into `agent.loop()`: `steer`, `stop`, `onTurn`, `budget`, `scores`, `price`. |
 
+Name the types of a body with one bag, `AgentBody<{ event?, output?, request?, reply?, sandboxes?, client?, middleware?, inboxTools? }>`. A field left out takes its default (`AgentTypeDefaults`), so `AgentBody<{ output: null }>` names only the output. `agents.agent()` infers all of it, so you only write a bag for a body you define apart from its agent. Types: `AgentTypes`, `AgentTypesOf`, `AgentTypeDefaults`.
+
 `control` fields:
 
 | Field | Description |
@@ -458,13 +460,15 @@ agent.invoke<Output>(target: "appId/functionId", data?, options?): Promise<Outpu
 | `meta` | none | Event meta. `meta.sessions` wins over the session and thread this call sets. |
 | `timeout` | none | How long to wait, as for `step.invoke()`. |
 
-The callee keeps the caller's session and gets a thread of its own. A call the limits refuse throws `AgentLimitError`. A stopped callee completes the caller's run with a null output.
+The callee keeps the caller's session and gets a thread of its own. A call the limits refuse throws `AgentLimitError`. A cancelled callee (stop now, `cancelOn`, or its own parent cancelled) throws `AgentCancelledError`, which is not retried. Cancelling the caller cancels a callee only if the callee lists `agentInvokeCancelOn` in `cancelOn`; `agents.agent()` throws if it lists it beside a trigger other than `invoke()`.
 
 | Export | Description |
 | --- | --- |
 | `agentInvokeDepth(event)` | How many agents deep an invoked agent is: 1 for the first, `0` when not from `agent.invoke()`. |
 | `agentInvokeInput(event)` | The data `agent.invoke()` was given, without the SDK's own key. A copy. |
 | `AgentInvokeOptions` | Type of the options above. |
+| `agentInvokeCancelOn` | A `cancelOn` entry (`{ event: "inngest/function.cancelled", if: "event.data.run_id == async.data._agent.parent" }`) that ends the run when the run that invoked it is cancelled. |
+| `AgentCancelledError` | Thrown by `agent.invoke()` for a cancelled callee. `functionId?` and `runId?` name the cancelled run. |
 
 ### Model errors and untrusted text
 
@@ -493,7 +497,7 @@ The same functions are exported by name: `classifyModelError`, `untrusted`. Type
 | `budget` | none | What the thread may spend: `AgentBudget`. |
 | `price` | none | What a model call costs. Needed for `budget.usd`. |
 
-`AgentBudget`: `tokens` (input plus output), `input`, `output`, `usd`. A field left out is not limited. `usd` without `limits.price` throws when the agent is made.
+`AgentBudget`: `tokens` (input plus output), `input`, `output`, `usd`. A field left out is not limited. `usd` without `limits.price` throws when the agent is made. A `usd` budget handed down by a parent needs the sub-agent's own `limits.price` too, since a price does not travel; its run fails without one. The handed-down `usd` budget belongs to that run and is not kept on the thread.
 
 Limits gate `agent.invoke()` only; a raw `step.invoke` or `sendEvent` bypasses them. Sub-agents inherit the limits narrowed.
 
@@ -554,6 +558,9 @@ A cancelled run (stop now, `cancelOn`, `timeouts.finish`) is neither reported no
 | `SubscribeData` | The data type of a subscription's messages. |
 | `InboxMessage` | `seq`, `id`, `name`, `data`, `ts`, `user?`, `v?`, `stream?`, and `is(type)` to narrow. |
 | `NextOptions` | `{ timeout? }`. `0` never waits. |
+| `SubscribeMessages` | The messages of a subscription as a union with one member per event, so checking `message.name` narrows `message.data`. |
+| `SubscribeTool` | The signature of `step.subscribe()`. Options are checked for typos; an explicit message type is only taken for events named by a string. |
+| `ExactOptions`, `NamedOptions` | The helper types behind that check. All of these types are exported from `inngest`. |
 
 Do not race `next()` against a timer with `Promise.race`; race a step against `next({ timeout: 0 })`, or use `group.parallel({ mode: "race" })`.
 
@@ -712,7 +719,7 @@ Other exports: `ChannelStreamEnded` (throw it from `append` when the stream is o
 | `report.status(status, options?)` | Shows whether the agent is working. |
 | `report.card(card, options?)` | Writes a task card. The reporter rolls to a new stream at the surface's limits. |
 | `report.begin(start, options?)` | Starts a stream with a title, recipient, and first cards. |
-| `report.finish(final?, options?)` | Ends the open stream. A destination with no stream posts `final.text`. |
+| `report.finish(final?, options?)` | Ends the open stream. A destination with no stream posts `final.text`. Returns the reference of the message that ended (Slack: its `ts`), or `undefined`. With several destinations, the first one that has a reference. |
 
 `ReportStreamOptions`: `to?`, `stepId?` (default `report:<kind>:<n>`). A channel passed inline in `to` must be the same object every time. Types: `Reporter`, `ReportConfig`, `ReportConfigValue`, `ReportTarget`, `ReportStreamOptions`.
 

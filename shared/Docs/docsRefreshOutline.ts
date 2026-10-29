@@ -853,6 +853,10 @@ export const docsRefreshOutline: DocsRefreshPage[] = [
             href: "/docs/labs/agents/structure",
           },
           {
+            title: "Which API?",
+            href: "/docs/labs/agents/which-api",
+          },
+          {
             title: "Threads",
             href: "/docs/labs/agents/threads",
           },
@@ -895,6 +899,10 @@ export const docsRefreshOutline: DocsRefreshPage[] = [
           {
             title: "Testing",
             href: "/docs/labs/agents/testing",
+          },
+          {
+            title: "Run on Workers",
+            href: "/docs/labs/agents/workers",
           },
           {
             title: "Reference",

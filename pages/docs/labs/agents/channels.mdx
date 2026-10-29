@@ -41,7 +41,7 @@ export const triage = agents.agent(
 
       const result = await agent.loop({
         model: claude,
-        prompt: message.data.content ?? "",
+        prompt: message.content ?? "",
         tools: {},
         ...control,
       });
@@ -140,7 +140,7 @@ export const review = agents.agent(
     for await (const message of inbox) {
       const result = await agent.loop({
         model: claude,
-        prompt: message.data.content ?? "",
+        prompt: message.content ?? "",
         tools: {},
         ...control,
       });
@@ -157,7 +157,7 @@ export const review = agents.agent(
 );
 ```
 
-`kind` is `"progress"`, `"result"` or `"error"`. `data` is plain JSON up to 32 KB, saved on the post step so a trace can show it. The GitHub channel makes `@mentions` inert.
+`kind` is `"progress"`, `"result"` or `"error"`, and `data` is plain JSON up to 32 KB. The GitHub channel makes `@mentions` inert.
 
 ## Write your own channel
 
@@ -243,7 +243,7 @@ Shows the question. The answer arrives later as a signal.
 When a stream is full or old, the reporter starts a new one with a summary card.
 </Annotation>
 
-<Annotation id="ended" lines="38" tease="start a new stream" title="ChannelStreamEnded" href="/docs/labs/agents/threads?ref=docs-labs-agents-channels" linkText="Threads">
+<Annotation id="ended" lines="37" tease="start a new stream" title="ChannelStreamEnded" href="/docs/labs/agents/threads?ref=docs-labs-agents-channels" linkText="Threads">
 Throw it when the surface closed the stream. Any other error fails the step.
 </Annotation>
 

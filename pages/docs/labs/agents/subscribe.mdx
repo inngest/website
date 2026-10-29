@@ -224,7 +224,7 @@ export const watcher = agents.agent(
     for await (const message of inbox) {
       await agent.loop({
         model: claude,
-        prompt: message.data.content ?? "",
+        prompt: message.content ?? "",
         tools: { ...inboxTools },
         ...control,
       });

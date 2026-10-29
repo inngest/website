@@ -9,6 +9,7 @@ export const description = "Inngest Agents repos and git: check a repository out
 
 - **Check out a repo.** Clone, or bring a restored checkout up to date. [Check out →](#check-out-a-repository)
 - **Checked pushes.** Your policy reads what a push really changes. [Policy →](#approve-pushes-with-a-policy)
+- **No write token in the sandbox.** `repo()` with `push` pushes from the host. [Host push →](#push-from-the-host)
 - **Push from your code.** The same checks, as a function. [Push →](#push-from-your-own-code)
 - **Commit without git.** Files straight to GitHub. [Commit files →](#commit-files-without-a-sandbox)
 - **GitHub App tokens.** Short-lived and narrowed. [GitHub App →](#authenticate-as-a-github-app)
@@ -39,7 +40,7 @@ export const fixer = agents.agent(
 
       await agent.loop({
         model: claude,
-        prompt: `${message.data.content ?? ""}\nThe repo is at ${checkout.path}`,
+        prompt: `${message.content ?? ""}\nThe repo is at ${checkout.path}`,
         tools: checkout.tools,
         ...control,
       });
@@ -180,7 +181,7 @@ export const pushOnly = agents.agent(
 
       await agent.loop({
         model: claude,
-        prompt: message.data.content ?? "",
+        prompt: message.content ?? "",
         tools: {
           ...sandboxTools,
           git_push: gitPushTool(sandbox, {
@@ -199,6 +200,52 @@ export const pushOnly = agents.agent(
 ```
 
 It never forces or deletes. `transport` is `"git"`, `"api"` (no `git`, so it runs on Workers) or `"auto"`.
+
+## Push from the host
+
+Give `repo()` a `push` option and the sandbox never holds a write credential. It clones with a read-only token, and `checkout.push()` and the `push` tool go through your policy and a write token on the host.
+
+```typescript {{ title: "inngest/agents/hostPush.ts" }}
+import { agent, repo } from "inngest/experimental/agents";
+import { agents } from "../client";
+import { app } from "../github";
+import { claude } from "../models/claude";
+import { policy } from "../policy";
+import { workbench } from "../sandboxes/workbench";
+
+export const hostPusher = agents.agent(
+  { id: "host-pusher", sandboxes: { work: workbench } },
+  async ({ inbox, sandboxes, control }) => {
+    for await (const message of inbox) {
+      const sandbox = await sandboxes.work.get();
+      const checkout = await repo(sandbox, {
+        repo: "acme/web",
+        path: "/work/web",
+        token: () => {
+          return app.token("acme/web", {
+            permissions: { contents: "read" },
+          });
+        },
+        push: {
+          token: () => {
+            return app.token("acme/web");
+          },
+          policy,
+        },
+      });
+
+      await agent.loop({
+        model: claude,
+        prompt: message.content ?? "",
+        tools: checkout.tools,
+        ...control,
+      });
+    }
+  },
+);
+```
+
+Pass the sandbox itself, not just its tools. A refused push comes back to the model as the tool's error.
 
 ## Push from your own code
 
@@ -318,7 +365,7 @@ It also has `jwt()`, `installationId(target)` and `forget()`. `apiUrl` points it
 ## How it works
 
 - The token is only in the one git process that talks to the remote.
-- A push moves as a bundle through a memoized step, up to 1.5 MiB. The API transport takes up to 8 MiB.
+- A push moves as a bundle through memoized steps, up to 1.5 MiB, compressed first and read in one step when it fits. The API transport takes up to 8 MiB, uploads four blobs at a time and sends small text files inline.
 - Your policy runs on your host against the real objects.
 - Git hooks and LFS filters are off in the checkout.
 

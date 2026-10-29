@@ -264,7 +264,9 @@ export const priced = agents.agent({ id: "priced" }, async ({ inbox }) => {
 });
 ```
 
-A budget needs `...control`; without it the loop runs unbudgeted. A dollar budget needs a price. Limits on sub-agents are in [Events and triggers](/docs/labs/agents/events-and-triggers?ref=docs-labs-agents-loop#limit-sub-agents).
+A budget needs `...control`, or the loop runs unbudgeted. A dollar budget needs a price, including in a sub-agent that is handed one: a price does not travel, so its run fails without its own `limits.price`. A handed-down dollar budget is for that run only and is not kept on the thread.
+
+Limits on sub-agents are in [Events and triggers](/docs/labs/agents/events-and-triggers?ref=docs-labs-agents-loop#limit-sub-agents).
 
 ## Handle errors
 

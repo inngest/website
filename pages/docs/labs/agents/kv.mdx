@@ -39,7 +39,7 @@ export const support = agents.agent(
     for await (const message of inbox) {
       const result = await agent.loop({
         model: claude,
-        prompt: message.data.content ?? "",
+        prompt: message.content ?? "",
         history: (await kv.thread.get(history)) ?? [],
         tools: {},
         ...control,
@@ -148,7 +148,7 @@ import { plan } from "../keys";
 export const planner = agents.agent({ id: "planner" }, async ({ inbox }) => {
   for await (const message of inbox) {
     await kv.thread.set(plan, {
-      steps: [message.data.content ?? ""],
+      steps: [message.content ?? ""],
       done: 0,
     });
 
@@ -336,7 +336,7 @@ export const own = agents.agent(
     for await (const message of inbox) {
       await agent.loop({
         model: claude,
-        prompt: message.data.content ?? "",
+        prompt: message.content ?? "",
         tools: {},
         ...control,
       });

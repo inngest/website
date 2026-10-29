@@ -12,6 +12,7 @@ export const description = "Test Inngest agents with no API keys: a scripted mod
 - **Fake the sandbox.** `fakeSandbox()` serves the Sandboxes API from memory. [Sandbox →](#fake-the-sandbox)
 - **Test a push.** `startGitRemote()` and `fakeGitDataApi()` ask for a token. [Git →](#test-a-push)
 - **Read thread state.** `withKeys()` returns the keys the agent set. [State →](#test-the-whole-agent)
+- **Test a channel.** `testReporter()` runs `report` steps on the spot. [Channel →](#test-a-channel)
 
 Everything here runs in Node and is for tests only. Import it from `inngest/experimental/agents/testing`.
 
@@ -73,7 +74,7 @@ export function createApp(options: AppOptions) {
       for await (const message of inbox) {
         const result = await agent.loop({
           model: options.model,
-          prompt: message.data.content ?? "",
+          prompt: message.content ?? "",
           tools: { lookup },
           ...control,
         });
@@ -319,7 +320,9 @@ Requests for anything but the Sandboxes API go to the real `fetch`.
 
 </AnnotatedCode>
 
-Commands run on the host only with `execute: "local"`, for a scripted model. `localDirs`, `diskPaths` and `passEnv` choose what a real command may touch. Never use `execute: "local"` with a real model.
+Commands run on the host only with `execute: "local"`, for a scripted model. `localDirs`, `diskPaths` and `passEnv` choose what a real command may touch.
+
+Never use `execute: "local"` with a real model.
 
 ## Test a push
 
@@ -373,13 +376,60 @@ test("a push without git", () => {
 });
 ```
 
-Pass `options` to `gitPushTool` or `pushBranch`, and for the API form give `github.fetch` as `fetch` with `transport: "api"`. Read `remote.pushAuth` and `github.ref(...)` after the agent pushes. The remote needs `git` with `git-http-backend`.
+Pass `options` to `gitPushTool` or `pushBranch`, and for the API form give `github.fetch` as `fetch` with `transport: "api"`. Read `remote.pushAuth` and `github.ref(...)` after the agent pushes.
+
+The remote needs `git` with `git-http-backend`.
+
+## Test a channel
+
+`testReporter()` gives a `report` that runs its steps on the spot, so a test sees what the channel was sent.
+
+```typescript {{ title: "inngest/channels/ticket.ts" }}
+import { defineChannel } from "inngest/experimental/agents";
+
+export const posted: string[] = [];
+
+export const ticket = defineChannel({
+  post: async (message) => {
+    posted.push(message.text ?? "");
+
+    return `ticket-${posted.length}`;
+  },
+});
+```
+
+```typescript {{ title: "test/reporter.test.ts" }}
+import { testReporter } from "inngest/experimental/agents/testing";
+import { expect, test } from "vitest";
+import { posted, ticket } from "../inngest/channels/ticket";
+
+test("finish returns the reference and a replay writes nothing", async () => {
+  const first = testReporter({ main: ticket });
+
+  const ref = await first.report.finish({ text: "Done." });
+
+  expect(ref).toBe("ticket-1");
+
+  expect(first.ran).toEqual(["report:finish:1"]);
+
+  const replay = testReporter({ main: ticket }, { saved: first.results });
+
+  expect(await replay.report.finish({ text: "Done." })).toBe("ticket-1");
+
+  expect(replay.ran).toEqual([]);
+
+  expect(posted).toEqual(["Done."]);
+});
+```
+
+`report.finish()` returns the reference `post` gave back (Slack: the message `ts`). `ran` lists the steps that ran, and `results` replays them.
 
 ## How it works
 
 - `startFakes`, `fakeSandbox` and `startGitRemote` have `close()` and work with `await using`.
 - `fakeSandbox({ fakes })` records in this process. `recordUrl` posts to a fakes server in another process.
 - The fake Slack follows the Web API, including streamed progress and its 50-card limit.
+- `fakeSandbox` serves pause and resume, so a thread whose sandbox pauses when idle can be tested.
 - Nothing looks for `git` until you call `startGitRemote` or `fakeGitDataApi`.
 
 [Reference →](/docs/labs/agents/reference-testing?ref=docs-labs-agents-testing)

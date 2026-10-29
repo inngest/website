@@ -22,6 +22,7 @@ Exports from `inngest/experimental/agents` unless the heading says `inngest/expe
 - [Sandbox middleware](#sandbox-middleware)
 - [Durable sandbox](#durable-sandbox)
 - [Commands with $](#commands-with-dollar)
+- [Shell sessions](#shell-sessions)
 - [Runners and groups](#runners-and-groups)
 - [Errors](#errors)
 - [Repo](#repo)
@@ -60,7 +61,7 @@ A baked skills source cannot be combined with `environment` or `secrets`, and al
 | `step.run(id, fn)` | Runs `fn` once per run, memoized. |
 | `event` | The event that started the run, when the agent passed it. |
 | `name` | The name the agent gives the sandbox. |
-| `restored` | Whether it was restored from the thread's snapshot; skip work an earlier run did. |
+| `restored` | Whether it was resumed from a pause or restored from the thread's snapshot; skip work an earlier run did. |
 
 Helpers on `sandbox`:
 
@@ -99,9 +100,9 @@ An agent's `sandboxes` maps names to a definition or a binding. [Sandboxes](/doc
 | --- | --- | --- |
 | `sandbox` | required | The definition. |
 | `start` | `"lazy"` | `"lazy"` creates on the first call that needs it; `"eager"` begins creating when the agent opens its sandboxes. May be a function of `{ event }`. |
-| `keepAlive` | none | Deprecated and inert: needs a platform idle timeout that does not exist. |
+| `idle` | `"pause"` | What the thread's sandbox becomes when the run is done with it. `"pause"` keeps it, disk and all, for the next run to resume. `"snapshot"` saves a snapshot and destroys it. |
 
-A sandbox belongs to the thread: it is restored from the thread's newest snapshot on first use, snapshotted when the run ends, then destroyed. Only files survive between runs.
+A sandbox belongs to the thread. With `idle: "pause"` the run's end pauses it and the next run resumes it, with no size cap; the thread keeps its ID in its KV scope, and the platform decides how long a paused sandbox is kept. A sandbox that cannot be paused is snapshotted and destroyed, and one that is gone or cannot be resumed falls back to the newest snapshot, then to a fresh sandbox. A resumed sandbox keeps its skills (only `"boot"` sources are fetched again) and runs `setup` again with `restored` true. Only files survive a snapshot, not processes.
 
 Functions that resolve and open sandboxes, for custom loops:
 
@@ -129,7 +130,8 @@ What `sandboxes.<name>` is in the agent body.
 | `tools` | The definition's tools, named `<name>_<tool>`. Calling one creates the sandbox. |
 | `get()` | The [durable sandbox](#durable-sandbox), created in one step on first call. |
 | `close()` | Destroys it if created. Call only when the run is ending. |
-| `recycle()` | Saves and destroys it now; the next `get()` or tool call restores it. Needs a sandbox that belongs to a thread. Throws if the snapshot or destroy fails. |
+| `idle` | `"pause"` or `"snapshot"`, from the binding. |
+| `recycle()` | Sets it aside now (paused, or saved and destroyed: see `idle`); the next `get()` or tool call brings it back. Needs a sandbox that belongs to a thread. Throws if the snapshot or destroy fails. |
 
 ## Tools
 
@@ -204,11 +206,13 @@ export const lookupOrder = tool({
 | --- | --- | --- |
 | `cwd` | `/work` | Where relative paths and commands start. |
 | `timeout` | `"5m"` | Longest one command may run. For `run_code`, the longest between waits. |
+| `session` | `true` | `run` keeps its working directory and exported environment between calls, like a terminal. `false` starts every command fresh in `cwd`. |
 | `only` | all (`run_code` only with `tools`) | Names to include. |
 | `tools` | none | Tools the code of `run_code` can call as `tools.name(...)`, besides `tools.sleep({ duration })` and `tools.now()`. `now` and `sleep` are taken. |
 
 - `edit` replaces exact text and runs in your app, so the sandbox needs nothing installed.
 - A command that exits non-zero is a result the model sees, not an error.
+- With `session`, shell functions, aliases and unexported variables do not carry over, and the model is told so in the tool description.
 
 Types: `CodeToolName` (`"read" | "write" | "edit" | "search" | "run" | "run_code"`), `CodeToolsOptions`.
 
@@ -272,6 +276,7 @@ interface DurableSandboxTools {
 | Member | Description |
 | --- | --- |
 | `$` | Run a command as one step. See [Commands with $](#commands-with-dollar). |
+| `shell(options?)` | A [shell session](#shell-sessions) whose commands share a directory and exported environment. |
 | `commands.run(id, command, options?)` | Runs a command. Options: `environment`, `cwd`, `timeout`, `exitCodes` (default `"any"`), or `tools` and `toolOptions`. `exitCodes` cannot be used with `tools`. |
 | `files.write(id, { path, data })`, `files.read(id, path)` | Move files through memoized steps, up to about 2 MiB. |
 | `processes.start`, `list`, `get` | Managed processes. |
@@ -305,6 +310,29 @@ Supporting types: `Sandbox`, `SandboxProcess`, `SandboxSnapshot`, `SandboxClient
 The result is a `DollarPromise` of `SandboxCommandResult` with `text()` (trimmed stdout), `lines()`, and `json<T>()`. Do not put secrets in the command text; use `env`.
 
 Types: `SandboxDollar`, `DollarOptions`, `DollarPromise`, `DollarTag`, `DollarValue`.
+
+## Shell sessions
+
+`sandbox.shell(options?)` returns a `SandboxShell` whose commands share a working directory and exported environment, like one terminal. [Sandboxes](/docs/labs/agents/sandboxes?ref=docs-labs-agents-reference-sandboxes#share-a-shell)
+
+| `SandboxShellOptions` | Default | Description |
+| --- | --- | --- |
+| `cwd` | the sandbox's own directory | Where the first command starts. |
+| `env` | none | Environment every command starts with, before what commands export. |
+
+| `SandboxShell` member | Description |
+| --- | --- |
+| `$` | The sandbox's `$` with the session's state. `cd` and `export` in one command apply to every command called after it finishes. An option on a call overrides the session for that command only. Commands run through a shell. |
+| `cwd` | The directory the next command starts in; `undefined` until a command has reported the sandbox's own. |
+| `env` | The environment the session adds to every command. |
+
+- A command uses the state as of the moment it was called, so commands started together (`Promise.all`) begin from the same state.
+- Only the directory and exported variables carry over. Functions, aliases, unexported variables and shell options do not.
+- A command that sets its own `EXIT` trap or replaces the shell with `exec` ends without its report, so its `cd` and `export` are not kept.
+- State moves only when a command ends with an allowed exit code, so one that throws leaves it as it was.
+- An exported variable is stored in its step's output. Do not export secrets you would not want kept there.
+
+Types: `SandboxShell`, `SandboxShellOptions`, `ShellState`, `ShellStart`. Building blocks for your own session: `beginShellCommand`, `endShellCommand`, `stripShellReport`, exported from `inngest/experimental`.
 
 ## Runners and groups
 
@@ -341,7 +369,7 @@ A group sandbox given an ID alone gets 2 vCPUs and 2048 MB. Types: `OneShotRunne
 Checks a repository out into a sandbox and pushes branches from it. The token is only in the environment of the one git process that talks to the remote. [Repos and git](/docs/labs/agents/repos-and-git?ref=docs-labs-agents-reference-sandboxes)
 
 ```typescript {{ title: "Signature" }}
-repo(sandbox: { commands, tools }, options: RepoOptions): Promise<Repo>
+repo(sandbox: { commands, tools, files? }, options: RepoOptions): Promise<Repo>
 ```
 
 | Option | Default | Description |
@@ -349,7 +377,8 @@ repo(sandbox: { commands, tools }, options: RepoOptions): Promise<Repo>
 | `repo` | required | `owner/name` on GitHub, or any git URL or path. Cannot start with `-`. |
 | `ref` | the default branch | Branch, tag, or commit. `"HEAD"` means the default. |
 | `path` | `/work` | Where to check out. |
-| `token` | none | String or function. Without it only public repositories clone. |
+| `token` | none | String or function. Clones and fetches, and pushes too unless `push` is set. Without it only public repositories clone. With `push` it can be read-only: a token for this repository with `contents: "read"` is all the sandbox ever holds. |
+| `push` | not set | `Omit<GitPushToolOptions, "remote" \| "cwd">`. Pushes from the host with the checks and write token of [`git_push`](#git-push), so the sandbox holds no write credential. Needs the sandbox itself (with `files`), or `repo()` throws. |
 | `sync` | not set | What to do when `path` already holds a checkout. |
 
 `sync` values:
@@ -365,8 +394,8 @@ repo(sandbox: { commands, tools }, options: RepoOptions): Promise<Repo>
 | `path` | Where it is checked out. |
 | `action` | `"cloned"`, `"synced"`, or `"diverged"` (`sync: "keep"` only). |
 | `sha` | The commit that is checked out. |
-| `push(branch)` | Pushes a local branch under the same name. |
-| `tools` | `read`, `write`, `edit`, `search`, `run` in `path`, plus `push`, for `agent.loop()`. |
+| `push(branch)` | Pushes a local branch under the same name. With `push` set, from the host; a refusal throws a `NonRetriableError`. |
+| `tools` | `read`, `write`, `edit`, `search`, `run` in `path`, plus `push`, for `agent.loop()`. `run` keeps its directory and exported environment between calls. With `push` set, a refusal comes back to the model as the tool's error. |
 
 Git hooks are off for these commands. Types: `Repo`, `RepoOptions`.
 
@@ -393,7 +422,7 @@ commitFiles(options: CommitFilesOptions): Promise<PushOutcome>
 | `api` | `https://api.github.com` | API base URL, for `"api"`. |
 | `fetch` | global | The `fetch` the API push uses. |
 
-The tool pushes one branch to the branch of the same name. It never forces or deletes. `pushBranch` returns `{ ok: true, pushed, warning? }` or `{ ok: false, error }`; refusals and rejections come back as values, and only a broken setup throws.
+The tool pushes one branch to the branch of the same name. It never forces or deletes. The sandbox makes one bundle of the new commits (compressed, and read in one step when it fits `maxBytes`); the host reads it in as few steps as it can and pushes once. The API form uploads blobs four at a time and sends small text files inline. `pushBranch` returns `{ ok: true, pushed, warning? }` or `{ ok: false, error }`; refusals and rejections come back as values, and only a broken setup throws.
 
 ### GitPolicy
 

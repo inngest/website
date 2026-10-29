@@ -28,7 +28,7 @@ export const billing = agents.agent(
     for await (const message of inbox) {
       await agent.loop({
         model: claude,
-        prompt: message.data.content ?? "",
+        prompt: message.content ?? "",
         tools: { getCustomer, getOrder, refund },
         onToolResult: (run) => {
           if (!run.isError && run.name === "getCustomer") {
@@ -209,7 +209,7 @@ export const triage = agents.agent(
     for await (const message of inbox) {
       await agent.loop({
         model: claude,
-        prompt: message.data.content ?? "",
+        prompt: message.content ?? "",
         tools,
         ...control,
       });
@@ -297,7 +297,7 @@ export const releaseWatcher = agents.agent(
     for await (const message of inbox) {
       await agent.loop({
         model: claude,
-        prompt: message.data.content ?? "",
+        prompt: message.content ?? "",
         tools: { ...inboxTools },
         ...control,
       });

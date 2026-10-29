@@ -1,7 +1,7 @@
 import { Info } from "shared/Docs/mdx";
 
 export const metaTitle = "Testing reference | Agents";
-export const description = "Agents testing reference: script, startFakes, fakeSandbox, startGitRemote, fakeGitDataApi, and withKeys from inngest/experimental/agents/testing.";
+export const description = "Agents testing reference: script, startFakes, fakeSandbox, startGitRemote, fakeGitDataApi, withKeys and testReporter from inngest/experimental/agents/testing.";
 
 # Agents testing reference
 
@@ -21,6 +21,7 @@ These helpers run in Node and are for tests, never production code. [Testing](/d
 | [`startGitRemote`](#startgitremote) | A git remote over HTTP that wants a token. | [Repos and git](/docs/labs/agents/repos-and-git?ref=docs-labs-agents-reference-testing) |
 | [`fakeGitDataApi`](#fakegitdataapi) | A GitHub Git Data API in memory. | [Repos and git](/docs/labs/agents/repos-and-git?ref=docs-labs-agents-reference-testing) |
 | [`withKeys`](#withkeys) | A thread handle whose `state()` returns only the keys the agent set. | [Threads](/docs/labs/agents/threads?ref=docs-labs-agents-reference-testing) |
+| [`testReporter`](#testreporter) | A `report` that runs its steps on the spot, for channel tests. | [Testing](/docs/labs/agents/testing?ref=docs-labs-agents-reference-testing#test-a-channel) |
 
 ```typescript {{ title: "inngest/testing/support.test.ts" }}
 import { Inngest } from "inngest";
@@ -130,6 +131,8 @@ fakeSandbox(options?: FakeSandboxOptions): FakeSandbox
 | `close()` | Kills started processes and removes the tools directory. Later requests answer 503. |
 | `[Symbol.asyncDispose]` | Same as `close()`. |
 
+It serves pause and resume too: a paused sandbox answers 409 to commands until resumed, and a destroyed one answers 404. The operations are recorded as `sandbox.pause` and `sandbox.resume`. A shell session's working directory is reported as `/work`.
+
 Processes and the call-home commands of tools run for real on this machine. Types: `FakeSandbox`, `FakeSandboxOptions`.
 
 ## startGitRemote
@@ -185,3 +188,27 @@ withKeys(thread: ThreadHandle): ThreadHandleWithKeys
 ```
 
 Returns the handle with `state()` returning only the keys the agent set in the thread's KV scope, a `Record<string, unknown>`. Type: `ThreadHandleWithKeys`.
+
+## testReporter
+
+A `report` for tests of channels. Every `report()`, `report.card()` and `report.finish()` runs its step directly against the channels you pass.
+
+```typescript {{ title: "Signature" }}
+testReporter(
+  channels: Record<string, Channel>,
+  options?: { report?: ReportConfig; saved?: Record<string, unknown> },
+): TestReporter
+```
+
+| Option | Default | Description |
+| --- | --- | --- |
+| `report` | channel `main` | The agent's `report` config. |
+| `saved` | none | Step results to replay, by step ID. A replayed step writes nothing again. |
+
+| `TestReporter` member | Description |
+| --- | --- |
+| `report` | The reporter, as the agent's `report`. |
+| `ran` | The IDs of the steps that ran, in order. Replayed steps are not listed. |
+| `results` | The results of the steps that ran, by step ID. Pass them as `saved` to another `testReporter()` to see a replay. |
+
+Type: `TestReporter`.

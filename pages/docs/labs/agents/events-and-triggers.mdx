@@ -11,6 +11,7 @@ export const description = "Inngest Agents triggers: start agent threads from ev
 - **On a schedule.** A cron starts the agent. [Cron →](#run-on-a-schedule)
 - **Several triggers.** One agent, many sources. [List →](#combine-triggers)
 - **Call another agent.** `agent.invoke()` returns its result. [Invoke →](#call-another-agent)
+- **Cancel children with the parent.** One `cancelOn` entry. [Cancel →](#cancel-with-the-caller)
 - **Limit sub-agents.** Depth, count, who and how much. [Limits →](#limit-sub-agents)
 - **Reach a live run.** Events that never start one. [Inbox →](#inbox-sources)
 
@@ -249,11 +250,53 @@ export const helper = inngest.createFunction(
 );
 ```
 
+## Cancel with the caller
+
+A cancelled callee makes `agent.invoke()` throw `AgentCancelledError`. Cancelling the caller cancels the callee only if the callee lists `agentInvokeCancelOn`.
+
+```typescript {{ title: "inngest/agents/worker.ts" }}
+import { invoke } from "inngest";
+import { agentInvokeCancelOn } from "inngest/experimental/agents";
+import { z } from "zod";
+import { agents } from "../client";
+
+export const worker = agents.agent(
+  {
+    id: "worker",
+    on: invoke(z.object({ task: z.string() })),
+    cancelOn: [agentInvokeCancelOn],
+  },
+  async ({ trigger }) => {
+    return { done: trigger?.data.task };
+  },
+);
+```
+
+```typescript {{ title: "inngest/agents/boss.ts" }}
+import { agent, AgentCancelledError } from "inngest/experimental/agents";
+import { agents } from "../client";
+import { worker } from "./worker";
+
+export const boss = agents.agent({ id: "boss" }, async () => {
+  try {
+    return await agent.invoke(worker, { task: "audit" });
+  } catch (error) {
+    if (error instanceof AgentCancelledError) {
+      return { done: null, cancelledRun: error.runId };
+    }
+
+    throw error;
+  }
+});
+```
+
+Use the entry only on an agent that `agent.invoke()` starts. `agents.agent()` throws if `on` has any other trigger.
+
 ## Limit sub-agents
 
-`limits` apply to `agent.invoke()`. A refused call throws `AgentLimitError`, whose `limit` is `depth`, `spawn`, `mayCall` or `budget`. Inside a tool, the model reads its message as the result.
+`limits` apply to `agent.invoke()`. A refused call throws `AgentLimitError`, whose `limit` is `depth`, `spawn`, `mayCall` or `budget`.
 
-Sub-agents inherit the limits, narrowed. `depth` defaults to 1. A raw `step.invoke` or `sendEvent` is not checked.
+Sub-agents inherit the limits, narrowed, and `depth` defaults to 1. A dollar budget needs the sub-agent's own `limits.price`, since a price does not travel. A raw `step.invoke` or `sendEvent` is not checked.
 
 ## Inbox sources
 
