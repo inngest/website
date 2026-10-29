@@ -41,7 +41,7 @@ When a Sandbox operation fails, find its step in the run trace or inspect the di
 
 ## Code in the Sandbox gets a `ToolError`
 
-**Check:** The tool name must be an own key of `tools`. A `tool.step()` with an `input` schema rejects arguments that do not match it before anything runs, and a tool that still fails after its retries raises the error. Also check that the call used named arguments for `tool.step()` and positional ones for a plain function.
+**Check:** The tool name must be an own key of `tools`. A `tool.step()` with an `input` schema rejects arguments that do not match it before anything runs, and a tool that still fails after its retries raises the error. Also check that the call used named arguments for a `tool.step()` with an `input` schema and positional ones for a plain function.
 
 **Fix:** Catch `ToolError` in the Sandbox code, or fix the arguments or the tool. The failed attempt is a step in the run trace. See [Tools](/docs/sandboxes/features/tools).
 

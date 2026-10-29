@@ -129,15 +129,19 @@ These runners are experimental.
 
 <CodeGroup>
 ```typescript {{ title: "TypeScript" }}
-await using sb = await step.sandbox.create("build");
-await sb.commands.run("npm test");
+await using sb = await step.sandbox.create("build", {
+  name: "build",
+  vcpu: 2,
+  memoryMb: 2048,
+});
+await sb.commands.run("test", "npm test");
 ```
 
 <SdkUnsupported title="Python" feature="Sandboxes" />
 <SdkUnsupported title="Go" feature="Sandboxes" />
 </CodeGroup>
 
-`group.sandbox()` (experimental) runs a callback with a fresh Sandbox and destroys it afterwards. The Sandbox's whole lifetime shows as one group in the trace, and a retried failure keeps the Sandbox for the next attempt.
+`group.sandbox()` (experimental) runs a callback with a fresh Sandbox and destroys it afterwards. The Sandbox's whole lifetime shows as one group in the trace. It is destroyed when the callback ends, even when it throws, so a failure after that is final and is not retried.
 
 <CodeGroup>
 ```typescript {{ title: "TypeScript" }}
@@ -150,7 +154,7 @@ await group.sandbox("build", async (sb) => {
 <SdkUnsupported title="Go" feature="Sandboxes" />
 </CodeGroup>
 
-`group` comes from the function's arguments, next to `step`: `async ({ event, step, group }) => {}`. Both forms use the same defaults when you pass only an ID: 2 vCPU and 2048 MiB.
+`group` comes from the function's arguments, next to `step`: `async ({ event, step, group }) => {}`. `group.sandbox()` uses 2 vCPU and 2048 MiB when you pass only an ID. `step.sandbox.create()` needs `name`, `vcpu`, and `memoryMb`.
 
 Durations such as `runningTimeout` and `timeout` accept compound strings like `"4m30s"`.
 

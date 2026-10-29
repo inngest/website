@@ -36,14 +36,22 @@ Inside the Sandbox, import `inngest_tools`:
 // agent.js
 const { tools } = require("inngest_tools");
 
-const customer = await tools.getCustomer("cus_1");
+async function main() {
+  const customer = await tools.getCustomer("cus_1");
+}
+
+main();
 ```
 
 ```python
 # agent.py
+import asyncio
 from inngest_tools import tools
 
-customer = await tools.getCustomer("cus_1")
+async def main():
+    customer = await tools.getCustomer("cus_1")
+
+asyncio.run(main())
 ```
 
 A tool that fails raises a `ToolError` the code can catch. Tools work with `step.sandbox`; the direct `inngest.sandboxes` client does not run them.

@@ -11,7 +11,7 @@ export const description = "Run commands in a Sandbox with $, a tagged template 
 - **Write commands like a script.** Each interpolated value is one argument, so there is no quoting to get wrong.
 - **Read output directly.** `.text()`, `.lines()`, and `.json()`.
 - **Fail loudly.** A command that exits with an unexpected code fails its step, with the output attached.
-- **Run for hours.** A long command is still one row in the trace.
+- **Run long commands.** A command that outlasts one step's wait is still one row in the trace.
 
 ## Run a command
 
@@ -80,7 +80,7 @@ const { stdout, stderr, exitCode } = await sb.$`node -v`;
 <SdkUnsupported title="Go" feature="Sandboxes" />
 </CodeGroup>
 
-`.json()` fails the step without retrying when the output is not JSON, naming the command.
+`.json()` throws a `NonRetriableError`, naming the command, when the output is not JSON.
 
 ## Set options
 
@@ -113,7 +113,7 @@ await sb.$({ id: "install" }).sh`pnpm install`;
 
 A configured `$` can be reused for many commands, and calling it again merges: `work$({ cwd: "/other" })` keeps `env` and `exitCodes`.
 
-`commands.run` takes `exitCodes` too, but defaults to `"any"`, so there the exit code comes back as data. It can't be combined with `tools`.
+`commands.run` takes `exitCodes` too, but defaults to `"any"`, so there the exit code comes back as data. `exitCodes` can't be combined with `tools` on `commands.run`.
 
 ## Handle failures
 
@@ -160,7 +160,7 @@ A timeout over five minutes runs the command as a process that the steps follow,
 
 <CodeGroup>
 ```typescript {{ title: "TypeScript" }}
-await sb.$({ timeout: "2h" }).sh`pnpm test:e2e`;
+await sb.$({ timeout: "45m" }).sh`pnpm test:e2e`;
 ```
 
 <SdkUnsupported title="Python" feature="Sandboxes" />
@@ -168,7 +168,8 @@ await sb.$({ timeout: "2h" }).sh`pnpm test:e2e`;
 </CodeGroup>
 
 - Output is the last 512 KiB.
-- Each wait counts against the run's step limit: 24 hours is about 288 steps.
+- Each wait counts against the run's step limit, one per five minutes of `timeout`.
+- The `timeout` does not extend the Sandbox's one hour of active runtime. See [Runtime expiry](/docs/sandboxes/limits#runtime-expiry).
 - A command that times out is killed, and fails with `type: "timeout"`.
 
 ## In the trace
