@@ -1,76 +1,17 @@
 import { CodeGroup, SdkUnsupported } from "shared/Docs/mdx";
 export const metaTitle = "Command shims | Sandboxes";
-export const description = "Command shims make a program in a Sandbox call your app first, so plain git, terraform and other CLIs work while the credentials stay in your app.";
+export const description = "Command shims make a program in a Sandbox call your app first, so plain terraform, gh and other CLIs work while the credentials stay in your app.";
 
 # Command shims
 
-> Make any program in a Sandbox call your app first, so code can run `git push` without ever holding the token.
+> Make any program in a Sandbox call your app first, so code can run `terraform apply` or `gh pr create` without ever holding the credential.
 
 > **Experimental.** `tool` is exported from `inngest/experimental`. The API can change.
 
 - **Keep credentials out of the Sandbox.** Privileged actions call home: your app does the work with its own token and replies with the result.
-- **Keep your commands as they are.** Code runs `git clone`, `git push` or `terraform apply` as usual.
-- **Decide per call.** Check a push against your rules, run the program as called, change its arguments, refuse it, or answer for it.
-- **Nothing secret in the run.** The token lives in your app's memory. It is never a step input or output and never appears in the trace.
-
-## Push from your app
-
-`tool.shim.git()` handles `git clone`, `git fetch` and `git push` in your app. A clone or fetch happens on your side and is unpacked into the Sandbox. A push is bundled in the Sandbox, brought home, checked by your `policy` and pushed from your app.
-
-<CodeGroup>
-```typescript {{ title: "TypeScript" }}
-import { tool } from "inngest/experimental";
-
-const git = tool.shim.git({
-  remote: "https://github.com/acme/app.git",
-  token: () => installationToken("acme/app"),
-  policy: async (push) => {
-    if (!push.branch?.startsWith("agent/")) {
-      return { refuse: "agents push to agent/* branches" };
-    }
-
-    const outside = push.paths.filter((path) => !path.startsWith("src/"));
-    if (outside.length > 0) {
-      return { refuse: `only src/ may change: ${outside.join(", ")}` };
-    }
-
-    if (/AKIA[0-9A-Z]{16}/.test(await push.patch())) {
-      return { refuse: "that patch contains an AWS key" };
-    }
-
-    return undefined;
-  },
-});
-
-await sb.$({
-  shims: [git],
-  toolOptions: { toolTimeout: "2m" },
-}).sh`
-  git clone https://github.com/acme/app.git work
-  cd work
-  git checkout -b agent/fix
-  ./fix.sh
-  git commit -am "fix"
-  git push -u origin agent/fix
-`;
-```
-
-<SdkUnsupported title="Python" feature="Sandboxes" />
-<SdkUnsupported title="Go" feature="Sandboxes" />
-</CodeGroup>
-
-- **There is no credential to find.** The Sandbox holds no token, so `git credential fill`, `env` and `.git/config` show nothing. `token` runs in your app for each clone, fetch and push.
-- **Your `policy` sees what is really being pushed.** It is worked out in your app from the objects that were sent, not taken from the Sandbox's word. It receives `branch`, `ref`, `sha`, `oldSha`, `fastForward`, `commits`, `paths` and `patch()`.
-- **Return nothing to allow.** Return `{ refuse: "why" }` to stop the push; the code sees `git: <why>` and exit code 126. Return `{ ref: "refs/heads/agent/fix" }` to push somewhere else, such as turning a push to `main` into a branch.
-- **`origin` is your `remote`.** `git clone` accepts only that URL, and the clone's `origin` is set to it.
-- **Supported forms.** `git clone [--depth N] [-b BRANCH] <url> [dir]`, `git fetch [origin]` and `git push [-u] [origin] [src[:dst]]`, with `git -C <dir>` in front.
-- **Not supported.** Force pushes, deleting refs, other remotes and `git pull` (use `git fetch` and `git merge`) are refused with a message.
-- **Pushes your policy cannot fully check are refused.** That means more than 500 new commits, more than one ref at once, a path with characters git prints in quotes, and history the host cannot read. Global git options other than `-C` are refused too.
-- **Everything else runs the real git** in the Sandbox with no round trip: `git status`, `git commit`, `git diff`.
-- **Your app needs `git` and `tar`.** Clones and pushes are staged in a temporary directory there.
-- **Size.** A push sends the history reachable from the pushed branch, up to `maxBytes` (128 MiB by default). Raise `toolTimeout` for big repositories; it defaults to 30 seconds.
-
-Use `username` if your host wants a name other than `x-access-token`.
+- **Keep your commands as they are.** Code runs `terraform apply` or `gh pr create` as usual.
+- **Decide per call.** Check a call against your rules, run the program as called, change its arguments, refuse it, or answer for it.
+- **Nothing secret in the run.** The credential lives in your app's memory. It is never a step input or output and never appears in the trace.
 
 ## Use shims
 
@@ -78,13 +19,13 @@ Use `username` if your host wants a name other than `x-access-token`.
 
 <CodeGroup>
 ```typescript {{ title: "TypeScript" }}
-const deploy$ = sb.$({ cwd: "/work", shims: [git, terraform] });
+const deploy$ = sb.$({ cwd: "/work", shims: [npm, terraform] });
 
 await deploy$.sh`terraform plan`;
 
 await sb.commands.run("plan", "terraform plan", {
   cwd: "/work",
-  shims: [git, terraform],
+  shims: [npm, terraform],
 });
 ```
 
@@ -92,7 +33,7 @@ await sb.commands.run("plan", "terraform plan", {
 <SdkUnsupported title="Go" feature="Sandboxes" />
 </CodeGroup>
 
-- **Anything the command starts is covered.** A script that runs `sh -c 'git push'`, or `npm` calling `git`, reaches the shim too.
+- **Anything the command starts is covered.** A script that runs `sh -c 'terraform plan'`, or `make` calling `terraform`, reaches the shim too.
 - **One shim per program.** Passing the same name twice throws, and so does a second `tool.shim.config()`.
 - **Some names are reserved.** Names the shims rely on (`sh`, `env`, `cat`) cannot be shimmed.
 - **Outside the command, nothing changes.** A daemon started earlier runs the real program.
@@ -210,25 +151,25 @@ await sb.$({
 
 ## For agents writing code in the Sandbox
 
-Shims are transparent. An agent runs `git push` and it works. The one hint to give it is: run `inngest-tool shims`.
+Shims are transparent. An agent runs `terraform plan` and it works. The one hint to give it is: run `inngest-tool shims`.
 
 ```sh
 $ inngest-tool shims
 config: values to read with inngest-tool config NAME: REGION
-git: clone, fetch and push are done by the host, which holds the credentials; other commands run in the sandbox
+gh: pr create is done by the host, which holds the credentials; other commands run in the sandbox
 terraform: plan runs; apply is refused
 
 $ echo $INNGEST_SHIMS
-git,terraform
+gh,terraform
 ```
 
-- **`inngest-tool shims`** prints one line per entry: the `config` line first, then each shim in the order passed. Descriptions come from `tool.shim(name, { description, handle })`, or are generated. Say what actually happens ("push opens a pull request from agent/*").
+- **`inngest-tool shims`** prints one line per entry: the `config` line first, then each shim in the order passed. Descriptions come from `tool.shim(name, { description, handle })`, or are generated. Say what actually happens ("pr create opens a pull request from agent/*").
 - **`INNGEST_SHIMS`** holds the shimmed program names, comma separated, for scripts.
 
 ## Limits
 
-- **A shim is a convenience, not a boundary.** Shims sit first on `PATH`, so code can run `/usr/bin/git` directly. What keeps a credential safe is that the Sandbox never has one. To stop code reaching the network around the shims, close the Sandbox's egress.
-- **A request is at most 256 KiB, and a reply 1 MiB.** `stdin` is text up to 128 KiB, and a call has up to 512 arguments. Move large data with the `sandbox` handle's files, as `tool.shim.git()` does.
+- **A shim is a convenience, not a boundary.** Shims sit first on `PATH`, so code can run `/usr/bin/terraform` directly. What keeps a credential safe is that the Sandbox never has one. To stop code reaching the network around the shims, close the Sandbox's egress.
+- **A request is at most 256 KiB, and a reply 1 MiB.** `stdin` is text up to 128 KiB, and a call has up to 512 arguments. Move large data with the `sandbox` handle's files.
 - **Shims need x86_64.**
 - **Each call is a round trip to your app.** Shim programs that run once per command. Use `only` or `local` so calls that don't need your app don't make the trip. A command stops after 100 calls unless you set `toolOptions.maxCalls`.
 - **A command with shims can run longer than five minutes.** Set `timeout`. Each wait counts against the run's step limit, like [long-running commands](/docs/sandboxes/features/commands#long-running-commands).
