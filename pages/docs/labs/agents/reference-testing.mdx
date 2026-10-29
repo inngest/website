@@ -1,4 +1,4 @@
-import { Info } from "shared/Docs/mdx";
+import { AnnotatedCode, Annotation, Info } from "shared/Docs/mdx";
 
 export const metaTitle = "Testing reference | Agents";
 export const description = "Agents testing reference: script, startFakes, fakeSandbox, startGitRemote, fakeGitDataApi, withKeys and testReporter from inngest/experimental/agents/testing.";
@@ -11,17 +11,17 @@ export const description = "Agents testing reference: script, startFakes, fakeSa
   Agents are an Inngest Labs project: early, moving fast, and shaped by your feedback. [What's Labs?](/docs/labs?ref=docs-labs-agents-reference-testing) APIs may change between releases.
 </Info>
 
-These helpers run in Node and are for tests, never production code. [Testing](/docs/labs/agents/testing?ref=docs-labs-agents-reference-testing) teaches them in order.
+These helpers run in Node and are for tests, never production code. [Testing](/docs/labs/agents/recipes/testing?ref=docs-labs-agents-reference-testing) shows them working.
 
 | Export | Description | Learn |
 | --- | --- | --- |
-| [`script`](#script) | A scripted model that needs no API key. | [Testing](/docs/labs/agents/testing?ref=docs-labs-agents-reference-testing) |
-| [`startFakes`](#startfakes) | A fake Slack, GitHub, and recorder in one local server. | [Testing](/docs/labs/agents/testing?ref=docs-labs-agents-reference-testing) |
-| [`fakeSandbox`](#fakesandbox) | The Sandboxes API served from memory. | [Testing](/docs/labs/agents/testing?ref=docs-labs-agents-reference-testing) |
+| [`script`](#script) | A scripted model that needs no API key. | [Testing](/docs/labs/agents/recipes/testing?ref=docs-labs-agents-reference-testing) |
+| [`startFakes`](#startfakes) | A fake Slack, GitHub, and recorder in one local server. | [Testing](/docs/labs/agents/recipes/testing?ref=docs-labs-agents-reference-testing) |
+| [`fakeSandbox`](#fakesandbox) | The Sandboxes API served from memory. | [Testing](/docs/labs/agents/recipes/testing?ref=docs-labs-agents-reference-testing) |
 | [`startGitRemote`](#startgitremote) | A git remote over HTTP that wants a token. | [Repos and git](/docs/labs/agents/repos-and-git?ref=docs-labs-agents-reference-testing) |
 | [`fakeGitDataApi`](#fakegitdataapi) | A GitHub Git Data API in memory. | [Repos and git](/docs/labs/agents/repos-and-git?ref=docs-labs-agents-reference-testing) |
 | [`withKeys`](#withkeys) | A thread handle whose `state()` returns only the keys the agent set. | [Threads](/docs/labs/agents/threads-and-memory?ref=docs-labs-agents-reference-testing) |
-| [`testReporter`](#testreporter) | A `report` that runs its steps on the spot, for channel tests. | [Testing](/docs/labs/agents/testing?ref=docs-labs-agents-reference-testing#test-a-channel) |
+| [`testReporter`](#testreporter) | A `report` that runs its steps on the spot, for channel tests. | [Testing](/docs/labs/agents/reference-testing?ref=docs-labs-agents-reference-testing#test-a-channel) |
 
 ## script
 
@@ -173,3 +173,238 @@ testReporter(
 | `results` | The results of the steps that ran, by step ID. Pass them as `saved` to another `testReporter()` to see a replay. |
 
 Type: `TestReporter`.
+
+## Worked tests
+
+Complete tests for the helpers above. The [Testing recipe](/docs/labs/agents/recipes/testing?ref=docs-labs-agents-reference-testing) shows the first one end to end.
+
+### Script the model
+
+A step answers by turn. A step with `when` answers the first request it matches.
+
+```typescript {{ title: "test/models.ts" }}
+import { script } from "inngest/experimental/agents/testing";
+
+export const model = script([
+  { call: { name: "lookup", input: { id: "42" } } },
+  {
+    say: "Sorry, I cannot help with that.",
+    when: (request) => {
+      return request.messages.length > 20;
+    },
+  },
+  { say: "You asked: {{last}}" },
+]);
+```
+
+After the script the model echoes the last user message. `{{last}}` in a `say` is replaced by that message.
+
+### Fake the sandbox
+
+`fakeSandbox` is the Sandboxes API served from memory. Give its `fetch` to the client.
+
+```typescript {{ title: "inngest/checks.ts" }}
+import { Inngest } from "inngest";
+import { sandboxMiddleware } from "inngest/experimental";
+import { agent } from "inngest/experimental/agents";
+import type { DurableSandbox } from "inngest/experimental";
+import { script } from "inngest/experimental/agents/testing";
+
+export function createChecks(fetchImpl: typeof fetch) {
+  const inngest = new Inngest({
+    id: "checks",
+    isDev: true,
+    middleware: [sandboxMiddleware()],
+    fetch: fetchImpl,
+  });
+
+  const check = inngest.createFunction(
+    { id: "check", triggers: [{ event: "checks/run" }] },
+    async ({ group }) => {
+      return group.sandbox("box", async (sandbox: DurableSandbox) => {
+        const result = await agent.loop({
+          model: script([
+            { call: { name: "run", input: { command: "npm test" } } },
+            { say: "tests pass" },
+          ]),
+          prompt: "run the tests",
+          tools: sandbox.tools.code({ only: ["run"] }),
+        });
+
+        return result.text;
+      });
+    },
+  );
+
+  return { inngest, check };
+}
+```
+
+<AnnotatedCode>
+
+```typescript {{ title: "test/sandbox.test.ts" }}
+import { fakeSandbox, startFakes } from "inngest/experimental/agents/testing";
+import { expect, test } from "vitest";
+import { createChecks } from "../inngest/checks";
+import { serveApp } from "./serveApp";
+
+test("the agent runs the canned command in a fake sandbox", async () => {
+  await using fakes = await startFakes();
+
+  await using sandbox = fakeSandbox({
+    fakes,
+    commands: {
+      "npm test": { stdout: "12 passed\n" },
+      "": {},
+    },
+  });
+
+  const { inngest, check } = createChecks(sandbox.fetch);
+
+  await using _server = await serveApp(inngest, [check]);
+
+  await inngest.send({ name: "checks/run", data: {} });
+
+  await expect
+    .poll(() => {
+      return fakes.posts({ channel: "sandbox", method: "sandbox.destroy" });
+    })
+    .toHaveLength(1);
+
+  const [exec] = fakes.posts({ channel: "sandbox", method: "sandbox.exec" });
+
+  expect(JSON.stringify(exec?.body)).toContain("npm test");
+});
+```
+
+<Annotation id="record" lines="10" tease="calls land on fakes" title="fakes" href="/docs/sandboxes/overview?ref=docs-labs-agents-reference-testing" linkText="Sandboxes">
+Every operation is recorded as `sandbox.create`, `exec`, `upload` or `destroy`.
+</Annotation>
+
+<Annotation id="commands" lines="11-14" tease="first match wins" title="commands" href="/docs/labs/agents/sandboxes-and-code?ref=docs-labs-agents-reference-testing" linkText="Sandboxes">
+Commands are matched by the text they contain. One that matches nothing fails with exit code 127, so a typo never passes. `""` matches the rest.
+</Annotation>
+
+<Annotation id="fetch" lines="17" tease="pass to the client" title="fetch" href="/docs/labs/agents/sandboxes-and-code?ref=docs-labs-agents-reference-testing" linkText="Sandboxes">
+Requests for anything but the Sandboxes API go to the real `fetch`.
+</Annotation>
+
+</AnnotatedCode>
+
+Commands run on the host only with `execute: "local"`, for a scripted model. `localDirs`, `diskPaths` and `passEnv` choose what a real command may touch.
+
+Never use `execute: "local"` with a real model.
+
+### Test a push
+
+`startGitRemote` serves real repositories over HTTP, behind a token. `fakeGitDataApi` is GitHub's Git Data API in memory, for pushes without git.
+
+```typescript {{ title: "test/git.test.ts" }}
+import { execSync } from "node:child_process";
+import { mkdtempSync, writeFileSync } from "node:fs";
+import { tmpdir } from "node:os";
+import { join } from "node:path";
+import { commitFiles } from "inngest/experimental/agents";
+import {
+  fakeGitDataApi,
+  startGitRemote,
+} from "inngest/experimental/agents/testing";
+import { expect, test } from "vitest";
+
+test("a git remote lists its branches", async () => {
+  await using remote = await startGitRemote({
+    token: "t0k",
+    repos: {
+      website: { "index.html": "<h1>hi</h1>\n" },
+      source: { main: { "a.ts": "export {};\n" }, pr: { "b.ts": "1\n" } },
+    },
+  });
+
+  expect(remote.repos.website?.url).toContain("website.git");
+
+  expect(Object.keys(remote.repos.source?.heads ?? {})).toEqual([
+    "main",
+    "pr",
+  ]);
+});
+
+test("a commit through the API carries the token", async () => {
+  const dir = mkdtempSync(join(tmpdir(), "base-"));
+
+  writeFileSync(join(dir, "README.md"), "# app\n");
+
+  execSync(
+    "git init -q -b main && git add . && git -c user.name=t -c user.email=t@t commit -qm base",
+    { cwd: dir },
+  );
+
+  const github = fakeGitDataApi({ repo: "acme/app" });
+
+  github.seed(dir, "HEAD", "refs/heads/main");
+
+  const result = await commitFiles({
+    remote: "https://github.com/acme/app",
+    token: "t0k",
+    api: "http://github.test",
+    fetch: github.fetch,
+    ref: "refs/heads/agent-fix",
+    message: "Fix the typo",
+    files: { "README.md": "# app, fixed\n" },
+  });
+
+  expect(result).toHaveProperty("pushed");
+
+  expect(github.ref("refs/heads/agent-fix")).toBeDefined();
+
+  expect(github.requests[0]?.authorization).toContain("t0k");
+});
+```
+
+Point `gitPushTool` or `pushBranch` at `remote.repos.<name>.url` with `transport: "git"`, or for the API form give `github.fetch` as `fetch` with `transport: "api"`. Read `remote.pushAuth` and `github.ref(...)` after the agent pushes.
+
+Both need `git` on the machine; the remote also needs `git-http-backend`.
+
+### Test a channel
+
+`testReporter()` gives a `report` that runs its steps on the spot, so a test sees what the channel was sent.
+
+```typescript {{ title: "inngest/channels/ticket.ts" }}
+import { defineChannel } from "inngest/experimental/agents";
+
+export const posted: string[] = [];
+
+export const ticket = defineChannel({
+  post: async (message) => {
+    posted.push(message.text ?? "");
+
+    return `ticket-${posted.length}`;
+  },
+});
+```
+
+```typescript {{ title: "test/reporter.test.ts" }}
+import { testReporter } from "inngest/experimental/agents/testing";
+import { expect, test } from "vitest";
+import { posted, ticket } from "../inngest/channels/ticket";
+
+test("finish returns the reference and a replay writes nothing", async () => {
+  const first = testReporter({ main: ticket });
+
+  const ref = await first.report.finish({ text: "Done." });
+
+  expect(ref).toBe("ticket-1");
+
+  expect(first.ran).toEqual(["report:finish:1:0:main"]);
+
+  const replay = testReporter({ main: ticket }, { saved: first.results });
+
+  expect(await replay.report.finish({ text: "Done." })).toBe("ticket-1");
+
+  expect(replay.ran).toEqual([]);
+
+  expect(posted).toEqual(["Done."]);
+});
+```
+
+`report.finish()` returns the reference `post` gave back (Slack: the message `ts`). `ran` lists the steps that ran, and `results` replays them.
+
