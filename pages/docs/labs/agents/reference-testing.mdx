@@ -1,0 +1,187 @@
+import { Info } from "shared/Docs/mdx";
+
+export const metaTitle = "Testing reference | Agents";
+export const description = "Agents testing reference: script, startFakes, fakeSandbox, startGitRemote, fakeGitDataApi, and withKeys from inngest/experimental/agents/testing.";
+
+# Agents testing reference
+
+> Signatures, options, and defaults for `inngest/experimental/agents/testing`.
+
+<Info>
+  Agents are an Inngest Labs project: early, moving fast, and shaped by your feedback. [What's Labs?](/docs/labs?ref=docs-labs-agents-reference-testing) APIs may change between releases.
+</Info>
+
+These helpers run in Node and are for tests, never production code. [Testing](/docs/labs/agents/testing?ref=docs-labs-agents-reference-testing) teaches them in order.
+
+| Export | Description | Learn |
+| --- | --- | --- |
+| [`script`](#script) | A scripted model that needs no API key. | [Testing](/docs/labs/agents/testing?ref=docs-labs-agents-reference-testing) |
+| [`startFakes`](#startfakes) | A fake Slack, GitHub, and recorder in one local server. | [Testing](/docs/labs/agents/testing?ref=docs-labs-agents-reference-testing) |
+| [`fakeSandbox`](#fakesandbox) | The Sandboxes API served from memory. | [Testing](/docs/labs/agents/testing?ref=docs-labs-agents-reference-testing) |
+| [`startGitRemote`](#startgitremote) | A git remote over HTTP that wants a token. | [Repos and git](/docs/labs/agents/repos-and-git?ref=docs-labs-agents-reference-testing) |
+| [`fakeGitDataApi`](#fakegitdataapi) | A GitHub Git Data API in memory. | [Repos and git](/docs/labs/agents/repos-and-git?ref=docs-labs-agents-reference-testing) |
+| [`withKeys`](#withkeys) | A thread handle whose `state()` returns only the keys the agent set. | [Threads](/docs/labs/agents/threads?ref=docs-labs-agents-reference-testing) |
+
+```typescript {{ title: "inngest/testing/support.test.ts" }}
+import { Inngest } from "inngest";
+import {
+  fakeSandbox,
+  script,
+  startFakes,
+  withKeys,
+} from "inngest/experimental/agents/testing";
+import { sandboxMiddleware } from "inngest/experimental";
+import { agent } from "inngest/experimental/agents";
+import { support } from "../agents/support";
+
+export const run = async () => {
+  await using fakes = await startFakes();
+  const sandbox = fakeSandbox({
+    fakes,
+    commands: { "npm test": { stdout: "ok" }, "": {} },
+  });
+
+  const client = new Inngest({
+    id: "app",
+    fetch: sandbox.fetch,
+    middleware: [sandboxMiddleware()],
+  });
+
+  const model = script([
+    { call: { name: "run", input: {} } },
+    { say: "done" },
+  ]);
+
+  await agent.loop({ model, prompt: "go", tools: {} });
+
+  const keys = await withKeys(support.thread("t1")).state();
+  const posts = fakes.posts({ channel: "sandbox", method: "sandbox.exec" });
+
+  return [client.id, keys, posts.length];
+};
+```
+
+## script
+
+```typescript {{ title: "Signature" }}
+script(steps?: ScriptStep[]): AgentModel
+
+type ScriptStep =
+  | { say: string; when?: (request: AgentModelRequest) => boolean }
+  | { call: { name: string; input: unknown }; when?: (request: AgentModelRequest) => boolean }
+```
+
+- A step with `when` answers the first request it matches. The others answer by turn: the first on turn 1, the second on turn 2, and so on.
+- After the script, the model echoes the last user message.
+- `{{last}}` in a `say` is replaced by the last user message.
+- Each reply reports usage of 10 input and 5 output tokens.
+
+## startFakes
+
+Starts one in-process HTTP server on a free local port that plays fake Slack, fake GitHub, and the recorder `fakeSandbox` reports to.
+
+```typescript {{ title: "Signature" }}
+startFakes(): Promise<Fakes>
+```
+
+| `Fakes` member | Description |
+| --- | --- |
+| `url` | Base URL, such as `http://127.0.0.1:41233`. Slack is under `/slack/api`, GitHub under `/github`. |
+| `calls` | Every call received, oldest first. |
+| `posts(filter?)` | The calls that match every field of the filter. |
+| `record(method, body)` | Records a sandbox operation, as `fakeSandbox({ fakes })` does. |
+| `close()` | Stops the server. |
+| `[Symbol.asyncDispose]` | Same as `close()`, for `await using`. |
+
+| `Call` field | Description |
+| --- | --- |
+| `channel` | `"slack"`, `"github"`, or `"sandbox"`. |
+| `method` | Such as `chat.postMessage`, `issues.createComment`, or `sandbox.exec`. |
+| `thread?` | The Slack thread timestamp, or `owner/repo#number` for GitHub. |
+| `body` | The request body, parsed. |
+
+`CallFilter`: `channel?`, `method?`, `thread?`. Point a Slack or GitHub channel's `apiUrl` at the matching path of `url`. The fake Slack follows Slack's rules for streams: 50 unique task cards, with a stream over once stopped. Types: `Fakes`, `Call`, `CallFilter`.
+
+## fakeSandbox
+
+The Sandboxes REST API served from memory, as a `fetch` you give the Inngest client. Requests for anything but `/v2/sandboxes` go to the real `fetch`.
+
+```typescript {{ title: "Signature" }}
+fakeSandbox(options?: FakeSandboxOptions): FakeSandbox
+```
+
+| Option | Default | Description |
+| --- | --- | --- |
+| `fakes` | none | The `startFakes()` server of this process that operations are recorded on. |
+| `recordUrl` | none | The URL of a fakes server in another process. Each operation is posted there and awaited. |
+| `commands` | none | Commands by the text they contain; the first match answers with `{ stdout?, stderr?, exitCode? }`. No match fails with exit code 127. The key `""` matches any command; put it last. |
+| `execute` | off | `"local"` lets a command no entry describes run on this machine when it touches the sandbox's directories. Use it only with `script()`. |
+| `passEnv` | none | Host environment variable names a local command may see. |
+| `localDirs` | none | Directories where an unmatched command runs for real. |
+| `diskPaths` | none | More sandbox paths whose files live on this machine. |
+
+`execute: "local"` is not a sandbox. Commands run with your user's rights; a path with `..`, `~user`, or an absolute path outside the sandbox's directories is refused with exit code 126. Never run it as root or with a real model.
+
+| `FakeSandbox` member | Description |
+| --- | --- |
+| `fetch` | Pass as the `fetch` option of the Inngest client. |
+| `calls` | Every operation, oldest first. |
+| `posts(filter?)` | Operations that match `method` and `thread`. |
+| `close()` | Kills started processes and removes the tools directory. Later requests answer 503. |
+| `[Symbol.asyncDispose]` | Same as `close()`. |
+
+Processes and the call-home commands of tools run for real on this machine. Types: `FakeSandbox`, `FakeSandboxOptions`.
+
+## startGitRemote
+
+Bare repositories served over HTTP by the real `git http-backend`. It needs `git` with `git-http-backend` installed.
+
+```typescript {{ title: "Signature" }}
+startGitRemote(options: GitRemoteOptions | string): Promise<GitRemote>
+```
+
+A string is the token, with one default repository.
+
+| Option | Default | Description |
+| --- | --- | --- |
+| `token` | required | A push needs basic auth as `x-access-token:<token>`. |
+| `repos` | one repository `repo` with `README.md` and `src/a.ts` on `main` | Repositories by name, each with a `GitSeed`: files of `main`, or branches by name. Every other branch starts from `main`. |
+| `anonymousReads` | `false` | Fetch and clone need no token. A push always does. |
+
+| `GitRemote` member | Description |
+| --- | --- |
+| `url`, `dir` | The first repository's URL (no credentials) and bare directory. |
+| `repos` | Every `GitRepo` by name: `url`, `dir`, `heads` (commit of each seeded branch). |
+| `seen` | Basic-auth headers the server has seen. |
+| `pushAuth` | The authorization header of each push request. |
+| `close()` | Stops the server and removes the repositories. |
+| `[Symbol.asyncDispose]` | Same as `close()`. |
+
+Types: `GitRemote`, `GitRemoteOptions`, `GitRepo`, `GitSeed`, `GitFiles`.
+
+## fakeGitDataApi
+
+A GitHub Git Data API in memory, for testing pushes with `transport: "api"` and `commitFiles`.
+
+```typescript {{ title: "Signature" }}
+fakeGitDataApi(options?: { repo?: string }): FakeGitDataApi
+```
+
+`repo` is `owner/name`; default `acme/app`.
+
+| `FakeGitDataApi` member | Description |
+| --- | --- |
+| `fetch` | Pass as the `fetch` of the push options, with `api` set to any URL such as `http://github.test`. |
+| `seed(repoDir, commit, ref)` | Loads `commit` and its ancestors from a local repository and points `ref` at it. Seed the commit the sandbox's clone was made from. |
+| `ref(ref)` | The commit a ref points at, or `undefined`. |
+| `requests` | Every request, oldest first: `method`, `path`, `authorization?`. |
+
+Type: `FakeGitDataApi`.
+
+## withKeys
+
+```typescript {{ title: "Signature" }}
+withKeys(thread: ThreadHandle): ThreadHandleWithKeys
+```
+
+Returns the handle with `state()` returning only the keys the agent set in the thread's KV scope, a `Record<string, unknown>`. Type: `ThreadHandleWithKeys`.

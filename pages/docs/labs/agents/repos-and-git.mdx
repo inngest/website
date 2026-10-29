@@ -1,0 +1,325 @@
+import { AnnotatedCode, Annotation } from "shared/Docs/mdx";
+
+export const metaTitle = "Repos and git | Inngest Agents";
+export const description = "Inngest Agents repos and git: check a repository out into a sandbox, let the model push branches your policy approves, commit files without git, and authenticate as a GitHub App.";
+
+# Repos and git
+
+> Let an agent change a repository without ever holding the token.
+
+- **Check out a repo.** Clone, or bring a restored checkout up to date. [Check out →](#check-out-a-repository)
+- **Checked pushes.** Your policy reads what a push really changes. [Policy →](#approve-pushes-with-a-policy)
+- **Push from your code.** The same checks, as a function. [Push →](#push-from-your-own-code)
+- **Commit without git.** Files straight to GitHub. [Commit files →](#commit-files-without-a-sandbox)
+- **GitHub App tokens.** Short-lived and narrowed. [GitHub App →](#authenticate-as-a-github-app)
+
+<AnnotatedCode>
+
+```typescript {{ title: "inngest/agents/fixer.ts" }}
+import { agent, repo } from "inngest/experimental/agents";
+import { agents } from "../client";
+import { app } from "../github";
+import { claude } from "../models/claude";
+import { workbench } from "../sandboxes/workbench";
+
+export const fixer = agents.agent(
+  { id: "fixer", sandboxes: { work: workbench } },
+  async ({ inbox, sandboxes, control }) => {
+    for await (const message of inbox) {
+      const sandbox = await sandboxes.work.get();
+      const checkout = await repo(sandbox, {
+        repo: "acme/web",
+        ref: "main",
+        path: "/work/web",
+        sync: "keep",
+        token: () => {
+          return app.token("acme/web");
+        },
+      });
+
+      await agent.loop({
+        model: claude,
+        prompt: `${message.data.content ?? ""}\nThe repo is at ${checkout.path}`,
+        tools: checkout.tools,
+        ...control,
+      });
+    }
+  },
+);
+```
+
+<Annotation id="repo" lines="12-20" tease="clone or sync" title="Check out" href="#check-out-a-repository" linkText="Check out">
+Clones, or fetches into an existing checkout.
+</Annotation>
+
+<Annotation id="sync" lines="16" tease="never wipes work" title="Sync" href="#check-out-a-repository" linkText="Check out">
+`"keep"` keeps what the agent did. `"reset"` discards it.
+</Annotation>
+
+<Annotation id="token" lines="17-19" tease="only for git's own process" title="Token" href="#authenticate-as-a-github-app" linkText="GitHub App">
+Never in a file or git config.
+</Annotation>
+
+<Annotation id="tools" lines="25" tease="code tools plus push" title="Tools" href="/docs/labs/agents/tools?ref=docs-labs-agents-repos-and-git" linkText="Tools">
+Code tools in the checkout, plus `push`.
+</Annotation>
+
+</AnnotatedCode>
+
+## Check out a repository
+
+`repo(sandbox, options)` takes an `owner/name` or any git URL. It returns `path`, `sha`, `push(branch)` and `tools`.
+
+`action` is `"cloned"`, `"synced"`, or `"diverged"` (`sync: "keep"` and the branch could not fast-forward). Without `sync`, a checkout holding unpushed work throws.
+
+## Approve pushes with a policy
+
+`sandbox.tools.git()` gives the model `git_push`. Your policy reads what a push changes before your app sends it with a token the sandbox never sees.
+
+<AnnotatedCode>
+
+```typescript {{ title: "inngest/sandboxes/pusher.ts" }}
+import { sandbox } from "inngest/experimental/agents";
+import { app } from "../github";
+import { policy } from "../policy";
+
+export const pusher = sandbox({
+  id: "pusher",
+  tools: sandbox.tools.git({
+    remote: "https://github.com/acme/web",
+    token: () => {
+      return app.token("acme/web", {
+        permissions: { contents: "write" },
+      });
+    },
+    policy,
+    cwd: "/work/web",
+  }),
+});
+```
+
+<Annotation id="token" lines="9-13" tease="made per push" title="Token" href="#authenticate-as-a-github-app" linkText="GitHub App">
+Called on your host, per push.
+</Annotation>
+
+<Annotation id="policy" lines="14" tease="decides each push" title="Policy" href="#approve-pushes-with-a-policy" linkText="Policy">
+Without one, any fast-forward goes through.
+</Annotation>
+
+</AnnotatedCode>
+
+A policy gets the push: `branch`, `ref`, `commits`, `paths`, `fastForward`, `patch()` and `files`.
+
+<AnnotatedCode>
+
+```typescript {{ title: "inngest/policy.ts" }}
+import type { GitPolicy } from "inngest/experimental/agents";
+
+export const policy: GitPolicy = async (push) => {
+  if (!push.branch?.startsWith("agent/")) {
+    return { refuse: "Branches for the agent start with agent/" };
+  }
+
+  if (!push.fastForward) {
+    return { refuse: "No history rewrites" };
+  }
+
+  const touched = push.paths.filter((path) => {
+    return path.startsWith(".github/") || path === "package.json";
+  });
+
+  if (touched.length > 0) {
+    return { refuse: `Not allowed to change ${touched.join(", ")}` };
+  }
+
+  for (const file of push.files) {
+    const after = await file.after();
+
+    if (after && after.size > 1_000_000) {
+      return { refuse: `${file.path} is over 1 MB` };
+    }
+  }
+
+  return { notes: [`${push.commits.length} commits to ${push.ref}`] };
+};
+```
+
+<Annotation id="names" lines="4-6" tease="by branch name" title="Refuse" href="#how-it-works" linkText="How it works">
+The model reads the message.
+</Annotation>
+
+<Annotation id="paths" lines="12-18" tease="by path" title="Paths" href="#how-it-works" linkText="How it works">
+Every path the commits touch.
+</Annotation>
+
+<Annotation id="content" lines="20-26" tease="by content" title="Files" href="#how-it-works" linkText="How it works">
+`before()` and `after()` give `size`, `text` and `bytes`.
+</Annotation>
+
+<Annotation id="notes" lines="28" tease="kept with the result" title="Notes" href="#how-it-works" linkText="How it works">
+Return `{ ref }` instead to push to another branch.
+</Annotation>
+
+</AnnotatedCode>
+
+`gitPushTool(sandbox, options)` builds the same tool for one sandbox handle.
+
+```typescript {{ title: "inngest/agents/pushOnly.ts" }}
+import { agent, gitPushTool } from "inngest/experimental/agents";
+import { agents } from "../client";
+import { app } from "../github";
+import { claude } from "../models/claude";
+import { policy } from "../policy";
+import { workbench } from "../sandboxes/workbench";
+
+export const pushOnly = agents.agent(
+  { id: "push-only", sandboxes: { work: workbench } },
+  async ({ inbox, sandboxes, sandboxTools, control }) => {
+    for await (const message of inbox) {
+      const sandbox = await sandboxes.work.get();
+
+      await agent.loop({
+        model: claude,
+        prompt: message.data.content ?? "",
+        tools: {
+          ...sandboxTools,
+          git_push: gitPushTool(sandbox, {
+            remote: "https://github.com/acme/web",
+            token: () => {
+              return app.token("acme/web");
+            },
+            policy,
+          }),
+        },
+        ...control,
+      });
+    }
+  },
+);
+```
+
+It never forces or deletes. `transport` is `"git"`, `"api"` (no `git`, so it runs on Workers) or `"auto"`.
+
+## Push from your own code
+
+`pushBranch()` returns the result. A refusal is `{ ok: false, error }`; only a broken setup throws.
+
+```typescript {{ title: "inngest/agents/nightly.ts" }}
+import { pushBranch } from "inngest/experimental/agents";
+import { agents } from "../client";
+import { app } from "../github";
+import { policy } from "../policy";
+import { workbench } from "../sandboxes/workbench";
+
+export const nightly = agents.agent(
+  { id: "nightly", sandboxes: { work: workbench } },
+  async ({ sandboxes, runId }) => {
+    const sandbox = await sandboxes.work.get();
+    const result = await pushBranch(
+      sandbox,
+      {
+        remote: "https://github.com/acme/web",
+        token: () => {
+          return app.token("acme/web");
+        },
+        policy,
+      },
+      "agent/nightly",
+      { idempotencyKey: runId },
+    );
+
+    return result.ok ? result.pushed : result.error;
+  },
+);
+```
+
+## Commit files without a sandbox
+
+`commitFiles()` writes one commit through the GitHub API. It needs no `git` and answers to the same policy.
+
+```typescript {{ title: "inngest/functions/publishSkill.ts" }}
+import { step } from "inngest";
+import { commitFiles } from "inngest/experimental/agents";
+import { inngest } from "../client";
+import { app } from "../github";
+import { policy } from "../policy";
+
+export const publishSkill = inngest.createFunction(
+  { id: "publish-skill", triggers: [{ event: "skill/approved" }] },
+  async ({ event }) => {
+    return step.run("commit", async () => {
+      return commitFiles({
+        remote: "https://github.com/acme/skills",
+        token: await app.token("acme/skills"),
+        ref: "refs/heads/agent/triage",
+        message: "Add the triage skill",
+        files: {
+          "triage/SKILL.md": event.data.text,
+          "old/SKILL.md": null,
+        },
+        policy,
+      });
+    });
+  },
+);
+```
+
+`null` deletes a path. The result is `{ pushed }`, `{ refused }` or `{ failed }`.
+
+## Authenticate as a GitHub App
+
+`githubApp()` trades the App's JWT for installation tokens. Keep it at module scope; it holds the caches.
+
+```typescript {{ title: "inngest/github.ts" }}
+import { githubApp } from "inngest/experimental/agents";
+
+export const app = githubApp({
+  appId: process.env.GITHUB_APP_ID ?? "",
+  privateKey: process.env.GITHUB_APP_PRIVATE_KEY ?? "",
+});
+```
+
+`token(target, options)` takes a repository, `{ org }`, `{ user }` or `{ installation }`. A repository token covers that repository alone unless you pass `repositories`.
+
+```typescript {{ title: "inngest/githubTokens.ts" }}
+import {
+  GithubAppError,
+  GithubAppNotInstalledError,
+} from "inngest/experimental/agents";
+import { app } from "./github";
+
+export const tokenFor = async (repository: string, fallback: string) => {
+  try {
+    return await app.token(repository, {
+      permissions: { contents: "write", pull_requests: "write" },
+    });
+  } catch (error) {
+    if (error instanceof GithubAppNotInstalledError) {
+      return fallback;
+    }
+
+    throw error;
+  }
+};
+
+export const orgToken = () => {
+  return app.token({ org: "acme" }, { repositories: ["web", "api"] });
+};
+
+export const everything = async () => {
+  return app.installedRepos(true);
+};
+```
+
+`GithubAppNotInstalledError` is the one failure to answer with a person's token. Other `GithubAppError`s carry `status`.
+
+It also has `jwt()`, `installationId(target)` and `forget()`. `apiUrl` points it at GitHub Enterprise.
+
+## How it works
+
+- The token is only in the one git process that talks to the remote.
+- A push moves as a bundle through a memoized step, up to 1.5 MiB. The API transport takes up to 8 MiB.
+- Your policy runs on your host against the real objects.
+- Git hooks and LFS filters are off in the checkout.
+
+[Reference →](/docs/labs/agents/reference-sandboxes?ref=docs-labs-agents-repos-and-git#repo)

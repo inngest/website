@@ -1,0 +1,58 @@
+import { Info } from "shared/Docs/mdx";
+
+export const metaTitle = "Inngest Agents | Labs";
+export const description = "Inngest Agents is an Inngest Labs project: agents that hold a conversation for days, survive crashes, take new instructions mid-turn, and keep their files between runs.";
+
+# Inngest Agents
+
+> Build agents that run for hours or days, take new instructions while they work, and never repeat finished work.
+
+<Info>
+  Inngest Agents is experimental and moves fast. Import it from `inngest/experimental/agents`; the API may change between releases. [What's Labs?](/docs/labs?ref=docs-labs-agents)
+</Info>
+
+An agent is an Inngest function with a durable inbox. Every model call and tool call is a step, so a crash or a deploy never repeats a finished one.
+
+## What you can do
+
+- **Keep a conversation per key.** Send it messages from anywhere. [Threads →](/docs/labs/agents/threads?ref=docs-labs-agents)
+- **Steer or stop mid-turn.** New messages join the next model call. [Threads →](/docs/labs/agents/threads?ref=docs-labs-agents#steer-a-running-turn)
+- **Give the model typed tools.** They run in your app with your credentials. [Tools →](/docs/labs/agents/tools?ref=docs-labs-agents)
+- **Give it a computer.** Files survive between runs. [Sandboxes →](/docs/labs/agents/sandboxes?ref=docs-labs-agents)
+- **Work in your repos.** Clone, edit, push under a policy. [Repos and git →](/docs/labs/agents/repos-and-git?ref=docs-labs-agents)
+- **Start from anything.** Events, schedules, other agents. [Triggers →](/docs/labs/agents/events-and-triggers?ref=docs-labs-agents)
+- **Talk where your team is.** Slack and GitHub channels. [Channels →](/docs/labs/agents/channels?ref=docs-labs-agents)
+- **Test without a model.** Scripted models and fake servers. [Testing →](/docs/labs/agents/testing?ref=docs-labs-agents)
+
+```typescript {{ title: "inngest/agents/support.ts" }}
+import { agent } from "inngest/experimental/agents";
+import { agents } from "../client";
+import { claude } from "../models/claude";
+import { lookupOrder } from "../tools/lookupOrder";
+
+export const support = agents.agent(
+  { id: "support" },
+  async ({ inbox, control }) => {
+    for await (const message of inbox) {
+      await agent.loop({
+        model: claude,
+        prompt: message.content ?? "",
+        tools: { lookupOrder },
+        ...control,
+      });
+    }
+  },
+);
+```
+
+```typescript {{ title: "send.ts" }}
+import { support } from "./inngest/agents/support";
+
+await support.thread("customer-42").send("Where is order 7?");
+```
+
+## Start here
+
+- [Quick start](/docs/labs/agents/quick-start?ref=docs-labs-agents) builds this agent in four files.
+- [Project structure](/docs/labs/agents/structure?ref=docs-labs-agents) shows where agents, tools and sandboxes live.
+- [Reference](/docs/labs/agents/reference?ref=docs-labs-agents) lists every export.

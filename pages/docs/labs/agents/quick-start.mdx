@@ -1,0 +1,110 @@
+import { AnnotatedCode, Annotation } from "shared/Docs/mdx";
+
+export const metaTitle = "Quick start | Inngest Agents";
+export const description = "Inngest Agents quick start: create the client, a tool and an agent, serve them, and send the first message.";
+
+# Quick start
+
+> Four small files, then a conversation that survives restarts.
+
+- **Needs.** Node.js 20+, a recent `inngest`, a Redis URL in `INNGEST_EXPERIMENTAL_KV_URL`, and a model API key. [Project structure →](/docs/labs/agents/structure?ref=docs-labs-agents-quick-start)
+
+```bash
+npm install inngest zod
+```
+
+## 1. Create the client
+
+```typescript {{ title: "inngest/client.ts" }}
+import { Inngest } from "inngest";
+import { createAgents } from "inngest/experimental/agents";
+
+export const inngest = new Inngest({ id: "support" });
+export const agents = createAgents(inngest);
+```
+
+## 2. Write a tool
+
+```typescript {{ title: "inngest/tools/lookupOrder.ts" }}
+import { tool } from "inngest/experimental";
+import { z } from "zod";
+
+export const lookupOrder = tool.step({
+  description: "Find an order by ID",
+  input: z.object({ id: z.string() }),
+  run: async ({ id }) => {
+    return { id, status: "shipped" };
+  },
+});
+```
+
+[Tools →](/docs/labs/agents/tools?ref=docs-labs-agents-quick-start)
+
+## 3. Write the agent
+
+<AnnotatedCode>
+
+```typescript {{ title: "inngest/agents/support.ts" }}
+import { agent } from "inngest/experimental/agents";
+import { agents } from "../client";
+import { claude } from "../models/claude";
+import { lookupOrder } from "../tools/lookupOrder";
+
+export const support = agents.agent(
+  { id: "support" },
+  async ({ inbox, control }) => {
+    for await (const message of inbox) {
+      await agent.loop({
+        model: claude,
+        prompt: message.content ?? "",
+        tools: { lookupOrder },
+        ...control,
+      });
+    }
+  },
+);
+```
+
+<Annotation id="inbox" lines="10" tease="durable messages" title="The inbox" href="/docs/labs/agents/threads?ref=docs-labs-agents-quick-start#read-the-inbox" linkText="Threads">
+Waits for each message at no cost while idle.
+</Annotation>
+
+<Annotation id="loop" lines="11" tease="model and tools" title="The loop" href="/docs/labs/agents/loop?ref=docs-labs-agents-quick-start" linkText="Loop">
+Every model call and tool call is a step.
+</Annotation>
+
+<Annotation id="control" lines="15" tease="steer and stop" title="Control" href="/docs/labs/agents/threads?ref=docs-labs-agents-quick-start#steer-a-running-turn" linkText="Steer">
+Lets new messages and stops reach the running turn.
+</Annotation>
+
+</AnnotatedCode>
+
+`inngest/models/claude.ts` is your own file: [`agent.model()`](/docs/labs/agents/loop?ref=docs-labs-agents-quick-start#make-a-model) wraps your provider's SDK.
+
+## 4. Serve it
+
+```typescript {{ title: "inngest/serve.ts" }}
+import { serve } from "inngest/node";
+import { agents, inngest } from "./client";
+import "./agents/support";
+
+serve({ client: inngest, functions: agents.functions() });
+```
+
+## 5. Send a message
+
+```typescript {{ title: "send.ts" }}
+import { support } from "./inngest/agents/support";
+
+await support.thread("customer-42").send("Where is order 7?");
+```
+
+The first message starts a run. Later messages to `customer-42` reach the same thread.
+
+## How it works
+
+- `agents.functions()` returns every agent defined so far, so import agent files before calling it.
+- Thread state and [KV](/docs/labs/agents/kv?ref=docs-labs-agents-quick-start) live in Redis.
+- Agents that use [sandboxes](/docs/labs/agents/sandboxes?ref=docs-labs-agents-quick-start) need `sandboxMiddleware()` on the client.
+
+[Threads →](/docs/labs/agents/threads?ref=docs-labs-agents-quick-start) · [Reference →](/docs/labs/agents/reference?ref=docs-labs-agents-quick-start)

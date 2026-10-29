@@ -1,0 +1,373 @@
+import { AnnotatedCode, Annotation } from "shared/Docs/mdx";
+
+export const metaTitle = "Agent sandboxes | Inngest Agents";
+export const description = "Inngest Agents sandboxes: give an agent an isolated machine with read, write, edit, search and run tools, per-thread snapshots, setup, skills and tools that call back into your app.";
+
+# Agent sandboxes
+
+> Give an agent a machine of its own that is still there on the next message.
+
+- **Code tools in one line.** `read`, `write`, `edit`, `search` and `run`. [Define a sandbox →](#define-a-sandbox)
+- **Created when needed.** Or as the run starts. [Start →](#start-lazily-or-eagerly)
+- **Files outlive the run.** Restored from a snapshot. [Persistence →](#keep-files-between-runs)
+- **Prepared once.** Setup code and skills from git. [Setup and skills →](#set-up-and-add-skills)
+- **Code that calls your app.** Scripts use your tools. [Run code →](#let-code-call-your-tools)
+
+First the client needs the sandbox middleware.
+
+```typescript {{ title: "inngest/client.ts" }}
+import { Inngest } from "inngest";
+import { sandboxMiddleware } from "inngest/experimental";
+import { createAgents } from "inngest/experimental/agents";
+
+export const inngest = new Inngest({
+  id: "coder",
+  middleware: [sandboxMiddleware()],
+});
+
+export const agents = createAgents(inngest);
+```
+
+<AnnotatedCode>
+
+```typescript {{ title: "inngest/sandboxes/workbench.ts" }}
+import { sandbox } from "inngest/experimental/agents";
+
+export const workbench = sandbox({
+  id: "workbench",
+  image: sandbox.image.custom("python-data:v1"),
+  vcpu: 2,
+  memoryMb: 2048,
+  tools: sandbox.tools.code({ cwd: "/work" }),
+});
+```
+
+<Annotation id="image" lines="5" tease="your own image" title="Image" href="/docs/sandboxes/features/base-images?ref=docs-labs-agents-sandboxes" linkText="Base images">
+`sandbox.image.inngest("base")` is the default.
+</Annotation>
+
+<Annotation id="tools" lines="8" tease="the tools it brings" title="Code tools" href="#choose-the-code-tools" linkText="Code tools">
+Every agent gets them.
+</Annotation>
+
+</AnnotatedCode>
+
+```typescript {{ title: "inngest/agents/coder.ts" }}
+import { agent } from "inngest/experimental/agents";
+import { agents } from "../client";
+import { claude } from "../models/claude";
+import { workbench } from "../sandboxes/workbench";
+
+export const coder = agents.agent(
+  { id: "coder", sandboxes: { work: workbench } },
+  async ({ inbox, sandboxTools, control }) => {
+    for await (const message of inbox) {
+      await agent.loop({
+        model: claude,
+        prompt: message.data.content ?? "",
+        tools: sandboxTools,
+        ...control,
+      });
+    }
+  },
+);
+```
+
+`sandboxTools` holds `work_read`, `work_write`, `work_edit`, `work_search` and `work_run`. The name you give the sandbox is the prefix.
+
+## Define a sandbox
+
+A definition is plain data. Nothing exists until an agent uses it.
+
+```typescript {{ title: "inngest/sandboxes/reader.ts" }}
+import { sandbox } from "inngest/experimental/agents";
+
+export const reader = sandbox({
+  id: "reader",
+  environment: { LOG_LEVEL: "debug" },
+  secrets: ["NPM_TOKEN"],
+  tools: sandbox.tools.code({
+    cwd: "/work/app",
+    timeout: "2m",
+    only: ["read", "search", "run"],
+  }),
+});
+```
+
+`environment` and `secrets` apply to a fresh sandbox only. See [Secrets](/docs/sandboxes/features/secrets?ref=docs-labs-agents-sandboxes).
+
+## Choose the code tools
+
+`sandbox.tools.code()` takes `cwd` (default `/work`), `timeout` (default 5 minutes) and `only`. `run_code` joins when you pass `tools`.
+
+## Start lazily or eagerly
+
+By default a sandbox is created by the first call that needs it. Bind it with `start: "eager"` to begin creating it as the run starts.
+
+<AnnotatedCode>
+
+```typescript {{ title: "inngest/agents/reviewer.ts" }}
+import { agent } from "inngest/experimental/agents";
+import { agents } from "../client";
+import { claude } from "../models/claude";
+import { reader } from "../sandboxes/reader";
+import { workbench } from "../sandboxes/workbench";
+
+export const reviewer = agents.agent(
+  {
+    id: "reviewer",
+    sandboxes: {
+      work: { sandbox: workbench, start: "eager" },
+      view: {
+        sandbox: reader,
+        start: ({ event }) => {
+          return event.data.content?.includes("deep") ? "eager" : "lazy";
+        },
+      },
+    },
+  },
+  async ({ inbox, sandboxTools, control }) => {
+    for await (const message of inbox) {
+      await agent.loop({
+        model: claude,
+        prompt: message.data.content ?? "",
+        tools: {
+          work_run: sandboxTools.work_run,
+          view_read: sandboxTools.view_read,
+        },
+        ...control,
+      });
+    }
+  },
+);
+```
+
+<Annotation id="eager" lines="11" tease="starts with the run" title="Eager" href="#how-it-works" linkText="How it works">
+Ready before it is asked for.
+</Annotation>
+
+<Annotation id="fn" lines="14-16" tease="chosen per run" title="Start from the event" href="/docs/labs/agents/events-and-triggers?ref=docs-labs-agents-sandboxes" linkText="Events">
+Keep it pure.
+</Annotation>
+
+</AnnotatedCode>
+
+`sandboxes` itself may be a function of `{ event }` too. Tool names are typed: `sandboxTools.view_write` fails to compile because `reader` leaves `write` out.
+
+## Keep files between runs
+
+A sandbox belongs to its thread. The first call restores it from the thread's newest snapshot, and the run's end saves it again.
+
+Only files survive, not processes. `recycle()` saves and destroys a sandbox now, and the next call restores it.
+
+```typescript {{ title: "inngest/agents/pairer.ts" }}
+import { agent } from "inngest/experimental/agents";
+import { agents } from "../client";
+import { claude } from "../models/claude";
+import { project } from "../sandboxes/project";
+
+export const pairer = agents.agent(
+  { id: "pairer", sandboxes: { work: project } },
+  async ({ inbox, sandboxes, sandboxTools, control }) => {
+    for await (const message of inbox) {
+      await agent.loop({
+        model: claude,
+        prompt: message.data.content ?? "",
+        tools: sandboxTools,
+        ...control,
+      });
+
+      await sandboxes.work.recycle();
+    }
+  },
+);
+```
+
+Recycle while the thread waits, so an idle sandbox costs nothing. See [Snapshots](/docs/sandboxes/features/snapshots-and-restore?ref=docs-labs-agents-sandboxes).
+
+## Set up and add skills
+
+`setup` runs once after the sandbox is ready. `skills.git()` puts a public GitHub repository of skills into it.
+
+<AnnotatedCode>
+
+```typescript {{ title: "inngest/sandboxes/project.ts" }}
+import { sandbox, skills } from "inngest/experimental/agents";
+
+export const project = sandbox({
+  id: "project",
+  skills: [
+    skills.git("acme/agent-skills", {
+      ref: "main",
+      freshness: "bake",
+      into: "/skills/acme",
+    }),
+  ],
+  tools: sandbox.tools.code(),
+  setup: async ({ sandbox, step, restored }) => {
+    if (restored) {
+      return;
+    }
+
+    const lockfile = await step.run("load-lockfile", async () => {
+      return "lockfile: 1";
+    });
+
+    await sandbox.files.write("lockfile", {
+      path: "/work/lock.txt",
+      data: lockfile,
+    });
+    await sandbox.commands.run("install", ["npm", "ci"], { cwd: "/work" });
+  },
+});
+```
+
+<Annotation id="skills" lines="5-11" tease="from git" title="Skills" href="#how-it-works" linkText="How it works">
+`"bake"` snapshots per commit. `"boot"` clones every start.
+</Annotation>
+
+<Annotation id="restored" lines="14-16" tease="skip what is already there" title="Restored" href="#keep-files-between-runs" linkText="Persistence">
+Earlier setup files are there.
+</Annotation>
+
+<Annotation id="step" lines="18-20" tease="memoized" title="Durable steps" href="/docs/sandboxes/reference?ref=docs-labs-agents-sandboxes" linkText="Sandboxes reference">
+Short names, prefixed for you.
+</Annotation>
+
+</AnnotatedCode>
+
+`setup` also gets `event` and `name`. A failure fails the call that created the sandbox.
+
+## Use the handle
+
+`sandboxes.work` is lazy. `get()` creates the sandbox in one step and returns the [sandbox handle](/docs/sandboxes/overview?ref=docs-labs-agents-sandboxes) your code can use directly.
+
+```typescript {{ title: "inngest/agents/prepper.ts" }}
+import { agents } from "../client";
+import { workbench } from "../sandboxes/workbench";
+
+export const prepper = agents.agent(
+  { id: "prepper", sandboxes: { work: workbench } },
+  async ({ sandboxes }) => {
+    const sandbox = await sandboxes.work.get();
+
+    await sandbox.commands.run("tests", ["npm", "test"], { cwd: "/work" });
+
+    const result = await sandbox.$`git status --short`;
+
+    await sandbox.files.write("notes", {
+      path: "/work/NOTES.md",
+      data: result.stdout,
+    });
+
+    return sandboxes.work.started;
+  },
+);
+```
+
+A handle also has `name`, `definition`, `tools`, `started` and `close()`.
+
+## Let code call your tools
+
+`run_code` lets the model write a Python or TypeScript script that calls your tools. A tool with `waits: true` may wait for days.
+
+<AnnotatedCode>
+
+```typescript {{ title: "inngest/sandboxes/analyst.ts" }}
+import { sandbox } from "inngest/experimental/agents";
+import { getAccount } from "../tools/getAccount";
+import { waitForApproval } from "../tools/waitForApproval";
+
+export const analyst = sandbox({
+  id: "analyst",
+  tools: sandbox.tools.code({
+    tools: { getAccount, waitForApproval },
+    only: ["run", "run_code"],
+  }),
+});
+```
+
+<Annotation id="script" lines="8" tease="tools.getAccount(...)" title="Tools for the script" href="/docs/labs/agents/tools?ref=docs-labs-agents-sandboxes" linkText="Tools">
+Plus built-in `now` and `sleep`.
+</Annotation>
+
+<Annotation id="only" lines="9" tease="narrow the set" title="Only" href="#choose-the-code-tools" linkText="Code tools">
+Leaving `run_code` out throws.
+</Annotation>
+
+</AnnotatedCode>
+
+```typescript {{ title: "inngest/tools/waitForApproval.ts" }}
+import { step } from "inngest";
+import { tool } from "inngest/experimental";
+import { z } from "zod";
+
+export const waitForApproval = tool.group({
+  description: "Wait for a person to approve",
+  input: z.object({ request: z.string() }),
+  waits: true,
+  run: async ({ request }) => {
+    const approval = await step.waitForEvent("approval", {
+      event: "approval/decided",
+      timeout: "7d",
+      if: `async.data.request == "${request}"`,
+    });
+
+    return approval?.data ?? null;
+  },
+});
+```
+
+While it waits the script exits, then runs again from the top with earlier calls answered from a journal. Read the clock with `tools.now()`. [Inbox tools](/docs/labs/agents/tools?ref=docs-labs-agents-sandboxes#let-the-model-listen-for-events) work here too, and [Run code](/docs/sandboxes/features/run-code?ref=docs-labs-agents-sandboxes) covers the sandbox side.
+
+## Use sandboxes in a plain function
+
+`resolveSandboxes()`, `openSandboxes()`, `getSandbox()` and `sandboxTools()` are what an agent uses, and work in any function.
+
+```typescript {{ title: "inngest/functions/workbenchJob.ts" }}
+import {
+  getSandbox,
+  openSandboxes,
+  resolveSandboxes,
+  sandboxTools,
+} from "inngest/experimental/agents";
+import { inngest } from "../client";
+import { workbench } from "../sandboxes/workbench";
+
+export const workbenchJob = inngest.createFunction(
+  { id: "workbench-job", triggers: [{ event: "job/requested" }] },
+  async ({ event, step }) => {
+    const bindings = await resolveSandboxes(
+      { work: { sandbox: workbench, start: "lazy" } },
+      { event },
+    );
+    const opened = openSandboxes(bindings, step.sandbox);
+    const work = getSandbox(opened, "work");
+
+    try {
+      const sandbox = await work.get();
+
+      await sandbox.commands.run("build", ["npm", "run", "build"]);
+
+      return Object.keys(sandboxTools(opened));
+    } finally {
+      await work.close();
+    }
+  },
+);
+```
+
+Without a thread `recycle()` throws. Close the sandbox yourself.
+
+## Push from a sandbox
+
+`sandbox.tools.git()` gives the model a checked `git_push`. See [Repos and git](/docs/labs/agents/repos-and-git?ref=docs-labs-agents-sandboxes).
+
+## How it works
+
+- The sandbox is created in one durable step, so every call shares it.
+- A run's end snapshots a used sandbox, then destroys it. A function cleans up cancelled runs.
+- `"bake"` skills boot from a fetch the first time a ref moves, while `agents.functions()` serves the function that builds the snapshot.
+- Skills come from public GitHub repositories.
+
+[Reference →](/docs/labs/agents/reference-sandboxes?ref=docs-labs-agents-sandboxes#sandbox)

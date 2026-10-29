@@ -840,6 +840,76 @@ export const docsRefreshOutline: DocsRefreshPage[] = [
           },
         ],
       },
+      {
+        title: "Inngest Agents",
+        href: "/docs/labs/agents",
+        children: [
+          {
+            title: "Quick start",
+            href: "/docs/labs/agents/quick-start",
+          },
+          {
+            title: "Project structure",
+            href: "/docs/labs/agents/structure",
+          },
+          {
+            title: "Threads",
+            href: "/docs/labs/agents/threads",
+          },
+          {
+            title: "Loop",
+            href: "/docs/labs/agents/loop",
+          },
+          {
+            title: "Triggers and invoke",
+            href: "/docs/labs/agents/events-and-triggers",
+          },
+          {
+            title: "Tools",
+            href: "/docs/labs/agents/tools",
+          },
+          {
+            title: "Sandboxes",
+            href: "/docs/labs/agents/sandboxes",
+          },
+          {
+            title: "Repos and git",
+            href: "/docs/labs/agents/repos-and-git",
+          },
+          {
+            title: "KV",
+            href: "/docs/labs/agents/kv",
+          },
+          {
+            title: "Subscribe",
+            href: "/docs/labs/agents/subscribe",
+          },
+          {
+            title: "Scores",
+            href: "/docs/labs/agents/scores",
+          },
+          {
+            title: "Channels",
+            href: "/docs/labs/agents/channels",
+          },
+          {
+            title: "Testing",
+            href: "/docs/labs/agents/testing",
+          },
+          {
+            title: "Reference",
+            href: "/docs/labs/agents/reference",
+          },
+          {
+            title: "Sandboxes reference",
+            href: "/docs/labs/agents/reference-sandboxes",
+          },
+          {
+            title: "Testing reference",
+            href: "/docs/labs/agents/reference-testing",
+          },
+        ],
+      },
     ],
   },
 ];

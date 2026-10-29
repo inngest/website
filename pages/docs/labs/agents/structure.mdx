@@ -1,0 +1,163 @@
+export const metaTitle = "Project structure | Inngest Agents";
+export const description = "Recommended file structure for Inngest Agents: an inngest folder with one agent per file, one tool per file, one sandbox per file, and a client.";
+
+# Project structure
+
+> One folder, one file per agent, tool and sandbox.
+
+Agents, tools and sandboxes are plain exports, so each can live in its own file and be imported by the others.
+
+```
+inngest/
+  client.ts
+  serve.ts
+  models/
+    claude.ts
+  lib/
+    docs.ts
+  agents/
+    support.ts
+    coder.ts
+  tools/
+    searchDocs.ts
+  sandboxes/
+    workbench.ts
+```
+
+## The client
+
+```typescript {{ title: "inngest/client.ts" }}
+import { Inngest } from "inngest";
+import { sandboxMiddleware } from "inngest/experimental";
+import { createAgents } from "inngest/experimental/agents";
+
+export const inngest = new Inngest({
+  id: "support",
+  middleware: [sandboxMiddleware()],
+});
+
+export const agents = createAgents(inngest);
+```
+
+## Shared helpers
+
+Code that more than one tool or agent needs goes in `inngest/lib/`.
+
+```typescript {{ title: "inngest/lib/docs.ts" }}
+export const searchIndex = async (query: string) => {
+  return [{ title: "Refund policy", url: `/docs?q=${query}` }];
+};
+```
+
+## One tool per file
+
+```typescript {{ title: "inngest/tools/searchDocs.ts" }}
+import { tool } from "inngest/experimental";
+import { z } from "zod";
+import { searchIndex } from "../lib/docs";
+
+export const searchDocs = tool.step({
+  description: "Search the help center",
+  input: z.object({ query: z.string() }),
+  run: async ({ query }) => {
+    return searchIndex(query);
+  },
+});
+```
+
+## One sandbox per file
+
+```typescript {{ title: "inngest/sandboxes/workbench.ts" }}
+import { sandbox } from "inngest/experimental/agents";
+
+export const workbench = sandbox({
+  id: "workbench",
+  tools: sandbox.tools.code(),
+});
+```
+
+## One agent per file
+
+An agent imports the client, a model, and the tools and sandboxes it uses.
+
+```typescript {{ title: "inngest/agents/support.ts" }}
+import { agent } from "inngest/experimental/agents";
+import { agents } from "../client";
+import { claude } from "../models/claude";
+import { searchDocs } from "../tools/searchDocs";
+
+export const support = agents.agent(
+  { id: "support" },
+  async ({ inbox, control }) => {
+    for await (const message of inbox) {
+      await agent.loop({
+        model: claude,
+        prompt: message.content ?? "",
+        tools: { searchDocs },
+        ...control,
+      });
+    }
+  },
+);
+```
+
+```typescript {{ title: "inngest/agents/coder.ts" }}
+import { agent } from "inngest/experimental/agents";
+import { agents } from "../client";
+import { claude } from "../models/claude";
+import { workbench } from "../sandboxes/workbench";
+import { searchDocs } from "../tools/searchDocs";
+
+export const coder = agents.agent(
+  { id: "coder", sandboxes: { work: workbench } },
+  async ({ inbox, sandboxTools, control }) => {
+    for await (const message of inbox) {
+      await agent.loop({
+        model: claude,
+        prompt: message.content ?? "",
+        tools: { ...sandboxTools, searchDocs },
+        ...control,
+      });
+    }
+  },
+);
+```
+
+## Serve them
+
+```typescript {{ title: "inngest/serve.ts" }}
+import { serve } from "inngest/node";
+import { agents, inngest } from "./client";
+import "./agents/coder";
+import "./agents/support";
+
+serve({ client: inngest, functions: agents.functions() });
+```
+
+## Grow it
+
+When a folder gets crowded, group by area. Imports stay relative.
+
+```
+inngest/
+  agents/
+    support/
+      triage.ts
+      refunds.ts
+    release/
+      watcher.ts
+  tools/
+    github/
+      listIssues.ts
+      commentOnIssue.ts
+  sandboxes/
+    workbench.ts
+```
+
+## How it works
+
+- An agent registers when its file is imported, and `agents.functions()` returns what is registered, so `serve.ts` imports each agent.
+- Tools and sandboxes are plain definitions with no client, so many agents can share one.
+- The same layout works for the Compute deploy flow: one agent per file keeps each deployable on its own.
+
+[Quick start →](/docs/labs/agents/quick-start?ref=docs-labs-agents-structure) · [Tools →](/docs/labs/agents/tools?ref=docs-labs-agents-structure) · [Sandboxes →](/docs/labs/agents/sandboxes?ref=docs-labs-agents-structure)

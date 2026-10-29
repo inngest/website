@@ -1,0 +1,312 @@
+import { AnnotatedCode, Annotation } from "shared/Docs/mdx";
+
+export const metaTitle = "Events and triggers | Inngest Agents";
+export const description = "Inngest Agents triggers: start agent threads from events, schedules and other agents, name the thread from event data, and limit how deep and how much sub-agents may spend.";
+
+# Events and triggers
+
+> Start threads from events, schedules and other agents.
+
+- **Start from an event.** The event's data names the thread. [Events →](#start-a-thread-from-an-event)
+- **On a schedule.** A cron starts the agent. [Cron →](#run-on-a-schedule)
+- **Several triggers.** One agent, many sources. [List →](#combine-triggers)
+- **Call another agent.** `agent.invoke()` returns its result. [Invoke →](#call-another-agent)
+- **Limit sub-agents.** Depth, count, who and how much. [Limits →](#limit-sub-agents)
+- **Reach a live run.** Events that never start one. [Inbox →](#inbox-sources)
+
+```typescript {{ title: "inngest/events.ts" }}
+import { eventType } from "inngest";
+import { z } from "zod";
+
+export const ticketOpened = eventType("support/ticket.opened", {
+  schema: z.object({
+    ticketId: z.string(),
+    subject: z.string(),
+    priority: z.enum(["low", "high"]),
+  }),
+});
+
+export const prCommented = eventType("github/pr.commented", {
+  schema: z.object({
+    repo: z.string(),
+    number: z.number(),
+    body: z.string(),
+  }),
+});
+```
+
+<AnnotatedCode>
+
+```typescript {{ title: "inngest/agents/support.ts" }}
+import { agent } from "inngest/experimental/agents";
+import { agents } from "../client";
+import { ticketOpened } from "../events";
+import { claude } from "../models/claude";
+
+export const support = agents.agent(
+  {
+    id: "support",
+    on: {
+      event: ticketOpened,
+      thread: '"ticket:" + event.data.ticketId',
+      if: 'event.data.priority == "high"',
+      message: (event) => event.data.subject,
+    },
+  },
+  async ({ inbox, trigger, control }) => {
+    console.log(trigger?.data.ticketId);
+
+    for await (const message of inbox) {
+      await agent.loop({
+        model: claude,
+        prompt: message.content ?? "",
+        tools: {},
+        ...control,
+      });
+    }
+  },
+);
+```
+
+<Annotation id="event" lines="10" tease="typed event" title="Event" href="/docs/labs/agents/structure?ref=docs-labs-agents-events-and-triggers" linkText="Structure">
+An `eventType()` types and validates `event.data`.
+</Annotation>
+
+<Annotation id="thread" lines="11" tease="the thread's key" title="Thread key" href="#how-it-works" linkText="How it works">
+A string expression over the event, not a function.
+</Annotation>
+
+<Annotation id="if" lines="12" tease="only high priority" title="Filter" href="#how-it-works" linkText="How it works">
+Events that do not match start nothing.
+</Annotation>
+
+<Annotation id="message" lines="13" tease="the first message" title="Message" href="/docs/labs/agents/threads?ref=docs-labs-agents-events-and-triggers#message-kinds" linkText="Messages">
+Becomes `message.content` in the inbox.
+</Annotation>
+
+<Annotation id="trigger" lines="16" tease="the event itself" title="Trigger" href="#combine-triggers" linkText="Combine">
+Typed from `on`. Narrow it by `name`.
+</Annotation>
+
+</AnnotatedCode>
+
+## Start a thread from an event
+
+The first matching event starts a run. Later ones with the same key reach it as messages.
+
+Send a message to the same key from anywhere and it joins that thread.
+
+```typescript {{ title: "app/send.ts" }}
+import { agentMessage } from "inngest/experimental/agents";
+import { inngest } from "../inngest/client";
+
+await inngest.send(
+  agentMessage.create({
+    agent: "support/support",
+    thread: "ticket:T-1",
+    kind: "user",
+    content: "Any news?",
+  }),
+);
+```
+
+## Run on a schedule
+
+A cron tick is one thread per agent, unless the trigger sets `thread`.
+
+```typescript {{ title: "inngest/agents/digest.ts" }}
+import { agents } from "../client";
+
+export const digest = agents.agent(
+  { id: "digest", on: { cron: "0 9 * * 1-5", jitter: "30s" } },
+  async ({ trigger }) => {
+    return trigger?.data.cron;
+  },
+);
+```
+
+## Combine triggers
+
+Give `on` a list. Each trigger types its own `message` from its own event.
+
+```typescript {{ title: "inngest/agents/watcher.ts" }}
+import { agents } from "../client";
+import { prCommented, ticketOpened } from "../events";
+
+export const watcher = agents.agent(
+  {
+    id: "watcher",
+    on: [
+      {
+        event: ticketOpened,
+        thread: '"ticket:" + event.data.ticketId',
+        message: (event) => event.data.subject,
+      },
+      {
+        event: prCommented,
+        thread: '"pr:" + string(int(event.data.number))',
+        message: (event) => event.data.body,
+      },
+      { cron: "0 * * * *", thread: '"hourly"' },
+    ],
+  },
+  async ({ trigger }) => {
+    if (trigger?.name === "support/ticket.opened") {
+      return trigger.data.subject;
+    }
+
+    if (trigger?.name === "github/pr.commented") {
+      return trigger.data.body;
+    }
+
+    return "tick";
+  },
+);
+```
+
+## Call another agent
+
+`on: invoke(schema)` types the input. `agent.invoke()` starts the agent on a new thread in the caller's session and returns its result.
+
+```typescript {{ title: "inngest/agents/researcher.ts" }}
+import { invoke } from "inngest";
+import { z } from "zod";
+import { agents } from "../client";
+
+export const researcher = agents.agent(
+  { id: "researcher", on: invoke(z.object({ question: z.string() })) },
+  async ({ trigger }) => {
+    return { answer: `Looked into: ${trigger?.data.question}` };
+  },
+);
+```
+
+```typescript {{ title: "inngest/agents/lead.ts" }}
+import { agent, AgentLimitError } from "inngest/experimental/agents";
+import { agents } from "../client";
+import { researcher } from "./researcher";
+
+export const lead = agents.agent(
+  {
+    id: "lead",
+    limits: {
+      depth: 1,
+      spawn: 3,
+      mayCall: ["support/researcher", "support/helper"],
+      budget: { usd: 5 },
+      price: { "*": { input: 3, output: 15 } },
+    },
+  },
+  async () => {
+    try {
+      const found = await agent.invoke(
+        researcher,
+        { question: "What changed in v3?" },
+        { thread: "research-1", timeout: "10m" },
+      );
+
+      return found.answer;
+    } catch (error) {
+      if (error instanceof AgentLimitError) {
+        return `refused by ${error.limit}`;
+      }
+
+      throw error;
+    }
+  },
+);
+```
+
+Pass `"appId/functionId"` for an agent without a handle. The result is untyped.
+
+```typescript {{ title: "inngest/agents/untyped.ts" }}
+import { agent } from "inngest/experimental/agents";
+import { agents } from "../client";
+
+export const untyped = agents.agent({ id: "untyped" }, async () => {
+  return agent.invoke<{ input: unknown }>("support/helper", { topic: "v3" });
+});
+```
+
+A plain function an agent invokes reads how deep it is and its input.
+
+```typescript {{ title: "inngest/helper.ts" }}
+import { invoke } from "inngest";
+import {
+  agentInvokeDepth,
+  agentInvokeInput,
+} from "inngest/experimental/agents";
+import { z } from "zod";
+import { inngest } from "./client";
+
+export const helper = inngest.createFunction(
+  { id: "helper", triggers: [invoke(z.object({ topic: z.string() }))] },
+  async ({ event }) => {
+    const input = agentInvokeInput(event);
+
+    return { input, depth: agentInvokeDepth(event) };
+  },
+);
+```
+
+## Limit sub-agents
+
+`limits` apply to `agent.invoke()`. A refused call throws `AgentLimitError`, whose `limit` is `depth`, `spawn`, `mayCall` or `budget`. Inside a tool, the model reads its message as the result.
+
+Sub-agents inherit the limits, narrowed. `depth` defaults to 1. A raw `step.invoke` or `sendEvent` is not checked.
+
+## Inbox sources
+
+An inbox source delivers events to a live run and never starts one.
+
+```typescript {{ title: "inngest/agents/reviewer.ts" }}
+import { agents } from "../client";
+import { prCommented } from "../events";
+
+export const reviewer = agents.agent(
+  {
+    id: "reviewer",
+    inbox: [
+      {
+        event: prCommented,
+        thread: '"pr:" + string(int(event.data.number))',
+      },
+    ],
+  },
+  async ({ inbox }) => {
+    const comments = inbox.of(prCommented);
+    const latest = await comments.next({ timeout: "1h" });
+
+    return latest?.data.body;
+  },
+);
+```
+
+Add a source mid-run with `inbox.listen()`. Disposing it stops listening.
+
+```typescript {{ title: "inngest/agents/listener.ts" }}
+import { agents } from "../client";
+import { prCommented } from "../events";
+
+export const listener = agents.agent({ id: "listener" }, async ({ inbox }) => {
+  await using _comments = await inbox.listen(prCommented, {
+    thread: '"pr:" + string(int(event.data.number))',
+  });
+
+  const message = await inbox.next({ timeout: "1h" });
+
+  return message?.name;
+});
+```
+
+Set `inboxTools` to let the model listen too: [Subscribe](/docs/labs/agents/subscribe?ref=docs-labs-agents-events-and-triggers).
+
+## How it works
+
+- A thread key is a CEL expression over `event`. The backend reads it as written, so a JavaScript function cannot be one.
+- It supports literals, `event.data.x` paths, `has()`, `+`, comparisons, `&&`, `||`, `!`, `a ? b : c` and `string()`. Use `string(int(...))` for numeric IDs.
+- Equal keys are the same thread, whichever event made them. Prefix keys to keep sources apart.
+- A trigger for a thread with a live run starts nothing. The run reads it from its inbox.
+- One trigger per event name. `agent/message` is reserved.
+
+[Reference →](/docs/labs/agents/reference?ref=docs-labs-agents-events-and-triggers)
