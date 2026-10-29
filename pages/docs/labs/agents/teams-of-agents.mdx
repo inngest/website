@@ -5,7 +5,7 @@ export const description = "Inngest Agents teams: hand work to another agent and
 
 # Teams of agents
 
-> Hand work to another agent and use what it finds, with limits on how far it goes.
+> Hand work to another agent and use what it finds.
 
 One agent can call another, wait for its result and carry on. Each callee gets a thread of its own and is traced as part of the caller's run.
 
@@ -206,12 +206,28 @@ export const boss = agents.agent({ id: "boss" }, async () => {
 - Use another agent's result: `agent.invoke(agent, input)`.
 - Let the model choose to delegate: a tool that calls `agent.invoke()`.
 - Cap depth, fan-out or which agents may be called: `limits.depth`, `spawn`, `mayCall`.
-- Cap spend across callees: `limits.budget` with a `limits.price` on each.
+- Cap spend of callees: `limits.budget` with a `limits.price` on each, and `spawn`. A callee gets at most what is left, but the callees' total is not capped.
 - End children with their parent: `cancelOn: [agentInvokeCancelOn]`.
 
 ## Options
 
-`agent.invoke(target, input, options)` takes `id` (default `agent:invoke:<target>`), `thread` (default `<functionId>:<runId>.<n>`), `meta` and `timeout` (default none). The callee keeps the caller's session.
+The callee keeps the caller's session. Defaults: `id` is `agent:invoke:<target>`, `thread` is `<functionId>:<runId>.<n>`, `timeout` is none.
+
+```typescript {{ title: "inngest/agents/patient.ts" }}
+import { agent } from "inngest/experimental/agents";
+import { agents } from "../client";
+import { researcher } from "./researcher";
+
+export const patient = agents.agent({ id: "patient" }, async () => {
+  const found = await agent.invoke(
+    researcher,
+    { question: "Why?" },
+    { id: "ask-researcher", thread: "why-1", timeout: "1h" },
+  );
+
+  return found.answer;
+});
+```
 
 ## Gotchas
 

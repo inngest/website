@@ -5,7 +5,7 @@ export const description = "Inngest Agents triggers: start an agent from a messa
 
 # Agents and triggers
 
-> Start an agent from a message, an event or a clock, and keep one thread per conversation.
+> Start an agent from a message, an event or a clock.
 
 An agent is code that waits for messages. A trigger says what starts it and which thread each start belongs to.
 
@@ -40,15 +40,15 @@ export const support = agents.agent(
 );
 ```
 
-<Annotation id="event" lines="9" tease="typed event" title="The trigger" href="#start-from-an-event" linkText="Start from an event">
+<Annotation id="event" lines="10" tease="typed event" title="The trigger" href="#start-from-an-event" linkText="Start from an event">
 Each `support/ticket.opened` event starts the agent.
 </Annotation>
 
-<Annotation id="thread" lines="10" tease="the thread's key" title="Thread key" href="#gotchas" linkText="Gotchas">
+<Annotation id="thread" lines="11" tease="the thread's key" title="Thread key" href="#gotchas" linkText="Gotchas">
 Same key, same conversation. It is a string expression, not a function.
 </Annotation>
 
-<Annotation id="message" lines="11" tease="the first message" title="First message" href="/docs/labs/agents/inboxes?ref=docs-labs-agents-agents-and-triggers" linkText="Inboxes">
+<Annotation id="message" lines="12-14" tease="the first message" title="First message" href="/docs/labs/agents/inboxes?ref=docs-labs-agents-agents-and-triggers" linkText="Inboxes">
 Arrives as `message.content` in the inbox.
 </Annotation>
 

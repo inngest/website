@@ -5,7 +5,7 @@ export const description = "Inngest Agents reliability: durable retries, caps on
 
 # Reliability
 
-> Cap what an agent can spend, survive crashes and bad calls, and test it with no model.
+> Cap spend, survive failures, and test with no model.
 
 Agents run for a long time and call things that fail. Every call is a step that retries on its own, and you set the limits.
 
@@ -44,7 +44,7 @@ export const budgeted = agents.agent(
 </Annotation>
 
 <Annotation id="budget" lines="10" tease="stop when spent" title="Budget" href="#gotchas" linkText="Gotchas">
-Dollars or tokens, across the whole run.
+Dollars or tokens, counted over every model call of the thread, across runs.
 </Annotation>
 
 <Annotation id="turns" lines="19" tease="stop after ten model calls" title="Turns" href="/docs/labs/agents/models-and-the-loop?ref=docs-labs-agents-reliability#options" linkText="Options">
@@ -212,7 +212,30 @@ Fake Slack and GitHub servers, a fake sandbox and thread keys are in the [Testin
 
 ## Options
 
-`recovery` takes an object: `resume` (default `true`) resends the turn, and `message` writes the failure post, or returns `false` to post nothing. `limits` also has `depth`, `spawn` and `mayCall` for [sub-agents](/docs/labs/agents/teams-of-agents?ref=docs-labs-agents-reliability#limit-sub-agents).
+`resume` (default `true`) resends the turn. `message` writes the failure post, or returns `false` to post nothing.
+
+```typescript {{ title: "inngest/agents/recovering.ts" }}
+import { agents } from "../client";
+
+export const recovering = agents.agent(
+  {
+    id: "recovering",
+    recovery: {
+      resume: true,
+      message: (failure) => {
+        return `Run ${failure.runId} failed: ${failure.error}`;
+      },
+    },
+  },
+  async ({ inbox }) => {
+    for await (const message of inbox) {
+      console.log(message.content);
+    }
+  },
+);
+```
+
+`limits` also has `depth`, `spawn` and `mayCall` for [sub-agents](/docs/labs/agents/teams-of-agents?ref=docs-labs-agents-reliability#limit-sub-agents).
 
 ## Gotchas
 

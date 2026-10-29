@@ -5,7 +5,7 @@ export const description = "Inngest Agents sandboxes: give an agent an isolated 
 
 # Sandboxes and code
 
-> Give an agent a machine of its own that is still there on the next message.
+> Give an agent a machine that is still there next message.
 
 An agent that writes code needs somewhere safe to run it. A sandbox is an isolated machine with code tools, paused between runs so its files stay.
 
@@ -121,7 +121,7 @@ export const pairer = agents.agent(
 );
 ```
 
-`recycle()` sets the sandbox aside while the thread waits, so an idle one costs nothing. If it cannot be paused, the thread falls back to its newest snapshot, then to a fresh sandbox. Set `idle: "snapshot"` on the binding to save a snapshot and destroy the sandbox instead. See [snapshots](/docs/sandboxes/features/snapshots-and-restore?ref=docs-labs-agents-sandboxes-and-code).
+`recycle()` sets the sandbox aside while the thread waits, so an idle one costs nothing. A sandbox that cannot be paused is snapshotted and destroyed instead; if the paused one is gone by the next run, the thread falls back to its newest snapshot, then to a fresh sandbox. Set `idle: "snapshot"` on the binding to save a snapshot and destroy the sandbox instead. See [snapshots](/docs/sandboxes/features/snapshots-and-restore?ref=docs-labs-agents-sandboxes-and-code).
 
 ## Share a shell
 
