@@ -30,11 +30,7 @@ export const support = agents.agent(
   },
   async ({ inbox, control }) => {
     for await (const message of inbox) {
-      await agent.loop({
-        model: claude,
-        prompt: message.content ?? "",
-        ...control,
-      });
+      await agent.loop({ model: claude, prompt: message.content ?? "", ...control });
     }
   },
 );
@@ -123,22 +119,12 @@ export const watcher = agents.agent(
   {
     id: "watcher",
     on: [
-      {
-        event: ticketOpened,
-        thread: '"ticket:" + event.data.ticketId',
-        message: (event) => {
-          return event.data.subject;
-        },
-      },
+      { event: ticketOpened, thread: '"ticket:" + event.data.ticketId' },
       { cron: "0 * * * *", thread: '"hourly"' },
     ],
   },
   async ({ trigger }) => {
-    if (trigger?.name === "support/ticket.opened") {
-      return trigger.data.subject;
-    }
-
-    return "tick";
+    return trigger?.name === "support/ticket.opened" ? trigger.data.subject : "tick";
   },
 );
 ```

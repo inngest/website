@@ -62,10 +62,7 @@ Posts the final text, or closes the progress stream with it.
 Replies in the Slack thread reach the live run as messages. Your route sends the events, and must verify Slack's or GitHub's signature first, because any sender of the event can steer the agent.
 
 ```typescript {{ title: "inngest/relay.ts" }}
-import {
-  githubCommentEvent,
-  slackMessageEvent,
-} from "inngest/experimental/agents";
+import { slackMessageEvent } from "inngest/experimental/agents";
 import { inngest } from "./client";
 
 export async function relay(text: string) {
@@ -73,95 +70,51 @@ export async function relay(text: string) {
     name: slackMessageEvent,
     data: { channel: "C0123ABC", ts: "1700000000.000100", text, user: "U1" },
   });
-
-  await inngest.send({
-    name: githubCommentEvent,
-    data: { owner: "acme", repo: "app", number: 7, body: text, author: "jo" },
-  });
 }
 ```
 
-Tokens come from `SLACK_BOT_TOKEN` and `GITHUB_TOKEN`, or from a `token` option.
+GitHub comments use `githubCommentEvent` the same way. Tokens come from `SLACK_BOT_TOKEN` and `GITHUB_TOKEN`, or from a `token` option.
 
 ## Show progress with cards
 
 `report.status()` shows whether the agent is working. A card is a task in a progress stream; writing the same `id` updates it.
 
 ```typescript {{ title: "inngest/agents/cards.ts" }}
-import { agent, slack } from "inngest/experimental/agents";
-import { agents } from "../client";
-import { claude } from "../models/claude";
+import type { Reporter } from "inngest/experimental/agents";
 
-export const cards = agents.agent(
-  {
-    id: "cards",
-    on: slack.thread({ in: ["C0123ABC"] }),
-    channels: ({ event }) => {
-      return { main: slack.channel(event, { in: ["C0123ABC"] }) };
-    },
-    report: "main",
-  },
-  async ({ inbox, control, report }) => {
-    for await (const message of inbox) {
-      await report.status("working");
+export async function showWork(report: Reporter) {
+  await report.status("working");
 
-      await report.card({ id: "read", title: "Reading the thread" });
+  await report.card({ id: "read", title: "Reading the thread" });
 
-      const result = await agent.loop({
-        model: claude,
-        prompt: message.content ?? "",
-        ...control,
-      });
+  await report.card({ id: "read", title: "Read", status: "done" });
 
-      await report.card({ id: "read", title: "Read", status: "done" });
-
-      await report.finish({ text: result.text });
-
-      await report.status("idle");
-    }
-  },
-);
+  await report.status("idle");
+}
 ```
 
-`status` is `working`, `idle` or `waiting`.
+Call it with the `report` from the agent body. `status` is `working`, `idle` or `waiting`.
 
 ## Ask a person
 
-`askThrough` renders a question through a channel. Slack shows the options as buttons, or a menu past 25. The agent waits with `step.waitForSignal()`.
+`askThrough` renders a question through a channel. Slack shows the options as buttons, or a menu past 25. Call `approve` from the agent body; it waits with `step.waitForSignal()`.
 
 ```typescript {{ title: "inngest/agents/approve.ts" }}
 import { step } from "inngest";
-import { askThrough } from "inngest/experimental/agents";
-import { agents } from "../client";
-import { boardChannel } from "../channels/board";
+import { askThrough, type Channel } from "inngest/experimental/agents";
 
-export const approve = agents.agent(
-  { id: "approve", channels: { main: boardChannel } },
-  async ({ inbox, channels }) => {
-    for await (const message of inbox) {
-      const signal = `approve-${message.seq}`;
+export async function approve(channel: Channel, signal: string) {
+  await step.run("ask", async () => {
+    await askThrough(channel, {
+      signal,
+      question: "Ship it?",
+      options: ["yes", "no"],
+      approvers: ["jack"],
+    });
+  });
 
-      await step.run("ask", async () => {
-        await askThrough(channels.main ?? boardChannel, {
-          signal,
-          question: "Ship it?",
-          options: ["yes", "no"],
-          recommended: "no",
-          approvers: ["jack"],
-          timeout: "1d",
-        });
-      });
-
-      const answer = await step.waitForSignal("answer", {
-        signal,
-        timeout: "1d",
-        onConflict: "replace",
-      });
-
-      console.log(answer?.data ?? "no answer");
-    }
-  },
-);
+  return step.waitForSignal("answer", { signal, timeout: "1d" });
+}
 ```
 
 ```typescript {{ title: "inngest/channels/board.ts" }}
@@ -185,35 +138,20 @@ Your route sends the answer as that signal, and checks `approvers`: the SDK enfo
 `report` takes a channel name, a channel, or a list. Each call can override it with `to`.
 
 ```typescript {{ title: "inngest/agents/review.ts" }}
-import { agent, github } from "inngest/experimental/agents";
 import { agents } from "../client";
+import { boardChannel } from "../channels/board";
 import { ticketChannel } from "../channels/ticket";
-import { claude } from "../models/claude";
 
 export const review = agents.agent(
   {
     id: "review",
-    on: github.thread({ repos: ["acme/app"] }),
-    channels: ({ event }) => {
-      return {
-        main: github.channel(event, { repos: ["acme/app"] }),
-        tickets: ticketChannel("T-1"),
-      };
-    },
+    channels: { main: boardChannel, tickets: ticketChannel("T-1") },
     report: ["main", "tickets"],
   },
-  async ({ inbox, control, report }) => {
-    for await (const message of inbox) {
-      const result = await agent.loop({
-        model: claude,
-        prompt: message.content ?? "",
-        ...control,
-      });
+  async ({ report }) => {
+    await report({ text: "Done", kind: "result", data: { turns: 2 } });
 
-      await report({ text: result.text, kind: "result", data: { turns: 2 } });
-
-      await report("Heads up for the team", { to: "tickets" });
-    }
+    await report("Heads up for the team", { to: "tickets" });
   },
 );
 ```
@@ -259,13 +197,7 @@ export const styled = agents.agent(
     channels: {
       main: slack.channel(
         { channel: "C0123ABC", threadTs: "1700000000.000100" },
-        {
-          in: ["C0123ABC"],
-          token: () => {
-            return process.env.SLACK_BOT_TOKEN ?? "";
-          },
-          streamTitle: "Working on it",
-        },
+        { in: ["C0123ABC"], streamTitle: "Working on it" },
       ),
     },
     report: "main",
@@ -276,7 +208,7 @@ export const styled = agents.agent(
 );
 ```
 
-`token` defaults to `SLACK_BOT_TOKEN` and may be a function. `streamTitle` defaults to `"Progress"`. `user` and `team` default to the event's author and the workspace.
+`token` defaults to `SLACK_BOT_TOKEN` and may be a string or a function. `streamTitle` defaults to `"Progress"`. `user` and `team` default to the event's author and the workspace.
 
 ## Gotchas
 

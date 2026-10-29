@@ -18,7 +18,7 @@ export const description = "Which Inngest Agents API to use: find the call for w
 | Hand messages back for later | `inbox.putBack(messages)` | [Read the inbox](/docs/labs/agents/inboxes?ref=docs-labs-agents-which-api#read-messages) |
 | Listen to another event mid-run | `inbox.listen(type, { thread })` | [Inbox sources](/docs/labs/agents/inboxes?ref=docs-labs-agents-which-api#listen-to-other-sources) |
 | Let the model listen too | `inboxTools` | [Let a model listen](/docs/labs/agents/tools?ref=docs-labs-agents-which-api#let-the-model-listen-for-events) |
-| Acknowledge a message that reaches a busy thread | `onArrival` | [Acknowledge arrivals](/docs/labs/agents/inboxes?ref=docs-labs-agents-which-api#acknowledge-arrivals) |
+| Acknowledge a message that reaches a busy thread | `onArrival` | [Acknowledge arrivals](/docs/labs/agents/inboxes?ref=docs-labs-agents-which-api#options) |
 
 ## Steer, stop and ask
 
@@ -26,8 +26,8 @@ export const description = "Which Inngest Agents API to use: find the call for w
 | --- | --- | --- |
 | New instructions to join the running turn | `...control` in `agent.loop()`, then send a `steer` message | [Steer a running turn](/docs/labs/agents/inboxes?ref=docs-labs-agents-which-api#steer-a-running-turn) |
 | Plain user messages to join it too | `foldMessages: "all"` | [Steer a running turn](/docs/labs/agents/inboxes?ref=docs-labs-agents-which-api#steer-a-running-turn) |
-| Stop after the current model call | `thread.stop({ when: "nextTurn" })` | [Stop a thread](/docs/labs/agents/inboxes?ref=docs-labs-agents-which-api#stop-a-thread) |
-| Stop the live run now | `thread.stop({ when: "now" })` | [Stop a thread](/docs/labs/agents/inboxes?ref=docs-labs-agents-which-api#stop-a-thread) |
+| Stop after the current model call | `thread.stop({ when: "nextTurn" })` | [Steer a running turn](/docs/labs/agents/inboxes?ref=docs-labs-agents-which-api#steer-a-running-turn) |
+| Stop the live run now | `thread.stop({ when: "now" })` | [Steer a running turn](/docs/labs/agents/inboxes?ref=docs-labs-agents-which-api#steer-a-running-turn) |
 | A typed answer from another thread | `requests` schemas and `thread.request()` | [Ask another thread](/docs/labs/agents/threads-and-memory?ref=docs-labs-agents-which-api#ask-another-thread) |
 | Ask a person to approve | `askThrough(channel, ask)` | [Ask a person](/docs/labs/agents/reporting?ref=docs-labs-agents-which-api#ask-a-person) |
 

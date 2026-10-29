@@ -71,13 +71,6 @@ export const hosted = agent.model(async (request) => {
     method: "POST",
     body: JSON.stringify({ system: request.system, messages: request.messages }),
   });
-
-  if (!response.ok) {
-    throw Object.assign(new Error(await response.text()), {
-      status: response.status,
-    });
-  }
-
   const reply = (await response.json()) as { text: string };
 
   return {
@@ -88,7 +81,7 @@ export const hosted = agent.model(async (request) => {
 });
 ```
 
-Throw an error with a `status` and the loop retries what a retry can fix. The request and response types are in the [reference](/docs/labs/agents/reference?ref=docs-labs-agents-models-and-the-loop#model-types).
+Throw an error with a `status` and the loop retries only what a retry can fix. The request and response types are in the [reference](/docs/labs/agents/reference?ref=docs-labs-agents-models-and-the-loop#model-types).
 
 ## Add tools
 
@@ -119,29 +112,19 @@ More in [Tools](/docs/labs/agents/tools?ref=docs-labs-agents-models-and-the-loop
 Pass the last result's `history` to the next loop.
 
 ```typescript {{ title: "inngest/agents/followUp.ts" }}
-import { agent } from "inngest/experimental/agents";
-import type { AgentMessage } from "inngest/experimental/agents";
+import { type AgentMessage, agent } from "inngest/experimental/agents";
 import { agents } from "../client";
 import { claude } from "../models/claude";
-import { getOrder } from "../tools/getOrder";
 
-export const followUp = agents.agent(
-  { id: "follow-up" },
-  async ({ inbox }) => {
-    let history: AgentMessage[] = [];
+export const followUp = agents.agent({ id: "follow-up" }, async ({ inbox }) => {
+  let history: AgentMessage[] = [];
 
-    for await (const message of inbox) {
-      const result = await agent.loop({
-        model: claude,
-        prompt: message.content ?? "",
-        tools: { getOrder },
-        history,
-      });
+  for await (const message of inbox) {
+    const result = await agent.loop({ model: claude, prompt: message.content ?? "", history });
 
-      history = result.history;
-    }
-  },
-);
+    history = result.history;
+  }
+});
 ```
 
 A variable lives only as long as the run. To keep it between runs, save it under the thread: [Threads and memory](/docs/labs/agents/threads-and-memory?ref=docs-labs-agents-models-and-the-loop).
@@ -188,52 +171,41 @@ import { agents } from "../client";
 import { claude } from "../models/claude";
 import { getOrder } from "../tools/getOrder";
 
-export const tuned = agents.agent({ id: "tuned" }, async ({ inbox }) => {
-  const message = await inbox.next();
-
+export const tuned = agents.agent({ id: "tuned" }, async () => {
   const result = await agent.loop({
     id: "orders",
     model: claude,
-    prompt: message?.content ?? "",
+    prompt: "Where is order 7?",
     tools: { getOrder },
     maxTurns: 10,
     wrapUp: "Answer now with what you know.",
     maxToolOutput: 50_000,
     parallelTools: false,
-    onToolResult: async (run) => {
-      if (run.isError) {
-        console.log(run.name, run.output, run.ms);
-      }
-    },
   });
 
   return result.toolCalls.length;
 });
 ```
 
-<Annotation id="max" lines="14" tease="default 40" title="maxTurns" href="#how-it-works" linkText="How it works">
+<Annotation id="max" lines="12" tease="default 40" title="maxTurns" href="#how-it-works" linkText="How it works">
 Model calls before the loop stops with `maxTurns`.
 </Annotation>
 
-<Annotation id="wrap" lines="15" tease="last turn, no tools" title="wrapUp" href="/docs/labs/agents/reference?ref=docs-labs-agents-models-and-the-loop#agentloop" linkText="Reference">
+<Annotation id="wrap" lines="13" tease="last turn, no tools" title="wrapUp" href="/docs/labs/agents/reference?ref=docs-labs-agents-models-and-the-loop#agentloop" linkText="Reference">
 Sent on the last turn so the model answers instead of calling a tool.
 </Annotation>
 
-<Annotation id="output" lines="16" tease="default 100,000 characters" title="maxToolOutput" href="#how-it-works" linkText="How it works">
+<Annotation id="output" lines="14" tease="default 100,000 characters" title="maxToolOutput" href="#how-it-works" linkText="How it works">
 Longer results keep their start and end.
 </Annotation>
 
-<Annotation id="parallel" lines="17" tease="default true" title="parallelTools" href="#how-it-works" linkText="How it works">
+<Annotation id="parallel" lines="15" tease="default true" title="parallelTools" href="#how-it-works" linkText="How it works">
 `false` runs the tools of one reply in order.
-</Annotation>
-
-<Annotation id="hook" lines="18-22" tease="after every tool" title="onToolResult" href="/docs/labs/agents/observability?ref=docs-labs-agents-models-and-the-loop" linkText="Observability">
-`onTurn` is the same hook for model calls.
 </Annotation>
 
 </AnnotatedCode>
 
-A second loop with the same `id` in one run gets `-2` after it, so a function can loop repeatedly without choosing IDs.
+`onTurn` and `onToolResult` hook every model and tool call. A second loop with the same `id` in one run gets `-2` after it, so a function can loop repeatedly without choosing IDs.
 
 ## Gotchas
 

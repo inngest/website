@@ -49,10 +49,6 @@ import { agents } from "../client";
 
 export const kinds = agents.agent({ id: "kinds" }, async ({ inbox }) => {
   for await (const message of inbox) {
-    if (message.kind === "user") {
-      console.log("next turn", message.content);
-    }
-
     if (message.kind === "steer") {
       console.log("redirect", message.content);
     }
@@ -64,9 +60,11 @@ export const kinds = agents.agent({ id: "kinds" }, async ({ inbox }) => {
 });
 ```
 
+`next({ timeout: "10m" })` waits for one message and gives up with `undefined`; it returns `null` once the inbox is closed. `unread()` takes what arrived while you worked, `current()` lists every saved message without moving, and `putBack()` returns messages you are not ready for. `next({ timeout: 0 })` never waits.
+
 ## Steer a running turn
 
-Send a `steer` message while the agent works. With `...control` in the loop, it joins the next model call.
+Send a `steer` message while the agent works. With `...control` in the loop, it joins the next model call. Stopping works the same way.
 
 ```typescript {{ title: "app/steer.ts" }}
 import { support } from "../inngest/agents/support";
@@ -76,60 +74,11 @@ const ticket = support.thread("ticket-42");
 await ticket.send("My invoice shows the wrong amount");
 
 await ticket.steer("Check the refund policy first");
+
+await ticket.stop({ when: "nextTurn" });
 ```
 
-## Wait with a timeout
-
-`next()` waits for one message. With a `timeout` it gives up with `undefined`; it returns `null` once the inbox is closed.
-
-```typescript {{ title: "inngest/agents/poll.ts" }}
-import { agents } from "../client";
-
-export const poll = agents.agent({ id: "poll" }, async ({ inbox }) => {
-  while (true) {
-    const message = await inbox.next({ timeout: "10m" });
-
-    if (message === null) {
-      return "closed";
-    }
-
-    if (message === undefined) {
-      console.log("quiet for ten minutes");
-
-      continue;
-    }
-
-    console.log(message.content, (await inbox.current()).length);
-  }
-});
-```
-
-`unread()` takes what arrived while you worked, `current()` lists every saved message without moving, and `putBack()` returns messages you are not ready for. `next({ timeout: 0 })` never waits.
-
-## Acknowledge arrivals
-
-`onArrival` runs for each message that reaches a busy thread, in its own function, so it never waits for the turn.
-
-```typescript {{ title: "inngest/agents/ack.ts" }}
-import { agents } from "../client";
-
-export const ack = agents.agent(
-  {
-    id: "ack",
-    onArrival: async ({ thread, message, step }) => {
-      await step.sendEvent("ack", {
-        name: "support/ack",
-        data: { thread, kind: message.kind },
-      });
-    },
-  },
-  async ({ inbox }) => {
-    for await (const message of inbox) {
-      console.log(message.content);
-    }
-  },
-);
-```
+`nextTurn` lets the current model call finish. `{ when: "now" }` ends the live run.
 
 ## Listen to other sources
 
@@ -142,16 +91,10 @@ import { prCommented } from "../events";
 export const reviewer = agents.agent(
   {
     id: "reviewer",
-    inbox: [
-      {
-        event: prCommented,
-        thread: '"pr:" + string(int(event.data.number))',
-      },
-    ],
+    inbox: [{ event: prCommented, thread: '"pr:" + string(int(event.data.number))' }],
   },
   async ({ inbox }) => {
-    const comments = inbox.of(prCommented);
-    const latest = await comments.next({ timeout: "1h" });
+    const latest = await inbox.of(prCommented).next({ timeout: "1h" });
 
     return latest?.data.body;
   },
@@ -178,52 +121,22 @@ Add a source mid-run with `await using comments = await inbox.listen(prCommented
 `step.subscribe` gives a plain Inngest function the same durable inbox.
 
 ```typescript {{ title: "inngest/functions/collect.ts" }}
-import { eventType } from "inngest";
-import { z } from "zod";
 import { inngest } from "../client";
-
-const item = eventType("batch/item", {
-  schema: z.object({ batch: z.string(), n: z.number() }),
-});
 
 export const collect = inngest.createFunction(
   { id: "collect", triggers: [{ event: "batch/started" }] },
-  async ({ event, step }) => {
-    await using inbox = await step.subscribe("items", {
-      event: item,
-      if: `async.data.batch == ${JSON.stringify(event.data.batch)}`,
-    });
+  async ({ step }) => {
+    await using inbox = await step.subscribe("items", { event: "batch/item" });
 
-    let total = 0;
+    const first = await inbox.next({ timeout: "1h" });
+    const more = await inbox.unread();
 
-    for await (const message of inbox) {
-      total += message.data.n;
-
-      if (total > 100) {
-        break;
-      }
-    }
-
-    return total;
+    return first ? [first, ...more].length : 0;
   },
 );
 ```
 
 `await using` closes the inbox when the scope ends. Several events share one ordered sequence, and `message.is(type)` narrows a message to its event.
-
-## Stop a thread
-
-```typescript {{ title: "app/stop.ts" }}
-import { support } from "../inngest/agents/support";
-
-const ticket = support.thread("ticket-42");
-
-await ticket.stop({ when: "nextTurn" });
-
-const { stopped } = await ticket.stop({ when: "now" });
-```
-
-`nextTurn` lets the current model call finish. `now` ends the live run.
 
 ## When to use what
 
@@ -232,33 +145,43 @@ const { stopped } = await ticket.stop({ when: "now" });
 - Never block: `inbox.next({ timeout: 0 })`.
 - New instructions mid-turn: `steer` with `...control`.
 - Plain user messages to join the turn too: `foldMessages: "all"`.
+- Acknowledge a message that reaches a busy thread: `onArrival`.
 - Listen to another event: an `inbox` source in the config, or `inbox.listen()`.
 
 ## Options
 
+`onArrival` runs for each message that reaches a busy thread, in its own function, so it never waits for the turn. `foldMessages: "all"` also folds `user` messages into the running turn; the default is `"steer"`.
+
 <AnnotatedCode>
 
-```typescript {{ title: "inngest/agents/fold.ts" }}
-import { agent } from "inngest/experimental/agents";
+```typescript {{ title: "inngest/agents/ack.ts" }}
 import { agents } from "../client";
-import { claude } from "../models/claude";
 
-export const fold = agents.agent(
-  { id: "fold", foldMessages: "all" },
-  async ({ inbox, control }) => {
-    for await (const message of inbox) {
-      await agent.loop({
-        model: claude,
-        prompt: message.content ?? "",
-        ...control,
+export const ack = agents.agent(
+  {
+    id: "ack",
+    foldMessages: "all",
+    onArrival: async ({ thread, message, step }) => {
+      await step.sendEvent("ack", {
+        name: "support/ack",
+        data: { thread, kind: message.kind },
       });
+    },
+  },
+  async ({ inbox }) => {
+    for await (const message of inbox) {
+      console.log(message.content);
     }
   },
 );
 ```
 
 <Annotation id="fold" lines="6" tease='default "steer"' title="foldMessages" href="#gotchas" linkText="Gotchas">
-`"all"` also folds `user` messages into the running turn. The default leaves them for their own turn.
+Folds `user` messages into the running turn too.
+</Annotation>
+
+<Annotation id="arrival" lines="7-12" tease="runs in its own function" title="onArrival" href="#how-it-works" linkText="How it works">
+Sends an acknowledgement without waiting for the turn.
 </Annotation>
 
 </AnnotatedCode>

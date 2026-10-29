@@ -81,7 +81,7 @@ It refuses repositories outside `repos`.
 </Annotation>
 
 <Annotation id="tools" lines="36" tease="read, search and run" title="Read-only tools" href="/docs/labs/agents/sandboxes-and-code?ref=docs-labs-agents-recipes-pr-reviewer" linkText="Sandboxes and code">
-The sandbox leaves `write` and `edit` out, so the reviewer cannot change code.
+The sandbox leaves `write` and `edit` out, so the reviewer has no file-changing tool. `run` still runs commands in the throwaway sandbox.
 </Annotation>
 
 </AnnotatedCode>
@@ -127,7 +127,7 @@ export GITHUB_TOKEN=ghp_... ANTHROPIC_API_KEY=sk-ant-... INNGEST_EXPERIMENTAL_KV
 node --import tsx inngest/serve.ts
 ```
 
-Your GitHub route sends a `github/issue_comment` event for each comment that mentions the bot. It needs an environment with Sandboxes. This recipe was type-checked against the SDK and not run.
+Your GitHub route sends a `github/issue_comment` event, and decides which comments count: only those that mention the bot. It needs an environment with Sandboxes. This recipe was type-checked against the SDK and not run.
 
 ## Variations
 

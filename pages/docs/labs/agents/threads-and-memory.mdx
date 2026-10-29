@@ -75,30 +75,19 @@ History belongs to one thread. Facts about a customer belong to every thread the
 ```typescript {{ title: "inngest/agents/account.ts" }}
 import { agent, kv } from "inngest/experimental/agents";
 import { agents } from "../client";
-import { history, preferences } from "../keys";
+import { preferences } from "../keys";
 import { claude } from "../models/claude";
-import { remember } from "../tools/remember";
 
-export const account = agents.agent(
-  { id: "account" },
-  async ({ inbox, control }) => {
-    for await (const message of inbox) {
-      const known = (await kv.session.get(preferences)) ?? [];
-
-      const result = await agent.loop({
-        model: claude,
-        system: `What we know about this customer: ${known.join("; ")}`,
-        prompt: message.content ?? "",
-        history: (await kv.thread.get(history)) ?? [],
-        tools: { remember },
-        compaction: { maxTokens: 150_000, keep: 8 },
-        ...control,
-      });
-
-      await kv.thread.set(history, result.history);
-    }
-  },
-);
+export const account = agents.agent({ id: "account" }, async ({ inbox }) => {
+  for await (const message of inbox) {
+    const known = (await kv.session.get(preferences)) ?? [];
+    await agent.loop({
+      model: claude,
+      system: `What we know about this customer: ${known.join("; ")}`,
+      prompt: message.content ?? "",
+    });
+  }
+});
 ```
 
 <Annotation id="session" lines="11" tease="every thread of the session" title="Session scope" href="#options" linkText="Options">
@@ -128,7 +117,6 @@ export const remember = tool.step({
     await kv.session.update(preferences, (current) => {
       return [...(current ?? []), fact];
     });
-
     return { saved: fact };
   },
 });
@@ -183,16 +171,13 @@ import { agents } from "../client";
 export const billing = agents.agent(
   {
     id: "billing",
-    requests: {
-      request: z.object({ orderId: z.string() }),
-      reply: z.object({ refundable: z.boolean() }),
-    },
+    requests: { request: z.object({ orderId: z.string() }), reply: z.object({ refundable: z.boolean() }) },
   },
   async ({ inbox }) => {
-    for await (const message of inbox) {
-      if (message.kind === "request") {
-        await message.reply({ refundable: message.payload.orderId !== "" });
-      }
+    const message = await inbox.next();
+
+    if (message?.kind === "request") {
+      await message.reply({ refundable: message.payload.orderId !== "" });
     }
   },
 );
