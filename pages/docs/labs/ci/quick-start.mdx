@@ -31,11 +31,45 @@ export const ci = createCi(inngest);
 
 Checks print to the terminal by default. [Run on GitHub →](/docs/labs/ci/reference?ref=docs-labs-ci-quick-start#run-on-github)
 
-## 3. Write a pipeline
+## 3. Write the jobs
 
-```typescript {{ title: "ci/pipelines.ts" }}
-import { github, checkout, $ } from "@inngest/ci";
-import { ci } from "./client";
+```typescript {{ title: "ci/jobs/base.ts" }}
+import { $, checkout } from "@inngest/ci";
+import { ci } from "../client";
+
+export const base = ci.job("base", async () => {
+  await checkout();
+  await $`pnpm install`;
+});
+```
+
+```typescript {{ title: "ci/jobs/lint.ts" }}
+import { $ } from "@inngest/ci";
+import { ci } from "../client";
+import { base } from "./base";
+
+export const lint = ci.job({ id: "lint", from: base }, async () => {
+  await $`pnpm lint`;
+});
+```
+
+```typescript {{ title: "ci/jobs/test.ts" }}
+import { $ } from "@inngest/ci";
+import { ci } from "../client";
+import { base } from "./base";
+
+export const test = ci.job({ id: "test", from: base }, async () => {
+  await $({ retries: 1 })`pnpm test`;
+});
+```
+
+## 4. Write a pipeline
+
+```typescript {{ title: "ci/pipelines/pr.ts" }}
+import { github } from "@inngest/ci";
+import { ci } from "../client";
+import { lint } from "../jobs/lint";
+import { test } from "../jobs/test";
 
 export const pr = ci.pipeline(
   {
@@ -47,34 +81,23 @@ export const pr = ci.pipeline(
     await Promise.all([lint(), test()]);
   },
 );
-
-const base = ci.job("base", async () => {
-  await checkout();
-  await $`pnpm install`;
-});
-
-const lint = ci.job({ id: "lint", from: base }, async () => {
-  await $`pnpm lint`;
-});
-
-const test = ci.job({ id: "test", from: base }, async () => {
-  await $({ retries: 1 })`pnpm test`;
-});
 ```
 
-## 4. Serve the pipelines
+## 5. Serve the pipelines
 
 ```typescript {{ title: "ci/server.ts" }}
 import { createServer } from "inngest/node";
 import { inngest, ci } from "./client";
-import "./pipelines";
+import "./pipelines/pr";
 
 const server = createServer({ client: inngest, functions: ci.functions() });
 
 server.listen(Number(process.env.PORT ?? 3000));
 ```
 
-## 5. Run locally
+[Project structure →](/docs/labs/ci/structure?ref=docs-labs-ci-quick-start)
+
+## 6. Run locally
 
 ```bash
 npx inngest-ci pr
@@ -82,7 +105,7 @@ npx inngest-ci pr
 
 [Run CI locally →](/docs/labs/ci/local?ref=docs-labs-ci-quick-start)
 
-## 6. Inspect the result
+## 7. Inspect the result
 
 ```
   inngest-ci pr  pull_request.opened · my-branch @ 70f798f + uncommitted
@@ -106,4 +129,4 @@ Press `enter` to open the run in the Dev Server. [Read the trace →](/docs/labs
 - Machines are destroyed when the run ends, or by a cleanup function.
 - Command output arrives when the command ends.
 
-[Concepts →](/docs/labs/ci/concepts?ref=docs-labs-ci-quick-start) · [Example project →](https://github.com/inngest/inngest-js/tree/main/examples/ci-pipelines)
+[Concepts →](/docs/labs/ci/concepts?ref=docs-labs-ci-quick-start) · [Project structure →](/docs/labs/ci/structure?ref=docs-labs-ci-quick-start) · [Example project →](https://github.com/inngest/inngest-js/tree/main/examples/ci-pipelines)

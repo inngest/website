@@ -16,7 +16,7 @@ export const description = "Define an Inngest CI pipeline, choose what starts it
 
 <AnnotatedCode>
 
-```typescript {{ title: "ci/pipelines.ts" }}
+```typescript {{ title: "ci/pipelines/pr.ts" }}
 export const pr = ci.pipeline(
   {
     id: "pr",
@@ -48,11 +48,11 @@ At most 20 per account.
 
 </AnnotatedCode>
 
-Serve pipelines with [`ci.functions()`](/docs/labs/ci/quick-start?ref=docs-labs-ci-pipelines#4-serve-the-pipelines).
+Serve pipelines with [`ci.functions()`](/docs/labs/ci/quick-start?ref=docs-labs-ci-pipelines#5-serve-the-pipelines). Put each pipeline in its own file. [Project structure →](/docs/labs/ci/structure?ref=docs-labs-ci-pipelines)
 
 ## Triggers
 
-```typescript {{ title: "TypeScript" }}
+```typescript {{ title: "ci/pipelines/merged.ts" }}
 export const merged = ci.pipeline(
   {
     id: "merged",
@@ -68,7 +68,7 @@ export const merged = ci.pipeline(
 );
 ```
 
-```typescript {{ title: "TypeScript" }}
+```typescript {{ title: "ci/pipelines/pr.ts" }}
 on: github.comment({ command: "/deploy" })
 on: github.mergeGroup()
 on: { cron: "0 3 * * *" }
@@ -79,7 +79,7 @@ on: ci.manual({ pipelineId: "deploy", schema })
 
 ## Skip a run
 
-```typescript {{ title: "TypeScript" }}
+```typescript {{ title: "ci/pipelines/pr.ts" }}
 const touched = await changed("src/**", "package.json");
 
 if (touched === false) {

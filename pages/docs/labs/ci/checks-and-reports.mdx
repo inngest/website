@@ -21,10 +21,13 @@ export const description = "Inngest CI reports one GitHub check for each pipelin
 ✕ pr / test      `pnpm test` exited with 1
 ```
 
-```typescript {{ title: "TypeScript" }}
+```typescript {{ title: "ci/pipelines/pr.ts" }}
 ci.pipeline({ id: "pr", on, check: false }, fn);
 ci.pipeline({ id: "pr", on, check: { jobs: false } }, fn);
 ci.pipeline({ id: "pr", on, check: { name: "CI" } }, fn);
+```
+
+```typescript {{ title: "ci/jobs/notify.ts" }}
 ci.job({ id: "notify", check: false }, fn);
 ```
 
@@ -32,7 +35,7 @@ ci.job({ id: "notify", check: false }, fn);
 
 <AnnotatedCode>
 
-```typescript {{ title: "TypeScript" }}
+```typescript {{ title: "ci/jobs/test.ts" }}
 await report.summary(`Coverage: **${coverage}%**`);
 
 await report.annotate([
@@ -54,7 +57,7 @@ Outside a job, `report` targets the pipeline check.
 
 ## Read the trace
 
-```typescript {{ title: "TypeScript" }}
+```typescript {{ title: "ci/jobs/test.ts" }}
 const test = ci.job({ id: "test", name: "Unit tests", from: base }, async () => {
   await $({ id: "unit tests", retries: 1 })`pnpm test`;
 });

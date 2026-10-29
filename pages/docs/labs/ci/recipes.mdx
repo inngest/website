@@ -7,7 +7,7 @@ export const description = "Inngest CI recipes: start services and wait for them
 
 ## Services and waiting
 
-```typescript {{ title: "TypeScript" }}
+```typescript {{ title: "ci/jobs/e2e.ts" }}
 const server = await $`pnpm start`.background();
 await waitForPort(3000);
 await waitForHttp("http://127.0.0.1:3000/health");
@@ -23,7 +23,7 @@ await step.invoke("contracts", { function: contracts, data: { sha } });
 
 ## Tests
 
-```typescript {{ title: "TypeScript" }}
+```typescript {{ title: "ci/jobs/test.ts" }}
 ci.job({ id: "test", from: build }, fn);
 ci.job({ id: "test", from: image.job("platform/node-base") }, fn);
 
@@ -46,7 +46,7 @@ ci.job({ id: "node", matrix: { axes: { node: ["20", "22"] } } }, fn);
 
 ## Pull requests
 
-```typescript {{ title: "TypeScript" }}
+```typescript {{ title: "ci/jobs/preview.ts" }}
 await github.stickyComment("preview", `Preview: ${url}`);
 await github.upsertPullRequest({ head: "release/next", title, body });
 await github.forcePushRef("heads/next", sha);
@@ -59,7 +59,7 @@ await report.summary("**Coverage:** 91%");
 
 ## Changes and triggers
 
-```typescript {{ title: "TypeScript" }}
+```typescript {{ title: "ci/pipelines/pr.ts" }}
 if (await changed("docs/**")) {
   await docsSite();
 }
@@ -78,7 +78,7 @@ singleton: { key: "event.data.pull_request.number", mode: "cancel" }
 
 ## Debugging
 
-```typescript {{ title: "TypeScript" }}
+```typescript {{ title: "ci/jobs/test.ts" }}
 ci.job({ id: "test", keepOnFailure: "24h" }, fn);
 ci.job({ id: "notify", check: false }, fn);
 ci.pipeline({ id, on, check: { name: "CI" } }, fn);

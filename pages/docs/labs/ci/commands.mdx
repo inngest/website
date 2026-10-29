@@ -13,7 +13,7 @@ export const description = "Run shell commands in an Inngest CI job with the $ t
 
 <AnnotatedCode>
 
-```typescript {{ title: "ci/jobs.ts" }}
+```typescript {{ title: "ci/jobs/test.ts" }}
 const test = ci.job("test", async () => {
   await checkout();
   await $`pnpm install`;
@@ -42,13 +42,13 @@ Returns the result instead.
 
 ## Retries
 
-```typescript {{ title: "TypeScript" }}
+```typescript {{ title: "ci/jobs/test.ts" }}
 await $({ retries: 2 })`pnpm test`;
 ```
 
 ## Options
 
-```typescript {{ title: "TypeScript" }}
+```typescript {{ title: "ci/jobs/test.ts" }}
 await $({ env: { CI: "true" }, timeout: "10m" })`pnpm test`;
 await $({ id: "e2e" })`pnpm exec playwright test`;
 await $.sh`pnpm build && pnpm pack`;
@@ -58,13 +58,21 @@ const sha = await $`git rev-parse HEAD`.text();
 
 ## Share commands between jobs
 
-```typescript {{ title: "TypeScript" }}
-export async function install() {
+```typescript {{ title: "ci/helpers.ts" }}
+import { $, checkout } from "@inngest/ci";
+
+export const install = async () => {
   await checkout();
   await $`pnpm install --frozen-lockfile`;
-}
+};
+```
 
-const test = ci.job("test", async () => {
+```typescript {{ title: "ci/jobs/test.ts" }}
+import { $ } from "@inngest/ci";
+import { ci } from "../client";
+import { install } from "../helpers";
+
+export const test = ci.job("test", async () => {
   await install();
   await $`pnpm test`;
 });

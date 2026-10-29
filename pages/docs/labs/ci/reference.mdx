@@ -13,7 +13,7 @@ export const description = "Inngest CI reference: pipeline and job options, trig
 
 ## `createCi`
 
-```typescript {{ title: "TypeScript" }}
+```typescript {{ title: "ci/client.ts" }}
 const ci = createCi(inngest, {
   github: githubApp(), // githubApp() | githubToken() | consoleReporter() (default)
   machine: { vcpu: 2 }, // default for every job
@@ -34,7 +34,7 @@ if (ci.local) {
 
 A [pipeline](/docs/labs/ci/pipelines?ref=docs-labs-ci-reference) is one Inngest function, so every flow control option works.
 
-```typescript {{ title: "TypeScript" }}
+```typescript {{ title: "ci/pipelines/pr.ts" }}
 export const pr = ci.pipeline(
   {
     id: "pr", // unique in the app; names the function, run, and check
@@ -61,7 +61,7 @@ Also accepted: `throttle`, `rateLimit`, `debounce`, `priority`, `idempotency`, `
 
 `ci.skip(reason)` ends the run with a success check carrying the reason.
 
-```typescript {{ title: "TypeScript" }}
+```typescript {{ title: "ci/pipelines/pr.ts" }}
 const touched = await changed("src/**", "package.json");
 // or: changed({ include: ["docs/**"], ignore: ["docs/**/*.png"] })
 // patterns: **, *, ?, {a,b}. No `include` means every file.
@@ -82,7 +82,7 @@ if (touched === false) {
 
 A [trigger](/docs/labs/ci/pipelines?ref=docs-labs-ci-reference#triggers) starts a pipeline and types its `event`.
 
-```typescript {{ title: "TypeScript" }}
+```typescript {{ title: "ci/pipelines/pr.ts" }}
 on: github.pullRequest({ branches, types, repo }) // opened, synchronize, reopened by default
 on: github.push({ branches, tags, repo }) // exact names: "v*" does not match v1.0.0; deleted branches excluded
 on: github.comment({ command, minPermission, repo }) // comment starts with `command`
@@ -101,7 +101,7 @@ on: [github.pullRequest(), github.push({ branches: ["main"] })] // union; narrow
 
 A [job](/docs/labs/ci/jobs?ref=docs-labs-ci-reference) has its own machine and check. Call it like a function.
 
-```typescript {{ title: "TypeScript" }}
+```typescript {{ title: "ci/jobs/build.ts" }}
 const test = ci.job("test", async () => {
   await checkout();
   await $`pnpm test`;
@@ -134,7 +134,7 @@ const build = ci.job(
 
 [`` $`…` ``](/docs/labs/ci/commands?ref=docs-labs-ci-reference) runs on the job's machine. A non-zero exit throws `CommandFailedError`.
 
-```typescript {{ title: "TypeScript" }}
+```typescript {{ title: "ci/jobs/test.ts" }}
 await $`pnpm --filter ${pkg} test`; // each value is one argument, unquoted
 await $`pnpm test --filter=${pkg}`; // joins the argument when it follows text with no space
 await $`pnpm test ${bail && ["--bail", "1"]}`; // arrays spread; false, null, undefined drop
@@ -159,7 +159,7 @@ await server.output({ tailBytes: 65536 });
 await server.kill(); // SIGTERM, or pass a signal number
 ```
 
-```typescript {{ title: "TypeScript" }}
+```typescript {{ title: "types.ts" }}
 type CommandResult = {
   exitCode: number;
   stdout: string; // last 64 KiB
@@ -177,7 +177,7 @@ type CommandResult = {
 
 A [machine](/docs/labs/ci/machines?ref=docs-labs-ci-reference) is a Sandbox. Each job gets one on its first command.
 
-```typescript {{ title: "TypeScript" }}
+```typescript {{ title: "ci/jobs/build.ts" }}
 machine: { vcpu: 1 } // 1 GiB
 machine: { vcpu: 2 } // 2 GiB, default
 machine: { vcpu: 4 } // 4 GiB
@@ -185,7 +185,7 @@ machine: { vcpu: 4 } // 4 GiB
 
 The first `machine` set wins: job, then pipeline, then `createCi`. Inngest destroys every machine when the pipeline ends. Only `$` runs on the machine.
 
-```typescript {{ title: "TypeScript" }}
+```typescript {{ title: "ci/jobs/test.ts" }}
 await checkout({
   repo: "acme/api", // default: the run's repository
   ref: "main", // branch, tag, or commit; default: the run's commit
@@ -205,7 +205,7 @@ await checkout({
 
 [`from`](/docs/labs/ci/base-images?ref=docs-labs-ci-reference#start-from-a-job) on [`ci.job`](#ci-job), including a [matrix job](#matrix-jobs), starts a job on a copy of another job's machine.
 
-```typescript {{ title: "TypeScript" }}
+```typescript {{ title: "ci/jobs/test.ts" }}
 const base = ci.job("base", async () => {
   await checkout();
   await $`pnpm install`;
@@ -232,7 +232,7 @@ from: image.job("app/job", input) // a job another app defines; input optional
 - Jobs defined inside a pipeline build in that run.
 - When a cached job's key changes, it and every cached job below it run again.
 
-```typescript {{ title: "TypeScript" }}
+```typescript {{ title: "ci/invalidate.ts" }}
 await inngest.send(invalidateEvent("node-base")); // ci/base-image.invalidate; job or its ID
 await inngest.send(invalidateEvent(base, { scope: "main" })); // branch, pr:<n>, global, or local
 ```
@@ -241,7 +241,7 @@ Without `scope`, every scope is cleared. [Rebuild on demand →](/docs/labs/ci/b
 
 ## Extra machines
 
-```typescript {{ title: "TypeScript" }}
+```typescript {{ title: "ci/jobs/verify.ts" }}
 const verify = ci.job("verify", async () => {
   await checkout();
 
@@ -272,7 +272,7 @@ await waitForHttp("http://127.0.0.1:3000/health", { timeout: "2m", status: 200 }
 
 Give a job a `matrix` to run it once per combination.
 
-```typescript {{ title: "TypeScript" }}
+```typescript {{ title: "ci/jobs/compat.ts" }}
 const compat = ci.job(
   {
     id: "compat",
@@ -301,7 +301,7 @@ await compat({ node: "22" });
 
 `shard()` gives this shard `files`: every `total`-th file from `index`. It throws `CiUsageError` outside a job.
 
-```typescript {{ title: "TypeScript" }}
+```typescript {{ title: "ci/jobs/unit.ts" }}
 import { $, shard } from "@inngest/ci";
 
 const unit = ci.job(
@@ -320,7 +320,7 @@ const unit = ci.job(
 
 Every job handler gets one context object.
 
-```typescript {{ title: "TypeScript" }}
+```typescript {{ title: "ci/jobs/test.ts" }}
 ci.job(
   {
     id: "test",
@@ -343,7 +343,7 @@ ci.job(
 
 Return an object from a job to hand data and commands to the jobs that start `from` it.
 
-```typescript {{ title: "TypeScript" }}
+```typescript {{ title: "ci/jobs/base.ts" }}
 const base = ci.job({ id: "base", cache: { key: files("pnpm-lock.yaml") } }, async () => {
   await $`pnpm install`;
 
@@ -369,7 +369,7 @@ const test = ci.job({ id: "test", from: base }, async ({ from }) => {
 
 A job's [`cache`](/docs/labs/ci/base-images?ref=docs-labs-ci-reference#add-a-cache-key) skips it when nothing it depends on changed. Its input is part of the identity.
 
-```typescript {{ title: "TypeScript" }}
+```typescript {{ title: "ci/jobs/base.ts" }}
 cache: {
   key: files("pnpm-lock.yaml", ".nvmrc"), // string | files() | async () => string | array | { name: part }
   refresh: [{ cron: "0 3 * * *" }], // triggers that build ahead of time
@@ -408,7 +408,7 @@ Returned ci.skip()          Success, with the reason
 Job never called            No check
 ```
 
-```typescript {{ title: "TypeScript" }}
+```typescript {{ title: "ci/jobs/test.ts" }}
 await report.summary(`Coverage: **${coverage}%**`); // stacks sections; truncated at 65,000 bytes with a trace note
 await report.annotate([{ path: "src/queue.ts", line: 42, message: "Flaky retry here" }]); // batches of 50; entries without path or message drop
 ```
@@ -453,7 +453,7 @@ export const ci = createCi(inngest, {
 
 ## GitHub API and helpers
 
-```typescript {{ title: "TypeScript" }}
+```typescript {{ title: "ci/jobs/release.ts" }}
 const created = await github.rest.repos.createRelease({ tag_name: "v1.4.0" }); // every Octokit REST method, one step per call
 await github.rest.with({ id: "tag-next" }).git.updateRef({ ref: "heads/next", sha: github.repo().sha, force: true });
 
@@ -509,7 +509,7 @@ Every run is tagged with metadata of kind `userland.inngest-ci`. Commands, outpu
 
 ## Steps inside jobs
 
-```typescript {{ title: "TypeScript" }}
+```typescript {{ title: "ci/jobs/migrations.ts" }}
 import { step } from "inngest";
 
 const migrations = ci.job("migrations", async () => {
@@ -534,7 +534,7 @@ const migrations = ci.job("migrations", async () => {
 
 ## Errors
 
-```typescript {{ title: "TypeScript" }}
+```typescript {{ title: "types.ts" }}
 import { CommandFailedError, CommandTimeoutError, CiUsageError } from "@inngest/ci";
 
 class CommandFailedError { command: string[]; exitCode: number; stdoutTail: string; stderrTail: string; jobPath: string } // non-zero exit outside exitCodes
