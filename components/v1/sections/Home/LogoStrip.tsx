@@ -46,6 +46,15 @@ interface CustomerLogo {
 // logo reads at roughly the same visual mass in the strip.
 const LOGOS: CustomerLogo[] = [
   {
+    name: "Ordinal",
+    // The spiral mark is taller than the wordmark, so the lockup renders
+    // taller than the flat wordmarks to keep the letters the same size.
+    src: "/assets/customers/ordinal-logo-white.svg",
+    width: 131,
+    height: 36,
+    caseStudyHref: "/customers/ordinal",
+  },
+  {
     name: "Replit",
     src: "/assets/v1/logos/replit.svg",
     width: 116,
