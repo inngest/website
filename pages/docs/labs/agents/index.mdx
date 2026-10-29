@@ -69,18 +69,25 @@ Read them in order, or jump to the one you need.
 
 ## Where to start
 
-The fastest way to see an agent run is the Agents Tour: lessons on the left, an editor on the right, and the real trace of every run underneath. It lives at `examples/agents-tour` in [inngest-js](https://github.com/inngest/inngest-js/tree/jack/agent-primitives/examples/agents-tour).
+The fastest way to see an agent run is the Agents Tour: lessons on the left, an editor on the right, and the real trace of every run underneath. It lives at `examples/agents-tour` in [inngest-js](https://github.com/inngest/inngest-js/tree/jack/agent-primitives/examples/agents-tour). You need `git`, Go, Node 24 and `pnpm`; `pnpm tour:devserver` builds a Dev Server with `step.subscribe`, which the published CLI does not have yet.
 
 ```bash
-git clone https://github.com/inngest/inngest-js.git
-cd inngest-js
-git checkout jack/agent-primitives
-pnpm install
-pnpm --filter inngest build
-cd examples/agents-tour
-pnpm install --ignore-workspace --config.lockfile=false
-pnpm tour:devserver
-pnpm tour
+(
+  set -e
+  corepack enable
+  node -e 'process.exit(+process.versions.node.split(".")[0] < 24)' || { echo "Node 24 or newer is required"; exit 1; }
+  [ -d inngest-js ] || git clone https://github.com/inngest/inngest-js
+  cd inngest-js
+  git fetch origin
+  git checkout jack/agent-primitives
+  git pull --ff-only
+  pnpm install
+  pnpm --filter inngest build
+  cd examples/agents-tour
+  pnpm install --ignore-workspace --config.lockfile=false
+  pnpm tour:devserver
+  pnpm tour
+)
 ```
 
 To build in your own project, follow the [Quick start](/docs/labs/agents/quick-start?ref=docs-labs-agents). [Project structure](/docs/labs/agents/structure?ref=docs-labs-agents) shows where agents, tools and sandboxes live, and the [Reference](/docs/labs/agents/reference?ref=docs-labs-agents) lists every export.

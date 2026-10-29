@@ -116,6 +116,32 @@ The first message starts a run. Later messages to `customer-42` reach the same t
 
 ## See the run
 
-Open the run in the Dev Server to see each model call and tool call as a step. Agents use `step.subscribe`, which the published Inngest CLI does not have yet, so use the Dev Server the [Agents Tour](/docs/labs/agents?ref=docs-labs-agents-quick-start#where-to-start) builds with `pnpm tour:devserver`.
+Open the run in the Dev Server to see each model call and tool call as a step. Agents use `step.subscribe`, which the published Inngest CLI does not have yet, so use the Dev Server that `pnpm tour:devserver` builds. The [Agents Tour](/docs/labs/agents?ref=docs-labs-agents-quick-start#where-to-start) command starts the tour and builds it:
+
+```bash
+(
+  set -e
+  corepack enable
+  node -e 'process.exit(+process.versions.node.split(".")[0] < 24)' || { echo "Node 24 or newer is required"; exit 1; }
+  [ -d inngest-js ] || git clone https://github.com/inngest/inngest-js
+  cd inngest-js
+  git fetch origin
+  git checkout jack/agent-primitives
+  git pull --ff-only
+  pnpm install
+  pnpm --filter inngest build
+  cd examples/agents-tour
+  pnpm install --ignore-workspace --config.lockfile=false
+  pnpm tour:devserver
+  pnpm tour
+)
+```
+
+`$DEV_SERVER` is that binary. It is cached at `~/.cache/inngest-agents-tour/devserver/<commit>/inngest-dev` (under `$XDG_CACHE_HOME` or `$TOUR_CACHE` when set). With your app serving on port 3000:
+
+```bash
+DEV_SERVER=$(ls ~/.cache/inngest-agents-tour/devserver/*/inngest-dev | head -n 1)
+$DEV_SERVER dev --no-discovery -u http://localhost:3000/api/inngest
+```
 
 Next, read the ten [concepts](/docs/labs/agents?ref=docs-labs-agents-quick-start#concepts) in order, or the [Reference](/docs/labs/agents/reference?ref=docs-labs-agents-quick-start).

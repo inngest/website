@@ -218,7 +218,6 @@ export const fixer = agents.agent(
   async ({ sandboxes }) => {
     const checkout = await repo(await sandboxes.work.get(), {
       repo: "acme/web",
-      sync: "keep",
       token: process.env.GITHUB_TOKEN,
     });
 
@@ -227,7 +226,7 @@ export const fixer = agents.agent(
 );
 ```
 
-`sync: "keep"` keeps what the agent did; `"reset"` discards it. Pushes your policy approves, host-side tokens and GitHub App auth are in [Repos and git](/docs/labs/agents/repos-and-git?ref=docs-labs-agents-sandboxes-and-code).
+Add `sync: "keep"` to keep what the agent did in an existing checkout; `"reset"` discards it. Pushes your policy approves, host-side tokens and GitHub App auth are in [Repos and git](/docs/labs/agents/repos-and-git?ref=docs-labs-agents-sandboxes-and-code).
 
 ## When to use what
 
