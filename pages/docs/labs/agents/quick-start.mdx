@@ -7,8 +7,6 @@ export const description = "Inngest Agents quick start: create the client, a mod
 
 > A few small files, then a conversation that survives restarts.
 
-Prefer to learn by running code? The [Agents Tour](/docs/labs/agents?ref=docs-labs-agents-quick-start#where-to-start) runs each lesson against a real Dev Server with nothing to set up first.
-
 ## Install
 
 You need Node.js 20+, a recent `inngest`, Zod 4, a Redis URL in `INNGEST_EXPERIMENTAL_KV_URL`, and an `ANTHROPIC_API_KEY`.
@@ -116,31 +114,24 @@ The first message starts a run. Later messages to `customer-42` reach the same t
 
 ## See the run
 
-Open the run in the Dev Server to see each model call and tool call as a step. Agents use `step.subscribe`, which the published Inngest CLI does not have yet, so use the Dev Server that `pnpm tour:devserver` builds. The [Agents Tour](/docs/labs/agents?ref=docs-labs-agents-quick-start#where-to-start) command starts the tour and builds it:
+Open the run in the Dev Server to see each model call and tool call as a step. Agents use `step.subscribe`, which the published Inngest CLI does not have yet, so build a Dev Server from the `jack/step-subscribe-clean` branch of [inngest/inngest](https://github.com/inngest/inngest). You need `git` and Go.
 
 ```bash
 (
   set -e
-  corepack enable
-  node -e 'process.exit(+process.versions.node.split(".")[0] < 24)' || { echo "Node 24 or newer is required"; exit 1; }
-  [ -d inngest-js ] || git clone https://github.com/inngest/inngest-js
-  cd inngest-js
-  git fetch origin
-  git checkout jack/agent-primitives
-  git pull --ff-only
-  pnpm install
-  pnpm --filter inngest build
-  cd examples/agents-tour
-  pnpm install --ignore-workspace --config.lockfile=false
-  pnpm tour:devserver
-  pnpm tour
+  git clone --depth 1 --branch jack/step-subscribe-clean https://github.com/inngest/inngest inngest-dev-src
+  cd inngest-dev-src
+  mkdir -p pkg/devserver/static internal/embeddocs/website/pages/docs
+  [ -f pkg/devserver/static/index.html ] || echo "<!doctype html><title>Inngest Dev Server</title>" > pkg/devserver/static/index.html
+  [ -f internal/embeddocs/website/pages/docs/index.md ] || echo "# Inngest docs" > internal/embeddocs/website/pages/docs/index.md
+  CGO_ENABLED=0 go build -trimpath -o ../inngest-dev ./cmd
 )
 ```
 
-`$DEV_SERVER` is that binary. It is cached at `~/.cache/inngest-agents-tour/devserver/<commit>/inngest-dev` (under `$XDG_CACHE_HOME` or `$TOUR_CACHE` when set). With your app serving on port 3000:
+`$DEV_SERVER` is that `inngest-dev` binary. This build has no Dev Server UI, so follow runs through your app's output. With your app serving on port 3000:
 
 ```bash
-DEV_SERVER=$(ls ~/.cache/inngest-agents-tour/devserver/*/inngest-dev | head -n 1)
+DEV_SERVER=$PWD/inngest-dev
 $DEV_SERVER dev --no-discovery -u http://localhost:3000/api/inngest
 ```
 
