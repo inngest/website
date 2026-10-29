@@ -37,6 +37,8 @@ You don't know. It starts over. Re-fetches data it already had. Re-calls the LLM
 
 The fix isn't "better error handling" — it's an execution model where [each step is checkpointed](/docs/durable-execution/primitives?ref=blog-agent-loop-architecture), each decision is persisted, and recovery means resuming from the last successful step.
 
+For a worked example, here's [an outer loop that retries the whole agent until a check passes](/blog/building-a-durable-goal-agent-loop-that-survives-crashes?ref=blog-agent-loop-architecture), and keeps going through a `kill -9` of its worker.
+
 ## The agent loop architecture in three layers
 
 Three layers. Each one maps to a concrete primitive.
