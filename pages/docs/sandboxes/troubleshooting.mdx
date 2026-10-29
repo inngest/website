@@ -33,6 +33,18 @@ When a Sandbox operation fails, find its step in the run trace or inspect the di
 
 **Fix:** Correct the names or key overlap and retry Create with the intended configuration. A clone cannot select new secrets; it carries values captured in the source snapshot. Pause and Resume do not fetch rotated values again.
 
+## Create rejects the image
+
+**Check:** `sandbox_image_not_found` means the image is not published to this workspace. A reference is a name, `name:tag`, or `name@sha256:<hex>`. A name without a tag uses `latest`. A snapshot clone cannot select an image.
+
+**Fix:** Correct the reference, or publish the image first. See [Choose an image](/docs/sandboxes/features/base-images#choose-an-image).
+
+## Code in the Sandbox gets a `ToolError`
+
+**Check:** The tool name must be an own key of `tools`. A `tool.step()` with an `input` schema rejects arguments that do not match it before anything runs, and a tool that still fails after its retries raises the error. Also check that the call used named arguments for a `tool.step()` with an `input` schema and positional ones for a plain function.
+
+**Fix:** Catch `ToolError` in the Sandbox code, or fix the arguments or the tool. The failed attempt is a step in the run trace. See [Tools](/docs/sandboxes/features/tools).
+
 ## Create returns an ID but the Sandbox is not ready
 
 **Check:** A TypeScript Create waits up to 120 seconds for `RUNNING` by default. A `runningTimeout` deadline ends that wait; it does not cancel Create or destroy the Sandbox. Get the Sandbox ID and inspect `PENDING`, `STARTING`, `RUNNING`, `FAILED`, or a terminal state.

@@ -17,6 +17,9 @@ export const description = "Inngest Sandboxes overview: run generated code or te
     "Pause, resume, snapshot, and clone": "/docs/sandboxes/features/pause-and-resume",
     "File upload and download": "/docs/sandboxes/reference#commands-processes-and-files",
     "Workspace secrets": "/docs/sandboxes/features/secrets",
+    "Python and TypeScript runners": "/docs/sandboxes/features/managed-lifecycle#run-python-or-typescript-in-one-call",
+    "Tools for sandboxed code": "/docs/sandboxes/features/tools",
+    "Custom images": "/docs/sandboxes/features/base-images#choose-an-image",
     "SSH access": "/docs/sandboxes/features/ssh",
     "S3-backed persistent mounts": "/docs/sandboxes/features/durable-filesystems",
   }}
@@ -32,6 +35,9 @@ export const description = "Inngest Sandboxes overview: run generated code or te
         "Pause, resume, snapshot, and clone": true,
         "File upload and download": { supported: true, tag: "Direct client" },
         "Workspace secrets": true,
+        "Python and TypeScript runners": { supported: true, tag: "Experimental" },
+        "Tools for sandboxed code": { supported: true, tag: "Experimental" },
+        "Custom images": { supported: true, tag: "Experimental" },
         "SSH access": { supported: false, tag: "Planned" },
         "S3-backed persistent mounts": { supported: false, tag: "Planned" },
       },
@@ -57,8 +63,12 @@ A durable run can include steps, waits, and retries that span more than one requ
 - **Pause and continue.** Stop active work and continue when the job is ready.
 - **Snapshot and clone.** Save Sandbox state and start a new Sandbox from it. Pause and resume continue the original Sandbox. Files persist through these operations.
 - **Follow the work in a trace.** See sandbox activity with the steps and events of the durable run.
+- **Run Python or TypeScript in one call.** Get a typed result back and nothing to clean up. [Managed lifecycle](/docs/sandboxes/features/managed-lifecycle#run-python-or-typescript-in-one-call)
+- **Run commands like a script.** `sb.$` runs a command as one step and returns text, lines, or JSON. [Commands](/docs/sandboxes/features/commands)
+- **Call your app from the Sandbox.** Sandboxed code calls your functions as durable steps that run with your credentials. [Tools](/docs/sandboxes/features/tools)
+- **Start from your own image.** [Base images](/docs/sandboxes/features/base-images#choose-an-image)
 
-The lifecycle depends on the API you use. With the low-level `step.sandbox.create()` API, your function calls create and destroy as durable operations and handles cleanup after permanent failure. A planned `step.sandbox.typescript` call will start a Sandbox, run TypeScript, and stop it automatically.
+The lifecycle depends on the API you use. With the low-level `step.sandbox.create()` API, your function calls create and destroy as durable operations and handles cleanup after permanent failure. `step.sandbox.python` and `step.sandbox.typescript` start a Sandbox, run your code, and destroy it in one call.
 
 ## How Sandboxes fit into Inngest
 
