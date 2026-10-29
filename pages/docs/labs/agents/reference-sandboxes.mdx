@@ -161,12 +161,11 @@ toolDefinitions(tools: SandboxTools): ToolJsonDefinition[]
 | `run` | all | required | `(input, { signal, idempotencyKey }) => result`. |
 | `group` | `tool()` | `false` | Run as a group of steps, so `run` can use the global `step`. |
 | `waits` | `tool()` and `tool.group()` | `false` | The tool may wait longer than a command may run. Needs `group: true`. |
-| `sandboxCommand` | `tool()` | none | Also offers the tool to sandbox code as this command. Lowercase letters, digits, hyphens. |
 
 - `SandboxToolContext` has `signal` (aborts on timeout) and `idempotencyKey` (stable across retries).
 - With a Standard Schema `input`, sandbox code calls the tool with named arguments and a bad call returns a `ToolError` without running anything. Without `input`, it takes positional JSON.
 - Schemas turn into JSON Schema from Zod 4 or any library that implements Standard JSON Schema.
-- `agent.toolError(body)` returns a failure the model can read. With an `output` schema it does not type check, so leave the schema off for tools that return it.
+- `agent.toolError(body)` returns a failure the model can read. It is allowed beside an `output` schema and is not checked against it.
 - A tool entry in a tools record may also be a plain function, an Inngest function, or a function reference.
 
 `SandboxToolOptions` (the `toolOptions` of a command with tools):

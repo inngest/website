@@ -70,7 +70,7 @@ A boolean or a finite number. Names cannot start with `agent.`.
 
 The loop and `report()` score the steps that already run, so none adds a step.
 
-- `agent.model_ms`, `agent.input_tokens`, `agent.output_tokens`, `agent.tool_calls` and `agent.steers` are on each model step.
+- `agent.model_ms`, `agent.input_tokens`, `agent.output_tokens`, `agent.tool_calls` and `agent.steers` are on each model step. `agent.cache_read_tokens` and `agent.cache_write_tokens` join them when the model reported cache usage, as `agent.anthropic()` does.
 - `agent.tool_ms` and `agent.tool_error` are on each tool step. `agent.tool_error` is `1` when the tool threw or returned an error.
 - `agent.first_output_ms` is on the first `report()` post: trigger event to post.
 - `agent.output_gap_ms` is on each later post: previous post to this one.

@@ -176,8 +176,8 @@ import { agents } from "../client";
 
 export const researcher = agents.agent(
   { id: "researcher", on: invoke(z.object({ question: z.string() })) },
-  async ({ trigger }) => {
-    return { answer: `Looked into: ${trigger?.data.question}` };
+  async ({ trigger, depth }) => {
+    return { answer: `Looked into: ${trigger?.data.question}`, depth };
   },
 );
 ```
@@ -229,7 +229,9 @@ export const untyped = agents.agent({ id: "untyped" }, async () => {
 });
 ```
 
-A plain function an agent invokes reads how deep it is and its input.
+An agent body reads how deep it is as `depth`: 1 when a function that is not an agent invoked it, 2 for the next, `0` when anything else started the run. Its `trigger.data` is already the caller's input.
+
+A plain function an agent invokes uses `agentInvokeDepth(event)` and `agentInvokeInput(event)` instead.
 
 ```typescript {{ title: "inngest/helper.ts" }}
 import { invoke } from "inngest";

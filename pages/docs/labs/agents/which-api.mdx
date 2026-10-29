@@ -48,6 +48,9 @@ export const description = "Which Inngest Agents API to use: find the call for w
 
 | When you want | Use | Learn |
 | --- | --- | --- |
+| A Claude model with prompt caching | `agent.anthropic({ model })` | [Use Anthropic](/docs/labs/agents/loop?ref=docs-labs-agents-which-api#use-anthropic) |
+| Context that changes on every call, without a cache miss | `volatile` of `agent.anthropic()`, or a message; keep `system` fixed | [Keep the system prompt fixed](/docs/labs/agents/loop?ref=docs-labs-agents-which-api#keep-the-system-prompt-fixed) |
+| Current Claude rates for a budget | `anthropicPrices` | [Price and budget](/docs/labs/agents/loop?ref=docs-labs-agents-which-api#price-and-budget) |
 | A model call with tools | `agent.loop()` | [Loop with tools](/docs/labs/agents/loop?ref=docs-labs-agents-which-api#loop-with-tools) |
 | A spend cap | `limits.budget` with `limits.price` | [Price and budget](/docs/labs/agents/loop?ref=docs-labs-agents-which-api#price-and-budget) |
 | A dollar budget in a sub-agent | the sub-agent's own `limits.price` | [Limit sub-agents](/docs/labs/agents/events-and-triggers?ref=docs-labs-agents-which-api#limit-sub-agents) |
@@ -65,6 +68,7 @@ export const description = "Which Inngest Agents API to use: find the call for w
 | Call an agent and use its result | `agent.invoke()` | [Call another agent](/docs/labs/agents/events-and-triggers?ref=docs-labs-agents-which-api#call-another-agent) |
 | Children to stop when the parent is cancelled | `cancelOn: [agentInvokeCancelOn]` | [Cancel with the caller](/docs/labs/agents/events-and-triggers?ref=docs-labs-agents-which-api#cancel-with-the-caller) |
 | To catch a cancelled child | `AgentCancelledError` | [Cancel with the caller](/docs/labs/agents/events-and-triggers?ref=docs-labs-agents-which-api#cancel-with-the-caller) |
+| To know how deep an invoked agent is | `depth` in the agent body; `agentInvokeDepth(event)` in a plain function | [Call another agent](/docs/labs/agents/events-and-triggers?ref=docs-labs-agents-which-api#call-another-agent) |
 | Cap depth, fan-out or which agents it may call | `limits.depth`, `spawn`, `mayCall` | [Limit sub-agents](/docs/labs/agents/events-and-triggers?ref=docs-labs-agents-which-api#limit-sub-agents) |
 
 ## Tools

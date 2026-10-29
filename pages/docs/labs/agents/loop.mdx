@@ -7,6 +7,7 @@ export const description = "Inngest Agents loop: run a model with tools until it
 
 > Run a model with tools until it is done, one durable step per call.
 
+- **Anthropic built in.** `agent.anthropic()` calls the Messages API with prompt caching, usage and errors handled. [Anthropic](#use-anthropic)
 - **Any model.** `agent.model()` wraps your SDK call. [Model →](#make-a-model)
 - **Durable turns.** A crash never repeats a model call or a tool. [Loop →](#loop-with-tools)
 - **Continue a conversation.** Pass `history` to the next loop. [History →](#continue-a-conversation)
@@ -14,11 +15,47 @@ export const description = "Inngest Agents loop: run a model with tools until it
 - **Stop on a budget.** Tokens or dollars, from your prices. [Budget →](#price-and-budget)
 - **Handle failure.** Tool errors, model errors, outside text. [Errors →](#handle-errors)
 
-## Make a model
+## Use Anthropic
 
-`agent.model()` types a function that calls your provider once per turn. The loop keeps `message` as you return it and sends it back on every later turn.
+`agent.anthropic()` is a model for the Anthropic Messages API. Pass your client, or leave `client` out and it imports `@anthropic-ai/sdk`.
 
 ```typescript {{ title: "inngest/models/claude.ts" }}
+import Anthropic from "@anthropic-ai/sdk";
+import { agent } from "inngest/experimental/agents";
+
+export const claude = agent.anthropic({
+  model: "claude-sonnet-5-5",
+  client: new Anthropic(),
+});
+```
+
+- **Caching is on.** Breakpoints go on the system prompt, the tools and the end of the conversation, so each call reads what the last one wrote. `cache: { ttl: "1h" }` keeps entries an hour, which suits threads where people answer slowly; `cache: false` turns it off.
+- **Usage includes the cache.** `usage.input` counts every input token; `cacheRead`, `cacheWrite` and `cacheWrite1h` say how many were cached.
+- **Errors are sorted.** A 4xx, a refusal, or a reply cut off by `maxTokens` fails the step for good. A 429, 529 or 5xx is retried, after the `retry-after` the API sent.
+- **Also exported as `anthropic()`.** Options are in the [reference](/docs/labs/agents/reference?ref=docs-labs-agents-loop#agentanthropic).
+
+### Keep the system prompt fixed
+
+The loop sends the whole conversation unchanged, so each call reads the cached prefix of the one before. Any change to the system prompt, the tools or an earlier message is a cache miss for everything after it. Keep `system` fixed for an agent. Put context that changes on every call in the adapter's `volatile`, or in a message. Never rewrite earlier context.
+
+```typescript {{ title: "inngest/models/dated.ts" }}
+import Anthropic from "@anthropic-ai/sdk";
+import { agent } from "inngest/experimental/agents";
+
+export const dated = agent.anthropic({
+  model: "claude-sonnet-5-5",
+  client: new Anthropic(),
+  volatile: () => `It is ${new Date().toISOString()}.`,
+});
+```
+
+`volatile` (text, or a function of the request) is added to the last user message after the cache breakpoint, so it never changes the cached prefix.
+
+## Make a model
+
+`agent.model()` types a function that calls your provider once per turn, for a provider without an adapter. The loop keeps `message` as you return it and sends it back on every later turn. The example uses the Anthropic SDK; the shape fits any provider.
+
+```typescript {{ title: "inngest/models/handwritten.ts" }}
 import Anthropic from "@anthropic-ai/sdk";
 import { agent } from "inngest/experimental/agents";
 
@@ -131,7 +168,7 @@ Each call is one durable step.
 
 </AnnotatedCode>
 
-The result also has `turns`, `usage`, `toolCalls` and `history`.
+The result also has `turns`, `usage`, `toolCalls` and `history`. `tools` is optional: a loop without it is a plain conversation.
 
 ## Continue a conversation
 
@@ -179,10 +216,10 @@ export const tuned = agents.agent({ id: "tuned" }, async ({ inbox, step }) => {
     tools: { getOrder },
     maxTurns: 10,
     wrapUp: "Answer now with what you know.",
-    maxToolOutput: 4_000,
+    maxToolOutput: 50_000,
     budget: (turn) => (turn > 8 ? "too many turns" : undefined),
     parallelTools: false,
-    context: { maxChars: 100_000 },
+    compaction: { maxTokens: 150_000 },
     onTurn: async (turn) => {
       await step.run(`log-turn-${turn.turn}`, async () => {
         console.log(turn.turn, turn.text, turn.usage.output);
@@ -199,14 +236,45 @@ export const tuned = agents.agent({ id: "tuned" }, async ({ inbox, step }) => {
 });
 ```
 
+A second loop with the same `id` in one run gets `-2` after it, a third `-3`, so a function can loop repeatedly without choosing IDs.
+
 Outside an agent body, `steer` and `stop` take your own functions. Inside one, spread [`control`](/docs/labs/agents/threads?ref=docs-labs-agents-loop#steer-a-running-turn).
+
+## Keep long conversations in the window
+
+Every call sends the whole conversation. `compaction` summarises its start once it nears the model's window; `spill` keeps the whole of a long tool result in a sandbox file.
+
+```typescript {{ title: "inngest/agents/long.ts" }}
+import { agent } from "inngest/experimental/agents";
+import { agents } from "../client";
+import { claude } from "../models/claude";
+
+export const long = agents.agent(
+  { id: "long" },
+  async ({ inbox }) => {
+    const message = await inbox.next();
+
+    const result = await agent.loop({
+      model: claude,
+      prompt: message?.content ?? "",
+      compaction: { maxTokens: 700_000, keep: 8 },
+    });
+
+    return result.text;
+  },
+);
+```
+
+- Past `maxTokens` (an estimate of about three characters a token, so set it well inside the window), everything but the last `keep` messages (default 8) becomes one summary message. The summary is made once, stored in that model step's output so a replay restores it, and reused until the conversation passes the budget again.
+- `summarise({ messages, previous })` writes the summary yourself. By default the loop's own `model` does it with no tools, and its tokens count in `usage`.
+- `spill: { sandbox, dir? }` writes a result longer than `maxToolOutput` (default 100,000 characters) to `<dir>/tool-output-<hash>.txt` (`dir` defaults to `/tmp` and must exist) and tells the model the path, so it can read the part it needs.
 
 ## Price and budget
 
-The SDK has no prices. Give a table of rates per million tokens, or a function.
+Give a table of rates per million tokens, or a function. `anthropicPrices` has the current Claude rates, cache reads and writes included; spread it to add or replace an entry.
 
 ```typescript {{ title: "inngest/agents/budgeted.ts" }}
-import { agent } from "inngest/experimental/agents";
+import { agent, anthropicPrices } from "inngest/experimental/agents";
 import { agents } from "../client";
 import { claude } from "../models/claude";
 import { getOrder } from "../tools/getOrder";
@@ -215,10 +283,7 @@ export const budgeted = agents.agent(
   {
     id: "budgeted",
     limits: {
-      price: {
-        "claude-sonnet-5-5": { input: 3, output: 15 },
-        "*": { input: 5, output: 25 },
-      },
+      price: { ...anthropicPrices, "*": { input: 5, output: 25 } },
       budget: { usd: 2, tokens: 500_000 },
     },
   },
@@ -252,7 +317,6 @@ export const priced = agents.agent({ id: "priced" }, async ({ inbox }) => {
   const result = await agent.loop({
     model: claude,
     prompt: message?.content ?? "",
-    tools: {},
     price: (usage, model) => {
       const rate = model === "claude-sonnet-5-5" ? 3 : 5;
 
@@ -270,9 +334,9 @@ Limits on sub-agents are in [Events and triggers](/docs/labs/agents/events-and-t
 
 ## Handle errors
 
-A tool that returns `agent.toolError(body)` gives the model an error result to react to, as in `getOrder` above.
+A tool that returns `agent.toolError(body)` gives the model an error result to react to, as in `getOrder` above. It works beside an `output` schema too.
 
-`classifyModelError` ends the run on a rejected request and retries the rest. The loop applies it to every model call.
+`classifyModelError` ends the run on a rejected request and retries the rest. The loop applies it to every model call, and `agent.anthropic()` already sorts its own errors.
 
 ```typescript {{ title: "inngest/models/custom.ts" }}
 import { agent } from "inngest/experimental/agents";
@@ -337,9 +401,9 @@ export const reviewIssue = agents.agent(
 
 ## How it works
 
-- A model call is the step `<id>:model:<turn>`. A tool call is `<id>:<turn>.<n>:<name>`.
+- A model call is the step `<id>:model:<turn>`. A tool call is `<id>:<turn>.<n>:<name>`. A repeated `id` in one run is `<id>-2`, `<id>-3`.
 - `stopped` is `done` when the model made no tool call, `maxTurns` when it ran out, `stopped` on a stop message and `budget` when the budget is spent.
-- Tool results over `maxToolOutput` keep their start and end. Old tool results shrink past `context.maxChars`; `history` stays whole.
+- Tool results over `maxToolOutput` keep their start and end. Nothing else is shortened: every call sends the whole conversation unless you set `compaction`, and `history` is never summarised.
 - The loop writes [scores](/docs/labs/agents/scores?ref=docs-labs-agents-loop) on steps it already runs. `scores: false` turns them off.
 
 [Reference →](/docs/labs/agents/reference?ref=docs-labs-agents-loop)

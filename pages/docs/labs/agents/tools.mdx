@@ -172,7 +172,7 @@ Prefixed per call.
 
 ## Return an error the model can read
 
-`agent.toolError(body)` gives the model `body` as an error. A throw does the same with its message.
+`agent.toolError(body)` gives the model `body` as an error, and works beside an `output` schema: the error is not checked against it. A throw does the same with its message.
 
 ```typescript {{ title: "inngest/tools/getTicket.ts" }}
 import { tool } from "inngest/experimental";
@@ -182,6 +182,7 @@ import { db } from "../db";
 
 export const getTicket = tool.step({
   input: z.object({ id: z.string() }),
+  output: z.object({ id: z.string(), subject: z.string() }),
   run: async ({ id }) => {
     const ticket = await db.tickets.find(id);
 
@@ -327,6 +328,6 @@ Listeners and waiting time.
 - Each call is one durable step. A group is a set of steps under the call's ID.
 - Arguments are checked against `input` before a step starts.
 - Calls in one reply run together. `parallelTools: false` runs them in order.
-- A result over `maxToolOutput` (8000 characters) keeps its start and end.
+- A result over `maxToolOutput` (100,000 characters by default) keeps its start and end.
 
 [Reference →](/docs/labs/agents/reference-sandboxes?ref=docs-labs-agents-tools#tools)

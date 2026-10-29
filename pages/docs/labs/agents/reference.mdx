@@ -174,6 +174,7 @@ The second argument of `agents.agent()`. It receives the function context of the
 | --- | --- | --- |
 | `event` | `{ name, data: ThreadMessage }` | The event that started the run. `data.event` is the trigger event. |
 | `trigger` | trigger event or `undefined` | The `on` event that started the run, typed from `on`. `undefined` when a plain thread message started it. |
+| `depth` | `number` | How many agents deep this run is when `agent.invoke()` started it: 1 for an agent a function that is not an agent invoked, 2 for the next. `0` when anything else started it, including a later run of an invoked agent's thread. |
 | `thread` | [`ThreadHandle`](#thread-handles) | The handle of this run's thread. |
 | `inbox` | [`ThreadInbox`](#inbox) | The thread's messages, in order. |
 | `sandboxes` | `Record<name, LazySandbox>` | The agent's sandboxes. [Sandboxes reference](/docs/labs/agents/reference-sandboxes?ref=docs-labs-agents-reference#lazysandbox) |
@@ -360,6 +361,7 @@ Types: `ThreadTrigger`, `ThreadTriggers`, `ThreadEventTrigger`, `ThreadCronTrigg
 | --- | --- |
 | `agent.loop(options)` | Runs the model and tools loop. |
 | `agent.model(fn)` | Makes a model function; returns `fn`. |
+| `agent.anthropic(options)` | A model function for the Anthropic Messages API. [Details](#agentanthropic) |
 | `agent.toolError(body)` | Returns a failure from a tool without throwing. The model sees an error result with `body`. |
 | `agent.invoke(target, data?, options?)` | Starts another agent and returns its result. |
 | `agent.classifyModelError(error)` | Marks model errors no retry can fix as `NonRetriableError`. |
@@ -375,10 +377,11 @@ agent.loop(options: AgentLoopOptions): Promise<AgentLoopResult>
 | --- | --- | --- | --- |
 | `model` | `AgentModel` | required | Called once per turn. |
 | `prompt` | `string` | required | The first user message. |
-| `tools` | tools record | required | Tools the model can call. |
-| `id` | `string` | `"agent"` | Prefix of step IDs. |
+| `tools` | tools record | none | Tools the model can call. |
+| `id` | `string` | `"agent"` | Prefix of step IDs. A second loop with the same prefix in one run gets `-2`, a third `-3`. |
 | `system` | `string` | none | System prompt. |
-| `maxToolOutput` | `number` | `8000` | Most characters of a tool result the model sees; longer keeps start and end. |
+| `maxToolOutput` | `number` | `100000` | Most characters of a tool result the model sees; longer keeps start and end and says how much is missing. |
+| `spill` | `{ sandbox, dir? }` | none | Saves the whole of a longer result to `<dir>/tool-output-<hash>.txt` in the sandbox (`dir` default `/tmp`, must exist) and tells the model the path. |
 | `parallelTools` | `boolean` | `true` | Run the tool calls of one reply at once. |
 | `maxTurns` | `number` | `40` | Most model calls. |
 | `history` | `AgentMessage[]` | none | History of an earlier result, to continue. |
@@ -386,7 +389,7 @@ agent.loop(options: AgentLoopOptions): Promise<AgentLoopResult>
 | `stop` | `(turn) => Promise<boolean>` | none | `true` ends the loop with `stopped: "stopped"`. |
 | `budget` | `(turn) => string \| undefined` | none | A reason ends the loop with `stopped: "budget"`. |
 | `wrapUp` | `string` | none | Text for the last turn, with no tool use allowed. |
-| `context` | `{ maxChars } \| false` | `{ maxChars: 200_000 }` | Old tool results are shortened past `maxChars`. `false` sends all. |
+| `compaction` | `AgentCompactionOptions` | off | Summarises the start of the conversation near the window. Without it every call sends the whole conversation. [Details](#compaction) |
 | `onToolResult` | `(run) => void` | none | Called when a tool call finishes. Put side effects in steps. |
 | `onTurn` | `(turn) => void` | none | Called after each model call. |
 | `price` | `AgentPrice` | none | What a model call costs. [Pricing](#pricing) |
@@ -403,7 +406,7 @@ Spread `...control` from the agent body to take `steer`, `stop`, `budget`, `onTu
 | `reason` | Why, for `"budget"`. |
 | `turns` | Model calls made. |
 | `history` | The whole conversation. Pass as `history` to continue. |
-| `usage` | `{ input, output, usd? }` of this loop. |
+| `usage` | `{ input, output, usd?, cacheRead?, cacheWrite?, cacheWrite1h? }` of this loop. |
 | `toolCalls` | Every tool call, in order, as `AgentToolRun`. |
 
 ### Model types
@@ -438,11 +441,46 @@ type AgentMessage =
 | --- | --- |
 | `AgentToolCall` | `id`, `name`, `input` |
 | `AgentToolResult` | `toolCallId`, `name`, `input`, `content`, `isError?` |
-| `AgentUsage` | `input`, `output`, `usd?` |
+| `AgentUsage` | `input` (cached tokens included), `output`, `usd?`, `cacheRead?`, `cacheWrite?`, `cacheWrite1h?`. The cache fields are parts of `input`; `cacheWrite1h` is part of `cacheWrite`. |
 | `AgentTurn` | `turn`, `stepId`, `text`, `toolCalls`, `usage` |
 | `AgentToolRun` | `turn`, `name`, `call`, `output`, `isError`, `stepId`, `ms`. With typed tools, `name` narrows `call.input` and `output` once `isError` is false. |
 
 A model function runs inside a step, so a failure is retried. The loop stops at once on a 4xx other than 408, 409, and 429. Throw `NonRetriableError` for anything else a retry cannot fix.
+
+### agent.anthropic
+
+[Loop](/docs/labs/agents/loop?ref=docs-labs-agents-reference#use-anthropic)
+
+```typescript {{ title: "Signature" }}
+agent.anthropic(options: AnthropicOptions): AgentModel
+anthropic(options: AnthropicOptions): AgentModel // the same function
+anthropicPrices: AgentPriceTable
+```
+
+| Option | Type | Default | Description |
+| --- | --- | --- | --- |
+| `model` | `string` | required | The model, such as `"claude-sonnet-5-5"`. It is also the name the call is priced under. |
+| `client` | `AnthropicClient` | made on first call | Your `@anthropic-ai/sdk` client. Without it the adapter imports the SDK and reads `ANTHROPIC_API_KEY`. A bundled app must pass it. |
+| `apiKey`, `baseURL` | `string` | none | For the client the adapter makes. Ignored with `client`. |
+| `maxTokens` | `number` | `16000` | Most tokens of one reply, thinking included. A reply cut off by it fails the step for good. |
+| `effort` | `"low" \| "medium" \| "high" \| "xhigh" \| "max"` | the model's | Sent as `output_config.effort`. |
+| `thinking` | `Record<string, unknown>` | not sent | The `thinking` request field. Thinking blocks stay in the history untouched. |
+| `cache` | `false \| { ttl?: "5m" \| "1h" }` | `{ ttl: "5m" }` | Prompt caching. `false` sends no breakpoints. A `1h` write costs 2x instead of 1.25x. |
+| `volatile` | `string \| (request) => string \| undefined` | none | Text added to the last user message after the cache breakpoint, for what changes on every call. |
+| `stream` | `boolean` | on above `maxTokens` 21,000 | Streams the reply and waits for the whole message. Needs a client with `messages.stream`. |
+| `timeout` | `number` | 300000 on its own client | Milliseconds before a call times out. |
+| `maxRetries` | `number` | `0` on its own client | Retries inside the SDK, before the step fails and Inngest retries it. |
+| `params` | `Record<string, unknown>` | none | More request fields (`metadata`, `stop_sequences`, server tools). Applied last. |
+
+- Keep `system` fixed per agent. Put context that changes on every call in `volatile` or in a message, and never rewrite earlier context: a changed prefix misses the cache.
+- Breakpoints go on the system prompt (which caches the tools with it; on the last tool when there is no system prompt), on the end of the conversation, and where the previous call's conversation ended.
+- The loop sends the whole conversation unchanged, so each call reads the cached prefix of the one before. Set `compaction` on `agent.loop()` to summarise only near the context limit.
+- `usage` is `{ input, output, cacheRead, cacheWrite, cacheWrite1h }`. `input` includes the cached tokens.
+- A 4xx, a `refusal`, a reply cut off by `maxTokens`, `model_context_window_exceeded` and `pause_turn` throw `NonRetriableError`. A 429, 529 or 5xx is retried, after the `retry-after` the API sent when it sent one.
+- Not covered: forcing one tool with `tool_choice`, a model or effort that changes per call (make one adapter for each), and a loop without `tools` that continues a history with tool calls in it.
+- It never uses `step.ai`. Use `anthropicPrices` (or your own table) as `limits.price` or `price`.
+
+Types: `AnthropicOptions`; `AnthropicClient`, the part of an `@anthropic-ai/sdk` client it calls (`messages.create`, and `messages.stream` when streaming), so any SDK client or a fake fits; `AnthropicReply`, the part of a Messages response it reads.
 
 ### agent.invoke
 
@@ -464,9 +502,10 @@ The callee keeps the caller's session and gets a thread of its own. A call the l
 
 | Export | Description |
 | --- | --- |
-| `agentInvokeDepth(event)` | How many agents deep an invoked agent is: 1 for the first, `0` when not from `agent.invoke()`. |
-| `agentInvokeInput(event)` | The data `agent.invoke()` was given, without the SDK's own key. A copy. |
+| `agentInvokeDepth(event)` | For a plain function that `agent.invoke()` starts: how many agents deep it is, 1 for the first, `0` when not from `agent.invoke()`. An agent body reads the same number as `depth`. |
+| `agentInvokeInput(event)` | For a plain function: the data `agent.invoke()` was given, without the SDK's own key. A copy. An agent body does not need it; its `trigger.data` is the input. |
 | `AgentInvokeOptions` | Type of the options above. |
+| `InvokeInput<TEvent>` | Type of the `data` argument: the `data` of the target's `invoke()` trigger, or `Record<string, unknown>` without one. |
 | `agentInvokeCancelOn` | A `cancelOn` entry (`{ event: "inngest/function.cancelled", if: "event.data.run_id == async.data._agent.parent" }`) that ends the run when the run that invoked it is cancelled. |
 | `AgentCancelledError` | Thrown by `agent.invoke()` for a cancelled callee. `functionId?` and `runId?` name the cancelled run. |
 
@@ -503,19 +542,39 @@ Limits gate `agent.invoke()` only; a raw `step.invoke` or `sendEvent` bypasses t
 
 `AgentLimitError` has `limit`: `"depth"`, `"spawn"`, `"mayCall"`, or `"budget"`.
 
+### Compaction
+
+[Loop](/docs/labs/agents/loop?ref=docs-labs-agents-reference#keep-long-conversations-in-the-window)
+
+| Option | Default | Description |
+| --- | --- | --- |
+| `maxTokens` | required | Summarise once the conversation is estimated past this many tokens (about three characters a token). |
+| `keep` | `8` | Messages at the end that are always sent whole. |
+| `summarise` | the loop's `model` | `({ messages, previous? }) => Promise<string>` writes the summary. The default model call has no tools and counts in `usage`. |
+
+`AgentCompaction` is `{ upTo, summary }`: the first `upTo` messages are replaced by `summary` when the conversation is sent. It rides in the output of the model step that made it, so a replay restores it. The `history` of the result is never summarised. Types: `AgentCompaction`, `AgentCompactionOptions`.
+
 ### Pricing
 
 [Loop](/docs/labs/agents/loop?ref=docs-labs-agents-reference#price-and-budget)
 
 ```typescript {{ title: "Signature" }}
 type AgentPriceFunction = (usage: AgentUsage, model: string | undefined) => number
-type AgentPriceTable = Record<string, { input: number; output: number }> // USD per million tokens
+type AgentPriceTable = Record<string, {
+  input: number;
+  output: number;
+  cacheRead?: number; // default: input
+  cacheWrite?: number; // 5-minute cache, default: input
+  cacheWrite1h?: number; // default: cacheWrite, then input
+}> // USD per million tokens
 type AgentPrice = AgentPriceFunction | AgentPriceTable
 ```
 
 - `"*"` is the rate for any model not named. A table with no rate for the model and no `"*"` throws `NonRetriableError`.
 - A price that is not dollars from 0 up throws `NonRetriableError`.
 - The cost is worked out once, inside the model call's step.
+- `input` counts cached tokens too. A call is priced with `cacheRead`, `cacheWrite` and `cacheWrite1h` at their own rates and the rest of `input` at `input`.
+- `anthropicPrices` is a table with the current Claude models, cache rates included. Spread it to add or replace an entry.
 
 ### Recovery
 
@@ -772,7 +831,7 @@ scores.score(name: string, value: number | boolean): Promise<void>
 - Inside a step the score is written on that step once. Outside a step it sets a run score, written again on replay, so use values that do not change.
 - A score never fails a run. A refusing server logs a warning once.
 
-Framework scores (`AgentScoreName`): `agent.model_ms`, `agent.tool_calls`, `agent.steers`, `agent.input_tokens`, `agent.output_tokens`, `agent.tool_ms`, `agent.tool_error`, `agent.first_output_ms`, `agent.output_gap_ms`, `agent.stopped`. Type: `AgentScores`.
+Framework scores (`AgentScoreName`): `agent.model_ms`, `agent.tool_calls`, `agent.steers`, `agent.input_tokens`, `agent.output_tokens`, `agent.cache_read_tokens`, `agent.cache_write_tokens`, `agent.tool_ms`, `agent.tool_error`, `agent.first_output_ms`, `agent.output_gap_ms`, `agent.stopped`. Type: `AgentScores`.
 
 ## Events
 
