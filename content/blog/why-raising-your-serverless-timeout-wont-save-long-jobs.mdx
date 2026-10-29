@@ -1,7 +1,7 @@
 ---
 tags: ["Durable Execution", "AI & Agents", "Background Jobs & Scheduling"]
 heading: "Why raising your serverless timeout won't save long jobs"
-subtitle: "One team's rule for knowing when a job has become long-running."
+subtitle: "One team's rule for when a job outgrows its serverless timeout, and how to keep it running anyway."
 image: https://cdn.inngest.com/blog/why-raising-your-serverless-timeout-won%E2%80%99t-save-long-jobs/heading.png
 showSubtitle: true
 date: "2026-10-30T12:00:00.000Z"
@@ -9,23 +9,35 @@ author: "Mitchell Alderson"
 category: engineering
 ---
 
-A team we work with runs agents in production, and they have a rule so short you can paste it into Slack.
+A $13B AI app platform uses Inngest to run agents in production. A massive operation, but an incredibly simple internal rule for managing long-running jobs:
 
-An engineer on the team put it like this: "Whenever someone needs something to run more than 10 [minutes]... just use Inngest. That's our recommendation to them."
+> Whenever someone needs something to run reliably for more than 10 minutes, we tell them to use Inngest.
 
 The rule sits on top of hard ceilings: their serverless runtimes cap out at two to five minutes. And the work that pushed them past it wasn't a nightly export. "The biggest use case for us was long-running agents we have internally."
 
 Here's what that line protects against, how work on the far side of it runs, and how to find where your own line belongs.
 
+## Key takeaways
+
+- A higher timeout only moves the cliff further out. A job that hits it still loses everything.
+- Agent runtimes are too unpredictable to fit under a fixed timeout.
+- The longer a job runs, the more likely a deploy or crash lands in the middle of it.
+- Split long jobs into steps that each fit your host's limit, so a failure resumes instead of starting over.
+- If a job has work you'd hate to redo, put it on durable execution, however short it runs.
+
 ## Why doesn't raising the serverless timeout fix long-running jobs?
 
-A hard ceiling means your real budget is whatever you're confident you'll finish under, with margin, on a bad day.
+Raising the timeout moves the cliff further out: a job that crosses it still loses everything it's done. And you rarely fail at the ceiling itself.
 
-For most request handlers, that number is easy to estimate. For an agent it's close to impossible. Runtime depends on how many tool calls the model decides to make, how long each model call takes today, whether a subagent goes down a rabbit hole, and whether anything has to wait on a person. You can't budget a number you can't predict.
+If your platform kills requests at two minutes, your job doesn't die at 2:00. It dies at 1:58 on the afternoon your model provider is slow, halfway through writing to three systems. A hard ceiling means your real budget is whatever you're confident you'll finish under, with margin, on a bad day.
+
+For most request handlers, that number is easy to estimate. For an agent, it's close to impossible. Runtime depends on how many tool calls the model decides to make, how long each model call takes today, whether a subagent goes down a rabbit hole, and whether anything has to wait on a person. You can't budget a number you can't predict.
 
 ## What breaks when a job runs longer than 10 minutes?
 
-Past about ten minutes, three things start to bite: the run overlaps with deploys and outages, retries get expensive, and a failure mid-run takes the job's in-memory state with it. Ten minutes is a proxy. What it measures is exposure. [The longer a job lives](/blog/all-your-workflows-are-about-to-be-long-running?ref=blog-why-raising-your-serverless-timeout-wont-save-long-jobs), the more of its life overlaps with everything else happening in production: deploys, provider hiccups, a container getting rescheduled, a rate limit you only hit at peak. A quick job almost never shares a window with a deploy. A long agent run easily can, if you ship a few times a day.
+After about ten minutes, three things start to bite: the run overlaps with deploys and outages, retries get expensive, and a mid-run failure takes the job's in-memory state with it.
+
+Ten minutes is a proxy. What it measures is exposure. [The longer a job lives](/blog/all-your-workflows-are-about-to-be-long-running?ref=blog-why-raising-your-serverless-timeout-wont-save-long-jobs), the more of its life overlaps with everything else happening in production: deploys, provider hiccups, a container getting rescheduled, a rate limit you only hit at peak. A quick job almost never shares a window with a deploy. A long agent run easily can, if you ship a few times a day.
 
 Retries get more expensive at the same rate. Retrying a quick job from the top costs you almost nothing. Retrying a long agent run from the top means paying for every model call again, with a user watching a spinner the whole time.
 
@@ -37,9 +49,9 @@ And the failures land in the middle. By the time it dies, the agent has read the
 
 You split it into steps that each fit under the limit, and let Inngest hand the run off between requests before your host cuts it off. You can cross the line and stay on serverless.
 
-On Inngest, a function is a sequence of steps, and Inngest [saves each step's result as a checkpoint](/docs/learn/how-functions-are-executed?ref=blog-why-raising-your-serverless-timeout-wont-save-long-jobs) the moment it finishes. In the TypeScript and Go SDKs, consecutive steps run back to back in the same request, and you [tell the SDK how long that request is allowed to last](/docs/setup/checkpointing?ref=blog-why-raising-your-serverless-timeout-wont-save-long-jobs#max-runtime-for-serverless-environments) with `checkpointing.maxRuntime`. Set it a little under your host's limit and the SDK hands off before the platform kills the request. The next request picks up at the next step, with every finished step's result already saved. (The Python SDK doesn't checkpoint yet, so each step gets its own request there. The outcome is the same.)
+On Inngest, a function is a sequence of steps, and Inngest [saves each step's result as a checkpoint](/docs/learn/how-functions-are-executed?ref=blog-why-raising-your-serverless-timeout-wont-save-long-jobs) as soon as it finishes. In the TypeScript and Go SDKs, consecutive steps run back to back in the same request, and you [tell the SDK how long that request is allowed to last](/docs/setup/checkpointing?ref=blog-why-raising-your-serverless-timeout-wont-save-long-jobs#max-runtime-for-serverless-environments) with `checkpointing.maxRuntime`. Set it a little under your host's limit and the SDK hands off before the platform kills the request. The next request picks up at the next step, with every finished step's result already saved. (The Python SDK doesn't checkpoint yet, so each step gets its own request there. The outcome is the same.)
 
-A run can outlast any single invocation because no single invocation has to hold the whole thing. The same checkpoints are why [a deploy](/docs/learn/versioning?ref=blog-why-raising-your-serverless-timeout-wont-save-long-jobs) or a crash mid-run is survivable: the run resumes from the last saved step instead of from zero.
+A run can outlast any single invocation because no single invocation has to hold the whole thing. The same checkpoints make [a deploy](/docs/learn/versioning?ref=blog-why-raising-your-serverless-timeout-wont-save-long-jobs) or a mid-run crash survivable: the run resumes from the last saved step instead of from zero.
 
 This is the part worth being precise about, because "just use X" advice has burned a lot of people. Each individual step still runs inside your host's timeout. If one piece of work needs longer than your platform allows, you have two options: break it into smaller steps, or run it on a long-lived worker with [Connect](/docs/setup/connect?ref=blog-why-raising-your-serverless-timeout-wont-save-long-jobs), where step execution isn't bound by HTTP timeouts. Connect needs a long-running server, so it's not a serverless option. In practice, most agent work splits cleanly into short pieces anyway: a model call, a tool call, a subagent.
 
@@ -118,7 +130,7 @@ Look at what happens in the middle of it. Ten minutes works for this team becaus
 
 If the job has a middle, or waits on anything, your line is probably lower than ten.
 
-Then take that job, find where it naturally breaks into pieces, and [wrap each piece in a step](/docs/durable-execution/primitives?ref=blog-why-raising-your-serverless-timeout-wont-save-long-jobs). Past a certain distance you stop sprinting and start pacing, and your infrastructure should know the difference.
+Then take that job, find where it naturally breaks into pieces, and [wrap each piece in a step](/docs/durable-execution/primitives?ref=blog-why-raising-your-serverless-timeout-wont-save-long-jobs). Past a certain distance, you stop sprinting and start pacing, and your infrastructure should know the difference.
 
 ## Related reading
 
