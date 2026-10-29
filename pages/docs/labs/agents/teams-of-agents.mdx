@@ -53,6 +53,7 @@ import { agents } from "../client";
 export const researcher = agents.agent(
   {
     id: "researcher",
+    description: "Looks into a question",
     on: invoke(z.object({ question: z.string() })),
     limits: { price: { "*": { input: 3, output: 15 } } },
   },
@@ -66,22 +67,29 @@ export const researcher = agents.agent(
 
 ## Call an agent from a tool
 
-Let the model decide when to delegate. A group tool calls the agent and returns its answer.
+Put the agent straight into `tools`. The model calls it by its key and gets what it returned.
 
-```typescript {{ title: "inngest/tools/research.ts" }}
-import { tool } from "inngest/experimental";
+```typescript {{ title: "inngest/agents/delegator.ts" }}
 import { agent } from "inngest/experimental/agents";
-import { z } from "zod";
-import { researcher } from "../agents/researcher";
+import { agents } from "../client";
+import { claude } from "../models/claude";
+import { researcher } from "./researcher";
 
-export const research = tool.group({
-  description: "Ask the researcher a question",
-  input: z.object({ question: z.string() }),
-  run: async ({ question }) => {
-    return agent.invoke(researcher, { question });
-  },
+export const delegator = agents.agent({ id: "delegator" }, async ({ inbox, control }) => {
+  const message = await inbox.next();
+
+  const result = await agent.loop({
+    model: claude,
+    prompt: message ?? "",
+    tools: { researcher },
+    ...control,
+  });
+
+  return result.text;
 });
 ```
+
+A plain agent takes `{ message }`, which it reads as an `agent/message` with `data.text`. An agent with `on: invoke(schema)`, like `researcher`, takes that schema. Its `description` is what the model reads. Listing an agent in `tools` allows it, so `mayCall` is not needed.
 
 ## Give a sandbox to one agent
 
@@ -116,7 +124,7 @@ export const workbench = sandbox({
 
 ## Limit sub-agents
 
-`limits` apply to `agent.invoke()`. A refused call throws `AgentLimitError`, whose `limit` is `depth`, `spawn`, `mayCall` or `budget`.
+`limits` apply to `agent.invoke()`. A refused call throws `AgentLimitError`, whose `limit` is `depth`, `spawn`, `mayCall` or `budget`. `mayCall` only limits calls made with `agent.invoke()`.
 
 ```typescript {{ title: "inngest/agents/careful.ts" }}
 import { agent, AgentLimitError } from "inngest/experimental/agents";
@@ -181,7 +189,7 @@ export const boss = agents.agent({ id: "boss" }, async () => {
 ## When to use what
 
 - Use another agent's result: `agent.invoke(agent, input)`.
-- Let the model choose to delegate: a tool that calls `agent.invoke()`.
+- Let the model choose to delegate: put the agent in `tools`.
 - Cap depth, fan-out or which agents may be called: `limits.depth`, `spawn`, `mayCall`.
 - Cap spend of callees: `limits.budget` with a `limits.price` on each, and `spawn`. A callee gets at most what is left, but the callees' total is not capped.
 - End children with their parent: `cancelOn: [agentInvokeCancelOn]`.

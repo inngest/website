@@ -365,6 +365,7 @@ Types: `ThreadTrigger`, `ThreadTriggers`, `ThreadEventTrigger`, `ThreadCronTrigg
 | `agent.anthropic(options)` | A model function for the Anthropic Messages API. [Details](#agentanthropic) |
 | `agent.toolError(body)` | Returns a failure from a tool without throwing. The model sees an error result with `body`. |
 | `agent.invoke(target, data?, options?)` | Starts another agent and returns its result. |
+| `tools: { researcher }` | An agent in `tools` is a tool: a plain agent takes `{ message }` (read as `agent/message`), an agent with `invoke(schema)` takes that schema, and `description` is what the model reads. `agentTools([a, b])` lists agents by ID. |
 | `agent.classifyModelError(error)` | Marks model errors no retry can fix as `NonRetriableError`. |
 | `agent.untrusted(text, options?)` | Wraps outside text in `<untrusted>` tags. |
 
@@ -534,7 +535,7 @@ The same functions are exported by name: `classifyModelError`, `untrusted`. Type
 | --- | --- | --- |
 | `depth` | `1` | Levels of sub-agents allowed below. A sub-agent gets this minus one at most. |
 | `spawn` | none | Most `agent.invoke()` calls one run may make. A refused call does not count. |
-| `mayCall` | any | Agents it may start, as `"appId/functionId"` patterns where `*` matches any text. |
+| `mayCall` | any | Agents it may start with `agent.invoke()`, as `"appId/functionId"` patterns where `*` matches any text. An agent listed in `tools` is allowed by being listed. |
 | `budget` | none | What the thread may spend: `AgentBudget`. |
 | `price` | none | What a model call costs. Needed for `budget.usd`. |
 
