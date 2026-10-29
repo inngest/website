@@ -1,0 +1,160 @@
+import { AnnotatedCode, Annotation } from "shared/Docs/mdx";
+
+export const metaTitle = "Sandbox tools | Inngest Agents";
+export const description = "Build an agent that answers a data question by writing a script in a sandbox that calls your own tools, so many calls cost one model turn and your credentials stay in your app.";
+
+# Sandbox tools
+
+> An agent that answers by writing code that calls your tools.
+
+```text
+You      How many pull requests did each person open in acme/app?
+analyst  maya 41, dan 27, priya 19, sam 8.
+```
+
+The model writes and runs a script like this in the sandbox:
+
+```python
+counts = {}
+page = 1
+
+while True:
+    pulls = await tools.listPullRequests(repo="acme/app", page=page)
+    if not pulls:
+        break
+    for pull in pulls:
+        counts[pull["author"]] = counts.get(pull["author"], 0) + 1
+    page += 1
+
+return counts
+```
+
+Screenshot needed: the run's trace, with one step per `listPullRequests` call.
+
+## The code
+
+<AnnotatedCode>
+
+```typescript {{ title: "inngest/sandboxes/analyst.ts" }}
+import { sandbox } from "inngest/experimental/agents";
+import { listPullRequests } from "../tools/listPullRequests";
+
+export const analyst = sandbox({
+  id: "analyst",
+  tools: sandbox.tools.code({
+    tools: { listPullRequests },
+    only: ["run_code"],
+  }),
+});
+```
+
+<Annotation id="tools" lines="6-9" tease="your tools, in the script" title="Tools for the script" href="/docs/labs/agents/sandboxes-and-code?ref=docs-labs-agents-recipes-sandbox-tools" linkText="Sandboxes and code">
+The script calls `tools.listPullRequests(...)`. Each call is a durable step in your app.
+</Annotation>
+
+<Annotation id="only" lines="8" tease="the only tool the model gets" title="One tool" href="/docs/labs/agents/sandboxes-and-code?ref=docs-labs-agents-recipes-sandbox-tools" linkText="Sandboxes and code">
+`run_code` is the whole interface. The model needs no tool per call.
+</Annotation>
+
+</AnnotatedCode>
+
+```typescript {{ title: "inngest/tools/listPullRequests.ts" }}
+import { tool } from "inngest/experimental";
+import { z } from "zod";
+
+export const listPullRequests = tool.step({
+  description: "List a page of pull requests, newest first",
+  input: z.object({ repo: z.string(), page: z.number().default(1) }),
+  run: async ({ repo, page }) => {
+    const response = await fetch(
+      `https://api.github.com/repos/${repo}/pulls?state=all&per_page=100&page=${page}`,
+      { headers: { authorization: `Bearer ${process.env.GITHUB_TOKEN}` } },
+    );
+
+    const pulls = (await response.json()) as {
+      number: number;
+      user: { login: string };
+    }[];
+
+    return pulls.map((pull) => {
+      return { number: pull.number, author: pull.user.login };
+    });
+  },
+});
+```
+
+```typescript {{ title: "inngest/agents/analyst.ts" }}
+import { agent } from "inngest/experimental/agents";
+import { agents } from "../client";
+import { claude } from "../models/claude";
+import { analyst as analystSandbox } from "../sandboxes/analyst";
+
+export const analyst = agents.agent(
+  { id: "analyst", sandboxes: { work: analystSandbox } },
+  async ({ inbox, sandboxTools, control }) => {
+    for await (const message of inbox) {
+      await agent.loop({
+        model: claude,
+        prompt: message.content ?? "",
+        tools: sandboxTools,
+        ...control,
+      });
+    }
+  },
+);
+```
+
+```typescript {{ title: "inngest/client.ts" }}
+import { Inngest } from "inngest";
+import { sandboxMiddleware } from "inngest/experimental";
+import { createAgents } from "inngest/experimental/agents";
+
+export const inngest = new Inngest({
+  id: "sandbox-tools",
+  middleware: [sandboxMiddleware()],
+});
+
+export const agents = createAgents(inngest);
+```
+
+```typescript {{ title: "inngest/serve.ts" }}
+import { createServer } from "inngest/node";
+import { agents, inngest } from "./client";
+import "./agents/analyst";
+
+createServer({
+  client: inngest,
+  functions: agents.functions(),
+}).listen(3000);
+```
+
+`inngest/models/claude.ts` follows the [Slack assistant](/docs/labs/agents/recipes/slack-assistant?ref=docs-labs-agents-recipes-sandbox-tools).
+
+## What it shows off
+
+- Many tool calls in one model turn. [Sandboxes and code](/docs/labs/agents/sandboxes-and-code?ref=docs-labs-agents-recipes-sandbox-tools)
+- The GitHub token stays in your app, never in the sandbox. [Tools](/docs/labs/agents/tools?ref=docs-labs-agents-recipes-sandbox-tools)
+- Every call from the script retries on its own. [Reliability](/docs/labs/agents/reliability?ref=docs-labs-agents-recipes-sandbox-tools)
+
+## Run it
+
+```bash
+npx inngest-cli@latest dev -u http://localhost:3000/api/inngest
+export GITHUB_TOKEN=ghp_... ANTHROPIC_API_KEY=sk-ant-... INNGEST_EXPERIMENTAL_KV_URL=redis://localhost:6379
+node --import tsx inngest/serve.ts
+```
+
+Send it a message with `analyst.thread("t1").send("How many pull requests did each person open in acme/app?")`. It needs an environment with Sandboxes. This recipe was type-checked against the SDK and not run.
+
+## Variations
+
+- Add `run` to `only` so it can install a library first. [Sandboxes and code](/docs/labs/agents/sandboxes-and-code?ref=docs-labs-agents-recipes-sandbox-tools)
+- Give the script a tool that waits for a person with `waits: true`. [Tools](/docs/labs/agents/tools?ref=docs-labs-agents-recipes-sandbox-tools)
+- Pass the same tools to a plain `step.sandbox.python` call. [Sandboxes and code](/docs/labs/agents/sandboxes-and-code?ref=docs-labs-agents-recipes-sandbox-tools)
+- Report the counts to Slack. [Slack assistant](/docs/labs/agents/recipes/slack-assistant?ref=docs-labs-agents-recipes-sandbox-tools)
+
+## Learn more
+
+- [Sandboxes and code](/docs/labs/agents/sandboxes-and-code?ref=docs-labs-agents-recipes-sandbox-tools)
+- [Tools](/docs/labs/agents/tools?ref=docs-labs-agents-recipes-sandbox-tools)
+- Next recipe: [Testing](/docs/labs/agents/recipes/testing?ref=docs-labs-agents-recipes-sandbox-tools)

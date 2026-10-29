@@ -1,0 +1,176 @@
+import { AnnotatedCode, Annotation } from "shared/Docs/mdx";
+
+export const metaTitle = "Slack assistant | Inngest Agents";
+export const description = "Build a support assistant that answers in a Slack thread, looks up orders, remembers each conversation and keeps notes the whole team shares.";
+
+# Slack assistant
+
+> A support assistant that answers in a Slack thread and remembers what the team tells it.
+
+```text
+Maya   Where is order 7?
+Bot    Order 7 shipped with UPS and arrives Friday.
+Maya   Remember: always give the carrier first.
+Bot    Saved. UPS, arriving Friday.
+
+(a new thread, an hour later)
+Dan    Where is order 9?
+Bot    UPS (carrier first, as asked), arriving Friday.
+```
+
+Screenshot needed: the same exchange in Slack, and the first run's trace in the Dev Server.
+
+## The code
+
+<AnnotatedCode>
+
+```typescript {{ title: "inngest/agents/support.ts" }}
+import { agent, kv, slack } from "inngest/experimental/agents";
+import { agents } from "../client";
+import { history, notes } from "../keys";
+import { claude } from "../models/claude";
+import { lookupOrder } from "../tools/lookupOrder";
+import { saveNote } from "../tools/saveNote";
+
+export const support = agents.agent(
+  {
+    id: "support",
+    on: slack.thread({ in: ["C0123ABC"] }),
+    channels: ({ event }) => {
+      return { main: slack.channel(event, { in: ["C0123ABC"] }) };
+    },
+    report: "main",
+  },
+  async ({ inbox, control, report }) => {
+    for await (const message of inbox) {
+      await report.status("working");
+
+      const known = (await kv.app.get(notes)) ?? [];
+
+      const result = await agent.loop({
+        model: claude,
+        system: `You answer support questions. The team asked you to remember: ${known.join("; ")}`,
+        prompt: message.content ?? "",
+        history: (await kv.thread.get(history)) ?? [],
+        tools: { lookupOrder, saveNote },
+        compaction: { maxTokens: 150_000 },
+        ...control,
+      });
+
+      await kv.thread.set(history, result.history);
+
+      await report.finish({ text: result.text });
+
+      await report.status("idle");
+    }
+  },
+);
+```
+
+<Annotation id="on" lines="11" tease="a thread is a conversation" title="Start from Slack" href="/docs/labs/agents/agents-and-triggers?ref=docs-labs-agents-recipes-slack-assistant" linkText="Agents and triggers">
+Each Slack thread in the channel becomes one agent thread.
+</Annotation>
+
+<Annotation id="channel" lines="12-15" tease="replies in the same thread" title="Reply where it was asked" href="/docs/labs/agents/reporting?ref=docs-labs-agents-recipes-slack-assistant" linkText="Reporting">
+The agent posts back into the thread that started it.
+</Annotation>
+
+<Annotation id="notes" lines="21,25,28" tease="shared by every thread" title="Remember the team" href="/docs/labs/agents/threads-and-memory?ref=docs-labs-agents-recipes-slack-assistant" linkText="Threads and memory">
+Notes saved in one thread appear in the prompt of every other.
+</Annotation>
+
+<Annotation id="history" lines="27,33" tease="per thread" title="Remember the thread" href="/docs/labs/agents/threads-and-memory?ref=docs-labs-agents-recipes-slack-assistant" linkText="Threads and memory">
+Every reply continues the thread's own history.
+</Annotation>
+
+<Annotation id="finish" lines="35" tease="ends the Slack stream" title="Post the answer" href="/docs/labs/agents/reporting?ref=docs-labs-agents-recipes-slack-assistant" linkText="Reporting">
+Closes the progress stream with the final text.
+</Annotation>
+
+</AnnotatedCode>
+
+```typescript {{ title: "inngest/tools/lookupOrder.ts" }}
+import { tool } from "inngest/experimental";
+import { z } from "zod";
+
+export const lookupOrder = tool.step({
+  description: "Find an order by ID",
+  input: z.object({ id: z.string() }),
+  run: async ({ id }) => {
+    return { id, status: "shipped", carrier: "UPS", eta: "Friday" };
+  },
+});
+```
+
+```typescript {{ title: "inngest/tools/saveNote.ts" }}
+import { tool } from "inngest/experimental";
+import { kv } from "inngest/experimental/agents";
+import { z } from "zod";
+import { notes } from "../keys";
+
+export const saveNote = tool.step({
+  description: "Save something the team asked you to remember",
+  input: z.object({ fact: z.string() }),
+  run: async ({ fact }) => {
+    await kv.app.update(notes, (current) => {
+      return [...(current ?? []), fact];
+    });
+
+    return { saved: fact };
+  },
+});
+```
+
+```typescript {{ title: "inngest/keys.ts" }}
+import { kvKey } from "inngest/experimental/agents";
+import type { AgentMessage } from "inngest/experimental/agents";
+
+export const history = kvKey<AgentMessage[]>("history");
+export const notes = kvKey<string[]>("notes");
+```
+
+```typescript {{ title: "inngest/serve.ts" }}
+import { createServer } from "inngest/node";
+import { agents, inngest } from "./client";
+import "./agents/support";
+
+createServer({
+  client: inngest,
+  functions: agents.functions(),
+}).listen(3000);
+```
+
+`inngest/client.ts` and `inngest/models/claude.ts` are the ones from the [quick start](/docs/labs/agents/quick-start?ref=docs-labs-agents-recipes-slack-assistant).
+
+## What it shows off
+
+- A Slack thread is a durable conversation. [Agents and triggers](/docs/labs/agents/agents-and-triggers?ref=docs-labs-agents-recipes-slack-assistant)
+- Memory per thread and for the whole team. [Threads and memory](/docs/labs/agents/threads-and-memory?ref=docs-labs-agents-recipes-slack-assistant)
+- Live status in Slack while it works. [Reporting](/docs/labs/agents/reporting?ref=docs-labs-agents-recipes-slack-assistant)
+- Every model call and tool call is a retried, traceable step. [Reliability](/docs/labs/agents/reliability?ref=docs-labs-agents-recipes-slack-assistant)
+
+## Run it
+
+```bash
+npx inngest-cli@latest dev -u http://localhost:3000/api/inngest
+export SLACK_BOT_TOKEN=xoxb-... ANTHROPIC_API_KEY=sk-ant-... INNGEST_EXPERIMENTAL_KV_URL=redis://localhost:6379
+node --import tsx inngest/serve.ts
+```
+
+Your Slack route sends a `slack/message` event for each message in `C0123ABC`. Open the run in the Dev Server to see the turn.
+
+The replies above are from a run with a scripted model, a fake Slack and a local Dev Server. It was not run against real Slack or Anthropic.
+
+## Variations
+
+- Show work as it happens with `report.card`. [Reporting](/docs/labs/agents/reporting?ref=docs-labs-agents-recipes-slack-assistant)
+- Ask before acting with an approve button. [Approvals](/docs/labs/agents/recipes/approvals?ref=docs-labs-agents-recipes-slack-assistant)
+- Give it a sandbox to run code. [Sandboxes and code](/docs/labs/agents/sandboxes-and-code?ref=docs-labs-agents-recipes-slack-assistant)
+- Try it offline with a scripted model. [Testing](/docs/labs/agents/recipes/testing?ref=docs-labs-agents-recipes-slack-assistant)
+
+## Learn more
+
+- [Agents and triggers](/docs/labs/agents/agents-and-triggers?ref=docs-labs-agents-recipes-slack-assistant)
+- [Reporting](/docs/labs/agents/reporting?ref=docs-labs-agents-recipes-slack-assistant)
+- [Threads and memory](/docs/labs/agents/threads-and-memory?ref=docs-labs-agents-recipes-slack-assistant)
+- Next recipe: [Issue triage](/docs/labs/agents/recipes/issue-triage?ref=docs-labs-agents-recipes-slack-assistant)

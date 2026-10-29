@@ -1,0 +1,143 @@
+import { AnnotatedCode, Annotation } from "shared/Docs/mdx";
+
+export const metaTitle = "PR reviewer | Inngest Agents";
+export const description = "Build an agent that checks out a pull request in a sandbox, runs its tests, reads the changes and reviews it in a GitHub comment.";
+
+# PR reviewer
+
+> An agent that checks out a pull request, runs its tests and reviews it in a comment.
+
+```text
+maya     @review-bot please review
+
+review-bot
+  The tests pass (42 passed). Two problems:
+  1. src/pagination.ts:31 skips the last page when `total` is a multiple of `limit`.
+  2. src/pagination.test.ts has no case for an empty list.
+```
+
+Screenshot needed: the review comment on a pull request.
+
+## The code
+
+<AnnotatedCode>
+
+```typescript {{ title: "inngest/agents/reviewer.ts" }}
+import { agent, github, repo } from "inngest/experimental/agents";
+import { agents } from "../client";
+import { claude } from "../models/claude";
+import { review } from "../sandboxes/review";
+
+export const reviewer = agents.agent(
+  {
+    id: "reviewer",
+    on: github.thread({
+      repos: ["acme/app"],
+      ignoreAuthors: ["review-bot[bot]"],
+    }),
+    channels: ({ event }) => {
+      return { main: github.channel(event, { repos: ["acme/app"] }) };
+    },
+    report: "main",
+    sandboxes: { work: review },
+  },
+  async ({ inbox, trigger, sandboxes, sandboxTools, control, report }) => {
+    for await (const message of inbox) {
+      const sandbox = await sandboxes.work.get();
+
+      await repo(sandbox, {
+        repo: `${trigger?.data.owner}/${trigger?.data.repo}`,
+        ref: `refs/pull/${trigger?.data.number}/head`,
+        path: "/work/app",
+        sync: "reset",
+        token: process.env.GITHUB_TOKEN,
+      });
+
+      const result = await agent.loop({
+        model: claude,
+        system:
+          "Review the pull request checked out in /work/app. Run its tests and read the changed files. Report problems first, with file and line.",
+        prompt: message.content ?? "",
+        tools: sandboxTools,
+        ...control,
+      });
+
+      await report.finish({ text: result.text });
+    }
+  },
+);
+```
+
+<Annotation id="trigger" lines="9-12" tease="comments start it" title="Start from a comment" href="/docs/labs/agents/agents-and-triggers?ref=docs-labs-agents-recipes-pr-reviewer" linkText="Agents and triggers">
+The agent's own comments are ignored, so it never answers itself.
+</Annotation>
+
+<Annotation id="channel" lines="13-16" tease="the review goes back to the pull request" title="Reply in the pull request" href="/docs/labs/agents/reporting?ref=docs-labs-agents-recipes-pr-reviewer" linkText="Reporting">
+It refuses repositories outside `repos`.
+</Annotation>
+
+<Annotation id="checkout" lines="23-29" tease="the pull request's head" title="Check it out" href="/docs/labs/agents/sandboxes-and-code?ref=docs-labs-agents-recipes-pr-reviewer" linkText="Sandboxes and code">
+`sync: "reset"` discards the last review's changes.
+</Annotation>
+
+<Annotation id="tools" lines="36" tease="read, search and run" title="Read-only tools" href="/docs/labs/agents/sandboxes-and-code?ref=docs-labs-agents-recipes-pr-reviewer" linkText="Sandboxes and code">
+The sandbox leaves `write` and `edit` out, so the reviewer cannot change code.
+</Annotation>
+
+</AnnotatedCode>
+
+```typescript {{ title: "inngest/sandboxes/review.ts" }}
+import { sandbox } from "inngest/experimental/agents";
+
+export const review = sandbox({
+  id: "review",
+  tools: sandbox.tools.code({
+    cwd: "/work/app",
+    only: ["read", "search", "run"],
+  }),
+});
+```
+
+```typescript {{ title: "inngest/client.ts" }}
+import { Inngest } from "inngest";
+import { sandboxMiddleware } from "inngest/experimental";
+import { createAgents } from "inngest/experimental/agents";
+
+export const inngest = new Inngest({
+  id: "pr-reviewer",
+  middleware: [sandboxMiddleware()],
+});
+
+export const agents = createAgents(inngest);
+```
+
+`inngest/models/claude.ts` and `inngest/serve.ts` follow the [Slack assistant](/docs/labs/agents/recipes/slack-assistant?ref=docs-labs-agents-recipes-pr-reviewer), with `./agents/reviewer` imported.
+
+## What it shows off
+
+- A GitHub comment is a durable conversation. [Agents and triggers](/docs/labs/agents/agents-and-triggers?ref=docs-labs-agents-recipes-pr-reviewer)
+- A real machine to run the tests on. [Sandboxes and code](/docs/labs/agents/sandboxes-and-code?ref=docs-labs-agents-recipes-pr-reviewer)
+- Tools limited to what a reviewer needs. [Tools](/docs/labs/agents/tools?ref=docs-labs-agents-recipes-pr-reviewer)
+
+## Run it
+
+```bash
+npx inngest-cli@latest dev -u http://localhost:3000/api/inngest
+export GITHUB_TOKEN=ghp_... ANTHROPIC_API_KEY=sk-ant-... INNGEST_EXPERIMENTAL_KV_URL=redis://localhost:6379
+node --import tsx inngest/serve.ts
+```
+
+Your GitHub route sends a `github/issue_comment` event for each comment that mentions the bot. It needs an environment with Sandboxes. This recipe was type-checked against the SDK and not run.
+
+## Variations
+
+- Let it suggest a fix as a branch. [Coding agent](/docs/labs/agents/recipes/coding-agent?ref=docs-labs-agents-recipes-pr-reviewer)
+- Review only after a person asks. [Approvals](/docs/labs/agents/recipes/approvals?ref=docs-labs-agents-recipes-pr-reviewer)
+- Show a card per file while it reads. [Reporting](/docs/labs/agents/reporting?ref=docs-labs-agents-recipes-pr-reviewer)
+- Keep the checkout between pushes with `sync: "keep"`. [Sandboxes and code](/docs/labs/agents/sandboxes-and-code?ref=docs-labs-agents-recipes-pr-reviewer)
+
+## Learn more
+
+- [Sandboxes and code](/docs/labs/agents/sandboxes-and-code?ref=docs-labs-agents-recipes-pr-reviewer)
+- [Reporting](/docs/labs/agents/reporting?ref=docs-labs-agents-recipes-pr-reviewer)
+- Next recipe: [Coding agent](/docs/labs/agents/recipes/coding-agent?ref=docs-labs-agents-recipes-pr-reviewer)

@@ -1,0 +1,200 @@
+import { AnnotatedCode, Annotation } from "shared/Docs/mdx";
+
+export const metaTitle = "Agent teams | Inngest Agents";
+export const description = "Build a lead agent that hands research to one agent and code to another, with limits on how deep, how many and how much they may spend.";
+
+# Agent teams
+
+> A lead agent that splits a request between a researcher and a coder.
+
+```text
+You         What does HTTP 429 mean? Then write a fetch wrapper that waits and retries on it.
+
+lead        asks researcher: What does HTTP 429 mean?
+researcher  Too Many Requests. Wait for the Retry-After header before retrying.
+lead        asks coder: Write fetchWithRetry that honors Retry-After.
+coder       Wrote and ran fetchWithRetry.ts. Its test passes.
+
+lead        429 means Too Many Requests. Here is fetchWithRetry, tested: ...
+```
+
+Screenshot needed: the lead's run with both child runs in the Dev Server.
+
+## The code
+
+<AnnotatedCode>
+
+```typescript {{ title: "inngest/agents/lead.ts" }}
+import { agent } from "inngest/experimental/agents";
+import { agents } from "../client";
+import { claude } from "../models/claude";
+import { code } from "../tools/code";
+import { research } from "../tools/research";
+
+export const lead = agents.agent(
+  {
+    id: "lead",
+    limits: {
+      depth: 1,
+      spawn: 4,
+      mayCall: ["agent-teams/researcher", "agent-teams/coder"],
+      budget: { usd: 2 },
+      price: { "*": { input: 3, output: 15 } },
+    },
+  },
+  async ({ inbox, control }) => {
+    const message = await inbox.next();
+
+    const result = await agent.loop({
+      model: claude,
+      system:
+        "Split the request. Ask the researcher for facts and the coder for code, then combine their answers.",
+      prompt: message?.content ?? "",
+      tools: { research, code },
+      ...control,
+    });
+
+    return result.text;
+  },
+);
+```
+
+<Annotation id="limits" lines="10-16" tease="depth, count, who and how much" title="Limit the team" href="/docs/labs/agents/teams-of-agents?ref=docs-labs-agents-recipes-agent-teams" linkText="Teams of agents">
+Sub-agents inherit these, narrowed. A refused call throws `AgentLimitError`.
+</Annotation>
+
+<Annotation id="mayCall" lines="13" tease="an allow list" title="Who it may call" href="/docs/labs/agents/teams-of-agents?ref=docs-labs-agents-recipes-agent-teams" linkText="Teams of agents">
+Names are `appId/agentId`.
+</Annotation>
+
+<Annotation id="tools" lines="26" tease="a sub-agent is a tool" title="Agents as tools" href="/docs/labs/agents/tools?ref=docs-labs-agents-recipes-agent-teams" linkText="Tools">
+The model decides who to ask and in what order.
+</Annotation>
+
+<Annotation id="return" lines="30" tease="the run's result" title="Return" href="/docs/labs/agents/agents-and-triggers?ref=docs-labs-agents-recipes-agent-teams" linkText="Agents and triggers">
+A caller that invokes `lead` gets this value back.
+</Annotation>
+
+</AnnotatedCode>
+
+```typescript {{ title: "inngest/agents/researcher.ts" }}
+import { invoke } from "inngest";
+import { agent } from "inngest/experimental/agents";
+import { z } from "zod";
+import { agents } from "../client";
+import { claude } from "../models/claude";
+
+export const researcher = agents.agent(
+  {
+    id: "researcher",
+    on: invoke(z.object({ question: z.string() })),
+    limits: { price: { "*": { input: 3, output: 15 } } },
+  },
+  async ({ trigger }) => {
+    const result = await agent.loop({
+      model: claude,
+      system: "Answer in five sentences or fewer, and say what you are unsure of.",
+      prompt: trigger?.data.question ?? "",
+    });
+
+    return { answer: result.text };
+  },
+);
+```
+
+```typescript {{ title: "inngest/agents/coder.ts" }}
+import { invoke } from "inngest";
+import { agent } from "inngest/experimental/agents";
+import { z } from "zod";
+import { agents } from "../client";
+import { claude } from "../models/claude";
+import { workbench } from "../sandboxes/workbench";
+
+export const coder = agents.agent(
+  {
+    id: "coder",
+    on: invoke(z.object({ task: z.string() })),
+    sandboxes: { work: workbench },
+    limits: { price: { "*": { input: 3, output: 15 } } },
+  },
+  async ({ trigger, sandboxTools }) => {
+    const result = await agent.loop({
+      model: claude,
+      prompt: trigger?.data.task ?? "",
+      tools: sandboxTools,
+    });
+
+    return { summary: result.text };
+  },
+);
+```
+
+```typescript {{ title: "inngest/tools/research.ts" }}
+import { tool } from "inngest/experimental";
+import { agent } from "inngest/experimental/agents";
+import { z } from "zod";
+import { researcher } from "../agents/researcher";
+
+export const research = tool.group({
+  description: "Ask the researcher a question",
+  input: z.object({ question: z.string() }),
+  run: async ({ question }) => {
+    return agent.invoke(researcher, { question });
+  },
+});
+```
+
+```typescript {{ title: "inngest/tools/code.ts" }}
+import { tool } from "inngest/experimental";
+import { agent } from "inngest/experimental/agents";
+import { z } from "zod";
+import { coder } from "../agents/coder";
+
+export const code = tool.group({
+  description: "Hand a coding task to the coder",
+  input: z.object({ task: z.string() }),
+  run: async ({ task }) => {
+    return agent.invoke(coder, { task });
+  },
+});
+```
+
+```typescript {{ title: "inngest/sandboxes/workbench.ts" }}
+import { sandbox } from "inngest/experimental/agents";
+
+export const workbench = sandbox({
+  id: "workbench",
+  tools: sandbox.tools.code({ cwd: "/work" }),
+});
+```
+
+`inngest/client.ts` is the one from the [Coding agent](/docs/labs/agents/recipes/coding-agent?ref=docs-labs-agents-recipes-agent-teams), with the sandbox middleware. `inngest/models/claude.ts` and `inngest/serve.ts` follow the [Slack assistant](/docs/labs/agents/recipes/slack-assistant?ref=docs-labs-agents-recipes-agent-teams).
+
+## What it shows off
+
+- One agent calls another and gets its result. [Teams of agents](/docs/labs/agents/teams-of-agents?ref=docs-labs-agents-recipes-agent-teams)
+- Only the coder gets a sandbox. [Sandboxes and code](/docs/labs/agents/sandboxes-and-code?ref=docs-labs-agents-recipes-agent-teams)
+- A dollar budget for the whole team. [Reliability](/docs/labs/agents/reliability?ref=docs-labs-agents-recipes-agent-teams)
+
+## Run it
+
+```bash
+npx inngest-cli@latest dev -u http://localhost:3000/api/inngest
+export ANTHROPIC_API_KEY=sk-ant-... INNGEST_EXPERIMENTAL_KV_URL=redis://localhost:6379
+node --import tsx inngest/serve.ts
+```
+
+Send the lead a message with `lead.thread("t1").send("...")`. The coder needs an environment with Sandboxes. This recipe was type-checked against the SDK and not run.
+
+## Variations
+
+- Let the lead's sub-agents cancel with it using `agentInvokeCancelOn`. [Teams of agents](/docs/labs/agents/teams-of-agents?ref=docs-labs-agents-recipes-agent-teams)
+- Share one sandbox between agents. [Sandboxes and code](/docs/labs/agents/sandboxes-and-code?ref=docs-labs-agents-recipes-agent-teams)
+- Swap the coder for the full [Coding agent](/docs/labs/agents/recipes/coding-agent?ref=docs-labs-agents-recipes-agent-teams).
+- Read the cost of each child in the trace. [Observability](/docs/labs/agents/observability?ref=docs-labs-agents-recipes-agent-teams)
+
+## Learn more
+
+- [Teams of agents](/docs/labs/agents/teams-of-agents?ref=docs-labs-agents-recipes-agent-teams)
+- [Reliability](/docs/labs/agents/reliability?ref=docs-labs-agents-recipes-agent-teams)
+- Next recipe: [Sandbox tools](/docs/labs/agents/recipes/sandbox-tools?ref=docs-labs-agents-recipes-agent-teams)
