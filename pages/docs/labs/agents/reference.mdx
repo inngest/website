@@ -64,11 +64,14 @@ export const agents = createAgents(inngest);
 ```
 
 ```typescript {{ title: "inngest/serve.ts" }}
-import { serve } from "inngest/node";
+import { createServer } from "inngest/node";
 import { agents, inngest } from "./client";
 import "./agents/support";
 
-serve({ client: inngest, functions: agents.functions() });
+createServer({
+  client: inngest,
+  functions: agents.functions(),
+}).listen(3000);
 ```
 
 ### AgentFunction
@@ -223,8 +226,8 @@ interface ThreadInbox extends AsyncIterable<ThreadInboxMessage> {
 | Method | Description |
 | --- | --- |
 | `next()` | Waits for the next message. `null` once the inbox is closed and drained. |
-| `next({ timeout })` | Waits at most `timeout` (durable). `undefined` on timeout, `null` at the end. Durations under a second round up to one. |
-| `current()` | Every message saved so far, read or not. Moves no cursor. |
+| `next({ timeout })` | Waits at most `timeout` (durable). `undefined` on timeout, `null` at the end. Durations under a second round up to one; `0` never waits. |
+| `current()` | Every message saved so far, read or not, stops included, but not the event that started the run. Moves no cursor. |
 | `unread()` | Takes every message after the cursor without waiting, and advances the cursor. Stops are included. |
 | `of(type)` | A `View` of one event's messages with a cursor of its own: `next`, `unread`, `current`, async iterable. |
 | `listen(source)` | Adds an event source mid-run. One step. Needs a `thread` or an `if`. |
@@ -829,7 +832,7 @@ scores.score(name: string, value: number | boolean): Promise<void>
 
 - `name`: no control characters or single quotes, at most 128 bytes, not starting with `agent.`.
 - Inside a step the score is written on that step once. Outside a step it sets a run score, written again on replay, so use values that do not change.
-- A score never fails a run. A refusing server logs a warning once.
+- A score the server refuses never fails a run; it logs a warning once. An invalid name, or one starting with `agent.`, throws.
 
 Framework scores (`AgentScoreName`): `agent.model_ms`, `agent.tool_calls`, `agent.steers`, `agent.input_tokens`, `agent.output_tokens`, `agent.cache_read_tokens`, `agent.cache_write_tokens`, `agent.tool_ms`, `agent.tool_error`, `agent.first_output_ms`, `agent.output_gap_ms`, `agent.stopped`. Type: `AgentScores`.
 

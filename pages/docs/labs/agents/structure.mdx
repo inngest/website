@@ -126,12 +126,15 @@ export const coder = agents.agent(
 ## Serve them
 
 ```typescript {{ title: "inngest/serve.ts" }}
-import { serve } from "inngest/node";
+import { createServer } from "inngest/node";
 import { agents, inngest } from "./client";
 import "./agents/coder";
 import "./agents/support";
 
-serve({ client: inngest, functions: agents.functions() });
+createServer({
+  client: inngest,
+  functions: agents.functions(),
+}).listen(3000);
 ```
 
 ## Grow it

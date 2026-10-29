@@ -41,7 +41,6 @@ export const support = agents.agent(
         model: claude,
         prompt: message.content ?? "",
         history: (await kv.thread.get(history)) ?? [],
-        tools: {},
         ...control,
       });
 
@@ -55,7 +54,7 @@ export const support = agents.agent(
 `get` gives the value, or `undefined` when the key has none.
 </Annotation>
 
-<Annotation id="set" lines="18" tease="JSON only" title="Write" href="/docs/labs/agents/structure?ref=docs-labs-agents-kv" linkText="Structure">
+<Annotation id="set" lines="17" tease="JSON only" title="Write" href="/docs/labs/agents/structure?ref=docs-labs-agents-kv" linkText="Structure">
 Values are stored as JSON, so no `Date`, `Map` or `undefined`.
 </Annotation>
 
@@ -129,7 +128,10 @@ Calls on `kv` itself use the run's scope.
 
 ```typescript {{ title: "inngest/keys.ts" }}
 import { kvKey } from "inngest/experimental/agents";
+import type { AgentMessage } from "inngest/experimental/agents";
 import { z } from "zod";
+
+export const history = kvKey<AgentMessage[]>("history");
 
 export const plan = kvKey(
   "plan",
@@ -337,7 +339,6 @@ export const own = agents.agent(
       await agent.loop({
         model: claude,
         prompt: message.content ?? "",
-        tools: {},
         ...control,
       });
 

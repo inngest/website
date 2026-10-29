@@ -43,8 +43,8 @@ sandbox<TTool>(options: SandboxDefinitionOptions<TTool>): SandboxDefinition<TToo
 | --- | --- | --- | --- |
 | `id` | `string` | required | Letters, digits, underscores, and hyphens; starts with a letter; up to 64 characters. |
 | `image` | [`SandboxImage`](#images) | the base image | Image to start from. |
-| `vcpu` | `number` | the platform's | Virtual CPUs. |
-| `memoryMb` | `number` | the platform's | Memory in megabytes. |
+| `vcpu` | `number` | `2` | Virtual CPUs. |
+| `memoryMb` | `number` | `2048` | Memory in megabytes. |
 | `environment` | `Record<string, string>` | none | Environment for a fresh sandbox. Not applied to one restored from a snapshot. |
 | `secrets` | `string[]` | none | Workspace secret names to inject. Not applied on restore. |
 | `tools` | `SandboxToolsFactory` | none | The tools every agent that uses it gets, such as `sandbox.tools.code()`. |
@@ -129,7 +129,7 @@ What `sandboxes.<name>` is in the agent body.
 | `started` | Whether creation has begun. |
 | `tools` | The definition's tools, named `<name>_<tool>`. Calling one creates the sandbox. |
 | `get()` | The [durable sandbox](#durable-sandbox), created in one step on first call. |
-| `close()` | Destroys it if created. Call only when the run is ending. |
+| `close()` | Saves a thread's sandbox as `idle` says (paused, or a snapshot), then destroys it, if created. Call only when the run is ending. |
 | `idle` | `"pause"` or `"snapshot"`, from the binding. |
 | `recycle()` | Sets it aside now (paused, or saved and destroyed: see `idle`); the next `get()` or tool call brings it back. Needs a sandbox that belongs to a thread. Throws if the snapshot or destroy fails. |
 
@@ -348,7 +348,8 @@ Types: `SandboxShell`, `SandboxShellOptions`, `ShellState`, `ShellStart`. Buildi
 | `input` | JSON values, each available to the snippet as a global of the same name. `tools` is taken when `tools` is given. |
 | `schema.output` | A Standard Schema the result must match; the return type follows it. |
 | `tools`, `toolOptions` | Tools the snippet can call. |
-| `environment`, `cwd`, `timeout` | Command options. |
+| `environment` | Set on the sandbox it creates, and inherited by its commands. |
+| `cwd`, `timeout` | Command options. |
 
 A group sandbox given an ID alone gets 2 vCPUs and 2048 MB. Types: `OneShotRunner`, `OneShotRunnerOptions`, `RunnerOptions`, `GroupSandbox`, `GroupSandboxOptions`, `GroupSandboxOptionsOrId`.
 
@@ -418,7 +419,7 @@ commitFiles(options: CommitFilesOptions): Promise<PushOutcome>
 | `cwd` | `/work` | The repository directory in the sandbox. |
 | `maxBytes` | 1 MiB (git), 4 MiB (api) | Most a push may weigh. At most 1.5 MiB with git, 8 MiB with api. |
 | `transport` | `"auto"` | `"git"` uses the host's git. `"api"` rebuilds commits with the GitHub Git Data API and needs no git, so it runs on Workers; it needs linear history. `"auto"` uses git when it runs, else the API for github.com. |
-| `api` | `https://api.github.com` | API base URL, for `"api"`. |
+| `api` | `https://api.github.com`, or `/api/v3` on the remote's host | API base URL, for `"api"`. |
 | `fetch` | global | The `fetch` the API push uses. |
 
 The tool pushes one branch to the branch of the same name. It never forces or deletes. The sandbox makes one bundle of the new commits (compressed, and read in one step when it fits `maxBytes`); the host reads it in as few steps as it can and pushes once. The API form uploads blobs four at a time and sends small text files inline. `pushBranch` returns `{ ok: true, pushed, warning? }` or `{ ok: false, error }`; refusals and rejections come back as values, and only a broken setup throws.

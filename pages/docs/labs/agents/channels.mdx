@@ -42,7 +42,6 @@ export const triage = agents.agent(
       const result = await agent.loop({
         model: claude,
         prompt: message.content ?? "",
-        tools: {},
         ...control,
       });
 
@@ -76,7 +75,7 @@ Where `report()` posts. Default: the channel named `main`.
 A task card in a progress stream. Writing the same `id` updates it.
 </Annotation>
 
-<Annotation id="finish" lines="29" tease="ends the stream" title="Finish" href="/docs/labs/agents/threads?ref=docs-labs-agents-channels" linkText="Threads">
+<Annotation id="finish" lines="28" tease="ends the stream" title="Finish" href="/docs/labs/agents/threads?ref=docs-labs-agents-channels" linkText="Threads">
 Closes the stream with final text, or posts it as a message.
 </Annotation>
 
@@ -141,7 +140,6 @@ export const review = agents.agent(
       const result = await agent.loop({
         model: claude,
         prompt: message.content ?? "",
-        tools: {},
         ...control,
       });
 
@@ -265,9 +263,11 @@ export const approve = agents.agent(
   { id: "approve", channels: { main: boardChannel } },
   async ({ inbox, channels }) => {
     for await (const message of inbox) {
+      const signal = `approve-${message.seq}`;
+
       await step.run("ask", async () => {
         await askThrough(channels.main ?? boardChannel, {
-          signal: `approve-${message.seq}`,
+          signal,
           question: "Ship it?",
           options: ["yes", "no"],
           recommended: "no",
@@ -275,12 +275,20 @@ export const approve = agents.agent(
           timeout: "1d",
         });
       });
+
+      const answer = await step.waitForSignal("answer", {
+        signal,
+        timeout: "1d",
+        onConflict: "replace",
+      });
+
+      console.log(answer?.data ?? "no answer");
     }
   },
 );
 ```
 
-The Slack channel shows options as buttons, or a menu past 25. Your route sends the answer as the `signal`, and checks `approvers`: the SDK enforces nothing.
+The Slack channel shows options as buttons, or a menu past 25. The agent waits with `step.waitForSignal()`. Your route sends the answer as that signal, and checks `approvers`: the SDK enforces nothing.
 
 ## How it works
 

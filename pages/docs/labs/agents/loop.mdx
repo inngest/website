@@ -53,55 +53,92 @@ export const dated = agent.anthropic({
 
 ## Make a model
 
-`agent.model()` types a function that calls your provider once per turn, for a provider without an adapter. The loop keeps `message` as you return it and sends it back on every later turn. The example uses the Anthropic SDK; the shape fits any provider.
+`agent.model()` types a function that calls your provider once per turn, for a provider without an adapter. The loop keeps `message` as you return it and sends it back on every later turn. The example calls an OpenAI-compatible chat API; the shape fits any provider.
 
-```typescript {{ title: "inngest/models/handwritten.ts" }}
-import Anthropic from "@anthropic-ai/sdk";
+```typescript {{ title: "inngest/models/gpt.ts" }}
 import { agent } from "inngest/experimental/agents";
 
-const anthropic = new Anthropic();
+type ChatReply = {
+  model: string;
+  choices: {
+    message: {
+      content: string | null;
+      tool_calls?: {
+        id: string;
+        function: { name: string; arguments: string };
+      }[];
+    };
+  }[];
+  usage: { prompt_tokens: number; completion_tokens: number };
+};
 
-export const claude = agent.model(async (request) => {
-  const reply = await anthropic.messages.create({
-    model: "claude-sonnet-5-5",
-    max_tokens: 8192,
-    system: request.system,
-    tools: request.tools,
-    tool_choice: request.toolChoice ? { type: "none" } : undefined,
-    messages: request.messages.map((message) => {
-      if (message.role === "tool") {
-        return {
-          role: "user",
-          content: message.results.map((result) => {
-            return {
-              type: "tool_result",
-              tool_use_id: result.toolCallId,
-              content: result.content,
-              is_error: result.isError,
-            };
-          }),
-        };
-      }
+export const gpt = agent.model(async (request) => {
+  const response = await fetch("https://api.openai.com/v1/chat/completions", {
+    method: "POST",
+    headers: {
+      authorization: `Bearer ${process.env.OPENAI_API_KEY}`,
+      "content-type": "application/json",
+    },
+    body: JSON.stringify({
+      model: "gpt-5",
+      messages: [
+        ...(request.system ? [{ role: "system", content: request.system }] : []),
+        ...request.messages.flatMap((message) => {
+          if (message.role === "assistant") {
+            return [message.content];
+          }
 
-      return message;
+          if (message.role === "tool") {
+            return message.results.map((result) => {
+              return {
+                role: "tool",
+                tool_call_id: result.toolCallId,
+                content: result.content,
+              };
+            });
+          }
+
+          return [message];
+        }),
+      ],
+      ...(request.tools.length > 0 && {
+        tools: request.tools.map((tool) => {
+          return {
+            type: "function",
+            function: {
+              name: tool.name,
+              description: tool.description,
+              parameters: tool.input_schema,
+            },
+          };
+        }),
+        tool_choice: request.toolChoice ?? "auto",
+      }),
     }),
   });
 
+  if (!response.ok) {
+    throw Object.assign(new Error(await response.text()), {
+      status: response.status,
+    });
+  }
+
+  const reply = (await response.json()) as ChatReply;
+  const message = reply.choices[0]?.message;
+
   return {
-    message: { role: "assistant", content: reply.content },
-    text: reply.content
-      .flatMap((block) => {
-        return block.type === "text" ? [block.text] : [];
-      })
-      .join(""),
-    toolCalls: reply.content.flatMap((block) => {
-      return block.type === "tool_use"
-        ? [{ id: block.id, name: block.name, input: block.input }]
-        : [];
+    message: { role: "assistant", content: { role: "assistant", ...message } },
+    text: message?.content ?? "",
+    toolCalls: (message?.tool_calls ?? []).map((call) => {
+      return {
+        id: call.id,
+        name: call.function.name,
+        input: JSON.parse(call.function.arguments),
+      };
     }),
     usage: {
-      input: reply.usage.input_tokens,
-      output: reply.usage.output_tokens,
+      input: reply.usage.prompt_tokens,
+      output: reply.usage.completion_tokens,
     },
     model: reply.model,
   };
@@ -336,27 +373,7 @@ Limits on sub-agents are in [Events and triggers](/docs/labs/agents/events-and-t
 
 A tool that returns `agent.toolError(body)` gives the model an error result to react to, as in `getOrder` above. It works beside an `output` schema too.
 
-`classifyModelError` ends the run on a rejected request and retries the rest. The loop applies it to every model call, and `agent.anthropic()` already sorts its own errors.
-
-```typescript {{ title: "inngest/models/custom.ts" }}
-import { agent } from "inngest/experimental/agents";
-
-declare const call: (messages: unknown[]) => Promise<string>;
-
-export const custom = agent.model(async (request) => {
-  try {
-    const text = await call(request.messages);
-
-    return {
-      message: { role: "assistant", content: text },
-      text,
-      toolCalls: [],
-    };
-  } catch (error) {
-    throw agent.classifyModelError(error);
-  }
-});
-```
+The loop sorts every model error: a rejected request (a 4xx other than 408, 409 and 429) ends the run, and the rest is retried. Throw an error with a `status`, like the model above, or a `NonRetriableError` to decide yourself. `agent.classifyModelError(error)` is the same check, for a loop of your own.
 
 Mark text from outside with `agent.untrusted()`, and say what the tag means in your prompt.
 

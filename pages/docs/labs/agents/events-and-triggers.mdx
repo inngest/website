@@ -61,7 +61,6 @@ export const support = agents.agent(
       await agent.loop({
         model: claude,
         prompt: message.content ?? "",
-        tools: {},
         ...control,
       });
     }
@@ -175,7 +174,11 @@ import { z } from "zod";
 import { agents } from "../client";
 
 export const researcher = agents.agent(
-  { id: "researcher", on: invoke(z.object({ question: z.string() })) },
+  {
+    id: "researcher",
+    on: invoke(z.object({ question: z.string() })),
+    limits: { price: { "*": { input: 3, output: 15 } } },
+  },
   async ({ trigger, depth }) => {
     return { answer: `Looked into: ${trigger?.data.question}`, depth };
   },

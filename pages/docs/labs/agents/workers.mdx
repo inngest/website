@@ -43,6 +43,14 @@ export const getEnv = () => {
 
 Config is read at import, before any request. A middleware builds what the body needs when a request arrives.
 
+```typescript {{ title: "inngest/models/claude.ts" }}
+import { agent } from "inngest/experimental/agents";
+
+export const claudeWith = (apiKey: string) => {
+  return agent.anthropic({ model: "claude-sonnet-5-5", apiKey });
+};
+```
+
 ```typescript {{ title: "inngest/middleware/deps.ts" }}
 import { Middleware } from "inngest";
 import { type Env, useEnv } from "../env";

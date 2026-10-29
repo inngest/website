@@ -104,11 +104,7 @@ export const patient = inngest.createFunction(
 
     const next = await inbox.next({ timeout: "30s" });
 
-    if (next === undefined) {
-      return { waiting: waiting.length, next: null };
-    }
-
-    return { waiting: waiting.length, next: next?.seq };
+    return { waiting: waiting.length, next: next?.seq ?? null };
   },
 );
 ```

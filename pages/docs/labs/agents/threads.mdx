@@ -38,7 +38,6 @@ export const support = agents.agent(
       const result = await agent.loop({
         model: claude,
         prompt: message.content ?? "",
-        tools: {},
         history,
         ...control,
       });
@@ -57,11 +56,11 @@ The first message to a key starts a run; later ones reach it.
 Waits for each message, so the run costs nothing while idle.
 </Annotation>
 
-<Annotation id="history" lines="15,19" tease="one conversation" title="History" href="/docs/labs/agents/loop?ref=docs-labs-agents-threads#continue-a-conversation" linkText="Loop">
+<Annotation id="history" lines="14,18" tease="one conversation" title="History" href="/docs/labs/agents/loop?ref=docs-labs-agents-threads#continue-a-conversation" linkText="Loop">
 Each turn continues the last.
 </Annotation>
 
-<Annotation id="control" lines="16" tease="steer and stop" title="Control" href="#steer-a-running-turn" linkText="Steer">
+<Annotation id="control" lines="15" tease="steer and stop" title="Control" href="#steer-a-running-turn" linkText="Steer">
 Lets steering and stop messages reach the loop.
 </Annotation>
 
@@ -137,7 +136,6 @@ export const fold = agents.agent(
       await agent.loop({
         model: claude,
         prompt: message.content ?? "",
-        tools: {},
         ...control,
       });
     }
@@ -214,15 +212,12 @@ export const poll = agents.agent({ id: "poll" }, async ({ inbox }) => {
       continue;
     }
 
-    const waiting = await inbox.unread();
-    inbox.putBack(waiting);
-
     console.log(message.content, (await inbox.current()).length);
   }
 });
 ```
 
-`current()` lists saved messages, `unread()` takes the rest, `putBack()` returns them. `of(type)` and `listen()` are in [Events and triggers](/docs/labs/agents/events-and-triggers?ref=docs-labs-agents-threads#inbox-sources).
+`current()` lists every saved message without moving, `unread()` takes what arrived while you worked, `putBack()` returns messages you are not ready for. `of(type)` and `listen()` are in [Events and triggers](/docs/labs/agents/events-and-triggers?ref=docs-labs-agents-threads#inbox-sources).
 
 ## Acknowledge arrivals
 

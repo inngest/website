@@ -90,23 +90,25 @@ export function createApp(options: AppOptions) {
 }
 ```
 
-A small helper serves the app and registers it with the Dev Server.
+A small helper serves the app on a free port and registers it with the Dev Server.
 
 ```typescript {{ title: "test/serveApp.ts" }}
 import { createServer } from "node:http";
+import type { AddressInfo } from "node:net";
 import type { Inngest, InngestFunction } from "inngest";
 import { serve } from "inngest/node";
 
 export async function serveApp(
   client: Inngest.Any,
   functions: InngestFunction.Any[],
-  port = 3939,
 ) {
   const server = createServer(serve({ client, functions }));
 
   await new Promise<void>((resolve) => {
-    server.listen(port, resolve);
+    server.listen(0, resolve);
   });
+
+  const { port } = server.address() as AddressInfo;
 
   await fetch(`http://localhost:${port}/api/inngest`, { method: "PUT" });
 
@@ -124,8 +126,8 @@ export async function serveApp(
 Start the Dev Server, then run the test.
 
 ```bash
-npx inngest-cli@latest dev --no-discovery
-npx vitest run
+npx inngest-cli@latest dev --no-discovery # leave running
+npx vitest run # in another terminal
 ```
 
 <AnnotatedCode>
@@ -329,33 +331,27 @@ Never use `execute: "local"` with a real model.
 `startGitRemote` serves real repositories over HTTP, behind a token. `fakeGitDataApi` is GitHub's Git Data API in memory, for pushes without git.
 
 ```typescript {{ title: "test/git.test.ts" }}
+import { execSync } from "node:child_process";
+import { mkdtempSync, writeFileSync } from "node:fs";
+import { tmpdir } from "node:os";
+import { join } from "node:path";
+import { commitFiles } from "inngest/experimental/agents";
 import {
   fakeGitDataApi,
   startGitRemote,
 } from "inngest/experimental/agents/testing";
 import { expect, test } from "vitest";
 
-test("a push needs the token", async () => {
+test("a git remote lists its branches", async () => {
   await using remote = await startGitRemote({
     token: "t0k",
     repos: {
       website: { "index.html": "<h1>hi</h1>\n" },
       source: { main: { "a.ts": "export {};\n" }, pr: { "b.ts": "1\n" } },
     },
-    anonymousReads: true,
   });
 
-  const options = {
-    remote: remote.repos.website?.url ?? remote.url,
-    token: () => {
-      return "t0k";
-    },
-    transport: "git" as const,
-  };
-
-  expect(options.remote).toContain("website.git");
-
-  expect(remote.pushAuth).toEqual([]);
+  expect(remote.repos.website?.url).toContain("website.git");
 
   expect(Object.keys(remote.repos.source?.heads ?? {})).toEqual([
     "main",
@@ -363,22 +359,41 @@ test("a push needs the token", async () => {
   ]);
 });
 
-test("a push without git", () => {
+test("a commit through the API carries the token", async () => {
+  const dir = mkdtempSync(join(tmpdir(), "base-"));
+
+  writeFileSync(join(dir, "README.md"), "# app\n");
+
+  execSync(
+    "git init -q -b main && git add . && git -c user.name=t -c user.email=t@t commit -qm base",
+    { cwd: dir },
+  );
+
   const github = fakeGitDataApi({ repo: "acme/app" });
 
-  github.seed("/tmp/clone", "HEAD", "refs/heads/main");
+  github.seed(dir, "HEAD", "refs/heads/main");
 
-  expect(github.ref("refs/heads/agent-fix")).toBeUndefined();
+  const result = await commitFiles({
+    remote: "https://github.com/acme/app",
+    token: "t0k",
+    api: "http://github.test",
+    fetch: github.fetch,
+    ref: "refs/heads/agent-fix",
+    message: "Fix the typo",
+    files: { "README.md": "# app, fixed\n" },
+  });
 
-  expect(github.requests).toEqual([]);
+  expect(result).toHaveProperty("pushed");
 
-  expect(typeof github.fetch).toBe("function");
+  expect(github.ref("refs/heads/agent-fix")).toBeDefined();
+
+  expect(github.requests[0]?.authorization).toContain("t0k");
 });
 ```
 
-Pass `options` to `gitPushTool` or `pushBranch`, and for the API form give `github.fetch` as `fetch` with `transport: "api"`. Read `remote.pushAuth` and `github.ref(...)` after the agent pushes.
+Point `gitPushTool` or `pushBranch` at `remote.repos.<name>.url` with `transport: "git"`, or for the API form give `github.fetch` as `fetch` with `transport: "api"`. Read `remote.pushAuth` and `github.ref(...)` after the agent pushes.
 
-The remote needs `git` with `git-http-backend`.
+Both need `git` on the machine; the remote also needs `git-http-backend`.
 
 ## Test a channel
 
@@ -410,7 +425,7 @@ test("finish returns the reference and a replay writes nothing", async () => {
 
   expect(ref).toBe("ticket-1");
 
-  expect(first.ran).toEqual(["report:finish:1"]);
+  expect(first.ran).toEqual(["report:finish:1:0:main"]);
 
   const replay = testReporter({ main: ticket }, { saved: first.results });
 

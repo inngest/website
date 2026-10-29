@@ -273,15 +273,17 @@ export const project = sandbox({
       return;
     }
 
-    const lockfile = await step.run("load-lockfile", async () => {
-      return "lockfile: 1";
+    const env = await step.run("load-env", async () => {
+      return "API_URL=https://api.acme.test\n";
     });
 
-    await sandbox.files.write("lockfile", {
-      path: "/work/lock.txt",
-      data: lockfile,
-    });
-    await sandbox.commands.run("install", ["npm", "ci"], { cwd: "/work" });
+    await sandbox.commands.run(
+      "clone",
+      ["git", "clone", "https://github.com/acme/web", "app"],
+      { cwd: "/work" },
+    );
+    await sandbox.files.write("env", { path: "/work/app/.env", data: env });
+    await sandbox.commands.run("install", ["npm", "ci"], { cwd: "/work/app" });
   },
 });
 ```

@@ -5,12 +5,12 @@ export const description = "Inngest Agents quick start: create the client, a too
 
 # Quick start
 
-> Four small files, then a conversation that survives restarts.
+> A few small files, then a conversation that survives restarts.
 
-- **Needs.** Node.js 20+, a recent `inngest`, a Redis URL in `INNGEST_EXPERIMENTAL_KV_URL`, and a model API key. [Project structure →](/docs/labs/agents/structure?ref=docs-labs-agents-quick-start)
+- **Needs.** Node.js 20+, a recent `inngest`, Zod 4, a Redis URL in `INNGEST_EXPERIMENTAL_KV_URL`, and an `ANTHROPIC_API_KEY`. [Project structure →](/docs/labs/agents/structure?ref=docs-labs-agents-quick-start)
 
 ```bash
-npm install inngest zod
+npm install inngest zod @anthropic-ai/sdk
 ```
 
 ## 1. Create the client
@@ -40,7 +40,17 @@ export const lookupOrder = tool.step({
 
 [Tools →](/docs/labs/agents/tools?ref=docs-labs-agents-quick-start)
 
-## 3. Write the agent
+## 3. Pick a model
+
+```typescript {{ title: "inngest/models/claude.ts" }}
+import { agent } from "inngest/experimental/agents";
+
+export const claude = agent.anthropic({ model: "claude-sonnet-5-5" });
+```
+
+It reads `ANTHROPIC_API_KEY`. For another provider, [`agent.model()`](/docs/labs/agents/loop?ref=docs-labs-agents-quick-start#make-a-model) wraps its SDK.
+
+## 4. Write the agent
 
 <AnnotatedCode>
 
@@ -79,19 +89,20 @@ Lets new messages and stops reach the running turn.
 
 </AnnotatedCode>
 
-`inngest/models/claude.ts` is your own file. With Anthropic it is one call, [`agent.anthropic()`](/docs/labs/agents/loop?ref=docs-labs-agents-quick-start#use-anthropic); for another provider, [`agent.model()`](/docs/labs/agents/loop?ref=docs-labs-agents-quick-start#make-a-model) wraps its SDK.
-
-## 4. Serve it
+## 5. Serve it
 
 ```typescript {{ title: "inngest/serve.ts" }}
-import { serve } from "inngest/node";
+import { createServer } from "inngest/node";
 import { agents, inngest } from "./client";
 import "./agents/support";
 
-serve({ client: inngest, functions: agents.functions() });
+createServer({
+  client: inngest,
+  functions: agents.functions(),
+}).listen(3000);
 ```
 
-## 5. Send a message
+## 6. Send a message
 
 ```typescript {{ title: "send.ts" }}
 import { support } from "./inngest/agents/support";

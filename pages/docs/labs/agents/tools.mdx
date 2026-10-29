@@ -258,6 +258,7 @@ export const definitions = toolDefinitions({ getOrder });
     "name": "getOrder",
     "description": "Find an order by ID",
     "input_schema": {
+      "$schema": "https://json-schema.org/draft/2020-12/schema",
       "type": "object",
       "properties": { "id": { "type": "string" } },
       "required": ["id"]
