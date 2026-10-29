@@ -6,7 +6,7 @@ export const description = "Troubleshoot Inngest Sandboxes: diagnose a failed Sa
 
 When a Sandbox operation fails, find its step in the run trace or inspect the direct SDK error. Check the resource’s current state before retrying: a lost response does not prove that a command or mutation failed. Keep the error `code`, `requestId`, and resource ID for investigation.
 
-> **Experimental beta:** The guidance below describes the access-gated `inngest@4.21.1+` beta. The API and limits can change. The newer beta reference documents selecting existing workspace secrets for a fresh Sandbox.
+> **Open beta.** Sandboxes are available on Pro plans and above. The guidance below describes the `inngest@4.21.1+` beta. The API and limits can change. The newer beta reference documents selecting existing workspace secrets for a fresh Sandbox.
 
 ## Before you retry
 
@@ -25,7 +25,7 @@ When a Sandbox operation fails, find its step in the run trace or inspect the di
 
 **Check:** A fresh beta Sandbox accepts 1, 2, or 4 vCPU with 1, 2, or 4 GiB of memory per vCPU (for example `2 / 2048`, `2 / 4096`, or `2 / 8192`). Other sizes return `invalid_field_format`. A supported pair can still fail because of account entitlement or unavailable matching capacity. Check the error code and current entitlement. `compute_unavailable` reports a temporary compute or storage availability failure.
 
-**Fix:** Correct an unsupported pair. For an entitlement or capacity rejection, check your beta access with Inngest and use a size your account can run. If Create returned an unconfirmed availability failure, reuse the **same active name and configuration** rather than making a second named Sandbox. A matching Create returns the existing Sandbox; a conflicting configuration returns `sandbox_name_taken`. Do not claim a placement time from the SDK’s readiness wait.
+**Fix:** Correct an unsupported pair. For a capacity rejection, retry later or use another supported size. If Create returned an unconfirmed availability failure, reuse the **same active name and configuration** rather than making a second named Sandbox. A matching Create returns the existing Sandbox; a conflicting configuration returns `sandbox_name_taken`. Do not claim a placement time from the SDK’s readiness wait.
 
 ## A custom-image Sandbox stops right after it starts
 
