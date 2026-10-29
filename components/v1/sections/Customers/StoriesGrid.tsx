@@ -51,14 +51,11 @@ export default function StoriesGrid() {
       ) : (
         <ul className="grid list-none grid-cols-1 gap-6 pl-0 sm:grid-cols-2 lg:grid-cols-3">
           {sorted.map((s, i) => (
-            <motion.li
-              key={s.id}
-              {...reveals.item(i)}
-              className="list-none"
-            >
+            <motion.li key={s.id} {...reveals.item(i)} className="list-none">
               <StoryCard
                 href={STORY_HREF(s.id)}
                 logo={s.logo}
+                logoHeight={s.logoHeight}
                 brand={s.brand}
                 tags={s.tags}
                 title={s.title}
