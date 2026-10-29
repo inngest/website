@@ -1,0 +1,295 @@
+import { AnnotatedCode, Annotation } from "shared/Docs/mdx";
+
+export const metaTitle = "Reporting | Inngest Agents";
+export const description = "Inngest Agents reporting: answer in Slack threads and GitHub comments, show progress with task cards, ask people to approve, report to several places, and write your own channel.";
+
+# Reporting
+
+> Answer where your team already works, show progress, and ask before acting.
+
+A channel is a place an agent can post to, such as a Slack thread, a GitHub issue or your own board. `report` writes to it from the agent body.
+
+<AnnotatedCode>
+
+```typescript {{ title: "inngest/agents/triage.ts" }}
+import { agent, slack } from "inngest/experimental/agents";
+import { agents } from "../client";
+import { claude } from "../models/claude";
+
+export const triage = agents.agent(
+  {
+    id: "triage",
+    on: slack.thread({ in: ["C0123ABC"] }),
+    channels: ({ event }) => {
+      return { main: slack.channel(event, { in: ["C0123ABC"] }) };
+    },
+    report: "main",
+  },
+  async ({ inbox, control, report }) => {
+    for await (const message of inbox) {
+      const result = await agent.loop({
+        model: claude,
+        prompt: message.content ?? "",
+        ...control,
+      });
+
+      await report.finish({ text: result.text });
+    }
+  },
+);
+```
+
+<Annotation id="on" lines="8" tease="a thread is a conversation" title="Start from Slack" href="/docs/labs/agents/agents-and-triggers?ref=docs-labs-agents-reporting" linkText="Agents and triggers">
+Each Slack thread in the channel is one agent thread. Bot messages are ignored.
+</Annotation>
+
+<Annotation id="channel" lines="9-11" tease="same thread" title="Reply where it was asked" href="#reply-in-the-thread" linkText="Reply in the thread">
+Built from the trigger event. It refuses channels outside `in`.
+</Annotation>
+
+<Annotation id="report" lines="12" tease="default destination" title="Report" href="#report-to-several-places" linkText="Several places">
+Where `report()` posts. Here, the channel named `main`.
+</Annotation>
+
+<Annotation id="finish" lines="22" tease="ends the stream" title="Finish" href="#show-progress-with-cards" linkText="Cards">
+Posts the final text, or closes the progress stream with it.
+</Annotation>
+
+</AnnotatedCode>
+
+## Reply in the thread
+
+Replies in the Slack thread reach the live run as messages. Your route sends the events, and must verify Slack's or GitHub's signature first, because any sender of the event can steer the agent.
+
+```typescript {{ title: "inngest/relay.ts" }}
+import {
+  githubCommentEvent,
+  slackMessageEvent,
+} from "inngest/experimental/agents";
+import { inngest } from "./client";
+
+export async function relay(text: string) {
+  await inngest.send({
+    name: slackMessageEvent,
+    data: { channel: "C0123ABC", ts: "1700000000.000100", text, user: "U1" },
+  });
+
+  await inngest.send({
+    name: githubCommentEvent,
+    data: { owner: "acme", repo: "app", number: 7, body: text, author: "jo" },
+  });
+}
+```
+
+Tokens come from `SLACK_BOT_TOKEN` and `GITHUB_TOKEN`, or from a `token` option.
+
+## Show progress with cards
+
+`report.status()` shows whether the agent is working. A card is a task in a progress stream; writing the same `id` updates it.
+
+```typescript {{ title: "inngest/agents/cards.ts" }}
+import { agent, slack } from "inngest/experimental/agents";
+import { agents } from "../client";
+import { claude } from "../models/claude";
+
+export const cards = agents.agent(
+  {
+    id: "cards",
+    on: slack.thread({ in: ["C0123ABC"] }),
+    channels: ({ event }) => {
+      return { main: slack.channel(event, { in: ["C0123ABC"] }) };
+    },
+    report: "main",
+  },
+  async ({ inbox, control, report }) => {
+    for await (const message of inbox) {
+      await report.status("working");
+
+      await report.card({ id: "read", title: "Reading the thread" });
+
+      const result = await agent.loop({
+        model: claude,
+        prompt: message.content ?? "",
+        ...control,
+      });
+
+      await report.card({ id: "read", title: "Read", status: "done" });
+
+      await report.finish({ text: result.text });
+
+      await report.status("idle");
+    }
+  },
+);
+```
+
+`status` is `working`, `idle` or `waiting`.
+
+## Ask a person
+
+`askThrough` renders a question through a channel. Slack shows the options as buttons, or a menu past 25. The agent waits with `step.waitForSignal()`.
+
+```typescript {{ title: "inngest/agents/approve.ts" }}
+import { step } from "inngest";
+import { askThrough } from "inngest/experimental/agents";
+import { agents } from "../client";
+import { boardChannel } from "../channels/board";
+
+export const approve = agents.agent(
+  { id: "approve", channels: { main: boardChannel } },
+  async ({ inbox, channels }) => {
+    for await (const message of inbox) {
+      const signal = `approve-${message.seq}`;
+
+      await step.run("ask", async () => {
+        await askThrough(channels.main ?? boardChannel, {
+          signal,
+          question: "Ship it?",
+          options: ["yes", "no"],
+          recommended: "no",
+          approvers: ["jack"],
+          timeout: "1d",
+        });
+      });
+
+      const answer = await step.waitForSignal("answer", {
+        signal,
+        timeout: "1d",
+        onConflict: "replace",
+      });
+
+      console.log(answer?.data ?? "no answer");
+    }
+  },
+);
+```
+
+```typescript {{ title: "inngest/channels/board.ts" }}
+import { defineChannel } from "inngest/experimental/agents";
+import { board } from "../board";
+
+export const boardChannel = defineChannel({
+  post: async (message) => {
+    await board.write("main", [message.text]);
+  },
+  ask: async (ask) => {
+    await board.write("asks", [ask.question, ...(ask.options ?? [])]);
+  },
+});
+```
+
+Your route sends the answer as that signal, and checks `approvers`: the SDK enforces nothing.
+
+## Report to several places
+
+`report` takes a channel name, a channel, or a list. Each call can override it with `to`.
+
+```typescript {{ title: "inngest/agents/review.ts" }}
+import { agent, github } from "inngest/experimental/agents";
+import { agents } from "../client";
+import { ticketChannel } from "../channels/ticket";
+import { claude } from "../models/claude";
+
+export const review = agents.agent(
+  {
+    id: "review",
+    on: github.thread({ repos: ["acme/app"] }),
+    channels: ({ event }) => {
+      return {
+        main: github.channel(event, { repos: ["acme/app"] }),
+        tickets: ticketChannel("T-1"),
+      };
+    },
+    report: ["main", "tickets"],
+  },
+  async ({ inbox, control, report }) => {
+    for await (const message of inbox) {
+      const result = await agent.loop({
+        model: claude,
+        prompt: message.content ?? "",
+        ...control,
+      });
+
+      await report({ text: result.text, kind: "result", data: { turns: 2 } });
+
+      await report("Heads up for the team", { to: "tickets" });
+    }
+  },
+);
+```
+
+`kind` is `"progress"`, `"result"` or `"error"`, and `data` is plain JSON up to 32 KB.
+
+## Write your own channel
+
+A channel needs only `post`.
+
+```typescript {{ title: "inngest/channels/ticket.ts" }}
+import { defineChannel } from "inngest/experimental/agents";
+import { tickets } from "../tickets";
+
+export function ticketChannel(id: string) {
+  return defineChannel({
+    post: async (message) => {
+      await tickets.comment(id, message.text);
+    },
+  });
+}
+```
+
+Add `status`, `ask` and `stream` for a richer surface. The members are in the [reference](/docs/labs/agents/reference?ref=docs-labs-agents-reporting#definechannel).
+
+## When to use what
+
+- Answer in a Slack thread: `slack.thread()` and `slack.channel()`.
+- Answer on a GitHub issue or pull request: `github.thread()` and `github.channel()`.
+- Show work as it happens: `report.status()` and `report.card()`.
+- Ask a person before acting: `askThrough()` and `step.waitForSignal()`.
+- Post somewhere else: `defineChannel()`.
+
+## Options
+
+```typescript {{ title: "inngest/agents/styled.ts" }}
+import { slack } from "inngest/experimental/agents";
+import { agents } from "../client";
+
+export const styled = agents.agent(
+  {
+    id: "styled",
+    channels: {
+      main: slack.channel(
+        { channel: "C0123ABC", threadTs: "1700000000.000100" },
+        {
+          in: ["C0123ABC"],
+          token: () => {
+            return process.env.SLACK_BOT_TOKEN ?? "";
+          },
+          streamTitle: "Working on it",
+        },
+      ),
+    },
+    report: "main",
+  },
+  async ({ report }) => {
+    await report("Started");
+  },
+);
+```
+
+`token` defaults to `SLACK_BOT_TOKEN` and may be a function. `streamTitle` defaults to `"Progress"`. `user` and `team` default to the event's author and the workspace.
+
+## Gotchas
+
+- Delivery is at least once: a post whose answer is lost is posted again.
+- A channel without `ask` is an error when you call `askThrough`.
+- Slack text is escaped, so a `<!channel>` in model output arrives as plain text. The GitHub channel makes `@mentions` inert.
+
+## How it works
+
+- Every `report` call is a step, so a replay posts nothing twice.
+- `slack.channel` and `github.channel` refuse targets outside `in` and `repos`.
+- The reporter rolls a full or old stream into a new one with a summary card.
+
+## Recipes and reference
+
+[Slack assistant](/docs/labs/agents/recipes/slack-assistant), [Approvals](/docs/labs/agents/recipes/approvals), [Channels reference](/docs/labs/agents/reference?ref=docs-labs-agents-reporting#channels).

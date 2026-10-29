@@ -1,0 +1,329 @@
+import { AnnotatedCode, Annotation } from "shared/Docs/mdx";
+
+export const metaTitle = "Sandboxes and code | Inngest Agents";
+export const description = "Inngest Agents sandboxes: give an agent an isolated machine with read, write, edit, search and run tools, files that survive between runs, and scripts that call back into your tools.";
+
+# Sandboxes and code
+
+> Give an agent a machine of its own that is still there on the next message.
+
+An agent that writes code needs somewhere safe to run it. A sandbox is an isolated machine with code tools, paused between runs so its files stay.
+
+<AnnotatedCode>
+
+```typescript {{ title: "inngest/agents/coder.ts" }}
+import { agent } from "inngest/experimental/agents";
+import { agents } from "../client";
+import { claude } from "../models/claude";
+import { workbench } from "../sandboxes/workbench";
+
+export const coder = agents.agent(
+  { id: "coder", sandboxes: { work: workbench } },
+  async ({ inbox, sandboxTools, control }) => {
+    for await (const message of inbox) {
+      await agent.loop({
+        model: claude,
+        prompt: message.content ?? "",
+        tools: sandboxTools,
+        ...control,
+      });
+    }
+  },
+);
+```
+
+<Annotation id="bind" lines="7" tease="nothing starts yet" title="Bind a sandbox" href="#give-the-agent-a-sandbox" linkText="Give the agent a sandbox">
+The sandbox is created by the first call that needs it. The name `work` becomes the tool prefix.
+</Annotation>
+
+<Annotation id="tools" lines="13" tease="work_read, work_run and more" title="Code tools" href="#choose-the-code-tools" linkText="Choose the code tools">
+`work_read`, `work_write`, `work_edit`, `work_search` and `work_run`.
+</Annotation>
+
+</AnnotatedCode>
+
+## Give the agent a sandbox
+
+The client needs the sandbox middleware. A sandbox definition is plain data; nothing exists until an agent uses it.
+
+```typescript {{ title: "inngest/client.ts" }}
+import { Inngest } from "inngest";
+import { sandboxMiddleware } from "inngest/experimental";
+import { createAgents } from "inngest/experimental/agents";
+
+export const inngest = new Inngest({
+  id: "coder",
+  middleware: [sandboxMiddleware()],
+});
+
+export const agents = createAgents(inngest);
+```
+
+```typescript {{ title: "inngest/sandboxes/workbench.ts" }}
+import { sandbox } from "inngest/experimental/agents";
+
+export const workbench = sandbox({
+  id: "workbench",
+  image: sandbox.image.custom("python-data:v1"),
+  vcpu: 2,
+  memoryMb: 2048,
+  tools: sandbox.tools.code({ cwd: "/work" }),
+});
+```
+
+`sandbox.image.inngest("base")` is the default image. See [base images](/docs/sandboxes/features/base-images?ref=docs-labs-agents-sandboxes-and-code).
+
+## Choose the code tools
+
+`sandbox.tools.code()` takes `cwd` (default `/work`), `timeout` (default 5 minutes), `session` (default `true`) and `only`.
+
+```typescript {{ title: "inngest/sandboxes/reader.ts" }}
+import { sandbox } from "inngest/experimental/agents";
+
+export const reader = sandbox({
+  id: "reader",
+  environment: { LOG_LEVEL: "debug" },
+  secrets: ["NPM_TOKEN"],
+  tools: sandbox.tools.code({
+    cwd: "/work/app",
+    timeout: "2m",
+    only: ["read", "search", "run"],
+  }),
+});
+```
+
+Tool names are typed: `sandboxTools.view_write` fails to compile when `view` is bound to `reader`, which leaves `write` out.
+
+## Keep files between runs
+
+A sandbox belongs to its thread. When the run ends it is paused, and the next run resumes it with its disk as it was: a checkout, `node_modules`, anything.
+
+```typescript {{ title: "inngest/agents/pairer.ts" }}
+import { agent } from "inngest/experimental/agents";
+import { agents } from "../client";
+import { claude } from "../models/claude";
+import { project } from "../sandboxes/project";
+
+export const pairer = agents.agent(
+  { id: "pairer", sandboxes: { work: project } },
+  async ({ inbox, sandboxes, sandboxTools, control }) => {
+    for await (const message of inbox) {
+      await agent.loop({
+        model: claude,
+        prompt: message.content ?? "",
+        tools: sandboxTools,
+        ...control,
+      });
+
+      await sandboxes.work.recycle();
+    }
+  },
+);
+```
+
+`recycle()` sets the sandbox aside while the thread waits, so an idle one costs nothing. If it cannot be paused, the thread falls back to its newest snapshot, then to a fresh sandbox. Set `idle: "snapshot"` on the binding to save a snapshot and destroy the sandbox instead. See [snapshots](/docs/sandboxes/features/snapshots-and-restore?ref=docs-labs-agents-sandboxes-and-code).
+
+## Share a shell
+
+The `run` tool remembers where it is: a `cd` in one call applies to the next, and so do exported variables. In your own code, `sandbox.shell()` gives the same for `$`.
+
+```typescript {{ title: "inngest/agents/stepper.ts" }}
+import { agents } from "../client";
+import { project } from "../sandboxes/project";
+
+export const stepper = agents.agent(
+  { id: "stepper", sandboxes: { work: project } },
+  async ({ sandboxes }) => {
+    const work = await sandboxes.work.get();
+    const sh = work.shell({ cwd: "/work", env: { CI: "1" } });
+
+    await sh.$`cd app`;
+    await sh.$`export NODE_ENV=test`;
+
+    return sh.$`npm test`.text();
+  },
+);
+```
+
+Pass `session: false` to `sandbox.tools.code()` to start every command fresh.
+
+## Let code call your tools
+
+`run_code` lets the model write a Python or TypeScript script that calls your tools. A tool with `waits: true` may wait for days.
+
+<AnnotatedCode>
+
+```typescript {{ title: "inngest/sandboxes/analyst.ts" }}
+import { sandbox } from "inngest/experimental/agents";
+import { getAccount } from "../tools/getAccount";
+import { waitForApproval } from "../tools/waitForApproval";
+
+export const analyst = sandbox({
+  id: "analyst",
+  tools: sandbox.tools.code({
+    tools: { getAccount, waitForApproval },
+    only: ["run", "run_code"],
+  }),
+});
+```
+
+<Annotation id="script" lines="8" tease="tools.getAccount(...)" title="Tools for the script" href="/docs/labs/agents/tools?ref=docs-labs-agents-sandboxes-and-code" linkText="Tools">
+The script calls them as `tools.getAccount(...)`. `now` and `sleep` are built in.
+</Annotation>
+
+<Annotation id="only" lines="9" tease="narrow the set" title="Only" href="#choose-the-code-tools" linkText="Choose the code tools">
+Leaving `run_code` out of `only` throws.
+</Annotation>
+
+</AnnotatedCode>
+
+```typescript {{ title: "inngest/tools/getAccount.ts" }}
+import { tool } from "inngest/experimental";
+import { z } from "zod";
+
+export const getAccount = tool.step({
+  description: "Find an account by ID",
+  input: z.object({ id: z.string() }),
+  run: async ({ id }) => {
+    return { id, plan: "pro" };
+  },
+});
+```
+
+```typescript {{ title: "inngest/tools/waitForApproval.ts" }}
+import { step } from "inngest";
+import { tool } from "inngest/experimental";
+import { z } from "zod";
+
+export const waitForApproval = tool.group({
+  description: "Wait for a person to approve",
+  input: z.object({ request: z.string() }),
+  waits: true,
+  run: async ({ request }) => {
+    const approval = await step.waitForEvent("approval", {
+      event: "approval/decided",
+      timeout: "7d",
+      if: `async.data.request == "${request}"`,
+    });
+
+    return approval?.data ?? null;
+  },
+});
+```
+
+While a tool waits the script exits, then runs again from the top with earlier calls answered from a journal. Read the clock with `tools.now()`. The sandbox side is in [Run code](/docs/sandboxes/features/run-code?ref=docs-labs-agents-sandboxes-and-code).
+
+## Clone a repo
+
+`repo()` clones a repository into the sandbox, or brings a restored checkout up to date, and returns the tools for it.
+
+```typescript {{ title: "inngest/agents/fixer.ts" }}
+import { agent, repo } from "inngest/experimental/agents";
+import { agents } from "../client";
+import { claude } from "../models/claude";
+import { workbench } from "../sandboxes/workbench";
+
+export const fixer = agents.agent(
+  { id: "fixer", sandboxes: { work: workbench } },
+  async ({ inbox, sandboxes, control }) => {
+    for await (const message of inbox) {
+      const sandbox = await sandboxes.work.get();
+      const checkout = await repo(sandbox, {
+        repo: "acme/web",
+        path: "/work/web",
+        sync: "keep",
+        token: () => {
+          return process.env.GITHUB_TOKEN ?? "";
+        },
+      });
+
+      await agent.loop({
+        model: claude,
+        prompt: `${message.content ?? ""}\nThe repo is at ${checkout.path}`,
+        tools: checkout.tools,
+        ...control,
+      });
+    }
+  },
+);
+```
+
+`sync: "keep"` keeps what the agent did; `"reset"` discards it. Pushes your policy approves, host-side tokens and GitHub App auth are in [Repos and git](/docs/labs/agents/repos-and-git?ref=docs-labs-agents-sandboxes-and-code).
+
+## When to use what
+
+- The model reads, edits and runs in a machine: `sandbox.tools.code()`.
+- A command in your own code: `sandbox.$` (throws on a non-zero exit) or `sandbox.commands.run()` (you read the exit code).
+- Files on the next run: the default `idle: "pause"`. A snapshot instead: `idle: "snapshot"`.
+- The sandbox ready before the first call: `start: "eager"` on the binding.
+- Push to GitHub safely: [Repos and git](/docs/labs/agents/repos-and-git?ref=docs-labs-agents-sandboxes-and-code).
+
+## Options
+
+`setup` runs once after a sandbox is ready. `skills.git()` also puts a public repository of skills into it.
+
+<AnnotatedCode>
+
+```typescript {{ title: "inngest/sandboxes/project.ts" }}
+import { sandbox } from "inngest/experimental/agents";
+
+export const project = sandbox({
+  id: "project",
+  tools: sandbox.tools.code(),
+  setup: async ({ sandbox, step, restored }) => {
+    if (restored) {
+      return;
+    }
+
+    const env = await step.run("load-env", async () => {
+      return "API_URL=https://api.acme.test\n";
+    });
+
+    await sandbox.commands.run(
+      "clone",
+      ["git", "clone", "https://github.com/acme/web", "app"],
+      { cwd: "/work" },
+    );
+    await sandbox.files.write("env", { path: "/work/app/.env", data: env });
+    await sandbox.commands.run("install", ["npm", "ci"], { cwd: "/work/app" });
+  },
+});
+```
+
+<Annotation id="restored" lines="7-9" tease="skip what is there" title="Restored" href="#keep-files-between-runs" linkText="Keep files">
+A resumed sandbox already has its earlier setup.
+</Annotation>
+
+<Annotation id="step" lines="11-13" tease="memoized" title="Durable steps" href="/docs/sandboxes/reference?ref=docs-labs-agents-sandboxes-and-code" linkText="Sandboxes reference">
+Short names, prefixed for you.
+</Annotation>
+
+</AnnotatedCode>
+
+## How secrets stay safe
+
+Workspace secrets are protected before they reach a Sandbox.
+
+- **Encrypted at rest.** Each value is envelope-encrypted and bound to your account and workspace.
+- **Short-lived access.** A launch can fetch its secrets only with an authorization that lasts one minute and is tied to that Sandbox and the machine launching it.
+- **No cloud credentials on the machine.** The machine running your Sandbox receives the values, never the keys that decrypt them.
+- **Never fetched twice.** Each Sandbox gets one fetch attempt. A failed or lost response is not replayed, and the launch fails.
+
+Once a value is inside the Sandbox, code there can read it. Prefer a tool or a short-lived token for anything sensitive. See [Secrets](/docs/sandboxes/features/secrets?ref=docs-labs-agents-sandboxes-and-code).
+
+## Gotchas
+
+- `environment` and `secrets` apply to a fresh sandbox only.
+- Processes do not survive a snapshot.
+- A `setup` failure fails the call that created the sandbox.
+- Without a thread, `recycle()` throws. Close the sandbox yourself.
+
+## How it works
+
+- The sandbox is created in one durable step, so every call shares it.
+- A run's end pauses a used sandbox; a function cleans up cancelled runs the same way.
+- A shell session reads the final directory and exported variables off each command's result, so a replay rebuilds it without touching the sandbox.
+
+## Recipes and reference
+
+[Coding agent](/docs/labs/agents/recipes/coding-agent), [Sandbox tools](/docs/labs/agents/recipes/sandbox-tools), [Sandboxes reference](/docs/labs/agents/reference-sandboxes?ref=docs-labs-agents-sandboxes-and-code).

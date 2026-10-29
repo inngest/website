@@ -1,0 +1,215 @@
+import { AnnotatedCode, Annotation } from "shared/Docs/mdx";
+
+export const metaTitle = "Agents and triggers | Inngest Agents";
+export const description = "Inngest Agents triggers: start an agent from a message, an event or a schedule, name the thread from event data, and combine several triggers on one agent.";
+
+# Agents and triggers
+
+> Start an agent from a message, an event or a clock, and keep one thread per conversation.
+
+An agent is code that waits for messages. A trigger says what starts it and which thread each start belongs to.
+
+<AnnotatedCode>
+
+```typescript {{ title: "inngest/agents/support.ts" }}
+import { agent } from "inngest/experimental/agents";
+import { agents } from "../client";
+import { ticketOpened } from "../events";
+import { claude } from "../models/claude";
+
+export const support = agents.agent(
+  {
+    id: "support",
+    on: {
+      event: ticketOpened,
+      thread: '"ticket:" + event.data.ticketId',
+      message: (event) => {
+        return event.data.subject;
+      },
+    },
+  },
+  async ({ inbox, control }) => {
+    for await (const message of inbox) {
+      await agent.loop({
+        model: claude,
+        prompt: message.content ?? "",
+        ...control,
+      });
+    }
+  },
+);
+```
+
+<Annotation id="event" lines="9" tease="typed event" title="The trigger" href="#start-from-an-event" linkText="Start from an event">
+Each `support/ticket.opened` event starts the agent.
+</Annotation>
+
+<Annotation id="thread" lines="10" tease="the thread's key" title="Thread key" href="#gotchas" linkText="Gotchas">
+Same key, same conversation. It is a string expression, not a function.
+</Annotation>
+
+<Annotation id="message" lines="11" tease="the first message" title="First message" href="/docs/labs/agents/inboxes?ref=docs-labs-agents-agents-and-triggers" linkText="Inboxes">
+Arrives as `message.content` in the inbox.
+</Annotation>
+
+</AnnotatedCode>
+
+## Start from a message
+
+Without `on`, an agent starts when something sends its thread a message. Send from any process.
+
+```typescript {{ title: "app/send.ts" }}
+import { agentMessage } from "inngest/experimental/agents";
+import { support } from "../inngest/agents/support";
+import { inngest } from "../inngest/client";
+
+await support.thread("ticket:T-1").send("Any news?");
+
+await inngest.send(
+  agentMessage.create({
+    agent: "support/support",
+    thread: "ticket:T-1",
+    kind: "user",
+    content: "Or send the event yourself",
+  }),
+);
+```
+
+The first message starts a run. Later ones join it. Slack and GitHub messages start threads too: [Reporting](/docs/labs/agents/reporting?ref=docs-labs-agents-agents-and-triggers).
+
+## Start from an event
+
+An `eventType()` types and validates the event. `if` drops events that do not match.
+
+```typescript {{ title: "inngest/events.ts" }}
+import { eventType } from "inngest";
+import { z } from "zod";
+
+export const ticketOpened = eventType("support/ticket.opened", {
+  schema: z.object({
+    ticketId: z.string(),
+    subject: z.string(),
+    priority: z.enum(["low", "high"]),
+  }),
+});
+```
+
+Add `if: 'event.data.priority == "high"'` to the trigger and low-priority tickets start nothing. The body reads the event as `trigger`.
+
+## Run on a schedule
+
+A cron tick is one thread per agent, unless the trigger sets `thread`.
+
+```typescript {{ title: "inngest/agents/digest.ts" }}
+import { agents } from "../client";
+
+export const digest = agents.agent(
+  { id: "digest", on: { cron: "0 9 * * 1-5", jitter: "30s" } },
+  async ({ trigger }) => {
+    return trigger?.data.cron;
+  },
+);
+```
+
+## Combine triggers
+
+Give `on` a list. Each trigger types its own `message` from its own event, and `trigger.name` narrows the body.
+
+```typescript {{ title: "inngest/agents/watcher.ts" }}
+import { agents } from "../client";
+import { ticketOpened } from "../events";
+
+export const watcher = agents.agent(
+  {
+    id: "watcher",
+    on: [
+      {
+        event: ticketOpened,
+        thread: '"ticket:" + event.data.ticketId',
+        message: (event) => {
+          return event.data.subject;
+        },
+      },
+      { cron: "0 * * * *", thread: '"hourly"' },
+    ],
+  },
+  async ({ trigger }) => {
+    if (trigger?.name === "support/ticket.opened") {
+      return trigger.data.subject;
+    }
+
+    return "tick";
+  },
+);
+```
+
+## Call another agent
+
+`on: invoke(schema)` makes an agent callable. The caller gets its return value.
+
+```typescript {{ title: "inngest/agents/researcher.ts" }}
+import { invoke } from "inngest";
+import { z } from "zod";
+import { agents } from "../client";
+
+export const researcher = agents.agent(
+  { id: "researcher", on: invoke(z.object({ question: z.string() })) },
+  async ({ trigger }) => {
+    return { answer: `Looked into: ${trigger?.data.question}` };
+  },
+);
+```
+
+The calling side, limits and cancelling are in [Teams of agents](/docs/labs/agents/teams-of-agents?ref=docs-labs-agents-agents-and-triggers).
+
+## When to use what
+
+- Start on a person's message: `slack.thread` or `github.thread` in [Reporting](/docs/labs/agents/reporting?ref=docs-labs-agents-agents-and-triggers).
+- Start from your own code: `agent.thread(key).send()`.
+- Start from something that happened: `on: { event, thread }`.
+- Start on a clock: `on: { cron }`.
+- Start from another agent: `on: invoke(schema)`.
+- Feed a live run without starting one: an inbox source in [Inboxes](/docs/labs/agents/inboxes?ref=docs-labs-agents-agents-and-triggers#listen-to-other-sources).
+
+## Options
+
+```typescript {{ title: "inngest/agents/options.ts" }}
+import { agents } from "../client";
+import { ticketOpened } from "../events";
+
+export const options = agents.agent(
+  {
+    id: "options",
+    on: {
+      event: ticketOpened,
+      thread: '"ticket:" + event.data.ticketId',
+      if: 'event.data.priority == "high"',
+      message: (event) => {
+        return event.data.subject;
+      },
+    },
+  },
+  async ({ trigger }) => {
+    return trigger?.data.ticketId;
+  },
+);
+```
+
+`thread` has no default for events: without it, every event is a new thread. `if` is a CEL expression over `event`. `message` defaults to no first message.
+
+## Gotchas
+
+- `thread` and `if` are CEL expressions: literals, `event.data.x` paths, `has()`, `+`, comparisons, `&&`, `||`, `!`, `?:` and `string()`. Use `string(int(...))` for numeric IDs.
+- Equal keys are the same thread, whichever event made them. Prefix keys to keep sources apart.
+- One trigger per event name. `agent/message` is reserved.
+- A trigger for a thread that has a live run starts nothing. The run reads it from its inbox.
+
+## How it works
+
+- `agents.agent()` registers an Inngest function. `agents.functions()` returns all of them.
+- A message is an `agent/message` event. A start event is turned into the first message.
+- One run is live per thread.
+
+## Recipes and reference
+
+[Scheduled watcher](/docs/labs/agents/recipes/scheduled-watcher), [Issue triage](/docs/labs/agents/recipes/issue-triage), [Agent reference](/docs/labs/agents/reference?ref=docs-labs-agents-agents-and-triggers#triggers).

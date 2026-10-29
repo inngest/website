@@ -91,7 +91,7 @@ What `agents.agent()` returns.
 
 ## Agent config
 
-The first argument of `agents.agent()`. [Events and triggers](/docs/labs/agents/events-and-triggers?ref=docs-labs-agents-reference), [Threads](/docs/labs/agents/threads?ref=docs-labs-agents-reference).
+The first argument of `agents.agent()`. [Events and triggers](/docs/labs/agents/agents-and-triggers?ref=docs-labs-agents-reference), [Threads](/docs/labs/agents/threads-and-memory?ref=docs-labs-agents-reference).
 
 | Option | Type | Default | Description |
 | --- | --- | --- | --- |
@@ -99,17 +99,17 @@ The first argument of `agents.agent()`. [Events and triggers](/docs/labs/agents/
 | `on` | [trigger](#triggers) or array | none | What starts the agent besides messages: events, event types, crons, `invoke()`. |
 | `thread` | CEL `string` | the trigger's | Thread key expression for event triggers. Overrides the one a trigger supplies. |
 | `session` | CEL `string` | the thread key | Session expression for event triggers. |
-| `kv` | `Kv` or `() => Kv` | the `createAgents` store | KV for thread state. A function is called at each use. [KV](/docs/labs/agents/kv?ref=docs-labs-agents-reference#give-one-agent-its-own-kv) |
-| `requests` | `{ request, reply }` schemas | none | Types for `handle.request()` and `message.reply()`. A schema must not transform its input. [Threads](/docs/labs/agents/threads?ref=docs-labs-agents-reference#ask-another-thread) |
-| `onArrival` | `(ctx) => void` | none | Runs for each message that reaches a busy thread, in its own `<id>-arrival` function. [Threads](/docs/labs/agents/threads?ref=docs-labs-agents-reference#acknowledge-arrivals) |
-| `inbox` | `InboxSource[]` | none | Event sources that reach a live run and never start one. [Events](/docs/labs/agents/events-and-triggers?ref=docs-labs-agents-reference#inbox-sources) |
-| `inboxTools` | [`InboxToolsConfig`](#inbox-tools) | off | Lets the model listen for events. [Subscribe](/docs/labs/agents/subscribe?ref=docs-labs-agents-reference#let-a-model-listen) |
-| `foldMessages` | `"steer" \| "all"` | `"steer"` | Which messages that arrive during a turn `control.steer()` folds into the next model call. [Threads](/docs/labs/agents/threads?ref=docs-labs-agents-reference#steer-a-running-turn) |
-| `sandboxes` | record, or function of `{ event }` | none | Sandboxes by name: definitions or `{ sandbox, start }`. [Sandboxes](/docs/labs/agents/sandboxes?ref=docs-labs-agents-reference) |
-| `channels` | record, or function of `{ event }` | none | Destinations by name. [Channels](/docs/labs/agents/channels?ref=docs-labs-agents-reference) |
+| `kv` | `Kv` or `() => Kv` | the `createAgents` store | KV for thread state. A function is called at each use. [KV](/docs/labs/agents/reference?ref=docs-labs-agents-reference#kv) |
+| `requests` | `{ request, reply }` schemas | none | Types for `handle.request()` and `message.reply()`. A schema must not transform its input. [Threads](/docs/labs/agents/threads-and-memory?ref=docs-labs-agents-reference#ask-another-thread) |
+| `onArrival` | `(ctx) => void` | none | Runs for each message that reaches a busy thread, in its own `<id>-arrival` function. [Threads](/docs/labs/agents/inboxes?ref=docs-labs-agents-reference#acknowledge-arrivals) |
+| `inbox` | `InboxSource[]` | none | Event sources that reach a live run and never start one. [Events](/docs/labs/agents/inboxes?ref=docs-labs-agents-reference#listen-to-other-sources) |
+| `inboxTools` | [`InboxToolsConfig`](#inbox-tools) | off | Lets the model listen for events. [Subscribe](/docs/labs/agents/tools?ref=docs-labs-agents-reference#let-the-model-listen-for-events) |
+| `foldMessages` | `"steer" \| "all"` | `"steer"` | Which messages that arrive during a turn `control.steer()` folds into the next model call. [Threads](/docs/labs/agents/inboxes?ref=docs-labs-agents-reference#steer-a-running-turn) |
+| `sandboxes` | record, or function of `{ event }` | none | Sandboxes by name: definitions or `{ sandbox, start }`. [Sandboxes](/docs/labs/agents/sandboxes-and-code?ref=docs-labs-agents-reference) |
+| `channels` | record, or function of `{ event }` | none | Destinations by name. [Channels](/docs/labs/agents/reporting?ref=docs-labs-agents-reference) |
 | `report` | channel name, channel, or list; or function of `{ event }` | channel named `main` | Where `report()` posts when not told. |
-| `limits` | [`AgentLimits`](#agentlimits) | see type | What the agent may start and spend. [Events](/docs/labs/agents/events-and-triggers?ref=docs-labs-agents-reference#limit-sub-agents) |
-| `scores` | `boolean` | `true` | Whether the agent scores itself. [Scores](/docs/labs/agents/scores?ref=docs-labs-agents-reference) |
+| `limits` | [`AgentLimits`](#agentlimits) | see type | What the agent may start and spend. [Events](/docs/labs/agents/teams-of-agents?ref=docs-labs-agents-reference#limit-sub-agents) |
+| `scores` | `boolean` | `true` | Whether the agent scores itself. [Scores](/docs/labs/agents/observability?ref=docs-labs-agents-reference) |
 | `recovery` | `boolean \| AgentRecovery` | off | What to do about a run that fails unexpectedly. [Recovery](#recovery) |
 
 Function options an agent takes as they are: `name` (default: the `id`), `description`, `concurrency`, `retries`, `timeouts`, `cancelOn`, `onFailure`, `idempotency`, `rateLimit`, `throttle`, `priority`, `middleware`. [Flow control](/docs/guides/flow-control?ref=docs-labs-agents-reference)
@@ -203,11 +203,11 @@ Name the types of a body with one bag, `AgentBody<{ event?, output?, request?, r
 | `scores` | The agent's `scores` setting. |
 | `price` | The agent's `limits.price`, if any. |
 
-`limits.budget` only applies to a loop given `...control`. [Loop](/docs/labs/agents/loop?ref=docs-labs-agents-reference)
+`limits.budget` only applies to a loop given `...control`. [Loop](/docs/labs/agents/models-and-the-loop?ref=docs-labs-agents-reference)
 
 ## Inbox
 
-`inbox` is an async iterable of messages, one per delivery. The first message is the event that started the run. [Threads](/docs/labs/agents/threads?ref=docs-labs-agents-reference#read-the-inbox)
+`inbox` is an async iterable of messages, one per delivery. The first message is the event that started the run. [Threads](/docs/labs/agents/inboxes?ref=docs-labs-agents-reference#read-messages)
 
 ```typescript {{ title: "Signature" }}
 interface ThreadInbox extends AsyncIterable<ThreadInboxMessage> {
@@ -264,7 +264,7 @@ Types: `ThreadMessage`, `ThreadUserMessage`, `ThreadSteerMessage`, `ThreadStopMe
 
 ## Thread handles
 
-A thread is one conversation with an address, its key. [Threads](/docs/labs/agents/threads?ref=docs-labs-agents-reference)
+A thread is one conversation with an address, its key. [Threads](/docs/labs/agents/threads-and-memory?ref=docs-labs-agents-reference)
 
 ```typescript {{ title: "Signature" }}
 agent.thread(key: string, session?: string): ThreadHandle
@@ -321,7 +321,7 @@ Types: `ThreadHandle`, `ThreadOptions`, `ThreadState`, `ThreadStatus`, `ThreadRe
 
 ### List threads
 
-[Threads](/docs/labs/agents/threads?ref=docs-labs-agents-reference#list-threads)
+[Threads](/docs/labs/agents/threads-and-memory?ref=docs-labs-agents-reference#look-inside-a-thread)
 
 ```typescript {{ title: "Signature" }}
 agent.threads.list(options?: ThreadListOptions): Promise<ThreadHandle[]>
@@ -338,7 +338,7 @@ Experimental: the Insights query is unverified on Inngest Cloud, and the Dev Ser
 
 ## Triggers
 
-`on` takes the shapes the `triggers` of a function take. [Events and triggers](/docs/labs/agents/events-and-triggers?ref=docs-labs-agents-reference)
+`on` takes the shapes the `triggers` of a function take. [Events and triggers](/docs/labs/agents/agents-and-triggers?ref=docs-labs-agents-reference)
 
 | Trigger | Description |
 | --- | --- |
@@ -358,7 +358,7 @@ Types: `ThreadTrigger`, `ThreadTriggers`, `ThreadEventTrigger`, `ThreadCronTrigg
 
 ## Loop and helpers
 
-`agent` is an object of helpers. [Loop](/docs/labs/agents/loop?ref=docs-labs-agents-reference)
+`agent` is an object of helpers. [Loop](/docs/labs/agents/models-and-the-loop?ref=docs-labs-agents-reference)
 
 | Helper | Description |
 | --- | --- |
@@ -452,7 +452,7 @@ A model function runs inside a step, so a failure is retried. The loop stops at 
 
 ### agent.anthropic
 
-[Loop](/docs/labs/agents/loop?ref=docs-labs-agents-reference#use-anthropic)
+[Loop](/docs/labs/agents/models-and-the-loop?ref=docs-labs-agents-reference#choose-a-model)
 
 ```typescript {{ title: "Signature" }}
 agent.anthropic(options: AnthropicOptions): AgentModel
@@ -487,7 +487,7 @@ Types: `AnthropicOptions`; `AnthropicClient`, the part of an `@anthropic-ai/sdk`
 
 ### agent.invoke
 
-[Events and triggers](/docs/labs/agents/events-and-triggers?ref=docs-labs-agents-reference#call-another-agent)
+[Events and triggers](/docs/labs/agents/teams-of-agents?ref=docs-labs-agents-reference#hand-work-to-another-agent)
 
 ```typescript {{ title: "Signature" }}
 agent.invoke(target: AgentFunction, data, options?: AgentInvokeOptions): Promise<Output>
@@ -529,7 +529,7 @@ The same functions are exported by name: `classifyModelError`, `untrusted`. Type
 
 ### AgentLimits
 
-[Events and triggers](/docs/labs/agents/events-and-triggers?ref=docs-labs-agents-reference#limit-sub-agents)
+[Events and triggers](/docs/labs/agents/teams-of-agents?ref=docs-labs-agents-reference#limit-sub-agents)
 
 | Field | Default | Description |
 | --- | --- | --- |
@@ -547,7 +547,7 @@ Limits gate `agent.invoke()` only; a raw `step.invoke` or `sendEvent` bypasses t
 
 ### Compaction
 
-[Loop](/docs/labs/agents/loop?ref=docs-labs-agents-reference#keep-long-conversations-in-the-window)
+[Loop](/docs/labs/agents/models-and-the-loop?ref=docs-labs-agents-reference#keep-long-conversations-in-the-window)
 
 | Option | Default | Description |
 | --- | --- | --- |
@@ -559,7 +559,7 @@ Limits gate `agent.invoke()` only; a raw `step.invoke` or `sendEvent` bypasses t
 
 ### Pricing
 
-[Loop](/docs/labs/agents/loop?ref=docs-labs-agents-reference#price-and-budget)
+[Loop](/docs/labs/agents/reliability?ref=docs-labs-agents-reference#limit-turns-and-spend)
 
 ```typescript {{ title: "Signature" }}
 type AgentPriceFunction = (usage: AgentUsage, model: string | undefined) => number
@@ -581,7 +581,7 @@ type AgentPrice = AgentPriceFunction | AgentPriceTable
 
 ### Recovery
 
-[Threads](/docs/labs/agents/threads?ref=docs-labs-agents-reference)
+[Threads](/docs/labs/agents/threads-and-memory?ref=docs-labs-agents-reference)
 
 `recovery: true` or an object posts a failure to the agent's channels and resends the turn that was in flight to a fresh run.
 
@@ -610,7 +610,7 @@ A cancelled run (stop now, `cancelOn`, `timeouts.finish`) is neither reported no
 
 ## Subscribe types
 
-`step.subscribe()` is a core step tool; the inbox is a subscription. [Subscribe](/docs/labs/agents/subscribe?ref=docs-labs-agents-reference)
+`step.subscribe()` is a core step tool; the inbox is a subscription. [Subscribe](/docs/labs/agents/inboxes?ref=docs-labs-agents-reference)
 
 | Type | Description |
 | --- | --- |
@@ -628,7 +628,7 @@ Do not race `next()` against a timer with `Promise.race`; race a step against `n
 
 ## Inbox tools
 
-Lets a model start listeners and wait for events. [Subscribe](/docs/labs/agents/subscribe?ref=docs-labs-agents-reference#let-a-model-listen)
+Lets a model start listeners and wait for events. [Subscribe](/docs/labs/agents/tools?ref=docs-labs-agents-reference#let-the-model-listen-for-events)
 
 ```typescript {{ title: "Signature" }}
 createInboxTools(inbox: InboxToolInbox, config: InboxToolsConfig): Record<InboxToolName, SandboxTool>
@@ -661,7 +661,7 @@ Messages come back marked with `agent.untrusted()`. Types: `InboxToolsConfig`, `
 
 ## KV
 
-A scoped store. Inside a function every call is a memoized step; outside one it goes straight to the store. [KV](/docs/labs/agents/kv?ref=docs-labs-agents-reference)
+A scoped store. Inside a function every call is a memoized step; outside one it goes straight to the store. [KV](/docs/labs/agents/threads-and-memory?ref=docs-labs-agents-reference)
 
 | Export | Description |
 | --- | --- |
@@ -728,7 +728,7 @@ Types: `Kv`, `KvAdapter`, `KvStore`, `KvScope`, `KvScopeInstance`, `KvSource`, `
 
 ## Channels
 
-Destinations for progress and asks. [Channels](/docs/labs/agents/channels?ref=docs-labs-agents-reference)
+Destinations for progress and asks. [Channels](/docs/labs/agents/reporting?ref=docs-labs-agents-reference)
 
 ### defineChannel
 
@@ -773,7 +773,7 @@ Other exports: `ChannelStreamEnded` (throw it from `append` when the stream is o
 
 ### Reporter
 
-`report` in the body. Every write is a step. [Channels](/docs/labs/agents/channels?ref=docs-labs-agents-reference#report-to-several-places)
+`report` in the body. Every write is a step. [Channels](/docs/labs/agents/reporting?ref=docs-labs-agents-reference#report-to-several-places)
 
 | Call | Description |
 | --- | --- |
@@ -787,7 +787,7 @@ Other exports: `ChannelStreamEnded` (throw it from `append` when the stream is o
 
 ## Slack and GitHub
 
-[Channels](/docs/labs/agents/channels?ref=docs-labs-agents-reference#start-from-a-message)
+[Channels](/docs/labs/agents/reporting?ref=docs-labs-agents-reference#reply-in-the-thread)
 
 ### slack
 
@@ -824,7 +824,7 @@ Other exports: `ChannelStreamEnded` (throw it from `append` when the stream is o
 
 ## Scores
 
-[Scores](/docs/labs/agents/scores?ref=docs-labs-agents-reference)
+[Scores](/docs/labs/agents/observability?ref=docs-labs-agents-reference)
 
 ```typescript {{ title: "Signature" }}
 scores.score(name: string, value: number | boolean): Promise<void>

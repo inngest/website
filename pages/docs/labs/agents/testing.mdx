@@ -187,23 +187,23 @@ test("answers in the Slack thread", async () => {
 });
 ```
 
-<Annotation id="fakes" lines="12" tease="closed by await using" title="startFakes" href="/docs/labs/agents/channels?ref=docs-labs-agents-testing" linkText="Channels">
+<Annotation id="fakes" lines="12" tease="closed by await using" title="startFakes" href="/docs/labs/agents/reporting?ref=docs-labs-agents-testing" linkText="Channels">
 A local server that plays Slack and GitHub and keeps every call.
 </Annotation>
 
-<Annotation id="script" lines="15-18" tease="turn 1 calls, turn 2 says" title="script" href="/docs/labs/agents/loop?ref=docs-labs-agents-testing" linkText="Loop">
+<Annotation id="script" lines="15-18" tease="turn 1 calls, turn 2 says" title="script" href="/docs/labs/agents/models-and-the-loop?ref=docs-labs-agents-testing" linkText="Loop">
 A model that needs no key. Steps answer by turn.
 </Annotation>
 
-<Annotation id="api" lines="19" tease="Slack goes to the fake" title="Fake URL" href="/docs/labs/agents/channels?ref=docs-labs-agents-testing#start-from-a-message" linkText="Channels">
+<Annotation id="api" lines="19" tease="Slack goes to the fake" title="Fake URL" href="/docs/labs/agents/reporting?ref=docs-labs-agents-testing#reply-in-the-thread" linkText="Channels">
 Point the channel at `fakes.url`: Slack at `/slack/api`, GitHub at `/github`.
 </Annotation>
 
-<Annotation id="poll" lines="37-41" tease="wait for the post" title="Assert" href="/docs/labs/agents/channels?ref=docs-labs-agents-testing" linkText="Channels">
+<Annotation id="poll" lines="37-41" tease="wait for the post" title="Assert" href="/docs/labs/agents/reporting?ref=docs-labs-agents-testing" linkText="Channels">
 `posts` filters by `channel`, `method` and `thread`, oldest first.
 </Annotation>
 
-<Annotation id="keys" lines="47-49" tease="only the keys you set" title="withKeys" href="/docs/labs/agents/kv?ref=docs-labs-agents-testing" linkText="KV">
+<Annotation id="keys" lines="47-49" tease="only the keys you set" title="withKeys" href="/docs/labs/agents/threads-and-memory?ref=docs-labs-agents-testing" linkText="KV">
 `state()` returns the thread's KV keys instead of the full state.
 </Annotation>
 
@@ -312,11 +312,11 @@ test("the agent runs the canned command in a fake sandbox", async () => {
 Every operation is recorded as `sandbox.create`, `exec`, `upload` or `destroy`.
 </Annotation>
 
-<Annotation id="commands" lines="11-14" tease="first match wins" title="commands" href="/docs/labs/agents/sandboxes?ref=docs-labs-agents-testing" linkText="Sandboxes">
+<Annotation id="commands" lines="11-14" tease="first match wins" title="commands" href="/docs/labs/agents/sandboxes-and-code?ref=docs-labs-agents-testing" linkText="Sandboxes">
 Commands are matched by the text they contain. One that matches nothing fails with exit code 127, so a typo never passes. `""` matches the rest.
 </Annotation>
 
-<Annotation id="fetch" lines="17" tease="pass to the client" title="fetch" href="/docs/labs/agents/sandboxes?ref=docs-labs-agents-testing" linkText="Sandboxes">
+<Annotation id="fetch" lines="17" tease="pass to the client" title="fetch" href="/docs/labs/agents/sandboxes-and-code?ref=docs-labs-agents-testing" linkText="Sandboxes">
 Requests for anything but the Sandboxes API go to the real `fetch`.
 </Annotation>
 

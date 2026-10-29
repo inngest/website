@@ -1,19 +1,21 @@
 import { AnnotatedCode, Annotation } from "shared/Docs/mdx";
 
 export const metaTitle = "Quick start | Inngest Agents";
-export const description = "Inngest Agents quick start: create the client, a tool and an agent, serve them, and send the first message.";
+export const description = "Inngest Agents quick start: create the client, a model, a tool and an agent, serve them, send the first message and see the run.";
 
 # Quick start
 
 > A few small files, then a conversation that survives restarts.
 
-- **Needs.** Node.js 20+, a recent `inngest`, Zod 4, a Redis URL in `INNGEST_EXPERIMENTAL_KV_URL`, and an `ANTHROPIC_API_KEY`. [Project structure →](/docs/labs/agents/structure?ref=docs-labs-agents-quick-start)
+Prefer to learn by running code? The [Agents Tour](/docs/labs/agents?ref=docs-labs-agents-quick-start#where-to-start) runs each lesson against a real Dev Server with nothing to set up first.
+
+## Install
+
+You need Node.js 20+, a recent `inngest`, Zod 4, a Redis URL in `INNGEST_EXPERIMENTAL_KV_URL`, and an `ANTHROPIC_API_KEY`.
 
 ```bash
 npm install inngest zod @anthropic-ai/sdk
 ```
-
-## 1. Create the client
 
 ```typescript {{ title: "inngest/client.ts" }}
 import { Inngest } from "inngest";
@@ -23,7 +25,19 @@ export const inngest = new Inngest({ id: "support" });
 export const agents = createAgents(inngest);
 ```
 
-## 2. Write a tool
+## Make a model
+
+```typescript {{ title: "inngest/models/claude.ts" }}
+import { agent } from "inngest/experimental/agents";
+
+export const claude = agent.anthropic({ model: "claude-sonnet-5-5" });
+```
+
+It reads `ANTHROPIC_API_KEY`. For another provider, [`agent.model()`](/docs/labs/agents/models-and-the-loop?ref=docs-labs-agents-quick-start#choose-a-model) wraps its SDK.
+
+## Write the agent
+
+A tool the model can call, then the agent that uses it.
 
 ```typescript {{ title: "inngest/tools/lookupOrder.ts" }}
 import { tool } from "inngest/experimental";
@@ -37,20 +51,6 @@ export const lookupOrder = tool.step({
   },
 });
 ```
-
-[Tools →](/docs/labs/agents/tools?ref=docs-labs-agents-quick-start)
-
-## 3. Pick a model
-
-```typescript {{ title: "inngest/models/claude.ts" }}
-import { agent } from "inngest/experimental/agents";
-
-export const claude = agent.anthropic({ model: "claude-sonnet-5-5" });
-```
-
-It reads `ANTHROPIC_API_KEY`. For another provider, [`agent.model()`](/docs/labs/agents/loop?ref=docs-labs-agents-quick-start#make-a-model) wraps its SDK.
-
-## 4. Write the agent
 
 <AnnotatedCode>
 
@@ -75,21 +75,21 @@ export const support = agents.agent(
 );
 ```
 
-<Annotation id="inbox" lines="9" tease="durable messages" title="The inbox" href="/docs/labs/agents/threads?ref=docs-labs-agents-quick-start#read-the-inbox" linkText="Threads">
+<Annotation id="inbox" lines="9" tease="durable messages" title="The inbox" href="/docs/labs/agents/inboxes?ref=docs-labs-agents-quick-start" linkText="Inboxes">
 Waits for each message at no cost while idle.
 </Annotation>
 
-<Annotation id="loop" lines="10" tease="model and tools" title="The loop" href="/docs/labs/agents/loop?ref=docs-labs-agents-quick-start" linkText="Loop">
+<Annotation id="loop" lines="10" tease="model and tools" title="The loop" href="/docs/labs/agents/models-and-the-loop?ref=docs-labs-agents-quick-start" linkText="Models and the loop">
 Every model call and tool call is a step.
 </Annotation>
 
-<Annotation id="control" lines="14" tease="steer and stop" title="Control" href="/docs/labs/agents/threads?ref=docs-labs-agents-quick-start#steer-a-running-turn" linkText="Steer">
+<Annotation id="control" lines="14" tease="steer and stop" title="Control" href="/docs/labs/agents/inboxes?ref=docs-labs-agents-quick-start#steer-a-running-turn" linkText="Steer">
 Lets new messages and stops reach the running turn.
 </Annotation>
 
 </AnnotatedCode>
 
-## 5. Serve it
+## Serve it
 
 ```typescript {{ title: "inngest/serve.ts" }}
 import { createServer } from "inngest/node";
@@ -102,7 +102,9 @@ createServer({
 }).listen(3000);
 ```
 
-## 6. Send a message
+`agents.functions()` returns every agent defined so far, so import agent files before calling it. Agents that use [sandboxes](/docs/labs/agents/sandboxes-and-code?ref=docs-labs-agents-quick-start) need `sandboxMiddleware()` on the client.
+
+## Send a message
 
 ```typescript {{ title: "send.ts" }}
 import { support } from "./inngest/agents/support";
@@ -110,12 +112,10 @@ import { support } from "./inngest/agents/support";
 await support.thread("customer-42").send("Where is order 7?");
 ```
 
-The first message starts a run. Later messages to `customer-42` reach the same thread.
+The first message starts a run. Later messages to `customer-42` reach the same thread, and its [memory](/docs/labs/agents/threads-and-memory?ref=docs-labs-agents-quick-start) lives in Redis.
 
-## How it works
+## See the run
 
-- `agents.functions()` returns every agent defined so far, so import agent files before calling it.
-- Thread state and [KV](/docs/labs/agents/kv?ref=docs-labs-agents-quick-start) live in Redis.
-- Agents that use [sandboxes](/docs/labs/agents/sandboxes?ref=docs-labs-agents-quick-start) need `sandboxMiddleware()` on the client.
+Open the run in the Dev Server to see each model call and tool call as a step. Agents use `step.subscribe`, which the published Inngest CLI does not have yet, so use the Dev Server the [Agents Tour](/docs/labs/agents?ref=docs-labs-agents-quick-start#where-to-start) builds with `pnpm tour:devserver`.
 
-[Threads →](/docs/labs/agents/threads?ref=docs-labs-agents-quick-start) · [Reference →](/docs/labs/agents/reference?ref=docs-labs-agents-quick-start)
+Next, read the ten [concepts](/docs/labs/agents?ref=docs-labs-agents-quick-start#concepts) in order, or the [Reference](/docs/labs/agents/reference?ref=docs-labs-agents-quick-start).

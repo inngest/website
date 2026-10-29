@@ -639,6 +639,17 @@ export const permanentRedirects = [
 
   // Inngest CI caching folded into one Base images & caching page.
   ["/docs/labs/ci/caching", "/docs/labs/ci/base-images"],
+
+  // Inngest Agents docs reorganised into concept pages.
+  ["/docs/labs/agents/events-and-triggers", "/docs/labs/agents/agents-and-triggers"],
+  ["/docs/labs/agents/loop", "/docs/labs/agents/models-and-the-loop"],
+  ["/docs/labs/agents/threads", "/docs/labs/agents/threads-and-memory"],
+  ["/docs/labs/agents/kv", "/docs/labs/agents/threads-and-memory"],
+  ["/docs/labs/agents/channels", "/docs/labs/agents/reporting"],
+  ["/docs/labs/agents/sandboxes", "/docs/labs/agents/sandboxes-and-code"],
+  ["/docs/labs/agents/subscribe", "/docs/labs/agents/inboxes"],
+  ["/docs/labs/agents/scores", "/docs/labs/agents/observability"],
+  ["/docs/labs/agents/testing", "/docs/labs/agents/recipes/testing"],
 ];
 
 const redirectMap = new Map(permanentRedirects);

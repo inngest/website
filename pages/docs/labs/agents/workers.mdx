@@ -206,7 +206,7 @@ Code outside `serve` that sends messages, such as an API route, calls `useEnv(en
 
 - The store, `kv` and token getters are called at each use, never at import.
 - The middleware runs on every request the client serves, so the agent's other functions have `env` too.
-- `d1KvAdapter` needs its tables first. See [Choose a store](/docs/labs/agents/kv?ref=docs-labs-agents-workers#choose-a-store).
+- `d1KvAdapter` needs its tables first. See [Choose a store](/docs/labs/agents/threads-and-memory?ref=docs-labs-agents-workers#options).
 - Use `transport: "api"` for pushes, since Workers have no `git`. See [Push from your own code](/docs/labs/agents/repos-and-git?ref=docs-labs-agents-workers#push-from-your-own-code).
 
 [Reference →](/docs/labs/agents/reference?ref=docs-labs-agents-workers)

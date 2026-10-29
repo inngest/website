@@ -1,18 +1,41 @@
 import { AnnotatedCode, Annotation } from "shared/Docs/mdx";
 
 export const metaTitle = "Tools | Inngest Agents";
-export const description = "Inngest Agents tools: functions the model calls, run in your app as durable steps with your credentials, with typed input, step groups, error results and inbox tools.";
+export const description = "Inngest Agents tools: functions the model calls, run in your app as durable steps with your credentials, with typed input and output, step groups, readable errors and waiting for people.";
 
 # Tools
 
 > Give the model functions that run in your app, as durable steps.
 
-- **Typed from your schema.** Bad input never runs. [Define a tool →](#define-a-tool)
-- **Many steps in one tool.** Invoke, send events, wait. [Tool groups →](#run-several-steps)
-- **Readable errors.** Return one, or throw. [Return an error →](#return-an-error-the-model-can-read)
-- **Listen for events.** Wait on a pull request. [Inbox tools →](#let-the-model-listen-for-events)
+A tool is a function the model can call. It runs in your app with your credentials, and a retry never repeats a finished call.
 
 <AnnotatedCode>
+
+```typescript {{ title: "inngest/tools/getOrder.ts" }}
+import { tool } from "inngest/experimental";
+import { z } from "zod";
+import { db } from "../db";
+
+export const getOrder = tool.step({
+  description: "Find an order by ID",
+  input: z.object({ id: z.string() }),
+  run: async ({ id }) => {
+    return db.orders.find(id);
+  },
+});
+```
+
+<Annotation id="input" lines="7" tease="bad input never runs" title="Input schema" href="#check-input-and-output" linkText="Check input and output">
+The model gets an error for bad input, and no step starts.
+</Annotation>
+
+<Annotation id="run" lines="8-10" tease="one durable step" title="The body" href="#run-several-steps" linkText="Run several steps">
+Your code, with your database and keys. Its result goes back to the model.
+</Annotation>
+
+</AnnotatedCode>
+
+Pass tools to a loop by name. The key is the name the model calls.
 
 ```typescript {{ title: "inngest/agents/billing.ts" }}
 import { agent } from "inngest/experimental/agents";
@@ -30,44 +53,11 @@ export const billing = agents.agent(
         model: claude,
         prompt: message.content ?? "",
         tools: { getCustomer, getOrder, refund },
-        onToolResult: (run) => {
-          if (!run.isError && run.name === "getCustomer") {
-            console.log(run.output.plan);
-          }
-        },
         ...control,
       });
     }
   },
 );
-```
-
-<Annotation id="tools" lines="15" tease="the key is the name" title="Tools by name" href="#pass-tools-to-a-loop" linkText="Pass tools">
-The model calls each tool by its key.
-</Annotation>
-
-<Annotation id="narrow" lines="16-20" tease="typed by name" title="Typed results" href="/docs/labs/agents/loop?ref=docs-labs-agents-tools" linkText="Loop">
-Checking `name` types `output`.
-</Annotation>
-
-</AnnotatedCode>
-
-## Define a tool
-
-`tool.step()` runs its body as one durable step. A retry never repeats a finished call.
-
-```typescript {{ title: "inngest/tools/getOrder.ts" }}
-import { tool } from "inngest/experimental";
-import { z } from "zod";
-import { db } from "../db";
-
-export const getOrder = tool.step({
-  description: "Find an order by ID",
-  input: z.object({ id: z.string() }),
-  run: async ({ id }) => {
-    return db.orders.find(id);
-  },
-});
 ```
 
 ## Check input and output
@@ -99,19 +89,19 @@ export const getCustomer = tool({
 });
 ```
 
-<Annotation id="input" lines="7" tease="bad input never runs" title="Input schema" href="#give-the-model-json-schema" linkText="JSON Schema">
-Bad input gets an error back and no step starts.
+<Annotation id="in" lines="7" tease="checked going in" title="Input" href="#options" linkText="Options">
+Also takes a JSON Schema object.
 </Annotation>
 
-<Annotation id="output" lines="8" tease="checked on the way out" title="Output schema" href="/docs/labs/agents/loop?ref=docs-labs-agents-tools" linkText="Loop">
+<Annotation id="out" lines="8" tease="checked on the way out" title="Output schema" href="#gotchas" linkText="Gotchas">
 A result that does not match fails the step.
 </Annotation>
 
-<Annotation id="display" lines="9-11" tease="named in the trace" title="Display name" href="/docs/labs/agents/loop?ref=docs-labs-agents-tools" linkText="Loop">
+<Annotation id="display" lines="9-11" tease="named in the trace" title="Display name" href="/docs/labs/agents/observability?ref=docs-labs-agents-tools" linkText="Observability">
 A string, or a function of the call's input.
 </Annotation>
 
-<Annotation id="key" lines="12" tease="same on every retry" title="Idempotency key" href="/docs/labs/agents/loop?ref=docs-labs-agents-tools" linkText="Loop">
+<Annotation id="key" lines="12" tease="same on every retry" title="Idempotency key" href="#how-it-works" linkText="How it works">
 For APIs that deduplicate writes.
 </Annotation>
 
@@ -154,25 +144,23 @@ export const refund = tool.group({
 });
 ```
 
-<Annotation id="group" lines="7" tease="steps inside a tool" title="Tool group" href="/docs/labs/agents/loop?ref=docs-labs-agents-tools" linkText="Loop">
-Any step tool works.
+<Annotation id="group" lines="7" tease="steps inside a tool" title="Tool group" href="#how-it-works" linkText="How it works">
+Any step tool works inside it.
 </Annotation>
 
-<Annotation id="error" lines="14" tease="model sees an error result" title="Return an error" href="#return-an-error-the-model-can-read" linkText="Errors">
+<Annotation id="error" lines="14" tease="model sees an error" title="Return an error" href="#return-an-error-the-model-can-read" linkText="Errors">
 Without throwing.
 </Annotation>
 
-<Annotation id="scoped" lines="17-19" tease="scoped to this call" title="Step IDs" href="/docs/labs/agents/loop?ref=docs-labs-agents-tools" linkText="Loop">
-Prefixed per call.
+<Annotation id="scoped" lines="17-19" tease="scoped to this call" title="Step IDs" href="#how-it-works" linkText="How it works">
+Prefixed per call, so two calls never collide.
 </Annotation>
 
 </AnnotatedCode>
 
-`tool({ id, group: true, ... })` is the same group with an `id`.
-
 ## Return an error the model can read
 
-`agent.toolError(body)` gives the model `body` as an error, and works beside an `output` schema: the error is not checked against it. A throw does the same with its message.
+`agent.toolError(body)` gives the model `body` as an error and works beside an `output` schema. A throw does the same with its message.
 
 ```typescript {{ title: "inngest/tools/getTicket.ts" }}
 import { tool } from "inngest/experimental";
@@ -191,27 +179,58 @@ export const getTicket = tool.step({
 });
 ```
 
-## Pass tools to a loop
+## Wait for a person
 
-`agent.loop()` takes tools by name. `agentTools()` names a list by their `id`s and fails on two with one name.
+A group tool can wait for days. The agent is not running while it waits.
 
-```typescript {{ title: "inngest/agents/triage.ts" }}
-import { agent, agentTools } from "inngest/experimental/agents";
+```typescript {{ title: "inngest/tools/waitForApproval.ts" }}
+import { step } from "inngest";
+import { tool } from "inngest/experimental";
+import { z } from "zod";
+
+export const waitForApproval = tool.group({
+  description: "Wait for a person to approve",
+  input: z.object({ request: z.string() }),
+  run: async ({ request }) => {
+    const approval = await step.waitForEvent("approval", {
+      event: "approval/decided",
+      timeout: "7d",
+      if: `async.data.request == "${request}"`,
+    });
+
+    return approval?.data ?? null;
+  },
+});
+```
+
+To ask in Slack first, see [Reporting](/docs/labs/agents/reporting?ref=docs-labs-agents-tools#ask-a-person). Add `waits: true` when a [sandbox script](/docs/labs/agents/sandboxes-and-code?ref=docs-labs-agents-tools#let-code-call-your-tools) calls it.
+
+## Let the model listen for events
+
+Set `inboxTools` and the model can start listeners, wait on them and read what arrives. It hears only the events you list.
+
+```typescript {{ title: "inngest/agents/releaseWatcher.ts" }}
+import { agent } from "inngest/experimental/agents";
 import { agents } from "../client";
 import { claude } from "../models/claude";
-import { getCustomer } from "../tools/getCustomer";
-import { listIssues } from "../tools/listIssues";
 
-const tools = agentTools([getCustomer, listIssues]);
-
-export const triage = agents.agent(
-  { id: "triage" },
-  async ({ inbox, control }) => {
+export const releaseWatcher = agents.agent(
+  {
+    id: "release-watcher",
+    inboxTools: {
+      listen: [
+        { event: "github/check_run", thread: "event.data.thread", maxPerRun: 2 },
+      ],
+      maxListeners: 3,
+      maxWait: "20m",
+    },
+  },
+  async ({ inbox, inboxTools, control }) => {
     for await (const message of inbox) {
       await agent.loop({
         model: claude,
         prompt: message.content ?? "",
-        tools,
+        tools: { ...inboxTools },
         ...control,
       });
     }
@@ -219,11 +238,17 @@ export const triage = agents.agent(
 );
 ```
 
-Spread in [`sandboxTools`](/docs/labs/agents/sandboxes?ref=docs-labs-agents-tools) too.
+The four tools are `inbox_listen`, `inbox_wait`, `inbox_read` and `inbox_stop`.
 
-## Give the model JSON Schema
+## When to use what
 
-`input` also takes a JSON Schema object, for a schema you already hold as JSON. `run` gets the arguments unchecked.
+- One call, one durable step: `tool.step()`.
+- Several steps, events or waits in one tool: `tool.group()`.
+- A checked result, a stable `id` or a display name: `tool()`.
+- Tell the model it went wrong: `agent.toolError()`.
+- Let the model write a script that calls tools: [Sandboxes and code](/docs/labs/agents/sandboxes-and-code?ref=docs-labs-agents-tools).
+
+## Options
 
 ```typescript {{ title: "inngest/tools/lookupSchema.ts" }}
 import { tool } from "inngest/experimental";
@@ -241,94 +266,20 @@ export const lookup = tool.step({
 });
 ```
 
-## Call your own model
+`input` also takes a JSON Schema object. `run` then gets its arguments unchecked. `agentTools([a, b])` names a list by their `id`s. `toolDefinitions()` gives the provider shape for a call outside the loop.
 
-`toolDefinitions()` gives the shape for a provider call outside the loop. It needs Zod 4 or Standard JSON Schema.
+## Gotchas
 
-```typescript {{ title: "inngest/agents/definitions.ts" }}
-import { toolDefinitions } from "inngest/experimental";
-import { getOrder } from "../tools/getOrder";
-
-export const definitions = toolDefinitions({ getOrder });
-```
-
-```json {{ title: "definitions" }}
-[
-  {
-    "name": "getOrder",
-    "description": "Find an order by ID",
-    "input_schema": {
-      "$schema": "https://json-schema.org/draft/2020-12/schema",
-      "type": "object",
-      "properties": { "id": { "type": "string" } },
-      "required": ["id"]
-    }
-  }
-]
-```
-
-## Let the model listen for events
-
-Set `inboxTools` on an agent and the model can start listeners, wait on them and read what arrives. It only hears the sources you list.
-
-<AnnotatedCode>
-
-```typescript {{ title: "inngest/agents/releaseWatcher.ts" }}
-import { agent } from "inngest/experimental/agents";
-import { agents } from "../client";
-import { claude } from "../models/claude";
-
-export const releaseWatcher = agents.agent(
-  {
-    id: "release-watcher",
-    inboxTools: {
-      listen: [
-        {
-          event: "github/check_run",
-          thread: "event.data.thread",
-          if: "event.data.conclusion != 'neutral'",
-          maxPerRun: 2,
-        },
-      ],
-      maxListeners: 3,
-      maxWait: "20m",
-      maxTotalWait: "1h",
-    },
-  },
-  async ({ inbox, inboxTools, control }) => {
-    for await (const message of inbox) {
-      await agent.loop({
-        model: claude,
-        prompt: message.content ?? "",
-        tools: { ...inboxTools },
-        ...control,
-      });
-    }
-  },
-);
-```
-
-<Annotation id="source" lines="10-15" tease="the model hears only this" title="A source" href="/docs/labs/agents/subscribe?ref=docs-labs-agents-tools" linkText="Subscribe">
-The model can only narrow `if`.
-</Annotation>
-
-<Annotation id="limits" lines="17-19" tease="caps on listening" title="Limits" href="/docs/labs/agents/subscribe?ref=docs-labs-agents-tools" linkText="Subscribe">
-Listeners and waiting time.
-</Annotation>
-
-<Annotation id="spread" lines="27" tease="four tools" title="Inbox tools" href="/docs/labs/agents/threads?ref=docs-labs-agents-tools" linkText="Threads">
-`inbox_listen`, `inbox_wait`, `inbox_read` and `inbox_stop`.
-</Annotation>
-
-</AnnotatedCode>
-
-`createInboxTools(inbox, config)` builds the same tools for any inbox with `listen` and `of`.
+- Arguments are checked against `input` before a step starts, so a tool never sees bad input.
+- A result over `maxToolOutput` (100,000 characters by default) keeps its start and end.
+- Calls in one model reply run together. `parallelTools: false` runs them in order.
 
 ## How it works
 
-- Each call is one durable step. A group is a set of steps under the call's ID.
-- Arguments are checked against `input` before a step starts.
-- Calls in one reply run together. `parallelTools: false` runs them in order.
-- A result over `maxToolOutput` (100,000 characters by default) keeps its start and end.
+- Each call is one durable step; a group is a set of steps under the call's ID.
+- The idempotency key is the same on every retry of a call.
+- `agent.toolError()` results are not checked against `output`.
 
-[Reference →](/docs/labs/agents/reference-sandboxes?ref=docs-labs-agents-tools#tools)
+## Recipes and reference
+
+[Approvals](/docs/labs/agents/recipes/approvals), [Sandbox tools](/docs/labs/agents/recipes/sandbox-tools), [Tools reference](/docs/labs/agents/reference-sandboxes?ref=docs-labs-agents-tools#tools).

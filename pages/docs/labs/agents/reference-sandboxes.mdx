@@ -33,7 +33,7 @@ Exports from `inngest/experimental/agents` unless the heading says `inngest/expe
 
 ## sandbox()
 
-Defines a sandbox for agents at module scope. Nothing exists until an agent uses it. [Sandboxes](/docs/labs/agents/sandboxes?ref=docs-labs-agents-reference-sandboxes)
+Defines a sandbox for agents at module scope. Nothing exists until an agent uses it. [Sandboxes](/docs/labs/agents/sandboxes-and-code?ref=docs-labs-agents-reference-sandboxes)
 
 ```typescript {{ title: "Signature" }}
 sandbox<TTool>(options: SandboxDefinitionOptions<TTool>): SandboxDefinition<TTool>
@@ -94,7 +94,7 @@ Types: `SandboxDefinition`, `SandboxDefinitionOptions`, `SandboxSetup`, `Sandbox
 
 ## Sandbox bindings
 
-An agent's `sandboxes` maps names to a definition or a binding. [Sandboxes](/docs/labs/agents/sandboxes?ref=docs-labs-agents-reference-sandboxes)
+An agent's `sandboxes` maps names to a definition or a binding. [Sandboxes](/docs/labs/agents/sandboxes-and-code?ref=docs-labs-agents-reference-sandboxes)
 
 | `SandboxBinding` field | Default | Description |
 | --- | --- | --- |
@@ -199,7 +199,7 @@ export const lookupOrder = tool({
 
 ## Code tools
 
-`sandbox.tools.code(options?)` gives a model `read`, `write`, `edit`, `search`, `run`, and optionally `run_code`. Each call is one command step. [Sandboxes](/docs/labs/agents/sandboxes?ref=docs-labs-agents-reference-sandboxes)
+`sandbox.tools.code(options?)` gives a model `read`, `write`, `edit`, `search`, `run`, and optionally `run_code`. Each call is one command step. [Sandboxes](/docs/labs/agents/sandboxes-and-code?ref=docs-labs-agents-reference-sandboxes)
 
 | Option | Default | Description |
 | --- | --- | --- |
@@ -312,7 +312,7 @@ Types: `SandboxDollar`, `DollarOptions`, `DollarPromise`, `DollarTag`, `DollarVa
 
 ## Shell sessions
 
-`sandbox.shell(options?)` returns a `SandboxShell` whose commands share a working directory and exported environment, like one terminal. [Sandboxes](/docs/labs/agents/sandboxes?ref=docs-labs-agents-reference-sandboxes#share-a-shell)
+`sandbox.shell(options?)` returns a `SandboxShell` whose commands share a working directory and exported environment, like one terminal. [Sandboxes](/docs/labs/agents/sandboxes-and-code?ref=docs-labs-agents-reference-sandboxes#share-a-shell)
 
 | `SandboxShellOptions` | Default | Description |
 | --- | --- | --- |
@@ -499,7 +499,7 @@ Errors: `GithubAppError` (`status`), and `GithubAppNotInstalledError` (a 404; th
 
 ## Skills
 
-Git sources of skills for a sandbox. [Sandboxes](/docs/labs/agents/sandboxes?ref=docs-labs-agents-reference-sandboxes)
+Git sources of skills for a sandbox. [Sandboxes](/docs/labs/agents/sandboxes-and-code?ref=docs-labs-agents-reference-sandboxes)
 
 ```typescript {{ title: "Signature" }}
 skills.git(repo: string, options?: SkillsGitOptions): SkillsSource
