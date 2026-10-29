@@ -82,8 +82,8 @@ Flow control encompasses various aspects such as concurrency control, rate limit
 
 * You need multiple queues for transcription, summarization, and upload. Since these have to run in series, you must manage the state between them.
 * You have to trigger the initial transcription with one event. Then, the next two are triggered by the previous steps in the process.
-* You have to control for concurrency to manage the amount of videos being processed by a single user at once.
-* You want to have some level of prioritization so you can control which users' workflows run first.
+* You have to [control for concurrency](/blog/long-running-jobs-shouldnt-be-first-come-first-served?ref=blog-queues-are-no-longer-the-right-abstraction) to manage the amount of videos being processed by a single user at once.
+* You want to have some level of [prioritization](/blog/long-running-jobs-shouldnt-be-first-come-first-served?ref=blog-queues-are-no-longer-the-right-abstraction) so you can control which users' workflows run first.
 * You must implement retry logic in case any step fails, back-off logic if any API is rate-limited, debouncing to stop multiple calls, and observability to ensure you can understand what happens within the operations.
 
 Implementing this at the queue level is a serious effort. Will you encapsulate all this inside a single function or break it into different tasks for specific queues? Are you going to save the state in the database for every step? Or YOLO it and just create a call chain?

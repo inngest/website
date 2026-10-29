@@ -1,0 +1,101 @@
+---
+tags:
+  [
+    "Queues & Flow Control",
+    "Engineering",
+    "Company & Product News",
+    "Background Jobs & Scheduling",
+    "Durable Execution",
+  ]
+heading: "Attack of the Shards: Our Migration to FoundationDB, Part 2"
+subtitle: "How the new queue lays out work, routes each enqueue to the right shard, moves accounts, and keeps one busy account from crowding out everyone else."
+showSubtitle: true
+image: /assets/blog/migration-to-foundationdb-part-2/featured-image.jpg
+date: "2026-10-14T12:00:00.000Z"
+author:
+  - Dan Lambright
+  - Lakshmi Kasinathan
+category: engineering
+---
+
+About a month ago we (Dan, Lakshmi, and Bruno) shared that we're migrating Inngest's queue to [FoundationDB](https://apple.github.io/foundationdb/). And since we think this work is pretty interesting, we decided to share the journey as we go. [Part 1](/blog/migration-to-foundationdb-part-1?ref=blog-migration-to-foundationdb-part-2) explained how we decided on the move from [Valkey](https://valkey.io/) to FDB, and outlined next steps. Now that testing has begun, we wanted to pause to recap where we're up to. *This time it's just Dan and Lakshmi, since Bruno is on a much needed vacation.*
+
+We'll cover how work is laid out, how an enqueue finds the right place, how accounts move, and how we keep one busy account from crowding out everyone else. Part 3 will cover the rollout and what it's like to run FDB in production. Let's get into it.
+
+## Where work lives: Two levels, not three
+
+Let's talk design first. Because one important decision runs through this entire post: two levels, not three.
+
+Our first queue design mirrored the scheduling hierarchy directly—accounts sat at the top, functions beneath them, and tenant queues beneath each function. That three-level structure was easy to reason about, but every enqueue and dequeue had to keep all of those levels up to date, which meant a lot of database work per operation (An enqueue adds work to the queue whenever something is scheduled, like a function run, its next step, or the end of a sleep; a dequeue takes that work off the queue so an executor can run it).
+
+Our new design keeps two levels: function pointers at the top, and tenant queues beneath them where needed. A top-level index lists every function with pending work, ordered from the earliest due time to the latest. Each function pointer leads to that function's queued items, ordered by when they're due to run.
+
+![Each shard keeps one index of functions with pending work. Function pointers are ordered earliest due first, and lead to queued items or child queues.](/assets/blog/migration-to-foundationdb-part-2/shard-queue-layout.jpg)
+
+Scanners walk the top-level index. Function B's items share a concurrency constraint, so they're split into child queues by key.
+
+Tenant queues exist only where a function needs them. When items share a concurrency constraint, such as a per-user limit set with a [custom concurrency key](/docs/durable-execution/flow-control/concurrency?ref=blog-migration-to-foundationdb-part-2), they're grouped into a child queue under the function. That keeps one tenant's backlog from blocking another tenant inside the same function.
+
+Account-level fairness didn't disappear when we dropped the account level. It moved into how scanners select work, which we cover below.
+
+## Logical shards keep the index small
+
+Logical shards solve the wide-index problem by giving each group of accounts its own top-level index. Without them, every scanner would search one enormous range of function pointers. With them, a scanner only walks the pointers for the accounts in its shard.
+
+Each logical shard holds on the order of 20,000 accounts, a size that keeps FDB range scans short and fast. All queued work for an account lives on the shard it's assigned to.
+
+As [Part 1](/blog/migration-to-foundationdb-part-1?ref=blog-migration-to-foundationdb-part-2) described, each [billing tier](/pricing?ref=blog-migration-to-foundationdb-part-2) runs on its own FDB cluster, and each tier is configured with some number of shards. A new account lands on one of its tier's shards by a random choice seeded from its account ID, and an operator can move it later.
+
+## Routing an enqueue
+
+With work split across shards, every enqueue first needs to know where to go. A metadata service maps each account to its shard, and that mapping is cached in Redis. On each enqueue, the producer checks the cached mapping and writes the item to the shard it names.
+
+Routing keeps working when an account moves between shards. A migration first updates the account's shard assignment and clears its cached entry, so every new lookup returns the destination. Existing work moves separately, as the next section explains.
+
+There's one gap: a request that looked up the old shard just before the cache was cleared still sends its work there. If both shards are in the same FDB database, that's fine, because the work lands in storage both shards share and still belongs to the new shard. If the shards are in different databases, the work ends up in the old database, so the migration has to catch it.
+
+## Moving accounts between shards
+
+Routing handles new work; rebalancing handles the work already queued. Rebalancing is operator-driven today, with automatic, load-based rebalancing a likely next step. What a move involves depends on whether the source and destination shards share an FDB database.
+
+| Move | What happens | Speed | What keeps it correct |
+| --- | --- | --- | --- |
+| Between shards in the same FDB database | Ownership moves; queued items stay where they are. We update the pointer's shard assignment and the indexes scanners use to find it. | Fast | Lease and in-flight checks, then a lock on the source queue |
+| Between FDB databases | Work is copied. Each item is added to the destination before it's removed from the source. | Slower | Stable item IDs and duplicate handling, since the two databases can't share a transaction |
+
+Each billing tier lives on a single FDB cluster, so moving an account within its tier is the fast kind: no queued data is copied.
+
+A move waits until nothing is running. Before moving a pointer, the migration checks that no executor holds an active processing lease and that no items are in flight. If either check fails, it waits and retries. Once both pass, it locks the function's source queue so no new processing starts mid-move.
+
+Items keep their scheduled times through a move, so the destination orders them by the same due times. That preserves scheduling order. It doesn't guarantee that runs start or finish in a strict sequence.
+
+## Fairness without a single thread
+
+Once work is laid out, routed, and movable, the last question is who runs next. Valkey ran queue operations on a single thread, which limited how much of the queue we could peek at once. FDB lets many executors discover and lease work concurrently, with transactions and leases keeping them from claiming the same item. But if every executor grabbed the oldest work, an account with many functions would get far more attention than an account with one.
+
+We combine two scanning strategies to balance that out:
+
+- **Weighted scans** group eligible function pointers hierarchically, from account to environment to function to tenant or custom concurrency key, then choose candidates using configured weights. An account gets no extra attention just because it has more function pointers.
+- **Sequential scans** walk ready work in time order, revisiting the oldest eligible items so nothing starves while the weighted scanner spreads attention around.
+
+The result is probabilistic fairness, not a guarantee of equal waiting times. Scans still have page, time, and worker-capacity limits, and customer-defined constraints still affect when work runs.
+
+### What a dequeue looks like now
+
+Here's how an executor actually takes work. Every step that claims or removes work runs in an FDB transaction, so concurrent executors can't interfere with each other:
+
+1. An executor leases a function pointer.
+2. It reads that function's eligible items.
+3. For each item, it tries to acquire capacity, respecting account, function, and custom-key constraints, and then lease the item.
+4. Leased items run. Items blocked by a constraint stay queued for a later attempt.
+5. When an item finishes successfully, it's removed from the queue, and the queue's bookkeeping is updated so the pointer reflects the remaining work.
+
+## What it costs
+
+All of this comes at a price: the new queue requires a lot of attention during phased rollout with careful tuning to ensure low latency for all Inngest users.
+
+In exchange, we get the things Valkey couldn't give us. Backlogs live on disk instead of expensive RAM, so a huge backlog isn't a memory emergency anymore—we can add storage servers as demand grows. And we can move work between executor pools in the same database without copying every queued item.
+
+## What's next
+
+Part 3 will bring this baby home: what we learn through the remaining rollout, and probably what you care most about: how FDB performs against old Valkey benchmarks. Stay tuned!

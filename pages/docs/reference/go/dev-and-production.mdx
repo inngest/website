@@ -55,9 +55,9 @@ Before you deploy, set these environment variables, and make sure that `INNGEST_
 | Variable | Description |
 | --- | --- |
 | `INNGEST_SIGNING_KEY` | Verifies requests from Inngest and authenticates syncs. Find it in your environment's [signing key settings](https://app.inngest.com/env/production/manage/signing-key). |
-| `INNGEST_SIGNING_KEY_FALLBACK` | Optional. The previous signing key, so that requests keep working while you [rotate keys](/docs/platform-and-operations/signing-keys#rotation). |
+| `INNGEST_SIGNING_KEY_FALLBACK` | Optional. The previous signing key, so that requests keep working while you [rotate keys](/docs/platform-and-operations/rotate-event-and-signing-keys). |
 | `INNGEST_EVENT_KEY` | Sends events with `client.Send` and `step.Send`. Create one in your environment's [event keys](https://app.inngest.com/env/production/manage/keys). |
-| `INNGEST_ENV` | Optional. The [branch environment](/docs/platform-and-operations/environments#branch-environments) to use, for example in preview deploys. |
+| `INNGEST_ENV` | Optional. The [branch environment](/docs/platform-and-operations/environments-and-branch-deploys#use-branch-deploys-for-preview-deployments) to use, for example in preview deploys. |
 
 You can also set each value in `inngestgo.ClientOpts`, such as `SigningKey` and `EventKey`. A value set in code takes the place of its environment variable.
 

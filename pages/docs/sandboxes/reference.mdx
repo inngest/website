@@ -11,7 +11,7 @@ export const description = "Inngest Sandboxes API reference: the runners, handle
 
 - Use trusted server-side Node.js 20.5+ with the `inngest` v4 package.
 - `await using` needs `lib: ["esnext.disposable"]` in `tsconfig.json`.
-- Enable Sandboxes and set `INNGEST_SIGNING_KEY`. `403 access_denied` means not enabled.
+- Use an Inngest Cloud account on Pro or above and set `INNGEST_SIGNING_KEY`. `403 access_denied` means the plan does not include Sandboxes; [upgrade your plan](https://app.inngest.com/billing/plans).
 - Fresh Sandboxes start from `base` unless you set `from`. Sizes are `1 / 1024`, `2 / 2048`, `4 / 4096`. Clones inherit.
 
 ## Choose the TypeScript surface

@@ -7,7 +7,7 @@ export const description = "Inngest Sandboxes limits: supported Sandbox sizes an
 
 | Limit | Value | If you reach it |
 | --- | --- | --- |
-| Access | Cloud environment with Sandboxes enabled. | `403 access_denied`. Ask Inngest to enable it. |
+| Access | Inngest Cloud account on Pro or above. | `403 access_denied` means the plan does not include Sandboxes. [Upgrade your plan](https://app.inngest.com/billing/plans). |
 | Size | **1 vCPU / 1,024 MiB**, **2 / 2,048**, or **4 / 4,096**. Clones inherit. | Pick one pair. Capacity can still reject. |
 | Active name | 1-255 characters, unique per workspace. | Same config returns the Sandbox. Else `409 sandbox_name_taken`. |
 | Create readiness wait | **120 s** default. `runningTimeout` changes it. `false` skips it. | Timeout does not destroy the Sandbox. Get it and clean up. |

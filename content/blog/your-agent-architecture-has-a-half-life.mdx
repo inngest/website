@@ -197,7 +197,7 @@ But a sandbox is stateless, ephemeral, has no real persistence, no sequencing, n
 
 Using a sandbox for durability or state is an anti-pattern. Some teams run their entire harness inside the sandbox. Claude Code, OpenCode, and similar tools do this. It works for interactive CLI use where a human is watching. But for production agents running autonomously, it makes the sandbox provider your orchestration provider by accident. Your orchestration is now split across layers with mixed observability and durability. Good luck debugging a three-hour background agent run where state lived in a sandbox that's already been torn down.
 
-The two layers are complementary. Execution gives sandboxes context, sequence, and durability. Sandboxes give execution a place to run untrusted code. Conflating them is a costly mistake on the road to production.
+The two layers are complementary. Execution gives [sandboxes](/blog/sandboxes-are-a-durability-problem?ref=blog-your-agent-architecture-has-a-half-life) context, sequence, and durability. Sandboxes give execution a place to run untrusted code. Conflating them is a costly mistake on the road to production.
 
 That's the brain managing the hands.
 
@@ -221,7 +221,7 @@ This is where the execution layer thesis gets concrete.
 
 The most interesting agent architectures emerging right now aren't single-shot request/response flows. They're loops. Crons, scores, iteration. Three functions that work together: a scheduled monitor that watches for changes, a triage agent that investigates problems, and a reviewer that evaluates the system's own performance over time.
 
-The monitor runs on a cron. Every 30 minutes, it checks health metrics. If something looks wrong, it invokes the triage agent. The triage agent fetches detailed data, correlates it against deploy history, and finds the root cause. It uses tools, might spin up a sandbox, might run for minutes. Then, on a weekly cron, the reviewer pulls run history from the execution layer itself, analyzes how the triage agent performed, and decides if the system should be modified.
+The monitor runs on a cron. Every 30 minutes, it checks health metrics. If something looks wrong, it invokes the triage agent. The triage agent fetches detailed data, correlates it against deploy history, and finds the root cause. It uses tools, might spin up a [sandbox](/blog/sandboxes-are-a-durability-problem?ref=blog-your-agent-architecture-has-a-half-life), might run for minutes. Then, on a weekly cron, the reviewer pulls run history from the execution layer itself, analyzes how the triage agent performed, and decides if the system should be modified.
 
 ![Loop architecture diagram with cron agent, sub-agents, and review agent](/assets/blog/your-agent-architecture-has-a-half-life/loop.png)
 

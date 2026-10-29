@@ -154,7 +154,7 @@ function buildRelated(slug: string): RelatedStory[] {
     .map((s) => ({
       logo: s.logo,
       logoAlt: s.brand,
-      logoHeight: LOGO_HEIGHT,
+      logoHeight: s.logoHeight ?? LOGO_HEIGHT,
       tags: s.tags,
       title: s.title,
       body: s.body,

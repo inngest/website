@@ -23,7 +23,7 @@ _If you're a visual learner, check out the video:_
 
 In multi-tenant systems, users share the same infrastructure resources. A "[noisy neighbor](https://learn.microsoft.com/en-us/azure/architecture/antipatterns/noisy-neighbor/noisy-neighbor)" refers to a high-usage user consuming excessive resources, thereby affecting other users' performance.
 
-In queueing systems, a noisy neighbor can monopolize a queue (or multiple queues), causing other users to wait longer for their jobs to be processed. This can lead to delays and frustration for users with lower usage levels. In these systems it's important to ensure fairness and consistent performance for all users, regardless of their usage levels.
+In queueing systems, a noisy neighbor can [monopolize a queue](/blog/long-running-jobs-shouldnt-be-first-come-first-served?ref=blog-fixing-multi-tenant-queueing-concurrency-problems) (or multiple queues), causing other users to wait longer for their jobs to be processed. This can lead to delays and frustration for users with lower usage levels. In these systems it's important to ensure fairness and consistent performance for all users, regardless of their usage levels.
 
 Here is a visualization of a single user monopolizing a [first-in-first-out (FIFO) queue](https://en.wikipedia.org/wiki/FIFO_(computing_and_electronics)):
 
