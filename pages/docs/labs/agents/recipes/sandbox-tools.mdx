@@ -138,8 +138,10 @@ createServer({
 
 ## Run it
 
+`$DEV_SERVER` is the Dev Server that `pnpm tour:devserver` builds; the published Inngest CLI does not have `step.subscribe` yet. See the [quick start](/docs/labs/agents/quick-start?ref=docs-labs-agents-recipes-sandbox-tools).
+
 ```bash
-npx inngest-cli@latest dev -u http://localhost:3000/api/inngest
+$DEV_SERVER dev --no-discovery -u http://localhost:3000/api/inngest
 export GITHUB_TOKEN=ghp_... ANTHROPIC_API_KEY=sk-ant-... INNGEST_EXPERIMENTAL_KV_URL=redis://localhost:6379
 node --import tsx inngest/serve.ts
 ```

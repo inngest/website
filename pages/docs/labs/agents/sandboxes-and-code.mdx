@@ -108,12 +108,7 @@ export const pairer = agents.agent(
   { id: "pairer", sandboxes: { work: project } },
   async ({ inbox, sandboxes, sandboxTools, control }) => {
     for await (const message of inbox) {
-      await agent.loop({
-        model: claude,
-        prompt: message.content ?? "",
-        tools: sandboxTools,
-        ...control,
-      });
+      await agent.loop({ model: claude, prompt: message.content ?? "", tools: sandboxTools, ...control });
 
       await sandboxes.work.recycle();
     }
@@ -200,13 +195,9 @@ export const waitForApproval = tool.group({
   input: z.object({ request: z.string() }),
   waits: true,
   run: async ({ request }) => {
-    const approval = await step.waitForEvent("approval", {
-      event: "approval/decided",
-      timeout: "7d",
-      if: `async.data.request == "${request}"`,
-    });
+    const approval = await step.waitForEvent("approval", { event: "approval/decided", timeout: "7d" });
 
-    return approval?.data ?? null;
+    return approval?.data ?? { request, approved: false };
   },
 });
 ```
@@ -215,35 +206,23 @@ While a tool waits the script exits, then runs again from the top with earlier c
 
 ## Clone a repo
 
-`repo()` clones a repository into the sandbox, or brings a restored checkout up to date, and returns the tools for it.
+`repo()` clones a repository into the sandbox, or brings a restored checkout up to date, and returns `tools` for `agent.loop()`.
 
 ```typescript {{ title: "inngest/agents/fixer.ts" }}
-import { agent, repo } from "inngest/experimental/agents";
+import { repo } from "inngest/experimental/agents";
 import { agents } from "../client";
-import { claude } from "../models/claude";
 import { workbench } from "../sandboxes/workbench";
 
 export const fixer = agents.agent(
   { id: "fixer", sandboxes: { work: workbench } },
-  async ({ inbox, sandboxes, control }) => {
-    for await (const message of inbox) {
-      const sandbox = await sandboxes.work.get();
-      const checkout = await repo(sandbox, {
-        repo: "acme/web",
-        path: "/work/web",
-        sync: "keep",
-        token: () => {
-          return process.env.GITHUB_TOKEN ?? "";
-        },
-      });
+  async ({ sandboxes }) => {
+    const checkout = await repo(await sandboxes.work.get(), {
+      repo: "acme/web",
+      sync: "keep",
+      token: process.env.GITHUB_TOKEN,
+    });
 
-      await agent.loop({
-        model: claude,
-        prompt: `${message.content ?? ""}\nThe repo is at ${checkout.path}`,
-        tools: checkout.tools,
-        ...control,
-      });
-    }
+    return checkout.path;
   },
 );
 ```
@@ -270,21 +249,16 @@ import { sandbox } from "inngest/experimental/agents";
 export const project = sandbox({
   id: "project",
   tools: sandbox.tools.code(),
-  setup: async ({ sandbox, step, restored }) => {
+  setup: async ({ sandbox, restored }) => {
     if (restored) {
       return;
     }
-
-    const env = await step.run("load-env", async () => {
-      return "API_URL=https://api.acme.test\n";
-    });
 
     await sandbox.commands.run(
       "clone",
       ["git", "clone", "https://github.com/acme/web", "app"],
       { cwd: "/work" },
     );
-    await sandbox.files.write("env", { path: "/work/app/.env", data: env });
     await sandbox.commands.run("install", ["npm", "ci"], { cwd: "/work/app" });
   },
 });
@@ -292,10 +266,6 @@ export const project = sandbox({
 
 <Annotation id="restored" lines="7-9" tease="skip what is there" title="Restored" href="#keep-files-between-runs" linkText="Keep files">
 A resumed sandbox already has its earlier setup.
-</Annotation>
-
-<Annotation id="step" lines="11-13" tease="memoized" title="Durable steps" href="/docs/sandboxes/reference?ref=docs-labs-agents-sandboxes-and-code" linkText="Sandboxes reference">
-Short names, prefixed for you.
 </Annotation>
 
 </AnnotatedCode>

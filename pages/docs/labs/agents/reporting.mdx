@@ -113,7 +113,7 @@ export async function approve(channel: Channel, signal: string) {
     });
   });
 
-  return step.waitForSignal("answer", { signal, timeout: "1d" });
+  return step.waitForSignal("answer", { signal, timeout: "1d", onConflict: "replace" });
 }
 ```
 
@@ -150,7 +150,6 @@ export const review = agents.agent(
   },
   async ({ report }) => {
     await report({ text: "Done", kind: "result", data: { turns: 2 } });
-
     await report("Heads up for the team", { to: "tickets" });
   },
 );

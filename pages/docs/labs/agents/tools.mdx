@@ -41,28 +41,19 @@ Pass tools to a loop by name. The key is the name the model calls.
 import { agent } from "inngest/experimental/agents";
 import { agents } from "../client";
 import { claude } from "../models/claude";
-import { getCustomer } from "../tools/getCustomer";
 import { getOrder } from "../tools/getOrder";
 import { refund } from "../tools/refund";
 
-export const billing = agents.agent(
-  { id: "billing" },
-  async ({ inbox, control }) => {
-    for await (const message of inbox) {
-      await agent.loop({
-        model: claude,
-        prompt: message.content ?? "",
-        tools: { getCustomer, getOrder, refund },
-        ...control,
-      });
-    }
-  },
-);
+export const billing = agents.agent({ id: "billing" }, async ({ inbox, control }) => {
+  for await (const message of inbox) {
+    await agent.loop({ model: claude, prompt: message.content ?? "", tools: { getOrder, refund }, ...control });
+  }
+});
 ```
 
 ## Check input and output
 
-`tool()` adds an `id` and an `output` schema.
+`tool()` adds an `id`, an `output` schema and an optional `displayName`, a string or a function of the input that names the call in the trace.
 
 <AnnotatedCode>
 
@@ -75,14 +66,8 @@ export const getCustomer = tool({
   description: "Find a customer by email",
   input: z.object({ email: z.string().email() }),
   output: z.object({ id: z.string(), plan: z.string() }),
-  displayName: ({ email }) => {
-    return `Look up: ${email}`;
-  },
-  run: async ({ email }, { idempotencyKey, signal }) => {
-    const found = await fetch(`https://api.acme.test/customers/${email}`, {
-      headers: { "idempotency-key": idempotencyKey },
-      signal,
-    });
+  run: async ({ email }, { idempotencyKey }) => {
+    const found = await fetch(`https://api.acme.test/customers/${email}`, { headers: { "idempotency-key": idempotencyKey } });
 
     return found.json() as Promise<{ id: string; plan: string }>;
   },
@@ -97,11 +82,7 @@ Also takes a JSON Schema object.
 A result that does not match fails the step.
 </Annotation>
 
-<Annotation id="display" lines="9-11" tease="named in the trace" title="Display name" href="/docs/labs/agents/observability?ref=docs-labs-agents-tools" linkText="Observability">
-A string, or a function of the call's input.
-</Annotation>
-
-<Annotation id="key" lines="12" tease="same on every retry" title="Idempotency key" href="#how-it-works" linkText="How it works">
+<Annotation id="key" lines="9-10" tease="same on every retry" title="Idempotency key" href="#how-it-works" linkText="How it works">
 For APIs that deduplicate writes.
 </Annotation>
 
@@ -116,43 +97,26 @@ For APIs that deduplicate writes.
 ```typescript {{ title: "inngest/tools/refund.ts" }}
 import { step } from "inngest";
 import { tool } from "inngest/experimental";
-import { agent } from "inngest/experimental/agents";
 import { z } from "zod";
-import { db } from "../db";
 
 export const refund = tool.group({
   description: "Refund an order and tell the customer",
   input: z.object({ orderId: z.string() }),
   run: async ({ orderId }) => {
-    const order = await db.orders.find(orderId);
-
-    if (order.status !== "shipped") {
-      return agent.toolError({ message: "Only shipped orders", orderId });
-    }
-
     const refunded = await step.run("refund", async () => {
-      return { orderId, amount: order.total };
+      return { orderId, amount: 42 };
     });
-
-    await step.sendEvent("notify", {
-      name: "order/refunded",
-      data: refunded,
-    });
-
+    await step.sendEvent("notify", { name: "order/refunded", data: refunded });
     return refunded;
   },
 });
 ```
 
-<Annotation id="group" lines="7" tease="steps inside a tool" title="Tool group" href="#how-it-works" linkText="How it works">
+<Annotation id="group" lines="5" tease="steps inside a tool" title="Tool group" href="#how-it-works" linkText="How it works">
 Any step tool works inside it.
 </Annotation>
 
-<Annotation id="error" lines="14" tease="model sees an error" title="Return an error" href="#return-an-error-the-model-can-read" linkText="Errors">
-Without throwing.
-</Annotation>
-
-<Annotation id="scoped" lines="17-19" tease="scoped to this call" title="Step IDs" href="#how-it-works" linkText="How it works">
+<Annotation id="scoped" lines="9-11" tease="scoped to this call" title="Step IDs" href="#how-it-works" linkText="How it works">
 Prefixed per call, so two calls never collide.
 </Annotation>
 
@@ -192,13 +156,9 @@ export const waitForApproval = tool.group({
   description: "Wait for a person to approve",
   input: z.object({ request: z.string() }),
   run: async ({ request }) => {
-    const approval = await step.waitForEvent("approval", {
-      event: "approval/decided",
-      timeout: "7d",
-      if: `async.data.request == "${request}"`,
-    });
+    const approval = await step.waitForEvent("approval", { event: "approval/decided", timeout: "7d" });
 
-    return approval?.data ?? null;
+    return approval?.data ?? { request, approved: false };
   },
 });
 ```
@@ -217,23 +177,12 @@ import { claude } from "../models/claude";
 export const releaseWatcher = agents.agent(
   {
     id: "release-watcher",
-    inboxTools: {
-      listen: [
-        { event: "github/check_run", thread: "event.data.thread", maxPerRun: 2 },
-      ],
-      maxListeners: 3,
-      maxWait: "20m",
-    },
+    inboxTools: { listen: [{ event: "github/check_run", thread: "event.data.thread" }], maxListeners: 3 },
   },
-  async ({ inbox, inboxTools, control }) => {
-    for await (const message of inbox) {
-      await agent.loop({
-        model: claude,
-        prompt: message.content ?? "",
-        tools: { ...inboxTools },
-        ...control,
-      });
-    }
+  async ({ inbox, inboxTools }) => {
+    const message = await inbox.next();
+
+    await agent.loop({ model: claude, prompt: message?.content ?? "", tools: { ...inboxTools } });
   },
 );
 ```

@@ -101,7 +101,7 @@ The first argument of `agents.agent()`. [Events and triggers](/docs/labs/agents/
 | `session` | CEL `string` | the thread key | Session expression for event triggers. |
 | `kv` | `Kv` or `() => Kv` | the `createAgents` store | KV for thread state. A function is called at each use. [KV](/docs/labs/agents/reference?ref=docs-labs-agents-reference#kv) |
 | `requests` | `{ request, reply }` schemas | none | Types for `handle.request()` and `message.reply()`. A schema must not transform its input. [Threads](/docs/labs/agents/threads-and-memory?ref=docs-labs-agents-reference#ask-another-thread) |
-| `onArrival` | `(ctx) => void` | none | Runs for each message that reaches a busy thread, in its own `<id>-arrival` function. [Threads](/docs/labs/agents/inboxes?ref=docs-labs-agents-reference#acknowledge-arrivals) |
+| `onArrival` | `(ctx) => void` | none | Runs for each message that reaches a busy thread, in its own `<id>-arrival` function. [Threads](/docs/labs/agents/inboxes?ref=docs-labs-agents-reference#options) |
 | `inbox` | `InboxSource[]` | none | Event sources that reach a live run and never start one. [Events](/docs/labs/agents/inboxes?ref=docs-labs-agents-reference#listen-to-other-sources) |
 | `inboxTools` | [`InboxToolsConfig`](#inbox-tools) | off | Lets the model listen for events. [Subscribe](/docs/labs/agents/tools?ref=docs-labs-agents-reference#let-the-model-listen-for-events) |
 | `foldMessages` | `"steer" \| "all"` | `"steer"` | Which messages that arrive during a turn `control.steer()` folds into the next model call. [Threads](/docs/labs/agents/inboxes?ref=docs-labs-agents-reference#steer-a-running-turn) |

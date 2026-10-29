@@ -89,10 +89,8 @@ A sandbox belongs to the thread that uses it. Declare `sandboxes` on the agent t
 
 ```typescript {{ title: "inngest/agents/builder.ts" }}
 import { invoke } from "inngest";
-import { agent } from "inngest/experimental/agents";
 import { z } from "zod";
 import { agents } from "../client";
-import { claude } from "../models/claude";
 import { workbench } from "../sandboxes/workbench";
 
 export const builder = agents.agent(
@@ -101,15 +99,8 @@ export const builder = agents.agent(
     on: invoke(z.object({ task: z.string() })),
     sandboxes: { work: workbench },
   },
-  async ({ trigger, sandboxTools, control }) => {
-    const result = await agent.loop({
-      model: claude,
-      prompt: trigger?.data.task ?? "",
-      tools: sandboxTools,
-      ...control,
-    });
-
-    return { summary: result.text };
+  async ({ trigger, sandboxTools }) => {
+    return { task: trigger?.data.task, tools: Object.keys(sandboxTools) };
   },
 );
 ```
@@ -133,33 +124,19 @@ import { agents } from "../client";
 import { researcher } from "./researcher";
 
 export const careful = agents.agent(
-  {
-    id: "careful",
-    limits: {
-      depth: 1,
-      spawn: 3,
-      mayCall: ["support/researcher"],
-      budget: { usd: 5 },
-      price: { "*": { input: 3, output: 15 } },
-    },
-  },
+  { id: "careful", limits: { depth: 1, spawn: 3, mayCall: ["support/researcher"] } },
   async () => {
     try {
       const found = await agent.invoke(researcher, { question: "Why?" });
-
       return found.answer;
     } catch (error) {
-      if (error instanceof AgentLimitError) {
-        return `refused by ${error.limit}`;
-      }
-
-      throw error;
+      return error instanceof AgentLimitError ? `refused by ${error.limit}` : "failed";
     }
   },
 );
 ```
 
-Sub-agents inherit the limits, narrowed, and `depth` defaults to 1. A dollar budget needs the sub-agent's own `limits.price`, since a price does not travel.
+Sub-agents inherit the limits, narrowed, and `depth` defaults to 1. Add `budget: { usd: 5 }` and a `price` table to cap spend; a dollar budget needs the sub-agent's own `limits.price`, since a price does not travel.
 
 ## Cancel with the caller
 

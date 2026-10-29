@@ -23,9 +23,10 @@ Screenshot needed: the digest in the team channel.
 <AnnotatedCode>
 
 ```typescript {{ title: "inngest/agents/watcher.ts" }}
-import { agent } from "inngest/experimental/agents";
+import { agent, kv } from "inngest/experimental/agents";
 import { agents } from "../client";
 import { team } from "../channels/team";
+import { reported } from "../keys";
 import { claude } from "../models/claude";
 import { listStalePullRequests } from "../tools/listStalePullRequests";
 
@@ -37,16 +38,31 @@ export const watcher = agents.agent(
     report: "main",
   },
   async ({ report }) => {
+    const found: number[] = [];
+
     const result = await agent.loop({
       model: claude,
       system:
         "Write a short digest for the team: one line per pull request, oldest first. If nothing is stale, answer with exactly OK.",
       prompt: "Check acme/app for pull requests idle for 3 days or more.",
       tools: { listStalePullRequests },
+      onToolResult: (run) => {
+        if (!run.isError && run.name === "listStalePullRequests") {
+          found.push(
+            ...run.output.map((pull) => {
+              return pull.number;
+            }),
+          );
+        }
+      },
     });
 
     if (result.text.trim() !== "OK") {
       await report(result.text);
+
+      await kv.app.update(reported, (current) => {
+        return [...(current ?? []), ...found];
+      });
     }
   },
 );
@@ -60,12 +76,12 @@ export const watcher = agents.agent(
 A cron run has no message to reply to, so the channel is fixed.
 </Annotation>
 
-<Annotation id="tools" lines="20" tease="the tool remembers" title="Tools" href="/docs/labs/agents/tools?ref=docs-labs-agents-recipes-scheduled-watcher" linkText="Tools">
+<Annotation id="tools" lines="23" tease="the tool filters" title="Tools" href="/docs/labs/agents/tools?ref=docs-labs-agents-recipes-scheduled-watcher" linkText="Tools">
 It skips pull requests it already reported.
 </Annotation>
 
-<Annotation id="quiet" lines="23-25" tease="silence is an answer" title="Say nothing" href="/docs/labs/agents/models-and-the-loop?ref=docs-labs-agents-recipes-scheduled-watcher" linkText="Models and the loop">
-`OK` means nothing new, so nothing is posted.
+<Annotation id="quiet" lines="35-41" tease="silence is an answer" title="Say nothing" href="/docs/labs/agents/models-and-the-loop?ref=docs-labs-agents-recipes-scheduled-watcher" linkText="Models and the loop">
+`OK` means nothing new, so nothing is posted. Pull requests are marked reported only after the post, so a failed post is retried.
 </Annotation>
 
 </AnnotatedCode>
@@ -79,6 +95,7 @@ import { reported } from "../keys";
 export const listStalePullRequests = tool.step({
   description: "List open pull requests with no activity for days, not yet reported",
   input: z.object({ repo: z.string(), days: z.number() }),
+  output: z.array(z.object({ number: z.number() }).passthrough()),
   run: async ({ repo, days }) => {
     const response = await fetch(
       `https://api.github.com/repos/${repo}/pulls?state=open&sort=updated&direction=asc&per_page=30`,
@@ -95,25 +112,20 @@ export const listStalePullRequests = tool.step({
     const cutoff = Date.now() - days * 86_400_000;
     const seen = (await kv.app.get(reported)) ?? [];
 
-    const stale = pulls.filter((pull) => {
-      return Date.parse(pull.updated_at) < cutoff && !seen.includes(pull.number);
-    });
-
-    await kv.app.set(reported, [
-      ...seen,
-      ...stale.map((pull) => {
-        return pull.number;
-      }),
-    ]);
-
-    return stale.map((pull) => {
-      return {
-        number: pull.number,
-        title: pull.title,
-        author: pull.user.login,
-        updated: pull.updated_at,
-      };
-    });
+    return pulls
+      .filter((pull) => {
+        return (
+          Date.parse(pull.updated_at) < cutoff && !seen.includes(pull.number)
+        );
+      })
+      .map((pull) => {
+        return {
+          number: pull.number,
+          title: pull.title,
+          author: pull.user.login,
+          updated: pull.updated_at,
+        };
+      });
   },
 });
 ```
@@ -159,8 +171,10 @@ createServer({
 
 ## Run it
 
+`$DEV_SERVER` is the Dev Server that `pnpm tour:devserver` builds; the published Inngest CLI does not have `step.subscribe` yet. See the [quick start](/docs/labs/agents/quick-start?ref=docs-labs-agents-recipes-scheduled-watcher).
+
 ```bash
-npx inngest-cli@latest dev -u http://localhost:3000/api/inngest
+$DEV_SERVER dev --no-discovery -u http://localhost:3000/api/inngest
 export GITHUB_TOKEN=ghp_... SLACK_WEBHOOK_URL=https://hooks.slack.com/services/... ANTHROPIC_API_KEY=sk-ant-... INNGEST_EXPERIMENTAL_KV_URL=redis://localhost:6379
 node --import tsx inngest/serve.ts
 ```

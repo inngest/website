@@ -90,19 +90,13 @@ export const account = agents.agent({ id: "account" }, async ({ inbox }) => {
 });
 ```
 
-<Annotation id="session" lines="11" tease="every thread of the session" title="Session scope" href="#options" linkText="Options">
+<Annotation id="session" lines="8" tease="every thread of the session" title="Session scope" href="#options" linkText="Options">
 Shared by all threads that name the same session, such as `acct-9`.
 </Annotation>
 
-<Annotation id="tool" lines="18" tease="the model decides" title="A tool writes it" href="/docs/labs/agents/tools?ref=docs-labs-agents-threads-and-memory" linkText="Tools">
-The model saves a fact when it learns one.
-</Annotation>
-
-<Annotation id="compaction" lines="19" tease="long threads" title="Compaction" href="/docs/labs/agents/models-and-the-loop?ref=docs-labs-agents-threads-and-memory#keep-long-conversations-in-the-window" linkText="Models and the loop">
-Past 150,000 tokens, the start of the history becomes one summary. The last 8 messages stay verbatim.
-</Annotation>
-
 </AnnotatedCode>
+
+Add `history` as above, `tools: { remember }` and `compaction: { maxTokens: 150_000, keep: 8 }` to the same loop. Past `maxTokens` the start of the history becomes one summary; see [Models and the loop](/docs/labs/agents/models-and-the-loop?ref=docs-labs-agents-threads-and-memory#keep-long-conversations-in-the-window).
 
 ```typescript {{ title: "inngest/tools/remember.ts" }}
 import { tool } from "inngest/experimental";
@@ -130,7 +124,7 @@ export const history = kvKey<AgentMessage[]>("history");
 export const preferences = kvKey<string[]>("preferences");
 ```
 
-`update` reads, changes and writes in one safe step, so two threads saving a fact at once never lose one.
+The model saves a fact when it learns one. `update` reads, changes and writes in one safe step, so two threads saving a fact at once never lose one.
 
 ## Look inside a thread
 
@@ -175,7 +169,6 @@ export const billing = agents.agent(
   },
   async ({ inbox }) => {
     const message = await inbox.next();
-
     if (message?.kind === "request") {
       await message.reply({ refundable: message.payload.orderId !== "" });
     }
