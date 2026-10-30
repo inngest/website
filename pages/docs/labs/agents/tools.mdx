@@ -1,0 +1,352 @@
+import { AnnotatedCode, Annotation } from "shared/Docs/mdx";
+
+export const metaTitle = "Tools | Inngest Agents";
+export const description = "Inngest Agents tools: functions the model calls, run in your app as durable steps with your credentials, with typed input and output, step groups, readable errors and waiting for people.";
+
+# Tools
+
+> Give the model functions that run in your app, as durable steps.
+
+A tool is a function the model can call. It runs in your app with your credentials, and a retry never repeats a finished call.
+
+<AnnotatedCode>
+
+```typescript {{ title: "inngest/tools/getOrder.ts" }}
+import { tool } from "inngest/experimental";
+import { z } from "zod";
+import { db } from "../db";
+
+export const getOrder = tool.step({
+  description: "Find an order by ID",
+  input: z.object({ id: z.string() }),
+  run: async ({ id }) => {
+    return db.orders.find(id);
+  },
+});
+```
+
+<Annotation id="input" lines="7" tease="bad input never runs" title="Input schema" href="#check-input-and-output" linkText="Check input and output">
+The model gets an error for bad input, and no step starts.
+</Annotation>
+
+<Annotation id="run" lines="8-10" tease="one durable step" title="The body" href="#run-several-steps" linkText="Run several steps">
+Your code, with your database and keys. Its result goes back to the model.
+</Annotation>
+
+</AnnotatedCode>
+
+Pass tools to a loop by name. The key is the name the model calls.
+
+```typescript {{ title: "inngest/agents/billing.ts" }}
+import { agent } from "inngest/experimental/agents";
+import { agents } from "../client";
+import { claude } from "../models/claude";
+import { getOrder } from "../tools/getOrder";
+import { refund } from "../tools/refund";
+
+export const billing = agents.agent({ id: "billing" }, async ({ inbox, control }) => {
+  for await (const message of inbox) {
+    await agent.loop({ model: claude, prompt: message, tools: { getOrder, refund }, ...control });
+  }
+});
+```
+
+## Check input and output
+
+`tool()` adds an `id`, an `output` schema and an optional `displayName`, a string or a function of the input that names the call in the trace.
+
+<AnnotatedCode>
+
+```typescript {{ title: "inngest/tools/getCustomer.ts" }}
+import { tool } from "inngest/experimental";
+import { z } from "zod";
+
+export const getCustomer = tool({
+  id: "getCustomer",
+  description: "Find a customer by email",
+  input: z.object({ email: z.string().email() }),
+  output: z.object({ id: z.string(), plan: z.string() }),
+  run: async ({ email }, { idempotencyKey }) => {
+    const found = await fetch(`https://api.acme.test/customers/${email}`, { headers: { "idempotency-key": idempotencyKey } });
+
+    return found.json() as Promise<{ id: string; plan: string }>;
+  },
+});
+```
+
+<Annotation id="in" lines="7" tease="checked going in" title="Input" href="#options" linkText="Options">
+Also takes a JSON Schema object.
+</Annotation>
+
+<Annotation id="out" lines="8" tease="checked on the way out" title="Output schema" href="#gotchas" linkText="Gotchas">
+A result that does not match fails the step.
+</Annotation>
+
+<Annotation id="key" lines="9-10" tease="same on every retry" title="Idempotency key" href="#how-it-works" linkText="How it works">
+For APIs that deduplicate writes.
+</Annotation>
+
+</AnnotatedCode>
+
+## Run several steps
+
+`tool.group()` runs its body as a group of steps instead of one. Use the global `step` inside it.
+
+<AnnotatedCode>
+
+```typescript {{ title: "inngest/tools/refund.ts" }}
+import { step } from "inngest";
+import { tool } from "inngest/experimental";
+import { z } from "zod";
+
+export const refund = tool.group({
+  description: "Refund an order and tell the customer",
+  input: z.object({ orderId: z.string() }),
+  run: async ({ orderId }) => {
+    const refunded = await step.run("refund", async () => {
+      return { orderId, amount: 42 };
+    });
+    await step.sendEvent("notify", { name: "order/refunded", data: refunded });
+    return refunded;
+  },
+});
+```
+
+<Annotation id="group" lines="5" tease="steps inside a tool" title="Tool group" href="#how-it-works" linkText="How it works">
+Any step tool works inside it.
+</Annotation>
+
+<Annotation id="scoped" lines="9-11" tease="scoped to this call" title="Step IDs" href="#how-it-works" linkText="How it works">
+Prefixed per call, so two calls never collide.
+</Annotation>
+
+</AnnotatedCode>
+
+## Return an error the model can read
+
+`agent.toolError(body)` gives the model `body` as an error and works beside an `output` schema. A throw does the same with its message.
+
+```typescript {{ title: "inngest/tools/getTicket.ts" }}
+import { tool } from "inngest/experimental";
+import { agent } from "inngest/experimental/agents";
+import { z } from "zod";
+import { db } from "../db";
+
+export const getTicket = tool.step({
+  input: z.object({ id: z.string() }),
+  output: z.object({ id: z.string(), subject: z.string() }),
+  run: async ({ id }) => {
+    const ticket = await db.tickets.find(id);
+
+    return ticket ?? agent.toolError({ message: "No such ticket", id });
+  },
+});
+```
+
+## Wait for a person
+
+A group tool can wait for days. The agent is not running while it waits.
+
+```typescript {{ title: "inngest/tools/waitForApproval.ts" }}
+import { step } from "inngest";
+import { tool } from "inngest/experimental";
+import { z } from "zod";
+
+export const waitForApproval = tool.group({
+  description: "Wait for a person to approve",
+  input: z.object({ request: z.string() }),
+  run: async ({ request }) => {
+    const approval = await step.waitForEvent("approval", { event: "approval/decided", timeout: "7d" });
+
+    return approval?.data ?? { request, approved: false };
+  },
+});
+```
+
+To ask in Slack first, see [Reporting](/docs/labs/agents/reporting?ref=docs-labs-agents-tools#ask-a-person). Add `waits: true` when a [sandbox script](/docs/labs/agents/sandboxes-and-code?ref=docs-labs-agents-tools#let-code-call-your-tools) calls it.
+
+## Let the model listen for events
+
+Set `inboxTools` and the model can start listeners, wait on them and read what arrives. It hears only the events you list.
+
+```typescript {{ title: "inngest/agents/releaseWatcher.ts" }}
+import { agent } from "inngest/experimental/agents";
+import { agents } from "../client";
+import { claude } from "../models/claude";
+
+export const releaseWatcher = agents.agent(
+  {
+    id: "release-watcher",
+    inboxTools: { listen: [{ event: "github/check_run", thread: "event.data.thread" }], maxListeners: 3 },
+  },
+  async ({ inbox, inboxTools }) => {
+    const message = await inbox.next();
+
+    await agent.loop({ model: claude, prompt: message ?? "", tools: { ...inboxTools } });
+  },
+);
+```
+
+The four tools are `inbox_listen`, `inbox_wait`, `inbox_read` and `inbox_stop`.
+
+## Use a remote MCP server
+
+`tool.mcp()` turns a remote MCP server into tools. Put it in `tools` and the model gets every tool the server offers, named `<key>_<tool>`.
+
+<AnnotatedCode>
+
+```typescript {{ title: "inngest/agents/analyst.ts" }}
+import { tool, secret } from "inngest/experimental";
+import { agent } from "inngest/experimental/agents";
+import { agents } from "../client";
+import { claude } from "../models/claude";
+
+const hex = tool.mcp({
+  url: "https://app.hex.tech/mcp",
+  auth: { bearer: secret("HEX_TOKEN") },
+  tools: ["search_projects", "run_project"],
+});
+
+export const analyst = agents.agent({ id: "analyst" }, async ({ inbox, control }) => {
+  for await (const message of inbox) {
+    await agent.loop({ model: claude, prompt: message, tools: { hex }, ...control });
+  }
+});
+```
+
+<Annotation id="secret" lines="8" tease="read inside the call" title="Credentials" href="#how-it-works" linkText="How it works">
+`secret()` holds the name of an environment variable, not the value. The token never reaches the model, a sandbox, a step output or a trace.
+</Annotation>
+
+<Annotation id="only" lines="9" tease="only these two" title="Allow list" href="/docs/labs/agents/reference-sandboxes?ref=docs-labs-agents-tools#mcp-servers" linkText="MCP reference">
+Leave `tools` out for all of them. A name the server does not have fails when the list is read.
+</Annotation>
+
+<Annotation id="key" lines="14" tease="the key is the name" title="hex_search_projects" href="#gotchas" linkText="Gotchas">
+Each call is one durable step, so a retry never repeats a finished one.
+</Annotation>
+
+</AnnotatedCode>
+
+For headers other than a bearer token, use `auth: { headers: { "x-api-key": secret("KEY") } }`. A sandbox script can call the same tools: `await hex.tools()` returns them as a plain record for [`sandbox.tools.code({ tools })`](/docs/labs/agents/sandboxes-and-code?ref=docs-labs-agents-tools#let-code-call-your-tools).
+
+## Connect each person's account
+
+With `auth: { oauth }`, every user signs in to the server as themselves. A user who has not connected gets a link instead of a result, and the model passes it on.
+
+<AnnotatedCode>
+
+```typescript {{ title: "inngest/tools/notion.ts" }}
+import { tool, kvOAuthStore } from "inngest/experimental";
+
+export const store = kvOAuthStore();
+
+export function notionFor(slackUser: string) {
+  return tool.mcp({
+    url: "https://mcp.notion.com/mcp",
+    auth: {
+      oauth: {
+        user: slackUser,
+        redirectUri: "https://app.acme.test/oauth/mcp",
+        store,
+        onNeedsAuthorization: async ({ authorizeUrl }) => {
+          await fetch("https://slack.com/api/chat.postMessage", {
+            method: "POST",
+            headers: { authorization: `Bearer ${process.env.SLACK_BOT_TOKEN}`, "content-type": "application/json" },
+            body: JSON.stringify({ channel: slackUser, text: `Connect Notion: ${authorizeUrl}` }),
+          });
+        },
+      },
+    },
+  });
+}
+```
+
+<Annotation id="user" lines="10" tease="whose token to use" title="User" href="/docs/labs/agents/reference-sandboxes?ref=docs-labs-agents-tools#per-user-oauth" linkText="OAuth reference">
+Any ID that is stable for the person. A function gets `{ runId }` and runs for every call.
+</Annotation>
+
+<Annotation id="store" lines="3,12" tease="tokens, encrypted" title="Store" href="#how-it-works" linkText="How it works">
+`kvOAuthStore()` writes to the agents KV, encrypted with `MCP_OAUTH_ENCRYPTION_KEY`. Share it with your callback route.
+</Annotation>
+
+<Annotation id="link" lines="13-18" tease="where the user sees it" title="The link" href="#gotchas" linkText="Gotchas">
+Optional. The model also receives the link and can say it in its own words.
+</Annotation>
+
+</AnnotatedCode>
+
+Your callback route finishes the sign-in. Pass `expectUser` whenever the route knows who is calling, so a link forwarded to someone else cannot connect their account to the asker.
+
+```typescript {{ title: "inngest/routes/mcpCallback.ts" }}
+import { completeMcpAuthorization } from "inngest/experimental";
+import { inngest } from "../client";
+import { store } from "../tools/notion";
+
+export async function mcpCallback(query: { code: string; state: string; error?: string }, signedInUser: string) {
+  await completeMcpAuthorization({
+    store,
+    code: query.code,
+    state: query.state,
+    error: query.error,
+    expectUser: signedInUser,
+    send: (event) => {
+      return inngest.send(event);
+    },
+  });
+}
+```
+
+To pause the run until the user has connected, call `waitForMcpAuthorization({ user, server: "notion", timeout: "10m" })` from the agent body. It resumes on the `agent/mcp.authorized` event that `completeMcpAuthorization()` sends, or returns `null` on timeout. `isMcpNeedsAuthorization(value)` tells a link result from a normal one.
+
+See it end to end in [MCP assistant](/docs/labs/agents/recipes/mcp-assistant?ref=docs-labs-agents-tools).
+
+## When to use what
+
+- Tools from a remote MCP server: `tool.mcp()`, with `secret()` or `auth.oauth`.
+- One call, one durable step: `tool.step()`.
+- Several steps, events or waits in one tool: `tool.group()`.
+- A checked result, a stable `id` or a display name: `tool()`.
+- Tell the model it went wrong: `agent.toolError()`.
+- Let the model write a script that calls tools: [Sandboxes and code](/docs/labs/agents/sandboxes-and-code?ref=docs-labs-agents-tools).
+
+## Options
+
+```typescript {{ title: "inngest/tools/lookupSchema.ts" }}
+import { tool } from "inngest/experimental";
+
+export const lookup = tool.step({
+  description: "Query a table",
+  input: {
+    type: "object",
+    properties: { table: { type: "string" } },
+    required: ["table"],
+  },
+  run: async ({ table }) => {
+    return { table, rows: 0 };
+  },
+});
+```
+
+`input` also takes a JSON Schema object. `run` then gets its arguments unchecked. `agentTools([a, b])` names a list by their `id`s. `toolDefinitions()` gives the provider shape for a call outside the loop.
+
+## Gotchas
+
+- Arguments are checked against `input` before a step starts, so a tool never sees bad input.
+- A result over `maxToolOutput` (100,000 characters by default) keeps its start and end.
+- An MCP tool that may change things is not retried after the request was sent. The model is told the outcome is unknown and decides. Tools the server marks read-only or idempotent do retry.
+- MCP results over 256 KB keep their start and end. `url` must be `https`, or `http` for localhost, with no credentials in it.
+- Calls in one model reply run together. `parallelTools: false` runs them in order.
+
+## How it works
+
+- Each call is one durable step; a group is a set of steps under the call's ID.
+- The idempotency key is the same on every retry of a call.
+- `agent.toolError()` results are not checked against `output`.
+- An MCP server's tool list is read once per run, in a step, so a replay sees the list the model saw.
+- OAuth tokens, registered clients and pending sign-ins live in the store, encrypted. Changing `MCP_OAUTH_ENCRYPTION_KEY` makes tokens unreadable and users connect again.
+- A sign-in link works once and expires after 10 minutes.
+
+## Recipes and reference
+
+[Approvals](/docs/labs/agents/recipes/approvals), [MCP assistant](/docs/labs/agents/recipes/mcp-assistant), [Sandbox tools](/docs/labs/agents/recipes/sandbox-tools), [Tools reference](/docs/labs/agents/reference-sandboxes?ref=docs-labs-agents-tools#tools).

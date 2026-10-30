@@ -1,0 +1,212 @@
+export const metaTitle = "Run on Workers | Inngest Agents";
+export const description = "Run Inngest Agents on Cloudflare Workers: bindings only exist per request, so use a middleware for per-request dependencies and getters for the store, KV and tokens.";
+
+# Run on Workers
+
+> Bindings exist only while a request runs. Nothing about your agents should need them at import time.
+
+- **Per-request dependencies.** A middleware puts them in the context. [Middleware →](#put-the-bindings-in-context)
+- **Getters for config.** The store, `kv` and tokens are functions called at each use. [Getters →](#read-bindings-through-getters)
+- **Serve it.** One `fetch` export. [Serve →](#serve-it)
+
+## Declare the bindings
+
+`env.ts` holds the bindings of the latest request. A Worker's bindings do not change within a deployment, so the latest is the right one.
+
+```typescript {{ title: "inngest/env.ts" }}
+import type { D1KvDatabase } from "inngest/experimental/agents";
+
+export type Env = {
+  DB: D1KvDatabase;
+  ANTHROPIC_API_KEY: string;
+  SLACK_BOT_TOKEN: string;
+  GITHUB_APP_ID: string;
+  GITHUB_APP_PRIVATE_KEY: string;
+};
+
+let current: Env | undefined;
+
+export const useEnv = (env: Env) => {
+  current = env;
+};
+
+export const getEnv = () => {
+  if (!current) {
+    throw new Error("No request has reached the Worker yet.");
+  }
+
+  return current;
+};
+```
+
+## Put the bindings in context
+
+Config is read at import, before any request. A middleware builds what the body needs when a request arrives.
+
+```typescript {{ title: "inngest/models/claude.ts" }}
+import { agent } from "inngest/experimental/agents";
+
+export const claudeWith = (apiKey: string) => {
+  return agent.anthropic({ model: "claude-sonnet-5-5", apiKey });
+};
+```
+
+```typescript {{ title: "inngest/middleware/deps.ts" }}
+import { Middleware } from "inngest";
+import { type Env, useEnv } from "../env";
+import { claudeWith } from "../models/claude";
+
+const createDeps = (env: Env) => {
+  return { model: claudeWith(env.ANTHROPIC_API_KEY) };
+};
+
+type Deps = ReturnType<typeof createDeps>;
+
+export class DepsMiddleware extends Middleware.BaseMiddleware {
+  readonly id = "deps";
+
+  env: Env | undefined;
+
+  override wrapRequest({ next, requestArgs }: Middleware.WrapRequestArgs) {
+    this.env = requestArgs[1] as Env | undefined;
+
+    if (this.env) {
+      useEnv(this.env);
+    }
+
+    return next();
+  }
+
+  override transformFunctionInput(
+    arg: Middleware.TransformFunctionInputArgs,
+  ): Middleware.TransformFunctionInputArgs & { ctx: { deps: Deps } } {
+    if (!this.env) {
+      throw new Error("deps: no Worker env in the request arguments");
+    }
+
+    return { ...arg, ctx: { ...arg.ctx, deps: createDeps(this.env) } };
+  }
+}
+```
+
+`wrapRequest` sees the arguments of the Worker's `fetch`, so `requestArgs[1]` is `env`. A middleware instance serves one request. On Pages Functions the env is in `requestArgs[0].env`.
+
+## Read bindings through getters
+
+Anything configured at import takes a function instead: the store, an agent's `kv`, and the tokens of Slack, GitHub and `git_push`.
+
+```typescript {{ title: "inngest/client.ts" }}
+import { Inngest } from "inngest";
+import { createAgents, d1KvAdapter } from "inngest/experimental/agents";
+import { getEnv } from "./env";
+import { DepsMiddleware } from "./middleware/deps";
+
+export const inngest = new Inngest({
+  id: "support",
+  middleware: [DepsMiddleware],
+});
+
+export const agents = createAgents(inngest, {
+  store: d1KvAdapter(() => {
+    return getEnv().DB;
+  }),
+});
+```
+
+```typescript {{ title: "inngest/github.ts" }}
+import { type GithubApp, githubApp } from "inngest/experimental/agents";
+import { getEnv } from "./env";
+
+let app: GithubApp | undefined;
+
+export const github = () => {
+  app ??= githubApp({
+    appId: getEnv().GITHUB_APP_ID,
+    privateKey: getEnv().GITHUB_APP_PRIVATE_KEY,
+  });
+
+  return app;
+};
+```
+
+```typescript {{ title: "inngest/sandboxes/workbench.ts" }}
+import { sandbox } from "inngest/experimental/agents";
+import { github } from "../github";
+
+export const workbench = sandbox({
+  id: "workbench",
+  tools: sandbox.tools.git({
+    remote: "https://github.com/acme/web",
+    token: () => {
+      return github().token("acme/web");
+    },
+  }),
+});
+```
+
+## Use them in the agent
+
+`deps` comes from the middleware. The Slack token is a function, so it reads `env` when a message is posted.
+
+```typescript {{ title: "inngest/agents/triage.ts" }}
+import { agent, slack } from "inngest/experimental/agents";
+import { agents } from "../client";
+import { getEnv } from "../env";
+import { workbench } from "../sandboxes/workbench";
+
+export const triage = agents.agent(
+  {
+    id: "triage",
+    on: slack.thread({ in: ["C0123ABC"] }),
+    sandboxes: { work: workbench },
+    channels: ({ event }) => {
+      return {
+        main: slack.channel(event, {
+          in: ["C0123ABC"],
+          token: () => {
+            return getEnv().SLACK_BOT_TOKEN;
+          },
+        }),
+      };
+    },
+    report: "main",
+  },
+  async ({ inbox, deps, sandboxTools, control, report }) => {
+    for await (const message of inbox) {
+      const result = await agent.loop({
+        model: deps.model,
+        prompt: message,
+        tools: sandboxTools,
+        ...control,
+      });
+
+      await report.finish({ text: result.text });
+    }
+  },
+);
+```
+
+An agent's `kv` option takes a function the same way, and so does the `kv` option of a thread handle. The function is called at each use and must return the same data every time.
+
+## Serve it
+
+```typescript {{ title: "inngest/serve.ts" }}
+import { serve } from "inngest/cloudflare";
+import { agents, inngest } from "./client";
+import "./agents/triage";
+
+export default {
+  fetch: serve({ client: inngest, functions: agents.functions() }),
+};
+```
+
+Code outside `serve` that sends messages, such as an API route, calls `useEnv(env)` first so the store getter has a binding.
+
+## How it works
+
+- The store, `kv` and token getters are called at each use, never at import.
+- The middleware runs on every request the client serves, so the agent's other functions have `env` too.
+- `d1KvAdapter` needs its tables first. See [Choose a store](/docs/labs/agents/threads-and-memory?ref=docs-labs-agents-workers#options).
+- Use `transport: "api"` for pushes, since Workers have no `git`. See [Push from your own code](/docs/labs/agents/repos-and-git?ref=docs-labs-agents-workers#push-from-your-own-code).
+
+[Reference →](/docs/labs/agents/reference?ref=docs-labs-agents-workers)

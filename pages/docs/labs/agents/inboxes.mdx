@@ -1,0 +1,205 @@
+import { AnnotatedCode, Annotation } from "shared/Docs/mdx";
+
+export const metaTitle = "Inboxes | Inngest Agents";
+export const description = "Inngest Agents inboxes: a durable inbox gives an agent messages in order, lets new instructions reach a running turn, waits with timeouts at no cost, and listens to other events.";
+
+# Inboxes
+
+> Messages wait for your agent in order, and new instructions reach it mid-turn.
+
+Messages and events arrive while an agent is busy. The inbox keeps every one, in order, and costs nothing while it waits.
+
+<AnnotatedCode>
+
+```typescript {{ title: "inngest/agents/support.ts" }}
+import { agent } from "inngest/experimental/agents";
+import { agents } from "../client";
+import { claude } from "../models/claude";
+
+export const support = agents.agent(
+  { id: "support" },
+  async ({ inbox, control }) => {
+    for await (const message of inbox) {
+      await agent.loop({
+        model: claude,
+        prompt: message,
+        ...control,
+      });
+    }
+  },
+);
+```
+
+<Annotation id="inbox" lines="8" tease="idle costs nothing" title="Read in order" href="#read-messages" linkText="Read messages">
+Waits for each message, and ends when the thread stops.
+</Annotation>
+
+<Annotation id="control" lines="12" tease="steer and stop" title="Control" href="#steer-a-running-turn" linkText="Steer">
+Lets steering and stop messages reach the running turn.
+</Annotation>
+
+</AnnotatedCode>
+
+## Read messages
+
+Every message is a plain event: `{ id, name, data, ts, seq }`. `agent/message` starts the next turn, `agent/steer` redirects the current one, and `agent/request` waits for a reply. `agent/stop` never reaches the inbox.
+
+```typescript {{ title: "inngest/agents/names.ts" }}
+import { agents } from "../client";
+
+export const names = agents.agent({ id: "names" }, async ({ inbox }) => {
+  for await (const message of inbox) {
+    switch (message.name) {
+      case "agent/steer":
+        console.log("redirect", message.data.text);
+        break;
+
+      case "agent/request":
+        await message.reply({ seen: message.data.payload });
+        break;
+    }
+  }
+});
+```
+
+`next({ timeout: "10m" })` waits for one message and gives up with `undefined`; it returns `null` once the inbox is closed. `unread()` takes what arrived while you worked, `current()` lists every saved message without moving, and `putBack()` returns messages you are not ready for. `next({ timeout: 0 })` never waits.
+
+## Steer a running turn
+
+Send an `agent/steer` event while the agent works. With `...control` in the loop, it joins the next model call. Stopping works the same way.
+
+```typescript {{ title: "app/steer.ts" }}
+import { support } from "../inngest/agents/support";
+
+const ticket = support.thread("ticket-42");
+
+await ticket.send("My invoice shows the wrong amount");
+
+await ticket.steer("Check the refund policy first");
+
+await ticket.stop({ when: "nextTurn" });
+```
+
+`nextTurn` lets the current model call finish. `{ when: "now" }` ends the live run.
+
+## Listen to other sources
+
+An inbox source delivers events to a live run and never starts one. `of(type)` reads one event with a position of its own.
+
+```typescript {{ title: "inngest/agents/reviewer.ts" }}
+import { agents } from "../client";
+import { prCommented } from "../events";
+
+export const reviewer = agents.agent(
+  {
+    id: "reviewer",
+    inbox: [{ event: prCommented, thread: '"pr:" + string(int(event.data.number))' }],
+  },
+  async ({ inbox }) => {
+    const latest = await inbox.of(prCommented).next({ timeout: "1h" });
+
+    return latest?.data.body;
+  },
+);
+```
+
+```typescript {{ title: "inngest/events.ts" }}
+import { eventType } from "inngest";
+import { z } from "zod";
+
+export const prCommented = eventType("github/pr.commented", {
+  schema: z.object({
+    repo: z.string(),
+    number: z.number(),
+    body: z.string(),
+  }),
+});
+```
+
+Add a source mid-run with `await using comments = await inbox.listen(prCommented, { thread })`. Disposing it stops listening. The model can listen too: [Tools](/docs/labs/agents/tools?ref=docs-labs-agents-inboxes#let-the-model-listen-for-events).
+
+## Use an inbox in any function
+
+`step.subscribe` gives a plain Inngest function the same durable inbox.
+
+```typescript {{ title: "inngest/functions/collect.ts" }}
+import { inngest } from "../client";
+
+export const collect = inngest.createFunction(
+  { id: "collect", triggers: [{ event: "batch/started" }] },
+  async ({ step }) => {
+    await using inbox = await step.subscribe("items", { event: "batch/item" });
+
+    const first = await inbox.next({ timeout: "1h" });
+    const more = await inbox.unread();
+
+    return first ? [first, ...more].length : 0;
+  },
+);
+```
+
+`await using` closes the inbox when the scope ends. Several events share one ordered sequence, and `message.is(type)` narrows a message to its event.
+
+## When to use what
+
+- Handle every message in order: `for await (const message of inbox)`.
+- The newest request wins: `inbox.of(type).unread()`, then take the last.
+- Never block: `inbox.next({ timeout: 0 })`.
+- New instructions mid-turn: `steer` with `...control`.
+- `agent/message` events to join the turn too: `foldMessages: "all"`.
+- Acknowledge a message that reaches a busy thread: `onArrival`.
+- Listen to another event: an `inbox` source in the config, or `inbox.listen()`.
+
+## Options
+
+`onArrival` runs for each message that reaches a busy thread, in its own function, so it never waits for the turn. `foldMessages: "all"` also folds `agent/message` events into the running turn; the default is `"steer"`.
+
+<AnnotatedCode>
+
+```typescript {{ title: "inngest/agents/ack.ts" }}
+import { agents } from "../client";
+
+export const ack = agents.agent(
+  {
+    id: "ack",
+    foldMessages: "all",
+    onArrival: async ({ thread, event, step }) => {
+      await step.sendEvent("ack", {
+        name: "support/ack",
+        data: { thread, name: event.name },
+      });
+    },
+  },
+  async ({ inbox }) => {
+    for await (const message of inbox) {
+      console.log(message.name, message.data);
+    }
+  },
+);
+```
+
+<Annotation id="fold" lines="6" tease='default "steer"' title="foldMessages" href="#gotchas" linkText="Gotchas">
+Folds `agent/message` events into the running turn too.
+</Annotation>
+
+<Annotation id="arrival" lines="7-12" tease="runs in its own function" title="onArrival" href="#how-it-works" linkText="How it works">
+Sends an acknowledgement without waiting for the turn.
+</Annotation>
+
+</AnnotatedCode>
+
+## Gotchas
+
+- The inbox closes when the agent body returns. A message sent after that is dropped.
+- Reads on one inbox run in call order. Do not race `next()` with `Promise.race`; use `next({ timeout: 0 })`.
+- `listen` only captures events sent after it.
+
+## How it works
+
+- The executor keeps a pause per source and saves each matching event as a step of the run.
+- A message already saved is read without a step. When none is, the run parks and wakes when one arrives.
+- An agent's `inbox` is `step.inbox` with thread messages.
+
+## Recipes and reference
+
+[Approvals](/docs/labs/agents/recipes/approvals), [Scheduled watcher](/docs/labs/agents/recipes/scheduled-watcher), [Inbox reference](/docs/labs/agents/reference?ref=docs-labs-agents-inboxes#inbox).

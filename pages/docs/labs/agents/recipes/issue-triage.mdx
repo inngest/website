@@ -1,0 +1,181 @@
+import { AnnotatedCode, Annotation } from "shared/Docs/mdx";
+
+export const metaTitle = "Issue triage | Inngest Agents";
+export const description = "Build an agent that labels each new GitHub issue, links similar open issues and leaves one comment, with every GitHub call retried as a durable step.";
+
+# Issue triage
+
+> An agent that labels every new issue and links the ones it has seen before.
+
+```text
+Issue #214   Dev server crashes when a step returns undefined
+Labels       bug
+Comment      Thanks for the report. This looks like #198, which has a fix in review.
+```
+
+Screenshot needed: the labeled issue with the agent's comment.
+
+## The code
+
+<AnnotatedCode>
+
+```typescript {{ title: "inngest/agents/triage.ts" }}
+import { agent } from "inngest/experimental/agents";
+import { agents } from "../client";
+import { issueOpened } from "../events";
+import { claude } from "../models/claude";
+import { applyTriage } from "../tools/applyTriage";
+import { findSimilar } from "../tools/findSimilar";
+
+export const triage = agents.agent(
+  {
+    id: "triage",
+    on: {
+      event: issueOpened,
+      thread: '"issue:" + event.data.repo + "#" + string(int(event.data.number))',
+    },
+  },
+  async ({ inbox, control }) => {
+    for await (const message of inbox) {
+      await agent.loop({
+        model: claude,
+        system:
+          "Triage new issues. Search for similar open issues, then label the issue and comment once. Link duplicates.",
+        prompt: message,
+        tools: { findSimilar, applyTriage },
+        ...control,
+      });
+    }
+  },
+);
+```
+
+<Annotation id="event" lines="11-14" tease="a typed event starts it" title="Start from an event" href="/docs/labs/agents/agents-and-triggers?ref=docs-labs-agents-recipes-issue-triage" linkText="Agents and triggers">
+Your webhook route sends `github/issue.opened`. `thread` names the thread after the issue, and the model reads the event as JSON.
+</Annotation>
+
+<Annotation id="tools" lines="23" tease="search, then act" title="Two tools" href="/docs/labs/agents/tools?ref=docs-labs-agents-recipes-issue-triage" linkText="Tools">
+The model searches first, then labels and comments in one call.
+</Annotation>
+
+</AnnotatedCode>
+
+```typescript {{ title: "inngest/events.ts" }}
+import { eventType } from "inngest";
+import { z } from "zod";
+
+export const issueOpened = eventType("github/issue.opened", {
+  schema: z.object({
+    repo: z.string(),
+    number: z.number(),
+    title: z.string(),
+    body: z.string(),
+  }),
+});
+```
+
+```typescript {{ title: "inngest/tools/findSimilar.ts" }}
+import { tool } from "inngest/experimental";
+import { z } from "zod";
+import { github } from "../github";
+
+export const findSimilar = tool.step({
+  description: "Search open issues in the repository for similar reports",
+  input: z.object({ repo: z.string(), query: z.string() }),
+  run: async ({ repo, query }) => {
+    const found = (await github(
+      `/search/issues?q=${encodeURIComponent(`repo:${repo} is:issue is:open ${query}`)}&per_page=5`,
+    )) as { items: { number: number; title: string }[] };
+
+    return found.items.map((item) => {
+      return { number: item.number, title: item.title };
+    });
+  },
+});
+```
+
+```typescript {{ title: "inngest/tools/applyTriage.ts" }}
+import { step } from "inngest";
+import { tool } from "inngest/experimental";
+import { z } from "zod";
+import { github } from "../github";
+
+export const applyTriage = tool.group({
+  description: "Label the issue and leave a short comment",
+  input: z.object({
+    repo: z.string(),
+    number: z.number(),
+    labels: z.array(z.enum(["bug", "feature", "question", "duplicate"])),
+    comment: z.string(),
+  }),
+  run: async ({ repo, number, labels, comment }) => {
+    await step.run("label", async () => {
+      await github(`/repos/${repo}/issues/${number}/labels`, {
+        method: "POST",
+        body: JSON.stringify({ labels }),
+      });
+    });
+
+    await step.run("comment", async () => {
+      await github(`/repos/${repo}/issues/${number}/comments`, {
+        method: "POST",
+        body: JSON.stringify({ body: comment }),
+      });
+    });
+
+    return { labeled: labels };
+  },
+});
+```
+
+```typescript {{ title: "inngest/github.ts" }}
+export async function github(path: string, init?: RequestInit) {
+  const response = await fetch(`https://api.github.com${path}`, {
+    ...init,
+    headers: {
+      accept: "application/vnd.github+json",
+      authorization: `Bearer ${process.env.GITHUB_TOKEN}`,
+    },
+  });
+
+  if (!response.ok) {
+    throw new Error(`GitHub ${response.status}: ${await response.text()}`);
+  }
+
+  return response.json() as Promise<unknown>;
+}
+```
+
+`inngest/client.ts`, `inngest/models/claude.ts` and `inngest/serve.ts` follow the [Slack assistant](/docs/labs/agents/recipes/slack-assistant?ref=docs-labs-agents-recipes-issue-triage), with `./agents/triage` imported.
+
+## What it shows off
+
+- Start an agent from any event, typed. [Agents and triggers](/docs/labs/agents/agents-and-triggers?ref=docs-labs-agents-recipes-issue-triage)
+- One thread per issue, so a redelivered event joins the same run. [Inboxes](/docs/labs/agents/inboxes?ref=docs-labs-agents-recipes-issue-triage)
+- A tool that runs two steps, so a retry never labels twice. [Tools](/docs/labs/agents/tools?ref=docs-labs-agents-recipes-issue-triage)
+
+## Run it
+
+`$DEV_SERVER` is a Dev Server with `step.subscribe`; [build it once](/docs/labs/agents/quick-start?ref=docs-labs-agents-recipes-issue-triage#see-the-run).
+
+```bash
+$DEV_SERVER dev --no-discovery -u http://localhost:3000/api/inngest
+export GITHUB_TOKEN=ghp_... ANTHROPIC_API_KEY=sk-ant-... INNGEST_EXPERIMENTAL_KV_URL=redis://localhost:6379
+node --import tsx inngest/serve.ts
+curl -X POST http://localhost:8288/e/dev -d '{"name":"github/issue.opened","data":{"repo":"acme/app","number":214,"title":"Dev server crashes","body":"A step returns undefined."}}'
+```
+
+This recipe was type-checked against the SDK and not run.
+
+## Variations
+
+- Reply in the issue with `github.channel` instead of a tool. [Reporting](/docs/labs/agents/reporting?ref=docs-labs-agents-recipes-issue-triage)
+- Only triage some issues with `if: 'event.data.repo == "acme/app"'`. [Agents and triggers](/docs/labs/agents/agents-and-triggers?ref=docs-labs-agents-recipes-issue-triage)
+- Ask a person before closing a duplicate. [Approvals](/docs/labs/agents/recipes/approvals?ref=docs-labs-agents-recipes-issue-triage)
+- Watch for stale issues on a schedule. [Scheduled watcher](/docs/labs/agents/recipes/scheduled-watcher?ref=docs-labs-agents-recipes-issue-triage)
+
+## Learn more
+
+- [Agents and triggers](/docs/labs/agents/agents-and-triggers?ref=docs-labs-agents-recipes-issue-triage)
+- [Tools](/docs/labs/agents/tools?ref=docs-labs-agents-recipes-issue-triage)
+- Next recipe: [PR reviewer](/docs/labs/agents/recipes/pr-reviewer?ref=docs-labs-agents-recipes-issue-triage)

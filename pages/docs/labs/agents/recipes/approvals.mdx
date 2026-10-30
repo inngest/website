@@ -1,0 +1,209 @@
+import { AnnotatedCode, Annotation } from "shared/Docs/mdx";
+
+export const metaTitle = "Approvals | Inngest Agents";
+export const description = "Build an agent that asks a person to approve in Slack before it merges a pull request, and waits for the answer for as long as it takes at no cost.";
+
+# Approvals
+
+> An agent that asks in Slack before it merges, and waits as long as it takes.
+
+```text
+Maya   Merge acme/app#42
+Bot    Merge acme/app#42?   [merge] [skip]
+Maya   (clicks merge)
+Bot    Merged acme/app#42.
+```
+
+Screenshot needed: the question with its two buttons in Slack.
+
+## The code
+
+<AnnotatedCode>
+
+```typescript {{ title: "inngest/tools/mergePullRequest.ts" }}
+import { step } from "inngest";
+import { tool } from "inngest/experimental";
+import { askThrough, type Channel } from "inngest/experimental/agents";
+import { z } from "zod";
+import { github } from "../github";
+
+export function mergePullRequest(channel: Channel) {
+  return tool.group({
+    description: "Merge a pull request once a person approves it",
+    input: z.object({ repo: z.string(), number: z.number() }),
+    waits: true,
+    run: async ({ repo, number }) => {
+      const signal = `merge:${repo.replace("/", ".")}:${number}`;
+
+      await step.run("ask", async () => {
+        await askThrough(channel, {
+          signal,
+          question: `Merge ${repo}#${number}?`,
+          options: ["merge", "skip"],
+          recommended: "skip",
+          timeout: "1d",
+        });
+      });
+
+      const answer = await step.waitForSignal("answer", {
+        signal,
+        timeout: "1d",
+        onConflict: "replace",
+      });
+
+      if (answer?.data !== "merge") {
+        return { merged: false, reason: answer ? "declined" : "no answer" };
+      }
+
+      await step.run("merge", async () => {
+        await github(`/repos/${repo}/pulls/${number}/merge`, {
+          method: "PUT",
+        });
+      });
+
+      return { merged: true };
+    },
+  });
+}
+```
+
+<Annotation id="ask" lines="15-23" tease="renders the buttons" title="Ask" href="/docs/labs/agents/reporting?ref=docs-labs-agents-recipes-approvals" linkText="Reporting">
+`askThrough` posts the question through the channel. The `signal` names the answer.
+</Annotation>
+
+<Annotation id="wait" lines="25-29" tease="costs nothing while it waits" title="Wait" href="/docs/labs/agents/tools?ref=docs-labs-agents-recipes-approvals" linkText="Tools">
+The run is parked until the signal arrives or a day passes.
+</Annotation>
+
+<Annotation id="gate" lines="31-33" tease="anything but merge stops here" title="Gate" href="/docs/labs/agents/reliability?ref=docs-labs-agents-recipes-approvals" linkText="Reliability">
+No answer and `skip` both leave the pull request alone.
+</Annotation>
+
+<Annotation id="merge" lines="35-39" tease="a step of its own" title="Merge" href="/docs/labs/agents/tools?ref=docs-labs-agents-recipes-approvals" linkText="Tools">
+It runs once, only after approval, and a retry never merges twice.
+</Annotation>
+
+</AnnotatedCode>
+
+```typescript {{ title: "inngest/agents/merger.ts" }}
+import { agent, slack } from "inngest/experimental/agents";
+import { agents } from "../client";
+import { claude } from "../models/claude";
+import { findPullRequest } from "../tools/findPullRequest";
+import { mergePullRequest } from "../tools/mergePullRequest";
+
+export const merger = agents.agent(
+  {
+    id: "merger",
+    on: slack.thread({ in: ["C0123ABC"] }),
+    channels: ({ event }) => {
+      return { main: slack.channel(event, { in: ["C0123ABC"] }) };
+    },
+    report: "main",
+  },
+  async ({ inbox, channels, control, report }) => {
+    const main = channels.main;
+
+    if (!main) {
+      throw new Error("The main channel is missing");
+    }
+
+    for await (const message of inbox) {
+      const result = await agent.loop({
+        model: claude,
+        system:
+          "Merge the pull request the user names, but only if it can merge.",
+        prompt: message,
+        tools: {
+          findPullRequest,
+          mergePullRequest: mergePullRequest(main),
+        },
+        ...control,
+      });
+
+      await report.finish({ text: result.text });
+    }
+  },
+);
+```
+
+```typescript {{ title: "inngest/tools/findPullRequest.ts" }}
+import { tool } from "inngest/experimental";
+import { z } from "zod";
+import { github } from "../github";
+
+export const findPullRequest = tool.step({
+  description: "Read a pull request: title, author and whether it can merge",
+  input: z.object({ repo: z.string(), number: z.number() }),
+  run: async ({ repo, number }) => {
+    const pr = (await github(`/repos/${repo}/pulls/${number}`)) as {
+      title: string;
+      user: { login: string };
+      mergeable: boolean | null;
+    };
+
+    return { title: pr.title, author: pr.user.login, mergeable: pr.mergeable };
+  },
+});
+```
+
+```typescript {{ title: "inngest/github.ts" }}
+export async function github(path: string, init?: RequestInit) {
+  const response = await fetch(`https://api.github.com${path}`, {
+    ...init,
+    headers: {
+      accept: "application/vnd.github+json",
+      authorization: `Bearer ${process.env.GITHUB_TOKEN}`,
+    },
+  });
+
+  if (!response.ok) {
+    throw new Error(`GitHub ${response.status}: ${await response.text()}`);
+  }
+
+  return response.json() as Promise<unknown>;
+}
+```
+
+```typescript {{ title: "inngest/buttons.ts" }}
+import { inngest } from "./client";
+
+export async function onApprovalClick(signal: string, answer: string) {
+  await inngest.sendSignal({ signal, data: answer });
+}
+```
+
+`inngest/client.ts`, `inngest/models/claude.ts` and `inngest/serve.ts` follow the [Slack assistant](/docs/labs/agents/recipes/slack-assistant?ref=docs-labs-agents-recipes-approvals), with `./agents/merger` imported.
+
+## What it shows off
+
+- A person decides, the agent waits. [Reporting](/docs/labs/agents/reporting?ref=docs-labs-agents-recipes-approvals)
+- A tool built for the run's channel. [Tools](/docs/labs/agents/tools?ref=docs-labs-agents-recipes-approvals)
+- A wait of days survives deploys and restarts. [Reliability](/docs/labs/agents/reliability?ref=docs-labs-agents-recipes-approvals)
+
+## Run it
+
+`$DEV_SERVER` is a Dev Server with `step.subscribe`; [build it once](/docs/labs/agents/quick-start?ref=docs-labs-agents-recipes-approvals#see-the-run).
+
+```bash
+$DEV_SERVER dev --no-discovery -u http://localhost:3000/api/inngest
+export SLACK_BOT_TOKEN=xoxb-... GITHUB_TOKEN=ghp_... ANTHROPIC_API_KEY=sk-ant-... INNGEST_EXPERIMENTAL_KV_URL=redis://localhost:6379
+node --import tsx inngest/serve.ts
+```
+
+Your Slack interactivity route calls `onApprovalClick` with the button's `block_id` as the signal and its `value` as the answer. Check who clicked there: the SDK does not.
+
+The transcript is from a run with a scripted model, a fake Slack, a stubbed GitHub and a local Dev Server. Clicking `skip` instead sent no merge request.
+
+## Variations
+
+- Name who may approve with `approvers`, and check it in your route. [Reporting](/docs/labs/agents/reporting?ref=docs-labs-agents-recipes-approvals)
+- Approve a push instead of a merge. [Coding agent](/docs/labs/agents/recipes/coding-agent?ref=docs-labs-agents-recipes-approvals)
+- Wait up to a week with `timeout: "7d"`. [Reliability](/docs/labs/agents/reliability?ref=docs-labs-agents-recipes-approvals)
+- Ask in GitHub or your own tool with `defineChannel`. [Reporting](/docs/labs/agents/reporting?ref=docs-labs-agents-recipes-approvals)
+
+## Learn more
+
+- [Reporting](/docs/labs/agents/reporting?ref=docs-labs-agents-recipes-approvals)
+- [Tools](/docs/labs/agents/tools?ref=docs-labs-agents-recipes-approvals)
+- Next recipe: [Scheduled watcher](/docs/labs/agents/recipes/scheduled-watcher?ref=docs-labs-agents-recipes-approvals)

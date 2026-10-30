@@ -1,0 +1,225 @@
+import { AnnotatedCode, Annotation } from "shared/Docs/mdx";
+
+export const metaTitle = "Testing | Inngest Agents";
+export const description = "Test a whole agent with no model key, no Slack and no real sandbox: a scripted model, a fake Slack that records every post, and thread state you can read back.";
+
+# Testing
+
+> Test a whole agent with no model key and no Slack.
+
+```text
+ ✓ test/support.test.ts (1 test) 706ms
+   ✓ answers in the Slack thread
+```
+
+## The code
+
+<AnnotatedCode>
+
+```typescript {{ title: "test/support.test.ts" }}
+import { slackMessageEvent } from "inngest/experimental/agents";
+import {
+  script,
+  startFakes,
+  withKeys,
+} from "inngest/experimental/agents/testing";
+import { expect, test } from "vitest";
+import { createApp } from "../inngest/app";
+import { serveApp } from "./serveApp";
+
+test("answers in the Slack thread", async () => {
+  await using fakes = await startFakes();
+
+  const app = createApp({
+    model: script([
+      { call: { name: "lookup", input: { id: "42" } } },
+      { say: "Order 42 has shipped." },
+    ]),
+    slackApi: `${fakes.url}/slack/api`,
+  });
+
+  await using _server = await serveApp(
+    app.inngest,
+    app.agents.functions(),
+  );
+
+  await app.inngest.send({
+    name: slackMessageEvent,
+    data: {
+      channel: "C0123ABC",
+      ts: "1700000000.000100",
+      text: "Where is order 42?",
+      user: "U1",
+    },
+  });
+
+  await expect
+    .poll(() => {
+      return fakes.posts({ channel: "slack", method: "chat.postMessage" });
+    })
+    .toHaveLength(1);
+
+  const [post] = fakes.posts({ method: "chat.postMessage" });
+
+  expect(post?.body.text).toBe("Order 42 has shipped.");
+
+  const thread = withKeys(
+    app.support.thread("slack:C0123ABC/1700000000.000100"),
+  );
+
+  expect((await thread.state()).answer).toBe("Order 42 has shipped.");
+});
+```
+
+<Annotation id="fakes" lines="12" tease="closed by await using" title="Fake Slack and GitHub" href="/docs/labs/agents/reliability?ref=docs-labs-agents-recipes-testing" linkText="Reliability">
+A local server that plays Slack and GitHub and keeps every call.
+</Annotation>
+
+<Annotation id="script" lines="15-18" tease="turn 1 calls, turn 2 says" title="Scripted model" href="/docs/labs/agents/models-and-the-loop?ref=docs-labs-agents-recipes-testing" linkText="Models and the loop">
+A model that needs no key. Steps answer by turn.
+</Annotation>
+
+<Annotation id="api" lines="19" tease="Slack goes to the fake" title="Point Slack at the fake" href="/docs/labs/agents/reporting?ref=docs-labs-agents-recipes-testing" linkText="Reporting">
+Slack at `/slack/api`, GitHub at `/github`.
+</Annotation>
+
+<Annotation id="poll" lines="37-45" tease="wait, then assert" title="Assert on the post" href="/docs/labs/agents/reliability?ref=docs-labs-agents-recipes-testing" linkText="Reliability">
+`posts` filters by `channel`, `method` and `thread`, oldest first.
+</Annotation>
+
+<Annotation id="keys" lines="47-51" tease="only the keys you set" title="Read the thread" href="/docs/labs/agents/threads-and-memory?ref=docs-labs-agents-recipes-testing" linkText="Threads and memory">
+`withKeys` makes `state()` return the thread's KV keys.
+</Annotation>
+
+</AnnotatedCode>
+
+```typescript {{ title: "inngest/app.ts" }}
+import { Inngest } from "inngest";
+import {
+  agent,
+  type AgentModel,
+  createAgents,
+  kv,
+  memoryKvAdapter,
+  slack,
+} from "inngest/experimental/agents";
+import { lookup } from "./tools/lookup";
+
+export interface AppOptions {
+  model: AgentModel;
+  slackApi?: string;
+}
+
+export function createApp(options: AppOptions) {
+  const inngest = new Inngest({ id: "support", isDev: true });
+
+  const agents = createAgents(inngest, { store: memoryKvAdapter() });
+
+  const support = agents.agent(
+    {
+      id: "support",
+      on: slack.thread({ in: ["C0123ABC"] }),
+      channels: ({ event }) => {
+        return {
+          main: slack.channel(event, {
+            in: ["C0123ABC"],
+            apiUrl: options.slackApi,
+            token: "xoxb-test",
+          }),
+        };
+      },
+      report: "main",
+    },
+    async ({ inbox, control, report }) => {
+      for await (const message of inbox) {
+        const result = await agent.loop({
+          model: options.model,
+          prompt: message,
+          tools: { lookup },
+          ...control,
+        });
+
+        await kv.thread.set("answer", result.text);
+
+        await report(result.text);
+      }
+    },
+  );
+
+  return { inngest, agents, support };
+}
+```
+
+```typescript {{ title: "inngest/tools/lookup.ts" }}
+import { tool } from "inngest/experimental";
+import { z } from "zod";
+
+export const lookup = tool.step({
+  description: "Find an order by ID",
+  input: z.object({ id: z.string() }),
+  run: async ({ id }) => {
+    return { id, status: "shipped" };
+  },
+});
+```
+
+```typescript {{ title: "test/serveApp.ts" }}
+import { createServer } from "node:http";
+import type { AddressInfo } from "node:net";
+import type { Inngest, InngestFunction } from "inngest";
+import { serve } from "inngest/node";
+
+export async function serveApp(
+  client: Inngest.Any,
+  functions: InngestFunction.Any[],
+) {
+  const server = createServer(serve({ client, functions }));
+
+  await new Promise<void>((resolve) => {
+    server.listen(0, resolve);
+  });
+
+  const { port } = server.address() as AddressInfo;
+
+  await fetch(`http://localhost:${port}/api/inngest`, { method: "PUT" });
+
+  return {
+    close: async () => {
+      server.close();
+    },
+    [Symbol.asyncDispose]: async () => {
+      server.close();
+    },
+  };
+}
+```
+
+## What it shows off
+
+- A scripted model makes the run deterministic. [Models and the loop](/docs/labs/agents/models-and-the-loop?ref=docs-labs-agents-recipes-testing)
+- A fake Slack records every post. [Reliability](/docs/labs/agents/reliability?ref=docs-labs-agents-recipes-testing)
+- The same agent code runs in tests and in production. [Agents and triggers](/docs/labs/agents/agents-and-triggers?ref=docs-labs-agents-recipes-testing)
+
+## Run it
+
+`$DEV_SERVER` is a Dev Server with `step.subscribe`; [build it once](/docs/labs/agents/quick-start?ref=docs-labs-agents-recipes-testing#see-the-run).
+
+```bash
+$DEV_SERVER dev --no-discovery   # leave running
+npx vitest run                              # in another terminal
+```
+
+The test sends events to the Dev Server at `http://localhost:8288`. This test passed against a local Dev Server.
+
+## Variations
+
+- Fake the sandbox with `fakeSandbox`. [Testing reference](/docs/labs/agents/reference-testing?ref=docs-labs-agents-recipes-testing#fakesandbox)
+- Test a push with `startGitRemote` or `fakeGitDataApi`. [Testing reference](/docs/labs/agents/reference-testing?ref=docs-labs-agents-recipes-testing#startgitremote)
+- Test a channel with `testReporter`. [Testing reference](/docs/labs/agents/reference-testing?ref=docs-labs-agents-recipes-testing#testreporter)
+- Choose a step with `when` for a request that depends on the conversation. [Testing reference](/docs/labs/agents/reference-testing?ref=docs-labs-agents-recipes-testing#script)
+
+## Learn more
+
+- [Reliability](/docs/labs/agents/reliability?ref=docs-labs-agents-recipes-testing)
+- [Testing reference](/docs/labs/agents/reference-testing?ref=docs-labs-agents-recipes-testing)
+- Back to [Slack assistant](/docs/labs/agents/recipes/slack-assistant?ref=docs-labs-agents-recipes-testing)

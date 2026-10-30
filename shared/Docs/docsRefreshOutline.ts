@@ -470,6 +470,14 @@ export const docsRefreshOutline: DocsRefreshPage[] = [
             href: "/docs/sandboxes/features",
             children: [
               {
+                title: "Run code",
+                href: "/docs/sandboxes/features/run-code",
+              },
+              {
+                title: "Exit codes and errors",
+                href: "/docs/sandboxes/features/exit-codes",
+              },
+              {
                 title: "Base images",
                 href: "/docs/sandboxes/features/base-images",
               },
@@ -500,6 +508,18 @@ export const docsRefreshOutline: DocsRefreshPage[] = [
               {
                 title: "Managed lifecycle",
                 href: "/docs/sandboxes/features/managed-lifecycle",
+              },
+              {
+                title: "Run-owned Sandboxes",
+                href: "/docs/sandboxes/features/run-owned",
+              },
+              {
+                title: "Tools and code mode",
+                href: "/docs/sandboxes/features/tools",
+              },
+              {
+                title: "Reusable sandbox functions",
+                href: "/docs/sandboxes/features/sandbox-functions",
               },
               {
                 title: "Isolation and security",
@@ -777,6 +797,14 @@ export const docsRefreshOutline: DocsRefreshPage[] = [
             href: "/docs/labs/ci/quick-start",
           },
           {
+            title: "Project structure",
+            href: "/docs/labs/ci/structure",
+          },
+          {
+            title: "Run CI locally",
+            href: "/docs/labs/ci/local",
+          },
+          {
             title: "Concepts",
             href: "/docs/labs/ci/concepts",
             children: [
@@ -793,12 +821,12 @@ export const docsRefreshOutline: DocsRefreshPage[] = [
                 href: "/docs/labs/ci/commands",
               },
               {
-                title: "Machines and from()",
+                title: "Machines",
                 href: "/docs/labs/ci/machines",
               },
               {
-                title: "Caching",
-                href: "/docs/labs/ci/caching",
+                title: "Base images & caching",
+                href: "/docs/labs/ci/base-images",
               },
               {
                 title: "Checks and reports",
@@ -813,6 +841,136 @@ export const docsRefreshOutline: DocsRefreshPage[] = [
           {
             title: "Recipes",
             href: "/docs/labs/ci/recipes",
+          },
+        ],
+      },
+      {
+        title: "Inngest Agents",
+        href: "/docs/labs/agents",
+        children: [
+          {
+            title: "Quick start",
+            href: "/docs/labs/agents/quick-start",
+          },
+          {
+            title: "Recipes",
+            href: "/docs/labs/agents/recipes",
+            children: [
+              {
+                title: "Slack assistant",
+                href: "/docs/labs/agents/recipes/slack-assistant",
+              },
+              {
+                title: "Issue triage",
+                href: "/docs/labs/agents/recipes/issue-triage",
+              },
+              {
+                title: "PR reviewer",
+                href: "/docs/labs/agents/recipes/pr-reviewer",
+              },
+              {
+                title: "Coding agent",
+                href: "/docs/labs/agents/recipes/coding-agent",
+              },
+              {
+                title: "Approvals",
+                href: "/docs/labs/agents/recipes/approvals",
+              },
+              {
+                title: "Scheduled watcher",
+                href: "/docs/labs/agents/recipes/scheduled-watcher",
+              },
+              {
+                title: "Agent teams",
+                href: "/docs/labs/agents/recipes/agent-teams",
+              },
+              {
+                title: "MCP assistant",
+                href: "/docs/labs/agents/recipes/mcp-assistant",
+              },
+              {
+                title: "Sandbox tools",
+                href: "/docs/labs/agents/recipes/sandbox-tools",
+              },
+              {
+                title: "Testing",
+                href: "/docs/labs/agents/recipes/testing",
+              },
+            ],
+          },
+          {
+            title: "Concepts",
+            children: [
+              {
+                title: "Agents and triggers",
+                href: "/docs/labs/agents/agents-and-triggers",
+              },
+              {
+                title: "Models and the loop",
+                href: "/docs/labs/agents/models-and-the-loop",
+              },
+              {
+                title: "Inboxes",
+                href: "/docs/labs/agents/inboxes",
+              },
+              {
+                title: "Reporting",
+                href: "/docs/labs/agents/reporting",
+              },
+              {
+                title: "Threads and memory",
+                href: "/docs/labs/agents/threads-and-memory",
+              },
+              {
+                title: "Tools",
+                href: "/docs/labs/agents/tools",
+              },
+              {
+                title: "Sandboxes and code",
+                href: "/docs/labs/agents/sandboxes-and-code",
+              },
+              {
+                title: "Teams of agents",
+                href: "/docs/labs/agents/teams-of-agents",
+              },
+              {
+                title: "Reliability",
+                href: "/docs/labs/agents/reliability",
+              },
+              {
+                title: "Observability",
+                href: "/docs/labs/agents/observability",
+              },
+            ],
+          },
+          {
+            title: "Guides",
+            children: [
+              {
+                title: "Project structure",
+                href: "/docs/labs/agents/structure",
+              },
+              {
+                title: "Repos and git",
+                href: "/docs/labs/agents/repos-and-git",
+              },
+              {
+                title: "Run on Workers",
+                href: "/docs/labs/agents/workers",
+              },
+            ],
+          },
+          {
+            title: "Reference",
+            href: "/docs/labs/agents/reference",
+          },
+          {
+            title: "Sandboxes reference",
+            href: "/docs/labs/agents/reference-sandboxes",
+          },
+          {
+            title: "Testing reference",
+            href: "/docs/labs/agents/reference-testing",
           },
         ],
       },

@@ -1,0 +1,61 @@
+import { AnnotatedCode, Annotation } from "shared/Docs/mdx";
+
+export const metaTitle = "Run-owned Sandboxes | Sandboxes";
+export const description = "Sandboxes and snapshots your function creates belong to its run and are cleaned up when the run ends, however it ends. Pick another active run as owner, or opt out with persistent.";
+
+# Run-owned Sandboxes and snapshots
+
+> Sandboxes and snapshots your run creates are cleaned up when it ends, however it ends.
+
+- **No leaks.** Failed, cancelled, and crashed runs all clean up the same way. [Choose the owner →](#choose-the-owner)
+- **No cleanup code.** No `onFailure`, no stored IDs. [Managed lifecycle →](/docs/sandboxes/features/managed-lifecycle?ref=docs-sandboxes-run-owned)
+- **Snapshots too.** [Snapshots →](#snapshots-follow-the-same-rule)
+
+<AnnotatedCode>
+
+```typescript {{ title: "TypeScript" }}
+const sb = await step.sandbox.create("scratch");
+await sb.python("work", code);
+
+const shared = await step.sandbox.create("shared", {
+  owner: { runId: event.data.coordinatorRunId },
+});
+
+const base = await step.sandbox.create("long-lived", { owner: "persistent" });
+```
+
+<Annotation id="default" lines="1-2" tease="destroyed with the run" title="Owned by this run" href="#choose-the-owner" linkText="Choose the owner">
+Never destroyed here. Cleaned up when the run ends.
+</Annotation>
+
+<Annotation id="other" lines="4-6" tease="another run owns it" title="Owned by another run" href="#choose-the-owner" linkText="Choose the owner">
+Lives until that run ends. The run must be active.
+</Annotation>
+
+<Annotation id="persistent" lines="8" tease="you destroy it" title="Opt out" href="#choose-the-owner" linkText="Choose the owner">
+Kept until you destroy it.
+</Annotation>
+
+</AnnotatedCode>
+
+## Choose the owner
+
+- Works on `create()`, `group.sandbox()`, the runners, and `snapshot()`.
+- An ended run fails with `sandbox_owner_run_not_active`.
+
+## Snapshots follow the same rule
+
+```typescript {{ title: "TypeScript" }}
+const snapshot = await sb.snapshot("prepared");
+const clones = await Promise.all(
+  tasks.map((task) => snapshot.clone(`clone-${task.id}`)),
+);
+```
+
+Owners aren't inherited between a snapshot and its clones.
+
+## How it works
+
+- When the run ends in any state, Inngest destroys what it still owns.
+- Snapshots are deleted after their clones.
+- Inngest CI's [uncached parent job](/docs/labs/ci/base-images?ref=docs-sandboxes-run-owned#in-one-run) is a run-owned snapshot.

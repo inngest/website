@@ -1,0 +1,73 @@
+import { Info } from "shared/Docs/mdx";
+
+export const metaTitle = "Inngest Agents | Labs";
+export const description = "Inngest Agents is an Inngest Labs project: agents that hold a conversation for days, survive crashes, take new instructions mid-turn, and keep their files between runs.";
+
+# Inngest Agents
+
+> Build agents that run for hours or days, take new instructions while they work, and never repeat finished work.
+
+<Info>
+  Inngest Agents is experimental and moves fast. Import it from `inngest/experimental/agents`; the API may change between releases. [What's Labs?](/docs/labs?ref=docs-labs-agents)
+</Info>
+
+An agent is an Inngest function with a durable inbox. Every model call and tool call is a step, so a crash or a deploy never repeats a finished one.
+
+```typescript {{ title: "inngest/agents/support.ts" }}
+import { agent } from "inngest/experimental/agents";
+import { agents } from "../client";
+import { claude } from "../models/claude";
+import { lookupOrder } from "../tools/lookupOrder";
+
+export const support = agents.agent(
+  { id: "support" },
+  async ({ inbox, control }) => {
+    for await (const message of inbox) {
+      await agent.loop({
+        model: claude,
+        prompt: message,
+        tools: { lookupOrder },
+        ...control,
+      });
+    }
+  },
+);
+```
+
+```typescript {{ title: "send.ts" }}
+import { support } from "./inngest/agents/support";
+
+await support.thread("customer-42").send("Where is order 7?");
+```
+
+## Concepts
+
+Read them in order, or jump to the one you need.
+
+1. [Agents and triggers](/docs/labs/agents/agents-and-triggers?ref=docs-labs-agents): start from a message, an event or a schedule.
+2. [Models and the loop](/docs/labs/agents/models-and-the-loop?ref=docs-labs-agents): a model with tools, one durable step per call.
+3. [Inboxes](/docs/labs/agents/inboxes?ref=docs-labs-agents): messages in order, steering mid-turn, listening to events.
+4. [Reporting](/docs/labs/agents/reporting?ref=docs-labs-agents): answer in Slack and GitHub, show progress, ask for approval.
+5. [Threads and memory](/docs/labs/agents/threads-and-memory?ref=docs-labs-agents): one key per conversation, state that lasts.
+6. [Tools](/docs/labs/agents/tools?ref=docs-labs-agents): typed functions that run in your app.
+7. [Sandboxes and code](/docs/labs/agents/sandboxes-and-code?ref=docs-labs-agents): a machine whose files survive between runs.
+8. [Teams of agents](/docs/labs/agents/teams-of-agents?ref=docs-labs-agents): hand work to another agent, with limits.
+9. [Reliability](/docs/labs/agents/reliability?ref=docs-labs-agents): retries, budgets, recovery and testing.
+10. [Observability](/docs/labs/agents/observability?ref=docs-labs-agents): traces, usage and scores.
+
+## Recipes
+
+- [Slack assistant](/docs/labs/agents/recipes/slack-assistant?ref=docs-labs-agents): answers in a thread and remembers it.
+- [Issue triage](/docs/labs/agents/recipes/issue-triage?ref=docs-labs-agents)
+- [PR reviewer](/docs/labs/agents/recipes/pr-reviewer?ref=docs-labs-agents)
+- [Coding agent](/docs/labs/agents/recipes/coding-agent?ref=docs-labs-agents)
+- [Approvals](/docs/labs/agents/recipes/approvals?ref=docs-labs-agents)
+- [Scheduled watcher](/docs/labs/agents/recipes/scheduled-watcher?ref=docs-labs-agents)
+- [Agent teams](/docs/labs/agents/recipes/agent-teams?ref=docs-labs-agents)
+- [MCP assistant](/docs/labs/agents/recipes/mcp-assistant?ref=docs-labs-agents)
+- [Sandbox tools](/docs/labs/agents/recipes/sandbox-tools?ref=docs-labs-agents)
+- [Testing](/docs/labs/agents/recipes/testing?ref=docs-labs-agents)
+
+## Where to start
+
+Follow the [Quick start](/docs/labs/agents/quick-start?ref=docs-labs-agents). [Project structure](/docs/labs/agents/structure?ref=docs-labs-agents) shows where agents, tools and sandboxes live, and the [Reference](/docs/labs/agents/reference?ref=docs-labs-agents) lists every export.

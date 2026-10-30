@@ -1,0 +1,273 @@
+import { AnnotatedCode, Annotation, Tip } from "shared/Docs/mdx";
+
+export const metaTitle = "Tools and code mode | Sandboxes";
+export const description = "Let code in a Sandbox call functions in your Inngest function, as durable steps. Your credentials stay out of the Sandbox, and code mode gives an LLM one tool that writes code against yours.";
+
+# Tools and code mode
+
+> Let code in a Sandbox call your functions, with your credentials, as durable steps.
+
+- **Credentials stay yours.** The Sandbox sees a stub, never a secret. [Declare tools →](#declare-tools)
+- **Typed for the code.** Declarations come from your schemas. [Call a tool →](#call-a-tool-from-the-sandbox)
+- **Every call is a step.** Saved, retried, and visible in the trace. [Durable steps →](#every-call-is-a-durable-step)
+- **One tool for an LLM.** The model writes a program against all your tools. [Code mode →](#code-mode)
+
+<AnnotatedCode>
+
+```typescript {{ title: "inngest/functions/refund-disputed.ts" }}
+export const refundDisputed = inngest.createFunction(
+  { id: "refund-disputed", triggers: [{ event: "billing/refund" }] },
+  async ({ event, step }) => {
+    const stripe = new Stripe(process.env.STRIPE_KEY!);
+
+    const refund = async (chargeId: string) => {
+      return (await stripe.refunds.create({ charge: chargeId })).status;
+    };
+
+    return step.sandbox.python(
+      "pick",
+      `
+for c in charges:
+    if c["disputed"]:
+        await tools.refund(c["id"])
+`,
+      { input: { charges: event.data.charges }, tools: { refund } },
+    );
+  },
+);
+```
+
+<Annotation id="key" lines="4" tease="stays in your app" title="Credentials stay yours" href="#declare-tools" linkText="Declare tools">
+The Stripe key never enters the Sandbox.
+</Annotation>
+
+<Annotation id="call" lines="15" tease="runs back in your function" title="Each call is a step" href="#every-call-is-a-durable-step" linkText="Durable steps">
+A flaky Stripe call retries without re-running the Python. A replay never refunds twice.
+</Annotation>
+
+<Annotation id="plain" lines="17" tease="a plain function" title="Zero ceremony" href="#plain-function-or-toolstep" linkText="Plain or tool.step">
+Called positionally from Python, still a durable step.
+</Annotation>
+
+</AnnotatedCode>
+
+<AnnotatedCode>
+
+```typescript {{ title: "inngest/functions/churn-report.ts" }}
+import { step } from "inngest";
+import { tool } from "inngest/experimental";
+import { z } from "zod";
+
+const report = await step.sandbox.python(
+  "churn-report",
+  `
+  customers = await tools.listCustomers(plan="pro")
+  at_risk = [c for c in customers if c["seats_used"] < c["seats"] * 0.3]
+
+  for c in at_risk:
+      await tools.sendSlack(channel="#cs", text=f"{c['name']} is under 30% seat use")
+
+  return {"checked": len(customers), "flagged": len(at_risk)}
+  `,
+  {
+    tools: {
+      listCustomers: tool.step({
+        description: "List customers on a plan",
+        input: z.object({ plan: z.enum(["free", "pro"]) }),
+        output: z.array(Customer),
+        run: ({ plan }) => {
+          return db.customers.where({ plan });
+        },
+      }),
+
+      sendSlack: tool.step({
+        input: z.object({ channel: z.string(), text: z.string() }),
+        run: ({ channel, text }, ctx) => {
+          return slack.post(channel, text, { idempotencyKey: ctx.idempotencyKey });
+        },
+      }),
+    },
+    schema: { output: z.object({ checked: z.number(), flagged: z.number() }) },
+  },
+);
+```
+
+<Annotation id="call" lines="8,12" tease="await tools.x(...)" title="Call tools like functions" href="#call-a-tool-from-the-sandbox" linkText="Call a tool">
+Async calls, parallel with `asyncio.gather` or `Promise.all`.
+</Annotation>
+
+<Annotation id="declare" lines="18-25" tease="a closure in your function" title="Tools run in your function" href="#declare-tools" linkText="Declare tools">
+`run` closes over your `db`. Nothing is sent to the Sandbox.
+</Annotation>
+
+<Annotation id="idem" lines="29-30" tease="safe on retry" title="Each call is a durable step" href="#every-call-is-a-durable-step" linkText="Durable steps">
+Saved results mean no double post. `ctx.idempotencyKey` is stable across retries.
+</Annotation>
+
+</AnnotatedCode>
+
+## Plain function or `tool.step()`
+
+| Use | When | You get |
+| --- | --- | --- |
+| Plain function | Trusted code you wrote, where both sides know the signature | Positional JSON arguments, no setup, still a durable step |
+| `tool.step()` | An LLM or other untrusted code calls it | Discovery and validation at the boundary |
+| `tool.step()` | Python keyword arguments | Names the Sandbox can see. JS can't read a plain function's parameter names |
+
+In code mode, `describeTools` lists a plain function as `name(...args)` with no schema, and warns. Upgrade the tools a model needs.
+
+## Declare tools
+
+```typescript {{ title: "TypeScript" }}
+await step.sandbox.python("a", code, {
+  tools: {
+    quick: (msg) => post(msg),
+    typed: tool.step({ input: z.object({ id: z.string() }), output: Customer, run: ({ id }) => load(id) }),
+    lookup: runSql.tool(),
+  },
+  toolOptions: { toolTimeout: "30s", maxCalls: 100, waitWindow: "20s" },
+});
+```
+
+- `run` gets `(input, ctx)`. `ctx.idempotencyKey` is stable across retries. `ctx.signal` aborts at `toolTimeout`.
+- `toolOptions` defaults are shown. A command with tools may run 5 minutes.
+- Works on [runners](/docs/sandboxes/features/run-code?ref=docs-sandboxes-tools), `create()`, and `group.sandbox()`, not `sb.$`.
+
+On `commands.run`, import the stub yourself. On runners, `tools` is already a global.
+
+```python {{ title: "Python" }}
+from inngest_tools import tools
+
+customer = await tools.getCustomer("cus_1")
+```
+
+```javascript {{ title: "Node" }}
+const { tools } = require("inngest_tools");
+
+tools.getCustomer("cus_1").then(console.log);
+```
+
+## Tools that run steps
+
+`tool.group()` runs its body as a group. Use the global `step`, not a parameter.
+
+```typescript {{ title: "TypeScript" }}
+import { step } from "inngest";
+import { tool } from "inngest/experimental";
+
+const customerReport = tool.group({
+  input: z.object({ id: z.string() }),
+  run: async ({ id }) => {
+    const [orders, tickets] = await Promise.all([
+      step.run("orders", () => db.orders.forCustomer(id)),
+      step.run("tickets", () => db.tickets.forCustomer(id)),
+    ]);
+
+    return { orders, tickets };
+  },
+});
+
+const requestApproval = tool.group({
+  input: z.object({ orderId: z.string() }),
+  run: async ({ orderId }) => {
+    const reply = await step.waitForEvent("approval", {
+      event: "app/approval.decided",
+      timeout: "1h",
+      match: "data.orderId",
+    });
+
+    return { approved: reply?.data.approved ?? false };
+  },
+});
+```
+
+The Sandbox sees one call and one result. `step.invoke` works too.
+
+## Call a tool from the Sandbox
+
+```python {{ title: "Python" }}
+class Customer(TypedDict):
+    id: str
+    name: str
+    plan: Literal["free", "pro"]
+    seats: int
+    seats_used: int
+
+class tools:
+    @staticmethod
+    async def listCustomers(*, plan: Literal["free", "pro"]) -> list[Customer]:
+        """List customers on a plan"""
+
+    @staticmethod
+    async def sendSlack(*, channel: str, text: str) -> None: ...
+```
+
+```typescript {{ title: "TypeScript" }}
+declare const tools: {
+  /** List customers on a plan */
+  listCustomers(input: { plan: "free" | "pro" }): Promise<Customer[]>;
+  sendSlack(input: { channel: string; text: string }): Promise<void>;
+};
+```
+
+`describeTools(tools, "python")` returns this text. An uncaught `ToolError` follows [`exitCodes`](/docs/sandboxes/features/exit-codes?ref=docs-sandboxes-tools).
+
+## Every call is a durable step
+
+```text {{ title: "Trace" }}
+SANDBOX  churn-report
+  create
+  exec                    exit 0 · 2 waits, folded in
+  tool listCustomers      #1
+  tool sendSlack          #2
+  tool sendSlack          #3
+  destroy
+```
+
+- Calls found together run in parallel, up to 8 at a time.
+- A tool that throws is retried, then raises `ToolError` in the code. Limit: `maxCalls` per command.
+
+## Code mode
+
+```typescript {{ title: "inngest/functions/support-agent.ts" }}
+import { sandbox } from "inngest/experimental";
+import { agentLoop, toAnthropic } from "@inngest/sandbox-tools";
+
+const runCode = sandbox.codeTool({
+  language: "python",
+  timeout: "2m",
+  tools: { getCustomer, listInvoices, sendSlack },
+});
+
+export const supportAgent = inngest.createFunction(
+  { id: "support-agent", triggers: { event: "support/ask" } },
+  async ({ event }) => {
+    return agentLoop({
+      adapter: toAnthropic,
+      tools: [runCode],
+      model: (messages, defs) => {
+        return anthropic.messages.create({ model: "claude-sonnet-4-5", max_tokens: 2048, tools: defs, messages });
+      },
+      messages: [{ role: "user", content: event.data.question }],
+    });
+  },
+);
+```
+
+```text {{ title: "Trace" }}
+FUNCTION  support-agent
+  llm-0        step.run: the model writes the code
+  run_code     SANDBOX · 4 tool calls · 3.1s
+  llm-1        step.run: the model answers
+```
+
+The model sees one typed `run_code` tool. Ten calls take one turn.
+
+<Tip>
+  The model's code is untrusted. Expose only what the agent should do.
+</Tip>
+
+## How it works
+
+A tool runs in your function and the Sandbox only gets a stub. Each call is a step, so replays never repeat it.
+

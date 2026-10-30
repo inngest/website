@@ -1,0 +1,156 @@
+import { AnnotatedCode, Annotation } from "shared/Docs/mdx";
+
+export const metaTitle = "Project structure | Inngest CI";
+export const description = "Recommended layout for Inngest CI code: one client, one file per pipeline, one file per job, shared helpers, and a server that imports the pipelines.";
+
+# Project structure
+
+> One client, one file per pipeline, one file per job.
+
+- **Short files.** Each pipeline and job is easy to find and review. [Layout →](#layout)
+- **Imports are the wiring.** Pipelines import jobs, and jobs import the job they start `from`. [Files →](#files)
+- **Room to grow.** Add subfolders when a folder fills up. [Grow →](#grow-it)
+
+## Layout
+
+```text
+ci/
+  client.ts
+  server.ts
+  helpers.ts
+  pipelines/
+    pr.ts
+    release.ts
+  jobs/
+    base.ts
+    lint.ts
+    test.ts
+```
+
+## Files
+
+Read them in the order they depend on each other.
+
+```typescript {{ title: "ci/client.ts" }}
+import { Inngest } from "inngest";
+import { createCi } from "@inngest/ci";
+
+export const inngest = new Inngest({ id: "my-app" });
+export const ci = createCi(inngest);
+```
+
+```typescript {{ title: "ci/helpers.ts" }}
+import { $, checkout } from "@inngest/ci";
+
+export const install = async () => {
+  await checkout();
+  await $`pnpm install`;
+};
+```
+
+```typescript {{ title: "ci/jobs/base.ts" }}
+import { ci } from "../client";
+import { install } from "../helpers";
+
+export const base = ci.job("base", async () => {
+  await install();
+});
+```
+
+<AnnotatedCode highlight>
+
+```typescript {{ title: "ci/jobs/lint.ts" }}
+import { $ } from "@inngest/ci";
+import { ci } from "../client";
+import { base } from "./base";
+
+export const lint = ci.job(
+  {
+    id: "lint",
+    from: base,
+  },
+  async () => {
+    await $`pnpm lint`;
+  },
+);
+```
+
+<Annotation id="from" lines="8" tease="imports the parent" title="Start from base">
+`from` takes the imported job. `ci/jobs/test.ts` looks the same.
+</Annotation>
+
+</AnnotatedCode>
+
+<AnnotatedCode highlight>
+
+```typescript {{ title: "ci/pipelines/pr.ts" }}
+import { github } from "@inngest/ci";
+import { ci } from "../client";
+import { lint } from "../jobs/lint";
+import { test } from "../jobs/test";
+
+export const pr = ci.pipeline(
+  {
+    id: "pr",
+    on: github.pullRequest(),
+  },
+  async () => {
+    await Promise.all([lint(), test()]);
+  },
+);
+```
+
+<Annotation id="jobs" lines="3-4" tease="imports its jobs" title="Pipelines import jobs">
+A pipeline imports only the jobs it calls.
+</Annotation>
+
+</AnnotatedCode>
+
+<AnnotatedCode highlight>
+
+```typescript {{ title: "ci/server.ts" }}
+import { createServer } from "inngest/node";
+import { inngest, ci } from "./client";
+import "./pipelines/pr";
+import "./pipelines/release";
+
+const server = createServer({ client: inngest, functions: ci.functions() });
+
+server.listen(Number(process.env.PORT ?? 3000));
+```
+
+<Annotation id="serve" lines="3-4" tease="one import per pipeline" title="Register the pipelines">
+Importing a file defines what is in it. Add a line for each new pipeline.
+</Annotation>
+
+</AnnotatedCode>
+
+## Grow it
+
+Group files into subfolders when a folder gets crowded. Imports change, nothing else does.
+
+```text
+ci/
+  jobs/
+    base.ts
+    lint.ts
+    test.ts
+    deploy/
+      preview.ts
+      production.ts
+  pipelines/
+    pr.ts
+    release/
+      stable.ts
+      canary.ts
+```
+
+## How it works
+
+- `ci.pipeline()` and `ci.job()` register on the `ci` client when their file is imported.
+- `ci.functions()` returns what is registered when it is called, so `server.ts` imports the pipelines first.
+- Jobs load through the pipelines that import them. A job no pipeline imports is not registered, including its `cache.refresh` triggers, so import it from `server.ts`.
+- Every file imports the same `ci`. A second `createCi` is a separate client, and `from` cannot reach jobs on another.
+- Job IDs are unique per app. Defining one twice throws `CiUsageError`.
+
+[Quick start →](/docs/labs/ci/quick-start?ref=docs-labs-ci-structure) · [Example project →](https://github.com/inngest/inngest-js/tree/main/examples/ci-pipelines)

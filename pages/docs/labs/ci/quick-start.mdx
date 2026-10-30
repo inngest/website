@@ -1,27 +1,12 @@
-import { Info } from "shared/Docs/mdx";
-
 export const metaTitle = "Quick start | Inngest CI";
 export const description = "Inngest CI quick start: write a pipeline in TypeScript, run it on the Inngest Dev Server, and read the checks and trace for the run.";
 
 # Inngest CI quick start
 
-> Write a pipeline, run it on the Dev Server with your uncommitted changes, and read the result in one trace.
+> Write a pipeline, run it with your uncommitted changes, and read one trace.
 
-<Info>
-  Inngest CI is an Inngest Labs project: early, moving fast, and shaped by your feedback. [What's Labs?](/docs/labs?ref=docs-labs-ci-quick-start)
-</Info>
-
-Run a pipeline with a shared `base` job and parallel `lint` and `test` jobs. Checks print to your terminal, and the run opens in the Dev Server as one trace.
-
-## Before you start
-
-You need:
-
-- Node.js 20 or newer.
-- `inngest` 4.22.0 or newer, within 4.x.
-- An Inngest account with access to [Sandboxes](/docs/sandboxes/overview?ref=docs-labs-ci-quick-start).
-- A git repository with `lint` and `test` scripts in `package.json`.
-- The Inngest CLI, signed in once:
+- **Needs.** Node.js 20+, `inngest` 4.22.0+, a git repo with `lint` and `test` scripts, and [Sandboxes](/docs/sandboxes/overview?ref=docs-labs-ci-quick-start) access.
+- **Sign in once.** The Dev Server runs commands on your account's Sandboxes.
 
 ```bash
 npx inngest-cli@latest login
@@ -31,13 +16,12 @@ npx inngest-cli@latest login
 
 ```bash
 npm install @inngest/ci inngest
+npm install --save-dev inngest-cli tsx
 ```
 
 ## 2. Create the client
 
-`ci/client.ts`
-
-```typescript {{ title: "TypeScript" }}
+```typescript {{ title: "ci/client.ts" }}
 import { Inngest } from "inngest";
 import { createCi } from "@inngest/ci";
 
@@ -45,15 +29,47 @@ export const inngest = new Inngest({ id: "my-app" });
 export const ci = createCi(inngest);
 ```
 
-By default, `createCi` prints checks to the terminal with `consoleReporter()`. To report checks on GitHub, see [Run on GitHub](/docs/labs/ci/reference?ref=docs-labs-ci-quick-start#run-on-github).
+Checks print to the terminal by default. [Run on GitHub →](/docs/labs/ci/reference?ref=docs-labs-ci-quick-start#run-on-github)
 
-## 3. Write a pipeline
+## 3. Write the jobs
 
-`ci/pipelines.ts`
+```typescript {{ title: "ci/jobs/base.ts" }}
+import { $, checkout } from "@inngest/ci";
+import { ci } from "../client";
 
-```typescript {{ title: "TypeScript" }}
-import { github, checkout, from, $ } from "@inngest/ci";
-import { ci } from "./client";
+export const base = ci.job("base", async () => {
+  await checkout();
+  await $`pnpm install`;
+});
+```
+
+```typescript {{ title: "ci/jobs/lint.ts" }}
+import { $ } from "@inngest/ci";
+import { ci } from "../client";
+import { base } from "./base";
+
+export const lint = ci.job({ id: "lint", from: base }, async () => {
+  await $`pnpm lint`;
+});
+```
+
+```typescript {{ title: "ci/jobs/test.ts" }}
+import { $ } from "@inngest/ci";
+import { ci } from "../client";
+import { base } from "./base";
+
+export const test = ci.job({ id: "test", from: base }, async () => {
+  await $({ retries: 1 })`pnpm test`;
+});
+```
+
+## 4. Write a pipeline
+
+```typescript {{ title: "ci/pipelines/pr.ts" }}
+import { github } from "@inngest/ci";
+import { ci } from "../client";
+import { lint } from "../jobs/lint";
+import { test } from "../jobs/test";
 
 export const pr = ci.pipeline(
   {
@@ -65,94 +81,52 @@ export const pr = ci.pipeline(
     await Promise.all([lint(), test()]);
   },
 );
-
-const base = ci.job("base", async () => {
-  await checkout();
-  await $`pnpm install`;
-});
-
-const lint = ci.job("lint", async () => {
-  await from(base);
-  await $`pnpm lint`;
-});
-
-const test = ci.job("test", async () => {
-  await from(base);
-  await $`pnpm test`.retries(1);
-});
 ```
 
-`base` installs dependencies once. `lint` and `test` each start from a copy of the `base` machine and run in parallel. If `pnpm test` fails, `.retries(1)` runs it again on the same machine without rerunning `base` or `lint`.
+## 5. Serve the pipelines
 
-## 4. Serve the pipelines
-
-`ci/server.ts`
-
-```typescript {{ title: "TypeScript" }}
+```typescript {{ title: "ci/server.ts" }}
 import { createServer } from "inngest/node";
 import { inngest, ci } from "./client";
-import "./pipelines";
+import "./pipelines/pr";
 
 const server = createServer({ client: inngest, functions: ci.functions() });
 
-server.listen(3000);
+server.listen(Number(process.env.PORT ?? 3000));
 ```
 
-`ci.functions()` returns your pipelines plus the functions CI needs behind the scenes: machine cleanup, cache refreshes, and GitHub check re-runs.
+[Project structure →](/docs/labs/ci/structure?ref=docs-labs-ci-quick-start)
 
-## 5. Run locally
-
-Start the Dev Server and your app in two terminals:
+## 6. Run locally
 
 ```bash
-npx inngest-cli@latest dev
+npx inngest-ci pr
 ```
 
-```bash
-INNGEST_DEV=1 npx tsx ci/server.ts
-```
+[Run CI locally →](/docs/labs/ci/local?ref=docs-labs-ci-quick-start)
 
-Send a pull request event built from your current checkout:
-
-`ci/send.ts`
-
-```typescript {{ title: "TypeScript" }}
-import { fixtures } from "@inngest/ci";
-import { inngest } from "./client";
-
-async function main() {
-  await inngest.send(await fixtures.pullRequest());
-}
-
-main();
-```
-
-```bash
-INNGEST_DEV=1 npx tsx ci/send.ts
-```
-
-`checkout()` uploads your working tree, including uncommitted changes and excluding ignored files. The upload is limited to 100 MiB and has no `.git` folder, so git commands on the machine only work in runs from GitHub.
-
-## 6. Inspect the result
-
-Your server terminal prints each check as it changes:
+## 7. Inspect the result
 
 ```
-[pr] … pr / test
-[pr] ✕ pr / test  `pnpm test` exited with 1  → http://localhost:8288/run?runID=01J…
+  inngest-ci pr  pull_request.opened · my-branch @ 70f798f + uncommitted
+  Dev Server  http://127.0.0.1:24288
+
+  ✕ pr                                                       58s
+  └─ ✓ base     $ pnpm install                               31s
+     ├─ ✓ lint  $ pnpm lint                                  12s
+     └─ ✕ test  $ pnpm test · attempt 2                      27s
+          `pnpm test` exited with 1
 ```
 
-Open the run link in the Dev Server. The trace lists every step in order. Steps start with their job, as in `test › pnpm test`, and each retry of a command is its own step. [Read the trace](/docs/labs/ci/checks-and-reports?ref=docs-labs-ci-quick-start#read-the-trace) lists the step names.
+Press `enter` to open the run in the Dev Server. [Read the trace →](/docs/labs/ci/checks-and-reports?ref=docs-labs-ci-quick-start#read-the-trace)
 
-## Cleanup and current behavior
+## How it works
 
-- Inngest destroys every machine when the pipeline ends. A separate function destroys machines left behind by a run that failed or was cancelled.
-- The Dev Server runs commands on Sandboxes in your Inngest account, so you need `inngest login`. There is no local Sandbox runtime yet.
-- Output from a command arrives when the command ends, not while it runs.
+- `inngest-cli` 1.45.1+ is the Dev Server. Your server must listen on `PORT`.
+- `inngest-ci` starts a Dev Server and `ci/server.ts`, then sends a pull request event for your branch.
+- `ci.functions()` adds the cache, GitHub re-run, and single-job functions.
+- `checkout()` uploads your working tree, uncommitted changes included.
+- Machines are destroyed when the run ends, or by a cleanup function.
+- Command output arrives when the command ends.
 
-## Next steps
-
-- [Concepts](/docs/labs/ci/concepts?ref=docs-labs-ci-quick-start) defines pipelines, triggers, jobs, commands, and machines.
-- [Pipelines and triggers](/docs/labs/ci/pipelines?ref=docs-labs-ci-quick-start), [Jobs](/docs/labs/ci/jobs?ref=docs-labs-ci-quick-start), and [Caching](/docs/labs/ci/caching?ref=docs-labs-ci-quick-start) cover what to build next.
-- [Reference](/docs/labs/ci/reference?ref=docs-labs-ci-quick-start) lists every option and running on GitHub.
-- [Example project](https://github.com/inngest/inngest-js/tree/main/examples/ci-pipelines) is a runnable app with matrices, caching, and GitHub checks.
+[Concepts →](/docs/labs/ci/concepts?ref=docs-labs-ci-quick-start) · [Project structure →](/docs/labs/ci/structure?ref=docs-labs-ci-quick-start) · [Example project →](https://github.com/inngest/inngest-js/tree/main/examples/ci-pipelines)

@@ -1,150 +1,95 @@
-import { CodeGroup, SdkUnsupported } from "shared/Docs/mdx";
+import { AnnotatedCode, Annotation } from "shared/Docs/mdx";
 
 export const metaTitle = "Quick start | Sandboxes";
-export const description = "Inngest Sandboxes quick start: run your first isolated Sandbox from a durable function and inspect its command output in the run trace.";
+export const description = "Inngest Sandboxes quick start: run Python, TypeScript, and shell in isolated Sandboxes from a durable function, and inspect each statement in the run trace.";
 
 # Sandboxes quick start
-> Run your first Sandbox from a durable function and inspect its command output in the run trace.
 
-Run a command in an isolated Linux Sandbox, return its output, and destroy the Sandbox from a durable Inngest function. The run trace shows each operation, so you can find where a command failed.
+> Run Python in an isolated Sandbox from a durable function and read the trace.
 
-## Before you start
+## What you need
 
-You need:
+- An Inngest Cloud account on Pro or above. [Upgrade your plan](https://app.inngest.com/billing/plans) if create returns `403 access_denied`.
+- A TypeScript Inngest app connected to an Inngest Cloud environment. [Node.js quick start →](/docs/durable-execution/quick-start/typescript-quick-start)
+- Node.js 20.5 or newer.
+- `INNGEST_SIGNING_KEY` set in your **server** environment only.
+- SDK v4. [Migrate from v3 →](/docs/reference/typescript/v4/migrations/v3-to-v4)
 
-- An existing server-side TypeScript Inngest app and a function handler connected to an Inngest Cloud environment. If you need an app, start with the [Node.js quick start](/docs/durable-execution/quick-start/typescript-quick-start).
-- A Node.js 20 or newer server runtime with the standard Fetch API.
-- An Inngest Cloud account on Pro or above. If Create returns `403 access_denied`, your plan does not include Sandboxes; [upgrade your plan](https://app.inngest.com/billing/plans).
-- `inngest` version 4.21.1 or newer.
-- Your environment's signing key set as `INNGEST_SIGNING_KEY` in your **server** environment. Keep it out of browser code and source control.
-
-## 1. Install the SDK
-
-> **Upgrading from SDK v3?** Sandboxes require the TypeScript SDK v4, including `sandboxMiddleware()`. Follow the [v3 to v4 migration guide](/docs/reference/typescript/v4/migrations/v3-to-v4) and update your existing app before adding the Sandbox middleware. Installing `inngest@latest` in a v3 app is a major-version upgrade.
-
-In your server-side project, install Inngest:
+## Install and enable
 
 ```bash
 npm install inngest@latest
 ```
 
-Check that the installed version is 4.21.1 or newer before continuing.
-
-## 2. Enable durable Sandbox steps
-
-Add the Sandbox middleware to your shared Inngest client. This makes `step.sandbox` available inside Inngest functions.
-
-`inngest/client.ts`
-
-<CodeGroup>
-```typescript {{ title: "TypeScript" }}
+```typescript {{ title: "inngest/client.ts" }}
 import { Inngest } from "inngest";
 import { sandboxMiddleware } from "inngest/experimental";
 
 export const inngest = new Inngest({
-  id: "sandbox-beta-demo",
+  id: "sandbox-demo",
   middleware: [sandboxMiddleware()],
 });
 ```
 
-<SdkUnsupported title="Python" feature="Sandboxes" />
-<SdkUnsupported title="Go" feature="Sandboxes" />
-</CodeGroup>
+## Run code
 
-Keep your existing app ID if you are adding this to an app you already use.
+<AnnotatedCode>
 
-## 3. Create a function that runs one command
-
-Add this function to your server-side project. The command prints one line to standard output and another to standard error. Each Sandbox operation has a stable step ID so Inngest can record it in the durable run.
-
-`inngest/functions/run-in-sandbox.ts`
-
-<CodeGroup>
-```typescript {{ title: "TypeScript" }}
+```typescript {{ title: "inngest/functions/run-in-sandbox.ts" }}
 import { inngest } from "../client";
 
 export const runInSandbox = inngest.createFunction(
-  {
-    id: "run-in-sandbox",
-    triggers: { event: "sandbox/demo.requested" },
-  },
+  { id: "run-in-sandbox", triggers: { event: "sandbox/demo.requested" } },
   async ({ event, step }) => {
-    const sandbox = await step.sandbox.create("create-sandbox", {
-      name: `beta-${event.data.jobId}`,
-      vcpu: 1,
-      memoryMb: 1024,
-    });
-
-    const result = await sandbox.commands.run(
-      "run-command",
-      "printf 'hello from the sandbox\\n'; printf 'diagnostic\\n' >&2",
-      {
-        cwd: "/",
-        timeout: "30s",
-      },
+    const stats = await step.sandbox.python<{ mean: number; n: number }>(
+      "stats",
+      `return {"mean": sum(values) / len(values), "n": len(values)}`,
+      { input: { values: event.data.values } },
     );
 
-    await sandbox.destroy("destroy-sandbox");
+    const listing = await step.sandbox.sh("list", "uname -a && ls /");
 
-    return {
-      sandboxId: sandbox.id,
-      stdout: result.stdout,
-      stderr: result.stderr,
-      exitCode: result.exitCode,
-      outputWasTruncated: result.output.truncated,
-    };
+    return { stats, listing };
   },
 );
 ```
 
-<SdkUnsupported title="Python" feature="Sandboxes" />
-<SdkUnsupported title="Go" feature="Sandboxes" />
-</CodeGroup>
+<Annotation id="input" lines="6-10" tease="input becomes variables" title="Input and return" href="/docs/sandboxes/features/run-code?ref=docs-sandboxes-quick-start" linkText="Run code">
+`input` keys become variables, and `return` sends a typed value back.
+</Annotation>
 
-Register `runInSandbox` in the `functions` array of your existing `serve()` handler. Deploy or connect the app to the Cloud environment with Sandbox beta access.
+<Annotation id="sh" lines="12" tease="shell too" title="Shell" href="/docs/sandboxes/features/run-code?ref=docs-sandboxes-quick-start" linkText="Run code">
+Each statement boots, runs, and destroys its own Sandbox.
+</Annotation>
 
-## 4. Trigger your function
+</AnnotatedCode>
 
-Send this event to the same Inngest environment from the Inngest dashboard or your application's event sender:
-
-```json
-{
-  "name": "sandbox/demo.requested",
-  "data": {
-    "jobId": "job_123"
-  }
-}
-```
-
-Use a stable job ID that is safe in a Sandbox name. Use a new ID for each new run.
-
-## 5. Inspect the result
-
-Open the function run in Inngest. A successful run returns a result like this, with an actual Sandbox ID:
+Register `runInSandbox` in your `serve()` handler, then send this event:
 
 ```json
-{
-  "sandboxId": "...",
-  "stdout": "hello from the sandbox\n",
-  "stderr": "diagnostic\n",
-  "exitCode": 0,
-  "outputWasTruncated": false
-}
+{ "name": "sandbox/demo.requested", "data": { "values": [3, 5, 10] } }
 ```
 
-Inspect the run's steps. You should find `create-sandbox`, `run-command`, and `destroy-sandbox` in the durable execution record. The first creates and waits for a running Sandbox, the second captures the command result, and the third destroys the Sandbox on the successful path. Open the trace to inspect the steps and any failure.
+```json
+{ "stats": { "mean": 6, "n": 3 }, "listing": "Linux ... \nbin\ndev\netc\n..." }
+```
 
-## Cleanup and beta behavior
+## Keep one Sandbox
 
-This example explicitly destroys the Sandbox after the command succeeds. **Durable Sandbox steps do not automatically guarantee cleanup after a permanent function failure.** For a workflow where a leaked Sandbox matters, add an Inngest `onFailure` handler or a separate deferred cleanup function that receives the Sandbox ID. A JavaScript `finally` block inside the function is not a substitute for cleanup after a permanently failed run.
+```typescript {{ title: "TypeScript" }}
+await using sb = await step.sandbox.create("work");
 
-Destroying a Sandbox removes its filesystem, processes, and retained output. Save anything you need outside the Sandbox before destroying it.
+await sb.$.sh`npm init -y && npm install lodash`;
+const version = await sb.$`node -p "require('lodash').VERSION"`.text();
+```
 
-## Continue from here
+## What you can do
 
-- [Sandboxes overview](/docs/sandboxes/overview) explains how isolated execution fits into a durable run.
-- [Sandboxes features](/docs/sandboxes/features) introduces files, processes, pause, snapshots, clones, and restore.
-- [Sandboxes guides](/docs/sandboxes/guides) covers longer tasks.
-- [Sandboxes limits](/docs/sandboxes/limits) and [reference](/docs/sandboxes/reference) hold the beta constraints and API details.
+- **Break it.** Run `ls /missing` and the row turns red. [Exit codes →](/docs/sandboxes/features/exit-codes?ref=docs-sandboxes-quick-start)
+- **Read the trace.** Each statement is one SANDBOX group. [Traces →](/docs/sandboxes/features/traces?ref=docs-sandboxes-quick-start)
+- **Reuse a Sandbox.** `await using` or `group.sandbox()`. [Managed lifecycle →](/docs/sandboxes/features/managed-lifecycle?ref=docs-sandboxes-quick-start)
 
-A Sandbox is an isolated Linux environment for code in a run. A [branch deploy](/docs/platform-and-operations/environments-and-branch-deploys) is a deployment preview for a Git branch.
+## How it works
+
+- Each statement is a durable step with its own Sandbox.
+- Without `await using`, a Sandbox is destroyed when the run ends.

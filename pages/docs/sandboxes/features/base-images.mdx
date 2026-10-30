@@ -1,4 +1,4 @@
-import { CodeGroup, SdkUnsupported } from "shared/Docs/mdx";
+import { AnnotatedCode, Annotation } from "shared/Docs/mdx";
 
 export const metaTitle = "Base images | Sandboxes";
 export const description = "Sandbox base images come with Node.js, Python, Ruby, and common command-line tools preinstalled, so isolated code can start running right away.";
@@ -7,66 +7,78 @@ export const description = "Sandbox base images come with Node.js, Python, Ruby,
 
 > Start isolated work with Node.js, Python, Ruby, and common command-line tools already installed.
 
-> **Open beta.** The Sandbox API, image, and limits may change. Use this beta for evaluation and feedback.
+- **Ready on create.** No image to build first. [What's included →](#what-the-base-image-includes)
+- **Pinned runtimes.** Node, Deno, Bun, and Python at exact versions. [Runtime images →](#runtime-images)
+- **Bring your own.** Use an image from your workspace. [Choose an image →](#choose-an-image)
+- **Image or snapshot.** Reuse a toolchain, or fan out. [Compare →](#image-or-snapshot)
 
-Run generated code or inspect a repository without building an image first. The beta Sandbox image includes Node.js, Python, Ruby, and common command-line tools. Check installed versions inside the Sandbox when your task depends on a specific version.
+<AnnotatedCode>
 
-## What the beta image includes
-
-The beta uses one fixed image for new Sandboxes. A Sandbox cloned from a snapshot starts with the captured image and filesystem changes.
-
-| Tool | Included |
-| --- | --- |
-| Node.js | Latest release as `node`, `npm`, and `npx`; LTS release as `node-lts`, `npm-lts`, and `npx-lts` |
-| Python | Python 3.14 |
-| Ruby | Ruby 4.0 |
-| Repository and network tools | Git, curl, OpenSSH, and CA certificates |
-| Shell and utilities | BusyBox `sh`, `grep`, `sed`, `awk`, `ripgrep`, `jq`, `find`, `tar`, and `gzip` |
-
-The image does **not** currently include Go, Rust, Java, Bun, or Deno. You cannot select a custom image or runtime in this beta. Exact installed versions can change when Inngest rebuilds the image. Check versions in the Sandbox if your task depends on them.
-
-## Inspect the image
-
-Run commands after the Sandbox reaches `RUNNING`. This example assumes you already have a Sandbox object from `inngest.sandboxes.create()`:
-
-<CodeGroup>
 ```typescript {{ title: "TypeScript" }}
-const result = await sandbox.commands.run(
-  "node --version && python3 --version && ruby --version && git --version",
-  { timeout: "30s" },
-);
+import { image } from "inngest/experimental";
 
-console.log(result.stdout);
-console.error(result.stderr);
-console.log(result.exitCode);
+const base = await step.sandbox.create("agent-1", {
+  from: image.inngest("base"),
+});
+
+const custom = await step.sandbox.create("agent-2", {
+  from: image.custom("my-image:v1"),
+});
+console.log(custom.imageDigest);
+
+await step.sandbox.python("ml", code, { runtime: "python@3.12" });
 ```
 
-<SdkUnsupported title="Python" feature="Sandboxes" />
-<SdkUnsupported title="Go" feature="Sandboxes" />
-</CodeGroup>
+<Annotation id="inngest" lines="4" tease="maintained by Inngest" title="Inngest images" href="#choose-an-image" linkText="Choose an image">
+`base` is the default. Omit `from` to use it.
+</Annotation>
 
-Inside an Inngest function, use the same command through `step.sandbox` and give the operation a stable step ID:
+<Annotation id="custom" lines="8" tease="published to your workspace" title="Custom images" href="#choose-an-image" linkText="Choose an image">
+Name, `name:tag`, or `name@sha256:<hex>`.
+</Annotation>
 
-<CodeGroup>
+<Annotation id="digest" lines="10" tease="exact image" title="Image digest" href="#choose-an-image" linkText="Choose an image">
+Shows exactly which image started.
+</Annotation>
+
+<Annotation id="runtime" lines="12" tease="pin a language" title="Runtime images" href="#runtime-images" linkText="Runtime images">
+`runtime` picks a pinned language image.
+</Annotation>
+
+</AnnotatedCode>
+
+## What the base image includes
+
+- Node.js (`node`, `node-lts`), Python 3.14, Ruby 4.0.
+- Git, curl, OpenSSH, BusyBox, `ripgrep`, `jq`, `tar`.
+- No Go, Rust, Java, Bun, or Deno. Bun and Deno have [runtime images](#runtime-images).
+- Check versions with `await sb.sh("versions", "node --version && python3 --version")`.
+
+## Choose an image
+
+- `image.inngest(name)` is `base` or a [runtime image](#runtime-images).
+- `image.custom(ref)` is a workspace image.
+- Images resolve once at create. A repeated name returns the original.
+
+### Runtime images
+
 ```typescript {{ title: "TypeScript" }}
-const result = await sandbox.commands.run(
-  "inspect-image",
-  "node --version && python3 --version && ruby --version && git --version",
-  { timeout: "30s" },
-);
+await step.sandbox.python("ml", code, { runtime: "python@3.12" });
+await step.sandbox.typescript("edge", code, { from: image.inngest("deno") });
+await step.sandbox.typescript("n22", code, { runtime: "node@22" });
 ```
 
-<SdkUnsupported title="Python" feature="Sandboxes" />
-<SdkUnsupported title="Go" feature="Sandboxes" />
-</CodeGroup>
+- `node@20`, `22`, `24` and `python@3.11` to `3.13` map to `node-20`, `python-3.11`, and so on.
+- `deno` and `bun` map to `image.inngest("deno")`.
+- [Run code →](/docs/sandboxes/features/run-code?ref=docs-sandboxes-base-images#choose-a-runtime)
 
-A nonzero exit code appears in the result. It does not throw an SDK error.
+### Image or snapshot?
 
-## Add dependencies for a task
+- **Image.** Starts fresh and lasts until you delete it.
+- **[Snapshot](/docs/sandboxes/features/snapshots-and-restore?ref=docs-sandboxes-base-images).** Starts where the source left off, processes included. Ends with its [owner run](/docs/sandboxes/features/run-owned?ref=docs-sandboxes-base-images).
 
-Install packages inside a running Sandbox when the task needs them. For example, create a project directory and install a Node package:
+## Add dependencies
 
-<CodeGroup>
 ```typescript {{ title: "TypeScript" }}
 await sandbox.commands.run(
   "mkdir -p /tmp/project && cd /tmp/project && npm init -y && npm install lodash",
@@ -74,20 +86,19 @@ await sandbox.commands.run(
 );
 ```
 
-<SdkUnsupported title="Python" feature="Sandboxes" />
-<SdkUnsupported title="Go" feature="Sandboxes" />
-</CodeGroup>
+Snapshots capture the files.
 
-This changes **that Sandbox**, not the fixed base image. The files remain in the Sandbox across pause and resume. A snapshot captures its disk, so clones start with the installed files. Destroying the Sandbox removes its filesystem. User snapshots expire and are not permanent storage. For files shared across different Sandboxes, use S3-backed persistent filesystem mounts.
+## Choose a size
 
-## Choose a supported size
+```typescript {{ title: "TypeScript" }}
+await inngest.sandboxes.create({ name: "a", vcpu: 1, memoryMb: 1024, from: image.inngest("base") });
+await inngest.sandboxes.create({ name: "b", vcpu: 2, memoryMb: 2048, from: image.inngest("base") });
+await inngest.sandboxes.create({ name: "c", vcpu: 4, memoryMb: 4096, from: image.inngest("base") });
+```
 
-Fresh Sandboxes accept these exact resource pairs:
+Clones inherit the snapshot's size.
 
-| `vcpu` | `memoryMb` |
-| --- | --- |
-| 1 | 1024 |
-| 2 | 2048 |
-| 4 | 4096 |
+## How it works
 
-Set both values from the same row. The API does not accept a size profile name. A snapshot clone inherits the snapshot's CPU and memory. Access or available capacity can still prevent a supported size from starting.
+- New Sandboxes start from `base` unless you choose another.
+- Inngest CI uses the same [images](/docs/labs/ci/base-images?ref=docs-sandboxes-base-images).
