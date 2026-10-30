@@ -309,8 +309,14 @@ export const FEATURES: Feature[] = [
     section: "comparison",
     plans: {
       [PLAN_NAMES.hobby]: "50k /mo included",
-      [PLAN_NAMES.pro]: "1M executions + add-on",
-      [PLAN_NAMES.business]: "10M executions + add-on",
+      [PLAN_NAMES.pro]: {
+        value: "1m/mo included",
+        description: "then $50 per 1m",
+      },
+      [PLAN_NAMES.business]: {
+        value: "10m/mo included",
+        description: "then $25 per 1m",
+      },
       [PLAN_NAMES.enterprise]: "Custom",
     },
   },
