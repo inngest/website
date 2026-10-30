@@ -224,10 +224,11 @@ export const NYC_RESOURCES: NycResource[] = [
     href: "/blog/all-your-workflows-are-about-to-be-long-running?ref=nyc-long-run-resources",
   },
   {
-    id: "visual-primer",
-    kind: "Walkthrough",
-    title: "What are Durable Functions? A visual JavaScript primer",
-    href: "/blog/durable-functions-a-visual-javascript-primer?ref=nyc-long-run-resources",
+    id: "ordinal-case-study",
+    kind: "Case study",
+    title:
+      "Built for the Lonng Run: How Ordinal scaled social orchestration to 1K enterprises with just two engineers.",
+    href: "/customers/ordinal?ref=nyc-long-run-resources",
   },
   {
     id: "steps-guide",
