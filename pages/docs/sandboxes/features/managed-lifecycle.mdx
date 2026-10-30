@@ -6,7 +6,7 @@ export const description = "Managed Sandbox lifecycle: create Sandboxes, run com
 
 > Coordinate Sandbox creation, commands, and cleanup as durable steps in a function run.
 
-> **Access-gated beta.** The low-level TypeScript API below follows the access-gated Sandbox beta. The planned `step.sandbox.typescript` helper has no published call shape yet.
+> **Open beta.** Sandboxes are available on Pro plans and above. The low-level TypeScript API below follows the Sandbox beta. The planned `step.sandbox.typescript` helper has no published call shape yet.
 
 Use durable Sandbox steps when isolated code belongs to a longer function run. Inngest records each operation’s result, so a resumed function can continue after completed steps. The API you choose determines which lifecycle and cleanup actions your function must handle.
 

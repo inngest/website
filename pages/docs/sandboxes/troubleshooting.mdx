@@ -6,7 +6,7 @@ export const description = "Troubleshoot Inngest Sandboxes: diagnose a failed Sa
 
 When a Sandbox operation fails, find its step in the run trace or inspect the direct SDK error. Check the resource’s current state before retrying: a lost response does not prove that a command or mutation failed. Keep the error `code`, `requestId`, and resource ID for investigation.
 
-> **Experimental beta:** The guidance below describes the access-gated `inngest@4.21.1+` beta. The API and limits can change. The newer beta reference documents selecting existing workspace secrets for a fresh Sandbox.
+> **Open beta.** Sandboxes are available on Pro plans and above. The guidance below describes the `inngest@4.21.1+` beta. The API and limits can change. The newer beta reference documents selecting existing workspace secrets for a fresh Sandbox.
 
 ## Before you retry
 
@@ -23,9 +23,15 @@ When a Sandbox operation fails, find its step in the run trace or inspect the di
 
 ## Create rejects a size or cannot place the Sandbox
 
-**Check:** A fresh beta Sandbox accepts only `1 vCPU / 1024 MiB`, `2 / 2048`, or `4 / 4096`. The values must come from the same pair. A supported pair can still fail because of account entitlement or unavailable matching capacity. Check the error code and current entitlement. `compute_unavailable` reports a temporary compute or storage availability failure.
+**Check:** A fresh beta Sandbox accepts 1, 2, or 4 vCPU with 1, 2, or 4 GiB of memory per vCPU (for example `2 / 2048`, `2 / 4096`, or `2 / 8192`). Other sizes return `invalid_field_format`. A supported pair can still fail because of account entitlement or unavailable matching capacity. Check the error code and current entitlement. `compute_unavailable` reports a temporary compute or storage availability failure.
 
-**Fix:** Correct an unsupported pair. For an entitlement or capacity rejection, check your beta access with Inngest and use a size your account can run. If Create returned an unconfirmed availability failure, reuse the **same active name and configuration** rather than making a second named Sandbox. A matching Create returns the existing Sandbox; a conflicting configuration returns `sandbox_name_taken`. Do not claim a placement time from the SDK’s readiness wait.
+**Fix:** Correct an unsupported pair. For a capacity rejection, retry later or use another supported size. If Create returned an unconfirmed availability failure, reuse the **same active name and configuration** rather than making a second named Sandbox. A matching Create returns the existing Sandbox; a conflicting configuration returns `sandbox_name_taken`. Do not claim a placement time from the SDK’s readiness wait.
+
+## A custom-image Sandbox stops right after it starts
+
+**Check:** If the image sets `ENTRYPOINT` or `CMD`, that command owns the Sandbox's lifetime, as with `docker run`. When it exits, the Sandbox becomes `TERMINATED`. Many base images, such as `alpine`, default to a shell that exits immediately.
+
+**Fix:** Give the image a long-running command, such as your server or `CMD ["tail", "-f", "/dev/null"]`, then publish a new tag and create a new Sandbox. See [how the image's command runs](/docs/sandboxes/features/custom-images#how-the-image-s-command-runs).
 
 ## Create rejects selected secrets
 

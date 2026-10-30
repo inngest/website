@@ -474,6 +474,10 @@ export const docsRefreshOutline: DocsRefreshPage[] = [
                 href: "/docs/sandboxes/features/base-images",
               },
               {
+                title: "Custom images",
+                href: "/docs/sandboxes/features/custom-images",
+              },
+              {
                 title: "Pause and resume",
                 href: "/docs/sandboxes/features/pause-and-resume",
               },
