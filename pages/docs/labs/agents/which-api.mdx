@@ -77,6 +77,9 @@ export const description = "Which Inngest Agents API to use: find the call for w
 | --- | --- | --- |
 | A tool that is one durable step | `tool.step()` | [Define a tool](/docs/labs/agents/tools?ref=docs-labs-agents-which-api) |
 | A tool that is several steps | `tool.group()` | [Run several steps](/docs/labs/agents/tools?ref=docs-labs-agents-which-api#run-several-steps) |
+| A remote MCP server's tools | `tool.mcp({ url, auth })` | [Use a remote MCP server](/docs/labs/agents/tools?ref=docs-labs-agents-which-api#use-a-remote-mcp-server) |
+| A credential the model never sees | `secret("ENV_NAME")` | [Use a remote MCP server](/docs/labs/agents/tools?ref=docs-labs-agents-which-api#use-a-remote-mcp-server) |
+| Each person signed in to the server as themselves | `auth: { oauth }`, `completeMcpAuthorization()` | [Connect each person's account](/docs/labs/agents/tools?ref=docs-labs-agents-which-api#connect-each-persons-account) |
 | The model to write a script that calls your tools | `run_code` with `tools` | [Let code call your tools](/docs/labs/agents/sandboxes-and-code?ref=docs-labs-agents-which-api#let-code-call-your-tools) |
 
 ## Sandboxes and commands

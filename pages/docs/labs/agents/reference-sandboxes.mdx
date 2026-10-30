@@ -197,6 +197,57 @@ export const lookupOrder = tool({
 });
 ```
 
+## MCP servers
+
+`tool`, `secret` and the OAuth helpers are exported from `inngest/experimental`. [Use a remote MCP server](/docs/labs/agents/tools?ref=docs-labs-agents-reference-sandboxes#use-a-remote-mcp-server)
+
+```typescript {{ title: "Signature" }}
+tool.mcp(options: McpServerOptions): McpServer
+server.tools(name?: string): Promise<SandboxTools>
+secret(source: string | (() => string | Promise<string>)): Secret
+```
+
+| Option | Default | Description |
+| --- | --- | --- |
+| `url` | required | The server's Streamable HTTP endpoint. `https`, or `http` for localhost. Redirects are not followed. |
+| `id` | none | The prefix `tools()` uses. In `agent.loop({ tools: { hex } })` the key is the prefix instead. |
+| `auth` | none | `{ bearer }`, `{ headers }` or `{ oauth }`. Values may be a string or a `secret()`. |
+| `tools` | all | Only these tools, by the server's names. A name the server lacks throws when the list is read. |
+| `timeout` | `"25s"` | The longest one call may take. Raise `toolOptions.toolTimeout` too when you raise this. |
+| `fetch` | global `fetch` | A `fetch` to use, for tests. |
+
+- Tools are named `<name>_<tool>`, with `-` and `.` turned into `_`. A name over 64 characters, or two that collide, throws.
+- `secret("NAME")` reads an environment variable inside the call. A function gives a value that depends on the caller. Printing or serializing a `Secret` gives its label.
+- `McpServer`, `McpServerOptions`, `McpAuth`, `Secret` and `SecretSource` are the types.
+
+## Per-user OAuth
+
+`auth: { oauth }` follows the MCP authorization spec: discovery, dynamic client registration, PKCE, code exchange and refresh. [Connect each person's account](/docs/labs/agents/tools?ref=docs-labs-agents-reference-sandboxes#connect-each-persons-account)
+
+| Option | Default | Description |
+| --- | --- | --- |
+| `user` | required | A stable ID for the person, or `(ctx: { runId?: string }) => string`, called for every call. |
+| `redirectUri` | required | Your callback route. Register it with the server when it has no dynamic registration. |
+| `store` | `kvOAuthStore()` | A `McpOAuthStore`: `get`, `compareAndSet` (atomic) and `delete`. |
+| `clientId` | registered for you | An OAuth client you registered, for servers without dynamic registration. |
+| `clientSecret` | none | That client's secret, as a string or a `secret()`. |
+| `scopes` | the server's | Plus `offline_access` when offered, so the token can refresh. |
+| `clientName` | `"Inngest agent"` | The name on the consent screen. |
+| `onNeedsAuthorization` | none | Called with `McpNeedsAuthorization` when a user has no token. |
+
+| Call | Description |
+| --- | --- |
+| `kvOAuthStore({ encryptionKey, adapter, app })` | The default store: the agents KV, AES-GCM encrypted. The key defaults to `secret("MCP_OAUTH_ENCRYPTION_KEY")`. |
+| `completeMcpAuthorization({ store, code, state, error, expectUser, clientSecret, send })` | Finishes the sign-in from your callback route and sends `agent/mcp.authorized`. Returns `{ server, user, url }`. |
+| `waitForMcpAuthorization({ user, server, timeout, id })` | Waits for `agent/mcp.authorized` for that user. Returns the event, or `null` on timeout. |
+| `isMcpNeedsAuthorization(value)` | Whether a result is a link to sign in. |
+| `mcpAuthorizedEvent` | The event name, `"agent/mcp.authorized"`. |
+
+- A user with no token gets `{ type: "mcp_needs_authorization", server, user, authorizeUrl, message }` as an error result. The link is valid for 10 minutes and works once.
+- Until someone has connected, a server's only tool is `<name>_connect`; the model calls it when the user wants something from the server.
+- `completeMcpAuthorization()` throws `McpAuthorizationError`, with a message safe to show, for a denied, expired, reused or mismatched link.
+- Types: `McpOAuthOptions`, `McpOAuthStore`, `McpOAuthUserContext`, `McpNeedsAuthorization`, `McpAuthorizedData`, `KvOAuthStoreOptions`.
+
 ## Code tools
 
 `sandbox.tools.code(options?)` gives a model `read`, `write`, `edit`, `search`, `run`, and optionally `run_code`. Each call is one command step. [Sandboxes](/docs/labs/agents/sandboxes-and-code?ref=docs-labs-agents-reference-sandboxes)

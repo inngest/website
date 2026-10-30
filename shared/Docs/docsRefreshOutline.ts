@@ -885,6 +885,10 @@ export const docsRefreshOutline: DocsRefreshPage[] = [
                 href: "/docs/labs/agents/recipes/agent-teams",
               },
               {
+                title: "MCP assistant",
+                href: "/docs/labs/agents/recipes/mcp-assistant",
+              },
+              {
                 title: "Sandbox tools",
                 href: "/docs/labs/agents/recipes/sandbox-tools",
               },

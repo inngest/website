@@ -189,8 +189,121 @@ export const releaseWatcher = agents.agent(
 
 The four tools are `inbox_listen`, `inbox_wait`, `inbox_read` and `inbox_stop`.
 
+## Use a remote MCP server
+
+`tool.mcp()` turns a remote MCP server into tools. Put it in `tools` and the model gets every tool the server offers, named `<key>_<tool>`.
+
+<AnnotatedCode>
+
+```typescript {{ title: "inngest/agents/analyst.ts" }}
+import { tool, secret } from "inngest/experimental";
+import { agent } from "inngest/experimental/agents";
+import { agents } from "../client";
+import { claude } from "../models/claude";
+
+const hex = tool.mcp({
+  url: "https://app.hex.tech/mcp",
+  auth: { bearer: secret("HEX_TOKEN") },
+  tools: ["search_projects", "run_project"],
+});
+
+export const analyst = agents.agent({ id: "analyst" }, async ({ inbox, control }) => {
+  for await (const message of inbox) {
+    await agent.loop({ model: claude, prompt: message, tools: { hex }, ...control });
+  }
+});
+```
+
+<Annotation id="secret" lines="8" tease="read inside the call" title="Credentials" href="#how-it-works" linkText="How it works">
+`secret()` holds the name of an environment variable, not the value. The token never reaches the model, a sandbox, a step output or a trace.
+</Annotation>
+
+<Annotation id="only" lines="9" tease="only these two" title="Allow list" href="/docs/labs/agents/reference-sandboxes?ref=docs-labs-agents-tools#mcp-servers" linkText="MCP reference">
+Leave `tools` out for all of them. A name the server does not have fails when the list is read.
+</Annotation>
+
+<Annotation id="key" lines="14" tease="the key is the name" title="hex_search_projects" href="#gotchas" linkText="Gotchas">
+Each call is one durable step, so a retry never repeats a finished one.
+</Annotation>
+
+</AnnotatedCode>
+
+For headers other than a bearer token, use `auth: { headers: { "x-api-key": secret("KEY") } }`. A sandbox script can call the same tools: `await hex.tools()` returns them as a plain record for [`sandbox.tools.code({ tools })`](/docs/labs/agents/sandboxes-and-code?ref=docs-labs-agents-tools#let-code-call-your-tools).
+
+## Connect each person's account
+
+With `auth: { oauth }`, every user signs in to the server as themselves. A user who has not connected gets a link instead of a result, and the model passes it on.
+
+<AnnotatedCode>
+
+```typescript {{ title: "inngest/tools/notion.ts" }}
+import { tool, kvOAuthStore } from "inngest/experimental";
+
+export const store = kvOAuthStore();
+
+export function notionFor(slackUser: string) {
+  return tool.mcp({
+    url: "https://mcp.notion.com/mcp",
+    auth: {
+      oauth: {
+        user: slackUser,
+        redirectUri: "https://app.acme.test/oauth/mcp",
+        store,
+        onNeedsAuthorization: async ({ authorizeUrl }) => {
+          await fetch("https://slack.com/api/chat.postMessage", {
+            method: "POST",
+            headers: { authorization: `Bearer ${process.env.SLACK_BOT_TOKEN}`, "content-type": "application/json" },
+            body: JSON.stringify({ channel: slackUser, text: `Connect Notion: ${authorizeUrl}` }),
+          });
+        },
+      },
+    },
+  });
+}
+```
+
+<Annotation id="user" lines="10" tease="whose token to use" title="User" href="/docs/labs/agents/reference-sandboxes?ref=docs-labs-agents-tools#per-user-oauth" linkText="OAuth reference">
+Any ID that is stable for the person. A function gets `{ runId }` and runs for every call.
+</Annotation>
+
+<Annotation id="store" lines="3,12" tease="tokens, encrypted" title="Store" href="#how-it-works" linkText="How it works">
+`kvOAuthStore()` writes to the agents KV, encrypted with `MCP_OAUTH_ENCRYPTION_KEY`. Share it with your callback route.
+</Annotation>
+
+<Annotation id="link" lines="13-18" tease="where the user sees it" title="The link" href="#gotchas" linkText="Gotchas">
+Optional. The model also receives the link and can say it in its own words.
+</Annotation>
+
+</AnnotatedCode>
+
+Your callback route finishes the sign-in. Pass `expectUser` whenever the route knows who is calling, so a link forwarded to someone else cannot connect their account to the asker.
+
+```typescript {{ title: "inngest/routes/mcpCallback.ts" }}
+import { completeMcpAuthorization } from "inngest/experimental";
+import { inngest } from "../client";
+import { store } from "../tools/notion";
+
+export async function mcpCallback(query: { code: string; state: string; error?: string }, signedInUser: string) {
+  await completeMcpAuthorization({
+    store,
+    code: query.code,
+    state: query.state,
+    error: query.error,
+    expectUser: signedInUser,
+    send: (event) => {
+      return inngest.send(event);
+    },
+  });
+}
+```
+
+To pause the run until the user has connected, call `waitForMcpAuthorization({ user, server: "notion", timeout: "10m" })` from the agent body. It resumes on the `agent/mcp.authorized` event that `completeMcpAuthorization()` sends, or returns `null` on timeout. `isMcpNeedsAuthorization(value)` tells a link result from a normal one.
+
+See it end to end in [MCP assistant](/docs/labs/agents/recipes/mcp-assistant?ref=docs-labs-agents-tools).
+
 ## When to use what
 
+- Tools from a remote MCP server: `tool.mcp()`, with `secret()` or `auth.oauth`.
 - One call, one durable step: `tool.step()`.
 - Several steps, events or waits in one tool: `tool.group()`.
 - A checked result, a stable `id` or a display name: `tool()`.
@@ -221,6 +334,8 @@ export const lookup = tool.step({
 
 - Arguments are checked against `input` before a step starts, so a tool never sees bad input.
 - A result over `maxToolOutput` (100,000 characters by default) keeps its start and end.
+- An MCP tool that may change things is not retried after the request was sent. The model is told the outcome is unknown and decides. Tools the server marks read-only or idempotent do retry.
+- MCP results over 256 KB keep their start and end. `url` must be `https`, or `http` for localhost, with no credentials in it.
 - Calls in one model reply run together. `parallelTools: false` runs them in order.
 
 ## How it works
@@ -228,7 +343,10 @@ export const lookup = tool.step({
 - Each call is one durable step; a group is a set of steps under the call's ID.
 - The idempotency key is the same on every retry of a call.
 - `agent.toolError()` results are not checked against `output`.
+- An MCP server's tool list is read once per run, in a step, so a replay sees the list the model saw.
+- OAuth tokens, registered clients and pending sign-ins live in the store, encrypted. Changing `MCP_OAUTH_ENCRYPTION_KEY` makes tokens unreadable and users connect again.
+- A sign-in link works once and expires after 10 minutes.
 
 ## Recipes and reference
 
-[Approvals](/docs/labs/agents/recipes/approvals), [Sandbox tools](/docs/labs/agents/recipes/sandbox-tools), [Tools reference](/docs/labs/agents/reference-sandboxes?ref=docs-labs-agents-tools#tools).
+[Approvals](/docs/labs/agents/recipes/approvals), [MCP assistant](/docs/labs/agents/recipes/mcp-assistant), [Sandbox tools](/docs/labs/agents/recipes/sandbox-tools), [Tools reference](/docs/labs/agents/reference-sandboxes?ref=docs-labs-agents-tools#tools).
