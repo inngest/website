@@ -6,7 +6,7 @@ export const description = "Inngest Sandboxes API reference: current beta calls 
 # Sandboxes reference
 > Find the current beta API calls and constraints for creating, running, and managing Sandboxes.
 
-> **Open beta.** Sandboxes are available on Pro plans and above. The TypeScript and REST contracts can change without a compatibility period. Use this reference to evaluate the current API. See the [Limits](/docs/sandboxes/limits) page for resource and output limits.
+> **Open beta.** Sandboxes are available on Pro plans and above. The TypeScript, Python, and REST contracts can change without a compatibility period. Use this reference to evaluate the current API. See the [Limits](/docs/sandboxes/limits) page for resource and output limits.
 
 ## Before you call the beta API
 
@@ -35,11 +35,26 @@ export const inngest = new Inngest({
 });
 ```
 
-<SdkUnsupported title="Python" feature="Sandboxes" />
+```python {{ title: "Python" }}
+!snippet:path=snippets/py/latest/sandboxes/reference/client.py
+```
+
 <SdkUnsupported title="Go" feature="Sandboxes" />
 </CodeGroup>
 
 The direct `inngest.sandboxes` client does not require middleware. Both surfaces use the client's environment and signing-key configuration.
+
+### Python
+
+The Python SDK (`inngest>=0.5.20`) has the same surfaces under `inngest.experimental.sandbox`, with snake_case names (`memory_mb`, `running_timeout`, `exit_code`). Durations take an `int` of milliseconds or a `datetime.timedelta`.
+
+| Surface | Use it for |
+| --- | --- |
+| `ctx.step.sandbox` | Durable Sandbox steps inside a function. No middleware is needed. |
+| `ctx.group.sandbox(id, ...)` | An `async with` block whose Sandbox is destroyed in a step when the block ends, including after an error. An error after the Sandbox is destroyed doesn't retry the function. |
+| `inngest_client.sandboxes` / `sandboxes_sync` | Direct async and sync calls. `async with inngest_client.sandboxes.create(...)` destroys the Sandbox when the block ends. |
+
+Select an image with `image=image.inngest("base")` or `image=image.custom("my-image:v1")`. Unlike TypeScript, `sandbox.files.upload` also runs as a durable step; it records only the path and byte count. Log streams and downloads are direct-only.
 
 ### Durable call shape
 
@@ -62,7 +77,10 @@ const result = await sandbox.commands.run(
 await sandbox.destroy("destroy-sandbox");
 ```
 
-<SdkUnsupported title="Python" feature="Sandboxes" />
+```python {{ title: "Python" }}
+!snippet:path=snippets/py/latest/sandboxes/reference/durable_call.py
+```
+
 <SdkUnsupported title="Go" feature="Sandboxes" />
 </CodeGroup>
 
