@@ -77,6 +77,7 @@ const LOGOS: CustomerLogo[] = [
     height: 36,
     caseStudyHref: "/customers/ordinal",
   },
+  { name: "Avoca", src: "/assets/v1/logos/avoca.svg", width: 118, height: 29 },
   {
     name: "Tripadvisor",
     src: "/assets/customers/tripadvisor.svg",
