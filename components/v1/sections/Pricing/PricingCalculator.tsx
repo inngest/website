@@ -23,7 +23,7 @@ const EXECUTION_TIERS: Record<
     { min: 1_000_000, max: 5_000_000, rate: 0.00005 },
     { min: 5_000_000, max: 15_000_000, rate: 0.000025 },
     { min: 15_000_000, max: 50_000_000, rate: 0.00002 },
-    { min: 50_000_000, max: 100_000_000, rate: 0.000015 },
+    { min: 50_000_000, max: Infinity, rate: 0.000015 },
   ],
   enterprise: [
     { min: 10_000_000, max: 15_000_000, rate: 0.0000575 },
