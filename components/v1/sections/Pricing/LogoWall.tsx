@@ -70,20 +70,19 @@ const LOGOS: CustomerLogo[] = [
     caseStudyHref: "/customers/resend",
     dotDx: 8,
   },
-  { name: "Avoca", src: "/assets/v1/logos/avoca.svg", width: 118, height: 29 },
-  {
-    name: "Tripadvisor",
-    src: "/assets/customers/tripadvisor.svg",
-    width: 170,
-    height: 26,
-    dy: 2,
-  },
   {
     name: "Ordinal",
     src: "/assets/customers/ordinal-logo-white.svg",
     width: 131,
     height: 36,
     caseStudyHref: "/customers/ordinal",
+  },
+  {
+    name: "Tripadvisor",
+    src: "/assets/customers/tripadvisor.svg",
+    width: 170,
+    height: 26,
+    dy: 2,
   },
   {
     name: "Artisan",
@@ -173,7 +172,7 @@ export default function LogoWall() {
         className="group/strip absolute inset-0 overflow-hidden"
         style={{ maskImage: intoCopyMask, WebkitMaskImage: intoCopyMask }}
       >
-        <div className="flex h-full w-max items-center motion-safe:animate-[v1-logo-marquee_40s_linear_infinite] motion-safe:group-hover/strip:[animation-play-state:paused] motion-safe:group-focus-within/strip:[animation-play-state:paused]">
+        <div className="flex h-full w-max items-center motion-safe:animate-[v1-logo-marquee_40s_linear_infinite] motion-safe:group-focus-within/strip:[animation-play-state:paused] motion-safe:group-hover/strip:[animation-play-state:paused]">
           {[0, 1].map((copy) => (
             <div
               key={copy}

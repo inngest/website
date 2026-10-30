@@ -42,7 +42,7 @@ interface CustomerLogo {
 
 // Heights are optically cheated per logo: very wide wordmarks
 // (Artisan 10.4:1, Soundcloud 8.4:1, ElevenLabs 7.7:1, BAERskin 7:1) render
-// shorter, compact marks (Cubic, Resend, Avoca ~4:1) render taller, so every
+// shorter, compact marks (Cubic, Resend ~4:1) render taller, so every
 // logo reads at roughly the same visual mass in the strip.
 const LOGOS: CustomerLogo[] = [
   {
@@ -96,14 +96,6 @@ const LOGOS: CustomerLogo[] = [
     // -right-1.5 lands on the "d" — nudge the dot clear of the letter.
     dotDx: 8,
   },
-  { name: "Avoca", src: "/assets/v1/logos/avoca.svg", width: 118, height: 29 },
-  {
-    name: "Tripadvisor",
-    src: "/assets/customers/tripadvisor.svg",
-    width: 170,
-    height: 26,
-    dy: 2,
-  },
   {
     name: "Ordinal",
     // The spiral mark is taller than the wordmark, so the lockup renders
@@ -112,6 +104,13 @@ const LOGOS: CustomerLogo[] = [
     width: 131,
     height: 36,
     caseStudyHref: "/customers/ordinal",
+  },
+  {
+    name: "Tripadvisor",
+    src: "/assets/customers/tripadvisor.svg",
+    width: 170,
+    height: 26,
+    dy: 2,
   },
   {
     name: "Outtake",
@@ -253,7 +252,7 @@ export default function LogoStrip({
           second copy butts seamlessly against the first at every loop reset
           — a single flex-gap row would leave a half-gap of empty space at
           the seam since the duplicated track has one fewer gap than logos. */}
-      <div className="relative flex w-max items-center motion-safe:animate-[v1-logo-marquee_40s_linear_infinite] motion-safe:group-hover/strip:[animation-play-state:paused] motion-safe:group-focus-within/strip:[animation-play-state:paused]">
+      <div className="relative flex w-max items-center motion-safe:animate-[v1-logo-marquee_40s_linear_infinite] motion-safe:group-focus-within/strip:[animation-play-state:paused] motion-safe:group-hover/strip:[animation-play-state:paused]">
         {[0, 1].map((copy) => (
           <div
             key={copy}
