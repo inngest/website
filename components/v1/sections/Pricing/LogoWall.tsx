@@ -22,13 +22,6 @@ const REF = "pricing-logo-wall";
 
 const LOGOS: CustomerLogo[] = [
   {
-    name: "Ordinal",
-    src: "/assets/customers/ordinal-logo-white.svg",
-    width: 131,
-    height: 36,
-    caseStudyHref: "/customers/ordinal",
-  },
-  {
     name: "Replit",
     src: "/assets/v1/logos/replit.svg",
     width: 116,
@@ -86,11 +79,11 @@ const LOGOS: CustomerLogo[] = [
     dy: 2,
   },
   {
-    name: "BAERskin",
-    src: "/assets/v1/logos/baerskin.svg",
-    width: 176,
-    height: 25,
-    caseStudyHref: "/customers/baerskin-tactical",
+    name: "Ordinal",
+    src: "/assets/customers/ordinal-logo-white.svg",
+    width: 131,
+    height: 36,
+    caseStudyHref: "/customers/ordinal",
   },
   {
     name: "Artisan",
@@ -180,7 +173,7 @@ export default function LogoWall() {
         className="group/strip absolute inset-0 overflow-hidden"
         style={{ maskImage: intoCopyMask, WebkitMaskImage: intoCopyMask }}
       >
-        <div className="flex h-full w-max items-center motion-safe:animate-[v1-logo-marquee_40s_linear_infinite] motion-safe:group-[:has(.logo-item:hover)]/strip:[animation-play-state:paused]">
+        <div className="flex h-full w-max items-center motion-safe:animate-[v1-logo-marquee_40s_linear_infinite] motion-safe:group-hover/strip:[animation-play-state:paused] motion-safe:group-focus-within/strip:[animation-play-state:paused]">
           {[0, 1].map((copy) => (
             <div
               key={copy}
