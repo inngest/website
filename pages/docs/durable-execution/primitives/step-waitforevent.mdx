@@ -104,9 +104,17 @@ Always handle the timeout, for example by recording an expired request or sendin
 
 Use a stable request or entity ID in both events. An event name alone can match unrelated runs. Sessions do not filter `step.waitForEvent()`; the event name and `match` or `if` determine the match.
 
-The wait only sees events sent after it starts listening. If an external system can send a response before the wait begins, arrange the sequence so the wait is registered first or check the external state before waiting. A matching event sent earlier will not resume this wait.
+The wait only sees events sent after it starts listening. A matching event sent earlier will not resume this wait. Arrange the sequence so the wait is registered before the external system can respond.
+
+Checking external state before waiting does not close this gap: a response can arrive between the check and the wait being registered. If you cannot coordinate that ordering, persist the response in your application and reconcile it when the wait times out before treating the response as missing.
 
 Use `step.waitForEvent()` for events that can fan out to multiple functions or runs. For direct, latency-sensitive resumption of one run, see [step.waitForSignal](/docs/durable-execution/primitives/step-waitforsignal).
+
+## Waiting for multiple events
+
+Each `step.waitForEvent()` resumes with one matching event. Calling it repeatedly in a loop does not create a continuous subscription or buffer events between waits. For example, an agent can receive event A, start processing it, and miss event B before the next wait is registered.
+
+If every event must be processed, use an event-triggered function for independent work, or persist events in an application inbox with a consumption cursor when the same run needs to process them in sequence.
 
 ## Limits and related pages
 
