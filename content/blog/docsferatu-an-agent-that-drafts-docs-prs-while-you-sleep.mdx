@@ -1,0 +1,169 @@
+---
+heading: "Docsferatu: an agent that drafts docs PRs while you sleep"
+subtitle: "Like a lot of lean teams, we ship faster than we can update our own docs. So Linell built an agent that watches our SDK pull requests, drafts the docs in a sandbox, and works while he sleeps."
+showSubtitle: true
+image: /assets/blog/docsferatu-an-agent-that-drafts-docs-prs-while-you-sleep/featured-image.jpg
+date: "2026-10-31T12:00:00.000Z"
+category: engineering
+author: Linell Bonnette
+---
+
+We sometimes ship faster than we can update our docs, but we can’t slow one down for the other. To help make that easier, I’ve been toying with a little app that watches our SDK repo for PRs, decides whether the docs need an update, and if they *do*, has a minion (err, Claude) open a draft PR before slipping back into the shadows. Nobody has to remember to ask. Obviously I named it Docsferatu.
+
+## The naive version (and where it dies)
+
+The first version in my head was just a webhook handler: GitHub posts "PR opened", the handler asks Claude whether the docs care, and if they do, it runs an agent that edits the website repo and opens a PR. Maybe forty lines. Bing bang bong **done.**
+
+It falls over pretty quickly:
+
+- **The agent is slow.** A real drafting run is minutes of reading and editing, and I let it go up to 25 before it gives up on itself. GitHub wants a webhook answered in seconds, and a Worker request isn't where you want to sit for half an hour.
+- **Webhooks come in bursts.** Someone pushes five fixup commits in two minutes and you get five "synchronize" events, so five classifications, five agents racing to write the same PR.
+- **Things crash mid-run.** If there's a deploy, a GitHub 502, or a sandbox hiccup and the handler dies at *minute 18,* the naive retry starts over from *zero…* which means paying for every LLM call again.
+
+The usual fix is a queue, a worker pool, a table of "how far did this job get", and retry logic you write yourself. That's the part I didn't want to build.
+
+## tldr durable execution
+
+The gist: you write a function as a series of named steps, and each step's result is saved once it finishes. Inngest calls the function over HTTP. When it calls again (after a crash, a redeploy, a retry, or just to run the next step), [finished steps return their saved results](/docs/durable-execution/durable-workflows?ref=blog-docsferatu-an-agent-that-drafts-docs-prs-while-you-sleep) instead of running again, and execution picks up after the last one that completed. A crash at minute 18 resumes at minute 18. The paid LLM call from minute 3 isn't re-run; its answer is already on file.
+
+Docsferatu has two main functions. `triage` decides whether a PR matters. `draft` writes the docs change. Each knob on them exists because of one of the failures above:
+
+```tsx
+export const triage = inngest.createFunction(
+  {
+    id: "triage",
+    triggers: [
+      { event: prEvent("opened"), if: repoFilter },
+      { event: prEvent("synchronize"), if: repoFilter }, // new commits
+      { event: prEvent("ready_for_review"), if: repoFilter },
+    ],
+    // Burst of pushes → one run, 5 minutes after the last one
+    debounce: { key: "event.data.pull_request.html_url", period: "5m" },
+    // A newer run for a PR cancels the old one, so a stale verdict can't win
+    singleton: { key: "event.data.pull_request.html_url", mode: "cancel" },
+  },
+```
+
+[`debounce`](/docs/durable-execution/flow-control/debounce?ref=blog-docsferatu-an-agent-that-drafts-docs-prs-while-you-sleep) waits until a PR has been quiet for five minutes, then runs once with the latest event. That's the fixup-commit burst handled. `singleton` in cancel mode means only one triage per PR runs at a time; a newer one kills the older.
+
+Inside, every outside call is its own `step.run`. The first step re-fetches the PR from GitHub, so everything after it works from GitHub's current data, not the event payload. The payload's only job is saying *which* PR to look at.
+
+If the PR touches no public API files, triage stops without calling a model at all. Otherwise it makes one plain Anthropic SDK call to Haiku:
+
+```tsx
+const pr = await step.run("verify", () => deps.github.getPr(name, event.data.pull_request.number));
+// …skip rules, then fetch changed file
+const verdict = await step.run("classify", () => classify(deps.anthropic, { /* title, body, diff, llms.txt */ }));
+const row = await step.run("save", () => saveTriage(deps.db, { ...base, ...save }));
+```
+
+What this shows: if, let’s say, there’s a DB blip and `save` fails, then retry skips `verify` and `classify` and goes straight back to `save`. The Haiku call only happens once.
+
+The first time triage says "relevant", it sends an event that kicks off `draft`. Adding the `docs-sync` label sends the same event, which is how you ask for a redraft. `draft` gets its own guards, of course. It re-fetches the PR first too. A `singleton` per PR in cancel mode means re-labeling kills an in-progress draft and starts over. `cancelOn` stops it if the source PR is closed without merging, so no agent keeps working on dead code. And `throttle` caps it at 10 drafts started per hour, so extra ones wait instead of piling onto my Anthropic bill 🙃.
+
+## Waiting 25 minutes without paying for it
+
+The agent runs in a [sandbox](/docs/sandboxes?ref=blog-docsferatu-an-agent-that-drafts-docs-prs-while-you-sleep), not in the Worker. But *something* has to wait for it to finish, and that something is a Cloudflare Worker, and they aren't built to hold a request open for half an hour.
+
+They don't have to. Short commands run as a single step. Long ones (the agent, the dependency install) start in the background, and the function naps: it sleeps, wakes up to check whether the process is done, and goes back to sleep.
+
+[`step.sleep`](/docs/reference/typescript/v4/functions/step-sleep?ref=blog-docsferatu-an-agent-that-drafts-docs-prs-while-you-sleep) doesn't sleep in the Worker. It saves "wake me in 60 seconds" and the invocation *ends*. Nothing is held open, and the Worker isn't running (or billing) while the agent thinks. A minute later Inngest calls the Worker again, finished steps return their saved results, the poll step checks the process, and the invocation ends again. The Worker is less of a babysitter and more like a vampire: dead between visits, briefly up to check on things, then straight back in the coffin.
+
+## Giving the agent a computer, but not the keys
+
+*Why not a GitHub Action?* Anthropic's `claude-code-action` is a real option, but the agent would share a runner with a token that can push, and drafting into the website repo from SDK PRs means keeping a website-write token in the SDK repo. I wanted the agent nowhere near a token.
+
+[A sandbox](/docs/sandboxes/features/isolation-and-security?ref=blog-docsferatu-an-agent-that-drafts-docs-prs-while-you-sleep) is an isolated Linux machine you start (and then throw away) through an API. The agent needs one because writing docs isn't just writing text. It has to clone the website and the SDK, read the code that changed, edit files, and then run tests and type-checks to see whether the edits actually hold up. That's an awful lot of trust to hand to a model reading a PR anyone could have written, so I tried my best to be careful about what each machine can reach:
+
+- **No GitHub token ever enters a [sandbox](/docs/sandboxes/features/isolation-and-security?ref=blog-docsferatu-an-agent-that-drafts-docs-prs-while-you-sleep).** The website and SDK repos are public, so the sandboxes clone them anonymously.
+- **The edit sandbox holds exactly one [secret](/docs/sandboxes/features/secrets?ref=blog-docsferatu-an-agent-that-drafts-docs-prs-while-you-sleep)**, the Anthropic API key, and it's never [snapshotted](/docs/sandboxes/features/snapshots-and-restore?ref=blog-docsferatu-an-agent-that-drafts-docs-prs-while-you-sleep), so the key can't end up baked into a saved image.
+- **Checks run somewhere else.** Each round of tests runs in a [fresh sandbox](/docs/sandboxes/features/isolation-and-security?ref=blog-docsferatu-an-agent-that-drafts-docs-prs-while-you-sleep) with no secrets at all.
+- **The agent can only read and edit files.** It gets Read, Edit, Write, Glob, Grep and four skills. No shell, no web tools. A default-deny hook (a function that approves or rejects every tool call before it runs) only allows writes under `pages/docs/**`, `snippets/**` and one navigation file. The hook enforces that, *not* the prompt *(which we know is more of a suggestion)*.
+- **The SDK checkout gets scrubbed.** Before the agent starts, I delete any agent instruction files the SDK PR carries (`.claude/`, `CLAUDE.md`, `AGENTS.md`), so a PR can't plant instructions for it.
+- **Nothing touches GitHub until the checks pass.** Then the Worker, which holds the only token that can write, makes one commit and opens or updates a *draft* PR.
+
+None of this makes prompt injection impossible. It limits what a fooled agent can touch. Docsferatu gets a coffin, not the keys to the castle.
+
+That default-deny hook is also where I tripped over my own feet. The first real draft, on [inngest-js#1830](https://github.com/inngest/inngest-js/pull/1830), ran the agent and then died with:
+
+```
+no structured result
+```
+
+Turns out the Agent SDK hands back its final JSON answer through an internal tool called `StructuredOutput`. Because my hook had never heard of it, it denied it just like every other tool not on the list. The lock worked a *little* too well. The fix was just one more `case` in a switch statement and a test so it stays allowed.
+
+When the checks *do* fail the errors go back to the agent in the same [edit sandbox](/docs/sandboxes?ref=blog-docsferatu-an-agent-that-drafts-docs-prs-while-you-sleep). Its checkout and context are still there, so it fixes what broke instead of starting over. It can try a couple of times, but if the third attempt still fails, then the run fails, and nothing gets committed.
+
+Every sandbox's name also includes the run ID, so when a draft is cancelled (someone relabels the PR, or it's closed), a small function listening for Inngest's `function.cancelled` event finds that run's sandboxes and [destroys them](/docs/sandboxes/features/managed-lifecycle?ref=blog-docsferatu-an-agent-that-drafts-docs-prs-while-you-sleep).
+
+## Snapshots
+
+The checks need the website's dependencies installed, plus Go and Python toolchains for the code snippets. Installing all of that from scratch on every check would be very lame (and slow), so the checking sandboxes start from a **[snapshot](/docs/sandboxes/features/snapshots-and-restore?ref=blog-docsferatu-an-agent-that-drafts-docs-prs-while-you-sleep)**: a saved image of a machine where everything is already installed.
+
+The snapshot is named after a hash of the website's lockfile, so it only gets rebuilt when the dependencies actually change. In my tests, building one took about 2.5 minutes, and a [sandbox](/docs/sandboxes/features/snapshots-and-restore?ref=blog-docsferatu-an-agent-that-drafts-docs-prs-while-you-sleep) started from it was ready in about 6 seconds. That's 2.5 minutes saved on every check for as long as the snapshot exists.
+
+When it *doesn't* exist, I still don't want a draft to stop and waste time waiting. I also don't want five drafts doing the same build at once. So the work splits in two:
+
+1. Before the agent starts editing, a draft looks for the snapshot. If it's missing, the draft sends a `deps.requested` event and the run keeps going. The agent edits in parallel with the build.
+2. A separate `deps-snapshot` function builds it. A `singleton` keyed on the lockfile hash means only one build runs per hash. When the build is done, it sends a `deps.ready` event.
+3. The draft only actually *waits* for that event when it reaches the checking step. Usually the snapshot is ready by then.
+
+There's one subtle race in there. If a draft checks for the snapshot, sees nothing, and only *then* starts listening for `deps.ready`, the build could finish in between and the draft would wait for an event that already came and went. So the draft starts listening *before* it looks:
+
+```tsx
+// 1. Register the wait first (not awaited), so a ready event can't slip past.
+const ready = step.waitForEvent("deps ready", {
+  event: depsReady,
+  if: `async.data.lockSha == '${lockSha}'`, // only this lockfile's build
+  timeout: "90m",
+});
+// 2. Then look. A hit returns right away and the wait is never used.
+const snapshotId = await findDepsSnapshot(ctx, lockSha);
+if (snapshotId) return { snapshotId };
+// 3. Miss: ask for a build and carry on editing.
+await step.sendEvent("deps request", depsRequested.create({ lockSha, baseSha, runId }));
+return { ready };
+```
+
+## What it's written so far
+
+So far it's three real runs on `inngest-js`, all from one afternoon. I kicked off all three by hand, adding the `docs-sync` label to a teammate's PRs because I was impatient to watch. Now the first time triage says "relevant" it drafts on its own, and the label is only for asking for a redraft. One quick caveat first: all three ran an older version of the dependency setup, where each draft installed the website's deps inline instead of using the snapshot handshake from the last section. So these timings are a little *slower* than what the current code should do.
+
+Here's one, [inngest-js#1837](https://github.com/inngest/inngest-js/pull/1837) ("Make the global `step` and `group` include middleware tools"):
+
+- **19:34:03 UTC** — I add the `docs-sync` label to the PR.
+- **In between** — a [sandbox](/docs/sandboxes?ref=blog-docsferatu-an-agent-that-drafts-docs-prs-while-you-sleep) clones both repos, the agent reads the SDK diff and the docs, edits one page, and the checks run in a [fresh sandbox](/docs/sandboxes/features/isolation-and-security?ref=blog-docsferatu-an-agent-that-drafts-docs-prs-while-you-sleep) with no secrets. They pass on the first try.
+- **19:40:56 UTC** — the Worker makes one commit and opens draft [website#1995](https://github.com/inngest/website/pull/1995).
+- **19:55:08 UTC** — the SDK PR merges.
+
+It was just there, a quarter-hour before the merge, *waiting in the shadows*. An SDK developer can use it as a jumping off point, merge it as is, or even completely kill it. Eventually it’d be neat to do something to track the final status of the PR as another scoring dimension.
+
+Here's a slice of what it wrote, added to the TypeScript client reference:
+
+```diff
++## `inngest.globals()` <VersionBadge version="v4.26.0+" />
++
++<Callout>
++`inngest.globals()` is experimental. It may change without a major version bump.
++</Callout>
++
++`inngest.globals()` returns `step` and `group` objects typed for this client.
++Helper functions can import them instead of taking `step` or `group` as
++arguments. The types include any tools your client's middleware adds, such as
++`step.sandbox` and `group.sandbox` from `sandboxMiddleware()`.
+```
+
+It also wrote a two-file example (a client that exports `inngest.globals()`, plus a helper that calls [`step.sandbox.create()`](/docs/sandboxes/quick-start?ref=blog-docsferatu-an-agent-that-drafts-docs-prs-while-you-sleep) without being handed `step`), and that snippet had to type-check before the PR existed. The PR description also lists open questions instead of just guessing: "The VersionBadge says v4.26.0+, assuming the next minor release follows 4.25.0. Please check this against the actual release." It also says why it *didn't* touch two pages triage had suggested. I’m sure that all of this *will* take some good old fashioned prompt engineering to get all the way right.
+
+The other one, [inngest-js#1834](https://github.com/inngest/inngest-js/pull/1834) ("Correct ref targeting for CI PRs"), changed CI runs to test GitHub's merge of a PR into its base instead of the PR's head. The draft, [website#1994](https://github.com/inngest/website/pull/1994), touched four pages under `pages/docs/labs/ci/` and opened about 6 minutes after the label went on (18:33:42 → 18:39:49 UTC). The edits are small and pretty consistent across pages:
+
+```diff
+-- `checkout()` clones the commit that triggered the run with a short-lived token that never appears in the trace. Locally it uploads your working tree without its `.git` folder.
++- `checkout()` clones the commit that triggered the run with a short-lived token that never appears in the trace. On a pull request it clones GitHub's test merge of the head into the base, so the run tests the change as it would be merged. Locally it uploads your working tree without its `.git` folder.
+```
+
+The third run is my favorite so far, and it's the one that *didn't* make a PR. Remember inngest-js#1830, the one the hook bricked? That PR ("Always destroy scoped sandboxes and make later failures final") changed when a [sandbox](/docs/sandboxes/features/managed-lifecycle?ref=blog-docsferatu-an-agent-that-drafts-docs-prs-while-you-sleep) gets cleaned up after an error. It's a behavior fix, but as far as I can tell nothing in the docs described the old behavior closely enough to be wrong. With the hook fixed, the agent looked for a while then decided nothing needed to change. No PR, no busywork for a reviewer. A docs bot that opens a PR for *every PR* is just a new kind of noise devs will learn to ignore. Knowing when to do nothing is a feature.
+
+You can also watch all of this happen, by the way! The dashboard streams the agent's output live through Inngest realtime, and *anyone* can vote on whether triage got a PR right or wrong. Each vote becomes a `triage_correct` score on that PR's triage run, so eventually I'll have actual numbers instead of just vibes.
+
+Until then, Docsferatu keeps doing what vampires do best: lurking in the repo, never seen at standup, leaving draft PRs behind like bite marks.
