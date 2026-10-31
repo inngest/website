@@ -94,7 +94,7 @@ Turns out the Agent SDK hands back its final JSON answer through an internal too
 
 When the checks *do* fail the errors go back to the agent in the same [edit sandbox](/docs/sandboxes?ref=blog-docsferatu-an-agent-that-drafts-docs-prs-while-you-sleep). Its checkout and context are still there, so it fixes what broke instead of starting over. It can try a couple of times, but if the third attempt still fails, then the run fails, and nothing gets committed.
 
-Every sandbox's name also includes the run ID, so when a draft is cancelled (someone relabels the PR, or it's closed), a small function listening for Inngest's `function.cancelled` event finds that run's sandboxes and [destroys them](/docs/sandboxes/features/managed-lifecycle?ref=blog-docsferatu-an-agent-that-drafts-docs-prs-while-you-sleep).
+Every sandbox's name also includes the run ID, so when a draft is cancelled (someone relabels the PR, or it's closed), a small function listening for Inngest's `inngest/function.cancelled` event finds that run's sandboxes and [destroys them](/docs/sandboxes/features/managed-lifecycle?ref=blog-docsferatu-an-agent-that-drafts-docs-prs-while-you-sleep).
 
 ## Snapshots
 
