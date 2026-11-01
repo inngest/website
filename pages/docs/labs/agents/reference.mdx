@@ -88,7 +88,7 @@ export const agents = createAgents(inngest);
 | `discovery` | value | `false` turns off the tools that find and reach other agents; `{ prepare }` fills part of their input. On by default. |
 | `listen` | value | Event types the model may start watching with `inbox_listen`. [Model tools](#model-tools) |
 | `remember` | value or function | `false` switches off the loop's remembered history. |
-| `loop` | value | Options for the agent's own loop, such as `{ maxTurns: 10 }`, or a whole loop to swap in. [The loop](#the-loop) |
+| `loop` | value | Options for the agent's own loop, such as `{ maxTurns: 10 }`, or a whole loop to swap in: a function shaped like the handler's `loop` that returns at least `{ text, end, unread }`. [The loop](#the-loop) |
 
 The options of `createFunction` that apply to agents (`name`, `retries`, `cancelOn`, `concurrency`, `throttle`, `idempotency`, `onFailure` and the rest) pass through to the function.
 
@@ -174,7 +174,7 @@ me.message(content: Json): Promise<void>
 
 - `key`: the thread's key.
 - `post(text)`: writes where the thread lives, in that place's own markup: the Slack thread or the pull request. Awaited, it waits until the post landed and throws if it still fails after retries. Not awaited, the agent carries on, the post still lands before the run ends, and a failure never fails the run.
-- A thread with no home, such as one opened by `start()` or a cron tick, posts nothing, and the trace warns.
+- A thread with no home, such as one opened by `start()` or a cron tick, has nowhere to post. A post there does nothing and the trace warns.
 - A Slack configuration error from a post you did not await, such as a bad token or a missing scope, becomes a warning on the trace.
 - `message(content)`: puts a message in the agent's own inbox. It is how work you did not wait for reports back.
 - The agent posts some things itself: in Slack, a status line while it works; the answer when there is no handler; and a notice when a run fails.
@@ -332,7 +332,7 @@ Agents talk through four event types. Each message says who sent it with `msg.fr
 - `agent/question`: answer it with `msg.reply(answer)` or the model's `reply` tool. The answer is a string.
 - `agent/answer`: `re` is the id of the question it answers. `refused` and `timed_out` mean no answer is coming.
 - `agent/finished`: how a run the agent started ended, with its output or error.
-- How the model sees each type: [Models](/docs/labs/agents/models?ref=docs-labs-agents-reference). `formatEvent` is the default wording. [The loop](#the-loop)
+- How the model sees each type: `formatEvent` is the default wording. [The loop](#the-loop)
 
 ```typescript
 for await (const msg of inbox) {
@@ -410,6 +410,7 @@ formatEvent(message: AgentMessage): string
 - **`loop.with(options)`** returns a loop derived from the handler's. Your options override what they name (`model` replaces the agent's) or add to it (`tools` are added to the agent's tools), as in `const strict = loop.with({ maxTurns: 5 })`.
 - **`agent.loop(options)`**, imported on its own, always builds a standalone loop that has only what its options give, so `model` is required.
 - **On the definition**, `loop: { maxTurns: 10 }` sets options for the agent's own loop, which is how an agent with no handler changes them. `loop:` also takes a whole loop to swap in; the agent's triggers, inbox and thread stay as they are.
+- **A whole loop** is a function shaped like the handler's `loop`, `(batch, options?) => Promise<Result>`. A hand-built one returns at least `{ text, end, unread }`, and the default handler posts `text`. The full [result](#the-result) of `agent.loop()` also has `history`, `turns`, `usage` and `toolCalls`.
 
 | Option | Default | Per call | Description |
 | --- | --- | --- | --- |
@@ -482,6 +483,7 @@ format?: (message: AgentMessage) => AgentUserContent;
 | `unread` | The messages a custom `steer` skipped. |
 | `compaction` | The summary of a long history, as `AgentCompaction`. The loop reuses it when the thread carries on. |
 
+- **A hand-built loop** returns at least `text`, `end` and `unread`. [The loop](#the-loop)
 - **Folding.** Before each model call, the first included, the loop drains the handler's inbox and every inbox the model opened, and folds what it took into that call. A message that arrives after the last drain stays in the inbox for your next read.
 - **Questions.** A question that arrives during a turn is answered at the next model call. The loop skips questions that already have a reply.
 - **Remembering.** After each batch the loop saves the model's history in thread state and picks it up when the thread's next run starts. A long history is summarized. `remember: false` on the agent switches this off.
