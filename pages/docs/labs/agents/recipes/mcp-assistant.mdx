@@ -1,7 +1,7 @@
 import { AnnotatedCode, Annotation } from "shared/Docs/mdx";
 
 export const metaTitle = "MCP assistant | Inngest Agents";
-export const description = "Build an agent that uses a remote MCP server as each person: it sends a sign-in link the first time, then works in their own account.";
+export const description = "Build a Slack agent that uses a remote MCP server as each person: it sends a sign-in link the first time, then works in their own account.";
 
 # MCP assistant
 
@@ -9,87 +9,175 @@ export const description = "Build an agent that uses a remote MCP server as each
 
 ```text
 Maya   What's in my Notion roadmap page?
-Bot    Connect Notion first: https://mcp.notion.com/authorize?...
-Maya   (approves)
+Bot    I sent you a link to connect Notion. Ask again once you've connected.
+Maya   (signs in with Notion in the browser)
+Maya   What's in my roadmap page?
 Bot    Your roadmap has three items: ...
 ```
 
 ## The code
 
+The server is one tool. `user` names the person from the Slack message that started the run, so every person gets their own token.
+
 <AnnotatedCode>
 
-```typescript {{ title: "inngest/agents/assistant.ts" }}
-import { tool, kvOAuthStore } from "inngest/experimental";
-import { agent } from "inngest/experimental/agents";
-import { agents } from "../client";
-import { claude } from "../models/claude";
+{/* not type-checked: tool.mcp with auth.oauth.user reading { event }, the default OAuth store */}
+```typescript {{ title: "inngest/tools/notion.ts" }}
+import { tool } from "inngest/experimental";
 
-export const store = kvOAuthStore();
-
-export const assistant = agents.agent({ id: "assistant" }, async ({ event, inbox, control }) => {
-  const asker = event.data.user as string;
-  const notion = tool.mcp({
-    url: "https://mcp.notion.com/mcp",
-    auth: { oauth: { user: asker, redirectUri: "https://app.acme.test/oauth/mcp", store } },
-  });
-
-  for await (const message of inbox) {
-    await agent.loop({ model: claude, prompt: message, tools: { notion }, ...control });
-  }
+export const notion = tool.mcp({
+  id: "notion",
+  url: "https://mcp.notion.com/mcp",
+  auth: {
+    oauth: {
+      user: ({ event }) => {
+        return event.data.user;
+      },
+      redirectUri: "https://app.acme.test/api/mcp/callback",
+    },
+  },
 });
 ```
 
-<Annotation id="store" lines="6" tease="one store, two places" title="Store" href="/docs/labs/agents/tools?ref=docs-labs-agents-recipes-mcp-assistant#connect-each-persons-account" linkText="Tools">
-The agent and your callback route share it.
+<Annotation id="id" lines="4" tease="tokens live under it" title="Server id" href="/docs/labs/agents/tools?ref=docs-labs-agents-recipes-mcp-assistant" linkText="Tools">
+Tokens are stored under this id, so two servers never share one.
 </Annotation>
 
-<Annotation id="oauth" lines="12" tease="per person" title="User" href="/docs/labs/agents/reference-sandboxes?ref=docs-labs-agents-recipes-mcp-assistant#per-user-oauth" linkText="OAuth reference">
-The asker's ID picks whose token each call uses.
+<Annotation id="user" lines="8-10" tease="whose token" title="User" href="/docs/labs/agents/tools?ref=docs-labs-agents-recipes-mcp-assistant" linkText="Tools">
+Gets the event and thread that started the run. Any ID that is stable for the person works.
 </Annotation>
 
-<Annotation id="link" lines="16" tease="link on first use" title="Sign-in link" href="/docs/labs/agents/tools?ref=docs-labs-agents-recipes-mcp-assistant#connect-each-persons-account" linkText="Tools">
-A user who has not connected gets a link from the model. Their next message works.
+<Annotation id="redirect" lines="11" tease="your callback route" title="Redirect" href="/docs/labs/agents/tools?ref=docs-labs-agents-recipes-mcp-assistant" linkText="Tools">
+Where the server sends the person after they sign in.
 </Annotation>
 
 </AnnotatedCode>
 
-```typescript {{ title: "inngest/routes/mcpCallback.ts" }}
-import { completeMcpAuthorization } from "inngest/experimental";
-import { inngest } from "../client";
-import { store } from "../agents/assistant";
+The agent has no handler; listing the tool is enough.
 
-export async function mcpCallback(query: { code: string; state: string; error?: string }, signedInUser: string) {
-  await completeMcpAuthorization({
-    store,
-    code: query.code,
-    state: query.state,
-    error: query.error,
-    expectUser: signedInUser,
-    send: (event) => {
-      return inngest.send(event);
-    },
-  });
-}
+<AnnotatedCode>
+
+{/* not type-checked: agents.agent with an MCP tool and no handler */}
+```typescript {{ title: "inngest/agents/assistant.ts" }}
+import { slack } from "inngest/experimental/agents";
+import { agents } from "../client";
+import { claude } from "../models/claude";
+import { notion } from "../tools/notion";
+
+export const assistant = agents.agent({
+  id: "assistant",
+  triggers: [slack.thread()],
+  model: claude,
+  system: "You help people with their Notion workspace.",
+  tools: { notion },
+});
 ```
 
-`inngest/client.ts`, `inngest/models/claude.ts` and `inngest/serve.ts` follow the [Slack assistant](/docs/labs/agents/recipes/slack-assistant?ref=docs-labs-agents-recipes-mcp-assistant).
+<Annotation id="tools" lines="11" tease="sign-in, handled for you" title="The sign-in link" href="/docs/labs/agents/tools?ref=docs-labs-agents-recipes-mcp-assistant" linkText="Tools">
+A person who hasn't connected gets the link from the SDK. The model learns only that a link was sent, and never sees the link or a token.
+</Annotation>
+
+</AnnotatedCode>
+
+The rest is wiring: the client, then three routes for Inngest, Slack and the server's redirect.
+
+{/* not type-checked: createAgents with the store from the environment */}
+```typescript {{ title: "inngest/client.ts" }}
+import { Inngest } from "inngest";
+import { createAgents } from "inngest/experimental/agents";
+
+export const inngest = new Inngest({ id: "mcp-assistant" });
+
+export const agents = createAgents(inngest);
+```
+
+{/* not type-checked: agents.functions() in a Next.js route */}
+```typescript {{ title: "app/api/inngest/route.ts" }}
+import { serve } from "inngest/next";
+import { agents, inngest } from "../../../inngest/client";
+import "../../../inngest/agents/assistant";
+
+export const { GET, POST, PUT } = serve({
+  client: inngest,
+  functions: agents.functions(),
+});
+```
+
+{/* not type-checked: slack.bridge as a Web handler */}
+```typescript {{ title: "app/api/slack/route.ts" }}
+import { secret } from "inngest/experimental";
+import { slack } from "inngest/experimental/agents";
+import { inngest } from "../../../inngest/client";
+
+export const POST = slack.bridge({
+  client: inngest,
+  signingSecret: secret("SLACK_SIGNING_SECRET"),
+});
+```
+
+{/* TODO(spec): tools.md ties the sign-in link to the first browser with a cookie that the callback checks. Which options does completeMcpAuthorization take to see that cookie? Does expectUser still exist? */}
+<AnnotatedCode>
+
+{/* not type-checked: completeMcpAuthorization with the default store */}
+```typescript {{ title: "app/api/mcp/callback/route.ts" }}
+import { completeMcpAuthorization, kvOAuthStore } from "inngest/experimental";
+
+export const GET = async (request: Request) => {
+  const { searchParams } = new URL(request.url);
+
+  await completeMcpAuthorization({
+    store: kvOAuthStore(),
+    code: searchParams.get("code") ?? "",
+    state: searchParams.get("state") ?? "",
+    error: searchParams.get("error") ?? undefined,
+  });
+
+  return new Response("Connected. You can close this tab.");
+};
+```
+
+<Annotation id="store" lines="7" tease="the store the tool uses" title="Store" href="/docs/labs/agents/tools?ref=docs-labs-agents-recipes-mcp-assistant" linkText="Tools">
+Tokens are encrypted with `MCP_OAUTH_ENCRYPTION_KEY` and kept in the app's store.
+</Annotation>
+
+</AnnotatedCode>
+
+`inngest/models/claude.ts` is the one from the [quick start](/docs/labs/agents/quick-start?ref=docs-labs-agents-recipes-mcp-assistant#pick-a-model).
 
 ## What it shows off
 
-- A remote server's tools, with no token in the model, a trace or a step output. [Tools](/docs/labs/agents/tools?ref=docs-labs-agents-recipes-mcp-assistant#use-a-remote-mcp-server)
-- Each person signs in once and works as themselves. [Tools](/docs/labs/agents/tools?ref=docs-labs-agents-recipes-mcp-assistant#connect-each-persons-account)
-- Pause until they connect with `waitForMcpAuthorization()`. [Reference](/docs/labs/agents/reference-sandboxes?ref=docs-labs-agents-recipes-mcp-assistant#per-user-oauth)
+- Each person signs in once and works as themselves. [Tools](/docs/labs/agents/tools?ref=docs-labs-agents-recipes-mcp-assistant)
+- The model never sees a sign-in link or a token. [Tools](/docs/labs/agents/tools?ref=docs-labs-agents-recipes-mcp-assistant)
+- A Slack agent with no handler, and a Slack route that checks the signature. [Slack and GitHub](/docs/labs/agents/slack-and-github?ref=docs-labs-agents-recipes-mcp-assistant)
 
 ## Run it
 
+You need the setup from the [quick start](/docs/labs/agents/quick-start?ref=docs-labs-agents-recipes-mcp-assistant#install), a Slack app and a Next.js app.
+
 ```bash
-export ANTHROPIC_API_KEY=sk-ant-... MCP_OAUTH_ENCRYPTION_KEY=$(openssl rand -base64 32) INNGEST_EXPERIMENTAL_KV_URL=redis://localhost:6379
-node --import tsx inngest/serve.ts
+export ANTHROPIC_API_KEY=sk-ant-...
+export INNGEST_EXPERIMENTAL_KV_URL=redis://localhost:6379
+export MCP_OAUTH_ENCRYPTION_KEY=$(openssl rand -base64 32)
+export SLACK_BOT_TOKEN=xoxb-...
+export SLACK_SIGNING_SECRET=...
+npm run dev
 ```
 
-Your callback route must know who is signed in: pass that user as `expectUser`.
+```bash
+npx inngest-cli@latest dev -u http://localhost:3000/api/inngest
+```
+
+Set your Slack app's Events API request URL to `https://<your-host>/api/slack`, and set `redirectUri` to your app's public address. Mention the bot and ask about Notion. The run shows each model turn and tool call.
 
 ## Variations
 
-- A server with a fixed token: `auth: { bearer: secret("TOKEN") }`. [Tools](/docs/labs/agents/tools?ref=docs-labs-agents-recipes-mcp-assistant#use-a-remote-mcp-server)
-- A server with no dynamic registration: set `clientId` and `clientSecret`. [Reference](/docs/labs/agents/reference-sandboxes?ref=docs-labs-agents-recipes-mcp-assistant#per-user-oauth)
+- Use a server with one shared token: `auth: { bearer: secret("TOKEN") }`. [Tools](/docs/labs/agents/tools?ref=docs-labs-agents-recipes-mcp-assistant)
+- Revoke one person's connection with `notion.disconnect(user)`. [Tools](/docs/labs/agents/tools?ref=docs-labs-agents-recipes-mcp-assistant)
+- Add a second server to `tools`. Its own `id` keeps its tokens apart. [Tools](/docs/labs/agents/tools?ref=docs-labs-agents-recipes-mcp-assistant)
+
+## Learn more
+
+- [Tools](/docs/labs/agents/tools?ref=docs-labs-agents-recipes-mcp-assistant)
+- [Slack and GitHub](/docs/labs/agents/slack-and-github?ref=docs-labs-agents-recipes-mcp-assistant)
+- [Reference: sandboxes, tools and MCP](/docs/labs/agents/reference-sandboxes?ref=docs-labs-agents-recipes-mcp-assistant)
+- Next recipe: [Sandbox tools](/docs/labs/agents/recipes/sandbox-tools?ref=docs-labs-agents-recipes-mcp-assistant)
