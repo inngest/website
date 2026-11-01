@@ -1,0 +1,231 @@
+import { AnnotatedCode, Annotation } from "shared/Docs/mdx";
+
+export const metaTitle = "Calling home | Inngest Agents";
+export const description = "Let a script in an agent's sandbox call your tools. Each call runs in your app as a durable step with your run's whole scope, so a tool can write thread state, post as the agent, and use credentials that never enter the sandbox.";
+
+# Calling home
+
+> Let a script in the sandbox call your tools: each call runs in your app, as a step, with your run's whole scope.
+
+The model can write one script instead of taking many turns, and your keys stay out of the machine. This page adds that to the PR helper, built up through [Threads](/docs/labs/agents/threads?ref=docs-labs-agents-calling-home), [Inboxes](/docs/labs/agents/inboxes?ref=docs-labs-agents-calling-home), [Models](/docs/labs/agents/models?ref=docs-labs-agents-calling-home), [Tools](/docs/labs/agents/tools?ref=docs-labs-agents-calling-home), [Skills](/docs/labs/agents/skills?ref=docs-labs-agents-calling-home) and [Sandboxes](/docs/labs/agents/sandboxes?ref=docs-labs-agents-calling-home).
+
+## The model writes code
+
+To read the CI logs of every open pull request without a model turn for each, give the sandbox's code tools your `readLog` tool.
+
+<AnnotatedCode>
+
+{/* not type-checked: sandbox.tools.code({ tools }), which gives the model work_run_code */}
+```typescript {{ title: "inngest/sandboxes/work.ts" }}
+import { secret } from "inngest/experimental";
+import { githubApp, sandbox } from "inngest/experimental/agents";
+import { readLog } from "../tools/readLog";
+
+export const work = sandbox({
+  id: "work",
+  repo: {
+    url: "https://github.com/acme/web",
+    auth: githubApp({
+      appId: process.env.GITHUB_APP_ID ?? "",
+      privateKey: secret("GITHUB_APP_PRIVATE_KEY"),
+    }),
+    policy: (push) => {
+      if (push.branch === "main") {
+        return { refuse: "Never push to main" };
+      }
+    },
+  },
+  tools: sandbox.tools.code({ tools: { readLog } }),
+});
+```
+
+<Annotation id="tools" lines="19" tease="adds work_run_code" title="Tools for scripts" href="/docs/labs/agents/reference-sandboxes?ref=docs-labs-agents-calling-home#code-tools" linkText="Reference: code tools">
+Giving the code tools some tools adds `work_run_code`. A script calls each by its key in the record, as `tools.readLog(...)`.
+</Annotation>
+
+</AnnotatedCode>
+
+The model writes one script and runs it with `work_run_code`:
+
+```python {{ title: "A script the model writes" }}
+failing = []
+
+for pr in [41, 42, 43, 44, 45]:
+    log = await tools.readLog(pr=pr)
+
+    if "FAIL" in log:
+        failing.append(pr)
+
+print(failing)
+```
+
+That is one turn, not one per pull request, and every `readLog` is its own step in your run's trace, retried and recorded like any other. The tool and the CI helper are as [Tools](/docs/labs/agents/tools?ref=docs-labs-agents-calling-home) left them:
+
+```typescript {{ title: "inngest/lib/ci.ts" }}
+export const fetchLog = async (pr: number) => {
+  const response = await fetch(`https://ci.acme.test/prs/${pr}/log`);
+
+  if (!response.ok) {
+    throw new Error(`CI log for #${pr}: ${response.status}`);
+  }
+
+  return await response.text();
+};
+```
+
+```typescript {{ title: "inngest/tools/readLog.ts" }}
+import { tool } from "inngest/experimental";
+import { z } from "zod";
+import { fetchLog } from "../lib/ci";
+
+export const readLog = tool.step({
+  description: "Reads the CI log of a pull request",
+  input: z.object({ pr: z.number() }),
+  run: async ({ pr }) => {
+    return await fetchLog(pr);
+  },
+});
+```
+
+## Your scope, from its code
+
+To let the script do what only your run can, such as saving thread state and commenting on the PR, make the tool inside the handler.
+
+<AnnotatedCode>
+
+{/* not type-checked: a tool made in the handler and passed with loop(batch, { tools }) */}
+```typescript {{ title: "inngest/agents/prHelper.ts" }}
+import { tool } from "inngest/experimental";
+import { github, kv, skills } from "inngest/experimental/agents";
+import { z } from "zod";
+import { agents } from "../client";
+import { ciFailed, ciPassed, deployed } from "../events";
+import { claude } from "../models/claude";
+import { work } from "../sandboxes/work";
+import { readLog } from "../tools/readLog";
+
+const triggers = [
+  github.thread({ repos: ["acme/web"] }),
+  { event: ciFailed, thread: "event.data.prUrl" },
+  { event: deployed, thread: "event.data.pull.url" },
+];
+
+export const prHelper = agents.agent(
+  {
+    id: "pr-helper",
+    triggers,
+    inbox: [{ event: ciPassed, thread: "event.data.prUrl" }],
+    idle: "1h",
+    model: claude,
+    system: "You help with pull requests on acme/web.",
+    budget: { usd: 0.5 },
+    tools: { readLog, ...github.tools() },
+    sandboxes: { work },
+    listen: [ciPassed, ciFailed],
+    skills: [skills.folder("./skills")],
+  },
+  async ({ inbox, me, loop }) => {
+    const note = tool.step({
+      description: "Leaves a note on this PR",
+      input: z.object({ text: z.string() }),
+      run: async ({ text }) => {
+        await kv.thread.set("note", text);
+
+        await me.post(text);
+
+        return "noted";
+      },
+    });
+
+    me.post("Looking at it.");
+
+    for await (const batch of inbox.batches({ max: 20 })) {
+      const result = await loop(batch, { tools: { note } });
+
+      if (result.end === "budget") {
+        await me.post("This PR is out of budget.");
+
+        return;
+      }
+
+      await me.post(result.text);
+    }
+  },
+);
+```
+
+<Annotation id="note" lines="31-41" tease="closes over me" title="A tool made in the handler" href="/docs/labs/agents/tools?ref=docs-labs-agents-calling-home" linkText="Tools">
+Its body can use `me`, `kv` and your variables. It runs as a durable step, like any tool.
+</Annotation>
+
+<Annotation id="tools" lines="46" tease="for this call" title="Per-call tools" href="/docs/labs/agents/reference?ref=docs-labs-agents-calling-home#tools-passed-to-a-loop" linkText="Reference: tools passed to a loop">
+Added to the agent's tools for this call. A script in the sandbox calls it by the same name.
+</Annotation>
+
+</AnnotatedCode>
+
+The script can also write thread state and comment on the PR:
+
+```python {{ title: "A script that calls note" }}
+log = await tools.readLog(pr=42)
+
+if "FAIL" in log:
+    await tools.note(text="The checkout test is failing.")
+```
+
+The comment lands through this run's own `me`, and the note in its own thread state. The script never held a GitHub token or the store. The events, and the client with its `sandboxMiddleware()`, are as [Threads](/docs/labs/agents/threads?ref=docs-labs-agents-calling-home) and [Sandboxes](/docs/labs/agents/sandboxes?ref=docs-labs-agents-calling-home#a-sandbox) left them:
+
+```typescript {{ title: "inngest/events.ts" }}
+import { eventType } from "inngest";
+import { z } from "zod";
+
+const ciRun = z.object({ pr: z.number(), prUrl: z.string() });
+
+export const ciFailed = eventType("ci/run.failed", { schema: ciRun });
+
+export const ciPassed = eventType("ci/run.passed", { schema: ciRun });
+
+export const deployed = eventType("deploy/finished", {
+  schema: z.object({ env: z.string(), pull: z.object({ url: z.string() }) }),
+});
+```
+
+## The keys stay home
+
+To use a credential without handing it to a script, keep it in the tool. `note` posts with your app's GitHub credentials, `readLog` reaches CI from your app, and the script only sees what they return.
+
+Nothing secret enters the sandbox unless you put it there with `sandbox({ secrets })`, which any code in the sandbox can read. [Reference: secrets →](/docs/labs/agents/reference-sandboxes?ref=docs-labs-agents-calling-home#secrets)
+
+## Your own scripts
+
+To call the same tools from a script you wrote, pass them to the command in your handler.
+
+{/* not type-checked: sandboxes.work.commands.run with tools */}
+```typescript
+await sandboxes.work.commands.run("triage", "node triage.mjs", {
+  tools: { readLog, note },
+});
+```
+
+```js {{ title: "triage.mjs" }}
+const { tools } = require("inngest_tools");
+
+const main = async () => {
+  const log = await tools.readLog({ pr: 42 });
+
+  if (log.includes("FAIL")) {
+    await tools.note({ text: "The checkout test is failing." });
+  }
+};
+
+main();
+```
+
+The script finds the tools in `inngest_tools` by the names in the record; in Python it is `from inngest_tools import tools`. [Tools and code mode →](/docs/sandboxes/features/tools?ref=docs-labs-agents-calling-home)
+
+## Recipes and reference
+
+- [Sandbox tools](/docs/labs/agents/recipes/sandbox-tools?ref=docs-labs-agents-calling-home)
+- [Tools](/docs/labs/agents/tools?ref=docs-labs-agents-calling-home)
+- [Sandboxes](/docs/labs/agents/sandboxes?ref=docs-labs-agents-calling-home)
+- [Reference: tools and sandboxes](/docs/labs/agents/reference-sandboxes?ref=docs-labs-agents-calling-home#tools)
