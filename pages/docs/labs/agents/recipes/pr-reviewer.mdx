@@ -25,7 +25,6 @@ Screenshot needed: the review comment on a pull request.
 <AnnotatedCode>
 
 {/* not type-checked: github.thread with repos, events and if */}
-{/* TODO(spec): github.thread({ repos?, events? }) has no way to keep only comments that ask for a review and skip the bot's own. This page assumes an if option and the event.data fields body and author. */}
 ```typescript {{ title: "inngest/agents/reviewer.ts" }}
 import { github } from "inngest/experimental/agents";
 import { agents } from "../client";
@@ -39,8 +38,9 @@ export const reviewer = agents.agent({
       repos: ["acme/app"],
       events: ["issue_comment"],
       if: [
-        'event.data.body.contains("@review-bot please review")',
-        'event.data.author != "review-bot[bot]"',
+        "has(event.data.issue.pull_request)",
+        'event.data.comment.body.contains("@review-bot please review")',
+        'event.data.comment.user.login != "review-bot[bot]"',
       ].join(" && "),
     }),
   ],
@@ -54,15 +54,15 @@ export const reviewer = agents.agent({
 });
 ```
 
-<Annotation id="trigger" lines="9-16" tease="only comments that ask" title="Start from a comment" href="/docs/labs/agents/slack-and-github?ref=docs-labs-agents-recipes-pr-reviewer" linkText="Slack and GitHub">
-A comment that asks for a review starts it. The review bot's own comments never do, so it cannot answer itself.
+<Annotation id="trigger" lines="9-17" tease="only comments that ask" title="Start from a comment" href="/docs/labs/agents/slack-and-github?ref=docs-labs-agents-recipes-pr-reviewer" linkText="Slack and GitHub">
+A comment on a pull request that asks for a review starts it. The review bot's own comments never do, so it cannot answer itself.
 </Annotation>
 
-<Annotation id="answer" lines="18-23" tease="no handler needed" title="The review is the answer" href="/docs/labs/agents/models-and-the-loop?ref=docs-labs-agents-recipes-pr-reviewer" linkText="Models and the loop">
+<Annotation id="answer" lines="19-24" tease="no handler needed" title="The review is the answer" href="/docs/labs/agents/models-and-the-loop?ref=docs-labs-agents-recipes-pr-reviewer" linkText="Models and the loop">
 The agent runs the model and posts its answer as one comment on the pull request.
 </Annotation>
 
-<Annotation id="sandbox" lines="24" tease="a machine for the tests" title="The sandbox" href="/docs/labs/agents/sandboxes-and-code?ref=docs-labs-agents-recipes-pr-reviewer" linkText="Sandboxes and code">
+<Annotation id="sandbox" lines="25" tease="a machine for the tests" title="The sandbox" href="/docs/labs/agents/sandboxes-and-code?ref=docs-labs-agents-recipes-pr-reviewer" linkText="Sandboxes and code">
 Listing the sandbox gives the model `review_run`, `review_read` and `review_search`.
 </Annotation>
 
@@ -72,7 +72,7 @@ The sandbox holds the repository, and the repository is a function of the commen
 
 <AnnotatedCode>
 
-{/* TODO(spec): the checkout leaves an existing checkout alone when a paused sandbox resumes, so a second request on the same pull request would review the old head. Which option or call gives it a clean checkout of the current head? */}
+{/* TODO(spec): a sandbox re-checks out only when the run's repo ref differs from the checkout's. refs/pull/N/head is the same string after the pull request gets new commits; does the comparison use the resolved commit, or is a second review of a moved head left on the old one? */}
 {/* not type-checked: repo as a function of the event, repo auth as a function, push: false */}
 ```typescript {{ title: "inngest/sandboxes/review.ts" }}
 import { sandbox } from "inngest/experimental/agents";
@@ -82,7 +82,7 @@ export const review = sandbox({
   repo: ({ event }) => {
     return {
       url: "https://github.com/acme/app",
-      ref: `refs/pull/${event.data.number}/head`,
+      ref: `refs/pull/${event.data.issue.number}/head`,
       auth: () => {
         return process.env.GITHUB_READ_TOKEN ?? "";
       },
@@ -169,9 +169,7 @@ export GITHUB_WEBHOOK_SECRET=...
 npm run dev
 ```
 
-`GITHUB_READ_TOKEN` only needs read access to the repository's contents. `GITHUB_TOKEN` posts the review.
-
-{/* TODO(spec): which token does the answer's post to GitHub use by default? This page assumes GITHUB_TOKEN. */}
+`GITHUB_READ_TOKEN` only needs read access to the repository's contents. `GITHUB_TOKEN` is what the agent posts the review with.
 
 Add a webhook to `acme/app` for **Issue comments**, pointing at `https://<your-host>/api/github` with `GITHUB_WEBHOOK_SECRET` as its secret; a tunnel works for local runs. Comment `@review-bot please review` on a pull request and watch the run in the Dev Server at [localhost:8288](http://localhost:8288).
 
