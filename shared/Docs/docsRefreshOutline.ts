@@ -805,14 +805,6 @@ export const docsRefreshOutline: DocsRefreshPage[] = [
             href: "/docs/labs/ci/quick-start",
           },
           {
-            title: "Project structure",
-            href: "/docs/labs/ci/structure",
-          },
-          {
-            title: "Run CI locally",
-            href: "/docs/labs/ci/local",
-          },
-          {
             title: "Concepts",
             href: "/docs/labs/ci/concepts",
             children: [
@@ -829,12 +821,12 @@ export const docsRefreshOutline: DocsRefreshPage[] = [
                 href: "/docs/labs/ci/commands",
               },
               {
-                title: "Machines",
+                title: "Machines and from()",
                 href: "/docs/labs/ci/machines",
               },
               {
-                title: "Base images & caching",
-                href: "/docs/labs/ci/base-images",
+                title: "Caching",
+                href: "/docs/labs/ci/caching",
               },
               {
                 title: "Checks and reports",

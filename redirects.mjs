@@ -400,8 +400,6 @@ export const permanentRedirects = [
     "/docs/durable-execution/guides-and-advanced/cancellation/bulk-cancellation",
   ],
   ["/patterns/running-code-on-a-schedule", "/docs/durable-execution/guides-and-advanced/events-and-triggers/schedules-and-delayed-starts"],
-  // Inngest CI caching folded into one Base images & caching page.
-  ["/docs/labs/ci/caching", "/docs/labs/ci/base-images"],
 
   // run-experiments-in-production moved from the Durable Workflows category to
   // the new AI Evals category (per Lauren's IA feedback). Old category URL is
