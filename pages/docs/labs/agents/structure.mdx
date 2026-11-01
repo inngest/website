@@ -12,6 +12,7 @@ inngest/
   client.ts
   serve.ts
   events.ts
+  keys.ts
   github.ts
   models/
     claude.ts
@@ -20,6 +21,9 @@ inngest/
     reviewer.ts
   functions/
     nightlyReview.ts
+  lib/
+    ci.ts
+    openPrs.ts
   tools/
     lookupOrder.ts
   sandboxes/
@@ -187,7 +191,9 @@ export const POST = slack.bridge({
 
 ## The other files
 
-- [`inngest/github.ts`](/docs/labs/agents/sandboxes?ref=docs-labs-agents-structure#a-repo) holds the `githubApp()` a sandbox's `repo` uses.
+- [`inngest/keys.ts`](/docs/labs/agents/memory?ref=docs-labs-agents-structure#typed-keys) holds the typed `kv.key()` definitions that handlers and tools share.
+- [`inngest/lib/ci.ts`](/docs/labs/agents/agents?ref=docs-labs-agents-structure#steps) and [`inngest/lib/openPrs.ts`](/docs/labs/agents/agent-teams?ref=docs-labs-agents-structure#not-everything-is-an-agent) hold plain helpers that a tool or a function calls.
+- [`inngest/github.ts`](/docs/labs/agents/reference-sandboxes?ref=docs-labs-agents-structure#git-hub-app) holds the `githubApp()` a sandbox's `repo` uses.
 - [`app/api/github/route.ts`](/docs/labs/agents/slack-and-github?ref=docs-labs-agents-structure#work-on-git-hub) mounts the GitHub bridge.
 - [`app/slack/socket.ts`](/docs/labs/agents/slack-and-github?ref=docs-labs-agents-structure#set-your-own-rules) takes your own Socket Mode connection.
 - [`app/api/mcp/callback/route.ts`](/docs/labs/agents/reference-sandboxes?ref=docs-labs-agents-structure#mcp) finishes an MCP sign-in.
