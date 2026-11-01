@@ -99,7 +99,7 @@ export const work = sandbox({ id: "work" });
 
 ## One agent per file
 
-An agent is a module-level export, not a function that builds one from a model. It imports the client, its model and the tools and sandboxes it uses.
+An agent is a module-level export. It imports the client, its model and the tools and sandboxes it uses.
 
 {/* not type-checked: agents.agent with a thread expression, tools and skills.folder */}
 ```typescript {{ title: "inngest/agents/support.ts" }}
@@ -139,7 +139,7 @@ export const reviewer = agents.agent({
 
 ## Plain functions beside them
 
-Work that holds no conversation is a plain function. It lives in `functions/`, and when it starts an agent it imports it. [Agents and triggers →](/docs/labs/agents/agents-and-triggers?ref=docs-labs-agents-structure#agent-or-plain-function)
+Work that needs no thread is a plain function. It lives in `functions/`, and when it starts an agent it imports it. [Agents and triggers →](/docs/labs/agents/agents-and-triggers?ref=docs-labs-agents-structure#agent-or-plain-function)
 
 {/* not type-checked: start().result() from a plain function */}
 ```typescript {{ title: "inngest/functions/nightlyReview.ts" }}
