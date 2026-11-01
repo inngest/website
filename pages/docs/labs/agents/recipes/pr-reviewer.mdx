@@ -52,7 +52,7 @@ export const reviewer = agents.agent({
 ```
 
 <Annotation id="trigger" lines="9-16" tease="only comments that ask" title="Start from a comment" href="/docs/labs/agents/slack-and-github?ref=docs-labs-agents-recipes-pr-reviewer#work-on-git-hub" linkText="Work on GitHub">
-Starts on a pull request comment that asks for a review, not on an edit or the app's own comment.
+Starts on a pull request comment that asks for a review, not on an edit. The route already drops the app's own comments.
 </Annotation>
 
 <Annotation id="idle" lines="18" tease="a short wait" title="A short idle" href="/docs/labs/agents/inboxes?ref=docs-labs-agents-recipes-pr-reviewer#going-quiet" linkText="Going quiet">
@@ -64,7 +64,7 @@ With no handler, the model's answer is the comment.
 </Annotation>
 
 <Annotation id="sandbox" lines="22" tease="a machine for tests" title="The sandbox" href="/docs/labs/agents/sandboxes?ref=docs-labs-agents-recipes-pr-reviewer#a-sandbox" linkText="A sandbox">
-Gives the model `review_run`, `review_read` and `review_search`.
+Gives the model this sandbox's tools.
 </Annotation>
 
 </AnnotatedCode>
@@ -96,6 +96,10 @@ The head of the pull request that asked.
 
 <Annotation id="readonly" lines="10-11" tease="nothing can push" title="Read only" href="/docs/labs/agents/reference-sandboxes?ref=docs-labs-agents-recipes-pr-reviewer#repos" linkText="Reference: repos">
 A read token and no push tool. A changed tracked file would block the next checkout, so the prompt forbids it.
+</Annotation>
+
+<Annotation id="tools" lines="14" tease="three tools only" title="Only these tools" href="/docs/labs/agents/reference-sandboxes?ref=docs-labs-agents-recipes-pr-reviewer#code-tools" linkText="Reference: code tools">
+The model gets `review_run`, `review_read` and `review_search`: no `edit`, no push.
 </Annotation>
 
 </AnnotatedCode>
