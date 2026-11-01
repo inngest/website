@@ -162,7 +162,7 @@ import { reviewer } from "../agents/reviewer";
 export const nightlyReview = inngest.createFunction(
   { id: "nightly-review", triggers: [{ cron: "TZ=UTC 0 2 * * *" }] },
   async () => {
-    const pr = "https://github.com/acme/api/pull/42";
+    const pr = "https://github.com/acme/web/pull/42";
 
     return await reviewer.start({ pr }).result();
   },
