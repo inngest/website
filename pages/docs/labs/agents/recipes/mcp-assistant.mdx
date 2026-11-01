@@ -94,8 +94,6 @@ Stores the token, encrypted with `MCP_OAUTH_ENCRYPTION_KEY`.
 
 </AnnotatedCode>
 
-The rest is wiring.
-
 {/* not type-checked: createAgents with the store from the environment */}
 ```typescript {{ title: "inngest/client.ts" }}
 import { Inngest } from "inngest";
@@ -155,7 +153,7 @@ npm run dev
 npx inngest-cli@latest dev -u http://localhost:3000/api/inngest
 ```
 
-Set up the Slack app as on [Slack and GitHub](/docs/labs/agents/slack-and-github?ref=docs-labs-agents-recipes-mcp-assistant#add-the-route), and set `redirectUri` to your app's public address. Mention the agent and ask about Notion.
+Set up the Slack app as on [Slack and GitHub](/docs/labs/agents/slack-and-github?ref=docs-labs-agents-recipes-mcp-assistant#add-the-route), and set `redirectUri` to your app's public address. Mention the agent, ask about Notion and open the run at [localhost:8288](http://localhost:8288).
 
 ## Variations
 
