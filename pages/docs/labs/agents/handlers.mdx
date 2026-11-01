@@ -44,7 +44,7 @@ export const triage = agents.agent(
 ```
 
 <Annotation id="args" lines="12" tease="all you need" title="The handler's argument" href="#read-the-event" linkText="Read the event">
-The trigger, the inbox, the thread and a ready loop. `step`, `sandboxes` and `score` are there too.
+`event`, `inbox`, `me` and a ready `loop`. `step`, `sandboxes` and `score` are there too.
 </Annotation>
 
 <Annotation id="post" lines="13" tease="not awaited" title="A post you don't wait for" href="#post-in-the-thread" linkText="Post in the thread">
@@ -52,7 +52,7 @@ The agent carries on at once, and the post still lands before the run ends.
 </Annotation>
 
 <Annotation id="batches" lines="15" tease="the trigger comes first" title="Batches" href="#read-the-inbox" linkText="Read the inbox">
-Every unread message at once, the trigger first. The `for await` ends after `idle` quiet time, or at once on a run opened through a handle.
+Every unread message at once, the trigger first.
 </Annotation>
 
 <Annotation id="loop" lines="16" tease="model and tools" title="The loop" href="#run-the-loop" linkText="Run the loop">
@@ -117,7 +117,7 @@ export const notes = agents.agent(
     id: "notes",
     triggers: [slack.thread()],
     model: claude,
-    system: "Summarise what the thread asked for.",
+    system: "Summarize what the thread asked for.",
   },
   async ({ inbox, me, loop }) => {
     for await (const batch of inbox.batches({ max: 20 })) {
@@ -131,7 +131,7 @@ export const notes = agents.agent(
 
 `max` caps a batch and leaves the rest unread, oldest first. To take one message at a time, loop over `inbox` itself.
 
-Both `for await` forms end after the agent's `idle` quiet time (ten minutes by default), or at once on a run opened through a handle. [When the handler returns →](#when-the-handler-returns)
+Both `for await` forms end after the agent's `idle` quiet time, ten minutes by default. [When the handler returns →](#when-the-handler-returns)
 
 ## Run the loop
 
@@ -234,14 +234,14 @@ A script in the sandbox calls `progress` by the same name, and it posts into thi
 
 </AnnotatedCode>
 
-A tool name the agent already uses is an error. [More per-call options →](/docs/labs/agents/models-and-the-loop?ref=docs-labs-agents-handlers#choose-per-call)
-
 {/* not type-checked: sandbox() */}
 ```typescript {{ title: "inngest/sandboxes/work.ts" }}
 import { sandbox } from "inngest/experimental/agents";
 
 export const work = sandbox({ id: "work" });
 ```
+
+A per-call tool whose name the agent already uses is an error. [More per-call options →](/docs/labs/agents/models-and-the-loop?ref=docs-labs-agents-handlers#choose-per-call)
 
 ## Post in the thread
 
@@ -254,9 +254,9 @@ me.post("Still running the tests.");
 ```
 
 - **Awaited**, it waits until the post landed, and throws if it still fails after retries.
-- **Not awaited**, the agent carries on at once and the post lands before the run ends. A failure is logged, and a bad token or missing scope warns on the trace.
+- **Not awaited**, the agent carries on at once and the post lands before the run ends. A failure is logged, and a bad Slack token or missing scope warns on the trace.
 
-The agent posts a status line while it works and a notice when a run fails. A thread with no home, such as one opened by `start()` or a schedule, posts nothing, and the trace says so.
+In Slack, the agent also sets a status line while it works. When a run fails it posts a notice. A thread with no home, such as one opened by `start()` or a schedule, posts nothing, and the trace says so.
 
 ## Message yourself
 
@@ -343,7 +343,7 @@ The run ends, and work you started and didn't await is stopped, so a run never a
 
 On a run opened through a handle (`start()`, `message()`, `start_agent`, `message_agent`), both `for await` forms behave as if `idle` were zero. They end the moment they would have to wait, so a looping handler normally returns after its first batch.
 
-The run then stays open while the runs it started with `start_agent` are open, and the answer after the last one is the output. Runs you start with `start()` don't hold it open. [Wait for the result →](/docs/labs/agents/teams-of-agents?ref=docs-labs-agents-handlers#wait-for-the-result)
+The run then stays open, for up to 24 hours, while the runs it started with `start_agent` are open, and the answer after the last one is the output. Runs you start with `start()` don't hold it open. [Wait for the result →](/docs/labs/agents/teams-of-agents?ref=docs-labs-agents-handlers#wait-for-the-result)
 
 ## Gotchas
 
