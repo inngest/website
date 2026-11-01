@@ -877,7 +877,7 @@ export const docsRefreshOutline: DocsRefreshPage[] = [
                 href: "/docs/labs/agents/recipes/scheduled-watcher",
               },
               {
-                title: "Agent teams",
+                title: "Lead and specialists",
                 href: "/docs/labs/agents/recipes/agent-teams",
               },
               {
