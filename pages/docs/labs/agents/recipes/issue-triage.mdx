@@ -22,7 +22,6 @@ Screenshot needed: the labeled issue with the agent's comment.
 <AnnotatedCode>
 
 {/* not type-checked: github.thread with repos, events and if; github.tools() in a tools record */}
-{/* TODO(spec): github.thread({ repos?, events? }) has no way to keep only issues that were opened, and the data of a github/issues event is not specified. This page assumes an if option and event.data.action. */}
 ```typescript {{ title: "inngest/agents/triage.ts" }}
 import { github } from "inngest/experimental/agents";
 import { agents } from "../client";
@@ -74,7 +73,7 @@ export const POST = github.bridge({
 ```
 
 <Annotation id="bridge" lines="5-8" tease="GitHub's door into the agent" title="The GitHub route" href="/docs/labs/agents/slack-and-github?ref=docs-labs-agents-recipes-issue-triage" linkText="Slack and GitHub">
-Checks GitHub's signature and sends each webhook as a `github/<event>` event, such as `github/issues`.
+Checks GitHub's signature and sends each webhook as a `github/<event>` event, such as `github/issues`. A redelivered webhook is dropped, so an issue is never triaged twice.
 </Annotation>
 
 </AnnotatedCode>
@@ -148,11 +147,9 @@ export const githubRest = async <T>(path: string, init?: RequestInit) => {
 
 `inngest/client.ts` and `inngest/models/claude.ts` are the ones from the [quick start](/docs/labs/agents/quick-start?ref=docs-labs-agents-recipes-issue-triage). `app/api/inngest/route.ts` serves the agents as in the [Slack assistant](/docs/labs/agents/recipes/slack-assistant?ref=docs-labs-agents-recipes-issue-triage), importing `inngest/agents/triage`.
 
-{/* TODO(spec): does github.bridge use X-GitHub-Delivery as the event id, so a redelivered webhook is dropped? A redelivery that gets through joins the issue's thread, where the model's history already shows the label and the comment. */}
-
 ## What it shows off
 
-- [GitHub as a trigger](/docs/labs/agents/slack-and-github?ref=docs-labs-agents-recipes-issue-triage) starts the agent on an issue, with one thread per issue.
+- [GitHub as a trigger](/docs/labs/agents/slack-and-github?ref=docs-labs-agents-recipes-issue-triage) starts the agent on an issue, with one thread per issue and no double triage on a redelivery.
 - [The comment tool](/docs/labs/agents/slack-and-github?ref=docs-labs-agents-recipes-issue-triage) comes from `github.tools()`, bound to the issue.
 - [Tools](/docs/labs/agents/tools?ref=docs-labs-agents-recipes-issue-triage) run as steps, so label and comment retry on their own.
 - [An agent with no handler](/docs/labs/agents/models-and-the-loop?ref=docs-labs-agents-recipes-issue-triage) needs nothing beyond a model, a prompt and these tools.
@@ -173,7 +170,7 @@ export GITHUB_WEBHOOK_SECRET=...
 npm run dev
 ```
 
-{/* TODO(spec): which token does github.tools() post with by default? This page assumes GITHUB_TOKEN. */}
+`GITHUB_TOKEN` is also the token `github.tools()` comments with.
 
 Add a webhook to `acme/app` for **Issues** events, pointing at `https://<your-host>/api/github` with `GITHUB_WEBHOOK_SECRET` as its secret; a tunnel works for local runs. Open an issue and watch the run in the Dev Server at [localhost:8288](http://localhost:8288).
 
