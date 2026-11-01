@@ -80,7 +80,7 @@ A schedule is a trigger like any other.
 Reads are checked against the schema.
 </Annotation>
 
-<Annotation id="seen" lines="13" tease="shared by every run" title="App scope" href="/docs/labs/agents/memory?ref=docs-labs-agents-recipes-scheduled-watcher#thread-state" linkText="Keep state">
+<Annotation id="seen" lines="13" tease="shared by every run" title="App scope" href="/docs/labs/agents/memory?ref=docs-labs-agents-recipes-scheduled-watcher#shared-by-every-pr" linkText="Share state">
 `kv.app` is the same for every run in the app. With no `createAgents`, it uses the store from `INNGEST_EXPERIMENTAL_KV_URL`.
 </Annotation>
 
@@ -182,7 +182,7 @@ The [model](/docs/labs/agents/quick-start?ref=docs-labs-agents-recipes-scheduled
 
 - [A plain function](/docs/labs/agents/agent-teams?ref=docs-labs-agents-recipes-scheduled-watcher#not-everything-is-an-agent) runs a schedule with steps and no agent.
 - [One model call](/docs/labs/agents/models?ref=docs-labs-agents-recipes-scheduled-watcher#ask-a-model) writes the digest inside a step.
-- [App-wide memory](/docs/labs/agents/memory?ref=docs-labs-agents-recipes-scheduled-watcher#thread-state) with a typed key remembers what was reported.
+- [App-wide memory](/docs/labs/agents/memory?ref=docs-labs-agents-recipes-scheduled-watcher#shared-by-every-pr) with a typed key remembers what was reported.
 - [Retried steps](/docs/labs/agents/reliability?ref=docs-labs-agents-recipes-scheduled-watcher) keep a failed post from being marked reported.
 
 ## Run it
@@ -206,11 +206,11 @@ Invoke `watcher` from the Functions page at [localhost:8288](http://localhost:82
 ## Variations
 
 - [Agents](/docs/labs/agents/agents?ref=docs-labs-agents-recipes-scheduled-watcher#other-ways-to-start) runs it hourly with `{ cron: "TZ=UTC 0 * * * *" }`.
-- [Agents reference](/docs/labs/agents/reference?ref=docs-labs-agents-recipes-scheduled-watcher#kv) reminds weekly with `kv.app.set(reported, value, { ttl: 604800 })`.
+- [KV](/docs/labs/agents/reference?ref=docs-labs-agents-recipes-scheduled-watcher#kv) reminds weekly with `kv.app.set(reported, value, { ttl: 604800 })`.
 - [Agent Teams](/docs/labs/agents/agent-teams?ref=docs-labs-agents-recipes-scheduled-watcher) hands a digest that needs follow-up to an agent with `start()`.
 
 ## Learn more
 
 - [Agents](/docs/labs/agents/agents?ref=docs-labs-agents-recipes-scheduled-watcher)
 - [Memory](/docs/labs/agents/memory?ref=docs-labs-agents-recipes-scheduled-watcher)
-- Next recipe: [Agent teams](/docs/labs/agents/recipes/agent-teams?ref=docs-labs-agents-recipes-scheduled-watcher)
+- Next recipe: [Lead and specialists](/docs/labs/agents/recipes/agent-teams?ref=docs-labs-agents-recipes-scheduled-watcher)
