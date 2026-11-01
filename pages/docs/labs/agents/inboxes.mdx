@@ -291,6 +291,7 @@ On a run opened through a handle (`start()`, `message()`, `start_agent`, `messag
 
 - The inbox is one `step.subscribe` the SDK opens with the triggers, your `inbox` sources and the agent message types. [`step.subscribe` →](/docs/durable-execution/primitives/step-subscribe?ref=docs-labs-agents-inboxes#how-it-works)
 - A batch read asks the executor, so it includes messages that arrived during a long step.
+- Agents use `optimizeParallelism: false` and need none of the background-reader remedy on the [core page](/docs/durable-execution/primitives/step-subscribe?ref=docs-labs-agents-inboxes#read-in-the-background).
 
 ## Recipes and reference
 
