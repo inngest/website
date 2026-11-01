@@ -87,8 +87,8 @@ export const digest = agents.agent(
   },
   async ({ sandboxes }) => {
     const summary = await sandboxes.work.commands.run(
-      "summarise",
-      "node summarise.js",
+      "summarize",
+      "node summarize.js",
       { tools: { ticket } },
     );
 
@@ -103,7 +103,7 @@ No wrapper and no second definition.
 
 </AnnotatedCode>
 
-```js {{ title: "summarise.js" }}
+```js {{ title: "summarize.js" }}
 const { tools } = require("inngest_tools");
 
 const main = async () => {
@@ -260,7 +260,7 @@ export const confirmShipment = tool.group({
 ```
 
 <Annotation id="waits" lines="8" tease="outlives a command" title="waits: true">
-Add it when sandbox code calls the group. The script exits while the group waits, then starts again with its earlier calls answered from a saved record. The model's side ignores the flag.
+Add it when sandbox code calls the group: the script exits while it waits, then runs again with earlier calls answered from a saved record. The model's side ignores the flag.
 </Annotation>
 
 </AnnotatedCode>
@@ -467,7 +467,7 @@ export const analyst = agents.agent({
 });
 ```
 
-The key names the server's tools, so the model sees `hex_search_projects`. Give `hex` to a sandbox's [code tools](/docs/labs/agents/sandboxes-and-code?ref=docs-labs-agents-tools#let-code-call-your-tools) and a script calls `tools.hex_search_projects(...)`; `{ ...(await hex.tools()) }` spreads the same tools into a record.
+The key names the server's tools, so the model sees `hex_search_projects`. Give `hex` to a sandbox's [code tools](/docs/labs/agents/sandboxes-and-code?ref=docs-labs-agents-tools#let-code-call-your-tools) and a script calls `tools.hex_search_projects(...)`.
 
 ## Sign in each person
 
@@ -503,7 +503,7 @@ Where the server sends the person after they grant access.
 
 </AnnotatedCode>
 
-A person who hasn't connected gets a sign-in link from the SDK, and the model only learns that a link was sent, so it can't read, change or leak it. Your app mounts one route to finish the sign-in, and the link works only in the browser that opened it.
+A person who hasn't connected gets a sign-in link from the SDK, and the model only learns that one was sent. Your app mounts one route to finish the sign-in; the link works only in the browser that opened it.
 
 {/* not type-checked: mcpCallback as a Web handler with the default store */}
 ```typescript {{ title: "app/api/mcp/callback/route.ts" }}
@@ -526,9 +526,9 @@ export const disconnectNotion = async (user: string) => {
 
 ## Keep secrets on the host
 
-`secret("NAME")` holds the name of an environment variable. It's read only inside the call that needs it and prints as `[secret NAME]`, so a token never lands in a log, a trace or a prompt; pass it wherever a token goes.
+`secret("NAME")` holds the name of an environment variable. It's read only inside the call that needs it and prints as `[secret NAME]`, so a token never lands in a log, a trace or a prompt.
 
-`sandbox({ secrets })` puts values into the sandbox; a `secret()` never goes there. [Sandboxes and code →](/docs/labs/agents/sandboxes-and-code?ref=docs-labs-agents-tools)
+To put a value into a sandbox instead, use `sandbox({ secrets })`. [Secrets →](/docs/labs/agents/sandboxes-and-code?ref=docs-labs-agents-tools#secrets)
 
 ## Tools that come with the agent
 
@@ -537,7 +537,7 @@ export const disconnectNotion = async (user: string) => {
 - [Teams of agents](/docs/labs/agents/teams-of-agents?ref=docs-labs-agents-tools) gives `start_agent`, `message_agent`, `ask_agent`, `stop_agent` and `reply`.
 - [Inboxes](/docs/labs/agents/inboxes?ref=docs-labs-agents-tools) gives `inbox_listen` and `inbox_close`, when the agent lists event types in `listen`.
 - [Skills](/docs/labs/agents/skills?ref=docs-labs-agents-tools) gives `open_skill`, when the agent has skills.
-- [Slack and GitHub](/docs/labs/agents/slack-and-github?ref=docs-labs-agents-tools) gives `slack_post`, `github_comment` and the rest, with one spread: `...slack.tools()`.
+- [Slack and GitHub](/docs/labs/agents/slack-and-github?ref=docs-labs-agents-tools) gives `slack_post`, `github_comment` and the rest, with one spread each: `...slack.tools()` and `...github.tools()`.
 
 ## Gotchas
 
