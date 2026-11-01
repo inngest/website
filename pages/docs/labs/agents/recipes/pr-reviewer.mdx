@@ -7,7 +7,7 @@ export const description = "Build an agent that checks out a pull request in a r
 
 > An agent that checks out a pull request, runs its tests and reviews it in a comment.
 
-A comment asks for the review. The repository is checked out for the agent, and nothing it runs can push.
+A comment asks for the review, and nothing the agent runs can push.
 
 ```text
 maya     @review-bot please review
@@ -40,40 +40,35 @@ export const reviewer = agents.agent({
       if: [
         "has(event.data.issue.pull_request)",
         'event.data.comment.body.contains("@review-bot please review")',
-        'event.data.comment.user.login != "review-bot[bot]"',
       ].join(" && "),
     }),
   ],
   model: claude,
-  system: [
-    "Review the pull request checked out in the sandbox.",
-    "Run its tests and read the changed files.",
-    "Report problems first, with file and line.",
-  ].join(" "),
+  system:
+    "Run tests, list problems with file and line, change no tracked files.",
   sandboxes: { review },
 });
 ```
 
-<Annotation id="trigger" lines="9-17" tease="only comments that ask" title="Start from a comment" href="/docs/labs/agents/slack-and-github?ref=docs-labs-agents-recipes-pr-reviewer" linkText="Slack and GitHub">
-A comment on a pull request that asks for a review starts it. The review bot's own comments never do, so it cannot answer itself.
+<Annotation id="trigger" lines="9-16" tease="only comments that ask" title="Start from a comment" href="/docs/labs/agents/slack-and-github?ref=docs-labs-agents-recipes-pr-reviewer#work-on-github" linkText="Work on GitHub">
+Starts on a pull request comment that asks for a review. The bridge drops the app's own comments.
 </Annotation>
 
-<Annotation id="answer" lines="19-24" tease="no handler needed" title="The review is the answer" href="/docs/labs/agents/models-and-the-loop?ref=docs-labs-agents-recipes-pr-reviewer" linkText="Models and the loop">
-The agent runs the model and posts its answer as one comment on the pull request.
+<Annotation id="answer" lines="18-20" tease="no handler needed" title="The review is the answer" href="/docs/labs/agents/models-and-the-loop?ref=docs-labs-agents-recipes-pr-reviewer" linkText="Models and the loop">
+With no handler, the model's answer is the comment.
 </Annotation>
 
-<Annotation id="sandbox" lines="25" tease="a machine for the tests" title="The sandbox" href="/docs/labs/agents/sandboxes-and-code?ref=docs-labs-agents-recipes-pr-reviewer" linkText="Sandboxes and code">
-Listing the sandbox gives the model `review_run`, `review_read` and `review_search`.
+<Annotation id="sandbox" lines="21" tease="a machine for tests" title="The sandbox" href="/docs/labs/agents/sandboxes-and-code?ref=docs-labs-agents-recipes-pr-reviewer" linkText="Sandboxes and code">
+Gives the model `review_run`, `review_read` and `review_search`.
 </Annotation>
 
 </AnnotatedCode>
 
-The sandbox holds the repository, and the repository is a function of the comment that started the run.
-
 <AnnotatedCode>
 
-{/* not type-checked: repo as a function of the event, repo auth as a function, push: false */}
+{/* not type-checked: repo as a function of the event, repo auth as a secret(), push: false */}
 ```typescript {{ title: "inngest/sandboxes/review.ts" }}
+import { secret } from "inngest/experimental";
 import { sandbox } from "inngest/experimental/agents";
 
 export const review = sandbox({
@@ -82,9 +77,7 @@ export const review = sandbox({
     return {
       url: "https://github.com/acme/app",
       ref: `refs/pull/${event.data.issue.number}/head`,
-      auth: () => {
-        return process.env.GITHUB_READ_TOKEN ?? "";
-      },
+      auth: secret("GITHUB_READ_TOKEN"),
       push: false,
     };
   },
@@ -92,23 +85,17 @@ export const review = sandbox({
 });
 ```
 
-<Annotation id="repo" lines="5-8" tease="the pull request's head" title="Check out the pull request" href="/docs/labs/agents/sandboxes-and-code?ref=docs-labs-agents-recipes-pr-reviewer" linkText="Sandboxes and code">
-A function of the event, so the checkout is the head of the pull request that asked. A second review after new commits fetches and checks out the new head.
+<Annotation id="repo" lines="6-9" tease="the pull request's head" title="Check out the pull request" href="/docs/labs/agents/sandboxes-and-code?ref=docs-labs-agents-recipes-pr-reviewer#check-out-a-repo" linkText="Check out a repo">
+The head of the pull request that asked. A second review fetches its new head.
 </Annotation>
 
-<Annotation id="readonly" lines="9-12" tease="nothing can push" title="Read only" href="/docs/labs/agents/sandboxes-and-code?ref=docs-labs-agents-recipes-pr-reviewer" linkText="Sandboxes and code">
-Checkout uses a read token, and `push: false` leaves out the push tool. `run` can still change files, but only inside the sandbox; a change to a tracked file blocks the next checkout.
-</Annotation>
-
-<Annotation id="tools" lines="15" tease="the shell plus two" title="Code tools" href="/docs/labs/agents/sandboxes-and-code?ref=docs-labs-agents-recipes-pr-reviewer" linkText="Sandboxes and code">
-`run` is a shell. `read` and `search` are opt-in, and `edit` stays out.
+<Annotation id="readonly" lines="10-11" tease="nothing can push" title="Read only" href="/docs/labs/agents/sandboxes-and-code?ref=docs-labs-agents-recipes-pr-reviewer#push-a-branch" linkText="Push a branch">
+A read token and no push tool. A changed tracked file would block the next checkout, so the prompt forbids it.
 </Annotation>
 
 </AnnotatedCode>
 
-A route receives GitHub's webhooks, and the client adds the sandbox middleware.
-
-<AnnotatedCode>
+The client adds `sandboxMiddleware()`.
 
 {/* not type-checked: github.bridge as a Web handler with the client and a secret */}
 ```typescript {{ title: "app/api/github/route.ts" }}
@@ -122,13 +109,7 @@ export const POST = github.bridge({
 });
 ```
 
-<Annotation id="bridge" lines="5-8" tease="GitHub's door into the agent" title="The GitHub route" href="/docs/labs/agents/slack-and-github?ref=docs-labs-agents-recipes-pr-reviewer" linkText="Slack and GitHub">
-Checks GitHub's signature and sends each webhook as a `github/<event>` event, such as `github/issue_comment`.
-</Annotation>
-
-</AnnotatedCode>
-
-{/* not type-checked: createAgents with the store from the environment */}
+{/* not type-checked: createAgents with the store from the environment, sandboxMiddleware() */}
 ```typescript {{ title: "inngest/client.ts" }}
 import { Inngest } from "inngest";
 import { sandboxMiddleware } from "inngest/experimental";
@@ -142,22 +123,17 @@ export const inngest = new Inngest({
 export const agents = createAgents(inngest);
 ```
 
-`inngest/models/claude.ts` is the one from the [quick start](/docs/labs/agents/quick-start?ref=docs-labs-agents-recipes-pr-reviewer). `app/api/inngest/route.ts` serves the agents as in the [Slack assistant](/docs/labs/agents/recipes/slack-assistant?ref=docs-labs-agents-recipes-pr-reviewer), importing `inngest/agents/reviewer`.
+The [model](/docs/labs/agents/quick-start?ref=docs-labs-agents-recipes-pr-reviewer#pick-a-model) and [serve route](/docs/labs/agents/recipes/slack-assistant?ref=docs-labs-agents-recipes-pr-reviewer) are the quick start's and the Slack assistant's, importing `inngest/agents/reviewer`.
 
 ## What it shows off
 
-- [A GitHub comment](/docs/labs/agents/slack-and-github?ref=docs-labs-agents-recipes-pr-reviewer) starts the agent on the pull request's own thread, and the answer comes back there.
-- [A repository in the sandbox](/docs/labs/agents/sandboxes-and-code?ref=docs-labs-agents-recipes-pr-reviewer) is checked out for you, at a ref the event names, and again when the pull request moves.
-- [Read-only by construction](/docs/labs/agents/sandboxes-and-code?ref=docs-labs-agents-recipes-pr-reviewer) means a read token, no push tool and no write token in the sandbox.
-- [Tools you pick](/docs/labs/agents/tools?ref=docs-labs-agents-recipes-pr-reviewer) limit the model to a shell, `read` and `search`.
+- [A GitHub comment](/docs/labs/agents/slack-and-github?ref=docs-labs-agents-recipes-pr-reviewer#work-on-github) starts the agent on the pull request's thread.
+- [A repository in the sandbox](/docs/labs/agents/sandboxes-and-code?ref=docs-labs-agents-recipes-pr-reviewer#check-out-a-repo) is checked out at a ref the event names.
+- [Code tools](/docs/labs/agents/sandboxes-and-code?ref=docs-labs-agents-recipes-pr-reviewer#work-in-a-shell) limit the model to a shell, `read` and `search`.
 
 ## Run it
 
-Set the project up as in the quick start, in a Next.js app. It needs an environment with Sandboxes. Start the Dev Server, pointed at the app:
-
-```bash
-npx inngest-cli@latest dev -u http://localhost:3000/api/inngest
-```
+Set the project up as in the [quick start](/docs/labs/agents/quick-start?ref=docs-labs-agents-recipes-pr-reviewer#install), in a Next.js app with Sandboxes.
 
 ```bash
 export ANTHROPIC_API_KEY=sk-ant-...
@@ -168,19 +144,19 @@ export GITHUB_WEBHOOK_SECRET=...
 npm run dev
 ```
 
-`GITHUB_READ_TOKEN` only needs read access to the repository's contents. `GITHUB_TOKEN` is what the agent posts the review with.
+```bash
+npx inngest-cli@latest dev -u http://localhost:3000/api/inngest
+```
 
-Add a webhook to `acme/app` for **Issue comments**, pointing at `https://<your-host>/api/github` with `GITHUB_WEBHOOK_SECRET` as its secret; a tunnel works for local runs. Comment `@review-bot please review` on a pull request and watch the run in the Dev Server at [localhost:8288](http://localhost:8288).
+Add an **Issue comments** webhook pointing at `https://<your-host>/api/github`, then comment `@review-bot please review` on a pull request.
 
 ## Variations
 
-- Let it suggest a fix as a branch. [Coding agent](/docs/labs/agents/recipes/coding-agent?ref=docs-labs-agents-recipes-pr-reviewer)
-- Cap what a review may spend with `budget`. [Reliability](/docs/labs/agents/reliability?ref=docs-labs-agents-recipes-pr-reviewer)
-- Teach it your team's conventions with a skill. [Skills](/docs/labs/agents/skills?ref=docs-labs-agents-recipes-pr-reviewer)
+- [Coding agent](/docs/labs/agents/recipes/coding-agent?ref=docs-labs-agents-recipes-pr-reviewer) suggests a fix as a branch.
+- [Reliability](/docs/labs/agents/reliability?ref=docs-labs-agents-recipes-pr-reviewer#cap-spend) caps what a review may spend with `budget`.
+- [Skills](/docs/labs/agents/skills?ref=docs-labs-agents-recipes-pr-reviewer) teach it your team's conventions.
 
 ## Learn more
 
 - [Sandboxes and code](/docs/labs/agents/sandboxes-and-code?ref=docs-labs-agents-recipes-pr-reviewer)
-- [Slack and GitHub](/docs/labs/agents/slack-and-github?ref=docs-labs-agents-recipes-pr-reviewer)
-- [Tools](/docs/labs/agents/tools?ref=docs-labs-agents-recipes-pr-reviewer)
 - Next recipe: [Coding agent](/docs/labs/agents/recipes/coding-agent?ref=docs-labs-agents-recipes-pr-reviewer)
