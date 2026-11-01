@@ -7,14 +7,13 @@ export const description = "Make an Inngest agent safe to leave running: durable
 
 > Leave an agent running. It retries what fails, caps its own spend and picks up after a crash or a deploy.
 
-Agents run for a long time and call things that fail. Every model call and tool call is a durable step, so a retry never repeats finished work.
+Every model call and tool call is a durable step, so a retry never repeats finished work.
 
-- **Survive crashes and deploys.** Finished calls never run twice. [Retries and replay →](#retries-and-replay)
-- **Cap spend.** A dollar or token budget for each thread. [Budget →](#cap-spend)
-- **Cap turns and reach.** Stop runaway loops and chains of agents. [Turns →](#cap-turns-and-reach)
-- **Ride out model errors.** Rate limits wait; rejected requests fail once. [Model errors →](#model-errors)
-- **Pick up after a failure.** The message in flight is tried again. [Recovery →](#recover-a-failed-run)
-- **Run long.** The step limit, deploys and `idle`. [Deploys and long runs →](#deploys-and-long-runs)
+- **Cap spend.** A budget for each thread. [Budget →](#cap-spend)
+- **Cap turns and reach.** No runaway loops or chains. [Turns →](#cap-turns-and-reach)
+- **Ride out model errors.** Rate limits wait. [Model errors →](#model-errors)
+- **Pick up after a failure.** The message is tried again. [Recovery →](#recover-a-failed-run)
+- **Run long.** Deploys, `idle` and the step limit. [Long runs →](#deploys-and-long-runs)
 
 {/* not type-checked: budget, limits and recovery on an agent definition, result.end and result.reason */}
 <AnnotatedCode>
@@ -51,15 +50,15 @@ export const support = agents.agent(
 ```
 
 <Annotation id="budget" lines="11" tease="per thread" title="Budget" href="#cap-spend" linkText="Cap spend">
-What this thread may spend, in dollars, tokens or both. The loop enforces it on every model call.
+What this thread may spend. The loop enforces it on every model call.
 </Annotation>
 
 <Annotation id="limits" lines="12" tease="who it may start" title="Limits" href="#cap-turns-and-reach" linkText="Cap turns and reach">
-Chains of agents starting agents go two deep at most, and only to agents in the `support` app.
+Agents it starts may start agents too, but no deeper. Only agents in the `support` app.
 </Annotation>
 
 <Annotation id="recovery" lines="13" tease="opt in" title="Recovery" href="#recover-a-failed-run" linkText="Recover a failed run">
-When a run fails for good, the thread gets one line and the message in flight is tried again.
+A run that fails for good posts one line, and the message in flight is tried again.
 </Annotation>
 
 <Annotation id="end" lines="19" tease="why it stopped" title="end and reason" href="/docs/labs/agents/models-and-the-loop?ref=docs-labs-agents-reliability" linkText="Models and the loop">
@@ -70,13 +69,11 @@ When a run fails for good, the thread gets one line and the message in flight is
 
 ## Retries and replay
 
-A failed step retries; tune it with the function's `retries` option. When a run crashes or a deploy restarts it, the function runs again from the top and finished steps return their saved results. Code outside a step runs again too, so keep side effects in tools. [Handlers →](/docs/labs/agents/handlers?ref=docs-labs-agents-reliability#gotchas)
+A failed step retries; tune it with `retries`. After a crash or a deploy the function runs again from the top and finished steps return their saved results, so keep side effects in tools. [Handlers →](/docs/labs/agents/handlers?ref=docs-labs-agents-reliability#gotchas)
 
 ## Cap spend
 
-`budget` limits what one thread may spend, in `usd`, `tokens` or both. It applies to every loop, with a handler or without one, and the thread keeps its spend across runs. A thread that another agent starts gets the budget of its own agent.
-
-The model prices its own calls, so a dollar budget needs no price table. `price` overrides the built-in rates.
+`budget` limits what one thread may spend, in `usd`, `tokens` or both, across all its runs. The model prices its own calls; `price` overrides the rates:
 
 {/* TODO(spec): `price` is a function of usage (loop.md) and, by L55, a function of { event, thread }. How does the SDK tell them apart? This page shows the per-million-token table only. */}
 {/* not type-checked: price as a per-million-token table */}
@@ -107,7 +104,7 @@ export const summariser = agents.agent({
 
 ## Cap turns and reach
 
-A turn is one model call and the tool calls it asked for. A loop that keeps calling tools stops after `maxTurns`, with `end: "maxTurns"`. Build the loop with it:
+A loop that keeps calling tools stops after `maxTurns` with `end: "maxTurns"`. It is an option of the loop:
 
 {/* TODO(spec): the definition has no maxTurns field and loop(batch, options) takes tools, steer and onTurn. Where does the cap of an agent's own loop go? Used agent.loop(options), which loop.md says returns the handler's loop function. */}
 {/* not type-checked: agent.loop(options) with maxTurns inside a handler */}
@@ -115,17 +112,15 @@ A turn is one model call and the tool calls it asked for. A loop that keeps call
 const loop = agent.loop({ model: claude, system, tools, maxTurns: 10 });
 ```
 
-`limits` caps chains of agents that start agents. `depth` is how long a chain may get, and `mayCall` lists the addresses the model may start. [Teams of agents →](/docs/labs/agents/teams-of-agents?ref=docs-labs-agents-reliability)
-
-{/* TODO(spec): what does a start refused by depth or mayCall look like, to the model and to code? */}
+`limits` caps chains of agents that start agents. `depth` defaults to 1, so agents you start can't start more until you raise it, and `mayCall` lists the addresses the model may start. A start past a limit throws in code, and the model gets an error result. [Teams of agents →](/docs/labs/agents/teams-of-agents?ref=docs-labs-agents-reliability)
 
 ## Model errors
 
-A rate limit waits for the `retry-after` the provider sends and tries again, for any model, including one you write yourself. A final error such as a rejected request fails the step for good and is not retried. [Models and the loop →](/docs/labs/agents/models-and-the-loop?ref=docs-labs-agents-reliability)
+A rate limit waits for the provider's `retry-after`, for any model. A final error such as a rejected request isn't retried. [Models and the loop →](/docs/labs/agents/models-and-the-loop?ref=docs-labs-agents-reliability)
 
 ## Recover a failed run
 
-With `recovery: true`, a run that fails for good doesn't strand the thread. One line goes where the thread lives, and the message the run was handling goes to a fresh run on the thread.
+With `recovery: true`, a run that fails for good posts one line and hands its message to a fresh run on the thread.
 
 {/* not type-checked: recovery, previousRun and restarts in the handler's argument */}
 <AnnotatedCode>
@@ -166,20 +161,18 @@ Every run gets it, with or without `recovery`.
 </Annotation>
 
 <Annotation id="restarts" lines="16" tease="moved between processes" title="restarts" href="/docs/labs/agents/reference?ref=docs-labs-agents-reliability#the-handler" linkText="Reference: the handler">
-How many times this run continued in another process. `depth` is how many agent starts led to the run, and `0` when none did.
+How many times this run continued in another process.
 </Annotation>
 
 </AnnotatedCode>
 
-The resend can't loop: the same error is never sent twice, a `NonRetriableError` is never sent, and one message gets at most three kinds of error. The fresh run reads the thread's saved history. It is not a Rerun or a Replay, which would start from the original trigger and repeat the whole conversation.
+The resend can't loop: the same error is never sent twice, a `NonRetriableError` is never sent, and one message gets at most three kinds of error. It is never a Rerun or a Replay, which would repeat the whole conversation.
 
 ## Deploys and long runs
 
-A run that is live when you deploy replays on the code you deployed. Every step it takes counts toward the step limit of 1,000: model calls, tool calls, KV calls, awaited posts and each message the inbox takes in. A fifty-minute chat can take a few hundred. [Limits →](/docs/durable-execution/limits?ref=docs-labs-agents-reliability#platform-limits)
+A run that is live when you deploy replays on the code you deployed. Every model call, tool call, KV call, awaited post and inbox message counts toward the step limit of 1,000. [Limits →](/docs/durable-execution/limits?ref=docs-labs-agents-reliability#platform-limits)
 
-Keep `idle` at its 10-minute default. The thread keeps the model's history, the sandbox and the shell's place, so a run that ends loses only the handler's own variables. [Threads and memory →](/docs/labs/agents/threads-and-memory?ref=docs-labs-agents-reliability#how-long-a-run-waits)
-
-A long `idle` is a choice, for a handler that must hold its own variables for days:
+Keep `idle` at its 10-minute default. The thread keeps the history, the sandbox and the shell's place, so a run that ends loses only the handler's variables. [Threads and memory →](/docs/labs/agents/threads-and-memory?ref=docs-labs-agents-reliability#how-long-a-run-waits)
 
 {/* not type-checked: idle as a duration string on an agent that waits for GitHub events */}
 <AnnotatedCode>
@@ -204,18 +197,18 @@ The run stays live across every deploy, and all it does adds to the step count.
 
 </AnnotatedCode>
 
-A run that takes in more messages than the step limit allows ends with the usual step-limit error.
+A run that takes in more messages than the limit allows ends with the usual step-limit error.
 
 ## Gotchas
 
-- **A spent budget stays spent.** The thread keeps its spend, so a later message ends at once with `end: "budget"`.
-- **A cancelled run isn't recovered.** A run you stop or cancel is neither reported nor resent.
-- **A model with no built-in prices needs `price`.** A dollar budget can't count calls it can't price.
+- **A spent budget stays spent.** A later message ends at once with `end: "budget"`.
+- **A cancelled run isn't recovered.** A stopped run is neither reported nor resent.
+- **A model with no built-in prices needs `price`.**
 
 ## How it works
 
-- Steps are saved by ID, so a replay returns finished calls instead of making them again.
-- A thread's spend lives in thread state, so it outlasts a run and a handler's variables don't.
+- Steps are saved by ID, so a replay never repeats a finished call.
+- A thread's spend lives in thread state, so it outlasts a run.
 
 ## Recipes and reference
 
