@@ -108,7 +108,7 @@ export const work = sandbox({ id: "work" });
 
 ## One agent per file
 
-An agent is a module-level export. It imports the client, its model and the tools and sandboxes it uses.
+An agent is a module-level export that imports the client, its model, and its tools and sandboxes.
 
 {/* not type-checked: agents.agent with a thread expression, tools and skills.folder */}
 ```typescript {{ title: "inngest/agents/support.ts" }}
@@ -148,7 +148,7 @@ export const reviewer = agents.agent({
 
 ## Plain functions beside them
 
-Work that needs no thread is a plain function. It lives in `functions/`, and when it starts an agent it imports it. [Agents and triggers →](/docs/labs/agents/agents-and-triggers?ref=docs-labs-agents-structure#agent-or-plain-function)
+Work that needs no thread is a plain function. It lives in `functions/` and imports any agent it starts. [Agents and triggers →](/docs/labs/agents/agents-and-triggers?ref=docs-labs-agents-structure#agent-or-plain-function)
 
 {/* not type-checked: start().result() from a plain function */}
 ```typescript {{ title: "inngest/functions/nightlyReview.ts" }}
@@ -187,10 +187,10 @@ export const POST = slack.bridge({
 
 ## The other files
 
-- `inngest/github.ts`: the `githubApp()` that a sandbox's `repo` uses. [Check out a repo →](/docs/labs/agents/sandboxes-and-code?ref=docs-labs-agents-structure#check-out-a-repo)
-- `app/api/github/route.ts`: the GitHub bridge, mounted like Slack's. [Work on GitHub →](/docs/labs/agents/slack-and-github?ref=docs-labs-agents-structure#work-on-git-hub)
-- `app/slack/socket.ts`: your own Socket Mode connection, handing each payload to the bridge. [Set your own rules →](/docs/labs/agents/slack-and-github?ref=docs-labs-agents-structure#set-your-own-rules)
-- `app/api/mcp/callback/route.ts`: the route that finishes an MCP sign-in. [Sign in each person →](/docs/labs/agents/tools?ref=docs-labs-agents-structure#sign-in-each-person)
+- [`inngest/github.ts`](/docs/labs/agents/sandboxes-and-code?ref=docs-labs-agents-structure#check-out-a-repo) holds the `githubApp()` a sandbox's `repo` uses.
+- [`app/api/github/route.ts`](/docs/labs/agents/slack-and-github?ref=docs-labs-agents-structure#work-on-git-hub) mounts the GitHub bridge.
+- [`app/slack/socket.ts`](/docs/labs/agents/slack-and-github?ref=docs-labs-agents-structure#set-your-own-rules) takes your own Socket Mode connection.
+- [`app/api/mcp/callback/route.ts`](/docs/labs/agents/tools?ref=docs-labs-agents-structure#sign-in-each-person) finishes an MCP sign-in.
 
 ## Serve them
 
@@ -232,7 +232,6 @@ inngest/
 
 - An agent registers when its file is imported, and `agents.functions()` returns what is registered, so `serve.ts` imports each agent.
 - Tools, sandboxes and models are plain definitions with no client, so many agents share one.
-- A plain function is served in the same list as the agents.
 
 ## Recipes and reference
 
