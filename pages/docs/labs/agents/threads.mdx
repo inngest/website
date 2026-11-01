@@ -7,11 +7,13 @@ export const description = "Say which events belong together and their runs shar
 
 > Say which events belong together, and their runs share one thread.
 
-A run is thrown away when it ends; a thread is what its runs share. You never set one up. The sections below grow a PR helper for `acme/web`, built on the [`hello` agent](/docs/labs/agents/agents?ref=docs-labs-agents-threads).
+A run is thrown away when it ends; a thread is what its runs share. You never set one up.
+
+The sections below grow a PR helper for `acme/web`, the agent after [`hello`](/docs/labs/agents/agents?ref=docs-labs-agents-threads). Short blocks show only what changes; [the last section](#a-trigger-with-its-own-key) has the whole file.
 
 ## Three events, three strangers
 
-To look after everything that happens to a pull request in one place, list its events as triggers.
+You want one helper for everything that happens to a PR. List its events as triggers.
 
 ```typescript {{ title: "inngest/events.ts" }}
 import { eventType } from "inngest";
@@ -43,11 +45,11 @@ export const prHelper = agents.agent(
 );
 ```
 
-Open a PR, fail its CI and deploy it: three runs, each on a thread of its own, because a plain event opens a fresh thread. None of them knows about the others.
+Open a PR, fail its CI and deploy it: three runs on three threads, because CI and deploy name no thread. None of them knows about the others.
 
 ## No magic
 
-`github.thread()` is triggers like any other.
+You want to know what `github.thread()` is, because it looks like magic. Here it is written out.
 
 {/* not type-checked: github.thread({ repos }) written out as event triggers */}
 ```typescript
@@ -64,11 +66,11 @@ github.thread({ repos: ["acme/web"] });
 ];
 ```
 
-GitHub's events, a filter for your repo and a `thread` that names the pull request. Your own events can set a `thread` too. `slack.thread()` does the same for Slack. [Slack and GitHub →](/docs/labs/agents/slack-and-github?ref=docs-labs-agents-threads)
+Your own events can set a `thread` too. `slack.thread()` does the same for Slack. [Slack and GitHub →](/docs/labs/agents/slack-and-github?ref=docs-labs-agents-threads)
 
 ## Which conversation is this?
 
-To make CI on #42 part of #42's thread, give its trigger a `thread`: an [expression](/docs/durable-execution/guides-and-advanced/writing-expressions?ref=docs-labs-agents-threads) over the `event`.
+You want CI on #42 to be part of #42's thread. Give its trigger a `thread`: an [expression](/docs/durable-execution/guides-and-advanced/writing-expressions?ref=docs-labs-agents-threads) over the `event`.
 
 <AnnotatedCode>
 
@@ -87,11 +89,11 @@ The CI event carries the PR's URL, the key GitHub's trigger uses too, so both la
 
 </AnnotatedCode>
 
-Fail CI on #42 and the run joins its thread, after the runs already there. Its reply goes on the PR, because a thread keyed by a PR's URL has that PR as its home. If `thread` finds nothing, the trigger opens a fresh thread and the trace warns.
+Fail CI on #42 and the run joins its thread, after the runs already there. To name the thread for every trigger at once, set `thread` on the agent's [definition](/docs/labs/agents/reference?ref=docs-labs-agents-threads#the-definition); a trigger's own `thread` wins.
 
 ## What a conversation keeps
 
-To know what joining a thread gets you, leave a note for the next run.
+You want to know what joining a thread gets you. Leave a note for the next run.
 
 {/* not type-checked: kv.thread.get and set in an agent handler */}
 ```typescript
@@ -106,34 +108,34 @@ async ({ event }) => {
 },
 ```
 
-The first run returns nothing, and the second returns the first's note. A run's variables are gone when it ends. The thread keeps:
+The first run returns nothing, and the second returns the first's note. The thread keeps:
 
 - its state, `kv.thread`. [Memory →](/docs/labs/agents/memory?ref=docs-labs-agents-threads#thread-state)
-- the model's history. [Models →](/docs/labs/agents/models?ref=docs-labs-agents-threads#it-remembers)
+- the model's history, which the loop saves in thread state. [Models →](/docs/labs/agents/models?ref=docs-labs-agents-threads#it-remembers)
 - its sandbox, with the shell's working directory and exported variables. [Sandboxes →](/docs/labs/agents/sandboxes?ref=docs-labs-agents-threads#it-belongs-to-the-thread)
 - its budget, and how its last run ended. [Models →](/docs/labs/agents/models?ref=docs-labs-agents-threads#a-budget)
 
 ## No key is fine
 
-For one-off jobs, an agent needs no key.
+You want an agent for one-off jobs. It needs no key.
 
 {/* not type-checked: an agent with a handler and no thread */}
-```typescript {{ title: "inngest/agents/summarise.ts" }}
+```typescript {{ title: "inngest/agents/summarize.ts" }}
 import { agents } from "../client";
 
-export const summarise = agents.agent(
-  { id: "summarise" },
+export const summarize = agents.agent(
+  { id: "summarize" },
   async ({ event }) => {
     return event.data.content.slice(0, 80);
   },
 );
 ```
 
-Each message is its own thread, with nothing to set up. That thread has no home, so nothing is posted anywhere: the answer stays in the run's output, and the trace warns.
+Each message is its own thread, with nothing to set up. Its answer stays in the run's output, since there is nowhere to post it.
 
 ## Two conversations
 
-The agent needs no change to follow two pull requests at once. Send CI failures for #42 and #43.
+You want to follow two pull requests at once. The agent needs no change; send CI failures for #42 and #43.
 
 ```typescript {{ title: "scripts/failBoth.ts" }}
 import { inngest } from "../inngest/client";
@@ -155,11 +157,11 @@ async ({ event, me }) => {
 },
 ```
 
-Two threads, side by side, each with its own runs and state.
+Each pull request has its own thread, with its own runs and state.
 
 ## A trigger with its own key
 
-To bring deploys into the same threads, though they carry the PR's address somewhere else, give their trigger its own `thread`.
+You want deploys in the thread too, though they carry the PR's address somewhere else. Give their trigger its own `thread`.
 
 {/* not type-checked: three triggers on an agent, each with its thread */}
 ```typescript
