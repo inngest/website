@@ -667,7 +667,7 @@ Types: `McpServer`, `McpServerOptions`, `McpAuth`.
 
 | `oauth` option | Default | Description |
 | --- | --- | --- |
-| `user` | required | A stable ID for the person, or `({ runId, event, thread }) => string`. A function gets the run's ID, its trigger event and its thread key, and runs for every call. |
+| `user` | required | A stable ID for the person, or `({ runId, event, thread }) => string`. A function gets the run's ID, its trigger event and `thread` (`{ key: string }`), and runs for every call. |
 | `redirectUri` | required | The URL of your [callback route](#the-callback-route). Register it with the server when it has no dynamic registration. |
 | `store` | `kvOAuthStore()` | Where tokens, registered clients and pending sign-ins live. |
 | `clientId` | registered for you | An OAuth client you registered, for servers without dynamic registration. |

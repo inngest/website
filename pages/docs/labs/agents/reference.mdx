@@ -64,7 +64,7 @@ export const agents = createAgents(inngest);
 `agents.agent(definition, handler?)` takes the fields below. [Agents and triggers →](/docs/labs/agents/agents-and-triggers?ref=docs-labs-agents-reference)
 
 - A field marked *value* takes a value only. Inngest reads `id`, `triggers`, `thread`, `inbox`, `card`, `discovery` and `listen` when your app syncs.
-- A field marked *value or function* also takes a function of `{ event, thread }`, which may be async. `event` is the event that started the run and `thread` is the thread's key.
+- A field marked *value or function* also takes a function of `{ event, thread }`, which may be async. `event` is the event that started the run and `thread` is `{ key: string }`.
 - The function runs once, when a run starts, and again on replay, so keep it free of side effects.
 - It may read [`kv`](#the-kv-import); each call is a memoized step.
 
@@ -98,7 +98,7 @@ A field that takes a function:
 system: async ({ event, thread }) => {
   const account = await lookupAccount(event.data.user);
 
-  return `Thread ${thread}: help ${account.name}.`;
+  return `Thread ${thread.key}: help ${account.name}.`;
 },
 ```
 
