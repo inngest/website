@@ -53,7 +53,7 @@ export const triage = agents.agent({
 
 ## Declare the bindings
 
-`env.ts` keeps the bindings of the latest request. They don't change within a deployment, so the latest are the right ones.
+`env.ts` keeps the bindings of the latest request, which are the same for the whole deployment.
 
 {/* not type-checked: D1Database from @cloudflare/workers-types */}
 ```typescript {{ title: "inngest/env.ts" }}
@@ -122,7 +122,7 @@ npx wrangler d1 migrations apply agents-db
 
 ## Read bindings at run time
 
-Fields that take a function (`model`, `tools`, `sandboxes` and the rest) get the event and thread, and so does a sandbox's `repo`. Its `auth` can be a function of its own. [The definition →](/docs/labs/agents/reference?ref=docs-labs-agents-workers#the-definition)
+Fields that take a function (`model`, `tools`, `sandboxes` and the rest) get the event and thread. So does a sandbox's `repo`, whose `auth` can be a function of its own. [The definition →](/docs/labs/agents/reference?ref=docs-labs-agents-workers#the-definition)
 
 {/* not type-checked: repo.auth as a function reading a Worker binding */}
 ```typescript {{ title: "inngest/sandboxes/work.ts" }}
@@ -185,7 +185,7 @@ Set up the Worker as in [Serving Inngest functions](/docs/learn/serving-inngest-
 ## Gotchas
 
 - **Import time has no bindings.** Read them inside a function.
-- **Some fields stay values.** `id`, `triggers`, `thread`, `inbox`, `card`, `discovery` and `listen` are read at sync, so keep bindings out of them.
+- **Some fields stay values.** Inngest reads them when the app syncs or an event is routed, so keep bindings out of them. [The definition →](/docs/labs/agents/reference?ref=docs-labs-agents-workers#the-definition)
 - **Field functions have no side effects.** They run again on replay, and may read `kv`.
 - **Other entry points call `setEnv`.** A scheduled handler that sends messages calls `setEnv(env)` first.
 
