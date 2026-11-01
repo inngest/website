@@ -73,7 +73,7 @@ The model calls `readLog` by this name. Hand the tool to a sandbox and a script 
 
 </AnnotatedCode>
 
-Asked why CI failed, the model calls `readLog`, and each call is a row in the trace. The files above lean on earlier pages: `fetchLog` is from [Steps](/docs/labs/agents/agents?ref=docs-labs-agents-tools#steps), the triggers are from [Threads](/docs/labs/agents/threads?ref=docs-labs-agents-tools) and the inbox is from [Inboxes](/docs/labs/agents/inboxes?ref=docs-labs-agents-tools).
+Asked why CI failed, the model calls `readLog`, and each call is a row in the trace. The files it imports are as [Steps](/docs/labs/agents/agents?ref=docs-labs-agents-tools#steps), [Threads](/docs/labs/agents/threads?ref=docs-labs-agents-tools) and [Inboxes](/docs/labs/agents/inboxes?ref=docs-labs-agents-tools) left them:
 
 ```typescript {{ title: "inngest/lib/ci.ts" }}
 export const fetchLog = async (pr: number) => {
@@ -104,10 +104,15 @@ export const deployed = eventType("deploy/finished", {
 
 ## Tools as steps
 
-You want a flaky call to survive without retry code. A failing `fetchLog` retries on its own, and the model sees only the final result. A tool that needs several steps is a `tool.group()`:
+You want one tool to run several steps. That is a `tool.group()`, and its body can use the global `step`:
 
 {/* not type-checked: tool.group with the global step */}
-```typescript
+```typescript {{ title: "inngest/tools/readAllLogs.ts" }}
+import { step } from "inngest";
+import { tool } from "inngest/experimental";
+import { z } from "zod";
+import { fetchLog } from "../lib/ci";
+
 export const readAllLogs = tool.group({
   description: "Reads the CI logs of several pull requests",
   input: z.object({ prs: z.array(z.number()) }),
@@ -123,7 +128,7 @@ export const readAllLogs = tool.group({
 });
 ```
 
-Each `step.run` is retried on its own, and [the reference](/docs/labs/agents/reference-sandboxes?ref=docs-labs-agents-tools#tools) lists every kind of tool.
+Each `step.run` is retried on its own, so a flaky call survives and the model never sees the retries. [The reference](/docs/labs/agents/reference-sandboxes?ref=docs-labs-agents-tools#tools) lists every kind of tool.
 
 ## Failing politely
 
@@ -164,7 +169,7 @@ export const readLog = tool.step({
 });
 ```
 
-<Annotation id="untrusted" lines="4-6" tease="true, or a label" title="untrusted" href="/docs/labs/agents/reference-sandboxes?ref=docs-labs-agents-tools#untrusted-results" linkText="Reference">
+<Annotation id="untrusted" lines="4-6" tease="true, or a label" title="untrusted" href="/docs/labs/agents/reference-sandboxes?ref=docs-labs-agents-tools#untrusted-results" linkText="Reference: untrusted results">
 `true` wraps the result as data. A function also says where the text came from.
 </Annotation>
 
@@ -181,7 +186,7 @@ You want the model to comment and ask on the pull request itself.
 tools: { readLog, ...github.tools() },
 ```
 
-The model gets two tools, bound to the PR the run came from:
+`github.tools()` uses `GITHUB_TOKEN`, or the `token` you pass it. The model gets two tools, bound to the PR the run came from:
 
 ```text {{ title: "What the model calls" }}
 github_comment({ body: "The test is flaky, so I re-ran CI." });
@@ -189,7 +194,7 @@ github_comment({ body: "The test is flaky, so I re-ran CI." });
 github_ask({ question: "Re-run CI?", options: ["yes", "no"] });
 ```
 
-They use `GITHUB_TOKEN` or the `token` you pass to `github.tools()`; `github_ask` returns at once, and the answer reaches the model's inbox later. Slack works the same way with [`...slack.tools()`](/docs/labs/agents/slack-and-github?ref=docs-labs-agents-tools).
+`github_ask` returns at once, and the answer reaches the model's inbox later. Slack works the same way with [`...slack.tools()`](/docs/labs/agents/slack-and-github?ref=docs-labs-agents-tools).
 
 ## Check before acting
 
@@ -251,7 +256,7 @@ inbox_listen({ source: "ci/run.passed", match: { pr: 42 }, as: "checks" });
 inbox_close({ as: "checks" });
 ```
 
-It is the inbox from [A second inbox](/docs/labs/agents/inboxes?ref=docs-labs-agents-tools#a-second-inbox), opened and closed at the model's choice, and the loop folds in what arrives on every inbox the model opened. With no `listen`, the model has neither tool.
+It is the inbox from [A second inbox](/docs/labs/agents/inboxes?ref=docs-labs-agents-tools#a-second-inbox), and the loop folds in what arrives on it. With no `listen`, the model has neither tool.
 
 {/* Go deeper */}
 ## Someone else's tools
@@ -281,7 +286,7 @@ Required. Renaming it signs everyone out.
 tools: { readLog, ...github.tools(), docs },
 ```
 
-The key names the server's tools, so the model sees `docs_<tool>`. Each person can connect as themselves with `auth.oauth`. [Reference: MCP](/docs/labs/agents/reference-sandboxes?ref=docs-labs-agents-tools#mcp)
+The key names the server's tools, so the model sees `docs_<tool>`. Each person can connect as themselves with `auth.oauth`. [Reference: MCP →](/docs/labs/agents/reference-sandboxes?ref=docs-labs-agents-tools#mcp)
 
 ## Secrets stay home
 
