@@ -67,14 +67,12 @@ Checks the signature, sends an event only for a message meant for the agent, the
 </Annotation>
 
 <Annotation id="secret" lines="7" tease="read inside the call" title="Signing secret" href="/docs/labs/agents/tools?ref=docs-labs-agents-slack-and-github#keep-secrets-on-the-host" linkText="Keep secrets on the host">
-Kept on the host. Posts use the bot token in `SLACK_BOT_TOKEN`.
+Kept on the host.
 </Annotation>
 
 </AnnotatedCode>
 
-Three kinds of message reach the agent: a direct message, a message that mentions it in any Slack channel it is in, and a reply in a thread it already answered. Everything else is dropped at the bridge and never stored. Bots, including the agent itself, are ignored unless you allow them.
-
-{/* TODO(spec): the name of the switch on the bridge that allows bots */}
+Three kinds of message reach the agent: a direct message, a message that mentions it in any Slack channel it is in, and a reply in a thread it already answered. Everything else is dropped at the bridge and never stored. Bots, including the agent itself, are ignored unless the bridge sets `allowBots: true`.
 
 ## Start from Slack
 
@@ -85,6 +83,8 @@ triggers: [slack.thread({ in: ["C0123ABC", "C0456DEF"] })],
 ```
 
 The model reads a message as `[Ana] can you check order 7?`, not as JSON. The thread's key is in the event as `event.data.threadKey`, a plain field that `waitForEvent` and `cancelOn` can match on. [Threads and memory →](/docs/labs/agents/threads-and-memory?ref=docs-labs-agents-slack-and-github)
+
+The SDK's own writes (`me.post()`, the status line and the default answer) use `SLACK_BOT_TOKEN`. `slack.thread({ token })` takes a string, a function or `secret()` instead.
 
 Besides `slack/message`, the bridge sends `slack/reaction`, `slack/action`, `slack/view` and `slack/stop`. Each carries `threadKey`.
 
@@ -223,7 +223,7 @@ export const POST = github.bridge({
 });
 ```
 
-`github.thread()` is the trigger. Each issue or pull request is one thread, keyed by its URL. The event's data is GitHub's webhook payload plus `threadKey`, and the model reads a comment as `[ana-dev] please review`.
+`github.thread()` is the trigger. Each issue or pull request is one thread, keyed by its URL. Without `events` it triggers on `issues`, `issue_comment`, `pull_request`, `pull_request_review` and `pull_request_review_comment`. The event's data is GitHub's webhook payload plus `threadKey`, and the model reads a comment as `[ana-dev] please review`.
 
 {/* TODO(spec): whether github.bridge ignores the agent's own comments */}
 {/* TODO(spec): whether a plain event that joins a PR thread posts on the PR when no GitHub event has opened that thread yet */}
