@@ -1,0 +1,257 @@
+import { AnnotatedCode, Annotation } from "shared/Docs/mdx";
+
+export const metaTitle = "Sandboxes | Inngest Agents";
+export const description = "Give an Inngest agent a machine for each thread: a shell for the model, files that are still there on the next message, a repo it can push to through your policy, and the same machine for your own code.";
+
+# Sandboxes
+
+> Give the agent a machine of its own, one per thread, so code runs there and not on yours.
+
+A sandbox is the machine for one [thread](/docs/labs/agents/threads?ref=docs-labs-agents-sandboxes). List it on an agent and the model gets a shell on it. This page adds one to the PR helper, built up through [Threads](/docs/labs/agents/threads?ref=docs-labs-agents-sandboxes), [Inboxes](/docs/labs/agents/inboxes?ref=docs-labs-agents-sandboxes), [Models](/docs/labs/agents/models?ref=docs-labs-agents-sandboxes), [Tools](/docs/labs/agents/tools?ref=docs-labs-agents-sandboxes) and [Skills](/docs/labs/agents/skills?ref=docs-labs-agents-sandboxes).
+
+## A sandbox
+
+To have the PR helper run the failing test instead of guessing at it, define a sandbox. Defining one creates nothing until it is used.
+
+{/* not type-checked: sandbox({ id }) */}
+```typescript
+export const work = sandbox({ id: "work" });
+```
+
+It lives in `inngest/sandboxes/work.ts`, which [A repo](#a-repo) fills out. List it on the agent:
+
+<AnnotatedCode>
+
+{/* not type-checked: sandboxes listed on an agent, which gives the model work_run */}
+```typescript {{ title: "inngest/agents/prHelper.ts" }}
+import { github, skills } from "inngest/experimental/agents";
+import { agents } from "../client";
+import { ciFailed, ciPassed, deployed } from "../events";
+import { claude } from "../models/claude";
+import { work } from "../sandboxes/work";
+import { readLog } from "../tools/readLog";
+
+const triggers = [
+  github.thread({ repos: ["acme/web"] }),
+  { event: ciFailed, thread: "event.data.prUrl" },
+  { event: deployed, thread: "event.data.pull.url" },
+];
+
+export const prHelper = agents.agent(
+  {
+    id: "pr-helper",
+    triggers,
+    inbox: [{ event: ciPassed, thread: "event.data.prUrl" }],
+    idle: "1h",
+    model: claude,
+    system: "You help with pull requests on acme/web.",
+    budget: { usd: 0.5 },
+    tools: { readLog, ...github.tools() },
+    sandboxes: { work },
+    listen: [ciPassed, ciFailed],
+    skills: [skills.folder("./skills")],
+  },
+  async ({ inbox, me, loop }) => {
+    me.post("Looking at it.");
+
+    for await (const batch of inbox.batches({ max: 20 })) {
+      const result = await loop(batch);
+
+      if (result.end === "budget") {
+        await me.post("This PR is out of budget.");
+
+        return;
+      }
+
+      await me.post(result.text);
+    }
+  },
+);
+```
+
+<Annotation id="sandboxes" lines="24" tease="work_run, a shell" title="Listed means given" href="/docs/labs/agents/reference-sandboxes?ref=docs-labs-agents-sandboxes#sandboxes-on-an-agent" linkText="Reference: sandboxes on an agent">
+The model gets `work_run`, a shell on the thread's machine that keeps `cd` and `export` between calls. It starts the first time the model or your code uses it.
+</Annotation>
+
+</AnnotatedCode>
+
+An app whose agents list sandboxes adds `sandboxMiddleware()` to its client, or the first use throws an error that says so.
+
+{/* not type-checked: sandboxMiddleware() on the client */}
+```typescript {{ title: "inngest/client.ts" }}
+import { Inngest } from "inngest";
+import { sandboxMiddleware } from "inngest/experimental";
+import { createAgents } from "inngest/experimental/agents";
+
+export const inngest = new Inngest({
+  id: "acme-web",
+  middleware: [sandboxMiddleware()],
+});
+
+export const agents = createAgents(inngest);
+```
+
+The files it imports are as those pages left them:
+
+```typescript {{ title: "inngest/events.ts" }}
+import { eventType } from "inngest";
+import { z } from "zod";
+
+const ciRun = z.object({ pr: z.number(), prUrl: z.string() });
+
+export const ciFailed = eventType("ci/run.failed", { schema: ciRun });
+
+export const ciPassed = eventType("ci/run.passed", { schema: ciRun });
+
+export const deployed = eventType("deploy/finished", {
+  schema: z.object({ env: z.string(), pull: z.object({ url: z.string() }) }),
+});
+```
+
+```typescript {{ title: "inngest/lib/ci.ts" }}
+export const fetchLog = async (pr: number) => {
+  const response = await fetch(`https://ci.acme.test/prs/${pr}/log`);
+
+  if (!response.ok) {
+    throw new Error(`CI log for #${pr}: ${response.status}`);
+  }
+
+  return await response.text();
+};
+```
+
+```typescript {{ title: "inngest/tools/readLog.ts" }}
+import { tool } from "inngest/experimental";
+import { z } from "zod";
+import { fetchLog } from "../lib/ci";
+
+export const readLog = tool.step({
+  description: "Reads the CI log of a pull request",
+  input: z.object({ pr: z.number() }),
+  run: async ({ pr }) => {
+    return await fetchLog(pr);
+  },
+});
+```
+
+## It belongs to the thread
+
+To have CI's second failure on the same PR find the checkout where the first run left it, change nothing: the thread owns its sandbox.
+
+```text {{ title: "PR 42, two runs" }}
+09:00  ci/run.failed  work_run: npm install  the sandbox starts
+09:04  the run ends
+09:14  ten minutes unused                    the sandbox pauses
+11:30  ci/run.failed  work_run: npm test     the sandbox resumes,
+                                             node_modules is there
+```
+
+The shell's working directory and exported variables come back with it. PR 43 is another thread, so it gets its own sandbox.
+
+## A repo
+
+To have it fix the test on a branch and never touch `main`, give the sandbox a repo and a policy.
+
+<AnnotatedCode>
+
+{/* not type-checked: sandbox({ repo }) with githubApp() auth and a push policy */}
+```typescript {{ title: "inngest/sandboxes/work.ts" }}
+import { secret } from "inngest/experimental";
+import { githubApp, sandbox } from "inngest/experimental/agents";
+
+export const work = sandbox({
+  id: "work",
+  repo: {
+    url: "https://github.com/acme/web",
+    auth: githubApp({
+      appId: process.env.GITHUB_APP_ID ?? "",
+      privateKey: secret("GITHUB_APP_PRIVATE_KEY"),
+    }),
+    policy: (push) => {
+      if (push.branch === "main") {
+        return { refuse: "Never push to main" };
+      }
+    },
+  },
+});
+```
+
+<Annotation id="repo" lines="6" tease="checked out at /work" title="Repo" href="/docs/labs/agents/reference-sandboxes?ref=docs-labs-agents-sandboxes#repos" linkText="Reference: repos">
+Checked out into `/work` when the sandbox starts, and the model's shell starts there.
+</Annotation>
+
+<Annotation id="auth" lines="8-11" tease="read to clone, write to push" title="Auth">
+`githubApp()` makes a short-lived read token to check out and a write token to push, both on your host.
+</Annotation>
+
+<Annotation id="policy" lines="12-16" tease="runs on your host" title="Policy">
+Sees the push's `branch`, `commits` and `paths` before anything is pushed. A refusal comes back to the model as an error it can read.
+</Annotation>
+
+</AnnotatedCode>
+
+With a `repo`, the model also gets `work_push`: it commits in the sandbox, and your app pushes after `policy` has looked. The checkout runs inside the sandbox, so a single `secret()` should be a read-only token; an agent that pushes uses `githubApp()` or `{ read, write }`, and the write token never enters the sandbox.
+
+## A sandbox for your code
+
+To run the tests yourself and keep the model off the machine, mark the sandbox code-only in the agent's definition:
+
+{/* not type-checked: a sandbox binding with model: false */}
+```typescript
+sandboxes: { work: { sandbox: work, model: false } },
+```
+
+Then run commands from the handler:
+
+{/* not type-checked: sandboxes.work.commands.run in a handler */}
+```typescript
+const tests = await sandboxes.work.commands.run("tests", "npm test", {
+  cwd: "/work",
+});
+```
+
+The model loses `work_run` and `work_push`. In the handler, `sandboxes.work` is the same machine: each command is a durable step, and `repo.push(branch)` goes through the same `policy`. [Reference: the handler's sandbox →](/docs/labs/agents/reference-sandboxes?ref=docs-labs-agents-sandboxes#the-handler-s-sandbox)
+
+{/* Go deeper */}
+
+## Any agent engine
+
+To have something other than the SDK's loop run the turns, give the definition a `loop` of your own.
+
+<AnnotatedCode>
+
+{/* not type-checked: a whole hand-built loop on the agent definition */}
+```typescript {{ title: "inngest/agents/parrot.ts" }}
+import { agents } from "../client";
+
+export const parrot = agents.agent({
+  id: "parrot",
+  loop: async (batch) => {
+    const heard = batch.map((message) => {
+      return JSON.stringify(message.data);
+    });
+
+    return { text: heard.join("\n"), end: "done", unread: [] };
+  },
+});
+```
+
+<Annotation id="loop" lines="5" tease="the batch in, the result out" title="A whole loop" href="/docs/labs/agents/reference?ref=docs-labs-agents-sandboxes#the-loop" linkText="Reference: the loop">
+A function shaped like the handler's `loop`. It reaches its model and tools however it likes.
+</Annotation>
+
+<Annotation id="result" lines="10" tease="what a loop returns" title="The result" href="/docs/labs/agents/reference?ref=docs-labs-agents-sandboxes#the-result" linkText="Reference: the result">
+The answer in `text`, why the loop stopped in `end`, and the messages it left in `unread`.
+</Annotation>
+
+</AnnotatedCode>
+
+The agent's triggers, inbox and thread stay as they are; only the turns change.
+
+## Recipes and reference
+
+- [Calling home](/docs/labs/agents/calling-home?ref=docs-labs-agents-sandboxes)
+- [Coding agent](/docs/labs/agents/recipes/coding-agent?ref=docs-labs-agents-sandboxes)
+- [Sandbox tools](/docs/labs/agents/recipes/sandbox-tools?ref=docs-labs-agents-sandboxes)
+- [Skills](/docs/labs/agents/skills?ref=docs-labs-agents-sandboxes)
+- [Reference: tools and sandboxes](/docs/labs/agents/reference-sandboxes?ref=docs-labs-agents-sandboxes)
