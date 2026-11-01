@@ -57,7 +57,7 @@ export const work = sandbox({
 });
 ```
 
-<Annotation id="repo" lines="6-8" tease="the request names it" title="The repository" href="/docs/labs/agents/sandboxes?ref=docs-labs-agents-recipes-coding-agent#a-repo" linkText="Check out a repo">
+<Annotation id="repo" lines="6-8" tease="the request names it" title="The repository" href="/docs/labs/agents/reference-sandboxes?ref=docs-labs-agents-recipes-coding-agent#repos" linkText="Reference: repos">
 A function of the event, so the sandbox clones the repository each request names.
 </Annotation>
 
@@ -97,7 +97,7 @@ export const coder = agents.agent({
 Callers send `{ repo, task }`, checked against this schema.
 </Annotation>
 
-<Annotation id="sandbox" lines="15" tease="a machine per thread" title="The sandbox" href="/docs/labs/agents/sandboxes?ref=docs-labs-agents-recipes-coding-agent" linkText="Sandboxes">
+<Annotation id="sandbox" lines="15" tease="a machine per thread" title="The sandbox" href="/docs/labs/agents/sandboxes?ref=docs-labs-agents-recipes-coding-agent#a-sandbox" linkText="A sandbox">
 The model gets `work_run` and `work_push`. The sandbox starts on first use.
 </Annotation>
 
@@ -141,7 +141,7 @@ The [model](/docs/labs/agents/quick-start?ref=docs-labs-agents-recipes-coding-ag
 
 ## What it shows off
 
-- [A repository in the sandbox](/docs/labs/agents/sandboxes?ref=docs-labs-agents-recipes-coding-agent#a-repo) is cloned for you, and the request picks which one.
+- [A repository in the sandbox](/docs/labs/agents/reference-sandboxes?ref=docs-labs-agents-recipes-coding-agent#repos) is the one the request names.
 - [A push policy](/docs/labs/agents/sandboxes?ref=docs-labs-agents-recipes-coding-agent#a-repo) lets your code decide what may leave the sandbox.
 - [A typed input](/docs/labs/agents/agent-teams?ref=docs-labs-agents-recipes-coding-agent#a-second-agent) gives callers a checked request.
 - [Start and wait](/docs/labs/agents/agent-teams?ref=docs-labs-agents-recipes-coding-agent#call-it-from-code) is one line in a plain function.
@@ -166,8 +166,8 @@ At [localhost:8288](http://localhost:8288), open `request-change`, choose **Invo
 
 ## Variations
 
-- [Agent teams](/docs/labs/agents/recipes/agent-teams?ref=docs-labs-agents-recipes-coding-agent) lets a lead agent call it.
-- [Sandboxes](/docs/labs/agents/sandboxes?ref=docs-labs-agents-recipes-coding-agent) installs dependencies once with `setup`.
+- [Lead and specialists](/docs/labs/agents/recipes/agent-teams?ref=docs-labs-agents-recipes-coding-agent) lets a lead agent call it.
+- [`sandbox()`](/docs/labs/agents/reference-sandboxes?ref=docs-labs-agents-recipes-coding-agent#sandbox) installs dependencies once with `setup`.
 - [Reliability](/docs/labs/agents/reliability?ref=docs-labs-agents-recipes-coding-agent#cap-spend) caps a request's spend with `budget`.
 
 ## Learn more
