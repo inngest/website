@@ -13,7 +13,7 @@ A Worker has no secrets or database at import time. Fields that take a function 
 - **Read secrets at run time.** The model, tokens and repo access are functions. [Run-time fields →](#read-bindings-at-run-time)
 - **Serve from `fetch`.** One export for Inngest and the Slack route. [Serve →](#serve-from-fetch)
 
-{/* not type-checked: model as a function reading a Worker binding, a Slack token function, getEnv() */}
+{/* not type-checked: model as a function reading a Worker binding, slack.thread({ token }) and slack.tools({ token }) */}
 <AnnotatedCode>
 
 ```typescript {{ title: "inngest/agents/triage.ts" }}
@@ -22,9 +22,13 @@ import { agents } from "../client";
 import { getEnv } from "../env";
 import { work } from "../sandboxes/work";
 
+const token = () => {
+  return getEnv().SLACK_BOT_TOKEN;
+};
+
 export const triage = agents.agent({
   id: "triage",
-  triggers: [slack.thread({ in: ["C0123ABC"] })],
+  triggers: [slack.thread({ in: ["C0123ABC"], token })],
   model: () => {
     return anthropic({
       model: "claude-sonnet-5-5",
@@ -32,23 +36,17 @@ export const triage = agents.agent({
     });
   },
   system: "You triage support threads.",
-  tools: {
-    ...slack.tools({
-      token: () => {
-        return getEnv().SLACK_BOT_TOKEN;
-      },
-    }),
-  },
+  tools: { ...slack.tools({ token }) },
   sandboxes: { work },
 });
 ```
 
-<Annotation id="model" lines="9-14" tease="called when a run starts" title="A field as a function" href="/docs/labs/agents/agents-and-triggers?ref=docs-labs-agents-workers#decide-per-run" linkText="Agents and triggers">
+<Annotation id="model" lines="13-18" tease="called when a run starts" title="A field as a function" href="/docs/labs/agents/agents-and-triggers?ref=docs-labs-agents-workers#decide-per-run" linkText="Agents and triggers">
 `getEnv()` is safe here: a run only starts inside a request.
 </Annotation>
 
-<Annotation id="token" lines="18-20" tease="called at each use" title="A token as a function" href="/docs/labs/agents/slack-and-github?ref=docs-labs-agents-workers" linkText="Slack and GitHub">
-Anywhere a token goes, a function works.
+<Annotation id="token" lines="6-8" tease="called at each use" title="A token as a function" href="/docs/labs/agents/slack-and-github?ref=docs-labs-agents-workers" linkText="Slack and GitHub">
+`slack.thread` uses it for the SDK's own posts, and `slack.tools` for the model's.
 </Annotation>
 
 </AnnotatedCode>
@@ -124,7 +122,7 @@ npx wrangler d1 migrations apply agents-db
 
 ## Read bindings at run time
 
-`model`, `system`, `tools`, `sandboxes`, `skills`, `budget`, `price`, `limits`, `idle` and `remember` take a function of the event and thread, which may be async and runs once when a run starts. A sandbox's `repo` does too, and its `auth` can be a function of its own.
+`model`, `system`, `tools`, `sandboxes`, `skills`, `budget`, `limits`, `idle` and `remember` take a function of the event and thread, which may be async and runs once when a run starts. A sandbox's `repo` does too, and its `auth` can be a function of its own.
 
 {/* not type-checked: repo.auth as a function reading a Worker binding */}
 ```typescript {{ title: "inngest/sandboxes/work.ts" }}
@@ -146,7 +144,6 @@ export const work = sandbox({
 
 `useEnv(env)` runs first on every request, so every function that follows can read the bindings. The Slack bridge reads its signing secret when it is built, so build it inside `fetch`, where the binding exists.
 
-{/* TODO(spec): how does a Worker pass `secret()` values and the SLACK_SIGNING_SECRET, and which option carries the Slack bot token for the SDK's own writes (status line, me.post, final answer)? Used slack.tools({ token }) and a bridge built per request. */}
 {/* not type-checked: serve() from inngest/cloudflare with slack.bridge() built per request */}
 ```typescript {{ title: "inngest/serve.ts" }}
 import { serve } from "inngest/cloudflare";
