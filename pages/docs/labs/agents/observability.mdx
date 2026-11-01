@@ -7,14 +7,12 @@ export const description = "See what an Inngest agent did, what it cost and how 
 
 > See what an agent did, what it cost and how well it worked.
 
-Every statement of a run is a row in its trace. Scores add timing, tokens and your own measures to those rows.
+Every statement of a run is a row in its trace. Scores add numbers to those rows.
 
-- **A row per statement.** Model calls, tool calls, posts and inbox reads. [Read a trace →](#read-a-trace)
-- **Scores you don't write.** Model time, tokens, tool calls and failures. [Automatic scores →](#automatic-scores)
-- **Scores you do.** One call, from a handler or a tool. [Score outcomes →](#score-outcomes)
-- **Usage and cost.** On every loop result. [Usage →](#track-usage-and-cost)
+- **A row per statement.** Calls, posts and inbox reads. [Read a trace →](#read-a-trace)
+- **Scores you don't write.** Time, tokens and failures. [Automatic scores →](#automatic-scores)
+- **Scores you do.** From a handler or a tool. [Score outcomes →](#score-outcomes)
 - **Progress as it happens.** A hook after each turn. [Show progress →](#show-progress)
-- **Warnings in place.** Mistakes that can't fail a run show on its trace. [Warnings →](#warnings)
 
 {/* not type-checked: score in the handler's argument and usage on the loop result */}
 <AnnotatedCode>
@@ -61,16 +59,13 @@ Every loop result carries the tokens and dollars of its own model calls.
 
 ## Read a trace
 
-Open a run in the Dev Server or in Inngest Cloud. The trace has one row for each:
+A run has one row for each:
 
-- model call and tool call, with its own timing and retries;
-- awaited `me.post()`;
+- model call, tool call and awaited `me.post()`;
 - inbox, with a tick for every message that arrived, read or not;
-- read of an inbox, which expands to the messages it took, with when each arrived and when it was read.
+- inbox read, expanding to the messages it took, with arrived and read times.
 
-A message the agent never read still shows as a tick, so "why didn't it react?" has an answer. [Inboxes →](/docs/labs/agents/inboxes?ref=docs-labs-agents-observability)
-
-Screenshot needed: the trace of one turn, with the model call, a tool call and the scores on both.
+An unread message still shows, so "why didn't it react?" has an answer. [Inboxes →](/docs/labs/agents/inboxes?ref=docs-labs-agents-observability)
 
 Screenshot needed: an inbox row with three ticks, and the read row expanded to its messages.
 
@@ -78,14 +73,14 @@ Screenshot needed: an inbox row with three ticks, and the read row expanded to i
 
 Every agent writes these, with nothing to turn on:
 
-- **On each model call:** its time, the tokens in and out, how many tools it called and how many messages were folded in.
-- **On each tool call:** its time and whether it failed.
+- **Each model call:** its time, tokens in and out, tools called and messages folded in.
+- **Each tool call:** its time and whether it failed.
 
-They sit on the row of the call. Query them over time in [Insights](/docs/platform-and-operations/insights?ref=docs-labs-agents-observability), and compare variants with [agent evals](/docs/agent-evals/overview?ref=docs-labs-agents-observability).
+Query them in [Insights](/docs/platform-and-operations/insights?ref=docs-labs-agents-observability) or compare variants with [agent evals](/docs/agent-evals/overview?ref=docs-labs-agents-observability).
 
 ## Score outcomes
 
-`score(name, value)` records a number or a boolean on the run. Call it from a handler, as above, or from a tool's context, where it lands on that tool call's row.
+`score(name, value)` records a number or a boolean. From a tool's context, it lands on that tool call's row.
 
 {/* not type-checked: score in a tool's context */}
 ```typescript {{ title: "inngest/tools/escalate.ts" }}
@@ -103,13 +98,13 @@ export const escalate = tool.step({
 });
 ```
 
-Await a score or don't: one you didn't await is still written before the run ends. Scoring is best effort, so a refused score logs a warning and the run goes on.
+Await it or don't: an un-awaited score is still written before the run ends. A refused score logs a warning and the run goes on.
 
 {/* TODO(spec): are score names restricted? The old docs reserved the `agent.` prefix for the automatic scores. */}
 
 ## Track usage and cost
 
-Each loop result carries the `usage` of its own model calls. The model prices its own calls, so `usd` is there with no price table. [Reliability →](/docs/labs/agents/reliability?ref=docs-labs-agents-observability#cap-spend)
+Each loop result carries the `usage` of its own model calls. The model prices its own calls, so `usd` needs no price table. [Reliability →](/docs/labs/agents/reliability?ref=docs-labs-agents-observability#cap-spend)
 
 {/* not type-checked: the usage fields of a loop result */}
 ```typescript
@@ -118,7 +113,7 @@ const { input, output, usd } = result.usage;
 
 ## Show progress
 
-`onTurn` runs after each turn's tool calls, with the turn's reply, tool runs and usage. The loop doesn't wait for it between turns, and an error in it is logged and never fails the run. The last one is waited for before `loop` returns.
+`onTurn` runs after each turn's tool calls. The loop doesn't wait for it between turns, and an error in it never fails the run.
 
 {/* not type-checked: loop(batch, { onTurn }) with an un-awaited me.post() */}
 <AnnotatedCode>
@@ -151,29 +146,28 @@ export const builder = agents.agent(
 ```
 
 <Annotation id="onturn" lines="16-18" tease="not awaited" title="onTurn" href="/docs/labs/agents/models-and-the-loop?ref=docs-labs-agents-observability" linkText="Models and the loop">
-Steps inside it are allowed. A slow post never delays the next model call.
+Steps inside it are allowed. The last one finishes before `loop` returns.
 </Annotation>
 
 </AnnotatedCode>
 
 ## Warnings
 
-These can't fail a run, so they show as a warning on its trace:
+These never fail a run, so they show as warnings on its trace:
 
-- a `me.post()` on a thread with no home, such as one opened by `start()`;
-- a Slack configuration error, such as a bad token or a missing scope, from a write you didn't await;
-- a `thread` expression that finds nothing at its path: a trigger then starts a fresh thread, and an `inbox` source reaches no thread.
+- a `me.post()` on a thread with no home;
+- a Slack configuration error from a write you didn't await;
+- a `thread` expression with nothing at its path.
 
 ## Gotchas
 
-- **A score in handler code is a step.** It gets its own row and counts toward the step limit. In a tool or the loop it rides on the call's row.
-- **Keep score names stable.** Changing a name starts a separate series. [Scores →](/docs/agent-evals/scores?ref=docs-labs-agents-observability)
-- **The automatic scores have no switch.** They are always written.
+- **A score in handler code is a step.** In a tool or the loop it adds none.
+- **Keep score names stable.** A changed name is a separate series. [Scores →](/docs/agent-evals/scores?ref=docs-labs-agents-observability)
 
 ## How it works
 
-- A score on a model or tool call rides on that call's result, so it adds no step and is never written again on replay.
-- Each inbox message is saved as it arrives, which is why its tick shows before anything reads it.
+- A score on a call rides on its result, so replay never writes it again.
+- Each inbox message is saved as it arrives, read or not.
 
 ## Recipes and reference
 
