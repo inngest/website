@@ -1,235 +1,449 @@
 import { AnnotatedCode, Annotation } from "shared/Docs/mdx";
 
 export const metaTitle = "Teams of agents | Inngest Agents";
-export const description = "Inngest Agents teams: find another agent through discovery and hand it work, let the model pick who to ask, give a sandbox to one agent, limit depth and spend, and cancel children with their parent.";
+export const description = "Start another Inngest agent from code or from a model, talk to it while it works, wait for its result, fan out in parallel, call agents in other apps and limit how far a team can reach.";
 
 # Teams of agents
 
-> Find another agent and hand it work, without wiring them together.
+> Start another agent, talk to it while it works, and get its answer back.
 
-Agents never import each other. Each one publishes a card, and callers find it at runtime by its address.
+One rule covers every call between agents: messages arrive in your [inbox](/docs/labs/agents/inboxes?ref=docs-labs-agents-teams-of-agents); results return to your call.
 
+- **Call an agent like a function.** `start()` opens a thread and returns a handle at once. [Start an agent →](#start-an-agent)
+- **Wait only when you choose.** `result()` waits for the answer; `message()` doesn't, unless you ask for its result too. [Wait for the result →](#wait-for-the-result)
+- **Talk while it works.** Message, ask or stop a running agent. [Talk to it →](#talk-to-a-running-agent)
+- **Fan out.** Review ten pull requests with one `Promise.all`. [Fan out →](#fan-out)
+- **Any app.** Call an agent in another app by its address. [Another app →](#call-an-agent-in-another-app)
+- **Let the model delegate.** It starts work and carries on; results arrive as messages. [The model →](#let-the-model-delegate)
+
+{/* not type-checked: reviewer.start() as a promise that carries message() and result(), the invoke() input typing */}
 <AnnotatedCode>
 
-```typescript {{ title: "inngest/agents/lead.ts" }}
-import { callAgent } from "inngest/experimental/agents";
+```typescript {{ title: "inngest/functions/reviewPull.ts" }}
+import { inngest } from "../client";
+import { pullOpened } from "../events";
+import { reviewer } from "../agents/reviewer";
+
+export const reviewPull = inngest.createFunction(
+  { id: "review-pull", triggers: [pullOpened] },
+  async ({ event }) => {
+    const review = await reviewer.start({ pr: event.data.url });
+
+    await review.message("Check the migration first.");
+
+    return await review.result();
+  },
+);
+```
+
+{/* not type-checked: an agent with an invoke() trigger, a model and a budget */}
+```typescript {{ title: "inngest/agents/reviewer.ts" }}
+import { invoke } from "inngest";
+import { z } from "zod";
 import { agents } from "../client";
+import { claude } from "../models/claude";
 
-export const lead = agents.agent({ id: "lead" }, async () => {
-  const found = await callAgent("support/researcher", {
-    question: "What changed in v3?",
-  });
-
-  return found;
+export const reviewer = agents.agent({
+  id: "reviewer",
+  triggers: [invoke(z.object({ pr: z.string() }))],
+  model: claude,
+  system: "Review the pull request at the URL you are given.",
+  budget: { usd: 2 },
 });
 ```
 
-<Annotation id="address" lines="5" tease="app/agent" title="Address" href="#publish-a-card" linkText="Publish a card">
-The callee's app and agent id. Nothing is imported.
+{/* not type-checked: eventType from inngest with a Zod schema */}
+```typescript {{ title: "inngest/events.ts" }}
+import { eventType } from "inngest";
+import { z } from "zod";
+
+export const pullOpened = eventType("pull/opened", {
+  schema: z.object({ url: z.string() }),
+});
+```
+
+<Annotation id="start" lines="8" tease="returns at once" title="Start" href="#start-an-agent" linkText="Start an agent">
+Opens a new thread for the reviewer and starts a run on it. It doesn't wait for the run.
 </Annotation>
 
-<Annotation id="input" lines="6" tease="what its card asks for" title="Input" href="#publish-a-card" linkText="Publish a card">
-The callee's `invoke()` schema, or `{ message }` for a plain agent.
+<Annotation id="message" lines="10" tease="into its inbox" title="Message" href="#talk-to-a-running-agent" linkText="Talk to a running agent">
+Lands in the reviewer's inbox while it works.
 </Annotation>
 
-<Annotation id="result" lines="9" tease="what the callee returned" title="Result" href="#how-it-works" linkText="How it works">
-The caller waits as a step, at no cost.
+<Annotation id="result" lines="12" tease="comes back to this call" title="Result" href="#wait-for-the-result" linkText="Wait for the result">
+The reviewer's answer returns to this call and never reaches an inbox.
 </Annotation>
 
 </AnnotatedCode>
 
-## Publish a card
+## Start an agent
 
-The callee's config becomes its card. `on: invoke(schema)` types its input, and it returns its result.
+`start()` opens a new [thread](/docs/labs/agents/threads-and-memory?ref=docs-labs-agents-teams-of-agents), starts a run on it and returns a handle at once. Every call opens its own thread, so two starts run side by side. With an `invoke()` trigger, the input is typed from it. [Typed input →](/docs/labs/agents/agents-and-triggers?ref=docs-labs-agents-teams-of-agents#take-a-typed-input)
 
-```typescript {{ title: "inngest/agents/researcher.ts" }}
-import { invoke } from "inngest";
-import { z } from "zod";
-import { agents } from "../client";
+An agent with no `invoke()` trigger takes text or JSON and receives it as a message:
 
-export const researcher = agents.agent(
-  {
-    id: "researcher",
-    description: "Looks into a question",
-    share: "team",
-    on: invoke(z.object({ question: z.string() })),
-    limits: { price: { "*": { input: 3, output: 15 } } },
-  },
-  async ({ trigger }) => {
-    return { answer: `Looked into: ${trigger?.data.question}` };
-  },
-);
-```
-
-Agents in the same app find each other by default. `share: "team"` lets agents in other apps find it too.
-
-`agents.announce()` publishes the app's cards once it is up.
-
-```typescript {{ title: "inngest/serve.ts" }}
-import { createServer } from "inngest/node";
-import { agents, inngest } from "./client";
-import "./agents/lead";
-import "./agents/researcher";
-
-createServer({
-  client: inngest,
-  functions: agents.functions(),
-}).listen(3000);
-
-await agents.announce();
-```
-
-## Let the model choose
-
-`discoveryTools()` lets the model list agents, read their cards, and call or message the one it needs.
-
-```typescript {{ title: "inngest/agents/delegator.ts" }}
-import { agent, discoveryTools } from "inngest/experimental/agents";
+{/* not type-checked: an agent with no triggers started by start() */}
+```typescript {{ title: "inngest/agents/summarizer.ts" }}
 import { agents } from "../client";
 import { claude } from "../models/claude";
 
-export const delegator = agents.agent(
-  { id: "delegator" },
-  async ({ inbox, control }) => {
-    const message = await inbox.next();
-
-    const result = await agent.loop({
-      model: claude,
-      prompt: message ?? "",
-      tools: discoveryTools(),
-      ...control,
-    });
-
-    return result.text;
-  },
-);
-```
-
-The model gets `list_agents`, `describe_agent`, `call_agent` and `message_agent`. It picks by `description`, so write it for a model to read.
-
-## Give a sandbox to one agent
-
-A sandbox belongs to the thread that uses it. Declare `sandboxes` on the agent that needs a machine; callers and other agents need none.
-
-```typescript {{ title: "inngest/agents/builder.ts" }}
-import { invoke } from "inngest";
-import { z } from "zod";
-import { agents } from "../client";
-import { workbench } from "../sandboxes/workbench";
-
-export const builder = agents.agent(
-  {
-    id: "builder",
-    on: invoke(z.object({ task: z.string() })),
-    sandboxes: { work: workbench },
-  },
-  async ({ trigger, sandboxTools }) => {
-    return { task: trigger?.data.task, tools: Object.keys(sandboxTools) };
-  },
-);
-```
-
-```typescript {{ title: "inngest/sandboxes/workbench.ts" }}
-import { sandbox } from "inngest/experimental/agents";
-
-export const workbench = sandbox({
-  id: "workbench",
-  tools: sandbox.tools.code(),
+export const summarizer = agents.agent({
+  id: "summarizer",
+  model: claude,
+  system: "Summarise what you are given in two sentences.",
 });
 ```
 
-## Limit sub-agents
+```typescript
+const summary = await summarizer.start("Release 4.2 adds retries.").result();
+```
 
-`limits` apply to every `callAgent()` and `call_agent`. A refused call throws `AgentLimitError`, whose `limit` is `depth`, `spawn`, `mayCall` or `budget`.
+## Wait for the result
 
-```typescript {{ title: "inngest/agents/careful.ts" }}
-import { AgentLimitError, callAgent } from "inngest/experimental/agents";
-import { agents } from "../client";
+`result()` waits for a run to end and returns its output: what the handler returned, or the model's last answer when the agent has no handler. On a handle from `start()` it is the run `start()` opened. `await reviewer.start({ pr }).result()` is both in one line, for when you don't need the handle.
 
-export const careful = agents.agent(
-  {
-    id: "careful",
-    limits: { depth: 1, spawn: 3, mayCall: ["support/researcher"] },
-  },
-  async () => {
+A failed or stopped run makes `result()` throw. `timeout` stops the wait after a while.
+
+{/* TODO(spec): what does result({ timeout }) do when the time runs out? messaging.md says only "no default timeout". */}
+{/* not type-checked: result({ timeout }) throwing for a failed or stopped run */}
+```typescript {{ title: "inngest/functions/reviewOrSkip.ts" }}
+import { inngest } from "../client";
+import { pullOpened } from "../events";
+import { reviewer } from "../agents/reviewer";
+
+export const reviewOrSkip = inngest.createFunction(
+  { id: "review-or-skip", triggers: [pullOpened] },
+  async ({ event }) => {
     try {
-      return await callAgent("support/researcher", { question: "Why?" });
-    } catch (error) {
-      return error instanceof AgentLimitError
-        ? `refused by ${error.limit}`
-        : "failed";
+      return await reviewer
+        .start({ pr: event.data.url })
+        .result({ timeout: "30m" });
+    } catch {
+      return "No review. A person will look.";
     }
   },
 );
 ```
 
-Sub-agents inherit the limits, narrowed, and `limits.depth` defaults to 1. The body's `depth` field is something else: how deep this run is, 1 for the first callee. Add `budget: { usd: 5 }` and a `price` table to cap spend; a dollar budget needs the sub-agent's own `limits.price`, since a price does not travel.
+A run opened by `start()` ends as soon as it has answered and nothing is unread, so `result()` returns promptly. With a handler, the run ends when the handler returns, and a loop over its inbox stops once nothing is waiting. [When the handler returns →](/docs/labs/agents/handlers?ref=docs-labs-agents-teams-of-agents#when-the-handler-returns)
 
-## Cancel with the caller
+## Carry on the conversation
 
-Cancelling the caller cancels the callee only if the callee lists `agentInvokeCancelOn`. A cancelled callee makes `callAgent()` throw `AgentCancelledError`.
+`message()` returns the run that takes the message, so a second round is one more line. The thread keeps its history, so the reviewer sees its first review too.
 
-```typescript {{ title: "inngest/agents/worker.ts" }}
-import { invoke } from "inngest";
-import { agentInvokeCancelOn } from "inngest/experimental/agents";
+{/* not type-checked: message().result() on the handle from start() */}
+```typescript {{ title: "inngest/functions/reviewTwice.ts" }}
+import { inngest } from "../client";
+import { pullOpened } from "../events";
+import { reviewer } from "../agents/reviewer";
+
+export const reviewTwice = inngest.createFunction(
+  { id: "review-twice", triggers: [pullOpened] },
+  async ({ event }) => {
+    const review = await reviewer.start({ pr: event.data.url });
+
+    const first = await review.result();
+
+    const second = await review
+      .message("Now check the tests you skipped.")
+      .result();
+
+    return { first, second };
+  },
+);
+```
+
+The message lands in the run that's still working, or starts a new run on the thread once the first has ended. Either way, `result()` gives the answer of the run that took it.
+
+## Talk to a running agent
+
+A handle talks to the thread. `message()` sends without waiting for the agent, `ask()` waits for an answer and `stop()` cancels the run.
+
+{/* TODO(spec): what does ask() do on a thread whose last run already ended? messaging.md describes ask() only for a running agent. */}
+
+{/* not type-checked: message(), ask() and stop() on a handle from start() */}
+<AnnotatedCode>
+
+```typescript {{ title: "inngest/functions/reviewWithChecks.ts" }}
+import { inngest } from "../client";
+import { pullOpened } from "../events";
+import { reviewer } from "../agents/reviewer";
+
+export const reviewWithChecks = inngest.createFunction(
+  { id: "review-with-checks", triggers: [pullOpened] },
+  async ({ event }) => {
+    const review = await reviewer.start({ pr: event.data.url });
+
+    await review.message("The author says the migration is safe to skip.");
+
+    const worry = await review.ask("Which file worries you most?");
+
+    if (worry === null) {
+      await review.stop();
+
+      return { worry: null, findings: null };
+    }
+
+    return { worry, findings: await review.result() };
+  },
+);
+```
+
+<Annotation id="message" lines="10" tease="doesn't wait" title="message()" href="/docs/labs/agents/models-and-the-loop?ref=docs-labs-agents-teams-of-agents" linkText="Models and the loop">
+Goes into the reviewer's inbox and reaches its next model call. It doesn't wait for the reviewer.
+</Annotation>
+
+<Annotation id="ask" lines="12" tease="waits for the answer" title="ask()" href="#gotchas" linkText="Gotchas">
+Gives `null` after an hour, or when the reviewer refuses. `{ timeout }` changes the hour.
+</Annotation>
+
+<Annotation id="stop" lines="15" tease="cancels the run" title="stop()">
+A `result()` waiting on this run throws.
+</Annotation>
+
+</AnnotatedCode>
+
+## Rebuild a handle
+
+`review.key` names the thread. Code that has the key rebuilds the handle with `thread(key)`. It has everything a handle has except its own `result()`; the run its `message()` starts has one.
+
+{/* not type-checked: reviewer.thread(key) rebuilding a handle and awaiting the run its message starts */}
+```typescript {{ title: "inngest/functions/nudgeReview.ts" }}
+import { eventType } from "inngest";
+import { z } from "zod";
+import { inngest } from "../client";
+import { reviewer } from "../agents/reviewer";
+
+const pullUpdated = eventType("pull/updated", {
+  schema: z.object({ reviewKey: z.string() }),
+});
+
+export const nudgeReview = inngest.createFunction(
+  { id: "nudge-review", triggers: [pullUpdated] },
+  async ({ event }) => {
+    const review = reviewer.thread(event.data.reviewKey);
+
+    return await review.message("The author pushed a fix.").result();
+  },
+);
+```
+
+## Fan out
+
+Every `start()` opens its own thread, so parallel work is `Promise.all`.
+
+{/* not type-checked: Promise.all over start().result() */}
+```typescript {{ title: "inngest/functions/reviewRelease.ts" }}
+import { eventType } from "inngest";
+import { z } from "zod";
+import { inngest } from "../client";
+import { reviewer } from "../agents/reviewer";
+
+const releaseCut = eventType("release/cut", {
+  schema: z.object({ pulls: z.array(z.string()) }),
+});
+
+export const reviewRelease = inngest.createFunction(
+  { id: "review-release", triggers: [releaseCut] },
+  async ({ event }) => {
+    return await Promise.all(
+      event.data.pulls.map(async (pr) => {
+        return await reviewer.start({ pr }).result();
+      }),
+    );
+  },
+);
+```
+
+## Call an agent in another app
+
+`agents.reference()` gives an agent in another app the same `start()` and `thread()` as an import. Its address is the app and the agent, as `app/agent`. [Discovery →](/docs/labs/agents/discovery?ref=docs-labs-agents-teams-of-agents#the-address)
+
+{/* not type-checked: agents.reference() with schema and output */}
+<AnnotatedCode>
+
+```typescript {{ title: "inngest/agents/platformAuditor.ts" }}
 import { z } from "zod";
 import { agents } from "../client";
 
-export const worker = agents.agent(
-  {
-    id: "worker",
-    on: invoke(z.object({ task: z.string() })),
-    cancelOn: [agentInvokeCancelOn],
-  },
-  async ({ trigger }) => {
-    return { done: trigger?.data.task };
+export const platformAuditor = agents.reference("platform/auditor", {
+  schema: z.object({ service: z.string() }),
+  output: z.object({ findings: z.array(z.string()) }),
+});
+```
+
+{/* not type-checked: start().result() typed from a reference's output */}
+```typescript {{ title: "inngest/functions/auditApi.ts" }}
+import { inngest } from "../client";
+import { platformAuditor } from "../agents/platformAuditor";
+
+export const auditApi = inngest.createFunction(
+  { id: "audit-api", triggers: [{ cron: "TZ=UTC 0 6 * * 1" }] },
+  async () => {
+    const { findings } = await platformAuditor
+      .start({ service: "api" })
+      .result();
+
+    return findings;
   },
 );
 ```
 
-```typescript {{ title: "inngest/agents/boss.ts" }}
-import { AgentCancelledError, callAgent } from "inngest/experimental/agents";
+<Annotation id="schema" lines="5" tease="types the input" title="schema">
+Without it, `start()` takes any JSON.
+</Annotation>
+
+<Annotation id="output" lines="6" tease="types the result" title="output">
+Without it, `result()` gives `unknown`, because the value comes from another app.
+</Annotation>
+
+</AnnotatedCode>
+
+## Answer a question
+
+An agent that gets an `agent/question` answers it with `msg.reply()`. `msg.from` says who asked: from an agent it is a handle, so `msg.from.message()` talks back; from a plain function it holds the function's `id` and `key` and can't be messaged.
+
+{/* not type-checked: msg.is(agentQuestion), msg.reply() and inbox.drain() in a start()-opened run */}
+<AnnotatedCode>
+
+```typescript {{ title: "inngest/agents/deployer.ts" }}
+import { invoke } from "inngest";
+import { agentQuestion } from "inngest/experimental/agents";
+import { z } from "zod";
 import { agents } from "../client";
 
-export const boss = agents.agent({ id: "boss" }, async () => {
-  try {
-    return await callAgent("support/worker", { task: "audit" });
-  } catch (error) {
-    if (error instanceof AgentCancelledError) {
-      return { done: null, cancelledRun: error.runId };
+export const deployer = agents.agent(
+  {
+    id: "deployer",
+    triggers: [invoke(z.object({ service: z.string() }))],
+  },
+  async ({ event, inbox, step }) => {
+    for (const region of ["us-east", "eu-west"]) {
+      await step.run(`roll-out-${region}`, async () => {
+        return { service: event.data.service, region };
+      });
+
+      for (const msg of await inbox.drain()) {
+        if (msg.is(agentQuestion)) {
+          await msg.reply(`Finished ${region}.`);
+        }
+      }
     }
 
-    throw error;
-  }
-});
+    return "deployed";
+  },
+);
 ```
 
-## When to use what
+<Annotation id="drain" lines="17" tease="check between steps" title="Unread messages" href="/docs/labs/agents/inboxes?ref=docs-labs-agents-teams-of-agents" linkText="Inboxes">
+`drain()` returns what has arrived and never waits.
+</Annotation>
 
-- Use another agent's result: `callAgent("app/agent", input)`.
-- Let the model choose who to ask: `tools: discoveryTools()`.
-- Look up agents in code: [`findAgents(query)`](/docs/labs/agents/reference?ref=docs-labs-agents-teams-of-agents#calling-agents).
-- Let agents in other apps find yours: `share: "team"`.
-- Cap depth, fan-out or which agents may be called: `limits.depth`, `spawn`, `mayCall`.
-- Cap spend of callees: `limits.budget` with a `limits.price` on each, and `spawn`. A callee gets at most what is left, but the callees' total is not capped.
-- End children with their parent: `cancelOn: [agentInvokeCancelOn]`.
-- Name the call's step: `callAgent(address, input, { id })`.
+<Annotation id="reply" lines="19" tease="one answer" title="reply()">
+A question gets one answer. A late or second answer is dropped.
+</Annotation>
+
+</AnnotatedCode>
+
+An agent with a model answers with its `reply` tool, which it always has.
+
+## Let the model delegate
+
+A model agent never waits on another agent. Its tools `start_agent`, `message_agent`, `ask_agent`, `stop_agent` and `reply` return at once, and what comes back arrives as a message in its inbox, batched with everything else. They are on by default, next to the agent's own [tools](/docs/labs/agents/tools?ref=docs-labs-agents-teams-of-agents). [Discovery →](/docs/labs/agents/discovery?ref=docs-labs-agents-teams-of-agents)
+
+```
+start_agent({
+  address: "support/reviewer",
+  input: { pr: "https://github.com/acme/api/pull/42" },
+})
+  { thread: "a1b2c3" }
+```
+
+The model carries on. Four message types come back, each in a default wording. [Models and the loop →](/docs/labs/agents/models-and-the-loop?ref=docs-labs-agents-teams-of-agents)
+
+- **`agent/message`.** What `message()` or `message_agent` sent. The model sees `Message from <address> (thread <key>): <content>`.
+- **`agent/question`.** From `ask()` or `ask_agent`. The model sees the question with its id, who asked, and a pointer to `reply`.
+- **`agent/answer`.** The answer to the model's `ask_agent`, shown with the question it answers. A refusal or a timeout shows as a plain "no answer" line.
+- **`agent/finished`.** Work the model started with `start_agent` ended. The model sees which agent and thread, the outcome (completed, failed or stopped), then the output or the error.
+
+They are exported as `agentMessage`, `agentQuestion`, `agentAnswer` and `agentFinished`, and `msg.is()` narrows to one. [Narrow an event with `is()` →](/docs/events/event-payloads-and-schemas?ref=docs-labs-agents-teams-of-agents#narrow-an-event-with-is)
+
+{/* not type-checked: msg.is(agentFinished) narrowing data.outcome in a handler */}
+<AnnotatedCode>
+
+```typescript {{ title: "inngest/agents/lead.ts" }}
+import { agentFinished, slack } from "inngest/experimental/agents";
+import { agents } from "../client";
+import { claude } from "../models/claude";
+
+export const lead = agents.agent(
+  {
+    id: "lead",
+    triggers: [slack.thread()],
+    model: claude,
+    system: "Hand pull request reviews to the reviewer agent.",
+  },
+  async ({ inbox, me, loop }) => {
+    for await (const batch of inbox.batches()) {
+      for (const msg of batch) {
+        if (msg.is(agentFinished) && msg.data.outcome === "failed") {
+          await me.post(`A review failed: ${msg.data.error}`);
+        }
+      }
+
+      const { text } = await loop(batch);
+
+      await me.post(text);
+    }
+  },
+);
+```
+
+<Annotation id="finished" lines="15" tease="narrow with is()" title="agent/finished">
+`outcome` is `"completed"`, `"failed"` or `"stopped"`. A failed run has an `error`.
+</Annotation>
+
+<Annotation id="loop" lines="20" tease="the model sees them all" title="The loop" href="/docs/labs/agents/models-and-the-loop?ref=docs-labs-agents-teams-of-agents" linkText="Models and the loop">
+The batch holds the finished message too, in its default wording.
+</Annotation>
+
+</AnnotatedCode>
+
+Sandbox code is code, so it gets the same tools plus `agent_result`, which waits. A script can start several agents and wait for each, as `Promise.all` does. [Sandboxes and code →](/docs/labs/agents/sandboxes-and-code?ref=docs-labs-agents-teams-of-agents)
+
+## Background work
+
+Work that runs beside a conversation is a plain function you don't await. It reports back with `me.message()`, and work still running when the handler returns is stopped. [Message yourself →](/docs/labs/agents/handlers?ref=docs-labs-agents-teams-of-agents#message-yourself)
+
+## Limit the team
+
+Put `limits` on the agent that delegates:
+
+{/* TODO(spec): the default of limits.depth, and what a refused start looks like to code and to the model. */}
+```typescript
+limits: { depth: 2, mayCall: ["support/reviewer"] },
+```
+
+`depth` caps a chain of starts, where A starts B and B starts C. `mayCall` lists the agents the model may start.
+
+Every thread spends from its own agent's `budget`, such as the reviewer's `budget: { usd: 2 }`, whoever started it. [Reliability →](/docs/labs/agents/reliability?ref=docs-labs-agents-teams-of-agents)
 
 ## Gotchas
 
-- An agent can be found only after its app announced its card. A daily heartbeat announces again.
-- `callAgent()` returns `unknown`. Check the shape before you use it.
-- Use `agentInvokeCancelOn` only on an agent that `callAgent()` or `call_agent` starts. `agents.agent()` throws if `on` has another trigger.
-- Don't message the thread of an agent with `agentInvokeCancelOn`. A message starts a run with no caller, and that run ends whenever any run is cancelled.
-- `message_agent`, a raw `step.invoke` and `sendEvent` are not checked by `limits`.
+- **Handle methods need a function.** They throw in a route or a script. Send the agent's trigger event from there.
+- **`ask()` can return `null`.** It does after the timeout and when the other side refuses. Pick a default.
+- **Code that waits can't be asked.** A question from the run behind your `result()` is refused at once. The agent's `ask()` returns `null` and your `result()` keeps waiting.
+- **Every `start()` opens a thread.** To carry on a conversation, `message()` the same thread. [Carry on →](#carry-on-the-conversation)
 
 ## How it works
 
-- `callAgent()` checks sharing in a step, then calls the agent as a step. The caller sleeps until it returns.
-- `call_agent` checks sharing on every call too, so a made-up address gets nowhere.
-- Limits are checked before the call starts and narrowed for the callee.
-- The callee's run is a child of the caller's trace.
+- A message for a thread with a live run lands in that run's inbox; a message for a quiet thread starts a run. [Threads and memory →](/docs/labs/agents/threads-and-memory?ref=docs-labs-agents-teams-of-agents)
+- A run opened through a handle ends once it has answered and nothing is unread. The thread keeps the history for the next run.
+- Answers to your `ask()` and outputs for your `result()` go only to the waiting call, so an inbox holds only what was sent to the agent.
+- Every agent message shows in the run's trace, with who sent it.
 
 ## Recipes and reference
 
-[Agent teams](/docs/labs/agents/recipes/agent-teams?ref=docs-labs-agents-teams-of-agents), [Coding agent](/docs/labs/agents/recipes/coding-agent?ref=docs-labs-agents-teams-of-agents), [Calling agents reference](/docs/labs/agents/reference?ref=docs-labs-agents-teams-of-agents#calling-agents).
+- [Agent teams](/docs/labs/agents/recipes/agent-teams?ref=docs-labs-agents-teams-of-agents): a lead that finds and starts specialists.
+- [Coding agent](/docs/labs/agents/recipes/coding-agent?ref=docs-labs-agents-teams-of-agents): a plain function that starts a coding agent and waits for its branch.
+- [Reference: thread handles](/docs/labs/agents/reference?ref=docs-labs-agents-teams-of-agents#thread-handles)
