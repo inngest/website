@@ -1,96 +1,93 @@
 import { AnnotatedCode, Annotation } from "shared/Docs/mdx";
 
 export const metaTitle = "Observability | Inngest Agents";
-export const description = "Inngest Agents observability: see every model and tool call in the trace, follow a thread's state and usage, and record scores for latency, tokens and your own outcomes.";
+export const description = "See what an Inngest agent did, what it cost and how well it worked: one trace row per statement, inbox ticks for every message, automatic scores, your own scores, usage and cost on the loop result, and progress as turns finish.";
 
 # Observability
 
-> See what an agent did, what it cost, how well it worked.
+> See what an agent did, what it cost and how well it worked.
 
-Every model call and tool call is a step in the run's trace. Built-in scores add timing and cost to each, and you can add your own.
+Every statement of a run is a row in its trace. Scores add timing, tokens and your own measures to those rows.
 
+- **A row per statement.** Model calls, tool calls, posts and inbox reads. [Read a trace →](#read-a-trace)
+- **Scores you don't write.** Model time, tokens, tool calls and failures. [Automatic scores →](#automatic-scores)
+- **Scores you do.** One call, from a handler or a tool. [Score outcomes →](#score-outcomes)
+- **Usage and cost.** On every loop result. [Usage →](#track-usage-and-cost)
+- **Progress as it happens.** A hook after each turn. [Show progress →](#show-progress)
+- **Warnings in place.** Mistakes that can't fail a run show on its trace. [Warnings →](#warnings)
+
+{/* not type-checked: score in the handler's argument and usage on the loop result */}
 <AnnotatedCode>
 
 ```typescript {{ title: "inngest/agents/support.ts" }}
-import { agent } from "inngest/experimental/agents";
+import { slack } from "inngest/experimental/agents";
 import { agents } from "../client";
 import { claude } from "../models/claude";
 
 export const support = agents.agent(
-  { id: "support" },
-  async ({ inbox, control, scores }) => {
-    for await (const message of inbox) {
-      const result = await agent.loop({
-        model: claude,
-        prompt: message,
-        ...control,
-      });
+  {
+    id: "support",
+    triggers: [slack.thread()],
+    model: claude,
+    system: "You answer support questions.",
+  },
+  async ({ inbox, me, loop, score }) => {
+    for await (const batch of inbox.batches()) {
+      const result = await loop(batch);
 
-      await scores.score("support.answered", result.text.length > 0);
+      await me.post(result.text);
 
-      await scores.score("support.turns", result.turns);
+      await score("answered", result.text.length > 0);
+
+      await score("cost", result.usage.usd ?? 0);
     }
   },
 );
 ```
 
-<Annotation id="scores" lines="7" tease="next to inbox and control" title="scores" href="#score-outcomes" linkText="Score outcomes">
-The body receives `scores` with `inbox`, `control` and `report`.
+<Annotation id="score" lines="12" tease="next to inbox and loop" title="score" href="#score-outcomes" linkText="Score outcomes">
+In the handler's argument and in every tool's context.
 </Annotation>
 
-<Annotation id="bool" lines="15" tease="true is 1" title="A yes or no" href="#gotchas" linkText="Gotchas">
-A boolean or a finite number. Names cannot start with `agent.`.
+<Annotation id="bool" lines="18" tease="true counts as 1" title="A yes or no" href="#score-outcomes" linkText="Score outcomes">
+A boolean or a finite number. Written once, however often the run replays.
+</Annotation>
+
+<Annotation id="usage" lines="20" tease="dollars spent" title="Usage" href="#track-usage-and-cost" linkText="Track usage and cost">
+Every loop result carries the tokens and dollars of its own model calls.
 </Annotation>
 
 </AnnotatedCode>
 
 ## Read a trace
 
-Open the run in the Dev Server or in Inngest Cloud. Each model call is a step named `<id>:model:<turn>`, each tool call is `<id>:<turn>.<n>:<name>`, and a tool with a `displayName` shows it.
+Open a run in the Dev Server or in Inngest Cloud. The trace has one row for each:
 
-Screenshot needed: the trace of one turn, with the model step, a tool step and their scores.
+- model call and tool call, with its own timing and retries;
+- awaited `me.post()`;
+- inbox, with a tick for every message that arrived, read or not;
+- read of an inbox, which expands to the messages it took, with when each arrived and when it was read.
 
-The scores on those steps come free:
+A message the agent never read still shows as a tick, so "why didn't it react?" has an answer. [Inboxes →](/docs/labs/agents/inboxes?ref=docs-labs-agents-observability)
 
-- `agent.model_ms`, `agent.input_tokens`, `agent.output_tokens`, `agent.tool_calls` and `agent.steers` on each model step. Cache scores join them when the model reports cache use, as `agent.anthropic()` does.
-- `agent.tool_ms` and `agent.tool_error` on each tool step. `agent.tool_error` is `1` when the tool threw or returned an error.
-- `agent.first_output_ms` and `agent.output_gap_ms` on `report()` posts.
-- `agent.stopped` on the step that records a stop request.
+Screenshot needed: the trace of one turn, with the model call, a tool call and the scores on both.
 
-## Follow a thread
+Screenshot needed: an inbox row with three ticks, and the read row expanded to its messages.
 
-`state()` reads a thread without a run: its status, turn, summary, usage and how the last run ended.
+## Automatic scores
 
-```typescript {{ title: "app/state.ts" }}
-import { support } from "../inngest/agents/support";
+Every agent writes these, with nothing to turn on:
 
-const ticket = support.thread("ticket-42");
+- **On each model call:** its time, the tokens in and out, how many tools it called and how many messages were folded in.
+- **On each tool call:** its time and whether it failed.
 
-const { status, turn, summary, usage, keys, lastRun } = await ticket.state();
-
-console.log(status, turn, summary, keys, lastRun);
-```
-
-`status` is `running`, `waiting`, `stopped` or `idle`.
-
-## Track usage and cost
-
-`usage` sums every model call of the thread. It has `usd` when the agent has a `limits.price`.
-
-```typescript {{ title: "app/usage.ts" }}
-import { support } from "../inngest/agents/support";
-
-const { usage } = await support.thread("ticket-42").state();
-
-console.log(usage.input, usage.output, usage.usd);
-```
-
-Each loop result carries the `usage` of that loop. Set prices in [Reliability](/docs/labs/agents/reliability?ref=docs-labs-agents-observability#limit-turns-and-spend).
+They sit on the row of the call. Query them over time in [Insights](/docs/platform-and-operations/insights?ref=docs-labs-agents-observability), and compare variants with [agent evals](/docs/agent-evals/overview?ref=docs-labs-agents-observability).
 
 ## Score outcomes
 
-Call `scores.score(name, value)` from the agent body or from a tool. Inside a tool it lands on that tool's step.
+`score(name, value)` records a number or a boolean on the run. Call it from a handler, as above, or from a tool's context, where it lands on that tool call's row.
 
+{/* not type-checked: score in a tool's context */}
 ```typescript {{ title: "inngest/tools/escalate.ts" }}
 import { tool } from "inngest/experimental";
 import { z } from "zod";
@@ -98,45 +95,87 @@ import { z } from "zod";
 export const escalate = tool.step({
   description: "Hands the thread to a person",
   input: z.object({ reason: z.string() }),
-  run: async ({ reason }) => {
+  run: async ({ reason }, { score }) => {
+    await score("escalated", true);
+
     return `escalated: ${reason}`;
   },
 });
 ```
 
-Query scores over time in [Insights](/docs/platform-and-operations/insights?ref=docs-labs-agents-observability), and compare variants with [agent evals](/docs/agent-evals/overview?ref=docs-labs-agents-observability).
+Await a score or don't: one you didn't await is still written before the run ends. Scoring is best effort, so a refused score logs a warning and the run goes on.
 
-## When to use what
+{/* TODO(spec): are score names restricted? The old docs reserved the `agent.` prefix for the automatic scores. */}
 
-- Find out why a turn was slow or costly: the trace and the built-in scores.
-- Check a thread from a script or a dashboard: `thread.state()`.
-- Measure your own outcome: `scores.score()`.
-- Compare variants or roll scores into averages: Insights and agent evals.
+## Track usage and cost
 
-## Options
+Each loop result carries the `usage` of its own model calls. The model prices its own calls, so `usd` is there with no price table. [Reliability →](/docs/labs/agents/reliability?ref=docs-labs-agents-observability#cap-spend)
 
-```typescript {{ title: "inngest/agents/quiet.ts" }}
-import { agents } from "../client";
-
-export const quiet = agents.agent({ id: "quiet", scores: false }, async () => {
-  return undefined;
-});
+{/* not type-checked: the usage fields of a loop result */}
+```typescript
+const { input, output, usd } = result.usage;
 ```
 
-`scores: false` turns the built-in scores off. `scores.score()` still works in the body.
+## Show progress
+
+`onTurn` runs after each turn's tool calls, with the turn's reply, tool runs and usage. The loop doesn't wait for it between turns, and an error in it is logged and never fails the run. The last one is waited for before `loop` returns.
+
+{/* not type-checked: loop(batch, { onTurn }) with an un-awaited me.post() */}
+<AnnotatedCode>
+
+```typescript {{ title: "inngest/agents/builder.ts" }}
+import { sandbox, slack } from "inngest/experimental/agents";
+import { agents } from "../client";
+import { claude } from "../models/claude";
+
+export const builder = agents.agent(
+  {
+    id: "builder",
+    triggers: [slack.thread()],
+    model: claude,
+    system: "Run the build and fix what fails.",
+    sandboxes: { work: sandbox({ id: "work" }) },
+  },
+  async ({ inbox, me, loop }) => {
+    for await (const batch of inbox.batches()) {
+      const { text } = await loop(batch, {
+        onTurn: (turn) => {
+          me.post(`Turn ${turn.turn}: ${turn.toolCalls.length} tool calls.`);
+        },
+      });
+
+      await me.post(text);
+    }
+  },
+);
+```
+
+<Annotation id="onturn" lines="16-18" tease="not awaited" title="onTurn" href="/docs/labs/agents/models-and-the-loop?ref=docs-labs-agents-observability" linkText="Models and the loop">
+Steps inside it are allowed. A slow post never delays the next model call.
+</Annotation>
+
+</AnnotatedCode>
+
+## Warnings
+
+These can't fail a run, so they show as a warning on its trace:
+
+- a `me.post()` on a thread with no home, such as one opened by `start()`;
+- a Slack configuration error, such as a bad token or a missing scope, from a write you didn't await;
+- a `thread` expression that finds nothing at its path: a trigger then starts a fresh thread, and an `inbox` source reaches no thread.
 
 ## Gotchas
 
-- A group from `tool.group()` is not one step, so it is not scored.
-- Outside a step, `scores.score` sets a score on the run. Call it with values that do not change between replays.
-- A score never fails a run. If the server refuses it, one warning is logged and the run goes on.
+- **A score in handler code is a step.** It gets its own row and counts toward the step limit. In a tool or the loop it rides on the call's row.
+- **Keep score names stable.** Changing a name starts a separate series. [Scores →](/docs/agent-evals/scores?ref=docs-labs-agents-observability)
+- **The automatic scores have no switch.** They are always written.
 
 ## How it works
 
-- A score rides in the metadata of a step that is already running, so none adds a step.
-- It is written once, when the step really runs, never on replay.
-- Averages, percentiles and rates are left to Insights.
+- A score on a model or tool call rides on that call's result, so it adds no step and is never written again on replay.
+- Each inbox message is saved as it arrives, which is why its tick shows before anything reads it.
 
 ## Recipes and reference
 
-[Slack assistant](/docs/labs/agents/recipes/slack-assistant), [Scores reference](/docs/labs/agents/reference?ref=docs-labs-agents-observability#scores).
+- [Handlers](/docs/labs/agents/handlers?ref=docs-labs-agents-observability#score-the-run): `score()` beside the rest of the handler's argument.
+- [Reference: the handler](/docs/labs/agents/reference?ref=docs-labs-agents-observability#the-handler)
