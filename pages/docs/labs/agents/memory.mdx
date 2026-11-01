@@ -1,0 +1,163 @@
+import { AnnotatedCode, Annotation } from "shared/Docs/mdx";
+
+export const metaTitle = "Memory | Inngest Agents";
+export const description = "Keep your own values on an Inngest agent's thread: count across runs with thread state, type a key with a schema, and share a list between every thread with app state.";
+
+# Memory
+
+> The SDK keeps its own things for you; thread state is for yours.
+
+A run's variables are gone when it ends, but a thread's state lasts as long as the thread. Each section changes the PR helper from [Inboxes](/docs/labs/agents/inboxes?ref=docs-labs-agents-memory) by one step.
+
+## Your own values
+
+To count CI failures on a PR, start with a variable.
+
+```typescript {{ title: "inngest/events.ts" }}
+import { eventType } from "inngest";
+import { z } from "zod";
+
+const ciRun = z.object({ pr: z.number(), prUrl: z.string() });
+
+export const ciFailed = eventType("ci/run.failed", { schema: ciRun });
+
+export const ciPassed = eventType("ci/run.passed", { schema: ciRun });
+
+export const deployed = eventType("deploy/finished", {
+  schema: z.object({ env: z.string(), pull: z.object({ url: z.string() }) }),
+});
+```
+
+<AnnotatedCode>
+
+{/* not type-checked: a run variable counting message.is() matches in an agent handler */}
+```typescript {{ title: "inngest/agents/prHelper.ts" }}
+import { github } from "inngest/experimental/agents";
+import { agents } from "../client";
+import { ciFailed, ciPassed, deployed } from "../events";
+
+const triggers = [
+  github.thread({ repos: ["acme/web"] }),
+  { event: ciFailed, thread: "event.data.prUrl" },
+  { event: deployed, thread: "event.data.pull.url" },
+];
+
+export const prHelper = agents.agent(
+  {
+    id: "pr-helper",
+    triggers,
+    inbox: [{ event: ciPassed, thread: "event.data.prUrl" }],
+    idle: "1h",
+  },
+  async ({ inbox, me }) => {
+    let failures = 0;
+
+    for await (const message of inbox) {
+      if (message.is(ciFailed)) {
+        failures += 1;
+
+        await me.post(`CI has failed ${failures} times`);
+      }
+    }
+  },
+);
+```
+
+<Annotation id="triggers" lines="5-9" tease="the same three" title="Triggers" href="/docs/labs/agents/threads?ref=docs-labs-agents-memory#a-trigger-with-its-own-key" linkText="Threads">
+The triggers from Threads.
+</Annotation>
+
+<Annotation id="inbox" lines="15-16" tease="from Inboxes" title="inbox and idle" href="/docs/labs/agents/inboxes?ref=docs-labs-agents-memory#going-quiet" linkText="Inboxes">
+CI passing is heard, and the run ends after an hour of quiet.
+</Annotation>
+
+<Annotation id="variable" lines="19" tease="lives as long as the run" title="A variable">
+After `idle` the run ends, and the next one counts from 0.
+</Annotation>
+
+</AnnotatedCode>
+
+The SDK keeps its own things for a thread: its [history](/docs/labs/agents/models?ref=docs-labs-agents-memory#it-remembers), [sandbox](/docs/labs/agents/sandboxes?ref=docs-labs-agents-memory#it-belongs-to-the-thread) and [budget](/docs/labs/agents/models?ref=docs-labs-agents-memory#a-budget). Your values are yours to keep.
+
+## Thread state
+
+To keep the count after the run ends, keep it in `kv.thread`.
+
+{/* not type-checked: kv.thread.get and set in an agent handler */}
+```typescript
+import { kv } from "inngest/experimental/agents";
+
+async ({ inbox, me }) => {
+  for await (const message of inbox) {
+    if (message.is(ciFailed)) {
+      const failures = (await kv.thread.get("failures")) ?? 0;
+
+      await kv.thread.set("failures", failures + 1);
+
+      await me.post(`CI has failed ${failures + 1} times`);
+    }
+  }
+},
+```
+
+`kv.thread` is this thread's state: it survives runs, restarts and deploys. It lives in your app's store, set with `INNGEST_EXPERIMENTAL_KV_URL`, and its values are JSON. [Store →](/docs/labs/agents/reference?ref=docs-labs-agents-memory#store)
+
+## Typed keys
+
+To make the editor know the value's type, define the key once with a schema.
+
+{/* not type-checked: kv.key with a zod schema */}
+```typescript {{ title: "inngest/keys.ts" }}
+import { kv } from "inngest/experimental/agents";
+import { z } from "zod";
+
+export const failures = kv.key("failures", z.number());
+```
+
+{/* not type-checked: kv.thread.update with a typed key in an agent handler */}
+```typescript
+import { kv } from "inngest/experimental/agents";
+import { failures } from "../keys";
+
+async ({ inbox, me }) => {
+  for await (const message of inbox) {
+    if (message.is(ciFailed)) {
+      await kv.thread.update(failures, (found) => {
+        return (found ?? 0) + 1;
+      });
+
+      const total = await kv.thread.get(failures);
+
+      await me.post(`CI has failed ${total} times`);
+    }
+  }
+},
+```
+
+`kv.thread.set(failures, "3")` is a type error, and a stored value that breaks the schema fails the read. `update` changes the value in one step, so overlapping updates never lose one.
+
+{/* Go deeper */}
+
+## Shared by every PR
+
+To share a list of flaky tests between every PR, add a second key to `inngest/keys.ts` and keep it in `kv.app`.
+
+{/* not type-checked: kv.key with an array schema */}
+```typescript
+export const flaky = kv.key("flaky", z.array(z.string()));
+```
+
+{/* not type-checked: kv.app.update with a typed key */}
+```typescript
+await kv.app.update(flaky, (found) => {
+  return [...(found ?? []), "checkout.spec.ts"];
+});
+```
+
+Both PRs see the same list. Every call names its scope: `kv.thread` lasts across a thread's runs, `kv.run` until the run ends, `kv.app` is shared by the app's functions and `kv.env` by every app of the environment. [KV →](/docs/labs/agents/reference?ref=docs-labs-agents-memory#kv)
+
+## Recipes and reference
+
+- [Reference: KV](/docs/labs/agents/reference?ref=docs-labs-agents-memory#kv)
+- [Slack assistant](/docs/labs/agents/recipes/slack-assistant?ref=docs-labs-agents-memory): a thread per Slack thread, with no handler.
+- [Workers](/docs/labs/agents/workers?ref=docs-labs-agents-memory): a D1 store on Cloudflare.
