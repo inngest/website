@@ -63,7 +63,6 @@ Calls the model until it stops asking for tools, folding in what arrives. It pos
 
 </AnnotatedCode>
 
-{/* not type-checked: tool.step */}
 ```typescript {{ title: "inngest/tools/readSource.ts" }}
 import { tool } from "inngest/experimental";
 import { z } from "zod";
@@ -231,7 +230,9 @@ What `steer` skipped comes back here, ready for the next loop.
 
 `loop(batch, options)` takes the loop's options for one call, such as `tools` ([Give the model a tool →](/docs/labs/agents/handlers?ref=docs-labs-agents-models-and-the-loop#give-the-model-a-tool)), `steer` and `onTurn`. [Reference: the loop →](/docs/labs/agents/reference?ref=docs-labs-agents-models-and-the-loop#the-loop)
 
-An agent with no handler sets them on its definition, as in `loop: { maxTurns: 10 }`. A handler derives a loop with `loop.with(options)`. It keeps the agent's model, prompt, tools and history, and your options override or add to them.
+An agent with no handler sets them on its definition, as in `loop: { maxTurns: 10 }`.
+
+A handler derives a loop with `loop.with(options)`. It keeps the agent's model, prompt, tools and history, and your options override or add to them.
 
 <AnnotatedCode>
 
@@ -299,11 +300,11 @@ The quick model answers by default; high priority tickets get the careful one.
 
 </AnnotatedCode>
 
-`agent.loop(options)`, imported on its own, builds a standalone loop with only what its options give it, so it needs a `model`.
+`agent.loop(options)`, from the `agent` export of `inngest/experimental/agents`, builds a standalone loop with only what its options give it, so it needs a `model`.
 
 ## Watch progress
 
-`onTurn` runs after each turn's tool calls, so you can tell people what the agent is doing.
+`onTurn` runs after each turn's tool calls, so you can tell people what the agent is doing. It gets the turn: its `turn` number, `stepId`, `text`, `toolCalls` and `usage`.
 
 <AnnotatedCode>
 
@@ -334,19 +335,19 @@ export const runner = agents.agent(
 );
 ```
 
-<Annotation id="onturn" lines="15" tease="after each turn's tools" title="onTurn" href="/docs/labs/agents/observability?ref=docs-labs-agents-models-and-the-loop" linkText="Observability">
+<Annotation id="onturn" lines="15" tease="after each turn's tools" title="onTurn" href="/docs/labs/agents/reference?ref=docs-labs-agents-models-and-the-loop#onturn" linkText="Reference">
 Not awaited between turns, so a slow post never delays the next model call.
 </Annotation>
 
-<Annotation id="post" lines="17" tease="best effort" title="Errors and steps">
-A failed post is logged and the loop carries on. The last `onTurn` finishes before the loop returns. Steps are allowed here.
+<Annotation id="post" lines="17" tease="best effort" title="A failed post">
+It is logged and the loop carries on.
 </Annotation>
 
 </AnnotatedCode>
 
 ## Remember and summarise
 
-The loop saves the model's history on the thread and reads it back on the thread's next run. When it nears the model's context window, the loop summarises the start once and reuses the summary. `remember: false` switches this off. [Threads and memory →](/docs/labs/agents/threads-and-memory?ref=docs-labs-agents-models-and-the-loop#remember-the-history)
+When the saved history nears the model's context window, the loop summarises the start once and reuses the summary. [Threads and memory →](/docs/labs/agents/threads-and-memory?ref=docs-labs-agents-models-and-the-loop#remember-the-history)
 
 To change the threshold, set `compaction` on the definition's loop. `keep` is how many recent messages are always sent whole.
 
@@ -381,7 +382,7 @@ The loop stops with `end: "budget"` when the thread has spent it.
 
 </AnnotatedCode>
 
-`price` overrides what the model reports, for a model with no built-in prices. It's a table of dollars per million tokens, or a function that prices one call.
+On the agent, beside `budget`, `price` overrides what the model reports, for a model with no built-in prices. It's a table of dollars per million tokens, where `"*"` is the rate for any model not named, or a function that prices one call.
 
 ```typescript
 price: { "*": { input: 3, output: 15 } },
@@ -391,9 +392,9 @@ When the default handler's loop ends on the budget, it posts that the thread's b
 
 For errors, any model gets the same treatment:
 
-- A rate limit or an overloaded provider is retried, after the `retry-after` the provider sent when it sent one.
+- A rate limit or an overloaded provider is retried, waiting for the provider's `retry-after` when it sends one.
 - A final provider error, such as a request it rejects, fails the step for good and isn't retried.
-- A failure the model can read and react to is `agent.toolError()`. [Tools →](/docs/labs/agents/tools?ref=docs-labs-agents-models-and-the-loop)
+- A failure the model can read and react to is `agent.toolError()`, from the same `agent` export. [Tools →](/docs/labs/agents/tools?ref=docs-labs-agents-models-and-the-loop)
 
 ## What the model sees
 
@@ -465,7 +466,7 @@ Keeps the standard wording for everything you didn't change, such as a message f
 
 ## How it works
 
-- Each model call and tool call is a step. Before each model call the loop reads the handler's inbox, one step and a round trip, plus one for each inbox the model opened.
+- Each model call and tool call is a step. Reading the handler's inbox before a model call adds a round trip to the executor, not a step, and so does each inbox the model opened.
 - The loop records model time, tokens, tool calls, folded messages, tool time and tool errors on every run. [Observability →](/docs/labs/agents/observability?ref=docs-labs-agents-models-and-the-loop)
 
 ## Recipes and reference
