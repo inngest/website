@@ -873,10 +873,6 @@ export const docsRefreshOutline: DocsRefreshPage[] = [
                 href: "/docs/labs/agents/recipes/coding-agent",
               },
               {
-                title: "Approvals",
-                href: "/docs/labs/agents/recipes/approvals",
-              },
-              {
                 title: "Scheduled watcher",
                 href: "/docs/labs/agents/recipes/scheduled-watcher",
               },
@@ -892,10 +888,6 @@ export const docsRefreshOutline: DocsRefreshPage[] = [
                 title: "Sandbox tools",
                 href: "/docs/labs/agents/recipes/sandbox-tools",
               },
-              {
-                title: "Testing",
-                href: "/docs/labs/agents/recipes/testing",
-              },
             ],
           },
           {
@@ -910,20 +902,16 @@ export const docsRefreshOutline: DocsRefreshPage[] = [
                 href: "/docs/labs/agents/handlers",
               },
               {
+                title: "Threads and memory",
+                href: "/docs/labs/agents/threads-and-memory",
+              },
+              {
                 title: "Models and the loop",
                 href: "/docs/labs/agents/models-and-the-loop",
               },
               {
                 title: "Inboxes",
                 href: "/docs/labs/agents/inboxes",
-              },
-              {
-                title: "Reporting",
-                href: "/docs/labs/agents/reporting",
-              },
-              {
-                title: "Threads and memory",
-                href: "/docs/labs/agents/threads-and-memory",
               },
               {
                 title: "Tools",
@@ -955,10 +943,6 @@ export const docsRefreshOutline: DocsRefreshPage[] = [
                 href: "/docs/labs/agents/structure",
               },
               {
-                title: "Repos and git",
-                href: "/docs/labs/agents/repos-and-git",
-              },
-              {
                 title: "Run on Workers",
                 href: "/docs/labs/agents/workers",
               },
@@ -969,12 +953,8 @@ export const docsRefreshOutline: DocsRefreshPage[] = [
             href: "/docs/labs/agents/reference",
           },
           {
-            title: "Sandboxes reference",
+            title: "Tools and sandboxes reference",
             href: "/docs/labs/agents/reference-sandboxes",
-          },
-          {
-            title: "Testing reference",
-            href: "/docs/labs/agents/reference-testing",
           },
         ],
       },
