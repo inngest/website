@@ -5,13 +5,13 @@ export const description = "Keep your own values on an Inngest agent's thread: c
 
 # Memory
 
-> The SDK keeps its own things for you; thread state is for yours.
+> Keep your own values on a thread, across runs and deploys.
 
-A run's variables are gone when it ends, but a thread's state lasts as long as the thread. Each section changes the PR helper from [Inboxes](/docs/labs/agents/inboxes?ref=docs-labs-agents-memory) by one step.
+A run's variables are gone when it ends, but a thread's state lasts as long as the thread. Each section builds on the PR helper from [Inboxes](/docs/labs/agents/inboxes?ref=docs-labs-agents-memory). After the first, a block shows only what changes.
 
 ## Your own values
 
-To count CI failures on a PR, start with a variable.
+You want to count CI failures on a PR. Start with a variable.
 
 ```typescript {{ title: "inngest/events.ts" }}
 import { eventType } from "inngest";
@@ -77,20 +77,21 @@ After `idle` the run ends, and the next one counts from 0.
 
 </AnnotatedCode>
 
-The SDK keeps its own things for a thread: its [history](/docs/labs/agents/models?ref=docs-labs-agents-memory#it-remembers), [sandbox](/docs/labs/agents/sandboxes?ref=docs-labs-agents-memory#it-belongs-to-the-thread) and [budget](/docs/labs/agents/models?ref=docs-labs-agents-memory#a-budget). Your values are yours to keep.
+The SDK keeps a thread's [history](/docs/labs/agents/models?ref=docs-labs-agents-memory#it-remembers), [sandbox](/docs/labs/agents/sandboxes?ref=docs-labs-agents-memory#it-belongs-to-the-thread) and [budget](/docs/labs/agents/models?ref=docs-labs-agents-memory#a-budget) for you.
 
 ## Thread state
 
-To keep the count after the run ends, keep it in `kv.thread`.
+You want the count to survive after the run ends. Keep it in `kv.thread`.
 
 {/* not type-checked: kv.thread.get and set in an agent handler */}
 ```typescript
 import { kv } from "inngest/experimental/agents";
+import { ciFailed } from "../events";
 
 async ({ inbox, me }) => {
   for await (const message of inbox) {
     if (message.is(ciFailed)) {
-      const failures = (await kv.thread.get("failures")) ?? 0;
+      const failures = Number((await kv.thread.get("failures")) ?? 0);
 
       await kv.thread.set("failures", failures + 1);
 
@@ -104,7 +105,7 @@ async ({ inbox, me }) => {
 
 ## Typed keys
 
-To make the editor know the value's type, define the key once with a schema.
+You want the editor to know the value's type. Define the key once with a schema.
 
 {/* not type-checked: kv.key with a zod schema */}
 ```typescript {{ title: "inngest/keys.ts" }}
@@ -117,6 +118,7 @@ export const failures = kv.key("failures", z.number());
 {/* not type-checked: kv.thread.update with a typed key in an agent handler */}
 ```typescript
 import { kv } from "inngest/experimental/agents";
+import { ciFailed } from "../events";
 import { failures } from "../keys";
 
 async ({ inbox, me }) => {
@@ -140,7 +142,7 @@ async ({ inbox, me }) => {
 
 ## Shared by every PR
 
-To share a list of flaky tests between every PR, add a second key to `inngest/keys.ts` and keep it in `kv.app`.
+You want a list of flaky tests that every PR shares. Add a second key to `inngest/keys.ts` and keep it in `kv.app`.
 
 {/* not type-checked: kv.key with an array schema */}
 ```typescript
@@ -154,10 +156,10 @@ await kv.app.update(flaky, (found) => {
 });
 ```
 
-Both PRs see the same list. Every call names its scope: `kv.thread` lasts across a thread's runs, `kv.run` until the run ends, `kv.app` is shared by the app's functions and `kv.env` by every app of the environment. [KV →](/docs/labs/agents/reference?ref=docs-labs-agents-memory#kv)
+Both PRs see the same list. Every call names its scope: `kv.thread` is one thread's state and `kv.app` is shared by the whole app. [KV →](/docs/labs/agents/reference?ref=docs-labs-agents-memory#kv)
 
 ## Recipes and reference
 
 - [Reference: KV](/docs/labs/agents/reference?ref=docs-labs-agents-memory#kv)
-- [Slack assistant](/docs/labs/agents/recipes/slack-assistant?ref=docs-labs-agents-memory): a thread per Slack thread, with no handler.
-- [Workers](/docs/labs/agents/workers?ref=docs-labs-agents-memory): a D1 store on Cloudflare.
+- [Slack assistant](/docs/labs/agents/recipes/slack-assistant?ref=docs-labs-agents-memory)
+- [Workers](/docs/labs/agents/workers?ref=docs-labs-agents-memory)
