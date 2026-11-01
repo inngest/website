@@ -918,8 +918,16 @@ export const docsRefreshOutline: DocsRefreshPage[] = [
                 href: "/docs/labs/agents/tools",
               },
               {
+                title: "Slack and GitHub",
+                href: "/docs/labs/agents/slack-and-github",
+              },
+              {
                 title: "Sandboxes and code",
                 href: "/docs/labs/agents/sandboxes-and-code",
+              },
+              {
+                title: "Skills",
+                href: "/docs/labs/agents/skills",
               },
               {
                 title: "Teams of agents",
