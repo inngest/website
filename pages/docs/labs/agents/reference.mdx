@@ -405,20 +405,25 @@ formatEvent(message: AgentMessage): string
 
 An agent with no handler changes these options for every call with `loop: agent.loop({ maxTurns: 10 })`.
 
-`agent.loop(options)` returns the same `loop` function the handler gets. Use it when a handler needs a different model. Its options:
+`agent.loop(options)` returns a `loop` function like the handler's. Use it when a handler needs a loop with other options, such as a different model.
+
+- **Inside an agent**, it starts from the agent's definition: its model, system and tools (the definition's `tools` plus the discovery, agent and sandbox tools), and the thread's remembered history. Your options override or add: `model` replaces the agent's, and `tools` are added to its tools.
+- **Outside an agent**, a loop has only what its options give, so `model` is required.
+
+Its options:
 
 | Option | Default | Description |
 | --- | --- | --- |
-| `model` | | What the loop calls each turn. [Models](#models) |
-| `system` | none | The system prompt. |
-| `tools` | none | Tools the model can call. |
+| `model` | the agent's | What the loop calls each turn. Required outside an agent. [Models](#models) |
+| `system` | the agent's | The system prompt. |
+| `tools` | the agent's | Tools the model can call. Inside an agent they are added to its tools. |
 | `id` | `"agent"` | Prefix of the loop's step ids. A second loop with the same prefix in one run gets `-2`, a third `-3`. |
 | `maxTurns` | `40` | Most model calls. |
 | `maxToolOutput` | `100000` | Most characters of a tool result the model sees. A longer result keeps its start and end and says how much is missing. |
 | `spill` | none | `{ sandbox, dir? }`. Saves the whole of a longer result to `<dir>/tool-output-<hash>.txt` in the sandbox (`dir` defaults to `/tmp` and must exist) and tells the model the path. |
 | `parallelTools` | `true` | Runs the tool calls of one reply at once. |
 | `wrapUp` | none | Text for the last turn, which allows no tool use. |
-| `history` | none | The history of an earlier result, to continue from. |
+| `history` | the thread's remembered history | The history of an earlier result, to continue from. |
 | `compaction` | automatic | Summarises the start of a long conversation. [Compaction](#compaction) |
 | `steer` | fold all | `(drained) => messages to fold`. What it skips comes back as `result.unread`. |
 | `stop` | none | `() => boolean`, checked before each model call. `true` ends the loop with `end: "stop"`. |
