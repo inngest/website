@@ -46,7 +46,7 @@ export const triage = agents.agent({
 });
 ```
 
-<Annotation id="trigger" lines="11-15" tease="one thread per issue" title="Start from GitHub" href="/docs/labs/agents/slack-and-github?ref=docs-labs-agents-recipes-issue-triage#work-on-github" linkText="Work on GitHub">
+<Annotation id="trigger" lines="11-15" tease="one thread per issue" title="Start from GitHub" href="/docs/labs/agents/slack-and-github?ref=docs-labs-agents-recipes-issue-triage#work-on-git-hub" linkText="Work on GitHub">
 Starts when an issue is opened in `acme/app`. Each issue is its own thread, keyed by its URL.
 </Annotation>
 
@@ -72,7 +72,7 @@ export const POST = github.bridge({
 });
 ```
 
-<Annotation id="bridge" lines="5-8" tease="signed route" title="The GitHub route" href="/docs/labs/agents/slack-and-github?ref=docs-labs-agents-recipes-issue-triage#work-on-github" linkText="Work on GitHub">
+<Annotation id="bridge" lines="5-8" tease="signed route" title="The GitHub route" href="/docs/labs/agents/slack-and-github?ref=docs-labs-agents-recipes-issue-triage#work-on-git-hub" linkText="Work on GitHub">
 Checks GitHub's signature and sends each webhook as a `github/<event>` event. A redelivery is dropped, so an issue is never triaged twice.
 </Annotation>
 
@@ -157,7 +157,7 @@ The [client](/docs/labs/agents/quick-start?ref=docs-labs-agents-recipes-issue-tr
 
 ## What it shows off
 
-- [GitHub as a trigger](/docs/labs/agents/slack-and-github?ref=docs-labs-agents-recipes-issue-triage#work-on-github) starts the agent from the repos and events you choose.
+- [GitHub as a trigger](/docs/labs/agents/slack-and-github?ref=docs-labs-agents-recipes-issue-triage#work-on-git-hub) starts the agent from the repos and events you choose.
 - [Tools](/docs/labs/agents/tools?ref=docs-labs-agents-recipes-issue-triage) are the functions the model calls to search and label.
 - [An agent with no handler](/docs/labs/agents/models-and-the-loop?ref=docs-labs-agents-recipes-issue-triage) needs only a model, a prompt and tools.
 
@@ -181,7 +181,7 @@ Add a webhook to `acme/app` for **Issues** events, pointing at `https://<your-ho
 
 ## Variations
 
-- [Slack and GitHub](/docs/labs/agents/slack-and-github?ref=docs-labs-agents-recipes-issue-triage#work-on-github) lets the model ask a maintainer with `ask` from `github.tools()`.
+- [Slack and GitHub](/docs/labs/agents/slack-and-github?ref=docs-labs-agents-recipes-issue-triage#work-on-git-hub) lets the model ask a maintainer with `ask` from `github.tools()`.
 - [Scheduled watcher](/docs/labs/agents/recipes/scheduled-watcher?ref=docs-labs-agents-recipes-issue-triage) watches for stale issues on a schedule.
 - [Coding agent](/docs/labs/agents/recipes/coding-agent?ref=docs-labs-agents-recipes-issue-triage) opens a branch for simple bugs.
 
