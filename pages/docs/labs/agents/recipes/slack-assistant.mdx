@@ -27,7 +27,6 @@ Screenshot needed: the same exchange in Slack, and the first run's trace in the 
 <AnnotatedCode>
 
 {/* not type-checked: slack.thread, system as an async function, kv.app and kv.key read in a run-time field */}
-{/* TODO(spec): may a run-time field's function call kv? The spec says the function is pure and runs again on replay; a kv read is a memoized step. */}
 ```typescript {{ title: "inngest/agents/support.ts" }}
 import { kv, slack } from "inngest/experimental/agents";
 import { agents } from "../client";
@@ -54,7 +53,7 @@ Each Slack thread in the channel is one conversation. The agent answers in the t
 </Annotation>
 
 <Annotation id="system" lines="12-16" tease="read when a run starts" title="Notes in the prompt" href="/docs/labs/agents/agents-and-triggers?ref=docs-labs-agents-recipes-slack-assistant#decide-per-run" linkText="Decide per run">
-Reads the team's notes from the app's store, so a note saved in one thread reaches every run that starts after it.
+Reads the team's notes from the app's store, as a step. A note saved in one thread reaches every run that starts after it.
 </Annotation>
 
 <Annotation id="tools" lines="17" tease="no handler needed" title="Model and tools" href="/docs/labs/agents/models-and-the-loop?ref=docs-labs-agents-recipes-slack-assistant" linkText="Models and the loop">
