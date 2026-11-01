@@ -48,7 +48,9 @@ await using activity = step.subscribe("pr-activity", [
 
 Each inbox has its own sources. For a separate stream, open another inbox with `step.subscribe()`.
 
-A message is the event as it was sent, with `name`, `data`, `id`, `ts` and `v`, typed from the inbox's sources. With several sources, narrow it with `message.is(type)`, which takes one event type or an array, or with [`eventType.is(message)`](/docs/reference/typescript/v4/functions/triggers#narrowing-with-is).
+A message is the event as it was sent, with `name`, `data`, `id`, `ts` and `v`. It's typed from the inbox's event types; a source given as a name has no schema, so its `data` is `unknown`.
+
+With several sources, narrow a message with `message.is(type)`, which takes one event type or an array. [`eventType.is(message)`](/docs/reference/typescript/v4/functions/triggers#narrowing-with-is) works too.
 
 Import the type with `import type { Inbox } from "inngest"`.
 

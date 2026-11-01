@@ -1,6 +1,6 @@
 import { AnnotatedCode, Annotation, Callout, Compatibility } from "shared/Docs/mdx";
 export const metaTitle = "step.subscribe() | Receive Events While a Run Works";
-export const description = "Open a durable inbox inside an Inngest function with step.subscribe(). Every matching event that arrives is kept in order, and the run reads it one message or one batch at a time.";
+export const description = "Open a durable inbox in an Inngest function with step.subscribe(). Matching events are kept in order, and the run reads them one at a time or in batches.";
 
 # `step.subscribe`
 
@@ -142,7 +142,9 @@ Comments that arrive during the sleep are kept for the next batch.
 
 ## More inboxes
 
-Open another inbox for a separate stream. Each one has its own sources, its own messages and its own `close()`. Inside `autoMerge` above:
+Open another inbox for a separate stream. Inside `autoMerge` above:
+
+<AnnotatedCode>
 
 ```typescript {{ title: "TypeScript" }}
 await using comments = step.subscribe("comments", {
@@ -153,7 +155,15 @@ await using comments = step.subscribe("comments", {
 const comment = await comments.next({ timeout: "1h" });
 ```
 
-Messages are typed from their inbox's sources, so `comment.data.body` is a `string`. A read waits on one inbox, so keep the sources one wait should cover in one inbox, as `autoMerge` does with reviews and checks.
+<Annotation id="separate" lines="1" tease="its own stream" title="One inbox per stream">
+Each inbox has its own sources, messages and `close()`. Order holds within an inbox, not across inboxes. A read waits on one inbox, so keep the sources one wait covers together, like reviews and checks in `autoMerge`.
+</Annotation>
+
+<Annotation id="typed" lines="6" tease="typed from its sources" title="Typed messages">
+Messages are typed from the inbox's event types. Once `comment` isn't `null`, `comment.data.body` is a `string`. A source given as a name has no schema, so its `data` stays `unknown`.
+</Annotation>
+
+</AnnotatedCode>
 
 ## Close an inbox
 
@@ -182,33 +192,44 @@ See the [`step.subscribe()` reference](/docs/reference/typescript/v4/functions/s
 
 ## Read in the background
 
-A read waiting in the background holds the run, like a pending `step.waitForEvent()`. To keep a reader going beside other work, run the work inside `group.parallel()`, then close the inbox to end the reader:
+By default, a read waiting in the background holds the run, like a pending `step.waitForEvent()`. To read beside other work, run that work inside `group.parallel()`. Then close the inbox to end the loop.
 
 ```typescript {{ title: "TypeScript" }}
-const comments = step.subscribe("comments", prCommented);
-const bodies: string[] = [];
+export const collectComments = inngest.createFunction(
+  { id: "collect-comments", triggers: [prOpened] },
+  async ({ event, step, group }) => {
+    const comments = step.subscribe("comments", {
+      event: prCommented,
+      if: "async.data.pr == event.data.pr",
+    });
 
-const reading = (async () => {
-  for await (const comment of comments) {
-    bodies.push(comment.data.body);
-  }
-})();
+    const bodies: string[] = [];
 
-await group.parallel({ mode: "race" }, async () => {
-  await step.run("merge", () => mergePr(event.data.pr));
-});
+    const reading = (async () => {
+      for await (const comment of comments) {
+        bodies.push(comment.data.body);
+      }
+    })();
 
-await comments.close();
-await reading;
+    await group.parallel(async () => {
+      await step.run("merge", () => mergePr(event.data.pr));
+    });
+
+    await comments.close();
+    await reading;
+
+    return { bodies };
+  },
+);
 ```
 
 ## Things to know
 
 - **Open before you act.** An inbox receives only events that arrive after it opens, so open it before the step that causes them.
-- **Race inside `group.parallel()`.** By default, a plain `Promise.race()` of a read and a step waits for both. Create the read once (`const reply = inbox.next()`), race it inside [`group.parallel()`](/docs/durable-execution/primitives/group-parallel#continue-after-the-first-step-settles), and if it loses, race the same `reply` again.
+- **Race inside `group.parallel()`.** By default, a plain `Promise.race()` of a read and a step, or of reads from two inboxes, waits for both. Create the read once (`const reply = inbox.next()`), race it inside [`group.parallel()`](/docs/durable-execution/primitives/group-parallel#continue-after-the-first-step-settles), and if it loses, race the same `reply` again.
 
 ## How it works
 
 - Each message is saved as its own step when it arrives, read or not. An event that matches two inboxes is saved in each.
-- Opening, `close()` and each batch read are one step, and a `next()` that receives a message adds none. A `next()` loop over 10 messages is 11 steps, or 12 with `close()`.
+- Opening, `close()` and each batch read cost one step each. A `next()` that receives a message adds none, so a `next()` loop over 10 messages is 11 steps, or 12 with `close()`.
 - Messages count toward the run's [step and state limits](/docs/durable-execution/limits#platform-limits). A run that receives more fails with the usual limit error, even while it sleeps.
