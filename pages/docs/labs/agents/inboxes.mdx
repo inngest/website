@@ -85,7 +85,7 @@ You want CI passing to reach a run that's working, but never to start one on its
 }
 ```
 
-Fail CI and pass it within the five seconds, and the handler returns `While I read, ci/run.passed arrived`. Only `triggers`, and messages sent to the thread by people or [other agents](/docs/labs/agents/agent-teams?ref=docs-labs-agents-inboxes), start a run.
+Fail CI to start a run and pass it within the five seconds, and the handler returns `While I read, ci/run.passed arrived`. Only `triggers`, and messages sent to the thread by people or [other agents](/docs/labs/agents/agent-teams?ref=docs-labs-agents-inboxes), start a run.
 
 ## Waiting
 
@@ -106,7 +106,7 @@ The run uses nothing while it waits.
 
 ## Pull the plug
 
-You want to trust that waiting survives anything. Stop the app while a run waits, start it again, then comment: the run carries on where it was. Inngest holds the wait, not your app. [Deploys →](/docs/labs/agents/reliability?ref=docs-labs-agents-inboxes#deploys-and-long-runs)
+You want to trust that waiting survives anything. Stop the app while a run waits, start it again, then comment on the PR: the run carries on where it was. Inngest holds the wait, not your app. [Deploys →](/docs/labs/agents/reliability?ref=docs-labs-agents-inboxes#deploys-and-long-runs)
 
 ## Answer every message
 
@@ -213,7 +213,7 @@ const checks = step.subscribe("checks", [
   { event: ciFailed, if: thisPr },
 ]);
 
-const result = await checks.next();
+const check = await checks.next();
 ```
 
 <Annotation id="this-pr" lines="1" tease="only this PR" title="if" href="/docs/labs/agents/reference?ref=docs-labs-agents-inboxes#thread-keys-and-inbox-sources" linkText="Reference">
@@ -226,7 +226,7 @@ Your agent's own `inbox` is one of these, opened for you.
 
 </AnnotatedCode>
 
-Checks that ran before it opened aren't in it, and `result` is a check and nothing else.
+Checks that ran before it opened aren't in it, and `check` is always `ci/run.passed` or `ci/run.failed`.
 
 ## Stop watching
 
@@ -234,7 +234,7 @@ You want to stop watching and know nothing was lost. `close()` the inbox.
 
 {/* not type-checked: close() on a second inbox in an agent handler */}
 ```typescript
-const result = await checks.next();
+const check = await checks.next();
 
 const missed = await checks.close();
 ```
