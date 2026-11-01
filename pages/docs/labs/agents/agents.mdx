@@ -14,7 +14,7 @@ Inngest starts it, retries what fails and records every run. The sections below 
 You want the smallest agent there is. Give it an id; the `agents` object comes from the client in the [quick start](/docs/labs/agents/quick-start?ref=docs-labs-agents-agents#create-the-client).
 
 {/* not type-checked: agents.agent with an id and no handler */}
-```typescript {{ title: "inngest/agents/hello.ts" }}
+```typescript
 import { agents } from "../client";
 
 export const hello = agents.agent({ id: "hello" });
@@ -108,7 +108,9 @@ export const fetchLog = async (pr: number) => {
 <AnnotatedCode>
 
 {/* not type-checked: step.run in an agent handler */}
-```typescript
+```typescript {{ title: "inngest/agents/hello.ts" }}
+import { agents } from "../client";
+import { ciFailed } from "../events";
 import { fetchLog } from "../lib/ci";
 
 export const hello = agents.agent(
@@ -127,7 +129,7 @@ export const hello = agents.agent(
 );
 ```
 
-<Annotation id="step" lines="7-9" tease="retried alone" title="step.run" href="/docs/durable-execution/primitives/step-run?ref=docs-labs-agents-agents" linkText="step.run">
+<Annotation id="step" lines="9-11" tease="retried alone" title="step.run" href="/docs/durable-execution/primitives/step-run?ref=docs-labs-agents-agents" linkText="step.run">
 If `fetchLog` throws, only this step retries. Finished steps return their saved result.
 </Annotation>
 
