@@ -426,7 +426,7 @@ export const githubAuth = githubApp({
 
 ## Tools
 
-A tool is defined once and works from the model and from sandbox code. The key in the `tools` record names it on both sides. `tool` and `toolDefinitions` are exported from `inngest/experimental`. [Tools](/docs/labs/agents/tools?ref=docs-labs-agents-reference-sandboxes)
+A tool is defined once and works from the model and from sandbox code. The key in the `tools` record names it on both sides. [Tools](/docs/labs/agents/tools?ref=docs-labs-agents-reference-sandboxes)
 
 | Call | Description |
 | --- | --- |
@@ -801,7 +801,7 @@ export const support = agents.agent({
 
 ## Images
 
-`image` is exported from `inngest/experimental` and used as `sandbox({ image })` or as `from` of `step.sandbox.create()`.
+`image` is used as `sandbox({ image })` or as `from` of `step.sandbox.create()`.
 
 | Call | Description |
 | --- | --- |
@@ -812,7 +812,7 @@ export const support = agents.agent({
 
 ## Sandbox middleware
 
-`inngest/experimental`. Enables `step.sandbox`, `group.sandbox` and the runners, and serves the cleanup function. An app whose agents list sandboxes adds it to the client. [Sandboxes reference](/docs/sandboxes/reference?ref=docs-labs-agents-reference-sandboxes)
+Enables `step.sandbox`, `group.sandbox` and the runners, and serves the cleanup function. An app whose agents list sandboxes adds it to the client. [Sandboxes reference](/docs/sandboxes/reference?ref=docs-labs-agents-reference-sandboxes)
 
 ```typescript {{ title: "Signature" }}
 sandboxMiddleware(): MiddlewareClass
@@ -842,7 +842,7 @@ export const agents = createAgents(inngest);
 
 ## Durable sandbox
 
-What `step.sandbox.create()` returns. Every method takes a step ID or step options first. Types from `inngest/experimental`.
+What `step.sandbox.create()` returns. Every method takes a step ID or step options first.
 
 ```typescript {{ title: "Signature" }}
 interface DurableSandboxTools {
@@ -890,7 +890,7 @@ interface DurableSandboxTools {
 
 `DurableSandboxProcess` has `signal`, `wait`, `getOutput`. `DurableSandboxSnapshot` has `waitUntilReady`, `delete`, `clone`, and the snapshot resource fields.
 
-The types of these methods, their options and their results are exported from `inngest/experimental`, named after the call: `SandboxCommandOptions`, `SandboxCommandResult`, `SandboxProcessStartOptions` and `SandboxSnapshotCreateOptions`. [Snapshots and restore](/docs/sandboxes/features/snapshots-and-restore?ref=docs-labs-agents-reference-sandboxes)
+The types of these methods, their options and their results are named after the call: `SandboxCommandOptions`, `SandboxCommandResult`, `SandboxProcessStartOptions` and `SandboxSnapshotCreateOptions`. [Snapshots and restore](/docs/sandboxes/features/snapshots-and-restore?ref=docs-labs-agents-reference-sandboxes)
 
 ## Commands with dollar
 
@@ -936,7 +936,7 @@ Types: `SandboxDollar`, `DollarOptions`, `DollarPromise`, `DollarTag`, `DollarVa
 - The [known shell limits](#known-shell-limits) apply.
 - State moves only when a command ends with an allowed exit code, so one that throws leaves it as it was.
 
-Types: `SandboxShell`, `SandboxShellOptions`, `ShellState`, `ShellStart`. Building blocks for your own shell: `beginShellCommand`, `endShellCommand`, `stripShellReport`, exported from `inngest/experimental`.
+Types: `SandboxShell`, `SandboxShellOptions`, `ShellState`, `ShellStart`. Building blocks for your own shell: `beginShellCommand`, `endShellCommand`, `stripShellReport`.
 
 ## Runners and groups
 
@@ -971,7 +971,7 @@ A group sandbox given an ID alone gets 2 vCPUs and 2048 MB. Types: `OneShotRunne
 
 ## Snapshot cache
 
-`inngest/experimental`. Build a sandbox once, keep it as a named snapshot, find it by name, and rebuild when its inputs change. A snapshot is named `<scope>/<key>/<generation>`.
+Build a sandbox once, keep it as a named snapshot, find it by name, and rebuild when its inputs change. A snapshot is named `<scope>/<key>/<generation>`.
 
 ```typescript {{ title: "Signature" }}
 snapshotCache(
