@@ -7,17 +7,19 @@ export const description = "Build a Slack agent that uses a remote MCP server as
 
 > An agent that works in each person's own account on a remote MCP server.
 
+Each person signs in once, and the model never sees the link or a token.
+
 ```text
-Maya   What's in my Notion roadmap page?
-Bot    I sent you a link to connect Notion. Ask again once you've connected.
-Maya   (signs in with Notion in the browser)
-Maya   What's in my roadmap page?
-Bot    Your roadmap has three items: ...
+Maya        What's in my Notion roadmap page?
+Assistant   I sent you a link to connect Notion. Ask again once connected.
+Maya        (signs in with Notion in the browser)
+Maya        What's in my roadmap page?
+Assistant   Your roadmap has three items: ...
 ```
 
-## The code
+Screenshot needed: the sign-in link in Slack, then the answer.
 
-The server is one tool. `user` names the person from the Slack message that started the run, so every person gets their own token.
+## The code
 
 <AnnotatedCode>
 
@@ -39,21 +41,19 @@ export const notion = tool.mcp({
 });
 ```
 
-<Annotation id="id" lines="4" tease="tokens live under it" title="Server id" href="/docs/labs/agents/tools?ref=docs-labs-agents-recipes-mcp-assistant" linkText="Tools">
-Tokens are stored under this id, so two servers never share one.
+<Annotation id="id" lines="4" tease="tokens live under it" title="Server id" href="/docs/labs/agents/tools?ref=docs-labs-agents-recipes-mcp-assistant#connect-an-mcp-server" linkText="Connect an MCP server">
+Tokens are stored under this id.
 </Annotation>
 
-<Annotation id="user" lines="8-10" tease="whose token" title="User" href="/docs/labs/agents/tools?ref=docs-labs-agents-recipes-mcp-assistant" linkText="Tools">
-Gets the event and thread that started the run. Any ID that is stable for the person works.
+<Annotation id="user" lines="8-10" tease="whose token" title="User" href="/docs/labs/agents/tools?ref=docs-labs-agents-recipes-mcp-assistant#sign-in-each-person" linkText="Sign in each person">
+Names the person from the Slack message that started the run.
 </Annotation>
 
-<Annotation id="redirect" lines="11" tease="your callback route" title="Redirect" href="/docs/labs/agents/tools?ref=docs-labs-agents-recipes-mcp-assistant" linkText="Tools">
+<Annotation id="redirect" lines="11" tease="your callback route" title="Redirect" href="/docs/labs/agents/tools?ref=docs-labs-agents-recipes-mcp-assistant#sign-in-each-person" linkText="Sign in each person">
 Where the server sends the person after they sign in.
 </Annotation>
 
 </AnnotatedCode>
-
-The agent has no handler; listing the tool is enough.
 
 <AnnotatedCode>
 
@@ -73,13 +73,28 @@ export const assistant = agents.agent({
 });
 ```
 
-<Annotation id="tools" lines="11" tease="sign-in, handled for you" title="The sign-in link" href="/docs/labs/agents/tools?ref=docs-labs-agents-recipes-mcp-assistant" linkText="Tools">
-A person who hasn't connected gets the link from the SDK. The model learns only that a link was sent, and never sees the link or a token.
+<Annotation id="tools" lines="11" tease="sign-in, handled for you" title="The sign-in link" href="/docs/labs/agents/tools?ref=docs-labs-agents-recipes-mcp-assistant#sign-in-each-person" linkText="Sign in each person">
+A person who hasn't connected gets the link from the SDK, not from the model.
 </Annotation>
 
 </AnnotatedCode>
 
-The rest is wiring: the client, then three routes for Inngest, Slack and the server's redirect.
+<AnnotatedCode>
+
+{/* not type-checked: mcpCallback as a Web handler with the default store */}
+```typescript {{ title: "app/api/mcp/callback/route.ts" }}
+import { kvOAuthStore, mcpCallback } from "inngest/experimental";
+
+export const GET = mcpCallback({ store: kvOAuthStore() });
+```
+
+<Annotation id="callback" lines="3" tease="finishes the sign-in" title="Callback" href="/docs/labs/agents/tools?ref=docs-labs-agents-recipes-mcp-assistant#sign-in-each-person" linkText="Sign in each person">
+Stores the token, encrypted with `MCP_OAUTH_ENCRYPTION_KEY`.
+</Annotation>
+
+</AnnotatedCode>
+
+The rest is wiring.
 
 {/* not type-checked: createAgents with the store from the environment */}
 ```typescript {{ title: "inngest/client.ts" }}
@@ -115,33 +130,17 @@ export const POST = slack.bridge({
 });
 ```
 
-<AnnotatedCode>
-
-{/* not type-checked: mcpCallback as a Web handler with the default store */}
-```typescript {{ title: "app/api/mcp/callback/route.ts" }}
-import { kvOAuthStore, mcpCallback } from "inngest/experimental";
-
-export const GET = mcpCallback({ store: kvOAuthStore() });
-```
-
-<Annotation id="callback" lines="3" tease="finishes the sign-in" title="Callback" href="/docs/labs/agents/tools?ref=docs-labs-agents-recipes-mcp-assistant" linkText="Tools">
-Takes the browser's request and checks it is the one that opened the link, then stores the token. Tokens are encrypted with `MCP_OAUTH_ENCRYPTION_KEY` in the app's store.
-</Annotation>
-
-</AnnotatedCode>
-
-`inngest/models/claude.ts` is the one from the [quick start](/docs/labs/agents/quick-start?ref=docs-labs-agents-recipes-mcp-assistant#pick-a-model).
+The [model](/docs/labs/agents/quick-start?ref=docs-labs-agents-recipes-mcp-assistant#pick-a-model) is the quick start's.
 
 ## What it shows off
 
-- Each person signs in once and works as themselves. [Tools](/docs/labs/agents/tools?ref=docs-labs-agents-recipes-mcp-assistant)
-- The model never sees a sign-in link or a token. [Tools](/docs/labs/agents/tools?ref=docs-labs-agents-recipes-mcp-assistant)
-- A sign-in callback that is one line. [Tools](/docs/labs/agents/tools?ref=docs-labs-agents-recipes-mcp-assistant)
-- A Slack agent with no handler, and a Slack route that checks the signature. [Slack and GitHub](/docs/labs/agents/slack-and-github?ref=docs-labs-agents-recipes-mcp-assistant)
+- [Per-person sign-in](/docs/labs/agents/tools?ref=docs-labs-agents-recipes-mcp-assistant#sign-in-each-person) lets each person work as themselves.
+- [A one-line callback](/docs/labs/agents/tools?ref=docs-labs-agents-recipes-mcp-assistant#sign-in-each-person) finishes the sign-in.
+- [A Slack agent with no handler](/docs/labs/agents/slack-and-github?ref=docs-labs-agents-recipes-mcp-assistant) needs only a signed Slack route.
 
 ## Run it
 
-You need the setup from the [quick start](/docs/labs/agents/quick-start?ref=docs-labs-agents-recipes-mcp-assistant#install), a Slack app and a Next.js app.
+Set the project up as in the [quick start](/docs/labs/agents/quick-start?ref=docs-labs-agents-recipes-mcp-assistant#install), in a Next.js app.
 
 ```bash
 export ANTHROPIC_API_KEY=sk-ant-...
@@ -156,17 +155,15 @@ npm run dev
 npx inngest-cli@latest dev -u http://localhost:3000/api/inngest
 ```
 
-Set your Slack app's Events API request URL to `https://<your-host>/api/slack`, and set `redirectUri` to your app's public address. Mention the bot and ask about Notion. The run shows each model turn and tool call.
+Set up the Slack app as on [Slack and GitHub](/docs/labs/agents/slack-and-github?ref=docs-labs-agents-recipes-mcp-assistant#add-the-route), and set `redirectUri` to your app's public address. Mention the agent and ask about Notion.
 
 ## Variations
 
-- Use a server with one shared token: `auth: { bearer: secret("TOKEN") }`. [Tools](/docs/labs/agents/tools?ref=docs-labs-agents-recipes-mcp-assistant)
-- Revoke one person's connection with `notion.disconnect(user)`. [Tools](/docs/labs/agents/tools?ref=docs-labs-agents-recipes-mcp-assistant)
-- Add a second server to `tools`. Its own `id` keeps its tokens apart. [Tools](/docs/labs/agents/tools?ref=docs-labs-agents-recipes-mcp-assistant)
+- [A shared token](/docs/labs/agents/tools?ref=docs-labs-agents-recipes-mcp-assistant#connect-an-mcp-server) serves a server that has one: `auth: { bearer: secret("TOKEN") }`.
+- [Disconnecting](/docs/labs/agents/tools?ref=docs-labs-agents-recipes-mcp-assistant#sign-in-each-person) revokes one person's connection with `notion.disconnect(user)`.
 
 ## Learn more
 
 - [Tools](/docs/labs/agents/tools?ref=docs-labs-agents-recipes-mcp-assistant)
-- [Slack and GitHub](/docs/labs/agents/slack-and-github?ref=docs-labs-agents-recipes-mcp-assistant)
-- [Reference: sandboxes, tools and MCP](/docs/labs/agents/reference-sandboxes?ref=docs-labs-agents-recipes-mcp-assistant)
+- [Tools and sandboxes reference](/docs/labs/agents/reference-sandboxes?ref=docs-labs-agents-recipes-mcp-assistant)
 - Next recipe: [Sandbox tools](/docs/labs/agents/recipes/sandbox-tools?ref=docs-labs-agents-recipes-mcp-assistant)
