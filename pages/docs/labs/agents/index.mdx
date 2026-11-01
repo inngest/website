@@ -16,7 +16,7 @@ An agent is an Inngest function that holds conversations. Every model call and t
 - **No loop to write.** A model, a prompt and tools make a whole agent. [Agents →](/docs/labs/agents/agents?ref=docs-labs-agents)
 - **Threads that remember.** A Slack thread, a pull request or a customer is one thread, with its history and state. [Threads →](/docs/labs/agents/threads?ref=docs-labs-agents)
 - **New messages reach the model mid-task.** Everything that arrives lands in the next model call. [Inboxes →](/docs/labs/agents/inboxes?ref=docs-labs-agents)
-- **A machine per thread.** The model works in a shell that's still there next week. [Sandboxes →](/docs/labs/agents/sandboxes?ref=docs-labs-agents)
+- **A machine per thread.** The model's shell pauses when idle and is back on its next use. [Sandboxes →](/docs/labs/agents/sandboxes?ref=docs-labs-agents)
 - **Agents that find each other.** The model looks up other agents and hands them work. [Agent discovery →](/docs/labs/agents/agent-discovery?ref=docs-labs-agents)
 
 {/* not type-checked: an agent with no handler in Slack */}
@@ -55,11 +55,11 @@ Mention it in Slack and it answers in the thread, with a status line while it wo
 Read them in order, or jump to the one you need.
 
 1. [Agents](/docs/labs/agents/agents?ref=docs-labs-agents): an agent is a function Inngest runs for you, durably.
-2. [Threads](/docs/labs/agents/threads?ref=docs-labs-agents): say which events belong to one conversation.
+2. [Threads](/docs/labs/agents/threads?ref=docs-labs-agents): say which events belong to one thread.
 3. [Inboxes](/docs/labs/agents/inboxes?ref=docs-labs-agents): an agent keeps listening while it works.
 4. [Memory](/docs/labs/agents/memory?ref=docs-labs-agents): a thread keeps your values between runs.
 5. [Models](/docs/labs/agents/models?ref=docs-labs-agents): a loop of turns you rarely write.
-6. [Tools](/docs/labs/agents/tools?ref=docs-labs-agents): an agent acts on the world only through tools.
+6. [Tools](/docs/labs/agents/tools?ref=docs-labs-agents): a model acts on the world only through tools.
 7. [Skills](/docs/labs/agents/skills?ref=docs-labs-agents): know-how the model reads when it needs it.
 8. [Sandboxes](/docs/labs/agents/sandboxes?ref=docs-labs-agents): code runs on the thread's own machine.
 9. [Calling home](/docs/labs/agents/calling-home?ref=docs-labs-agents): sandbox code calls your tools, inside your run.
@@ -75,7 +75,7 @@ Read them in order, or jump to the one you need.
 - [PR reviewer](/docs/labs/agents/recipes/pr-reviewer?ref=docs-labs-agents): checks out a pull request, runs its tests and reviews it.
 - [Coding agent](/docs/labs/agents/recipes/coding-agent?ref=docs-labs-agents): changes a repository on a branch without holding the write token.
 - [Scheduled watcher](/docs/labs/agents/recipes/scheduled-watcher?ref=docs-labs-agents): a weekday digest, as a plain function.
-- [Agent teams](/docs/labs/agents/recipes/agent-teams?ref=docs-labs-agents): a lead that finds specialists and combines their answers.
+- [Lead and specialists](/docs/labs/agents/recipes/agent-teams?ref=docs-labs-agents): a lead that finds specialists and combines their answers.
 - [MCP assistant](/docs/labs/agents/recipes/mcp-assistant?ref=docs-labs-agents): works in each person's own account on a remote MCP server.
 - [Sandbox tools](/docs/labs/agents/recipes/sandbox-tools?ref=docs-labs-agents): answers by writing a script that calls your tools.
 
