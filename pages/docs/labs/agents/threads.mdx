@@ -9,7 +9,7 @@ export const description = "Say which events belong together and their runs shar
 
 A run is thrown away when it ends; a thread is what its runs share.
 
-The sections below grow a PR helper for `acme/web`, the agent after [`hello`](/docs/labs/agents/agents?ref=docs-labs-agents-threads); after the first block, a block shows only what changes, and [the last section](#a-trigger-with-its-own-key) has the whole file.
+The sections below grow a PR helper for `acme/web`, built like [`hello`](/docs/labs/agents/agents?ref=docs-labs-agents-threads). After the first block, a block shows only what changes, and [the last section](#a-trigger-with-its-own-key) has the whole file.
 
 ## Three events, three strangers
 
@@ -29,7 +29,7 @@ export const deployed = eventType("deploy/finished", {
 ```
 
 {/* not type-checked: github.thread({ repos }) and plain event triggers on an agent */}
-```typescript {{ title: "inngest/agents/prHelper.ts" }}
+```typescript
 import { github } from "inngest/experimental/agents";
 import { agents } from "../client";
 import { ciFailed, deployed } from "../events";
@@ -132,7 +132,7 @@ export const summarize = agents.agent(
 );
 ```
 
-Each `start()` is its own thread, with nothing to set up. Its answer stays in the run's output, since there is nowhere to post it.
+Each `start()` is its own thread, with nothing to set up. Its answer is the run's output.
 
 ## Two conversations
 
@@ -165,7 +165,7 @@ Each pull request has its own thread, with its own runs and state.
 You want deploys in the thread too, though they carry the PR's URL somewhere else. Give their trigger its own `thread`.
 
 {/* not type-checked: three triggers on an agent, each with its thread */}
-```typescript
+```typescript {{ title: "inngest/agents/prHelper.ts" }}
 import { github } from "inngest/experimental/agents";
 import { agents } from "../client";
 import { ciFailed, deployed } from "../events";
