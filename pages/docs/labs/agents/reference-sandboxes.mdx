@@ -92,8 +92,6 @@ export const work = sandbox({
       if (!push.branch?.startsWith("agent/")) {
         return { refuse: "Branches for the agent start with agent/" };
       }
-
-      return undefined;
     },
   },
   setup: async ({ sandbox, restored }) => {
@@ -412,7 +410,7 @@ githubApp(options: GithubAppOptions): GithubApp
 
 `GithubAppTarget` is `"owner/name"`, `{ org }`, `{ user }` or `{ installation }`. `GithubAppTokenOptions` has `permissions` (such as `{ contents: "write" }`) and `repositories` (names, or `"all"`; a repository target defaults to that repository alone).
 
-Errors: `GithubAppError` (`status`), and `GithubAppNotInstalledError` (a 404; the one failure to answer with a person's token). Types: `GithubApp`, `GithubAppOptions`, `GithubAppTarget`, `GithubAppTokenOptions`.
+Errors: `GithubAppError` (`status`), and `GithubAppNotInstalledError` (a 404; the one failure that calls for falling back to a person's token). Types: `GithubApp`, `GithubAppOptions`, `GithubAppTarget`, `GithubAppTokenOptions`.
 
 {/* not type-checked: githubApp with a secret() private key */}
 ```typescript {{ title: "inngest/github.ts" }}
