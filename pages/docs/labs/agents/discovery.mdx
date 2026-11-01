@@ -86,6 +86,7 @@ start_agent({
   address: "support/reviewer",
   input: { pr: "https://github.com/acme/api/pull/42" },
 })
+  { thread: "a1b2c3" }
 ```
 
 `list_agents` matches the query's words against each card's address, description and skills. `start_agent` checks the input against the card first, so a bad call fails with a readable error. [Teams of agents →](/docs/labs/agents/teams-of-agents?ref=docs-labs-agents-discovery#let-the-model-delegate)
@@ -148,11 +149,11 @@ export const concierge = agents.agent({
 ```
 
 <Annotation id="prepare" lines="11-17" tease="runs before each start" title="prepare">
-Gets the card, the model's input, the run's event and its `thread`. What it returns is what the other agent receives.
+Gets the card, the model's input, the run's event and its `thread`.
 </Annotation>
 
 <Annotation id="requester" lines="13" tease="who is asking" title="A host-set field">
-The Slack user who asked, from the event. The model can't make it up.
+The Slack user who asked, from the event.
 </Annotation>
 
 </AnnotatedCode>
