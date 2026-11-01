@@ -7,11 +7,11 @@ export const description = "An Inngest agent keeps listening while it works: wha
 
 > Your agent keeps listening while it works.
 
-Whatever is sent to a thread while its run works waits in the run's inbox, in order. Each section changes the PR helper from [Threads](/docs/labs/agents/threads?ref=docs-labs-agents-inboxes) by one step.
+Whatever is sent to a thread while its run works waits in the run's inbox, in order. Each section changes the PR helper from [Threads](/docs/labs/agents/threads?ref=docs-labs-agents-inboxes) by one step. After the first, a block shows only what changes.
 
 ## While it works
 
-To let a CI failure that arrives mid-run reach that run, read the run's `inbox`.
+You want a CI failure that arrives while the helper is busy to reach it, not start a second run. Read the run's `inbox`.
 
 ```typescript {{ title: "inngest/events.ts" }}
 import { eventType } from "inngest";
@@ -65,7 +65,7 @@ The event that started the run.
 </Annotation>
 
 <Annotation id="arrived" lines="18" tease="what landed meanwhile" title="next()" href="/docs/reference/typescript/v4/functions/step-subscribe?ref=docs-labs-agents-inboxes" linkText="Reference">
-What arrived meanwhile.
+Reads the oldest unread message: the CI failure, if it came in during the sleep.
 </Annotation>
 
 </AnnotatedCode>
@@ -74,33 +74,22 @@ Fail CI inside the five seconds: no second run starts.
 
 ## Heard, never a start
 
-To let CI passing reach a working run without ever starting one, list it in `inbox`.
+You want CI passing to reach a run that's working, but never to start one on its own. List it in `inbox`; the handler stays as in [While it works](#while-it-works).
 
 {/* not type-checked: the inbox option with a source that sets its own thread */}
 ```typescript
-export const prHelper = agents.agent(
-  {
-    id: "pr-helper",
-    triggers,
-    inbox: [{ event: ciPassed, thread: "event.data.prUrl" }],
-  },
-  async ({ inbox, step }) => {
-    await step.sleep("read the diff", "5s");
-
-    await inbox.next();
-
-    const arrived = await inbox.next();
-
-    return `While I read, ${arrived?.name} arrived`;
-  },
-);
+{
+  id: "pr-helper",
+  triggers,
+  inbox: [{ event: ciPassed, thread: "event.data.prUrl" }],
+}
 ```
 
-Only `triggers` start a run. Sources, and messages from people and [other agents](/docs/labs/agents/agent-teams?ref=docs-labs-agents-inboxes), reach a live one. A source's `if` compares the arriving event, `async`, with the run's trigger, `event`.
+Fail CI and pass it within the five seconds, and the handler reports `ci/run.passed`. Only `triggers`, and messages sent to the thread by people or [other agents](/docs/labs/agents/agent-teams?ref=docs-labs-agents-inboxes), start a run.
 
 ## Waiting
 
-To wait for the next thing on the PR, call `next()` with nothing unread.
+You want to wait for the next thing on the PR. Call `next()` with nothing unread.
 
 {/* not type-checked: a second inbox.next() that waits in an agent handler */}
 ```typescript
@@ -113,15 +102,15 @@ async ({ inbox }) => {
 },
 ```
 
-The run uses nothing while it waits. Without a `timeout`, `idle` doesn't end the wait.
+The run uses nothing while it waits.
 
 ## Pull the plug
 
-To trust that waiting survives anything, stop the app while a run waits, start it again, then comment: the run carries on where it was. Inngest holds the wait, not your app. [Deploys →](/docs/labs/agents/reliability?ref=docs-labs-agents-inboxes#deploys-and-long-runs)
+You want to trust that waiting survives anything. Stop the app while a run waits, start it again, then comment: the run carries on where it was. Inngest holds the wait, not your app. [Deploys →](/docs/labs/agents/reliability?ref=docs-labs-agents-inboxes#deploys-and-long-runs)
 
 ## Answer every message
 
-To reply on the PR to everything that happens to it, loop over the `inbox`.
+You want a reply on the PR for everything that happens to it. Loop over the `inbox`.
 
 {/* not type-checked: for await over an agent's inbox with me.post() */}
 ```typescript
@@ -132,11 +121,11 @@ async ({ inbox, me }) => {
 },
 ```
 
-`me.post()` writes where the thread lives, here the pull request. A read takes the message, so each one is seen once.
+`me.post()` writes where the thread lives. A read takes the message, so each one is seen once.
 
 ## Batches
 
-To handle comments that land together as one, loop over `inbox.batches()`.
+You want five comments that land together handled together. Loop over `inbox.batches()`.
 
 {/* not type-checked: inbox.batches({ max }) in an agent handler */}
 ```typescript
@@ -147,44 +136,37 @@ async ({ inbox, me }) => {
 },
 ```
 
-One reply covers the batch, a plain array. `max` caps a flood and leaves the rest unread, oldest first.
+`max` caps a flood and leaves the rest unread, oldest first.
 
 ## Going quiet
 
-To stop when the PR goes quiet and come back when it doesn't, set `idle` on the agent.
+You want the helper to stop when the PR goes quiet, and come back when it doesn't. Set `idle` on the agent; the handler is the one from [Batches](#batches).
 
 <AnnotatedCode>
 
-{/* not type-checked: idle on an agent definition with inbox.batches({ max }) */}
+{/* not type-checked: idle on an agent definition */}
 ```typescript
-export const prHelper = agents.agent(
-  {
-    id: "pr-helper",
-    triggers,
-    inbox: [{ event: ciPassed, thread: "event.data.prUrl" }],
-    idle: "1h",
-  },
-  async ({ inbox, me }) => {
-    for await (const batch of inbox.batches({ max: 20 })) {
-      await me.post(`Seen ${batch.length} things`);
-    }
-  },
-);
+{
+  id: "pr-helper",
+  triggers,
+  inbox: [{ event: ciPassed, thread: "event.data.prUrl" }],
+  idle: "1h",
+}
 ```
 
-<Annotation id="idle" lines="6" tease="quiet before it ends" title="idle" href="/docs/labs/agents/reference?ref=docs-labs-agents-inboxes#idle" linkText="Reference">
+<Annotation id="idle" lines="5" tease="quiet before it ends" title="idle" href="/docs/labs/agents/reference?ref=docs-labs-agents-inboxes#idle" linkText="Reference">
 After this much quiet both `for await` forms end. The default is ten minutes.
 </Annotation>
 
 </AnnotatedCode>
 
-The next message starts a new run. A run opened with `start()` ends once it has answered. [Call it from code →](/docs/labs/agents/agent-teams?ref=docs-labs-agents-inboxes#call-it-from-code)
+The next trigger starts a new run. A run opened through a handle ends once it has answered. [Call it from code →](/docs/labs/agents/agent-teams?ref=docs-labs-agents-inboxes#call-it-from-code)
 
 {/* Go deeper */}
 
 ## Give up waiting
 
-To stop waiting for a review that never comes, give `next()` a `timeout`.
+You want to stop waiting for a review that never comes. Give `next()` a `timeout`.
 
 {/* not type-checked: inbox.next({ timeout }) in an agent handler */}
 ```typescript
@@ -201,7 +183,7 @@ async ({ inbox, me }) => {
 
 ## Check without waiting
 
-To see what queued up between two steps without stopping, `drain()` the inbox.
+You want to see what queued up between two steps, without stopping. `drain()` the inbox.
 
 {/* not type-checked: inbox.drain() in an agent handler */}
 ```typescript
@@ -216,23 +198,23 @@ It never waits: `waiting` is `[]` when nothing came.
 
 ## A second inbox
 
-To watch a PR's checks after it pushes a fix, and only from now on, open a second inbox with `step.subscribe`.
+You want to watch a PR's checks after it pushes a fix, and only from now on. Open a second inbox with `step.subscribe`.
 
 <AnnotatedCode>
 
 {/* not type-checked: step.subscribe with if in an agent handler beside the agent's inbox */}
 ```typescript
-const mine = `async.data.prUrl == "${me.key}"`;
+const thisPr = `async.data.prUrl == "${me.key}"`;
 
 const checks = step.subscribe("checks", [
-  { event: ciPassed, if: mine },
-  { event: ciFailed, if: mine },
+  { event: ciPassed, if: thisPr },
+  { event: ciFailed, if: thisPr },
 ]);
 
 const result = await checks.next();
 ```
 
-<Annotation id="mine" lines="1" tease="only this PR" title="if" href="/docs/labs/agents/reference?ref=docs-labs-agents-inboxes#thread-keys-and-inbox-sources" linkText="Reference">
+<Annotation id="this-pr" lines="1" tease="only this PR" title="if" href="/docs/labs/agents/reference?ref=docs-labs-agents-inboxes#thread-keys-and-inbox-sources" linkText="Reference">
 An inbox you open isn't tied to the thread, so filter it. `async` is the arriving event.
 </Annotation>
 
@@ -242,11 +224,11 @@ Your agent's own `inbox` is one of these, opened for you.
 
 </AnnotatedCode>
 
-Checks that ran before it opened aren't in it, and `result` is a check and nothing else. Agents run with `optimizeParallelism: false`, so a read beside your steps needs none of the [background-reader remedy](/docs/durable-execution/primitives/step-subscribe?ref=docs-labs-agents-inboxes#read-in-the-background) on the core page.
+Checks that ran before it opened aren't in it, and `result` is a check and nothing else.
 
 ## Stop watching
 
-To stop watching and know nothing was lost, `close()` the inbox.
+You want to stop watching and know nothing was lost. `close()` the inbox.
 
 {/* not type-checked: close() on a second inbox in an agent handler */}
 ```typescript
@@ -259,18 +241,18 @@ const missed = await checks.close();
 
 ## Clean up for you
 
-To close it even if the code throws, open it with `await using`.
+You want the inbox closed even if the code throws. Open it with `await using`.
 
 {/* not type-checked: await using on a second inbox in an agent handler */}
 ```typescript
 await using checks = step.subscribe("checks", [
-  { event: ciPassed, if: mine },
-  { event: ciFailed, if: mine },
+  { event: ciPassed, if: thisPr },
+  { event: ciFailed, if: thisPr },
 ]);
 ```
 
 ## Recipes and reference
 
-- [PR reviewer](/docs/labs/agents/recipes/pr-reviewer?ref=docs-labs-agents-inboxes): a handler that picks what the model sees.
-- [Issue triage](/docs/labs/agents/recipes/issue-triage?ref=docs-labs-agents-inboxes): an agent triggered by GitHub.
+- [PR reviewer](/docs/labs/agents/recipes/pr-reviewer?ref=docs-labs-agents-inboxes)
+- [Issue triage](/docs/labs/agents/recipes/issue-triage?ref=docs-labs-agents-inboxes)
 - [Reference: the inbox](/docs/labs/agents/reference?ref=docs-labs-agents-inboxes#inbox)
