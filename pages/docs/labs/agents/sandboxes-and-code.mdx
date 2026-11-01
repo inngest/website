@@ -16,9 +16,9 @@ A sandbox is the machine for one [thread](/docs/labs/agents/threads-and-memory?r
 - **Credentials stay with you.** A shim runs a program with a token only your app holds. [Hand a program a credential →](#hand-a-program-a-credential)
 - **Pushes your policy checks.** Your app pushes, so the sandbox never holds a write token. [Check out and push →](#check-out-a-repo)
 
+{/* not type-checked: sandboxes listed on an agent, which gives the model work_run and work_push */}
 <AnnotatedCode>
 
-{/* not type-checked: sandboxes listed on an agent, which gives the model work_run and work_push */}
 ```typescript {{ title: "inngest/agents/coder.ts" }}
 import { slack } from "inngest/experimental/agents";
 import { agents } from "../client";
@@ -39,7 +39,7 @@ Each Slack thread gets its own sandbox, so two threads never share files.
 </Annotation>
 
 <Annotation id="sandboxes" lines="11" tease="work_run, work_push" title="Listed means given" href="#give-the-agent-a-sandbox" linkText="Give the agent a sandbox">
-The model gets the sandbox's tools, named after the key: `work_run`, and `work_push` because it has a repo. Nothing starts until the model uses one.
+The model gets the sandbox's tools, named after the key: `work_run`, and `work_push` because it has a repo. Nothing starts until the model or your code uses one.
 </Annotation>
 
 </AnnotatedCode>
@@ -47,22 +47,20 @@ The model gets the sandbox's tools, named after the key: `work_run`, and `work_p
 {/* not type-checked: sandbox() with a repo, githubApp() as its auth */}
 ```typescript {{ title: "inngest/sandboxes/work.ts" }}
 import { sandbox } from "inngest/experimental/agents";
-import { app } from "../github";
+import { githubAuth } from "../github";
 
 export const work = sandbox({
   id: "work",
-  vcpu: 2,
-  memoryMb: 4096,
   repo: {
     url: "https://github.com/acme/api",
-    auth: app,
+    auth: githubAuth,
   },
 });
 ```
 
 ## Give the agent a sandbox
 
-`sandbox()` returns a definition and creates nothing, so importing one is safe. Define it at module scope and list it on any agent. An app whose agents list sandboxes adds `sandboxMiddleware()` to its client.
+`sandbox()` returns a definition and creates nothing, so importing one is safe. An app whose agents list sandboxes adds `sandboxMiddleware()` to its client, and using a sandbox without it throws an error that says so.
 
 {/* not type-checked: sandboxMiddleware() on the client */}
 ```typescript {{ title: "inngest/client.ts" }}
@@ -78,9 +76,9 @@ export const inngest = new Inngest({
 export const agents = createAgents(inngest);
 ```
 
+{/* not type-checked: sandbox() with image, size and setup */}
 <AnnotatedCode>
 
-{/* not type-checked: sandbox() with image, size and setup */}
 ```typescript {{ title: "inngest/sandboxes/scratch.ts" }}
 import { image } from "inngest/experimental";
 import { sandbox } from "inngest/experimental/agents";
@@ -88,8 +86,8 @@ import { sandbox } from "inngest/experimental/agents";
 export const scratch = sandbox({
   id: "scratch",
   image: image.custom("python-data:v1"),
-  vcpu: 2,
-  memoryMb: 2048,
+  vcpu: 4,
+  memoryMb: 8192,
   setup: async ({ sandbox }) => {
     await sandbox.commands.run("install", "pip install pandas");
   },
@@ -100,8 +98,8 @@ export const scratch = sandbox({
 Leave it out for the base image.
 </Annotation>
 
-<Annotation id="size" lines="7-8" tease="2 vCPU, 2048 MB" title="Size">
-These are the defaults. Ask for more when the work needs it.
+<Annotation id="size" lines="7-8" tease="4 vCPU, 8192 MB" title="Size">
+The defaults are 2 vCPU and 2048 MB. Ask for more when the work needs it.
 </Annotation>
 
 <Annotation id="setup" lines="9-11" tease="runs once, at creation" title="Setup">
@@ -110,11 +108,9 @@ Runs when the sandbox is created, not on every run.
 
 </AnnotatedCode>
 
-Listed as `sandboxes: { scratch }`, it gives the model `scratch_run`. Using a sandbox without the middleware throws an error that says to add it.
-
 ## Keep files between runs
 
-The thread owns its sandbox. It starts the first time the model or your code uses it. Ten minutes after its last use it pauses, whether the run is still waiting or has ended, and the next use brings it back with its disk as it was.
+The thread owns its sandbox. It starts the first time it's used, pauses ten minutes after its last use, and comes back with its disk as it was.
 
 ```text {{ title: "One thread, two runs" }}
 09:00  work_run  npm install   the sandbox starts
@@ -123,17 +119,15 @@ The thread owns its sandbox. It starts the first time the model or your code use
 11:30  work_run  npm test      the sandbox resumes, node_modules is there
 ```
 
-A run that never needs the sandbox never starts one.
-
 ## Work in a shell
 
-The model works in a shell, not file by file. `work_run` keeps `cd` and `export` from one call to the next, and into the thread's next run. Files stay on the machine instead of passing through step state. There is no write tool: a heredoc in `work_run` writes a file.
+The model works in a shell, not file by file: `work_run` keeps `cd` and `export` from one call to the next, and into the thread's next run. There is no write tool; a heredoc in `work_run` writes a file.
 
-`read`, `search` and `edit` are off until you ask for them. `sandbox.tools.code()` takes `only`, `tools`, `shims` and `timeout`.
-
-<AnnotatedCode>
+`read`, `search` and `edit` are off until you ask for them.
 
 {/* not type-checked: sandbox.tools.code with only and timeout */}
+<AnnotatedCode>
+
 ```typescript {{ title: "inngest/sandboxes/editor.ts" }}
 import { sandbox } from "inngest/experimental/agents";
 
@@ -146,23 +140,23 @@ export const editor = sandbox({
 });
 ```
 
-<Annotation id="only" lines="6" tease="editor_run, editor_edit" title="Only">
+<Annotation id="only" lines="6" tease="editor_run, editor_edit" title="Only" href="/docs/labs/agents/reference-sandboxes?ref=docs-labs-agents-sandboxes-and-code#code-tools" linkText="Reference: code tools">
 The tools the model gets. Without `only` it gets `run`, plus `run_code` once you give tools.
 </Annotation>
 
-<Annotation id="timeout" lines="7" tease="longest one command may run" title="Timeout">
-The default is five minutes. A longer one works. [Run long commands →](#run-long-commands)
+<Annotation id="timeout" lines="7" tease="longest one command may run" title="Timeout" href="#run-long-commands" linkText="Run long commands">
+The default is five minutes. A longer one works.
 </Annotation>
 
 </AnnotatedCode>
 
 ## Use it from a handler
 
-A [handler](/docs/labs/agents/handlers?ref=docs-labs-agents-sandboxes-and-code) gets the same machine the model uses. `sandboxes.work` opens it on first use, so a run that never touches it starts nothing. `{ sandbox: work, model: false }` keeps a sandbox for your code only.
-
-<AnnotatedCode>
+A [handler](/docs/labs/agents/handlers?ref=docs-labs-agents-sandboxes-and-code) gets the same machine the model uses, opened on first use.
 
 {/* not type-checked: sandboxes.work.commands.run in a handler, { sandbox, model: false } */}
+<AnnotatedCode>
+
 ```typescript {{ title: "inngest/agents/tester.ts" }}
 import { github } from "inngest/experimental/agents";
 import { agents } from "../client";
@@ -194,7 +188,7 @@ export const tester = agents.agent(
 ```
 
 <Annotation id="code-only" lines="12" tease="the model gets none of its tools" title="Code only">
-Without `model: false`, the model would get `work_run` too.
+`model: false` keeps this sandbox for your code. Without it, the model would get `work_run` too.
 </Annotation>
 
 <Annotation id="commands" lines="15-17" tease="a command on the thread's machine" title="Run a command" href="/docs/labs/agents/reference-sandboxes?ref=docs-labs-agents-sandboxes-and-code#the-handlers-sandbox" linkText="Reference">
@@ -218,11 +212,11 @@ Besides `commands`, `sandboxes.work` has:
 
 ## Let code call your tools
 
-A script on the machine can call your [tools](/docs/labs/agents/tools?ref=docs-labs-agents-sandboxes-and-code). They run in your app, with your credentials, as durable steps, so the sandbox never holds a secret. The key in the `tools` record names a tool for the model and for the script alike.
-
-<AnnotatedCode>
+A script on the machine can call your [tools](/docs/labs/agents/tools?ref=docs-labs-agents-sandboxes-and-code). They run in your app, with your credentials, as durable steps, so the sandbox never holds a secret.
 
 {/* not type-checked: sandbox.tools.code({ tools }), which gives the model analyst_run_code */}
+<AnnotatedCode>
+
 ```typescript {{ title: "inngest/sandboxes/analyst.ts" }}
 import { sandbox } from "inngest/experimental/agents";
 import { getAccount } from "../tools/getAccount";
@@ -237,7 +231,7 @@ export const analyst = sandbox({
 ```
 
 <Annotation id="tools" lines="8" tease="adds analyst_run_code" title="Tools for scripts" href="/docs/labs/agents/tools?ref=docs-labs-agents-sandboxes-and-code" linkText="Tools">
-Giving the code tools some tools adds `run_code`. The script calls them as `tools.getAccount(...)`. `now` and `sleep` are built in.
+Giving the code tools some tools adds `run_code`. The script calls each by its key in the record, as `tools.getAccount(...)`.
 </Annotation>
 
 </AnnotatedCode>
@@ -250,8 +244,6 @@ account = await tools.getAccount(id="a-42")
 if account["plan"] == "pro":
     ci = await tools.waitForCi(branch="agent/fix")
 ```
-
-These are ordinary tools: the same record works in an agent's `tools`.
 
 {/* not type-checked: tool.step called by a script */}
 ```typescript {{ title: "inngest/tools/getAccount.ts" }}
@@ -267,11 +259,11 @@ export const getAccount = tool.step({
 });
 ```
 
-`waitForCi` can take hours. Declared with `waits: true`, it makes the script exit instead of holding the command open. When the tool answers, the script runs again from the top and its earlier calls return their saved answers.
-
-<AnnotatedCode>
+`waitForCi` can take hours, so it's declared with `waits: true`: the script exits, and when the tool answers it runs again from the top, with its earlier calls answered from a saved record.
 
 {/* not type-checked: tool.group with waits: true called from a script */}
+<AnnotatedCode>
+
 ```typescript {{ title: "inngest/tools/waitForCi.ts" }}
 import { step } from "inngest";
 import { tool } from "inngest/experimental";
@@ -285,7 +277,7 @@ export const waitForCi = tool.group({
     const finished = await step.waitForEvent("ci-finished", {
       event: "ci/finished",
       timeout: "2h",
-      if: `async.data.branch == "${branch}"`,
+      if: `async.data.branch == ${JSON.stringify(branch)}`,
     });
 
     return { passed: finished?.data.passed ?? false };
@@ -299,7 +291,7 @@ Inline when the model calls it; a pause the script survives when a script calls 
 
 </AnnotatedCode>
 
-Your own code passes tools to a command with `tools`. The script imports them with `from inngest_tools import tools`. The core Sandbox `$` template takes `tools` too. [Tools and code mode →](/docs/sandboxes/features/tools?ref=docs-labs-agents-sandboxes-and-code)
+Your own code passes tools to a command with `tools`, and the script imports them with `from inngest_tools import tools`. [Tools and code mode →](/docs/sandboxes/features/tools?ref=docs-labs-agents-sandboxes-and-code)
 
 ```typescript
 await sandboxes.work.commands.run("summarise", "python summarise.py", {
@@ -307,15 +299,15 @@ await sandboxes.work.commands.run("summarise", "python summarise.py", {
 });
 ```
 
-A tool you make inside a handler and pass with `loop(batch, { tools })` makes `run_code` appear for that call. A script calls the tool by the same name, so it can call back into the run with everything the handler can see. [Give the model a tool →](/docs/labs/agents/handlers?ref=docs-labs-agents-sandboxes-and-code#give-the-model-a-tool)
+A tool made inside a handler and passed with `loop(batch, { tools })` makes `run_code` appear for that call, so a script can call back into the run. [Give the model a tool →](/docs/labs/agents/handlers?ref=docs-labs-agents-sandboxes-and-code#give-the-model-a-tool)
 
 ## Hand a program a credential
 
-A shim is a program on the shell's `PATH` that calls your app first. Your app decides what happens: run the real program with something added, change its arguments, or answer on its own. The model types `flyctl deploy` and never handles the token.
-
-<AnnotatedCode>
+A shim is a program on the shell's `PATH` that calls your app first. The model types `flyctl deploy` and never handles the token.
 
 {/* not type-checked: tool.shim passed to sandbox.tools.code({ shims }) */}
+<AnnotatedCode>
+
 ```typescript {{ title: "inngest/sandboxes/deployer.ts" }}
 import { tool } from "inngest/experimental";
 import { sandbox } from "inngest/experimental/agents";
@@ -360,7 +352,7 @@ A shim can also decline with `refuse("message")` or answer on its own with `repl
 
 ## Run long commands
 
-A command with a `timeout` over five minutes works, including one that calls tools or uses shims. The model's commands take it from `sandbox.tools.code({ timeout })`. Your code passes it per command:
+A command with a `timeout` over five minutes works, even one that calls tools or uses shims. Your code passes it per command; the model's commands take it from `sandbox.tools.code({ timeout })`.
 
 ```typescript
 await sandboxes.work.commands.run("deploy", "flyctl deploy", {
@@ -371,31 +363,31 @@ await sandboxes.work.commands.run("deploy", "flyctl deploy", {
 
 ## Check out a repo
 
-`repo` on a sandbox checks a repository out when the sandbox starts, so the model begins with the code in front of it. The checkout uses a short-lived read-only token. It goes to the one `git` process that clones and is never written into the checkout's config.
+`repo` on a sandbox checks a repository out when the sandbox starts, so the model begins with the code in front of it. The read-only token goes to the one `git` process that clones and is never written into the checkout's config.
 
 {/* not type-checked: githubApp() with a secret() private key */}
 ```typescript {{ title: "inngest/github.ts" }}
 import { secret } from "inngest/experimental";
 import { githubApp } from "inngest/experimental/agents";
 
-export const app = githubApp({
+export const githubAuth = githubApp({
   appId: process.env.GITHUB_APP_ID ?? "",
   privateKey: secret("GITHUB_APP_PRIVATE_KEY"),
 });
 ```
 
+{/* not type-checked: sandbox({ repo }) with auth, ref, path and author */}
 <AnnotatedCode>
 
-{/* not type-checked: sandbox({ repo }) with auth, ref, path and author */}
 ```typescript {{ title: "inngest/sandboxes/service.ts" }}
 import { sandbox } from "inngest/experimental/agents";
-import { app } from "../github";
+import { githubAuth } from "../github";
 
 export const service = sandbox({
   id: "service",
   repo: {
     url: "https://github.com/acme/api",
-    auth: app,
+    auth: githubAuth,
     ref: "main",
     path: "/work/api",
     author: { name: "Acme Agent", email: "agent@acme.dev" },
@@ -408,11 +400,11 @@ Asked for a read-only token to check out and a write token to push, each short-l
 </Annotation>
 
 <Annotation id="ref" lines="9" tease="the branch, tag or commit" title="Ref">
-Each run starts on this ref. A checkout already on it is left alone.
+Each run starts on this ref. If the checkout is on another, the sandbox fetches and checks out this one, and changes to tracked files make that an error the run sees.
 </Annotation>
 
 <Annotation id="path" lines="10" tease="where it lands" title="Path">
-The folder for the checkout. It defaults to `/work`.
+The folder for the checkout, `/work` by default. The model's shell starts there.
 </Annotation>
 
 <Annotation id="author" lines="11" tease="who commits" title="Author">
@@ -421,14 +413,12 @@ The name and email on commits made in the sandbox. The default author is `innges
 
 </AnnotatedCode>
 
-The model's shell starts in the checkout's `path`.
-
-`repo` can also be a function of `{ event, thread }`, run once when the run starts. A reviewer checks out the pull request it was triggered by. When a resumed sandbox's checkout is on another ref, the sandbox fetches the new one and checks it out. Uncommitted changes in the working tree make that an error the run sees.
+`repo` can also be a function of `{ event, thread }`, run once when the run starts, so a reviewer checks out the pull request it was triggered by.
 
 {/* not type-checked: repo as a function of { event } */}
 ```typescript {{ title: "inngest/sandboxes/review.ts" }}
 import { sandbox } from "inngest/experimental/agents";
-import { app } from "../github";
+import { githubAuth } from "../github";
 
 export const review = sandbox({
   id: "review",
@@ -436,7 +426,7 @@ export const review = sandbox({
     return {
       url: event.data.repo,
       ref: event.data.head,
-      auth: app,
+      auth: githubAuth,
     };
   },
 });
@@ -444,20 +434,20 @@ export const review = sandbox({
 
 ## Push a branch
 
-The model commits in the sandbox with its own messages and calls `work_push({ branch })`. Your app makes the push, with its own write token, after `policy` has seen the branch, the commits and the paths they touch. The sandbox never holds a write token.
-
-<AnnotatedCode>
+The model commits in the sandbox and calls `work_push({ branch })`. Your app makes the push after `policy` has seen the branch, the commits and the paths they touch.
 
 {/* not type-checked: repo.policy reading the push and returning refuse or notes */}
+<AnnotatedCode>
+
 ```typescript {{ title: "inngest/sandboxes/guarded.ts" }}
 import { sandbox } from "inngest/experimental/agents";
-import { app } from "../github";
+import { githubAuth } from "../github";
 
 export const guarded = sandbox({
   id: "guarded",
   repo: {
     url: "https://github.com/acme/api",
-    auth: app,
+    auth: githubAuth,
     policy: async (push) => {
       if (!push.branch?.startsWith("agent/")) {
         return { refuse: "Branches for the agent start with agent/" };
@@ -481,7 +471,7 @@ export const guarded = sandbox({
 Sees `push.branch`, `push.commits` with their messages and `push.paths` before anything is pushed. It returns `{ refuse }`, `{ notes }` or nothing.
 </Annotation>
 
-<Annotation id="refuse" lines="11" tease="the model reads the reason" title="Refuse" href="#push-a-branch" linkText="Push a branch">
+<Annotation id="refuse" lines="11" tease="the model reads the reason" title="Refuse">
 A refused push comes back to the model as an error it can read and fix.
 </Annotation>
 
@@ -489,17 +479,17 @@ A refused push comes back to the model as an error it can read and fix.
 Every path the commits touch.
 </Annotation>
 
-<Annotation id="notes" lines="22" tease="kept with the result" title="Notes" href="#push-a-branch" linkText="Push a branch">
+<Annotation id="notes" lines="22" tease="kept with the result" title="Notes">
 Returned in the push result, for an audit trail.
 </Annotation>
 
 </AnnotatedCode>
 
-Your code pushes the same way, through the same policy. `repo.push(branch)` returns `{ branch, sha, notes }`. A refusal throws `PushRefusedError`, which isn't retried.
-
-<AnnotatedCode>
+Your code pushes through the same policy, and a refusal throws `PushRefusedError`, which isn't retried.
 
 {/* not type-checked: sandboxes.guarded.repo.push and PushRefusedError */}
+<AnnotatedCode>
+
 ```typescript {{ title: "inngest/agents/nightly.ts" }}
 import { PushRefusedError } from "inngest/experimental/agents";
 import { agents } from "../client";
@@ -534,7 +524,7 @@ export const nightly = agents.agent(
 ```
 
 <Annotation id="push" lines="21" tease="the same push as work_push" title="Push from code">
-Returns the branch, the commit and the policy's notes.
+Returns `{ branch, sha, notes }`.
 </Annotation>
 
 <Annotation id="refused" lines="23-24" tease="reason is a string" title="Refused">
@@ -545,21 +535,13 @@ Returns the branch, the commit and the policy's notes.
 
 To keep the model from pushing, set `push: false` on the repo. `work_push` is left out, and your code can still push.
 
-```typescript
-repo: {
-  url: "https://github.com/acme/api",
-  auth: app,
-  push: false,
-},
-```
-
 ## Secrets
 
-`sandbox({ secrets })` and `secret()` are different things. `secrets` puts values into the sandbox, where any code running there can read them. `secret()` keeps a value on your host.
-
-<AnnotatedCode>
+`sandbox({ secrets })` puts values into the sandbox, where any code running there can read them; `secret()` keeps a value on your host.
 
 {/* not type-checked: sandbox({ environment, secrets }) */}
+<AnnotatedCode>
+
 ```typescript {{ title: "inngest/sandboxes/builder.ts" }}
 import { sandbox } from "inngest/experimental/agents";
 
@@ -580,24 +562,21 @@ Each value is set in the sandbox as an environment variable with that name.
 
 </AnnotatedCode>
 
-Pass `secret("NAME")` wherever a token goes, as the GitHub App's private key above. It prints as `[secret NAME]` and is read only inside the call that needs it. For anything the model's code shouldn't hold, use a tool or a short-lived token. [Tools →](/docs/labs/agents/tools?ref=docs-labs-agents-sandboxes-and-code)
+Pass `secret("NAME")` wherever a token goes, as the GitHub App's private key above. For anything the model's code shouldn't hold, use a tool or a short-lived token. [Tools →](/docs/labs/agents/tools?ref=docs-labs-agents-sandboxes-and-code)
 
 ## Gotchas
 
 - **The shell's environment has a cap.** Every `export` rides along on every later command. At 256 entries or 64 KiB the shell fails early and names the limit.
 - **An `EXIT` trap or `exec` drops the place.** A command that sets its own `EXIT` trap or uses `exec` doesn't carry its `cd` and `export` to the next call.
 - **Exports stay in run history.** An exported value is saved with the call. Put credentials in `secrets`, or behind a tool.
-- **A new `ref` needs a clean tree.** When a run's `ref` differs from the checkout's, uncommitted changes make the checkout an error. Commit or discard them first.
-- **A recreated sandbox starts at the default.** The shell's place returns only with the same sandbox or its snapshot.
-- **A long tool call needs a long command.** In a script, a tool call that outlives the command's `timeout` (five minutes by default) aborts the command. Declare the tool `waits: true`, or give the command a longer `timeout`.
-- **A script that waits runs again.** Calls it already made return saved answers. Files it writes and processes it starts happen again, so read the clock with `tools.now()`.
+- **A script that waits runs again from the top.** Files it writes and processes it starts happen again, so make them safe to repeat.
 - **A shim is a program on `PATH`.** Code that runs the real program by its full path skips the shim.
 - **One repo per sandbox.** A second repo gets a second sandbox. A push names the branch and opens no pull request; your app does that with its GitHub tools or its own code.
 
 ## How it works
 
-- The sandbox starts in one durable step, so every call shares it. Ten minutes after its last use it pauses; a run that waits longer pauses it at that mark.
-- Each `run` is its own shell process, started in the saved directory with the saved environment. It reports its new place when it exits, and the SDK saves that with the call, so a restart or another machine replays to the same place.
+- The sandbox starts in one durable step, so every call shares it. A run that waits longer than ten minutes pauses it at that mark.
+- Each `run` is its own shell process, started in the saved directory with the saved environment. It reports its new place when it exits, and the SDK saves that with the call, so a restart or another machine replays to the same place. A recreated sandbox starts at the default.
 - A push is four steps: the sandbox bundles the new commits, your app reads the bundle, `policy` sees the branch, commits and paths, and your app pushes with its write token. It sends the commits that are there and never forces or deletes.
 - A command over five minutes runs as a process that steps follow in windows of five minutes, one wait step each.
 
