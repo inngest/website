@@ -1,0 +1,329 @@
+import { AnnotatedCode, Annotation } from "shared/Docs/mdx";
+
+export const metaTitle = "Models | Inngest Agents";
+export const description = "Give an Inngest agent a model and a prompt and it runs the loop for you: it remembers the thread, folds in corrections, keeps a budget per thread, takes any model, and can answer with a typed value.";
+
+# Models
+
+> Give an agent a model and a prompt, and it runs the loop of turns for you.
+
+The PR helper is the one from [Inboxes](/docs/labs/agents/inboxes?ref=docs-labs-agents-models), with the triggers [Threads](/docs/labs/agents/threads?ref=docs-labs-agents-models) gave it.
+
+## Ask a model
+
+You want a summary of the pull request, written by a model.
+
+{/* not type-checked: anthropic() as a named export */}
+```typescript {{ title: "inngest/models/claude.ts" }}
+import { anthropic } from "inngest/experimental/agents";
+
+export const claude = anthropic({ model: "claude-sonnet-5-5" });
+```
+
+<AnnotatedCode>
+
+{/* not type-checked: the anthropic() one-shot call inside a handler */}
+```typescript
+async ({ inbox, me, step }) => {
+  for await (const batch of inbox.batches({ max: 20 })) {
+    const summary = await step.run("summarise", async () => {
+      return await claude({
+        prompt: `Summarise:\n${JSON.stringify(batch)}`,
+      });
+    });
+
+    await me.post(summary.text);
+  }
+},
+```
+
+<Annotation id="step" lines="3" tease="not a step by itself" title="Wrap it in a step" href="/docs/labs/agents/agents?ref=docs-labs-agents-models#steps" linkText="Steps">
+A retry would repeat a bare model call.
+</Annotation>
+
+</AnnotatedCode>
+
+It forgets: a follow-up question gets an answer that knows nothing of the summary.
+
+## The loop
+
+You want follow-ups to work. A turn is one model call plus the tool calls it asked for.
+
+```typescript {{ title: "inngest/events.ts" }}
+import { eventType } from "inngest";
+import { z } from "zod";
+
+const ciRun = z.object({ pr: z.number(), prUrl: z.string() });
+
+export const ciFailed = eventType("ci/run.failed", { schema: ciRun });
+
+export const ciPassed = eventType("ci/run.passed", { schema: ciRun });
+
+export const deployed = eventType("deploy/finished", {
+  schema: z.object({ env: z.string(), pull: z.object({ url: z.string() }) }),
+});
+```
+
+<AnnotatedCode>
+
+{/* not type-checked: model, system and loop(batch) in the PR helper */}
+```typescript {{ title: "inngest/agents/prHelper.ts" }}
+import { github } from "inngest/experimental/agents";
+import { agents } from "../client";
+import { ciFailed, ciPassed, deployed } from "../events";
+import { claude } from "../models/claude";
+
+const triggers = [
+  github.thread({ repos: ["acme/web"] }),
+  { event: ciFailed, thread: "event.data.prUrl" },
+  { event: deployed, thread: "event.data.pull.url" },
+];
+
+export const prHelper = agents.agent(
+  {
+    id: "pr-helper",
+    triggers,
+    inbox: [{ event: ciPassed, thread: "event.data.prUrl" }],
+    idle: "1h",
+    model: claude,
+    system: "You help with pull requests on acme/web.",
+  },
+  async ({ inbox, loop, me }) => {
+    for await (const batch of inbox.batches({ max: 20 })) {
+      const result = await loop(batch);
+
+      await me.post(result.text);
+    }
+  },
+);
+```
+
+<Annotation id="model" lines="18-19" tease="what the loop runs" title="Model and system" href="#delete-the-handler" linkText="Delete the handler">
+With no handler, these two are the whole agent.
+</Annotation>
+
+<Annotation id="loop" lines="23" tease="runs the turns" title="loop(batch)">
+Calls the model until it stops asking for tools. It posts nothing.
+</Annotation>
+
+</AnnotatedCode>
+
+The trace shows a row per turn. `loop` is in the handler's argument only when the agent has a `model`.
+
+## It remembers
+
+You want the helper to pick the thread up after it went quiet.
+
+After each batch the loop saves the model's history in the thread, one of the things [a thread keeps](/docs/labs/agents/threads?ref=docs-labs-agents-models#what-a-conversation-keeps). The run after `idle` ends sees earlier turns, and a long history is summarised once.
+
+{/* not type-checked: remember on an agent definition */}
+```typescript
+remember: false,
+```
+
+That line starts every run clean, for an agent that answers one-off requests.
+
+## Corrections land
+
+You want "focus on the tests" to count while the model works.
+
+Before every model call the loop takes everything that arrived in the [inbox](/docs/labs/agents/inboxes?ref=docs-labs-agents-models#while-it-works), so the correction reaches the very next call.
+
+## Delete the handler
+
+You want the same agent with no code.
+
+{/* not type-checked: a model agent with no handler */}
+```typescript
+export const prHelper = agents.agent({
+  id: "pr-helper",
+  triggers,
+  inbox: [{ event: ciPassed, thread: "event.data.prUrl" }],
+  idle: "1h",
+  model: claude,
+  system: "You help with pull requests on acme/web.",
+});
+```
+
+This is the handler the SDK writes: each batch goes through the loop, and the answer is posted where the thread lives and is the run's output.
+
+## A budget
+
+You want a cap on what each pull request can spend.
+
+{/* not type-checked: budget on an agent definition */}
+```typescript
+budget: { usd: 0.5 },
+```
+
+The budget belongs to the thread, so every PR gets its own. In a handler, `end` says why the loop stopped:
+
+<AnnotatedCode>
+
+{/* not type-checked: result.end on the loop's result */}
+```typescript
+const result = await loop(batch);
+
+if (result.end === "budget") {
+  await me.post("This PR is out of budget.");
+} else {
+  await me.post(result.text);
+}
+```
+
+<Annotation id="end" lines="3" tease="why it stopped" title="end" href="/docs/labs/agents/reference?ref=docs-labs-agents-models#the-result" linkText="Reference">
+`"done"`, `"maxTurns"`, `"stop"` or `"budget"`.
+</Annotation>
+
+</AnnotatedCode>
+
+With no handler, the default one posts that the budget is spent.
+
+## Progress
+
+You want a line on the PR while the work goes on.
+
+<AnnotatedCode>
+
+{/* not type-checked: an un-awaited me.post() beside loop(batch) */}
+```typescript
+async ({ inbox, loop, me }) => {
+  for await (const batch of inbox.batches({ max: 20 })) {
+    me.post("Looking at it.");
+
+    const result = await loop(batch);
+
+    if (result.end === "budget") {
+      await me.post("This PR is out of budget.");
+    } else {
+      await me.post(result.text);
+    }
+  }
+},
+```
+
+<Annotation id="progress" lines="3" tease="not awaited" title="No await" href="/docs/labs/agents/inboxes?ref=docs-labs-agents-models#answer-every-message" linkText="Answer every message">
+The work carries on, and the run waits for the post before it ends.
+</Annotation>
+
+<Annotation id="final" lines="10" tease="awaited" title="The answer">
+Await it, so a failed post fails the run.
+</Annotation>
+
+</AnnotatedCode>
+
+## Any model
+
+You want to try another model without touching the agent.
+
+<AnnotatedCode>
+
+{/* not type-checked: .with() variants and a model function typed AgentModel */}
+```typescript {{ title: "inngest/models/quick.ts" }}
+import type { AgentModel } from "inngest/experimental/agents";
+import { claude } from "./claude";
+
+export const quick = claude.with({ effort: "low", maxTokens: 500 });
+
+export const timed: AgentModel = async (request) => {
+  const started = Date.now();
+  const reply = await quick(request);
+
+  console.log(`model took ${Date.now() - started}ms`);
+
+  return reply;
+};
+```
+
+<Annotation id="with" lines="4" tease="same client, other options" title=".with()" href="/docs/labs/agents/reference?ref=docs-labs-agents-models#models" linkText="Reference">
+A variant of the model, for one agent or one call.
+</Annotation>
+
+<Annotation id="shape" lines="6" tease="any function of this shape" title="AgentModel">
+The history in, the reply out.
+</Annotation>
+
+</AnnotatedCode>
+
+Swap `model: claude` for `model: timed` and the same agent runs.
+
+{/* Go deeper */}
+## A typed answer
+
+You want a yes or no you can branch on, not prose.
+
+<AnnotatedCode>
+
+{/* not type-checked: the anthropic() one-shot call with an output schema */}
+```typescript
+const verdict = await step.run("safe to merge?", async () => {
+  return await claude({
+    prompt: `Is this PR safe to merge?\n${JSON.stringify(batch)}`,
+    output: z.object({ safe: z.boolean(), reason: z.string() }),
+  });
+});
+
+if (!verdict.output.safe) {
+  await me.post(verdict.output.reason);
+}
+```
+
+<Annotation id="output" lines="4" tease="a schema in, a value out" title="output">
+`verdict.output.safe` is a boolean the editor knows.
+</Annotation>
+
+</AnnotatedCode>
+
+## Choose what folds in
+
+You want CI passing not to interrupt the model mid-review.
+
+<AnnotatedCode>
+
+{/* not type-checked: loop(batch, { steer }) with message.is() */}
+```typescript
+const result = await loop(batch, {
+  steer: (drained) => {
+    return drained.filter((message) => {
+      return !message.is(ciPassed);
+    });
+  },
+});
+```
+
+<Annotation id="steer" lines="2-6" tease="what the model sees next" title="steer" href="/docs/labs/agents/reference?ref=docs-labs-agents-models#the-loop" linkText="Reference">
+Gets the messages the loop took and returns the ones to fold in.
+</Annotation>
+
+</AnnotatedCode>
+
+The passes come back on `result.unread`.
+
+## Progress on every turn
+
+You want a line on the PR for each turn.
+
+<AnnotatedCode>
+
+{/* not type-checked: loop(batch, { onTurn }) posting through me */}
+```typescript
+await loop(batch, {
+  onTurn: ({ turn, toolCalls }) => {
+    me.post(`Turn ${turn}: ${toolCalls.length} tool calls`);
+  },
+});
+```
+
+<Annotation id="onturn" lines="2-4" tease="after each turn's tools" title="onTurn" href="/docs/labs/agents/reference?ref=docs-labs-agents-models#on-turn" linkText="Reference">
+A slow or failing post never holds up the next model call.
+</Annotation>
+
+</AnnotatedCode>
+
+## Recipes and reference
+
+- [Slack assistant](/docs/labs/agents/recipes/slack-assistant?ref=docs-labs-agents-models)
+- [Coding agent](/docs/labs/agents/recipes/coding-agent?ref=docs-labs-agents-models)
+- [Reliability](/docs/labs/agents/reliability?ref=docs-labs-agents-models): budgets, pricing and model errors.
+- [Reference: the loop](/docs/labs/agents/reference?ref=docs-labs-agents-models#the-loop)
+- [Reference: models](/docs/labs/agents/reference?ref=docs-labs-agents-models#models)
