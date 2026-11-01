@@ -64,7 +64,7 @@ export type Env = {
   ANTHROPIC_API_KEY: string;
   SLACK_BOT_TOKEN: string;
   SLACK_SIGNING_SECRET: string;
-  GITHUB_TOKEN: string;
+  GITHUB_READ_TOKEN: string;
 };
 
 let current: Env | undefined;
@@ -134,8 +134,9 @@ export const work = sandbox({
   repo: {
     url: "https://github.com/acme/web",
     auth: () => {
-      return getEnv().GITHUB_TOKEN;
+      return getEnv().GITHUB_READ_TOKEN;
     },
+    push: false,
   },
 });
 ```
