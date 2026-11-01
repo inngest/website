@@ -25,7 +25,7 @@ export const lead = agents.agent({ id: "lead" }, async () => {
 ```
 
 <Annotation id="address" lines="5" tease="app/agent" title="Address" href="#publish-a-card" linkText="Publish a card">
-The callee's app and id, from its card. Nothing is imported.
+The callee's app and agent id. Nothing is imported.
 </Annotation>
 
 <Annotation id="input" lines="6" tease="what its card asks for" title="Input" href="#publish-a-card" linkText="Publish a card">
@@ -51,6 +51,13 @@ export const researcher = agents.agent(
   {
     id: "researcher",
     description: "Looks into a question",
+    skills: [
+      {
+        id: "changes",
+        description: "Finds what changed between versions",
+        examples: ["What changed in v3?"],
+      },
+    ],
     share: "team",
     on: invoke(z.object({ question: z.string() })),
     limits: { price: { "*": { input: 3, output: 15 } } },
@@ -140,7 +147,7 @@ export const workbench = sandbox({
 
 ## Limit sub-agents
 
-`limits` apply to every `callAgent()`, and to every `call_agent` the model makes. A refused call throws `AgentLimitError`, whose `limit` is `depth`, `spawn`, `mayCall` or `budget`. In a loop, the model reads it as the tool's result. `message_agent` is not a call, so limits don't apply to it.
+`limits` apply to every `callAgent()` and `call_agent`. A refused call throws `AgentLimitError`, whose `limit` is `depth`, `spawn`, `mayCall` or `budget`.
 
 ```typescript {{ title: "inngest/agents/careful.ts" }}
 import { AgentLimitError, callAgent } from "inngest/experimental/agents";
@@ -163,7 +170,7 @@ export const careful = agents.agent(
 );
 ```
 
-Sub-agents inherit the limits, narrowed, and `depth` defaults to 1. A callee's body reads its own `depth`: 1 for the first callee, 2 for its callees. Add `budget: { usd: 5 }` and a `price` table to cap spend; a dollar budget needs the sub-agent's own `limits.price`, since a price does not travel.
+Sub-agents inherit the limits, narrowed, and `limits.depth` defaults to 1. The body's `depth` field is something else: how deep this run is, 1 for the first callee. Add `budget: { usd: 5 }` and a `price` table to cap spend; a dollar budget needs the sub-agent's own `limits.price`, since a price does not travel.
 
 ## Cancel with the caller
 
@@ -208,37 +215,20 @@ export const boss = agents.agent({ id: "boss" }, async () => {
 
 - Use another agent's result: `callAgent("app/agent", input)`.
 - Let the model choose who to ask: `tools: discoveryTools()`.
-- Look up agents in code: `findAgents(query)`.
+- Look up agents in code: [`findAgents(query)`](/docs/labs/agents/reference?ref=docs-labs-agents-teams-of-agents#calling-agents).
 - Let agents in other apps find yours: `share: "team"`.
 - Cap depth, fan-out or which agents may be called: `limits.depth`, `spawn`, `mayCall`.
 - Cap spend of callees: `limits.budget` with a `limits.price` on each, and `spawn`. A callee gets at most what is left, but the callees' total is not capped.
 - End children with their parent: `cancelOn: [agentInvokeCancelOn]`.
-
-## Options
-
-`callAgent()` takes a step `id`. The callee keeps the caller's session and gets a thread of its own.
-
-```typescript {{ title: "inngest/agents/digest.ts" }}
-import { callAgent } from "inngest/experimental/agents";
-import { agents } from "../client";
-
-export const digest = agents.agent({ id: "digest" }, async () => {
-  return callAgent(
-    "support/researcher",
-    { question: "Why?" },
-    { id: "ask-researcher" },
-  );
-});
-```
-
-Defaults: `id` is `agent:invoke:<address>`, the callee's thread is `<functionId>:<runId>.<n>`, and there is no timeout. For the options of `discoveryTools()`, see the [reference](/docs/labs/agents/reference?ref=docs-labs-agents-teams-of-agents#calling-agents).
+- Name the call's step: `callAgent(address, input, { id })`. [Options](/docs/labs/agents/reference?ref=docs-labs-agents-teams-of-agents#calling-agents)
 
 ## Gotchas
 
 - An agent can be found only after its app announced its card. A daily heartbeat announces again.
 - `callAgent()` returns `unknown`. Check the shape before you use it.
-- Use `agentInvokeCancelOn` only on an agent that only calls start. `agents.agent()` throws if `on` has another trigger. A message to its idle thread starts a run that any cancellation would end, so don't message it.
-- A raw `step.invoke` or `sendEvent` is not checked by `limits`.
+- Use `agentInvokeCancelOn` only on an agent that `callAgent()` or `call_agent` starts. `agents.agent()` throws if `on` has another trigger.
+- Don't message the thread of an agent with `agentInvokeCancelOn`. That run would end whenever any run is cancelled.
+- `message_agent`, a raw `step.invoke` and `sendEvent` are not checked by `limits`.
 
 ## How it works
 

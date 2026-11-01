@@ -58,7 +58,7 @@ export const lead = agents.agent(
 ```
 
 <Annotation id="limits" lines="8-13" tease="depth, count, who and how much" title="Limit the team" href="/docs/labs/agents/teams-of-agents?ref=docs-labs-agents-recipes-agent-teams" linkText="Teams of agents">
-Sub-agents inherit these, narrowed. A refused call throws `AgentLimitError`. A price does not travel, so each child sets its own.
+Sub-agents inherit these, narrowed. The model reads a refused call as the tool's result. A price does not travel, so each child sets its own.
 </Annotation>
 
 <Annotation id="tools" lines="23" tease="find, then ask" title="Discovery tools" href="/docs/labs/agents/teams-of-agents?ref=docs-labs-agents-recipes-agent-teams#let-the-model-choose" linkText="Teams of agents">
@@ -173,7 +173,7 @@ Send the lead a message with `lead.thread("t1").send("...")`. The coder needs an
 
 ## Variations
 
-- Let the lead's sub-agents cancel with it using `agentInvokeCancelOn`. [Teams of agents](/docs/labs/agents/teams-of-agents?ref=docs-labs-agents-recipes-agent-teams)
+- Let the lead's sub-agents cancel with it using `agentInvokeCancelOn`, and never message their threads. [Teams of agents](/docs/labs/agents/teams-of-agents?ref=docs-labs-agents-recipes-agent-teams)
 - Share one sandbox between agents. [Sandboxes and code](/docs/labs/agents/sandboxes-and-code?ref=docs-labs-agents-recipes-agent-teams)
 - Swap the coder for the full [Coding agent](/docs/labs/agents/recipes/coding-agent?ref=docs-labs-agents-recipes-agent-teams).
 - Read the cost of each child in the trace. [Observability](/docs/labs/agents/observability?ref=docs-labs-agents-recipes-agent-teams)

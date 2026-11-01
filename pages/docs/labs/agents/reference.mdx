@@ -355,7 +355,7 @@ Experimental: the Insights query is unverified on Inngest Cloud, and the Dev Ser
 - Use one trigger per event name.
 - A trigger for a thread with a live run starts nothing; the run reads the event from its inbox.
 - `thread` and `session` are CEL expressions, not functions, because the backend evaluates them.
-- A `callAgent()` call runs on a thread of its own; any other invocation uses `thread` or the agent's own thread.
+- A call from `callAgent()` or `call_agent` runs on a thread of its own; any other invocation uses `thread` or the agent's own thread.
 
 Types: `ThreadTrigger`, `ThreadTriggers`, `ThreadEventTrigger`, `ThreadCronTrigger`, `ThreadCronEvent`, `ThreadTriggerEvent`, `ThreadTriggerData`, `ThreadTriggerEventOf`, `ThreadTriggerEventSource`, `ThreadTriggerList`, `ThreadTriggerListEvent`, `ThreadKeyConfig`.
 
@@ -518,14 +518,19 @@ addressOf(card: AgentCard): string
 
 | Export | Description |
 | --- | --- |
-| `callAgent(address, input, options?)` | Calls the agent whose address is `"<app>/<agentId>"` and returns its result. Throws if the agent is not shared with the caller. An agent without `invoke(schema)` takes `{ message }`. `options.id` is the step ID, default `agent:invoke:<address>`. Repeats in one run are numbered. |
+| `callAgent(address, input, options?)` | Calls the agent whose address is `"<appId>/<id>"` and returns its result. Throws if the agent is not shared with the caller. An agent without `invoke(schema)` takes `{ message }`. `options.id` is the step ID, default `agent:invoke:<address>`. Repeats in one run are numbered. |
 | `findAgents(query?)` | The cards of the agents the caller may use that match any word of `query`, best match first. Without a query it returns them all. The read is a step. |
 | `discoveryTools(options?)` | `list_agents`, `describe_agent`, `call_agent` and `message_agent`, for `agent.loop({ tools })` or `sandbox.tools.code({ tools })`. |
 | `addressOf(card)` | The address of a card's agent. |
 
-`discoveryTools({ prepare })` fills in what the model must not make up, such as who is asking: it gets `{ card, input }` and returns the input `call_agent` hands over. `discoveryTools({ onBackground })` lets the model pass `background: true` to start a long call and carry on. It gets `{ id, result }`, where `result` settles with the agent's result. Without it, `background` is refused.
+| `discoveryTools()` option | Gets | Does |
+| --- | --- | --- |
+| `prepare` | `{ card, input }` | Returns the input `call_agent` hands over. Use it to add what the model must not make up, such as who is asking. |
+| `onBackground` | `{ id, result }` | Takes the calls the model makes with `background: true`, so the model carries on. `result` settles with the agent's result. Without it, `background` is refused. |
 
-The callee keeps the caller's session and gets a thread of its own. Its key is `<functionId>:<runId>.<n>`. A call has no timeout. A call the limits refuse throws `AgentLimitError`. A cancelled callee (stop now, `cancelOn`, or its own parent cancelled) throws `AgentCancelledError`, which is not retried. Cancelling the caller cancels a callee only if the callee lists `agentInvokeCancelOn` in `cancelOn`; `agents.agent()` throws if it lists it beside a trigger other than `invoke()`.
+The callee keeps the caller's session and gets a thread of its own. Its key is `<functionId>:<runId>.<n>`. A call has no timeout.
+
+A cancelled callee (stop now, `cancelOn`, or its own parent cancelled) throws `AgentCancelledError`, which is not retried. Cancelling the caller cancels a callee only if the callee lists `agentInvokeCancelOn` in `cancelOn`. `agents.agent()` throws if it lists it beside a trigger other than `invoke()`.
 
 | Export | Description |
 | --- | --- |
@@ -544,7 +549,7 @@ Types: `AgentCard`, `AgentShare`, `AgentsRegisteredData`, `DiscoveryTools`, `Dis
 | --- | --- | --- |
 | `depth` | `1` | Levels of sub-agents allowed below. A sub-agent gets this minus one at most. |
 | `spawn` | none | Most agent calls (`callAgent()` or `call_agent`) one run may make. A refused call does not count. |
-| `mayCall` | any | Agents it may call, as `"<app>/<agentId>"` patterns where `*` matches any text. |
+| `mayCall` | any | Agents it may call, as `"<appId>/<id>"` patterns where `*` matches any text. |
 | `budget` | none | What the thread may spend: `AgentBudget`. |
 | `price` | none | What a model call costs. Needed for `budget.usd`. |
 
@@ -552,7 +557,7 @@ Types: `AgentCard`, `AgentShare`, `AgentsRegisteredData`, `DiscoveryTools`, `Dis
 
 Limits gate agent calls only; a raw `step.invoke` or `sendEvent` bypasses them. Sub-agents inherit the limits narrowed.
 
-`AgentLimitError` has `limit`: `"depth"`, `"spawn"`, `"mayCall"`, or `"budget"`.
+`AgentLimitError` has `limit`: `"depth"`, `"spawn"`, `"mayCall"`, or `"budget"`. In a loop, `call_agent` hands it to the model as the tool's result.
 
 ### Compaction
 
