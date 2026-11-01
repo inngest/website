@@ -98,9 +98,7 @@ export const escalate = tool.step({
 });
 ```
 
-Await it or don't: an un-awaited score is still written before the run ends. A refused score logs a warning and the run goes on.
-
-{/* TODO(spec): are score names restricted? The old docs reserved the `agent.` prefix for the automatic scores. */}
+Await it or don't: an un-awaited score is still written before the run ends. A refused score logs a warning and the run goes on. Names can't start with `agent.`, which the automatic scores use.
 
 ## Track usage and cost
 
