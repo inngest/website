@@ -66,7 +66,7 @@ Build results reach this run's inbox while it is live. Only `triggers` start a r
 </Annotation>
 
 <Annotation id="thread" lines="23" tease="which thread" title="thread" href="/docs/labs/agents/threads-and-memory?ref=docs-labs-agents-inboxes#name-a-thread" linkText="Name a thread">
-Builds name their service `app`, so the event joins the thread with that key. Without `thread`, the agent-wide expression applies. Here `event` is the arriving event.
+Builds name their service `app`, so the event joins the thread with that key.
 </Annotation>
 
 <Annotation id="if" lines="24" tease="this run's branch only" title="if" href="#add-sources" linkText="Add sources">
@@ -74,7 +74,7 @@ Builds name their service `app`, so the event joins the thread with that key. Wi
 </Annotation>
 
 <Annotation id="batches" lines="33" tease="everything unread" title="batches()" href="#read-the-inbox" linkText="Read the inbox">
-Every unread message at once, up to 20, the trigger first. The `for await` ends after `idle` of quiet time.
+Every unread message at once, up to 20, the trigger first.
 </Annotation>
 
 <Annotation id="loop" lines="34" tease="folds in what arrives" title="loop(batch)" href="/docs/labs/agents/models-and-the-loop?ref=docs-labs-agents-inboxes#fold-in-messages" linkText="Models and the loop">
@@ -90,7 +90,7 @@ An agent's inbox holds everything sent to its thread while a run works:
 - **The trigger.** First in the inbox. The handler's `event` is the same message.
 - **Source events.** From the `inbox` sources you list.
 - **People's messages.** A reply in a Slack thread or a comment on a pull request.
-- **Messages from agents.** `agent/message`, `agent/question`, `agent/answer` and `agent/finished`, each with `from`. [Teams of agents →](/docs/labs/agents/teams-of-agents?ref=docs-labs-agents-inboxes)
+- **Messages from agents.** `agent/message`, `agent/question`, `agent/answer` and `agent/finished`, each with `from`. `agent/answer` and `agent/finished` reach agents with a model only. [Teams of agents →](/docs/labs/agents/teams-of-agents?ref=docs-labs-agents-inboxes)
 
 An answer to your code's `ask()`, the result for `result()` and a `stop()` never arrive as messages. [Teams of agents →](/docs/labs/agents/teams-of-agents?ref=docs-labs-agents-inboxes)
 
@@ -155,7 +155,7 @@ The core pages cover every read. [`step.subscribe` →](/docs/durable-execution/
 
 ## Add sources
 
-List events about the same work in `inbox`, written like triggers.
+List events about the same work in `inbox`, written like triggers. A source with no `thread` uses the agent-wide expression, and in its `thread` expression `event` is the arriving event.
 
 ## More inboxes
 
@@ -278,7 +278,7 @@ A sandbox script can wait on a named inbox with `inbox_next({ as })` or `inbox_n
 
 `idle` ends both `for await` forms: after that much quiet they finish, the handler returns, and the next message starts a run. [How long a run waits →](/docs/labs/agents/threads-and-memory?ref=docs-labs-agents-inboxes#how-long-a-run-waits)
 
-On a run opened through a handle (`start()`, `message()`, `start_agent`, `message_agent`), both `for await` forms behave as if `idle` were zero, so a looping handler normally returns after the first batch. [When the handler returns →](/docs/labs/agents/handlers?ref=docs-labs-agents-inboxes#when-the-handler-returns)
+A run opened through a handle ends once it has answered. [When the handler returns →](/docs/labs/agents/handlers?ref=docs-labs-agents-inboxes#when-the-handler-returns)
 
 ## Gotchas
 
