@@ -1,4 +1,4 @@
-import { CodeGroup, SdkUnsupported } from "shared/Docs/mdx";
+import { CodeGroup, SdkUnsupported, VersionBadge, ImageTheme } from "shared/Docs/mdx";
 export const metaTitle = "Traces | Sandboxes";
 export const description = "Sandbox traces show each command and operation in the same Inngest run trace as your function steps, so you can find failed or slow Sandbox work.";
 
@@ -12,7 +12,25 @@ Open the function trace to find which Sandbox operation slowed or failed a job. 
 
 Open the function run in the Inngest dashboard or Dev Server. The trace shows the steps alongside the rest of the function. Select a step to inspect its timing, input, output, error details, and retry attempts.
 
+Each command is one row, tagged with `[$]` and named after the command it ran <VersionBadge version="v4.26.0+" />. Sandbox operations such as creating or destroying show as plain names, like "Create sandbox":
+
+<ImageTheme
+  dark={"/assets/docs/sandboxes/sandbox-trace-collapsed-dark.webp"}
+  light={"/assets/docs/sandboxes/sandbox-trace-collapsed-light.webp"}
+  alt={"A run trace with the rows Create sandbox, write-script, python3 --version, python3 /tmp/analyze.py, write-report, cat /tmp/report.md, and Destroy sandbox on a timeline. The command rows carry a $ tag."}
+/>
+
+Expand a command row and select its step to see what ran. Its Metadata tab shows the command, exit code, and Sandbox, and the header shows its timing. With `commands.run`, a nonzero exit code is a result, so the step still completes. A `$` command fails its step on one unless `exitCodes` allows it:
+
+<ImageTheme
+  dark={"/assets/docs/sandboxes/sandbox-trace-expanded-dark.webp"}
+  light={"/assets/docs/sandboxes/sandbox-trace-expanded-light.webp"}
+  alt={"The analyze step selected under the python3 /tmp/analyze.py row. Its metadata lists action exec, the command, exit_code 2, method commands.run, and the Sandbox ID and name."}
+/>
+
 Give each Sandbox operation a stable, descriptive step ID. For example, `create-sandbox`, `run-command`, and `destroy-sandbox` make the sequence readable and let you identify the operation that failed. A retry appears as another attempt for that step. Completed steps return their recorded results when the function replays.
+
+Each step carries `inngest.sandbox` metadata that names the action and the machine, command, process, or snapshot involved. A snapshot shows as one group, "Create snapshot" and "Wait for snapshot". `group.sandbox()`, `step.sandbox.python`, and `step.sandbox.typescript` show the Sandbox's whole lifetime as one group, with the create, run, and destroy steps inside. Each [tool](/docs/sandboxes/features/tools) call is its own step.
 
 A trace records the durable API operations. It does not make the Sandbox guest process, filesystem, or output durable.
 
@@ -57,4 +75,4 @@ The example destroys the Sandbox on the successful path. For a function that can
 
 ## Protect trace data
 
-The current trace view displays step inputs, outputs, and errors. Keep credentials out of command strings, captured output, and returned values. The beta can inject selected workspace secrets into the Sandbox environment, but it does not automatically redact values printed to command output or files.
+The trace view displays step inputs, outputs, and errors. Environment values you pass to `step.sandbox` calls (`create`, `commands.run`, `processes.start`) are not recorded: the trace keeps only the variable names <VersionBadge version="v4.26.0+" />. Command strings, captured output, and returned values are recorded as they are, so keep credentials out of them. The beta can inject selected workspace secrets into the Sandbox environment, but it does not automatically redact values printed to command output or files.

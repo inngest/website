@@ -1,4 +1,4 @@
-import { CodeGroup, SdkUnsupported } from "shared/Docs/mdx";
+import { CodeGroup, SdkUnsupported, VersionBadge } from "shared/Docs/mdx";
 
 export const metaTitle = "Base images | Sandboxes";
 export const description = "Sandbox base images come with Node.js, Python, Ruby, and common command-line tools preinstalled, so isolated code can start running right away.";
@@ -13,7 +13,7 @@ Run generated code or inspect a repository without building an image first. The 
 
 ## What the beta image includes
 
-New Sandboxes use the default image unless you select a published image. A Sandbox cloned from a snapshot starts with the captured image and filesystem changes.
+New Sandboxes start from this image unless you [choose another](#choose-an-image). A Sandbox cloned from a snapshot starts with the captured image and filesystem changes.
 
 | Tool | Included |
 | --- | --- |
@@ -23,22 +23,44 @@ New Sandboxes use the default image unless you select a published image. A Sandb
 | Repository and network tools | Git, curl, OpenSSH, and CA certificates |
 | Operating system and utilities | Debian 13 slim with GNU `grep`, `sed`, `awk`, `find`, `diff`, `tar`, and `gzip`, plus `ripgrep` and `jq` |
 
-The default image does **not** currently include Go, Rust, Java, Bun, or Deno. Exact installed versions can change when Inngest rebuilds the image. Check versions in the Sandbox if your task depends on them.
+The image does **not** currently include Go, Rust, Java, Bun, or Deno. Exact installed versions can change when Inngest rebuilds the image. Check versions in the Sandbox if your task depends on them.
 
-## Select a published image
+## Choose an image <VersionBadge version="v4.25.0+" />
 
-In SDK 4.25 or newer, import `image` from `inngest/experimental` and set
-`from: image.custom("my-image:v1")` when creating a Sandbox. Use
-`from: image.inngest("base")` to select the platform base image explicitly.
-With REST, set `"image": "my-image:v1"` on `POST /v2/sandboxes`.
+Pass `from` to start a Sandbox from an Inngest image or an image published to your workspace. `image.inngest()` and `image.custom()` are experimental and exported from `inngest/experimental`.
 
-An untagged name uses `latest`. To pin an exact artifact, use
-`my-image@sha256:<digest>` with its 64-character lowercase hexadecimal digest.
-Tags can move; existing Sandboxes keep their resolved image. Snapshot clones
-inherit the captured image and cannot override it.
+<CodeGroup>
+```typescript {{ title: "TypeScript" }}
+import { image } from "inngest/experimental";
 
-To build and publish your own application code, dependencies, or runtimes,
-follow [Custom images](/docs/sandboxes/features/custom-images).
+await step.sandbox.create("build", {
+  name: "build",
+  vcpu: 2,
+  memoryMb: 2048,
+  from: image.inngest("base"),
+});
+
+await step.sandbox.create("custom", {
+  name: "custom",
+  vcpu: 2,
+  memoryMb: 2048,
+  from: image.custom("my-image:v1"),
+});
+```
+
+<SdkUnsupported title="Python" feature="Sandboxes" />
+<SdkUnsupported title="Go" feature="Sandboxes" />
+</CodeGroup>
+
+- Reference a custom image by name, `name:tag`, or `name@sha256:<hex>`. A name without a tag uses `latest`.
+- The image must already be published to your workspace. Create does not build or upload one.
+- Create resolves the image once. A retry of the same Sandbox keeps its original image, even if the tag has moved; use a new Sandbox name to pick up an update.
+- A Sandbox's `imageRef` and `imageDigest` show what it started from.
+- A snapshot clone keeps its source image and cannot select another.
+- `inngest.sandboxes.create()` takes the same `from`, or a plain `image` string such as `"my-image:v1"`.
+- With REST, set `"image": "my-image:v1"` on `POST /v2/sandboxes`. To pin an exact artifact, use `my-image@sha256:<digest>` with its 64-character lowercase hexadecimal digest.
+
+To build and publish your own application code, dependencies, or runtimes, follow [Custom images](/docs/sandboxes/features/custom-images).
 
 ## Inspect the image
 

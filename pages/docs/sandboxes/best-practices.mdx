@@ -25,7 +25,7 @@ Destroy a Sandbox when the work finishes. Destroy removes its processes, filesys
 - If Create can wait for readiness, use `runningTimeout: false` when you need the Sandbox ID before the wait. Then call `waitUntilRunning` as a separate step. A readiness timeout does not destroy the Sandbox.
 - Store the Sandbox ID when another function or process must reconnect. Fetch the Sandbox by ID rather than storing a serialized SDK object.
 
-The planned `step.sandbox.typescript` convenience call will start a Sandbox, run TypeScript, and stop it automatically. Use the documented create, run, and destroy operations in beta examples.
+For one isolated task that keeps no Sandbox between steps, use [`step.sandbox.python` or `step.sandbox.typescript`](/docs/sandboxes/features/managed-lifecycle#run-python-or-typescript-in-one-call), which destroy the Sandbox for you. For a Sandbox scoped to a block, use `await using` or `group.sandbox()`.
 
 ## Make retries safe
 
@@ -56,7 +56,7 @@ Use external storage for any file that must survive independently of one Sandbox
 
 ## Size the work to beta limits
 
-The current beta has a one-hour active runtime per Sandbox and accepts 1, 2, or 4 vCPU with 1, 2, or 4 GiB of memory per vCPU. Paused time does not consume the remaining active runtime. Sandboxes start from the default image or a [custom image](/docs/sandboxes/features/custom-images) you publish. Disk sizes, resizing, and a configurable TTL are not available through this beta API. A valid size can still fail when capacity is unavailable. Beta limits can change.
+The current beta has a one-hour active runtime per Sandbox and accepts 1, 2, or 4 vCPU with 1, 2, or 4 GiB of memory per vCPU. Paused time does not consume the remaining active runtime. Sandboxes start from the default image unless you choose a published one with [`image.custom()`](/docs/sandboxes/features/base-images#choose-an-image), such as a [custom image](/docs/sandboxes/features/custom-images) you build. Disk sizes, resizing, and a configurable TTL are not available through this beta API. A valid size can still fail when the account lacks access or capacity is unavailable. Beta limits can change.
 
 ## Protect credentials and access
 
