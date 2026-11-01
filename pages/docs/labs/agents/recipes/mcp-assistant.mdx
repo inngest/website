@@ -115,29 +115,17 @@ export const POST = slack.bridge({
 });
 ```
 
-{/* TODO(spec): tools.md ties the sign-in link to the first browser with a cookie that the callback checks. Which options does completeMcpAuthorization take to see that cookie? Does expectUser still exist? */}
 <AnnotatedCode>
 
-{/* not type-checked: completeMcpAuthorization with the default store */}
+{/* not type-checked: mcpCallback as a Web handler with the default store */}
 ```typescript {{ title: "app/api/mcp/callback/route.ts" }}
-import { completeMcpAuthorization, kvOAuthStore } from "inngest/experimental";
+import { kvOAuthStore, mcpCallback } from "inngest/experimental";
 
-export const GET = async (request: Request) => {
-  const { searchParams } = new URL(request.url);
-
-  await completeMcpAuthorization({
-    store: kvOAuthStore(),
-    code: searchParams.get("code") ?? "",
-    state: searchParams.get("state") ?? "",
-    error: searchParams.get("error") ?? undefined,
-  });
-
-  return new Response("Connected. You can close this tab.");
-};
+export const GET = mcpCallback({ store: kvOAuthStore() });
 ```
 
-<Annotation id="store" lines="7" tease="the store the tool uses" title="Store" href="/docs/labs/agents/tools?ref=docs-labs-agents-recipes-mcp-assistant" linkText="Tools">
-Tokens are encrypted with `MCP_OAUTH_ENCRYPTION_KEY` and kept in the app's store.
+<Annotation id="callback" lines="3" tease="finishes the sign-in" title="Callback" href="/docs/labs/agents/tools?ref=docs-labs-agents-recipes-mcp-assistant" linkText="Tools">
+Takes the browser's request and checks it is the one that opened the link, then stores the token. Tokens are encrypted with `MCP_OAUTH_ENCRYPTION_KEY` in the app's store.
 </Annotation>
 
 </AnnotatedCode>
@@ -148,6 +136,7 @@ Tokens are encrypted with `MCP_OAUTH_ENCRYPTION_KEY` and kept in the app's store
 
 - Each person signs in once and works as themselves. [Tools](/docs/labs/agents/tools?ref=docs-labs-agents-recipes-mcp-assistant)
 - The model never sees a sign-in link or a token. [Tools](/docs/labs/agents/tools?ref=docs-labs-agents-recipes-mcp-assistant)
+- A sign-in callback that is one line. [Tools](/docs/labs/agents/tools?ref=docs-labs-agents-recipes-mcp-assistant)
 - A Slack agent with no handler, and a Slack route that checks the signature. [Slack and GitHub](/docs/labs/agents/slack-and-github?ref=docs-labs-agents-recipes-mcp-assistant)
 
 ## Run it
