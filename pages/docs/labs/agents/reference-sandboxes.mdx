@@ -35,7 +35,7 @@ Names here come from `inngest/experimental`, except `sandbox`, `skills`, `github
 
 ## sandbox()
 
-Defines a sandbox at module scope. It creates nothing; an agent that lists it gets a machine the first time something uses it. [Sandboxes](/docs/labs/agents/sandboxes?ref=docs-labs-agents-reference-sandboxes)
+Defines a sandbox at module scope. It creates nothing; an agent that lists it gets a machine the first time something uses it. [Sandboxes →](/docs/labs/agents/sandboxes?ref=docs-labs-agents-reference-sandboxes)
 
 ```typescript {{ title: "Signature" }}
 sandbox<TTool>(
@@ -108,7 +108,7 @@ Types: `SandboxDefinition`, `SandboxDefinitionOptions`, `SandboxSetup`, `Sandbox
 
 ## Sandboxes on an agent
 
-An agent's `sandboxes` is a record. The key names the sandbox in its tool names and in a handler. The record takes a value, or a function of `{ event, thread }` that may be async and runs once when a run starts. [Agents reference](/docs/labs/agents/reference?ref=docs-labs-agents-reference-sandboxes#the-definition)
+An agent's `sandboxes` is a record. The key names the sandbox in its tool names and in a handler. The record takes a value, or a function of `{ event, thread }` that may be async and runs once when a run starts. [Agents reference →](/docs/labs/agents/reference?ref=docs-labs-agents-reference-sandboxes#the-definition)
 
 A value in the record is a definition, or a binding:
 
@@ -152,7 +152,7 @@ Types: `SandboxBinding`, `SandboxStart`.
 
 ## The handler's sandbox
 
-In a handler, `sandboxes.<key>` is the thread's sandbox. It opens on first use, so reading it starts nothing. [Agents](/docs/labs/agents/agents?ref=docs-labs-agents-reference-sandboxes)
+In a handler, `sandboxes.<key>` is the thread's sandbox. It opens on first use, so reading it starts nothing. [Sandboxes →](/docs/labs/agents/sandboxes?ref=docs-labs-agents-reference-sandboxes#a-sandbox-for-your-code)
 
 ```typescript {{ title: "Signature" }}
 type SandboxHandle = Pick<DurableSandbox, "commands" | "files"> & {
@@ -219,7 +219,7 @@ Types: `SandboxHandle`.
 
 ## Code tools
 
-`sandbox.tools.code(options?)` sets which tools a sandbox gives the model. With no options the model gets `run`, and `run_code` when app tools are given. [Sandboxes](/docs/labs/agents/sandboxes?ref=docs-labs-agents-reference-sandboxes)
+`sandbox.tools.code(options?)` sets which tools a sandbox gives the model. With no options the model gets `run`, and `run_code` when app tools are given. [Sandboxes →](/docs/labs/agents/sandboxes?ref=docs-labs-agents-reference-sandboxes)
 
 ```typescript {{ title: "Signature" }}
 sandbox.tools.code(options?: CodeToolsOptions): SandboxToolsFactory
@@ -291,7 +291,7 @@ A command with a `timeout` over five minutes runs as a process that steps follow
 
 ## Repos
 
-A sandbox's `repo` is checked out when the sandbox starts. The write token never enters the sandbox: your app makes the push, after `policy` has looked at it. [Sandboxes](/docs/labs/agents/sandboxes?ref=docs-labs-agents-reference-sandboxes)
+A sandbox's `repo` is checked out when the sandbox starts. The write token never enters the sandbox: your app makes the push, after `policy` has looked at it. [Sandboxes →](/docs/labs/agents/sandboxes?ref=docs-labs-agents-reference-sandboxes)
 
 `repo` takes a value, or a function of `{ event, thread }` that may be async. The function runs once when a run starts and must be pure.
 
@@ -359,7 +359,7 @@ The checkout runs inside the sandbox, so a single `secret()` should be a read-on
 
 The model pushes with `<key>_push({ branch })` and code with `sandboxes.<key>.repo.push(branch)`. They are the same push, in four steps:
 
-1. The sandbox bundles the commits that are not on the remote yet. It holds no credentials.
+1. The sandbox bundles the commits that are not on the remote yet. This step needs no token.
 2. Your app reads the bundle back.
 3. Your app shows the commits and paths to `policy`, which can refuse.
 4. Your app pushes from its own side with the write token.
@@ -426,7 +426,7 @@ export const githubAuth = githubApp({
 
 ## Tools
 
-A tool is defined once and works from the model and from sandbox code. The key in the `tools` record names it on both sides. [Tools](/docs/labs/agents/tools?ref=docs-labs-agents-reference-sandboxes)
+A tool is defined once and works from the model and from sandbox code. The key in the `tools` record names it on both sides. [Tools →](/docs/labs/agents/tools?ref=docs-labs-agents-reference-sandboxes)
 
 | Call | Description |
 | --- | --- |
@@ -503,7 +503,7 @@ export const coolDown = tool.group({
 
 - A plain function's input type is `Parameters<F>[0]` and its output `Awaited<ReturnType<F>>`. A function or reference takes the data of its trigger and returns its return.
 - A server's tool names can't be listed by the types: the name type is `` `${key}_${string}` ``, the input is `Record<string, unknown>` and the output is `unknown`.
-- A listed sandbox's tools and the discovery and agent tools arrive without wiring. `slack.tools()` and `github.tools()` are spread into `tools`. [Slack and GitHub](/docs/labs/agents/slack-and-github?ref=docs-labs-agents-reference-sandboxes)
+- A listed sandbox's tools and the discovery and agent tools arrive without wiring. `slack.tools()` and `github.tools()` are spread into `tools`. [Slack and GitHub →](/docs/labs/agents/slack-and-github?ref=docs-labs-agents-reference-sandboxes)
 
 ### ToolContext
 
@@ -622,7 +622,7 @@ export const terraform = tool.shim("terraform", ({ argv, run, refuse }) => {
 
 ## MCP
 
-`tool.mcp()` turns a remote MCP server into tools. Put it in a `tools` record and the model and sandbox code get every tool the server offers, named `<key>_<tool>`. [Tools](/docs/labs/agents/tools?ref=docs-labs-agents-reference-sandboxes)
+`tool.mcp()` turns a remote MCP server into tools. Put it in a `tools` record and the model and sandbox code get every tool the server offers, named `<key>_<tool>`. [Tools →](/docs/labs/agents/tools?ref=docs-labs-agents-reference-sandboxes)
 
 ```typescript {{ title: "Signature" }}
 tool.mcp(options: McpServerOptions): McpServer
@@ -738,14 +738,14 @@ secret(source: string | (() => string | Promise<string>)): Secret
 
 - `secret("NAME")` reads the environment variable `NAME` inside the call. A function gives a value that depends on the caller.
 - A `Secret` printed or serialized gives its label, so a token never lands in a log, a prompt or a trace.
-- `secret()` is accepted wherever a token goes, such as `auth.bearer`, `auth.headers` and `clientSecret` in [MCP](#mcp), a repo's [`RepoAuth`](#repo-auth) token function, and the Slack and GitHub bridge secrets. [Slack and GitHub](/docs/labs/agents/slack-and-github?ref=docs-labs-agents-reference-sandboxes)
-- Once a value is inside the sandbox, code there can read it. Prefer a tool, a [shim](#shims) or a short-lived token for anything sensitive. [Secrets in Sandboxes](/docs/sandboxes/features/secrets?ref=docs-labs-agents-reference-sandboxes)
+- `secret()` is accepted wherever a token goes, such as `auth.bearer`, `auth.headers` and `clientSecret` in [MCP](#mcp), a repo's [`RepoAuth`](#repo-auth) token function, and the Slack and GitHub bridge secrets. [Slack and GitHub →](/docs/labs/agents/slack-and-github?ref=docs-labs-agents-reference-sandboxes)
+- Once a value is inside the sandbox, code there can read it. Prefer a tool, a [shim](#shims) or a short-lived token for anything sensitive. [Secrets in Sandboxes →](/docs/sandboxes/features/secrets?ref=docs-labs-agents-reference-sandboxes)
 
 Types: `Secret`, `SecretSource`.
 
 ## Skills
 
-A skill is know-how the model reads, in the `SKILL.md` format: a name, a description, instructions, and optional scripts and files. A skill never adds a tool, and its scripts act only by calling tools. [Skills](/docs/labs/agents/skills?ref=docs-labs-agents-reference-sandboxes)
+A skill is know-how the model reads, in the `SKILL.md` format: a name, a description, instructions, and optional scripts and files. A skill never adds a tool, and its scripts act only by calling tools. [Skills →](/docs/labs/agents/skills?ref=docs-labs-agents-reference-sandboxes)
 
 ```typescript {{ title: "Signature" }}
 skills.folder(path: string): SkillSource
@@ -768,7 +768,7 @@ skills.repo(repo: string, options?: SkillsRepoOptions): SkillSource
 - Public repos need no `auth`. A private repo is read with `auth` on the host, never in the sandbox.
 - The model sees every skill's name and description in its prompt. `open_skill({ name: string }): string` returns one skill's body. It is the same tool for every skill, and only an agent with skills has it. It works with no sandbox.
 - A skill's files are placed in `/skills/<name>/` in the first sandbox the model can use among the agent's listed sandboxes. An agent with skills and no sandbox gets instructions only.
-- The agent's card lists each skill's name and description. A repo's skills can change between syncs, so the card may list a skill a run cannot read. [Agent discovery](/docs/labs/agents/agent-discovery?ref=docs-labs-agents-reference-sandboxes)
+- The agent's card lists each skill's name and description. A repo's skills can change between syncs, so the card may list a skill a run cannot read. [Agent discovery →](/docs/labs/agents/agent-discovery?ref=docs-labs-agents-reference-sandboxes)
 
 ```md
 ---
@@ -808,11 +808,11 @@ export const support = agents.agent({
 | `image.inngest(name)` | An image Inngest maintains, such as `image.inngest("base")`. |
 | `image.custom(ref)` | An image in your workspace: `"my-image"`, `"my-image:v1"` or `"my-image@sha256:<hex>"`. |
 
-`SandboxImage` is `{ kind: "inngest/sandbox.image", ref }`. [Base images](/docs/sandboxes/features/base-images?ref=docs-labs-agents-reference-sandboxes)
+`SandboxImage` is `{ kind: "inngest/sandbox.image", ref }`. [Base images →](/docs/sandboxes/features/base-images?ref=docs-labs-agents-reference-sandboxes)
 
 ## Sandbox middleware
 
-Enables `step.sandbox`, `group.sandbox` and the runners, and serves the cleanup function. An app whose agents list sandboxes adds it to the client. [Sandboxes reference](/docs/sandboxes/reference?ref=docs-labs-agents-reference-sandboxes)
+Enables `step.sandbox`, `group.sandbox` and the runners, and serves the cleanup function. An app whose agents list sandboxes adds it to the client. [Sandboxes reference →](/docs/sandboxes/reference?ref=docs-labs-agents-reference-sandboxes)
 
 ```typescript {{ title: "Signature" }}
 sandboxMiddleware(): MiddlewareClass
@@ -890,11 +890,11 @@ interface DurableSandboxTools {
 
 `DurableSandboxProcess` has `signal`, `wait`, `getOutput`. `DurableSandboxSnapshot` has `waitUntilReady`, `delete`, `clone`, and the snapshot resource fields.
 
-The types of these methods, their options and their results are named after the call: `SandboxCommandOptions`, `SandboxCommandResult`, `SandboxProcessStartOptions` and `SandboxSnapshotCreateOptions`. [Snapshots and restore](/docs/sandboxes/features/snapshots-and-restore?ref=docs-labs-agents-reference-sandboxes)
+The types of these methods, their options and their results are named after the call: `SandboxCommandOptions`, `SandboxCommandResult`, `SandboxProcessStartOptions` and `SandboxSnapshotCreateOptions`. [Snapshots and restore →](/docs/sandboxes/features/snapshots-and-restore?ref=docs-labs-agents-reference-sandboxes)
 
 ## Commands with dollar
 
-`sandbox.$` runs a command as one step. [Exit codes](/docs/sandboxes/features/exit-codes?ref=docs-labs-agents-reference-sandboxes)
+`sandbox.$` runs a command as one step. [Exit codes →](/docs/sandboxes/features/exit-codes?ref=docs-labs-agents-reference-sandboxes)
 
 | Form | Description |
 | --- | --- |
