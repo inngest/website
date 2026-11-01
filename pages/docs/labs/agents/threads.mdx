@@ -7,9 +7,9 @@ export const description = "Say which events belong together and their runs shar
 
 > Say which events belong together, and their runs share one thread.
 
-A run is thrown away when it ends; a thread is what its runs share. You never set one up.
+A run is thrown away when it ends; a thread is what its runs share.
 
-The sections below grow a PR helper for `acme/web`, the agent after [`hello`](/docs/labs/agents/agents?ref=docs-labs-agents-threads). Short blocks show only what changes; [the last section](#a-trigger-with-its-own-key) has the whole file.
+The sections below grow a PR helper for `acme/web`, the agent after [`hello`](/docs/labs/agents/agents?ref=docs-labs-agents-threads); after the first block, a block shows only what changes, and [the last section](#a-trigger-with-its-own-key) has the whole file.
 
 ## Three events, three strangers
 
@@ -51,20 +51,26 @@ Open a PR, fail its CI and deploy it: three runs on three threads, because CI an
 
 You want to know what `github.thread()` is, because it looks like magic. Here it is written out.
 
+<AnnotatedCode>
+
 {/* not type-checked: github.thread({ repos }) written out as event triggers */}
 ```typescript
 github.thread({ repos: ["acme/web"] });
 
-// is the same as one trigger per GitHub event:
 [
   {
     event: "github/issue_comment",
     if: 'event.data.repository.full_name == "acme/web"',
     thread: "event.data.threadKey",
   },
-  // ...and the same for each of its other events
 ];
 ```
+
+<Annotation id="rest" lines="9" tease="the other events" title="One per event">
+One of these for each GitHub event.
+</Annotation>
+
+</AnnotatedCode>
 
 Your own events can set a `thread` too. `slack.thread()` does the same for Slack. [Slack and GitHub →](/docs/labs/agents/slack-and-github?ref=docs-labs-agents-threads)
 
@@ -83,8 +89,8 @@ triggers: [
 ],
 ```
 
-<Annotation id="thread" lines="3" tease="the PR's address" title="thread" href="/docs/labs/agents/reference?ref=docs-labs-agents-threads#thread-keys-and-inbox-sources" linkText="Thread keys">
-The CI event carries the PR's URL, the key GitHub's trigger uses too, so both land on one thread.
+<Annotation id="thread" lines="3" tease="the PR's URL" title="thread" href="/docs/labs/agents/reference?ref=docs-labs-agents-threads#thread-keys-and-inbox-sources" linkText="Thread keys">
+The CI event carries the PR's URL. GitHub's trigger keys on the same URL, so both land on one thread.
 </Annotation>
 
 </AnnotatedCode>
@@ -108,12 +114,7 @@ async ({ event }) => {
 },
 ```
 
-The first run returns nothing, and the second returns the first's note. The thread keeps:
-
-- its state, `kv.thread`. [Memory →](/docs/labs/agents/memory?ref=docs-labs-agents-threads#thread-state)
-- the model's history, which the loop saves in thread state. [Models →](/docs/labs/agents/models?ref=docs-labs-agents-threads#it-remembers)
-- its sandbox, with the shell's working directory and exported variables. [Sandboxes →](/docs/labs/agents/sandboxes?ref=docs-labs-agents-threads#it-belongs-to-the-thread)
-- its budget, and how its last run ended. [Models →](/docs/labs/agents/models?ref=docs-labs-agents-threads#a-budget)
+The first run returns nothing, and the second returns the first's note. The thread keeps its [state](/docs/labs/agents/memory?ref=docs-labs-agents-threads#thread-state), the model's [history](/docs/labs/agents/models?ref=docs-labs-agents-threads#it-remembers), its [sandbox](/docs/labs/agents/sandboxes?ref=docs-labs-agents-threads#it-belongs-to-the-thread) and its [budget](/docs/labs/agents/models?ref=docs-labs-agents-threads#a-budget).
 
 ## No key is fine
 
@@ -131,7 +132,7 @@ export const summarize = agents.agent(
 );
 ```
 
-Each message is its own thread, with nothing to set up. Its answer stays in the run's output, since there is nowhere to post it.
+Each `start()` is its own thread, with nothing to set up. Its answer stays in the run's output, since there is nowhere to post it.
 
 ## Two conversations
 
@@ -161,7 +162,7 @@ Each pull request has its own thread, with its own runs and state.
 
 ## A trigger with its own key
 
-You want deploys in the thread too, though they carry the PR's address somewhere else. Give their trigger its own `thread`.
+You want deploys in the thread too, though they carry the PR's URL somewhere else. Give their trigger its own `thread`.
 
 {/* not type-checked: three triggers on an agent, each with its thread */}
 ```typescript
