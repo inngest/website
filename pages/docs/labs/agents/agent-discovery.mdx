@@ -1,0 +1,160 @@
+import { AnnotatedCode, Annotation } from "shared/Docs/mdx";
+
+export const metaTitle = "Agent discovery | Inngest Agents";
+export const description = "How Inngest agents find each other: every agent publishes a card, a model finds agents with list_agents and describe_agent, and share and mayCall decide who can see and start an agent.";
+
+# Agent discovery
+
+> Agents find each other at run time, by what they do.
+
+Every agent publishes a card. A model agent reads the cards and starts the one it needs, in any app, with nothing wired in code.
+
+## A card
+
+To let other agents find yours, give it a card that says what it does and returns.
+
+<AnnotatedCode>
+
+{/* not type-checked: the card field on an agent with an invoke() trigger */}
+```typescript {{ title: "inngest/agents/securityReviewer.ts" }}
+import { invoke } from "inngest";
+import { z } from "zod";
+import { agents } from "../client";
+import { claude } from "../models/claude";
+
+export const securityReviewer = agents.agent({
+  id: "security-reviewer",
+  triggers: [invoke(z.object({ pr: z.string() }))],
+  model: claude,
+  system: "You review pull requests for security problems.",
+  card: {
+    description: "Reviews a pull request for security problems",
+    share: "team",
+  },
+});
+```
+
+<Annotation id="description" lines="12" tease="written for a model" title="description">
+A model chooses by this line.
+</Annotation>
+
+<Annotation id="share" lines="13" tease="who can find it" title="share" href="#who-can-find-it" linkText="Who can find it">
+`"team"` shows it to every app in the environment.
+</Annotation>
+
+</AnnotatedCode>
+
+In an app named `platform`, its address is `platform/security-reviewer`: the name `start_agent`, `mayCall` and [`agents.reference()`](/docs/labs/agents/agent-teams?ref=docs-labs-agents-agent-discovery#an-agent-in-another-app) take.
+
+## Finding
+
+To use an agent nobody wired in, the [PR helper](/docs/labs/agents/agent-teams?ref=docs-labs-agents-agent-discovery)'s model looks one up.
+
+{/* not type-checked: a handler around the loop, with discovery on by default */}
+```typescript {{ title: "inngest/agents/prHelper.ts" }}
+import { github } from "inngest/experimental/agents";
+import { agents } from "../client";
+import { claude } from "../models/claude";
+
+export const prHelper = agents.agent(
+  {
+    id: "pr-helper",
+    triggers: [github.thread({ repos: ["acme/web"] })],
+    model: claude,
+    system: "You help with pull requests on acme/web.",
+  },
+  async ({ inbox, me, loop }) => {
+    for await (const batch of inbox.batches()) {
+      const answer = await loop(batch);
+
+      await me.post(answer.text);
+    }
+  },
+);
+```
+
+```text {{ title: "What the model calls" }}
+list_agents({ query: "security" })
+  agents: [
+    {
+      address: "platform/security-reviewer",
+      description: "Reviews a pull request for security problems",
+      effects: "write",
+    },
+  ]
+
+describe_agent({ address: "platform/security-reviewer" })
+  input: { type: "object", properties: { pr: { type: "string" } }, ... }
+
+start_agent({
+  address: "platform/security-reviewer",
+  input: { pr: "https://github.com/acme/web/pull/42" },
+})
+  { thread: "a1b2c3" }
+```
+
+`start_agent` checks the input against the card first, and the review returns as `agent/finished`. [Agent Teams →](/docs/labs/agents/agent-teams?ref=docs-labs-agents-agent-discovery#the-model-calls-agents)
+
+## Keeping to itself
+
+To keep an agent from reaching for others, switch discovery off.
+
+{/* not type-checked: discovery: false on an agent */}
+```typescript
+discovery: false,
+```
+
+That removes `list_agents`, `describe_agent` and the agent tools except `reply`. Its card is still published.
+
+{/* Go deeper */}
+
+## What a card says
+
+To tell the model more, fill in the rest of the card.
+
+{/* not type-checked: every field of the card on an agent */}
+```typescript
+card: {
+  description: "Reviews a pull request for security problems",
+  share: "team",
+  owner: "platform",
+  effects: "read",
+  speed: "minutes",
+},
+```
+
+```text {{ title: "What describe_agent returns" }}
+{
+  address: "platform/security-reviewer",
+  description: "Reviews a pull request for security problems",
+  input: { type: "object", properties: { pr: { type: "string" } }, ... },
+  share: "team",
+  owner: "platform",
+  effects: "read",
+  speed: "minutes",
+}
+```
+
+`input` comes from the `invoke()` trigger, and the card lists the agent's skills. A card is announced when your app syncs and every six hours; a paused agent shows `paused: true`.
+
+## Who can find it
+
+To choose who finds an agent, set `share`: `"private"`, the default, shows it to its own app, and `"team"` to every app in the environment.
+
+It isn't access control: anyone with the address can start the agent from code. A new card takes a few minutes to show.
+
+## Who it may start
+
+To limit what the PR helper's model may start, list the agents.
+
+{/* not type-checked: limits.mayCall on an agent */}
+```typescript
+limits: { mayCall: ["platform/security-reviewer"] },
+```
+
+`start_agent` refuses any address not on the list. The model can still list every card.
+
+## Recipes and reference
+
+- [Agent teams](/docs/labs/agents/recipes/agent-teams?ref=docs-labs-agents-agent-discovery)
+- [Reference: cards and discovery](/docs/labs/agents/reference?ref=docs-labs-agents-agent-discovery#cards-and-discovery)
