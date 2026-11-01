@@ -136,7 +136,7 @@ export const readLog = tool.step({
 
 ## It belongs to the thread
 
-You want CI's second failure on the same PR to find the checkout where the first run left it. Change nothing: the thread owns its sandbox.
+You want CI's second failure on the same PR to find the machine as the first run left it. Change nothing: the thread owns its sandbox.
 
 ```text {{ title: "PR 42, two runs" }}
 09:00  ci/run.failed  work_run: npm install  the sandbox starts
@@ -191,7 +191,7 @@ Sees the push's `branch`, `commits` and `paths` before anything is pushed. A ref
 
 </AnnotatedCode>
 
-With a `repo`, the model also gets `work_push`: it commits in the sandbox, and your app pushes after `policy` has looked. A single `secret()` should be a read-only token; an agent that pushes uses `githubApp()` or `{ read, write }`.
+With a `repo`, the model also gets `work_push`: it commits in the sandbox, and your app pushes. A single `secret()` should be a read-only token; an agent that pushes uses `githubApp()` or `{ read, write }`.
 
 ## A sandbox for your code
 
@@ -212,42 +212,6 @@ const tests = await sandboxes.work.commands.run("tests", "npm test", {
 ```
 
 The model loses `work_run` and `work_push`. In the handler, `sandboxes.work` is the same machine: each command is a durable step, and `repo.push(branch)` goes through the same `policy`. [Reference: the handler's sandbox →](/docs/labs/agents/reference-sandboxes?ref=docs-labs-agents-sandboxes#the-handler-s-sandbox)
-
-{/* Go deeper */}
-
-## Any agent engine
-
-You want something other than the SDK's loop to run the turns. Give the definition a `loop` of your own.
-
-<AnnotatedCode>
-
-{/* not type-checked: a whole hand-built loop on the agent definition */}
-```typescript {{ title: "inngest/agents/parrot.ts" }}
-import { agents } from "../client";
-
-export const parrot = agents.agent({
-  id: "parrot",
-  loop: async (batch) => {
-    const heard = batch.map((message) => {
-      return JSON.stringify(message.data);
-    });
-
-    return { text: heard.join("\n"), end: "done", unread: [] };
-  },
-});
-```
-
-<Annotation id="loop" lines="5" tease="the batch in, the result out" title="A whole loop" href="/docs/labs/agents/reference?ref=docs-labs-agents-sandboxes#the-loop" linkText="Reference: the loop">
-A function shaped like the handler's `loop`. It reaches its model and tools however it likes.
-</Annotation>
-
-<Annotation id="result" lines="10" tease="what a loop returns" title="The result" href="/docs/labs/agents/reference?ref=docs-labs-agents-sandboxes#the-result" linkText="Reference: the result">
-The answer in `text`, why the loop stopped in `end`, and the messages it left in `unread`.
-</Annotation>
-
-</AnnotatedCode>
-
-The agent's triggers, inbox and thread stay as they are; only the turns change.
 
 ## Recipes and reference
 
