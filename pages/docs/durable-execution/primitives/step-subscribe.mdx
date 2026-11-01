@@ -249,4 +249,4 @@ Closing the inbox ends the loop's waiting read, so `reading` settles.
 
 - Each message is saved as its own step when it arrives, read or not. An event that matches two inboxes is saved in each.
 - Opening, `close()` and each batch read cost one step each. A `next()` that receives a message adds none. A `next()` loop over 10 messages is 11 steps, or 12 with `close()`.
-- Messages count toward the run's [step and state limits](/docs/durable-execution/limits#platform-limits). A run that receives more fails with the usual limit error, even while it sleeps.
+- Messages count toward the run's [step and state limits](/docs/durable-execution/limits#platform-limits). A run that goes over a limit fails with the usual limit error, even while it sleeps.

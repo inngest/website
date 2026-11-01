@@ -264,6 +264,7 @@ const sectionReference: (NavGroup | NavLink)[] = [
             title: "step.subscribe()",
             href: tsRef("v4", "functions/step-subscribe"),
             className: "font-mono",
+            tag: "experimental",
           },
           {
             title: "step.sendEvent()",
