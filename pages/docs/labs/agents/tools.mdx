@@ -514,9 +514,7 @@ export const analyst = agents.agent({
 });
 ```
 
-A script calls them the same way: `tools.hex_search_projects(...)`. If a call says it can't expand a server, spread its tools: `{ ...(await hex.tools()) }`.
-
-{/* TODO(spec): which call paths cannot expand a bare server and need the spread form */}
+A script calls them the same way: `tools.hex_search_projects(...)`. `{ ...(await hex.tools()) }` spreads the same tools into a record.
 
 ## Sign in each person
 
