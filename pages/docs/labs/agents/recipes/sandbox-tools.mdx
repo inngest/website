@@ -88,7 +88,7 @@ export const analysis = sandbox({
 });
 ```
 
-<Annotation id="tools" lines="6" tease="tools for scripts" title="Tools for the script" href="/docs/labs/agents/sandboxes-and-code?ref=docs-labs-agents-recipes-sandbox-tools#let-code-call-your-tools" linkText="Let code call your tools">
+<Annotation id="tools" lines="6" tease="tools for scripts" title="Tools for the script" href="/docs/labs/agents/calling-home?ref=docs-labs-agents-recipes-sandbox-tools" linkText="Let code call your tools">
 The script calls `tools.listPullRequests(...)`.
 </Annotation>
 
@@ -114,7 +114,7 @@ export const analyst = agents.agent({
 });
 ```
 
-<Annotation id="sandboxes" lines="13" tease="named after the sandbox" title="Listed sandbox" href="/docs/labs/agents/sandboxes-and-code?ref=docs-labs-agents-recipes-sandbox-tools#give-the-agent-a-sandbox" linkText="Give the agent a sandbox">
+<Annotation id="sandboxes" lines="13" tease="named after the sandbox" title="Listed sandbox" href="/docs/labs/agents/sandboxes?ref=docs-labs-agents-recipes-sandbox-tools#a-sandbox" linkText="Give the agent a sandbox">
 The model gets `analysis_run_code`, and `analysis_run` for the shell.
 </Annotation>
 
@@ -136,9 +136,9 @@ The [model](/docs/labs/agents/quick-start?ref=docs-labs-agents-recipes-sandbox-t
 
 ## What it shows off
 
-- [Code that calls tools](/docs/labs/agents/sandboxes-and-code?ref=docs-labs-agents-recipes-sandbox-tools#let-code-call-your-tools) makes many calls in one model turn.
+- [Code that calls tools](/docs/labs/agents/calling-home?ref=docs-labs-agents-recipes-sandbox-tools) makes many calls in one model turn.
 - [Tools](/docs/labs/agents/tools?ref=docs-labs-agents-recipes-sandbox-tools) keep the GitHub token in your app, never in the sandbox.
-- [A typed input](/docs/labs/agents/agents-and-triggers?ref=docs-labs-agents-recipes-sandbox-tools#take-a-typed-input) starts an agent with no handler.
+- [A typed input](/docs/labs/agents/agent-teams?ref=docs-labs-agents-recipes-sandbox-tools#a-second-agent) starts an agent with no handler.
 
 ## Run it
 
@@ -159,11 +159,11 @@ At [localhost:8288](http://localhost:8288), invoke `analyst` with `{ "question":
 
 ## Variations
 
-- [Group tools](/docs/labs/agents/tools?ref=docs-labs-agents-recipes-sandbox-tools#wait-for-a-reply) can wait for a person with `waits: true`.
-- [Handlers](/docs/labs/agents/sandboxes-and-code?ref=docs-labs-agents-recipes-sandbox-tools#let-code-call-your-tools) run the same tools with `sandboxes.analysis.commands.run` and `{ tools }`.
+- [Group tools](/docs/labs/agents/reference-sandboxes?ref=docs-labs-agents-recipes-sandbox-tools#tools) can wait for a person with `waits: true`.
+- [Calling home](/docs/labs/agents/calling-home?ref=docs-labs-agents-recipes-sandbox-tools) run the same tools with `sandboxes.analysis.commands.run` and `{ tools }`.
 
 ## Learn more
 
-- [Sandboxes and code](/docs/labs/agents/sandboxes-and-code?ref=docs-labs-agents-recipes-sandbox-tools)
+- [Sandboxes](/docs/labs/agents/sandboxes?ref=docs-labs-agents-recipes-sandbox-tools)
 - [Tools](/docs/labs/agents/tools?ref=docs-labs-agents-recipes-sandbox-tools)
 - [All recipes](/docs/labs/agents/recipes?ref=docs-labs-agents-recipes-sandbox-tools)

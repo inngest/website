@@ -57,15 +57,15 @@ export const work = sandbox({
 });
 ```
 
-<Annotation id="repo" lines="6-8" tease="the request names it" title="The repository" href="/docs/labs/agents/sandboxes-and-code?ref=docs-labs-agents-recipes-coding-agent#check-out-a-repo" linkText="Check out a repo">
+<Annotation id="repo" lines="6-8" tease="the request names it" title="The repository" href="/docs/labs/agents/sandboxes?ref=docs-labs-agents-recipes-coding-agent#a-repo" linkText="Check out a repo">
 A function of the event, so the sandbox clones the repository each request names.
 </Annotation>
 
-<Annotation id="auth" lines="9-12" tease="read to clone" title="Two tokens" href="/docs/labs/agents/sandboxes-and-code?ref=docs-labs-agents-recipes-coding-agent#check-out-a-repo" linkText="Check out a repo">
+<Annotation id="auth" lines="9-12" tease="read to clone" title="Two tokens" href="/docs/labs/agents/sandboxes?ref=docs-labs-agents-recipes-coding-agent#a-repo" linkText="Check out a repo">
 The checkout uses the read token and the push the write token, which stays in your app.
 </Annotation>
 
-<Annotation id="policy" lines="13-25" tease="can refuse a push" title="Push policy" href="/docs/labs/agents/sandboxes-and-code?ref=docs-labs-agents-recipes-coding-agent#push-a-branch" linkText="Push a branch">
+<Annotation id="policy" lines="13-25" tease="can refuse a push" title="Push policy" href="/docs/labs/agents/sandboxes?ref=docs-labs-agents-recipes-coding-agent#a-repo" linkText="Push a branch">
 Sees the branch and the changed files before anything is pushed, and can refuse. The model reads a refusal and can fix the branch.
 </Annotation>
 
@@ -93,11 +93,11 @@ export const coder = agents.agent({
 });
 ```
 
-<Annotation id="invoke" lines="11" tease="callers send checked input" title="A typed input" href="/docs/labs/agents/agents-and-triggers?ref=docs-labs-agents-recipes-coding-agent#take-a-typed-input" linkText="Take a typed input">
+<Annotation id="invoke" lines="11" tease="callers send checked input" title="A typed input" href="/docs/labs/agents/agent-teams?ref=docs-labs-agents-recipes-coding-agent#a-second-agent" linkText="Take a typed input">
 Callers send `{ repo, task }`, checked against this schema.
 </Annotation>
 
-<Annotation id="sandbox" lines="15" tease="a machine per thread" title="The sandbox" href="/docs/labs/agents/sandboxes-and-code?ref=docs-labs-agents-recipes-coding-agent" linkText="Sandboxes and code">
+<Annotation id="sandbox" lines="15" tease="a machine per thread" title="The sandbox" href="/docs/labs/agents/sandboxes?ref=docs-labs-agents-recipes-coding-agent" linkText="Sandboxes and code">
 The model gets `work_run` and `work_push`. The sandbox starts on first use.
 </Annotation>
 
@@ -119,7 +119,7 @@ export const requestChange = inngest.createFunction(
 );
 ```
 
-<Annotation id="result" lines="8" tease="start, then wait" title="Start and wait" href="/docs/labs/agents/teams-of-agents?ref=docs-labs-agents-recipes-coding-agent#wait-for-the-result" linkText="Wait for the result">
+<Annotation id="result" lines="8" tease="start, then wait" title="Start and wait" href="/docs/labs/agents/agent-teams?ref=docs-labs-agents-recipes-coding-agent#call-it-from-code" linkText="Wait for the result">
 `result()` resolves with the agent's answer as soon as it has given it.
 </Annotation>
 
@@ -141,10 +141,10 @@ The [model](/docs/labs/agents/quick-start?ref=docs-labs-agents-recipes-coding-ag
 
 ## What it shows off
 
-- [A repository in the sandbox](/docs/labs/agents/sandboxes-and-code?ref=docs-labs-agents-recipes-coding-agent#check-out-a-repo) is cloned for you, and the request picks which one.
-- [A push policy](/docs/labs/agents/sandboxes-and-code?ref=docs-labs-agents-recipes-coding-agent#push-a-branch) lets your code decide what may leave the sandbox.
-- [A typed input](/docs/labs/agents/agents-and-triggers?ref=docs-labs-agents-recipes-coding-agent#take-a-typed-input) gives callers a checked request.
-- [Start and wait](/docs/labs/agents/teams-of-agents?ref=docs-labs-agents-recipes-coding-agent#wait-for-the-result) is one line in a plain function.
+- [A repository in the sandbox](/docs/labs/agents/sandboxes?ref=docs-labs-agents-recipes-coding-agent#a-repo) is cloned for you, and the request picks which one.
+- [A push policy](/docs/labs/agents/sandboxes?ref=docs-labs-agents-recipes-coding-agent#a-repo) lets your code decide what may leave the sandbox.
+- [A typed input](/docs/labs/agents/agent-teams?ref=docs-labs-agents-recipes-coding-agent#a-second-agent) gives callers a checked request.
+- [Start and wait](/docs/labs/agents/agent-teams?ref=docs-labs-agents-recipes-coding-agent#call-it-from-code) is one line in a plain function.
 
 ## Run it
 
@@ -167,11 +167,11 @@ At [localhost:8288](http://localhost:8288), open `request-change`, choose **Invo
 ## Variations
 
 - [Agent teams](/docs/labs/agents/recipes/agent-teams?ref=docs-labs-agents-recipes-coding-agent) lets a lead agent call it.
-- [Sandboxes and code](/docs/labs/agents/sandboxes-and-code?ref=docs-labs-agents-recipes-coding-agent) installs dependencies once with `setup`.
+- [Sandboxes](/docs/labs/agents/sandboxes?ref=docs-labs-agents-recipes-coding-agent) installs dependencies once with `setup`.
 - [Reliability](/docs/labs/agents/reliability?ref=docs-labs-agents-recipes-coding-agent#cap-spend) caps a request's spend with `budget`.
 
 ## Learn more
 
-- [Sandboxes and code](/docs/labs/agents/sandboxes-and-code?ref=docs-labs-agents-recipes-coding-agent)
-- [Teams of agents](/docs/labs/agents/teams-of-agents?ref=docs-labs-agents-recipes-coding-agent)
+- [Sandboxes](/docs/labs/agents/sandboxes?ref=docs-labs-agents-recipes-coding-agent)
+- [Agent Teams](/docs/labs/agents/agent-teams?ref=docs-labs-agents-recipes-coding-agent)
 - Next recipe: [Scheduled watcher](/docs/labs/agents/recipes/scheduled-watcher?ref=docs-labs-agents-recipes-coding-agent)

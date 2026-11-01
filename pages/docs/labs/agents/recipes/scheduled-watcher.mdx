@@ -7,7 +7,7 @@ export const description = "Build a scheduled function that finds pull requests 
 
 > A weekday digest that speaks up only when there is news.
 
-It has no thread, inbox or card, so it is a plain function and not an agent. [Agent or plain function →](/docs/labs/agents/agents-and-triggers?ref=docs-labs-agents-recipes-scheduled-watcher#agent-or-plain-function)
+It has no thread, inbox or card, so it is a plain function and not an agent. [Agent or plain function →](/docs/labs/agents/agent-teams?ref=docs-labs-agents-recipes-scheduled-watcher#not-everything-is-an-agent)
 
 ```text
 Mon 09:00   Watcher
@@ -72,19 +72,19 @@ export const watcher = inngest.createFunction(
 );
 ```
 
-<Annotation id="cron" lines="11" tease="a cron trigger" title="Run on a schedule" href="/docs/labs/agents/agents-and-triggers?ref=docs-labs-agents-recipes-scheduled-watcher#start-a-run" linkText="Start a run">
+<Annotation id="cron" lines="11" tease="a cron trigger" title="Run on a schedule" href="/docs/labs/agents/agents?ref=docs-labs-agents-recipes-scheduled-watcher#other-ways-to-start" linkText="Start a run">
 A schedule is a trigger like any other.
 </Annotation>
 
-<Annotation id="key" lines="8" tease="a typed key" title="What was reported" href="/docs/labs/agents/threads-and-memory?ref=docs-labs-agents-recipes-scheduled-watcher#type-a-key" linkText="Type a key">
+<Annotation id="key" lines="8" tease="a typed key" title="What was reported" href="/docs/labs/agents/memory?ref=docs-labs-agents-recipes-scheduled-watcher#typed-keys" linkText="Type a key">
 Reads are checked against the schema.
 </Annotation>
 
-<Annotation id="seen" lines="13" tease="shared by every run" title="App scope" href="/docs/labs/agents/threads-and-memory?ref=docs-labs-agents-recipes-scheduled-watcher#keep-state" linkText="Keep state">
+<Annotation id="seen" lines="13" tease="shared by every run" title="App scope" href="/docs/labs/agents/memory?ref=docs-labs-agents-recipes-scheduled-watcher#thread-state" linkText="Keep state">
 `kv.app` is the same for every run in the app. With no `createAgents`, it uses the store from `INNGEST_EXPERIMENTAL_KV_URL`.
 </Annotation>
 
-<Annotation id="digest" lines="23-30" tease="one model call" title="The digest" href="/docs/labs/agents/models-and-the-loop?ref=docs-labs-agents-recipes-scheduled-watcher#call-it-once" linkText="Call it once">
+<Annotation id="digest" lines="23-30" tease="one model call" title="The digest" href="/docs/labs/agents/models?ref=docs-labs-agents-recipes-scheduled-watcher#ask-a-model" linkText="Call it once">
 A one-shot call isn't a step by itself, so it sits in one.
 </Annotation>
 
@@ -180,9 +180,9 @@ The [model](/docs/labs/agents/quick-start?ref=docs-labs-agents-recipes-scheduled
 
 ## What it shows off
 
-- [A plain function](/docs/labs/agents/agents-and-triggers?ref=docs-labs-agents-recipes-scheduled-watcher#agent-or-plain-function) runs a schedule with steps and no agent.
-- [One model call](/docs/labs/agents/models-and-the-loop?ref=docs-labs-agents-recipes-scheduled-watcher#call-it-once) writes the digest inside a step.
-- [App-wide memory](/docs/labs/agents/threads-and-memory?ref=docs-labs-agents-recipes-scheduled-watcher#keep-state) with a typed key remembers what was reported.
+- [A plain function](/docs/labs/agents/agent-teams?ref=docs-labs-agents-recipes-scheduled-watcher#not-everything-is-an-agent) runs a schedule with steps and no agent.
+- [One model call](/docs/labs/agents/models?ref=docs-labs-agents-recipes-scheduled-watcher#ask-a-model) writes the digest inside a step.
+- [App-wide memory](/docs/labs/agents/memory?ref=docs-labs-agents-recipes-scheduled-watcher#thread-state) with a typed key remembers what was reported.
 - [Retried steps](/docs/labs/agents/reliability?ref=docs-labs-agents-recipes-scheduled-watcher) keep a failed post from being marked reported.
 
 ## Run it
@@ -205,12 +205,12 @@ Invoke `watcher` from the Functions page at [localhost:8288](http://localhost:82
 
 ## Variations
 
-- [Agents and triggers](/docs/labs/agents/agents-and-triggers?ref=docs-labs-agents-recipes-scheduled-watcher#start-a-run) runs it hourly with `{ cron: "TZ=UTC 0 * * * *" }`.
-- [Threads and memory](/docs/labs/agents/threads-and-memory?ref=docs-labs-agents-recipes-scheduled-watcher#claim-a-key) reminds weekly with `kv.app.set(reported, value, { ttl: 604800 })`.
-- [Teams of agents](/docs/labs/agents/teams-of-agents?ref=docs-labs-agents-recipes-scheduled-watcher) hands a digest that needs follow-up to an agent with `start()`.
+- [Agents](/docs/labs/agents/agents?ref=docs-labs-agents-recipes-scheduled-watcher#other-ways-to-start) runs it hourly with `{ cron: "TZ=UTC 0 * * * *" }`.
+- [Threads and memory](/docs/labs/agents/reference?ref=docs-labs-agents-recipes-scheduled-watcher#kv) reminds weekly with `kv.app.set(reported, value, { ttl: 604800 })`.
+- [Agent Teams](/docs/labs/agents/agent-teams?ref=docs-labs-agents-recipes-scheduled-watcher) hands a digest that needs follow-up to an agent with `start()`.
 
 ## Learn more
 
-- [Agents and triggers](/docs/labs/agents/agents-and-triggers?ref=docs-labs-agents-recipes-scheduled-watcher)
-- [Threads and memory](/docs/labs/agents/threads-and-memory?ref=docs-labs-agents-recipes-scheduled-watcher)
+- [Agents](/docs/labs/agents/agents?ref=docs-labs-agents-recipes-scheduled-watcher)
+- [Memory](/docs/labs/agents/memory?ref=docs-labs-agents-recipes-scheduled-watcher)
 - Next recipe: [Agent teams](/docs/labs/agents/recipes/agent-teams?ref=docs-labs-agents-recipes-scheduled-watcher)

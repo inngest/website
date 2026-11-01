@@ -61,7 +61,7 @@ export const agents = createAgents(inngest);
 
 ## The definition
 
-`agents.agent(definition, handler?)` takes the fields below. [Agents and triggers →](/docs/labs/agents/agents-and-triggers?ref=docs-labs-agents-reference)
+`agents.agent(definition, handler?)` takes the fields below. [Agents →](/docs/labs/agents/agents?ref=docs-labs-agents-reference)
 
 - A field marked *value* takes a value only. Inngest reads `id`, `triggers`, `thread`, `inbox`, `card`, `discovery` and `listen` when your app syncs or an event is routed.
 - A field marked *value or function* also takes a function of `{ event, thread }`, which may be async. `event` is the event that started the run and `thread` is `{ key: string }`.
@@ -142,7 +142,7 @@ inbox: [
 
 ## The handler
 
-The second argument of `agents.agent()`. It gets one argument: the function's usual context (`step` and the rest) with these fields beside it. [Handlers →](/docs/labs/agents/handlers?ref=docs-labs-agents-reference)
+The second argument of `agents.agent()`. It gets one argument: the function's usual context (`step` and the rest) with these fields beside it. [Agents →](/docs/labs/agents/agents?ref=docs-labs-agents-reference)
 
 | Field | Description |
 | --- | --- |
@@ -213,7 +213,7 @@ const answer = await reviewer.start({ pr }).result();
 
 ## Thread handles
 
-What you hold to talk to a thread. `start()` gives one, `thread(key)` rebuilds one, a message's `from` is one, and [`me`](#me) is the handle to your own thread. [Teams of agents →](/docs/labs/agents/teams-of-agents?ref=docs-labs-agents-reference)
+What you hold to talk to a thread. `start()` gives one, `thread(key)` rebuilds one, a message's `from` is one, and [`me`](#me) is the handle to your own thread. [Agent Teams →](/docs/labs/agents/agent-teams?ref=docs-labs-agents-reference)
 
 ```typescript {{ title: "Signature" }}
 type Json = string | number | boolean | null | Json[] | { [key: string]: Json };
@@ -300,7 +300,7 @@ const { findings } = await reviewer.start({ pr }).result();
 
 ## Messages
 
-Agents talk through four event types. Each message says who sent it with `msg.from`, a [`Sender`](#thread-handles). `msg.is(type)` narrows `data`. [Teams of agents →](/docs/labs/agents/teams-of-agents?ref=docs-labs-agents-reference)
+Agents talk through four event types. Each message says who sent it with `msg.from`, a [`Sender`](#thread-handles). `msg.is(type)` narrows `data`. [Agent Teams →](/docs/labs/agents/agent-teams?ref=docs-labs-agents-reference)
 
 | Export | Event | Delivered to |
 | --- | --- | --- |
@@ -332,7 +332,7 @@ Agents talk through four event types. Each message says who sent it with `msg.fr
 - `agent/question`: answer it with `msg.reply(answer)` or the model's `reply` tool. The answer is a string.
 - `agent/answer`: `re` is the id of the question it answers. `refused` and `timed_out` mean no answer is coming.
 - `agent/finished`: how a run the agent started ended, with its output or error.
-- How the model sees each type: [Models and the loop](/docs/labs/agents/models-and-the-loop?ref=docs-labs-agents-reference). `formatEvent` is the default wording. [The loop](#the-loop)
+- How the model sees each type: [Models](/docs/labs/agents/models?ref=docs-labs-agents-reference). `formatEvent` is the default wording. [The loop](#the-loop)
 
 ```typescript
 for await (const msg of inbox) {
@@ -395,7 +395,7 @@ A message is the event as sent, plus `is(types)`, which takes one event type or 
 
 ## The loop
 
-The loop runs turns until the model stops calling tools, reaches `maxTurns`, is stopped or spends the budget. A turn is one model call plus the tool calls it asked for. The handler's `loop` is already set up from the definition and posts nothing. [Models and the loop →](/docs/labs/agents/models-and-the-loop?ref=docs-labs-agents-reference)
+The loop runs turns until the model stops calling tools, reaches `maxTurns`, is stopped or spends the budget. A turn is one model call plus the tool calls it asked for. The handler's `loop` is already set up from the definition and posts nothing. [Models →](/docs/labs/agents/models?ref=docs-labs-agents-reference)
 
 ```typescript {{ title: "Signature" }}
 loop(batch: AgentMessage[], options?): Promise<Result>
@@ -491,7 +491,7 @@ format?: (message: AgentMessage) => AgentUserContent;
 
 ## Models
 
-A model is what the loop calls each turn: the history in, the reply out. Any function of that shape works, typed `AgentModel`. [Models and the loop →](/docs/labs/agents/models-and-the-loop?ref=docs-labs-agents-reference)
+A model is what the loop calls each turn: the history in, the reply out. Any function of that shape works, typed `AgentModel`. [Models →](/docs/labs/agents/models?ref=docs-labs-agents-reference)
 
 ```typescript {{ title: "Signature" }}
 const claude = anthropic(options): AgentModel
@@ -592,7 +592,7 @@ limits: { depth?: number; mayCall?: string[] }
 
 ## Cards and discovery
 
-Every agent publishes a card, and the model finds cards with two tools. [Discovery →](/docs/labs/agents/discovery?ref=docs-labs-agents-reference)
+Every agent publishes a card, and the model finds cards with two tools. [Agent discovery →](/docs/labs/agents/agent-discovery?ref=docs-labs-agents-reference)
 
 ```typescript {{ title: "Signature" }}
 type AgentCard = {
@@ -855,7 +855,7 @@ triggers: [
 
 ## KV
 
-Where what lasts between runs is kept. [Threads and memory →](/docs/labs/agents/threads-and-memory?ref=docs-labs-agents-reference)
+Where what lasts between runs is kept. [Memory →](/docs/labs/agents/memory?ref=docs-labs-agents-reference)
 
 ### Store
 

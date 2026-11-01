@@ -55,15 +55,15 @@ export const reviewer = agents.agent({
 Starts on a pull request comment that asks for a review, not on an edit or the app's own comment.
 </Annotation>
 
-<Annotation id="idle" lines="18" tease="a short wait" title="A short idle" href="/docs/labs/agents/threads-and-memory?ref=docs-labs-agents-recipes-pr-reviewer#how-long-a-run-waits" linkText="How long a run waits">
+<Annotation id="idle" lines="18" tease="a short wait" title="A short idle" href="/docs/labs/agents/inboxes?ref=docs-labs-agents-recipes-pr-reviewer#going-quiet" linkText="How long a run waits">
 A request after the run has ended checks out the pull request's new head; one sent within the minute joins the running review.
 </Annotation>
 
-<Annotation id="answer" lines="19-21" tease="no handler needed" title="The review is the answer" href="/docs/labs/agents/models-and-the-loop?ref=docs-labs-agents-recipes-pr-reviewer" linkText="Models and the loop">
+<Annotation id="answer" lines="19-21" tease="no handler needed" title="The review is the answer" href="/docs/labs/agents/models?ref=docs-labs-agents-recipes-pr-reviewer" linkText="Models and the loop">
 With no handler, the model's answer is the comment.
 </Annotation>
 
-<Annotation id="sandbox" lines="22" tease="a machine for tests" title="The sandbox" href="/docs/labs/agents/sandboxes-and-code?ref=docs-labs-agents-recipes-pr-reviewer" linkText="Sandboxes and code">
+<Annotation id="sandbox" lines="22" tease="a machine for tests" title="The sandbox" href="/docs/labs/agents/sandboxes?ref=docs-labs-agents-recipes-pr-reviewer" linkText="Sandboxes and code">
 Gives the model `review_run`, `review_read` and `review_search`.
 </Annotation>
 
@@ -90,11 +90,11 @@ export const review = sandbox({
 });
 ```
 
-<Annotation id="repo" lines="6-9" tease="the pull request's head" title="Check out the pull request" href="/docs/labs/agents/sandboxes-and-code?ref=docs-labs-agents-recipes-pr-reviewer#check-out-a-repo" linkText="Check out a repo">
+<Annotation id="repo" lines="6-9" tease="the pull request's head" title="Check out the pull request" href="/docs/labs/agents/sandboxes?ref=docs-labs-agents-recipes-pr-reviewer#a-repo" linkText="Check out a repo">
 The head of the pull request that asked.
 </Annotation>
 
-<Annotation id="readonly" lines="10-11" tease="nothing can push" title="Read only" href="/docs/labs/agents/sandboxes-and-code?ref=docs-labs-agents-recipes-pr-reviewer#push-a-branch" linkText="Push a branch">
+<Annotation id="readonly" lines="10-11" tease="nothing can push" title="Read only" href="/docs/labs/agents/sandboxes?ref=docs-labs-agents-recipes-pr-reviewer#a-repo" linkText="Push a branch">
 A read token and no push tool. A changed tracked file would block the next checkout, so the prompt forbids it.
 </Annotation>
 
@@ -135,8 +135,8 @@ The [model](/docs/labs/agents/quick-start?ref=docs-labs-agents-recipes-pr-review
 ## What it shows off
 
 - [A GitHub comment](/docs/labs/agents/slack-and-github?ref=docs-labs-agents-recipes-pr-reviewer#work-on-git-hub) starts the agent on the pull request's thread.
-- [A repository in the sandbox](/docs/labs/agents/sandboxes-and-code?ref=docs-labs-agents-recipes-pr-reviewer#check-out-a-repo) is checked out at the event's ref.
-- [Code tools](/docs/labs/agents/sandboxes-and-code?ref=docs-labs-agents-recipes-pr-reviewer#work-in-a-shell) limit the model to a shell, `read` and `search`.
+- [A repository in the sandbox](/docs/labs/agents/sandboxes?ref=docs-labs-agents-recipes-pr-reviewer#a-repo) is checked out at the event's ref.
+- [Code tools](/docs/labs/agents/sandboxes?ref=docs-labs-agents-recipes-pr-reviewer#it-belongs-to-the-thread) limit the model to a shell, `read` and `search`.
 
 ## Run it
 

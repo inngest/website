@@ -12,7 +12,7 @@ Every statement of a run is a row in its trace, and scores add numbers to those 
 - **A row per statement.** Calls, posts, reads. [Read a trace →](#read-a-trace)
 - **Scores you don't write.** Time, tokens, failures. [Automatic scores →](#automatic-scores)
 - **Scores you do.** From a handler or a tool. [Score outcomes →](#score-outcomes)
-- **Progress as it happens.** `onTurn` after each turn. [Show progress →](/docs/labs/agents/models-and-the-loop?ref=docs-labs-agents-observability#watch-progress)
+- **Progress as it happens.** `onTurn` after each turn. [Show progress →](/docs/labs/agents/models?ref=docs-labs-agents-observability#progress-on-every-turn)
 
 <AnnotatedCode>
 
@@ -102,5 +102,5 @@ An un-awaited score is still written before the run ends. Names can't start with
 
 ## Recipes and reference
 
-- [Handlers](/docs/labs/agents/handlers?ref=docs-labs-agents-observability#score-the-run): `score()` beside the rest of the handler's argument.
+- [Agents reference: the handler](/docs/labs/agents/reference?ref=docs-labs-agents-observability#the-handler): `score()` beside the rest of the handler's argument.
 - [Reference: scores](/docs/labs/agents/reference?ref=docs-labs-agents-observability#scores)

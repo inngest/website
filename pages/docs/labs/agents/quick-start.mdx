@@ -32,7 +32,7 @@ export const inngest = new Inngest({ id: "support" });
 export const agents = createAgents(inngest);
 ```
 
-`createAgents` keeps each thread's state in the Redis store from `INNGEST_EXPERIMENTAL_KV_URL`. [Threads and memory →](/docs/labs/agents/threads-and-memory?ref=docs-labs-agents-quick-start)
+`createAgents` keeps each thread's state in the Redis store from `INNGEST_EXPERIMENTAL_KV_URL`. [Memory →](/docs/labs/agents/memory?ref=docs-labs-agents-quick-start)
 
 ## Pick a model
 
@@ -86,15 +86,15 @@ export const support = agents.agent({
 });
 ```
 
-<Annotation id="triggers" lines="13" tease="what starts a run" title="Triggers" href="/docs/labs/agents/agents-and-triggers?ref=docs-labs-agents-quick-start" linkText="Agents and triggers">
+<Annotation id="triggers" lines="13" tease="what starts a run" title="Triggers" href="/docs/labs/agents/agents?ref=docs-labs-agents-quick-start" linkText="Agents and triggers">
 Anything a function can trigger on. Here, an event.
 </Annotation>
 
-<Annotation id="thread" lines="14" tease="one thread per customer" title="Thread" href="/docs/labs/agents/threads-and-memory?ref=docs-labs-agents-quick-start" linkText="Threads and memory">
+<Annotation id="thread" lines="14" tease="one thread per customer" title="Thread" href="/docs/labs/agents/memory?ref=docs-labs-agents-quick-start" linkText="Threads and memory">
 Questions with the same customer land on one thread, so the agent remembers what was said.
 </Annotation>
 
-<Annotation id="model" lines="15-17" tease="no handler needed" title="Model, prompt and tools" href="/docs/labs/agents/models-and-the-loop?ref=docs-labs-agents-quick-start" linkText="Models and the loop">
+<Annotation id="model" lines="15-17" tease="no handler needed" title="Model, prompt and tools" href="/docs/labs/agents/models?ref=docs-labs-agents-quick-start" linkText="Models and the loop">
 With no handler, the agent sends each message to the model and runs its tool calls until it answers.
 </Annotation>
 
@@ -149,6 +149,6 @@ Nothing here says where to post, so the answer stays in the run. Put the agent i
 
 ## Next
 
-- [Agents and triggers](/docs/labs/agents/agents-and-triggers?ref=docs-labs-agents-quick-start) covers everything an agent definition takes.
-- [Handlers](/docs/labs/agents/handlers?ref=docs-labs-agents-quick-start) let your code decide what the model sees and what gets posted.
+- [Agents](/docs/labs/agents/agents?ref=docs-labs-agents-quick-start) covers everything an agent definition takes.
+- [Agents](/docs/labs/agents/agents?ref=docs-labs-agents-quick-start) let your code decide what the model sees and what gets posted.
 - [Recipes](/docs/labs/agents/recipes?ref=docs-labs-agents-quick-start) are complete examples to copy.

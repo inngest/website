@@ -35,7 +35,7 @@ Names here come from `inngest/experimental`, except `sandbox`, `skills`, `github
 
 ## sandbox()
 
-Defines a sandbox at module scope. It creates nothing; an agent that lists it gets a machine the first time something uses it. [Sandboxes and code](/docs/labs/agents/sandboxes-and-code?ref=docs-labs-agents-reference-sandboxes)
+Defines a sandbox at module scope. It creates nothing; an agent that lists it gets a machine the first time something uses it. [Sandboxes](/docs/labs/agents/sandboxes?ref=docs-labs-agents-reference-sandboxes)
 
 ```typescript {{ title: "Signature" }}
 sandbox<TTool>(
@@ -152,7 +152,7 @@ Types: `SandboxBinding`, `SandboxStart`.
 
 ## The handler's sandbox
 
-In a handler, `sandboxes.<key>` is the thread's sandbox. It opens on first use, so reading it starts nothing. [Handlers](/docs/labs/agents/handlers?ref=docs-labs-agents-reference-sandboxes)
+In a handler, `sandboxes.<key>` is the thread's sandbox. It opens on first use, so reading it starts nothing. [Agents](/docs/labs/agents/agents?ref=docs-labs-agents-reference-sandboxes)
 
 ```typescript {{ title: "Signature" }}
 type SandboxHandle = Pick<DurableSandbox, "commands" | "files"> & {
@@ -219,7 +219,7 @@ Types: `SandboxHandle`.
 
 ## Code tools
 
-`sandbox.tools.code(options?)` sets which tools a sandbox gives the model. With no options the model gets `run`, and `run_code` when app tools are given. [Sandboxes and code](/docs/labs/agents/sandboxes-and-code?ref=docs-labs-agents-reference-sandboxes)
+`sandbox.tools.code(options?)` sets which tools a sandbox gives the model. With no options the model gets `run`, and `run_code` when app tools are given. [Sandboxes](/docs/labs/agents/sandboxes?ref=docs-labs-agents-reference-sandboxes)
 
 ```typescript {{ title: "Signature" }}
 sandbox.tools.code(options?: CodeToolsOptions): SandboxToolsFactory
@@ -291,7 +291,7 @@ A command with a `timeout` over five minutes runs as a process that steps follow
 
 ## Repos
 
-A sandbox's `repo` is checked out when the sandbox starts. The write token never enters the sandbox: your app makes the push, after `policy` has looked at it. [Sandboxes and code](/docs/labs/agents/sandboxes-and-code?ref=docs-labs-agents-reference-sandboxes)
+A sandbox's `repo` is checked out when the sandbox starts. The write token never enters the sandbox: your app makes the push, after `policy` has looked at it. [Sandboxes](/docs/labs/agents/sandboxes?ref=docs-labs-agents-reference-sandboxes)
 
 `repo` takes a value, or a function of `{ event, thread }` that may be async. The function runs once when a run starts and must be pure.
 
@@ -768,7 +768,7 @@ skills.repo(repo: string, options?: SkillsRepoOptions): SkillSource
 - Public repos need no `auth`. A private repo is read with `auth` on the host, never in the sandbox.
 - The model sees every skill's name and description in its prompt. `open_skill({ name: string }): string` returns one skill's body. It is the same tool for every skill, and only an agent with skills has it. It works with no sandbox.
 - A skill's files are placed in `/skills/<name>/` in the first sandbox the model can use among the agent's listed sandboxes. An agent with skills and no sandbox gets instructions only.
-- The agent's card lists each skill's name and description. A repo's skills can change between syncs, so the card may list a skill a run cannot read. [Discovery](/docs/labs/agents/discovery?ref=docs-labs-agents-reference-sandboxes)
+- The agent's card lists each skill's name and description. A repo's skills can change between syncs, so the card may list a skill a run cannot read. [Agent discovery](/docs/labs/agents/agent-discovery?ref=docs-labs-agents-reference-sandboxes)
 
 ```md
 ---

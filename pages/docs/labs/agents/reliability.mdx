@@ -7,7 +7,7 @@ export const description = "Make an Inngest agent safe to leave running: durable
 
 > Leave an agent running. It retries what fails, caps its own spend and picks up after a crash or a deploy.
 
-Every model call and tool call is a [durable step](/docs/labs/agents/handlers?ref=docs-labs-agents-reliability#gotchas), so a retry never repeats finished work.
+Every model call and tool call is a [durable step](/docs/labs/agents/agents?ref=docs-labs-agents-reliability), so a retry never repeats finished work.
 
 - **Cap spend and turns.** No runaway loops. [Caps →](#cap-spend)
 - **Recover.** Rate limits wait; a failed run picks up. [Recovery →](#recover-from-failures)
@@ -51,7 +51,7 @@ export const support = agents.agent(
 What this thread may spend.
 </Annotation>
 
-<Annotation id="limits" lines="12" tease="who it may start" title="Limits" href="/docs/labs/agents/teams-of-agents?ref=docs-labs-agents-reliability" linkText="Teams of agents">
+<Annotation id="limits" lines="12" tease="who it may start" title="Limits" href="/docs/labs/agents/agent-teams?ref=docs-labs-agents-reliability" linkText="Teams of agents">
 Agents it starts can start agents, but no deeper. Its model may start only `support/researcher`.
 </Annotation>
 
@@ -59,7 +59,7 @@ Agents it starts can start agents, but no deeper. Its model may start only `supp
 Also hands the message in flight to a fresh run.
 </Annotation>
 
-<Annotation id="end" lines="19" tease="why it stopped" title="end and reason" href="/docs/labs/agents/models-and-the-loop?ref=docs-labs-agents-reliability" linkText="Models and the loop">
+<Annotation id="end" lines="19" tease="why it stopped" title="end and reason" href="/docs/labs/agents/models?ref=docs-labs-agents-reliability" linkText="Models and the loop">
 `"budget"` comes with a `reason` to pass on.
 </Annotation>
 
@@ -130,7 +130,7 @@ export const lookup = agents.agent(
 );
 ```
 
-<Annotation id="turns" lines="14" tease="for this call" title="maxTurns" href="/docs/labs/agents/models-and-the-loop?ref=docs-labs-agents-reliability" linkText="Models and the loop">
+<Annotation id="turns" lines="14" tease="for this call" title="maxTurns" href="/docs/labs/agents/models?ref=docs-labs-agents-reliability" linkText="Models and the loop">
 A loop option, so each call can have its own.
 </Annotation>
 
@@ -192,7 +192,7 @@ export const babysitter = agents.agent({
 });
 ```
 
-<Annotation id="idle" lines="10" tease="a week-long run" title="A long idle" href="/docs/labs/agents/threads-and-memory?ref=docs-labs-agents-reliability#how-long-a-run-waits" linkText="Threads and memory">
+<Annotation id="idle" lines="10" tease="a week-long run" title="A long idle" href="/docs/labs/agents/inboxes?ref=docs-labs-agents-reliability#going-quiet" linkText="Threads and memory">
 Live across every deploy.
 </Annotation>
 
@@ -205,5 +205,5 @@ Live across every deploy.
 
 ## Recipes and reference
 
-- [Teams of agents](/docs/labs/agents/teams-of-agents?ref=docs-labs-agents-reliability): each thread has its own budget.
+- [Agent Teams](/docs/labs/agents/agent-teams?ref=docs-labs-agents-reliability): each thread has its own budget.
 - [Reference: budget, limits and recovery](/docs/labs/agents/reference?ref=docs-labs-agents-reliability#budget-limits-and-recovery)

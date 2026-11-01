@@ -43,7 +43,7 @@ export const researcher = agents.agent({
 });
 ```
 
-<Annotation id="card" lines="10" tease="found by description" title="Card" href="/docs/labs/agents/discovery?ref=docs-labs-agents-recipes-agent-teams#publish-a-card" linkText="Publish a card">
+<Annotation id="card" lines="10" tease="found by description" title="Card" href="/docs/labs/agents/agent-discovery?ref=docs-labs-agents-recipes-agent-teams#a-card" linkText="Publish a card">
 Published when the app syncs. The description is what the lead searches.
 </Annotation>
 
@@ -92,11 +92,11 @@ export const lead = agents.agent({
 });
 ```
 
-<Annotation id="invoke" lines="10" tease="a typed request" title="invoke()" href="/docs/labs/agents/agents-and-triggers?ref=docs-labs-agents-recipes-agent-teams#take-a-typed-input" linkText="Take a typed input">
+<Annotation id="invoke" lines="10" tease="a typed request" title="invoke()" href="/docs/labs/agents/agent-teams?ref=docs-labs-agents-recipes-agent-teams#a-second-agent" linkText="Take a typed input">
 Checks what callers send, and goes on the agent's card.
 </Annotation>
 
-<Annotation id="system" lines="12" tease="no names in code" title="Discovery" href="/docs/labs/agents/discovery?ref=docs-labs-agents-recipes-agent-teams#find-agents" linkText="Find agents">
+<Annotation id="system" lines="12" tease="no names in code" title="Discovery" href="/docs/labs/agents/agent-discovery?ref=docs-labs-agents-recipes-agent-teams#finding" linkText="Find agents">
 The lead has `list_agents` and `start_agent` by default. Each result comes back as an `agent/finished` message.
 </Annotation>
 
@@ -122,7 +122,7 @@ export const askTeam = inngest.createFunction(
 );
 ```
 
-<Annotation id="result" lines="8" tease="wait for the answer" title="Start and wait" href="/docs/labs/agents/teams-of-agents?ref=docs-labs-agents-recipes-agent-teams#wait-for-the-result" linkText="Wait for the result">
+<Annotation id="result" lines="8" tease="wait for the answer" title="Start and wait" href="/docs/labs/agents/agent-teams?ref=docs-labs-agents-recipes-agent-teams#call-it-from-code" linkText="Wait for the result">
 `result()` resolves with the lead's answer, given once the specialists it started with `start_agent` have finished.
 </Annotation>
 
@@ -161,10 +161,10 @@ The [model](/docs/labs/agents/quick-start?ref=docs-labs-agents-recipes-agent-tea
 
 ## What it shows off
 
-- [Discovery](/docs/labs/agents/discovery?ref=docs-labs-agents-recipes-agent-teams#find-agents) lets the lead find specialists with no imports between them.
-- [Start and wait](/docs/labs/agents/teams-of-agents?ref=docs-labs-agents-recipes-agent-teams#wait-for-the-result) lets a plain function wait for the lead's answer.
-- [Limits](/docs/labs/agents/teams-of-agents?ref=docs-labs-agents-recipes-agent-teams#limit-the-team) keep delegation one level deep by default.
-- [A sandbox](/docs/labs/agents/sandboxes-and-code?ref=docs-labs-agents-recipes-agent-teams) gives the coder a machine to run its code.
+- [Agent discovery](/docs/labs/agents/agent-discovery?ref=docs-labs-agents-recipes-agent-teams#finding) lets the lead find specialists with no imports between them.
+- [Start and wait](/docs/labs/agents/agent-teams?ref=docs-labs-agents-recipes-agent-teams#call-it-from-code) lets a plain function wait for the lead's answer.
+- [Limits](/docs/labs/agents/reliability?ref=docs-labs-agents-recipes-agent-teams) keep delegation one level deep by default.
+- [A sandbox](/docs/labs/agents/sandboxes?ref=docs-labs-agents-recipes-agent-teams) gives the coder a machine to run its code.
 
 ## Run it
 
@@ -184,12 +184,12 @@ At [localhost:8288](http://localhost:8288), open `ask-team`, choose **Invoke** a
 
 ## Variations
 
-- [`agents.reference`](/docs/labs/agents/teams-of-agents?ref=docs-labs-agents-recipes-agent-teams#call-an-agent-in-another-app) calls the lead by address from another app.
-- [`limits.mayCall`](/docs/labs/agents/teams-of-agents?ref=docs-labs-agents-recipes-agent-teams#limit-the-team) limits who the lead may start.
-- [`share: "team"`](/docs/labs/agents/discovery?ref=docs-labs-agents-recipes-agent-teams) lets other apps use the researcher.
+- [`agents.reference`](/docs/labs/agents/agent-teams?ref=docs-labs-agents-recipes-agent-teams#an-agent-in-another-app) calls the lead by address from another app.
+- [`limits.mayCall`](/docs/labs/agents/reliability?ref=docs-labs-agents-recipes-agent-teams) limits who the lead may start.
+- [`share: "team"`](/docs/labs/agents/agent-discovery?ref=docs-labs-agents-recipes-agent-teams) lets other apps use the researcher.
 
 ## Learn more
 
-- [Teams of agents](/docs/labs/agents/teams-of-agents?ref=docs-labs-agents-recipes-agent-teams)
-- [Discovery](/docs/labs/agents/discovery?ref=docs-labs-agents-recipes-agent-teams)
+- [Agent Teams](/docs/labs/agents/agent-teams?ref=docs-labs-agents-recipes-agent-teams)
+- [Agent discovery](/docs/labs/agents/agent-discovery?ref=docs-labs-agents-recipes-agent-teams)
 - Next recipe: [MCP assistant](/docs/labs/agents/recipes/mcp-assistant?ref=docs-labs-agents-recipes-agent-teams)

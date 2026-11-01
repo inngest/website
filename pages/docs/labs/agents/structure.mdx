@@ -148,7 +148,7 @@ export const reviewer = agents.agent({
 
 ## Plain functions beside them
 
-Work that needs no thread is a plain function. It lives in `functions/` and imports any agent it starts. [Agents and triggers →](/docs/labs/agents/agents-and-triggers?ref=docs-labs-agents-structure#agent-or-plain-function)
+Work that needs no thread is a plain function. It lives in `functions/` and imports any agent it starts. [Agent Teams →](/docs/labs/agents/agent-teams?ref=docs-labs-agents-structure#not-everything-is-an-agent)
 
 {/* not type-checked: start().result() from a plain function */}
 ```typescript {{ title: "inngest/functions/nightlyReview.ts" }}
@@ -187,10 +187,10 @@ export const POST = slack.bridge({
 
 ## The other files
 
-- [`inngest/github.ts`](/docs/labs/agents/sandboxes-and-code?ref=docs-labs-agents-structure#check-out-a-repo) holds the `githubApp()` a sandbox's `repo` uses.
+- [`inngest/github.ts`](/docs/labs/agents/sandboxes?ref=docs-labs-agents-structure#a-repo) holds the `githubApp()` a sandbox's `repo` uses.
 - [`app/api/github/route.ts`](/docs/labs/agents/slack-and-github?ref=docs-labs-agents-structure#work-on-git-hub) mounts the GitHub bridge.
 - [`app/slack/socket.ts`](/docs/labs/agents/slack-and-github?ref=docs-labs-agents-structure#set-your-own-rules) takes your own Socket Mode connection.
-- [`app/api/mcp/callback/route.ts`](/docs/labs/agents/tools?ref=docs-labs-agents-structure#sign-in-each-person) finishes an MCP sign-in.
+- [`app/api/mcp/callback/route.ts`](/docs/labs/agents/reference-sandboxes?ref=docs-labs-agents-structure#mcp) finishes an MCP sign-in.
 
 ## Serve them
 

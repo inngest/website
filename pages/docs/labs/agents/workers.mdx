@@ -45,7 +45,7 @@ export const triage = agents.agent({
 `getEnv()` reads the request's bindings (`env.ts`, below). `slack.thread` uses the token for the SDK's own posts, `slack.tools` for the model's.
 </Annotation>
 
-<Annotation id="model" lines="13-18" tease="called per run" title="A field as a function" href="/docs/labs/agents/agents-and-triggers?ref=docs-labs-agents-workers#decide-per-run" linkText="Agents and triggers">
+<Annotation id="model" lines="13-18" tease="called per run" title="A field as a function" href="/docs/labs/agents/reference?ref=docs-labs-agents-workers#the-definition" linkText="Agents and triggers">
 `getEnv()` is safe here: a run only starts inside a request.
 </Annotation>
 
@@ -196,5 +196,5 @@ Set up the Worker as in [Serving Inngest functions](/docs/learn/serving-inngest-
 
 ## Recipes and reference
 
-- [Threads and memory](/docs/labs/agents/threads-and-memory?ref=docs-labs-agents-workers): the store, and what a thread keeps.
+- [Memory](/docs/labs/agents/memory?ref=docs-labs-agents-workers): the store, and what a thread keeps.
 - [Reference: the definition](/docs/labs/agents/reference?ref=docs-labs-agents-workers#the-definition)
