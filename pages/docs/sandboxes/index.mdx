@@ -3,23 +3,28 @@ export const description = "Inngest Sandboxes run AI-generated or untrusted code
 
 # Sandboxes
 
-> Run generated code in an isolated microVM and follow it in the same trace as your function.
+> Run generated code in an isolated microVM and see its activity alongside your function steps and retries.
 
-- **Run code in one statement.** Python, TypeScript, or shell, with a typed value back. [Run code →](/docs/sandboxes/features/run-code?ref=docs-sandboxes-index)
-- **Boot in under a second.** Each Sandbox is its own VM, isolated from the host. [Isolation →](/docs/sandboxes/features/isolation-and-security?ref=docs-sandboxes-index)
-- **Keep your work.** Pause and resume, or snapshot and clone. [Pause and resume →](/docs/sandboxes/features/pause-and-resume?ref=docs-sandboxes-index)
-- **Call your functions from the Sandbox.** Tools run as durable steps, so credentials stay out. [Tools →](/docs/sandboxes/features/tools?ref=docs-sandboxes-index)
-- **Never leak one.** Whatever your run creates is cleaned up when it ends. [Run-owned →](/docs/sandboxes/features/run-owned?ref=docs-sandboxes-index)
-- **Follow the whole job.** Every statement is a group in the run trace. [Traces →](/docs/sandboxes/features/traces?ref=docs-sandboxes-index)
+When an agent needs to run generated code or test a repository, put that work in a Sandbox. Each Sandbox has its own filesystem and processes. Inngest records Sandbox operations in the durable function run, so you can inspect the job and retry the surrounding steps from one trace.
 
-```typescript {{ title: "TypeScript" }}
-const total = await step.sandbox.python<number>("sum", "return sum(xs)", { input: { xs } });
-```
+## What you can do
+
+- **Run code in isolation.** Each Sandbox runs in a separate VM, isolated from the host and other Sandboxes. Sandboxes cannot send traffic directly to one another; outbound network access is allowed by default.
+- **Run code in one call.** Python, TypeScript, or shell, with a typed value back. A non-zero exit fails the step by default. See [Run code](/docs/sandboxes/features/run-code) and [Exit codes](/docs/sandboxes/features/exit-codes).
+- **Start quickly and keep your work.** Sandboxes boot in under a second. Pause and resume the same Sandbox, or capture a snapshot and clone it into a new Sandbox. Its filesystem persists through those operations.
+- **Share files when tasks need them.** S3-backed persistent mounts let different Sandboxes use the same backing path.
+- **Call your functions from the Sandbox.** [Tools](/docs/sandboxes/features/tools) run as durable steps in your function, so your credentials stay out of the Sandbox.
+- **Skip the cleanup code.** [Run-owned Sandboxes](/docs/sandboxes/features/run-owned) are cleaned up when the run ends, however it ends.
+- **Follow the whole job.** See Sandbox operations alongside function steps, waits, and retries in a run trace.
+
+A durable function can start a Sandbox, run code, wait for another event, and continue later. The lifecycle depends on the API. `step.sandbox.python`, `step.sandbox.typescript`, and `step.sandbox.sh` start a Sandbox, run code, and destroy it in one call. With `step.sandbox.create()`, `await using` destroys the Sandbox at the end of its scope, and Inngest cleans up anything still alive when the run ends.
 
 ## Start here
 
-- [Overview](/docs/sandboxes/overview)
-- [Quick start](/docs/sandboxes/quick-start)
-- [Features](/docs/sandboxes/features)
-- [Guides](/docs/sandboxes/guides)
-- [Reference](/docs/sandboxes/reference) and [Limits](/docs/sandboxes/limits)
+- [Overview](/docs/sandboxes/overview) explains how Sandboxes fit into durable execution.
+- [Quick start](/docs/sandboxes/quick-start) runs a command with the TypeScript beta.
+- [Features](/docs/sandboxes/features) covers running code, lifecycle, filesystems, SSH, secrets, tools, isolation, and traces.
+- [Guides](/docs/sandboxes/guides) shows how to use Sandboxes in a durable job.
+- [Reference](/docs/sandboxes/reference) and [Limits](/docs/sandboxes/limits) give the current API and beta limits.
+
+**Open beta.** Sandboxes are available on Pro plans and above. The TypeScript Sandbox beta is intended for evaluation.
