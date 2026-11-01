@@ -68,7 +68,6 @@ export const reviewer = agents.agent({
 });
 ```
 
-{/* not type-checked: eventType from inngest with a Zod schema */}
 ```typescript {{ title: "inngest/events.ts" }}
 import { eventType } from "inngest";
 import { z } from "zod";
@@ -80,7 +79,7 @@ export const pullOpened = eventType("pull/opened", {
 
 ## Start an agent
 
-`start()` opens a new [thread](/docs/labs/agents/threads-and-memory?ref=docs-labs-agents-teams-of-agents), starts a run on it and returns a handle at once. With an `invoke()` trigger, the input is typed from it. [Typed input →](/docs/labs/agents/agents-and-triggers?ref=docs-labs-agents-teams-of-agents#take-a-typed-input)
+With an `invoke()` trigger, the input to `start()` is typed from it. [Typed input →](/docs/labs/agents/agents-and-triggers?ref=docs-labs-agents-teams-of-agents#take-a-typed-input)
 
 An agent with no `invoke()` trigger takes text or JSON and receives it as a message:
 
@@ -126,9 +125,9 @@ export const reviewOrSkip = inngest.createFunction(
 );
 ```
 
-A run opened through a handle ends as soon as it has answered and nothing is unread, so `result()` returns promptly. With a handler, the run ends when the handler returns, and a loop over its inbox stops once nothing is waiting. [When the handler returns →](/docs/labs/agents/handlers?ref=docs-labs-agents-teams-of-agents#when-the-handler-returns)
+A run opened through a handle ends as soon as it has answered and nothing is unread, so `result()` returns promptly. With a handler, the run ends when the handler returns, and a `for await` loop over its inbox stops once nothing is waiting. [When the handler returns →](/docs/labs/agents/handlers?ref=docs-labs-agents-teams-of-agents#when-the-handler-returns)
 
-A model agent's run stays open while the runs it started with `start_agent` are open. Their results fold in, and the answer after the last one is the output, so `await lead.start(request).result()` on a delegating agent gives the combined answer. Code that calls `start()` handles its children itself, through `result()` or not at all.
+A model agent's run stays open while the runs it started with `start_agent` are open. Their results fold in, and the answer after the last one is the output. So `await lead.start(request).result()` on a delegating agent gives the combined answer. Code that calls `start()` handles its children itself, through `result()` or not at all.
 
 ## Continue a thread
 
@@ -348,17 +347,9 @@ An agent with a model answers with its `reply` tool, which it always has.
 
 ## Let the model delegate
 
-A model agent never waits on another agent. `start_agent`, `message_agent`, `ask_agent`, `stop_agent` and `reply` are on by default and return at once; what comes back arrives in its inbox with everything else. [Discovery →](/docs/labs/agents/discovery?ref=docs-labs-agents-teams-of-agents)
+A model agent never waits on another agent. `start_agent`, `message_agent`, `ask_agent`, `stop_agent` and `reply` are on by default and return at once; what comes back arrives in its inbox with everything else. [Find agents →](/docs/labs/agents/discovery?ref=docs-labs-agents-teams-of-agents#find-agents)
 
-```text
-start_agent({
-  address: "support/reviewer",
-  input: { pr: "https://github.com/acme/api/pull/42" },
-})
-  { thread: "a1b2c3" }
-```
-
-The model carries on. Four message types come back: `agent/message`, `agent/question`, `agent/answer` and `agent/finished`, the last only for runs the model opened with `start_agent`. [How the model sees them →](/docs/labs/agents/models-and-the-loop?ref=docs-labs-agents-teams-of-agents#what-the-model-sees)
+Four message types come back: `agent/message`, `agent/question`, `agent/answer` and `agent/finished`, the last only for runs the model opened with `start_agent`. [How the model sees them →](/docs/labs/agents/models-and-the-loop?ref=docs-labs-agents-teams-of-agents#what-the-model-sees)
 
 They are exported as `agentMessage`, `agentQuestion`, `agentAnswer` and `agentFinished`, and `msg.is()` narrows to one. [Narrow an event with `is()` →](/docs/durable-execution/guides-and-advanced/events-and-triggers/event-payloads-and-schemas?ref=docs-labs-agents-teams-of-agents#narrow-an-event-with-is)
 
@@ -448,7 +439,6 @@ Every thread spends from its own agent's `budget`, such as the reviewer's `budge
 ## Gotchas
 
 - **Handle methods need a function.** They throw in a route or a script. Send the agent's trigger event from there.
-- **`ask()` can return `null`.** Pick a default.
 - **Code that waits can't be asked.** A question from the run behind your `result()` is refused at once. The agent's `ask()` returns `null` and your `result()` keeps waiting.
 - **A delegating agent's `result()` waits for its helpers.** It waits at most 24 hours, then answers and names the helpers still running.
 - **Starting again opens another thread.** To continue one, `message()` the same thread. [Continue a thread →](#continue-a-thread)
