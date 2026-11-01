@@ -9,7 +9,7 @@ export const description = "How Inngest agents find each other: every agent publ
 
 Every agent publishes a card. A model agent reads the cards and starts the one it needs, in any app, with nothing wired in code.
 
-- **Be found with no code.** Describe your agent; the SDK publishes the card. [Publish a card →](#publish-a-card)
+- **Be found with no code.** The SDK publishes a card for every agent. [Publish a card →](#publish-a-card)
 - **Choose who sees it.** `share` keeps a card in your app or shows it to the environment. [Not access control →](#gotchas)
 - **Models find agents.** `list_agents` and `describe_agent` are on by default. [Find agents →](#find-agents)
 - **Keep an agent on its own.** One setting stops it reaching others. [Turn it off →](#turn-it-off)
@@ -40,7 +40,7 @@ export const reviewer = agents.agent({
 ```
 
 <Annotation id="input" lines="9" tease="the card's input" title="Input">
-The card's `input` is the schema of this `invoke()` trigger. You write it once.
+The card's `input` is the schema of this `invoke()` trigger. You write it once. An agent with no `invoke()` trigger has no `input`, and callers send it text or JSON.
 </Annotation>
 
 <Annotation id="skills" lines="12" tease="listed on the card" title="Skills" href="/docs/labs/agents/skills?ref=docs-labs-agents-discovery" linkText="Skills">
@@ -52,7 +52,7 @@ A model picks agents by this line. Say what the agent does and what it returns.
 </Annotation>
 
 <Annotation id="share" lines="15" tease="who sees it" title="Share" href="#gotchas" linkText="Gotchas">
-`"team"` shows the card to every app in the environment. The default, `"private"`, shows it only to the agent's own app.
+`"team"` shows the card to every app in the environment. The default, `"private"`, shows it only to the agent's own app, and an agent with no `card` field is published that way.
 </Annotation>
 
 <Annotation id="effects" lines="16" tease="read or write" title="Effects" href="/docs/labs/agents/reference?ref=docs-labs-agents-discovery#cards-and-discovery" linkText="Reference: the card">
@@ -63,15 +63,11 @@ A model picks agents by this line. Say what the agent does and what it returns.
 
 ## Publish a card
 
-Cards announce when your app syncs, and again every six hours. An agent with no `card` field still publishes its address, as `share: "private"`; one with no `invoke()` trigger has no `input`, and callers send it text or JSON.
-
-## The address
-
-An agent is `app/agent` everywhere, as in `support/reviewer`: `start_agent`, `mayCall` and `agents.reference()` all take it. [Teams of agents →](/docs/labs/agents/teams-of-agents?ref=docs-labs-agents-discovery)
+Cards announce when your app syncs, and again every six hours. An agent is `app/agent` everywhere, as in `support/reviewer`: `start_agent`, `mayCall` and `agents.reference()` all take that address. [Teams of agents →](/docs/labs/agents/teams-of-agents?ref=docs-labs-agents-discovery)
 
 ## Find agents
 
-Every model agent has `list_agents` and `describe_agent`, with no wiring. This is what a model does to hand a review to the reviewer:
+A model hands a review to the reviewer like this, with no wiring:
 
 ```text
 list_agents({ query: "review" })
@@ -161,19 +157,15 @@ The Slack user who asked, from the event. The model can't make it up.
 ## Gotchas
 
 - **`share` is a discovery rule, not access control.** Anyone who knows an address can start the agent from code, and anyone with an event key can send its trigger. [Teams of agents →](/docs/labs/agents/teams-of-agents?ref=docs-labs-agents-discovery#call-an-agent-in-another-app)
-- **A new card takes a few minutes to show.** `refresh` finds it only once it has landed.
-- **A run reads the cards once.** A replay reuses that read. The model passes `refresh: true` to `list_agents` to read again, and a failed read is an error it can read, never an empty list.
+- **Cards lag, and a run reads them once.** A new card takes a few minutes to show. The model passes `refresh: true` to `list_agents` to read again, which finds it only once it has landed. A failed read is an error it can read, never an empty list.
 - **Paused and removed agents.** A paused agent is listed with `paused: true`, and `start_agent` refuses it with a reason. A removed agent drops out, and an unknown or unshared address gives an error that tells the model to list again.
-- **Plain functions are never discoverable.** Only agents publish cards.
 
 ## How it works
 
-- Discovery keeps the newest card of each agent from the last 24 hours, so a rolling deploy never hides an agent.
-- An app announces only its own agents. A card that names another app's address is dropped.
+- Discovery keeps the newest card of each agent from the last 24 hours, so a rolling deploy never hides an agent. An app announces only its own agents.
 - On Cloud the read is one Insights query that also checks each app's functions, which is how paused agents are marked. The Dev Server answers from its events, so discovery works locally.
 
 ## Recipes and reference
 
 - [Agent teams](/docs/labs/agents/recipes/agent-teams?ref=docs-labs-agents-discovery): a lead that finds specialists by what they do.
-- [Teams of agents](/docs/labs/agents/teams-of-agents?ref=docs-labs-agents-discovery): start, message, ask and stop what you found.
 - [Reference: the card](/docs/labs/agents/reference?ref=docs-labs-agents-discovery#cards-and-discovery)
