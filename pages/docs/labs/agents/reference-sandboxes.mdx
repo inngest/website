@@ -183,7 +183,7 @@ export const fixer = agents.agent(
     system: "Fix what you are asked to fix.",
     sandboxes: { work },
   },
-  async ({ inbox, loop, me, sandboxes }) => {
+  async ({ inbox, me, loop, sandboxes }) => {
     for await (const batch of inbox.batches()) {
       const { text } = await loop(batch);
 
