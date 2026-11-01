@@ -1,34 +1,19 @@
 import { Info } from "shared/Docs/mdx";
 
-export const metaTitle = "Sandboxes reference | Inngest Agents";
+export const metaTitle = "Tools and sandboxes reference | Inngest Agents";
 export const description = "Reference for Inngest Agents sandboxes, code tools, repos, tools, MCP servers, secrets and skills: signatures, options and defaults.";
 
-# Sandboxes reference
+# Tools and sandboxes reference
 
 > Signatures, options and defaults for sandboxes, code tools, repos, tools, MCP servers, secrets and skills.
 
 <Info>
-  Agents are an Inngest Labs project: early, moving fast, and shaped by your feedback. [What's Labs?](/docs/labs?ref=docs-labs-agents-reference-sandboxes) APIs may change between releases.
+  Inngest Agents is experimental and moves fast. Import it from `inngest/experimental/agents`; the API may change between releases. [What's Labs?](/docs/labs?ref=docs-labs-agents-reference-sandboxes)
 </Info>
 
 The agent definition, handler and loop are in the [Agents reference](/docs/labs/agents/reference?ref=docs-labs-agents-reference-sandboxes). The sandbox platform itself is in the [Sandboxes reference](/docs/sandboxes/reference?ref=docs-labs-agents-reference-sandboxes).
 
-```typescript
-import {
-  disconnect,
-  kvOAuthStore,
-  mcpCallback,
-  sandboxMiddleware,
-  secret,
-  tool,
-} from "inngest/experimental";
-import {
-  PushRefusedError,
-  githubApp,
-  sandbox,
-  skills,
-} from "inngest/experimental/agents";
-```
+Imports used on this page: `tool`, `toolDefinitions`, `secret`, `disconnect`, `image`, `kvOAuthStore`, `mcpCallback`, `sandboxMiddleware` and `snapshotCache` come from `inngest/experimental`; `sandbox`, `skills`, `githubApp`, `agent` and `PushRefusedError` come from `inngest/experimental/agents`.
 
 - [sandbox()](#sandbox)
 - [Sandboxes on an agent](#sandboxes-on-an-agent)
@@ -42,7 +27,7 @@ import {
 - [Images](#images)
 - [Sandbox middleware](#sandbox-middleware)
 - [Durable sandbox](#durable-sandbox)
-- [Commands with $](#commands-with-dollar)
+- [Commands with dollar](#commands-with-dollar)
 - [Shells](#shells)
 - [Runners and groups](#runners-and-groups)
 - [Errors](#errors)
@@ -91,7 +76,7 @@ Members of `sandbox`:
 ```typescript {{ title: "inngest/sandboxes/work.ts" }}
 import { image } from "inngest/experimental";
 import { sandbox } from "inngest/experimental/agents";
-import { app } from "../github";
+import { githubAuth } from "../github";
 
 export const work = sandbox({
   id: "work",
@@ -102,7 +87,7 @@ export const work = sandbox({
   repo: {
     url: "https://github.com/acme/api",
     path: "/work/api",
-    auth: app,
+    auth: githubAuth,
     policy: (push) => {
       if (!push.branch?.startsWith("agent/")) {
         return { refuse: "Branches for the agent start with agent/" };
@@ -203,6 +188,7 @@ export const fixer = agents.agent(
   async ({ inbox, loop, me, sandboxes }) => {
     for await (const batch of inbox.batches()) {
       const { text } = await loop(batch);
+
       const tests = await sandboxes.work.commands.run("tests", "npm test", {
         cwd: "/work/api",
       });
@@ -246,7 +232,7 @@ sandbox.tools.code(options?: CodeToolsOptions): SandboxToolsFactory
 | `shims` | `SandboxShim[]` | none | [Shims](#shims) put on the shell's `PATH`, so a program that holds a credential on your app works from `run` and `run_code`. |
 | `timeout` | `string \| number` | `"5m"` | The longest one `run` command may take. See [Long commands](#long-commands). |
 
-Each tool is named `<sandbox>_<tool>` and returns text the model reads, except `push`.
+Each tool is named `<key>_<tool>`, after the key in the agent's `sandboxes` record, and returns text the model reads, except `push`.
 
 | Tool | Input | Returns |
 | --- | --- | --- |
@@ -286,7 +272,7 @@ Types: `CodeToolName` (`"run" | "run_code" | "read" | "search" | "edit"`), `Code
 - Each `run` is its own `/bin/sh` process, started with the saved working directory and environment. When it exits, it prints its final directory and environment changes after a marker line, which the SDK strips from what the model sees.
 - No shell process outlives a command, and the sandbox holds no shell state. A fresh process on another machine replays the earlier `run` results and arrives at the same place.
 - When several `run` calls are in flight, their effects apply in call order.
-- The thread keeps the shell's place across runs, so a later run starts where the last one stopped. Another thread starts in the default directory with an empty environment.
+- The thread keeps the shell's place across runs, so a later run starts where the last one stopped. Another thread starts in the default directory, which is the repo's `path` when the sandbox has a `repo`, with an empty environment.
 - The place is used only when the same sandbox, or its snapshot, comes back. A recreated sandbox starts at the default.
 - There is one shell per sandbox per thread.
 
@@ -314,15 +300,15 @@ A sandbox's `repo` is checked out when the sandbox starts. The write token never
 | `url` | `string` | required | The repository URL. |
 | `auth` | [`RepoAuth`](#repoauth) | none | Mints the repository's tokens. Needed to push, and to check out a private repository. |
 | `ref` | `string` | the default branch | Branch, tag or commit to check out. |
-| `path` | `string` | `/work` | Where to check out. |
+| `path` | `string` | `/work` | Where to check out. The model's shell starts here. |
 | `policy` | `(push) => result` | allow | Looks at each [push](#push) before it is made and can refuse it. |
 | `author` | `{ name: string; email: string }` | `inngest-agent` | The git author of commits the SDK makes. |
-| `push` | `boolean` | `true` | `false` leaves the `<sandbox>_push` tool out. |
+| `push` | `boolean` | `true` | `false` leaves the `<key>_push` tool out. |
 
 {/* not type-checked: repo as a function of the trigger event */}
 ```typescript {{ title: "inngest/sandboxes/review.ts" }}
 import { sandbox } from "inngest/experimental/agents";
-import { app } from "../github";
+import { githubAuth } from "../github";
 
 export const review = sandbox({
   id: "review",
@@ -330,7 +316,7 @@ export const review = sandbox({
     return {
       url: event.data.repo,
       ref: event.data.head,
-      auth: app,
+      auth: githubAuth,
       push: false,
     };
   },
@@ -352,12 +338,13 @@ type RepoAuth =
 ### Checkout
 
 - The checkout runs when the sandbox starts.
-- At each run's start, if the run's `ref` differs from the checkout's, the sandbox fetches and checks out the new `ref`. Uncommitted changes in the working tree make that an error the run sees. The same `ref` is left alone, so a resumed sandbox keeps its work.
+- At each run's start, if the run's `ref` differs from the checkout's, the sandbox fetches and checks out the new `ref`. Changes to tracked files make that an error the run sees; untracked files don't count. The same `ref` is left alone, so a resumed sandbox keeps its work.
+- The check compares the commit the `ref` resolves to after a fetch, so a moved ref such as `refs/pull/N/head` checks out the new commits.
 - The read-only token goes to the checkout's one `git` process, as a header for that process only. It is never stored in the checkout's config.
 
 ### Push
 
-The model pushes with `<sandbox>_push({ branch })` and code with `sandboxes.<key>.repo.push(branch)`. They are the same push, in four steps:
+The model pushes with `<key>_push({ branch })` and code with `sandboxes.<key>.repo.push(branch)`. They are the same push, in four steps:
 
 1. The sandbox bundles the commits that are not on the remote yet. It holds no credentials.
 2. Your app reads the bundle back.
@@ -418,7 +405,7 @@ Errors: `GithubAppError` (`status`), and `GithubAppNotInstalledError` (a 404; th
 ```typescript {{ title: "inngest/github.ts" }}
 import { githubApp } from "inngest/experimental/agents";
 
-export const app = githubApp({
+export const githubAuth = githubApp({
   appId: process.env.GITHUB_APP_ID ?? "",
   privateKey: process.env.GITHUB_APP_KEY ?? "",
 });
@@ -503,7 +490,6 @@ export const coolDown = tool.group({
 
 - A plain function's input type is `Parameters<F>[0]` and its output `Awaited<ReturnType<F>>`. A function or reference takes the data of its trigger and returns its return.
 - A server's tool names can't be listed by the types: the name type is `` `${key}_${string}` ``, the input is `Record<string, unknown>` and the output is `unknown`.
-- A tool kind that can't be used on a path fails at call start with a message that says so.
 - A listed sandbox's tools and the discovery and agent tools arrive without wiring. `slack.tools()` and `github.tools()` are spread into `tools`. [Slack and GitHub](/docs/labs/agents/slack-and-github?ref=docs-labs-agents-reference-sandboxes)
 
 ### ToolContext
@@ -823,7 +809,7 @@ createSandboxCleanup(client: Inngest): DeferredFunction
 | Export | Description |
 | --- | --- |
 | `sandboxMiddleware()` | Add to `middleware` of `new Inngest(...)`. It adds `step.sandbox`, `step.sandbox.python`, `step.sandbox.typescript` and `group.sandbox`. |
-| `createSandboxCleanup(client)` | The function that destroys the sandboxes of scopes whose run ended early (cancel, timeout). An app with the middleware serves it automatically; pass it to `serve()` only when serving without the client's middleware. Experimental. |
+| `createSandboxCleanup(client)` | The function that destroys the sandboxes of scopes whose run ended early (cancel, timeout). An app with the middleware serves it automatically; pass it to `serve()` only when serving without the client's middleware. It is experimental. |
 
 Using the global `step.sandbox` without the middleware throws an error that says to add it. The direct `inngest.sandboxes` client does not need the middleware.
 
@@ -879,7 +865,7 @@ interface DurableSandboxTools {
 
 | Member | Description |
 | --- | --- |
-| `$` | Run a command as one step. See [Commands with $](#commands-with-dollar). |
+| `$` | Run a command as one step. See [Commands with dollar](#commands-with-dollar). |
 | `shell(options?)` | A [shell](#shells) whose commands share a directory and exported environment. |
 | `commands.run(id, command, options?)` | Runs a command. Options: `environment`, `cwd`, `timeout`, `exitCodes` (default `"any"`), `tools`, `toolOptions` and `shims`. `exitCodes` cannot be used with `tools`. |
 | `files.write(id, { path, data })`, `files.read(id, path)` | Move files through memoized steps, up to about 2 MiB. |
@@ -891,7 +877,7 @@ interface DurableSandboxTools {
 
 `DurableSandboxProcess` has `signal`, `wait`, `getOutput`. `DurableSandboxSnapshot` has `waitUntilReady`, `delete`, `clone`, and the snapshot resource fields.
 
-Supporting types: `Sandbox`, `SandboxProcess`, `SandboxSnapshot`, `SandboxClient`, `SandboxRef`, `SandboxResource`, `SandboxResources`, `SandboxStatus`, `SandboxDuration`, `SandboxCommand` (a shell string or an argv array), `SandboxCommandOptions`, `SandboxCommandResult` (`stdout`, `stderr`, `exitCode`, `output`), `SandboxCommandOutputMetadata`, `SandboxExitCodes`, `SandboxDestroyResult`, `SandboxListOptions`, `SandboxListResult`, `SandboxPageInfo`, `SandboxWaitUntilRunningOptions`, `SandboxLifecycleOptions`, `SandboxFileUploadOptions`, `SandboxFileUploadResult`, `SandboxFileDownloadOptions`, `SandboxLogStreamOptions`, `SandboxOutputChunk`, `SandboxProcessOutput`, `SandboxProcessOutputOptions`, `SandboxProcessListOptions`, `SandboxProcessListResult`, `SandboxProcessRef`, `SandboxProcessResource`, `SandboxProcessSignalOptions`, `SandboxProcessStartOptions`, `SandboxProcessState`, `SandboxProcessWaitOptions`, `SandboxSnapshotCloneOptions`, `SandboxSnapshotCreateOptions`, `SandboxSnapshotListOptions`, `SandboxSnapshotListResult`, `SandboxSnapshotRef`, `SandboxSnapshotResource`, `SandboxSnapshotStatus`, `SandboxSnapshotWaitOptions`, `DurableSandbox`, `DurableSandboxProcess`, `DurableSandboxSnapshot`, `DurableSandboxTools`, `SandboxAction`. [Snapshots and restore](/docs/sandboxes/features/snapshots-and-restore?ref=docs-labs-agents-reference-sandboxes)
+The types of these methods, their options and their results are exported from `inngest/experimental`, named after the call: `SandboxCommandOptions`, `SandboxCommandResult`, `SandboxProcessStartOptions` and `SandboxSnapshotCreateOptions`. [Snapshots and restore](/docs/sandboxes/features/snapshots-and-restore?ref=docs-labs-agents-reference-sandboxes)
 
 ## Commands with dollar
 
