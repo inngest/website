@@ -7,12 +7,12 @@ export const description = "Build an agent that clones a repository into a sandb
 
 > An agent that changes a repository on a branch and never holds the write token.
 
-Your policy looks at the branch before your app pushes it.
+Ask for a change in plain words and get a branch your policy approved.
 
 ```text
 request-change   acme/web   "Fix the off-by-one in pagination"
 
-  coder  work_run   edit src/pagination.ts
+  coder  work_run   sed -i 's/offset + 1/offset/' src/pagination.ts
   coder  work_run   npm test                  58 passed
   coder  work_push  agent/fix-pagination-offset
 
@@ -103,8 +103,6 @@ The model gets `work_run` and `work_push`. The sandbox starts on first use.
 
 </AnnotatedCode>
 
-A plain function starts the agent and waits for its answer.
-
 <AnnotatedCode>
 
 {/* not type-checked: start().result() from a plain function */}
@@ -164,7 +162,7 @@ npx tsx inngest/serve.ts
 npx inngest-cli@latest dev -u http://localhost:3000/api/inngest
 ```
 
-In the Dev Server, open `request-change`, choose **Invoke** and send `{ "repo": "acme/web", "task": "Fix the off-by-one in pagination" }`. The run returns the summary.
+At [localhost:8288](http://localhost:8288), open `request-change`, choose **Invoke** and send `{ "repo": "acme/web", "task": "Fix the off-by-one in pagination" }`. The run returns the summary.
 
 ## Variations
 
