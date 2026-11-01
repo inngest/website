@@ -7,11 +7,11 @@ export const description = "Give an Inngest agent a machine for each thread: a s
 
 > Give the agent a machine of its own, one per thread, so code runs there and not on yours.
 
-A sandbox is the machine for one [thread](/docs/labs/agents/threads?ref=docs-labs-agents-sandboxes). List it on an agent and the model gets a shell on it. This page adds one to the PR helper, built up through [Threads](/docs/labs/agents/threads?ref=docs-labs-agents-sandboxes), [Inboxes](/docs/labs/agents/inboxes?ref=docs-labs-agents-sandboxes), [Models](/docs/labs/agents/models?ref=docs-labs-agents-sandboxes), [Tools](/docs/labs/agents/tools?ref=docs-labs-agents-sandboxes) and [Skills](/docs/labs/agents/skills?ref=docs-labs-agents-sandboxes).
+A sandbox is the machine for one [thread](/docs/labs/agents/threads?ref=docs-labs-agents-sandboxes), and listing it on an agent gives the model a shell on it. This page adds one to the PR helper, built up through [Threads](/docs/labs/agents/threads?ref=docs-labs-agents-sandboxes), [Inboxes](/docs/labs/agents/inboxes?ref=docs-labs-agents-sandboxes), [Models](/docs/labs/agents/models?ref=docs-labs-agents-sandboxes), [Tools](/docs/labs/agents/tools?ref=docs-labs-agents-sandboxes) and [Skills](/docs/labs/agents/skills?ref=docs-labs-agents-sandboxes).
 
 ## A sandbox
 
-To have the PR helper run the failing test instead of guessing at it, define a sandbox. Defining one creates nothing until it is used.
+You want the PR helper to run the failing test instead of guessing at it. Defining a sandbox creates nothing until it is used.
 
 {/* not type-checked: sandbox({ id }) */}
 ```typescript
@@ -70,12 +70,12 @@ export const prHelper = agents.agent(
 ```
 
 <Annotation id="sandboxes" lines="24" tease="work_run, a shell" title="Listed means given" href="/docs/labs/agents/reference-sandboxes?ref=docs-labs-agents-sandboxes#sandboxes-on-an-agent" linkText="Reference: sandboxes on an agent">
-The model gets `work_run`, a shell on the thread's machine that keeps `cd` and `export` between calls. It starts the first time the model or your code uses it.
+The model gets `work_run`, a shell on the thread's machine that keeps `cd` and `export` between calls.
 </Annotation>
 
 </AnnotatedCode>
 
-An app whose agents list sandboxes adds `sandboxMiddleware()` to its client, or the first use throws an error that says so.
+An app whose agents list sandboxes adds `sandboxMiddleware()` to its client.
 
 {/* not type-checked: sandboxMiddleware() on the client */}
 ```typescript {{ title: "inngest/client.ts" }}
@@ -136,12 +136,13 @@ export const readLog = tool.step({
 
 ## It belongs to the thread
 
-To have CI's second failure on the same PR find the checkout where the first run left it, change nothing: the thread owns its sandbox.
+You want CI's second failure on the same PR to find the checkout where the first run left it. Change nothing: the thread owns its sandbox.
 
 ```text {{ title: "PR 42, two runs" }}
 09:00  ci/run.failed  work_run: npm install  the sandbox starts
-09:04  the run ends
+09:04  the answer is posted                  the run waits
 09:14  ten minutes unused                    the sandbox pauses
+10:04  idle runs out                         the run ends
 11:30  ci/run.failed  work_run: npm test     the sandbox resumes,
                                              node_modules is there
 ```
@@ -150,7 +151,7 @@ The shell's working directory and exported variables come back with it. PR 43 is
 
 ## A repo
 
-To have it fix the test on a branch and never touch `main`, give the sandbox a repo and a policy.
+You want it to fix the test on a branch and never touch `main`. Give the sandbox a repo and a policy.
 
 <AnnotatedCode>
 
@@ -181,7 +182,7 @@ Checked out into `/work` when the sandbox starts, and the model's shell starts t
 </Annotation>
 
 <Annotation id="auth" lines="8-11" tease="read to clone, write to push" title="Auth">
-`githubApp()` makes a short-lived read token to check out and a write token to push, both on your host.
+`githubApp()` mints a short-lived read token for the checkout and a write token for the push, which stays on your host.
 </Annotation>
 
 <Annotation id="policy" lines="12-16" tease="runs on your host" title="Policy">
@@ -190,11 +191,11 @@ Sees the push's `branch`, `commits` and `paths` before anything is pushed. A ref
 
 </AnnotatedCode>
 
-With a `repo`, the model also gets `work_push`: it commits in the sandbox, and your app pushes after `policy` has looked. The checkout runs inside the sandbox, so a single `secret()` should be a read-only token; an agent that pushes uses `githubApp()` or `{ read, write }`, and the write token never enters the sandbox.
+With a `repo`, the model also gets `work_push`: it commits in the sandbox, and your app pushes after `policy` has looked. A single `secret()` should be a read-only token; an agent that pushes uses `githubApp()` or `{ read, write }`.
 
 ## A sandbox for your code
 
-To run the tests yourself and keep the model off the machine, mark the sandbox code-only in the agent's definition:
+You want to run the tests yourself and keep the model off the machine. Mark the sandbox code-only in the agent's definition:
 
 {/* not type-checked: a sandbox binding with model: false */}
 ```typescript
@@ -216,7 +217,7 @@ The model loses `work_run` and `work_push`. In the handler, `sandboxes.work` is 
 
 ## Any agent engine
 
-To have something other than the SDK's loop run the turns, give the definition a `loop` of your own.
+You want something other than the SDK's loop to run the turns. Give the definition a `loop` of your own.
 
 <AnnotatedCode>
 
