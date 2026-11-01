@@ -120,7 +120,7 @@ inbox: [
 - In a source's `if`, `async` is the arriving event and `event` is the run's trigger, as in `waitForEvent`.
 - A plain event trigger with no `thread` opens a fresh thread per event. `slack.thread()`, `github.thread()` and `start()` settle their own keys.
 - A trigger with nothing at its `thread` path opens a fresh thread. A source with nothing at its path reaches no thread. The trace warns in both cases and nothing throws.
-- A thread posts where it lives, whichever event started the run, so an event that joins a pull request's thread still posts on the pull request.
+- A thread posts where it lives, whichever event started the run. A thread keyed by a pull request's or issue's URL has that pull request or issue as its home, even when a plain event opened it.
 
 ### Idle
 
@@ -742,7 +742,7 @@ export const POST = slack.bridge({
 - The event id is Slack's `event_id`.
 - It answers Slack after the send succeeds.
 - Messages from bots, including the agent itself, are ignored unless you set `allowBots: true`.
-- `gate` replaces the rule for what is meant for the agent. A message it skips never becomes an event. It gets the message, the thread's key and a `history()` of the thread, and the bot's own user id.
+- `gate` replaces the rule for what is meant for the agent. A message it skips never becomes an event. It gets the message, the thread's key, `history()` (the thread's earlier messages, oldest first) and the bot's own user id.
 - `handle(payload)` takes a payload from a connection your app already trusts, such as its own Socket Mode connection, and skips the signature check. The SDK never runs the socket. The gate and the thread key behave the same either way.
 
 
@@ -803,11 +803,13 @@ export const POST = github.bridge({
 });
 ```
 
-- **`github.bridge`** is mounted like Slack's. It verifies `X-Hub-Signature-256` and sends `github/<event>` events, such as `github/issue_comment`. It uses the `X-GitHub-Delivery` header as the event id, so a redelivered webhook is dropped.
+- **`github.bridge`** is mounted like Slack's. It verifies `X-Hub-Signature-256` and sends `github/<event>` events, such as `github/issue_comment`. It uses the `X-GitHub-Delivery` header as the event id, so a redelivered webhook is dropped. It drops the app's own comments and, unless allowed, other bots', so an agent never triggers itself.
 - **`github.thread()`** triggers on those events. `events` takes GitHub's event names, such as `"issue_comment"` or `"pull_request_review"`. Without it the trigger covers `issues`, `issue_comment`, `pull_request`, `pull_request_review` and `pull_request_review_comment`. `repos` limits the trigger to repositories, such as `"acme/api"`. `if` is an expression over `event`, as on any trigger.
 - A `github/<event>` event's data is GitHub's webhook payload plus `threadKey`. A GitHub thread is keyed by the pull request's or issue's URL. A plain event joins the thread by carrying that URL, as in `{ event: "ci/run.failed", thread: "event.data.prUrl" }`, and a run it starts still posts on the pull request.
 - **`github.tools()`** is bound to the thread. A call with no GitHub form, such as a status line, warns once.
 - **Credentials.** `github.tools()` and `me.post()` on a GitHub thread use `GITHUB_TOKEN`. `github.tools({ token })` takes a string, a function that returns one, `secret()` or `githubApp()`.
+
+{/* TODO(spec): the option that lets other bots through github.bridge. */}
 
 ```typescript {{ title: "Signature" }}
 github_comment({ body: string }): { url: string }
