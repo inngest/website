@@ -1,0 +1,124 @@
+import { Callout, Properties, Property } from "src/shared/Docs/mdx";
+
+
+export const metaTitle = "step.subscribe() | TypeScript SDK v4 Reference"
+export const description = "Open an inbox inside a run with step.subscribe() in SDK v4. Read messages with next(), nextBatch(), drain() and for await, make views with of() and listen(), and close it."
+
+# Subscribe
+
+Use `step.subscribe()` to open an inbox inside a run. Every matching event that arrives after it opens becomes a message, kept in order until the run reads it. For a walkthrough, see [step.subscribe](/docs/durable-execution/primitives/step-subscribe).
+
+<Callout>
+  `step.subscribe()` is experimental, and the API may change.
+</Callout>
+
+## `step.subscribe(id, sources): Inbox`
+
+<Properties>
+  <Property name="id" type="string" required>
+    The ID of the step. Opening the inbox is one step.
+  </Property>
+  <Property name="sources" type="InboxSources" required>
+    One source or an array of them. A source is an event name, an [`eventType()`](/docs/reference/typescript/v4/functions/triggers#event-type), or an object:
+    <Properties nested={true}>
+      <Property name="event" type="string | EventType" required>
+        The event to receive.
+      </Property>
+      <Property name="if" type="string">
+        An expression the event must match. The arriving event is `async` and the event that started the run is `event`, as in [`step.waitForEvent()`](/docs/reference/typescript/v4/functions/step-wait-for-event). See [writing expressions](/docs/durable-execution/guides-and-advanced/writing-expressions).
+      </Property>
+    </Properties>
+  </Property>
+</Properties>
+
+```ts
+// One source
+await using inbox = step.subscribe("reviews", prReviewed);
+
+// Several, filtered to this run's pull request
+await using activity = step.subscribe("pr-activity", [
+  { event: prReviewed, if: "async.data.pr == event.data.pr" },
+  { event: prChecked, if: "async.data.pr == event.data.pr" },
+]);
+```
+
+`step.subscribe()` returns at once. The inbox receives only events that arrive after it opens. `await using` closes it at the end of the block.
+
+## `Inbox`
+
+A message is the event as it was sent (`EventPayload`): `name`, `data`, `id`, `ts` and `v`. Narrow it with [`eventType.is()`](/docs/reference/typescript/v4/functions/triggers#narrowing-with-is). Import the type with `import type { Inbox } from "inngest"`.
+
+Every reader, the inbox and each view, keeps its own place. Reading from one never takes messages from another.
+
+### `next(options?): Promise<EventPayload | null | undefined>`
+
+Returns the next unread message, waiting for one if none is unread.
+
+<Properties>
+  <Property name="timeout" type="number | string | Date">
+    How long to wait: milliseconds, a duration such as `"30m"`, or a `Date`. Returns `null` if no message arrives in time.
+  </Property>
+</Properties>
+
+Returns `undefined` once the reader is closed, including a read that was waiting when it closed. Two reads on one reader return messages in order. A read that loses a race keeps its place and takes the next message.
+
+### `nextBatch(options?): Promise<EventPayload[] | null | undefined>`
+
+Returns every unread message, waiting for at least one. Each batch read is one step.
+
+<Properties>
+  <Property name="max" type="number">
+    Takes at most this many messages, oldest first. The rest stays unread.
+  </Property>
+  <Property name="timeout" type="number | string | Date">
+    Returns `null` if no message arrives in time.
+  </Property>
+</Properties>
+
+Returns `undefined` once the reader is closed.
+
+### `drain(options?): Promise<EventPayload[]>`
+
+Returns every unread message without waiting, or `[]`. Takes `max`, like `nextBatch()`. Each `drain()` is one step.
+
+### `batches(options?): AsyncGenerator<EventPayload[]>`
+
+Reads batch after batch with `for await`, using `nextBatch()`. Takes `max`. The loop ends when the reader closes.
+
+```ts
+for await (const batch of inbox.batches({ max: 20 })) {
+  await step.run("handle-batch", () => handleBatch(batch));
+}
+```
+
+### `[Symbol.asyncIterator]()`
+
+Reads one message at a time with `for await`, using `next()`. The loop ends when the reader closes.
+
+```ts
+for await (const message of inbox) {
+  await step.run("handle", () => handle(message));
+}
+```
+
+### `of(types): Inbox`
+
+Returns a view of the messages of one event type or an array of them. A view reads from the start of the inbox, and calling `of()` with the same types returns the same view. `of()` adds no step.
+
+### `listen(sources): Inbox`
+
+Adds sources to the inbox and returns a view over only the messages they receive. Takes sources like `step.subscribe()`. The new sources receive only events that arrive after `listen()`, and the inbox sees their messages too. `listen()` is one step.
+
+### `close(): Promise<EventPayload[]>`
+
+Closes the reader and every view on it, and returns the messages this reader hadn't read. `close()` is one step.
+
+- Closing the inbox stops all of its sources.
+- Closing a `listen()` view stops that view's sources. The inbox keeps its copies of their messages.
+- Closing an `of()` view ends only that reader.
+
+After `close()`, `next()`, `nextBatch()` and loops return `undefined` or end, and `drain()` returns `[]`. A message that arrives while `close()` is in flight isn't returned.
+
+### `closed: boolean`
+
+`true` once this reader, or one it is a view of, is closed.

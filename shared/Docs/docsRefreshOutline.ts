@@ -185,6 +185,11 @@ export const docsRefreshOutline: DocsRefreshPage[] = [
                 monospace: true,
               },
               {
+                title: "step.subscribe",
+                href: "/docs/durable-execution/primitives/step-subscribe",
+                monospace: true,
+              },
+              {
                 title: "step.invoke",
                 href: "/docs/durable-execution/primitives/step-invoke",
                 monospace: true,
