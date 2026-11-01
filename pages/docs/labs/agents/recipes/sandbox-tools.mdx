@@ -38,8 +38,6 @@ Screenshot needed: the run's trace, with one step per `listPullRequests` call.
 
 ## The code
 
-The tool is an ordinary `tool.step`.
-
 ```typescript {{ title: "inngest/tools/listPullRequests.ts" }}
 import { tool } from "inngest/experimental";
 import { z } from "zod";
@@ -48,12 +46,22 @@ export const listPullRequests = tool.step({
   description: "List a page of pull requests, newest first",
   input: z.object({ repo: z.string(), page: z.number().default(1) }),
   run: async ({ repo, page }) => {
+    const token = process.env.GITHUB_TOKEN;
+
+    if (!token) {
+      throw new Error("Set GITHUB_TOKEN");
+    }
+
     const base = `https://api.github.com/repos/${repo}/pulls`;
     const query = `state=all&per_page=100&page=${page}`;
 
     const response = await fetch(`${base}?${query}`, {
-      headers: { authorization: `Bearer ${process.env.GITHUB_TOKEN}` },
+      headers: { authorization: `Bearer ${token}` },
     });
+
+    if (!response.ok) {
+      throw new Error(`GitHub ${response.status}: ${await response.text()}`);
+    }
 
     const pulls = (await response.json()) as {
       number: number;
@@ -151,7 +159,7 @@ In the Dev Server, invoke `analyst` with `{ "question": "How many pull requests 
 
 ## Variations
 
-- [Tools](/docs/labs/agents/tools?ref=docs-labs-agents-recipes-sandbox-tools#wait-for-a-reply) can wait for a person with `waits: true`.
+- [Group tools](/docs/labs/agents/tools?ref=docs-labs-agents-recipes-sandbox-tools#wait-for-a-reply) can wait for a person with `waits: true`.
 - [Handlers](/docs/labs/agents/sandboxes-and-code?ref=docs-labs-agents-recipes-sandbox-tools#let-code-call-your-tools) run the same tools with `sandboxes.analysis.commands.run` and `{ tools }`.
 
 ## Learn more
