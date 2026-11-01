@@ -11,7 +11,7 @@ A skill is a folder with a `SKILL.md`: a name, a description and instructions. T
 
 ## A skill
 
-To have the PR helper review the way your team does, write the checklist as a skill.
+You want the PR helper to review the way your team does. Write the checklist as a skill.
 
 <AnnotatedCode>
 
@@ -89,14 +89,12 @@ export const prHelper = agents.agent(
 ```
 
 <Annotation id="skills" lines="24" tease="ships with your deploy" title="Skills" href="/docs/labs/agents/reference-sandboxes?ref=docs-labs-agents-skills#skills" linkText="Reference: skills">
-One folder per skill. The path resolves against the working directory when the agent is defined, so ship the folder with your app.
+One folder per skill, resolved from the working directory, so ship it with your app. `skills.repo("acme/skills")` lists a shared pack the same way; it changes without a deploy, and a private one takes `auth`.
 </Annotation>
 
 </AnnotatedCode>
 
-Asked for a review, the model opens the checklist with `open_skill`, and not before. A pack in a repo is listed the same way, `skills.repo("acme/skills")`; it changes without a deploy, and a private one takes `auth`.
-
-The files it imports are as those pages left them:
+Asked for a review, the model opens the checklist with `open_skill`, and not before. The files it imports are as those pages left them:
 
 ```typescript {{ title: "inngest/events.ts" }}
 import { eventType } from "inngest";
@@ -141,14 +139,14 @@ export const readLog = tool.step({
 
 ## Skills add no tools
 
-To see what a skill can't do, look at step 3 of the checklist: "Run the linter". The PR helper has no tool for that, so the model says it can't.
+You want step 3 of the checklist, "Run the linter", to work. The PR helper has no tool for that, so the model says it can't.
 
 {/* not type-checked: a lint tool listed beside readLog */}
 ```typescript
 tools: { lint, readLog, ...github.tools() },
 ```
 
-Listing a `lint` tool makes the step work. A skill names tools but never adds one, and its scripts, which land in the first sandbox the model can use at `/skills/<name>/`, act only by calling tools. [Sandboxes →](/docs/labs/agents/sandboxes?ref=docs-labs-agents-skills)
+Listing a `lint` tool makes the step work, because a skill names tools but never adds one. [Sandboxes →](/docs/labs/agents/sandboxes?ref=docs-labs-agents-skills)
 
 ## Recipes and reference
 
