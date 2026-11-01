@@ -177,7 +177,7 @@ me.message(content: Json): Promise<void>
 - A thread with no home, such as one opened by `start()` or a cron tick, posts nothing, and the trace warns.
 - A Slack configuration error from a post you did not await, such as a bad token or a missing scope, becomes a warning on the trace.
 - `message(content)`: puts a message in the agent's own inbox. It is how work you did not wait for reports back.
-- The agent posts some things itself: a status line while it works, the answer when there is no handler, and a notice when a run fails.
+- The agent posts some things itself: in Slack, a status line while it works; the answer when there is no handler; and a notice when a run fails.
 
 ## Agent
 
