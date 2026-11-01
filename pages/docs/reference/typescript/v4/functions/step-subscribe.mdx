@@ -42,13 +42,15 @@ await using activity = step.subscribe("pr-activity", [
 ]);
 ```
 
-`step.subscribe()` returns at once, and the inbox receives only events that arrive after it opens. `await using` (TypeScript 5.2 or later) closes it at the end of the block.
+`step.subscribe()` returns at once, and the inbox receives only events that arrive after it opens (an event up to 5 seconds older can still match). `await using` (TypeScript 5.2 or later) closes it at the end of the block.
 
 ## `Inbox`
 
 A message is the event as it was sent (`EventPayload`), with `name`, `data`, `id`, `ts` and `v`. Narrow it with [`eventType.is()`](/docs/reference/typescript/v4/functions/triggers#narrowing-with-is).
 
-A view is an `Inbox` too, with the same methods, and views nest. Every reader keeps its own place, so reading from one never takes messages from another. Import the type with `import type { Inbox } from "inngest"`.
+A view is an `Inbox` too, with the same methods, and views nest. Every reader keeps its own place, so reading from one never takes messages from another.
+
+Import the type with `import type { Inbox } from "inngest"`.
 
 ### `next(options?): Promise<EventPayload | null | undefined>`
 
@@ -60,7 +62,7 @@ Returns the next unread message, waiting for one if none is unread.
   </Property>
 </Properties>
 
-Returns `undefined` once the reader is closed, including a read that was waiting when it closed. Two reads on one reader return messages in order. A read that loses a race keeps its place and takes the next message.
+Returns `undefined` once the reader is closed, even for a read that was already waiting. Two reads on one reader return messages in order, and a read that loses a race keeps its place for the next message.
 
 ### `nextBatch(options?): Promise<EventPayload[] | null | undefined>`
 
@@ -103,11 +105,11 @@ for await (const message of inbox) {
 
 ### `of(types): Inbox`
 
-Returns a view of the messages of one event type or an array of them, read from the start of the inbox. The same types return the same view. `of()` adds no step.
+Returns a view of the messages of one event type or an array of them, read from the start of the inbox. The same types return the same view, and `of()` adds no step.
 
 ### `listen(sources): Inbox`
 
-Adds sources, written like those of `step.subscribe()`, and returns a view over only the messages they receive. They receive events from now on, and the inbox sees those messages too. `listen()` is one step.
+Adds sources, written like those of `step.subscribe()`, and returns a view over only the messages they receive from now on. The inbox sees those messages too, and `listen()` is one step.
 
 ### `close(): Promise<EventPayload[]>`
 

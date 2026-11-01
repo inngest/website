@@ -185,7 +185,7 @@ inngest.createFunction(
 
 ### Narrowing with `is()`
 
-`eventType().is(value)` checks any value, such as JSON from another service or a message from a [`step.subscribe()`](/docs/reference/typescript/v4/functions/step-subscribe) inbox, and narrows it to this event type.
+`eventType().is(value)` narrows any value to this event type, such as JSON from another service or a [`step.subscribe()`](/docs/reference/typescript/v4/functions/step-subscribe) message.
 
 ```ts
 const value: unknown = JSON.parse(body);
