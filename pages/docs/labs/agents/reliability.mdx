@@ -51,7 +51,7 @@ export const support = agents.agent(
 What this thread may spend.
 </Annotation>
 
-<Annotation id="limits" lines="12" tease="who it may start" title="Limits" href="/docs/labs/agents/agent-teams?ref=docs-labs-agents-reliability" linkText="Teams of agents">
+<Annotation id="limits" lines="12" tease="who it may start" title="Limits" href="/docs/labs/agents/agent-teams?ref=docs-labs-agents-reliability" linkText="Agent Teams">
 Agents it starts can start agents, but no deeper. Its model may start only `support/researcher`.
 </Annotation>
 
@@ -59,7 +59,7 @@ Agents it starts can start agents, but no deeper. Its model may start only `supp
 Also hands the message in flight to a fresh run.
 </Annotation>
 
-<Annotation id="end" lines="19" tease="why it stopped" title="end and reason" href="/docs/labs/agents/models?ref=docs-labs-agents-reliability" linkText="Models and the loop">
+<Annotation id="end" lines="19" tease="why it stopped" title="end and reason" href="/docs/labs/agents/models?ref=docs-labs-agents-reliability" linkText="Models">
 `"budget"` comes with a `reason` to pass on.
 </Annotation>
 
@@ -130,7 +130,7 @@ export const lookup = agents.agent(
 );
 ```
 
-<Annotation id="turns" lines="14" tease="for this call" title="maxTurns" href="/docs/labs/agents/models?ref=docs-labs-agents-reliability" linkText="Models and the loop">
+<Annotation id="turns" lines="14" tease="for this call" title="maxTurns" href="/docs/labs/agents/models?ref=docs-labs-agents-reliability" linkText="Models">
 A loop option, so each call can have its own.
 </Annotation>
 
@@ -192,7 +192,7 @@ export const babysitter = agents.agent({
 });
 ```
 
-<Annotation id="idle" lines="10" tease="a week-long run" title="A long idle" href="/docs/labs/agents/inboxes?ref=docs-labs-agents-reliability#going-quiet" linkText="Threads and memory">
+<Annotation id="idle" lines="10" tease="a week-long run" title="A long idle" href="/docs/labs/agents/inboxes?ref=docs-labs-agents-reliability#going-quiet" linkText="Inboxes">
 Live across every deploy.
 </Annotation>
 
