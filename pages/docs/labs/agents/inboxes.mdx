@@ -14,9 +14,9 @@ More messages arrive while an agent works: a follow-up, a CI result, a review. T
 - **More inboxes.** Open another one inside a handler. [More inboxes →](#more-inboxes)
 - **The model can watch too.** It opens and closes inboxes for the event types you allow. [Let the model watch →](#let-the-model-watch)
 
-{/* not type-checked: inbox sources with thread and if, inbox.batches({ max }) and loop(batch) */}
 <AnnotatedCode>
 
+{/* not type-checked: inbox sources with thread and if, inbox.batches({ max }) and loop(batch) */}
 ```typescript {{ title: "inngest/agents/deployer.ts" }}
 import { eventType } from "inngest";
 import { z } from "zod";
@@ -99,11 +99,11 @@ Answers to your code's `ask()` and `result()` go to the caller, and `stop()` can
 
 ## Read the inbox
 
-Loop over `batches()` for everything unread, with `max` capping a batch, oldest first, or over `inbox` for one message at a time. To wait for a reply, or look without waiting, read with `nextBatch()`, `next()` and `drain()`:
+Read what has arrived, or wait for a reply. Loop over `batches()` for everything unread, with `max` capping a batch, oldest first, or over `inbox` for one message at a time. For more control, use `nextBatch()`, `next()` and `drain()`:
 
-{/* not type-checked: inbox.nextBatch({ max }), inbox.next({ timeout }) and inbox.drain() in an agent handler */}
 <AnnotatedCode>
 
+{/* not type-checked: inbox.nextBatch({ max }), inbox.next({ timeout }) and inbox.drain() in an agent handler */}
 ```typescript {{ title: "inngest/agents/releaser.ts" }}
 import { slack } from "inngest/experimental/agents";
 import { agents } from "../client";
@@ -162,9 +162,9 @@ List events about the same work in `inbox`, written like triggers, and they reac
 
 To watch something else mid-run, open another inbox with `step.subscribe` in your handler.
 
-{/* not type-checked: step.subscribe in an agent handler beside the agent's inbox */}
 <AnnotatedCode>
 
+{/* not type-checked: step.subscribe in an agent handler beside the agent's inbox */}
 ```typescript {{ title: "inngest/agents/canary.ts" }}
 import { eventType } from "inngest";
 import { z } from "zod";
@@ -223,9 +223,9 @@ The loop folds the agent's inbox only, so the model sees these events only if yo
 
 List the event types the model may follow in `listen`, and it gets two tools: `inbox_listen` opens an inbox on one of them, and `inbox_close` closes it.
 
-{/* not type-checked: listen on an agent definition */}
 <AnnotatedCode>
 
+{/* not type-checked: listen on an agent definition */}
 ```typescript {{ title: "inngest/agents/follower.ts" }}
 import { eventType } from "inngest";
 import { slack } from "inngest/experimental/agents";
