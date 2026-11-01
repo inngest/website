@@ -1,244 +1,384 @@
 import { AnnotatedCode, Annotation } from "shared/Docs/mdx";
 
 export const metaTitle = "Threads and memory | Inngest Agents";
-export const description = "Inngest Agents threads and memory: name a conversation with a key, save its history and facts under scoped keys, and read a thread's state from anywhere.";
+export const description = "Name an Inngest agent's conversations with a key, let it pick each one up where it stopped, keep your own state in scoped, typed keys, and choose the store behind it.";
 
 # Threads and memory
 
-> One key per conversation, and whatever the agent saves under it is still there tomorrow.
+> Name a conversation with a key, and the agent picks it up where it stopped, hours or days later.
 
-Every conversation with an agent is a thread, named by a key you choose. Save the history under that key and the next message picks up exactly where the last one stopped.
+A thread is one conversation, named by a key. Messages with the same key reach the same thread, one run works on it at a time, and what the agent keeps lasts between runs.
 
+- **One key per conversation.** Events whose keys match share a thread. [Name a thread →](#name-a-thread)
+- **One run at a time.** Messages for a busy thread join its run. [How long a run waits →](#how-long-a-run-waits)
+- **Memory with no code.** The model's history is there on the next run. [Remember the history →](#remember-the-history)
+- **State of your own.** Four scopes of durable, typed keys. [Keep state →](#keep-state)
+- **Your store.** Redis, D1 or memory for tests. [Choose a store →](#choose-a-store)
+
+{/* not type-checked: agents.agent with thread, model and no handler */}
 <AnnotatedCode>
 
 ```typescript {{ title: "inngest/agents/support.ts" }}
-import { agent, kv } from "inngest/experimental/agents";
+import { eventType } from "inngest";
+import { z } from "zod";
 import { agents } from "../client";
-import { history } from "../keys";
 import { claude } from "../models/claude";
 
-export const support = agents.agent(
-  { id: "support" },
-  async ({ inbox, control }) => {
-    for await (const message of inbox) {
-      const result = await agent.loop({
-        model: claude,
-        prompt: message,
-        history: (await kv.thread.get(history)) ?? [],
-        ...control,
-      });
+export const question = eventType("support/question", {
+  schema: z.object({ customer: z.string(), text: z.string() }),
+});
 
-      await kv.thread.set(history, result.history);
-    }
-  },
-);
+export const support = agents.agent({
+  id: "support",
+  triggers: [question],
+  thread: "event.data.customer",
+  model: claude,
+  system: "You answer questions about orders.",
+});
 ```
 
-<Annotation id="inbox" lines="9" tease="idle costs nothing" title="One run per thread" href="/docs/labs/agents/inboxes?ref=docs-labs-agents-threads-and-memory" linkText="Inboxes">
-The run waits here between messages, so a quiet thread uses nothing.
+<Annotation id="thread" lines="13" tease="same customer, same thread" title="Thread" href="#name-a-thread" linkText="Name a thread">
+Every question from customer `42` lands on one thread, whenever it arrives.
 </Annotation>
 
-<Annotation id="read" lines="13" tease="empty on the first turn" title="Read memory" href="#remember-across-threads" linkText="Remember">
-`undefined` until the thread has saved something.
-</Annotation>
-
-<Annotation id="write" lines="17" tease="JSON only" title="Write memory" href="#gotchas" linkText="Gotchas">
-`result.history` is the whole conversation so far.
+<Annotation id="memory" lines="14-15" tease="no code to remember" title="Memory" href="#remember-the-history" linkText="Remember the history">
+With no handler, the agent saves the model's history on the thread, and the next run starts with it.
 </Annotation>
 
 </AnnotatedCode>
 
-## Talk to a thread
+## Name a thread
 
-A thread is a string key. The same key is the same conversation, from any process.
+`thread` is an expression over the incoming `event`. Events whose keys come out equal share a thread; without it, each event opens its own. A trigger can carry its own expression when its events name the thread differently. [Writing expressions →](/docs/durable-execution/guides-and-advanced/writing-expressions?ref=docs-labs-agents-threads-and-memory)
 
-```typescript {{ title: "app/tickets.ts" }}
-import { support } from "../inngest/agents/support";
-
-const ticket = support.thread("ticket-42", "acct-9");
-
-await ticket.send("My invoice shows the wrong amount");
-
-await ticket.send("It was due on the 3rd");
-
-const { status, turn, summary } = await ticket.state();
-```
-
-The first `send` starts a run. The second joins it, or starts a new one if the first has finished. The second argument names the session the thread belongs to; it defaults to the key.
-
-## Remember across threads
-
-History belongs to one thread. Facts about a customer belong to every thread they open. Give those a wider scope.
-
+{/* not type-checked: github.thread() with a plain event trigger that carries its own thread expression */}
 <AnnotatedCode>
 
-```typescript {{ title: "inngest/agents/account.ts" }}
-import { agent, kv } from "inngest/experimental/agents";
+```typescript {{ title: "inngest/agents/babysitter.ts" }}
+import { eventType } from "inngest";
+import { github } from "inngest/experimental/agents";
+import { z } from "zod";
 import { agents } from "../client";
-import { preferences } from "../keys";
 import { claude } from "../models/claude";
 
-export const account = agents.agent({ id: "account" }, async ({ inbox }) => {
-  for await (const message of inbox) {
-    const known = (await kv.session.get(preferences)) ?? [];
-    await agent.loop({
-      model: claude,
-      system: `What we know about this customer: ${known.join("; ")}`,
-      prompt: message,
-    });
-  }
+export const ciFailed = eventType("ci/run.failed", {
+  schema: z.object({ prUrl: z.string(), log: z.string() }),
+});
+
+export const babysitter = agents.agent({
+  id: "babysitter",
+  triggers: [
+    github.thread(),
+    { event: ciFailed, thread: "event.data.prUrl" },
+  ],
+  model: claude,
+  system: "You keep a pull request moving until it merges.",
 });
 ```
 
-<Annotation id="session" lines="8" tease="every thread of the session" title="Session scope" href="#options" linkText="Options">
-Shared by all threads that name the same session, such as `acct-9`.
+<Annotation id="github" lines="14" tease="keyed by the PR's URL" title="github.thread()" href="/docs/labs/agents/slack-and-github?ref=docs-labs-agents-threads-and-memory" linkText="Slack and GitHub">
+A GitHub thread is the pull request or issue itself, keyed by its URL, so it needs no expression.
+</Annotation>
+
+<Annotation id="join" lines="15" tease="join by carrying the URL" title="A plain event joins">
+A failed CI run carries the URL, so it lands on the pull request's thread. The run it starts posts on the pull request.
 </Annotation>
 
 </AnnotatedCode>
 
-Add `history` as above, `tools: { remember }` and `compaction: { maxTokens: 150_000, keep: 8 }` to the same loop. Past `maxTokens` the start of the history becomes one summary; see [Models and the loop](/docs/labs/agents/models-and-the-loop?ref=docs-labs-agents-threads-and-memory#keep-long-conversations-in-the-window).
+A Slack thread is its own thread, and every `start()` opens a new one, so neither needs an expression. An `inbox` source takes a `thread` too. [Inboxes →](/docs/labs/agents/inboxes?ref=docs-labs-agents-threads-and-memory#add-sources)
 
-```typescript {{ title: "inngest/tools/remember.ts" }}
-import { tool } from "inngest/experimental";
-import { kv } from "inngest/experimental/agents";
-import { z } from "zod";
-import { preferences } from "../keys";
+If an event has nothing at the path, a trigger starts a fresh thread and a source reaches no thread. The trace warns either way, so a typo shows up instead of landing in the wrong thread.
 
-export const remember = tool.step({
-  description: "Save something to remember about this customer",
-  input: z.object({ fact: z.string() }),
-  run: async ({ fact }) => {
-    await kv.session.update(preferences, (current) => {
-      return [...(current ?? []), fact];
-    });
-    return { saved: fact };
-  },
+## How long a run waits
+
+At most one run is live per thread. A message for a live thread lands in that run's inbox, and a message for a quiet thread starts a run.
+
+A live run waits for more messages and ends after `idle` of quiet time, ten minutes by default. The next message starts a run that reads the history back.
+
+```text
+09:00  question arrives      starts a run
+09:01  answer posted
+09:04  follow-up arrives     joins the same run
+09:05  answer posted
+09:15  ten quiet minutes     the run ends
+14:00  question arrives      starts a run that reads the history
+```
+
+{/* not type-checked: idle on an agent definition */}
+<AnnotatedCode>
+
+```typescript {{ title: "inngest/agents/concierge.ts" }}
+import { slack } from "inngest/experimental/agents";
+import { agents } from "../client";
+import { claude } from "../models/claude";
+
+export const concierge = agents.agent({
+  id: "concierge",
+  triggers: [slack.thread()],
+  model: claude,
+  system: "You help guests plan their stay.",
+  idle: "30m",
 });
 ```
 
-```typescript {{ title: "inngest/keys.ts" }}
-import { kvKey } from "inngest/experimental/agents";
-import type { AgentMessage } from "inngest/experimental/agents";
+<Annotation id="idle" lines="10" tease="a duration" title="idle" href="/docs/labs/agents/agents-and-triggers?ref=docs-labs-agents-threads-and-memory#decide-per-run" linkText="Decide per run">
+How long a run waits in quiet before it ends. Guests answer slowly here. A number, a duration string or a function of the event and thread.
+</Annotation>
 
-export const history = kvKey<AgentMessage[]>("history");
-export const preferences = kvKey<string[]>("preferences");
-```
+</AnnotatedCode>
 
-The model saves a fact when it learns one. `update` reads, changes and writes in one safe step, so two threads saving a fact at once never lose one.
+`idle` also ends a handler's loops, and a few runs end differently:
 
-## Look inside a thread
+- **Handler loops.** `for await` over `inbox.batches()` or over `inbox` finishes after `idle`, so the handler returns.
+- **Waits with no timeout.** `inbox.next()` with no `timeout` keeps the run live as long as it waits.
+- **Runs opened through a handle.** `start()`, `message()`, `start_agent` and `message_agent` open runs that end once they've answered and nothing is unread, so `result()` returns promptly. Only runs a trigger starts wait `idle`.
+- **Continuing from code.** A run opened through a handle stays open while the runs it started are open. A second round is `await handle.message(content).result()`, and `ask()` on a thread whose last run ended starts a run there. [Teams of agents →](/docs/labs/agents/teams-of-agents?ref=docs-labs-agents-threads-and-memory#carry-on-the-conversation)
 
-`state()` reads a thread's memory without a run, from your app or a script.
+Keep the default unless people reply slower than that:
 
-```typescript {{ title: "app/inspect.ts" }}
-import { account } from "../inngest/agents/account";
+- **Deploys.** A live run replays on the new code after a deploy.
+- **Steps.** Every step counts toward the limit of 1,000, and a busy 50-minute chat can take over 300.
+- **Little is lost.** History, sandbox and shell stay on the thread; only handler variables reset.
 
-const ticket = account.thread("ticket-42", "acct-9");
+## What lasts
 
-const { status, turn, usage, lastRun } = await ticket.state();
+A run's variables go when it ends. The thread keeps:
 
-console.log(status, turn, usage, lastRun);
-```
+- **State.** The keys you save with `kv.thread`.
+- **History.** The model's side of the conversation, saved by the loop.
+- **Sandbox.** Paused when unused, resumed on the next use. [Sandboxes and code →](/docs/labs/agents/sandboxes-and-code?ref=docs-labs-agents-threads-and-memory)
+- **The shell's place.** Its working directory and exported variables.
+- **Budget.** What the thread has spent. [Reliability →](/docs/labs/agents/reliability?ref=docs-labs-agents-threads-and-memory)
+- **How the last run ended.**
 
-`status` is `running`, `waiting`, `stopped` or `idle`. `usage` sums every model call so far.
+Handler variables don't survive a run, so put anything the next run needs in thread state.
 
-List a session's threads with `threads.list()`, most recently messaged first.
+## Remember the history
 
-```typescript {{ title: "app/list.ts" }}
-import { support } from "../inngest/agents/support";
+The loop saves the model's history on the thread after every batch and reads it back when the thread's next run starts. A long history is summarised once, and the summary is reused. The default handler and `loop(batch)` both do this with no code.
 
-const recent = await support.threads.list({ session: "acct-9", limit: 20 });
+`remember: false` switches it off for an agent whose requests stand alone.
 
-for (const thread of recent) {
-  console.log(thread.key, (await thread.state()).status);
-}
-```
+{/* not type-checked: remember: false on an agent definition */}
+<AnnotatedCode>
 
-## Ask another thread
-
-Give an agent `requests` schemas and a function can ask its thread a typed question. The asker gets the reply, or `null` after the timeout.
-
-```typescript {{ title: "inngest/agents/billing.ts" }}
+```typescript {{ title: "inngest/agents/lookup.ts" }}
+import { eventType } from "inngest";
 import { z } from "zod";
 import { agents } from "../client";
+import { claude } from "../models/claude";
 
-export const billing = agents.agent(
+export const lookupRequested = eventType("orders/lookup.requested", {
+  schema: z.object({ customer: z.string(), text: z.string() }),
+});
+
+export const lookup = agents.agent({
+  id: "lookup",
+  triggers: [lookupRequested],
+  thread: "event.data.customer",
+  model: claude,
+  system: "Answer from the order data. Each question stands alone.",
+  remember: false,
+});
+```
+
+<Annotation id="remember" lines="16" tease="start clean every run" title="remember" href="/docs/labs/agents/models-and-the-loop?ref=docs-labs-agents-threads-and-memory#remember-and-summarise" linkText="Models and the loop">
+Each run starts with an empty history. The thread's state, budget and sandbox are still its own.
+</Annotation>
+
+</AnnotatedCode>
+
+## Keep state
+
+For anything else, `kv` is a durable key-value store. It is an import, and inside a function it finds its own thread and run.
+
+{/* not type-checked: kv.thread.update with a typed key in an agent handler */}
+<AnnotatedCode>
+
+```typescript {{ title: "inngest/agents/planner.ts" }}
+import { kv, slack } from "inngest/experimental/agents";
+import { agents } from "../client";
+import { plan } from "../keys";
+import { claude } from "../models/claude";
+
+export const planner = agents.agent(
   {
-    id: "billing",
-    requests: {
-      request: z.object({ orderId: z.string() }),
-      reply: z.object({ refundable: z.boolean() }),
-    },
+    id: "planner",
+    triggers: [slack.thread()],
+    model: claude,
+    system: "You plan the work, one step per message.",
   },
-  async ({ inbox }) => {
-    const message = await inbox.next();
-    if (message?.name === "agent/request") {
-      await message.reply({ refundable: message.data.payload.orderId !== "" });
+  async ({ inbox, loop, me }) => {
+    for await (const batch of inbox.batches()) {
+      const { text } = await loop(batch);
+
+      await kv.thread.update(plan, (found) => {
+        return { steps: [...(found?.steps ?? []), text] };
+      });
+
+      await me.post(text);
     }
   },
 );
 ```
 
-```typescript {{ title: "inngest/functions/refundCheck.ts" }}
-import { billing } from "../agents/billing";
+<Annotation id="key" lines="3" tease="a typed key" title="plan" href="#type-a-key" linkText="Type a key">
+Defined once in `inngest/keys.ts`, so every read and write agrees on the value.
+</Annotation>
+
+<Annotation id="scope" lines="17" tease="always written out" title="kv.thread">
+The scope is part of every call, so you can see how long a value lives. This one lasts across the thread's runs.
+</Annotation>
+
+<Annotation id="update" lines="18" tease="read, change, write" title="update" href="#claim-and-update" linkText="Claim and update">
+A compare-and-set. It gets what is stored, or `undefined`, and returns the next value, and two runs updating one key never lose an update.
+</Annotation>
+
+</AnnotatedCode>
+
+Four scopes, and every call names one:
+
+- **`kv.thread`.** This thread's keys, kept across its runs.
+- **`kv.run`.** This run's keys, removed when the run ends.
+- **`kv.app`.** Shared by every function of the app.
+- **`kv.env`.** Shared by every app of the environment.
+
+`run`, `app` and `env` also work in plain functions, in an app with no `createAgents`: the store comes from `INNGEST_EXPERIMENTAL_KV_URL`. `kv.thread` needs an agent run. A function for a run-time field, such as `system` or `budget`, may read `kv` too; each call is a step, so the function needs no other side effects.
+
+## Type a key
+
+A key is a plain name, whose value is `unknown`, or a name that carries its value's type.
+
+{/* not type-checked: kv.key with a type and with a schema */}
+<AnnotatedCode>
+
+```typescript {{ title: "inngest/keys.ts" }}
+import { kv } from "inngest/experimental/agents";
+import { z } from "zod";
+
+export const nickname = kv.key<string>("nickname");
+
+export const plan = kv.key(
+  "plan",
+  z.object({ steps: z.array(z.string()) }),
+);
+```
+
+<Annotation id="typed" lines="4" tease="types only" title="kv.key<T>(name)" href="/docs/labs/agents/reference?ref=docs-labs-agents-threads-and-memory#kv" linkText="Reference">
+`get`, `set` and `update` know the value is a string. Nothing is checked at run time.
+</Annotation>
+
+<Annotation id="schema" lines="6-9" tease="checked on read" title="kv.key(name, schema)" href="/docs/labs/agents/reference?ref=docs-labs-agents-threads-and-memory#kv" linkText="Reference">
+A stored value that breaks the schema fails the read for good and stays where it is. Writes aren't checked.
+</Annotation>
+
+</AnnotatedCode>
+
+## Claim and update
+
+Every scope has the same methods. `get` reads a key and `set` writes one, with an optional `ttl`. This job takes a lock on `kv.app` so two overlapping runs never clean up at once.
+
+{/* not type-checked: kv.app.setIfAbsent with ttl and delete in a plain function */}
+<AnnotatedCode>
+
+```typescript {{ title: "inngest/functions/nightly.ts" }}
+import { kv } from "inngest/experimental/agents";
 import { inngest } from "../client";
 
-export const refundCheck = inngest.createFunction(
-  { id: "refund-check", triggers: [{ event: "shop/refund.requested" }] },
-  async () => {
-    const answer = await billing
-      .thread("acct-9")
-      .request({ orderId: "A-100" }, { timeout: "5m" });
+export const nightly = inngest.createFunction(
+  { id: "nightly", triggers: [{ cron: "TZ=UTC 0 2 * * *" }] },
+  async ({ step }) => {
+    const claimed = await kv.app.setIfAbsent("nightly-lock", true, {
+      ttl: 3600,
+    });
 
-    return answer?.refundable ? "refund" : "no refund";
+    if (!claimed) {
+      return { skipped: true };
+    }
+
+    await step.run("clean-up", async () => {
+      return { removed: 12 };
+    });
+
+    await kv.app.delete("nightly-lock");
+
+    return { skipped: false };
   },
 );
 ```
 
-`request` works only inside a function, and wakes an idle thread. Agents reach each other through discovery instead: [Teams of agents](/docs/labs/agents/teams-of-agents?ref=docs-labs-agents-threads-and-memory).
+<Annotation id="claim" lines="7" tease="first caller wins" title="setIfAbsent" href="/docs/labs/agents/reference?ref=docs-labs-agents-threads-and-memory#kv" linkText="Reference">
+Writes only when the key has no value, and says whether this call holds it.
+</Annotation>
 
-## When to use what
+<Annotation id="ttl" lines="8" tease="seconds" title="ttl" href="/docs/labs/agents/reference?ref=docs-labs-agents-threads-and-memory#kv" linkText="Reference">
+A key past its `ttl` reads as absent, so a crashed run can't hold the lock for ever. Without a `ttl`, a key never expires.
+</Annotation>
 
-- Keep the conversation: `kv.thread` with `result.history`.
-- Keep facts about a person or account: `kv.session` and a tool that writes it.
-- Keep a setting every thread should see: `kv.app` or `kv.env`.
-- Keep scratch work for one run: `kv.run`, removed when the run ends.
-- Find a thread from outside the agent: `agent.thread(key)` and `state()`.
-- Ask another thread a question: `thread.request()`.
+<Annotation id="delete" lines="19" tease="release it" title="delete" href="/docs/labs/agents/reference?ref=docs-labs-agents-threads-and-memory#kv" linkText="Reference">
+Removes the key.
+</Annotation>
 
-## Options
+</AnnotatedCode>
 
-Pick the scope by who should see the value and when it goes away.
+`take` reads and deletes in one step, `all` lists a scope's keys and `clear` removes them. `index(name)` keeps a sorted list beside your keys, with `add`, `range` and `remove`.
 
-```typescript {{ title: "inngest/scopes.ts" }}
-import { kv } from "inngest/experimental/agents";
+{/* TODO(spec): the arguments of index(name).add and .remove, and what range and all() return */}
 
-export async function scopes(otherThread: string) {
-  await kv.run.set("scratch", { files: ["a.ts"] });
-  await kv.thread.set("topic", "refunds");
-  await kv.session.set("customer", "acme");
-  await kv.app.set("model", "claude");
-  await kv.env.set("flag:beta", true);
+## Choose a store
 
-  return kv.scope("thread", otherThread).get("topic");
-}
+Thread state lives in one store per app, chosen once. Set `INNGEST_EXPERIMENTAL_KV_URL` for Redis with no code, or pass a store to `createAgents`.
+
+{/* not type-checked: createAgents with a redisKvAdapter store */}
+```typescript {{ title: "inngest/client.ts" }}
+import { Inngest } from "inngest";
+import { createAgents, redisKvAdapter } from "inngest/experimental/agents";
+
+export const inngest = new Inngest({ id: "support" });
+
+export const agents = createAgents(inngest, {
+  store: redisKvAdapter(process.env.REDIS_URL ?? "redis://localhost:6379"),
+});
 ```
 
-Each scope is wider than the one before. Pass a `store` to `createAgents` for D1 or memory instead of Redis. `kvKey(name, schema)` checks every read, and `update`, `setIfAbsent` and `take` never lose a racing write. `kv.scope(name, id)` reads another instance, such as a different thread.
+- **`redisKvAdapter(url)`.** Redis 6.2 or newer.
+- **`d1KvAdapter(db)`.** A Cloudflare D1 database, with `d1KvSchema` for the migration. [Workers →](/docs/labs/agents/workers?ref=docs-labs-agents-threads-and-memory)
+- **`memoryKvAdapter()`.** For tests. It keeps state in one process, so a run that moves to another machine loses it.
+
+`store` wins over the environment variable. With neither, any KV call throws an error that names both.
+
+## Outside a function
+
+`kv` finds its thread from the running function. In a route or a script, bind it to your client with `kv.with(client)`. `scope("thread", key)` reaches any thread by its key.
+
+{/* not type-checked: kv.with(client).scope("thread", key) in a script */}
+```typescript {{ title: "scripts/thread.ts" }}
+import { kv } from "inngest/experimental/agents";
+import { inngest } from "../inngest/client";
+import { plan } from "../inngest/keys";
+
+const thread = kv.with(inngest).scope("thread", "42");
+
+console.log(await thread.get(plan));
+```
 
 ## Gotchas
 
-- Values are stored as JSON: no `Date`, `Map` or `undefined`.
-- The inbox closes when the agent body returns. A message sent after that is dropped, so loop for as long as the thread should live.
-- `update` runs your function again if another run wrote first, so keep it pure.
-- `threads.list()` uses Insights, which the Dev Server does not serve.
+- **One value for every event is one thread.** An expression that gives all events the same key puts them on one thread.
+- **`update` can run its function twice.** On a race it reads again and retries, up to 25 times, so keep the function pure. The value it writes never expires, even if the key had a `ttl`.
+- **Values are JSON.** No `Date`, `Map` or `undefined` properties.
+- **Every call is a step.** A run that makes many KV calls reaches the step limit sooner.
+- **Nothing expires on its own.** A key lasts until you delete it, unless it has a `ttl`.
+- **`__` names are the SDK's.** Keep your own keys off that prefix.
 
 ## How it works
 
-- A message is an `agent/message` event. It starts a run when none is live.
-- One run is live per thread. Messages sent during a run join its inbox.
-- Thread memory lives in the KV store you give `createAgents`.
+- A thread is a record in your store: its status, spend, budget and how its last run ended, beside your keys.
+- The loop saves the history under the thread's scope after every batch, and a run for a quiet thread reads it back.
+- Each KV call inside a function is one memoized step, named by its operation, scope and key, so a replay sees the values the first run saw.
 
 ## Recipes and reference
 
-[Slack assistant](/docs/labs/agents/recipes/slack-assistant), [Approvals](/docs/labs/agents/recipes/approvals), [KV reference](/docs/labs/agents/reference?ref=docs-labs-agents-threads-and-memory#kv).
+- [Slack assistant](/docs/labs/agents/recipes/slack-assistant?ref=docs-labs-agents-threads-and-memory): a thread per Slack thread, with no handler.
+- [Reference: KV](/docs/labs/agents/reference?ref=docs-labs-agents-threads-and-memory#kv)
