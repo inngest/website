@@ -781,6 +781,7 @@ slack_progress({
 github.bridge({
   client: Inngest;
   secret: string | Secret;
+  allowBots?: boolean;
 }): (request: Request) => Promise<Response>
 
 github.thread(options?: {
@@ -803,13 +804,11 @@ export const POST = github.bridge({
 });
 ```
 
-- **`github.bridge`** is mounted like Slack's. It verifies `X-Hub-Signature-256` and sends `github/<event>` events, such as `github/issue_comment`. It uses the `X-GitHub-Delivery` header as the event id, so a redelivered webhook is dropped. It drops the app's own comments and, unless allowed, other bots', so an agent never triggers itself.
+- **`github.bridge`** is mounted like Slack's. It verifies `X-Hub-Signature-256` and sends `github/<event>` events, such as `github/issue_comment`. It uses the `X-GitHub-Delivery` header as the event id, so a redelivered webhook is dropped. It drops the app's own comments, and other bots' unless you set `allowBots: true`, so an agent never triggers itself.
 - **`github.thread()`** triggers on those events. `events` takes GitHub's event names, such as `"issue_comment"` or `"pull_request_review"`. Without it the trigger covers `issues`, `issue_comment`, `pull_request`, `pull_request_review` and `pull_request_review_comment`. `repos` limits the trigger to repositories, such as `"acme/api"`. `if` is an expression over `event`, as on any trigger.
 - A `github/<event>` event's data is GitHub's webhook payload plus `threadKey`. A GitHub thread is keyed by the pull request's or issue's URL. A plain event joins the thread by carrying that URL, as in `{ event: "ci/run.failed", thread: "event.data.prUrl" }`, and a run it starts still posts on the pull request.
 - **`github.tools()`** is bound to the thread. A call with no GitHub form, such as a status line, warns once.
 - **Credentials.** `github.tools()` and `me.post()` on a GitHub thread use `GITHUB_TOKEN`. `github.tools({ token })` takes a string, a function that returns one, `secret()` or `githubApp()`.
-
-{/* TODO(spec): the option that lets other bots through github.bridge. */}
 
 ```typescript {{ title: "Signature" }}
 github_comment({ body: string }): { url: string }
