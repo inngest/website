@@ -16,9 +16,9 @@ An agent with no handler answers every message the same way. A handler is plain 
 - **Posts that never slow you down.** Await one, or don't. [Post →](#post-in-the-thread)
 - **A result for the caller.** Whatever the handler returns. [Return →](#return-a-result)
 
-{/* not type-checked: the handler argument (event, inbox, me, loop) and an un-awaited me.post() */}
 <AnnotatedCode>
 
+{/* not type-checked: the handler argument (event, inbox, me, loop) and an un-awaited me.post() */}
 ```typescript {{ title: "inngest/agents/triage.ts" }}
 import { slack } from "inngest/experimental/agents";
 import { agents } from "../client";
@@ -135,9 +135,9 @@ export const notes = agents.agent(
 
 `loop(batch)` runs the model with the agent's prompt and tools until it answers, and posts nothing. You decide what to do with the result.
 
-{/* not type-checked: the loop result's end and reason */}
 <AnnotatedCode>
 
+{/* not type-checked: the loop result's end and reason */}
 ```typescript {{ title: "inngest/agents/support.ts" }}
 import { slack } from "inngest/experimental/agents";
 import { agents } from "../client";
@@ -183,9 +183,9 @@ The loop saves the model's history on the thread. It is in the argument only whe
 
 A tool made inside the handler can use everything in its scope: `me`, the event, your variables. Pass it to a loop call with `tools`.
 
-{/* not type-checked: loop(batch, { tools }) with a tool closing over me, called from sandbox code */}
 <AnnotatedCode>
 
+{/* not type-checked: loop(batch, { tools }) with a tool closing over me, called from sandbox code */}
 ```typescript {{ title: "inngest/agents/prHelper.ts" }}
 import { tool } from "inngest/experimental";
 import { github } from "inngest/experimental/agents";
