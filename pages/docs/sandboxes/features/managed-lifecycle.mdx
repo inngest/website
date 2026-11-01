@@ -1,135 +1,161 @@
-import { AnnotatedCode, Annotation, Info } from "shared/Docs/mdx";
-
+import { CodeGroup, SdkUnsupported, VersionBadge } from "shared/Docs/mdx";
 export const metaTitle = "Managed lifecycle | Sandboxes";
-export const description = "Create a Sandbox in a durable function and let Inngest clean it up: await using destroys it at the end of a scope, group.sandbox wraps a callback, and anything left over goes when the run ends.";
+export const description = "Managed Sandbox lifecycle: create Sandboxes, run commands, and clean up as durable steps in an Inngest function run, with retries handled for you.";
 
 # Managed lifecycle
 
-> Create a Sandbox, run several statements in it, and have it cleaned up without writing cleanup code.
+> Coordinate Sandbox creation, commands, and cleanup as durable steps in a function run.
 
-- **End it where you want.** `await using` destroys it at scope end. [End it →](#end-it-where-you-want)
-- **Or wrap a callback.** `group.sandbox()` works in every runtime. [Group a callback →](#group-a-callback)
-- **Leftovers are cleaned up.** [Cleanup →](#what-cleanup-does-for-you)
+> **Open beta.** Sandboxes are available on Pro plans and above. The low-level TypeScript API below follows the Sandbox beta. The one-call `step.sandbox.python` and `step.sandbox.typescript` runners are [experimental](#run-python-or-typescript-in-one-call).
 
-<AnnotatedCode>
+Use durable Sandbox steps when isolated code belongs to a longer function run. Inngest records each operation’s result, so a resumed function can continue after completed steps. The API you choose determines which lifecycle and cleanup actions your function must handle.
 
-```typescript {{ title: "inngest/functions/build-check.ts" }}
-import { image } from "inngest/experimental";
+| API | What Inngest handles | What you handle |
+| --- | --- | --- |
+| `step.sandbox.create()` and other low-level steps | Durable operation results, safe retries, readiness polling by default, and step failures | When to pause, resume, snapshot, clone, and destroy the Sandbox; cleanup after permanent failure |
+| `inngest.sandboxes` | Immediate Sandbox requests and bounded readiness polling | Retries, cancellation, and cleanup in your server process |
+| `step.sandbox.python` and `step.sandbox.typescript` (experimental) | Creates a Sandbox, runs your code, returns the result, and destroys the Sandbox in one call | Nothing to clean up; pass `input`, `schema`, and `tools` |
 
-export const buildCheck = inngest.createFunction(
-  { id: "build-check", triggers: { event: "repo/pushed" } },
+## Use a Sandbox in a durable function
+
+Add the Sandbox middleware to a TypeScript v4 client. Each `step.sandbox` operation takes a stable step ID. This example creates a Sandbox, runs a command, and destroys the Sandbox on the successful path.
+
+<CodeGroup>
+```typescript {{ title: "TypeScript" }}
+import { Inngest } from "inngest";
+import { sandboxMiddleware } from "inngest/experimental";
+
+const inngest = new Inngest({
+  id: "sandbox-lifecycle",
+  middleware: [sandboxMiddleware()],
+});
+
+export const runInSandbox = inngest.createFunction(
+  {
+    id: "run-in-sandbox",
+    triggers: { event: "sandbox/job.requested" },
+  },
   async ({ event, step }) => {
-    await using sb = await step.sandbox.create("check", {
-      from: image.inngest("node-22"),
-      vcpu: 4,
-      secrets: ["NPM_TOKEN"],
+    const sandbox = await step.sandbox.create("create-sandbox", {
+      name: `job-${event.data.jobId}`,
+      vcpu: 1,
+      memoryMb: 1024,
+      runningTimeout: "60s",
     });
 
-    await sb.$`git clone --depth 1 ${event.data.url} /work/repo`;
-    await sb.$.sh({ timeout: "5m" })`cd /work/repo && npm ci`;
+    const result = await sandbox.commands.run(
+      "run-command",
+      ["node", "-e", "console.log('done')"],
+      { timeout: "30s" },
+    );
 
-    const tests = await sb.$.sh({ exitCodes: "any" })`cd /work/repo && npm test`;
+    await sandbox.destroy("destroy-sandbox");
 
-    return { passed: tests.ok, tail: tests.stdout.slice(-2000) };
+    return { exitCode: result.exitCode, stdout: result.stdout };
   },
 );
 ```
 
-<Annotation id="using" lines="6" tease="destroyed at scope end" title="await using" href="#end-it-where-you-want" linkText="End it where you want">
-Destroyed when the function leaves this scope, even by throwing.
-</Annotation>
+<SdkUnsupported title="Python" feature="Sandboxes" />
+<SdkUnsupported title="Go" feature="Sandboxes" />
+</CodeGroup>
 
-<Annotation id="options" lines="7-9" tease="size, image, secrets" title="Machine options" href="#create-options" linkText="Create options">
-Image, size, and secrets, set at create.
-</Annotation>
+Use a stable, Sandbox-safe job ID in the event. A completed step replays its result, including the Sandbox object returned by Create. This avoids creating another Sandbox when the function resumes after a later step. It does **not** keep the guest process or filesystem alive if the Sandbox itself is lost.
 
-<Annotation id="state" lines="12-13" tease="state carries over" title="One Sandbox, many statements" href="/docs/sandboxes/features/run-code?ref=docs-sandboxes-managed-lifecycle#the-template" linkText="The $ template">
-The clone is still there for `npm ci`. Each statement is a durable step.
-</Annotation>
+Create waits for `RUNNING` by default. If readiness times out, the Sandbox may still exist. When cleanup needs an ID even if readiness fails, create with `runningTimeout: false`, then call `sandbox.waitUntilRunning("wait-for-sandbox", { timeout: "60s" })` as a separate step.
 
-<Annotation id="exit" lines="15" tease="1 is data here" title="Failures stop the run" href="/docs/sandboxes/features/exit-codes?ref=docs-sandboxes-managed-lifecycle" linkText="Exit codes">
-Failing clone or install stops the function. Failing tests are information here.
-</Annotation>
+## Clean up after failure
 
-</AnnotatedCode>
+The example's Destroy step runs only if execution reaches it. If the function fails after all retries, use an `onFailure` handler or a separate cleanup function that can retrieve the Sandbox ID. Store the ID somewhere that handler can read after Create. The failure handler runs as a separate function; a JavaScript `finally` block in the main function does not replace this cleanup path.
 
-## Create options
+For immediate server-side calls through `inngest.sandboxes`, use `try/finally` and call `sandbox?.destroy()` in `finally`. The direct client has no durable step replay.
 
+Destroy removes the Sandbox filesystem, processes, and retained process output. Persist artifacts outside the Sandbox before destroying it. Destroy may first return `TERMINATING`; teardown continues after the API accepts the request.
+
+## Pause, resume, and reuse state
+
+Pause releases the live runtime into a private checkpoint. Resume returns the **same** Sandbox ID with its filesystem, memory, and remaining runtime. The current beta allows one hour of active runtime per Sandbox; time spent paused does not consume it. Use the returned running Sandbox before making another command, file, log, or process call.
+
+A user snapshot keeps a copy of memory, disk, environment, image, and resource settings while the source Sandbox continues running. Clone creates a **new** Sandbox ID from a ready snapshot. Snapshot creation and readiness are separate phases. A wait timeout does not cancel the snapshot being created.
+
+The Sandbox filesystem persists through pause and resume, and a snapshot clone receives the captured filesystem. S3-backed persistent filesystem mounts can share a backing path across different Sandboxes, including clones; those mounts are a separate storage choice from the Sandbox’s private filesystem.
+
+## Retries and uncertain outcomes
+
+Let unexpected `step.sandbox` errors escape the function. Inngest retries operations the middleware marks safe and records a failure when retries are exhausted or an operation is unsafe to repeat. An `operation_ambiguous` error means a command, process start, or signal may have happened without a confirmed response. Inspect the Sandbox or the operation's external effect before deciding whether to repeat it.
+
+A durable step records the operation result; it does not promise that a Sandbox, guest process, or retained output survives a lost runtime. Inspect the current Sandbox state with Get when work resumes after a long wait or external interruption.
+
+Sandbox operations used as durable steps appear with the function's other steps in its run trace.
+
+## Run Python or TypeScript in one call <VersionBadge version="v4.25.0+" />
+
+`step.sandbox.python` and `step.sandbox.typescript` create a Sandbox, run your code, and destroy it. A top-level `return` gives the result back. Each key of `input` becomes a variable.
+
+<CodeGroup>
 ```typescript {{ title: "TypeScript" }}
-type CreateOptions = {
-  name?: string;
-  from?: SandboxImage;
-  vcpu?: number;
-  memoryMb?: number;
-  timeout?: SandboxDuration;
-  runningTimeout?: SandboxDuration | false;
-  env?: Record<string, string>;
-  secrets?: string[];
-  owner?: "persistent" | { runId: string };
-  tools?: SandboxTools;
-  toolOptions?: SandboxToolOptions;
-};
-```
-
-- Defaults: `vcpu` 2, `memoryMb` 2048 ([limits](/docs/sandboxes/limits?ref=docs-sandboxes-managed-lifecycle)), `timeout` `"30s"`.
-- See [images](/docs/sandboxes/features/base-images?ref=docs-sandboxes-managed-lifecycle), [secrets](/docs/sandboxes/features/secrets?ref=docs-sandboxes-managed-lifecycle), and [owners](/docs/sandboxes/features/run-owned?ref=docs-sandboxes-managed-lifecycle).
-
-## End it where you want
-
-```typescript {{ title: "TypeScript" }}
-async ({ step, event }) => {
-  const repo = await step.run("resolve", () => resolveRepo(event.data.repoId));
-  let files: string[];
-
+const stats = await step.sandbox.python(
+  "stats",
+  `import statistics
+return {"mean": statistics.mean(values)}`,
   {
-    await using sb = await step.sandbox.create("review", { from: image.inngest("node-22") });
-    await sb.$`git clone --depth 1 ${repo.url} /work/r`;
-    await sb.$.sh({ exitCodes: "any" })`cd /work/r && npx eslint .`;
-    files = (await sb.$.sh`cd /work/r && git diff --name-only`.text()).split("\n");
-  }
-
-  await step.run("notify", () => notify(repo.id, files));
-  return { files };
-}
-```
-
-Without `await using`, it lasts until the run ends, or until `await sb.destroy("done")`.
-
-<Info>
-  `await using` needs `lib: ["esnext.disposable"]` and Node.js 20.5 or newer. Otherwise use `group.sandbox()`.
-</Info>
-
-## Group a callback
-
-```typescript {{ title: "TypeScript" }}
-import { $ } from "inngest/experimental";
-
-const out = await group.sandbox("run", (sb) => sb.python("main", "return 6 * 7"));
-
-const report = await group.sandbox(
-  { id: "build-check", from: image.inngest("node-22"), vcpu: 4, secrets: ["NPM_TOKEN"] },
-  async (sb) => {
-    await $`git clone --depth 1 ${url} /work/repo`;
-    const tests = await $.sh({ exitCodes: "any" })`cd /work/repo && npm test`;
-    return { passed: tests.ok, tail: tests.stdout.slice(-2000) };
+    input: { values: [1, 2, 3, 4] },
+    schema: { output: z.object({ mean: z.number() }) },
   },
+);
+
+const total = await step.sandbox.typescript(
+  "sum",
+  `return numbers.reduce((a: number, b: number) => a + b, 0)`,
+  { input: { numbers: [1, 2, 3] } },
 );
 ```
 
-A bare `$` inside the callback runs on the group's Sandbox. Outside a group it throws.
+<SdkUnsupported title="Python" feature="Sandboxes" />
+<SdkUnsupported title="Go" feature="Sandboxes" />
+</CodeGroup>
 
-Destroyed when the callback returns or throws. One `SANDBOX` group in the [trace](/docs/sandboxes/features/traces?ref=docs-sandboxes-managed-lifecycle).
+- `schema.output` types the result and fails the step, with the schema's issues, when the result does not match.
+- A non-zero exit fails the step with the error output.
+- Code can be indented to match your source. Top-level `await` works in TypeScript, which needs Node 22.13 or later in the image.
+- The first argument is a step ID or step options, such as `{ id: "stats", name: "Compute the mean" }`.
+- Pass [`tools`](/docs/sandboxes/features/tools) to let the code call your functions, plus any `step.sandbox.create()` option such as `image` or `secrets`.
 
-## What cleanup does for you
+These runners are experimental.
 
-- **Success or final failure.** Destroyed at once.
-- **A failure that will retry.** Kept, so the retry finds its files.
-- **Cancel, timeout, or crash.** Destroyed when the run ends. See [Run-owned](/docs/sandboxes/features/run-owned?ref=docs-sandboxes-managed-lifecycle).
+## Scope a Sandbox to a block <VersionBadge version="v4.24.0+" />
 
+`await using` destroys the Sandbox when the block exits.
 
-## How it works
+<CodeGroup>
+```typescript {{ title: "TypeScript" }}
+await using sb = await step.sandbox.create("build", {
+  name: "build",
+  vcpu: 2,
+  memoryMb: 2048,
+});
+await sb.commands.run("test", "npm test");
+```
 
-- A retry repeats only the failed step, in the same Sandbox.
-- `operation_ambiguous` means inspect before repeating.
-- [Pause](/docs/sandboxes/features/pause-and-resume?ref=docs-sandboxes-managed-lifecycle) resumes the same ID. A [clone](/docs/sandboxes/features/snapshots-and-restore?ref=docs-sandboxes-managed-lifecycle) is new.
-- Outside a function, destroy in `finally`.
+<SdkUnsupported title="Python" feature="Sandboxes" />
+<SdkUnsupported title="Go" feature="Sandboxes" />
+</CodeGroup>
+
+`group.sandbox()` (experimental) runs a callback with a fresh Sandbox and destroys it afterwards. The Sandbox's whole lifetime shows as one group in the trace. It is destroyed when the callback ends, even when it throws, so a failure after that is final and is not retried.
+
+<CodeGroup>
+```typescript {{ title: "TypeScript" }}
+await group.sandbox("build", async (sb) => {
+  await sb.commands.run("test", "npm test");
+});
+```
+
+<SdkUnsupported title="Python" feature="Sandboxes" />
+<SdkUnsupported title="Go" feature="Sandboxes" />
+</CodeGroup>
+
+`group` comes from the function's arguments, next to `step`: `async ({ event, step, group }) => {}`. `group.sandbox()` uses 2 vCPU and 2048 MiB when you pass only an ID. `step.sandbox.create()` needs `name`, `vcpu`, and `memoryMb`.
+
+Durations such as `runningTimeout` and `timeout` accept compound strings like `"4m30s"`.
+
+This page describes isolated microVM Sandboxes. Deployment preview environments are called **branch deploys**.

@@ -514,12 +514,16 @@ export const docsRefreshOutline: DocsRefreshPage[] = [
                 href: "/docs/sandboxes/features/managed-lifecycle",
               },
               {
-                title: "Run-owned Sandboxes",
-                href: "/docs/sandboxes/features/run-owned",
+                title: "Commands",
+                href: "/docs/sandboxes/features/commands",
               },
               {
-                title: "Tools and code mode",
+                title: "Tools",
                 href: "/docs/sandboxes/features/tools",
+              },
+              {
+                title: "Run-owned Sandboxes",
+                href: "/docs/sandboxes/features/run-owned",
               },
               {
                 title: "Reusable sandbox functions",

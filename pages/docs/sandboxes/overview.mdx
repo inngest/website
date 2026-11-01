@@ -11,16 +11,15 @@ export const description = "Inngest Sandboxes overview: run generated code or te
 <SdkSupport
   feature="Sandboxes"
   links={{
-    "Run Python, TypeScript, and shell": "/docs/sandboxes/features/run-code",
     "Durable step.sandbox calls": "/docs/sandboxes/features/managed-lifecycle",
-    "Automatic cleanup": "/docs/sandboxes/features/run-owned",
-    "Tools and code mode": "/docs/sandboxes/features/tools",
-    "Reusable sandbox functions": "/docs/sandboxes/features/sandbox-functions",
     "Direct inngest.sandboxes client": "/docs/sandboxes/reference#choose-the-type-script-surface",
     "Commands and background processes": "/docs/sandboxes/reference#commands-processes-and-files",
     "Pause, resume, snapshot, and clone": "/docs/sandboxes/features/pause-and-resume",
     "File upload and download": "/docs/sandboxes/reference#commands-processes-and-files",
     "Workspace secrets": "/docs/sandboxes/features/secrets",
+    "Python and TypeScript runners": "/docs/sandboxes/features/managed-lifecycle#run-python-or-typescript-in-one-call",
+    "Tools for sandboxed code": "/docs/sandboxes/features/tools",
+    "Custom images": "/docs/sandboxes/features/base-images#choose-an-image",
     "SSH access": "/docs/sandboxes/features/ssh",
     "S3-backed persistent mounts": "/docs/sandboxes/features/durable-filesystems",
   }}
@@ -30,16 +29,15 @@ export const description = "Inngest Sandboxes overview: run generated code or te
       href: "/docs/sandboxes/reference",
       status: "Beta",
       features: {
-        "Run Python, TypeScript, and shell": true,
         "Durable step.sandbox calls": true,
-        "Automatic cleanup": true,
-        "Tools and code mode": true,
-        "Reusable sandbox functions": true,
         "Direct inngest.sandboxes client": true,
         "Commands and background processes": true,
         "Pause, resume, snapshot, and clone": true,
         "File upload and download": { supported: true, tag: "Direct client" },
         "Workspace secrets": true,
+        "Python and TypeScript runners": { supported: true, tag: "Experimental" },
+        "Tools for sandboxed code": { supported: true, tag: "Experimental" },
+        "Custom images": { supported: true, tag: "Experimental" },
         "SSH access": { supported: false, tag: "Planned" },
         "S3-backed persistent mounts": { supported: false, tag: "Planned" },
       },
@@ -62,16 +60,15 @@ A durable run can include steps, waits, and retries that span more than one requ
 
 - **Boot quickly.** Start a microVM in under a second when work needs an isolated environment.
 - **Run code in isolation.** Keep code that needs its own environment apart from the function's runtime.
-- **Run code in one statement.** Python, TypeScript, or shell, with a typed value back. See [Run code](/docs/sandboxes/features/run-code).
-- **Fail loudly.** A non-zero exit fails its step and shows red in the trace. See [Exit codes](/docs/sandboxes/features/exit-codes).
 - **Pause and continue.** Stop active work and continue when the job is ready.
 - **Snapshot and clone.** Save Sandbox state and start a new Sandbox from it. Pause and resume continue the original Sandbox. Files persist through these operations.
-- **Call your functions from the Sandbox.** Code in the Sandbox calls your functions as durable steps, with your credentials. See [Tools](/docs/sandboxes/features/tools).
-- **Reuse sandbox code.** Wrap a runner in a plain function with typed input and output. See [Reusable sandbox functions](/docs/sandboxes/features/sandbox-functions).
-- **Never leak one.** Whatever your run creates is cleaned up when it ends. See [Run-owned Sandboxes](/docs/sandboxes/features/run-owned).
 - **Follow the work in a trace.** See sandbox activity with the steps and events of the durable run.
+- **Run Python or TypeScript in one call.** Get a typed result back and nothing to clean up. [Managed lifecycle](/docs/sandboxes/features/managed-lifecycle#run-python-or-typescript-in-one-call)
+- **Run commands like a script.** `sb.$` runs a command as one step and returns text, lines, or JSON. [Commands](/docs/sandboxes/features/commands)
+- **Call your app from the Sandbox.** Sandboxed code calls your functions as durable steps that run with your credentials. [Tools](/docs/sandboxes/features/tools)
+- **Start from your own image.** [Base images](/docs/sandboxes/features/base-images#choose-an-image)
 
-The lifecycle depends on the API you use. `step.sandbox.python`, `step.sandbox.typescript`, and `step.sandbox.sh` start a Sandbox, run code, and destroy it in one call. With `step.sandbox.create()`, `await using` destroys the Sandbox at the end of its scope, and Inngest cleans up anything your run still owns when it ends.
+The lifecycle depends on the API you use. With the low-level `step.sandbox.create()` API, your function calls create and destroy as durable operations and handles cleanup after permanent failure. `step.sandbox.python` and `step.sandbox.typescript` start a Sandbox, run your code, and destroy it in one call.
 
 ## How Sandboxes fit into Inngest
 
@@ -98,7 +95,7 @@ Sandboxes provide an execution environment for work inside a run. They are separ
 ## Next steps
 
 - [Quick start](/docs/sandboxes/quick-start) — run your first Sandbox.
-- [Features](/docs/sandboxes/features) — understand running code, isolation, lifecycle controls, tools, and traces.
+- [Features](/docs/sandboxes/features) — understand isolation, lifecycle controls, and traces.
 - [Guides](/docs/sandboxes/guides) — use Sandboxes in durable work.
 - [Limits](/docs/sandboxes/limits) and [Reference](/docs/sandboxes/reference) — check exact support, behavior, and API details.
 - [Inngest CI](/docs/labs/ci) is an Inngest Labs project built on Sandboxes: write CI pipelines in TypeScript and run each job on its own Sandbox.

@@ -1,62 +1,78 @@
+import { CodeGroup, SdkUnsupported, VersionBadge, ImageTheme } from "shared/Docs/mdx";
 export const metaTitle = "Traces | Sandboxes";
-export const description = "Each Sandbox statement is one SANDBOX group in the run trace. Expand it to see create, commands, tool calls, snapshots, and destroy, and find failed or slow work at a glance.";
+export const description = "Sandbox traces show each command and operation in the same Inngest run trace as your function steps, so you can find failed or slow Sandbox work.";
 
 # Traces
 
-> See every Sandbox statement as one row in the run trace, and expand it to find what failed or ran slowly.
+> Find failed or slow Sandbox operations alongside the other steps in a function run.
 
-- **One statement, one row.** Size, exit code, and duration on the row. [Collapsed and expanded →](#collapsed-and-expanded)
-- **Red means failed.** The exit code and stderr tail are on the row. [Exit codes →](/docs/sandboxes/features/exit-codes?ref=docs-sandboxes-traces)
-- **One group per scope.** [One Sandbox →](#several-statements-in-one-sandbox)
-- **Tools and snapshots.** Each shows as its own row. [Tools and snapshots →](#tools-and-snapshots)
+Open the function trace to find which Sandbox operation slowed or failed a job. Each `step.sandbox` call is a durable step: Inngest records its result for replay and applies that operation’s retry classification. Guest commands and files still have their own lifecycle.
 
-## Collapsed and expanded
+## What appears in the trace
 
-```text {{ title: "Collapsed" }}
-sum      SANDBOX · python · exit 0 · 2 vCPU / 2 GB · 4.1s
-ls       SANDBOX · sh · exit 0 · 3.2s
-parse    SANDBOX · typescript · exit 1 · red · 5.6s
+Open the function run in the Inngest dashboard or Dev Server. The trace shows the steps alongside the rest of the function. Select a step to inspect its timing, input, output, error details, and retry attempts.
+
+Each command is one row, tagged with `[$]` and named after the command it ran <VersionBadge version="v4.26.0+" />. Sandbox operations such as creating or destroying show as plain names, like "Create sandbox":
+
+<ImageTheme
+  dark={"/assets/docs/sandboxes/sandbox-trace-collapsed-dark.webp"}
+  light={"/assets/docs/sandboxes/sandbox-trace-collapsed-light.webp"}
+  alt={"A run trace with the rows Create sandbox, write-script, python3 --version, python3 /tmp/analyze.py, write-report, cat /tmp/report.md, and Destroy sandbox on a timeline. The command rows carry a $ tag."}
+/>
+
+Expand a command row and select its step to see what ran. Its Metadata tab shows the command, exit code, and Sandbox, and the header shows its timing. With `commands.run`, a nonzero exit code is a result, so the step still completes. A `$` command fails its step on one unless `exitCodes` allows it:
+
+<ImageTheme
+  dark={"/assets/docs/sandboxes/sandbox-trace-expanded-dark.webp"}
+  light={"/assets/docs/sandboxes/sandbox-trace-expanded-light.webp"}
+  alt={"The analyze step selected under the python3 /tmp/analyze.py row. Its metadata lists action exec, the command, exit_code 2, method commands.run, and the Sandbox ID and name."}
+/>
+
+Give each Sandbox operation a stable, descriptive step ID. For example, `create-sandbox`, `run-command`, and `destroy-sandbox` make the sequence readable and let you identify the operation that failed. A retry appears as another attempt for that step. Completed steps return their recorded results when the function replays.
+
+Each step carries `inngest.sandbox` metadata that names the action and the machine, command, process, or snapshot involved. A snapshot shows as one group, "Create snapshot" and "Wait for snapshot". `group.sandbox()`, `step.sandbox.python`, and `step.sandbox.typescript` show the Sandbox's whole lifetime as one group, with the create, run, and destroy steps inside. Each [tool](/docs/sandboxes/features/tools) call is its own step.
+
+A trace records the durable API operations. It does not make the Sandbox guest process, filesystem, or output durable.
+
+## Try it in a function
+
+The example uses the TypeScript v4 beta API. Configure `sandboxMiddleware()`, use an account on Pro or above, and set `INNGEST_SIGNING_KEY` before running the example.
+
+<CodeGroup>
+```typescript {{ title: "TypeScript" }}
+const sandbox = await step.sandbox.create("create-sandbox", {
+  name: `trace-${event.data.jobId}`,
+  vcpu: 1,
+  memoryMb: 1024,
+});
+
+const result = await sandbox.commands.run(
+  "run-command",
+  "printf 'hello from the sandbox\\n'",
+  { timeout: "30s" },
+);
+
+await sandbox.destroy("destroy-sandbox");
+
+return {
+  sandboxId: sandbox.id,
+  exitCode: result.exitCode,
+  stdout: result.stdout,
+};
 ```
 
-```text {{ title: "Expanded: a command that exits 1" }}
-SANDBOX  parse · node@22 · 2 vCPU / 2 GB · 5.6s
-  create     ok
-  run        exit 1 not in exitCodes: step failed, no retries
-  destroy    ran because the failure was final
-```
+<SdkUnsupported title="Python" feature="Sandboxes" />
+<SdkUnsupported title="Go" feature="Sandboxes" />
+</CodeGroup>
 
-Retries show as attempts. Select a row for input, output, and error.
+After the run, open its trace and follow the three step IDs. Select `run-command` to inspect the step result or an error. Select the run to inspect the function's returned Sandbox ID and command result. A command that exits with a nonzero code still returns a command result; it does not throw solely because of that exit code.
 
-## Several statements in one Sandbox
+The example destroys the Sandbox on the successful path. For a function that can fail permanently, add an `onFailure` cleanup strategy. A JavaScript `finally` block around durable steps does not guarantee cleanup after permanent failure or cancellation. See [Managed lifecycle](/docs/sandboxes/features/managed-lifecycle).
 
-```text {{ title: "Trace" }}
-SANDBOX  build-check · node-22 · 4 vCPU / 4 GB · 38s
-  create
-  git clone ...     exit 0
-  npm ci            exit 0
-  npm test          exit 1 · allowed by exitCodes · green
-  destroy
-```
+## When calls do not become durable steps
 
-## Tools and snapshots
+`inngest.sandboxes` makes immediate server-side requests. It does not memoize each operation as a step or add a separate step to the run trace. Use `step.sandbox` when the operation belongs to a durable function run. Use the direct client for immediate calls, live streams, or file transfer.
 
-```text {{ title: "Trace" }}
-SANDBOX  churn-report
-  create
-  exec                    exit 0 · 2 waits, folded in
-  tool listCustomers      #1
-  tool sendSlack          #2
-  tool sendSlack          #3
-  destroy
-```
+## Protect trace data
 
-- [Tool](/docs/sandboxes/features/tools?ref=docs-sandboxes-traces) calls are rows. Waits fold into `exec`.
-- A [snapshot](/docs/sandboxes/features/snapshots-and-restore?ref=docs-sandboxes-traces) is a **SNAPSHOT** group.
-
-## How it works
-
-- `step.sandbox` adds durable steps. `inngest.sandboxes` adds no rows.
-- Protect trace data: it shows `input`, output, and errors unredacted. Use [`secrets`](/docs/sandboxes/features/secrets?ref=docs-sandboxes-traces).
-- A [code mode](/docs/sandboxes/features/tools?ref=docs-sandboxes-traces#code-mode) call is a group between model calls.
-
-[Inngest CI traces →](/docs/labs/ci/checks-and-reports?ref=docs-sandboxes-traces#read-the-trace)
+The trace view displays step inputs, outputs, and errors. Environment values you pass to `step.sandbox` calls (`create`, `commands.run`, `processes.start`) are not recorded: the trace keeps only the variable names <VersionBadge version="v4.26.0+" />. Command strings, captured output, and returned values are recorded as they are, so keep credentials out of them. The beta can inject selected workspace secrets into the Sandbox environment, but it does not automatically redact values printed to command output or files.

@@ -10,20 +10,21 @@ When an agent needs to run generated code or test a repository, put that work in
 ## What you can do
 
 - **Run code in isolation.** Each Sandbox runs in a separate VM, isolated from the host and other Sandboxes. Sandboxes cannot send traffic directly to one another; outbound network access is allowed by default.
-- **Run code in one call.** Python, TypeScript, or shell, with a typed value back. A non-zero exit fails the step by default. See [Run code](/docs/sandboxes/features/run-code) and [Exit codes](/docs/sandboxes/features/exit-codes).
 - **Start quickly and keep your work.** Sandboxes boot in under a second. Pause and resume the same Sandbox, or capture a snapshot and clone it into a new Sandbox. Its filesystem persists through those operations.
 - **Share files when tasks need them.** S3-backed persistent mounts let different Sandboxes use the same backing path.
-- **Call your functions from the Sandbox.** [Tools](/docs/sandboxes/features/tools) run as durable steps in your function, so your credentials stay out of the Sandbox.
-- **Skip the cleanup code.** [Run-owned Sandboxes](/docs/sandboxes/features/run-owned) are cleaned up when the run ends, however it ends.
 - **Follow the whole job.** See Sandbox operations alongside function steps, waits, and retries in a run trace.
+- **Run Python or TypeScript in one call.** `step.sandbox.python` and `step.sandbox.typescript` start a Sandbox, run your code, return a typed result, and clean up. [Managed lifecycle](/docs/sandboxes/features/managed-lifecycle#run-python-or-typescript-in-one-call)
+- **Run commands like a script.** `sb.$` runs a command as one step and returns text, lines, or JSON. [Commands](/docs/sandboxes/features/commands)
+- **Let sandboxed code call your app.** Tools run your functions as durable steps with your credentials. [Tools](/docs/sandboxes/features/tools)
+- **Start from your own image.** Choose `image.inngest()` or `image.custom()` when creating a Sandbox. [Base images](/docs/sandboxes/features/base-images)
 
-A durable function can start a Sandbox, run code, wait for another event, and continue later. The lifecycle depends on the API. `step.sandbox.python`, `step.sandbox.typescript`, and `step.sandbox.sh` start a Sandbox, run code, and destroy it in one call. With `step.sandbox.create()`, `await using` destroys the Sandbox at the end of its scope, and Inngest cleans up anything still alive when the run ends.
+A durable function can start a Sandbox, run code, wait for another event, and continue later. With the low-level `step.sandbox.create()` path your function destroys the Sandbox and handles cleanup after permanent failure; the one-call runners clean up for you.
 
 ## Start here
 
 - [Overview](/docs/sandboxes/overview) explains how Sandboxes fit into durable execution.
 - [Quick start](/docs/sandboxes/quick-start) runs a command with the TypeScript beta.
-- [Features](/docs/sandboxes/features) covers running code, lifecycle, filesystems, SSH, secrets, tools, isolation, and traces.
+- [Features](/docs/sandboxes/features) covers lifecycle, filesystems, SSH, secrets, isolation, and traces.
 - [Guides](/docs/sandboxes/guides) shows how to use Sandboxes in a durable job.
 - [Reference](/docs/sandboxes/reference) and [Limits](/docs/sandboxes/limits) give the current API and beta limits.
 

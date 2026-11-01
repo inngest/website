@@ -1,273 +1,226 @@
-import { AnnotatedCode, Annotation, Tip } from "shared/Docs/mdx";
+import { CodeGroup, SdkUnsupported, VersionBadge } from "shared/Docs/mdx";
+export const metaTitle = "Tools | Sandboxes";
+export const description = "Sandbox tools let code running in an isolated Sandbox call functions in your app. Each call is a durable, retried step that runs with your credentials.";
 
-export const metaTitle = "Tools and code mode | Sandboxes";
-export const description = "Let code in a Sandbox call functions in your Inngest function, as durable steps. Your credentials stay out of the Sandbox, and code mode gives an LLM one tool that writes code against yours.";
+# Tools <VersionBadge version="v4.25.0+" />
 
-# Tools and code mode
+> Let code in a Sandbox call back into your app. Each call is a durable step that runs with your credentials.
 
-> Let code in a Sandbox call your functions, with your credentials, as durable steps.
+> **Experimental.** `tool` is exported from `inngest/experimental`. The API can change.
 
-- **Credentials stay yours.** The Sandbox sees a stub, never a secret. [Declare tools →](#declare-tools)
-- **Typed for the code.** Declarations come from your schemas. [Call a tool →](#call-a-tool-from-the-sandbox)
-- **Every call is a step.** Saved, retried, and visible in the trace. [Durable steps →](#every-call-is-a-durable-step)
-- **One tool for an LLM.** The model writes a program against all your tools. [Code mode →](#code-mode)
+- **Keep credentials out of the Sandbox.** The tool runs in your function, so the Sandbox never sees your keys.
+- **Get durable calls.** Every call is its own step: retried, memoized, and visible in the trace.
+- **Use your live scope.** A tool can close over a client or tenant created earlier in the handler.
+- **Call anything.** A plain function, an `Inngest` function, or a group of steps.
 
-<AnnotatedCode>
+## Give a command a tool
 
-```typescript {{ title: "inngest/functions/refund-disputed.ts" }}
-export const refundDisputed = inngest.createFunction(
-  { id: "refund-disputed", triggers: [{ event: "billing/refund" }] },
-  async ({ event, step }) => {
-    const stripe = new Stripe(process.env.STRIPE_KEY!);
+Pass `tools` to `commands.run`. The code calls it by name.
 
-    const refund = async (chargeId: string) => {
-      return (await stripe.refunds.create({ charge: chargeId })).status;
-    };
+<CodeGroup>
+```typescript {{ title: "TypeScript" }}
+await sandbox.commands.run("agent", "node agent.js", {
+  tools: {
+    getCustomer: (id: string) => db.customers.find(id),
+  },
+});
+```
 
-    return step.sandbox.python(
-      "pick",
-      `
-for c in charges:
-    if c["disputed"]:
-        await tools.refund(c["id"])
-`,
-      { input: { charges: event.data.charges }, tools: { refund } },
-    );
+<SdkUnsupported title="Python" feature="Sandboxes" />
+<SdkUnsupported title="Go" feature="Sandboxes" />
+</CodeGroup>
+
+Inside the Sandbox, import `inngest_tools`:
+
+```js
+// agent.js
+const { tools } = require("inngest_tools");
+
+async function main() {
+  const customer = await tools.getCustomer("cus_1");
+}
+
+main();
+```
+
+```python
+# agent.py
+import asyncio
+from inngest_tools import tools
+
+async def main():
+    customer = await tools.getCustomer("cus_1")
+
+asyncio.run(main())
+```
+
+A tool that fails raises a `ToolError` the code can catch. Tools work with `step.sandbox`; the direct `inngest.sandboxes` client does not run them.
+
+## Use tools in a runner
+
+[`step.sandbox.python` and `step.sandbox.typescript`](/docs/sandboxes/features/managed-lifecycle#run-python-or-typescript-in-one-call) take `tools` too. The code calls them with no import.
+
+<CodeGroup>
+```typescript {{ title: "TypeScript" }}
+const total = await step.sandbox.python(
+  "total",
+  `customer = await tools.getCustomer("cus_1")
+return customer["seats"] * 10`,
+  {
+    tools: { getCustomer: (id: string) => db.customers.find(id) },
+    schema: { output: z.number() },
   },
 );
 ```
 
-<Annotation id="key" lines="4" tease="stays in your app" title="Credentials stay yours" href="#declare-tools" linkText="Declare tools">
-The Stripe key never enters the Sandbox.
-</Annotation>
+<SdkUnsupported title="Python" feature="Sandboxes" />
+<SdkUnsupported title="Go" feature="Sandboxes" />
+</CodeGroup>
 
-<Annotation id="call" lines="15" tease="runs back in your function" title="Each call is a step" href="#every-call-is-a-durable-step" linkText="Durable steps">
-A flaky Stripe call retries without re-running the Python. A replay never refunds twice.
-</Annotation>
+## Type the arguments with `tool.step()`
 
-<Annotation id="plain" lines="17" tease="a plain function" title="Zero ceremony" href="#plain-function-or-toolstep" linkText="Plain or tool.step">
-Called positionally from Python, still a durable step.
-</Annotation>
+A plain function takes positional arguments. Declare `tool.step()` for named, validated ones. A bad call gets a `ToolError` in the Sandbox and nothing runs.
 
-</AnnotatedCode>
-
-<AnnotatedCode>
-
-```typescript {{ title: "inngest/functions/churn-report.ts" }}
-import { step } from "inngest";
+<CodeGroup>
+```typescript {{ title: "TypeScript" }}
 import { tool } from "inngest/experimental";
 import { z } from "zod";
 
-const report = await step.sandbox.python(
-  "churn-report",
-  `
-  customers = await tools.listCustomers(plan="pro")
-  at_risk = [c for c in customers if c["seats_used"] < c["seats"] * 0.3]
-
-  for c in at_risk:
-      await tools.sendSlack(channel="#cs", text=f"{c['name']} is under 30% seat use")
-
-  return {"checked": len(customers), "flagged": len(at_risk)}
-  `,
-  {
-    tools: {
-      listCustomers: tool.step({
-        description: "List customers on a plan",
-        input: z.object({ plan: z.enum(["free", "pro"]) }),
-        output: z.array(Customer),
-        run: ({ plan }) => {
-          return db.customers.where({ plan });
-        },
-      }),
-
-      sendSlack: tool.step({
-        input: z.object({ channel: z.string(), text: z.string() }),
-        run: ({ channel, text }, ctx) => {
-          return slack.post(channel, text, { idempotencyKey: ctx.idempotencyKey });
-        },
-      }),
-    },
-    schema: { output: z.object({ checked: z.number(), flagged: z.number() }) },
+const getCustomer = tool.step({
+  description: "Look up a customer by ID",
+  input: z.object({ id: z.string() }),
+  output: z.object({ name: z.string() }),
+  run: async ({ id }, { idempotencyKey }) => {
+    return db.customers.find(id);
   },
-);
-```
+});
 
-<Annotation id="call" lines="8,12" tease="await tools.x(...)" title="Call tools like functions" href="#call-a-tool-from-the-sandbox" linkText="Call a tool">
-Async calls, parallel with `asyncio.gather` or `Promise.all`.
-</Annotation>
-
-<Annotation id="declare" lines="18-25" tease="a closure in your function" title="Tools run in your function" href="#declare-tools" linkText="Declare tools">
-`run` closes over your `db`. Nothing is sent to the Sandbox.
-</Annotation>
-
-<Annotation id="idem" lines="29-30" tease="safe on retry" title="Each call is a durable step" href="#every-call-is-a-durable-step" linkText="Durable steps">
-Saved results mean no double post. `ctx.idempotencyKey` is stable across retries.
-</Annotation>
-
-</AnnotatedCode>
-
-## Plain function or `tool.step()`
-
-| Use | When | You get |
-| --- | --- | --- |
-| Plain function | Trusted code you wrote, where both sides know the signature | Positional JSON arguments, no setup, still a durable step |
-| `tool.step()` | An LLM or other untrusted code calls it | Discovery and validation at the boundary |
-| `tool.step()` | Python keyword arguments | Names the Sandbox can see. JS can't read a plain function's parameter names |
-
-In code mode, `describeTools` lists a plain function as `name(...args)` with no schema, and warns. Upgrade the tools a model needs.
-
-## Declare tools
-
-```typescript {{ title: "TypeScript" }}
-await step.sandbox.python("a", code, {
-  tools: {
-    quick: (msg) => post(msg),
-    typed: tool.step({ input: z.object({ id: z.string() }), output: Customer, run: ({ id }) => load(id) }),
-    lookup: runSql.tool(),
-  },
-  toolOptions: { toolTimeout: "30s", maxCalls: 100, waitWindow: "20s" },
+await sandbox.commands.run("agent", "node agent.js", {
+  tools: { getCustomer },
 });
 ```
 
-- `run` gets `(input, ctx)`. `ctx.idempotencyKey` is stable across retries. `ctx.signal` aborts at `toolTimeout`.
-- `toolOptions` defaults are shown. A command with tools may run 5 minutes.
-- Works on [runners](/docs/sandboxes/features/run-code?ref=docs-sandboxes-tools), `create()`, and `group.sandbox()`, not `sb.$`.
+<SdkUnsupported title="Python" feature="Sandboxes" />
+<SdkUnsupported title="Go" feature="Sandboxes" />
+</CodeGroup>
 
-On `commands.run`, import the stub yourself. On runners, `tools` is already a global.
-
-```python {{ title: "Python" }}
-from inngest_tools import tools
-
-customer = await tools.getCustomer("cus_1")
+```js
+const customer = await tools.getCustomer({ id: "cus_1" });
 ```
 
-```javascript {{ title: "Node" }}
-const { tools } = require("inngest_tools");
-
-tools.getCustomer("cus_1").then(console.log);
+```python
+customer = await tools.getCustomer(id="cus_1")
 ```
 
-## Tools that run steps
+- `input` and `output` take any Standard Schema.
+- `idempotencyKey` stays the same across retries. Pass it to APIs that deduplicate writes.
 
-`tool.group()` runs its body as a group. Use the global `step`, not a parameter.
+## Run steps inside a tool with `tool.group()`
 
+The body of a `tool.group()` can use real steps: run them in parallel, invoke other functions, send events, or wait for one.
+
+<CodeGroup>
 ```typescript {{ title: "TypeScript" }}
 import { step } from "inngest";
 import { tool } from "inngest/experimental";
 
-const customerReport = tool.group({
-  input: z.object({ id: z.string() }),
-  run: async ({ id }) => {
-    const [orders, tickets] = await Promise.all([
-      step.run("orders", () => db.orders.forCustomer(id)),
-      step.run("tickets", () => db.tickets.forCustomer(id)),
-    ]);
-
-    return { orders, tickets };
-  },
-});
-
-const requestApproval = tool.group({
+const refund = tool.group({
   input: z.object({ orderId: z.string() }),
   run: async ({ orderId }) => {
-    const reply = await step.waitForEvent("approval", {
-      event: "app/approval.decided",
-      timeout: "1h",
-      match: "data.orderId",
+    const result = await step.invoke("refund", {
+      function: refundFn,
+      data: { orderId },
     });
 
-    return { approved: reply?.data.approved ?? false };
+    await step.sendEvent("notify", { name: "order/refunded", data: result });
+
+    return result;
   },
 });
 ```
 
-The Sandbox sees one call and one result. `step.invoke` works too.
+<SdkUnsupported title="Python" feature="Sandboxes" />
+<SdkUnsupported title="Go" feature="Sandboxes" />
+</CodeGroup>
 
-## Call a tool from the Sandbox
+## Pass an Inngest function
 
-```python {{ title: "Python" }}
-class Customer(TypedDict):
-    id: str
-    name: str
-    plan: Literal["free", "pro"]
-    seats: int
-    seats_used: int
+An Inngest function, or a `referenceFunction()` to one, is a tool too. The code passes named arguments, which become the event data, and gets the function's result back.
 
-class tools:
-    @staticmethod
-    async def listCustomers(*, plan: Literal["free", "pro"]) -> list[Customer]:
-        """List customers on a plan"""
-
-    @staticmethod
-    async def sendSlack(*, channel: str, text: str) -> None: ...
-```
-
+<CodeGroup>
 ```typescript {{ title: "TypeScript" }}
-declare const tools: {
-  /** List customers on a plan */
-  listCustomers(input: { plan: "free" | "pro" }): Promise<Customer[]>;
-  sendSlack(input: { channel: string; text: string }): Promise<void>;
-};
-```
+import { eventType } from "inngest";
 
-`describeTools(tools, "python")` returns this text. An uncaught `ToolError` follows [`exitCodes`](/docs/sandboxes/features/exit-codes?ref=docs-sandboxes-tools).
-
-## Every call is a durable step
-
-```text {{ title: "Trace" }}
-SANDBOX  churn-report
-  create
-  exec                    exit 0 · 2 waits, folded in
-  tool listCustomers      #1
-  tool sendSlack          #2
-  tool sendSlack          #3
-  destroy
-```
-
-- Calls found together run in parallel, up to 8 at a time.
-- A tool that throws is retried, then raises `ToolError` in the code. Limit: `maxCalls` per command.
-
-## Code mode
-
-```typescript {{ title: "inngest/functions/support-agent.ts" }}
-import { sandbox } from "inngest/experimental";
-import { agentLoop, toAnthropic } from "@inngest/sandbox-tools";
-
-const runCode = sandbox.codeTool({
-  language: "python",
-  timeout: "2m",
-  tools: { getCustomer, listInvoices, sendSlack },
-});
-
-export const supportAgent = inngest.createFunction(
-  { id: "support-agent", triggers: { event: "support/ask" } },
-  async ({ event }) => {
-    return agentLoop({
-      adapter: toAnthropic,
-      tools: [runCode],
-      model: (messages, defs) => {
-        return anthropic.messages.create({ model: "claude-sonnet-4-5", max_tokens: 2048, tools: defs, messages });
-      },
-      messages: [{ role: "user", content: event.data.question }],
-    });
+const refund = inngest.createFunction(
+  {
+    id: "refund",
+    triggers: [
+      eventType("order/refund", {
+        schema: z.object({ orderId: z.string() }),
+      }),
+    ],
   },
+  async ({ event }) => issueRefund(event.data.orderId),
 );
+
+await sandbox.commands.run("agent", "node agent.js", {
+  tools: { refund },
+});
 ```
 
-```text {{ title: "Trace" }}
-FUNCTION  support-agent
-  llm-0        step.run: the model writes the code
-  run_code     SANDBOX · 4 tool calls · 3.1s
-  llm-1        step.run: the model answers
+<SdkUnsupported title="Python" feature="Sandboxes" />
+<SdkUnsupported title="Go" feature="Sandboxes" />
+</CodeGroup>
+
+The arguments are checked against the function's trigger schema when it has one. Without a schema, any named arguments are sent; wrap the invoke in `tool.group()` to declare the input you want.
+
+## Limits and options
+
+`toolOptions` tunes how calls run:
+
+<CodeGroup>
+```typescript {{ title: "TypeScript" }}
+await sandbox.commands.run("agent", "node agent.js", {
+  tools: { getCustomer },
+  toolOptions: { toolTimeout: "10s", maxCalls: 50 },
+});
 ```
 
-The model sees one typed `run_code` tool. Ten calls take one turn.
+<SdkUnsupported title="Python" feature="Sandboxes" />
+<SdkUnsupported title="Go" feature="Sandboxes" />
+</CodeGroup>
 
-<Tip>
-  The model's code is untrusted. Expose only what the agent should do.
-</Tip>
+| Option | Default | What it does |
+| --- | --- | --- |
+| `toolTimeout` | 30 seconds | How long one `tool.step()` may run before its step fails. |
+| `maxCalls` | 100 | Tool calls allowed in one command before it is stopped. |
+| `waitWindow` | 20 seconds | The longest one wait step blocks before a fresh one continues. |
 
-## How it works
+- Tool names start with a letter, then letters, digits, or `_`, up to 64 characters.
+- A request from the Sandbox can be 256 KiB, and a reply 1 MiB.
+- A command with tools can run for 5 minutes when you set no `timeout`.
+- Arguments arrive from the Sandbox, so validate them with `tool.step()` when the code is untrusted.
 
-A tool runs in your function and the Sandbox only gets a stub. Each call is a step, so replays never repeat it.
+## Give the tools to a model <VersionBadge version="v4.26.0+" />
 
+`toolDefinitions(tools)` (experimental, from `inngest/experimental`) returns `{ name, description, input_schema }` for each tool, ready for a model API. No hand-written JSON Schema.
+
+<CodeGroup>
+```typescript {{ title: "TypeScript" }}
+import { toolDefinitions } from "inngest/experimental";
+
+await anthropic.messages.create({
+  model,
+  max_tokens: 1024,
+  messages,
+  tools: toolDefinitions({ getCustomer }),
+});
+```
+
+<SdkUnsupported title="Python" feature="Sandboxes" />
+<SdkUnsupported title="Go" feature="Sandboxes" />
+</CodeGroup>
+
+- For OpenAI, map each definition to `{ type: "function", name, description, parameters: input_schema }`.
+- Declare tools with `tool.step()` or `tool.group()` and an object `input` schema. Schemas come from Zod 4 or any library that implements Standard JSON Schema; other schemas throw.
+- A tool without an `input` schema takes any object.
