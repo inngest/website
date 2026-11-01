@@ -104,7 +104,7 @@ A schedule is a trigger too: `{ cron: "TZ=UTC 0 9 * * 1-5" }`.
 
 `slack.thread()` and `github.thread()` name their own threads, so they need no `thread`. [Slack and GitHub →](/docs/labs/agents/slack-and-github?ref=docs-labs-agents-agents-and-triggers)
 
-An agent can also have no triggers at all. Code starts it with `start()`, and a model agent with `start_agent`. [Teams of agents →](/docs/labs/agents/teams-of-agents?ref=docs-labs-agents-agents-and-triggers)
+An agent can also have no triggers at all. Code starts it with `start()`; a model agent uses the `start_agent` tool. [Teams of agents →](/docs/labs/agents/teams-of-agents?ref=docs-labs-agents-agents-and-triggers)
 
 ## Let the model answer
 
@@ -114,11 +114,11 @@ An agent with a `model` and no handler answers on its own. For each batch of mes
 2. posts the answer where the thread lives, such as the Slack thread it came from;
 3. saves the model's history on the thread, so the next run picks it up.
 
-Then it waits for more messages and ends after ten quiet minutes. A run opened through a handle, such as `start()`, ends after its first answer. [Threads and memory →](/docs/labs/agents/threads-and-memory?ref=docs-labs-agents-agents-and-triggers#how-long-a-run-waits)
+Started by a trigger, it then waits for more messages and ends after ten quiet minutes. [How long a run waits →](/docs/labs/agents/threads-and-memory?ref=docs-labs-agents-agents-and-triggers#how-long-a-run-waits)
 
 ## Take a typed input
 
-An `invoke()` trigger declares what callers send. Code that starts the agent gets a typed input and a typed result.
+An `invoke()` trigger declares what callers send; they get a typed input and a typed result.
 
 <AnnotatedCode>
 
@@ -162,7 +162,7 @@ export const nightlyReview = inngest.createFunction(
 
 ## Decide per run
 
-Pick the prompt, the model or the budget from the event. `model`, `system`, `tools`, `sandboxes`, `skills`, `budget`, `limits`, `idle` and `remember` take a value or an async function of the event and thread, run once per run.
+Pick the prompt, the model or the budget from the event. These options take an async function of the event and thread, run once per run. [Reference →](/docs/labs/agents/reference?ref=docs-labs-agents-agents-and-triggers#the-definition)
 
 {/* not type-checked: system as an async function of { event } */}
 ```typescript {{ title: "inngest/agents/accounts.ts" }}
@@ -189,7 +189,7 @@ export const lookupAccount = async (user: string) => {
 };
 ```
 
-The function runs again on replay, so keep it free of side effects. `id`, `triggers`, `thread`, `inbox`, `card`, `discovery` and `listen` take values only, because Inngest needs them before a run starts.
+The function runs again on replay, so keep it free of side effects.
 
 ## Write a handler
 
@@ -211,7 +211,7 @@ export const digest = inngest.createFunction(
       return [{ number: 42, title: "Retry webhooks", days: 5 }];
     });
 
-    return await step.run("summarise", async () => {
+    return await step.run("summarize", async () => {
       const { text } = await claude({
         system: "Write one line per pull request, oldest first.",
         prompt: JSON.stringify(pulls),
@@ -223,18 +223,15 @@ export const digest = inngest.createFunction(
 );
 ```
 
-A plain function can still start an agent with `start()`, as `nightlyReview` does above. [Start an agent →](/docs/labs/agents/teams-of-agents?ref=docs-labs-agents-agents-and-triggers#start-an-agent)
-
 ## Gotchas
 
 - **Import agents before serving.** `agents.functions()` lists only imported agents. [Project structure →](/docs/labs/agents/structure?ref=docs-labs-agents-agents-and-triggers)
-- **A thread with no home posts nothing.** One opened by a schedule, `start()` or a plain event with no GitHub URL keeps the answer in the run's output, and the trace warns.
-- **Function options still apply.** `retries`, `concurrency`, `throttle` and the rest pass through.
+- **A thread with no home posts nothing.** A schedule, `start()` or a plain event with no GitHub URL opens one. The answer stays in the run's output, and the trace warns.
+- **Function options still apply.** `retries`, `concurrency` and the rest pass through.
 
 ## How it works
 
 - Each model call and tool call is a step, so a retry or a deploy never repeats finished work.
-- At most one run is live per thread. A message for a quiet thread starts one.
 - Every agent publishes a card when your app syncs. With no `card` it is private to its own app.
 
 ## Recipes and reference
