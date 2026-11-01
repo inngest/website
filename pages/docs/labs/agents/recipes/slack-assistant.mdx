@@ -52,7 +52,7 @@ The agent answers in the Slack thread, with a status line while it works.
 </Annotation>
 
 <Annotation id="system" lines="11-15" tease="read at run start" title="Notes in the prompt" href="/docs/labs/agents/agents-and-triggers?ref=docs-labs-agents-recipes-slack-assistant#decide-per-run" linkText="Decide per run">
-Reads the team's notes as a step when a run starts, so a thread already mid-run sees a new note on its next run.
+Reads the team's notes as a step when a run starts. A thread already mid-run sees a new note on its next run.
 </Annotation>
 
 <Annotation id="tools" lines="16" tease="no handler needed" title="Model and tools" href="/docs/labs/agents/models-and-the-loop?ref=docs-labs-agents-recipes-slack-assistant" linkText="Models and the loop">
@@ -95,8 +95,6 @@ export const { GET, POST, PUT } = serve({
 });
 ```
 
-Two tools: an order lookup, and a note every thread can read.
-
 ```typescript {{ title: "inngest/tools/lookupOrder.ts" }}
 import { tool } from "inngest/experimental";
 import { z } from "zod";
@@ -135,9 +133,9 @@ The [client](/docs/labs/agents/quick-start?ref=docs-labs-agents-recipes-slack-as
 
 ## What it shows off
 
-- [Threads](/docs/labs/agents/threads-and-memory?ref=docs-labs-agents-recipes-slack-assistant) pick up where they stopped, after a restart or a day.
+- [Threads](/docs/labs/agents/threads-and-memory?ref=docs-labs-agents-recipes-slack-assistant) give each Slack thread its own history.
 - [An agent with no handler](/docs/labs/agents/models-and-the-loop?ref=docs-labs-agents-recipes-slack-assistant) answers in the thread from a definition alone.
-- [App-wide memory](/docs/labs/agents/threads-and-memory?ref=docs-labs-agents-recipes-slack-assistant#keep-state) lets one thread teach every other.
+- [App-wide memory](/docs/labs/agents/threads-and-memory?ref=docs-labs-agents-recipes-slack-assistant#keep-state) is one store every thread can read.
 - [Slack](/docs/labs/agents/slack-and-github?ref=docs-labs-agents-recipes-slack-assistant) reaches the agent through one signed route.
 
 ## Run it
