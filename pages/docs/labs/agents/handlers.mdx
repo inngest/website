@@ -27,7 +27,7 @@ import { claude } from "../models/claude";
 export const triage = agents.agent(
   {
     id: "triage",
-    triggers: [slack.thread({ in: ["C0123ABC"] })],
+    triggers: [slack.thread()],
     model: claude,
     system: "You triage support threads.",
   },
@@ -52,7 +52,7 @@ The agent carries on at once, and the post still lands before the run ends.
 </Annotation>
 
 <Annotation id="batches" lines="15" tease="the trigger comes first" title="Batches" href="#read-the-inbox" linkText="Read the inbox">
-Every unread message at once. The loop ends after ten quiet minutes.
+Every unread message at once, the trigger first. The loop ends after `idle` quiet time, or at once on a run opened by `start()`.
 </Annotation>
 
 <Annotation id="loop" lines="16" tease="model and tools" title="The loop" href="#run-the-loop" linkText="Run the loop">
@@ -104,7 +104,7 @@ The event is also the first message in the inbox, so a handler can read it eithe
 
 ## Read the inbox
 
-The inbox holds everything sent to the thread while the run works: its trigger, more messages from people, and messages and questions from other agents. `inbox.batches()` gives you every unread message at once, as a plain array.
+The inbox holds what is sent to the thread while the run works: the trigger, more messages from people, and messages from other agents. `inbox.batches()` gives every unread message at once, as an array.
 
 {/* not type-checked: inbox.batches({ max }) and for await over the inbox */}
 ```typescript {{ title: "inngest/agents/notes.ts" }}
@@ -129,11 +129,11 @@ export const notes = agents.agent(
 );
 ```
 
-`max` caps a batch and leaves the rest unread, oldest first, so a flood never fills the model's context. To take one message at a time, use `for await (const message of inbox)`. Both loops end after the agent's `idle` quiet time, ten minutes by default. [Inboxes →](/docs/labs/agents/inboxes?ref=docs-labs-agents-handlers)
+`max` caps a batch and leaves the rest unread, oldest first. To take one message at a time, loop over `inbox` itself. Both loops end after the agent's `idle` quiet time (ten minutes by default), or at once on a run opened by `start()`. [When the handler returns →](#when-the-handler-returns)
 
 ## Run the loop
 
-`loop(batch)` runs the model with the agent's model, prompt and tools until the model stops calling tools. Messages that arrive meanwhile reach the model's next call. It posts nothing: you decide what to do with the result.
+`loop(batch)` runs the model with the agent's prompt and tools until it answers, and posts nothing. You decide what to do with the result.
 
 {/* not type-checked: the loop result's end and reason */}
 <AnnotatedCode>
@@ -177,11 +177,11 @@ The loop stops when this thread has spent it.
 
 </AnnotatedCode>
 
-The loop keeps the model's history on the thread, so the next run starts where this one stopped. `loop` is in the argument only when the agent has a `model`. [Models and the loop →](/docs/labs/agents/models-and-the-loop?ref=docs-labs-agents-handlers)
+The loop saves the model's history on the thread. It is in the argument only when the agent has a `model`. [Models and the loop →](/docs/labs/agents/models-and-the-loop?ref=docs-labs-agents-handlers)
 
 ## Give the model a tool
 
-A tool made inside the handler can use everything in its scope: `me`, the event, your variables. Pass it to one loop call with `tools`, next to the agent's own.
+A tool made inside the handler can use everything in its scope: `me`, the event, your variables. Pass it to a loop call with `tools`.
 
 {/* not type-checked: loop(batch, { tools }) with a tool closing over me, called from sandbox code */}
 <AnnotatedCode>
@@ -203,7 +203,7 @@ export const prHelper = agents.agent(
     sandboxes: { work },
   },
   async ({ inbox, me, loop }) => {
-    const progress = tool({
+    const progress = tool.step({
       description: "Tells the person on the pull request how it's going",
       input: z.object({ note: z.string() }),
       run: async ({ note }) => {
@@ -232,13 +232,14 @@ A script in the sandbox calls `progress` by the same name, and it posts into thi
 
 </AnnotatedCode>
 
+{/* not type-checked: sandbox() */}
 ```typescript {{ title: "inngest/sandboxes/work.ts" }}
 import { sandbox } from "inngest/experimental/agents";
 
 export const work = sandbox({ id: "work" });
 ```
 
-A tool name used twice in one call is an error. The loop's other options work per call too, such as `maxTurns`, `onTurn` and `steer`. [Models and the loop →](/docs/labs/agents/models-and-the-loop?ref=docs-labs-agents-handlers)
+A name the agent already uses is an error. [More per-call options →](/docs/labs/agents/models-and-the-loop?ref=docs-labs-agents-handlers#choose-per-call)
 
 ## Post in the thread
 
@@ -251,9 +252,9 @@ me.post("Still running the tests.");
 ```
 
 - **Awaited**, it waits until the post landed, and throws if it still fails after retries.
-- **Not awaited**, the agent carries on at once. The post still lands before the run ends; if it fails, the run goes on and its trace shows a warning.
+- **Not awaited**, the agent carries on at once and the post lands before the run ends. A failure is logged, and a bad token or missing scope warns on the trace.
 
-The agent posts some things itself: a status line while it works, the answer when there's no handler, and a notice when a run fails. A thread with no home, such as one opened by an event or `start()`, posts nothing, and the trace says so.
+The agent posts a status line while it works and a notice when a run fails. A thread with no home, such as one opened by `start()` or a schedule, posts nothing, and the trace says so.
 
 ## Message yourself
 
@@ -292,17 +293,15 @@ export const releaser = agents.agent(
 );
 ```
 
-The smoke test runs beside the conversation. Its result arrives as a message, and the model reads it with everything else.
-
 ## Score the run
 
-`score(name, value)` records how well the run went, as a number or a boolean. It's in the handler's argument and in every tool's context, and it's written once, however often the run replays.
+`score(name, value)` records how well the run went, as a number or a boolean. It's written once, however often the run replays.
 
 ```typescript
 await score("resolved", true);
 ```
 
-Await it or don't: an un-awaited score is still written before the run ends. The agent also records model time, tokens, tool calls and tool errors on its own. [Observability →](/docs/labs/agents/observability?ref=docs-labs-agents-handlers)
+Await it or don't. The agent records its own scores too. [Observability →](/docs/labs/agents/observability?ref=docs-labs-agents-handlers)
 
 ## Return a result
 
@@ -338,19 +337,18 @@ The model's one-shot call takes an `output` schema and returns a typed value. It
 
 ## When the handler returns
 
-The run ends. Work you started and didn't await is stopped, so a run never acts after it decided it was done. Un-awaited `me.post()` and `score()` calls are the exception: they land first.
+The run ends, and work you started and didn't await is stopped, so a run never acts after it decided it was done. Un-awaited `me.post()` and `score()` calls land first.
+
+On a run opened through a handle (`start()`, `message()`, `start_agent`, `message_agent`), both `for await` forms behave as if `idle` were zero: they end the moment they would have to wait, so a looping handler normally returns after its first batch. The run stays open while the runs it started with `start_agent` are open, and the answer after the last one is the output. [Wait for the result →](/docs/labs/agents/teams-of-agents?ref=docs-labs-agents-handlers#wait-for-the-result)
 
 ## Gotchas
 
 - **Code outside steps runs again.** A handler re-runs from the top on every replay, and finished steps return their saved results. Put side effects in steps or tools.
-- **Wrap one-off model calls in a step.** A model call made outside the loop isn't a step on its own.
-- **The loop needs a model.** An agent with no `model` has no `loop` in its argument.
 
 ## How it works
 
 - `inbox` is one `step.subscribe` the agent opens with its triggers, its `inbox` sources and the messages agents send each other. [`step.subscribe` →](/docs/durable-execution/primitives/step-subscribe?ref=docs-labs-agents-handlers)
-- Each model call, tool call and awaited post is a step, with its own row in the trace.
-- An un-awaited post is a step too; the run waits for it before it ends.
+- Each model call, tool call and post is a step with its own trace row. The run waits for un-awaited posts before it ends.
 
 ## Recipes and reference
 
