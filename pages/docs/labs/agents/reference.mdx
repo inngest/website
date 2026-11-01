@@ -61,7 +61,7 @@ export const agents = createAgents(inngest);
 
 ## The definition
 
-`agents.agent(definition, handler?)` takes the fields below. A field marked *value or function* takes a value, or a function of `{ event, thread }` that may be async. `event` is the event that started the run and `thread` is the thread's key. The function runs once, when a run starts, and again on replay, so keep it free of side effects. A field marked *value* is read when your app syncs and takes a value only. [Agents and triggers →](/docs/labs/agents/agents-and-triggers?ref=docs-labs-agents-reference)
+`agents.agent(definition, handler?)` takes the fields below. A field marked *value or function* takes a value, or a function of `{ event, thread }` that may be async. `event` is the event that started the run and `thread` is the thread's key. The function runs once, when a run starts, and again on replay, so keep it free of side effects. It may read [`kv`](#the-kv-import); each call is a memoized step. A field marked *value* is read when your app syncs and takes a value only. [Agents and triggers →](/docs/labs/agents/agents-and-triggers?ref=docs-labs-agents-reference)
 
 | Field | Takes | Description |
 | --- | --- | --- |
@@ -128,7 +128,7 @@ inbox: [
 
 - The default handler ends its run after `idle` of quiet. In a handler, `for await (const batch of inbox.batches())` and `for await (const message of inbox)` end the same way. A later message starts a run on the same thread, which reads its history back.
 - A handler that waits some other way, such as `next()` with no timeout, keeps its run live as long as it waits.
-- Only runs started by triggers, and by plain messages, wait `idle`. A run opened through a handle (`start()`, `message()`, `start_agent` or `message_agent`) ends once it has answered and nothing is unread, so `result()` resolves promptly. A later `message()` to that thread starts a run that picks up the history. With a handler, both `for await` forms on such a run behave as if `idle` were zero: they yield what is already in the inbox and end the moment they would have to wait.
+- Only runs started by triggers, and by plain messages, wait `idle`. A run opened through a handle (`start()`, `message()`, `start_agent` or `message_agent`) ends once it has answered and nothing is unread, so `result()` resolves promptly. It stays open while agents it started with `start()` or `start_agent` are still running: their `agent/finished` messages fold in, and the answer after the last one is the run's output. A later `message()` to that thread starts a run that picks up the history. With a handler, both `for await` forms on such a run behave as if `idle` were zero: they yield what is already in the inbox and end the moment they would have to wait.
 - A longer `idle` keeps the run live across deploys, and each of its steps counts toward the step limit. The default suits most agents. [Reliability →](/docs/labs/agents/reliability?ref=docs-labs-agents-reference)
 
 ## The handler
@@ -151,7 +151,7 @@ The second argument of `agents.agent()`. It gets one argument: the function's us
 - **With no handler**, an agent with a `model` sends each batch of messages to the loop and posts the answer where the thread lives. An agent with neither a model nor a handler takes its batch, posts nothing and ends with `undefined`.
 - **The return value** is the run's output, which a caller's `result()` reads. With no handler it is the model's final answer, a string.
 - **The run ends** when the handler returns. Work still running and not awaited is stopped, except an un-awaited `me.post()` or `score()`, which land first. A plain function keeps its own behaviour.
-- **A run opened through a handle** (`start()`, `message()`, `start_agent`, `message_agent`) ends once it has answered. [Idle](#idle)
+- **A run opened through a handle** (`start()`, `message()`, `start_agent`, `message_agent`) ends once it has answered, after any agents it started have finished. [Idle](#idle)
 
 ## me
 
@@ -242,7 +242,7 @@ type Sender =
 What each method does:
 
 - `message(content)`: text or JSON. Sends the message and returns at once. A message to a thread with a live run lands in that run's inbox; a message to a quiet thread starts a run.
-- `ask(question, { timeout })`: waits for the answer, a string. Gives `null` after `timeout` (default one hour) or when the question is refused.
+- `ask(question, { timeout })`: waits for the answer, a string. On a thread whose last run ended it starts a run there, and the answer goes to the waiting `ask()`. Gives `null` after `timeout` (default one hour) or when the question is refused.
 - `result({ timeout })`: waits for a run to end and gives its output, with no default timeout. After `start()` it is the run `start()` opened. After `message()` it is the run that took the message: the live run it folded into, or the run it started on a quiet thread. Throws with the reason when the run failed or was stopped. A `timeout` that passes throws a timeout error and the run keeps going.
 - `stop()`: cancels the run. It takes no options.
 - Answers to `ask()` and outputs for `result()` go to the waiting call and never land in an inbox.
@@ -633,7 +633,7 @@ stop_agent({ thread: string }): { ok: true }
 reply({ to: string; text: string }): { ok: true }
 ```
 
-- `start_agent` returns the thread's key at once. When the work ends, an `agent/finished` message arrives. A run opened this way ends once it has answered.
+- `start_agent` returns the thread's key at once. When the work ends, an `agent/finished` message arrives. A run opened this way ends once it has answered, after any agents it started have finished.
 - It refuses a paused or archived agent with a reason the model can read, and checks `input` against the card's `input` before it starts anything. An agent without an `invoke()` trigger gets `input` as the content of an `agent/message`.
 - `message_agent` sends the message and returns at once. A run it opens on a quiet thread ends once it has answered.
 - `ask_agent` returns a question id at once. The answer arrives as an `agent/answer` whose `re` is that id.
@@ -746,8 +746,12 @@ github.bridge({
   secret: string | Secret;
 }): (request: Request) => Promise<Response>
 
-github.thread(options?: { repos?: string[]; events?: string[] })
-github.tools()
+github.thread(options?: {
+  repos?: string[];
+  events?: string[];
+  if?: string;
+})
+github.tools(options?: { token? })
 ```
 
 {/* not type-checked: github.bridge mounted as a route handler */}
@@ -762,17 +766,27 @@ export const POST = github.bridge({
 });
 ```
 
-- **`github.bridge`** is mounted like Slack's. It verifies `X-Hub-Signature-256` and sends `github/<event>` events, such as `github/issue_comment`.
-- **`github.thread()`** triggers on those events. `events` takes GitHub's event names, such as `"issue_comment"` or `"pull_request_review"`. `repos` limits the trigger to repositories, such as `"acme/api"`.
-- A GitHub thread is keyed by the pull request's or issue's URL, in `threadKey` of the event data (`GithubCommentData & { threadKey: string }`). A plain event joins the thread by carrying that URL, as in `{ event: "ci/run.failed", thread: "event.data.prUrl" }`, and a run it starts still posts on the pull request.
+- **`github.bridge`** is mounted like Slack's. It verifies `X-Hub-Signature-256` and sends `github/<event>` events, such as `github/issue_comment`. It uses the `X-GitHub-Delivery` header as the event id, so a redelivered webhook is dropped.
+- **`github.thread()`** triggers on those events. `events` takes GitHub's event names, such as `"issue_comment"` or `"pull_request_review"`. `repos` limits the trigger to repositories, such as `"acme/api"`. `if` is an expression over `event`, as on any trigger.
+- A `github/<event>` event's data is GitHub's webhook payload plus `threadKey`. A GitHub thread is keyed by the pull request's or issue's URL. A plain event joins the thread by carrying that URL, as in `{ event: "ci/run.failed", thread: "event.data.prUrl" }`, and a run it starts still posts on the pull request.
 - **`github.tools()`** is bound to the thread. A call with no GitHub form, such as a status line, warns once.
+- **Credentials.** `github.tools()` and `me.post()` on a GitHub thread use `GITHUB_TOKEN`. `github.tools({ token })` takes a string, a function that returns one, `secret()` or `githubApp()`.
 
 ```typescript {{ title: "Signature" }}
 github_comment({ body: string }): { url: string }
 github_ask({ question: string; options?: string[] }): { id: string }
 ```
 
-{/* TODO(spec): how github.tools() gets its token, and which events github.thread() triggers on when events is left out. */}
+```typescript
+triggers: [
+  github.thread({
+    events: ["issue_comment"],
+    if: 'event.data.comment.body.contains("@review-bot please review")',
+  }),
+],
+```
+
+{/* TODO(spec): which events github.thread() triggers on when events is left out. */}
 
 ## KV
 
@@ -823,7 +837,7 @@ The scope is always written out. There is no bare `kv.get`.
 | `kv.app` | Shared by every function of the app. |
 | `kv.env` | Shared by every app of the environment. |
 
-`kv.run`, `kv.app` and `kv.env` work in plain functions. `kv.scope("thread", key)` reaches another thread's state, for example from a bridge or a script.
+`kv.run`, `kv.app` and `kv.env` work in plain functions, including in an app with no `createAgents`, with the store from `INNGEST_EXPERIMENTAL_KV_URL`. `kv.scope("thread", key)` reaches another thread's state, for example from a bridge or a script.
 
 Every scope has the same methods:
 
