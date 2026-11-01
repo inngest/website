@@ -7,6 +7,8 @@ export const description = "Build an agent that answers a data question by writi
 
 > An agent that answers by writing one script that calls your tools.
 
+The model writes the script once, and each call it makes runs your tool as a step.
+
 ```text
 You      How many pull requests did each person open in acme/app?
 analyst  maya 41, dan 27, priya 19, sam 8.
@@ -36,7 +38,7 @@ Screenshot needed: the run's trace, with one step per `listPullRequests` call.
 
 ## The code
 
-The tool is an ordinary tool. The GitHub token is read in your app, so it never reaches the sandbox.
+The tool is an ordinary `tool.step`.
 
 ```typescript {{ title: "inngest/tools/listPullRequests.ts" }}
 import { tool } from "inngest/experimental";
@@ -48,6 +50,7 @@ export const listPullRequests = tool.step({
   run: async ({ repo, page }) => {
     const base = `https://api.github.com/repos/${repo}/pulls`;
     const query = `state=all&per_page=100&page=${page}`;
+
     const response = await fetch(`${base}?${query}`, {
       headers: { authorization: `Bearer ${process.env.GITHUB_TOKEN}` },
     });
@@ -64,8 +67,6 @@ export const listPullRequests = tool.step({
 });
 ```
 
-The sandbox hands the tool to the script.
-
 <AnnotatedCode>
 
 {/* not type-checked: sandbox.tools.code({ tools }) */}
@@ -79,13 +80,11 @@ export const analysis = sandbox({
 });
 ```
 
-<Annotation id="tools" lines="6" tease="your tools, in the script" title="Tools for the script" href="/docs/labs/agents/sandboxes-and-code?ref=docs-labs-agents-recipes-sandbox-tools" linkText="Sandboxes and code">
-The script calls `tools.listPullRequests(...)`. Each call is a durable step in your app, retried on its own.
+<Annotation id="tools" lines="6" tease="tools for scripts" title="Tools for the script" href="/docs/labs/agents/sandboxes-and-code?ref=docs-labs-agents-recipes-sandbox-tools#let-code-call-your-tools" linkText="Let code call your tools">
+The script calls `tools.listPullRequests(...)`.
 </Annotation>
 
 </AnnotatedCode>
-
-The agent lists the sandbox and has no handler.
 
 <AnnotatedCode>
 
@@ -107,25 +106,11 @@ export const analyst = agents.agent({
 });
 ```
 
-<Annotation id="sandboxes" lines="13" tease="its tools, named after it" title="Listed sandbox" href="/docs/labs/agents/sandboxes-and-code?ref=docs-labs-agents-recipes-sandbox-tools" linkText="Sandboxes and code">
-The model gets `analysis_run_code`, and `analysis_run` for the shell. The sandbox starts when the model first uses one.
+<Annotation id="sandboxes" lines="13" tease="named after the sandbox" title="Listed sandbox" href="/docs/labs/agents/sandboxes-and-code?ref=docs-labs-agents-recipes-sandbox-tools#give-the-agent-a-sandbox" linkText="Give the agent a sandbox">
+The model gets `analysis_run_code`, and `analysis_run` for the shell.
 </Annotation>
 
 </AnnotatedCode>
-
-{/* not type-checked: createAgents with the store from the environment */}
-```typescript {{ title: "inngest/client.ts" }}
-import { Inngest } from "inngest";
-import { sandboxMiddleware } from "inngest/experimental";
-import { createAgents } from "inngest/experimental/agents";
-
-export const inngest = new Inngest({
-  id: "sandbox-tools",
-  middleware: [sandboxMiddleware()],
-});
-
-export const agents = createAgents(inngest);
-```
 
 {/* not type-checked: agents.functions() */}
 ```typescript {{ title: "inngest/serve.ts" }}
@@ -139,18 +124,17 @@ createServer({
 }).listen(3000);
 ```
 
-`inngest/models/claude.ts` is the one from the [quick start](/docs/labs/agents/quick-start?ref=docs-labs-agents-recipes-sandbox-tools#pick-a-model).
+The [model](/docs/labs/agents/quick-start?ref=docs-labs-agents-recipes-sandbox-tools#pick-a-model) is the quick start's, and [the client](/docs/labs/agents/structure?ref=docs-labs-agents-recipes-sandbox-tools#the-client) adds `sandboxMiddleware()`.
 
 ## What it shows off
 
-- Many tool calls in one model turn. [Sandboxes and code](/docs/labs/agents/sandboxes-and-code?ref=docs-labs-agents-recipes-sandbox-tools)
-- The GitHub token stays in your app, never in the sandbox. [Tools](/docs/labs/agents/tools?ref=docs-labs-agents-recipes-sandbox-tools)
-- Every call from the script retries on its own. [Reliability](/docs/labs/agents/reliability?ref=docs-labs-agents-recipes-sandbox-tools)
-- An agent with no handler and a typed input. [Agents and triggers](/docs/labs/agents/agents-and-triggers?ref=docs-labs-agents-recipes-sandbox-tools#take-a-typed-input)
+- [Code that calls tools](/docs/labs/agents/sandboxes-and-code?ref=docs-labs-agents-recipes-sandbox-tools#let-code-call-your-tools) makes many calls in one model turn.
+- [Tools](/docs/labs/agents/tools?ref=docs-labs-agents-recipes-sandbox-tools) keep the GitHub token in your app, never in the sandbox.
+- [A typed input](/docs/labs/agents/agents-and-triggers?ref=docs-labs-agents-recipes-sandbox-tools#take-a-typed-input) starts an agent with no handler.
 
 ## Run it
 
-You need the setup from the [quick start](/docs/labs/agents/quick-start?ref=docs-labs-agents-recipes-sandbox-tools#install), a GitHub token and an environment with Sandboxes.
+Set the project up as in the [quick start](/docs/labs/agents/quick-start?ref=docs-labs-agents-recipes-sandbox-tools#install), with Sandboxes.
 
 ```bash
 export ANTHROPIC_API_KEY=sk-ant-...
@@ -163,13 +147,12 @@ npx tsx inngest/serve.ts
 npx inngest-cli@latest dev -u http://localhost:3000/api/inngest
 ```
 
-On the Dev Server's Functions page, invoke `analyst` with `{ "question": "How many pull requests did each person open in acme/app?" }`. The run shows one `analysis_run_code` call and a step for every `listPullRequests` call inside it.
+In the Dev Server, invoke `analyst` with `{ "question": "How many pull requests did each person open in acme/app?" }`. The run shows one `analysis_run_code` call and a step for every `listPullRequests` call inside it.
 
 ## Variations
 
-- Give the model only the script tool with `only: ["run_code"]` in `sandbox.tools.code`. [Sandboxes and code](/docs/labs/agents/sandboxes-and-code?ref=docs-labs-agents-recipes-sandbox-tools)
-- Let a tool wait for a person with `waits: true`. [Tools](/docs/labs/agents/tools?ref=docs-labs-agents-recipes-sandbox-tools)
-- Run the same tools from a handler with `sandboxes.analysis.commands.run` and `{ tools }`. [Sandboxes and code](/docs/labs/agents/sandboxes-and-code?ref=docs-labs-agents-recipes-sandbox-tools)
+- [Tools](/docs/labs/agents/tools?ref=docs-labs-agents-recipes-sandbox-tools#wait-for-a-reply) can wait for a person with `waits: true`.
+- [Handlers](/docs/labs/agents/sandboxes-and-code?ref=docs-labs-agents-recipes-sandbox-tools#let-code-call-your-tools) run the same tools with `sandboxes.analysis.commands.run` and `{ tools }`.
 
 ## Learn more
 
