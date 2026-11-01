@@ -12,8 +12,8 @@ An agent is a function that holds conversations. Give it a model and it answers 
 - **Start from anything.** Events, schedules, Slack and GitHub threads. [Triggers →](#start-a-run)
 - **No code for a model agent.** A model, a prompt and tools make a whole agent. [No handler →](#let-the-model-answer)
 - **A typed input.** Callers send checked input and get a typed result. [Typed input →](#take-a-typed-input)
-- **Decide per run.** Pick the prompt or the model from the event that started the run. [Per run →](#decide-per-run)
-- **Plain functions too.** A scheduled job with one model call doesn't need to be an agent. [Agent or function →](#agent-or-plain-function)
+- **Decide per run.** Pick the prompt or the model from the event. [Per run →](#decide-per-run)
+- **Plain functions too.** A scheduled job with one model call needn't be an agent. [Agent or function →](#agent-or-plain-function)
 
 {/* not type-checked: the full definition shape (triggers, model, system, tools, sandboxes, skills, card) */}
 <AnnotatedCode>
@@ -46,8 +46,8 @@ The same triggers a function takes, plus Slack and GitHub threads.
 With no handler, these are the whole agent.
 </Annotation>
 
-<Annotation id="sandboxes" lines="11" tease="a machine per thread" title="Sandboxes" href="/docs/labs/agents/sandboxes-and-code?ref=docs-labs-agents-agents-and-triggers" linkText="Sandboxes and code">
-The model gets its tools, named after it: `work_run`.
+<Annotation id="sandboxes" lines="11" tease="a machine per thread" title="Sandboxes" href="/docs/labs/agents/sandboxes-and-code?ref=docs-labs-agents-agents-and-triggers#give-the-agent-a-sandbox" linkText="Give the agent a sandbox">
+The model gets its tools, named after it: `work_run`. An app that lists sandboxes adds `sandboxMiddleware()` to its client.
 </Annotation>
 
 <Annotation id="skills" lines="12" tease="know-how to read" title="Skills" href="/docs/labs/agents/skills?ref=docs-labs-agents-agents-and-triggers" linkText="Skills">
@@ -62,7 +62,7 @@ What other agents see when they look for help. `share: "team"` shows it to every
 
 ## Start a run
 
-A trigger starts a run on a thread. `triggers` takes what a function's triggers take: events, schedules and typed calls, plus integration triggers such as `slack.thread()` and `github.thread()`.
+Start a run from any event, and say which thread it lands on.
 
 {/* not type-checked: two event triggers on an agent, the agent-wide thread expression */}
 <AnnotatedCode>
@@ -102,7 +102,7 @@ Events with the same key share a thread, so a failed rollback joins the failed d
 
 A schedule is a trigger too: `{ cron: "TZ=UTC 0 9 * * 1-5" }`.
 
-A Slack thread and a GitHub pull request name their own threads, so `slack.thread()` and `github.thread()` need no `thread`. [Slack and GitHub →](/docs/labs/agents/slack-and-github?ref=docs-labs-agents-agents-and-triggers)
+`slack.thread()` and `github.thread()` name their own threads, so they need no `thread`. [Slack and GitHub →](/docs/labs/agents/slack-and-github?ref=docs-labs-agents-agents-and-triggers)
 
 An agent can also have no triggers at all. Code and other agents start it with `start()`. [Teams of agents →](/docs/labs/agents/teams-of-agents?ref=docs-labs-agents-agents-and-triggers)
 
@@ -114,13 +114,11 @@ An agent with a `model` and no handler answers on its own. For each batch of mes
 2. posts the answer where the thread lives, such as the Slack thread it came from;
 3. saves the model's history on the thread, so the next run picks it up.
 
-Then it waits for more messages. After ten quiet minutes the run ends, and the next message starts a new run on the same thread. `idle` changes how long it waits. [Threads and memory →](/docs/labs/agents/threads-and-memory?ref=docs-labs-agents-agents-and-triggers#how-long-a-run-waits)
-
-A run that code opened with `start()` ends right after its first answer, and that answer is the run's output, which the caller's `result()` reads.
+Then it waits for more messages and ends after ten quiet minutes. A run opened with `start()` ends after its first answer. [Threads and memory →](/docs/labs/agents/threads-and-memory?ref=docs-labs-agents-agents-and-triggers#how-long-a-run-waits)
 
 ## Take a typed input
 
-An `invoke()` trigger declares what callers send. Code that starts the agent gets a typed input and a typed result, and other agents see the schema on its card.
+An `invoke()` trigger declares what callers send. Code that starts the agent gets a typed input and a typed result.
 
 {/* not type-checked: invoke() trigger on an agent, start().result() from a plain function */}
 <AnnotatedCode>
@@ -160,11 +158,11 @@ export const nightlyReview = inngest.createFunction(
 );
 ```
 
-`start()` opens a new thread and `result()` waits for the answer. Without an `invoke()` trigger, `start()` takes text or JSON and sends it as a message. [Teams of agents →](/docs/labs/agents/teams-of-agents?ref=docs-labs-agents-agents-and-triggers)
+`result()` waits for the answer. Without an `invoke()` trigger, `start()` takes text or JSON. [Teams of agents →](/docs/labs/agents/teams-of-agents?ref=docs-labs-agents-agents-and-triggers)
 
 ## Decide per run
 
-`model`, `system`, `tools`, `sandboxes`, `skills`, `budget`, `limits`, `idle` and `remember` take a value, or a function of the event and thread that may be async. It runs once, when a run starts.
+Pick the prompt, the model or the budget from the event. `model`, `system`, `tools`, `sandboxes`, `skills`, `budget`, `limits`, `idle` and `remember` take a value or an async function of the event and thread, run once per run.
 
 {/* not type-checked: system as an async function of { event } */}
 ```typescript {{ title: "inngest/agents/accounts.ts" }}
@@ -191,11 +189,11 @@ export const lookupAccount = async (user: string) => {
 };
 ```
 
-The function runs again when the run replays, so keep it free of side effects. `id`, `triggers`, `thread`, `inbox`, `card`, `discovery` and `listen` take values only, because Inngest reads them when your app syncs.
+The function runs again on replay, so keep it free of side effects. `id`, `triggers`, `thread`, `inbox`, `card`, `discovery` and `listen` take values only, because Inngest needs them before a run starts.
 
 ## Write a handler
 
-Pass a function as the second argument and your code runs instead of the default. It gets the run's inbox, the thread and a loop set up from the definition.
+To decide what the model sees and what gets posted, pass a handler as the second argument.
 
 {/* not type-checked: a handler with inbox.batches(), loop(batch) and me.post() */}
 ```typescript {{ title: "inngest/agents/triage.ts" }}
@@ -206,7 +204,7 @@ import { claude } from "../models/claude";
 export const triage = agents.agent(
   {
     id: "triage",
-    triggers: [slack.thread({ in: ["C0123ABC"] })],
+    triggers: [slack.thread()],
     model: claude,
     system: "You triage support threads.",
   },
@@ -224,7 +222,7 @@ export const triage = agents.agent(
 
 ## Agent or plain function
 
-An agent holds conversations: each run works on a thread, reads an inbox and publishes a card. Work that needs none of that is a plain function, which costs less and is never discoverable. A morning digest with one model call is a plain function.
+Work that needs no thread, inbox or card is a plain function: cheaper, and never discoverable.
 
 {/* not type-checked: the anthropic() one-shot call */}
 ```typescript {{ title: "inngest/functions/digest.ts" }}
@@ -254,15 +252,15 @@ A plain function can still start agents with `start()`. [Scheduled watcher →](
 
 ## Gotchas
 
-- **Import agents before serving.** `agents.functions()` lists the agents whose files were imported, so the serve file imports each one. [Project structure →](/docs/labs/agents/structure?ref=docs-labs-agents-agents-and-triggers)
-- **A thread with no home posts nothing.** A run started by an event, a schedule or `start()` has nowhere to post, so the answer stays in the run's output and the trace shows a warning.
-- **Other function options still apply.** `retries`, `concurrency`, `throttle`, `cancelOn` and the rest pass through to the function.
+- **Import agents before serving.** `agents.functions()` lists only imported agents. [Project structure →](/docs/labs/agents/structure?ref=docs-labs-agents-agents-and-triggers)
+- **A thread with no home posts nothing.** One opened by a schedule, `start()` or a plain event with no GitHub URL keeps the answer in the run's output, and the trace warns.
+- **Function options still apply.** `retries`, `concurrency`, `throttle` and the rest pass through.
 
 ## How it works
 
-- An agent is an Inngest function. Each model call and tool call is a step, so a retry or a deploy never repeats finished work.
-- At most one run is live per thread. A message for a live thread lands in that run's inbox; a message for a quiet thread starts a run.
-- Every agent publishes a card when your app syncs. With no `card` field it is private to its own app.
+- Each model call and tool call is a step, so a retry or a deploy never repeats finished work.
+- At most one run is live per thread. A message for a quiet thread starts one.
+- Every agent publishes a card when your app syncs. With no `card` it is private to its own app.
 
 ## Recipes and reference
 
