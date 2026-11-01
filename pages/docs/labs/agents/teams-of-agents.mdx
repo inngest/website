@@ -50,7 +50,7 @@ The reviewer's answer returns to this call and never reaches an inbox.
 
 </AnnotatedCode>
 
-The reviewer is an agent with a typed input, and `pullOpened` is the event that starts the function:
+The reviewer takes a typed input, and `pullOpened` starts the function:
 
 {/* not type-checked: an agent with an invoke() trigger, a model and a budget */}
 ```typescript {{ title: "inngest/agents/reviewer.ts" }}
@@ -80,7 +80,7 @@ export const pullOpened = eventType("pull/opened", {
 
 ## Start an agent
 
-`start()` opens a new [thread](/docs/labs/agents/threads-and-memory?ref=docs-labs-agents-teams-of-agents), starts a run on it and returns a handle at once. Every call opens its own thread, so two starts run side by side. With an `invoke()` trigger, the input is typed from it. [Typed input →](/docs/labs/agents/agents-and-triggers?ref=docs-labs-agents-teams-of-agents#take-a-typed-input)
+`start()` opens a new [thread](/docs/labs/agents/threads-and-memory?ref=docs-labs-agents-teams-of-agents), starts a run on it and returns a handle at once. With an `invoke()` trigger, the input is typed from it. [Typed input →](/docs/labs/agents/agents-and-triggers?ref=docs-labs-agents-teams-of-agents#take-a-typed-input)
 
 An agent with no `invoke()` trigger takes text or JSON and receives it as a message:
 
@@ -102,7 +102,7 @@ const summary = await summarizer.start("Release 4.2 adds retries.").result();
 
 ## Wait for the result
 
-`result()` waits for a run to end and returns its output: what the handler returned, or the model's last answer when the agent has no handler. On a handle from `start()` it is the run `start()` opened. `await reviewer.start({ pr }).result()` is both in one line, for when you don't need the handle.
+`result()` waits for the run to end and returns its output: what the handler returned, or the model's last answer when the agent has no handler. `await reviewer.start({ pr }).result()` does both in one line.
 
 A failed or stopped run makes `result()` throw. So does a `timeout` that runs out, while the agent's run keeps going.
 
@@ -128,11 +128,11 @@ export const reviewOrSkip = inngest.createFunction(
 
 A run opened through a handle ends as soon as it has answered and nothing is unread, so `result()` returns promptly. With a handler, the run ends when the handler returns, and a loop over its inbox stops once nothing is waiting. [When the handler returns →](/docs/labs/agents/handlers?ref=docs-labs-agents-teams-of-agents#when-the-handler-returns)
 
-The run stays open while runs it started with `start_agent` or `start()` are still open. Their `agent/finished` messages fold in, and the answer after the last one is the output. So `await lead.start(request).result()` on a model agent that delegates gives the combined answer.
+A model agent's run stays open while the runs it started with `start_agent` are open. Their results fold in, and the answer after the last one is the output, so `await lead.start(request).result()` on a delegating agent gives the combined answer. Code that calls `start()` handles its children itself, through `result()` or not at all.
 
-## Carry on the conversation
+## Continue a thread
 
-`message()` returns the run that takes the message, so a second round is one more line. The thread keeps its history, so the reviewer sees its first review too.
+`message()` returns the run that takes the message, either the live run it folded into or a new one on a quiet thread. A second round is one more line, and the reviewer sees its first review in the thread's history.
 
 {/* not type-checked: message().result() on the handle from start() */}
 ```typescript {{ title: "inngest/functions/reviewTwice.ts" }}
@@ -156,11 +156,9 @@ export const reviewTwice = inngest.createFunction(
 );
 ```
 
-The message lands in the run that's still working, or starts a new run on the thread once the first has ended. Either way, `result()` gives the answer of the run that took it.
-
 ## Talk to a running agent
 
-A handle talks to the thread. `message()` sends without waiting for the agent, `ask()` waits for an answer and `stop()` cancels the run. Asking a quiet thread starts a run on it, and the answer comes back to your `ask()`.
+A handle talks to the thread. Asking a quiet thread starts a run on it, and the answer comes back to your `ask()`.
 
 {/* not type-checked: message(), ask() and stop() on a handle from start() */}
 <AnnotatedCode>
@@ -206,7 +204,7 @@ A `result()` waiting on this run throws.
 
 ## Rebuild a handle
 
-`review.key` names the thread. Code that has the key rebuilds the handle with `thread(key)`. It has everything a handle has except its own `result()`; the run its `message()` starts has one.
+`review.key` names the thread, and code that has the key rebuilds the handle with `thread(key)`. It has everything a handle has except its own `result()`; the run its `message()` starts has one.
 
 {/* not type-checked: reviewer.thread(key) rebuilding a handle and awaiting the run its message starts */}
 ```typescript {{ title: "inngest/functions/nudgeReview.ts" }}
@@ -231,7 +229,7 @@ export const nudgeReview = inngest.createFunction(
 
 ## Fan out
 
-Every `start()` opens its own thread, so parallel work is `Promise.all`.
+Parallel work is `Promise.all` over `start().result()`.
 
 {/* not type-checked: Promise.all over start().result() */}
 ```typescript {{ title: "inngest/functions/reviewRelease.ts" }}
@@ -258,7 +256,7 @@ export const reviewRelease = inngest.createFunction(
 
 ## Call an agent in another app
 
-`agents.reference()` gives an agent in another app the same `start()` and `thread()` as an import. Its address is the app and the agent, as `app/agent`. [Discovery →](/docs/labs/agents/discovery?ref=docs-labs-agents-teams-of-agents#the-address)
+`agents.reference()` gives an agent in another app the same `start()` and `thread()` as an import, by its [address](/docs/labs/agents/discovery?ref=docs-labs-agents-teams-of-agents#the-address).
 
 {/* not type-checked: agents.reference() with schema and output */}
 <AnnotatedCode>
@@ -350,9 +348,9 @@ An agent with a model answers with its `reply` tool, which it always has.
 
 ## Let the model delegate
 
-A model agent never waits on another agent. Its tools `start_agent`, `message_agent`, `ask_agent`, `stop_agent` and `reply` return at once, and what comes back arrives as a message in its inbox, batched with everything else. They are on by default, next to the agent's own [tools](/docs/labs/agents/tools?ref=docs-labs-agents-teams-of-agents). [Discovery →](/docs/labs/agents/discovery?ref=docs-labs-agents-teams-of-agents)
+A model agent never waits on another agent. `start_agent`, `message_agent`, `ask_agent`, `stop_agent` and `reply` are on by default and return at once; what comes back arrives in its inbox with everything else. [Discovery →](/docs/labs/agents/discovery?ref=docs-labs-agents-teams-of-agents)
 
-```
+```text
 start_agent({
   address: "support/reviewer",
   input: { pr: "https://github.com/acme/api/pull/42" },
@@ -360,12 +358,7 @@ start_agent({
   { thread: "a1b2c3" }
 ```
 
-The model carries on. Four message types come back, each in a default wording. [Models and the loop →](/docs/labs/agents/models-and-the-loop?ref=docs-labs-agents-teams-of-agents)
-
-- **`agent/message`.** What `message()` or `message_agent` sent. The model sees `Message from <address> (thread <key>): <content>`.
-- **`agent/question`.** From `ask()` or `ask_agent`. The model sees the question with its id, who asked, and a pointer to `reply`.
-- **`agent/answer`.** The answer to the model's `ask_agent`, shown with the question it answers. A refusal or a timeout shows as a plain "no answer" line.
-- **`agent/finished`.** Work the model started with `start_agent` ended. The model sees which agent and thread, the outcome (completed, failed or stopped), then the output or the error.
+The model carries on. Four message types come back: `agent/message`, `agent/question`, `agent/answer` and `agent/finished`, the last only for runs the model opened with `start_agent`. [How the model sees them →](/docs/labs/agents/models-and-the-loop?ref=docs-labs-agents-teams-of-agents#what-the-model-sees)
 
 They are exported as `agentMessage`, `agentQuestion`, `agentAnswer` and `agentFinished`, and `msg.is()` narrows to one. [Narrow an event with `is()` →](/docs/durable-execution/guides-and-advanced/events-and-triggers/event-payloads-and-schemas?ref=docs-labs-agents-teams-of-agents#narrow-an-event-with-is)
 
@@ -410,36 +403,59 @@ The batch holds the finished message too, in its default wording.
 
 </AnnotatedCode>
 
-Sandbox code is code, so it gets the same tools plus `agent_result`, which waits. A script can start several agents and wait for each, as `Promise.all` does. [Sandboxes and code →](/docs/labs/agents/sandboxes-and-code?ref=docs-labs-agents-teams-of-agents)
+Sandbox code gets the same tools plus `agent_result`, which waits, so a script can start several agents and wait for each. [Sandboxes and code →](/docs/labs/agents/sandboxes-and-code?ref=docs-labs-agents-teams-of-agents)
 
 ## Background work
 
-Work that runs beside a conversation is a plain function you don't await. It reports back with `me.message()`, and work still running when the handler returns is stopped. [Message yourself →](/docs/labs/agents/handlers?ref=docs-labs-agents-teams-of-agents#message-yourself)
+Work that runs beside your handler is a plain function you don't await. It reports back with `me.message()`, and work still running when the handler returns is stopped. [Message yourself →](/docs/labs/agents/handlers?ref=docs-labs-agents-teams-of-agents#message-yourself)
 
 ## Limit the team
 
-Put `limits` on the agent that delegates:
+Put `limits` on the agent that delegates. A start past a limit throws in code, and the model gets an error it can read.
 
-```typescript
-limits: { depth: 2, mayCall: ["support/reviewer"] },
+{/* not type-checked: limits with depth and mayCall on a delegating agent */}
+<AnnotatedCode>
+
+```typescript {{ title: "inngest/agents/coordinator.ts" }}
+import { slack } from "inngest/experimental/agents";
+import { agents } from "../client";
+import { claude } from "../models/claude";
+
+export const coordinator = agents.agent({
+  id: "coordinator",
+  triggers: [slack.thread()],
+  model: claude,
+  system: "Hand pull request reviews to the reviewer agent.",
+  limits: {
+    depth: 2,
+    mayCall: ["support/reviewer"],
+  },
+});
 ```
 
-`depth` caps a chain of starts, where A starts B and B starts C. It's 1 by default: an agent can start agents, and those can't start more. `mayCall` lists the agents the model may start. A start past a limit throws in code, and the model gets an error it can read.
+<Annotation id="depth" lines="11" tease="how deep a chain goes" title="depth">
+Caps a chain of starts, where A starts B and B starts C. It is 1 by default: an agent can start agents, and those can't start more.
+</Annotation>
+
+<Annotation id="mayCall" lines="12" tease="the agents it may start" title="mayCall">
+Exact addresses of the agents the model may start.
+</Annotation>
+
+</AnnotatedCode>
 
 Every thread spends from its own agent's `budget`, such as the reviewer's `budget: { usd: 2 }`, whoever started it. [Reliability →](/docs/labs/agents/reliability?ref=docs-labs-agents-teams-of-agents)
 
 ## Gotchas
 
 - **Handle methods need a function.** They throw in a route or a script. Send the agent's trigger event from there.
-- **`ask()` can return `null`.** It does after the timeout and when the other side refuses. Pick a default.
+- **`ask()` can return `null`.** Pick a default.
 - **Code that waits can't be asked.** A question from the run behind your `result()` is refused at once. The agent's `ask()` returns `null` and your `result()` keeps waiting.
-- **A delegating agent's `result()` waits for its helpers.** The run stays open until the agents it started have finished.
-- **Every `start()` opens a thread.** To carry on a conversation, `message()` the same thread. [Carry on →](#carry-on-the-conversation)
+- **A delegating agent's `result()` waits for its helpers.** It waits at most 24 hours, then answers and names the helpers still running.
+- **Starting again opens another thread.** To continue one, `message()` the same thread. [Continue a thread →](#continue-a-thread)
 
 ## How it works
 
 - A message for a thread with a live run lands in that run's inbox; a message for a quiet thread starts a run. [Threads and memory →](/docs/labs/agents/threads-and-memory?ref=docs-labs-agents-teams-of-agents)
-- A run opened through a handle ends once it has answered, nothing is unread and the agents it started have finished. The thread keeps the history for the next run.
 - Answers to your `ask()` and outputs for your `result()` go only to the waiting call, so an inbox holds only what was sent to the agent.
 - Every agent message shows in the run's trace, with who sent it.
 
