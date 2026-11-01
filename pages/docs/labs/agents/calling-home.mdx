@@ -7,11 +7,11 @@ export const description = "Let a script in an agent's sandbox call your tools. 
 
 > Let a script in the sandbox call your tools: each call runs in your app, as a step, with your run's whole scope.
 
-The model can write one script instead of taking many turns, and your keys stay out of the machine. This page adds that to the PR helper, built up through [Threads](/docs/labs/agents/threads?ref=docs-labs-agents-calling-home), [Inboxes](/docs/labs/agents/inboxes?ref=docs-labs-agents-calling-home), [Models](/docs/labs/agents/models?ref=docs-labs-agents-calling-home), [Tools](/docs/labs/agents/tools?ref=docs-labs-agents-calling-home), [Skills](/docs/labs/agents/skills?ref=docs-labs-agents-calling-home) and [Sandboxes](/docs/labs/agents/sandboxes?ref=docs-labs-agents-calling-home).
+The model can write one script instead of taking many turns, and your tools' credentials stay out of the machine. This page adds that to the PR helper, built up through [Threads](/docs/labs/agents/threads?ref=docs-labs-agents-calling-home), [Inboxes](/docs/labs/agents/inboxes?ref=docs-labs-agents-calling-home), [Models](/docs/labs/agents/models?ref=docs-labs-agents-calling-home), [Tools](/docs/labs/agents/tools?ref=docs-labs-agents-calling-home), [Skills](/docs/labs/agents/skills?ref=docs-labs-agents-calling-home) and [Sandboxes](/docs/labs/agents/sandboxes?ref=docs-labs-agents-calling-home).
 
 ## The model writes code
 
-To read the CI logs of every open pull request without a model turn for each, give the sandbox's code tools your `readLog` tool.
+You want the model to read the CI log of every open pull request without a turn for each. Give the sandbox's code tools your `readLog` tool.
 
 <AnnotatedCode>
 
@@ -89,7 +89,7 @@ export const readLog = tool.step({
 
 ## Your scope, from its code
 
-To let the script do what only your run can, such as saving thread state and commenting on the PR, make the tool inside the handler.
+You want the script to do what only your run can, such as saving thread state and commenting on the PR. Make the tool inside the handler.
 
 <AnnotatedCode>
 
@@ -173,7 +173,7 @@ if "FAIL" in log:
     await tools.note(text="The checkout test is failing.")
 ```
 
-The comment lands through this run's own `me`, and the note in its own thread state. The script never held a GitHub token or the store. The events, and the client with its `sandboxMiddleware()`, are as [Threads](/docs/labs/agents/threads?ref=docs-labs-agents-calling-home) and [Sandboxes](/docs/labs/agents/sandboxes?ref=docs-labs-agents-calling-home#a-sandbox) left them:
+The comment lands through this run's own `me`. The events, and the client with its `sandboxMiddleware()`, are as [Threads](/docs/labs/agents/threads?ref=docs-labs-agents-calling-home) and [Sandboxes](/docs/labs/agents/sandboxes?ref=docs-labs-agents-calling-home#a-sandbox) left them:
 
 ```typescript {{ title: "inngest/events.ts" }}
 import { eventType } from "inngest";
@@ -190,24 +190,38 @@ export const deployed = eventType("deploy/finished", {
 });
 ```
 
+{/* not type-checked: sandboxMiddleware() on the client */}
+```typescript {{ title: "inngest/client.ts" }}
+import { Inngest } from "inngest";
+import { sandboxMiddleware } from "inngest/experimental";
+import { createAgents } from "inngest/experimental/agents";
+
+export const inngest = new Inngest({
+  id: "acme-web",
+  middleware: [sandboxMiddleware()],
+});
+
+export const agents = createAgents(inngest);
+```
+
 ## The keys stay home
 
-To use a credential without handing it to a script, keep it in the tool. `note` posts with your app's GitHub credentials, `readLog` reaches CI from your app, and the script only sees what they return.
+You want a script to use a credential without being handed it. Keep the credential in the tool: `note` posts with your app's GitHub credentials, `readLog` reaches CI from your app, and the script only sees what they return.
 
-Nothing secret enters the sandbox unless you put it there with `sandbox({ secrets })`, which any code in the sandbox can read. [Reference: secrets →](/docs/labs/agents/reference-sandboxes?ref=docs-labs-agents-calling-home#secrets)
+The sandbox holds only the checkout's read-only token and the values you add with `sandbox({ secrets })`, which any code in it can read; the write token stays on your host. [Reference: secrets →](/docs/labs/agents/reference-sandboxes?ref=docs-labs-agents-calling-home#secrets)
 
 ## Your own scripts
 
-To call the same tools from a script you wrote, pass them to the command in your handler.
+You want to call the same tools from a script you wrote. Run it from [your handler's sandbox](/docs/labs/agents/sandboxes?ref=docs-labs-agents-calling-home#a-sandbox-for-your-code) and pass the tools to the command.
 
 {/* not type-checked: sandboxes.work.commands.run with tools */}
 ```typescript
-await sandboxes.work.commands.run("triage", "node triage.mjs", {
+await sandboxes.work.commands.run("triage", "node triage.cjs", {
   tools: { readLog, note },
 });
 ```
 
-```js {{ title: "triage.mjs" }}
+```js {{ title: "triage.cjs" }}
 const { tools } = require("inngest_tools");
 
 const main = async () => {
