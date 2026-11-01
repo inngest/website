@@ -14,9 +14,9 @@ A key names a thread, and what the agent keeps lasts between runs.
 - **Memory with no code.** The model's history is there on the next run. [Remember the history →](#remember-the-history)
 - **State of your own.** Four scopes of durable, typed keys. [Keep state →](#keep-state)
 
-{/* not type-checked: agents.agent with thread, model and no handler */}
 <AnnotatedCode>
 
+{/* not type-checked: agents.agent with thread, model and no handler */}
 ```typescript {{ title: "inngest/agents/support.ts" }}
 import { eventType } from "inngest";
 import { z } from "zod";
@@ -48,11 +48,11 @@ With no handler, the agent saves the model's history on the thread, and the next
 
 ## Name a thread
 
-`thread` is an expression over the `event`. Events with equal keys share a thread; without it, each event opens its own. [Writing expressions →](/docs/durable-execution/guides-and-advanced/writing-expressions?ref=docs-labs-agents-threads-and-memory)
+Events about one customer, pull request or order belong on one thread. `thread` is an expression over the `event` that gives them the same key; without it, each event opens its own. [Writing expressions →](/docs/durable-execution/guides-and-advanced/writing-expressions?ref=docs-labs-agents-threads-and-memory)
 
-{/* not type-checked: github.thread() with a plain event trigger that carries its own thread expression */}
 <AnnotatedCode>
 
+{/* not type-checked: github.thread() with a plain event trigger that carries its own thread expression */}
 ```typescript {{ title: "inngest/agents/babysitter.ts" }}
 import { eventType } from "inngest";
 import { github } from "inngest/experimental/agents";
@@ -100,9 +100,9 @@ At most one run is live per thread. A live run takes new messages and ends after
 14:00  question arrives      starts a run that reads the history
 ```
 
-{/* not type-checked: idle on an agent definition */}
 <AnnotatedCode>
 
+{/* not type-checked: idle on an agent definition */}
 ```typescript {{ title: "inngest/agents/concierge.ts" }}
 import { slack } from "inngest/experimental/agents";
 import { agents } from "../client";
@@ -135,9 +135,9 @@ A run's variables go when it ends. The thread keeps its `kv.thread` state, the m
 
 The loop saves the model's history on the thread and reads it back on the next run. `remember: false` starts every run clean.
 
-{/* not type-checked: remember: false on an agent definition */}
 <AnnotatedCode>
 
+{/* not type-checked: remember: false on an agent definition */}
 ```typescript {{ title: "inngest/agents/lookup.ts" }}
 import { eventType } from "inngest";
 import { z } from "zod";
@@ -168,9 +168,9 @@ Each run starts with an empty history. The thread's state, budget and sandbox ar
 
 For anything else, `kv` is a durable key-value store. Inside a function it finds its own thread and run.
 
-{/* not type-checked: kv.thread.update with a typed key in an agent handler */}
 <AnnotatedCode>
 
+{/* not type-checked: kv.thread.update with a typed key in an agent handler */}
 ```typescript {{ title: "inngest/agents/planner.ts" }}
 import { kv, slack } from "inngest/experimental/agents";
 import { agents } from "../client";
@@ -226,9 +226,9 @@ In plain functions, `run`, `app` and `env` work with the store from `INNGEST_EXP
 
 A key can carry its value's type.
 
-{/* not type-checked: kv.key with a type and with a schema */}
 <AnnotatedCode>
 
+{/* not type-checked: kv.key with a type and with a schema */}
 ```typescript {{ title: "inngest/keys.ts" }}
 import { kv } from "inngest/experimental/agents";
 import { z } from "zod";
@@ -255,9 +255,9 @@ A stored value that breaks the schema fails the read for good and stays where it
 
 This job takes a lock on `kv.app`, so two overlapping runs never clean up at once.
 
-{/* not type-checked: kv.app.setIfAbsent with ttl and delete in a plain function */}
 <AnnotatedCode>
 
+{/* not type-checked: kv.app.setIfAbsent with ttl and delete in a plain function */}
 ```typescript {{ title: "inngest/functions/nightly.ts" }}
 import { kv } from "inngest/experimental/agents";
 import { inngest } from "../client";
