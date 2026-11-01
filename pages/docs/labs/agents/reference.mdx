@@ -112,9 +112,7 @@ The first argument of `agents.agent()`. [Events and triggers](/docs/labs/agents/
 | `channels` | record, or function of `{ event }` | none | Destinations by name. [Channels](/docs/labs/agents/reporting?ref=docs-labs-agents-reference) |
 | `report` | channel name, channel, or list; or function of `{ event }` | channel named `main` | Where `report()` posts when not told. |
 | `limits` | [`AgentLimits`](#agentlimits) | see type | What the agent may start and spend. [Events](/docs/labs/agents/teams-of-agents?ref=docs-labs-agents-reference#limit-sub-agents) |
-| `share` | `"private" \| "team"` | `"private"` | Who may find and call the agent: agents of its own app, or of every app in the environment. [Teams](/docs/labs/agents/teams-of-agents?ref=docs-labs-agents-reference#publish-a-card) |
-| `skills` | `{ id, description, examples }[]` | none | What the agent is good at. Models pick agents by these. |
-| `scores` | `boolean` | `true` | Whether the agent scores itself. [Scores](/docs/labs/agents/observability?ref=docs-labs-agents-reference) |
+| `share` | `"private" \| "team"` | `"private"` | Who may find and call the agent: agents of its own app, or of every app in the environment. [Teams](/docs/labs/agents/teams-of-agents?ref=docs-labs-agents-reference#publish-a-card) || `scores` | `boolean` | `true` | Whether the agent scores itself. [Scores](/docs/labs/agents/observability?ref=docs-labs-agents-reference) |
 | `recovery` | `boolean \| AgentRecovery` | off | What to do about a run that fails unexpectedly. [Recovery](#recovery) |
 
 `description` also goes on the agent's card, where callers and models read it.
@@ -523,12 +521,12 @@ addressOf(card: AgentCard): string
 | `discoveryTools(options?)` | `list_agents`, `describe_agent`, `call_agent` and `message_agent`, for `agent.loop({ tools })` or `sandbox.tools.code({ tools })`. |
 | `addressOf(card)` | The address of a card's agent. |
 
+The callee keeps the caller's session and gets a thread of its own. Its key is `<functionId>:<runId>.<n>`. A call has no timeout.
+
 | `discoveryTools()` option | Gets | Does |
 | --- | --- | --- |
 | `prepare` | `{ card, input }` | Returns the input `call_agent` hands over. Use it to add what the model must not make up, such as who is asking. |
 | `onBackground` | `{ id, result }` | Takes the calls the model makes with `background: true`, so the model carries on. `result` settles with the agent's result. Without it, `background` is refused. |
-
-The callee keeps the caller's session and gets a thread of its own. Its key is `<functionId>:<runId>.<n>`. A call has no timeout.
 
 A cancelled callee (stop now, `cancelOn`, or its own parent cancelled) throws `AgentCancelledError`, which is not retried. Cancelling the caller cancels a callee only if the callee lists `agentInvokeCancelOn` in `cancelOn`. `agents.agent()` throws if it lists it beside a trigger other than `invoke()`.
 

@@ -51,13 +51,6 @@ export const researcher = agents.agent(
   {
     id: "researcher",
     description: "Looks into a question",
-    skills: [
-      {
-        id: "changes",
-        description: "Finds what changed between versions",
-        examples: ["What changed in v3?"],
-      },
-    ],
     share: "team",
     on: invoke(z.object({ question: z.string() })),
     limits: { price: { "*": { input: 3, output: 15 } } },
@@ -112,7 +105,7 @@ export const delegator = agents.agent(
 );
 ```
 
-The model gets `list_agents`, `describe_agent`, `call_agent` and `message_agent`. It picks by `description` and `skills`, so write those for a model to read.
+The model gets `list_agents`, `describe_agent`, `call_agent` and `message_agent`. It picks by `description`, so write it for a model to read.
 
 ## Give a sandbox to one agent
 
@@ -220,14 +213,14 @@ export const boss = agents.agent({ id: "boss" }, async () => {
 - Cap depth, fan-out or which agents may be called: `limits.depth`, `spawn`, `mayCall`.
 - Cap spend of callees: `limits.budget` with a `limits.price` on each, and `spawn`. A callee gets at most what is left, but the callees' total is not capped.
 - End children with their parent: `cancelOn: [agentInvokeCancelOn]`.
-- Name the call's step: `callAgent(address, input, { id })`. [Options](/docs/labs/agents/reference?ref=docs-labs-agents-teams-of-agents#calling-agents)
+- Name the call's step: `callAgent(address, input, { id })`.
 
 ## Gotchas
 
 - An agent can be found only after its app announced its card. A daily heartbeat announces again.
 - `callAgent()` returns `unknown`. Check the shape before you use it.
 - Use `agentInvokeCancelOn` only on an agent that `callAgent()` or `call_agent` starts. `agents.agent()` throws if `on` has another trigger.
-- Don't message the thread of an agent with `agentInvokeCancelOn`. That run would end whenever any run is cancelled.
+- Don't message the thread of an agent with `agentInvokeCancelOn`. A message starts a run with no caller, and that run ends whenever any run is cancelled.
 - `message_agent`, a raw `step.invoke` and `sendEvent` are not checked by `limits`.
 
 ## How it works
