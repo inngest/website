@@ -414,7 +414,7 @@ githubApp(options: GithubAppOptions): GithubApp
 
 Errors: `GithubAppError` (`status`), and `GithubAppNotInstalledError` (a 404; the one failure to answer with a person's token). Types: `GithubApp`, `GithubAppOptions`, `GithubAppTarget`, `GithubAppTokenOptions`.
 
-{/* not type-checked: githubApp options from environment variables */}
+{/* not type-checked: githubApp with a secret() private key */}
 ```typescript {{ title: "inngest/github.ts" }}
 import { secret } from "inngest/experimental";
 import { githubApp } from "inngest/experimental/agents";
