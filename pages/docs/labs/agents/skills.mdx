@@ -71,7 +71,7 @@ description: When an order can be refunded. Use for any refund question.
 1. Look the order up with the `lookupOrder` tool.
 2. Orders delivered under 30 days ago are refundable in full.
 3. Older orders get store credit, never cash.
-4. Run `python check.py <order-id>` to confirm the dates.
+4. Run `python /skills/refund-policy/check.py <order-id>`.
 ```
 
 <Annotation id="name" lines="2" tease="what the model opens" title="Name" href="#open-a-skill" linkText="Open a skill">
@@ -87,7 +87,7 @@ Naming `lookupOrder` doesn't add it. The agent has to list it.
 </Annotation>
 
 <Annotation id="script" lines="11" tease="a file beside it" title="Scripts and files" href="#ship-files-and-scripts" linkText="Ship files and scripts">
-`check.py` goes to the agent's sandbox.
+`check.py` goes to the agent's sandbox, under `/skills/refund-policy/`.
 </Annotation>
 
 </AnnotatedCode>
@@ -103,9 +103,9 @@ Naming `lookupOrder` doesn't add it. The agent has to list it.
 skills.repo("acme/skills", { ref: "main", path: "support" })
 ```
 
-{/* TODO(spec): what ref and path mean for skills.repo (a branch, tag or commit? the folder that holds the skills?) and what they default to. skills.md only says sources take them. */}
-
-`ref` picks the version to read and `path` the folder in the repo that holds the skills.
+- **`ref`** picks the branch, tag or commit to read.
+- **`path`** is the folder in the repo that holds the skill folders.
+- **`auth`** reads a private repo. [Read a private repo →](#read-a-private-repo)
 
 ## Open a skill
 
@@ -119,7 +119,7 @@ It returns the skill's instructions as text. Only an agent with skills has `open
 
 ## Ship files and scripts
 
-Files beside `SKILL.md` go to the first sandbox the model can use among the agent's listed sandboxes. The model runs a script there like any other file. With no sandbox, the model gets the instructions only.
+Files beside `SKILL.md` go to the first sandbox the model can use among the agent's listed sandboxes, at `/skills/<name>/`. The model runs a script there like any other file. With no sandbox, the model gets the instructions only.
 
 <AnnotatedCode>
 
@@ -185,9 +185,41 @@ So a skill can't widen what an agent may do. A skill that names a tool the agent
 
 ## Read a private repo
 
-Public repos need no token. A private repo is read with your app's GitHub credentials, on your host. The token never reaches the sandbox or a snapshot of it. [Check out a repo →](/docs/labs/agents/sandboxes-and-code?ref=docs-labs-agents-skills#check-out-a-repo)
+Public repos need no token. For a private repo, pass `auth`: a `githubApp()` or a token. Your host reads the repo with it, and the token never reaches the sandbox or a snapshot of it.
 
-{/* TODO(spec): how does the app give skills.repo its GitHub credentials? The type tests show no auth option on skills.repo, and skills.md says only "the app's GitHub credentials". */}
+{/* not type-checked: skills.repo with auth from githubApp() */}
+```typescript {{ title: "inngest/agents/internal.ts" }}
+import { skills, slack } from "inngest/experimental/agents";
+import { agents } from "../client";
+import { app } from "../github";
+import { claude } from "../models/claude";
+
+export const internal = agents.agent({
+  id: "internal",
+  triggers: [slack.thread()],
+  model: claude,
+  system: "You answer questions about how we work.",
+  skills: [
+    skills.repo("acme/handbook", {
+      path: "skills",
+      auth: app,
+    }),
+  ],
+});
+```
+
+{/* not type-checked: githubApp() with a secret() private key */}
+```typescript {{ title: "inngest/github.ts" }}
+import { secret } from "inngest/experimental";
+import { githubApp } from "inngest/experimental/agents";
+
+export const app = githubApp({
+  appId: process.env.GITHUB_APP_ID ?? "",
+  privateKey: secret("GITHUB_APP_PRIVATE_KEY"),
+});
+```
+
+[GitHub App credentials →](/docs/labs/agents/sandboxes-and-code?ref=docs-labs-agents-skills#check-out-a-repo)
 
 ## Skills on the card
 
