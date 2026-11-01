@@ -7,7 +7,7 @@ export const description = "Keep your own values on an Inngest agent's thread: c
 
 > Keep your own values on a thread, across runs and deploys.
 
-A run's variables are gone when it ends, but a thread's state lasts as long as the thread. Each section builds on the PR helper from [Inboxes](/docs/labs/agents/inboxes?ref=docs-labs-agents-memory). After the first, a block shows only what changes.
+A run's variables are gone when it ends, but a thread's state lasts as long as the thread. Each section builds on the PR helper from [Inboxes](/docs/labs/agents/inboxes?ref=docs-labs-agents-memory), and after the first, a block shows only what changes.
 
 ## Your own values
 
@@ -136,7 +136,7 @@ async ({ inbox, me }) => {
 },
 ```
 
-`kv.thread.set(failures, "3")` is a type error, and a stored value that breaks the schema fails the read. `update` changes the value in one step, so overlapping updates never lose one.
+`kv.thread.set(failures, "3")` is a type error, and a stored value that breaks the schema fails the read. `update` reads and writes together, so overlapping updates never lose one.
 
 {/* Go deeper */}
 
@@ -156,7 +156,7 @@ await kv.app.update(flaky, (found) => {
 });
 ```
 
-Both PRs see the same list. Every call names its scope: `kv.thread` is one thread's state and `kv.app` is shared by the whole app. [KV →](/docs/labs/agents/reference?ref=docs-labs-agents-memory#kv)
+Every PR sees the same list. Each call names its scope: `kv.thread` is one thread's state and `kv.app` is shared by the whole app. [KV →](/docs/labs/agents/reference?ref=docs-labs-agents-memory#kv)
 
 ## Recipes and reference
 
