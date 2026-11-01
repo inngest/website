@@ -142,8 +142,6 @@ export const work = sandbox({
 });
 ```
 
-{/* TODO(spec): Workers have no `git`; is the push made through GitHub's API automatically, or is it chosen (today `transport: "api"`)? */}
-
 ## Serve from fetch
 
 `useEnv(env)` runs first on every request, so every function that follows can read the bindings. The Slack bridge reads its signing secret when it is built, so build it inside `fetch`, where the binding exists.
@@ -185,7 +183,7 @@ Set up the Worker itself as in [Serving Inngest functions](/docs/learn/serving-i
 
 - **Import time has no bindings.** Read them inside a function. A value computed at the top of a file runs before the first request.
 - **Sync-time fields stay values.** `id`, `triggers`, `thread`, `inbox`, `card`, `discovery` and `listen` are read when your app syncs, so keep bindings out of them.
-- **Run-time functions must be pure.** They run again when the run replays.
+- **Run-time functions have no side effects.** They run again when the run replays. They may read `kv`.
 - **Other entry points call `useEnv`.** Code outside `fetch` that sends messages, such as a scheduled handler, calls `useEnv(env)` first so the store has its binding.
 
 ## How it works
