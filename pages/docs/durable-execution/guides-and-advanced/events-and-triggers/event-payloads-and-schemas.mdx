@@ -65,7 +65,7 @@ The event type can also appear in a function's `triggers` array and in `step.wai
 
 ## Narrow an event with `is()`
 
-When a function has several triggers, `event.is()` tells you which event started the run, and types `event.data` to match. It takes one event type or an array.
+In the TypeScript SDK, `event.is()` tells a function with several triggers which event started the run, and types `event.data` to match. It takes one event type or an array.
 
 ```typescript {{ title: "TypeScript" }}
 import { eventType, Inngest } from "inngest";

@@ -195,7 +195,7 @@ if (userCreated.is(value)) {
 }
 ```
 
-`is()` checks the event name. It doesn't validate `data` against the schema.
+`is()` compares the event name exactly, so a wildcard type never matches. It doesn't validate `data` against the schema.
 
 ### Wildcards
 
