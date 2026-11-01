@@ -104,7 +104,7 @@ A schedule is a trigger too: `{ cron: "TZ=UTC 0 9 * * 1-5" }`.
 
 `slack.thread()` and `github.thread()` name their own threads, so they need no `thread`. [Slack and GitHub →](/docs/labs/agents/slack-and-github?ref=docs-labs-agents-agents-and-triggers)
 
-An agent can also have no triggers at all. Code and other agents start it with `start()`. [Teams of agents →](/docs/labs/agents/teams-of-agents?ref=docs-labs-agents-agents-and-triggers)
+An agent can also have no triggers at all. Code starts it with `start()`, and a model agent with `start_agent`. [Teams of agents →](/docs/labs/agents/teams-of-agents?ref=docs-labs-agents-agents-and-triggers)
 
 ## Let the model answer
 
@@ -114,7 +114,7 @@ An agent with a `model` and no handler answers on its own. For each batch of mes
 2. posts the answer where the thread lives, such as the Slack thread it came from;
 3. saves the model's history on the thread, so the next run picks it up.
 
-Then it waits for more messages and ends after ten quiet minutes. A run opened with `start()` ends after its first answer. [Threads and memory →](/docs/labs/agents/threads-and-memory?ref=docs-labs-agents-agents-and-triggers#how-long-a-run-waits)
+Then it waits for more messages and ends after ten quiet minutes. A run opened through a handle, such as `start()`, ends after its first answer. [Threads and memory →](/docs/labs/agents/threads-and-memory?ref=docs-labs-agents-agents-and-triggers#how-long-a-run-waits)
 
 ## Take a typed input
 
@@ -193,36 +193,11 @@ The function runs again on replay, so keep it free of side effects. `id`, `trigg
 
 ## Write a handler
 
-To decide what the model sees and what gets posted, pass a handler as the second argument.
-
-{/* not type-checked: a handler with inbox.batches(), loop(batch) and me.post() */}
-```typescript {{ title: "inngest/agents/triage.ts" }}
-import { slack } from "inngest/experimental/agents";
-import { agents } from "../client";
-import { claude } from "../models/claude";
-
-export const triage = agents.agent(
-  {
-    id: "triage",
-    triggers: [slack.thread()],
-    model: claude,
-    system: "You triage support threads.",
-  },
-  async ({ inbox, me, loop }) => {
-    for await (const batch of inbox.batches()) {
-      const { text } = await loop(batch);
-
-      await me.post(text);
-    }
-  },
-);
-```
-
-[Handlers →](/docs/labs/agents/handlers?ref=docs-labs-agents-agents-and-triggers)
+To decide what the model sees and what gets posted, pass a handler as the second argument. [Handlers →](/docs/labs/agents/handlers?ref=docs-labs-agents-agents-and-triggers)
 
 ## Agent or plain function
 
-Work that needs no thread, inbox or card is a plain function: cheaper, and never discoverable.
+Work with no thread, inbox or card needs no agent. Call the model from a step in a plain function.
 
 {/* not type-checked: the anthropic() one-shot call */}
 ```typescript {{ title: "inngest/functions/digest.ts" }}
@@ -248,7 +223,7 @@ export const digest = inngest.createFunction(
 );
 ```
 
-A plain function can still start agents with `start()`. [Scheduled watcher →](/docs/labs/agents/recipes/scheduled-watcher?ref=docs-labs-agents-agents-and-triggers)
+A plain function can still start an agent with `start()`, as `nightlyReview` does above. [Start an agent →](/docs/labs/agents/teams-of-agents?ref=docs-labs-agents-agents-and-triggers#start-an-agent)
 
 ## Gotchas
 
