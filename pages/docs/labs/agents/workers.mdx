@@ -1,33 +1,78 @@
+import { AnnotatedCode, Annotation } from "shared/Docs/mdx";
+
 export const metaTitle = "Run on Workers | Inngest Agents";
-export const description = "Run Inngest Agents on Cloudflare Workers: bindings only exist per request, so use a middleware for per-request dependencies and getters for the store, KV and tokens.";
+export const description = "Run Inngest Agents on Cloudflare Workers: bindings exist only per request, so keep the store in D1, give the model and tokens as functions, and serve from the Worker's fetch.";
 
 # Run on Workers
 
-> Bindings exist only while a request runs. Nothing about your agents should need them at import time.
+> Bindings exist only while a request runs, so an agent reads them when a run needs them.
 
-- **Per-request dependencies.** A middleware puts them in the context. [Middleware →](#put-the-bindings-in-context)
-- **Getters for config.** The store, `kv` and tokens are functions called at each use. [Getters →](#read-bindings-through-getters)
-- **Serve it.** One `fetch` export. [Serve →](#serve-it)
+A Worker has no secrets or database at import time. Fields that take a function are called when a run starts, and that is when a binding exists.
+
+- **Keep state in D1.** The store reads its binding on each use. [Store →](#store-state-in-d1)
+- **Read secrets at run time.** The model, tokens and repo access are functions. [Run-time fields →](#read-bindings-at-run-time)
+- **Serve from `fetch`.** One export for Inngest and the Slack route. [Serve →](#serve-from-fetch)
+
+{/* not type-checked: model as a function reading a Worker binding, a Slack token function, getEnv() */}
+<AnnotatedCode>
+
+```typescript {{ title: "inngest/agents/triage.ts" }}
+import { anthropic, slack } from "inngest/experimental/agents";
+import { agents } from "../client";
+import { getEnv } from "../env";
+import { work } from "../sandboxes/work";
+
+export const triage = agents.agent({
+  id: "triage",
+  triggers: [slack.thread({ in: ["C0123ABC"] })],
+  model: () => {
+    return anthropic({
+      model: "claude-sonnet-5-5",
+      apiKey: getEnv().ANTHROPIC_API_KEY,
+    });
+  },
+  system: "You triage support threads.",
+  tools: {
+    ...slack.tools({
+      token: () => {
+        return getEnv().SLACK_BOT_TOKEN;
+      },
+    }),
+  },
+  sandboxes: { work },
+});
+```
+
+<Annotation id="model" lines="9-14" tease="called when a run starts" title="A field as a function" href="/docs/labs/agents/agents-and-triggers?ref=docs-labs-agents-workers#decide-per-run" linkText="Agents and triggers">
+`getEnv()` is safe here: a run only starts inside a request.
+</Annotation>
+
+<Annotation id="token" lines="18-20" tease="called at each use" title="A token as a function" href="/docs/labs/agents/slack-and-github?ref=docs-labs-agents-workers" linkText="Slack and GitHub">
+Anywhere a token goes, a function works.
+</Annotation>
+
+</AnnotatedCode>
 
 ## Declare the bindings
 
-`env.ts` holds the bindings of the latest request. A Worker's bindings do not change within a deployment, so the latest is the right one.
+`env.ts` holds the bindings of the latest request. A Worker's bindings don't change within a deployment, so the latest are the right ones.
 
+{/* not type-checked: D1Database from @cloudflare/workers-types */}
 ```typescript {{ title: "inngest/env.ts" }}
-import type { D1KvDatabase } from "inngest/experimental/agents";
+import type { D1Database } from "@cloudflare/workers-types";
 
 export type Env = {
-  DB: D1KvDatabase;
+  DB: D1Database;
   ANTHROPIC_API_KEY: string;
   SLACK_BOT_TOKEN: string;
-  GITHUB_APP_ID: string;
-  GITHUB_APP_PRIVATE_KEY: string;
+  SLACK_SIGNING_SECRET: string;
+  GITHUB_TOKEN: string;
 };
 
 let current: Env | undefined;
 
-export const useEnv = (env: Env) => {
-  current = env;
+export const useEnv = (env: unknown) => {
+  current = env as Env;
 };
 
 export const getEnv = () => {
@@ -39,71 +84,20 @@ export const getEnv = () => {
 };
 ```
 
-## Put the bindings in context
+## Store state in D1
 
-Config is read at import, before any request. A middleware builds what the body needs when a request arrives.
+The store keeps each thread's history, spend and sandbox. `d1KvAdapter` takes a function, which it calls on every operation, so it never holds a binding past a request. Add `sandboxMiddleware()` when an agent lists sandboxes.
 
-```typescript {{ title: "inngest/models/claude.ts" }}
-import { agent } from "inngest/experimental/agents";
-
-export const claudeWith = (apiKey: string) => {
-  return agent.anthropic({ model: "claude-sonnet-5-5", apiKey });
-};
-```
-
-```typescript {{ title: "inngest/middleware/deps.ts" }}
-import { Middleware } from "inngest";
-import { type Env, useEnv } from "../env";
-import { claudeWith } from "../models/claude";
-
-const createDeps = (env: Env) => {
-  return { model: claudeWith(env.ANTHROPIC_API_KEY) };
-};
-
-type Deps = ReturnType<typeof createDeps>;
-
-export class DepsMiddleware extends Middleware.BaseMiddleware {
-  readonly id = "deps";
-
-  env: Env | undefined;
-
-  override wrapRequest({ next, requestArgs }: Middleware.WrapRequestArgs) {
-    this.env = requestArgs[1] as Env | undefined;
-
-    if (this.env) {
-      useEnv(this.env);
-    }
-
-    return next();
-  }
-
-  override transformFunctionInput(
-    arg: Middleware.TransformFunctionInputArgs,
-  ): Middleware.TransformFunctionInputArgs & { ctx: { deps: Deps } } {
-    if (!this.env) {
-      throw new Error("deps: no Worker env in the request arguments");
-    }
-
-    return { ...arg, ctx: { ...arg.ctx, deps: createDeps(this.env) } };
-  }
-}
-```
-
-`wrapRequest` sees the arguments of the Worker's `fetch`, so `requestArgs[1]` is `env`. A middleware instance serves one request. On Pages Functions the env is in `requestArgs[0].env`.
-
-## Read bindings through getters
-
-Anything configured at import takes a function instead: the store, an agent's `kv`, and the tokens of Slack, GitHub and `git_push`.
-
+{/* not type-checked: d1KvAdapter with a function, sandboxMiddleware() */}
 ```typescript {{ title: "inngest/client.ts" }}
 import { Inngest } from "inngest";
+import { sandboxMiddleware } from "inngest/experimental";
 import { createAgents, d1KvAdapter } from "inngest/experimental/agents";
 import { getEnv } from "./env";
-import { DepsMiddleware } from "./middleware/deps";
 
 export const inngest = new Inngest({
   id: "support",
-  middleware: [DepsMiddleware],
+  middleware: [sandboxMiddleware()],
 });
 
 export const agents = createAgents(inngest, {
@@ -113,100 +107,94 @@ export const agents = createAgents(inngest, {
 });
 ```
 
-```typescript {{ title: "inngest/github.ts" }}
-import { type GithubApp, githubApp } from "inngest/experimental/agents";
-import { getEnv } from "./env";
+The store needs two tables. `d1KvSchema` holds the statements, so write them into a wrangler migration. `agents-db` is the name of your D1 database.
 
-let app: GithubApp | undefined;
+{/* not type-checked: d1KvSchema as a list of SQL statements */}
+```typescript {{ title: "inngest/printSchema.ts" }}
+import { d1KvSchema } from "inngest/experimental/agents";
 
-export const github = () => {
-  app ??= githubApp({
-    appId: getEnv().GITHUB_APP_ID,
-    privateKey: getEnv().GITHUB_APP_PRIVATE_KEY,
-  });
-
-  return app;
-};
+console.log(`${d1KvSchema.join(";\n\n")};`);
 ```
 
-```typescript {{ title: "inngest/sandboxes/workbench.ts" }}
-import { sandbox } from "inngest/experimental/agents";
-import { github } from "../github";
+```bash
+npx wrangler d1 migrations create agents-db agents
+npx tsx inngest/printSchema.ts > migrations/0001_agents.sql
+npx wrangler d1 migrations apply agents-db
+```
 
-export const workbench = sandbox({
-  id: "workbench",
-  tools: sandbox.tools.git({
-    remote: "https://github.com/acme/web",
-    token: () => {
-      return github().token("acme/web");
+## Read bindings at run time
+
+`model`, `system`, `tools`, `sandboxes`, `skills`, `budget`, `price`, `limits`, `idle` and `remember` take a function of the event and thread, which may be async and runs once when a run starts. A sandbox's `repo` does too, and its `auth` can be a function of its own.
+
+{/* not type-checked: repo.auth as a function reading a Worker binding */}
+```typescript {{ title: "inngest/sandboxes/work.ts" }}
+import { sandbox } from "inngest/experimental/agents";
+import { getEnv } from "../env";
+
+export const work = sandbox({
+  id: "work",
+  repo: {
+    url: "https://github.com/acme/web",
+    auth: () => {
+      return getEnv().GITHUB_TOKEN;
     },
-  }),
+  },
 });
 ```
 
-## Use them in the agent
+{/* TODO(spec): Workers have no `git`; is the push made through GitHub's API automatically, or is it chosen (today `transport: "api"`)? */}
 
-`deps` comes from the middleware. The Slack token is a function, so it reads `env` when a message is posted.
+## Serve from fetch
 
-```typescript {{ title: "inngest/agents/triage.ts" }}
-import { agent, slack } from "inngest/experimental/agents";
-import { agents } from "../client";
-import { getEnv } from "../env";
-import { workbench } from "../sandboxes/workbench";
+`useEnv(env)` runs first on every request, so every function that follows can read the bindings. The Slack bridge reads its signing secret when it is built, so build it inside `fetch`, where the binding exists.
 
-export const triage = agents.agent(
-  {
-    id: "triage",
-    on: slack.thread({ in: ["C0123ABC"] }),
-    sandboxes: { work: workbench },
-    channels: ({ event }) => {
-      return {
-        main: slack.channel(event, {
-          in: ["C0123ABC"],
-          token: () => {
-            return getEnv().SLACK_BOT_TOKEN;
-          },
-        }),
-      };
-    },
-    report: "main",
-  },
-  async ({ inbox, deps, sandboxTools, control, report }) => {
-    for await (const message of inbox) {
-      const result = await agent.loop({
-        model: deps.model,
-        prompt: message,
-        tools: sandboxTools,
-        ...control,
-      });
-
-      await report.finish({ text: result.text });
-    }
-  },
-);
-```
-
-An agent's `kv` option takes a function the same way, and so does the `kv` option of a thread handle. The function is called at each use and must return the same data every time.
-
-## Serve it
-
+{/* TODO(spec): how does a Worker pass `secret()` values and the SLACK_SIGNING_SECRET, and which option carries the Slack bot token for the SDK's own writes (status line, me.post, final answer)? Used slack.tools({ token }) and a bridge built per request. */}
+{/* not type-checked: serve() from inngest/cloudflare with slack.bridge() built per request */}
 ```typescript {{ title: "inngest/serve.ts" }}
 import { serve } from "inngest/cloudflare";
+import { slack } from "inngest/experimental/agents";
 import { agents, inngest } from "./client";
+import { getEnv, useEnv } from "./env";
 import "./agents/triage";
 
+const handler = serve({
+  client: inngest,
+  functions: agents.functions(),
+  servePath: "/api/inngest",
+});
+
 export default {
-  fetch: serve({ client: inngest, functions: agents.functions() }),
+  fetch: (request: Request, env: Record<string, string | undefined>) => {
+    useEnv(env);
+
+    if (new URL(request.url).pathname === "/api/slack") {
+      return slack.bridge({
+        client: inngest,
+        signingSecret: getEnv().SLACK_SIGNING_SECRET,
+      })(request);
+    }
+
+    return handler(request, env);
+  },
 };
 ```
 
-Code outside `serve` that sends messages, such as an API route, calls `useEnv(env)` first so the store getter has a binding.
+Set up the Worker itself as in [Serving Inngest functions](/docs/learn/serving-inngest-functions?ref=docs-labs-agents-workers#framework-cloudflare-workers), including the `nodejs_compat` flag.
+
+## Gotchas
+
+- **Import time has no bindings.** Read them inside a function. A value computed at the top of a file runs before the first request.
+- **Sync-time fields stay values.** `id`, `triggers`, `thread`, `inbox`, `card`, `discovery` and `listen` are read when your app syncs, so keep bindings out of them.
+- **Run-time functions must be pure.** They run again when the run replays.
+- **Other entry points call `useEnv`.** Code outside `fetch` that sends messages, such as a scheduled handler, calls `useEnv(env)` first so the store has its binding.
 
 ## How it works
 
-- The store, `kv` and token getters are called at each use, never at import.
-- The middleware runs on every request the client serves, so the agent's other functions have `env` too.
-- `d1KvAdapter` needs its tables first. See [Choose a store](/docs/labs/agents/threads-and-memory?ref=docs-labs-agents-workers#options).
-- Use `transport: "api"` for pushes, since Workers have no `git`. See [Push from your own code](/docs/labs/agents/repos-and-git?ref=docs-labs-agents-workers#push-from-your-own-code).
+- A run-time field's function is called once when a run starts, and a token function at each use.
+- The store's function is called on every operation, so nothing keeps a binding past its request.
+- Everything else about agents is the same as on any host. [Project structure →](/docs/labs/agents/structure?ref=docs-labs-agents-workers)
 
-[Reference →](/docs/labs/agents/reference?ref=docs-labs-agents-workers)
+## Recipes and reference
+
+- [Threads and memory](/docs/labs/agents/threads-and-memory?ref=docs-labs-agents-workers): the store, and what a thread keeps.
+- [Reference: the definition](/docs/labs/agents/reference?ref=docs-labs-agents-workers#the-definition)
