@@ -26,9 +26,9 @@ export const claude = anthropic({ model: "claude-sonnet-5-5" });
 ```typescript
 async ({ inbox, me, step }) => {
   for await (const batch of inbox.batches({ max: 20 })) {
-    const summary = await step.run("summarise", async () => {
+    const summary = await step.run("summarize", async () => {
       return await claude({
-        prompt: `Summarise:\n${JSON.stringify(batch)}`,
+        prompt: `Summarize:\n${JSON.stringify(batch)}`,
       });
     });
 
@@ -99,7 +99,7 @@ export const prHelper = agents.agent(
 ```
 
 <Annotation id="model" lines="18-19" tease="what the loop runs" title="Model and system" href="#delete-the-handler" linkText="Delete the handler">
-With no handler, these two are the whole agent.
+With a model and a system, the agent needs no handler.
 </Annotation>
 
 <Annotation id="loop" lines="23" tease="runs the turns" title="loop(batch)">
@@ -114,7 +114,7 @@ The trace shows a row per turn. `loop` is in the handler's argument only when th
 
 You want the helper to pick the thread up after it went quiet.
 
-After each batch the loop saves the model's history in the thread, one of the things [a thread keeps](/docs/labs/agents/threads?ref=docs-labs-agents-models#what-a-conversation-keeps). The run after `idle` ends sees earlier turns, and a long history is summarised once.
+After each batch the loop saves the model's history in [the thread](/docs/labs/agents/threads?ref=docs-labs-agents-models#what-a-conversation-keeps). The run after `idle` ends sees the earlier turns; when the history gets long, the loop summarizes it and reuses the summary.
 
 {/* not type-checked: remember on an agent definition */}
 ```typescript
@@ -166,9 +166,11 @@ const result = await loop(batch);
 
 if (result.end === "budget") {
   await me.post("This PR is out of budget.");
-} else {
-  await me.post(result.text);
+
+  return;
 }
+
+await me.post(result.text);
 ```
 
 <Annotation id="end" lines="3" tease="why it stopped" title="end" href="/docs/labs/agents/reference?ref=docs-labs-agents-models#the-result" linkText="Reference">
@@ -188,25 +190,27 @@ You want a line on the PR while the work goes on.
 {/* not type-checked: an un-awaited me.post() beside loop(batch) */}
 ```typescript
 async ({ inbox, loop, me }) => {
-  for await (const batch of inbox.batches({ max: 20 })) {
-    me.post("Looking at it.");
+  me.post("Looking at it.");
 
+  for await (const batch of inbox.batches({ max: 20 })) {
     const result = await loop(batch);
 
     if (result.end === "budget") {
       await me.post("This PR is out of budget.");
-    } else {
-      await me.post(result.text);
+
+      return;
     }
+
+    await me.post(result.text);
   }
 },
 ```
 
-<Annotation id="progress" lines="3" tease="not awaited" title="No await" href="/docs/labs/agents/inboxes?ref=docs-labs-agents-models#answer-every-message" linkText="Answer every message">
+<Annotation id="progress" lines="2" tease="not awaited" title="No await" href="/docs/labs/agents/inboxes?ref=docs-labs-agents-models#answer-every-message" linkText="Answer every message">
 The work carries on, and the run waits for the post before it ends.
 </Annotation>
 
-<Annotation id="final" lines="10" tease="awaited" title="The answer">
+<Annotation id="final" lines="13" tease="awaited" title="The answer">
 Await it, so a failed post fails the run.
 </Annotation>
 
