@@ -62,7 +62,7 @@ export const names = agents.agent({ id: "names" }, async ({ inbox }) => {
 });
 ```
 
-`next({ timeout: "10m" })` waits for one message and gives up with `undefined`; it returns `null` once the inbox is closed. `unread()` takes what arrived while you worked, `current()` lists every saved message without moving, and `putBack()` returns messages you are not ready for. `next({ timeout: 0 })` never waits.
+`next({ timeout: "10m" })` waits for one message and gives up with `undefined`; it returns `null` once the inbox is closed. `unread()` takes what arrived while you worked, and `current()` lists every saved message without moving. `next({ timeout: 0 })` never waits.
 
 ## Steer a running turn
 

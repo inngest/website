@@ -15,7 +15,6 @@ export const description = "Which Inngest Agents API to use: find the call for w
 | Give up after a while | `inbox.next({ timeout: "10m" })` returns `undefined` | [Read the inbox](/docs/labs/agents/inboxes?ref=docs-labs-agents-which-api#read-messages) |
 | Take what arrived while you worked | `inbox.unread()` | [Wait and catch up](/docs/labs/agents/inboxes?ref=docs-labs-agents-which-api#read-messages) |
 | List every message so far without moving | `inbox.current()` | [Wait and catch up](/docs/labs/agents/inboxes?ref=docs-labs-agents-which-api#read-messages) |
-| Hand messages back for later | `inbox.putBack(messages)` | [Read the inbox](/docs/labs/agents/inboxes?ref=docs-labs-agents-which-api#read-messages) |
 | Listen to another event mid-run | `inbox.listen(type, { thread })` | [Inbox sources](/docs/labs/agents/inboxes?ref=docs-labs-agents-which-api#listen-to-other-sources) |
 | Let the model listen too | `inboxTools` | [Let a model listen](/docs/labs/agents/tools?ref=docs-labs-agents-which-api#let-the-model-listen-for-events) |
 | Acknowledge a message that reaches a busy thread | `onArrival` | [Acknowledge arrivals](/docs/labs/agents/inboxes?ref=docs-labs-agents-which-api#options) |

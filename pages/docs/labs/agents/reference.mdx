@@ -217,7 +217,6 @@ interface ThreadInbox extends AsyncIterable<ThreadInboxMessage> {
   of(type): View;
   listen(source: InboxSource): Promise<ThreadListener>;
   listen(event, options: { thread?: string; if?: string }): Promise<ThreadListener>;
-  putBack(messages: ThreadInboxMessage[]): void;
   close(): Promise<ThreadInboxMessage[]>;
 }
 ```
@@ -230,7 +229,6 @@ interface ThreadInbox extends AsyncIterable<ThreadInboxMessage> {
 | `unread()` | Takes every message after the cursor without waiting, and advances the cursor. Stops are included. |
 | `of(type)` | A `View` of one event's messages with a cursor of its own: `next`, `unread`, `current`, async iterable. |
 | `listen(source)` | Adds an event source mid-run. One step. Needs a `thread` or an `if`. |
-| `putBack(messages)` | Returns messages so the next reads give them first. |
 | `close()` | Ends the subscription and returns the unread messages. |
 
 Stop messages are skipped while the agent waits for its next message.
@@ -614,7 +612,7 @@ A cancelled run (stop now, `cancelOn`, `timeouts.finish`) is neither reported no
 
 | Type | Description |
 | --- | --- |
-| `Subscription` | `next()`, `next({ timeout })`, `current()`, `unread()`, `of()`, `listen()`, `putBack()`, `close()`, async iterable and `AsyncDisposable`. |
+| `Subscription` | `next()`, `next({ timeout })`, `current()`, `unread()`, `of()`, `listen()`, `close()`, async iterable and `AsyncDisposable`. |
 | `SubscribeOptions` | `{ event, if? }` or `{ events: SubscribeEvent[] }`. |
 | `SubscribeEvent` | `{ event: string \| EventType; if?: string }`. `if` is over `async`, as `async.data.thread == "t1"`. |
 | `SubscribeData` | The data type of a subscription's messages. |
