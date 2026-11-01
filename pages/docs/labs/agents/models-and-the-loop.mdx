@@ -16,9 +16,9 @@ The loop calls the model, runs the tools it asks for, and repeats until it has a
 - **Long threads fit.** The history is saved, summarised and reused. [Remember and summarise →](#remember-and-summarise)
 - **Cost and errors handled.** The model prices its own calls, and rate limits wait. [Cost and errors →](#cost-and-errors)
 
-{/* not type-checked: a handler with loop(batch), result.end and result.reason */}
 <AnnotatedCode>
 
+{/* not type-checked: a handler with loop(batch), result.end and result.reason */}
 ```typescript {{ title: "inngest/agents/reviewer.ts" }}
 import { github } from "inngest/experimental/agents";
 import { agents } from "../client";
@@ -81,9 +81,9 @@ export const readSource = tool.step({
 
 A model is what the loop calls each turn: the history in, the reply out. `anthropic()` reads `ANTHROPIC_API_KEY`.
 
-{/* not type-checked: anthropic() as a named export and .with() variants */}
 <AnnotatedCode>
 
+{/* not type-checked: anthropic() as a named export and .with() variants */}
 ```typescript {{ title: "inngest/models/claude.ts" }}
 import { anthropic } from "inngest/experimental/agents";
 
@@ -100,9 +100,9 @@ Changes effort, thinking or the token cap for one agent or one call. The client 
 
 Any function of the `AgentModel` shape is a model too. This one wraps another and times it:
 
-{/* not type-checked: a model function typed AgentModel */}
 <AnnotatedCode>
 
+{/* not type-checked: a model function typed AgentModel */}
 ```typescript {{ title: "inngest/models/timed.ts" }}
 import type { AgentModel } from "inngest/experimental/agents";
 import { claude } from "./claude";
@@ -127,9 +127,9 @@ The loop calls it once per turn, inside a step, and waits out a provider's `retr
 
 The model also answers on its own. Pass `system`, `prompt` or `messages`, and a schema as `output` for a typed reply.
 
-{/* not type-checked: the anthropic() one-shot call with output */}
 <AnnotatedCode>
 
+{/* not type-checked: the anthropic() one-shot call with output */}
 ```typescript {{ title: "inngest/functions/label.ts" }}
 import { z } from "zod";
 import { inngest } from "../client";
@@ -180,9 +180,9 @@ Folded messages don't come back through your `for await`. One that arrives durin
 
 `steer` picks what to fold: it gets the messages the loop took and returns the ones to fold. The rest come back as `result.unread`.
 
-{/* not type-checked: loop(batch, { steer }) and result.unread, with agentQuestion and message.is() */}
 <AnnotatedCode>
 
+{/* not type-checked: loop(batch, { steer }) and result.unread, with agentQuestion and message.is() */}
 ```typescript {{ title: "inngest/agents/builder.ts" }}
 import { agentQuestion, github } from "inngest/experimental/agents";
 import { agents } from "../client";
@@ -233,9 +233,9 @@ What `steer` skipped comes back here, ready for the next loop.
 
 An agent with no handler sets them on its definition, as in `loop: { maxTurns: 10 }`. A handler derives a loop with `loop.with(options)`. It keeps the agent's model, prompt, tools and history, and your options override or add to them.
 
-{/* not type-checked: loop options on a no-handler agent, and loop.with() with another model and stop in a handler */}
 <AnnotatedCode>
 
+{/* not type-checked: loop options on a no-handler agent, and loop.with() with another model and stop in a handler */}
 ```typescript {{ title: "inngest/agents/escalator.ts" }}
 import { eventType } from "inngest";
 import { kv } from "inngest/experimental/agents";
@@ -305,9 +305,9 @@ The quick model answers by default; high priority tickets get the careful one.
 
 `onTurn` runs after each turn's tool calls, so you can tell people what the agent is doing.
 
-{/* not type-checked: loop(batch, { onTurn }) posting through me */}
 <AnnotatedCode>
 
+{/* not type-checked: loop(batch, { onTurn }) posting through me */}
 ```typescript {{ title: "inngest/agents/runner.ts" }}
 import { slack } from "inngest/experimental/agents";
 import { agents } from "../client";
@@ -358,9 +358,9 @@ loop: { compaction: { maxTokens: 150_000, keep: 8 } },
 
 The model prices its own calls, so a dollar `budget` works with no price table. The budget belongs to each thread. [Reliability →](/docs/labs/agents/reliability?ref=docs-labs-agents-models-and-the-loop)
 
-{/* not type-checked: budget on an agent definition */}
 <AnnotatedCode>
 
+{/* not type-checked: budget on an agent definition */}
 ```typescript {{ title: "inngest/agents/capped.ts" }}
 import { slack } from "inngest/experimental/agents";
 import { agents } from "../client";
@@ -408,9 +408,9 @@ A Slack message reads `[Name] text` and a GitHub comment the same, with the logi
 
 `format` words a message your own way. `formatEvent` is the default wording, so you only write what differs.
 
-{/* not type-checked: loop.with({ format }) with formatEvent and message.is() */}
 <AnnotatedCode>
 
+{/* not type-checked: loop.with({ format }) with formatEvent and message.is() */}
 ```typescript {{ title: "inngest/agents/shipper.ts" }}
 import { eventType } from "inngest";
 import { formatEvent } from "inngest/experimental/agents";
