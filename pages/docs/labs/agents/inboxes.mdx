@@ -7,11 +7,11 @@ export const description = "An Inngest agent keeps listening while it works: wha
 
 > Your agent keeps listening while it works.
 
-Whatever is sent to a thread while its run works waits in the run's inbox, in order. Each section changes the PR helper from [Threads](/docs/labs/agents/threads?ref=docs-labs-agents-inboxes) by one step. After the first, a block shows only what changes.
+Whatever is sent to a thread while its run works waits in the run's inbox, in order. Each section changes the PR helper from [Threads](/docs/labs/agents/threads?ref=docs-labs-agents-inboxes) by one step, and after the first, a block shows only what changes.
 
 ## While it works
 
-You want a CI failure that arrives while the helper is busy to reach it, not start a second run. Read the run's `inbox`.
+You want the helper to see a CI failure that arrives while it is busy, not start a second run. Read the run's `inbox`.
 
 ```typescript {{ title: "inngest/events.ts" }}
 import { eventType } from "inngest";
@@ -85,7 +85,7 @@ You want CI passing to reach a run that's working, but never to start one on its
 }
 ```
 
-Fail CI and pass it within the five seconds, and the handler reports `ci/run.passed`. Only `triggers`, and messages sent to the thread by people or [other agents](/docs/labs/agents/agent-teams?ref=docs-labs-agents-inboxes), start a run.
+Fail CI and pass it within the five seconds, and the handler returns `While I read, ci/run.passed arrived`. Only `triggers`, and messages sent to the thread by people or [other agents](/docs/labs/agents/agent-teams?ref=docs-labs-agents-inboxes), start a run.
 
 ## Waiting
 
@@ -160,7 +160,7 @@ After this much quiet both `for await` forms end. The default is ten minutes.
 
 </AnnotatedCode>
 
-The next trigger starts a new run. A run opened through a handle ends once it has answered. [Call it from code →](/docs/labs/agents/agent-teams?ref=docs-labs-agents-inboxes#call-it-from-code)
+The next trigger starts a new run. A run opened by `start()` ends once it has answered. [Call it from code →](/docs/labs/agents/agent-teams?ref=docs-labs-agents-inboxes#call-it-from-code)
 
 {/* Go deeper */}
 
@@ -171,15 +171,15 @@ You want to stop waiting for a review that never comes. Give `next()` a `timeout
 {/* not type-checked: inbox.next({ timeout }) in an agent handler */}
 ```typescript
 async ({ inbox, me }) => {
-  const next = await inbox.next({ timeout: "1m" });
+  await inbox.next();
 
-  if (next === null) {
+  const review = await inbox.next({ timeout: "1m" });
+
+  if (review === null) {
     await me.post("No reviews for a minute, so I'm moving on.");
   }
 },
 ```
-
-[`nextBatch({ timeout })`](/docs/durable-execution/primitives/step-subscribe?ref=docs-labs-agents-inboxes#read-in-batches) gives `null` the same way.
 
 ## Check without waiting
 
@@ -188,17 +188,19 @@ You want to see what queued up between two steps, without stopping. `drain()` th
 {/* not type-checked: inbox.drain() in an agent handler */}
 ```typescript
 async ({ inbox, step }) => {
+  await inbox.next();
+
   await step.sleep("read the diff", "5s");
 
   const waiting = await inbox.drain();
 },
 ```
 
-It never waits: `waiting` is `[]` when nothing came.
+It never waits: `waiting` is `[]` when nothing else came.
 
 ## A second inbox
 
-You want to watch a PR's checks after it pushes a fix, and only from now on. Open a second inbox with `step.subscribe`.
+You want to watch a PR's checks from now on, after the helper pushes a fix. Open a second inbox with `step.subscribe`.
 
 <AnnotatedCode>
 
