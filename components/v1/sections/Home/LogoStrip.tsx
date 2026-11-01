@@ -96,6 +96,15 @@ const LOGOS: CustomerLogo[] = [
     // -right-1.5 lands on the "d" — nudge the dot clear of the letter.
     dotDx: 8,
   },
+  {
+    name: "Ordinal",
+    // The spiral mark is taller than the wordmark, so the lockup renders
+    // taller than the flat wordmarks to keep the letters the same size.
+    src: "/assets/customers/ordinal-logo-white.svg",
+    width: 131,
+    height: 36,
+    caseStudyHref: "/customers/ordinal",
+  },
   { name: "Avoca", src: "/assets/v1/logos/avoca.svg", width: 118, height: 29 },
   {
     name: "Tripadvisor",
@@ -103,13 +112,6 @@ const LOGOS: CustomerLogo[] = [
     width: 170,
     height: 26,
     dy: 2,
-  },
-  {
-    name: "BAERskin",
-    src: "/assets/v1/logos/baerskin.svg",
-    width: 176,
-    height: 25,
-    caseStudyHref: "/customers/baerskin-tactical",
   },
   {
     name: "Outtake",
@@ -240,9 +242,10 @@ export default function LogoStrip({
         aria-hidden="true"
         className="from-v1-canvasBase/40 pointer-events-none absolute inset-x-0 top-0 z-0 h-24 bg-gradient-to-b to-transparent"
       />
-      {/* Pause is gated to hovering an actual logo (`group/strip:has(.logo-item:hover)`)
-          rather than anywhere in the section, so passive cursor
-          travel across the strip doesn't freeze the marquee.
+      {/* Pause while the pointer is anywhere on the row, including the
+          gaps, and while a logo link is focused. Pausing only on the
+          logo boxes lets the track lurch between them, and a focused
+          link inside the moving track makes the page scroll to chase it.
 
           The track is two self-contained copies, each carrying its own
           trailing gap (`pr-*` matching the inter-logo `gap-x-*`). This makes
@@ -250,7 +253,7 @@ export default function LogoStrip({
           second copy butts seamlessly against the first at every loop reset
           — a single flex-gap row would leave a half-gap of empty space at
           the seam since the duplicated track has one fewer gap than logos. */}
-      <div className="relative flex w-max items-center motion-safe:animate-[v1-logo-marquee_40s_linear_infinite] motion-safe:group-[:has(.logo-item:hover)]/strip:[animation-play-state:paused]">
+      <div className="relative flex w-max items-center motion-safe:animate-[v1-logo-marquee_40s_linear_infinite] motion-safe:group-focus-within/strip:[animation-play-state:paused] motion-safe:group-hover/strip:[animation-play-state:paused]">
         {[0, 1].map((copy) => (
           <div
             key={copy}

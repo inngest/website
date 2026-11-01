@@ -14,6 +14,9 @@ export interface StoryCard {
   // intrinsic aspect ratio, so per-brand config stays at zero.
   brand: string;
   logo: string;
+  // Optional override when a lockup's artwork doesn't fill the shared
+  // 24px box, so the wordmark reads as tall as the others.
+  logoHeight?: number;
   // Tags double as the grid filter key — they uppercase-match the
   // CategoryDropdown options (AI / ECOMMERCE / SAAS / SECURITY).
   tags: string[];
@@ -38,6 +41,16 @@ export const STORY_HREF = (id: string) => `/customers/${id}`;
 export const LOGO_HEIGHT = 24;
 
 export const STORIES: StoryCard[] = [
+  {
+    id: "ordinal",
+    brand: "Ordinal",
+    logo: "/assets/customers/ordinal-logo-white.svg",
+    logoHeight: 36,
+    tags: ["Saas"],
+    title:
+      "Built for the Lonng Run: How Ordinal scaled social orchestration to 1K enterprises with just two engineers.",
+    body: "Social orchestration for B2B teams like Clay, Zapier, and Profound. Two engineers run more than a million executions a month.",
+  },
   {
     id: "featured",
     brand: "Featured",

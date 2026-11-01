@@ -7,7 +7,7 @@ export const description = "Sandbox base images come with Node.js, Python, Ruby,
 
 > Start isolated work with Node.js, Python, Ruby, and common command-line tools already installed.
 
-> **Open beta.** The Sandbox API, image, and limits may change. Use this beta for evaluation and feedback.
+> **Open beta.** Sandboxes are available on Pro plans and above. The Sandbox API, image, and limits may change. Use this beta for evaluation and feedback.
 
 Run generated code or inspect a repository without building an image first. The beta Sandbox image includes Node.js, Python, Ruby, and common command-line tools. Check installed versions inside the Sandbox when your task depends on a specific version.
 
@@ -21,7 +21,7 @@ New Sandboxes start from this image unless you [choose another](#choose-an-image
 | Python | Python 3.14 |
 | Ruby | Ruby 4.0 |
 | Repository and network tools | Git, curl, OpenSSH, and CA certificates |
-| Shell and utilities | BusyBox `sh`, `grep`, `sed`, `awk`, `ripgrep`, `jq`, `find`, `tar`, and `gzip` |
+| Operating system and utilities | Debian 13 slim with GNU `grep`, `sed`, `awk`, `find`, `diff`, `tar`, and `gzip`, plus `ripgrep` and `jq` |
 
 The image does **not** currently include Go, Rust, Java, Bun, or Deno. Exact installed versions can change when Inngest rebuilds the image. Check versions in the Sandbox if your task depends on them.
 
@@ -58,6 +58,9 @@ await step.sandbox.create("custom", {
 - A Sandbox's `imageRef` and `imageDigest` show what it started from.
 - A snapshot clone keeps its source image and cannot select another.
 - `inngest.sandboxes.create()` takes the same `from`, or a plain `image` string such as `"my-image:v1"`.
+- With REST, set `"image": "my-image:v1"` on `POST /v2/sandboxes`. To pin an exact artifact, use `my-image@sha256:<digest>` with its 64-character lowercase hexadecimal digest.
+
+To build and publish your own application code, dependencies, or runtimes, follow [Custom images](/docs/sandboxes/features/custom-images).
 
 ## Inspect the image
 
@@ -116,12 +119,12 @@ This changes **that Sandbox**, not the fixed base image. The files remain in the
 
 ## Choose a supported size
 
-Fresh Sandboxes accept these exact resource pairs:
+Fresh Sandboxes accept 1, 2, or 4 vCPU with 1, 2, or 4 GiB of memory per vCPU. `memoryMb` is measured in MiB:
 
-| `vcpu` | `memoryMb` |
+| `vcpu` | Allowed `memoryMb` values |
 | --- | --- |
-| 1 | 1024 |
-| 2 | 2048 |
-| 4 | 4096 |
+| 1 | 1024, 2048, 4096 |
+| 2 | 2048, 4096, 8192 |
+| 4 | 4096, 8192, 16384 |
 
-Set both values from the same row. The API does not accept a size profile name. A snapshot clone inherits the snapshot's CPU and memory. Access or available capacity can still prevent a supported size from starting.
+Other sizes are not available. The API does not accept a size profile name. A snapshot clone inherits the snapshot's CPU and memory. Access or available capacity can still prevent a supported size from starting; missing capacity returns `503 compute_unavailable`.
