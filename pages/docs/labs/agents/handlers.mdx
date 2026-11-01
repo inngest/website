@@ -238,7 +238,7 @@ import { sandbox } from "inngest/experimental/agents";
 export const work = sandbox({ id: "work" });
 ```
 
-A tool name used twice in one call is an error. `loop(batch, { onTurn, steer })` takes the loop's hook and fold for one call too. [Models and the loop →](/docs/labs/agents/models-and-the-loop?ref=docs-labs-agents-handlers)
+A tool name used twice in one call is an error. The loop's other options work per call too, such as `maxTurns`, `onTurn` and `steer`. [Models and the loop →](/docs/labs/agents/models-and-the-loop?ref=docs-labs-agents-handlers)
 
 ## Post in the thread
 

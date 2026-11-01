@@ -164,7 +164,7 @@ export const nightlyReview = inngest.createFunction(
 
 ## Decide per run
 
-`model`, `system`, `tools`, `sandboxes`, `skills`, `budget`, `price`, `limits`, `idle` and `remember` take a value, or a function of the event and thread that may be async. It runs once, when a run starts.
+`model`, `system`, `tools`, `sandboxes`, `skills`, `budget`, `limits`, `idle` and `remember` take a value, or a function of the event and thread that may be async. It runs once, when a run starts.
 
 {/* not type-checked: system as an async function of { event } */}
 ```typescript {{ title: "inngest/agents/accounts.ts" }}
