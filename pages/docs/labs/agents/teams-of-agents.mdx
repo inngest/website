@@ -104,9 +104,7 @@ const summary = await summarizer.start("Release 4.2 adds retries.").result();
 
 `result()` waits for a run to end and returns its output: what the handler returned, or the model's last answer when the agent has no handler. On a handle from `start()` it is the run `start()` opened. `await reviewer.start({ pr }).result()` is both in one line, for when you don't need the handle.
 
-A failed or stopped run makes `result()` throw. `timeout` stops the wait after a while.
-
-{/* TODO(spec): what does result({ timeout }) do when the time runs out? messaging.md says only "no default timeout". */}
+A failed or stopped run makes `result()` throw. So does a `timeout` that runs out, while the agent's run keeps going.
 {/* not type-checked: result({ timeout }) throwing for a failed or stopped run */}
 ```typescript {{ title: "inngest/functions/reviewOrSkip.ts" }}
 import { inngest } from "../client";
@@ -421,12 +419,11 @@ Work that runs beside a conversation is a plain function you don't await. It rep
 
 Put `limits` on the agent that delegates:
 
-{/* TODO(spec): the default of limits.depth, and what a refused start looks like to code and to the model. */}
 ```typescript
 limits: { depth: 2, mayCall: ["support/reviewer"] },
 ```
 
-`depth` caps a chain of starts, where A starts B and B starts C. `mayCall` lists the agents the model may start.
+`depth` caps a chain of starts, where A starts B and B starts C. It's 1 by default: an agent can start agents, and those can't start more. `mayCall` lists the agents the model may start. A start past a limit throws in code, and the model gets an error it can read.
 
 Every thread spends from its own agent's `budget`, such as the reviewer's `budget: { usd: 2 }`, whoever started it. [Reliability →](/docs/labs/agents/reliability?ref=docs-labs-agents-teams-of-agents)
 
