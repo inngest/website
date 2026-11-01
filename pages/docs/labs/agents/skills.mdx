@@ -12,7 +12,7 @@ A skill is a folder with a `SKILL.md`: a name, a description and instructions. T
 - **Plain files.** `SKILL.md` is a format other agent tools read too. [Write a skill →](#write-a-skill)
 - **From your app or a repo.** A folder ships with a deploy; a repo changes without one. [Read a repo →](#read-a-repo)
 - **Read on demand.** The prompt carries names and descriptions; instructions load when needed. [Open a skill →](#open-a-skill)
-- **Scripts and files too.** They land in the agent's sandbox. [Ship files and scripts →](#ship-files-and-scripts)
+- **Scripts and files too.** They land in the first sandbox the model can use. [Ship files and scripts →](#ship-files-and-scripts)
 - **Read, then call.** A skill never adds a tool. [Skills and tools →](#skills-and-tools)
 
 {/* not type-checked: skills.folder() and skills.repo() on an agent */}
@@ -88,79 +88,6 @@ Where `check.py` sits in the sandbox.
 
 </AnnotatedCode>
 
-## Open a skill
-
-The model opens a skill's instructions with one fixed tool, and only an agent with skills has it.
-
-```typescript
-open_skill({ name: "refund-policy" })
-```
-
-## Ship files and scripts
-
-Files beside `SKILL.md` go to the agent's sandbox, at `/skills/<name>/`. The model runs a script there like any other file.
-
-{/* not type-checked: skills with tools and a sandbox on one agent */}
-<AnnotatedCode>
-
-```typescript {{ title: "inngest/agents/helpdesk.ts" }}
-import { skills, slack } from "inngest/experimental/agents";
-import { agents } from "../client";
-import { claude } from "../models/claude";
-import { work } from "../sandboxes/work";
-import { lookupOrder } from "../tools/lookupOrder";
-
-export const helpdesk = agents.agent({
-  id: "helpdesk",
-  triggers: [slack.thread()],
-  model: claude,
-  system: "You answer support questions about orders.",
-  tools: { lookupOrder },
-  sandboxes: { work },
-  skills: [skills.folder("./skills")],
-});
-```
-
-<Annotation id="tools" lines="12" tease="the tool the skill names" title="Tools the agent has" href="#skills-and-tools" linkText="Skills and tools">
-The tool the skill names.
-</Annotation>
-
-<Annotation id="sandboxes" lines="13" tease="where check.py lands" title="Files in the sandbox" href="/docs/labs/agents/sandboxes-and-code?ref=docs-labs-agents-skills" linkText="Sandboxes and code">
-`work` is the first sandbox the model can use, so the skill's files go there.
-</Annotation>
-
-<Annotation id="skills" lines="14" tease="every skill in ./skills" title="Skills">
-The model sees `refund-policy` and `shipping` by name and description.
-</Annotation>
-
-</AnnotatedCode>
-
-{/* not type-checked: a sandbox for the skill's files */}
-```typescript {{ title: "inngest/sandboxes/work.ts" }}
-import { sandbox } from "inngest/experimental/agents";
-
-export const work = sandbox({ id: "work" });
-```
-
-An app whose agents list sandboxes adds `sandboxMiddleware()` to its client. [Sandboxes and code →](/docs/labs/agents/sandboxes-and-code?ref=docs-labs-agents-skills)
-
-```typescript {{ title: "inngest/tools/lookupOrder.ts" }}
-import { tool } from "inngest/experimental";
-import { z } from "zod";
-
-export const lookupOrder = tool.step({
-  description: "Find an order by ID",
-  input: z.object({ id: z.string() }),
-  run: async ({ id }) => {
-    return { id, status: "delivered", deliveredDaysAgo: 12 };
-  },
-});
-```
-
-## Skills and tools
-
-A skill can name a tool, and its scripts can run, but a skill never adds a tool. The agent has to list it, and anything a skill does in your app goes through that tool's credentials and checks. [Tools →](/docs/labs/agents/tools?ref=docs-labs-agents-skills)
-
 ## Read a repo
 
 Public repos need no `auth`. A private repo is read with it on your host, and the token never reaches the sandbox or a snapshot of it.
@@ -206,9 +133,78 @@ A `githubApp()` or a token, for a private repo.
 
 </AnnotatedCode>
 
-## Skills on the card
+## Open a skill
 
-The agent's card lists each skill's name and description, read from the `SKILL.md` files, so other agents can decide whether to call it. [Discovery →](/docs/labs/agents/discovery?ref=docs-labs-agents-skills)
+The model opens a skill's instructions with one fixed tool, and only an agent with skills has it.
+
+```text {{ title: "What the model calls" }}
+open_skill({ name: "refund-policy" })
+```
+
+## Ship files and scripts
+
+Files beside `SKILL.md` go to the first sandbox the model can use, at `/skills/<name>/`. The model runs a script there like any other file.
+
+{/* not type-checked: skills with tools and a sandbox on one agent */}
+<AnnotatedCode>
+
+```typescript {{ title: "inngest/agents/helpdesk.ts" }}
+import { skills, slack } from "inngest/experimental/agents";
+import { agents } from "../client";
+import { claude } from "../models/claude";
+import { work } from "../sandboxes/work";
+import { lookupOrder } from "../tools/lookupOrder";
+
+export const helpdesk = agents.agent({
+  id: "helpdesk",
+  triggers: [slack.thread()],
+  model: claude,
+  system: "You answer support questions about orders.",
+  tools: { lookupOrder },
+  sandboxes: { work },
+  skills: [skills.folder("./skills")],
+});
+```
+
+<Annotation id="tools" lines="12" tease="the tool the skill names" title="Tools the agent has" href="#skills-and-tools" linkText="Skills and tools">
+`refund-policy` names `lookupOrder`, so the agent lists it too.
+</Annotation>
+
+<Annotation id="sandboxes" lines="13" tease="where check.py lands" title="Files in the sandbox" href="/docs/labs/agents/sandboxes-and-code?ref=docs-labs-agents-skills" linkText="Sandboxes and code">
+`work` is the first sandbox the model can use, so the skill's files go there.
+</Annotation>
+
+<Annotation id="skills" lines="14" tease="every skill in ./skills" title="Skills">
+The model sees `refund-policy` and `shipping` by name and description.
+</Annotation>
+
+</AnnotatedCode>
+
+{/* not type-checked: a sandbox for the skill's files */}
+```typescript {{ title: "inngest/sandboxes/work.ts" }}
+import { sandbox } from "inngest/experimental/agents";
+
+export const work = sandbox({ id: "work" });
+```
+
+An app whose agents list sandboxes adds `sandboxMiddleware()` to its client. [Sandboxes and code →](/docs/labs/agents/sandboxes-and-code?ref=docs-labs-agents-skills)
+
+```typescript {{ title: "inngest/tools/lookupOrder.ts" }}
+import { tool } from "inngest/experimental";
+import { z } from "zod";
+
+export const lookupOrder = tool.step({
+  description: "Find an order by ID",
+  input: z.object({ id: z.string() }),
+  run: async ({ id }) => {
+    return { id, status: "delivered", deliveredDaysAgo: 12 };
+  },
+});
+```
+
+## Skills and tools
+
+A skill can name a tool, and its scripts can run, but a skill never adds a tool. The agent has to list it, and anything a skill does in your app goes through that tool's credentials and checks. [Tools →](/docs/labs/agents/tools?ref=docs-labs-agents-skills)
 
 ## Gotchas
 
