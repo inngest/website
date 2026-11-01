@@ -95,7 +95,7 @@ A read token and no push tool. A changed tracked file would block the next check
 
 </AnnotatedCode>
 
-The client adds `sandboxMiddleware()`.
+GitHub calls a route in your app.
 
 {/* not type-checked: github.bridge as a Web handler with the client and a secret */}
 ```typescript {{ title: "app/api/github/route.ts" }}
@@ -108,6 +108,8 @@ export const POST = github.bridge({
   secret: secret("GITHUB_WEBHOOK_SECRET"),
 });
 ```
+
+The client adds `sandboxMiddleware()`.
 
 {/* not type-checked: createAgents with the store from the environment, sandboxMiddleware() */}
 ```typescript {{ title: "inngest/client.ts" }}
@@ -148,7 +150,7 @@ npm run dev
 npx inngest-cli@latest dev -u http://localhost:3000/api/inngest
 ```
 
-Add an **Issue comments** webhook pointing at `https://<your-host>/api/github`, then comment `@review-bot please review` on a pull request.
+Add an **Issue comments** webhook pointing at `https://<your-host>/api/github`, then comment `@review-bot please review` on a pull request. `GITHUB_TOKEN` is the token the review is posted with.
 
 ## Variations
 
