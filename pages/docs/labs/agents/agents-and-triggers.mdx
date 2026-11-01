@@ -127,7 +127,7 @@ export const watcher = agents.agent(
 
 ## Call another agent
 
-`on: invoke(schema)` makes an agent callable. The caller gets its return value.
+`on: invoke(schema)` types what a call hands the agent. Other agents find it by its card and call it with `callAgent()`; the caller gets its return value.
 
 ```typescript {{ title: "inngest/agents/researcher.ts" }}
 import { invoke } from "inngest";
