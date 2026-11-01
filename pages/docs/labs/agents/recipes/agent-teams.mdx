@@ -26,8 +26,6 @@ Screenshot needed: the lead's run beside both specialists' runs.
 
 ## The code
 
-The specialists have a model, a prompt, a budget and a card, and no code.
-
 <AnnotatedCode>
 
 {/* not type-checked: agents.agent with no triggers and no handler, budget, card */}
@@ -51,17 +49,24 @@ Published when the app syncs. The description is what the lead searches.
 
 </AnnotatedCode>
 
+{/* not type-checked: sandbox() with only an id */}
+```typescript {{ title: "inngest/sandboxes/work.ts" }}
+import { sandbox } from "inngest/experimental/agents";
+
+export const work = sandbox({ id: "work" });
+```
+
 {/* not type-checked: agents.agent with a listed sandbox, budget and card */}
 ```typescript {{ title: "inngest/agents/coder.ts" }}
-import { sandbox } from "inngest/experimental/agents";
 import { agents } from "../client";
 import { claude } from "../models/claude";
+import { work } from "../sandboxes/work";
 
 export const coder = agents.agent({
   id: "coder",
   model: claude,
   system: "Write the code, run it and its tests, then say what you ran.",
-  sandboxes: { work: sandbox({ id: "work" }) },
+  sandboxes: { work },
   budget: { usd: 1 },
   card: { description: "Writes and tests code in a sandbox" },
 });
@@ -161,7 +166,7 @@ The [model](/docs/labs/agents/quick-start?ref=docs-labs-agents-recipes-agent-tea
 - [Discovery](/docs/labs/agents/discovery?ref=docs-labs-agents-recipes-agent-teams#find-agents) lets the lead find specialists with no imports between them.
 - [Start and wait](/docs/labs/agents/teams-of-agents?ref=docs-labs-agents-recipes-agent-teams#wait-for-the-result) lets a plain function wait for the lead's answer.
 - [Limits](/docs/labs/agents/teams-of-agents?ref=docs-labs-agents-recipes-agent-teams#limit-the-team) keep delegation one level deep by default.
-- [A sandbox](/docs/labs/agents/sandboxes-and-code?ref=docs-labs-agents-recipes-agent-teams) belongs to the coder only.
+- [A sandbox](/docs/labs/agents/sandboxes-and-code?ref=docs-labs-agents-recipes-agent-teams) gives the coder a machine to run its code.
 
 ## Run it
 
@@ -177,7 +182,7 @@ npx tsx inngest/serve.ts
 npx inngest-cli@latest dev -u http://localhost:3000/api/inngest
 ```
 
-In the Dev Server, open `ask-team`, choose **Invoke** and send `{ "request": "What does HTTP 429 mean? Then write a retrying fetch." }`. The run shows the lead's searches, both `start_agent` calls and the answer.
+In the Dev Server, open `ask-team`, choose **Invoke** and send `{ "request": "What does HTTP 429 mean? Then write a retrying fetch." }`. `ask-team` returns the combined answer; open the lead's run to see its searches and both `start_agent` calls.
 
 ## Variations
 
