@@ -13,11 +13,11 @@ export const description = "Reference for Inngest Agents sandboxes, code tools, 
 
 The agent definition, handler and loop are in the [Agents reference](/docs/labs/agents/reference?ref=docs-labs-agents-reference-sandboxes). The sandbox platform itself is in the [Sandboxes reference](/docs/sandboxes/reference?ref=docs-labs-agents-reference-sandboxes).
 
-Imports used on this page: `tool`, `toolDefinitions`, `secret`, `disconnect`, `image`, `kvOAuthStore`, `mcpCallback`, `sandboxMiddleware` and `snapshotCache` come from `inngest/experimental`; `sandbox`, `skills`, `githubApp`, `agent` and `PushRefusedError` come from `inngest/experimental/agents`.
+Names here come from `inngest/experimental`, except `sandbox`, `skills`, `githubApp`, `agent`, `agentTools` and `PushRefusedError`, which come from `inngest/experimental/agents`.
 
 - [sandbox()](#sandbox)
 - [Sandboxes on an agent](#sandboxes-on-an-agent)
-- [The handler's sandbox](#the-handlers-sandbox)
+- [The handler's sandbox](#the-handler-s-sandbox)
 - [Code tools](#code-tools)
 - [Repos](#repos)
 - [Tools](#tools)
@@ -53,7 +53,7 @@ sandbox<TTool>(
 | `secrets` | `string[]` | none | Workspace secret names to inject. Not applied on restore. [Secrets](#secrets) |
 | `tools` | `SandboxToolsFactory` | `sandbox.tools.code()` | The model's tools. Takes only [`sandbox.tools.code(...)`](#code-tools). |
 | `repo` | [`RepoOptions`](#repos) or a function | none | A repository checked out when the sandbox starts. |
-| `setup` | `(context) => Promise<void>` | none | Runs when the sandbox is created. A failure fails the call that created it. |
+| `setup` | `(context) => Promise<void>` | none | Runs when the sandbox is created, after the checkout and the skill files, so it can use both. A failure fails the call that created it. |
 
 `setup` receives a `SandboxSetupContext`:
 
@@ -298,7 +298,7 @@ A sandbox's `repo` is checked out when the sandbox starts. The write token never
 | `RepoOptions` field | Type | Default | Description |
 | --- | --- | --- | --- |
 | `url` | `string` | required | The repository URL. |
-| `auth` | [`RepoAuth`](#repoauth) | none | Mints the repository's tokens. Needed to push, and to check out a private repository. |
+| `auth` | [`RepoAuth`](#repo-auth) | none | The repository's tokens. Needed to push, and to check out a private repository. |
 | `ref` | `string` | the default branch | Branch, tag or commit to check out. |
 | `path` | `string` | `/work` | Where to check out. The model's shell starts here. |
 | `policy` | `(push) => result` | allow | Looks at each [push](#push) before it is made and can refuse it. |
@@ -327,13 +327,26 @@ One sandbox has one repo. A second repo gets a second sandbox.
 
 ### RepoAuth
 
-`auth` is anything that mints a token for the repository. It is asked for read-only access at checkout and write access at push, each inside a step, and the token is short-lived. A token function can read a [`secret()`](#secrets), as anywhere else a token goes.
+`auth` supplies a read token for the checkout and a write token for the push. Each is asked for inside a step.
 
 ```typescript {{ title: "Signature" }}
+type TokenFunction = (request: {
+  access: "read" | "write";
+}) => string | Promise<string>;
+
 type RepoAuth =
   | GithubApp
-  | ((request: { access: "read" | "write" }) => string | Promise<string>);
+  | Secret
+  | TokenFunction
+  | { read: Secret | TokenFunction; write: Secret | TokenFunction };
 ```
+
+- **`githubApp()`** mints a short-lived token of each kind. [GitHub App](#git-hub-app)
+- **A `Secret`**, such as `secret("GITHUB_TOKEN")`, is one token for both.
+- **A function** gets `{ access: "read" }` at checkout and `{ access: "write" }` at push. It can read a [`secret()`](#secrets).
+- **`{ read, write }`** gives each side its own, each a `Secret` or a function.
+
+The checkout runs inside the sandbox, so a single `secret()` should be a read-only token. An agent that pushes uses `githubApp()` or `{ read, write }`, and the write token never enters the sandbox.
 
 ### Checkout
 
@@ -562,7 +575,7 @@ Sandbox code calls tools through `toolOptions` on a command (`commands.run`, `$`
 
 A tool call that outlives its command's `timeout` (five minutes by default) aborts the command. A tool that must run longer is a `waits: true` group, or the command gets a longer `timeout`. The model side has no such cap.
 
-Types: `AgentTool`, `AgentToolDefinition`, `ToolDefinition`, `SandboxTool`, `SandboxToolEntry`, `SandboxToolOptions`, `SandboxTools`, `SandboxToolsOptions`, `ToolContext`, `ToolJsonDefinition`.
+Types: `AgentTool`, `AgentToolDefinition`, `ToolDefinition`, `SandboxTool`, `ToolContext`.
 
 ### Shims
 
@@ -620,7 +633,7 @@ disconnect(server: McpServer, user: string): Promise<void>
 
 | Option | Default | Description |
 | --- | --- | --- |
-| `id` | required | Names the server. Stored sign-ins are kept under it, so changing it signs people out. `server.tools()` uses it as the name prefix; in a record the key is the prefix. |
+| `id` | required | Keys the stored sign-ins, so changing it signs people out. In a record the key names the tools; `server.tools()` uses `id` as the prefix. |
 | `url` | required | The server's Streamable HTTP endpoint. |
 | `auth` | none | `{ bearer }`, `{ headers }` or `{ oauth }`. Values may be a string or a [`secret()`](#secrets). |
 | `tools` | all | Only these tools, by the server's names. A name the server lacks throws when the list is read. |
@@ -725,7 +738,7 @@ secret(source: string | (() => string | Promise<string>)): Secret
 
 - `secret("NAME")` reads the environment variable `NAME` inside the call. A function gives a value that depends on the caller.
 - A `Secret` printed or serialized gives its label, so a token never lands in a log, a prompt or a trace.
-- `secret()` is accepted wherever a token goes, such as `auth.bearer`, `auth.headers` and `clientSecret` in [MCP](#mcp), a repo's [`RepoAuth`](#repoauth) token function, and the Slack and GitHub bridge secrets. [Slack and GitHub](/docs/labs/agents/slack-and-github?ref=docs-labs-agents-reference-sandboxes)
+- `secret()` is accepted wherever a token goes, such as `auth.bearer`, `auth.headers` and `clientSecret` in [MCP](#mcp), a repo's [`RepoAuth`](#repo-auth) token function, and the Slack and GitHub bridge secrets. [Slack and GitHub](/docs/labs/agents/slack-and-github?ref=docs-labs-agents-reference-sandboxes)
 - Once a value is inside the sandbox, code there can read it. Prefer a tool, a [shim](#shims) or a short-lived token for anything sensitive. [Secrets in Sandboxes](/docs/sandboxes/features/secrets?ref=docs-labs-agents-reference-sandboxes)
 
 Types: `Secret`, `SecretSource`.
@@ -748,9 +761,9 @@ skills.repo(repo: string, options?: SkillsRepoOptions): SkillSource
 | --- | --- |
 | `ref` | Branch, tag or commit to read. |
 | `path` | The folder in the repository that holds the skill folders. |
-| `auth` | A [`githubApp()`](#github-app) or a token, for a private repository. |
+| `auth` | A [`githubApp()`](#git-hub-app) or a token, for a private repository. |
 
-- A folder and a repo can be listed together. Two skills with the same name are an error when the agent is defined.
+- A folder and a repo can be listed together. Two folder skills with one name are an error when the agent is defined. A clash found in a repo at run time is a warning on the trace, and the first source listed wins.
 - A repo is read once per run. A failed read is logged, and the agent carries on without those skills.
 - Public repos need no `auth`. A private repo is read with `auth` on the host, never in the sandbox.
 - The model sees every skill's name and description in its prompt. `open_skill({ name: string }): string` returns one skill's body. It is the same tool for every skill, and only an agent with skills has it. It works with no sandbox.
@@ -996,6 +1009,4 @@ snapshotKey(parts): Promise<{ hash: string; named: Record<string, string> }>
 
 `snapshotKey` accepts an array of strings or functions, an object of them, or `[name, part]` entries, and hashes them so the key changes when any part does. `snapshotName` throws on an empty part or a generation with `/`.
 
-Types: `SnapshotCache`, `SnapshotCacheAction`, `SnapshotCacheClient`, `SnapshotCacheOptions`, `SnapshotEntry`, `SnapshotKeyEntry`, `SnapshotKeyPart`, `FindOptions`, `FoundSnapshot`, `TakenSnapshot`, `TakeOptions`, `TakeSnapshot`.
-
-`ExperimentRef` (`{ experimentName, variant }`) is also exported from `inngest/experimental`; it attributes a score to an experiment variant and is not specific to agents.
+Types: `SnapshotCache`, `SnapshotCacheClient`, `SnapshotCacheOptions`, `SnapshotEntry`.
