@@ -62,7 +62,7 @@ export const POST = slack.bridge({
 ```
 
 <Annotation id="bridge" lines="5" tease="Request in, Response out" title="The bridge" href="#how-it-works" linkText="How it works">
-Checks the signature, sends an event only for a message meant for the agent, then answers Slack.
+Checks the signature, then sends an event only for a direct message, a mention in any channel the agent is in, or a reply in a thread it already answered. Bots, including the agent itself, are ignored unless the bridge sets `allowBots: true`.
 </Annotation>
 
 <Annotation id="secret" lines="7" tease="read inside the call" title="Signing secret" href="/docs/labs/agents/tools?ref=docs-labs-agents-slack-and-github#keep-secrets-on-the-host" linkText="Keep secrets on the host">
@@ -76,25 +76,24 @@ In your Slack app, point Event Subscriptions and Interactivity at the route's UR
 - **Events:** `app_mention`, `message.im`, `message.channels`, `message.groups`, `reaction_added` and `assistant_thread_started`.
 - **Scopes:** `chat:write`, `app_mentions:read`, `channels:history`, `groups:history`, `im:history`, `reactions:read` and `assistant:write`.
 
-Three kinds of message reach the agent: a direct message, a message that mentions it in any Slack channel it is in, and a reply in a thread it already answered. Everything else is dropped at the bridge and never stored. Bots, including the agent itself, are ignored unless the bridge sets `allowBots: true`.
-
 ## Start from Slack
 
-`slack.thread()` covers every channel the app is in, plus DMs. List channels to limit it:
+`slack.thread()` covers every channel the app is in, plus DMs. `in` limits it, and `token` replaces `SLACK_BOT_TOKEN` for the SDK's own writes: [`me.post()`](/docs/labs/agents/handlers?ref=docs-labs-agents-slack-and-github#post-in-the-thread), the status line and the default answer.
 
 ```typescript
-triggers: [slack.thread({ in: ["C0123ABC", "C0456DEF"] })],
+triggers: [
+  slack.thread({
+    in: ["C0123ABC", "C0456DEF"],
+    token: secret("ACME_SLACK_TOKEN"),
+  }),
+],
 ```
 
-The model reads a message as `[Ana] can you check order 7?`, not as JSON. The thread's key is in the event as `event.data.threadKey`, a plain field that `waitForEvent` and `cancelOn` can match on. [Threads and memory →](/docs/labs/agents/threads-and-memory?ref=docs-labs-agents-slack-and-github)
-
-The SDK's own writes (`me.post()`, the status line and the default answer) use `SLACK_BOT_TOKEN`. `slack.thread({ token })` takes a string, a function or `secret()` instead.
-
-Besides `slack/message`, the bridge sends `slack/reaction`, `slack/action`, `slack/view` and `slack/stop`. Each carries `threadKey`.
+The model reads a message as `[Ana] can you check order 7?`, not as JSON. Each event carries `threadKey`, a plain field that `waitForEvent` and `cancelOn` can match on. Besides `slack/message`, the bridge sends `slack/reaction`, `slack/action`, `slack/view` and `slack/stop`. [Threads and memory →](/docs/labs/agents/threads-and-memory?ref=docs-labs-agents-slack-and-github)
 
 ## Post, ask and show progress
 
-`slack.tools()` gives the model three tools, and sandbox code calls the same ones by name. They post in the Slack thread the run came from.
+`slack.tools()` gives the model three tools, and [sandbox code](/docs/labs/agents/sandboxes-and-code?ref=docs-labs-agents-slack-and-github#let-code-call-your-tools) calls the same ones by name. They post in the Slack thread the run came from.
 
 <AnnotatedCode>
 
@@ -123,12 +122,12 @@ main();
 The same `id` updates the task.
 </Annotation>
 
-<Annotation id="ask" lines="10-13" tease="waits in a script" title="slack_ask" href="#gotchas" linkText="Gotchas">
-In a script the call waits and gives the answer as a string.
+<Annotation id="ask" lines="10-13" tease="waits in a script" title="slack_ask" href="/docs/labs/agents/inboxes?ref=docs-labs-agents-slack-and-github" linkText="Inboxes">
+In a script the call waits and gives the answer as a string. When the model calls it, the model carries on, and the answer arrives later in its inbox.
 </Annotation>
 
 <Annotation id="post" lines="15" tease="plain text" title="slack_post" href="/docs/labs/agents/handlers?ref=docs-labs-agents-slack-and-github#post-in-the-thread" linkText="Post in the thread">
-Lands in the same thread as `me.post()`.
+Lands in the same thread as `me.post()`. Posts use Slack's markup, so links and mentions work; broadcast mentions such as `<!channel>` do nothing.
 </Annotation>
 
 </AnnotatedCode>
@@ -137,16 +136,6 @@ Lands in the same thread as `me.post()`.
 await sandboxes.work.commands.run("ship", "node ship.js", {
   tools: { ...slack.tools() },
 });
-```
-
-When the model calls `slack_ask`, it carries on without waiting. The answer arrives later as a message in its inbox. [Inboxes →](/docs/labs/agents/inboxes?ref=docs-labs-agents-slack-and-github)
-
-Posts use Slack's markup, so links and mentions work. Broadcast mentions in the model's text, such as `<!channel>`, do nothing. The SDK sets Slack's status line while the agent works.
-
-```typescript
-await me.post(
-  "Deployed. <@U024BE7LH>, see <https://acme.test/deploys/7|deploy 7>.",
-);
 ```
 
 ## Post somewhere else
@@ -178,17 +167,17 @@ Used when a call gives no `to`. The model can still pass its own.
 
 ## Set your own rules
 
-A `gate` replaces the default rule. A message it rejects never becomes an event. If you run your own Socket Mode connection, give each payload to `bridge.handle()`; the SDK never opens a socket.
+A `gate` replaces the default rule, and a message it rejects never becomes an event. For your own Socket Mode connection, give each payload to `bridge.handle()`.
 
 {/* not type-checked: slack.bridge({ gate }) and bridge.handle(payload) */}
 <AnnotatedCode>
 
-```typescript {{ title: "inngest/slack/bridge.ts" }}
+```typescript {{ title: "app/slack/socket.ts" }}
 import { secret } from "inngest/experimental";
 import { slack } from "inngest/experimental/agents";
-import { inngest } from "../client";
+import { inngest } from "../../inngest/client";
 
-export const bridge = slack.bridge({
+const bridge = slack.bridge({
   client: inngest,
   signingSecret: secret("SLACK_SIGNING_SECRET"),
   gate: ({ message, bot }) => {
@@ -201,19 +190,19 @@ export const onSocketEvent = async (payload: unknown) => {
 };
 ```
 
-<Annotation id="gate" lines="8-10" tease="replaces the default rule" title="gate" href="#gotchas" linkText="Gotchas">
-Gets the message, the thread (`key` and `history()`) and the bot's own `userId`, and returns a boolean or a promise of one. This one passes only mentions.
+<Annotation id="gate" lines="8-10" tease="replaces the default rule" title="gate">
+Gets the message, the thread (`key` and `history()`) and the bot's own `userId`, and returns a boolean or a promise of one. This one passes only mentions, so direct messages stop reaching the agent.
 </Annotation>
 
 <Annotation id="handle" lines="13-15" tease="no signature check" title="handle" href="#how-it-works" linkText="How it works">
-For a connection you already trust. The gate and thread key behave as over HTTP.
+For a connection you already trust; the SDK never opens a socket. The gate and thread key behave as over HTTP.
 </Annotation>
 
 </AnnotatedCode>
 
 ## Work on GitHub
 
-`github.bridge()` verifies `X-Hub-Signature-256` and sends `github/<event>` events, such as `github/issue_comment`. A redelivered webhook is dropped.
+`github.bridge()` verifies `X-Hub-Signature-256` and sends `github/<event>` events, such as `github/issue_comment`. A redelivered webhook is dropped, and so are the app's own comments and other bots', so an agent never triggers itself.
 
 {/* not type-checked: github.bridge({ client, secret }) as a Web handler */}
 ```typescript {{ title: "app/api/github/route.ts" }}
@@ -227,7 +216,7 @@ export const POST = github.bridge({
 });
 ```
 
-`github.thread()` is the trigger. Each issue or pull request is one thread, keyed by its URL. Without `events` it triggers on `issues`, `issue_comment`, `pull_request`, `pull_request_review` and `pull_request_review_comment`. The event's data is GitHub's webhook payload plus `threadKey`, and the model reads a comment as `[ana-dev] please review`. The bridge drops the app's own comments and other bots', so an agent never triggers itself.
+`github.thread()` is the trigger. Each issue or pull request is one thread, keyed by its URL.
 
 {/* not type-checked: github.thread({ repos, events }), a plain event source with a thread override, and ...github.tools() */}
 <AnnotatedCode>
@@ -254,7 +243,7 @@ export const prHelper = agents.agent({
 ```
 
 <Annotation id="thread" lines="8-12" tease="a thread per PR" title="github.thread()" href="/docs/labs/agents/agents-and-triggers?ref=docs-labs-agents-slack-and-github#start-a-run" linkText="Start a run">
-`repos` and `events` limit it, and `events` takes GitHub's event names. `if` works as on any trigger.
+`repos` and `events` limit it, and `events` takes GitHub's event names. Without `events` it triggers on `issues`, `issue_comment`, `pull_request`, `pull_request_review` and `pull_request_review_comment`. `if` works as on any trigger, over GitHub's webhook payload plus `threadKey`.
 </Annotation>
 
 <Annotation id="plain" lines="13" tease="a plain event joins" title="Join by URL">
@@ -270,7 +259,6 @@ An event that carries the URL lands on the same thread. The pull request is that
 ## Gotchas
 
 - **Anyone in the thread can answer an ask.** Nothing checks who.
-- **A `gate` replaces the default rule.** It has to keep the direct messages and mentions you still want.
 - **`to` is needed without a Slack thread.** A cron run, `start()` or a GitHub thread has none, so the model gets an error that names `to`.
 - **Messages travel with their full text.** Not as a pointer, and not encrypted.
 - **Misconfigured writes warn.** A bad token or missing scope on a write you didn't await becomes a warning on the trace and never fails the run. An awaited write throws.
@@ -278,13 +266,13 @@ An event that carries the URL lands on the same thread. The pull request is that
 
 ## How it works
 
-- Each bridge sends one event per message meant for the agent, then answers the sender. A Slack redelivery is one event, because the event id is Slack's `event_id`; GitHub's is `X-GitHub-Delivery`.
-- The agent marks a Slack thread as its own when it first posts there. The bridge reads that mark to accept replies without a mention.
-- `me.post()` and `slack_post` write to the same Slack thread. On GitHub, `me.post()` and `github_comment` comment on the issue or pull request. A GitHub thread's key is its URL, so it is unique across repositories.
+- A redelivery is one event: the event id is Slack's `event_id` or GitHub's `X-GitHub-Delivery`.
+- The agent marks a Slack thread as its own when it first posts there. The bridge reads that mark to accept replies without a mention, and the SDK sets Slack's status line while the agent works.
+- On GitHub, `me.post()` and `github_comment` comment on the issue or pull request, and the model reads a comment as `[ana-dev] please review`.
 
 ## Recipes and reference
 
 - [Slack assistant](/docs/labs/agents/recipes/slack-assistant?ref=docs-labs-agents-slack-and-github): an agent with no handler, in Slack.
 - [Issue triage](/docs/labs/agents/recipes/issue-triage?ref=docs-labs-agents-slack-and-github): an agent triggered by GitHub.
 - [PR reviewer](/docs/labs/agents/recipes/pr-reviewer?ref=docs-labs-agents-slack-and-github): a handler that reviews a pull request.
-- [Reference: Slack and GitHub](/docs/labs/agents/reference?ref=docs-labs-agents-slack-and-github)
+- [Reference: Slack and GitHub](/docs/labs/agents/reference?ref=docs-labs-agents-slack-and-github#slack-and-github)
