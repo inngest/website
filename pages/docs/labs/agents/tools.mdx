@@ -68,7 +68,7 @@ export const prHelper = agents.agent({
 ```
 
 <Annotation id="tools" lines="21" tease="the key is the name" title="tools" href="/docs/labs/agents/calling-home?ref=docs-labs-agents-tools" linkText="Calling home">
-The model calls `readLog`, and a script in a sandbox calls the same tool by the same name.
+The model calls `readLog` by this name. Hand the tool to a sandbox and a script calls it by the same name.
 </Annotation>
 
 </AnnotatedCode>
@@ -104,9 +104,26 @@ export const deployed = eventType("deploy/finished", {
 
 ## Tools as steps
 
-You want a flaky call to survive without retry code.
+You want a flaky call to survive without retry code. A failing `fetchLog` retries on its own, and the model sees only the final result. A tool that needs several steps is a `tool.group()`:
 
-Every tool call is a durable step, so a flaky `fetchLog` retries on its own and the model sees only the result. A tool that needs several steps is a `tool.group()`; [the reference](/docs/labs/agents/reference-sandboxes?ref=docs-labs-agents-tools#tools) lists every kind.
+{/* not type-checked: tool.group with the global step */}
+```typescript
+export const readAllLogs = tool.group({
+  description: "Reads the CI logs of several pull requests",
+  input: z.object({ prs: z.array(z.number()) }),
+  run: async ({ prs }) => {
+    return await Promise.all(
+      prs.map((pr) => {
+        return step.run(`log ${pr}`, async () => {
+          return await fetchLog(pr);
+        });
+      }),
+    );
+  },
+});
+```
+
+Each `step.run` is retried on its own, and [the reference](/docs/labs/agents/reference-sandboxes?ref=docs-labs-agents-tools#tools) lists every kind of tool.
 
 ## Failing politely
 
@@ -125,7 +142,7 @@ run: async ({ pr }) => {
 },
 ```
 
-`agent.toolError()`, from `inngest/experimental/agents`, returns a failure the model can read, without throwing. Throw when a retry could help; return it when the failure is the answer.
+`agent.toolError()`, from `inngest/experimental/agents`, returns a failure the model can read, without throwing. A thrown error reaches the model as an error it can read too.
 
 ## Outside text
 
@@ -166,14 +183,13 @@ tools: { readLog, ...github.tools() },
 
 The model gets two tools, bound to the PR the run came from:
 
-{/* not type-checked: the github_comment and github_ask tool calls */}
-```typescript
+```text {{ title: "What the model calls" }}
 github_comment({ body: "The test is flaky, so I re-ran CI." });
 
 github_ask({ question: "Re-run CI?", options: ["yes", "no"] });
 ```
 
-They use `GITHUB_TOKEN`, or the `token` you pass to `github.tools()`. `github_ask` returns at once, and the answer reaches the model's inbox later. Slack works the same way with `...slack.tools()`: `slack_post`, `slack_ask` and `slack_progress`, each taking an optional `to` for a channel, a person or a message link. Routes and setup are in the [Slack and GitHub guide](/docs/labs/agents/slack-and-github?ref=docs-labs-agents-tools).
+They use `GITHUB_TOKEN` or the `token` you pass to `github.tools()`; `github_ask` returns at once, and the answer reaches the model's inbox later. Slack works the same way with [`...slack.tools()`](/docs/labs/agents/slack-and-github?ref=docs-labs-agents-tools).
 
 ## Check before acting
 
@@ -229,8 +245,7 @@ listen: [ciPassed, ciFailed],
 
 The model may open an inbox on either event type, and close it when it is done:
 
-{/* not type-checked: the inbox_listen and inbox_close tool calls */}
-```typescript
+```text {{ title: "What the model calls to watch" }}
 inbox_listen({ source: "ci/run.passed", match: { pr: 42 }, as: "checks" });
 
 inbox_close({ as: "checks" });
