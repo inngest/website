@@ -62,7 +62,7 @@ export const POST = slack.bridge({
 ```
 
 <Annotation id="bridge" lines="5" tease="Request in, Response out" title="The bridge" href="#how-it-works" linkText="How it works">
-Checks the signature, then sends an event only for a direct message, a mention in any channel the agent is in, or a reply in a thread it already answered. A redelivery is one event. Bots, including the agent itself, are ignored unless the bridge sets `allowBots: true`.
+Checks the signature, then lets through a direct message, a mention or a reply in a thread the agent already answered. A redelivery is one event.
 </Annotation>
 
 <Annotation id="secret" lines="7" tease="read inside the call" title="Signing secret" href="/docs/labs/agents/tools?ref=docs-labs-agents-slack-and-github#keep-secrets-on-the-host" linkText="Keep secrets on the host">
@@ -78,18 +78,11 @@ In your Slack app, point Event Subscriptions and Interactivity at the route's UR
 
 ## Start from Slack
 
-`slack.thread()` covers every channel the app is in, plus DMs. `in` limits it, and `token` replaces `SLACK_BOT_TOKEN` for the SDK's own writes: [`me.post()`](/docs/labs/agents/handlers?ref=docs-labs-agents-slack-and-github#post-in-the-thread), the status line and the default answer.
+`slack.thread()` covers every channel the app is in, plus DMs. `in` takes a list of channel IDs to limit it, and `token` replaces `SLACK_BOT_TOKEN` for the SDK's own writes: [`me.post()`](/docs/labs/agents/handlers?ref=docs-labs-agents-slack-and-github#post-in-the-thread), the status line and the default answer.
 
-```typescript
-triggers: [
-  slack.thread({
-    in: ["C0123ABC", "C0456DEF"],
-    token: secret("ACME_SLACK_TOKEN"),
-  }),
-],
-```
+The model reads a message as `[Ana] can you check order 7?`, not as JSON. [Threads and memory →](/docs/labs/agents/threads-and-memory?ref=docs-labs-agents-slack-and-github)
 
-The model reads a message as `[Ana] can you check order 7?`, not as JSON. Each event carries `threadKey`, a plain field that `waitForEvent` and `cancelOn` can match on. Besides `slack/message`, the bridge sends `slack/reaction`, `slack/action`, `slack/view` and `slack/stop`. [Threads and memory →](/docs/labs/agents/threads-and-memory?ref=docs-labs-agents-slack-and-github)
+Besides `slack/message`, the bridge sends `slack/reaction`, `slack/action`, `slack/view` and `slack/stop`. Each carries `threadKey`, a plain field that `waitForEvent` and `cancelOn` can match on.
 
 ## Post, ask and show progress
 
@@ -132,11 +125,7 @@ Lands in the same thread as `me.post()`. Posts use Slack's markup, so links and 
 
 </AnnotatedCode>
 
-```typescript
-await sandboxes.work.commands.run("ship", "node ship.js", {
-  tools: { ...slack.tools() },
-});
-```
+Your own code passes the same tools to a command with `tools: { ...slack.tools() }`.
 
 ## Post somewhere else
 
@@ -145,14 +134,14 @@ Every Slack tool takes an optional `to`: `#channel`, `@person` or a Slack messag
 {/* not type-checked: slack.tools({ to }) on an agent with a cron trigger */}
 <AnnotatedCode>
 
-```typescript {{ title: "inngest/agents/digest.ts" }}
+```typescript {{ title: "inngest/agents/deployDigest.ts" }}
 import { slack } from "inngest/experimental/agents";
 import { agents } from "../client";
 import { claude } from "../models/claude";
 
-export const digest = agents.agent({
-  id: "digest",
-  triggers: [{ cron: "TZ=UTC 0 9 * * 1-5" }],
+export const deployDigest = agents.agent({
+  id: "deploy-digest",
+  triggers: [{ cron: "TZ=UTC 0 8 * * *" }],
   model: claude,
   system: "Summarise yesterday's deploys and post it with slack_post.",
   tools: { ...slack.tools({ to: "#deploys" }) },
@@ -160,7 +149,7 @@ export const digest = agents.agent({
 ```
 
 <Annotation id="to" lines="10" tease="a default destination" title="to" href="#gotchas" linkText="Gotchas">
-Used when a call gives no `to`. A cron run has no Slack thread, so it needs one. The model can still pass its own.
+Used when a call gives no `to`. The model can still pass its own.
 </Annotation>
 
 </AnnotatedCode>
@@ -243,7 +232,7 @@ export const prHelper = agents.agent({
 ```
 
 <Annotation id="thread" lines="8-12" tease="a thread per PR" title="github.thread()" href="/docs/labs/agents/agents-and-triggers?ref=docs-labs-agents-slack-and-github#start-a-run" linkText="Start a run">
-`repos` and `events` limit it, and `events` takes GitHub's event names. Without `events` it triggers on `issues`, `issue_comment`, `pull_request`, `pull_request_review` and `pull_request_review_comment`. `if` works as on any trigger, over GitHub's webhook payload plus `threadKey`.
+`repos` and `events` limit it, and `events` takes GitHub's event names. `if` works as on any trigger, over GitHub's webhook payload plus `threadKey`.
 </Annotation>
 
 <Annotation id="plain" lines="13" tease="a plain event joins" title="Join by URL">
@@ -259,6 +248,8 @@ An event that carries the URL lands on the same thread. The pull request is that
 ## Gotchas
 
 - **Anyone in the thread can answer an ask.** Nothing checks who.
+- **Bots are ignored.** That includes the agent itself, unless the bridge sets `allowBots: true`.
+- **`github.thread()` listens to five events by default.** They are `issues`, `issue_comment`, `pull_request`, `pull_request_review` and `pull_request_review_comment`; `events` narrows them.
 - **`to` is needed without a Slack thread.** A cron run, `start()` or a GitHub thread has none, so the model gets an error that names `to`.
 - **Messages travel with their full text.** Not as a pointer, and not encrypted.
 - **Misconfigured writes warn.** A bad token or missing scope on a write you didn't await becomes a warning on the trace and never fails the run. An awaited write throws.
