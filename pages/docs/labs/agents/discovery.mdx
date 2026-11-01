@@ -1,0 +1,215 @@
+import { AnnotatedCode, Annotation } from "shared/Docs/mdx";
+
+export const metaTitle = "Discovery | Inngest Agents";
+export const description = "How Inngest agents find each other: every agent publishes a card, a model finds agents with list_agents and describe_agent, and share decides which apps see an agent.";
+
+# Discovery
+
+> Agents find each other at run time, by what they do.
+
+Every agent publishes a card. A model agent reads the cards and starts the one it needs, in any app, with nothing wired in code.
+
+- **Be found with no code.** Describe your agent; the SDK publishes the card. [Publish a card →](#publish-a-card)
+- **One name.** An agent is `app/agent` everywhere. [The address →](#the-address)
+- **Choose who sees it.** Keep it in your app, or share it with the environment. [Share →](#choose-who-sees-it)
+- **Models find agents.** `list_agents` and `describe_agent` are on by default. [Find agents →](#find-agents)
+- **Keep an agent on its own.** One setting stops it reaching others. [Turn it off →](#turn-it-off)
+- **Fill in what the model must not make up.** The host sets part of the input. [Prepare input →](#fill-in-input-from-the-host)
+
+{/* not type-checked: the card field on agents.agent, skills.folder() and the card filled from the invoke() trigger */}
+<AnnotatedCode>
+
+```typescript {{ title: "inngest/agents/reviewer.ts" }}
+import { invoke } from "inngest";
+import { skills } from "inngest/experimental/agents";
+import { z } from "zod";
+import { agents } from "../client";
+import { claude } from "../models/claude";
+
+export const reviewer = agents.agent({
+  id: "reviewer",
+  triggers: [invoke(z.object({ pr: z.string() }))],
+  model: claude,
+  system: "Review the pull request you are given and list the problems.",
+  skills: [skills.folder("./skills")],
+  card: {
+    description: "Reviews a pull request and returns findings.",
+    share: "team",
+    owner: "platform",
+    effects: "read",
+    speed: "minutes",
+  },
+});
+```
+
+<Annotation id="input" lines="9" tease="the card's input" title="Input">
+The card's `input` is the schema of this `invoke()` trigger. You write it once.
+</Annotation>
+
+<Annotation id="skills" lines="12" tease="listed on the card" title="Skills" href="/docs/labs/agents/skills?ref=docs-labs-agents-discovery" linkText="Skills">
+Each `SKILL.md`'s name and description go on the card.
+</Annotation>
+
+<Annotation id="description" lines="14" tease="written for a model" title="Description">
+A model picks agents by this line. Say what the agent does and what it returns.
+</Annotation>
+
+<Annotation id="share" lines="15" tease="who sees it" title="Share" href="#choose-who-sees-it" linkText="Choose who sees it">
+`"team"` shows the card to every app in the environment. Without it, the card is private to the agent's own app.
+</Annotation>
+
+<Annotation id="hints" lines="16-18" tease="hints for the caller" title="Owner, effects, speed">
+`owner` names who looks after the agent. `effects` is `"read"` or `"write"`, the default. `speed` is `"seconds"` or `"minutes"`.
+</Annotation>
+
+</AnnotatedCode>
+
+## Publish a card
+
+Every agent has a card. You write the `card` field; the SDK fills in the rest:
+
+- the **address**, from the app's id and the agent's id;
+- the **input** schema, from the agent's `invoke()` trigger;
+- the **skills**, from the agent's `skills`: each `SKILL.md`'s name and description.
+
+An agent with no `invoke()` trigger has no `input`, and callers send it text or JSON. An agent with no `card` field still publishes its address, as `share: "private"`.
+
+## The address
+
+An agent's address is its app's id and its own id, as in `support/reviewer`. It is the one name for the agent. A model starts an agent by address, `mayCall` lists addresses, and `agents.reference()` builds a handle from one. [Teams of agents →](/docs/labs/agents/teams-of-agents?ref=docs-labs-agents-discovery)
+
+## Choose who sees it
+
+`share: "private"`, the default, shows the card to agents in the agent's own app. `share: "team"` shows it to every app in the environment. It limits what discovery shows, not who can start the agent. [Gotchas →](#gotchas)
+
+## When cards appear
+
+Cards announce when your app syncs, and again every six hours. There is nothing to call. A new or changed card can take a few minutes to show.
+
+## Find agents
+
+Every model agent has `list_agents` and `describe_agent`, with no wiring. This is what a model does to hand a review to the reviewer:
+
+```
+list_agents({ query: "review" })
+  agents: [
+    {
+      address: "support/reviewer",
+      description: "Reviews a pull request and returns findings.",
+      effects: "read",
+    },
+  ]
+
+describe_agent({ address: "support/reviewer" })
+  input: { type: "object", properties: { pr: { type: "string" } }, ... }
+
+start_agent({ address: "support/reviewer", input: { pr: "acme/api#42" } })
+```
+
+- `list_agents` tests the query's words against each card's address, description and skills. With no query it lists every agent the caller may see.
+- `describe_agent` returns one whole card, including its `input`.
+- `start_agent` checks the input against the card before it starts anything, so a bad call fails with a readable error. [Teams of agents →](/docs/labs/agents/teams-of-agents?ref=docs-labs-agents-discovery#let-the-model-delegate)
+
+Sandbox code gets the same tools. Fixed code doesn't look agents up: it imports the agent or builds a reference. [Teams of agents →](/docs/labs/agents/teams-of-agents?ref=docs-labs-agents-discovery)
+
+## Read once per run
+
+The first discovery call in a run reads the current cards. The rest of the run reuses that read, and so does a replay. To read again, for example to find an agent made during the run, the model passes `refresh`:
+
+```
+list_agents({ query: "audit", refresh: true })
+```
+
+A failed read comes back as an error the model can read, never as an empty list, so an empty list means no agents.
+
+## Paused and removed agents
+
+A paused agent is listed with `paused: true`, and `start_agent` refuses it with a reason the model can read. A removed agent drops out of the list.
+
+An address that doesn't exist, or isn't shared with the caller, gives a readable error that tells the model to list again.
+
+## Turn it off
+
+`discovery: false` takes `list_agents` and `describe_agent` away, with the tools that start or reach other agents: `start_agent`, `message_agent`, `ask_agent` and `stop_agent`. `reply` stays, because answering a question isn't finding agents. The agent's own card is still published.
+
+{/* not type-checked: discovery: false on an agent */}
+<AnnotatedCode>
+
+```typescript {{ title: "inngest/agents/refunds.ts" }}
+import { invoke } from "inngest";
+import { z } from "zod";
+import { agents } from "../client";
+import { claude } from "../models/claude";
+
+export const refunds = agents.agent({
+  id: "refunds",
+  triggers: [invoke(z.object({ order: z.string() }))],
+  model: claude,
+  system: "Refund the order you are given and say what you did.",
+  discovery: false,
+});
+```
+
+<Annotation id="off" lines="11" tease="can't reach others" title="No discovery">
+Agents that may see its card can still find and start it.
+</Annotation>
+
+</AnnotatedCode>
+
+## Fill in input from the host
+
+`discovery: { prepare }` runs before `start_agent` sends its input. It gets the card of the agent being started and the input the model wrote, and returns the input to send. The model never sets a field the host fills.
+
+{/* not type-checked: discovery.prepare with { card, input } returning the input to send */}
+<AnnotatedCode>
+
+```typescript {{ title: "inngest/agents/concierge.ts" }}
+import { slack } from "inngest/experimental/agents";
+import { agents } from "../client";
+import { claude } from "../models/claude";
+
+export const concierge = agents.agent({
+  id: "concierge",
+  triggers: [slack.thread()],
+  model: claude,
+  system: "Find the right agent for the request and hand it over.",
+  discovery: {
+    prepare: ({ card, input }) => {
+      if (card.address === "platform/auditor") {
+        return { ...input, requester: "support" };
+      }
+
+      return input;
+    },
+  },
+});
+```
+
+<Annotation id="prepare" lines="11-17" tease="runs before each start" title="prepare">
+Called with the card and the model's input. What it returns is what the other agent receives.
+</Annotation>
+
+<Annotation id="requester" lines="13" tease="set by the host" title="A host-set field">
+`requester` comes from your code, so the model can't make it up.
+</Annotation>
+
+</AnnotatedCode>
+
+## Gotchas
+
+- **`share` is a discovery rule, not access control.** Anyone who knows an address can start the agent from code, and anyone with an event key can send its trigger. [Teams of agents →](/docs/labs/agents/teams-of-agents?ref=docs-labs-agents-discovery#call-an-agent-in-another-app)
+- **A new agent takes a few minutes to show.** A `refresh` finds it only once its card has landed.
+- **Plain functions are never discoverable.** Only agents publish cards, so a model can't find and run a function.
+
+## How it works
+
+- Discovery keeps the newest card of each agent from the last 24 hours. A rolling deploy never hides an agent.
+- An app announces only its own agents. A card that names another app's address is dropped.
+- On Cloud the read is one Insights query. The Dev Server answers from its events, so discovery works locally with no setup.
+- The same read checks each app's functions, which is how it marks paused agents and drops removed ones.
+
+## Recipes and reference
+
+- [Agent teams](/docs/labs/agents/recipes/agent-teams?ref=docs-labs-agents-discovery): a lead that finds specialists by what they do.
+- [Teams of agents](/docs/labs/agents/teams-of-agents?ref=docs-labs-agents-discovery): start, message, ask and stop what you found.
+- [Reference: the card](/docs/labs/agents/reference?ref=docs-labs-agents-discovery)
