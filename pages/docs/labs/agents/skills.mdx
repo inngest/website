@@ -10,7 +10,7 @@ export const description = "Teach an Inngest agent how your team does things wit
 A skill is a folder with a `SKILL.md`: a name, a description and instructions. The model sees every name and description, and opens the instructions when they apply.
 
 - **Plain files.** `SKILL.md` is a format other agent tools read too. [Write a skill →](#write-a-skill)
-- **From your app or a repo.** A folder ships with a deploy; a repo changes without one. [Add skills →](#add-skills-to-an-agent)
+- **From your app or a repo.** A folder ships with a deploy; a repo changes without one. [Read a repo →](#read-a-repo)
 - **Read on demand.** The prompt carries names and descriptions; instructions load when needed. [Open a skill →](#open-a-skill)
 - **Scripts and files too.** They land in the agent's sandbox. [Ship files and scripts →](#ship-files-and-scripts)
 - **Read, then call.** A skill never adds a tool. [Skills and tools →](#skills-are-read-tools-are-called)
@@ -36,11 +36,11 @@ export const support = agents.agent({
 ```
 
 <Annotation id="folder" lines="11" tease="ships with your deploy" title="Skills in your app">
-One folder per skill, read from your app. The path resolves against the working directory when the agent is defined, so ship the folder with your app.
+One folder per skill, so a change ships with a deploy. The path resolves against the working directory when the agent is defined, so ship the folder with your app.
 </Annotation>
 
 <Annotation id="repo" lines="12" tease="changes without a deploy" title="Skills in a repo" href="#read-a-repo" linkText="Read a repo">
-A public pack, read with no token. An edit to the repo reaches the agent on its next run.
+A public pack, read with no token. An edit to the repo reaches every agent that lists it on its next run, with no deploy.
 </Annotation>
 
 </AnnotatedCode>
@@ -92,10 +92,6 @@ Naming `lookupOrder` doesn't add it. The agent has to list it.
 
 </AnnotatedCode>
 
-## Add skills to an agent
-
-`skills` takes a list of sources, a folder, a repo or both. `skills.folder(path)` reads skills shipped with your app, so they change with a deploy. `skills.repo("owner/name")` reads them from a repo, so a fix reaches every agent that lists it with no deploy.
-
 ## Open a skill
 
 The prompt carries each skill's name and description. When one applies, the model opens its instructions with one fixed tool, and only an agent with skills has it.
@@ -137,7 +133,7 @@ The skill says to use `lookupOrder`. This line is what lets the model call it.
 `work` is the first sandbox the model can use, so the skill's files go there.
 </Annotation>
 
-<Annotation id="skills" lines="14" tease="every skill in ./skills" title="Skills" href="#add-skills-to-an-agent" linkText="Add skills to an agent">
+<Annotation id="skills" lines="14" tease="every skill in ./skills" title="Skills">
 The model sees `refund-policy` and `shipping` by name and description.
 </Annotation>
 
@@ -228,7 +224,7 @@ The agent's card lists each skill's name and description, read from the `SKILL.m
 
 ## How it works
 
-- The prompt carries each skill's name and description. The instructions load through `open_skill`, one fixed tool for every skill, so the tool list at the front of the prompt never changes and prompt caching holds.
+- The instructions load through `open_skill`, one fixed tool for every skill, so the tool list at the front of the prompt never changes and prompt caching holds.
 - A repo is read on your host with GitHub's tarball endpoint for its `ref` and `path`.
 
 ## Recipes and reference
