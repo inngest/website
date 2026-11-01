@@ -52,7 +52,7 @@ What this thread may spend.
 </Annotation>
 
 <Annotation id="limits" lines="12" tease="who it may start" title="Limits" href="/docs/labs/agents/teams-of-agents?ref=docs-labs-agents-reliability" linkText="Teams of agents">
-Agents it starts can start agents, but no deeper. It may start only `support/researcher`.
+Agents it starts can start agents, but no deeper. Its model may start only `support/researcher`.
 </Annotation>
 
 <Annotation id="recovery" lines="13" tease="opt in" title="Recovery" href="#recover-from-failures" linkText="Recover from failures">
@@ -138,7 +138,7 @@ A loop option, so each call can have its own.
 
 ## Recover from failures
 
-A rate limit waits for the provider's `retry-after`, for any model; a final error such as a rejected request isn't retried. A run that fails for good posts one line where the thread lives, and with `recovery` hands the message it was handling to a fresh run.
+A rate limit waits for the provider's `retry-after`, for any model; a final error such as a rejected request isn't retried. A run that fails for good posts one line where the thread lives.
 
 <AnnotatedCode>
 
@@ -162,7 +162,7 @@ export const releaser = agents.agent({
 ```
 
 <Annotation id="message" lines="10-14" tease="opt in" title="Recovery" href="/docs/labs/agents/reference?ref=docs-labs-agents-reliability#recovery" linkText="Reference: recovery">
-`message` writes the line; `{ resume: false }` skips the resend.
+`message` writes the line; `{ resume: false }` keeps it but skips the fresh run.
 </Annotation>
 
 </AnnotatedCode>
@@ -171,7 +171,7 @@ The same error is never resent, and neither is a `NonRetriableError`. A handler'
 
 ## Deploys and long runs
 
-A live run replays on the code you deployed. Every model call, tool call, KV call, awaited post and inbox message counts toward the 1,000-step limit. [Limits →](/docs/durable-execution/limits?ref=docs-labs-agents-reliability#platform-limits)
+After a deploy, a live run replays on your latest code. Every model call, tool call, awaited post and inbox message counts toward the 1,000-step limit, and so does a KV call made outside a step. [Limits →](/docs/durable-execution/limits?ref=docs-labs-agents-reliability#platform-limits)
 
 An agent that waits on something slow, such as a pull request, can raise `idle` to stay live across deploys.
 
@@ -206,7 +206,6 @@ Live across every deploy; all it does adds to the step count.
 
 ## How it works
 
-- Steps are saved by ID, so a replay reuses finished calls.
 - A thread's spend lives in thread state, so it outlasts runs.
 
 ## Recipes and reference
