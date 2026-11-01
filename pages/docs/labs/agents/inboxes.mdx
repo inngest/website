@@ -270,9 +270,7 @@ The model calls the tools by name:
 inbox_listen({ source: "pr/checks", match: { pr: 42 }, as: "checks" });
 ```
 
-`match` narrows by a field equal to a value; the model never writes an expression. `inbox_close({ as: "checks" })` stops watching.
-
-{/* TODO(spec): which fields does match compare against, the event's data only or any path? */}
+`match` narrows by fields of the event's `data` equal to values, with dots for nested fields such as `"pull_request.number": 42`, up to eight of them. The model never writes an expression. `inbox_close({ as: "checks" })` stops watching.
 
 A script the model runs in a sandbox can wait on a named inbox: `inbox_next({ as })` returns the next message and `inbox_next_batch({ as })` the next batch, waiting if none has arrived. [Sandboxes and code →](/docs/labs/agents/sandboxes-and-code?ref=docs-labs-agents-inboxes)
 

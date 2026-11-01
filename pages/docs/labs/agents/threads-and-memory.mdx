@@ -322,9 +322,7 @@ Removes the key.
 
 </AnnotatedCode>
 
-`take` reads and deletes in one step, `all` lists a scope's keys and `clear` removes them. `index(name)` keeps a sorted list beside your keys, with `add`, `range` and `remove`.
-
-{/* TODO(spec): the arguments of index(name).add and .remove, and what range and all() return */}
+`take` reads and deletes in one step, `all` lists a scope's keys and `clear` removes them. `index(name)` keeps a sorted list beside your keys, with `add`, `range({ min, max, limit, order })` and `remove`. [Reference: KV →](/docs/labs/agents/reference?ref=docs-labs-agents-threads-and-memory#kv)
 
 ## Choose a store
 
