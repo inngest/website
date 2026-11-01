@@ -64,10 +64,12 @@ export const description = "Which Inngest Agents API to use: find the call for w
 | --- | --- | --- |
 | A thread per event | `on: { event, thread }` | [Start a thread from an event](/docs/labs/agents/agents-and-triggers?ref=docs-labs-agents-which-api#start-from-an-event) |
 | A schedule | `on: { cron }` | [Run on a schedule](/docs/labs/agents/agents-and-triggers?ref=docs-labs-agents-which-api#run-on-a-schedule) |
-| Call an agent and use its result | `agent.invoke()`, or the agent in `tools` | [Call another agent](/docs/labs/agents/teams-of-agents?ref=docs-labs-agents-which-api#hand-work-to-another-agent) |
+| Call an agent and use its result | `callAgent("app/agent", input)` | [Teams of agents](/docs/labs/agents/teams-of-agents?ref=docs-labs-agents-which-api) |
+| The model to find and call agents | `tools: discoveryTools()` | [Let the model pick](/docs/labs/agents/teams-of-agents?ref=docs-labs-agents-which-api#let-the-model-pick-who-to-ask) |
+| Agents in other apps to find yours | `share: "team"` | [Publish a card](/docs/labs/agents/teams-of-agents?ref=docs-labs-agents-which-api#publish-a-card) |
 | Children to stop when the parent is cancelled | `cancelOn: [agentInvokeCancelOn]` | [Cancel with the caller](/docs/labs/agents/teams-of-agents?ref=docs-labs-agents-which-api#cancel-with-the-caller) |
 | To catch a cancelled child | `AgentCancelledError` | [Cancel with the caller](/docs/labs/agents/teams-of-agents?ref=docs-labs-agents-which-api#cancel-with-the-caller) |
-| To know how deep an invoked agent is | `depth` in the agent body; `agentInvokeDepth(event)` in a plain function | [Call another agent](/docs/labs/agents/teams-of-agents?ref=docs-labs-agents-which-api#hand-work-to-another-agent) |
+| To know how deep a called agent is | `depth` in the agent body | [Publish a card](/docs/labs/agents/teams-of-agents?ref=docs-labs-agents-which-api#publish-a-card) |
 | Cap depth, fan-out or which agents it may call | `limits.depth`, `spawn`, `mayCall` | [Limit sub-agents](/docs/labs/agents/teams-of-agents?ref=docs-labs-agents-which-api#limit-sub-agents) |
 
 ## Tools

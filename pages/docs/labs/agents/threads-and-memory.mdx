@@ -156,7 +156,7 @@ for (const thread of recent) {
 
 ## Ask another thread
 
-Give an agent `requests` schemas and another thread can ask it a typed question. The asker gets the reply, or `null` after the timeout.
+Give an agent `requests` schemas and your app can ask its thread a typed question. The asker gets the reply, or `null` after the timeout.
 
 ```typescript {{ title: "inngest/agents/billing.ts" }}
 import { z } from "zod";
@@ -176,20 +176,17 @@ export const billing = agents.agent(
 );
 ```
 
-```typescript {{ title: "inngest/agents/refunds.ts" }}
-import { agents } from "../client";
-import { billing } from "./billing";
+```typescript {{ title: "app/refund-check.ts" }}
+import { billing } from "../inngest/agents/billing";
 
-export const refunds = agents.agent({ id: "refunds" }, async () => {
-  const answer = await billing
-    .thread("acct-9")
-    .request({ orderId: "A-100" }, { timeout: "5m" });
+const answer = await billing
+  .thread("acct-9")
+  .request({ orderId: "A-100" }, { timeout: "5m" });
 
-  return answer?.refundable ? "refund" : "no refund";
-});
+console.log(answer?.refundable ? "refund" : "no refund");
 ```
 
-`request` works inside a function and wakes an idle thread.
+`request` also works inside a function, and wakes an idle thread. Agents reach each other through discovery instead: [Teams of agents](/docs/labs/agents/teams-of-agents?ref=docs-labs-agents-threads-and-memory).
 
 ## When to use what
 

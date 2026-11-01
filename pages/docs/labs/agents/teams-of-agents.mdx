@@ -1,49 +1,46 @@
 import { AnnotatedCode, Annotation } from "shared/Docs/mdx";
 
 export const metaTitle = "Teams of agents | Inngest Agents";
-export const description = "Inngest Agents teams: hand work to another agent and use its result, call agents from tools, give a sandbox to one agent, limit depth and spend, and cancel children with their parent.";
+export const description = "Inngest Agents teams: find another agent through discovery and hand it work, let the model pick who to ask, give a sandbox to one agent, limit depth and spend, and cancel children with their parent.";
 
 # Teams of agents
 
-> Hand work to another agent and use what it finds.
+> Find another agent and hand it work, without wiring them together.
 
-One agent can call another, wait for its result and carry on. Each callee gets a thread of its own and is traced as part of the caller's run.
+Agents never import each other. Each one publishes a card that says what it does, and a caller finds it by its address, so you can move, rename or redeploy one without touching the rest.
 
 <AnnotatedCode>
 
 ```typescript {{ title: "inngest/agents/lead.ts" }}
-import { agent } from "inngest/experimental/agents";
+import { callAgent } from "inngest/experimental/agents";
 import { agents } from "../client";
-import { researcher } from "./researcher";
 
 export const lead = agents.agent({ id: "lead" }, async () => {
-  const found = await agent.invoke(
-    researcher,
-    { question: "What changed in v3?" },
-    { thread: "research-1", timeout: "10m" },
-  );
+  const found = await callAgent("support/researcher", {
+    question: "What changed in v3?",
+  });
 
-  return found.answer;
+  return found;
 });
 ```
 
-<Annotation id="callee" lines="7" tease="typed input and output" title="The callee" href="#hand-work-to-another-agent" linkText="Hand work over">
-Pass the agent itself and the input is checked against its schema.
+<Annotation id="address" lines="5" tease="app/agent" title="Address" href="#publish-a-card" linkText="Publish a card">
+The callee's app and id, from its card. Nothing is imported.
 </Annotation>
 
-<Annotation id="options" lines="9" tease="its own thread" title="Thread and timeout" href="#options" linkText="Options">
-Without `thread`, the callee gets one named after the run.
+<Annotation id="input" lines="6" tease="what its card asks for" title="Input" href="#publish-a-card" linkText="Publish a card">
+The callee's `invoke()` schema, or `{ message }` for a plain agent.
 </Annotation>
 
-<Annotation id="result" lines="12" tease="what the callee returned" title="Result" href="#how-it-works" linkText="How it works">
+<Annotation id="result" lines="9" tease="what the callee returned" title="Result" href="#how-it-works" linkText="How it works">
 The caller waits as a step, at no cost.
 </Annotation>
 
 </AnnotatedCode>
 
-## Hand work to another agent
+## Publish a card
 
-The callee uses `on: invoke(schema)` to type its input and returns its result.
+The callee's config becomes its card. `on: invoke(schema)` types its input, and it returns its result.
 
 ```typescript {{ title: "inngest/agents/researcher.ts" }}
 import { invoke } from "inngest";
@@ -54,6 +51,7 @@ export const researcher = agents.agent(
   {
     id: "researcher",
     description: "Looks into a question",
+    share: "team",
     on: invoke(z.object({ question: z.string() })),
     limits: { price: { "*": { input: 3, output: 15 } } },
   },
@@ -63,33 +61,51 @@ export const researcher = agents.agent(
 );
 ```
 
-`depth` is 1 when a function that is not an agent invoked it, 2 for the next, and `0` when anything else started the run. For an agent without a handle, pass `"appId/functionId"`; the result is then untyped.
+Agents in the same app find each other by default; `share: "team"` lets agents in other apps find it too. `depth` is 1 when a function that is not an agent called it, 2 for the next, and `0` when anything else started the run.
 
-## Call an agent from a tool
+`agents.announce()` publishes the app's cards once it is up.
 
-Put the agent straight into `tools`. The model calls it by its key and gets what it returned.
+```typescript {{ title: "inngest/serve.ts" }}
+import { createServer } from "inngest/node";
+import { agents, inngest } from "./client";
+import "./agents/lead";
+import "./agents/researcher";
 
-```typescript {{ title: "inngest/agents/delegator.ts" }}
-import { agent } from "inngest/experimental/agents";
-import { agents } from "../client";
-import { claude } from "../models/claude";
-import { researcher } from "./researcher";
+createServer({
+  client: inngest,
+  functions: agents.functions(),
+}).listen(3000);
 
-export const delegator = agents.agent({ id: "delegator" }, async ({ inbox, control }) => {
-  const message = await inbox.next();
-
-  const result = await agent.loop({
-    model: claude,
-    prompt: message ?? "",
-    tools: { researcher },
-    ...control,
-  });
-
-  return result.text;
-});
+await agents.announce();
 ```
 
-A plain agent takes `{ message }`, which it reads as an `agent/message` with `data.text`. An agent with `on: invoke(schema)`, like `researcher`, takes that schema. Its `description` is what the model reads. Listing an agent in `tools` allows it, so `mayCall` is not needed.
+## Let the model pick who to ask
+
+`discoveryTools()` lets the model list agents, read their cards, and call or message the one it needs.
+
+```typescript {{ title: "inngest/agents/delegator.ts" }}
+import { agent, discoveryTools } from "inngest/experimental/agents";
+import { agents } from "../client";
+import { claude } from "../models/claude";
+
+export const delegator = agents.agent(
+  { id: "delegator" },
+  async ({ inbox, control }) => {
+    const message = await inbox.next();
+
+    const result = await agent.loop({
+      model: claude,
+      prompt: message ?? "",
+      tools: discoveryTools(),
+      ...control,
+    });
+
+    return result.text;
+  },
+);
+```
+
+The model gets `list_agents`, `describe_agent`, `call_agent` and `message_agent`. It picks by `description` and `skills`, so write those for a model to read.
 
 ## Give a sandbox to one agent
 
@@ -124,21 +140,24 @@ export const workbench = sandbox({
 
 ## Limit sub-agents
 
-`limits` apply to `agent.invoke()`. A refused call throws `AgentLimitError`, whose `limit` is `depth`, `spawn`, `mayCall` or `budget`. `mayCall` only limits calls made with `agent.invoke()`.
+`limits` apply to every `callAgent()`, and to every `call_agent` the model makes. A refused call throws `AgentLimitError`, whose `limit` is `depth`, `spawn`, `mayCall` or `budget`.
 
 ```typescript {{ title: "inngest/agents/careful.ts" }}
-import { agent, AgentLimitError } from "inngest/experimental/agents";
+import { AgentLimitError, callAgent } from "inngest/experimental/agents";
 import { agents } from "../client";
-import { researcher } from "./researcher";
 
 export const careful = agents.agent(
-  { id: "careful", limits: { depth: 1, spawn: 3, mayCall: ["support/researcher"] } },
+  {
+    id: "careful",
+    limits: { depth: 1, spawn: 3, mayCall: ["support/researcher"] },
+  },
   async () => {
     try {
-      const found = await agent.invoke(researcher, { question: "Why?" });
-      return found.answer;
+      return await callAgent("support/researcher", { question: "Why?" });
     } catch (error) {
-      return error instanceof AgentLimitError ? `refused by ${error.limit}` : "failed";
+      return error instanceof AgentLimitError
+        ? `refused by ${error.limit}`
+        : "failed";
     }
   },
 );
@@ -148,7 +167,7 @@ Sub-agents inherit the limits, narrowed, and `depth` defaults to 1. Add `budget:
 
 ## Cancel with the caller
 
-Cancelling the caller cancels the callee only if the callee lists `agentInvokeCancelOn`. A cancelled callee makes `agent.invoke()` throw `AgentCancelledError`.
+Cancelling the caller cancels the callee only if the callee lists `agentInvokeCancelOn`. A cancelled callee makes `callAgent()` throw `AgentCancelledError`.
 
 ```typescript {{ title: "inngest/agents/worker.ts" }}
 import { invoke } from "inngest";
@@ -169,13 +188,12 @@ export const worker = agents.agent(
 ```
 
 ```typescript {{ title: "inngest/agents/boss.ts" }}
-import { agent, AgentCancelledError } from "inngest/experimental/agents";
+import { AgentCancelledError, callAgent } from "inngest/experimental/agents";
 import { agents } from "../client";
-import { worker } from "./worker";
 
 export const boss = agents.agent({ id: "boss" }, async () => {
   try {
-    return await agent.invoke(worker, { task: "audit" });
+    return await callAgent("support/worker", { task: "audit" });
   } catch (error) {
     if (error instanceof AgentCancelledError) {
       return { done: null, cancelledRun: error.runId };
@@ -188,44 +206,47 @@ export const boss = agents.agent({ id: "boss" }, async () => {
 
 ## When to use what
 
-- Use another agent's result: `agent.invoke(agent, input)`.
-- Let the model choose to delegate: put the agent in `tools`.
+- Use another agent's result: `callAgent("app/agent", input)`.
+- Let the model choose who to ask: `tools: discoveryTools()`.
+- Look up agents in code: `findAgents(query)`.
+- Let agents in other apps find yours: `share: "team"`.
 - Cap depth, fan-out or which agents may be called: `limits.depth`, `spawn`, `mayCall`.
 - Cap spend of callees: `limits.budget` with a `limits.price` on each, and `spawn`. A callee gets at most what is left, but the callees' total is not capped.
 - End children with their parent: `cancelOn: [agentInvokeCancelOn]`.
 
 ## Options
 
-The callee keeps the caller's session. Defaults: `id` is `agent:invoke:<target>`, `thread` is `<functionId>:<runId>.<n>`, `timeout` is none.
+`callAgent()` takes a step `id`. The callee keeps the caller's session and gets a thread of its own.
 
 ```typescript {{ title: "inngest/agents/patient.ts" }}
-import { agent } from "inngest/experimental/agents";
+import { callAgent } from "inngest/experimental/agents";
 import { agents } from "../client";
-import { researcher } from "./researcher";
 
 export const patient = agents.agent({ id: "patient" }, async () => {
-  const found = await agent.invoke(
-    researcher,
+  return callAgent(
+    "support/researcher",
     { question: "Why?" },
-    { id: "ask-researcher", thread: "why-1", timeout: "1h" },
+    { id: "ask-researcher" },
   );
-
-  return found.answer;
 });
 ```
 
+Defaults: `id` is `agent:invoke:<address>`, the callee's thread is `<functionId>:<runId>.<n>`, and there is no timeout. `discoveryTools({ prepare })` fills in what the model must not make up, such as who is asking, before `call_agent` hands over its input. `discoveryTools({ onBackground })` lets the model start a long call and carry on.
+
 ## Gotchas
 
-- Use `agentInvokeCancelOn` only on an agent that `agent.invoke()` starts. `agents.agent()` throws if `on` has any other trigger.
+- An agent can be found only after its app announced its card. A daily heartbeat announces again.
+- `callAgent()` returns `unknown`. Check the shape before you use it.
+- Use `agentInvokeCancelOn` only on an agent that is called. `agents.agent()` throws if `on` has any other trigger.
 - A raw `step.invoke` or `sendEvent` is not checked by `limits`.
-- A callee's `trigger.data` is already the caller's input. A plain function uses `agentInvokeInput(event)` and `agentInvokeDepth(event)`.
 
 ## How it works
 
-- `agent.invoke()` is a step. The caller sleeps until the callee returns.
+- `callAgent()` reads the cards in a step, checks the caller may use the agent, then invokes it as a step. The caller sleeps until the callee returns.
+- The tools check sharing again on every call, so an address the model made up reaches nothing it may not use.
 - Limits are checked before the call starts and narrowed for the callee.
 - The callee's run is a child of the caller's trace.
 
 ## Recipes and reference
 
-[Agent teams](/docs/labs/agents/recipes/agent-teams), [Coding agent](/docs/labs/agents/recipes/coding-agent), [Invoke reference](/docs/labs/agents/reference?ref=docs-labs-agents-teams-of-agents#agentinvoke).
+[Agent teams](/docs/labs/agents/recipes/agent-teams), [Coding agent](/docs/labs/agents/recipes/coding-agent), [Discovery reference](/docs/labs/agents/reference?ref=docs-labs-agents-teams-of-agents#callagent).

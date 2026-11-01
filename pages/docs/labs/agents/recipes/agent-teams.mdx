@@ -10,6 +10,7 @@ export const description = "Build a lead agent that hands research to one agent 
 ```text
 You         What does HTTP 429 mean? Then write a fetch wrapper that waits and retries on it.
 
+lead        finds agent-teams/researcher and agent-teams/coder
 lead        asks researcher: What does HTTP 429 mean?
 researcher  Too Many Requests. Wait for the Retry-After header before retrying.
 lead        asks coder: Write fetchWithRetry that honors Retry-After.
@@ -25,11 +26,9 @@ Screenshot needed: the lead's run with both child runs in the Dev Server.
 <AnnotatedCode>
 
 ```typescript {{ title: "inngest/agents/lead.ts" }}
-import { agent } from "inngest/experimental/agents";
+import { agent, discoveryTools } from "inngest/experimental/agents";
 import { agents } from "../client";
 import { claude } from "../models/claude";
-import { coder } from "./coder";
-import { researcher } from "./researcher";
 
 export const lead = agents.agent(
   {
@@ -47,9 +46,9 @@ export const lead = agents.agent(
     const result = await agent.loop({
       model: claude,
       system:
-        "Split the request. Ask the researcher for facts and the coder for code, then combine their answers.",
+        "Split the request. Find agents for facts and code, ask each, then combine the answers.",
       prompt: message ?? "",
-      tools: { researcher, coder },
+      tools: discoveryTools(),
       ...control,
     });
 
@@ -58,15 +57,15 @@ export const lead = agents.agent(
 );
 ```
 
-<Annotation id="limits" lines="10-15" tease="depth, count, who and how much" title="Limit the team" href="/docs/labs/agents/teams-of-agents?ref=docs-labs-agents-recipes-agent-teams" linkText="Teams of agents">
+<Annotation id="limits" lines="8-13" tease="depth, count, who and how much" title="Limit the team" href="/docs/labs/agents/teams-of-agents?ref=docs-labs-agents-recipes-agent-teams" linkText="Teams of agents">
 Sub-agents inherit these, narrowed. A refused call throws `AgentLimitError`. A price does not travel, so each child sets its own.
 </Annotation>
 
-<Annotation id="tools" lines="25" tease="a sub-agent is a tool" title="Agents as tools" href="/docs/labs/agents/teams-of-agents?ref=docs-labs-agents-recipes-agent-teams#call-an-agent-from-a-tool" linkText="Teams of agents">
-The model decides who to ask and in what order. Each agent is called by its key, with no tool file to write.
+<Annotation id="tools" lines="23" tease="find, then ask" title="Discovery tools" href="/docs/labs/agents/teams-of-agents?ref=docs-labs-agents-recipes-agent-teams#let-the-model-pick-who-to-ask" linkText="Teams of agents">
+The model lists the agents it may use, reads their cards, and decides who to ask and in what order. No agent names another in code.
 </Annotation>
 
-<Annotation id="return" lines="29" tease="the run's result" title="Return" href="/docs/labs/agents/agents-and-triggers?ref=docs-labs-agents-recipes-agent-teams" linkText="Agents and triggers">
+<Annotation id="return" lines="27" tease="the run's result" title="Return" href="/docs/labs/agents/agents-and-triggers?ref=docs-labs-agents-recipes-agent-teams" linkText="Agents and triggers">
 A caller that invokes `lead` gets this value back.
 </Annotation>
 
@@ -135,11 +134,28 @@ export const workbench = sandbox({
 });
 ```
 
-`inngest/client.ts` is the one from the [Coding agent](/docs/labs/agents/recipes/coding-agent?ref=docs-labs-agents-recipes-agent-teams), with `id: "agent-teams"`. `inngest/models/claude.ts` and `inngest/serve.ts` follow the [Slack assistant](/docs/labs/agents/recipes/slack-assistant?ref=docs-labs-agents-recipes-agent-teams).
+The server announces the cards once it is up, so the lead can find the others.
+
+```typescript {{ title: "inngest/serve.ts" }}
+import { createServer } from "inngest/node";
+import { agents, inngest } from "./client";
+import "./agents/coder";
+import "./agents/lead";
+import "./agents/researcher";
+
+createServer({
+  client: inngest,
+  functions: agents.functions(),
+}).listen(3000);
+
+await agents.announce();
+```
+
+`inngest/client.ts` is the one from the [Coding agent](/docs/labs/agents/recipes/coding-agent?ref=docs-labs-agents-recipes-agent-teams), with `id: "agent-teams"`. `inngest/models/claude.ts` is the one from the [quick start](/docs/labs/agents/quick-start?ref=docs-labs-agents-recipes-agent-teams).
 
 ## What it shows off
 
-- One agent calls another and gets its result. [Teams of agents](/docs/labs/agents/teams-of-agents?ref=docs-labs-agents-recipes-agent-teams)
+- One agent finds others and uses their results, with no imports between them. [Teams of agents](/docs/labs/agents/teams-of-agents?ref=docs-labs-agents-recipes-agent-teams)
 - Only the coder gets a sandbox. [Sandboxes and code](/docs/labs/agents/sandboxes-and-code?ref=docs-labs-agents-recipes-agent-teams)
 - A dollar budget on the lead, and prices for each child. [Reliability](/docs/labs/agents/reliability?ref=docs-labs-agents-recipes-agent-teams)
 
