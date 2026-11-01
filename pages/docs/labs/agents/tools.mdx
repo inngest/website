@@ -5,18 +5,17 @@ export const description = "Inngest Agents tools: define a function once and let
 
 # Tools
 
-> Define a function once. The model and your sandbox scripts both call it, as a durable step in your app.
+> Define a function once, and the model and your sandbox scripts both call it, as a durable step in your app.
 
 A tool runs in your app with your credentials, and a retry never repeats a finished call. A [skill](/docs/labs/agents/skills?ref=docs-labs-agents-tools) is read; a tool is called.
 
 - **One definition, two callers.** The model and sandbox code use the same name. [Both sides →](#use-it-from-both-sides)
-- **Every kind works.** A step, a group of steps, a function, a program, a remote server. [Kinds →](#pick-a-kind)
-- **Errors the model can read.** Scripts catch a `ToolError`. [Errors →](#fail-so-the-model-can-read-it)
+- **Every kind works.** A step, a group of steps, a function, a plain function. [Kinds →](#pick-a-kind)
+- **Errors the model can read.** Scripts catch a `ToolError`. [Errors →](#return-errors)
 - **Outside text stays data.** Wrapped for the model only. [Untrusted →](#mark-outside-text)
 - **Change a tool by wrapping it.** One place, both callers. [Wrap →](#wrap-a-tool)
 - **Remote MCP servers.** A bearer token, or each person's own sign-in. [MCP →](#connect-an-mcp-server)
 
-{/* not type-checked: tool.step() with a named input */}
 <AnnotatedCode>
 
 ```typescript {{ title: "inngest/tools/ticket.ts" }}
@@ -44,7 +43,7 @@ Your code, with your keys. Its result goes back to the caller.
 
 ## Use it from both sides
 
-Put the tool in an agent's `tools` and the model calls it. The key is its name.
+Put the tool in an agent's `tools`.
 
 {/* not type-checked: agents.agent with a tools record, as in the quick start */}
 <AnnotatedCode>
@@ -65,7 +64,7 @@ export const triage = agents.agent({
 ```
 
 <Annotation id="key" lines="11" tease="the key is the name" title="One name" href="/docs/labs/agents/sandboxes-and-code?ref=docs-labs-agents-tools#let-code-call-your-tools" linkText="Let code call your tools">
-The model calls `ticket`. Give the same tool to a sandbox's code tools, and a script calls `tools.ticket(...)`.
+The key is the name. The model calls `ticket`; give the same tool to a sandbox's code tools, and a script calls `tools.ticket(...)`.
 </Annotation>
 
 </AnnotatedCode>
@@ -127,7 +126,7 @@ An app whose agents list sandboxes adds `sandboxMiddleware()` to its client. [Sa
 
 ## Pick a kind
 
-`tool()` and `tool.step()` make one durable step per call, and the key in the record names them. Every other kind goes in the same record.
+A step, a group, an Inngest function and a plain function all go in the same `tools` record.
 
 {/* not type-checked: a tools record holding a step, a group, a waiting group, an Inngest function and a plain function with an argument */}
 <AnnotatedCode>
@@ -159,15 +158,11 @@ export const support = agents.agent({
 ```
 
 <Annotation id="step" lines="15" tease="one durable step" title="tool.step()" href="#use-it-from-both-sides" linkText="Both sides">
-One step per call.
+`tool()` and `tool.step()` make one durable step per call.
 </Annotation>
 
-<Annotation id="group" lines="16" tease="several steps" title="tool.group()" href="#run-several-steps" linkText="Run several steps">
-The body runs steps.
-</Annotation>
-
-<Annotation id="waits" lines="17" tease="waits for days" title="waits: true" href="#wait-for-a-reply" linkText="Wait for a reply">
-A group that may wait longer than a command may run.
+<Annotation id="group" lines="16-17" tease="several steps, some wait" title="tool.group()" href="#run-several-steps" linkText="Run several steps">
+The body runs steps. `confirmShipment` is a group that waits.
 </Annotation>
 
 <Annotation id="function" lines="18" tease="a function is a tool" title="An Inngest function" href="/docs/labs/agents/agents-and-triggers?ref=docs-labs-agents-tools" linkText="Agents and triggers">
@@ -175,12 +170,11 @@ Its trigger's data is the input and its return is the result. A `referenceFuncti
 </Annotation>
 
 <Annotation id="plain" lines="19-21" tease="no constructor needed" title="A plain function">
-The model's input object is its one argument. It has no schema for the model, so use `tool.step()` when the model needs one.
+The model's input object is its one argument.
 </Annotation>
 
 </AnnotatedCode>
 
-{/* not type-checked: an Inngest function created with an eventType trigger */}
 ```typescript {{ title: "inngest/functions/cancelOrder.ts" }}
 import { eventType } from "inngest";
 import { z } from "zod";
@@ -202,7 +196,6 @@ export const cancelOrder = inngest.createFunction(
 
 `tool.group()` runs its body as a group of steps instead of one. Use the global `step` inside it.
 
-{/* not type-checked: tool.group with the global step */}
 <AnnotatedCode>
 
 ```typescript {{ title: "inngest/tools/refund.ts" }}
@@ -240,7 +233,7 @@ Prefixed per call, so two calls never collide.
 
 ## Wait for a reply
 
-A group can wait for days, and the agent isn't running while it waits. Add `waits: true` when sandbox code calls it.
+A group can wait for days, and the agent isn't running while it waits.
 
 {/* not type-checked: tool.group with waits: true and step.waitForEvent */}
 <AnnotatedCode>
@@ -267,7 +260,7 @@ export const confirmShipment = tool.group({
 ```
 
 <Annotation id="waits" lines="8" tease="outlives a command" title="waits: true">
-A script that calls this exits, waits, then starts again with its earlier calls answered from a saved record. The model's side ignores the flag.
+Add it when sandbox code calls the group. The script exits while the group waits, then starts again with its earlier calls answered from a saved record. The model's side ignores the flag.
 </Annotation>
 
 </AnnotatedCode>
@@ -276,7 +269,7 @@ A script that calls this exits, waits, then starts again with its earlier calls 
 
 `tool.shim()` stands in for a program on the shell's `PATH`, and your handler decides what happens when code runs it. The model never handles the token: your handler adds it to the environment of that one process. [Hand a program a credential →](/docs/labs/agents/sandboxes-and-code?ref=docs-labs-agents-tools#hand-a-program-a-credential)
 
-## Fail so the model can read it
+## Return errors
 
 A thrown error, or `agent.toolError(body)`, reaches the model as an error result it can read and correct. Sandbox code gets a thrown `ToolError` it can catch.
 
@@ -433,7 +426,7 @@ A number or a boolean, written once however often the run replays.
 
 ## Connect an MCP server
 
-`tool.mcp()` turns a remote MCP server into tools named `<id>_<tool>`. Put it in `tools`.
+`tool.mcp()` turns a remote MCP server into tools named `<key>_<tool>`, after its key in `tools`.
 
 {/* not type-checked: tool.mcp with a required id and a bearer secret */}
 <AnnotatedCode>
@@ -448,8 +441,8 @@ export const hex = tool.mcp({
 });
 ```
 
-<Annotation id="id" lines="4" tease="names it, keys its tokens" title="id">
-Required. Prefixes the tools (`hex_search_projects`) and keys the tokens.
+<Annotation id="id" lines="4" tease="keys its tokens" title="id">
+Required. Keys each person's tokens.
 </Annotation>
 
 <Annotation id="bearer" lines="6" tease="read inside the call" title="Credentials" href="#keep-secrets-on-the-host" linkText="Keep secrets on the host">
@@ -474,7 +467,7 @@ export const analyst = agents.agent({
 });
 ```
 
-A script calls them the same way: `tools.hex_search_projects(...)`. `{ ...(await hex.tools()) }` spreads the same tools into a record.
+The key names the server's tools, so the model sees `hex_search_projects`. Give `hex` to a sandbox's [code tools](/docs/labs/agents/sandboxes-and-code?ref=docs-labs-agents-tools#let-code-call-your-tools) and a script calls `tools.hex_search_projects(...)`; `{ ...(await hex.tools()) }` spreads the same tools into a record.
 
 ## Sign in each person
 
@@ -548,8 +541,8 @@ export const disconnectNotion = async (user: string) => {
 
 ## Gotchas
 
-- **A script's call has a time limit.** A call that outlives its command's `timeout` (five minutes by default) aborts the command. Make the tool a `waits: true` group, or give the command a longer `timeout`. The model's side has none.
-- **A script starts again after a wait.** It runs from the top, with finished calls answered from a saved record, so keep what it does outside tool calls safe to repeat.
+- **A script's call has a time limit.** A call that outlives its command's `timeout` (five minutes by default) aborts the command. Make the tool a [waiting group](#wait-for-a-reply), or give the command a longer `timeout`. The model's side has none.
+- **A script that waits runs again from the top.** Keep what it does outside tool calls safe to repeat.
 - **MCP calls pass a network guard.** HTTPS only (`http:` for localhost), no private addresses and no redirects.
 - **Renaming an `id` signs everyone out.** Tokens are kept under it. Changing the `url` doesn't.
 
@@ -557,7 +550,7 @@ export const disconnectNotion = async (user: string) => {
 
 - Each call is one durable step. A group is a set of steps under the call's ID.
 - The agent decides what each side gets. Waiting tools such as `agent_result` and `inbox_next` are for scripts only, because the model never waits.
-- An MCP server's tools are listed in a step before a run starts, so a replay sees the list the model saw.
+- A sandbox script's MCP tools are listed in a step before its command starts, so a replay sees the list the script saw.
 
 ## Recipes and reference
 
