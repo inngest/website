@@ -13,11 +13,11 @@ export const description = "Inngest Agents is an Inngest Labs project: agents th
 
 An agent is an Inngest function that holds conversations. Every model call and tool call is a durable step, so a crash or a deploy never repeats one.
 
-- **No loop to write.** A model, a prompt and tools make a whole agent. [Agents and triggers →](/docs/labs/agents/agents-and-triggers?ref=docs-labs-agents)
-- **Threads that remember.** A Slack thread, a pull request or a customer is one thread, with its history and state. [Threads and memory →](/docs/labs/agents/threads-and-memory?ref=docs-labs-agents)
+- **No loop to write.** A model, a prompt and tools make a whole agent. [Agents →](/docs/labs/agents/agents?ref=docs-labs-agents)
+- **Threads that remember.** A Slack thread, a pull request or a customer is one thread, with its history and state. [Threads →](/docs/labs/agents/threads?ref=docs-labs-agents)
 - **New messages reach the model mid-task.** Everything that arrives lands in the next model call. [Inboxes →](/docs/labs/agents/inboxes?ref=docs-labs-agents)
-- **A machine per thread.** The model works in a shell that's still there next week. [Sandboxes and code →](/docs/labs/agents/sandboxes-and-code?ref=docs-labs-agents)
-- **Agents that find each other.** The model looks up other agents and hands them work. [Discovery →](/docs/labs/agents/discovery?ref=docs-labs-agents)
+- **A machine per thread.** The model works in a shell that's still there next week. [Sandboxes →](/docs/labs/agents/sandboxes?ref=docs-labs-agents)
+- **Agents that find each other.** The model looks up other agents and hands them work. [Agent discovery →](/docs/labs/agents/agent-discovery?ref=docs-labs-agents)
 
 {/* not type-checked: an agent with no handler in Slack */}
 ```typescript {{ title: "inngest/agents/support.ts" }}
@@ -54,17 +54,17 @@ Mention it in Slack and it answers in the thread, with a status line while it wo
 
 Read them in order, or jump to the one you need.
 
-1. [Agents and triggers](/docs/labs/agents/agents-and-triggers?ref=docs-labs-agents): define an agent and what starts it.
-2. [Handlers](/docs/labs/agents/handlers?ref=docs-labs-agents): your code around the model.
-3. [Threads and memory](/docs/labs/agents/threads-and-memory?ref=docs-labs-agents): one key per thread, and state that lasts.
-4. [Models and the loop](/docs/labs/agents/models-and-the-loop?ref=docs-labs-agents): turns, tools, history and cost.
-5. [Inboxes](/docs/labs/agents/inboxes?ref=docs-labs-agents): messages in order, and events the agent watches.
-6. [Tools](/docs/labs/agents/tools?ref=docs-labs-agents): functions in your app that the model and scripts call.
-7. [Slack and GitHub](/docs/labs/agents/slack-and-github?ref=docs-labs-agents): start from a thread, answer in it.
-8. [Sandboxes and code](/docs/labs/agents/sandboxes-and-code?ref=docs-labs-agents): a machine per thread, and repos the app pushes.
-9. [Skills](/docs/labs/agents/skills?ref=docs-labs-agents): know-how the model reads when it needs it.
-10. [Teams of agents](/docs/labs/agents/teams-of-agents?ref=docs-labs-agents): start an agent, talk to it, wait for its result.
-11. [Discovery](/docs/labs/agents/discovery?ref=docs-labs-agents): cards, and how agents find each other.
+1. [Agents](/docs/labs/agents/agents?ref=docs-labs-agents): an agent is a function Inngest runs for you, durably.
+2. [Threads](/docs/labs/agents/threads?ref=docs-labs-agents): say which events belong to one conversation.
+3. [Inboxes](/docs/labs/agents/inboxes?ref=docs-labs-agents): an agent keeps listening while it works.
+4. [Memory](/docs/labs/agents/memory?ref=docs-labs-agents): a thread keeps your values between runs.
+5. [Models](/docs/labs/agents/models?ref=docs-labs-agents): a loop of turns you rarely write.
+6. [Tools](/docs/labs/agents/tools?ref=docs-labs-agents): an agent acts on the world only through tools.
+7. [Skills](/docs/labs/agents/skills?ref=docs-labs-agents): know-how the model reads when it needs it.
+8. [Sandboxes](/docs/labs/agents/sandboxes?ref=docs-labs-agents): code runs on the thread's own machine.
+9. [Calling home](/docs/labs/agents/calling-home?ref=docs-labs-agents): sandbox code calls your tools, inside your run.
+10. [Agent Teams](/docs/labs/agents/agent-teams?ref=docs-labs-agents): start an agent, talk to it, wait for its result.
+11. [Agent discovery](/docs/labs/agents/agent-discovery?ref=docs-labs-agents): every agent publishes a card, and models find them.
 12. [Reliability](/docs/labs/agents/reliability?ref=docs-labs-agents): retries, budgets and recovery.
 13. [Observability](/docs/labs/agents/observability?ref=docs-labs-agents): traces, usage and scores.
 

@@ -894,48 +894,48 @@ export const docsRefreshOutline: DocsRefreshPage[] = [
             title: "Concepts",
             children: [
               {
-                title: "Agents and triggers",
-                href: "/docs/labs/agents/agents-and-triggers",
+                title: "Agents",
+                href: "/docs/labs/agents/agents",
               },
               {
-                title: "Handlers",
-                href: "/docs/labs/agents/handlers",
-              },
-              {
-                title: "Threads and memory",
-                href: "/docs/labs/agents/threads-and-memory",
-              },
-              {
-                title: "Models and the loop",
-                href: "/docs/labs/agents/models-and-the-loop",
+                title: "Threads",
+                href: "/docs/labs/agents/threads",
               },
               {
                 title: "Inboxes",
                 href: "/docs/labs/agents/inboxes",
               },
               {
+                title: "Memory",
+                href: "/docs/labs/agents/memory",
+              },
+              {
+                title: "Models",
+                href: "/docs/labs/agents/models",
+              },
+              {
                 title: "Tools",
                 href: "/docs/labs/agents/tools",
-              },
-              {
-                title: "Slack and GitHub",
-                href: "/docs/labs/agents/slack-and-github",
-              },
-              {
-                title: "Sandboxes and code",
-                href: "/docs/labs/agents/sandboxes-and-code",
               },
               {
                 title: "Skills",
                 href: "/docs/labs/agents/skills",
               },
               {
-                title: "Teams of agents",
-                href: "/docs/labs/agents/teams-of-agents",
+                title: "Sandboxes",
+                href: "/docs/labs/agents/sandboxes",
               },
               {
-                title: "Discovery",
-                href: "/docs/labs/agents/discovery",
+                title: "Calling home",
+                href: "/docs/labs/agents/calling-home",
+              },
+              {
+                title: "Agent Teams",
+                href: "/docs/labs/agents/agent-teams",
+              },
+              {
+                title: "Agent discovery",
+                href: "/docs/labs/agents/agent-discovery",
               },
               {
                 title: "Reliability",
@@ -953,6 +953,10 @@ export const docsRefreshOutline: DocsRefreshPage[] = [
               {
                 title: "Project structure",
                 href: "/docs/labs/agents/structure",
+              },
+              {
+                title: "Slack and GitHub",
+                href: "/docs/labs/agents/slack-and-github",
               },
               {
                 title: "Run on Workers",
