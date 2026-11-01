@@ -582,7 +582,7 @@ limits: { depth?: number; mayCall?: string[] }
 - Whenever a run fails for good, with or without `recovery`, the agent posts one line where the thread lives.
 - With `recovery`, it also resends the message the run was handling to a fresh run, which starts from that message.
 - It never resends the same error twice, never resends a `NonRetriableError`, and allows at most three kinds of error per message.
-- A cancelled run (`stop()`, `cancelOn`, `timeouts.finish`) is neither reported nor resumed.
+- A canceled run (`stop()`, `cancelOn`, `timeouts.finish`) is neither reported nor resumed.
 - The next run gets `previousRun`, with or without recovery. [The handler](#the-handler)
 
 | Option | Default | Description |
