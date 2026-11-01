@@ -51,7 +51,7 @@ Starts when an issue is opened in `acme/app`. Each issue is its own thread, keye
 </Annotation>
 
 <Annotation id="tools" lines="20" tease="comment from GitHub" title="Search, label, comment" href="/docs/labs/agents/tools?ref=docs-labs-agents-recipes-issue-triage#git-hub-is-tools" linkText="GitHub is tools">
-`github.tools()` brings `github_comment` and `github_ask`, bound to the issue.
+`github.tools()` brings `github_comment` and `github_ask`, bound to the issue. Commenting once is the prompt's rule; the tools don't limit it.
 </Annotation>
 
 </AnnotatedCode>
@@ -73,7 +73,7 @@ export const POST = github.bridge({
 ```
 
 <Annotation id="bridge" lines="5-8" tease="signed route" title="The GitHub route" href="/docs/labs/agents/slack-and-github?ref=docs-labs-agents-recipes-issue-triage#work-on-git-hub" linkText="Work on GitHub">
-Checks GitHub's signature and sends each webhook as a `github/<event>` event. A redelivery is dropped, so an issue is never triaged twice.
+Checks GitHub's signature and sends each webhook as a `github/<event>` event. A redelivery is dropped.
 </Annotation>
 
 </AnnotatedCode>
