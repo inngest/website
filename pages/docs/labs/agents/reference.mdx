@@ -83,9 +83,7 @@ export const agents = createAgents(inngest);
 | `discovery` | value | `false` turns off the tools that find and reach other agents; `{ prepare }` fills part of their input. On by default. |
 | `listen` | value | Event types the model may start watching with `inbox_listen`. [Model tools](#model-tools) |
 | `remember` | value or function | `false` switches off the loop's remembered history. |
-| `loop` | value | Replaces the whole loop with another one, which brings its own model and tools. Triggers, inbox and thread stay as they are. |
-
-{/* TODO(spec): `loop` swaps the whole loop, but no alternative loop is exported (claudeAgent is not built). Keep the row? */}
+| `loop` | value | Replaces the whole loop. |
 
 The options of `createFunction` that apply to agents (`name`, `retries`, `cancelOn`, `concurrency`, `throttle`, `idempotency`, `onFailure` and the rest) pass through to the function.
 
@@ -413,17 +411,18 @@ formatEvent(message: AgentMessage): string
 | `model` | | What the loop calls each turn. [Models](#models) |
 | `system` | none | The system prompt. |
 | `tools` | none | Tools the model can call. |
+| `id` | `"agent"` | Prefix of the loop's step ids. A second loop with the same prefix in one run gets `-2`, a third `-3`. |
 | `maxTurns` | `40` | Most model calls. |
 | `maxToolOutput` | `100000` | Most characters of a tool result the model sees. A longer result keeps its start and end and says how much is missing. |
+| `spill` | none | `{ sandbox, dir? }`. Saves the whole of a longer result to `<dir>/tool-output-<hash>.txt` in the sandbox (`dir` defaults to `/tmp` and must exist) and tells the model the path. |
+| `parallelTools` | `true` | Runs the tool calls of one reply at once. |
 | `wrapUp` | none | Text for the last turn, which allows no tool use. |
 | `history` | none | The history of an earlier result, to continue from. |
-| `compaction` | automatic | Tunes the summary of a long history. The threshold comes from the model's context size. |
+| `compaction` | automatic | Summarises the start of a long conversation. [Compaction](#compaction) |
 | `steer` | fold all | `(drained) => messages to fold`. What it skips comes back as `result.unread`. |
 | `stop` | none | `() => boolean`, checked before each model call. `true` ends the loop with `end: "stop"`. |
 | `onTurn` | none | Called after each turn. |
 | `format` | `formatEvent` | `(message) => AgentUserContent`. What the model sees for a message. |
-
-{/* TODO(spec): today's loop also has id, spill and parallelTools, and compaction takes its own options (maxTokens, keep, summarise). The spec names none of them. Document or drop? */}
 
 ```typescript {{ title: "Signature" }}
 steer?: (drained: AgentMessage[]) => AgentMessage[] | Promise<AgentMessage[]>;
@@ -431,7 +430,19 @@ stop?: () => boolean | Promise<boolean>;
 format?: (message: AgentMessage) => AgentUserContent;
 ```
 
-The result:
+### Compaction
+
+`compaction` takes these options. The summary rides in the output of the model step that made it, so a replay restores it.
+
+| Option | Default | Description |
+| --- | --- | --- |
+| `maxTokens` | the model's context size | Summarise once the conversation is estimated past this many tokens, at about three characters a token. |
+| `keep` | `8` | Messages at the end that are always sent whole. |
+| `summarise` | the loop's `model` | `({ messages, previous? }) => Promise<string>` writes the summary. The default call has no tools and counts in `usage`. |
+
+`AgentCompaction` is `{ upTo, summary }`: the first `upTo` messages are replaced by `summary` when the conversation is sent. The `history` of the result is never summarised.
+
+### The result
 
 | Field | Description |
 | --- | --- |
@@ -486,12 +497,18 @@ const careful = claude.with({ effort: "high" });
 | `apiKey`, `baseURL` | none | For the client the adapter makes. Ignored with `client`. |
 | `maxTokens` | `16000` | Most tokens of one reply, thinking included. |
 | `effort` | the model's | One of `low`, `medium`, `high`, `xhigh` or `max`. |
-| `thinking` | not sent | The `thinking` request field. |
+| `thinking` | not sent | The `thinking` request field. Thinking blocks stay in the history untouched. |
+| `cache` | `{ ttl: "5m" }` | Prompt caching: `false`, or `{ ttl?: "5m" \| "1h" }`. `false` sends no breakpoints. A `1h` write costs 2x instead of 1.25x. |
+| `volatile` | none | A string, or `(request) => string \| undefined`. Text added to the last user message after the cache breakpoint, for what changes on every call. |
+| `stream` | on above `maxTokens` 21,000 | Streams the reply and waits for the whole message. Needs a client with `messages.stream`. |
+| `timeout` | 300000 on its own client | Milliseconds before a call times out. |
+| `maxRetries` | `0` on its own client | Retries inside the SDK, before the step fails and Inngest retries it. |
+| `params` | none | More request fields, such as `metadata`, `stop_sequences` or server tools. Applied last. |
 
-{/* TODO(spec): today's anthropic() also takes cache, volatile, stream, timeout, maxRetries and params. The spec names none of them. Document or drop? */}
+Keep `system` fixed per agent. Put context that changes on every call in `volatile` or in a message: a changed prefix misses the cache.
 
 - **The one-shot call** takes `system`, `messages`, `prompt`, `tools`, `toolChoice` and `output`. With an `output` schema it returns a typed `output` beside `text`. It is not a step by itself, so wrap it in `step.run()`.
-- **`.with(overrides)`** gives a variant with those options changed, such as `effort`, `thinking` or `maxTokens`. It cannot change `client`, `apiKey` or `baseURL`.
+- **`.with(overrides)`** gives a variant with those options changed, such as `effort`, `thinking`, `maxTokens` or `cache`. It cannot change `client`, `apiKey` or `baseURL`.
 - **Cost.** The model prices its own calls, so a `budget` in dollars needs no price table. [`price`](#budget-limits-and-recovery) overrides it for a custom model or one the table does not know.
 - **Errors.** A model call is a step, so a failure retries, after `retry-after` when the provider sent one, for any model function. A final error such as a bad request fails the step for good.
 
@@ -527,11 +544,15 @@ limits: { depth?: number; mayCall?: string[] }
 
 - When a run fails for good, the agent posts one line where the thread lives and resends the message the run was handling to a fresh run, which starts from that message.
 - It never resends the same error twice, never resends a `NonRetriableError`, and allows at most three kinds of error per message.
-- `resume`: whether to resend the message. Default `true`.
-- `message`: the line to post. A function of the failure; returning `false` posts nothing.
+- A cancelled run (`stop()`, `cancelOn`, `timeouts.finish`) is neither reported nor resumed.
 - The next run gets `previousRun`, with or without recovery. [The handler](#the-handler)
 
-{/* TODO(spec): resume and message are named in the spec; their meaning here comes from the code. Confirm. */}
+| Option | Default | Description |
+| --- | --- | --- |
+| `resume` | `true` | Resend the message the run was handling. |
+| `message` | one line with the error | `(failure: RunFailure) => string \| false`. The line to post. `false` posts nothing. |
+
+`RunFailure` has `runId`, `thread`, `error`, `fingerprint`, `resuming`, `repeated` and `superseded`.
 
 ## Cards and discovery
 
@@ -678,7 +699,8 @@ slack.bridge({
   signingSecret: string | Secret;
   gate?: (call: {
     message: SlackMessageData;
-    thread: { key: string };
+    thread: { key: string; history(): Promise<SlackMessageData[]> };
+    bot: { userId: string };
   }) => boolean | Promise<boolean>;
 }): ((request: Request) => Promise<Response>) & {
   handle(payload: unknown): Promise<void>;
@@ -702,13 +724,16 @@ export const POST = slack.bridge({
 
 **`slack.bridge`** is a Web handler: `(request: Request) => Promise<Response>`.
 
-- It checks Slack's signature, answers Slack at once and sends a `slack/message` event only for messages meant for the agent: a direct message, a message that mentions it in any Slack channel it is in, and a reply in a thread it already answered in. Everything else is dropped and never stored.
+- It checks Slack's signature and sends a `slack/message` event only for messages meant for the agent: a direct message, a message that mentions it in any Slack channel it is in, and a reply in a thread it already answered in. Everything else is dropped and never stored.
+- It forwards typed events, each with `threadKey` in its data: `slack/message`, `slack/reaction`, `slack/action`, `slack/view` and `slack/stop`. A `slack/message` event's data is `SlackMessageData & { threadKey: string }`.
+- The event id is Slack's `event_id`.
+- It answers Slack after the send succeeds.
 - Messages from bots, including the agent itself, are ignored unless you allow them.
-- `gate` replaces that rule. A message it skips never becomes an event.
+- `gate` replaces the rule for what is meant for the agent. A message it skips never becomes an event. It gets the message, the thread's key and a `history()` of the thread, and the bot's own user id.
 - `handle(payload)` takes a payload from a connection your app already trusts, such as its own Socket Mode connection, and skips the signature check. The SDK never runs the socket. The gate and the thread key behave the same either way.
-- The event's data is `SlackMessageData & { threadKey: string }`.
 
 {/* TODO(spec): the switch on slack.bridge that lets bots through is not named in the spec's type. */}
+{/* TODO(spec): the return type of gate's thread.history(). */}
 
 **`slack.thread()`** triggers on any Slack channel the app is in, plus direct messages. `in` limits it to Slack channel IDs. It keys the thread on `threadKey`.
 
@@ -736,6 +761,7 @@ slack_progress({
 - `slack.tools({ to })` sets a default `to`, for example for a cron agent.
 - `slack_ask` puts a question to the people in the thread. The model gets an id at once and the answer arrives as a message. Sandbox code waits and gets the answer as a string.
 - Posts use Slack's own markup. Links (`<https://example.com|the PR>`) and mentions (`<@U024BE7LH>`) work, unsafe text is escaped, and broadcast mentions (`<!channel>`, `<!here>`, `<!everyone>`) are made inert.
+- The model reads a `slack/message` as `[Name] text`.
 - While a run works, the SDK sets Slack's status line itself. `me.post()` and `slack_post` write to the same thread.
 
 ### GitHub
