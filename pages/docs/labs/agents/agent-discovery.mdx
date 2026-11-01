@@ -11,7 +11,7 @@ Every agent publishes a card. A model agent reads the cards it can see and start
 
 ## A card
 
-You want other agents to find yours. Give it a card that says what it does and returns.
+You want other agents to find yours. Give it a card that says what it does.
 
 <AnnotatedCode>
 
@@ -39,12 +39,12 @@ A model chooses by this line.
 </Annotation>
 
 <Annotation id="share" lines="13" tease="who can find it" title="share" href="#who-can-find-it" linkText="Who can find it">
-`"team"` shows it to every app in the environment.
+Who else can find it.
 </Annotation>
 
 </AnnotatedCode>
 
-In an app named `platform`, its address is `platform/security-reviewer`: the name `start_agent`, `mayCall` and [`agents.reference()`](/docs/labs/agents/agent-teams?ref=docs-labs-agents-agent-discovery#an-agent-in-another-app) take.
+In an app named `platform`, its address is `platform/security-reviewer`. `start_agent`, `mayCall` and [`agents.reference()`](/docs/labs/agents/agent-teams?ref=docs-labs-agents-agent-discovery#an-agent-in-another-app) take that address.
 
 ## Finding
 
@@ -116,9 +116,9 @@ card: {
 
 ## Who can find it
 
-You want to choose who finds an agent. `share` sets it: `"private"`, the default, shows the agent only to its own app, and `"team"` shows it to every app in the environment.
+You want to choose who finds an agent. `share` sets it. `"private"`, the default, shows the agent to its own app; `"team"` to every app.
 
-It isn't access control: anyone with the address can start the agent from code, and a new card takes a few minutes to show.
+It isn't access control: anyone with the address can start the agent from code.
 
 ## Who it may start
 
@@ -129,7 +129,7 @@ You want to limit what the PR helper's model may start. List the agents.
 limits: { mayCall: ["platform/security-reviewer"] },
 ```
 
-`start_agent` refuses any address not on the list. The model can still list every card.
+`start_agent` refuses any address not on the list. The model can still list the cards shared with it.
 
 ## Recipes and reference
 
