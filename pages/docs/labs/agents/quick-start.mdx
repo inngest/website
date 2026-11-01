@@ -47,6 +47,7 @@ export const claude = anthropic({ model: "claude-sonnet-5-5" });
 
 A tool is a function the model can call. It runs in your app, as a durable step.
 
+{/* not type-checked: tool.step */}
 ```typescript {{ title: "inngest/tools/lookupOrder.ts" }}
 import { tool } from "inngest/experimental";
 import { z } from "zod";
@@ -143,7 +144,7 @@ Open the Dev Server at [localhost:8288](http://localhost:8288). The run shows ea
 
 Ask again for customer `42` and the model sees the first question too. Within ten minutes the question joins the same run; later, a new run picks up the thread where it stopped. Restart the app in between and nothing is lost.
 
-This thread has no home, so the answer stays in the run. Put the agent in Slack and it answers in the Slack thread. [Slack and GitHub →](/docs/labs/agents/slack-and-github?ref=docs-labs-agents-quick-start)
+Nothing here says where to post, so the answer stays in the run. Put the agent in Slack and it answers in the Slack thread. [Slack and GitHub →](/docs/labs/agents/slack-and-github?ref=docs-labs-agents-quick-start)
 
 ## Next
 
