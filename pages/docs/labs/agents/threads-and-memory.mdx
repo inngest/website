@@ -123,9 +123,9 @@ How long a run waits in quiet before it ends. Guests answer slowly here.
 
 </AnnotatedCode>
 
-A run opened through a handle (`start()`, `message()`, `start_agent`, `message_agent`) ends once it has answered and nothing is unread, so only runs a trigger starts wait `idle`. [Continue a thread →](/docs/labs/agents/teams-of-agents?ref=docs-labs-agents-threads-and-memory#continue-a-thread)
+A run opened through a handle, such as `start()`, ends once it has answered and nothing is unread, so only runs a trigger starts wait `idle`. [Continue a thread →](/docs/labs/agents/teams-of-agents?ref=docs-labs-agents-threads-and-memory#continue-a-thread)
 
-Keep the default unless people reply slower; a longer `idle` costs steps and spans deploys. [Long runs →](/docs/labs/agents/reliability?ref=docs-labs-agents-threads-and-memory#deploys-and-long-runs)
+Keep the default unless people reply slower; a longer `idle` keeps the run live across deploys, and its steps count toward the step limit. [Long runs →](/docs/labs/agents/reliability?ref=docs-labs-agents-threads-and-memory#deploys-and-long-runs)
 
 ## What lasts
 
@@ -162,7 +162,7 @@ export const lookup = agents.agent({
 });
 ```
 
-<Annotation id="remember" lines="16" tease="start clean every run" title="remember" href="/docs/labs/agents/models-and-the-loop?ref=docs-labs-agents-threads-and-memory#remember-and-summarise" linkText="Models and the loop">
+<Annotation id="remember" lines="16" tease="start clean every run" title="remember" href="/docs/labs/agents/models-and-the-loop?ref=docs-labs-agents-threads-and-memory#remember-and-summarize" linkText="Models and the loop">
 Each run starts with an empty history. The thread's state, budget and sandbox are still its own.
 </Annotation>
 
@@ -293,7 +293,7 @@ Writes only when the key has no value, and says whether this call holds it.
 </Annotation>
 
 <Annotation id="ttl" lines="8" tease="seconds" title="ttl" href="/docs/labs/agents/reference?ref=docs-labs-agents-threads-and-memory#kv" linkText="Reference">
-A key past its `ttl` reads as absent, so a crashed run can't hold the lock for ever. Without a `ttl`, a key never expires.
+A key past its `ttl` reads as absent, so a crashed run can't hold the lock forever. Without a `ttl`, a key never expires.
 </Annotation>
 
 <Annotation id="delete" lines="19" tease="release it" title="delete" href="/docs/labs/agents/reference?ref=docs-labs-agents-threads-and-memory#kv" linkText="Reference">
@@ -301,8 +301,6 @@ Removes the key.
 </Annotation>
 
 </AnnotatedCode>
-
-The reference lists the rest, such as `take`, `all`, `clear` and the sorted `index(name)`. [Reference: KV →](/docs/labs/agents/reference?ref=docs-labs-agents-threads-and-memory#kv)
 
 ## Choose a store
 
@@ -344,13 +342,14 @@ console.log(await thread.get(plan));
 ## Gotchas
 
 - **A `thread` expression with no value warns.** A trigger then starts a fresh thread, and a source reaches none.
-- **`update` can run its function twice.** On a race it retries, so keep the function pure. The value it writes never expires, even if the key had a `ttl`.
+- **`update` can run its function twice.** On a race it retries, so keep the function pure.
+- **`update` drops a `ttl`.** The value it writes never expires, even if the key had one.
 - **Values are JSON.** No `Date`, `Map` or `undefined` properties.
 - **`__` names are the SDK's.** Keep your own keys off that prefix.
 
 ## How it works
 
-- A thread is a record in your store: its status, spend, budget and how its last run ended, beside your keys.
+- A thread is a record in your store, beside your keys.
 - A KV call outside a step is its own memoized step, so a replay sees the values the first run saw. Inside a step's callback it adds none.
 
 ## Recipes and reference
