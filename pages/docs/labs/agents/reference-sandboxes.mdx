@@ -395,7 +395,7 @@ githubApp(options: GithubAppOptions): GithubApp
 | `GithubAppOptions` | Default | Description |
 | --- | --- | --- |
 | `appId` | required | The App's ID. |
-| `privateKey` | required | A PEM. PKCS#1 keys are converted; `\n` written out as two characters is read as a newline. |
+| `privateKey` | required | A PEM string or a [`secret()`](#secrets). PKCS#1 keys are converted; `\n` written out as two characters is read as a newline. |
 | `apiUrl` | `https://api.github.com` | API base URL. |
 | `fetch` | global | The `fetch` to use. |
 | `userAgent` | `inngest-github-app` | The header GitHub requires. |
@@ -416,11 +416,12 @@ Errors: `GithubAppError` (`status`), and `GithubAppNotInstalledError` (a 404; th
 
 {/* not type-checked: githubApp options from environment variables */}
 ```typescript {{ title: "inngest/github.ts" }}
+import { secret } from "inngest/experimental";
 import { githubApp } from "inngest/experimental/agents";
 
 export const githubAuth = githubApp({
   appId: process.env.GITHUB_APP_ID ?? "",
-  privateKey: process.env.GITHUB_APP_KEY ?? "",
+  privateKey: secret("GITHUB_APP_PRIVATE_KEY"),
 });
 ```
 
