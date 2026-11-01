@@ -5,7 +5,7 @@ export const description = "Teach an Inngest agent how your team does things wit
 
 # Skills
 
-> Teach an agent how your team does things, in plain files you can change without a deploy.
+> Teach an agent how your team does things, in plain `SKILL.md` files from your app or a repo.
 
 A skill is a folder with a `SKILL.md`: a name, a description and instructions. The model sees every name and description, and opens the instructions when they apply.
 
@@ -13,7 +13,7 @@ A skill is a folder with a `SKILL.md`: a name, a description and instructions. T
 - **From your app or a repo.** A folder ships with a deploy; a repo changes without one. [Read a repo →](#read-a-repo)
 - **Read on demand.** The prompt carries names and descriptions; instructions load when needed. [Open a skill →](#open-a-skill)
 - **Scripts and files too.** They land in the agent's sandbox. [Ship files and scripts →](#ship-files-and-scripts)
-- **Read, then call.** A skill never adds a tool. [Skills and tools →](#skills-are-read-tools-are-called)
+- **Read, then call.** A skill never adds a tool. [Skills and tools →](#skills-and-tools)
 
 {/* not type-checked: skills.folder() and skills.repo() on an agent */}
 <AnnotatedCode>
@@ -47,7 +47,7 @@ A public pack, read with no token. An edit to the repo reaches every agent that 
 
 ## Write a skill
 
-A skill is a folder. `SKILL.md` carries the name and description in its front matter, then the instructions; scripts and files sit beside it.
+`SKILL.md` carries the name and description in its front matter, then the instructions; scripts and files sit beside it.
 
 ```text {{ title: "Your app" }}
 skills/
@@ -82,19 +82,15 @@ The model passes this name to `open_skill`. Each skill on an agent has its own.
 Say what the skill is for and when to open it. This line is how the model decides.
 </Annotation>
 
-<Annotation id="tool" lines="8" tease="names a tool" title="Tools by name" href="#skills-are-read-tools-are-called" linkText="Skills and tools">
-Naming `lookupOrder` doesn't add it. The agent has to list it.
-</Annotation>
-
 <Annotation id="script" lines="11" tease="a file beside it" title="Scripts and files" href="#ship-files-and-scripts" linkText="Ship files and scripts">
-`check.py` goes to the agent's sandbox, under `/skills/refund-policy/`.
+Where `check.py` sits in the sandbox.
 </Annotation>
 
 </AnnotatedCode>
 
 ## Open a skill
 
-The prompt carries each skill's name and description. When one applies, the model opens its instructions with one fixed tool, and only an agent with skills has it.
+The model opens a skill's instructions with one fixed tool, and only an agent with skills has it.
 
 ```typescript
 open_skill({ name: "refund-policy" })
@@ -102,7 +98,7 @@ open_skill({ name: "refund-policy" })
 
 ## Ship files and scripts
 
-Files beside `SKILL.md` go to the first sandbox the model can use among the agent's listed sandboxes, at `/skills/<name>/`. The model runs a script there like any other file.
+Files beside `SKILL.md` go to the agent's sandbox, at `/skills/<name>/`. The model runs a script there like any other file.
 
 {/* not type-checked: skills with tools and a sandbox on one agent */}
 <AnnotatedCode>
@@ -125,8 +121,8 @@ export const helpdesk = agents.agent({
 });
 ```
 
-<Annotation id="tools" lines="12" tease="the tool the skill names" title="Tools the agent has" href="#skills-are-read-tools-are-called" linkText="Skills and tools">
-The skill says to use `lookupOrder`. This line is what lets the model call it.
+<Annotation id="tools" lines="12" tease="the tool the skill names" title="Tools the agent has" href="#skills-and-tools" linkText="Skills and tools">
+The tool the skill names.
 </Annotation>
 
 <Annotation id="sandboxes" lines="13" tease="where check.py lands" title="Files in the sandbox" href="/docs/labs/agents/sandboxes-and-code?ref=docs-labs-agents-skills" linkText="Sandboxes and code">
@@ -148,7 +144,6 @@ export const work = sandbox({ id: "work" });
 
 An app whose agents list sandboxes adds `sandboxMiddleware()` to its client. [Sandboxes and code →](/docs/labs/agents/sandboxes-and-code?ref=docs-labs-agents-skills)
 
-{/* not type-checked: tool.step named by a skill */}
 ```typescript {{ title: "inngest/tools/lookupOrder.ts" }}
 import { tool } from "inngest/experimental";
 import { z } from "zod";
@@ -162,9 +157,9 @@ export const lookupOrder = tool.step({
 });
 ```
 
-## Skills are read, tools are called
+## Skills and tools
 
-A skill can name a tool, and its scripts can run, but a skill never adds a tool. Anything it does in your app goes through a tool the agent already lists, with that tool's credentials and checks. [Tools →](/docs/labs/agents/tools?ref=docs-labs-agents-skills)
+A skill can name a tool, and its scripts can run, but a skill never adds a tool. The agent has to list it, and anything a skill does in your app goes through that tool's credentials and checks. [Tools →](/docs/labs/agents/tools?ref=docs-labs-agents-skills)
 
 ## Read a repo
 
