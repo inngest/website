@@ -19,9 +19,14 @@ export const description = "Troubleshoot Inngest Sandboxes: diagnose a failed Sa
 
 ## Size rejected or no capacity
 
-- Sizes are `1 / 1024`, `2 / 2048`, `4 / 4096`, from one pair. Entitlement or capacity can still reject.
+- Sizes are 1, 2 or 4 vCPU with 1, 2 or 4 GiB per vCPU, such as `2 / 4096`. Entitlement or capacity can still reject.
 - `compute_unavailable` is temporary.
 - Retry with the **same active name and config**. A conflict returns `sandbox_name_taken`.
+
+## A custom-image Sandbox stops right after it starts
+
+- An image's `ENTRYPOINT` or `CMD` owns the Sandbox's lifetime, as with `docker run`. When it exits, the Sandbox is `TERMINATED`.
+- Give the image a long-running command, such as your server or `CMD ["tail", "-f", "/dev/null"]`, publish a new tag and create a new Sandbox. [Custom images →](/docs/sandboxes/features/custom-images?ref=docs-sandboxes-troubleshooting)
 
 ## Secrets rejected
 

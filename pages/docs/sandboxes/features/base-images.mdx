@@ -57,7 +57,7 @@ Shows exactly which image started.
 ## Choose an image
 
 - `image.inngest(name)` is `base` or a [runtime image](#runtime-images).
-- `image.custom(ref)` is a workspace image.
+- `image.custom(ref)` is a workspace image. Build and publish one with [Custom images](/docs/sandboxes/features/custom-images?ref=docs-sandboxes-base-images).
 - Images resolve once at create. A repeated name returns the original.
 
 ### Runtime images
@@ -91,12 +91,18 @@ Snapshots capture the files.
 ## Choose a size
 
 ```typescript {{ title: "TypeScript" }}
-await inngest.sandboxes.create({ name: "a", vcpu: 1, memoryMb: 1024, from: image.inngest("base") });
-await inngest.sandboxes.create({ name: "b", vcpu: 2, memoryMb: 2048, from: image.inngest("base") });
-await inngest.sandboxes.create({ name: "c", vcpu: 4, memoryMb: 4096, from: image.inngest("base") });
+await inngest.sandboxes.create({ name: "a", vcpu: 1, memoryMb: 1024 });
+await inngest.sandboxes.create({ name: "b", vcpu: 2, memoryMb: 8192 });
 ```
 
-Clones inherit the snapshot's size.
+| `vcpu` | `memoryMb` |
+| --- | --- |
+| 1 | 1024, 2048, 4096 |
+| 2 | 2048, 4096, 8192 |
+| 4 | 4096, 8192, 16384 |
+
+- 1, 2 or 4 vCPU with 1, 2 or 4 GiB per vCPU. Other sizes are refused.
+- Clones inherit the snapshot's size.
 
 ## How it works
 
