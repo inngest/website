@@ -196,15 +196,8 @@ function readNote(el: ReactElement): Note {
 export function AnnotatedCode({
   children,
   label,
-  highlight,
 }: {
   children: ReactNode;
-  /**
-   * Keeps lines tinted all the time, not only while a note is open: `true`
-   * for every annotated line, or ranges like "3-6,9" for specific lines.
-   * The rest of the block is never dimmed while a note is open.
-   */
-  highlight?: boolean | string;
   /**
    * Optional `?unreleased=<label>` value: when set, the annotated version
    * only shows with that label, and the plain block otherwise.
@@ -223,23 +216,15 @@ export function AnnotatedCode({
     return <>{codeEl ?? children}</>;
   }
 
-  return (
-    <Annotated
-      parts={parts as ReactElement[]}
-      codeEl={codeEl}
-      highlight={highlight}
-    />
-  );
+  return <Annotated parts={parts as ReactElement[]} codeEl={codeEl} />;
 }
 
 function Annotated({
   parts,
   codeEl,
-  highlight,
 }: {
   parts: ReactElement[];
   codeEl: ReactElement;
-  highlight?: boolean | string;
 }) {
   const codeProps = codeEl.props as CodeBlockProps;
   const codeChild = Children.toArray(codeProps.children).find(isValidElement);
@@ -269,26 +254,6 @@ function Annotated({
       })
       .map(readNote);
   }, [parts]);
-
-  const marked = useMemo(() => {
-    const out = new Set<number>();
-
-    if (typeof highlight === "string") {
-      parseRanges(highlight).forEach(([a, b]) => {
-        for (let n = a; n <= b; n += 1) {
-          out.add(n);
-        }
-      });
-    } else if (highlight) {
-      notes.forEach((note) => {
-        note.lines.forEach((n) => {
-          out.add(n);
-        });
-      });
-    }
-
-    return out;
-  }, [highlight, notes]);
 
   const spec = useMemo(() => {
     return readTrace(
@@ -565,10 +530,7 @@ function Annotated({
                       }
                       className={clsx(
                         "relative flex items-center whitespace-pre transition-[opacity,background-color,box-shadow] duration-200 motion-reduce:transition-none",
-                        active && !lit && marked.size === 0 && DIM,
-                        marked.has(n) &&
-                          !lit &&
-                          "bg-matcha-500/10 shadow-[inset_2px_0_0_theme(colors.matcha.500)]",
+                        active && !lit && DIM,
                         lit && "z-[1] bg-white dark:bg-white/[0.05]"
                       )}
                       style={{
