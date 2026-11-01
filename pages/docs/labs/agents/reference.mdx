@@ -201,6 +201,7 @@ type Agent<TInput, TOutput> = {
 - `start()` and a handle's methods need a function's step context and throw outside one. A Slack route or an API handler starts an agent by sending its trigger event.
 - A run opened by `start()` ends once it has answered, and that answer is the run's output. [Idle](#idle)
 
+{/* not type-checked: invoke() trigger and start().result() on an agent */}
 ```typescript
 const reviewer = agents.agent({
   id: "reviewer",
@@ -334,6 +335,7 @@ Agents talk through four event types. Each message says who sent it with `msg.fr
 - `agent/finished`: how a run the agent started ended, with its output or error.
 - How the model sees each type: `formatEvent` is the default wording. [The loop](#the-loop)
 
+{/* not type-checked: agentQuestion and agentFinished narrowing, msg.reply() and me.post() */}
 ```typescript
 for await (const msg of inbox) {
   if (msg.is(agentQuestion)) {
@@ -881,6 +883,7 @@ The agents layer keeps its own state in the same store, under names that start w
 
 `kv` finds its thread and run by itself inside a function. Outside one, bind it to a client with `kv.with(client)`.
 
+{/* not type-checked: kv.key, kv.thread.update, kv.with(client) and scope() */}
 ```typescript
 import { kv } from "inngest/experimental/agents";
 
