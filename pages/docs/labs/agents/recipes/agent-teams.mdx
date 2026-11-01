@@ -83,9 +83,8 @@ export const coder = agents.agent({
 });
 ```
 
-The lead takes a typed request and finds the specialists itself.
+The lead takes a typed request and finds the specialists itself. It has no handler either.
 
-{/* TODO(spec): the lead's start_agent calls return at once and the specialists' results arrive as agent/finished. A run opened through a handle (start(), message(), start_agent) ends once it has answered and nothing is unread, so lead.start(...).result() in the first Variation would resolve with the lead's "I have asked them" answer, before any agent/finished arrives. How does a model lead that delegates get its combined answer into result()? The Dev Server path, where a trigger opens the run and idle applies, is what the page shows. */}
 <AnnotatedCode>
 
 {/* not type-checked: invoke() trigger on an agent with no handler, limits.depth, budget, discovery tools */}
@@ -114,7 +113,36 @@ The lead has `list_agents` and `start_agent` by default. Each specialist's resul
 </Annotation>
 
 <Annotation id="limits" lines="11" tease="one level deep" title="Depth" href="/docs/labs/agents/teams-of-agents?ref=docs-labs-agents-recipes-agent-teams" linkText="Teams of agents">
-The lead starts specialists, and they start no one.
+The lead starts specialists, and they start no one. One level is the default; writing it makes the rule visible.
+</Annotation>
+
+</AnnotatedCode>
+
+Any plain function can call the lead and wait for the combined answer.
+
+<AnnotatedCode>
+
+{/* not type-checked: start().result() on an agent with an invoke() trigger, from a plain function */}
+```typescript {{ title: "inngest/functions/askTeam.ts" }}
+import { eventType } from "inngest";
+import { z } from "zod";
+import { lead } from "../agents/lead";
+import { inngest } from "../client";
+
+const teamRequest = eventType("team/request", {
+  schema: z.object({ request: z.string() }),
+});
+
+export const askTeam = inngest.createFunction(
+  { id: "ask-team", triggers: [teamRequest] },
+  async ({ event }) => {
+    return await lead.start({ request: event.data.request }).result();
+  },
+);
+```
+
+<Annotation id="result" lines="13" tease="wait for the answer" title="Start and wait" href="/docs/labs/agents/teams-of-agents?ref=docs-labs-agents-recipes-agent-teams" linkText="Teams of agents">
+`start()` opens a thread for the lead. `result()` resolves with the answer it gives after the specialists it started have finished.
 </Annotation>
 
 </AnnotatedCode>
@@ -126,10 +154,11 @@ import { agents, inngest } from "./client";
 import "./agents/coder";
 import "./agents/lead";
 import "./agents/researcher";
+import { askTeam } from "./functions/askTeam";
 
 createServer({
   client: inngest,
-  functions: agents.functions(),
+  functions: [...agents.functions(), askTeam],
 }).listen(3000);
 ```
 
@@ -138,7 +167,7 @@ createServer({
 ## What it shows off
 
 - One agent finds others and uses their results, with no imports between them. [Discovery](/docs/labs/agents/discovery?ref=docs-labs-agents-recipes-agent-teams)
-- A typed request that code and the Dev Server both send. [Agents and triggers](/docs/labs/agents/agents-and-triggers?ref=docs-labs-agents-recipes-agent-teams#take-a-typed-input)
+- A plain function that calls the lead and waits for the answer. [Teams of agents](/docs/labs/agents/teams-of-agents?ref=docs-labs-agents-recipes-agent-teams)
 - A budget on every agent and a depth limit on the lead. [Reliability](/docs/labs/agents/reliability?ref=docs-labs-agents-recipes-agent-teams)
 - A sandbox for the coder only. [Sandboxes and code](/docs/labs/agents/sandboxes-and-code?ref=docs-labs-agents-recipes-agent-teams)
 
@@ -156,11 +185,11 @@ npx tsx inngest/serve.ts
 npx inngest-cli@latest dev -u http://localhost:3000/api/inngest
 ```
 
-On the Dev Server's Functions page, invoke `lead` with `{ "request": "What does HTTP 429 mean? Then write a fetch wrapper that retries on it." }`. The run shows the lead's searches, both `start_agent` calls and the answer. Cards reach discovery when the app syncs; on Cloud, an agent that was just deployed can take a few minutes to appear.
+On the Dev Server, send `team/request` with `{ "request": "What does HTTP 429 mean? Then write a fetch wrapper that retries on it." }`, or invoke `lead` with the same data from its Functions page. The run shows the lead's searches, both `start_agent` calls and the answer. Cards reach discovery when the app syncs; on Cloud, an agent that was just deployed can take a few minutes to appear.
 
 ## Variations
 
-- Call the lead from a plain function with `lead.start({ request }).result()`. [Agents and triggers](/docs/labs/agents/agents-and-triggers?ref=docs-labs-agents-recipes-agent-teams#take-a-typed-input)
+- Call the lead by address from another app with `agents.reference`. [Teams of agents](/docs/labs/agents/teams-of-agents?ref=docs-labs-agents-recipes-agent-teams)
 - Limit who the lead may start with `limits: { mayCall: [...] }`. [Teams of agents](/docs/labs/agents/teams-of-agents?ref=docs-labs-agents-recipes-agent-teams)
 - Let other apps use the researcher with `share: "team"` on its card. [Discovery](/docs/labs/agents/discovery?ref=docs-labs-agents-recipes-agent-teams)
 
