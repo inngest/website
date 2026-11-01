@@ -28,7 +28,7 @@ export const reviewer = agents.agent({
 });
 ```
 
-`invoke()` makes the agent callable and types its input: `pr` is the pull request's URL. With no handler, its output is the model's last answer.
+`invoke()` types the agent's input: `pr` is the pull request's URL. With no handler, its output is the model's last answer.
 
 ## Call it from code
 
@@ -76,9 +76,9 @@ export const prHelper = agents.agent(
   },
   async ({ inbox, me, loop }) => {
     for await (const batch of inbox.batches({ max: 20 })) {
-      const answer = await loop(batch);
+      const result = await loop(batch);
 
-      await me.post(answer.text);
+      await me.post(result.text);
 
       const passed = batch.some((message) => {
         return message.is(ciPassed);
@@ -159,7 +159,7 @@ for await (const batch of inbox.batches()) {
 }
 ```
 
-The question arrives as `agent/question`, with who asked in `message.from`, and `reply()` answers it.
+The question arrives as `agent/question`, with who asked in `message.from`, and `reply()` answers it. A handle asks with `ask()`, a model with `ask_agent`.
 
 ## The model calls agents
 
