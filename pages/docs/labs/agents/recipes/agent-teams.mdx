@@ -1,9 +1,9 @@
 import { AnnotatedCode, Annotation } from "shared/Docs/mdx";
 
-export const metaTitle = "Agent teams | Inngest Agents";
+export const metaTitle = "Lead and specialists | Inngest Agents";
 export const description = "Build a lead agent that finds a researcher and a coder at run time, hands each its part and combines their answers, with a budget on every agent.";
 
-# Agent teams
+# Lead and specialists
 
 > A lead that finds the right specialists, hands each its part and combines the answers.
 
@@ -163,7 +163,7 @@ The [model](/docs/labs/agents/quick-start?ref=docs-labs-agents-recipes-agent-tea
 
 - [Agent discovery](/docs/labs/agents/agent-discovery?ref=docs-labs-agents-recipes-agent-teams#finding) lets the lead find specialists with no imports between them.
 - [Start and wait](/docs/labs/agents/agent-teams?ref=docs-labs-agents-recipes-agent-teams#call-it-from-code) lets a plain function wait for the lead's answer.
-- [Limits](/docs/labs/agents/reliability?ref=docs-labs-agents-recipes-agent-teams) keep delegation one level deep by default.
+- [Limits](/docs/labs/agents/reference?ref=docs-labs-agents-recipes-agent-teams#limits) keep delegation one level deep by default.
 - [A sandbox](/docs/labs/agents/sandboxes?ref=docs-labs-agents-recipes-agent-teams) gives the coder a machine to run its code.
 
 ## Run it
@@ -185,8 +185,8 @@ At [localhost:8288](http://localhost:8288), open `ask-team`, choose **Invoke** a
 ## Variations
 
 - [`agents.reference`](/docs/labs/agents/agent-teams?ref=docs-labs-agents-recipes-agent-teams#an-agent-in-another-app) calls the lead by address from another app.
-- [`limits.mayCall`](/docs/labs/agents/reliability?ref=docs-labs-agents-recipes-agent-teams) limits who the lead may start.
-- [`share: "team"`](/docs/labs/agents/agent-discovery?ref=docs-labs-agents-recipes-agent-teams) lets other apps use the researcher.
+- [`limits.mayCall`](/docs/labs/agents/agent-discovery?ref=docs-labs-agents-recipes-agent-teams#who-it-may-start) limits who the lead may start.
+- [`share: "team"`](/docs/labs/agents/agent-discovery?ref=docs-labs-agents-recipes-agent-teams#who-can-find-it) lets other apps use the researcher.
 
 ## Learn more
 
