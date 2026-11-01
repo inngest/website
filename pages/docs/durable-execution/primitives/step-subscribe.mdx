@@ -156,11 +156,11 @@ const comment = await comments.next({ timeout: "1h" });
 ```
 
 <Annotation id="separate" lines="1" tease="its own stream" title="One inbox per stream">
-Each inbox has its own sources, messages and `close()`. Order holds within an inbox, not across inboxes. A read waits on one inbox, so keep the sources one wait covers together, like reviews and checks in `autoMerge`.
+Order holds within an inbox, not across inboxes. A read waits on one inbox, so keep the sources one wait covers together, like reviews and checks in `autoMerge`.
 </Annotation>
 
 <Annotation id="typed" lines="6" tease="typed from its sources" title="Typed messages">
-Messages are typed from the inbox's event types. Once `comment` isn't `null`, `comment.data.body` is a `string`. A source given as a name has no schema, so its `data` stays `unknown`.
+Messages are typed from the inbox's event types, so after `if (comment)`, `comment.data.body` is a `string`. A source given as a name stays `unknown` until you narrow it with `message.is()`.
 </Annotation>
 
 </AnnotatedCode>
@@ -226,10 +226,11 @@ export const collectComments = inngest.createFunction(
 ## Things to know
 
 - **Open before you act.** An inbox receives only events that arrive after it opens, so open it before the step that causes them.
-- **Race inside `group.parallel()`.** By default, a plain `Promise.race()` of a read and a step, or of reads from two inboxes, waits for both. Create the read once (`const reply = inbox.next()`), race it inside [`group.parallel()`](/docs/durable-execution/primitives/group-parallel#continue-after-the-first-step-settles), and if it loses, race the same `reply` again.
+- **Race inside `group.parallel()`.** By default, a plain `Promise.race()` of a read and a step waits for both. Create the read once (`const reply = inbox.next()`), race it inside [`group.parallel()`](/docs/durable-execution/primitives/group-parallel#continue-after-the-first-step-settles), and if it loses, race the same `reply` again.
+- **One wait, one inbox.** To wait on two streams at once, put their sources in one inbox rather than racing two inboxes.
 
 ## How it works
 
 - Each message is saved as its own step when it arrives, read or not. An event that matches two inboxes is saved in each.
-- Opening, `close()` and each batch read cost one step each. A `next()` that receives a message adds none, so a `next()` loop over 10 messages is 11 steps, or 12 with `close()`.
+- Opening, `close()` and each batch read cost one step each. A `next()` that receives a message adds none. A `next()` loop over 10 messages is 11 steps, or 12 with `close()`.
 - Messages count toward the run's [step and state limits](/docs/durable-execution/limits#platform-limits). A run that receives more fails with the usual limit error, even while it sleeps.
