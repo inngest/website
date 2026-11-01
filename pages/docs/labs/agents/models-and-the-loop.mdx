@@ -79,7 +79,7 @@ export const readSource = tool.step({
 
 ## Pick a model
 
-A model is what the loop calls each turn: the conversation in, the reply out. `anthropic()` reads `ANTHROPIC_API_KEY`, and `.with()` makes a variant that shares its client.
+A model is what the loop calls each turn: the history in, the reply out. `anthropic()` reads `ANTHROPIC_API_KEY`.
 
 {/* not type-checked: anthropic() as a named export and .with() variants */}
 <AnnotatedCode>
@@ -163,7 +163,7 @@ A one-shot call isn't a step on its own, so a retry would repeat it. Put it in `
 
 ## Run the loop
 
-`loop(batch)` runs turns. A turn is one model call plus the tool calls it asked for, and each call is a durable step. The result's `end` says why the loop stopped:
+`loop(batch)` runs turns. A turn is one model call plus the tool calls it asked for. The result's `end` says why the loop stopped:
 
 - **`"done"`.** The model stopped calling tools.
 - **`"maxTurns"`.** It used all its turns.
@@ -174,11 +174,11 @@ The result also has `turns`, `history`, `usage` and `toolCalls`. `loop` is in a 
 
 ## Fold in messages
 
-A message can arrive while the model works. Before every model call, the first included, the loop takes everything new from the handler's inbox and shows it to the model, so a correction reaches the very next call.
+Before every model call, the first included, the loop takes everything new from the handler's inbox and shows it to the model, so a correction reaches the very next call.
 
 Folded messages don't come back through your `for await`. One that arrives during the final model call stays in the inbox for your next read.
 
-`steer` picks what to fold. It gets the messages the loop took and returns the ones to fold; the rest come back as `result.unread`.
+`steer` picks what to fold: it gets the messages the loop took and returns the ones to fold. The rest come back as `result.unread`.
 
 {/* not type-checked: loop(batch, { steer }) and result.unread, with agentQuestion and message.is() */}
 <AnnotatedCode>
@@ -229,23 +229,16 @@ What `steer` skipped comes back here, ready for the next loop.
 
 ## Choose per call
 
-`loop(batch, options)` takes the loop's options for one call:
+`loop(batch, options)` takes the loop's options for one call, such as `tools` ([Give the model a tool →](/docs/labs/agents/handlers?ref=docs-labs-agents-models-and-the-loop#give-the-model-a-tool)), `steer` and `onTurn`. [Reference: the loop →](/docs/labs/agents/reference?ref=docs-labs-agents-models-and-the-loop#the-loop)
 
-- **`tools`.** Added to the agent's own for that call; a name used twice is an error. Sandbox code can call them too. [Give the model a tool →](/docs/labs/agents/handlers?ref=docs-labs-agents-models-and-the-loop#give-the-model-a-tool)
-- **`steer`.** Picks what to fold. [Fold in messages →](#fold-in-messages)
-- **`onTurn`.** Reports each turn. [Watch progress →](#watch-progress)
-- **`maxTurns`.** The most model calls, 40 by default.
-- **`maxToolOutput`.** The most characters of one tool result the model sees.
-- **`wrapUp`.** Text sent on the last turn, with no tools allowed, so the model has to answer.
+An agent with no handler sets them on its definition, as in `loop: { maxTurns: 10 }`. A handler derives a loop with `loop.with(options)`. It keeps the agent's model, prompt, tools and history, and your options override or add to them.
 
-An agent with no handler changes them by swapping its loop. A handler that needs another model builds one with `agent.loop(options)`, which starts from the agent's prompt, tools and remembered history. Its options override the agent's, and `stop` and `format` go there too.
-
-{/* not type-checked: agent.loop(options) as the loop of a no-handler agent, and in a handler with another model and stop */}
+{/* not type-checked: loop options on a no-handler agent, and loop.with() with another model and stop in a handler */}
 <AnnotatedCode>
 
 ```typescript {{ title: "inngest/agents/escalator.ts" }}
 import { eventType } from "inngest";
-import { agent, kv } from "inngest/experimental/agents";
+import { kv } from "inngest/experimental/agents";
 import { z } from "zod";
 import { agents } from "../client";
 import { claude, claudeQuick } from "../models/claude";
@@ -264,7 +257,7 @@ export const quick = agents.agent({
   thread: "event.data.id",
   model: claudeQuick,
   system: "You answer support tickets.",
-  loop: agent.loop({ maxTurns: 10 }),
+  loop: { maxTurns: 10 },
 });
 
 export const escalator = agents.agent(
@@ -276,9 +269,8 @@ export const escalator = agents.agent(
     system: "You answer support tickets.",
   },
   async ({ event, inbox, loop }) => {
-    const careful = agent.loop({
+    const careful = loop.with({
       model: claude.with({ effort: "high" }),
-      system: "You answer high priority tickets with great care.",
       stop: async () => {
         return (await kv.thread.get("paused")) === true;
       },
@@ -293,23 +285,25 @@ export const escalator = agents.agent(
 );
 ```
 
-<Annotation id="swap" lines="21" tease="no handler, other limits" title="loop: agent.loop()" href="/docs/labs/agents/reference?ref=docs-labs-agents-models-and-the-loop#the-loop" linkText="Reference">
+<Annotation id="swap" lines="21" tease="no handler, other limits" title="loop: { maxTurns }" href="/docs/labs/agents/reference?ref=docs-labs-agents-models-and-the-loop#the-loop" linkText="Reference">
 The agent keeps its model, prompt and tools, and the loop stops after ten model calls.
 </Annotation>
 
-<Annotation id="careful" lines="33-39" tease="a loop of its own" title="agent.loop()" href="/docs/labs/agents/reference?ref=docs-labs-agents-models-and-the-loop#the-loop" linkText="Reference">
-Another model and prompt, with the same call shape as `loop`. `stop` is checked before each model call, and the loop ends with `end: "stop"` when it returns `true`.
+<Annotation id="careful" lines="33-38" tease="same agent, other model" title="loop.with()" href="/docs/labs/agents/reference?ref=docs-labs-agents-models-and-the-loop#the-loop" linkText="Reference">
+Swaps the model and keeps the rest. `stop` is checked before each model call, and the loop ends with `end: "stop"` when it returns `true`.
 </Annotation>
 
-<Annotation id="pick" lines="41" tease="one loop per run" title="Pick at run time">
+<Annotation id="pick" lines="40" tease="one loop per run" title="Pick at run time">
 The quick model answers by default; high priority tickets get the careful one.
 </Annotation>
 
 </AnnotatedCode>
 
+`agent.loop(options)`, imported on its own, builds a standalone loop with only what its options give it, so it needs a `model`.
+
 ## Watch progress
 
-`onTurn` runs after each turn's tool calls, so you can tell people what the agent is doing. It isn't awaited between turns, an error in it is logged, and the loop waits for the last call before it returns.
+`onTurn` runs after each turn's tool calls, so you can tell people what the agent is doing.
 
 {/* not type-checked: loop(batch, { onTurn }) posting through me */}
 <AnnotatedCode>
@@ -352,17 +346,13 @@ A failed post is logged and the loop carries on. The last `onTurn` finishes befo
 
 ## Remember and summarise
 
-The loop saves the model's history on the thread after every batch and reads it back when the thread's next run starts. When the history nears the model's context window, the loop summarises its start once, returns the summary on the result and reuses it as the thread carries on, so you never pay for it twice.
+The loop saves the model's history on the thread and reads it back on the thread's next run. When it nears the model's context window, the loop summarises the start once and reuses the summary. `remember: false` switches this off. [Threads and memory →](/docs/labs/agents/threads-and-memory?ref=docs-labs-agents-models-and-the-loop#remember-the-history)
 
-The default handler and `loop(batch)` both remember. `remember: false` on the agent switches it off. [Threads and memory →](/docs/labs/agents/threads-and-memory?ref=docs-labs-agents-models-and-the-loop#remember-the-history)
-
-The threshold comes from the model's context size. To change it, swap the loop:
+To change the threshold, set `compaction` on the definition's loop. `keep` is how many recent messages are always sent whole.
 
 ```typescript
-loop: agent.loop({ compaction: { maxTokens: 150_000, keep: 8 } }),
+loop: { compaction: { maxTokens: 150_000, keep: 8 } },
 ```
-
-`keep` is how many recent messages are always sent whole.
 
 ## Cost and errors
 
@@ -391,7 +381,7 @@ The loop stops with `end: "budget"` when the thread has spent it.
 
 </AnnotatedCode>
 
-`price` overrides what the model reports, for a model with no built-in prices. It is a table of dollars per million tokens, with `"*"` for any model not named, or a function that prices one call. It sits beside `budget` and is a plain value.
+`price` overrides what the model reports, for a model with no built-in prices. It's a table of dollars per million tokens, or a function that prices one call.
 
 ```typescript
 price: { "*": { input: 3, output: 15 } },
@@ -414,14 +404,16 @@ A message from another agent reaches the model as text. The loop words the four 
 - **`agent/finished`.** Which agent and thread finished, the outcome (completed, failed or stopped), then the output or the error.
 - **`agent/answer`.** The answer, next to the question it answers, so several questions can be open at once. `refused` and `timed_out` show as a plain "no answer" line.
 
-Any other event shows as its name and data as JSON. `format` words a message your own way, and `formatEvent` is the default wording, so you only write what differs.
+A Slack message reads `[Name] text` and a GitHub comment the same, with the login. Any other event shows as its name and data as JSON.
 
-{/* not type-checked: agent.loop({ format }) with formatEvent and message.is() */}
+`format` words a message your own way. `formatEvent` is the default wording, so you only write what differs.
+
+{/* not type-checked: loop.with({ format }) with formatEvent and message.is() */}
 <AnnotatedCode>
 
 ```typescript {{ title: "inngest/agents/shipper.ts" }}
 import { eventType } from "inngest";
-import { agent, formatEvent } from "inngest/experimental/agents";
+import { formatEvent } from "inngest/experimental/agents";
 import { z } from "zod";
 import { agents } from "../client";
 import { claude } from "../models/claude";
@@ -430,20 +422,16 @@ export const releaseRequested = eventType("release/requested", {
   schema: z.object({ service: z.string(), branch: z.string() }),
 });
 
-const system = "You ship the branch you are asked to ship.";
-
 export const shipper = agents.agent(
   {
     id: "shipper",
     triggers: [releaseRequested],
     thread: "event.data.service",
     model: claude,
-    system,
+    system: "You ship the branch you are asked to ship.",
   },
-  async ({ inbox }) => {
-    const run = agent.loop({
-      model: claude,
-      system,
+  async ({ inbox, loop }) => {
+    const run = loop.with({
       format: (message) => {
         if (message.is(releaseRequested)) {
           return `Ship ${message.data.branch} of ${message.data.service}.`;
@@ -461,11 +449,11 @@ export const shipper = agents.agent(
 );
 ```
 
-<Annotation id="format" lines="25-31" tease="your wording for a message" title="format" href="/docs/labs/agents/reference?ref=docs-labs-agents-models-and-the-loop#the-loop" linkText="Reference">
+<Annotation id="format" lines="21-27" tease="your wording for a message" title="format" href="/docs/labs/agents/reference?ref=docs-labs-agents-models-and-the-loop#the-loop" linkText="Reference">
 Gets every message the model is about to read, the trigger included, and returns text for it.
 </Annotation>
 
-<Annotation id="fallback" lines="30" tease="the default wording" title="formatEvent">
+<Annotation id="fallback" lines="26" tease="the default wording" title="formatEvent">
 Keeps the standard wording for everything you didn't change, such as a message from another agent.
 </Annotation>
 
@@ -473,15 +461,12 @@ Keeps the standard wording for everything you didn't change, such as a message f
 
 ## Gotchas
 
-- **Wrap one-shot calls in a step.** The model's one-shot call isn't a step, so a retry repeats it.
-- **The loop needs a model.** An agent with no `model` has no `loop` in its argument.
-- **A question to a busy agent waits.** It is answered at the agent's next model call, so the asker's `ask()` waits through a long turn. The asker's one-hour timeout covers it.
+- **A question to a busy agent waits.** It is answered at the agent's next model call, so the asker's `ask()` waits through a long turn, within its one-hour timeout.
 
 ## How it works
 
-- A model call is one step, and each tool call is a step. Before each model call the loop reads the handler's inbox, which costs one step and a round trip, and each inbox the model opened adds its own.
-- After each batch the loop saves the history under the thread's scope in your store.
-- The loop records model time, tokens, tool calls, folded messages, tool time and tool errors on every run, with no setup. [Observability →](/docs/labs/agents/observability?ref=docs-labs-agents-models-and-the-loop)
+- Each model call and tool call is a step. Before each model call the loop reads the handler's inbox, one step and a round trip, plus one for each inbox the model opened.
+- The loop records model time, tokens, tool calls, folded messages, tool time and tool errors on every run. [Observability →](/docs/labs/agents/observability?ref=docs-labs-agents-models-and-the-loop)
 
 ## Recipes and reference
 
