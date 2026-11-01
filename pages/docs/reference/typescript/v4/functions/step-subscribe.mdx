@@ -52,7 +52,13 @@ A message is the event as it was sent, with `name`, `data`, `id`, `ts` and `v`. 
 
 With several sources, narrow a message with `message.is(type)`, which takes one event type or an array. [`eventType.is(message)`](/docs/reference/typescript/v4/functions/triggers#narrowing-with-is) works too.
 
-Import the type with `import type { Inbox } from "inngest"`.
+Import the types with `import type { Inbox, InboxMessage } from "inngest"`. `InboxMessage<typeof inbox>` is the type of an inbox's messages, for code that handles them outside the loop:
+
+```ts
+const describe = (message: InboxMessage<typeof inbox>) => {
+  return message.is(prReviewed) ? "review" : "check";
+};
+```
 
 ### `next(options?)`
 
