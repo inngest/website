@@ -51,7 +51,7 @@ export const support = agents.agent(
 What this thread may spend.
 </Annotation>
 
-<Annotation id="limits" lines="12" tease="who it may start" title="Limits" href="/docs/labs/agents/agent-teams?ref=docs-labs-agents-reliability" linkText="Agent Teams">
+<Annotation id="limits" lines="12" tease="who it may start" title="Limits" href="/docs/labs/agents/agent-discovery?ref=docs-labs-agents-reliability#who-it-may-start" linkText="Who it may start">
 Agents it starts can start agents, but no deeper. Its model may start only `support/researcher`.
 </Annotation>
 
@@ -59,7 +59,7 @@ Agents it starts can start agents, but no deeper. Its model may start only `supp
 Also hands the message in flight to a fresh run.
 </Annotation>
 
-<Annotation id="end" lines="19" tease="why it stopped" title="end and reason" href="/docs/labs/agents/models?ref=docs-labs-agents-reliability" linkText="Models">
+<Annotation id="end" lines="19" tease="why it stopped" title="end and reason" href="/docs/labs/agents/models?ref=docs-labs-agents-reliability#a-budget" linkText="A budget">
 `"budget"` comes with a `reason` to pass on.
 </Annotation>
 
@@ -130,7 +130,7 @@ export const lookup = agents.agent(
 );
 ```
 
-<Annotation id="turns" lines="14" tease="for this call" title="maxTurns" href="/docs/labs/agents/models?ref=docs-labs-agents-reliability" linkText="Models">
+<Annotation id="turns" lines="14" tease="for this call" title="maxTurns" href="/docs/labs/agents/reference?ref=docs-labs-agents-reliability#the-loop" linkText="Reference: the loop">
 A loop option, so each call can have its own.
 </Annotation>
 
@@ -205,5 +205,5 @@ Live across every deploy.
 
 ## Recipes and reference
 
-- [Agent Teams](/docs/labs/agents/agent-teams?ref=docs-labs-agents-reliability): each thread has its own budget.
+- [Lead and specialists](/docs/labs/agents/recipes/agent-teams?ref=docs-labs-agents-reliability): each thread has its own budget.
 - [Reference: budget, limits and recovery](/docs/labs/agents/reference?ref=docs-labs-agents-reliability#budget-limits-and-recovery)
