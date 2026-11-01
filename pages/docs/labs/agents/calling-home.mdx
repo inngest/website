@@ -5,7 +5,7 @@ export const description = "Let a script in an agent's sandbox call your tools. 
 
 # Calling home
 
-> Let a script in the sandbox call your tools: each call runs in your app, as a step; a tool made in your handler also has the run's `me`, `kv` and variables.
+> Let a script in the sandbox call your tools, each call a step in your app.
 
 The model can write one script instead of taking many turns, and your tools' credentials stay out of the machine. This page adds that to the PR helper, built up through [Threads](/docs/labs/agents/threads?ref=docs-labs-agents-calling-home), [Inboxes](/docs/labs/agents/inboxes?ref=docs-labs-agents-calling-home), [Models](/docs/labs/agents/models?ref=docs-labs-agents-calling-home), [Tools](/docs/labs/agents/tools?ref=docs-labs-agents-calling-home), [Skills](/docs/labs/agents/skills?ref=docs-labs-agents-calling-home) and [Sandboxes](/docs/labs/agents/sandboxes?ref=docs-labs-agents-calling-home).
 
@@ -59,7 +59,7 @@ for pr in [41, 42, 43, 44, 45]:
 print(failing)
 ```
 
-That is one turn, not one per pull request, and each `readLog` is a step in your trace. The tool and the CI helper are as [Tools](/docs/labs/agents/tools?ref=docs-labs-agents-calling-home) left them:
+Each `readLog` is a step in your trace. The tool and the CI helper are as [Tools](/docs/labs/agents/tools?ref=docs-labs-agents-calling-home) left them:
 
 ```typescript {{ title: "inngest/lib/ci.ts" }}
 export const fetchLog = async (pr: number) => {
@@ -208,7 +208,7 @@ export const agents = createAgents(inngest);
 
 You want a script to use a credential without being handed it. `note` and `readLog` run in your app with its credentials, so the script sees only what they return.
 
-The sandbox holds the checkout's read-only token and any `sandbox({ secrets })` values, which its code can read. The write token stays on your host. [Reference: secrets →](/docs/labs/agents/reference-sandboxes?ref=docs-labs-agents-calling-home#secrets)
+Only the checkout's read-only token and any `sandbox({ secrets })` values enter the sandbox; the write token stays on your host. [Reference: secrets →](/docs/labs/agents/reference-sandboxes?ref=docs-labs-agents-calling-home#secrets)
 
 ## Your own scripts
 
@@ -235,7 +235,7 @@ const main = async () => {
 main();
 ```
 
-The script finds the tools in `inngest_tools` by the names in the record; in Python it is `from inngest_tools import tools`. [Tools and code mode →](/docs/sandboxes/features/tools?ref=docs-labs-agents-calling-home)
+The script finds the tools in `inngest_tools` by the names in the record. In Python, import them with `from inngest_tools import tools`. [Tools and code mode →](/docs/sandboxes/features/tools?ref=docs-labs-agents-calling-home)
 
 ## Recipes and reference
 
