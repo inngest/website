@@ -27,14 +27,14 @@ import { github } from "inngest/experimental/agents";
 import { agents } from "../client";
 import { claude } from "../models/claude";
 import { findSimilar } from "../tools/findSimilar";
-import { repo } from "../tools/githubRest";
+import { repoName } from "../tools/githubRest";
 import { label } from "../tools/label";
 
 export const triage = agents.agent({
   id: "triage",
   triggers: [
     github.thread({
-      repos: [repo],
+      repos: [repoName],
       events: ["issues"],
       if: 'event.data.action == "opened"',
     }),
@@ -83,13 +83,15 @@ The tools call GitHub's REST API through one helper.
 ```typescript {{ title: "inngest/tools/findSimilar.ts" }}
 import { tool } from "inngest/experimental";
 import { z } from "zod";
-import { githubRest, repo } from "./githubRest";
+import { githubRest, repoName } from "./githubRest";
 
 export const findSimilar = tool.step({
   description: "Search open issues for similar reports",
   input: z.object({ query: z.string() }),
   run: async ({ query }) => {
-    const search = encodeURIComponent(`repo:${repo} is:issue is:open ${query}`);
+    const search = encodeURIComponent(
+      `repo:${repoName} is:issue is:open ${query}`,
+    );
 
     const found = await githubRest<{
       items: { number: number; title: string }[];
@@ -105,7 +107,7 @@ export const findSimilar = tool.step({
 ```typescript {{ title: "inngest/tools/label.ts" }}
 import { tool } from "inngest/experimental";
 import { z } from "zod";
-import { githubRest, repo } from "./githubRest";
+import { githubRest, repoName } from "./githubRest";
 
 export const label = tool.step({
   description: "Label the issue",
@@ -114,7 +116,7 @@ export const label = tool.step({
     labels: z.array(z.enum(["bug", "feature", "question", "duplicate"])),
   }),
   run: async ({ number, labels }) => {
-    await githubRest(`/repos/${repo}/issues/${number}/labels`, {
+    await githubRest(`/repos/${repoName}/issues/${number}/labels`, {
       method: "POST",
       body: JSON.stringify({ labels }),
     });
@@ -125,14 +127,20 @@ export const label = tool.step({
 ```
 
 ```typescript {{ title: "inngest/tools/githubRest.ts" }}
-export const repo = "acme/app";
+export const repoName = "acme/app";
 
 export const githubRest = async <T>(path: string, init?: RequestInit) => {
+  const token = process.env.GITHUB_TOKEN;
+
+  if (!token) {
+    throw new Error("Set GITHUB_TOKEN");
+  }
+
   const response = await fetch(`https://api.github.com${path}`, {
     ...init,
     headers: {
       accept: "application/vnd.github+json",
-      authorization: `Bearer ${process.env.GITHUB_TOKEN}`,
+      authorization: `Bearer ${token}`,
       "content-type": "application/json",
     },
   });
@@ -149,8 +157,8 @@ The [client](/docs/labs/agents/quick-start?ref=docs-labs-agents-recipes-issue-tr
 
 ## What it shows off
 
-- [GitHub as a trigger](/docs/labs/agents/slack-and-github?ref=docs-labs-agents-recipes-issue-triage#work-on-github) starts the agent per issue, once per delivery.
-- [Tools](/docs/labs/agents/tools?ref=docs-labs-agents-recipes-issue-triage) make each GitHub call its own step.
+- [GitHub as a trigger](/docs/labs/agents/slack-and-github?ref=docs-labs-agents-recipes-issue-triage#work-on-github) starts the agent from the repos and events you choose.
+- [Tools](/docs/labs/agents/tools?ref=docs-labs-agents-recipes-issue-triage) are the functions the model calls to search and label.
 - [An agent with no handler](/docs/labs/agents/models-and-the-loop?ref=docs-labs-agents-recipes-issue-triage) needs only a model, a prompt and tools.
 
 ## Run it
@@ -173,7 +181,7 @@ Add a webhook to `acme/app` for **Issues** events, pointing at `https://<your-ho
 
 ## Variations
 
-- [Slack and GitHub](/docs/labs/agents/slack-and-github?ref=docs-labs-agents-recipes-issue-triage#work-on-github) lets the model ask a maintainer when it is unsure, with the `ask` tool from `github.tools()`.
+- [Slack and GitHub](/docs/labs/agents/slack-and-github?ref=docs-labs-agents-recipes-issue-triage#work-on-github) lets the model ask a maintainer with `ask` from `github.tools()`.
 - [Scheduled watcher](/docs/labs/agents/recipes/scheduled-watcher?ref=docs-labs-agents-recipes-issue-triage) watches for stale issues on a schedule.
 - [Coding agent](/docs/labs/agents/recipes/coding-agent?ref=docs-labs-agents-recipes-issue-triage) opens a branch for simple bugs.
 
