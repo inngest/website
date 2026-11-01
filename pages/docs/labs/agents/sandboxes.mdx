@@ -211,7 +211,7 @@ const tests = await sandboxes.work.commands.run("tests", "npm test", {
 });
 ```
 
-The model loses `work_run` and `work_push`. In the handler, `sandboxes.work` is the same machine: each command is a durable step, and `repo.push(branch)` goes through the same `policy`. [Reference: the handler's sandbox →](/docs/labs/agents/reference-sandboxes?ref=docs-labs-agents-sandboxes#the-handler-s-sandbox)
+The model loses `work_run` and `work_push`. In the handler, `sandboxes.work` is the same machine, and each command is a durable step. [Reference: the handler's sandbox →](/docs/labs/agents/reference-sandboxes?ref=docs-labs-agents-sandboxes#the-handler-s-sandbox)
 
 ## Recipes and reference
 
