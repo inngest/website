@@ -22,7 +22,6 @@ It has no thread to reply in, no inbox to read and no card to publish, so it is 
 
 ## The code
 
-{/* TODO(spec): kv.app in a plain function with only INNGEST_EXPERIMENTAL_KV_URL set; does the app still need createAgents(inngest)? kv.md says the variable alone gives a store, L54 says the app scope works in plain functions. */}
 ```typescript {{ title: "inngest/client.ts" }}
 import { Inngest } from "inngest";
 
@@ -122,7 +121,7 @@ Reads are checked against the schema.
 </Annotation>
 
 <Annotation id="seen" lines="11" tease="shared by every run" title="App scope" href="/docs/labs/agents/threads-and-memory?ref=docs-labs-agents-recipes-scheduled-watcher" linkText="Threads and memory">
-`kv.app` is the same for every run of every function in the app.
+`kv.app` is the same for every run of every function in the app. It uses the store from `INNGEST_EXPERIMENTAL_KV_URL`, so there is no `createAgents`.
 </Annotation>
 
 <Annotation id="digest" lines="50-53" tease="one model call" title="The digest" href="/docs/labs/agents/models-and-the-loop?ref=docs-labs-agents-recipes-scheduled-watcher" linkText="Models and the loop">
