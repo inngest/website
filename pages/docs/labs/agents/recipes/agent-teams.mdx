@@ -46,7 +46,7 @@ export const lead = agents.agent(
     const result = await agent.loop({
       model: claude,
       system:
-        "Split the request. Find agents for facts and code, ask each, then combine the answers.",
+        "Find agents for facts and code, ask each, then combine the answers.",
       prompt: message ?? "",
       tools: discoveryTools(),
       ...control,
@@ -61,12 +61,12 @@ export const lead = agents.agent(
 Sub-agents inherit these, narrowed. A refused call throws `AgentLimitError`. A price does not travel, so each child sets its own.
 </Annotation>
 
-<Annotation id="tools" lines="23" tease="find, then ask" title="Discovery tools" href="/docs/labs/agents/teams-of-agents?ref=docs-labs-agents-recipes-agent-teams#let-the-model-pick-who-to-ask" linkText="Teams of agents">
-The model lists the agents it may use, reads their cards, and decides who to ask and in what order. No agent names another in code.
+<Annotation id="tools" lines="23" tease="find, then ask" title="Discovery tools" href="/docs/labs/agents/teams-of-agents?ref=docs-labs-agents-recipes-agent-teams#let-the-model-choose" linkText="Teams of agents">
+The model lists the agents it may use and reads their cards. It decides who to ask, and in what order. No agent names another in code.
 </Annotation>
 
 <Annotation id="return" lines="27" tease="the run's result" title="Return" href="/docs/labs/agents/agents-and-triggers?ref=docs-labs-agents-recipes-agent-teams" linkText="Agents and triggers">
-A caller that invokes `lead` gets this value back.
+An agent that calls `lead` gets this value back.
 </Annotation>
 
 </AnnotatedCode>

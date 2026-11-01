@@ -7,7 +7,7 @@ export const description = "Inngest Agents teams: find another agent through dis
 
 > Find another agent and hand it work, without wiring them together.
 
-Agents never import each other. Each one publishes a card that says what it does, and a caller finds it by its address, so you can move, rename or redeploy one without touching the rest.
+Agents never import each other. Each one publishes a card that says what it does. Callers find it at runtime and call it by its address.
 
 <AnnotatedCode>
 
@@ -61,7 +61,7 @@ export const researcher = agents.agent(
 );
 ```
 
-Agents in the same app find each other by default; `share: "team"` lets agents in other apps find it too. `depth` is 1 when a function that is not an agent called it, 2 for the next, and `0` when anything else started the run.
+Agents in the same app find each other by default; `share: "team"` lets agents in other apps find it too. `depth` counts calls: the first callee gets 1 and its callees 2. A run no call started gets `0`.
 
 `agents.announce()` publishes the app's cards once it is up.
 
@@ -79,7 +79,7 @@ createServer({
 await agents.announce();
 ```
 
-## Let the model pick who to ask
+## Let the model choose
 
 `discoveryTools()` lets the model list agents, read their cards, and call or message the one it needs.
 
@@ -231,7 +231,7 @@ export const patient = agents.agent({ id: "patient" }, async () => {
 });
 ```
 
-Defaults: `id` is `agent:invoke:<address>`, the callee's thread is `<functionId>:<runId>.<n>`, and there is no timeout. `discoveryTools({ prepare })` fills in what the model must not make up, such as who is asking, before `call_agent` hands over its input. `discoveryTools({ onBackground })` lets the model start a long call and carry on.
+Defaults: `id` is `agent:invoke:<address>`, the callee's thread is `<functionId>:<runId>.<n>`, and there is no timeout. For the options of `discoveryTools()`, see the [reference](/docs/labs/agents/reference?ref=docs-labs-agents-teams-of-agents#calling-agents).
 
 ## Gotchas
 
@@ -242,11 +242,12 @@ Defaults: `id` is `agent:invoke:<address>`, the callee's thread is `<functionId>
 
 ## How it works
 
-- `callAgent()` reads the cards in a step, checks the caller may use the agent, then invokes it as a step. The caller sleeps until the callee returns.
-- The tools check sharing again on every call, so an address the model made up reaches nothing it may not use.
+- `callAgent()` reads the cards in a step and checks sharing.
+- The call is a step. The caller sleeps until the callee returns.
+- The tools check sharing on every call, so a made-up address gets nowhere.
 - Limits are checked before the call starts and narrowed for the callee.
 - The callee's run is a child of the caller's trace.
 
 ## Recipes and reference
 
-[Agent teams](/docs/labs/agents/recipes/agent-teams), [Coding agent](/docs/labs/agents/recipes/coding-agent), [Discovery reference](/docs/labs/agents/reference?ref=docs-labs-agents-teams-of-agents#callagent).
+[Agent teams](/docs/labs/agents/recipes/agent-teams), [Coding agent](/docs/labs/agents/recipes/coding-agent), [Calling agents reference](/docs/labs/agents/reference?ref=docs-labs-agents-teams-of-agents#calling-agents).
