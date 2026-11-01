@@ -56,7 +56,6 @@ list_agents({ query: "security" })
     {
       address: "platform/security-reviewer",
       description: "Reviews a pull request for security problems",
-      effects: "write",
     },
   ]
 
@@ -70,7 +69,7 @@ start_agent({
   { thread: "a1b2c3" }
 ```
 
-`start_agent` checks the input against the card first, and the review returns as `agent/finished`. [Agent Teams →](/docs/labs/agents/agent-teams?ref=docs-labs-agents-agent-discovery#the-model-calls-agents)
+`start_agent` checks the input against the card first, and the review returns as `agent/finished`. [The model calls agents →](/docs/labs/agents/agent-teams?ref=docs-labs-agents-agent-discovery#the-model-calls-agents)
 
 ## Keeping to itself
 
@@ -116,7 +115,7 @@ card: {
 
 ## Who can find it
 
-You want to choose who finds an agent. `share` sets it. `"private"`, the default, shows the agent to its own app; `"team"` to every app.
+You want to choose who finds an agent. `share: "private"`, the default, shows it to its own app; `share: "team"` to every app in the environment.
 
 It isn't access control: anyone with the address can start the agent from code.
 
