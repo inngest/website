@@ -1,11 +1,11 @@
 import { Info } from "shared/Docs/mdx";
 
 export const metaTitle = "Inngest Agents | Labs";
-export const description = "Inngest Agents is an Inngest Labs project: agents that hold a conversation for days, take new messages while they work, run code in their own sandbox and never repeat finished work.";
+export const description = "Inngest Agents is an Inngest Labs project: agents that keep a thread going for days, take new messages while they work, run code in their own sandbox and never repeat finished work.";
 
 # Inngest Agents
 
-> Build agents that hold a conversation for days, take new messages mid-task, and never repeat finished work.
+> Build agents that keep a thread going for days, take new messages mid-task, and never repeat finished work.
 
 <Info>
   Inngest Agents is experimental and moves fast. Import it from `inngest/experimental/agents`; the API may change between releases. [What's Labs?](/docs/labs?ref=docs-labs-agents)
@@ -35,6 +35,7 @@ export const support = agents.agent({
 });
 ```
 
+{/* not type-checked: tool.step */}
 ```typescript {{ title: "inngest/tools/lookupOrder.ts" }}
 import { tool } from "inngest/experimental";
 import { z } from "zod";
@@ -56,7 +57,7 @@ Read them in order, or jump to the one you need.
 
 1. [Agents and triggers](/docs/labs/agents/agents-and-triggers?ref=docs-labs-agents): define an agent and what starts it.
 2. [Handlers](/docs/labs/agents/handlers?ref=docs-labs-agents): your code around the model.
-3. [Threads and memory](/docs/labs/agents/threads-and-memory?ref=docs-labs-agents): one key per conversation, and state that lasts.
+3. [Threads and memory](/docs/labs/agents/threads-and-memory?ref=docs-labs-agents): one key per thread, and state that lasts.
 4. [Models and the loop](/docs/labs/agents/models-and-the-loop?ref=docs-labs-agents): turns, tools, history and cost.
 5. [Inboxes](/docs/labs/agents/inboxes?ref=docs-labs-agents): messages in order, and events the agent watches.
 6. [Tools](/docs/labs/agents/tools?ref=docs-labs-agents): functions in your app that the model and scripts call.
