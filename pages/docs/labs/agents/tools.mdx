@@ -471,7 +471,7 @@ The key names the server's tools, so the model sees `hex_search_projects`. Give 
 
 ## Sign in each person
 
-With `auth.oauth`, each person connects the server as themselves. `user` names the person and gets `{ runId, event, thread }`: the run's trigger event and thread key.
+With `auth.oauth`, each person connects the server as themselves. `user` names the person and gets `{ runId, event, thread }`: the run's trigger event and its thread, which is `{ key }`.
 
 {/* not type-checked: auth.oauth.user receiving { runId, event, thread } */}
 <AnnotatedCode>
