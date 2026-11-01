@@ -1,11 +1,13 @@
 import { AnnotatedCode, Annotation } from "shared/Docs/mdx";
 
 export const metaTitle = "Agent teams | Inngest Agents";
-export const description = "Build a lead agent that finds a researcher and a coder at run time, hands each its part and combines their answers, with a budget on every agent and a limit on how deep delegation goes.";
+export const description = "Build a lead agent that finds a researcher and a coder at run time, hands each its part and combines their answers, with a budget on every agent.";
 
 # Agent teams
 
 > A lead that finds the right specialists, hands each its part and combines the answers.
+
+No agent imports another: the lead finds the specialists by their cards.
 
 ```text
 You         What does HTTP 429 mean? Then write a fetch wrapper
@@ -20,25 +22,11 @@ coder       finished: Wrote and ran fetchWithRetry.ts. Its test passes.
 lead        429 means Too Many Requests. Here is fetchWithRetry: ...
 ```
 
-Screenshot needed: the lead's run in the Dev Server, with both specialists' runs beside it.
+Screenshot needed: the lead's run beside both specialists' runs.
 
 ## The code
 
-{/* not type-checked: createAgents with the store from the environment */}
-```typescript {{ title: "inngest/client.ts" }}
-import { Inngest } from "inngest";
-import { sandboxMiddleware } from "inngest/experimental";
-import { createAgents } from "inngest/experimental/agents";
-
-export const inngest = new Inngest({
-  id: "agent-teams",
-  middleware: [sandboxMiddleware()],
-});
-
-export const agents = createAgents(inngest);
-```
-
-The two specialists have a model, a prompt, a budget and a card, and no code. The coder also has a sandbox.
+The specialists have a model, a prompt, a budget and a card, and no code.
 
 <AnnotatedCode>
 
@@ -57,11 +45,7 @@ export const researcher = agents.agent({
 });
 ```
 
-<Annotation id="budget" lines="9" tease="its own spend cap" title="Budget" href="/docs/labs/agents/reliability?ref=docs-labs-agents-recipes-agent-teams" linkText="Reliability">
-Every thread has its own budget, so a runaway researcher stops by itself.
-</Annotation>
-
-<Annotation id="card" lines="10" tease="how the lead finds it" title="Card" href="/docs/labs/agents/discovery?ref=docs-labs-agents-recipes-agent-teams" linkText="Discovery">
+<Annotation id="card" lines="10" tease="found by description" title="Card" href="/docs/labs/agents/discovery?ref=docs-labs-agents-recipes-agent-teams#publish-a-card" linkText="Publish a card">
 Published when the app syncs. The description is what the lead searches.
 </Annotation>
 
@@ -83,66 +67,60 @@ export const coder = agents.agent({
 });
 ```
 
-The lead takes a typed request and finds the specialists itself. It has no handler either.
-
 <AnnotatedCode>
 
-{/* not type-checked: invoke() trigger on an agent with no handler, limits.depth, budget, discovery tools */}
+{/* not type-checked: invoke() trigger on an agent with no handler, budget, discovery tools */}
 ```typescript {{ title: "inngest/agents/lead.ts" }}
 import { invoke } from "inngest";
 import { z } from "zod";
 import { agents } from "../client";
 import { claude } from "../models/claude";
 
+export const teamRequest = z.object({ request: z.string() });
+
 export const lead = agents.agent({
   id: "lead",
-  triggers: [invoke(z.object({ request: z.string() }))],
+  triggers: [invoke(teamRequest)],
   model: claude,
   system: "Find specialists, start them, then combine their results.",
-  limits: { depth: 1 },
   budget: { usd: 0.5 },
 });
 ```
 
-<Annotation id="invoke" lines="8" tease="a typed request" title="invoke()" href="/docs/labs/agents/agents-and-triggers?ref=docs-labs-agents-recipes-agent-teams#take-a-typed-input" linkText="Agents and triggers">
+<Annotation id="invoke" lines="10" tease="a typed request" title="invoke()" href="/docs/labs/agents/agents-and-triggers?ref=docs-labs-agents-recipes-agent-teams#take-a-typed-input" linkText="Take a typed input">
 Checks what callers send, and goes on the agent's card.
 </Annotation>
 
-<Annotation id="system" lines="10" tease="no names in code" title="Discovery" href="/docs/labs/agents/discovery?ref=docs-labs-agents-recipes-agent-teams" linkText="Discovery">
-The lead has `list_agents` and `start_agent` by default. Each specialist's result comes back as an `agent/finished` message.
+<Annotation id="system" lines="12" tease="no names in code" title="Discovery" href="/docs/labs/agents/discovery?ref=docs-labs-agents-recipes-agent-teams#find-agents" linkText="Find agents">
+The lead has `list_agents` and `start_agent` by default. Each result comes back as an `agent/finished` message.
 </Annotation>
 
-<Annotation id="limits" lines="11" tease="one level deep" title="Depth" href="/docs/labs/agents/teams-of-agents?ref=docs-labs-agents-recipes-agent-teams" linkText="Teams of agents">
-The lead starts specialists, and they start no one. One level is the default; writing it makes the rule visible.
+<Annotation id="budget" lines="13" tease="its own spend cap" title="Budgets" href="/docs/labs/agents/reliability?ref=docs-labs-agents-recipes-agent-teams#cap-spend" linkText="Cap spend">
+Every thread has its own budget, never handed down. One run of each agent here costs at most 2 dollars.
 </Annotation>
 
 </AnnotatedCode>
 
-Any plain function can call the lead and wait for the combined answer.
+A plain function calls the lead and waits for the combined answer.
 
 <AnnotatedCode>
 
 {/* not type-checked: start().result() on an agent with an invoke() trigger, from a plain function */}
 ```typescript {{ title: "inngest/functions/askTeam.ts" }}
-import { eventType } from "inngest";
-import { z } from "zod";
-import { lead } from "../agents/lead";
+import { invoke } from "inngest";
+import { lead, teamRequest } from "../agents/lead";
 import { inngest } from "../client";
 
-const teamRequest = eventType("team/request", {
-  schema: z.object({ request: z.string() }),
-});
-
 export const askTeam = inngest.createFunction(
-  { id: "ask-team", triggers: [teamRequest] },
+  { id: "ask-team", triggers: [invoke(teamRequest)] },
   async ({ event }) => {
-    return await lead.start({ request: event.data.request }).result();
+    return await lead.start(event.data).result();
   },
 );
 ```
 
-<Annotation id="result" lines="13" tease="wait for the answer" title="Start and wait" href="/docs/labs/agents/teams-of-agents?ref=docs-labs-agents-recipes-agent-teams" linkText="Teams of agents">
-`start()` opens a thread for the lead. `result()` resolves with the answer it gives after the specialists it started have finished.
+<Annotation id="result" lines="8" tease="wait for the answer" title="Start and wait" href="/docs/labs/agents/teams-of-agents?ref=docs-labs-agents-recipes-agent-teams#wait-for-the-result" linkText="Wait for the result">
+`result()` resolves with the answer the lead gives after the specialists it started have finished.
 </Annotation>
 
 </AnnotatedCode>
@@ -162,18 +140,32 @@ createServer({
 }).listen(3000);
 ```
 
-`inngest/models/claude.ts` is the one from the [quick start](/docs/labs/agents/quick-start?ref=docs-labs-agents-recipes-agent-teams#pick-a-model). No agent imports another: the lead finds the others by their cards.
+{/* not type-checked: createAgents with the store from the environment, sandboxMiddleware() */}
+```typescript {{ title: "inngest/client.ts" }}
+import { Inngest } from "inngest";
+import { sandboxMiddleware } from "inngest/experimental";
+import { createAgents } from "inngest/experimental/agents";
+
+export const inngest = new Inngest({
+  id: "agent-teams",
+  middleware: [sandboxMiddleware()],
+});
+
+export const agents = createAgents(inngest);
+```
+
+The [model](/docs/labs/agents/quick-start?ref=docs-labs-agents-recipes-agent-teams#pick-a-model) is the quick start's.
 
 ## What it shows off
 
-- One agent finds others and uses their results, with no imports between them. [Discovery](/docs/labs/agents/discovery?ref=docs-labs-agents-recipes-agent-teams)
-- A plain function that calls the lead and waits for the answer. [Teams of agents](/docs/labs/agents/teams-of-agents?ref=docs-labs-agents-recipes-agent-teams)
-- A budget on every agent and a depth limit on the lead. [Reliability](/docs/labs/agents/reliability?ref=docs-labs-agents-recipes-agent-teams)
-- A sandbox for the coder only. [Sandboxes and code](/docs/labs/agents/sandboxes-and-code?ref=docs-labs-agents-recipes-agent-teams)
+- [Discovery](/docs/labs/agents/discovery?ref=docs-labs-agents-recipes-agent-teams#find-agents) lets the lead find specialists with no imports between them.
+- [Start and wait](/docs/labs/agents/teams-of-agents?ref=docs-labs-agents-recipes-agent-teams#wait-for-the-result) lets a plain function wait for the lead's answer.
+- [Limits](/docs/labs/agents/teams-of-agents?ref=docs-labs-agents-recipes-agent-teams#limit-the-team) keep delegation one level deep by default.
+- [A sandbox](/docs/labs/agents/sandboxes-and-code?ref=docs-labs-agents-recipes-agent-teams) belongs to the coder only.
 
 ## Run it
 
-You need the setup from the [quick start](/docs/labs/agents/quick-start?ref=docs-labs-agents-recipes-agent-teams#install). The coder's sandbox needs an environment with Sandboxes.
+Set the project up as in the [quick start](/docs/labs/agents/quick-start?ref=docs-labs-agents-recipes-agent-teams#install), with Sandboxes for the coder.
 
 ```bash
 export ANTHROPIC_API_KEY=sk-ant-...
@@ -185,13 +177,13 @@ npx tsx inngest/serve.ts
 npx inngest-cli@latest dev -u http://localhost:3000/api/inngest
 ```
 
-On the Dev Server, send `team/request` with `{ "request": "What does HTTP 429 mean? Then write a fetch wrapper that retries on it." }`, or invoke `lead` with the same data from its Functions page. The run shows the lead's searches, both `start_agent` calls and the answer. Cards reach discovery when the app syncs; on Cloud, an agent that was just deployed can take a few minutes to appear.
+In the Dev Server, open `ask-team`, choose **Invoke** and send `{ "request": "What does HTTP 429 mean? Then write a retrying fetch." }`. The run shows the lead's searches, both `start_agent` calls and the answer.
 
 ## Variations
 
-- Call the lead by address from another app with `agents.reference`. [Teams of agents](/docs/labs/agents/teams-of-agents?ref=docs-labs-agents-recipes-agent-teams)
-- Limit who the lead may start with `limits: { mayCall: [...] }`. [Teams of agents](/docs/labs/agents/teams-of-agents?ref=docs-labs-agents-recipes-agent-teams)
-- Let other apps use the researcher with `share: "team"` on its card. [Discovery](/docs/labs/agents/discovery?ref=docs-labs-agents-recipes-agent-teams)
+- [`agents.reference`](/docs/labs/agents/teams-of-agents?ref=docs-labs-agents-recipes-agent-teams#call-an-agent-in-another-app) calls the lead by address from another app.
+- [`limits.mayCall`](/docs/labs/agents/teams-of-agents?ref=docs-labs-agents-recipes-agent-teams#limit-the-team) limits who the lead may start.
+- [`share: "team"`](/docs/labs/agents/discovery?ref=docs-labs-agents-recipes-agent-teams) lets other apps use the researcher.
 
 ## Learn more
 
