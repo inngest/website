@@ -1,19 +1,18 @@
 import { AnnotatedCode, Annotation } from "shared/Docs/mdx";
 
 export const metaTitle = "Threads and memory | Inngest Agents";
-export const description = "Name an Inngest agent's conversations with a key, let it pick each one up where it stopped, keep your own state in scoped, typed keys, and choose the store behind it.";
+export const description = "Name an Inngest agent's threads with a key, let it pick each one up where it stopped, keep your own state in scoped, typed keys, and choose the store behind it.";
 
 # Threads and memory
 
-> Name a conversation with a key, and the agent picks it up where it stopped, hours or days later.
+> Name a thread with a key, and the agent picks it up where it stopped, hours or days later.
 
-A thread is one conversation, named by a key. Messages with the same key reach the same thread, one run works on it at a time, and what the agent keeps lasts between runs.
+A key names a thread, and what the agent keeps lasts between runs.
 
-- **One key per conversation.** Events whose keys match share a thread. [Name a thread →](#name-a-thread)
+- **One key per thread.** Events with matching keys share a thread. [Name a thread →](#name-a-thread)
 - **One run at a time.** Messages for a busy thread join its run. [How long a run waits →](#how-long-a-run-waits)
 - **Memory with no code.** The model's history is there on the next run. [Remember the history →](#remember-the-history)
 - **State of your own.** Four scopes of durable, typed keys. [Keep state →](#keep-state)
-- **Your store.** Redis, D1 or memory for tests. [Choose a store →](#choose-a-store)
 
 {/* not type-checked: agents.agent with thread, model and no handler */}
 <AnnotatedCode>
@@ -49,7 +48,7 @@ With no handler, the agent saves the model's history on the thread, and the next
 
 ## Name a thread
 
-`thread` is an expression over the incoming `event`. Events whose keys come out equal share a thread; without it, each event opens its own. A trigger can carry its own expression when its events name the thread differently. [Writing expressions →](/docs/durable-execution/guides-and-advanced/writing-expressions?ref=docs-labs-agents-threads-and-memory)
+`thread` is an expression over the `event`. Events with equal keys share a thread; without it, each event opens its own. [Writing expressions →](/docs/durable-execution/guides-and-advanced/writing-expressions?ref=docs-labs-agents-threads-and-memory)
 
 {/* not type-checked: github.thread() with a plain event trigger that carries its own thread expression */}
 <AnnotatedCode>
@@ -86,15 +85,11 @@ A failed CI run carries the URL, so it lands on the pull request's thread. The r
 
 </AnnotatedCode>
 
-A Slack thread is its own thread, and every `start()` opens a new one, so neither needs an expression. An `inbox` source takes a `thread` too. [Inboxes →](/docs/labs/agents/inboxes?ref=docs-labs-agents-threads-and-memory#add-sources)
-
-If an event has nothing at the path, a trigger starts a fresh thread and a source reaches no thread. The trace warns either way, so a typo shows up instead of landing in the wrong thread.
+`slack.thread()` and `start()` name their own threads. An `inbox` source takes a `thread` too. [Inboxes →](/docs/labs/agents/inboxes?ref=docs-labs-agents-threads-and-memory#add-sources)
 
 ## How long a run waits
 
-At most one run is live per thread. A message for a live thread lands in that run's inbox, and a message for a quiet thread starts a run.
-
-A live run waits for more messages and ends after `idle` of quiet time, ten minutes by default. The next message starts a run that reads the history back.
+At most one run is live per thread. A live run takes new messages and ends after `idle` of quiet time, ten minutes by default.
 
 ```text
 09:00  question arrives      starts a run
@@ -128,37 +123,17 @@ How long a run waits in quiet before it ends. Guests answer slowly here. A numbe
 
 </AnnotatedCode>
 
-`idle` also ends a handler's loops, and a few runs end differently:
+A run opened through a handle (`start()`, `message()`, `start_agent`, `message_agent`) ends once it has answered and nothing is unread, so only runs a trigger starts wait `idle`. [Continue a thread →](/docs/labs/agents/teams-of-agents?ref=docs-labs-agents-threads-and-memory#continue-a-thread)
 
-- **Handler loops.** `for await` over `inbox.batches()` or over `inbox` finishes after `idle`, so the handler returns.
-- **Waits with no timeout.** `inbox.next()` with no `timeout` keeps the run live as long as it waits.
-- **Runs opened through a handle.** `start()`, `message()`, `start_agent` and `message_agent` open runs that end once they've answered and nothing is unread, so `result()` returns promptly. Only runs a trigger starts wait `idle`.
-- **Continuing from code.** A run opened through a handle stays open while the runs it started are open. A second round is `await handle.message(content).result()`, and `ask()` on a thread whose last run ended starts a run there. [Teams of agents →](/docs/labs/agents/teams-of-agents?ref=docs-labs-agents-threads-and-memory#carry-on-the-conversation)
-
-Keep the default unless people reply slower than that:
-
-- **Deploys.** A live run replays on the new code after a deploy.
-- **Steps.** Every step counts toward the limit of 1,000, and a busy 50-minute chat can take over 300.
-- **Little is lost.** History, sandbox and shell stay on the thread; only handler variables reset.
+Keep the default unless people reply slower; a longer `idle` costs steps and spans deploys. [Long runs →](/docs/labs/agents/reliability?ref=docs-labs-agents-threads-and-memory#deploys-and-long-runs)
 
 ## What lasts
 
-A run's variables go when it ends. The thread keeps:
-
-- **State.** The keys you save with `kv.thread`.
-- **History.** The model's side of the conversation, saved by the loop.
-- **Sandbox.** Paused when unused, resumed on the next use. [Sandboxes and code →](/docs/labs/agents/sandboxes-and-code?ref=docs-labs-agents-threads-and-memory)
-- **The shell's place.** Its working directory and exported variables.
-- **Budget.** What the thread has spent. [Reliability →](/docs/labs/agents/reliability?ref=docs-labs-agents-threads-and-memory)
-- **How the last run ended.**
-
-Handler variables don't survive a run, so put anything the next run needs in thread state.
+A run's variables go when it ends. The thread keeps its `kv.thread` state, the model's history, its [sandbox](/docs/labs/agents/sandboxes-and-code?ref=docs-labs-agents-threads-and-memory) and the shell's place, its [budget](/docs/labs/agents/reliability?ref=docs-labs-agents-threads-and-memory) and how the last run ended.
 
 ## Remember the history
 
-The loop saves the model's history on the thread after every batch and reads it back when the thread's next run starts. A long history is summarised once, and the summary is reused. The default handler and `loop(batch)` both do this with no code.
-
-`remember: false` switches it off for an agent whose requests stand alone.
+The loop saves the model's history on the thread and reads it back on the next run. `remember: false` starts every run clean.
 
 {/* not type-checked: remember: false on an agent definition */}
 <AnnotatedCode>
@@ -191,7 +166,7 @@ Each run starts with an empty history. The thread's state, budget and sandbox ar
 
 ## Keep state
 
-For anything else, `kv` is a durable key-value store. It is an import, and inside a function it finds its own thread and run.
+For anything else, `kv` is a durable key-value store. Inside a function it finds its own thread and run.
 
 {/* not type-checked: kv.thread.update with a typed key in an agent handler */}
 <AnnotatedCode>
@@ -213,9 +188,10 @@ export const planner = agents.agent(
     for await (const batch of inbox.batches()) {
       const { text } = await loop(batch);
 
-      await kv.thread.update(plan, (found) => {
-        return { steps: [...(found?.steps ?? []), text] };
-      });
+      await kv.thread
+        .update(plan, (found) => {
+          return { steps: [...(found?.steps ?? []), text] };
+        });
 
       await me.post(text);
     }
@@ -244,11 +220,11 @@ Four scopes, and every call names one:
 - **`kv.app`.** Shared by every function of the app.
 - **`kv.env`.** Shared by every app of the environment.
 
-`run`, `app` and `env` also work in plain functions, in an app with no `createAgents`: the store comes from `INNGEST_EXPERIMENTAL_KV_URL`. `kv.thread` needs an agent run. A function for a run-time field, such as `system` or `budget`, may read `kv` too; each call is a step, so the function needs no other side effects.
+In plain functions, `run`, `app` and `env` work with the store from `INNGEST_EXPERIMENTAL_KV_URL`. A run-time field's function may read `kv`; each call is a step, so keep the function free of other side effects.
 
 ## Type a key
 
-A key is a plain name, whose value is `unknown`, or a name that carries its value's type.
+A key can carry its value's type.
 
 {/* not type-checked: kv.key with a type and with a schema */}
 <AnnotatedCode>
@@ -277,7 +253,7 @@ A stored value that breaks the schema fails the read for good and stays where it
 
 ## Claim and update
 
-Every scope has the same methods. `get` reads a key and `set` writes one, with an optional `ttl`. This job takes a lock on `kv.app` so two overlapping runs never clean up at once.
+This job takes a lock on `kv.app`, so two overlapping runs never clean up at once.
 
 {/* not type-checked: kv.app.setIfAbsent with ttl and delete in a plain function */}
 <AnnotatedCode>
@@ -322,11 +298,11 @@ Removes the key.
 
 </AnnotatedCode>
 
-`take` reads and deletes in one step, `all` lists a scope's keys and `clear` removes them. `index(name)` keeps a sorted list beside your keys, with `add`, `range({ min, max, limit, order })` and `remove`. [Reference: KV →](/docs/labs/agents/reference?ref=docs-labs-agents-threads-and-memory#kv)
+The reference lists the rest, such as `take`, `all`, `clear` and the sorted `index(name)`. [Reference: KV →](/docs/labs/agents/reference?ref=docs-labs-agents-threads-and-memory#kv)
 
 ## Choose a store
 
-Thread state lives in one store per app, chosen once. Set `INNGEST_EXPERIMENTAL_KV_URL` for Redis with no code, or pass a store to `createAgents`.
+Thread state lives in one store per app. Set `INNGEST_EXPERIMENTAL_KV_URL` for Redis with no code, or pass a store to `createAgents`.
 
 {/* not type-checked: createAgents with a redisKvAdapter store */}
 ```typescript {{ title: "inngest/client.ts" }}
@@ -342,13 +318,13 @@ export const agents = createAgents(inngest, {
 
 - **`redisKvAdapter(url)`.** Redis 6.2 or newer.
 - **`d1KvAdapter(db)`.** A Cloudflare D1 database, with `d1KvSchema` for the migration. [Workers →](/docs/labs/agents/workers?ref=docs-labs-agents-threads-and-memory)
-- **`memoryKvAdapter()`.** For tests. It keeps state in one process, so a run that moves to another machine loses it.
+- **`memoryKvAdapter()`.** For tests; state stays in one process.
 
-`store` wins over the environment variable. With neither, any KV call throws an error that names both.
+`store` wins over the environment variable. With neither, any KV call throws.
 
 ## Outside a function
 
-`kv` finds its thread from the running function. In a route or a script, bind it to your client with `kv.with(client)`. `scope("thread", key)` reaches any thread by its key.
+In a route or a script, bind `kv` to your client with `kv.with(client)`.
 
 {/* not type-checked: kv.with(client).scope("thread", key) in a script */}
 ```typescript {{ title: "scripts/thread.ts" }}
@@ -363,18 +339,15 @@ console.log(await thread.get(plan));
 
 ## Gotchas
 
-- **One value for every event is one thread.** An expression that gives all events the same key puts them on one thread.
-- **`update` can run its function twice.** On a race it reads again and retries, up to 25 times, so keep the function pure. The value it writes never expires, even if the key had a `ttl`.
+- **A missing path warns.** With nothing at the path, a trigger starts a fresh thread and a source reaches none.
+- **`update` can run its function twice.** On a race it retries, so keep the function pure. The value it writes never expires, even if the key had a `ttl`.
 - **Values are JSON.** No `Date`, `Map` or `undefined` properties.
-- **Every call is a step.** A run that makes many KV calls reaches the step limit sooner.
-- **Nothing expires on its own.** A key lasts until you delete it, unless it has a `ttl`.
 - **`__` names are the SDK's.** Keep your own keys off that prefix.
 
 ## How it works
 
 - A thread is a record in your store: its status, spend, budget and how its last run ended, beside your keys.
-- The loop saves the history under the thread's scope after every batch, and a run for a quiet thread reads it back.
-- Each KV call inside a function is one memoized step, named by its operation, scope and key, so a replay sees the values the first run saw.
+- Each KV call in a function is one memoized step, so a replay sees the values the first run saw.
 
 ## Recipes and reference
 
