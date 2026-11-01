@@ -61,7 +61,7 @@ export const agents = createAgents(inngest);
 
 ## The definition
 
-`agents.agent(definition, handler?)` takes the fields below. A field marked *value or function* takes a value, or a function of `{ event, thread }` that may be async. `event` is the event that started the run and `thread` is the thread's key. The function runs once, when a run starts, and again on replay, so keep it free of side effects. It may read [`kv`](#the-kv-import); each call is a memoized step. A field marked *value* is read when your app syncs and takes a value only. [Agents and triggers →](/docs/labs/agents/agents-and-triggers?ref=docs-labs-agents-reference)
+`agents.agent(definition, handler?)` takes the fields below. A field marked *value or function* takes a value, or a function of `{ event, thread }` that may be async. `event` is the event that started the run and `thread` is the thread's key. The function runs once, when a run starts, and again on replay, so keep it free of side effects. It may read [`kv`](#the-kv-import); each call is a memoized step. A field marked *value* takes a value only. Inngest reads `id`, `triggers`, `thread`, `inbox`, `card`, `discovery` and `listen` when your app syncs. [Agents and triggers →](/docs/labs/agents/agents-and-triggers?ref=docs-labs-agents-reference)
 
 | Field | Takes | Description |
 | --- | --- | --- |
@@ -77,13 +77,13 @@ export const agents = createAgents(inngest);
 | `skills` | value or function | `skills.folder()` and `skills.repo()` sources. [Sandboxes reference](/docs/labs/agents/reference-sandboxes?ref=docs-labs-agents-reference) |
 | `card` | value | `{ description, share, owner, effects, speed }`. Optional. [Cards and discovery](#cards-and-discovery) |
 | `budget` | value or function | What a thread may spend: `{ usd, tokens }`. [Budget, limits and recovery](#budget-limits-and-recovery) |
-| `price` | value or function | Overrides the model's own prices. |
+| `price` | value | Overrides the model's own prices: a per-million-token table, or a function that prices a call. Not a function of `{ event, thread }`. [Budget and price](#budget-and-price) |
 | `limits` | value or function | `{ depth, mayCall }`: how deep chains of started agents go, and which agents the model may start. |
 | `recovery` | value | `true` or `{ resume, message }`. Off by default. |
 | `discovery` | value | `false` turns off the tools that find and reach other agents; `{ prepare }` fills part of their input. On by default. |
 | `listen` | value | Event types the model may start watching with `inbox_listen`. [Model tools](#model-tools) |
 | `remember` | value or function | `false` switches off the loop's remembered history. |
-| `loop` | value | Replaces the whole loop. |
+| `loop` | value | Replaces the whole loop. For an agent with no handler, `loop: agent.loop({ maxTurns: 10 })` changes the loop's options. |
 
 The options of `createFunction` that apply to agents (`name`, `retries`, `cancelOn`, `concurrency`, `throttle`, `idempotency`, `onFailure` and the rest) pass through to the function.
 
@@ -146,7 +146,7 @@ The second argument of `agents.agent()`. It gets one argument: the function's us
 | `previousRun` | How the thread's last run ended, if there was one. Every run after the first gets it, with or without `recovery`. |
 | `step` | Core's step tools, such as `step.run()`. |
 
-- **With no handler**, an agent with a `model` sends each batch of messages to the loop and posts the answer where the thread lives. An agent with neither a model nor a handler takes its batch, posts nothing and ends with `undefined`.
+- **With no handler**, an agent with a `model` sends each batch of messages to the loop and posts the answer where the thread lives. When the loop ends on `budget`, it posts that the thread's budget is spent. An agent with neither a model nor a handler takes its batch, posts nothing and ends with `undefined`.
 - **The return value** is the run's output, which a caller's `result()` reads. With no handler it is the model's final answer, a string.
 - **The run ends** when the handler returns. Work still running and not awaited is stopped, except an un-awaited `me.post()` or `score()`, which land first. A plain function keeps its own behaviour.
 - **A run opened through a handle** (`start()`, `message()`, `start_agent`, `message_agent`) ends once it has answered, after any agents it started have finished. [Idle](#idle)
@@ -166,8 +166,6 @@ me.message(content: Json): Promise<void>
 - A thread with no home, such as one opened by `start()` or a cron tick, posts nothing, and the trace warns.
 - A Slack configuration error from a post you did not await, such as a bad token or a missing scope, becomes a warning on the trace.
 - `message(content)`: puts a message in the agent's own inbox. It is how work you did not wait for reports back.
-
-{/* TODO(spec): me.message is typed Promise<void> here. Does it return a RunHandle like a ThreadHandle's message()? */}
 
 - The agent posts some things itself: a status line while it works, the answer when there is no handler, and a notice when a run fails.
 
@@ -298,8 +296,6 @@ Agents talk through four event types. Each message says who sent it with `msg.fr
 | `agentAnswer` | `agent/answer` | Agents with a model. |
 | `agentFinished` | `agent/finished` | Agents with a model, for runs they started with `start_agent`. |
 
-{/* TODO(spec): does agent/finished also follow runs opened with message_agent? */}
-
 ```typescript {{ title: "Signature" }}
 // agent/message
 { content: Json }
@@ -400,9 +396,14 @@ formatEvent(message: AgentMessage): string
 
 | Option | Description |
 | --- | --- |
-| `tools` | Added to the agent's tools. A name used twice is an error. A tool made in the handler can close over `me`, the event and your variables, and sandbox code calls it by the same name. |
+| `tools` | Added to the agent's tools. A name used twice is an error. A tool made in the handler can close over `me`, the event and your variables, and sandbox code calls it by the same name. A tool passed here makes `run_code` available for that call even when the sandbox's code tools had no `tools`. |
 | `steer` | Chooses which drained messages are folded in. |
 | `onTurn` | Called after each turn. |
+| `maxTurns` | Most model calls for this call. |
+| `maxToolOutput` | Most characters of a tool result the model sees. |
+| `wrapUp` | Text for the last turn, which allows no tool use. |
+
+An agent with no handler changes these options for every call with `loop: agent.loop({ maxTurns: 10 })`.
 
 `agent.loop(options)` returns the same `loop` function the handler gets. Use it when a handler needs a different model. Its options:
 
@@ -523,8 +524,20 @@ budget: { usd?: number; tokens?: number }
 ```
 
 - The budget belongs to the thread, comes from its own agent's definition and is never handed down by the agent that started it. It is always enforced.
-- When a thread has spent it, the loop ends with `end: "budget"` and a `reason`.
-- `price` is a function or a per-million-token table. It only overrides the prices the model reports.
+- When a thread has spent it, the loop ends with `end: "budget"` and a `reason`. The default handler also posts that the thread's budget is spent.
+
+`price` overrides the prices the model reports. It is a per-million-token table or a function that prices a call, and it does not take `{ event, thread }`.
+
+```typescript
+price: {
+  "claude-sonnet-5-5": { input: 3, output: 15 },
+  "*": { input: 3, output: 15 },
+},
+```
+
+- A table maps a model id to US dollars per million tokens: `input` and `output`, and optionally `cacheRead`, `cacheWrite` and `cacheWrite1h`, which default to `input` where unset. `"*"` is the rate for any model not named.
+- A function takes the call's `usage` and the model id and returns dollars: `(usage, model) => number`.
+- The cost is worked out once, inside the model call's step. A price that is not dollars from 0 up is a non-retriable error.
 
 ### Limits
 
@@ -533,16 +546,15 @@ limits: { depth?: number; mayCall?: string[] }
 ```
 
 - `depth`: how many levels of started agents may sit below this one (A starts B, B starts C). Default `1`: an agent can start agents, but those cannot start more unless you raise it.
-- `mayCall`: the addresses the model may start with `start_agent`, as patterns where `*` matches any text, such as `"platform/*"`.
+- `mayCall`: the exact addresses the model may start with `start_agent`, such as `"platform/reviewer"`.
 - A start that a limit refuses throws in code. The model gets an error result it can read.
-
-{/* TODO(spec): the exact mayCall pattern rules. */}
 
 ### Recovery
 
 `recovery: true` or `{ resume, message }`. It is off by default.
 
-- When a run fails for good, the agent posts one line where the thread lives and resends the message the run was handling to a fresh run, which starts from that message.
+- Whenever a run fails for good, with or without `recovery`, the agent posts one line where the thread lives.
+- With `recovery`, it also resends the message the run was handling to a fresh run, which starts from that message.
 - It never resends the same error twice, never resends a `NonRetriableError`, and allows at most three kinds of error per message.
 - A cancelled run (`stop()`, `cancelOn`, `timeouts.finish`) is neither reported nor resumed.
 - The next run gets `previousRun`, with or without recovery. [The handler](#the-handler)
@@ -550,7 +562,7 @@ limits: { depth?: number; mayCall?: string[] }
 | Option | Default | Description |
 | --- | --- | --- |
 | `resume` | `true` | Resend the message the run was handling. |
-| `message` | one line with the error | `(failure: RunFailure) => string \| false`. The line to post. `false` posts nothing. |
+| `message` | one line with the error | `(failure: RunFailure) => string \| false`. The line to post in place of the default. `false` posts nothing. |
 
 `RunFailure` has `runId`, `thread`, `error`, `fingerprint`, `resuming`, `repeated` and `superseded`.
 
@@ -697,6 +709,7 @@ A route, a trigger and a set of tools for each. [Slack and GitHub →](/docs/lab
 slack.bridge({
   client: Inngest;
   signingSecret: string | Secret;
+  allowBots?: boolean;
   gate?: (call: {
     message: SlackMessageData;
     thread: { key: string; history(): Promise<SlackMessageData[]> };
@@ -706,7 +719,7 @@ slack.bridge({
   handle(payload: unknown): Promise<void>;
 }
 
-slack.thread(options?: { in?: string[] })
+slack.thread(options?: { in?: string[]; token? })
 slack.tools(options?: { to?: string })
 ```
 
@@ -728,14 +741,12 @@ export const POST = slack.bridge({
 - It forwards typed events, each with `threadKey` in its data: `slack/message`, `slack/reaction`, `slack/action`, `slack/view` and `slack/stop`. A `slack/message` event's data is `SlackMessageData & { threadKey: string }`.
 - The event id is Slack's `event_id`.
 - It answers Slack after the send succeeds.
-- Messages from bots, including the agent itself, are ignored unless you allow them.
+- Messages from bots, including the agent itself, are ignored unless you set `allowBots: true`.
 - `gate` replaces the rule for what is meant for the agent. A message it skips never becomes an event. It gets the message, the thread's key and a `history()` of the thread, and the bot's own user id.
 - `handle(payload)` takes a payload from a connection your app already trusts, such as its own Socket Mode connection, and skips the signature check. The SDK never runs the socket. The gate and the thread key behave the same either way.
 
-{/* TODO(spec): the switch on slack.bridge that lets bots through is not named in the spec's type. */}
-{/* TODO(spec): the return type of gate's thread.history(). */}
 
-**`slack.thread()`** triggers on any Slack channel the app is in, plus direct messages. `in` limits it to Slack channel IDs. It keys the thread on `threadKey`.
+**`slack.thread()`** triggers on any Slack channel the app is in, plus direct messages. `in` limits it to Slack channel IDs. It keys the thread on `threadKey`. `token` is the Slack token for the SDK's own writes, such as the status line and `me.post()`: a string, a function or `secret()`. It defaults to `SLACK_BOT_TOKEN`.
 
 **`slack.tools()`** is a record of tools bound to the thread the run came from. The model and sandbox code both call them. The Slack token comes from `SLACK_BOT_TOKEN`.
 
@@ -793,7 +804,7 @@ export const POST = github.bridge({
 ```
 
 - **`github.bridge`** is mounted like Slack's. It verifies `X-Hub-Signature-256` and sends `github/<event>` events, such as `github/issue_comment`. It uses the `X-GitHub-Delivery` header as the event id, so a redelivered webhook is dropped.
-- **`github.thread()`** triggers on those events. `events` takes GitHub's event names, such as `"issue_comment"` or `"pull_request_review"`. `repos` limits the trigger to repositories, such as `"acme/api"`. `if` is an expression over `event`, as on any trigger.
+- **`github.thread()`** triggers on those events. `events` takes GitHub's event names, such as `"issue_comment"` or `"pull_request_review"`. Without it the trigger covers `issues`, `issue_comment`, `pull_request`, `pull_request_review` and `pull_request_review_comment`. `repos` limits the trigger to repositories, such as `"acme/api"`. `if` is an expression over `event`, as on any trigger.
 - A `github/<event>` event's data is GitHub's webhook payload plus `threadKey`. A GitHub thread is keyed by the pull request's or issue's URL. A plain event joins the thread by carrying that URL, as in `{ event: "ci/run.failed", thread: "event.data.prUrl" }`, and a run it starts still posts on the pull request.
 - **`github.tools()`** is bound to the thread. A call with no GitHub form, such as a status line, warns once.
 - **Credentials.** `github.tools()` and `me.post()` on a GitHub thread use `GITHUB_TOKEN`. `github.tools({ token })` takes a string, a function that returns one, `secret()` or `githubApp()`.
@@ -811,8 +822,6 @@ triggers: [
   }),
 ],
 ```
-
-{/* TODO(spec): which events github.thread() triggers on when events is left out. */}
 
 ## KV
 
@@ -900,5 +909,6 @@ await score("resolved", true);
 - `score` is the same function in the handler's argument and in every tool's context, so a tool needs no client to write one.
 - It is written once, however often the run replays. Inside a step, such as a tool, it rides on that step's result. In handler code it becomes a step of its own, with its id taken from the name.
 - Await it or don't: an un-awaited score is still written before the run ends.
+- Your own score names may not start with `agent.`, which is reserved for the automatic scores.
 - The value is a finite number or a boolean. A score the server refuses logs a warning and the run goes on.
 - **Automatic scores.** The agent always records model time, tokens, tool calls, folded messages, tool time and tool errors. They cannot be switched off. [Observability →](/docs/labs/agents/observability?ref=docs-labs-agents-reference)
