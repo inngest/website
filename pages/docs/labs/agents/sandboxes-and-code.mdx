@@ -56,7 +56,6 @@ export const work = sandbox({
   repo: {
     url: "https://github.com/acme/api",
     auth: app,
-    path: "/work/api",
   },
 });
 ```
@@ -130,29 +129,29 @@ A run that never needs the sandbox never starts one.
 
 The model works in a shell, not file by file. `work_run` keeps `cd` and `export` from one call to the next, and into the thread's next run. Files stay on the machine instead of passing through step state. There is no write tool: a heredoc in `work_run` writes a file.
 
-`read`, `search` and `edit` are off until you ask for them.
+`read`, `search` and `edit` are off until you ask for them. `sandbox.tools.code()` takes `only`, `tools`, `shims` and `timeout`.
 
 <AnnotatedCode>
 
-{/* not type-checked: sandbox.tools.code with cwd and only */}
+{/* not type-checked: sandbox.tools.code with only and timeout */}
 ```typescript {{ title: "inngest/sandboxes/editor.ts" }}
 import { sandbox } from "inngest/experimental/agents";
 
 export const editor = sandbox({
   id: "editor",
   tools: sandbox.tools.code({
-    cwd: "/work/app",
     only: ["run", "read", "search", "edit"],
+    timeout: "10m",
   }),
 });
 ```
 
-<Annotation id="cwd" lines="6" tease="where commands start" title="Working directory">
-Relative paths and commands start here. The default is `/work`.
+<Annotation id="only" lines="6" tease="editor_run, editor_edit" title="Only">
+The tools the model gets. Without `only` it gets `run`, plus `run_code` once you give tools.
 </Annotation>
 
-<Annotation id="only" lines="7" tease="editor_run, editor_edit" title="Only">
-The tools the model gets. Without `only` it gets `run`, plus `run_code` once you give tools.
+<Annotation id="timeout" lines="7" tease="longest one command may run" title="Timeout">
+The default is five minutes. A longer one works. [Run long commands →](#run-long-commands)
 </Annotation>
 
 </AnnotatedCode>
@@ -180,7 +179,7 @@ export const tester = agents.agent(
   },
   async ({ inbox, me, loop, sandboxes }) => {
     const tests = await sandboxes.work.commands.run("tests", "npm test", {
-      cwd: "/work/api",
+      cwd: "/work",
     });
 
     await me.message({ tests: tests.stdout.slice(-2000) });
@@ -198,7 +197,7 @@ export const tester = agents.agent(
 Without `model: false`, the model would get `work_run` too.
 </Annotation>
 
-<Annotation id="commands" lines="15-17" tease="a command on the thread's machine" title="Run a command">
+<Annotation id="commands" lines="15-17" tease="a command on the thread's machine" title="Run a command" href="/docs/labs/agents/reference-sandboxes?ref=docs-labs-agents-sandboxes-and-code#the-handlers-sandbox" linkText="Reference">
 Each call is a durable step, so a replay never runs the tests twice.
 </Annotation>
 
@@ -214,6 +213,8 @@ Besides `commands`, `sandboxes.work` has:
 - `repo.push(branch)`, when the definition has a `repo`. [Push a branch →](#push-a-branch)
 - `recycle()`, which pauses the machine at once. The next use brings it back.
 - `close()`, which destroys it.
+
+[Reference: the handler's sandbox →](/docs/labs/agents/reference-sandboxes?ref=docs-labs-agents-sandboxes-and-code#the-handlers-sandbox)
 
 ## Let code call your tools
 
@@ -407,19 +408,23 @@ export const service = sandbox({
 Asked for a read-only token to check out and a write token to push, each short-lived and made on your host. A function of `{ access }` that returns a token works too.
 </Annotation>
 
-<Annotation id="where" lines="9-10" tease="branch and folder" title="Ref and path">
-A sandbox that resumes keeps its checkout and any unpushed work.
+<Annotation id="ref" lines="9" tease="the branch, tag or commit" title="Ref">
+Each run starts on this ref. A checkout already on it is left alone.
+</Annotation>
+
+<Annotation id="path" lines="10" tease="where it lands" title="Path">
+The folder for the checkout. It defaults to `/work`.
 </Annotation>
 
 <Annotation id="author" lines="11" tease="who commits" title="Author">
-The name and email on commits made in the sandbox.
+The name and email on commits made in the sandbox. The default author is `inngest-agent`.
 </Annotation>
 
 </AnnotatedCode>
 
-{/* TODO(spec): where does the model's shell start when the sandbox has a repo: the checkout's path or the code tools' cwd? And what do ref and path default to? */}
+{/* TODO(spec): confirm the model's shell starts in the checkout (repo.path) now that sandbox.tools.code() has no cwd option. */}
 
-`repo` can also be a function of `{ event, thread }`, run once when the run starts. A reviewer checks out the pull request it was triggered by:
+`repo` can also be a function of `{ event, thread }`, run once when the run starts. A reviewer checks out the pull request it was triggered by. When a resumed sandbox's checkout is on another ref, the sandbox fetches the new one and checks it out. Uncommitted changes in the working tree make that an error the run sees.
 
 {/* not type-checked: repo as a function of { event } */}
 ```typescript {{ title: "inngest/sandboxes/review.ts" }}
@@ -440,7 +445,7 @@ export const review = sandbox({
 
 ## Push a branch
 
-The model commits in the sandbox with its own messages and calls `work_push({ branch })`. Your app makes the push, with its own write token, after `policy` has seen the commits and files. The sandbox never holds a write token.
+The model commits in the sandbox with its own messages and calls `work_push({ branch })`. Your app makes the push, with its own write token, after `policy` has seen the branch, the commits and the paths they touch. The sandbox never holds a write token.
 
 <AnnotatedCode>
 
@@ -454,7 +459,6 @@ export const guarded = sandbox({
   repo: {
     url: "https://github.com/acme/api",
     auth: app,
-    path: "/work/api",
     policy: async (push) => {
       if (!push.branch?.startsWith("agent/")) {
         return { refuse: "Branches for the agent start with agent/" };
@@ -468,25 +472,25 @@ export const guarded = sandbox({
         return { refuse: `Not allowed to change ${touched.join(", ")}` };
       }
 
-      return { notes: [`${push.commits.length} commits to ${push.ref}`] };
+      return { notes: [`${push.commits.length} commits to ${push.branch}`] };
     },
   },
 });
 ```
 
-<Annotation id="policy" lines="10" tease="runs on your host" title="Policy">
-Sees the commits and files before anything is pushed. `push.files` holds each file's content before and after, for checks that need the whole file.
+<Annotation id="policy" lines="9" tease="runs on your host" title="Policy">
+Sees `push.branch`, `push.commits` with their messages and `push.paths` before anything is pushed. It returns `{ refuse }`, `{ notes }` or nothing.
 </Annotation>
 
-<Annotation id="refuse" lines="12" tease="the model reads the reason" title="Refuse" href="#push-a-branch" linkText="Push a branch">
+<Annotation id="refuse" lines="11" tease="the model reads the reason" title="Refuse" href="#push-a-branch" linkText="Push a branch">
 A refused push comes back to the model as an error it can read and fix.
 </Annotation>
 
-<Annotation id="paths" lines="15-17" tease="by path" title="Paths">
+<Annotation id="paths" lines="14-16" tease="by path" title="Paths">
 Every path the commits touch.
 </Annotation>
 
-<Annotation id="notes" lines="23" tease="kept with the result" title="Notes" href="#push-a-branch" linkText="Push a branch">
+<Annotation id="notes" lines="22" tease="kept with the result" title="Notes" href="#push-a-branch" linkText="Push a branch">
 Returned in the push result, for an audit trail.
 </Annotation>
 
@@ -514,7 +518,7 @@ export const nightly = agents.agent(
     await guard.commands.run(
       "fix",
       "npm audit fix && git commit -am audit",
-      { cwd: "/work/api" },
+      { cwd: "/work" },
     );
 
     try {
@@ -584,6 +588,7 @@ Pass `secret("NAME")` wherever a token goes, as the GitHub App's private key abo
 - **The shell's environment has a cap.** Every `export` rides along on every later command. At 256 entries or 64 KiB the shell fails early and names the limit.
 - **An `EXIT` trap or `exec` drops the place.** A command that sets its own `EXIT` trap or uses `exec` doesn't carry its `cd` and `export` to the next call.
 - **Exports stay in run history.** An exported value is saved with the call. Put credentials in `secrets`, or behind a tool.
+- **A new `ref` needs a clean tree.** When a run's `ref` differs from the checkout's, uncommitted changes make the checkout an error. Commit or discard them first.
 - **A recreated sandbox starts at the default.** The shell's place returns only with the same sandbox or its snapshot.
 - **A long tool call needs a long command.** In a script, a tool call that outlives the command's `timeout` (five minutes by default) aborts the command. Declare the tool `waits: true`, or give the command a longer `timeout`.
 - **A script that waits runs again.** Calls it already made return saved answers. Files it writes and processes it starts happen again, so read the clock with `tools.now()`.
@@ -594,7 +599,7 @@ Pass `secret("NAME")` wherever a token goes, as the GitHub App's private key abo
 
 - The sandbox starts in one durable step, so every call shares it. Ten minutes after its last use it pauses; a run that waits longer pauses it at that mark.
 - Each `run` is its own shell process, started in the saved directory with the saved environment. It reports its new place when it exits, and the SDK saves that with the call, so a restart or another machine replays to the same place.
-- A push is four steps: the sandbox bundles the new commits, your app reads the bundle, `policy` sees the commits and files, and your app pushes with its write token. It sends the commits that are there and never forces or deletes.
+- A push is four steps: the sandbox bundles the new commits, your app reads the bundle, `policy` sees the branch, commits and paths, and your app pushes with its write token. It sends the commits that are there and never forces or deletes.
 - A command over five minutes runs as a process that steps follow in windows of five minutes, one wait step each.
 
 ## Recipes and reference
