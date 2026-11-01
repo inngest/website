@@ -20,6 +20,7 @@ This page covers `inngest/experimental/agents`. Sandboxes, tools, git, and skill
 - [Thread handles](#thread-handles)
 - [Triggers](#triggers)
 - [Loop and helpers](#loop-and-helpers)
+- [Calling agents](#calling-agents)
 - [Limits, pricing, and recovery](#limits-pricing-and-recovery)
 - [Subscribe types](#subscribe-types)
 - [Inbox tools](#inbox-tools)
@@ -48,7 +49,7 @@ interface Agents {
 ```
 
 - `store`: where KV, thread state, and indexes live. One store per app ID. See [KV stores](#kv-stores).
-- `agents.functions()`: every function to serve, for each agent its run, cleanup, finished, and (with `onArrival`) arrival function, plus one skills bake function per client when an agent may bake skills, and the `agents-announce` heartbeat. Call it after the agents are defined.
+- `agents.functions()`: every function to serve. For each agent: its run, cleanup, finished and (with `onArrival`) arrival functions. Once per client: a skills bake function when an agent may bake skills, and the `agents-announce` heartbeat. Call it after the agents are defined.
 - `agents.announce()`: sends the cards of this client's agents in an `agents/registered` event, so [discovery](/docs/labs/agents/teams-of-agents?ref=docs-labs-agents-reference#publish-a-card) finds them. Call it once the app is up. The heartbeat sends it again daily at 06:00 UTC, and on an `agents/announce` event.
 - `agents.agent()` registers the agent when its file is imported, so import each agent file before serving.
 
@@ -112,7 +113,7 @@ The first argument of `agents.agent()`. [Events and triggers](/docs/labs/agents/
 | `report` | channel name, channel, or list; or function of `{ event }` | channel named `main` | Where `report()` posts when not told. |
 | `limits` | [`AgentLimits`](#agentlimits) | see type | What the agent may start and spend. [Events](/docs/labs/agents/teams-of-agents?ref=docs-labs-agents-reference#limit-sub-agents) |
 | `share` | `"private" \| "team"` | `"private"` | Who may find and call the agent: agents of its own app, or of every app in the environment. [Teams](/docs/labs/agents/teams-of-agents?ref=docs-labs-agents-reference#publish-a-card) |
-| `skills` | `{ id, description, examples }[]` | none | What the agent is good at. Models pick agents by these. On the card. |
+| `skills` | `{ id, description, examples }[]` | none | What the agent is good at. Models pick agents by these. |
 | `scores` | `boolean` | `true` | Whether the agent scores itself. [Scores](/docs/labs/agents/observability?ref=docs-labs-agents-reference) |
 | `recovery` | `boolean \| AgentRecovery` | off | What to do about a run that fails unexpectedly. [Recovery](#recovery) |
 
@@ -182,7 +183,7 @@ The second argument of `agents.agent()`. It receives the function context of the
 | --- | --- | --- |
 | `event` | `{ name, data: AgentStartData }` | The event that started the run. `data.event` is the trigger event. |
 | `trigger` | trigger event or `undefined` | The `on` event that started the run, typed from `on`. `undefined` when a plain thread message started it. |
-| `depth` | `number` | How many calls deep this run is. The first callee gets 1 and its callees 2. A run no call started gets `0`, including a later run of a called agent's thread. |
+| `depth` | `number` | How many calls deep this run is: 1 for the first callee, 2 for its callees. `0` when no call started the run, including a later run of a called agent's thread. |
 | `thread` | [`ThreadHandle`](#thread-handles) | The handle of this run's thread. |
 | `inbox` | [`ThreadInbox`](#inbox) | The thread's messages, in order. |
 | `sandboxes` | `Record<name, LazySandbox>` | The agent's sandboxes. [Sandboxes reference](/docs/labs/agents/reference-sandboxes?ref=docs-labs-agents-reference#lazysandbox) |
@@ -487,36 +488,6 @@ anthropicPrices: AgentPriceTable
 
 Types: `AnthropicOptions`; `AnthropicClient`, the part of an `@anthropic-ai/sdk` client it calls (`messages.create`, and `messages.stream` when streaming), so any SDK client or a fake fits; `AnthropicReply`, the part of a Messages response it reads.
 
-### Calling agents
-
-[Teams of agents](/docs/labs/agents/teams-of-agents?ref=docs-labs-agents-reference)
-
-```typescript {{ title: "Signature" }}
-callAgent(
-  address: string,
-  input: Record<string, unknown>,
-  options?: { id?: string },
-): Promise<unknown>
-findAgents(query?: string): Promise<AgentCard[]>
-discoveryTools(options?: DiscoveryToolsOptions): DiscoveryTools
-```
-
-| Export | Description |
-| --- | --- |
-| `callAgent(address, input, options?)` | Calls the agent whose address is `"<app>/<agentId>"` and returns its result. Throws if the agent is not shared with the caller. An agent without `invoke(schema)` takes `{ message }`. `options.id` is the step ID, default `agent:invoke:<address>`. Repeats in one run are numbered. |
-| `findAgents(query?)` | The cards of the agents the caller may use that match any word of `query`, best match first. Without a query it returns them all. The read is a step. |
-| `discoveryTools(options?)` | `list_agents`, `describe_agent`, `call_agent` and `message_agent`, for `agent.loop({ tools })` or `sandbox.tools.code({ tools })`. `prepare({ card, input })` returns the input `call_agent` hands over. `onBackground({ id, result })` takes the calls the model starts with `background: true`; without it they are refused. |
-| `addressOf(card)` | The address of a card's agent. |
-
-The callee keeps the caller's session and gets a thread of its own. Its key is `<functionId>:<runId>.<n>`. A call has no timeout. A call the limits refuse throws `AgentLimitError`. A cancelled callee (stop now, `cancelOn`, or its own parent cancelled) throws `AgentCancelledError`, which is not retried. Cancelling the caller cancels a callee only if the callee lists `agentInvokeCancelOn` in `cancelOn`; `agents.agent()` throws if it lists it beside a trigger other than `invoke()`.
-
-| Export | Description |
-| --- | --- |
-| `agentInvokeCancelOn` | A `cancelOn` entry (`{ event: "inngest/function.cancelled", if: "event.data.run_id == async.data._agent.parent" }`) that ends the run when the run that called it is cancelled. |
-| `AgentCancelledError` | Thrown by `callAgent()` for a cancelled callee. In a loop, `call_agent` hands it to the model as the tool's result. `functionId?` and `runId?` name the cancelled run. |
-
-Types: `AgentCard`, `AgentShare`, `AgentsRegisteredData`, `DiscoveryTools`, `DiscoveryToolsOptions`.
-
 ### Model errors and untrusted text
 
 ```typescript {{ title: "Signature" }}
@@ -529,6 +500,39 @@ untrustedTag: "untrusted"
 - `untrusted` returns the text between `<untrusted source="...">` tags and breaks any closing tag in the text. A non-string is marked as its JSON. Nothing calls it for you.
 
 The same functions are exported by name: `classifyModelError`, `untrusted`. Type: `UntrustedOptions`.
+
+## Calling agents
+
+[Teams of agents](/docs/labs/agents/teams-of-agents?ref=docs-labs-agents-reference)
+
+```typescript {{ title: "Signature" }}
+callAgent(
+  address: string,
+  input: Record<string, unknown>,
+  options?: { id?: string },
+): Promise<unknown>
+findAgents(query?: string): Promise<AgentCard[]>
+discoveryTools(options?: DiscoveryToolsOptions): DiscoveryTools
+addressOf(card: AgentCard): string
+```
+
+| Export | Description |
+| --- | --- |
+| `callAgent(address, input, options?)` | Calls the agent whose address is `"<app>/<agentId>"` and returns its result. Throws if the agent is not shared with the caller. An agent without `invoke(schema)` takes `{ message }`. `options.id` is the step ID, default `agent:invoke:<address>`. Repeats in one run are numbered. |
+| `findAgents(query?)` | The cards of the agents the caller may use that match any word of `query`, best match first. Without a query it returns them all. The read is a step. |
+| `discoveryTools(options?)` | `list_agents`, `describe_agent`, `call_agent` and `message_agent`, for `agent.loop({ tools })` or `sandbox.tools.code({ tools })`. |
+| `addressOf(card)` | The address of a card's agent. |
+
+`discoveryTools({ prepare })` fills in what the model must not make up, such as who is asking: it gets `{ card, input }` and returns the input `call_agent` hands over. `discoveryTools({ onBackground })` lets the model pass `background: true` to start a long call and carry on. It gets `{ id, result }`, where `result` settles with the agent's result. Without it, `background` is refused.
+
+The callee keeps the caller's session and gets a thread of its own. Its key is `<functionId>:<runId>.<n>`. A call has no timeout. A call the limits refuse throws `AgentLimitError`. A cancelled callee (stop now, `cancelOn`, or its own parent cancelled) throws `AgentCancelledError`, which is not retried. Cancelling the caller cancels a callee only if the callee lists `agentInvokeCancelOn` in `cancelOn`; `agents.agent()` throws if it lists it beside a trigger other than `invoke()`.
+
+| Export | Description |
+| --- | --- |
+| `agentInvokeCancelOn` | A `cancelOn` entry (`{ event: "inngest/function.cancelled", if: "event.data.run_id == async.data._agent.parent" }`) that ends the run when the run that called it is cancelled. |
+| `AgentCancelledError` | Thrown by `callAgent()` for a cancelled callee. In a loop, `call_agent` hands it to the model as the tool's result. `functionId?` and `runId?` name the cancelled run. |
+
+Types: `AgentCard`, `AgentShare`, `AgentsRegisteredData`, `DiscoveryTools`, `DiscoveryToolsOptions`.
 
 ## Limits, pricing, and recovery
 

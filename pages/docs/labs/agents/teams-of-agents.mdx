@@ -7,7 +7,7 @@ export const description = "Inngest Agents teams: find another agent through dis
 
 > Find another agent and hand it work, without wiring them together.
 
-Agents never import each other. Each one publishes a card that says what it does. Callers find it at runtime and call it by its address.
+Agents never import each other. Each one publishes a card, and callers find it at runtime by its address.
 
 <AnnotatedCode>
 
@@ -55,13 +55,13 @@ export const researcher = agents.agent(
     on: invoke(z.object({ question: z.string() })),
     limits: { price: { "*": { input: 3, output: 15 } } },
   },
-  async ({ trigger, depth }) => {
-    return { answer: `Looked into: ${trigger?.data.question}`, depth };
+  async ({ trigger }) => {
+    return { answer: `Looked into: ${trigger?.data.question}` };
   },
 );
 ```
 
-Agents in the same app find each other by default; `share: "team"` lets agents in other apps find it too. `depth` counts calls: the first callee gets 1 and its callees 2. A run no call started gets `0`.
+Agents in the same app find each other by default. `share: "team"` lets agents in other apps find it too.
 
 `agents.announce()` publishes the app's cards once it is up.
 
@@ -140,7 +140,7 @@ export const workbench = sandbox({
 
 ## Limit sub-agents
 
-`limits` apply to every `callAgent()`, and to every `call_agent` the model makes. A refused call throws `AgentLimitError`, whose `limit` is `depth`, `spawn`, `mayCall` or `budget`.
+`limits` apply to every `callAgent()`, and to every `call_agent` the model makes. A refused call throws `AgentLimitError`, whose `limit` is `depth`, `spawn`, `mayCall` or `budget`. In a loop, the model reads it as the tool's result. `message_agent` is not a call, so limits don't apply to it.
 
 ```typescript {{ title: "inngest/agents/careful.ts" }}
 import { AgentLimitError, callAgent } from "inngest/experimental/agents";
@@ -163,7 +163,7 @@ export const careful = agents.agent(
 );
 ```
 
-Sub-agents inherit the limits, narrowed, and `depth` defaults to 1. Add `budget: { usd: 5 }` and a `price` table to cap spend; a dollar budget needs the sub-agent's own `limits.price`, since a price does not travel.
+Sub-agents inherit the limits, narrowed, and `depth` defaults to 1. A callee's body reads its own `depth`: 1 for the first callee, 2 for its callees. Add `budget: { usd: 5 }` and a `price` table to cap spend; a dollar budget needs the sub-agent's own `limits.price`, since a price does not travel.
 
 ## Cancel with the caller
 
@@ -218,11 +218,11 @@ export const boss = agents.agent({ id: "boss" }, async () => {
 
 `callAgent()` takes a step `id`. The callee keeps the caller's session and gets a thread of its own.
 
-```typescript {{ title: "inngest/agents/patient.ts" }}
+```typescript {{ title: "inngest/agents/digest.ts" }}
 import { callAgent } from "inngest/experimental/agents";
 import { agents } from "../client";
 
-export const patient = agents.agent({ id: "patient" }, async () => {
+export const digest = agents.agent({ id: "digest" }, async () => {
   return callAgent(
     "support/researcher",
     { question: "Why?" },
@@ -237,17 +237,16 @@ Defaults: `id` is `agent:invoke:<address>`, the callee's thread is `<functionId>
 
 - An agent can be found only after its app announced its card. A daily heartbeat announces again.
 - `callAgent()` returns `unknown`. Check the shape before you use it.
-- Use `agentInvokeCancelOn` only on an agent that is called. `agents.agent()` throws if `on` has any other trigger.
+- Use `agentInvokeCancelOn` only on an agent that only calls start. `agents.agent()` throws if `on` has another trigger. A message to its idle thread starts a run that any cancellation would end, so don't message it.
 - A raw `step.invoke` or `sendEvent` is not checked by `limits`.
 
 ## How it works
 
-- `callAgent()` reads the cards in a step and checks sharing.
-- The call is a step. The caller sleeps until the callee returns.
-- The tools check sharing on every call, so a made-up address gets nowhere.
+- `callAgent()` checks sharing in a step, then calls the agent as a step. The caller sleeps until it returns.
+- `call_agent` checks sharing on every call too, so a made-up address gets nowhere.
 - Limits are checked before the call starts and narrowed for the callee.
 - The callee's run is a child of the caller's trace.
 
 ## Recipes and reference
 
-[Agent teams](/docs/labs/agents/recipes/agent-teams), [Coding agent](/docs/labs/agents/recipes/coding-agent), [Calling agents reference](/docs/labs/agents/reference?ref=docs-labs-agents-teams-of-agents#calling-agents).
+[Agent teams](/docs/labs/agents/recipes/agent-teams?ref=docs-labs-agents-teams-of-agents), [Coding agent](/docs/labs/agents/recipes/coding-agent?ref=docs-labs-agents-teams-of-agents), [Calling agents reference](/docs/labs/agents/reference?ref=docs-labs-agents-teams-of-agents#calling-agents).

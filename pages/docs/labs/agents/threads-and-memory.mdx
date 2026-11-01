@@ -165,7 +165,10 @@ import { agents } from "../client";
 export const billing = agents.agent(
   {
     id: "billing",
-    requests: { request: z.object({ orderId: z.string() }), reply: z.object({ refundable: z.boolean() }) },
+    requests: {
+      request: z.object({ orderId: z.string() }),
+      reply: z.object({ refundable: z.boolean() }),
+    },
   },
   async ({ inbox }) => {
     const message = await inbox.next();

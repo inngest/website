@@ -5,7 +5,7 @@ export const description = "Recommended file structure for Inngest Agents: an in
 
 > One folder, one file per agent, tool and sandbox.
 
-Agents, tools and sandboxes are plain exports, so each can live in its own file and be imported by the others.
+Agents, tools and sandboxes are plain exports, so each lives in its own file. Agents import tools and sandboxes, never each other.
 
 ```
 inngest/
