@@ -367,7 +367,7 @@ The model carries on. Four message types come back, each in a default wording. [
 - **`agent/answer`.** The answer to the model's `ask_agent`, shown with the question it answers. A refusal or a timeout shows as a plain "no answer" line.
 - **`agent/finished`.** Work the model started with `start_agent` ended. The model sees which agent and thread, the outcome (completed, failed or stopped), then the output or the error.
 
-They are exported as `agentMessage`, `agentQuestion`, `agentAnswer` and `agentFinished`, and `msg.is()` narrows to one. [Narrow an event with `is()` →](/docs/events/event-payloads-and-schemas?ref=docs-labs-agents-teams-of-agents#narrow-an-event-with-is)
+They are exported as `agentMessage`, `agentQuestion`, `agentAnswer` and `agentFinished`, and `msg.is()` narrows to one. [Narrow an event with `is()` →](/docs/durable-execution/guides-and-advanced/events-and-triggers/event-payloads-and-schemas?ref=docs-labs-agents-teams-of-agents#narrow-an-event-with-is)
 
 {/* not type-checked: msg.is(agentFinished) narrowing data.outcome in a handler */}
 <AnnotatedCode>
