@@ -158,9 +158,9 @@ Agents that may see its card can still find and start it.
 
 ## Fill in input from the host
 
-`discovery: { prepare }` runs before `start_agent` sends its input. It gets the card of the agent being started and the input the model wrote, and returns the input to send. The model never sets a field the host fills.
+`discovery: { prepare }` runs before `start_agent` sends its input. It gets the card of the agent being started, the input the model wrote, and the run's event and thread, and returns the input to send. The model never sets a field the host fills.
 
-{/* not type-checked: discovery.prepare with { card, input } returning the input to send */}
+{/* not type-checked: discovery.prepare with { card, input, event } returning the input to send */}
 <AnnotatedCode>
 
 ```typescript {{ title: "inngest/agents/concierge.ts" }}
@@ -174,9 +174,9 @@ export const concierge = agents.agent({
   model: claude,
   system: "Find the right agent for the request and hand it over.",
   discovery: {
-    prepare: ({ card, input }) => {
+    prepare: ({ card, input, event }) => {
       if (card.address === "platform/auditor") {
-        return { ...input, requester: "support" };
+        return { ...input, requester: event.data.user };
       }
 
       return input;
@@ -186,11 +186,11 @@ export const concierge = agents.agent({
 ```
 
 <Annotation id="prepare" lines="11-17" tease="runs before each start" title="prepare">
-Called with the card and the model's input. What it returns is what the other agent receives.
+Called with the card, the model's input and the run's context. What it returns is what the other agent receives.
 </Annotation>
 
-<Annotation id="requester" lines="13" tease="set by the host" title="A host-set field">
-`requester` comes from your code, so the model can't make it up.
+<Annotation id="requester" lines="13" tease="who is asking" title="A host-set field">
+The Slack user who asked, from the event. The model can't make it up.
 </Annotation>
 
 </AnnotatedCode>

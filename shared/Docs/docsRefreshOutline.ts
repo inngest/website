@@ -926,6 +926,10 @@ export const docsRefreshOutline: DocsRefreshPage[] = [
                 href: "/docs/labs/agents/teams-of-agents",
               },
               {
+                title: "Discovery",
+                href: "/docs/labs/agents/discovery",
+              },
+              {
                 title: "Reliability",
                 href: "/docs/labs/agents/reliability",
               },
