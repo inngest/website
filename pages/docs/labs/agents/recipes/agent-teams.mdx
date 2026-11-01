@@ -106,8 +106,6 @@ Every thread has its own budget, never handed down. One run of each agent here c
 
 </AnnotatedCode>
 
-A plain function calls the lead and waits for the combined answer.
-
 <AnnotatedCode>
 
 {/* not type-checked: start().result() on an agent with an invoke() trigger, from a plain function */}
@@ -125,7 +123,7 @@ export const askTeam = inngest.createFunction(
 ```
 
 <Annotation id="result" lines="8" tease="wait for the answer" title="Start and wait" href="/docs/labs/agents/teams-of-agents?ref=docs-labs-agents-recipes-agent-teams#wait-for-the-result" linkText="Wait for the result">
-`result()` resolves with the answer the lead gives after the specialists it started have finished.
+`result()` resolves with the lead's answer, given once the specialists it started with `start_agent` have finished.
 </Annotation>
 
 </AnnotatedCode>
@@ -182,7 +180,7 @@ npx tsx inngest/serve.ts
 npx inngest-cli@latest dev -u http://localhost:3000/api/inngest
 ```
 
-In the Dev Server, open `ask-team`, choose **Invoke** and send `{ "request": "What does HTTP 429 mean? Then write a retrying fetch." }`. `ask-team` returns the combined answer; open the lead's run to see its searches and both `start_agent` calls.
+At [localhost:8288](http://localhost:8288), open `ask-team`, choose **Invoke** and send `{ "request": "What does HTTP 429 mean? Then write a retrying fetch." }`. `ask-team` returns the combined answer; open the lead's run to see its searches and both `start_agent` calls.
 
 ## Variations
 
