@@ -1,13 +1,13 @@
 import { AnnotatedCode, Annotation } from "shared/Docs/mdx";
 
 export const metaTitle = "Slack assistant | Inngest Agents";
-export const description = "Build an agent that answers in a Slack thread, looks up orders, remembers each conversation and keeps notes the whole team shares.";
+export const description = "Build an agent that answers in a Slack thread, looks up orders, remembers each thread and keeps notes the whole team shares.";
 
 # Slack assistant
 
 > An agent that answers in a Slack thread and learns from what the team tells it.
 
-A trigger, a model, a prompt and two tools. The thread, its memory and the status line come with the agent.
+It remembers each Slack thread across restarts, and a note saved in one thread reaches the others.
 
 ```text
 Maya      @Support Where is order 7?
@@ -30,10 +30,9 @@ Screenshot needed: the same exchange in Slack, and the first run's trace in the 
 ```typescript {{ title: "inngest/agents/support.ts" }}
 import { kv, slack } from "inngest/experimental/agents";
 import { agents } from "../client";
-import { notes } from "../lib/notes";
 import { claude } from "../models/claude";
 import { lookupOrder } from "../tools/lookupOrder";
-import { saveNote } from "../tools/saveNote";
+import { notes, saveNote } from "../tools/saveNote";
 
 export const support = agents.agent({
   id: "support",
@@ -48,21 +47,21 @@ export const support = agents.agent({
 });
 ```
 
-<Annotation id="trigger" lines="10" tease="a thread is a conversation" title="Start from Slack" href="/docs/labs/agents/agents-and-triggers?ref=docs-labs-agents-recipes-slack-assistant#start-a-run" linkText="Start a run">
-Each Slack thread in the channel is one conversation. The agent answers in the thread and shows a status line while it works.
+<Annotation id="trigger" lines="9" tease="each Slack thread" title="Start from Slack" href="/docs/labs/agents/agents-and-triggers?ref=docs-labs-agents-recipes-slack-assistant#start-a-run" linkText="Start a run">
+The agent answers in the Slack thread, with a status line while it works.
 </Annotation>
 
-<Annotation id="system" lines="12-16" tease="read when a run starts" title="Notes in the prompt" href="/docs/labs/agents/agents-and-triggers?ref=docs-labs-agents-recipes-slack-assistant#decide-per-run" linkText="Decide per run">
-Reads the team's notes from the app's store, as a step. A note saved in one thread reaches every run that starts after it.
+<Annotation id="system" lines="11-15" tease="read at run start" title="Notes in the prompt" href="/docs/labs/agents/agents-and-triggers?ref=docs-labs-agents-recipes-slack-assistant#decide-per-run" linkText="Decide per run">
+Reads the team's notes as a step when a run starts, so a thread already mid-run sees a new note on its next run.
 </Annotation>
 
-<Annotation id="tools" lines="17" tease="no handler needed" title="Model and tools" href="/docs/labs/agents/models-and-the-loop?ref=docs-labs-agents-recipes-slack-assistant" linkText="Models and the loop">
-With no handler, the agent runs the model with these tools and posts the answer. The loop remembers the thread.
+<Annotation id="tools" lines="16" tease="no handler needed" title="Model and tools" href="/docs/labs/agents/models-and-the-loop?ref=docs-labs-agents-recipes-slack-assistant" linkText="Models and the loop">
+With no handler, the agent runs the model with these tools and posts the answer.
 </Annotation>
 
 </AnnotatedCode>
 
-Slack calls a route in your app. It is a Web handler, so any framework that gives you a `Request` can mount it.
+Slack calls a route in your app. [Set up the Slack app →](/docs/labs/agents/slack-and-github?ref=docs-labs-agents-recipes-slack-assistant#add-the-route)
 
 <AnnotatedCode>
 
@@ -78,8 +77,8 @@ export const POST = slack.bridge({
 });
 ```
 
-<Annotation id="bridge" lines="5-8" tease="Slack's door into the agent" title="The Slack route" href="/docs/labs/agents/slack-and-github?ref=docs-labs-agents-recipes-slack-assistant" linkText="Slack and GitHub">
-Checks Slack's signature and sends an event only for messages meant for the agent. Its own messages are ignored.
+<Annotation id="bridge" lines="5-8" tease="signed route" title="The Slack route" href="/docs/labs/agents/slack-and-github?ref=docs-labs-agents-recipes-slack-assistant" linkText="Slack and GitHub">
+Checks Slack's signature and sends an event for each message meant for the agent.
 </Annotation>
 
 </AnnotatedCode>
@@ -96,7 +95,7 @@ export const { GET, POST, PUT } = serve({
 });
 ```
 
-The tools are two steps the model can call, and one key the notes live under.
+Two tools: an order lookup, and a note every thread can read.
 
 ```typescript {{ title: "inngest/tools/lookupOrder.ts" }}
 import { tool } from "inngest/experimental";
@@ -111,12 +110,13 @@ export const lookupOrder = tool.step({
 });
 ```
 
-{/* not type-checked: kv.app.update with a typed kv.key */}
+{/* not type-checked: kv.key with a type argument, kv.app.update with a typed kv.key */}
 ```typescript {{ title: "inngest/tools/saveNote.ts" }}
 import { tool } from "inngest/experimental";
 import { kv } from "inngest/experimental/agents";
 import { z } from "zod";
-import { notes } from "../lib/notes";
+
+export const notes = kv.key<string[]>("notes");
 
 export const saveNote = tool.step({
   description: "Save something the team asked you to remember",
@@ -131,30 +131,18 @@ export const saveNote = tool.step({
 });
 ```
 
-{/* not type-checked: kv.key with a type argument */}
-```typescript {{ title: "inngest/lib/notes.ts" }}
-import { kv } from "inngest/experimental/agents";
-
-export const notes = kv.key<string[]>("notes");
-```
-
-`inngest/client.ts` and `inngest/models/claude.ts` are the ones from the [quick start](/docs/labs/agents/quick-start?ref=docs-labs-agents-recipes-slack-assistant).
+The [client](/docs/labs/agents/quick-start?ref=docs-labs-agents-recipes-slack-assistant#create-the-client) and [model](/docs/labs/agents/quick-start?ref=docs-labs-agents-recipes-slack-assistant#pick-a-model) are the quick start's.
 
 ## What it shows off
 
-- [Threads](/docs/labs/agents/threads-and-memory?ref=docs-labs-agents-recipes-slack-assistant) pick up where they stopped, after a restart, a deploy or a day.
-- [An agent with no handler](/docs/labs/agents/models-and-the-loop?ref=docs-labs-agents-recipes-slack-assistant) answers in the thread, with a status line, from a definition alone.
-- [App-wide memory](/docs/labs/agents/threads-and-memory?ref=docs-labs-agents-recipes-slack-assistant) lets one thread teach every other.
+- [Threads](/docs/labs/agents/threads-and-memory?ref=docs-labs-agents-recipes-slack-assistant) pick up where they stopped, after a restart or a day.
+- [An agent with no handler](/docs/labs/agents/models-and-the-loop?ref=docs-labs-agents-recipes-slack-assistant) answers in the thread from a definition alone.
+- [App-wide memory](/docs/labs/agents/threads-and-memory?ref=docs-labs-agents-recipes-slack-assistant#keep-state) lets one thread teach every other.
 - [Slack](/docs/labs/agents/slack-and-github?ref=docs-labs-agents-recipes-slack-assistant) reaches the agent through one signed route.
-- [Retried steps](/docs/labs/agents/reliability?ref=docs-labs-agents-recipes-slack-assistant) make every model call and tool call visible in the trace.
 
 ## Run it
 
-Set the project up as in the quick start, in a Next.js app. Start the Dev Server, pointed at the app:
-
-```bash
-npx inngest-cli@latest dev -u http://localhost:3000/api/inngest
-```
+Set the project up as in the [quick start](/docs/labs/agents/quick-start?ref=docs-labs-agents-recipes-slack-assistant#install), in a Next.js app.
 
 ```bash
 export ANTHROPIC_API_KEY=sk-ant-...
@@ -164,17 +152,20 @@ export SLACK_SIGNING_SECRET=...
 npm run dev
 ```
 
-Point your Slack app's Event Subscriptions at `https://<your-host>/api/slack`; a tunnel works for local runs. Invite the app to `C0123ABC`, mention it, and open the run in the Dev Server at [localhost:8288](http://localhost:8288).
+```bash
+npx inngest-cli@latest dev -u http://localhost:3000/api/inngest
+```
+
+Point the Slack app at `https://<your-host>/api/slack`; a tunnel works for local runs. Invite it to `C0123ABC`, mention it, and open the run at [localhost:8288](http://localhost:8288).
 
 ## Variations
 
-- Let the model post, ask a question and show progress with `slack.tools()`. [Slack and GitHub](/docs/labs/agents/slack-and-github?ref=docs-labs-agents-recipes-slack-assistant)
-- Cap what a thread may spend with `budget`. [Reliability](/docs/labs/agents/reliability?ref=docs-labs-agents-recipes-slack-assistant)
-- Give it a sandbox to run code. [Sandboxes and code](/docs/labs/agents/sandboxes-and-code?ref=docs-labs-agents-recipes-slack-assistant)
+- [Slack and GitHub](/docs/labs/agents/slack-and-github?ref=docs-labs-agents-recipes-slack-assistant#post-ask-and-show-progress) lets the model post, ask a question and show progress with `slack.tools()`.
+- [Reliability](/docs/labs/agents/reliability?ref=docs-labs-agents-recipes-slack-assistant#cap-spend) caps what a thread may spend with `budget`.
+- [Sandboxes and code](/docs/labs/agents/sandboxes-and-code?ref=docs-labs-agents-recipes-slack-assistant) gives it a sandbox to run code.
 
 ## Learn more
 
 - [Agents and triggers](/docs/labs/agents/agents-and-triggers?ref=docs-labs-agents-recipes-slack-assistant)
 - [Threads and memory](/docs/labs/agents/threads-and-memory?ref=docs-labs-agents-recipes-slack-assistant)
-- [Slack and GitHub](/docs/labs/agents/slack-and-github?ref=docs-labs-agents-recipes-slack-assistant)
 - Next recipe: [Issue triage](/docs/labs/agents/recipes/issue-triage?ref=docs-labs-agents-recipes-slack-assistant)
