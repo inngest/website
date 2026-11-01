@@ -1,4 +1,4 @@
-import { ImageTheme, CodeGroup, AnnotatedCode, Annotation } from "src/shared/Docs/mdx";
+import { ImageTheme, CodeGroup } from "src/shared/Docs/mdx";
 import ResendLogo from "src/public/assets/docs/guides/resend-webhook-events/featured-image.png";
 
 
@@ -199,12 +199,10 @@ Every Inngest function handler comes with an additional [`step` object](/docs/re
 
 The code below sends a welcome email, then uses `step.sleep` to wait for three days before sending another email offering a free trial:
 
-<AnnotatedCode>
-
 ```tsx
 const sendOnboardingEmails = inngest.createFunction(
   { id: 'onboarding-emails', triggers: { event: 'app/signup.completed' } },
-  async ({ event, step }) => {
+  async ({ event, step }) => { // ← step is available in the handler's arguments
     const { user } = event.data
 	  const { email, first_name } = user
 
@@ -229,12 +227,6 @@ const sendOnboardingEmails = inngest.createFunction(
   }
 )
 ```
-
-<Annotation id="step" lines="3" tease="step is available" title="`step` in the handler">
-`step` is available in the handler's arguments.
-</Annotation>
-
-</AnnotatedCode>
 
 This is handy, but we can do better. Since Resend sends you webhook events when emails are delivered, opened and clicked, you can build dynamic email campaigns tailored to each user's needs.
 
