@@ -205,7 +205,16 @@ export const POST = github.bridge({
 });
 ```
 
-`github.thread()` is the trigger. Each issue or pull request is one thread, keyed by its URL.
+`github.thread()` is the trigger. Each issue or pull request is one thread, keyed by its URL. A CI event can join that thread too, when it carries the URL.
+
+```typescript {{ title: "inngest/events.ts" }}
+import { eventType } from "inngest";
+import { z } from "zod";
+
+const ciRun = z.object({ pr: z.number(), prUrl: z.string() });
+
+export const ciFailed = eventType("ci/run.failed", { schema: ciRun });
+```
 
 <AnnotatedCode>
 
