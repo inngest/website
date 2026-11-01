@@ -11,7 +11,7 @@ Messages arrive in your [inbox](/docs/labs/agents/inboxes?ref=docs-labs-agents-a
 
 ## A second agent
 
-To give the PR helper someone to hand reviews to, define a second agent.
+You want a reviewer the PR helper can hand pull requests to.
 
 {/* not type-checked: an agent with an invoke() trigger, a model and no handler */}
 ```typescript {{ title: "inngest/agents/reviewer.ts" }}
@@ -32,7 +32,7 @@ export const reviewer = agents.agent({
 
 ## Call it from code
 
-To get a review once CI passes on the helper's fix, `start()` the reviewer in the handler and wait for its `result()`.
+You want the review back in the PR helper's code, to post on the PR once CI passes. `start()` the reviewer in the handler and wait for its `result()`.
 
 ```typescript {{ title: "inngest/events.ts" }}
 import { eventType } from "inngest";
@@ -85,9 +85,7 @@ export const prHelper = agents.agent(
       });
 
       if (passed) {
-        const review = await reviewer
-          .start({ pr: me.key })
-          .result({ timeout: "30m" });
+        const review = await reviewer.start({ pr: me.key }).result();
 
         await me.post(review);
       }
@@ -96,23 +94,17 @@ export const prHelper = agents.agent(
 );
 ```
 
-<Annotation id="result" lines="33-35" tease="waits for the answer" title="start() and result()">
-`start()` returns at once. `result()` waits for the answer, a string here.
+<Annotation id="result" lines="33" tease="waits for the answer" title="start() and result()">
+`start()` returns at once. `result()` waits for the answer, a string here, and throws if the run fails or is stopped.
 </Annotation>
 
 </AnnotatedCode>
 
-The tools, skill and sandbox are left out. [Threads](/docs/labs/agents/threads?ref=docs-labs-agents-agent-teams#a-trigger-with-its-own-key) built the triggers, [Inboxes](/docs/labs/agents/inboxes?ref=docs-labs-agents-agent-teams) the `inbox` and `idle`, and [Models](/docs/labs/agents/models?ref=docs-labs-agents-agent-teams#the-loop) the loop.
-
-A failed or stopped run makes `result()` throw, as does the `timeout` running out; the reviewer carries on.
-
-A run opened through a handle ends once it has answered and nothing is unread, so `result()` returns promptly. If that agent has a handler, its `for await` loop ends the moment it would have to wait, not after `idle`.
-
-A model that starts agents with `start_agent` holds its run open until they finish, for at most 24 hours. Agents you `start()` yourself are yours to await.
+The rest of the PR helper is as [Calling home](/docs/labs/agents/calling-home?ref=docs-labs-agents-agent-teams) left it. A run opened through a handle ends once it has answered, so `result()` returns promptly. [Idle →](/docs/labs/agents/reference?ref=docs-labs-agents-agent-teams#idle)
 
 ## Talk while it works
 
-To correct or question the reviewer while it works, use the handle `start()` returns.
+You want to correct or question the reviewer while it works, and the handle `start()` returns lets you.
 
 <AnnotatedCode>
 
@@ -150,26 +142,28 @@ const second = await review.message("Now check the tests.").result();
 
 ## Being talked to
 
-To let the reviewer ask the PR helper something, read the question from the inbox and reply.
+You want the reviewer to be able to ask the PR helper a question.
 
-{/* not type-checked: agentQuestion, message.is() and message.reply() in a handler */}
+{/* not type-checked: start() without result(), then agentQuestion and message.reply() in the inbox loop */}
 ```typescript
 import { agentQuestion } from "inngest/experimental/agents";
 
-for (const message of batch) {
-  if (message.is(agentQuestion)) {
-    await message.reply("Yes, the author asked for the migration.");
+await reviewer.start({ pr: me.key });
+
+for await (const batch of inbox.batches()) {
+  for (const message of batch) {
+    if (message.is(agentQuestion)) {
+      await message.reply("Yes, the author asked for the migration.");
+    }
   }
 }
 ```
 
-`agent/question` says who asked in `message.from`, and gets one answer. A model agent has a `reply` tool for it.
-
-Code waiting in `result()` isn't reading its inbox, so a question from that run is refused at once and the asker's `ask()` gives `null`.
+The question arrives as `agent/question`, with who asked in `message.from`, and `reply()` answers it.
 
 ## The model calls agents
 
-To let the PR helper's model hand off a review itself, give it nothing: `start_agent` is on by default.
+You want the PR helper's model to hand off a review itself. It has the [agent tools](/docs/labs/agents/reference?ref=docs-labs-agents-agent-teams#agent-tools) `start_agent`, `message_agent`, `ask_agent`, `stop_agent` and `reply` by default.
 
 ```text {{ title: "What the model calls" }}
 start_agent({
@@ -179,7 +173,7 @@ start_agent({
   { thread: "a1b2c3" }
 ```
 
-None of the agent tools waits. What comes back lands in the inbox as `agent/message`, `agent/question`, `agent/answer` or, for runs opened with `start_agent`, `agent/finished`, so the model can't deadlock. [How the model reads them →](/docs/labs/agents/reference?ref=docs-labs-agents-agent-teams#the-loop)
+None of them waits, so the model can't deadlock. What comes back lands in its inbox as `agent/message`, `agent/question`, `agent/answer` or, for runs opened with `start_agent`, `agent/finished`. [How the model reads them →](/docs/labs/agents/reference?ref=docs-labs-agents-agent-teams#the-loop)
 
 {/* not type-checked: message.is(agentFinished) narrowing data.outcome */}
 ```typescript
@@ -192,7 +186,7 @@ if (message.is(agentFinished) && message.data.outcome === "failed") {
 
 ## From the sandbox
 
-To start agents from a script on the sandbox, call the same tools there, plus `agent_result`.
+You want a script on the sandbox to start agents. It calls the same tools there, plus `agent_result`.
 
 ```python {{ title: "A script the model runs" }}
 started = await tools.start_agent(
@@ -207,7 +201,7 @@ review = await tools.agent_result(thread=started["thread"])
 
 ## Background work
 
-To check with the reviewer without holding up the PR helper, do it in a function you don't await.
+You want to check with the reviewer without holding up the PR helper. Do it in a function you don't await.
 
 {/* not type-checked: an un-awaited function that reports back through me.message() */}
 ```typescript
@@ -224,7 +218,7 @@ void reviewLater();
 
 ## Not everything is an agent
 
-To check every open PR each morning, use a plain function.
+You want a check of every open PR each morning. A plain function with a cron trigger does it.
 
 ```typescript {{ title: "inngest/lib/openPrs.ts" }}
 import { z } from "zod";
@@ -266,13 +260,13 @@ export const nightly = inngest.createFunction(
 );
 ```
 
-`thread(url)` rebuilds a handle from a key, so `message()` reaches that PR's thread. With the cron on the agent, each tick would be a thread of its own, about no PR. A plain function has no thread, inbox or card, and costs less.
+`thread(url)` gives the handle of that PR's thread, so each PR's thread gets the nudge. A plain function has no thread, inbox or card, and costs less.
 
 {/* Go deeper */}
 
 ## An agent in another app
 
-To call a reviewer another app owns, reference it by address.
+You want to call a reviewer another app owns. Reference it by address.
 
 {/* not type-checked: agents.reference() with schema and output */}
 ```typescript {{ title: "inngest/agents/platformReviewer.ts" }}
@@ -285,10 +279,10 @@ export const platformReviewer = agents.reference("platform/reviewer", {
 });
 ```
 
-It has the `start()` and `thread()` of an import, by its [address](/docs/labs/agents/agent-discovery?ref=docs-labs-agents-agent-teams#a-card). Without `schema`, `start()` takes any JSON; without `output`, `result()` gives `unknown`.
+It has the same `start()` and `thread()` as an imported agent, by its [address](/docs/labs/agents/agent-discovery?ref=docs-labs-agents-agent-teams#a-card). Without `schema`, `start()` takes any JSON; without `output`, `result()` gives `unknown`.
 
 ## Recipes and reference
 
-- [Agent teams](/docs/labs/agents/recipes/agent-teams?ref=docs-labs-agents-agent-teams)
+- [Lead and specialists](/docs/labs/agents/recipes/agent-teams?ref=docs-labs-agents-agent-teams)
 - [Coding agent](/docs/labs/agents/recipes/coding-agent?ref=docs-labs-agents-agent-teams)
 - [Reference: thread handles](/docs/labs/agents/reference?ref=docs-labs-agents-agent-teams#thread-handles)
