@@ -233,11 +233,11 @@ export const collectComments = inngest.createFunction(
 ```
 
 <Annotation id="parallel" lines="17-20" tease="the foreground work" title="Race group" href="/docs/durable-execution/primitives/group-parallel#continue-after-the-first-step-settles" linkText="Parallel steps">
-The steps and the sleep go in the group, not the reader. Comments that arrive meanwhile reach the loop.
+Comments that arrive meanwhile reach the loop.
 </Annotation>
 
 <Annotation id="end" lines="22-23" tease="before any later step" title="Close right after">
-Closing ends the loop's waiting read, so `reading` settles. A step outside the group before `close()` would leave the run waiting.
+Closing ends the loop's waiting read, so `reading` settles.
 </Annotation>
 
 </AnnotatedCode>
