@@ -30,8 +30,8 @@ import { kv } from "inngest/experimental/agents";
 import { z } from "zod";
 import { inngest } from "../client";
 import { claude } from "../models/claude";
+import { findStalePulls } from "./findStalePulls";
 import { postToSlack } from "./postToSlack";
-import { findStalePulls } from "./stalePulls";
 
 const reported = kv.key("reported", z.array(z.number()));
 
@@ -96,14 +96,24 @@ A failed post throws and the step retries. Pull requests are marked reported onl
 
 The calls to GitHub and Slack are helpers.
 
-```typescript {{ title: "inngest/functions/stalePulls.ts" }}
+```typescript {{ title: "inngest/functions/findStalePulls.ts" }}
 export const findStalePulls = async (seen: number[]) => {
+  const token = process.env.GITHUB_TOKEN;
+
+  if (!token) {
+    throw new Error("Set GITHUB_TOKEN");
+  }
+
   const query = "state=open&sort=updated&direction=asc";
 
   const response = await fetch(
     `https://api.github.com/repos/acme/app/pulls?${query}`,
-    { headers: { authorization: `Bearer ${process.env.GITHUB_TOKEN}` } },
+    { headers: { authorization: `Bearer ${token}` } },
   );
+
+  if (!response.ok) {
+    throw new Error(`GitHub ${response.status}: ${await response.text()}`);
+  }
 
   const pulls = (await response.json()) as {
     number: number;
@@ -198,7 +208,7 @@ Invoke `watcher` from the Dev Server's Functions page to run it before 09:00. A 
 ## Variations
 
 - [Agents and triggers](/docs/labs/agents/agents-and-triggers?ref=docs-labs-agents-recipes-scheduled-watcher#start-a-run) runs it hourly with `{ cron: "TZ=UTC 0 * * * *" }`.
-- [Threads and memory](/docs/labs/agents/threads-and-memory?ref=docs-labs-agents-recipes-scheduled-watcher#claim-and-update) reminds weekly with `kv.app.set(reported, value, { ttl: 604800 })`.
+- [Threads and memory](/docs/labs/agents/threads-and-memory?ref=docs-labs-agents-recipes-scheduled-watcher#claim-a-key) reminds weekly with `kv.app.set(reported, value, { ttl: 604800 })`.
 - [Teams of agents](/docs/labs/agents/teams-of-agents?ref=docs-labs-agents-recipes-scheduled-watcher) hands a digest that needs follow-up to an agent with `start()`.
 
 ## Learn more
