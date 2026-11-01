@@ -78,7 +78,7 @@ In your Slack app, point Event Subscriptions and Interactivity at the route's UR
 
 ## Start from Slack
 
-`slack.thread()` covers every channel the app is in, plus DMs. `in` takes a list of channel IDs to limit it, and `token` replaces `SLACK_BOT_TOKEN` for the SDK's own writes: [`me.post()`](/docs/labs/agents/handlers?ref=docs-labs-agents-slack-and-github#post-in-the-thread), the status line and the default answer.
+`slack.thread()` covers every channel the app is in, plus DMs; `in` limits it to a list of channel IDs. `token` replaces `SLACK_BOT_TOKEN` for the SDK's own writes: [`me.post()`](/docs/labs/agents/handlers?ref=docs-labs-agents-slack-and-github#post-in-the-thread), the status line and the default answer.
 
 The model reads a message as `[Ana] can you check order 7?`, not as JSON. [Threads and memory →](/docs/labs/agents/threads-and-memory?ref=docs-labs-agents-slack-and-github)
 
@@ -143,7 +143,7 @@ export const deployDigest = agents.agent({
   id: "deploy-digest",
   triggers: [{ cron: "TZ=UTC 0 8 * * *" }],
   model: claude,
-  system: "Summarise yesterday's deploys and post it with slack_post.",
+  system: "Summarize yesterday's deploys and post it with slack_post.",
   tools: { ...slack.tools({ to: "#deploys" }) },
 });
 ```
@@ -180,7 +180,7 @@ export const onSocketEvent = async (payload: unknown) => {
 ```
 
 <Annotation id="gate" lines="8-10" tease="replaces the default rule" title="gate">
-Gets the message, the thread (`key` and `history()`) and the bot's own `userId`, and returns a boolean or a promise of one. This one passes only mentions, so direct messages stop reaching the agent.
+Gets the message, the thread (`key`, `history()`) and the bot's `userId`, and returns a boolean or a promise. This one passes only mentions, so direct messages stop reaching the agent.
 </Annotation>
 
 <Annotation id="handle" lines="13-15" tease="no signature check" title="handle" href="#how-it-works" linkText="How it works">
@@ -191,7 +191,7 @@ For a connection you already trust; the SDK never opens a socket. The gate and t
 
 ## Work on GitHub
 
-`github.bridge()` verifies `X-Hub-Signature-256` and sends `github/<event>` events, such as `github/issue_comment`. A redelivered webhook is dropped, and so are the app's own comments and other bots', so an agent never triggers itself.
+`github.bridge()` verifies `X-Hub-Signature-256` and sends `github/<event>` events, such as `github/issue_comment`. A redelivered webhook is dropped.
 
 {/* not type-checked: github.bridge({ client, secret }) as a Web handler */}
 ```typescript {{ title: "app/api/github/route.ts" }}
