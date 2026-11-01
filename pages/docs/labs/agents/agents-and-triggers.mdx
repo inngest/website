@@ -15,9 +15,9 @@ An agent is a function that holds conversations. Give it a model and it answers 
 - **Decide per run.** Pick the prompt or the model from the event. [Per run →](#decide-per-run)
 - **Plain functions too.** A scheduled job with one model call needn't be an agent. [Agent or function →](#agent-or-plain-function)
 
-{/* not type-checked: the full definition shape (triggers, model, system, tools, sandboxes, skills, card) */}
 <AnnotatedCode>
 
+{/* not type-checked: the full definition shape (triggers, model, system, tools, sandboxes, skills, card) */}
 ```typescript {{ title: "inngest/agents/helper.ts" }}
 import { sandbox, skills, slack } from "inngest/experimental/agents";
 import { agents } from "../client";
@@ -64,9 +64,9 @@ What other agents see when they look for help. `share: "team"` shows it to every
 
 Start a run from any event, and say which thread it lands on.
 
-{/* not type-checked: two event triggers on an agent, the agent-wide thread expression */}
 <AnnotatedCode>
 
+{/* not type-checked: two event triggers on an agent, the agent-wide thread expression */}
 ```typescript {{ title: "inngest/agents/deploys.ts" }}
 import { eventType } from "inngest";
 import { z } from "zod";
@@ -120,9 +120,9 @@ Then it waits for more messages and ends after ten quiet minutes. A run opened w
 
 An `invoke()` trigger declares what callers send. Code that starts the agent gets a typed input and a typed result.
 
-{/* not type-checked: invoke() trigger on an agent, start().result() from a plain function */}
 <AnnotatedCode>
 
+{/* not type-checked: invoke() trigger on an agent, start().result() from a plain function */}
 ```typescript {{ title: "inngest/agents/reviewer.ts" }}
 import { invoke } from "inngest";
 import { z } from "zod";
