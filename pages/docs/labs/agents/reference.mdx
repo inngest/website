@@ -11,7 +11,7 @@ export const description = "Signatures, options and defaults for inngest/experim
   Inngest Agents is experimental and moves fast. Import it from `inngest/experimental/agents`; the API may change between releases. [What's Labs?](/docs/labs?ref=docs-labs-agents-reference)
 </Info>
 
-Everything here is a named export of `inngest/experimental/agents`, except `eventType` and `invoke`, which come from `inngest`. Sandboxes, code tools, repos, tool constructors, MCP, secrets and skills are in the [Sandboxes reference](/docs/labs/agents/reference-sandboxes?ref=docs-labs-agents-reference).
+Everything here is a named export of `inngest/experimental/agents`, except `eventType` and `invoke`, which come from `inngest`. Sandboxes, code tools, repos, tool constructors, MCP, secrets and skills are in the [Tools and sandboxes reference](/docs/labs/agents/reference-sandboxes?ref=docs-labs-agents-reference).
 
 - [createAgents](#createagents)
 - [The definition](#the-definition)
@@ -61,7 +61,12 @@ export const agents = createAgents(inngest);
 
 ## The definition
 
-`agents.agent(definition, handler?)` takes the fields below. A field marked *value or function* takes a value, or a function of `{ event, thread }` that may be async. `event` is the event that started the run and `thread` is the thread's key. The function runs once, when a run starts, and again on replay, so keep it free of side effects. It may read [`kv`](#the-kv-import); each call is a memoized step. A field marked *value* takes a value only. Inngest reads `id`, `triggers`, `thread`, `inbox`, `card`, `discovery` and `listen` when your app syncs. [Agents and triggers →](/docs/labs/agents/agents-and-triggers?ref=docs-labs-agents-reference)
+`agents.agent(definition, handler?)` takes the fields below. [Agents and triggers →](/docs/labs/agents/agents-and-triggers?ref=docs-labs-agents-reference)
+
+- A field marked *value* takes a value only. Inngest reads `id`, `triggers`, `thread`, `inbox`, `card`, `discovery` and `listen` when your app syncs.
+- A field marked *value or function* also takes a function of `{ event, thread }`, which may be async. `event` is the event that started the run and `thread` is the thread's key.
+- The function runs once, when a run starts, and again on replay, so keep it free of side effects.
+- It may read [`kv`](#the-kv-import); each call is a memoized step.
 
 | Field | Takes | Description |
 | --- | --- | --- |
@@ -73,8 +78,8 @@ export const agents = createAgents(inngest);
 | `model` | value or function | What the loop calls each turn, such as `anthropic({ model })`. Without one the handler has no `loop`. [Models](#models) |
 | `system` | value or function | The system prompt. |
 | `tools` | value or function | Extra tools, by name. The name is the same for the model and for sandbox code. Tools of listed sandboxes, discovery and the agent tools need no listing. |
-| `sandboxes` | value or function | Sandboxes by name. Each gives the model its tools, named after it (`work_run`), and opens when first used. `{ sandbox, model: false }` keeps one for code only. Each `repo` may be a function too. [Sandboxes reference](/docs/labs/agents/reference-sandboxes?ref=docs-labs-agents-reference) |
-| `skills` | value or function | `skills.folder()` and `skills.repo()` sources. [Sandboxes reference](/docs/labs/agents/reference-sandboxes?ref=docs-labs-agents-reference) |
+| `sandboxes` | value or function | Sandboxes by name. Each gives the model its tools, named after it (`work_run`), and opens when first used. `{ sandbox, model: false }` keeps one for code only. Each `repo` may be a function too. [Tools and sandboxes reference](/docs/labs/agents/reference-sandboxes?ref=docs-labs-agents-reference) |
+| `skills` | value or function | `skills.folder()` and `skills.repo()` sources. [Tools and sandboxes reference](/docs/labs/agents/reference-sandboxes?ref=docs-labs-agents-reference) |
 | `card` | value | `{ description, share, owner, effects, speed }`. Optional. [Cards and discovery](#cards-and-discovery) |
 | `budget` | value or function | What a thread may spend: `{ usd, tokens }`. [Budget, limits and recovery](#budget-limits-and-recovery) |
 | `price` | value | Overrides the model's own prices: a per-million-token table, or a function that prices a call. Not a function of `{ event, thread }`. [Budget and price](#budget-and-price) |
@@ -83,7 +88,7 @@ export const agents = createAgents(inngest);
 | `discovery` | value | `false` turns off the tools that find and reach other agents; `{ prepare }` fills part of their input. On by default. |
 | `listen` | value | Event types the model may start watching with `inbox_listen`. [Model tools](#model-tools) |
 | `remember` | value or function | `false` switches off the loop's remembered history. |
-| `loop` | value | Replaces the whole loop. For an agent with no handler, `loop: agent.loop({ maxTurns: 10 })` changes the loop's options. |
+| `loop` | value | Options for the agent's own loop, such as `{ maxTurns: 10 }`, or a whole loop to swap in. [The loop](#the-loop) |
 
 The options of `createFunction` that apply to agents (`name`, `retries`, `cancelOn`, `concurrency`, `throttle`, `idempotency`, `onFailure` and the rest) pass through to the function.
 
@@ -138,8 +143,8 @@ The second argument of `agents.agent()`. It gets one argument: the function's us
 | `event` | The event that started the run, exactly as sent. `event.is()` narrows it to one trigger. It is also the inbox's first message. |
 | `inbox` | The run's [`Inbox<AgentMessage>`](#inbox). |
 | `me` | The handle to the run's own thread. [me](#me) |
-| `loop` | `loop(batch, options?)`, set up from the definition. Only present when the agent has a `model`. [The loop](#the-loop) |
-| `sandboxes` | A handle per listed sandbox, such as `sandboxes.work`. [Sandboxes reference](/docs/labs/agents/reference-sandboxes?ref=docs-labs-agents-reference) |
+| `loop` | `loop(batch, options?)` and `loop.with(options)`, set up from the definition. Only present when the agent has a `model`. [The loop](#the-loop) |
+| `sandboxes` | A handle per listed sandbox, such as `sandboxes.work`. [Tools and sandboxes reference](/docs/labs/agents/reference-sandboxes?ref=docs-labs-agents-reference) |
 | `score` | `score(name, value)`. [Scores](#scores) |
 | `restarts` | How many times this run continued in another process. |
 | `depth` | How many agents deep this chain of starts is. `0` when a trigger, not another agent, started the run. |
@@ -148,7 +153,7 @@ The second argument of `agents.agent()`. It gets one argument: the function's us
 
 - **With no handler**, an agent with a `model` sends each batch of messages to the loop and posts the answer where the thread lives. When the loop ends on `budget`, it posts that the thread's budget is spent. An agent with neither a model nor a handler takes its batch, posts nothing and ends with `undefined`.
 - **The return value** is the run's output, which a caller's `result()` reads. With no handler it is the model's final answer, a string.
-- **The run ends** when the handler returns. Work still running and not awaited is stopped, except an un-awaited `me.post()` or `score()`, which land first. A plain function keeps its own behaviour.
+- **The run ends** when the handler returns. Work still running and not awaited is stopped, except an un-awaited `me.post()` or `score()`, which land first. Plain functions are unaffected: un-awaited work there behaves as in any Inngest function.
 - **A run opened through a handle** (`start()`, `message()`, `start_agent`, `message_agent`) ends once it has answered, after any agents it started have finished. [Idle](#idle)
 
 ## me
@@ -166,7 +171,6 @@ me.message(content: Json): Promise<void>
 - A thread with no home, such as one opened by `start()` or a cron tick, posts nothing, and the trace warns.
 - A Slack configuration error from a post you did not await, such as a bad token or a missing scope, becomes a warning on the trace.
 - `message(content)`: puts a message in the agent's own inbox. It is how work you did not wait for reports back.
-
 - The agent posts some things itself: a status line while it works, the answer when there is no handler, and a notice when a run fails.
 
 ## Agent
@@ -356,7 +360,7 @@ interface Inbox<TMessage> extends AsyncIterable<TMessage>, AsyncDisposable {
 }
 ```
 
-A read takes: the messages it returns are not unread afterwards.
+A read takes the messages it returns, so they are not unread afterwards.
 
 | Read | Waits | Gives |
 | --- | --- | --- |
@@ -386,55 +390,56 @@ The loop runs turns until the model stops calling tools, reaches `maxTurns`, is 
 
 ```typescript {{ title: "Signature" }}
 loop(batch: AgentMessage[], options?): Promise<Result>
+loop.with(options): typeof loop
 
 agent.loop(options): typeof loop
 agent.toolError(body)
 formatEvent(message: AgentMessage): string
 ```
 
-`loop(batch, options)` takes options for one call:
+- **`loop(batch, options)`** is the handler's loop. It starts from the agent's definition: its model, system, tools (the definition's `tools` plus the discovery, agent and sandbox tools) and the thread's remembered history. The options marked *per call* in the table can be passed to one call.
+- **`loop.with(options)`** returns a loop derived from the handler's. Your options override what they name (`model` replaces the agent's) or add to it (`tools` are added to the agent's tools), as in `const strict = loop.with({ maxTurns: 5 })`.
+- **`agent.loop(options)`**, imported on its own, always builds a standalone loop that has only what its options give, so `model` is required.
+- **On the definition**, `loop: { maxTurns: 10 }` sets options for the agent's own loop, which is how an agent with no handler changes them. `loop:` also takes a whole loop to swap in; the agent's triggers, inbox and thread stay as they are.
 
-| Option | Description |
-| --- | --- |
-| `tools` | Added to the agent's tools. A name used twice is an error. A tool made in the handler can close over `me`, the event and your variables, and sandbox code calls it by the same name. A tool passed here makes `run_code` available for that call even when the sandbox's code tools had no `tools`. |
-| `steer` | Chooses which drained messages are folded in. |
-| `onTurn` | Called after each turn. |
-| `maxTurns` | Most model calls for this call. |
-| `maxToolOutput` | Most characters of a tool result the model sees. |
-| `wrapUp` | Text for the last turn, which allows no tool use. |
-
-An agent with no handler changes these options for every call with `loop: agent.loop({ maxTurns: 10 })`.
-
-`agent.loop(options)` returns a `loop` function like the handler's. Use it when a handler needs a loop with other options, such as a different model.
-
-- **Inside an agent**, it starts from the agent's definition: its model, system and tools (the definition's `tools` plus the discovery, agent and sandbox tools), and the thread's remembered history. Your options override or add: `model` replaces the agent's, and `tools` are added to its tools.
-- **Outside an agent**, a loop has only what its options give, so `model` is required.
-
-Its options:
-
-| Option | Default | Description |
-| --- | --- | --- |
-| `model` | the agent's | What the loop calls each turn. Required outside an agent. [Models](#models) |
-| `system` | the agent's | The system prompt. |
-| `tools` | the agent's | Tools the model can call. Inside an agent they are added to its tools. |
-| `id` | `"agent"` | Prefix of the loop's step ids. A second loop with the same prefix in one run gets `-2`, a third `-3`. |
-| `maxTurns` | `40` | Most model calls. |
-| `maxToolOutput` | `100000` | Most characters of a tool result the model sees. A longer result keeps its start and end and says how much is missing. |
-| `spill` | none | `{ sandbox, dir? }`. Saves the whole of a longer result to `<dir>/tool-output-<hash>.txt` in the sandbox (`dir` defaults to `/tmp` and must exist) and tells the model the path. |
-| `parallelTools` | `true` | Runs the tool calls of one reply at once. |
-| `wrapUp` | none | Text for the last turn, which allows no tool use. |
-| `history` | the thread's remembered history | The history of an earlier result, to continue from. |
-| `compaction` | automatic | Summarises the start of a long conversation. [Compaction](#compaction) |
-| `steer` | fold all | `(drained) => messages to fold`. What it skips comes back as `result.unread`. |
-| `stop` | none | `() => boolean`, checked before each model call. `true` ends the loop with `end: "stop"`. |
-| `onTurn` | none | Called after each turn. |
-| `format` | `formatEvent` | `(message) => AgentUserContent`. What the model sees for a message. |
+| Option | Default | Per call | Description |
+| --- | --- | --- | --- |
+| `model` | the agent's | no | What the loop calls each turn. Required for `agent.loop(options)`. [Models](#models) |
+| `system` | the agent's | no | The system prompt. |
+| `tools` | the agent's | yes | Tools the model can call, added to the agent's own. A name used twice is an error. A tool made in the handler can close over `me`, the event and your variables, and sandbox code calls it by the same name. A tool passed here makes `run_code` available for that call even when the sandbox's code tools had no `tools`. |
+| `id` | `"agent"` | no | Prefix of the loop's step ids. A second loop with the same prefix in one run gets `-2`, a third `-3`. |
+| `maxTurns` | `40` | yes | Most model calls. |
+| `maxToolOutput` | `100000` | yes | Most characters of a tool result the model sees. A longer result keeps its start and end and says how much is missing. |
+| `spill` | none | no | `{ sandbox, dir? }`. Saves the whole of a longer result to `<dir>/tool-output-<hash>.txt` in the sandbox (`dir` defaults to `/tmp` and must exist) and tells the model the path. |
+| `parallelTools` | `true` | no | Runs the tool calls of one reply at once. |
+| `wrapUp` | none | yes | Text for the last turn, which allows no tool use. |
+| `history` | the thread's remembered history | no | The history of an earlier result, to continue from. |
+| `compaction` | automatic | no | Summarises the start of a long history. [Compaction](#compaction) |
+| `steer` | fold all | yes | Chooses which drained messages are folded in. What it skips comes back as `result.unread`. |
+| `stop` | none | no | Checked before each model call. `true` ends the loop with `end: "stop"`. |
+| `onTurn` | none | yes | Called after each turn. [onTurn](#onturn) |
+| `format` | `formatEvent` | no | What the model sees for a message. |
 
 ```typescript {{ title: "Signature" }}
 steer?: (drained: AgentMessage[]) => AgentMessage[] | Promise<AgentMessage[]>;
-stop?: () => boolean | Promise<boolean>;
+stop?: ({ turn }: { turn: number }) => boolean | Promise<boolean>;
+onTurn?: (turn: AgentTurn) => void | Promise<void>;
 format?: (message: AgentMessage) => AgentUserContent;
 ```
+
+### onTurn
+
+`onTurn` is called after each turn's tool calls with the turn:
+
+| `AgentTurn` field | Description |
+| --- | --- |
+| `turn` | This model call's number, from 1. |
+| `text` | The reply's text. |
+| `toolCalls` | The tool calls of this turn, finished. |
+| `usage` | Tokens this call used, and its cost in dollars when the model prices its calls. |
+
+- It is not awaited between turns, and the last call is waited for before the loop returns.
+- An error in it is logged and the loop carries on. Steps are allowed inside it.
 
 ### Compaction
 
@@ -442,11 +447,11 @@ format?: (message: AgentMessage) => AgentUserContent;
 
 | Option | Default | Description |
 | --- | --- | --- |
-| `maxTokens` | the model's context size | Summarise once the conversation is estimated past this many tokens, at about three characters a token. |
+| `maxTokens` | the model's context size | Summarise once the history is estimated past this many tokens, at about three characters a token. |
 | `keep` | `8` | Messages at the end that are always sent whole. |
 | `summarise` | the loop's `model` | `({ messages, previous? }) => Promise<string>` writes the summary. The default call has no tools and counts in `usage`. |
 
-`AgentCompaction` is `{ upTo, summary }`: the first `upTo` messages are replaced by `summary` when the conversation is sent. The `history` of the result is never summarised.
+`AgentCompaction` is `{ upTo, summary }`: the first `upTo` messages are replaced by `summary` when the history is sent. The `history` of the result is never summarised.
 
 ### The result
 
@@ -465,9 +470,8 @@ format?: (message: AgentMessage) => AgentUserContent;
 - **Folding.** Before each model call, the first included, the loop drains the handler's inbox and every inbox the model opened, and folds what it took into that call. A message that arrives after the last drain stays in the inbox for your next read.
 - **Questions.** A question that arrives during a turn is answered at the next model call. The loop skips questions that already have a reply.
 - **Remembering.** After each batch the loop saves the model's history in thread state and picks it up when the thread's next run starts. A long history is summarised. `remember: false` on the agent switches this off.
-- **`onTurn`** is not awaited between turns and the last call is waited for before the loop returns. An error in it is logged and the loop carries on. Steps are allowed inside it.
 - **`agent.toolError(body)`**: `return` it from a tool to give the model a failure it can read without throwing. In sandbox code the same failure is a thrown `ToolError`.
-- **`formatEvent`** is the default wording of the four agent message types. Any other event shows as its name and data as JSON. A custom `format` can call it for what it does not change.
+- **`formatEvent`** is the default wording. A `slack/message` reads `[Name] text`, and a GitHub comment reads the same way with the login. The four agent message types have their own wording, and any other event shows as its name and data as JSON. A custom `format` can call it for what it does not change.
 - There are no hooks around tool calls. Wrap the tool instead. [Tools →](/docs/labs/agents/tools?ref=docs-labs-agents-reference)
 
 ## Models
@@ -640,12 +644,12 @@ describe_agent({ address: string }): AgentCard
 prepare?: (call: {
   card: AgentCard;
   input: Record<string, Json>;
-  event: AgentMessage;
-  thread: string;
+  event: Event;
+  thread: { key: string };
 }) => Record<string, Json> | Promise<Record<string, Json>>;
 ```
 
-`event` is the event that started the run and `thread` is the thread's key.
+`event` is the event that started the run and `thread.key` is the thread's key.
 
 ```typescript
 discovery: {
@@ -691,7 +695,7 @@ inbox_close({ as: string }): { ok: true }
 ```
 
 - `inbox_listen` opens a named inbox. `source` is the name of an event type in `listen`; nothing else can be watched.
-- `match` narrows by field equals value. The model never writes an expression.
+- `match` narrows by fields of the event's `data`, compared with equals. Keys are paths, with dots for nested fields such as `"pull_request.number"`. There are at most 8, and a ninth is an error the model sees. The model never writes an expression.
 - The loop folds from every inbox the model opened. `inbox_close` closes one.
 
 ### For sandbox code
@@ -702,7 +706,7 @@ Sandbox code gets the agent tools and the discovery tools, plus tools that wait,
 - `inbox_next({ as })` and `inbox_next_batch({ as })`: wait on a named inbox.
 - The waiting form of `slack_ask`, which gives the answer as a string.
 
-The shell and code tools of a sandbox (`work_run`) and `open_skill` are in the [Sandboxes reference](/docs/labs/agents/reference-sandboxes?ref=docs-labs-agents-reference). Slack and GitHub tools are under [Slack and GitHub](#slack-and-github).
+The shell and code tools of a sandbox (`work_run`) and `open_skill` are in the [Tools and sandboxes reference](/docs/labs/agents/reference-sandboxes?ref=docs-labs-agents-reference). Slack and GitHub tools are under [Slack and GitHub](#slack-and-github).
 
 ## Slack and GitHub
 
@@ -724,8 +728,10 @@ slack.bridge({
   handle(payload: unknown): Promise<void>;
 }
 
-slack.thread(options?: { in?: string[]; token? })
-slack.tools(options?: { to?: string })
+type Token = string | (() => string | Promise<string>) | Secret;
+
+slack.thread(options?: { in?: string[]; token?: Token })
+slack.tools(options?: { to?: string; token?: Token })
 ```
 
 {/* not type-checked: slack.bridge mounted as a route handler */}
@@ -753,7 +759,7 @@ export const POST = slack.bridge({
 
 **`slack.thread()`** triggers on any Slack channel the app is in, plus direct messages. `in` limits it to Slack channel IDs. It keys the thread on `threadKey`. `token` is the Slack token for the SDK's own writes, such as the status line and `me.post()`: a string, a function or `secret()`. It defaults to `SLACK_BOT_TOKEN`.
 
-**`slack.tools()`** is a record of tools bound to the thread the run came from. The model and sandbox code both call them. The Slack token comes from `SLACK_BOT_TOKEN`.
+**`slack.tools()`** is a record of tools bound to the thread the run came from. The model and sandbox code both call them. `token` is the Slack token for their calls, in the same forms as on `slack.thread()`, and defaults to `SLACK_BOT_TOKEN`.
 
 ```typescript {{ title: "Signature" }}
 slack_post({ text: string; to?: string }): { channel: string; ts: string }
@@ -794,7 +800,7 @@ github.thread(options?: {
   events?: string[];
   if?: string;
 })
-github.tools(options?: { token? })
+github.tools(options?: { token?: Token | GithubApp })
 ```
 
 {/* not type-checked: github.bridge mounted as a route handler */}
