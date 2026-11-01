@@ -15,9 +15,9 @@ The agent definition, handler and loop are in the [Agents reference](/docs/labs/
 
 ```typescript
 import {
-  completeMcpAuthorization,
   disconnect,
   kvOAuthStore,
+  mcpCallback,
   sandboxMiddleware,
   secret,
   tool,
@@ -239,13 +239,12 @@ Types: `SandboxHandle`.
 sandbox.tools.code(options?: CodeToolsOptions): SandboxToolsFactory
 ```
 
-{/* TODO(spec): the old code tools took `cwd` and `timeout`. sandbox.md says only "run's default timeout is five minutes". Do the options stay, and what are their defaults? */}
-
 | Option | Type | Default | Description |
 | --- | --- | --- | --- |
 | `only` | `CodeToolName[]` | `["run"]`, plus `"run_code"` with `tools` | The tools to include. May leave out `run`. |
 | `tools` | `SandboxTools` | none | App tools the code of `run_code` can call as `tools.<name>(...)`. Adds `run_code`. `now` and `sleep` are taken by `tools.now()` and `tools.sleep({ duration })`. |
 | `shims` | `SandboxShim[]` | none | [Shims](#shims) put on the shell's `PATH`, so a program that holds a credential on your app works from `run` and `run_code`. |
+| `timeout` | `string \| number` | `"5m"` | The longest one `run` command may take. See [Long commands](#long-commands). |
 
 Each tool is named `<sandbox>_<tool>` and returns text the model reads, except `push`.
 
@@ -302,15 +301,13 @@ The shell's environment rides in every command. The platform allows at most 256 
 
 ### Long commands
 
-A command with a `timeout` over five minutes runs as a process that steps follow in windows of at most five minutes, one wait step per window. That includes commands that call tools or use shims. The model's `run` times out after five minutes by default.
+A command with a `timeout` over five minutes runs as a process that steps follow in windows of at most five minutes, one wait step per window. That includes commands that call tools or use shims. The model's `run` times out after five minutes unless `timeout` says otherwise.
 
 ## Repos
 
 A sandbox's `repo` is checked out when the sandbox starts. The write token never enters the sandbox: your app makes the push, after `policy` has looked at it. [Sandboxes and code](/docs/labs/agents/sandboxes-and-code?ref=docs-labs-agents-reference-sandboxes)
 
 `repo` takes a value, or a function of `{ event, thread }` that may be async. The function runs once when a run starts and must be pure.
-
-{/* TODO(spec): defaults of repo `path` (the earlier checkout helper used /work) and of the `author` option (sandbox.md says "an option with a default" without naming it). */}
 
 | `RepoOptions` field | Type | Default | Description |
 | --- | --- | --- | --- |
@@ -319,7 +316,7 @@ A sandbox's `repo` is checked out when the sandbox starts. The write token never
 | `ref` | `string` | the default branch | Branch, tag or commit to check out. |
 | `path` | `string` | `/work` | Where to check out. |
 | `policy` | `(push) => result` | allow | Looks at each [push](#push) before it is made and can refuse it. |
-| `author` | `{ name: string; email: string }` | a default author | The git author of commits the SDK makes. |
+| `author` | `{ name: string; email: string }` | `inngest-agent` | The git author of commits the SDK makes. |
 | `push` | `boolean` | `true` | `false` leaves the `<sandbox>_push` tool out. |
 
 {/* not type-checked: repo as a function of the trigger event */}
@@ -344,7 +341,7 @@ One sandbox has one repo. A second repo gets a second sandbox.
 
 ### RepoAuth
 
-`auth` is anything that mints a token for the repository. It is asked for read-only access at checkout and write access at push, each inside a step, and the token is short-lived.
+`auth` is anything that mints a token for the repository. It is asked for read-only access at checkout and write access at push, each inside a step, and the token is short-lived. A token function can read a [`secret()`](#secrets), as anywhere else a token goes.
 
 ```typescript {{ title: "Signature" }}
 type RepoAuth =
@@ -354,7 +351,8 @@ type RepoAuth =
 
 ### Checkout
 
-- The checkout runs when the sandbox starts. An existing checkout is left alone when a paused sandbox resumes.
+- The checkout runs when the sandbox starts.
+- At each run's start, if the run's `ref` differs from the checkout's, the sandbox fetches and checks out the new `ref`. Uncommitted changes in the working tree make that an error the run sees. The same `ref` is left alone, so a resumed sandbox keeps its work.
 - The read-only token goes to the checkout's one `git` process, as a header for that process only. It is never stored in the checkout's config.
 
 ### Push
@@ -363,7 +361,7 @@ The model pushes with `<sandbox>_push({ branch })` and code with `sandboxes.<key
 
 1. The sandbox bundles the commits that are not on the remote yet. It holds no credentials.
 2. Your app reads the bundle back.
-3. Your app shows the commits and files to `policy`, which can refuse.
+3. Your app shows the commits and paths to `policy`, which can refuse.
 4. Your app pushes from its own side with the write token.
 
 The push sends the commits that are there. It never forces and never deletes. Opening a pull request stays out of the sandbox: the result names the branch, and your app opens the pull request with its GitHub tools or its own code.
@@ -378,18 +376,11 @@ A refusal is a thrown, non-retriable `PushRefusedError` with `reason: string` in
 
 `policy` returns nothing to allow, `{ refuse }` to stop with a message, or `{ notes }` to add audit notes that come back in `PushResult.notes`. It receives the push:
 
-{/* TODO(spec): sandbox.md says policy is "a function of the push (the shape of today's GitPolicy)". The field list below and the omitted { ref } result come from that shape. Confirm the list. */}
-
 | `push` field | Description |
 | --- | --- |
-| `remote`, `ref`, `branch?`, `sha`, `oldSha?` | What is being updated. |
-| `fastForward` | Whether the remote's commit is an ancestor. |
-| `commits` | The commits being pushed, newest first: `{ sha, author, subject }`. |
+| `branch` | The branch being pushed. |
+| `commits` | The commits being pushed, each with its message. |
 | `paths` | Every path those commits touch. |
-| `patch()` | The text of the changes, for scanning. |
-| `files` | `path`, and `before()` and `after()`, each a blob or `undefined`. |
-
-A blob has `size`, `binary`, `bytes`, `mode?` and `text`.
 
 Types: `RepoOptions`, `RepoAuth`, `PushResult`, `PushRefusedError`.
 
@@ -453,11 +444,9 @@ tool.step(definition: ToolDefinition): SandboxTool
 tool.group(definition: WaitingToolDefinition): SandboxTool
 ```
 
-{/* TODO(spec): tools.md says `id` is not needed in a record (the key names the tool) and its examples call tool() without it; the old tool() required `id`. Is `id` optional? */}
-
 | Option | Applies to | Default | Description |
 | --- | --- | --- | --- |
-| `id` | `tool()` | none | The tool's name where no record key names it, as in `agentTools([...])`. Letters, digits and underscores; starts with a letter; up to 64. |
+| `id` | `tool()` | none | Optional. The key in the `tools` record names the tool; `id` names it in `agentTools([...])`. Letters, digits and underscores; starts with a letter; up to 64. |
 | `description` | all | none | What the tool does. |
 | `displayName` | all | the tool's name | Trace label, or `(input) => string`. |
 | `input` | all | none | A Standard Schema or a JSON Schema object. Models need an object schema. With no `input`, the tool is called with an empty object. |
@@ -593,8 +582,6 @@ Types: `AgentTool`, `AgentToolDefinition`, `ToolDefinition`, `SandboxTool`, `San
 
 `tool.shim(name, handler)` makes a program on the shell's `PATH` call your handler first, so code runs `terraform apply` without holding the credential. A shim goes in the `shims` list of [`sandbox.tools.code()`](#code-tools), `commands.run` or `$`, and is a program on `PATH`, not an entry in the model's tool list.
 
-{/* TODO(spec): link the core shims page (/docs/sandboxes/features/shims) once it merges; it is on branch jack/sandbox-shims-docs. Tools in a sandbox: /docs/sandboxes/features/tools. */}
-
 ```typescript {{ title: "Signature" }}
 tool.shim(name: string, handler: ShimHandler): SandboxShim
 tool.shim(name: string, options: ShimOptions): SandboxShim
@@ -679,12 +666,10 @@ Types: `McpServer`, `McpServerOptions`, `McpAuth`.
 
 `auth: { oauth }` follows the MCP authorization spec: discovery, dynamic client registration, PKCE, code exchange and refresh. Every person signs in as themselves.
 
-{/* TODO(spec): tools.md says the SDK sends the sign-in link to the person and the model never sees it. What happens to the oauth option onNeedsAuthorization, and to waitForMcpAuthorization, isMcpNeedsAuthorization and the agent/mcp.authorized event? None is in the export list. Also: how does completeMcpAuthorization receive the browser cookie it checks? */}
-
 | `oauth` option | Default | Description |
 | --- | --- | --- |
 | `user` | required | A stable ID for the person, or `({ runId, event, thread }) => string`. A function gets the run's ID, its trigger event and its thread key, and runs for every call. |
-| `redirectUri` | required | Your callback route. Register it with the server when it has no dynamic registration. |
+| `redirectUri` | required | The URL of your [callback route](#the-callback-route). Register it with the server when it has no dynamic registration. |
 | `store` | `kvOAuthStore()` | Where tokens, registered clients and pending sign-ins live. |
 | `clientId` | registered for you | An OAuth client you registered, for servers without dynamic registration. |
 | `clientSecret` | none | That client's secret, as a string or a `secret()`. |
@@ -698,16 +683,29 @@ Types: `McpServer`, `McpServerOptions`, `McpAuth`.
 | Call | Description |
 | --- | --- |
 | `kvOAuthStore({ encryptionKey, adapter, app })` | The default store: the agents store, AES-GCM encrypted. The key defaults to `secret("MCP_OAUTH_ENCRYPTION_KEY")`. Changing the key makes stored tokens unreadable, and people sign in again. |
-| `completeMcpAuthorization({ store, code, state, error, expectUser, clientSecret, send })` | Finishes the sign-in from the callback route your app mounts. Returns `{ server, user, url }`. Pass `expectUser` whenever the route knows who is calling, so a forwarded link can't connect someone else's account. |
+| `mcpCallback({ store })` | The callback route's handler. See [The callback route](#the-callback-route). |
 | `disconnect(server, user)` | Revokes one person's connection to one server. |
 
-`completeMcpAuthorization()` throws `McpAuthorizationError`, with a message safe to show, for a denied, expired, reused or mismatched link.
+### The callback route
 
-{/* not type-checked: tool.mcp with oauth, a user function of the trigger event and kvOAuthStore */}
+Your app mounts one route that finishes the sign-in. `mcpCallback({ store })` is a Web handler: it takes the `Request`, with the browser's cookie, and returns a `Response`. Give it the same store the servers use.
+
+```typescript {{ title: "Signature" }}
+mcpCallback(options: {
+  store: McpOAuthStore;
+}): (request: Request) => Promise<Response>
+```
+
+{/* not type-checked: mcpCallback mounted as a Next.js route */}
+```typescript {{ title: "app/api/mcp/callback/route.ts" }}
+import { kvOAuthStore, mcpCallback } from "inngest/experimental";
+
+export const GET = mcpCallback({ store: kvOAuthStore() });
+```
+
+{/* not type-checked: tool.mcp with oauth and a user function of the trigger event */}
 ```typescript {{ title: "inngest/tools/notion.ts" }}
-import { kvOAuthStore, tool } from "inngest/experimental";
-
-export const store = kvOAuthStore();
+import { tool } from "inngest/experimental";
 
 export const notion = tool.mcp({
   id: "notion",
@@ -718,7 +716,6 @@ export const notion = tool.mcp({
         return event.data.user;
       },
       redirectUri: "https://app.acme.test/api/mcp/callback",
-      store,
     },
   },
 });
@@ -728,7 +725,7 @@ Types: `McpOAuthOptions`, `McpOAuthStore`, `McpOAuthUserContext`, `KvOAuthStoreO
 
 ## Secrets
 
-`secret()` keeps a value on your host. `sandbox({ secrets })` puts values into the sandbox. They solve different problems, and both stay.
+`secret()` keeps a value on your host. `sandbox({ secrets })` puts values into the sandbox. They solve different problems.
 
 ```typescript {{ title: "Signature" }}
 secret(source: string | (() => string | Promise<string>)): Secret
@@ -742,7 +739,7 @@ secret(source: string | (() => string | Promise<string>)): Secret
 
 - `secret("NAME")` reads the environment variable `NAME` inside the call. A function gives a value that depends on the caller.
 - A `Secret` printed or serialized gives its label, so a token never lands in a log, a prompt or a trace.
-- `secret()` is accepted wherever a token goes, such as `auth.bearer`, `auth.headers` and `clientSecret` in [MCP](#mcp), and the Slack and GitHub bridge secrets. [Slack and GitHub](/docs/labs/agents/slack-and-github?ref=docs-labs-agents-reference-sandboxes)
+- `secret()` is accepted wherever a token goes, such as `auth.bearer`, `auth.headers` and `clientSecret` in [MCP](#mcp), a repo's [`RepoAuth`](#repoauth) token function, and the Slack and GitHub bridge secrets. [Slack and GitHub](/docs/labs/agents/slack-and-github?ref=docs-labs-agents-reference-sandboxes)
 - Once a value is inside the sandbox, code there can read it. Prefer a tool, a [shim](#shims) or a short-lived token for anything sensitive. [Secrets in Sandboxes](/docs/sandboxes/features/secrets?ref=docs-labs-agents-reference-sandboxes)
 
 Types: `Secret`, `SecretSource`.
@@ -756,8 +753,6 @@ skills.folder(path: string): SkillSource
 skills.repo(repo: string, options?: SkillsRepoOptions): SkillSource
 ```
 
-{/* TODO(spec): skills.md gives `ref` and `path` options for sources but not what `path` means for a repo, its default, or the option that takes GitHub credentials for a private repo. Also where in the sandbox the files land. */}
-
 | Source | Description |
 | --- | --- |
 | `skills.folder(path)` | Skills shipped with your app, one folder per skill. The path resolves against the process's working directory when the agent is defined, so ship the folder with the app. They change with a deploy. |
@@ -766,13 +761,14 @@ skills.repo(repo: string, options?: SkillsRepoOptions): SkillSource
 | `skills.repo` option | Description |
 | --- | --- |
 | `ref` | Branch, tag or commit to read. |
-| `path` | The folder in the repository that holds the skills. |
+| `path` | The folder in the repository that holds the skill folders. |
+| `auth` | A [`githubApp()`](#github-app) or a token, for a private repository. |
 
 - A folder and a repo can be listed together. Two skills with the same name are an error when the agent is defined.
 - A repo is read once per run. A failed read is logged, and the agent carries on without those skills.
-- Public repos need no token. A private repo is read with your app's GitHub credentials on the host, never in the sandbox. [GitHub App](#github-app)
+- Public repos need no `auth`. A private repo is read with `auth` on the host, never in the sandbox.
 - The model sees every skill's name and description in its prompt. `open_skill({ name: string }): string` returns one skill's body. It is the same tool for every skill, and only an agent with skills has it. It works with no sandbox.
-- A skill's files are placed in the first sandbox the model can use among the agent's listed sandboxes. An agent with skills and no sandbox gets instructions only.
+- A skill's files are placed in `/skills/<name>/` in the first sandbox the model can use among the agent's listed sandboxes. An agent with skills and no sandbox gets instructions only.
 - The agent's card lists each skill's name and description. A repo's skills can change between syncs, so the card may list a skill a run cannot read. [Discovery](/docs/labs/agents/discovery?ref=docs-labs-agents-reference-sandboxes)
 
 ```md
