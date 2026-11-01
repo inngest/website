@@ -10,7 +10,7 @@ export const description = "Run Inngest Agents on Cloudflare Workers: bindings e
 A Worker has no secrets or database at import time, so fields that take a function read them when a run starts.
 
 - **Keep state in D1.** The store reads its binding on each use. [Store →](#store-state-in-d1)
-- **Read secrets at run time.** The model, tokens and repo access are functions. [Run-time fields →](#read-bindings-at-run-time)
+- **Read secrets at run time.** The model, tokens and repo access are functions. [Bindings →](#read-bindings-at-run-time)
 - **Serve from `fetch`.** One export for Inngest and the Slack route. [Serve →](#serve-from-fetch)
 
 <AnnotatedCode>
@@ -41,12 +41,12 @@ export const triage = agents.agent({
 });
 ```
 
-<Annotation id="model" lines="13-18" tease="called per run" title="A field as a function" href="/docs/labs/agents/agents-and-triggers?ref=docs-labs-agents-workers#decide-per-run" linkText="Agents and triggers">
-`getEnv()` is safe here: a run only starts inside a request.
+<Annotation id="token" lines="6-8" tease="called at each use" title="A token as a function" href="/docs/labs/agents/slack-and-github?ref=docs-labs-agents-workers" linkText="Slack and GitHub">
+`getEnv()` reads the request's bindings (`env.ts`, below). `slack.thread` uses the token for the SDK's own posts, `slack.tools` for the model's.
 </Annotation>
 
-<Annotation id="token" lines="6-8" tease="called at each use" title="A token as a function" href="/docs/labs/agents/slack-and-github?ref=docs-labs-agents-workers" linkText="Slack and GitHub">
-`slack.thread` uses it for the SDK's own posts, `slack.tools` for the model's.
+<Annotation id="model" lines="13-18" tease="called per run" title="A field as a function" href="/docs/labs/agents/agents-and-triggers?ref=docs-labs-agents-workers#decide-per-run" linkText="Agents and triggers">
+`getEnv()` is safe here: a run only starts inside a request.
 </Annotation>
 
 </AnnotatedCode>
@@ -69,7 +69,7 @@ export type Env = {
 
 let current: Env | undefined;
 
-export const useEnv = (env: unknown) => {
+export const setEnv = (env: unknown) => {
   current = env as Env;
 };
 
@@ -122,7 +122,7 @@ npx wrangler d1 migrations apply agents-db
 
 ## Read bindings at run time
 
-Every run-time field takes a function of the event and thread, and so does a sandbox's `repo`. Its `auth` can be a function of its own. [Run-time fields →](/docs/labs/agents/reference?ref=docs-labs-agents-workers#the-definition)
+Fields that take a function (`model`, `tools`, `sandboxes` and the rest) get the event and thread, and so does a sandbox's `repo`. Its `auth` can be a function of its own. [The definition →](/docs/labs/agents/reference?ref=docs-labs-agents-workers#the-definition)
 
 {/* not type-checked: repo.auth as a function reading a Worker binding */}
 ```typescript {{ title: "inngest/sandboxes/work.ts" }}
@@ -142,7 +142,7 @@ export const work = sandbox({
 
 ## Serve from fetch
 
-`useEnv(env)` runs first on every request, so everything after it can read the bindings. Workers require a default export for the entry point.
+`setEnv(env)` runs first on every request, so everything after it can read the bindings. Workers require a default export for the entry point.
 
 {/* not type-checked: serve() from inngest/cloudflare with slack.bridge() and a secret function */}
 ```typescript {{ title: "inngest/serve.ts" }}
@@ -150,7 +150,7 @@ import { serve } from "inngest/cloudflare";
 import { secret } from "inngest/experimental";
 import { slack } from "inngest/experimental/agents";
 import { agents, inngest } from "./client";
-import { getEnv, useEnv } from "./env";
+import { getEnv, setEnv } from "./env";
 import "./agents/triage";
 
 const handler = serve({
@@ -168,7 +168,7 @@ const slackBridge = slack.bridge({
 
 export default {
   fetch: (request: Request, env: Record<string, string | undefined>) => {
-    useEnv(env);
+    setEnv(env);
 
     if (new URL(request.url).pathname === "/api/slack") {
       return slackBridge(request);
@@ -184,13 +184,13 @@ Set up the Worker as in [Serving Inngest functions](/docs/learn/serving-inngest-
 ## Gotchas
 
 - **Import time has no bindings.** Read them inside a function.
-- **Sync-time fields stay values.** `id`, `triggers`, `thread`, `inbox`, `card`, `discovery` and `listen` are read at sync, so keep bindings out of them.
-- **Run-time functions have no side effects.** They run again on replay, and may read `kv`.
-- **Other entry points call `useEnv`.** A scheduled handler that sends messages calls `useEnv(env)` first.
+- **Some fields stay values.** `id`, `triggers`, `thread`, `inbox`, `card`, `discovery` and `listen` are read at sync, so keep bindings out of them.
+- **Field functions have no side effects.** They run again on replay, and may read `kv`.
+- **Other entry points call `setEnv`.** A scheduled handler that sends messages calls `setEnv(env)` first.
 
 ## How it works
 
-- A run-time field's function runs once when a run starts, a token function at each use and the store's on every operation.
+- A field's function runs once when a run starts, a token function at each use and the store's on every operation.
 - Everything else is the same as on any host. [Project structure →](/docs/labs/agents/structure?ref=docs-labs-agents-workers)
 
 ## Recipes and reference
