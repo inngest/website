@@ -94,8 +94,6 @@ A failed post throws and the step retries. Pull requests are marked reported onl
 
 </AnnotatedCode>
 
-The calls to GitHub and Slack are helpers.
-
 ```typescript {{ title: "inngest/functions/findStalePulls.ts" }}
 export const findStalePulls = async (seen: number[]) => {
   const token = process.env.GITHUB_TOKEN;
@@ -203,7 +201,7 @@ npx tsx inngest/serve.ts
 npx inngest-cli@latest dev -u http://localhost:3000/api/inngest
 ```
 
-Invoke `watcher` from the Dev Server's Functions page to run it before 09:00. A second invoke posts nothing.
+Invoke `watcher` from the Functions page at [localhost:8288](http://localhost:8288) to run it before 09:00. A second invoke posts nothing.
 
 ## Variations
 
