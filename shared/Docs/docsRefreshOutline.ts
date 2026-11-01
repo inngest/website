@@ -969,7 +969,7 @@ export const docsRefreshOutline: DocsRefreshPage[] = [
             ],
           },
           {
-            title: "Reference",
+            title: "Agents reference",
             href: "/docs/labs/agents/reference",
           },
           {
