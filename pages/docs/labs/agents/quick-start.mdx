@@ -86,15 +86,15 @@ export const support = agents.agent({
 });
 ```
 
-<Annotation id="triggers" lines="13" tease="what starts a run" title="Triggers" href="/docs/labs/agents/agents?ref=docs-labs-agents-quick-start" linkText="Agents">
+<Annotation id="triggers" lines="13" tease="what starts a run" title="Triggers" href="/docs/labs/agents/agents?ref=docs-labs-agents-quick-start#other-ways-to-start" linkText="Agents">
 Anything a function can trigger on. Here, an event.
 </Annotation>
 
-<Annotation id="thread" lines="14" tease="one thread per customer" title="Thread" href="/docs/labs/agents/memory?ref=docs-labs-agents-quick-start" linkText="Memory">
+<Annotation id="thread" lines="14" tease="one thread per customer" title="Thread" href="/docs/labs/agents/threads?ref=docs-labs-agents-quick-start#which-conversation-is-this" linkText="Threads">
 Questions with the same customer land on one thread, so the agent remembers what was said.
 </Annotation>
 
-<Annotation id="model" lines="15-17" tease="no handler needed" title="Model, prompt and tools" href="/docs/labs/agents/models?ref=docs-labs-agents-quick-start" linkText="Models">
+<Annotation id="model" lines="15-17" tease="no handler needed" title="Model, prompt and tools" href="/docs/labs/agents/models?ref=docs-labs-agents-quick-start#delete-the-handler" linkText="Models">
 With no handler, the agent sends each message to the model and runs its tool calls until it answers.
 </Annotation>
 
@@ -149,6 +149,6 @@ Nothing here says where to post, so the answer stays in the run. Put the agent i
 
 ## Next
 
-- [Agents](/docs/labs/agents/agents?ref=docs-labs-agents-quick-start) covers everything an agent definition takes.
-- [Agents](/docs/labs/agents/agents?ref=docs-labs-agents-quick-start) let your code decide what the model sees and what gets posted.
+- [Agents](/docs/labs/agents/agents?ref=docs-labs-agents-quick-start) grows an agent from an id to a handler with triggers and steps.
+- [Models](/docs/labs/agents/models?ref=docs-labs-agents-quick-start) covers the loop an agent with no handler runs, and how to take it over.
 - [Recipes](/docs/labs/agents/recipes?ref=docs-labs-agents-quick-start) are complete examples to copy.
