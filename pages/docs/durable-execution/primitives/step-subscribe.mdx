@@ -225,7 +225,9 @@ export const collectComments = inngest.createFunction(
     await comments.close();
     await reading;
 
-    await step.run("notify-owner", () => notifyOwner(event.data.pr, bodies));
+    await step.run("notify-owner", () => {
+      return notifyOwner(event.data.pr, bodies);
+    });
   },
 );
 ```
