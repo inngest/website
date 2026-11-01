@@ -13,7 +13,7 @@ The loop calls the model, runs the tools it asks for, and repeats until it has a
 - **Turns until done.** Every model and tool call is a durable step. [Run the loop →](#run-the-loop)
 - **Messages reach the model.** Whatever arrives is folded in before the next call. [Fold in messages →](#fold-in-messages)
 - **Progress as it works.** `onTurn` reports each turn and never slows the next. [Watch progress →](#watch-progress)
-- **Long threads fit.** The history is saved, summarised and reused. [Remember and summarise →](#remember-and-summarise)
+- **Long threads fit.** The history is saved, summarized and reused. [Remember and summarize →](#remember-and-summarize)
 - **Cost and errors handled.** The model prices its own calls, and rate limits wait. [Cost and errors →](#cost-and-errors)
 
 <AnnotatedCode>
@@ -173,7 +173,7 @@ The result also has `turns`, `history`, `usage` and `toolCalls`. `loop` is in a 
 
 ## Fold in messages
 
-Before every model call, the first included, the loop takes everything new from the handler's inbox and shows it to the model, so a correction reaches the very next call.
+Before every model call, the loop takes everything new from the handler's inbox and shows it to the model. A correction reaches the very next call.
 
 Folded messages don't come back through your `for await`. One that arrives during the final model call stays in the inbox for your next read.
 
@@ -228,15 +228,19 @@ What `steer` skipped comes back here, ready for the next loop.
 
 ## Choose per call
 
-`loop(batch, options)` takes the loop's options for one call, such as `tools` ([Give the model a tool →](/docs/labs/agents/handlers?ref=docs-labs-agents-models-and-the-loop#give-the-model-a-tool)), `steer` and `onTurn`. [Reference: the loop →](/docs/labs/agents/reference?ref=docs-labs-agents-models-and-the-loop#the-loop)
+`loop(batch, options)` takes the loop's options for one call, such as [`tools`](/docs/labs/agents/handlers?ref=docs-labs-agents-models-and-the-loop#give-the-model-a-tool), `steer` and `onTurn`. [Reference: the loop →](/docs/labs/agents/reference?ref=docs-labs-agents-models-and-the-loop#the-loop)
 
-An agent with no handler sets them on its definition, as in `loop: { maxTurns: 10 }`.
+An agent with no handler sets them on its definition, such as a cap of ten model calls:
+
+```typescript
+loop: { maxTurns: 10 },
+```
 
 A handler derives a loop with `loop.with(options)`. It keeps the agent's model, prompt, tools and history, and your options override or add to them.
 
 <AnnotatedCode>
 
-{/* not type-checked: loop options on a no-handler agent, and loop.with() with another model and stop in a handler */}
+{/* not type-checked: loop.with() with another model and stop in a handler */}
 ```typescript {{ title: "inngest/agents/escalator.ts" }}
 import { eventType } from "inngest";
 import { kv } from "inngest/experimental/agents";
@@ -250,15 +254,6 @@ export const ticketOpened = eventType("support/ticket.opened", {
     priority: z.enum(["low", "high"]),
     text: z.string(),
   }),
-});
-
-export const quick = agents.agent({
-  id: "quick",
-  triggers: [ticketOpened],
-  thread: "event.data.id",
-  model: claudeQuick,
-  system: "You answer support tickets.",
-  loop: { maxTurns: 10 },
 });
 
 export const escalator = agents.agent(
@@ -277,24 +272,20 @@ export const escalator = agents.agent(
       },
     });
 
-    const run = event.data.priority === "high" ? careful : loop;
+    const runLoop = event.data.priority === "high" ? careful : loop;
     const batch = await inbox.nextBatch();
-    const { text } = await run(batch ?? []);
+    const { text } = await runLoop(batch ?? []);
 
     return text;
   },
 );
 ```
 
-<Annotation id="swap" lines="21" tease="no handler, other limits" title="loop: { maxTurns }" href="/docs/labs/agents/reference?ref=docs-labs-agents-models-and-the-loop#the-loop" linkText="Reference">
-The agent keeps its model, prompt and tools, and the loop stops after ten model calls.
-</Annotation>
-
-<Annotation id="careful" lines="33-38" tease="same agent, other model" title="loop.with()" href="/docs/labs/agents/reference?ref=docs-labs-agents-models-and-the-loop#the-loop" linkText="Reference">
+<Annotation id="careful" lines="24-29" tease="same agent, other model" title="loop.with()" href="/docs/labs/agents/reference?ref=docs-labs-agents-models-and-the-loop#the-loop" linkText="Reference">
 Swaps the model and keeps the rest. `stop` is checked before each model call, and the loop ends with `end: "stop"` when it returns `true`.
 </Annotation>
 
-<Annotation id="pick" lines="40" tease="one loop per run" title="Pick at run time">
+<Annotation id="pick" lines="31" tease="one loop per run" title="Pick at run time">
 The quick model answers by default; high priority tickets get the careful one.
 </Annotation>
 
@@ -304,7 +295,7 @@ The quick model answers by default; high priority tickets get the careful one.
 
 ## Watch progress
 
-`onTurn` runs after each turn's tool calls, so you can tell people what the agent is doing. It gets the turn: its `turn` number, `stepId`, `text`, `toolCalls` and `usage`.
+`onTurn` runs after each turn's tool calls, so you can tell people what the agent is doing. It gets the turn, with its `turn` number and `text`.
 
 <AnnotatedCode>
 
@@ -345,9 +336,9 @@ It is logged and the loop carries on.
 
 </AnnotatedCode>
 
-## Remember and summarise
+## Remember and summarize
 
-When the saved history nears the model's context window, the loop summarises the start once and reuses the summary. [Threads and memory →](/docs/labs/agents/threads-and-memory?ref=docs-labs-agents-models-and-the-loop#remember-the-history)
+When the saved history nears the model's context window, the loop summarizes the start once and reuses the summary. [Threads and memory →](/docs/labs/agents/threads-and-memory?ref=docs-labs-agents-models-and-the-loop#remember-the-history)
 
 To change the threshold, set `compaction` on the definition's loop. `keep` is how many recent messages are always sent whole.
 
@@ -394,7 +385,7 @@ For errors, any model gets the same treatment:
 
 - A rate limit or an overloaded provider is retried, waiting for the provider's `retry-after` when it sends one.
 - A final provider error, such as a request it rejects, fails the step for good and isn't retried.
-- A failure the model can read and react to is `agent.toolError()`, from the same `agent` export. [Tools →](/docs/labs/agents/tools?ref=docs-labs-agents-models-and-the-loop)
+- A failure the model can read and react to is `agent.toolError()`, with `agent` imported from `inngest/experimental/agents`. [Tools →](/docs/labs/agents/tools?ref=docs-labs-agents-models-and-the-loop)
 
 ## What the model sees
 
@@ -432,7 +423,7 @@ export const shipper = agents.agent(
     system: "You ship the branch you are asked to ship.",
   },
   async ({ inbox, loop }) => {
-    const run = loop.with({
+    const runLoop = loop.with({
       format: (message) => {
         if (message.is(releaseRequested)) {
           return `Ship ${message.data.branch} of ${message.data.service}.`;
@@ -443,7 +434,7 @@ export const shipper = agents.agent(
     });
 
     const batch = await inbox.nextBatch();
-    const { text } = await run(batch ?? []);
+    const { text } = await runLoop(batch ?? []);
 
     return text;
   },
@@ -451,7 +442,7 @@ export const shipper = agents.agent(
 ```
 
 <Annotation id="format" lines="21-27" tease="your wording for a message" title="format" href="/docs/labs/agents/reference?ref=docs-labs-agents-models-and-the-loop#the-loop" linkText="Reference">
-Gets every message the model is about to read, the trigger included, and returns text for it.
+Gets every message the model is about to read, and returns text for it. That includes the trigger.
 </Annotation>
 
 <Annotation id="fallback" lines="26" tease="the default wording" title="formatEvent">
@@ -462,11 +453,11 @@ Keeps the standard wording for everything you didn't change, such as a message f
 
 ## Gotchas
 
-- **A question to a busy agent waits.** It is answered at the agent's next model call, so the asker's `ask()` waits through a long turn, within its one-hour timeout.
+- **A question to a busy agent waits.** It is answered at the agent's next model call. The asker's `ask()` waits through a long turn, up to its one-hour timeout.
 
 ## How it works
 
-- Each model call and tool call is a step. Reading the handler's inbox before a model call adds a round trip to the executor, not a step, and so does each inbox the model opened.
+- Each model call and tool call is a step. A message counts as a step when it arrives; reading it adds none.
 - The loop records model time, tokens, tool calls, folded messages, tool time and tool errors on every run. [Observability →](/docs/labs/agents/observability?ref=docs-labs-agents-models-and-the-loop)
 
 ## Recipes and reference
