@@ -1,285 +1,823 @@
 import { Info } from "shared/Docs/mdx";
 
-export const metaTitle = "Sandboxes reference | Agents";
-export const description = "Agent sandboxes reference: sandbox(), tools, code tools, images, repo and git push helpers, GitHub App auth, skills, the sandbox middleware, and durable sandbox types in inngest/experimental.";
+export const metaTitle = "Sandboxes reference | Inngest Agents";
+export const description = "Reference for Inngest Agents sandboxes, code tools, repos, tools, MCP servers, secrets and skills: signatures, options and defaults.";
 
-# Agents sandboxes reference
+# Sandboxes reference
 
-> Signatures, options, and defaults for sandboxes, tools, and git in the agents APIs.
+> Signatures, options and defaults for sandboxes, code tools, repos, tools, MCP servers, secrets and skills.
 
 <Info>
   Agents are an Inngest Labs project: early, moving fast, and shaped by your feedback. [What's Labs?](/docs/labs?ref=docs-labs-agents-reference-sandboxes) APIs may change between releases.
 </Info>
 
-Exports from `inngest/experimental/agents` unless the heading says `inngest/experimental`. Core agent APIs are in [Reference](/docs/labs/agents/reference?ref=docs-labs-agents-reference-sandboxes). The sandbox platform itself is in the [Sandboxes reference](/docs/sandboxes/reference?ref=docs-labs-agents-reference-sandboxes).
+The agent definition, handler and loop are in the [Agents reference](/docs/labs/agents/reference?ref=docs-labs-agents-reference-sandboxes). The sandbox platform itself is in the [Sandboxes reference](/docs/sandboxes/reference?ref=docs-labs-agents-reference-sandboxes).
+
+```typescript
+import {
+  completeMcpAuthorization,
+  disconnect,
+  kvOAuthStore,
+  sandboxMiddleware,
+  secret,
+  tool,
+} from "inngest/experimental";
+import {
+  PushRefusedError,
+  githubApp,
+  sandbox,
+  skills,
+} from "inngest/experimental/agents";
+```
 
 - [sandbox()](#sandbox)
-- [Sandbox bindings](#sandbox-bindings)
-- [LazySandbox](#lazysandbox)
-- [Tools](#tools)
+- [Sandboxes on an agent](#sandboxes-on-an-agent)
+- [The handler's sandbox](#the-handlers-sandbox)
 - [Code tools](#code-tools)
+- [Repos](#repos)
+- [Tools](#tools)
+- [MCP](#mcp)
+- [Secrets](#secrets)
+- [Skills](#skills)
 - [Images](#images)
 - [Sandbox middleware](#sandbox-middleware)
 - [Durable sandbox](#durable-sandbox)
 - [Commands with $](#commands-with-dollar)
-- [Shell sessions](#shell-sessions)
+- [Shells](#shells)
 - [Runners and groups](#runners-and-groups)
 - [Errors](#errors)
-- [Repo](#repo)
-- [Git push](#git-push)
-- [GitHub App](#github-app)
-- [Skills](#skills)
 - [Snapshot cache](#snapshot-cache)
 
 ## sandbox()
 
-Defines a sandbox for agents at module scope. Nothing exists until an agent uses it. [Sandboxes](/docs/labs/agents/sandboxes-and-code?ref=docs-labs-agents-reference-sandboxes)
+Defines a sandbox at module scope. It creates nothing; an agent that lists it gets a machine the first time something uses it. [Sandboxes and code](/docs/labs/agents/sandboxes-and-code?ref=docs-labs-agents-reference-sandboxes)
 
 ```typescript {{ title: "Signature" }}
-sandbox<TTool>(options: SandboxDefinitionOptions<TTool>): SandboxDefinition<TTool>
+sandbox<TTool>(
+  options: SandboxDefinitionOptions<TTool>,
+): SandboxDefinition<TTool>
 ```
 
 | Option | Type | Default | Description |
 | --- | --- | --- | --- |
-| `id` | `string` | required | Letters, digits, underscores, and hyphens; starts with a letter; up to 64 characters. |
+| `id` | `string` | required | Letters, digits, underscores and hyphens; starts with a letter; up to 64 characters. |
 | `image` | [`SandboxImage`](#images) | the base image | Image to start from. |
 | `vcpu` | `number` | `2` | Virtual CPUs. |
 | `memoryMb` | `number` | `2048` | Memory in megabytes. |
 | `environment` | `Record<string, string>` | none | Environment for a fresh sandbox. Not applied to one restored from a snapshot. |
-| `secrets` | `string[]` | none | Workspace secret names to inject. Not applied on restore. |
-| `tools` | `SandboxToolsFactory` | none | The tools every agent that uses it gets, such as `sandbox.tools.code()`. |
-| `skills` | `SkillsSource[]` | none | Made with [`skills.git()`](#skills). Sources need distinct, non-overlapping `into` paths. |
-| `setup` | `(context) => Promise<void>` | none | Runs once after the sandbox is ready. A failure fails the `get()` that created it. |
+| `secrets` | `string[]` | none | Workspace secret names to inject. Not applied on restore. [Secrets](#secrets) |
+| `tools` | `SandboxToolsFactory` | `sandbox.tools.code()` | The model's tools. Takes only [`sandbox.tools.code(...)`](#code-tools). |
+| `repo` | [`RepoOptions`](#repos) or a function | none | A repository checked out when the sandbox starts. |
+| `setup` | `(context) => Promise<void>` | none | Runs when the sandbox is created. A failure fails the call that created it. |
 
-A baked skills source cannot be combined with `environment` or `secrets`, and allows at most 16 vCPUs and 32,768 MB.
-
-`setup` receives `SandboxSetupContext`:
+`setup` receives a `SandboxSetupContext`:
 
 | Field | Description |
 | --- | --- |
-| `sandbox` | The new sandbox, a `SandboxHandle` with durable `commands` and `files`. |
+| `sandbox` | The sandbox, with durable `commands` and `files`. |
 | `step.run(id, fn)` | Runs `fn` once per run, memoized. |
 | `event` | The event that started the run, when the agent passed it. |
 | `name` | The name the agent gives the sandbox. |
-| `restored` | Whether it was resumed from a pause or restored from the thread's snapshot; skip work an earlier run did. |
+| `restored` | Whether it came back from a pause or a snapshot. Skip work an earlier run did. |
 
-Helpers on `sandbox`:
+Members of `sandbox`:
 
 | Member | Description |
 | --- | --- |
 | `sandbox.image` | The [`image`](#images) helpers. |
 | `sandbox.tools.code(options?)` | [Code tools](#code-tools). |
-| `sandbox.tools.git(options)` | The `git_push` tool. See [Git push](#git-push). |
 
-```typescript {{ title: "inngest/sandboxes/workbench.ts" }}
+{/* not type-checked: sandbox() with repo and policy, githubApp from inngest/github.ts */}
+```typescript {{ title: "inngest/sandboxes/work.ts" }}
 import { image } from "inngest/experimental";
-import { sandbox, skills } from "inngest/experimental/agents";
+import { sandbox } from "inngest/experimental/agents";
+import { app } from "../github";
 
-export const workbench = sandbox({
-  id: "workbench",
-  image: image.custom("python-data:v1"),
+export const work = sandbox({
+  id: "work",
+  image: image.custom("node-dev:v1"),
   vcpu: 2,
-  memoryMb: 2048,
-  skills: [skills.git("inngest/inngest-skills", { freshness: "boot" })],
-  tools: sandbox.tools.code({ cwd: "/work", timeout: "5m" }),
+  memoryMb: 4096,
+  tools: sandbox.tools.code({ only: ["run", "read", "edit"] }),
+  repo: {
+    url: "https://github.com/acme/api",
+    path: "/work/api",
+    auth: app,
+    policy: (push) => {
+      if (!push.branch?.startsWith("agent/")) {
+        return { refuse: "Branches for the agent start with agent/" };
+      }
+
+      return undefined;
+    },
+  },
   setup: async ({ sandbox, restored }) => {
     if (!restored) {
-      await sandbox.commands.run("mkdir", "mkdir -p /work");
+      await sandbox.commands.run("cache", "mkdir -p /work/cache");
     }
   },
 });
 ```
 
-Types: `SandboxDefinition`, `SandboxDefinitionOptions`, `SandboxSetup`, `SandboxSetupContext`, `SandboxToolsFactory`, `SandboxToolNames`, `SandboxToolsOf`, `SandboxRecord`, `SandboxesConfig`, `ConfigValue`, `SandboxHandle`.
+Types: `SandboxDefinition`, `SandboxDefinitionOptions`, `SandboxSetup`, `SandboxSetupContext`, `SandboxToolsFactory`.
 
-## Sandbox bindings
+## Sandboxes on an agent
 
-An agent's `sandboxes` maps names to a definition or a binding. [Sandboxes](/docs/labs/agents/sandboxes-and-code?ref=docs-labs-agents-reference-sandboxes)
+An agent's `sandboxes` is a record. The key names the sandbox in its tool names and in a handler. The record takes a value, or a function of `{ event, thread }` that may be async and runs once when a run starts. [Agents reference](/docs/labs/agents/reference?ref=docs-labs-agents-reference-sandboxes#the-definition)
+
+A value in the record is a definition, or a binding:
 
 | `SandboxBinding` field | Default | Description |
 | --- | --- | --- |
 | `sandbox` | required | The definition. |
-| `start` | `"lazy"` | `"lazy"` creates on the first call that needs it; `"eager"` begins creating when the agent opens its sandboxes. May be a function of `{ event }`. |
-| `idle` | `"pause"` | What the thread's sandbox becomes when the run is done with it. `"pause"` keeps it, disk and all, for the next run to resume. `"snapshot"` saves a snapshot and destroys it. |
+| `model` | `true` | `false` keeps the sandbox for code only: the model gets none of its tools. |
+| `start` | `"lazy"` | `"lazy"` creates the sandbox on first use. `"eager"` begins creating it when the run opens its sandboxes. May be a function of `{ event }`. |
+| `idle` | `"pause"` | What the sandbox becomes when it sits unused. `"pause"` keeps it, disk and all. `"snapshot"` saves a snapshot and destroys it. |
 
-A sandbox belongs to the thread. With `idle: "pause"` the run's end pauses it and the next run resumes it, with no size cap; the thread keeps its ID in its KV scope, and the platform decides how long a paused sandbox is kept. A sandbox that cannot be paused is snapshotted and destroyed, and one that is gone or cannot be resumed falls back to the newest snapshot, then to a fresh sandbox. A resumed sandbox keeps its skills (only `"boot"` sources are fetched again) and runs `setup` again with `restored` true. Only files survive a snapshot, not processes.
+- Every listed sandbox adds its [code tools](#code-tools) to the model's, named `<key>_<tool>`: `work_run`, `work_push`. The agent's own `tools` lists only the extras.
+- Listing a sandbox starts nothing. With `start: "lazy"` it starts the first time the model calls one of its tools, or code first uses it.
+- A sandbox belongs to its thread. Another thread gets its own.
+- A sandbox sitting unused for 10 minutes is paused, whether the run is still waiting or has ended. The next use brings it back with its disk as it was.
+- A sandbox that cannot be paused is snapshotted and destroyed. One that is gone, or cannot resume, falls back to the newest snapshot, then to a fresh sandbox. Only files survive a snapshot, not processes.
+- The thread keeps the [shell's place](#the-shell) with its sandbox.
+- The client needs [`sandboxMiddleware()`](#sandbox-middleware).
 
-Functions that resolve and open sandboxes, for custom loops:
+{/* not type-checked: a sandboxes record with a code-only binding */}
+```typescript {{ title: "inngest/agents/coder.ts" }}
+import { sandbox, slack } from "inngest/experimental/agents";
+import { agents } from "../client";
+import { claude } from "../models/claude";
+import { work } from "../sandboxes/work";
 
-| Function | Description |
-| --- | --- |
-| `resolveSandboxes(config, ctx)` | Resolves the config and each binding's `start` for one run. Functions must be pure. |
-| `openSandboxes(bindings, sandboxes, runtime?, owner?)` | Opens them as `LazySandbox`es. Eager ones begin at once. |
-| `getSandbox(opened, name)` | One opened sandbox by name; throws naming the sandboxes the agent has. |
-| `sandboxTools(opened)` | Every sandbox's tools, namespaced `<name>_<tool>`, for `agent.loop()`. Two tools with one name throw. |
-| `agentTools(tools)` | A tools record from `tool()` results, keyed by `id`. |
-| `toolNamespaceSeparator` | `"_"`. |
+const scratch = sandbox({ id: "scratch" });
+
+export const coder = agents.agent({
+  id: "coder",
+  triggers: [slack.thread()],
+  model: claude,
+  system: "Fix what you are asked to fix, run the tests, then push a branch.",
+  sandboxes: {
+    work,
+    scratch: { sandbox: scratch, model: false },
+  },
+});
+```
 
 Types: `SandboxBinding`, `SandboxStart`.
 
-## LazySandbox
+## The handler's sandbox
 
-What `sandboxes.<name>` is in the agent body.
+In a handler, `sandboxes.<key>` is the thread's sandbox. It opens on first use, so reading it starts nothing. [Handlers](/docs/labs/agents/handlers?ref=docs-labs-agents-reference-sandboxes)
+
+```typescript {{ title: "Signature" }}
+type SandboxHandle = Pick<DurableSandbox, "commands" | "files"> & {
+  repo: { push(branch: string): Promise<PushResult> };
+  recycle(): Promise<void>;
+  close(): Promise<void>;
+};
+```
 
 | Member | Description |
 | --- | --- |
-| `name` | The name the agent gives it. |
-| `definition` | The `SandboxDefinition`. |
-| `start` | `"lazy"` or `"eager"`. |
-| `started` | Whether creation has begun. |
-| `tools` | The definition's tools, named `<name>_<tool>`. Calling one creates the sandbox. |
-| `get()` | The [durable sandbox](#durable-sandbox), created in one step on first call. |
-| `close()` | Saves a thread's sandbox as `idle` says (paused, or a snapshot), then destroys it, if created. Call only when the run is ending. |
-| `idle` | `"pause"` or `"snapshot"`, from the binding. |
-| `recycle()` | Sets it aside now (paused, or saved and destroyed: see `idle`); the next `get()` or tool call brings it back. Needs a sandbox that belongs to a thread. Throws if the snapshot or destroy fails. |
+| `commands` | `commands.run(id, command, options?)`. See the [durable sandbox](#durable-sandbox). |
+| `files` | `files.write(id, { path, data })` and `files.read(id, path)`. |
+| `repo.push(branch)` | Pushes a local branch under the same name, the same push as the model's `<key>_push`. Present only when the definition has a `repo`. [Push](#push) |
+| `recycle()` | Sets the sandbox aside at once, as `idle` says. The next use brings it back. Throws if the snapshot or destroy fails. |
+| `close()` | Saves the sandbox as `idle` says, then destroys it, if it was created. Call it only when the run is ending. |
+
+{/* not type-checked: sandboxes.work.commands, repo.push and PushRefusedError in a handler */}
+```typescript {{ title: "inngest/agents/fixer.ts" }}
+import { PushRefusedError, slack } from "inngest/experimental/agents";
+import { agents } from "../client";
+import { claude } from "../models/claude";
+import { work } from "../sandboxes/work";
+
+export const fixer = agents.agent(
+  {
+    id: "fixer",
+    triggers: [slack.thread()],
+    model: claude,
+    system: "Fix what you are asked to fix.",
+    sandboxes: { work },
+  },
+  async ({ inbox, loop, me, sandboxes }) => {
+    for await (const batch of inbox.batches()) {
+      const { text } = await loop(batch);
+      const tests = await sandboxes.work.commands.run("tests", "npm test", {
+        cwd: "/work/api",
+      });
+
+      if (tests.exitCode !== 0) {
+        await me.post(text);
+
+        continue;
+      }
+
+      try {
+        const pushed = await sandboxes.work.repo.push("agent/fix");
+
+        await me.post(`Pushed ${pushed.branch}. ${text}`);
+      } catch (error) {
+        if (!(error instanceof PushRefusedError)) {
+          throw error;
+        }
+
+        await me.post(`The push was refused: ${error.reason}`);
+      }
+    }
+  },
+);
+```
+
+Types: `SandboxHandle`.
+
+## Code tools
+
+`sandbox.tools.code(options?)` sets which tools a sandbox gives the model. With no options the model gets `run`, and `run_code` when app tools are given. [Sandboxes and code](/docs/labs/agents/sandboxes-and-code?ref=docs-labs-agents-reference-sandboxes)
+
+```typescript {{ title: "Signature" }}
+sandbox.tools.code(options?: CodeToolsOptions): SandboxToolsFactory
+```
+
+{/* TODO(spec): the old code tools took `cwd` and `timeout`. sandbox.md says only "run's default timeout is five minutes". Do the options stay, and what are their defaults? */}
+
+| Option | Type | Default | Description |
+| --- | --- | --- | --- |
+| `only` | `CodeToolName[]` | `["run"]`, plus `"run_code"` with `tools` | The tools to include. May leave out `run`. |
+| `tools` | `SandboxTools` | none | App tools the code of `run_code` can call as `tools.<name>(...)`. Adds `run_code`. `now` and `sleep` are taken by `tools.now()` and `tools.sleep({ duration })`. |
+| `shims` | `SandboxShim[]` | none | [Shims](#shims) put on the shell's `PATH`, so a program that holds a credential on your app works from `run` and `run_code`. |
+
+Each tool is named `<sandbox>_<tool>` and returns text the model reads, except `push`.
+
+| Tool | Input | Returns |
+| --- | --- | --- |
+| `run` | `{ command: string }` | `string` |
+| `run_code` | `{ language: "python" \| "typescript"; code: string }` | `string` |
+| `read` | `{ path: string; from?: number; to?: number }` | `string` |
+| `search` | `{ pattern: string; path?: string }` | `string` |
+| `edit` | `{ path: string; old_string: string; new_string: string; replace_all?: boolean }` | `string` |
+| `push` | `{ branch: string }` | [`PushResult`](#push) |
+
+- `read`, `search` and `edit` are included only through `only`.
+- `push` is present when the sandbox has a [`repo`](#repos), unless the repo sets `push: false`.
+- A script in `run_code` calls the app tools as `tools.<name>`. A tool declared with [`waits: true`](#tools) makes the script exit and re-run from its journal.
+- To write a file, the model uses a heredoc in `run`.
+
+{/* not type-checked: sandbox.tools.code with tools and shims */}
+```typescript {{ title: "inngest/sandboxes/deployer.ts" }}
+import { sandbox } from "inngest/experimental/agents";
+import { getAccount } from "../tools/getAccount";
+import { terraform } from "../tools/terraform";
+
+export const deployer = sandbox({
+  id: "deployer",
+  tools: sandbox.tools.code({
+    tools: { getAccount },
+    shims: [terraform],
+  }),
+});
+```
+
+Types: `CodeToolName` (`"run" | "run_code" | "read" | "search" | "edit"`), `CodeToolsOptions`.
+
+### The shell
+
+`run` is a shell that keeps its place: `cd` and `export` carry from one call to the next.
+
+- Each `run` is its own `/bin/sh` process, started with the saved working directory and environment. When it exits, it prints its final directory and environment changes after a marker line, which the SDK strips from what the model sees.
+- No shell process outlives a command, and the sandbox holds no shell state. A fresh process on another machine replays the earlier `run` results and arrives at the same place.
+- When several `run` calls are in flight, their effects apply in call order.
+- The thread keeps the shell's place across runs, so a later run starts where the last one stopped. Another thread starts in the default directory with an empty environment.
+- The place is used only when the same sandbox, or its snapshot, comes back. A recreated sandbox starts at the default.
+- There is one shell per sandbox per thread.
+
+### Environment cap
+
+The shell's environment rides in every command. The platform allows at most 256 entries and 64 KiB. When the environment nears either, the shell fails early with a message that names the limit.
+
+### Known shell limits
+
+- A command that sets its own `EXIT` trap, or replaces the shell with `exec`, ends without its end state, so its `cd` and `export` are dropped.
+- An exported value is saved in the step's output, so a secret exported in the shell stays in run history. Credentials belong in [`secrets`](#secrets) or in tools.
+
+### Long commands
+
+A command with a `timeout` over five minutes runs as a process that steps follow in windows of at most five minutes, one wait step per window. That includes commands that call tools or use shims. The model's `run` times out after five minutes by default.
+
+## Repos
+
+A sandbox's `repo` is checked out when the sandbox starts. The write token never enters the sandbox: your app makes the push, after `policy` has looked at it. [Sandboxes and code](/docs/labs/agents/sandboxes-and-code?ref=docs-labs-agents-reference-sandboxes)
+
+`repo` takes a value, or a function of `{ event, thread }` that may be async. The function runs once when a run starts and must be pure.
+
+{/* TODO(spec): defaults of repo `path` (the earlier checkout helper used /work) and of the `author` option (sandbox.md says "an option with a default" without naming it). */}
+
+| `RepoOptions` field | Type | Default | Description |
+| --- | --- | --- | --- |
+| `url` | `string` | required | The repository URL. |
+| `auth` | [`RepoAuth`](#repoauth) | none | Mints the repository's tokens. Needed to push, and to check out a private repository. |
+| `ref` | `string` | the default branch | Branch, tag or commit to check out. |
+| `path` | `string` | `/work` | Where to check out. |
+| `policy` | `(push) => result` | allow | Looks at each [push](#push) before it is made and can refuse it. |
+| `author` | `{ name: string; email: string }` | a default author | The git author of commits the SDK makes. |
+| `push` | `boolean` | `true` | `false` leaves the `<sandbox>_push` tool out. |
+
+{/* not type-checked: repo as a function of the trigger event */}
+```typescript {{ title: "inngest/sandboxes/review.ts" }}
+import { sandbox } from "inngest/experimental/agents";
+import { app } from "../github";
+
+export const review = sandbox({
+  id: "review",
+  repo: ({ event }) => {
+    return {
+      url: event.data.repo,
+      ref: event.data.head,
+      auth: app,
+      push: false,
+    };
+  },
+});
+```
+
+One sandbox has one repo. A second repo gets a second sandbox.
+
+### RepoAuth
+
+`auth` is anything that mints a token for the repository. It is asked for read-only access at checkout and write access at push, each inside a step, and the token is short-lived.
+
+```typescript {{ title: "Signature" }}
+type RepoAuth =
+  | GithubApp
+  | ((request: { access: "read" | "write" }) => string | Promise<string>);
+```
+
+### Checkout
+
+- The checkout runs when the sandbox starts. An existing checkout is left alone when a paused sandbox resumes.
+- The read-only token goes to the checkout's one `git` process, as a header for that process only. It is never stored in the checkout's config.
+
+### Push
+
+The model pushes with `<sandbox>_push({ branch })` and code with `sandboxes.<key>.repo.push(branch)`. They are the same push, in four steps:
+
+1. The sandbox bundles the commits that are not on the remote yet. It holds no credentials.
+2. Your app reads the bundle back.
+3. Your app shows the commits and files to `policy`, which can refuse.
+4. Your app pushes from its own side with the write token.
+
+The push sends the commits that are there. It never forces and never deletes. Opening a pull request stays out of the sandbox: the result names the branch, and your app opens the pull request with its GitHub tools or its own code.
+
+```typescript {{ title: "Signature" }}
+repo.push(branch: string): Promise<PushResult>
+
+type PushResult = { branch: string; sha: string; notes: string[] };
+```
+
+A refusal is a thrown, non-retriable `PushRefusedError` with `reason: string` in code, and an error result the model reads.
+
+`policy` returns nothing to allow, `{ refuse }` to stop with a message, or `{ notes }` to add audit notes that come back in `PushResult.notes`. It receives the push:
+
+{/* TODO(spec): sandbox.md says policy is "a function of the push (the shape of today's GitPolicy)". The field list below and the omitted { ref } result come from that shape. Confirm the list. */}
+
+| `push` field | Description |
+| --- | --- |
+| `remote`, `ref`, `branch?`, `sha`, `oldSha?` | What is being updated. |
+| `fastForward` | Whether the remote's commit is an ancestor. |
+| `commits` | The commits being pushed, newest first: `{ sha, author, subject }`. |
+| `paths` | Every path those commits touch. |
+| `patch()` | The text of the changes, for scanning. |
+| `files` | `path`, and `before()` and `after()`, each a blob or `undefined`. |
+
+A blob has `size`, `binary`, `bytes`, `mode?` and `text`.
+
+Types: `RepoOptions`, `RepoAuth`, `PushResult`, `PushRefusedError`.
+
+### GitHub App
+
+`githubApp(options)` authenticates as a GitHub App and mints installation tokens. It uses `fetch` and WebCrypto only.
+
+```typescript {{ title: "Signature" }}
+githubApp(options: GithubAppOptions): GithubApp
+```
+
+| `GithubAppOptions` | Default | Description |
+| --- | --- | --- |
+| `appId` | required | The App's ID. |
+| `privateKey` | required | A PEM. PKCS#1 keys are converted; `\n` written out as two characters is read as a newline. |
+| `apiUrl` | `https://api.github.com` | API base URL. |
+| `fetch` | global | The `fetch` to use. |
+| `userAgent` | `inngest-github-app` | The header GitHub requires. |
+| `refreshMarginMs` | five minutes | How long before expiry a token stops being reused. |
+| `now` | `Date.now` | The clock. |
+
+| `GithubApp` method | Description |
+| --- | --- |
+| `jwt()` | The App's JWT: RS256, valid nine minutes. |
+| `installationId(target)` | The installation ID, found once and remembered. |
+| `token(target, options?)` | An installation token, cached until near expiry. |
+| `installedRepos(refresh?)` | Every `"owner/name"` the App can reach, remembered five minutes. |
+| `forget()` | Forgets every ID, token and the repository list. |
+
+`GithubAppTarget` is `"owner/name"`, `{ org }`, `{ user }` or `{ installation }`. `GithubAppTokenOptions` has `permissions` (such as `{ contents: "write" }`) and `repositories` (names, or `"all"`; a repository target defaults to that repository alone).
+
+Errors: `GithubAppError` (`status`), and `GithubAppNotInstalledError` (a 404; the one failure to answer with a person's token). Types: `GithubApp`, `GithubAppOptions`, `GithubAppTarget`, `GithubAppTokenOptions`.
+
+{/* not type-checked: githubApp options from environment variables */}
+```typescript {{ title: "inngest/github.ts" }}
+import { githubApp } from "inngest/experimental/agents";
+
+export const app = githubApp({
+  appId: process.env.GITHUB_APP_ID ?? "",
+  privateKey: process.env.GITHUB_APP_KEY ?? "",
+});
+```
 
 ## Tools
 
-`tool` and `toolDefinitions` are exported from `inngest/experimental`, not from `inngest/experimental/agents`. [Tools](/docs/labs/agents/tools?ref=docs-labs-agents-reference-sandboxes)
+A tool is defined once and works from the model and from sandbox code. The key in the `tools` record names it on both sides. `tool` and `toolDefinitions` are exported from `inngest/experimental`. [Tools](/docs/labs/agents/tools?ref=docs-labs-agents-reference-sandboxes)
 
 | Call | Description |
 | --- | --- |
-| `tool(definition)` | An agent tool, run in your function, one durable step per call. |
-| `tool.step(definition)` | A tool that sandbox code can call. Its body is one durable step. |
-| `tool.group(definition)` | A tool whose body is a group of steps; it may use the global `step`. |
+| `tool(definition)` | One durable step per call. Also takes `id` and `group`. |
+| `tool.step(definition)` | One durable step per call. |
+| `tool.group(definition)` | A tool whose body runs several steps, scoped under the call. It may use the global `step`. |
+| `tool.shim(name, handler)` | A program on `PATH` that calls your app. See [Shims](#shims). |
+| `tool.mcp(options)` | A remote MCP server. See [MCP](#mcp). |
+| `agentTools(tools)` | A tools record from `tool()` results, keyed by `id`. |
 | `toolDefinitions(tools)` | The `{ name, description, input_schema }` list a model API takes. |
 
 ```typescript {{ title: "Signature" }}
 tool(definition: AgentToolDefinition): AgentTool
 tool.step(definition: ToolDefinition): SandboxTool
 tool.group(definition: WaitingToolDefinition): SandboxTool
-toolDefinitions(tools: SandboxTools): ToolJsonDefinition[]
 ```
+
+{/* TODO(spec): tools.md says `id` is not needed in a record (the key names the tool) and its examples call tool() without it; the old tool() required `id`. Is `id` optional? */}
 
 | Option | Applies to | Default | Description |
 | --- | --- | --- | --- |
-| `id` | `tool()` | required | The name the model sees. Letters, digits, underscores; starts with a letter; up to 64. |
+| `id` | `tool()` | none | The tool's name where no record key names it, as in `agentTools([...])`. Letters, digits and underscores; starts with a letter; up to 64. |
 | `description` | all | none | What the tool does. |
 | `displayName` | all | the tool's name | Trace label, or `(input) => string`. |
-| `input` | all | none | A Standard Schema or a JSON Schema object. Models need an object schema. |
+| `input` | all | none | A Standard Schema or a JSON Schema object. Models need an object schema. With no `input`, the tool is called with an empty object. |
 | `output` | all | none | A Standard Schema. A result that does not match fails the step. |
-| `run` | all | required | `(input, { signal, idempotencyKey }) => result`. |
+| `run` | all | required | `(input, context: ToolContext) => result` |
+| `untrusted` | all | none | `true`, or `(input) => string` that gives the source label. See [Untrusted results](#untrusted-results). |
 | `group` | `tool()` | `false` | Run as a group of steps, so `run` can use the global `step`. |
-| `waits` | `tool()` and `tool.group()` | `false` | The tool may wait longer than a command may run. Needs `group: true`. |
+| `waits` | `tool()`, `tool.group()` | `false` | The tool may take longer than a command may run. Needs a group. |
 
-- `SandboxToolContext` has `signal` (aborts on timeout) and `idempotencyKey` (stable across retries).
-- With a Standard Schema `input`, sandbox code calls the tool with named arguments and a bad call returns a `ToolError` without running anything. Without `input`, it takes positional JSON.
-- Schemas turn into JSON Schema from Zod 4 or any library that implements Standard JSON Schema.
-- `agent.toolError(body)` returns a failure the model can read. It is allowed beside an `output` schema and is not checked against it.
-- A tool entry in a tools record may also be a plain function, an Inngest function, or a function reference.
+Schemas turn into JSON Schema from Zod 4 or any library that implements Standard JSON Schema.
 
-`SandboxToolOptions` (the `toolOptions` of a command with tools):
+A `waits: true` group lets sandbox code call a tool that takes hours: the script exits and re-runs from its journal, so the command's wait cap doesn't apply. The model side runs the body inline and ignores the flag.
 
-| Option | Default | Description |
-| --- | --- | --- |
-| `waitWindow` | `"20s"` | Longest one wait step blocks before a fresh one continues. |
-| `toolTimeout` | `"30s"` | How long one `tool.step()` may run before its step fails. |
-| `maxCalls` | `100` | Tool calls allowed in one command. |
-
-Types: `AgentTool`, `AgentToolDefinition`, `ToolDefinition`, `SandboxTool`, `SandboxToolContext`, `SandboxToolEntry`, `SandboxToolOptions`, `SandboxTools`, `SandboxToolsOptions`, `JsonSchemaObject`, `ToolJsonDefinition`.
-
-```typescript {{ title: "inngest/tools/lookupOrder.ts" }}
-import { agent } from "inngest/experimental/agents";
+{/* not type-checked: tool.step with a Zod input, called by the model and by sandbox code */}
+```typescript {{ title: "inngest/tools/getAccount.ts" }}
 import { tool } from "inngest/experimental";
 import { z } from "zod";
 
-export const lookupOrder = tool({
-  id: "lookup_order",
-  description: "Find an order by ID.",
-  input: z.object({ orderId: z.string() }),
-  run: async ({ orderId }, { idempotencyKey }) => {
-    if (orderId === "") {
-      return agent.toolError({ message: "No such order", idempotencyKey });
-    }
-
-    return { status: "shipped" };
+export const getAccount = tool.step({
+  description: "Find an account by ID",
+  input: z.object({ id: z.string() }),
+  run: async ({ id }) => {
+    return { id, plan: "pro" };
   },
 });
 ```
 
-## MCP servers
+{/* not type-checked: tool.group with waits: true and the global step */}
+```typescript {{ title: "inngest/tools/coolDown.ts" }}
+import { step } from "inngest";
+import { tool } from "inngest/experimental";
+import { z } from "zod";
 
-`tool`, `secret` and the OAuth helpers are exported from `inngest/experimental`. [Use a remote MCP server](/docs/labs/agents/tools?ref=docs-labs-agents-reference-sandboxes#use-a-remote-mcp-server)
+export const coolDown = tool.group({
+  description: "Wait before the next deploy attempt",
+  input: z.object({ minutes: z.number() }),
+  waits: true,
+  run: async ({ minutes }) => {
+    await step.sleep("cool-down", `${minutes}m`);
+
+    return { waited: minutes };
+  },
+});
+```
+
+### What goes in a record
+
+| Entry | From the model | From sandbox code |
+| --- | --- | --- |
+| `tool()`, `tool.step()`, `tool.group()` | Named input. | Named input. A bad call returns a `ToolError` without running anything. |
+| A plain function | The model's input object is the function's one positional argument. | Positional values. |
+| An Inngest function or a function reference | Called with the input as its event data. | The same. |
+| An MCP server | Its tools, as `<key>_<tool>`. | The same. |
+
+- A plain function's input type is `Parameters<F>[0]` and its output `Awaited<ReturnType<F>>`. A function or reference takes the data of its trigger and returns its return.
+- A server's tool names can't be listed by the types: the name type is `` `${key}_${string}` ``, the input is `Record<string, unknown>` and the output is `unknown`.
+- A tool kind that can't be used on a path fails at call start with a message that says so.
+- A listed sandbox's tools and the discovery and agent tools arrive without wiring. `slack.tools()` and `github.tools()` are spread into `tools`. [Slack and GitHub](/docs/labs/agents/slack-and-github?ref=docs-labs-agents-reference-sandboxes)
+
+### ToolContext
+
+The second argument of `run`.
+
+```typescript {{ title: "Signature" }}
+type ToolContext = {
+  signal: AbortSignal;
+  idempotencyKey: string;
+  runId: string;
+  score: (name: string, value: number | boolean) => Promise<void>;
+  sandbox?: DurableSandbox;
+};
+```
+
+| Field | Description |
+| --- | --- |
+| `signal` | Aborts on timeout. |
+| `idempotencyKey` | Stable across retries. For APIs that deduplicate writes. |
+| `runId` | The calling run's ID, set whether the model or sandbox code calls. |
+| `score(name, value)` | Records a score. It is written once however often the run replays, and a refused score logs a warning without failing the run. It is the handler's `score`. |
+| `sandbox` | The sandbox the code runs in. Set only when sandbox code calls the tool, never in a group tool. |
+
+### Untrusted results
+
+`untrusted: true | ((input) => string)` marks a tool's result as outside text. When the model reads the result, the SDK wraps it in untrusted tags; sandbox code gets the plain result. The function gives a source label.
+
+- Every open and close tag variant in the result is broken, and the label is capped, so text inside the result can't escape the wrapper.
+- MCP tools are untrusted by default.
+- To change a result in another way, such as redacting or truncating, wrap the tool in a tool whose body calls the original's `run`. A wrapped tool works from the model and from sandbox code.
+
+### Tool errors
+
+A thrown error or `agent.toolError(body)` reaches the model as an error result it can read. In sandbox code it is a thrown `ToolError`. `agent.toolError` is allowed beside an `output` schema and is not checked against it.
+
+{/* not type-checked: untrusted label function and agent.toolError in a tool */}
+```typescript {{ title: "inngest/tools/getTicket.ts" }}
+import { tool } from "inngest/experimental";
+import { agent } from "inngest/experimental/agents";
+import { z } from "zod";
+
+export const getTicket = tool.step({
+  description: "Reads a support ticket",
+  input: z.object({ id: z.string() }),
+  untrusted: ({ id }) => {
+    return `ticket ${id}`;
+  },
+  run: async ({ id }) => {
+    const response = await fetch(`https://api.acme.test/tickets/${id}`);
+
+    if (!response.ok) {
+      return agent.toolError({ message: "No such ticket", id });
+    }
+
+    return await response.json();
+  },
+});
+```
+
+### Call limits
+
+Sandbox code calls tools through `toolOptions` on a command (`commands.run`, `$`):
+
+| `toolOptions` | Default | Description |
+| --- | --- | --- |
+| `waitWindow` | `"20s"` | Longest one wait step blocks before a fresh one continues. 60s for a command that may run past five minutes, and at most 240s. |
+| `toolTimeout` | `"30s"` | How long one tool call, or one shim handler, may run before its step fails. |
+| `maxCalls` | `100` | Tool calls allowed in one command before it is stopped. |
+
+A tool call that outlives its command's `timeout` (five minutes by default) aborts the command. A tool that must run longer is a `waits: true` group, or the command gets a longer `timeout`. The model side has no such cap.
+
+Types: `AgentTool`, `AgentToolDefinition`, `ToolDefinition`, `SandboxTool`, `SandboxToolEntry`, `SandboxToolOptions`, `SandboxTools`, `SandboxToolsOptions`, `ToolContext`, `ToolJsonDefinition`.
+
+### Shims
+
+`tool.shim(name, handler)` makes a program on the shell's `PATH` call your handler first, so code runs `terraform apply` without holding the credential. A shim goes in the `shims` list of [`sandbox.tools.code()`](#code-tools), `commands.run` or `$`, and is a program on `PATH`, not an entry in the model's tool list.
+
+{/* TODO(spec): link the core shims page (/docs/sandboxes/features/shims) once it merges; it is on branch jack/sandbox-shims-docs. Tools in a sandbox: /docs/sandboxes/features/tools. */}
+
+```typescript {{ title: "Signature" }}
+tool.shim(name: string, handler: ShimHandler): SandboxShim
+tool.shim(name: string, options: ShimOptions): SandboxShim
+tool.shim.config(values: Record<string, string> | string[]): SandboxShim
+```
+
+| `ShimOptions` | Description |
+| --- | --- |
+| `handle` | The handler, required. |
+| `description` | What agents read from `inngest-tool shims`. |
+| `stdin` | `true` to read the program's stdin. Off by default, since reading a pipe nobody writes to would hang. |
+| `local` | Answers a first argument inside the sandbox, with no call to your app. |
+| `only` | Calls the handler only when one of the words is an argument. |
+
+The handler receives:
+
+| Field | Description |
+| --- | --- |
+| `argv`, `name`, `cwd` | The arguments (without the program name), the program and the working directory. |
+| `run(change?)` | Runs the real program. `change` can set `argv`, `env` or `stdin`. Returning nothing is `run()`. |
+| `reply(code, { stdout, stderr })` | Ends the call with this exit code and output. |
+| `refuse(message)` | Prints `<name>: <message>` on stderr and exits 126. |
+| `sandbox`, `signal`, `idempotencyKey`, `runId` | The sandbox to run commands in while the program waits, the abort signal, and the retry-stable values. |
+
+One shim per program. `sh`, `env` and `cat` can't be shimmed. A shim is a convenience, not a boundary: code can still run `/usr/bin/terraform` directly, so the credential must stay on your side. A retried step runs the handler again, so keep it safe to repeat.
+
+{/* not type-checked: tool.shim that refuses terraform apply */}
+```typescript {{ title: "inngest/tools/terraform.ts" }}
+import { tool } from "inngest/experimental";
+
+export const terraform = tool.shim("terraform", ({ argv, run, refuse }) => {
+  if (argv[0] === "apply") {
+    return refuse("apply goes through a pull request");
+  }
+
+  return run();
+});
+```
+
+## MCP
+
+`tool.mcp()` turns a remote MCP server into tools. Put it in a `tools` record and the model and sandbox code get every tool the server offers, named `<key>_<tool>`. [Tools](/docs/labs/agents/tools?ref=docs-labs-agents-reference-sandboxes)
 
 ```typescript {{ title: "Signature" }}
 tool.mcp(options: McpServerOptions): McpServer
 server.tools(name?: string): Promise<SandboxTools>
-secret(source: string | (() => string | Promise<string>)): Secret
+server.disconnect(user: string): Promise<void>
+disconnect(server: McpServer, user: string): Promise<void>
 ```
 
 | Option | Default | Description |
 | --- | --- | --- |
-| `url` | required | The server's Streamable HTTP endpoint. `https`, or `http` for localhost. Redirects are not followed. |
-| `id` | none | The prefix `tools()` uses. In `agent.loop({ tools: { hex } })` the key is the prefix instead. |
-| `auth` | none | `{ bearer }`, `{ headers }` or `{ oauth }`. Values may be a string or a `secret()`. |
+| `id` | required | Names the server. Stored sign-ins are kept under it, so changing it signs people out. `server.tools()` uses it as the name prefix; in a record the key is the prefix. |
+| `url` | required | The server's Streamable HTTP endpoint. |
+| `auth` | none | `{ bearer }`, `{ headers }` or `{ oauth }`. Values may be a string or a [`secret()`](#secrets). |
 | `tools` | all | Only these tools, by the server's names. A name the server lacks throws when the list is read. |
 | `timeout` | `"25s"` | The longest one call may take. Raise `toolOptions.toolTimeout` too when you raise this. |
-| `fetch` | global `fetch` | A `fetch` to use, for tests. |
+| `fetch` | global `fetch` | A `fetch` to use instead of the global one. |
 
-- Tools are named `<name>_<tool>`, with `-` and `.` turned into `_`. A name over 64 characters, or two that collide, throws.
-- `secret("NAME")` reads an environment variable inside the call. A function gives a value that depends on the caller. Printing or serializing a `Secret` gives its label.
-- `McpServer`, `McpServerOptions`, `McpAuth`, `Secret` and `SecretSource` are the types.
+- A tool name has `-` and `.` turned into `_`. A name over 64 characters, or two that collide, throws.
+- `{ ...(await server.tools()) }` gives the same tools as a plain record.
+- Results are untrusted by default.
+- Every call goes through a network guard: HTTPS only (`http:` is allowed for localhost), no private or internal addresses, and any redirect is an error.
+- A call that lands on another machine reconnects to the server.
+- `disconnect(server, user)` and `server.disconnect(user)` revoke one person's stored connection.
 
-## Per-user OAuth
+{/* not type-checked: tool.mcp with a bearer secret and an allow list */}
+```typescript {{ title: "inngest/tools/hex.ts" }}
+import { secret, tool } from "inngest/experimental";
 
-`auth: { oauth }` follows the MCP authorization spec: discovery, dynamic client registration, PKCE, code exchange and refresh. [Connect each person's account](/docs/labs/agents/tools?ref=docs-labs-agents-reference-sandboxes#connect-each-persons-account)
+export const hex = tool.mcp({
+  id: "hex",
+  url: "https://app.hex.tech/mcp",
+  auth: { bearer: secret("HEX_TOKEN") },
+  tools: ["search_projects", "run_project"],
+});
+```
 
-| Option | Default | Description |
+Types: `McpServer`, `McpServerOptions`, `McpAuth`.
+
+### Per-user OAuth
+
+`auth: { oauth }` follows the MCP authorization spec: discovery, dynamic client registration, PKCE, code exchange and refresh. Every person signs in as themselves.
+
+{/* TODO(spec): tools.md says the SDK sends the sign-in link to the person and the model never sees it. What happens to the oauth option onNeedsAuthorization, and to waitForMcpAuthorization, isMcpNeedsAuthorization and the agent/mcp.authorized event? None is in the export list. Also: how does completeMcpAuthorization receive the browser cookie it checks? */}
+
+| `oauth` option | Default | Description |
 | --- | --- | --- |
-| `user` | required | A stable ID for the person, or `(ctx: { runId?: string }) => string`, called for every call. |
+| `user` | required | A stable ID for the person, or `({ runId, event, thread }) => string`. A function gets the run's ID, its trigger event and its thread key, and runs for every call. |
 | `redirectUri` | required | Your callback route. Register it with the server when it has no dynamic registration. |
-| `store` | `kvOAuthStore()` | A `McpOAuthStore`: `get`, `compareAndSet` (atomic) and `delete`. |
+| `store` | `kvOAuthStore()` | Where tokens, registered clients and pending sign-ins live. |
 | `clientId` | registered for you | An OAuth client you registered, for servers without dynamic registration. |
 | `clientSecret` | none | That client's secret, as a string or a `secret()`. |
 | `scopes` | the server's | Plus `offline_access` when offered, so the token can refresh. |
 | `clientName` | `"Inngest agent"` | The name on the consent screen. |
-| `onNeedsAuthorization` | none | Called with `McpNeedsAuthorization` when a user has no token. |
+
+- A person with no token is sent the sign-in link directly. The model learns only that a link was sent.
+- The link is tied to the browser that first opened it, works once and expires after 10 minutes.
+- Tokens are stored under the server's `id`, encrypted.
 
 | Call | Description |
 | --- | --- |
-| `kvOAuthStore({ encryptionKey, adapter, app })` | The default store: the agents KV, AES-GCM encrypted. The key defaults to `secret("MCP_OAUTH_ENCRYPTION_KEY")`. |
-| `completeMcpAuthorization({ store, code, state, error, expectUser, clientSecret, send })` | Finishes the sign-in from your callback route and sends `agent/mcp.authorized`. Returns `{ server, user, url }`. |
-| `waitForMcpAuthorization({ user, server, timeout, id })` | Waits for `agent/mcp.authorized` for that user. Returns the event, or `null` on timeout. |
-| `isMcpNeedsAuthorization(value)` | Whether a result is a link to sign in. |
-| `mcpAuthorizedEvent` | The event name, `"agent/mcp.authorized"`. |
+| `kvOAuthStore({ encryptionKey, adapter, app })` | The default store: the agents store, AES-GCM encrypted. The key defaults to `secret("MCP_OAUTH_ENCRYPTION_KEY")`. Changing the key makes stored tokens unreadable, and people sign in again. |
+| `completeMcpAuthorization({ store, code, state, error, expectUser, clientSecret, send })` | Finishes the sign-in from the callback route your app mounts. Returns `{ server, user, url }`. Pass `expectUser` whenever the route knows who is calling, so a forwarded link can't connect someone else's account. |
+| `disconnect(server, user)` | Revokes one person's connection to one server. |
 
-- A user with no token gets `{ type: "mcp_needs_authorization", server, user, authorizeUrl, message }` as an error result. The link is valid for 10 minutes and works once.
-- Until someone has connected, a server's only tool is `<name>_connect`; the model calls it when the user wants something from the server.
-- `completeMcpAuthorization()` throws `McpAuthorizationError`, with a message safe to show, for a denied, expired, reused or mismatched link.
-- Types: `McpOAuthOptions`, `McpOAuthStore`, `McpOAuthUserContext`, `McpNeedsAuthorization`, `McpAuthorizedData`, `KvOAuthStoreOptions`.
+`completeMcpAuthorization()` throws `McpAuthorizationError`, with a message safe to show, for a denied, expired, reused or mismatched link.
 
-## Code tools
+{/* not type-checked: tool.mcp with oauth, a user function of the trigger event and kvOAuthStore */}
+```typescript {{ title: "inngest/tools/notion.ts" }}
+import { kvOAuthStore, tool } from "inngest/experimental";
 
-`sandbox.tools.code(options?)` gives a model `read`, `write`, `edit`, `search`, `run`, and optionally `run_code`. Each call is one command step. [Sandboxes](/docs/labs/agents/sandboxes-and-code?ref=docs-labs-agents-reference-sandboxes)
+export const store = kvOAuthStore();
 
-| Option | Default | Description |
+export const notion = tool.mcp({
+  id: "notion",
+  url: "https://mcp.notion.com/mcp",
+  auth: {
+    oauth: {
+      user: ({ event }) => {
+        return event.data.user;
+      },
+      redirectUri: "https://app.acme.test/api/mcp/callback",
+      store,
+    },
+  },
+});
+```
+
+Types: `McpOAuthOptions`, `McpOAuthStore`, `McpOAuthUserContext`, `KvOAuthStoreOptions`.
+
+## Secrets
+
+`secret()` keeps a value on your host. `sandbox({ secrets })` puts values into the sandbox. They solve different problems, and both stay.
+
+```typescript {{ title: "Signature" }}
+secret(source: string | (() => string | Promise<string>)): Secret
+```
+
+| | `secret()` | `sandbox({ secrets })` |
 | --- | --- | --- |
-| `cwd` | `/work` | Where relative paths and commands start. |
-| `timeout` | `"5m"` | Longest one command may run. For `run_code`, the longest between waits. |
-| `session` | `true` | `run` keeps its working directory and exported environment between calls, like a terminal. `false` starts every command fresh in `cwd`. |
-| `only` | all (`run_code` only with `tools`) | Names to include. |
-| `tools` | none | Tools the code of `run_code` can call as `tools.name(...)`, besides `tools.sleep({ duration })` and `tools.now()`. `now` and `sleep` are taken. |
+| Where the value lives | On the host, read inside the call that needs it. | Inside the sandbox, injected under the same name. |
+| Can sandbox code read it | No. | Yes. |
+| Use it for | Tokens your app's tools send. | Values a program in the sandbox needs. |
 
-- `edit` replaces exact text and runs in your app, so the sandbox needs nothing installed.
-- A command that exits non-zero is a result the model sees, not an error.
-- With `session`, shell functions, aliases and unexported variables do not carry over, and the model is told so in the tool description.
+- `secret("NAME")` reads the environment variable `NAME` inside the call. A function gives a value that depends on the caller.
+- A `Secret` printed or serialized gives its label, so a token never lands in a log, a prompt or a trace.
+- `secret()` is accepted wherever a token goes, such as `auth.bearer`, `auth.headers` and `clientSecret` in [MCP](#mcp), and the Slack and GitHub bridge secrets. [Slack and GitHub](/docs/labs/agents/slack-and-github?ref=docs-labs-agents-reference-sandboxes)
+- Once a value is inside the sandbox, code there can read it. Prefer a tool, a [shim](#shims) or a short-lived token for anything sensitive. [Secrets in Sandboxes](/docs/sandboxes/features/secrets?ref=docs-labs-agents-reference-sandboxes)
 
-Types: `CodeToolName` (`"read" | "write" | "edit" | "search" | "run" | "run_code"`), `CodeToolsOptions`.
+Types: `Secret`, `SecretSource`.
+
+## Skills
+
+A skill is know-how the model reads, in the `SKILL.md` format: a name, a description, instructions, and optional scripts and files. A skill never adds a tool, and its scripts act only by calling tools. [Skills](/docs/labs/agents/skills?ref=docs-labs-agents-reference-sandboxes)
+
+```typescript {{ title: "Signature" }}
+skills.folder(path: string): SkillSource
+skills.repo(repo: string, options?: SkillsRepoOptions): SkillSource
+```
+
+{/* TODO(spec): skills.md gives `ref` and `path` options for sources but not what `path` means for a repo, its default, or the option that takes GitHub credentials for a private repo. Also where in the sandbox the files land. */}
+
+| Source | Description |
+| --- | --- |
+| `skills.folder(path)` | Skills shipped with your app, one folder per skill. The path resolves against the process's working directory when the agent is defined, so ship the folder with the app. They change with a deploy. |
+| `skills.repo("owner/name", options?)` | Skills read from a repository. They change without a deploy. |
+
+| `skills.repo` option | Description |
+| --- | --- |
+| `ref` | Branch, tag or commit to read. |
+| `path` | The folder in the repository that holds the skills. |
+
+- A folder and a repo can be listed together. Two skills with the same name are an error when the agent is defined.
+- A repo is read once per run. A failed read is logged, and the agent carries on without those skills.
+- Public repos need no token. A private repo is read with your app's GitHub credentials on the host, never in the sandbox. [GitHub App](#github-app)
+- The model sees every skill's name and description in its prompt. `open_skill({ name: string }): string` returns one skill's body. It is the same tool for every skill, and only an agent with skills has it. It works with no sandbox.
+- A skill's files are placed in the first sandbox the model can use among the agent's listed sandboxes. An agent with skills and no sandbox gets instructions only.
+- The agent's card lists each skill's name and description. A repo's skills can change between syncs, so the card may list a skill a run cannot read. [Discovery](/docs/labs/agents/discovery?ref=docs-labs-agents-reference-sandboxes)
+
+```md
+---
+name: refund-policy
+description: When a refund is allowed, and how to issue one
+---
+
+Refunds are allowed within 30 days of delivery. Use the `refund` tool.
+```
+
+{/* not type-checked: skills.folder and skills.repo on an agent */}
+```typescript {{ title: "inngest/agents/support.ts" }}
+import { skills, slack } from "inngest/experimental/agents";
+import { agents } from "../client";
+import { claude } from "../models/claude";
+import { work } from "../sandboxes/work";
+
+export const support = agents.agent({
+  id: "support",
+  triggers: [slack.thread()],
+  model: claude,
+  system: "You answer support questions.",
+  sandboxes: { work },
+  skills: [
+    skills.folder("./skills"),
+    skills.repo("inngest/inngest-skills"),
+  ],
+});
+```
 
 ## Images
 
-`image` is exported from `inngest/experimental` and used as `sandbox({ image })` or `from` of `step.sandbox.create()`.
+`image` is exported from `inngest/experimental` and used as `sandbox({ image })` or as `from` of `step.sandbox.create()`.
 
 | Call | Description |
 | --- | --- |
 | `image.inngest(name)` | An image Inngest maintains, such as `image.inngest("base")`. |
-| `image.custom(ref)` | An image in your workspace: `"my-image"`, `"my-image:v1"`, or `"my-image@sha256:<hex>"`. |
+| `image.custom(ref)` | An image in your workspace: `"my-image"`, `"my-image:v1"` or `"my-image@sha256:<hex>"`. |
 
 `SandboxImage` is `{ kind: "inngest/sandbox.image", ref }`. [Base images](/docs/sandboxes/features/base-images?ref=docs-labs-agents-reference-sandboxes)
 
 ## Sandbox middleware
 
-`inngest/experimental`. Enables `step.sandbox`, `group.sandbox`, and the runners, and serves the cleanup function. Agents with `sandboxes` need it on the client. [Sandboxes reference](/docs/sandboxes/reference?ref=docs-labs-agents-reference-sandboxes)
+`inngest/experimental`. Enables `step.sandbox`, `group.sandbox` and the runners, and serves the cleanup function. An app whose agents list sandboxes adds it to the client. [Sandboxes reference](/docs/sandboxes/reference?ref=docs-labs-agents-reference-sandboxes)
 
 ```typescript {{ title: "Signature" }}
 sandboxMiddleware(): MiddlewareClass
@@ -288,19 +826,39 @@ createSandboxCleanup(client: Inngest): DeferredFunction
 
 | Export | Description |
 | --- | --- |
-| `sandboxMiddleware()` | Add to `middleware` of `new Inngest(...)`. It adds `step.sandbox`, `step.sandbox.python`, `step.sandbox.typescript`, and `group.sandbox`. |
-| `createSandboxCleanup(client)` | The function that destroys the sandboxes of scopes whose run ended early (cancel, timeout). Apps with the middleware serve it automatically; pass it to `serve()` only when serving without the client's middleware. Experimental. |
+| `sandboxMiddleware()` | Add to `middleware` of `new Inngest(...)`. It adds `step.sandbox`, `step.sandbox.python`, `step.sandbox.typescript` and `group.sandbox`. |
+| `createSandboxCleanup(client)` | The function that destroys the sandboxes of scopes whose run ended early (cancel, timeout). An app with the middleware serves it automatically; pass it to `serve()` only when serving without the client's middleware. Experimental. |
 
-The direct `inngest.sandboxes` client does not need the middleware.
+Using the global `step.sandbox` without the middleware throws an error that says to add it. The direct `inngest.sandboxes` client does not need the middleware.
+
+{/* not type-checked: sandboxMiddleware on the client */}
+```typescript {{ title: "inngest/client.ts" }}
+import { Inngest } from "inngest";
+import { sandboxMiddleware } from "inngest/experimental";
+import { createAgents } from "inngest/experimental/agents";
+
+export const inngest = new Inngest({
+  id: "coder",
+  middleware: [sandboxMiddleware()],
+});
+
+export const agents = createAgents(inngest);
+```
 
 ## Durable sandbox
 
-What `step.sandbox.create()` and `LazySandbox.get()` return. Every method takes a step ID or step options first. Types from `inngest/experimental`.
+What `step.sandbox.create()` returns. Every method takes a step ID or step options first. Types from `inngest/experimental`.
 
 ```typescript {{ title: "Signature" }}
 interface DurableSandboxTools {
-  create(id, options: SandboxCreateOptions): Promise<DurableSandbox & AsyncDisposable>;
-  list(id, options?: SandboxListOptions): Promise<SandboxListResult<DurableSandbox>>;
+  create(
+    id,
+    options: SandboxCreateOptions,
+  ): Promise<DurableSandbox & AsyncDisposable>;
+  list(
+    id,
+    options?: SandboxListOptions,
+  ): Promise<SandboxListResult<DurableSandbox>>;
   get(id, sandboxId: string): Promise<DurableSandbox | null>;
   snapshots: { list(id, options?); get(id, snapshotId) };
 }
@@ -326,8 +884,8 @@ interface DurableSandboxTools {
 | Member | Description |
 | --- | --- |
 | `$` | Run a command as one step. See [Commands with $](#commands-with-dollar). |
-| `shell(options?)` | A [shell session](#shell-sessions) whose commands share a directory and exported environment. |
-| `commands.run(id, command, options?)` | Runs a command. Options: `environment`, `cwd`, `timeout`, `exitCodes` (default `"any"`), or `tools` and `toolOptions`. `exitCodes` cannot be used with `tools`. |
+| `shell(options?)` | A [shell](#shells) whose commands share a directory and exported environment. |
+| `commands.run(id, command, options?)` | Runs a command. Options: `environment`, `cwd`, `timeout`, `exitCodes` (default `"any"`), `tools`, `toolOptions` and `shims`. `exitCodes` cannot be used with `tools`. |
 | `files.write(id, { path, data })`, `files.read(id, path)` | Move files through memoized steps, up to about 2 MiB. |
 | `processes.start`, `list`, `get` | Managed processes. |
 | `snapshot(id, options?, waitOptions?)`, `snapshots.create(...)` | Snapshots the sandbox. |
@@ -345,7 +903,7 @@ Supporting types: `Sandbox`, `SandboxProcess`, `SandboxSnapshot`, `SandboxClient
 
 | Form | Description |
 | --- | --- |
-| `` sandbox.$`git status` `` | Runs argv with no shell. Static text splits on whitespace; each value is one argument; arrays spread; `null`, `undefined`, and `false` are dropped. |
+| `` sandbox.$`git status` `` | Runs argv with no shell. Static text splits on whitespace; each value is one argument; arrays spread; `null`, `undefined` and `false` are dropped. |
 | `` sandbox.$.sh`a \| b` `` | Runs a shell script with each value quoted. A value inside quotes throws. |
 | `sandbox.$(options)` | A `$` with options set. |
 | `sandbox.$({ ...options, id: "build" })` | Also names the step; returns a tag with `.sh`. |
@@ -356,14 +914,16 @@ Supporting types: `Sandbox`, `SandboxProcess`, `SandboxSnapshot`, `SandboxClient
 | `env` | none | Environment for this command. Values are kept out of the trace. |
 | `cwd` | none | Working directory. |
 | `exitCodes` | `[0]` | Exit codes that are not failures. `"any"` allows all. |
+| `tools`, `toolOptions` | none | [Tools](#tools) the command's code can call, and their [limits](#call-limits). Works as in `commands.run`. |
+| `shims` | none | [Shims](#shims) for the command. |
 
-The result is a `DollarPromise` of `SandboxCommandResult` with `text()` (trimmed stdout), `lines()`, and `json<T>()`. Do not put secrets in the command text; use `env`.
+The result is a `DollarPromise` of `SandboxCommandResult` with `text()` (trimmed stdout), `lines()` and `json<T>()`. Do not put secrets in the command text; use `env`.
 
 Types: `SandboxDollar`, `DollarOptions`, `DollarPromise`, `DollarTag`, `DollarValue`.
 
-## Shell sessions
+## Shells
 
-`sandbox.shell(options?)` returns a `SandboxShell` whose commands share a working directory and exported environment, like one terminal. [Sandboxes](/docs/labs/agents/sandboxes-and-code?ref=docs-labs-agents-reference-sandboxes#share-a-shell)
+`sandbox.shell(options?)` returns a `SandboxShell` whose commands share a working directory and exported environment, like one terminal. The code tools' [shell](#the-shell) works the same way.
 
 | `SandboxShellOptions` | Default | Description |
 | --- | --- | --- |
@@ -372,17 +932,16 @@ Types: `SandboxDollar`, `DollarOptions`, `DollarPromise`, `DollarTag`, `DollarVa
 
 | `SandboxShell` member | Description |
 | --- | --- |
-| `$` | The sandbox's `$` with the session's state. `cd` and `export` in one command apply to every command called after it finishes. An option on a call overrides the session for that command only. Commands run through a shell. |
+| `$` | The sandbox's `$` with the shell's state. `cd` and `export` in one command apply to every command called after it finishes. An option on a call overrides the shell for that command only. Commands run through a shell. |
 | `cwd` | The directory the next command starts in; `undefined` until a command has reported the sandbox's own. |
-| `env` | The environment the session adds to every command. |
+| `env` | The environment the shell adds to every command. |
 
 - A command uses the state as of the moment it was called, so commands started together (`Promise.all`) begin from the same state.
 - Only the directory and exported variables carry over. Functions, aliases, unexported variables and shell options do not.
-- A command that sets its own `EXIT` trap or replaces the shell with `exec` ends without its report, so its `cd` and `export` are not kept.
+- The [known shell limits](#known-shell-limits) apply.
 - State moves only when a command ends with an allowed exit code, so one that throws leaves it as it was.
-- An exported variable is stored in its step's output. Do not export secrets you would not want kept there.
 
-Types: `SandboxShell`, `SandboxShellOptions`, `ShellState`, `ShellStart`. Building blocks for your own session: `beginShellCommand`, `endShellCommand`, `stripShellReport`, exported from `inngest/experimental`.
+Types: `SandboxShell`, `SandboxShellOptions`, `ShellState`, `ShellStart`. Building blocks for your own shell: `beginShellCommand`, `endShellCommand`, `stripShellReport`, exported from `inngest/experimental`.
 
 ## Runners and groups
 
@@ -392,7 +951,7 @@ Types: `SandboxShell`, `SandboxShellOptions`, `ShellState`, `ShellStart`. Buildi
 | `step.sandbox.typescript(id, code, options?)` | The same for TypeScript. |
 | `group.sandbox(idOrOptions, callback)` | A sandbox that lives for the callback, shown as one group in the trace. Destroyed when the callback ends. Its cleanup also runs on cancel. |
 
-`OneShotRunnerOptions` are the options of `create` (all optional except that `name` and `snapshotId` are set for you) plus `RunnerOptions`:
+`OneShotRunnerOptions` are the options of `create` (all optional, except that `name` and `snapshotId` are set for you) plus `RunnerOptions`:
 
 | Option | Description |
 | --- | --- |
@@ -415,162 +974,15 @@ A group sandbox given an ID alone gets 2 vCPUs and 2048 MB. Types: `OneShotRunne
 
 `CommandError`: `type` (`"failed"` or `"timeout"`), `message`, `command`, `exitCode?`, `stdoutTail`, `stderrTail` (the last 8 KiB each). Types: `CommandError`, `SandboxErrorCode`, `SandboxErrorDetail`.
 
-## Repo
-
-Checks a repository out into a sandbox and pushes branches from it. The token is only in the environment of the one git process that talks to the remote. [Repos and git](/docs/labs/agents/repos-and-git?ref=docs-labs-agents-reference-sandboxes)
-
-```typescript {{ title: "Signature" }}
-repo(sandbox: { commands, tools, files? }, options: RepoOptions): Promise<Repo>
-```
-
-| Option | Default | Description |
-| --- | --- | --- |
-| `repo` | required | `owner/name` on GitHub, or any git URL or path. Cannot start with `-`. |
-| `ref` | the default branch | Branch, tag, or commit. `"HEAD"` means the default. |
-| `path` | `/work` | Where to check out. |
-| `token` | none | String or function. Clones and fetches, and pushes too unless `push` is set. Without it only public repositories clone. With `push` it can be read-only: a token for this repository with `contents: "read"` is all the sandbox ever holds. |
-| `push` | not set | `Omit<GitPushToolOptions, "remote" \| "cwd">`. Pushes from the host with the checks and write token of [`git_push`](#git-push), so the sandbox holds no write credential. Needs the sandbox itself (with `files`), or `repo()` throws. |
-| `sync` | not set | What to do when `path` already holds a checkout. |
-
-`sync` values:
-
-- Not set: a checkout with nothing to lose is brought to `ref`. One with local work throws, naming `"keep"` and `"reset"`.
-- `"reset"`: the working copy becomes `ref` as the remote has it. Local commits, changes, and untracked files are discarded.
-- `"keep"`: nothing is discarded. `ref` is checked out and a branch fast-forwards when it can; a diverged branch stays and the result says `"diverged"`.
-
-`Repo`:
-
-| Member | Description |
-| --- | --- |
-| `path` | Where it is checked out. |
-| `action` | `"cloned"`, `"synced"`, or `"diverged"` (`sync: "keep"` only). |
-| `sha` | The commit that is checked out. |
-| `push(branch)` | Pushes a local branch under the same name. With `push` set, from the host; a refusal throws a `NonRetriableError`. |
-| `tools` | `read`, `write`, `edit`, `search`, `run` in `path`, plus `push`, for `agent.loop()`. `run` keeps its directory and exported environment between calls. With `push` set, a refusal comes back to the model as the tool's error. |
-
-Git hooks are off for these commands. Types: `Repo`, `RepoOptions`.
-
-## Git push
-
-The `git_push` tool lets the model push a branch without holding a credential. The branch is bundled in the sandbox, brought home, checked by your policy, and pushed with a token only your app has. [Repos and git](/docs/labs/agents/repos-and-git?ref=docs-labs-agents-reference-sandboxes)
-
-```typescript {{ title: "Signature" }}
-sandbox.tools.git(options: GitPushToolOptions): SandboxToolsFactory<"git_push">
-gitPushTool(sandbox: SandboxHandle, options: GitPushToolOptions): AgentTool
-pushBranch(sandbox, options, branch: string, context: { idempotencyKey: string; signal?: AbortSignal }): Promise<PushBranchResult>
-commitFiles(options: CommitFilesOptions): Promise<PushOutcome>
-```
-
-| `GitPushToolOptions` | Default | Description |
-| --- | --- | --- |
-| `remote` | required | An http(s) URL with no user name or password. |
-| `token` | required | `() => string \| Promise<string>`, called inside the push step on the host. Never sent to the sandbox. |
-| `username` | `x-access-token` | User name for the token. |
-| `policy` | allow new and fast-forward branches | Decides each push. |
-| `cwd` | `/work` | The repository directory in the sandbox. |
-| `maxBytes` | 1 MiB (git), 4 MiB (api) | Most a push may weigh. At most 1.5 MiB with git, 8 MiB with api. |
-| `transport` | `"auto"` | `"git"` uses the host's git. `"api"` rebuilds commits with the GitHub Git Data API and needs no git, so it runs on Workers; it needs linear history. `"auto"` uses git when it runs, else the API for github.com. |
-| `api` | `https://api.github.com`, or `/api/v3` on the remote's host | API base URL, for `"api"`. |
-| `fetch` | global | The `fetch` the API push uses. |
-
-The tool pushes one branch to the branch of the same name. It never forces or deletes. The sandbox makes one bundle of the new commits (compressed, and read in one step when it fits `maxBytes`); the host reads it in as few steps as it can and pushes once. The API form uploads blobs four at a time and sends small text files inline. `pushBranch` returns `{ ok: true, pushed, warning? }` or `{ ok: false, error }`; refusals and rejections come back as values, and only a broken setup throws.
-
-### GitPolicy
-
-```typescript {{ title: "inngest/policies/branches.ts" }}
-import type { GitPolicy } from "inngest/experimental/agents";
-
-export const branches: GitPolicy = (push) => {
-  if (!push.branch?.startsWith("agent/")) {
-    return { refuse: "Branches for the agent start with agent/" };
-  }
-
-  return undefined;
-};
-```
-
-A policy returns nothing to allow, `{ refuse }` to stop with a message, or `{ ref?, notes? }` to move the push or add audit notes (up to 20 strings of 500 characters).
-
-| `GitPush` field | Description |
-| --- | --- |
-| `remote`, `ref`, `branch?`, `sha`, `oldSha?` | What is being updated. |
-| `fastForward` | Whether the remote's commit is an ancestor. |
-| `commits` | New commits, newest first: `{ sha, author, subject }`. More than 500 is refused before the policy runs. |
-| `paths` | Every path those commits touch. |
-| `patch()` | The text of the changes, for scanning. |
-| `files` | `GitPushFile[]`: `path`, `before()`, `after()`, each a `GitPushBlob` or `undefined`. Files up to 8 MiB. |
-
-`GitPushBlob`: `size`, `binary`, `bytes`, `mode?`, `text`. Types: `GitPolicy`, `GitPolicyResult`, `GitPush`, `GitPushBlob`, `GitPushFile`, `PushedRef` (`src`, `ref`, `sha`, `oldSha?`, `status`, `asked`, `notes?`, `sandboxSha?`), `PushOutcome` (`{ pushed } | { refused } | { failed }`), `PushBranchResult`, `GitPushToolOptions`.
-
-### commitFiles
-
-Commits a set of files to a GitHub repository from your app, with no sandbox and no git. Call it inside a step. It answers to the same `GitPolicy`.
-
-| `CommitFilesOptions` | Default | Description |
-| --- | --- | --- |
-| `remote` | required | `https://github.com/owner/repo`. |
-| `token` | required | Used only for requests the host makes. |
-| `ref` | required | Full ref, such as `refs/heads/skills/fix`. A new branch starts from the default branch. |
-| `message` | required | Commit message, kept as given. |
-| `files` | required | Path to text, bytes, `null` (delete), or `{ content, executable? }`. |
-| `author` | `inngest-agent` | `{ name, email }` for author and committer. |
-| `date` | now | ISO date. Compute it before the step so a retry makes the same commit. |
-| `policy` | none | The push it sees has `sha` empty. |
-| `api`, `fetch`, `signal` | as for git push | |
-
-## GitHub App
-
-Authenticates as a GitHub App. Uses `fetch` and WebCrypto only. [Repos and git](/docs/labs/agents/repos-and-git?ref=docs-labs-agents-reference-sandboxes)
-
-```typescript {{ title: "Signature" }}
-githubApp(options: GithubAppOptions): GithubApp
-```
-
-| `GithubAppOptions` | Default | Description |
-| --- | --- | --- |
-| `appId` | required | The App's ID. |
-| `privateKey` | required | A PEM. PKCS#1 keys are converted; `\n` written out as two characters is read as a newline. |
-| `apiUrl` | `https://api.github.com` | API base URL. |
-| `fetch` | global | The `fetch` to use. |
-| `userAgent` | `inngest-github-app` | The header GitHub requires. |
-| `refreshMarginMs` | five minutes | How long before expiry a token stops being reused. |
-| `now` | `Date.now` | The clock. |
-
-| `GithubApp` method | Description |
-| --- | --- |
-| `jwt()` | The App's JWT: RS256, valid nine minutes. |
-| `installationId(target)` | The installation ID, found once and remembered. |
-| `token(target, options?)` | An installation token, cached until near expiry. |
-| `installedRepos(refresh?)` | Every `"owner/name"` the App can reach, remembered five minutes. |
-| `forget()` | Forgets every ID, token, and the repository list. |
-
-`GithubAppTarget`: `"owner/name"`, `{ org }`, `{ user }`, or `{ installation }`. `GithubAppTokenOptions`: `permissions` (such as `{ contents: "write" }`) and `repositories` (names, or `"all"`; a repository target defaults to that repository alone).
-
-Errors: `GithubAppError` (`status`), and `GithubAppNotInstalledError` (a 404; the one failure to answer with a person's token). Types: `GithubApp`, `GithubAppOptions`, `GithubAppTarget`, `GithubAppTokenOptions`.
-
-## Skills
-
-Git sources of skills for a sandbox. [Sandboxes](/docs/labs/agents/sandboxes-and-code?ref=docs-labs-agents-reference-sandboxes)
-
-```typescript {{ title: "Signature" }}
-skills.git(repo: string, options?: SkillsGitOptions): SkillsSource
-```
-
-| Option | Default | Description |
-| --- | --- | --- |
-| `ref` | `"HEAD"` | Branch, tag, or commit. |
-| `freshness` | `"bake"` | `"bake"` puts skills in a snapshot named by commit sha; the first sandbox after the ref moves boots from a fetch and asks for a bake. `"boot"` fetches on every create. |
-| `into` | `/skills/<owner>/<name>` | A directory under `/skills/`. Replaced on every fetch. |
-| `github` | github.com | `{ url?, apiUrl? }` for another host. |
-
-Sources are public GitHub repositories. A baked sandbox restored from a thread snapshot keeps its skills until that snapshot expires. `skillsBake` is the event type `"agent/skills.bake"` that asks for a bake; `agents.functions()` serves the function that handles it. Types: `SkillsGitOptions`, `SkillsSource`.
-
 ## Snapshot cache
 
 `inngest/experimental`. Build a sandbox once, keep it as a named snapshot, find it by name, and rebuild when its inputs change. A snapshot is named `<scope>/<key>/<generation>`.
 
 ```typescript {{ title: "Signature" }}
-snapshotCache(client: SnapshotCacheClient, options?: SnapshotCacheOptions): SnapshotCache
+snapshotCache(
+  client: SnapshotCacheClient,
+  options?: SnapshotCacheOptions,
+): SnapshotCache
 snapshotName(entry: SnapshotEntry): string
 snapshotSlot(name: string): string
 snapshotGeneration(name: string): string
@@ -586,7 +998,7 @@ snapshotKey(parts): Promise<{ hash: string; named: Record<string, string> }>
 | `SnapshotCache` method | Description |
 | --- | --- |
 | `find(entry, options?)` | The newest usable snapshot, or `undefined`. Any error is a miss. |
-| `take(entry, snapshot, options?)` | Takes the snapshot under its name. Another holder is adopted; an unusable holder is deleted and the take retried once. A new snapshot replaces older generations. |
+| `take(entry, snapshot, options?)` | Takes the snapshot under its name. Another holder is adopted; an unusable holder is deleted and the take retried once. A snapshot of a later generation replaces older ones. |
 | `ensure(entry, build, options?)` | The snapshot if there is one, else build it. |
 | `latest({ scope, key }, options?)` | The newest of any generation. Lists every snapshot; prefer `find`. |
 | `remove(snapshotId)` | Deletes it. `true` when gone. |
