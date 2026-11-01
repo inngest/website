@@ -64,8 +64,8 @@ export const triage = agents.agent({
 });
 ```
 
-<Annotation id="key" lines="11" tease="the key is the name" title="One name" href="/docs/labs/agents/sandboxes-and-code?ref=docs-labs-agents-tools" linkText="Sandboxes and code">
-The model calls `ticket`. A script the model runs calls `tools.ticket(...)`.
+<Annotation id="key" lines="11" tease="the key is the name" title="One name" href="/docs/labs/agents/sandboxes-and-code?ref=docs-labs-agents-tools#let-code-call-your-tools" linkText="Let code call your tools">
+The model calls `ticket`. Give the same tool to a sandbox's code tools, and a script calls `tools.ticket(...)`.
 </Annotation>
 
 </AnnotatedCode>
@@ -87,13 +87,13 @@ export const digest = agents.agent(
     sandboxes: { work },
   },
   async ({ sandboxes }) => {
-    const done = await sandboxes.work.commands.run(
+    const summary = await sandboxes.work.commands.run(
       "summarise",
       "node summarise.js",
       { tools: { ticket } },
     );
 
-    return done.stdout;
+    return summary.stdout;
   },
 );
 ```
@@ -103,15 +103,6 @@ No wrapper and no second definition.
 </Annotation>
 
 </AnnotatedCode>
-
-{/* not type-checked: sandbox() from inngest/experimental/agents */}
-```typescript {{ title: "inngest/sandboxes/work.ts" }}
-import { sandbox } from "inngest/experimental/agents";
-
-export const work = sandbox({ id: "work" });
-```
-
-An app whose agents list sandboxes adds `sandboxMiddleware()` to its client. [Sandboxes and code →](/docs/labs/agents/sandboxes-and-code?ref=docs-labs-agents-tools)
 
 ```js {{ title: "summarise.js" }}
 const { tools } = require("inngest_tools");
@@ -124,6 +115,15 @@ const main = async () => {
 
 main();
 ```
+
+{/* not type-checked: sandbox() from inngest/experimental/agents */}
+```typescript {{ title: "inngest/sandboxes/work.ts" }}
+import { sandbox } from "inngest/experimental/agents";
+
+export const work = sandbox({ id: "work" });
+```
+
+An app whose agents list sandboxes adds `sandboxMiddleware()` to its client. [Sandboxes and code →](/docs/labs/agents/sandboxes-and-code?ref=docs-labs-agents-tools)
 
 ## Pick a kind
 
@@ -274,40 +274,7 @@ A script that calls this exits, waits, then starts again with its earlier calls 
 
 ## Hand a program to the shell
 
-`tool.shim()` stands in for a program on the shell's `PATH`. The sandbox never holds the credential: your handler does the privileged part, then runs the real program.
-
-{/* not type-checked: tool.shim handed to sandbox.tools.code({ shims }) so the model's shell sees it */}
-<AnnotatedCode>
-
-```typescript {{ title: "inngest/sandboxes/deployer.ts" }}
-import { tool } from "inngest/experimental";
-import { sandbox } from "inngest/experimental/agents";
-
-const mintDeployToken = async () => {
-  return "short-lived-token";
-};
-
-const flyctl = tool.shim("flyctl", async ({ run }) => {
-  return run({ env: { FLY_API_TOKEN: await mintDeployToken() } });
-});
-
-export const deployer = sandbox({
-  id: "deployer",
-  tools: sandbox.tools.code({ shims: [flyctl] }),
-});
-```
-
-<Annotation id="shim" lines="8-10" tease="runs in your app" title="The shim" href="/docs/labs/agents/sandboxes-and-code?ref=docs-labs-agents-tools" linkText="Sandboxes and code">
-Runs whenever code runs `flyctl`. It can run the real program, answer for it or refuse.
-</Annotation>
-
-<Annotation id="shims" lines="14" tease="model and code" title="shims">
-The model's `run` and `run_code` get it, and so does your `commands.run`.
-</Annotation>
-
-</AnnotatedCode>
-
-A shim stays a program on `PATH`. It isn't an entry in the model's tool list.
+`tool.shim()` stands in for a program on the shell's `PATH`, and your handler decides what happens when code runs it. The model never handles the token: your handler adds it to the environment of that one process. [Hand a program a credential →](/docs/labs/agents/sandboxes-and-code?ref=docs-labs-agents-tools#hand-a-program-a-credential)
 
 ## Fail so the model can read it
 
@@ -316,21 +283,21 @@ A thrown error, or `agent.toolError(body)`, reaches the model as an error result
 {/* not type-checked: agent.toolError beside an output schema */}
 <AnnotatedCode>
 
-```typescript {{ title: "inngest/tools/findTicket.ts" }}
+```typescript {{ title: "inngest/tools/findOrder.ts" }}
 import { tool } from "inngest/experimental";
 import { agent } from "inngest/experimental/agents";
 import { z } from "zod";
 
-export const findTicket = tool.step({
-  description: "Reads a support ticket",
+export const findOrder = tool.step({
+  description: "Finds an order by ID",
   input: z.object({ id: z.string() }),
-  output: z.object({ id: z.string(), subject: z.string() }),
+  output: z.object({ id: z.string(), status: z.string() }),
   run: async ({ id }) => {
-    if (id !== "T-42") {
-      return agent.toolError({ message: "No such ticket", id });
+    if (id !== "O-42") {
+      return agent.toolError({ message: "No such order", id });
     }
 
-    return { id, subject: "Refund request" };
+    return { id, status: "shipped" };
   },
 });
 ```
@@ -350,7 +317,7 @@ const { tools } = require("inngest_tools");
 
 const main = async () => {
   try {
-    await tools.findTicket({ id: "T-404" });
+    await tools.findOrder({ id: "O-404" });
   } catch (error) {
     console.log(error.message);
   }
@@ -388,11 +355,11 @@ export const readTicket = tool.step({
 
 </AnnotatedCode>
 
-Tools from an MCP server are untrusted by default. Text inside a result can't close the wrapper.
+Tools from an MCP server are untrusted by default.
 
 ## Wrap a tool
 
-There are no hooks around tool calls: every call is already a step, with its own trace row, timing and retries. To check input or change a result, wrap the tool. The wrapper works from the model and from sandbox code.
+To check input or change a result, wrap the tool. The wrapper works from the model and from sandbox code.
 
 {/* not type-checked: a tool whose run calls another tool's run */}
 <AnnotatedCode>
@@ -426,8 +393,6 @@ Pass the context along, then change what comes out. Here the email is dropped.
 </Annotation>
 
 </AnnotatedCode>
-
-Hand `safeTicket` to the agent and to commands instead of `ticket`.
 
 ## Score from a tool
 
@@ -470,7 +435,7 @@ A number or a boolean, written once however often the run replays.
 
 `tool.mcp()` turns a remote MCP server into tools named `<id>_<tool>`. Put it in `tools`.
 
-{/* not type-checked: tool.mcp with a required id, a bearer secret and an allow list */}
+{/* not type-checked: tool.mcp with a required id and a bearer secret */}
 <AnnotatedCode>
 
 ```typescript {{ title: "inngest/tools/hex.ts" }}
@@ -480,7 +445,6 @@ export const hex = tool.mcp({
   id: "hex",
   url: "https://app.hex.tech/mcp",
   auth: { bearer: secret("HEX_TOKEN") },
-  tools: ["search_projects", "run_project"],
 });
 ```
 
@@ -490,10 +454,6 @@ Required. Prefixes the tools (`hex_search_projects`) and keys the tokens.
 
 <Annotation id="bearer" lines="6" tease="read inside the call" title="Credentials" href="#keep-secrets-on-the-host" linkText="Keep secrets on the host">
 Never reaches the model, a sandbox, a step output or a trace.
-</Annotation>
-
-<Annotation id="only" lines="7" tease="only these two" title="Allow list" href="/docs/labs/agents/reference-sandboxes?ref=docs-labs-agents-tools#mcp" linkText="Reference">
-Leave it out for every tool the server offers.
 </Annotation>
 
 </AnnotatedCode>
@@ -550,9 +510,7 @@ Where the server sends the person after they grant access.
 
 </AnnotatedCode>
 
-A person who hasn't connected gets a sign-in link from the SDK. The model only learns that a link was sent, so it can't read, change or leak it. The link finishes only in the browser that first opened it.
-
-Your app mounts one route to finish the sign-in. It takes the browser's request and checks that it is the browser that opened the link.
+A person who hasn't connected gets a sign-in link from the SDK, and the model only learns that a link was sent, so it can't read, change or leak it. Your app mounts one route to finish the sign-in, and the link works only in the browser that opened it.
 
 {/* not type-checked: mcpCallback as a Web handler with the default store */}
 ```typescript {{ title: "app/api/mcp/callback/route.ts" }}
@@ -561,7 +519,7 @@ import { kvOAuthStore, mcpCallback } from "inngest/experimental";
 export const GET = mcpCallback({ store: kvOAuthStore() });
 ```
 
-Tokens are kept per server `id`, encrypted. `disconnect(server, user)` removes one person's connection, and `notion.disconnect(user)` is the same call.
+Tokens are kept per server `id`. `disconnect(server, user)` removes one person's connection, and `notion.disconnect(user)` is the same call.
 
 {/* not type-checked: disconnect(server, user) from inngest/experimental */}
 ```typescript {{ title: "inngest/functions/disconnectNotion.ts" }}
@@ -575,7 +533,7 @@ export const disconnectNotion = async (user: string) => {
 
 ## Keep secrets on the host
 
-`secret("NAME")` holds the name of an environment variable. It's read only inside the call that needs it and prints as `[secret NAME]`, so a token never lands in a log, a trace or a prompt. Pass it wherever a token goes.
+`secret("NAME")` holds the name of an environment variable. It's read only inside the call that needs it and prints as `[secret NAME]`, so a token never lands in a log, a trace or a prompt; pass it wherever a token goes.
 
 `sandbox({ secrets })` puts values into the sandbox; a `secret()` never goes there. [Sandboxes and code →](/docs/labs/agents/sandboxes-and-code?ref=docs-labs-agents-tools)
 
@@ -591,9 +549,8 @@ export const disconnectNotion = async (user: string) => {
 ## Gotchas
 
 - **A script's call has a time limit.** A call that outlives its command's `timeout` (five minutes by default) aborts the command. Make the tool a `waits: true` group, or give the command a longer `timeout`. The model's side has none.
-- **A script starts again after a wait.** It runs from the top, with finished calls answered from a saved record, so read clocks and randomness through tools.
-- **A change that was sent isn't retried.** An MCP tool that may change things isn't retried once the request went out; the model is told the outcome is unknown. Read-only and idempotent tools do retry.
-- **MCP calls pass a network guard.** HTTPS only (`http:` for localhost), no private addresses, no credentials in the URL and no redirects.
+- **A script starts again after a wait.** It runs from the top, with finished calls answered from a saved record, so keep what it does outside tool calls safe to repeat.
+- **MCP calls pass a network guard.** HTTPS only (`http:` for localhost), no private addresses and no redirects.
 - **Renaming an `id` signs everyone out.** Tokens are kept under it. Changing the `url` doesn't.
 
 ## How it works
