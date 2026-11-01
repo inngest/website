@@ -108,13 +108,13 @@ export const lookupOrder = tool.step({
 });
 ```
 
-{/* not type-checked: kv.key with a type argument, kv.app.update with a typed kv.key */}
+{/* not type-checked: kv.key with a schema, kv.app.update with a typed kv.key */}
 ```typescript {{ title: "inngest/tools/saveNote.ts" }}
 import { tool } from "inngest/experimental";
 import { kv } from "inngest/experimental/agents";
 import { z } from "zod";
 
-export const notes = kv.key<string[]>("notes");
+export const notes = kv.key("notes", z.array(z.string()));
 
 export const saveNote = tool.step({
   description: "Save something the team asked you to remember",
