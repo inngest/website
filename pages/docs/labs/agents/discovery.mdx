@@ -40,7 +40,7 @@ export const reviewer = agents.agent({
 ```
 
 <Annotation id="input" lines="9" tease="the card's input" title="Input">
-The card's `input` is the schema of this `invoke()` trigger. You write it once. An agent with no `invoke()` trigger has no `input`, and callers send it text or JSON.
+The card's `input` is the schema of this `invoke()` trigger, so you write it once. An agent with no `invoke()` trigger has no `input`, and callers send text or JSON.
 </Annotation>
 
 <Annotation id="skills" lines="12" tease="listed on the card" title="Skills" href="/docs/labs/agents/skills?ref=docs-labs-agents-discovery" linkText="Skills">
@@ -69,7 +69,7 @@ Cards announce when your app syncs, and again every six hours. An agent is `app/
 
 A model hands a review to the reviewer like this, with no wiring:
 
-```text
+```text {{ title: "What the model calls" }}
 list_agents({ query: "review" })
   agents: [
     {
