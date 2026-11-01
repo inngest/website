@@ -11,7 +11,7 @@ Inngest starts it, retries what fails and records every run. The sections below 
 
 ## Hello, agent
 
-The smallest agent is an id. The `agents` object comes from the client in the [quick start](/docs/labs/agents/quick-start?ref=docs-labs-agents-agents#create-the-client).
+You want the smallest agent there is. Give it an id; the `agents` object comes from the client in the [quick start](/docs/labs/agents/quick-start?ref=docs-labs-agents-agents#create-the-client).
 
 {/* not type-checked: agents.agent with an id and no handler */}
 ```typescript {{ title: "inngest/agents/hello.ts" }}
@@ -20,11 +20,11 @@ import { agents } from "../client";
 export const hello = agents.agent({ id: "hello" });
 ```
 
-Start it with `hello.start("Hi")`. [Call it from code →](/docs/labs/agents/agent-teams?ref=docs-labs-agents-agents#call-it-from-code) The Dev Server shows one run, completed: its first row is the message, and it returns nothing.
+Start it with `hello.start("Hi")`. The Dev Server shows one run, completed: its first row is the message, and it returns nothing. [Call it from code →](/docs/labs/agents/agent-teams?ref=docs-labs-agents-agents#call-it-from-code)
 
 ## Give it a body
 
-To make it do something, pass a handler as the second argument. What it returns is the run's output.
+You want the agent to do something. Pass a handler as the second argument; what it returns is the run's output.
 
 {/* not type-checked: agents.agent with a handler */}
 ```typescript
@@ -33,11 +33,9 @@ export const hello = agents.agent({ id: "hello" }, async () => {
 });
 ```
 
-The run's output is `"I ran."`.
-
 ## What started it
 
-To read what was sent, take `event` from the handler's argument.
+You want to read what was sent. Take `event` from the handler's argument.
 
 {/* not type-checked: a handler reading event.data.content */}
 ```typescript
@@ -50,7 +48,7 @@ export const hello = agents.agent({ id: "hello" }, async ({ event }) => {
 
 ## Other ways to start
 
-To start a run from CI as well as from a message, list its event type in `triggers`.
+You want CI to start it, not just a message. List its event type in `triggers`.
 
 ```typescript {{ title: "inngest/events.ts" }}
 import { eventType } from "inngest";
@@ -89,11 +87,11 @@ Narrows `event` to one trigger's type.
 
 </AnnotatedCode>
 
-A schedule is a trigger too: `{ cron: "0 9 * * *" }`. [Threads](/docs/labs/agents/threads?ref=docs-labs-agents-agents#no-magic) shows GitHub's, and the [Slack and GitHub guide](/docs/labs/agents/slack-and-github?ref=docs-labs-agents-agents) covers both.
+A schedule is a trigger too: `{ cron: "0 9 * * *" }`. GitHub's trigger is in [Threads](/docs/labs/agents/threads?ref=docs-labs-agents-agents#no-magic); the [Slack and GitHub guide](/docs/labs/agents/slack-and-github?ref=docs-labs-agents-agents) covers it and Slack's.
 
 ## Steps
 
-To make a flaky call survive without retry code, wrap it in `step.run`.
+You want work that survives a flaky call without retry code. Wrap it in `step.run`.
 
 ```typescript {{ title: "inngest/lib/ci.ts" }}
 export const fetchLog = async (pr: number) => {
@@ -135,7 +133,7 @@ If `fetchLog` throws, only this step retries. Finished steps return their saved 
 
 </AnnotatedCode>
 
-The trace shows both attempts of a step that failed once. Code outside a step runs again on every replay, so keep side effects inside steps.
+Code outside a step runs again on every replay, so keep side effects inside steps.
 
 ## Recipes and reference
 
