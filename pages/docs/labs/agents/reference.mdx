@@ -1,6 +1,6 @@
 import { Info } from "shared/Docs/mdx";
 
-export const metaTitle = "Reference | Inngest Agents";
+export const metaTitle = "Agents reference | Inngest Agents";
 export const description = "Signatures, options and defaults for inngest/experimental/agents: createAgents, the definition and handler, me, thread handles, messages, the inbox, the loop, models, budgets and recovery, cards and discovery, model tools, Slack and GitHub, KV and scores.";
 
 # Agents reference
@@ -13,7 +13,7 @@ export const description = "Signatures, options and defaults for inngest/experim
 
 Everything here is a named export of `inngest/experimental/agents`, except `eventType` and `invoke`, which come from `inngest`. Sandboxes, code tools, repos, tool constructors, MCP, secrets and skills are in the [Tools and sandboxes reference](/docs/labs/agents/reference-sandboxes?ref=docs-labs-agents-reference).
 
-- [createAgents](#createagents)
+- [createAgents](#create-agents)
 - [The definition](#the-definition)
 - [The handler](#the-handler)
 - [me](#me)
@@ -26,7 +26,7 @@ Everything here is a named export of `inngest/experimental/agents`, except `even
 - [Budget, limits and recovery](#budget-limits-and-recovery)
 - [Cards and discovery](#cards-and-discovery)
 - [Model tools](#model-tools)
-- [Slack and GitHub](#slack-and-github)
+- [Slack and GitHub](#slack-and-git-hub)
 - [KV](#kv)
 - [Scores](#scores)
 
@@ -131,7 +131,11 @@ inbox: [
 
 - The default handler ends its run after `idle` of quiet. In a handler, `for await (const batch of inbox.batches())` and `for await (const message of inbox)` end the same way. A later message starts a run on the same thread, which reads its history back.
 - A handler that waits some other way, such as `next()` with no timeout, keeps its run live as long as it waits.
-- Only runs started by triggers, and by plain messages, wait `idle`. A run opened through a handle (`start()`, `message()`, `start_agent` or `message_agent`) ends once it has answered and nothing is unread, so `result()` resolves promptly. It stays open while agents it started with `start()` or `start_agent` are still running: their `agent/finished` messages fold in, and the answer after the last one is the run's output. A later `message()` to that thread starts a run that picks up the history. With a handler, both `for await` forms on such a run behave as if `idle` were zero: they yield what is already in the inbox and end the moment they would have to wait.
+- Only runs started by triggers, and by plain messages, wait `idle`.
+- A run opened through a handle (`start()`, `message()`, `start_agent` or `message_agent`) ends once it has answered and nothing is unread, so `result()` resolves promptly.
+- Such a run stays open while agents it started with `start_agent` are still running: their `agent/finished` messages fold in, and the answer after the last one is the run's output. Agents it started with `start()` are yours to wait for, with `result()`.
+- A later `message()` to that thread starts a run that picks up the history.
+- With a handler, both `for await` forms on such a run behave as if `idle` were zero: they yield what is already in the inbox and end the moment they would have to wait.
 - A longer `idle` keeps the run live across deploys, and each of its steps counts toward the step limit. The default suits most agents. [Reliability →](/docs/labs/agents/reliability?ref=docs-labs-agents-reference)
 
 ## The handler
@@ -154,7 +158,7 @@ The second argument of `agents.agent()`. It gets one argument: the function's us
 - **With no handler**, an agent with a `model` sends each batch of messages to the loop and posts the answer where the thread lives. When the loop ends on `budget`, it posts that the thread's budget is spent. An agent with neither a model nor a handler takes its batch, posts nothing and ends with `undefined`.
 - **The return value** is the run's output, which a caller's `result()` reads. With no handler it is the model's final answer, a string.
 - **The run ends** when the handler returns. Work still running and not awaited is stopped, except an un-awaited `me.post()` or `score()`, which land first. Plain functions are unaffected: un-awaited work there behaves as in any Inngest function.
-- **A run opened through a handle** (`start()`, `message()`, `start_agent`, `message_agent`) ends once it has answered, after any agents it started have finished. [Idle](#idle)
+- **A run opened through a handle** (`start()`, `message()`, `start_agent`, `message_agent`) ends once it has answered, after any agents it started with `start_agent` have finished. [Idle](#idle)
 
 ## me
 
@@ -406,7 +410,7 @@ formatEvent(message: AgentMessage): string
 | --- | --- | --- | --- |
 | `model` | the agent's | no | What the loop calls each turn. Required for `agent.loop(options)`. [Models](#models) |
 | `system` | the agent's | no | The system prompt. |
-| `tools` | the agent's | yes | Tools the model can call, added to the agent's own. A name used twice is an error. A tool made in the handler can close over `me`, the event and your variables, and sandbox code calls it by the same name. A tool passed here makes `run_code` available for that call even when the sandbox's code tools had no `tools`. |
+| `tools` | the agent's | yes | Tools the model can call, added to the agent's own. A name used twice is an error. [Tools passed to a loop](#tools-passed-to-a-loop) |
 | `id` | `"agent"` | no | Prefix of the loop's step ids. A second loop with the same prefix in one run gets `-2`, a third `-3`. |
 | `maxTurns` | `40` | yes | Most model calls. |
 | `maxToolOutput` | `100000` | yes | Most characters of a tool result the model sees. A longer result keeps its start and end and says how much is missing. |
@@ -417,7 +421,7 @@ formatEvent(message: AgentMessage): string
 | `compaction` | automatic | no | Summarises the start of a long history. [Compaction](#compaction) |
 | `steer` | fold all | yes | Chooses which drained messages are folded in. What it skips comes back as `result.unread`. |
 | `stop` | none | no | Checked before each model call. `true` ends the loop with `end: "stop"`. |
-| `onTurn` | none | yes | Called after each turn. [onTurn](#onturn) |
+| `onTurn` | none | yes | Called after each turn. [onTurn](#on-turn) |
 | `format` | `formatEvent` | no | What the model sees for a message. |
 
 ```typescript {{ title: "Signature" }}
@@ -427,6 +431,11 @@ onTurn?: (turn: AgentTurn) => void | Promise<void>;
 format?: (message: AgentMessage) => AgentUserContent;
 ```
 
+### Tools passed to a loop
+
+- A tool made in the handler can close over `me`, the event and your variables, and sandbox code calls it by the same name.
+- A tool passed here makes `run_code` available for that call even when the sandbox's code tools had no `tools`.
+
 ### onTurn
 
 `onTurn` is called after each turn's tool calls with the turn:
@@ -434,6 +443,7 @@ format?: (message: AgentMessage) => AgentUserContent;
 | `AgentTurn` field | Description |
 | --- | --- |
 | `turn` | This model call's number, from 1. |
+| `stepId` | The ID of the model call's step. |
 | `text` | The reply's text. |
 | `toolCalls` | The tool calls of this turn, finished. |
 | `usage` | Tokens this call used, and its cost in dollars when the model prices its calls. |
@@ -510,7 +520,7 @@ const careful = claude.with({ effort: "high" });
 | `thinking` | not sent | The `thinking` request field. Thinking blocks stay in the history untouched. |
 | `cache` | `{ ttl: "5m" }` | Prompt caching: `false`, or `{ ttl?: "5m" \| "1h" }`. `false` sends no breakpoints. A `1h` write costs 2x instead of 1.25x. |
 | `volatile` | none | A string, or `(request) => string \| undefined`. Text added to the last user message after the cache breakpoint, for what changes on every call. |
-| `stream` | on above `maxTokens` 21,000 | Streams the reply and waits for the whole message. Needs a client with `messages.stream`. |
+| `stream` | when `maxTokens` is above 21,000 | Streams the reply and waits for the whole message. Needs a client with `messages.stream`. |
 | `timeout` | 300000 on its own client | Milliseconds before a call times out. |
 | `maxRetries` | `0` on its own client | Retries inside the SDK, before the step fails and Inngest retries it. |
 | `params` | none | More request fields, such as `metadata`, `stop_sequences` or server tools. Applied last. |
@@ -519,7 +529,7 @@ Keep `system` fixed per agent. Put context that changes on every call in `volati
 
 - **The one-shot call** takes `system`, `messages`, `prompt`, `tools`, `toolChoice` and `output`. With an `output` schema it returns a typed `output` beside `text`. It is not a step by itself, so wrap it in `step.run()`.
 - **`.with(overrides)`** gives a variant with those options changed, such as `effort`, `thinking`, `maxTokens` or `cache`. It cannot change `client`, `apiKey` or `baseURL`.
-- **Cost.** The model prices its own calls, so a `budget` in dollars needs no price table. [`price`](#budget-limits-and-recovery) overrides it for a custom model or one the table does not know.
+- **Cost.** The model prices its own calls, so a `budget` in dollars needs no price table. [`price`](#budget-and-price) overrides it for a custom model or one the table does not know.
 - **Errors.** A model call is a step, so a failure retries, after `retry-after` when the provider sent one, for any model function. A final error such as a bad request fails the step for good.
 
 ## Budget, limits and recovery
@@ -675,7 +685,7 @@ stop_agent({ thread: string }): { ok: true }
 reply({ to: string; text: string }): { ok: true }
 ```
 
-- `start_agent` returns the thread's key at once. When the work ends, an `agent/finished` message arrives. A run opened this way ends once it has answered, after any agents it started have finished.
+- `start_agent` returns the thread's key at once. When the work ends, an `agent/finished` message arrives. A run opened this way ends once it has answered, after any agents it started with `start_agent` have finished.
 - It refuses a paused or archived agent with a reason the model can read, and checks `input` against the card's `input` before it starts anything. An agent without an `invoke()` trigger gets `input` as the content of an `agent/message`.
 - `message_agent` sends the message and returns at once. A run it opens on a quiet thread ends once it has answered.
 - `ask_agent` returns a question id at once. The answer arrives as an `agent/answer` whose `re` is that id.
@@ -706,7 +716,7 @@ Sandbox code gets the agent tools and the discovery tools, plus tools that wait,
 - `inbox_next({ as })` and `inbox_next_batch({ as })`: wait on a named inbox.
 - The waiting form of `slack_ask`, which gives the answer as a string.
 
-The shell and code tools of a sandbox (`work_run`) and `open_skill` are in the [Tools and sandboxes reference](/docs/labs/agents/reference-sandboxes?ref=docs-labs-agents-reference). Slack and GitHub tools are under [Slack and GitHub](#slack-and-github).
+The shell and code tools of a sandbox (`work_run`) and `open_skill` are in the [Tools and sandboxes reference](/docs/labs/agents/reference-sandboxes?ref=docs-labs-agents-reference). Slack and GitHub tools are under [Slack and GitHub](#slack-and-git-hub).
 
 ## Slack and GitHub
 
@@ -755,7 +765,6 @@ export const POST = slack.bridge({
 - Messages from bots, including the agent itself, are ignored unless you set `allowBots: true`.
 - `gate` replaces the rule for what is meant for the agent. A message it skips never becomes an event. It gets the message, the thread's key, `history()` (the thread's earlier messages, oldest first) and the bot's own user id.
 - `handle(payload)` takes a payload from a connection your app already trusts, such as its own Socket Mode connection, and skips the signature check. The SDK never runs the socket. The gate and the thread key behave the same either way.
-
 
 **`slack.thread()`** triggers on any Slack channel the app is in, plus direct messages. `in` limits it to Slack channel IDs. It keys the thread on `threadKey`. `token` is the Slack token for the SDK's own writes, such as the status line and `me.post()`: a string, a function or `secret()`. It defaults to `SLACK_BOT_TOKEN`.
 
@@ -902,7 +911,7 @@ Every scope has the same methods:
 
 - **Values** are `Json`.
 - **Keys** are a plain name, whose value is `unknown`, or typed: `kv.key<T>(name)`, or `kv.key(name, schema)`, which checks a value when it is read. A stored value that fails the schema is a non-retriable error and stays in place. Writes are not checked.
-- **Steps.** Inside a function each call is one memoized step, so a replay sees the values the first run saw, and each call counts toward the step limit. Outside a function a call goes straight to the store.
+- **Steps.** A call in a function outside any step is its own memoized step, so a replay sees the values the first run saw, and it counts toward the step limit. Inside a step's callback (a tool, `tool.step`'s `run`, `step.run`) a call goes straight to the store, adds no step, and the step memoizes the result. Outside a function a call goes straight to the store.
 - **The loop's history** is saved in `kv.thread`. [The loop](#the-loop)
 - The store's connection never keeps a process alive. There is no `close()`.
 
