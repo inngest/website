@@ -76,37 +76,7 @@ export const inngest = new Inngest({
 export const agents = createAgents(inngest);
 ```
 
-{/* not type-checked: sandbox() with image, size and setup */}
-<AnnotatedCode>
-
-```typescript {{ title: "inngest/sandboxes/scratch.ts" }}
-import { image } from "inngest/experimental";
-import { sandbox } from "inngest/experimental/agents";
-
-export const scratch = sandbox({
-  id: "scratch",
-  image: image.custom("python-data:v1"),
-  vcpu: 4,
-  memoryMb: 8192,
-  setup: async ({ sandbox }) => {
-    await sandbox.commands.run("install", "pip install pandas");
-  },
-});
-```
-
-<Annotation id="image" lines="6" tease="the machine's image" title="Image" href="/docs/sandboxes/features/base-images?ref=docs-labs-agents-sandboxes-and-code" linkText="Base images">
-Leave it out for the base image.
-</Annotation>
-
-<Annotation id="size" lines="7-8" tease="4 vCPU, 8192 MB" title="Size">
-The defaults are 2 vCPU and 2048 MB. Ask for more when the work needs it.
-</Annotation>
-
-<Annotation id="setup" lines="9-11" tease="runs once, at creation" title="Setup">
-Runs when the sandbox is created, not on every run.
-</Annotation>
-
-</AnnotatedCode>
+`sandbox()` also takes an `image`, a size and a `setup` step. [Reference: sandbox() →](/docs/labs/agents/reference-sandboxes?ref=docs-labs-agents-sandboxes-and-code#sandbox)
 
 ## Keep files between runs
 
@@ -145,7 +115,7 @@ The tools the model gets. Without `only` it gets `run`, plus `run_code` once you
 </Annotation>
 
 <Annotation id="timeout" lines="7" tease="longest one command may run" title="Timeout" href="#run-long-commands" linkText="Run long commands">
-The default is five minutes. A longer one works.
+The default is five minutes.
 </Annotation>
 
 </AnnotatedCode>
@@ -191,7 +161,7 @@ export const tester = agents.agent(
 `model: false` keeps this sandbox for your code. Without it, the model would get `work_run` too.
 </Annotation>
 
-<Annotation id="commands" lines="15-17" tease="a command on the thread's machine" title="Run a command" href="/docs/labs/agents/reference-sandboxes?ref=docs-labs-agents-sandboxes-and-code#the-handlers-sandbox" linkText="Reference">
+<Annotation id="commands" lines="15-17" tease="a command on the thread's machine" title="Run a command" href="/docs/labs/agents/reference-sandboxes?ref=docs-labs-agents-sandboxes-and-code#the-handler-s-sandbox" linkText="Reference">
 Each call is a durable step, so a replay never runs the tests twice.
 </Annotation>
 
@@ -201,14 +171,7 @@ The result lands in the agent's own inbox, and the loop shows it to the model.
 
 </AnnotatedCode>
 
-Besides `commands`, `sandboxes.work` has:
-
-- `files`, to move files in and out.
-- `repo.push(branch)`, when the definition has a `repo`. [Push a branch →](#push-a-branch)
-- `recycle()`, which pauses the machine at once. The next use brings it back.
-- `close()`, which destroys it.
-
-[Reference: the handler's sandbox →](/docs/labs/agents/reference-sandboxes?ref=docs-labs-agents-sandboxes-and-code#the-handlers-sandbox)
+Besides `commands`, `sandboxes.work` has `files`, `recycle()`, `close()` and, when the definition has a `repo`, `repo.push(branch)`. [Reference: the handler's sandbox →](/docs/labs/agents/reference-sandboxes?ref=docs-labs-agents-sandboxes-and-code#the-handler-s-sandbox)
 
 ## Let code call your tools
 
@@ -245,7 +208,6 @@ if account["plan"] == "pro":
     ci = await tools.waitForCi(branch="agent/fix")
 ```
 
-{/* not type-checked: tool.step called by a script */}
 ```typescript {{ title: "inngest/tools/getAccount.ts" }}
 import { tool } from "inngest/experimental";
 import { z } from "zod";
@@ -259,7 +221,7 @@ export const getAccount = tool.step({
 });
 ```
 
-`waitForCi` can take hours, so it's declared with `waits: true`: the script exits, and when the tool answers it runs again from the top, with its earlier calls answered from a saved record.
+`waitForCi` can take hours, so it's declared with `waits: true`.
 
 {/* not type-checked: tool.group with waits: true called from a script */}
 <AnnotatedCode>
@@ -286,7 +248,7 @@ export const waitForCi = tool.group({
 ```
 
 <Annotation id="waits" lines="8" tease="the script exits and re-runs" title="Waits" href="/docs/labs/agents/tools?ref=docs-labs-agents-sandboxes-and-code" linkText="Tools">
-Inline when the model calls it; a pause the script survives when a script calls it.
+A script that calls it exits while it waits, then runs again from the top. The model's side runs it inline.
 </Annotation>
 
 </AnnotatedCode>
@@ -312,7 +274,7 @@ A shim is a program on the shell's `PATH` that calls your app first. The model t
 import { tool } from "inngest/experimental";
 import { sandbox } from "inngest/experimental/agents";
 
-const flyctl = tool.shim("flyctl", {
+export const flyctl = tool.shim("flyctl", {
   only: ["deploy"],
   handle: async ({ run }) => {
     const token = process.env.FLY_DEPLOY_TOKEN ?? "";
@@ -325,7 +287,6 @@ export const deployer = sandbox({
   id: "deployer",
   tools: sandbox.tools.code({
     shims: [flyctl],
-    timeout: "15m",
   }),
 });
 ```
@@ -342,17 +303,13 @@ The token joins the environment of that one process and isn't saved in the run.
 The model's `run` and `run_code` find `flyctl` on `PATH`. It isn't a tool in the model's list.
 </Annotation>
 
-<Annotation id="timeout" lines="17" tease="a long deploy is one call" title="Timeout" href="#run-long-commands" linkText="Run long commands">
-Longer than five minutes works.
-</Annotation>
-
 </AnnotatedCode>
 
 A shim can also decline with `refuse("message")` or answer on its own with `reply(0, { stdout })`.
 
 ## Run long commands
 
-A command with a `timeout` over five minutes works, even one that calls tools or uses shims. Your code passes it per command; the model's commands take it from `sandbox.tools.code({ timeout })`.
+A command with a `timeout` over five minutes works, even one that calls tools or uses shims. Your code passes it per command, here with the `flyctl` shim above; the model's commands take it from `sandbox.tools.code({ timeout })`.
 
 ```typescript
 await sandboxes.work.commands.run("deploy", "flyctl deploy", {
@@ -396,7 +353,7 @@ export const service = sandbox({
 ```
 
 <Annotation id="auth" lines="8" tease="read at checkout, write at push" title="Auth">
-Asked for a read-only token to check out and a write token to push, each short-lived and made on your host. A function of `{ access }` that returns a token works too.
+`githubApp()` makes a read token to check out and a write token to push, each short-lived, on your host. A `secret()`, a function of `{ access }` or `{ read, write }` works too.
 </Annotation>
 
 <Annotation id="ref" lines="9" tease="the branch, tag or commit" title="Ref">
@@ -412,6 +369,8 @@ The name and email on commits made in the sandbox. The default author is `innges
 </Annotation>
 
 </AnnotatedCode>
+
+The checkout runs inside the sandbox, so a single `secret()` should be a read-only token. An agent that pushes uses `githubApp()` or `{ read, write }`, and the write token never enters the sandbox.
 
 `repo` can also be a function of `{ event, thread }`, run once when the run starts, so a reviewer checks out the pull request it was triggered by.
 
@@ -434,7 +393,7 @@ export const review = sandbox({
 
 ## Push a branch
 
-The model commits in the sandbox and calls `work_push({ branch })`. Your app makes the push after `policy` has seen the branch, the commits and the paths they touch.
+The model commits in the sandbox and calls `work_push({ branch })`. Your app makes the push, after `policy` has seen it.
 
 {/* not type-checked: repo.policy reading the push and returning refuse or notes */}
 <AnnotatedCode>
@@ -533,7 +492,7 @@ Returns `{ branch, sha, notes }`.
 
 </AnnotatedCode>
 
-To keep the model from pushing, set `push: false` on the repo. `work_push` is left out, and your code can still push.
+To keep the model from pushing, set `push: false` on the repo. `work_push` is left out.
 
 ## Secrets
 
@@ -569,15 +528,15 @@ Pass `secret("NAME")` wherever a token goes, as the GitHub App's private key abo
 - **The shell's environment has a cap.** Every `export` rides along on every later command. At 256 entries or 64 KiB the shell fails early and names the limit.
 - **An `EXIT` trap or `exec` drops the place.** A command that sets its own `EXIT` trap or uses `exec` doesn't carry its `cd` and `export` to the next call.
 - **Exports stay in run history.** An exported value is saved with the call. Put credentials in `secrets`, or behind a tool.
-- **A script that waits runs again from the top.** Files it writes and processes it starts happen again, so make them safe to repeat.
+- **Make a waiting script safe to repeat.** Files it writes and processes it starts happen again.
 - **A shim is a program on `PATH`.** Code that runs the real program by its full path skips the shim.
 - **One repo per sandbox.** A second repo gets a second sandbox. A push names the branch and opens no pull request; your app does that with its GitHub tools or its own code.
 
 ## How it works
 
 - The sandbox starts in one durable step, so every call shares it. A run that waits longer than ten minutes pauses it at that mark.
-- Each `run` is its own shell process, started in the saved directory with the saved environment. It reports its new place when it exits, and the SDK saves that with the call, so a restart or another machine replays to the same place. A recreated sandbox starts at the default.
-- A push is four steps: the sandbox bundles the new commits, your app reads the bundle, `policy` sees the branch, commits and paths, and your app pushes with its write token. It sends the commits that are there and never forces or deletes.
+- Each `run` is its own shell process, started in the saved directory with the saved environment. When it exits it reports its new place, and the SDK saves that with the call. A restart or another machine replays to the same place, and a recreated sandbox starts at the default.
+- A push is four steps. The sandbox bundles the new commits, your app reads the bundle, `policy` sees the branch, commits and paths, and your app pushes with its write token. It sends the commits that are there and never forces or deletes.
 - A command over five minutes runs as a process that steps follow in windows of five minutes, one wait step each.
 
 ## Recipes and reference
