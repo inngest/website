@@ -12,7 +12,7 @@ Every model call and tool call is a durable step, so a retry never repeats finis
 - **Cap spend.** A budget for each thread. [Budget →](#cap-spend)
 - **Cap turns and reach.** No runaway loops or chains. [Turns →](#cap-turns-and-reach)
 - **Ride out model errors.** Rate limits wait. [Model errors →](#model-errors)
-- **Pick up after a failure.** The message is tried again. [Recovery →](#recover-a-failed-run)
+- **Pick up after a failure.** One line, then the message again. [Recovery →](#recover-a-failed-run)
 - **Run long.** Deploys, `idle` and the step limit. [Long runs →](#deploys-and-long-runs)
 
 {/* not type-checked: budget, limits and recovery on an agent definition, result.end and result.reason */}
@@ -30,7 +30,7 @@ export const support = agents.agent(
     model: claude,
     system: "You answer support questions.",
     budget: { usd: 2, tokens: 500_000 },
-    limits: { depth: 2, mayCall: ["support/*"] },
+    limits: { depth: 2, mayCall: ["support/researcher"] },
     recovery: true,
   },
   async ({ inbox, me, loop }) => {
@@ -54,11 +54,11 @@ What this thread may spend. The loop enforces it on every model call.
 </Annotation>
 
 <Annotation id="limits" lines="12" tease="who it may start" title="Limits" href="#cap-turns-and-reach" linkText="Cap turns and reach">
-Agents it starts may start agents too, but no deeper. Only agents in the `support` app.
+Agents it starts may start agents too, but no deeper. It may start only `support/researcher`.
 </Annotation>
 
 <Annotation id="recovery" lines="13" tease="opt in" title="Recovery" href="#recover-a-failed-run" linkText="Recover a failed run">
-A run that fails for good posts one line, and the message in flight is tried again.
+Also hands the message in flight to a fresh run, after the line every failed run posts.
 </Annotation>
 
 <Annotation id="end" lines="19" tease="why it stopped" title="end and reason" href="/docs/labs/agents/models-and-the-loop?ref=docs-labs-agents-reliability" linkText="Models and the loop">
@@ -75,7 +75,6 @@ A failed step retries; tune it with `retries`. After a crash or a deploy the fun
 
 `budget` limits what one thread may spend, in `usd`, `tokens` or both, across all its runs. The model prices its own calls; `price` overrides the rates:
 
-{/* TODO(spec): `price` is a function of usage (loop.md) and, by L55, a function of { event, thread }. How does the SDK tell them apart? This page shows the per-million-token table only. */}
 {/* not type-checked: price as a per-million-token table */}
 <AnnotatedCode>
 
@@ -97,19 +96,35 @@ export const summariser = agents.agent({
 ```
 
 <Annotation id="price" lines="11-13" tease="dollars per million tokens" title="Price" href="/docs/labs/agents/reference?ref=docs-labs-agents-reliability#the-definition" linkText="Reference: the definition">
-`"*"` is the rate for any model not named.
+`"*"` is the rate for any model not named. A function of the call's usage works too.
 </Annotation>
 
 </AnnotatedCode>
 
 ## Cap turns and reach
 
-A loop that keeps calling tools stops after `maxTurns` with `end: "maxTurns"`. It is an option of the loop:
+A loop that keeps calling tools stops after `maxTurns` (40 by default) with `end: "maxTurns"`. A handler sets it per call:
 
-{/* TODO(spec): the definition has no maxTurns field and loop(batch, options) takes tools, steer and onTurn. Where does the cap of an agent's own loop go? Used agent.loop(options), which loop.md says returns the handler's loop function. */}
-{/* not type-checked: agent.loop(options) with maxTurns inside a handler */}
+{/* not type-checked: maxTurns as a per-call loop option */}
 ```typescript
-const loop = agent.loop({ model: claude, system, tools, maxTurns: 10 });
+const result = await loop(batch, { maxTurns: 10 });
+```
+
+An agent with no handler swaps the loop:
+
+{/* not type-checked: loop: agent.loop({ maxTurns }) on a definition with no handler */}
+```typescript {{ title: "inngest/agents/lookup.ts" }}
+import { agent, slack } from "inngest/experimental/agents";
+import { agents } from "../client";
+import { claude } from "../models/claude";
+
+export const lookup = agents.agent({
+  id: "lookup",
+  triggers: [slack.thread()],
+  model: claude,
+  system: "Answer from the docs, in three turns or fewer.",
+  loop: agent.loop({ maxTurns: 10 }),
+});
 ```
 
 `limits` caps chains of agents that start agents. `depth` defaults to 1, so agents you start can't start more until you raise it, and `mayCall` lists the addresses the model may start. A start past a limit throws in code, and the model gets an error result. [Teams of agents →](/docs/labs/agents/teams-of-agents?ref=docs-labs-agents-reliability)
@@ -120,7 +135,7 @@ A rate limit waits for the provider's `retry-after`, for any model. A final erro
 
 ## Recover a failed run
 
-With `recovery: true`, a run that fails for good posts one line and hands its message to a fresh run on the thread.
+Every run that fails for good posts one line where the thread lives. With `recovery: true` it also hands the message it was handling to a fresh run on the thread.
 
 {/* not type-checked: recovery, previousRun and restarts in the handler's argument */}
 <AnnotatedCode>
@@ -153,7 +168,7 @@ export const releaser = agents.agent(
 ```
 
 <Annotation id="recovery" lines="11" tease="opt in" title="Recovery" href="/docs/labs/agents/reference?ref=docs-labs-agents-reliability#the-definition" linkText="Reference: the definition">
-Off unless you turn it on. `{ resume: false }` posts the line and sends nothing again; `message` writes the line yourself.
+Off unless you turn it on. `{ resume: false }` skips the resend; `message` writes the line yourself.
 </Annotation>
 
 <Annotation id="previous" lines="14" tease="how the last run ended" title="previousRun" href="/docs/labs/agents/reference?ref=docs-labs-agents-reliability#the-handler" linkText="Reference: the handler">
@@ -201,8 +216,8 @@ A run that takes in more messages than the limit allows ends with the usual step
 
 ## Gotchas
 
-- **A spent budget stays spent.** A later message ends at once with `end: "budget"`.
-- **A cancelled run isn't recovered.** A stopped run is neither reported nor resent.
+- **A spent budget stays spent.** A later message ends at once with `end: "budget"`. With no handler, the agent posts that the budget is spent; a handler checks `end` itself.
+- **A cancelled run isn't recovered.** A stopped run posts no line and is not resent.
 - **A model with no built-in prices needs `price`.**
 
 ## How it works
