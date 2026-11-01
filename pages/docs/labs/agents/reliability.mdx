@@ -67,21 +67,21 @@ Also hands the message in flight to a fresh run.
 
 ## Cap spend
 
-`budget` caps what one thread spends across all its runs. The model prices its own calls; `price` overrides its rates.
+`budget` caps what one thread spends across all its runs, kept in thread state. The model prices its own calls; `price` overrides its rates.
 
 <AnnotatedCode>
 
 {/* not type-checked: price as a per-million-token table */}
-```typescript {{ title: "inngest/agents/summariser.ts" }}
+```typescript {{ title: "inngest/agents/summarizer.ts" }}
 import { slack } from "inngest/experimental/agents";
 import { agents } from "../client";
 import { claude } from "../models/claude";
 
-export const summariser = agents.agent({
-  id: "summariser",
+export const summarizer = agents.agent({
+  id: "summarizer",
   triggers: [slack.thread()],
   model: claude,
-  system: "Summarise the thread in three lines.",
+  system: "Summarize the thread in three lines.",
   budget: { usd: 1 },
   price: {
     "*": { input: 2.5, output: 12.5 },
@@ -97,7 +97,7 @@ export const summariser = agents.agent({
 
 ## Cap turns
 
-A loop that keeps calling tools stops after `maxTurns` (40 by default). A handler sets it per call; an agent with no handler sets `loop: { maxTurns: 10 }` on its definition.
+A loop that keeps calling tools stops after `maxTurns` (40 by default). An agent with no handler sets it as `loop: { maxTurns: 10 }` on its definition.
 
 <AnnotatedCode>
 
@@ -138,7 +138,7 @@ A loop option, so each call can have its own.
 
 ## Recover from failures
 
-A rate limit waits for the provider's `retry-after`, for any model; a final error such as a rejected request isn't retried. A run that fails for good posts one line where the thread lives.
+A rate limit waits for the provider's `retry-after`, for any model; a final error such as a rejected request isn't retried. A run that fails for good posts one line where the thread lives. With `recovery`, the message it was handling goes to a fresh run.
 
 <AnnotatedCode>
 
@@ -161,7 +161,7 @@ export const releaser = agents.agent({
 });
 ```
 
-<Annotation id="message" lines="10-14" tease="opt in" title="Recovery" href="/docs/labs/agents/reference?ref=docs-labs-agents-reliability#recovery" linkText="Reference: recovery">
+<Annotation id="message" lines="10-14" tease="the line it posts" title="Message" href="/docs/labs/agents/reference?ref=docs-labs-agents-reliability#recovery" linkText="Reference: recovery">
 `message` writes the line; `{ resume: false }` keeps it but skips the fresh run.
 </Annotation>
 
@@ -171,9 +171,9 @@ The same error is never resent, and neither is a `NonRetriableError`. A handler'
 
 ## Deploys and long runs
 
-After a deploy, a live run replays on your latest code. Every model call, tool call, awaited post and inbox message counts toward the 1,000-step limit, and so does a KV call made outside a step. [Limits →](/docs/durable-execution/limits?ref=docs-labs-agents-reliability#platform-limits)
+After a deploy, a live run replays on your latest code. Every model call, tool call, awaited post and inbox message is a step toward the 1,000-step limit. So is a KV call made outside a step. [Limits →](/docs/durable-execution/limits?ref=docs-labs-agents-reliability#platform-limits)
 
-An agent that waits on something slow, such as a pull request, can raise `idle` to stay live across deploys.
+Keep the default `idle` of ten minutes unless the agent waits on something slow, such as a pull request. A longer `idle` keeps the run live across deploys and spends steps.
 
 <AnnotatedCode>
 
@@ -193,7 +193,7 @@ export const babysitter = agents.agent({
 ```
 
 <Annotation id="idle" lines="10" tease="a week-long run" title="A long idle" href="/docs/labs/agents/threads-and-memory?ref=docs-labs-agents-reliability#how-long-a-run-waits" linkText="Threads and memory">
-Live across every deploy; all it does adds to the step count.
+Live across every deploy.
 </Annotation>
 
 </AnnotatedCode>
@@ -202,11 +202,6 @@ Live across every deploy; all it does adds to the step count.
 
 - **A spent budget stays spent.** Later messages end at once.
 - **A cancelled run isn't recovered.**
-- **A long `idle` can reach the step limit.**
-
-## How it works
-
-- A thread's spend lives in thread state, so it outlasts runs.
 
 ## Recipes and reference
 
