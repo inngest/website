@@ -59,7 +59,7 @@ Every loop result carries its tokens and dollars. The model prices its own calls
 
 ## Read a trace
 
-An inbox has a tick for every message that arrived, read or not. [Inboxes →](/docs/labs/agents/inboxes?ref=docs-labs-agents-observability)
+A model call, a tool call, a post and an inbox read are each one row. An inbox has one row for its whole life, with a tick for every message that arrived, read or not. [Inboxes →](/docs/labs/agents/inboxes?ref=docs-labs-agents-observability)
 
 <ScreenshotNeeded>an inbox row with three ticks, and the read row expanded to its messages</ScreenshotNeeded>
 
@@ -91,13 +91,14 @@ An un-awaited score is still written before the run ends. Names can't start with
 
 ## Gotchas
 
-- **A score in handler code is a step.** In a tool or the loop it adds none.
+- **A score in handler code is a step.** In a tool it adds none.
 - **Keep score names stable.** A changed name is a separate series. [Scores →](/docs/agent-evals/scores?ref=docs-labs-agents-observability)
 - **Some problems are only warnings.** A `me.post()` on a thread with no home shows on the trace and fails nothing.
 
 ## How it works
 
 - A score on a call rides on its result, so replay never writes it twice.
+- A score is best effort: a refused one logs a warning and the run goes on.
 
 ## Recipes and reference
 
