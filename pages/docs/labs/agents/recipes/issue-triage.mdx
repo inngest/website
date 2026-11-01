@@ -5,7 +5,7 @@ export const description = "Build an agent that labels each new GitHub issue, li
 
 # Issue triage
 
-> An agent that labels every new issue and links the ones you have seen before.
+> An agent that labels every new issue and links duplicates.
 
 Each GitHub call is its own step, so a retry repeats only the call that failed.
 
@@ -51,7 +51,7 @@ Starts when an issue is opened in `acme/app`. Each issue is its own thread, keye
 </Annotation>
 
 <Annotation id="tools" lines="20" tease="comment from GitHub" title="Search, label, comment" href="/docs/labs/agents/tools?ref=docs-labs-agents-recipes-issue-triage" linkText="Tools">
-`github.tools()` brings the comment tool, bound to the issue.
+`github.tools()` brings `github_comment` and `github_ask`, bound to the issue.
 </Annotation>
 
 </AnnotatedCode>
@@ -77,8 +77,6 @@ Checks GitHub's signature and sends each webhook as a `github/<event>` event. A 
 </Annotation>
 
 </AnnotatedCode>
-
-The tools call GitHub's REST API through one helper.
 
 ```typescript {{ title: "inngest/tools/findSimilar.ts" }}
 import { tool } from "inngest/experimental";
@@ -177,11 +175,11 @@ npm run dev
 npx inngest-cli@latest dev -u http://localhost:3000/api/inngest
 ```
 
-Add a webhook to `acme/app` for **Issues** events, pointing at `https://<your-host>/api/github` with `GITHUB_WEBHOOK_SECRET` as its secret; a tunnel works for local runs. Open an issue and watch the run at [localhost:8288](http://localhost:8288).
+Add a webhook to `acme/app` for **Issues** events, pointing at `https://<your-host>/api/github` with `GITHUB_WEBHOOK_SECRET` as its secret. A tunnel works for local runs. Open an issue and watch the run at [localhost:8288](http://localhost:8288).
 
 ## Variations
 
-- [Slack and GitHub](/docs/labs/agents/slack-and-github?ref=docs-labs-agents-recipes-issue-triage#work-on-git-hub) lets the model ask a maintainer with `ask` from `github.tools()`.
+- [`github_ask`](/docs/labs/agents/slack-and-github?ref=docs-labs-agents-recipes-issue-triage#work-on-git-hub) lets the model ask a maintainer when unsure; say so in the prompt.
 - [Scheduled watcher](/docs/labs/agents/recipes/scheduled-watcher?ref=docs-labs-agents-recipes-issue-triage) watches for stale issues on a schedule.
 - [Coding agent](/docs/labs/agents/recipes/coding-agent?ref=docs-labs-agents-recipes-issue-triage) opens a branch for simple bugs.
 
