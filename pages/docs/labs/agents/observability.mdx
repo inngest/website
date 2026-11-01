@@ -59,17 +59,17 @@ Every loop result carries its tokens and dollars. The model prices its own calls
 
 ## Read a trace
 
-A run has a row for each model call, tool call and awaited `me.post()`. An inbox has a tick for every message that arrived, read or not. [Inboxes →](/docs/labs/agents/inboxes?ref=docs-labs-agents-observability)
+An inbox has a tick for every message that arrived, read or not. [Inboxes →](/docs/labs/agents/inboxes?ref=docs-labs-agents-observability)
 
 <ScreenshotNeeded>an inbox row with three ticks, and the read row expanded to its messages</ScreenshotNeeded>
 
 ## Automatic scores
 
-Every agent records model time, tokens, tool calls, folded messages, tool time and tool errors. Query them in [Insights](/docs/platform-and-operations/insights?ref=docs-labs-agents-observability) or compare variants with [agent evals](/docs/agent-evals/overview?ref=docs-labs-agents-observability).
+Every agent records model time, tokens, tool calls, folded messages, tool time and tool errors. They show on the trace and in function dashboards, and [agent evals](/docs/agent-evals/overview?ref=docs-labs-agents-observability) compare variants with them. [Where scores appear →](/docs/agent-evals/scores?ref=docs-labs-agents-observability#where-scores-appear)
 
 ## Score outcomes
 
-`score(name, value)` records a number or a boolean. From a tool's context, it lands on that tool call's row.
+`score(name, value)` from a tool's context lands on that tool call's row.
 
 {/* not type-checked: score in a tool's context */}
 ```typescript {{ title: "inngest/tools/escalate.ts" }}
@@ -98,7 +98,6 @@ An un-awaited score is still written before the run ends. Names can't start with
 ## How it works
 
 - A score on a call rides on its result, so replay never writes it twice.
-- Each inbox message is saved as it arrives, read or not.
 
 ## Recipes and reference
 
