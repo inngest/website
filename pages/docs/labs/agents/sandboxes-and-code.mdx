@@ -220,7 +220,6 @@ Besides `commands`, `sandboxes.work` has:
 
 A script on the machine can call your [tools](/docs/labs/agents/tools?ref=docs-labs-agents-sandboxes-and-code). They run in your app, with your credentials, as durable steps, so the sandbox never holds a secret. The key in the `tools` record names a tool for the model and for the script alike.
 
-{/* TODO(spec): does a tool passed to loop(batch, { tools }) make run_code appear on a sandbox whose code tools were given no tools? tools.md says a script calls it by the same name but not how run_code gets it. */}
 <AnnotatedCode>
 
 {/* not type-checked: sandbox.tools.code({ tools }), which gives the model analyst_run_code */}
@@ -308,7 +307,7 @@ await sandboxes.work.commands.run("summarise", "python summarise.py", {
 });
 ```
 
-A tool you make inside a handler and pass with `loop(batch, { tools })` is called by the same name from a script, so a script can call back into the run with everything the handler can see. [Give the model a tool →](/docs/labs/agents/handlers?ref=docs-labs-agents-sandboxes-and-code#give-the-model-a-tool)
+A tool you make inside a handler and pass with `loop(batch, { tools })` makes `run_code` appear for that call. A script calls the tool by the same name, so it can call back into the run with everything the handler can see. [Give the model a tool →](/docs/labs/agents/handlers?ref=docs-labs-agents-sandboxes-and-code#give-the-model-a-tool)
 
 ## Hand a program a credential
 
@@ -422,7 +421,7 @@ The name and email on commits made in the sandbox. The default author is `innges
 
 </AnnotatedCode>
 
-{/* TODO(spec): confirm the model's shell starts in the checkout (repo.path) now that sandbox.tools.code() has no cwd option. */}
+The model's shell starts in the checkout's `path`.
 
 `repo` can also be a function of `{ event, thread }`, run once when the run starts. A reviewer checks out the pull request it was triggered by. When a resumed sandbox's checkout is on another ref, the sandbox fetches the new one and checks it out. Uncommitted changes in the working tree make that an error the run sees.
 
