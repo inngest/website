@@ -105,6 +105,7 @@ const summary = await summarizer.start("Release 4.2 adds retries.").result();
 `result()` waits for a run to end and returns its output: what the handler returned, or the model's last answer when the agent has no handler. On a handle from `start()` it is the run `start()` opened. `await reviewer.start({ pr }).result()` is both in one line, for when you don't need the handle.
 
 A failed or stopped run makes `result()` throw. So does a `timeout` that runs out, while the agent's run keeps going.
+
 {/* not type-checked: result({ timeout }) throwing for a failed or stopped run */}
 ```typescript {{ title: "inngest/functions/reviewOrSkip.ts" }}
 import { inngest } from "../client";
@@ -125,7 +126,9 @@ export const reviewOrSkip = inngest.createFunction(
 );
 ```
 
-A run opened by `start()` ends as soon as it has answered and nothing is unread, so `result()` returns promptly. With a handler, the run ends when the handler returns, and a loop over its inbox stops once nothing is waiting. [When the handler returns →](/docs/labs/agents/handlers?ref=docs-labs-agents-teams-of-agents#when-the-handler-returns)
+A run opened through a handle ends as soon as it has answered and nothing is unread, so `result()` returns promptly. With a handler, the run ends when the handler returns, and a loop over its inbox stops once nothing is waiting. [When the handler returns →](/docs/labs/agents/handlers?ref=docs-labs-agents-teams-of-agents#when-the-handler-returns)
+
+The run stays open while runs it started with `start_agent` or `start()` are still open. Their `agent/finished` messages fold in, and the answer after the last one is the output. So `await lead.start(request).result()` on a model agent that delegates gives the combined answer.
 
 ## Carry on the conversation
 
@@ -157,9 +160,7 @@ The message lands in the run that's still working, or starts a new run on the th
 
 ## Talk to a running agent
 
-A handle talks to the thread. `message()` sends without waiting for the agent, `ask()` waits for an answer and `stop()` cancels the run.
-
-{/* TODO(spec): what does ask() do on a thread whose last run already ended? messaging.md describes ask() only for a running agent. */}
+A handle talks to the thread. `message()` sends without waiting for the agent, `ask()` waits for an answer and `stop()` cancels the run. Asking a quiet thread starts a run on it, and the answer comes back to your `ask()`.
 
 {/* not type-checked: message(), ask() and stop() on a handle from start() */}
 <AnnotatedCode>
@@ -432,12 +433,13 @@ Every thread spends from its own agent's `budget`, such as the reviewer's `budge
 - **Handle methods need a function.** They throw in a route or a script. Send the agent's trigger event from there.
 - **`ask()` can return `null`.** It does after the timeout and when the other side refuses. Pick a default.
 - **Code that waits can't be asked.** A question from the run behind your `result()` is refused at once. The agent's `ask()` returns `null` and your `result()` keeps waiting.
+- **A delegating agent's `result()` waits for its helpers.** The run stays open until the agents it started have finished.
 - **Every `start()` opens a thread.** To carry on a conversation, `message()` the same thread. [Carry on →](#carry-on-the-conversation)
 
 ## How it works
 
 - A message for a thread with a live run lands in that run's inbox; a message for a quiet thread starts a run. [Threads and memory →](/docs/labs/agents/threads-and-memory?ref=docs-labs-agents-teams-of-agents)
-- A run opened through a handle ends once it has answered and nothing is unread. The thread keeps the history for the next run.
+- A run opened through a handle ends once it has answered, nothing is unread and the agents it started have finished. The thread keeps the history for the next run.
 - Answers to your `ask()` and outputs for your `result()` go only to the waiting call, so an inbox holds only what was sent to the agent.
 - Every agent message shows in the run's trace, with who sent it.
 
