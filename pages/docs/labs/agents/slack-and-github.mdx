@@ -93,7 +93,7 @@ The model reads a message as `[Ana] can you check order 7?`, not as JSON. Each e
 
 ## Post, ask and show progress
 
-`slack.tools()` gives the model three tools, and [sandbox code](/docs/labs/agents/sandboxes-and-code?ref=docs-labs-agents-slack-and-github#let-code-call-your-tools) calls the same ones by name. They post in the Slack thread the run came from.
+`slack.tools()` gives the model three tools, and [sandbox code](/docs/labs/agents/sandboxes-and-code?ref=docs-labs-agents-slack-and-github#let-code-call-your-tools) calls the same ones by name. They post in the Slack thread the run came from, with `SLACK_BOT_TOKEN` unless you pass `slack.tools({ token })`.
 
 <AnnotatedCode>
 
