@@ -145,8 +145,9 @@ export interface CampaignCard {
 }
 
 /**
- * "Learn more" cards: a blog post and two docs patterns. A card with no
- * `image` shows a labelled placeholder from `mediaNote`.
+ * "Learn more" cards: a blog post, a docs pattern, and the Ordinal case
+ * study. A card with no `image` shows a labelled placeholder from
+ * `mediaNote`.
  */
 export const LR_CAMPAIGN_CARDS: CampaignCard[] = [
   {
@@ -177,17 +178,17 @@ export const LR_CAMPAIGN_CARDS: CampaignCard[] = [
     },
   },
   {
-    id: "docs-large-datasets",
-    title: "Process large datasets without starting over",
-    body: "Run jobs that take hours or days, survive crashes and deploys, and never redo finished work.",
+    id: "ordinal-case-study",
+    title:
+      "Built for the Lonng Run: How Ordinal scaled social orchestration to 1K enterprises with just two engineers.",
+    body: "Two engineers built social orchestration for teams like Clay, Zapier, and Profound, and scaled it past a million executions a month.",
     cta: {
-      label: "Read the docs",
-      href: "/docs/patterns/durable/process-large-datasets-without-starting-over?ref=long-run-learn-more",
+      label: "Read the story",
+      href: "/customers/ordinal?ref=long-run-learn-more",
     },
     image: {
-      // The docs page's generated social card (shared/Docs/Layout.tsx).
-      src: "/api/og?title=Process%20large%20datasets%20without%20starting%20over&v=5",
-      alt: "Process large datasets without starting over",
+      src: "/assets/blog/ordinal-customer-story/featured-image.jpg",
+      alt: "Built for the Lonng Run",
     },
   },
 ];
