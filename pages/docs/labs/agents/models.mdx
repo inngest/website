@@ -49,21 +49,6 @@ A follow-up question gets an answer that knows nothing of the summary.
 
 You want follow-ups to work. A turn is one model call plus the tool calls it asked for.
 
-```typescript {{ title: "inngest/events.ts" }}
-import { eventType } from "inngest";
-import { z } from "zod";
-
-const ciRun = z.object({ pr: z.number(), prUrl: z.string() });
-
-export const ciFailed = eventType("ci/run.failed", { schema: ciRun });
-
-export const ciPassed = eventType("ci/run.passed", { schema: ciRun });
-
-export const deployed = eventType("deploy/finished", {
-  schema: z.object({ env: z.string(), pull: z.object({ url: z.string() }) }),
-});
-```
-
 <AnnotatedCode>
 
 {/* not type-checked: model, system and loop(batch) in the PR helper */}
@@ -88,7 +73,7 @@ export const prHelper = agents.agent(
     model: claude,
     system: "You help with pull requests on acme/web.",
   },
-  async ({ inbox, loop, me }) => {
+  async ({ inbox, me, loop }) => {
     for await (const batch of inbox.batches({ max: 20 })) {
       const result = await loop(batch);
 
@@ -109,6 +94,23 @@ Calls the model until it stops asking for tools. It posts nothing.
 </AnnotatedCode>
 
 The trace shows a row for each model call and each tool call. `loop` is in the handler's argument only when the agent has a `model`.
+
+The events are as [Inboxes](/docs/labs/agents/inboxes?ref=docs-labs-agents-models) left them:
+
+```typescript {{ title: "inngest/events.ts" }}
+import { eventType } from "inngest";
+import { z } from "zod";
+
+const ciRun = z.object({ pr: z.number(), prUrl: z.string() });
+
+export const ciFailed = eventType("ci/run.failed", { schema: ciRun });
+
+export const ciPassed = eventType("ci/run.passed", { schema: ciRun });
+
+export const deployed = eventType("deploy/finished", {
+  schema: z.object({ env: z.string(), pull: z.object({ url: z.string() }) }),
+});
+```
 
 ## It remembers
 
@@ -145,7 +147,7 @@ export const prHelper = agents.agent({
 });
 ```
 
-This is the handler the SDK writes: each batch goes through the loop, and the answer is posted where the thread lives and is the run's output.
+This is the handler the SDK writes: each batch goes through the loop. Its answer is posted where the thread lives and is the run's output.
 
 ## A budget
 
@@ -189,7 +191,7 @@ You want a line on the PR while the work goes on.
 
 {/* not type-checked: an un-awaited me.post() beside loop(batch) */}
 ```typescript
-async ({ inbox, loop, me }) => {
+async ({ inbox, me, loop }) => {
   me.post("Looking at it.");
 
   for await (const batch of inbox.batches({ max: 20 })) {
@@ -223,7 +225,7 @@ You want to try another model without touching the agent.
 <AnnotatedCode>
 
 {/* not type-checked: .with() variants and a model function typed AgentModel */}
-```typescript {{ title: "inngest/models/quick.ts" }}
+```typescript {{ title: "inngest/models/variants.ts" }}
 import type { AgentModel } from "inngest/experimental/agents";
 import { claude } from "./claude";
 
