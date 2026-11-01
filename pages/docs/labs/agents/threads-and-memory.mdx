@@ -118,7 +118,7 @@ export const concierge = agents.agent({
 ```
 
 <Annotation id="idle" lines="10" tease="a duration" title="idle" href="/docs/labs/agents/agents-and-triggers?ref=docs-labs-agents-threads-and-memory#decide-per-run" linkText="Decide per run">
-How long a run waits in quiet before it ends. Guests answer slowly here. A number, a duration string or a function of the event and thread.
+How long a run waits in quiet before it ends. Guests answer slowly here.
 </Annotation>
 
 </AnnotatedCode>
@@ -129,7 +129,11 @@ Keep the default unless people reply slower; a longer `idle` costs steps and spa
 
 ## What lasts
 
-A run's variables go when it ends. The thread keeps its `kv.thread` state, the model's history, its [sandbox](/docs/labs/agents/sandboxes-and-code?ref=docs-labs-agents-threads-and-memory) and the shell's place, its [budget](/docs/labs/agents/reliability?ref=docs-labs-agents-threads-and-memory) and how the last run ended.
+A run's variables go when it ends. The thread keeps:
+
+- its `kv.thread` state and the model's history;
+- its [sandbox](/docs/labs/agents/sandboxes-and-code?ref=docs-labs-agents-threads-and-memory), with the shell's working directory and exported variables;
+- its [budget](/docs/labs/agents/reliability?ref=docs-labs-agents-threads-and-memory) and how the last run ended.
 
 ## Remember the history
 
@@ -207,8 +211,8 @@ Defined once in `inngest/keys.ts`, so every read and write agrees on the value.
 The scope is part of every call, so you can see how long a value lives. This one lasts across the thread's runs.
 </Annotation>
 
-<Annotation id="update" lines="18" tease="read, change, write" title="update" href="#claim-and-update" linkText="Claim and update">
-A compare-and-set. It gets what is stored, or `undefined`, and returns the next value, and two runs updating one key never lose an update.
+<Annotation id="update" lines="18" tease="read, change, write" title="update" href="/docs/labs/agents/reference?ref=docs-labs-agents-threads-and-memory#kv" linkText="Reference">
+Reads the stored value, or `undefined`, and writes what you return. Two runs updating one key never lose an update.
 </Annotation>
 
 </AnnotatedCode>
@@ -220,7 +224,7 @@ Four scopes, and every call names one:
 - **`kv.app`.** Shared by every function of the app.
 - **`kv.env`.** Shared by every app of the environment.
 
-In plain functions, `run`, `app` and `env` work with the store from `INNGEST_EXPERIMENTAL_KV_URL`. A run-time field's function may read `kv`; each call is a step, so keep the function free of other side effects.
+In plain functions, `run`, `app` and `env` work with the store from `INNGEST_EXPERIMENTAL_KV_URL`. A function-valued option such as `system` may read `kv`; each call is a step, so keep the function free of other side effects.
 
 ## Type a key
 
@@ -251,7 +255,7 @@ A stored value that breaks the schema fails the read for good and stays where it
 
 </AnnotatedCode>
 
-## Claim and update
+## Claim a key
 
 This job takes a lock on `kv.app`, so two overlapping runs never clean up at once.
 
@@ -339,7 +343,7 @@ console.log(await thread.get(plan));
 
 ## Gotchas
 
-- **A missing path warns.** With nothing at the path, a trigger starts a fresh thread and a source reaches none.
+- **A `thread` expression with no value warns.** A trigger then starts a fresh thread, and a source reaches none.
 - **`update` can run its function twice.** On a race it retries, so keep the function pure. The value it writes never expires, even if the key had a `ttl`.
 - **Values are JSON.** No `Date`, `Map` or `undefined` properties.
 - **`__` names are the SDK's.** Keep your own keys off that prefix.
@@ -347,7 +351,7 @@ console.log(await thread.get(plan));
 ## How it works
 
 - A thread is a record in your store: its status, spend, budget and how its last run ended, beside your keys.
-- Each KV call in a function is one memoized step, so a replay sees the values the first run saw.
+- A KV call outside a step is its own memoized step, so a replay sees the values the first run saw. Inside a step's callback it adds none.
 
 ## Recipes and reference
 
