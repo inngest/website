@@ -36,6 +36,22 @@ export const reviewPull = inngest.createFunction(
 );
 ```
 
+<Annotation id="start" lines="8" tease="returns at once" title="Start" href="#start-an-agent" linkText="Start an agent">
+Opens a new thread for the reviewer and starts a run on it. It doesn't wait for the run.
+</Annotation>
+
+<Annotation id="message" lines="10" tease="into its inbox" title="Message" href="#talk-to-a-running-agent" linkText="Talk to a running agent">
+Lands in the reviewer's inbox while it works.
+</Annotation>
+
+<Annotation id="result" lines="12" tease="comes back to this call" title="Result" href="#wait-for-the-result" linkText="Wait for the result">
+The reviewer's answer returns to this call and never reaches an inbox.
+</Annotation>
+
+</AnnotatedCode>
+
+The reviewer is an agent with a typed input, and `pullOpened` is the event that starts the function:
+
 {/* not type-checked: an agent with an invoke() trigger, a model and a budget */}
 ```typescript {{ title: "inngest/agents/reviewer.ts" }}
 import { invoke } from "inngest";
@@ -61,20 +77,6 @@ export const pullOpened = eventType("pull/opened", {
   schema: z.object({ url: z.string() }),
 });
 ```
-
-<Annotation id="start" lines="8" tease="returns at once" title="Start" href="#start-an-agent" linkText="Start an agent">
-Opens a new thread for the reviewer and starts a run on it. It doesn't wait for the run.
-</Annotation>
-
-<Annotation id="message" lines="10" tease="into its inbox" title="Message" href="#talk-to-a-running-agent" linkText="Talk to a running agent">
-Lands in the reviewer's inbox while it works.
-</Annotation>
-
-<Annotation id="result" lines="12" tease="comes back to this call" title="Result" href="#wait-for-the-result" linkText="Wait for the result">
-The reviewer's answer returns to this call and never reaches an inbox.
-</Annotation>
-
-</AnnotatedCode>
 
 ## Start an agent
 
@@ -272,6 +274,16 @@ export const platformAuditor = agents.reference("platform/auditor", {
 });
 ```
 
+<Annotation id="schema" lines="5" tease="types the input" title="schema">
+Without it, `start()` takes any JSON.
+</Annotation>
+
+<Annotation id="output" lines="6" tease="types the result" title="output">
+Without it, `result()` gives `unknown`, because the value comes from another app.
+</Annotation>
+
+</AnnotatedCode>
+
 {/* not type-checked: start().result() typed from a reference's output */}
 ```typescript {{ title: "inngest/functions/auditApi.ts" }}
 import { inngest } from "../client";
@@ -288,16 +300,6 @@ export const auditApi = inngest.createFunction(
   },
 );
 ```
-
-<Annotation id="schema" lines="5" tease="types the input" title="schema">
-Without it, `start()` takes any JSON.
-</Annotation>
-
-<Annotation id="output" lines="6" tease="types the result" title="output">
-Without it, `result()` gives `unknown`, because the value comes from another app.
-</Annotation>
-
-</AnnotatedCode>
 
 ## Answer a question
 
