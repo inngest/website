@@ -1,41 +1,51 @@
 import { AnnotatedCode, Annotation } from "shared/Docs/mdx";
 
 export const metaTitle = "Quick start | Inngest Agents";
-export const description = "Inngest Agents quick start: create the client, a model, a tool and an agent, serve them, send the first message and see the run.";
+export const description = "Inngest Agents quick start: a client, a model, a tool and an agent with no handler, served to the Dev Server, then a question and the run that answers it.";
 
 # Quick start
 
-> A few small files, then a conversation that survives restarts.
+> Five small files, then an agent that answers, remembers the customer and survives a restart.
 
 ## Install
 
-You need Node.js 20+, a recent `inngest`, Zod 4, a Redis URL in `INNGEST_EXPERIMENTAL_KV_URL`, and an `ANTHROPIC_API_KEY`.
+You need Node.js 20+, a Redis URL for thread state and an Anthropic API key.
 
 ```bash
 npm install inngest zod @anthropic-ai/sdk
 ```
 
+```bash
+export INNGEST_EXPERIMENTAL_KV_URL=redis://localhost:6379
+export ANTHROPIC_API_KEY=sk-ant-...
+```
+
+## Create the client
+
+{/* not type-checked: createAgents with the store from the environment */}
 ```typescript {{ title: "inngest/client.ts" }}
 import { Inngest } from "inngest";
 import { createAgents } from "inngest/experimental/agents";
 
 export const inngest = new Inngest({ id: "support" });
+
 export const agents = createAgents(inngest);
 ```
 
-## Make a model
+`createAgents` keeps each thread's state in the Redis store from `INNGEST_EXPERIMENTAL_KV_URL`. [Threads and memory →](/docs/labs/agents/threads-and-memory?ref=docs-labs-agents-quick-start)
 
+## Pick a model
+
+{/* not type-checked: anthropic() as a named export */}
 ```typescript {{ title: "inngest/models/claude.ts" }}
-import { agent } from "inngest/experimental/agents";
+import { anthropic } from "inngest/experimental/agents";
 
-export const claude = agent.anthropic({ model: "claude-sonnet-5-5" });
+export const claude = anthropic({ model: "claude-sonnet-5-5" });
 ```
 
-It reads `ANTHROPIC_API_KEY`. For another provider, [`agent.model()`](/docs/labs/agents/models-and-the-loop?ref=docs-labs-agents-quick-start#choose-a-model) wraps its SDK.
+## Add a tool
 
-## Write the agent
-
-A tool the model can call, then the agent that uses it.
+A tool is a function the model can call. It runs in your app, as a durable step.
 
 ```typescript {{ title: "inngest/tools/lookupOrder.ts" }}
 import { tool } from "inngest/experimental";
@@ -45,50 +55,54 @@ export const lookupOrder = tool.step({
   description: "Find an order by ID",
   input: z.object({ id: z.string() }),
   run: async ({ id }) => {
-    return { id, status: "shipped" };
+    return { id, status: "shipped", eta: "Friday" };
   },
 });
 ```
 
+## Write the agent
+
 <AnnotatedCode>
 
+{/* not type-checked: agents.agent with triggers, thread, model, system, tools and no handler */}
 ```typescript {{ title: "inngest/agents/support.ts" }}
-import { agent } from "inngest/experimental/agents";
+import { eventType } from "inngest";
+import { z } from "zod";
 import { agents } from "../client";
 import { claude } from "../models/claude";
 import { lookupOrder } from "../tools/lookupOrder";
 
-export const support = agents.agent(
-  { id: "support" },
-  async ({ inbox, control }) => {
-    for await (const message of inbox) {
-      await agent.loop({
-        model: claude,
-        prompt: message,
-        tools: { lookupOrder },
-        ...control,
-      });
-    }
-  },
-);
+export const question = eventType("support/question", {
+  schema: z.object({ customer: z.string(), text: z.string() }),
+});
+
+export const support = agents.agent({
+  id: "support",
+  triggers: [question],
+  thread: "event.data.customer",
+  model: claude,
+  system: "You answer questions about orders. Keep it short.",
+  tools: { lookupOrder },
+});
 ```
 
-<Annotation id="inbox" lines="9" tease="durable messages" title="The inbox" href="/docs/labs/agents/inboxes?ref=docs-labs-agents-quick-start" linkText="Inboxes">
-Waits for each message at no cost while idle.
+<Annotation id="triggers" lines="13" tease="what starts a run" title="Triggers" href="/docs/labs/agents/agents-and-triggers?ref=docs-labs-agents-quick-start" linkText="Agents and triggers">
+Anything a function can trigger on. Here, an event.
 </Annotation>
 
-<Annotation id="loop" lines="10" tease="model and tools" title="The loop" href="/docs/labs/agents/models-and-the-loop?ref=docs-labs-agents-quick-start" linkText="Models and the loop">
-Every model call and tool call is a step.
+<Annotation id="thread" lines="14" tease="one thread per customer" title="Thread" href="/docs/labs/agents/threads-and-memory?ref=docs-labs-agents-quick-start" linkText="Threads and memory">
+Questions with the same customer land on one thread, so the agent remembers what was said.
 </Annotation>
 
-<Annotation id="control" lines="14" tease="steer and stop" title="Control" href="/docs/labs/agents/inboxes?ref=docs-labs-agents-quick-start#steer-a-running-turn" linkText="Steer">
-Lets new messages and stops reach the running turn.
+<Annotation id="model" lines="15-17" tease="no handler needed" title="Model, prompt and tools" href="/docs/labs/agents/models-and-the-loop?ref=docs-labs-agents-quick-start" linkText="Models and the loop">
+With no handler, the agent sends each message to the model and runs its tool calls until it answers.
 </Annotation>
 
 </AnnotatedCode>
 
 ## Serve it
 
+{/* not type-checked: agents.functions() */}
 ```typescript {{ title: "inngest/serve.ts" }}
 import { createServer } from "inngest/node";
 import { agents, inngest } from "./client";
@@ -100,39 +114,39 @@ createServer({
 }).listen(3000);
 ```
 
-`agents.functions()` returns every agent defined so far, so import agent files before calling it. Agents that use [sandboxes](/docs/labs/agents/sandboxes-and-code?ref=docs-labs-agents-quick-start) need `sandboxMiddleware()` on the client.
+`agents.functions()` returns the agents defined so far, so import every agent file before you call it. Start the app and the Dev Server:
 
-## Send a message
-
-```typescript {{ title: "send.ts" }}
-import { support } from "./inngest/agents/support";
-
-await support.thread("customer-42").send("Where is order 7?");
+```bash
+npx tsx inngest/serve.ts
 ```
 
-The first message starts a run. Later messages to `customer-42` reach the same thread, and its [memory](/docs/labs/agents/threads-and-memory?ref=docs-labs-agents-quick-start) lives in Redis.
+```bash
+npx inngest-cli@latest dev -u http://localhost:3000/api/inngest
+```
+
+## Ask it something
+
+Send the event from the Dev Server's **Send event** button, or from code:
+
+```typescript {{ title: "ask.ts" }}
+import { inngest } from "./inngest/client";
+
+await inngest.send({
+  name: "support/question",
+  data: { customer: "42", text: "Where is order 7?" },
+});
+```
 
 ## See the run
 
-Open the run in the Dev Server to see each model call and tool call as a step. Agents use `step.subscribe`, which the published Inngest CLI does not have yet, so build a Dev Server from the `jack/step-subscribe-clean` branch of [inngest/inngest](https://github.com/inngest/inngest). You need `git` and Go.
+Open the Dev Server at [localhost:8288](http://localhost:8288). The run shows each model call and the `lookupOrder` call as its own step, and the last model call holds the answer.
 
-```bash
-(
-  set -e
-  git clone --depth 1 --branch jack/step-subscribe-clean https://github.com/inngest/inngest inngest-dev-src
-  cd inngest-dev-src
-  mkdir -p pkg/devserver/static internal/embeddocs/website/pages/docs
-  [ -f pkg/devserver/static/index.html ] || echo "<!doctype html><title>Inngest Dev Server</title>" > pkg/devserver/static/index.html
-  [ -f internal/embeddocs/website/pages/docs/index.md ] || echo "# Inngest docs" > internal/embeddocs/website/pages/docs/index.md
-  CGO_ENABLED=0 go build -trimpath -o ../inngest-dev ./cmd
-)
-```
+Ask again for customer `42` and the model sees the first question too. Within ten minutes the question joins the same run; later, a new run picks up the thread where it stopped. Restart the app in between and nothing is lost.
 
-`$DEV_SERVER` is that `inngest-dev` binary. This build has no Dev Server UI, so follow runs through your app's output. With your app serving on port 3000:
+This thread has no home, so the answer stays in the run. Put the agent in Slack and it answers in the Slack thread. [Slack and GitHub →](/docs/labs/agents/slack-and-github?ref=docs-labs-agents-quick-start)
 
-```bash
-DEV_SERVER=$PWD/inngest-dev
-$DEV_SERVER dev --no-discovery -u http://localhost:3000/api/inngest
-```
+## Next
 
-Next, read the ten [concepts](/docs/labs/agents?ref=docs-labs-agents-quick-start#concepts) in order, or the [Reference](/docs/labs/agents/reference?ref=docs-labs-agents-quick-start).
+- [Agents and triggers](/docs/labs/agents/agents-and-triggers?ref=docs-labs-agents-quick-start) covers everything an agent definition takes.
+- [Handlers](/docs/labs/agents/handlers?ref=docs-labs-agents-quick-start) let your code decide what the model sees and what gets posted.
+- [Recipes](/docs/labs/agents/recipes?ref=docs-labs-agents-quick-start) are complete agents to copy.
