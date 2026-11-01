@@ -72,7 +72,6 @@ The sandbox holds the repository, and the repository is a function of the commen
 
 <AnnotatedCode>
 
-{/* TODO(spec): a sandbox re-checks out only when the run's repo ref differs from the checkout's. refs/pull/N/head is the same string after the pull request gets new commits; does the comparison use the resolved commit, or is a second review of a moved head left on the old one? */}
 {/* not type-checked: repo as a function of the event, repo auth as a function, push: false */}
 ```typescript {{ title: "inngest/sandboxes/review.ts" }}
 import { sandbox } from "inngest/experimental/agents";
@@ -94,11 +93,11 @@ export const review = sandbox({
 ```
 
 <Annotation id="repo" lines="5-8" tease="the pull request's head" title="Check out the pull request" href="/docs/labs/agents/sandboxes-and-code?ref=docs-labs-agents-recipes-pr-reviewer" linkText="Sandboxes and code">
-A function of the event, so the checkout is the head of the pull request that asked.
+A function of the event, so the checkout is the head of the pull request that asked. A second review after new commits fetches and checks out the new head.
 </Annotation>
 
 <Annotation id="readonly" lines="9-12" tease="nothing can push" title="Read only" href="/docs/labs/agents/sandboxes-and-code?ref=docs-labs-agents-recipes-pr-reviewer" linkText="Sandboxes and code">
-Checkout uses a read token, and `push: false` leaves out the push tool. `run` can still change files, but only inside the sandbox.
+Checkout uses a read token, and `push: false` leaves out the push tool. `run` can still change files, but only inside the sandbox; a change to a tracked file blocks the next checkout.
 </Annotation>
 
 <Annotation id="tools" lines="15" tease="the shell plus two" title="Code tools" href="/docs/labs/agents/sandboxes-and-code?ref=docs-labs-agents-recipes-pr-reviewer" linkText="Sandboxes and code">
@@ -148,7 +147,7 @@ export const agents = createAgents(inngest);
 ## What it shows off
 
 - [A GitHub comment](/docs/labs/agents/slack-and-github?ref=docs-labs-agents-recipes-pr-reviewer) starts the agent on the pull request's own thread, and the answer comes back there.
-- [A repository in the sandbox](/docs/labs/agents/sandboxes-and-code?ref=docs-labs-agents-recipes-pr-reviewer) is checked out for you, at a ref the event names.
+- [A repository in the sandbox](/docs/labs/agents/sandboxes-and-code?ref=docs-labs-agents-recipes-pr-reviewer) is checked out for you, at a ref the event names, and again when the pull request moves.
 - [Read-only by construction](/docs/labs/agents/sandboxes-and-code?ref=docs-labs-agents-recipes-pr-reviewer) means a read token, no push tool and no write token in the sandbox.
 - [Tools you pick](/docs/labs/agents/tools?ref=docs-labs-agents-recipes-pr-reviewer) limit the model to a shell, `read` and `search`.
 
