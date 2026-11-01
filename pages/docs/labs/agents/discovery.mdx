@@ -82,7 +82,10 @@ list_agents({ query: "review" })
 describe_agent({ address: "support/reviewer" })
   input: { type: "object", properties: { pr: { type: "string" } }, ... }
 
-start_agent({ address: "support/reviewer", input: { pr: "acme/api#42" } })
+start_agent({
+  address: "support/reviewer",
+  input: { pr: "https://github.com/acme/api/pull/42" },
+})
 ```
 
 `list_agents` matches the query's words against each card's address, description and skills. `start_agent` checks the input against the card first, so a bad call fails with a readable error. [Teams of agents →](/docs/labs/agents/teams-of-agents?ref=docs-labs-agents-discovery#let-the-model-delegate)
