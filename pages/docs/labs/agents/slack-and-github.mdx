@@ -82,7 +82,7 @@ In your Slack app, point Event Subscriptions and Interactivity at the route's UR
 
 The model reads a message as `[Ana] can you check order 7?`, not as JSON. [How the model reads messages →](/docs/labs/agents/reference?ref=docs-labs-agents-slack-and-github#the-loop)
 
-Besides `slack/message`, the bridge sends `slack/reaction`, `slack/action`, `slack/view` and `slack/stop`. Each carries `threadKey`, a plain field that `waitForEvent` and `cancelOn` can match on.
+Besides `slack/message`, the bridge sends `slack/reaction`, `slack/action`, `slack/view` and `slack/stop`. Each carries `threadKey`, which `waitForEvent` and `cancelOn` can match on.
 
 ## Post, ask and show progress
 
@@ -241,7 +241,7 @@ export const prHelper = agents.agent({
 });
 ```
 
-<Annotation id="thread" lines="9-13" tease="a thread per PR" title="github.thread()" href="/docs/labs/agents/agents?ref=docs-labs-agents-slack-and-github#other-ways-to-start" linkText="Start a run">
+<Annotation id="thread" lines="9-13" tease="a thread per PR" title="github.thread()" href="/docs/labs/agents/agents?ref=docs-labs-agents-slack-and-github#other-ways-to-start" linkText="Other ways to start">
 `repos` and `events` limit it, and `events` takes GitHub's event names. `if` works as on any trigger, over GitHub's webhook payload plus `threadKey`.
 </Annotation>
 
@@ -262,12 +262,12 @@ An event that carries the URL lands on the same thread. The pull request is that
 - **`github.thread()` listens to five events by default.** They are `issues`, `issue_comment`, `pull_request`, `pull_request_review` and `pull_request_review_comment`; `events` narrows them.
 - **`to` is needed without a Slack thread.** A cron run, `start()` or a GitHub thread has none, so the model gets an error that names `to`.
 - **Messages travel with their full text.** Not as a pointer, and not encrypted.
-- **Misconfigured writes warn.** A bad token or missing scope on a write you didn't await becomes a warning on the trace and never fails the run. An awaited write throws.
+- **Misconfigured writes warn.** A bad token or missing scope on a write you didn't await warns on the trace. It never fails the run; an awaited write throws.
 - **GitHub has no status line.** A call with no GitHub form warns once.
 
 ## How it works
 
-- The agent marks a Slack thread as its own when it first posts there, which is how the bridge recognizes a later reply. The SDK sets Slack's status line while the agent works.
+- The agent marks a Slack thread as its own when it first posts there. That is how the bridge recognizes a later reply. The SDK sets Slack's status line while the agent works.
 - On GitHub, `me.post()` and `github_comment` comment on the issue or pull request, and the model reads a comment as `[ana-dev] please review`.
 
 ## Recipes and reference
