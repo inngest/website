@@ -7,7 +7,7 @@ export const description = "Build an agent that clones a repository into a sandb
 
 > An agent that changes a repository on a branch and never holds the write token.
 
-The sandbox clones with a read token; your app pushes, after your policy has looked at the branch.
+Your policy looks at the branch before your app pushes it.
 
 ```text
 request-change   acme/web   "Fix the off-by-one in pagination"
@@ -25,29 +25,19 @@ Screenshot needed: the run's trace in the Dev Server.
 
 <AnnotatedCode>
 
-{/* not type-checked: repo as a function of the event, repo auth by access, policy */}
+{/* not type-checked: repo as a function of the event, repo auth as { read, write }, policy */}
 ```typescript {{ title: "inngest/sandboxes/work.ts" }}
+import { secret } from "inngest/experimental";
 import { sandbox } from "inngest/experimental/agents";
-
-const requireEnv = (name: string) => {
-  const value = process.env[name];
-
-  if (!value) {
-    throw new Error(`Set ${name}`);
-  }
-
-  return value;
-};
 
 export const work = sandbox({
   id: "work",
   repo: ({ event }) => {
     return {
       url: `https://github.com/${event.data.repo}`,
-      auth: ({ access }) => {
-        const write = access === "write";
-
-        return requireEnv(write ? "GITHUB_WRITE_TOKEN" : "GITHUB_READ_TOKEN");
+      auth: {
+        read: secret("GITHUB_READ_TOKEN"),
+        write: secret("GITHUB_WRITE_TOKEN"),
       },
       policy: (push) => {
         if (!push.branch?.startsWith("agent/")) {
@@ -67,15 +57,15 @@ export const work = sandbox({
 });
 ```
 
-<Annotation id="repo" lines="15-17" tease="the request names it" title="The repository" href="/docs/labs/agents/sandboxes-and-code?ref=docs-labs-agents-recipes-coding-agent#check-out-a-repo" linkText="Check out a repo">
+<Annotation id="repo" lines="6-8" tease="the request names it" title="The repository" href="/docs/labs/agents/sandboxes-and-code?ref=docs-labs-agents-recipes-coding-agent#check-out-a-repo" linkText="Check out a repo">
 A function of the event, so the sandbox clones the repository each request names.
 </Annotation>
 
-<Annotation id="auth" lines="18-22" tease="read to clone" title="Two tokens" href="/docs/labs/agents/sandboxes-and-code?ref=docs-labs-agents-recipes-coding-agent#check-out-a-repo" linkText="Check out a repo">
-The checkout asks for `read`, the push for `write`. The write token stays in your app.
+<Annotation id="auth" lines="9-12" tease="read to clone" title="Two tokens" href="/docs/labs/agents/sandboxes-and-code?ref=docs-labs-agents-recipes-coding-agent#check-out-a-repo" linkText="Check out a repo">
+The checkout uses the read token and the push the write token, which stays in your app.
 </Annotation>
 
-<Annotation id="policy" lines="23-35" tease="can refuse a push" title="Push policy" href="/docs/labs/agents/sandboxes-and-code?ref=docs-labs-agents-recipes-coding-agent#push-a-branch" linkText="Push a branch">
+<Annotation id="policy" lines="13-25" tease="can refuse a push" title="Push policy" href="/docs/labs/agents/sandboxes-and-code?ref=docs-labs-agents-recipes-coding-agent#push-a-branch" linkText="Push a branch">
 Sees the branch and the changed files before anything is pushed, and can refuse. The model reads a refusal and can fix the branch.
 </Annotation>
 
@@ -154,7 +144,7 @@ The [model](/docs/labs/agents/quick-start?ref=docs-labs-agents-recipes-coding-ag
 ## What it shows off
 
 - [A repository in the sandbox](/docs/labs/agents/sandboxes-and-code?ref=docs-labs-agents-recipes-coding-agent#check-out-a-repo) is cloned for you, and the request picks which one.
-- [A push policy](/docs/labs/agents/sandboxes-and-code?ref=docs-labs-agents-recipes-coding-agent#push-a-branch) is your code, and the write token stays in your app.
+- [A push policy](/docs/labs/agents/sandboxes-and-code?ref=docs-labs-agents-recipes-coding-agent#push-a-branch) lets your code decide what may leave the sandbox.
 - [A typed input](/docs/labs/agents/agents-and-triggers?ref=docs-labs-agents-recipes-coding-agent#take-a-typed-input) gives callers a checked request.
 - [Start and wait](/docs/labs/agents/teams-of-agents?ref=docs-labs-agents-recipes-coding-agent#wait-for-the-result) is one line in a plain function.
 
