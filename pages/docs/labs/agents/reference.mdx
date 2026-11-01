@@ -11,7 +11,7 @@ export const description = "Signatures, options and defaults for inngest/experim
   Inngest Agents is experimental and moves fast. Import it from `inngest/experimental/agents`; the API may change between releases. [What's Labs?](/docs/labs?ref=docs-labs-agents-reference)
 </Info>
 
-Everything here is a named export of `inngest/experimental/agents`, except `eventType` and `invoke`, which come from `inngest`. Sandboxes, code tools, repos, tool constructors, MCP, secrets and skills are in the [Tools and sandboxes reference](/docs/labs/agents/reference-sandboxes?ref=docs-labs-agents-reference).
+Everything here is a named export of `inngest/experimental/agents`, except `eventType` and `invoke` from `inngest`, and `secret` and `sandboxMiddleware` from `inngest/experimental`. Sandboxes, code tools, repos, tool constructors, MCP, secrets and skills are in the [Tools and sandboxes reference](/docs/labs/agents/reference-sandboxes?ref=docs-labs-agents-reference).
 
 - [createAgents](#create-agents)
 - [The definition](#the-definition)
@@ -63,7 +63,7 @@ export const agents = createAgents(inngest);
 
 `agents.agent(definition, handler?)` takes the fields below. [Agents and triggers →](/docs/labs/agents/agents-and-triggers?ref=docs-labs-agents-reference)
 
-- A field marked *value* takes a value only. Inngest reads `id`, `triggers`, `thread`, `inbox`, `card`, `discovery` and `listen` when your app syncs.
+- A field marked *value* takes a value only. Inngest reads `id`, `triggers`, `thread`, `inbox`, `card`, `discovery` and `listen` when your app syncs or an event is routed.
 - A field marked *value or function* also takes a function of `{ event, thread }`, which may be async. `event` is the event that started the run and `thread` is `{ key: string }`.
 - The function runs once, when a run starts, and again on replay, so keep it free of side effects.
 - It may read [`kv`](#the-kv-import); each call is a memoized step.
@@ -131,9 +131,11 @@ inbox: [
 
 - The default handler ends its run after `idle` of quiet. In a handler, `for await (const batch of inbox.batches())` and `for await (const message of inbox)` end the same way. A later message starts a run on the same thread, which reads its history back.
 - A handler that waits some other way, such as `next()` with no timeout, keeps its run live as long as it waits.
-- Only runs started by triggers, and by plain messages, wait `idle`.
+- Only runs a trigger starts wait `idle`.
 - A run opened through a handle (`start()`, `message()`, `start_agent` or `message_agent`) ends once it has answered and nothing is unread, so `result()` resolves promptly.
-- Such a run stays open while agents it started with `start_agent` are still running: their `agent/finished` messages fold in, and the answer after the last one is the run's output. Agents it started with `start()` are yours to wait for, with `result()`.
+- Such a run stays open while agents it started with `start_agent` are still running: their `agent/finished` messages fold in, and the answer after the last one is the run's output.
+- That wait lasts at most 24 hours; then the run answers and names the agents still running.
+- Agents it started with `start()` are yours to wait for, with `result()`.
 - A later `message()` to that thread starts a run that picks up the history.
 - With a handler, both `for await` forms on such a run behave as if `idle` were zero: they yield what is already in the inbox and end the moment they would have to wait.
 - A longer `idle` keeps the run live across deploys, and each of its steps counts toward the step limit. The default suits most agents. [Reliability →](/docs/labs/agents/reliability?ref=docs-labs-agents-reference)
@@ -158,7 +160,7 @@ The second argument of `agents.agent()`. It gets one argument: the function's us
 - **With no handler**, an agent with a `model` sends each batch of messages to the loop and posts the answer where the thread lives. When the loop ends on `budget`, it posts that the thread's budget is spent. An agent with neither a model nor a handler takes its batch, posts nothing and ends with `undefined`.
 - **The return value** is the run's output, which a caller's `result()` reads. With no handler it is the model's final answer, a string.
 - **The run ends** when the handler returns. Work still running and not awaited is stopped, except an un-awaited `me.post()` or `score()`, which land first. Plain functions are unaffected: un-awaited work there behaves as in any Inngest function.
-- **A run opened through a handle** (`start()`, `message()`, `start_agent`, `message_agent`) ends once it has answered, after any agents it started with `start_agent` have finished. [Idle](#idle)
+- **A run opened through a handle** (`start()`, `message()`, `start_agent`, `message_agent`) ends once it has answered, after waiting up to 24 hours for any agents it started with `start_agent`. [Idle](#idle)
 
 ## me
 
@@ -193,7 +195,8 @@ type Agent<TInput, TOutput> = {
 
 - `TInput` is the data of the agent's `invoke()` trigger, or `Json` without one.
 - `TOutput` is what `result()` gives: the handler's return type; `string` for a model agent with no handler; `undefined` for an agent with neither.
-- `start(input)` opens a fresh thread with a generated key, starts a run on it and returns at once. The promise also has the methods of [`StartedThread`](#thread-handles), so `start(input).result()` needs one `await`. With an `invoke()` trigger it is typed from the schema and sent as that trigger's data. Without one, `start(content)` takes text or JSON and sends an `agent/message` with that `content`.
+- `start(input)` opens a fresh thread with a generated key, starts a run on it and returns at once. The promise also has the methods of [`StartedThread`](#thread-handles), so `start(input).result()` needs one `await`.
+- With an `invoke()` trigger, `input` is typed from the schema and sent as that trigger's data. Without one, `start(content)` takes text or JSON and sends an `agent/message` with that `content`.
 - `thread(key)` rebuilds a [`ThreadHandle`](#thread-handles) from a key.
 - `start()` and a handle's methods need a function's step context and throw outside one. A Slack route or an API handler starts an agent by sending its trigger event.
 - A run opened by `start()` ends once it has answered, and that answer is the run's output. [Idle](#idle)
@@ -247,7 +250,9 @@ What each method does:
 
 - `message(content)`: text or JSON. Sends the message and returns at once. A message to a thread with a live run lands in that run's inbox; a message to a quiet thread starts a run.
 - `ask(question, { timeout })`: waits for the answer, a string. On a thread whose last run ended it starts a run there, and the answer goes to the waiting `ask()`. Gives `null` after `timeout` (default one hour) or when the question is refused.
-- `result({ timeout })`: waits for a run to end and gives its output, with no default timeout. After `start()` it is the run `start()` opened. After `message()` it is the run that took the message: the live run it folded into, or the run it started on a quiet thread. Throws with the reason when the run failed or was stopped. A `timeout` that passes throws a timeout error and the run keeps going.
+- `result({ timeout })`: waits for a run to end and gives its output, with no default timeout. Throws with the reason when the run failed or was stopped.
+- After `start()`, `result()` waits for the run `start()` opened. After `message()`, it waits for the run that took the message: the live run it folded into, or the run it started on a quiet thread.
+- A `timeout` that passes throws a timeout error, and the run keeps going.
 - `stop()`: cancels the run. It takes no options.
 - Answers to `ask()` and outputs for `result()` go to the waiting call and never land in an inbox.
 - A question from a run you are waiting on with `result()` is refused at once, so the asker's `ask()` gives `null` and `result()` keeps waiting. Each question is answered once; a late or second answer is dropped.
@@ -418,7 +423,7 @@ formatEvent(message: AgentMessage): string
 | `parallelTools` | `true` | no | Runs the tool calls of one reply at once. |
 | `wrapUp` | none | yes | Text for the last turn, which allows no tool use. |
 | `history` | the thread's remembered history | no | The history of an earlier result, to continue from. |
-| `compaction` | automatic | no | Summarises the start of a long history. [Compaction](#compaction) |
+| `compaction` | automatic | no | Summarizes the start of a long history. [Compaction](#compaction) |
 | `steer` | fold all | yes | Chooses which drained messages are folded in. What it skips comes back as `result.unread`. |
 | `stop` | none | no | Checked before each model call. `true` ends the loop with `end: "stop"`. |
 | `onTurn` | none | yes | Called after each turn. [onTurn](#on-turn) |
@@ -446,7 +451,7 @@ format?: (message: AgentMessage) => AgentUserContent;
 | `stepId` | The ID of the model call's step. |
 | `text` | The reply's text. |
 | `toolCalls` | The tool calls of this turn, finished. |
-| `usage` | Tokens this call used, and its cost in dollars when the model prices its calls. |
+| `usage` | `AgentUsage` for this call: `input` and `output` tokens, and `usd` when the model prices its calls. |
 
 - It is not awaited between turns, and the last call is waited for before the loop returns.
 - An error in it is logged and the loop carries on. Steps are allowed inside it.
@@ -457,11 +462,11 @@ format?: (message: AgentMessage) => AgentUserContent;
 
 | Option | Default | Description |
 | --- | --- | --- |
-| `maxTokens` | the model's context size | Summarise once the history is estimated past this many tokens, at about three characters a token. |
+| `maxTokens` | the model's context size | Summarize once the history is estimated past this many tokens, at about three characters a token. |
 | `keep` | `8` | Messages at the end that are always sent whole. |
 | `summarise` | the loop's `model` | `({ messages, previous? }) => Promise<string>` writes the summary. The default call has no tools and counts in `usage`. |
 
-`AgentCompaction` is `{ upTo, summary }`: the first `upTo` messages are replaced by `summary` when the history is sent. The `history` of the result is never summarised.
+`AgentCompaction` is `{ upTo, summary }`: the first `upTo` messages are replaced by `summary` when the history is sent. The `history` of the result is never summarized.
 
 ### The result
 
@@ -472,14 +477,14 @@ format?: (message: AgentMessage) => AgentUserContent;
 | `reason` | Why, for `"budget"`. |
 | `turns` | Model calls made. |
 | `history` | The whole history. Pass it as `history` to continue. |
-| `usage` | Tokens in and out, and the cost in dollars when the model prices its calls. |
+| `usage` | `AgentUsage`, summed over the turns: `input` (cached tokens included) and `output` tokens, `usd` when the model prices its calls, and `cacheRead`, `cacheWrite` and `cacheWrite1h` when it reports them. |
 | `toolCalls` | Every tool call, in order. |
 | `unread` | The messages a custom `steer` skipped. |
 | `compaction` | The summary of a long history, as `AgentCompaction`. The loop reuses it when the thread carries on. |
 
 - **Folding.** Before each model call, the first included, the loop drains the handler's inbox and every inbox the model opened, and folds what it took into that call. A message that arrives after the last drain stays in the inbox for your next read.
 - **Questions.** A question that arrives during a turn is answered at the next model call. The loop skips questions that already have a reply.
-- **Remembering.** After each batch the loop saves the model's history in thread state and picks it up when the thread's next run starts. A long history is summarised. `remember: false` on the agent switches this off.
+- **Remembering.** After each batch the loop saves the model's history in thread state and picks it up when the thread's next run starts. A long history is summarized. `remember: false` on the agent switches this off.
 - **`agent.toolError(body)`**: `return` it from a tool to give the model a failure it can read without throwing. In sandbox code the same failure is a thrown `ToolError`.
 - **`formatEvent`** is the default wording. A `slack/message` reads `[Name] text`, and a GitHub comment reads the same way with the login. The four agent message types have their own wording, and any other event shows as its name and data as JSON. A custom `format` can call it for what it does not change.
 - There are no hooks around tool calls. Wrap the tool instead. [Tools →](/docs/labs/agents/tools?ref=docs-labs-agents-reference)
@@ -513,8 +518,8 @@ const careful = claude.with({ effort: "high" });
 | Option | Default | Description |
 | --- | --- | --- |
 | `model` | required | The model id, such as `"claude-sonnet-5-5"`. |
-| `client` | made on first call | Your `@anthropic-ai/sdk` client. Without it the adapter imports the SDK and reads `ANTHROPIC_API_KEY`. |
-| `apiKey`, `baseURL` | none | For the client the adapter makes. Ignored with `client`. |
+| `client` | made on first call | Your `@anthropic-ai/sdk` client. Without it, `anthropic()` imports the SDK and reads `ANTHROPIC_API_KEY`. |
+| `apiKey`, `baseURL` | none | For the client `anthropic()` makes. Ignored with `client`. |
 | `maxTokens` | `16000` | Most tokens of one reply, thinking included. |
 | `effort` | the model's | One of `low`, `medium`, `high`, `xhigh` or `max`. |
 | `thinking` | not sent | The `thinking` request field. Thinking blocks stay in the history untouched. |
@@ -685,7 +690,7 @@ stop_agent({ thread: string }): { ok: true }
 reply({ to: string; text: string }): { ok: true }
 ```
 
-- `start_agent` returns the thread's key at once. When the work ends, an `agent/finished` message arrives. A run opened this way ends once it has answered, after any agents it started with `start_agent` have finished.
+- `start_agent` returns the thread's key at once. When the work ends, an `agent/finished` message arrives. A run opened this way ends once it has answered, after waiting up to 24 hours for any agents it started with `start_agent`.
 - It refuses a paused or archived agent with a reason the model can read, and checks `input` against the card's `input` before it starts anything. An agent without an `invoke()` trigger gets `input` as the content of an `agent/message`.
 - `message_agent` sends the message and returns at once. A run it opens on a quiet thread ends once it has answered.
 - `ask_agent` returns a question id at once. The answer arrives as an `agent/answer` whose `re` is that id.
@@ -824,9 +829,13 @@ export const POST = github.bridge({
 });
 ```
 
-- **`github.bridge`** is mounted like Slack's. It verifies `X-Hub-Signature-256` and sends `github/<event>` events, such as `github/issue_comment`. It uses the `X-GitHub-Delivery` header as the event id, so a redelivered webhook is dropped. It drops the app's own comments, and other bots' unless you set `allowBots: true`, so an agent never triggers itself.
-- **`github.thread()`** triggers on those events. `events` takes GitHub's event names, such as `"issue_comment"` or `"pull_request_review"`. Without it the trigger covers `issues`, `issue_comment`, `pull_request`, `pull_request_review` and `pull_request_review_comment`. `repos` limits the trigger to repositories, such as `"acme/api"`. `if` is an expression over `event`, as on any trigger.
-- A `github/<event>` event's data is GitHub's webhook payload plus `threadKey`. A GitHub thread is keyed by the pull request's or issue's URL. A plain event joins the thread by carrying that URL, as in `{ event: "ci/run.failed", thread: "event.data.prUrl" }`, and a run it starts still posts on the pull request.
+- **`github.bridge`** is mounted like Slack's. It verifies `X-Hub-Signature-256` and sends `github/<event>` events, such as `github/issue_comment`.
+- The bridge uses the `X-GitHub-Delivery` header as the event id, so a redelivered webhook is dropped.
+- The bridge drops the app's own comments, and other bots' unless you set `allowBots: true`, so an agent never triggers itself.
+- **`github.thread()`** triggers on those events. `repos` limits it to repositories, such as `"acme/api"`, and `if` is an expression over `event`, as on any trigger.
+- `events` takes GitHub's event names, such as `"issue_comment"` or `"pull_request_review"`. Without it the trigger covers `issues`, `issue_comment`, `pull_request`, `pull_request_review` and `pull_request_review_comment`.
+- A `github/<event>` event's data is GitHub's webhook payload plus `threadKey`. A GitHub thread is keyed by the pull request's or issue's URL.
+- A plain event joins the thread by carrying that URL, as in `{ event: "ci/run.failed", thread: "event.data.prUrl" }`, and a run it starts still posts on the pull request.
 - **`github.tools()`** is bound to the thread. A call with no GitHub form, such as a status line, warns once.
 - **Credentials.** `github.tools()` and `me.post()` on a GitHub thread use `GITHUB_TOKEN`. `github.tools({ token })` takes a string, a function that returns one, `secret()` or `githubApp()`.
 
