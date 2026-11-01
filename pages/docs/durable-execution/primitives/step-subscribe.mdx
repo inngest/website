@@ -142,7 +142,7 @@ Comments that arrive during the sleep are kept for the next batch.
 
 ## More inboxes
 
-Open another inbox for a separate stream. Inside `autoMerge` above:
+Open another inbox inside `autoMerge` for a separate stream:
 
 <AnnotatedCode>
 
@@ -153,13 +153,17 @@ await using comments = step.subscribe("comments", {
 });
 
 const comment = await comments.next({ timeout: "1h" });
+
+if (comment) {
+  console.log(comment.data.body);
+}
 ```
 
 <Annotation id="separate" lines="1" tease="its own stream" title="One inbox per stream">
-Order holds within an inbox, not across inboxes. A read waits on one inbox, so keep the sources one wait covers together, like reviews and checks in `autoMerge`.
+Each inbox keeps its own order. Order isn't kept across inboxes.
 </Annotation>
 
-<Annotation id="typed" lines="6" tease="typed from its sources" title="Typed messages">
+<Annotation id="typed" lines="9" tease="typed from its sources" title="Typed messages">
 Messages are typed from the inbox's event types, so after `if (comment)`, `comment.data.body` is a `string`. A source given as a name stays `unknown` until you narrow it with `message.is()`.
 </Annotation>
 
@@ -192,7 +196,9 @@ See the [`step.subscribe()` reference](/docs/reference/typescript/v4/functions/s
 
 ## Read in the background
 
-By default, a read waiting in the background holds the run, like a pending `step.waitForEvent()`. To read beside other work, run that work inside `group.parallel()`. Then close the inbox to end the loop.
+By default, a read waiting in the background holds the run, like a pending `step.waitForEvent()`.
+
+<AnnotatedCode>
 
 ```typescript {{ title: "TypeScript" }}
 export const collectComments = inngest.createFunction(
@@ -223,11 +229,21 @@ export const collectComments = inngest.createFunction(
 );
 ```
 
+<Annotation id="parallel" lines="17" tease="work beside the loop" title="`group.parallel()`" href="/docs/durable-execution/primitives/group-parallel#continue-after-the-first-step-settles" linkText="Parallel steps">
+Run the other work inside `group.parallel()`, so the waiting read doesn't hold it.
+</Annotation>
+
+<Annotation id="end" lines="21-22" tease="ends the loop" title="Close to finish">
+Closing the inbox ends the loop's waiting read, so `reading` settles.
+</Annotation>
+
+</AnnotatedCode>
+
 ## Things to know
 
 - **Open before you act.** An inbox receives only events that arrive after it opens, so open it before the step that causes them.
 - **Race inside `group.parallel()`.** By default, a plain `Promise.race()` of a read and a step waits for both. Create the read once (`const reply = inbox.next()`), race it inside [`group.parallel()`](/docs/durable-execution/primitives/group-parallel#continue-after-the-first-step-settles), and if it loses, race the same `reply` again.
-- **One wait, one inbox.** To wait on two streams at once, put their sources in one inbox rather than racing two inboxes.
+- **One wait, one inbox.** A read waits on one inbox. To wait on two streams at once, put their sources in one inbox, like reviews and checks in `autoMerge`.
 
 ## How it works
 

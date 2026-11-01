@@ -42,7 +42,7 @@ await using activity = step.subscribe("pr-activity", [
 ]);
 ```
 
-`step.subscribe()` returns at once, and the inbox receives only events that arrive after it opens (an event up to 5 seconds older can still match). `await using` (TypeScript 5.2 or later) closes it at the end of the block.
+`step.subscribe()` returns at once. The inbox receives only events that arrive after it opens, though an event up to 5 seconds older can still match. `await using` (TypeScript 5.2 or later) closes it at the end of the block.
 
 ## `Inbox`
 
@@ -64,7 +64,7 @@ Returns the next unread message, waiting for one if none is unread.
   </Property>
 </Properties>
 
-Returns `undefined` once the inbox is closed, even for a read that was already waiting. Two reads return messages in order, and a read that loses a race keeps its place for the next message.
+Returns `undefined` once the inbox is closed, even for a read that was already waiting. Two reads return messages in order. A read that loses a race keeps its place for the next message.
 
 ### `nextBatch(options?)`
 
