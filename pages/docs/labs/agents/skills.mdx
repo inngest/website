@@ -89,7 +89,7 @@ export const prHelper = agents.agent(
 ```
 
 <Annotation id="skills" lines="24" tease="ships with your deploy" title="Skills" href="/docs/labs/agents/reference-sandboxes?ref=docs-labs-agents-skills#skills" linkText="Reference: skills">
-One folder per skill, resolved from the working directory, so ship it with your app. `skills.repo("acme/skills")` reads a shared pack from a repo instead.
+One folder per skill, resolved from the working directory, so ship it with your app. `skills.repo("acme/skills")` adds a shared pack from a repo.
 </Annotation>
 
 </AnnotatedCode>
@@ -146,7 +146,7 @@ You want step 3 of the checklist, "Run the linter", to work. The PR helper has n
 tools: { lint, readLog, ...github.tools() },
 ```
 
-Listing `lint`, a tool of your own that runs the linter, makes the step work. A skill names tools but never adds one. [Sandboxes →](/docs/labs/agents/sandboxes?ref=docs-labs-agents-skills)
+Add a `lint` tool of your own, and the step works. A skill names tools but never adds one. [Sandboxes →](/docs/labs/agents/sandboxes?ref=docs-labs-agents-skills)
 
 ## Recipes and reference
 
