@@ -52,7 +52,7 @@ The agent carries on at once, and the post still lands before the run ends.
 </Annotation>
 
 <Annotation id="batches" lines="15" tease="the trigger comes first" title="Batches" href="#read-the-inbox" linkText="Read the inbox">
-Every unread message at once, the trigger first. The loop ends after `idle` quiet time, or at once on a run opened by `start()`.
+Every unread message at once, the trigger first. The `for await` ends after `idle` quiet time, or at once on a run opened through a handle.
 </Annotation>
 
 <Annotation id="loop" lines="16" tease="model and tools" title="The loop" href="#run-the-loop" linkText="Run the loop">
@@ -129,7 +129,9 @@ export const notes = agents.agent(
 );
 ```
 
-`max` caps a batch and leaves the rest unread, oldest first. To take one message at a time, loop over `inbox` itself. Both loops end after the agent's `idle` quiet time (ten minutes by default), or at once on a run opened by `start()`. [When the handler returns →](#when-the-handler-returns)
+`max` caps a batch and leaves the rest unread, oldest first. To take one message at a time, loop over `inbox` itself.
+
+Both `for await` forms end after the agent's `idle` quiet time (ten minutes by default), or at once on a run opened through a handle. [When the handler returns →](#when-the-handler-returns)
 
 ## Run the loop
 
@@ -177,7 +179,7 @@ The loop stops when this thread has spent it.
 
 </AnnotatedCode>
 
-The loop saves the model's history on the thread. It is in the argument only when the agent has a `model`. [Models and the loop →](/docs/labs/agents/models-and-the-loop?ref=docs-labs-agents-handlers)
+`loop` is in the argument only when the agent has a `model`. [Models and the loop →](/docs/labs/agents/models-and-the-loop?ref=docs-labs-agents-handlers)
 
 ## Give the model a tool
 
@@ -232,14 +234,14 @@ A script in the sandbox calls `progress` by the same name, and it posts into thi
 
 </AnnotatedCode>
 
+A tool name the agent already uses is an error. [More per-call options →](/docs/labs/agents/models-and-the-loop?ref=docs-labs-agents-handlers#choose-per-call)
+
 {/* not type-checked: sandbox() */}
 ```typescript {{ title: "inngest/sandboxes/work.ts" }}
 import { sandbox } from "inngest/experimental/agents";
 
 export const work = sandbox({ id: "work" });
 ```
-
-A name the agent already uses is an error. [More per-call options →](/docs/labs/agents/models-and-the-loop?ref=docs-labs-agents-handlers#choose-per-call)
 
 ## Post in the thread
 
@@ -339,7 +341,9 @@ The model's one-shot call takes an `output` schema and returns a typed value. It
 
 The run ends, and work you started and didn't await is stopped, so a run never acts after it decided it was done. Un-awaited `me.post()` and `score()` calls land first.
 
-On a run opened through a handle (`start()`, `message()`, `start_agent`, `message_agent`), both `for await` forms behave as if `idle` were zero: they end the moment they would have to wait, so a looping handler normally returns after its first batch. The run stays open while the runs it started with `start_agent` are open, and the answer after the last one is the output. [Wait for the result →](/docs/labs/agents/teams-of-agents?ref=docs-labs-agents-handlers#wait-for-the-result)
+On a run opened through a handle (`start()`, `message()`, `start_agent`, `message_agent`), both `for await` forms behave as if `idle` were zero. They end the moment they would have to wait, so a looping handler normally returns after its first batch.
+
+The run then stays open while the runs it started with `start_agent` are open, and the answer after the last one is the output. Runs you start with `start()` don't hold it open. [Wait for the result →](/docs/labs/agents/teams-of-agents?ref=docs-labs-agents-handlers#wait-for-the-result)
 
 ## Gotchas
 
@@ -348,7 +352,7 @@ On a run opened through a handle (`start()`, `message()`, `start_agent`, `messag
 ## How it works
 
 - `inbox` is one `step.subscribe` the agent opens with its triggers, its `inbox` sources and the messages agents send each other. [`step.subscribe` →](/docs/durable-execution/primitives/step-subscribe?ref=docs-labs-agents-handlers)
-- Each model call, tool call and post is a step with its own trace row. The run waits for un-awaited posts before it ends.
+- Each model call and tool call is a step with its own trace row.
 
 ## Recipes and reference
 
