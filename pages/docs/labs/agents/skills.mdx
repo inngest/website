@@ -1,0 +1,215 @@
+import { AnnotatedCode, Annotation } from "shared/Docs/mdx";
+
+export const metaTitle = "Skills | Inngest Agents";
+export const description = "Teach an Inngest agent how your team does things with SKILL.md files from your app or a repo. The model reads names and descriptions up front, opens the instructions it needs, and finds scripts and files in its sandbox.";
+
+# Skills
+
+> Teach an agent how your team does things, in plain files you can change without a deploy.
+
+A skill is a folder with a `SKILL.md`: a name, a description and instructions. The model sees every name and description, and opens the instructions when they apply.
+
+- **Plain files.** `SKILL.md` is a format other agent tools read too. [Write a skill →](#write-a-skill)
+- **From your app or a repo.** A folder ships with a deploy; a repo changes without one. [Add skills →](#add-skills-to-an-agent)
+- **Read on demand.** The prompt carries names and descriptions; instructions load when needed. [Open a skill →](#open-a-skill)
+- **Scripts and files too.** They land in the agent's sandbox. [Ship files and scripts →](#ship-files-and-scripts)
+- **Read, then call.** A skill never adds a tool, so it can't widen what an agent may do. [Skills and tools →](#skills-are-read-tools-are-called)
+
+<AnnotatedCode>
+
+{/* not type-checked: skills.folder() and skills.repo() on an agent */}
+```typescript {{ title: "inngest/agents/support.ts" }}
+import { skills, slack } from "inngest/experimental/agents";
+import { agents } from "../client";
+import { claude } from "../models/claude";
+
+export const support = agents.agent({
+  id: "support",
+  triggers: [slack.thread()],
+  model: claude,
+  system: "You answer support questions.",
+  skills: [
+    skills.folder("./skills"),
+    skills.repo("inngest/inngest-skills"),
+  ],
+});
+```
+
+<Annotation id="folder" lines="11" tease="ships with your deploy" title="Skills in your app" href="#add-skills-to-an-agent" linkText="Add skills to an agent">
+One folder per skill, read from your app.
+</Annotation>
+
+<Annotation id="repo" lines="12" tease="changes without a deploy" title="Skills in a repo" href="#add-skills-to-an-agent" linkText="Add skills to an agent">
+A public pack, read with no token. An edit to the repo reaches the agent on its next run.
+</Annotation>
+
+</AnnotatedCode>
+
+## Write a skill
+
+A skill is a folder. `SKILL.md` carries the name and description in its front matter, then the instructions. Scripts and files sit beside it.
+
+```text {{ title: "Your app" }}
+skills/
+  refund-policy/
+    SKILL.md
+    check.py
+  shipping/
+    SKILL.md
+```
+
+<AnnotatedCode>
+
+```markdown {{ title: "skills/refund-policy/SKILL.md" }}
+---
+name: refund-policy
+description: When an order can be refunded. Use for any refund question.
+---
+
+# Refund policy
+
+1. Look the order up with the `lookupOrder` tool.
+2. Orders delivered under 30 days ago are refundable in full.
+3. Older orders get store credit, never cash.
+4. Run `python check.py <order-id>` to confirm the dates.
+```
+
+<Annotation id="name" lines="2" tease="what the model opens" title="Name" href="#open-a-skill" linkText="Open a skill">
+The model passes this name to `open_skill`. Each skill on an agent has its own.
+</Annotation>
+
+<Annotation id="description" lines="3" tease="always in the prompt" title="Description" href="#open-a-skill" linkText="Open a skill">
+Say what the skill is for and when to open it. This line is how the model decides.
+</Annotation>
+
+<Annotation id="tool" lines="8" tease="names a tool" title="Tools by name" href="#skills-are-read-tools-are-called" linkText="Skills and tools">
+Naming `lookupOrder` doesn't add it. The agent has to list it.
+</Annotation>
+
+<Annotation id="script" lines="11" tease="a file beside it" title="Scripts and files" href="#ship-files-and-scripts" linkText="Ship files and scripts">
+`check.py` goes to the agent's sandbox.
+</Annotation>
+
+</AnnotatedCode>
+
+## Add skills to an agent
+
+`skills` takes a list of sources. List a folder, a repo or both.
+
+- **`skills.folder(path)`** reads skills shipped with your app, so they change with a deploy. The path resolves against the working directory when the agent is defined, so ship the folder with your app.
+- **`skills.repo("owner/name")`** reads skills from a repo, so a fix reaches every agent that lists it with no deploy.
+
+```typescript
+skills.repo("acme/skills", { ref: "main", path: "support" })
+```
+
+{/* TODO(spec): what ref and path mean for skills.repo (a branch, tag or commit? the folder that holds the skills?) and what they default to. skills.md only says sources take them. */}
+
+`ref` picks the version to read and `path` the folder in the repo that holds the skills.
+
+## Open a skill
+
+The prompt carries each skill's name and description. When one applies, the model opens its instructions with one fixed tool.
+
+```typescript
+open_skill({ name: "refund-policy" })
+```
+
+It returns the skill's instructions as text. Only an agent with skills has `open_skill`, and it works with no sandbox.
+
+## Ship files and scripts
+
+Files beside `SKILL.md` go to the first sandbox the model can use among the agent's listed sandboxes. The model runs a script there like any other file. With no sandbox, the model gets the instructions only.
+
+<AnnotatedCode>
+
+{/* not type-checked: skills with tools and a sandbox on one agent */}
+```typescript {{ title: "inngest/agents/helpdesk.ts" }}
+import { skills, slack } from "inngest/experimental/agents";
+import { agents } from "../client";
+import { claude } from "../models/claude";
+import { work } from "../sandboxes/work";
+import { lookupOrder } from "../tools/lookupOrder";
+
+export const helpdesk = agents.agent({
+  id: "helpdesk",
+  triggers: [slack.thread()],
+  model: claude,
+  system: "You answer support questions about orders.",
+  tools: { lookupOrder },
+  sandboxes: { work },
+  skills: [skills.folder("./skills")],
+});
+```
+
+<Annotation id="tools" lines="12" tease="the tool the skill names" title="Tools the agent has" href="#skills-are-read-tools-are-called" linkText="Skills and tools">
+The skill says to use `lookupOrder`. This line is what lets the model call it.
+</Annotation>
+
+<Annotation id="sandboxes" lines="13" tease="where check.py lands" title="Files in the sandbox" href="/docs/labs/agents/sandboxes-and-code?ref=docs-labs-agents-skills" linkText="Sandboxes and code">
+`work` is the first sandbox the model can use, so the skill's files go there.
+</Annotation>
+
+<Annotation id="skills" lines="14" tease="every skill in ./skills" title="Skills" href="#add-skills-to-an-agent" linkText="Add skills to an agent">
+The model sees `refund-policy` and `shipping` by name and description.
+</Annotation>
+
+</AnnotatedCode>
+
+{/* not type-checked: a sandbox for the skill's files */}
+```typescript {{ title: "inngest/sandboxes/work.ts" }}
+import { sandbox } from "inngest/experimental/agents";
+
+export const work = sandbox({ id: "work" });
+```
+
+{/* not type-checked: tool.step named by a skill */}
+```typescript {{ title: "inngest/tools/lookupOrder.ts" }}
+import { tool } from "inngest/experimental";
+import { z } from "zod";
+
+export const lookupOrder = tool.step({
+  description: "Find an order by ID",
+  input: z.object({ id: z.string() }),
+  run: async ({ id }) => {
+    return { id, status: "delivered", deliveredDaysAgo: 12 };
+  },
+});
+```
+
+## Skills are read, tools are called
+
+A skill can name a tool, and its scripts can run, but a skill never adds a tool. Anything it does in your app goes through a tool the agent already has, with that tool's credentials and checks.
+
+So a skill can't widen what an agent may do. A skill that names a tool the agent doesn't list can't use it, and the model's tool list is the same whichever skills are listed. [Tools →](/docs/labs/agents/tools?ref=docs-labs-agents-skills)
+
+## Read a private repo
+
+Public repos need no token. A private repo is read with your app's GitHub credentials, on your host. The token never reaches the sandbox or a snapshot of it. [Check out a repo →](/docs/labs/agents/sandboxes-and-code?ref=docs-labs-agents-skills#check-out-a-repo)
+
+{/* TODO(spec): how does the app give skills.repo its GitHub credentials? The type tests show no auth option on skills.repo, and skills.md says only "the app's GitHub credentials". */}
+
+## Skills on the card
+
+The agent's card lists each skill's name and description, read from the `SKILL.md` files, so other agents can decide whether to call it. [Discovery →](/docs/labs/agents/discovery?ref=docs-labs-agents-skills)
+
+## Gotchas
+
+- **A repo is read once per run.** An edit shows up on the next run, not partway through one.
+- **A failed read is logged, not raised.** The agent carries on without those skills, so check the logs if a skill goes missing.
+- **Names can't repeat.** Two skills with the same name are an error when the agent is defined.
+- **No sandbox, no scripts.** Without a sandbox the model reads the instructions and nothing runs.
+- **The card can lag.** A card is announced when the app syncs, so it may list a skill from a repo that a run no longer sees.
+
+## How it works
+
+- The prompt carries each skill's name and description. The instructions load through `open_skill`, one fixed tool for every skill, so the tool list at the front of the prompt never changes and prompt caching holds.
+- A skill is text and files, so anyone can write and share one, and no host code is involved.
+- The card's skills are the agent's own, so you list a skill once and the card follows.
+
+## Recipes and reference
+
+- [Sandboxes and code](/docs/labs/agents/sandboxes-and-code?ref=docs-labs-agents-skills): where a skill's files land.
+- [Tools](/docs/labs/agents/tools?ref=docs-labs-agents-skills): what a skill's scripts can call.
+- [Discovery](/docs/labs/agents/discovery?ref=docs-labs-agents-skills): cards that list skills.
+- [Reference: skills](/docs/labs/agents/reference-sandboxes?ref=docs-labs-agents-skills#skills)
