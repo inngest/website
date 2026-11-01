@@ -1,0 +1,191 @@
+import { AnnotatedCode, Annotation } from "shared/Docs/mdx";
+
+export const metaTitle = "Threads | Inngest Agents";
+export const description = "Say which events belong together and their runs share one thread. Name a thread from a trigger, see what a thread keeps between runs, and keep two pull requests apart.";
+
+# Threads
+
+> Say which events belong together, and their runs share one thread.
+
+A run is thrown away when it ends; a thread is what its runs share. You never set one up. The sections below grow a PR helper for `acme/web`, built on the [`hello` agent](/docs/labs/agents/agents?ref=docs-labs-agents-threads).
+
+## Three events, three strangers
+
+To look after everything that happens to a pull request in one place, list its events as triggers.
+
+```typescript {{ title: "inngest/events.ts" }}
+import { eventType } from "inngest";
+import { z } from "zod";
+
+const ciRun = z.object({ pr: z.number(), prUrl: z.string() });
+
+export const ciFailed = eventType("ci/run.failed", { schema: ciRun });
+
+export const deployed = eventType("deploy/finished", {
+  schema: z.object({ env: z.string(), pull: z.object({ url: z.string() }) }),
+});
+```
+
+{/* not type-checked: github.thread({ repos }) and plain event triggers on an agent */}
+```typescript {{ title: "inngest/agents/prHelper.ts" }}
+import { github } from "inngest/experimental/agents";
+import { agents } from "../client";
+import { ciFailed, deployed } from "../events";
+
+export const prHelper = agents.agent(
+  {
+    id: "pr-helper",
+    triggers: [github.thread({ repos: ["acme/web"] }), ciFailed, deployed],
+  },
+  async ({ event }) => {
+    return `Saw ${event.name}`;
+  },
+);
+```
+
+Open a PR, fail its CI and deploy it: three runs, each on a thread of its own, because a plain event opens a fresh thread. None of them knows about the others.
+
+## No magic
+
+`github.thread()` is triggers like any other.
+
+{/* not type-checked: github.thread({ repos }) written out as event triggers */}
+```typescript
+github.thread({ repos: ["acme/web"] });
+
+// is the same as one trigger per GitHub event:
+[
+  {
+    event: "github/issue_comment",
+    if: 'event.data.repository.full_name == "acme/web"',
+    thread: "event.data.threadKey",
+  },
+  // ...and the same for each of its other events
+];
+```
+
+GitHub's events, a filter for your repo and a `thread` that names the pull request. Your own events can set a `thread` too. `slack.thread()` does the same for Slack. [Slack and GitHub →](/docs/labs/agents/slack-and-github?ref=docs-labs-agents-threads)
+
+## Which conversation is this?
+
+To make CI on #42 part of #42's thread, give its trigger a `thread`: an [expression](/docs/durable-execution/guides-and-advanced/writing-expressions?ref=docs-labs-agents-threads) over the `event`.
+
+<AnnotatedCode>
+
+{/* not type-checked: a trigger with its own thread expression */}
+```typescript
+triggers: [
+  github.thread({ repos: ["acme/web"] }),
+  { event: ciFailed, thread: "event.data.prUrl" },
+  deployed,
+],
+```
+
+<Annotation id="thread" lines="3" tease="the PR's address" title="thread" href="/docs/labs/agents/reference?ref=docs-labs-agents-threads#thread-keys-and-inbox-sources" linkText="Thread keys">
+The CI event carries the PR's URL, the key GitHub's trigger uses too, so both land on one thread.
+</Annotation>
+
+</AnnotatedCode>
+
+Fail CI on #42 and the run joins its thread, after the runs already there. Its reply goes on the PR, because a thread keyed by a PR's URL has that PR as its home. If `thread` finds nothing, the trigger opens a fresh thread and the trace warns.
+
+## What a conversation keeps
+
+To know what joining a thread gets you, leave a note for the next run.
+
+{/* not type-checked: kv.thread.get and set in an agent handler */}
+```typescript
+import { kv } from "inngest/experimental/agents";
+
+async ({ event }) => {
+  const note = await kv.thread.get("note");
+
+  await kv.thread.set("note", `saw ${event.name}`);
+
+  return note;
+},
+```
+
+The first run returns nothing, and the second returns the first's note. A run's variables are gone when it ends. The thread keeps:
+
+- its state, `kv.thread`. [Memory →](/docs/labs/agents/memory?ref=docs-labs-agents-threads#thread-state)
+- the model's history. [Models →](/docs/labs/agents/models?ref=docs-labs-agents-threads#it-remembers)
+- its sandbox, with the shell's working directory and exported variables. [Sandboxes →](/docs/labs/agents/sandboxes?ref=docs-labs-agents-threads#it-belongs-to-the-thread)
+- its budget, and how its last run ended. [Models →](/docs/labs/agents/models?ref=docs-labs-agents-threads#a-budget)
+
+## No key is fine
+
+For one-off jobs, an agent needs no key.
+
+{/* not type-checked: an agent with a handler and no thread */}
+```typescript {{ title: "inngest/agents/summarise.ts" }}
+import { agents } from "../client";
+
+export const summarise = agents.agent(
+  { id: "summarise" },
+  async ({ event }) => {
+    return event.data.content.slice(0, 80);
+  },
+);
+```
+
+Each message is its own thread, with nothing to set up. That thread has no home, so nothing is posted anywhere: the answer stays in the run's output, and the trace warns.
+
+## Two conversations
+
+The agent needs no change to follow two pull requests at once. Send CI failures for #42 and #43.
+
+```typescript {{ title: "scripts/failBoth.ts" }}
+import { inngest } from "../inngest/client";
+
+const pulls = "https://github.com/acme/web/pull";
+
+await inngest.send([
+  { name: "ci/run.failed", data: { pr: 42, prUrl: `${pulls}/42` } },
+  { name: "ci/run.failed", data: { pr: 43, prUrl: `${pulls}/43` } },
+]);
+```
+
+`me` is the handle to the run's own thread, so `me.key` names the one a run is on.
+
+{/* not type-checked: me.key in an agent handler */}
+```typescript
+async ({ event, me }) => {
+  return `Saw ${event.name} on ${me.key}`;
+},
+```
+
+Two threads, side by side, each with its own runs and state.
+
+## A trigger with its own key
+
+To bring deploys into the same threads, though they carry the PR's address somewhere else, give their trigger its own `thread`.
+
+{/* not type-checked: three triggers on an agent, each with its thread */}
+```typescript
+import { github } from "inngest/experimental/agents";
+import { agents } from "../client";
+import { ciFailed, deployed } from "../events";
+
+export const prHelper = agents.agent(
+  {
+    id: "pr-helper",
+    triggers: [
+      github.thread({ repos: ["acme/web"] }),
+      { event: ciFailed, thread: "event.data.prUrl" },
+      { event: deployed, thread: "event.data.pull.url" },
+    ],
+  },
+  async ({ event, me }) => {
+    return `Saw ${event.name} on ${me.key}`;
+  },
+);
+```
+
+All three kinds of event land on #42's thread.
+
+## Recipes and reference
+
+- [Reference: thread keys and inbox sources](/docs/labs/agents/reference?ref=docs-labs-agents-threads#thread-keys-and-inbox-sources)
+- [Slack and GitHub](/docs/labs/agents/slack-and-github?ref=docs-labs-agents-threads)
+- [PR reviewer](/docs/labs/agents/recipes/pr-reviewer?ref=docs-labs-agents-threads)
