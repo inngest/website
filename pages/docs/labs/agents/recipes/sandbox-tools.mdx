@@ -7,7 +7,7 @@ export const description = "Build an agent that answers a data question by writi
 
 > An agent that answers by writing one script that calls your tools.
 
-The model writes the script once, and each call it makes runs your tool as a step.
+The model writes the script once, and each call it makes runs your tool as a step, so a failed call retries by itself.
 
 ```text
 You      How many pull requests did each person open in acme/app?
@@ -159,7 +159,7 @@ At [localhost:8288](http://localhost:8288), invoke `analyst` with `{ "question":
 
 ## Variations
 
-- [Group tools](/docs/labs/agents/reference-sandboxes?ref=docs-labs-agents-recipes-sandbox-tools#tools) can wait for a person with `waits: true`.
+- [Group tools](/docs/labs/agents/reference-sandboxes?ref=docs-labs-agents-recipes-sandbox-tools#tools) can run for hours with `waits: true`.
 - [Your own scripts](/docs/labs/agents/calling-home?ref=docs-labs-agents-recipes-sandbox-tools#your-own-scripts) call the same tools with `sandboxes.analysis.commands.run` and `{ tools }`.
 
 ## Learn more
