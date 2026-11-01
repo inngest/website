@@ -62,7 +62,7 @@ export const POST = slack.bridge({
 ```
 
 <Annotation id="bridge" lines="5" tease="Request in, Response out" title="The bridge" href="#how-it-works" linkText="How it works">
-Checks the signature, then sends an event only for a direct message, a mention in any channel the agent is in, or a reply in a thread it already answered. Bots, including the agent itself, are ignored unless the bridge sets `allowBots: true`.
+Checks the signature, then sends an event only for a direct message, a mention in any channel the agent is in, or a reply in a thread it already answered. A redelivery is one event. Bots, including the agent itself, are ignored unless the bridge sets `allowBots: true`.
 </Annotation>
 
 <Annotation id="secret" lines="7" tease="read inside the call" title="Signing secret" href="/docs/labs/agents/tools?ref=docs-labs-agents-slack-and-github#keep-secrets-on-the-host" linkText="Keep secrets on the host">
@@ -140,7 +140,7 @@ await sandboxes.work.commands.run("ship", "node ship.js", {
 
 ## Post somewhere else
 
-Every Slack tool takes an optional `to`: `#channel`, `@person` or a Slack message link. A cron run has no Slack thread, so set a default.
+Every Slack tool takes an optional `to`: `#channel`, `@person` or a Slack message link.
 
 {/* not type-checked: slack.tools({ to }) on an agent with a cron trigger */}
 <AnnotatedCode>
@@ -160,7 +160,7 @@ export const digest = agents.agent({
 ```
 
 <Annotation id="to" lines="10" tease="a default destination" title="to" href="#gotchas" linkText="Gotchas">
-Used when a call gives no `to`. The model can still pass its own.
+Used when a call gives no `to`. A cron run has no Slack thread, so it needs one. The model can still pass its own.
 </Annotation>
 
 </AnnotatedCode>
@@ -266,7 +266,6 @@ An event that carries the URL lands on the same thread. The pull request is that
 
 ## How it works
 
-- A redelivery is one event: the event id is Slack's `event_id` or GitHub's `X-GitHub-Delivery`.
 - The agent marks a Slack thread as its own when it first posts there. The bridge reads that mark to accept replies without a mention, and the SDK sets Slack's status line while the agent works.
 - On GitHub, `me.post()` and `github_comment` comment on the issue or pull request, and the model reads a comment as `[ana-dev] please review`.
 
