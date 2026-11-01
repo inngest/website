@@ -3,7 +3,7 @@ export const description = "Lay out an Inngest Agents project: a client, one fil
 
 # Project structure
 
-> One file per agent, tool, sandbox and model, so everything is easy to find and share.
+> One file per agent, tool, sandbox and model, each imported by name where it is used.
 
 Agents, tools, sandboxes and models are plain exports. An agent imports what it uses, and code that calls an agent imports that agent.
 
@@ -12,6 +12,7 @@ inngest/
   client.ts
   serve.ts
   events.ts
+  github.ts
   models/
     claude.ts
   agents/
@@ -27,14 +28,21 @@ skills/
   refunds/
     SKILL.md
 app/
+  slack/
+    socket.ts
   api/
     slack/
       route.ts
+    github/
+      route.ts
+    mcp/
+      callback/
+        route.ts
 ```
 
 ## The client
 
-The client holds the Inngest app and the agents factory. Add `sandboxMiddleware()` when any agent lists sandboxes.
+The client holds the Inngest client and `agents`, which defines every agent. Add `sandboxMiddleware()` when any agent lists sandboxes.
 
 {/* not type-checked: createAgents with the store from the environment, sandboxMiddleware() */}
 ```typescript {{ title: "inngest/client.ts" }}
@@ -176,6 +184,13 @@ export const POST = slack.bridge({
   signingSecret: secret("SLACK_SIGNING_SECRET"),
 });
 ```
+
+## The other files
+
+- `inngest/github.ts`: the `githubApp()` that a sandbox's `repo` uses. [Check out a repo →](/docs/labs/agents/sandboxes-and-code?ref=docs-labs-agents-structure#check-out-a-repo)
+- `app/api/github/route.ts`: the GitHub bridge, mounted like Slack's. [Work on GitHub →](/docs/labs/agents/slack-and-github?ref=docs-labs-agents-structure#work-on-git-hub)
+- `app/slack/socket.ts`: your own Socket Mode connection, handing each payload to the bridge. [Set your own rules →](/docs/labs/agents/slack-and-github?ref=docs-labs-agents-structure#set-your-own-rules)
+- `app/api/mcp/callback/route.ts`: the route that finishes an MCP sign-in. [Sign in each person →](/docs/labs/agents/tools?ref=docs-labs-agents-structure#sign-in-each-person)
 
 ## Serve them
 
