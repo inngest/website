@@ -60,6 +60,7 @@ A step does not make an external action exactly once. If a provider accepts a re
 - [step.sleepUntil](/docs/durable-execution/primitives/step-sleepuntil) — Resume at a specific date and time.
 - [step.waitForEvent](/docs/durable-execution/primitives/step-waitforevent) — Resume when a matching event arrives, or handle the timeout.  Use this for most external actions and events that can affect multiple runs.
 - [step.waitForSignal](/docs/durable-execution/primitives/step-waitforsignal) — Resume one run with a unique signal. Use it only when the run needs direct, latency-sensitive resumption.
+- [step.subscribe](/docs/durable-execution/primitives/step-subscribe): Receive every matching event that arrives while the run works, and read them in order. Experimental, TypeScript only.
 - [step.invoke](/docs/durable-execution/primitives/step-invoke) — Start another Inngest function and wait for its result. Use it to reuse or compose functions.
 - [step.sendEvent](/docs/durable-execution/primitives/step-sendevent) — Send an event from inside a function as a reliable step. Use it to trigger other functions without losing the send when this function retries.
 
@@ -81,6 +82,7 @@ Every primitive works in [durable workflows](/docs/durable-execution/durable-wor
 | `step.sleepUntil` | ✓ | ✓ |
 | `step.waitForEvent` | ✓ | ✓ |
 | `step.waitForSignal` | ✓ | ✓ |
+| `step.subscribe` | ✓ | ✓ |
 | `step.invoke` | ✓ | ✓ |
 | `step.sendEvent` | ✓ | ✓ |
 | Parallel steps | ✓ | ✓ |

@@ -6,7 +6,7 @@ export const description = "Open an inbox inside a run with step.subscribe() in 
 
 # Subscribe
 
-Use `step.subscribe()` to open an inbox inside a run. Every matching event that arrives after it opens becomes a message, kept in order until the run reads it. For a walkthrough, see [step.subscribe](/docs/durable-execution/primitives/step-subscribe).
+Use `step.subscribe()` to open an inbox inside a run: every matching event that arrives becomes a message, kept in order. For a walkthrough, see [step.subscribe](/docs/durable-execution/primitives/step-subscribe).
 
 <Callout>
   `step.subscribe()` is experimental, and the API may change.
@@ -42,13 +42,13 @@ await using activity = step.subscribe("pr-activity", [
 ]);
 ```
 
-`step.subscribe()` returns at once. The inbox receives only events that arrive after it opens. `await using` closes it at the end of the block.
+`step.subscribe()` returns at once, and the inbox receives only events that arrive after it opens. `await using` (TypeScript 5.2 or later) closes it at the end of the block.
 
 ## `Inbox`
 
-A message is the event as it was sent (`EventPayload`): `name`, `data`, `id`, `ts` and `v`. Narrow it with [`eventType.is()`](/docs/reference/typescript/v4/functions/triggers#narrowing-with-is). Import the type with `import type { Inbox } from "inngest"`.
+A message is the event as it was sent (`EventPayload`), with `name`, `data`, `id`, `ts` and `v`. Narrow it with [`eventType.is()`](/docs/reference/typescript/v4/functions/triggers#narrowing-with-is).
 
-Every reader, the inbox and each view, keeps its own place. Reading from one never takes messages from another.
+A view is an `Inbox` too, with the same methods, and views nest. Every reader keeps its own place, so reading from one never takes messages from another. Import the type with `import type { Inbox } from "inngest"`.
 
 ### `next(options?): Promise<EventPayload | null | undefined>`
 
@@ -103,11 +103,11 @@ for await (const message of inbox) {
 
 ### `of(types): Inbox`
 
-Returns a view of the messages of one event type or an array of them. A view reads from the start of the inbox, and calling `of()` with the same types returns the same view. `of()` adds no step.
+Returns a view of the messages of one event type or an array of them, read from the start of the inbox. The same types return the same view. `of()` adds no step.
 
 ### `listen(sources): Inbox`
 
-Adds sources to the inbox and returns a view over only the messages they receive. Takes sources like `step.subscribe()`. The new sources receive only events that arrive after `listen()`, and the inbox sees their messages too. `listen()` is one step.
+Adds sources, written like those of `step.subscribe()`, and returns a view over only the messages they receive. They receive events from now on, and the inbox sees those messages too. `listen()` is one step.
 
 ### `close(): Promise<EventPayload[]>`
 
@@ -116,8 +116,9 @@ Closes the reader and every view on it, and returns the messages this reader had
 - Closing the inbox stops all of its sources.
 - Closing a `listen()` view stops that view's sources. The inbox keeps its copies of their messages.
 - Closing an `of()` view ends only that reader.
+- A view keeps its unread messages when a reader above it closes, and returns them from its own `close()`.
 
-After `close()`, `next()`, `nextBatch()` and loops return `undefined` or end, and `drain()` returns `[]`. A message that arrives while `close()` is in flight isn't returned.
+After `close()`, `next()` and `nextBatch()` return `undefined`, loops end, and `drain()` returns `[]`. A message that arrives while `close()` is in flight isn't returned.
 
 ### `closed: boolean`
 

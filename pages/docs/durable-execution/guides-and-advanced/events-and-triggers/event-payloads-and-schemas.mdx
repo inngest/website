@@ -76,6 +76,7 @@ const inngest = new Inngest({ id: "shop" });
 const orderPaid = eventType("shop/order.paid", {
   schema: z.object({ orderId: z.string(), total: z.number() }),
 });
+
 const orderRefunded = eventType("shop/order.refunded", {
   schema: z.object({ orderId: z.string(), reason: z.string() }),
 });

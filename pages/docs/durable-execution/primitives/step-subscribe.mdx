@@ -6,7 +6,7 @@ export const description = "Open a durable inbox inside an Inngest function with
 
 > Receive a stream of events inside a running function, and read them when you're ready.
 
-<Compatibility endpoints={false} />
+<Compatibility />
 
 `step.waitForEvent()` waits for one event. `step.subscribe()` opens an inbox that keeps every matching event that arrives, in order, while the run does other work.
 
@@ -18,12 +18,12 @@ It's useful when:
 
 {/* TODO(release): name the minimum TypeScript SDK and Dev Server versions here once step.subscribe confirms them. */}
 <Callout variant="info">
-  `step.subscribe()` is experimental in the TypeScript SDK, and the API may change. Run it on the latest Dev Server. Python and Go don't support it yet.
+  `step.subscribe()` is experimental in the TypeScript SDK, and the API may change. Run it on the latest Dev Server. Python and Go don't support it.
 </Callout>
 
-## Merge a pull request when it's ready
+## Watch a pull request
 
-This function listens to one pull request's reviews and checks, and merges it once it is approved and passing.
+This function merges a pull request once it is approved and its checks pass.
 
 <AnnotatedCode>
 
@@ -37,9 +37,11 @@ const inngest = new Inngest({ id: "github-bot" });
 const prOpened = eventType("github/pr.opened", {
   schema: z.object({ pr: z.number() }),
 });
+
 const prReviewed = eventType("github/pr.reviewed", {
   schema: z.object({ pr: z.number(), approved: z.boolean() }),
 });
+
 const prChecked = eventType("github/pr.checked", {
   schema: z.object({ pr: z.number(), passed: z.boolean() }),
 });
@@ -74,31 +76,35 @@ export const autoMerge = inngest.createFunction(
 );
 ```
 
-<Annotation id="open" lines="20" tease="opens the inbox" title="Open an inbox" href="#close-an-inbox" linkText="Close an inbox">
-From here on, every matching event is kept as a message, in order, even while the run does other work. `await using` closes the inbox when the function returns.
+<Annotation id="open" lines="22" tease="opens the inbox" title="Open an inbox" href="#close-an-inbox" linkText="Close an inbox">
+Events that match from here on are kept. `await using` closes the inbox when the function returns.
 </Annotation>
 
-<Annotation id="sources" lines="21-22" tease="written like triggers" title="Sources" href="/docs/durable-execution/guides-and-advanced/writing-expressions" linkText="Writing expressions">
+<Annotation id="sources" lines="23-24" tease="written like triggers" title="Sources" href="/docs/durable-execution/guides-and-advanced/writing-expressions" linkText="Writing expressions">
 An event type plus an optional `if`. In `if`, `async` is the arriving event and `event` is the one that started this run.
 </Annotation>
 
-<Annotation id="read" lines="28" tease="sleeps while empty" title="Read in order" href="#read-in-batches" linkText="Read in batches">
+<Annotation id="read" lines="30" tease="sleeps while empty" title="Read in order" href="#read-in-batches" linkText="Read in batches">
 Takes one message at a time. When nothing is unread, the run sleeps until a message arrives.
 </Annotation>
 
-<Annotation id="is" lines="29,33" tease="narrows the type" title="`is()`" href="/docs/durable-execution/guides-and-advanced/events-and-triggers/event-payloads-and-schemas#narrow-an-event-with-is" linkText="Narrow an event">
+<Annotation id="is" lines="31,35" tease="narrows the type" title="`is()`" href="/docs/durable-execution/guides-and-advanced/events-and-triggers/event-payloads-and-schemas#narrow-an-event-with-is" linkText="Narrow an event">
 A message is the event as it was sent. `is()` checks which event type it is.
 </Annotation>
 
 </AnnotatedCode>
 
-Send `github/pr.reviewed` and `github/pr.checked` with the same `pr`. Events for other pull requests don't reach this run.
+Events for other pull requests don't reach this run.
 
 ## Read in batches
 
-When events arrive faster than you handle them, take everything that piled up at once. This digest tells a pull request's owner about new comments at most once an hour, and stops after a quiet day.
+Take everything that piled up at once. This digest tells a pull request's owner about new comments at most once an hour.
+
+<AnnotatedCode>
 
 ```typescript {{ title: "TypeScript" }}
+import { notifyOwner } from "./github";
+
 const prCommented = eventType("github/pr.commented", {
   schema: z.object({ pr: z.number(), body: z.string() }),
 });
@@ -128,43 +134,52 @@ export const commentDigest = inngest.createFunction(
 );
 ```
 
-Comments that arrive during the hour's sleep are kept, and the next `nextBatch()` takes all of them.
+<Annotation id="batch" lines="16" tease="takes what's unread" title="`nextBatch()`" href="/docs/reference/typescript/v4/functions/step-subscribe#next-batch-options-promise-event-payload-null-undefined" linkText="Reference">
+Waits for at least one message, then takes every unread one, up to `max`. The rest stays unread, oldest first.
+</Annotation>
 
-- `nextBatch()` waits for at least one message, then takes every unread one.
-- `drain()` takes every unread message now and never waits. It returns `[]` when there are none.
-- `max` caps a batch. The rest stays unread, oldest first.
-- `for await (const batch of inbox.batches())` reads batch after batch.
+<Annotation id="quiet" lines="18" tease="a quiet day ends it" title="Timeout" href="#close-an-inbox" linkText="Close an inbox">
+`nextBatch()` returns `null` when nothing arrives within `timeout`, and `undefined` once the inbox is closed.
+</Annotation>
+
+<Annotation id="sleep" lines="26" tease="comments keep arriving" title="Nothing is missed">
+Comments that arrive during the sleep are kept for the next batch.
+</Annotation>
+
+</AnnotatedCode>
+
+`drain()` takes every unread message without waiting, and `for await (const batch of inbox.batches())` reads batch after batch.
 
 ## Read one kind, or listen to more
 
-A view is another reader on the same inbox. Every reader keeps its own place, so reading from a view never takes messages from the inbox.
+A view is another reader on the same inbox, with its own place. Inside `autoMerge` above:
 
 ```typescript {{ title: "TypeScript" }}
 const reviews = inbox.of(prReviewed);
 const review = await reviews.next({ timeout: "1h" });
 
-await using deploys = inbox.listen({
-  event: deployFinished,
+await using comments = inbox.listen({
+  event: prCommented,
   if: "async.data.pr == event.data.pr",
 });
-const deploy = await deploys.next({ timeout: "1h" });
+
+const comment = await comments.next({ timeout: "1h" });
 ```
 
-- `of(types)` reads only those event types. It reads from the start of the inbox, and the same types always give the same view.
-- `listen(sources)` adds sources from now on, and reads only what they receive. Closing it stops those sources; the inbox keeps its copies.
+`of()` reads some event types, from the start of the inbox. `listen()` adds sources from now on, and closing it stops them. A view is an `Inbox` too, and reading from it never takes messages from the inbox.
 
 ## Close an inbox
 
-`close()` stops the sources, ends any read that is waiting, and returns the messages that reader hadn't read. Closing the inbox closes every view on it. `await using` calls `close()` at the end of the block.
+`close()` stops the sources, ends any waiting read, and returns the messages that reader hadn't read. `await using` calls it at the end of the block.
 
 ```typescript {{ title: "TypeScript" }}
-const inbox = step.subscribe("approvals", approvalRecorded);
+const inbox = step.subscribe("reviews", prReviewed);
 
 const first = await inbox.next({ timeout: "1h" });
 const unread = await inbox.close();
 ```
 
-After `close()`, reads return `undefined` and `drain()` returns `[]`.
+After `close()`, reads return `undefined` and `drain()` returns `[]`. Closing the inbox closes its views too.
 
 ## API
 
@@ -174,24 +189,18 @@ const inbox = step.subscribe(id, sources);
 
 - **`id`**: a stable step ID.
 - **`sources`**: one source or an array. A source is an event type, an event name, or `{ event, if }`.
-- **Returns** an `Inbox` at once. Read it with:
-  - `next()`: the next message. With `{ timeout }`, `null` if none arrives in time.
-  - `nextBatch({ max, timeout })`: every unread message, waiting for at least one.
-  - `drain({ max })`: every unread message now.
-  - `for await` over the inbox, or over `inbox.batches({ max })`.
-  - `of(types)` and `listen(sources)`: views.
-  - `close()`: stops the inbox and returns its unread messages. `closed` is then `true`.
+- **Returns** an `Inbox` with `next()`, `nextBatch()`, `drain()`, `batches()`, `of()`, `listen()`, `close()` and `closed`.
 
-Timeouts take a duration such as `"30m"`, milliseconds, or a `Date`. See the [`step.subscribe()` reference](/docs/reference/typescript/v4/functions/step-subscribe) for every type.
+Timeouts take a duration such as `"30m"`, milliseconds, or a `Date`. `await using` needs TypeScript 5.2 or later. See the [`step.subscribe()` reference](/docs/reference/typescript/v4/functions/step-subscribe) for every method.
 
 ## Things to know
 
-- **Open before you act.** An inbox receives only events that arrive after it opens, like `step.waitForEvent()`. Open it before the step that causes the events.
-- **Racing a read.** To continue when either a read or a step settles first, race them inside [`group.parallel()`](/docs/durable-execution/primitives/group-parallel#continue-after-the-first-step-settles). A read that loses keeps its place and takes the next message, so keep it and reuse it.
-- **Read in the foreground.** A read loop left running in the background beside other steps can keep the run from finishing, even after you close the inbox.
+- **Open before you act.** An inbox receives only events that arrive after it opens. Open it before the step that causes them.
+- **Race inside `group.parallel()`.** A plain `Promise.race()` of a read and a step waits for both. Inside [`group.parallel()`](/docs/durable-execution/primitives/group-parallel#continue-after-the-first-step-settles), it continues when the first settles. The losing read keeps its place, so reuse it.
+- **Read in the foreground.** A read waiting in the background holds the run, like a pending `step.waitForEvent()`, until a message arrives or the inbox closes.
 
 ## How it works
 
-- Each message is saved as its own step the moment it arrives, read or not. It is saved once, however many views read it.
-- Opening, `listen()`, `close()` and each batch read are one step. `of()` and a `next()` that finds a message waiting add none, so a `next()` loop over 10 messages is 11 steps.
+- Each message is saved as its own step when it arrives, read or not. It's saved once, however many views read it.
+- Opening, `listen()`, `close()` and each batch read are one step. `of()` adds none, and neither does a `next()` that receives a message, so a `next()` loop over 10 messages is 11 steps.
 - Messages count toward the run's [step and state limits](/docs/durable-execution/limits#platform-limits). A run that receives more fails with the usual limit error, even while it sleeps.
