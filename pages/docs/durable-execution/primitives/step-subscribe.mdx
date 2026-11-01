@@ -196,7 +196,7 @@ See the [`step.subscribe()` reference](/docs/reference/typescript/v4/functions/s
 
 ## Read in the background
 
-By default, a read waiting in the background holds the run, like a pending `step.waitForEvent()`.
+With the default [`optimizeParallelism: true`](/docs/durable-execution/primitives/group-parallel#optimize-parallel-step-performance), a read that keeps waiting beside your steps keeps the run waiting, like `step.waitForEvent()`. Put the foreground work in `group.parallel({ mode: "race" }, ...)`, not the reader, and call `close()` right after the group, before any later step outside it.
 
 <AnnotatedCode>
 
@@ -217,24 +217,25 @@ export const collectComments = inngest.createFunction(
       }
     })();
 
-    await group.parallel(async () => {
+    await group.parallel({ mode: "race" }, async () => {
       await step.run("merge", () => mergePr(event.data.pr));
+      await step.sleep("late-comments", "1h");
     });
 
     await comments.close();
     await reading;
 
-    return { bodies };
+    await step.run("notify-owner", () => notifyOwner(event.data.pr, bodies));
   },
 );
 ```
 
-<Annotation id="parallel" lines="17" tease="work beside the loop" title="`group.parallel()`" href="/docs/durable-execution/primitives/group-parallel#continue-after-the-first-step-settles" linkText="Parallel steps">
-Run the other work inside `group.parallel()`. Otherwise the waiting read keeps the run from reaching `close()`.
+<Annotation id="parallel" lines="17-20" tease="the foreground work" title="Race group" href="/docs/durable-execution/primitives/group-parallel#continue-after-the-first-step-settles" linkText="Parallel steps">
+The steps and the sleep go in the group, not the reader. Comments that arrive meanwhile reach the loop.
 </Annotation>
 
-<Annotation id="end" lines="21-22" tease="ends the loop" title="Close to finish">
-Closing the inbox ends the loop's waiting read, so `reading` settles.
+<Annotation id="end" lines="22-23" tease="before any later step" title="Close right after">
+Closing ends the loop's waiting read, so `reading` settles. A step outside the group before `close()` would leave the run waiting.
 </Annotation>
 
 </AnnotatedCode>
@@ -242,7 +243,7 @@ Closing the inbox ends the loop's waiting read, so `reading` settles.
 ## Things to know
 
 - **Open before you act.** An inbox receives only events that arrive after it opens, so open it before the step that causes them.
-- **Race inside `group.parallel()`.** By default, a plain `Promise.race()` of a read and a step waits for both. Create the read once (`const reply = inbox.next()`), race it inside [`group.parallel()`](/docs/durable-execution/primitives/group-parallel#continue-after-the-first-step-settles), and if it loses, race the same `reply` again.
+- **Race inside `group.parallel()`.** By default, a plain `Promise.race()` of a read and a step waits for both. Create the read once (`const reply = inbox.next()`) and race it inside [`group.parallel()`](/docs/durable-execution/primitives/group-parallel#continue-after-the-first-step-settles). A read that loses keeps waiting: race the same `reply` again, or call `close()` before the next step outside the group.
 - **One wait, one inbox.** To wait on two streams at once, put their sources in one inbox, like reviews and checks in `autoMerge`.
 
 ## How it works
