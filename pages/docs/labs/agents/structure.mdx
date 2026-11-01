@@ -191,8 +191,8 @@ export const POST = slack.bridge({
 
 ## The other files
 
-- [`inngest/keys.ts`](/docs/labs/agents/memory?ref=docs-labs-agents-structure#typed-keys) holds the typed `kv.key()` definitions that handlers and tools share.
-- [`inngest/lib/ci.ts`](/docs/labs/agents/agents?ref=docs-labs-agents-structure#steps) and [`inngest/lib/openPrs.ts`](/docs/labs/agents/agent-teams?ref=docs-labs-agents-structure#not-everything-is-an-agent) hold plain helpers that a tool or a function calls.
+- [`inngest/keys.ts`](/docs/labs/agents/memory?ref=docs-labs-agents-structure#typed-keys) holds typed `kv.key()` definitions.
+- [`inngest/lib/`](/docs/labs/agents/agents?ref=docs-labs-agents-structure#steps) holds plain helpers, such as `ci.ts` and `openPrs.ts`.
 - [`inngest/github.ts`](/docs/labs/agents/reference-sandboxes?ref=docs-labs-agents-structure#git-hub-app) holds the `githubApp()` a sandbox's `repo` uses.
 - [`app/api/github/route.ts`](/docs/labs/agents/slack-and-github?ref=docs-labs-agents-structure#work-on-git-hub) mounts the GitHub bridge.
 - [`app/slack/socket.ts`](/docs/labs/agents/slack-and-github?ref=docs-labs-agents-structure#set-your-own-rules) takes your own Socket Mode connection.
