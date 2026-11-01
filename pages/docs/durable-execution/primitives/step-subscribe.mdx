@@ -196,7 +196,7 @@ See the [`step.subscribe()` reference](/docs/reference/typescript/v4/functions/s
 
 ## Read in the background
 
-With the default [`optimizeParallelism: true`](/docs/durable-execution/primitives/group-parallel#optimize-parallel-step-performance), a read that keeps waiting beside your steps keeps the run waiting, like `step.waitForEvent()`. Put the foreground work in `group.parallel({ mode: "race" }, ...)`, not the reader, and call `close()` right after the group, before any later step outside it.
+With the default [`optimizeParallelism: true`](/docs/durable-execution/primitives/group-parallel#optimize-parallel-step-performance), a read that keeps waiting beside your steps keeps the run waiting, like `step.waitForEvent()`. Put the foreground work in `group.parallel({ mode: "race" }, ...)`, not the loop, and call `close()` right after the group, before any later step outside it.
 
 <AnnotatedCode>
 
