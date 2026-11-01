@@ -139,6 +139,13 @@ export const reviewer = agents.agent({
 });
 ```
 
+<Annotation id="invoke" lines="8" tease="the input schema" title="invoke()" href="/docs/labs/agents/discovery?ref=docs-labs-agents-agents-and-triggers" linkText="Discovery">
+Checks what callers send, and goes on the agent's card.
+</Annotation>
+
+</AnnotatedCode>
+
+{/* not type-checked: start().result() from a plain function */}
 ```typescript {{ title: "inngest/functions/nightlyReview.ts" }}
 import { inngest } from "../client";
 import { reviewer } from "../agents/reviewer";
@@ -152,12 +159,6 @@ export const nightlyReview = inngest.createFunction(
   },
 );
 ```
-
-<Annotation id="invoke" lines="8" tease="the input schema" title="invoke()" href="/docs/labs/agents/discovery?ref=docs-labs-agents-agents-and-triggers" linkText="Discovery">
-Checks what callers send, and goes on the agent's card.
-</Annotation>
-
-</AnnotatedCode>
 
 `start()` opens a new thread and `result()` waits for the answer. Without an `invoke()` trigger, `start()` takes text or JSON and sends it as a message. [Teams of agents →](/docs/labs/agents/teams-of-agents?ref=docs-labs-agents-agents-and-triggers)
 

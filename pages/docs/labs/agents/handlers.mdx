@@ -222,12 +222,6 @@ export const prHelper = agents.agent(
 );
 ```
 
-```typescript {{ title: "inngest/sandboxes/work.ts" }}
-import { sandbox } from "inngest/experimental/agents";
-
-export const work = sandbox({ id: "work" });
-```
-
 <Annotation id="tool" lines="17-25" tease="closes over me" title="A tool in the handler" href="/docs/labs/agents/tools?ref=docs-labs-agents-handlers" linkText="Tools">
 It runs as a durable step, like any tool.
 </Annotation>
@@ -237,6 +231,12 @@ A script in the sandbox calls `progress` by the same name, and it posts into thi
 </Annotation>
 
 </AnnotatedCode>
+
+```typescript {{ title: "inngest/sandboxes/work.ts" }}
+import { sandbox } from "inngest/experimental/agents";
+
+export const work = sandbox({ id: "work" });
+```
 
 A tool name used twice in one call is an error. `loop(batch, { onTurn, steer })` takes the loop's hook and fold for one call too. [Models and the loop →](/docs/labs/agents/models-and-the-loop?ref=docs-labs-agents-handlers)
 
