@@ -55,7 +55,7 @@ With several sources, narrow a message with `message.is(type)`, which takes one 
 Import the types with `import type { Inbox, InboxMessage } from "inngest"`. `InboxMessage<typeof inbox>` is the type of an inbox's messages, for code that handles them outside the loop:
 
 ```ts
-const describe = (message: InboxMessage<typeof inbox>) => {
+const kindOf = (message: InboxMessage<typeof activity>) => {
   return message.is(prReviewed) ? "review" : "check";
 };
 ```
