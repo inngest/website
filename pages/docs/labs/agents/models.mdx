@@ -43,7 +43,7 @@ A retry would repeat a bare model call.
 
 </AnnotatedCode>
 
-It forgets: a follow-up question gets an answer that knows nothing of the summary.
+A follow-up question gets an answer that knows nothing of the summary.
 
 ## The loop
 
@@ -108,13 +108,13 @@ Calls the model until it stops asking for tools. It posts nothing.
 
 </AnnotatedCode>
 
-The trace shows a row per turn. `loop` is in the handler's argument only when the agent has a `model`.
+The trace shows a row for each model call and each tool call. `loop` is in the handler's argument only when the agent has a `model`.
 
 ## It remembers
 
 You want the helper to pick the thread up after it went quiet.
 
-After each batch the loop saves the model's history in [the thread](/docs/labs/agents/threads?ref=docs-labs-agents-models#what-a-conversation-keeps). The run after `idle` ends sees the earlier turns; when the history gets long, the loop summarizes it and reuses the summary.
+The loop saves the model's history in [the thread](/docs/labs/agents/threads?ref=docs-labs-agents-models#what-a-conversation-keeps) after each batch, so the next run sees it. When the history gets long, the loop summarizes it and reuses the summary.
 
 {/* not type-checked: remember on an agent definition */}
 ```typescript
@@ -173,7 +173,7 @@ if (result.end === "budget") {
 await me.post(result.text);
 ```
 
-<Annotation id="end" lines="3" tease="why it stopped" title="end" href="/docs/labs/agents/reference?ref=docs-labs-agents-models#the-result" linkText="Reference">
+<Annotation id="end" lines="3" tease="why it stopped" title="end" href="/docs/labs/agents/reference?ref=docs-labs-agents-models#the-result" linkText="Reference: the result">
 `"done"`, `"maxTurns"`, `"stop"` or `"budget"`.
 </Annotation>
 
@@ -239,7 +239,7 @@ export const timed: AgentModel = async (request) => {
 };
 ```
 
-<Annotation id="with" lines="4" tease="same client, other options" title=".with()" href="/docs/labs/agents/reference?ref=docs-labs-agents-models#models" linkText="Reference">
+<Annotation id="with" lines="4" tease="same client, other options" title=".with()" href="/docs/labs/agents/reference?ref=docs-labs-agents-models#models" linkText="Reference: models">
 A variant of the model, for one agent or one call.
 </Annotation>
 
@@ -295,7 +295,7 @@ const result = await loop(batch, {
 });
 ```
 
-<Annotation id="steer" lines="2-6" tease="what the model sees next" title="steer" href="/docs/labs/agents/reference?ref=docs-labs-agents-models#the-loop" linkText="Reference">
+<Annotation id="steer" lines="2-6" tease="what the model sees next" title="steer" href="/docs/labs/agents/reference?ref=docs-labs-agents-models#the-loop" linkText="Reference: the loop">
 Gets the messages the loop took and returns the ones to fold in.
 </Annotation>
 
@@ -318,11 +318,52 @@ await loop(batch, {
 });
 ```
 
-<Annotation id="onturn" lines="2-4" tease="after each turn's tools" title="onTurn" href="/docs/labs/agents/reference?ref=docs-labs-agents-models#on-turn" linkText="Reference">
+<Annotation id="onturn" lines="2-4" tease="after each turn's tools" title="onTurn" href="/docs/labs/agents/reference?ref=docs-labs-agents-models#on-turn" linkText="Reference: onTurn">
 A slow or failing post never holds up the next model call.
 </Annotation>
 
 </AnnotatedCode>
+
+## Your own loop
+
+You want the agent's turns to run your way, or just a little differently. To change the loop's own options, set `loop` on the definition:
+
+{/* not type-checked: loop options on an agent definition */}
+```typescript
+loop: { maxTurns: 10 },
+```
+
+The loop makes at most 10 model calls, down from the default 40. For more than options, give `loop` a whole loop of your own:
+
+<AnnotatedCode>
+
+{/* not type-checked: a whole hand-built loop on the agent definition */}
+```typescript {{ title: "inngest/agents/parrot.ts" }}
+import { agents } from "../client";
+
+export const parrot = agents.agent({
+  id: "parrot",
+  loop: async (batch) => {
+    const heard = batch.map((message) => {
+      return JSON.stringify(message.data);
+    });
+
+    return { text: heard.join("\n"), end: "done", unread: [] };
+  },
+});
+```
+
+<Annotation id="own-loop" lines="5" tease="the batch in, the result out" title="A whole loop" href="/docs/labs/agents/reference?ref=docs-labs-agents-models#the-loop" linkText="Reference: the loop">
+A function shaped like the handler's `loop`. It reaches its model and tools however it likes.
+</Annotation>
+
+<Annotation id="own-result" lines="10" tease="what a loop returns" title="The result" href="/docs/labs/agents/reference?ref=docs-labs-agents-models#the-result" linkText="Reference: the result">
+The answer in `text`, why the loop stopped in `end`, and the messages it left in `unread`.
+</Annotation>
+
+</AnnotatedCode>
+
+The default handler posts `text`, and the agent's triggers, inbox and thread stay as they are. [Reference: the loop →](/docs/labs/agents/reference?ref=docs-labs-agents-models#the-loop)
 
 ## Recipes and reference
 
