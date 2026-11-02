@@ -1,18 +1,18 @@
 import { AnnotatedCode, Annotation } from "shared/Docs/mdx";
 
 export const metaTitle = "PR reviewer | Inngest Agents";
-export const description = "Build an agent that checks out a pull request in a read-only sandbox, runs its tests, reads the changes and reviews it in a GitHub comment.";
+export const description = "Build an agent that checks out a pull request in a read-only sandbox, runs its tests, reads the changes and posts its review as a comment through a tool you write.";
 
 # PR reviewer
 
 > An agent that checks out a pull request, runs its tests and reviews it in a comment.
 
-A comment asks for the review, and nothing the agent runs can push.
+Opening a pull request starts the review, and nothing the agent runs can push.
 
 ```text
-maya     @review-bot please review
+pr/opened   #42   maya
 
-review-bot
+reviewer    comment on #42
   The tests pass (42 passed). Two problems:
   1. src/pagination.ts:31 skips the last page when `total` % `limit` is 0.
   2. src/pagination.test.ts has no case for an empty list.
@@ -22,56 +22,61 @@ Screenshot needed: the review comment on a pull request.
 
 ## The code
 
-<AnnotatedCode>
+Your own webhook route sends `pr/opened` with `inngest.send` when a pull request opens.
 
-{/* not type-checked: github.thread with repos, events and if; idle as a duration */}
-```typescript {{ title: "inngest/agents/reviewer.ts" }}
-import { github } from "inngest/experimental/agents";
-import { agents } from "../client";
-import { claude } from "../models/claude";
-import { review } from "../sandboxes/review";
+```typescript {{ title: "inngest/events.ts" }}
+import { eventType } from "inngest";
+import { z } from "zod";
 
-export const reviewer = agents.agent({
-  id: "reviewer",
-  triggers: [
-    github.thread({
-      repos: ["acme/app"],
-      events: ["issue_comment"],
-      if:
-        'event.data.action == "created" && ' +
-        "has(event.data.issue.pull_request) && " +
-        'event.data.comment.body.contains("@review-bot please review")',
-    }),
-  ],
-  idle: "1m",
-  model: claude,
-  system:
-    "Run tests, list problems with file and line, change no tracked files.",
-  sandboxes: { review },
+export const prOpened = eventType("pr/opened", {
+  schema: z.object({ pr: z.number(), author: z.string() }),
 });
 ```
 
-<Annotation id="trigger" lines="9-16" tease="only comments that ask" title="Start from a comment" href="/docs/labs/agents/slack-and-github?ref=docs-labs-agents-recipes-pr-reviewer#work-on-git-hub" linkText="Work on GitHub">
-Starts on a pull request comment that asks for a review, not on an edit. The route already drops the app's own comments.
+<AnnotatedCode>
+
+{/* not type-checked: agents.agent with an event trigger, thread, a listed sandbox and no handler */}
+```typescript {{ title: "inngest/agents/reviewer.ts" }}
+import { agents } from "../client";
+import { prOpened } from "../events";
+import { claude } from "../models/claude";
+import { review } from "../sandboxes/review";
+import { comment } from "../tools/comment";
+
+export const reviewer = agents.agent({
+  id: "reviewer",
+  triggers: [prOpened],
+  thread: "event.data.pr",
+  model: claude,
+  system:
+    "Run the tests, list problems with file and line, change no tracked " +
+    "files, then post the review with comment.",
+  sandboxes: { review },
+  tools: { comment },
+});
+```
+
+<Annotation id="trigger" lines="9-10" tease="one thread per pull request" title="Start from your event" href="/docs/labs/agents/threads?ref=docs-labs-agents-recipes-pr-reviewer#which-conversation-is-this" linkText="Which conversation is this?">
+Starts when a pull request opens. Each pull request is its own thread, keyed by its number.
 </Annotation>
 
-<Annotation id="idle" lines="18" tease="a short wait" title="A short idle" href="/docs/labs/agents/inboxes?ref=docs-labs-agents-recipes-pr-reviewer#going-quiet" linkText="Going quiet">
-A request after the run has ended checks out the pull request's new head; one sent within the minute joins the running review.
+<Annotation id="answer" lines="12-14" tease="no handler needed" title="The review is a tool call" href="/docs/labs/agents/models?ref=docs-labs-agents-recipes-pr-reviewer#delete-the-handler" linkText="Delete the handler">
+With no handler, the model's answer is only the run's output, so the prompt asks it to post the review.
 </Annotation>
 
-<Annotation id="answer" lines="19-21" tease="no handler needed" title="The review is the answer" href="/docs/labs/agents/models?ref=docs-labs-agents-recipes-pr-reviewer#delete-the-handler" linkText="Delete the handler">
-With no handler, the model's answer is the comment.
-</Annotation>
-
-<Annotation id="sandbox" lines="22" tease="a machine for tests" title="The sandbox" href="/docs/labs/agents/sandboxes?ref=docs-labs-agents-recipes-pr-reviewer#a-sandbox" linkText="A sandbox">
+<Annotation id="sandbox" lines="15" tease="a machine for tests" title="The sandbox" href="/docs/labs/agents/sandboxes?ref=docs-labs-agents-recipes-pr-reviewer#a-sandbox" linkText="A sandbox">
 Gives the model this sandbox's tools.
+</Annotation>
+
+<Annotation id="comment" lines="16" tease="your tool, your token" title="The comment tool" href="/docs/labs/agents/tools?ref=docs-labs-agents-recipes-pr-reviewer#your-own-git-hub-tools" linkText="Your own GitHub tools">
+Posts the review on the pull request. The token stays in your app.
 </Annotation>
 
 </AnnotatedCode>
 
 <AnnotatedCode>
 
-{/* not type-checked: repo as a function of the event, repo auth as a secret(), push: false */}
+{/* not type-checked: repo as a function of the event, repo auth as one secret(), push: false */}
 ```typescript {{ title: "inngest/sandboxes/review.ts" }}
 import { secret } from "inngest/experimental";
 import { sandbox } from "inngest/experimental/agents";
@@ -80,8 +85,8 @@ export const review = sandbox({
   id: "review",
   repo: ({ event }) => {
     return {
-      url: "https://github.com/acme/app",
-      ref: `refs/pull/${event.data.issue.number}/head`,
+      url: "https://github.com/acme/web",
+      ref: `refs/pull/${event.data.pr}/head`,
       auth: secret("GITHUB_READ_TOKEN"),
       push: false,
     };
@@ -91,11 +96,11 @@ export const review = sandbox({
 ```
 
 <Annotation id="repo" lines="6-9" tease="the pull request's head" title="Check out the pull request" href="/docs/labs/agents/reference-sandboxes?ref=docs-labs-agents-recipes-pr-reviewer#repos" linkText="Reference: repos">
-The head of the pull request that asked.
+The head of the pull request that opened.
 </Annotation>
 
 <Annotation id="readonly" lines="10-11" tease="nothing can push" title="Read only" href="/docs/labs/agents/reference-sandboxes?ref=docs-labs-agents-recipes-pr-reviewer#repos" linkText="Reference: repos">
-A read token and no push tool. A changed tracked file would block the next checkout, so the prompt forbids it.
+One read-only secret serves the checkout, and `push: false` leaves out the push tool. A changed tracked file would block the next checkout, so the prompt forbids it.
 </Annotation>
 
 <Annotation id="tools" lines="14" tease="three tools only" title="Only these tools" href="/docs/labs/agents/reference-sandboxes?ref=docs-labs-agents-recipes-pr-reviewer#code-tools" linkText="Reference: code tools">
@@ -104,18 +109,41 @@ The model gets `review_run`, `review_read` and `review_search`: no `edit`, no pu
 
 </AnnotatedCode>
 
-GitHub calls a route in your app.
+```typescript {{ title: "inngest/tools/comment.ts" }}
+import { tool } from "inngest/experimental";
+import { z } from "zod";
+import { gh } from "../lib/github";
 
-{/* not type-checked: github.bridge as a Web handler with the client and a secret */}
-```typescript {{ title: "app/api/github/route.ts" }}
-import { secret } from "inngest/experimental";
-import { github } from "inngest/experimental/agents";
-import { inngest } from "../../../inngest/client";
-
-export const POST = github.bridge({
-  client: inngest,
-  secret: secret("GITHUB_WEBHOOK_SECRET"),
+export const comment = tool.step({
+  description: "Comments on a pull request",
+  input: z.object({ pr: z.number(), body: z.string() }),
+  run: async ({ pr, body }) => {
+    return await gh.comment(pr, body);
+  },
 });
+```
+
+```typescript {{ title: "inngest/lib/github.ts" }}
+const api = "https://api.github.com/repos/acme/web";
+
+export const gh = {
+  comment: async (pr: number, body: string) => {
+    const response = await fetch(`${api}/issues/${pr}/comments`, {
+      method: "POST",
+      headers: {
+        accept: "application/vnd.github+json",
+        authorization: `Bearer ${process.env.GITHUB_TOKEN}`,
+      },
+      body: JSON.stringify({ body }),
+    });
+
+    if (!response.ok) {
+      throw new Error(`Comment on #${pr}: ${response.status}`);
+    }
+
+    return await response.json();
+  },
+};
 ```
 
 The client adds `sandboxMiddleware()`.
@@ -134,13 +162,14 @@ export const inngest = new Inngest({
 export const agents = createAgents(inngest);
 ```
 
-The [model](/docs/labs/agents/quick-start?ref=docs-labs-agents-recipes-pr-reviewer#pick-a-model) is the quick start's. The serve route is the [Slack assistant's](/docs/labs/agents/recipes/slack-assistant?ref=docs-labs-agents-recipes-pr-reviewer), importing `inngest/agents/reviewer`.
+The [model](/docs/labs/agents/quick-start?ref=docs-labs-agents-recipes-pr-reviewer#pick-a-model) is the quick start's. The serve route is the [Support assistant's](/docs/labs/agents/recipes/support-assistant?ref=docs-labs-agents-recipes-pr-reviewer), importing `inngest/agents/reviewer`.
 
 ## What it shows off
 
-- [A GitHub comment](/docs/labs/agents/slack-and-github?ref=docs-labs-agents-recipes-pr-reviewer#work-on-git-hub) starts the agent on the pull request's thread.
+- [Your own event](/docs/labs/agents/threads?ref=docs-labs-agents-recipes-pr-reviewer#which-conversation-is-this) starts the agent on the pull request's thread.
 - [A repository in the sandbox](/docs/labs/agents/reference-sandboxes?ref=docs-labs-agents-recipes-pr-reviewer#repos) is checked out at the event's ref.
 - [Code tools](/docs/labs/agents/reference-sandboxes?ref=docs-labs-agents-recipes-pr-reviewer#code-tools) limit the model to a shell, `read` and `search`.
+- [A comment tool](/docs/labs/agents/tools?ref=docs-labs-agents-recipes-pr-reviewer#your-own-git-hub-tools) posts the review, so the write token stays in your app.
 
 ## Run it
 
@@ -151,7 +180,6 @@ export ANTHROPIC_API_KEY=sk-ant-...
 export INNGEST_EXPERIMENTAL_KV_URL=redis://localhost:6379
 export GITHUB_READ_TOKEN=ghp_...
 export GITHUB_TOKEN=ghp_...
-export GITHUB_WEBHOOK_SECRET=...
 npm run dev
 ```
 
@@ -159,12 +187,22 @@ npm run dev
 npx inngest-cli@latest dev -u http://localhost:3000/api/inngest
 ```
 
-Add an **Issue comments** webhook pointing at `https://<your-host>/api/github`, then comment `@review-bot please review` on a pull request. `GITHUB_TOKEN` posts the review. Open the run at [localhost:8288](http://localhost:8288).
+`GITHUB_READ_TOKEN` only reads `acme/web`, and `GITHUB_TOKEN` posts the review. Send a pull request from the Dev Server's **Send event** button at [localhost:8288](http://localhost:8288), or from code, with the number of an open pull request:
+
+```typescript {{ title: "scripts/openPr.ts" }}
+import { inngest } from "../inngest/client";
+
+await inngest.send({
+  name: "pr/opened",
+  data: { pr: 42, author: "maya" },
+});
+```
 
 ## Variations
 
 - [Coding agent](/docs/labs/agents/recipes/coding-agent?ref=docs-labs-agents-recipes-pr-reviewer) suggests a fix as a branch.
 - [Skills](/docs/labs/agents/skills?ref=docs-labs-agents-recipes-pr-reviewer) teach it your team's conventions.
+- [A second trigger](/docs/labs/agents/sandboxes?ref=docs-labs-agents-recipes-pr-reviewer#it-belongs-to-the-thread) for pushes, keyed by the same pull request, reviews the head after a push in the same sandbox.
 
 ## Learn more
 
