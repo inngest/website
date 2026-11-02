@@ -1,0 +1,215 @@
+import { AnnotatedCode, Annotation } from "shared/Docs/mdx";
+
+export const metaTitle = "Reliability | Inngest Agents";
+export const description = "Make an Inngest agent safe to leave running: durable retries, a spend budget for each thread, caps on turns and on the agents it starts, sorted model errors, recovery of a failed run, and what a long run does across deploys.";
+
+# Reliability
+
+> Leave an agent running: it retries what fails, caps its own spend and picks up after a crash or a deploy.
+
+Every model call and tool call is a [durable step](/docs/labs/agents/agents?ref=docs-labs-agents-reliability#steps), so a retry never repeats finished work.
+
+- **Cap spend and turns.** No runaway loops. [Caps →](#cap-spend)
+- **Recover.** Rate limits wait; a failed run picks up. [Recovery →](#recover-from-failures)
+- **Run long.** Deploys, `idle` and the step limit. [Long runs →](#deploys-and-long-runs)
+
+<AnnotatedCode>
+
+{/* not type-checked: budget, limits and recovery on an agent definition, result.end and result.reason */}
+```typescript {{ title: "inngest/agents/support.ts" }}
+import { agents } from "../client";
+import { ticketOpened, ticketReplied } from "../events";
+import { claude } from "../models/claude";
+
+export const support = agents.agent(
+  {
+    id: "support",
+    triggers: [ticketOpened],
+    thread: "event.data.ticket",
+    inbox: [ticketReplied],
+    model: claude,
+    system: "You answer support questions.",
+    budget: { usd: 2, tokens: 500_000 },
+    limits: { depth: 2, mayCall: ["support/researcher"] },
+    recovery: true,
+  },
+  async ({ inbox, loop }) => {
+    let answer = "";
+
+    for await (const batch of inbox.batches()) {
+      const result = await loop(batch);
+
+      if (result.end === "budget") {
+        return result.reason;
+      }
+
+      answer = result.text;
+    }
+
+    return answer;
+  },
+);
+```
+
+<Annotation id="budget" lines="13" tease="per thread" title="Budget" href="#cap-spend" linkText="Cap spend">
+What this thread may spend.
+</Annotation>
+
+<Annotation id="limits" lines="14" tease="who it may start" title="Limits" href="/docs/labs/agents/agent-discovery?ref=docs-labs-agents-reliability#who-it-may-start" linkText="Who it may start">
+Agents it starts can start agents, but no deeper. Its model may start only `support/researcher`.
+</Annotation>
+
+<Annotation id="recovery" lines="15" tease="opt in" title="Recovery" href="#recover-from-failures" linkText="Recover from failures">
+Also hands the message in flight to a fresh run.
+</Annotation>
+
+<Annotation id="end" lines="23" tease="why it stopped" title="end and reason" href="/docs/labs/agents/models?ref=docs-labs-agents-reliability#a-budget" linkText="A budget">
+`"budget"` comes with a `reason`, which the handler returns as the run's output.
+</Annotation>
+
+</AnnotatedCode>
+
+The agents on this page use these events:
+
+```typescript {{ title: "inngest/events.ts" }}
+import { eventType } from "inngest";
+import { z } from "zod";
+
+export const ticketOpened = eventType("ticket/opened", {
+  schema: z.object({ ticket: z.string(), text: z.string() }),
+});
+
+export const ticketReplied = eventType("ticket/replied", {
+  schema: z.object({
+    ticket: z.string(),
+    from: z.string(),
+    team: z.boolean(),
+    text: z.string(),
+  }),
+});
+```
+
+## Cap spend
+
+`budget` caps what one thread spends across all its runs, kept in thread state. The model prices its own calls; `price` overrides its rates. With no handler, a spent budget ends the loop: the run's output is the model's last text, and the trace shows `end` as `"budget"`.
+
+<AnnotatedCode>
+
+{/* not type-checked: price as a per-million-token table */}
+```typescript {{ title: "inngest/agents/summarizer.ts" }}
+import { agents } from "../client";
+import { ticketOpened } from "../events";
+import { claude } from "../models/claude";
+
+export const summarizer = agents.agent({
+  id: "summarizer",
+  triggers: [ticketOpened],
+  thread: "event.data.ticket",
+  model: claude,
+  system: "Summarize the ticket in three lines.",
+  budget: { usd: 1 },
+  price: {
+    "*": { input: 2.5, output: 12.5 },
+  },
+});
+```
+
+<Annotation id="price" lines="12-14" tease="dollars per million tokens" title="Price" href="/docs/labs/agents/reference?ref=docs-labs-agents-reliability#budget-and-price" linkText="Reference: budget and price">
+`"*"` is the rate for any model not named.
+</Annotation>
+
+</AnnotatedCode>
+
+## Cap turns
+
+A loop that keeps calling tools stops after `maxTurns` (40 by default). An agent with no handler sets it as `loop: { maxTurns: 10 }` on its definition.
+
+<AnnotatedCode>
+
+{/* not type-checked: maxTurns as a per-call loop option and end: "maxTurns" */}
+```typescript {{ title: "inngest/agents/lookup.ts" }}
+import { agents } from "../client";
+import { ticketOpened } from "../events";
+import { claude } from "../models/claude";
+
+export const lookup = agents.agent(
+  {
+    id: "lookup",
+    triggers: [ticketOpened],
+    thread: "event.data.ticket",
+    model: claude,
+    system: "Answer from the docs.",
+  },
+  async ({ inbox, loop }) => {
+    let answer = "";
+
+    for await (const batch of inbox.batches()) {
+      const result = await loop(batch, { maxTurns: 10 });
+
+      if (result.end === "maxTurns") {
+        return "I ran out of turns before I finished.";
+      }
+
+      answer = result.text;
+    }
+
+    return answer;
+  },
+);
+```
+
+<Annotation id="turns" lines="17" tease="for this call" title="maxTurns" href="/docs/labs/agents/reference?ref=docs-labs-agents-reliability#the-loop" linkText="Reference: the loop">
+A loop option, so each call can have its own.
+</Annotation>
+
+</AnnotatedCode>
+
+## Recover from failures
+
+A rate limit waits for the provider's `retry-after`, for any model. A final error such as a rejected request isn't retried.
+
+A run that fails for good shows its error in the trace. With `recovery: true`, the message it was handling goes to a fresh run. The same error is never resent, nor is a `NonRetriableError`, and a message is resent for at most three kinds of error.
+
+Every next run gets [`previousRun`](/docs/labs/agents/reference?ref=docs-labs-agents-reliability#the-handler), with or without `recovery`. It is `{ runId, status, at, error? }` and says how the last run ended: `status` is `"completed"`, `"failed"` or `"cancelled"`, and `at` is milliseconds since the epoch.
+
+## Deploys and long runs
+
+After a deploy, a live run replays on your latest code. Every model call, tool call, `step.run` of your own and inbox message is a step toward the 1,000-step limit. So is a KV call made outside a step. [Limits →](/docs/durable-execution/limits?ref=docs-labs-agents-reliability#platform-limits)
+
+Keep the default `idle` of ten minutes unless the agent waits on something slow, such as a customer's reply. A longer `idle` keeps the run live across deploys, spends steps and keeps the thread's sandbox running.
+
+<AnnotatedCode>
+
+{/* not type-checked: idle as a duration string on an agent that waits for a customer's reply */}
+```typescript {{ title: "inngest/agents/followUp.ts" }}
+import { agents } from "../client";
+import { ticketOpened, ticketReplied } from "../events";
+import { claude } from "../models/claude";
+
+export const followUp = agents.agent({
+  id: "follow-up",
+  triggers: [ticketOpened],
+  thread: "event.data.ticket",
+  inbox: [ticketReplied],
+  model: claude,
+  system: "Follow the ticket until the customer confirms it is solved.",
+  idle: "7d",
+});
+```
+
+<Annotation id="idle" lines="12" tease="a week-long run" title="A long idle" href="/docs/labs/agents/inboxes?ref=docs-labs-agents-reliability#going-quiet" linkText="Going quiet">
+Live across every deploy.
+</Annotation>
+
+</AnnotatedCode>
+
+## Gotchas
+
+- **A spent budget stays spent.** Later messages end at once.
+- **A cancelled run isn't recovered.**
+- **Work you don't await is stopped** when the handler returns. An un-awaited `score()` is still written.
+
+## Recipes and reference
+
+- [Lead and specialists](/docs/labs/agents/recipes/agent-teams?ref=docs-labs-agents-reliability): each thread has its own budget.
+- [Reference: budget, limits and recovery](/docs/labs/agents/reference?ref=docs-labs-agents-reliability#budget-limits-and-recovery)

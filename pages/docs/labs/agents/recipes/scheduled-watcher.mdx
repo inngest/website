@@ -1,0 +1,216 @@
+import { AnnotatedCode, Annotation } from "shared/Docs/mdx";
+
+export const metaTitle = "Scheduled watcher | Inngest Agents";
+export const description = "Build a scheduled function that finds pull requests that have gone quiet, writes a digest with one model call and posts it to your team, staying silent when there is nothing new.";
+
+# Scheduled watcher
+
+> A weekday digest that speaks up only when there is news.
+
+It has no thread, inbox or card, so it is a plain function and not an agent. [Agent or plain function →](/docs/labs/agents/agent-teams?ref=docs-labs-agents-recipes-scheduled-watcher#not-everything-is-an-agent)
+
+```text
+Mon 09:00   Watcher
+            Stale pull requests in acme/app:
+            #301 Add retries to webhooks, maya, idle 5 days
+            #288 Bump vitest, dan, idle 4 days
+
+Tue 09:00   (nothing posted: no pull request went stale)
+```
+
+Screenshot needed: the digest in the team channel.
+
+## The code
+
+<AnnotatedCode>
+
+{/* not type-checked: kv.key with a schema, kv.app in a plain function and the anthropic() one-shot call */}
+```typescript {{ title: "inngest/functions/watcher.ts" }}
+import { kv } from "inngest/experimental/agents";
+import { z } from "zod";
+import { inngest } from "../client";
+import { claude } from "../models/claude";
+import { findStalePulls } from "./findStalePulls";
+import { postToSlack } from "./postToSlack";
+
+const reported = kv.key("reported", z.array(z.number()));
+
+export const watcher = inngest.createFunction(
+  { id: "watcher", triggers: [{ cron: "TZ=UTC 0 9 * * 1-5" }] },
+  async ({ step }) => {
+    const seen = (await kv.app.get(reported)) ?? [];
+
+    const stale = await step.run("find-stale", async () => {
+      return await findStalePulls(seen);
+    });
+
+    if (stale.length === 0) {
+      return;
+    }
+
+    const digest = await step.run("digest", async () => {
+      const { text } = await claude({
+        system: "One line per pull request, oldest first, for the team.",
+        prompt: JSON.stringify(stale),
+      });
+
+      return text;
+    });
+
+    await step.run("post", async () => {
+      await postToSlack(digest);
+    });
+
+    const numbers = stale.map((pull) => {
+      return pull.number;
+    });
+
+    await kv.app.update(reported, (current) => {
+      return [...(current ?? []), ...numbers];
+    });
+  },
+);
+```
+
+<Annotation id="cron" lines="11" tease="a cron trigger" title="Run on a schedule" href="/docs/labs/agents/agents?ref=docs-labs-agents-recipes-scheduled-watcher#other-ways-to-start" linkText="Start a run">
+A schedule is a trigger like any other.
+</Annotation>
+
+<Annotation id="key" lines="8" tease="a typed key" title="What was reported" href="/docs/labs/agents/memory?ref=docs-labs-agents-recipes-scheduled-watcher#typed-keys" linkText="Type a key">
+Reads are checked against the schema.
+</Annotation>
+
+<Annotation id="seen" lines="13" tease="shared by every run" title="App scope" href="/docs/labs/agents/memory?ref=docs-labs-agents-recipes-scheduled-watcher#shared-by-every-pr" linkText="Share state">
+`kv.app` is the same for every run in the app. With no `createAgents`, it uses the store from `INNGEST_EXPERIMENTAL_KV_URL`.
+</Annotation>
+
+<Annotation id="digest" lines="23-30" tease="one model call" title="The digest" href="/docs/labs/agents/models?ref=docs-labs-agents-recipes-scheduled-watcher#ask-a-model" linkText="Call it once">
+A one-shot call isn't a step by itself, so it sits in one.
+</Annotation>
+
+<Annotation id="post" lines="32-34,40-42" tease="retried until it lands" title="Post, then mark" href="/docs/labs/agents/reliability?ref=docs-labs-agents-recipes-scheduled-watcher" linkText="Reliability">
+A failed post throws and the step retries. Pull requests are marked reported only after it succeeds.
+</Annotation>
+
+</AnnotatedCode>
+
+```typescript {{ title: "inngest/functions/findStalePulls.ts" }}
+export const findStalePulls = async (seen: number[]) => {
+  const token = process.env.GITHUB_TOKEN;
+
+  if (!token) {
+    throw new Error("Set GITHUB_TOKEN");
+  }
+
+  const query = "state=open&sort=updated&direction=asc";
+
+  const response = await fetch(
+    `https://api.github.com/repos/acme/app/pulls?${query}`,
+    { headers: { authorization: `Bearer ${token}` } },
+  );
+
+  if (!response.ok) {
+    throw new Error(`GitHub ${response.status}: ${await response.text()}`);
+  }
+
+  const pulls = (await response.json()) as {
+    number: number;
+    title: string;
+    updated_at: string;
+    user: { login: string };
+  }[];
+
+  const cutoff = Date.now() - 3 * 86_400_000;
+
+  return pulls
+    .filter((pull) => {
+      const idle = Date.parse(pull.updated_at) < cutoff;
+
+      return idle && !seen.includes(pull.number);
+    })
+    .map((pull) => {
+      return {
+        number: pull.number,
+        title: pull.title,
+        author: pull.user.login,
+        updated: pull.updated_at,
+      };
+    });
+};
+```
+
+```typescript {{ title: "inngest/functions/postToSlack.ts" }}
+export const postToSlack = async (text: string) => {
+  const webhook = process.env.SLACK_WEBHOOK_URL;
+
+  if (!webhook) {
+    throw new Error("Set SLACK_WEBHOOK_URL");
+  }
+
+  const response = await fetch(webhook, {
+    method: "POST",
+    headers: { "content-type": "application/json" },
+    body: JSON.stringify({ text }),
+  });
+
+  if (!response.ok) {
+    throw new Error(`Slack answered ${response.status}`);
+  }
+};
+```
+
+```typescript {{ title: "inngest/serve.ts" }}
+import { createServer } from "inngest/node";
+import { inngest } from "./client";
+import { watcher } from "./functions/watcher";
+
+createServer({
+  client: inngest,
+  functions: [watcher],
+}).listen(3000);
+```
+
+```typescript {{ title: "inngest/client.ts" }}
+import { Inngest } from "inngest";
+
+export const inngest = new Inngest({ id: "watcher" });
+```
+
+The [model](/docs/labs/agents/quick-start?ref=docs-labs-agents-recipes-scheduled-watcher#pick-a-model) is the quick start's.
+
+## What it shows off
+
+- [A plain function](/docs/labs/agents/agent-teams?ref=docs-labs-agents-recipes-scheduled-watcher#not-everything-is-an-agent) runs a schedule with steps and no agent.
+- [One model call](/docs/labs/agents/models?ref=docs-labs-agents-recipes-scheduled-watcher#ask-a-model) writes the digest inside a step.
+- [App-wide memory](/docs/labs/agents/memory?ref=docs-labs-agents-recipes-scheduled-watcher#shared-by-every-pr) with a typed key remembers what was reported.
+- [Retried steps](/docs/labs/agents/reliability?ref=docs-labs-agents-recipes-scheduled-watcher) keep a failed post from being marked reported.
+
+## Run it
+
+Set the project up as in the [quick start](/docs/labs/agents/quick-start?ref=docs-labs-agents-recipes-scheduled-watcher#install), plus a GitHub token and a Slack incoming webhook.
+
+```bash
+export ANTHROPIC_API_KEY=sk-ant-...
+export INNGEST_EXPERIMENTAL_KV_URL=redis://localhost:6379
+export GITHUB_TOKEN=ghp_...
+export SLACK_WEBHOOK_URL=https://hooks.slack.com/services/...
+npx tsx inngest/serve.ts
+```
+
+```bash
+npx inngest-cli@latest dev -u http://localhost:3000/api/inngest
+```
+
+Invoke `watcher` from the Functions page at [localhost:8288](http://localhost:8288) to run it before 09:00. A second invoke posts nothing.
+
+## Variations
+
+- [Agents](/docs/labs/agents/agents?ref=docs-labs-agents-recipes-scheduled-watcher#other-ways-to-start) runs it hourly with `{ cron: "TZ=UTC 0 * * * *" }`.
+- [KV](/docs/labs/agents/reference?ref=docs-labs-agents-recipes-scheduled-watcher#kv) reminds weekly with `kv.app.set(reported, value, { ttl: 604800 })`.
+- [Agent Teams](/docs/labs/agents/agent-teams?ref=docs-labs-agents-recipes-scheduled-watcher) hands a digest that needs follow-up to an agent with `start()`.
+
+## Learn more
+
+- [Agents](/docs/labs/agents/agents?ref=docs-labs-agents-recipes-scheduled-watcher)
+- [Memory](/docs/labs/agents/memory?ref=docs-labs-agents-recipes-scheduled-watcher)
+- Next recipe: [Lead and specialists](/docs/labs/agents/recipes/agent-teams?ref=docs-labs-agents-recipes-scheduled-watcher)

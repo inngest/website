@@ -1,0 +1,170 @@
+import { AnnotatedCode, Annotation } from "shared/Docs/mdx";
+
+export const metaTitle = "Threads | Inngest Agents";
+export const description = "Say which events belong together and their runs share one thread. Name a thread from your own events, see what a thread keeps between runs, and keep two pull requests apart.";
+
+# Threads
+
+> Say which events belong together, and their runs share one thread.
+
+A run is thrown away when it ends; a thread is what its runs share.
+
+The sections below grow a PR helper for `acme/web`, built like [`hello`](/docs/labs/agents/agents?ref=docs-labs-agents-threads). After the first block, a block shows only what changes, and [the last section](#a-trigger-with-its-own-key) has the whole file.
+
+## Three events, three strangers
+
+You want one helper for everything that happens to a PR. List its events as triggers.
+
+```typescript {{ title: "inngest/events.ts" }}
+import { eventType } from "inngest";
+import { z } from "zod";
+
+const ciRun = z.object({ pr: z.number() });
+
+export const prOpened = eventType("pr/opened", {
+  schema: z.object({ pr: z.number(), author: z.string() }),
+});
+
+export const prComment = eventType("pr/comment", {
+  schema: z.object({ pr: z.number(), author: z.string(), body: z.string() }),
+});
+
+export const ciFailed = eventType("ci/run.failed", { schema: ciRun });
+
+export const deployed = eventType("deploy/finished", {
+  schema: z.object({ env: z.string(), pull: z.number() }),
+});
+```
+
+{/* not type-checked: event triggers on an agent with a handler */}
+```typescript
+import { agents } from "../client";
+import { ciFailed, deployed, prComment, prOpened } from "../events";
+
+export const prHelper = agents.agent(
+  { id: "pr-helper", triggers: [prOpened, prComment, ciFailed, deployed] },
+  async ({ event }) => {
+    return `Saw ${event.name}`;
+  },
+);
+```
+
+Open a PR, fail its CI and deploy it: three runs on three threads, because none of the events names a thread. None of them knows about the others.
+
+## Which conversation is this?
+
+You want everything about #42 to be one thread. Give the agent a `thread`: an [expression](/docs/durable-execution/guides-and-advanced/writing-expressions?ref=docs-labs-agents-threads) over the `event`.
+
+<AnnotatedCode>
+
+{/* not type-checked: thread on an agent definition */}
+```typescript
+{
+  id: "pr-helper",
+  triggers: [prOpened, prComment, ciFailed, deployed],
+  thread: "event.data.pr",
+}
+```
+
+<Annotation id="thread" lines="4" tease="the PR's number" title="thread" href="/docs/labs/agents/reference?ref=docs-labs-agents-threads#thread-keys-and-inbox-sources" linkText="Thread keys">
+Events that carry the same `pr` land on one thread. The key is the number as a string.
+</Annotation>
+
+</AnnotatedCode>
+
+Open PR #42 and fail its CI: both land on #42's thread, one run at a time, in order. There's no magic in a thread: it's a key on your own events, and events whose keys come out equal share a thread.
+
+## What a conversation keeps
+
+You want to know what joining a thread gets you. Leave a note for the next run.
+
+{/* not type-checked: kv.thread.get and set in an agent handler */}
+```typescript
+import { kv } from "inngest/experimental/agents";
+
+async ({ event }) => {
+  const note = await kv.thread.get("note");
+
+  await kv.thread.set("note", `saw ${event.name}`);
+
+  return note;
+},
+```
+
+The first run returns nothing, and the second returns the first's note. The thread keeps its [state](/docs/labs/agents/memory?ref=docs-labs-agents-threads#thread-state), the model's [history](/docs/labs/agents/models?ref=docs-labs-agents-threads#it-remembers), its [sandbox](/docs/labs/agents/sandboxes?ref=docs-labs-agents-threads#it-belongs-to-the-thread) and its [budget](/docs/labs/agents/models?ref=docs-labs-agents-threads#a-budget).
+
+## No key is fine
+
+You want an agent for one-off jobs. It needs no key.
+
+{/* not type-checked: an agent with a handler and no thread */}
+```typescript {{ title: "inngest/agents/summarize.ts" }}
+import { agents } from "../client";
+
+export const summarize = agents.agent(
+  { id: "summarize" },
+  async ({ event }) => {
+    return event.data.content.slice(0, 80);
+  },
+);
+```
+
+Each `start()` is its own thread, with nothing to set up. Its answer is the run's output.
+
+## Two conversations
+
+You want to follow two pull requests at once. The agent needs no change; send CI failures for #42 and #43.
+
+```typescript {{ title: "scripts/failBoth.ts" }}
+import { inngest } from "../inngest/client";
+
+await inngest.send([
+  { name: "ci/run.failed", data: { pr: 42 } },
+  { name: "ci/run.failed", data: { pr: 43 } },
+]);
+```
+
+`me` is the handle to the run's own thread, so `me.key` names it: `"42"` or `"43"`.
+
+{/* not type-checked: me.key in an agent handler */}
+```typescript
+async ({ event, me }) => {
+  return `Saw ${event.name} on ${me.key}`;
+},
+```
+
+Each pull request has its own thread, with its own runs and state. Code turns the key back into the PR's number with `Number(me.key)`.
+
+## A trigger with its own key
+
+You want deploys in the thread too, though the deploy event names the PR `pull`. Give that trigger its own `thread`; it wins over the agent's.
+
+{/* not type-checked: four triggers on an agent, one with its own thread */}
+```typescript {{ title: "inngest/agents/prHelper.ts" }}
+import { agents } from "../client";
+import { ciFailed, deployed, prComment, prOpened } from "../events";
+
+export const prHelper = agents.agent(
+  {
+    id: "pr-helper",
+    triggers: [
+      prOpened,
+      prComment,
+      ciFailed,
+      { event: deployed, thread: "event.data.pull" },
+    ],
+    thread: "event.data.pr",
+  },
+  async ({ event, me }) => {
+    return `Saw ${event.name} on ${me.key}`;
+  },
+);
+```
+
+Every kind of event lands on #42's thread.
+
+## Recipes and reference
+
+- [Reference: thread keys and inbox sources](/docs/labs/agents/reference?ref=docs-labs-agents-threads#thread-keys-and-inbox-sources)
+- [Support assistant](/docs/labs/agents/recipes/support-assistant?ref=docs-labs-agents-threads)
+- [PR reviewer](/docs/labs/agents/recipes/pr-reviewer?ref=docs-labs-agents-threads)

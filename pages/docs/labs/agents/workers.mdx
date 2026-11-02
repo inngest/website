@@ -1,0 +1,189 @@
+import { AnnotatedCode, Annotation } from "shared/Docs/mdx";
+
+export const metaTitle = "Run on Workers | Inngest Agents";
+export const description = "Run Inngest Agents on Cloudflare Workers: bindings exist only per request, so keep the store in D1, give the model and tokens as functions, and serve from the Worker's fetch.";
+
+# Run on Workers
+
+> Run your agents on Cloudflare Workers, with state in D1 and secrets read at run time.
+
+A Worker has no secrets or database at import time, so fields that take a function read them when a run starts.
+
+- **Keep state in D1.** The store reads its binding on each use. [Store →](#store-state-in-d1)
+- **Read secrets at run time.** The model and the repo's `auth` are functions. [Bindings →](#read-bindings-at-run-time)
+- **Serve from `fetch`.** One export that sets the bindings, then serves Inngest. [Serve →](#serve-from-fetch)
+
+<AnnotatedCode>
+
+{/* not type-checked: model as a function reading a Worker binding */}
+```typescript {{ title: "inngest/agents/triage.ts" }}
+import { anthropic } from "inngest/experimental/agents";
+import { agents } from "../client";
+import { getEnv } from "../env";
+import { ticketOpened } from "../events";
+import { work } from "../sandboxes/work";
+
+export const triage = agents.agent({
+  id: "triage",
+  triggers: [ticketOpened],
+  thread: "event.data.ticket",
+  model: () => {
+    return anthropic({
+      model: "claude-sonnet-5-5",
+      apiKey: getEnv().ANTHROPIC_API_KEY,
+    });
+  },
+  system: "You triage support tickets.",
+  sandboxes: { work },
+});
+```
+
+<Annotation id="model" lines="11-16" tease="called per run" title="A field as a function" href="/docs/labs/agents/reference?ref=docs-labs-agents-workers#the-definition" linkText="Reference: the definition">
+`getEnv()` reads the request's bindings (`env.ts`, below) and is safe here: a run only starts inside a request.
+</Annotation>
+
+</AnnotatedCode>
+
+`ticketOpened` is the event the [Support assistant](/docs/labs/agents/recipes/support-assistant?ref=docs-labs-agents-workers) listens for.
+
+```typescript {{ title: "inngest/events.ts" }}
+import { eventType } from "inngest";
+import { z } from "zod";
+
+export const ticketOpened = eventType("ticket/opened", {
+  schema: z.object({ ticket: z.string(), text: z.string() }),
+});
+```
+
+## Declare the bindings
+
+`env.ts` keeps the bindings of the latest request, which are the same for the whole deployment.
+
+{/* not type-checked: D1Database from @cloudflare/workers-types */}
+```typescript {{ title: "inngest/env.ts" }}
+import type { D1Database } from "@cloudflare/workers-types";
+
+export type Env = {
+  DB: D1Database;
+  ANTHROPIC_API_KEY: string;
+  GITHUB_READ_TOKEN: string;
+};
+
+let current: Env | undefined;
+
+export const setEnv = (env: unknown) => {
+  current = env as Env;
+};
+
+export const getEnv = () => {
+  if (!current) {
+    throw new Error("No request has reached the Worker yet.");
+  }
+
+  return current;
+};
+```
+
+## Store state in D1
+
+`d1KvAdapter` takes a function and calls it on every operation, so the store never holds a binding past a request. Add `sandboxMiddleware()` when an agent lists sandboxes.
+
+{/* not type-checked: d1KvAdapter with a function, sandboxMiddleware() */}
+```typescript {{ title: "inngest/client.ts" }}
+import { Inngest } from "inngest";
+import { sandboxMiddleware } from "inngest/experimental";
+import { createAgents, d1KvAdapter } from "inngest/experimental/agents";
+import { getEnv } from "./env";
+
+export const inngest = new Inngest({
+  id: "support",
+  middleware: [sandboxMiddleware()],
+});
+
+export const agents = createAgents(inngest, {
+  store: d1KvAdapter(() => {
+    return getEnv().DB;
+  }),
+});
+```
+
+`d1KvSchema` holds the statements for the store's two tables. Write them into a migration; `agents-db` is your D1 database's name.
+
+{/* not type-checked: d1KvSchema as a list of SQL statements */}
+```typescript {{ title: "inngest/printSchema.ts" }}
+import { d1KvSchema } from "inngest/experimental/agents";
+
+console.log(`${d1KvSchema.join(";\n\n")};`);
+```
+
+```bash
+npx wrangler d1 migrations create agents-db agents
+npx tsx inngest/printSchema.ts > migrations/0001_agents.sql
+npx wrangler d1 migrations apply agents-db
+```
+
+## Read bindings at run time
+
+Fields that take a function (`model`, `tools`, `sandboxes` and the rest) get the event and thread. So does a sandbox's `repo`, whose `auth` can be a function of its own. [The definition →](/docs/labs/agents/reference?ref=docs-labs-agents-workers#the-definition)
+
+{/* not type-checked: repo.auth as a function reading a Worker binding */}
+```typescript {{ title: "inngest/sandboxes/work.ts" }}
+import { sandbox } from "inngest/experimental/agents";
+import { getEnv } from "../env";
+
+export const work = sandbox({
+  id: "work",
+  repo: {
+    url: "https://github.com/acme/web",
+    auth: () => {
+      return getEnv().GITHUB_READ_TOKEN;
+    },
+    push: false,
+  },
+});
+```
+
+## Serve from fetch
+
+`setEnv(env)` runs first on every request, so everything after it can read the bindings. Workers require a default export for the entry point.
+
+{/* not type-checked: serve() from inngest/cloudflare with agents.functions() */}
+```typescript {{ title: "inngest/serve.ts" }}
+import { serve } from "inngest/cloudflare";
+import { agents, inngest } from "./client";
+import { setEnv } from "./env";
+import "./agents/triage";
+
+const handler = serve({
+  client: inngest,
+  functions: agents.functions(),
+  servePath: "/api/inngest",
+});
+
+export default {
+  fetch: (request: Request, env: Record<string, string | undefined>) => {
+    setEnv(env);
+
+    return handler(request, env);
+  },
+};
+```
+
+Turn on the `nodejs_compat` flag, as [Serve functions](/docs/durable-execution/deploying-functions/serve?ref=docs-labs-agents-workers) says for Workers.
+
+## Gotchas
+
+- **Import time has no bindings.** Read them inside a function.
+- **Some fields stay values.** Inngest reads them when the app syncs or an event is routed, so keep bindings out of them. [The definition →](/docs/labs/agents/reference?ref=docs-labs-agents-workers#the-definition)
+- **Field functions have no side effects.** They run again on replay, and may read `kv`.
+- **Other entry points call `setEnv`.** A scheduled handler that sends messages calls `setEnv(env)` first.
+
+## How it works
+
+- A field's function runs once when a run starts, a token function at each use and the store's on every operation.
+- Everything else is the same as on any host. [Project structure →](/docs/labs/agents/structure?ref=docs-labs-agents-workers)
+
+## Recipes and reference
+
+- [Memory](/docs/labs/agents/memory?ref=docs-labs-agents-workers): the store, and what a thread keeps.
+- [Reference: the definition](/docs/labs/agents/reference?ref=docs-labs-agents-workers#the-definition)

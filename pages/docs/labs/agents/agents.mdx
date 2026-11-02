@@ -1,0 +1,145 @@
+import { AnnotatedCode, Annotation } from "shared/Docs/mdx";
+
+export const metaTitle = "Agents | Inngest Agents";
+export const description = "An Inngest agent is a function Inngest runs for you, durably. Start from the smallest agent, give it a handler, read what started it, add triggers and wrap flaky work in steps.";
+
+# Agents
+
+> An agent is code Inngest runs for you, durably.
+
+Inngest starts it, retries what fails and records every run. The sections below grow one agent, `hello`, from an id to a step that retries.
+
+## Hello, agent
+
+You want the smallest agent there is. Give it an id; the `agents` object comes from the client in the [quick start](/docs/labs/agents/quick-start?ref=docs-labs-agents-agents#create-the-client).
+
+{/* not type-checked: agents.agent with an id and no handler */}
+```typescript
+import { agents } from "../client";
+
+export const hello = agents.agent({ id: "hello" });
+```
+
+Start it with `hello.start("Hi")`. The Dev Server shows one run, completed: its first row is the message, and it returns nothing. [Call it from code →](/docs/labs/agents/agent-teams?ref=docs-labs-agents-agents#call-it-from-code)
+
+## Give it a body
+
+You want the agent to do something. Pass a handler as the second argument; what it returns is the run's output.
+
+{/* not type-checked: agents.agent with a handler */}
+```typescript
+export const hello = agents.agent({ id: "hello" }, async () => {
+  return "I ran.";
+});
+```
+
+## What started it
+
+You want to read what was sent. Take `event` from the handler's argument.
+
+{/* not type-checked: a handler reading event.data.content */}
+```typescript
+export const hello = agents.agent({ id: "hello" }, async ({ event }) => {
+  return `You said: ${event.data.content}`;
+});
+```
+
+`event` is exactly what was sent: `start("Hi")` sends the text as `event.data.content`. Open the trace's first row to see it.
+
+## Other ways to start
+
+You want CI to start it, not just a message. List its event type in `triggers`.
+
+```typescript {{ title: "inngest/events.ts" }}
+import { eventType } from "inngest";
+import { z } from "zod";
+
+const ciRun = z.object({ pr: z.number() });
+
+export const ciFailed = eventType("ci/run.failed", { schema: ciRun });
+```
+
+<AnnotatedCode>
+
+{/* not type-checked: triggers with an event type, event.is() narrowing */}
+```typescript
+import { ciFailed } from "../events";
+
+export const hello = agents.agent(
+  { id: "hello", triggers: [ciFailed] },
+  async ({ event }) => {
+    if (event.is(ciFailed)) {
+      return `CI failed on #${event.data.pr}`;
+    }
+
+    return `You said: ${event.data.content}`;
+  },
+);
+```
+
+<Annotation id="triggers" lines="4" tease="what starts a run" title="Triggers" href="/docs/labs/agents/threads?ref=docs-labs-agents-agents#three-events-three-strangers" linkText="Threads">
+Sending `ci/run.failed` starts a run. A message still does.
+</Annotation>
+
+<Annotation id="is" lines="6" tease="tell them apart" title="event.is()" href="/docs/durable-execution/guides-and-advanced/events-and-triggers/event-payloads-and-schemas?ref=docs-labs-agents-agents#narrow-an-event-with-is" linkText="Narrow an event with is()">
+Narrows `event` to one trigger's type.
+</Annotation>
+
+</AnnotatedCode>
+
+A schedule is a trigger too: `{ cron: "0 9 * * *" }`.
+
+## Steps
+
+You want work that survives a flaky call without retry code. Wrap it in `step.run`.
+
+```typescript {{ title: "inngest/lib/ci.ts" }}
+export const fetchLog = async (pr: number) => {
+  const response = await fetch(`https://ci.acme.test/prs/${pr}/log`);
+
+  if (!response.ok) {
+    throw new Error(`CI log for #${pr}: ${response.status}`);
+  }
+
+  return await response.text();
+};
+```
+
+<AnnotatedCode>
+
+{/* not type-checked: step.run in an agent handler */}
+```typescript {{ title: "inngest/agents/hello.ts" }}
+import { agents } from "../client";
+import { ciFailed } from "../events";
+import { fetchLog } from "../lib/ci";
+
+export const hello = agents.agent(
+  { id: "hello", triggers: [ciFailed] },
+  async ({ event, step }) => {
+    if (event.is(ciFailed)) {
+      const log = await step.run("read the log", async () => {
+        return await fetchLog(event.data.pr);
+      });
+
+      return log.split("\n")[0];
+    }
+
+    return `You said: ${event.data.content}`;
+  },
+);
+```
+
+<Annotation id="step" lines="9-11" tease="retried alone" title="step.run" href="/docs/durable-execution/primitives/step-run?ref=docs-labs-agents-agents" linkText="step.run">
+If `fetchLog` throws, only this step retries. Finished steps return their saved result.
+</Annotation>
+
+</AnnotatedCode>
+
+Code outside a step runs again on every replay, so keep side effects inside steps.
+
+## Recipes and reference
+
+- [Quick start](/docs/labs/agents/quick-start?ref=docs-labs-agents-agents)
+- [Recipes](/docs/labs/agents/recipes?ref=docs-labs-agents-agents)
+- [Reference: the definition](/docs/labs/agents/reference?ref=docs-labs-agents-agents#the-definition)
+- [Reference: the handler](/docs/labs/agents/reference?ref=docs-labs-agents-agents#the-handler)

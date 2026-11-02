@@ -1,0 +1,177 @@
+import { AnnotatedCode, Annotation } from "shared/Docs/mdx";
+
+export const metaTitle = "Coding agent | Inngest Agents";
+export const description = "Build an agent that clones a repository into a sandbox, makes a change, runs the tests and pushes a branch your policy allows, with no write token in the sandbox.";
+
+# Coding agent
+
+> An agent that changes a repository on a branch and never holds the write token.
+
+Ask for a change in plain words and get a branch your policy allowed.
+
+```text
+request-change   acme/web   "Fix the off-by-one in pagination"
+
+  coder  work_run   sed -i 's/offset + 1/offset/' src/pagination.ts
+  coder  work_run   npm test                  58 passed
+  coder  work_push  agent/fix-pagination-offset
+
+Returned: Pushed agent/fix-pagination-offset. The tests pass.
+```
+
+Screenshot needed: the run's trace in the Dev Server.
+
+## The code
+
+<AnnotatedCode>
+
+{/* not type-checked: repo as a function of the event, repo auth as { read, write }, policy */}
+```typescript {{ title: "inngest/sandboxes/work.ts" }}
+import { secret } from "inngest/experimental";
+import { sandbox } from "inngest/experimental/agents";
+
+export const work = sandbox({
+  id: "work",
+  repo: ({ event }) => {
+    return {
+      url: `https://github.com/${event.data.repo}`,
+      auth: {
+        read: secret("GITHUB_READ_TOKEN"),
+        write: secret("GITHUB_WRITE_TOKEN"),
+      },
+      policy: (push) => {
+        if (!push.branch?.startsWith("agent/")) {
+          return { refuse: "Branches for the agent start with agent/" };
+        }
+
+        const touched = push.paths.filter((path) => {
+          return path.startsWith(".github/");
+        });
+
+        if (touched.length > 0) {
+          return { refuse: `Not allowed to change ${touched.join(", ")}` };
+        }
+      },
+    };
+  },
+});
+```
+
+<Annotation id="repo" lines="6-8" tease="the request names it" title="The repository" href="/docs/labs/agents/reference-sandboxes?ref=docs-labs-agents-recipes-coding-agent#repos" linkText="Reference: repos">
+A function of the event, so the sandbox clones the repository each request names.
+</Annotation>
+
+<Annotation id="auth" lines="9-12" tease="read to clone" title="Two tokens" href="/docs/labs/agents/sandboxes?ref=docs-labs-agents-recipes-coding-agent#a-repo" linkText="Check out a repo">
+The checkout uses the read token and the push the write token, which stays in your app.
+</Annotation>
+
+<Annotation id="policy" lines="13-25" tease="can refuse a push" title="Push policy" href="/docs/labs/agents/sandboxes?ref=docs-labs-agents-recipes-coding-agent#a-repo" linkText="Push a branch">
+Sees the branch and the changed files before anything is pushed, and can refuse. The model reads a refusal and can fix the branch.
+</Annotation>
+
+</AnnotatedCode>
+
+<AnnotatedCode>
+
+{/* not type-checked: invoke() as an agent trigger, a listed sandbox with a repo */}
+```typescript {{ title: "inngest/agents/coder.ts" }}
+import { invoke } from "inngest";
+import { z } from "zod";
+import { agents } from "../client";
+import { claude } from "../models/claude";
+import { work } from "../sandboxes/work";
+
+export const changeRequest = z.object({ repo: z.string(), task: z.string() });
+
+export const coder = agents.agent({
+  id: "coder",
+  triggers: [invoke(changeRequest)],
+  model: claude,
+  system:
+    "Work on a branch named agent/<name>, run tests, push, say which branch.",
+  sandboxes: { work },
+});
+```
+
+<Annotation id="invoke" lines="11" tease="callers send checked input" title="A typed input" href="/docs/labs/agents/agent-teams?ref=docs-labs-agents-recipes-coding-agent#a-second-agent" linkText="Take a typed input">
+Callers send `{ repo, task }`, checked against this schema.
+</Annotation>
+
+<Annotation id="sandbox" lines="15" tease="a machine per thread" title="The sandbox" href="/docs/labs/agents/sandboxes?ref=docs-labs-agents-recipes-coding-agent#a-sandbox" linkText="A sandbox">
+The model gets `work_run` and `work_push`. The sandbox starts on first use.
+</Annotation>
+
+</AnnotatedCode>
+
+<AnnotatedCode>
+
+{/* not type-checked: start().result() from a plain function */}
+```typescript {{ title: "inngest/functions/requestChange.ts" }}
+import { invoke } from "inngest";
+import { inngest } from "../client";
+import { changeRequest, coder } from "../agents/coder";
+
+export const requestChange = inngest.createFunction(
+  { id: "request-change", triggers: [invoke(changeRequest)] },
+  async ({ event }) => {
+    return await coder.start(event.data).result();
+  },
+);
+```
+
+<Annotation id="result" lines="8" tease="start, then wait" title="Start and wait" href="/docs/labs/agents/agent-teams?ref=docs-labs-agents-recipes-coding-agent#call-it-from-code" linkText="Wait for the result">
+`result()` resolves with the agent's answer as soon as it has given it.
+</Annotation>
+
+</AnnotatedCode>
+
+{/* not type-checked: agents.functions() beside a plain function */}
+```typescript {{ title: "inngest/serve.ts" }}
+import { createServer } from "inngest/node";
+import { agents, inngest } from "./client";
+import { requestChange } from "./functions/requestChange";
+
+createServer({
+  client: inngest,
+  functions: [...agents.functions(), requestChange],
+}).listen(3000);
+```
+
+The [model](/docs/labs/agents/quick-start?ref=docs-labs-agents-recipes-coding-agent#pick-a-model) is the quick start's, and [the client](/docs/labs/agents/structure?ref=docs-labs-agents-recipes-coding-agent#the-client) adds `sandboxMiddleware()`. Importing `requestChange` imports the agent, so `agents.functions()` includes it.
+
+## What it shows off
+
+- [A repository in the sandbox](/docs/labs/agents/reference-sandboxes?ref=docs-labs-agents-recipes-coding-agent#repos) is the one the request names.
+- [A push policy](/docs/labs/agents/sandboxes?ref=docs-labs-agents-recipes-coding-agent#a-repo) lets your code decide what may leave the sandbox.
+- [A typed input](/docs/labs/agents/agent-teams?ref=docs-labs-agents-recipes-coding-agent#a-second-agent) gives callers a checked request.
+- [Start and wait](/docs/labs/agents/agent-teams?ref=docs-labs-agents-recipes-coding-agent#call-it-from-code) is one line in a plain function.
+
+## Run it
+
+Set the project up as in the [quick start](/docs/labs/agents/quick-start?ref=docs-labs-agents-recipes-coding-agent#install), with Sandboxes.
+
+```bash
+export ANTHROPIC_API_KEY=sk-ant-...
+export INNGEST_EXPERIMENTAL_KV_URL=redis://localhost:6379
+export GITHUB_READ_TOKEN=ghp_...
+export GITHUB_WRITE_TOKEN=ghp_...
+npx tsx inngest/serve.ts
+```
+
+```bash
+npx inngest-cli@latest dev -u http://localhost:3000/api/inngest
+```
+
+At [localhost:8288](http://localhost:8288), open `request-change`, choose **Invoke** and send `{ "repo": "acme/web", "task": "Fix the off-by-one in pagination" }`. The run returns the summary.
+
+## Variations
+
+- [Lead and specialists](/docs/labs/agents/recipes/agent-teams?ref=docs-labs-agents-recipes-coding-agent) lets a lead agent call it.
+- [`sandbox()`](/docs/labs/agents/reference-sandboxes?ref=docs-labs-agents-recipes-coding-agent#sandbox) installs dependencies once with `setup`.
+- [Reliability](/docs/labs/agents/reliability?ref=docs-labs-agents-recipes-coding-agent#cap-spend) caps a request's spend with `budget`.
+
+## Learn more
+
+- [Sandboxes](/docs/labs/agents/sandboxes?ref=docs-labs-agents-recipes-coding-agent)
+- [Agent Teams](/docs/labs/agents/agent-teams?ref=docs-labs-agents-recipes-coding-agent)
+- Next recipe: [Scheduled watcher](/docs/labs/agents/recipes/scheduled-watcher?ref=docs-labs-agents-recipes-coding-agent)

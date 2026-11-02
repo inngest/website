@@ -1,0 +1,62 @@
+import { AnnotatedCode, Annotation } from "shared/Docs/mdx";
+
+export const metaTitle = "Reusable sandbox functions | Sandboxes";
+export const description = "Wrap a runner in a plain function to get typed, reusable sandbox code you call like a step.";
+
+# Reusable sandbox functions
+
+> Wrap a runner in a function and call it like a step.
+
+- **Typed end to end.** Arguments in, output schema out. [Define it →](#define-it)
+- **Works anywhere in a run.** `step` is a global. [Call it →](#call-it)
+- **Just a function.** Export it, test it, share it. No new API.
+
+<AnnotatedCode>
+
+```typescript {{ title: "inngest/sandbox/stats.ts" }}
+import { step } from "inngest";
+import { z } from "zod";
+
+const Stats = z.object({ mean: z.number(), stdev: z.number() });
+
+export const stats = async (id: string, values: number[]) => {
+  return step.sandbox.python(id, `import statistics
+return {"mean": statistics.mean(values), "stdev": statistics.stdev(values)}`, {
+    input: { values },
+    schema: { output: Stats },
+  });
+};
+```
+
+<Annotation id="args" lines="6" tease="typed input" title="Your arguments are the input" href="#define-it" linkText="Define it">
+The signature types what callers pass.
+</Annotation>
+
+<Annotation id="runner" lines="7-9" tease="a runner" title="Code with a top-level return" href="/docs/sandboxes/features/run-code?ref=docs-sandboxes-sandbox-functions#return-a-value" linkText="Return a value">
+`input` keys become variables. Same rules as the runners.
+</Annotation>
+
+<Annotation id="schema" lines="11" tease="typed output" title="An output schema" href="/docs/sandboxes/features/run-code?ref=docs-sandboxes-sandbox-functions#options" linkText="Runner options">
+A mismatch fails the step.
+</Annotation>
+
+</AnnotatedCode>
+
+## Define it
+
+Pass `runtime`, `from`, `tools`, and the other [runner options](/docs/sandboxes/features/run-code?ref=docs-sandboxes-sandbox-functions#options) on the runner call inside the function.
+
+## Call it
+
+```typescript {{ title: "TypeScript" }}
+import { stats } from "../sandbox/stats";
+
+const { mean } = await stats("stats", [1, 2, 3, 4]);
+```
+
+A non-zero exit fails the step, per [Exit codes](/docs/sandboxes/features/exit-codes?ref=docs-sandboxes-sandbox-functions).
+
+## How it works
+
+- The function calls `step.sandbox.python` through the global `step`, so each call is a durable step.
+- Give an LLM your code through [Tools and code mode](/docs/sandboxes/features/tools?ref=docs-sandboxes-sandbox-functions).

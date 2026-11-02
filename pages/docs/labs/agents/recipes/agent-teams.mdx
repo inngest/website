@@ -1,0 +1,194 @@
+import { AnnotatedCode, Annotation } from "shared/Docs/mdx";
+
+export const metaTitle = "Lead and specialists | Inngest Agents";
+export const description = "Build a lead agent that finds a researcher and a coder at run time, hands each its part and combines their answers, with a budget on every agent.";
+
+# Lead and specialists
+
+> A lead that finds the right specialists, hands each its part and combines the answers.
+
+No agent imports another: the lead finds the specialists by their cards.
+
+```text
+You         What does HTTP 429 mean? Then write a fetch wrapper
+            that waits and retries on it.
+
+lead        list_agents: researcher, coder
+lead        start_agent researcher: What does HTTP 429 mean?
+lead        start_agent coder: Write fetchWithRetry for Retry-After.
+researcher  finished: Too Many Requests. Wait for Retry-After.
+coder       finished: Wrote and ran fetchWithRetry.ts. Its test passes.
+
+lead        429 means Too Many Requests. Here is fetchWithRetry: ...
+```
+
+Screenshot needed: the lead's run beside both specialists' runs.
+
+## The code
+
+<AnnotatedCode>
+
+{/* not type-checked: agents.agent with no triggers and no handler, budget, card */}
+```typescript {{ title: "inngest/agents/researcher.ts" }}
+import { agents } from "../client";
+import { claude } from "../models/claude";
+
+export const researcher = agents.agent({
+  id: "researcher",
+  model: claude,
+  system:
+    "Answer in five sentences or fewer, and say what you are unsure of.",
+  budget: { usd: 0.5 },
+  card: { description: "Answers a factual question" },
+});
+```
+
+<Annotation id="card" lines="10" tease="found by description" title="Card" href="/docs/labs/agents/agent-discovery?ref=docs-labs-agents-recipes-agent-teams#a-card" linkText="Publish a card">
+The description is what the lead searches. Agents in the lead's own app are found at once.
+</Annotation>
+
+</AnnotatedCode>
+
+{/* not type-checked: sandbox() with only an id */}
+```typescript {{ title: "inngest/sandboxes/work.ts" }}
+import { sandbox } from "inngest/experimental/agents";
+
+export const work = sandbox({ id: "work" });
+```
+
+{/* not type-checked: agents.agent with a listed sandbox, budget and card */}
+```typescript {{ title: "inngest/agents/coder.ts" }}
+import { agents } from "../client";
+import { claude } from "../models/claude";
+import { work } from "../sandboxes/work";
+
+export const coder = agents.agent({
+  id: "coder",
+  model: claude,
+  system: "Write the code, run it and its tests, then say what you ran.",
+  sandboxes: { work },
+  budget: { usd: 1 },
+  card: { description: "Writes and tests code in a sandbox" },
+});
+```
+
+<AnnotatedCode>
+
+{/* not type-checked: invoke() trigger on an agent with no handler, budget, discovery tools */}
+```typescript {{ title: "inngest/agents/lead.ts" }}
+import { invoke } from "inngest";
+import { z } from "zod";
+import { agents } from "../client";
+import { claude } from "../models/claude";
+
+export const teamRequest = z.object({ request: z.string() });
+
+export const lead = agents.agent({
+  id: "lead",
+  triggers: [invoke(teamRequest)],
+  model: claude,
+  system: "Find specialists, start them, then combine their results.",
+  budget: { usd: 0.5 },
+});
+```
+
+<Annotation id="invoke" lines="10" tease="a typed request" title="invoke()" href="/docs/labs/agents/agent-teams?ref=docs-labs-agents-recipes-agent-teams#a-second-agent" linkText="Take a typed input">
+Checks what callers send, and goes on the agent's card.
+</Annotation>
+
+<Annotation id="system" lines="12" tease="no names in code" title="Discovery" href="/docs/labs/agents/agent-discovery?ref=docs-labs-agents-recipes-agent-teams#finding" linkText="Find agents">
+The lead has `list_agents` and `start_agent` by default. Each result comes back as an `agent/finished` message.
+</Annotation>
+
+<Annotation id="budget" lines="13" tease="its own spend cap" title="Budgets" href="/docs/labs/agents/reliability?ref=docs-labs-agents-recipes-agent-teams#cap-spend" linkText="Cap spend">
+Every thread has its own budget, never handed down. The three add up to 2 dollars for one run of each; a second thread of the same agent has its own.
+</Annotation>
+
+</AnnotatedCode>
+
+<AnnotatedCode>
+
+{/* not type-checked: start().result() on an agent with an invoke() trigger, from a plain function */}
+```typescript {{ title: "inngest/functions/askTeam.ts" }}
+import { invoke } from "inngest";
+import { lead, teamRequest } from "../agents/lead";
+import { inngest } from "../client";
+
+export const askTeam = inngest.createFunction(
+  { id: "ask-team", triggers: [invoke(teamRequest)] },
+  async ({ event }) => {
+    return await lead.start(event.data).result();
+  },
+);
+```
+
+<Annotation id="result" lines="8" tease="wait for the answer" title="Start and wait" href="/docs/labs/agents/agent-teams?ref=docs-labs-agents-recipes-agent-teams#call-it-from-code" linkText="Wait for the result">
+`result()` resolves with the lead's answer, given once the specialists it started with `start_agent` have finished.
+</Annotation>
+
+</AnnotatedCode>
+
+{/* not type-checked: agents.functions() */}
+```typescript {{ title: "inngest/serve.ts" }}
+import { createServer } from "inngest/node";
+import { agents, inngest } from "./client";
+import "./agents/coder";
+import "./agents/lead";
+import "./agents/researcher";
+import { askTeam } from "./functions/askTeam";
+
+createServer({
+  client: inngest,
+  functions: [...agents.functions(), askTeam],
+}).listen(3000);
+```
+
+{/* not type-checked: createAgents with the store from the environment, sandboxMiddleware() */}
+```typescript {{ title: "inngest/client.ts" }}
+import { Inngest } from "inngest";
+import { sandboxMiddleware } from "inngest/experimental";
+import { createAgents } from "inngest/experimental/agents";
+
+export const inngest = new Inngest({
+  id: "agent-teams",
+  middleware: [sandboxMiddleware()],
+});
+
+export const agents = createAgents(inngest);
+```
+
+The [model](/docs/labs/agents/quick-start?ref=docs-labs-agents-recipes-agent-teams#pick-a-model) is the quick start's.
+
+## What it shows off
+
+- [Agent discovery](/docs/labs/agents/agent-discovery?ref=docs-labs-agents-recipes-agent-teams#finding) lets the lead find specialists with no imports between them.
+- [Start and wait](/docs/labs/agents/agent-teams?ref=docs-labs-agents-recipes-agent-teams#call-it-from-code) lets a plain function wait for the lead's answer.
+- [Limits](/docs/labs/agents/reference?ref=docs-labs-agents-recipes-agent-teams#limits) keep delegation one level deep by default.
+- [A sandbox](/docs/labs/agents/sandboxes?ref=docs-labs-agents-recipes-agent-teams) gives the coder a machine to run its code.
+
+## Run it
+
+Set the project up as in the [quick start](/docs/labs/agents/quick-start?ref=docs-labs-agents-recipes-agent-teams#install), with Sandboxes for the coder.
+
+```bash
+export ANTHROPIC_API_KEY=sk-ant-...
+export INNGEST_EXPERIMENTAL_KV_URL=redis://localhost:6379
+npx tsx inngest/serve.ts
+```
+
+```bash
+npx inngest-cli@latest dev -u http://localhost:3000/api/inngest
+```
+
+At [localhost:8288](http://localhost:8288), open `ask-team`, choose **Invoke** and send `{ "request": "What does HTTP 429 mean? Then write a retrying fetch." }`. `ask-team` returns the combined answer; open the lead's run to see its searches and both `start_agent` calls.
+
+## Variations
+
+- [`limits.mayCall`](/docs/labs/agents/agent-discovery?ref=docs-labs-agents-recipes-agent-teams#who-it-may-start) limits who the lead may start.
+- [`share: "team"`](/docs/labs/agents/agent-discovery?ref=docs-labs-agents-recipes-agent-teams#who-can-find-it) lets other apps find the researcher once its card refreshes.
+
+## Learn more
+
+- [Agent Teams](/docs/labs/agents/agent-teams?ref=docs-labs-agents-recipes-agent-teams)
+- [Agent discovery](/docs/labs/agents/agent-discovery?ref=docs-labs-agents-recipes-agent-teams)
+- Next recipe: [MCP assistant](/docs/labs/agents/recipes/mcp-assistant?ref=docs-labs-agents-recipes-agent-teams)

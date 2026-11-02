@@ -502,7 +502,9 @@ function docsRefreshNav(page: DocsRefreshPage): NavGroup | NavLink {
       title: page.title,
       ...(page.openWhenIdle ? { openWhenIdle: true } : {}),
       links: [
-        ...(!hasOverview ? [{ title: "Overview", href: page.href }] : []),
+        ...(!hasOverview && page.href
+          ? [{ title: "Overview", href: page.href }]
+          : []),
         ...page.children.map(docsRefreshNav),
       ],
     };

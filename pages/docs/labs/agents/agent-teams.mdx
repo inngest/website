@@ -1,0 +1,314 @@
+import { AnnotatedCode, Annotation } from "shared/Docs/mdx";
+
+export const metaTitle = "Agent Teams | Inngest Agents";
+export const description = "Start one Inngest agent from another: call it from code and wait for its answer, talk to it while it works, let a model hand work off, run work in the background and message a pull request's thread from a plain function.";
+
+# Agent Teams
+
+> Start another agent, talk to it while it works, and get its answer back.
+
+Messages arrive in your [inbox](/docs/labs/agents/inboxes?ref=docs-labs-agents-agent-teams); results return to your call. Below, the PR helper from [Calling home](/docs/labs/agents/calling-home?ref=docs-labs-agents-agent-teams) gets a reviewer.
+
+## A second agent
+
+You want a reviewer the PR helper can hand pull requests to.
+
+{/* not type-checked: an agent with an invoke() trigger, a model and no handler */}
+```typescript {{ title: "inngest/agents/reviewer.ts" }}
+import { invoke } from "inngest";
+import { z } from "zod";
+import { agents } from "../client";
+import { claude } from "../models/claude";
+
+export const reviewer = agents.agent({
+  id: "reviewer",
+  triggers: [invoke(z.object({ pr: z.number() }))],
+  model: claude,
+  system: "You review pull requests and list the problems.",
+});
+```
+
+`invoke()` types the agent's input: `pr` is the pull request's number. With no handler, its output is the model's last answer.
+
+## Call it from code
+
+You want the review back in the PR helper's code, to comment on the PR once CI passes. `start()` the reviewer in the handler and wait for its `result()`.
+
+<AnnotatedCode>
+
+{/* not type-checked: start().result() on another agent inside an agent handler */}
+```typescript {{ title: "inngest/agents/prHelper.ts" }}
+import { agents } from "../client";
+import { ciFailed, ciPassed, deployed, prComment, prOpened } from "../events";
+import { gh } from "../lib/github";
+import { claude } from "../models/claude";
+import { reviewer } from "./reviewer";
+
+const triggers = [
+  prOpened,
+  prComment,
+  ciFailed,
+  { event: deployed, thread: "event.data.pull" },
+];
+
+export const prHelper = agents.agent(
+  {
+    id: "pr-helper",
+    triggers,
+    thread: "event.data.pr",
+    inbox: [ciPassed],
+    idle: "1h",
+    model: claude,
+    system: "You help with pull requests on acme/web.",
+  },
+  async ({ inbox, loop, me, step }) => {
+    for await (const batch of inbox.batches({ max: 20 })) {
+      const result = await loop(batch);
+
+      await step.run("comment", async () => {
+        return await gh.comment(Number(me.key), result.text);
+      });
+
+      const passed = batch.some((message) => {
+        return message.is(ciPassed);
+      });
+
+      if (passed) {
+        const review = await reviewer.start({ pr: Number(me.key) }).result();
+
+        await step.run("comment review", async () => {
+          return await gh.comment(Number(me.key), review);
+        });
+      }
+    }
+  },
+);
+```
+
+<Annotation id="result" lines="37" tease="waits for the answer" title="start() and result()">
+`start()` returns at once. `result()` waits for the answer, a string here, and throws if the run fails or is stopped.
+</Annotation>
+
+</AnnotatedCode>
+
+A run opened through a handle ends once it has answered, so `result()` returns promptly. It waits only for the runs its model started with `start_agent`, never for `start()` calls in code. [Idle →](/docs/labs/agents/reference?ref=docs-labs-agents-agent-teams#idle)
+
+The rest of the PR helper is as [Calling home](/docs/labs/agents/calling-home?ref=docs-labs-agents-agent-teams) left it. The events and the GitHub client are as [Threads](/docs/labs/agents/threads?ref=docs-labs-agents-agent-teams), [Inboxes](/docs/labs/agents/inboxes?ref=docs-labs-agents-agent-teams) and [Tools](/docs/labs/agents/tools?ref=docs-labs-agents-agent-teams#your-own-git-hub-tools) left them:
+
+```typescript {{ title: "inngest/events.ts" }}
+import { eventType } from "inngest";
+import { z } from "zod";
+
+const ciRun = z.object({ pr: z.number() });
+
+export const prOpened = eventType("pr/opened", {
+  schema: z.object({ pr: z.number(), author: z.string() }),
+});
+
+export const prComment = eventType("pr/comment", {
+  schema: z.object({ pr: z.number(), author: z.string(), body: z.string() }),
+});
+
+export const ciFailed = eventType("ci/run.failed", { schema: ciRun });
+
+export const ciPassed = eventType("ci/run.passed", { schema: ciRun });
+
+export const deployed = eventType("deploy/finished", {
+  schema: z.object({ env: z.string(), pull: z.number() }),
+});
+```
+
+```typescript {{ title: "inngest/lib/github.ts" }}
+const api = "https://api.github.com/repos/acme/web";
+
+export const gh = {
+  comment: async (pr: number, body: string) => {
+    const response = await fetch(`${api}/issues/${pr}/comments`, {
+      method: "POST",
+      headers: {
+        accept: "application/vnd.github+json",
+        authorization: `Bearer ${process.env.GITHUB_TOKEN}`,
+      },
+      body: JSON.stringify({ body }),
+    });
+
+    if (!response.ok) {
+      throw new Error(`Comment on #${pr}: ${response.status}`);
+    }
+
+    return await response.json();
+  },
+};
+```
+
+## Talk while it works
+
+You want to correct or question the reviewer while it works, and the handle `start()` returns lets you.
+
+<AnnotatedCode>
+
+{/* not type-checked: message(), ask() and stop() on a handle from start() */}
+```typescript
+const review = await reviewer.start({ pr: Number(me.key) });
+
+await review.message("The author says the migration is safe to skip.");
+
+const worry = await review.ask("Which file worries you most?");
+
+await review.stop();
+```
+
+<Annotation id="message" lines="3" tease="doesn't wait" title="message()">
+Lands in the reviewer's inbox and reaches its next model call.
+</Annotation>
+
+<Annotation id="ask" lines="5" tease="waits for the answer" title="ask()">
+Gives `null` after an hour or when the reviewer refuses. `{ timeout }` changes the hour.
+</Annotation>
+
+<Annotation id="stop" lines="7" tease="cancels the run" title="stop()">
+A `result()` waiting on this run throws.
+</Annotation>
+
+</AnnotatedCode>
+
+Once the reviewer has answered, its run is over. `message()` and `ask()` then start a run on the same thread, which picks up its history:
+
+{/* not type-checked: message().result() on a handle from start() */}
+```typescript
+const second = await review.message("Now check the tests.").result();
+```
+
+## Being talked to
+
+You want the reviewer to be able to ask the PR helper a question.
+
+{/* not type-checked: start() without result(), then agentQuestion and message.reply() in the inbox loop */}
+```typescript
+import { agentQuestion } from "inngest/experimental/agents";
+
+await reviewer.start({ pr: Number(me.key) });
+
+for await (const batch of inbox.batches()) {
+  for (const message of batch) {
+    if (message.is(agentQuestion)) {
+      await message.reply("Yes, the author asked for the migration.");
+    }
+  }
+}
+```
+
+The question arrives as `agent/question`, with who asked in `message.from`, and `reply()` answers it. A handle asks with `ask()`, a model with `ask_agent`.
+
+## The model calls agents
+
+You want the PR helper's model to hand off a review itself. It has the [agent tools](/docs/labs/agents/reference?ref=docs-labs-agents-agent-teams#agent-tools) `start_agent`, `message_agent`, `ask_agent`, `stop_agent` and `reply` by default. `start_agent` reaches agents in other apps too, as [Agent discovery](/docs/labs/agents/agent-discovery?ref=docs-labs-agents-agent-teams) shows.
+
+```text {{ title: "What the model calls" }}
+start_agent({
+  address: "acme-web/reviewer",
+  input: { pr: 42 },
+})
+  { thread: "a1b2c3" }
+```
+
+None of them waits, so the model can't deadlock. What comes back lands in its inbox as `agent/message`, `agent/question`, `agent/answer` or, for runs opened with `start_agent`, `agent/finished`. [How the model reads them →](/docs/labs/agents/reference?ref=docs-labs-agents-agent-teams#the-loop)
+
+{/* not type-checked: message.is(agentFinished) narrowing data.outcome */}
+```typescript
+import { agentFinished } from "inngest/experimental/agents";
+
+if (message.is(agentFinished) && message.data.outcome === "failed") {
+  const text = `The review failed: ${message.data.error}`;
+
+  await step.run("comment", async () => {
+    return await gh.comment(Number(me.key), text);
+  });
+}
+```
+
+## From the sandbox
+
+You want a script on the sandbox to start agents. It calls the same tools there, plus `agent_result`.
+
+```python {{ title: "A script the model runs" }}
+started = await tools.start_agent(
+    address="acme-web/reviewer",
+    input={"pr": 42},
+)
+
+review = await tools.agent_result(thread=started["thread"])
+```
+
+`agent_result` waits: code can wait for an agent, where the model only reacts. [The model writes code →](/docs/labs/agents/calling-home?ref=docs-labs-agents-agent-teams#the-model-writes-code)
+
+## Background work
+
+You want to check with the reviewer without holding up the PR helper. Do it in a function you don't await.
+
+{/* not type-checked: an un-awaited function that reports back through me.message() */}
+```typescript
+const reviewLater = async () => {
+  const review = await reviewer.start({ pr: Number(me.key) }).result();
+
+  await me.message({ review });
+};
+
+void reviewLater();
+```
+
+`me.message()` puts the review in the PR helper's own inbox, for a later batch. Work still running when the handler returns is stopped.
+
+## Not everything is an agent
+
+You want a check of every open PR each morning. A plain function with a cron trigger does it.
+
+```typescript {{ title: "inngest/lib/openPrs.ts" }}
+import { z } from "zod";
+
+const pulls = z.array(z.object({ number: z.number() }));
+
+export const openPrs = async () => {
+  const response = await fetch("https://api.github.com/repos/acme/web/pulls");
+
+  if (!response.ok) {
+    throw new Error(`Open PRs: ${response.status}`);
+  }
+
+  const open = pulls.parse(await response.json());
+
+  return open.map((pull) => {
+    return pull.number;
+  });
+};
+```
+
+{/* not type-checked: prHelper.thread(key).message() from a plain function */}
+```typescript {{ title: "inngest/functions/nightly.ts" }}
+import { inngest } from "../client";
+import { prHelper } from "../agents/prHelper";
+import { openPrs } from "../lib/openPrs";
+
+export const nightly = inngest.createFunction(
+  { id: "nightly", triggers: [{ cron: "0 9 * * *" }] },
+  async ({ step }) => {
+    const prs = await step.run("open-prs", async () => {
+      return await openPrs();
+    });
+
+    for (const pr of prs) {
+      const thread = prHelper.thread(String(pr));
+
+      await thread.message("Morning check: anything stuck?");
+    }
+  },
+);
+```
+
+`thread(key)` gives the handle of that PR's thread, so each PR's thread gets the nudge. A plain function has no thread, inbox or card, and costs less.
+
+## Recipes and reference
+
+- [Lead and specialists](/docs/labs/agents/recipes/agent-teams?ref=docs-labs-agents-agent-teams)
+- [Coding agent](/docs/labs/agents/recipes/coding-agent?ref=docs-labs-agents-agent-teams)
+- [Reference: thread handles](/docs/labs/agents/reference?ref=docs-labs-agents-agent-teams#thread-handles)

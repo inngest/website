@@ -1,0 +1,218 @@
+import { AnnotatedCode, Annotation } from "shared/Docs/mdx";
+
+export const metaTitle = "MCP assistant | Inngest Agents";
+export const description = "Build an agent that uses a remote MCP server as each person: your own code sends the sign-in link the first time, then the agent works in their own account.";
+
+# MCP assistant
+
+> An agent that works in each person's own account on a remote MCP server.
+
+Each person signs in once, and the model never sees the link or a token.
+
+```text
+task/assigned   31   maya   What's in my Notion roadmap page?
+To maya         Sign in to notion: https://mcp.notion.com/authorize?...
+Run output      I sent Maya a link to connect Notion. Send the task again
+                once she has.
+
+(Maya signs in with Notion in the browser, and the task is sent again)
+task/assigned   31   maya   What's in my Notion roadmap page?
+Run output      Your roadmap has three items: ...
+```
+
+Screenshot needed: the sign-in message as your app delivers it, then the run's output.
+
+## The code
+
+Your app sends `task/assigned` with `inngest.send` when a task goes to a person.
+
+```typescript {{ title: "inngest/events.ts" }}
+import { eventType } from "inngest";
+import { z } from "zod";
+
+export const taskAssigned = eventType("task/assigned", {
+  schema: z.object({ task: z.string(), user: z.string(), text: z.string() }),
+});
+```
+
+<AnnotatedCode>
+
+{/* not type-checked: tool.mcp with auth.oauth.user reading { event }, onNeedsAuthorization, the default OAuth store */}
+```typescript {{ title: "inngest/tools/notion.ts" }}
+import { tool } from "inngest/experimental";
+import { chat } from "../lib/chat";
+
+export const notion = tool.mcp({
+  id: "notion",
+  url: "https://mcp.notion.com/mcp",
+  auth: {
+    oauth: {
+      user: ({ event }) => {
+        return event.data.user;
+      },
+      redirectUri: "https://app.acme.test/api/mcp/callback",
+      onNeedsAuthorization: async ({ url, server, user }) => {
+        await chat.send(user, `Sign in to ${server}: ${url}`);
+      },
+    },
+  },
+});
+```
+
+<Annotation id="id" lines="5" tease="tokens live under it" title="Server id" href="/docs/labs/agents/tools?ref=docs-labs-agents-recipes-mcp-assistant#someone-else-s-tools" linkText="Connect an MCP server">
+Tokens are stored under this id.
+</Annotation>
+
+<Annotation id="user" lines="9-11" tease="whose token" title="User" href="/docs/labs/agents/reference-sandboxes?ref=docs-labs-agents-recipes-mcp-assistant#per-user-o-auth" linkText="Sign in each person">
+Names the person from the event that started the run.
+</Annotation>
+
+<Annotation id="redirect" lines="12" tease="your callback route" title="Redirect" href="/docs/labs/agents/reference-sandboxes?ref=docs-labs-agents-recipes-mcp-assistant#per-user-o-auth" linkText="Sign in each person">
+Where the server sends the person after they sign in.
+</Annotation>
+
+<Annotation id="authorize" lines="13-15" tease="sent by your code" title="The sign-in link" href="/docs/labs/agents/reference-sandboxes?ref=docs-labs-agents-recipes-mcp-assistant#deliver-the-link" linkText="Deliver the link">
+Runs inside the tool's step, so a replay doesn't send the link twice. Without it the person is never told, and the trace shows a warning.
+</Annotation>
+
+</AnnotatedCode>
+
+```typescript {{ title: "inngest/lib/chat.ts" }}
+const api = "https://chat.acme.test/api";
+
+export const chat = {
+  send: async (user: string, text: string) => {
+    const response = await fetch(`${api}/users/${user}/messages`, {
+      method: "POST",
+      headers: {
+        authorization: `Bearer ${process.env.CHAT_TOKEN}`,
+        "content-type": "application/json",
+      },
+      body: JSON.stringify({ text }),
+    });
+
+    if (!response.ok) {
+      throw new Error(`Message to ${user}: ${response.status}`);
+    }
+  },
+};
+```
+
+<AnnotatedCode>
+
+{/* not type-checked: agents.agent with an event trigger, thread, an MCP tool and no handler */}
+```typescript {{ title: "inngest/agents/assistant.ts" }}
+import { agents } from "../client";
+import { taskAssigned } from "../events";
+import { claude } from "../models/claude";
+import { notion } from "../tools/notion";
+
+export const assistant = agents.agent({
+  id: "assistant",
+  triggers: [taskAssigned],
+  thread: "event.data.task",
+  model: claude,
+  system: "You do tasks in the person's Notion workspace.",
+  tools: { notion },
+});
+```
+
+<Annotation id="trigger" lines="8-9" tease="one thread per task" title="Start from your event" href="/docs/labs/agents/threads?ref=docs-labs-agents-recipes-mcp-assistant#which-conversation-is-this" linkText="Which conversation is this?">
+Sending a task again lands on its thread, so the model remembers the first try.
+</Annotation>
+
+<Annotation id="tools" lines="12" tease="sign-in, handled for you" title="The MCP tools" href="/docs/labs/agents/reference-sandboxes?ref=docs-labs-agents-recipes-mcp-assistant#per-user-o-auth" linkText="Sign in each person">
+A person who hasn't connected gets the link from your hook, not from the model.
+</Annotation>
+
+</AnnotatedCode>
+
+<AnnotatedCode>
+
+{/* not type-checked: mcpCallback as a Web handler with the default store */}
+```typescript {{ title: "app/api/mcp/callback/route.ts" }}
+import { kvOAuthStore, mcpCallback } from "inngest/experimental";
+
+export const GET = mcpCallback({ store: kvOAuthStore() });
+```
+
+<Annotation id="callback" lines="3" tease="finishes the sign-in" title="Callback" href="/docs/labs/agents/reference-sandboxes?ref=docs-labs-agents-recipes-mcp-assistant#the-callback-route" linkText="Add the callback route">
+Stores the token, encrypted with `MCP_OAUTH_ENCRYPTION_KEY`.
+</Annotation>
+
+</AnnotatedCode>
+
+{/* not type-checked: createAgents with the store from the environment */}
+```typescript {{ title: "inngest/client.ts" }}
+import { Inngest } from "inngest";
+import { createAgents } from "inngest/experimental/agents";
+
+export const inngest = new Inngest({ id: "mcp-assistant" });
+
+export const agents = createAgents(inngest);
+```
+
+{/* not type-checked: agents.functions() in a Next.js route */}
+```typescript {{ title: "app/api/inngest/route.ts" }}
+import { serve } from "inngest/next";
+import { agents, inngest } from "../../../inngest/client";
+import "../../../inngest/agents/assistant";
+
+export const { GET, POST, PUT } = serve({
+  client: inngest,
+  functions: agents.functions(),
+});
+```
+
+The [model](/docs/labs/agents/quick-start?ref=docs-labs-agents-recipes-mcp-assistant#pick-a-model) is the quick start's.
+
+## What it shows off
+
+- [Per-person sign-in](/docs/labs/agents/reference-sandboxes?ref=docs-labs-agents-recipes-mcp-assistant#per-user-o-auth) lets each person work as themselves.
+- [A hook for the link](/docs/labs/agents/reference-sandboxes?ref=docs-labs-agents-recipes-mcp-assistant#deliver-the-link) sends the sign-in link through your own code, never through the model.
+- [A one-line callback](/docs/labs/agents/reference-sandboxes?ref=docs-labs-agents-recipes-mcp-assistant#the-callback-route) finishes the sign-in.
+
+## Run it
+
+Set the project up as in the [quick start](/docs/labs/agents/quick-start?ref=docs-labs-agents-recipes-mcp-assistant#install), in a Next.js app.
+
+```bash
+export ANTHROPIC_API_KEY=sk-ant-...
+export INNGEST_EXPERIMENTAL_KV_URL=redis://localhost:6379
+export MCP_OAUTH_ENCRYPTION_KEY=$(openssl rand -base64 32)
+export CHAT_TOKEN=...
+npm run dev
+```
+
+```bash
+npx inngest-cli@latest dev -u http://localhost:3000/api/inngest
+```
+
+Set `redirectUri` to your app's public address; a tunnel works for local runs. Send a task from the Dev Server's **Send event** button at [localhost:8288](http://localhost:8288), or from code:
+
+```typescript {{ title: "scripts/assignTask.ts" }}
+import { inngest } from "../inngest/client";
+
+await inngest.send({
+  name: "task/assigned",
+  data: {
+    task: "31",
+    user: "maya",
+    text: "What's in my Notion roadmap page?",
+  },
+});
+```
+
+The first run sends the link through `chat.send`. With no chat service yet, swap the `fetch` in `chat.send` for a `console.log` and open the link from the app's output. Sign in, then send the task again.
+
+## Variations
+
+- [A shared token](/docs/labs/agents/tools?ref=docs-labs-agents-recipes-mcp-assistant#secrets-stay-home) serves a server that has one: `auth: { bearer: secret("TOKEN") }`.
+- [Disconnecting](/docs/labs/agents/reference-sandboxes?ref=docs-labs-agents-recipes-mcp-assistant#mcp) revokes one person's connection with `notion.disconnect(user)`.
+- [A reply tool](/docs/labs/agents/recipes/support-assistant?ref=docs-labs-agents-recipes-mcp-assistant) like the Support assistant's `sendReply` sends the answer to the person instead of leaving it in the run's output.
+
+## Learn more
+
+- [Tools](/docs/labs/agents/tools?ref=docs-labs-agents-recipes-mcp-assistant)
+- [Tools and sandboxes reference](/docs/labs/agents/reference-sandboxes?ref=docs-labs-agents-recipes-mcp-assistant)
+- Next recipe: [Sandbox tools](/docs/labs/agents/recipes/sandbox-tools?ref=docs-labs-agents-recipes-mcp-assistant)

@@ -470,6 +470,14 @@ export const docsRefreshOutline: DocsRefreshPage[] = [
             href: "/docs/sandboxes/features",
             children: [
               {
+                title: "Run code",
+                href: "/docs/sandboxes/features/run-code",
+              },
+              {
+                title: "Exit codes and errors",
+                href: "/docs/sandboxes/features/exit-codes",
+              },
+              {
                 title: "Base images",
                 href: "/docs/sandboxes/features/base-images",
               },
@@ -512,6 +520,14 @@ export const docsRefreshOutline: DocsRefreshPage[] = [
               {
                 title: "Tools",
                 href: "/docs/sandboxes/features/tools",
+              },
+              {
+                title: "Run-owned Sandboxes",
+                href: "/docs/sandboxes/features/run-owned",
+              },
+              {
+                title: "Reusable sandbox functions",
+                href: "/docs/sandboxes/features/sandbox-functions",
               },
               {
                 title: "Isolation and security",
@@ -825,6 +841,132 @@ export const docsRefreshOutline: DocsRefreshPage[] = [
           {
             title: "Recipes",
             href: "/docs/labs/ci/recipes",
+          },
+        ],
+      },
+      {
+        title: "Inngest Agents",
+        href: "/docs/labs/agents",
+        children: [
+          {
+            title: "Quick start",
+            href: "/docs/labs/agents/quick-start",
+          },
+          {
+            title: "Recipes",
+            href: "/docs/labs/agents/recipes",
+            children: [
+              {
+                title: "Support assistant",
+                href: "/docs/labs/agents/recipes/support-assistant",
+              },
+              {
+                title: "Issue triage",
+                href: "/docs/labs/agents/recipes/issue-triage",
+              },
+              {
+                title: "PR reviewer",
+                href: "/docs/labs/agents/recipes/pr-reviewer",
+              },
+              {
+                title: "Coding agent",
+                href: "/docs/labs/agents/recipes/coding-agent",
+              },
+              {
+                title: "Scheduled watcher",
+                href: "/docs/labs/agents/recipes/scheduled-watcher",
+              },
+              {
+                title: "Lead and specialists",
+                href: "/docs/labs/agents/recipes/agent-teams",
+              },
+              {
+                title: "MCP assistant",
+                href: "/docs/labs/agents/recipes/mcp-assistant",
+              },
+              {
+                title: "Sandbox tools",
+                href: "/docs/labs/agents/recipes/sandbox-tools",
+              },
+            ],
+          },
+          {
+            title: "Concepts",
+            children: [
+              {
+                title: "Agents",
+                href: "/docs/labs/agents/agents",
+              },
+              {
+                title: "Threads",
+                href: "/docs/labs/agents/threads",
+              },
+              {
+                title: "Inboxes",
+                href: "/docs/labs/agents/inboxes",
+              },
+              {
+                title: "Memory",
+                href: "/docs/labs/agents/memory",
+              },
+              {
+                title: "Models",
+                href: "/docs/labs/agents/models",
+              },
+              {
+                title: "Tools",
+                href: "/docs/labs/agents/tools",
+              },
+              {
+                title: "Skills",
+                href: "/docs/labs/agents/skills",
+              },
+              {
+                title: "Sandboxes",
+                href: "/docs/labs/agents/sandboxes",
+              },
+              {
+                title: "Calling home",
+                href: "/docs/labs/agents/calling-home",
+              },
+              {
+                title: "Agent Teams",
+                href: "/docs/labs/agents/agent-teams",
+              },
+              {
+                title: "Agent discovery",
+                href: "/docs/labs/agents/agent-discovery",
+              },
+              {
+                title: "Reliability",
+                href: "/docs/labs/agents/reliability",
+              },
+              {
+                title: "Observability",
+                href: "/docs/labs/agents/observability",
+              },
+            ],
+          },
+          {
+            title: "Guides",
+            children: [
+              {
+                title: "Project structure",
+                href: "/docs/labs/agents/structure",
+              },
+              {
+                title: "Run on Workers",
+                href: "/docs/labs/agents/workers",
+              },
+            ],
+          },
+          {
+            title: "Agents reference",
+            href: "/docs/labs/agents/reference",
+          },
+          {
+            title: "Tools and sandboxes reference",
+            href: "/docs/labs/agents/reference-sandboxes",
           },
         ],
       },

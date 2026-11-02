@@ -1,0 +1,205 @@
+import { AnnotatedCode, Annotation } from "shared/Docs/mdx";
+
+export const metaTitle = "Issue triage | Inngest Agents";
+export const description = "Build an agent that labels each reported bug, links similar open issues and leaves one comment, with every GitHub call a tool you write that runs as its own step.";
+
+# Issue triage
+
+> An agent that labels every reported issue and links duplicates.
+
+Each GitHub call is its own step, so a retry repeats only the call that failed.
+
+```text
+bug/reported   #214   Dev server crashes when a step returns undefined
+Labels         bug
+Comment        Thanks. This looks like #198, which has a fix in review.
+```
+
+Screenshot needed: the labeled issue with the agent's comment.
+
+## The code
+
+Your own webhook route or form sends `bug/reported` with `inngest.send` when someone files a bug.
+
+```typescript {{ title: "inngest/events.ts" }}
+import { eventType } from "inngest";
+import { z } from "zod";
+
+export const bugReported = eventType("bug/reported", {
+  schema: z.object({ issue: z.number(), title: z.string(), body: z.string() }),
+});
+```
+
+<AnnotatedCode>
+
+{/* not type-checked: agents.agent with an event trigger, thread, model, system and tools and no handler */}
+```typescript {{ title: "inngest/agents/triage.ts" }}
+import { agents } from "../client";
+import { bugReported } from "../events";
+import { claude } from "../models/claude";
+import { comment } from "../tools/comment";
+import { findSimilar } from "../tools/findSimilar";
+import { label } from "../tools/label";
+
+export const triage = agents.agent({
+  id: "triage",
+  triggers: [bugReported],
+  thread: "event.data.issue",
+  model: claude,
+  system:
+    "Find similar issues, label this one, comment once. Link duplicates.",
+  tools: { findSimilar, label, comment },
+});
+```
+
+<Annotation id="trigger" lines="10-11" tease="one thread per issue" title="Start from your event" href="/docs/labs/agents/threads?ref=docs-labs-agents-recipes-issue-triage#which-conversation-is-this" linkText="Which conversation is this?">
+Starts when a bug is reported. Each issue is its own thread, keyed by its number.
+</Annotation>
+
+<Annotation id="tools" lines="15" tease="GitHub calls you write" title="Search, label, comment" href="/docs/labs/agents/tools?ref=docs-labs-agents-recipes-issue-triage#your-own-git-hub-tools" linkText="Your own GitHub tools">
+Each tool is a `fetch` with your token. Commenting once is the prompt's rule; the tools don't limit it.
+</Annotation>
+
+</AnnotatedCode>
+
+```typescript {{ title: "inngest/tools/findSimilar.ts" }}
+import { tool } from "inngest/experimental";
+import { z } from "zod";
+import { githubRest, repoName } from "./githubRest";
+
+export const findSimilar = tool.step({
+  description: "Search open issues for similar reports",
+  input: z.object({ query: z.string() }),
+  run: async ({ query }) => {
+    const search = encodeURIComponent(
+      `repo:${repoName} is:issue is:open ${query}`,
+    );
+
+    const found = await githubRest<{
+      items: { number: number; title: string }[];
+    }>(`/search/issues?q=${search}&per_page=5`);
+
+    return found.items.map((item) => {
+      return { number: item.number, title: item.title };
+    });
+  },
+});
+```
+
+```typescript {{ title: "inngest/tools/label.ts" }}
+import { tool } from "inngest/experimental";
+import { z } from "zod";
+import { githubRest, repoName } from "./githubRest";
+
+export const label = tool.step({
+  description: "Label the issue",
+  input: z.object({
+    number: z.number(),
+    labels: z.array(z.enum(["bug", "feature", "question", "duplicate"])),
+  }),
+  run: async ({ number, labels }) => {
+    await githubRest(`/repos/${repoName}/issues/${number}/labels`, {
+      method: "POST",
+      body: JSON.stringify({ labels }),
+    });
+
+    return { labeled: labels };
+  },
+});
+```
+
+```typescript {{ title: "inngest/tools/comment.ts" }}
+import { tool } from "inngest/experimental";
+import { z } from "zod";
+import { githubRest, repoName } from "./githubRest";
+
+export const comment = tool.step({
+  description: "Comment on the issue",
+  input: z.object({ number: z.number(), body: z.string() }),
+  run: async ({ number, body }) => {
+    await githubRest(`/repos/${repoName}/issues/${number}/comments`, {
+      method: "POST",
+      body: JSON.stringify({ body }),
+    });
+
+    return { commented: true };
+  },
+});
+```
+
+```typescript {{ title: "inngest/tools/githubRest.ts" }}
+export const repoName = "acme/app";
+
+export const githubRest = async <T>(path: string, init?: RequestInit) => {
+  const token = process.env.GITHUB_TOKEN;
+
+  if (!token) {
+    throw new Error("Set GITHUB_TOKEN");
+  }
+
+  const response = await fetch(`https://api.github.com${path}`, {
+    ...init,
+    headers: {
+      accept: "application/vnd.github+json",
+      authorization: `Bearer ${token}`,
+      "content-type": "application/json",
+    },
+  });
+
+  if (!response.ok) {
+    throw new Error(`GitHub ${response.status}: ${await response.text()}`);
+  }
+
+  return (await response.json()) as T;
+};
+```
+
+The [client](/docs/labs/agents/quick-start?ref=docs-labs-agents-recipes-issue-triage#create-the-client) and [model](/docs/labs/agents/quick-start?ref=docs-labs-agents-recipes-issue-triage#pick-a-model) are the quick start's. The serve route is the [Support assistant's](/docs/labs/agents/recipes/support-assistant?ref=docs-labs-agents-recipes-issue-triage), importing `inngest/agents/triage`.
+
+## What it shows off
+
+- [Your own events](/docs/labs/agents/threads?ref=docs-labs-agents-recipes-issue-triage#which-conversation-is-this) start the agent and name its thread.
+- [Tools](/docs/labs/agents/tools?ref=docs-labs-agents-recipes-issue-triage#your-own-git-hub-tools) are the functions the model calls to search, label and comment.
+- [An agent with no handler](/docs/labs/agents/models?ref=docs-labs-agents-recipes-issue-triage#delete-the-handler) needs only a model, a prompt and tools.
+
+## Run it
+
+Set the project up as in the [quick start](/docs/labs/agents/quick-start?ref=docs-labs-agents-recipes-issue-triage#install), in a Next.js app.
+
+```bash
+export ANTHROPIC_API_KEY=sk-ant-...
+export INNGEST_EXPERIMENTAL_KV_URL=redis://localhost:6379
+export GITHUB_TOKEN=ghp_...
+npm run dev
+```
+
+```bash
+npx inngest-cli@latest dev -u http://localhost:3000/api/inngest
+```
+
+`GITHUB_TOKEN` needs to search, label and comment in `acme/app`. Send a bug from the Dev Server's **Send event** button at [localhost:8288](http://localhost:8288), or from code, with the number of an open issue:
+
+```typescript {{ title: "scripts/reportBug.ts" }}
+import { inngest } from "../inngest/client";
+
+await inngest.send({
+  name: "bug/reported",
+  data: {
+    issue: 214,
+    title: "Dev server crashes when a step returns undefined",
+    body: "Returning undefined from step.run stops the dev server.",
+  },
+});
+```
+
+## Variations
+
+- [Check before acting](/docs/labs/agents/tools?ref=docs-labs-agents-recipes-issue-triage#check-before-acting) wraps `comment` so it refuses text that looks like a secret.
+- [Scheduled watcher](/docs/labs/agents/recipes/scheduled-watcher?ref=docs-labs-agents-recipes-issue-triage) watches for stale pull requests on a schedule.
+- [Coding agent](/docs/labs/agents/recipes/coding-agent?ref=docs-labs-agents-recipes-issue-triage) opens a branch for simple bugs.
+
+## Learn more
+
+- [Agents](/docs/labs/agents/agents?ref=docs-labs-agents-recipes-issue-triage)
+- [Tools](/docs/labs/agents/tools?ref=docs-labs-agents-recipes-issue-triage)
+- Next recipe: [PR reviewer](/docs/labs/agents/recipes/pr-reviewer?ref=docs-labs-agents-recipes-issue-triage)
