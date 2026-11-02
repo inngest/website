@@ -152,7 +152,7 @@ The second argument of `agents.agent()`. It gets one argument: the function's us
 
 - **With no handler**, an agent with a `model` sends each batch of messages to the loop. An agent with neither a model nor a handler takes its batch and ends with `undefined`. An agent that should tell people something uses a tool you write. [Tools →](/docs/labs/agents/tools?ref=docs-labs-agents-reference)
 - **The return value** is the run's output, which a caller's `result()` reads. With no handler it is the model's final answer, a string.
-- **The run ends** when the handler returns. Work still running and not awaited is stopped, except an un-awaited `score()`, which lands first. Plain functions are unaffected: un-awaited work there behaves as in any Inngest function.
+- **The run ends** when the handler returns. A step the handler started and didn't await still runs, once, and the run ends after it; nothing new starts after the handler returns. That includes an un-awaited `score()`. Plain functions are unaffected: un-awaited work there behaves as in any Inngest function.
 - **A run opened through a handle** (`start()`, `message()`, `start_agent`, `message_agent`) ends once it has answered, after waiting up to 24 hours for any agents it started with `start_agent`. [Idle](#idle)
 
 ## me

@@ -257,7 +257,7 @@ const reviewLater = async () => {
 void reviewLater();
 ```
 
-`me.message()` puts the review in the PR helper's own inbox, for a later batch. Work still running when the handler returns is stopped.
+`me.message()` puts the review in the PR helper's own inbox, for a later batch. A step the handler started and didn't await still runs, once, and the run ends after it. Nothing new starts after the handler returns.
 
 ## Not everything is an agent
 

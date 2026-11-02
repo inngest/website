@@ -207,7 +207,7 @@ Live across every deploy.
 
 - **A spent budget stays spent.** Later messages end at once.
 - **A cancelled run isn't recovered.**
-- **Work you don't await is stopped** when the handler returns. An un-awaited `score()` is still written.
+- **Work you don't await still runs, once,** and the run ends after it. Nothing new starts after the handler returns. An un-awaited `score()` is written the same way.
 
 ## Recipes and reference
 
