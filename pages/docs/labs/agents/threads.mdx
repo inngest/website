@@ -33,7 +33,7 @@ export const deployed = eventType("deploy/finished", {
 ```
 
 {/* not type-checked: event triggers on an agent with a handler */}
-```typescript {{ title: "inngest/agents/prHelper.ts" }}
+```typescript
 import { agents } from "../client";
 import { ciFailed, deployed, prOpened } from "../events";
 
