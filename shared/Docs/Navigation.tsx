@@ -56,6 +56,7 @@ import { toDocsNavPath } from "./docsNavPath";
 import TypeScriptIcon from "src/shared/Icons/TypeScript";
 import PythonIcon from "src/shared/Icons/Python";
 import GoIcon from "src/shared/Icons/Go";
+import { refLinkProps } from "@/utils/v1/ref";
 
 type ActiveSectionContextType = {
   activeSection: string;
@@ -144,7 +145,7 @@ export function TabItem({ href, children, matcher, title }) {
   return (
     <li>
       <Link
-        href={href}
+        {...refLinkProps(href)}
         className={clsx(
           "relative top-0.5 block cursor-pointer whitespace-nowrap px-3 py-4 text-sm font-medium leading-5 transition",
           isActive &&
@@ -227,9 +228,9 @@ function NavLink({
 // link in a new tab.
 const LinkOrHref = (props: any) => {
   if (props.target === "_blank") {
-    return <a {...props} />;
+    return <a {...props} {...refLinkProps(props.href)} />;
   }
-  return <Link {...props} />;
+  return <Link {...props} {...refLinkProps(props.href)} />;
 };
 
 function VisibleSectionHighlight({ listItems }) {

@@ -1,5 +1,6 @@
 import Link from "next/link";
 import clsx from "clsx";
+import { refLinkProps } from "@/utils/v1/ref";
 
 export default function Button({
   href,
@@ -12,7 +13,7 @@ export default function Button({
 }) {
   return (
     <Link
-      href={href}
+      {...refLinkProps(href)}
       className={clsx(
         "inline-flex items-center gap-1 whitespace-nowrap px-6 py-2 font-medium transition-all",
         variant === "primary" && "bg-cta text-carbon-1000 hover:bg-ctaHover",

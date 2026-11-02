@@ -7,6 +7,7 @@ import {
   IconBlog,
 } from "../Icons/duotone";
 import Card from "src/components/Card";
+import { refLinkProps } from "@/utils/v1/ref";
 
 function getType(type) {
   switch (type) {
@@ -47,7 +48,10 @@ export default function Learning({ type, href, title, description }) {
   const learningType = getType(type.toUpperCase());
 
   return (
-    <a href={href} className="group flex rounded-lg text-basis transition-all">
+    <a
+      {...refLinkProps(href)}
+      className="group flex rounded-lg text-basis transition-all"
+    >
       <Card variant="hover" className="flex p-4 pt-4 xl:p-6 xl:pt-5">
         <span className="flex items-center gap-1 text-sm font-semibold">
           <learningType.icon size={24} color="matcha" /> {type}

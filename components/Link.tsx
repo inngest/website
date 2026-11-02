@@ -1,6 +1,7 @@
 import NextLink, { type LinkProps } from "next/link";
 import { AnchorHTMLAttributes } from "react";
 import clsx from "clsx";
+import { refLinkProps } from "@/utils/v1/ref";
 
 export default function Link(
   props: LinkProps & AnchorHTMLAttributes<HTMLAnchorElement>
@@ -10,5 +11,7 @@ export default function Link(
     props.color ? props.color : "text-link",
     props.className
   );
-  return <NextLink {...props} className={className} />;
+  return (
+    <NextLink {...props} {...refLinkProps(props.href)} className={className} />
+  );
 }

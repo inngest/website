@@ -18,6 +18,7 @@ import GradientFrame from "@/components/v1/sections/shared/GradientFrame";
 import MobileReelNav from "@/components/v1/sections/shared/MobileReelNav";
 import Section from "@/components/v1/sections/shared/Section";
 import SectionHeader from "@/components/v1/sections/shared/SectionHeader";
+import { refLinkProps } from "@/utils/v1/ref";
 
 /**
  * "Everything production apps require" — display headline + body, a
@@ -289,7 +290,7 @@ export default function Reliability() {
                 </span>
               </button>
               <a
-                href={feature.href}
+                {...refLinkProps(feature.href)}
                 target="_blank"
                 rel="noopener noreferrer"
                 className="pl-[40px] pr-[22px] pb-2 pt-1 font-v1Label text-[12px] text-v1-frost/40 hover:text-v1-accent-salmon motion-safe:transition-colors motion-safe:duration-200"

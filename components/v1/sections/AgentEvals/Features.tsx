@@ -7,6 +7,7 @@ import GradientFrame from "@/components/v1/sections/shared/GradientFrame";
 import Section from "@/components/v1/sections/shared/Section";
 import { V1_SECTION_TITLE } from "@/components/v1/sections/shared/sectionTitle";
 import AnimatedEvals from "@/components/v1/sections/AgentEvals/AnimatedEvals";
+import { refLinkProps } from "@/utils/v1/ref";
 
 /**
  * "Everything you need to safely test in production" — same layout as the
@@ -140,7 +141,7 @@ export default function Features() {
               >
                 {f.href ? (
                   <Link
-                    href={f.href}
+                    {...refLinkProps(f.href)}
                     prefetch={false}
                     className="-m-3 flex flex-col gap-2 rounded-md p-3 hover:bg-gradient-to-br hover:from-white/[0.06] hover:to-white/[0.02] motion-safe:transition-colors motion-safe:duration-200"
                   >

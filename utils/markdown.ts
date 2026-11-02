@@ -4,6 +4,7 @@ import rehypeAutolinkHeadings from "rehype-autolink-headings";
 
 import { rehypeParseCodeBlocks } from "src/mdx/rehype.mjs";
 import { rehypeCanonicalDocsLinks } from "src/mdx/rehypeCanonicalDocsLinks.mjs";
+import { rehypeRefLinks } from "src/mdx/rehypeRefLinks.mjs";
 import { rehypeRemoveTwoSlashMarkup, rehypeShiki } from "src/utils/code";
 import { formatShortLocaleDate } from "src/utils/date";
 
@@ -117,6 +118,7 @@ export async function loadMarkdownFile<T>(
         rehypeCanonicalDocsLinks,
         rehypeSlug,
         rehypeAutolinkHeadings,
+        rehypeRefLinks,
       ],
     },
   });

@@ -2,6 +2,7 @@ import Link from "next/link";
 import Image, { type ImageProps } from "next/image";
 import { type MDXComponents } from "mdx/types";
 import { Unreleased } from "shared/Docs/Unreleased";
+import { refLinkProps } from "@/utils/v1/ref";
 
 // Cloud (#eaeaea) is the body colour for this page; there is no v1
 // token for it, so it's used as a literal here and on the entry date.
@@ -15,7 +16,7 @@ export const CLOUD = "text-[#eaeaea]";
 export const mdxComponents: MDXComponents = {
   a: ({ href, children, ...props }) => (
     <Link
-      href={href ?? "#"}
+      {...refLinkProps(href ?? "#")}
       {...props}
       className="text-v1-accent-salmon-light underline-offset-2 motion-safe:transition-colors hover:underline"
     >

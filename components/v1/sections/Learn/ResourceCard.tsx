@@ -4,6 +4,7 @@ import RegisterCue from "@/components/v1/sections/Events/RegisterCue";
 import SpotlightFrame from "@/components/v1/sections/Events/SpotlightFrame";
 import Chip from "@/components/v1/sections/shared/Chip";
 import type { PostCard } from "@/components/v1/sections/Learn/types";
+import { refLinkProps } from "@/utils/v1/ref";
 
 export default function ResourceCard({ post }: { post: PostCard }) {
   const ctaLabel =
@@ -19,7 +20,7 @@ export default function ResourceCard({ post }: { post: PostCard }) {
     // /blog/[slug]. Add per-type routing once REPORT/VIDEO/DEMO content
     // sources exist.
     <Link
-      href={post.href ?? `/blog/${post.slug}`}
+      {...refLinkProps(post.href ?? `/blog/${post.slug}`)}
       className="block h-full rounded-lg"
     >
       {/* Black gradient frame + cursor spotlight / lift / tilt hover —
