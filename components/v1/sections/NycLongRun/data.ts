@@ -21,7 +21,7 @@ export const HERO = {
   // Inngest does about it.
   body: [
     "26.2 is one kind of lonng run. Another happens in production.",
-    "If you're building AI agents, you know they might have to wait hours or days before a user responds. Wrap product code in APIs that tell it when to stop, start, fan-out, and retry. So your app picks up where it left off, not back at the starting line.",
+    "If you're building agents, you know they might have to wait hours or days between user input. Wrap code in APIs that tell it when to stop, start, fan-out, and retry, so your app picks up where it left off, not back at the starting line.",
   ],
   cta: {
     label: "Start Free",
