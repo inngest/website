@@ -222,7 +222,7 @@ await step.run("comment", async () => {
 
 </AnnotatedCode>
 
-With no handler, a spent budget ends the loop and the run's output says so.
+With no handler, a spent budget ends the loop: the output is the model's last text, and the trace shows `end` as `"budget"`.
 
 ## Any model
 

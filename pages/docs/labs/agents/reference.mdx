@@ -81,7 +81,7 @@ export const agents = createAgents(inngest);
 | `budget` | value or function | What a thread may spend: `{ usd, tokens }`. [Budget, limits and recovery](#budget-limits-and-recovery) |
 | `price` | value | Overrides the model's own prices: a per-million-token table, or a function that prices a call. Not a function of `{ event, thread }`. [Budget and price](#budget-and-price) |
 | `limits` | value or function | `{ depth, mayCall }`: how deep chains of started agents go, and which agents the model may start. |
-| `recovery` | value | `true` or `{ resume }`. Off by default. [Recovery](#recovery) |
+| `recovery` | value | `true` to resend a failed run's message to a fresh run. Off by default. [Recovery](#recovery) |
 | `discovery` | value | `false` turns off the tools that find and reach other agents; `{ prepare }` fills part of their input. On by default. |
 | `listen` | value | Event types the model may start watching with `inbox_listen`. [Model tools](#model-tools) |
 | `remember` | value or function | `false` switches off the loop's remembered history. |
@@ -571,17 +571,13 @@ limits: { depth?: number; mayCall?: string[] }
 
 ### Recovery
 
-`recovery: true` or `{ resume }`. It is off by default.
+`recovery?: boolean`, off by default.
 
 - A run that fails for good shows its error in the trace, with or without `recovery`.
 - With `recovery`, the agent resends the message the run was handling to a fresh run, which starts from that message.
 - It never resends the same error twice, never resends a `NonRetriableError`, and allows at most three kinds of error per message.
-- A cancelled run (`stop()`, `cancelOn`, `timeouts.finish`) is not resumed.
+- A cancelled run (`stop()`, `cancelOn`, `timeouts.finish`) is not resent.
 - The next run gets `previousRun`, with or without recovery. [The handler](#the-handler)
-
-| Option | Default | Description |
-| --- | --- | --- |
-| `resume` | `true` | Resend the message the run was handling. |
 
 ## Cards and discovery
 
