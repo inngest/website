@@ -38,7 +38,8 @@ export default function Hero() {
             <p className="text-v1-body-sm-loose text-v1-frost/80">
               Twelve months of the Pro plan at no cost, with all of its features
               and included limits. Usage above those limits is billed at
-              standard Pro rates.{" "}
+              standard Pro rates, so you&apos;ll add a payment method once
+              you&apos;re approved.{" "}
               <a href="/pricing?ref=startups" className={linkClassName}>
                 Compare plans
               </a>
@@ -58,10 +59,6 @@ export default function Hero() {
               </li>
               <li>
                 Not on a paid Inngest plan yet (Free plan accounts are welcome)
-              </li>
-              <li>
-                A payment method on your Inngest account, so usage above Pro
-                limits can be billed
               </li>
             </ul>
             <p className="text-v1-body-sm-loose text-v1-frost/80">

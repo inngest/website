@@ -31,9 +31,9 @@ const FAQS: FaqItem[] = [
   },
   {
     id: "payment-method",
-    question: "Why do I need a payment method on file?",
+    question: "Do I need a payment method to apply?",
     answer:
-      "So usage above Pro's included limits can be billed. You won't be charged for the Pro plan during your free year.",
+      "Not to apply. You'll add one once you're approved, so usage above Pro's included limits can be billed. You won't be charged for the Pro plan during your free year.",
   },
   {
     id: "after-year-one",
@@ -52,7 +52,7 @@ const FAQS: FaqItem[] = [
     id: "review",
     question: "How are applications reviewed?",
     answer:
-      "Our team checks each application against the criteria above. If you're approved, we upgrade your Inngest account to Pro and let you know by email.",
+      "Our team checks each application against the criteria above. If you're approved, we'll email you next steps, including adding a payment method, and then upgrade your account to Pro.",
   },
   {
     id: "apply-again",
