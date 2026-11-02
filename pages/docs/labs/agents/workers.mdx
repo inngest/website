@@ -11,42 +11,35 @@ A Worker has no secrets or database at import time, so fields that take a functi
 
 - **Keep state in D1.** The store reads its binding on each use. [Store →](#store-state-in-d1)
 - **Read secrets at run time.** The model, tokens and repo access are functions. [Bindings →](#read-bindings-at-run-time)
-- **Serve from `fetch`.** One export for Inngest and the Slack route. [Serve →](#serve-from-fetch)
+- **Serve from `fetch`.** One export that sets the bindings, then serves Inngest. [Serve →](#serve-from-fetch)
 
 <AnnotatedCode>
 
-{/* not type-checked: model as a function reading a Worker binding, slack.thread({ token }) and slack.tools({ token }) */}
+{/* not type-checked: model as a function reading a Worker binding */}
 ```typescript {{ title: "inngest/agents/triage.ts" }}
-import { anthropic, slack } from "inngest/experimental/agents";
+import { anthropic } from "inngest/experimental/agents";
 import { agents } from "../client";
 import { getEnv } from "../env";
+import { ticketOpened } from "../events";
 import { work } from "../sandboxes/work";
-
-const token = () => {
-  return getEnv().SLACK_BOT_TOKEN;
-};
 
 export const triage = agents.agent({
   id: "triage",
-  triggers: [slack.thread({ in: ["C0123ABC"], token })],
+  triggers: [ticketOpened],
+  thread: "event.data.ticket",
   model: () => {
     return anthropic({
       model: "claude-sonnet-5-5",
       apiKey: getEnv().ANTHROPIC_API_KEY,
     });
   },
-  system: "You triage support threads.",
-  tools: { ...slack.tools({ token }) },
+  system: "You triage support tickets.",
   sandboxes: { work },
 });
 ```
 
-<Annotation id="token" lines="6-8" tease="called at each use" title="A token as a function" href="/docs/labs/agents/slack-and-github?ref=docs-labs-agents-workers" linkText="Slack and GitHub">
-`getEnv()` reads the request's bindings (`env.ts`, below). `slack.thread` uses the token for the SDK's own posts, `slack.tools` for the model's.
-</Annotation>
-
-<Annotation id="model" lines="13-18" tease="called per run" title="A field as a function" href="/docs/labs/agents/reference?ref=docs-labs-agents-workers#the-definition" linkText="Reference: the definition">
-`getEnv()` is safe here: a run only starts inside a request.
+<Annotation id="model" lines="11-16" tease="called per run" title="A field as a function" href="/docs/labs/agents/reference?ref=docs-labs-agents-workers#the-definition" linkText="Reference: the definition">
+`getEnv()` reads the request's bindings (`env.ts`, below) and is safe here: a run only starts inside a request.
 </Annotation>
 
 </AnnotatedCode>
@@ -62,8 +55,6 @@ import type { D1Database } from "@cloudflare/workers-types";
 export type Env = {
   DB: D1Database;
   ANTHROPIC_API_KEY: string;
-  SLACK_BOT_TOKEN: string;
-  SLACK_SIGNING_SECRET: string;
   GITHUB_READ_TOKEN: string;
 };
 
@@ -145,13 +136,11 @@ export const work = sandbox({
 
 `setEnv(env)` runs first on every request, so everything after it can read the bindings. Workers require a default export for the entry point.
 
-{/* not type-checked: serve() from inngest/cloudflare with slack.bridge() and a secret function */}
+{/* not type-checked: serve() from inngest/cloudflare with agents.functions() */}
 ```typescript {{ title: "inngest/serve.ts" }}
 import { serve } from "inngest/cloudflare";
-import { secret } from "inngest/experimental";
-import { slack } from "inngest/experimental/agents";
 import { agents, inngest } from "./client";
-import { getEnv, setEnv } from "./env";
+import { setEnv } from "./env";
 import "./agents/triage";
 
 const handler = serve({
@@ -160,20 +149,9 @@ const handler = serve({
   servePath: "/api/inngest",
 });
 
-const slackBridge = slack.bridge({
-  client: inngest,
-  signingSecret: secret(() => {
-    return getEnv().SLACK_SIGNING_SECRET;
-  }),
-});
-
 export default {
   fetch: (request: Request, env: Record<string, string | undefined>) => {
     setEnv(env);
-
-    if (new URL(request.url).pathname === "/api/slack") {
-      return slackBridge(request);
-    }
 
     return handler(request, env);
   },
