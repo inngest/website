@@ -1,7 +1,7 @@
 import { AnnotatedCode, Annotation } from "shared/Docs/mdx";
 
 export const metaTitle = "Calling home | Inngest Agents";
-export const description = "Let a script in an agent's sandbox call your tools. Each call runs in your app as a durable step, and a tool made in your handler can also write thread state and post as the agent, with credentials that stay in your app.";
+export const description = "Let a script in an agent's sandbox call your tools. Each call runs in your app as a durable step, and a tool made in your handler can also write thread state and comment on the pull request, with credentials that stay in your app.";
 
 # Calling home
 
@@ -18,17 +18,17 @@ You want the model to read the CI log of every open pull request without a turn 
 {/* not type-checked: sandbox.tools.code({ tools }), which gives the model work_run_code */}
 ```typescript {{ title: "inngest/sandboxes/work.ts" }}
 import { secret } from "inngest/experimental";
-import { githubApp, sandbox } from "inngest/experimental/agents";
+import { sandbox } from "inngest/experimental/agents";
 import { readLog } from "../tools/readLog";
 
 export const work = sandbox({
   id: "work",
   repo: {
     url: "https://github.com/acme/web",
-    auth: githubApp({
-      appId: process.env.GITHUB_APP_ID ?? "",
-      privateKey: secret("GITHUB_APP_PRIVATE_KEY"),
-    }),
+    auth: {
+      read: secret("GITHUB_READ_TOKEN"),
+      write: secret("GITHUB_WRITE_TOKEN"),
+    },
     policy: (push) => {
       if (push.branch === "main") {
         return { refuse: "Never push to main" };
@@ -96,69 +96,74 @@ You want the script to do what only your run can, such as saving thread state an
 {/* not type-checked: a tool made in the handler and passed with loop(batch, { tools }) */}
 ```typescript {{ title: "inngest/agents/prHelper.ts" }}
 import { tool } from "inngest/experimental";
-import { github, kv, skills } from "inngest/experimental/agents";
+import { kv, skills } from "inngest/experimental/agents";
 import { z } from "zod";
 import { agents } from "../client";
-import { ciFailed, ciPassed, deployed } from "../events";
+import { ciFailed, ciPassed, deployed, prOpened } from "../events";
+import { gh } from "../lib/github";
 import { claude } from "../models/claude";
 import { work } from "../sandboxes/work";
+import { comment } from "../tools/comment";
 import { readLog } from "../tools/readLog";
 
 const triggers = [
-  github.thread({ repos: ["acme/web"] }),
-  { event: ciFailed, thread: "event.data.prUrl" },
-  { event: deployed, thread: "event.data.pull.url" },
+  prOpened,
+  ciFailed,
+  { event: deployed, thread: "event.data.pull" },
 ];
 
 export const prHelper = agents.agent(
   {
     id: "pr-helper",
     triggers,
-    inbox: [{ event: ciPassed, thread: "event.data.prUrl" }],
+    thread: "event.data.pr",
+    inbox: [ciPassed],
     idle: "1h",
     model: claude,
     system: "You help with pull requests on acme/web.",
     budget: { usd: 0.5 },
-    tools: { readLog, ...github.tools() },
+    tools: { readLog, comment },
     sandboxes: { work },
     listen: [ciPassed, ciFailed],
     skills: [skills.folder("./skills")],
   },
-  async ({ inbox, me, loop }) => {
+  async ({ inbox, loop, me, step }) => {
     const note = tool.step({
       description: "Leaves a note on this PR",
       input: z.object({ text: z.string() }),
       run: async ({ text }) => {
         await kv.thread.set("note", text);
 
-        await me.post(text);
+        await gh.comment(Number(me.key), text);
 
         return "noted";
       },
     });
 
-    me.post("Looking at it.");
-
     for await (const batch of inbox.batches({ max: 20 })) {
       const result = await loop(batch, { tools: { note } });
 
       if (result.end === "budget") {
-        await me.post("This PR is out of budget.");
+        await step.run("comment", async () => {
+          return await gh.comment(Number(me.key), "This PR is out of budget.");
+        });
 
         return;
       }
 
-      await me.post(result.text);
+      await step.run("comment", async () => {
+        return await gh.comment(Number(me.key), result.text);
+      });
     }
   },
 );
 ```
 
-<Annotation id="note" lines="31-41" tease="closes over me" title="A tool made in the handler" href="/docs/labs/agents/tools?ref=docs-labs-agents-calling-home" linkText="Tools">
-Its body can use `me`, `kv` and your variables. It runs as a durable step, like any tool.
+<Annotation id="note" lines="34-44" tease="closes over me" title="A tool made in the handler" href="/docs/labs/agents/tools?ref=docs-labs-agents-calling-home" linkText="Tools">
+Its body can use `me`, `kv` and your variables. It runs as a durable step, so its comment happens once.
 </Annotation>
 
-<Annotation id="tools" lines="46" tease="for this call" title="Per-call tools" href="/docs/labs/agents/reference?ref=docs-labs-agents-calling-home#tools-passed-to-a-loop" linkText="Reference: tools passed to a loop">
+<Annotation id="tools" lines="47" tease="for this call" title="Per-call tools" href="/docs/labs/agents/reference?ref=docs-labs-agents-calling-home#tools-passed-to-a-loop" linkText="Reference: tools passed to a loop">
 Added to the agent's tools for this call. A script in the sandbox calls it by the same name.
 </Annotation>
 
@@ -173,20 +178,24 @@ if "FAIL" in log:
     await tools.note(text="The checkout test is failing.")
 ```
 
-The events, and the client with its `sandboxMiddleware()`, are as [Threads](/docs/labs/agents/threads?ref=docs-labs-agents-calling-home) and [Sandboxes](/docs/labs/agents/sandboxes?ref=docs-labs-agents-calling-home#a-sandbox) left them:
+The events, the client with its `sandboxMiddleware()`, and the GitHub client with its `comment` tool are as [Threads](/docs/labs/agents/threads?ref=docs-labs-agents-calling-home), [Sandboxes](/docs/labs/agents/sandboxes?ref=docs-labs-agents-calling-home#a-sandbox) and [Tools](/docs/labs/agents/tools?ref=docs-labs-agents-calling-home#your-own-git-hub-tools) left them:
 
 ```typescript {{ title: "inngest/events.ts" }}
 import { eventType } from "inngest";
 import { z } from "zod";
 
-const ciRun = z.object({ pr: z.number(), prUrl: z.string() });
+const ciRun = z.object({ pr: z.number() });
+
+export const prOpened = eventType("pr/opened", {
+  schema: z.object({ pr: z.number(), author: z.string() }),
+});
 
 export const ciFailed = eventType("ci/run.failed", { schema: ciRun });
 
 export const ciPassed = eventType("ci/run.passed", { schema: ciRun });
 
 export const deployed = eventType("deploy/finished", {
-  schema: z.object({ env: z.string(), pull: z.object({ url: z.string() }) }),
+  schema: z.object({ env: z.string(), pull: z.number() }),
 });
 ```
 
@@ -204,11 +213,48 @@ export const inngest = new Inngest({
 export const agents = createAgents(inngest);
 ```
 
+```typescript {{ title: "inngest/lib/github.ts" }}
+const api = "https://api.github.com/repos/acme/web";
+
+export const gh = {
+  comment: async (pr: number, body: string) => {
+    const response = await fetch(`${api}/issues/${pr}/comments`, {
+      method: "POST",
+      headers: {
+        accept: "application/vnd.github+json",
+        authorization: `Bearer ${process.env.GITHUB_TOKEN}`,
+      },
+      body: JSON.stringify({ body }),
+    });
+
+    if (!response.ok) {
+      throw new Error(`Comment on #${pr}: ${response.status}`);
+    }
+
+    return await response.json();
+  },
+};
+```
+
+```typescript {{ title: "inngest/tools/comment.ts" }}
+import { tool } from "inngest/experimental";
+import { z } from "zod";
+import { gh } from "../lib/github";
+
+export const comment = tool.step({
+  description: "Comments on a pull request",
+  input: z.object({ pr: z.number(), body: z.string() }),
+  run: async ({ pr, body }) => {
+    return await gh.comment(pr, body);
+  },
+});
+```
+
 ## The keys stay home
 
-You want a script to use a credential without being handed it. `note` and `readLog` run in your app with its credentials, so the script sees only what they return.
+You want a script to use a credential without being handed it. `note` comments with your app's GitHub token and `readLog` reads CI with yours, so the script sees only what they return.
 
-Only the checkout's read-only token and any `sandbox({ secrets })` values enter the sandbox; the write token stays on your host. [Reference: secrets →](/docs/labs/agents/reference-sandboxes?ref=docs-labs-agents-calling-home#secrets)
+Only the checkout's read token and any `sandbox({ secrets })` values enter the sandbox; the write token stays on your host. [Reference: secrets →](/docs/labs/agents/reference-sandboxes?ref=docs-labs-agents-calling-home#secrets)
 
 ## Your own scripts
 
