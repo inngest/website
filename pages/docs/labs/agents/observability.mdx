@@ -9,7 +9,7 @@ export const description = "See what an Inngest agent did, what it cost and how 
 
 Every statement of a run is a row in its trace, and scores add numbers to those rows.
 
-- **A row per statement.** Calls, posts, reads. [Read a trace →](#read-a-trace)
+- **A row per statement.** Calls and reads. [Read a trace →](#read-a-trace)
 - **Scores you don't write.** Time, tokens, failures. [Automatic scores →](#automatic-scores)
 - **Scores you do.** From a handler or a tool. [Score outcomes →](#score-outcomes)
 - **Progress as it happens.** `onTurn` after each turn. [Show progress →](/docs/labs/agents/models?ref=docs-labs-agents-observability#progress-on-every-turn)
@@ -18,22 +18,21 @@ Every statement of a run is a row in its trace, and scores add numbers to those 
 
 {/* not type-checked: score in the handler's argument and usage on the loop result */}
 ```typescript {{ title: "inngest/agents/support.ts" }}
-import { slack } from "inngest/experimental/agents";
 import { agents } from "../client";
+import { ticketOpened } from "../events";
 import { claude } from "../models/claude";
 
 export const support = agents.agent(
   {
     id: "support",
-    triggers: [slack.thread()],
+    triggers: [ticketOpened],
+    thread: "event.data.ticket",
     model: claude,
     system: "You answer support questions.",
   },
-  async ({ inbox, me, loop, score }) => {
+  async ({ inbox, loop, score }) => {
     for await (const batch of inbox.batches()) {
       const result = await loop(batch);
-
-      await me.post(result.text);
 
       await score("answered", result.text.length > 0);
 
@@ -43,23 +42,34 @@ export const support = agents.agent(
 );
 ```
 
-<Annotation id="score" lines="12" tease="beside the loop" title="score" href="#score-outcomes" linkText="Score outcomes">
+<Annotation id="score" lines="13" tease="beside the loop" title="score" href="#score-outcomes" linkText="Score outcomes">
 In the handler's argument and in every tool's context.
 </Annotation>
 
-<Annotation id="bool" lines="18" tease="true counts as 1" title="A yes or no" href="#score-outcomes" linkText="Score outcomes">
+<Annotation id="bool" lines="17" tease="true counts as 1" title="A yes or no" href="#score-outcomes" linkText="Score outcomes">
 A boolean or a finite number.
 </Annotation>
 
-<Annotation id="usage" lines="20" tease="dollars spent" title="Usage" href="/docs/labs/agents/reliability?ref=docs-labs-agents-observability#cap-spend" linkText="Cap spend">
+<Annotation id="usage" lines="19" tease="dollars spent" title="Usage" href="/docs/labs/agents/reliability?ref=docs-labs-agents-observability#cap-spend" linkText="Cap spend">
 Every loop result carries its tokens and dollars. The model prices its own calls.
 </Annotation>
 
 </AnnotatedCode>
 
+The event is:
+
+```typescript {{ title: "inngest/events.ts" }}
+import { eventType } from "inngest";
+import { z } from "zod";
+
+export const ticketOpened = eventType("ticket/opened", {
+  schema: z.object({ ticket: z.number(), question: z.string() }),
+});
+```
+
 ## Read a trace
 
-A model call, a tool call, a post and an inbox read are each one row. An inbox has one row for its whole life, with a tick for every message that arrived, read or not. [Inboxes →](/docs/labs/agents/inboxes?ref=docs-labs-agents-observability)
+A model call, a tool call and an inbox read are each one row. An inbox has one row for its whole life, with a tick for every message that arrived, read or not. [Inboxes →](/docs/labs/agents/inboxes?ref=docs-labs-agents-observability)
 
 <ScreenshotNeeded>an inbox row with three ticks, and the read row expanded to its messages</ScreenshotNeeded>
 
@@ -93,7 +103,6 @@ An un-awaited score is still written before the run ends. Names can't start with
 
 - **A score in handler code is a step.** In a tool it adds none.
 - **Keep score names stable.** A changed name is a separate series. [Scores →](/docs/agent-evals/scores?ref=docs-labs-agents-observability)
-- **Some problems are only warnings.** A `me.post()` on a thread with no home shows on the trace and fails nothing.
 
 ## How it works
 
