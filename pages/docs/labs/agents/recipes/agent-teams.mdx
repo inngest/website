@@ -44,7 +44,7 @@ export const researcher = agents.agent({
 ```
 
 <Annotation id="card" lines="10" tease="found by description" title="Card" href="/docs/labs/agents/agent-discovery?ref=docs-labs-agents-recipes-agent-teams#a-card" linkText="Publish a card">
-Published when the app syncs. The description is what the lead searches.
+The description is what the lead searches. Agents in the lead's own app are found at once.
 </Annotation>
 
 </AnnotatedCode>
@@ -184,9 +184,8 @@ At [localhost:8288](http://localhost:8288), open `ask-team`, choose **Invoke** a
 
 ## Variations
 
-- [`agents.reference`](/docs/labs/agents/agent-teams?ref=docs-labs-agents-recipes-agent-teams#an-agent-in-another-app) calls the lead by address from another app.
 - [`limits.mayCall`](/docs/labs/agents/agent-discovery?ref=docs-labs-agents-recipes-agent-teams#who-it-may-start) limits who the lead may start.
-- [`share: "team"`](/docs/labs/agents/agent-discovery?ref=docs-labs-agents-recipes-agent-teams#who-can-find-it) lets other apps use the researcher.
+- [`share: "team"`](/docs/labs/agents/agent-discovery?ref=docs-labs-agents-recipes-agent-teams#who-can-find-it) lets other apps find the researcher once its card refreshes.
 
 ## Learn more
 
