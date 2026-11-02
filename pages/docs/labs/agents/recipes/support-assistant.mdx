@@ -13,9 +13,8 @@ It remembers each ticket across restarts, and a note saved on one ticket reaches
 ticket/opened    T-1  Where is order 7?
 Support          sendReply: Order 7 shipped with UPS and arrives Friday.
 
-ticket/replied   T-1  Maya (team): Remember: always give the carrier first.
+ticket/replied   T-1  maya (team): Remember: always give the carrier first.
 Support          saveNote: always give the carrier first
-Support          sendReply: Saved. UPS, arriving Friday.
 
 (another ticket, an hour later)
 ticket/opened    T-2  Where is order 9?
@@ -26,7 +25,7 @@ Screenshot needed: the first run's trace in the Dev Server, with the `sendReply`
 
 ## The code
 
-Your helpdesk's webhook route sends these two events with `inngest.send`. The assistant's own replies send none.
+Your helpdesk's webhook route sends these two events with `inngest.send`. It sends `ticket/replied` for customer and team messages, not for the assistant's own replies.
 
 ```typescript {{ title: "inngest/events.ts" }}
 import { eventType } from "inngest";
@@ -37,13 +36,18 @@ export const ticketOpened = eventType("ticket/opened", {
 });
 
 export const ticketReplied = eventType("ticket/replied", {
-  schema: z.object({ ticket: z.string(), from: z.string(), text: z.string() }),
+  schema: z.object({
+    ticket: z.string(),
+    from: z.string(),
+    team: z.boolean(),
+    text: z.string(),
+  }),
 });
 ```
 
 <AnnotatedCode>
 
-{/* not type-checked: system as an async function, kv.app and kv.key read in a run-time field */}
+{/* not type-checked: agents.agent with event triggers, thread and no handler, system as an async function, kv.app and kv.key read in a run-time field */}
 ```typescript {{ title: "inngest/agents/support.ts" }}
 import { kv } from "inngest/experimental/agents";
 import { agents } from "../client";
@@ -63,6 +67,7 @@ export const support = agents.agent({
 
     return [
       "Answer each ticket and send the answer with sendReply.",
+      "Call saveNote only when a message with team: true asks you to.",
       `Team notes: ${known.join("; ")}`,
     ].join("\n");
   },
@@ -74,11 +79,11 @@ export const support = agents.agent({
 Both events carry the ticket, so a ticket's messages share one thread and its history.
 </Annotation>
 
-<Annotation id="system" lines="14-21" tease="read at run start" title="Notes in the prompt" href="/docs/labs/agents/reference?ref=docs-labs-agents-recipes-support-assistant#the-definition" linkText="Decide per run">
-Reads the team's notes when a run starts. A run already under way sees a note saved meanwhile on its next run.
+<Annotation id="system" lines="14-22" tease="read at run start" title="Notes in the prompt" href="/docs/labs/agents/reference?ref=docs-labs-agents-recipes-support-assistant#the-definition" linkText="Decide per run">
+Reads the team's notes when a run starts, so a note saved during a run reaches the ticket's next run. The prompt lets only a `team: true` message save one.
 </Annotation>
 
-<Annotation id="tools" lines="22" tease="no handler needed" title="Model and tools" href="/docs/labs/agents/models?ref=docs-labs-agents-recipes-support-assistant#delete-the-handler" linkText="Delete the handler">
+<Annotation id="tools" lines="23" tease="no handler needed" title="Model and tools" href="/docs/labs/agents/models?ref=docs-labs-agents-recipes-support-assistant#delete-the-handler" linkText="Delete the handler">
 With no handler, the agent runs the model with these tools until it answers. The answer is only the run's output, so `sendReply` is how the customer hears it.
 </Annotation>
 
@@ -173,7 +178,7 @@ The [client](/docs/labs/agents/quick-start?ref=docs-labs-agents-recipes-support-
 
 - [Threads](/docs/labs/agents/threads?ref=docs-labs-agents-recipes-support-assistant#what-a-conversation-keeps) give each ticket its own history.
 - [An agent with no handler](/docs/labs/agents/models?ref=docs-labs-agents-recipes-support-assistant#delete-the-handler) answers from a definition alone.
-- [A tool you write](/docs/labs/agents/tools?ref=docs-labs-agents-recipes-support-assistant#tools-as-steps) tells the customer, as a step that retries and never repeats.
+- [A tool you write](/docs/labs/agents/tools?ref=docs-labs-agents-recipes-support-assistant#your-own-git-hub-tools) tells the customer, as a step that retries and never repeats.
 - [App-wide memory](/docs/labs/agents/memory?ref=docs-labs-agents-recipes-support-assistant#shared-by-every-pr) is one store every ticket can read.
 
 ## Run it
@@ -202,7 +207,7 @@ await inngest.send({
 });
 ```
 
-Then send `ticket/replied` for `T-1` with `from: "maya"` and `text: "Remember: always give the carrier first."`, and open `T-2`. With no helpdesk yet, swap the `fetch` in `helpdesk.reply` for a `console.log` and read the replies in the app's output.
+Then send `ticket/replied` for `T-1` with `from: "maya"`, `team: true` and `text: "Remember: always give the carrier first."`, and open `T-2`. With no helpdesk yet, swap the `fetch` in `helpdesk.reply` for a `console.log` and read the replies in the app's output.
 
 ## Variations
 
