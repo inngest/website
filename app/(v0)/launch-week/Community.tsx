@@ -4,6 +4,7 @@ import {
   RiArrowRightUpLine,
   RiToolsFill,
 } from "@remixicon/react";
+import { refLinkProps } from "@/utils/v1/ref";
 
 const betaTesterLink =
   "mailto:hello@inngest.com?subject=I'd%20like%20to%20become%20an%20Inngest%20beta%20tester&body=Hi%20there%2C%0ACan%20you%20please%20add%20me%20to%20the%20Inngest%20beta%20tester%20group%3F%0A%0AMy%20Inngest%20billing%20email%20is%3A%20%3CPlease%20add%20you%20email%3E%0A%0AThanks!";
@@ -64,7 +65,7 @@ export default function Community() {
       <Card
         header={
           <a
-            href={betaTesterLink}
+            {...refLinkProps(betaTesterLink)}
             className="w-full bg-[#027A48] rounded flex items-center justify-center text-white h-[140px] lg:h-[200px]  hover:opacity-80 transition-all duration-150"
           >
             <RiToolsFill size="4em" />
@@ -77,7 +78,7 @@ export default function Community() {
           research sessions? Sign up below to get access to new features!
         </p>
         <a
-          href={betaTesterLink}
+          {...refLinkProps(betaTesterLink)}
           className="rounded-full border border-contrast px-4 py-2 flex items-center gap-2 hover:bg-carbon-500/10"
         >
           <RiArrowRightUpLine className="h-4 w-4 text-subtle" /> Become a beta

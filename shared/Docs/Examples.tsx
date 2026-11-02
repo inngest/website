@@ -1,6 +1,7 @@
 import React from "react";
 import Link from "next/link";
 import clsx from "clsx";
+import { refLinkProps } from "@/utils/v1/ref";
 
 export function Example({
   example,
@@ -58,7 +59,7 @@ export function Example({
         )}
         <ExampleInfo label="Explore">
           <Link
-            href={example.github}
+            {...refLinkProps(example.github)}
             className="hover:text-slate-600 dark:hover:text-slate-400 hover:underline"
           >
             Code
@@ -67,7 +68,7 @@ export function Example({
             <>
               {" | "}{" "}
               <Link
-                href={example.demo}
+                {...refLinkProps(example.demo)}
                 className="hover:text-slate-600 dark:hover:text-slate-400 hover:underline"
               >
                 Demo
@@ -78,7 +79,7 @@ export function Example({
         <ExampleInfo label="Made by">
           {example.authorSocial ? (
             <Link
-              href={example.authorSocial}
+              {...refLinkProps(example.authorSocial)}
               className="hover:text-slate-600 dark:hover:text-slate-400 hover:underline"
             >
               {" "}

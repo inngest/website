@@ -7,6 +7,7 @@ import GradientFrame from "@/components/v1/sections/shared/GradientFrame";
 import Section from "@/components/v1/sections/shared/Section";
 import SectionHeader from "@/components/v1/sections/shared/SectionHeader";
 import { reveals } from "@/utils/v1/reveals";
+import { refLinkProps } from "@/utils/v1/ref";
 
 // "Observability by default." Bordered card with a
 // top row (514px copy column + 784px dashboard) and a 3×2 feature grid
@@ -115,7 +116,7 @@ export default function Observability() {
                 </span>
               </div>
               <a
-                href={f.href}
+                {...refLinkProps(f.href)}
                 className="px-[22px] pb-[18px] font-v1Label text-[13px] text-v1-frost/40 hover:text-v1-accent-salmon motion-safe:transition-colors motion-safe:duration-200"
               >
                 Read the docs →

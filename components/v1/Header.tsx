@@ -25,7 +25,7 @@ import {
 } from "@/components/v1/nav-config";
 import { WipeLabel } from "@/components/v1/sections/shared/WipeLabel";
 import { GITHUB_STARS_LABEL, GithubMark } from "@/components/v1/GithubStars";
-import { appendRef } from "@/utils/v1/ref";
+import { appendRef, refLinkProps } from "@/utils/v1/ref";
 import { handleStartFreeClick } from "@/utils/v1/startFreeCta";
 import { cn } from "@/utils/v1/cn";
 import { useScrolledPast } from "@/utils/v1/hooks/useScrolledPast";
@@ -352,7 +352,7 @@ export default function Header() {
               </Link>
               <Button asChild variant="pill" size="sm">
                 <a
-                  href={appendRef(SIGN_UP_URL, "nav")}
+                  {...refLinkProps(appendRef(SIGN_UP_URL, "nav"))}
                   onClick={handleStartFreeClick(appendRef(SIGN_UP_URL, "nav"))}
                 >
                   Start free

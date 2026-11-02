@@ -5,6 +5,7 @@ import NewsletterSignup from "src/components/NewsletterSignup";
 import { generateMetadata } from "src/utils/social";
 import Community from "./Community";
 import ProductHunt from "./ProductHunt";
+import { refLinkProps } from "@/utils/v1/ref";
 
 export const metadata: Metadata = generateMetadata({
   title: "Launch Week II - September 23-27, 2024",
@@ -313,7 +314,7 @@ function Card({
   cta?: string;
 }) {
   return (
-    <a href={href} className={`group flex flex-grow ${className}`}>
+    <a {...refLinkProps(href)} className={`group flex flex-grow ${className}`}>
       <div className="flex p-px w-full rounded-lg bg-gradient-to-bl from-[#686868] via-[#545454] to-[#292929]">
         <div
           className={`flex flex-col md:flex-${flow} gap-6 items-center md:items-start justify-between rounded-lg p-6 flex-grow

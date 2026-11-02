@@ -5,10 +5,11 @@ import {
   RiTwitterXFill,
   RiDiscordFill,
 } from "@remixicon/react";
+import { refLinkProps } from "@/utils/v1/ref";
 
 function SocialLink({ href, icon: Icon, children }) {
   return (
-    <Link href={href} className="group">
+    <Link {...refLinkProps(href)} className="group">
       <span className="sr-only">{children}</span>
       <Icon className="h-5 w-5 text-subtle transition group-hover:text-link" />
     </Link>

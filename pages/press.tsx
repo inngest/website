@@ -1,5 +1,6 @@
 import React from "react";
 import styles from "../styles/Press.module.css";
+import { refLinkProps } from "@/utils/v1/ref";
 
 const ASSETS = [];
 
@@ -11,7 +12,7 @@ const Press = () => {
       <div>
         {ASSETS.map((asset) => (
           <div>
-            <a href={asset.src} download>
+            <a {...refLinkProps(asset.src)} download>
               <img src={asset.src} />
             </a>
             <div>{asset.name}</div>

@@ -13,6 +13,7 @@ import {
   LR_USE_CASES,
   LR_USE_CASES_COPY,
 } from "@/components/v1/sections/LongRun/data";
+import { refLinkProps } from "@/utils/v1/ref";
 
 /**
  * Section 03 — what people build.
@@ -50,7 +51,7 @@ export default function UseCases() {
         {LR_USE_CASES.map((c, i) => (
           <motion.li key={c.id} {...reveals.item(i)} className="list-none">
             <Link
-              href={c.href}
+              {...refLinkProps(c.href)}
               className="group flex h-full flex-col overflow-hidden rounded-lg border border-v1-subtle bg-v1-surfaceBase transition-colors duration-200 hover:border-v1-contrast"
             >
               {c.image ? (

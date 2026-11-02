@@ -23,6 +23,7 @@ import {
   SDK_LANGUAGES,
   type SDKLanguage,
 } from "./LanguageStore";
+import { refLinkProps } from "@/utils/v1/ref";
 
 const languageNames = {
   js: "JavaScript",
@@ -372,9 +373,9 @@ export function SdkUnsupported({
           Select another language to see the example, or{" "}
           <a
             className="text-breeze-600 hover:text-breeze-500 dark:text-breeze-300"
-            href={`https://github.com/inngest/${
+            {...refLinkProps(`https://github.com/inngest/${
               sdkId === "go" ? "inngestgo" : sdkId === "python" ? "inngest-py" : "inngest-js"
-            }/issues`}
+            }/issues`)}
             target="_blank"
             rel="noreferrer"
           >

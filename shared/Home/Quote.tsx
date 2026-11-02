@@ -1,6 +1,7 @@
 import Image from "next/image";
 import Link from "next/link";
 import clsx from "clsx";
+import { refLinkProps } from "@/utils/v1/ref";
 
 export default function Quote({
   text,
@@ -62,7 +63,7 @@ export default function Quote({
         </cite>
         {!!caseStudy && (
           <Link
-            href={caseStudy}
+            {...refLinkProps(caseStudy)}
             className="mt-4 mx-auto rounded-md font-medium px-6 py-2 bg-slate-800 hover:bg-slate-600 transition-all text-white border border-slate-800 hover:border-slate-600 hover:bg-slate-500/10 whitespace-nowrap"
           >
             Read the customer story →

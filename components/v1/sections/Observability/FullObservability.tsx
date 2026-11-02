@@ -12,6 +12,7 @@ import SectionHeader from "@/components/v1/sections/shared/SectionHeader";
 import MobileReelNav from "@/components/v1/sections/shared/MobileReelNav";
 import ReelDirectoryRow from "@/components/v1/sections/shared/ReelDirectoryRow";
 import { useReelCarousel } from "@/components/v1/sections/shared/useReelCarousel";
+import { refLinkProps } from "@/utils/v1/ref";
 
 interface Feature {
   id: string;
@@ -180,7 +181,7 @@ export default function FullObservability() {
                 <span className="flex flex-1 flex-col gap-2 font-v1Heading">
                   {f.href ? (
                     <Link
-                      href={f.href}
+                      {...refLinkProps(f.href)}
                       prefetch={false}
                       className="flex flex-col gap-2 hover:opacity-80 motion-safe:transition-opacity motion-safe:duration-200"
                     >

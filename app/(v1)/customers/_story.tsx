@@ -9,6 +9,7 @@ import readingTime from "reading-time";
 import rehypeSlug from "rehype-slug";
 import remarkGfm from "remark-gfm";
 import { serialize } from "next-mdx-remote/serialize";
+import { rehypeRefLinks } from "@/mdx/rehypeRefLinks.mjs";
 
 import CustomerStory, {
   type CustomerStoryData,
@@ -78,7 +79,7 @@ const readStudy = cache(
 const MDX_OPTIONS = {
   mdxOptions: {
     remarkPlugins: [remarkGfm],
-    rehypePlugins: [rehypeSlug],
+    rehypePlugins: [rehypeSlug, rehypeRefLinks],
   },
 } as any;
 
