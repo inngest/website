@@ -105,6 +105,6 @@ if (orderPaid.is(value)) {
 }
 ```
 
-`is()` checks the event name. It doesn't validate `data` against the schema.
+`is()` checks for an exact event name. It doesn't validate `data` against the schema.
 ## Change a payload safely
 Keep existing fields stable for deployed consumers. Add fields when consumers can ignore them. If you must change the meaning or shape of a field, version the event and plan the sender and consumer rollout together. See [Versioning](/docs/durable-execution/guides-and-advanced/versioning) for changing code while runs remain active.

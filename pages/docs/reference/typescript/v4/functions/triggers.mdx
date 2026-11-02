@@ -215,6 +215,8 @@ inngest.createFunction(
 );
 ```
 
+`is()` doesn't take a wildcard event type; it checks for an exact event name.
+
 <Callout>
   Wildcard event types cannot define a schema, since the matched events may have different payload shapes.
 </Callout>
