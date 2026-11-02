@@ -25,6 +25,7 @@ export const claude = anthropic({ model: "claude-sonnet-5-5" });
 {/* not type-checked: the anthropic() one-shot call inside a handler */}
 ```typescript
 import { gh } from "../lib/github";
+import { claude } from "../models/claude";
 
 async ({ inbox, me, step }) => {
   for await (const batch of inbox.batches({ max: 20 })) {
@@ -41,7 +42,7 @@ async ({ inbox, me, step }) => {
 },
 ```
 
-<Annotation id="step" lines="5" tease="not a step by itself" title="Wrap it in a step" href="/docs/labs/agents/agents?ref=docs-labs-agents-models#steps" linkText="Steps">
+<Annotation id="step" lines="6" tease="not a step by itself" title="Wrap it in a step" href="/docs/labs/agents/agents?ref=docs-labs-agents-models#steps" linkText="Steps">
 A retry would repeat a bare model call.
 </Annotation>
 

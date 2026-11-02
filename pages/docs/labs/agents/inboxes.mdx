@@ -157,7 +157,7 @@ async ({ inbox, me, step }) => {
 },
 ```
 
-A reply on the PR is plain code in a step, so it happens once even when the run retries. `me.key` is the PR's number as a string, and a read takes the message, so each one is seen once.
+A reply on the PR is plain code in a step, so it happens once even when the run retries. `me.key` is the PR's number as a string; send `pr/comment` for people's comments, not the helper's own.
 
 ## Batches
 
