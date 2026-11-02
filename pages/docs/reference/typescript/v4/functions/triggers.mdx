@@ -1,4 +1,4 @@
-import { Info, Callout, Properties, Property, Row, Col, CodeGroup, VersionBadge } from "src/shared/Docs/mdx";
+import { Info, Callout, Properties, Property, Row, Col, CodeGroup, VersionBadge, Unreleased } from "src/shared/Docs/mdx";
 
 
 export const metaTitle = "Trigger Helpers | eventTrigger(), cron() (SDK v4)"
@@ -182,6 +182,46 @@ inngest.createFunction(
   }
 );
 ```
+
+<Unreleased label="subscribe">
+
+### Narrow events with `is()` <VersionBadge version="v4.27.0+" />
+
+The `event` your handler receives has an `is()` method. Pass one event type, or an array of them, to narrow `event`:
+
+```ts
+const issueOpened = eventType("issue.opened", {
+  schema: z.object({ id: z.string() }),
+});
+const issueClosed = eventType("issue.closed");
+
+inngest.createFunction(
+  { id: "issues", triggers: [issueOpened, issueClosed] },
+  async ({ event }) => {
+    if (event.is(issueOpened)) {
+      return event.data.id; // typed as string
+    }
+
+    if (event.is([issueOpened, issueClosed])) {
+      return event.name;
+    }
+  }
+);
+```
+
+Every `EventType` also has an `is(value)` method that narrows any value, including plain JSON such as the result of [`step.invoke()`](/docs/reference/typescript/v4/functions/step-invoke):
+
+```ts
+const result: unknown = await step.invoke("get-issue", { function: getIssue });
+
+if (issueOpened.is(result)) {
+  // result.name is "issue.opened" and result.data is { id: string }
+}
+```
+
+`is()` checks the event's `name` only; it does not validate `data` against the schema. A wildcard event type such as `eventType("user/*")` matches every name that starts with `user/`. The `is()` method on `event` is not enumerable, so it doesn't appear when you serialize the event.
+
+</Unreleased>
 
 ### Wildcards
 

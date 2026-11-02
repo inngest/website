@@ -1,0 +1,98 @@
+import { CodeGroup, SdkUnsupported, Callout, VersionBadge } from "shared/Docs/mdx";
+export const metaTitle = "step.subscribe() | Receive Events in a Run";
+export const description = "Open a durable inbox in an Inngest function with step.subscribe(). Every matching event that arrives is saved, and the run reads them in order, even while it was busy.";
+export const unreleased = "subscribe"
+
+
+# `step.subscribe` <VersionBadge version="TypeScript v4.27.0+" />
+
+<Callout>
+  `step.subscribe()` is **experimental**. Its API may change in a minor release.
+</Callout>
+
+`step.subscribe()` opens an **inbox** inside a run. Every event that matches one of the inbox's sources after it opens becomes a **message**. The run reads its unread messages in order, one at a time or all at once as a batch, whether or not the run was waiting when they arrived.
+
+Use it when:
+
+- A run must handle a stream of events, not one event.
+- Events can arrive while the run is busy in another step or sleeping.
+- You want to process events that arrive together as one batch.
+
+## Why choose an inbox?
+
+[`step.waitForEvent()`](/docs/durable-execution/primitives/step-waitforevent) matches only events that arrive while the run is waiting. An event that arrives during a `step.run()` or `step.sleep()` before the wait starts is missed. An inbox keeps receiving from the moment it opens until it closes, so no matching event is lost between reads.
+
+## Open an inbox and read it
+
+<CodeGroup>
+```typescript {{ title: "TypeScript" }}
+const ticketOpened = eventType("support/ticket.opened", {
+  schema: z.object({ ticketId: z.string() }),
+});
+const ticketReplied = eventType("support/ticket.replied", {
+  schema: z.object({ ticketId: z.string(), body: z.string() }),
+});
+
+export const handleTicket = inngest.createFunction(
+  { id: "handle-ticket", triggers: [ticketOpened] },
+  async ({ event, step }) => {
+    await using replies = step.subscribe("replies", {
+      event: ticketReplied,
+      if: `async.data.ticketId == "${event.data.ticketId}"`,
+    });
+
+    const first = await replies.next({ timeout: "7d" });
+    if (!first) return { status: "no-reply" };
+
+    await step.run("answer-first-reply", () => answer(first.data.body));
+
+    // Replies that arrived during the step above are already in the inbox.
+    const more = await replies.drain();
+    await step.run("answer-follow-ups", () =>
+      answer(more.map((reply) => reply.data.body).join("\n"))
+    );
+  }
+);
+```
+
+<SdkUnsupported title="Python" feature="step.subscribe">Use [`ctx.step.wait_for_event`](/docs/durable-execution/primitives/step-waitforevent) in a loop instead.</SdkUnsupported>
+
+<SdkUnsupported title="Go" feature="step.subscribe">Use [`step.WaitForEvent`](/docs/durable-execution/primitives/step-waitforevent) in a loop instead.</SdkUnsupported>
+</CodeGroup>
+
+`await using` closes the inbox when the block ends. A source is written like a trigger: an event type, an event name, or an object with an `event` and an `if` expression in which the arriving event is `async`. Pass one source or an array.
+
+## Read messages
+
+| Method | Waits? | Returns |
+| --- | --- | --- |
+| `inbox.next({ timeout? })` | Yes, until a message arrives | The next message, `null` on timeout, `undefined` once closed |
+| `inbox.nextBatch({ max?, timeout? })` | Yes, until at least one message arrives | Every unread message (up to `max`), `null` on timeout, `undefined` once closed |
+| `inbox.drain({ max? })` | No | Every unread message (up to `max`), or `[]` |
+| `for await (const m of inbox)` | Yes | Each message until the inbox closes |
+| `inbox.batches({ max?, timeout? })` | Yes | Each batch until the inbox closes or a wait times out |
+| `inbox.close()` | No | The messages that were not read |
+
+Messages are typed from the inbox's sources. With several event types, narrow a message with `message.is(type)`:
+
+```ts
+const ticketClosed = eventType("support/ticket.closed");
+
+await using activity = step.subscribe("activity", [ticketReplied, ticketClosed]);
+
+for await (const message of activity) {
+  if (message.is(ticketClosed)) break;
+
+  await step.run(`reply-${message.id}`, () => answer(message.data.body));
+}
+```
+
+## Close an inbox
+
+When an inbox closes, it stops receiving events, any waiting read ends with `undefined`, and `close()` returns the messages that were not read. Close an inbox when the run no longer needs it, or open it with `await using` to close it at the end of the block.
+
+## Requirements
+
+`step.subscribe()` needs an Inngest server that supports inboxes. On an older Dev Server, the run fails immediately with a non-retriable error that says what to upgrade. Run the latest Dev Server with `npx inngest-cli@latest dev`.
+
+See the [`step.subscribe()` reference](/docs/reference/typescript/v4/functions/step-subscribe) for every option.
