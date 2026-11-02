@@ -1,7 +1,7 @@
 import { AnnotatedCode, Annotation } from "shared/Docs/mdx";
 
 export const metaTitle = "Threads | Inngest Agents";
-export const description = "Say which events belong together and their runs share one thread. Name a thread from a trigger, see what a thread keeps between runs, and keep two pull requests apart.";
+export const description = "Say which events belong together and their runs share one thread. Name a thread from your own events, see what a thread keeps between runs, and keep two pull requests apart.";
 
 # Threads
 
@@ -19,83 +19,56 @@ You want one helper for everything that happens to a PR. List its events as trig
 import { eventType } from "inngest";
 import { z } from "zod";
 
-const ciRun = z.object({ pr: z.number(), prUrl: z.string() });
+const ciRun = z.object({ pr: z.number() });
+
+export const prOpened = eventType("pr/opened", {
+  schema: z.object({ pr: z.number(), author: z.string() }),
+});
 
 export const ciFailed = eventType("ci/run.failed", { schema: ciRun });
 
 export const deployed = eventType("deploy/finished", {
-  schema: z.object({ env: z.string(), pull: z.object({ url: z.string() }) }),
+  schema: z.object({ env: z.string(), pull: z.number() }),
 });
 ```
 
-{/* not type-checked: github.thread({ repos }) and plain event triggers on an agent */}
-```typescript
-import { github } from "inngest/experimental/agents";
+{/* not type-checked: event triggers on an agent with a handler */}
+```typescript {{ title: "inngest/agents/prHelper.ts" }}
 import { agents } from "../client";
-import { ciFailed, deployed } from "../events";
+import { ciFailed, deployed, prOpened } from "../events";
 
 export const prHelper = agents.agent(
-  {
-    id: "pr-helper",
-    triggers: [github.thread({ repos: ["acme/web"] }), ciFailed, deployed],
-  },
+  { id: "pr-helper", triggers: [prOpened, ciFailed, deployed] },
   async ({ event }) => {
     return `Saw ${event.name}`;
   },
 );
 ```
 
-Open a PR, fail its CI and deploy it: three runs on three threads, because CI and deploy name no thread. None of them knows about the others.
-
-## No magic
-
-You want to know what `github.thread()` is, because it looks like magic. Here it is written out.
-
-<AnnotatedCode>
-
-{/* not type-checked: github.thread({ repos }) written out as event triggers */}
-```typescript
-github.thread({ repos: ["acme/web"] });
-
-[
-  {
-    event: "github/issue_comment",
-    if: 'event.data.repository.full_name == "acme/web"',
-    thread: "event.data.threadKey",
-  },
-];
-```
-
-<Annotation id="rest" lines="9" tease="the other events" title="One per event">
-One of these for each GitHub event.
-</Annotation>
-
-</AnnotatedCode>
-
-Your own events can set a `thread` too. `slack.thread()` does the same for Slack. [Slack and GitHub →](/docs/labs/agents/slack-and-github?ref=docs-labs-agents-threads)
+Open a PR, fail its CI and deploy it: three runs on three threads, because none of the events names a thread. None of them knows about the others.
 
 ## Which conversation is this?
 
-You want CI on #42 to be part of #42's thread. Give its trigger a `thread`: an [expression](/docs/durable-execution/guides-and-advanced/writing-expressions?ref=docs-labs-agents-threads) over the `event`.
+You want everything about #42 to be one thread. Give the agent a `thread`: an [expression](/docs/durable-execution/guides-and-advanced/writing-expressions?ref=docs-labs-agents-threads) over the `event`.
 
 <AnnotatedCode>
 
-{/* not type-checked: a trigger with its own thread expression */}
+{/* not type-checked: thread on an agent definition */}
 ```typescript
-triggers: [
-  github.thread({ repos: ["acme/web"] }),
-  { event: ciFailed, thread: "event.data.prUrl" },
-  deployed,
-],
+{
+  id: "pr-helper",
+  triggers: [prOpened, ciFailed, deployed],
+  thread: "event.data.pr",
+}
 ```
 
-<Annotation id="thread" lines="3" tease="the PR's URL" title="thread" href="/docs/labs/agents/reference?ref=docs-labs-agents-threads#thread-keys-and-inbox-sources" linkText="Thread keys">
-The CI event carries the PR's URL. GitHub's trigger keys on the same URL, so both land on one thread.
+<Annotation id="thread" lines="4" tease="the PR's number" title="thread" href="/docs/labs/agents/reference?ref=docs-labs-agents-threads#thread-keys-and-inbox-sources" linkText="Thread keys">
+Events that carry the same `pr` land on one thread. The key is the number as a string.
 </Annotation>
 
 </AnnotatedCode>
 
-Fail CI on #42 and the run joins its thread, after the runs already there. To name the thread for every trigger at once, set `thread` on the agent's [definition](/docs/labs/agents/reference?ref=docs-labs-agents-threads#the-definition); a trigger's own `thread` wins.
+Open PR #42 and fail its CI: both land on #42's thread, one run at a time, in order. There's no magic in a thread: it's a key on your own events, and events whose keys come out equal share a thread.
 
 ## What a conversation keeps
 
@@ -141,15 +114,13 @@ You want to follow two pull requests at once. The agent needs no change; send CI
 ```typescript {{ title: "scripts/failBoth.ts" }}
 import { inngest } from "../inngest/client";
 
-const pulls = "https://github.com/acme/web/pull";
-
 await inngest.send([
-  { name: "ci/run.failed", data: { pr: 42, prUrl: `${pulls}/42` } },
-  { name: "ci/run.failed", data: { pr: 43, prUrl: `${pulls}/43` } },
+  { name: "ci/run.failed", data: { pr: 42 } },
+  { name: "ci/run.failed", data: { pr: 43 } },
 ]);
 ```
 
-`me` is the handle to the run's own thread, so `me.key` names the one a run is on.
+`me` is the handle to the run's own thread, so `me.key` names it: `"42"` or `"43"`.
 
 {/* not type-checked: me.key in an agent handler */}
 ```typescript
@@ -158,26 +129,26 @@ async ({ event, me }) => {
 },
 ```
 
-Each pull request has its own thread, with its own runs and state.
+Each pull request has its own thread, with its own runs and state. Code turns the key back into the PR's number with `Number(me.key)`.
 
 ## A trigger with its own key
 
-You want deploys in the thread too, though they carry the PR's URL somewhere else. Give their trigger its own `thread`.
+You want deploys in the thread too, though the deploy event names the PR `pull`. Give that trigger its own `thread`; it wins over the agent's.
 
-{/* not type-checked: three triggers on an agent, each with its thread */}
+{/* not type-checked: three triggers on an agent, one with its own thread */}
 ```typescript {{ title: "inngest/agents/prHelper.ts" }}
-import { github } from "inngest/experimental/agents";
 import { agents } from "../client";
-import { ciFailed, deployed } from "../events";
+import { ciFailed, deployed, prOpened } from "../events";
 
 export const prHelper = agents.agent(
   {
     id: "pr-helper",
     triggers: [
-      github.thread({ repos: ["acme/web"] }),
-      { event: ciFailed, thread: "event.data.prUrl" },
-      { event: deployed, thread: "event.data.pull.url" },
+      prOpened,
+      ciFailed,
+      { event: deployed, thread: "event.data.pull" },
     ],
+    thread: "event.data.pr",
   },
   async ({ event, me }) => {
     return `Saw ${event.name} on ${me.key}`;
@@ -190,5 +161,5 @@ All three kinds of event land on #42's thread.
 ## Recipes and reference
 
 - [Reference: thread keys and inbox sources](/docs/labs/agents/reference?ref=docs-labs-agents-threads#thread-keys-and-inbox-sources)
-- [Slack and GitHub](/docs/labs/agents/slack-and-github?ref=docs-labs-agents-threads)
+- [Support assistant](/docs/labs/agents/recipes/support-assistant?ref=docs-labs-agents-threads)
 - [PR reviewer](/docs/labs/agents/recipes/pr-reviewer?ref=docs-labs-agents-threads)
