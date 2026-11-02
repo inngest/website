@@ -1,4 +1,4 @@
-import { CodeGroup, SdkUnsupported } from "shared/Docs/mdx";
+import { CodeGroup, SdkUnsupported, VersionBadge } from "shared/Docs/mdx";
 export const metaTitle = "Managed lifecycle | Sandboxes";
 export const description = "Managed Sandbox lifecycle: create Sandboxes, run commands, and clean up as durable steps in an Inngest function run, with retries handled for you.";
 
@@ -6,7 +6,7 @@ export const description = "Managed Sandbox lifecycle: create Sandboxes, run com
 
 > Coordinate Sandbox creation, commands, and cleanup as durable steps in a function run.
 
-> **Open beta.** Sandboxes are available on Pro plans and above. The low-level TypeScript API below follows the Sandbox beta. The planned `step.sandbox.typescript` helper has no published call shape yet.
+> **Open beta.** Sandboxes are available on Pro plans and above. The low-level TypeScript API below follows the Sandbox beta. The one-call `step.sandbox.python` and `step.sandbox.typescript` runners are [experimental](#run-python-or-typescript-in-one-call).
 
 Use durable Sandbox steps when isolated code belongs to a longer function run. Inngest records each operation’s result, so a resumed function can continue after completed steps. The API you choose determines which lifecycle and cleanup actions your function must handle.
 
@@ -14,7 +14,7 @@ Use durable Sandbox steps when isolated code belongs to a longer function run. I
 | --- | --- | --- |
 | `step.sandbox.create()` and other low-level steps | Durable operation results, safe retries, readiness polling by default, and step failures | When to pause, resume, snapshot, clone, and destroy the Sandbox; cleanup after permanent failure |
 | `inngest.sandboxes` | Immediate Sandbox requests and bounded readiness polling | Retries, cancellation, and cleanup in your server process |
-| Planned `step.sandbox.typescript` | Starts a Sandbox, runs TypeScript, and stops the Sandbox in one call | Planned; no beta API |
+| `step.sandbox.python` and `step.sandbox.typescript` (experimental) | Creates a Sandbox, runs your code, returns the result, and destroys the Sandbox in one call | Nothing to clean up; pass `input`, `schema`, and `tools` |
 
 ## Use a Sandbox in a durable function
 
@@ -88,9 +88,74 @@ A durable step records the operation result; it does not promise that a Sandbox,
 
 Sandbox operations used as durable steps appear with the function's other steps in its run trace.
 
-## One-call TypeScript execution
+## Run Python or TypeScript in one call <VersionBadge version="v4.25.0+" />
 
-A planned `step.sandbox.typescript` call will start a Sandbox, run TypeScript, and stop it automatically. This planned path is for one isolated task that does not keep a Sandbox between steps.
+`step.sandbox.python` and `step.sandbox.typescript` create a Sandbox, run your code, and destroy it. A top-level `return` gives the result back. Each key of `input` becomes a variable.
+
+<CodeGroup>
+```typescript {{ title: "TypeScript" }}
+const stats = await step.sandbox.python(
+  "stats",
+  `import statistics
+return {"mean": statistics.mean(values)}`,
+  {
+    input: { values: [1, 2, 3, 4] },
+    schema: { output: z.object({ mean: z.number() }) },
+  },
+);
+
+const total = await step.sandbox.typescript(
+  "sum",
+  `return numbers.reduce((a: number, b: number) => a + b, 0)`,
+  { input: { numbers: [1, 2, 3] } },
+);
+```
+
+<SdkUnsupported title="Python" feature="Sandboxes" />
+<SdkUnsupported title="Go" feature="Sandboxes" />
+</CodeGroup>
+
+- `schema.output` types the result and fails the step, with the schema's issues, when the result does not match.
+- A non-zero exit fails the step with the error output.
+- Code can be indented to match your source. Top-level `await` works in TypeScript, which needs Node 22.13 or later in the image.
+- The first argument is a step ID or step options, such as `{ id: "stats", name: "Compute the mean" }`.
+- Pass [`tools`](/docs/sandboxes/features/tools) to let the code call your functions, plus any `step.sandbox.create()` option such as `image` or `secrets`.
+
+These runners are experimental.
+
+## Scope a Sandbox to a block <VersionBadge version="v4.24.0+" />
+
+`await using` destroys the Sandbox when the block exits.
+
+<CodeGroup>
+```typescript {{ title: "TypeScript" }}
+await using sb = await step.sandbox.create("build", {
+  name: "build",
+  vcpu: 2,
+  memoryMb: 2048,
+});
+await sb.commands.run("test", "npm test");
+```
+
+<SdkUnsupported title="Python" feature="Sandboxes" />
+<SdkUnsupported title="Go" feature="Sandboxes" />
+</CodeGroup>
+
+`group.sandbox()` (experimental) runs a callback with a fresh Sandbox and destroys it afterwards. The Sandbox's whole lifetime shows as one group in the trace. It is destroyed when the callback ends, even when it throws, so a failure after that is final and is not retried.
+
+<CodeGroup>
+```typescript {{ title: "TypeScript" }}
+await group.sandbox("build", async (sb) => {
+  await sb.commands.run("test", "npm test");
+});
+```
+
+<SdkUnsupported title="Python" feature="Sandboxes" />
+<SdkUnsupported title="Go" feature="Sandboxes" />
+</CodeGroup>
+
+`group` comes from the function's arguments, next to `step`: `async ({ event, step, group }) => {}`. `group.sandbox()` uses 2 vCPU and 2048 MiB when you pass only an ID. `step.sandbox.create()` needs `name`, `vcpu`, and `memoryMb`.
+
+Durations such as `runningTimeout` and `timeout` accept compound strings like `"4m30s"`.
 
 This page describes isolated microVM Sandboxes. Deployment preview environments are called **branch deploys**.
-
