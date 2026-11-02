@@ -26,7 +26,7 @@ It lives in `inngest/sandboxes/work.ts`, which [A repo](#a-repo) fills out. List
 ```typescript {{ title: "inngest/agents/prHelper.ts" }}
 import { skills } from "inngest/experimental/agents";
 import { agents } from "../client";
-import { ciFailed, ciPassed, deployed, prOpened } from "../events";
+import { ciFailed, ciPassed, deployed, prComment, prOpened } from "../events";
 import { gh } from "../lib/github";
 import { claude } from "../models/claude";
 import { work } from "../sandboxes/work";
@@ -35,6 +35,7 @@ import { readLog } from "../tools/readLog";
 
 const triggers = [
   prOpened,
+  prComment,
   ciFailed,
   { event: deployed, thread: "event.data.pull" },
 ];
@@ -74,7 +75,7 @@ export const prHelper = agents.agent(
 );
 ```
 
-<Annotation id="sandboxes" lines="27" tease="work_run, a shell" title="Listed means given" href="/docs/labs/agents/reference-sandboxes?ref=docs-labs-agents-sandboxes#sandboxes-on-an-agent" linkText="Reference: sandboxes on an agent">
+<Annotation id="sandboxes" lines="28" tease="work_run, a shell" title="Listed means given" href="/docs/labs/agents/reference-sandboxes?ref=docs-labs-agents-sandboxes#sandboxes-on-an-agent" linkText="Reference: sandboxes on an agent">
 The model gets `work_run`, a shell on the thread's machine that keeps `cd` and `export` between calls.
 </Annotation>
 
@@ -106,6 +107,10 @@ const ciRun = z.object({ pr: z.number() });
 
 export const prOpened = eventType("pr/opened", {
   schema: z.object({ pr: z.number(), author: z.string() }),
+});
+
+export const prComment = eventType("pr/comment", {
+  schema: z.object({ pr: z.number(), author: z.string(), body: z.string() }),
 });
 
 export const ciFailed = eventType("ci/run.failed", { schema: ciRun });

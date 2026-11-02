@@ -44,12 +44,13 @@ One durable step per call.
 {/* not type-checked: thread, inbox and tools on an agent definition that has a model and no handler */}
 ```typescript {{ title: "inngest/agents/prHelper.ts" }}
 import { agents } from "../client";
-import { ciFailed, ciPassed, deployed, prOpened } from "../events";
+import { ciFailed, ciPassed, deployed, prComment, prOpened } from "../events";
 import { claude } from "../models/claude";
 import { readLog } from "../tools/readLog";
 
 const triggers = [
   prOpened,
+  prComment,
   ciFailed,
   { event: deployed, thread: "event.data.pull" },
 ];
@@ -67,7 +68,7 @@ export const prHelper = agents.agent({
 });
 ```
 
-<Annotation id="tools" lines="21" tease="the key is the name" title="tools" href="/docs/labs/agents/calling-home?ref=docs-labs-agents-tools" linkText="Calling home">
+<Annotation id="tools" lines="22" tease="the key is the name" title="tools" href="/docs/labs/agents/calling-home?ref=docs-labs-agents-tools" linkText="Calling home">
 The model calls `readLog` by this name. Hand the tool to a sandbox and a script calls it by the same name.
 </Annotation>
 
@@ -95,6 +96,10 @@ const ciRun = z.object({ pr: z.number() });
 
 export const prOpened = eventType("pr/opened", {
   schema: z.object({ pr: z.number(), author: z.string() }),
+});
+
+export const prComment = eventType("pr/comment", {
+  schema: z.object({ pr: z.number(), author: z.string(), body: z.string() }),
 });
 
 export const ciFailed = eventType("ci/run.failed", { schema: ciRun });

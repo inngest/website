@@ -23,6 +23,10 @@ export const prOpened = eventType("pr/opened", {
   schema: z.object({ pr: z.number(), author: z.string() }),
 });
 
+export const prComment = eventType("pr/comment", {
+  schema: z.object({ pr: z.number(), author: z.string(), body: z.string() }),
+});
+
 export const ciFailed = eventType("ci/run.failed", { schema: ciRun });
 
 export const ciPassed = eventType("ci/run.passed", { schema: ciRun });
@@ -62,11 +66,12 @@ export const gh = {
 {/* not type-checked: a run variable counting message.is() matches in an agent handler */}
 ```typescript {{ title: "inngest/agents/prHelper.ts" }}
 import { agents } from "../client";
-import { ciFailed, ciPassed, deployed, prOpened } from "../events";
+import { ciFailed, ciPassed, deployed, prComment, prOpened } from "../events";
 import { gh } from "../lib/github";
 
 const triggers = [
   prOpened,
+  prComment,
   ciFailed,
   { event: deployed, thread: "event.data.pull" },
 ];
@@ -98,15 +103,15 @@ export const prHelper = agents.agent(
 );
 ```
 
-<Annotation id="triggers" lines="5-9" tease="the same three" title="Triggers" href="/docs/labs/agents/threads?ref=docs-labs-agents-memory#a-trigger-with-its-own-key" linkText="Threads">
+<Annotation id="triggers" lines="5-10" tease="the same four" title="Triggers" href="/docs/labs/agents/threads?ref=docs-labs-agents-memory#a-trigger-with-its-own-key" linkText="Threads">
 The triggers from Threads.
 </Annotation>
 
-<Annotation id="inbox" lines="16-17" tease="from Inboxes" title="inbox and idle" href="/docs/labs/agents/inboxes?ref=docs-labs-agents-memory#going-quiet" linkText="Inboxes">
+<Annotation id="inbox" lines="17-18" tease="from Inboxes" title="inbox and idle" href="/docs/labs/agents/inboxes?ref=docs-labs-agents-memory#going-quiet" linkText="Inboxes">
 CI passing is heard, and the run ends after an hour of quiet.
 </Annotation>
 
-<Annotation id="variable" lines="20" tease="lives as long as the run" title="A variable">
+<Annotation id="variable" lines="21" tease="lives as long as the run" title="A variable">
 After `idle` the run ends, and the next one counts from 0.
 </Annotation>
 

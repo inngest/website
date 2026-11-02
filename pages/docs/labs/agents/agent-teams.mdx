@@ -39,13 +39,14 @@ You want the review back in the PR helper's code, to comment on the PR once CI p
 {/* not type-checked: start().result() on another agent inside an agent handler */}
 ```typescript {{ title: "inngest/agents/prHelper.ts" }}
 import { agents } from "../client";
-import { ciFailed, ciPassed, deployed, prOpened } from "../events";
+import { ciFailed, ciPassed, deployed, prComment, prOpened } from "../events";
 import { gh } from "../lib/github";
 import { claude } from "../models/claude";
 import { reviewer } from "./reviewer";
 
 const triggers = [
   prOpened,
+  prComment,
   ciFailed,
   { event: deployed, thread: "event.data.pull" },
 ];
@@ -84,7 +85,7 @@ export const prHelper = agents.agent(
 );
 ```
 
-<Annotation id="result" lines="36" tease="waits for the answer" title="start() and result()">
+<Annotation id="result" lines="37" tease="waits for the answer" title="start() and result()">
 `start()` returns at once. `result()` waits for the answer, a string here, and throws if the run fails or is stopped.
 </Annotation>
 
@@ -102,6 +103,10 @@ const ciRun = z.object({ pr: z.number() });
 
 export const prOpened = eventType("pr/opened", {
   schema: z.object({ pr: z.number(), author: z.string() }),
+});
+
+export const prComment = eventType("pr/comment", {
+  schema: z.object({ pr: z.number(), author: z.string(), body: z.string() }),
 });
 
 export const ciFailed = eventType("ci/run.failed", { schema: ciRun });

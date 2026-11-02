@@ -83,12 +83,13 @@ You want follow-ups to work. A turn is one model call plus the tool calls it ask
 {/* not type-checked: model, system and loop(batch) in the PR helper */}
 ```typescript {{ title: "inngest/agents/prHelper.ts" }}
 import { agents } from "../client";
-import { ciFailed, ciPassed, deployed, prOpened } from "../events";
+import { ciFailed, ciPassed, deployed, prComment, prOpened } from "../events";
 import { gh } from "../lib/github";
 import { claude } from "../models/claude";
 
 const triggers = [
   prOpened,
+  prComment,
   ciFailed,
   { event: deployed, thread: "event.data.pull" },
 ];
@@ -115,11 +116,11 @@ export const prHelper = agents.agent(
 );
 ```
 
-<Annotation id="model" lines="19-20" tease="what the loop runs" title="Model and system" href="#delete-the-handler" linkText="Delete the handler">
+<Annotation id="model" lines="20-21" tease="what the loop runs" title="Model and system" href="#delete-the-handler" linkText="Delete the handler">
 With a model and a system, the agent needs no handler.
 </Annotation>
 
-<Annotation id="loop" lines="24" tease="runs the turns" title="loop(batch)">
+<Annotation id="loop" lines="25" tease="runs the turns" title="loop(batch)">
 Calls the model until it stops asking for tools, and returns the answer in `result.text`.
 </Annotation>
 
@@ -137,6 +138,10 @@ const ciRun = z.object({ pr: z.number() });
 
 export const prOpened = eventType("pr/opened", {
   schema: z.object({ pr: z.number(), author: z.string() }),
+});
+
+export const prComment = eventType("pr/comment", {
+  schema: z.object({ pr: z.number(), author: z.string(), body: z.string() }),
 });
 
 export const ciFailed = eventType("ci/run.failed", { schema: ciRun });

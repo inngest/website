@@ -99,7 +99,7 @@ import { tool } from "inngest/experimental";
 import { kv, skills } from "inngest/experimental/agents";
 import { z } from "zod";
 import { agents } from "../client";
-import { ciFailed, ciPassed, deployed, prOpened } from "../events";
+import { ciFailed, ciPassed, deployed, prComment, prOpened } from "../events";
 import { gh } from "../lib/github";
 import { claude } from "../models/claude";
 import { work } from "../sandboxes/work";
@@ -108,6 +108,7 @@ import { readLog } from "../tools/readLog";
 
 const triggers = [
   prOpened,
+  prComment,
   ciFailed,
   { event: deployed, thread: "event.data.pull" },
 ];
@@ -159,11 +160,11 @@ export const prHelper = agents.agent(
 );
 ```
 
-<Annotation id="note" lines="34-44" tease="closes over me" title="A tool made in the handler" href="/docs/labs/agents/tools?ref=docs-labs-agents-calling-home" linkText="Tools">
+<Annotation id="note" lines="35-45" tease="closes over me" title="A tool made in the handler" href="/docs/labs/agents/tools?ref=docs-labs-agents-calling-home" linkText="Tools">
 Its body can use `me`, `kv` and your variables. It runs as a durable step, so its comment happens once.
 </Annotation>
 
-<Annotation id="tools" lines="47" tease="for this call" title="Per-call tools" href="/docs/labs/agents/reference?ref=docs-labs-agents-calling-home#tools-passed-to-a-loop" linkText="Reference: tools passed to a loop">
+<Annotation id="tools" lines="48" tease="for this call" title="Per-call tools" href="/docs/labs/agents/reference?ref=docs-labs-agents-calling-home#tools-passed-to-a-loop" linkText="Reference: tools passed to a loop">
 Added to the agent's tools for this call. A script in the sandbox calls it by the same name.
 </Annotation>
 
@@ -188,6 +189,10 @@ const ciRun = z.object({ pr: z.number() });
 
 export const prOpened = eventType("pr/opened", {
   schema: z.object({ pr: z.number(), author: z.string() }),
+});
+
+export const prComment = eventType("pr/comment", {
+  schema: z.object({ pr: z.number(), author: z.string(), body: z.string() }),
 });
 
 export const ciFailed = eventType("ci/run.failed", { schema: ciRun });

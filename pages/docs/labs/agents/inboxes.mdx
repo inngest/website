@@ -23,6 +23,10 @@ export const prOpened = eventType("pr/opened", {
   schema: z.object({ pr: z.number(), author: z.string() }),
 });
 
+export const prComment = eventType("pr/comment", {
+  schema: z.object({ pr: z.number(), author: z.string(), body: z.string() }),
+});
+
 export const ciFailed = eventType("ci/run.failed", { schema: ciRun });
 
 export const ciPassed = eventType("ci/run.passed", { schema: ciRun });
@@ -37,10 +41,11 @@ export const deployed = eventType("deploy/finished", {
 {/* not type-checked: inbox.next() in an agent handler with per-trigger thread keys */}
 ```typescript {{ title: "inngest/agents/prHelper.ts" }}
 import { agents } from "../client";
-import { ciFailed, deployed, prOpened } from "../events";
+import { ciFailed, deployed, prComment, prOpened } from "../events";
 
 const triggers = [
   prOpened,
+  prComment,
   ciFailed,
   { event: deployed, thread: "event.data.pull" },
 ];
@@ -59,15 +64,15 @@ export const prHelper = agents.agent(
 );
 ```
 
-<Annotation id="triggers" lines="4-8" tease="the same three" title="Triggers" href="/docs/labs/agents/threads?ref=docs-labs-agents-inboxes#a-trigger-with-its-own-key" linkText="Threads">
+<Annotation id="triggers" lines="4-9" tease="the same four" title="Triggers" href="/docs/labs/agents/threads?ref=docs-labs-agents-inboxes#a-trigger-with-its-own-key" linkText="Threads">
 The triggers from Threads.
 </Annotation>
 
-<Annotation id="first" lines="15" tease="the trigger" title="The first message">
+<Annotation id="first" lines="16" tease="the trigger" title="The first message">
 The event that started the run.
 </Annotation>
 
-<Annotation id="arrived" lines="17" tease="what landed meanwhile" title="next()" href="/docs/reference/typescript/v4/functions/step-subscribe?ref=docs-labs-agents-inboxes" linkText="Reference">
+<Annotation id="arrived" lines="18" tease="what landed meanwhile" title="next()" href="/docs/reference/typescript/v4/functions/step-subscribe?ref=docs-labs-agents-inboxes" linkText="Reference">
 Reads the oldest unread message: the CI failure, if it came in during the sleep.
 </Annotation>
 

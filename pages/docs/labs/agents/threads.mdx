@@ -25,6 +25,10 @@ export const prOpened = eventType("pr/opened", {
   schema: z.object({ pr: z.number(), author: z.string() }),
 });
 
+export const prComment = eventType("pr/comment", {
+  schema: z.object({ pr: z.number(), author: z.string(), body: z.string() }),
+});
+
 export const ciFailed = eventType("ci/run.failed", { schema: ciRun });
 
 export const deployed = eventType("deploy/finished", {
@@ -35,10 +39,10 @@ export const deployed = eventType("deploy/finished", {
 {/* not type-checked: event triggers on an agent with a handler */}
 ```typescript
 import { agents } from "../client";
-import { ciFailed, deployed, prOpened } from "../events";
+import { ciFailed, deployed, prComment, prOpened } from "../events";
 
 export const prHelper = agents.agent(
-  { id: "pr-helper", triggers: [prOpened, ciFailed, deployed] },
+  { id: "pr-helper", triggers: [prOpened, prComment, ciFailed, deployed] },
   async ({ event }) => {
     return `Saw ${event.name}`;
   },
@@ -57,7 +61,7 @@ You want everything about #42 to be one thread. Give the agent a `thread`: an [e
 ```typescript
 {
   id: "pr-helper",
-  triggers: [prOpened, ciFailed, deployed],
+  triggers: [prOpened, prComment, ciFailed, deployed],
   thread: "event.data.pr",
 }
 ```
@@ -135,16 +139,17 @@ Each pull request has its own thread, with its own runs and state. Code turns th
 
 You want deploys in the thread too, though the deploy event names the PR `pull`. Give that trigger its own `thread`; it wins over the agent's.
 
-{/* not type-checked: three triggers on an agent, one with its own thread */}
+{/* not type-checked: four triggers on an agent, one with its own thread */}
 ```typescript {{ title: "inngest/agents/prHelper.ts" }}
 import { agents } from "../client";
-import { ciFailed, deployed, prOpened } from "../events";
+import { ciFailed, deployed, prComment, prOpened } from "../events";
 
 export const prHelper = agents.agent(
   {
     id: "pr-helper",
     triggers: [
       prOpened,
+      prComment,
       ciFailed,
       { event: deployed, thread: "event.data.pull" },
     ],
@@ -156,7 +161,7 @@ export const prHelper = agents.agent(
 );
 ```
 
-All three kinds of event land on #42's thread.
+Every kind of event lands on #42's thread.
 
 ## Recipes and reference
 

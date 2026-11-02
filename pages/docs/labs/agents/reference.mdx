@@ -107,6 +107,7 @@ A trigger and an `inbox` source may each set their own `thread`, which wins over
 thread: "event.data.pr",
 triggers: [
   prOpened,
+  prComment,
   ciFailed,
   { event: deployed, thread: "event.data.pull" },
 ],
