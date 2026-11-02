@@ -127,6 +127,21 @@ A value in the record is a definition, or a binding:
 - The thread keeps the [shell's place](#the-shell) with its sandbox.
 - The client needs [`sandboxMiddleware()`](#sandbox-middleware).
 
+The examples on this page use these event types.
+
+```typescript {{ title: "inngest/events.ts" }}
+import { eventType } from "inngest";
+import { z } from "zod";
+
+export const prOpened = eventType("pr/opened", {
+  schema: z.object({ pr: z.number(), author: z.string() }),
+});
+
+export const ticketOpened = eventType("ticket/opened", {
+  schema: z.object({ ticket: z.string(), text: z.string() }),
+});
+```
+
 {/* not type-checked: a sandboxes record with a code-only binding */}
 ```typescript {{ title: "inngest/agents/coder.ts" }}
 import { sandbox } from "inngest/experimental/agents";
@@ -172,6 +187,8 @@ type SandboxHandle = Pick<DurableSandbox, "commands" | "files"> & {
 | `recycle()` | Sets the sandbox aside at once, as `idle` says. The next use brings it back. Throws if the snapshot or destroy fails. |
 | `close()` | Saves the sandbox as `idle` says, then destroys it, if it was created. Call it only when the run is ending. |
 
+`gh` is the comment helper from [Inboxes](/docs/labs/agents/inboxes?ref=docs-labs-agents-reference-sandboxes#answer-every-message).
+
 {/* not type-checked: sandboxes.work.commands, repo.push and PushRefusedError in a handler */}
 ```typescript {{ title: "inngest/agents/fixer.ts" }}
 import { PushRefusedError } from "inngest/experimental/agents";
@@ -190,7 +207,7 @@ export const fixer = agents.agent(
     system: "Fix what you are asked to fix.",
     sandboxes: { work },
   },
-  async ({ inbox, me, loop, sandboxes, step }) => {
+  async ({ inbox, loop, me, sandboxes, step }) => {
     const say = async (id: string, body: string) => {
       return await step.run(id, async () => {
         return await gh.comment(Number(me.key), body);
@@ -355,7 +372,7 @@ type RepoAuth =
 - **A function** gets `{ access: "read" }` at checkout and `{ access: "write" }` at push. It can read a [`secret()`](#secrets).
 - **`{ read, write }`** gives each side its own, each a `Secret` or a function.
 
-The read token goes into the sandbox for the checkout, and the write token stays on your host for the push. A single `secret()` is used for both, so it should be a read-only token, which fits `repo: { push: false }`. An agent that pushes uses `{ read, write }` or a function.
+The read token goes into the sandbox for the checkout. The write token stays on your host for the push. A single `secret()` is used for both, so it should be a read-only token, which fits `repo: { push: false }`. An agent that pushes uses `{ read, write }` or a function.
 
 ### Checkout
 
@@ -657,12 +674,12 @@ Types: `McpServer`, `McpServerOptions`, `McpAuth`.
 
 ### Deliver the link
 
-`onNeedsAuthorization` is how a person gets the sign-in link. Your code shows it however you like: a message, an email, a page.
+`onNeedsAuthorization` is how a person gets the sign-in link. Your code shows it however you like: a message, an email, a page. `chat` is the client from the [MCP assistant](/docs/labs/agents/recipes/mcp-assistant?ref=docs-labs-agents-reference-sandboxes).
 
 {/* not type-checked: tool.mcp with oauth, a user function of the trigger event and onNeedsAuthorization */}
 ```typescript {{ title: "inngest/tools/notion.ts" }}
 import { tool } from "inngest/experimental";
-import { sendEmail } from "../lib/email";
+import { chat } from "../lib/chat";
 
 export const notion = tool.mcp({
   id: "notion",
@@ -673,8 +690,8 @@ export const notion = tool.mcp({
         return event.data.user;
       },
       redirectUri: "https://app.acme.test/api/mcp/callback",
-      onNeedsAuthorization: async ({ url, user }) => {
-        await sendEmail(user, "Sign in to Notion", url);
+      onNeedsAuthorization: async ({ url, server, user }) => {
+        await chat.send(user, `Sign in to ${server}: ${url}`);
       },
     },
   },
