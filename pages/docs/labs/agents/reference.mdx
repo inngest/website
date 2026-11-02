@@ -246,7 +246,7 @@ What each method does:
 
 - `message(content)`: text or JSON. Sends the message and returns at once. A message to a thread with a live run lands in that run's inbox; a message to a quiet thread starts a run.
 - `ask(question, { timeout })`: waits for the answer, a string. On a thread whose last run ended it starts a run there, and the answer goes to the waiting `ask()`. Gives `null` after `timeout` (default one hour) or when the question is refused.
-- `result({ timeout })`: waits for a run to end and gives its output, with no default timeout. Throws with the reason when the run failed or was stopped.
+- `result({ timeout })`: waits for a run to end and gives its output, with no default timeout. The `timeout` works only when chained on `start(...)` or `message(...)`; calling `result({ timeout })` on a handle that was already started throws. Throws with the reason when the run failed or was stopped.
 - After `start()`, `result()` waits for the run `start()` opened. After `message()`, it waits for the run that took the message: the live run it folded into, or the run it started on a quiet thread.
 - A `timeout` that passes throws a timeout error, and the run keeps going.
 - `stop()`: cancels the run. It takes no options.
