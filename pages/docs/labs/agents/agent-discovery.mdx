@@ -117,9 +117,9 @@ card: {
 
 You want to choose who finds an agent. `share: "private"`, the default, shows it to its own app; `share: "team"` to every app in the environment.
 
-An agent of your own app is found at once, from its definition. Another app's agent appears after that app's next announce: cards go out every six hours, and on the Dev Server you can invoke the app's announce function by hand.
+An agent of your own app is found at once, from its definition. Another app's agent appears after that app's next announce, every six hours. On the Dev Server, invoke the announce function by hand.
 
-It isn't access control: anyone with the address can start the agent from code.
+It isn't access control: code in your app can import and start any of its agents, and anyone with an event key can send an agent's trigger.
 
 ## Who it may start
 
