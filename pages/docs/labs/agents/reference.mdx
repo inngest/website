@@ -147,10 +147,10 @@ The second argument of `agents.agent()`. It gets one argument: the function's us
 | `score` | `score(name, value)`. [Scores](#scores) |
 | `restarts` | How many times this run continued in another process. |
 | `depth` | How many agents deep this chain of starts is. `0` when a trigger, not another agent, started the run. |
-| `previousRun` | How the thread's last run ended, if there was one. Every run after the first gets it, with or without `recovery`. |
+| `previousRun` | `{ runId, status, at, error? }`: how the thread's last run ended, if there was one. `status` is `"completed"`, `"failed"` or `"cancelled"`; `at` is milliseconds since the epoch. Every run after the first gets it, with or without `recovery`. |
 | `step` | Core's step tools, such as `step.run()`. |
 
-- **With no handler**, an agent with a `model` sends each batch of messages to the loop, and its answer is the run's output. An agent with neither a model nor a handler takes its batch and ends with `undefined`. An agent that should tell people something uses a tool you write. [Tools →](/docs/labs/agents/tools?ref=docs-labs-agents-reference)
+- **With no handler**, an agent with a `model` sends each batch of messages to the loop. An agent with neither a model nor a handler takes its batch and ends with `undefined`. An agent that should tell people something uses a tool you write. [Tools →](/docs/labs/agents/tools?ref=docs-labs-agents-reference)
 - **The return value** is the run's output, which a caller's `result()` reads. With no handler it is the model's final answer, a string.
 - **The run ends** when the handler returns. Work still running and not awaited is stopped, except an un-awaited `score()`, which lands first. Plain functions are unaffected: un-awaited work there behaves as in any Inngest function.
 - **A run opened through a handle** (`start()`, `message()`, `start_agent`, `message_agent`) ends once it has answered, after waiting up to 24 hours for any agents it started with `start_agent`. [Idle](#idle)
