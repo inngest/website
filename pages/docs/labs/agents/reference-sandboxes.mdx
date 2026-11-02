@@ -13,7 +13,7 @@ export const description = "Reference for Inngest Agents sandboxes, code tools, 
 
 The agent definition, handler and loop are in the [Agents reference](/docs/labs/agents/reference?ref=docs-labs-agents-reference-sandboxes). The sandbox platform itself is in the [Sandboxes reference](/docs/sandboxes/reference?ref=docs-labs-agents-reference-sandboxes).
 
-Names here come from `inngest/experimental`, except `sandbox`, `skills`, `githubApp`, `agent`, `agentTools` and `PushRefusedError`, which come from `inngest/experimental/agents`.
+Names here come from `inngest/experimental`, except `sandbox`, `skills`, `agent`, `agentTools` and `PushRefusedError`, which come from `inngest/experimental/agents`.
 
 - [sandbox()](#sandbox)
 - [Sandboxes on an agent](#sandboxes-on-an-agent)
@@ -72,11 +72,10 @@ Members of `sandbox`:
 | `sandbox.image` | The [`image`](#images) helpers. |
 | `sandbox.tools.code(options?)` | [Code tools](#code-tools). |
 
-{/* not type-checked: sandbox() with repo and policy, githubApp from inngest/github.ts */}
+{/* not type-checked: sandbox() with repo and policy */}
 ```typescript {{ title: "inngest/sandboxes/work.ts" }}
-import { image } from "inngest/experimental";
+import { image, secret } from "inngest/experimental";
 import { sandbox } from "inngest/experimental/agents";
-import { githubAuth } from "../github";
 
 export const work = sandbox({
   id: "work",
@@ -85,9 +84,12 @@ export const work = sandbox({
   memoryMb: 4096,
   tools: sandbox.tools.code({ only: ["run", "read", "edit"] }),
   repo: {
-    url: "https://github.com/acme/api",
-    path: "/work/api",
-    auth: githubAuth,
+    url: "https://github.com/acme/web",
+    path: "/work/web",
+    auth: {
+      read: secret("GITHUB_READ_TOKEN"),
+      write: secret("GITHUB_WRITE_TOKEN"),
+    },
     policy: (push) => {
       if (!push.branch?.startsWith("agent/")) {
         return { refuse: "Branches for the agent start with agent/" };
@@ -115,20 +117,21 @@ A value in the record is a definition, or a binding:
 | `sandbox` | required | The definition. |
 | `model` | `true` | `false` keeps the sandbox for code only: the model gets none of its tools. |
 | `start` | `"lazy"` | `"lazy"` creates the sandbox on first use. `"eager"` begins creating it when the run opens its sandboxes. May be a function of `{ event }`. |
-| `idle` | `"pause"` | What the sandbox becomes when it sits unused. `"pause"` keeps it, disk and all. `"snapshot"` saves a snapshot and destroys it. |
+| `idle` | `"pause"` | What setting the sandbox aside does, when the run ends or on `recycle()`. `"pause"` keeps it, disk and all. `"snapshot"` saves a snapshot and destroys it. |
 
 - Every listed sandbox adds its [code tools](#code-tools) to the model's, named `<key>_<tool>`: `work_run`, `work_push`. The agent's own `tools` lists only the extras.
 - Listing a sandbox starts nothing. With `start: "lazy"` it starts the first time the model calls one of its tools, or code first uses it.
 - A sandbox belongs to its thread. Another thread gets its own.
-- A sandbox sitting unused for 10 minutes is paused, whether the run is still waiting or has ended. The next use brings it back with its disk as it was.
+- A thread's sandbox is paused when the run ends, and the next use brings it back with its disk as it was. Nothing pauses it while a run waits.
 - A sandbox that cannot be paused is snapshotted and destroyed. One that is gone, or cannot resume, falls back to the newest snapshot, then to a fresh sandbox. Only files survive a snapshot, not processes.
 - The thread keeps the [shell's place](#the-shell) with its sandbox.
 - The client needs [`sandboxMiddleware()`](#sandbox-middleware).
 
 {/* not type-checked: a sandboxes record with a code-only binding */}
 ```typescript {{ title: "inngest/agents/coder.ts" }}
-import { sandbox, slack } from "inngest/experimental/agents";
+import { sandbox } from "inngest/experimental/agents";
 import { agents } from "../client";
+import { prOpened } from "../events";
 import { claude } from "../models/claude";
 import { work } from "../sandboxes/work";
 
@@ -136,7 +139,8 @@ const scratch = sandbox({ id: "scratch" });
 
 export const coder = agents.agent({
   id: "coder",
-  triggers: [slack.thread()],
+  triggers: [prOpened],
+  thread: "event.data.pr",
   model: claude,
   system: "Fix what you are asked to fix, run the tests, then push a branch.",
   sandboxes: {
@@ -170,29 +174,38 @@ type SandboxHandle = Pick<DurableSandbox, "commands" | "files"> & {
 
 {/* not type-checked: sandboxes.work.commands, repo.push and PushRefusedError in a handler */}
 ```typescript {{ title: "inngest/agents/fixer.ts" }}
-import { PushRefusedError, slack } from "inngest/experimental/agents";
+import { PushRefusedError } from "inngest/experimental/agents";
 import { agents } from "../client";
+import { prOpened } from "../events";
+import { gh } from "../lib/github";
 import { claude } from "../models/claude";
 import { work } from "../sandboxes/work";
 
 export const fixer = agents.agent(
   {
     id: "fixer",
-    triggers: [slack.thread()],
+    triggers: [prOpened],
+    thread: "event.data.pr",
     model: claude,
     system: "Fix what you are asked to fix.",
     sandboxes: { work },
   },
-  async ({ inbox, me, loop, sandboxes }) => {
+  async ({ inbox, me, loop, sandboxes, step }) => {
+    const say = async (id: string, body: string) => {
+      return await step.run(id, async () => {
+        return await gh.comment(Number(me.key), body);
+      });
+    };
+
     for await (const batch of inbox.batches()) {
       const { text } = await loop(batch);
 
       const tests = await sandboxes.work.commands.run("tests", "npm test", {
-        cwd: "/work/api",
+        cwd: "/work/web",
       });
 
       if (tests.exitCode !== 0) {
-        await me.post(text);
+        await say("tests-failed", text);
 
         continue;
       }
@@ -200,13 +213,13 @@ export const fixer = agents.agent(
       try {
         const pushed = await sandboxes.work.repo.push("agent/fix");
 
-        await me.post(`Pushed ${pushed.branch}. ${text}`);
+        await say("pushed", `Pushed ${pushed.branch}. ${text}`);
       } catch (error) {
         if (!(error instanceof PushRefusedError)) {
           throw error;
         }
 
-        await me.post(`The push was refused: ${error.reason}`);
+        await say("refused", `The push was refused: ${error.reason}`);
       }
     }
   },
@@ -305,8 +318,8 @@ A sandbox's `repo` is checked out when the sandbox starts. The write token never
 
 {/* not type-checked: repo as a function of the trigger event */}
 ```typescript {{ title: "inngest/sandboxes/review.ts" }}
+import { secret } from "inngest/experimental";
 import { sandbox } from "inngest/experimental/agents";
-import { githubAuth } from "../github";
 
 export const review = sandbox({
   id: "review",
@@ -314,7 +327,7 @@ export const review = sandbox({
     return {
       url: event.data.repo,
       ref: event.data.head,
-      auth: githubAuth,
+      auth: secret("GITHUB_READ_TOKEN"),
       push: false,
     };
   },
@@ -333,18 +346,16 @@ type TokenFunction = (request: {
 }) => string | Promise<string>;
 
 type RepoAuth =
-  | GithubApp
   | Secret
   | TokenFunction
   | { read: Secret | TokenFunction; write: Secret | TokenFunction };
 ```
 
-- **`githubApp()`** mints a short-lived token of each kind. [GitHub App](#git-hub-app)
-- **A `Secret`**, such as `secret("GITHUB_TOKEN")`, is one token for both.
+- **A `Secret`**, such as `secret("GITHUB_READ_TOKEN")`, is one token for both.
 - **A function** gets `{ access: "read" }` at checkout and `{ access: "write" }` at push. It can read a [`secret()`](#secrets).
 - **`{ read, write }`** gives each side its own, each a `Secret` or a function.
 
-The checkout runs inside the sandbox, so a single `secret()` should be a read-only token. An agent that pushes uses `githubApp()` or `{ read, write }`, and the write token never enters the sandbox.
+The read token goes into the sandbox for the checkout, and the write token stays on your host for the push. A single `secret()` is used for both, so it should be a read-only token, which fits `repo: { push: false }`. An agent that pushes uses `{ read, write }` or a function.
 
 ### Checkout
 
@@ -362,7 +373,7 @@ The model pushes with `<key>_push({ branch })` and code with `sandboxes.<key>.re
 3. Your app shows the commits and paths to `policy`, which can refuse.
 4. Your app pushes from its own side with the write token.
 
-The push sends the commits that are there. It never forces and never deletes. Opening a pull request stays out of the sandbox: the result names the branch, and your app opens the pull request with its GitHub tools or its own code.
+The push sends the commits that are there. It never forces and never deletes. Opening a pull request stays out of the sandbox: the result names the branch, and your app opens the pull request with its own code.
 
 ```typescript {{ title: "Signature" }}
 repo.push(branch: string): Promise<PushResult>
@@ -381,47 +392,6 @@ A refusal is a thrown, non-retriable `PushRefusedError` with `reason: string` in
 | `paths` | Every path those commits touch. |
 
 Types: `RepoOptions`, `RepoAuth`, `PushResult`, `PushRefusedError`.
-
-### GitHub App
-
-`githubApp(options)` authenticates as a GitHub App and mints installation tokens. It uses `fetch` and WebCrypto only.
-
-```typescript {{ title: "Signature" }}
-githubApp(options: GithubAppOptions): GithubApp
-```
-
-| `GithubAppOptions` | Default | Description |
-| --- | --- | --- |
-| `appId` | required | The App's ID. |
-| `privateKey` | required | A PEM string or a [`secret()`](#secrets). PKCS#1 keys are converted; `\n` written out as two characters is read as a newline. |
-| `apiUrl` | `https://api.github.com` | API base URL. |
-| `fetch` | global | The `fetch` to use. |
-| `userAgent` | `inngest-github-app` | The header GitHub requires. |
-| `refreshMarginMs` | five minutes | How long before expiry a token stops being reused. |
-| `now` | `Date.now` | The clock. |
-
-| `GithubApp` method | Description |
-| --- | --- |
-| `jwt()` | The App's JWT: RS256, valid nine minutes. |
-| `installationId(target)` | The installation ID, found once and remembered. |
-| `token(target, options?)` | An installation token, cached until near expiry. |
-| `installedRepos(refresh?)` | Every `"owner/name"` the App can reach, remembered five minutes. |
-| `forget()` | Forgets every ID, token and the repository list. |
-
-`GithubAppTarget` is `"owner/name"`, `{ org }`, `{ user }` or `{ installation }`. `GithubAppTokenOptions` has `permissions` (such as `{ contents: "write" }`) and `repositories` (names, or `"all"`; a repository target defaults to that repository alone).
-
-Errors: `GithubAppError` (`status`), and `GithubAppNotInstalledError` (a 404; the one failure that calls for falling back to a person's token). Types: `GithubApp`, `GithubAppOptions`, `GithubAppTarget`, `GithubAppTokenOptions`.
-
-{/* not type-checked: githubApp with a secret() private key */}
-```typescript {{ title: "inngest/github.ts" }}
-import { secret } from "inngest/experimental";
-import { githubApp } from "inngest/experimental/agents";
-
-export const githubAuth = githubApp({
-  appId: process.env.GITHUB_APP_ID ?? "",
-  privateKey: secret("GITHUB_APP_PRIVATE_KEY"),
-});
-```
 
 ## Tools
 
@@ -502,7 +472,7 @@ export const coolDown = tool.group({
 
 - A plain function's input type is `Parameters<F>[0]` and its output `Awaited<ReturnType<F>>`. A function or reference takes the data of its trigger and returns its return.
 - A server's tool names can't be listed by the types: the name type is `` `${key}_${string}` ``, the input is `Record<string, unknown>` and the output is `unknown`.
-- A listed sandbox's tools and the discovery and agent tools arrive without wiring. `slack.tools()` and `github.tools()` are spread into `tools`. [Slack and GitHub →](/docs/labs/agents/slack-and-github?ref=docs-labs-agents-reference-sandboxes)
+- A listed sandbox's tools and the discovery and agent tools arrive without wiring.
 
 ### ToolContext
 
@@ -668,13 +638,14 @@ Types: `McpServer`, `McpServerOptions`, `McpAuth`.
 | --- | --- | --- |
 | `user` | required | A stable ID for the person, or `({ runId, event, thread }) => string`. A function gets the run's ID, its trigger event and `thread` (`{ key: string }`), and runs for every call. |
 | `redirectUri` | required | The URL of your [callback route](#the-callback-route). Register it with the server when it has no dynamic registration. |
+| `onNeedsAuthorization` | none | `({ url, server, thread, user }) => void \| Promise<void>`. Gets the sign-in link of a person with no token. [Deliver the link](#deliver-the-link) |
 | `store` | `kvOAuthStore()` | Where tokens, registered clients and pending sign-ins live. |
 | `clientId` | registered for you | An OAuth client you registered, for servers without dynamic registration. |
 | `clientSecret` | none | That client's secret, as a string or a `secret()`. |
 | `scopes` | the server's | Plus `offline_access` when offered, so the token can refresh. |
 | `clientName` | `"Inngest agent"` | The name on the consent screen. |
 
-- A person with no token is sent the sign-in link directly. The model learns only that a link was sent.
+- A person with no token has to sign in. Your `onNeedsAuthorization` hook gets the link. [Deliver the link](#deliver-the-link)
 - The link is tied to the browser that first opened it, works once and expires after 10 minutes.
 - Tokens are stored under the server's `id`, encrypted.
 
@@ -683,6 +654,47 @@ Types: `McpServer`, `McpServerOptions`, `McpAuth`.
 | `kvOAuthStore({ encryptionKey, adapter, app })` | The default store: the agents store, AES-GCM encrypted. The key defaults to `secret("MCP_OAUTH_ENCRYPTION_KEY")`. Changing the key makes stored tokens unreadable, and people sign in again. |
 | `mcpCallback({ store })` | The callback route's handler. See [The callback route](#the-callback-route). |
 | `disconnect(server, user)` | Revokes one person's connection to one server. |
+
+### Deliver the link
+
+`onNeedsAuthorization` is how a person gets the sign-in link. Your code shows it however you like: a message, an email, a page.
+
+{/* not type-checked: tool.mcp with oauth, a user function of the trigger event and onNeedsAuthorization */}
+```typescript {{ title: "inngest/tools/notion.ts" }}
+import { tool } from "inngest/experimental";
+import { sendEmail } from "../lib/email";
+
+export const notion = tool.mcp({
+  id: "notion",
+  url: "https://mcp.notion.com/mcp",
+  auth: {
+    oauth: {
+      user: ({ event }) => {
+        return event.data.user;
+      },
+      redirectUri: "https://app.acme.test/api/mcp/callback",
+      onNeedsAuthorization: async ({ url, user }) => {
+        await sendEmail(user, "Sign in to Notion", url);
+      },
+    },
+  },
+});
+```
+
+```typescript {{ title: "Signature" }}
+onNeedsAuthorization?: (call: {
+  url: string;
+  server: string;
+  thread: { key: string };
+  user: string;
+}) => void | Promise<void>;
+```
+
+- `url` is the sign-in link, `server` is the MCP server's `id`, and `user` is the string the `user` function returned.
+- The hook runs inside the calling tool's step, so a replay does not send the link twice.
+- With the hook, the model gets a result that says a sign-in link was sent and to try again after the person signs in.
+- Without the hook, the model gets an error result that says the server needs sign-in and the app has no `onNeedsAuthorization`. The trace gets a warning and the link goes nowhere.
+- The model never sees the URL, with or without the hook.
 
 ### The callback route
 
@@ -699,24 +711,6 @@ mcpCallback(options: {
 import { kvOAuthStore, mcpCallback } from "inngest/experimental";
 
 export const GET = mcpCallback({ store: kvOAuthStore() });
-```
-
-{/* not type-checked: tool.mcp with oauth and a user function of the trigger event */}
-```typescript {{ title: "inngest/tools/notion.ts" }}
-import { tool } from "inngest/experimental";
-
-export const notion = tool.mcp({
-  id: "notion",
-  url: "https://mcp.notion.com/mcp",
-  auth: {
-    oauth: {
-      user: ({ event }) => {
-        return event.data.user;
-      },
-      redirectUri: "https://app.acme.test/api/mcp/callback",
-    },
-  },
-});
 ```
 
 Types: `McpOAuthOptions`, `McpOAuthStore`, `McpOAuthUserContext`, `KvOAuthStoreOptions`.
@@ -737,7 +731,7 @@ secret(source: string | (() => string | Promise<string>)): Secret
 
 - `secret("NAME")` reads the environment variable `NAME` inside the call. A function gives a value that depends on the caller.
 - A `Secret` printed or serialized gives its label, so a token never lands in a log, a prompt or a trace.
-- `secret()` is accepted wherever a token goes, such as `auth.bearer`, `auth.headers` and `clientSecret` in [MCP](#mcp), a repo's [`RepoAuth`](#repo-auth) token function, and the Slack and GitHub bridge secrets. [Slack and GitHub →](/docs/labs/agents/slack-and-github?ref=docs-labs-agents-reference-sandboxes)
+- `secret()` is accepted wherever a token goes, such as `auth.bearer`, `auth.headers` and `clientSecret` in [MCP](#mcp), and the tokens of a repo's [`RepoAuth`](#repo-auth).
 - Once a value is inside the sandbox, code there can read it. Prefer a tool, a [shim](#shims) or a short-lived token for anything sensitive. [Secrets in Sandboxes →](/docs/sandboxes/features/secrets?ref=docs-labs-agents-reference-sandboxes)
 
 Types: `Secret`, `SecretSource`.
@@ -748,26 +742,13 @@ A skill is know-how the model reads, in the `SKILL.md` format: a name, a descrip
 
 ```typescript {{ title: "Signature" }}
 skills.folder(path: string): SkillSource
-skills.repo(repo: string, options?: SkillsRepoOptions): SkillSource
 ```
 
-| Source | Description |
-| --- | --- |
-| `skills.folder(path)` | Skills shipped with your app, one folder per skill. The path resolves against the process's working directory when the agent is defined, so ship the folder with the app. They change with a deploy. |
-| `skills.repo("owner/name", options?)` | Skills read from a repository. They change without a deploy. |
-
-| `skills.repo` option | Description |
-| --- | --- |
-| `ref` | Branch, tag or commit to read. |
-| `path` | The folder in the repository that holds the skill folders. |
-| `auth` | A [`githubApp()`](#git-hub-app) or a token, for a private repository. |
-
-- A folder and a repo can be listed together. Two folder skills with one name are an error when the agent is defined. A clash found in a repo at run time is a warning on the trace, and the first source listed wins.
-- A repo is read once per run. A failed read is logged, and the agent carries on without those skills.
-- Public repos need no `auth`. A private repo is read with `auth` on the host, never in the sandbox.
+- `skills.folder(path)` reads skills shipped with your app, one folder per skill. The path resolves against the process's working directory when the agent is defined, so ship the folder with the app. Skills change with a deploy.
+- Two skills with one name are an error when the agent is defined.
 - The model sees every skill's name and description in its prompt. `open_skill({ name: string }): string` returns one skill's body. It is the same tool for every skill, and only an agent with skills has it. It works with no sandbox.
 - A skill's files are placed in `/skills/<name>/` in the first sandbox the model can use among the agent's listed sandboxes. An agent with skills and no sandbox gets instructions only.
-- The agent's card lists each skill's name and description. A repo's skills can change between syncs, so the card may list a skill a run cannot read. [Agent discovery →](/docs/labs/agents/agent-discovery?ref=docs-labs-agents-reference-sandboxes)
+- The agent's card lists each skill's name and description. [Agent discovery →](/docs/labs/agents/agent-discovery?ref=docs-labs-agents-reference-sandboxes)
 
 ```md
 ---
@@ -778,23 +759,22 @@ description: When a refund is allowed, and how to issue one
 Refunds are allowed within 30 days of delivery. Use the `refund` tool.
 ```
 
-{/* not type-checked: skills.folder and skills.repo on an agent */}
+{/* not type-checked: skills.folder on an agent */}
 ```typescript {{ title: "inngest/agents/support.ts" }}
-import { skills, slack } from "inngest/experimental/agents";
+import { skills } from "inngest/experimental/agents";
 import { agents } from "../client";
+import { ticketOpened } from "../events";
 import { claude } from "../models/claude";
 import { work } from "../sandboxes/work";
 
 export const support = agents.agent({
   id: "support",
-  triggers: [slack.thread()],
+  triggers: [ticketOpened],
+  thread: "event.data.ticket",
   model: claude,
   system: "You answer support questions.",
   sandboxes: { work },
-  skills: [
-    skills.folder("./skills"),
-    skills.repo("inngest/inngest-skills"),
-  ],
+  skills: [skills.folder("./skills")],
 });
 ```
 
