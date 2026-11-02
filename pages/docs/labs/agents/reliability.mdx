@@ -170,13 +170,13 @@ A rate limit waits for the provider's `retry-after`, for any model. A final erro
 
 A run that fails for good shows its error in the trace. With `recovery: true`, the message it was handling goes to a fresh run. The same error is never resent, nor is a `NonRetriableError`, and a message is resent for at most three kinds of error.
 
-Every next run gets [`previousRun`](/docs/labs/agents/reference?ref=docs-labs-agents-reliability#the-handler), with or without `recovery`: `{ runId, status, at, error? }` says how the last run ended.
+Every next run gets [`previousRun`](/docs/labs/agents/reference?ref=docs-labs-agents-reliability#the-handler), with or without `recovery`. It is `{ runId, status, at, error? }` and says how the last run ended: `status` is `"completed"`, `"failed"` or `"cancelled"`, and `at` is milliseconds since the epoch.
 
 ## Deploys and long runs
 
 After a deploy, a live run replays on your latest code. Every model call, tool call, `step.run` of your own and inbox message is a step toward the 1,000-step limit. So is a KV call made outside a step. [Limits →](/docs/durable-execution/limits?ref=docs-labs-agents-reliability#platform-limits)
 
-Keep the default `idle` of ten minutes unless the agent waits on something slow, such as a customer's reply. A longer `idle` keeps the run live across deploys and spends steps.
+Keep the default `idle` of ten minutes unless the agent waits on something slow, such as a customer's reply. A longer `idle` keeps the run live across deploys, spends steps and keeps the thread's sandbox running.
 
 <AnnotatedCode>
 

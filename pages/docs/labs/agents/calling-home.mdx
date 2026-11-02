@@ -15,7 +15,7 @@ You want the model to read the CI log of every open pull request without a turn 
 
 <AnnotatedCode>
 
-{/* not type-checked: sandbox.tools.code({ tools }), which gives the model work_run_code */}
+{/* not type-checked: sandbox.tools.code({ tools }), which gives the model work_run_code, and a read and write token pair on repo.auth */}
 ```typescript {{ title: "inngest/sandboxes/work.ts" }}
 import { secret } from "inngest/experimental";
 import { sandbox } from "inngest/experimental/agents";
@@ -179,7 +179,7 @@ if "FAIL" in log:
     await tools.note(text="The checkout test is failing.")
 ```
 
-The events, the client with its `sandboxMiddleware()`, and the GitHub client with its `comment` tool are as [Threads](/docs/labs/agents/threads?ref=docs-labs-agents-calling-home), [Sandboxes](/docs/labs/agents/sandboxes?ref=docs-labs-agents-calling-home#a-sandbox) and [Tools](/docs/labs/agents/tools?ref=docs-labs-agents-calling-home#your-own-git-hub-tools) left them:
+The events, the client with its `sandboxMiddleware()`, and the GitHub client with its `comment` tool are as [Threads](/docs/labs/agents/threads?ref=docs-labs-agents-calling-home), [Inboxes](/docs/labs/agents/inboxes?ref=docs-labs-agents-calling-home), [Sandboxes](/docs/labs/agents/sandboxes?ref=docs-labs-agents-calling-home#a-sandbox) and [Tools](/docs/labs/agents/tools?ref=docs-labs-agents-calling-home#your-own-git-hub-tools) left them:
 
 ```typescript {{ title: "inngest/events.ts" }}
 import { eventType } from "inngest";

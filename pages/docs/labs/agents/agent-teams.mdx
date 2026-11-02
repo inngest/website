@@ -93,7 +93,7 @@ export const prHelper = agents.agent(
 
 A run opened through a handle ends once it has answered, so `result()` returns promptly. It waits only for the runs its model started with `start_agent`, never for `start()` calls in code. [Idle →](/docs/labs/agents/reference?ref=docs-labs-agents-agent-teams#idle)
 
-The rest of the PR helper is as [Calling home](/docs/labs/agents/calling-home?ref=docs-labs-agents-agent-teams) left it. The events and the GitHub client are as [Threads](/docs/labs/agents/threads?ref=docs-labs-agents-agent-teams) and [Tools](/docs/labs/agents/tools?ref=docs-labs-agents-agent-teams#your-own-git-hub-tools) left them:
+The rest of the PR helper is as [Calling home](/docs/labs/agents/calling-home?ref=docs-labs-agents-agent-teams) left it. The events and the GitHub client are as [Threads](/docs/labs/agents/threads?ref=docs-labs-agents-agent-teams), [Inboxes](/docs/labs/agents/inboxes?ref=docs-labs-agents-agent-teams) and [Tools](/docs/labs/agents/tools?ref=docs-labs-agents-agent-teams#your-own-git-hub-tools) left them:
 
 ```typescript {{ title: "inngest/events.ts" }}
 import { eventType } from "inngest";
