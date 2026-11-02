@@ -24,6 +24,8 @@ export const claude = anthropic({ model: "claude-sonnet-5-5" });
 
 {/* not type-checked: the anthropic() one-shot call inside a handler */}
 ```typescript
+import { gh } from "../lib/github";
+
 async ({ inbox, me, step }) => {
   for await (const batch of inbox.batches({ max: 20 })) {
     const summary = await step.run("summarize", async () => {
@@ -32,16 +34,43 @@ async ({ inbox, me, step }) => {
       });
     });
 
-    await me.post(summary.text);
+    await step.run("comment", async () => {
+      return await gh.comment(Number(me.key), summary.text);
+    });
   }
 },
 ```
 
-<Annotation id="step" lines="3" tease="not a step by itself" title="Wrap it in a step" href="/docs/labs/agents/agents?ref=docs-labs-agents-models#steps" linkText="Steps">
+<Annotation id="step" lines="5" tease="not a step by itself" title="Wrap it in a step" href="/docs/labs/agents/agents?ref=docs-labs-agents-models#steps" linkText="Steps">
 A retry would repeat a bare model call.
 </Annotation>
 
 </AnnotatedCode>
+
+`gh` is the comment helper from [Inboxes](/docs/labs/agents/inboxes?ref=docs-labs-agents-models#answer-every-message):
+
+```typescript {{ title: "inngest/lib/github.ts" }}
+const api = "https://api.github.com/repos/acme/web";
+
+export const gh = {
+  comment: async (pr: number, body: string) => {
+    const response = await fetch(`${api}/issues/${pr}/comments`, {
+      method: "POST",
+      headers: {
+        accept: "application/vnd.github+json",
+        authorization: `Bearer ${process.env.GITHUB_TOKEN}`,
+      },
+      body: JSON.stringify({ body }),
+    });
+
+    if (!response.ok) {
+      throw new Error(`Comment on #${pr}: ${response.status}`);
+    }
+
+    return await response.json();
+  },
+};
+```
 
 A follow-up question gets an answer that knows nothing of the summary.
 
@@ -53,42 +82,45 @@ You want follow-ups to work. A turn is one model call plus the tool calls it ask
 
 {/* not type-checked: model, system and loop(batch) in the PR helper */}
 ```typescript {{ title: "inngest/agents/prHelper.ts" }}
-import { github } from "inngest/experimental/agents";
 import { agents } from "../client";
-import { ciFailed, ciPassed, deployed } from "../events";
+import { ciFailed, ciPassed, deployed, prOpened } from "../events";
+import { gh } from "../lib/github";
 import { claude } from "../models/claude";
 
 const triggers = [
-  github.thread({ repos: ["acme/web"] }),
-  { event: ciFailed, thread: "event.data.prUrl" },
-  { event: deployed, thread: "event.data.pull.url" },
+  prOpened,
+  ciFailed,
+  { event: deployed, thread: "event.data.pull" },
 ];
 
 export const prHelper = agents.agent(
   {
     id: "pr-helper",
     triggers,
-    inbox: [{ event: ciPassed, thread: "event.data.prUrl" }],
+    thread: "event.data.pr",
+    inbox: [ciPassed],
     idle: "1h",
     model: claude,
     system: "You help with pull requests on acme/web.",
   },
-  async ({ inbox, me, loop }) => {
+  async ({ inbox, loop, me, step }) => {
     for await (const batch of inbox.batches({ max: 20 })) {
       const result = await loop(batch);
 
-      await me.post(result.text);
+      await step.run("comment", async () => {
+        return await gh.comment(Number(me.key), result.text);
+      });
     }
   },
 );
 ```
 
-<Annotation id="model" lines="18-19" tease="what the loop runs" title="Model and system" href="#delete-the-handler" linkText="Delete the handler">
+<Annotation id="model" lines="19-20" tease="what the loop runs" title="Model and system" href="#delete-the-handler" linkText="Delete the handler">
 With a model and a system, the agent needs no handler.
 </Annotation>
 
-<Annotation id="loop" lines="23" tease="runs the turns" title="loop(batch)">
-Calls the model until it stops asking for tools. It posts nothing.
+<Annotation id="loop" lines="24" tease="runs the turns" title="loop(batch)">
+Calls the model until it stops asking for tools, and returns the answer in `result.text`.
 </Annotation>
 
 </AnnotatedCode>
@@ -101,14 +133,18 @@ The events are as [Inboxes](/docs/labs/agents/inboxes?ref=docs-labs-agents-model
 import { eventType } from "inngest";
 import { z } from "zod";
 
-const ciRun = z.object({ pr: z.number(), prUrl: z.string() });
+const ciRun = z.object({ pr: z.number() });
+
+export const prOpened = eventType("pr/opened", {
+  schema: z.object({ pr: z.number(), author: z.string() }),
+});
 
 export const ciFailed = eventType("ci/run.failed", { schema: ciRun });
 
 export const ciPassed = eventType("ci/run.passed", { schema: ciRun });
 
 export const deployed = eventType("deploy/finished", {
-  schema: z.object({ env: z.string(), pull: z.object({ url: z.string() }) }),
+  schema: z.object({ env: z.string(), pull: z.number() }),
 });
 ```
 
@@ -140,14 +176,15 @@ You want the same agent with no code.
 export const prHelper = agents.agent({
   id: "pr-helper",
   triggers,
-  inbox: [{ event: ciPassed, thread: "event.data.prUrl" }],
+  thread: "event.data.pr",
+  inbox: [ciPassed],
   idle: "1h",
   model: claude,
   system: "You help with pull requests on acme/web.",
 });
 ```
 
-This is the handler the SDK writes: each batch goes through the loop. Its answer is posted where the thread lives and is the run's output.
+This is the handler the SDK writes: each batch goes through the loop. Its answer is only the run's output; to put it on the PR, the model needs a tool. [Your own GitHub tools →](/docs/labs/agents/tools?ref=docs-labs-agents-models#your-own-git-hub-tools)
 
 ## A budget
 
@@ -167,12 +204,16 @@ The budget belongs to the thread, so every PR gets its own. In a handler, `end` 
 const result = await loop(batch);
 
 if (result.end === "budget") {
-  await me.post("This PR is out of budget.");
+  await step.run("comment", async () => {
+    return await gh.comment(Number(me.key), "This PR is out of budget.");
+  });
 
   return;
 }
 
-await me.post(result.text);
+await step.run("comment", async () => {
+  return await gh.comment(Number(me.key), result.text);
+});
 ```
 
 <Annotation id="end" lines="3" tease="why it stopped" title="end" href="/docs/labs/agents/reference?ref=docs-labs-agents-models#the-result" linkText="Reference: the result">
@@ -181,42 +222,7 @@ await me.post(result.text);
 
 </AnnotatedCode>
 
-With no handler, the default one posts that the budget is spent.
-
-## Progress
-
-You want a line on the PR while the work goes on.
-
-<AnnotatedCode>
-
-{/* not type-checked: an un-awaited me.post() beside loop(batch) */}
-```typescript
-async ({ inbox, me, loop }) => {
-  me.post("Looking at it.");
-
-  for await (const batch of inbox.batches({ max: 20 })) {
-    const result = await loop(batch);
-
-    if (result.end === "budget") {
-      await me.post("This PR is out of budget.");
-
-      return;
-    }
-
-    await me.post(result.text);
-  }
-},
-```
-
-<Annotation id="progress" lines="2" tease="not awaited" title="No await" href="/docs/labs/agents/inboxes?ref=docs-labs-agents-models#answer-every-message" linkText="Answer every message">
-The work carries on, and the run waits for the post before it ends.
-</Annotation>
-
-<Annotation id="final" lines="13" tease="awaited" title="The answer">
-Await it, so a failed post fails the run.
-</Annotation>
-
-</AnnotatedCode>
+With no handler, a spent budget ends the loop and the run's output says so.
 
 ## Any model
 
@@ -270,7 +276,9 @@ const verdict = await step.run("safe to merge?", async () => {
 });
 
 if (!verdict.output.safe) {
-  await me.post(verdict.output.reason);
+  await step.run("comment", async () => {
+    return await gh.comment(Number(me.key), verdict.output.reason);
+  });
 }
 ```
 
@@ -311,17 +319,22 @@ You want a line on the PR for each turn.
 
 <AnnotatedCode>
 
-{/* not type-checked: loop(batch, { onTurn }) posting through me */}
+{/* not type-checked: loop(batch, { onTurn }) commenting from a step */}
 ```typescript
 await loop(batch, {
-  onTurn: ({ turn, toolCalls }) => {
-    me.post(`Turn ${turn}: ${toolCalls.length} tool calls`);
+  onTurn: async ({ turn, toolCalls }) => {
+    await step.run("progress", async () => {
+      return await gh.comment(
+        Number(me.key),
+        `Turn ${turn}: ${toolCalls.length} tool calls`,
+      );
+    });
   },
 });
 ```
 
-<Annotation id="onturn" lines="2-4" tease="after each turn's tools" title="onTurn" href="/docs/labs/agents/reference?ref=docs-labs-agents-models#on-turn" linkText="Reference: onTurn">
-A slow or failing post never holds up the next model call.
+<Annotation id="onturn" lines="2-9" tease="after each turn's tools" title="onTurn" href="/docs/labs/agents/reference?ref=docs-labs-agents-models#on-turn" linkText="Reference: onTurn">
+Gets the turn: `turn`, `stepId`, `text`, `toolCalls` and `usage`. A slow or failing comment never holds up the next model call.
 </Annotation>
 
 </AnnotatedCode>
@@ -335,7 +348,7 @@ You want the agent's turns to run your way, or just a little differently. To cha
 loop: { maxTurns: 10 },
 ```
 
-The loop makes at most 10 model calls, down from the default 40. For more than options, give `loop` a whole loop of your own:
+The loop makes at most 10 model calls, down from the default 40. In a handler, `loop.with({ maxTurns: 10 })` derives that loop from the agent's. For more than options, give `loop` a whole loop of your own:
 
 <AnnotatedCode>
 
@@ -365,11 +378,11 @@ The answer in `text`, why the loop stopped in `end`, and the messages it left in
 
 </AnnotatedCode>
 
-The default handler posts `text`, and the agent's triggers, inbox and thread stay as they are. [Reference: the loop →](/docs/labs/agents/reference?ref=docs-labs-agents-models#the-loop)
+The default handler returns `text` as the run's output, and the agent's triggers, inbox and thread stay as they are. [Reference: the loop →](/docs/labs/agents/reference?ref=docs-labs-agents-models#the-loop)
 
 ## Recipes and reference
 
-- [Slack assistant](/docs/labs/agents/recipes/slack-assistant?ref=docs-labs-agents-models)
+- [Support assistant](/docs/labs/agents/recipes/support-assistant?ref=docs-labs-agents-models)
 - [Coding agent](/docs/labs/agents/recipes/coding-agent?ref=docs-labs-agents-models)
 - [Reliability](/docs/labs/agents/reliability?ref=docs-labs-agents-models): budgets, pricing and model errors.
 - [Reference: the loop](/docs/labs/agents/reference?ref=docs-labs-agents-models#the-loop)
