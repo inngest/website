@@ -62,5 +62,49 @@ await inngest.send(invoicePaid.create({
 ```
 </CodeGroup>
 The event type can also appear in a function's `triggers` array and in `step.waitForEvent()`. A runtime schema validates event data. Use `staticSchema()` when only TypeScript checking is required.
+
+## Narrow an event with `is()`
+
+In the TypeScript SDK, `event.is()` shows which trigger started a run. It also types `event.data` to match, and takes one event type or an array.
+
+```typescript {{ title: "TypeScript" }}
+import { eventType, Inngest } from "inngest";
+import { z } from "zod";
+
+const inngest = new Inngest({ id: "shop" });
+
+const orderPaid = eventType("shop/order.paid", {
+  schema: z.object({ orderId: z.string(), total: z.number() }),
+});
+
+const orderRefunded = eventType("shop/order.refunded", {
+  schema: z.object({ orderId: z.string(), reason: z.string() }),
+});
+
+export const syncLedger = inngest.createFunction(
+  { id: "sync-ledger", triggers: [orderPaid, orderRefunded] },
+  async ({ event }) => {
+    if (event.is(orderPaid)) {
+      return { credit: event.data.total };
+    }
+
+    if (event.is(orderRefunded)) {
+      return { refund: event.data.reason };
+    }
+  },
+);
+```
+
+Every event type also has `is(value)`, which checks any value: JSON from another service, or a message from a [`step.subscribe()` inbox](/docs/durable-execution/primitives/step-subscribe).
+
+```typescript {{ title: "TypeScript" }}
+const value: unknown = JSON.parse(body);
+
+if (orderPaid.is(value)) {
+  console.log(value.data.total);
+}
+```
+
+`is()` checks for an exact event name. It doesn't validate `data` against the schema.
 ## Change a payload safely
 Keep existing fields stable for deployed consumers. Add fields when consumers can ignore them. If you must change the meaning or shape of a field, version the event and plan the sender and consumer rollout together. See [Versioning](/docs/durable-execution/guides-and-advanced/versioning) for changing code while runs remain active.
