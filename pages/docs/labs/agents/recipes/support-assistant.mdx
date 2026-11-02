@@ -1,98 +1,124 @@
 import { AnnotatedCode, Annotation } from "shared/Docs/mdx";
 
-export const metaTitle = "Slack assistant | Inngest Agents";
-export const description = "Build an agent that answers in a Slack thread, looks up orders, remembers each thread and keeps notes the whole team shares.";
+export const metaTitle = "Support assistant | Inngest Agents";
+export const description = "Build an agent that answers each support ticket on its own thread, looks up orders, replies through a tool you write and keeps notes the whole team shares.";
 
-# Slack assistant
+# Support assistant
 
-> An agent that answers in a Slack thread and learns from what the team tells it.
+> An agent that answers every ticket and learns from what the team tells it.
 
-It remembers each Slack thread across restarts, and a note saved in one thread reaches the others.
+It remembers each ticket across restarts, and a note saved on one ticket reaches the others.
 
 ```text
-Maya      @Support Where is order 7?
-Support   Order 7 shipped with UPS and arrives Friday.
-Maya      Remember: always give the carrier first.
-Support   Saved. UPS, arriving Friday.
+ticket/opened    T-1  Where is order 7?
+Support          sendReply: Order 7 shipped with UPS and arrives Friday.
 
-(a new thread, an hour later)
-Dan       @Support Where is order 9?
-Support   UPS (carrier first, as asked), arriving Friday.
+ticket/replied   T-1  Maya (team): Remember: always give the carrier first.
+Support          saveNote: always give the carrier first
+Support          sendReply: Saved. UPS, arriving Friday.
+
+(another ticket, an hour later)
+ticket/opened    T-2  Where is order 9?
+Support          sendReply: UPS (carrier first, as asked), arriving Friday.
 ```
 
-Screenshot needed: the same exchange in Slack, and the first run's trace in the Dev Server.
+Screenshot needed: the first run's trace in the Dev Server, with the `sendReply` step.
 
 ## The code
 
+Your helpdesk's webhook route sends these two events with `inngest.send`. The assistant's own replies send none.
+
+```typescript {{ title: "inngest/events.ts" }}
+import { eventType } from "inngest";
+import { z } from "zod";
+
+export const ticketOpened = eventType("ticket/opened", {
+  schema: z.object({ ticket: z.string(), text: z.string() }),
+});
+
+export const ticketReplied = eventType("ticket/replied", {
+  schema: z.object({ ticket: z.string(), from: z.string(), text: z.string() }),
+});
+```
+
 <AnnotatedCode>
 
-{/* not type-checked: slack.thread, system as an async function, kv.app and kv.key read in a run-time field */}
+{/* not type-checked: system as an async function, kv.app and kv.key read in a run-time field */}
 ```typescript {{ title: "inngest/agents/support.ts" }}
-import { kv, slack } from "inngest/experimental/agents";
+import { kv } from "inngest/experimental/agents";
 import { agents } from "../client";
+import { ticketOpened, ticketReplied } from "../events";
 import { claude } from "../models/claude";
 import { lookupOrder } from "../tools/lookupOrder";
 import { notes, saveNote } from "../tools/saveNote";
+import { sendReply } from "../tools/sendReply";
 
 export const support = agents.agent({
   id: "support",
-  triggers: [slack.thread({ in: ["C0123ABC"] })],
+  triggers: [ticketOpened, ticketReplied],
+  thread: "event.data.ticket",
   model: claude,
   system: async () => {
     const known = (await kv.app.get(notes)) ?? [];
 
-    return `Answer support questions. Team notes: ${known.join("; ")}`;
+    return [
+      "Answer each ticket and send the answer with sendReply.",
+      `Team notes: ${known.join("; ")}`,
+    ].join("\n");
   },
-  tools: { lookupOrder, saveNote },
+  tools: { lookupOrder, saveNote, sendReply },
 });
 ```
 
-<Annotation id="trigger" lines="9" tease="each Slack thread" title="Start from Slack" href="/docs/labs/agents/slack-and-github?ref=docs-labs-agents-recipes-slack-assistant#start-from-slack" linkText="Start from Slack">
-The agent answers in the Slack thread, with a status line while it works.
+<Annotation id="thread" lines="11-12" tease="one thread per ticket" title="Start from your events" href="/docs/labs/agents/threads?ref=docs-labs-agents-recipes-support-assistant#which-conversation-is-this" linkText="Which conversation is this?">
+Both events carry the ticket, so a ticket's messages share one thread and its history.
 </Annotation>
 
-<Annotation id="system" lines="11-15" tease="read at run start" title="Notes in the prompt" href="/docs/labs/agents/reference?ref=docs-labs-agents-recipes-slack-assistant#the-definition" linkText="Decide per run">
-Reads the team's notes as a step when a run starts. A thread already mid-run sees a new note on its next run.
+<Annotation id="system" lines="14-21" tease="read at run start" title="Notes in the prompt" href="/docs/labs/agents/reference?ref=docs-labs-agents-recipes-support-assistant#the-definition" linkText="Decide per run">
+Reads the team's notes when a run starts. A run already under way sees a note saved meanwhile on its next run.
 </Annotation>
 
-<Annotation id="tools" lines="16" tease="no handler needed" title="Model and tools" href="/docs/labs/agents/models?ref=docs-labs-agents-recipes-slack-assistant#delete-the-handler" linkText="Delete the handler">
-With no handler, the agent runs the model with these tools and posts the answer.
+<Annotation id="tools" lines="22" tease="no handler needed" title="Model and tools" href="/docs/labs/agents/models?ref=docs-labs-agents-recipes-support-assistant#delete-the-handler" linkText="Delete the handler">
+With no handler, the agent runs the model with these tools until it answers. The answer is only the run's output, so `sendReply` is how the customer hears it.
 </Annotation>
 
 </AnnotatedCode>
 
-Slack calls a route in your app. [Set up the Slack app →](/docs/labs/agents/slack-and-github?ref=docs-labs-agents-recipes-slack-assistant#add-the-route)
+```typescript {{ title: "inngest/tools/sendReply.ts" }}
+import { tool } from "inngest/experimental";
+import { z } from "zod";
+import { helpdesk } from "../lib/helpdesk";
 
-<AnnotatedCode>
-
-{/* not type-checked: slack.bridge as a Web handler with the client and a secret */}
-```typescript {{ title: "app/api/slack/route.ts" }}
-import { secret } from "inngest/experimental";
-import { slack } from "inngest/experimental/agents";
-import { inngest } from "../../../inngest/client";
-
-export const POST = slack.bridge({
-  client: inngest,
-  signingSecret: secret("SLACK_SIGNING_SECRET"),
+export const sendReply = tool.step({
+  description: "Sends a reply to the customer on their ticket",
+  input: z.object({ ticket: z.string(), body: z.string() }),
+  run: async ({ ticket, body }) => {
+    return await helpdesk.reply(ticket, body);
+  },
 });
 ```
 
-<Annotation id="bridge" lines="5-8" tease="signed route" title="The Slack route" href="/docs/labs/agents/slack-and-github?ref=docs-labs-agents-recipes-slack-assistant" linkText="Slack and GitHub">
-Checks Slack's signature and sends an event for each message meant for the agent.
-</Annotation>
+```typescript {{ title: "inngest/lib/helpdesk.ts" }}
+const api = "https://helpdesk.acme.test/api";
 
-</AnnotatedCode>
+export const helpdesk = {
+  reply: async (ticket: string, body: string) => {
+    const response = await fetch(`${api}/tickets/${ticket}/replies`, {
+      method: "POST",
+      headers: {
+        authorization: `Bearer ${process.env.HELPDESK_TOKEN}`,
+        "content-type": "application/json",
+      },
+      body: JSON.stringify({ body }),
+    });
 
-{/* not type-checked: agents.functions() in a Next.js route */}
-```typescript {{ title: "app/api/inngest/route.ts" }}
-import { serve } from "inngest/next";
-import { agents, inngest } from "../../../inngest/client";
-import "../../../inngest/agents/support";
+    if (!response.ok) {
+      throw new Error(`Reply on ${ticket}: ${response.status}`);
+    }
 
-export const { GET, POST, PUT } = serve({
-  client: inngest,
-  functions: agents.functions(),
-});
+    return await response.json();
+  },
+};
 ```
 
 ```typescript {{ title: "inngest/tools/lookupOrder.ts" }}
@@ -129,24 +155,35 @@ export const saveNote = tool.step({
 });
 ```
 
-The [client](/docs/labs/agents/quick-start?ref=docs-labs-agents-recipes-slack-assistant#create-the-client) and [model](/docs/labs/agents/quick-start?ref=docs-labs-agents-recipes-slack-assistant#pick-a-model) are the quick start's.
+{/* not type-checked: agents.functions() in a Next.js route */}
+```typescript {{ title: "app/api/inngest/route.ts" }}
+import { serve } from "inngest/next";
+import { agents, inngest } from "../../../inngest/client";
+import "../../../inngest/agents/support";
+
+export const { GET, POST, PUT } = serve({
+  client: inngest,
+  functions: agents.functions(),
+});
+```
+
+The [client](/docs/labs/agents/quick-start?ref=docs-labs-agents-recipes-support-assistant#create-the-client) and [model](/docs/labs/agents/quick-start?ref=docs-labs-agents-recipes-support-assistant#pick-a-model) are the quick start's.
 
 ## What it shows off
 
-- [Threads](/docs/labs/agents/threads?ref=docs-labs-agents-recipes-slack-assistant#what-a-conversation-keeps) give each Slack thread its own history.
-- [An agent with no handler](/docs/labs/agents/models?ref=docs-labs-agents-recipes-slack-assistant#delete-the-handler) answers in the thread from a definition alone.
-- [App-wide memory](/docs/labs/agents/memory?ref=docs-labs-agents-recipes-slack-assistant#shared-by-every-pr) is one store every thread can read.
-- [Slack](/docs/labs/agents/slack-and-github?ref=docs-labs-agents-recipes-slack-assistant) reaches the agent through one signed route.
+- [Threads](/docs/labs/agents/threads?ref=docs-labs-agents-recipes-support-assistant#what-a-conversation-keeps) give each ticket its own history.
+- [An agent with no handler](/docs/labs/agents/models?ref=docs-labs-agents-recipes-support-assistant#delete-the-handler) answers from a definition alone.
+- [A tool you write](/docs/labs/agents/tools?ref=docs-labs-agents-recipes-support-assistant#tools-as-steps) tells the customer, as a step that retries and never repeats.
+- [App-wide memory](/docs/labs/agents/memory?ref=docs-labs-agents-recipes-support-assistant#shared-by-every-pr) is one store every ticket can read.
 
 ## Run it
 
-Set the project up as in the [quick start](/docs/labs/agents/quick-start?ref=docs-labs-agents-recipes-slack-assistant#install), in a Next.js app.
+Set the project up as in the [quick start](/docs/labs/agents/quick-start?ref=docs-labs-agents-recipes-support-assistant#install), in a Next.js app.
 
 ```bash
 export ANTHROPIC_API_KEY=sk-ant-...
 export INNGEST_EXPERIMENTAL_KV_URL=redis://localhost:6379
-export SLACK_BOT_TOKEN=xoxb-...
-export SLACK_SIGNING_SECRET=...
+export HELPDESK_TOKEN=...
 npm run dev
 ```
 
@@ -154,16 +191,27 @@ npm run dev
 npx inngest-cli@latest dev -u http://localhost:3000/api/inngest
 ```
 
-Point the Slack app at `https://<your-host>/api/slack`; a tunnel works for local runs. Invite it to `C0123ABC`, mention it, and open the run at [localhost:8288](http://localhost:8288).
+Send a ticket from the Dev Server's **Send event** button at [localhost:8288](http://localhost:8288), or from code:
+
+```typescript {{ title: "scripts/openTicket.ts" }}
+import { inngest } from "../inngest/client";
+
+await inngest.send({
+  name: "ticket/opened",
+  data: { ticket: "T-1", text: "Where is order 7?" },
+});
+```
+
+Then send `ticket/replied` for `T-1` with `from: "maya"` and `text: "Remember: always give the carrier first."`, and open `T-2`. With no helpdesk yet, swap the `fetch` in `helpdesk.reply` for a `console.log` and read the replies in the app's output.
 
 ## Variations
 
-- [Slack and GitHub](/docs/labs/agents/slack-and-github?ref=docs-labs-agents-recipes-slack-assistant#post-ask-and-show-progress) lets the model post, ask a question and show progress with `slack.tools()`.
-- [Reliability](/docs/labs/agents/reliability?ref=docs-labs-agents-recipes-slack-assistant#cap-spend) caps what a thread may spend with `budget`.
-- [Sandboxes](/docs/labs/agents/sandboxes?ref=docs-labs-agents-recipes-slack-assistant) gives it a sandbox to run code.
+- [Check before acting](/docs/labs/agents/tools?ref=docs-labs-agents-recipes-support-assistant#check-before-acting) wraps `sendReply` so it refuses a reply that holds a secret.
+- [Reliability](/docs/labs/agents/reliability?ref=docs-labs-agents-recipes-support-assistant#cap-spend) caps what a ticket may spend with `budget`.
+- [Sandboxes](/docs/labs/agents/sandboxes?ref=docs-labs-agents-recipes-support-assistant) gives it a sandbox to run code.
 
 ## Learn more
 
-- [Agents](/docs/labs/agents/agents?ref=docs-labs-agents-recipes-slack-assistant)
-- [Memory](/docs/labs/agents/memory?ref=docs-labs-agents-recipes-slack-assistant)
-- Next recipe: [Issue triage](/docs/labs/agents/recipes/issue-triage?ref=docs-labs-agents-recipes-slack-assistant)
+- [Agents](/docs/labs/agents/agents?ref=docs-labs-agents-recipes-support-assistant)
+- [Memory](/docs/labs/agents/memory?ref=docs-labs-agents-recipes-support-assistant)
+- Next recipe: [Issue triage](/docs/labs/agents/recipes/issue-triage?ref=docs-labs-agents-recipes-support-assistant)
