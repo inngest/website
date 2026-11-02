@@ -17,12 +17,11 @@ export const HERO = {
   // "Built here, running here" is SF's line — Inngest is built there.
   // NYC gets the campaign line instead, which is true anywhere.
   eyebrowAccent: "Build for the lonng run.",
-  // Three paragraphs: the campaign line, then what goes wrong on a long
-  // run, then what Inngest does about it.
+  // Two paragraphs: the campaign line, then the agent problem and what
+  // Inngest does about it.
   body: [
     "26.2 is one kind of lonng run. Another happens in production.",
-    "Agents and workflows can run for hours, days, or weeks. When something fails along the way, the work that already finished shouldn't have to start over.",
-    "Inngest makes lonng-running work durable — checkpointing every step so failures can retry from where they happened instead of sending the whole run back to the starting line.",
+    "If you're building AI agents, you know they might have to wait hours or days before a user responds. Wrap product code in APIs that tell it when to stop, start, fan-out, and retry. So your app picks up where it left off, not back at the starting line.",
   ],
   cta: {
     label: "Start Free",
