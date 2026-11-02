@@ -80,7 +80,7 @@ export const ticketReplied = eventType("ticket/replied", {
 
 ## Cap spend
 
-`budget` caps what one thread spends across all its runs, kept in thread state. The model prices its own calls; `price` overrides its rates.
+`budget` caps what one thread spends across all its runs, kept in thread state. The model prices its own calls; `price` overrides its rates. With no handler, a spent budget ends the loop: the run's output is the model's last text, and the trace shows `end` as `"budget"`.
 
 <AnnotatedCode>
 
@@ -151,7 +151,9 @@ A loop option, so each call can have its own.
 
 A rate limit waits for the provider's `retry-after`, for any model. A final error such as a rejected request isn't retried.
 
-A run that fails for good shows its error in the trace and posts nothing. With `recovery: true`, the message it was handling goes to a fresh run, and the same error is never resent, nor is a `NonRetriableError`. A handler's [`previousRun`](/docs/labs/agents/reference?ref=docs-labs-agents-reliability#the-handler) says how the last run ended, with or without `recovery`.
+A run that fails for good shows its error in the trace and posts nothing. With `recovery: true`, the message it was handling goes to a fresh run. The same error is never resent, nor is a `NonRetriableError`, and a message is resent for at most three kinds of error.
+
+Every next run gets [`previousRun`](/docs/labs/agents/reference?ref=docs-labs-agents-reliability#the-handler), with or without `recovery`: `{ runId, status, at, error? }` says how the last run ended.
 
 ## Deploys and long runs
 
