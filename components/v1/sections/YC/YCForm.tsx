@@ -5,6 +5,7 @@ import Button from "@/components/v1/Button";
 import { TextField, TextareaField } from "@/components/v1/forms";
 import { analytics } from "@/utils/segment";
 import { readFirstTouch } from "src/shared/firstTouch";
+import { getPageRef } from "@/utils/v1/refHandoff";
 import { FORM_TYPE } from "src/components/ContactForm.constants";
 
 // Same submission contract as the legacy `ContactForm` (event name/version,
@@ -97,12 +98,8 @@ export default function YCForm() {
       return;
     }
 
-    let ref = "";
-    try {
-      ref = new URLSearchParams(window.location.search).get("ref") ?? "";
-    } catch {
-      // noop
-    }
+    // URL `?ref=` first, then a ref handed off by a tracked link click.
+    const ref = getPageRef()?.ref ?? "";
     const firstTouch = readFirstTouch();
 
     try {
