@@ -17,46 +17,81 @@ You want to count CI failures on a PR. Start with a variable.
 import { eventType } from "inngest";
 import { z } from "zod";
 
-const ciRun = z.object({ pr: z.number(), prUrl: z.string() });
+const ciRun = z.object({ pr: z.number() });
+
+export const prOpened = eventType("pr/opened", {
+  schema: z.object({ pr: z.number(), author: z.string() }),
+});
 
 export const ciFailed = eventType("ci/run.failed", { schema: ciRun });
 
 export const ciPassed = eventType("ci/run.passed", { schema: ciRun });
 
 export const deployed = eventType("deploy/finished", {
-  schema: z.object({ env: z.string(), pull: z.object({ url: z.string() }) }),
+  schema: z.object({ env: z.string(), pull: z.number() }),
 });
+```
+
+The comment helper is `gh`, from [Inboxes](/docs/labs/agents/inboxes?ref=docs-labs-agents-memory#answer-every-message).
+
+```typescript {{ title: "inngest/lib/github.ts" }}
+const api = "https://api.github.com/repos/acme/web";
+
+export const gh = {
+  comment: async (pr: number, body: string) => {
+    const response = await fetch(`${api}/issues/${pr}/comments`, {
+      method: "POST",
+      headers: {
+        accept: "application/vnd.github+json",
+        authorization: `Bearer ${process.env.GITHUB_TOKEN}`,
+      },
+      body: JSON.stringify({ body }),
+    });
+
+    if (!response.ok) {
+      throw new Error(`Comment on #${pr}: ${response.status}`);
+    }
+
+    return await response.json();
+  },
+};
 ```
 
 <AnnotatedCode>
 
 {/* not type-checked: a run variable counting message.is() matches in an agent handler */}
 ```typescript {{ title: "inngest/agents/prHelper.ts" }}
-import { github } from "inngest/experimental/agents";
 import { agents } from "../client";
-import { ciFailed, ciPassed, deployed } from "../events";
+import { ciFailed, ciPassed, deployed, prOpened } from "../events";
+import { gh } from "../lib/github";
 
 const triggers = [
-  github.thread({ repos: ["acme/web"] }),
-  { event: ciFailed, thread: "event.data.prUrl" },
-  { event: deployed, thread: "event.data.pull.url" },
+  prOpened,
+  ciFailed,
+  { event: deployed, thread: "event.data.pull" },
 ];
 
 export const prHelper = agents.agent(
   {
     id: "pr-helper",
     triggers,
-    inbox: [{ event: ciPassed, thread: "event.data.prUrl" }],
+    thread: "event.data.pr",
+    inbox: [ciPassed],
     idle: "1h",
   },
-  async ({ inbox, me }) => {
+  async ({ inbox, me, step }) => {
     let failures = 0;
 
     for await (const message of inbox) {
       if (message.is(ciFailed)) {
         failures += 1;
 
-        await me.post(`CI has failed ${failures} times`);
+        await step.run("comment", async () => {
+          return await gh.comment(
+            Number(me.key),
+            `CI has failed ${failures} times`,
+          );
+        });
       }
     }
   },
@@ -67,11 +102,11 @@ export const prHelper = agents.agent(
 The triggers from Threads.
 </Annotation>
 
-<Annotation id="inbox" lines="15-16" tease="from Inboxes" title="inbox and idle" href="/docs/labs/agents/inboxes?ref=docs-labs-agents-memory#going-quiet" linkText="Inboxes">
+<Annotation id="inbox" lines="16-17" tease="from Inboxes" title="inbox and idle" href="/docs/labs/agents/inboxes?ref=docs-labs-agents-memory#going-quiet" linkText="Inboxes">
 CI passing is heard, and the run ends after an hour of quiet.
 </Annotation>
 
-<Annotation id="variable" lines="19" tease="lives as long as the run" title="A variable">
+<Annotation id="variable" lines="20" tease="lives as long as the run" title="A variable">
 After `idle` the run ends, and the next one counts from 0.
 </Annotation>
 
@@ -87,15 +122,21 @@ You want the count to survive after the run ends. Keep it in `kv.thread`.
 ```typescript
 import { kv } from "inngest/experimental/agents";
 import { ciFailed } from "../events";
+import { gh } from "../lib/github";
 
-async ({ inbox, me }) => {
+async ({ inbox, me, step }) => {
   for await (const message of inbox) {
     if (message.is(ciFailed)) {
       const failures = Number((await kv.thread.get("failures")) ?? 0);
 
       await kv.thread.set("failures", failures + 1);
 
-      await me.post(`CI has failed ${failures + 1} times`);
+      await step.run("comment", async () => {
+        return await gh.comment(
+          Number(me.key),
+          `CI has failed ${failures + 1} times`,
+        );
+      });
     }
   }
 },
@@ -120,8 +161,9 @@ export const failures = kv.key("failures", z.number());
 import { kv } from "inngest/experimental/agents";
 import { ciFailed } from "../events";
 import { failures } from "../keys";
+import { gh } from "../lib/github";
 
-async ({ inbox, me }) => {
+async ({ inbox, me, step }) => {
   for await (const message of inbox) {
     if (message.is(ciFailed)) {
       await kv.thread.update(failures, (found) => {
@@ -130,7 +172,12 @@ async ({ inbox, me }) => {
 
       const total = await kv.thread.get(failures);
 
-      await me.post(`CI has failed ${total} times`);
+      await step.run("comment", async () => {
+        return await gh.comment(
+          Number(me.key),
+          `CI has failed ${total} times`,
+        );
+      });
     }
   }
 },
@@ -161,5 +208,5 @@ Every PR sees the same list. Each call names its scope: `kv.thread` is one threa
 ## Recipes and reference
 
 - [Reference: KV](/docs/labs/agents/reference?ref=docs-labs-agents-memory#kv)
-- [Slack assistant](/docs/labs/agents/recipes/slack-assistant?ref=docs-labs-agents-memory)
+- [Support assistant](/docs/labs/agents/recipes/support-assistant?ref=docs-labs-agents-memory)
 - [Workers](/docs/labs/agents/workers?ref=docs-labs-agents-memory)
