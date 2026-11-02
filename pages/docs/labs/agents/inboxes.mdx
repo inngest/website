@@ -17,14 +17,18 @@ You want the helper to see a CI failure that arrives while it is busy, not start
 import { eventType } from "inngest";
 import { z } from "zod";
 
-const ciRun = z.object({ pr: z.number(), prUrl: z.string() });
+const ciRun = z.object({ pr: z.number() });
+
+export const prOpened = eventType("pr/opened", {
+  schema: z.object({ pr: z.number(), author: z.string() }),
+});
 
 export const ciFailed = eventType("ci/run.failed", { schema: ciRun });
 
 export const ciPassed = eventType("ci/run.passed", { schema: ciRun });
 
 export const deployed = eventType("deploy/finished", {
-  schema: z.object({ env: z.string(), pull: z.object({ url: z.string() }) }),
+  schema: z.object({ env: z.string(), pull: z.number() }),
 });
 ```
 
@@ -32,18 +36,17 @@ export const deployed = eventType("deploy/finished", {
 
 {/* not type-checked: inbox.next() in an agent handler with per-trigger thread keys */}
 ```typescript {{ title: "inngest/agents/prHelper.ts" }}
-import { github } from "inngest/experimental/agents";
 import { agents } from "../client";
-import { ciFailed, deployed } from "../events";
+import { ciFailed, deployed, prOpened } from "../events";
 
 const triggers = [
-  github.thread({ repos: ["acme/web"] }),
-  { event: ciFailed, thread: "event.data.prUrl" },
-  { event: deployed, thread: "event.data.pull.url" },
+  prOpened,
+  ciFailed,
+  { event: deployed, thread: "event.data.pull" },
 ];
 
 export const prHelper = agents.agent(
-  { id: "pr-helper", triggers },
+  { id: "pr-helper", triggers, thread: "event.data.pr" },
   async ({ inbox, step }) => {
     await step.sleep("read the diff", "5s");
 
@@ -56,15 +59,15 @@ export const prHelper = agents.agent(
 );
 ```
 
-<Annotation id="triggers" lines="5-9" tease="the same three" title="Triggers" href="/docs/labs/agents/threads?ref=docs-labs-agents-inboxes#a-trigger-with-its-own-key" linkText="Threads">
+<Annotation id="triggers" lines="4-8" tease="the same three" title="Triggers" href="/docs/labs/agents/threads?ref=docs-labs-agents-inboxes#a-trigger-with-its-own-key" linkText="Threads">
 The triggers from Threads.
 </Annotation>
 
-<Annotation id="first" lines="16" tease="the trigger" title="The first message">
+<Annotation id="first" lines="15" tease="the trigger" title="The first message">
 The event that started the run.
 </Annotation>
 
-<Annotation id="arrived" lines="18" tease="what landed meanwhile" title="next()" href="/docs/reference/typescript/v4/functions/step-subscribe?ref=docs-labs-agents-inboxes" linkText="Reference">
+<Annotation id="arrived" lines="17" tease="what landed meanwhile" title="next()" href="/docs/reference/typescript/v4/functions/step-subscribe?ref=docs-labs-agents-inboxes" linkText="Reference">
 Reads the oldest unread message: the CI failure, if it came in during the sleep.
 </Annotation>
 
@@ -74,14 +77,15 @@ Fail CI inside the five seconds: no second run starts.
 
 ## Heard, never a start
 
-You want CI passing to reach a run that's working, but never to start one on its own. List it in `inbox`; the handler stays as in [While it works](#while-it-works).
+You want CI passing to reach a run that's working, but never to start one on its own. List it in `inbox`; the agent's `thread` places it, and the handler stays as in [While it works](#while-it-works).
 
-{/* not type-checked: the inbox option with a source that sets its own thread */}
+{/* not type-checked: the inbox option on an agent definition */}
 ```typescript
 {
   id: "pr-helper",
   triggers,
-  inbox: [{ event: ciPassed, thread: "event.data.prUrl" }],
+  thread: "event.data.pr",
+  inbox: [ciPassed],
 }
 ```
 
@@ -110,18 +114,45 @@ You want to trust that waiting survives anything. Stop the app while a run waits
 
 ## Answer every message
 
-You want a reply on the PR for everything that happens to it. Loop over the `inbox`.
+You want a reply on the PR for everything that happens to it. Loop over the `inbox`, and comment from a step.
 
-{/* not type-checked: for await over an agent's inbox with me.post() */}
+```typescript {{ title: "inngest/lib/github.ts" }}
+const api = "https://api.github.com/repos/acme/web";
+
+export const gh = {
+  comment: async (pr: number, body: string) => {
+    const response = await fetch(`${api}/issues/${pr}/comments`, {
+      method: "POST",
+      headers: {
+        accept: "application/vnd.github+json",
+        authorization: `Bearer ${process.env.GITHUB_TOKEN}`,
+      },
+      body: JSON.stringify({ body }),
+    });
+
+    if (!response.ok) {
+      throw new Error(`Comment on #${pr}: ${response.status}`);
+    }
+
+    return await response.json();
+  },
+};
+```
+
+{/* not type-checked: for await over an agent's inbox with a comment step */}
 ```typescript
-async ({ inbox, me }) => {
+import { gh } from "../lib/github";
+
+async ({ inbox, me, step }) => {
   for await (const message of inbox) {
-    await me.post(`Seen: ${message.name}`);
+    await step.run("comment", async () => {
+      return await gh.comment(Number(me.key), `Seen: ${message.name}`);
+    });
   }
 },
 ```
 
-`me.post()` writes where the thread lives. A read takes the message, so each one is seen once.
+A reply on the PR is plain code in a step, so it happens once even when the run retries. `me.key` is the PR's number as a string, and a read takes the message, so each one is seen once.
 
 ## Batches
 
@@ -129,9 +160,13 @@ You want five comments that land together handled together. Loop over `inbox.bat
 
 {/* not type-checked: inbox.batches({ max }) in an agent handler */}
 ```typescript
-async ({ inbox, me }) => {
+import { gh } from "../lib/github";
+
+async ({ inbox, me, step }) => {
   for await (const batch of inbox.batches({ max: 20 })) {
-    await me.post(`Seen ${batch.length} things`);
+    await step.run("comment", async () => {
+      return await gh.comment(Number(me.key), `Seen ${batch.length} things`);
+    });
   }
 },
 ```
@@ -149,12 +184,13 @@ You want the helper to stop when the PR goes quiet, and come back when it doesn'
 {
   id: "pr-helper",
   triggers,
-  inbox: [{ event: ciPassed, thread: "event.data.prUrl" }],
+  thread: "event.data.pr",
+  inbox: [ciPassed],
   idle: "1h",
 }
 ```
 
-<Annotation id="idle" lines="5" tease="quiet before it ends" title="idle" href="/docs/labs/agents/reference?ref=docs-labs-agents-inboxes#idle" linkText="Reference">
+<Annotation id="idle" lines="6" tease="quiet before it ends" title="idle" href="/docs/labs/agents/reference?ref=docs-labs-agents-inboxes#idle" linkText="Reference">
 After this much quiet both `for await` forms end. The default is ten minutes.
 </Annotation>
 
@@ -170,13 +206,20 @@ You want to stop waiting for a review that never comes. Give `next()` a `timeout
 
 {/* not type-checked: inbox.next({ timeout }) in an agent handler */}
 ```typescript
-async ({ inbox, me }) => {
+import { gh } from "../lib/github";
+
+async ({ inbox, me, step }) => {
   await inbox.next();
 
   const review = await inbox.next({ timeout: "1m" });
 
   if (review === null) {
-    await me.post("No reviews for a minute, so I'm moving on.");
+    await step.run("comment", async () => {
+      return await gh.comment(
+        Number(me.key),
+        "No reviews for a minute, so I'm moving on.",
+      );
+    });
   }
 },
 ```
@@ -206,7 +249,7 @@ You want to watch a PR's checks from now on, after the helper pushes a fix. Open
 
 {/* not type-checked: step.subscribe with if in an agent handler beside the agent's inbox */}
 ```typescript
-const thisPr = `async.data.prUrl == "${me.key}"`;
+const thisPr = `async.data.pr == ${Number(me.key)}`;
 
 const checks = step.subscribe("checks", [
   { event: ciPassed, if: thisPr },
