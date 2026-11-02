@@ -24,7 +24,7 @@ import { claude } from "../models/claude";
 
 export const securityReviewer = agents.agent({
   id: "security-reviewer",
-  triggers: [invoke(z.object({ pr: z.string() }))],
+  triggers: [invoke(z.object({ pr: z.number() }))],
   model: claude,
   system: "You review pull requests for security problems.",
   card: {
@@ -44,7 +44,7 @@ Who else can find it.
 
 </AnnotatedCode>
 
-In an app named `platform`, its address is `platform/security-reviewer`. `start_agent`, `mayCall` and [`agents.reference()`](/docs/labs/agents/agent-teams?ref=docs-labs-agents-agent-discovery#an-agent-in-another-app) take that address.
+In an app named `platform`, its address is `platform/security-reviewer`. `start_agent` and `mayCall` take that address.
 
 ## Finding
 
@@ -60,11 +60,11 @@ list_agents({ query: "security" })
   ]
 
 describe_agent({ address: "platform/security-reviewer" })
-  input: { type: "object", properties: { pr: { type: "string" } }, ... }
+  input: { type: "object", properties: { pr: { type: "number" } }, ... }
 
 start_agent({
   address: "platform/security-reviewer",
-  input: { pr: "https://github.com/acme/web/pull/42" },
+  input: { pr: 42 },
 })
   { thread: "a1b2c3" }
 ```
@@ -103,7 +103,7 @@ card: {
 {
   address: "platform/security-reviewer",
   description: "Reviews a pull request for security problems",
-  input: { type: "object", properties: { pr: { type: "string" } }, ... },
+  input: { type: "object", properties: { pr: { type: "number" } }, ... },
   share: "team",
   owner: "platform",
   effects: "read",
@@ -111,11 +111,13 @@ card: {
 }
 ```
 
-`input` comes from the `invoke()` trigger, and the card lists the agent's skills. A card is announced when your app syncs and every six hours; a paused agent shows `paused: true`.
+`input` comes from the `invoke()` trigger, and the card lists the agent's skills. A paused agent shows `paused: true`.
 
 ## Who can find it
 
 You want to choose who finds an agent. `share: "private"`, the default, shows it to its own app; `share: "team"` to every app in the environment.
+
+An agent of your own app is found at once, from its definition. Another app's agent appears after that app's next announce: cards go out every six hours, and on the Dev Server you can invoke the app's announce function by hand.
 
 It isn't access control: anyone with the address can start the agent from code.
 
