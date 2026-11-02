@@ -1,7 +1,7 @@
 import { Info } from "shared/Docs/mdx";
 
 export const metaTitle = "Agents reference | Inngest Agents";
-export const description = "Signatures, options and defaults for inngest/experimental/agents: createAgents, the definition and handler, me, thread handles, messages, the inbox, the loop, models, budgets and recovery, cards and discovery, model tools, Slack and GitHub, KV and scores.";
+export const description = "Signatures, options and defaults for inngest/experimental/agents: createAgents, the definition and handler, me, thread handles, messages, the inbox, the loop, models, budgets and recovery, cards and discovery, model tools, KV and scores.";
 
 # Agents reference
 
@@ -26,7 +26,6 @@ Everything here is a named export of `inngest/experimental/agents`, except `even
 - [Budget, limits and recovery](#budget-limits-and-recovery)
 - [Cards and discovery](#cards-and-discovery)
 - [Model tools](#model-tools)
-- [Slack and GitHub](#slack-and-git-hub)
 - [KV](#kv)
 - [Scores](#scores)
 
@@ -39,13 +38,11 @@ createAgents(client: Inngest, options?: { store?: KvStore }): Agents
 
 agents.agent(definition, handler?): Agent<TInput, TOutput>
 agents.functions(): InngestFunction[]
-agents.reference(address, options?): Pick<Agent, "start" | "thread">
 ```
 
 - `store`: where thread state and the SDK's own state live. One store per app. Without the option the store is Redis at `INNGEST_EXPERIMENTAL_KV_URL`; the option wins over the variable. [KV](#kv)
 - `agents.agent()`: defines an agent and registers it when its module is imported. [The definition](#the-definition), [The handler](#the-handler)
 - `agents.functions()`: every function to serve. Import each agent module before calling it.
-- `agents.reference()`: a handle to an agent in another app. [Thread handles](#thread-handles)
 
 An app whose agents list sandboxes adds `middleware: [sandboxMiddleware()]`, from `inngest/experimental`, to its client.
 
@@ -71,7 +68,7 @@ export const agents = createAgents(inngest);
 | Field | Takes | Description |
 | --- | --- | --- |
 | `id` | value | The agent's id. Its address is `app/id`. |
-| `triggers` | value | What starts a run: what a function's `triggers` take (event types, event names, `{ cron }`, `invoke(schema)`), plus `slack.thread()` and `github.thread()`. With none, `start()` and `start_agent` start the agent. |
+| `triggers` | value | What starts a run: what a function's `triggers` take (event types, event names, `{ cron }`, `invoke(schema)`). With none, `start()` and `start_agent` start the agent. |
 | `thread` | value | A CEL expression over `event` that names the thread an event belongs to, such as `"event.data.customer"`. [Thread keys](#thread-keys-and-inbox-sources) |
 | `inbox` | value | Event sources a live run receives, written like triggers. [Inbox sources](#thread-keys-and-inbox-sources) |
 | `idle` | value or function | How long a run waits in quiet before it ends. A duration: milliseconds as a number, a string such as `"10m"`, or a Temporal duration. Default 10 minutes. [Idle](#idle) |
@@ -79,12 +76,12 @@ export const agents = createAgents(inngest);
 | `system` | value or function | The system prompt. |
 | `tools` | value or function | Extra tools, by name. The name is the same for the model and for sandbox code. Tools of listed sandboxes, discovery and the agent tools need no listing. |
 | `sandboxes` | value or function | Sandboxes by name. Each gives the model its tools, named after it (`work_run`), and opens when first used. `{ sandbox, model: false }` keeps one for code only. Each `repo` may be a function too. [Tools and sandboxes reference](/docs/labs/agents/reference-sandboxes?ref=docs-labs-agents-reference) |
-| `skills` | value or function | `skills.folder()` and `skills.repo()` sources. [Tools and sandboxes reference](/docs/labs/agents/reference-sandboxes?ref=docs-labs-agents-reference) |
+| `skills` | value or function | `skills.folder()` sources. [Tools and sandboxes reference](/docs/labs/agents/reference-sandboxes?ref=docs-labs-agents-reference) |
 | `card` | value | `{ description, share, owner, effects, speed }`. Optional. [Cards and discovery](#cards-and-discovery) |
 | `budget` | value or function | What a thread may spend: `{ usd, tokens }`. [Budget, limits and recovery](#budget-limits-and-recovery) |
 | `price` | value | Overrides the model's own prices: a per-million-token table, or a function that prices a call. Not a function of `{ event, thread }`. [Budget and price](#budget-and-price) |
 | `limits` | value or function | `{ depth, mayCall }`: how deep chains of started agents go, and which agents the model may start. |
-| `recovery` | value | `true` or `{ resume, message }`. Off by default. |
+| `recovery` | value | `true` or `{ resume }`. Off by default. [Recovery](#recovery) |
 | `discovery` | value | `false` turns off the tools that find and reach other agents; `{ prepare }` fills part of their input. On by default. |
 | `listen` | value | Event types the model may start watching with `inbox_listen`. [Model tools](#model-tools) |
 | `remember` | value or function | `false` switches off the loop's remembered history. |
@@ -107,15 +104,13 @@ system: async ({ event, thread }) => {
 A trigger and an `inbox` source may each set their own `thread`, which wins over the agent-wide one.
 
 ```typescript
-triggers: [
-  github.thread(),
-  { event: "ci/run.failed", thread: "event.data.prUrl" },
-],
+thread: "event.data.pr",
+triggers: [prOpened, ciFailed],
 inbox: [
   {
-    event: "deploy/finished",
-    if: "async.data.prUrl == event.data.threadKey",
-    thread: "event.data.prUrl",
+    event: deployed,
+    if: "async.data.pull == event.data.pr",
+    thread: "event.data.pull",
   },
 ],
 ```
@@ -123,9 +118,8 @@ inbox: [
 - Events whose keys come out equal land on one thread.
 - In `thread`, `event` is the event being placed: the trigger for a trigger, the arriving event for an `inbox` source.
 - In a source's `if`, `async` is the arriving event and `event` is the run's trigger, as in `waitForEvent`.
-- A plain event trigger with no `thread` opens a fresh thread per event. `slack.thread()`, `github.thread()` and `start()` settle their own keys.
+- A plain event trigger with no `thread` opens a fresh thread per event. `start()` settles its own key.
 - A trigger with nothing at its `thread` path opens a fresh thread. A source with nothing at its path reaches no thread. The trace warns in both cases and nothing throws.
-- A thread posts where it lives, whichever event started the run. A thread keyed by a pull request's or issue's URL has that pull request or issue as its home, even when a plain event opened it.
 
 ### Idle
 
@@ -157,9 +151,9 @@ The second argument of `agents.agent()`. It gets one argument: the function's us
 | `previousRun` | How the thread's last run ended, if there was one. Every run after the first gets it, with or without `recovery`. |
 | `step` | Core's step tools, such as `step.run()`. |
 
-- **With no handler**, an agent with a `model` sends each batch of messages to the loop and posts the answer where the thread lives. When the loop ends on `budget`, it posts that the thread's budget is spent. An agent with neither a model nor a handler takes its batch, posts nothing and ends with `undefined`.
+- **With no handler**, an agent with a `model` sends each batch of messages to the loop, and its answer is the run's output. An agent with neither a model nor a handler takes its batch and ends with `undefined`. An agent that should tell people something uses a tool you write. [Tools →](/docs/labs/agents/tools?ref=docs-labs-agents-reference)
 - **The return value** is the run's output, which a caller's `result()` reads. With no handler it is the model's final answer, a string.
-- **The run ends** when the handler returns. Work still running and not awaited is stopped, except an un-awaited `me.post()` or `score()`, which land first. Plain functions are unaffected: un-awaited work there behaves as in any Inngest function.
+- **The run ends** when the handler returns. Work still running and not awaited is stopped, except an un-awaited `score()`, which lands first. Plain functions are unaffected: un-awaited work there behaves as in any Inngest function.
 - **A run opened through a handle** (`start()`, `message()`, `start_agent`, `message_agent`) ends once it has answered, after waiting up to 24 hours for any agents it started with `start_agent`. [Idle](#idle)
 
 ## me
@@ -168,16 +162,18 @@ The handler's handle to its own thread.
 
 ```typescript {{ title: "Signature" }}
 me.key: string
-me.post(text: string): Promise<void>
 me.message(content: Json): Promise<void>
 ```
 
 - `key`: the thread's key.
-- `post(text)`: writes where the thread lives, in that place's own markup: the Slack thread or the pull request. Awaited, it waits until the post landed and throws if it still fails after retries. Not awaited, the agent carries on, the post still lands before the run ends, and a failure never fails the run.
-- A thread with no home, such as one opened by `start()` or a cron tick, has nowhere to post. A post there does nothing and the trace warns.
-- A Slack configuration error from a post you did not await, such as a bad token or a missing scope, becomes a warning on the trace.
 - `message(content)`: puts a message in the agent's own inbox. It is how work you did not wait for reports back.
-- The agent posts some things itself: in Slack, a status line while it works; the answer when there is no handler; and a notice when a run fails.
+- To tell people something, call your own code in a step (`gh` is a client you write), or give the model a tool. [Answer every message →](/docs/labs/agents/inboxes?ref=docs-labs-agents-reference#answer-every-message)
+
+```typescript
+await step.run("comment", async () => {
+  return await gh.comment(Number(me.key), text);
+});
+```
 
 ## Agent
 
@@ -198,14 +194,14 @@ type Agent<TInput, TOutput> = {
 - `start(input)` opens a fresh thread with a generated key, starts a run on it and returns at once. The promise also has the methods of [`StartedThread`](#thread-handles), so `start(input).result()` needs one `await`.
 - With an `invoke()` trigger, `input` is typed from the schema and sent as that trigger's data. Without one, `start(content)` takes text or JSON and sends an `agent/message` with that `content`.
 - `thread(key)` rebuilds a [`ThreadHandle`](#thread-handles) from a key.
-- `start()` and a handle's methods need a function's step context and throw outside one. A Slack route or an API handler starts an agent by sending its trigger event.
+- `start()` and a handle's methods need a function's step context and throw outside one. A route or an API handler starts an agent by sending its trigger event.
 - A run opened by `start()` ends once it has answered, and that answer is the run's output. [Idle](#idle)
 
 {/* not type-checked: invoke() trigger and start().result() on an agent */}
 ```typescript
 const reviewer = agents.agent({
   id: "reviewer",
-  triggers: [invoke(z.object({ pr: z.string() }))],
+  triggers: [invoke(z.object({ pr: z.number() }))],
   model: claude,
 });
 
@@ -283,22 +279,6 @@ const reviews = await Promise.all(
 );
 ```
 
-### agents.reference
-
-A handle to an agent in another app. It has the same `start` and `thread` as an imported agent.
-
-```typescript
-const reviewer = agents.reference("platform/reviewer", {
-  schema: z.object({ pr: z.string() }),
-  output: z.object({ findings: z.array(z.string()) }),
-});
-
-const { findings } = await reviewer.start({ pr }).result();
-```
-
-- `schema` types the input of `start()`. Without options, `start` takes `Json`.
-- `output` types `result()`. Without it, `result()` gives `unknown`.
-
 ## Messages
 
 Agents talk through four event types. Each message says who sent it with `msg.from`, a [`Sender`](#thread-handles). `msg.is(type)` narrows `data`. [Agent Teams →](/docs/labs/agents/agent-teams?ref=docs-labs-agents-reference)
@@ -335,7 +315,7 @@ Agents talk through four event types. Each message says who sent it with `msg.fr
 - `agent/finished`: how a run the agent started ended, with its output or error.
 - How the model sees each type: `formatEvent` is the default wording. [The loop](#the-loop)
 
-{/* not type-checked: agentQuestion and agentFinished narrowing, msg.reply() and me.post() */}
+{/* not type-checked: agentQuestion and agentFinished narrowing, msg.reply() and a gh client */}
 ```typescript
 for await (const msg of inbox) {
   if (msg.is(agentQuestion)) {
@@ -343,7 +323,11 @@ for await (const msg of inbox) {
   }
 
   if (msg.is(agentFinished) && msg.data.outcome === "failed") {
-    await me.post(`The helper failed: ${msg.data.error}`);
+    const body = `The helper failed: ${msg.data.error}`;
+
+    await step.run("comment", async () => {
+      return await gh.comment(Number(me.key), body);
+    });
   }
 }
 ```
@@ -387,6 +371,14 @@ A read takes the messages it returns, so they are not unread afterwards.
 
 `AgentMessage` is the union of the agent's trigger events, its `inbox` sources' events and the four [message events](#messages), each with `is()`.
 
+Core exports the types of what an inbox gives, from `inngest`:
+
+| Type | Description |
+| --- | --- |
+| `InboxMessage<typeof inbox>` | The message type of an inbox, such as the handler's. |
+| `InboxMessageOf<TSources>` | The message type of a list of sources. |
+| `UntypedInboxMessage` | A message with no schema. Bare `InboxMessage` is the same type. |
+
 - **Contents.** The run's trigger comes first, then everything sent to the thread: events from `inbox` sources, and messages and questions from people and other agents. It never holds an answer to your `ask()` or an output for your `result()`, and a stop is never a message.
 - **Folded messages.** The loop reads from the inbox between model calls, so your own `for await` does not see messages it folded in.
 - **Idle.** Both `for await` forms end after the agent's `idle` quiet time. [Idle](#idle)
@@ -397,7 +389,7 @@ A message is the event as sent, plus `is(types)`, which takes one event type or 
 
 ## The loop
 
-The loop runs turns until the model stops calling tools, reaches `maxTurns`, is stopped or spends the budget. A turn is one model call plus the tool calls it asked for. The handler's `loop` is already set up from the definition and posts nothing. [Models →](/docs/labs/agents/models?ref=docs-labs-agents-reference)
+The loop runs turns until the model stops calling tools, reaches `maxTurns`, is stopped or spends the budget. A turn is one model call plus the tool calls it asked for. The handler's `loop` is already set up from the definition. [Models →](/docs/labs/agents/models?ref=docs-labs-agents-reference)
 
 ```typescript {{ title: "Signature" }}
 loop(batch: AgentMessage[], options?): Promise<Result>
@@ -412,7 +404,7 @@ formatEvent(message: AgentMessage): string
 - **`loop.with(options)`** returns a loop derived from the handler's. Your options override what they name (`model` replaces the agent's) or add to it (`tools` are added to the agent's tools), as in `const strict = loop.with({ maxTurns: 5 })`.
 - **`agent.loop(options)`**, imported on its own, always builds a standalone loop that has only what its options give, so `model` is required.
 - **On the definition**, `loop: { maxTurns: 10 }` sets options for the agent's own loop, which is how an agent with no handler changes them. `loop:` also takes a whole loop to swap in; the agent's triggers, inbox and thread stay as they are.
-- **A whole loop** is a function shaped like the handler's `loop`, `(batch, options?) => Promise<Result>`. A hand-built one returns at least `{ text, end, unread }`, and the default handler posts `text`. The full [result](#the-result) of `agent.loop()` also has `history`, `turns`, `usage` and `toolCalls`.
+- **A whole loop** is a function shaped like the handler's `loop`, `(batch, options?) => Promise<Result>`. A hand-built one returns at least `{ text, end, unread }`, and the default handler returns `text` as the run's output. The full [result](#the-result) of `agent.loop()` also has `history`, `turns`, `usage` and `toolCalls`.
 
 | Option | Default | Per call | Description |
 | --- | --- | --- | --- |
@@ -490,7 +482,7 @@ format?: (message: AgentMessage) => AgentUserContent;
 - **Questions.** A question that arrives during a turn is answered at the next model call. The loop skips questions that already have a reply.
 - **Remembering.** After each batch the loop saves the model's history in thread state and picks it up when the thread's next run starts. A long history is summarized. `remember: false` on the agent switches this off.
 - **`agent.toolError(body)`**: `return` it from a tool to give the model a failure it can read without throwing. In sandbox code the same failure is a thrown `ToolError`.
-- **`formatEvent`** is the default wording. A `slack/message` reads `[Name] text`, and a GitHub comment reads the same way with the login. The four agent message types have their own wording, and any other event shows as its name and data as JSON. A custom `format` can call it for what it does not change.
+- **`formatEvent`** is the default wording. The four agent message types have their own wording, and any other event shows as its name and its data as JSON. A custom `format` can call it for what it does not change.
 - There are no hooks around tool calls. Wrap the tool instead. [Tools →](/docs/labs/agents/tools?ref=docs-labs-agents-reference)
 
 ## Models
@@ -552,7 +544,7 @@ budget: { usd?: number; tokens?: number }
 ```
 
 - The budget belongs to the thread, comes from its own agent's definition and is never handed down by the agent that started it. It is always enforced.
-- When a thread has spent it, the loop ends with `end: "budget"` and a `reason`. The default handler also posts that the thread's budget is spent.
+- When a thread has spent it, the loop ends with `end: "budget"` and a `reason`. With no handler, the run's output says the thread's budget is spent.
 
 `price` overrides the prices the model reports. It is a per-million-token table or a function that prices a call, and it does not take `{ event, thread }`.
 
@@ -579,20 +571,17 @@ limits: { depth?: number; mayCall?: string[] }
 
 ### Recovery
 
-`recovery: true` or `{ resume, message }`. It is off by default.
+`recovery: true` or `{ resume }`. It is off by default.
 
-- Whenever a run fails for good, with or without `recovery`, the agent posts one line where the thread lives.
-- With `recovery`, it also resends the message the run was handling to a fresh run, which starts from that message.
+- A run that fails for good shows its error in the trace, with or without `recovery`.
+- With `recovery`, the agent resends the message the run was handling to a fresh run, which starts from that message.
 - It never resends the same error twice, never resends a `NonRetriableError`, and allows at most three kinds of error per message.
-- A cancelled run (`stop()`, `cancelOn`, `timeouts.finish`) is neither reported nor resumed.
+- A cancelled run (`stop()`, `cancelOn`, `timeouts.finish`) is not resumed.
 - The next run gets `previousRun`, with or without recovery. [The handler](#the-handler)
 
 | Option | Default | Description |
 | --- | --- | --- |
 | `resume` | `true` | Resend the message the run was handling. |
-| `message` | one line with the error | `(failure: RunFailure) => string \| false`. The line to post in place of the default. `false` posts nothing. |
-
-`RunFailure` has `runId`, `thread`, `error`, `fingerprint`, `resuming`, `repeated` and `superseded`.
 
 ## Cards and discovery
 
@@ -649,8 +638,10 @@ describe_agent({ address: string }): AgentCard
 - The first discovery call in a run reads the current cards once, as a durable step, and the rest of the run reuses that read.
 - The current cards are the newest card of each agent from the last 24 hours. A rolling deploy cannot hide agents.
 - A card whose function is paused is marked `paused`, and `start_agent` refuses it with a reason. A card whose function is gone is dropped.
-- Cards announce when your app syncs and every 6 hours. There is nothing to call.
-- A deployed agent can take a few minutes to show up, and a refresh finds it only once it has.
+- A cron the SDK registers announces the cards every 6 hours. There is nothing to call.
+- Agents of the caller's own app are found at once, from their definitions in the running process.
+- Another app's agents appear after that app's next announce, plus the few minutes Insights takes. A refresh finds them only once they have landed.
+- On the Dev Server, invoke the app's announce function by hand to announce at once.
 - `share` is a discovery rule, not access control. Anyone who knows an address can start the agent from code, and anyone with an event key can send its trigger.
 
 ### Turn discovery off
@@ -723,139 +714,8 @@ Sandbox code gets the agent tools and the discovery tools, plus tools that wait,
 
 - `agent_result({ thread })`: waits for the result of a run the script started.
 - `inbox_next({ as })` and `inbox_next_batch({ as })`: wait on a named inbox.
-- The waiting form of `slack_ask`, which gives the answer as a string.
 
-The shell and code tools of a sandbox (`work_run`) and `open_skill` are in the [Tools and sandboxes reference](/docs/labs/agents/reference-sandboxes?ref=docs-labs-agents-reference). Slack and GitHub tools are under [Slack and GitHub](#slack-and-git-hub).
-
-## Slack and GitHub
-
-A route, a trigger and a set of tools for each. [Slack and GitHub →](/docs/labs/agents/slack-and-github?ref=docs-labs-agents-reference)
-
-### Slack
-
-```typescript {{ title: "Signature" }}
-slack.bridge({
-  client: Inngest;
-  signingSecret: string | Secret;
-  allowBots?: boolean;
-  gate?: (call: {
-    message: SlackMessageData;
-    thread: { key: string; history(): Promise<SlackMessageData[]> };
-    bot: { userId: string };
-  }) => boolean | Promise<boolean>;
-}): ((request: Request) => Promise<Response>) & {
-  handle(payload: unknown): Promise<void>;
-}
-
-type Token = string | (() => string | Promise<string>) | Secret;
-
-slack.thread(options?: { in?: string[]; token?: Token })
-slack.tools(options?: { to?: string; token?: Token })
-```
-
-{/* not type-checked: slack.bridge mounted as a route handler */}
-```typescript {{ title: "app/api/slack/route.ts" }}
-import { secret } from "inngest/experimental";
-import { slack } from "inngest/experimental/agents";
-import { inngest } from "../../../inngest/client";
-
-export const POST = slack.bridge({
-  client: inngest,
-  signingSecret: secret("SLACK_SIGNING_SECRET"),
-});
-```
-
-**`slack.bridge`** is a Web handler: `(request: Request) => Promise<Response>`.
-
-- It checks Slack's signature and sends a `slack/message` event only for messages meant for the agent: a direct message, a message that mentions it in any Slack channel it is in, and a reply in a thread it already answered in. Everything else is dropped and never stored.
-- It forwards typed events, each with `threadKey` in its data: `slack/message`, `slack/reaction`, `slack/action`, `slack/view` and `slack/stop`. A `slack/message` event's data is `SlackMessageData & { threadKey: string }`.
-- The event id is Slack's `event_id`.
-- It answers Slack after the send succeeds.
-- Messages from bots, including the agent itself, are ignored unless you set `allowBots: true`.
-- `gate` replaces the rule for what is meant for the agent. A message it skips never becomes an event. It gets the message, the thread's key, `history()` (the thread's earlier messages, oldest first) and the bot's own user id.
-- `handle(payload)` takes a payload from a connection your app already trusts, such as its own Socket Mode connection, and skips the signature check. The SDK never runs the socket. The gate and the thread key behave the same either way.
-
-**`slack.thread()`** triggers on any Slack channel the app is in, plus direct messages. `in` limits it to Slack channel IDs. It keys the thread on `threadKey`. `token` is the Slack token for the SDK's own writes, such as the status line and `me.post()`: a string, a function or `secret()`. It defaults to `SLACK_BOT_TOKEN`.
-
-**`slack.tools()`** is a record of tools bound to the thread the run came from. The model and sandbox code both call them. `token` is the Slack token for their calls, in the same forms as on `slack.thread()`, and defaults to `SLACK_BOT_TOKEN`.
-
-```typescript {{ title: "Signature" }}
-slack_post({ text: string; to?: string }): { channel: string; ts: string }
-slack_ask({
-  question: string;
-  options?: string[];
-  to?: string;
-}): { id: string }
-slack_progress({
-  id: string;
-  title: string;
-  status?: "pending" | "running" | "done" | "error";
-  details?: string;
-  output?: string;
-  sources?: { url: string; text: string }[];
-  to?: string;
-}): { ok: true }
-```
-
-- `to` is `#support`, `@person` for a direct message, or a link to a Slack message to reply in that thread. Without `to` the tool uses the run's Slack thread. With neither, the model gets an error result that names `to`.
-- `slack.tools({ to })` sets a default `to`, for example for a cron agent.
-- `slack_ask` puts a question to the people in the thread. The model gets an id at once and the answer arrives as a message. Sandbox code waits and gets the answer as a string.
-- Posts use Slack's own markup. Links (`<https://example.com|the PR>`) and mentions (`<@U024BE7LH>`) work, unsafe text is escaped, and broadcast mentions (`<!channel>`, `<!here>`, `<!everyone>`) are made inert.
-- The model reads a `slack/message` as `[Name] text`.
-- While a run works, the SDK sets Slack's status line itself. `me.post()` and `slack_post` write to the same thread.
-
-### GitHub
-
-```typescript {{ title: "Signature" }}
-github.bridge({
-  client: Inngest;
-  secret: string | Secret;
-  allowBots?: boolean;
-}): (request: Request) => Promise<Response>
-
-github.thread(options?: {
-  repos?: string[];
-  events?: string[];
-  if?: string;
-})
-github.tools(options?: { token?: Token | GithubApp })
-```
-
-{/* not type-checked: github.bridge mounted as a route handler */}
-```typescript {{ title: "app/api/github/route.ts" }}
-import { secret } from "inngest/experimental";
-import { github } from "inngest/experimental/agents";
-import { inngest } from "../../../inngest/client";
-
-export const POST = github.bridge({
-  client: inngest,
-  secret: secret("GITHUB_WEBHOOK_SECRET"),
-});
-```
-
-- **`github.bridge`** is mounted like Slack's. It verifies `X-Hub-Signature-256` and sends `github/<event>` events, such as `github/issue_comment`.
-- The bridge uses the `X-GitHub-Delivery` header as the event id, so a redelivered webhook is dropped.
-- The bridge drops the app's own comments, and other bots' unless you set `allowBots: true`, so an agent never triggers itself.
-- **`github.thread()`** triggers on those events. `repos` limits it to repositories, such as `"acme/api"`, and `if` is an expression over `event`, as on any trigger.
-- `events` takes GitHub's event names, such as `"issue_comment"` or `"pull_request_review"`. Without it the trigger covers `issues`, `issue_comment`, `pull_request`, `pull_request_review` and `pull_request_review_comment`.
-- A `github/<event>` event's data is GitHub's webhook payload plus `threadKey`. A GitHub thread is keyed by the pull request's or issue's URL.
-- A plain event joins the thread by carrying that URL, as in `{ event: "ci/run.failed", thread: "event.data.prUrl" }`, and a run it starts still posts on the pull request.
-- **`github.tools()`** is bound to the thread. A call with no GitHub form, such as a status line, warns once.
-- **Credentials.** `github.tools()` and `me.post()` on a GitHub thread use `GITHUB_TOKEN`. `github.tools({ token })` takes a string, a function that returns one, `secret()` or `githubApp()`.
-
-```typescript {{ title: "Signature" }}
-github_comment({ body: string }): { url: string }
-github_ask({ question: string; options?: string[] }): { id: string }
-```
-
-```typescript
-triggers: [
-  github.thread({
-    events: ["issue_comment"],
-    if: 'event.data.comment.body.contains("@review-bot please review")',
-  }),
-],
-```
+The shell and code tools of a sandbox (`work_run`) and `open_skill` are in the [Tools and sandboxes reference](/docs/labs/agents/reference-sandboxes?ref=docs-labs-agents-reference).
 
 ## KV
 
@@ -907,7 +767,7 @@ The scope is always written out. There is no bare `kv.get`.
 | `kv.app` | Shared by every function of the app. |
 | `kv.env` | Shared by every app of the environment. |
 
-`kv.run`, `kv.app` and `kv.env` work in plain functions, including in an app with no `createAgents`, with the store from `INNGEST_EXPERIMENTAL_KV_URL`. `kv.scope("thread", key)` reaches another thread's state, for example from a bridge or a script.
+`kv.run`, `kv.app` and `kv.env` work in plain functions, including in an app with no `createAgents`, with the store from `INNGEST_EXPERIMENTAL_KV_URL`. `kv.scope("thread", key)` reaches another thread's state, for example from a route or a script.
 
 Every scope has the same methods:
 
