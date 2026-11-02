@@ -40,6 +40,8 @@ export const support = agents.agent(
       if (result.end === "budget") {
         return result.reason;
       }
+
+      return result.text;
     }
   },
 );
@@ -70,11 +72,11 @@ import { eventType } from "inngest";
 import { z } from "zod";
 
 export const ticketOpened = eventType("ticket/opened", {
-  schema: z.object({ ticket: z.number(), question: z.string() }),
+  schema: z.object({ ticket: z.string(), text: z.string() }),
 });
 
 export const ticketReplied = eventType("ticket/replied", {
-  schema: z.object({ ticket: z.number(), message: z.string() }),
+  schema: z.object({ ticket: z.string(), from: z.string(), text: z.string() }),
 });
 ```
 
@@ -136,6 +138,8 @@ export const lookup = agents.agent(
       if (result.end === "maxTurns") {
         return "I ran out of turns before I finished.";
       }
+
+      return result.text;
     }
   },
 );
@@ -151,7 +155,7 @@ A loop option, so each call can have its own.
 
 A rate limit waits for the provider's `retry-after`, for any model. A final error such as a rejected request isn't retried.
 
-A run that fails for good shows its error in the trace and posts nothing. With `recovery: true`, the message it was handling goes to a fresh run. The same error is never resent, nor is a `NonRetriableError`, and a message is resent for at most three kinds of error.
+A run that fails for good shows its error in the trace. With `recovery: true`, the message it was handling goes to a fresh run. The same error is never resent, nor is a `NonRetriableError`, and a message is resent for at most three kinds of error.
 
 Every next run gets [`previousRun`](/docs/labs/agents/reference?ref=docs-labs-agents-reliability#the-handler), with or without `recovery`: `{ runId, status, at, error? }` says how the last run ended.
 

@@ -63,7 +63,7 @@ import { eventType } from "inngest";
 import { z } from "zod";
 
 export const ticketOpened = eventType("ticket/opened", {
-  schema: z.object({ ticket: z.number(), question: z.string() }),
+  schema: z.object({ ticket: z.string(), text: z.string() }),
 });
 ```
 
