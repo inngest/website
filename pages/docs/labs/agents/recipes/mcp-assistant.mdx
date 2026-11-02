@@ -71,8 +71,8 @@ Names the person from the event that started the run.
 Where the server sends the person after they sign in.
 </Annotation>
 
-<Annotation id="authorize" lines="13-15" tease="the link goes through your code" title="The sign-in link" href="/docs/labs/agents/reference-sandboxes?ref=docs-labs-agents-recipes-mcp-assistant#per-user-o-auth" linkText="Sign in each person">
-Runs inside the tool's step, so a replay doesn't send the link twice. The model learns only that a link was sent. Without this hook the person is never told, and the trace shows a warning.
+<Annotation id="authorize" lines="13-15" tease="sent by your code" title="The sign-in link" href="/docs/labs/agents/reference-sandboxes?ref=docs-labs-agents-recipes-mcp-assistant#deliver-the-link" linkText="Deliver the link">
+Runs inside the tool's step, so a replay doesn't send the link twice. Without it the person is never told, and the trace shows a warning.
 </Annotation>
 
 </AnnotatedCode>
@@ -169,7 +169,7 @@ The [model](/docs/labs/agents/quick-start?ref=docs-labs-agents-recipes-mcp-assis
 ## What it shows off
 
 - [Per-person sign-in](/docs/labs/agents/reference-sandboxes?ref=docs-labs-agents-recipes-mcp-assistant#per-user-o-auth) lets each person work as themselves.
-- [A hook for the link](/docs/labs/agents/reference-sandboxes?ref=docs-labs-agents-recipes-mcp-assistant#per-user-o-auth) sends the sign-in link through your own channel, never through the model.
+- [A hook for the link](/docs/labs/agents/reference-sandboxes?ref=docs-labs-agents-recipes-mcp-assistant#deliver-the-link) sends the sign-in link through your own code, never through the model.
 - [A one-line callback](/docs/labs/agents/reference-sandboxes?ref=docs-labs-agents-recipes-mcp-assistant#the-callback-route) finishes the sign-in.
 
 ## Run it
@@ -209,6 +209,7 @@ The first run sends the link through `chat.send`. With no chat service yet, swap
 
 - [A shared token](/docs/labs/agents/tools?ref=docs-labs-agents-recipes-mcp-assistant#secrets-stay-home) serves a server that has one: `auth: { bearer: secret("TOKEN") }`.
 - [Disconnecting](/docs/labs/agents/reference-sandboxes?ref=docs-labs-agents-recipes-mcp-assistant#mcp) revokes one person's connection with `notion.disconnect(user)`.
+- [A reply tool](/docs/labs/agents/recipes/support-assistant?ref=docs-labs-agents-recipes-mcp-assistant) like the Support assistant's `sendReply` sends the answer to the person instead of leaving it in the run's output.
 
 ## Learn more
 
