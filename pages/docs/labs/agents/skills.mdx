@@ -1,7 +1,7 @@
 import { AnnotatedCode, Annotation } from "shared/Docs/mdx";
 
 export const metaTitle = "Skills | Inngest Agents";
-export const description = "Teach an Inngest agent how your team does things with SKILL.md files from your app or a repo. The model reads names and descriptions up front, opens the instructions it needs, and a skill never adds a tool.";
+export const description = "Teach an Inngest agent how your team does things with SKILL.md files from your app. The model reads names and descriptions up front, opens the instructions it needs, and a skill never adds a tool.";
 
 # Skills
 
@@ -45,51 +45,56 @@ List the folder on the agent.
 
 {/* not type-checked: skills.folder() on an agent */}
 ```typescript {{ title: "inngest/agents/prHelper.ts" }}
-import { github, skills } from "inngest/experimental/agents";
+import { skills } from "inngest/experimental/agents";
 import { agents } from "../client";
-import { ciFailed, ciPassed, deployed } from "../events";
+import { ciFailed, ciPassed, deployed, prOpened } from "../events";
+import { gh } from "../lib/github";
 import { claude } from "../models/claude";
+import { comment } from "../tools/comment";
 import { readLog } from "../tools/readLog";
 
 const triggers = [
-  github.thread({ repos: ["acme/web"] }),
-  { event: ciFailed, thread: "event.data.prUrl" },
-  { event: deployed, thread: "event.data.pull.url" },
+  prOpened,
+  ciFailed,
+  { event: deployed, thread: "event.data.pull" },
 ];
 
 export const prHelper = agents.agent(
   {
     id: "pr-helper",
     triggers,
-    inbox: [{ event: ciPassed, thread: "event.data.prUrl" }],
+    thread: "event.data.pr",
+    inbox: [ciPassed],
     idle: "1h",
     model: claude,
     system: "You help with pull requests on acme/web.",
     budget: { usd: 0.5 },
-    tools: { readLog, ...github.tools() },
+    tools: { readLog, comment },
     listen: [ciPassed, ciFailed],
     skills: [skills.folder("./skills")],
   },
-  async ({ inbox, me, loop }) => {
-    me.post("Looking at it.");
-
+  async ({ inbox, loop, me, step }) => {
     for await (const batch of inbox.batches({ max: 20 })) {
       const result = await loop(batch);
 
       if (result.end === "budget") {
-        await me.post("This PR is out of budget.");
+        await step.run("comment", async () => {
+          return await gh.comment(Number(me.key), "This PR is out of budget.");
+        });
 
         return;
       }
 
-      await me.post(result.text);
+      await step.run("comment", async () => {
+        return await gh.comment(Number(me.key), result.text);
+      });
     }
   },
 );
 ```
 
-<Annotation id="skills" lines="24" tease="ships with your deploy" title="Skills" href="/docs/labs/agents/reference-sandboxes?ref=docs-labs-agents-skills#skills" linkText="Reference: skills">
-One folder per skill, resolved from the working directory, so ship it with your app. `skills.repo("acme/skills")` adds a shared pack from a repo.
+<Annotation id="skills" lines="27" tease="ships with your deploy" title="Skills" href="/docs/labs/agents/reference-sandboxes?ref=docs-labs-agents-skills#skills" linkText="Reference: skills">
+One folder per skill, resolved from the working directory, so ship it with your app.
 </Annotation>
 
 </AnnotatedCode>
@@ -100,14 +105,18 @@ Asked for a review, the model opens the checklist with `open_skill`, and not bef
 import { eventType } from "inngest";
 import { z } from "zod";
 
-const ciRun = z.object({ pr: z.number(), prUrl: z.string() });
+const ciRun = z.object({ pr: z.number() });
+
+export const prOpened = eventType("pr/opened", {
+  schema: z.object({ pr: z.number(), author: z.string() }),
+});
 
 export const ciFailed = eventType("ci/run.failed", { schema: ciRun });
 
 export const ciPassed = eventType("ci/run.passed", { schema: ciRun });
 
 export const deployed = eventType("deploy/finished", {
-  schema: z.object({ env: z.string(), pull: z.object({ url: z.string() }) }),
+  schema: z.object({ env: z.string(), pull: z.number() }),
 });
 ```
 
@@ -120,6 +129,29 @@ export const fetchLog = async (pr: number) => {
   }
 
   return await response.text();
+};
+```
+
+```typescript {{ title: "inngest/lib/github.ts" }}
+const api = "https://api.github.com/repos/acme/web";
+
+export const gh = {
+  comment: async (pr: number, body: string) => {
+    const response = await fetch(`${api}/issues/${pr}/comments`, {
+      method: "POST",
+      headers: {
+        accept: "application/vnd.github+json",
+        authorization: `Bearer ${process.env.GITHUB_TOKEN}`,
+      },
+      body: JSON.stringify({ body }),
+    });
+
+    if (!response.ok) {
+      throw new Error(`Comment on #${pr}: ${response.status}`);
+    }
+
+    return await response.json();
+  },
 };
 ```
 
@@ -137,13 +169,27 @@ export const readLog = tool.step({
 });
 ```
 
+```typescript {{ title: "inngest/tools/comment.ts" }}
+import { tool } from "inngest/experimental";
+import { z } from "zod";
+import { gh } from "../lib/github";
+
+export const comment = tool.step({
+  description: "Comments on a pull request",
+  input: z.object({ pr: z.number(), body: z.string() }),
+  run: async ({ pr, body }) => {
+    return await gh.comment(pr, body);
+  },
+});
+```
+
 ## Skills add no tools
 
 You want step 3 of the checklist, "Run the linter", to work. The PR helper has no tool for that, so the model says it can't.
 
 {/* not type-checked: a lint tool listed beside readLog */}
 ```typescript
-tools: { lint, readLog, ...github.tools() },
+tools: { lint, readLog, comment },
 ```
 
 Add a `lint` tool of your own, and the step works. A skill names tools but never adds one. [Sandboxes →](/docs/labs/agents/sandboxes?ref=docs-labs-agents-skills)
