@@ -34,6 +34,8 @@ export const support = agents.agent(
     recovery: true,
   },
   async ({ inbox, loop }) => {
+    let answer = "";
+
     for await (const batch of inbox.batches()) {
       const result = await loop(batch);
 
@@ -41,8 +43,10 @@ export const support = agents.agent(
         return result.reason;
       }
 
-      return result.text;
+      answer = result.text;
     }
+
+    return answer;
   },
 );
 ```
@@ -76,7 +80,12 @@ export const ticketOpened = eventType("ticket/opened", {
 });
 
 export const ticketReplied = eventType("ticket/replied", {
-  schema: z.object({ ticket: z.string(), from: z.string(), text: z.string() }),
+  schema: z.object({
+    ticket: z.string(),
+    from: z.string(),
+    team: z.boolean(),
+    text: z.string(),
+  }),
 });
 ```
 
@@ -132,6 +141,8 @@ export const lookup = agents.agent(
     system: "Answer from the docs.",
   },
   async ({ inbox, loop }) => {
+    let answer = "";
+
     for await (const batch of inbox.batches()) {
       const result = await loop(batch, { maxTurns: 10 });
 
@@ -139,8 +150,10 @@ export const lookup = agents.agent(
         return "I ran out of turns before I finished.";
       }
 
-      return result.text;
+      answer = result.text;
     }
+
+    return answer;
   },
 );
 ```
