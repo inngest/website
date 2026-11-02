@@ -114,7 +114,10 @@ const snapshot = await sandbox.snapshot({ name: "deps-installed" });
 const found = await inngest.sandboxes.snapshots.list({ name: "deps-installed" });
 ```
 
-<SdkUnsupported title="Python" feature="Sandboxes" />
+```python {{ title: "Python" }}
+!snippet:path=snippets/py/latest/sandboxes/snapshots_and_restore/named_snapshot.py
+```
+
 <SdkUnsupported title="Go" feature="Sandboxes" />
 </CodeGroup>
 
