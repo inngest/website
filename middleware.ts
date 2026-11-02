@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
-import { resolveDocsPath } from "@/redirects.mjs";
+import { resolveDocsPath, TS_STABLE_VERSION } from "@/redirects.mjs";
+import { canonicalDocsPath } from "@/utils/docsCanonical.mjs";
 
 /**
  * Middleware for AI agent content negotiation and SEO canonicalization.
@@ -96,11 +97,16 @@ export function middleware(req: NextRequest) {
   // the route serves moved docs in place (see resolveDocsPath), so canonicalising
   // to the requested slug would point crawlers at a URL that only 308s.
   const docsMarkdownSlug = pathname.match(/^\/docs-markdown(?:\/(.*))?$/);
-  const canonicalPathname = docsMarkdownSlug
-    ? `/docs${
-        docsMarkdownSlug[1] ? `/${resolveDocsPath(docsMarkdownSlug[1])}` : ""
-      }`
-    : pathname.replace(/^\/blog-markdown(\/|$)/, "/blog$1");
+  // The stable TypeScript reference canonicalises to its versionless URL
+  // (utils/docsCanonical.mjs), matching the HTML canonical tag.
+  const canonicalPathname = canonicalDocsPath(
+    docsMarkdownSlug
+      ? `/docs${
+          docsMarkdownSlug[1] ? `/${resolveDocsPath(docsMarkdownSlug[1])}` : ""
+        }`
+      : pathname.replace(/^\/blog-markdown(\/|$)/, "/blog$1"),
+    TS_STABLE_VERSION
+  );
   res.headers.set(
     "Link",
     `<${SITE_ORIGIN}${canonicalPathname}>; rel="canonical"`
