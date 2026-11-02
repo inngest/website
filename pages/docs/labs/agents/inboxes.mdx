@@ -249,7 +249,7 @@ You want to watch a PR's checks from now on, after the helper pushes a fix. Open
 
 {/* not type-checked: step.subscribe with if in an agent handler beside the agent's inbox */}
 ```typescript
-const thisPr = `async.data.pr == ${Number(me.key)}`;
+const thisPr = "async.data.pr == event.data.pr";
 
 const checks = step.subscribe("checks", [
   { event: ciPassed, if: thisPr },
@@ -260,7 +260,7 @@ const check = await checks.next();
 ```
 
 <Annotation id="this-pr" lines="1" tease="only this PR" title="if" href="/docs/labs/agents/reference?ref=docs-labs-agents-inboxes#thread-keys-and-inbox-sources" linkText="Reference">
-An inbox you open isn't tied to the thread, so filter it. `async` is the arriving event.
+An inbox you open isn't tied to the thread, so filter it. `async` is the arriving event, and `event` the run's trigger.
 </Annotation>
 
 <Annotation id="subscribe" lines="3" tease="beside the agent's own" title="step.subscribe" href="/docs/durable-execution/primitives/step-subscribe?ref=docs-labs-agents-inboxes#more-inboxes" linkText="More inboxes">
