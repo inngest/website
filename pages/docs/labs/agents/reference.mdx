@@ -11,7 +11,7 @@ export const description = "Signatures, options and defaults for inngest/experim
   Inngest Agents is experimental and moves fast. Import it from `inngest/experimental/agents`; the API may change between releases. [What's Labs?](/docs/labs?ref=docs-labs-agents-reference)
 </Info>
 
-Everything here is a named export of `inngest/experimental/agents`, except `eventType` and `invoke` from `inngest`, and `secret` and `sandboxMiddleware` from `inngest/experimental`. Sandboxes, code tools, repos, tool constructors, MCP, secrets and skills are in the [Tools and sandboxes reference](/docs/labs/agents/reference-sandboxes?ref=docs-labs-agents-reference).
+Everything here is a named export of `inngest/experimental/agents`, except `eventType`, `invoke`, `InboxMessage`, `InboxMessageOf` and `UntypedInboxMessage` from `inngest`, and `secret` and `sandboxMiddleware` from `inngest/experimental`. Sandboxes, code tools, repos, tool constructors, MCP, secrets and skills are in the [Tools and sandboxes reference](/docs/labs/agents/reference-sandboxes?ref=docs-labs-agents-reference).
 
 - [createAgents](#create-agents)
 - [The definition](#the-definition)
@@ -105,14 +105,12 @@ A trigger and an `inbox` source may each set their own `thread`, which wins over
 
 ```typescript
 thread: "event.data.pr",
-triggers: [prOpened, ciFailed],
-inbox: [
-  {
-    event: deployed,
-    if: "async.data.pull == event.data.pr",
-    thread: "event.data.pull",
-  },
+triggers: [
+  prOpened,
+  ciFailed,
+  { event: deployed, thread: "event.data.pull" },
 ],
+inbox: [{ event: ciPassed, if: "async.data.pr == event.data.pr" }],
 ```
 
 - Events whose keys come out equal land on one thread.
@@ -544,7 +542,7 @@ budget: { usd?: number; tokens?: number }
 ```
 
 - The budget belongs to the thread, comes from its own agent's definition and is never handed down by the agent that started it. It is always enforced.
-- When a thread has spent it, the loop ends with `end: "budget"` and a `reason`. With no handler, the run's output is the model's last text.
+- When a thread has spent it, the loop ends with `end: "budget"` and a `reason`. With no handler, the run's output is the model's last text and the trace shows `end: "budget"`.
 
 `price` overrides the prices the model reports. It is a per-million-token table or a function that prices a call, and it does not take `{ event, thread }`.
 
@@ -638,7 +636,7 @@ describe_agent({ address: string }): AgentCard
 - Agents of the caller's own app are found at once, from their definitions in the running process.
 - Another app's agents appear after that app's next announce, plus the few minutes Insights takes. A refresh finds them only once they have landed.
 - On the Dev Server, invoke the app's announce function by hand to announce at once.
-- `share` is a discovery rule, not access control. Anyone who knows an address can start the agent from code, and anyone with an event key can send its trigger.
+- `share` is a discovery rule, not access control. Code in your app can import and start any of its agents, and anyone with an event key can send an agent's trigger.
 
 ### Turn discovery off
 
