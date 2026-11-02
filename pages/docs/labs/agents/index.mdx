@@ -14,21 +14,27 @@ export const description = "Inngest Agents is an Inngest Labs project: agents th
 An agent is an Inngest function that holds conversations. Every model call and tool call is a durable step, so a crash or a deploy never repeats one.
 
 - **No loop to write.** A model, a prompt and tools make a whole agent. [Agents →](/docs/labs/agents/agents?ref=docs-labs-agents)
-- **Threads that remember.** A Slack thread, a pull request or a customer is one thread, with its history and state. [Threads →](/docs/labs/agents/threads?ref=docs-labs-agents)
+- **Threads that remember.** A pull request, a ticket or a customer is one thread, with its history and state. [Threads →](/docs/labs/agents/threads?ref=docs-labs-agents)
 - **New messages reach the model mid-task.** Everything that arrives lands in the next model call. [Inboxes →](/docs/labs/agents/inboxes?ref=docs-labs-agents)
-- **A machine per thread.** The model's shell pauses when idle and is back on its next use. [Sandboxes →](/docs/labs/agents/sandboxes?ref=docs-labs-agents)
+- **A machine per thread.** The model's shell pauses when the run ends and is back on its next use. [Sandboxes →](/docs/labs/agents/sandboxes?ref=docs-labs-agents)
 - **Agents that find each other.** The model looks up other agents and hands them work. [Agent discovery →](/docs/labs/agents/agent-discovery?ref=docs-labs-agents)
 
-{/* not type-checked: an agent with no handler in Slack */}
+{/* not type-checked: agents.agent with triggers, thread, model, system, tools and no handler */}
 ```typescript {{ title: "inngest/agents/support.ts" }}
-import { slack } from "inngest/experimental/agents";
+import { eventType } from "inngest";
+import { z } from "zod";
 import { agents } from "../client";
 import { claude } from "../models/claude";
 import { lookupOrder } from "../tools/lookupOrder";
 
+export const question = eventType("support/question", {
+  schema: z.object({ customer: z.string(), text: z.string() }),
+});
+
 export const support = agents.agent({
   id: "support",
-  triggers: [slack.thread()],
+  triggers: [question],
+  thread: "event.data.customer",
   model: claude,
   system: "You answer questions about orders.",
   tools: { lookupOrder },
@@ -48,7 +54,7 @@ export const lookupOrder = tool.step({
 });
 ```
 
-Mention it in Slack and it answers in the thread, with a status line while it works. A reply days later picks up the same thread.
+Send a `support/question` event and the model looks up the order and answers, in the run's output. A question from the same customer days later picks up the same thread.
 
 ## Concepts
 
@@ -70,7 +76,7 @@ Read them in order, or jump to the one you need.
 
 ## Recipes
 
-- [Slack assistant](/docs/labs/agents/recipes/slack-assistant?ref=docs-labs-agents): answers in a thread and remembers what the team tells it.
+- [Support assistant](/docs/labs/agents/recipes/support-assistant?ref=docs-labs-agents): answers each ticket in its own thread and remembers what the team tells it.
 - [Issue triage](/docs/labs/agents/recipes/issue-triage?ref=docs-labs-agents): labels new issues and links duplicates.
 - [PR reviewer](/docs/labs/agents/recipes/pr-reviewer?ref=docs-labs-agents): checks out a pull request, runs its tests and reviews it.
 - [Coding agent](/docs/labs/agents/recipes/coding-agent?ref=docs-labs-agents): changes a repository on a branch without holding the write token.

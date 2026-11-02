@@ -145,7 +145,7 @@ Ask again for customer `42` and the model sees the first question too.
 
 Within ten minutes the question joins the same run; later, a new run picks up the thread where it stopped. Restart the app in between and nothing is lost.
 
-Nothing here says where to post, so the answer stays in the run. Put the agent in Slack and it answers in the Slack thread. [Slack and GitHub →](/docs/labs/agents/slack-and-github?ref=docs-labs-agents-quick-start)
+The answer is the run's output, which [`result()`](/docs/labs/agents/agent-teams?ref=docs-labs-agents-quick-start#call-it-from-code) returns. To send it somewhere, give the model a tool you write. [Tools →](/docs/labs/agents/tools?ref=docs-labs-agents-quick-start)
 
 ## Next
 

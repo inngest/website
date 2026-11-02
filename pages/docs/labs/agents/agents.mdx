@@ -54,7 +54,7 @@ You want CI to start it, not just a message. List its event type in `triggers`.
 import { eventType } from "inngest";
 import { z } from "zod";
 
-const ciRun = z.object({ pr: z.number(), prUrl: z.string() });
+const ciRun = z.object({ pr: z.number() });
 
 export const ciFailed = eventType("ci/run.failed", { schema: ciRun });
 ```
@@ -87,7 +87,7 @@ Narrows `event` to one trigger's type.
 
 </AnnotatedCode>
 
-A schedule is a trigger too: `{ cron: "0 9 * * *" }`. GitHub's trigger is in [Threads](/docs/labs/agents/threads?ref=docs-labs-agents-agents#no-magic); the [Slack and GitHub guide](/docs/labs/agents/slack-and-github?ref=docs-labs-agents-agents) covers it and Slack's.
+A schedule is a trigger too: `{ cron: "0 9 * * *" }`.
 
 ## Steps
 
