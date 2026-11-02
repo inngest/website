@@ -115,7 +115,7 @@ for await (const message of inbox) {
 
 Stops the inbox's sources and returns an array of the messages it hadn't read. `close()` is one step.
 
-After `close()`, `next()` and `nextBatch()` return `undefined`, loops end, and `drain()` returns `[]`. A message that arrives while `close()` is in flight isn't returned.
+After `close()`, `next()` and `nextBatch()` return `undefined`, loops end, and `drain()` returns `[]`. The executor takes the cut-off when it handles the close, so a message saved before then is returned if you hadn't read it, and a message that arrives after is dropped.
 
 ### `closed`
 
