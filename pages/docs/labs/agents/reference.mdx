@@ -527,6 +527,8 @@ const careful = claude.with({ effort: "high" });
 
 Keep `system` fixed per agent. Put context that changes on every call in `volatile` or in a message: a changed prefix misses the cache.
 
+The system text the SDK sends opens with one stable line naming the agent, such as "You are the agent `agent-playground/blank` (id `blank`), on thread `c_42`." It is the same every turn, so the cache holds.
+
 - **The one-shot call** takes `system`, `messages`, `prompt`, `tools`, `toolChoice` and `output`. With an `output` schema it returns a typed `output` beside `text`. It is not a step by itself, so wrap it in `step.run()`.
 - **`.with(overrides)`** gives a variant with those options changed, such as `effort`, `thinking`, `maxTokens` or `cache`. It cannot change `client`, `apiKey` or `baseURL`.
 - **Cost.** The model prices its own calls, so a `budget` in dollars needs no price table. [`price`](#budget-and-price) overrides it for a custom model or one the table does not know.

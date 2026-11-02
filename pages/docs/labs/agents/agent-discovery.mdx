@@ -70,6 +70,8 @@ start_agent({
   { thread: "a1b2c3" }
 ```
 
+An agent never lists itself; `describe_agent` on its own address marks it `self`.
+
 `start_agent` checks the input against the card first, and the review returns as `agent/finished`. [The model calls agents →](/docs/labs/agents/agent-teams?ref=docs-labs-agents-agent-discovery#the-model-calls-agents)
 
 ## Keeping to itself
