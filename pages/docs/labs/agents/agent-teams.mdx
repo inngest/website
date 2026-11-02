@@ -34,48 +34,6 @@ export const reviewer = agents.agent({
 
 You want the review back in the PR helper's code, to comment on the PR once CI passes. `start()` the reviewer in the handler and wait for its `result()`.
 
-```typescript {{ title: "inngest/events.ts" }}
-import { eventType } from "inngest";
-import { z } from "zod";
-
-const ciRun = z.object({ pr: z.number() });
-
-export const prOpened = eventType("pr/opened", {
-  schema: z.object({ pr: z.number(), author: z.string() }),
-});
-
-export const ciFailed = eventType("ci/run.failed", { schema: ciRun });
-
-export const ciPassed = eventType("ci/run.passed", { schema: ciRun });
-
-export const deployed = eventType("deploy/finished", {
-  schema: z.object({ env: z.string(), pull: z.number() }),
-});
-```
-
-```typescript {{ title: "inngest/lib/github.ts" }}
-const api = "https://api.github.com/repos/acme/web";
-
-export const gh = {
-  comment: async (pr: number, body: string) => {
-    const response = await fetch(`${api}/issues/${pr}/comments`, {
-      method: "POST",
-      headers: {
-        accept: "application/vnd.github+json",
-        authorization: `Bearer ${process.env.GITHUB_TOKEN}`,
-      },
-      body: JSON.stringify({ body }),
-    });
-
-    if (!response.ok) {
-      throw new Error(`Comment on #${pr}: ${response.status}`);
-    }
-
-    return await response.json();
-  },
-};
-```
-
 <AnnotatedCode>
 
 {/* not type-checked: start().result() on another agent inside an agent handler */}
@@ -132,7 +90,51 @@ export const prHelper = agents.agent(
 
 </AnnotatedCode>
 
-The rest of the PR helper is as [Calling home](/docs/labs/agents/calling-home?ref=docs-labs-agents-agent-teams) left it. A run opened through a handle ends once it has answered, so `result()` returns promptly; it waits only for the runs its model started with `start_agent`, never for `start()` calls in code. [Idle →](/docs/labs/agents/reference?ref=docs-labs-agents-agent-teams#idle)
+A run opened through a handle ends once it has answered, so `result()` returns promptly. It waits only for the runs its model started with `start_agent`, never for `start()` calls in code. [Idle →](/docs/labs/agents/reference?ref=docs-labs-agents-agent-teams#idle)
+
+The rest of the PR helper is as [Calling home](/docs/labs/agents/calling-home?ref=docs-labs-agents-agent-teams) left it. The events and the GitHub client are as [Threads](/docs/labs/agents/threads?ref=docs-labs-agents-agent-teams) and [Tools](/docs/labs/agents/tools?ref=docs-labs-agents-agent-teams#your-own-git-hub-tools) left them:
+
+```typescript {{ title: "inngest/events.ts" }}
+import { eventType } from "inngest";
+import { z } from "zod";
+
+const ciRun = z.object({ pr: z.number() });
+
+export const prOpened = eventType("pr/opened", {
+  schema: z.object({ pr: z.number(), author: z.string() }),
+});
+
+export const ciFailed = eventType("ci/run.failed", { schema: ciRun });
+
+export const ciPassed = eventType("ci/run.passed", { schema: ciRun });
+
+export const deployed = eventType("deploy/finished", {
+  schema: z.object({ env: z.string(), pull: z.number() }),
+});
+```
+
+```typescript {{ title: "inngest/lib/github.ts" }}
+const api = "https://api.github.com/repos/acme/web";
+
+export const gh = {
+  comment: async (pr: number, body: string) => {
+    const response = await fetch(`${api}/issues/${pr}/comments`, {
+      method: "POST",
+      headers: {
+        accept: "application/vnd.github+json",
+        authorization: `Bearer ${process.env.GITHUB_TOKEN}`,
+      },
+      body: JSON.stringify({ body }),
+    });
+
+    if (!response.ok) {
+      throw new Error(`Comment on #${pr}: ${response.status}`);
+    }
+
+    return await response.json();
+  },
+};
+```
 
 ## Talk while it works
 
@@ -195,11 +197,11 @@ The question arrives as `agent/question`, with who asked in `message.from`, and 
 
 ## The model calls agents
 
-You want the PR helper's model to hand off a review itself. It has the [agent tools](/docs/labs/agents/reference?ref=docs-labs-agents-agent-teams#agent-tools) `start_agent`, `message_agent`, `ask_agent`, `stop_agent` and `reply` by default, and `start_agent` reaches agents in other apps too, as [Agent discovery](/docs/labs/agents/agent-discovery?ref=docs-labs-agents-agent-teams) shows.
+You want the PR helper's model to hand off a review itself. It has the [agent tools](/docs/labs/agents/reference?ref=docs-labs-agents-agent-teams#agent-tools) `start_agent`, `message_agent`, `ask_agent`, `stop_agent` and `reply` by default. `start_agent` reaches agents in other apps too, as [Agent discovery](/docs/labs/agents/agent-discovery?ref=docs-labs-agents-agent-teams) shows.
 
 ```text {{ title: "What the model calls" }}
 start_agent({
-  address: "support/reviewer",
+  address: "acme-web/reviewer",
   input: { pr: 42 },
 })
   { thread: "a1b2c3" }
@@ -226,7 +228,7 @@ You want a script on the sandbox to start agents. It calls the same tools there,
 
 ```python {{ title: "A script the model runs" }}
 started = await tools.start_agent(
-    address="support/reviewer",
+    address="acme-web/reviewer",
     input={"pr": 42},
 )
 
