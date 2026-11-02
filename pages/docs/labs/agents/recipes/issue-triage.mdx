@@ -1,79 +1,63 @@
 import { AnnotatedCode, Annotation } from "shared/Docs/mdx";
 
 export const metaTitle = "Issue triage | Inngest Agents";
-export const description = "Build an agent that labels each new GitHub issue, links similar open issues and leaves one comment, with every GitHub call retried as its own step.";
+export const description = "Build an agent that labels each reported bug, links similar open issues and leaves one comment, with every GitHub call a tool you write that runs as its own step.";
 
 # Issue triage
 
-> An agent that labels every new issue and links duplicates.
+> An agent that labels every reported issue and links duplicates.
 
 Each GitHub call is its own step, so a retry repeats only the call that failed.
 
 ```text
-Issue #214   Dev server crashes when a step returns undefined
-Labels       bug
-Comment      Thanks. This looks like #198, which has a fix in review.
+bug/reported   #214   Dev server crashes when a step returns undefined
+Labels         bug
+Comment        Thanks. This looks like #198, which has a fix in review.
 ```
 
 Screenshot needed: the labeled issue with the agent's comment.
 
 ## The code
 
+Your own webhook route or form sends `bug/reported` with `inngest.send` when someone files a bug.
+
+```typescript {{ title: "inngest/events.ts" }}
+import { eventType } from "inngest";
+import { z } from "zod";
+
+export const bugReported = eventType("bug/reported", {
+  schema: z.object({ issue: z.number(), title: z.string(), body: z.string() }),
+});
+```
+
 <AnnotatedCode>
 
-{/* not type-checked: github.thread with repos, events and if; github.tools() in a tools record */}
+{/* not type-checked: agents.agent with an event trigger, thread, model, system and tools and no handler */}
 ```typescript {{ title: "inngest/agents/triage.ts" }}
-import { github } from "inngest/experimental/agents";
 import { agents } from "../client";
+import { bugReported } from "../events";
 import { claude } from "../models/claude";
+import { comment } from "../tools/comment";
 import { findSimilar } from "../tools/findSimilar";
-import { repoName } from "../tools/githubRest";
 import { label } from "../tools/label";
 
 export const triage = agents.agent({
   id: "triage",
-  triggers: [
-    github.thread({
-      repos: [repoName],
-      events: ["issues"],
-      if: 'event.data.action == "opened"',
-    }),
-  ],
+  triggers: [bugReported],
+  thread: "event.data.issue",
   model: claude,
   system:
     "Find similar issues, label this one, comment once. Link duplicates.",
-  tools: { findSimilar, label, ...github.tools() },
+  tools: { findSimilar, label, comment },
 });
 ```
 
-<Annotation id="trigger" lines="11-15" tease="one thread per issue" title="Start from GitHub" href="/docs/labs/agents/slack-and-github?ref=docs-labs-agents-recipes-issue-triage#work-on-git-hub" linkText="Work on GitHub">
-Starts when an issue is opened in `acme/app`. Each issue is its own thread, keyed by its URL.
+<Annotation id="trigger" lines="10-11" tease="one thread per issue" title="Start from your event" href="/docs/labs/agents/threads?ref=docs-labs-agents-recipes-issue-triage#which-conversation-is-this" linkText="Which conversation is this?">
+Starts when a bug is reported. Each issue is its own thread, keyed by its number.
 </Annotation>
 
-<Annotation id="tools" lines="20" tease="comment from GitHub" title="Search, label, comment" href="/docs/labs/agents/tools?ref=docs-labs-agents-recipes-issue-triage#git-hub-is-tools" linkText="GitHub is tools">
-`github.tools()` brings `github_comment` and `github_ask`, bound to the issue. Commenting once is the prompt's rule; the tools don't limit it.
-</Annotation>
-
-</AnnotatedCode>
-
-GitHub calls a route in your app.
-
-<AnnotatedCode>
-
-{/* not type-checked: github.bridge as a Web handler with the client and a secret */}
-```typescript {{ title: "app/api/github/route.ts" }}
-import { secret } from "inngest/experimental";
-import { github } from "inngest/experimental/agents";
-import { inngest } from "../../../inngest/client";
-
-export const POST = github.bridge({
-  client: inngest,
-  secret: secret("GITHUB_WEBHOOK_SECRET"),
-});
-```
-
-<Annotation id="bridge" lines="5-8" tease="signed route" title="The GitHub route" href="/docs/labs/agents/slack-and-github?ref=docs-labs-agents-recipes-issue-triage#work-on-git-hub" linkText="Work on GitHub">
-Checks GitHub's signature and sends each webhook as a `github/<event>` event. A redelivery is dropped.
+<Annotation id="tools" lines="15" tease="GitHub calls you write" title="Search, label, comment" href="/docs/labs/agents/tools?ref=docs-labs-agents-recipes-issue-triage#your-own-git-hub-tools" linkText="Your own GitHub tools">
+Each tool is a `fetch` with your token. Commenting once is the prompt's rule; the tools don't limit it.
 </Annotation>
 
 </AnnotatedCode>
@@ -124,6 +108,25 @@ export const label = tool.step({
 });
 ```
 
+```typescript {{ title: "inngest/tools/comment.ts" }}
+import { tool } from "inngest/experimental";
+import { z } from "zod";
+import { githubRest, repoName } from "./githubRest";
+
+export const comment = tool.step({
+  description: "Comment on the issue",
+  input: z.object({ number: z.number(), body: z.string() }),
+  run: async ({ number, body }) => {
+    await githubRest(`/repos/${repoName}/issues/${number}/comments`, {
+      method: "POST",
+      body: JSON.stringify({ body }),
+    });
+
+    return { commented: true };
+  },
+});
+```
+
 ```typescript {{ title: "inngest/tools/githubRest.ts" }}
 export const repoName = "acme/app";
 
@@ -151,12 +154,12 @@ export const githubRest = async <T>(path: string, init?: RequestInit) => {
 };
 ```
 
-The [client](/docs/labs/agents/quick-start?ref=docs-labs-agents-recipes-issue-triage#create-the-client) and [model](/docs/labs/agents/quick-start?ref=docs-labs-agents-recipes-issue-triage#pick-a-model) are the quick start's. The serve route is the [Slack assistant's](/docs/labs/agents/recipes/slack-assistant?ref=docs-labs-agents-recipes-issue-triage), importing `inngest/agents/triage`.
+The [client](/docs/labs/agents/quick-start?ref=docs-labs-agents-recipes-issue-triage#create-the-client) and [model](/docs/labs/agents/quick-start?ref=docs-labs-agents-recipes-issue-triage#pick-a-model) are the quick start's. The serve route is the [Support assistant's](/docs/labs/agents/recipes/support-assistant?ref=docs-labs-agents-recipes-issue-triage), importing `inngest/agents/triage`.
 
 ## What it shows off
 
-- [GitHub as a trigger](/docs/labs/agents/slack-and-github?ref=docs-labs-agents-recipes-issue-triage#work-on-git-hub) starts the agent from the repos and events you choose.
-- [Tools](/docs/labs/agents/tools?ref=docs-labs-agents-recipes-issue-triage) are the functions the model calls to search and label.
+- [Your own events](/docs/labs/agents/threads?ref=docs-labs-agents-recipes-issue-triage#which-conversation-is-this) start the agent and name its thread.
+- [Tools](/docs/labs/agents/tools?ref=docs-labs-agents-recipes-issue-triage#your-own-git-hub-tools) are the functions the model calls to search, label and comment.
 - [An agent with no handler](/docs/labs/agents/models?ref=docs-labs-agents-recipes-issue-triage#delete-the-handler) needs only a model, a prompt and tools.
 
 ## Run it
@@ -167,7 +170,6 @@ Set the project up as in the [quick start](/docs/labs/agents/quick-start?ref=doc
 export ANTHROPIC_API_KEY=sk-ant-...
 export INNGEST_EXPERIMENTAL_KV_URL=redis://localhost:6379
 export GITHUB_TOKEN=ghp_...
-export GITHUB_WEBHOOK_SECRET=...
 npm run dev
 ```
 
@@ -175,11 +177,24 @@ npm run dev
 npx inngest-cli@latest dev -u http://localhost:3000/api/inngest
 ```
 
-Add a webhook to `acme/app` for **Issues** events, pointing at `https://<your-host>/api/github` with `GITHUB_WEBHOOK_SECRET` as its secret. A tunnel works for local runs. Open an issue and watch the run at [localhost:8288](http://localhost:8288).
+`GITHUB_TOKEN` needs to search, label and comment in `acme/app`. Send a bug from the Dev Server's **Send event** button at [localhost:8288](http://localhost:8288), or from code, with the number of an open issue:
+
+```typescript {{ title: "scripts/reportBug.ts" }}
+import { inngest } from "../inngest/client";
+
+await inngest.send({
+  name: "bug/reported",
+  data: {
+    issue: 214,
+    title: "Dev server crashes when a step returns undefined",
+    body: "Returning undefined from step.run stops the dev server.",
+  },
+});
+```
 
 ## Variations
 
-- [`github_ask`](/docs/labs/agents/slack-and-github?ref=docs-labs-agents-recipes-issue-triage#work-on-git-hub) lets the model ask a maintainer when unsure; say so in the prompt.
+- [Check before acting](/docs/labs/agents/tools?ref=docs-labs-agents-recipes-issue-triage#check-before-acting) wraps `comment` so it refuses text that looks like a secret.
 - [Scheduled watcher](/docs/labs/agents/recipes/scheduled-watcher?ref=docs-labs-agents-recipes-issue-triage) watches for stale issues on a schedule.
 - [Coding agent](/docs/labs/agents/recipes/coding-agent?ref=docs-labs-agents-recipes-issue-triage) opens a branch for simple bugs.
 
