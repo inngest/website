@@ -17,53 +17,66 @@ Every model call and tool call is a [durable step](/docs/labs/agents/agents?ref=
 
 {/* not type-checked: budget, limits and recovery on an agent definition, result.end and result.reason */}
 ```typescript {{ title: "inngest/agents/support.ts" }}
-import { slack } from "inngest/experimental/agents";
 import { agents } from "../client";
+import { ticketOpened, ticketReplied } from "../events";
 import { claude } from "../models/claude";
 
 export const support = agents.agent(
   {
     id: "support",
-    triggers: [slack.thread()],
+    triggers: [ticketOpened],
+    thread: "event.data.ticket",
+    inbox: [ticketReplied],
     model: claude,
     system: "You answer support questions.",
     budget: { usd: 2, tokens: 500_000 },
     limits: { depth: 2, mayCall: ["support/researcher"] },
     recovery: true,
   },
-  async ({ inbox, me, loop }) => {
+  async ({ inbox, loop }) => {
     for await (const batch of inbox.batches()) {
       const result = await loop(batch);
 
       if (result.end === "budget") {
-        await me.post(result.reason);
-
-        return;
+        return result.reason;
       }
-
-      await me.post(result.text);
     }
   },
 );
 ```
 
-<Annotation id="budget" lines="11" tease="per thread" title="Budget" href="#cap-spend" linkText="Cap spend">
+<Annotation id="budget" lines="13" tease="per thread" title="Budget" href="#cap-spend" linkText="Cap spend">
 What this thread may spend.
 </Annotation>
 
-<Annotation id="limits" lines="12" tease="who it may start" title="Limits" href="/docs/labs/agents/agent-discovery?ref=docs-labs-agents-reliability#who-it-may-start" linkText="Who it may start">
+<Annotation id="limits" lines="14" tease="who it may start" title="Limits" href="/docs/labs/agents/agent-discovery?ref=docs-labs-agents-reliability#who-it-may-start" linkText="Who it may start">
 Agents it starts can start agents, but no deeper. Its model may start only `support/researcher`.
 </Annotation>
 
-<Annotation id="recovery" lines="13" tease="opt in" title="Recovery" href="#recover-from-failures" linkText="Recover from failures">
+<Annotation id="recovery" lines="15" tease="opt in" title="Recovery" href="#recover-from-failures" linkText="Recover from failures">
 Also hands the message in flight to a fresh run.
 </Annotation>
 
-<Annotation id="end" lines="19" tease="why it stopped" title="end and reason" href="/docs/labs/agents/models?ref=docs-labs-agents-reliability#a-budget" linkText="A budget">
-`"budget"` comes with a `reason` to pass on.
+<Annotation id="end" lines="21" tease="why it stopped" title="end and reason" href="/docs/labs/agents/models?ref=docs-labs-agents-reliability#a-budget" linkText="A budget">
+`"budget"` comes with a `reason`, which the handler returns as the run's output.
 </Annotation>
 
 </AnnotatedCode>
+
+The agents on this page use these events:
+
+```typescript {{ title: "inngest/events.ts" }}
+import { eventType } from "inngest";
+import { z } from "zod";
+
+export const ticketOpened = eventType("ticket/opened", {
+  schema: z.object({ ticket: z.number(), question: z.string() }),
+});
+
+export const ticketReplied = eventType("ticket/replied", {
+  schema: z.object({ ticket: z.number(), message: z.string() }),
+});
+```
 
 ## Cap spend
 
@@ -73,15 +86,16 @@ Also hands the message in flight to a fresh run.
 
 {/* not type-checked: price as a per-million-token table */}
 ```typescript {{ title: "inngest/agents/summarizer.ts" }}
-import { slack } from "inngest/experimental/agents";
 import { agents } from "../client";
+import { ticketOpened } from "../events";
 import { claude } from "../models/claude";
 
 export const summarizer = agents.agent({
   id: "summarizer",
-  triggers: [slack.thread()],
+  triggers: [ticketOpened],
+  thread: "event.data.ticket",
   model: claude,
-  system: "Summarize the thread in three lines.",
+  system: "Summarize the ticket in three lines.",
   budget: { usd: 1 },
   price: {
     "*": { input: 2.5, output: 12.5 },
@@ -89,7 +103,7 @@ export const summarizer = agents.agent({
 });
 ```
 
-<Annotation id="price" lines="11-13" tease="dollars per million tokens" title="Price" href="/docs/labs/agents/reference?ref=docs-labs-agents-reliability#budget-and-price" linkText="Reference: budget and price">
+<Annotation id="price" lines="12-14" tease="dollars per million tokens" title="Price" href="/docs/labs/agents/reference?ref=docs-labs-agents-reliability#budget-and-price" linkText="Reference: budget and price">
 `"*"` is the rate for any model not named.
 </Annotation>
 
@@ -103,34 +117,31 @@ A loop that keeps calling tools stops after `maxTurns` (40 by default). An agent
 
 {/* not type-checked: maxTurns as a per-call loop option and end: "maxTurns" */}
 ```typescript {{ title: "inngest/agents/lookup.ts" }}
-import { slack } from "inngest/experimental/agents";
 import { agents } from "../client";
+import { ticketOpened } from "../events";
 import { claude } from "../models/claude";
 
 export const lookup = agents.agent(
   {
     id: "lookup",
-    triggers: [slack.thread()],
+    triggers: [ticketOpened],
+    thread: "event.data.ticket",
     model: claude,
     system: "Answer from the docs.",
   },
-  async ({ inbox, me, loop }) => {
+  async ({ inbox, loop }) => {
     for await (const batch of inbox.batches()) {
       const result = await loop(batch, { maxTurns: 10 });
 
       if (result.end === "maxTurns") {
-        await me.post("I ran out of turns before I finished.");
-
-        continue;
+        return "I ran out of turns before I finished.";
       }
-
-      await me.post(result.text);
     }
   },
 );
 ```
 
-<Annotation id="turns" lines="14" tease="for this call" title="maxTurns" href="/docs/labs/agents/reference?ref=docs-labs-agents-reliability#the-loop" linkText="Reference: the loop">
+<Annotation id="turns" lines="15" tease="for this call" title="maxTurns" href="/docs/labs/agents/reference?ref=docs-labs-agents-reliability#the-loop" linkText="Reference: the loop">
 A loop option, so each call can have its own.
 </Annotation>
 
@@ -140,61 +151,34 @@ A loop option, so each call can have its own.
 
 A rate limit waits for the provider's `retry-after`, for any model. A final error such as a rejected request isn't retried.
 
-A run that fails for good posts one line where the thread lives. With `recovery`, the message it was handling goes to a fresh run.
-
-<AnnotatedCode>
-
-{/* not type-checked: recovery with a message function */}
-```typescript {{ title: "inngest/agents/releaser.ts" }}
-import { slack } from "inngest/experimental/agents";
-import { agents } from "../client";
-import { claude } from "../models/claude";
-
-export const releaser = agents.agent({
-  id: "releaser",
-  triggers: [slack.thread()],
-  model: claude,
-  system: "You run releases.",
-  recovery: {
-    message: (failure) => {
-      return `That run failed: ${failure.error}`;
-    },
-  },
-});
-```
-
-<Annotation id="message" lines="10-14" tease="the line it posts" title="Message" href="/docs/labs/agents/reference?ref=docs-labs-agents-reliability#recovery" linkText="Reference: recovery">
-`message` writes the line; `{ resume: false }` keeps it but skips the fresh run.
-</Annotation>
-
-</AnnotatedCode>
-
-The same error is never resent, and neither is a `NonRetriableError`. A handler's [`previousRun`](/docs/labs/agents/reference?ref=docs-labs-agents-reliability#the-handler) says how the last run ended.
+A run that fails for good shows its error in the trace and posts nothing. With `recovery: true`, the message it was handling goes to a fresh run, and the same error is never resent, nor is a `NonRetriableError`. A handler's [`previousRun`](/docs/labs/agents/reference?ref=docs-labs-agents-reliability#the-handler) says how the last run ended, with or without `recovery`.
 
 ## Deploys and long runs
 
-After a deploy, a live run replays on your latest code. Every model call, tool call, awaited post and inbox message is a step toward the 1,000-step limit. So is a KV call made outside a step. [Limits →](/docs/durable-execution/limits?ref=docs-labs-agents-reliability#platform-limits)
+After a deploy, a live run replays on your latest code. Every model call, tool call, `step.run` of your own and inbox message is a step toward the 1,000-step limit. So is a KV call made outside a step. [Limits →](/docs/durable-execution/limits?ref=docs-labs-agents-reliability#platform-limits)
 
-Keep the default `idle` of ten minutes unless the agent waits on something slow, such as a pull request. A longer `idle` keeps the run live across deploys and spends steps.
+Keep the default `idle` of ten minutes unless the agent waits on something slow, such as a customer's reply. A longer `idle` keeps the run live across deploys and spends steps.
 
 <AnnotatedCode>
 
-{/* not type-checked: idle as a duration string on an agent that waits for GitHub events */}
-```typescript {{ title: "inngest/agents/babysitter.ts" }}
-import { github } from "inngest/experimental/agents";
+{/* not type-checked: idle as a duration string on an agent that waits for a customer's reply */}
+```typescript {{ title: "inngest/agents/followUp.ts" }}
 import { agents } from "../client";
+import { ticketOpened, ticketReplied } from "../events";
 import { claude } from "../models/claude";
 
-export const babysitter = agents.agent({
-  id: "babysitter",
-  triggers: [github.thread()],
+export const followUp = agents.agent({
+  id: "follow-up",
+  triggers: [ticketOpened],
+  thread: "event.data.ticket",
+  inbox: [ticketReplied],
   model: claude,
-  system: "Watch the pull request until it merges.",
+  system: "Follow the ticket until the customer confirms it is solved.",
   idle: "7d",
 });
 ```
 
-<Annotation id="idle" lines="10" tease="a week-long run" title="A long idle" href="/docs/labs/agents/inboxes?ref=docs-labs-agents-reliability#going-quiet" linkText="Going quiet">
+<Annotation id="idle" lines="12" tease="a week-long run" title="A long idle" href="/docs/labs/agents/inboxes?ref=docs-labs-agents-reliability#going-quiet" linkText="Going quiet">
 Live across every deploy.
 </Annotation>
 
@@ -204,6 +188,7 @@ Live across every deploy.
 
 - **A spent budget stays spent.** Later messages end at once.
 - **A cancelled run isn't recovered.**
+- **Work you don't await is stopped** when the handler returns. An un-awaited `score()` is still written.
 
 ## Recipes and reference
 
