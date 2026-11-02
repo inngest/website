@@ -5,7 +5,6 @@ from inngest.experimental.sandbox import DurableSandbox
 
 
 async def clone_builder(ctx: inngest.Context, builder: DurableSandbox) -> str:
-    # !snippet:start
     snapshot = await builder.snapshot(
         "snapshot-builder",
         timeout=datetime.timedelta(minutes=5),
@@ -26,4 +25,3 @@ async def clone_builder(ctx: inngest.Context, builder: DurableSandbox) -> str:
     await snapshot.delete("delete-snapshot")
 
     return result.stdout
-    # !snippet:end

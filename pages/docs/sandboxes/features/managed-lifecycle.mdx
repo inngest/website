@@ -140,7 +140,7 @@ await using sb = await step.sandbox.create("build", {
 await sb.commands.run("test", "npm test");
 ```
 
-<SdkUnsupported title="Python" feature="Scoping with `await using`">Use `ctx.group.sandbox()`, shown below.</SdkUnsupported>
+<SdkUnsupported title="Python" feature="Scoping with await using">Use `ctx.group.sandbox()`, shown below.</SdkUnsupported>
 <SdkUnsupported title="Go" feature="Sandboxes" />
 </CodeGroup>
 

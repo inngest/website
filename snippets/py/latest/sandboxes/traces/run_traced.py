@@ -4,7 +4,6 @@ import inngest
 
 
 async def run_traced(ctx: inngest.Context) -> dict[str, object]:
-    # !snippet:start
     sandbox = await ctx.step.sandbox.create(
         "create-sandbox",
         name=f"trace-{ctx.event.data['jobId']}",
@@ -25,4 +24,3 @@ async def run_traced(ctx: inngest.Context) -> dict[str, object]:
         "exitCode": result.exit_code,
         "stdout": result.stdout,
     }
-    # !snippet:end

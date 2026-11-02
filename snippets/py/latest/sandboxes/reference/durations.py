@@ -4,7 +4,6 @@ import inngest
 
 
 async def durations(ctx: inngest.Context) -> None:
-    # !snippet:start
     sandbox = await ctx.step.sandbox.create(
         "build",
         name="build",
@@ -17,4 +16,3 @@ async def durations(ctx: inngest.Context) -> None:
         "test", "npm test", timeout=datetime.timedelta(minutes=5)
     )
     await sandbox.commands.run("test", "npm test", timeout=90_000)  # ms
-    # !snippet:end

@@ -5,7 +5,6 @@ from inngest.experimental.sandbox import Sandbox
 
 
 async def snapshot_and_clone(sandbox: Sandbox) -> None:
-    # !snippet:start
     await sandbox.commands.run(
         "mkdir -p /work && printf 'prepared\\n' > /work/config.txt"
     )
@@ -22,4 +21,3 @@ async def snapshot_and_clone(sandbox: Sandbox) -> None:
             print(result.stdout)
     finally:
         await snapshot.delete()
-    # !snippet:end

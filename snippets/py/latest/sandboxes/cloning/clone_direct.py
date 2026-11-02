@@ -5,7 +5,6 @@ from .client import inngest_client
 
 
 async def build_and_clone() -> None:
-    # !snippet:start
     # Leaving each `async with` block destroys that Sandbox.
     async with inngest_client.sandboxes.create(
         name=f"builder-{uuid.uuid4()}",
@@ -33,4 +32,3 @@ async def build_and_clone() -> None:
                 print(clone.id, result.stdout)
         finally:
             await snapshot.delete()
-    # !snippet:end

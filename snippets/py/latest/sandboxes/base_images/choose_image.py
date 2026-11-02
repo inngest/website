@@ -3,7 +3,6 @@ from inngest.experimental.sandbox import image
 
 
 async def choose_image(ctx: inngest.Context) -> None:
-    # !snippet:start
     await ctx.step.sandbox.create(
         "build",
         name="build",
@@ -19,4 +18,3 @@ async def choose_image(ctx: inngest.Context) -> None:
         memory_mb=2048,
         image=image.custom("my-image:v1"),
     )
-    # !snippet:end

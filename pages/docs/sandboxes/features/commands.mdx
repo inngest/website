@@ -55,7 +55,7 @@ await sb.$.sh`ls ${dir} | wc -l`;      // quoted for you
 await sb.$.sh`ls "${dir}"`;            // throws: no values inside quotes or after a backslash
 ```
 
-<SdkUnsupported title="Python" feature="`$` commands">Use `sandbox.commands.run()`. A nonzero exit code is returned as `exit_code`, not raised.</SdkUnsupported>
+<SdkUnsupported title="Python" feature="$ commands">Use `sandbox.commands.run()`. A nonzero exit code is returned as `exit_code`, not raised.</SdkUnsupported>
 <SdkUnsupported title="Go" feature="Sandboxes" />
 </CodeGroup>
 
@@ -76,7 +76,7 @@ const pkg = await sb.$`cat package.json`.json<{ name: string }>();   // parsed s
 const { stdout, stderr, exitCode } = await sb.$`node -v`;
 ```
 
-<SdkUnsupported title="Python" feature="`$` commands" />
+<SdkUnsupported title="Python" feature="$ commands" />
 <SdkUnsupported title="Go" feature="Sandboxes" />
 </CodeGroup>
 
@@ -99,7 +99,7 @@ await work$.sh`pnpm test | tee out.log`;
 await sb.$({ id: "install" }).sh`pnpm install`;
 ```
 
-<SdkUnsupported title="Python" feature="`$` commands" />
+<SdkUnsupported title="Python" feature="$ commands" />
 <SdkUnsupported title="Go" feature="Sandboxes" />
 </CodeGroup>
 
@@ -138,7 +138,7 @@ try {
 }
 ```
 
-<SdkUnsupported title="Python" feature="`$` commands" />
+<SdkUnsupported title="Python" feature="$ commands" />
 <SdkUnsupported title="Go" feature="Sandboxes" />
 </CodeGroup>
 
@@ -163,7 +163,7 @@ A timeout over five minutes runs the command as a process that the steps follow,
 await sb.$({ timeout: "45m" }).sh`pnpm test:e2e`;
 ```
 
-<SdkUnsupported title="Python" feature="`$` commands">`commands.run()` caps `timeout` at five minutes. For longer work, start a process with `processes.start()` and `wait()` on it.</SdkUnsupported>
+<SdkUnsupported title="Python" feature="$ commands">`commands.run()` caps `timeout` at five minutes. For longer work, start a process with `processes.start()` and `wait()` on it.</SdkUnsupported>
 <SdkUnsupported title="Go" feature="Sandboxes" />
 </CodeGroup>
 
@@ -184,6 +184,6 @@ await sb.$({ env: { NPM_TOKEN: token } }).sh`pnpm publish`;   // token stays out
 await sb.$`npm login --token ${token}`;                       // token is in the command text
 ```
 
-<SdkUnsupported title="Python" feature="`$` commands" />
+<SdkUnsupported title="Python" feature="$ commands" />
 <SdkUnsupported title="Go" feature="Sandboxes" />
 </CodeGroup>

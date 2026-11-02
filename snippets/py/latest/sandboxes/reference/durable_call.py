@@ -4,7 +4,6 @@ import inngest
 
 
 async def run_tests(ctx: inngest.Context) -> int:
-    # !snippet:start
     sandbox = await ctx.step.sandbox.create(
         "create-sandbox",
         name=f"job-{ctx.event.data['jobId']}",
@@ -20,5 +19,4 @@ async def run_tests(ctx: inngest.Context) -> int:
     )
 
     await sandbox.destroy("destroy-sandbox")
-    # !snippet:end
     return result.exit_code
