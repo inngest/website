@@ -10,7 +10,7 @@ export const description = "Run Inngest Agents on Cloudflare Workers: bindings e
 A Worker has no secrets or database at import time, so fields that take a function read them when a run starts.
 
 - **Keep state in D1.** The store reads its binding on each use. [Store →](#store-state-in-d1)
-- **Read secrets at run time.** The model, tokens and repo access are functions. [Bindings →](#read-bindings-at-run-time)
+- **Read secrets at run time.** The model and the repo's `auth` are functions. [Bindings →](#read-bindings-at-run-time)
 - **Serve from `fetch`.** One export that sets the bindings, then serves Inngest. [Serve →](#serve-from-fetch)
 
 <AnnotatedCode>
@@ -43,6 +43,17 @@ export const triage = agents.agent({
 </Annotation>
 
 </AnnotatedCode>
+
+`ticketOpened` is the event the [Support assistant](/docs/labs/agents/recipes/support-assistant?ref=docs-labs-agents-workers) listens for.
+
+```typescript {{ title: "inngest/events.ts" }}
+import { eventType } from "inngest";
+import { z } from "zod";
+
+export const ticketOpened = eventType("ticket/opened", {
+  schema: z.object({ ticket: z.string(), text: z.string() }),
+});
+```
 
 ## Declare the bindings
 
