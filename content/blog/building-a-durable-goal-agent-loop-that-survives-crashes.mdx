@@ -1,0 +1,320 @@
+---
+tags: ["AI & Agents", "Durable Execution", "Engineering", "Tutorials & Guides"]
+heading: "Building a durable /goal agent loop that survives crashes"
+subtitle: "A /goal agent loop that runs for hours needs crash recovery, retries on every model call, durable pauses and a safe place to run the agent's code. Here's what durable steps handle for you, and the one boundary they don't."
+showSubtitle: true
+image: https://cdn.inngest.com/blog/building-a-durable-goal-agent-loop-that-survives-crashes/header.png
+date: "2026-11-02T12:00:00.000Z"
+author: "Mitchell Alderson"
+category: engineering
+---
+
+Claude Code and Codex can both keep a coding agent working on one goal, attempt after attempt, until a check passes.
+
+Point one at a hard enough goal and the loop runs for days, inside a terminal process on one machine, trusting that process not to die the whole time.
+
+I wanted that loop without the bet, so I built my own on durable steps and tried to kill it. I ran `kill -9` in the middle of an attempt. About 15 seconds later, a new worker picked up the run where it left off, and the trace showed every finished turn exactly once, none of them rerun or rebilled.
+
+Here's what breaks when a loop like this runs that long, which of those failures durable steps handle for you, the one they don't, and how the same runs grade the agent's code in a sandbox and double as eval data.
+
+## Key takeaways
+
+- An agent loop running in one process is only as reliable as that process.
+- Make each model call, tool call and validation check a memoized step, so a crash only repeats what it interrupted.
+- Rebuild loop state from step results only, and make every step safe to run twice.
+- Running the agent's code is dangerous, so send just that part to a sandbox.
+
+## What is a /goal loop, and what breaks when it runs for hours?
+
+A /goal loop is an agent attempting a goal over and over until a check says it's done. The loop itself is a few lines; the work is keeping it alive for hours.
+
+The Builder team's write-up on [building an agent loop a small model can finish](https://www.builder.io/blog/build-an-agent-loop-a-small-model-can-finish) is the best recent guide to the check half.
+
+It covers making the check trustworthy, holding examples back, and leaning on what Geoffrey Huntley calls [back pressure](https://ghuntley.com/ralph/): tests, builds and type checks that reject a bad attempt before you have to.
+
+When I tried running a /goal loop unattended, four things went wrong, and you'll hit all of them eventually:
+
+- The machine crashes or runs out of memory mid-attempt.
+- A model call hangs, times out or the provider drops the connection.
+- A single attempt takes longer than any one request should, risking host timeouts on deployed agents.
+- The loop loses track of its best result, and of where it was.
+
+Each has a known fix, and each adds infrastructure to own: a process supervisor, retries and backoff around every model call, a queue so a long attempt isn't one long request, and a store for the loop to checkpoint its state.
+
+My test goal was a port of Go's [golang.org/x/mod/semver](https://pkg.go.dev/golang.org/x/mod/semver) to TypeScript, graded against cases generated from the real Go package, with some held back for a final score.
+
+The agent never sees the cases, and the model is deliberately small and cheap, so it misbehaves often enough to exercise everything below.
+
+## How do you build a /goal loop out of durable steps?
+
+You make the loop one function, and every unit of work inside it a step.
+
+| Loop piece | Step | If it fails | What you'd build without it |
+| --- | --- | --- | --- |
+| Attempt | A [child function](/docs/durable-execution/primitives/step-invoke?ref=blog-building-a-durable-goal-agent-loop-that-survives-crashes) called with `step.invoke` | Retries, then counts as a stall, and the goal keeps going | A job queue, and a way to resume a half-finished attempt |
+| Model turn | `step.ai.wrap` around a [model call made from the worker](/docs/features/inngest-functions/steps-workflows/step-ai-orchestration?ref=blog-building-a-durable-goal-agent-loop-that-survives-crashes) | That turn retries; earlier turns stay memoized | Retry and backoff around every call, and a cache so finished turns aren't paid for twice |
+| Tool call | `step.run` | That call retries | A record of which tool calls already ran |
+| Check and revert | `step.run` and sandbox steps | Retries from the phase that failed | Checkpoints inside a multi-phase grader |
+
+The keep-or-revert decision itself is a plain function of step results. I built this on Inngest because I didn't want to write the [retry, memoization and state handling](/blog/ai-agents-inngest-durable-steps?ref=blog-building-a-durable-goal-agent-loop-that-survives-crashes) myself. That's the job of a [durable harness](/blog/durable-execution-key-to-harnessing-ai-agents?ref=blog-building-a-durable-goal-agent-loop-that-survives-crashes), and the agent is the easy part to swap.
+
+![The /goal loop: each attempt, check, and keep-or-revert decision is a durable step](/assets/blog/building-a-durable-goal-agent-loop-that-survives-crashes/goal-loop-diagram.png)
+
+Here's the core of the loop, trimmed:
+
+```ts
+// src/inngest/goal-loop.ts (trimmed: brief, events, scores and live updates removed)
+const initial = await step.run("baseline-init", () => ws.initial());
+const baseline: Best = { ...(await check("baseline", initial, "train")), ...(initial.files ? { files: initial.files } : {}) };
+
+// Replay: the state is rebuilt from memoized step results only.
+let state = initialState(baseline);
+
+for (let i = 1; i <= maxAttempts; i++) {
+  const { best } = state;
+
+  // An attempt that exhausts its retries counts as a stall, not a failed goal.
+  const invoked: unknown = await step
+    .invoke(`attempt-${i}`, {
+      function: agentAttempt,
+      data: { goalId, i, start: { commit: best.commit, files: best.files }, brief, model },
+    })
+    .catch(() => failedAttempt(best, "attempt failed"));
+  const attempt = isAttemptResult(invoked) ? invoked : failedAttempt(best, "attempt cancelled or returned no result");
+
+  // An attempt that changed nothing skips the check.
+  const result = attempt.changed
+    ? await check(`check-${i}`, { commit: attempt.commit, files: attempt.files }, "train", best.failBits)
+    : best;
+
+  // The check itself changed mid-run: re-score the incumbent first.
+  const rebaselined =
+    attempt.changed && result.checkVersion !== best.checkVersion
+      ? await step.run(`rebaseline-${i}`, () => runCheck({ commit: best.commit, set: "train" }))
+      : undefined;
+
+  // Keep or revert: a pure function of the results above.
+  const after = afterAttempt(state, { i, attempt, result, rebaselined });
+  state = after.state;
+  if (after.outcome !== "kept" && attempt.changed && ws.revert) {
+    const revert = ws.revert;
+    await step.run(`revert-${i}`, () => revert(state.best.commit));
+  }
+
+  if (result.pass) break;
+
+  // Park for a human after maxStalls attempts without progress.
+  if (i < maxAttempts && state.stalls >= maxStalls) {
+    const review = await step.waitForEvent(`review-${i}`, {
+      event: goalReviewSubmitted,
+      match: "data.goalId",
+      timeout: "3d",
+    });
+    if (!review || review.data.action === "stop") break;
+    state = { ...state, humanNote: review.data.note, stalls: 0 };
+  }
+}
+
+// Scored once, on the final best; never shown to an agent.
+const holdout = await check("holdout", state.best, "holdout");
+```
+
+One rule makes everything after this section work. `best`, `stalls` and the human's note come only from step return values. The function body re-executes on every step, and the memoized step results rebuild the same state each time, so a worker that dies mid-goal comes back to the same attempt with the same best score.
+
+A plain `while` loop in a long-lived process feels identical, right up until the process restarts and the state is gone.
+
+The other rule is that every step has to be [safe to run twice](/blog/your-agent-just-learned-to-spend-money?ref=blog-building-a-durable-goal-agent-loop-that-survives-crashes). Each attempt starts by resetting to the best code, and the commit step recognizes a commit it already made.
+
+## What happens when the worker dies mid-attempt?
+
+If the worker comes back inside the loop function's retry window, the run resumes, as it did after my `kill -9`. If it stays down longer, the run fails, even though every step it finished is still saved. I found that edge by killing the worker again and leaving it down past the window. The finished attempt and the memoized turns were all still there, and the run failed anyway. That's the line from my build log I keep coming back to: **the durability boundary is the function retry budget, not the step state.**
+
+State survives a dead worker indefinitely. [A run survives a dead worker](/blog/the-queue-is-durable-your-worker-is-not?ref=blog-building-a-durable-goal-agent-loop-that-survives-crashes) only as long as the next function that has to execute keeps retrying.
+
+How long that is depends on [how many times the function retries](/docs/durable-execution/guides-and-advanced/error-handling/retries?ref=blog-building-a-durable-goal-agent-loop-that-survives-crashes), and on Inngest's [default backoff schedule](https://github.com/inngest/inngest/blob/main/pkg/backoff/backoff.go#L10-L22), which waits a little longer before each try. The attempt function's retries run out first, then the loop has to run on the worker to handle the failed attempt, and the loop's default window is only a few minutes. That's the one my worker missed.
+
+The fix is one line of config.
+
+```ts
+// src/inngest/goal-loop.ts: the repo keeps the default retries; raise them for unattended runs
+export const goalLoop = inngest.createFunction(
+  {
+    id: "goal-loop",
+    retries: 20, // the default window is a few minutes; the max stretches it to hours
+    concurrency: [{ key: "event.data.goalId", limit: 1 }], // one live run per goal
+    triggers: [goalStarted],
+  },
+  async ({ event, step, group, runId }) => {
+    // ...
+  },
+);
+```
+
+Finished steps are memoized, so retrying the loop function costs almost nothing, and raising its `retries` widens the window fast, from minutes to hours. If you're running a loop like this unattended, also run the worker on a host that restarts it when it crashes. A dead worker then costs you a delay, as long as it comes back inside the window.
+
+Out-of-memory crashes belong here too, with one difference. The most likely thing to blow up a worker in a loop like this is the agent's own code, an infinite loop or a runaway allocation, and that code never runs on the worker. More on that in the sandbox section.
+
+## What happens when the model provider times out or drops the connection?
+
+The turn's step fails, Inngest retries it with backoff, and the turns before it stay memoized. Nothing else in the attempt reruns, and I didn't write any code to make that happen.
+
+The first time I watched it, a model call hung partway through an attempt and then died with a generic error. Inngest tried it again. That failed too. The third try went through in seconds, and the attempt picked up at the next turn as if nothing had happened.
+
+Retries kept the run alive, but they cost time. Later in that same run, one turn held a request open for 17 minutes before the provider gave up on it. The slow ones were always turns where the model was writing way more than it needed to, so I capped how much a single turn can write.
+
+```ts
+// src/inngest/events.ts
+export const GOAL_DEFAULTS = {
+  maxAttempts: 60,
+  maxStalls: 5,
+  maxTurnsPerAttempt: 8,
+  maxTokensPerTurn: 4000,
+} as const;
+```
+
+Some failures aren't worth retrying. Later on, an attempt died because the model got cut off halfway through a tool call, and the provider rejected the broken history on the next request. A malformed request won't get better on a retry, so the model call throws a [non-retriable error](/docs/durable-execution/guides-and-advanced/error-handling/non-retriable-errors?ref=blog-building-a-durable-goal-agent-loop-that-survives-crashes) and Inngest stops retrying it. The loop counted it as a stall and moved on to the next attempt. A failed attempt costs one attempt. It never fails the goal.
+
+Inngest gives you two ways to make the call itself. `step.ai.infer` makes it from Inngest's side, so it finishes even while your worker is down. That's what happened when I killed the worker: the call in flight finished anyway. `step.ai.wrap` runs your own client on the worker, where you own the timeout and every log line. I started on infer and moved to wrap after a turn sat in the running state on a connection that never came back, with no timeout I could set. That's the trade: on wrap, a worker that dies mid-call costs you that one turn again.
+
+On wrap, the SDK's own retries are turned off, because retries belong to the step. Anything that might work on a second try, like a timeout, a rate limit or a provider hiccup, throws, and Inngest retries the turn.
+
+```ts
+// src/lib/model-call.ts (trimmed: logging, trace metadata and error detail removed)
+// Retries belong to the step (memoized, visible in the trace), not the SDK.
+const client = new OpenAI({ baseURL: opts.baseURL, apiKey: opts.apiKey ?? "", timeout: timeoutMs(), maxRetries: 0 });
+try {
+  json = (await client.chat.completions.create(body as never)) as unknown as ChatResponse;
+} catch (err) {
+  const timedOut = err instanceof OpenAI.APIConnectionTimeoutError;
+  const status = err instanceof OpenAI.APIError && err.status ? err.status : timedOut ? "timeout" : "network_error";
+  // A malformed request won't get better on retry; rate limits, timeouts and 5xx might.
+  if (typeof status === "number" && status >= 400 && status < 500 && status !== 408 && status !== 429) {
+    throw new NonRetriableError(`model call ${status}`);
+  }
+  throw new Error(`model call ${status}`); // retried by the step
+}
+
+// One turn. The API key is closed over, not passed in: wrap records the function's arguments in the trace.
+step.ai.wrap(id, modelCaller({ baseURL: baseUrl, apiKey, label, logger, timeoutMs }), body);
+```
+
+## How long can a single attempt run?
+
+As long as it needs to. An attempt is its own function run made of short steps, so no single request has to stay open for the whole attempt. One attempt in an early run spent most of its time waiting out retries, far longer than any request should stay open, and none of its requests came close.
+
+That's what matters on a [serverless host](/blog/why-raising-your-serverless-timeout-wont-save-long-jobs?ref=blog-building-a-durable-goal-agent-loop-that-survives-crashes). Each step has to finish within one request: Inngest gives each step a generous [runtime limit](/docs/durable-execution/primitives/step-run?ref=blog-building-a-durable-goal-agent-loop-that-survives-crashes#results-and-limits), but your host's timeout wins if it's shorter. That's why every model call carries a timeout the worker owns: a hung turn fails its step long before the host would kill the request.
+
+Splitting attempts into child functions gave me one gotcha worth passing on. Midway through a Cloud run I cancelled an attempt from the dashboard, expecting the loop to treat it like any other failed attempt and count a stall. Instead the loop crashed, and kept crashing on every retry, reading a field off something that wasn't an attempt result. A cancelled invoke _resolved_ `step.invoke` instead of rejecting it, so my `.catch` never ran. The fix is an `isAttemptResult` check on whatever the invoke returns: anything that isn't a real attempt result is treated as a failed attempt.
+
+What happened next is my favorite moment from the whole build. I shipped that fix while the loop was still sitting in its retry backoff. The next retry ran the new code against the memoized, cancelled invoke result, counted it as a stall, ran the holdout and finished the goal. I didn't restart anything. It was also the first goal to complete end to end on Inngest Cloud. That's what durable state buys you in practice: a fix can reach a run that's already in flight, because the run is just its step results plus whatever code is deployed now.
+
+## How does the loop keep its progress across hours and human reviews?
+
+Progress lives in step results, so there's nothing to lose. When the loop stalls, it parks on a [durable event wait](/docs/durable-execution/primitives/step-waitforevent?ref=blog-building-a-durable-goal-agent-loop-that-survives-crashes), `step.waitForEvent`, until a human sends a note.
+
+The longest run stalled after its first good attempt and parked for review. I read the check report, wrote a note naming the rules the model kept missing, and sent it as a `goal/review.submitted` event. The note reached the next attempt's brief word for word.
+
+The harder case is when the check itself changes partway through a run. You find a bug in your grader, you fix it, and now every score the loop has stored was measured with a different ruler.
+
+Each check result carries a version hash of the grader and its cases, and when the version changes, the loop re-scores its current best before comparing anything. I tested this by dropping a whole function's cases mid-run. The loop re-scored its best attempt under the new check, and it kept the next attempt only because it beat that new score. Without the re-score, it would have compared a number from one check against a number from another.
+
+I lost a whole run early on, and not to anything in the loop: I'd started the local dev server without `--persist`, which makes it a scratchpad. Durable execution is only as durable as the orchestrator's own storage, which is why this is meant to run on Inngest Cloud.
+
+There are hard limits too. Inngest [caps how many steps a run can take](/docs/durable-execution/limits?ref=blog-building-a-durable-goal-agent-loop-that-survives-crashes). The loop budgets for an attempt's worst case, which limits how many attempts one goal gets, fewer when every check runs in a sandbox (the budget math is at the top of [goal-loop.ts](https://github.com/inngest/agent-examples/blob/main/agent-loop/src/inngest/goal-loop.ts)). Chaining runs past that is the obvious next piece, and I haven't built it. Step results and a run's total state have size limits too, which is one more reason a check result carries a short report and a compact record of which cases failed, never the cases themselves.
+
+## Where does the agent's untrusted code run?
+
+In an [Inngest Sandbox](/docs/sandboxes/overview?ref=blog-building-a-durable-goal-agent-loop-that-survives-crashes): a fresh one for every check, created, used once and destroyed by the check's own steps.
+
+This was the problem I couldn't wave away. The check has to _execute_ code a model just wrote, and that code can loop forever, exhaust memory or crash outright. Run it on the worker and it takes the loop down with it. My first grader ran it in a child process with a timeout, and that wasn't enough either. The timeout killed the wrapper process but left its child spinning on `while(true){}` and pinning a core.
+
+The design that worked came from noticing that only executing agent code is untrusted. Reading, editing and typechecking source never runs it. So the agent's workspace is an in-memory map of file contents carried in step results. The file tools and the typecheck run on the worker, where they're harmless. Only the grader goes to the sandbox, and each phase of it is its own step. The sandbox has no network, so the files API is the only way in or out. If the agent's code hangs or crashes, the check still scores whatever it finished, and everything it didn't finish counts as a failure.
+
+```ts
+// check/run-check-sandbox.ts (trimmed)
+export async function runCheckSandboxSteps(step: Step, idBase: string, opts: { files: Files; ref: string; set: CaseSet; against?: string; name: string }) {
+  const sb = await step.sandbox.create(`${idBase}-sandbox`, { name: opts.name, vcpu: 1, memoryMb: 1024, runningTimeout: "120s" });
+  try {
+    // The runner, the agent's files, and only the case file for this set.
+    await step.run(`${idBase}-upload`, async () => uploadWorkspace(await inngest.sandboxes.get(sb.id), opts.files, opts.set));
+
+    let timedOut = false;
+    try {
+      await sb.commands.run(`${idBase}-exec`, ["/bin/sh", "-c", "node runner.ts src/semver.ts cases.jsonl > out.jsonl 2> err.txt"], {
+        cwd: "/workspace",
+        timeout: "60000ms",
+        environment: { NODE_OPTIONS: "--max-old-space-size=256" },
+      });
+    } catch (e) {
+      if (getSandboxError(e)?.code !== "sandbox_exec_timed_out") throw e;
+      timedOut = true;
+    }
+
+    return await step.run(`${idBase}-score`, async () => scoreSandbox(await inngest.sandboxes.get(sb.id), opts, timedOut));
+  } finally {
+    await sb.destroy(`${idBase}-destroy`).catch(() => {});
+  }
+}
+```
+
+Because every phase is memoized, a retry picks up at the phase that failed instead of starting the check over, and the trace shows exactly where a check spent its time. The sandbox's name comes from the run ID, so a replay finds the same one.
+
+That split is also why the sandbox holds only the check and not the agent's whole session. An attempt can run for many minutes and survive worker restarts because its state lives in steps. A check takes seconds and has nothing to survive. The sandbox is the hands and the loop is the brain: the sandbox executes the dangerous part, and the loop and its state live in the durable functions around it.
+
+Two properties came for free. The loop uploads holdout cases only when it scores the holdout, so they never exist inside a sandbox an attempt is graded in. And the grader gives the same answer either way. In the smoke test, the empty stub failed every case, a known-good implementation passed every case, and both scores matched the local grader exactly.
+
+## How do you tell whether a change to the loop actually helped?
+
+You score every attempt inside the run, and split runs across variants with an [experiment](/docs/features/inngest-functions/steps-workflows/step-experiments?ref=blog-building-a-durable-goal-agent-loop-that-survives-crashes). Both are steps in the same function that runs the loop, so the eval data comes out of running the goal. Nothing gets exported to a separate tool, and every score sits in the same trace as the attempt that produced it.
+
+After each attempt, the loop records a handful of [Inngest scores](/docs/agent-evals/scores?ref=blog-building-a-durable-goal-agent-loop-that-survives-crashes): the check's fail rate, whether the attempt was kept, how many turns it took and what it cost. At the end it scores the final best on the train and holdout cases, plus the gap between them. The gap is the number I'd watch. A loop that [learns to satisfy its own check report](/blog/build-self-learning-agent?ref=blog-building-a-durable-goal-agent-loop-that-survives-crashes) shows up as a train score the holdout doesn't match.
+
+The thing most worth testing in a /goal loop is the brief, what each attempt is told before it starts. So the brief options are the variants of an experiment: a control, one that adds Go's documentation for the package, one with more failing examples and one without the one-function-per-attempt focus.
+
+```ts
+// src/inngest/goal-loop.ts (trimmed)
+const exp = event.data.variant
+  ? await group.experiment("brief", {
+      variants: Object.fromEntries(
+        VARIANT_NAMES.map((v) => [v, () => step.run(`brief-${v}`, () => BRIEF_VARIANTS[v])]),
+      ),
+      select: experiment.fixed(event.data.variant),
+    })
+  : undefined;
+
+// ... the loop runs ...
+
+// Run-scoped, and attributed to the experiment's variant when there is one.
+// recordScores writes inngest.score.experiment() calls inside one step.run (src/lib/score.ts).
+await recordScores(
+  step,
+  "score-final",
+  {
+    "train.pass_rate": 1 - best.score,
+    "holdout.pass_rate": 1 - holdout.score,
+    generalization_gap: holdout.score - best.score,
+    cost_usd: costUsd,
+  },
+  { experiment: exp?.experimentRef, runId },
+);
+```
+
+The selection is memoized like any other step, so a retry or a replay never switches a run to a different brief halfway through. The repo's eval script gives each run a fixed variant, so every variant gets the same number of runs, and its report groups the finished goals by variant. On live traffic you'd swap `experiment.fixed` for `experiment.weighted` and let Inngest split the runs.
+
+What sent me here was a hint I couldn't trust yet. Runs with Go's documentation in the brief did far better than the runs without it, and one model solved the goal in two attempts. But that was one run each, on different days of provider routing. An experiment turns a hint like that into a comparison.
+
+This is [online evaluation](/blog/online-vs-offline-ai-evals-when-to-use-each?ref=blog-building-a-durable-goal-agent-loop-that-survives-crashes): the real goal, run again. There's no versioned dataset of past goals to replay offline, so if you need one, that's still a separate piece. Scoring is also in open beta.
+
+## How do you watch a loop that runs for hours?
+
+You subscribe to a [Realtime](/docs/realtime?ref=blog-building-a-durable-goal-agent-loop-that-survives-crashes) channel the loop publishes to, with each publish wrapped in a memoized step that swallows its own errors. In the build log I put it as: a watcher is a viewer, and a realtime hiccup must never retry or fail a goal. Memoizing each publish also means a replay never sends the same update twice.
+
+The repo's terminal UI is built on that channel plus the events API: it rebuilds a goal's history, follows it live, and sends the review note when the loop parks. The run doesn't know or care whether anyone is watching.
+
+![The agent-loop terminal UI following a goal live over Realtime](/assets/blog/building-a-durable-goal-agent-loop-that-survives-crashes/terminal-ui.jpeg)
+
+## Run it on your own goal
+
+Clone the [agent-loop example](https://github.com/inngest/agent-examples/tree/main/agent-loop) and swap in your own check. The loop doesn't care what it's grinding on: replace `golden/` with whatever produces your ground truth and `check/` with whatever scores against it, and keep the rest. The sandboxed check needs Sandboxes, which are in public beta on the [Pro plan and above](/pricing?ref=blog-building-a-durable-goal-agent-loop-that-survives-crashes). The README covers running it on the local dev server, on Inngest Cloud with a long-lived [Connect worker](/docs/setup/connect?ref=blog-building-a-durable-goal-agent-loop-that-survives-crashes), and the limits I've already hit, so you'll know where the edges are before you find them.
+
+That's the run that goes for days, without the bet.
