@@ -544,7 +544,7 @@ budget: { usd?: number; tokens?: number }
 ```
 
 - The budget belongs to the thread, comes from its own agent's definition and is never handed down by the agent that started it. It is always enforced.
-- When a thread has spent it, the loop ends with `end: "budget"` and a `reason`. With no handler, the run's output says the thread's budget is spent.
+- When a thread has spent it, the loop ends with `end: "budget"` and a `reason`. With no handler, the run's output is the model's last text.
 
 `price` overrides the prices the model reports. It is a per-million-token table or a function that prices a call, and it does not take `{ event, thread }`.
 
