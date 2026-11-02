@@ -857,8 +857,8 @@ export const docsRefreshOutline: DocsRefreshPage[] = [
             href: "/docs/labs/agents/recipes",
             children: [
               {
-                title: "Slack assistant",
-                href: "/docs/labs/agents/recipes/slack-assistant",
+                title: "Support assistant",
+                href: "/docs/labs/agents/recipes/support-assistant",
               },
               {
                 title: "Issue triage",
@@ -953,10 +953,6 @@ export const docsRefreshOutline: DocsRefreshPage[] = [
               {
                 title: "Project structure",
                 href: "/docs/labs/agents/structure",
-              },
-              {
-                title: "Slack and GitHub",
-                href: "/docs/labs/agents/slack-and-github",
               },
               {
                 title: "Run on Workers",
