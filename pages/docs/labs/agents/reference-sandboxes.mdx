@@ -117,7 +117,7 @@ A value in the record is a definition, or a binding:
 | `sandbox` | required | The definition. |
 | `model` | `true` | `false` keeps the sandbox for code only: the model gets none of its tools. |
 | `start` | `"lazy"` | `"lazy"` creates the sandbox on first use. `"eager"` begins creating it when the run opens its sandboxes. May be a function of `{ event }`. |
-| `idle` | `"pause"` | What setting the sandbox aside does, when the run ends or on `recycle()`. `"pause"` keeps it, disk and all. `"snapshot"` saves a snapshot and destroys it. |
+| `idle` | `"pause"` | How the sandbox is set aside when the run ends or on `recycle()`. `"pause"` keeps it, disk and all. `"snapshot"` saves a snapshot and destroys it. |
 
 - Every listed sandbox adds its [code tools](#code-tools) to the model's, named `<key>_<tool>`: `work_run`, `work_push`. The agent's own `tools` lists only the extras.
 - Listing a sandbox starts nothing. With `start: "lazy"` it starts the first time the model calls one of its tools, or code first uses it.
