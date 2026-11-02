@@ -6,7 +6,7 @@ export const description = "Open a durable inbox in an Inngest function with ste
 
 > Receive a stream of events inside a running function, and read them when you're ready.
 
-<Compatibility />
+<Compatibility endpoints={false} />
 
 [`step.waitForEvent()`](/docs/durable-execution/primitives/step-waitforevent) waits for one event. `step.subscribe()` opens an inbox that keeps every matching event, in order, while the run works.
 
