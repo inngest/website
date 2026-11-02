@@ -100,9 +100,9 @@ You want to wait for the next thing on the PR. Call `next()` with nothing unread
 async ({ inbox }) => {
   await inbox.next();
 
-  const comment = await inbox.next();
+  const next = await inbox.next();
 
-  return `Next on the PR: ${comment?.name}`;
+  return `Next on the PR: ${next?.name}`;
 },
 ```
 
@@ -110,7 +110,7 @@ The run uses nothing while it waits.
 
 ## Pull the plug
 
-You want to trust that waiting survives anything. Stop the app while a run waits, start it again, then comment on the PR: the run carries on where it was. Inngest holds the wait, not your app. [Deploys →](/docs/labs/agents/reliability?ref=docs-labs-agents-inboxes#deploys-and-long-runs)
+You want to trust that waiting survives anything. Stop the app while a run waits, start it again, then fail CI on the PR: the run carries on where it was. Inngest holds the wait, not your app. [Deploys →](/docs/labs/agents/reliability?ref=docs-labs-agents-inboxes#deploys-and-long-runs)
 
 ## Answer every message
 
@@ -202,7 +202,7 @@ The next trigger starts a new run. A run opened by `start()` ends once it has an
 
 ## Give up waiting
 
-You want to stop waiting for a review that never comes. Give `next()` a `timeout`.
+You want to stop waiting for CI that never reports. Give `next()` a `timeout`.
 
 {/* not type-checked: inbox.next({ timeout }) in an agent handler */}
 ```typescript
@@ -211,13 +211,13 @@ import { gh } from "../lib/github";
 async ({ inbox, me, step }) => {
   await inbox.next();
 
-  const review = await inbox.next({ timeout: "1m" });
+  const next = await inbox.next({ timeout: "1m" });
 
-  if (review === null) {
+  if (next === null) {
     await step.run("comment", async () => {
       return await gh.comment(
         Number(me.key),
-        "No reviews for a minute, so I'm moving on.",
+        "CI hasn't reported for a minute, so I'm moving on.",
       );
     });
   }
