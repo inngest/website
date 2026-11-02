@@ -33,13 +33,12 @@ export const HERO = {
   },
   // Shows the command itself rather than a generic label, per design.
   installCta: { label: "npm install inngest", command: "npm install inngest" },
-  // The design's run-trace panel: a step.run function with a flaky step
-  // retrying across three attempts before completing.
+  // Campaign photo from the NYC Marathon course.
   visual: {
-    src: "/assets/v1/nyc-long-run/dashboard-header-ui.png",
-    alt: "An Inngest run trace: a step.run function with a flaky step retrying across three attempts before completing, alongside each step's duration.",
-    width: 1255,
-    height: 973,
+    src: "/assets/v1/nyc-long-run/keep-running-sign.jpg",
+    alt: "A spectator at the NYC Marathon holds up an Inngest sign reading “Some things should keep running. You, apparently.” as runners pass.",
+    width: 2000,
+    height: 1333,
   },
 } as const;
 

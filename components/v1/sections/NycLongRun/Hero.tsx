@@ -111,9 +111,11 @@ export default function Hero() {
           </motion.div>
         </div>
 
-        {/* No frame: the panel artwork carries its own chrome and sits
-            directly on the page background. */}
-        <motion.div {...entry(700)} className="mt-12 lg:mt-0">
+        {/* Framed like the page's other photos (rounded, subtle border). */}
+        <motion.div
+          {...entry(700)}
+          className="mt-12 overflow-hidden rounded-lg border border-v1-subtle lg:mt-0"
+        >
           <Image
             src={HERO.visual.src}
             alt={HERO.visual.alt}
