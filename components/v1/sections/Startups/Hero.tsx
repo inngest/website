@@ -71,7 +71,31 @@ export default function Hero() {
           </div>
 
           <div className="border-t border-v1-steel/20 pt-8">
-            <FormTestimonial />
+            <FormTestimonial
+              logo={{
+                // Same lockup as the home LogoStrip; the spiral mark is
+                // taller than the wordmark, so it renders a bit taller
+                // than the Resend default to keep the letters even.
+                src: "/assets/customers/ordinal-logo-white.svg",
+                alt: "Ordinal",
+                width: 109,
+                height: 30,
+              }}
+              quote={
+                <>
+                  Inngest let us outsource all the infrastructure under our
+                  orchestration, to continue to scale Ordinal with just two
+                  engineers. Defining what needs to happen in code just makes
+                  sense to me.
+                </>
+              }
+              caption={
+                <>
+                  <span className="block">Francisco Delgado</span>
+                  <span className="block">Co-founder, Ordinal</span>
+                </>
+              }
+            />
           </div>
 
           <div className="flex flex-row items-center gap-4 border-t border-v1-steel/20 pt-8">
