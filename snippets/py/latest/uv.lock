@@ -159,13 +159,17 @@ wheels = [
 
 [[package]]
 name = "inngest"
-version = "0.5.19"
-source = { git = "https://github.com/inngest/inngest-py?subdirectory=pkg%2Finngest&rev=cc58a7b#cc58a7b0cc346bfee5ed71595d6943ae4db2536e" }
+version = "0.5.20"
+source = { registry = "https://pypi.org/simple" }
 dependencies = [
     { name = "httpx" },
     { name = "jcs" },
     { name = "pydantic" },
     { name = "typing-extensions" },
+]
+sdist = { url = "https://files.pythonhosted.org/packages/8a/06/8c8660e32c4609e1f89845fe34853de039d3bd2ce26f9c3f75c125c5810c/inngest-0.5.20.tar.gz", hash = "sha256:eda7f333aae34d64533ad0c985b577016f622bd5438027083ad8a020c9347fac", size = 184244, upload-time = "2026-11-02T20:02:57.628Z" }
+wheels = [
+    { url = "https://files.pythonhosted.org/packages/87/e8/e002a5773b80b795cd7bd0e590545e061d402d47c882241ce0d8ce362835/inngest-0.5.20-py3-none-any.whl", hash = "sha256:154650839dceb3d6a97755f639eb21c6cc8a98a1f5b664c770c3e9edbfce22b8", size = 247005, upload-time = "2026-11-02T20:02:55.972Z" },
 ]
 
 [[package]]
@@ -370,7 +374,7 @@ dependencies = [
 requires-dist = [
     { name = "fastapi", specifier = ">=0.128.0" },
     { name = "flask", specifier = ">=3.1.3" },
-    { name = "inngest", git = "https://github.com/inngest/inngest-py?subdirectory=pkg%2Finngest&rev=cc58a7b" },
+    { name = "inngest", specifier = ">=0.5.20" },
     { name = "mypy", specifier = "==1.16.1" },
     { name = "pydantic", specifier = ">=2.0.0" },
     { name = "ruff", specifier = "==0.12.2" },
