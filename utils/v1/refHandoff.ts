@@ -7,16 +7,19 @@
  * module carries the same `ref` value to the next page without the URL:
  *
  *   1. An internal link carries `data-ref="<placement>"` and a clean href.
- *   2. On click, `installRefClickListener()` stores `{ ref, path }` in a
+ *   2. On click, `installRefClickListener()` adds `{ ref, path, time }` to a
  *      short-lived first-party cookie. A cookie (not sessionStorage) survives
  *      full page loads between the App Router and Pages Router halves of the
- *      site, and links opened in a new tab.
+ *      site, and links opened in a new tab. It holds a short list of pending
+ *      handoffs, so several links opened in new tabs at once don't overwrite
+ *      each other.
  *   3. On the destination page, `getPageRef()` returns `?ref=` from the URL
  *      when present (external sites, the app, sign-up links keep using it),
- *      and otherwise the handoff value when the cookie's path matches the
- *      current page. The cookie is cleared once read and the value is cached
- *      for the life of the page, so a form submitted minutes later still
- *      sees it.
+ *      and otherwise claims the oldest pending handoff for the current path.
+ *      The claimed entry is removed, and the result is remembered for the
+ *      rest of that page view, so a form submitted minutes later still sees
+ *      it. A fresh handoff always wins over that memory, so returning to a
+ *      page through a different link reports the new placement.
  *
  * Everything that used to read `?ref=` from the URL (Segment page views, the
  * contact and YC forms, the demo view event) reads `getPageRef()` instead, so
@@ -28,6 +31,8 @@
 
 export const REF_HANDOFF_COOKIE = "inngest_ref_handoff";
 export const REF_HANDOFF_MAX_AGE_SECONDS = 30;
+/** Most pending handoffs kept at once; older ones are dropped first. */
+export const REF_HANDOFF_MAX_ENTRIES = 10;
 
 /** GTM dataLayer event pushed once per page view that has a ref. */
 export const REF_PAGE_VIEW_EVENT = "ref_page_view";
@@ -40,10 +45,16 @@ export interface PageRef {
   source: RefSource;
 }
 
-interface Handoff {
+/** One pending handoff: a tracked click waiting for its destination. */
+export interface Handoff {
   ref: string;
+  /** Normalised destination path. */
   path: string;
+  /** Click time, ms since epoch. */
+  time: number;
 }
+
+const MAX_AGE_MS = REF_HANDOFF_MAX_AGE_SECONDS * 1000;
 
 /** "/pricing/" and "/pricing" are the same page; "" is "/". */
 export function normalizePath(pathname: string): string {
@@ -51,50 +62,60 @@ export function normalizePath(pathname: string): string {
   return trimmed === "" ? "/" : trimmed;
 }
 
-export function serializeHandoff(handoff: Handoff): string {
-  return encodeURIComponent(JSON.stringify(handoff));
+export function serializeHandoffs(handoffs: Handoff[]): string {
+  return encodeURIComponent(JSON.stringify(handoffs));
 }
 
-/** Read the handoff from a `document.cookie` string. Null if absent or malformed. */
-export function parseHandoffCookie(cookieString: string): Handoff | null {
+/**
+ * Read the pending handoffs from a `document.cookie` string, oldest first.
+ * Malformed entries (or a malformed cookie) are ignored.
+ */
+export function parseHandoffCookie(cookieString: string): Handoff[] {
   const prefix = `${REF_HANDOFF_COOKIE}=`;
   const part = cookieString
     .split(/;\s*/)
     .find((cookie) => cookie.startsWith(prefix));
-  if (!part) return null;
+  if (!part) return [];
   try {
     const data = JSON.parse(decodeURIComponent(part.slice(prefix.length)));
-    if (
-      data &&
-      typeof data.ref === "string" &&
-      data.ref !== "" &&
-      typeof data.path === "string"
-    ) {
-      return { ref: data.ref, path: data.path };
-    }
+    if (!Array.isArray(data)) return [];
+    return data.filter(
+      (h): h is Handoff =>
+        h &&
+        typeof h.ref === "string" &&
+        h.ref !== "" &&
+        typeof h.path === "string" &&
+        typeof h.time === "number"
+    );
   } catch {
-    // malformed cookie — ignore
+    return [];
   }
-  return null;
+}
+
+/** Drop expired entries and keep only the newest REF_HANDOFF_MAX_ENTRIES. */
+export function pruneHandoffs(handoffs: Handoff[], now: number): Handoff[] {
+  return handoffs
+    .filter((h) => now - h.time >= 0 && now - h.time <= MAX_AGE_MS)
+    .slice(-REF_HANDOFF_MAX_ENTRIES);
 }
 
 /**
- * Pure resolution: the URL `?ref=` wins; otherwise a handoff whose path
- * matches the current page.
+ * Claim the oldest live handoff for `pathname`. Returns the claimed ref (or
+ * null) and the handoffs that remain pending for other tabs.
  */
-export function resolvePageRef(
-  search: string,
+export function claimHandoff(
+  handoffs: Handoff[],
   pathname: string,
-  cookieString: string
-): PageRef | null {
-  const urlRef = new URLSearchParams(search).get("ref");
-  if (urlRef) return { ref: urlRef, source: "url" };
-
-  const handoff = parseHandoffCookie(cookieString);
-  if (handoff && handoff.path === normalizePath(pathname)) {
-    return { ref: handoff.ref, source: "click" };
-  }
-  return null;
+  now: number
+): { ref: string | null; remaining: Handoff[] } {
+  const live = pruneHandoffs(handoffs, now);
+  const path = normalizePath(pathname);
+  const index = live.findIndex((h) => h.path === path);
+  if (index === -1) return { ref: null, remaining: live };
+  return {
+    ref: live[index].ref,
+    remaining: [...live.slice(0, index), ...live.slice(index + 1)],
+  };
 }
 
 function cookieAttributes(maxAge: number): string {
@@ -105,46 +126,76 @@ function cookieAttributes(maxAge: number): string {
   return `; Max-Age=${maxAge}; Path=/; SameSite=Lax${secure}`;
 }
 
-function clearHandoffCookie() {
-  document.cookie = `${REF_HANDOFF_COOKIE}=${cookieAttributes(0)}`;
+function writeHandoffs(handoffs: Handoff[]) {
+  document.cookie = handoffs.length
+    ? `${REF_HANDOFF_COOKIE}=${serializeHandoffs(handoffs)}${cookieAttributes(
+        REF_HANDOFF_MAX_AGE_SECONDS
+      )}`
+    : `${REF_HANDOFF_COOKIE}=${cookieAttributes(0)}`;
 }
 
-// The ref found for the current page, keyed by pathname + search so a
-// client-side navigation resolves afresh.
-let cached: { key: string; value: PageRef } | null = null;
+// The ref for the current page view, keyed by pathname + search. Stored even
+// when there is no ref, so a later page view of another URL replaces it.
+let current: { key: string; value: PageRef | null } | null = null;
+
+/** Forget the current page view's ref. Exposed for tests. */
+export function resetPageRef() {
+  current = null;
+}
 
 /**
- * The ref for the current page, or null. Safe to call repeatedly: the first
- * call that finds a handoff consumes the cookie and caches the value.
+ * The ref for the current page, or null. Safe to call repeatedly during a
+ * page view: the first call claims any pending handoff, later calls return
+ * the same answer (unless a new handoff for this page has arrived since).
  */
 export function getPageRef(): PageRef | null {
   if (typeof window === "undefined") return null;
   try {
     const { pathname, search } = window.location;
     const key = `${pathname}${search}`;
-    if (cached && cached.key === key) return cached.value;
 
-    const value = resolvePageRef(search, pathname, document.cookie);
-    if (value) {
-      cached = { key, value };
-      if (value.source === "click") clearHandoffCookie();
+    const urlRef = new URLSearchParams(search).get("ref");
+    if (urlRef) {
+      current = { key, value: { ref: urlRef, source: "url" } };
+      return current.value;
     }
-    return value;
+
+    const pending = parseHandoffCookie(document.cookie);
+    if (pending.length > 0) {
+      const { ref, remaining } = claimHandoff(pending, pathname, Date.now());
+      if (ref !== null || remaining.length !== pending.length) {
+        writeHandoffs(remaining);
+      }
+      if (ref !== null) {
+        current = { key, value: { ref, source: "click" } };
+        return current.value;
+      }
+    }
+
+    if (current && current.key === key) return current.value;
+    current = { key, value: null };
+    return null;
   } catch {
     return null;
   }
 }
 
-/** Store a handoff for a same-origin destination. No-op for other origins. */
+/** Queue a handoff for a same-origin destination. No-op for other origins. */
 export function storeRefHandoff(ref: string, href: string) {
   if (typeof window === "undefined" || !ref) return;
   try {
     const url = new URL(href, window.location.href);
     if (url.origin !== window.location.origin) return;
-    const value = serializeHandoff({ ref, path: normalizePath(url.pathname) });
-    document.cookie = `${REF_HANDOFF_COOKIE}=${value}${cookieAttributes(
-      REF_HANDOFF_MAX_AGE_SECONDS
-    )}`;
+    const now = Date.now();
+    writeHandoffs(
+      pruneHandoffs(
+        [
+          ...parseHandoffCookie(document.cookie),
+          { ref, path: normalizePath(url.pathname), time: now },
+        ],
+        now
+      )
+    );
   } catch {
     // best effort — never block navigation
   }
@@ -186,8 +237,11 @@ export function installRefClickListener(): () => void {
 export function pushRefPageView(pageRef: PageRef) {
   if (typeof window === "undefined") return;
   try {
-    window.dataLayer = window.dataLayer || [];
-    window.dataLayer.push({
+    // Typed locally (rather than via the global Window augmentation in
+    // index.d.ts) so ts-node can run this module's tests on its own.
+    const w = window as Window & { dataLayer?: unknown[] };
+    w.dataLayer = w.dataLayer || [];
+    w.dataLayer.push({
       event: REF_PAGE_VIEW_EVENT,
       ref: pageRef.ref,
       ref_source: pageRef.source,

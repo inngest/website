@@ -39,7 +39,7 @@
     "env:rm": "vercel env rm",
     "github:stars": "pnpm dlx ts-node ./scripts/updateGithubStars.ts",
     "test": "pnpm test:redirects && pnpm test:docs-markdown && pnpm test:ref-handoff",
-    "test:ref-handoff": "node --experimental-strip-types --test ./utils/v1/refHandoff.test.mjs",
+    "test:ref-handoff": "pnpm dlx ts-node ./utils/v1/refHandoff.test.ts",
     "test:docs-markdown": "pnpm dlx ts-node ./mdx/utils/docs.test.ts",
     "test:redirects": "node --test ./redirects.test.mjs",
     "preinstall": "npx only-allow pnpm"
