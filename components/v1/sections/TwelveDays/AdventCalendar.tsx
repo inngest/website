@@ -265,7 +265,7 @@ function Door({
               </div>
             )}
             <h3 className="font-sans text-[22px] font-black uppercase leading-[1.05] tracking-[-0.01em]">
-              {day.gift}
+              {day.title}
             </h3>
             <p className="text-[14px] leading-[20px] text-[#010101]/75">
               {day.body}
@@ -331,7 +331,7 @@ function Door({
             needsHold
               ? `Day ${day.day} is ready. Press and hold to open.`
               : unlocked
-              ? `Day ${day.day}: ${day.gift}`
+              ? `Day ${day.day}: ${day.title}`
               : `Day ${day.day}, opens ${opensOn} at midnight Eastern`
           }
           aria-disabled={!open && !needsHold}
@@ -414,6 +414,9 @@ function Door({
               style={{ color: face.num }}
             >
               {day.day}
+            </span>
+            <span className="relative text-[16px] leading-[22px]">
+              {day.teaser}
             </span>
             {needsHold ? (
               <span className="relative flex flex-col gap-2">

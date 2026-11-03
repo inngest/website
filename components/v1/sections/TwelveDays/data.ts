@@ -62,9 +62,14 @@ export interface WorkflowDay {
   day: number;
   /** The primitive the lesson teaches. */
   primitive: string;
-  /** The song line — "On the Nth day of workflows, Inngest gave to me…" */
-  gift: string;
-  /** One or two sentences on what it does and why it matters. */
+  /** The lesson's name, from its folder in the course repo. */
+  title: string;
+  /**
+   * The problem, the way a developer would complain about it. Shown on
+   * the door before it opens, so it's a hint, not the answer.
+   */
+  teaser: string;
+  /** One or two sentences on the fix, in the card shop's story. */
   body: string;
   /** Short, real SDK code. Keep it to a few lines; the door is small. */
   code: string;
@@ -73,137 +78,155 @@ export interface WorkflowDay {
   video?: string;
 }
 
+/**
+ * The twelve lessons, from Mitch's technical concepts (the Notion tech
+ * spec). Each one is a problem the holiday card shop hits during the
+ * rush, and the primitive that fixes it.
+ */
 export const DAYS: WorkflowDay[] = [
   {
     day: 1,
-    primitive: "Background jobs",
-    gift: "A job that runs in the background",
-    body: "Move slow work off the request. Wrap it in step.run and a failure retries just that step, while everything that already finished stays finished.",
-    code: `await step.run("send-welcome", () =>\n  email.send(user)\n);`,
+    primitive: "Durable steps",
+    title: "Survive failure",
+    teaser: "“My LLM call failed and took the whole request down with it.”",
+    body: "The image API fails twice. Wrap each call in a step and only the failed one retries, so the card's text is written, and billed, once.",
+    code: `const text = await step.run("write-card", () =>\n  llm.write(event.data.message)\n);`,
     docs: {
-      label: "Background jobs",
-      href: `/docs/guides/background-jobs?ref=${REF}-day-1`,
+      label: "Steps",
+      href: `/docs/learn/inngest-steps?ref=${REF}-day-1`,
     },
   },
   {
     day: 2,
-    primitive: "Sleeps",
-    gift: "Two sleeps a-sleeping",
-    body: "Pause a function for seconds or for weeks. No queue to babysit, no server held open while it waits.",
-    code: `await step.sleep("wait-a-day", "1d");`,
+    primitive: "Fail fast",
+    title: "Stop knocking",
+    teaser: "“Stop retrying things that are never going to work.”",
+    body: "A message that fails moderation won't pass on the fourth try. Stop right away and tell the sender, and when a provider says “come back later,” come back exactly then.",
+    code: `if (check.flagged) {\n  throw new NonRetriableError("Failed moderation");\n}\nif (res.status === 429) {\n  throw new RetryAfterError("Busy", "5s");\n}`,
     docs: {
-      label: "Sleeps",
-      href: `/docs/features/inngest-functions/steps-workflows/sleeps?ref=${REF}-day-2`,
+      label: "Error handling",
+      href: `/docs/guides/error-handling?ref=${REF}-day-2`,
     },
   },
   {
     day: 3,
-    primitive: "Wait for human input",
-    gift: "Three humans approving",
-    body: "Stop mid-function and wait for a person to click approve, with a timeout in case they never do.",
-    code: `await step.waitForEvent("approval", {\n  event: "app/expense.approved",\n  timeout: "3d",\n});`,
+    primitive: "Invoke",
+    title: "Split the work",
+    teaser: "“My flakiest API is setting the rules for my whole workflow.”",
+    body: "Rendering the art fails more than anything else. Give it its own function with ten retries and invoke it, so the rest of the card keeps the default four.",
+    code: `const art = await step.invoke("render-art", {\n  function: renderArt, // retries: 10\n  data: { prompt },\n});`,
     docs: {
-      label: "Wait for event",
-      href: `/docs/features/inngest-functions/steps-workflows/wait-for-event?ref=${REF}-day-3`,
+      label: "Invoke",
+      href: `/docs/guides/invoking-functions-directly?ref=${REF}-day-3`,
     },
   },
   {
     day: 4,
-    primitive: "Fan-out",
-    gift: "Four jobs a-fanning",
-    body: "Send one event per item and let each run on its own. One slow job never holds up the rest.",
-    code: `await step.sendEvent("fan-out",\n  users.map((u) => ({\n    name: "app/user.nudge",\n    data: u,\n  }))\n);`,
+    primitive: "Wait for event",
+    title: "Wait for a human",
+    teaser: "“I need a human to say yes before this goes out.”",
+    body: "The draft pauses until the sender approves it. Approving picks the run back up; silence lets it expire. It costs nothing while it waits, even for days.",
+    code: `const ok = await step.waitForEvent("approval", {\n  event: "card/approved",\n  match: "data.cardId",\n  timeout: "3d",\n});`,
     docs: {
-      label: "Fan-out jobs",
-      href: `/docs/guides/fan-out-jobs?ref=${REF}-day-4`,
+      label: "Wait for event",
+      href: `/docs/features/inngest-functions/steps-workflows/wait-for-event?ref=${REF}-day-4`,
     },
   },
   {
     day: 5,
-    primitive: "Cron jobs",
-    gift: "Five golden crons",
-    body: "Schedule a function with a cron expression, in whatever timezone the work lives in. It's also how these doors open.",
-    code: `triggers: {\n  cron: "TZ=America/Los_Angeles 0 9 * * 1",\n}`,
+    primitive: "Sleep and cancel",
+    title: "Deliver on the 25th",
+    teaser: "“Send this on Christmas morning, unless they cancel.”",
+    body: "The card sleeps until Christmas morning, then goes out. If the sender deletes it first, one cancel event stops the sleeping run.",
+    code: `cancelOn: [{\n  event: "card/deleted",\n  match: "data.cardId",\n}],\n// …\nawait step.sleepUntil("christmas", "2026-12-25T08:00");`,
     docs: {
-      label: "Scheduled functions",
-      href: `/docs/guides/scheduled-functions?ref=${REF}-day-5`,
+      label: "Cancel on events",
+      href: `/docs/features/inngest-functions/cancellation/cancel-on-events?ref=${REF}-day-5`,
     },
   },
   {
     day: 6,
-    primitive: "Throttling",
-    gift: "Six throttles throttling",
-    body: "Cap how fast a function runs, per user or per API key, so the third-party API on the other end stays happy.",
-    code: `throttle: {\n  limit: 6,\n  period: "1m",\n  key: "event.data.user_id",\n}`,
+    primitive: "Concurrency keys",
+    title: "One customer per lane",
+    teaser: "“One customer sent 20 cards and now everyone else is waiting.”",
+    body: "Give every account its own limit. Someone sending 20 cards no longer pushes another customer's single card to 19th in line.",
+    code: `concurrency: {\n  limit: 2,\n  key: "event.data.accountId",\n}`,
     docs: {
-      label: "Throttling",
-      href: `/docs/guides/throttling?ref=${REF}-day-6`,
+      label: "Concurrency",
+      href: `/docs/guides/concurrency?ref=${REF}-day-6`,
     },
   },
   {
     day: 7,
-    primitive: "Batching",
-    gift: "Seven batches batching",
-    body: "Collect events and process them together: one bulk insert instead of a hundred tiny ones.",
-    code: `batchEvents: {\n  maxSize: 100,\n  timeout: "7s",\n}`,
+    primitive: "Throttling",
+    title: "Respect rate limits",
+    teaser:
+      "“The image API is rate-limiting us, and our retries make it worse.”",
+    body: "Start four renders every ten seconds, just under the provider's five, and every call goes through first time. Concurrency caps how many run at once; throttling caps how many start.",
+    code: `throttle: {\n  limit: 4,\n  period: "10s",\n}`,
     docs: {
-      label: "Batching",
-      href: `/docs/guides/batching?ref=${REF}-day-7`,
+      label: "Throttling",
+      href: `/docs/guides/throttling?ref=${REF}-day-7`,
     },
   },
   {
     day: 8,
-    primitive: "AI steps",
-    gift: "Eight models a-wrapping",
-    body: "Turn each LLM call into a step, with prompts and tokens in the trace and retries when the provider hiccups.",
-    code: `await step.ai.wrap("draft-reply",\n  generateText,\n  { model, prompt }\n);`,
+    primitive: "Debounce",
+    title: "Wait for quiet",
+    teaser: "“Users smash the regenerate button and we pay for every click.”",
+    body: "Eight edits in two seconds used to mean eight LLM calls. Debounce per card, and one call runs with the latest text.",
+    code: `debounce: {\n  key: "event.data.cardId",\n  period: "2s",\n}`,
     docs: {
-      label: "AI orchestration",
-      href: `/docs/features/inngest-functions/steps-workflows/step-ai-orchestration?ref=${REF}-day-8`,
+      label: "Debounce",
+      href: `/docs/guides/debounce?ref=${REF}-day-8`,
     },
   },
   {
     day: 9,
-    primitive: "Debounce",
-    gift: "Nine debounces debouncing",
-    body: "When events arrive in a flurry, wait for the dust to settle and run once with the latest one.",
-    code: `debounce: {\n  key: "event.data.customer_id",\n  period: "9s",\n}`,
+    primitive: "Fan-out",
+    title: "Send to everyone",
+    teaser: "“Our bulk send failed halfway and 24 people got the card twice.”",
+    body: "Don't loop over 50 recipients inside one step. Send one event per recipient, so a failure at number 25 retries number 25 and nobody else.",
+    code: `await step.sendEvent("send-to-each",\n  recipients.map((to) => ({\n    name: "card/send",\n    data: { cardId, to },\n  }))\n);`,
     docs: {
-      label: "Debounce",
-      href: `/docs/guides/debounce?ref=${REF}-day-9`,
+      label: "Fan-out jobs",
+      href: `/docs/guides/fan-out-jobs?ref=${REF}-day-9`,
     },
   },
   {
     day: 10,
-    primitive: "Cancellation",
-    gift: "Ten runs a-cancelling",
-    body: "Stop a run the moment it stops making sense, like a reminder for an order that was just cancelled.",
-    code: `cancelOn: [{\n  event: "app/order.cancelled",\n  match: "data.orderId",\n}]`,
+    primitive: "Priority",
+    title: "Paid users first",
+    teaser: "“Paying customers are stuck behind free-tier traffic.”",
+    body: "Twenty free cards are queued when two Pro cards arrive. One priority expression moves the Pro cards to the front.",
+    code: `priority: {\n  run: "event.data.plan == 'pro' ? 120 : 0",\n}`,
     docs: {
-      label: "Cancel on events",
-      href: `/docs/features/inngest-functions/cancellation/cancel-on-events?ref=${REF}-day-10`,
+      label: "Priority",
+      href: `/docs/guides/priority?ref=${REF}-day-10`,
     },
   },
   {
     day: 11,
-    primitive: "Concurrency",
-    gift: "Eleven tenants queueing",
-    body: "Give every customer their own concurrency limit, so one noisy tenant can't take the whole queue.",
-    code: `concurrency: {\n  limit: 11,\n  key: "event.data.tenant_id",\n}`,
+    primitive: "Batching",
+    title: "Batch the boring stuff",
+    teaser: "“We're paying for 120 database writes that could be three.”",
+    body: "Collect “card opened” events, up to 50 or five seconds at a time, and write each batch in one insert. 120 events become three writes.",
+    code: `batchEvents: {\n  maxSize: 50,\n  timeout: "5s",\n}`,
     docs: {
-      label: "Concurrency",
-      href: `/docs/guides/concurrency?ref=${REF}-day-11`,
+      label: "Batching",
+      href: `/docs/guides/batching?ref=${REF}-day-11`,
     },
   },
   {
     day: 12,
-    primitive: "Checkpointing",
-    gift: "Twelve steps checkpointing",
-    body: "Every completed step is saved as it finishes, so a run that falls over picks up where it left off. On by default in v4.",
-    code: `new Inngest({\n  id: "my-app",\n  checkpointing: {\n    maxRuntime: "800s",\n  },\n});`,
+    primitive: "Agent Evals",
+    title: "Measure what works",
+    teaser: "“We changed the prompt. Is it actually better?”",
+    body: "Split traffic between two card tones, then score each card when the recipient actually reacts, days later. Real outcomes pick the winner, not guesses.",
+    code: `await group.experiment("card-tone", {\n  variants: { classic, playful },\n  select: experiment.weighted({\n    classic: 50, playful: 50,\n  }),\n});`,
     docs: {
-      label: "Checkpointing",
-      href: `/docs/setup/checkpointing?ref=${REF}-day-12`,
+      label: "Experiments",
+      href: `/docs/agent-evals/experiments?ref=${REF}-day-12`,
     },
   },
 ];
@@ -339,50 +362,54 @@ export const MACHINE = {
   aside: "Because even holiday chaos deserves durable execution.",
   locked: "The machine comes alive December 3.",
   steps: {
-    1: { step: 'step.run("send-welcome")', done: "Email queued", ms: 212 },
-    2: {
-      step: 'step.sleep("wait-a-day", "1d")',
-      done: "Slept 1d (fast-forwarded)",
-      ms: 86_400_000,
-    },
-    3: {
-      step: 'step.waitForEvent("approval")',
-      done: "A human said yes",
-      ms: 41_000,
-    },
-    4: {
-      step: 'step.sendEvent("fan-out")',
-      done: "Fanned out to 4 jobs",
-      ms: 38,
-    },
-    5: {
-      step: 'cron("0 9 * * 1")',
-      done: "Monday, 9 AM, right on time",
-      ms: 4,
-    },
-    6: { step: "throttle: 6/min", done: "Stayed under the limit", ms: 640 },
-    7: { step: "batchEvents: 100", done: "Inserted 100 rows at once", ms: 95 },
-    8: {
-      step: 'step.ai.wrap("draft-reply")',
-      done: "Model replied, 412 tokens",
+    1: {
+      step: 'step.run("write-card")',
+      done: "Card written, billed once",
       ms: 1_830,
     },
-    9: {
-      step: "debounce: 9s",
-      done: "Ran once, with the latest event",
-      ms: 9_000,
+    2: {
+      step: "NonRetriableError",
+      done: "Bad prompt stopped, sender told",
+      ms: 12,
     },
-    10: {
-      step: "cancelOn: order.cancelled",
-      done: "Nothing to cancel, carried on",
-      ms: 3,
+    3: {
+      step: 'step.invoke("render-art")',
+      done: "Art rendered on retry 6 of 10",
+      ms: 4_200,
     },
-    11: {
-      step: "concurrency: 11/tenant",
-      done: "Got a slot in the queue",
+    4: {
+      step: 'step.waitForEvent("approval")',
+      done: "The sender said yes",
+      ms: 41_000,
+    },
+    5: {
+      step: 'step.sleepUntil("christmas")',
+      done: "Slept until Dec 25 (fast-forwarded)",
+      ms: 86_400_000,
+    },
+    6: {
+      step: "concurrency: 2/account",
+      done: "Got its own lane",
       ms: 120,
     },
-    12: { step: "checkpoint", done: "All twelve steps saved", ms: 7 },
+    7: { step: "throttle: 4/10s", done: "No 429s", ms: 640 },
+    8: {
+      step: "debounce: 2s",
+      done: "Ran once, with the latest text",
+      ms: 2_000,
+    },
+    9: {
+      step: 'step.sendEvent("send-to-each")',
+      done: "Fanned out to 50 recipients",
+      ms: 38,
+    },
+    10: { step: "priority: pro first", done: "Jumped the queue", ms: 3 },
+    11: { step: "batchEvents: 50", done: "120 events, 3 writes", ms: 95 },
+    12: {
+      step: 'group.experiment("card-tone")',
+      done: "Playful tone pulling ahead",
+      ms: 7,
+    },
   } as Record<number, { step: string; done: string; ms: number }>,
 } as const;
 
