@@ -1,5 +1,7 @@
 import { useMemo } from "react";
 
+import { canonicalDocsHref } from "../../utils/docsCanonical.mjs";
+import { TS_STABLE } from "../Docs/LanguageStore";
 import PatternMedia from "./PatternMedia";
 
 // ─── Inline markdown ─────────────────────────────────────────────────────────
@@ -51,7 +53,7 @@ function parseInline(text: string, key = "i"): InlineNode[] {
         const urlEnd = text.indexOf(")", close + 2);
         if (urlEnd !== -1) {
           const linkText = text.slice(i + 1, close);
-          const url = text.slice(close + 2, urlEnd);
+          const url = canonicalDocsHref(text.slice(close + 2, urlEnd), TS_STABLE);
           const isInternal = url.startsWith("/");
           push(
             <a

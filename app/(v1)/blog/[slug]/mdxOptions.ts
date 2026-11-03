@@ -8,6 +8,7 @@ import { recmaCodeHike, remarkCodeHike } from "codehike/mdx";
 import { rehypeRemoveTwoSlashMarkup, rehypeShiki } from "@/utils/code";
 // @ts-ignore - local .mjs without bundled types
 import { rehypeParseCodeBlocks } from "@/mdx/rehype.mjs";
+import { rehypeCanonicalDocsLinks } from "@/mdx/rehypeCanonicalDocsLinks.mjs";
 
 const chConfig = {
   components: { code: "Code" },
@@ -36,6 +37,7 @@ export const MDX_OPTIONS = {
       rehypeRemoveTwoSlashMarkup,
       rehypeShiki,
       [rehypeRaw, { passThrough: MDX_REHYPE_NODE_TYPES }],
+      rehypeCanonicalDocsLinks,
       rehypeSlug,
     ],
     remarkPlugins: [[remarkCodeHike, chConfig], remarkGfm],

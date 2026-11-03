@@ -13,6 +13,7 @@ import {
 } from "./navigationStructure";
 import SocialBadges from "./SocialBadges";
 import { useUnreleasedLabels } from "./Unreleased";
+import { toDocsNavPath } from "./docsNavPath";
 
 function CheckIcon(props) {
   return (
@@ -169,7 +170,7 @@ function PageNavigation() {
     (page) => !page.unreleased || unreleasedLabels.has(page.unreleased)
   );
   let currentPageIndex = allPages.findIndex(
-    (page) => page.href === router.pathname
+    (page) => page.href === toDocsNavPath(router.pathname)
   );
 
   if (currentPageIndex === -1) {
