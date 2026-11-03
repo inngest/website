@@ -12,7 +12,8 @@ import {
 
 /**
  * The finale: a live CodeTV episode building a Rube Goldberg machine
- * out of everything behind the doors. The animated "keep all your weird
+ * out of everything behind the doors, plus the way into the
+ * build-a-thon whose entries star in it. The animated "keep all your weird
  * workflows running" poster loops beside it.
  */
 export default function Finale() {
@@ -54,13 +55,22 @@ export default function Finale() {
               {p}
             </motion.p>
           ))}
-          <motion.div {...reveals.body}>
+          <motion.div
+            {...reveals.body}
+            className="flex flex-col gap-3 sm:flex-row"
+          >
             <Link
               href={FINALE.cta.href}
               prefetch={false}
               className={buttonClass("ink") + " w-full sm:w-auto"}
             >
               {FINALE.cta.label}
+            </Link>
+            <Link
+              href={FINALE.buildathon.href}
+              className={buttonClass("white") + " w-full sm:w-auto"}
+            >
+              {FINALE.buildathon.label}
             </Link>
           </motion.div>
         </div>

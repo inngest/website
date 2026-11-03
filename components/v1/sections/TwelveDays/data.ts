@@ -306,10 +306,15 @@ export const FINALE = {
   title: ["Twelve workflows walk", "into one machine."],
   body: [
     "After the last door opens, join Inngest and CodeTV live as we build one gloriously overengineered Rube Goldberg machine out of everything behind the doors.",
+    "Then build your own. We'll show three of the weirdest build-a-thon entries on the stream and pick a $5K winner on air.",
   ],
   // TODO: registration link and date are still TBD; this anchor is a
   // placeholder until then.
   cta: { label: "Save your spot", href: "#finale" },
+  buildathon: {
+    label: "Enter the build-a-thon",
+    href: `/12-days-of-workflows/build-a-thon?ref=${REF}-finale`,
+  },
   video: "/assets/v1/12-days/cat-vertical.mp4",
   videoLabel:
     "Animated poster: an eyeball rolls down a ramp into a bowl balanced on someone's head, under the words Keep all your weird workflows running.",
@@ -385,4 +390,57 @@ export const MACHINE = {
     },
     12: { step: "checkpoint", done: "All twelve steps saved", ms: 7 },
   } as Record<number, { step: string; done: string; ms: number }>,
+} as const;
+
+/**
+ * The build-a-thon page (TwelveDaysBuildathon.tsx). Entries go to
+ * Segment as `12 Days Build-a-thon Submitted`; the three showcased on
+ * the finale livestream are picked from there.
+ *
+ * Submissions close December 23. TODO: the livestream (Dec 29 or 30)
+ * is still to be confirmed; add its date to `when` once it is.
+ */
+export const BUILDATHON = {
+  chips: ["Build-a-thon", "$5K prize"],
+  title: ["Build your", "weird workflow."],
+  when: "Submit by December 23. Winner picked live on CodeTV.",
+  cta: { label: "Submit your workflow", href: "#submit" },
+  body: "Use all twelve primitives from behind the doors to build one gloriously overengineered workflow that does something really simple, the Rube Goldberg way. Toast a slice of bread. Water a plant. Say good morning.",
+  rulesTitle: "The rules",
+  rules: [
+    "Your workflow uses every one of the twelve primitives below.",
+    "It does one simple thing, in the most complicated way you can make work.",
+    "It's deployed on Vercel, and the code is in a public GitHub repo.",
+    "Make it weird!*",
+  ],
+  rulesFootnote:
+    "*Weird as in a toaster that needs three approvals and a cron job to make toast. Not weirdo weird. Keep it silly, keep it kind.",
+  primitivesTitle: "Your twelve moving parts",
+  prizesTitle: "What you get",
+  prizes: [
+    "$5K cash for the winner, picked live on CodeTV.",
+    "An exclusive Inngest sweatshirt for everyone who submits.",
+  ],
+  formTitle: "Submit your workflow",
+  fields: {
+    name: "Name",
+    email: "Email",
+    company: "Company",
+    linkedin: "LinkedIn profile",
+    linkedinHint: "So we can tag you when we share it.",
+    vercel: "Vercel preview URL",
+    github: "GitHub repo URL",
+    description: "What does it do? (optional)",
+    descriptionHint: "One or two sentences. The more absurd, the better.",
+    confirm: "My workflow uses all twelve primitives.",
+  },
+  button: "Submit my workflow",
+  sending: "Submitting…",
+  sent: "Got it. Your workflow is in the running. Watch the finale to see if it makes the show.",
+  failed: "That didn't go through. Try again?",
+  back: { label: "Back to the calendar", href: "/12-days-of-workflows" },
+  startCta: {
+    label: "Start building free",
+    href: `/sign-up?ref=${REF}-build-a-thon`,
+  },
 } as const;
