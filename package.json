@@ -13,7 +13,7 @@
   "main": "n/a",
   "scripts": {
     "dev": "next dev -p ${PORT:-3001}",
-    "build": "node scripts/check-image-sizes.mjs && next build && next-sitemap",
+    "build": "node scripts/check-image-sizes.mjs && next build && next-sitemap && node scripts/check-ref-links.mjs",
     "check:images": "node scripts/check-image-sizes.mjs",
     "start": "next start",
     "link-check": "lychee --config lychee.toml --base-url http://localhost:3001 './content/**/*.mdx' './pages/**/*.mdx' './pages/**/*.tsx' './app/**/*.tsx'",
