@@ -17,7 +17,11 @@ const FAQS: FaqItem[] = [
     id: "exceed-included-runs",
     question: "What happens when I exceed my plan's included executions?",
     answer:
-      "On Pro, overage is metered at tiered rates that decrease as volume grows (from $0.000050 down to $0.000015 per execution, based on current published rates). On Free, there's no metered overage — execution pauses once you hit the free quota, and you'll need to upgrade to resume.",
+      "The Free plan is a hard cap. Runs pause at 50,000 executions until you upgrade.\n\nPro, Business, and Enterprise are not capped. They keep running, and executions past the included amount are billed.\n\nOn Pro and Business, the rate comes from total monthly executions, counted from zero. Included executions are free and still set which tier you pay next.\n\nUp to 5 million: $50 per million ($0.000050).\n5 million to 15 million: $25 per million ($0.000025).\n15 million to 50 million: $20 per million ($0.000020).\nAbove 50 million: $15 per million ($0.000015).\n\nPro includes 1 million, so the next 4 million, through 5 million total, are $50 per million. Business includes 10 million, so the next 5 million, from 10 million to 15 million total, are $25 per million. Enterprise rates are custom.",
+    link: {
+      label: "Execution limits",
+      href: "/docs/durable-execution/limits",
+    },
   },
   {
     id: "which-limits",
