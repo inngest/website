@@ -3,12 +3,20 @@ const path = require("node:path");
 const matter = require("gray-matter");
 
 // unreleased pages and blog posts with noindex stay out of the sitemap.
-// their robots metadata conflicts with a sitemap entry.
+// their robots metadata conflicts with a sitemap entry. So do posts
+// republished from a partner's site: their canonical_url names the
+// partner's original, and a sitemap entry would claim the copy instead.
 function sourceIsExcludedFromSitemap(filePath) {
   try {
     const src = fs.readFileSync(filePath, "utf8");
     const data = matter(src).data;
     if (data.unreleased || data.noindex) return true;
+    if (
+      typeof data.canonical_url === "string" &&
+      !/^https:\/\/www\.inngest\.com(\/|$)/.test(data.canonical_url)
+    ) {
+      return true;
+    }
     return /export\s+const\s+unreleased\s*=/.test(src);
   } catch {
     return false;
@@ -128,11 +136,8 @@ module.exports = {
     // Pages with noindex set in code — sitemap + noindex is contradictory.
     "/content/ai-in-production-report-2026",
     "/content/ai-in-production-report-2026/*",
-    // NYC campaign page — still in review, noindex in its own metadata,
-    // so it must stay out of the sitemap. Remove this line to list it.
-    "/nyc-long-run",
-    // step.run campaign page — noindex until it's reviewed.
-    "/long-run",
+    // YC deal page — shared directly, noindex in its own metadata.
+    "/yc",
     "/resources/access/*",
   ],
 };
