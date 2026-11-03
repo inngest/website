@@ -1,6 +1,7 @@
 const fs = require("node:fs");
 const path = require("node:path");
 const matter = require("gray-matter");
+const { lastmodFor } = require("./next-sitemap.lastmod.js");
 
 // unreleased pages and blog posts with noindex stay out of the sitemap.
 // their robots metadata conflicts with a sitemap entry. So do posts
@@ -84,7 +85,8 @@ module.exports = {
       loc: (await getCanonicalizer())(urlPath),
       changefreq: config.changefreq,
       priority: config.priority,
-      lastmod: config.autoLastmod ? new Date().toISOString() : undefined,
+      // Real dates only, never the build time; see next-sitemap.lastmod.js.
+      lastmod: lastmodFor(urlPath),
       alternateRefs: config.alternateRefs ?? [],
     };
   },

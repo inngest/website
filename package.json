@@ -38,10 +38,11 @@
     "env:add": "vercel env add",
     "env:rm": "vercel env rm",
     "github:stars": "pnpm dlx ts-node ./scripts/updateGithubStars.ts",
-    "test": "pnpm test:redirects && pnpm test:docs-markdown && pnpm test:ref-handoff && pnpm test:docs-canonical && pnpm test:middleware",
+    "test": "pnpm test:redirects && pnpm test:docs-markdown && pnpm test:ref-handoff && pnpm test:docs-canonical && pnpm test:middleware && pnpm test:sitemap-lastmod",
     "test:middleware": "pnpm dlx tsx --test ./middleware.test.ts",
     "test:ref-handoff": "pnpm dlx ts-node ./utils/v1/refHandoff.test.ts",
     "test:docs-canonical": "node --test ./utils/docsCanonical.test.mjs",
+    "test:sitemap-lastmod": "node --test ./next-sitemap.lastmod.test.mjs",
     "test:docs-markdown": "pnpm dlx ts-node ./mdx/utils/docs.test.ts",
     "test:redirects": "node --test ./redirects.test.mjs",
     "preinstall": "npx only-allow pnpm"
