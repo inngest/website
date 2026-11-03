@@ -9,7 +9,7 @@ export const description = "Inngest usage limits by plan: concurrency, event pay
 Check the limits that affect your run, steps, events, and history before deployment. Your hosting provider can impose separate request and runtime limits on the code you serve.
 
 ## Plan-based limits
-These limits and included monthly allowances apply to Inngest Cloud. The [pricing page](https://www.inngest.com/pricing) lists billing and overage rates.
+These limits and included monthly allowances apply to Inngest Cloud. [Plan prices](/pricing?ref=docs-durable-execution-limits) are on the pricing page. Execution overage rates are below.
 
 
 | Measure | Free | Pro | Business | Enterprise |
@@ -29,6 +29,28 @@ These limits and included monthly allowances apply to Inngest Cloud. The [pricin
 | Maximum function run length, including sleeps | 30 days | 90 days | 366 days | Custom |
 
 An **execution** is one function run or one step execution. A function run with five steps uses six executions.
+
+## Execution overage
+
+The Free plan stops at 50,000 executions per month. Runs pause until you upgrade.
+
+Pro, Business, and Enterprise do not stop. Executions above the included amount are billed.
+
+On Pro and Business, the price comes from the tiers below. A tier is based on total executions for the month, counted from zero. Included executions are free, and they still set which tier you pay next.
+
+| Monthly executions | Per million | Per execution |
+| --- | --- | --- |
+| Up to 5 million | $50 | $0.000050 |
+| 5 million to 15 million | $25 | $0.000025 |
+| 15 million to 50 million | $20 | $0.000020 |
+| 50 million and above | $15 | $0.000015 |
+
+Pro includes 1 million executions. The next 4 million, through 5 million total, are billed at $50 per million.
+
+Business includes 10 million executions. The next 5 million, from 10 million to 15 million total, are billed at $25 per million.
+
+Enterprise execution pricing is custom.
+
 **Maximum function run length** is the total time from when a run starts to when it finishes, including time spent in `step.sleep()`, `step.sleepUntil()`, and `step.waitForEvent()`. On the Free plan, a run can sleep for up to 30 days in total.
 
 Only active resources count toward these workspace, app, and function limits. The functions-per-workspace value is the app limit multiplied by the function limit; it is not a separate limit.
