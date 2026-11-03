@@ -275,7 +275,6 @@ export const CALENDAR = {
   title: "No peeking.",
   subtitle: "The workflows are still wrapping themselves.",
   body: "One new workflow unlocks every weekday, December 3–18. Come back for a short lesson, runnable code, and the docs to make it your own. Miss a day? Catch up whenever you like.",
-  completed: "Completed ✓",
   /** Each door's sign-up link. */
   tryIt: "Try it free",
 } as const;
@@ -318,11 +317,6 @@ export const FINALE = {
   video: "/assets/v1/12-days/cat-vertical.mp4",
   videoLabel:
     "Animated poster: an eyeball rolls down a ramp into a bowl balanced on someone's head, under the words Keep all your weird workflows running.",
-} as const;
-
-export const SONG = {
-  eyebrow: "The song so far",
-  locked: "The first verse drops December 3.",
 } as const;
 
 export const CLOSING = {
@@ -445,5 +439,32 @@ export const BUILDATHON = {
   startCta: {
     label: "Start building free",
     href: `/sign-up?ref=${REF}-build-a-thon`,
+  },
+} as const;
+
+/**
+ * The build-a-thon section on the 12 Days page (BuildathonTeaser.tsx):
+ * the short version of the rules, linking out to the full page.
+ */
+export const BUILDATHON_TEASER = {
+  eyebrow: "The build-a-thon",
+  title: ["Build your", "weird workflow."],
+  body: "Twelve doors, twelve primitives. Put every one of them into a single workflow that does something really simple in the most overengineered way you can make work.",
+  when: BUILDATHON.when,
+  guidelines: [
+    "Use all twelve primitives from the calendar.",
+    "Do one simple thing, the Rube Goldberg way.",
+    "Deploy it on Vercel, with the code in a public GitHub repo.",
+    "Make it weird!*",
+  ],
+  footnote: BUILDATHON.rulesFootnote,
+  prizes: BUILDATHON.prizes,
+  cta: {
+    label: "See the full rules",
+    href: `/12-days-of-workflows/build-a-thon?ref=${REF}-build-a-thon-section`,
+  },
+  submit: {
+    label: "Submit your workflow",
+    href: `/12-days-of-workflows/build-a-thon?ref=${REF}-build-a-thon-section#submit`,
   },
 } as const;

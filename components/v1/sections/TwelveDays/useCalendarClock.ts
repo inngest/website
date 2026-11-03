@@ -44,44 +44,6 @@ export function formatCountdown(ms: number): string {
   return `${d > 0 ? `${d}d ` : ""}${pad(h)}:${pad(m)}:${pad(s)}`;
 }
 
-const PROGRESS_KEY = "12-days-of-workflows:done";
-
-/**
- * Which lessons this visitor has marked done. Lives in this browser
- * only, so every read and write is allowed to fail.
- */
-export function useLessonProgress() {
-  const [done, setDone] = useState<number[]>([]);
-
-  useEffect(() => {
-    try {
-      const raw = window.localStorage.getItem(PROGRESS_KEY);
-      const parsed: unknown = raw ? JSON.parse(raw) : [];
-      if (Array.isArray(parsed)) {
-        setDone(parsed.filter((n): n is number => typeof n === "number"));
-      }
-    } catch {
-      // Private mode or blocked storage: start empty.
-    }
-  }, []);
-
-  const toggle = (day: number) => {
-    setDone((prev) => {
-      const next = prev.includes(day)
-        ? prev.filter((d) => d !== day)
-        : [...prev, day].sort((a, b) => a - b);
-      try {
-        window.localStorage.setItem(PROGRESS_KEY, JSON.stringify(next));
-      } catch {
-        // Still works for this visit.
-      }
-      return next;
-    });
-  };
-
-  return { done, toggle };
-}
-
 const OPENED_KEY = "12-days-of-workflows:opened";
 
 /**

@@ -40,15 +40,7 @@ import {
  * What's behind a locked door isn't rendered at all, so there's nothing
  * to find in the DOM before its day.
  */
-export default function AdventCalendar({
-  now,
-  done,
-  onToggleDone,
-}: {
-  now: Date | null;
-  done: number[];
-  onToggleDone: (day: number) => void;
-}) {
+export default function AdventCalendar({ now }: { now: Date | null }) {
   const gridRef = useRef<HTMLUListElement>(null);
   // Doors wait to pop until someone can see them, so the stagger isn't
   // spent above the fold while the visitor is still reading the hero.
@@ -132,8 +124,6 @@ export default function AdventCalendar({
                   staggerIndex={position}
                   needsHold={day.day === today && !opened.includes(day.day)}
                   onOpened={() => markOpened(day.day)}
-                  done={done.includes(day.day)}
-                  onToggleDone={() => onToggleDone(day.day)}
                   countdown={
                     now && day.day === nextDay
                       ? formatCountdown(
@@ -171,8 +161,6 @@ function Door({
   needsHold,
   onOpened,
   countdown,
-  done,
-  onToggleDone,
 }: {
   day: WorkflowDay;
   unlocked: boolean;
@@ -181,8 +169,6 @@ function Door({
   needsHold: boolean;
   onOpened: () => void;
   countdown: string | null;
-  done: boolean;
-  onToggleDone: () => void;
 }) {
   const reduceMotion = useReducedMotion();
   const face = DOOR_FACES[(day.day - 1) % DOOR_FACES.length];
@@ -256,16 +242,9 @@ function Door({
             inert={!open}
             aria-hidden={!open}
           >
-            <div className="flex items-center justify-between">
-              <p className="font-v1Label text-[13px] uppercase">
-                Lesson {day.day} · {day.primitive}
-              </p>
-              {done && (
-                <span className="shrink-0 whitespace-nowrap rounded-full bg-[#0BDD48] px-2 py-0.5 font-v1Label text-[12px] uppercase">
-                  {CALENDAR.completed}
-                </span>
-              )}
-            </div>
+            <p className="font-v1Label text-[13px] uppercase">
+              Lesson {day.day} · {day.primitive}
+            </p>
             {/* Lesson video, or its slot until it's cut. */}
             {day.video ? (
               <video
@@ -305,22 +284,12 @@ function Door({
             >
               {CALENDAR.tryIt} <span aria-hidden="true">→</span>
             </a>
-            <div className="flex items-center justify-between gap-3 pt-1">
-              <Link
-                href={day.docs.href}
-                className="inline-flex items-center gap-2 font-v1Label text-[13px] uppercase underline-offset-4 hover:underline"
-              >
-                {day.docs.label} docs <span aria-hidden="true">→</span>
-              </Link>
-              <button
-                type="button"
-                onClick={onToggleDone}
-                aria-pressed={done}
-                className={buttonClass("outline", "sm")}
-              >
-                {done ? "Undo" : "Mark done"}
-              </button>
-            </div>
+            <Link
+              href={day.docs.href}
+              className="inline-flex items-center gap-2 pt-1 font-v1Label text-[13px] uppercase underline-offset-4 hover:underline"
+            >
+              {day.docs.label} docs <span aria-hidden="true">→</span>
+            </Link>
           </div>
         )}
       </div>
