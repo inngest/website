@@ -38,7 +38,7 @@ We used a stack of excellent services to get the job done:
 - **Deepgram**: AI Transcription using Whisper models for excellent high-quality results
 - **OpenAI**: Just a little extra sauce.
 
-All of this is glued together with **[Inngest, which provides consistent, reliable, resilient, and understandable workflows](https://inngest.com)** throughout the complex asynchronous process.
+All of this is glued together with **[Inngest, which provides consistent, reliable, resilient, and understandable workflows](https://www.inngest.com)** throughout the complex asynchronous process.
 
 ## The Problem
 

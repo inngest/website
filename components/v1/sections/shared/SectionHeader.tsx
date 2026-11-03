@@ -29,8 +29,11 @@ import { V1_SECTION_TITLE } from "@/components/v1/sections/shared/sectionTitle";
  * layout's text column. Reveal animations match the standard cadence.
  */
 export interface SectionHeaderProps {
-  /** id for the `<h2>` (wire the section's `aria-labelledby` to it). */
+  /** id for the title heading (wire the section's `aria-labelledby` to it). */
   id?: string;
+  /** Heading level for the title. Use "h1" when this is the page's main
+   *  heading; defaults to "h2". */
+  as?: "h1" | "h2";
   eyebrow?: ReactNode;
   title: ReactNode;
   body?: ReactNode;
@@ -50,6 +53,7 @@ export interface SectionHeaderProps {
 
 export default function SectionHeader({
   id,
+  as = "h2",
   eyebrow,
   title,
   body,
@@ -61,14 +65,15 @@ export default function SectionHeader({
   className,
 }: SectionHeaderProps) {
   const hasSub = Boolean(body || actions);
+  const Heading = as === "h1" ? motion.h1 : motion.h2;
   const titleEl = (
-    <motion.h2
+    <Heading
       {...reveals.heading}
       id={id}
       className={cn(V1_SECTION_TITLE, titleClassName)}
     >
       {title}
-    </motion.h2>
+    </Heading>
   );
   return (
     <div className={cn("flex flex-col gap-v1-stack", className)}>

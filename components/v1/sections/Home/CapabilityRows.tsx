@@ -41,7 +41,7 @@ const CAPABILITIES: Capability[] = [
     videoSrc:
       "https://cdn.inngest.com/homepage/june-2026-redesign-dashboard-tour-v2.mp4",
     videoPoster: "/assets/v1/home/posters/observability.webp",
-    docsHref: "/docs/platform/monitor/traces",
+    docsHref: "/docs/platform-and-operations/traces",
   },
   {
     id: "flow-control",
@@ -52,7 +52,7 @@ const CAPABILITIES: Capability[] = [
     videoSrc:
       "https://cdn.inngest.com/homepage/june-2026-flow-control-website.mp4",
     videoPoster: "/assets/v1/home/posters/flow-control.webp",
-    docsHref: "/docs/guides/flow-control",
+    docsHref: "/docs/durable-execution/flow-control",
   },
   {
     id: "sandboxes",
@@ -74,7 +74,7 @@ const CAPABILITIES: Capability[] = [
     body: "How do you know if your agent works? If you want to know which variant actually performed better, you used to have to stitch together data from multiple systems, implement human reviews, and build a layer of instrumentation on top. Inngest captures all of this data by default, so you can add scoring the same way you add retries.",
     videoSrc: "https://cdn.inngest.com/homepage/june-2026-score-website.mp4",
     videoPoster: "/assets/v1/home/posters/scoring.webp",
-    docsHref: "/docs/learn/agent-evals",
+    docsHref: "/docs/agent-evals/overview",
   },
 ];
 

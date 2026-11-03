@@ -265,7 +265,7 @@ Two properties came for free. The loop uploads holdout cases only when it scores
 
 ## How do you tell whether a change to the loop actually helped?
 
-You score every attempt inside the run, and split runs across variants with an [experiment](/docs/features/inngest-functions/steps-workflows/step-experiments?ref=blog-building-a-durable-goal-agent-loop-that-survives-crashes). Both are steps in the same function that runs the loop, so the eval data comes out of running the goal. Nothing gets exported to a separate tool, and every score sits in the same trace as the attempt that produced it.
+You score every attempt inside the run, and split runs across variants with an [experiment](/docs/agent-evals/experiments?ref=blog-building-a-durable-goal-agent-loop-that-survives-crashes). Both are steps in the same function that runs the loop, so the eval data comes out of running the goal. Nothing gets exported to a separate tool, and every score sits in the same trace as the attempt that produced it.
 
 After each attempt, the loop records a handful of [Inngest scores](/docs/agent-evals/scores?ref=blog-building-a-durable-goal-agent-loop-that-survives-crashes): the check's fail rate, whether the attempt was kept, how many turns it took and what it cost. At the end it scores the final best on the train and holdout cases, plus the gap between them. The gap is the number I'd watch. A loop that [learns to satisfy its own check report](/blog/build-self-learning-agent?ref=blog-building-a-durable-goal-agent-loop-that-survives-crashes) shows up as a train score the holdout doesn't match.
 
@@ -315,6 +315,6 @@ The repo's terminal UI is built on that channel plus the events API: it rebuilds
 
 ## Run it on your own goal
 
-Clone the [agent-loop example](https://github.com/inngest/agent-examples/tree/main/agent-loop) and swap in your own check. The loop doesn't care what it's grinding on: replace `golden/` with whatever produces your ground truth and `check/` with whatever scores against it, and keep the rest. The sandboxed check needs Sandboxes, which are in public beta on the [Pro plan and above](/pricing?ref=blog-building-a-durable-goal-agent-loop-that-survives-crashes). The README covers running it on the local dev server, on Inngest Cloud with a long-lived [Connect worker](/docs/setup/connect?ref=blog-building-a-durable-goal-agent-loop-that-survives-crashes), and the limits I've already hit, so you'll know where the edges are before you find them.
+Clone the [agent-loop example](https://github.com/inngest/agent-examples/tree/main/agent-loop) and swap in your own check. The loop doesn't care what it's grinding on: replace `golden/` with whatever produces your ground truth and `check/` with whatever scores against it, and keep the rest. The sandboxed check needs Sandboxes, which are in public beta on the [Pro plan and above](/pricing?ref=blog-building-a-durable-goal-agent-loop-that-survives-crashes). The README covers running it on the local dev server, on Inngest Cloud with a long-lived [Connect worker](/docs/durable-execution/deploying-functions/connect?ref=blog-building-a-durable-goal-agent-loop-that-survives-crashes), and the limits I've already hit, so you'll know where the edges are before you find them.
 
 That's the run that goes for days, without the bet.
