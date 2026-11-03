@@ -53,19 +53,28 @@ export default function NycResources() {
           <motion.li key={r.id} {...reveals.item(i)} className="list-none">
             <Link
               href={r.href}
-              className="group flex h-full flex-col gap-4 rounded-lg border border-v1-subtle p-6 transition-colors duration-200 hover:border-v1-contrast"
+              className="group flex h-full flex-col overflow-hidden rounded-lg border border-v1-subtle transition-colors duration-200 hover:border-v1-contrast"
             >
-              <span className="text-v1-label-sm uppercase text-v1-frost/55">
-                {r.kind}
-              </span>
-              <span className="text-v1-heading-xs flex-1 text-v1-frost">
-                {r.title}
-              </span>
-              <span
-                aria-hidden="true"
-                className="text-v1-label-md uppercase text-v1-accent-salmon"
-              >
-                Read →
+              <img
+                src={r.image.src}
+                alt={r.image.alt}
+                loading="lazy"
+                decoding="async"
+                className="block aspect-[2/1] w-full border-b border-v1-subtle object-cover"
+              />
+              <span className="flex flex-1 flex-col gap-4 p-6">
+                <span className="text-v1-label-sm uppercase text-v1-frost/55">
+                  {r.kind}
+                </span>
+                <span className="text-v1-heading-xs flex-1 text-v1-frost">
+                  {r.title}
+                </span>
+                <span
+                  aria-hidden="true"
+                  className="text-v1-label-md uppercase text-v1-accent-salmon"
+                >
+                  Read →
+                </span>
               </span>
             </Link>
           </motion.li>

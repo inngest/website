@@ -24,7 +24,7 @@ export const metadata: Metadata = {
       city: "nyc",
     }),
     description:
-      "Build apps and agents that run for days. Wrap functions in steps that pause for events, retry, fan-out, and handle everything production throws at you — without touching infra.",
+      "26.2 is one kind of lonng run. Another happens in production. If you're building agents, you know they might have to wait hours or days for user input. Wrap code in APIs that tell it when to stop, start, fan-out, and retry, so your app picks up where it left off, not back at the starting line.",
   }),
   robots: { index: false, follow: false },
 };
