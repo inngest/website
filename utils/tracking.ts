@@ -1,3 +1,5 @@
+import { getPageRef } from "@/utils/v1/refHandoff";
+
 export const trackPageView = (url: string) => {
   if (typeof window.Inngest === "undefined") {
     console.warn("Inngest is not initialized");
@@ -16,11 +18,8 @@ export const trackPageView = (url: string) => {
 };
 
 export const trackDemoView = () => {
-  let ref = null;
-  try {
-    const urlParams = new URLSearchParams(window.location.search);
-    ref = urlParams.get("ref");
-  } catch (e) {}
+  // URL `?ref=` first, then a ref handed off by a tracked link click.
+  const ref = getPageRef()?.ref ?? null;
 
   if (typeof window.Inngest === "undefined") {
     console.warn("Inngest is not initialized");
