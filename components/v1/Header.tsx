@@ -396,6 +396,20 @@ export default function Header() {
               />
             </div>
           )}
+
+          {/* Every other menu's links, in the HTML from first load and
+              hidden with CSS. The layer above only mounts on hover, and
+              crawlers don't hover, so without this none of the mega-menu
+              links (or the mobile menu, which lists the same items) are
+              visible to search engines or AI crawlers. The open menu is
+              left out here so its links aren't rendered twice. */}
+          <div className="hidden">
+            {ALL_NAV.filter(
+              (item) => item.menu && item.label !== activeItem?.label
+            ).map((item) => (
+              <NavMenuPanel key={item.label} menu={item.menu!} />
+            ))}
+          </div>
         </div>
       </div>
       <MobileMenu isOpen={menuOpen} onClose={closeMenu} />
