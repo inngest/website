@@ -69,8 +69,16 @@ module.exports = {
   exclude: [
     "*/_*",
     "*/landing/*",
+    "/blog-markdown",
     "/blog-markdown/*",
+    "/docs-markdown",
     "/docs-markdown/*",
+    // Plain-text and markdown files for AI crawlers. Found via llms.txt and
+    // robots.txt, not the sitemap, which lists HTML pages only.
+    "/blog.txt",
+    "/llm-context.md",
+    "/llms.txt",
+    "/llms-full.txt",
     "/api/*",
     "*/download-gate-form*",
     // Pages that have been redirected — keep these out of the sitemap.

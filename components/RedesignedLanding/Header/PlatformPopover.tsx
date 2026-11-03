@@ -31,7 +31,7 @@ export const platformDropdown = [
   },
   {
     name: "Durable Workflows",
-    href: "/uses/durable-workflows?ref=nav",
+    href: "/platform/durable-execution?ref=nav",
     description: "Learn about durable workflows, retries, and more",
     icon: (
       <svg
@@ -52,7 +52,7 @@ export const platformDropdown = [
   },
   {
     name: "Durable Endpoints",
-    href: "/durable-endpoints?ref=nav",
+    href: "/platform/durable-execution?ref=nav",
     description: "Build fault-tolerant API endpoints",
     icon: (
       <svg
@@ -71,7 +71,7 @@ export const platformDropdown = [
   },
   {
     name: "Platform",
-    href: "/platform?ref=nav",
+    href: "/platform/durable-execution?ref=nav",
     description: "Learn about features, flow control, and more",
     icon: (
       <svg
@@ -90,7 +90,7 @@ export const platformDropdown = [
   },
   {
     name: "Queueing",
-    href: "/compare-to-legacy-queues?ref=nav",
+    href: "/platform/flow-control?ref=nav",
     description: "Compare Inngest to legacy queues",
     icon: (
       <svg
@@ -109,7 +109,7 @@ export const platformDropdown = [
   },
   {
     name: "Workflow Engines",
-    href: "/uses/workflow-engine?ref=nav",
+    href: "/uses/webhooks?ref=nav",
     description: "Learn about workflow engines",
     icon: (
       <svg
@@ -147,7 +147,7 @@ export const platformDropdown = [
   },
   {
     name: "Scheduled and cron jobs",
-    href: "/uses/serverless-cron-jobs?ref=nav",
+    href: "/uses/scheduled-jobs?ref=nav",
     description: "Learn about scheduled and recurring jobs",
     icon: (
       <svg

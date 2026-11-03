@@ -413,6 +413,7 @@ export const permanentRedirects = [
   // a few standalone LPs being retired.
   ["/uses/durable-workflows", "/platform/durable-execution"],
   ["/compare-to-legacy-queues", "/platform/flow-control"],
+  ["/uses/serverless-queues", "/platform/flow-control"],
   ["/uses/serverless-cron-jobs", "/uses/scheduled-jobs"],
   ["/uses/workflow-engine", "/uses/webhooks"],
   ["/durable-endpoints", "/platform/durable-execution"],

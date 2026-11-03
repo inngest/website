@@ -79,7 +79,7 @@ export const NYC_USE_CASES: NycUseCase[] = [
     title: "Workflows",
     body: "Coordinate multi-step processes without losing completed work.",
     icon: "durable-execution",
-    href: "/docs/features/inngest-functions/steps-workflows?ref=nyc-long-run-use-cases",
+    href: "/docs/durable-execution/primitives?ref=nyc-long-run-use-cases",
     image: {
       src: "/assets/v1/nyc-long-run/workflows.png",
       // Decorative: the card title and body already say what it is.
@@ -92,7 +92,7 @@ export const NYC_USE_CASES: NycUseCase[] = [
     title: "Background jobs",
     body: "Run work beyond the request-response cycle.",
     icon: "background-jobs",
-    href: "/docs/guides/background-jobs?ref=nyc-long-run-use-cases",
+    href: "/docs/patterns/jobs/keeping-your-api-fast?ref=nyc-long-run-use-cases",
     image: {
       src: "/assets/v1/nyc-long-run/background-jobs.png",
       // Decorative: the card title and body already say what it is.
@@ -105,7 +105,7 @@ export const NYC_USE_CASES: NycUseCase[] = [
     title: "AI agents",
     body: "Support unpredictable sequences of model calls and tool use.",
     icon: "ai-workflows",
-    href: "/docs/learn/durable-agents?ref=nyc-long-run-use-cases",
+    href: "/docs/durable-execution/durable-agents?ref=nyc-long-run-use-cases",
     image: {
       src: "/assets/v1/nyc-long-run/agent-bot.png",
       // Decorative: the card title and body already say what it is.
@@ -118,7 +118,7 @@ export const NYC_USE_CASES: NycUseCase[] = [
     title: "Data pipelines",
     body: "Process multi-step data operations with durable execution.",
     icon: "queues",
-    href: "/docs/guides/flow-control?ref=nyc-long-run-use-cases",
+    href: "/docs/durable-execution/flow-control?ref=nyc-long-run-use-cases",
     image: {
       src: "/assets/v1/nyc-long-run/data-pipelines.png",
       // Decorative: the card title and body already say what it is.

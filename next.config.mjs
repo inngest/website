@@ -340,6 +340,11 @@ const nextConfig = {
         hostname: "cdn.inngest.com",
         pathname: "/codetv-hackathon-landing-page/**",
       },
+      {
+        protocol: "https",
+        hostname: "cdn.inngest.com",
+        pathname: "/customers/**",
+      },
     ],
     // Next.js 16 requires explicit localPatterns for all next/image local sources
     localPatterns: [

@@ -22,7 +22,7 @@ const STUDIES: CaseStudyItem[] = [
       </>
     ),
     logo: { src: "/assets/v1/logos/resend.svg", alt: "Resend", width: 96, height: 24 },
-    cta: { label: "See the reliable webhook patterns", href: "/patterns/build-reliable-webhooks" },
+    cta: { label: "See the reliable webhook patterns", href: "/docs/patterns/jobs/build-reliable-webhooks" },
   },
   {
     id: "clerk-auth",
@@ -65,7 +65,7 @@ const STUDIES: CaseStudyItem[] = [
       </>
     ),
     logo: { src: "/assets/v1/logos/outtake.svg", alt: "Outtake", width: 136, height: 24 },
-    cta: { label: "Read the event coordination pattern", href: "/patterns/event-coordination-for-lost-customers" },
+    cta: { label: "Read the event coordination pattern", href: "/docs/patterns/events/event-coordination-for-lost-customers" },
   },
   {
     id: "internal-events",

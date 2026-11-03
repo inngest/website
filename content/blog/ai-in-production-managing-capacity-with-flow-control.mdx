@@ -65,7 +65,7 @@ Second, AI APIs are expensive. The scale they have costs money, so they can be e
 
 Third, AI APIs are flaky. Scale doesn't always work perfectly, so in their nascent state, these AI services can flake out constantly, so you need a way to retry calls to ensure that the flakiness doesn't cascade to your product and impact your users' experience.
 
-[Durable execution](/uses/durable-workflows?ref=blog-manage-capacity-ai) and [flow control](/docs/durable-execution/flow-control?ref=blog-manage-capacity-ai) are required. Adding these allows you to run AI reliably while controlling costs and user experience.
+[Durable execution](/platform/durable-execution?ref=blog-manage-capacity-ai) and [flow control](/docs/durable-execution/flow-control?ref=blog-manage-capacity-ai) are required. Adding these allows you to run AI reliably while controlling costs and user experience.
 
 ## Comply with API rate limits with throttling
 
@@ -290,7 +290,7 @@ export const userWorkflow = inngest.createFunction(
 )
 ```
 
-If the OpenAI and Hugging Face calls work, but the Anthropic call doesn't, this flow doesn't require you to re-run the first two API calls, thus incurring extra costs. [Durable execution](/uses/durable-workflows?ref=blog-manage-capacity-ai) means state and retries (as well as logging and observability so you know what went wrong) will be handled for you.
+If the OpenAI and Hugging Face calls work, but the Anthropic call doesn't, this flow doesn't require you to re-run the first two API calls, thus incurring extra costs. [Durable execution](/platform/durable-execution?ref=blog-manage-capacity-ai) means state and retries (as well as logging and observability so you know what went wrong) will be handled for you.
 
 ### Singleton Functions for exclusive execution
 

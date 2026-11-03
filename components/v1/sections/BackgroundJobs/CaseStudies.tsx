@@ -44,7 +44,7 @@ const STUDIES: CaseStudyItem[] = [
     title: "Billing & payments",
     body: "Stripe webhooks, invoice generation, subscription lifecycle events, and reconciliation jobs.",
     logo: { src: "/assets/v1/logos/replit.svg", alt: "Replit", width: 112, height: 28 },
-    cta: { label: CTA_LABEL, href: "/customers/replit?ref=background-jobs" },
+    // No Replit customer story is published yet, so the card has no link.
   },
 ];
 

@@ -6,20 +6,20 @@ export const navigation = {
     { name: "AI & Agents", href: "/ai?ref=footer-links" },
     {
       name: "Durable Workflows",
-      href: "/uses/durable-workflows?ref=footer-links",
+      href: "/platform/durable-execution?ref=footer-links",
     },
     {
       name: "Durable Endpoints",
-      href: "/durable-endpoints?ref=footer-links",
+      href: "/platform/durable-execution?ref=footer-links",
     },
-    { name: "Platform", href: "/platform?ref=footer-links" },
+    { name: "Platform", href: "/platform/durable-execution?ref=footer-links" },
     {
       name: "Queueing",
-      href: "/compare-to-legacy-queues?ref=footer-links",
+      href: "/platform/flow-control?ref=footer-links",
     },
     {
       name: "Workflow Engines",
-      href: "/uses/workflow-engine?ref=footer-links",
+      href: "/uses/webhooks?ref=footer-links",
     },
     {
       name: "Background Jobs",
@@ -27,14 +27,14 @@ export const navigation = {
     },
     {
       name: "Scheduled and cron jobs",
-      href: "/uses/serverless-cron-jobs?ref=homepage-footer-links",
+      href: "/uses/scheduled-jobs?ref=homepage-footer-links",
     },
   ],
   explore: [
     { name: "Docs", href: "/docs?ref=footer-links" },
     {
       name: "Inngest vs. Traditional Queues",
-      href: "/compare-to-legacy-queues?ref=footer-links",
+      href: "/platform/flow-control?ref=footer-links",
     },
     {
       name: "Inngest vs. Kafka",

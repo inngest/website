@@ -18,7 +18,7 @@ export default function BlogHeader({ description }: { description: string }) {
         </h2>
       </div>
       <div className="flex flex-row items-center gap-2 lg:gap-4">
-        <p className="text-sm text-carbon-200">{description}</p>
+        <h1 className="text-sm text-carbon-200">{description}</h1>
         <a
           href="/api/rss.xml"
           className="hidden rounded-md border border-transparent py-1 text-subtle transition-all hover:border-carbon-200/30 hover:text-white md:block"

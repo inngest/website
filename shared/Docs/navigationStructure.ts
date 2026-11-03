@@ -658,7 +658,7 @@ export const menuTabs = [
   {
     title: "Examples",
     icon: LightBulbIcon,
-    href: "/docs/examples/",
+    href: "/docs/examples",
     matcher: matchers.examples,
   },
   {
@@ -698,7 +698,7 @@ export const topLevelNav = [
     id: "examples",
     title: "Examples",
     icon: LightBulbIcon,
-    href: "/docs/examples/",
+    href: "/docs/examples",
     sectionLinks: [...sectionExamples, ...sectionPatterns],
     matcher: matchers.examples,
   },

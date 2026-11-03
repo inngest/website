@@ -251,9 +251,23 @@ function extractArticleHeadings(content: string): BlogTocItem[] {
 }
 
 export function generateStaticParams(): { slug: string }[] {
-  return loadAllPostsMeta()
-    .filter((p) => !p.data.redirect)
-    .map((p) => ({ slug: p.slug }));
+  const posts = loadAllPostsMeta().filter((p) => !p.data.redirect);
+
+  // The <title>, H1, Open Graph title and /blog listing all come from
+  // `heading`. A post without one ships as "undefined - Inngest Blog" and
+  // silently drops out of /blog, so fail the build instead.
+  const missingHeading = posts
+    .filter(
+      (p) => typeof p.data.heading !== "string" || p.data.heading.trim() === ""
+    )
+    .map((p) => p.slug);
+  if (missingHeading.length > 0) {
+    throw new Error(
+      `Blog posts missing a "heading" in front matter: ${missingHeading.join(", ")}`
+    );
+  }
+
+  return posts.map((p) => ({ slug: p.slug }));
 }
 
 export async function generateMetadata({
