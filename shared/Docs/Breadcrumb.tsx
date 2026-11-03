@@ -11,6 +11,7 @@ import {
   topLevelNav,
 } from "./navigationStructure";
 import { getAllSections, hasNavGroupPath } from "./Navigation";
+import { toDocsNavPath } from "./docsNavPath";
 import Link from "next/link";
 import ChevronRight from "../Icons/ChevronRight";
 
@@ -49,7 +50,7 @@ export function Breadcrumb() {
   let router = useRouter();
 
   const hierarchyLinks = useMemo(
-    () => getHierarchyLinks(router.pathname),
+    () => getHierarchyLinks(toDocsNavPath(router.pathname)),
     [router.pathname]
   );
 

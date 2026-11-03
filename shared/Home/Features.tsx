@@ -51,11 +51,11 @@ const content = [
     ),
     ctas: [
       {
-        href: "/docs/reference/typescript/v4/functions/step-sleep",
+        href: "/docs/reference/typescript/functions/step-sleep",
         text: "Learn about sleep",
       },
       {
-        href: "/docs/reference/typescript/v4/functions/step-sleep-until",
+        href: "/docs/reference/typescript/functions/step-sleep-until",
         text: "Learn about sleepUntil",
       },
     ],
@@ -91,11 +91,11 @@ const content = [
     ),
     ctas: [
       {
-        href: "/docs/reference/typescript/v4/functions/rate-limit",
+        href: "/docs/reference/typescript/functions/rate-limit",
         text: "Learn about rate limit",
       },
       {
-        href: "/docs/reference/typescript/v4/functions/debounce",
+        href: "/docs/reference/typescript/functions/debounce",
         text: "Learn about debounce",
       },
     ],
@@ -129,7 +129,7 @@ const content = [
     ),
     ctas: [
       {
-        href: "/docs/reference/typescript/v4/functions/handling-failures",
+        href: "/docs/reference/typescript/functions/handling-failures",
         text: "Learn about handling failures",
       },
     ],
@@ -146,7 +146,7 @@ const content = [
     ),
     ctas: [
       {
-        href: "/docs/reference/typescript/v4/functions/step-wait-for-event",
+        href: "/docs/reference/typescript/functions/step-wait-for-event",
         text: "Learn about waiting for events",
       },
     ],

@@ -4,12 +4,19 @@ import {
   BookOpenIcon,
   CodeBracketIcon,
 } from "@heroicons/react/24/outline";
+import { canonicalDocsPath } from "../../utils/docsCanonical.mjs";
 import { TS_STABLE, type TSVersion } from "./LanguageStore";
 import { docsRefreshOutline, type DocsRefreshPage } from "./docsRefreshOutline";
 import PATTERN_SECTIONS, { PATTERNS } from "../Patterns/patternsData";
 
+// The stable version's pages link to their versionless canonical URL; see
+// utils/docsCanonical.mjs. Compare against router.pathname with
+// toDocsNavPath(), which applies the same rule.
 function tsRef(version: TSVersion, path: string): string {
-  return `/docs/reference/typescript/${version}/${path}`;
+  return canonicalDocsPath(
+    `/docs/reference/typescript/${version}/${path}`,
+    TS_STABLE
+  );
 }
 
 export type NavLink = {
@@ -664,7 +671,7 @@ export const menuTabs = [
   {
     title: "SDKs & APIs",
     icon: CodeBracketIcon,
-    href: `/docs/reference/typescript/${TS_STABLE}/intro`,
+    href: tsRef(TS_STABLE, "intro"),
     matcher: matchers.reference,
   },
 ];
@@ -706,7 +713,7 @@ export const topLevelNav = [
     id: "sdk",
     title: "SDKs & APIs",
     icon: CodeBracketIcon,
-    href: `/docs/reference/typescript/${TS_STABLE}/intro`,
+    href: tsRef(TS_STABLE, "intro"),
     matcher: matchers.reference,
     sectionLinks: sectionReference,
   },

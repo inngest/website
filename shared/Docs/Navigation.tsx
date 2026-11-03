@@ -52,6 +52,7 @@ import {
   type SDKLanguage,
   type TSVersion,
 } from "./LanguageStore";
+import { toDocsNavPath } from "./docsNavPath";
 import TypeScriptIcon from "src/shared/Icons/TypeScript";
 import PythonIcon from "src/shared/Icons/Python";
 import GoIcon from "src/shared/Icons/Go";
@@ -72,7 +73,7 @@ export function ActiveSectionProvider({
   children: React.ReactNode;
 }) {
   const router = useRouter();
-  const pathname = router.pathname;
+  const pathname = toDocsNavPath(router.pathname);
 
   const getInitialSection = useCallback(() => {
     const section = topLevelNav.find(
@@ -119,7 +120,7 @@ function isMatch(
 
 function TopLevelNavItem({ href, matcher, title, icon: Icon }) {
   const router = useRouter();
-  const pathname = router.pathname;
+  const pathname = toDocsNavPath(router.pathname);
   const isActive = isMatch(matcher, pathname) || href === pathname;
   return (
     <NavLink href={href} isTopLevel={true}>
@@ -137,7 +138,7 @@ function TopLevelNavItem({ href, matcher, title, icon: Icon }) {
 
 export function TabItem({ href, children, matcher, title }) {
   const router = useRouter();
-  const pathname = router.pathname;
+  const pathname = toDocsNavPath(router.pathname);
   const isActive = isMatch(matcher, pathname) || href === pathname;
 
   return (
@@ -385,7 +386,7 @@ function NavigationGroup({
   let isInsideMobileNavigation = useIsInsideMobileNavigation();
   let [router] = useInitialValue([useRouter()], isInsideMobileNavigation);
 
-  const currentPath = router.pathname;
+  const currentPath = toDocsNavPath(router.pathname);
 
   // hack: animation flickers on initial render so let's enable it after mount
   let [animateAccordion, setAnimateAccordion] = useState(false);
@@ -594,7 +595,7 @@ function NavigationSection({ group }: { group: NavGroup }) {
       <NavigationLinks
         links={group.links}
         nestingLevel={1}
-        currentPath={router.pathname}
+        currentPath={toDocsNavPath(router.pathname)}
         emphasizeGroups
       />
     </li>
@@ -948,7 +949,7 @@ function VersionSwitcher({
 export function Navigation(props) {
   const router = useRouter();
 
-  const pathname = router.pathname;
+  const pathname = toDocsNavPath(router.pathname);
 
   const { activeSection } = useActiveSection();
   const { effectiveLanguage, effectiveTsVersion, setLanguage, setTsVersion } =

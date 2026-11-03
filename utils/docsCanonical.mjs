@@ -29,3 +29,35 @@ export function canonicalDocsPath(pathname, stableVersion) {
   if (rest === "" || rest.startsWith("migrations/")) return pathname;
   return `/docs/reference/typescript/${rest}`;
 }
+
+const INNGEST_ORIGIN = /^https?:\/\/(?:www\.)?inngest\.com(?=[/?#]|$)/i;
+
+/**
+ * canonicalDocsPath() for a link href rather than a bare path, so internal
+ * links point at the canonical URL instead of the duplicate. Accepts root
+ * relative paths and absolute inngest.com URLs, keeps any query or hash, and
+ * returns every other href (external, relative, mailto:, …) unchanged.
+ *
+ * Content can keep linking to /docs/reference/typescript/<version>/…: while
+ * that version is stable the link renders versionless, and once a newer
+ * version ships it renders as written, pinned to the old version.
+ *
+ * @template {string | undefined | null} T
+ * @param {T} href
+ * @param {string} stableVersion TS_STABLE_VERSION, e.g. "v4"
+ * @returns {T}
+ */
+export function canonicalDocsHref(href, stableVersion) {
+  if (typeof href !== "string") return href;
+  const origin = href.match(INNGEST_ORIGIN)?.[0] ?? "";
+  if (!origin && (!href.startsWith("/") || href.startsWith("//"))) return href;
+
+  const rest = href.slice(origin.length);
+  const suffixAt = rest.search(/[?#]/);
+  const pathname = suffixAt === -1 ? rest : rest.slice(0, suffixAt);
+  const suffix = suffixAt === -1 ? "" : rest.slice(suffixAt);
+
+  const canonical = canonicalDocsPath(pathname, stableVersion);
+  if (canonical === pathname) return href;
+  return /** @type {T} */ (origin + canonical + suffix);
+}
