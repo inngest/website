@@ -1,3 +1,4 @@
+// @ts-check
 /**
  * Real `lastmod` dates for the XML sitemap.
  *
@@ -20,6 +21,10 @@ const { execFileSync } = require("node:child_process");
 const matter = require("gray-matter");
 
 /** "YYYY-MM-DD" (W3C date) for front-matter dates; null if not a date. */
+/**
+ * @param {unknown} value
+ * @returns {string | null}
+ */
 function toW3CDate(value) {
   if (!value) return null;
   const d = value instanceof Date ? value : new Date(String(value));
@@ -27,19 +32,32 @@ function toW3CDate(value) {
   return d.toISOString().slice(0, 10);
 }
 
+/**
+ * @param {string} rel repo-relative path
+ * @returns {string | null}
+ */
 function readIfExists(rel) {
   const abs = path.join(process.cwd(), rel);
   return fs.existsSync(abs) ? fs.readFileSync(abs, "utf8") : null;
 }
 
+/**
+ * @param {string[]} candidates repo-relative paths
+ * @returns {string | undefined}
+ */
 function firstExisting(candidates) {
   return candidates.find((rel) => fs.existsSync(path.join(process.cwd(), rel)));
 }
 
 /** Blog and changelog: the date the content says it was published/updated. */
+/**
+ * @param {string} rel repo-relative path
+ * @returns {string | null}
+ */
 function contentDate(rel) {
   const src = readIfExists(rel);
   if (src === null) return null;
+  /** @type {Record<string, unknown>} */
   let data = {};
   try {
     data = matter(src).data;
@@ -54,8 +72,10 @@ function contentDate(rel) {
   return exported ? toW3CDate(exported[1]) : null;
 }
 
+/** @type {Map<string, string> | undefined} */
 let gitDates;
 /** Map of repo-relative path → ISO date of the last commit touching it. */
+/** @returns {Map<string, string>} */
 function loadGitDates() {
   if (gitDates) return gitDates;
   gitDates = new Map();
@@ -97,6 +117,10 @@ function loadGitDates() {
 }
 
 /** The lastmod for a sitemap URL path, or undefined to omit it. */
+/**
+ * @param {string} urlPath sitemap path, e.g. "/blog/my-post"
+ * @returns {string | undefined}
+ */
 function lastmodFor(urlPath) {
   const p = urlPath.replace(/\/+$/, "");
 
