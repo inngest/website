@@ -1,3 +1,4 @@
+import Image from "next/image";
 import Link from "next/link";
 import RegisterCue from "@/components/v1/sections/Events/RegisterCue";
 import SpotlightFrame from "@/components/v1/sections/Events/SpotlightFrame";
@@ -73,13 +74,23 @@ function Tile({ post }: { post: PostCard }) {
     );
   }
   return (
-    <div className="aspect-[2/1] w-full shrink-0 overflow-hidden">
-      <img
+    <div className="relative aspect-[2/1] w-full shrink-0 overflow-hidden">
+      <Image
         src={post.image}
         alt=""
-        loading="lazy"
-        className="h-full w-full object-cover"
+        fill
+        // Cards are at most ~445px wide (3 columns in a 1440px container).
+        sizes="(min-width: 1024px) 445px, (min-width: 640px) 50vw, 100vw"
+        unoptimized={skipOptimizer(post.image)}
+        className="object-cover"
       />
     </div>
   );
+}
+
+/** The optimizer can't improve SVGs or animated GIFs, and it rejects local
+ *  paths with a query string (e.g. `?v=2` cache busters) unless they are
+ *  allowed in images.localPatterns. Serve those as-is. */
+function skipOptimizer(src: string): boolean {
+  return /\.(svg|gif)(\?|$)/i.test(src) || /^\/[^?]*\?/.test(src);
 }
