@@ -438,7 +438,10 @@ export const BUILDATHON = {
   sending: "Submitting…",
   sent: "Got it. Your workflow is in the running. Watch the finale to see if it makes the show.",
   failed: "That didn't go through. Try again?",
-  back: { label: "Back to the calendar", href: "/12-days-of-workflows" },
+  back: {
+    label: "Back to the calendar",
+    href: `/12-days-of-workflows?ref=${REF}-build-a-thon`,
+  },
   startCta: {
     label: "Start building free",
     href: `/sign-up?ref=${REF}-build-a-thon`,
