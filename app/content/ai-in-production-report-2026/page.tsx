@@ -23,7 +23,7 @@ export const metadata: Metadata = {
     description: PAGE_DESCRIPTION,
     image: "/assets/reports/2026-benchmark/og/landing.png",
   }),
-  robots: { index: false, follow: false },
+  robots: { index: false, follow: true },
   alternates: {
     canonical: "https://www.inngest.com/blog/ai-in-production-report-2026",
   },

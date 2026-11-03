@@ -20,8 +20,7 @@ import { LR_SECTION_PADDING } from "@/components/v1/sections/LongRun/headings";
  * Product-led, campaign second: hero → the product difference → use
  * cases → quick starts → the campaign programming → resources.
  *
- * Not indexed yet: the route sends `noindex, nofollow` and is excluded
- * from the sitemap.
+ * Indexable and in the sitemap (see app/(v1)/long-run/page.tsx).
  */
 export default function LongRun() {
   return (

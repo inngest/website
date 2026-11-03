@@ -17,9 +17,9 @@ import { SF_SECTION_PADDING } from "@/components/v1/sections/SfLongRun/sfHeading
  * Product-led, campaign second: hero → the product difference → use
  * cases → quick starts → the San Francisco programming → resources.
  *
- * Live but unlisted. The route sends `noindex, nofollow`, is excluded
- * from the sitemap, and nothing on the site links to it, so the only
- * way in is the URL on a poster.
+ * Indexable and in the sitemap (see app/(v1)/sf-long-run/page.tsx).
+ * Nothing on the site links to it; most visitors arrive from the URL on
+ * a poster.
  */
 export default function SfLongRun() {
   return (

@@ -7,12 +7,14 @@ import { canonicalDocsPath } from "@/utils/docsCanonical.mjs";
  *
  * Responsibilities:
  *
- * 1. SEO canonicalization (all pages)
- *    Emits a `Link: <canonical>; rel="canonical"` HTTP response header (clean
- *    pathname, no query params) as a belt-and-suspenders signal to crawlers.
- *    The HTML `<link rel="canonical">` tag itself comes from the root layout's
- *    `metadata.alternates.canonical` (app router) and `pages/_app.tsx` (pages
- *    router) — not from middleware.
+ * 1. SEO canonicalization (markdown mirrors only)
+ *    Emits a `Link: <canonical>; rel="canonical"` HTTP response header on
+ *    /docs-markdown and /blog-markdown, which have no HTML to carry a tag.
+ *    HTML pages declare their canonical in the page itself: the root layout's
+ *    `metadata.alternates.canonical` (app router), the blog post metadata and
+ *    `pages/_app.tsx` (pages router). Those know about page-level overrides
+ *    (e.g. a syndicated post's `canonical_url`); a header built here from the
+ *    request path cannot, so it is not sent on HTML pages.
  *
  * 2. Markdown serving for AI agents / AEO (blog + docs only)
  *
@@ -84,33 +86,38 @@ export function middleware(req: NextRequest) {
     }
   }
 
-  // ── Pass-through: add Vary, canonical Link, and markdown alternate headers ─
+  // ── Pass-through: add Vary, mirror canonical, and markdown alternate headers
 
   const res = NextResponse.next();
   res.headers.set("Vary", "Accept");
 
-  // Canonical: always the clean pathname with no query params. For the
-  // markdown mirrors (/docs-markdown, /blog-markdown), canonicalize to the
-  // corresponding HTML page so crawlers don't index the raw markdown as a
-  // duplicate.
+  // Canonical header for the markdown mirrors (/docs-markdown,
+  // /blog-markdown) only: point crawlers at the corresponding HTML page so
+  // they don't index the raw markdown as a duplicate. HTML pages carry their
+  // own canonical tag (see the note at the top of this file).
   // For /docs-markdown the canonical must name where the doc actually lives:
   // the route serves moved docs in place (see resolveDocsPath), so canonicalising
   // to the requested slug would point crawlers at a URL that only 308s.
   const docsMarkdownSlug = pathname.match(/^\/docs-markdown(?:\/(.*))?$/);
-  // The stable TypeScript reference canonicalises to its versionless URL
-  // (utils/docsCanonical.mjs), matching the HTML canonical tag.
-  const canonicalPathname = canonicalDocsPath(
-    docsMarkdownSlug
-      ? `/docs${
-          docsMarkdownSlug[1] ? `/${resolveDocsPath(docsMarkdownSlug[1])}` : ""
-        }`
-      : pathname.replace(/^\/blog-markdown(\/|$)/, "/blog$1"),
-    TS_STABLE_VERSION
-  );
-  res.headers.set(
-    "Link",
-    `<${SITE_ORIGIN}${canonicalPathname}>; rel="canonical"`
-  );
+  const isBlogMarkdown = /^\/blog-markdown(\/|$)/.test(pathname);
+  if (docsMarkdownSlug || isBlogMarkdown) {
+    // The stable TypeScript reference canonicalises to its versionless URL
+    // (utils/docsCanonical.mjs), matching the HTML canonical tag.
+    const canonicalPathname = canonicalDocsPath(
+      docsMarkdownSlug
+        ? `/docs${
+            docsMarkdownSlug[1]
+              ? `/${resolveDocsPath(docsMarkdownSlug[1])}`
+              : ""
+          }`
+        : pathname.replace(/^\/blog-markdown(\/|$)/, "/blog$1"),
+      TS_STABLE_VERSION
+    );
+    res.headers.set(
+      "Link",
+      `<${SITE_ORIGIN}${canonicalPathname}>; rel="canonical"`
+    );
+  }
 
   // Markdown alternate link for blog/docs so agents can discover raw content.
   if (/^\/blog\/[^/]+$/.test(pathname)) {
