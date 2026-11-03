@@ -79,6 +79,11 @@ pnpm env:pull  # Get environment variables from Vercel
 
 - **Always use relative URLs for internal links** (e.g., `/docs/sdk/overview` not `https://www.inngest.com/docs/sdk/overview`)
 - Use Ref Tags (e.g., `?ref=blog-introducing-checkpointing`) on internal links for marketing attribution. Ref tags should describe the page the link is on.
+  - Write them as `?ref=` in the href. They never reach the rendered HTML for same-origin links: the link renders a clean URL plus `data-ref="…"`, and `utils/v1/refHandoff.ts` reports the value to analytics on click. This keeps one URL per page for search engines.
+  - In MDX (docs, blog, changelog, customer stories) nothing else is needed; the `rehypeRefLinks` plugin converts them at build time.
+  - In components, render internal links with the shared link components (`@/components/v1/Link`, `ButtonLink`, `Button`), or spread `{...refLinkProps(href)}` (from `@/utils/v1/ref`) instead of `href={href}` on a raw `<a>` or `next/link`. Never build a `?ref=` URL any other way.
+  - `/sign-up`, `/sign-in` and links to other domains (e.g. app.inngest.com) keep `?ref=` in the URL on purpose; that is how signup attribution reaches the app.
+  - `pnpm build` runs `scripts/check-ref-links.mjs`, which warns about any internal link that still renders with `?ref=`.
 - Only use absolute URLs for external links
 
 ## Code Snippets
