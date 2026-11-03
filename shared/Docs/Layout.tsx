@@ -21,6 +21,7 @@ import {
   SDK_ALL,
 } from "./LanguageStore";
 import { getOpenGraphImageURL } from "../../utils/social";
+import { canonicalDocsPath } from "../../utils/docsCanonical.mjs";
 import clsx from "clsx";
 
 import { Breadcrumb } from "./Breadcrumb";
@@ -118,9 +119,11 @@ export function Layout({
     .split("?")[0]
     .split("#")[0];
   const markdownAlternateUrl = `https://www.inngest.com/docs-markdown${docsPath}`;
-  const canonicalUrl = `https://www.inngest.com${
-    router.asPath.split("?")[0].split("#")[0]
-  }`;
+  // Must match the canonical tag in pages/_app.tsx.
+  const canonicalUrl = `https://www.inngest.com${canonicalDocsPath(
+    router.asPath.split("?")[0].split("#")[0],
+    TS_STABLE
+  )}`;
 
   // JSON-LD structured data for documentation pages. MDX pages can export
   // `structuredData` to append page-specific FAQPage, HowTo, or similar nodes.

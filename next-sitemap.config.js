@@ -49,6 +49,20 @@ async function getRedirectSources() {
   return redirectSources;
 }
 
+// The stable TypeScript reference is listed at its versionless canonical URL
+// (utils/docsCanonical.mjs), not the /<stable>/ file path next-sitemap finds.
+let toCanonical;
+async function getCanonicalizer() {
+  if (!toCanonical) {
+    const [{ canonicalDocsPath }, { TS_STABLE_VERSION }] = await Promise.all([
+      import("./utils/docsCanonical.mjs"),
+      import("./redirects.mjs"),
+    ]);
+    toCanonical = (urlPath) => canonicalDocsPath(urlPath, TS_STABLE_VERSION);
+  }
+  return toCanonical;
+}
+
 /** @type {import('next-sitemap').IConfig} */
 module.exports = {
   siteUrl: "https://www.inngest.com",
@@ -59,7 +73,7 @@ module.exports = {
     const src = contentSourceFor(urlPath);
     if (src && sourceIsExcludedFromSitemap(src)) return null;
     return {
-      loc: urlPath,
+      loc: (await getCanonicalizer())(urlPath),
       changefreq: config.changefreq,
       priority: config.priority,
       lastmod: config.autoLastmod ? new Date().toISOString() : undefined,
