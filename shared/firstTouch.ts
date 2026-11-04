@@ -1,11 +1,8 @@
-import { useRef } from "react";
+import { useEffect, useRef } from "react";
 import { useCookie } from "react-use";
 
-/**
- * The shape of the first-touch cookie payload. Captured once, on the visitor's
- * first landing on the site. Subsequent visits (within the cookie TTL) don't
- * overwrite this — that's the whole point of "first touch".
- */
+// the first fields keep the original visit.  last_utm_campaign records the
+// latest campaign URL so forms can send both values.
 export interface FirstTouch {
   first_utm_source?: string;
   first_utm_medium?: string;
@@ -16,9 +13,11 @@ export interface FirstTouch {
   first_landing_url?: string;
   first_referrer?: string;
   first_seen_at?: string;
+  last_utm_campaign?: string;
 }
 
 const COOKIE_NAME = "inngest_first_touch";
+const COOKIE_TTL_MS = 6 * 30 * 24 * 60 * 60 * 1000;
 
 const UTM_KEYS = [
   "utm_source",
@@ -44,6 +43,9 @@ function captureFirstTouch(): FirstTouch {
       if (v) {
         // Map utm_source -> first_utm_source, etc.
         (payload as any)[`first_${k}`] = v;
+        if (k === "utm_campaign") {
+          payload.last_utm_campaign = v;
+        }
       }
     });
     const refValue = params.get("ref");
@@ -90,21 +92,52 @@ export function readFirstTouch(): FirstTouch | null {
   }
 }
 
-/**
- * Write the first-touch cookie if one doesn't already exist. Mirrors the
- * `useAnonymousID` pattern — 6-month TTL, sameSite=lax, scoped to the
- * site hostname.
- *
- * Returns the parsed cookie value (existing or newly written) and an
- * `existing` flag so callers can tell whether this was the first touch.
- */
-export const useFirstTouch = (): {
+// the cookie keeps first-touch fields for six months.  later campaign URLs
+// update last_utm_campaign so forms can report the latest campaign.
+export const useFirstTouch = (
+  campaign?: string | null
+): {
   firstTouch: FirstTouch | null;
   existing: boolean;
 } => {
   // Prevent race conditions across re-renders.
-  const cached = useRef<any>(false);
+  const cached = useRef<{
+    firstTouch: FirstTouch | null;
+    existing: boolean;
+  } | null>(null);
   const [firstTouchCookie, setFirstTouchCookie] = useCookie(COOKIE_NAME);
+
+  useEffect(() => {
+    if (!firstTouchCookie) return;
+
+    let stored: FirstTouch;
+    try {
+      stored = JSON.parse(firstTouchCookie) as FirstTouch;
+    } catch (e) {
+      return;
+    }
+    if (!stored || typeof stored !== "object") return;
+    const lastCampaign =
+      campaign || stored.last_utm_campaign || stored.first_utm_campaign;
+    if (!lastCampaign || stored.last_utm_campaign === lastCampaign) return;
+
+    const firstSeen = Date.parse(stored.first_seen_at || "");
+    const expires = new Date(
+      (Number.isNaN(firstSeen) ? Date.now() : firstSeen) + COOKIE_TTL_MS
+    );
+    const updated = { ...stored, last_utm_campaign: lastCampaign };
+    try {
+      setFirstTouchCookie(JSON.stringify(updated), {
+        domain: process.env.NEXT_PUBLIC_HOSTNAME,
+        path: "/",
+        expires,
+        sameSite: "lax",
+      });
+      if (cached.current) cached.current.firstTouch = updated;
+    } catch (e) {
+      return;
+    }
+  }, [campaign, firstTouchCookie, setFirstTouchCookie]);
 
   if (!cached.current) {
     if (!firstTouchCookie) {
@@ -115,9 +148,7 @@ export const useFirstTouch = (): {
       }
 
       const payload = captureFirstTouch();
-      const sixMonthsFromNow = new Date(
-        Date.now() + 6 * 30 * 24 * 60 * 60 * 1000
-      );
+      const sixMonthsFromNow = new Date(Date.now() + COOKIE_TTL_MS);
       try {
         setFirstTouchCookie(JSON.stringify(payload), {
           domain: process.env.NEXT_PUBLIC_HOSTNAME,
