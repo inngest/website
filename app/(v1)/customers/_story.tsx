@@ -19,6 +19,11 @@ import {
   STORY_HREF,
   LOGO_HEIGHT,
 } from "@/components/v1/sections/Customers/data";
+import {
+  customerStorySchemas,
+  JsonLdScript,
+  schemaGraph,
+} from "@/utils/v1/structuredData";
 
 // Shared customer-story content layer. Reads content/customers/{slug}.mdx
 // and exposes the helpers used by the dynamic /customers/[slug] route to
@@ -169,11 +174,26 @@ export async function renderV1Story(slug: string) {
   const post = readStudy(slug);
   if (!post) return null;
   const source = await serializeStudy(post.content);
+  const { data } = post;
   return (
-    <CustomerStory
-      story={buildStoryData(post.data, post.content)}
-      source={source}
-      related={buildRelated(slug)}
-    />
+    <>
+      <JsonLdScript
+        data={schemaGraph(
+          customerStorySchemas({
+            slug,
+            title: data.title,
+            companyName: data.companyName,
+            companyURL: data.companyURL,
+            companyDescription: data.companyDescription,
+            image: data.ogImage,
+          })
+        )}
+      />
+      <CustomerStory
+        story={buildStoryData(data, post.content)}
+        source={source}
+        related={buildRelated(slug)}
+      />
+    </>
   );
 }
