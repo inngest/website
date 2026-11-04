@@ -79,8 +79,9 @@ function Tile({ post }: { post: PostCard }) {
         src={post.image}
         alt=""
         fill
-        // Cards are at most ~445px wide (3 columns in a 1440px container).
-        sizes="(min-width: 1024px) 445px, (min-width: 640px) 50vw, 100vw"
+        // Card width in ResourceExplorer's grid: max-w-[1440px] container,
+        // px-6 (sm:px-8) gutters, gap-5, 1/2/3 columns at base/sm/lg.
+        sizes="(min-width: 1440px) 446px, (min-width: 1024px) calc((100vw - 104px) / 3), (min-width: 640px) calc((100vw - 84px) / 2), calc(100vw - 48px)"
         unoptimized={skipOptimizer(post.image)}
         className="object-cover"
       />
