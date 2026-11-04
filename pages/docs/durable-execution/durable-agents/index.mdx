@@ -203,6 +203,8 @@ await sandbox.destroy("destroy-sandbox");
 
 A nonzero exit code comes back as a result, not an exception, so the model sees the error and can fix its code. Files and processes persist between tool calls. When the agent waits for approval, [pause](/docs/sandboxes/features/pause-and-resume) the Sandbox; paused time doesn't count toward its runtime. Sandboxes are in beta and you own cleanup: destroy the Sandbox on success and in a [failure handler](/docs/durable-execution/guides-and-advanced/error-handling/failure-handlers). See the [Sandboxes quick start](/docs/sandboxes/quick-start) to enable `step.sandbox`.
 
+For a coding agent, the experimental `agent.loop()`, `sandbox.tools.code()`, and `repo()` from `inngest/experimental` run this loop for you, with read, write, edit, search, run, and push tools. See [Coding-agent primitives](/docs/sandboxes/reference#coding-agent-primitives).
+
 ## Handle failures
 
 - **Retries per step.** Every step retries on its own with backoff. Set the count with the function's `retries` option. See [Retries](/docs/durable-execution/guides-and-advanced/error-handling/retries).
