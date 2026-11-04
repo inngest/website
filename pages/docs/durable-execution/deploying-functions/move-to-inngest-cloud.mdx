@@ -1,0 +1,105 @@
+import { Info, CodeGroup, Steps, Step } from "shared/Docs/mdx";
+
+export const metaTitle = "Move from the Dev Server to Inngest Cloud";
+export const description = "Why the Inngest Dev Server can't hold production state, and how to move to Inngest Cloud: event and signing keys, serve vs. connect, and a first-run checklist.";
+
+# How to move from the Inngest Dev Server to Inngest Cloud
+
+> Move from local development to production by changing where your state lives, not your function code.
+
+The [Inngest Dev Server](/docs/local-development?ref=docs-move-to-inngest-cloud) is built to make you fast. Inngest Cloud is built to make sure nothing you ship gets lost. Moving between them isn't a code change; it is a change in where your state lives and who is responsible for keeping it.
+
+This guide covers the why (what Cloud gives you that a local process can't) and the how (keys, connectivity, and a checklist to get your first production run green).
+
+## Why can't the Dev Server run production workloads?
+
+The Dev Server has no durability beyond your machine. It's a full, open-source copy of the Inngest engine that runs on your laptop, with the same queue, the same [step memoization](/docs/durable-execution/durable-workflows?ref=docs-move-to-inngest-cloud), and the same retries.
+
+**State is ephemeral by default.** The Dev Server starts clean every session unless you pass `--persist`. Every test starts from a known state, with no leftover runs polluting your results.
+
+Starting clean is also why it can't hold production work. Restart it and in-flight runs are gone.
+
+**Cloud keeps state off-process.** In Inngest Cloud, run state, the queue, and step results live in replicated, managed storage tuned for the run queue. Your workers never hold the source of truth.
+
+### The boundary that makes it durable
+
+The core idea is a hard line between the engine and your workers:
+
+- **The engine** owns the queue, run state, step results, retries, and flow control.
+- **Your workers** run your function code and report each step's result back.
+
+When a worker dies mid-run, nothing the engine knows about is lost. Completed steps stay memoized. The next healthy worker picks up the run and skips straight to the unfinished step.
+
+On your laptop, the engine and the worker share one machine, so a laptop crash takes both down. In Cloud, the engine is a [separate, replicated deployment](/docs/platform-and-operations/cloud-architecture-and-security?ref=docs-move-to-inngest-cloud). That separation is the durability guarantee.
+
+## What does Inngest Cloud add beyond durability?
+
+Because Cloud runs every function durably, it also captures everything that happened during each run. That execution record is what the rest of the platform is built on:
+
+- [**Agent Evals**](/docs/agent-evals/overview?ref=docs-move-to-inngest-cloud). Experiments (weighted A/B tests of models, prompts, and params) plus continuous online scoring, including deferred scoring when a real outcome lands later. No traces exported to a separate tool.
+- [**Observability**](/docs/platform-and-operations/observability?ref=docs-move-to-inngest-cloud). Prompts, models, tokens, and cost attached to the exact run and step that produced them.
+- [**Sessions**](/docs/agent-evals/sessions?ref=docs-move-to-inngest-cloud). Related runs grouped into one conversation or incident thread.
+- [**Insights**](/docs/platform-and-operations/insights?ref=docs-move-to-inngest-cloud). SQL and natural-language queries over scores, cost, and execution data.
+
+Each is [durable execution](/blog/principles-of-durable-execution?ref=docs-move-to-inngest-cloud) applied to a new problem, and each depends on state that outlives the worker.
+
+## Move to Inngest Cloud
+
+<Steps>
+<Step title="Set your event key and signing key">
+
+Locally, the Dev Server doesn't validate keys, so you've never needed them. In Cloud you need two, both from the Inngest dashboard, set as environment variables on every worker:
+
+| Key | Env var | What it does |
+| --- | --- | --- |
+| Event key | `INNGEST_EVENT_KEY` | Authorizes your app to send events into an environment. Create one per source (API, webhooks, cron service) so you can rotate or revoke each independently. |
+| Signing key | `INNGEST_SIGNING_KEY` | Signs traffic between Inngest and your workers. Your SDK rejects any request to your function endpoint that Inngest didn't sign. |
+
+The signing key matters for safety. Without it, anyone who finds your `/api/inngest` endpoint could trigger your functions.
+
+```bash
+INNGEST_EVENT_KEY=<from dashboard>
+INNGEST_SIGNING_KEY=<from dashboard>
+# Remove INNGEST_DEV=1 from production env
+```
+
+See [Keys and access](/docs/platform-and-operations/keys-and-access?ref=docs-move-to-inngest-cloud) and [Rotate event and signing keys](/docs/platform-and-operations/rotate-event-and-signing-keys?ref=docs-move-to-inngest-cloud).
+
+</Step>
+<Step title="Choose serve or connect">
+
+There are two ways for Inngest to reach your workers, and where your code runs mostly decides which one you use.
+
+**[`serve`](/docs/durable-execution/deploying-functions/serve?ref=docs-move-to-inngest-cloud) (HTTP, the default).** Inngest calls your function endpoint over HTTPS for each step. It needs a publicly reachable URL and works everywhere, including serverless platforms like [Vercel](/docs/durable-execution/deploying-functions/platforms/vercel?ref=docs-move-to-inngest-cloud) and AWS Lambda. Nothing runs between steps, so it's the lightest option.
+
+**[`connect`](/docs/durable-execution/deploying-functions/connect?ref=docs-move-to-inngest-cloud) (WebSocket workers).** Your worker opens an outbound, persistent connection to Inngest. No inbound traffic, no public URL, no load balancer. Connect requires a long-running process (Render, Fly.io, Kubernetes, ECS) and does not run on serverless.
+
+|  | `serve` | `connect` |
+| --- | --- | --- |
+| Network | Inbound HTTPS to a public URL | Outbound WebSocket, no public URL |
+| Runtimes | Serverless and servers | Long-running servers only |
+| Latency | One HTTP request per step | Lowest; persistent connection |
+| Long steps | Bound by platform HTTP timeouts | Not bound by HTTP timeouts |
+| Syncing | Sync the app after each deploy | Automatic when a worker connects |
+| Scaling | Your platform scales the endpoint | Add workers; cap each with `maxWorkerConcurrency` |
+| Plan limits | None specific | 3 concurrent connections on Free, 20 on paid plans |
+
+The short rule: on serverless, use `serve`. On containers where you'd rather not expose an endpoint, or where steps run long, use `connect`. Check your [billing page](https://app.inngest.com/billing) for your plan's connection limits.
+
+If latency is the reason you're reaching for `connect`, also look at [checkpointing](/docs/durable-execution/best-practices/performance?ref=docs-move-to-inngest-cloud), which speeds up step execution under `serve`.
+
+</Step>
+<Step title="Ship your first production run">
+
+Your function code doesn't change.
+
+- [ ] Create an Inngest Cloud account and pick an environment (Production, or a [branch deploy](/docs/platform-and-operations/environments-and-branch-deploys?ref=docs-move-to-inngest-cloud) for previews).
+- [ ] Copy an event key and the signing key into your deploy platform's env vars. Make sure `INNGEST_DEV` is unset.
+- [ ] Set `appVersion` from something that changes every deploy (git SHA, image tag).
+- [ ] **If `serve`:** deploy, then [sync your app's](/docs/platform-and-operations/apps-and-syncs?ref=docs-move-to-inngest-cloud) public `/api/inngest` URL in the dashboard (or use your platform's [integration](/docs/durable-execution/deploying-functions/platforms/vercel?ref=docs-move-to-inngest-cloud) to sync on deploy).
+- [ ] **If `connect`:** set `instanceId` per worker and `maxWorkerConcurrency`, add a `/ready` health check, and deploy. The first worker to connect syncs the app.
+- [ ] Send a test event and watch the run in the dashboard.
+- [ ] Kill a worker mid-run on purpose. Confirm the run resumes on another worker and completed steps don't re-execute.
+
+</Step>
+</Steps>
