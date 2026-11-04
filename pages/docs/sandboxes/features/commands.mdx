@@ -169,7 +169,7 @@ await sb.$({ timeout: "45m" }).sh`pnpm test:e2e`;
 
 - Output is the last 512 KiB.
 - Each wait counts against the run's step limit, one per five minutes of `timeout`.
-- The `timeout` does not extend the Sandbox's one hour of active runtime. See [Runtime expiry](/docs/sandboxes/limits#runtime-expiry).
+- The `timeout` does not extend the Sandbox's runtime limit. See [Runtime expiry](/docs/sandboxes/limits#runtime-expiry).
 - A command that times out is killed, and fails with `type: "timeout"`.
 
 ## In the trace

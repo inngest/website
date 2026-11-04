@@ -119,12 +119,14 @@ This changes **that Sandbox**, not the fixed base image. The files remain in the
 
 ## Choose a supported size
 
-Fresh Sandboxes accept 1, 2, or 4 vCPU with 1, 2, or 4 GiB of memory per vCPU. `memoryMb` is measured in MiB:
+Fresh Sandboxes accept 1, 2, 4, 8, or 16 vCPU with 1, 2, or 4 GiB of memory per vCPU. `memoryMb` is measured in MiB:
 
 | `vcpu` | Allowed `memoryMb` values |
 | --- | --- |
 | 1 | 1024, 2048, 4096 |
 | 2 | 2048, 4096, 8192 |
 | 4 | 4096, 8192, 16384 |
+| 8 | 8192, 16384, 32768 |
+| 16 | 16384, 32768, 65536 |
 
 Other sizes are not available. The API does not accept a size profile name. A snapshot clone inherits the snapshot's CPU and memory. Access or available capacity can still prevent a supported size from starting; missing capacity returns `503 compute_unavailable`.

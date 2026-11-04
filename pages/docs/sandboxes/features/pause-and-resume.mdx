@@ -6,13 +6,13 @@ export const description = "Pause an Inngest Sandbox while work waits, then resu
 
 > Pause a Sandbox when work needs to wait, then resume the same environment without rebuilding it.
 
-Pause a Sandbox while a job waits for review, then resume it under the same ID without rebuilding its files. Inngest releases the live runtime while paused and restores its filesystem, memory, processes, environment, resources, network identity, and remaining runtime when it resumes.
+Pause a Sandbox while a job waits for review, then resume it under the same ID without rebuilding its files. Inngest releases the live runtime while paused and restores its filesystem, memory, processes, environment, resources, and network identity when it resumes.
 
 > **Open beta.** Sandboxes are available on Pro plans and above. Use `inngest@4.21.1` or newer. The API and limits can change. Keep data that must outlive a Sandbox in external storage.
 
 ## What pause preserves
 
-A Sandbox moves from `RUNNING` through `PAUSING` to `PAUSED`, then through `RESUMING` back to `RUNNING`. Both SDK methods wait for the stable state and return a new Sandbox object. The current beta allows one hour of active runtime per Sandbox. Time spent paused does not consume its remaining runtime. The runtime timeout requests an automatic Pause; see [Runtime expiry](/docs/sandboxes/limits#runtime-expiry) for the state transition and effects on running commands and processes.
+A Sandbox moves from `RUNNING` to `PAUSED`, then back to `RUNNING`. While a pause or resume is in progress, the API reports it as `STARTING`. Both SDK methods wait for the stable state and return a new Sandbox object. Your plan sets how long a Sandbox can run, up to 24 hours. Each Resume starts a new runtime window. The runtime timeout requests an automatic Pause; see [Runtime expiry](/docs/sandboxes/limits#runtime-expiry) for the state transition and effects on running commands and processes.
 
 Pause uses a private checkpoint. It is a cold transition, so active external network connections can break. Reconnect those clients after resume. Commands, file operations, logs, and process operations require `RUNNING`. Use the object returned by `resume()` before you continue work.
 
