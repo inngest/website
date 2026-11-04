@@ -6,14 +6,13 @@ import { readFirstTouch } from "src/shared/firstTouch";
 import { BUILDATHON, REF } from "@/components/v1/sections/TwelveDays/data";
 import { buttonClass } from "@/components/v1/sections/TwelveDays/poster";
 
-/** Segment event the build-a-thon entries are read from. */
+/** Posts the entry to the build-a-thon Slack channel. */
+const SUBMIT_URL = "/api/12-days/build-a-thon";
+
+/** Segment event for attributing entries. */
 export const SUBMITTED_EVENT = "12 Days Build-a-thon Submitted";
 
 const SUBMITTED_KEY = "12-days-of-workflows:build-a-thon-submitted";
-
-// Same as the email sign-up: the track call waits for the analytics
-// client, which never loads if it's blocked.
-const SEND_TIMEOUT_MS = 8000;
 
 const FIELDS = BUILDATHON.fields;
 
@@ -62,14 +61,17 @@ function Field({
 }
 
 /**
- * The build-a-thon entry form: sends a `12 Days Build-a-thon Submitted`
- * track call through Segment, like the page's email sign-up. Track
- * only, no identify, so a typed-in email never overwrites an existing
- * person's attributes. Remembered in this browser so a return visit
- * shows the confirmation instead of an empty form.
+ * The build-a-thon entry form. The entry goes to /api/12-days/build-a-thon,
+ * which posts it to Slack; a `12 Days Build-a-thon Submitted` track call
+ * also goes to Segment for attribution. Track only, no identify, so a
+ * typed-in email never overwrites an existing person's attributes.
+ * Remembered in this browser so a return visit shows the confirmation
+ * instead of an empty form.
  */
 export default function BuildathonForm() {
   const [entry, setEntry] = useState<Entry>(EMPTY);
+  // Hidden from people; bots that fill every field set it.
+  const [honeypot, setHoneypot] = useState("");
   const [status, setStatus] = useState<"idle" | "sending" | "sent" | "failed">(
     "idle"
   );
@@ -97,35 +99,39 @@ export default function BuildathonForm() {
     }
     const firstTouch = readFirstTouch();
 
+    // The entry itself goes to the server, which posts it to Slack.
     try {
-      await Promise.race([
-        analytics.track(SUBMITTED_EVENT, {
-          name: entry.name.trim(),
-          email: entry.email.trim(),
-          company: entry.company.trim(),
-          linkedin_url: entry.linkedin.trim(),
-          vercel_url: entry.vercel.trim(),
-          github_url: entry.github.trim(),
-          description: entry.description.trim(),
-          campaign: REF,
-          form_type: "12_days_build_a_thon",
-          form_source: "website",
-          ref,
-          ...(firstTouch || {}),
-        }),
-        new Promise((_, reject) =>
-          setTimeout(
-            () => reject(new Error("Analytics didn't load")),
-            SEND_TIMEOUT_MS
-          )
-        ),
-      ]);
-      window.dataLayer?.push({ event: SUBMITTED_EVENT, ref });
+      const res = await fetch(SUBMIT_URL, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ ...entry, website: honeypot, ref }),
+      });
+      if (!res.ok) throw new Error(`Submit failed: ${res.status}`);
     } catch (err) {
       console.warn("12 Days build-a-thon entry not sent", err);
       setStatus("failed");
       return;
     }
+
+    // Segment is for attribution only, so a blocked or slow analytics
+    // client doesn't hold up the confirmation.
+    analytics
+      .track(SUBMITTED_EVENT, {
+        name: entry.name.trim(),
+        email: entry.email.trim(),
+        company: entry.company.trim(),
+        linkedin_url: entry.linkedin.trim(),
+        vercel_url: entry.vercel.trim(),
+        github_url: entry.github.trim(),
+        description: entry.description.trim(),
+        campaign: REF,
+        form_type: "12_days_build_a_thon",
+        form_source: "website",
+        ref,
+        ...(firstTouch || {}),
+      })
+      .catch(() => {});
+    window.dataLayer?.push({ event: SUBMITTED_EVENT, ref });
 
     try {
       window.localStorage.setItem(SUBMITTED_KEY, "1");
@@ -149,8 +155,21 @@ export default function BuildathonForm() {
   return (
     <form
       onSubmit={handleSubmit}
-      className="flex flex-col gap-5 rounded-xl border-[3px] border-[#010101] bg-[#FBF0A8] p-6 shadow-[8px_8px_0_#010101] sm:p-8"
+      className="relative flex flex-col gap-5 rounded-xl border-[3px] border-[#010101] bg-[#FBF0A8] p-6 shadow-[8px_8px_0_#010101] sm:p-8"
     >
+      <div
+        aria-hidden="true"
+        className="absolute -left-[9999px] h-px w-px overflow-hidden"
+      >
+        <label htmlFor="buildathon-website">Website</label>
+        <input
+          id="buildathon-website"
+          tabIndex={-1}
+          autoComplete="off"
+          value={honeypot}
+          onChange={(e) => setHoneypot(e.target.value)}
+        />
+      </div>
       <div className="grid grid-cols-1 gap-5 sm:grid-cols-2">
         <Field id="buildathon-name" label={FIELDS.name}>
           <input
