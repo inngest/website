@@ -32,6 +32,8 @@ Checks are automatic: one for the pipeline and one for each [job](/docs/labs/ci/
 
 While a run will be retried, checks stay in progress and complete only on success or the final attempt. Command failures, timeouts, usage errors, and matrix failures made only of those fail once.
 
+A pull request run tests GitHub's test merge of the head into the base, but its checks are posted on the head commit. A pull request that conflicts with its base fails the run once, with `PR has conflicts with main` naming its base branch.
+
 Set `check: false` on a pipeline to turn checks off, or `check: { jobs: false }` to keep only the pipeline check.
 
 ## Add a summary or annotations
