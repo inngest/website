@@ -150,7 +150,7 @@ Stable additions <VersionBadge version="v4.24.0+" />: `await using` scopes a dur
 
 ## Errors and cleanup
 
-`SandboxError` exposes `action`, `code`, `ambiguous`, `retryable`, `requestId`, and relevant resource IDs. Branch on these fields rather than message text. The direct client never retries an operation automatically. Durable middleware maps retryable failures to retriable step errors and invalid or unsafe failures to non-retriable errors.
+`SandboxError` exposes `action`, `code`, `ambiguous`, `retryable`, `requestId`, and relevant resource IDs. Branch on these fields rather than message text. The direct client never retries an operation automatically. Durable middleware maps retryable failures to retriable step errors and invalid or unsafe failures to non-retriable errors. For what to check and how to fix common error codes, see [Troubleshooting](/docs/sandboxes/troubleshooting).
 
 `operation_ambiguous` means an operation might have completed without a confirmed response. Reconcile by action before repeating it:
 
