@@ -1,7 +1,7 @@
 import { AnnotatedCode, Annotation } from "shared/Docs/mdx";
 
 export const metaTitle = "Tools | Inngest Agents";
-export const description = "An Inngest agent acts on the world only through tools: define one once and the model calls it as a durable step. Failures the model can read, outside text marked as data, tools you write for any service, wrapped tools, and MCP servers.";
+export const description = "An Inngest agent acts on the world only through tools: define one once and the model calls it as a durable step. Failures the model can read, outside text marked as data, tools you write for any service, checked tools, MCP servers, and shared tools that one app hosts for others.";
 
 # Tools
 
@@ -41,7 +41,6 @@ One durable step per call.
 
 <AnnotatedCode>
 
-{/* not type-checked: thread, inbox and tools on an agent definition that has a model and no handler */}
 ```typescript {{ title: "inngest/agents/prHelper.ts" }}
 import { agents } from "../client";
 import { ciFailed, ciPassed, deployed, prComment, prOpened } from "../events";
@@ -115,7 +114,6 @@ export const deployed = eventType("deploy/finished", {
 
 You want one tool to run several steps. That is a `tool.group()`, and its body can use the global `step`:
 
-{/* not type-checked: tool.group with the global step */}
 ```typescript {{ title: "inngest/tools/readAllLogs.ts" }}
 import { step } from "inngest";
 import { tool } from "inngest/experimental";
@@ -252,41 +250,40 @@ You want the comment tool to refuse text that looks like a secret.
 
 <AnnotatedCode>
 
-{/* not type-checked: a tool wrapping another tool's description, input and run */}
 ```typescript {{ title: "inngest/tools/safeComment.ts" }}
 import { tool } from "inngest/experimental";
 import { agent } from "inngest/experimental/agents";
-import { comment } from "./comment";
+import { z } from "zod";
+import { gh } from "../lib/github";
 
 export const safeComment = tool.step({
-  description: comment.description,
-  input: comment.input,
-  run: async (input, context) => {
-    if (/ghp_\w+|sk-\w+/.test(input.body)) {
+  description: "Comments on a pull request",
+  input: z.object({ pr: z.number(), body: z.string() }),
+  run: async ({ pr, body }) => {
+    if (/ghp_\w+|sk-\w+/.test(body)) {
       return agent.toolError("That looks like a secret. Not posted.");
     }
 
-    return await comment.run(input, context);
+    return await gh.comment(pr, body);
   },
 });
 ```
 
-<Annotation id="check" lines="9-11" tease="refuse before posting" title="The check">
-Return an error and the original never runs.
+<Annotation id="check" lines="10-12" tease="refuse before posting" title="The check">
+Return an error and nothing is posted.
 </Annotation>
 
-<Annotation id="original" lines="13" tease="call the original" title="The original's run">
-Pass the context along, then change what comes out if you need to.
+<Annotation id="original" lines="14" tease="then post" title="The post">
+The same call the plain `comment` tool makes.
 </Annotation>
 
 </AnnotatedCode>
 
-{/* not type-checked: a wrapped tool replacing comment in a tools record */}
 ```typescript
 tools: { readLog, comment: safeComment },
 ```
 
-There are no hooks around tool calls: you wrap the tool. The wrapper takes the original's place, so the model and sandbox code both get it.
+There are no hooks around tool calls: you replace the tool with a checked one. Listed under the original's key, it takes the original's place, so the model and sandbox code both get it.
 
 ## Watching for things
 
@@ -314,7 +311,6 @@ You want the model to use a tool server you don't run.
 
 <AnnotatedCode>
 
-{/* not type-checked: tool.mcp with a required id */}
 ```typescript {{ title: "inngest/tools/docs.ts" }}
 import { tool } from "inngest/experimental";
 
@@ -347,6 +343,52 @@ auth: { bearer: secret("DOCS_TOKEN") },
 ```
 
 `secret("DOCS_TOKEN")` reads that environment variable inside the call that needs it. The trace, the model and every log show `[secret DOCS_TOKEN]`.
+
+## Tools other apps call
+
+You want one app to hold the GitHub token and the agents of every app to comment through it. Make the tool with `tool.shared()` (experimental) and host it in that app.
+
+<AnnotatedCode>
+
+```typescript {{ title: "inngest/tools/postComment.ts" }}
+import { tool } from "inngest/experimental";
+import { z } from "zod";
+import { gh } from "../lib/github";
+
+export const postComment = tool.shared({
+  id: "post-comment",
+  description: "Comments on a pull request on acme/web",
+  input: z.object({ pr: z.number(), body: z.string() }),
+  card: { tags: ["github"], share: "team" },
+  run: async ({ pr, body }, { step }) => {
+    return await step.run("comment", async () => {
+      return await gh.comment(pr, body);
+    });
+  },
+});
+```
+
+<Annotation id="id" lines="6" tease="its function and address" title="id">
+The ID of the function that hosts it, and the second half of its address, such as `acme-web/post-comment`.
+</Annotation>
+
+<Annotation id="card" lines="9" tease="like an agent's card" title="card">
+Takes what an agent's card takes. `effects` is `"write"` unless the card says `"read"`.
+</Annotation>
+
+<Annotation id="run" lines="10-14" tease="a run of its own" title="run">
+Runs in the hosting app, with its secrets and its `step`. Every call is one run of that function.
+</Annotation>
+
+</AnnotatedCode>
+
+The hosting app lists it on `createAgents`, and `agents.functions()` serves it with the app's agents:
+
+```typescript
+export const agents = createAgents(inngest, { tools: [postComment] });
+```
+
+An agent lists it in `tools` like any other tool, and a call invokes the hosted function as a durable step. Agents get the shared tools their [`discovery.tools`](/docs/labs/agents/agent-discovery?ref=docs-labs-agents-tools) allows without listing them. By default that is the tools of their own app and the read-only tools of other apps. This one writes, so an agent in another app names it: `discovery: { tools: ["acme-web/post-comment"] }`. A list replaces the default. The model sees the tool by its ID, as `post_comment`.
 
 ## Recipes and reference
 

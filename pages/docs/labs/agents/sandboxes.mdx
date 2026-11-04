@@ -13,7 +13,6 @@ A sandbox is the machine for one [thread](/docs/labs/agents/threads?ref=docs-lab
 
 You want the PR helper to run the failing test instead of guessing at it. Defining a sandbox creates nothing until it is used.
 
-{/* not type-checked: sandbox({ id }) */}
 ```typescript
 export const work = sandbox({ id: "work" });
 ```
@@ -22,7 +21,6 @@ It lives in `inngest/sandboxes/work.ts`, which [A repo](#a-repo) fills out. List
 
 <AnnotatedCode>
 
-{/* not type-checked: sandboxes listed on an agent, which gives the model work_run */}
 ```typescript {{ title: "inngest/agents/prHelper.ts" }}
 import { skills } from "inngest/experimental/agents";
 import { agents } from "../client";
@@ -83,7 +81,6 @@ The model gets `work_run`, a shell on the thread's machine that keeps `cd` and `
 
 An app whose agents list sandboxes adds `sandboxMiddleware()` to its client.
 
-{/* not type-checked: sandboxMiddleware() on the client */}
 ```typescript {{ title: "inngest/client.ts" }}
 import { Inngest } from "inngest";
 import { sandboxMiddleware } from "inngest/experimental";
@@ -200,13 +197,28 @@ You want CI's second failure on the same PR to find the machine as the first run
 
 The sandbox pauses when the run ends, never while the run waits. The shell's working directory and exported variables come back with it.
 
+## Its tools
+
+You want the model to read and edit files, not only run commands. A sandbox's `tools` is a record, and the built-ins are ready-made values in `sandbox.tools`:
+
+```typescript
+const { run, read, edit, search } = sandbox.tools;
+
+export const work = sandbox({
+  id: "work",
+  cwd: "/work",
+  tools: { run: run.with({ timeout: "10m" }), read, edit, search },
+});
+```
+
+The model sees each as `work_<key>`: `work_run`, `work_read`, `work_edit` and `work_search`. Without `tools` a sandbox brings `run`. The built-ins are `run`, `read`, `edit`, `write`, `search` and `runCode`, and `.with()` sets their options. Any tool of yours listed there acts on this machine too: a `tool.group()` gets it as `context.sandbox`. [Reference: code tools →](/docs/labs/agents/reference-sandboxes?ref=docs-labs-agents-sandboxes#code-tools)
+
 ## A repo
 
 You want it to fix the test on a branch and never touch `main`. Give the sandbox a repo and a policy.
 
 <AnnotatedCode>
 
-{/* not type-checked: sandbox({ repo }) with a read and write token pair and a push policy */}
 ```typescript {{ title: "inngest/sandboxes/work.ts" }}
 import { secret } from "inngest/experimental";
 import { sandbox } from "inngest/experimental/agents";
@@ -248,21 +260,21 @@ With a `repo`, the model also gets `work_push`: it commits in the sandbox, and y
 
 You want to run the tests yourself and keep the model off the machine. Mark the sandbox code-only in the agent's definition:
 
-{/* not type-checked: a sandbox binding with model: false */}
 ```typescript
-sandboxes: { work: { sandbox: work, model: false } },
+sandboxes: { work: work.with({ model: false }) },
 ```
 
 Then run commands from the handler:
 
-{/* not type-checked: sandboxes.work.commands.run in a handler */}
 ```typescript
 const tests = await sandboxes.work.commands.run("tests", "npm test", {
   cwd: "/work",
 });
+
+const sha = await sandboxes.work.$`git rev-parse HEAD`.text();
 ```
 
-The model loses `work_run` and `work_push`. In the handler, `sandboxes.work` is the same machine, and each command is a durable step. [Reference: the handler's sandbox →](/docs/labs/agents/reference-sandboxes?ref=docs-labs-agents-sandboxes#the-handler-s-sandbox)
+The model loses `work_run` and `work_push`. In the handler, `sandboxes.work` is the same machine, and each command is a durable step. `` $`...` `` starts in the sandbox's `cwd` and fails its step on a non-zero exit; `commands.run` returns the exit code. [Reference: the handler's sandbox →](/docs/labs/agents/reference-sandboxes?ref=docs-labs-agents-sandboxes#the-handler-s-sandbox)
 
 ## Recipes and reference
 

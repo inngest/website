@@ -47,7 +47,6 @@ export const ticketReplied = eventType("ticket/replied", {
 
 <AnnotatedCode>
 
-{/* not type-checked: agents.agent with event triggers, thread and no handler, system as an async function, kv.app and kv.key read in a run-time field */}
 ```typescript {{ title: "inngest/agents/support.ts" }}
 import { kv } from "inngest/experimental/agents";
 import { agents } from "../client";
@@ -139,7 +138,6 @@ export const lookupOrder = tool.step({
 });
 ```
 
-{/* not type-checked: kv.key with a schema, kv.app.update with a typed kv.key */}
 ```typescript {{ title: "inngest/tools/saveNote.ts" }}
 import { tool } from "inngest/experimental";
 import { kv } from "inngest/experimental/agents";
@@ -160,7 +158,6 @@ export const saveNote = tool.step({
 });
 ```
 
-{/* not type-checked: agents.functions() in a Next.js route */}
 ```typescript {{ title: "app/api/inngest/route.ts" }}
 import { serve } from "inngest/next";
 import { agents, inngest } from "../../../inngest/client";
@@ -196,7 +193,7 @@ npm run dev
 npx inngest-cli@latest dev -u http://localhost:3000/api/inngest
 ```
 
-Send a ticket from the Dev Server's **Send event** button at [localhost:8288](http://localhost:8288), or from code:
+`INNGEST_EXPERIMENTAL_KV_URL` is required here: `saveNote` uses `kv.app.update`, which the default ledger store doesn't offer. Send a ticket from the Dev Server's **Send event** button at [localhost:8288](http://localhost:8288), or from code:
 
 ```typescript {{ title: "scripts/openTicket.ts" }}
 import { inngest } from "../inngest/client";

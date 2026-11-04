@@ -38,7 +38,6 @@ export const deployed = eventType("deploy/finished", {
 
 <AnnotatedCode>
 
-{/* not type-checked: inbox.next() in an agent handler with per-trigger thread keys */}
 ```typescript {{ title: "inngest/agents/prHelper.ts" }}
 import { agents } from "../client";
 import { ciFailed, deployed, prComment, prOpened } from "../events";
@@ -78,13 +77,12 @@ Reads the oldest unread message: the CI failure, if it came in during the sleep.
 
 </AnnotatedCode>
 
-Fail CI inside the five seconds: no second run starts.
+Fail CI inside the five seconds: no second run starts. The inbox opens first thing in the run, so even a message sent the moment a run starts reaches it.
 
 ## Heard, never a start
 
 You want CI passing to reach a run that's working, but never to start one on its own. List it in `inbox`; the agent's `thread` places it, and the handler stays as in [While it works](#while-it-works).
 
-{/* not type-checked: the inbox option on an agent definition */}
 ```typescript
 {
   id: "pr-helper",
@@ -100,7 +98,6 @@ Fail CI to start a run and pass it within the five seconds, and the handler retu
 
 You want to wait for the next thing on the PR. Call `next()` with nothing unread.
 
-{/* not type-checked: a second inbox.next() that waits in an agent handler */}
 ```typescript
 async ({ inbox }) => {
   await inbox.next();
@@ -144,7 +141,6 @@ export const gh = {
 };
 ```
 
-{/* not type-checked: for await over an agent's inbox with a comment step */}
 ```typescript
 import { gh } from "../lib/github";
 
@@ -163,7 +159,6 @@ A reply on the PR is plain code in a step, so it happens once even when the run 
 
 You want five comments that land together handled together. Loop over `inbox.batches()`.
 
-{/* not type-checked: inbox.batches({ max }) in an agent handler */}
 ```typescript
 import { gh } from "../lib/github";
 
@@ -184,7 +179,6 @@ You want the helper to stop when the PR goes quiet, and come back when it doesn'
 
 <AnnotatedCode>
 
-{/* not type-checked: idle on an agent definition */}
 ```typescript
 {
   id: "pr-helper",
@@ -201,7 +195,7 @@ After this much quiet both `for await` forms end. The default is ten minutes.
 
 </AnnotatedCode>
 
-The next trigger starts a new run. A run opened by `start()` ends once it has answered. [Call it from code →](/docs/labs/agents/agent-teams?ref=docs-labs-agents-inboxes#call-it-from-code)
+The next trigger starts a new run. A run opened by `start()` or a handle's `message()` ends once it has answered, unless the agent sets its own `idle`, as this one does. [Call it from code →](/docs/labs/agents/agent-teams?ref=docs-labs-agents-inboxes#call-it-from-code)
 
 {/* Go deeper */}
 
@@ -209,7 +203,6 @@ The next trigger starts a new run. A run opened by `start()` ends once it has an
 
 You want to stop waiting for CI that never reports. Give `next()` a `timeout`.
 
-{/* not type-checked: inbox.next({ timeout }) in an agent handler */}
 ```typescript
 import { gh } from "../lib/github";
 
@@ -233,7 +226,6 @@ async ({ inbox, me, step }) => {
 
 You want to see what queued up between two steps, without stopping. `drain()` the inbox.
 
-{/* not type-checked: inbox.drain() in an agent handler */}
 ```typescript
 async ({ inbox, step }) => {
   await inbox.next();
@@ -252,7 +244,6 @@ You want to watch a PR's checks from now on, after the helper pushes a fix. Open
 
 <AnnotatedCode>
 
-{/* not type-checked: step.subscribe with if in an agent handler beside the agent's inbox */}
 ```typescript
 const thisPr = "async.data.pr == event.data.pr";
 
@@ -280,7 +271,6 @@ Checks that ran before it opened aren't in it, and `check` is always `ci/run.pas
 
 You want to stop watching and know nothing was lost. `close()` the inbox.
 
-{/* not type-checked: close() on a second inbox in an agent handler */}
 ```typescript
 const check = await checks.next();
 
@@ -293,7 +283,6 @@ const missed = await checks.close();
 
 You want the inbox closed even if the code throws. Open it with `await using`.
 
-{/* not type-checked: await using on a second inbox in an agent handler */}
 ```typescript
 await using checks = step.subscribe("checks", [
   { event: ciPassed, if: thisPr },

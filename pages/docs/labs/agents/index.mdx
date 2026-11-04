@@ -19,7 +19,6 @@ An agent is an Inngest function that holds conversations. Every model call and t
 - **A machine per thread.** The model's shell pauses when the run ends and is back on its next use. [Sandboxes →](/docs/labs/agents/sandboxes?ref=docs-labs-agents)
 - **Agents that find each other.** The model looks up other agents and hands them work. [Agent discovery →](/docs/labs/agents/agent-discovery?ref=docs-labs-agents)
 
-{/* not type-checked: agents.agent with triggers, thread, model, system, tools and no handler */}
 ```typescript {{ title: "inngest/agents/support.ts" }}
 import { eventType } from "inngest";
 import { z } from "zod";

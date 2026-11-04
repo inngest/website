@@ -24,7 +24,6 @@ Screenshot needed: the digest in the team channel.
 
 <AnnotatedCode>
 
-{/* not type-checked: kv.key with a schema, kv.app in a plain function and the anthropic() one-shot call */}
 ```typescript {{ title: "inngest/functions/watcher.ts" }}
 import { kv } from "inngest/experimental/agents";
 import { z } from "zod";
@@ -54,7 +53,7 @@ export const watcher = inngest.createFunction(
         prompt: JSON.stringify(stale),
       });
 
-      return text;
+      return text ?? "";
     });
 
     await step.run("post", async () => {
@@ -81,7 +80,7 @@ Reads are checked against the schema.
 </Annotation>
 
 <Annotation id="seen" lines="13" tease="shared by every run" title="App scope" href="/docs/labs/agents/memory?ref=docs-labs-agents-recipes-scheduled-watcher#shared-by-every-pr" linkText="Share state">
-`kv.app` is the same for every run in the app. With no `createAgents`, it uses the store from `INNGEST_EXPERIMENTAL_KV_URL`.
+`kv.app` is the same for every run in the app. With no `createAgents`, it uses Redis at `INNGEST_EXPERIMENTAL_KV_URL`. Agents keep state in a ledger that `agents.functions()` serves, and this app serves none, so set the URL.
 </Annotation>
 
 <Annotation id="digest" lines="23-30" tease="one model call" title="The digest" href="/docs/labs/agents/models?ref=docs-labs-agents-recipes-scheduled-watcher#ask-a-model" linkText="Call it once">
@@ -201,7 +200,7 @@ npx tsx inngest/serve.ts
 npx inngest-cli@latest dev -u http://localhost:3000/api/inngest
 ```
 
-Invoke `watcher` from the Functions page at [localhost:8288](http://localhost:8288) to run it before 09:00. A second invoke posts nothing.
+`INNGEST_EXPERIMENTAL_KV_URL` is required here: the app serves no agents, so it has no ledger. Invoke `watcher` from the Functions page at [localhost:8288](http://localhost:8288) to run it before 09:00. A second invoke posts nothing.
 
 ## Variations
 

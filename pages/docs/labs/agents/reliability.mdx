@@ -15,7 +15,6 @@ Every model call and tool call is a [durable step](/docs/labs/agents/agents?ref=
 
 <AnnotatedCode>
 
-{/* not type-checked: budget, limits and recovery on an agent definition, result.end and result.reason */}
 ```typescript {{ title: "inngest/agents/support.ts" }}
 import { agents } from "../client";
 import { ticketOpened, ticketReplied } from "../events";
@@ -30,7 +29,8 @@ export const support = agents.agent(
     model: claude,
     system: "You answer support questions.",
     budget: { usd: 2, tokens: 500_000 },
-    limits: { depth: 2, mayCall: ["support/researcher"] },
+    limits: { depth: 2 },
+    discovery: { agents: ["support/researcher"] },
     recovery: true,
   },
   async ({ inbox, loop }) => {
@@ -55,15 +55,15 @@ export const support = agents.agent(
 What this thread may spend.
 </Annotation>
 
-<Annotation id="limits" lines="14" tease="who it may start" title="Limits" href="/docs/labs/agents/agent-discovery?ref=docs-labs-agents-reliability#who-it-may-start" linkText="Who it may start">
-Agents it starts can start agents, but no deeper. Its model may start only `support/researcher`.
+<Annotation id="limits" lines="14-15" tease="who it may start" title="Limits and discovery" href="/docs/labs/agents/agent-discovery?ref=docs-labs-agents-reliability#who-it-may-start" linkText="Who it may start">
+Agents it starts can start agents, but no deeper. Its model may find and start only `support/researcher`.
 </Annotation>
 
-<Annotation id="recovery" lines="15" tease="opt in" title="Recovery" href="#recover-from-failures" linkText="Recover from failures">
+<Annotation id="recovery" lines="16" tease="opt in" title="Recovery" href="#recover-from-failures" linkText="Recover from failures">
 Also hands the message in flight to a fresh run.
 </Annotation>
 
-<Annotation id="end" lines="23" tease="why it stopped" title="end and reason" href="/docs/labs/agents/models?ref=docs-labs-agents-reliability#a-budget" linkText="A budget">
+<Annotation id="end" lines="24" tease="why it stopped" title="end and reason" href="/docs/labs/agents/models?ref=docs-labs-agents-reliability#a-budget" linkText="A budget">
 `"budget"` comes with a `reason`, which the handler returns as the run's output.
 </Annotation>
 
@@ -91,11 +91,10 @@ export const ticketReplied = eventType("ticket/replied", {
 
 ## Cap spend
 
-`budget` caps what one thread spends across all its runs, kept in thread state. The model prices its own calls; `price` overrides its rates. With no handler, a spent budget ends the loop: the run's output is the model's last text, and the trace shows `end` as `"budget"`.
+`budget` caps what one thread spends across all its runs, kept in this agent's own record on the thread and written once per model turn. On the default ledger store, that write is one step of the run. The model prices its own calls; `price` overrides its rates. With no handler, a spent budget ends the loop: the run's output is the model's last text, and the trace shows `end` as `"budget"`.
 
 <AnnotatedCode>
 
-{/* not type-checked: price as a per-million-token table */}
 ```typescript {{ title: "inngest/agents/summarizer.ts" }}
 import { agents } from "../client";
 import { ticketOpened } from "../events";
@@ -126,7 +125,6 @@ A loop that keeps calling tools stops after `maxTurns` (40 by default). An agent
 
 <AnnotatedCode>
 
-{/* not type-checked: maxTurns as a per-call loop option and end: "maxTurns" */}
 ```typescript {{ title: "inngest/agents/lookup.ts" }}
 import { agents } from "../client";
 import { ticketOpened } from "../events";
@@ -176,11 +174,12 @@ Every next run gets [`previousRun`](/docs/labs/agents/reference?ref=docs-labs-ag
 
 After a deploy, a live run replays on your latest code. Every model call, tool call, `step.run` of your own and inbox message is a step toward the 1,000-step limit. So is a KV call made outside a step. [Limits →](/docs/durable-execution/limits?ref=docs-labs-agents-reliability#platform-limits)
 
+With no store configured, thread state lives in your app's ledger functions, which `agents.functions()` serves. They retry a failed request, so a deploy or restart doesn't lose a thread's state.
+
 Keep the default `idle` of ten minutes unless the agent waits on something slow, such as a customer's reply. A longer `idle` keeps the run live across deploys, spends steps and keeps the thread's sandbox running.
 
 <AnnotatedCode>
 
-{/* not type-checked: idle as a duration string on an agent that waits for a customer's reply */}
 ```typescript {{ title: "inngest/agents/followUp.ts" }}
 import { agents } from "../client";
 import { ticketOpened, ticketReplied } from "../events";

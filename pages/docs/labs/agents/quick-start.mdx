@@ -9,20 +9,18 @@ export const description = "Inngest Agents quick start: a client, a model, a too
 
 ## Install
 
-You need Node.js 20+, a Redis 6.2+ URL for thread state and an Anthropic API key.
+You need Node.js 20+ and an Anthropic API key.
 
 ```bash
 npm install inngest zod @anthropic-ai/sdk
 ```
 
 ```bash
-export INNGEST_EXPERIMENTAL_KV_URL=redis://localhost:6379
 export ANTHROPIC_API_KEY=sk-ant-...
 ```
 
 ## Create the client
 
-{/* not type-checked: createAgents with the store from the environment */}
 ```typescript {{ title: "inngest/client.ts" }}
 import { Inngest } from "inngest";
 import { createAgents } from "inngest/experimental/agents";
@@ -32,11 +30,10 @@ export const inngest = new Inngest({ id: "support" });
 export const agents = createAgents(inngest);
 ```
 
-`createAgents` keeps each thread's state in the Redis store from `INNGEST_EXPERIMENTAL_KV_URL`. [Memory →](/docs/labs/agents/memory?ref=docs-labs-agents-quick-start)
+`createAgents` keeps each thread's state in functions it serves beside your agents, so there is no database to set up. [Memory →](/docs/labs/agents/memory?ref=docs-labs-agents-quick-start)
 
 ## Pick a model
 
-{/* not type-checked: anthropic() as a named export */}
 ```typescript {{ title: "inngest/models/claude.ts" }}
 import { anthropic } from "inngest/experimental/agents";
 
@@ -64,7 +61,6 @@ export const lookupOrder = tool.step({
 
 <AnnotatedCode>
 
-{/* not type-checked: agents.agent with triggers, thread, model, system, tools and no handler */}
 ```typescript {{ title: "inngest/agents/support.ts" }}
 import { eventType } from "inngest";
 import { z } from "zod";
@@ -102,7 +98,6 @@ With no handler, the agent sends each message to the model and runs its tool cal
 
 ## Serve it
 
-{/* not type-checked: agents.functions() */}
 ```typescript {{ title: "inngest/serve.ts" }}
 import { createServer } from "inngest/node";
 import { agents, inngest } from "./client";
@@ -114,7 +109,7 @@ createServer({
 }).listen(3000);
 ```
 
-`agents.functions()` returns the agents defined so far, so import every agent file before you call it. Start the app and the Dev Server:
+`agents.functions()` returns the agents defined so far, plus the functions that keep their state, so import every agent file before you call it. Start the app and the Dev Server:
 
 ```bash
 npx tsx inngest/serve.ts

@@ -15,7 +15,6 @@ A Worker has no secrets or database at import time, so fields that take a functi
 
 <AnnotatedCode>
 
-{/* not type-checked: model as a function reading a Worker binding */}
 ```typescript {{ title: "inngest/agents/triage.ts" }}
 import { anthropic } from "inngest/experimental/agents";
 import { agents } from "../client";
@@ -86,9 +85,10 @@ export const getEnv = () => {
 
 ## Store state in D1
 
+With no `store`, state lives in functions the app serves, as on any host. D1 adds atomic writes such as `update`. [Where it lives →](/docs/labs/agents/memory?ref=docs-labs-agents-workers#where-it-lives)
+
 `d1KvAdapter` takes a function and calls it on every operation, so the store never holds a binding past a request. Add `sandboxMiddleware()` when an agent lists sandboxes.
 
-{/* not type-checked: d1KvAdapter with a function, sandboxMiddleware() */}
 ```typescript {{ title: "inngest/client.ts" }}
 import { Inngest } from "inngest";
 import { sandboxMiddleware } from "inngest/experimental";
@@ -109,7 +109,6 @@ export const agents = createAgents(inngest, {
 
 `d1KvSchema` holds the statements for the store's two tables. Write them into a migration; `agents-db` is your D1 database's name.
 
-{/* not type-checked: d1KvSchema as a list of SQL statements */}
 ```typescript {{ title: "inngest/printSchema.ts" }}
 import { d1KvSchema } from "inngest/experimental/agents";
 
@@ -126,7 +125,6 @@ npx wrangler d1 migrations apply agents-db
 
 Fields that take a function (`model`, `tools`, `sandboxes` and the rest) get the event and thread. So does a sandbox's `repo`, whose `auth` can be a function of its own. [The definition →](/docs/labs/agents/reference?ref=docs-labs-agents-workers#the-definition)
 
-{/* not type-checked: repo.auth as a function reading a Worker binding */}
 ```typescript {{ title: "inngest/sandboxes/work.ts" }}
 import { sandbox } from "inngest/experimental/agents";
 import { getEnv } from "../env";

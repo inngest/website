@@ -11,15 +11,16 @@ The model can write one script instead of taking many turns, and your tools' cre
 
 ## The model writes code
 
-You want the model to read the CI log of every open pull request without a turn for each. Give the sandbox's code tools your `readLog` tool.
+You want the model to read the CI log of every open pull request without a turn for each. List `runCode` on the sandbox and give it your `readLog` tool.
 
 <AnnotatedCode>
 
-{/* not type-checked: sandbox.tools.code({ tools }), which gives the model work_run_code, and a read and write token pair on repo.auth */}
 ```typescript {{ title: "inngest/sandboxes/work.ts" }}
 import { secret } from "inngest/experimental";
 import { sandbox } from "inngest/experimental/agents";
 import { readLog } from "../tools/readLog";
+
+const { run, runCode } = sandbox.tools;
 
 export const work = sandbox({
   id: "work",
@@ -35,17 +36,17 @@ export const work = sandbox({
       }
     },
   },
-  tools: sandbox.tools.code({ tools: { readLog } }),
+  tools: { run, runCode: runCode.with({ tools: { readLog } }) },
 });
 ```
 
-<Annotation id="tools" lines="19" tease="adds work_run_code" title="Tools for scripts" href="/docs/labs/agents/reference-sandboxes?ref=docs-labs-agents-calling-home#code-tools" linkText="Reference: code tools">
-Passing `tools` to the code tools adds `work_run_code`. A script calls each by its key in the record, as `tools.readLog(...)`.
+<Annotation id="tools" lines="21" tease="adds work_runCode" title="Tools for scripts" href="/docs/labs/agents/reference-sandboxes?ref=docs-labs-agents-calling-home#code-tools" linkText="Reference: code tools">
+The model gets `work_runCode` beside `work_run`. A script calls each tool by its key in the record, as `tools.readLog(...)`, and the tool's description lists them for the model.
 </Annotation>
 
 </AnnotatedCode>
 
-The model writes one script and runs it with `work_run_code`:
+The model writes one script and runs it with `work_runCode`:
 
 ```python {{ title: "A script the model writes" }}
 failing = []
@@ -59,7 +60,11 @@ for pr in [41, 42, 43, 44, 45]:
 print(failing)
 ```
 
-Each `readLog` is a step in your trace. The tool and the CI helper are as [Tools](/docs/labs/agents/tools?ref=docs-labs-agents-calling-home) left them:
+Each `readLog` is a step in your trace.
+
+The script also gets the agent's own tools with no setup (experimental): `tools.list_agents`, `describe_agent`, `start_agent`, `message_agent`, `stop_agent` and `agent_result`, which waits for a started agent to finish. A run that owes [reports](/docs/labs/agents/agent-teams?ref=docs-labs-agents-calling-home) gets `tools.report` too. The same rules apply as for the model, `discovery: false` removes the agent tools, and a tool you give under the same name wins.
+
+The tool and the CI helper are as [Tools](/docs/labs/agents/tools?ref=docs-labs-agents-calling-home) left them:
 
 ```typescript {{ title: "inngest/lib/ci.ts" }}
 export const fetchLog = async (pr: number) => {
@@ -93,7 +98,6 @@ You want the script to do what only your run can, such as saving thread state an
 
 <AnnotatedCode>
 
-{/* not type-checked: a tool made in the handler and passed with loop(batch, { tools }) */}
 ```typescript {{ title: "inngest/agents/prHelper.ts" }}
 import { tool } from "inngest/experimental";
 import { kv, skills } from "inngest/experimental/agents";
@@ -204,7 +208,6 @@ export const deployed = eventType("deploy/finished", {
 });
 ```
 
-{/* not type-checked: sandboxMiddleware() on the client */}
 ```typescript {{ title: "inngest/client.ts" }}
 import { Inngest } from "inngest";
 import { sandboxMiddleware } from "inngest/experimental";
@@ -265,7 +268,6 @@ Only the checkout's read token and any `sandbox({ secrets })` values enter the s
 
 You want to call the same tools from a script you wrote. Run it from [your handler's sandbox](/docs/labs/agents/sandboxes?ref=docs-labs-agents-calling-home#a-sandbox-for-your-code) and pass the tools to the command.
 
-{/* not type-checked: sandboxes.work.commands.run with tools */}
 ```typescript
 await sandboxes.work.commands.run("triage", "node triage.cjs", {
   tools: { readLog, note },

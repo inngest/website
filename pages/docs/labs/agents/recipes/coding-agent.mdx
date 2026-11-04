@@ -25,7 +25,6 @@ Screenshot needed: the run's trace in the Dev Server.
 
 <AnnotatedCode>
 
-{/* not type-checked: repo as a function of the event, repo auth as { read, write }, policy */}
 ```typescript {{ title: "inngest/sandboxes/work.ts" }}
 import { secret } from "inngest/experimental";
 import { sandbox } from "inngest/experimental/agents";
@@ -33,8 +32,10 @@ import { sandbox } from "inngest/experimental/agents";
 export const work = sandbox({
   id: "work",
   repo: ({ event }) => {
+    const { repo } = event.data as { repo: string };
+
     return {
-      url: `https://github.com/${event.data.repo}`,
+      url: `https://github.com/${repo}`,
       auth: {
         read: secret("GITHUB_READ_TOKEN"),
         write: secret("GITHUB_WRITE_TOKEN"),
@@ -57,15 +58,15 @@ export const work = sandbox({
 });
 ```
 
-<Annotation id="repo" lines="6-8" tease="the request names it" title="The repository" href="/docs/labs/agents/reference-sandboxes?ref=docs-labs-agents-recipes-coding-agent#repos" linkText="Reference: repos">
-A function of the event, so the sandbox clones the repository each request names.
+<Annotation id="repo" lines="6-10" tease="the request names it" title="The repository" href="/docs/labs/agents/reference-sandboxes?ref=docs-labs-agents-recipes-coding-agent#repos" linkText="Reference: repos">
+A function of the event, so the sandbox clones the repository each request names. A sandbox is defined apart from any agent, so `event.data` is `unknown` until you say its shape.
 </Annotation>
 
-<Annotation id="auth" lines="9-12" tease="read to clone" title="Two tokens" href="/docs/labs/agents/sandboxes?ref=docs-labs-agents-recipes-coding-agent#a-repo" linkText="Check out a repo">
+<Annotation id="auth" lines="11-14" tease="read to clone" title="Two tokens" href="/docs/labs/agents/sandboxes?ref=docs-labs-agents-recipes-coding-agent#a-repo" linkText="Check out a repo">
 The checkout uses the read token and the push the write token, which stays in your app.
 </Annotation>
 
-<Annotation id="policy" lines="13-25" tease="can refuse a push" title="Push policy" href="/docs/labs/agents/sandboxes?ref=docs-labs-agents-recipes-coding-agent#a-repo" linkText="Push a branch">
+<Annotation id="policy" lines="15-27" tease="can refuse a push" title="Push policy" href="/docs/labs/agents/sandboxes?ref=docs-labs-agents-recipes-coding-agent#a-repo" linkText="Push a branch">
 Sees the branch and the changed files before anything is pushed, and can refuse. The model reads a refusal and can fix the branch.
 </Annotation>
 
@@ -73,7 +74,6 @@ Sees the branch and the changed files before anything is pushed, and can refuse.
 
 <AnnotatedCode>
 
-{/* not type-checked: invoke() as an agent trigger, a listed sandbox with a repo */}
 ```typescript {{ title: "inngest/agents/coder.ts" }}
 import { invoke } from "inngest";
 import { z } from "zod";
@@ -105,7 +105,6 @@ The model gets `work_run` and `work_push`. The sandbox starts on first use.
 
 <AnnotatedCode>
 
-{/* not type-checked: start().result() from a plain function */}
 ```typescript {{ title: "inngest/functions/requestChange.ts" }}
 import { invoke } from "inngest";
 import { inngest } from "../client";
@@ -125,7 +124,6 @@ export const requestChange = inngest.createFunction(
 
 </AnnotatedCode>
 
-{/* not type-checked: agents.functions() beside a plain function */}
 ```typescript {{ title: "inngest/serve.ts" }}
 import { createServer } from "inngest/node";
 import { agents, inngest } from "./client";
@@ -152,7 +150,6 @@ Set the project up as in the [quick start](/docs/labs/agents/quick-start?ref=doc
 
 ```bash
 export ANTHROPIC_API_KEY=sk-ant-...
-export INNGEST_EXPERIMENTAL_KV_URL=redis://localhost:6379
 export GITHUB_READ_TOKEN=ghp_...
 export GITHUB_WRITE_TOKEN=ghp_...
 npx tsx inngest/serve.ts

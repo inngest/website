@@ -28,7 +28,6 @@ Screenshot needed: the lead's run beside both specialists' runs.
 
 <AnnotatedCode>
 
-{/* not type-checked: agents.agent with no triggers and no handler, budget, card */}
 ```typescript {{ title: "inngest/agents/researcher.ts" }}
 import { agents } from "../client";
 import { claude } from "../models/claude";
@@ -49,14 +48,12 @@ The description is what the lead searches. Agents in the lead's own app are foun
 
 </AnnotatedCode>
 
-{/* not type-checked: sandbox() with only an id */}
 ```typescript {{ title: "inngest/sandboxes/work.ts" }}
 import { sandbox } from "inngest/experimental/agents";
 
 export const work = sandbox({ id: "work" });
 ```
 
-{/* not type-checked: agents.agent with a listed sandbox, budget and card */}
 ```typescript {{ title: "inngest/agents/coder.ts" }}
 import { agents } from "../client";
 import { claude } from "../models/claude";
@@ -74,7 +71,6 @@ export const coder = agents.agent({
 
 <AnnotatedCode>
 
-{/* not type-checked: invoke() trigger on an agent with no handler, budget, discovery tools */}
 ```typescript {{ title: "inngest/agents/lead.ts" }}
 import { invoke } from "inngest";
 import { z } from "zod";
@@ -108,7 +104,6 @@ Every thread has its own budget, never handed down. The three add up to 2 dollar
 
 <AnnotatedCode>
 
-{/* not type-checked: start().result() on an agent with an invoke() trigger, from a plain function */}
 ```typescript {{ title: "inngest/functions/askTeam.ts" }}
 import { invoke } from "inngest";
 import { lead, teamRequest } from "../agents/lead";
@@ -128,7 +123,6 @@ export const askTeam = inngest.createFunction(
 
 </AnnotatedCode>
 
-{/* not type-checked: agents.functions() */}
 ```typescript {{ title: "inngest/serve.ts" }}
 import { createServer } from "inngest/node";
 import { agents, inngest } from "./client";
@@ -143,7 +137,6 @@ createServer({
 }).listen(3000);
 ```
 
-{/* not type-checked: createAgents with the store from the environment, sandboxMiddleware() */}
 ```typescript {{ title: "inngest/client.ts" }}
 import { Inngest } from "inngest";
 import { sandboxMiddleware } from "inngest/experimental";
@@ -172,7 +165,6 @@ Set the project up as in the [quick start](/docs/labs/agents/quick-start?ref=doc
 
 ```bash
 export ANTHROPIC_API_KEY=sk-ant-...
-export INNGEST_EXPERIMENTAL_KV_URL=redis://localhost:6379
 npx tsx inngest/serve.ts
 ```
 
@@ -184,7 +176,8 @@ At [localhost:8288](http://localhost:8288), open `ask-team`, choose **Invoke** a
 
 ## Variations
 
-- [`limits.mayCall`](/docs/labs/agents/agent-discovery?ref=docs-labs-agents-recipes-agent-teams#who-it-may-start) limits who the lead may start.
+- [`discovery.agents`](/docs/labs/agents/agent-discovery?ref=docs-labs-agents-recipes-agent-teams#who-it-may-start) limits who the lead may find and start.
+- [Reports](/docs/labs/agents/agent-teams?ref=docs-labs-agents-recipes-agent-teams#reports-along-the-way) let the lead ask each specialist for typed updates while it works.
 - [`share: "team"`](/docs/labs/agents/agent-discovery?ref=docs-labs-agents-recipes-agent-teams#who-can-find-it) lets other apps find the researcher once its card refreshes.
 
 ## Learn more

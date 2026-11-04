@@ -13,7 +13,6 @@ Messages arrive in your [inbox](/docs/labs/agents/inboxes?ref=docs-labs-agents-a
 
 You want a reviewer the PR helper can hand pull requests to.
 
-{/* not type-checked: an agent with an invoke() trigger, a model and no handler */}
 ```typescript {{ title: "inngest/agents/reviewer.ts" }}
 import { invoke } from "inngest";
 import { z } from "zod";
@@ -36,7 +35,6 @@ You want the review back in the PR helper's code, to comment on the PR once CI p
 
 <AnnotatedCode>
 
-{/* not type-checked: start().result() on another agent inside an agent handler */}
 ```typescript {{ title: "inngest/agents/prHelper.ts" }}
 import { agents } from "../client";
 import { ciFailed, ciPassed, deployed, prComment, prOpened } from "../events";
@@ -91,7 +89,9 @@ export const prHelper = agents.agent(
 
 </AnnotatedCode>
 
-A run opened through a handle ends once it has answered, so `result()` returns promptly. It waits only for the runs its model started with `start_agent`, never for `start()` calls in code. [Idle →](/docs/labs/agents/reference?ref=docs-labs-agents-agent-teams#idle)
+A run opened through a handle ends once it has answered, so `result()` returns promptly. It waits only for the runs its model started with `start_agent`, never for `start()` calls in code. An agent that sets its own `idle` waits for more messages instead, so a long-lived agent can serve a handle. [Idle →](/docs/labs/agents/reference?ref=docs-labs-agents-agent-teams#idle)
+
+`start()` opens a new thread each time. To keep one thread, and its sandbox and history, across runs, pass its key: `reviewer.start({ pr: 42 }, { thread: "42" })`. The input is still typed by the `invoke()` trigger.
 
 The rest of the PR helper is as [Calling home](/docs/labs/agents/calling-home?ref=docs-labs-agents-agent-teams) left it. The events and the GitHub client are as [Threads](/docs/labs/agents/threads?ref=docs-labs-agents-agent-teams), [Inboxes](/docs/labs/agents/inboxes?ref=docs-labs-agents-agent-teams) and [Tools](/docs/labs/agents/tools?ref=docs-labs-agents-agent-teams#your-own-git-hub-tools) left them:
 
@@ -147,7 +147,6 @@ You want to correct or question the reviewer while it works, and the handle `sta
 
 <AnnotatedCode>
 
-{/* not type-checked: message(), ask() and stop() on a handle from start() */}
 ```typescript
 const review = await reviewer.start({ pr: Number(me.key) });
 
@@ -174,7 +173,6 @@ A `result()` waiting on this run throws.
 
 Once the reviewer has answered, its run is over. `message()` and `ask()` then start a run on the same thread, which picks up its history:
 
-{/* not type-checked: message().result() on a handle from start() */}
 ```typescript
 const second = await review.message("Now check the tests.").result();
 ```
@@ -183,7 +181,6 @@ const second = await review.message("Now check the tests.").result();
 
 You want the reviewer to be able to ask the PR helper a question.
 
-{/* not type-checked: start() without result(), then agentQuestion and message.reply() in the inbox loop */}
 ```typescript
 import { agentQuestion } from "inngest/experimental/agents";
 
@@ -214,7 +211,12 @@ start_agent({
 
 None of them waits, so the model can't deadlock. What comes back lands in its inbox as `agent/message`, `agent/question`, `agent/answer` or, for runs opened with `start_agent`, `agent/finished`. [How the model reads them →](/docs/labs/agents/reference?ref=docs-labs-agents-agent-teams#the-loop)
 
-{/* not type-checked: message.is(agentFinished) narrowing data.outcome */}
+- **Who it can reach.** `message_agent`, `ask_agent` and `stop_agent` reach only the thread that started the agent, threads it started, and members of its group. Thread keys from `start()` and `start_agent` are signed, so a guessed key is refused.
+- **Groups.** `start_agent({ ..., group: "fix" })`, or `start(input, { group: "fix" })` in code, puts the new thread in a group. Threads the same starter put in that group can message and ask each other, and live members hear when another joins. A group needs a generated key, so it can't be set with `thread`.
+- **Attached or not.** A started agent carries on by itself when the starter's run ends. `attach: true` cancels it when that run ends for good.
+- **Ending a turn.** Every model agent also has a `wait` tool, which ends its turn until the next message arrives. It is experimental, and a tool of your own named `wait` replaces it. `reply` is only for answering a question by its ID; a run's result reaches whoever started it on its own.
+- **Who sent it.** In a thread another agent started, a message with no sender, such as a person's steer, reads "Message from outside the agent team (not from an agent)", so the model doesn't take it for its starter's.
+
 ```typescript
 import { agentFinished } from "inngest/experimental/agents";
 
@@ -229,7 +231,7 @@ if (message.is(agentFinished) && message.data.outcome === "failed") {
 
 ## From the sandbox
 
-You want a script on the sandbox to start agents. It calls the same tools there, plus `agent_result`.
+You want a script on the sandbox to start agents. Code the model runs with `runCode` calls `list_agents`, `describe_agent`, `start_agent`, `message_agent` and `stop_agent` there, plus `agent_result`, with no setup. The same discovery filters and reach rules apply, and `discovery: false` removes them.
 
 ```python {{ title: "A script the model runs" }}
 started = await tools.start_agent(
@@ -242,11 +244,69 @@ review = await tools.agent_result(thread=started["thread"])
 
 `agent_result` waits: code can wait for an agent, where the model only reacts. [The model writes code →](/docs/labs/agents/calling-home?ref=docs-labs-agents-agent-teams#the-model-writes-code)
 
+## Reports along the way
+
+You want each finding as the reviewer finds it, not one answer at the end. Ask for typed reports when you start it. This is experimental.
+
+<AnnotatedCode>
+
+{/* not type-checked: start() with reports checks; at SDK 1853ec72 the handler's message type doesn't include reports, so message.is(finding) narrows to never */}
+```typescript
+import { eventType } from "inngest";
+import { z } from "zod";
+
+const finding = eventType("review/finding", {
+  schema: z.object({ file: z.string(), problem: z.string() }),
+});
+
+await reviewer.start(
+  { pr: Number(me.key) },
+  { reports: [{ event: finding, required: true }] },
+);
+
+for await (const batch of inbox.batches()) {
+  for (const message of batch) {
+    if (message.is(finding)) {
+      await step.run("comment finding", async () => {
+        return await gh.comment(Number(me.key), message.data.problem);
+      });
+    }
+  }
+}
+```
+
+<Annotation id="type" lines="4-6" tease="an ordinary event type" title="A report type">
+Any `eventType()`. Its name can't start with `agent/` or `inngest/`.
+</Annotation>
+
+<Annotation id="reports" lines="8-11" tease="what it owes" title="reports">
+A line is an event type, or `{ event, to, if, required }`. `to` sends it to other threads, such as `me` or `agent.thread(key)`, and `if` is a CEL condition over `async.data`.
+</Annotation>
+
+<Annotation id="is" lines="15" tease="typed data" title="is()">
+A report reaches your inbox under its type's name, typed by its schema.
+</Annotation>
+
+</AnnotatedCode>
+
+The reviewer's model gets a `report` tool, and a handler gets `me.report(finding, data)`. The data is checked against the schema before it is sent. A model that tries to finish while it owes a `required` report is reminded, and if it never sends one, its `agent/finished` lists the type in `missing`. A model can ask for reports too, with `start_agent`'s `reports`.
+
+## Lend a sandbox
+
+You want a fixer agent to work on the PR helper's checkout, not a fresh machine. Lend it the sandbox's tools. This is experimental.
+
+```typescript
+await fixer.start({ pr: Number(me.key) }, { tools: sandboxes.work.tools });
+```
+
+The fixer's model gets `work_run`, `work_read` and the rest, and its run executes them as steps against the PR helper's machine. `sandboxes: { work: sandboxes.work }` lends the machine itself, for the fixer's code. Only the built-in tools can be lent, `push` never is, and both agents must be in the same app.
+
+A child that borrows is attached: it is cancelled when the PR helper's run ends for good, so it never outlives the machine. `attach: false` with a lend is an error.
+
 ## Background work
 
 You want to check with the reviewer without holding up the PR helper. Do it in a function you don't await.
 
-{/* not type-checked: an un-awaited function that reports back through me.message() */}
 ```typescript
 const reviewLater = async () => {
   const review = await reviewer.start({ pr: Number(me.key) }).result();
@@ -283,7 +343,6 @@ export const openPrs = async () => {
 };
 ```
 
-{/* not type-checked: prHelper.thread(key).message() from a plain function */}
 ```typescript {{ title: "inngest/functions/nightly.ts" }}
 import { inngest } from "../client";
 import { prHelper } from "../agents/prHelper";

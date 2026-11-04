@@ -63,7 +63,6 @@ export const gh = {
 
 <AnnotatedCode>
 
-{/* not type-checked: a run variable counting message.is() matches in an agent handler */}
 ```typescript {{ title: "inngest/agents/prHelper.ts" }}
 import { agents } from "../client";
 import { ciFailed, ciPassed, deployed, prComment, prOpened } from "../events";
@@ -123,7 +122,6 @@ The SDK keeps a thread's [history](/docs/labs/agents/models?ref=docs-labs-agents
 
 You want the count to survive after the run ends. Keep it in `kv.thread`.
 
-{/* not type-checked: kv.thread.get and set in an agent handler */}
 ```typescript
 import { kv } from "inngest/experimental/agents";
 import { ciFailed } from "../events";
@@ -147,13 +145,12 @@ async ({ inbox, me, step }) => {
 },
 ```
 
-`kv.thread` is this thread's state: it survives runs, restarts and deploys. It lives in your app's store, set with `INNGEST_EXPERIMENTAL_KV_URL`, and its values are JSON. [Store →](/docs/labs/agents/reference?ref=docs-labs-agents-memory#store)
+`kv.thread` is this thread's state: it survives runs, restarts and deploys. Its values are JSON. [Where it lives →](#where-it-lives)
 
 ## Typed keys
 
 You want the editor to know the value's type. Define the key once with a schema.
 
-{/* not type-checked: kv.key with a zod schema */}
 ```typescript {{ title: "inngest/keys.ts" }}
 import { kv } from "inngest/experimental/agents";
 import { z } from "zod";
@@ -161,7 +158,6 @@ import { z } from "zod";
 export const failures = kv.key("failures", z.number());
 ```
 
-{/* not type-checked: kv.thread.update with a typed key in an agent handler */}
 ```typescript
 import { kv } from "inngest/experimental/agents";
 import { ciFailed } from "../events";
@@ -171,11 +167,9 @@ import { gh } from "../lib/github";
 async ({ inbox, me, step }) => {
   for await (const message of inbox) {
     if (message.is(ciFailed)) {
-      await kv.thread.update(failures, (found) => {
-        return (found ?? 0) + 1;
-      });
+      const total = ((await kv.thread.get(failures)) ?? 0) + 1;
 
-      const total = await kv.thread.get(failures);
+      await kv.thread.set(failures, total);
 
       await step.run("comment", async () => {
         return await gh.comment(
@@ -188,7 +182,7 @@ async ({ inbox, me, step }) => {
 },
 ```
 
-`kv.thread.set(failures, "3")` is a type error, and a stored value that breaks the schema fails the read. `update` reads and writes together, so overlapping updates never lose one.
+`kv.thread.set(failures, "3")` is a type error, and a stored value that breaks the schema fails the read.
 
 {/* Go deeper */}
 
@@ -196,19 +190,35 @@ async ({ inbox, me, step }) => {
 
 You want a list of flaky tests that every PR shares. Add a second key to `inngest/keys.ts` and keep it in `kv.app`.
 
-{/* not type-checked: kv.key with an array schema */}
 ```typescript
 export const flaky = kv.key("flaky", z.array(z.string()));
 ```
 
-{/* not type-checked: kv.app.update with a typed key */}
+```typescript
+const found = (await kv.app.get(flaky)) ?? [];
+
+await kv.app.set(flaky, [...found, "checkout.spec.ts"]);
+```
+
+Every PR sees the same list. Each call names its scope: `kv.thread` is one thread's state and `kv.app` is shared by the whole app. [KV →](/docs/labs/agents/reference?ref=docs-labs-agents-memory#kv)
+
+## Where it lives
+
+By default, state lives in functions that `agents.functions()` serves with your agents, so there is nothing else to run. This store is experimental, and it has limits:
+
+- **Later write wins.** Every live run sees a write after a short lag. Two runs that read, change and write one key at once can lose one change. Give each key one writer, or send a message to one owner.
+- **128 KB per thread.** The same cap holds for each `kv.app` and `kv.env`. The model's remembered history counts toward it.
+- **Write between steps.** A write inside a step's callback (a tool or `step.run`) throws.
+- **Read inside a function.** A script or a route can write with `kv.with(client)`, but not read.
+- **One app.** `kv.env` is shared by the functions of one app, not across apps.
+
+For atomic writes, give `createAgents` a store: `redisKvAdapter(url)` or `d1KvAdapter(db)`. Setting `INNGEST_EXPERIMENTAL_KV_URL` to a Redis URL does the same. A store adds `update`, `setIfAbsent` and `take`, which read and write together, so overlapping updates never lose one. [Store →](/docs/labs/agents/reference?ref=docs-labs-agents-memory#store)
+
 ```typescript
 await kv.app.update(flaky, (found) => {
   return [...(found ?? []), "checkout.spec.ts"];
 });
 ```
-
-Every PR sees the same list. Each call names its scope: `kv.thread` is one thread's state and `kv.app` is shared by the whole app. [KV →](/docs/labs/agents/reference?ref=docs-labs-agents-memory#kv)
 
 ## Recipes and reference
 

@@ -42,7 +42,6 @@ app/
 
 The client holds the Inngest client and `agents`, which defines every agent. Add `sandboxMiddleware()` when any agent lists sandboxes.
 
-{/* not type-checked: createAgents with the store from the environment, sandboxMiddleware() */}
 ```typescript {{ title: "inngest/client.ts" }}
 import { Inngest } from "inngest";
 import { sandboxMiddleware } from "inngest/experimental";
@@ -60,7 +59,6 @@ export const agents = createAgents(inngest);
 
 Agents import their model, so a different model for another environment is a change to this file.
 
-{/* not type-checked: anthropic() as a named export */}
 ```typescript {{ title: "inngest/models/claude.ts" }}
 import { anthropic } from "inngest/experimental/agents";
 
@@ -97,7 +95,6 @@ export const lookupOrder = tool.step({
 
 ## One sandbox per file
 
-{/* not type-checked: sandbox from inngest/experimental/agents */}
 ```typescript {{ title: "inngest/sandboxes/work.ts" }}
 import { sandbox } from "inngest/experimental/agents";
 
@@ -108,7 +105,6 @@ export const work = sandbox({ id: "work" });
 
 An agent is a module-level export that imports the client, its model, and its tools and sandboxes.
 
-{/* not type-checked: agents.agent with a thread expression, tools and skills.folder */}
 ```typescript {{ title: "inngest/agents/support.ts" }}
 import { skills } from "inngest/experimental/agents";
 import { agents } from "../client";
@@ -127,7 +123,6 @@ export const support = agents.agent({
 });
 ```
 
-{/* not type-checked: an invoke() trigger on an agent that lists a sandbox */}
 ```typescript {{ title: "inngest/agents/reviewer.ts" }}
 import { invoke } from "inngest";
 import { z } from "zod";
@@ -148,7 +143,6 @@ export const reviewer = agents.agent({
 
 Work that needs no thread is a plain function. It lives in `functions/` and imports any agent it starts. [Not everything is an agent →](/docs/labs/agents/agent-teams?ref=docs-labs-agents-structure#not-everything-is-an-agent)
 
-{/* not type-checked: start().result() from a plain function */}
 ```typescript {{ title: "inngest/functions/nightlyReview.ts" }}
 import { inngest } from "../client";
 import { reviewer } from "../agents/reviewer";
@@ -177,7 +171,6 @@ Each skill is a folder with a `SKILL.md`. `skills.folder("./skills")` finds them
 
 Import every agent file before you call `agents.functions()`, then add your plain functions to the list.
 
-{/* not type-checked: agents.functions() spread with a plain function */}
 ```typescript {{ title: "inngest/serve.ts" }}
 import { createServer } from "inngest/node";
 import { agents, inngest } from "./client";
@@ -211,7 +204,7 @@ inngest/
 
 ## How it works
 
-- An agent registers when its file is imported, and `agents.functions()` returns what is registered, so `serve.ts` imports each agent.
+- An agent registers when its file is imported, and `agents.functions()` returns what is registered, so `serve.ts` imports each agent. The list also holds the functions agents need behind the scenes, such as the ones that keep thread state, so serve all of it.
 - Tools, sandboxes and models are plain definitions with no client, so many agents share one.
 
 ## Recipes and reference

@@ -36,7 +36,6 @@ export const deployed = eventType("deploy/finished", {
 });
 ```
 
-{/* not type-checked: event triggers on an agent with a handler */}
 ```typescript
 import { agents } from "../client";
 import { ciFailed, deployed, prComment, prOpened } from "../events";
@@ -57,7 +56,6 @@ You want everything about #42 to be one thread. Give the agent a `thread`: an [e
 
 <AnnotatedCode>
 
-{/* not type-checked: thread on an agent definition */}
 ```typescript
 {
   id: "pr-helper",
@@ -78,7 +76,6 @@ Open PR #42 and fail its CI: both land on #42's thread, one run at a time, in or
 
 You want to know what joining a thread gets you. Leave a note for the next run.
 
-{/* not type-checked: kv.thread.get and set in an agent handler */}
 ```typescript
 import { kv } from "inngest/experimental/agents";
 
@@ -91,13 +88,12 @@ async ({ event }) => {
 },
 ```
 
-The first run returns nothing, and the second returns the first's note. The thread keeps its [state](/docs/labs/agents/memory?ref=docs-labs-agents-threads#thread-state), the model's [history](/docs/labs/agents/models?ref=docs-labs-agents-threads#it-remembers), its [sandbox](/docs/labs/agents/sandboxes?ref=docs-labs-agents-threads#it-belongs-to-the-thread) and its [budget](/docs/labs/agents/models?ref=docs-labs-agents-threads#a-budget).
+The first run returns nothing, and the second returns the first's note. With no store configured, your app's own ledger functions keep it, with no outside service. The thread keeps its [state](/docs/labs/agents/memory?ref=docs-labs-agents-threads#thread-state), the model's [history](/docs/labs/agents/models?ref=docs-labs-agents-threads#it-remembers), its [sandbox](/docs/labs/agents/sandboxes?ref=docs-labs-agents-threads#it-belongs-to-the-thread) and its [budget](/docs/labs/agents/models?ref=docs-labs-agents-threads#a-budget).
 
 ## No key is fine
 
 You want an agent for one-off jobs. It needs no key.
 
-{/* not type-checked: an agent with a handler and no thread */}
 ```typescript {{ title: "inngest/agents/summarize.ts" }}
 import { agents } from "../client";
 
@@ -109,7 +105,7 @@ export const summarize = agents.agent(
 );
 ```
 
-Each `start()` is its own thread, with nothing to set up. Its answer is the run's output.
+Each `start()` is its own thread, with nothing to set up. Its answer is the run's output. To run again on a thread you already have, pass its key: `summarize.start(input, { thread: key })`.
 
 ## Two conversations
 
@@ -126,7 +122,6 @@ await inngest.send([
 
 `me` is the handle to the run's own thread, so `me.key` names it: `"42"` or `"43"`.
 
-{/* not type-checked: me.key in an agent handler */}
 ```typescript
 async ({ event, me }) => {
   return `Saw ${event.name} on ${me.key}`;
@@ -139,7 +134,6 @@ Each pull request has its own thread, with its own runs and state. Code turns th
 
 You want deploys in the thread too, though the deploy event names the PR `pull`. Give that trigger its own `thread`; it wins over the agent's.
 
-{/* not type-checked: four triggers on an agent, one with its own thread */}
 ```typescript {{ title: "inngest/agents/prHelper.ts" }}
 import { agents } from "../client";
 import { ciFailed, deployed, prComment, prOpened } from "../events";

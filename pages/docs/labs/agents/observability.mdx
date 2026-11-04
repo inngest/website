@@ -16,7 +16,6 @@ Every statement of a run is a row in its trace, and scores add numbers to those 
 
 <AnnotatedCode>
 
-{/* not type-checked: score in the handler's argument and usage on the loop result */}
 ```typescript {{ title: "inngest/agents/support.ts" }}
 import { agents } from "../client";
 import { ticketOpened } from "../events";
@@ -81,7 +80,6 @@ Every agent records model time, tokens, tool calls, folded messages, tool time a
 
 `score(name, value)` from a tool's context lands on that tool call's row.
 
-{/* not type-checked: score in a tool's context */}
 ```typescript {{ title: "inngest/tools/escalate.ts" }}
 import { tool } from "inngest/experimental";
 import { z } from "zod";
@@ -98,6 +96,8 @@ export const escalate = tool.step({
 ```
 
 An un-awaited score is still written before the run ends. Names can't start with `agent.`, which the automatic scores use.
+
+Code anywhere in an agent run, such as a helper module, can import `score` from `inngest/experimental/agents`. It is the same function, found from the running agent. Pass a record to write several scores in one step: `score({ answered: true, cost: 0.02 })`. Inside a variant of an [experiment](/docs/agent-evals/overview?ref=docs-labs-agents-observability), a score also credits that variant.
 
 ## Gotchas
 

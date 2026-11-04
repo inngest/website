@@ -13,7 +13,6 @@ Inngest starts it, retries what fails and records every run. The sections below 
 
 You want the smallest agent there is. Give it an id; the `agents` object comes from the client in the [quick start](/docs/labs/agents/quick-start?ref=docs-labs-agents-agents#create-the-client).
 
-{/* not type-checked: agents.agent with an id and no handler */}
 ```typescript
 import { agents } from "../client";
 
@@ -26,7 +25,6 @@ Start it with `hello.start("Hi")`. The Dev Server shows one run, completed: its 
 
 You want the agent to do something. Pass a handler as the second argument; what it returns is the run's output.
 
-{/* not type-checked: agents.agent with a handler */}
 ```typescript
 export const hello = agents.agent({ id: "hello" }, async () => {
   return "I ran.";
@@ -37,7 +35,6 @@ export const hello = agents.agent({ id: "hello" }, async () => {
 
 You want to read what was sent. Take `event` from the handler's argument.
 
-{/* not type-checked: a handler reading event.data.content */}
 ```typescript
 export const hello = agents.agent({ id: "hello" }, async ({ event }) => {
   return `You said: ${event.data.content}`;
@@ -61,7 +58,6 @@ export const ciFailed = eventType("ci/run.failed", { schema: ciRun });
 
 <AnnotatedCode>
 
-{/* not type-checked: triggers with an event type, event.is() narrowing */}
 ```typescript
 import { ciFailed } from "../events";
 
@@ -72,13 +68,13 @@ export const hello = agents.agent(
       return `CI failed on #${event.data.pr}`;
     }
 
-    return `You said: ${event.data.content}`;
+    return "A message started me.";
   },
 );
 ```
 
 <Annotation id="triggers" lines="4" tease="what starts a run" title="Triggers" href="/docs/labs/agents/threads?ref=docs-labs-agents-agents#three-events-three-strangers" linkText="Threads">
-Sending `ci/run.failed` starts a run. A message still does.
+Sending `ci/run.failed` starts a run. A message still does, though `event` is typed by `triggers` only.
 </Annotation>
 
 <Annotation id="is" lines="6" tease="tell them apart" title="event.is()" href="/docs/durable-execution/guides-and-advanced/events-and-triggers/event-payloads-and-schemas?ref=docs-labs-agents-agents#narrow-an-event-with-is" linkText="Narrow an event with is()">
@@ -107,7 +103,6 @@ export const fetchLog = async (pr: number) => {
 
 <AnnotatedCode>
 
-{/* not type-checked: step.run in an agent handler */}
 ```typescript {{ title: "inngest/agents/hello.ts" }}
 import { agents } from "../client";
 import { ciFailed } from "../events";
@@ -124,7 +119,7 @@ export const hello = agents.agent(
       return log.split("\n")[0];
     }
 
-    return `You said: ${event.data.content}`;
+    return "A message started me.";
   },
 );
 ```

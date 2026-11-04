@@ -13,7 +13,6 @@ The PR helper is the one from [Inboxes](/docs/labs/agents/inboxes?ref=docs-labs-
 
 You want a summary of the pull request, written by a model.
 
-{/* not type-checked: anthropic() as a named export */}
 ```typescript {{ title: "inngest/models/claude.ts" }}
 import { anthropic } from "inngest/experimental/agents";
 
@@ -81,7 +80,6 @@ You want follow-ups to work. A turn is one model call plus the tool calls it ask
 
 <AnnotatedCode>
 
-{/* not type-checked: model, system and loop(batch) in the PR helper */}
 ```typescript {{ title: "inngest/agents/prHelper.ts" }}
 import { agents } from "../client";
 import { ciFailed, ciPassed, deployed, prComment, prOpened } from "../events";
@@ -122,7 +120,7 @@ With a model and a system, the agent needs no handler.
 </Annotation>
 
 <Annotation id="loop" lines="25" tease="runs the turns" title="loop(batch)">
-Calls the model until it stops asking for tools, and returns the answer in `result.text`.
+Calls the model until it stops asking for tools or calls the built-in `wait`, and returns the answer in `result.text`.
 </Annotation>
 
 </AnnotatedCode>
@@ -223,7 +221,7 @@ await step.run("comment", async () => {
 ```
 
 <Annotation id="end" lines="3" tease="why it stopped" title="end" href="/docs/labs/agents/reference?ref=docs-labs-agents-models#the-result" linkText="Reference: the result">
-`"done"`, `"maxTurns"`, `"stop"` or `"budget"`.
+`"done"`, `"maxTurns"`, `"stop"`, `"budget"` or `"noToolCall"`.
 </Annotation>
 
 </AnnotatedCode>
@@ -236,34 +234,46 @@ You want to try another model without touching the agent.
 
 <AnnotatedCode>
 
-{/* not type-checked: .with() variants and a model function typed AgentModel */}
 ```typescript {{ title: "inngest/models/variants.ts" }}
-import type { AgentModel } from "inngest/experimental/agents";
+import { agentModel } from "inngest/experimental/agents";
 import { claude } from "./claude";
 
 export const quick = claude.with({ effort: "low", maxTokens: 500 });
 
-export const timed: AgentModel = async (request) => {
+export const timed = agentModel(async (request) => {
   const started = Date.now();
   const reply = await quick(request);
 
   console.log(`model took ${Date.now() - started}ms`);
 
   return reply;
-};
+});
 ```
 
 <Annotation id="with" lines="4" tease="same client, other options" title=".with()" href="/docs/labs/agents/reference?ref=docs-labs-agents-models#models" linkText="Reference: models">
 A variant of the model, for one agent or one call.
 </Annotation>
 
-<Annotation id="shape" lines="6" tease="any function of this shape" title="AgentModel">
-The history in, the reply out.
+<Annotation id="shape" lines="6" tease="any function of this shape" title="agentModel()">
+The history in, the reply out. `agentModel()` marks it as a model, so an agent's `model` doesn't read it as a function of the run.
 </Annotation>
 
 </AnnotatedCode>
 
 Swap `model: claude` for `model: timed` and the same agent runs.
+
+`model` also takes a function of `{ event, thread }` that returns a model, read once at the start of each run:
+
+{/* not type-checked: model as a function of the run */}
+```typescript
+model: ({ event }) => {
+  if (event.name === "ci/run.failed") {
+    return claude.with({ effort: "high" });
+  }
+
+  return claude;
+},
+```
 
 {/* Go deeper */}
 ## A typed answer
@@ -340,7 +350,7 @@ await loop(batch, {
 ```
 
 <Annotation id="onturn" lines="2-9" tease="after each turn's tools" title="onTurn" href="/docs/labs/agents/reference?ref=docs-labs-agents-models#on-turn" linkText="Reference: onTurn">
-Gets the turn: `turn`, `stepId`, `text`, `toolCalls` and `usage`. A slow or failing comment never holds up the next model call.
+Gets the turn: `turn`, `stepId`, `text`, `toolCalls`, `runs`, `model` and `usage`. A slow or failing comment never holds up the next model call.
 </Annotation>
 
 </AnnotatedCode>
@@ -354,22 +364,28 @@ You want the agent's turns to run your way, or just a little differently. To cha
 loop: { maxTurns: 10 },
 ```
 
-The loop makes at most 10 model calls, down from the default 40. In a handler, `loop.with({ maxTurns: 10 })` derives that loop from the agent's. For more than options, give `loop` a whole loop of your own:
+The loop makes at most 10 model calls, down from the default 40. Other options work the same way, such as `toolChoice: "required"` for a small model that answers in chat, or `stop: hasToolCall("finish")` to end once a `finish` tool has run. In a handler, `loop.with({ maxTurns: 10 })` derives that loop from the agent's. For more than options, give `loop` a whole loop of your own:
 
 <AnnotatedCode>
 
-{/* not type-checked: a whole hand-built loop on the agent definition */}
 ```typescript {{ title: "inngest/agents/parrot.ts" }}
 import { agents } from "../client";
 
 export const parrot = agents.agent({
   id: "parrot",
   loop: async (batch) => {
-    const heard = batch.map((message) => {
-      return JSON.stringify(message.data);
-    });
+    const heard = typeof batch === "string" ? batch : JSON.stringify(batch);
 
-    return { text: heard.join("\n"), end: "done", unread: [] };
+    return {
+      text: heard,
+      end: "done",
+      unread: [],
+      turns: 0,
+      noToolCallTurns: 0,
+      history: [],
+      usage: { input: 0, output: 0 },
+      toolCalls: [],
+    };
   },
 });
 ```
@@ -378,8 +394,8 @@ export const parrot = agents.agent({
 A function shaped like the handler's `loop`. It reaches its model and tools however it likes.
 </Annotation>
 
-<Annotation id="own-result" lines="10" tease="what a loop returns" title="The result" href="/docs/labs/agents/reference?ref=docs-labs-agents-models#the-result" linkText="Reference: the result">
-The answer in `text`, why the loop stopped in `end`, and the messages it left in `unread`.
+<Annotation id="own-result" lines="8-17" tease="what a loop returns" title="The result" href="/docs/labs/agents/reference?ref=docs-labs-agents-models#the-result" linkText="Reference: the result">
+The answer in `text`, why the loop stopped in `end` and the messages it left in `unread`. A loop with no model calls leaves the rest empty.
 </Annotation>
 
 </AnnotatedCode>

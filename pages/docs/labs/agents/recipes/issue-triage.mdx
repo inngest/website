@@ -32,7 +32,6 @@ export const bugReported = eventType("bug/reported", {
 
 <AnnotatedCode>
 
-{/* not type-checked: agents.agent with an event trigger, thread, model, system and tools and no handler */}
 ```typescript {{ title: "inngest/agents/triage.ts" }}
 import { agents } from "../client";
 import { bugReported } from "../events";
@@ -168,7 +167,6 @@ Set the project up as in the [quick start](/docs/labs/agents/quick-start?ref=doc
 
 ```bash
 export ANTHROPIC_API_KEY=sk-ant-...
-export INNGEST_EXPERIMENTAL_KV_URL=redis://localhost:6379
 export GITHUB_TOKEN=ghp_...
 npm run dev
 ```
