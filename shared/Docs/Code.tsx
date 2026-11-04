@@ -702,10 +702,11 @@ export function GuideSection({
   show: string;
 }) {
   let context = useContext(GuideSelectorContext);
-  if (show === context.selected) {
-    return <>{children}</>;
-  }
-  return null;
+  return (
+    <SelectableSection show={show} selected={context.selected}>
+      {children}
+    </SelectableSection>
+  );
 }
 
 export function GuideTitle() {
@@ -714,6 +715,33 @@ export function GuideTitle() {
     (o) => o.key === context.selected
   );
   return <>{selectedOption?.title}</>;
+}
+
+/**
+ * Renders every Guide/Language section in the HTML and hides the ones that
+ * aren't selected, instead of leaving them out. Crawlers that don't run
+ * JavaScript (most AI crawlers) otherwise only see the first section, which
+ * is often a stub ("not yet supported in Go"). `display: contents` keeps the
+ * selected section's layout identical to rendering its children directly.
+ */
+function SelectableSection({
+  show,
+  selected,
+  children,
+}: {
+  show: string;
+  selected: string;
+  children: React.ReactNode;
+}) {
+  const isSelected = show === selected;
+  return (
+    <div
+      data-section={show}
+      style={{ display: isSelected ? "contents" : "none" }}
+    >
+      {children}
+    </div>
+  );
 }
 
 // --- LanguageSelector (SDK language-aware, no inline Tab UI) ---
@@ -820,10 +848,11 @@ export function LanguageSection({
   show: string;
 }) {
   let context = useContext(LanguageSelectorContext);
-  if (show === context.selected) {
-    return <>{children}</>;
-  }
-  return null;
+  return (
+    <SelectableSection show={show} selected={context.selected}>
+      {children}
+    </SelectableSection>
+  );
 }
 
 export function LanguageTitle() {
