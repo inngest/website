@@ -90,6 +90,47 @@ const inngest = new Inngest({
 We recommend setting the [`INNGEST_EVENT_KEY`](/docs/sdk/environment-variables#inngest-event-key) as an environment variable over using the `eventKey` option. As with any secret, it's not a good practice to hard-code the event key in your codebase.
 </Callout>
 
+## `inngest.globals()` <VersionBadge version="v4.26.0+" />
+
+<Callout>
+`inngest.globals()` is experimental. It may change without a major version bump.
+</Callout>
+
+`inngest.globals()` returns `step` and `group` objects typed for this client. Helper functions can import them instead of taking `step` or `group` as arguments. The types include any tools your client's middleware adds, such as `step.sandbox` and `group.sandbox` from [`sandboxMiddleware()`](/docs/sandboxes/reference?ref=docs-reference-client-create).
+
+<CodeGroup>
+```ts {{ filename: "inngest/client.ts" }}
+import { Inngest } from "inngest";
+import { sandboxMiddleware } from "inngest/experimental";
+
+export const inngest = new Inngest({
+  id: "my-app",
+  middleware: [sandboxMiddleware()],
+});
+
+export const { step, group } = inngest.globals();
+```
+
+```ts {{ filename: "inngest/helpers.ts" }}
+import { step } from "./client";
+
+// No `step` argument needed
+export const createBuildBox = () =>
+  step.sandbox.create("create-build-box", {
+    name: "build-box",
+    vcpu: 1,
+    memoryMb: 1024,
+  });
+```
+</CodeGroup>
+
+`globals()` takes no arguments. Its return type is `GlobalTools<typeof inngest>`, which is exported from `inngest`.
+
+These are the same global tools you get from `import { step, group } from "inngest"`. On each call, they use the tools of the function run they're called from. The `inngest` exports work the same way at runtime, including middleware-added tools. What `globals()` adds is the types for your client's middleware.
+
+- **Inside a function run**, calls behave the same as the handler's own `step` and `group`. Steps are found in the same tick, so `Promise.all()` across global and handler steps works as expected.
+- **Outside a function run**, step and group calls reject with an error. The exceptions are `step.ai.models` and [`step.fetch`](/docs/reference/typescript/v4/functions/fetch?ref=docs-reference-client-create), which uses the global `fetch` by default.
+
 ## Cloud Mode and Dev Mode
 
 An SDK can run in two separate "modes:" **Cloud** or **Dev**.
