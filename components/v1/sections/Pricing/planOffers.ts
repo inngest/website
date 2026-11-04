@@ -5,8 +5,10 @@ const HOST = "https://www.inngest.com";
 /**
  * Schema.org Offer for each pricing plan, built from the same PLANS data as
  * the pricing cards so the structured data can't drift from the page.
- * Plans with a numeric price get a monthly price ("starting at" plans also
- * set minPrice); "Custom" plans get an offer without a price.
+ * Plans with a numeric price get price + currency (the plan's base monthly
+ * price); "Custom" plans get an offer without a price. No priceSpecification:
+ * Google's Rich Results Test flags UnitPriceSpecification as an invalid type
+ * on software app offers.
  */
 export function planOffers(plans: Plan[] = PLANS): Record<string, unknown>[] {
   return plans.map((plan) => {
@@ -18,17 +20,6 @@ export function planOffers(plans: Plan[] = PLANS): Record<string, unknown>[] {
     };
     const price = plan.cost.basePrice;
     if (typeof price !== "number") return offer;
-    return {
-      ...offer,
-      price: String(price),
-      priceCurrency: "USD",
-      priceSpecification: {
-        "@type": "UnitPriceSpecification",
-        price,
-        priceCurrency: "USD",
-        ...(plan.cost.startsAt ? { minPrice: price } : {}),
-        ...(plan.cost.period === "mo" ? { billingDuration: "P1M" } : {}),
-      },
-    };
+    return { ...offer, price: String(price), priceCurrency: "USD" };
   });
 }
