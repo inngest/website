@@ -90,15 +90,26 @@ export default function AdventCalendar({ now }: { now: Date | null }) {
             </p>
             <EmailSignup />
           </div>
-          {/* The step.run rat, leaping over the heading. */}
-          <Image
-            src="/assets/v1/12-days/rat.webp"
-            alt=""
+          {/* The step.run rat, taped over with an X: no peeking. */}
+          <div
             aria-hidden="true"
-            width={1400}
-            height={500}
-            className="pointer-events-none absolute -top-6 right-0 hidden h-auto w-[46%] max-w-[560px] rounded-[24px] border-[3px] border-[#010101] shadow-[6px_6px_0_#010101] lg:block"
-          />
+            className="pointer-events-none absolute -top-6 right-0 hidden w-[46%] max-w-[560px] lg:block"
+          >
+            <Image
+              src="/assets/v1/12-days/rat.webp"
+              alt=""
+              width={1400}
+              height={500}
+              className="h-auto w-full rounded-[24px] border-[3px] border-[#010101] shadow-[6px_6px_0_#010101]"
+            />
+            <svg
+              viewBox="0 0 280 100"
+              className="absolute inset-0 h-full w-full overflow-visible"
+            >
+              <path d="M-8 -6 L288 104" stroke="#010101" strokeWidth="24" />
+              <path d="M290 -2 L-10 98" stroke="#010101" strokeWidth="24" />
+            </svg>
+          </div>
         </div>
 
         <ul

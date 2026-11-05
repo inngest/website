@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useRef } from "react";
+import Image from "next/image";
 import Link from "next/link";
 import PageShell from "@/components/v1/PageShell";
 import { clearHeroPanel, setHeroPanel } from "@/utils/v1/heroNav";
@@ -21,7 +22,7 @@ import {
  * inngest.com/12-days-of-workflows/build-a-thon — the "build your weird
  * workflow" challenge that feeds the finale livestream.
  *
- * Salmon header with the brief, then the rules, the twelve primitives
+ * Salmon header with the brief and the rat-wheel contraption, then the rules, the twelve primitives
  * an entry has to use (read from the calendar's DAYS, so the list stays
  * in step with the doors) and the entry form.
  */
@@ -42,31 +43,46 @@ export default function TwelveDaysBuildathon() {
           className="w-full"
           style={{ backgroundColor: COLORS.salmon, color: COLORS.ink }}
         >
-          <div className="mx-auto flex w-full max-w-[1440px] flex-col gap-6 px-6 pb-16 pt-24 sm:px-9 lg:px-8 lg:pb-20 lg:pt-36">
-            <ul className="flex list-none flex-wrap gap-2 pl-0">
-              {BUILDATHON.chips.map((c, i) => (
-                <li key={c} className="list-none">
-                  <Chip tone={i === 0 ? "dark" : "light"}>{c}</Chip>
-                </li>
-              ))}
-            </ul>
-            <h1 id="buildathon-heading" className={POSTER_TITLE}>
-              <span className="block text-white">{BUILDATHON.title[0]}</span>
-              <span className="block">{BUILDATHON.title[1]}</span>
-            </h1>
-            <p className="max-w-[680px] text-[18px] leading-[28px] sm:text-[20px] sm:leading-[30px]">
-              {BUILDATHON.body}
-            </p>
-            <p className="font-v1Label text-[15px] uppercase">
-              {BUILDATHON.when}
-            </p>
-            <div>
-              <a
-                href={BUILDATHON.cta.href}
-                className={buttonClass("ink") + " w-full sm:w-auto"}
-              >
-                {BUILDATHON.cta.label}
-              </a>
+          <div className="mx-auto grid w-full max-w-[1440px] grid-cols-1 gap-x-10 px-6 pb-16 pt-24 sm:px-9 lg:grid-cols-[minmax(0,1fr)_minmax(0,30%)] lg:px-8 lg:pb-0 lg:pt-36">
+            <div className="flex flex-col gap-6 lg:pb-20">
+              <ul className="flex list-none flex-wrap gap-2 pl-0">
+                {BUILDATHON.chips.map((c, i) => (
+                  <li key={c} className="list-none">
+                    <Chip tone={i === 0 ? "dark" : "light"}>{c}</Chip>
+                  </li>
+                ))}
+              </ul>
+              <h1 id="buildathon-heading" className={POSTER_TITLE}>
+                <span className="block text-white">{BUILDATHON.title[0]}</span>
+                <span className="block">{BUILDATHON.title[1]}</span>
+              </h1>
+              <p className="max-w-[680px] text-[18px] leading-[28px] sm:text-[20px] sm:leading-[30px]">
+                {BUILDATHON.body}
+              </p>
+              <p className="font-v1Label text-[15px] uppercase">
+                {BUILDATHON.when}
+              </p>
+              <div>
+                <a
+                  href={BUILDATHON.cta.href}
+                  className={buttonClass("ink") + " w-full sm:w-auto"}
+                >
+                  {BUILDATHON.cta.label}
+                </a>
+              </div>
+            </div>
+
+            {/* The contraption: rat on a wheel, a hand, a mug, a mouth. */}
+            <div className="relative mx-auto mt-12 w-full max-w-[320px] self-end lg:mt-0 lg:max-w-none">
+              <Image
+                src="/assets/v1/12-days/contraption.webp"
+                alt="A rat in a green vest running on a wheel, which tips a hand to pour coffee from a green mug into a wide-open mouth."
+                width={760}
+                height={1499}
+                priority
+                sizes="(max-width: 1024px) 320px, 30vw"
+                className="h-auto w-full"
+              />
             </div>
           </div>
         </section>

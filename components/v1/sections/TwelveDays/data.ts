@@ -337,9 +337,9 @@ export const FINALE = {
     label: "Enter the build-a-thon",
     href: `/12-days-of-workflows/build-a-thon?ref=${REF}-finale`,
   },
-  video: "/assets/v1/12-days/cat-vertical.mp4",
-  videoLabel:
-    "Animated poster: an eyeball rolls down a ramp into a bowl balanced on someone's head, under the words Keep all your weird workflows running.",
+  image: "/assets/v1/12-days/finale.webp",
+  imageAlt:
+    "A cat's paw nudges an eyeball off a shelf and down a green ramp toward a funnel balanced on the head of a woman with green lips and big curly buns.",
 } as const;
 
 export const CLOSING = {
