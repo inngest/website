@@ -473,6 +473,12 @@ export const BUILDATHON = {
  * The build-a-thon section on the 12 Days page (BuildathonTeaser.tsx):
  * the short version of the rules, linking out to the full page.
  */
+/** The scrolling strip under the hero that points down to the build-a-thon. */
+export const BUILDATHON_MARQUEE = {
+  text: "Submit your weirdest workflow for the chance to win $5K cash",
+  href: `/12-days-of-workflows/build-a-thon?ref=${REF}-marquee`,
+} as const;
+
 export const BUILDATHON_TEASER = {
   eyebrow: "The build-a-thon",
   title: ["Build your", "weird workflow."],

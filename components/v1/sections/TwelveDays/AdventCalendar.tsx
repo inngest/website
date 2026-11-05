@@ -71,29 +71,32 @@ export default function AdventCalendar({ now }: { now: Date | null }) {
       style={{ backgroundColor: COLORS.blue }}
     >
       <div className="relative mx-auto flex w-full max-w-[1440px] flex-col gap-12 px-6 py-16 sm:px-9 sm:py-20 lg:px-8 lg:py-24">
-        <div className="relative flex flex-col gap-5">
-          <p className={`${POSTER_EYEBROW} text-[#0BDD48]`}>
-            {CALENDAR.eyebrow}
-          </p>
-          <h2 id="twelve-days-calendar-heading" className={POSTER_TITLE}>
-            {CALENDAR.title}
-          </h2>
-          <p className="font-v1Label text-[clamp(18px,2.4vw,28px)] uppercase leading-[1.15]">
-            {CALENDAR.subtitle}
-          </p>
-          <p className="max-w-[560px] text-[18px] leading-[28px] text-white/85">
-            {CALENDAR.body}
-          </p>
-          <div className="flex flex-col gap-3">
-            <p className="font-v1Label text-[14px] uppercase">
-              {SIGNUP.prompt}
+        {/* Text left, rat right: its own column so it never covers the copy. */}
+        <div className="grid grid-cols-1 gap-10 lg:grid-cols-[minmax(0,1fr)_minmax(0,40%)] lg:items-center">
+          <div className="flex flex-col gap-5">
+            <p className={`${POSTER_EYEBROW} text-[#0BDD48]`}>
+              {CALENDAR.eyebrow}
             </p>
-            <EmailSignup />
+            <h2 id="twelve-days-calendar-heading" className={POSTER_TITLE}>
+              {CALENDAR.title}
+            </h2>
+            <p className="font-v1Label text-[clamp(18px,2.4vw,28px)] uppercase leading-[1.15]">
+              {CALENDAR.subtitle}
+            </p>
+            <p className="max-w-[560px] text-[18px] leading-[28px] text-white/85">
+              {CALENDAR.body}
+            </p>
+            <div className="flex flex-col gap-3">
+              <p className="font-v1Label text-[14px] uppercase">
+                {SIGNUP.prompt}
+              </p>
+              <EmailSignup />
+            </div>
           </div>
           {/* The step.run rat, taped over with an X: no peeking. */}
           <div
             aria-hidden="true"
-            className="pointer-events-none absolute -top-6 right-0 hidden w-[46%] max-w-[560px] lg:block"
+            className="pointer-events-none relative hidden w-full max-w-[560px] justify-self-end lg:block"
           >
             <Image
               src="/assets/v1/12-days/rat.webp"

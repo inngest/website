@@ -154,7 +154,7 @@ export default function Hero({ now }: { now: Date | null }) {
         {/* The wreath: a grinning black cat ringed by scarfed rats. */}
         <motion.div
           {...entry(380)}
-          className="relative mx-auto mt-12 w-full max-w-[360px] self-end lg:mt-0 lg:max-w-none"
+          className="relative mx-auto mt-12 w-full max-w-[360px] lg:mt-[69px] lg:max-w-none lg:self-start"
         >
           <Image
             src="/assets/v1/12-days/wreath.webp"

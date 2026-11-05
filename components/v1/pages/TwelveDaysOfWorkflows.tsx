@@ -4,6 +4,7 @@ import ButtonLink from "@/components/v1/ButtonLink";
 import PageShell from "@/components/v1/PageShell";
 import StartBuilding from "@/components/v1/sections/Home/StartBuilding";
 import AdventCalendar from "@/components/v1/sections/TwelveDays/AdventCalendar";
+import BuildathonMarquee from "@/components/v1/sections/TwelveDays/BuildathonMarquee";
 import BuildathonTeaser from "@/components/v1/sections/TwelveDays/BuildathonTeaser";
 import { CLOSING } from "@/components/v1/sections/TwelveDays/data";
 import Finale from "@/components/v1/sections/TwelveDays/Finale";
@@ -33,6 +34,7 @@ export default function TwelveDaysOfWorkflows() {
     <PageShell>
       <div className="overflow-x-clip">
         <Hero now={now} />
+        <BuildathonMarquee />
         <AdventCalendar now={now} />
         <BuildathonTeaser />
         <Finale />
