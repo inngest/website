@@ -51,15 +51,20 @@ async ({ event, step }) => {
     memoryMb: 2048,
   });
 
-  const result = await sandbox.commands.run("run-tests", "npm test", {
-    timeout: "5m",
-  });
+  // Run the code your agent generated here
+  const result = await sandbox.commands.run(
+    "run-command",
+    ["node", "-e", "console.log('done')"],
+    { timeout: "30s" },
+  );
 
   await sandbox.destroy("destroy-sandbox");
 
   return { exitCode: result.exitCode, stdout: result.stdout };
 };
 ```
+
+The destroy step only runs if the run reaches it. If the command step fails permanently, clean up the sandbox in an `onFailure` handler, as described in the [lifecycle guide](/docs/sandboxes/features/managed-lifecycle?ref=blog-agents-dont-fail-at-the-start-line#clean-up-after-failure).
 
 One caveat on "pick the right kit." The orchestration layer is the part you keep. Models, prompts, frameworks, and sandbox providers will all change underneath it, and you can call any sandbox provider from a step today. Choose the layer that's hardest to swap with care, and keep everything above it swappable.
 
@@ -73,7 +78,7 @@ Every marathon has runners who go out too fast. The crowds in the first miles ar
 
 An agent's version of going out too fast is fan-out. A batch of runs starts at once, each calls the same model provider, and the provider starts returning 429s. Each run backs off and retries on its own schedule; the retries collide, and the rate limit you were trying to respect becomes the bottleneck for everything. Add more than one customer, and it gets worse: one tenant's big batch eats the whole limit while everyone else waits.
 
-Hand-rolled backoff can't fix this, because every run is making its own decision with no idea what the others are doing. Pacing belongs at the function level, declared once and enforced across every run. **[Flow control](/docs/guides/flow-control?ref=blog-agents-dont-fail-at-the-start-line)** in Inngest lives in the function config: [concurrency](/docs/guides/concurrency?ref=blog-agents-dont-fail-at-the-start-line) keyed per tenant so no single customer takes every slot, and a [throttle](/docs/guides/throttling?ref=blog-agents-dont-fail-at-the-start-line) matched to what your provider actually allows. Set the limit before the first 429, not after.
+Hand-rolled backoff can't fix this, because every run is making its own decision with no idea what the others are doing. Pacing belongs at the function level, declared once and enforced across every run. **[Flow control](/docs/guides/flow-control?ref=blog-agents-dont-fail-at-the-start-line)** in Inngest lives in the function config: [concurrency](/docs/guides/concurrency?ref=blog-agents-dont-fail-at-the-start-line) keyed per tenant so no single customer takes every slot, and a [throttle](/docs/guides/throttling?ref=blog-agents-dont-fail-at-the-start-line) matched to what your provider actually allows. Set the limit before the first 429, not after. A throttle limits how fast runs start, not the model calls inside a run, so for a long-running agent that makes many calls, put those calls in their own throttled function.
 
 ```ts
 // src/inngest/research-agent.ts
@@ -83,7 +88,7 @@ export const researchAgent = inngest.createFunction(
     triggers: { event: "agent/research.requested" },
     // No single tenant can take every slot
     concurrency: { limit: 5, key: "event.data.tenantId" },
-    // Stay under the model provider's limit across all runs combined
+    // Cap how fast runs start across all tenants
     throttle: { limit: 50, period: "1m" },
   },
   async ({ event, step }) => {
