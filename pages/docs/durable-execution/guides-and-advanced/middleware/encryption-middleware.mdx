@@ -40,6 +40,7 @@ Encrypt sensitive values in your own code before you send them in events or retu
 </SdkUnsupported>
 </CodeGroup>
 Register the middleware on the client to apply it to that app's functions. You can also register it on one function.
+On Cloudflare Workers, the default LibSodium service can't run. Pass a custom `encryptionService` instead, as described in the [TypeScript reference](/docs/reference/typescript/v4/middleware/encryption?ref=docs-encryption-middleware#cloudflare-workers).
 ## Know what it encrypts
 By default, the middleware encrypts all step data and function output. For events, it encrypts only `event.data.encrypted`. Other event fields remain outside that encrypted field. Put sensitive event values inside `data.encrypted`, or set `eventEncryptionField` to a different field name. Check your event shape before sending real data.
 The middleware can read data written with an older key when you configure `fallbackDecryptionKeys`. The `decryptOnly` option stops new encryption while still decrypting existing data. Plan key changes around runs and events that still need the old key.
