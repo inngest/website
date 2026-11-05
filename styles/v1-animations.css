@@ -853,6 +853,14 @@ button:focus-visible .v1-wipe-reveal {
   .v1-codetv-marquee {
     animation: v1CodetvMarquee 56s linear infinite;
   }
+  /* 12 Days build-a-thon strip; pauses while hovered or focused. */
+  .v1-12days-marquee {
+    animation: v1CodetvMarquee 40s linear infinite;
+  }
+  a:hover > .v1-12days-marquee,
+  a:focus-visible > .v1-12days-marquee {
+    animation-play-state: paused;
+  }
   .v1-codetv-pulse {
     animation: v1CodetvPulse 1.6s ease-in-out infinite;
   }

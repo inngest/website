@@ -113,6 +113,7 @@ module.exports = {
     "/long-run",
     // Holiday campaign page — noindex until it's reviewed.
     "/12-days-of-workflows",
+    "/12-days-of-workflows/*",
     "/resources/access/*",
   ],
 };

@@ -45,7 +45,7 @@ function status(now: Date | null): string | null {
 /**
  * Poster-style hero: salmon field, a huge white line, a mono line, a
  * huge black line — set like the "Huge day for people who refuse to
- * stop running" posters — with the rat-wheel contraption on the right.
+ * stop running" posters — with the cat-and-rats wreath on the right.
  */
 export default function Hero({ now }: { now: Date | null }) {
   const line = status(now);
@@ -151,16 +151,16 @@ export default function Hero({ now }: { now: Date | null }) {
           </motion.p>
         </div>
 
-        {/* The contraption: rat on a wheel, a hand, a mug, a mouth. */}
+        {/* The wreath: a grinning black cat ringed by scarfed rats. */}
         <motion.div
           {...entry(380)}
-          className="relative mx-auto mt-12 w-full max-w-[360px] self-end lg:mt-0 lg:max-w-none"
+          className="relative mx-auto mt-12 w-full max-w-[360px] lg:mt-[69px] lg:max-w-none lg:self-start"
         >
           <Image
-            src="/assets/v1/12-days/contraption.webp"
-            alt="A rat in a green vest running on a wheel, which tips a hand to pour coffee from a green mug into a wide-open mouth."
-            width={760}
-            height={1499}
+            src="/assets/v1/12-days/wreath.webp"
+            alt="A grinning black cat with a lit candle on its head, ringed by a wreath of green and yellow rats in striped scarfs, tied off with a bow and mistletoe."
+            width={1400}
+            height={1842}
             priority
             sizes="(max-width: 1024px) 360px, 34vw"
             className="h-auto w-full"

@@ -1,6 +1,7 @@
 "use client";
 
-import { motion, useReducedMotion } from "motion/react";
+import Image from "next/image";
+import { motion } from "motion/react";
 import Link from "next/link";
 import { reveals } from "@/utils/v1/reveals";
 import { COLORS, FINALE } from "@/components/v1/sections/TwelveDays/data";
@@ -12,12 +13,11 @@ import {
 
 /**
  * The finale: a live CodeTV episode building a Rube Goldberg machine
- * out of everything behind the doors. The animated "keep all your weird
- * workflows running" poster loops beside it.
+ * out of everything behind the doors, plus the way into the
+ * build-a-thon whose entries star in it. The animated "keep all your weird
+ * workflows running" machine sits beside it.
  */
 export default function Finale() {
-  const reduceMotion = useReducedMotion();
-
   return (
     <section
       id="finale"
@@ -25,7 +25,7 @@ export default function Finale() {
       className="relative w-full scroll-mt-20 overflow-hidden"
       style={{ backgroundColor: COLORS.salmon, color: COLORS.ink }}
     >
-      <div className="mx-auto grid w-full max-w-[1440px] grid-cols-1 gap-12 px-6 py-16 sm:px-9 sm:py-20 lg:grid-cols-[minmax(0,1fr)_380px] lg:items-center lg:px-8 lg:py-24">
+      <div className="mx-auto grid w-full max-w-[1440px] grid-cols-1 gap-12 px-6 py-16 sm:px-9 sm:py-20 lg:grid-cols-[minmax(0,1fr)_minmax(0,480px)] lg:items-center lg:px-8 lg:py-24">
         <div className="flex flex-col gap-6">
           <motion.ul
             {...reveals.body}
@@ -54,7 +54,10 @@ export default function Finale() {
               {p}
             </motion.p>
           ))}
-          <motion.div {...reveals.body}>
+          <motion.div
+            {...reveals.body}
+            className="flex flex-col gap-3 sm:flex-row"
+          >
             <Link
               href={FINALE.cta.href}
               prefetch={false}
@@ -62,26 +65,27 @@ export default function Finale() {
             >
               {FINALE.cta.label}
             </Link>
+            <Link
+              href={FINALE.buildathon.href}
+              className={buttonClass("white") + " w-full sm:w-auto"}
+            >
+              {FINALE.buildathon.label}
+            </Link>
           </motion.div>
         </div>
 
         <motion.div
           {...reveals.item(0)}
-          className="mx-auto w-full max-w-[380px] overflow-hidden rounded-xl border-[3px] border-[#010101] shadow-[8px_8px_0_#010101]"
+          className="mx-auto w-full max-w-[480px]"
         >
-          {/* Decorative loop: muted, no controls. Paused for reduced
-              motion, where it shows its first frame. */}
-          <video
-            src={FINALE.video}
-            aria-label={FINALE.videoLabel}
-            autoPlay={!reduceMotion}
-            loop
-            muted
-            playsInline
-            preload="metadata"
-            width={1080}
-            height={1920}
-            className="block h-auto w-full"
+          {/* The frame and its drop shadow are part of the art. */}
+          <Image
+            src={FINALE.image}
+            alt={FINALE.imageAlt}
+            width={1300}
+            height={1405}
+            sizes="(max-width: 1024px) 480px, 34vw"
+            className="h-auto w-full"
           />
         </motion.div>
       </div>
