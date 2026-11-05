@@ -6,7 +6,14 @@ import { readFirstTouch } from "src/shared/firstTouch";
 import { REF, SIGNUP } from "@/components/v1/sections/TwelveDays/data";
 import { buttonClass } from "@/components/v1/sections/TwelveDays/poster";
 
-/** Segment event Customer.io builds the 12 Days email list from. */
+/**
+ * Same Segment event as the site's other forms, so it reaches Customer.io
+ * the usual way; the 12 Days segment there filters on FORM_TYPE.
+ */
+const SEGMENT_EVENT = "Form Submitted";
+export const FORM_TYPE = "12_days_of_workflows";
+
+/** Google Tag Manager event, kept separate so GTM can tell it apart. */
 export const SUBSCRIBED_EVENT = "12 Days Subscribed";
 
 const SUBSCRIBED_KEY = "12-days-of-workflows:subscribed";
@@ -16,8 +23,10 @@ const SUBSCRIBED_KEY = "12-days-of-workflows:subscribed";
 const SEND_TIMEOUT_MS = 8000;
 
 /**
- * "Email me each door": sends a `12 Days Subscribed` track call through
- * Segment, and Customer.io sends the daily emails from there.
+ * "Email me each door": sends a `Form Submitted` track call through
+ * Segment with `form_type: "12_days_of_workflows"`, like the site's other
+ * forms. Customer.io builds the 12 Days segment from it and sends the
+ * daily emails.
  *
  * Track only, no identify, like the site's other unauthenticated forms:
  * an email typed into a form shouldn't overwrite an existing person's
@@ -52,10 +61,10 @@ export default function EmailSignup() {
 
     try {
       await Promise.race([
-        analytics.track(SUBSCRIBED_EVENT, {
+        analytics.track(SEGMENT_EVENT, {
           email,
           campaign: REF,
-          form_type: "12_days_of_workflows",
+          form_type: FORM_TYPE,
           form_source: "website",
           ref,
           ...(firstTouch || {}),
