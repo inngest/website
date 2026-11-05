@@ -28,14 +28,6 @@ export const HERO = {
   },
   // Shows the command itself rather than a generic label, per design.
   installCta: { label: "npm install inngest", command: "npm install inngest" },
-  // The design's run-trace panel: a step.run function with a flaky step
-  // retrying across three attempts before completing.
-  visual: {
-    src: "/assets/v1/sf-long-run/dashboard-header-ui.png",
-    alt: "An Inngest run trace: a step.run function with a flaky step retrying across three attempts before completing, alongside each step's duration.",
-    width: 1255,
-    height: 973,
-  },
 } as const;
 
 /* ── 02 · Product demo ────────────────────────────────────────────── */

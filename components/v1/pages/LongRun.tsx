@@ -18,8 +18,8 @@ import { LR_SECTION_PADDING } from "@/components/v1/sections/LongRun/headings";
  * can change without touching the SF or NYC pages. Images still load
  * from /assets/v1/sf-long-run.
  *
- * Product-led, campaign second: hero → the product demo video → use
- * cases → Ordinal testimonial → quick starts → the campaign programming
+ * Product-led, campaign second: hero → use cases → the product demo
+ * video → Ordinal testimonial → quick starts → the campaign programming
  * → resources.
  *
  * Indexable and in the sitemap (see app/(v1)/long-run/page.tsx).
@@ -32,8 +32,8 @@ export default function LongRun() {
         {/* Customer logos sit directly under the hero, per design — the
             swoosh above bleeds over them. */}
         <LogoStrip contained />
-        <ProductDemo />
         <UseCases />
+        <ProductDemo />
         <Testimonial />
         <StartBuilding
           refTag="long-run-start-building"
