@@ -2,7 +2,7 @@
 tags: ["AI & Agents", "Durable Execution", "Queues & Flow Control", "Workflows & Orchestration"]
 heading: "Agents don't fail at the starting line"
 subtitle: "Three architectural decisions to make when building long-running agents."
-image: /assets/blog/agents-dont-fail-at-the-start-line/marathon-16.jpg
+image: https://cdn.inngest.com/blog/agents-dont-fail-at-the-start-line/heading.png
 date: 2026-11-06
 author: Mitchell Alderson
 category: engineering
@@ -26,7 +26,7 @@ Here are the three decisions, in race order, that determine whether something lo
 
 Decide that the work will outlive a single request, and choose the whole kit with that in mind: what orchestrates the run, and where the code it writes actually runs.
 
-![A runner's shoes at the start of the race](/assets/blog/agents-dont-fail-at-the-start-line/marathon-08.jpg)
+![A runner's shoes at the start of the race](https://cdn.inngest.com/blog/agents-dont-fail-at-the-start-line/marathon-08.jpg)
 
 Nobody changes shoes at the start line. The pair that feels fast in a 5K wrecks you at mile 15, and by then there's nothing to do about it.
 
@@ -68,7 +68,7 @@ One caveat on "pick the right kit." The orchestration layer is the part you keep
 
 Put limits on the work yourself, before someone else's limits do it for you.
 
-![Runners fueling during the race](/assets/blog/agents-dont-fail-at-the-start-line/marathon-05.jpg)
+![Runners fueling during the race](https://cdn.inngest.com/blog/agents-dont-fail-at-the-start-line/marathon-05.jpg)
 
 Every marathon has runners who go out too fast. The crowds in the first miles are loud, the legs feel great, and the bill arrives twenty miles later. Experienced runners fuel before they're hungry for the same reason: by the time you notice the problem, it's too late to fix it.
 
@@ -97,7 +97,7 @@ export const researchAgent = inngest.createFunction(
 
 Because every extra minute gives something another chance to go wrong. The longer something runs, the higher the chance an agent has to crash, the same way the longer a runner goes, the higher the chance of getting injured. For long-running work, failure in the middle is expected.
 
-![A runner pushing through the late miles of the marathon](/assets/blog/agents-dont-fail-at-the-start-line/marathon-053.jpg)
+![A runner pushing through the late miles of the marathon](https://cdn.inngest.com/blog/agents-dont-fail-at-the-start-line/marathon-053.jpg)
 
 Around mile 20, the marathon gets hard. A runner who cramps there doesn't go back to Staten Island and start over. They slow down, work through it, and keep going from where they are.
 
