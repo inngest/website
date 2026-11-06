@@ -1,0 +1,381 @@
+---
+tags: ["AI & Agents", "Observability & Debugging", "Tutorials & Guides"]
+heading: "How to use Jev for agent evals, and check it against real outcomes"
+subtitle: "How to use TypeSafe's Jev as an eval scorer for AI agents in Inngest: score every production run cheaply, then check its verdicts against what users actually do."
+showSubtitle: true
+image: /assets/blog/how-to-use-jev-for-agent-evals-and-check-it-against-real-outcomes/featured-image.png
+date: "2026-11-06T12:00:00.000Z"
+author: "Mitchell Alderson"
+category: engineering
+---
+
+Jev is a good fit for agent evals. It's a decision model from TypeSafe that answers questions about your agent's output, like "did this draft stay on brief?", with a probability instead of generated text.
+
+It's also cheap. In an [independent comparison from the University of Pennsylvania](https://arxiv.org/abs/2609.29769), flash-tier LLM judges cost 29 to 325 times as much as Jev and took 30 to 220 times as long. At that price, you can score every production run instead of a sample.
+
+A cheap judge is still a judge, though, and the case for checking it comes from a real agent.
+
+A founder I talked with this month runs one for painters, plumbers, and cleaners. When a contractor approves a campaign, the agent schedules a week of social posts, with a hard cap on how many go out per day. Then someone tried to run an on-demand promo on top of the schedule, and the agent rejected it because it hit the cap.
+
+The offline eval suite had no test for that case, so it never failed. The bug sat there until a person tried it live. He fixed it the right way, by adding the case to his offline evals, but production had to tell him first.
+
+An eval suite only knows the failures someone already imagined, and a judge only knows what's in the text you hand it. This post wires Jev into an Inngest function as an eval scorer using [Agent Evals](/blog/introducing-agent-evals?ref=blog-how-to-use-jev-for-agent-evals-and-check-it-against-real-outcomes), records the real outcomes on the same run, and shows how to find where Jev is wrong.
+
+## Key takeaways
+
+- Jev works as an eval scorer when you treat its verdict as a light signal: it's cheap enough to score every production run, and its verdicts still need checking against real outcomes.
+- Run the judge inside `step.run()` and record it with `step.score()`, so retries and replays reuse the verdict instead of paying for it again.
+- Jev's yes/no answer is a probability from 0 to 1, so it drops straight into a score with no parsing and no thresholding.
+- Record product signals, like a contractor's approval and a homeowner's email open, on the same run as the judge, even when they arrive weeks later.
+- Pin Jev's model version and rename the score when you change the question, because a different judge produces a different series.
+
+## What is Jev?
+
+Jev is a decision model from TypeSafe. You give it some text or JSON, which it calls `state`, plus a set of typed questions. It answers each question with probabilities.
+
+TypeSafe calls it a "System One" model: it makes a fast call on what's in front of it and never writes anything.
+
+It takes three kinds of question:
+
+- **Yes/no** (`noul`) returns the probability of yes.
+- **Pick-one** (`choice`) returns a label, plus the probability of each option you defined.
+- **Rubric score** (`score`) returns a value on the scale you wrote, with probabilities for each level.
+
+### How Jev differs from an LLM judge
+
+An LLM generates text, so a judge prompt asks it to answer in some format, and you parse a verdict out of the reply.
+
+Jev's answer _is_ the probability, so there's nothing to parse. A call took about 0.2 seconds in the Penn comparison.
+
+The trade-off is that you get no written rationale. Jev tells you what it decided and how sure it is, not why.
+
+### How you use Jev for evals
+
+Ask one question per thing you care about. After the agent produces an output, ask Jev whether the output meets the bar, and record the answer as a score on that run.
+
+Do that on every run, and you have a continuous eval of the agent in production.
+
+## Why treat Jev's verdict as a light signal?
+
+The founder with the campaign agent told me he'd rather have evidence than confidence. He keeps his own evals pass/fail for that reason: a 0.6 from a judge tells him how sure the judge is, not whether the agent did the right thing.
+
+I agree with him, and it's how we think about judges at Inngest. I learned it the hard way: a [self-improving agent I built](/blog/build-self-learning-agent?ref=blog-how-to-use-jev-for-agent-evals-and-check-it-against-real-outcomes) figured out how to game its own LLM judge within hours, by writing the scoring criteria into its prompt.
+
+A judge's verdict, whether it comes from Jev or from an LLM, is a **light signal**. It's immediate and cheap, which makes it useful, and it's still one model's opinion of another model's output.
+
+The **product signal** is what actually happened: the contractor approved the campaign, the homeowner opened the email, the ticket stayed closed. Our own [LLM-judge guide](/docs/agent-evals/guides/llm-judge?ref=blog-how-to-use-jev-for-agent-evals-and-check-it-against-real-outcomes) says the same thing: when you can observe the real outcome, prefer it, and use the judge to explain it.
+
+### Jev is built for that job
+
+The Penn comparison put Jev against three flash-tier LLM judges on nine rubric panels. Jev's accuracy was statistically distinguishable from theirs in only 8 of 27 comparisons. Close to LLM-judge accuracy at a fraction of the cost is what you want from a light signal.
+
+The same paper also has the finding I'd put on a sticky note. On every graded panel, the four judges agreed with each other more than they agreed with the human labels.
+
+Judges converging on an answer doesn't make it the right one. That gap is what product signals are for.
+
+## What is an eval score in Inngest?
+
+An eval score in Inngest is a name and a value, a number from 0 to 1 or a boolean, recorded on a function run with [`step.score()`](/docs/agent-evals/scores?ref=blog-how-to-use-jev-for-agent-evals-and-check-it-against-real-outcomes). It's a durable step, so a retry or replay doesn't record it twice.
+
+The mechanics are small.
+
+The hard part is a philosophy question: what do you actually care about? Did the contractor approve it? Did the homeowner open the email?
+
+How you compute the value is up to you. It's bring your own logic: your business rules, the judge you already wrote, or a model call. OpenAI will never know your business logic.
+
+### Start with the judge you already have
+
+Scoring needs one line of setup on the client:
+
+```ts
+// inngest/client.ts
+import { Inngest } from "inngest";
+import { scoreMiddleware } from "inngest/experimental";
+
+export const inngest = new Inngest({
+  id: "campaign-agent",
+  middleware: [scoreMiddleware()],
+});
+```
+
+If you already have a hand-rolled judge, starting is close to a copy-paste. Here's the founder's setup, roughly: an existing judge function that returns pass or fail.
+
+```ts
+// inngest/draft-campaign.ts
+const verdict = await step.run("judge-draft", () =>
+  judgeCampaign({ brief: event.data.brief, draft }) // the judge you already have
+);
+
+await step.score("score-judge-pass", {
+  name: "judge-pass",
+  value: verdict.pass, // booleans count as 1 or 0 in aggregates
+});
+```
+
+### Keep the judge inside `step.run()`
+
+One rule is easy to get wrong: the judge call goes _inside_ `step.run()`.
+
+Inngest functions [resume by replaying](/docs/learn/inngest-steps?ref=blog-how-to-use-jev-for-agent-evals-and-check-it-against-real-outcomes), and code outside a step runs again on every resume. Put the judge outside a step and you pay for a new verdict every time the function wakes up, and you might get a different one.
+
+Inside a step, a retry or replay reuses the recorded verdict. Our LLM-judge guide does the same thing for the same reason.
+
+### Not every score needs a model
+
+The founder's daily-cap bug is a five-line score. Manual requests should never bounce off the daily cap, so score exactly that, and only on runs where it applies:
+
+```ts
+// Manual campaigns should never be rejected by the daily cap.
+if (event.data.manual) {
+  await step.score("score-manual-accepted", {
+    name: "manual-request-accepted",
+    value: result.status !== "rejected_daily_cap",
+  });
+}
+```
+
+The first time that bug happened in production, this score would have dropped to zero on a dashboard instead of waiting for someone to notice.
+
+It's also very little code. In a world where AI writes a lot of the code, that's less attack surface for the AI to get wrong.
+
+## How do you add Jev to an Inngest function?
+
+Jev goes in the same place as any other judge: inside a step, feeding a score.
+
+Pass the draft and the campaign brief as Jev's `state`, then ask one yes/no question. In TypeSafe's [TypeScript SDK](https://github.com/typesafe-ai/typesafe-sdk-js) that's a `noul`, and the answer comes back as the probability of yes.
+
+```ts
+// inngest/jev.ts
+import { noul, TypeSafeClient } from "@typesafe-ai/sdk";
+
+export const jev = new TypeSafeClient({
+  defaultModel: "jev-1.13.0", // pin it; the default is jev-latest [verify current version]
+  retry: { maxRetries: 0 },   // step.run already retries
+});
+```
+
+```ts
+// inngest/draft-campaign.ts
+const onBrief = await step.run("jev-on-brief", async () => {
+  const { answers } = await jev.systemOne({
+    state: { brief: event.data.brief, draft: draft.body },
+    questions: {
+      onBrief: noul(
+        "Does the draft promote only the business's listed services and match the campaign brief?",
+        {
+          true: "Stays on the listed services and the brief's offer.",
+          false: "Invents services, pricing, or claims, or drifts from the brief.",
+        },
+      ),
+    },
+  });
+  return answers.onBrief.noul; // probability of yes, 0 to 1
+});
+
+await step.score("score-jev-on-brief", { name: "jev-on-brief", value: onBrief });
+```
+
+The probability is already the 0-to-1 range our scoring docs recommend, so there's nothing to parse and nothing to threshold.
+
+I keep the raw probability rather than rounding it to pass/fail. It's a light signal, so I want all the information it has. The pass/fail lives on the product signals, which actually are binary.
+
+### Write the question carefully
+
+The wiring is the easy part. The question and the two criteria descriptions are where the work is, and that's a prompt engineering problem.
+
+Write them the way you'd brief a new hire who has never seen the business.
+
+### Two SDK defaults to override
+
+Both are the boring kind of detail that bites later.
+
+**Retries.** The client retries on its own, twice with backoff. The call already sits inside `step.run()`, which retries too, so two layers would stack. I turn the client's retries off and let the step own them.
+
+**The model alias.** The client defaults to `jev-latest`. If the model behind the alias changes, your scores shift with no change on your side, and last month's numbers stop being comparable to this month's. The Penn authors flag the same risk in their own runs.
+
+Pin a version. And treat the score name as part of the contract: renaming a score starts a new series in Inngest, so when you change the question or the model, change the name too (`jev-on-brief-v2`).
+
+### Expect a little noise
+
+Jev isn't perfectly deterministic. In the paper's repeat runs, about 3% of verdicts flipped at least once across five passes, all of them near 50%.
+
+That's fine for a weak signal, and it's another reason not to treat it as the truth.
+
+### Run it inline
+
+Our [LLM-judge guide](/docs/agent-evals/guides/llm-judge?ref=blog-how-to-use-jev-for-agent-evals-and-check-it-against-real-outcomes) suggests moving slow judges into a deferred scorer so they don't hold up the response. Jev's median latency in the paper was about 0.2 seconds, so I didn't bother.
+
+## How do you check Jev against real outcomes?
+
+Record each outcome as its own score on the same run as Jev's verdict: inline with `step.score()` when the run is already waiting for the outcome, and with a deferred scorer when it arrives after the run ends. That's awkward when evals live in a separate tool, where you'd store a trace ID and join on it later.
+
+### Product signal 1: the contractor's approval
+
+This one is easy, because the run is already waiting for it. The founder's agent sends the draft to the contractor for approval, and the run sits on [`step.waitForEvent()`](/docs/durable-execution/primitives/step-waitforevent?ref=blog-how-to-use-jev-for-agent-evals-and-check-it-against-real-outcomes) until they answer, without keeping a process alive.
+
+Approvals take days, and he relies on that waiting state today. Once the event arrives, the score is one more line.
+
+```ts
+// inngest/draft-campaign.ts (continued, inside async ({ event, step, defer }) => { ... })
+const approval = await step.waitForEvent("wait-for-approval", {
+  event: "campaign/approved",
+  match: "data.draftId", // the reply must carry the same draftId as the request
+  timeout: "7d",
+});
+if (!approval) return; // no answer: record nothing, so silence doesn't count as a no
+
+await step.score("score-contractor-approved", {
+  name: "contractor-approved",
+  value: approval.data.approved,
+});
+if (!approval.data.approved) return;
+
+const sent = await step.run("send-email", () => sendCampaign(draft));
+
+defer("score-email-open", {
+  function: emailOpenScorer,
+  data: { messageId: sent.messageId },
+});
+```
+
+### Product signal 2: the homeowner's open, weeks later
+
+The open might be weeks away, and there's no reason to keep this run open for it. [Deferred scoring](/docs/agent-evals/deferred-scoring?ref=blog-how-to-use-jev-for-agent-evals-and-check-it-against-real-outcomes) handles that.
+
+`defer()` hands the message ID to a scorer, the parent run finishes, and the scorer waits on its own:
+
+```ts
+// inngest/email-open-scorer.ts
+import { createScorer } from "inngest/experimental";
+import { z } from "zod";
+import { inngest } from "./client";
+
+export const emailOpenScorer = createScorer(
+  inngest,
+  { id: "email-open-scorer", schema: z.object({ messageId: z.string() }) },
+  async ({ event, step }) => {
+    const opened = await step.waitForEvent("wait-for-open", {
+      event: "email/opened",
+      match: "data.messageId",
+      timeout: "21d",
+    });
+    if (!opened) return null; // unknown, not a failure
+    return { name: "homeowner-opened", value: true };
+  }
+);
+```
+
+When the open event lands, the scorer returns its score and Inngest attaches it to the run that called `defer()`. The parent never stored or passed a run ID.
+
+Three weeks apart, the draft-time verdict and the homeowner's open sit on the same run. That's what durable execution buys you here: you can link runs that look completely unrelated because they happened so far apart.
+
+### Decide what a timeout means
+
+If no open arrives in 21 days, you can return `null` (unknown) or `false` (didn't happen). I return `null`.
+
+Email opens are noisy. Image blocking and privacy proxies hide real opens and fake others, so a missing open isn't strong evidence of anything. Our docs make the same call for most comparisons.
+
+Whichever you pick, keep it fixed, or the score changes meaning under you.
+
+### Watch for early events
+
+Inngest schedules a deferred scorer when the parent run finishes, and a wait only catches events sent after it starts. Here the send is the last step, so the window is tiny, but an open that lands within seconds of delivery could slip past.
+
+If that matters for your signal, have the webhook that receives it score the run directly with [`inngest.score({ runId })`](/docs/agent-evals/scores?ref=blog-how-to-use-jev-for-agent-evals-and-check-it-against-real-outcomes#score-from-outside-the-run) instead.
+
+## How do you find where Jev is wrong?
+
+Compare Jev's score against the product-signal scores on the same runs, and look at where they disagree. That's the question this whole setup exists to answer.
+
+Look for two groups:
+
+- Drafts Jev was confident about that the contractor rejected or the homeowner ignored.
+- Drafts Jev doubted that went on to do fine.
+
+Either group points at the question, the criteria descriptions, or a dimension that a judge just can't see from the draft.
+
+A query along these lines lines up the three scores per run and groups them by Jev's score:
+
+```sql
+-- Jev's verdict vs. what happened, grouped by Jev's score.
+-- Table and column names are illustrative: check the schema browser in Insights.
+SELECT
+  round(jev, 1)                AS jev_score,
+  count()                      AS drafts,
+  avg(approved)                AS approval_rate,
+  sum(opened) / sum(approved)  AS open_rate  -- opens per approved send
+FROM (
+  SELECT
+    run_id,
+    maxIf(value, name = 'jev-on-brief')        AS jev,
+    maxIf(value, name = 'contractor-approved') AS approved,
+    maxIf(value, name = 'homeowner-opened')    AS opened
+  FROM scores
+  GROUP BY run_id
+  HAVING countIf(name = 'contractor-approved') > 0  -- skip drafts nobody reviewed
+)
+GROUP BY jev_score
+ORDER BY jev_score;
+```
+
+If you'd rather not write SQL, Insights AI can generate a query like this from a plain-English prompt.
+
+Read the result top to bottom. If approval and open rates climb as Jev's score climbs, the light signal is tracking reality. Rows where they stay flat or run backwards are where to look first.
+
+That disagreement is how the light signal gets better. Rewrite the question, tighten the criteria descriptions, or stop asking a judge about something the outcome measures better. Bump the score name each time.
+
+[Insights](/docs/platform-and-operations/insights?ref=blog-how-to-use-jev-for-agent-evals-and-check-it-against-real-outcomes) is SQL over the same execution data, so the founder doesn't have to give up the admin dashboard he likes. The same queries run through Inngest's REST API and [MCP server](/docs/ai-dev-tools/mcp?ref=blog-how-to-use-jev-for-agent-evals-and-check-it-against-real-outcomes), so he can pull these numbers into it.
+
+## What are the limits of this approach?
+
+It doesn't replace offline evals, the APIs are new, and Jev has known blind spots.
+
+### The APIs are new
+
+`step.score()` and `createScorer()` both come from `inngest/experimental`, and deferred scoring is labeled beta. Agent Evals needs TypeScript SDK v4.8.0 or later. Pin your SDK version.
+
+### It doesn't replace offline evals
+
+Inngest doesn't ship offline datasets or versioned eval suites. If you need regression tests against a frozen set before every deploy, keep your offline evals, or [hold back a set and score it once at the end](/blog/building-a-durable-goal-agent-loop-that-survives-crashes?ref=blog-how-to-use-jev-for-agent-evals-and-check-it-against-real-outcomes).
+
+That's where the founder's cap fix went, and it belonged there. Online scores tell you what happened in production; they don't replace a pre-merge gate.
+
+### Jev has limits
+
+In the Penn paper, Jev did best on binary checklist questions and fell behind the best LLM judge on graded ones. That's part of why this example asks yes/no.
+
+TypeSafe's own docs list literal reading of scoping words and negations as a known failure mode.
+
+### A second judge won't rescue the first
+
+When Jev was most confident and wrong, the three LLM judges in the paper gave the same wrong answer 96% of the time. Independent errors would have matched about half the time.
+
+A cascade that sent Jev's low-confidence calls to an LLM judge cut cost but beat the best single judge by at most 1.5 points.
+
+Judges tend to be wrong in the same places, so a second judge is another light signal, not a check on the first. The check is the outcome.
+
+### Scores don't carry cost
+
+Scores don't include token counts or cost. Model calls show up in the run's [trace](/docs/platform-and-operations/traces?ref=blog-how-to-use-jev-for-agent-evals-and-check-it-against-real-outcomes) instead.
+
+## Try Jev on your own agent
+
+Start with what you've got:
+
+1. Put your existing judge inside a step and record it with `step.score()`.
+2. Add Jev next to it as a second light signal, if the cost and speed fit.
+3. Add one product signal, the outcome you'd actually stake the product on, and give it a week.
+4. Query where the judge and the outcome disagree, and fix the question before you trust the number.
+
+Once both kinds of score exist, comparing prompts or models with [experiments](/docs/agent-evals/experiments?ref=blog-how-to-use-jev-for-agent-evals-and-check-it-against-real-outcomes) is configuration on the same function. That's its own post. For a broader starting point on scoring, see [Evals in Inngest: a practical guide](/blog/evals-in-inngest-a-practical-guide-to-measuring-and-improving-your-agent?ref=blog-how-to-use-jev-for-agent-evals-and-check-it-against-real-outcomes).
+
+None of this locks you in. Scoring is a few calls around code you already have. If you end up not liking it, unwrap it and go back to the way you were.
+
+---
+
+## Sources
+
+1. Rao and Callison-Burch, "JEV vs. LLMs as Rubric Judges: Cheaper, Faster, and Wrong in the Same Places," arXiv:2609.29769v1 (24 Sep 2026): [arxiv.org/abs/2609.29769](https://arxiv.org/abs/2609.29769). Used: cost and latency ranges (abstract, §4.2); 8 of 27 separated (§4.1); judge-judge agreement above judge-label agreement on all seven graded panels (§5.1); 96.0% repeated errors vs. ~50% baseline (§6.2); cascade at most +1.5 points (§6.3); ~3% verdict flips and ~0.2s median latency (App. A); unpinned alias caveat (Limitations).
+2. TypeSafe TypeScript SDK, @typesafe-ai/sdk v0.6.0: [github.com/typesafe-ai/typesafe-sdk-js](https://github.com/typesafe-ai/typesafe-sdk-js)
+3. TypeSafe docs, jev-1.13 known failure modes: [docs.typesafe.ai/model-jaggedness/jev-1.13](https://docs.typesafe.ai/model-jaggedness/jev-1.13)
+4. Inngest docs: [Scores](/docs/agent-evals/scores?ref=blog-how-to-use-jev-for-agent-evals-and-check-it-against-real-outcomes), [Deferred scoring](/docs/agent-evals/deferred-scoring?ref=blog-how-to-use-jev-for-agent-evals-and-check-it-against-real-outcomes), [Score with an LLM judge](/docs/agent-evals/guides/llm-judge?ref=blog-how-to-use-jev-for-agent-evals-and-check-it-against-real-outcomes), [Agent Evals overview](/docs/agent-evals/overview?ref=blog-how-to-use-jev-for-agent-evals-and-check-it-against-real-outcomes), [Experiments](/docs/agent-evals/experiments?ref=blog-how-to-use-jev-for-agent-evals-and-check-it-against-real-outcomes), [step.waitForEvent](/docs/durable-execution/primitives/step-waitforevent?ref=blog-how-to-use-jev-for-agent-evals-and-check-it-against-real-outcomes), [Steps](/docs/learn/inngest-steps?ref=blog-how-to-use-jev-for-agent-evals-and-check-it-against-real-outcomes), [Insights](/docs/platform-and-operations/insights?ref=blog-how-to-use-jev-for-agent-evals-and-check-it-against-real-outcomes), [Traces](/docs/platform-and-operations/traces?ref=blog-how-to-use-jev-for-agent-evals-and-check-it-against-real-outcomes), [MCP](/docs/ai-dev-tools/mcp?ref=blog-how-to-use-jev-for-agent-evals-and-check-it-against-real-outcomes)
