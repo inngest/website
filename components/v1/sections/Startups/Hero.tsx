@@ -52,10 +52,13 @@ export default function Hero() {
               <li>
                 Founded in the last {PROGRAM_RULES.maxCompanyAgeYears} years
               </li>
-              <li>Fewer than {PROGRAM_RULES.maxEmployees} employees</li>
               <li>
-                Bootstrapped, or raised through {PROGRAM_RULES.maxStageLabel}{" "}
-                with less than {PROGRAM_RULES.maxRaisedLabel} in total
+                {PROGRAM_RULES.minEmployees} to {PROGRAM_RULES.maxEmployees}{" "}
+                employees, as shown on your LinkedIn company page
+              </li>
+              <li>
+                Bootstrapped, or raised less than {PROGRAM_RULES.maxRaisedLabel}{" "}
+                in total
               </li>
               <li>
                 Not on a paid Inngest plan yet (Free plan accounts are welcome)

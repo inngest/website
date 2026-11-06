@@ -40,7 +40,8 @@ export default function StartupForm() {
   const [fundingStage, setFundingStage] = useState("");
   const [totalRaised, setTotalRaised] = useState("");
   const [investor, setInvestor] = useState("");
-  const [profileUrl, setProfileUrl] = useState("");
+  const [linkedinUrl, setLinkedinUrl] = useState("");
+  const [crunchbaseUrl, setCrunchbaseUrl] = useState("");
   const [survey, setSurvey] = useState("");
   const [message, setMessage] = useState("");
   const [honeyPot, setHoneyPot] = useState("");
@@ -90,7 +91,8 @@ export default function StartupForm() {
       fundingStage,
       totalRaised: raised,
       investor,
-      profileUrl,
+      linkedinUrl,
+      crunchbaseUrl,
     };
 
     try {
@@ -131,7 +133,8 @@ export default function StartupForm() {
         funding_stage: fundingStage,
         total_raised: raised,
         investor_or_accelerator: investor,
-        company_profile_url: profileUrl,
+        linkedin_url: linkedinUrl,
+        crunchbase_url: crunchbaseUrl,
         ...(firstTouch || {}),
       });
 
@@ -307,12 +310,24 @@ export default function StartupForm() {
         )}
 
         <TextField
-          id="startup-profile"
+          id="startup-linkedin"
           type="url"
-          label="Crunchbase or LinkedIn company page (optional)"
+          label="LinkedIn company page"
+          required
+          placeholder="https://www.linkedin.com/company/..."
+          value={linkedinUrl}
+          onChange={setLinkedinUrl}
+          className={fieldClassName}
+          labelClassName={labelClassName}
+        />
+
+        <TextField
+          id="startup-crunchbase"
+          type="url"
+          label="Crunchbase page (optional)"
           placeholder="https://"
-          value={profileUrl}
-          onChange={setProfileUrl}
+          value={crunchbaseUrl}
+          onChange={setCrunchbaseUrl}
           className={fieldClassName}
           labelClassName={labelClassName}
         />

@@ -9,9 +9,9 @@ import type { SelectOption } from "@/components/v1/forms";
  */
 export const PROGRAM_RULES = {
   maxCompanyAgeYears: 5,
-  maxEmployees: 50,
-  maxRaisedLabel: "$30M",
-  maxStageLabel: "Series A",
+  minEmployees: 3,
+  maxEmployees: 24,
+  maxRaisedLabel: "$10M",
 } as const;
 
 const CURRENT_YEAR = new Date().getFullYear();
@@ -26,10 +26,10 @@ export const FOUNDED_OPTIONS: SelectOption[] = [
 ];
 
 export const HEADCOUNT_OPTIONS: SelectOption[] = [
-  { value: "1-10", label: "1–10" },
-  { value: "11-25", label: "11–25" },
-  { value: "26-49", label: "26–49" },
-  { value: "50+", label: "50 or more" },
+  { value: "1-2", label: "1–2" },
+  { value: "3-10", label: "3–10" },
+  { value: "11-24", label: "11–24" },
+  { value: "25+", label: "25 or more" },
 ];
 
 export const FUNDING_STAGE_OPTIONS: SelectOption[] = [
@@ -43,9 +43,8 @@ export const FUNDING_STAGE_OPTIONS: SelectOption[] = [
 export const TOTAL_RAISED_OPTIONS: SelectOption[] = [
   { value: "under-1m", label: "Under $1M" },
   { value: "1m-5m", label: "$1M–$5M" },
-  { value: "5m-15m", label: "$5M–$15M" },
-  { value: "15m-30m", label: "$15M–$30M" },
-  { value: "30m-plus", label: "$30M or more" },
+  { value: "5m-10m", label: "$5M–$10M" },
+  { value: "10m-plus", label: "$10M or more" },
 ];
 
 export interface EligibilityAnswers {
@@ -64,19 +63,14 @@ export function ineligibilityReasons(a: EligibilityAnswers): string[] {
       `The program is for companies founded in the last ${PROGRAM_RULES.maxCompanyAgeYears} years.`
     );
   }
-  if (a.headcount === "50+") {
+  if (a.headcount === "1-2" || a.headcount === "25+") {
     reasons.push(
-      `The program is for companies with fewer than ${PROGRAM_RULES.maxEmployees} employees.`
+      `The program is for teams of ${PROGRAM_RULES.minEmployees} to ${PROGRAM_RULES.maxEmployees} employees.`
     );
   }
-  if (a.fundingStage === "series-b-plus") {
+  if (a.fundingStage === "series-b-plus" || a.totalRaised === "10m-plus") {
     reasons.push(
-      `The program is for bootstrapped companies or those raised through ${PROGRAM_RULES.maxStageLabel}.`
-    );
-  }
-  if (a.fundingStage !== "bootstrapped" && a.totalRaised === "30m-plus") {
-    reasons.push(
-      `The program is for companies that have raised less than ${PROGRAM_RULES.maxRaisedLabel} in total.`
+      `The program is for bootstrapped companies or those that have raised less than ${PROGRAM_RULES.maxRaisedLabel} in total.`
     );
   }
   return reasons;
