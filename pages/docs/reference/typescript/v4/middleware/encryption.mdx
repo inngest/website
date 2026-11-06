@@ -1,4 +1,4 @@
-import { Properties, Property } from "src/shared/Docs/mdx";
+import { Callout, Properties, Property } from "src/shared/Docs/mdx";
 
 export const metaTitle = "Encryption Middleware | TypeScript SDK v4"
 export const description = "Encrypt and decrypt step inputs and outputs automatically so sensitive data is never stored in plaintext."
@@ -50,7 +50,7 @@ Returns a `Middleware.Class` that can be passed to the `middleware` array on a c
     Additional keys to try when decrypting. Useful during key rotation.
   </Property>
   <Property name="encryptionService" type="EncryptionService">
-    A custom encryption service instance. If not provided, the default LibSodium-based service is used.
+    A custom encryption service instance. If not provided, the default LibSodium-based service is used. Required on Cloudflare Workers; see [Cloudflare Workers](#cloudflare-workers).
   </Property>
   <Property name="legacyV0Service" type="object">
     Options for backward compatibility with v0 AES encryption format.
@@ -108,6 +108,14 @@ encryptionMiddleware({
   key: process.env.MY_ENCRYPTION_KEY_V2,
 });
 ```
+
+## Cloudflare Workers
+
+The default LibSodium service can't run on Cloudflare Workers. On Workers, pass a custom `encryptionService`, such as one built on WebCrypto's AES-GCM. A custom service extends `EncryptionService` from `@inngest/middleware-encryption` and implements `identifier`, `encrypt(value)`, and `decrypt(value)`.
+
+<Callout>
+The middleware loads LibSodium only when the default service first encrypts or decrypts, so passing a custom `encryptionService` never loads it. Before `@inngest/middleware-encryption` 2.0.1, importing the package loaded LibSodium immediately and crashed Workers at startup, even with a custom service.
+</Callout>
 
 ## Cross-language support
 
