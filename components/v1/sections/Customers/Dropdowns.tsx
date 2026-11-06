@@ -27,10 +27,10 @@ export const CATEGORY_OPTIONS = [
   "SAAS",
   "SECURITY",
 ] as const;
-export type Category = (typeof CATEGORY_OPTIONS)[number];
+export type Category = typeof CATEGORY_OPTIONS[number];
 
 export const SORT_OPTIONS = ["LATEST", "ALPHABETICAL"] as const;
-export type SortOption = (typeof SORT_OPTIONS)[number];
+export type SortOption = typeof SORT_OPTIONS[number];
 
 export function CategoryDropdown({
   selected,
@@ -77,7 +77,7 @@ export function SortByDropdown({
   onChange: (next: SortOption) => void;
 }) {
   return (
-    <FilterDropdown label="Sort By" align="right">
+    <FilterDropdown label="Sort By">
       {(close) =>
         SORT_OPTIONS.map((opt) => (
           <DropdownOption
@@ -151,7 +151,7 @@ function FilterDropdown({
         onClick={() => setOpen((o) => !o)}
         aria-haspopup="true"
         aria-expanded={open}
-        className="group/dd inline-flex items-center gap-2 text-[18px] text-v1-frost motion-safe:transition-colors hover:text-v1-accent-salmon"
+        className="group/dd inline-flex items-center gap-2 text-[18px] text-v1-frost hover:text-v1-accent-salmon motion-safe:transition-colors"
       >
         <span>{label}</span>
         {/* Chevron rotates 180° when the panel is open. Mirrors what
@@ -204,9 +204,7 @@ function FilterDropdown({
             }}
             className="pointer-events-none absolute inset-0 bg-cover bg-center opacity-60"
           />
-          <div className="relative flex flex-col">
-            {children(close)}
-          </div>
+          <div className="relative flex flex-col">{children(close)}</div>
         </div>
       )}
     </div>

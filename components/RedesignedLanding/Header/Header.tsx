@@ -28,7 +28,8 @@ export default function Header() {
   const pathname = usePathname();
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
 
-  if (pathname?.startsWith("/content/ai-in-production-report-2026")) return null;
+  if (pathname?.startsWith("/content/ai-in-production-report-2026"))
+    return null;
 
   return (
     <header
@@ -96,7 +97,7 @@ export default function Header() {
               href={"/customers?ref=nav"}
               className="flex hidden items-center gap-x-1 text-sm/6 font-semibold text-white min-[920px]:flex"
             >
-              CUSTOMERS
+              CUSTOMER STORIES
             </Link>
             <ResourcePopover />
             <Link
@@ -267,7 +268,7 @@ export default function Header() {
                   href="/customers?ref=nav"
                   className="-mx-3 block border-b border-stone-700 px-3 py-4 text-base/7 font-semibold uppercase text-stone-50 hover:bg-stone-800"
                 >
-                  Customers
+                  Customer Stories
                 </Link>
 
                 <Disclosure
@@ -341,9 +342,7 @@ export default function Header() {
               <div className="border-none py-6">
                 <div className="flex space-x-4">
                   <Button variant="outline" asChild>
-                    <Link
-                      href={`${process.env.NEXT_PUBLIC_APP_HOST}?ref=nav`}
-                    >
+                    <Link href={`${process.env.NEXT_PUBLIC_APP_HOST}?ref=nav`}>
                       Sign In
                     </Link>
                   </Button>

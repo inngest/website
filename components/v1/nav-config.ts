@@ -266,7 +266,7 @@ export const NAV_PRIMARY: NavItem[] = [
     menu: PLATFORM_MENU,
   },
   { label: "Use Cases", href: "/ai", menu: USE_CASES_MENU },
-  { label: "Customers", href: "/customers" },
+  { label: "Customer Stories", href: "/customers" },
   { label: "Resources", href: "/blog", menu: RESOURCES_MENU },
   { label: "Docs", href: "/docs" },
   { label: "Pricing", href: "/pricing" },
