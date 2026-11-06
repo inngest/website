@@ -203,6 +203,19 @@ export const UPCOMING: EventItem[] = [
     image: "/assets/v1/events/the-ai-conference-2026.png",
     imagePosition: "left center",
   },
+  {
+    id: "lonng-run-coffee-club-marina-green",
+    title: "The Lonng Run Coffee Club",
+    date: "Thursday, October 22, 2026 · 7–10 AM PDT",
+    startsAt: "2026-10-22T07:00:00-07:00",
+    endsAt: "2026-10-22T10:00:00-07:00",
+    location: "SAN FRANCISCO, CA",
+    topics: ["Meetups"],
+    excerpt:
+      "Free coffee and a little post-run fuel at Marina Green Field. Out for your morning miles or just passing through? Grab a coffee on us.",
+    href: "https://luma.com/inngest-mgvz",
+    image: "/assets/v1/sf-long-run/sf-run.png",
+  },
 ];
 
 const CODETV_HACKATHON: EventItem = {
@@ -459,6 +472,19 @@ export const ALL_EVENTS: EventItem[] = sortEventsByDate([
       "Coffee and conversation at Corgi Café for people building agents and workflows — a free campaign drink and Inngest swag, part of Build for the Lonng Run.",
     href: "https://luma.com/inngest-2gu5",
     image: "/assets/v1/sf-long-run/corgi-cup.png",
+  },
+  {
+    id: "lonng-run-coffee-club-marina-green",
+    title: "The Lonng Run Coffee Club",
+    date: "Thursday, October 22, 2026 · 7–10 AM PDT",
+    startsAt: "2026-10-22T07:00:00-07:00",
+    endsAt: "2026-10-22T10:00:00-07:00",
+    location: "SAN FRANCISCO, CA",
+    topics: ["Meetups"],
+    excerpt:
+      "Free coffee and a little post-run fuel at Marina Green Field. Out for your morning miles or just passing through? Grab a coffee on us.",
+    href: "https://luma.com/inngest-mgvz",
+    image: "/assets/v1/sf-long-run/sf-run.png",
   },
   CODETV_HACKATHON,
   SF_LONG_RUN,
