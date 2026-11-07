@@ -29,6 +29,7 @@ import {
   ReportTableOfContents,
   ReportMobileContentsBar,
 } from "@/components/Blog/Report";
+import { refLinkProps } from "@/utils/v1/ref";
 
 const ARTICLE_BODY_ID = "blog-article-body";
 
@@ -630,7 +631,7 @@ function RelatedContent({ posts }: { posts: RelatedPost[] }) {
                 way — rather than `asChild` — avoids cloneElement/
                 Children.only, so this whole tree can render in a Server
                 Component without the lazy-child RSC failure. */}
-            <Link href={`/blog/${p.slug}`} className="block h-full rounded-lg">
+            <Link {...refLinkProps(`/blog/${p.slug}`)} className="block h-full rounded-lg">
               <SpotlightFrame
                 tilt
                 className="h-full"

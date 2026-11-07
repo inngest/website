@@ -7,6 +7,7 @@ import Chip from "@/components/v1/sections/shared/Chip";
 import EventCardLarge from "@/components/v1/sections/Events/EventCardLarge";
 import SpotlightFrame from "@/components/v1/sections/Events/SpotlightFrame";
 import { isPastEvent, sortEventsByDate } from "@/components/v1/sections/Events/data";
+import { refLinkProps } from "@/utils/v1/ref";
 
 const COVER_IMAGE = "/assets/v1/events/agent-architecture-half-life.png";
 
@@ -201,7 +202,7 @@ export default function AgentArchitectureHalfLifeTalk() {
                   flexibility, and why the right execution layer unlocks faster
                   iteration.{" "}
                   <a
-                    href={SCHEDULE_URL}
+                    {...refLinkProps(SCHEDULE_URL)}
                     target="_blank"
                     rel="noopener noreferrer"
                     className="underline underline-offset-2 hover:text-v1-accent-salmon"
@@ -218,7 +219,7 @@ export default function AgentArchitectureHalfLifeTalk() {
                 </Chip>
               ) : (
                 <Button asChild variant="accent" className="self-start">
-                  <a href={SCHEDULE_URL} target="_blank" rel="noopener noreferrer">
+                  <a {...refLinkProps(SCHEDULE_URL)} target="_blank" rel="noopener noreferrer">
                     View on schedule →
                   </a>
                 </Button>
@@ -278,7 +279,7 @@ export default function AgentArchitectureHalfLifeTalk() {
                 </p>
                 <div className="flex flex-wrap gap-x-4 gap-y-1 text-[14px] leading-[20px]">
                   <a
-                    href={SPEAKER.github}
+                    {...refLinkProps(SPEAKER.github)}
                     target="_blank"
                     rel="noopener noreferrer"
                     className="underline underline-offset-2 hover:text-v1-accent-salmon"
@@ -286,7 +287,7 @@ export default function AgentArchitectureHalfLifeTalk() {
                     GitHub
                   </a>
                   <a
-                    href={SPEAKER.linkedin}
+                    {...refLinkProps(SPEAKER.linkedin)}
                     target="_blank"
                     rel="noopener noreferrer"
                     className="underline underline-offset-2 hover:text-v1-accent-salmon"

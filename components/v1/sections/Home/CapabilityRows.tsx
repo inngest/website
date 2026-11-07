@@ -5,7 +5,7 @@ import Image from "next/image";
 import Link from "next/link";
 import { motion } from "motion/react";
 import { cn } from "@/utils/v1/cn";
-import { appendRef } from "@/utils/v1/ref";
+import { appendRef, refLinkProps } from "@/utils/v1/ref";
 import { reveals } from "@/utils/v1/reveals";
 import { useIsDesktop } from "@/utils/v1/hooks/useIsDesktop";
 import GradientFrame from "@/components/v1/sections/shared/GradientFrame";
@@ -452,7 +452,7 @@ function StackedCard({
 function DocsCue({ href }: { href: string }) {
   return (
     <Link
-      href={href}
+      {...refLinkProps(href)}
       className="group/cta text-v1-label-md inline-flex w-fit items-center uppercase text-v1-frost hover:text-v1-accent-salmon focus:outline-none focus-visible:text-v1-accent-salmon motion-safe:transition-colors motion-safe:duration-300"
     >
       <span>See docs</span>

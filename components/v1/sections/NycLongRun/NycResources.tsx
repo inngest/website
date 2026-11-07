@@ -13,6 +13,7 @@ import {
   NYC_RESOURCES,
   NYC_RESOURCES_COPY,
 } from "@/components/v1/sections/NycLongRun/data";
+import { refLinkProps } from "@/utils/v1/ref";
 
 /**
  * Section 07 — resources.
@@ -52,7 +53,7 @@ export default function NycResources() {
         {NYC_RESOURCES.map((r, i) => (
           <motion.li key={r.id} {...reveals.item(i)} className="list-none">
             <Link
-              href={r.href}
+              {...refLinkProps(r.href)}
               className="group flex h-full flex-col overflow-hidden rounded-lg border border-v1-subtle transition-colors duration-200 hover:border-v1-contrast"
             >
               <img

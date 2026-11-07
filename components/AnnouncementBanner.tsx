@@ -1,4 +1,5 @@
 import React from "react";
+import { refLinkProps } from "@/utils/v1/ref";
 
 type Props = {
   href: string;
@@ -30,7 +31,7 @@ const NOISE_BG =
 
 const Banner: React.FC<Props> = ({ href, children, className, target, rel }) => (
   <a
-    href={href}
+    {...refLinkProps(href)}
     target={target}
     rel={rel}
     // use the .page-banner class to hide it on select pages via CSS

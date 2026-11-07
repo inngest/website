@@ -21,6 +21,7 @@
  */
 
 import Link from "next/link";
+import { refLinkProps } from "@/utils/v1/ref";
 
 interface CustomerLogo {
   name: string;
@@ -190,7 +191,7 @@ function LogoMark({
   // parent `aria-hidden`.
   return (
     <Link
-      href={href}
+      {...refLinkProps(href)}
       className={className}
       aria-label={decorative ? undefined : `${logo.name} — Read the case study`}
       tabIndex={decorative ? -1 : undefined}

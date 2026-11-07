@@ -16,6 +16,7 @@ import { reveals } from "@/utils/v1/reveals";
 import { V1_CYCLE_MS } from "@/utils/v1/springs";
 import { useInView } from "@/utils/v1/hooks/useInView";
 import { cn } from "@/utils/v1/cn";
+import { refLinkProps } from "@/utils/v1/ref";
 
 /**
  * Horizontally-paginated Emblá carousel of case-study cards. The
@@ -350,7 +351,7 @@ function CaseStudyCard({
   // plain, non-interactive card.
   return cta ? (
     <Link
-      href={cta.href}
+      {...refLinkProps(cta.href)}
       aria-label={`${study.title}: ${cta.label}`}
       onPointerMove={onCursorSpotlightMove}
       style={CURSOR_SPOTLIGHT_SEED}

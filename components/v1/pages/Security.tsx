@@ -2,6 +2,7 @@ import { type ReactNode } from "react";
 import PageShell from "@/components/v1/PageShell";
 import Button from "@/components/v1/Button";
 import LogoMarquee from "@/components/v1/sections/Home/LogoMarquee";
+import { refLinkProps } from "@/utils/v1/ref";
 
 // Security — same v1 treatment as the Terms and Privacy pages: an 800px
 // reading column on the grain backdrop (PageShell), a centred Display/Sm
@@ -66,7 +67,7 @@ function Link({ href, children }: { href: string; children: ReactNode }) {
   const external = /^https?:/.test(href);
   return (
     <a
-      href={href}
+      {...refLinkProps(href)}
       {...(external && { target: "_blank", rel: "noreferrer" })}
       className="underline underline-offset-2 hover:text-v1-frost/70 motion-safe:transition-colors"
     >

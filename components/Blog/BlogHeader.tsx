@@ -1,5 +1,6 @@
 import { Rss } from "react-feather";
 import { BLOG_CATEGORIES } from "./index";
+import { refLinkProps } from "@/utils/v1/ref";
 
 export default function BlogHeader({ description }: { description: string }) {
   const categoryLinks = Object.keys(BLOG_CATEGORIES).map((k) => ({
@@ -30,7 +31,7 @@ export default function BlogHeader({ description }: { description: string }) {
         <span className="text-sm text-basis">Categories:</span>
         {categoryLinks.map((link) => (
           <a
-            href={link.href}
+            {...refLinkProps(link.href)}
             key={link.href}
             className="text-sm text-subtle hover:text-link"
           >
