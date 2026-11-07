@@ -8,6 +8,7 @@ You can set environment variables to change various parts of Inngest's configura
 We'll look at all available environment variables here, what to set them to, and what our recommendations are for their use.
 
 - [INNGEST_BASE_URL](#inngest-base-url)
+- [INNGEST_CONNECT_INSTANCE_ID](#inngest-connect-instance-id)
 - [INNGEST_DEV](#inngest-dev)
 - [INNGEST_ENV](#inngest-env)
 - [INNGEST_EVENT_KEY](#inngest-event-key)
@@ -51,6 +52,18 @@ Inngest Cloud for local integration testing or similar.
 
 In this case, prefer using [INNGEST_DEV=1](#inngest-dev). For Docker, it may be
 appropriate to also set `INNGEST_BASE_URL=http://host.docker.internal:8288`. Learn more in our [Docker guide](/docs/local-development).
+
+---
+
+## INNGEST_CONNECT_INSTANCE_ID
+
+Sets the instance ID that identifies a [connect](/docs/durable-execution/deploying-functions/connect?ref=environment-variables) worker. Use a value that stays stable across restarts, such as a container or machine ID.
+
+Can be overwritten by manually specifying `instanceId` in `connect()`. If neither is set, the SDK uses the machine's hostname.
+
+The SDK also sends the instance ID with step checkpoint requests. Apps that aren't using connect send this environment variable's value when it's set.
+
+Available in TypeScript SDK version `4.27.0` and above.
 
 ---
 
