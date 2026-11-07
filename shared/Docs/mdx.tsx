@@ -60,6 +60,7 @@ export {
   TraceMarker,
 } from "./AnnotatedCode/AnnotatedCode";
 export { DownloadLink } from "./DownloadLink";
+export { ScreenshotNeeded } from "./ScreenshotNeeded";
 export { Unreleased } from "./Unreleased";
 
 import { PageActions } from "./PageActions";
