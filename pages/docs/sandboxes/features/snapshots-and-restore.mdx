@@ -93,7 +93,7 @@ Snapshot Create and its readiness wait are separate memoized steps. Let unexpect
 
 A **clone** starts a new sandbox from a ready user snapshot. Use it to repeat work from the same prepared state or branch into independent runs. It does not overwrite the source sandbox.
 
-**Pause and resume** preserve the original sandbox ID. Pause uses a private checkpoint; resume restores the same sandbox's filesystem, memory, environment, resources, and remaining runtime. Private pause checkpoints do not appear in the user snapshot list or count against user snapshot quota. See [Pause and resume](/docs/sandboxes/features/pause-and-resume) for the lifecycle guide.
+**Pause and resume** preserve the original sandbox ID. Pause uses a private checkpoint; resume restores the same sandbox's filesystem, memory, environment, and resources. Private pause checkpoints do not appear in the user snapshot list or count against user snapshot quota. See [Pause and resume](/docs/sandboxes/features/pause-and-resume) for the lifecycle guide.
 
 Restore means either resuming a paused sandbox with the same ID or cloning a user snapshot into a new sandbox. There is no separate operation that replaces an existing sandbox with a user snapshot. See [Cloning](/docs/sandboxes/features/cloning) for more on independent sandbox copies.
 

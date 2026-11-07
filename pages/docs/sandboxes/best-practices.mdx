@@ -50,13 +50,13 @@ Use external storage for any file that must survive independently of one Sandbox
 
 ## Use pause and snapshots for different tasks
 
-- **Pause and resume** when you need the same Sandbox later. Resume keeps its ID, filesystem, memory, environment, and remaining runtime. Wait for `RUNNING` before calling commands, files, logs, or processes.
+- **Pause and resume** when you need the same Sandbox later. Resume keeps its ID, filesystem, memory, and environment. Wait for `RUNNING` before calling commands, files, logs, or processes.
 - **Snapshot and clone** when you need a new Sandbox from a prepared state. The clone gets a new Sandbox ID and inherits the captured image, resources, memory, environment, and disk. The source keeps running.
 - Do not treat either feature as a backup. User snapshots are crash-consistent, have a server-defined expiry, and count against account-specific quotas. Pause uses a private checkpoint for that Sandbox. Save irreplaceable data elsewhere.
 
 ## Size the work to beta limits
 
-The current beta has a one-hour active runtime per Sandbox and accepts 1, 2, or 4 vCPU with 1, 2, or 4 GiB of memory per vCPU. Paused time does not consume the remaining active runtime. Sandboxes start from the default image unless you choose a published one with [`image.custom()`](/docs/sandboxes/features/base-images#choose-an-image), such as a [custom image](/docs/sandboxes/features/custom-images) you build. Disk sizes, resizing, and a configurable TTL are not available through this beta API. A valid size can still fail when the account lacks access or capacity is unavailable. Beta limits can change.
+Your plan sets how long a Sandbox can run, up to 24 hours, and each Resume starts a new runtime window. The current beta accepts 1, 2, 4, 8, or 16 vCPU with 1, 2, or 4 GiB of memory per vCPU. Sandboxes start from the default image unless you choose a published one with [`image.custom()`](/docs/sandboxes/features/base-images#choose-an-image), such as a [custom image](/docs/sandboxes/features/custom-images) you build. Disk sizes, resizing, and a configurable TTL are not available through this beta API. A valid size can still fail when the account lacks access or capacity is unavailable. Beta limits can change.
 
 ## Protect credentials and access
 
