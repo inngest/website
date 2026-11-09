@@ -4,6 +4,7 @@ import { useEffect, useMemo, useRef, useState } from "react";
 import PageShell from "@/components/v1/PageShell";
 import Button from "@/components/v1/Button";
 import { cn } from "@/utils/v1/cn";
+import { CHARACTERS, CHARACTER_IDS, type CharacterId } from "./characters";
 import {
   CARD_KINDS,
   WORKFLOW_SOURCE,
@@ -30,6 +31,34 @@ const KIND_LABELS: Record<CardKind, { title: string; blurb: string }> = {
   },
 };
 
+/**
+ * Center-crops an uploaded photo to a small square JPEG data URL, so the
+ * upload to the card route stays tiny. Nothing is stored server-side.
+ */
+async function toFaceDataURL(file: File): Promise<string> {
+  const bitmap = await createImageBitmap(file);
+  const size = 320;
+  const side = Math.min(bitmap.width, bitmap.height);
+  const canvas = document.createElement("canvas");
+  canvas.width = size;
+  canvas.height = size;
+  canvas
+    .getContext("2d")!
+    .drawImage(
+      bitmap,
+      (bitmap.width - side) / 2,
+      (bitmap.height - side) / 2,
+      side,
+      side,
+      0,
+      0,
+      size,
+      size
+    );
+  bitmap.close();
+  return canvas.toDataURL("image/jpeg", 0.85);
+}
+
 /** ms between trace rows appearing while the workflow "runs". */
 const STEP_MS = 260;
 
@@ -42,6 +71,15 @@ export default function WorkflowCards({
   const [kind, setKind] = useState<CardKind>(initial?.kind ?? "participating");
   const [day, setDay] = useState(initial?.day ?? 1);
   const [github, setGithub] = useState(initial?.github ?? "");
+  const [character, setCharacter] = useState<CharacterId>(
+    initial?.character ?? "rat"
+  );
+  // An uploaded photo (data URL). Only ever sent to the card route to be
+  // drawn, never stored, so it isn't part of the share link.
+  const [photo, setPhoto] = useState<string | null>(null);
+  const [photoError, setPhotoError] = useState(false);
+  // The card drawn with the photo, as a blob URL.
+  const [photoCard, setPhotoCard] = useState<string | null>(null);
 
   // The input of the card that has been (or is being) run.
   const [run, setRun] = useState<CardInput | null>(initial);
@@ -53,6 +91,32 @@ export default function WorkflowCards({
   const spec = useMemo(() => (run ? runWeirdWorkflow(run) : null), [run]);
   const query = run ? cardQuery(run) : "";
   const imageURL = run ? `/api/workflow-card?${query}` : "";
+  // With a photo, the card comes from a POST instead of the GET URL.
+  const [runPhoto, setRunPhoto] = useState<string | null>(null);
+  const displayURL = runPhoto ? photoCard : imageURL;
+
+  useEffect(() => {
+    if (!runPhoto || !query) return;
+    let url: string | null = null;
+    let cancelled = false;
+    setPhotoCard(null);
+    fetch("/api/workflow-card", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ query, face: runPhoto }),
+    })
+      .then((res) => (res.ok ? res.blob() : Promise.reject(res.status)))
+      .then((blob) => {
+        if (cancelled) return;
+        url = URL.createObjectURL(blob);
+        setPhotoCard(url);
+      })
+      .catch(() => !cancelled && setRunPhoto(null)); // fall back to GET
+    return () => {
+      cancelled = true;
+      if (url) URL.revokeObjectURL(url);
+    };
+  }, [runPhoto, query]);
   const done = spec ? visibleSteps >= spec.trace.length : false;
 
   // Play the trace whenever a new run starts.
@@ -77,8 +141,10 @@ export default function WorkflowCards({
       day: kind === "completed" ? 12 : day,
       nonce,
       github: sanitizeGithub(github),
+      character,
     };
     setRun(input);
+    setRunPhoto(photo);
     setCopied(false);
     window.history.replaceState(null, "", `?${cardQuery(input)}`);
   };
@@ -156,9 +222,88 @@ export default function WorkflowCards({
                 className="text-v1-body-lg rounded-lg border border-v1-frost/20 bg-v1-jetBlack px-4 py-3 text-v1-frost placeholder:text-v1-frost/40 focus:border-v1-accent-green focus:outline-none"
               />
               <span className="text-v1-body-sm text-v1-frost/50">
-                Puts your GitHub avatar on the card as an ornament.
+                Your avatar becomes the face. Or upload a photo below.
               </span>
             </label>
+
+            <label className="flex flex-col gap-3">
+              <span className="text-v1-label-md uppercase text-v1-frost/70">
+                event.data.face{" "}
+                <span className="normal-case text-v1-frost/40">(optional)</span>
+              </span>
+              <div className="flex items-center gap-4">
+                {photo && (
+                  // eslint-disable-next-line @next/next/no-img-element
+                  <img
+                    src={photo}
+                    alt="Your uploaded face"
+                    className="h-14 w-14 rounded-full object-cover"
+                  />
+                )}
+                <input
+                  type="file"
+                  accept="image/jpeg,image/png,image/webp"
+                  onChange={async (e) => {
+                    const file = e.target.files?.[0];
+                    setPhotoError(false);
+                    if (!file) return;
+                    try {
+                      setPhoto(await toFaceDataURL(file));
+                    } catch {
+                      setPhoto(null);
+                      setPhotoError(true);
+                    }
+                  }}
+                  className="text-v1-body-sm min-w-0 text-v1-frost/70 file:mr-3 file:rounded-lg file:border-0 file:bg-v1-frost/10 file:px-3 file:py-2 file:text-v1-frost"
+                />
+                {photo && (
+                  <button
+                    type="button"
+                    onClick={() => setPhoto(null)}
+                    className="text-v1-body-sm text-v1-frost/60 underline"
+                  >
+                    Remove
+                  </button>
+                )}
+              </div>
+              <span className="text-v1-body-sm text-v1-frost/50">
+                {photoError
+                  ? "Couldn't read that image. Try a JPEG or PNG."
+                  : "Used to draw your card, never stored. Share links use your GitHub avatar instead."}
+              </span>
+            </label>
+
+            <fieldset className="flex flex-col gap-3">
+              <legend className="text-v1-label-md mb-3 uppercase text-v1-frost/70">
+                event.data.character
+              </legend>
+              {CHARACTER_IDS.map((c) => (
+                <label
+                  key={c}
+                  className={cn(
+                    "flex cursor-pointer flex-col rounded-lg border px-4 py-3 transition-colors",
+                    character === c
+                      ? "border-v1-accent-green bg-v1-accent-green/10"
+                      : "border-v1-frost/20 hover:border-v1-frost/40"
+                  )}
+                >
+                  <input
+                    type="radio"
+                    name="character"
+                    value={c}
+                    checked={character === c}
+                    onChange={() => setCharacter(c)}
+                    className="sr-only"
+                  />
+                  <span className="text-v1-body-md text-v1-frost">
+                    {CHARACTERS[c].label}
+                  </span>
+                  <span className="text-v1-body-sm text-v1-frost/60">
+                    {CHARACTERS[c].blurb}
+                  </span>
+                </label>
+              ))}
+            </fieldset>
 
             <fieldset className="flex flex-col gap-3">
               <legend className="text-v1-label-md mb-3 uppercase text-v1-frost/70">
@@ -229,11 +374,11 @@ export default function WorkflowCards({
             ) : (
               <>
                 <div className="relative aspect-[1200/630] overflow-hidden rounded-xl border border-v1-frost/15 bg-v1-jetBlack">
-                  {done && (
+                  {done && displayURL && (
                     // eslint-disable-next-line @next/next/no-img-element
                     <img
-                      key={imageURL}
-                      src={imageURL}
+                      key={displayURL}
+                      src={displayURL}
                       alt={`${spec.headline} — ${spec.input.name}`}
                       onLoad={() => setImageLoaded(true)}
                       className={cn(
@@ -258,7 +403,14 @@ export default function WorkflowCards({
                     size="md"
                     className="!rounded-lg !bg-v1-accent-green !text-v1-jetBlack hover:!bg-v1-accent-green/85"
                   >
-                    <a href={`${imageURL}&download=1`} download>
+                    <a
+                      href={
+                        runPhoto && photoCard
+                          ? photoCard
+                          : `${imageURL}&download=1`
+                      }
+                      download="inngest-12-days-card.png"
+                    >
                       Download PNG
                     </a>
                   </Button>

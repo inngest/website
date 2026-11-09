@@ -14,6 +14,8 @@
  * the series' code samples.
  */
 
+import { CHARACTER_IDS, type CharacterId } from "./characters";
+
 export const CARD_KINDS = ["participating", "completed", "stuck"] as const;
 export type CardKind = typeof CARD_KINDS[number];
 
@@ -42,6 +44,8 @@ export type CardInput = {
   nonce: number;
   /** Optional GitHub username; its avatar goes on the card. */
   github: string;
+  /** Which face-in-hole character the face goes in. */
+  character: CharacterId;
 };
 
 export type Palette = {
@@ -93,6 +97,9 @@ export type CardSpec = {
   garlandLetters: string[];
   /** The function's id, e.g. "make-a-card-for-riley". */
   functionId: string;
+  /** The card's only real text: a giant word and one short line. */
+  big: string;
+  small: string;
   trace: TraceRow[];
 };
 
@@ -161,6 +168,9 @@ export const parseCardInput = (
     day: clampDay(Number(get("day") ?? 1)),
     nonce: Math.max(0, Math.floor(Number(get("n") ?? 0)) || 0),
     github: sanitizeGithub(get("gh")),
+    character: CHARACTER_IDS.includes(get("c") as CharacterId)
+      ? (get("c") as CharacterId)
+      : "rat",
   };
 };
 
@@ -172,6 +182,7 @@ export const cardQuery = (input: CardInput) => {
     n: String(input.nonce),
   });
   if (input.github) params.set("gh", input.github);
+  params.set("c", input.character);
   return params.toString();
 };
 
@@ -541,6 +552,12 @@ export const runWeirdWorkflow = (input: CardInput): CardSpec => {
     glitter,
     garland,
     garlandLetters: garlandLettersFor(input.name),
+    big: input.kind === "completed" ? "DONE." : `DAY ${input.day}`,
+    small: {
+      participating: "of 12. Going great.",
+      completed: "All 12 days. All I got was this card.",
+      stuck: "Not stuck. Waiting for an event.",
+    }[input.kind],
     functionId: `make-a-card-for-${
       slugify(firstName(input.name)).slice(0, 14) || "you"
     }`,
