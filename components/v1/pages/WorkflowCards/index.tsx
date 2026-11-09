@@ -72,7 +72,7 @@ export default function WorkflowCards({
   const [day, setDay] = useState(initial?.day ?? 1);
   const [github, setGithub] = useState(initial?.github ?? "");
   const [character, setCharacter] = useState<CharacterId>(
-    initial?.character ?? "rat"
+    initial?.character ?? "pizza"
   );
   // An uploaded photo (data URL). Only ever sent to the card route to be
   // drawn, never stored, so it isn't part of the share link.

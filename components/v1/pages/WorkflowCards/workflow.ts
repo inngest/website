@@ -170,7 +170,7 @@ export const parseCardInput = (
     github: sanitizeGithub(get("gh")),
     character: CHARACTER_IDS.includes(get("c") as CharacterId)
       ? (get("c") as CharacterId)
-      : "rat",
+      : "pizza",
   };
 };
 
@@ -555,7 +555,7 @@ export const runWeirdWorkflow = (input: CardInput): CardSpec => {
     big: input.kind === "completed" ? "DONE." : `DAY ${input.day}`,
     small: {
       participating: "of 12. Going great.",
-      completed: "All 12 days. All I got was this card.",
+      completed: "All I got was this card.",
       stuck: "Not stuck. Waiting for an event.",
     }[input.kind],
     functionId: `make-a-card-for-${

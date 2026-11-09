@@ -1,10 +1,6 @@
-import type { ReactElement } from "react";
 import { ImageResponse } from "next/og";
-import {
-  ART_H,
-  ART_W,
-  CHARACTERS,
-} from "@/components/v1/pages/WorkflowCards/characters";
+import { SCENE } from "@/components/v1/pages/WorkflowCards/art.generated";
+import { CHARACTERS } from "@/components/v1/pages/WorkflowCards/characters";
 import {
   parseCardInput,
   runWeirdWorkflow,
@@ -29,9 +25,16 @@ import {
 const W = 1200;
 const H = 630;
 
-/** Where the 600×560 character art sits on the card. */
-const ART_X = 592;
-const ART_Y = H - ART_H;
+/** The 12 Days poster colours. */
+const SALMON = "#F55C50";
+const INK = "#010101";
+
+/** The mouth and tongue run along the bottom, as on the long-run cards. */
+const SCENE_W = 1240;
+const SCENE_H = Math.round((SCENE_W * SCENE.height) / SCENE.width);
+const SCENE_X = -40;
+// Low enough that the lips clear the text block above them.
+const SCENE_Y = 386;
 
 const MAX_FACE_CHARS = 700_000; // ~500KB of JPEG, far more than a 320px one needs
 const FACE_DATA_URL = /^data:image\/(jpeg|png);base64,[a-z0-9+/=]+$/i;
@@ -72,34 +75,30 @@ async function loadAvatar(github: string): Promise<string | null> {
 async function render({
   spec,
   face,
-  origin,
   cache,
   download,
 }: {
   spec: CardSpec;
   face: string | null;
-  origin: string;
   cache: string;
   download: boolean;
 }) {
   try {
-    const [whyte, mono] = await Promise.all([
-      loadFont("Whyte/ABCWhyte-Light.otf"),
+    const [poster, mono] = await Promise.all([
+      // The 12 Days poster face: Circular, heaviest weight.
+      loadFont("Circular/CircularXXWeb-ExtraBlack.woff"),
       loadFont("WhyteMono/ABCWhyteMono-Regular.otf"),
     ]);
 
-    const image = new ImageResponse(
-      <Card spec={spec} face={face} origin={origin} />,
-      {
-        width: W,
-        height: H,
-        fonts: [
-          { name: "Whyte", data: whyte, style: "normal", weight: 300 },
-          { name: "WhyteMono", data: mono, style: "normal", weight: 400 },
-        ],
-        headers: { "Cache-Control": cache },
-      }
-    );
+    const image = new ImageResponse(<Card spec={spec} face={face} />, {
+      width: W,
+      height: H,
+      fonts: [
+        { name: "Circular", data: poster, style: "normal", weight: 900 },
+        { name: "WhyteMono", data: mono, style: "normal", weight: 400 },
+      ],
+      headers: { "Cache-Control": cache },
+    });
 
     if (download) {
       const slug =
@@ -127,7 +126,6 @@ export async function GET(req: Request) {
   return render({
     spec,
     face: await loadAvatar(spec.input.github),
-    origin: url.origin,
     // Deterministic per URL, so it can cache hard.
     cache: "public, max-age=86400, s-maxage=31536000, immutable",
     download: Boolean(url.searchParams.get("download")),
@@ -157,46 +155,74 @@ export async function POST(req: Request) {
   return render({
     spec,
     face,
-    origin: new URL(req.url).origin,
     cache: "private, no-store",
     download: false,
   });
 }
 
-function Card({
-  spec,
-  face,
-  origin,
-}: {
-  spec: CardSpec;
-  face: string | null;
-  origin: string;
-}) {
-  const p = spec.palette;
-  const character = CHARACTERS[spec.input.character];
-  const f = character.face;
-  const art = character.artwork;
-  const layer = (src: string) => (
+function Card({ spec, face }: { spec: CardSpec; face: string | null }) {
+  const c = CHARACTERS[spec.input.character];
+  const height = Math.round((c.width * c.art.height) / c.art.width);
+
+  const runner = (
     <img
-      src={new URL(src, origin).toString()}
-      width={ART_W}
-      height={ART_H}
-      style={{ position: "absolute", left: ART_X, top: ART_Y }}
+      src={c.art.src}
+      width={c.width}
+      height={height}
+      style={{ position: "absolute", left: c.left, top: c.top }}
     />
   );
-  const svgLayer = (draw?: () => ReactElement) =>
-    draw ? (
+  const tongue = (
+    <img
+      src={SCENE.src}
+      width={SCENE_W}
+      height={SCENE_H}
+      style={{ position: "absolute", left: SCENE_X, top: SCENE_Y }}
+    />
+  );
+  // Faces get the art's heavy black outline so they read as part of it.
+  const faces = c.faces.map((f, i) => {
+    const r = Math.round(f.r * c.width);
+    const style = {
+      position: "absolute" as const,
+      left: c.left + f.x * c.width - r,
+      top: c.top + f.y * height - r,
+      width: r * 2,
+      height: r * 2,
+      borderRadius: 999,
+      border: `${Math.max(4, Math.round(r / 12))}px solid ${INK}`,
+    };
+    return face ? (
+      <img
+        key={i}
+        src={face}
+        width={r * 2}
+        height={r * 2}
+        style={{ ...style, objectFit: "cover" }}
+      />
+    ) : (
       <div
+        key={i}
         style={{
-          position: "absolute",
-          left: ART_X,
-          top: ART_Y,
+          ...style,
+          backgroundColor: "#ECFE08",
           display: "flex",
+          flexDirection: "column",
+          alignItems: "center",
+          justifyContent: "center",
+          fontFamily: "WhyteMono",
+          fontSize: Math.max(11, Math.round(r / 3.2)),
+          lineHeight: 1.1,
+          color: INK,
+          textTransform: "uppercase",
         }}
       >
-        {draw()}
+        <div style={{ display: "flex" }}>Your</div>
+        <div style={{ display: "flex" }}>face</div>
+        <div style={{ display: "flex" }}>here</div>
       </div>
-    ) : null;
+    );
+  });
 
   return (
     <div
@@ -205,189 +231,106 @@ function Card({
         height: H,
         display: "flex",
         position: "relative",
-        backgroundColor: p.bg,
-        color: p.fg,
-        fontFamily: "Whyte",
+        backgroundColor: SALMON,
+        color: INK,
+        fontFamily: "Circular",
         overflow: "hidden",
       }}
     >
-      {spec.snow.map((s, i) => (
-        <div
-          key={`s${i}`}
-          style={{
-            position: "absolute",
-            left: s.x * W,
-            top: s.y * H,
-            width: s.size,
-            height: s.size,
-            borderRadius: 999,
-            backgroundColor: p.fg,
-            opacity: s.opacity * 0.3,
-          }}
-        />
-      ))}
-
-      <Garland spec={spec} />
-
-      {/* The character, in three layers around the face. */}
-      {art?.back ? layer(art.back) : svgLayer(character.back)}
-      {face ? (
-        <img
-          src={face}
-          width={f.r * 2}
-          height={f.r * 2}
-          style={{
-            position: "absolute",
-            left: ART_X + f.cx - f.r,
-            top: ART_Y + f.cy - f.r,
-            borderRadius: 999,
-            objectFit: "cover",
-          }}
-        />
+      {c.behindTongue ? (
+        <>
+          {runner}
+          {faces}
+          {tongue}
+        </>
       ) : (
-        <div
-          style={{
-            position: "absolute",
-            left: ART_X + f.cx - f.r,
-            top: ART_Y + f.cy - f.r,
-            width: f.r * 2,
-            height: f.r * 2,
-            borderRadius: 999,
-            backgroundColor: p.panel,
-            border: `4px dashed ${p.accent}`,
-            display: "flex",
-            flexDirection: "column",
-            alignItems: "center",
-            justifyContent: "center",
-            fontFamily: "WhyteMono",
-            fontSize: 20,
-            lineHeight: 1.2,
-            color: p.accent,
-            textTransform: "uppercase",
-          }}
-        >
-          <div style={{ display: "flex" }}>Your</div>
-          <div style={{ display: "flex" }}>face</div>
-          <div style={{ display: "flex" }}>here</div>
-        </div>
+        <>
+          {tongue}
+          {runner}
+          {faces}
+        </>
       )}
-      {art?.front ? layer(art.front) : svgLayer(character.front)}
 
-      {/* Left: as little text as possible. */}
+      {/* Poster type: chip, huge white line, mono line, name. */}
       <div
         style={{
           position: "absolute",
           left: 56,
-          top: 128,
-          bottom: 44,
-          width: 520,
+          top: 48,
           display: "flex",
           flexDirection: "column",
-          justifyContent: "space-between",
+          alignItems: "flex-start",
         }}
       >
-        <div style={{ display: "flex", flexDirection: "column" }}>
-          <div
-            style={{
-              fontFamily: "WhyteMono",
-              fontSize: 18,
-              letterSpacing: 2,
-              textTransform: "uppercase",
-              color: p.accent,
-            }}
-          >
-            12 Days of Workflows
-          </div>
-          <div
-            style={{
-              fontSize: 168,
-              lineHeight: 1,
-              letterSpacing: -7,
-              marginTop: 10,
-              marginLeft: -6,
-            }}
-          >
-            {spec.big}
-          </div>
-          <div style={{ fontSize: 30, lineHeight: 1.2, marginTop: 8 }}>
-            {spec.small}
-          </div>
+        <div
+          style={{
+            display: "flex",
+            fontFamily: "WhyteMono",
+            fontSize: 17,
+            textTransform: "uppercase",
+            padding: "6px 14px",
+            borderRadius: 999,
+            backgroundColor: "rgba(255,255,255,0.35)",
+          }}
+        >
+          Inngest · 12 Days of Workflows
         </div>
-
-        <div style={{ display: "flex", flexDirection: "column" }}>
-          <div style={{ fontSize: 36 }}>{spec.input.name}</div>
+        <div
+          style={{
+            fontSize: 184,
+            lineHeight: 0.86,
+            letterSpacing: -6,
+            color: "#FFFFFF",
+            marginTop: 26,
+            marginLeft: -8,
+            textTransform: "uppercase",
+          }}
+        >
+          {spec.big}
+        </div>
+        <div
+          style={{
+            fontFamily: "WhyteMono",
+            fontSize: 28,
+            lineHeight: 1.1,
+            textTransform: "uppercase",
+            marginTop: 18,
+            maxWidth: 620,
+          }}
+        >
+          {spec.small}
+        </div>
+        <div
+          style={{
+            display: "flex",
+            alignItems: "center",
+            marginTop: 22,
+            gap: 12,
+          }}
+        >
           <div
             style={{
-              fontFamily: "WhyteMono",
-              fontSize: 15,
-              color: p.muted,
-              marginTop: 6,
+              display: "flex",
+              fontSize: 30,
+              lineHeight: 1,
+              textTransform: "uppercase",
+              color: "#FFFFFF",
+              backgroundColor: INK,
+              padding: "10px 16px 8px",
+              borderRadius: 8,
             }}
           >
-            {spec.input.github && face
-              ? `@${spec.input.github} · ${spec.functionId}()`
-              : `${spec.functionId}()`}
+            {spec.input.name}
           </div>
+          {spec.input.github && face && (
+            <div
+              style={{ display: "flex", fontFamily: "WhyteMono", fontSize: 18 }}
+            >
+              {`@${spec.input.github}`}
+            </div>
+          )}
         </div>
       </div>
-    </div>
-  );
-}
-
-/**
- * Twelve ornaments, one per day: lit for the days that have run, a big
- * one for today, dim for what's still queued.
- */
-function Garland({ spec }: { spec: CardSpec }) {
-  const p = spec.palette;
-  const left = 40;
-  const right = W - 40;
-  const top = 18;
-  const drop = 50;
-  const pts = spec.garland.map((y, i) => ({
-    x: left + ((right - left) * i) / 11,
-    y: top + y * drop,
-  }));
-  const path = pts
-    .map((pt, i) => {
-      if (i === 0) return `M ${pt.x} ${pt.y}`;
-      const prev = pts[i - 1];
-      const mx = (prev.x + pt.x) / 2;
-      const my = Math.max(prev.y, pt.y) + 14;
-      return `Q ${mx} ${my} ${pt.x} ${pt.y}`;
-    })
-    .join(" ");
-
-  return (
-    <div style={{ position: "absolute", left: 0, top: 0, display: "flex" }}>
-      <svg width={W} height={110} viewBox={`0 0 ${W} 110`}>
-        <path d={path} fill="none" stroke={p.muted} strokeWidth={2} />
-        {pts.map((pt, i) => {
-          const status = spec.trace[i].status;
-          const r = status === "current" ? 17 : 12;
-          const fill =
-            status === "pending" ? p.muted : i % 2 ? p.barAlt : p.bar;
-          return (
-            <g key={i} opacity={status === "pending" ? 0.35 : 1}>
-              <rect
-                x={pt.x - 4}
-                y={pt.y + 2}
-                width={8}
-                height={6}
-                fill={p.muted}
-              />
-              <circle cx={pt.x} cy={pt.y + 7 + r} r={r} fill={fill} />
-              <circle
-                cx={pt.x - r * 0.4}
-                cy={pt.y + 7 + r * 0.6}
-                r={3}
-                fill="#FFFFFF"
-                opacity={0.6}
-              />
-            </g>
-          );
-        })}
-      </svg>
     </div>
   );
 }
