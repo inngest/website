@@ -9,14 +9,20 @@ import { useEffect, useState } from "react";
  *
  * Off production you can time-travel with `?now=2026-12-05T08:00:00Z`
  * to see the calendar on any day. Production ignores it, so nobody can
- * peek behind tomorrow's door with a URL.
+ * peek behind tomorrow's door with a URL, except on the password-gated
+ * employee preview (`allowTimeTravel`).
  */
-export function useCalendarClock(): Date | null {
+export function useCalendarClock({
+  allowTimeTravel = false,
+}: { allowTimeTravel?: boolean } = {}): Date | null {
   const [now, setNow] = useState<Date | null>(null);
 
   useEffect(() => {
     let offset = 0;
-    if (process.env.NEXT_PUBLIC_VERCEL_ENV !== "production") {
+    if (
+      allowTimeTravel ||
+      process.env.NEXT_PUBLIC_VERCEL_ENV !== "production"
+    ) {
       const override = new URLSearchParams(window.location.search).get("now");
       const t = override ? Date.parse(override) : NaN;
       if (!Number.isNaN(t)) offset = t - Date.now();
@@ -28,7 +34,7 @@ export function useCalendarClock(): Date | null {
     // within a second of midnight for anyone watching it happen.
     const id = window.setInterval(tick, 1000);
     return () => window.clearInterval(id);
-  }, []);
+  }, [allowTimeTravel]);
 
   return now;
 }

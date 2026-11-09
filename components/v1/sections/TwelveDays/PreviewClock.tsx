@@ -33,7 +33,8 @@ const STOPS = [
 ];
 
 /**
- * A reviewer's time machine, shown everywhere except production. Each
+ * A reviewer's time machine, shown everywhere except production, and
+ * on production only on the password-gated employee preview (`always`). Each
  * button reloads the page at 10am Eastern on that door's day (through
  * the `?now=` override in useCalendarClock), so today's door is the one
  * to press and hold, and every earlier door is already open.
@@ -41,18 +42,20 @@ const STOPS = [
  * "Reset doors" forgets which doors this browser has held open, so the
  * hold-to-open can be tested again.
  */
-export default function PreviewClock() {
+export default function PreviewClock({ always = false }: { always?: boolean }) {
   const [show, setShow] = useState(false);
   const [current, setCurrent] = useState<string | null>(null);
   const [collapsed, setCollapsed] = useState(false);
 
   useEffect(() => {
-    if (process.env.NEXT_PUBLIC_VERCEL_ENV === "production") return;
+    if (!always && process.env.NEXT_PUBLIC_VERCEL_ENV === "production") {
+      return;
+    }
     setShow(true);
     // Starts folded on phones, where it would cover most of a door.
     setCollapsed(window.innerWidth < 640);
     setCurrent(new URLSearchParams(window.location.search).get("now"));
-  }, []);
+  }, [always]);
 
   if (!show) return null;
 

@@ -27,9 +27,17 @@ import { useCalendarClock } from "@/components/v1/sections/TwelveDays/useCalenda
  *
  * There's no sign-in. The email sign-up in the calendar is how people
  * hear about each new door.
+ *
+ * `employeePreview` is the password-gated copy at
+ * /12-days-of-workflows/team: time travel and the day switcher work
+ * there even on production, so the team can walk every lesson early.
  */
-export default function TwelveDaysOfWorkflows() {
-  const now = useCalendarClock();
+export default function TwelveDaysOfWorkflows({
+  employeePreview = false,
+}: {
+  employeePreview?: boolean;
+}) {
+  const now = useCalendarClock({ allowTimeTravel: employeePreview });
 
   return (
     <PageShell>
@@ -54,7 +62,7 @@ export default function TwelveDaysOfWorkflows() {
           }
         />
       </div>
-      <PreviewClock />
+      <PreviewClock always={employeePreview} />
     </PageShell>
   );
 }
