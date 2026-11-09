@@ -10,6 +10,7 @@ import { CLOSING } from "@/components/v1/sections/TwelveDays/data";
 import Finale from "@/components/v1/sections/TwelveDays/Finale";
 import Hero from "@/components/v1/sections/TwelveDays/Hero";
 import Machine from "@/components/v1/sections/TwelveDays/Machine";
+import PreviewClock from "@/components/v1/sections/TwelveDays/PreviewClock";
 import HowItOpens from "@/components/v1/sections/TwelveDays/HowItOpens";
 import { useCalendarClock } from "@/components/v1/sections/TwelveDays/useCalendarClock";
 
@@ -53,6 +54,7 @@ export default function TwelveDaysOfWorkflows() {
           }
         />
       </div>
+      <PreviewClock />
     </PageShell>
   );
 }

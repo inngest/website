@@ -44,7 +44,7 @@ export function formatCountdown(ms: number): string {
   return `${d > 0 ? `${d}d ` : ""}${pad(h)}:${pad(m)}:${pad(s)}`;
 }
 
-const OPENED_KEY = "12-days-of-workflows:opened";
+export const OPENED_KEY = "12-days-of-workflows:opened";
 
 /**
  * Doors this visitor has opened by hand. Today's door waits to be held

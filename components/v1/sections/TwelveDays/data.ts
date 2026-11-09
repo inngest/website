@@ -80,7 +80,8 @@ export interface WorkflowDay {
 
 /**
  * The twelve lessons, from Mitch's technical concepts (the Notion tech
- * spec). Each one is a problem the holiday card shop hits during the
+ * spec). Each `code` sample is trimmed from the "After" block on that
+ * day's lesson page, so step names match what the videos show. Each one is a problem the holiday card shop hits during the
  * rush, and the primitive that fixes it.
  */
 export const DAYS: WorkflowDay[] = [
@@ -90,7 +91,7 @@ export const DAYS: WorkflowDay[] = [
     title: "Survive failure",
     teaser: "“My LLM call failed and took the whole request down with it.”",
     body: "The image API fails twice. Wrap each call in a step and only the failed one retries, so the card's text is written, and billed, once.",
-    code: `const text = await step.run("write-card", () =>\n  llm.write(event.data.message)\n);`,
+    code: `const card = await step.run(\n  "write-text",\n  () => writeCard(event.data)\n);\nconst image = await step.run(\n  "render-image",\n  () => renderImage({\n    text: card.text,\n  })\n);`,
     docs: {
       label: "Steps",
       href: `/docs/learn/inngest-steps?ref=${REF}-day-1`,
@@ -102,7 +103,7 @@ export const DAYS: WorkflowDay[] = [
     title: "Stop knocking",
     teaser: "“Stop retrying things that are never going to work.”",
     body: "A message that fails moderation won't pass on the fourth try. Stop right away and tell the sender, and when a provider says “come back later,” come back exactly then.",
-    code: `if (check.flagged) {\n  throw new NonRetriableError("Failed moderation");\n}\nif (res.status === 429) {\n  throw new RetryAfterError("Busy", "5s");\n}`,
+    code: `if (!verdict.ok) {\n  throw new NonRetriableError(\n    "Rejected by moderation"\n  );\n}\nif (err.status === 429) {\n  throw new RetryAfterError(\n    "LLM rate limited",\n    err.retryAfterMs ?? "1m"\n  );\n}`,
     docs: {
       label: "Error handling",
       href: `/docs/guides/error-handling?ref=${REF}-day-2`,
@@ -114,7 +115,7 @@ export const DAYS: WorkflowDay[] = [
     title: "Split the work",
     teaser: "“My flakiest API is setting the rules for my whole workflow.”",
     body: "Rendering the art fails more than anything else. Give it its own function with ten retries and invoke it, so the rest of the card keeps the default four.",
-    code: `const art = await step.invoke("render-art", {\n  function: renderArt, // retries: 10\n  data: { prompt },\n});`,
+    code: `// renderCardImage has retries: 10\nconst image = await step.invoke(\n  "render-image",\n  {\n    function: renderCardImage,\n    data: { text: card.text },\n  }\n);`,
     docs: {
       label: "Invoke",
       href: `/docs/guides/invoking-functions-directly?ref=${REF}-day-3`,
@@ -126,7 +127,7 @@ export const DAYS: WorkflowDay[] = [
     title: "Wait for a human",
     teaser: "“I need a human to say yes before this goes out.”",
     body: "The draft pauses until the sender approves it. Approving picks the run back up; silence lets it expire. It costs nothing while it waits, even for days.",
-    code: `const ok = await step.waitForEvent("approval", {\n  event: "card/approved",\n  match: "data.cardId",\n  timeout: "3d",\n});`,
+    code: `const approval =\n  await step.waitForEvent(\n    "wait-for-approval",\n    {\n      event: cardApproved,\n      match: "data.cardId",\n      timeout: "48h",\n    }\n  );\nif (approval === null) {\n  return { status: "expired" };\n}`,
     docs: {
       label: "Wait for event",
       href: `/docs/features/inngest-functions/steps-workflows/wait-for-event?ref=${REF}-day-4`,
@@ -138,7 +139,7 @@ export const DAYS: WorkflowDay[] = [
     title: "Deliver on the 25th",
     teaser: "“Send this on Christmas morning, unless they cancel.”",
     body: "The card sleeps until Christmas morning, then goes out. If the sender deletes it first, one cancel event stops the sleeping run.",
-    code: `cancelOn: [{\n  event: "card/deleted",\n  match: "data.cardId",\n}],\n// …\nawait step.sleepUntil("christmas", "2026-12-25T08:00");`,
+    code: `cancelOn: [{\n  event: cardDeleted,\n  match: "data.cardId",\n}],\n// …\nawait step.sleepUntil(\n  "wait-for-delivery-date",\n  event.data.deliverAt\n);`,
     docs: {
       label: "Cancel on events",
       href: `/docs/features/inngest-functions/cancellation/cancel-on-events?ref=${REF}-day-5`,
@@ -150,7 +151,7 @@ export const DAYS: WorkflowDay[] = [
     title: "One customer per lane",
     teaser: "“One customer sent 20 cards and now everyone else is waiting.”",
     body: "Give every account its own limit. Someone sending 20 cards no longer pushes another customer's single card to 19th in line.",
-    code: `concurrency: {\n  limit: 2,\n  key: "event.data.accountId",\n}`,
+    code: `concurrency: [\n  { limit: 5 },\n  {\n    key: "event.data.accountId",\n    limit: 2,\n  },\n],`,
     docs: {
       label: "Concurrency",
       href: `/docs/guides/concurrency?ref=${REF}-day-6`,
@@ -163,7 +164,7 @@ export const DAYS: WorkflowDay[] = [
     teaser:
       "“The image API is rate-limiting us, and our retries make it worse.”",
     body: "Start four renders every ten seconds, just under the provider's five, and every call goes through first time. Concurrency caps how many run at once; throttling caps how many start.",
-    code: `throttle: {\n  limit: 4,\n  period: "10s",\n}`,
+    code: `{\n  id: "render-card-image",\n  retries: 10,\n  throttle: {\n    limit: 4,\n    period: "10s",\n  },\n}`,
     docs: {
       label: "Throttling",
       href: `/docs/guides/throttling?ref=${REF}-day-7`,
@@ -174,8 +175,8 @@ export const DAYS: WorkflowDay[] = [
     primitive: "Debounce",
     title: "Wait for quiet",
     teaser: "“Users smash the regenerate button and we pay for every click.”",
-    body: "Eight edits in two seconds used to mean eight LLM calls. Debounce per card, and one call runs with the latest text.",
-    code: `debounce: {\n  key: "event.data.cardId",\n  period: "2s",\n}`,
+    body: "Eight edits in two seconds used to mean eight LLM calls. Debounce per card, and one call runs with the latest text once they stop.",
+    code: `{\n  id: "regenerate-preview",\n  triggers: [cardEdited],\n  debounce: {\n    key: "event.data.cardId",\n    period: "3s",\n  },\n}`,
     docs: {
       label: "Debounce",
       href: `/docs/guides/debounce?ref=${REF}-day-8`,
@@ -187,7 +188,7 @@ export const DAYS: WorkflowDay[] = [
     title: "Send to everyone",
     teaser: "“Our bulk send failed halfway and 24 people got the card twice.”",
     body: "Don't loop over 50 recipients inside one step. Send one event per recipient, so a failure at number 25 retries number 25 and nobody else.",
-    code: `await step.sendEvent("send-to-each",\n  recipients.map((to) => ({\n    name: "card/send",\n    data: { cardId, to },\n  }))\n);`,
+    code: `const deliveries = recipients.map(\n  (to) =>\n    deliveryRequested.create({\n      cardId,\n      to,\n    })\n);\nawait step.sendEvent(\n  "fan-out",\n  deliveries\n);`,
     docs: {
       label: "Fan-out jobs",
       href: `/docs/guides/fan-out-jobs?ref=${REF}-day-9`,
@@ -199,7 +200,7 @@ export const DAYS: WorkflowDay[] = [
     title: "Paid users first",
     teaser: "“Paying customers are stuck behind free-tier traffic.”",
     body: "Twenty free cards are queued when two Pro cards arrive. One priority expression moves the Pro cards to the front.",
-    code: `priority: {\n  run: "event.data.plan == 'pro' ? 120 : 0",\n}`,
+    code: `{\n  id: "create-card",\n  concurrency: { limit: 2 },\n  priority: {\n    run: \`event.data.plan == "pro"\n      ? 120 : 0\`,\n  },\n}`,
     docs: {
       label: "Priority",
       href: `/docs/guides/priority?ref=${REF}-day-10`,
@@ -211,7 +212,7 @@ export const DAYS: WorkflowDay[] = [
     title: "Batch the boring stuff",
     teaser: "“We're paying for 120 database writes that could be three.”",
     body: "Collect “card opened” events, up to 50 or five seconds at a time, and write each batch in one insert. 120 events become three writes.",
-    code: `batchEvents: {\n  maxSize: 50,\n  timeout: "5s",\n}`,
+    code: `batchEvents: {\n  maxSize: 50,\n  timeout: "5s",\n},\n// …\nasync ({ events, step }) => {\n  const opens = events.map(\n    (e) => e.data\n  );\n  return step.run("insert-opens",\n    () => insertRows(opens));\n}`,
     docs: {
       label: "Batching",
       href: `/docs/guides/batching?ref=${REF}-day-11`,
@@ -223,7 +224,7 @@ export const DAYS: WorkflowDay[] = [
     title: "Measure what works",
     teaser: "“We changed the prompt. Is it actually better?”",
     body: "Split traffic between two card tones, then score each card when the recipient actually reacts, days later. Real outcomes pick the winner, not guesses.",
-    code: `await group.experiment("card-tone", {\n  variants: { classic, playful },\n  select: experiment.weighted({\n    classic: 50, playful: 50,\n  }),\n});`,
+    code: `const { result } =\n  await group.experiment(\n    "card-tone",\n    {\n      variants: { classic, warm },\n      select: experiment.weighted({\n        classic: 50,\n        warm: 50,\n      }),\n    }\n  );\nawait step.score("score-length", {\n  name: "fits-on-card",\n  value: result.text.length <= 280,\n});`,
     docs: {
       label: "Experiments",
       href: `/docs/agent-evals/experiments?ref=${REF}-day-12`,
@@ -363,7 +364,7 @@ export const MACHINE = {
   locked: "The machine comes alive December 3.",
   steps: {
     1: {
-      step: 'step.run("write-card")',
+      step: 'step.run("write-text")',
       done: "Card written, billed once",
       ms: 1_830,
     },
@@ -373,17 +374,17 @@ export const MACHINE = {
       ms: 12,
     },
     3: {
-      step: 'step.invoke("render-art")',
+      step: 'step.invoke("render-image")',
       done: "Art rendered on retry 6 of 10",
       ms: 4_200,
     },
     4: {
-      step: 'step.waitForEvent("approval")',
+      step: 'step.waitForEvent("wait-for-approval")',
       done: "The sender said yes",
       ms: 41_000,
     },
     5: {
-      step: 'step.sleepUntil("christmas")',
+      step: 'step.sleepUntil("wait-for-delivery-date")',
       done: "Slept until Dec 25 (fast-forwarded)",
       ms: 86_400_000,
     },
@@ -394,12 +395,12 @@ export const MACHINE = {
     },
     7: { step: "throttle: 4/10s", done: "No 429s", ms: 640 },
     8: {
-      step: "debounce: 2s",
+      step: "debounce: 3s",
       done: "Ran once, with the latest text",
       ms: 2_000,
     },
     9: {
-      step: 'step.sendEvent("send-to-each")',
+      step: 'step.sendEvent("fan-out")',
       done: "Fanned out to 50 recipients",
       ms: 38,
     },
@@ -407,7 +408,7 @@ export const MACHINE = {
     11: { step: "batchEvents: 50", done: "120 events, 3 writes", ms: 95 },
     12: {
       step: 'group.experiment("card-tone")',
-      done: "Playful tone pulling ahead",
+      done: "Warm tone pulling ahead",
       ms: 7,
     },
   } as Record<number, { step: string; done: string; ms: number }>,
