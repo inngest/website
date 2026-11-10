@@ -152,7 +152,12 @@ export default function WorkflowCards({
   // Read after mount so server and client render the same hrefs.
   const [origin, setOrigin] = useState("https://www.inngest.com");
   useEffect(() => setOrigin(window.location.origin), []);
-  const shareURL = run ? `${origin}/12-days/card?${query}` : "";
+  // Ref tags per channel, so shared cards are attributed to the Build for
+  // the Lonng Run campaign (its 12 Days tags all start with "12-days").
+  const shareURL = (channel: "link" | "x" | "linkedin") =>
+    run
+      ? `${origin}/12-days/card?${query}&ref=12-days-card-share-${channel}`
+      : "";
   const shareText =
     run?.kind === "completed"
       ? "I completed the 12 Days of Workflows and all I got was this card."
@@ -160,11 +165,11 @@ export default function WorkflowCards({
 
   const copyLink = async () => {
     try {
-      await navigator.clipboard.writeText(shareURL);
+      await navigator.clipboard.writeText(shareURL("link"));
       setCopied(true);
       setTimeout(() => setCopied(false), 2000);
     } catch {
-      window.prompt("Copy this link", shareURL);
+      window.prompt("Copy this link", shareURL("link"));
     }
   };
 
@@ -431,7 +436,7 @@ export default function WorkflowCards({
                     <a
                       href={`https://x.com/intent/post?text=${encodeURIComponent(
                         shareText
-                      )}&url=${encodeURIComponent(shareURL)}`}
+                      )}&url=${encodeURIComponent(shareURL("x"))}`}
                       target="_blank"
                       rel="noreferrer"
                     >
@@ -446,7 +451,7 @@ export default function WorkflowCards({
                   >
                     <a
                       href={`https://www.linkedin.com/sharing/share-offsite/?url=${encodeURIComponent(
-                        shareURL
+                        shareURL("linkedin")
                       )}`}
                       target="_blank"
                       rel="noreferrer"
