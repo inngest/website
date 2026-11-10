@@ -13,6 +13,7 @@ import {
   resetPageRef,
   serializeHandoffs,
   isNewPageView,
+  pageViewKey,
   pushRefPageView,
   storeRefHandoff,
   type Handoff,
@@ -239,6 +240,28 @@ describe("page views", () => {
     effectRun();
     assert.deepEqual(segmentPages, ["/docs/events"]);
     assert.equal(pushed().length, 1);
+  });
+
+  it("a link to the same page with a different query is a new page view", () => {
+    // e.g. the header's Pricing link clicked while on /pricing.
+    browser.visit("/pricing");
+    effectRun();
+    browser.visit("/pricing?ref=nav");
+    effectRun();
+    // Back to /pricing.
+    browser.visit("/pricing");
+    effectRun();
+    assert.deepEqual(segmentPages, ["/pricing", "/pricing", "/pricing"]);
+    assert.deepEqual(pushed(), [["nav", "url", "/pricing"]]);
+  });
+
+  it("pageViewKey ignores ?guide= and trailing slashes", () => {
+    assert.equal(
+      pageViewKey("/docs/events/", "?ref=nav&guide=python"),
+      "/docs/events?ref=nav"
+    );
+    assert.equal(pageViewKey("/docs", "?guide=go"), "/docs");
+    assert.equal(pageViewKey("/pricing", ""), "/pricing");
   });
 
   it("pushes again after navigating away and back", () => {

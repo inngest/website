@@ -20,7 +20,7 @@ export default function Analytics() {
 
   useEffect(() => {
     // Once per page view: on docs (Pages Router) pages this effect also
-    // re-runs for the same page. See isNewPageView().
+    // re-runs for the same URL. See isNewPageView().
     if (!isNewPageView()) return;
     // URL `?ref=` first, then a ref handed off by a tracked link click.
     const pageRef = getPageRef();
