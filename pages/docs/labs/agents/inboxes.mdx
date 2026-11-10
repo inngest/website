@@ -34,6 +34,10 @@ export const ciPassed = eventType("ci/run.passed", { schema: ciRun });
 export const deployed = eventType("deploy/finished", {
   schema: z.object({ env: z.string(), pull: z.number() }),
 });
+
+export const buildFinished = eventType("build/finished", {
+  schema: z.object({ pr: z.number(), artifact: z.string() }),
+});
 ```
 
 <AnnotatedCode>
@@ -235,41 +239,42 @@ It never waits: `waiting` is `[]` when nothing else came.
 
 ## A second inbox
 
-You want to watch a PR's checks from now on, after the helper pushes a fix. Open a second inbox with `step.subscribe`.
+You want to wait for this PR's build artifact, which the agent's definition says nothing about. Open a second inbox with `step.subscribe`.
 
 <AnnotatedCode>
 
 ```typescript
 const thisPr = "async.data.pr == event.data.pr";
 
-const checks = step.subscribe("checks", [
-  { event: ciPassed, if: thisPr },
-  { event: ciFailed, if: thisPr },
-]);
+const builds = step.subscribe("builds", [{ event: buildFinished, if: thisPr }]);
 
-const check = await checks.next();
+const build = await builds.next();
 ```
 
 <Annotation id="this-pr" lines="1" tease="only this PR" title="if" href="/docs/labs/agents/reference?ref=docs-labs-agents-inboxes#thread-keys-and-inbox-sources" linkText="Reference">
 An inbox you open isn't tied to the thread, so filter it. `async` is the arriving event, and `event` the run's trigger.
 </Annotation>
 
-<Annotation id="subscribe" lines="3" tease="beside the agent's own" title="step.subscribe" href="/docs/durable-execution/primitives/step-subscribe?ref=docs-labs-agents-inboxes#more-inboxes" linkText="More inboxes">
-Your agent's own `inbox` is one of these, opened for you.
+<Annotation id="subscribe" lines="3" tease="this run only" title="step.subscribe" href="/docs/durable-execution/primitives/step-subscribe?ref=docs-labs-agents-inboxes#more-inboxes" linkText="More inboxes">
+A private inbox, open for as long as this run is. Your agent's own `inbox` is one of these, opened for you.
 </Annotation>
 
 </AnnotatedCode>
 
-Checks that ran before it opened aren't in it, and `check` is always `ci/run.passed` or `ci/run.failed`.
+Builds that finished before it opened aren't in it, and `build` is always `build/finished`.
+
+**Subscribe only to events the thread doesn't already have.** `buildFinished` is neither a trigger nor an `inbox` source here, which is what makes this safe. Two subscriptions matching the same arriving event is the one shape to avoid: whichever is read first takes it, the other never sees it, and nothing errors - so the message is silently gone. The thread holds the subscriptions for its own events for exactly that reason.
+
+So this is for something private to one run. To watch a new event *for the thread* - and have it reach whichever run is live, now and later - ask the thread instead, with [`thread.listen`](/docs/labs/agents/threads?ref=docs-labs-agents-inboxes#watch-for-something-else), or let the model ask with its own [`listen` tool](/docs/labs/agents/tools?ref=docs-labs-agents-inboxes#watching-for-things).
 
 ## Stop watching
 
 You want to stop watching and know nothing was lost. `close()` the inbox.
 
 ```typescript
-const check = await checks.next();
+const build = await builds.next();
 
-const missed = await checks.close();
+const missed = await builds.close();
 ```
 
 `missed` holds the unread messages. [Close an inbox →](/docs/durable-execution/primitives/step-subscribe?ref=docs-labs-agents-inboxes#close-an-inbox)
@@ -279,9 +284,8 @@ const missed = await checks.close();
 You want the inbox closed even if the code throws. Open it with `await using`.
 
 ```typescript
-await using checks = step.subscribe("checks", [
-  { event: ciPassed, if: thisPr },
-  { event: ciFailed, if: thisPr },
+await using builds = step.subscribe("builds", [
+  { event: buildFinished, if: thisPr },
 ]);
 ```
 

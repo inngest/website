@@ -285,9 +285,29 @@ There are no hooks around tool calls: you replace the tool with a checked one. L
 
 ## Watching for things
 
-You want the model to follow the PR's checks on its own, the way a human reviewer might subscribe to a thread. There's no model-facing tool for that in this iteration — dynamic subscription belongs to the thread now, not to a per-agent `listen` list, and the model-facing shape of "ask the thread to watch something for me" isn't settled in the SDK yet.
+You want the model to follow the PR's checks on its own, the way a human reviewer might subscribe to a thread. It already can: every model agent has `listen` and `unlisten`, and you write nothing.
 
-TODO: once that mechanism lands, this section should show the model opening and closing a watch on its own. Until then, give the model a fixed [second inbox](/docs/labs/agents/inboxes?ref=docs-labs-agents-tools#a-second-inbox) in your handler's own code instead — the loop still folds in whatever arrives on it, the only difference is you, not the model, decided to open it.
+Asked to watch PR 412, the model calls:
+
+```json
+{
+  "tool": "listen",
+  "input": {
+    "event": "github/pull_request.review",
+    "where": { "data.number": 412 },
+    "reason": "following reviews of 412"
+  }
+}
+```
+
+The tool builds the filter from `where` and asks the **thread** to subscribe. It returns once the thread has recorded the subscription, and does not wait for the event itself: reviews of 412 arrive from then on as ordinary messages, which the loop folds into the next model call. `unlisten` with the same `event` and `where` drops it again.
+
+This has to be a tool rather than configuration. "Watch PR 412" is a decision the model makes while it works, so nothing written at definition time could express it - which is why there is no `listen` list on the definition.
+
+- **The thread holds the watch, not the run.** So it survives the run that asked for it ending, is there for the runs after it, and is re-established when the thread hands over.
+- **A path must look like `data.number` or `name`.** Anything else comes back as an error the model can read rather than being put into an expression.
+- **A tool of your own named `listen` or `unlisten` replaces that one**, under the usual rule for a name that collides.
+- **Handler code asks the same thing** with [`thread.listen`](/docs/labs/agents/threads?ref=docs-labs-agents-tools#watch-for-something-else), for an agent that has no model to decide for it. [Reference: listen and unlisten →](/docs/labs/agents/reference?ref=docs-labs-agents-tools#listen-and-unlisten)
 
 {/* Go deeper */}
 ## Someone else's tools

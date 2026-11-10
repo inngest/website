@@ -12,6 +12,7 @@ Every model call and tool call is a [durable step](/docs/labs/agents/agents?ref=
 - **Cap turns and delegation depth.** No runaway loops, no runaway chains of started agents. [Caps →](#cap-turns)
 - **Sorted model errors.** A rate limit waits; a bad request fails for good. [Model errors →](#model-errors)
 - **Run across a deploy.** Each run is short-lived, so a deploy mid-run just means the next run on the thread lands on newer code. [Across a deploy →](#across-a-deploy)
+- **A failed run's messages are not lost.** The thread hands them to the next run. [When a run fails for good →](#what-happens-when-a-run-fails-for-good)
 
 <AnnotatedCode>
 
@@ -131,9 +132,15 @@ For the rarer case where a run genuinely is still live across a deploy (it's wai
 
 ## What happens when a run fails for good
 
-A run that fails for good — not cancelled, not budgeted out, genuinely exhausted its retries — shows its error in the trace. Resending the message it was handling to a fresh run is the thread's job, not something this agent's definition opts into: the thread holds the durable log and knows what it already forwarded, so it's positioned to re-forward correctly in a way a per-agent flag never could be.
+A run that fails for good - not cancelled, genuinely exhausted its retries - shows its error in the trace. Getting the messages it was handling to a fresh run is the thread's job, and not something an agent's definition opts into. There is no flag.
 
-TODO: the exact resend mechanism (what the thread does, and when) is not yet built as of this writing — this section describes the decided shape from `19-api-decisions.md`, not a shipped behavior. Don't write code against a resend API until it lands.
+The mechanism is a **take-up watermark**. The thread holds the log; a run that ends records how far it read. Any entry the thread holds that nothing took up **leads the next run's inbox**, before anything new. So a message the failed run never finished with is not gone: the next run on the thread is handed it first.
+
+That is the same mechanism that makes a lost forward harmless. A forward skipped at the agent's singleton leaves the agent **late, not wrong**, because the entry is still in the log and the next read hands it back. [Late, not wrong →](/docs/labs/agents/reference?ref=docs-labs-agents-reliability#late-not-wrong)
+
+It also fails in the right direction. A take-up record is fire and forget like every other write, so one can be lost - and losing one means the next run is handed those entries **again**: duplication, not loss. Every write carries an id derived from durable values, so a write that arrives twice is applied once and the duplication costs nothing.
+
+**What it is not:** a promise about any particular reply. An answer given while the log is still converging can be incomplete, the way it can in any concurrent system. What the thread guarantees is that nothing its log holds is lost to a run that reads it. [Known limits →](/docs/labs/agents/reference?ref=docs-labs-agents-reliability#known-limits)
 
 Every run after the first gets [`previousRun`](/docs/labs/agents/reference?ref=docs-labs-agents-reliability#the-handler), regardless of how the run before it ended. It is `{ runId, status, at, error? }`: `status` is `"completed"`, `"failed"` or `"cancelled"`, and `at` is milliseconds since the epoch.
 
@@ -145,4 +152,5 @@ Every run after the first gets [`previousRun`](/docs/labs/agents/reference?ref=d
 ## Recipes and reference
 
 - [Lead and specialists](/docs/labs/agents/recipes/agent-teams?ref=docs-labs-agents-reliability): `limits.depth` bounds how far a tree of started agents can grow.
+- [Reference: the thread](/docs/labs/agents/reference?ref=docs-labs-agents-reliability#the-thread): the three functions behind one agent, and the limits this design accepts.
 - [Reference: limits](/docs/labs/agents/reference?ref=docs-labs-agents-reliability#limits)
