@@ -94,13 +94,13 @@ export const readLog = tool.step({
 
 ## Your scope, from its code
 
-You want the script to do what only your run can, such as saving thread state and commenting on the PR. Make the tool inside the handler.
+You want the script to do what only your run can, such as commenting on the PR. Make the tool inside the handler.
 
 <AnnotatedCode>
 
 ```typescript {{ title: "inngest/agents/prHelper.ts" }}
 import { tool } from "inngest/experimental";
-import { kv, skills } from "inngest/experimental/agents";
+import { skills } from "inngest/experimental/agents";
 import { z } from "zod";
 import { agents } from "../client";
 import { ciFailed, ciPassed, deployed, prComment, prOpened } from "../events";
@@ -123,13 +123,10 @@ export const prHelper = agents.agent(
     triggers,
     thread: "event.data.pr",
     inbox: [ciPassed],
-    idle: "1h",
     model: claude,
     system: "You help with pull requests on acme/web.",
-    budget: { usd: 0.5 },
     tools: { readLog, comment },
     sandboxes: { work },
-    listen: [ciPassed, ciFailed],
     skills: [skills.folder("./skills")],
   },
   async ({ inbox, loop, thread, step }) => {
@@ -137,8 +134,6 @@ export const prHelper = agents.agent(
       description: "Leaves a note on this PR",
       input: z.object({ text: z.string() }),
       run: async ({ text }) => {
-        await kv.thread.set("note", text);
-
         await gh.comment(Number(thread.key), text);
 
         return "noted";
@@ -148,14 +143,6 @@ export const prHelper = agents.agent(
     for await (const batch of inbox.batches({ max: 20 })) {
       const result = await loop(batch, { tools: { note } });
 
-      if (result.end === "budget") {
-        await step.run("comment", async () => {
-          return await gh.comment(Number(thread.key), "This PR is out of budget.");
-        });
-
-        return;
-      }
-
       await step.run("comment", async () => {
         return await gh.comment(Number(thread.key), result.text);
       });
@@ -164,17 +151,17 @@ export const prHelper = agents.agent(
 );
 ```
 
-<Annotation id="note" lines="35-45" tease="closes over me" title="A tool made in the handler" href="/docs/labs/agents/tools?ref=docs-labs-agents-calling-home" linkText="Tools">
-Its body can use `thread`, `kv` and your variables. It runs as a durable step, so its comment happens once.
+<Annotation id="note" lines="33-41" tease="closes over thread" title="A tool made in the handler" href="/docs/labs/agents/tools?ref=docs-labs-agents-calling-home" linkText="Tools">
+Its body can use `thread` and your variables. It runs as a durable step, so its comment happens once.
 </Annotation>
 
-<Annotation id="tools" lines="48" tease="for this call" title="Per-call tools" href="/docs/labs/agents/reference?ref=docs-labs-agents-calling-home#tools-passed-to-a-loop" linkText="Reference: tools passed to a loop">
+<Annotation id="tools" lines="44" tease="for this call" title="Per-call tools" href="/docs/labs/agents/reference?ref=docs-labs-agents-calling-home#tools-passed-to-a-loop" linkText="Reference: tools passed to a loop">
 Added to the agent's tools for this call. A script in the sandbox calls it by the same name.
 </Annotation>
 
 </AnnotatedCode>
 
-The script can also write thread state and comment on the PR:
+The script can also comment on the PR:
 
 ```python {{ title: "A script that calls note" }}
 log = await tools.readLog(pr=42)
