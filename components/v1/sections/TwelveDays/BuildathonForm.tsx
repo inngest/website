@@ -9,7 +9,13 @@ import { buttonClass } from "@/components/v1/sections/TwelveDays/poster";
 /** Posts the entry to the build-a-thon Slack channel. */
 const SUBMIT_URL = "/api/12-days/build-a-thon";
 
-/** Segment event for attributing entries. */
+/**
+ * Segment event for entries, also pushed to GTM. The Customer.io - Website
+ * destination in Segment maps this exact name (event + person, setting
+ * `twelve_days_buildathon_submitted_at`), and the "CE - 12 Days
+ * Build-a-thon Submitted" trigger in GTM matches it. Rename only together
+ * with those.
+ */
 export const SUBMITTED_EVENT = "12 Days Build-a-thon Submitted";
 
 const SUBMITTED_KEY = "12-days-of-workflows:build-a-thon-submitted";

@@ -7,13 +7,21 @@ import { REF, SIGNUP } from "@/components/v1/sections/TwelveDays/data";
 import { buttonClass } from "@/components/v1/sections/TwelveDays/poster";
 
 /**
- * Same Segment event as the site's other forms, so it reaches Customer.io
- * the usual way; the 12 Days segment there filters on FORM_TYPE.
+ * Segment event for the sign-up. Its own name, like the content download
+ * and contact sales forms, because the Customer.io - Website destination
+ * maps it by this exact name: one mapping records the event and another
+ * creates the person from `properties.email` (setting
+ * `twelve_days_subscribed_at`). The generic `Form Submitted` has no person
+ * mapping, so sign-ups sent under it land in Customer.io as anonymous
+ * events. Rename only together with those Segment mappings.
  */
-const SEGMENT_EVENT = "Form Submitted";
+const SEGMENT_EVENT = "12 Days Signup Form Submitted";
 export const FORM_TYPE = "12_days_of_workflows";
 
-/** Google Tag Manager event, kept separate so GTM can tell it apart. */
+/**
+ * Google Tag Manager event, kept separate so GTM can tell it apart. The
+ * "CE - 12 Days Subscribed" trigger in GTM matches this exact name.
+ */
 export const SUBSCRIBED_EVENT = "12 Days Subscribed";
 
 const SUBSCRIBED_KEY = "12-days-of-workflows:subscribed";
@@ -23,10 +31,10 @@ const SUBSCRIBED_KEY = "12-days-of-workflows:subscribed";
 const SEND_TIMEOUT_MS = 8000;
 
 /**
- * "Email me each door": sends a `Form Submitted` track call through
- * Segment with `form_type: "12_days_of_workflows"`, like the site's other
- * forms. Customer.io builds the 12 Days segment from it and sends the
- * daily emails.
+ * "Email me each door": sends a `12 Days Signup Form Submitted` track
+ * call through Segment with `form_type: "12_days_of_workflows"`.
+ * Customer.io creates the person from it, builds the 12 Days segment on
+ * `twelve_days_subscribed_at` and sends the daily emails.
  *
  * Track only, no identify, like the site's other unauthenticated forms:
  * an email typed into a form shouldn't overwrite an existing person's
