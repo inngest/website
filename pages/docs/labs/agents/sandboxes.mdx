@@ -44,26 +44,15 @@ export const prHelper = agents.agent(
     triggers,
     thread: "event.data.pr",
     inbox: [ciPassed],
-    idle: "1h",
     model: claude,
     system: "You help with pull requests on acme/web.",
-    budget: { usd: 0.5 },
     tools: { readLog, comment },
     sandboxes: { work },
-    listen: [ciPassed, ciFailed],
     skills: [skills.folder("./skills")],
   },
   async ({ inbox, loop, thread, step }) => {
     for await (const batch of inbox.batches({ max: 20 })) {
       const result = await loop(batch);
-
-      if (result.end === "budget") {
-        await step.run("comment", async () => {
-          return await gh.comment(Number(thread.key), "This PR is out of budget.");
-        });
-
-        return;
-      }
 
       await step.run("comment", async () => {
         return await gh.comment(Number(thread.key), result.text);
@@ -188,14 +177,13 @@ You want CI's second failure on the same PR to find the machine as the first run
 
 ```text {{ title: "PR 42, two runs" }}
 09:00  ci/run.failed  work_run: npm install  the sandbox starts
-09:04  the comment is posted                 the run waits
-10:04  idle runs out                         the run ends,
+09:04  the comment is posted                 the run ends,
                                              the sandbox pauses
 11:30  ci/run.failed  work_run: npm test     the sandbox resumes,
                                              node_modules is there
 ```
 
-The sandbox pauses when the run ends, never while the run waits. The shell's working directory and exported variables come back with it.
+The run ends as soon as it has answered — there's nothing to wait out first — and the sandbox pauses with it. The shell's working directory and exported variables come back when the next run resumes it.
 
 ## Its tools
 

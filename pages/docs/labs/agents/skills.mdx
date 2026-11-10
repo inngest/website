@@ -65,25 +65,14 @@ export const prHelper = agents.agent(
     triggers,
     thread: "event.data.pr",
     inbox: [ciPassed],
-    idle: "1h",
     model: claude,
     system: "You help with pull requests on acme/web.",
-    budget: { usd: 0.5 },
     tools: { readLog, comment },
-    listen: [ciPassed, ciFailed],
     skills: [skills.folder("./skills")],
   },
   async ({ inbox, loop, thread, step }) => {
     for await (const batch of inbox.batches({ max: 20 })) {
       const result = await loop(batch);
-
-      if (result.end === "budget") {
-        await step.run("comment", async () => {
-          return await gh.comment(Number(thread.key), "This PR is out of budget.");
-        });
-
-        return;
-      }
 
       await step.run("comment", async () => {
         return await gh.comment(Number(thread.key), result.text);
