@@ -68,7 +68,7 @@ export const hello = agents.agent(
       return `CI failed on #${event.data.pr}`;
     }
 
-    return "A message started me.";
+    return "A message started thread.";
   },
 );
 ```
@@ -119,7 +119,7 @@ export const hello = agents.agent(
       return log.split("\n")[0];
     }
 
-    return "A message started me.";
+    return "A message started thread.";
   },
 );
 ```

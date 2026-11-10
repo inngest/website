@@ -26,7 +26,7 @@ export const claude = anthropic({ model: "claude-sonnet-5-5" });
 import { gh } from "../lib/github";
 import { claude } from "../models/claude";
 
-async ({ inbox, me, step }) => {
+async ({ inbox, thread, step }) => {
   for await (const batch of inbox.batches({ max: 20 })) {
     const summary = await step.run("summarize", async () => {
       return await claude({
@@ -35,7 +35,7 @@ async ({ inbox, me, step }) => {
     });
 
     await step.run("comment", async () => {
-      return await gh.comment(Number(me.key), summary.text);
+      return await gh.comment(Number(thread.key), summary.text);
     });
   }
 },
@@ -103,12 +103,12 @@ export const prHelper = agents.agent(
     model: claude,
     system: "You help with pull requests on acme/web.",
   },
-  async ({ inbox, loop, me, step }) => {
+  async ({ inbox, loop, thread, step }) => {
     for await (const batch of inbox.batches({ max: 20 })) {
       const result = await loop(batch);
 
       await step.run("comment", async () => {
-        return await gh.comment(Number(me.key), result.text);
+        return await gh.comment(Number(thread.key), result.text);
       });
     }
   },
@@ -209,14 +209,14 @@ const result = await loop(batch);
 
 if (result.end === "budget") {
   await step.run("comment", async () => {
-    return await gh.comment(Number(me.key), "This PR is out of budget.");
+    return await gh.comment(Number(thread.key), "This PR is out of budget.");
   });
 
   return;
 }
 
 await step.run("comment", async () => {
-  return await gh.comment(Number(me.key), result.text);
+  return await gh.comment(Number(thread.key), result.text);
 });
 ```
 
@@ -293,7 +293,7 @@ const verdict = await step.run("safe to merge?", async () => {
 
 if (!verdict.output.safe) {
   await step.run("comment", async () => {
-    return await gh.comment(Number(me.key), verdict.output.reason);
+    return await gh.comment(Number(thread.key), verdict.output.reason);
   });
 }
 ```
@@ -341,7 +341,7 @@ await loop(batch, {
   onTurn: async ({ turn, toolCalls }) => {
     await step.run("progress", async () => {
       return await gh.comment(
-        Number(me.key),
+        Number(thread.key),
         `Turn ${turn}: ${toolCalls.length} tool calls`,
       );
     });

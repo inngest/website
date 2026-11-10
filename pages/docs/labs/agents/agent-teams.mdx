@@ -59,12 +59,12 @@ export const prHelper = agents.agent(
     model: claude,
     system: "You help with pull requests on acme/web.",
   },
-  async ({ inbox, loop, me, step }) => {
+  async ({ inbox, loop, thread, step }) => {
     for await (const batch of inbox.batches({ max: 20 })) {
       const result = await loop(batch);
 
       await step.run("comment", async () => {
-        return await gh.comment(Number(me.key), result.text);
+        return await gh.comment(Number(thread.key), result.text);
       });
 
       const passed = batch.some((message) => {
@@ -72,10 +72,10 @@ export const prHelper = agents.agent(
       });
 
       if (passed) {
-        const review = await reviewer.start({ pr: Number(me.key) }).result();
+        const review = await reviewer.start({ pr: Number(thread.key) }).result();
 
         await step.run("comment review", async () => {
-          return await gh.comment(Number(me.key), review);
+          return await gh.comment(Number(thread.key), review);
         });
       }
     }
@@ -148,7 +148,7 @@ You want to correct or question the reviewer while it works, and the handle `sta
 <AnnotatedCode>
 
 ```typescript
-const review = await reviewer.start({ pr: Number(me.key) });
+const review = await reviewer.start({ pr: Number(thread.key) });
 
 await review.message("The author says the migration is safe to skip.");
 
@@ -184,7 +184,7 @@ You want the reviewer to be able to ask the PR helper a question.
 ```typescript
 import { agentQuestion } from "inngest/experimental/agents";
 
-await reviewer.start({ pr: Number(me.key) });
+await reviewer.start({ pr: Number(thread.key) });
 
 for await (const batch of inbox.batches()) {
   for (const message of batch) {
@@ -224,7 +224,7 @@ if (message.is(agentFinished) && message.data.outcome === "failed") {
   const text = `The review failed: ${message.data.error}`;
 
   await step.run("comment", async () => {
-    return await gh.comment(Number(me.key), text);
+    return await gh.comment(Number(thread.key), text);
   });
 }
 ```
@@ -260,7 +260,7 @@ const finding = eventType("review/finding", {
 });
 
 await reviewer.start(
-  { pr: Number(me.key) },
+  { pr: Number(thread.key) },
   { reports: [{ event: finding, required: true }] },
 );
 
@@ -268,7 +268,7 @@ for await (const batch of inbox.batches()) {
   for (const message of batch) {
     if (message.is(finding)) {
       await step.run("comment finding", async () => {
-        return await gh.comment(Number(me.key), message.data.problem);
+        return await gh.comment(Number(thread.key), message.data.problem);
       });
     }
   }
@@ -280,7 +280,7 @@ Any `eventType()`. Its name can't start with `agent/` or `inngest/`.
 </Annotation>
 
 <Annotation id="reports" lines="8-11" tease="what it owes" title="reports">
-A line is an event type, or `{ event, to, if, required }`. `to` sends it to other threads, such as `me` or `agent.thread(key)`, and `if` is a CEL condition over `async.data`.
+A line is an event type, or `{ event, to, if, required }`. `to` sends it to other threads, such as `thread` or `agent.thread(key)`, and `if` is a CEL condition over `async.data`.
 </Annotation>
 
 <Annotation id="is" lines="15" tease="typed data" title="is()">
@@ -289,14 +289,14 @@ A report reaches your inbox under its type's name, typed by its schema.
 
 </AnnotatedCode>
 
-The reviewer's model gets a `report` tool, and a handler gets `me.report(finding, data)`. The data is checked against the schema before it is sent. A model that tries to finish while it owes a `required` report is reminded, and if it never sends one, its `agent/finished` lists the type in `missing`. A model can ask for reports too, with `start_agent`'s `reports`.
+The reviewer's model gets a `report` tool, and a handler gets `thread.report(finding, data)`. The data is checked against the schema before it is sent. A model that tries to finish while it owes a `required` report is reminded, and if it never sends one, its `agent/finished` lists the type in `missing`. A model can ask for reports too, with `start_agent`'s `reports`.
 
 ## Lend a sandbox
 
 You want a fixer agent to work on the PR helper's checkout, not a fresh machine. Lend it the sandbox's tools. This is experimental.
 
 ```typescript
-await fixer.start({ pr: Number(me.key) }, { tools: sandboxes.work.tools });
+await fixer.start({ pr: Number(thread.key) }, { tools: sandboxes.work.tools });
 ```
 
 The fixer's model gets `work_run`, `work_read` and the rest, and its run executes them as steps against the PR helper's machine. `sandboxes: { work: sandboxes.work }` lends the machine itself, for the fixer's code. Only the built-in tools can be lent, `push` never is, and both agents must be in the same app.
@@ -309,15 +309,15 @@ You want to check with the reviewer without holding up the PR helper. Do it in a
 
 ```typescript
 const reviewLater = async () => {
-  const review = await reviewer.start({ pr: Number(me.key) }).result();
+  const review = await reviewer.start({ pr: Number(thread.key) }).result();
 
-  await me.message({ review });
+  await thread.message({ review });
 };
 
 void reviewLater();
 ```
 
-`me.message()` puts the review in the PR helper's own inbox, for a later batch. A step the handler started and didn't await still runs, once, and the run ends after it. Nothing new starts after the handler returns.
+`thread.message()` puts the review in the PR helper's own inbox, for a later batch. A step the handler started and didn't await still runs, once, and the run ends after it. Nothing new starts after the handler returns.
 
 ## Not everything is an agent
 

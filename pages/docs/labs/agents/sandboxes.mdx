@@ -53,20 +53,20 @@ export const prHelper = agents.agent(
     listen: [ciPassed, ciFailed],
     skills: [skills.folder("./skills")],
   },
-  async ({ inbox, loop, me, step }) => {
+  async ({ inbox, loop, thread, step }) => {
     for await (const batch of inbox.batches({ max: 20 })) {
       const result = await loop(batch);
 
       if (result.end === "budget") {
         await step.run("comment", async () => {
-          return await gh.comment(Number(me.key), "This PR is out of budget.");
+          return await gh.comment(Number(thread.key), "This PR is out of budget.");
         });
 
         return;
       }
 
       await step.run("comment", async () => {
-        return await gh.comment(Number(me.key), result.text);
+        return await gh.comment(Number(thread.key), result.text);
       });
     }
   },

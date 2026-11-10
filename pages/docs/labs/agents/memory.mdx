@@ -83,7 +83,7 @@ export const prHelper = agents.agent(
     inbox: [ciPassed],
     idle: "1h",
   },
-  async ({ inbox, me, step }) => {
+  async ({ inbox, thread, step }) => {
     let failures = 0;
 
     for await (const message of inbox) {
@@ -92,7 +92,7 @@ export const prHelper = agents.agent(
 
         await step.run("comment", async () => {
           return await gh.comment(
-            Number(me.key),
+            Number(thread.key),
             `CI has failed ${failures} times`,
           );
         });
@@ -127,7 +127,7 @@ import { kv } from "inngest/experimental/agents";
 import { ciFailed } from "../events";
 import { gh } from "../lib/github";
 
-async ({ inbox, me, step }) => {
+async ({ inbox, thread, step }) => {
   for await (const message of inbox) {
     if (message.is(ciFailed)) {
       const failures = Number((await kv.thread.get("failures")) ?? 0);
@@ -136,7 +136,7 @@ async ({ inbox, me, step }) => {
 
       await step.run("comment", async () => {
         return await gh.comment(
-          Number(me.key),
+          Number(thread.key),
           `CI has failed ${failures + 1} times`,
         );
       });
@@ -164,7 +164,7 @@ import { ciFailed } from "../events";
 import { failures } from "../keys";
 import { gh } from "../lib/github";
 
-async ({ inbox, me, step }) => {
+async ({ inbox, thread, step }) => {
   for await (const message of inbox) {
     if (message.is(ciFailed)) {
       const total = ((await kv.thread.get(failures)) ?? 0) + 1;
@@ -173,7 +173,7 @@ async ({ inbox, me, step }) => {
 
       await step.run("comment", async () => {
         return await gh.comment(
-          Number(me.key),
+          Number(thread.key),
           `CI has failed ${total} times`,
         );
       });

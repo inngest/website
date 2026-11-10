@@ -221,10 +221,10 @@ export const fixer = agents.agent(
     system: "Fix what you are asked to fix.",
     sandboxes: { work },
   },
-  async ({ inbox, loop, me, sandboxes, step }) => {
+  async ({ inbox, loop, thread, sandboxes, step }) => {
     const say = async (id: string, body: string) => {
       return await step.run(id, async () => {
-        return await gh.comment(Number(me.key), body);
+        return await gh.comment(Number(thread.key), body);
       });
     };
 

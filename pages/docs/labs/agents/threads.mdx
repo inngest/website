@@ -120,15 +120,15 @@ await inngest.send([
 ]);
 ```
 
-`me` is the handle to the run's own thread, so `me.key` names it: `"42"` or `"43"`.
+`thread` is the handle to the run's own thread, so `thread.key` names it: `"42"` or `"43"`.
 
 ```typescript
-async ({ event, me }) => {
-  return `Saw ${event.name} on ${me.key}`;
+async ({ event, thread }) => {
+  return `Saw ${event.name} on ${thread.key}`;
 },
 ```
 
-Each pull request has its own thread, with its own runs and state. Code turns the key back into the PR's number with `Number(me.key)`.
+Each pull request has its own thread, with its own runs and state. Code turns the key back into the PR's number with `Number(thread.key)`.
 
 ## A trigger with its own key
 
@@ -149,8 +149,8 @@ export const prHelper = agents.agent(
     ],
     thread: "event.data.pr",
   },
-  async ({ event, me }) => {
-    return `Saw ${event.name} on ${me.key}`;
+  async ({ event, thread }) => {
+    return `Saw ${event.name} on ${thread.key}`;
   },
 );
 ```

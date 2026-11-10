@@ -144,16 +144,16 @@ export const gh = {
 ```typescript
 import { gh } from "../lib/github";
 
-async ({ inbox, me, step }) => {
+async ({ inbox, thread, step }) => {
   for await (const message of inbox) {
     await step.run("comment", async () => {
-      return await gh.comment(Number(me.key), `Seen: ${message.name}`);
+      return await gh.comment(Number(thread.key), `Seen: ${message.name}`);
     });
   }
 },
 ```
 
-A reply on the PR is plain code in a step, so it happens once even when the run retries. `me.key` is the PR's number as a string; send `pr/comment` for people's comments, not the helper's own.
+A reply on the PR is plain code in a step, so it happens once even when the run retries. `thread.key` is the PR's number as a string; send `pr/comment` for people's comments, not the helper's own.
 
 ## Batches
 
@@ -162,10 +162,10 @@ You want five comments that land together handled together. Loop over `inbox.bat
 ```typescript
 import { gh } from "../lib/github";
 
-async ({ inbox, me, step }) => {
+async ({ inbox, thread, step }) => {
   for await (const batch of inbox.batches({ max: 20 })) {
     await step.run("comment", async () => {
-      return await gh.comment(Number(me.key), `Seen ${batch.length} things`);
+      return await gh.comment(Number(thread.key), `Seen ${batch.length} things`);
     });
   }
 },
@@ -206,7 +206,7 @@ You want to stop waiting for CI that never reports. Give `next()` a `timeout`.
 ```typescript
 import { gh } from "../lib/github";
 
-async ({ inbox, me, step }) => {
+async ({ inbox, thread, step }) => {
   await inbox.next();
 
   const next = await inbox.next({ timeout: "1m" });
@@ -214,7 +214,7 @@ async ({ inbox, me, step }) => {
   if (next === null) {
     await step.run("comment", async () => {
       return await gh.comment(
-        Number(me.key),
+        Number(thread.key),
         "CI hasn't reported for a minute, so I'm moving on.",
       );
     });

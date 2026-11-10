@@ -132,14 +132,14 @@ export const prHelper = agents.agent(
     listen: [ciPassed, ciFailed],
     skills: [skills.folder("./skills")],
   },
-  async ({ inbox, loop, me, step }) => {
+  async ({ inbox, loop, thread, step }) => {
     const note = tool.step({
       description: "Leaves a note on this PR",
       input: z.object({ text: z.string() }),
       run: async ({ text }) => {
         await kv.thread.set("note", text);
 
-        await gh.comment(Number(me.key), text);
+        await gh.comment(Number(thread.key), text);
 
         return "noted";
       },
@@ -150,14 +150,14 @@ export const prHelper = agents.agent(
 
       if (result.end === "budget") {
         await step.run("comment", async () => {
-          return await gh.comment(Number(me.key), "This PR is out of budget.");
+          return await gh.comment(Number(thread.key), "This PR is out of budget.");
         });
 
         return;
       }
 
       await step.run("comment", async () => {
-        return await gh.comment(Number(me.key), result.text);
+        return await gh.comment(Number(thread.key), result.text);
       });
     }
   },
@@ -165,7 +165,7 @@ export const prHelper = agents.agent(
 ```
 
 <Annotation id="note" lines="35-45" tease="closes over me" title="A tool made in the handler" href="/docs/labs/agents/tools?ref=docs-labs-agents-calling-home" linkText="Tools">
-Its body can use `me`, `kv` and your variables. It runs as a durable step, so its comment happens once.
+Its body can use `thread`, `kv` and your variables. It runs as a durable step, so its comment happens once.
 </Annotation>
 
 <Annotation id="tools" lines="48" tease="for this call" title="Per-call tools" href="/docs/labs/agents/reference?ref=docs-labs-agents-calling-home#tools-passed-to-a-loop" linkText="Reference: tools passed to a loop">
