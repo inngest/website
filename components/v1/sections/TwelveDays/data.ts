@@ -94,7 +94,7 @@ export const DAYS: WorkflowDay[] = [
     code: `const card = await step.run(\n  "write-text",\n  () => writeCard(event.data)\n);\nconst image = await step.run(\n  "render-image",\n  () => renderImage({\n    text: card.text,\n  })\n);`,
     docs: {
       label: "Steps",
-      href: `/docs/learn/inngest-steps?ref=${REF}-day-1`,
+      href: `/docs/durable-execution/primitives/step-run?ref=${REF}-day-1`,
     },
   },
   {
@@ -106,7 +106,7 @@ export const DAYS: WorkflowDay[] = [
     code: `if (!verdict.ok) {\n  throw new NonRetriableError(\n    "Rejected by moderation"\n  );\n}\nif (err.status === 429) {\n  throw new RetryAfterError(\n    "LLM rate limited",\n    err.retryAfterMs ?? "1m"\n  );\n}`,
     docs: {
       label: "Error handling",
-      href: `/docs/guides/error-handling?ref=${REF}-day-2`,
+      href: `/docs/durable-execution/guides-and-advanced/error-handling/inngest-errors?ref=${REF}-day-2`,
     },
   },
   {
@@ -118,7 +118,7 @@ export const DAYS: WorkflowDay[] = [
     code: `// renderCardImage has retries: 10\nconst image = await step.invoke(\n  "render-image",\n  {\n    function: renderCardImage,\n    data: { text: card.text },\n  }\n);`,
     docs: {
       label: "Invoke",
-      href: `/docs/guides/invoking-functions-directly?ref=${REF}-day-3`,
+      href: `/docs/durable-execution/primitives/step-invoke?ref=${REF}-day-3`,
     },
   },
   {
@@ -130,7 +130,7 @@ export const DAYS: WorkflowDay[] = [
     code: `const approval =\n  await step.waitForEvent(\n    "wait-for-approval",\n    {\n      event: cardApproved,\n      match: "data.cardId",\n      timeout: "48h",\n    }\n  );\nif (approval === null) {\n  return { status: "expired" };\n}`,
     docs: {
       label: "Wait for event",
-      href: `/docs/features/inngest-functions/steps-workflows/wait-for-event?ref=${REF}-day-4`,
+      href: `/docs/durable-execution/primitives/step-waitforevent?ref=${REF}-day-4`,
     },
   },
   {
@@ -142,7 +142,7 @@ export const DAYS: WorkflowDay[] = [
     code: `cancelOn: [{\n  event: cardDeleted,\n  match: "data.cardId",\n}],\n// …\nawait step.sleepUntil(\n  "wait-for-delivery-date",\n  event.data.deliverAt\n);`,
     docs: {
       label: "Cancel on events",
-      href: `/docs/features/inngest-functions/cancellation/cancel-on-events?ref=${REF}-day-5`,
+      href: `/docs/durable-execution/guides-and-advanced/cancellation/events?ref=${REF}-day-5`,
     },
   },
   {
@@ -154,7 +154,7 @@ export const DAYS: WorkflowDay[] = [
     code: `concurrency: [\n  { limit: 5 },\n  {\n    key: "event.data.accountId",\n    limit: 2,\n  },\n],`,
     docs: {
       label: "Concurrency",
-      href: `/docs/guides/concurrency?ref=${REF}-day-6`,
+      href: `/docs/durable-execution/flow-control/concurrency?ref=${REF}-day-6`,
     },
   },
   {
@@ -167,7 +167,7 @@ export const DAYS: WorkflowDay[] = [
     code: `{\n  id: "render-card-image",\n  retries: 10,\n  throttle: {\n    limit: 4,\n    period: "10s",\n  },\n}`,
     docs: {
       label: "Throttling",
-      href: `/docs/guides/throttling?ref=${REF}-day-7`,
+      href: `/docs/durable-execution/flow-control/throttling?ref=${REF}-day-7`,
     },
   },
   {
@@ -179,7 +179,7 @@ export const DAYS: WorkflowDay[] = [
     code: `{\n  id: "regenerate-preview",\n  triggers: [cardEdited],\n  debounce: {\n    key: "event.data.cardId",\n    period: "3s",\n  },\n}`,
     docs: {
       label: "Debounce",
-      href: `/docs/guides/debounce?ref=${REF}-day-8`,
+      href: `/docs/durable-execution/flow-control/debounce?ref=${REF}-day-8`,
     },
   },
   {
@@ -191,7 +191,7 @@ export const DAYS: WorkflowDay[] = [
     code: `const deliveries = recipients.map(\n  (to) =>\n    deliveryRequested.create({\n      cardId,\n      to,\n    })\n);\nawait step.sendEvent(\n  "fan-out",\n  deliveries\n);`,
     docs: {
       label: "Fan-out jobs",
-      href: `/docs/guides/fan-out-jobs?ref=${REF}-day-9`,
+      href: `/docs/durable-execution/guides-and-advanced/patterns/fan-out?ref=${REF}-day-9`,
     },
   },
   {
@@ -203,7 +203,7 @@ export const DAYS: WorkflowDay[] = [
     code: `{\n  id: "create-card",\n  concurrency: { limit: 2 },\n  priority: {\n    run: \`event.data.plan == "pro"\n      ? 120 : 0\`,\n  },\n}`,
     docs: {
       label: "Priority",
-      href: `/docs/guides/priority?ref=${REF}-day-10`,
+      href: `/docs/durable-execution/flow-control/priority?ref=${REF}-day-10`,
     },
   },
   {
@@ -215,7 +215,7 @@ export const DAYS: WorkflowDay[] = [
     code: `batchEvents: {\n  maxSize: 50,\n  timeout: "5s",\n},\n// …\nasync ({ events, step }) => {\n  const opens = events.map(\n    (e) => e.data\n  );\n  return step.run("insert-opens",\n    () => insertRows(opens));\n}`,
     docs: {
       label: "Batching",
-      href: `/docs/guides/batching?ref=${REF}-day-11`,
+      href: `/docs/durable-execution/flow-control/batching?ref=${REF}-day-11`,
     },
   },
   {
@@ -309,7 +309,7 @@ export const HOW_IT_OPENS = {
   body: "No elves working overtime. Every midnight Eastern, an Inngest function opens the next door. Watch the schedule in action and see how a little orchestration keeps the season running.",
   cta: {
     label: "See how it works",
-    href: `/docs/guides/scheduled-functions?ref=${REF}`,
+    href: `/docs/durable-execution/guides-and-advanced/events-and-triggers/schedules-and-delayed-starts?ref=${REF}`,
   },
 } as const;
 
