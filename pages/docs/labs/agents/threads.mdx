@@ -34,6 +34,10 @@ export const ciFailed = eventType("ci/run.failed", { schema: ciRun });
 export const deployed = eventType("deploy/finished", {
   schema: z.object({ env: z.string(), pull: z.number() }),
 });
+
+export const prReviewed = eventType("pr/reviewed", {
+  schema: z.object({ pr: z.number(), reviewer: z.string(), state: z.string() }),
+});
 ```
 
 ```typescript
@@ -86,7 +90,7 @@ async ({ event, previousRun }) => {
 },
 ```
 
-The first run gets `previousRun: undefined`; every run after the first gets how the one before it ended. That's the thread talking to its own future run, and it costs nothing to set up — a thread is a run, not a lookup, so it's the thread's own state doing the remembering, not a database you configured. The model's [history](/docs/labs/agents/models?ref=docs-labs-agents-threads#it-remembers) and a [sandbox](/docs/labs/agents/sandboxes?ref=docs-labs-agents-threads#it-belongs-to-the-thread) survive the same way. [Memory →](/docs/labs/agents/memory?ref=docs-labs-agents-threads)
+The first run gets `previousRun: undefined`; every run after the first gets how the one before it ended. That's the thread talking to its own future run, and it costs nothing to set up — a thread is a run, not a lookup, so it's the thread's own state doing the remembering, not a database you configured. The model's [history](/docs/labs/agents/models?ref=docs-labs-agents-threads#it-remembers) and a [sandbox](/docs/labs/agents/sandboxes?ref=docs-labs-agents-threads#it-belongs-to-the-thread) survive the same way, and so do values you name yourself. [Your own values →](#your-own-values)
 
 ## No key is fine
 
@@ -127,6 +131,64 @@ async ({ event, thread }) => {
 ```
 
 Each pull request has its own thread, with its own runs and state. Code turns the key back into the PR's number with `Number(thread.key)`.
+
+## Your own values
+
+You want to count CI failures on the PR. `kv.thread` keeps a value of your own on the thread, under a name you choose.
+
+<AnnotatedCode>
+
+```typescript
+async ({ event, kv, thread }) => {
+  if (event.is(ciFailed)) {
+    const failures = ((await kv.thread.get<number>("failures")) ?? 0) + 1;
+
+    await kv.thread.set("failures", failures);
+
+    return `CI has failed ${failures} times on ${thread.key}`;
+  }
+
+  return `Saw ${event.name} on ${thread.key}`;
+},
+```
+
+<Annotation id="get" lines="3" tease="no round trip" title="get" href="/docs/labs/agents/reference?ref=docs-labs-agents-threads#thread-state" linkText="Reference: thread state">
+The run already holds the thread's state, so a `get` is local. It costs no step and nothing to wait for.
+</Annotation>
+
+<Annotation id="set" lines="5" tease="one event, no ack" title="set" href="/docs/labs/agents/reference?ref=docs-labs-agents-threads#thread-state" linkText="Reference: thread state">
+One event to the thread, which is the only writer. Fire and forget: one step, no ack, no retry.
+</Annotation>
+
+</AnnotatedCode>
+
+Fail CI on #42 three times and the third run says `CI has failed 3 times on 42`.
+
+`kv.thread` is a shape you already recognise, and that is all it is - **it is not a key-value store, and there is no store behind it.** A `get` reads what this run was handed when it started; a `set` sends the thread one write, which the thread applies in the one order it has. There is nothing to configure, nothing to provision and nothing to bind.
+
+`delete(key)` drops a key, the same way, and `all()` gives every key the run holds.
+
+## Watch for something else
+
+You want the helper to follow reviews of this PR, which the agent's definition says nothing about. `thread.listen` asks the thread to watch for an event.
+
+```typescript
+import { prReviewed } from "../events";
+
+async ({ event, thread }) => {
+  if (event.is(prOpened)) {
+    await thread.listen(prReviewed, { "data.pr": Number(thread.key) });
+  }
+
+  return `Saw ${event.name} on ${thread.key}`;
+},
+```
+
+`pr/reviewed` is not one of the agent's triggers and not an `inbox` source: the thread subscribes to it because this run asked, and from then on a review of #42 reaches the thread as a message like any other.
+
+The **thread** holds the watch, not this run, so it outlives the run that asked for it and the events reach whichever run is live when they land. `thread.unlisten(prReviewed, { "data.pr": 42 })` drops it again, with the same event and filter it was asked for. Both return whether the thread confirmed.
+
+This is for a handler. An agent with a `model` needs neither: the model has the same two things as tools, because what to watch for is usually its decision rather than yours. [Watching for things →](/docs/labs/agents/tools?ref=docs-labs-agents-threads#watching-for-things)
 
 ## A trigger with its own key
 

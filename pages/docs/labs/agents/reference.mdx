@@ -16,6 +16,7 @@ Everything here is a named export of `inngest/experimental/agents`, except `even
 - [createAgents](#create-agents)
 - [The definition](#the-definition)
 - [The handler](#the-handler)
+- [The thread](#the-thread)
 - [The handler's thread](#the-handlers-thread)
 - [Agent](#agent)
 - [Thread handles](#thread-handles)
@@ -24,6 +25,7 @@ Everything here is a named export of `inngest/experimental/agents`, except `even
 - [The loop](#the-loop)
 - [Models](#models)
 - [Custom models](#custom-models)
+- [Thread state](#thread-state)
 - [Limits](#limits)
 - [Cards and discovery](#cards-and-discovery)
 - [Model tools](#model-tools)
@@ -45,7 +47,7 @@ agents.functions(): InngestFunction[]
 
 - `tools`: EXPERIMENTAL. The shared tools (`tool.shared()`) this app hosts. Each becomes a function, and its card is announced with the app's agents. [Tools and sandboxes reference](/docs/labs/agents/reference-sandboxes?ref=docs-labs-agents-reference)
 - `agents.agent()`: defines an agent and registers it when its module is imported. [The definition](#the-definition), [The handler](#the-handler)
-- `agents.functions()`: every function to serve, including the SDK's own (the ledger, card announcements, finished and cancel relays). Import each agent module before calling it.
+- `agents.functions()`: every function to serve. Each agent brings five: the one that runs the handler, the two that hold its threads ([The thread](#the-thread)), and the cleanup and finished relays. Beside them are the app's own: card announcements, the relay that reports a run `start_agent` began, and the one that answers a model's unanswered question. Import each agent module before calling it.
 
 An app whose agents list sandboxes adds `middleware: [sandboxMiddleware()]`, from `inngest/experimental`, to its client.
 
@@ -128,6 +130,42 @@ What makes an agent feel continuous across many runs is the thread, not the run.
 - A later `message()` to a quiet thread starts a new run, which picks up the history.
 - A handler that waits some other way, such as `next()` with no timeout, keeps its run live as long as it waits — that is a choice your handler makes, not a property of the agent.
 
+## The thread
+
+A declared agent is served as three functions. You write one definition and get all three; nothing here is configurable.
+
+| Function | What it is |
+| --- | --- |
+| The agent run | Short-lived, many over a conversation's life. It obtains the thread's state when it starts, keeps an inbox while it works, and ends when its inbox is empty. [Short-lived runs](#short-lived-runs) |
+| The supervisor | Long-lived, one per thread, keyed on the plain thread key. It holds no state and does nothing but invoke the holder, and invoke the next one when the current one hands over. |
+| The holder | Long-lived. It holds every subscription, the log and the state, and it is the only writer. It has no event triggers and no singleton: only the supervisor's `invoke()` starts one. |
+
+- **Your `triggers` are triggers on the supervisor, not on the agent run.** The agent run is woken only by forwards from the holder. So a live thread receives arrivals through its *subscription* rather than through its trigger, because the trigger is skipped while the supervisor holds the thread's key.
+- **The state travels as the invoke's return value** when one holder hands over to the next, not as an event, so nothing about it can be skipped, dropped or sent to a run that is not listening.
+- Because the supervisor never ends between two holders, an arrival cannot start a second, empty thread while state is moving from one holder to the next.
+
+### Late, not wrong
+
+**Forwards are advisory; the thread's log is authoritative.** The holder forwards arrivals to wake an agent run. If a forward is lost - skipped at the agent's singleton, arriving while a run is between reads, anything - the agent is **late, not wrong**, because the thread still holds the entry and the agent reconciles against the log on its next read. Every read hands back everything the thread holds that no agent run has taken up, and so does the state a forward carries.
+
+That is also why none of this needs compare-and-keep-max, strict ordering or non-independent compaction: one writer, one ordering, and a durable record that a missed forward does not remove.
+
+**It is a claim about the log, not about any one answer.** An answer given while the log is still converging can be incomplete, on every path. That is ordinary concurrency rather than a property of this design, and read as a promise about replies it would be the wrong promise. What is guaranteed is that nothing the log holds is lost to a run that reads it.
+
+### Known limits
+
+Each of these was weighed and accepted rather than engineered away. They are stated here because they are properties of the design, not bugs in it.
+
+- **About 4MB.** A thread's whole log travels on the handover. Past roughly 4MB it is refused and the thread is lost. There is no store to spill to.
+- **A write to a thread with no live run reaches nothing, and nobody is told.** `kv.thread.set` is fire and forget; there is no ack to miss.
+- **Permanent failure of a thread's holder loses the log since the last handover** - including the case where an agent was told its write landed and is later handed state without it.
+- **Dormancy.** Nothing re-animates a thread nobody is asking after. A thread moves when something arrives for it, and not otherwise.
+- **The thread-birth subscription window.** A trigger starts the thread, and the thread then establishes its subscriptions. An event that lands in that gap and matches a subscription not yet established is missed. Measured at 26-142ms, median 44ms. It is one window per thread lifetime, not one per message: once subscribed a thread stays subscribed for its life, and after a handover it re-establishes from state. The triggering event itself is never at risk, since it arrives as the trigger payload.
+
+  Stated plainly, because the acceptance should be real: **a person who sends two messages in quick succession as the very first two of a conversation may get an answer to only one, silently.** And for anything lost in that window the failure is **wrong, not late** - the one place the guarantee above inverts, because those writes were never in the log for a later read to find.
+- **The supervisor's own ceiling.** It spends one step per generation, so a thread gets roughly as many generations as a run gets steps, about 900, and then the thread is lost.
+- **The handover gap.** A holder stops reading and returns, and its successor subscribes a request later. An arrival in that window reaches nothing: the supervisor is live, so its trigger is skipped, and no subscription is open. Bounded by one request rather than by anything you do.
+
 ## The handler
 
 The second argument of `agents.agent()`. It gets one argument: the function's usual context (`step` and the rest) with these fields beside it. [Agents →](/docs/labs/agents/agents?ref=docs-labs-agents-reference)
@@ -137,6 +175,7 @@ The second argument of `agents.agent()`. It gets one argument: the function's us
 | `event` | The event that started the run, exactly as sent. `event.is()` narrows it to one trigger. It is also the inbox's first message. |
 | `inbox` | The run's [`Inbox<AgentMessage>`](#inbox). |
 | `thread` | The handle to the run's own thread. [The handler's thread](#the-handlers-thread) |
+| `kv` | `kv.thread`: values of your own kept on the thread. [Thread state](#thread-state) |
 | `loop` | `loop(batch, options?)` and `loop.with(options)`, set up from the definition. Only present when the agent has a `model`. [The loop](#the-loop) |
 | `sandboxes` | A handle per listed sandbox, such as `sandboxes.work`. [Tools and sandboxes reference](/docs/labs/agents/reference-sandboxes?ref=docs-labs-agents-reference) |
 | `score` | `score(name, value)` or `score({ name: value })`. [Scores](#scores) |
@@ -157,11 +196,22 @@ The handler's handle to its own thread.
 ```typescript {{ title: "Signature" }}
 thread.key: string
 thread.message(content: Json): Promise<void>
+thread.listen(
+  event: string | EventType,
+  where?: Record<string, string | number | boolean>,
+): Promise<boolean>
+thread.unlisten(
+  event: string | EventType,
+  where?: Record<string, string | number | boolean>,
+): Promise<boolean>
 thread.report(type: EventType, data): Promise<void>
 ```
 
 - `key`: the thread's key.
 - `message(content)`: puts a message in the agent's own inbox. It is how work you did not wait for reports back.
+- `listen(event, where?)`: EXPERIMENTAL. Asks the thread to watch for an event and bring it to the agent as a message. `where` is paths into the arriving event and the values they must have, as in `{ "data.number": 412 }`; with none, every event of that name reaches the agent. It returns once the thread has recorded the subscription, which is the only thing it waits for, and the boolean says whether the thread confirmed.
+- The **thread** holds the subscription, not the run, so a watch outlives the run that asked for it and is re-established after a handover. A model has the same thing as [a tool](#listen-and-unlisten), which is usually the right place for it: what to watch for is its decision.
+- `unlisten(event, where?)`: EXPERIMENTAL. Asks the thread to stop watching. The `event` and `where` must be the ones it was asked to watch with.
 - `report(type, data)`: EXPERIMENTAL. Sends a typed report to where the run's starter asked for that type. `data` is checked against the type's schema first, and a bad report throws and sends nothing. It throws when the run was not started with that report type. Sent from a step, so a replay sends it once. [Reports](#reports)
 - To tell people something, call your own code in a step (`gh` is a client you write), or give the model a tool. [Answer every message →](/docs/labs/agents/inboxes?ref=docs-labs-agents-reference#answer-every-message)
 
@@ -544,7 +594,7 @@ format?: (message: AgentMessage) => AgentUserContent;
 - **A hand-built loop** returns every field but `reason` and `compaction`. [The loop](#the-loop)
 - **Folding.** Before each model call, the first included, the loop drains the handler's inbox and every inbox the model opened, and folds what it took into that call. A message that arrives after the last drain stays in the inbox for your next read.
 - **Questions.** A question that arrives during a turn is answered at the next model call. The loop skips questions that already have a reply.
-- **Remembering.** The thread, not the run, holds history: after each batch the loop folds the model's history into the thread's own state, and the next run of the thread picks it up at start, under this agent's own key. There is no store to configure, and no option to switch it off — the thread's history is what makes a resumed run continuous. A long history is summarized (see [Compaction](#compaction)). TODO: the exact size limit on a thread's history under the no-store design, and what happens past it, is not yet settled in the SDK — confirm before documenting a number.
+- **Remembering.** The thread, not the run, holds history: after each batch the loop folds the model's history into the thread's own state, and the next run of the thread picks it up at start, under this agent's own key. There is no store to configure, and no option to switch it off — the thread's history is what makes a resumed run continuous. A long history is summarized (see [Compaction](#compaction)), and past about 4MB a thread is lost outright - a stated limitation, not a bug. [Known limits](#known-limits)
 - **`agent.toolError(body)`**: `return` it from a tool to give the model a failure it can read without throwing. In sandbox code the same failure is a thrown `ToolError`.
 - **`formatEvent`** is the default wording. The agent message types and reports have their own wording, and any other event shows as its name and its data as JSON. A custom `format` can call it for what it does not change.
 - There are no hooks around tool calls. Wrap the tool instead. [Tools →](/docs/labs/agents/tools?ref=docs-labs-agents-reference)
@@ -859,7 +909,19 @@ report({ type: string; data: Json }): { ok: true }
 - `wait`: EXPERIMENTAL. Ends the model's turn on purpose when it has nothing to do until a message arrives. Once it and the other calls of the same reply have run, the loop ends as on a reply with no tool call, and the run waits for its next message. It costs no step. Every model agent's loop has it, and a tool of your own named `wait` replaces it.
 - `report`: EXPERIMENTAL. Present when the run was started with [`reports`](#reports). It sends one typed report, checked against its schema; a bad one comes back as an error the model can read. Before the model may finish, the loop reminds it of a required report it hasn't sent.
 
-There is no tool for a model to open a dynamic subscription of its own. The thread owns subscriptions now — an agent asks the thread, and the thread subscribes and forwards arrivals on. TODO: the model-facing shape of that ask (if any) isn't settled in the SDK yet; this page will gain a section once it lands.
+### listen and unlisten
+
+```typescript {{ title: "Signature" }}
+listen({ event: string; where?: Record<string, string | number | boolean>; reason?: string }): string
+unlisten({ event: string; where?: Record<string, string | number | boolean> }): string
+```
+
+- `listen`: EXPERIMENTAL. Asks the thread to watch for an event and bring it to the model as a message when it happens. `event` is the event's name. `where` is paths into the arriving event and the values they must have, as in `{ "data.number": 412 }`; the tool builds the filter from it. Left out, every event of that name reaches the agent. `reason` is a few words on why, for the trace.
+- It returns once the **thread** has recorded the subscription, and does not wait for the event. The thread holds the watch, not the run, so it outlives the run that asked and is re-established after a handover.
+- A path must look like `data.number` or `name`. Anything else is refused with a message the model can read, rather than being put into an expression.
+- `unlisten`: EXPERIMENTAL. Asks the thread to stop. The `event` and `where` must be the ones it was asked to watch with.
+- Every model agent's loop has both. A tool of your own named `listen` or `unlisten` replaces that one.
+- A handler asks the same thing with [`thread.listen`](#the-handlers-thread). [Watching for things →](/docs/labs/agents/tools?ref=docs-labs-agents-reference#watching-for-things)
 
 ### For sandbox code
 
@@ -873,9 +935,28 @@ Code a model runs with `runCode` can call these as `tools.<name>(...)`, with no 
 
 The shell and code tools of a sandbox (`work_run`) and `open_skill` are in the [Tools and sandboxes reference](/docs/labs/agents/reference-sandboxes?ref=docs-labs-agents-reference).
 
-## State
+## Thread state
 
-There is no store and no `kv` import in this iteration. State lives on the thread's own run, which the thread writes and every agent run reads through its inbox when it starts. There is nothing to configure. [Memory →](/docs/labs/agents/memory?ref=docs-labs-agents-reference)
+Values of your own, kept on the thread. `kv.thread` in the handler's context. [Your own values →](/docs/labs/agents/threads?ref=docs-labs-agents-reference#your-own-values)
+
+```typescript {{ title: "Signature" }}
+kv.thread.get<T>(key: string): Promise<T | undefined>
+kv.thread.set(key: string, value: Json): Promise<void>
+kv.thread.delete(key: string): Promise<void>
+kv.thread.all(): Promise<Record<string, unknown>>
+```
+
+```typescript
+await kv.thread.set("stage", "triage");
+
+const stage = await kv.thread.get<string>("stage");
+```
+
+- **It is not a key-value store, and there is nothing behind it.** It is a shape you already recognise over the thread's log, which you do not need to see. There is no store to configure, provision or bind, on any host.
+- `get` reads the state this run already holds: obtained when the run started and kept current by what the thread forwards. **Local, no round trip, no step.**
+- `set` and `delete` send the thread one write each: one event, one step, **no ack, no wait and no retry**. The thread is the only writer and applies them in the one order it has.
+- `all()` gives every key this run holds. Keys starting with `__` are the agent's own and are not shown.
+- A write to a thread with no live run reaches nothing, and nobody is told. [Known limits](#known-limits)
 
 ## Scores
 

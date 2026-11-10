@@ -78,7 +78,7 @@ export const getEnv = () => {
 };
 ```
 
-A thread's state lives on its own run, the same way it does on any host — there's no store to bind to D1 or anywhere else. [Memory →](/docs/labs/agents/memory?ref=docs-labs-agents-workers)
+A thread's state lives on the thread's own run, the same way it does on any host - there's no store to bind to D1 or anywhere else, and `kv.thread` reaches no service. [Your own values →](/docs/labs/agents/threads?ref=docs-labs-agents-workers#your-own-values)
 
 ```typescript {{ title: "inngest/client.ts" }}
 import { Inngest } from "inngest";
@@ -157,5 +157,5 @@ Turn on the `nodejs_compat` flag, as [Serve functions](/docs/durable-execution/d
 
 ## Recipes and reference
 
-- [Memory](/docs/labs/agents/memory?ref=docs-labs-agents-workers): what a thread keeps, with no store to configure.
+- [Threads](/docs/labs/agents/threads?ref=docs-labs-agents-workers): what a thread keeps, with no store to configure.
 - [Reference: the definition](/docs/labs/agents/reference?ref=docs-labs-agents-workers#the-definition)
