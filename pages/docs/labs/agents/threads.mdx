@@ -74,21 +74,19 @@ Open PR #42 and fail its CI: both land on #42's thread, one run at a time, in or
 
 ## What a conversation keeps
 
-You want to know what joining a thread gets you. Leave a note for the next run.
+You want to know what joining a thread gets you. Ask what the last run on it did.
 
 ```typescript
-import { kv } from "inngest/experimental/agents";
+async ({ event, previousRun }) => {
+  if (!previousRun) {
+    return `First run on this thread, saw ${event.name}`;
+  }
 
-async ({ event }) => {
-  const note = await kv.thread.get("note");
-
-  await kv.thread.set("note", `saw ${event.name}`);
-
-  return note;
+  return `Last run on this thread ${previousRun.status}. Now saw ${event.name}`;
 },
 ```
 
-The first run returns nothing, and the second returns the first's note. With no store configured, your app's own ledger functions keep it, with no outside service. The thread keeps its [state](/docs/labs/agents/memory?ref=docs-labs-agents-threads#thread-state), the model's [history](/docs/labs/agents/models?ref=docs-labs-agents-threads#it-remembers), its [sandbox](/docs/labs/agents/sandboxes?ref=docs-labs-agents-threads#it-belongs-to-the-thread) and its [budget](/docs/labs/agents/models?ref=docs-labs-agents-threads#a-budget).
+The first run gets `previousRun: undefined`; every run after the first gets how the one before it ended. That's the thread talking to its own future run, and it costs nothing to set up — a thread is a run, not a lookup, so it's the thread's own state doing the remembering, not a database you configured. The model's [history](/docs/labs/agents/models?ref=docs-labs-agents-threads#it-remembers) and a [sandbox](/docs/labs/agents/sandboxes?ref=docs-labs-agents-threads#it-belongs-to-the-thread) survive the same way. [Memory →](/docs/labs/agents/memory?ref=docs-labs-agents-threads)
 
 ## No key is fine
 
