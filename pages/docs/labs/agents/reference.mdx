@@ -357,6 +357,8 @@ What each method does:
 - Answers to `ask()` and outputs for `result()` go to the waiting call and never land in an inbox.
 - A question from a run you are waiting on with `result()` is refused at once, so the asker's `ask()` gives `null` and `result()` keeps waiting. Each question is answered once; a late or second answer is dropped.
 - `Sender` is what `msg.from` holds. A plain function's sender cannot be messaged back.
+- **`message()` and `ask()` need a function's step context** and throw outside one, because each is a step. From a route or an API handler, send the agent's trigger event instead.
+- **There is no `state()`.** A handle talks to a thread; it does not read one. [Reading state from outside a run](#reading-state-from-outside-a-run)
 
 ```typescript
 const coding = await coder.start({ task });
@@ -957,6 +959,27 @@ const stage = await kv.thread.get<string>("stage");
 - `set` and `delete` send the thread one write each: one event, one step, **no ack, no wait and no retry**. The thread is the only writer and applies them in the one order it has.
 - `all()` gives every key this run holds, the agent's own bookkeeping included. Those start with `__`; leave them alone, and don't use that prefix yourself.
 - A write to a thread with no live run reaches nothing, and nobody is told. [Known limits](#known-limits)
+
+### Reading state from outside a run
+
+**You can't, and that is deliberate rather than an oversight.** `kv.thread` is the only way to read a thread's state, and it exists only inside an agent run. There is no `thread.state()`, nothing on a [thread handle](#thread-handles) reads state, and no export does it either.
+
+Two reasons, and they close from both ends:
+
+- **Outside a run it is inexpressible.** Reading a thread means asking the holder, which is an event and a wait for the answer - a **step**. A route handler, an API handler or a script has no steps, so the only way to serve a read there would be for the SDK to call the Inngest API, which it does not do (agent discovery is the single exception).
+- **Inside a run it would be redundant.** The run already holds the thread's state, handed to it when it started and kept current by what the thread forwards. `kv.thread.get` reads that locally, with no round trip and no step. A read against the holder would cost a step to learn what the run already knows.
+
+So from outside a run, ask the agent rather than the thread: send its trigger event (or an `agent/message`) and watch for what comes back.
+
+```typescript {{ title: "app/api/stage/route.ts" }}
+// A route handler has no steps, so it sends an event and reads the reply.
+await inngest.send({
+  name: "ticket/stage-requested",
+  data: { ticket: "t_42" },
+});
+```
+
+The agent's run answers with whatever you have it send - a typed [report](#reports), an event of your own, a row it writes - and your route reads that. It is the same answer as for `message()`, which throws outside a function for the same reason.
 
 ## Scores
 

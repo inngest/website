@@ -170,6 +170,8 @@ Fail CI on #42 three times and the third run says `CI has failed 3 times on 42`.
 
 `delete(key)` drops a key, the same way, and `all()` gives every key the run holds - the agent's own bookkeeping included, which is why those start with `__` and you shouldn't.
 
+`kv.thread` is the only way to read a thread's state, and it only exists inside a run. There is no way to read a thread from a route handler or a script: ask the agent rather than the thread, by sending it an event and watching for what comes back. [Reading state from outside a run →](/docs/labs/agents/reference?ref=docs-labs-agents-threads#reading-state-from-outside-a-run)
+
 ## Watch for something else
 
 You want the helper to follow reviews of this PR, which the agent's definition says nothing about. `thread.listen` asks the thread to watch for an event.
