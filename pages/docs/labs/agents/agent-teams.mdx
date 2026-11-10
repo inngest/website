@@ -55,7 +55,6 @@ export const prHelper = agents.agent(
     triggers,
     thread: "event.data.pr",
     inbox: [ciPassed],
-    idle: "1h",
     model: claude,
     system: "You help with pull requests on acme/web.",
   },
@@ -89,7 +88,7 @@ export const prHelper = agents.agent(
 
 </AnnotatedCode>
 
-A run opened through a handle ends once it has answered, so `result()` returns promptly. It waits only for the runs its model started with `start_agent`, never for `start()` calls in code. An agent that sets its own `idle` waits for more messages instead, so a long-lived agent can serve a handle. [Idle →](/docs/labs/agents/reference?ref=docs-labs-agents-agent-teams#idle)
+A run opened through a handle ends once it has answered, so `result()` returns promptly — the run itself is short-lived either way. It waits only for the runs its own model started with `start_agent`, never for `start()` calls your code made. [Short-lived runs →](/docs/labs/agents/reference?ref=docs-labs-agents-agent-teams#short-lived-runs)
 
 `start()` opens a new thread each time. To keep one thread, and its sandbox and history, across runs, pass its key: `reviewer.start({ pr: 42 }, { thread: "42" })`. The input is still typed by the `invoke()` trigger.
 
@@ -211,8 +210,7 @@ start_agent({
 
 None of them waits, so the model can't deadlock. What comes back lands in its inbox as `agent/message`, `agent/question`, `agent/answer` or, for runs opened with `start_agent`, `agent/finished`. [How the model reads them →](/docs/labs/agents/reference?ref=docs-labs-agents-agent-teams#the-loop)
 
-- **Who it can reach.** `message_agent`, `ask_agent` and `stop_agent` reach only the thread that started the agent, threads it started, and members of its group. Thread keys from `start()` and `start_agent` are signed, so a guessed key is refused.
-- **Groups.** `start_agent({ ..., group: "fix" })`, or `start(input, { group: "fix" })` in code, puts the new thread in a group. Threads the same starter put in that group can message and ask each other, and live members hear when another joins. A group needs a generated key, so it can't be set with `thread`.
+- **Who it can reach.** `message_agent`, `ask_agent` and `stop_agent` reach only the thread that started the agent, and threads it started. Thread keys from `start()` and `start_agent` are signed, so a guessed key is refused. There's no group of threads to reach beyond that — a "team" here is lineage (who started whom) plus discovery (what a model can find), not shared membership in anything.
 - **Attached or not.** A started agent carries on by itself when the starter's run ends. `attach: true` cancels it when that run ends for good.
 - **Ending a turn.** Every model agent also has a `wait` tool, which ends its turn until the next message arrives. It is experimental, and a tool of your own named `wait` replaces it. `reply` is only for answering a question by its ID; a run's result reaches whoever started it on its own.
 - **Who sent it.** In a thread another agent started, a message with no sender, such as a person's steer, reads "Message from outside the agent team (not from an agent)", so the model doesn't take it for its starter's.
