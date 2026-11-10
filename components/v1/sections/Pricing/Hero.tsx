@@ -13,6 +13,7 @@ import { reveals } from "@/utils/v1/reveals";
 import { springs, tweens } from "@/utils/v1/springs";
 import { PLANS, type Plan, type PlanName } from "./plans";
 import LogoWall from "./LogoWall";
+import { refLinkProps } from "@/utils/v1/ref";
 
 // Pixel-perfect port of the hero design + hover
 // animation borrowed from Home/FeatureCards:
@@ -303,7 +304,7 @@ function PlanCard({
           anywhere on the card lands here; pointer events still bubble
           to the article for the cursor-spotlight + hover hand-off. */}
       <a
-        href={plan.cta.href}
+        {...refLinkProps(plan.cta.href)}
         aria-hidden="true"
         tabIndex={-1}
         className={cn("absolute inset-0 z-20 outline-none", cornerRadius)}

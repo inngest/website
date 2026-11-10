@@ -6,6 +6,7 @@ import {
   RiGithubLine,
   RiArrowRightLine,
 } from "@remixicon/react";
+import { refLinkProps } from "@/utils/v1/ref";
 
 export default function Resources({
   items,
@@ -36,7 +37,7 @@ export default function Resources({
             <h3 className="text-xl text-basis">{item.title}</h3>
             <p className="grow text-subtle">{item.description}</p>
             <Link
-              href={item.url}
+              {...refLinkProps(item.url)}
               className="flex flex-row items-center gap-2 rounded-md border border-subtle px-4 py-2 text-basis hover:bg-carbon-50/10"
             >
               {item.type === "blog"

@@ -6,6 +6,7 @@
  */
 
 import Link from "next/link";
+import { refLinkProps } from "@/utils/v1/ref";
 
 interface CustomerLogo {
   name: string;
@@ -139,7 +140,7 @@ function LogoMark({
 
   return (
     <Link
-      href={`${logo.caseStudyHref}?ref=${REF}`}
+      {...refLinkProps(`${logo.caseStudyHref}?ref=${REF}`)}
       className="group/logo logo-item relative shrink-0 outline-none focus-visible:opacity-100"
       aria-label={decorative ? undefined : `${logo.name} — Read the case study`}
       tabIndex={decorative ? -1 : undefined}

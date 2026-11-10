@@ -1,6 +1,7 @@
 import Link from "next/link";
 import Image from "next/image";
 import { RiExternalLinkLine } from "@remixicon/react";
+import { refLinkProps } from "@/utils/v1/ref";
 
 const caseStudies: {
   href: string;
@@ -60,7 +61,7 @@ export default function CaseStudies() {
             {caseStudy.snippet}
             <Link
               className="flex items-center gap-0.5 text-link text-sm pt-1 hover:decoration-link decoration-transparent decoration-1 underline underline-offset-2 cursor-pointer transition-color duration-300"
-              href={caseStudy.href}
+              {...refLinkProps(caseStudy.href)}
             >
               Read the customer story
               <RiExternalLinkLine className="h-4 w-4" />

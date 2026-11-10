@@ -9,6 +9,7 @@ import Container from "../shared/layout/Container";
 import { Button } from "src/shared/Button";
 import ArrowRight from "src/shared/Icons/ArrowRight";
 import XSocialIcon from "src/shared/Icons/XSocialIcon";
+import { refLinkProps } from "@/utils/v1/ref";
 
 export const getStaticProps = async () => {
   return {
@@ -391,7 +392,7 @@ const Output = ({ selected }: { selected: Selected }) => {
           <ul className="list-disc text-slate-200 ml-4 pb-8">
             {selected.reply.references.map((r) => (
               <li key={r} className="">
-                <a className="text-indigo-400" href={r}>
+                <a className="text-indigo-400" {...refLinkProps(r)}>
                   {r}
                 </a>
               </li>

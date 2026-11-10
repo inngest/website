@@ -3,6 +3,7 @@ import { useMemo } from "react";
 import { canonicalDocsHref } from "../../utils/docsCanonical.mjs";
 import { TS_STABLE } from "../Docs/LanguageStore";
 import PatternMedia from "./PatternMedia";
+import { refLinkProps } from "@/utils/v1/ref";
 
 // ─── Inline markdown ─────────────────────────────────────────────────────────
 type InlineNode = string | React.ReactElement;
@@ -58,7 +59,7 @@ function parseInline(text: string, key = "i"): InlineNode[] {
           push(
             <a
               key={`${key}-l${n++}`}
-              href={url}
+              {...refLinkProps(url)}
               className="md-link"
               target={isInternal ? "_self" : "_blank"}
               rel={isInternal ? undefined : "noopener noreferrer"}
@@ -354,7 +355,7 @@ export function MarkdownRender({ source }: { source: string }) {
             if (b.level === 2)
               return (
                 <h2 key={i} id={id} className="md-h2">
-                  <a href={`#${id}`} className="md-anchor" aria-label="Anchor">§</a>
+                  <a {...refLinkProps(`#${id}`)} className="md-anchor" aria-label="Anchor">§</a>
                   {parseInline(b.value, `h2-${i}`)}
                 </h2>
               );

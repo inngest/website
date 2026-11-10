@@ -8,6 +8,7 @@ import {
   PopoverTrigger,
   PopoverContent,
 } from "src/components/RedesignedLanding/Header/Popover";
+import { refLinkProps } from "@/utils/v1/ref";
 
 export const platformDropdown = [
   {
@@ -222,7 +223,7 @@ export default function PlatformPopover() {
                     {platformDropdown.slice(0, 4).map((item) => (
                       <Link
                         key={item.name}
-                        href={item.href}
+                        {...refLinkProps(item.href)}
                         className="flex gap-x-2 rounded-sm px-2 py-2 text-sm font-semibold leading-6 text-stone-50 transition-colors hover:bg-stone-800"
                       >
                         <div className="flex items-center gap-x-2">
@@ -252,7 +253,7 @@ export default function PlatformPopover() {
                     {platformDropdown.slice(4).map((item) => (
                       <Link
                         key={item.name}
-                        href={item.href}
+                        {...refLinkProps(item.href)}
                         className="flex gap-x-2 rounded-sm px-2 py-2 text-sm font-semibold leading-6 text-stone-50 transition-colors hover:bg-stone-800"
                       >
                         <div className="flex items-center gap-x-2">

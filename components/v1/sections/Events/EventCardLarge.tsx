@@ -3,6 +3,7 @@ import Chip from "@/components/v1/sections/shared/Chip";
 import SpotlightFrame from "@/components/v1/sections/Events/SpotlightFrame";
 import RegisterCue from "@/components/v1/sections/Events/RegisterCue";
 import { isPastEvent, type EventItem } from "@/components/v1/sections/Events/data";
+import { refLinkProps } from "@/utils/v1/ref";
 
 // The featured card used in the Upcoming Events list. Hover matches the
 // home "Get Started" cards: cursor spotlight + 4px lift + soft shadow
@@ -10,7 +11,7 @@ import { isPastEvent, type EventItem } from "@/components/v1/sections/Events/dat
 // as distortion).
 export default function EventCardLarge({ ev, newTab }: { ev: EventItem; newTab?: boolean }) {
   return (
-    <Link href={ev.href} className="block rounded-lg" {...(newTab ? { target: "_blank", rel: "noopener noreferrer" } : {})}>
+    <Link {...refLinkProps(ev.href)} className="block rounded-lg" {...(newTab ? { target: "_blank", rel: "noopener noreferrer" } : {})}>
       <SpotlightFrame
         // The card is a flex row at desktop with image at 422.667 of
         // 1300 (≈ 32.51%) and content filling the remainder. Height is

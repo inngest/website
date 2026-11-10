@@ -43,7 +43,7 @@ const footerLinks = [
       },
       {
         label: "Serverless queues for TypeScript",
-        url: "/uses/serverless-queues?ref=footer",
+        url: "/platform/flow-control?ref=footer",
       },
       {
         label: "Scheduled & cron jobs",

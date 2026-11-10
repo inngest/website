@@ -9,6 +9,7 @@ import {
   CURSOR_SPOTLIGHT_SEED,
   CURSOR_SPOTLIGHT_BG,
 } from "@/utils/v1/cursorFx";
+import { refLinkProps } from "@/utils/v1/ref";
 
 // Lift-only transform for the no-tilt path — consumes the same
 // `--lift` slot CURSOR_TILT_SEED exposes (so the hover lift still
@@ -74,7 +75,7 @@ export default function HoverCardShell({
   if (href) {
     return (
       <Link
-        href={href}
+        {...refLinkProps(href)}
         prefetch={false}
         {...handlers}
         style={seedStyle}

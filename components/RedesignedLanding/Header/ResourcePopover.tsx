@@ -10,6 +10,7 @@ import {
   PopoverContent,
 } from "src/components/RedesignedLanding/Header/Popover";
 import { featuredBlogPost } from "./helpers";
+import { refLinkProps } from "@/utils/v1/ref";
 
 export const resourceDropdown = [
   {
@@ -143,7 +144,7 @@ export default function ResourcePopover() {
                     {resourceDropdown.map((item) => (
                       <Link
                         key={item.name}
-                        href={item.href}
+                        {...refLinkProps(item.href)}
                         className="flex gap-x-2 rounded-sm px-2 py-2 text-sm font-semibold leading-6 text-stone-50 transition-colors hover:bg-stone-800"
                       >
                         <div className="flex items-center gap-x-2">
@@ -186,7 +187,7 @@ export default function ResourcePopover() {
                         </div>
                         <h4 className="mt-4 text-base text-stone-50">
                           <Link
-                            href={featuredBlogPost.href}
+                            {...refLinkProps(featuredBlogPost.href)}
                             className="font-whyte text-base font-semibold leading-[1.05rem] text-stone-50"
                           >
                             <span className="absolute inset-0" />

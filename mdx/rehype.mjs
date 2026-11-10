@@ -11,6 +11,7 @@ import path from "node:path";
 
 import * as sourceFilePath from "./plugins/sourceFilePath.mjs";
 import { rehypeCanonicalDocsLinks } from "./rehypeCanonicalDocsLinks.mjs";
+import { rehypeRefLinks } from "./rehypeRefLinks.mjs";
 import { formatSnippetFileContent } from "./utils/snippet.mjs";
 
 export function rehypeParseCodeBlocks() {
@@ -198,6 +199,7 @@ function getSections(node) {
 export const rehypePlugins = [
   mdxAnnotations.rehype,
   rehypeCanonicalDocsLinks,
+  rehypeRefLinks,
   rehypeCodeTitles,
   rehypeParseCodeBlocks,
   rehypeShiki,

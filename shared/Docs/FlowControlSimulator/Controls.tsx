@@ -34,6 +34,7 @@ import {
   Switch,
   TenantChip,
 } from "./ui";
+import { refLinkProps } from "@/utils/v1/ref";
 
 type Update = (fn: (draft: SimConfig) => void) => void;
 
@@ -124,7 +125,7 @@ function ControlRow({
               </span>
             )}
             <Link
-              href={href}
+              {...refLinkProps(href)}
               className="text-muted hover:text-basis"
               aria-label={`${title} docs`}
               title={`${title} docs`}
@@ -600,7 +601,7 @@ export function FlowSettings({
                 Enterprise
               </span>
               <Link
-                href={`${DOCS}/multi-tenancy`}
+                {...refLinkProps(`${DOCS}/multi-tenancy`)}
                 className="text-muted hover:text-basis"
                 aria-label="Multi-tenancy docs"
               >

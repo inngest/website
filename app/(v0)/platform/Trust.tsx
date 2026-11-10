@@ -1,5 +1,6 @@
 import Link from "next/link";
 import { Button } from "src/components/RedesignedLanding/Button";
+import { refLinkProps } from "@/utils/v1/ref";
 
 export default function TrustFeaturesSection() {
   const features = [
@@ -56,7 +57,9 @@ export default function TrustFeaturesSection() {
                   you can trust it to run your most critical workloads.
                 </p>
                 <Button variant="outline" asChild>
-                  <Link href="/contact?ref=homepage-trust">Contact us</Link>
+                  <Link {...refLinkProps("/contact?ref=homepage-trust")}>
+                    Contact us
+                  </Link>
                 </Button>
               </div>
 
@@ -75,7 +78,7 @@ export default function TrustFeaturesSection() {
                         <>
                           {" "}
                           <a
-                            href={feature.linkHref}
+                            {...refLinkProps(feature.linkHref)}
                             className="text-gray-300 underline transition-colors hover:text-white"
                           >
                             {feature.link}
