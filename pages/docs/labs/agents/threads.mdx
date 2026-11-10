@@ -168,7 +168,7 @@ Fail CI on #42 three times and the third run says `CI has failed 3 times on 42`.
 
 `kv.thread` is a shape you already recognise, and that is all it is - **it is not a key-value store, and there is no store behind it.** A `get` reads what this run was handed when it started; a `set` sends the thread one write, which the thread applies in the one order it has. There is nothing to configure, nothing to provision and nothing to bind.
 
-`delete(key)` drops a key, the same way, and `all()` gives every key the run holds.
+`delete(key)` drops a key, the same way, and `all()` gives every key the run holds - the agent's own bookkeeping included, which is why those start with `__` and you shouldn't.
 
 ## Watch for something else
 

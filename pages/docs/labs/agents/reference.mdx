@@ -955,7 +955,7 @@ const stage = await kv.thread.get<string>("stage");
 - **It is not a key-value store, and there is nothing behind it.** It is a shape you already recognise over the thread's log, which you do not need to see. There is no store to configure, provision or bind, on any host.
 - `get` reads the state this run already holds: obtained when the run started and kept current by what the thread forwards. **Local, no round trip, no step.**
 - `set` and `delete` send the thread one write each: one event, one step, **no ack, no wait and no retry**. The thread is the only writer and applies them in the one order it has.
-- `all()` gives every key this run holds. Keys starting with `__` are the agent's own and are not shown.
+- `all()` gives every key this run holds, the agent's own bookkeeping included. Those start with `__`; leave them alone, and don't use that prefix yourself.
 - A write to a thread with no live run reaches nothing, and nobody is told. [Known limits](#known-limits)
 
 ## Scores
