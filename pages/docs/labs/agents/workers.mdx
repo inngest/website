@@ -1,15 +1,14 @@
 import { AnnotatedCode, Annotation } from "shared/Docs/mdx";
 
 export const metaTitle = "Run on Workers | Inngest Agents";
-export const description = "Run Inngest Agents on Cloudflare Workers: bindings exist only per request, so keep the store in D1, give the model and tokens as functions, and serve from the Worker's fetch.";
+export const description = "Run Inngest Agents on Cloudflare Workers: bindings exist only per request, so give the model and tokens as functions, and serve from the Worker's fetch.";
 
 # Run on Workers
 
-> Run your agents on Cloudflare Workers, with state in D1 and secrets read at run time.
+> Run your agents on Cloudflare Workers, with secrets read at run time.
 
-A Worker has no secrets or database at import time, so fields that take a function read them when a run starts.
+A Worker has no secrets at import time, so fields that take a function read them when a run starts.
 
-- **Keep state in D1.** The store reads its binding on each use. [Store →](#store-state-in-d1)
 - **Read secrets at run time.** The model and the repo's `auth` are functions. [Bindings →](#read-bindings-at-run-time)
 - **Serve from `fetch`.** One export that sets the bindings, then serves Inngest. [Serve →](#serve-from-fetch)
 
@@ -58,12 +57,8 @@ export const ticketOpened = eventType("ticket/opened", {
 
 `env.ts` keeps the bindings of the latest request, which are the same for the whole deployment.
 
-{/* not type-checked: D1Database from @cloudflare/workers-types */}
 ```typescript {{ title: "inngest/env.ts" }}
-import type { D1Database } from "@cloudflare/workers-types";
-
 export type Env = {
-  DB: D1Database;
   ANTHROPIC_API_KEY: string;
   GITHUB_READ_TOKEN: string;
 };
@@ -83,43 +78,22 @@ export const getEnv = () => {
 };
 ```
 
-## Store state in D1
-
-With no `store`, state lives in functions the app serves, as on any host. D1 adds atomic writes such as `update`. [Where it lives →](/docs/labs/agents/memory?ref=docs-labs-agents-workers#where-it-lives)
-
-`d1KvAdapter` takes a function and calls it on every operation, so the store never holds a binding past a request. Add `sandboxMiddleware()` when an agent lists sandboxes.
+A thread's state lives on its own run, the same way it does on any host — there's no store to bind to D1 or anywhere else. [Memory →](/docs/labs/agents/memory?ref=docs-labs-agents-workers)
 
 ```typescript {{ title: "inngest/client.ts" }}
 import { Inngest } from "inngest";
 import { sandboxMiddleware } from "inngest/experimental";
-import { createAgents, d1KvAdapter } from "inngest/experimental/agents";
-import { getEnv } from "./env";
+import { createAgents } from "inngest/experimental/agents";
 
 export const inngest = new Inngest({
   id: "support",
   middleware: [sandboxMiddleware()],
 });
 
-export const agents = createAgents(inngest, {
-  store: d1KvAdapter(() => {
-    return getEnv().DB;
-  }),
-});
+export const agents = createAgents(inngest);
 ```
 
-`d1KvSchema` holds the statements for the store's two tables. Write them into a migration; `agents-db` is your D1 database's name.
-
-```typescript {{ title: "inngest/printSchema.ts" }}
-import { d1KvSchema } from "inngest/experimental/agents";
-
-console.log(`${d1KvSchema.join(";\n\n")};`);
-```
-
-```bash
-npx wrangler d1 migrations create agents-db agents
-npx tsx inngest/printSchema.ts > migrations/0001_agents.sql
-npx wrangler d1 migrations apply agents-db
-```
+Add `sandboxMiddleware()` when an agent lists sandboxes.
 
 ## Read bindings at run time
 
@@ -173,15 +147,15 @@ Turn on the `nodejs_compat` flag, as [Serve functions](/docs/durable-execution/d
 
 - **Import time has no bindings.** Read them inside a function.
 - **Some fields stay values.** Inngest reads them when the app syncs or an event is routed, so keep bindings out of them. [The definition →](/docs/labs/agents/reference?ref=docs-labs-agents-workers#the-definition)
-- **Field functions have no side effects.** They run again on replay, and may read `kv`.
+- **Field functions have no side effects.** They run again on replay.
 - **Other entry points call `setEnv`.** A scheduled handler that sends messages calls `setEnv(env)` first.
 
 ## How it works
 
-- A field's function runs once when a run starts, a token function at each use and the store's on every operation.
+- A field's function runs once when a run starts, and a token function at each use.
 - Everything else is the same as on any host. [Project structure →](/docs/labs/agents/structure?ref=docs-labs-agents-workers)
 
 ## Recipes and reference
 
-- [Memory](/docs/labs/agents/memory?ref=docs-labs-agents-workers): the store, and what a thread keeps.
+- [Memory](/docs/labs/agents/memory?ref=docs-labs-agents-workers): what a thread keeps, with no store to configure.
 - [Reference: the definition](/docs/labs/agents/reference?ref=docs-labs-agents-workers#the-definition)
