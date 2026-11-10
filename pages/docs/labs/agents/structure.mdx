@@ -203,7 +203,7 @@ inngest/
 
 ## How it works
 
-- An agent registers when its file is imported, and `agents.functions()` returns what is registered, so `serve.ts` imports each agent. The list also holds the functions agents need behind the scenes, such as the ones that keep thread state, so serve all of it.
+- An agent registers when its file is imported, and `agents.functions()` returns what is registered, so `serve.ts` imports each agent. The list is longer than the number of agents: one declared agent is served as three functions - the one that runs your handler, and the two that hold its threads - plus its cleanup and finished relays, and the app's own card announcements. Serve all of it. [Reference: the thread →](/docs/labs/agents/reference?ref=docs-labs-agents-structure#the-thread)
 - Tools, sandboxes and models are plain definitions with no client, so many agents share one.
 
 ## Recipes and reference

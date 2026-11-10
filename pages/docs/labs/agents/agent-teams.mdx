@@ -248,7 +248,7 @@ You want each finding as the reviewer finds it, not one answer at the end. Ask f
 
 <AnnotatedCode>
 
-{/* not type-checked: start() with reports checks; at SDK 1853ec72 the handler's message type doesn't include reports, so message.is(finding) narrows to never */}
+{/* not type-checked: start() with reports checks; still true at SDK 75b020aa - AgentMessage's union is triggers, inbox sources and the agent/* messages, so an arriving report has no member and message.is(finding) narrows to never. Runtime is correct; the type is the gap. */}
 ```typescript
 import { eventType } from "inngest";
 import { z } from "zod";

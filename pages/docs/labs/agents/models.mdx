@@ -254,16 +254,23 @@ interface AgentModelRequest {
   maxTurns: number;
   toolChoice?: "auto" | "required" | "none" | { tool: string };
   tools: ToolJsonDefinition[]; // { name, description?, input_schema }
+  briefing?: BriefingParts; // only for a model that places it itself
 }
 
 interface AgentModelResponse {
   message: { role: "assistant"; content: unknown }; // kept in history untouched
   text?: string;
   toolCalls: { id: string; name: string; input: unknown }[];
-  usage?: { input: number; output: number; usd?: number };
+  usage?: AgentUsage; // { input, output, usd?, cacheRead?, cacheWrite? }
   model?: string;
+  usd?: number;
+  details?: Record<string, Json>; // shows up as turn.model in onTurn
 }
 ```
+
+Only `message` and `toolCalls` are required of a reply. Everything else is something to report when you have it.
+
+`contextWindow` is the model's context size in tokens, which a loop that summarizes a long history uses to decide when; `placesBriefing` says your model places the agent's [briefing](/docs/labs/agents/reference?ref=docs-labs-agents-models#the-definition) itself from `request.briefing`, rather than having it appended to `system`. Leave both out and the loop does the sensible thing.
 
 It runs inside a step, so a thrown error retries like any other step failure; throw `NonRetriableError` for one retrying can't fix (a 4xx the provider will never accept twice).
 

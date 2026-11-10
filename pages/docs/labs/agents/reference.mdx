@@ -297,7 +297,7 @@ type ReportRoute = {
 - `required: true` makes the report owed: the agent's loop reminds its model before it may finish. When an agent started with `start_agent` finishes without it, the `agent/finished` its starter reads lists it in `missing`.
 - The agent's model gets a `report({ type, data })` tool, its handler gets [`thread.report()`](#the-handlers-thread), and its sandbox code gets `report` too.
 - The routes travel in the start's signed grant, so the agent needs no prior knowledge of the types. A receiver only takes a report from its own child or from a start whose grant names it for that type.
-- In the receiver's inbox, `msg.is(milestone)` narrows the report to its data. The model reads it as `Report "<type>" from <address>`.
+- A report reaches the receiver's inbox under its own type's name, and `msg.data` is its data. The model reads it as `Report "<type>" from <address>`. **Types lag the runtime here:** a report type is not in the inbox message union unless it is also an `inbox` source, so `msg.is(milestone)` does not yet narrow it.
 
 {/* not type-checked: start() with reports and a required line */}
 ```typescript

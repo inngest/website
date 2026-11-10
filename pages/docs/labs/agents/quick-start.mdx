@@ -109,7 +109,7 @@ createServer({
 }).listen(3000);
 ```
 
-`agents.functions()` returns the agents defined so far, plus the functions that keep their state, so import every agent file before you call it. Start the app and the Dev Server:
+`agents.functions()` returns the agents defined so far, plus the functions that hold their threads and their state, so import every agent file before you call it. One agent is more than one function, which is why the list is longer than you might expect. [Reference: the thread →](/docs/labs/agents/reference?ref=docs-labs-agents-quick-start#the-thread) Start the app and the Dev Server:
 
 ```bash
 npx tsx inngest/serve.ts
