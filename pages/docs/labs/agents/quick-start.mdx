@@ -30,7 +30,7 @@ export const inngest = new Inngest({ id: "support" });
 export const agents = createAgents(inngest);
 ```
 
-`createAgents` keeps each thread's state in functions it serves beside your agents, so there is no database to set up. [Memory →](/docs/labs/agents/memory?ref=docs-labs-agents-quick-start)
+A thread is its own run, so it remembers because it's running, not because something is storing it for you — there's no database to set up. [Memory →](/docs/labs/agents/memory?ref=docs-labs-agents-quick-start)
 
 ## Pick a model
 
@@ -138,7 +138,7 @@ Open the Dev Server at [localhost:8288](http://localhost:8288). The run shows ea
 
 Ask again for customer `42` and the model sees the first question too.
 
-Within ten minutes the question joins the same run; later, a new run picks up the thread where it stopped. Restart the app in between and nothing is lost.
+Ask again right away and the question joins the run still answering the first; wait longer and a fresh, short-lived run picks the thread up where it stopped — either way the model sees the same history. Restart the app in between and nothing is lost.
 
 The answer is the run's output, which [`result()`](/docs/labs/agents/agent-teams?ref=docs-labs-agents-quick-start#call-it-from-code) returns when you start the agent from code. To send it somewhere, give the model a tool you write. [Tools →](/docs/labs/agents/tools?ref=docs-labs-agents-quick-start)
 
