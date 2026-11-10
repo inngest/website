@@ -1,7 +1,7 @@
 import { AnnotatedCode, Annotation } from "shared/Docs/mdx";
 
 export const metaTitle = "Inboxes | Inngest Agents";
-export const description = "An Inngest agent keeps listening while it works: what is sent to its thread reaches the live run in order. Wait for the next message, answer each one, read them in batches, end on quiet, and open more inboxes.";
+export const description = "An Inngest agent keeps listening while it works: what is sent to its thread reaches the live run in order. Wait for the next message, answer each one, read them in batches, end when there's nothing left, and open more inboxes.";
 
 # Inboxes
 
@@ -175,9 +175,7 @@ async ({ inbox, thread, step }) => {
 
 ## Going quiet
 
-You want the helper to stop when the PR goes quiet, and come back when it doesn't. Set `idle` on the agent; the handler is the one from [Batches](#batches).
-
-<AnnotatedCode>
+You want to know what happens when the PR goes quiet. There's no setting to reach for: an agent run ends the moment its inbox has nothing left in it, and that's true for every agent, always — the handler is the one from [Batches](#batches), unchanged.
 
 ```typescript
 {
@@ -185,17 +183,14 @@ You want the helper to stop when the PR goes quiet, and come back when it doesn'
   triggers,
   thread: "event.data.pr",
   inbox: [ciPassed],
-  idle: "1h",
 }
 ```
 
-<Annotation id="idle" lines="6" tease="quiet before it ends" title="idle" href="/docs/labs/agents/reference?ref=docs-labs-agents-inboxes#idle" linkText="Reference">
-After this much quiet both `for await` forms end. The default is ten minutes.
-</Annotation>
+Both `for await` forms — one message at a time, or in batches — end as soon as there's nothing unread, not after some quiet period. A run isn't something that sits open waiting to see if more arrives; it does the work in front of it and finishes.
 
-</AnnotatedCode>
+What makes the PR helper feel like it's "still there" across a quiet PR isn't a long-lived run — it's the thread. The next trigger, or the next message a person or another agent sends, starts a fresh run on the same thread, and that run picks the history straight back up. [What a conversation keeps →](/docs/labs/agents/threads?ref=docs-labs-agents-inboxes#what-a-conversation-keeps)
 
-The next trigger starts a new run. A run opened by `start()` or a handle's `message()` ends once it has answered, unless the agent sets its own `idle`, as this one does. [Call it from code →](/docs/labs/agents/agent-teams?ref=docs-labs-agents-inboxes#call-it-from-code)
+A run opened by `start()` or a handle's `message()` works the same way: it ends once it has answered. [Call it from code →](/docs/labs/agents/agent-teams?ref=docs-labs-agents-inboxes#call-it-from-code)
 
 {/* Go deeper */}
 
