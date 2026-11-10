@@ -138,9 +138,13 @@ function writeHandoffs(handoffs: Handoff[]) {
 // when there is no ref, so a later page view of another URL replaces it.
 let current: { key: string; value: PageRef | null } | null = null;
 
+/** Path of the last page view seen by trackRefPageView(). */
+let lastPageViewPath: string | null = null;
+
 /** Forget the current page view's ref. Exposed for tests. */
 export function resetPageRef() {
   current = null;
+  lastPageViewPath = null;
 }
 
 /**
@@ -250,4 +254,21 @@ export function pushRefPageView(pageRef: PageRef) {
   } catch (err) {
     console.warn("[refHandoff] dataLayer push failed", err);
   }
+}
+
+/**
+ * Push `ref_page_view` at most once per page view. Call it on every run of
+ * the page-view effect, with or without a ref.
+ *
+ * On Pages Router pages (the docs), the effect runs twice per load because
+ * `useSearchParams()` changes once the router is ready, which doubled
+ * `ref_page_view` on docs pages. Navigating to a different path, or back
+ * to an earlier one, still counts as a new page view.
+ */
+export function trackRefPageView(pageRef: PageRef | null) {
+  if (typeof window === "undefined") return;
+  const path = normalizePath(window.location.pathname);
+  if (path === lastPageViewPath) return;
+  lastPageViewPath = path;
+  if (pageRef) pushRefPageView(pageRef);
 }

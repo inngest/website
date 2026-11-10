@@ -13,6 +13,7 @@ import {
   resetPageRef,
   serializeHandoffs,
   storeRefHandoff,
+  trackRefPageView,
   type Handoff,
 } from "./refHandoff";
 
@@ -187,5 +188,64 @@ describe("getPageRef in the browser", () => {
     storeRefHandoff("nav", "/docs");
     browser.visit("/pricing");
     assert.equal(getPageRef(), null);
+  });
+});
+
+describe("ref_page_view", () => {
+  beforeEach(install);
+
+  /** ref_page_view events pushed so far, as [ref, ref_source, page_path]. */
+  function pushed(): string[][] {
+    const dataLayer = ((globalThis as any).window.dataLayer ?? []) as {
+      event: string;
+      ref: string;
+      ref_source: string;
+      page_path: string;
+    }[];
+    return dataLayer
+      .filter((e) => e.event === "ref_page_view")
+      .map((e) => [e.ref, e.ref_source, e.page_path]);
+  }
+
+  /** One run of the page-view effect in components/Analytics.tsx. */
+  function effectRun() {
+    trackRefPageView(getPageRef());
+  }
+
+  it("pushes once when the effect runs twice for the same page", () => {
+    // Pages Router: the effect re-runs once search params are ready.
+    browser.visit("/docs?ref=nav");
+    effectRun();
+    effectRun();
+    assert.deepEqual(pushed(), [["nav", "url", "/docs"]]);
+  });
+
+  it("pushes again after navigating away and back", () => {
+    browser.visit("/docs?ref=nav");
+    effectRun();
+    browser.visit("/pricing");
+    effectRun();
+    browser.visit("/docs?ref=nav");
+    effectRun();
+    assert.deepEqual(pushed(), [
+      ["nav", "url", "/docs"],
+      ["nav", "url", "/docs"],
+    ]);
+  });
+
+  it("pushes nothing for a page without a ref", () => {
+    browser.visit("/pricing");
+    effectRun();
+    effectRun();
+    assert.deepEqual(pushed(), []);
+  });
+
+  it("pushes a click handoff once", () => {
+    browser.visit("/");
+    effectRun();
+    browser.click("footer", "/pricing");
+    effectRun();
+    effectRun();
+    assert.deepEqual(pushed(), [["footer", "click", "/pricing"]]);
   });
 });

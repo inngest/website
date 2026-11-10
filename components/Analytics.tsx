@@ -6,7 +6,7 @@ import { analytics } from "@/utils/segment";
 import {
   getPageRef,
   installRefClickListener,
-  pushRefPageView,
+  trackRefPageView,
 } from "@/utils/v1/refHandoff";
 
 export default function Analytics() {
@@ -24,7 +24,7 @@ export default function Analytics() {
       ref: pageRef?.ref ?? null,
       ...(pageRef ? { ref_source: pageRef.source } : {}),
     });
-    if (pageRef) pushRefPageView(pageRef);
+    trackRefPageView(pageRef);
   }, [pathname, searchParams]);
 
   return null;
