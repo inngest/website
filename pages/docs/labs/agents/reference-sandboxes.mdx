@@ -726,7 +726,7 @@ Types: `McpServer`, `McpServerOptions`, `McpAuth`.
 | `user` | required | A stable ID for the person, or `({ runId, event, thread }) => string`. A function gets the run's ID, its trigger event and `thread` (`{ key: string }`), and runs for every call. |
 | `redirectUri` | required | The URL of your [callback route](#the-callback-route). Register it with the server when it has no dynamic registration. |
 | `onNeedsAuthorization` | none | `({ url, server, thread, user }) => void \| Promise<void>`. Gets the sign-in link of a person with no token. [Deliver the link](#deliver-the-link) |
-| `store` | `kvOAuthStore()` | Where tokens, registered clients and pending sign-ins live. |
+| `store` | required | Where tokens, registered clients and pending sign-ins live. There is no built-in store to default to; implement `McpOAuthStore` over your own durable storage. [Bring your own store](#bring-your-own-store) |
 | `clientId` | registered for you | An OAuth client you registered, for servers without dynamic registration. |
 | `clientSecret` | none | That client's secret, as a string or a `secret()`. |
 | `scopes` | the server's | Plus `offline_access` when offered, so the token can refresh. |
@@ -738,9 +738,30 @@ Types: `McpServer`, `McpServerOptions`, `McpAuth`.
 
 | Call | Description |
 | --- | --- |
-| `kvOAuthStore({ encryptionKey, adapter, app })` | The default store: the agents store, AES-GCM encrypted. The key defaults to `secret("MCP_OAUTH_ENCRYPTION_KEY")`. Changing the key makes stored tokens unreadable, and people sign in again. |
 | `mcpCallback({ store })` | The callback route's handler. See [The callback route](#the-callback-route). |
 | `disconnect(server, user)` | Revokes one person's connection to one server. |
+
+### Bring your own store
+
+There is no built-in token store in this iteration — no KV service to lean on, for this or anything else. What survives is the interface `tool.mcp`'s `auth.oauth.store` and `mcpCallback({ store })` both take: three methods, and you implement them over durable storage you already run (Redis, a table in your own database).
+
+```typescript {{ title: "Signature" }}
+interface McpOAuthStore {
+  get(key: string): Promise<string | null>;
+  compareAndSet(
+    key: string,
+    expected: string | null,
+    next: string,
+  ): Promise<boolean>;
+  delete(key: string): Promise<void>;
+}
+```
+
+- `get(key)`: the value, or `null` if there is none.
+- `compareAndSet(key, expected, next)`: writes `next` only when the current value is exactly `expected` (`null` meaning "no value yet"), and returns whether it wrote. This has to be a true atomic compare-and-set — two token refreshes racing on the same key is exactly the case this exists to prevent.
+- `delete(key)`: removes the key.
+- Give the same store instance to both `tool.mcp`'s `auth.oauth.store` and `mcpCallback({ store })` — they read and write the same keys. [MCP assistant →](/docs/labs/agents/recipes/mcp-assistant?ref=docs-labs-agents-reference-sandboxes) builds one over Redis in about twenty lines, with a Lua script for the atomic compare-and-set.
+- Encrypting what you store (as the values are raw OAuth tokens) is your responsibility now too — there's no `encryptionKey` option wrapping this for you.
 
 ### Deliver the link
 
@@ -793,12 +814,13 @@ mcpCallback(options: {
 ```
 
 ```typescript {{ title: "app/api/mcp/callback/route.ts" }}
-import { kvOAuthStore, mcpCallback } from "inngest/experimental";
+import { mcpCallback } from "inngest/experimental";
+import { oauthStore } from "../../../../inngest/lib/oauthStore";
 
-export const GET = mcpCallback({ store: kvOAuthStore() });
+export const GET = mcpCallback({ store: oauthStore });
 ```
 
-Types: `McpOAuthOptions`, `McpOAuthStore`, `McpOAuthUserContext`, `KvOAuthStoreOptions`.
+Types: `McpOAuthOptions`, `McpOAuthStore`, `McpOAuthUserContext`.
 
 ## Secrets
 
