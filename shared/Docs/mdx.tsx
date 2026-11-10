@@ -631,6 +631,7 @@ export function Card<T extends React.ElementType = "div">({
         className
       )}
       {...props}
+      {...(props.href != undefined ? refLinkProps(props.href) : {})}
     >
       <div
         className={clsx("flex items-start gap-1 px-6 py-6", {
