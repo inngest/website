@@ -92,6 +92,8 @@ async ({ event, previousRun }) => {
 
 The first run gets `previousRun: undefined`; every run after the first gets how the one before it ended. That's the thread talking to its own future run, and it costs nothing to set up — a thread is a run, not a lookup, so it's the thread's own state doing the remembering, not a database you configured. The model's [history](/docs/labs/agents/models?ref=docs-labs-agents-threads#it-remembers) and a [sandbox](/docs/labs/agents/sandboxes?ref=docs-labs-agents-threads#it-belongs-to-the-thread) survive the same way, and so do values you name yourself. [Your own values →](#your-own-values)
 
+A thread is a pair of long-lived functions the SDK serves beside your agent: one keyed on the thread, which never ends while the thread lives, and one that holds the log, the state and every subscription. You declare neither. What it buys you is that **a message a run never got to is not lost** - the thread still holds it, and hands it to the next run on the thread first. [Reference: the thread →](/docs/labs/agents/reference?ref=docs-labs-agents-threads#the-thread)
+
 ## No key is fine
 
 You want an agent for one-off jobs. It needs no key.
