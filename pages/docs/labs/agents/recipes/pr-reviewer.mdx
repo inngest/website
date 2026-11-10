@@ -171,6 +171,7 @@ The [model](/docs/labs/agents/quick-start?ref=docs-labs-agents-recipes-pr-review
 - [A repository in the sandbox](/docs/labs/agents/reference-sandboxes?ref=docs-labs-agents-recipes-pr-reviewer#repos) is checked out at the event's ref.
 - [The built-in tools](/docs/labs/agents/reference-sandboxes?ref=docs-labs-agents-recipes-pr-reviewer#code-tools), listed one by one, limit the model to a shell, `read` and `search`.
 - [A comment tool](/docs/labs/agents/tools?ref=docs-labs-agents-recipes-pr-reviewer#your-own-git-hub-tools) posts the review, so the token that posts stays in your app.
+- [Reports](#reporting-findings-instead-of-one-comment) are the structured alternative to a comment, for a caller that can wait and read findings as they're made.
 
 ## Run it
 
@@ -197,6 +198,38 @@ await inngest.send({
   data: { pr: 42, author: "maya" },
 });
 ```
+
+## Reporting findings instead of one comment
+
+The `comment` tool is the right choice here because nothing is waiting on the reviewer — a webhook started it, and posting to the pull request *is* the output. But a reviewer started by another agent (a [lead](/docs/labs/agents/recipes/agent-teams?ref=docs-labs-agents-recipes-pr-reviewer), a CI orchestrator) has a caller that can wait and read structured findings, not just a final comment. Give it a report type and the model gets a `report` tool alongside `comment`, with no change to how it's triggered:
+
+```typescript {{ title: "inngest/events.ts" }}
+import { eventType } from "inngest";
+import { z } from "zod";
+
+export const finding = eventType("review/finding", {
+  schema: z.object({ file: z.string(), line: z.number(), problem: z.string() }),
+});
+```
+
+A caller that starts this agent with `start()` and asks for that report type gets each finding as the model writes it, not one comment at the end:
+
+```typescript
+const review = await reviewer.start(
+  { pr: 42 },
+  { reports: [{ event: finding, required: true }] },
+);
+
+for await (const batch of inbox.batches()) {
+  for (const message of batch) {
+    if (message.is(finding)) {
+      console.log(`${message.data.file}:${message.data.line} — ${message.data.problem}`);
+    }
+  }
+}
+```
+
+Nothing about the webhook-triggered path above changes — `reports` only exists for a run that was started with it, so the plain `pr/opened` trigger still just gets a comment. [Reports along the way →](/docs/labs/agents/agent-teams?ref=docs-labs-agents-recipes-pr-reviewer#reports-along-the-way)
 
 ## Variations
 
