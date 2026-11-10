@@ -17,6 +17,7 @@
 import fs from "node:fs";
 import path from "node:path";
 
+import { resolveRedirect } from "../redirects.mjs";
 import { splitInternalRef } from "../utils/v1/refLinks.mjs";
 
 const args = process.argv.slice(2);
@@ -43,30 +44,61 @@ if (files.length === 0) {
 }
 
 const HREF = /\shref="([^"]*)"/g;
+const TRACKED_A = /<a\b[^>]*\bdata-ref="[^"]*"[^>]*>/g;
 const found = new Map(); // href → Set of pages
+const redirected = new Map(); // tracked href that redirects → Set of pages
+
+/** @param {Map<string, Set<string>>} map */
+function add(map, key, page) {
+  if (!map.has(key)) map.set(key, new Set());
+  map.get(key).add(page);
+}
 
 for (const file of files) {
   const html = fs.readFileSync(file, "utf8");
+  const page =
+    "/" +
+    path
+      .relative(buildDir, file)
+      .replace(/^server\/(app|pages)\/?/, "")
+      .replace(/\.html$/, "")
+      .replace(/(^|\/)index$/, "");
   for (const match of html.matchAll(HREF)) {
     const href = match[1].replace(/&amp;/g, "&");
-    if (!splitInternalRef(href)) continue;
-    const page =
-      "/" +
-      path
-        .relative(buildDir, file)
-        .replace(/^server\/(app|pages)\/?/, "")
-        .replace(/\.html$/, "")
-        .replace(/(^|\/)index$/, "");
-    if (!found.has(href)) found.set(href, new Set());
-    found.get(href).add(page);
+    if (splitInternalRef(href)) add(found, href, page);
   }
+  // A tracked link to a path that redirects loses its ref: the click
+  // handoff matches the destination path exactly.
+  for (const tag of html.matchAll(TRACKED_A)) {
+    const href = tag[0]
+      .match(/\shref="(\/[^"]*)"/)?.[1]
+      ?.replace(/&amp;/g, "&");
+    if (!href || href.startsWith("//")) continue;
+    const pathname = href.split(/[?#]/)[0];
+    if (resolveRedirect(pathname) !== pathname) add(redirected, href, page);
+  }
+}
+
+if (redirected.size > 0) {
+  const warn = strict ? console.error : console.warn;
+  warn(
+    `[check-ref-links] ${redirected.size} tracked link(s) point at a URL ` +
+      `that redirects, so their ref is lost. Link to the final URL instead:`
+  );
+  for (const [href, pages] of [...redirected].slice(0, 25)) {
+    warn(
+      `  ${href} → ${resolveRedirect(href.split(/[?#]/)[0])}  — e.g. ` +
+        [...pages].slice(0, 3).join(", ")
+    );
+  }
+  if (redirected.size > 25) warn(`  …and ${redirected.size - 25} more`);
 }
 
 if (found.size === 0) {
   console.log(
     `[check-ref-links] OK: no internal ?ref= links in ${files.length} pages.`
   );
-  process.exit(0);
+  process.exit(strict && redirected.size > 0 ? 1 : 0);
 }
 
 const rows = [...found.entries()].sort((a, b) => b[1].size - a[1].size);

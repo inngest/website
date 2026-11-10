@@ -25,16 +25,16 @@ test("keeps other parameters, their order and the hash", () => {
   });
 });
 
-test("handles absolute www and apex inngest.com URLs", () => {
+test("makes absolute www and apex inngest.com URLs root-relative", () => {
   assert.deepEqual(
     splitInternalRef("https://www.inngest.com/blog/x?ref=blog"),
     {
-      href: "https://www.inngest.com/blog/x",
+      href: "/blog/x",
       ref: "blog",
     }
   );
   assert.deepEqual(splitInternalRef("https://inngest.com/?ref=x"), {
-    href: "https://inngest.com/",
+    href: "/",
     ref: "x",
   });
 });
@@ -128,4 +128,36 @@ test("rehypeRefLinks rewrites markdown links and inline JSX anchors", () => {
   ]);
   // Components render through refLinkProps() themselves.
   assert.equal(card.attributes[0].value, "/docs?ref=card");
+});
+
+test("rehypeRefLinks points tracked links at their final URL", () => {
+  const tree = {
+    type: "root",
+    children: [
+      {
+        type: "element",
+        tagName: "a",
+        properties: { href: "/docs/guides/concurrency?ref=blog#keys" },
+        children: [],
+      },
+      {
+        type: "element",
+        tagName: "a",
+        properties: {
+          href: "https://www.inngest.com/docs/guides/concurrency?ref=blog",
+        },
+        children: [],
+      },
+    ],
+  };
+  rehypeRefLinks()(tree);
+  const [relative, absolute] = tree.children;
+  assert.deepEqual(relative.properties, {
+    href: "/docs/durable-execution/flow-control/concurrency#keys",
+    dataRef: "blog",
+  });
+  assert.deepEqual(absolute.properties, {
+    href: "/docs/durable-execution/flow-control/concurrency",
+    dataRef: "blog",
+  });
 });

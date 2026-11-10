@@ -10,6 +10,11 @@
  * utils/v1/refHandoff.ts for how the value reaches analytics). Links that
  * leave www.inngest.com keep `?ref=`, and so do the sign-up and sign-in
  * short links, which redirect to app.inngest.com and pass attribution there.
+ *
+ * Absolute www/apex inngest.com links come back root-relative. The click
+ * handoff only works within one origin, so an absolute link would lose its
+ * ref on a preview or local site, and an apex link (inngest.com → redirect
+ * → www.inngest.com) would lose it in production.
  */
 
 /** Paths that redirect to app.inngest.com and must keep `?ref=` in the URL. */
@@ -74,5 +79,5 @@ export function splitInternalRef(url) {
   if (ref === null) return null;
 
   const rest = kept.length ? `?${kept.join("&")}` : "";
-  return { href: `${base}${rest}${hash}`, ref };
+  return { href: `${path}${rest}${hash}`, ref };
 }
