@@ -12,8 +12,9 @@ import {
   pruneHandoffs,
   resetPageRef,
   serializeHandoffs,
+  isNewPageView,
+  pushRefPageView,
   storeRefHandoff,
-  trackRefPageView,
   type Handoff,
 } from "./refHandoff";
 
@@ -191,7 +192,7 @@ describe("getPageRef in the browser", () => {
   });
 });
 
-describe("ref_page_view", () => {
+describe("page views", () => {
   beforeEach(install);
 
   /** ref_page_view events pushed so far, as [ref, ref_source, page_path]. */
@@ -207,10 +208,19 @@ describe("ref_page_view", () => {
       .map((e) => [e.ref, e.ref_source, e.page_path]);
   }
 
+  let segmentPages: string[] = [];
+
   /** One run of the page-view effect in components/Analytics.tsx. */
   function effectRun() {
-    trackRefPageView(getPageRef());
+    if (!isNewPageView()) return;
+    const pageRef = getPageRef();
+    segmentPages.push((globalThis as any).window.location.pathname);
+    if (pageRef) pushRefPageView(pageRef);
   }
+
+  beforeEach(() => {
+    segmentPages = [];
+  });
 
   it("pushes once when the effect runs twice for the same page", () => {
     // Pages Router: the effect re-runs once search params are ready.
@@ -218,6 +228,17 @@ describe("ref_page_view", () => {
     effectRun();
     effectRun();
     assert.deepEqual(pushed(), [["nav", "url", "/docs"]]);
+    assert.deepEqual(segmentPages, ["/docs"]);
+  });
+
+  it("a query change on the same page is not a new page view", () => {
+    // The docs language switcher adds ?guide= to the URL in place.
+    browser.visit("/docs/events?ref=nav");
+    effectRun();
+    browser.visit("/docs/events?ref=nav&guide=python");
+    effectRun();
+    assert.deepEqual(segmentPages, ["/docs/events"]);
+    assert.equal(pushed().length, 1);
   });
 
   it("pushes again after navigating away and back", () => {
@@ -231,6 +252,7 @@ describe("ref_page_view", () => {
       ["nav", "url", "/docs"],
       ["nav", "url", "/docs"],
     ]);
+    assert.deepEqual(segmentPages, ["/docs", "/pricing", "/docs"]);
   });
 
   it("pushes nothing for a page without a ref", () => {

@@ -138,7 +138,7 @@ function writeHandoffs(handoffs: Handoff[]) {
 // when there is no ref, so a later page view of another URL replaces it.
 let current: { key: string; value: PageRef | null } | null = null;
 
-/** Path of the last page view seen by trackRefPageView(). */
+/** Path of the last page view seen by isNewPageView(). */
 let lastPageViewPath: string | null = null;
 
 /** Forget the current page view's ref. Exposed for tests. */
@@ -257,18 +257,22 @@ export function pushRefPageView(pageRef: PageRef) {
 }
 
 /**
- * Push `ref_page_view` at most once per page view. Call it on every run of
- * the page-view effect, with or without a ref.
+ * True the first time it's called for a page view, false on repeat calls.
+ * Gate every page-view side effect on it (the Segment page call and
+ * `ref_page_view`), calling it on each run of the page-view effect.
  *
- * On Pages Router pages (the docs), the effect runs twice per load because
- * `useSearchParams()` changes once the router is ready, which doubled
- * `ref_page_view` on docs pages. Navigating to a different path, or back
- * to an earlier one, still counts as a new page view.
+ * On Pages Router pages (the docs), the page-view effect runs twice per
+ * load because `useSearchParams()` changes once the router is ready, and
+ * again when the docs language switcher adds `?guide=` to the URL. That
+ * double-counted docs page views in Amplitude and GA4. Only a change of
+ * path counts as a new page view: navigating to a different page, or back
+ * to an earlier one. App Router pages don't change their query string in
+ * place, so nothing changes for them.
  */
-export function trackRefPageView(pageRef: PageRef | null) {
-  if (typeof window === "undefined") return;
+export function isNewPageView(): boolean {
+  if (typeof window === "undefined") return false;
   const path = normalizePath(window.location.pathname);
-  if (path === lastPageViewPath) return;
+  if (path === lastPageViewPath) return false;
   lastPageViewPath = path;
-  if (pageRef) pushRefPageView(pageRef);
+  return true;
 }

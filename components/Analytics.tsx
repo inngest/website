@@ -6,7 +6,8 @@ import { analytics } from "@/utils/segment";
 import {
   getPageRef,
   installRefClickListener,
-  trackRefPageView,
+  isNewPageView,
+  pushRefPageView,
 } from "@/utils/v1/refHandoff";
 
 export default function Analytics() {
@@ -18,13 +19,16 @@ export default function Analytics() {
   useEffect(() => installRefClickListener(), []);
 
   useEffect(() => {
+    // Once per page view: on docs (Pages Router) pages this effect also
+    // re-runs for the same page. See isNewPageView().
+    if (!isNewPageView()) return;
     // URL `?ref=` first, then a ref handed off by a tracked link click.
     const pageRef = getPageRef();
     analytics.page(null, {
       ref: pageRef?.ref ?? null,
       ...(pageRef ? { ref_source: pageRef.source } : {}),
     });
-    trackRefPageView(pageRef);
+    if (pageRef) pushRefPageView(pageRef);
   }, [pathname, searchParams]);
 
   return null;
