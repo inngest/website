@@ -38,7 +38,7 @@ const menu: {
     url: "/docs",
   },
   {
-    title: "Customers",
+    title: "Customer Stories",
     url: "/customers",
   },
   {
