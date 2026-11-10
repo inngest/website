@@ -12,6 +12,9 @@ import {
   pruneHandoffs,
   resetPageRef,
   serializeHandoffs,
+  isNewPageView,
+  pageViewKey,
+  pushRefPageView,
   storeRefHandoff,
   type Handoff,
 } from "./refHandoff";
@@ -187,5 +190,107 @@ describe("getPageRef in the browser", () => {
     storeRefHandoff("nav", "/docs");
     browser.visit("/pricing");
     assert.equal(getPageRef(), null);
+  });
+});
+
+describe("page views", () => {
+  beforeEach(install);
+
+  /** ref_page_view events pushed so far, as [ref, ref_source, page_path]. */
+  function pushed(): string[][] {
+    const dataLayer = ((globalThis as any).window.dataLayer ?? []) as {
+      event: string;
+      ref: string;
+      ref_source: string;
+      page_path: string;
+    }[];
+    return dataLayer
+      .filter((e) => e.event === "ref_page_view")
+      .map((e) => [e.ref, e.ref_source, e.page_path]);
+  }
+
+  let segmentPages: string[] = [];
+
+  /** One run of the page-view effect in components/Analytics.tsx. */
+  function effectRun() {
+    if (!isNewPageView()) return;
+    const pageRef = getPageRef();
+    segmentPages.push((globalThis as any).window.location.pathname);
+    if (pageRef) pushRefPageView(pageRef);
+  }
+
+  beforeEach(() => {
+    segmentPages = [];
+  });
+
+  it("pushes once when the effect runs twice for the same page", () => {
+    // Pages Router: the effect re-runs once search params are ready.
+    browser.visit("/docs?ref=nav");
+    effectRun();
+    effectRun();
+    assert.deepEqual(pushed(), [["nav", "url", "/docs"]]);
+    assert.deepEqual(segmentPages, ["/docs"]);
+  });
+
+  it("a query change on the same page is not a new page view", () => {
+    // The docs language switcher adds ?guide= to the URL in place.
+    browser.visit("/docs/events?ref=nav");
+    effectRun();
+    browser.visit("/docs/events?ref=nav&guide=python");
+    effectRun();
+    assert.deepEqual(segmentPages, ["/docs/events"]);
+    assert.equal(pushed().length, 1);
+  });
+
+  it("a link to the same page with a different query is a new page view", () => {
+    // e.g. the header's Pricing link clicked while on /pricing.
+    browser.visit("/pricing");
+    effectRun();
+    browser.visit("/pricing?ref=nav");
+    effectRun();
+    // Back to /pricing.
+    browser.visit("/pricing");
+    effectRun();
+    assert.deepEqual(segmentPages, ["/pricing", "/pricing", "/pricing"]);
+    assert.deepEqual(pushed(), [["nav", "url", "/pricing"]]);
+  });
+
+  it("pageViewKey ignores ?guide= and trailing slashes", () => {
+    assert.equal(
+      pageViewKey("/docs/events/", "?ref=nav&guide=python"),
+      "/docs/events?ref=nav"
+    );
+    assert.equal(pageViewKey("/docs", "?guide=go"), "/docs");
+    assert.equal(pageViewKey("/pricing", ""), "/pricing");
+  });
+
+  it("pushes again after navigating away and back", () => {
+    browser.visit("/docs?ref=nav");
+    effectRun();
+    browser.visit("/pricing");
+    effectRun();
+    browser.visit("/docs?ref=nav");
+    effectRun();
+    assert.deepEqual(pushed(), [
+      ["nav", "url", "/docs"],
+      ["nav", "url", "/docs"],
+    ]);
+    assert.deepEqual(segmentPages, ["/docs", "/pricing", "/docs"]);
+  });
+
+  it("pushes nothing for a page without a ref", () => {
+    browser.visit("/pricing");
+    effectRun();
+    effectRun();
+    assert.deepEqual(pushed(), []);
+  });
+
+  it("pushes a click handoff once", () => {
+    browser.visit("/");
+    effectRun();
+    browser.click("footer", "/pricing");
+    effectRun();
+    effectRun();
+    assert.deepEqual(pushed(), [["footer", "click", "/pricing"]]);
   });
 });

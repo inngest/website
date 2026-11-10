@@ -138,9 +138,13 @@ function writeHandoffs(handoffs: Handoff[]) {
 // when there is no ref, so a later page view of another URL replaces it.
 let current: { key: string; value: PageRef | null } | null = null;
 
+/** URL key of the last page view seen by isNewPageView(). */
+let lastPageViewKey: string | null = null;
+
 /** Forget the current page view's ref. Exposed for tests. */
 export function resetPageRef() {
   current = null;
+  lastPageViewKey = null;
 }
 
 /**
@@ -250,4 +254,39 @@ export function pushRefPageView(pageRef: PageRef) {
   } catch (err) {
     console.warn("[refHandoff] dataLayer push failed", err);
   }
+}
+
+/**
+ * Query parameters that change a page's URL in place without being a new
+ * page view: the docs language switcher sets `?guide=` on load (to the
+ * reader's saved language) and when the reader switches language.
+ */
+const IN_PAGE_PARAMS = ["guide"];
+
+/** Page-view key: normalised path plus query, minus IN_PAGE_PARAMS. */
+export function pageViewKey(pathname: string, search: string): string {
+  const params = new URLSearchParams(search);
+  for (const name of IN_PAGE_PARAMS) params.delete(name);
+  const query = params.toString();
+  return normalizePath(pathname) + (query ? `?${query}` : "");
+}
+
+/**
+ * True the first time it's called for a page view, false on repeat calls.
+ * Gate every page-view side effect on it (the Segment page call and
+ * `ref_page_view`), calling it on each run of the page-view effect.
+ *
+ * On Pages Router pages (the docs), the page-view effect runs a second time
+ * for the same URL once `useSearchParams()` is ready, and again when the
+ * docs language switcher adds `?guide=`. That double-counted docs page
+ * views in Amplitude and GA4. A page view is new when the path or query
+ * changes (ignoring `?guide=`), so a link to the same page with a different
+ * query, and back/forward between such URLs, still count.
+ */
+export function isNewPageView(): boolean {
+  if (typeof window === "undefined") return false;
+  const key = pageViewKey(window.location.pathname, window.location.search);
+  if (key === lastPageViewKey) return false;
+  lastPageViewKey = key;
+  return true;
 }
