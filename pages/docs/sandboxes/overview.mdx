@@ -43,7 +43,25 @@ export const description = "Inngest Sandboxes overview: run generated code or te
       },
       note: "Open beta on Pro plans and above. The API can change before launch.",
     },
-    { sdk: "python", planned: true },
+    {
+      sdk: "python",
+      href: "/docs/sandboxes/reference#python",
+      status: "Beta",
+      features: {
+        "Durable step.sandbox calls": true,
+        "Direct inngest.sandboxes client": true,
+        "Commands and background processes": true,
+        "Pause, resume, snapshot, and clone": true,
+        "File upload and download": { supported: true, tag: "Durable upload" },
+        "Workspace secrets": true,
+        "Python and TypeScript runners": false,
+        "Tools for sandboxed code": false,
+        "Custom images": { supported: true, tag: "Experimental" },
+        "SSH access": { supported: false, tag: "Planned" },
+        "S3-backed persistent mounts": { supported: false, tag: "Planned" },
+      },
+      note: "Requires inngest 0.5.20 or newer. The API can change before launch.",
+    },
     { sdk: "go", planned: true },
   ]}
 />
