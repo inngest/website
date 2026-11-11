@@ -9,11 +9,15 @@ export const description = "Inngest Agents quick start: a client, a model, a too
 
 ## Install
 
-You need Node.js 20+ and an Anthropic API key.
+You need Node.js 20+, an Anthropic API key, and Dev Server 1.52.0 or newer.
 
 ```bash
-npm install inngest zod @anthropic-ai/sdk
+npm install inngest@agents zod @anthropic-ai/sdk
 ```
+
+**`inngest@agents`, not plain `inngest`.** The agent primitives are experimental and ship on their own prerelease tag, so `inngest@latest` does not have `inngest/experimental/agents` in it at all and every import on this page would fail. Install the tag rather than the version it resolves to today: it moves as the work does, and a pinned version goes stale against these pages within days.
+
+`1.52.0` is the first Dev Server with `step.subscribe`, which is how an agent reads its inbox. `inngest-cli@latest` is newer than that, so the command below is already right - the version matters only if you pin the CLI or have an older one installed, where the failure is confusing rather than clear.
 
 ```bash
 export ANTHROPIC_API_KEY=sk-ant-...
