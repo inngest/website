@@ -207,10 +207,16 @@ The `comment` tool is the right choice here because nothing is waiting on the re
 import { eventType } from "inngest";
 import { z } from "zod";
 
-export const finding = eventType("review/finding", {
-  schema: z.object({ file: z.string(), line: z.number(), problem: z.string() }),
+export const findingSchema = z.object({
+  file: z.string(),
+  line: z.number(),
+  problem: z.string(),
 });
+
+export const finding = eventType("review/finding", { schema: findingSchema });
 ```
+
+The schema is exported beside the type because a caller reading these reports parses with it.
 
 A caller that starts this agent with `start()` and asks for that report type gets each finding as the model writes it, not one comment at the end:
 
@@ -222,12 +228,18 @@ const review = await reviewer.start(
 
 for await (const batch of inbox.batches()) {
   for (const message of batch) {
-    if (message.is(finding)) {
-      console.log(`${message.data.file}:${message.data.line} — ${message.data.problem}`);
+    const named: { name: string; data: unknown } = message;
+
+    if (named.name === finding.name) {
+      const found = findingSchema.parse(named.data);
+
+      console.log(`${found.file}:${found.line} - ${found.problem}`);
     }
   }
 }
 ```
+
+`message.is(finding)` can't narrow to a report, so the name is matched and the data parsed with the report's own schema. [Reading a report's type →](/docs/labs/agents/agent-teams?ref=docs-labs-agents-recipes-pr-reviewer#reading-a-reports-type)
 
 Nothing about the webhook-triggered path above changes — `reports` only exists for a run that was started with it, so the plain `pr/opened` trigger still just gets a comment. [Reports along the way →](/docs/labs/agents/agent-teams?ref=docs-labs-agents-recipes-pr-reviewer#reports-along-the-way)
 

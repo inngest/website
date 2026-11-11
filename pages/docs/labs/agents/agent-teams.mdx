@@ -248,14 +248,13 @@ You want each finding as the reviewer finds it, not one answer at the end. Ask f
 
 <AnnotatedCode>
 
-{/* not type-checked: start() with reports checks; still true at SDK 75b020aa - AgentMessage's union is triggers, inbox sources and the agent/* messages, so an arriving report has no member and message.is(finding) narrows to never. Runtime is correct; the type is the gap. */}
 ```typescript
 import { eventType } from "inngest";
 import { z } from "zod";
 
-const finding = eventType("review/finding", {
-  schema: z.object({ file: z.string(), problem: z.string() }),
-});
+const findingSchema = z.object({ file: z.string(), problem: z.string() });
+
+const finding = eventType("review/finding", { schema: findingSchema });
 
 await reviewer.start(
   { pr: Number(thread.key) },
@@ -264,9 +263,13 @@ await reviewer.start(
 
 for await (const batch of inbox.batches()) {
   for (const message of batch) {
-    if (message.is(finding)) {
+    const named: { name: string; data: unknown } = message;
+
+    if (named.name === finding.name) {
+      const found = findingSchema.parse(named.data);
+
       await step.run("comment finding", async () => {
-        return await gh.comment(Number(thread.key), message.data.problem);
+        return await gh.comment(Number(thread.key), found.problem);
       });
     }
   }
@@ -281,11 +284,29 @@ Any `eventType()`. Its name can't start with `agent/` or `inngest/`.
 A line is an event type, or `{ event, to, if, required }`. `to` sends it to other threads, such as `thread` or `agent.thread(key)`, and `if` is a CEL condition over `async.data`.
 </Annotation>
 
-<Annotation id="is" lines="15" tease="typed data" title="is()">
-A report reaches your inbox under its type's name, typed by its schema.
+<Annotation id="is" lines="15-18" tease="match, then parse" title="Reading a report" href="#reading-a-reports-type" linkText="Reading a report's type">
+A report reaches your inbox under its type's name. `message.is(finding)` can't narrow to it, so match the name and parse the data.
 </Annotation>
 
 </AnnotatedCode>
+
+### Reading a report's type
+
+A report arrives under its own type's name with its own data, and **the runtime is right** - but `message.is(finding)` narrows to `never`, so nothing inside that `if` is usable. `is()` matches a message against the agent's triggers, its `inbox` sources and the `agent/*` messages, and an arriving report is none of those, so every intersection comes out empty.
+
+Comparing the name directly doesn't work either: every name in that union is a literal, so `message.name === finding.name` is refused outright as a comparison with no overlap. Widen the message to the two fields you need, then parse the data with the report's own schema, as the example above does:
+
+```typescript
+const named: { name: string; data: unknown } = message;
+
+if (named.name === finding.name) {
+  const found = findingSchema.parse(named.data);
+}
+```
+
+`found` is typed by the schema, and the parse is doing real work rather than quieting the compiler. **A report's data is whatever the sender wrote**, and validating it against the type's schema is a check `is()` was performing for you - it refuses the match when the data doesn't fit. So a bare `as` cast would be typed *and* trusted, which is worse than what you started with.
+
+This is a known limitation of the types, not of reports. The fix is for an agent to declare the report types it accepts the way it declares its `inbox` sources, which would narrow exactly and weaken nothing; it is out of scope for now. `AgentMessage` in the SDK carries the full reasoning, including why a permissive union member would be the wrong repair.
 
 The reviewer's model gets a `report` tool, and a handler gets `thread.report(finding, data)`. The data is checked against the schema before it is sent. A model that tries to finish while it owes a `required` report is reminded, and if it never sends one, its `agent/finished` lists the type in `missing`. A model can ask for reports too, with `start_agent`'s `reports`.
 
