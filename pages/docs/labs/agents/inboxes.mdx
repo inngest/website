@@ -1,0 +1,296 @@
+import { AnnotatedCode, Annotation } from "shared/Docs/mdx";
+
+export const metaTitle = "Inboxes | Inngest Agents";
+export const description = "An Inngest agent keeps listening while it works: what is sent to its thread reaches the live run in order. Wait for the next message, answer each one, read them in batches, end when there's nothing left, and open more inboxes.";
+
+# Inboxes
+
+> Your agent keeps listening while it works.
+
+Whatever is sent to a thread while its run works waits in the run's inbox, in order. Each section changes the PR helper from [Threads](/docs/labs/agents/threads?ref=docs-labs-agents-inboxes) by one step, and after the first, a block shows only what changes.
+
+## While it works
+
+You want the helper to see a CI failure that arrives while it is busy, not start a second run. Read the run's `inbox`.
+
+```typescript {{ title: "inngest/events.ts" }}
+import { eventType } from "inngest";
+import { z } from "zod";
+
+const ciRun = z.object({ pr: z.number() });
+
+export const prOpened = eventType("pr/opened", {
+  schema: z.object({ pr: z.number(), author: z.string() }),
+});
+
+export const prComment = eventType("pr/comment", {
+  schema: z.object({ pr: z.number(), author: z.string(), body: z.string() }),
+});
+
+export const ciFailed = eventType("ci/run.failed", { schema: ciRun });
+
+export const ciPassed = eventType("ci/run.passed", { schema: ciRun });
+
+export const deployed = eventType("deploy/finished", {
+  schema: z.object({ env: z.string(), pull: z.number() }),
+});
+
+export const buildFinished = eventType("build/finished", {
+  schema: z.object({ pr: z.number(), artifact: z.string() }),
+});
+```
+
+<AnnotatedCode>
+
+```typescript {{ title: "inngest/agents/prHelper.ts" }}
+import { agents } from "../client";
+import { ciFailed, deployed, prComment, prOpened } from "../events";
+
+const triggers = [
+  prOpened,
+  prComment,
+  ciFailed,
+  { event: deployed, thread: "event.data.pull" },
+];
+
+export const prHelper = agents.agent(
+  { id: "pr-helper", triggers, thread: "event.data.pr" },
+  async ({ inbox, step }) => {
+    await step.sleep("read the diff", "5s");
+
+    await inbox.next();
+
+    const arrived = await inbox.next();
+
+    return `While I read, ${arrived?.name} arrived`;
+  },
+);
+```
+
+<Annotation id="triggers" lines="4-9" tease="the same four" title="Triggers" href="/docs/labs/agents/threads?ref=docs-labs-agents-inboxes#a-trigger-with-its-own-key" linkText="Threads">
+The triggers from Threads.
+</Annotation>
+
+<Annotation id="first" lines="16" tease="the trigger" title="The first message">
+The event that started the run.
+</Annotation>
+
+<Annotation id="arrived" lines="18" tease="what landed meanwhile" title="next()" href="/docs/reference/typescript/v4/functions/step-subscribe?ref=docs-labs-agents-inboxes" linkText="Reference">
+Reads the oldest unread message: the CI failure, if it came in during the sleep.
+</Annotation>
+
+</AnnotatedCode>
+
+Fail CI inside the five seconds: no second run starts. The inbox opens first thing in the run, so even a message sent the moment a run starts reaches it.
+
+## Heard, never a start
+
+You want CI passing to reach a run that's working, but never to start one on its own. List it in `inbox`; the agent's `thread` places it, and the handler stays as in [While it works](#while-it-works).
+
+```typescript
+{
+  id: "pr-helper",
+  triggers,
+  thread: "event.data.pr",
+  inbox: [ciPassed],
+}
+```
+
+Fail CI to start a run and pass it within the five seconds, and the handler returns `While I read, ci/run.passed arrived`. Only `triggers`, and messages sent to the thread by people or [other agents](/docs/labs/agents/agent-teams?ref=docs-labs-agents-inboxes), start a run.
+
+## Waiting
+
+You want to wait for the next thing on the PR. Call `next()` with nothing unread.
+
+```typescript
+async ({ inbox }) => {
+  await inbox.next();
+
+  const next = await inbox.next();
+
+  return `Next on the PR: ${next?.name}`;
+},
+```
+
+The run uses nothing while it waits.
+
+## Pull the plug
+
+You want to trust that waiting survives anything. Stop the app while a run waits, start it again, then fail CI on the PR: the run carries on where it was. Inngest holds the wait, not your app. [Deploys →](/docs/labs/agents/reliability?ref=docs-labs-agents-inboxes#across-a-deploy)
+
+## Answer every message
+
+You want a reply on the PR for everything that happens to it. Loop over the `inbox`, and comment from a step.
+
+```typescript {{ title: "inngest/lib/github.ts" }}
+const api = "https://api.github.com/repos/acme/web";
+
+export const gh = {
+  comment: async (pr: number, body: string) => {
+    const response = await fetch(`${api}/issues/${pr}/comments`, {
+      method: "POST",
+      headers: {
+        accept: "application/vnd.github+json",
+        authorization: `Bearer ${process.env.GITHUB_TOKEN}`,
+      },
+      body: JSON.stringify({ body }),
+    });
+
+    if (!response.ok) {
+      throw new Error(`Comment on #${pr}: ${response.status}`);
+    }
+
+    return await response.json();
+  },
+};
+```
+
+```typescript
+import { gh } from "../lib/github";
+
+async ({ inbox, thread, step }) => {
+  for await (const message of inbox) {
+    await step.run("comment", async () => {
+      return await gh.comment(Number(thread.key), `Seen: ${message.name}`);
+    });
+  }
+},
+```
+
+A reply on the PR is plain code in a step, so it happens once even when the run retries. `thread.key` is the PR's number as a string; send `pr/comment` for people's comments, not the helper's own.
+
+## Batches
+
+You want five comments that land together handled together. Loop over `inbox.batches()`.
+
+```typescript
+import { gh } from "../lib/github";
+
+async ({ inbox, thread, step }) => {
+  for await (const batch of inbox.batches({ max: 20 })) {
+    await step.run("comment", async () => {
+      return await gh.comment(Number(thread.key), `Seen ${batch.length} things`);
+    });
+  }
+},
+```
+
+`max` caps a flood and leaves the rest unread, oldest first.
+
+## Going quiet
+
+You want to know what happens when the PR goes quiet. There's no setting to reach for: an agent run ends the moment its inbox has nothing left in it, and that's true for every agent, always — the handler is the one from [Batches](#batches), unchanged.
+
+```typescript
+{
+  id: "pr-helper",
+  triggers,
+  thread: "event.data.pr",
+  inbox: [ciPassed],
+}
+```
+
+Both `for await` forms — one message at a time, or in batches — end as soon as there's nothing unread, not after some quiet period. A run isn't something that sits open waiting to see if more arrives; it does the work in front of it and finishes.
+
+What makes the PR helper feel like it's "still there" across a quiet PR isn't a long-lived run — it's the thread. The next trigger, or the next message a person or another agent sends, starts a fresh run on the same thread, and that run picks the history straight back up. [What a conversation keeps →](/docs/labs/agents/threads?ref=docs-labs-agents-inboxes#what-a-conversation-keeps)
+
+A run opened by `start()` or a handle's `message()` works the same way: it ends once it has answered. [Call it from code →](/docs/labs/agents/agent-teams?ref=docs-labs-agents-inboxes#call-it-from-code)
+
+{/* Go deeper */}
+
+## Give up waiting
+
+You want to stop waiting for CI that never reports. Give `next()` a `timeout`.
+
+```typescript
+import { gh } from "../lib/github";
+
+async ({ inbox, thread, step }) => {
+  await inbox.next();
+
+  const next = await inbox.next({ timeout: "1m" });
+
+  if (next === null) {
+    await step.run("comment", async () => {
+      return await gh.comment(
+        Number(thread.key),
+        "CI hasn't reported for a minute, so I'm moving on.",
+      );
+    });
+  }
+},
+```
+
+## Check without waiting
+
+You want to see what queued up between two steps, without stopping. `drain()` the inbox.
+
+```typescript
+async ({ inbox, step }) => {
+  await inbox.next();
+
+  await step.sleep("read the diff", "5s");
+
+  const waiting = await inbox.drain();
+},
+```
+
+It never waits: `waiting` is `[]` when nothing else came.
+
+## A second inbox
+
+You want to wait for this PR's build artifact, which the agent's definition says nothing about. Open a second inbox with `step.subscribe`.
+
+<AnnotatedCode>
+
+```typescript
+const thisPr = "async.data.pr == event.data.pr";
+
+const builds = step.subscribe("builds", [{ event: buildFinished, if: thisPr }]);
+
+const build = await builds.next();
+```
+
+<Annotation id="this-pr" lines="1" tease="only this PR" title="if" href="/docs/labs/agents/reference?ref=docs-labs-agents-inboxes#thread-keys-and-inbox-sources" linkText="Reference">
+An inbox you open isn't tied to the thread, so filter it. `async` is the arriving event, and `event` the run's trigger.
+</Annotation>
+
+<Annotation id="subscribe" lines="3" tease="this run only" title="step.subscribe" href="/docs/durable-execution/primitives/step-subscribe?ref=docs-labs-agents-inboxes#more-inboxes" linkText="More inboxes">
+A private inbox, open for as long as this run is. Your agent's own `inbox` is one of these, opened for you.
+</Annotation>
+
+</AnnotatedCode>
+
+Builds that finished before it opened aren't in it, and `build` is always `build/finished`.
+
+**Subscribe only to events the thread doesn't already have.** `buildFinished` is neither a trigger nor an `inbox` source here, which is what makes this safe. Two subscriptions matching the same arriving event is the one shape to avoid: whichever is read first takes it, the other never sees it, and nothing errors - so the message is silently gone. The thread holds the subscriptions for its own events for exactly that reason.
+
+So this is for something private to one run. To watch a new event *for the thread* - and have it reach whichever run is live, now and later - ask the thread instead, with [`thread.listen`](/docs/labs/agents/threads?ref=docs-labs-agents-inboxes#watch-for-something-else), or let the model ask with its own [`listen` tool](/docs/labs/agents/tools?ref=docs-labs-agents-inboxes#watching-for-things).
+
+## Stop watching
+
+You want to stop watching and know nothing was lost. `close()` the inbox.
+
+```typescript
+const build = await builds.next();
+
+const missed = await builds.close();
+```
+
+`missed` holds the unread messages. [Close an inbox →](/docs/durable-execution/primitives/step-subscribe?ref=docs-labs-agents-inboxes#close-an-inbox)
+
+## Clean up for you
+
+You want the inbox closed even if the code throws. Open it with `await using`.
+
+```typescript
+await using builds = step.subscribe("builds", [
+  { event: buildFinished, if: thisPr },
+]);
+```
+
+## Recipes and reference
+
+- [PR reviewer](/docs/labs/agents/recipes/pr-reviewer?ref=docs-labs-agents-inboxes)
+- [Issue triage](/docs/labs/agents/recipes/issue-triage?ref=docs-labs-agents-inboxes)
+- [Reference: the inbox](/docs/labs/agents/reference?ref=docs-labs-agents-inboxes#inbox)

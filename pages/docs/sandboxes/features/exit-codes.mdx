@@ -1,0 +1,94 @@
+import { AnnotatedCode, Annotation } from "shared/Docs/mdx";
+
+export const metaTitle = "Exit codes and errors | Sandboxes";
+export const description = "A Sandbox command that exits non-zero fails its step by default and shows red in the trace. Allow the exit codes that are information with exitCodes, and read failures with getCommandError.";
+
+# Exit codes and errors
+
+> A failed command stops your function and shows red in the trace. Allow the codes that are information.
+
+- **Fail loud by default.** A bad `npm ci` stops the run. [How it works →](#how-it-works)
+- **Allow the codes you expect.** `grep` exiting `1` is an answer, not an error. [Allow exit codes →](#allow-exit-codes)
+- **Read why it failed.** Command, exit code, and output tails. [Read the failure →](#read-the-failure)
+- **Same rule in CI.** `$` throws, `$({ exitCodes: "any" })` returns. [Inngest CI →](/docs/labs/ci/commands?ref=docs-sandboxes-exit-codes)
+
+<AnnotatedCode>
+
+```typescript {{ title: "inngest/functions/review.ts" }}
+import { getCommandError } from "inngest/experimental";
+
+await using sb = await step.sandbox.create("review");
+
+await sb.sh("install", "npm ci");
+
+const hit = await sb.sh("find", `grep -q ${needle} /work/log`, {
+  exitCodes: [0, 1],
+});
+
+const probe = await sb.sh("probe", "./flaky-tool", { exitCodes: "any" });
+
+try {
+  await sb.sh("lint", "npx eslint .");
+} catch (err) {
+  const failure = getCommandError(err);
+  await step.run("report", () => postComment(failure?.stderrTail));
+  throw err;
+}
+```
+
+<Annotation id="default" lines="5" tease="fails on non-zero" title="Throws by default" href="#how-it-works" linkText="How it works">
+Only exit `0` succeeds.
+</Annotation>
+
+<Annotation id="allow" lines="7-9" tease="1 is information" title="Allow specific codes" href="#allow-exit-codes" linkText="Allow exit codes">
+`1` is "no match". `hit.ok` is `false` for it.
+</Annotation>
+
+<Annotation id="any" lines="11" tease="never throws" title="Inspect it yourself" href="#allow-exit-codes" linkText="Allow exit codes">
+Never throws on an exit code.
+</Annotation>
+
+<Annotation id="read" lines="16" tease="read the details" title="Read what failed" href="#read-the-failure" linkText="Read the failure">
+Command, exit code, and output tails.
+</Annotation>
+
+</AnnotatedCode>
+
+## Allow exit codes
+
+```typescript {{ title: "TypeScript" }}
+const result = await sb.sh("diff", "diff -q a.txt b.txt", { exitCodes: [0, 1] });
+
+const hit = await sb.$({ exitCodes: [0, 1] })`grep ${needle} log`;
+```
+
+Works on `sh`, `python`, `typescript`, `run`, `commands.run`, and [`$`](/docs/sandboxes/features/run-code?ref=docs-sandboxes-exit-codes#the-template).
+
+## Read the failure
+
+```typescript {{ title: "TypeScript" }}
+const fn = inngest.createFunction(
+  {
+    id: "ci-lint",
+    triggers: { event: "repo/pushed" },
+    onFailure: async ({ error, step }) => {
+      const failure = getCommandError(error);
+      // { command, exitCode, stdoutTail, stderrTail, truncated } | undefined
+      await step.run("comment", () => postComment(failure?.stderrTail));
+    },
+  },
+  async ({ step }) => {
+    await step.sandbox.sh("lint", "npx eslint .");
+  },
+);
+```
+
+`getSandboxError(err)` covers timeouts and capacity: `code`, `retryable`, `ambiguous`.
+
+## How it works
+
+- A non-zero exit fails the step without retries, so `npm publish` never repeats.
+- The row and its group go red, and replays throw the same error.
+- Timeouts are `sandbox_exec_timed_out`. An unknown outcome is `operation_ambiguous`.
+
+[Run code →](/docs/sandboxes/features/run-code?ref=docs-sandboxes-exit-codes)

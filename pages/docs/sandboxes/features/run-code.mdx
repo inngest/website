@@ -1,0 +1,189 @@
+import { AnnotatedCode, Annotation } from "shared/Docs/mdx";
+
+export const metaTitle = "Run code | Sandboxes";
+export const description = "Run Python, TypeScript, or shell in an isolated Sandbox in one statement. Pass data in as variables, get a typed value back, and pick the runtime and version.";
+
+# Run code
+
+> Run Python, TypeScript, or shell in a Sandbox with one statement, and get the result back as a value.
+
+- **One statement.** Create, run, and destroy in a single call. [The runners →](#the-runners)
+- **Data in, value out.** Keys become variables, `return` sends JSON back. [Pass data in →](#pass-data-in)
+- **Typed results.** Validate the value with Zod, Valibot, or ArkType. [Type the result →](#type-the-result)
+- **Pick the runtime.** Node, Deno, Bun, or Python, at an exact version. [Choose a runtime →](#choose-a-runtime)
+- **Safe commands.** Interpolated values never reach a shell unquoted. [The `$` template →](#the-template)
+
+<AnnotatedCode>
+
+```typescript {{ title: "inngest/functions/grade.ts" }}
+import { step } from "inngest";
+import { z } from "zod";
+
+const grade = await step.sandbox.python(
+  "grade",
+  `
+  passed = [c for c in cases if c["got"] == c["want"]]
+  return {"passed": len(passed), "total": len(cases)}
+  `,
+  {
+    input: { cases: assignment.cases },
+    runtime: "python@3.12",
+    timeout: "2m",
+    schema: {
+      output: z.object({ passed: z.number(), total: z.number() }),
+    },
+  },
+);
+```
+
+<Annotation id="runner" lines="4" tease="one statement" title="One call runs the whole job" href="#the-runners" linkText="The runners">
+Boots a Sandbox, runs the code, and destroys it.
+</Annotation>
+
+<Annotation id="return" lines="8" tease="top-level return" title="Return a value" href="#return-a-value" linkText="Return a value">
+A top-level `return` sends JSON back to your function.
+</Annotation>
+
+<Annotation id="input" lines="11" tease="becomes globals" title="Pass data in as variables" href="#pass-data-in" linkText="Pass data in">
+Each key is a variable. Values are never spliced into source.
+</Annotation>
+
+<Annotation id="runtime" lines="12" tease="pick the version" title="Choose the version" href="#choose-a-runtime" linkText="Choose a runtime">
+Picks the language and exact version.
+</Annotation>
+
+<Annotation id="schema" lines="14-16" tease="typed result" title="Check the result" href="#type-the-result" linkText="Type the result">
+Validates the returned value and types it.
+</Annotation>
+
+</AnnotatedCode>
+
+## The runners
+
+```typescript {{ title: "TypeScript" }}
+const total = await step.sandbox.python<number>("sum", "return sum(range(10))");
+const listing = await step.sandbox.sh("ls", "ls -la /work");
+const count = await step.sandbox.typescript<number>("count", "return JSON.parse(raw).items.length", {
+  input: { raw: payload },
+});
+
+await using sb = await step.sandbox.create("many");
+await sb.python("a", "return 1");
+```
+
+`python` and `typescript` return the `return` value, `sh` returns `stdout`, and `run` returns the [full result](#the-full-result). Created Sandboxes share the method names.
+
+## Pass data in
+
+```typescript {{ title: "TypeScript" }}
+const label = await step.sandbox.python<string>(
+  "label",
+  `return f"{name} has {len(items)} items"`,
+  { input: { name: user.name, items: cart.items } },
+);
+```
+
+- Values are JSON. A `Date` or `Map` throws before any Sandbox starts.
+- `input` shows in the trace. Use [`secrets`](/docs/sandboxes/features/secrets?ref=docs-sandboxes-run-code) for sensitive values.
+
+## Return a value
+
+```typescript {{ title: "TypeScript" }}
+await step.sandbox.typescript("a", `const total = rows.length; return { total };`, { input: { rows } });
+await step.sandbox.python("b", `total = len(rows)\nreturn {"total": total}`, { input: { rows } });
+```
+
+Top-level `await` works. No `return` gives `undefined`.
+
+## Type the result
+
+```typescript {{ title: "TypeScript" }}
+const stats = await step.sandbox.python(
+  "stats",
+  `return {"mean": sum(xs) / len(xs), "n": len(xs)}`,
+  {
+    input: { xs },
+    schema: { output: z.object({ mean: z.number(), n: z.number() }) },
+  },
+);
+
+stats.mean;
+```
+
+Any [Standard Schema](https://standardschema.dev) works. A failing value fails the step with the issues.
+
+## Choose a runtime
+
+```typescript {{ title: "TypeScript" }}
+await step.sandbox.typescript("node", code, { runtime: "node@22" });
+await step.sandbox.typescript("edge", code, { runtime: "deno" });
+await step.sandbox.typescript("fast", code, { runtime: "bun" });
+await step.sandbox.python("ml", code, { runtime: "python@3.13" });
+```
+
+Also `node@20`, `node@24`, `python@3.11`, `python@3.12`. Each is a [runtime image](/docs/sandboxes/features/base-images?ref=docs-sandboxes-run-code).
+
+## The `$` template
+
+```typescript {{ title: "TypeScript" }}
+await using sb = await step.sandbox.create("repo");
+
+await sb.$`git clone --depth 1 ${url} /work/repo`;
+const files = await sb.$.sh`ls /work/repo | head -5`.text();
+const pkg = await sb.$`cat /work/repo/package.json`.json();
+const tests = await sb.$.sh({ exitCodes: [0, 1], timeout: "4m" })`cd /work/repo && npm test`;
+```
+
+- `` sb.$`…` `` runs the command directly, with no shell. Each `${value}` is one argument.
+- `` sb.$.sh`…` `` runs `/bin/sh -c`, with values quoted, for pipes and `&&`.
+- Pass options by calling `$` first: `timeout`, `env`, `cwd`, `retries`, `exitCodes`, `id`, and `quiet`. Keep the configured tag to reuse it: `const repo$ = sb.$({ cwd: "/work/repo" })`.
+- Non-zero exits stop the run, as in [Exit codes](/docs/sandboxes/features/exit-codes?ref=docs-sandboxes-run-code).
+
+## The full result
+
+```typescript {{ title: "TypeScript" }}
+type SandboxResult = {
+  ok: boolean;
+  exitCode: number;
+  stdout: string;
+  stderr: string;
+  result?: unknown;
+  truncated: boolean;
+  durationMs: number;
+};
+```
+
+`result` is absent for shell. `ok` is `false` only for an [allowed exit code](/docs/sandboxes/features/exit-codes?ref=docs-sandboxes-run-code).
+
+## Options
+
+```typescript {{ title: "TypeScript" }}
+type RunnerOptions = {
+  input?: Record<string, JSONValue>;
+  runtime?: string;
+  from?: SandboxImage;
+  vcpu?: number;
+  memoryMb?: number;
+  files?: Record<string, string | Uint8Array>;
+  env?: Record<string, string>;
+  secrets?: string[];
+  cwd?: string;
+  timeout?: SandboxDuration;
+  exitCodes?: number[] | "any";
+  schema?: { input?: StandardSchemaV1; output?: StandardSchemaV1 };
+  tools?: SandboxTools;
+  toolOptions?: SandboxToolOptions;
+  owner?: "persistent" | { runId: string };
+};
+```
+
+- Defaults: `vcpu` 2, `memoryMb` 2048, `timeout` `"30s"` up to `"5m"`. See [limits](/docs/sandboxes/limits?ref=docs-sandboxes-run-code).
+- `from` is [`image.inngest()` or `image.custom()`](/docs/sandboxes/features/base-images?ref=docs-sandboxes-run-code#choose-an-image).
+- [`tools`](/docs/sandboxes/features/tools?ref=docs-sandboxes-run-code) and [`owner`](/docs/sandboxes/features/run-owned?ref=docs-sandboxes-run-code) have their own pages.
+
+## How it works
+
+- Each runner is a group of durable steps. A retry repeats only the failed phase.
+- Each statement is one [trace](/docs/sandboxes/features/traces?ref=docs-sandboxes-run-code) row with create, run, and destroy phases.
+
+[Exit codes and errors →](/docs/sandboxes/features/exit-codes?ref=docs-sandboxes-run-code)

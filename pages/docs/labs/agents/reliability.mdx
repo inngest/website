@@ -1,0 +1,156 @@
+import { AnnotatedCode, Annotation } from "shared/Docs/mdx";
+
+export const metaTitle = "Reliability | Inngest Agents";
+export const description = "Make an Inngest agent safe to leave running: durable retries, caps on turns and on the agents it starts, sorted model errors, and what happens across a deploy.";
+
+# Reliability
+
+> Leave an agent running: it retries what fails, caps how deep it delegates and picks up cleanly after a crash or a deploy.
+
+Every model call and tool call is a [durable step](/docs/labs/agents/agents?ref=docs-labs-agents-reliability#steps), so a retry never repeats finished work.
+
+- **Cap turns and delegation depth.** No runaway loops, no runaway chains of started agents. [Caps →](#cap-turns)
+- **Sorted model errors.** A rate limit waits; a bad request fails for good. [Model errors →](#model-errors)
+- **Run across a deploy.** Each run is short-lived, so a deploy mid-run just means the next run on the thread lands on newer code. [Across a deploy →](#across-a-deploy)
+- **A failed run's messages are not lost.** The thread hands them to the next run. [When a run fails for good →](#what-happens-when-a-run-fails-for-good)
+
+<AnnotatedCode>
+
+```typescript {{ title: "inngest/agents/support.ts" }}
+import { agents } from "../client";
+import { ticketOpened, ticketReplied } from "../events";
+import { claude } from "../models/claude";
+
+export const support = agents.agent(
+  {
+    id: "support",
+    triggers: [ticketOpened],
+    thread: "event.data.ticket",
+    inbox: [ticketReplied],
+    model: claude,
+    system: "You answer support questions.",
+    limits: { depth: 2 },
+    discovery: { agents: ["support/researcher"] },
+  },
+  async ({ inbox, loop }) => {
+    let answer = "";
+
+    for await (const batch of inbox.batches()) {
+      const result = await loop(batch);
+
+      answer = result.text;
+    }
+
+    return answer;
+  },
+);
+```
+
+<Annotation id="limits" lines="11-12" tease="who it may start" title="Limits and discovery" href="/docs/labs/agents/agent-discovery?ref=docs-labs-agents-reliability#who-it-may-start" linkText="Who it may start">
+Agents it starts can start agents, but no deeper than that. Its model may find and start only `support/researcher`.
+</Annotation>
+
+</AnnotatedCode>
+
+The agents on this page use these events:
+
+```typescript {{ title: "inngest/events.ts" }}
+import { eventType } from "inngest";
+import { z } from "zod";
+
+export const ticketOpened = eventType("ticket/opened", {
+  schema: z.object({ ticket: z.string(), text: z.string() }),
+});
+
+export const ticketReplied = eventType("ticket/replied", {
+  schema: z.object({
+    ticket: z.string(),
+    from: z.string(),
+    text: z.string(),
+  }),
+});
+```
+
+## Cap turns
+
+A loop that keeps calling tools stops after `maxTurns` (40 by default). An agent with no handler sets it as `loop: { maxTurns: 10 }` on its definition.
+
+<AnnotatedCode>
+
+```typescript {{ title: "inngest/agents/lookup.ts" }}
+import { agents } from "../client";
+import { ticketOpened } from "../events";
+import { claude } from "../models/claude";
+
+export const lookup = agents.agent(
+  {
+    id: "lookup",
+    triggers: [ticketOpened],
+    thread: "event.data.ticket",
+    model: claude,
+    system: "Answer from the docs.",
+  },
+  async ({ inbox, loop }) => {
+    let answer = "";
+
+    for await (const batch of inbox.batches()) {
+      const result = await loop(batch, { maxTurns: 10 });
+
+      if (result.end === "maxTurns") {
+        return "I ran out of turns before I finished.";
+      }
+
+      answer = result.text;
+    }
+
+    return answer;
+  },
+);
+```
+
+<Annotation id="turns" lines="17" tease="for this call" title="maxTurns" href="/docs/labs/agents/reference?ref=docs-labs-agents-reliability#the-loop" linkText="Reference: the loop">
+A loop option, so each call can have its own.
+</Annotation>
+
+</AnnotatedCode>
+
+## Cap delegation depth
+
+`limits.depth` caps how many levels of started agents sit below this one: this agent can start agents, and (at the default, `3`) those can start two more levels before a start is refused. The default is deliberately generous — deep enough that discovery and delegation compose on their own, without every agent author having to raise it by hand — not a tight safety cap. The lowest `depth` anywhere in the chain wins, so one cautious agent near the root bounds the whole tree underneath it. [Who it may start →](/docs/labs/agents/agent-discovery?ref=docs-labs-agents-reliability#who-it-may-start)
+
+A start that a limit refuses throws in code, and the model gets back an error result it can read and act on — it isn't silently dropped.
+
+## Model errors
+
+A rate limit (429, 529, or a 5xx) waits for the provider's `retry-after` when it sent one, for any model function, and retries inside the step. A final error — a bad request, a refusal, a reply cut off by `maxTokens` — fails the step for good and shows in the trace; no amount of retrying would fix it.
+
+## Across a deploy
+
+An agent run is short-lived: it answers and ends the moment its inbox is empty, there's no quiet period it sits waiting through. So a deploy almost never lands mid-run — it lands between runs, and the next message to a thread simply starts a fresh run on whatever code is live, reading the thread's history back same as always. [Short-lived runs →](/docs/labs/agents/reference?ref=docs-labs-agents-reliability#short-lived-runs)
+
+For the rarer case where a run genuinely is still live across a deploy (it's waiting on a sandbox call, or on an agent it started with `start_agent`), the usual Inngest guarantee holds: it replays on your latest code when it resumes. Every model call, tool call, `step.run` of your own and inbox message is a step toward the 1,000-step limit. [Limits →](/docs/durable-execution/limits?ref=docs-labs-agents-reliability#platform-limits)
+
+## What happens when a run fails for good
+
+A run that fails for good - not cancelled, genuinely exhausted its retries - shows its error in the trace. Getting the messages it was handling to a fresh run is the thread's job, and not something an agent's definition opts into. There is no flag.
+
+The mechanism is a **take-up watermark**. The thread holds the log; a run that ends records how far it read. Any entry the thread holds that nothing took up **leads the next run's inbox**, before anything new. So a message the failed run never finished with is not gone: the next run on the thread is handed it first.
+
+That is the same mechanism that makes a lost forward harmless. A forward skipped at the agent's singleton leaves the agent **late, not wrong**, because the entry is still in the log and the next read hands it back. [Late, not wrong →](/docs/labs/agents/reference?ref=docs-labs-agents-reliability#late-not-wrong)
+
+It also fails in the right direction. A take-up record is fire and forget like every other write, so one can be lost - and losing one means the next run is handed those entries **again**: duplication, not loss. Every write carries an id derived from durable values, so a write that arrives twice is applied once and the duplication costs nothing.
+
+**What it is not:** a promise about any particular reply. An answer given while the log is still converging can be incomplete, the way it can in any concurrent system. What the thread guarantees is that nothing its log holds is lost to a run that reads it. [Known limits →](/docs/labs/agents/reference?ref=docs-labs-agents-reliability#known-limits)
+
+Every run after the first gets [`previousRun`](/docs/labs/agents/reference?ref=docs-labs-agents-reliability#the-handler), regardless of how the run before it ended. It is `{ runId, status, at, error? }`: `status` is `"completed"`, `"failed"` or `"cancelled"`, and `at` is milliseconds since the epoch.
+
+## Gotchas
+
+- **A cancelled run isn't resumed the way a failed one might be** — a cancellation (`thread.stop()`, `cancelOn`, a `timeouts.finish` limit) is a choice, not a failure.
+- **Work you don't await still runs, once,** and the run ends after it. Nothing new starts after the handler returns. An un-awaited `score()` is written the same way.
+
+## Recipes and reference
+
+- [Lead and specialists](/docs/labs/agents/recipes/agent-teams?ref=docs-labs-agents-reliability): `limits.depth` bounds how far a tree of started agents can grow.
+- [Reference: the thread](/docs/labs/agents/reference?ref=docs-labs-agents-reliability#the-thread): the three functions behind one agent, and the limits this design accepts.
+- [Reference: limits](/docs/labs/agents/reference?ref=docs-labs-agents-reliability#limits)

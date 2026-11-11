@@ -1,0 +1,179 @@
+import { AnnotatedCode, Annotation } from "shared/Docs/mdx";
+
+export const metaTitle = "Support assistant | Inngest Agents";
+export const description = "Build an agent that answers each support ticket on its own thread, looks up orders and replies through a tool you write.";
+
+# Support assistant
+
+> An agent that answers every ticket on its own thread, and remembers the ticket across restarts.
+
+```text
+ticket/opened    T-1  Where is order 7?
+Support          sendReply: Order 7 shipped with UPS and arrives Friday.
+
+ticket/replied   T-1  maya: Thanks! When does order 9 usually ship?
+Support          sendReply: Order status varies; I can look up 9 if you'd like.
+
+(another ticket, an hour later)
+ticket/opened    T-2  Where is order 9?
+Support          sendReply: Order 9 shipped with UPS, arriving Friday.
+```
+
+Screenshot needed: the first run's trace in the Dev Server, with the `sendReply` step.
+
+## The code
+
+Your helpdesk's webhook route sends these two events with `inngest.send`. It sends `ticket/replied` for customer messages, not for the assistant's own replies.
+
+```typescript {{ title: "inngest/events.ts" }}
+import { eventType } from "inngest";
+import { z } from "zod";
+
+export const ticketOpened = eventType("ticket/opened", {
+  schema: z.object({ ticket: z.string(), text: z.string() }),
+});
+
+export const ticketReplied = eventType("ticket/replied", {
+  schema: z.object({
+    ticket: z.string(),
+    from: z.string(),
+    text: z.string(),
+  }),
+});
+```
+
+<AnnotatedCode>
+
+```typescript {{ title: "inngest/agents/support.ts" }}
+import { agents } from "../client";
+import { ticketOpened, ticketReplied } from "../events";
+import { claude } from "../models/claude";
+import { lookupOrder } from "../tools/lookupOrder";
+import { sendReply } from "../tools/sendReply";
+
+export const support = agents.agent({
+  id: "support",
+  triggers: [ticketOpened, ticketReplied],
+  thread: "event.data.ticket",
+  model: claude,
+  system: "Answer each ticket and send the answer with sendReply.",
+  tools: { lookupOrder, sendReply },
+});
+```
+
+<Annotation id="thread" lines="8-9" tease="one thread per ticket" title="Start from your events" href="/docs/labs/agents/threads?ref=docs-labs-agents-recipes-support-assistant#which-conversation-is-this" linkText="Which conversation is this?">
+Both events carry the ticket, so a ticket's messages share one thread and its history.
+</Annotation>
+
+<Annotation id="tools" lines="10-11" tease="no handler needed" title="Model and tools" href="/docs/labs/agents/models?ref=docs-labs-agents-recipes-support-assistant#delete-the-handler" linkText="Delete the handler">
+With no handler, the agent runs the model with these tools until it answers. The answer is only the run's output, so `sendReply` is how the customer hears it.
+</Annotation>
+
+</AnnotatedCode>
+
+```typescript {{ title: "inngest/tools/sendReply.ts" }}
+import { tool } from "inngest/experimental";
+import { z } from "zod";
+import { helpdesk } from "../lib/helpdesk";
+
+export const sendReply = tool.step({
+  description: "Sends a reply to the customer on their ticket",
+  input: z.object({ ticket: z.string(), body: z.string() }),
+  run: async ({ ticket, body }) => {
+    return await helpdesk.reply(ticket, body);
+  },
+});
+```
+
+```typescript {{ title: "inngest/lib/helpdesk.ts" }}
+const api = "https://helpdesk.acme.test/api";
+
+export const helpdesk = {
+  reply: async (ticket: string, body: string) => {
+    const response = await fetch(`${api}/tickets/${ticket}/replies`, {
+      method: "POST",
+      headers: {
+        authorization: `Bearer ${process.env.HELPDESK_TOKEN}`,
+        "content-type": "application/json",
+      },
+      body: JSON.stringify({ body }),
+    });
+
+    if (!response.ok) {
+      throw new Error(`Reply on ${ticket}: ${response.status}`);
+    }
+
+    return await response.json();
+  },
+};
+```
+
+```typescript {{ title: "inngest/tools/lookupOrder.ts" }}
+import { tool } from "inngest/experimental";
+import { z } from "zod";
+
+export const lookupOrder = tool.step({
+  description: "Find an order by ID",
+  input: z.object({ id: z.string() }),
+  run: async ({ id }) => {
+    return { id, status: "shipped", carrier: "UPS", eta: "Friday" };
+  },
+});
+```
+
+```typescript {{ title: "app/api/inngest/route.ts" }}
+import { serve } from "inngest/next";
+import { agents, inngest } from "../../../inngest/client";
+import "../../../inngest/agents/support";
+
+export const { GET, POST, PUT } = serve({
+  client: inngest,
+  functions: agents.functions(),
+});
+```
+
+The [client](/docs/labs/agents/quick-start?ref=docs-labs-agents-recipes-support-assistant#create-the-client) and [model](/docs/labs/agents/quick-start?ref=docs-labs-agents-recipes-support-assistant#pick-a-model) are the quick start's.
+
+## What it shows off
+
+- [Threads](/docs/labs/agents/threads?ref=docs-labs-agents-recipes-support-assistant#what-a-conversation-keeps) give each ticket its own history.
+- [An agent with no handler](/docs/labs/agents/models?ref=docs-labs-agents-recipes-support-assistant#delete-the-handler) answers from a definition alone.
+- [A tool you write](/docs/labs/agents/tools?ref=docs-labs-agents-recipes-support-assistant#your-own-git-hub-tools) tells the customer, as a step that retries and never repeats.
+
+## Run it
+
+Set the project up as in the [quick start](/docs/labs/agents/quick-start?ref=docs-labs-agents-recipes-support-assistant#install), in a Next.js app.
+
+```bash
+export ANTHROPIC_API_KEY=sk-ant-...
+export HELPDESK_TOKEN=...
+npm run dev
+```
+
+```bash
+npx inngest-cli@latest dev -u http://localhost:3000/api/inngest
+```
+
+Send a ticket from the Dev Server's **Send event** button at [localhost:8288](http://localhost:8288), or from code:
+
+```typescript {{ title: "scripts/openTicket.ts" }}
+import { inngest } from "../inngest/client";
+
+await inngest.send({
+  name: "ticket/opened",
+  data: { ticket: "T-1", text: "Where is order 7?" },
+});
+```
+
+Then send `ticket/replied` for `T-1` with `from: "maya"` and a follow-up `text`, and open `T-2` as a fresh ticket. With no helpdesk yet, swap the `fetch` in `helpdesk.reply` for a `console.log` and read the replies in the app's output.
+
+## Variations
+
+- [Check before acting](/docs/labs/agents/tools?ref=docs-labs-agents-recipes-support-assistant#check-before-acting) wraps `sendReply` so it refuses a reply that holds a secret.
+- [Sandboxes](/docs/labs/agents/sandboxes?ref=docs-labs-agents-recipes-support-assistant) gives it a sandbox to run code.
+
+## Learn more
+
+- [Agents](/docs/labs/agents/agents?ref=docs-labs-agents-recipes-support-assistant)
+- [Threads](/docs/labs/agents/threads?ref=docs-labs-agents-recipes-support-assistant)
+- Next recipe: [Issue triage](/docs/labs/agents/recipes/issue-triage?ref=docs-labs-agents-recipes-support-assistant)
