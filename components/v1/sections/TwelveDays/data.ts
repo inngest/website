@@ -232,14 +232,33 @@ export const DAYS: WorkflowDay[] = [
   },
 ];
 
-/** Door front colours, cycled by day. Ink is the number and outline. */
+/** Door front colours from Savannah's design, cycled by day. */
 export const DOOR_FACES = [
-  { bg: COLORS.salmon, ink: COLORS.ink, num: "#FFFFFF" },
-  { bg: COLORS.lime, ink: COLORS.ink, num: COLORS.ink },
-  { bg: COLORS.green, ink: COLORS.ink, num: COLORS.ink },
-  { bg: COLORS.cream, ink: COLORS.ink, num: COLORS.salmon },
-  { bg: COLORS.ink, ink: COLORS.ink, num: COLORS.lime },
-  { bg: "#FFFFFF", ink: COLORS.ink, num: COLORS.blue },
+  { bg: "#0BDD48", num: "#FFFFFF" },
+  { bg: "#FCD900", num: "#020202" },
+  { bg: "#F65C4F", num: "#FFFFFF" },
+];
+
+/**
+ * Where each door's illustration sits in its window, in the design's
+ * units (the window is 295.5 × 208). Negative `y` means the art pokes
+ * out of the top. From the "12 days of workflow" page of the Long
+ * Running Campaign Figma file (frame 938:13060); the art itself is
+ * public/assets/v1/12-days/doors/day-N.svg.
+ */
+export const DOOR_ART = [
+  { x: 33.8, y: -26.6, w: 224 },
+  { x: 10.4, y: -26.5, w: 271 },
+  { x: 7.3, y: -29.0, w: 277 },
+  { x: 8.2, y: 3.5, w: 274 },
+  { x: 42.5, y: -25.6, w: 207 },
+  { x: 10.4, y: -37.1, w: 270 },
+  { x: 41.2, y: -12.3, w: 209 },
+  { x: 8.1, y: -15.9, w: 274 },
+  { x: 23.5, y: -35.5, w: 245 },
+  { x: 53.9, y: -36.1, w: 184 },
+  { x: 23.6, y: -40.6, w: 243 },
+  { x: 9.2, y: -32.0, w: 273 },
 ];
 
 /**
