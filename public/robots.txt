@@ -5,11 +5,6 @@
 # Standard crawlers
 User-agent: *
 Allow: /
-# To be removed once internal links stop carrying ?ref= (it is moving to a
-# data-ref attribute), so external ?ref= links can be crawled and
-# consolidated by the canonical tag.
-Disallow: /*?ref=
-Disallow: /*?*&ref=
 Disallow: /*?redirect_url=
 Disallow: /*?*&redirect_url=
 
