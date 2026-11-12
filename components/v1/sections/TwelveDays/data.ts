@@ -456,7 +456,7 @@ export const BUILDATHON = {
   rules: [
     "Your workflow uses every one of the twelve primitives below.",
     "It does one simple thing, in the most complicated way you can make work.",
-    "It's deployed on Vercel, and the code is in a public GitHub repo.",
+    "It's deployed somewhere we can try it, and the code is in a public GitHub repo.",
     "Make it weird!*",
   ],
   rulesFootnote:
