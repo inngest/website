@@ -10,7 +10,6 @@ import { CLOSING } from "@/components/v1/sections/TwelveDays/data";
 import Finale from "@/components/v1/sections/TwelveDays/Finale";
 import Hero from "@/components/v1/sections/TwelveDays/Hero";
 import PreviewClock from "@/components/v1/sections/TwelveDays/PreviewClock";
-import HowItOpens from "@/components/v1/sections/TwelveDays/HowItOpens";
 import { useCalendarClock } from "@/components/v1/sections/TwelveDays/useCalendarClock";
 
 /**
@@ -18,9 +17,8 @@ import { useCalendarClock } from "@/components/v1/sections/TwelveDays/useCalenda
  * campaign, in the Build for the Lonng Run brand.
  *
  * Hero → countdown ticker → the advent calendar → the build-a-thon →
- * the live CodeTV finale → how the doors open (the cron job) → closing
- * quick starts. (The playable machine, Machine.tsx, is off the page
- * after Lauren's review.)
+ * the live CodeTV finale → closing quick starts. (The playable machine,
+ * Machine.tsx, is off the page after Lauren's review.)
  *
  * One clock for the whole page, so the ticker and the doors flip at
  * the same instant at midnight.
@@ -47,7 +45,6 @@ export default function TwelveDaysOfWorkflows({
         <AdventCalendar now={now} />
         <BuildathonTeaser />
         <Finale />
-        <HowItOpens />
         {/* The shared closing section sets its buttons and cards in
             caps; this page has none, so they're turned off here. */}
         <div className="[&_*]:!normal-case">

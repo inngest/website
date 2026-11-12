@@ -261,31 +261,6 @@ export const DOOR_ART = [
   { x: 9.2, y: -32.0, w: 273 },
 ];
 
-/**
- * The cron function that opens the doors, shown on the page.
- *
- * NOT WIRED UP: the page unlocks doors from the visitor's clock (see
- * useCalendarClock), so nothing has to run on a server.
- */
-export const UNLOCK_FUNCTION = `inngest.createFunction(
-  {
-    id: "open-todays-door",
-    triggers: {
-      // Midnight Eastern, every day in December.
-      cron: "TZ=America/New_York 0 0 * 12 *",
-    },
-  },
-  async ({ step }) => {
-    const day = await step.run("which-door", () =>
-      calendar.doorFor(new Date())
-    );
-    if (!day) return; // Outside December 7–18.
-    await step.run("open-door", () =>
-      calendar.open(day)
-    );
-  }
-);`;
-
 export const HERO = {
   chips: ["Inngest × CodeTV", "December 7–18"],
   // Set like the posters: a huge line, a mono line, a huge line. Read
@@ -320,16 +295,6 @@ export const CALENDAR = {
   },
   /** Each door's sign-up link. */
   tryIt: "Try it free",
-} as const;
-
-export const HOW_IT_OPENS = {
-  eyebrow: "How the doors open",
-  title: "A cron job. Obviously.",
-  body: "No elves working overtime. Every midnight Eastern, an Inngest function opens the next door. Watch the schedule in action and see how a little orchestration keeps the season running.",
-  cta: {
-    label: "See how it works",
-    href: `/docs/durable-execution/guides-and-advanced/events-and-triggers/schedules-and-delayed-starts?ref=${REF}`,
-  },
 } as const;
 
 /** The email sign-up in the calendar (EmailSignup.tsx). */
