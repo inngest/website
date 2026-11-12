@@ -42,8 +42,6 @@ const PATTERNS: Partial<Record<keyof Entry, RegExp>> = {
   github: /^https:\/\/(www\.)?github\.com\/[^/]+\/[^/]+/,
 };
 
-const OPTIONAL = new Set<keyof Entry>(["description"]);
-
 /** Read and check one entry. Returns the problem as a string if it's bad. */
 function parse(body: unknown): Entry | string {
   if (!body || typeof body !== "object") return "Invalid request";
@@ -53,7 +51,7 @@ function parse(body: unknown): Entry | string {
     const value = typeof raw[key] === "string" ? raw[key].trim() : "";
     const max =
       key === "description" ? MAX_LENGTH.description : MAX_LENGTH.default;
-    if (!value && !OPTIONAL.has(key)) return `${key} is required`;
+    if (!value) return `${key} is required`;
     if (value.length > max) return `${key} is too long`;
     if (value && PATTERNS[key] && !PATTERNS[key].test(value)) {
       return `${key} doesn't look right`;

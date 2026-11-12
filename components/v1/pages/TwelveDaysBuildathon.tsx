@@ -164,7 +164,17 @@ export default function TwelveDaysBuildathon() {
             </div>
 
             <div id="submit" className="flex scroll-mt-24 flex-col gap-5">
-              <h2 className={POSTER_EYEBROW}>{BUILDATHON.formTitle}</h2>
+              {/* A big heading and the deadline, so the form reads as a
+                  build-a-thon entry, not a sales form, at a glance. */}
+              <div className="flex flex-col gap-2">
+                <p className={`${POSTER_EYEBROW} text-[#F55C50]`}>
+                  {BUILDATHON.chips[0]}
+                </p>
+                <h2 className="font-sans text-[clamp(36px,4.4vw,56px)] font-black leading-[0.95] tracking-[-0.02em]">
+                  {BUILDATHON.formTitle}
+                </h2>
+                <p className="font-v1Label text-[15px]">{BUILDATHON.when}</p>
+              </div>
               <BuildathonForm />
             </div>
           </div>

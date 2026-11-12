@@ -289,7 +289,8 @@ export default function BuildathonForm() {
       >
         <textarea
           id="buildathon-description"
-          rows={3}
+          required
+          rows={4}
           maxLength={500}
           aria-describedby="buildathon-description-hint"
           value={entry.description}
