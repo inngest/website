@@ -60,9 +60,7 @@ export default function Hero() {
                 Bootstrapped, or raised less than {PROGRAM_RULES.maxRaisedLabel}{" "}
                 in total
               </li>
-              <li>
-                Not on a paid Inngest plan yet (Free plan accounts are welcome)
-              </li>
+              <li>New Inngest customers</li>
             </ul>
             <p className="text-v1-body-sm-loose text-v1-frost/80">
               In Y Combinator?{" "}

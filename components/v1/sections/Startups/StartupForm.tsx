@@ -3,10 +3,8 @@
 import { useState, type FormEvent } from "react";
 import Button from "@/components/v1/Button";
 import { SelectField, TextField, TextareaField } from "@/components/v1/forms";
-import { SIGN_UP_URL } from "@/components/v1/nav-config";
 import { analytics } from "@/utils/segment";
 import { calculateSpamScore } from "@/utils/v1/contactSubmit";
-import { appendRef } from "@/utils/v1/ref";
 import { readFirstTouch } from "src/shared/firstTouch";
 import { FORM_TYPE } from "src/components/ContactForm.constants";
 import {
@@ -170,9 +168,6 @@ export default function StartupForm() {
   // Same denser sizing as the YC form card.
   const fieldClassName = "h-[38px] text-[14px]";
   const labelClassName = "text-v1-body-sm-loose";
-  const hintLinkClassName =
-    "ml-1 font-v1Body text-[12px] normal-case text-v1-frost/70 underline hover:text-v1-frost";
-
   return (
     <form onSubmit={handleSubmit} className="flex flex-col gap-5">
       <div className="flex flex-col gap-5">
@@ -228,20 +223,7 @@ export default function StartupForm() {
         <TextField
           id="startup-account-email"
           type="email"
-          label={
-            <>
-              Inngest account email{" "}
-              <a
-                className={hintLinkClassName}
-                target="_blank"
-                rel="noopener noreferrer"
-                href={appendRef(SIGN_UP_URL, "startups-form")}
-              >
-                No account yet? Sign up free
-              </a>
-            </>
-          }
-          required
+          label="Inngest account email (if you have one)"
           value={accountEmail}
           onChange={setAccountEmail}
           className={fieldClassName}
