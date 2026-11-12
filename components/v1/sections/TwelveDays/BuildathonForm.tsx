@@ -6,12 +6,13 @@ import { readFirstTouch } from "src/shared/firstTouch";
 import { BUILDATHON, REF } from "@/components/v1/sections/TwelveDays/data";
 import { buttonClass } from "@/components/v1/sections/TwelveDays/poster";
 
-/** Posts the entry to the build-a-thon Slack channel. */
+/** Sends the entry to Segment from the server (see the route for where it goes). */
 const SUBMIT_URL = "/api/12-days/build-a-thon";
 
 /**
- * Segment event for entries, also pushed to GTM. The Customer.io - Website
- * destination in Segment maps this exact name (event + person, setting
+ * Segment event for entries, sent by the server route (which repeats
+ * this name) and pushed to GTM here. Segment maps this exact name to Attio
+ * and Customer.io (event + person, setting
  * `twelve_days_buildathon_submitted_at`), and the "CE - 12 Days
  * Build-a-thon Submitted" trigger in GTM matches it. Rename only together
  * with those.
@@ -68,8 +69,8 @@ function Field({
 
 /**
  * The build-a-thon entry form. The entry goes to /api/12-days/build-a-thon,
- * which posts it to Slack; a `12 Days Build-a-thon Submitted` track call
- * also goes to Segment for attribution. Track only, no identify, so a
+ * which sends `12 Days Build-a-thon Submitted` to Segment (Segment → Attio
+ * posts it to Slack). Track only, no identify, so a
  * typed-in email never overwrites an existing person's attributes.
  * Remembered in this browser so a return visit shows the confirmation
  * instead of an empty form.
@@ -105,12 +106,32 @@ export default function BuildathonForm() {
     }
     const firstTouch = readFirstTouch();
 
-    // The entry itself goes to the server, which posts it to Slack.
+    // The browser's Segment ID, so the server's event joins this visitor's
+    // page views. A blocked or slow analytics client just means no ID.
+    let anonymousId: string | null = null;
+    try {
+      const user = await Promise.race([
+        analytics.user(),
+        new Promise<null>((resolve) => setTimeout(() => resolve(null), 1500)),
+      ]);
+      anonymousId = user?.anonymousId() ?? null;
+    } catch {
+      // noop
+    }
+
+    // The server sends the Segment event, so it isn't tracked here too.
     try {
       const res = await fetch(SUBMIT_URL, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ ...entry, website: honeypot, ref }),
+        body: JSON.stringify({
+          ...entry,
+          website: honeypot,
+          ref,
+          campaign: REF,
+          firstTouch,
+          anonymousId,
+        }),
       });
       if (!res.ok) throw new Error(`Submit failed: ${res.status}`);
     } catch (err) {
@@ -119,24 +140,6 @@ export default function BuildathonForm() {
       return;
     }
 
-    // Segment is for attribution only, so a blocked or slow analytics
-    // client doesn't hold up the confirmation.
-    analytics
-      .track(SUBMITTED_EVENT, {
-        name: entry.name.trim(),
-        email: entry.email.trim(),
-        company: entry.company.trim(),
-        linkedin_url: entry.linkedin.trim(),
-        vercel_url: entry.vercel.trim(),
-        github_url: entry.github.trim(),
-        description: entry.description.trim(),
-        campaign: REF,
-        form_type: "12_days_build_a_thon",
-        form_source: "website",
-        ref,
-        ...(firstTouch || {}),
-      })
-      .catch(() => {});
     window.dataLayer?.push({ event: SUBMITTED_EVENT, ref });
 
     try {

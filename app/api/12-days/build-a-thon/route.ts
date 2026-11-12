@@ -4,13 +4,21 @@ export const runtime = "nodejs";
 
 /**
  * Build-a-thon entries from /12-days-of-workflows/build-a-thon. Each one
- * is posted to the team's Slack channel through an incoming webhook
- * (SLACK_BUILDATHON_WEBHOOK_URL in Vercel).
+ * is sent to Segment from the server as "12 Days Build-a-thon Submitted",
+ * so an ad blocker that stops Segment in the browser can't lose an entry.
  *
- * Runs on the server so an ad blocker that stops Segment in the browser
- * can't lose an entry. The form still sends its Segment event for
- * attribution.
+ * Segment forwards it to Attio, where a workflow adds the person to the
+ * build-a-thon list and posts to Slack, and to Customer.io. Those
+ * mappings and the GTM trigger match this exact event name and these
+ * property names, so rename nothing here without checking with whoever
+ * owns the Segment setup.
  */
+
+/** Must match SUBMITTED_EVENT in BuildathonForm. */
+const EVENT = "12 Days Build-a-thon Submitted";
+
+/** The same Segment source the site's browser events use. */
+const SEGMENT_TRACK_URL = "https://api.segment.io/v1/track";
 
 const FIELDS = [
   "name",
@@ -54,65 +62,32 @@ function parse(body: unknown): Entry | string {
   return entry;
 }
 
-/**
- * Slack treats <, > and & as markup, so a submitted value could
- * otherwise turn into a link or an @channel.
- */
-function escape(text: string): string {
-  return text
-    .replace(/&/g, "&amp;")
-    .replace(/</g, "&lt;")
-    .replace(/>/g, "&gt;");
+/** First-touch attribution keys the form may pass through from its cookie. */
+const FIRST_TOUCH_KEYS = [
+  "first_utm_source",
+  "first_utm_medium",
+  "first_utm_campaign",
+  "first_utm_content",
+  "first_utm_term",
+  "first_ref",
+  "first_landing_url",
+  "first_referrer",
+  "first_seen_at",
+] as const;
+
+function firstTouch(raw: Record<string, unknown>): Record<string, string> {
+  const source = raw.firstTouch;
+  if (!source || typeof source !== "object") return {};
+  const out: Record<string, string> = {};
+  for (const key of FIRST_TOUCH_KEYS) {
+    const value = (source as Record<string, unknown>)[key];
+    if (typeof value === "string" && value) out[key] = value.slice(0, 500);
+  }
+  return out;
 }
 
-/** A Slack link. A "|" in the URL would end it early, so encode it. */
-function link(url: string, label: string): string {
-  return `<${escape(url).replace(/\|/g, "%7C")}|${label}>`;
-}
-
-function slackMessage(entry: Entry, ref: string) {
-  const name = escape(entry.name);
-  const company = escape(entry.company);
-  const fields = [
-    `*Name*\n${name}`,
-    `*Company*\n${company}`,
-    `*Email*\n${escape(entry.email)}`,
-    `*LinkedIn*\n${link(entry.linkedin, "Profile")}`,
-    `*Vercel preview*\n${link(entry.vercel, "Open the preview")}`,
-    `*GitHub*\n${link(entry.github, "Open the repo")}`,
-  ];
-  return {
-    text: `New build-a-thon entry from ${name} (${company})`,
-    blocks: [
-      {
-        type: "header",
-        text: { type: "plain_text", text: "🧪 New build-a-thon entry" },
-      },
-      {
-        type: "section",
-        fields: fields.map((text) => ({ type: "mrkdwn", text })),
-      },
-      ...(entry.description
-        ? [
-            {
-              type: "section",
-              text: {
-                type: "mrkdwn",
-                text: `*What it does*\n${escape(entry.description)}`,
-              },
-            },
-          ]
-        : []),
-      ...(ref
-        ? [
-            {
-              type: "context",
-              elements: [{ type: "mrkdwn", text: `ref: ${escape(ref)}` }],
-            },
-          ]
-        : []),
-    ],
-  };
+function str(value: unknown, max: number): string {
+  return typeof value === "string" ? value.trim().slice(0, max) : "";
 }
 
 export async function POST(req: Request) {
@@ -134,33 +109,68 @@ export async function POST(req: Request) {
   if (typeof entry === "string") {
     return NextResponse.json({ error: entry }, { status: 400 });
   }
-  const ref =
-    raw && typeof raw.ref === "string" ? raw.ref.trim().slice(0, 100) : "";
+  const props = raw as Record<string, unknown>;
+  const ref = str(props.ref, 100);
 
-  const webhook = process.env.SLACK_BUILDATHON_WEBHOOK_URL;
-  if (!webhook) {
-    // Local development has no webhook; log the entry instead. Anywhere
+  const properties = {
+    name: entry.name,
+    email: entry.email,
+    company: entry.company,
+    linkedin_url: entry.linkedin,
+    vercel_url: entry.vercel,
+    github_url: entry.github,
+    description: entry.description,
+    campaign: str(props.campaign, 100),
+    form_type: "12_days_build_a_thon",
+    form_source: "website",
+    ref,
+    ...firstTouch(props),
+  };
+
+  const writeKey = process.env.NEXT_PUBLIC_SEGMENT_WRITE_KEY;
+  if (!writeKey) {
+    // Local development has no write key; log the entry instead. Anywhere
     // else, fail so the form says so rather than dropping the entry.
     if (process.env.NODE_ENV === "development") {
-      console.log("Build-a-thon entry (no Slack webhook set)", entry);
+      console.log(`${EVENT} (no Segment write key set)`, properties);
       return NextResponse.json({ ok: true }, { status: 201 });
     }
-    console.error("SLACK_BUILDATHON_WEBHOOK_URL is not set");
+    console.error("NEXT_PUBLIC_SEGMENT_WRITE_KEY is not set");
     return NextResponse.json({ error: "Not configured" }, { status: 500 });
   }
 
+  // The browser's Segment anonymous ID ties this entry to the visitor's
+  // earlier page views; without one, Segment still needs an ID.
+  const anonymousId = str(props.anonymousId, 100) || crypto.randomUUID();
+  const ip = req.headers.get("x-forwarded-for")?.split(",")[0]?.trim();
+
   try {
-    const res = await fetch(webhook, {
+    const res = await fetch(SEGMENT_TRACK_URL, {
       method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify(slackMessage(entry, ref)),
+      headers: {
+        "Content-Type": "application/json",
+        Authorization: `Basic ${Buffer.from(`${writeKey}:`).toString(
+          "base64"
+        )}`,
+      },
+      body: JSON.stringify({
+        event: EVENT,
+        anonymousId,
+        properties,
+        context: {
+          ...(ip ? { ip } : {}),
+          userAgent: req.headers.get("user-agent") ?? undefined,
+          page: { url: req.headers.get("referer") ?? undefined },
+        },
+        timestamp: new Date().toISOString(),
+      }),
     });
     if (!res.ok) {
-      console.error("Slack webhook failed", res.status, await res.text());
+      console.error("Segment track failed", res.status, await res.text());
       return NextResponse.json({ error: "Couldn't send" }, { status: 502 });
     }
   } catch (err) {
-    console.error("Slack webhook failed", err);
+    console.error("Segment track failed", err);
     return NextResponse.json({ error: "Couldn't send" }, { status: 502 });
   }
 

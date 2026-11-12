@@ -415,10 +415,10 @@ export const MACHINE = {
 } as const;
 
 /**
- * The build-a-thon page (TwelveDaysBuildathon.tsx). Entries post to the
- * team's Slack channel (app/api/12-days/build-a-thon) and go to Segment as
- * `12 Days Build-a-thon Submitted`, which creates the person in
- * Customer.io; the three showcased on the finale livestream are picked
+ * The build-a-thon page (TwelveDaysBuildathon.tsx). Entries go to Segment
+ * from the server (app/api/12-days/build-a-thon) as
+ * `12 Days Build-a-thon Submitted`; Segment sends them to Attio (list +
+ * Slack post) and Customer.io; the three showcased on the finale livestream are picked
  * from those.
  *
  * Submissions close December 23. TODO: the livestream (Dec 29 or 30)
