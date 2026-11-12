@@ -318,7 +318,7 @@ export const SIGNUP = {
   prompt: "Get an email when each door opens.",
   label: "Email address",
   placeholder: "you@company.com",
-  button: "Email me each door",
+  button: "Email me when doors open",
   sending: "Signing you up…",
   sent: "You're on the list. See you at the next door.",
   failed: "That didn't go through. Try again?",
