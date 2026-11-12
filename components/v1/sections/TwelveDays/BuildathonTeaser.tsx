@@ -90,6 +90,9 @@ export default function BuildathonTeaser() {
                 >
                   {p.prize}
                 </span>
+                {"note" in p && (
+                  <span className="text-[16px] leading-[1.3]">{p.note}</span>
+                )}
               </li>
             ))}
           </ul>

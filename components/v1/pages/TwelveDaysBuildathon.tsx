@@ -142,6 +142,7 @@ export default function TwelveDaysBuildathon() {
                       className="list-none text-[18px] leading-[28px]"
                     >
                       <span className="font-black">{p.place}:</span> {p.prize}
+                      {"note" in p && `, ${p.note.toLowerCase()}`}
                     </li>
                   ))}
                 </ul>

@@ -463,9 +463,14 @@ export const BUILDATHON = {
     "*Weird as in a toaster that needs three approvals and a cron job to make toast. Not weirdo weird. Keep it silly, keep it kind.",
   primitivesTitle: "Your twelve moving parts",
   prizesTitle: "What you get",
+  /** `note` is a small line under the amount. */
   prizes: [
     { place: "First prize", prize: "$3K USD" },
-    { place: "Second and third prize", prize: "$2K USD" },
+    {
+      place: "Second and third prize",
+      prize: "$2K USD",
+      note: "Split between second and third",
+    },
     {
       place: "Honorable mentions",
       prize: "A showcase on CodeTV and special Inngest swag",
