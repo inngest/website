@@ -31,7 +31,7 @@ import {
  * The advent calendar: twelve doors in order, each hinged on its left
  * edge. The front leads with the lesson's concept; the number and the
  * teaser quote are secondary. A door unlocks at midnight Eastern on its
- * date (weekdays, December 3–18).
+ * date (one a day, December 7–18).
  * Today's door glows and waits to be held open (it creaks wider the
  * longer you hold); earlier days swing open on their own, in a stagger
  * the first time the grid scrolls into view.

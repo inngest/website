@@ -4,7 +4,7 @@
  *
  * Copy for inngest.com/12-days-of-workflows. Twelve short video lessons,
  * one Inngest primitive each, behind an advent calendar whose doors
- * unlock at midnight Eastern, one per weekday from December 3 to 18.
+ * unlock at midnight Eastern, one a day from December 7 to 18.
  * Ends with a live CodeTV episode building a Rube Goldberg machine out
  * of all twelve.
  *
@@ -25,11 +25,10 @@ export const YEAR = 2026;
 export const TIMEZONE = "America/New_York";
 
 /**
- * The December date each door opens: weekdays only, December 3–18.
- * These are 2026's weekdays, so rerunning the calendar in another year
- * means updating `YEAR` and this list together.
+ * The December date each door opens: one a day, weekends included,
+ * December 7–18.
  */
-export const UNLOCK_DATES = [3, 4, 7, 8, 9, 10, 11, 14, 15, 16, 17, 18];
+export const UNLOCK_DATES = [7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18];
 
 /**
  * Midnight Eastern on door `day`'s date. December is always EST
@@ -253,15 +252,15 @@ export const UNLOCK_FUNCTION = `inngest.createFunction(
   {
     id: "open-todays-door",
     triggers: {
-      // Midnight Eastern, every weekday in December.
-      cron: "TZ=America/New_York 0 0 * 12 1-5",
+      // Midnight Eastern, every day in December.
+      cron: "TZ=America/New_York 0 0 * 12 *",
     },
   },
   async ({ step }) => {
     const day = await step.run("which-door", () =>
       calendar.doorFor(new Date())
     );
-    if (!day) return; // Outside December 3–18.
+    if (!day) return; // Outside December 7–18.
     await step.run("open-door", () =>
       calendar.open(day)
     );
@@ -269,7 +268,7 @@ export const UNLOCK_FUNCTION = `inngest.createFunction(
 );`;
 
 export const HERO = {
-  chips: ["Inngest × CodeTV", "December 3–18"],
+  chips: ["Inngest × CodeTV", "December 7–18"],
   // Set like the posters: a huge line, a mono line, a huge line. Read
   // as one heading (`label`).
   titleTop: "12 Days",
@@ -299,7 +298,7 @@ export const CALENDAR = {
     label: "Skip to submission.",
     href: `/12-days-of-workflows/build-a-thon?ref=${REF}-calendar#submit`,
   },
-  body: "One new lesson unlocks every weekday, December 3–18. Each one takes a problem you'll hit building a long-running workflow and shows how Inngest handles it, with a short video, runnable code, and the docs to make it your own. Miss a day? Catch up whenever you like.",
+  body: "One new lesson unlocks every day, December 7–18. Each one takes a problem you'll hit building a long-running workflow and shows how Inngest handles it, with a short video, runnable code, and the docs to make it your own. Miss a day? Catch up whenever you like.",
   /** Each door's sign-up link. */
   tryIt: "Try it free",
 } as const;
@@ -364,7 +363,7 @@ export const MACHINE = {
   subtitle: "Twelve moving parts.",
   body: "Every new door adds a stage to our increasingly questionable holiday contraption. Run it. Break it halfway. Watch Inngest pick up where it left off—without rerunning completed steps.",
   aside: "Because even holiday chaos deserves durable execution.",
-  locked: "The machine comes alive December 3.",
+  locked: "The machine comes alive December 7.",
   steps: {
     1: {
       step: 'step.run("write-text")',
@@ -484,7 +483,7 @@ export const BUILDATHON = {
  * linking down to the calendar. `idle` shows until the clock mounts.
  */
 export const TICKER = {
-  idle: "A new lesson every weekday, December 3–18",
+  idle: "A new lesson every day, December 7–18",
   allOpen: "All twelve doors are open.",
   label: "Jump to the calendar",
 } as const;
