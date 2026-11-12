@@ -85,9 +85,6 @@ export default function AdventCalendar({ now }: { now: Date | null }) {
               {CALENDAR.skip.label}
             </Link>
           </p>
-          <p className="max-w-[560px] text-[18px] leading-[28px] text-white/85">
-            {CALENDAR.body}
-          </p>
           {/* The subhead above asks for the email, so no separate prompt. */}
           <EmailSignup />
         </div>

@@ -299,7 +299,6 @@ export const CALENDAR = {
     label: "Skip to submission.",
     href: `/12-days-of-workflows/build-a-thon?ref=${REF}-calendar#submit`,
   },
-  body: "One new lesson unlocks every day, December 7–18. Each one takes a problem you'll hit building a long-running workflow and shows how Inngest handles it, with a short video, runnable code, and the docs to make it your own. Miss a day? Catch up whenever you like.",
   /** Each door's sign-up link. */
   tryIt: "Try it free",
 } as const;
