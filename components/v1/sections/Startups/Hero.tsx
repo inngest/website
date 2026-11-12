@@ -57,8 +57,8 @@ export default function Hero() {
                 employees, as shown on your LinkedIn company page
               </li>
               <li>
-                Bootstrapped, or raised less than {PROGRAM_RULES.maxRaisedLabel}{" "}
-                in total
+                Bootstrapped, or raised between {PROGRAM_RULES.minRaisedLabel}{" "}
+                and {PROGRAM_RULES.maxRaisedLabel}
               </li>
               <li>New Inngest customers</li>
             </ul>

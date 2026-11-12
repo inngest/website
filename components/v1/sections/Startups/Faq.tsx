@@ -14,7 +14,7 @@ const FAQS: FaqItem[] = [
   {
     id: "eligibility",
     question: "Who's eligible?",
-    answer: `Companies founded in the last ${PROGRAM_RULES.maxCompanyAgeYears} years with ${PROGRAM_RULES.minEmployees} to ${PROGRAM_RULES.maxEmployees} employees that are either bootstrapped or have raised less than ${PROGRAM_RULES.maxRaisedLabel} in total. We check headcount on your LinkedIn company page. The program is for new customers, meaning you haven't paid for an Inngest plan yet. If you're on our Free plan, you can apply.`,
+    answer: `Companies founded in the last ${PROGRAM_RULES.maxCompanyAgeYears} years with ${PROGRAM_RULES.minEmployees} to ${PROGRAM_RULES.maxEmployees} employees that are either bootstrapped or have raised between ${PROGRAM_RULES.minRaisedLabel} and ${PROGRAM_RULES.maxRaisedLabel} in total. We check headcount on your LinkedIn company page. The program is for new customers, meaning you haven't paid for an Inngest plan yet. If you're on our Free plan, you can apply.`,
   },
   {
     id: "bootstrapped",

@@ -11,7 +11,8 @@ export const PROGRAM_RULES = {
   maxCompanyAgeYears: 5,
   minEmployees: 3,
   maxEmployees: 24,
-  maxRaisedLabel: "$10M",
+  minRaisedLabel: "$100K",
+  maxRaisedLabel: "$5M",
 } as const;
 
 const CURRENT_YEAR = new Date().getFullYear();
@@ -41,10 +42,10 @@ export const FUNDING_STAGE_OPTIONS: SelectOption[] = [
 ];
 
 export const TOTAL_RAISED_OPTIONS: SelectOption[] = [
-  { value: "under-1m", label: "Under $1M" },
+  { value: "under-100k", label: "Under $100K" },
+  { value: "100k-1m", label: "$100K–$1M" },
   { value: "1m-5m", label: "$1M–$5M" },
-  { value: "5m-10m", label: "$5M–$10M" },
-  { value: "10m-plus", label: "$10M or more" },
+  { value: "5m-plus", label: "$5M or more" },
 ];
 
 export interface EligibilityAnswers {
@@ -68,9 +69,13 @@ export function ineligibilityReasons(a: EligibilityAnswers): string[] {
       `The program is for teams of ${PROGRAM_RULES.minEmployees} to ${PROGRAM_RULES.maxEmployees} employees.`
     );
   }
-  if (a.fundingStage === "series-b-plus" || a.totalRaised === "10m-plus") {
+  if (
+    a.fundingStage === "series-b-plus" ||
+    a.totalRaised === "under-100k" ||
+    a.totalRaised === "5m-plus"
+  ) {
     reasons.push(
-      `The program is for bootstrapped companies or those that have raised less than ${PROGRAM_RULES.maxRaisedLabel} in total.`
+      `The program is for bootstrapped companies or those that have raised between ${PROGRAM_RULES.minRaisedLabel} and ${PROGRAM_RULES.maxRaisedLabel} in total.`
     );
   }
   return reasons;
