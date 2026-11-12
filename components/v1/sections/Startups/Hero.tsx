@@ -22,9 +22,9 @@ export default function Hero() {
       </h1>
 
       <p className="text-v1-body-lg-loose mx-auto mt-6 max-w-[760px] text-center text-v1-frost lg:mt-8">
-        Building something new? Qualifying startups get the Inngest Pro plan
-        free for the first year. Bootstrapped or venture-backed, the offer is
-        the same.
+        Building something new? Qualifying startups get 50% off the Inngest Pro
+        plan for 12 months. Bootstrapped or venture-backed, the offer is the
+        same.
       </p>
 
       <div className="mt-12 grid grid-cols-1 gap-y-12 lg:mt-[52px] lg:grid-cols-[1fr_1fr] lg:items-start lg:gap-x-12 lg:gap-y-0 lg:px-[70px]">
@@ -36,9 +36,9 @@ export default function Hero() {
           <div className="flex flex-col gap-4">
             <h2 className="text-v1-heading-sm text-v1-frost">What you get</h2>
             <p className="text-v1-body-sm-loose text-v1-frost/80">
-              Twelve months of the Pro plan at no cost, with all of its features
+              Twelve months of the Pro plan at 50% off, with all of its features
               and included limits. Usage above those limits is billed at
-              standard Pro rates, so you&apos;ll add a payment method once
+              standard Pro rates. You&apos;ll add a payment method once
               you&apos;re approved.{" "}
               <a href="/pricing?ref=startups" className={linkClassName}>
                 Compare plans

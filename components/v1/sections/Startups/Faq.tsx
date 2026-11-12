@@ -8,7 +8,7 @@ const FAQS: FaqItem[] = [
     id: "what-you-get",
     question: "What does the Startup Program include?",
     answer:
-      "The Pro plan, free for 12 months from the day your account is upgraded. You get every Pro feature and included limit. Paid add-ons such as HIPAA and advanced observability aren't part of the offer.",
+      "50% off the Pro plan for 12 months, starting the day your account is upgraded. You get every Pro feature and included limit. Paid add-ons such as HIPAA and advanced observability aren't part of the offer.",
     link: { label: "Compare plans", href: "/pricing" },
   },
   {
@@ -26,26 +26,26 @@ const FAQS: FaqItem[] = [
     id: "overages",
     question: "What happens if we go over Pro's included limits?",
     answer:
-      "Usage above Pro's included limits is billed at standard Pro rates. The Pro plan itself stays free for the full 12 months.",
+      "Usage above Pro's included limits is billed at standard Pro rates. The 50% discount applies to the Pro plan itself for the full 12 months.",
     link: { label: "See Pro pricing", href: "/pricing" },
   },
   {
     id: "payment-method",
     question: "Do I need a payment method to apply?",
     answer:
-      "Not to apply. You'll add one once you're approved, so usage above Pro's included limits can be billed. You won't be charged for the Pro plan during your free year.",
+      "Not to apply. You'll add one once you're approved. It covers the discounted Pro plan and any usage above Pro's included limits.",
   },
   {
     id: "after-year-one",
     question: "What happens after 12 months?",
     answer:
-      "Your account moves to standard Pro billing. We'll email you about 30 days before your free year ends.",
+      "Your account moves to standard Pro billing. We'll email you about 30 days before your discount ends.",
   },
   {
     id: "yc",
     question: "We're a Y Combinator company. Should we apply here?",
     answer:
-      "Use the YC deal instead. It's the same offer, verified with your YC badge.",
+      "Use the YC deal instead. It has its own offer and is verified with your YC badge.",
     link: { label: "Request the YC deal", href: "/yc" },
   },
   {
