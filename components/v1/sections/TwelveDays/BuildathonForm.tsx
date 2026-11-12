@@ -271,7 +271,7 @@ export default function BuildathonForm() {
           pattern="https:\/\/.+"
           value={entry.vercel}
           onChange={(e) => set("vercel")(e.target.value)}
-          placeholder="https://your-weird-workflow.vercel.app"
+          placeholder="https://your-weird-workflow.example.com"
           className={INPUT}
         />
       </Field>

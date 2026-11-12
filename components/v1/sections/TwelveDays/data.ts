@@ -478,7 +478,7 @@ export const BUILDATHON = {
     company: "Company",
     linkedin: "LinkedIn profile",
     linkedinHint: "So we can tag you when we share it.",
-    vercel: "Vercel preview URL",
+    vercel: "Preview URL",
     github: "GitHub repo URL",
     description: "Pitch your workflow",
     descriptionHint: "Why is it weird, and why does it work?",
