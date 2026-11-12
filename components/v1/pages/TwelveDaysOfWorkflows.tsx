@@ -48,18 +48,22 @@ export default function TwelveDaysOfWorkflows({
         <BuildathonTeaser />
         <Finale />
         <HowItOpens />
-        <StartBuilding
-          refTag="12-days-of-workflows-start-building"
-          title={CLOSING.title}
-          body={CLOSING.body}
-          titleClassName="normal-case"
-          className="!py-16 sm:!py-20 lg:!py-24"
-          actions={
-            <ButtonLink variant="primary" href={CLOSING.cta.href}>
-              {CLOSING.cta.label}
-            </ButtonLink>
-          }
-        />
+        {/* The shared closing section sets its buttons and cards in
+            caps; this page has none, so they're turned off here. */}
+        <div className="[&_*]:!normal-case">
+          <StartBuilding
+            refTag="12-days-of-workflows-start-building"
+            title={CLOSING.title}
+            body={CLOSING.body}
+            titleClassName="normal-case"
+            className="!py-16 sm:!py-20 lg:!py-24"
+            actions={
+              <ButtonLink variant="primary" href={CLOSING.cta.href}>
+                {CLOSING.cta.label}
+              </ButtonLink>
+            }
+          />
+        </div>
       </div>
       <PreviewClock always={employeePreview} />
     </PageShell>

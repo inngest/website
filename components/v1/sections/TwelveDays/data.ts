@@ -292,7 +292,8 @@ export const CALENDAR_ID = "calendar";
 export const CALENDAR = {
   eyebrow: "The calendar",
   title: "No peeking.",
-  subtitle: "The lessons are still wrapping themselves.",
+  subtitle:
+    "The lessons are still wrapping themselves. Add your email to get notified when each lesson drops.",
   skip: {
     lead: "Already ready to build?",
     label: "Skip to submission.",

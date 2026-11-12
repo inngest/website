@@ -10,7 +10,6 @@ import {
   DAYS,
   DOOR_FACES,
   REF,
-  SIGNUP,
   unlockAt,
   unlockLabel,
   type WorkflowDay,
@@ -77,7 +76,7 @@ export default function AdventCalendar({ now }: { now: Date | null }) {
           <h2 id="twelve-days-calendar-heading" className={POSTER_TITLE}>
             {CALENDAR.title}
           </h2>
-          <p className="font-v1Label text-[18px] leading-[1.4]">
+          <p className="max-w-[640px] font-v1Label text-[15px] leading-[1.5]">
             {CALENDAR.subtitle} {CALENDAR.skip.lead}{" "}
             <Link
               href={CALENDAR.skip.href}
@@ -89,10 +88,8 @@ export default function AdventCalendar({ now }: { now: Date | null }) {
           <p className="max-w-[560px] text-[18px] leading-[28px] text-white/85">
             {CALENDAR.body}
           </p>
-          <div className="flex flex-col gap-3">
-            <p className="font-v1Label text-[14px]">{SIGNUP.prompt}</p>
-            <EmailSignup />
-          </div>
+          {/* The subhead above asks for the email, so no separate prompt. */}
+          <EmailSignup />
         </div>
 
         <ul
