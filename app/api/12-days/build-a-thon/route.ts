@@ -1,4 +1,5 @@
 import { NextResponse } from "next/server";
+import { promises as dns } from "node:dns";
 
 export const runtime = "nodejs";
 
@@ -90,6 +91,36 @@ function str(value: unknown, max: number): string {
   return typeof value === "string" ? value.trim().slice(0, max) : "";
 }
 
+/**
+ * False only when DNS says the email's domain can't receive mail (no
+ * such domain, or no mail or address records), which is how a typo like
+ * `name@company.con` shows up. Slow or failed lookups count as fine, so
+ * a DNS hiccup never loses an entry.
+ */
+async function domainTakesMail(email: string): Promise<boolean> {
+  const domain = email.slice(email.lastIndexOf("@") + 1).toLowerCase();
+  const lookup = async () => {
+    try {
+      const mx = await dns.resolveMx(domain);
+      if (mx.length > 0) return true;
+    } catch (err) {
+      const code = (err as NodeJS.ErrnoException).code;
+      if (code !== "ENOTFOUND" && code !== "ENODATA") return true;
+    }
+    // No MX record: mail falls back to the domain's own address.
+    try {
+      return (await dns.resolve(domain)).length > 0;
+    } catch (err) {
+      const code = (err as NodeJS.ErrnoException).code;
+      return code !== "ENOTFOUND" && code !== "ENODATA";
+    }
+  };
+  return Promise.race([
+    lookup(),
+    new Promise<boolean>((resolve) => setTimeout(() => resolve(true), 2000)),
+  ]);
+}
+
 export async function POST(req: Request) {
   let body: unknown;
   try {
@@ -108,6 +139,12 @@ export async function POST(req: Request) {
   const entry = parse(body);
   if (typeof entry === "string") {
     return NextResponse.json({ error: entry }, { status: 400 });
+  }
+  if (!(await domainTakesMail(entry.email))) {
+    return NextResponse.json(
+      { error: "That email domain doesn't take mail. Check for a typo?" },
+      { status: 400 }
+    );
   }
   const props = raw as Record<string, unknown>;
   const ref = str(props.ref, 100);

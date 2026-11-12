@@ -5,6 +5,10 @@ import { analytics } from "@/utils/segment";
 import { readFirstTouch } from "src/shared/firstTouch";
 import { REF, SIGNUP } from "@/components/v1/sections/TwelveDays/data";
 import { buttonClass } from "@/components/v1/sections/TwelveDays/poster";
+import {
+  EmailTypoHint,
+  useEmailTypoCheck,
+} from "@/components/v1/sections/TwelveDays/EmailTypoHint";
 
 /**
  * Segment event for the sign-up. Its own name, like the content download
@@ -46,6 +50,7 @@ export default function EmailSignup() {
   const [status, setStatus] = useState<"idle" | "sending" | "sent" | "failed">(
     "idle"
   );
+  const typo = useEmailTypoCheck(email, setEmail);
 
   useEffect(() => {
     try {
@@ -57,6 +62,7 @@ export default function EmailSignup() {
 
   async function handleSubmit(e: FormEvent<HTMLFormElement>) {
     e.preventDefault();
+    if (!typo.okToSend()) return;
     setStatus("sending");
 
     let ref = "";
@@ -111,38 +117,48 @@ export default function EmailSignup() {
   }
 
   return (
-    <form
-      onSubmit={handleSubmit}
-      className="flex w-full max-w-[620px] flex-col gap-3 sm:flex-row"
-    >
-      <label htmlFor="twelve-days-email" className="sr-only">
-        {SIGNUP.label}
-      </label>
-      <input
-        id="twelve-days-email"
-        type="email"
-        required
-        autoComplete="email"
-        value={email}
-        onChange={(e) => setEmail(e.target.value)}
-        placeholder={SIGNUP.placeholder}
-        className="h-[42px] min-w-0 flex-1 rounded-md border-2 border-[#010101] bg-white px-5 text-[16px] text-[#010101] placeholder:text-[#010101]/50 focus-visible:outline focus-visible:outline-4 focus-visible:outline-offset-2 focus-visible:outline-[#ECFE08]"
-      />
-      <button
-        type="submit"
-        disabled={status === "sending"}
-        className={buttonClass("ink")}
+    <div className="flex w-full max-w-[620px] flex-col gap-2">
+      <form
+        onSubmit={handleSubmit}
+        className="flex w-full flex-col gap-3 sm:flex-row"
       >
-        {status === "sending" ? SIGNUP.sending : SIGNUP.button}
-      </button>
-      {status === "failed" && (
-        <p
-          role="alert"
-          className="font-v1Label text-[12px] text-[#ECFE08] sm:self-center"
+        <label htmlFor="twelve-days-email" className="sr-only">
+          {SIGNUP.label}
+        </label>
+        <input
+          id="twelve-days-email"
+          type="email"
+          required
+          autoComplete="email"
+          aria-invalid={typo.problem ? true : undefined}
+          aria-describedby={typo.problem ? "twelve-days-email-typo" : undefined}
+          value={email}
+          onChange={(e) => setEmail(e.target.value)}
+          placeholder={SIGNUP.placeholder}
+          className="h-[42px] min-w-0 flex-1 rounded-md border-2 border-[#010101] bg-white px-5 text-[16px] text-[#010101] placeholder:text-[#010101]/50 focus-visible:outline focus-visible:outline-4 focus-visible:outline-offset-2 focus-visible:outline-[#ECFE08]"
+        />
+        <button
+          type="submit"
+          disabled={status === "sending"}
+          className={buttonClass("ink")}
         >
-          {SIGNUP.failed}
-        </p>
-      )}
-    </form>
+          {status === "sending" ? SIGNUP.sending : SIGNUP.button}
+        </button>
+        {status === "failed" && (
+          <p
+            role="alert"
+            className="font-v1Label text-[12px] text-[#ECFE08] sm:self-center"
+          >
+            {SIGNUP.failed}
+          </p>
+        )}
+      </form>
+      <EmailTypoHint
+        id="twelve-days-email-typo"
+        problem={typo.problem}
+        onApplySuggestion={typo.applySuggestion}
+        className="text-[#ECFE08]"
+      />
+    </div>
   );
 }

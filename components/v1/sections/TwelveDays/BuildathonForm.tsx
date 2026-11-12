@@ -5,6 +5,10 @@ import { analytics } from "@/utils/segment";
 import { readFirstTouch } from "src/shared/firstTouch";
 import { BUILDATHON, REF } from "@/components/v1/sections/TwelveDays/data";
 import { buttonClass } from "@/components/v1/sections/TwelveDays/poster";
+import {
+  EmailTypoHint,
+  useEmailTypoCheck,
+} from "@/components/v1/sections/TwelveDays/EmailTypoHint";
 
 /** Sends the entry to Segment from the server (see the route for where it goes). */
 const SUBMIT_URL = "/api/12-days/build-a-thon";
@@ -90,9 +94,17 @@ export default function BuildathonForm() {
 
   const set = (key: keyof Entry) => (value: string) =>
     setEntry((e) => ({ ...e, [key]: value }));
+  const typo = useEmailTypoCheck(entry.email, set("email"));
+  // The server's reason when it turns an entry down (a 400), if any.
+  const [rejected, setRejected] = useState<string | null>(null);
 
   async function handleSubmit(e: FormEvent<HTMLFormElement>) {
     e.preventDefault();
+    setRejected(null);
+    if (!typo.okToSend()) {
+      document.getElementById("buildathon-email")?.focus();
+      return;
+    }
     setStatus("sending");
 
     let ref = "";
@@ -130,6 +142,12 @@ export default function BuildathonForm() {
           anonymousId,
         }),
       });
+      if (res.status === 400) {
+        const data = (await res.json().catch(() => null)) as {
+          error?: string;
+        } | null;
+        setRejected(data?.error ?? null);
+      }
       if (!res.ok) throw new Error(`Submit failed: ${res.status}`);
     } catch (err) {
       console.warn("12 Days build-a-thon entry not sent", err);
@@ -193,10 +211,20 @@ export default function BuildathonForm() {
             type="email"
             required
             autoComplete="email"
+            aria-invalid={typo.problem ? true : undefined}
+            aria-describedby={
+              typo.problem ? "buildathon-email-typo" : undefined
+            }
             value={entry.email}
             onChange={(e) => set("email")(e.target.value)}
             placeholder="you@company.com"
             className={INPUT}
+          />
+          <EmailTypoHint
+            id="buildathon-email-typo"
+            problem={typo.problem}
+            onApplySuggestion={typo.applySuggestion}
+            className="text-[#010101]"
           />
         </Field>
         <Field id="buildathon-company" label={FIELDS.company}>
@@ -289,7 +317,7 @@ export default function BuildathonForm() {
         </button>
         {status === "failed" && (
           <p role="alert" className="font-v1Label text-[12px] text-[#F55C50]">
-            {BUILDATHON.failed}
+            {rejected ?? BUILDATHON.failed}
           </p>
         )}
       </div>
