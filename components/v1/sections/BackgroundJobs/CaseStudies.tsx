@@ -29,7 +29,7 @@ const STUDIES: CaseStudyItem[] = [
     id: "resend",
     title: "Notifications & Communications",
     body: "The DX and visibility with Inngest is really incredible. Faster to develop locally than with our previous queue.",
-    logo: { src: "/assets/v1/logos/resend.svg", alt: "Resend", width: 96, height: 24 },
+    logo: { src: "/assets/v1/logos/resend.svg", alt: "Resend", width: 113, height: 24 },
     cta: { label: CTA_LABEL, href: "/customers/resend?ref=background-jobs" },
   },
   {

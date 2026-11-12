@@ -21,7 +21,7 @@ const STUDIES: CaseStudyItem[] = [
         notify Slack—all from one event, each step independent.
       </>
     ),
-    logo: { src: "/assets/v1/logos/resend.svg", alt: "Resend", width: 96, height: 24 },
+    logo: { src: "/assets/v1/logos/resend.svg", alt: "Resend", width: 113, height: 24 },
     cta: { label: "See the reliable webhook patterns", href: "/docs/patterns/jobs/build-reliable-webhooks" },
   },
   {
@@ -49,7 +49,7 @@ const STUDIES: CaseStudyItem[] = [
         what users actually do, not just timers.
       </>
     ),
-    logo: { src: "/assets/v1/logos/resend.svg", alt: "Resend", width: 96, height: 24 },
+    logo: { src: "/assets/v1/logos/resend.svg", alt: "Resend", width: 113, height: 24 },
     cta: { label: "Read the Resend webhook guide", href: "/docs/guides/resend-webhook-events?ref=webhooks-events-use-cases" },
   },
   {
