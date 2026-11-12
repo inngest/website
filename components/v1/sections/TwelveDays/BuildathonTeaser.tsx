@@ -14,9 +14,9 @@ import {
 } from "@/components/v1/sections/TwelveDays/poster";
 
 /**
- * The build-a-thon, short version: the brief, the guidelines and the
- * prizes on a cream field, linking out to the full rules and the entry
- * form at /12-days-of-workflows/build-a-thon.
+ * The build-a-thon, short version: the brief and the prizes on a cream
+ * field, with one link out to the full rules and the entry form at
+ * /12-days-of-workflows/build-a-thon.
  */
 export default function BuildathonTeaser() {
   return (
@@ -50,27 +50,15 @@ export default function BuildathonTeaser() {
           >
             {BUILDATHON_TEASER.body}
           </motion.p>
-          <motion.p
-            {...reveals.body}
-            className="font-v1Label text-[15px] uppercase"
-          >
+          <motion.p {...reveals.body} className="font-v1Label text-[15px]">
             {BUILDATHON_TEASER.when}
           </motion.p>
-          <motion.div
-            {...reveals.body}
-            className="flex flex-col gap-3 sm:flex-row"
-          >
+          <motion.div {...reveals.body}>
             <Link
               href={BUILDATHON_TEASER.cta.href}
               className={buttonClass("ink") + " w-full sm:w-auto"}
             >
               {BUILDATHON_TEASER.cta.label}
-            </Link>
-            <Link
-              href={BUILDATHON_TEASER.submit.href}
-              className={buttonClass("outline") + " w-full sm:w-auto"}
-            >
-              {BUILDATHON_TEASER.submit.label}
             </Link>
           </motion.div>
         </div>
@@ -79,30 +67,35 @@ export default function BuildathonTeaser() {
           {...reveals.item(0)}
           className="flex flex-col gap-6 rounded-xl border-[3px] border-[#010101] bg-white p-6 shadow-[8px_8px_0_#010101] sm:p-8"
         >
-          <ol className="flex flex-col gap-3 pl-0">
-            {BUILDATHON_TEASER.guidelines.map((g, i) => (
+          <h3 className={`${POSTER_EYEBROW} text-[#F55C50]`}>
+            {BUILDATHON_TEASER.prizesTitle}
+          </h3>
+          <ul className="flex flex-col pl-0">
+            {BUILDATHON_TEASER.prizes.map((p, i) => (
               <li
-                key={g}
-                className="flex list-none gap-3 text-[18px] leading-[28px]"
+                key={p.place}
+                className={
+                  "flex list-none flex-col gap-1 py-4 " +
+                  (i > 0 ? "border-t-2 border-[#010101]" : "pt-0")
+                }
               >
-                <span className="font-v1Label text-[#F55C50]">{i + 1}.</span>
-                {g}
-              </li>
-            ))}
-          </ol>
-          <p className="text-[14px] italic leading-[22px] text-[#010101]/70">
-            {BUILDATHON_TEASER.footnote}
-          </p>
-          <ul className="flex flex-col gap-2 border-t-2 border-[#010101] pl-0 pt-5">
-            {BUILDATHON_TEASER.prizes.map((p) => (
-              <li
-                key={p}
-                className="list-none font-v1Label text-[14px] uppercase leading-[1.4]"
-              >
-                {p}
+                <span className="font-v1Label text-[15px]">{p.place}</span>
+                <span
+                  className={
+                    "font-sans font-black leading-[1] tracking-[-0.02em] " +
+                    (p.prize.startsWith("$")
+                      ? "text-[clamp(40px,5vw,64px)]"
+                      : "text-[22px] leading-[1.15]")
+                  }
+                >
+                  {p.prize}
+                </span>
               </li>
             ))}
           </ul>
+          <p className="text-[14px] italic leading-[22px] text-[#010101]/70">
+            {BUILDATHON_TEASER.footnote}
+          </p>
         </motion.div>
       </div>
     </section>

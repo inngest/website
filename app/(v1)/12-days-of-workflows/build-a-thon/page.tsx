@@ -19,7 +19,7 @@ export const metadata: Metadata = {
       city: "sf",
     }),
     description:
-      "Use all twelve primitives from the 12 Days of Workflows to build something simple in the most complicated way you can. Win $5K, picked live on CodeTV.",
+      "Use all twelve primitives from the 12 Days of Workflows to build something simple in the most complicated way you can. Win cash prizes, picked live on CodeTV.",
   }),
   robots: { index: false, follow: false },
 };

@@ -1,18 +1,12 @@
 "use client";
 
-import { useEffect, useRef } from "react";
+import { useEffect, useRef, useState } from "react";
 import Image from "next/image";
 import Link from "next/link";
 import { motion } from "motion/react";
 import { clearHeroPanel, setHeroPanel } from "@/utils/v1/heroNav";
 import { tweens } from "@/utils/v1/springs";
-import {
-  COLORS,
-  DAYS,
-  HERO,
-  unlockAt,
-} from "@/components/v1/sections/TwelveDays/data";
-import { formatCountdown } from "@/components/v1/sections/TwelveDays/useCalendarClock";
+import { COLORS, HERO } from "@/components/v1/sections/TwelveDays/data";
 import {
   buttonClass,
   Chip,
@@ -33,13 +27,36 @@ const entry = (delayMs: number) => ({
   transition: { ...tweens.entry, delay: delayMs / 1000 },
 });
 
-/** One line of status under the CTA: what's open and what's next. */
-function status(now: Date | null): string | null {
-  if (!now) return null;
-  const next = DAYS.find((d) => unlockAt(d.day).getTime() > now.getTime());
-  if (!next) return "All twelve doors are open.";
-  const wait = formatCountdown(unlockAt(next.day).getTime() - now.getTime());
-  return `Door ${next.day} opens in ${wait}`;
+/** `npm install inngest` as a button that copies itself. */
+function InstallButton() {
+  const [copied, setCopied] = useState(false);
+  useEffect(() => {
+    if (!copied) return;
+    const id = window.setTimeout(() => setCopied(false), 2000);
+    return () => window.clearTimeout(id);
+  }, [copied]);
+
+  return (
+    <button
+      type="button"
+      onClick={() => {
+        navigator.clipboard
+          ?.writeText(HERO.install)
+          .then(() => setCopied(true))
+          .catch(() => {});
+      }}
+      aria-label={`Copy ${HERO.install}`}
+      className={buttonClass("ink") + " gap-3 !font-v1Mono !text-[14px]"}
+    >
+      <span aria-hidden="true" className="text-[#0BDD48]">
+        $
+      </span>
+      {HERO.install}
+      <span aria-live="polite" className="text-[12px] text-white/60">
+        {copied ? "Copied" : "Copy"}
+      </span>
+    </button>
+  );
 }
 
 /**
@@ -47,8 +64,7 @@ function status(now: Date | null): string | null {
  * huge black line — set like the "Huge day for people who refuse to
  * stop running" posters — with the cat-and-rats wreath on the right.
  */
-export default function Hero({ now }: { now: Date | null }) {
-  const line = status(now);
+export default function Hero() {
   // Tell the fixed header it sits on salmon, so its nav-hover wipe goes
   // dark instead of vanishing (same signal SplitHero publishes).
   const heroToken = useRef<object>({});
@@ -109,15 +125,8 @@ export default function Hero({ now }: { now: Date | null }) {
           </h1>
 
           <motion.p
-            {...entry(400)}
-            className="mt-8 max-w-[620px] font-sans text-[22px] font-black leading-[1.15] sm:text-[26px]"
-          >
-            {HERO.tagline}
-          </motion.p>
-
-          <motion.p
             {...entry(440)}
-            className="mt-4 max-w-[560px] text-[18px] leading-[28px] sm:text-[20px] sm:leading-[30px]"
+            className="mt-8 max-w-[560px] text-[18px] leading-[28px] sm:text-[20px] sm:leading-[30px]"
           >
             {HERO.body}
           </motion.p>
@@ -126,29 +135,15 @@ export default function Hero({ now }: { now: Date | null }) {
             {...entry(540)}
             className="mt-8 flex flex-col items-stretch gap-4 sm:flex-row sm:items-center"
           >
+            <InstallButton />
             <Link
               href={HERO.cta.href}
               prefetch={false}
-              className={buttonClass("ink")}
+              className={buttonClass("outline")}
             >
               {HERO.cta.label}
             </Link>
-            <Link
-              href={HERO.secondaryCta.href}
-              prefetch={false}
-              className={buttonClass("outline")}
-            >
-              {HERO.secondaryCta.label}
-            </Link>
           </motion.div>
-          {/* Reserves its line before the clock mounts so nothing jumps.
-              Not a live region: it ticks every second. */}
-          <motion.p
-            {...entry(600)}
-            className="mt-5 min-h-[20px] font-v1Label text-[15px] uppercase"
-          >
-            {line}
-          </motion.p>
         </div>
 
         {/* The wreath: a grinning black cat ringed by scarfed rats. */}

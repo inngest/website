@@ -51,10 +51,7 @@ function Field({
 }) {
   return (
     <div className="flex flex-col gap-1.5">
-      <label
-        htmlFor={id}
-        className="font-v1Label text-[13px] uppercase text-[#010101]"
-      >
+      <label htmlFor={id} className="font-v1Label text-[13px] text-[#010101]">
         {label}
       </label>
       {children}
@@ -154,7 +151,7 @@ export default function BuildathonForm() {
     return (
       <p
         role="status"
-        className="rounded-xl border-[3px] border-[#010101] bg-[#0BDD48] p-6 font-v1Label text-[16px] uppercase leading-[1.4] text-[#010101] shadow-[8px_8px_0_#010101]"
+        className="rounded-xl border-[3px] border-[#010101] bg-[#0BDD48] p-6 font-v1Label text-[16px] leading-[1.4] text-[#010101] shadow-[8px_8px_0_#010101]"
       >
         {BUILDATHON.sent}
       </p>
@@ -291,10 +288,7 @@ export default function BuildathonForm() {
           {status === "sending" ? BUILDATHON.sending : BUILDATHON.button}
         </button>
         {status === "failed" && (
-          <p
-            role="alert"
-            className="font-v1Label text-[12px] uppercase text-[#F55C50]"
-          >
+          <p role="alert" className="font-v1Label text-[12px] text-[#F55C50]">
             {BUILDATHON.failed}
           </p>
         )}

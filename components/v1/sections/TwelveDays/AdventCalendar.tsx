@@ -9,7 +9,6 @@ import {
   COLORS,
   DAYS,
   DOOR_FACES,
-  DOOR_ORDER,
   REF,
   SIGNUP,
   unlockAt,
@@ -29,8 +28,9 @@ import {
 } from "@/components/v1/sections/TwelveDays/poster";
 
 /**
- * The advent calendar: twelve doors, scattered like a real one, each
- * hinged on its left edge. A door unlocks at midnight Eastern on its
+ * The advent calendar: twelve doors in order, each hinged on its left
+ * edge. The front leads with the lesson's concept; the number and the
+ * teaser quote are secondary. A door unlocks at midnight Eastern on its
  * date (weekdays, December 3–18).
  * Today's door glows and waits to be held open (it creaks wider the
  * longer you hold); earlier days swing open on their own, in a stagger
@@ -77,16 +77,20 @@ export default function AdventCalendar({ now }: { now: Date | null }) {
           <h2 id="twelve-days-calendar-heading" className={POSTER_TITLE}>
             {CALENDAR.title}
           </h2>
-          <p className="font-v1Label text-[clamp(18px,2.4vw,28px)] uppercase leading-[1.15]">
-            {CALENDAR.subtitle}
+          <p className="font-v1Label text-[18px] leading-[1.4]">
+            {CALENDAR.subtitle} {CALENDAR.skip.lead}{" "}
+            <Link
+              href={CALENDAR.skip.href}
+              className="text-[#ECFE08] underline underline-offset-4 hover:no-underline"
+            >
+              {CALENDAR.skip.label}
+            </Link>
           </p>
           <p className="max-w-[560px] text-[18px] leading-[28px] text-white/85">
             {CALENDAR.body}
           </p>
           <div className="flex flex-col gap-3">
-            <p className="font-v1Label text-[14px] uppercase">
-              {SIGNUP.prompt}
-            </p>
+            <p className="font-v1Label text-[14px]">{SIGNUP.prompt}</p>
             <EmailSignup />
           </div>
         </div>
@@ -95,8 +99,7 @@ export default function AdventCalendar({ now }: { now: Date | null }) {
           ref={gridRef}
           className="grid list-none grid-cols-1 gap-6 pl-0 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4"
         >
-          {DOOR_ORDER.map((dayNumber, position) => {
-            const day = DAYS[dayNumber - 1];
+          {DAYS.map((day, position) => {
             const unlocked =
               now !== null && unlockAt(day.day).getTime() <= now.getTime();
             return (
@@ -213,8 +216,8 @@ function Door({
     return () => window.clearTimeout(id);
   }, [unlocked, canPop, open, needsHold, staggerIndex]);
 
-  // Holding today's door lifts its shutter a little, as a preview.
-  const lift = needsHold ? hold * 14 : 0;
+  // Holding today's door creaks it open a little, as a preview.
+  const creak = needsHold ? hold * 24 : 0;
 
   const opensOn = unlockLabel(day.day);
 
@@ -232,7 +235,7 @@ function Door({
             inert={!open}
             aria-hidden={!open}
           >
-            <p className="font-v1Label text-[13px] uppercase">
+            <p className="font-v1Label text-[13px]">
               Lesson {day.day} · {day.primitive}
             </p>
             {/* Lesson video, or its slot until it's cut. */}
@@ -248,13 +251,13 @@ function Door({
               <div
                 role="img"
                 aria-label={`Lesson ${day.day} video coming soon`}
-                className="flex aspect-video w-full items-center justify-center rounded-md border-2 border-dashed border-[#010101] text-center font-v1Label text-[12px] uppercase"
+                className="flex aspect-video w-full items-center justify-center rounded-md border-2 border-dashed border-[#010101] text-center font-v1Label text-[12px]"
                 style={{ backgroundColor: COLORS.cream }}
               >
                 ▶ Lesson video coming
               </div>
             )}
-            <h3 className="font-sans text-[22px] font-black uppercase leading-[1.05] tracking-[-0.01em]">
+            <h3 className="font-sans text-[22px] font-black leading-[1.05] tracking-[-0.01em]">
               {day.title}
             </h3>
             <p className="text-[14px] leading-[20px] text-[#010101]/75">
@@ -270,13 +273,13 @@ function Door({
               onClick={handleStartFreeClick(
                 `/sign-up?ref=${REF}-day-${day.day}`
               )}
-              className="mt-auto self-start font-v1Label text-[12px] uppercase underline underline-offset-4"
+              className="mt-auto self-start font-v1Label text-[12px] underline underline-offset-4"
             >
               {CALENDAR.tryIt} <span aria-hidden="true">→</span>
             </a>
             <Link
               href={day.docs.href}
-              className="inline-flex items-center gap-2 pt-1 font-v1Label text-[13px] uppercase underline-offset-4 hover:underline"
+              className="inline-flex items-center gap-2 pt-1 font-v1Label text-[13px] underline-offset-4 hover:underline"
             >
               {day.docs.label} docs <span aria-hidden="true">→</span>
             </Link>
@@ -311,10 +314,13 @@ function Door({
         </div>
       )}
 
-      {/* The door: a roll-up locker shutter. Clipped to its own tile, so
-          rolling up reveals the day behind it without covering the
+      {/* The door, hinged on its left edge. Clipped to its own tile, so
+          swinging open reveals the day behind it without covering the
           doors next to it. */}
-      <div className="pointer-events-none absolute inset-0 z-10 overflow-hidden rounded-xl">
+      <div
+        className="pointer-events-none absolute inset-0 z-10 overflow-hidden rounded-xl"
+        style={{ perspective: 1400 }}
+      >
         <motion.button
           type="button"
           aria-label={
@@ -350,14 +356,15 @@ function Door({
             touchAction: needsHold ? "none" : undefined,
             WebkitUserSelect: "none",
             userSelect: "none",
+            transformOrigin: "left center",
           }}
           initial={false}
           animate={
             open
               ? reduceMotion
                 ? { opacity: 0 }
-                : { y: "-101%" }
-              : { y: reduceMotion ? 0 : `-${lift}%`, opacity: 1 }
+                : { rotateY: -92, opacity: 0 }
+              : { rotateY: reduceMotion ? 0 : -creak, opacity: 1 }
           }
           transition={
             reduceMotion
@@ -365,23 +372,24 @@ function Door({
               : hold > 0
               ? { duration: 0 }
               : open
-              ? { duration: 0.6, ease: [0.65, 0, 0.35, 1] }
+              ? {
+                  rotateY: { duration: 0.7, ease: [0.65, 0, 0.35, 1] },
+                  opacity: { duration: 0.2, delay: 0.5 },
+                }
               : { duration: 0.25 }
           }
         >
-          {/* Front face, with the shutter's slats. */}
+          {/* Front face: a panelled door with a knob on the right. */}
           <motion.span
             key={rattle}
-            className="absolute inset-0 flex flex-col justify-between overflow-hidden rounded-xl border-[3px] border-[#010101] p-5 pb-12 text-left"
+            className="absolute inset-0 flex overflow-hidden rounded-xl border-[3px] border-[#010101] p-3 text-left"
             style={{
               backgroundColor: face.bg,
-              backgroundImage:
-                "repeating-linear-gradient(to bottom, transparent 0 26px, rgb(1 1 1 / 0.14) 26px 29px)",
               color: face.bg === COLORS.ink ? "#FFFFFF" : COLORS.ink,
             }}
-            // A locked shutter rattles in its frame when tapped.
+            // A locked door rattles in its frame when tapped.
             animate={
-              rattle && !reduceMotion ? { y: [0, -6, 0, -3, 0] } : undefined
+              rattle && !reduceMotion ? { x: [0, -5, 4, -2, 0] } : undefined
             }
             transition={{ duration: 0.4 }}
           >
@@ -395,54 +403,115 @@ function Door({
                 transition={{ duration: 1.4, repeat: Infinity }}
               />
             )}
-            <span className="relative flex items-center justify-between font-v1Label text-[14px] uppercase">
-              <span>Day</span>
-              <span>{needsHold ? "Today" : unlocked ? "Open" : "Locked"}</span>
-            </span>
-            <span
-              className="relative font-sans text-[160px] font-black leading-[0.8] tracking-[-0.05em] sm:text-[180px]"
-              style={{ color: face.num }}
-            >
-              {day.day}
-            </span>
-            <span className="relative text-[16px] leading-[22px]">
-              {day.teaser}
-            </span>
-            {needsHold ? (
-              <span className="relative flex flex-col gap-2">
-                <span className="font-v1Label text-[13px] uppercase">
-                  {hold > 0
-                    ? "Keep holding…"
-                    : `Open Day ${day.day} · press and hold`}
-                </span>
-                <span className="block h-3 w-full overflow-hidden rounded-full border-[3px] border-[#010101] bg-white">
-                  <span
-                    className="block h-full"
-                    style={{
-                      width: `${hold * 100}%`,
-                      backgroundColor: COLORS.green,
-                    }}
-                  />
-                </span>
-              </span>
-            ) : (
-              <span className="relative font-v1Label text-[13px] uppercase">
-                {countdown
-                  ? `Opens in ${countdown}`
-                  : unlocked
-                  ? "Opening…"
-                  : `Opens ${opensOn}`}
-              </span>
-            )}
-            {/* Pull handle along the bottom edge. */}
+            {/* Hinges on the left edge. */}
             <span
               aria-hidden="true"
-              className="absolute bottom-4 left-1/2 h-4 w-20 -translate-x-1/2 rounded-full border-[3px] border-[#010101]"
+              className="absolute left-0 top-[18%] h-8 w-[6px] rounded-r-sm bg-[#010101]"
+            />
+            <span
+              aria-hidden="true"
+              className="absolute bottom-[18%] left-0 h-8 w-[6px] rounded-r-sm bg-[#010101]"
+            />
+            {/* The two panels: the top one carries the lesson. */}
+            <span className="relative flex w-full flex-col gap-3">
+              <span
+                className="relative flex flex-[3] flex-col gap-4 rounded-md border-[3px] p-4"
+                style={{ borderColor: doorLine(face) }}
+              >
+                <span className="flex items-center justify-between">
+                  <span
+                    className="inline-flex h-9 min-w-9 items-center justify-center rounded-full border-[3px] px-2 font-v1Label text-[15px] font-semibold"
+                    style={{
+                      borderColor: doorLine(face),
+                      color: face.num,
+                    }}
+                  >
+                    {day.day}
+                  </span>
+                  {needsHold ? (
+                    <span className="rounded-full bg-[#010101] px-2.5 py-1 font-v1Label text-[12px] text-[#ECFE08]">
+                      Today
+                    </span>
+                  ) : unlocked ? null : (
+                    <LockIcon />
+                  )}
+                </span>
+                <span
+                  className="font-sans text-[clamp(30px,3.2vw,40px)] font-black leading-[0.95] tracking-[-0.02em]"
+                  style={{ color: face.num }}
+                >
+                  {day.primitive}
+                </span>
+                <span className="mt-auto text-[15px] leading-[21px] opacity-80">
+                  {day.teaser}
+                </span>
+              </span>
+              <span
+                className="relative flex flex-[1] flex-col justify-end rounded-md border-[3px] p-4"
+                style={{ borderColor: doorLine(face) }}
+              >
+                {needsHold ? (
+                  <span className="flex flex-col gap-2">
+                    <span className="font-v1Label text-[13px]">
+                      {hold > 0 ? "Keep holding…" : "Press and hold to open"}
+                    </span>
+                    <span className="block h-3 w-full overflow-hidden rounded-full border-[3px] border-[#010101] bg-white">
+                      <span
+                        className="block h-full"
+                        style={{
+                          width: `${hold * 100}%`,
+                          backgroundColor: COLORS.green,
+                        }}
+                      />
+                    </span>
+                  </span>
+                ) : (
+                  <span className="font-v1Label text-[13px]">
+                    {countdown
+                      ? `Opens in ${countdown}`
+                      : unlocked
+                      ? "Opening…"
+                      : `Opens ${opensOn}`}
+                  </span>
+                )}
+              </span>
+            </span>
+            {/* Doorknob, on the right edge between the panels. */}
+            <span
+              aria-hidden="true"
+              className="absolute right-[10px] top-[66%] h-5 w-5 rounded-full border-[3px] border-[#010101]"
               style={{ backgroundColor: COLORS.lime }}
             />
           </motion.span>
         </motion.button>
       </div>
     </div>
+  );
+}
+
+/** Panel outlines: ink on light doors, a soft white on the black one. */
+function doorLine(face: { bg: string }): string {
+  return face.bg === COLORS.ink
+    ? "rgb(255 255 255 / 0.35)"
+    : "rgb(1 1 1 / 0.8)";
+}
+
+function LockIcon() {
+  return (
+    <svg
+      role="img"
+      aria-label="Locked"
+      viewBox="0 0 24 24"
+      width="22"
+      height="22"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth="2.5"
+      strokeLinecap="round"
+      strokeLinejoin="round"
+    >
+      <rect x="4" y="11" width="16" height="10" rx="2" fill="currentColor" />
+      <path d="M8 11V7a4 4 0 0 1 8 0v4" />
+    </svg>
   );
 }

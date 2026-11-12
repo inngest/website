@@ -103,7 +103,7 @@ export default function EmailSignup() {
     return (
       <p
         role="status"
-        className="font-v1Label text-[16px] uppercase leading-[1.3] text-[#ECFE08]"
+        className="font-v1Label text-[16px] leading-[1.3] text-[#ECFE08]"
       >
         {SIGNUP.sent}
       </p>
@@ -138,7 +138,7 @@ export default function EmailSignup() {
       {status === "failed" && (
         <p
           role="alert"
-          className="font-v1Label text-[12px] uppercase text-[#ECFE08] sm:self-center"
+          className="font-v1Label text-[12px] text-[#ECFE08] sm:self-center"
         >
           {SIGNUP.failed}
         </p>

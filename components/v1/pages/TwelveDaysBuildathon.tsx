@@ -59,9 +59,7 @@ export default function TwelveDaysBuildathon() {
               <p className="max-w-[680px] text-[18px] leading-[28px] sm:text-[20px] sm:leading-[30px]">
                 {BUILDATHON.body}
               </p>
-              <p className="font-v1Label text-[15px] uppercase">
-                {BUILDATHON.when}
-              </p>
+              <p className="font-v1Label text-[15px]">{BUILDATHON.when}</p>
               <div>
                 <a
                   href={BUILDATHON.cta.href}
@@ -121,7 +119,7 @@ export default function TwelveDaysBuildathon() {
                       key={d.day}
                       className="flex list-none items-center gap-3 rounded-md border-2 border-[#010101] px-3 py-2"
                     >
-                      <span className="shrink-0 whitespace-nowrap font-v1Label text-[12px] uppercase text-[#010101]/60">
+                      <span className="shrink-0 whitespace-nowrap font-v1Label text-[12px] text-[#010101]/60">
                         Day {d.day}
                       </span>
                       <Link
@@ -140,10 +138,10 @@ export default function TwelveDaysBuildathon() {
                 <ul className="flex flex-col gap-2 pl-0">
                   {BUILDATHON.prizes.map((p) => (
                     <li
-                      key={p}
+                      key={p.place}
                       className="list-none text-[18px] leading-[28px]"
                     >
-                      {p}
+                      <span className="font-black">{p.place}:</span> {p.prize}
                     </li>
                   ))}
                 </ul>

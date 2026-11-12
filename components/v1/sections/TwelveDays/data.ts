@@ -8,7 +8,8 @@
  * Ends with a live CodeTV episode building a Rube Goldberg machine out
  * of all twelve.
  *
- * DRAFT: copy is Lauren's review draft. CodeTV participation and the
+ * Copy follows Lauren's review (Notion: "12 Days of Workflows: Landing
+ * page copy", November 12). CodeTV participation and the
  * finale details stay provisional until approved,
  * and the lesson list waits on the final lineup (Mitch). Everything the
  * page says lives here so those land as data edits, not layout changes.
@@ -232,13 +233,6 @@ export const DAYS: WorkflowDay[] = [
   },
 ];
 
-/**
- * Where each day sits on the calendar. Real advent calendars scatter the
- * numbers so you have to hunt for today's door; this is a fixed shuffle
- * so the layout is the same for everyone.
- */
-export const DOOR_ORDER = [7, 2, 11, 4, 9, 1, 12, 5, 3, 10, 6, 8];
-
 /** Door front colours, cycled by day. Ink is the number and outline. */
 export const DOOR_FACES = [
   { bg: COLORS.salmon, ink: COLORS.ink, num: "#FFFFFF" },
@@ -279,14 +273,16 @@ export const HERO = {
   // Set like the posters: a huge line, a mono line, a huge line. Read
   // as one heading (`label`).
   titleTop: "12 Days",
-  titleMid: "of",
+  titleMid: "of [weird]",
   titleBottom: "Workflows",
-  label: "12 Days of Workflows",
-  tagline:
-    "Twelve doors. Twelve weird workflows. One very long-running holiday season.",
-  body: "A new door opens every weekday at midnight Eastern. Behind each: a bite-sized video, a real code example, and another way to make your workflows keep running when things get weird.",
-  cta: { label: "Explore the calendar", href: "#calendar" },
-  secondaryCta: { label: "Start building free", href: `/sign-up?ref=${REF}` },
+  label: "12 Days of Weird Workflows",
+  body: "Twelve doors. Twelve lessons to make all your weird workflows durable. Combine them and submit your weird workflow for a chance to win cash and other prizes.",
+  /** Copies to the clipboard. */
+  install: "npm install inngest",
+  cta: {
+    label: "Submit your build",
+    href: `/12-days-of-workflows/build-a-thon?ref=${REF}-hero`,
+  },
 } as const;
 
 /** Section id the hero's "Explore the calendar" jumps to. */
@@ -297,8 +293,13 @@ export const CALENDAR_ID = "calendar";
 export const CALENDAR = {
   eyebrow: "The calendar",
   title: "No peeking.",
-  subtitle: "The workflows are still wrapping themselves.",
-  body: "One new workflow unlocks every weekday, December 3–18. Come back for a short lesson, runnable code, and the docs to make it your own. Miss a day? Catch up whenever you like.",
+  subtitle: "The lessons are still wrapping themselves.",
+  skip: {
+    lead: "Already ready to build?",
+    label: "Skip to submission.",
+    href: `/12-days-of-workflows/build-a-thon?ref=${REF}-calendar#submit`,
+  },
+  body: "One new lesson unlocks every weekday, December 3–18. Each one takes a problem you'll hit building a long-running workflow and shows how Inngest handles it, with a short video, runnable code, and the docs to make it your own. Miss a day? Catch up whenever you like.",
   /** Each door's sign-up link. */
   tryIt: "Try it free",
 } as const;
@@ -326,17 +327,19 @@ export const SIGNUP = {
 
 export const FINALE = {
   chips: ["Live on CodeTV"],
-  title: ["Twelve workflows walk", "into one machine."],
+  title: ["Watch us pick the winners", "live on CodeTV."],
   body: [
     "After the last door opens, join Inngest and CodeTV live as we build one gloriously overengineered Rube Goldberg machine out of everything behind the doors.",
-    "Then build your own. We'll show three of the weirdest build-a-thon entries on the stream and pick a $5K winner on air.",
+    "Then build your own. We'll show the weirdest build-a-thon entries on the stream and pick the winners on air.",
   ],
   // TODO: registration link and date are still TBD; this anchor is a
   // placeholder until then.
-  cta: { label: "Save your spot", href: "#finale" },
-  buildathon: {
-    label: "Enter the build-a-thon",
-    href: `/12-days-of-workflows/build-a-thon?ref=${REF}-finale`,
+  cta: { label: "Save the date", href: "#finale" },
+  /** The YouTube-style frame around the art. */
+  player: {
+    channel: "CodeTV",
+    title: "12 Days of Workflows: the finale",
+    live: "Live",
   },
   image: "/assets/v1/12-days/finale.webp",
   imageAlt:
@@ -425,9 +428,9 @@ export const MACHINE = {
  * is still to be confirmed; add its date to `when` once it is.
  */
 export const BUILDATHON = {
-  chips: ["Build-a-thon", "$5K prize"],
+  chips: ["Build-a-thon", "Cash prizes"],
   title: ["Build your", "weird workflow."],
-  when: "Submit by December 23. Winner picked live on CodeTV.",
+  when: "Submit by December 23. Winners picked live on CodeTV.",
   cta: { label: "Submit your workflow", href: "#submit" },
   body: "Use all twelve primitives from behind the doors to build one gloriously overengineered workflow that does something really simple, the Rube Goldberg way. Toast a slice of bread. Water a plant. Say good morning.",
   rulesTitle: "The rules",
@@ -442,8 +445,12 @@ export const BUILDATHON = {
   primitivesTitle: "Your twelve moving parts",
   prizesTitle: "What you get",
   prizes: [
-    "$5K cash for the winner, picked live on CodeTV.",
-    "An exclusive Inngest sweatshirt for everyone who submits.",
+    { place: "First prize", prize: "$3K USD" },
+    { place: "Second and third prize", prize: "$2K USD" },
+    {
+      place: "Honorable mentions",
+      prize: "A showcase on CodeTV and special Inngest swag",
+    },
   ],
   formTitle: "Submit your workflow",
   fields: {
@@ -473,34 +480,30 @@ export const BUILDATHON = {
 } as const;
 
 /**
- * The build-a-thon section on the 12 Days page (BuildathonTeaser.tsx):
- * the short version of the rules, linking out to the full page.
+ * The scrolling ticker under the hero: what's open and what's next,
+ * linking down to the calendar. `idle` shows until the clock mounts.
  */
-/** The scrolling strip under the hero that points down to the build-a-thon. */
-export const BUILDATHON_MARQUEE = {
-  text: "Submit your weirdest workflow for the chance to win $5K cash",
-  href: `/12-days-of-workflows/build-a-thon?ref=${REF}-marquee`,
+export const TICKER = {
+  idle: "A new lesson every weekday, December 3–18",
+  allOpen: "All twelve doors are open.",
+  label: "Jump to the calendar",
 } as const;
 
+/**
+ * The build-a-thon section on the 12 Days page (BuildathonTeaser.tsx):
+ * the prizes, linking out to the full rules and the entry form.
+ */
 export const BUILDATHON_TEASER = {
   eyebrow: "The build-a-thon",
   title: ["Build your", "weird workflow."],
-  body: "Twelve doors, twelve primitives. Put every one of them into a single workflow that does something really simple in the most overengineered way you can make work.",
+  body: "Twelve lessons, twelve primitives. Put every one of them into a single workflow that does something really simple in the most overengineered way you can make work.",
   when: BUILDATHON.when,
-  guidelines: [
-    "Use all twelve primitives from the calendar.",
-    "Do one simple thing, the Rube Goldberg way.",
-    "Deploy it on Vercel, with the code in a public GitHub repo.",
-    "Make it weird!*",
-  ],
-  footnote: BUILDATHON.rulesFootnote,
+  prizesTitle: "The prizes",
   prizes: BUILDATHON.prizes,
+  footnote:
+    "Make it weird: as in a toaster that needs three approvals and a cron job to make toast. Not weirdo weird. Keep it silly, keep it kind.",
   cta: {
-    label: "See the full rules",
-    href: `/12-days-of-workflows/build-a-thon?ref=${REF}-build-a-thon-section`,
-  },
-  submit: {
     label: "Submit your workflow",
-    href: `/12-days-of-workflows/build-a-thon?ref=${REF}-build-a-thon-section#submit`,
+    href: `/12-days-of-workflows/build-a-thon?ref=${REF}-build-a-thon-section`,
   },
 } as const;
