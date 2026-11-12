@@ -1,0 +1,211 @@
+import { Callout, Properties, Property, VersionBadge } from "src/shared/Docs/mdx";
+
+export const metaTitle = "Loops and FSMs | TypeScript SDK v4"
+export const description = "Define keyed loops and finite state machines with createLoop and createFSM, keeping durable state per key across runs."
+export const unreleased = "loops"
+
+# Loops and FSMs <VersionBadge version="v4.27.0+" />
+
+A loop is an Inngest function that keeps one state record per key. Each input for a key — a trigger event, a tick, or a wake — is one run. The run reads the state, runs steps, and changes the state in place. Inngest commits the state when the handler returns and runs one input per key at a time.
+
+An FSM is a loop that cannot subscribe to events. Its inputs are its trigger events, the tick, and wakes.
+
+<Callout variant="info">
+  Loops and FSMs are experimental. `createLoop` and `createFSM` are imported from `inngest/experimental`, and the API may change without a major version bump.
+</Callout>
+
+---
+
+## Defining a loop
+
+```ts
+import { createFSM } from "inngest/experimental";
+
+type State = {
+  phase: "stable" | "canary";
+  build: string;
+};
+
+export const rollout = createFSM(
+  inngest,
+  {
+    id: "connect-app",
+    triggers: [
+      { event: "compute/deploy.created" },
+      { event: "compute/workload.terminated" },
+    ],
+    key: "event.data.app_id",
+    tick: "30s",
+    state: { phase: "stable", build: "" } as State,
+  },
+  async ({ event, input, state, step, loop }) => {
+    if (event.name === "compute/deploy.created") {
+      state.build = event.data.build_id;
+      state.phase = "canary";
+    }
+
+    const health = await step.run("check", () => checkReplicas(input.key));
+    if (health === "starting") {
+      return loop.wake("recheck", "10s");
+    }
+
+    state.phase = "stable";
+  }
+);
+```
+
+`createLoop` and `createFSM` return a `LoopFunction`, which is an Inngest function. Register it in your serve handler with your other functions:
+
+```ts
+serve({ client: inngest, functions: [...myFunctions, rollout] });
+```
+
+### `createLoop(client, config, handler): LoopFunction`
+
+### `createFSM(client, config, handler): LoopFunction`
+
+Both accept the same arguments. `config` accepts the options of [`inngest.createFunction`](/docs/reference/typescript/v4/functions/create?ref=docs-reference-loops), with these differences:
+
+- `key` and `state` are required, and `triggers` must contain at least one trigger.
+- `singleton`, `batchEvents`, `debounce`, and a `concurrency` limit with a `key` are rejected. A loop already runs one input per key.
+- `onFailure` is not supported.
+
+<Properties>
+  <Property name="client" type="Inngest" required>
+    Your Inngest client instance.
+  </Property>
+  <Property name="config" type="object" required>
+    <Properties nested>
+      <Property name="id" type="string" required>
+        A unique identifier for the function.
+      </Property>
+      <Property name="triggers" type="object | object[]" required>
+        One trigger or an array of triggers. At least one is required.
+      </Property>
+      <Property name="key" type="string" required>
+        A CEL expression over the event that names the instance, such as `"event.data.app_id"`. Each key has its own state, and Inngest runs one input per key at a time. An event whose key is empty starts no run.
+      </Property>
+      <Property name="state" type="object | array" required>
+        The state an instance has before its first commit. Each run of a new instance gets a copy. It must be an object or an array that can be encoded as JSON. Its type is the type of `state` in the handler, so cast it when the literal is narrower than your state type.
+      </Property>
+      <Property name="tick" type="number | string">
+        Run the instance again this long after a run for the key finishes. The run has `input.kind` set to `"tick"`. At most one tick is pending per key. Accepts milliseconds or a duration string such as `"30s"`.
+      </Property>
+      <Property name="idleTTL" type="number | string">
+        Delete the instance when no run commits state for this long. Accepts milliseconds or a duration string such as `"7d"`.
+      </Property>
+    </Properties>
+  </Property>
+  <Property name="handler" type="function" required>
+    The async handler. It returns nothing; it keeps data by changing `state`. See [Handler arguments](#handler-arguments).
+  </Property>
+</Properties>
+
+---
+
+## Handler arguments
+
+The handler receives the usual Inngest function arguments, plus:
+
+<Properties>
+  <Property name="state" type="object | array">
+    The state of this instance. Change it in place. The SDK sends it to Inngest when the handler returns. A handler that throws commits nothing.
+  </Property>
+  <Property name="input" type="LoopInput">
+    What started this run.
+    <Properties nested>
+      <Property name="kind" type={`"event" | "tick" | "wake" | "subscription"`}>
+        The kind of input.
+      </Property>
+      <Property name="id" type="string">
+        The wake ID or the subscription ID, for those kinds of input.
+      </Property>
+      <Property name="key" type="string">
+        The value of the `key` expression for this instance. Set for every kind of input.
+      </Property>
+      <Property name="version" type="number">
+        The state version this run loaded.
+      </Property>
+    </Properties>
+  </Property>
+  <Property name="event" type="object">
+    The trigger event, or `inngest/loop.tick` for a tick, `inngest/loop.wake` for a wake, or a subscribed event. A tick and a wake carry only `data.key` (and `data.id` for a wake), so narrow `event` by name before reading `event.data`.
+  </Property>
+  <Property name="loop" type="LoopTools | FSMTools">
+    Calls that say what happens after the run. See [Loop tools](#loop-tools).
+  </Property>
+  <Property name="step" type="object">
+    The step tools, without `step.sleep()`, `step.sleepUntil()`, `step.waitForEvent()`, and `step.waitForSignal()`.
+  </Property>
+</Properties>
+
+### Rules
+
+- **Change state, don't return it.** A value returned from the handler is dropped with a warning.
+- **Don't change state inside `step.run()`.** A memoized step does not run its callback again, so the change is lost on the next request of the run. Assign the step result to `state` in the handler body instead.
+- **Return to wait.** A run that waits holds the key, so no other input for that key can run. `step.run()` and `step.invoke()` are allowed, but `step.sleep()`, `step.waitForEvent()`, and `step.waitForSignal()` fail the run with a `NonRetriableError`. To wait, call `loop.wake()` and return.
+- **`defer()` is not supported.** A call is skipped and logged as an error.
+
+---
+
+## Loop tools
+
+The `loop` calls are collected during the run and sent once, when the handler returns. A handler that throws sends none of them. Calling a `loop` method inside `step.run()` fails the step; call it from the handler body.
+
+### `loop.wake(id, after): void`
+
+Run the instance again after the duration. That run has `input.kind` set to `"wake"` and `input.id` set to `id`. If you call `wake` more than once in a run, the last call wins.
+
+<Properties>
+  <Property name="id" type="string" required>
+    A non-empty wake ID.
+  </Property>
+  <Property name="after" type="number | string" required>
+    How long to wait, in milliseconds or as a duration string such as `"10s"`.
+  </Property>
+</Properties>
+
+### `loop.end(): void`
+
+End the instance after this run. Inngest deletes its state, subscriptions, and timers. A wake from the same run is dropped. The next trigger event for the key starts a new instance with the initial `state`.
+
+### `loop.subscribe(id, options): void`
+
+Only available in `createLoop`. Calling it in an FSM fails the run.
+
+Run the instance again when a matching event is received. That run has `input.kind` set to `"subscription"` and `input.id` set to `id`. The last call for an ID in a run wins.
+
+<Callout variant="warning">
+  Subscriptions are not yet supported by the Inngest server. A run that calls `loop.subscribe()` or `loop.unsubscribe()` fails.
+</Callout>
+
+<Properties>
+  <Property name="id" type="string" required>
+    A non-empty subscription ID.
+  </Property>
+  <Property name="options" type="object" required>
+    <Properties nested>
+      <Property name="event" type="string | EventType" required>
+        The event to subscribe to.
+      </Property>
+      <Property name="if" type="string">
+        A CEL expression over the event. The instance runs only for an event that matches.
+      </Property>
+      <Property name="ttl" type="number | string">
+        How long the subscription lives. The server default applies when unset.
+      </Property>
+    </Properties>
+  </Property>
+</Properties>
+
+### `loop.unsubscribe(id): void`
+
+Only available in `createLoop`. Removes the subscription with the given ID.
+
+---
+
+## Limits
+
+- State is stored as JSON and capped at 512KB. A larger state fails the run without retry.
+- Middleware does not see the committed state, so [encryption middleware](/docs/reference/typescript/v4/middleware/encryption?ref=docs-reference-loops) does not encrypt it.
+- Tick, wake, and subscription runs are not validated against your trigger schemas.
