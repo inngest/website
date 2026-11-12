@@ -350,10 +350,6 @@ export const FINALE = {
     "After the last door opens, join Inngest and CodeTV live as we build one gloriously overengineered Rube Goldberg machine out of everything behind the doors.",
     "Then build your own. We'll show the weirdest build-a-thon entries on the stream and pick the winners on air.",
   ],
-  cta: {
-    label: "Save the date",
-    href: `/12-days-of-workflows/livestream?ref=${REF}-finale`,
-  },
   /** The YouTube-style frame around the art. */
   player: {
     channel: "CodeTV",
@@ -550,6 +546,13 @@ export const LIVESTREAM = {
   title: ["Watch us pick the winners", "live on CodeTV."],
   body: "After the last door opens, join Inngest and CodeTV live as we build one gloriously overengineered Rube Goldberg machine out of everything behind the doors, show the weirdest build-a-thon entries, and pick the winners on air.",
   when: "Date and time coming soon",
+  /**
+   * When the stream starts, as an ISO time with its offset, and how long
+   * it runs. Until `start` is set, the "add to calendar" links after
+   * registering stay hidden.
+   */
+  start: "",
+  minutes: 90,
   /** The YouTube video ID of the stream (the part after `v=`). */
   youtubeId: "",
   form: {

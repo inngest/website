@@ -2,14 +2,14 @@
 
 import Image from "next/image";
 import { motion } from "motion/react";
-import Link from "next/link";
 import { reveals } from "@/utils/v1/reveals";
-import { COLORS, FINALE } from "@/components/v1/sections/TwelveDays/data";
 import {
-  buttonClass,
-  Chip,
-  POSTER_TITLE,
-} from "@/components/v1/sections/TwelveDays/poster";
+  COLORS,
+  FINALE,
+  LIVESTREAM,
+} from "@/components/v1/sections/TwelveDays/data";
+import LivestreamForm from "@/components/v1/sections/TwelveDays/LivestreamForm";
+import { Chip, POSTER_TITLE } from "@/components/v1/sections/TwelveDays/poster";
 
 /**
  * The finale: a live CodeTV episode building a Rube Goldberg machine
@@ -57,14 +57,17 @@ export default function Finale() {
               {p}
             </motion.p>
           ))}
-          <motion.div {...reveals.body}>
-            <Link
-              href={FINALE.cta.href}
-              prefetch={false}
-              className={buttonClass("ink") + " w-full sm:w-auto"}
-            >
-              {FINALE.cta.label}
-            </Link>
+          {/* Registering here adds them to the livestream list: reminders
+              and the calendar invite go out from Customer.io. */}
+          <motion.div
+            {...reveals.body}
+            id="register"
+            className="flex max-w-[520px] scroll-mt-24 flex-col gap-3"
+          >
+            <p className="font-v1Label text-[15px]">
+              {LIVESTREAM.form.title} · {LIVESTREAM.when}
+            </p>
+            <LivestreamForm />
           </motion.div>
         </div>
 

@@ -23,6 +23,58 @@ export const REGISTERED_EVENT = "12 Days Livestream Registered";
 
 const REGISTERED_KEY = "12-days-of-workflows:livestream-registered";
 
+/** "20261229T180000Z": the UTC form calendar links and .ics files use. */
+function calendarTime(date: Date): string {
+  return date
+    .toISOString()
+    .replace(/[-:]/g, "")
+    .replace(/\.\d{3}/, "");
+}
+
+/**
+ * Google Calendar and .ics links for the stream, or null until
+ * `LIVESTREAM.start` is set. The event links to the watch page.
+ */
+function calendarLinks(origin: string) {
+  if (!LIVESTREAM.start) return null;
+  const start = new Date(LIVESTREAM.start);
+  if (Number.isNaN(start.getTime())) return null;
+  const end = new Date(start.getTime() + LIVESTREAM.minutes * 60_000);
+  const title = LIVESTREAM.live.title;
+  const url = `${origin}${LIVESTREAM.watch.href}`;
+  const details = `${LIVESTREAM.body}\n\nWatch: ${url}`;
+  const dates = `${calendarTime(start)}/${calendarTime(end)}`;
+  const google =
+    "https://calendar.google.com/calendar/render?" +
+    new URLSearchParams({
+      action: "TEMPLATE",
+      text: title,
+      dates,
+      details,
+      location: url,
+    }).toString();
+  const ics = [
+    "BEGIN:VCALENDAR",
+    "VERSION:2.0",
+    "PRODID:-//Inngest//12 Days of Workflows//EN",
+    "BEGIN:VEVENT",
+    `UID:12-days-of-workflows-finale@inngest.com`,
+    `DTSTAMP:${calendarTime(new Date())}`,
+    `DTSTART:${calendarTime(start)}`,
+    `DTEND:${calendarTime(end)}`,
+    `SUMMARY:${title}`,
+    `DESCRIPTION:${details.replace(/\n/g, "\\n").replace(/[,;]/g, "\\$&")}`,
+    `URL:${url}`,
+    `LOCATION:${url}`,
+    "END:VEVENT",
+    "END:VCALENDAR",
+  ].join("\r\n");
+  return {
+    google,
+    ics: `data:text/calendar;charset=utf-8,${encodeURIComponent(ics)}`,
+  };
+}
+
 const INPUT =
   "h-[42px] w-full min-w-0 rounded-md border-2 border-[#010101] bg-white px-4 text-[16px] text-[#010101] placeholder:text-[#010101]/40 focus-visible:outline focus-visible:outline-4 focus-visible:outline-offset-2 focus-visible:outline-[#0035F1]";
 
@@ -116,6 +168,10 @@ export default function LivestreamForm() {
   }
 
   if (status === "sent") {
+    const calendar =
+      typeof window === "undefined"
+        ? null
+        : calendarLinks(window.location.origin);
     return (
       <div
         role="status"
@@ -128,6 +184,25 @@ export default function LivestreamForm() {
         >
           {LIVESTREAM.watch.label} <span aria-hidden="true">→</span>
         </Link>
+        {calendar && (
+          <span className="flex flex-wrap gap-x-4 gap-y-1 font-v1Label text-[14px]">
+            <a
+              href={calendar.google}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="underline underline-offset-4 hover:no-underline"
+            >
+              Add to Google Calendar
+            </a>
+            <a
+              href={calendar.ics}
+              download="12-days-of-workflows-finale.ics"
+              className="underline underline-offset-4 hover:no-underline"
+            >
+              Add to Apple or Outlook (.ics)
+            </a>
+          </span>
+        )}
       </div>
     );
   }
