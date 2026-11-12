@@ -9,7 +9,7 @@ export const description = "Clone Inngest Sandboxes: prepare an environment once
 
 If several jobs need the same dependencies, prepare one Sandbox, snapshot it, and clone a separate Sandbox for each job. Each clone starts from the captured state with its own Sandbox ID.
 
-> **Beta:** Sandboxes are an access-gated, experimental feature. The API can change.
+> **Open beta.** Sandboxes are available on Pro plans and above. The API can change.
 
 ## What a clone contains
 
@@ -106,7 +106,7 @@ Snapshot creation and clone startup are separate. The REST API can return a snap
 
 `snapshot.clone()` returns a clone that is already `RUNNING`, or waits for a `STARTING` clone to reach `RUNNING`. The default readiness wait is up to 120 seconds. Set `runningTimeout` to change that bound. A readiness timeout does not destroy the new sandbox, so track and clean it up.
 
-Snapshots have a server-defined `expiresAt`. They are not permanent storage and use account-specific count and storage quotas. The exact retention period and quotas are still being finalized for launch. The beta supports resource pairs of 1 vCPU / 1024 MB, 2 vCPU / 2048 MB, and 4 vCPU / 4096 MB; clones inherit the snapshot's pair.
+Snapshots have a server-defined `expiresAt`. They are not permanent storage and use account-specific count and storage quotas. The exact retention period and quotas are still being finalized for launch. Clones inherit the snapshot's CPU and memory; see [supported sizes](/docs/sandboxes/features/base-images#choose-a-supported-size).
 
 ## Clone or pause?
 

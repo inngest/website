@@ -17,7 +17,7 @@ A queue sounds simple. A line of jobs, first in, first out. At real scale, it st
 
 Stripped down, the queue's job is simple: out of all the work waiting to run, pick what runs next. Every durable function, every retry, every step that resumes after a sleep is the queue deciding what's due and handing it to an executor.
 
-What makes that hard is everything wrapped around "what runs next." The queue is multi-tenant, so thousands of customers share it and one customer's spike can't stall everyone else. It's durable, so a job sitting in it is a promise a crash isn't allowed to break. And it runs hot, with hundreds of millions of items in flight, which rules out anything that scans the whole thing to make a decision. None of this shows up when you build a queue for one app on a slow afternoon. All of it shows up in production.
+What makes that hard is everything wrapped around "what runs next." The queue is multi-tenant, so thousands of customers share it and one customer's spike can't stall everyone else. It's durable, so a job sitting in it is [a promise a crash isn't allowed to break](/blog/the-queue-is-durable-your-worker-is-not?ref=blog-the-queue-is-the-easy-part). And it runs hot, with hundreds of millions of items in flight, which rules out anything that scans the whole thing to make a decision. None of this shows up when you build a queue for one app on a slow afternoon. All of it shows up in production.
 
 ## How we landed on a tree
 

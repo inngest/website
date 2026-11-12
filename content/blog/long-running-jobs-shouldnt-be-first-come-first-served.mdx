@@ -39,7 +39,7 @@ In Inngest, this is configuration on the function:
 | Who waits? | [Concurrency keys](/docs/durable-execution/flow-control/concurrency?ref=blog-long-running-jobs-shouldnt-be-first-come-first-served) `concurrency.key` | Gives each customer (or user, or tenant) its own queue with its own limit, so one customer's backlog only delays that customer. |
 | When do they go? | [Priority](/docs/durable-execution/flow-control/priority?ref=blog-long-running-jobs-shouldnt-be-first-come-first-served) `priority.run` | Moves runs earlier or later within a queue based on data in the event, like plan or source. |
 
-Both only matter when there's a backlog. Concurrency limits count steps that are actively executing, so a run paused on `step.sleep()` or `step.waitForEvent()` doesn't hold a slot. The waiting described below is work that's ready to run and waiting for a free slot.
+Both only matter when there's a backlog. Concurrency limits count steps that are actively executing, so a run paused on `step.sleep()` or `step.waitForEvent()` [doesn't hold a slot](/blog/how-to-know-when-you-need-more-concurrency?ref=blog-long-running-jobs-shouldnt-be-first-come-first-served). The waiting described below is work that's ready to run and waiting for a free slot.
 
 ## Who waits: give each customer their own queue
 

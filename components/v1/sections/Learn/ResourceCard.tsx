@@ -1,8 +1,10 @@
+import Image from "next/image";
 import Link from "next/link";
 import RegisterCue from "@/components/v1/sections/Events/RegisterCue";
 import SpotlightFrame from "@/components/v1/sections/Events/SpotlightFrame";
 import Chip from "@/components/v1/sections/shared/Chip";
 import type { PostCard } from "@/components/v1/sections/Learn/types";
+import { refLinkProps } from "@/utils/v1/ref";
 
 export default function ResourceCard({ post }: { post: PostCard }) {
   const ctaLabel =
@@ -18,7 +20,7 @@ export default function ResourceCard({ post }: { post: PostCard }) {
     // /blog/[slug]. Add per-type routing once REPORT/VIDEO/DEMO content
     // sources exist.
     <Link
-      href={post.href ?? `/blog/${post.slug}`}
+      {...refLinkProps(post.href ?? `/blog/${post.slug}`)}
       className="block h-full rounded-lg"
     >
       {/* Black gradient frame + cursor spotlight / lift / tilt hover —
@@ -73,13 +75,24 @@ function Tile({ post }: { post: PostCard }) {
     );
   }
   return (
-    <div className="aspect-[2/1] w-full shrink-0 overflow-hidden">
-      <img
+    <div className="relative aspect-[2/1] w-full shrink-0 overflow-hidden">
+      <Image
         src={post.image}
         alt=""
-        loading="lazy"
-        className="h-full w-full object-cover"
+        fill
+        // Card width in ResourceExplorer's grid: max-w-[1440px] container,
+        // px-6 (sm:px-8) gutters, gap-5, 1/2/3 columns at base/sm/lg.
+        sizes="(min-width: 1440px) 446px, (min-width: 1024px) calc((100vw - 104px) / 3), (min-width: 640px) calc((100vw - 84px) / 2), calc(100vw - 48px)"
+        unoptimized={skipOptimizer(post.image)}
+        className="object-cover"
       />
     </div>
   );
+}
+
+/** The optimizer can't improve SVGs or animated GIFs, and it rejects local
+ *  paths with a query string (e.g. `?v=2` cache busters) unless they are
+ *  allowed in images.localPatterns. Serve those as-is. */
+function skipOptimizer(src: string): boolean {
+  return /\.(svg|gif)(\?|$)/i.test(src) || /^\/[^?]*\?/.test(src);
 }

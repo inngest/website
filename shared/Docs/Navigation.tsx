@@ -52,9 +52,11 @@ import {
   type SDKLanguage,
   type TSVersion,
 } from "./LanguageStore";
+import { toDocsNavPath } from "./docsNavPath";
 import TypeScriptIcon from "src/shared/Icons/TypeScript";
 import PythonIcon from "src/shared/Icons/Python";
 import GoIcon from "src/shared/Icons/Go";
+import { refLinkProps } from "@/utils/v1/ref";
 
 type ActiveSectionContextType = {
   activeSection: string;
@@ -72,7 +74,7 @@ export function ActiveSectionProvider({
   children: React.ReactNode;
 }) {
   const router = useRouter();
-  const pathname = router.pathname;
+  const pathname = toDocsNavPath(router.pathname);
 
   const getInitialSection = useCallback(() => {
     const section = topLevelNav.find(
@@ -119,7 +121,7 @@ function isMatch(
 
 function TopLevelNavItem({ href, matcher, title, icon: Icon }) {
   const router = useRouter();
-  const pathname = router.pathname;
+  const pathname = toDocsNavPath(router.pathname);
   const isActive = isMatch(matcher, pathname) || href === pathname;
   return (
     <NavLink href={href} isTopLevel={true}>
@@ -137,13 +139,13 @@ function TopLevelNavItem({ href, matcher, title, icon: Icon }) {
 
 export function TabItem({ href, children, matcher, title }) {
   const router = useRouter();
-  const pathname = router.pathname;
+  const pathname = toDocsNavPath(router.pathname);
   const isActive = isMatch(matcher, pathname) || href === pathname;
 
   return (
     <li>
       <Link
-        href={href}
+        {...refLinkProps(href)}
         className={clsx(
           "relative top-0.5 block cursor-pointer whitespace-nowrap px-3 py-4 text-sm font-medium leading-5 transition",
           isActive &&
@@ -226,9 +228,9 @@ function NavLink({
 // link in a new tab.
 const LinkOrHref = (props: any) => {
   if (props.target === "_blank") {
-    return <a {...props} />;
+    return <a {...props} {...refLinkProps(props.href)} />;
   }
-  return <Link {...props} />;
+  return <Link {...props} {...refLinkProps(props.href)} />;
 };
 
 function VisibleSectionHighlight({ listItems }) {
@@ -385,7 +387,7 @@ function NavigationGroup({
   let isInsideMobileNavigation = useIsInsideMobileNavigation();
   let [router] = useInitialValue([useRouter()], isInsideMobileNavigation);
 
-  const currentPath = router.pathname;
+  const currentPath = toDocsNavPath(router.pathname);
 
   // hack: animation flickers on initial render so let's enable it after mount
   let [animateAccordion, setAnimateAccordion] = useState(false);
@@ -594,7 +596,7 @@ function NavigationSection({ group }: { group: NavGroup }) {
       <NavigationLinks
         links={group.links}
         nestingLevel={1}
-        currentPath={router.pathname}
+        currentPath={toDocsNavPath(router.pathname)}
         emphasizeGroups
       />
     </li>
@@ -948,7 +950,7 @@ function VersionSwitcher({
 export function Navigation(props) {
   const router = useRouter();
 
-  const pathname = router.pathname;
+  const pathname = toDocsNavPath(router.pathname);
 
   const { activeSection } = useActiveSection();
   const { effectiveLanguage, effectiveTsVersion, setLanguage, setTsVersion } =

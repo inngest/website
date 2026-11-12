@@ -1,25 +1,26 @@
 import Link from "next/link";
 import StatusWidget from "src/shared/StatusWidget";
+import { refLinkProps } from "@/utils/v1/ref";
 
 export const navigation = {
   platform: [
     { name: "AI & Agents", href: "/ai?ref=footer-links" },
     {
       name: "Durable Workflows",
-      href: "/uses/durable-workflows?ref=footer-links",
+      href: "/platform/durable-execution?ref=footer-links",
     },
     {
       name: "Durable Endpoints",
-      href: "/durable-endpoints?ref=footer-links",
+      href: "/platform/durable-execution?ref=footer-links",
     },
-    { name: "Platform", href: "/platform?ref=footer-links" },
+    { name: "Platform", href: "/platform/durable-execution?ref=footer-links" },
     {
       name: "Queueing",
-      href: "/compare-to-legacy-queues?ref=footer-links",
+      href: "/platform/flow-control?ref=footer-links",
     },
     {
       name: "Workflow Engines",
-      href: "/uses/workflow-engine?ref=footer-links",
+      href: "/uses/webhooks?ref=footer-links",
     },
     {
       name: "Background Jobs",
@@ -27,14 +28,14 @@ export const navigation = {
     },
     {
       name: "Scheduled and cron jobs",
-      href: "/uses/serverless-cron-jobs?ref=homepage-footer-links",
+      href: "/uses/scheduled-jobs?ref=homepage-footer-links",
     },
   ],
   explore: [
     { name: "Docs", href: "/docs?ref=footer-links" },
     {
       name: "Inngest vs. Traditional Queues",
-      href: "/compare-to-legacy-queues?ref=footer-links",
+      href: "/platform/flow-control?ref=footer-links",
     },
     {
       name: "Inngest vs. Kafka",
@@ -80,7 +81,7 @@ export default function FooterLinks() {
                 {navigation.platform.map((item) => (
                   <li key={item.name}>
                     <a
-                      href={item.href}
+                      {...refLinkProps(item.href)}
                       className="text-sm/6 text-gray-400 hover:text-white"
                     >
                       {item.name}
@@ -97,7 +98,7 @@ export default function FooterLinks() {
                 {navigation.explore.map((item) => (
                   <li key={item.name}>
                     <a
-                      href={item.href}
+                      {...refLinkProps(item.href)}
                       className="text-sm/6 text-gray-400 hover:text-white"
                     >
                       {item.name}
@@ -114,7 +115,7 @@ export default function FooterLinks() {
                 {navigation.company.map((item) => (
                   <li key={item.name}>
                     <a
-                      href={item.href}
+                      {...refLinkProps(item.href)}
                       className="text-sm/6 text-gray-400 hover:text-white"
                     >
                       {item.name}
@@ -131,7 +132,7 @@ export default function FooterLinks() {
                 {navigation.community.map((item) => (
                   <li key={item.name}>
                     <a
-                      href={item.href}
+                      {...refLinkProps(item.href)}
                       className="text-sm/6 text-gray-400 hover:text-white"
                     >
                       {item.name}
@@ -153,21 +154,21 @@ export default function FooterLinks() {
           </p>
           <div className="flex flex-row justify-end  text-sm/6 text-stone-500">
             <Link
-              href="/privacy?ref=footer-links"
+              {...refLinkProps("/privacy?ref=footer-links")}
               className="px-1 hover:underline"
             >
               Privacy Policy
             </Link>
             <div>|</div>
             <Link
-              href="/terms?ref=footer-links"
+              {...refLinkProps("/terms?ref=footer-links")}
               className="px-1 hover:underline"
             >
               Terms
             </Link>
             <div>|</div>
             <Link
-              href="/security?ref=footer-links"
+              {...refLinkProps("/security?ref=footer-links")}
               className="pl-1 hover:underline"
             >
               Security

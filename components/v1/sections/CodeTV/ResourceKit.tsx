@@ -8,7 +8,7 @@ import {
   V1_SECTION_PADDING_Y_COMPACT,
 } from "@/components/v1/sections/shared/sectionShell";
 import { cn } from "@/utils/v1/cn";
-import { appendRef } from "@/utils/v1/ref";
+import { appendRef, refLinkProps } from "@/utils/v1/ref";
 import {
   KEEP_GOING_CODE,
   PAGE_REF,
@@ -118,7 +118,7 @@ export default function ResourceKit() {
                 className="border-t border-v1-frost/15 last:border-b"
               >
                 <a
-                  href={appendRef(link.href, `${PAGE_REF}-kit`)}
+                  {...refLinkProps(appendRef(link.href, `${PAGE_REF}-kit`))}
                   className="group flex items-baseline justify-between gap-4 py-4"
                 >
                   <span className="flex flex-col gap-1">

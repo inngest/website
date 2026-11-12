@@ -14,6 +14,7 @@ import {
   tokenizeCode,
   renderTokens,
 } from "@/components/v1/sections/shared/codeHighlight";
+import { refLinkProps } from "@/utils/v1/ref";
 
 /**
  * "Designed for AI, not retrofitted". A
@@ -431,7 +432,7 @@ export default function DesignedForAI() {
                   </ReelDirectoryRow>
                   {slide.href && (
                     <Link
-                      href={slide.href}
+                      {...refLinkProps(slide.href)}
                       target="_blank"
                       rel="noopener noreferrer"
                       className="pb-2 pl-[40px] pr-[22px] pt-1 font-v1Label text-[13px] text-v1-frost/50 hover:text-v1-accent-salmon motion-safe:transition-colors motion-safe:duration-200"

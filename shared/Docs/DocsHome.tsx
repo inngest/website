@@ -15,6 +15,7 @@ import { GridPattern } from "./GridPattern";
 import IconTypeScript from "../Icons/TypeScript";
 import IconPython from "../Icons/Python";
 import IconGo from "../Icons/Go";
+import { refLinkProps } from "@/utils/v1/ref";
 
 /*
  * Components for the docs home page (pages/docs/index.mdx).
@@ -416,7 +417,7 @@ type ImageCardItem = {
 
 function ImageCard({ href, title, description, illustration }: ImageCardItem) {
   return (
-    <Link href={href} className={cardBase}>
+    <Link {...refLinkProps(href)} className={cardBase}>
       {illustration}
       <div className="p-4">
         <h3 className={titleClass}>{title}</h3>
@@ -518,7 +519,7 @@ type IconCardItem = {
 
 function IconCard({ href, title, description, icon }: IconCardItem) {
   return (
-    <Link href={href} className={clsx(cardBase, "p-5")}>
+    <Link {...refLinkProps(href)} className={clsx(cardBase, "p-5")}>
       <div className="mb-3 flex h-9 w-9 items-center justify-center rounded-md bg-matcha-500/10 text-matcha-600 dark:text-matcha-400">
         {icon}
       </div>
@@ -638,7 +639,7 @@ export function StartBuilding({
         {languages.map((l) => (
           <Link
             key={l.href}
-            href={withRef(l.href, refParam)}
+            {...refLinkProps(withRef(l.href, refParam))}
             className={clsx(cardBase, "p-5")}
           >
             <div className="mb-3 flex h-9 items-center">{l.icon}</div>
@@ -652,7 +653,7 @@ export function StartBuilding({
         {frameworks.map((f) => (
           <Link
             key={f.href}
-            href={withRef(f.href, refParam)}
+            {...refLinkProps(withRef(f.href, refParam))}
             className={clsx(
               cardSurface,
               "flex items-center justify-between px-4 py-3 text-sm font-medium text-basis"

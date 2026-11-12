@@ -25,7 +25,7 @@ import {
 } from "@/components/v1/nav-config";
 import { WipeLabel } from "@/components/v1/sections/shared/WipeLabel";
 import { GITHUB_STARS_LABEL, GithubMark } from "@/components/v1/GithubStars";
-import { appendRef } from "@/utils/v1/ref";
+import { appendRef, refLinkProps } from "@/utils/v1/ref";
 import { handleStartFreeClick } from "@/utils/v1/startFreeCta";
 import { cn } from "@/utils/v1/cn";
 import { useScrolledPast } from "@/utils/v1/hooks/useScrolledPast";
@@ -352,7 +352,7 @@ export default function Header() {
               </Link>
               <Button asChild variant="pill" size="sm">
                 <a
-                  href={appendRef(SIGN_UP_URL, "nav")}
+                  {...refLinkProps(appendRef(SIGN_UP_URL, "nav"))}
                   onClick={handleStartFreeClick(appendRef(SIGN_UP_URL, "nav"))}
                 >
                   Start free
@@ -396,6 +396,20 @@ export default function Header() {
               />
             </div>
           )}
+
+          {/* Every other menu's links, in the HTML from first load and
+              hidden with CSS. The layer above only mounts on hover, and
+              crawlers don't hover, so without this none of the mega-menu
+              links (or the mobile menu, which lists the same items) are
+              visible to search engines or AI crawlers. The open menu is
+              left out here so its links aren't rendered twice. */}
+          <div className="hidden">
+            {ALL_NAV.filter(
+              (item) => item.menu && item.label !== activeItem?.label
+            ).map((item) => (
+              <NavMenuPanel key={item.label} menu={item.menu!} />
+            ))}
+          </div>
         </div>
       </div>
       <MobileMenu isOpen={menuOpen} onClose={closeMenu} />

@@ -6,7 +6,7 @@ const footerLinks = [
     links: [
       {
         label: "Platform",
-        url: "/platform?ref=footer",
+        url: "/platform/durable-execution?ref=footer",
       },
       {
         label: "Documentation",
@@ -31,23 +31,23 @@ const footerLinks = [
       },
       {
         label: "Compare to traditional queues",
-        url: "/compare-to-legacy-queues?ref=footer",
+        url: "/platform/flow-control?ref=footer",
       },
       {
         label: "Durable workflows",
-        url: "/uses/durable-workflows?ref=footer",
+        url: "/platform/durable-execution?ref=footer",
       },
       {
         label: "Workflow engines",
-        url: "/uses/workflow-engine?ref=footer",
+        url: "/uses/webhooks?ref=footer",
       },
       {
         label: "Serverless queues for TypeScript",
-        url: "/uses/serverless-queues?ref=footer",
+        url: "/platform/flow-control?ref=footer",
       },
       {
         label: "Scheduled & cron jobs",
-        url: "/uses/serverless-cron-jobs?ref=footer",
+        url: "/uses/scheduled-jobs?ref=footer",
       },
       {
         label: "Node.js background jobs",

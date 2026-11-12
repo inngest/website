@@ -413,6 +413,7 @@ export const permanentRedirects = [
   // a few standalone LPs being retired.
   ["/uses/durable-workflows", "/platform/durable-execution"],
   ["/compare-to-legacy-queues", "/platform/flow-control"],
+  ["/uses/serverless-queues", "/platform/flow-control"],
   ["/uses/serverless-cron-jobs", "/uses/scheduled-jobs"],
   ["/uses/workflow-engine", "/uses/webhooks"],
   ["/durable-endpoints", "/platform/durable-execution"],
@@ -423,6 +424,11 @@ export const permanentRedirects = [
   ["/product/how-inngest-works", "/"],
   // The scheduled-jobs page moved under /uses; preserve the old URL.
   ["/scheduled-jobs", "/uses/scheduled-jobs"],
+  // Legacy blog category pages (old design, a taxonomy the /blog hub no
+  // longer uses). /blog filters by tag instead.
+  ["/blog/category/engineering", "/blog"],
+  ["/blog/category/product-updates", "/blog"],
+  ["/blog/category/company-news", "/blog"],
 ];
 
 const redirectMap = new Map(permanentRedirects);

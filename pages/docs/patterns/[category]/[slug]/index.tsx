@@ -16,6 +16,7 @@ import {
 import AgentView from "../../../../../shared/Patterns/AgentView";
 import { patternMarkdown } from "../../../../../shared/Patterns/markdown";
 import "../../../../../shared/Patterns/patterns-docs.css";
+import { refLinkProps } from "@/utils/v1/ref";
 
 type PatternFrontmatter = {
   title?: string;
@@ -143,7 +144,7 @@ export default function PatternPage({
       <div className="md-prose">
         <span className="cat-eyebrow mono">
           <span className="cat-eyebrow-dot" />
-          <Link href={`/docs/patterns/${category}`} className="md-link" style={{ border: 0 }}>
+          <Link {...refLinkProps(`/docs/patterns/${category}`)} className="md-link" style={{ border: 0 }}>
             {sectionName}
           </Link>
         </span>
@@ -169,7 +170,7 @@ export default function PatternPage({
 
       <div className="pat-nav">
         {prev ? (
-          <Link className="pat-nav-card" href={`/docs/patterns/${category}/${prev.slug}`}>
+          <Link className="pat-nav-card" {...refLinkProps(`/docs/patterns/${category}/${prev.slug}`)}>
             <span className="pat-nav-dir mono">← Previous</span>
             <span className="pat-nav-title">{prev.title}</span>
           </Link>
@@ -179,7 +180,7 @@ export default function PatternPage({
         {next ? (
           <Link
             className="pat-nav-card pat-nav-card--next"
-            href={`/docs/patterns/${category}/${next.slug}`}
+            {...refLinkProps(`/docs/patterns/${category}/${next.slug}`)}
           >
             <span className="pat-nav-dir mono">Next →</span>
             <span className="pat-nav-title">{next.title}</span>

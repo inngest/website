@@ -474,6 +474,10 @@ export const docsRefreshOutline: DocsRefreshPage[] = [
                 href: "/docs/sandboxes/features/base-images",
               },
               {
+                title: "Custom images",
+                href: "/docs/sandboxes/features/custom-images",
+              },
+              {
                 title: "Pause and resume",
                 href: "/docs/sandboxes/features/pause-and-resume",
               },
@@ -500,6 +504,14 @@ export const docsRefreshOutline: DocsRefreshPage[] = [
               {
                 title: "Managed lifecycle",
                 href: "/docs/sandboxes/features/managed-lifecycle",
+              },
+              {
+                title: "Commands",
+                href: "/docs/sandboxes/features/commands",
+              },
+              {
+                title: "Tools",
+                href: "/docs/sandboxes/features/tools",
               },
               {
                 title: "Isolation and security",

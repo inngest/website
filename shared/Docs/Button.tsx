@@ -2,6 +2,8 @@ import React from "react";
 import Link, { LinkProps } from "next/link";
 import clsx from "clsx";
 
+import { refLinkProps } from "@/utils/v1/ref";
+
 function ArrowIcon(props) {
   return (
     <svg viewBox="0 0 20 20" fill="none" aria-hidden="true" {...props}>
@@ -72,7 +74,11 @@ export function Button({
   );
 
   return (
-    <Component className={className} {...props}>
+    <Component
+      className={className}
+      {...props}
+      {...(props.href ? refLinkProps(props.href) : {})}
+    >
       {arrow === "left" && arrowIcon}
       {children}
       {arrow === "right" && arrowIcon}

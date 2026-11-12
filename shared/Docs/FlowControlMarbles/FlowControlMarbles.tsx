@@ -20,6 +20,7 @@ import { MarbleDiagram } from "./Diagram";
 import { MarbleLegend } from "./Legend";
 import { EPS, buildModel } from "./model";
 import { getMarbleScenario } from "./scenarios";
+import { refLinkProps } from "@/utils/v1/ref";
 
 const END_HOLD_MS = 2200;
 
@@ -152,7 +153,7 @@ export function FlowControlMarbles({ scenario: id }: { scenario: string }) {
             <RiRestartLine className="h-3.5 w-3.5" />
           </ControlButton>
           <a
-            href={simulatorHref(scenario.preset, scenario.config)}
+            {...refLinkProps(simulatorHref(scenario.preset, scenario.config))}
             className="ml-1 inline-flex h-7 items-center gap-0.5 rounded-md px-1.5 text-[11px] font-medium text-muted transition-colors hover:bg-canvasMuted hover:text-basis"
             title="Open this scenario in the flow control simulator"
           >

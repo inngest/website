@@ -51,7 +51,7 @@ export default function RootLayout({
   children: React.ReactNode;
 }) {
   return (
-    <html suppressHydrationWarning>
+    <html lang="en" suppressHydrationWarning>
       <head>
         <link
           rel="preconnect"
@@ -80,6 +80,18 @@ export default function RootLayout({
           crossOrigin="anonymous"
         />
         <link rel="stylesheet" href="https://fonts-cdn.inngest.com/fonts.css" />
+        {/* Scroll-reveal animations (utils/v1/reveals.ts and friends) are
+            server-rendered at their start state, opacity 0 and shifted
+            down, and only animate in once JavaScript runs. Without
+            JavaScript that hides most of a v1 page's copy, so show those
+            elements in place instead. Scoped to <main> and to the
+            translateY start state, so hover labels (translateX) and the
+            header menus stay hidden. Has no effect when JavaScript is on. */}
+        <noscript
+          dangerouslySetInnerHTML={{
+            __html: `<style>main [style*="opacity:0;transform:translateY("]{opacity:1!important;transform:none!important}</style>`,
+          }}
+        />
         <Script
           id="js-inngest-queue-init"
           async

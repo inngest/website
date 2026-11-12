@@ -21,13 +21,13 @@ export default function FormTestimonial({
 }) {
   return (
     <figure className="flex flex-col items-start gap-8">
-      {/* resend.svg is a 65×16 white lockup; h-6 renders it ~98px wide.
+      {/* resend.svg is a 377×80 white lockup; h-6 renders it ~113px wide.
           width/height reserve the box to avoid layout shift before the
           SVG loads. */}
       <img
         src="/assets/v1/logos/resend.svg"
         alt="Resend"
-        width={98}
+        width={113}
         height={24}
         decoding="async"
         className="h-[24px] w-auto"

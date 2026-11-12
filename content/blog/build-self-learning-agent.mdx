@@ -357,6 +357,8 @@ That creates a recursive failure: the agent's prompt now contains scoring langua
 
 The fix was the `CRITICAL OUTPUT RULES` block that explicitly prohibits scoring targets, metrics, and evaluation data in generated output. The agent should never know it's being scored.
 
+A stronger guard is to hold some cases out of the loop entirely and [score a held-back set once, at the end](/blog/building-a-durable-goal-agent-loop-that-survives-crashes?ref=blog-build-self-learning-agent), so a gap between the train and holdout scores shows when the agent is gaming its check.
+
 This happened within hours, not months. If you build a self-improving system, assume the LLM will find shortcuts you didn't anticipate.
 
 ### Gains are Marginal with Frontier Models

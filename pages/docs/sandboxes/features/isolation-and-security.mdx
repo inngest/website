@@ -7,7 +7,7 @@ export const description = "Sandbox isolation and security: run generated or unt
 
 Run generated code or repository checks in a separate Linux microVM so that code cannot share your function’s process. Each Sandbox has its own filesystem, processes, environment variables, compute resources, and network identity. When you call it through `step.sandbox`, Inngest records the operation beside the function steps.
 
-This page describes the current access-gated beta and the planned launch capabilities separately. The beta is for evaluation, not production workloads or data you cannot recreate.
+This page describes the current open beta and the planned launch capabilities separately. The beta is for evaluation, not production workloads or data you cannot recreate.
 
 ## What belongs to one Sandbox
 
@@ -15,7 +15,7 @@ This page describes the current access-gated beta and the planned launch capabil
 | --- | --- |
 | Files and processes | A Sandbox has its own filesystem and running processes. Destroying it removes the live filesystem, processes, and retained process output. |
 | Environment | Sandbox-level environment values apply to commands and processes unless those operations override them. Code inside the Sandbox can read those values. |
-| Compute | A Sandbox has its own CPU and memory allocation. The beta offers fixed resource pairs. |
+| Compute | A Sandbox has its own CPU and memory allocation. The beta offers a fixed menu of supported sizes. |
 | Network | A Sandbox has a network identity. The beta creates it in the workspace's default egress-only VPC. The beta API does not expose public ingress or custom VPC selection. |
 
 **Confirmed for launch:** Each Sandbox runs as a separate VM with complete isolation from the host and other Sandboxes. Sandboxes cannot send traffic to one another. This lets you run untrusted code away from your function process and from other Sandbox workloads.

@@ -25,6 +25,7 @@ export default function Community() {
           containerClassName="flex flex-col"
         >
           <SectionHeader
+            as="h1"
             id="community-heading"
             eyebrow="Community"
             title="What builders are saying"
