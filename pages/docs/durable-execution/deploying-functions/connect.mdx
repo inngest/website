@@ -227,6 +227,12 @@ No signing or event keys are required in local development mode.
 
     By default, Inngest will attempt to use the hostname of the worker as the instance id. If you're running your app in a containerized environment, you can set the `instanceId` to the container id.
 
+    In the TypeScript SDK (v4.27.0+), you can also set the instance id with the `INNGEST_CONNECT_INSTANCE_ID` environment variable. It's used when the `instanceId` option is omitted. If you pass `instanceId` to `connect()`, the option takes precedence over the environment variable.
+
+    ```shell
+    INNGEST_CONNECT_INSTANCE_ID=worker-1
+    ```
+
     <CodeGroup>
     ```ts {{ title: "Any platform" }}
     // Set the instance ID to any environment variable that is unique to the worker
