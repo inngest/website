@@ -66,7 +66,7 @@ const LOGOS: CustomerLogo[] = [
   {
     name: "Resend",
     src: "/assets/v1/logos/resend.svg",
-    width: 118,
+    width: 137,
     height: 29,
     caseStudyHref: "/customers/resend",
     dotDx: 8,
