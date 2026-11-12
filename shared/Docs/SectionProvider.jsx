@@ -55,6 +55,14 @@ function useVisibleSections(sectionStore) {
   let sections = useStore(sectionStore, (s) => s.sections);
 
   useEffect(() => {
+    // Headings inside an unselected Language/Guide section are rendered but
+    // hidden (display: none), so they have no layout box. Skip them, or their
+    // zero-size rect would count as "above the threshold".
+    function isRendered(section) {
+      let el = section.headingRef?.current;
+      return Boolean(el && el.getClientRects().length > 0);
+    }
+
     function checkVisibleSections() {
       let { innerHeight, scrollY, document } = window;
       let newVisibleSections = [];
@@ -65,8 +73,9 @@ function useVisibleSections(sectionStore) {
         innerHeight + Math.round(scrollY) >=
         document.body.offsetHeight - 10 // tolerance
       ) {
-        if (sections.length > 0) {
-          setVisibleSections([sections[sections.length - 1].id]);
+        let rendered = sections.filter(isRendered);
+        if (rendered.length > 0) {
+          setVisibleSections([rendered[rendered.length - 1].id]);
           return;
         }
       }
@@ -76,8 +85,8 @@ function useVisibleSections(sectionStore) {
 
       for (let i = 0; i < sections.length; i++) {
         let section = sections[i];
-        let rect = section.headingRef?.current?.getBoundingClientRect();
-        if (!rect) continue;
+        if (!isRendered(section)) continue;
+        let rect = section.headingRef.current.getBoundingClientRect();
 
         // If this section's top is above the threshold, it's the current candidate.
         if (rect.top < topThreshold) {
