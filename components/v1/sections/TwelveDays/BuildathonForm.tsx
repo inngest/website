@@ -171,7 +171,13 @@ export default function BuildathonForm() {
         role="status"
         className="rounded-xl border-[3px] border-[#010101] bg-[#0BDD48] p-6 font-v1Label text-[16px] leading-[1.4] text-[#010101] shadow-[8px_8px_0_#010101]"
       >
-        {BUILDATHON.sent}
+        {BUILDATHON.sent}{" "}
+        <a
+          href={BUILDATHON.register.href}
+          className="underline underline-offset-4 hover:no-underline"
+        >
+          {BUILDATHON.register.label}
+        </a>
       </p>
     );
   }

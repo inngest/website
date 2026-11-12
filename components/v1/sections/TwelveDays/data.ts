@@ -331,9 +331,10 @@ export const FINALE = {
     "After the last door opens, join Inngest and CodeTV live as we build one gloriously overengineered Rube Goldberg machine out of everything behind the doors.",
     "Then build your own. We'll show the weirdest build-a-thon entries on the stream and pick the winners on air.",
   ],
-  // TODO: registration link and date are still TBD; this anchor is a
-  // placeholder until then.
-  cta: { label: "Save the date", href: "#finale" },
+  cta: {
+    label: "Save the date",
+    href: `/12-days-of-workflows/livestream?ref=${REF}-finale`,
+  },
   /** The YouTube-style frame around the art. */
   player: {
     channel: "CodeTV",
@@ -467,6 +468,11 @@ export const BUILDATHON = {
   button: "Submit my workflow",
   sending: "Submitting…",
   sent: "Got it. Your workflow is in the running. Watch the finale to see if it makes the show.",
+  /** Shown after `sent`: the finale is where the winners are picked. */
+  register: {
+    label: "Register for the livestream",
+    href: `/12-days-of-workflows/livestream?ref=${REF}-build-a-thon-sent`,
+  },
   failed: "That didn't go through. Try again?",
   back: {
     label: "Back to the calendar",
@@ -504,5 +510,50 @@ export const BUILDATHON_TEASER = {
   cta: {
     label: "Submit your workflow",
     href: `/12-days-of-workflows/build-a-thon?ref=${REF}-build-a-thon-section`,
+  },
+} as const;
+
+/**
+ * The finale livestream: registration at /12-days-of-workflows/livestream
+ * and the stream itself at /12-days-of-workflows/live.
+ *
+ * TODO: the date (Dec 29 or 30) and the YouTube video ID are still to
+ * be confirmed. Set `when` and `youtubeId` once they are; until then the
+ * watch page shows a "coming soon" slot instead of the player.
+ */
+export const LIVESTREAM = {
+  chips: ["Live on CodeTV", "Free"],
+  title: ["Watch us pick the winners", "live on CodeTV."],
+  body: "After the last door opens, join Inngest and CodeTV live as we build one gloriously overengineered Rube Goldberg machine out of everything behind the doors, show the weirdest build-a-thon entries, and pick the winners on air.",
+  when: "Date and time coming soon",
+  /** The YouTube video ID of the stream (the part after `v=`). */
+  youtubeId: "",
+  form: {
+    title: "Save your spot",
+    intro: "We'll email you the link and a reminder before we go live.",
+    name: "Name",
+    email: "Email",
+    button: "Save my spot",
+    sending: "Saving your spot…",
+    sent: "You're in. We'll email you the link before we go live.",
+    failed: "That didn't go through. Try again?",
+  },
+  watch: {
+    label: "Where to watch",
+    href: `/12-days-of-workflows/live?ref=${REF}-livestream`,
+  },
+  live: {
+    chips: ["Live on CodeTV"],
+    title: "12 Days of Workflows: the finale",
+    soon: "The stream will play right here. Save your spot and we'll email you before we go live.",
+    youtube: "Watch on YouTube",
+    register: {
+      label: "Save your spot",
+      href: `/12-days-of-workflows/livestream?ref=${REF}-live`,
+    },
+    back: {
+      label: "Back to the calendar",
+      href: `/12-days-of-workflows?ref=${REF}-live`,
+    },
   },
 } as const;

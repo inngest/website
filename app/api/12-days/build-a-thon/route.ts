@@ -1,5 +1,11 @@
 import { NextResponse } from "next/server";
-import { promises as dns } from "node:dns";
+import {
+  BAD_DOMAIN,
+  domainTakesMail,
+  firstTouch,
+  sendToSegment,
+  str,
+} from "@/app/api/12-days/shared";
 
 export const runtime = "nodejs";
 
@@ -17,9 +23,6 @@ export const runtime = "nodejs";
 
 /** Must match SUBMITTED_EVENT in BuildathonForm. */
 const EVENT = "12 Days Build-a-thon Submitted";
-
-/** The same Segment source the site's browser events use. */
-const SEGMENT_TRACK_URL = "https://api.segment.io/v1/track";
 
 const FIELDS = [
   "name",
@@ -61,64 +64,6 @@ function parse(body: unknown): Entry | string {
   return entry;
 }
 
-/** First-touch attribution keys the form may pass through from its cookie. */
-const FIRST_TOUCH_KEYS = [
-  "first_utm_source",
-  "first_utm_medium",
-  "first_utm_campaign",
-  "first_utm_content",
-  "first_utm_term",
-  "first_ref",
-  "first_landing_url",
-  "first_referrer",
-  "first_seen_at",
-] as const;
-
-function firstTouch(raw: Record<string, unknown>): Record<string, string> {
-  const source = raw.firstTouch;
-  if (!source || typeof source !== "object") return {};
-  const out: Record<string, string> = {};
-  for (const key of FIRST_TOUCH_KEYS) {
-    const value = (source as Record<string, unknown>)[key];
-    if (typeof value === "string" && value) out[key] = value.slice(0, 500);
-  }
-  return out;
-}
-
-function str(value: unknown, max: number): string {
-  return typeof value === "string" ? value.trim().slice(0, max) : "";
-}
-
-/**
- * False only when DNS says the email's domain can't receive mail (no
- * such domain, or no mail or address records), which is how a typo like
- * `name@company.con` shows up. Slow or failed lookups count as fine, so
- * a DNS hiccup never loses an entry.
- */
-async function domainTakesMail(email: string): Promise<boolean> {
-  const domain = email.slice(email.lastIndexOf("@") + 1).toLowerCase();
-  const lookup = async () => {
-    try {
-      const mx = await dns.resolveMx(domain);
-      if (mx.length > 0) return true;
-    } catch (err) {
-      const code = (err as NodeJS.ErrnoException).code;
-      if (code !== "ENOTFOUND" && code !== "ENODATA") return true;
-    }
-    // No MX record: mail falls back to the domain's own address.
-    try {
-      return (await dns.resolve(domain)).length > 0;
-    } catch (err) {
-      const code = (err as NodeJS.ErrnoException).code;
-      return code !== "ENOTFOUND" && code !== "ENODATA";
-    }
-  };
-  return Promise.race([
-    lookup(),
-    new Promise<boolean>((resolve) => setTimeout(() => resolve(true), 2000)),
-  ]);
-}
-
 export async function POST(req: Request) {
   let body: unknown;
   try {
@@ -139,10 +84,7 @@ export async function POST(req: Request) {
     return NextResponse.json({ error: entry }, { status: 400 });
   }
   if (!(await domainTakesMail(entry.email))) {
-    return NextResponse.json(
-      { error: "That email domain doesn't take mail. Check for a typo?" },
-      { status: 400 }
-    );
+    return NextResponse.json({ error: BAD_DOMAIN }, { status: 400 });
   }
   const props = raw as Record<string, unknown>;
   const ref = str(props.ref, 100);
@@ -162,52 +104,5 @@ export async function POST(req: Request) {
     ...firstTouch(props),
   };
 
-  const writeKey = process.env.NEXT_PUBLIC_SEGMENT_WRITE_KEY;
-  if (!writeKey) {
-    // Local development has no write key; log the entry instead. Anywhere
-    // else, fail so the form says so rather than dropping the entry.
-    if (process.env.NODE_ENV === "development") {
-      console.log(`${EVENT} (no Segment write key set)`, properties);
-      return NextResponse.json({ ok: true }, { status: 201 });
-    }
-    console.error("NEXT_PUBLIC_SEGMENT_WRITE_KEY is not set");
-    return NextResponse.json({ error: "Not configured" }, { status: 500 });
-  }
-
-  // The browser's Segment anonymous ID ties this entry to the visitor's
-  // earlier page views; without one, Segment still needs an ID.
-  const anonymousId = str(props.anonymousId, 100) || crypto.randomUUID();
-  const ip = req.headers.get("x-forwarded-for")?.split(",")[0]?.trim();
-
-  try {
-    const res = await fetch(SEGMENT_TRACK_URL, {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-        Authorization: `Basic ${Buffer.from(`${writeKey}:`).toString(
-          "base64"
-        )}`,
-      },
-      body: JSON.stringify({
-        event: EVENT,
-        anonymousId,
-        properties,
-        context: {
-          ...(ip ? { ip } : {}),
-          userAgent: req.headers.get("user-agent") ?? undefined,
-          page: { url: req.headers.get("referer") ?? undefined },
-        },
-        timestamp: new Date().toISOString(),
-      }),
-    });
-    if (!res.ok) {
-      console.error("Segment track failed", res.status, await res.text());
-      return NextResponse.json({ error: "Couldn't send" }, { status: 502 });
-    }
-  } catch (err) {
-    console.error("Segment track failed", err);
-    return NextResponse.json({ error: "Couldn't send" }, { status: 502 });
-  }
-
-  return NextResponse.json({ ok: true }, { status: 201 });
+  return sendToSegment(req, EVENT, properties, props);
 }
