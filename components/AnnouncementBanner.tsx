@@ -56,18 +56,23 @@ const Banner: React.FC<Props> = ({ href, children, className, target, rel }) => 
   </a>
 );
 
+// 12 Days of Workflows banner (Nov 23 – Dec 7) — BRAND-139
 export default function AnnouncementBanner() {
   return (
-    <Banner
-      href="https://www.youtube.com/watch?v=pui1mW9sexM&ref=site-banner"
-      target="_blank"
-      rel="noopener noreferrer"
-    >
-      <span className="inline-flex items-center gap-1.5">
-        <span className="font-normal underline underline-offset-2">
-          Watch our CodeTV episode on YouTube!
+    <Banner href="/12-days-of-workflows?ref=site-banner#twelve-days-email">
+      <span className="inline-flex flex-wrap items-center justify-center gap-x-1.5">
+        <span className="font-semibold">
+          12 Days of Workflows starts December 7.
         </span>
-        <span aria-hidden="true">📺</span>
+        <span className="font-normal">
+          Get one new Inngest × CodeTV lesson every day through December 18.
+        </span>
+        <span className="inline-flex items-center gap-1">
+          <span className="font-normal underline underline-offset-2">
+            Get the lessons
+          </span>
+          <span aria-hidden="true">→</span>
+        </span>
       </span>
     </Banner>
   );
