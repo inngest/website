@@ -74,6 +74,7 @@ const COLUMN_COMPANY: FooterColumnDef = {
     { label: "About", href: "/about" },
     { label: "Contact Us", href: "/get-in-touch" },
     { label: "Pricing", href: "/pricing" },
+    { label: "Startup Program", href: "/startups" },
     { label: "Changelog", href: "/changelog" },
     { label: "Support", href: "https://support.inngest.com" },
     { label: "Careers", href: "https://jobs.ashbyhq.com/inngest" },

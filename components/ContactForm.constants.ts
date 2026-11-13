@@ -16,7 +16,8 @@
 export const FORM_TYPE = {
   SALES_LEAD_FORM: "sales_lead",
   YC_LEAD_FORM: "yc_lead",
+  STARTUP_LEAD_FORM: "startup_lead",
   CONTENT_DOWNLOAD: "content_download",
 } as const;
 
-export type FormType = (typeof FORM_TYPE)[keyof typeof FORM_TYPE];
+export type FormType = typeof FORM_TYPE[keyof typeof FORM_TYPE];
