@@ -93,7 +93,12 @@ export const PLANS: Plan[] = [
     },
     features: [
       { category: "Platform", value: "5", text: "seats" },
-      { category: "Platform", value: "50k", text: "executions" },
+      {
+        category: "Platform",
+        value: "50k",
+        text: "executions",
+        note: "Hard cap. Runs pause here.",
+      },
       { category: "Platform", value: "5", text: "concurrent steps" },
       { category: "Platform", value: "3", text: "workers" },
       { category: "Platform", value: "Unlimited", text: "serverless workers" },
@@ -138,7 +143,12 @@ export const PLANS: Plan[] = [
     },
     features: [
       { category: "Platform", value: "15", text: "seats" },
-      { category: "Platform", value: "1M", text: "executions + add-on" },
+      {
+        category: "Platform",
+        value: "1M",
+        text: "executions + add-on",
+        note: "Extra usage is billed.",
+      },
       { category: "Platform", value: "100+", text: "concurrent steps" },
       { category: "Platform", value: "20", text: "workers + add-on" },
       { category: "Platform", value: "Unlimited", text: "serverless workers" },
@@ -187,7 +197,12 @@ export const PLANS: Plan[] = [
     },
     features: [
       { category: "Platform", value: "30", text: "seats" },
-      { category: "Platform", value: "10M", text: "executions + add-on" },
+      {
+        category: "Platform",
+        value: "10M",
+        text: "executions + add-on",
+        note: "Extra usage is billed.",
+      },
       { category: "Platform", value: "500", text: "concurrent steps" },
       { category: "Platform", value: "100", text: "workers + add-on" },
       { category: "Platform", value: "Unlimited", text: "serverless workers" },
@@ -234,7 +249,12 @@ export const PLANS: Plan[] = [
     },
     features: [
       { category: "Platform", value: "Custom", text: "seats" },
-      { category: "Platform", value: "Custom", text: "executions" },
+      {
+        category: "Platform",
+        value: "Custom",
+        text: "executions",
+        note: "Extra usage is billed.",
+      },
       { category: "Platform", value: "Custom", text: "concurrent steps" },
       { category: "Platform", value: "Custom", text: "workers" },
       { category: "Platform", value: "Unlimited", text: "serverless workers" },
@@ -305,19 +325,26 @@ export const FEATURES: Feature[] = [
   },
   {
     name: "Executions",
-    description: "A single durable function run or step execution",
+    description:
+      "One function run or one step. Free is a hard cap and runs pause. Paid plans keep running and bill extra usage. Tiers count monthly executions from zero, including the ones in your plan.",
     section: "comparison",
     plans: {
-      [PLAN_NAMES.hobby]: "50k /mo included",
+      [PLAN_NAMES.hobby]: {
+        value: "50k /mo included",
+        description: "then runs pause",
+      },
       [PLAN_NAMES.pro]: {
         value: "1m/mo included",
-        description: "then $50 per 1m",
+        description: "then $50–$15 per 1m",
       },
       [PLAN_NAMES.business]: {
         value: "10m/mo included",
-        description: "then $25 per 1m",
+        description: "then $25–$15 per 1m",
       },
-      [PLAN_NAMES.enterprise]: "Custom",
+      [PLAN_NAMES.enterprise]: {
+        value: "Custom",
+        description: "extra usage billed",
+      },
     },
   },
   {

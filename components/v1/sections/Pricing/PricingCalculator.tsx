@@ -1,11 +1,12 @@
 "use client";
 
-import { useCallback, useEffect, useMemo, useRef, useState } from "react";
+import { useCallback, useEffect, useId, useMemo, useRef, useState } from "react";
 import ButtonLink from "@/components/v1/ButtonLink";
 import Chip from "@/components/v1/sections/shared/Chip";
 import Section from "@/components/v1/sections/shared/Section";
 import SectionHeader from "@/components/v1/sections/shared/SectionHeader";
 import { CURSOR_SPOTLIGHT_SEED, onCursorSpotlightMove } from "@/utils/v1/cursorFx";
+import { cn } from "@/utils/v1/cn";
 import { PLANS, PLAN_NAMES, getPlan, type Plan, type PlanName } from "./plans";
 
 // Compact pricing calculator. Left: billed dimensions with a one-line
@@ -66,6 +67,15 @@ function executionsCost(
   }
   return cost;
 }
+
+// Published Pro and Business rates. The calculator total already applies
+// these. The disclosure explains them; it does not itemize the estimate.
+const SCALE_TIERS = [
+  { label: "Up to 5 million", perMillion: 50, rate: 0.00005 },
+  { label: "5 million–15 million", perMillion: 25, rate: 0.000025 },
+  { label: "15 million–50 million", perMillion: 20, rate: 0.00002 },
+  { label: "50 million and above", perMillion: 15, rate: 0.000015 },
+] as const;
 
 const HOBBY_LIMITS = {
   scores: 10_000,
@@ -466,8 +476,127 @@ export default function PricingCalculator() {
             {plan.cta.text}
           </ButtonLink>
         </div>
+
+        <ExecutionScale className="lg:col-span-2" />
       </div>
     </Section>
+  );
+}
+
+function ExecutionScale({ className }: { className?: string }) {
+  const [open, setOpen] = useState(false);
+  const panelId = `execution-scale-${useId()}`;
+
+  return (
+    <div className={cn("border-t border-v1-contrast pt-3", className)}>
+      <button
+        type="button"
+        onClick={() => setOpen((value) => !value)}
+        aria-expanded={open}
+        aria-controls={panelId}
+        className="group flex w-full items-center gap-1.5 text-left outline-none"
+      >
+        <Chevron isOpen={open} />
+        <span className="text-v1-body-xs text-v1-frost/80 group-hover:text-v1-frost">
+          How execution rates scale
+        </span>
+      </button>
+      <div
+        id={panelId}
+        role="region"
+        aria-label="Execution rate tiers"
+        className={cn(
+          "grid motion-safe:transition-[grid-template-rows,opacity] motion-safe:duration-300",
+          open ? "grid-rows-[1fr] opacity-100" : "grid-rows-[0fr] opacity-0",
+        )}
+      >
+        <div className="min-h-0 overflow-hidden">
+          <div className="flex flex-col gap-3 pt-3">
+            <div className="overflow-x-auto">
+              <table className="w-full min-w-[420px] border-collapse text-left">
+                <caption className="sr-only">
+                  Pro and Business execution rates by monthly volume
+                </caption>
+                <thead>
+                  <tr className="border-b border-v1-strong/[0.4]">
+                    <th
+                      scope="col"
+                      className="py-1.5 pr-3 text-[11px] font-normal uppercase tracking-[0.04em] text-v1-frost/60"
+                    >
+                      Monthly executions
+                    </th>
+                    <th
+                      scope="col"
+                      className="px-3 py-1.5 text-right text-[11px] font-normal uppercase tracking-[0.04em] text-v1-frost/60"
+                    >
+                      Per million
+                    </th>
+                    <th
+                      scope="col"
+                      className="py-1.5 pl-3 text-right text-[11px] font-normal uppercase tracking-[0.04em] text-v1-frost/60"
+                    >
+                      Per execution
+                    </th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {SCALE_TIERS.map((tier) => {
+                    return (
+                      <tr
+                        key={tier.label}
+                        className="border-b border-v1-strong/[0.25] last:border-b-0"
+                      >
+                        <th
+                          scope="row"
+                          className="py-1.5 pr-3 text-[12px] font-normal text-v1-frost/70"
+                        >
+                          {tier.label}
+                        </th>
+                        <td className="px-3 py-1.5 text-right font-v1Mono text-[12px] tabular-nums text-v1-frost">
+                          ${tier.perMillion}
+                        </td>
+                        <td className="py-1.5 pl-3 text-right font-v1Mono text-[12px] tabular-nums text-v1-frost">
+                          ${tier.rate.toFixed(6)}
+                        </td>
+                      </tr>
+                    );
+                  })}
+                </tbody>
+              </table>
+            </div>
+            <p className="max-w-[680px] text-[12px] leading-[1.5] text-v1-frost/50">
+              Tiers count total monthly executions from zero. Included
+              executions are free and still set the next rate. Pro includes 1
+              million, so the next 4 million are $50 per million. Business
+              includes 10 million, so the next 5 million are $25 per million.
+              Free pauses at 50,000.
+            </p>
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+function Chevron({ isOpen }: { isOpen: boolean }) {
+  return (
+    <svg
+      viewBox="0 0 24 24"
+      className={cn(
+        "size-4 text-v1-frost/80 motion-safe:transition-transform motion-safe:duration-200",
+        isOpen && "rotate-180",
+      )}
+      aria-hidden="true"
+    >
+      <path
+        d="M6 10 L12 16 L18 10"
+        fill="none"
+        stroke="currentColor"
+        strokeWidth="1.6"
+        strokeLinecap="round"
+        strokeLinejoin="round"
+      />
+    </svg>
   );
 }
 
