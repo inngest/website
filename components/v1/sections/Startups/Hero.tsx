@@ -67,7 +67,7 @@ export default function Hero() {
                 Bootstrapped, or raised between {PROGRAM_RULES.minRaisedLabel}{" "}
                 and {PROGRAM_RULES.maxRaisedLabel}
               </li>
-              <li>New Inngest customers</li>
+              <li>Not on a paid Inngest plan yet</li>
             </ul>
             <p className="text-v1-body-sm-loose text-v1-frost/80">
               In Y Combinator?{" "}
