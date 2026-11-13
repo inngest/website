@@ -13,14 +13,14 @@ import TwelveDaysOfWorkflows from "@/components/v1/pages/TwelveDaysOfWorkflows";
  */
 export const metadata: Metadata = {
   ...generateMetadata({
-    title: "12 Days of Workflows",
+    title: "12 Days of [weird] workflows",
     image: getLongRunOpenGraphImagePath({
-      title: "12 Days of Workflows.",
-      eyebrow: "Inngest × CodeTV · December 3–18",
+      title: "12 Days of [weird] workflows.",
+      eyebrow: "Inngest × CodeTV · December 7–18",
       city: "sf",
     }),
     description:
-      "Twelve doors. Twelve weird workflows. One very long-running holiday season. A new Inngest lesson unlocks every weekday at midnight Eastern, December 3–18.",
+      "Twelve doors. Twelve lessons to make all your weird workflows durable. A new door opens every day, December 7–18.",
   }),
   robots: { index: false, follow: false },
 };

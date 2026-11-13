@@ -1,7 +1,6 @@
 "use client";
 
 import { useEffect, useRef, useState } from "react";
-import Image from "next/image";
 import Link from "next/link";
 import { motion, useInView, useReducedMotion } from "motion/react";
 import {
@@ -9,10 +8,9 @@ import {
   CALENDAR_ID,
   COLORS,
   DAYS,
+  DOOR_ART,
   DOOR_FACES,
-  DOOR_ORDER,
   REF,
-  SIGNUP,
   unlockAt,
   unlockLabel,
   type WorkflowDay,
@@ -30,9 +28,10 @@ import {
 } from "@/components/v1/sections/TwelveDays/poster";
 
 /**
- * The advent calendar: twelve doors, scattered like a real one, each
- * hinged on its left edge. A door unlocks at midnight Eastern on its
- * date (weekdays, December 3–18).
+ * The advent calendar: twelve doors in order, each hinged on its left
+ * edge. The front leads with the lesson's concept; the number and the
+ * teaser quote are secondary. A door unlocks at midnight Eastern on its
+ * date (one a day, December 7–18).
  * Today's door glows and waits to be held open (it creaks wider the
  * longer you hold); earlier days swing open on their own, in a stagger
  * the first time the grid scrolls into view.
@@ -40,15 +39,7 @@ import {
  * What's behind a locked door isn't rendered at all, so there's nothing
  * to find in the DOM before its day.
  */
-export default function AdventCalendar({
-  now,
-  done,
-  onToggleDone,
-}: {
-  now: Date | null;
-  done: number[];
-  onToggleDone: (day: number) => void;
-}) {
+export default function AdventCalendar({ now }: { now: Date | null }) {
   const gridRef = useRef<HTMLUListElement>(null);
   // Doors wait to pop until someone can see them, so the stagger isn't
   // spent above the fold while the visitor is still reading the hero.
@@ -79,42 +70,31 @@ export default function AdventCalendar({
       style={{ backgroundColor: COLORS.blue }}
     >
       <div className="relative mx-auto flex w-full max-w-[1440px] flex-col gap-12 px-6 py-16 sm:px-9 sm:py-20 lg:px-8 lg:py-24">
-        <div className="relative flex flex-col gap-5">
+        <div className="flex flex-col gap-5">
           <p className={`${POSTER_EYEBROW} text-[#0BDD48]`}>
             {CALENDAR.eyebrow}
           </p>
           <h2 id="twelve-days-calendar-heading" className={POSTER_TITLE}>
             {CALENDAR.title}
           </h2>
-          <p className="font-v1Label text-[clamp(18px,2.4vw,28px)] uppercase leading-[1.15]">
-            {CALENDAR.subtitle}
+          <p className="max-w-[640px] font-v1Label text-[15px] leading-[1.5]">
+            {CALENDAR.subtitle} {CALENDAR.skip.lead}{" "}
+            <Link
+              href={CALENDAR.skip.href}
+              className="text-[#ECFE08] underline underline-offset-4 hover:no-underline"
+            >
+              {CALENDAR.skip.label}
+            </Link>
           </p>
-          <p className="max-w-[560px] text-[18px] leading-[28px] text-white/85">
-            {CALENDAR.body}
-          </p>
-          <div className="flex flex-col gap-3">
-            <p className="font-v1Label text-[14px] uppercase">
-              {SIGNUP.prompt}
-            </p>
-            <EmailSignup />
-          </div>
-          {/* The step.run rat, leaping over the heading. */}
-          <Image
-            src="/assets/v1/12-days/rat.webp"
-            alt=""
-            aria-hidden="true"
-            width={1400}
-            height={500}
-            className="pointer-events-none absolute -top-6 right-0 hidden h-auto w-[46%] max-w-[560px] rounded-[24px] border-[3px] border-[#010101] shadow-[6px_6px_0_#010101] lg:block"
-          />
+          {/* The subhead above asks for the email, so no separate prompt. */}
+          <EmailSignup />
         </div>
 
         <ul
           ref={gridRef}
           className="grid list-none grid-cols-1 gap-6 pl-0 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4"
         >
-          {DOOR_ORDER.map((dayNumber, position) => {
-            const day = DAYS[dayNumber - 1];
+          {DAYS.map((day, position) => {
             const unlocked =
               now !== null && unlockAt(day.day).getTime() <= now.getTime();
             return (
@@ -132,8 +112,6 @@ export default function AdventCalendar({
                   staggerIndex={position}
                   needsHold={day.day === today && !opened.includes(day.day)}
                   onOpened={() => markOpened(day.day)}
-                  done={done.includes(day.day)}
-                  onToggleDone={() => onToggleDone(day.day)}
                   countdown={
                     now && day.day === nextDay
                       ? formatCountdown(
@@ -171,8 +149,6 @@ function Door({
   needsHold,
   onOpened,
   countdown,
-  done,
-  onToggleDone,
 }: {
   day: WorkflowDay;
   unlocked: boolean;
@@ -181,11 +157,10 @@ function Door({
   needsHold: boolean;
   onOpened: () => void;
   countdown: string | null;
-  done: boolean;
-  onToggleDone: () => void;
 }) {
   const reduceMotion = useReducedMotion();
   const face = DOOR_FACES[(day.day - 1) % DOOR_FACES.length];
+  const art = DOOR_ART[day.day - 1];
   const [open, setOpen] = useState(false);
   const [rattle, setRattle] = useState(0);
   // Doors already unlocked when the grid first comes into view open in a
@@ -237,8 +212,8 @@ function Door({
     return () => window.clearTimeout(id);
   }, [unlocked, canPop, open, needsHold, staggerIndex]);
 
-  // Holding today's door lifts its shutter a little, as a preview.
-  const lift = needsHold ? hold * 14 : 0;
+  // Holding today's door creaks it open a little, as a preview.
+  const creak = needsHold ? hold * 24 : 0;
 
   const opensOn = unlockLabel(day.day);
 
@@ -247,7 +222,10 @@ function Door({
       {/* Behind the door. Only exists once the day has unlocked. In
           normal flow, so a long lesson makes its door (and its row)
           taller instead of being clipped; the shutter covers it. */}
-      <div className="relative h-full min-h-[460px] overflow-hidden rounded-xl border-[3px] border-[#010101] bg-white text-[#010101] shadow-[6px_6px_0_#010101]">
+      <div
+        className="relative h-full min-h-[580px] overflow-hidden rounded-[20px] border-[#020202] bg-white text-[#010101]"
+        style={DOOR_BORDER}
+      >
         {unlocked && (
           // Out of the tab order and hidden from screen readers until
           // the shutter rolls up, but still taking up its space.
@@ -256,16 +234,9 @@ function Door({
             inert={!open}
             aria-hidden={!open}
           >
-            <div className="flex items-center justify-between">
-              <p className="font-v1Label text-[13px] uppercase">
-                Lesson {day.day} · {day.primitive}
-              </p>
-              {done && (
-                <span className="shrink-0 whitespace-nowrap rounded-full bg-[#0BDD48] px-2 py-0.5 font-v1Label text-[12px] uppercase">
-                  {CALENDAR.completed}
-                </span>
-              )}
-            </div>
+            <p className="font-v1Label text-[13px]">
+              Lesson {day.day} · {day.primitive}
+            </p>
             {/* Lesson video, or its slot until it's cut. */}
             {day.video ? (
               <video
@@ -279,14 +250,14 @@ function Door({
               <div
                 role="img"
                 aria-label={`Lesson ${day.day} video coming soon`}
-                className="flex aspect-video w-full items-center justify-center rounded-md border-2 border-dashed border-[#010101] text-center font-v1Label text-[12px] uppercase"
+                className="flex aspect-video w-full items-center justify-center rounded-md border-2 border-dashed border-[#010101] text-center font-v1Label text-[12px]"
                 style={{ backgroundColor: COLORS.cream }}
               >
                 ▶ Lesson video coming
               </div>
             )}
-            <h3 className="font-sans text-[22px] font-black uppercase leading-[1.05] tracking-[-0.01em]">
-              {day.gift}
+            <h3 className="font-sans text-[22px] font-black leading-[1.05] tracking-[-0.01em]">
+              {day.title}
             </h3>
             <p className="text-[14px] leading-[20px] text-[#010101]/75">
               {day.body}
@@ -301,26 +272,16 @@ function Door({
               onClick={handleStartFreeClick(
                 `/sign-up?ref=${REF}-day-${day.day}`
               )}
-              className="mt-auto self-start font-v1Label text-[12px] uppercase underline underline-offset-4"
+              className="mt-auto self-start font-v1Label text-[12px] underline underline-offset-4"
             >
               {CALENDAR.tryIt} <span aria-hidden="true">→</span>
             </a>
-            <div className="flex items-center justify-between gap-3 pt-1">
-              <Link
-                href={day.docs.href}
-                className="inline-flex items-center gap-2 font-v1Label text-[13px] uppercase underline-offset-4 hover:underline"
-              >
-                {day.docs.label} docs <span aria-hidden="true">→</span>
-              </Link>
-              <button
-                type="button"
-                onClick={onToggleDone}
-                aria-pressed={done}
-                className={buttonClass("outline", "sm")}
-              >
-                {done ? "Undo" : "Mark done"}
-              </button>
-            </div>
+            <Link
+              href={day.docs.href}
+              className="inline-flex items-center gap-2 pt-1 font-v1Label text-[13px] underline-offset-4 hover:underline"
+            >
+              {day.docs.label} docs <span aria-hidden="true">→</span>
+            </Link>
           </div>
         )}
       </div>
@@ -352,17 +313,20 @@ function Door({
         </div>
       )}
 
-      {/* The door: a roll-up locker shutter. Clipped to its own tile, so
-          rolling up reveals the day behind it without covering the
+      {/* The door, hinged on its left edge. Clipped to its own tile, so
+          swinging open reveals the day behind it without covering the
           doors next to it. */}
-      <div className="pointer-events-none absolute inset-0 z-10 overflow-hidden rounded-xl">
+      <div
+        className="pointer-events-none absolute inset-0 z-10 overflow-hidden rounded-[20px]"
+        style={{ perspective: 1400 }}
+      >
         <motion.button
           type="button"
           aria-label={
             needsHold
               ? `Day ${day.day} is ready. Press and hold to open.`
               : unlocked
-              ? `Day ${day.day}: ${day.gift}`
+              ? `Day ${day.day}: ${day.title}`
               : `Day ${day.day}, opens ${opensOn} at midnight Eastern`
           }
           aria-disabled={!open && !needsHold}
@@ -385,20 +349,21 @@ function Door({
           }}
           // Stop the long-press menu on touch screens while holding.
           onContextMenu={(e) => needsHold && e.preventDefault()}
-          className="absolute inset-0 rounded-xl focus-visible:outline focus-visible:outline-4 focus-visible:outline-offset-[-7px] focus-visible:outline-[#ECFE08]"
+          className="absolute inset-0 rounded-[20px] focus-visible:outline focus-visible:outline-4 focus-visible:outline-offset-[-7px] focus-visible:outline-[#ECFE08]"
           style={{
             pointerEvents: open ? "none" : "auto",
             touchAction: needsHold ? "none" : undefined,
             WebkitUserSelect: "none",
             userSelect: "none",
+            transformOrigin: "left center",
           }}
           initial={false}
           animate={
             open
               ? reduceMotion
                 ? { opacity: 0 }
-                : { y: "-101%" }
-              : { y: reduceMotion ? 0 : `-${lift}%`, opacity: 1 }
+                : { rotateY: -92, opacity: 0 }
+              : { rotateY: reduceMotion ? 0 : -creak, opacity: 1 }
           }
           transition={
             reduceMotion
@@ -406,23 +371,26 @@ function Door({
               : hold > 0
               ? { duration: 0 }
               : open
-              ? { duration: 0.6, ease: [0.65, 0, 0.35, 1] }
+              ? {
+                  rotateY: { duration: 0.7, ease: [0.65, 0, 0.35, 1] },
+                  opacity: { duration: 0.2, delay: 0.5 },
+                }
               : { duration: 0.25 }
           }
         >
-          {/* Front face, with the shutter's slats. */}
+          {/* Front face, after Savannah's door design: day and number,
+              lock state, the illustration breaking out of its window,
+              the teaser, the date and a pull handle. */}
           <motion.span
             key={rattle}
-            className="absolute inset-0 flex flex-col justify-between overflow-hidden rounded-xl border-[3px] border-[#010101] p-5 pb-12 text-left"
+            className="absolute inset-0 flex flex-col items-stretch gap-6 overflow-hidden rounded-[20px] border-[#020202] p-5 text-left text-[#020202]"
             style={{
+              ...DOOR_BORDER,
               backgroundColor: face.bg,
-              backgroundImage:
-                "repeating-linear-gradient(to bottom, transparent 0 26px, rgb(1 1 1 / 0.14) 26px 29px)",
-              color: face.bg === COLORS.ink ? "#FFFFFF" : COLORS.ink,
             }}
-            // A locked shutter rattles in its frame when tapped.
+            // A locked door rattles in its frame when tapped.
             animate={
-              rattle && !reduceMotion ? { y: [0, -6, 0, -3, 0] } : undefined
+              rattle && !reduceMotion ? { x: [0, -5, 4, -2, 0] } : undefined
             }
             transition={{ duration: 0.4 }}
           >
@@ -430,57 +398,120 @@ function Door({
             {needsHold && !reduceMotion && (
               <motion.span
                 aria-hidden="true"
-                className="pointer-events-none absolute inset-0 rounded-[9px] border-[6px]"
-                style={{ borderColor: COLORS.lime }}
-                animate={{ opacity: [0.25, 1, 0.25] }}
+                className="pointer-events-none absolute inset-0 z-10 rounded-[16px] border-[6px]"
+                style={{ borderColor: "#FFFFFF" }}
+                animate={{ opacity: [0.2, 1, 0.2] }}
                 transition={{ duration: 1.4, repeat: Infinity }}
               />
             )}
-            <span className="relative flex items-center justify-between font-v1Label text-[14px] uppercase">
-              <span>Day</span>
-              <span>{needsHold ? "Today" : unlocked ? "Open" : "Locked"}</span>
+            <span className="flex items-start justify-between">
+              <span className="flex flex-col">
+                <span className={`${DOOR_LABEL} -mb-2.5`}>Day</span>
+                <span
+                  className="font-sans text-[100px] font-black leading-none tracking-[-1px]"
+                  style={{ color: face.num }}
+                >
+                  {day.day}
+                </span>
+              </span>
+              <span className={`${DOOR_LABEL} flex items-center gap-[7px]`}>
+                <LockIcon open={unlocked} />
+                {needsHold ? "Today" : unlocked ? "Open" : "Locked"}
+              </span>
             </span>
+
+            {/* The window. The art is positioned as in the design, in
+                percentages of the window, and spills over its edges. */}
             <span
-              className="relative font-sans text-[160px] font-black leading-[0.8] tracking-[-0.05em] sm:text-[180px]"
-              style={{ color: face.num }}
+              className="relative block aspect-[295.5/208] w-full shrink-0 rounded-[30px] border-[#020202] bg-white"
+              style={DOOR_BORDER}
             >
-              {day.day}
+              <img
+                src={`/assets/v1/12-days/doors/day-${day.day}.svg`}
+                alt=""
+                aria-hidden="true"
+                draggable={false}
+                className="pointer-events-none absolute max-w-none select-none"
+                style={{
+                  left: `${(art.x / ART_WINDOW.w) * 100}%`,
+                  top: `${(art.y / ART_WINDOW.h) * 100}%`,
+                  width: `${(art.w / ART_WINDOW.w) * 100}%`,
+                }}
+              />
             </span>
-            {needsHold ? (
-              <span className="relative flex flex-col gap-2">
-                <span className="font-v1Label text-[13px] uppercase">
-                  {hold > 0
-                    ? "Keep holding…"
-                    : `Open Day ${day.day} · press and hold`}
-                </span>
-                <span className="block h-3 w-full overflow-hidden rounded-full border-[3px] border-[#010101] bg-white">
-                  <span
-                    className="block h-full"
-                    style={{
-                      width: `${hold * 100}%`,
-                      backgroundColor: COLORS.green,
-                    }}
-                  />
-                </span>
-              </span>
-            ) : (
-              <span className="relative font-v1Label text-[13px] uppercase">
-                {countdown
-                  ? `Opens in ${countdown}`
-                  : unlocked
-                  ? "Opening…"
-                  : `Opens ${opensOn}`}
-              </span>
-            )}
-            {/* Pull handle along the bottom edge. */}
+
+            <span className="text-[16px] leading-[1.3]">{day.teaser}</span>
+
+            <span className={DOOR_LABEL}>
+              {needsHold
+                ? hold > 0
+                  ? "Keep holding…"
+                  : "Press and hold to open"
+                : countdown
+                ? `Opens in ${countdown}`
+                : unlocked
+                ? "Opening…"
+                : `Opens ${opensOn}`}
+            </span>
+
+            {/* Pull handle. On today's door it fills while held. */}
             <span
               aria-hidden="true"
-              className="absolute bottom-4 left-1/2 h-4 w-20 -translate-x-1/2 rounded-full border-[3px] border-[#010101]"
-              style={{ backgroundColor: COLORS.lime }}
-            />
+              className="relative mx-auto mt-auto block h-[15px] w-[100px] shrink-0 overflow-hidden rounded-full border-2 border-[#020202]"
+              style={{ backgroundColor: HANDLE }}
+            >
+              {needsHold && (
+                <span
+                  className="absolute inset-y-0 left-0 block"
+                  style={{
+                    width: `${hold * 100}%`,
+                    backgroundColor: "#FFFFFF",
+                  }}
+                />
+              )}
+            </span>
           </motion.span>
         </motion.button>
       </div>
     </div>
+  );
+}
+
+/** The design's border: hairline top and left, a thick "shadow" edge. */
+const DOOR_BORDER = {
+  borderTopWidth: 1.5,
+  borderLeftWidth: 1.5,
+  borderRightWidth: 7,
+  borderBottomWidth: 7,
+  borderStyle: "solid",
+} as const;
+
+/** Small spaced-out labels: "Day", "Locked", "Opens December 11". */
+const DOOR_LABEL =
+  "font-sans text-[15px] font-normal uppercase leading-[1.5] tracking-[2.25px]";
+
+const HANDLE = "#F7DA10";
+
+/** The window's size in the design, which the art positions are in. */
+const ART_WINDOW = { w: 295.5, h: 208 };
+
+/** The design's lock-fill and lock-unlock-line icons. */
+function LockIcon({ open }: { open: boolean }) {
+  return (
+    <svg
+      aria-hidden="true"
+      viewBox="0 0 20 20"
+      width="20"
+      height="20"
+      fill="currentColor"
+    >
+      <path
+        d={
+          open
+            ? "M6.25 8.5H16C16.1989 8.5 16.3897 8.57902 16.5303 8.71967C16.671 8.86032 16.75 9.05109 16.75 9.25V16.75C16.75 16.9489 16.671 17.1397 16.5303 17.2803C16.3897 17.421 16.1989 17.5 16 17.5H4C3.80109 17.5 3.61032 17.421 3.46967 17.2803C3.32902 17.1397 3.25 16.9489 3.25 16.75V9.25C3.25 9.05109 3.32902 8.86032 3.46967 8.71967C3.61032 8.57902 3.80109 8.5 4 8.5H4.75V7.75C4.74957 6.56703 5.14869 5.41858 5.88264 4.49083C6.6166 3.56307 7.64238 2.91038 8.7937 2.63857C9.94502 2.36676 11.1544 2.49175 12.2258 2.99328C13.2972 3.49482 14.1678 4.3435 14.6965 5.40175L13.3548 6.07225C12.9771 5.31626 12.3552 4.70998 11.5899 4.35171C10.8245 3.99344 9.9606 3.90417 9.13816 4.09838C8.31572 4.2926 7.583 4.7589 7.05877 5.42171C6.53454 6.08451 6.24955 6.90494 6.25 7.75V8.5ZM4.75 10V16H15.25V10H4.75ZM8.5 12.25H11.5V13.75H8.5V12.25Z"
+            : "M15.25 8.5H16C16.1989 8.5 16.3897 8.57902 16.5303 8.71967C16.671 8.86032 16.75 9.05109 16.75 9.25V16.75C16.75 16.9489 16.671 17.1397 16.5303 17.2803C16.3897 17.421 16.1989 17.5 16 17.5H4C3.80109 17.5 3.61032 17.421 3.46967 17.2803C3.32902 17.1397 3.25 16.9489 3.25 16.75V9.25C3.25 9.05109 3.32902 8.86032 3.46967 8.71967C3.61032 8.57902 3.80109 8.5 4 8.5H4.75V7.75C4.75 7.06056 4.8858 6.37787 5.14963 5.74091C5.41347 5.10395 5.80018 4.5252 6.28769 4.03769C6.7752 3.55018 7.35395 3.16347 7.99091 2.89963C8.62787 2.6358 9.31056 2.5 10 2.5C10.6894 2.5 11.3721 2.6358 12.0091 2.89963C12.646 3.16347 13.2248 3.55018 13.7123 4.03769C14.1998 4.5252 14.5865 5.10395 14.8504 5.74091C15.1142 6.37787 15.25 7.06056 15.25 7.75V8.5ZM13.75 8.5V7.75C13.75 6.75544 13.3549 5.80161 12.6517 5.09835C11.9484 4.39509 10.9946 4 10 4C9.00544 4 8.05161 4.39509 7.34835 5.09835C6.64509 5.80161 6.25 6.75544 6.25 7.75V8.5H13.75ZM9.25 11.5V14.5H10.75V11.5H9.25Z"
+        }
+      />
+    </svg>
   );
 }
