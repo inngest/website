@@ -30,6 +30,12 @@ const FAQS: FaqItem[] = [
     link: { label: "See Pro pricing", href: "/pricing" },
   },
   {
+    id: "account",
+    question: "Do I need an Inngest account to apply?",
+    answer:
+      "Yes. Create a free account first. It takes a couple of minutes, and you can start building on the Free plan while we review your application. Then apply with the email you signed up with.",
+  },
+  {
     id: "payment-method",
     question: "Do I need a payment method to apply?",
     answer:
@@ -52,7 +58,7 @@ const FAQS: FaqItem[] = [
     id: "review",
     question: "How are applications reviewed?",
     answer:
-      "Our team checks each application against the criteria above. If you're approved, we'll email you next steps for creating or upgrading your Inngest account and adding a payment method.",
+      "Our team checks each application against the criteria above. If you're approved, we'll email you next steps for adding a payment method and upgrading to Pro with your discount applied.",
   },
   {
     id: "apply-again",

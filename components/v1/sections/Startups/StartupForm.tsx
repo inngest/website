@@ -4,7 +4,9 @@ import { useState, type FormEvent } from "react";
 import Button from "@/components/v1/Button";
 import { SelectField, TextField, TextareaField } from "@/components/v1/forms";
 import { analytics } from "@/utils/segment";
+import { SIGN_UP_URL } from "@/components/v1/nav-config";
 import { calculateSpamScore } from "@/utils/v1/contactSubmit";
+import { appendRef } from "@/utils/v1/ref";
 import { readFirstTouch } from "src/shared/firstTouch";
 import { FORM_TYPE } from "src/components/ContactForm.constants";
 import {
@@ -161,6 +163,15 @@ export default function StartupForm() {
           Our team will review it against the program criteria and email you at{" "}
           {email} once there&apos;s a decision.
         </p>
+        <p className="text-v1-body-sm-loose text-v1-frost/70">
+          While you wait, start building on the Free plan.{" "}
+          <a
+            href="/docs?ref=startups-confirmation"
+            className="underline hover:text-v1-frost"
+          >
+            Read the docs
+          </a>
+        </p>
       </div>
     );
   }
@@ -223,7 +234,20 @@ export default function StartupForm() {
         <TextField
           id="startup-account-email"
           type="email"
-          label="Inngest account email (if you have one)"
+          label={
+            <>
+              Inngest account email{" "}
+              <a
+                className="ml-1 font-v1Body text-[12px] normal-case text-v1-frost/70 underline hover:text-v1-frost"
+                target="_blank"
+                rel="noopener noreferrer"
+                href={appendRef(SIGN_UP_URL, "startups-form")}
+              >
+                No account yet? Sign up free
+              </a>
+            </>
+          }
+          required
           value={accountEmail}
           onChange={setAccountEmail}
           className={fieldClassName}

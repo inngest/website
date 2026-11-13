@@ -1,5 +1,6 @@
 import Image from "next/image";
 import FormTestimonial from "@/components/v1/sections/shared/FormTestimonial";
+import HowItWorks from "./HowItWorks";
 import StartupForm from "./StartupForm";
 import { PROGRAM_RULES } from "./program";
 
@@ -26,6 +27,8 @@ export default function Hero() {
         plan for 12 months. Bootstrapped or venture-backed, the offer is the
         same.
       </p>
+
+      <HowItWorks />
 
       <div className="mt-12 grid grid-cols-1 gap-y-12 lg:mt-[52px] lg:grid-cols-[1fr_1fr] lg:items-start lg:gap-x-12 lg:gap-y-0 lg:px-[70px]">
         <div className="max-w-[600px] rounded-[4px] border border-v1-steel/20 bg-v1-surfaceElevated p-6 sm:p-8">
