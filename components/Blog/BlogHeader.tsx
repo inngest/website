@@ -1,5 +1,6 @@
 import { Rss } from "react-feather";
 import { BLOG_CATEGORIES } from "./index";
+import { refLinkProps } from "@/utils/v1/ref";
 
 export default function BlogHeader({ description }: { description: string }) {
   const categoryLinks = Object.keys(BLOG_CATEGORIES).map((k) => ({
@@ -18,7 +19,7 @@ export default function BlogHeader({ description }: { description: string }) {
         </h2>
       </div>
       <div className="flex flex-row items-center gap-2 lg:gap-4">
-        <p className="text-sm text-carbon-200">{description}</p>
+        <h1 className="text-sm text-carbon-200">{description}</h1>
         <a
           href="/api/rss.xml"
           className="hidden rounded-md border border-transparent py-1 text-subtle transition-all hover:border-carbon-200/30 hover:text-white md:block"
@@ -30,7 +31,7 @@ export default function BlogHeader({ description }: { description: string }) {
         <span className="text-sm text-basis">Categories:</span>
         {categoryLinks.map((link) => (
           <a
-            href={link.href}
+            {...refLinkProps(link.href)}
             key={link.href}
             className="text-sm text-subtle hover:text-link"
           >

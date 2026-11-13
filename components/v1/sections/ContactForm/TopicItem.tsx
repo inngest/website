@@ -3,6 +3,7 @@ import {
   AccordionItem,
 } from "@/components/v1/sections/shared/Accordion";
 import type { Topic } from "@/components/v1/sections/ContactForm/topics";
+import { refLinkProps } from "@/utils/v1/ref";
 
 export default function TopicItem({ topic }: { topic: Topic }) {
   return (
@@ -44,7 +45,7 @@ function TopicAction({
   const external = /^(https?:|mailto:)/.test(action.href);
   return (
     <a
-      href={action.href}
+      {...refLinkProps(action.href)}
       {...(external
         ? { target: "_blank", rel: "noopener noreferrer" }
         : {})}

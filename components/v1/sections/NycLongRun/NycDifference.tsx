@@ -12,7 +12,7 @@ import { reveals } from "@/utils/v1/reveals";
 import { NYC_DIFFERENCE } from "@/components/v1/sections/NycLongRun/data";
 
 /**
- * Section 02 — "It doesn't have to be hard."
+ * Section 02 — "Building durable agents doesn't have to be hard."
  *
  * Reuses the homepage's before/after assets through the shared
  * `BeforeAfterSlider`, rather than importing Home's section wholesale:

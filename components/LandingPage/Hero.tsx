@@ -2,6 +2,7 @@ import Link from "next/link";
 import Image from "next/image";
 import React from "react";
 import { cn } from "src/components/utils/classNames";
+import { refLinkProps } from "@/utils/v1/ref";
 
 export default function Hero({
   headline,
@@ -66,7 +67,7 @@ export default function Hero({
                 return (
                   <Link
                     key={idx}
-                    href={cta.href}
+                    {...refLinkProps(cta.href)}
                     className="inline-flex items-center gap-1  whitespace-nowrap bg-cta px-6 py-2 font-medium text-carbon-1000 transition-all hover:bg-ctaHover"
                   >
                     {cta.text}
@@ -76,7 +77,7 @@ export default function Hero({
               return (
                 <Link
                   key={idx}
-                  href={cta.href}
+                  {...refLinkProps(cta.href)}
                   className="inline-flex items-center gap-1 whitespace-nowrap px-6 py-2 font-medium text-basis transition-all hover:underline"
                 >
                   {cta.text}

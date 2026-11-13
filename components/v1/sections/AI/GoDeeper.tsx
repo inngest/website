@@ -3,7 +3,7 @@
 import Link from "next/link";
 import { motion } from "motion/react";
 import { cn } from "@/utils/v1/cn";
-import { appendRef } from "@/utils/v1/ref";
+import { appendRef, refLinkProps } from "@/utils/v1/ref";
 import { reveals } from "@/utils/v1/reveals";
 import Section from "@/components/v1/sections/shared/Section";
 import {
@@ -135,7 +135,7 @@ function ResourceCard({ resource }: { resource: Resource }) {
   // focus-visible ring for keyboard navigation.
   return (
     <Link
-      href={appendRef(resource.href, "ai")}
+      {...refLinkProps(appendRef(resource.href, "ai"))}
       // Several resource hrefs (e.g. /docs/agent-kit) redirect
       // off-domain; default hover-prefetch follows the redirect
       // and CORS-fails on the RSC payload.

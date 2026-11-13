@@ -6,6 +6,7 @@ import Button from "@/components/v1/Button";
 import Chip from "@/components/v1/sections/shared/Chip";
 import EventCardLarge from "@/components/v1/sections/Events/EventCardLarge";
 import { isPastEvent, sortEventsByDate } from "@/components/v1/sections/Events/data";
+import { refLinkProps } from "@/utils/v1/ref";
 
 const COVER_IMAGE = "/assets/v1/events/lightning-lab-ship-your-first-eval.png";
 
@@ -271,14 +272,14 @@ export default function LightningLabShipYourFirstEval() {
                     Past event
                   </Chip>
                   <Button asChild variant="accent" className="self-start">
-                    <a href={RECORDING_URL} target="_blank" rel="noopener noreferrer">
+                    <a {...refLinkProps(RECORDING_URL)} target="_blank" rel="noopener noreferrer">
                       Watch the recording →
                     </a>
                   </Button>
                 </div>
               ) : (
                 <Button asChild variant="accent" className="self-start">
-                  <a href={REGISTER_URL} target="_blank" rel="noopener noreferrer">
+                  <a {...refLinkProps(REGISTER_URL)} target="_blank" rel="noopener noreferrer">
                     Register here →
                   </a>
                 </Button>

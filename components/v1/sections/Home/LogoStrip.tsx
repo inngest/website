@@ -21,6 +21,7 @@
  */
 
 import Link from "next/link";
+import { refLinkProps } from "@/utils/v1/ref";
 
 interface CustomerLogo {
   name: string;
@@ -42,7 +43,7 @@ interface CustomerLogo {
 
 // Heights are optically cheated per logo: very wide wordmarks
 // (Artisan 10.4:1, Soundcloud 8.4:1, ElevenLabs 7.7:1, BAERskin 7:1) render
-// shorter, compact marks (Cubic, Resend, Avoca ~4:1) render taller, so every
+// shorter, compact marks (Cubic, Resend, Avoca ~4–4.7:1) render taller, so every
 // logo reads at roughly the same visual mass in the strip.
 const LOGOS: CustomerLogo[] = [
   {
@@ -89,7 +90,7 @@ const LOGOS: CustomerLogo[] = [
   {
     name: "Resend",
     src: "/assets/v1/logos/resend.svg",
-    width: 118,
+    width: 137,
     height: 29,
     caseStudyHref: "/customers/resend",
     // Wordmark sits flush to the SVG right edge, so the default
@@ -190,7 +191,7 @@ function LogoMark({
   // parent `aria-hidden`.
   return (
     <Link
-      href={href}
+      {...refLinkProps(href)}
       className={className}
       aria-label={decorative ? undefined : `${logo.name} — Read the case study`}
       tabIndex={decorative ? -1 : undefined}

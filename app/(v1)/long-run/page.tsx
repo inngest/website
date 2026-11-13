@@ -9,9 +9,10 @@ import LongRun from "@/components/v1/pages/LongRun";
  * step.run → inngest.com/long-run. (The step.run redirect itself is set
  * in Vercel's domain settings, not in this repo.)
  *
- * Not indexed yet: it sends `noindex, nofollow` and is excluded from the
- * sitemap. To list it publicly, drop the robots block below and remove
- * the "/long-run" line from next-sitemap.config.js — both are needed,
+ * Publicly indexable and in the sitemap, like /sf-long-run and
+ * /nyc-long-run. To pull it out of search, add
+ * `robots: { index: false, follow: true }` below and add "/long-run" to
+ * the sitemap exclude list in next-sitemap.config.js — both are needed,
  * since a sitemap entry and a noindex tag contradict each other.
  */
 export const metadata: Metadata = {
@@ -26,7 +27,6 @@ export const metadata: Metadata = {
     description:
       "Build apps and agents that run for days. Wrap functions in steps that pause for events, retry, fan-out, and handle everything production throws at you — without touching infra.",
   }),
-  robots: { index: false, follow: false },
 };
 
 export default function Page() {

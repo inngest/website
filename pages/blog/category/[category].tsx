@@ -22,7 +22,9 @@ export default function BlogCategory(props: StaticProps) {
   return (
     <>
       <Head>
-        <title>Inngest - {props.meta.title}</title>
+        {/* A single string: <title> with mixed text and expressions
+            renders empty. */}
+        <title>{props.meta.title}</title>
         <meta name="description" content={props.meta.description}></meta>
         <meta property="og:title" content={props.meta.title} />
         <meta property="og:description" content={props.meta.description} />
@@ -56,7 +58,7 @@ export async function getStaticProps({
       serializedPosts,
       categoryTitle: title,
       meta: {
-        title: `Product & Engineering Blog - ${title}`,
+        title: `${title} - Inngest Blog`,
         description: `Blog posts covering the topic of ${title}`,
       },
     },

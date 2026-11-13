@@ -1,0 +1,142 @@
+---
+tags: ["AI & Agents", "Durable Execution", "Queues & Flow Control", "Workflows & Orchestration"]
+heading: "Agents don't fail at the starting line"
+subtitle: "Three architectural decisions to make when building long-running agents."
+image: https://cdn.inngest.com/blog/agents-dont-fail-at-the-start-line/heading.png
+date: 2026-11-06
+author: Mitchell Alderson
+category: engineering
+---
+
+Twenty-one miles into Sunday's race in New York, ten men were still running in one pack. Nothing had been decided. Then, in the final mile, [Andreas Almgren](https://worldathletics.org/news/report/new-york-city-marathon-2026-almgren-chepkirui), a half-marathon specialist running his first marathon, pulled away from Yemaneberhan Crippa and won by thirteen seconds.
+
+In software, long-running work gets decided the same way. For the first twenty miles, almost anything looks fine: the demo agent, the cron job held together with retries, the function that has never run longer than your timeout. What you picked before you started, and how you ran the middle, only shows up at the end.
+
+Here are the three decisions, in race order, that determine whether something long-running actually finishes.
+
+## Key takeaways
+
+- Long jobs fail in the middle. Plan for that before the first step runs.
+- Pick infrastructure that assumes your work will outlive a single request.
+- Keep the code your agent runs in the same system that orchestrates it, so failures live in one trace.
+- Set limits on your agent before a provider sets them for you.
+- When one step fails, retry that step. Don't restart the whole run.
+
+## What should you decide before a long-running agent starts?
+
+Decide that the work will outlive a single request, and choose the whole kit with that in mind: what orchestrates the run, and where the code it writes actually runs.
+
+![A runner's shoes at the start of the race](https://cdn.inngest.com/blog/agents-dont-fail-at-the-start-line/marathon-08.jpg)
+
+Nobody changes shoes at the start line. The pair that feels fast in a 5K wrecks you at mile 15, and by then there's nothing to do about it.
+
+Most agent infrastructure starts out request-scoped. A serverless function or an API route holds the whole run in memory and hopes it finishes before the platform's timeout. That's fine for a quick job.
+
+An hour-long run is different. A deploy, a restart, or a timeout isn't bad luck there; over a long enough run, one of them is guaranteed. Picking the right execution model from the get-go is what helps you at mile 20: **[checkpointed steps](/docs/learn/inngest-steps?ref=blog-agents-dont-fail-at-the-start-line)**, with state stored outside the process, so the run doesn't care which machine picks it back up. We've written up the pattern for [running long jobs on serverless hosts](/docs/patterns/durable/run-long-jobs-on-serverless-hosts?ref=blog-agents-dont-fail-at-the-start-line), and [why raising your serverless timeout won't save long jobs](/blog/why-raising-your-serverless-timeout-wont-save-long-jobs?ref=blog-agents-dont-fail-at-the-start-line).
+
+The second half of the kit is newer. Agents increasingly write code, and that code needs an isolated machine to run on. Most teams bolt on a sandbox from a separate vendor, and it works fine until something fails at step 40. Then you're reconstructing what happened from two systems: the orchestrator's trace on one side, the sandbox's logs on the other, and nothing that tells you which retry did what.
+
+That seam is why sandbox calls in **[Inngest Sandboxes](/docs/sandboxes?ref=blog-agents-dont-fail-at-the-start-line)** (beta) run as durable steps. They show up in the same trace as the rest of the run and retry like any other step. Tony wrote up how the warm pool and snapshots work in [What everyone gets wrong about building sandboxes](/blog/what-everyone-gets-wrong-when-building-sandboxes?ref=blog-agents-dont-fail-at-the-start-line).
+
+```ts
+async ({ event, step }) => {
+  // Each sandbox call is a durable step in the same trace as the rest of the run
+  const sandbox = await step.sandbox.create("create-sandbox", {
+    name: `job-${event.data.jobId}`,
+    vcpu: 2,
+    memoryMb: 2048,
+  });
+
+  // Run the code your agent generated here
+  const result = await sandbox.commands.run(
+    "run-command",
+    ["node", "-e", "console.log('done')"],
+    { timeout: "30s" },
+  );
+
+  await sandbox.destroy("destroy-sandbox");
+
+  return { exitCode: result.exitCode, stdout: result.stdout };
+};
+```
+
+The destroy step only runs if the run reaches it. If the command step fails permanently, clean up the sandbox in an `onFailure` handler, as described in the [lifecycle guide](/docs/sandboxes/features/managed-lifecycle?ref=blog-agents-dont-fail-at-the-start-line#clean-up-after-failure).
+
+One caveat on "pick the right kit." The orchestration layer is the part you keep. Models, prompts, frameworks, and sandbox providers will all change underneath it, and you can call any sandbox provider from a step today. Choose the layer that's hardest to swap with care, and keep everything above it swappable.
+
+## How do you pace an agent that runs for hours?
+
+Put limits on the work yourself, before someone else's limits do it for you.
+
+![Runners fueling during the race](https://cdn.inngest.com/blog/agents-dont-fail-at-the-start-line/marathon-05.jpg)
+
+Every marathon has runners who go out too fast. The crowds in the first miles are loud, the legs feel great, and the bill arrives twenty miles later. Experienced runners fuel before they're hungry for the same reason: by the time you notice the problem, it's too late to fix it.
+
+An agent's version of going out too fast is fan-out. A batch of runs starts at once, each calls the same model provider, and the provider starts returning 429s. Each run backs off and retries on its own schedule; the retries collide, and the rate limit you were trying to respect becomes the bottleneck for everything. Add more than one customer, and it gets worse: one tenant's big batch eats the whole limit while everyone else waits.
+
+Hand-rolled backoff can't fix this, because every run is making its own decision with no idea what the others are doing. Pacing belongs at the function level, declared once and enforced across every run. **[Flow control](/docs/guides/flow-control?ref=blog-agents-dont-fail-at-the-start-line)** in Inngest lives in the function config: [concurrency](/docs/guides/concurrency?ref=blog-agents-dont-fail-at-the-start-line) keyed per tenant so no single customer takes every slot, and a [throttle](/docs/guides/throttling?ref=blog-agents-dont-fail-at-the-start-line) matched to what your provider actually allows. Set the limit before the first 429, not after. A throttle limits how fast runs start, not the model calls inside a run, so for a long-running agent that makes many calls, put those calls in their own throttled function.
+
+```ts
+// src/inngest/research-agent.ts
+export const researchAgent = inngest.createFunction(
+  {
+    id: "research-agent",
+    triggers: { event: "agent/research.requested" },
+    // No single tenant can take every slot
+    concurrency: { limit: 5, key: "event.data.tenantId" },
+    // Cap how fast runs start across all tenants
+    throttle: { limit: 50, period: "1m" },
+  },
+  async ({ event, step }) => {
+    // ...
+  }
+);
+```
+
+## Why do long-running agents crash more the longer they run?
+
+Because every extra minute gives something another chance to go wrong. The longer something runs, the higher the chance an agent has to crash, the same way the longer a runner goes, the higher the chance of getting injured. For long-running work, failure in the middle is expected.
+
+![A runner pushing through the late miles of the marathon](https://cdn.inngest.com/blog/agents-dont-fail-at-the-start-line/marathon-053.jpg)
+
+Around mile 20, the marathon gets hard. A runner who cramps there doesn't go back to Staten Island and start over. They slow down, work through it, and keep going from where they are.
+
+That's also where the comparison stops working, and the place it breaks is the point. A runner can't checkpoint. If the injury is bad enough, the race is over and every mile before it counts for nothing. Your agent doesn't have to work that way.
+
+Think about what a run without checkpoints costs when it dies at step 40. [Starting over](/docs/patterns/durable/process-large-datasets-without-starting-over?ref=blog-agents-dont-fail-at-the-start-line) costs more than time. You pay for every model call again. Side effects run twice: the email goes out again, the ticket gets filed again, the record gets written twice. And if a person approved something halfway through, that approval died with the process.
+
+You need to build durability for that long run, so the work can keep running through a crash instead of ending at one. In practice, that means breaking the run into **[durable steps](/docs/learn/durable-agents?ref=blog-agents-dont-fail-at-the-start-line)**. Each step saves its result when it finishes. If step 40 fails, Inngest [retries](/docs/features/inngest-functions/error-retries/retries?ref=blog-agents-dont-fail-at-the-start-line) step 40, and when the run resumes, the 39 steps before it return their saved results instead of running again. Waiting on a person doesn't hold a process open either: the run [waits for the approval event](/docs/reference/typescript/v4/functions/step-wait-for-event?ref=blog-agents-dont-fail-at-the-start-line) and picks back up when it arrives.
+
+```ts
+async ({ event, step }) => {
+  const plan = await step.run("plan", () => planTasks(event.data.goal));
+
+  for (const task of plan.tasks) {
+    // Each finished task is saved. A failure here retries this task only.
+    await step.run(`task-${task.id}`, () => runTask(task));
+  }
+
+  // No process sits open while a person decides
+  const approval = await step.waitForEvent("wait-for-approval", {
+    event: "agent/report.approved",
+    match: "data.runId",
+    timeout: "3d",
+  });
+
+  if (!approval) return { status: "expired" };
+
+  await step.run("publish", () => publishReport(plan));
+};
+```
+
+Retry the step, not the chain.
+
+## What happens after the finish line?
+
+Runners don't stop thinking about a race when they cross the line. They go back through their splits, figure out where it got hard, and train differently for the next one. Long-running agents improve the same way. Every step of every run is already traced, so you can score runs against what actually happened in your product and change what the next run does, without exporting anything to a separate tool. We've gone deeper on that in [Introducing Agent Evals](/blog/introducing-agent-evals?ref=blog-agents-dont-fail-at-the-start-line) and [Evals in Inngest: a practical guide](/blog/evals-in-inngest-a-practical-guide-to-measuring-and-improving-your-agent?ref=blog-agents-dont-fail-at-the-start-line).
+
+## Your longest run
+
+Pick the longest-running job you have and ask it one question: if it dies at step 40, where does it start again?
+
+If the answer is step one, you know which decision to make first.

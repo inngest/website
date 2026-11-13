@@ -1,14 +1,23 @@
 const fs = require("node:fs");
 const path = require("node:path");
 const matter = require("gray-matter");
+const { lastmodFor } = require("./next-sitemap.lastmod.js");
 
 // unreleased pages and blog posts with noindex stay out of the sitemap.
-// their robots metadata conflicts with a sitemap entry.
+// their robots metadata conflicts with a sitemap entry. So do posts
+// republished from a partner's site: their canonical_url names the
+// partner's original, and a sitemap entry would claim the copy instead.
 function sourceIsExcludedFromSitemap(filePath) {
   try {
     const src = fs.readFileSync(filePath, "utf8");
     const data = matter(src).data;
     if (data.unreleased || data.noindex) return true;
+    if (
+      typeof data.canonical_url === "string" &&
+      !/^https:\/\/www\.inngest\.com(\/|$)/.test(data.canonical_url)
+    ) {
+      return true;
+    }
     return /export\s+const\s+unreleased\s*=/.test(src);
   } catch {
     return false;
@@ -49,6 +58,20 @@ async function getRedirectSources() {
   return redirectSources;
 }
 
+// The stable TypeScript reference is listed at its versionless canonical URL
+// (utils/docsCanonical.mjs), not the /<stable>/ file path next-sitemap finds.
+let toCanonical;
+async function getCanonicalizer() {
+  if (!toCanonical) {
+    const [{ canonicalDocsPath }, { TS_STABLE_VERSION }] = await Promise.all([
+      import("./utils/docsCanonical.mjs"),
+      import("./redirects.mjs"),
+    ]);
+    toCanonical = (urlPath) => canonicalDocsPath(urlPath, TS_STABLE_VERSION);
+  }
+  return toCanonical;
+}
+
 /** @type {import('next-sitemap').IConfig} */
 module.exports = {
   siteUrl: "https://www.inngest.com",
@@ -59,18 +82,27 @@ module.exports = {
     const src = contentSourceFor(urlPath);
     if (src && sourceIsExcludedFromSitemap(src)) return null;
     return {
-      loc: urlPath,
+      loc: (await getCanonicalizer())(urlPath),
       changefreq: config.changefreq,
       priority: config.priority,
-      lastmod: config.autoLastmod ? new Date().toISOString() : undefined,
+      // Real dates only, never the build time; see next-sitemap.lastmod.js.
+      lastmod: lastmodFor(urlPath),
       alternateRefs: config.alternateRefs ?? [],
     };
   },
   exclude: [
     "*/_*",
     "*/landing/*",
+    "/blog-markdown",
     "/blog-markdown/*",
+    "/docs-markdown",
     "/docs-markdown/*",
+    // Plain-text and markdown files for AI crawlers. Found via llms.txt and
+    // robots.txt, not the sitemap, which lists HTML pages only.
+    "/blog.txt",
+    "/llm-context.md",
+    "/llms.txt",
+    "/llms-full.txt",
     "/api/*",
     "*/download-gate-form*",
     // Pages that have been redirected — keep these out of the sitemap.
@@ -106,11 +138,8 @@ module.exports = {
     // Pages with noindex set in code — sitemap + noindex is contradictory.
     "/content/ai-in-production-report-2026",
     "/content/ai-in-production-report-2026/*",
-    // NYC campaign page — still in review, noindex in its own metadata,
-    // so it must stay out of the sitemap. Remove this line to list it.
-    "/nyc-long-run",
-    // step.run campaign page — noindex until it's reviewed.
-    "/long-run",
+    // YC deal page — shared directly, noindex in its own metadata.
+    "/yc",
     "/resources/access/*",
   ],
 };

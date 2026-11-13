@@ -19,6 +19,7 @@ import Dropdown from "./Dropdown";
 // Manual count of stars on GitHub for now
 // Run pnpm run github:stars to get the latest count
 import githubData from "src/data/github.json";
+import { refLinkProps } from "@/utils/v1/ref";
 
 const githubStars = githubData.stars;
 
@@ -134,7 +135,7 @@ export default function Nav() {
                     >
                       {url ? (
                         <a
-                          href={`${url}?ref=nav`}
+                          {...refLinkProps(`${url}?ref=nav`)}
                           className={`hidden items-center text-nowrap px-7 py-2 text-sm font-medium text-basis/90 hover:text-primary-intense md:flex md:px-5 ${className}`}
                         >
                           {title}
@@ -149,7 +150,7 @@ export default function Nav() {
                   ) : (
                     <li key={idx}>
                       <a
-                        href={`${url}?ref=nav`}
+                        {...refLinkProps(`${url}?ref=nav`)}
                         className={`flex items-center text-nowrap px-7 py-2 text-sm font-medium text-basis/90 hover:text-primary-intense md:px-5 ${className}`}
                       >
                         {title}
@@ -163,7 +164,7 @@ export default function Nav() {
                   ({ title, url, iconClassName = "", ...item }, idx) => (
                     <li key={idx}>
                       <a
-                        href={url}
+                        {...refLinkProps(url)}
                         className={`flex flex-shrink-0 items-center px-3.5 py-2 text-basis/90 hover:text-primary-intense`}
                         title={title}
                       >
@@ -177,14 +178,16 @@ export default function Nav() {
             <div className="flex flex-shrink-0 items-center gap-6 py-8 pl-8 md:justify-end md:py-0 md:pl-10">
               <OpenSourceButton className="hidden min-[816px]:block" />
               <a
-                href={`${process.env.NEXT_PUBLIC_APP_HOST}?ref=nav`}
+                {...refLinkProps(`${process.env.NEXT_PUBLIC_APP_HOST}?ref=nav`)}
                 className={`hover:primary-intense flex-shrink-0 text-sm font-medium text-basis/90 transition-all duration-150
                   md:hidden min-[880px]:inline`}
               >
                 Sign In
               </a>
               <a
-                href={`${process.env.NEXT_PUBLIC_SIGNUP_URL}?ref=nav`}
+                {...refLinkProps(
+                  `${process.env.NEXT_PUBLIC_SIGNUP_URL}?ref=nav`
+                )}
                 className="flex flex-shrink-0 items-center gap-1 rounded-md bg-cta py-2 pl-5 pr-4 text-sm font-medium text-onContrast transition-all hover:bg-ctaHover"
               >
                 Sign Up

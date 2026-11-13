@@ -115,7 +115,7 @@ inngest.createFunction(
 What this gives you toward a fault-tolerant event-driven architecture:
 
 - Code inside each `step.run()` retries independently and **resumes from where the function left off**.
-- `step.waitForEvent()` coordinates follow-up user actions via [event coordination](/patterns/event-coordination-for-lost-customers?ref=blog-build-more-reliable-workflows-with-events).
+- `step.waitForEvent()` coordinates follow-up user actions via [event coordination](/docs/patterns/events/event-coordination-for-lost-customers?ref=blog-build-more-reliable-workflows-with-events).
 - Step results, failures, and retries are visible in the Inngest dashboard for **observability**.
 
 Deploy the same functions [locally or to any supported platform](/docs/platform-and-operations/apps-and-syncs?ref=blog-build-more-reliable-workflows-with-events). More on step tools is in the [steps docs](/docs/durable-execution/primitives?ref=blog-build-more-reliable-workflows-with-events).

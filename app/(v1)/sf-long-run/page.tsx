@@ -10,7 +10,7 @@ import SfLongRun from "@/components/v1/pages/SfLongRun";
  *
  * Publicly indexable: no robots block here, and the route is in the
  * sitemap. To pull it back out of search, add
- * `robots: { index: false, follow: false }` below and re-add the
+ * `robots: { index: false, follow: true }` below and re-add the
  * "/sf-long-run" line to next-sitemap.config.js — both are needed,
  * since a sitemap entry and a noindex tag contradict each other.
  */

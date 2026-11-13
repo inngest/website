@@ -9,10 +9,10 @@ export interface FormTestimonialLogo {
 }
 
 const RESEND_LOGO: FormTestimonialLogo = {
-  // resend.svg is a 65×16 white lockup; 24px tall renders it ~98px wide.
+  // resend.svg is a 377×80 white lockup; 24px tall renders it ~113px wide.
   src: "/assets/v1/logos/resend.svg",
   alt: "Resend",
-  width: 98,
+  width: 113,
   height: 24,
 };
 

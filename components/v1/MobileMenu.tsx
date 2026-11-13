@@ -23,7 +23,7 @@ import {
   type NavItem,
   type NavMenuItem,
 } from "@/components/v1/nav-config";
-import { appendRef } from "@/utils/v1/ref";
+import { appendRef, refLinkProps } from "@/utils/v1/ref";
 import { handleStartFreeClick } from "@/utils/v1/startFreeCta";
 import { cn } from "@/utils/v1/cn";
 
@@ -146,7 +146,7 @@ export default function MobileMenu({ isOpen, onClose }: MobileMenuProps) {
                   >
                     {external ? (
                       <a
-                        href={item.href}
+                        {...refLinkProps(item.href)}
                         target="_blank"
                         rel="noreferrer"
                         onClick={onClose}
@@ -155,7 +155,7 @@ export default function MobileMenu({ isOpen, onClose }: MobileMenuProps) {
                       </a>
                     ) : (
                       <NextLink
-                        href={appendRef(item.href, "nav")}
+                        {...refLinkProps(appendRef(item.href, "nav"))}
                         onClick={onClose}
                       >
                         {label}
@@ -165,13 +165,16 @@ export default function MobileMenu({ isOpen, onClose }: MobileMenuProps) {
                 );
               })}
               <Button asChild variant="secondary" size="lg" className="!w-full">
-                <a href={appendRef(SIGN_IN_URL, "nav")} onClick={onClose}>
+                <a
+                  {...refLinkProps(appendRef(SIGN_IN_URL, "nav"))}
+                  onClick={onClose}
+                >
                   Sign in
                 </a>
               </Button>
               <Button asChild variant="pill" size="lg" className="!w-full">
                 <a
-                  href={appendRef(SIGN_UP_URL, "nav")}
+                  {...refLinkProps(appendRef(SIGN_UP_URL, "nav"))}
                   onClick={(event) => {
                     onClose();
                     handleStartFreeClick(appendRef(SIGN_UP_URL, "nav"))(event);

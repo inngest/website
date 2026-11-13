@@ -1,8 +1,8 @@
 "use client";
 
-import Image from "next/image";
 import { motion } from "motion/react";
 import ButtonLink from "@/components/v1/ButtonLink";
+import HeroCodeTrace from "@/components/v1/sections/Home/HeroCodeTrace";
 import { tweens } from "@/utils/v1/springs";
 import { CURSOR_SPOTLIGHT_SEED } from "@/utils/v1/cursorFx";
 import { HERO } from "@/components/v1/sections/LongRun/data";
@@ -12,7 +12,7 @@ import RunningFriend from "@/components/v1/sections/LongRun/RunningFriend";
 /**
  * Campaign hero — what someone sees after scanning a step.run/sf
  * placement. Split layout: the copy stack reads down the left column
- * with the product panel beside it, and the campaign illustration runs
+ * with the homepage's code animation beside it, and the campaign illustration runs
  * full-bleed underneath, bleeding over the logo strip below.
  */
 
@@ -113,20 +113,14 @@ export default function Hero() {
           </motion.div>
         </div>
 
-        {/* No frame: the panel artwork carries its own chrome and sits
-            directly on the page background. */}
-        <motion.div {...entry(700)} className="mt-12 lg:mt-0">
-          <Image
-            src={HERO.visual.src}
-            alt={HERO.visual.alt}
-            width={HERO.visual.width}
-            height={HERO.visual.height}
-            // Above the fold, so not lazy-loaded. Stating the slot width
-            // lets Next pick a variant that matches the column.
-            priority
-            sizes="(max-width: 1024px) 92vw, 46vw"
-            className="h-auto w-full"
-          />
+        {/* The homepage hero's code animation (a step.run function
+            whose steps run, fail, retry, and complete), in place of
+            the static run-trace panel. */}
+        <motion.div
+          {...entry(700)}
+          className="mt-12 flex justify-center lg:mt-0 lg:justify-end"
+        >
+          <HeroCodeTrace />
         </motion.div>
       </div>
 
