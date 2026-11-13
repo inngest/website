@@ -404,13 +404,12 @@ export const MACHINE = {
  * Slack post) and Customer.io; the three showcased on the finale livestream are picked
  * from those.
  *
- * Submissions close December 23. TODO: the livestream (Dec 29 or 30)
- * is still to be confirmed; add its date to `when` once it is.
+ * Submissions close December 23; the livestream is December 29.
  */
 export const BUILDATHON = {
   chips: ["Build-a-thon", "Cash prizes"],
   title: ["Build your", "weird workflow."],
-  when: "Submit by December 23. Winners picked live on CodeTV.",
+  when: "Submit by December 23. Winners picked live on CodeTV, December 29.",
   cta: { label: "Submit your workflow", href: "#submit" },
   body: "Use all twelve primitives from behind the doors to build one gloriously overengineered workflow that does something really simple, the Rube Goldberg way. Toast a slice of bread. Water a plant. Say good morning.",
   rulesTitle: "The rules",
@@ -502,21 +501,21 @@ export const BUILDATHON_TEASER = {
  * The finale livestream: registration at /12-days-of-workflows/livestream
  * and the stream itself at /12-days-of-workflows/live.
  *
- * TODO: the date (Dec 29 or 30) and the YouTube video ID are still to
- * be confirmed. Set `when` and `youtubeId` once they are; until then the
- * watch page shows a "coming soon" slot instead of the player.
+ * December 29, 10am Pacific. TODO: set `youtubeId` once the stream is
+ * scheduled; until then the watch page shows a "coming soon" slot
+ * instead of the player.
  */
 export const LIVESTREAM = {
   chips: ["Live on CodeTV", "Free"],
   title: ["Watch us pick the winners", "live on CodeTV."],
   body: "After the last door opens, join Inngest and CodeTV live as we build one gloriously overengineered Rube Goldberg machine out of everything behind the doors, show the weirdest build-a-thon entries, and pick the winners on air.",
-  when: "Date and time coming soon",
+  when: "December 29 · 10am PT / 1pm ET",
   /**
    * When the stream starts, as an ISO time with its offset, and how long
    * it runs. Until `start` is set, the "add to calendar" links after
    * registering stay hidden.
    */
-  start: "",
+  start: "2026-12-29T10:00:00-08:00",
   minutes: 90,
   /** The YouTube video ID of the stream (the part after `v=`). */
   youtubeId: "",
