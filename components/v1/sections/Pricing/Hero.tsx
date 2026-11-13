@@ -1,9 +1,9 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import Image from "next/image";
 import { animate, motion, useMotionValue, useTransform } from "motion/react";
 import ButtonLink from "@/components/v1/ButtonLink";
-import GradientFrame from "@/components/v1/sections/shared/GradientFrame";
 import Chip from "@/components/v1/sections/shared/Chip";
 import {
   CURSOR_SPOTLIGHT_SEED,
@@ -136,41 +136,43 @@ export default function Hero() {
         </ul>
       </div>
 
-      {/* Startup Program callout: a centered bar under the plan cards
-          (same pattern as LangChain's pricing page) rather than a badge on
-          the Pro card, so it reads as a separate program. */}
-      <GradientFrame
-        variant="black"
-        className="rounded-md"
-        innerClassName="relative flex flex-col items-center gap-4 px-6 py-8 text-center"
-      >
-        {/* Soft salmon glow from the top edge, the same salmon as the Pro
-            card's highlight, so the callout reads as part of the offer
-            without competing with the plan cards. */}
-        <div
+      {/* Startup Program callout: centered under the plan cards (same
+          pattern as LangChain's pricing page), with no box. A faint static
+          copy of the stipple logomark sits off to the right as a watermark,
+          fading out toward the copy. Static image rather than the animated
+          canvas, since the page's closing CTA already uses the animation. */}
+      <div className="relative overflow-hidden py-10 lg:py-12">
+        <Image
+          src="/assets/v1/quote/stipple-logomark.webp"
+          alt=""
           aria-hidden="true"
-          className="pointer-events-none absolute inset-0"
+          width={800}
+          height={419}
+          className="pointer-events-none absolute right-[-160px] top-1/2 hidden w-[560px] max-w-none -translate-y-1/2 select-none opacity-[0.14] sm:block lg:right-[-40px]"
           style={{
-            background:
-              "radial-gradient(ellipse 60% 140% at 50% 0%, rgb(var(--color-v1-salmon-gradient) / 0.22), transparent 70%)",
+            maskImage:
+              "linear-gradient(to left, black 45%, transparent 100%)",
+            WebkitMaskImage:
+              "linear-gradient(to left, black 45%, transparent 100%)",
           }}
         />
-        <p className="relative text-v1-heading-sm text-v1-frost">
-          Early-stage startup? Get 50% off Pro for 12 months.
-        </p>
-        <p className="relative max-w-[40rem] text-v1-body-sm-loose text-v1-frost/80">
-          New customers that are bootstrapped or have raised between $100K and
-          $5M can apply for the Inngest Startup Program.
-        </p>
-        <ButtonLink
-          href="/startups?ref=pricing-startups-callout"
-          variant="accent"
-          size="md"
-          className="relative"
-        >
-          Apply for the Startup Program
-        </ButtonLink>
-      </GradientFrame>
+        <div className="relative flex flex-col items-center gap-4 text-center">
+          <p className="text-v1-heading-sm text-v1-frost">
+            Early-stage startup? Get 50% off Pro for 12 months.
+          </p>
+          <p className="max-w-[40rem] text-v1-body-sm-loose text-v1-frost/80">
+            New customers that are bootstrapped or have raised between $100K
+            and $5M can apply for the Inngest Startup Program.
+          </p>
+          <ButtonLink
+            href="/startups?ref=pricing-startups-callout"
+            variant="accent"
+            size="md"
+          >
+            Apply for the Startup Program
+          </ButtonLink>
+        </div>
+      </div>
     </section>
   );
 }
