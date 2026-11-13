@@ -29,10 +29,13 @@ export async function GET() {
       description: post.subtitle,
       author: post.author,
       date: post.date,
-      // Blog posts can just be redirects to customer stories
-      // they start with a leading slash
+      // Blog posts can be redirects: internal ones (customer stories) start
+      // with a leading slash, external ones (e.g. podcast episodes) are
+      // absolute URLs and are used as-is.
       url: post.redirect
-        ? `${HOST}${post.redirect}`
+        ? /^https?:\/\//.test(post.redirect)
+          ? post.redirect
+          : `${HOST}${post.redirect}`
         : `${HOST}/blog/${post.slug}`,
       categories: post.tags || [],
     }));
