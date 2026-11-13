@@ -1,4 +1,5 @@
 import Image from "next/image";
+import { refLinkProps } from "@/utils/v1/ref";
 import FormTestimonial from "@/components/v1/sections/shared/FormTestimonial";
 import HowItWorks from "./HowItWorks";
 import StartupForm from "./StartupForm";
@@ -43,7 +44,10 @@ export default function Hero() {
               and included limits. Usage above those limits is billed at
               standard Pro rates. You&apos;ll add a payment method once
               you&apos;re approved.{" "}
-              <a href="/pricing?ref=startups" className={linkClassName}>
+              <a
+                {...refLinkProps("/pricing?ref=startups")}
+                className={linkClassName}
+              >
                 Compare plans
               </a>
             </p>
@@ -67,10 +71,17 @@ export default function Hero() {
             </ul>
             <p className="text-v1-body-sm-loose text-v1-frost/80">
               In Y Combinator?{" "}
-              <a href="/yc?ref=startups" className={linkClassName}>
+              <a
+                {...refLinkProps("/yc?ref=startups")}
+                className={linkClassName}
+              >
                 Request the YC deal
               </a>{" "}
               instead.
+            </p>
+            <p className="text-v1-caption text-v1-frost/60">
+              Inngest may change or end the Startup Program at any time.
+              Approvals are at Inngest&apos;s discretion.
             </p>
           </div>
 

@@ -6,7 +6,8 @@ import { SelectField, TextField, TextareaField } from "@/components/v1/forms";
 import { analytics } from "@/utils/segment";
 import { SIGN_UP_URL } from "@/components/v1/nav-config";
 import { calculateSpamScore } from "@/utils/v1/contactSubmit";
-import { appendRef } from "@/utils/v1/ref";
+import { appendRef, refLinkProps } from "@/utils/v1/ref";
+import { getPageRef } from "@/utils/v1/refHandoff";
 import { readFirstTouch } from "src/shared/firstTouch";
 import { FORM_TYPE } from "src/components/ContactForm.constants";
 import {
@@ -74,12 +75,7 @@ export default function StartupForm() {
       return;
     }
 
-    let ref = "";
-    try {
-      ref = new URLSearchParams(window.location.search).get("ref") ?? "";
-    } catch {
-      // noop
-    }
+    const ref = getPageRef()?.ref ?? "";
     const firstTouch = readFirstTouch();
 
     const application = {
@@ -166,7 +162,7 @@ export default function StartupForm() {
         <p className="text-v1-body-sm-loose text-v1-frost/70">
           While you wait, start building on the Free plan.{" "}
           <a
-            href="/docs?ref=startups-confirmation"
+            {...refLinkProps("/docs?ref=startups-confirmation")}
             className="underline hover:text-v1-frost"
           >
             Read the docs
@@ -375,7 +371,7 @@ export default function StartupForm() {
           </ul>
           <p className="text-v1-body-sm-loose text-v1-frost">
             <a
-              href="/contact?ref=startups-form"
+              {...refLinkProps("/contact?ref=startups-form")}
               className="underline hover:text-v1-frost/80"
             >
               Talk to our team
