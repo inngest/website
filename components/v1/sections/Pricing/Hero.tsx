@@ -140,14 +140,25 @@ export default function Hero() {
           (same pattern as LangChain's pricing page) rather than a badge on
           the Pro card, so it reads as a separate program. */}
       <GradientFrame
-        variant="charcoal"
+        variant="black"
         className="rounded-md"
-        innerClassName="flex flex-col items-center gap-4 px-6 py-8 text-center"
+        innerClassName="relative flex flex-col items-center gap-4 px-6 py-8 text-center"
       >
-        <p className="text-v1-heading-sm text-v1-frost">
+        {/* Soft salmon glow from the top edge, the same salmon as the Pro
+            card's highlight, so the callout reads as part of the offer
+            without competing with the plan cards. */}
+        <div
+          aria-hidden="true"
+          className="pointer-events-none absolute inset-0"
+          style={{
+            background:
+              "radial-gradient(ellipse 60% 140% at 50% 0%, rgb(var(--color-v1-salmon-gradient) / 0.22), transparent 70%)",
+          }}
+        />
+        <p className="relative text-v1-heading-sm text-v1-frost">
           Early-stage startup? Get 50% off Pro for 12 months.
         </p>
-        <p className="max-w-[40rem] text-v1-body-sm-loose text-v1-frost/80">
+        <p className="relative max-w-[40rem] text-v1-body-sm-loose text-v1-frost/80">
           New customers that are bootstrapped or have raised between $100K and
           $5M can apply for the Inngest Startup Program.
         </p>
@@ -155,6 +166,7 @@ export default function Hero() {
           href="/startups?ref=pricing-startups-callout"
           variant="accent"
           size="md"
+          className="relative"
         >
           Apply for the Startup Program
         </ButtonLink>
