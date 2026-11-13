@@ -56,18 +56,24 @@ const Banner: React.FC<Props> = ({ href, children, className, target, rel }) => 
   </a>
 );
 
+// TODO(BRAND-143): fill in the finale date, e.g. "December 30" before merging.
+const FINALE_DATE = "[date]";
+
+// 12 Days of Workflows banner (Dec 23 – 29/30) — BRAND-143
 export default function AnnouncementBanner() {
   return (
-    <Banner
-      href="https://www.youtube.com/watch?v=pui1mW9sexM&ref=site-banner"
-      target="_blank"
-      rel="noopener noreferrer"
-    >
-      <span className="inline-flex items-center gap-1.5">
-        <span className="font-normal underline underline-offset-2">
-          Watch our CodeTV episode on YouTube!
+    <Banner href="/12-days-of-workflows?ref=site-banner#finale">
+      <span className="inline-flex flex-wrap items-center justify-center gap-x-1.5">
+        <span className="font-semibold">Come see what everyone built.</span>
+        <span className="font-normal">
+          Join Jason for the weird workflow finale on {FINALE_DATE}.
         </span>
-        <span aria-hidden="true">📺</span>
+        <span className="inline-flex items-center gap-1">
+          <span className="font-normal underline underline-offset-2">
+            Get finale details
+          </span>
+          <span aria-hidden="true">→</span>
+        </span>
       </span>
     </Banner>
   );
