@@ -16,6 +16,24 @@ const DX_DEMO_SRC =
 const DX_DEMO_POSTER = "/assets/v1/home/posters/demo.webp";
 
 /**
+ * Pasted into a coding agent. The workflow is the same one the quick
+ * starts teach; the agent picks TypeScript, Python, or Go from the
+ * open project instead of assuming Next.js.
+ */
+const LOCAL_START_PROMPT = `Add an Inngest workflow to this project. Match the language and framework already here, and reuse any existing Inngest client or serve route.
+
+Create a process-task function triggered by app/task.created. In a step named "handle-task", return the event ID. Then pause the run for 1 second in a step named "pause". Serve the function at /api/inngest, and add a POST /api/create-task route that sends one sample app/task.created event.
+
+Choose the SDK from the project:
+- TypeScript: Inngest TypeScript SDK v4, with this framework's serve handler. Use the Next.js App Router handler only when this project is Next.js.
+- Python: the Python SDK, with the framework already in the project. Use FastAPI when no framework is obvious.
+- Go: the Go SDK. Use net/http unless the project already has another HTTP router.
+
+If the directory is empty, create a Next.js App Router project and use the TypeScript SDK v4. If the project is not TypeScript, Python, or Go, stop and say what you found.
+
+Start the app with INNGEST_DEV=1 and start the Inngest Dev Server against the actual serve URL. Trigger the function, inspect its run, and report the files changed, commands run, and observed result.`;
+
+/**
  * Product demo — the first section after the hero, and the one
  * centre-aligned lockup on the page: title → body → CTA pair, stacked
  * on the centre axis above the demo video. The video sits in the same
@@ -58,6 +76,8 @@ export default function Quote() {
         >
           <InstallCommandButton
             label="Copy prompt to start locally"
+            command={LOCAL_START_PROMPT}
+            analyticsCommand="local_start_prompt"
             placement="homepage_dx"
           />
           <ButtonLink variant="accent" href="/pricing?ref=homepage-dx">
