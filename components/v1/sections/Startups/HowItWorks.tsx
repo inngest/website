@@ -37,8 +37,8 @@ export default function HowItWorks() {
         <span className="text-v1-caption text-v1-frost/60">Step 3</span>
         <h2 className="text-v1-heading-sm text-v1-frost">Upgrade at 50% off</h2>
         <p className="text-v1-body-sm-loose text-v1-frost/80">
-          We&apos;ll review your application and email you next steps: add a
-          payment method and upgrade to Pro with 50% off applied.
+          We&apos;ll email you next steps. Add a payment method and upgrade
+          to Pro with your discount.
         </p>
       </li>
     </ol>

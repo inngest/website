@@ -135,18 +135,21 @@ export default function Hero() {
         </ul>
       </div>
 
-      {/* Startup Program callout: a slim bar under the plan cards rather
-          than a badge on the Pro card, so it reads as a separate program. */}
-      <div className="flex flex-col items-start justify-between gap-4 rounded-[4px] border border-v1-steel/20 px-6 py-5 sm:flex-row sm:items-center">
-        <p className="text-v1-body-sm-loose text-v1-frost/80">
-          <span className="text-v1-frost">Early-stage startup?</span>{" "}
-          Qualifying startups get 50% off the Pro plan for 12 months.
+      {/* Startup Program callout: a centered bar under the plan cards
+          (same pattern as LangChain's pricing page) rather than a badge on
+          the Pro card, so it reads as a separate program. */}
+      <div className="flex flex-col items-center gap-4 rounded-[4px] border border-v1-steel/20 bg-v1-surfaceElevated px-6 py-8 text-center">
+        <p className="text-v1-heading-sm text-v1-frost">
+          Early-stage startup? Get 50% off Pro for 12 months.
+        </p>
+        <p className="max-w-[40rem] text-v1-body-sm-loose text-v1-frost/80">
+          New customers that are bootstrapped or have raised between $100K and
+          $5M can apply for the Inngest Startup Program.
         </p>
         <ButtonLink
           href="/startups?ref=pricing-startups-callout"
-          variant="secondary"
-          size="sm"
-          className="shrink-0"
+          variant="accent"
+          size="md"
         >
           Apply for the Startup Program
         </ButtonLink>
