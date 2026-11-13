@@ -3,6 +3,7 @@
 import { useEffect, useState } from "react";
 import { animate, motion, useMotionValue, useTransform } from "motion/react";
 import ButtonLink from "@/components/v1/ButtonLink";
+import GradientFrame from "@/components/v1/sections/shared/GradientFrame";
 import Chip from "@/components/v1/sections/shared/Chip";
 import {
   CURSOR_SPOTLIGHT_SEED,
@@ -138,7 +139,11 @@ export default function Hero() {
       {/* Startup Program callout: a centered bar under the plan cards
           (same pattern as LangChain's pricing page) rather than a badge on
           the Pro card, so it reads as a separate program. */}
-      <div className="flex flex-col items-center gap-4 rounded-[4px] border border-v1-steel/20 bg-v1-surfaceElevated px-6 py-8 text-center">
+      <GradientFrame
+        variant="charcoal"
+        className="rounded-md"
+        innerClassName="flex flex-col items-center gap-4 px-6 py-8 text-center"
+      >
         <p className="text-v1-heading-sm text-v1-frost">
           Early-stage startup? Get 50% off Pro for 12 months.
         </p>
@@ -153,7 +158,7 @@ export default function Hero() {
         >
           Apply for the Startup Program
         </ButtonLink>
-      </div>
+      </GradientFrame>
     </section>
   );
 }
