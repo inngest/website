@@ -56,18 +56,21 @@ const Banner: React.FC<Props> = ({ href, children, className, target, rel }) => 
   </a>
 );
 
+// 12 Days of Workflows banner (Dec 18) — BRAND-141
 export default function AnnouncementBanner() {
   return (
-    <Banner
-      href="https://www.youtube.com/watch?v=pui1mW9sexM&ref=site-banner"
-      target="_blank"
-      rel="noopener noreferrer"
-    >
-      <span className="inline-flex items-center gap-1.5">
-        <span className="font-normal underline underline-offset-2">
-          Watch our CodeTV episode on YouTube!
+    <Banner href="/12-days-of-workflows?ref=site-banner#calendar">
+      <span className="inline-flex flex-wrap items-center justify-center gap-x-1.5">
+        <span className="font-semibold">All twelve doors are open.</span>
+        <span className="font-normal">
+          Watch the series, then build something weird.
         </span>
-        <span aria-hidden="true">📺</span>
+        <span className="inline-flex items-center gap-1">
+          <span className="font-normal underline underline-offset-2">
+            Explore the series
+          </span>
+          <span aria-hidden="true">→</span>
+        </span>
       </span>
     </Banner>
   );
