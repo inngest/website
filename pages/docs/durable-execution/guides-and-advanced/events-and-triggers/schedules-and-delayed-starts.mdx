@@ -3,13 +3,13 @@ import { CodeGroup, Warning, LanguageSelector, LanguageSection } from "shared/Do
 export const metaTitle = "Cron Jobs, Schedules & Delayed Functions";
 export const description = "Schedule Inngest functions with cron jobs and timezone-aware recurring schedules, or delay a start to a specific time with event timestamps or sleepUntil.";
 
-# Schedules and delayed starts
+# Cron, schedules, and delayed starts
 
 > Schedule recurring or future work without keeping an app timer running.
 
 Run a daily report or send a reminder at a chosen time without keeping an app timer running. Inngest stores the schedule or delay and starts the function when it is due. This works on any provider or platform, including serverless hosts, and survives server restarts and redeploys. You never manage a queue or backlog.
 
-## Run on a recurring schedule
+## Cron: Run on a recurring schedule
 
 Use a cron trigger for work such as a daily report.
 
@@ -41,6 +41,55 @@ export const dailyReport = inngest.createFunction(
 The basic cron expression runs at 09:00 UTC. A cron expression has five fields: minute, hour, day of month, month, and day of week. For example, `0 9 * * *` runs at 09:00 every day, `0 * * * *` runs at the start of every hour, and `0 12 * * 5` runs at 12:00 every Friday.
 
 Your functions must be [served](/docs/durable-execution/deploying-functions/serve) so Inngest can find and call them.
+
+## Cron event type
+
+Each time a cron schedule fires, Inngest starts the function with an `inngest/scheduled.timer` event. The `inngest/` prefix is reserved for system events, so you do not send this event yourself.
+
+| Field | Type | Description |
+| --- | --- | --- |
+| `name` | `string` | Always `"inngest/scheduled.timer"`. |
+| `data.cron` | `string` | The cron expression that fired, including any `TZ=` prefix. |
+| `id` | `string` | The event ID. |
+| `ts` | `number` | The event timestamp, in Unix milliseconds. |
+
+```json {{ title: "Example payload" }}
+{
+  "name": "inngest/scheduled.timer",
+  "data": {
+    "cron": "TZ=Europe/Paris 0 9 * * *"
+  },
+  "id": "01JD3QW6E4Z9M8X7Y5V2T1R0PK",
+  "ts": 1763020800000
+}
+```
+
+Read the event in the handler when you need the schedule, or to tell a cron run apart from other triggers on the same function. In TypeScript, the payload type is `ScheduledTimerEventPayload`, and checking `event.name` narrows to it. See [Check which event started a run](/docs/durable-execution/guides-and-advanced/events-and-triggers/event-and-trigger-concepts#check-which-event-started-a-run).
+
+<CodeGroup>
+```typescript {{ title: "TypeScript" }}
+async ({ event }) => {
+  if (event.name === "inngest/scheduled.timer") {
+    console.log(`Started by cron: ${event.data.cron}`);
+  }
+}
+```
+
+```python {{ title: "Python" }}
+async def handler(ctx: inngest.Context) -> None:
+    if ctx.event.name == "inngest/scheduled.timer":
+        print(f"Started by cron: {ctx.event.data['cron']}")
+```
+
+```go {{ title: "Go" }}
+func(ctx context.Context, input inngestgo.Input[map[string]any]) (any, error) {
+	if input.Event.Name == "inngest/scheduled.timer" {
+		fmt.Printf("Started by cron: %v\n", input.Event.Data["cron"])
+	}
+	return nil, nil
+},
+```
+</CodeGroup>
 
 ## Run in a local timezone
 
