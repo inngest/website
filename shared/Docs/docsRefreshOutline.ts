@@ -282,7 +282,7 @@ export const docsRefreshOutline: DocsRefreshPage[] = [
                 href: "/docs/durable-execution/guides-and-advanced/events-and-triggers/receive-webhook-events",
               },
               {
-                title: "Schedules and delayed starts",
+                title: "Cron, schedules, and delayed starts",
                 href: "/docs/durable-execution/guides-and-advanced/events-and-triggers/schedules-and-delayed-starts",
               },
             ],
