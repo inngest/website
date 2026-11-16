@@ -43,7 +43,8 @@ export default function HowItWorks() {
         <span className={stepClassName}>Step 3</span>
         <h2 className="text-v1-heading-sm text-v1-frost">Upgrade at 50% off</h2>
         <p className={bodyClassName}>
-          Once approved, add a card and upgrade to Pro.
+          Once approved, add a card and upgrade to Pro. Your discount is
+          applied for you.
         </p>
       </li>
     </ol>
