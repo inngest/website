@@ -3,18 +3,23 @@ import { appendRef } from "@/utils/v1/ref";
 
 // Sign up first, then apply: approved startups need an account anyway,
 // and anyone who signs up starts building on the Free plan while their
-// application is reviewed.
+// application is reviewed. Kept to one short line per card so the page
+// scans quickly; the FAQ carries the detail.
+const cardClassName =
+  "flex flex-col gap-3 rounded-[4px] border border-v1-steel/20 bg-v1-surfaceElevated p-6";
+const stepClassName = "text-v1-label-sm uppercase text-v1-accent-salmon";
+const bodyClassName = "text-v1-body-sm-loose text-v1-frost/80";
+
 export default function HowItWorks() {
   return (
-    <ol className="mt-12 grid grid-cols-1 gap-6 sm:grid-cols-3 lg:mt-[52px] lg:px-[70px]">
-      <li className="flex flex-col gap-3 border-t border-v1-steel/20 pt-6">
-        <span className="text-v1-caption text-v1-frost/60">Step 1</span>
+    <ol className="mt-12 grid grid-cols-1 gap-4 sm:grid-cols-3 lg:mt-[52px] lg:gap-6 lg:px-[70px]">
+      <li className={cardClassName}>
+        <span className={stepClassName}>Step 1</span>
         <h2 className="text-v1-heading-sm text-v1-frost">
-          Create your account
+          Create a free account
         </h2>
-        <p className="text-v1-body-sm-loose text-v1-frost/80">
-          Sign up for Inngest. It&apos;s free, takes a couple of minutes, and
-          you can start building right away.{" "}
+        <p className={bodyClassName}>
+          Start building on the Free plan.{" "}
           <a
             href={appendRef(SIGN_UP_URL, "startups-apply")}
             target="_blank"
@@ -25,20 +30,18 @@ export default function HowItWorks() {
           </a>
         </p>
       </li>
-      <li className="flex flex-col gap-3 border-t border-v1-steel/20 pt-6">
-        <span className="text-v1-caption text-v1-frost/60">Step 2</span>
+      <li className={cardClassName}>
+        <span className={stepClassName}>Step 2</span>
         <h2 className="text-v1-heading-sm text-v1-frost">Apply</h2>
-        <p className="text-v1-body-sm-loose text-v1-frost/80">
-          Fill out the form below with your Inngest account email and a few
-          details about your company.
+        <p className={bodyClassName}>
+          Use your Inngest account email in the form below.
         </p>
       </li>
-      <li className="flex flex-col gap-3 border-t border-v1-steel/20 pt-6">
-        <span className="text-v1-caption text-v1-frost/60">Step 3</span>
+      <li className={cardClassName}>
+        <span className={stepClassName}>Step 3</span>
         <h2 className="text-v1-heading-sm text-v1-frost">Upgrade at 50% off</h2>
-        <p className="text-v1-body-sm-loose text-v1-frost/80">
-          We&apos;ll email you next steps. Add a payment method and upgrade
-          to Pro with your discount.
+        <p className={bodyClassName}>
+          Once approved, add a card and upgrade to Pro.
         </p>
       </li>
     </ol>

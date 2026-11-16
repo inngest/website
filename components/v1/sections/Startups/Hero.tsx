@@ -1,5 +1,6 @@
 import Image from "next/image";
 import { refLinkProps } from "@/utils/v1/ref";
+import LogoStrip from "@/components/v1/sections/Home/LogoStrip";
 import FormTestimonial from "@/components/v1/sections/shared/FormTestimonial";
 import HowItWorks from "./HowItWorks";
 import StartupForm from "./StartupForm";
@@ -7,9 +8,9 @@ import { PROGRAM_RULES } from "./program";
 
 const linkClassName = "underline hover:text-v1-frost/80";
 
-// Same layout as the /yc page: H1 and intro across the full width, then
-// a grid with the application form on the left and the offer, criteria,
-// and social proof on the right.
+// H1 and intro, the three steps as cards, the customer logo strip, then
+// a grid with the application form on the left and the criteria and
+// social proof on the right.
 export default function Hero() {
   return (
     <section
@@ -31,6 +32,14 @@ export default function Hero() {
 
       <HowItWorks />
 
+      {/* Social proof sits between the steps and the form, so the logos
+          land before the ask. */}
+      <div className="mt-12 lg:mt-[52px] lg:px-[70px]">
+        <div className="border-t border-v1-frost/[0.08] pt-6 lg:pt-8">
+          <LogoStrip label="Trusted in production by" />
+        </div>
+      </div>
+
       <div className="mt-12 grid grid-cols-1 gap-y-12 lg:mt-[52px] lg:grid-cols-[1fr_1fr] lg:items-start lg:gap-x-12 lg:gap-y-0 lg:px-[70px]">
         <div className="max-w-[600px] rounded-[4px] border border-v1-steel/20 bg-v1-surfaceElevated p-6 sm:p-8">
           <StartupForm />
@@ -38,22 +47,6 @@ export default function Hero() {
 
         <div className="flex flex-col gap-10">
           <div className="flex flex-col gap-4">
-            <h2 className="text-v1-heading-sm text-v1-frost">What you get</h2>
-            <p className="text-v1-body-sm-loose text-v1-frost/80">
-              Twelve months of the Pro plan at 50% off, with all of its features
-              and included limits. Usage above those limits is billed at
-              standard Pro rates. You&apos;ll add a payment method once
-              you&apos;re approved.{" "}
-              <a
-                {...refLinkProps("/pricing?ref=startups")}
-                className={linkClassName}
-              >
-                Compare plans
-              </a>
-            </p>
-          </div>
-
-          <div className="flex flex-col gap-4 border-t border-v1-steel/20 pt-8">
             <h2 className="text-v1-heading-sm text-v1-frost">Who qualifies</h2>
             <ul className="text-v1-body-sm-loose flex list-disc flex-col gap-2 pl-5 text-v1-frost/80">
               <li>
