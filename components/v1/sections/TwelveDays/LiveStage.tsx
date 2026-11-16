@@ -91,6 +91,76 @@ function Gear({
 }
 
 /**
+ * Door illustrations placed around the machine, in viewBox units. A
+ * `hang` prop dangles on a string from the beam above it and swings.
+ */
+const PROPS: {
+  day: number;
+  x: number;
+  y: number;
+  w: number;
+  h: number;
+  hang?: number;
+}[] = [
+  // Sticky note pinned to the wall above the ramps.
+  { day: 4, x: 214, y: 0, w: 220, h: 157 },
+  // Pizza ornament swinging off the end of the beam.
+  { day: 9, x: 1416, y: 104, w: 168, h: 189, hang: 62 },
+  // Candle on its pedestal under the ramps.
+  { day: 10, x: 290, y: 560, w: 170, h: 255 },
+  // Mittens drying by the first post.
+  { day: 12, x: -6, y: 612, w: 204, h: 200 },
+  // Deodorant next to the funnel, and Clippy riding the pipe.
+  { day: 2, x: 676, y: 630, w: 190, h: 180 },
+  { day: 3, x: 1016, y: 598, w: 222, h: 211 },
+];
+
+function Prop({
+  day,
+  x,
+  y,
+  w,
+  h,
+  hang,
+  animate,
+}: typeof PROPS[number] & { animate: boolean }) {
+  const cx = x + w / 2;
+  const image = (
+    <image
+      href={`/assets/v1/12-days/doors/day-${day}.svg`}
+      x={x}
+      y={y}
+      width={w}
+      height={h}
+      preserveAspectRatio="xMidYMid meet"
+    />
+  );
+  if (hang === undefined) return image;
+  return (
+    <g>
+      <line
+        x1={cx}
+        y1={hang}
+        x2={cx}
+        y2={y + 14}
+        stroke={INK}
+        strokeWidth={4}
+      />
+      {image}
+      {animate && (
+        <animateTransform
+          attributeName="transform"
+          type="rotate"
+          values={`-6 ${cx} ${hang};6 ${cx} ${hang};-6 ${cx} ${hang}`}
+          dur="3.2s"
+          repeatCount="indefinite"
+        />
+      )}
+    </g>
+  );
+}
+
+/**
  * The machine around the sign: a ball rolls down the ramps into a
  * funnel, the pipe turns the gears, and the gears wind the rope that
  * holds the sign up. Decorative only; still for reduced motion.
@@ -103,6 +173,21 @@ function Contraption({ animate }: { animate: boolean }) {
       className="absolute inset-0 h-full w-full"
       preserveAspectRatio="xMidYMid meet"
     >
+      {/* Savannah's door art, worked into the machine. */}
+      <rect
+        x={276}
+        y={812}
+        width={198}
+        height={100}
+        rx={10}
+        fill={COLORS.green}
+        stroke={INK}
+        strokeWidth={6}
+      />
+      {PROPS.map((prop) => (
+        <Prop key={prop.day} {...prop} animate={animate} />
+      ))}
+
       {/* Ceiling beam and the pulleys the sign hangs from. */}
       <rect x={560} y={36} width={980} height={26} rx={8} fill={INK} />
       {[700, 1200].map((x) => (
@@ -188,7 +273,7 @@ function Contraption({ animate }: { animate: boolean }) {
       {/* Funnel and the pipe along the floor to the gears. */}
       <path
         d="M548 590 L652 590 L618 650 L582 650 Z"
-        fill={COLORS.cream}
+        fill={COLORS.salmon}
         stroke={INK}
         strokeWidth={6}
         strokeLinejoin="round"
@@ -289,7 +374,7 @@ export default function LiveStage() {
   return (
     <div
       className="relative overflow-hidden rounded-xl border-[3px] border-[#010101] text-[#010101] shadow-[8px_8px_0_#010101] sm:aspect-video"
-      style={{ backgroundColor: COLORS.salmon }}
+      style={{ backgroundColor: COLORS.cream }}
     >
       <div className="hidden sm:block">
         <Contraption animate={!reduceMotion} />
@@ -300,7 +385,7 @@ export default function LiveStage() {
         <div
           role="timer"
           aria-live="off"
-          className="flex w-full flex-col items-center justify-center gap-3 rounded-[20px] border-[#020202] bg-[#FBF0A8] px-4 py-6 text-center sm:h-full sm:gap-[clamp(6px,1vw,14px)] sm:py-3"
+          className="flex w-full flex-col items-center justify-center gap-3 rounded-[20px] border-[#020202] bg-white px-4 py-6 text-center sm:h-full sm:gap-[clamp(6px,1vw,14px)] sm:py-3"
           style={{
             borderTopWidth: 1.5,
             borderLeftWidth: 1.5,

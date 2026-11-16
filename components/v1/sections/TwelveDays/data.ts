@@ -270,8 +270,8 @@ export const HERO = {
   titleBottom: "Workflows",
   label: "12 Days of Weird Workflows",
   body: "Twelve doors. Twelve lessons to make all your weird workflows durable. Combine them and submit your weird workflow for a chance to win cash and other prizes.",
-  /** Copies to the clipboard. */
-  install: "npm install inngest",
+  /** Down to the calendar: the doors and the email sign-up. */
+  signup: { label: "Sign up for the challenge", href: "#calendar" },
   cta: {
     label: "Submit your build",
     href: `/12-days-of-workflows/build-a-thon?ref=${REF}-hero`,

@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useRef } from "react";
 import Image from "next/image";
 import Link from "next/link";
 import { motion } from "motion/react";
@@ -26,38 +26,6 @@ const entry = (delayMs: number) => ({
   animate: { opacity: 1, y: 0 } as const,
   transition: { ...tweens.entry, delay: delayMs / 1000 },
 });
-
-/** `npm install inngest` as a button that copies itself. */
-function InstallButton() {
-  const [copied, setCopied] = useState(false);
-  useEffect(() => {
-    if (!copied) return;
-    const id = window.setTimeout(() => setCopied(false), 2000);
-    return () => window.clearTimeout(id);
-  }, [copied]);
-
-  return (
-    <button
-      type="button"
-      onClick={() => {
-        navigator.clipboard
-          ?.writeText(HERO.install)
-          .then(() => setCopied(true))
-          .catch(() => {});
-      }}
-      aria-label={`Copy ${HERO.install}`}
-      className={buttonClass("ink") + " gap-3 !font-v1Mono !text-[14px]"}
-    >
-      <span aria-hidden="true" className="text-[#0BDD48]">
-        $
-      </span>
-      {HERO.install}
-      <span aria-live="polite" className="text-[12px] text-white/60">
-        {copied ? "Copied" : "Copy"}
-      </span>
-    </button>
-  );
-}
 
 /**
  * Poster-style hero: salmon field, a huge white line, a mono line, a
@@ -135,7 +103,9 @@ export default function Hero() {
             {...entry(540)}
             className="mt-8 flex flex-col items-stretch gap-4 sm:flex-row sm:items-center"
           >
-            <InstallButton />
+            <a href={HERO.signup.href} className={buttonClass("ink")}>
+              {HERO.signup.label}
+            </a>
             <Link
               href={HERO.cta.href}
               prefetch={false}
