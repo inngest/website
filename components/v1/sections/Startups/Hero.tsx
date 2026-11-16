@@ -107,6 +107,7 @@ export default function Hero() {
                   sense to me.
                 </>
               }
+              link={{ href: "/customers/ordinal?ref=startups-testimonial" }}
               caption={
                 <>
                   <span className="block">Francisco Delgado</span>

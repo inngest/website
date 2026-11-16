@@ -1,4 +1,5 @@
 import { type ReactNode } from "react";
+import { refLinkProps } from "@/utils/v1/ref";
 
 export interface FormTestimonialLogo {
   src: string;
@@ -32,7 +33,8 @@ const RESEND_QUOTE = (
  *
  * `caption`, `logo`, and `quote` default to the Resend testimonial; callers
  * can override any of them (the YC page swaps the caption, /startups uses
- * Ordinal) without duplicating the figure markup.
+ * Ordinal) without duplicating the figure markup. Pass `link` to add a
+ * "Read the story" link to that customer's case study.
  */
 export default function FormTestimonial({
   caption = (
@@ -43,12 +45,15 @@ export default function FormTestimonial({
   ),
   logo = RESEND_LOGO,
   quote = RESEND_QUOTE,
+  link,
 }: {
   caption?: ReactNode;
   /** Defaults to the Resend logo; pass another customer's lockup to
    *  swap the quote (e.g. /startups uses Ordinal). */
   logo?: FormTestimonialLogo;
   quote?: ReactNode;
+  /** Optional link to the customer's story, shown under the caption. */
+  link?: { href: string; label?: string };
 }) {
   return (
     <figure className="flex flex-col items-start gap-8">
@@ -67,6 +72,20 @@ export default function FormTestimonial({
           {caption}
         </figcaption>
       </blockquote>
+      {link && (
+        <a
+          {...refLinkProps(link.href)}
+          className="group/story text-v1-label-sm inline-flex items-baseline uppercase text-v1-frost motion-safe:transition-colors hover:text-v1-accent-salmon"
+        >
+          {link.label ?? "Read the story"}
+          <span
+            aria-hidden="true"
+            className="ml-2 inline-block motion-safe:transition-transform group-hover/story:translate-x-[6px]"
+          >
+            →
+          </span>
+        </a>
+      )}
     </figure>
   );
 }
