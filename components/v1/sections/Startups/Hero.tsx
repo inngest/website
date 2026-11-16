@@ -1,4 +1,5 @@
 import Image from "next/image";
+import ButtonLink from "@/components/v1/ButtonLink";
 import { refLinkProps } from "@/utils/v1/ref";
 import LogoStrip from "@/components/v1/sections/Home/LogoStrip";
 import FormTestimonial from "@/components/v1/sections/shared/FormTestimonial";
@@ -30,6 +31,12 @@ export default function Hero() {
         same.
       </p>
 
+      <div className="mt-8 flex justify-center">
+        <ButtonLink href="#apply" variant="accent" size="md">
+          Apply now
+        </ButtonLink>
+      </div>
+
       <HowItWorks />
 
       {/* Social proof sits between the steps and the form, so the logos
@@ -41,7 +48,10 @@ export default function Hero() {
       </div>
 
       <div className="mt-12 grid grid-cols-1 gap-y-12 lg:mt-[52px] lg:grid-cols-[1fr_1fr] lg:items-start lg:gap-x-12 lg:gap-y-0 lg:px-[70px]">
-        <div className="max-w-[600px] rounded-[4px] border border-v1-steel/20 bg-v1-surfaceElevated p-6 sm:p-8">
+        <div
+          id="apply"
+          className="max-w-[600px] scroll-mt-28 rounded-[4px] border border-v1-steel/20 bg-v1-surfaceElevated p-6 sm:p-8"
+        >
           <StartupForm />
         </div>
 

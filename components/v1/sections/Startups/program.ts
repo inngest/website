@@ -15,6 +15,9 @@ export const PROGRAM_RULES = {
   maxRaisedLabel: "$5M",
 } as const;
 
+/** Review turnaround promised on the page, the FAQ, and the confirmation. */
+export const REVIEW_TIME_LABEL = "5 to 7 business days";
+
 const CURRENT_YEAR = new Date().getFullYear();
 const OLDEST_ELIGIBLE_YEAR = CURRENT_YEAR - PROGRAM_RULES.maxCompanyAgeYears;
 

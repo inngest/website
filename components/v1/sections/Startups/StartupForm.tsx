@@ -16,6 +16,7 @@ import {
   HEADCOUNT_OPTIONS,
   TOTAL_RAISED_OPTIONS,
   ineligibilityReasons,
+  REVIEW_TIME_LABEL,
 } from "./program";
 
 // Modeled on `YCForm` (same honeypot, spam scoring, analytics/GTM
@@ -157,7 +158,7 @@ export default function StartupForm() {
         </h2>
         <p className="text-v1-body-sm-loose text-v1-frost/70">
           Our team will review it against the program criteria and email you at{" "}
-          {email} once there&apos;s a decision.
+          {email} within {REVIEW_TIME_LABEL}.
         </p>
         <p className="text-v1-body-sm-loose text-v1-frost/70">
           While you wait, start building on the Free plan.{" "}

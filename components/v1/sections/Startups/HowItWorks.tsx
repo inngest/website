@@ -1,5 +1,6 @@
 import { SIGN_UP_URL } from "@/components/v1/nav-config";
 import { appendRef } from "@/utils/v1/ref";
+import { REVIEW_TIME_LABEL } from "./program";
 
 // Sign up first, then apply: approved startups need an account anyway,
 // and anyone who signs up starts building on the Free plan while their
@@ -19,7 +20,7 @@ export default function HowItWorks() {
           Create a free account
         </h2>
         <p className={bodyClassName}>
-          Start building on the Free plan.{" "}
+          It&apos;s free and takes a couple of minutes.{" "}
           <a
             href={appendRef(SIGN_UP_URL, "startups-apply")}
             target="_blank"
@@ -34,7 +35,8 @@ export default function HowItWorks() {
         <span className={stepClassName}>Step 2</span>
         <h2 className="text-v1-heading-sm text-v1-frost">Apply</h2>
         <p className={bodyClassName}>
-          Use your Inngest account email in the form below.
+          Use your Inngest account email in the form below. We&apos;ll reply
+          within {REVIEW_TIME_LABEL}.
         </p>
       </li>
       <li className={cardClassName}>

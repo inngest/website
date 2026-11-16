@@ -1,7 +1,7 @@
 import SharedFaq, {
   type Faq as FaqItem,
 } from "@/components/v1/sections/AI/Faq";
-import { PROGRAM_RULES } from "./program";
+import { PROGRAM_RULES, REVIEW_TIME_LABEL } from "./program";
 
 const FAQS: FaqItem[] = [
   {
@@ -58,7 +58,7 @@ const FAQS: FaqItem[] = [
     id: "review",
     question: "How are applications reviewed?",
     answer:
-      "Our team checks each application against the criteria above. If you're approved, we'll email you next steps for adding a payment method and upgrading to Pro with your discount applied.",
+      `Our team checks each application against the criteria above and replies within ${REVIEW_TIME_LABEL}. If you're approved, we'll email you next steps for adding a payment method and upgrading to Pro with your discount applied.`,
   },
   {
     id: "apply-again",
