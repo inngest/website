@@ -262,9 +262,15 @@ function Door({
             <p className="text-[14px] leading-[20px] text-[#010101]/75">
               {day.body}
             </p>
-            <pre className="shrink-0 overflow-x-auto rounded-md bg-[#010101] p-3 font-v1Mono text-[12px] leading-[18px] text-[#0BDD48]">
-              <code>{day.code}</code>
-            </pre>
+            <div className="relative shrink-0">
+              <pre className="overflow-x-auto rounded-md bg-[#010101] p-3 pr-16 font-v1Mono text-[12px] leading-[18px] text-[#0BDD48]">
+                <code>{day.code}</code>
+              </pre>
+              <CopyButton
+                text={day.code}
+                label={`Copy the Day ${day.day} code`}
+              />
+            </div>
             {/* Sign-ups from each door are attributed to its day, and carry
                 the visitor id so Customer.io can tie them to email sign-ups. */}
             <a
@@ -513,5 +519,55 @@ function LockIcon({ open }: { open: boolean }) {
         }
       />
     </svg>
+  );
+}
+
+/**
+ * Copies `text`: the Clipboard API where it's allowed, else the old
+ * hidden-textarea copy. Resolves false if neither works.
+ */
+async function copyText(text: string): Promise<boolean> {
+  try {
+    await navigator.clipboard.writeText(text);
+    return true;
+  } catch {
+    const area = document.createElement("textarea");
+    area.value = text;
+    area.setAttribute("readonly", "");
+    area.style.position = "fixed";
+    area.style.opacity = "0";
+    document.body.appendChild(area);
+    area.select();
+    let ok = false;
+    try {
+      ok = document.execCommand("copy");
+    } catch {
+      ok = false;
+    }
+    area.remove();
+    return ok;
+  }
+}
+
+/** Copies a door's code sample; says "Copied" for two seconds. */
+function CopyButton({ text, label }: { text: string; label: string }) {
+  const [copied, setCopied] = useState(false);
+  useEffect(() => {
+    if (!copied) return;
+    const id = window.setTimeout(() => setCopied(false), 2000);
+    return () => window.clearTimeout(id);
+  }, [copied]);
+
+  return (
+    <button
+      type="button"
+      aria-label={label}
+      onClick={() => {
+        copyText(text).then((ok) => ok && setCopied(true));
+      }}
+      className="absolute right-2 top-2 rounded border border-[#0BDD48]/60 bg-[#010101] px-2 py-0.5 font-v1Label text-[11px] text-[#0BDD48] hover:bg-[#0BDD48] hover:text-[#010101] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#ECFE08]"
+    >
+      <span aria-live="polite">{copied ? "Copied" : "Copy"}</span>
+    </button>
   );
 }
