@@ -321,6 +321,11 @@ export const FINALE = {
     title: "12 Days of Workflows: the finale",
     live: "Live",
   },
+  /** The player and this button both go to the countdown / stream page. */
+  watch: {
+    label: "Join us live",
+    href: `/12-days-of-workflows/live?ref=${REF}-finale`,
+  },
   image: "/assets/v1/12-days/finale.webp",
   imageAlt:
     "A cat's paw nudges an eyeball off a shelf and down a green ramp toward a funnel balanced on the head of a woman with green lips and big curly buns.",

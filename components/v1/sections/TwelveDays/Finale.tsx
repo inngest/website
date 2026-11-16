@@ -2,6 +2,7 @@
 
 import Image from "next/image";
 import { motion } from "motion/react";
+import Link from "next/link";
 import { reveals } from "@/utils/v1/reveals";
 import {
   COLORS,
@@ -9,7 +10,11 @@ import {
   LIVESTREAM,
 } from "@/components/v1/sections/TwelveDays/data";
 import LivestreamForm from "@/components/v1/sections/TwelveDays/LivestreamForm";
-import { Chip, POSTER_TITLE } from "@/components/v1/sections/TwelveDays/poster";
+import {
+  buttonClass,
+  Chip,
+  POSTER_TITLE,
+} from "@/components/v1/sections/TwelveDays/poster";
 
 /**
  * The finale: a live CodeTV episode building a Rube Goldberg machine
@@ -73,10 +78,15 @@ export default function Finale() {
 
         <motion.div
           {...reveals.item(0)}
-          className="mx-auto w-full max-w-[480px]"
+          className="mx-auto flex w-full max-w-[480px] flex-col gap-6"
         >
-          {/* A YouTube-style player: video area, then the title row. */}
-          <div className="overflow-hidden rounded-xl border-[3px] border-[#010101] bg-white shadow-[8px_8px_0_#010101]">
+          {/* A YouTube-style player: video area, then the title row. The
+              whole thing links to the livestream page. */}
+          <Link
+            href={FINALE.watch.href}
+            aria-label={`${FINALE.watch.label}: ${FINALE.player.title}`}
+            className="group block overflow-hidden rounded-xl border-[3px] border-[#010101] bg-white shadow-[8px_8px_0_#010101] focus-visible:outline focus-visible:outline-4 focus-visible:outline-offset-4 focus-visible:outline-[#ECFE08] motion-safe:transition-transform motion-safe:hover:-translate-y-1"
+          >
             <div className="relative aspect-video overflow-hidden bg-[#F55C50]">
               <Image
                 src={FINALE.image}
@@ -96,7 +106,7 @@ export default function Finale() {
               {/* Play button */}
               <span
                 aria-hidden="true"
-                className="absolute left-1/2 top-1/2 flex h-12 w-[68px] -translate-x-1/2 -translate-y-1/2 items-center justify-center rounded-[14px] bg-[#FF0000]"
+                className="absolute left-1/2 top-1/2 flex h-12 w-[68px] -translate-x-1/2 -translate-y-1/2 items-center justify-center rounded-[14px] bg-[#FF0000] group-hover:scale-110 motion-safe:transition-transform"
               >
                 <span className="ml-1 block h-0 w-0 border-y-[10px] border-l-[17px] border-y-transparent border-l-white" />
               </span>
@@ -117,7 +127,13 @@ export default function Finale() {
                 </span>
               </span>
             </div>
-          </div>
+          </Link>
+          <Link
+            href={FINALE.watch.href}
+            className={buttonClass("ink") + " w-full sm:w-auto sm:self-start"}
+          >
+            {FINALE.watch.label} <span aria-hidden="true">→</span>
+          </Link>
         </motion.div>
       </div>
     </section>
