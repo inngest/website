@@ -455,7 +455,7 @@ export const BUILDATHON = {
   /** Shown after `sent`: the finale is where the winners are picked. */
   register: {
     label: "Register for the livestream",
-    href: `/12-days-of-workflows/livestream?ref=${REF}-build-a-thon-sent`,
+    href: `/12-days-of-workflows?ref=${REF}-build-a-thon-sent#register`,
   },
   failed: "That didn't go through. Try again?",
   back: {
@@ -536,11 +536,22 @@ export const LIVESTREAM = {
   live: {
     chips: ["Live on CodeTV"],
     title: "12 Days of Workflows: the finale",
-    soon: "The stream will play right here. Save your spot and we'll email you before we go live.",
+    /** The countdown in place of the player, before the stream. */
+    countdown: {
+      lead: "Come back in",
+      tail: "for the livestream.",
+      units: {
+        day: ["day", "days"],
+        hour: ["hour", "hours"],
+        minute: ["minute", "minutes"],
+      },
+      /** Once the start time passes and the player isn't set up yet. */
+      starting: "We're going live any second. Refresh in a moment.",
+    },
     youtube: "Watch on YouTube",
     register: {
       label: "Save your spot",
-      href: `/12-days-of-workflows/livestream?ref=${REF}-live`,
+      href: `/12-days-of-workflows?ref=${REF}-live#register`,
     },
     back: {
       label: "Back to the calendar",
