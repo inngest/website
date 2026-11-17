@@ -43,6 +43,7 @@ export default function StartupForm() {
   const [totalRaised, setTotalRaised] = useState("");
   const [investor, setInvestor] = useState("");
   const [linkedinUrl, setLinkedinUrl] = useState("");
+  const [githubUrl, setGithubUrl] = useState("");
   const [crunchbaseUrl, setCrunchbaseUrl] = useState("");
   const [survey, setSurvey] = useState("");
   const [message, setMessage] = useState("");
@@ -89,6 +90,7 @@ export default function StartupForm() {
       totalRaised: raised,
       investor,
       linkedinUrl,
+      githubUrl,
       crunchbaseUrl,
     };
 
@@ -131,6 +133,7 @@ export default function StartupForm() {
         total_raised: raised,
         investor_or_accelerator: investor,
         linkedin_url: linkedinUrl,
+        github_url: githubUrl,
         crunchbase_url: crunchbaseUrl,
         ...(firstTouch || {}),
       });
@@ -315,11 +318,23 @@ export default function StartupForm() {
         <TextField
           id="startup-linkedin"
           type="url"
-          label="LinkedIn company page"
-          required
+          label="LinkedIn company page (optional, speeds up review)"
           placeholder="https://www.linkedin.com/company/..."
           value={linkedinUrl}
           onChange={setLinkedinUrl}
+          className={fieldClassName}
+          labelClassName={labelClassName}
+        />
+
+        {/* Fallback for teams without a LinkedIn page: support checks
+            team size here instead. */}
+        <TextField
+          id="startup-github"
+          type="url"
+          label="GitHub org or team page (optional)"
+          placeholder="https://github.com/..."
+          value={githubUrl}
+          onChange={setGithubUrl}
           className={fieldClassName}
           labelClassName={labelClassName}
         />

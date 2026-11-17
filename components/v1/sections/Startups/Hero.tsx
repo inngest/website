@@ -64,7 +64,7 @@ export default function Hero() {
               </li>
               <li>
                 {PROGRAM_RULES.minEmployees} to {PROGRAM_RULES.maxEmployees}{" "}
-                employees, as shown on your LinkedIn company page
+                employees
               </li>
               <li>
                 Bootstrapped, or raised between {PROGRAM_RULES.minRaisedLabel}{" "}
