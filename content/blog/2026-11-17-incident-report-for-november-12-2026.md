@@ -1,7 +1,6 @@
 ---
 focus: false
 featured: false
-hide: true
 heading: "Incident report for November 12, 2026 - Missed function runs"
 subtitle: A report on a scheduling edge case that prevented some events from starting their expected function runs.
 image: /assets/blog/incident-post-mortem.svg
