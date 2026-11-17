@@ -53,11 +53,14 @@ Pipes, `&&`, redirects, and shell builtins need a shell, so use `$.sh`.
 ```typescript {{ title: "TypeScript" }}
 await sb.$.sh`ls ${dir} | wc -l`;      // quoted for you
 await sb.$.sh`ls "${dir}"`;            // throws: no values inside quotes or after a backslash
+await sb.$.sh`printf %s ${text} > notes.txt`; // writes untrusted text literally
 ```
 
 <SdkUnsupported title="Python" feature="Sandboxes" />
 <SdkUnsupported title="Go" feature="Sandboxes" />
 </CodeGroup>
+
+A heredoc body ignores the quotes around a value, so a `$.sh` template with values can't contain `<<` anywhere in its text, even quoted or escaped. It throws before the command starts. To write untrusted text to a file, use `` printf %s ${value} `` instead of a heredoc. A heredoc with no values, or `<<` inside a value, still works.
 
 In `$` and `$.sh`:
 
