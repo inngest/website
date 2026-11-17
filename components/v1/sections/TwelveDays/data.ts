@@ -325,7 +325,8 @@ export const SIGNUP = {
   placeholder: "you@company.com",
   button: "Email me when doors open",
   sending: "Signing you up…",
-  sent: "You're on the list. See you at the next door.",
+  sent: "You're on the list.",
+  sentBody: "We'll email you the moment each new door opens.",
   failed: "That didn't go through. Try again?",
 } as const;
 
@@ -684,9 +685,15 @@ export const RAFFLE = {
   notYet: "The raffle opens with the first door on December 7.",
   closed: "Entries are closed. See you at the draw.",
   rules: {
-    lead: "No purchase necessary.",
+    lead: "No purchase necessary. Open to people in the US with an Inngest account under the email they enter.",
     label: "Official rules",
     href: `/12-days-of-workflows/raffle-rules?ref=${REF}-raffle`,
+  },
+  /** Winners need an Inngest account under the email they entered. */
+  account: {
+    lead: "No Inngest account yet?",
+    label: "Start free in cloud",
+    href: `/sign-up?ref=${REF}-raffle`,
   },
   dialog: {
     title: (day: number) => `Day ${day} raffle`,

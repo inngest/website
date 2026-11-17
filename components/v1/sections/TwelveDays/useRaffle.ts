@@ -55,6 +55,28 @@ export function saveEntry(day: number, name: string, email: string) {
   window.dispatchEvent(new CustomEvent(CHANGED, { detail: next }));
 }
 
+const PROMPTED_KEY = "12-days-of-workflows:raffle-prompted";
+
+/**
+ * True the first time it's called for `day` in this browser, and false
+ * after: the pop-up opens on its own at most once a day, so closing it
+ * sticks. The buttons still open it any time.
+ */
+export function claimAutoPrompt(day: number): boolean {
+  if (read().days.includes(day)) return false;
+  try {
+    const raw = window.localStorage.getItem(PROMPTED_KEY);
+    const prompted: unknown = raw ? JSON.parse(raw) : [];
+    const list = Array.isArray(prompted) ? prompted : [];
+    if (list.includes(day)) return false;
+    window.localStorage.setItem(PROMPTED_KEY, JSON.stringify([...list, day]));
+    return true;
+  } catch {
+    // Blocked storage: don't nag on every visit.
+    return false;
+  }
+}
+
 /** Opens the raffle pop-up for `day` (RaffleDialog listens). */
 export function openRaffle(day: number) {
   window.dispatchEvent(new CustomEvent(OPEN, { detail: day }));

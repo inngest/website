@@ -26,6 +26,7 @@ import {
   useOpenedDoors,
 } from "@/components/v1/sections/TwelveDays/useCalendarClock";
 import {
+  claimAutoPrompt,
   openRaffle,
   useRaffleState,
 } from "@/components/v1/sections/TwelveDays/useRaffle";
@@ -72,6 +73,18 @@ export default function AdventCalendar({ now }: { now: Date | null }) {
   // The day whose raffle is open, and the days this browser has entered.
   const raffleDay = now ? raffleDayAt(now) : null;
   const { days: entered } = useRaffleState();
+
+  // Offer today's raffle once a day when the doors come into view. If
+  // today's door still has to be held open, the offer waits for that
+  // (onOpened below) so the door gets its moment first.
+  const todayNeedsHold = today !== undefined && !opened.includes(today);
+  useEffect(() => {
+    if (!inView || raffleDay === null || todayNeedsHold) return;
+    const id = window.setTimeout(() => {
+      if (claimAutoPrompt(raffleDay)) openRaffle(raffleDay);
+    }, 1500);
+    return () => window.clearTimeout(id);
+  }, [inView, raffleDay, todayNeedsHold]);
 
   return (
     <section
@@ -126,8 +139,10 @@ export default function AdventCalendar({ now }: { now: Date | null }) {
                   onOpened={() => {
                     markOpened(day.day);
                     // Once the shutter is up, offer today's raffle.
-                    if (day.day === raffleDay && !entered.includes(day.day)) {
-                      window.setTimeout(() => openRaffle(day.day), 1200);
+                    if (day.day === raffleDay) {
+                      window.setTimeout(() => {
+                        if (claimAutoPrompt(day.day)) openRaffle(day.day);
+                      }, 1200);
                     }
                   }}
                   raffle={

@@ -19,6 +19,42 @@ import {
  * entry period, odds, prizes and their value, the draw, how winners are
  * notified, void where prohibited).
  */
+/**
+ * Draft terms. US location and a matching Inngest account are the
+ * campaign's requirements; the rest are common sweepstakes terms for
+ * legal to confirm or replace.
+ */
+const TERMS = [
+  {
+    title: "Located in the US",
+    body: "You must be located in the United States when you enter and when the prize is awarded. Prizes ship only to US addresses.",
+  },
+  {
+    title: "A valid Inngest account",
+    body: "You must have a valid Inngest account, free or paid, registered to the same email address you enter with. Entries without a matching account when the winner is drawn aren't eligible. A free account qualifies, so no purchase is necessary.",
+  },
+  {
+    title: "One entry per person per day",
+    body: "Enter once per day, December 7–18, while that day's door is open (each day's raffle closes at midnight Eastern when the next door opens). Extra entries for the same day don't count.",
+  },
+  {
+    title: "How winners are picked",
+    body: "Each day's winner is drawn at random from that day's eligible entries. Every eligible entry also counts toward the grand prize, drawn live on CodeTV on December 29.",
+  },
+  {
+    title: "Contacting winners",
+    body: "We'll email winners at the address they entered with. If a winner doesn't reply within 7 days, or isn't eligible, we'll draw another winner.",
+  },
+  {
+    title: "Prizes",
+    body: "Prizes can't be transferred or exchanged for cash. We may substitute a prize of equal or greater value if one isn't available.",
+  },
+  {
+    title: "Who can't enter",
+    body: "Inngest employees and their immediate families aren't eligible.",
+  },
+];
+
 export default function TwelveDaysRaffleRules() {
   return (
     <PageShell>
@@ -44,6 +80,16 @@ export default function TwelveDaysRaffleRules() {
             every entry also counts toward the grand prize, drawn live on CodeTV
             on December 29.
           </p>
+          <h2 className="font-sans text-[24px] font-black">
+            Terms and conditions
+          </h2>
+          <ol className="flex list-decimal flex-col gap-3 pl-6 text-[16px] leading-[26px]">
+            {TERMS.map((t) => (
+              <li key={t.title}>
+                <strong>{t.title}.</strong> {t.body}
+              </li>
+            ))}
+          </ol>
           <h2 className="font-sans text-[24px] font-black">
             Daily prizes and approximate retail value
           </h2>

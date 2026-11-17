@@ -277,6 +277,17 @@ export default function RaffleDialog() {
                 {RAFFLE.rules.label}
               </Link>
             </p>
+            <p className="font-v1Label text-[12px] text-[#010101]/70">
+              {RAFFLE.account.lead}{" "}
+              <a
+                href={RAFFLE.account.href}
+                target="_blank"
+                rel="noopener"
+                className="underline underline-offset-4 hover:no-underline"
+              >
+                {RAFFLE.account.label} <span aria-hidden="true">↗</span>
+              </a>
+            </p>
           </form>
         )}
       </div>

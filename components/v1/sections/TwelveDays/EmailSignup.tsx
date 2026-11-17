@@ -107,12 +107,25 @@ export default function EmailSignup() {
 
   if (status === "sent") {
     return (
-      <p
+      <div
         role="status"
-        className="font-v1Label text-[16px] leading-[1.3] text-[#ECFE08]"
+        className="flex w-full max-w-[620px] items-center gap-4 rounded-xl border-[3px] border-[#010101] bg-[#ECFE08] p-4 text-[#010101] shadow-[6px_6px_0_#010101] sm:p-5"
       >
-        {SIGNUP.sent}
-      </p>
+        <span
+          aria-hidden="true"
+          className="flex h-11 w-11 shrink-0 items-center justify-center rounded-full bg-[#010101] text-[22px] font-black text-[#ECFE08]"
+        >
+          ✓
+        </span>
+        <span className="flex flex-col gap-1">
+          <span className="font-sans text-[22px] font-black leading-[1.1] tracking-[-0.01em]">
+            {SIGNUP.sent}
+          </span>
+          <span className="font-v1Label text-[14px] leading-[1.4]">
+            {SIGNUP.sentBody}
+          </span>
+        </span>
+      </div>
     );
   }
 
