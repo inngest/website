@@ -16,6 +16,8 @@ _All timestamps are in UTC._
 
 On November 12, 2026, from 19:25 to 19:43 UTC, a scheduling edge case prevented some events received by Inngest Cloud from starting their expected function runs. Inngest accepted and stored the events, but a queue routing failure caused retries to be incorrectly treated as duplicates. Affected events appeared in the dashboard without a corresponding run or failure record. We fixed this edge case in the November 13 release.
 
+The issue affected a subset of customers. Scheduling requests failed only when they passed through one queue proxy instance and needed the shared queue shard missing from its routing table. Enterprise workloads on Dedicated Infrastructure use separate queue shards and were unaffected.
+
 ## What Happened
 
 When Inngest receives an event, the Event API validates it and publishes it to an internal event stream. Our scheduling service reads that stream, finds functions whose triggers match the event, and applies their flow-control settings. When a function is ready to start, the scheduler records the initial run state and sends the first unit of work to the queue. An executor picks up that work and calls the function on your infrastructure. You can learn more about this in our documentation on [Inngest Cloud architecture](/docs/platform-and-operations/cloud-architecture-and-security?ref=blog-incident-report-for-november-12-2026#from-event-to-run).
