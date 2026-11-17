@@ -503,6 +503,71 @@ export const BUILDATHON_TEASER = {
 } as const;
 
 /**
+ * The door whose raffle is open at `now`, or null. A day's raffle opens
+ * with its door and closes when the next door opens (the last one stays
+ * open for a day), so each entry counts for its own day only.
+ */
+export function raffleDayAt(now: Date): number | null {
+  const t = now.getTime();
+  for (let day = UNLOCK_DATES.length; day >= 1; day--) {
+    const opens = unlockAt(day).getTime();
+    if (t < opens) continue;
+    const closes =
+      day < UNLOCK_DATES.length
+        ? unlockAt(day + 1).getTime()
+        : opens + 24 * 60 * 60 * 1000;
+    return t < closes ? day : null;
+  }
+  return null;
+}
+
+/**
+ * The daily raffle (RaffleSection.tsx, RaffleDialog.tsx). One entry per
+ * door per person; all entries go into one draw on the finale stream.
+ *
+ * TODO before launch: real prizes, and the official rules at
+ * /12-days-of-workflows/raffle-rules. Both are placeholders.
+ */
+export const RAFFLE = {
+  eyebrow: "The daily raffle",
+  title: ["Open a door.", "Enter the raffle."],
+  body: "Every door you open is one more entry. Enter on all twelve days and you've got twelve chances at the prizes. We draw the winners live on CodeTV on December 29.",
+  steps: [
+    "Open today's door.",
+    "Enter the day's raffle. One entry per day.",
+    "Watch the draw live on December 29.",
+  ],
+  prizesTitle: "Up for grabs",
+  /** TODO: real prizes. */
+  prizes: [
+    { name: "Grand prize: TBD", note: "Placeholder. Something very nice." },
+    { name: "Runner-up prize: TBD", note: "Placeholder. Also very nice." },
+  ],
+  tracker: "Your entries",
+  enter: "Enter today's raffle",
+  entered: "You're in for today",
+  notYet: "The raffle opens with the first door on December 7.",
+  closed: "Entries are closed. See you at the draw.",
+  rules: {
+    lead: "No purchase necessary.",
+    label: "Official rules",
+    href: `/12-days-of-workflows/raffle-rules?ref=${REF}-raffle`,
+  },
+  dialog: {
+    title: (day: number) => `Day ${day} raffle`,
+    body: "Enter for a shot at the prizes. You'll also get an email when each new door opens.",
+    name: "Name",
+    email: "Work email",
+    button: "Enter the raffle",
+    sending: "Entering…",
+    sent: (day: number) =>
+      `You're in for Day ${day}. Come back tomorrow for another entry.`,
+    failed: "That didn't go through. Try again?",
+    close: "Close",
+  },
+} as const;
+
+/**
  * The finale livestream: registration at /12-days-of-workflows/livestream
  * and the stream itself at /12-days-of-workflows/live.
  *

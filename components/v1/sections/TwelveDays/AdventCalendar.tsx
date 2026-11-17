@@ -11,6 +11,8 @@ import {
   DOOR_ART,
   DOOR_FACES,
   REF,
+  raffleDayAt,
+  RAFFLE,
   unlockAt,
   unlockLabel,
   type WorkflowDay,
@@ -22,6 +24,10 @@ import {
   formatCountdown,
   useOpenedDoors,
 } from "@/components/v1/sections/TwelveDays/useCalendarClock";
+import {
+  openRaffle,
+  useRaffleState,
+} from "@/components/v1/sections/TwelveDays/useRaffle";
 import {
   POSTER_EYEBROW,
   POSTER_TITLE,
@@ -61,6 +67,10 @@ export default function AdventCalendar({ now }: { now: Date | null }) {
         .reverse()
         .find((d) => unlockAt(d.day).getTime() <= now.getTime())?.day
     : undefined;
+
+  // The day whose raffle is open, and the days this browser has entered.
+  const raffleDay = now ? raffleDayAt(now) : null;
+  const { days: entered } = useRaffleState();
 
   return (
     <section
@@ -111,7 +121,18 @@ export default function AdventCalendar({ now }: { now: Date | null }) {
                   canPop={inView && now !== null}
                   staggerIndex={position}
                   needsHold={day.day === today && !opened.includes(day.day)}
-                  onOpened={() => markOpened(day.day)}
+                  onOpened={() => {
+                    markOpened(day.day);
+                    // Once the shutter is up, offer today's raffle.
+                    if (day.day === raffleDay && !entered.includes(day.day)) {
+                      window.setTimeout(() => openRaffle(day.day), 1200);
+                    }
+                  }}
+                  raffle={
+                    day.day === raffleDay
+                      ? { entered: entered.includes(day.day) }
+                      : null
+                  }
                   countdown={
                     now && day.day === nextDay
                       ? formatCountdown(
@@ -148,6 +169,7 @@ function Door({
   staggerIndex,
   needsHold,
   onOpened,
+  raffle,
   countdown,
 }: {
   day: WorkflowDay;
@@ -156,6 +178,8 @@ function Door({
   staggerIndex: number;
   needsHold: boolean;
   onOpened: () => void;
+  /** Set on the door whose raffle is open today. */
+  raffle: { entered: boolean } | null;
   countdown: string | null;
 }) {
   const reduceMotion = useReducedMotion();
@@ -271,6 +295,18 @@ function Door({
                 label={`Copy the Day ${day.day} code`}
               />
             </div>
+            {raffle && (
+              <button
+                type="button"
+                onClick={() => openRaffle(day.day)}
+                className={
+                  buttonClass(raffle.entered ? "white" : "ink", "sm") +
+                  " shrink-0 self-start"
+                }
+              >
+                {raffle.entered ? `${RAFFLE.entered} ✓` : `${RAFFLE.enter} →`}
+              </button>
+            )}
             {/* Sign-ups from each door are attributed to its day, and carry
                 the visitor id so Customer.io can tie them to email sign-ups. */}
             <a

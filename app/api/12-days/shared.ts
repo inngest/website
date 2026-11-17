@@ -72,24 +72,24 @@ export async function domainTakesMail(email: string): Promise<boolean> {
 }
 
 /**
- * Sends `event` to Segment and answers the form: 201 when it's sent,
- * 502 when Segment refuses, 500 when there's no write key outside local
- * development (so the form says so rather than dropping it).
+ * Sends one track call to Segment from the server. True when Segment
+ * took it (or, in local development without a write key, when it was
+ * logged instead); false when there's no key or Segment refused.
  */
-export async function sendToSegment(
+export async function trackSegment(
   req: Request,
   event: string,
   properties: Record<string, unknown>,
   raw: Record<string, unknown>
-): Promise<NextResponse> {
+): Promise<boolean> {
   const writeKey = process.env.NEXT_PUBLIC_SEGMENT_WRITE_KEY;
   if (!writeKey) {
     if (process.env.NODE_ENV === "development") {
       console.log(`${event} (no Segment write key set)`, properties);
-      return NextResponse.json({ ok: true }, { status: 201 });
+      return true;
     }
     console.error("NEXT_PUBLIC_SEGMENT_WRITE_KEY is not set");
-    return NextResponse.json({ error: "Not configured" }, { status: 500 });
+    return false;
   }
 
   // The browser's Segment anonymous ID ties this to the visitor's
@@ -120,13 +120,29 @@ export async function sendToSegment(
     });
     if (!res.ok) {
       console.error("Segment track failed", res.status, await res.text());
-      return NextResponse.json({ error: "Couldn't send" }, { status: 502 });
+      return false;
     }
   } catch (err) {
     console.error("Segment track failed", err);
-    return NextResponse.json({ error: "Couldn't send" }, { status: 502 });
+    return false;
   }
-  return NextResponse.json({ ok: true }, { status: 201 });
+  return true;
+}
+
+/**
+ * Sends `event` to Segment and answers the form: 201 when it's sent,
+ * 502 when it isn't (no write key, or Segment refused), so the form
+ * says so rather than dropping it.
+ */
+export async function sendToSegment(
+  req: Request,
+  event: string,
+  properties: Record<string, unknown>,
+  raw: Record<string, unknown>
+): Promise<NextResponse> {
+  return (await trackSegment(req, event, properties, raw))
+    ? NextResponse.json({ ok: true }, { status: 201 })
+    : NextResponse.json({ error: "Couldn't send" }, { status: 502 });
 }
 
 /** The answer when the email's domain can't receive mail. */
