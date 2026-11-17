@@ -2,6 +2,7 @@ import { Fragment } from "react";
 import Image from "next/image";
 import Link from "@/components/v1/Link";
 import FooterDotSphere from "@/components/v1/FooterDotSphereLazy";
+import PrivacyChoicesLink from "@/components/v1/PrivacyChoicesLink";
 import { WipeLabel } from "@/components/v1/sections/shared/WipeLabel";
 import { appendRef } from "@/utils/v1/ref";
 
@@ -162,7 +163,7 @@ const LEGAL_LINKS = [
 // Inline legal links, shown in both the mobile and desktop footer rows.
 function LegalLinks() {
   return (
-    <ul className="text-v1-caption flex items-center gap-1 text-v1-frost">
+    <ul className="text-v1-caption flex flex-wrap items-center justify-center gap-1 text-v1-frost">
       {LEGAL_LINKS.map((link, i) => (
         <Fragment key={link.href}>
           {i > 0 && <li aria-hidden="true">|</li>}
@@ -176,6 +177,14 @@ function LegalLinks() {
           </li>
         </Fragment>
       ))}
+      <li aria-hidden="true">|</li>
+      <li>
+        {/* Opens the DataGrail consent preferences (CPRA opt-out link,
+            GDPR consent withdrawal). Falls back to /privacy. */}
+        <PrivacyChoicesLink className="underline underline-offset-2">
+          <WipeLabel>Your Privacy Choices</WipeLabel>
+        </PrivacyChoicesLink>
+      </li>
     </ul>
   );
 }

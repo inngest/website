@@ -15,6 +15,7 @@ import SocialBadges from "./SocialBadges";
 import { useUnreleasedLabels } from "./Unreleased";
 import { toDocsNavPath } from "./docsNavPath";
 import { refLinkProps } from "@/utils/v1/ref";
+import PrivacyChoicesLink from "@/components/v1/PrivacyChoicesLink";
 
 function CheckIcon(props) {
   return (
@@ -238,6 +239,7 @@ function SmallPrint() {
       <div className="text-xs text-slate-600 dark:text-slate-400">
         &copy; {new Date().getFullYear()} Inngest Inc. All rights reserved.
       </div>
+      <PrivacyChoicesLink className="text-xs text-slate-600 underline underline-offset-2 hover:text-slate-900 dark:text-slate-400 dark:hover:text-white" />
       {IS_HIRING && (
         <a
           {...refLinkProps("/about?ref=docs-footer")}
