@@ -4,7 +4,12 @@ import { useEffect, useRef, useState, type FormEvent } from "react";
 import Link from "next/link";
 import { analytics } from "@/utils/segment";
 import { readFirstTouch } from "src/shared/firstTouch";
-import { RAFFLE, REF } from "@/components/v1/sections/TwelveDays/data";
+import {
+  prizeFor,
+  RAFFLE,
+  REF,
+} from "@/components/v1/sections/TwelveDays/data";
+import PrizeSticker from "@/components/v1/sections/TwelveDays/PrizeSticker";
 import {
   EmailTypoHint,
   useEmailTypoCheck,
@@ -177,6 +182,21 @@ export default function RaffleDialog() {
           </div>
         ) : (
           <form onSubmit={handleSubmit} className="flex flex-col gap-4">
+            {day !== null && prizeFor(day) && (
+              <div className="flex items-center gap-4 rounded-lg border-2 border-[#010101] bg-[#010101] p-3 text-white">
+                <span className="flex h-14 w-14 shrink-0 items-center justify-center">
+                  <PrizeSticker prize={prizeFor(day)!} size={48} glow />
+                </span>
+                <span className="flex min-w-0 flex-col">
+                  <span className="font-v1Label text-[12px] text-[#ECFE08]">
+                    {RAFFLE.todaysPrize}
+                  </span>
+                  <span className="font-sans text-[18px] font-black leading-[1.15]">
+                    {prizeFor(day)!.prize}
+                  </span>
+                </span>
+              </div>
+            )}
             <p className="text-[16px] leading-[24px]">{copy.body}</p>
             <div
               aria-hidden="true"

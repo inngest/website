@@ -10,6 +10,7 @@ import {
   DAYS,
   DOOR_ART,
   DOOR_FACES,
+  prizeFor,
   raffleDayAt,
   RAFFLE,
   unlockAt,
@@ -299,6 +300,11 @@ function Door({
             {/* One way on per door: today's raffle, and the docs. Getting
                 started with Inngest lives once, above the grid. */}
             <div className="mt-auto flex flex-col items-start gap-3 pt-1">
+              {raffle && prizeFor(day.day) && (
+                <p className="font-v1Label text-[12px]">
+                  {RAFFLE.todaysPrize}: {prizeFor(day.day)!.prize}
+                </p>
+              )}
               {raffle && (
                 <button
                   type="button"

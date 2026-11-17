@@ -543,27 +543,141 @@ export function raffleDayAt(now: Date): number | null {
 }
 
 /**
- * The daily raffle (RaffleSection.tsx, RaffleDialog.tsx). One entry per
- * door per person; all entries go into one draw on the finale stream.
+ * One prize a day, each a pun on that day's lesson. Drawn from that
+ * day's entries; every entry also counts toward the grand prize on the
+ * finale stream. `value` is the approximate retail value in USD, for the
+ * official rules (check prices when buying).
  *
- * TODO before launch: real prizes, and the official rules at
- * /12-days-of-workflows/raffle-rules. Both are placeholders.
+ * `emoji` stands in for the prize art until there are transparent
+ * product cutouts: set `image` (e.g. "/assets/v1/12-days/prizes/day-1.png")
+ * and the calendar shows that instead.
+ */
+export type DailyPrize = {
+  day: number;
+  prize: string;
+  pun: string;
+  value: number;
+  emoji: string;
+  image?: string;
+};
+
+export const DAILY_PRIZES: DailyPrize[] = [
+  {
+    day: 1,
+    prize: "Garmin running watch",
+    pun: "Count every step.",
+    value: 300,
+    emoji: "⌚",
+  },
+  {
+    day: 2,
+    prize: "Bambu Lab A1 mini 3D printer",
+    pun: "Fail fast, print again.",
+    value: 300,
+    emoji: "🖨️",
+  },
+  {
+    day: 3,
+    prize: "Sony noise-cancelling headphones",
+    pun: "Invoke focus.",
+    value: 350,
+    emoji: "🎧",
+  },
+  {
+    day: 4,
+    prize: "Ember mug + coffee subscription",
+    pun: "Wait for it…",
+    value: 250,
+    emoji: "☕",
+  },
+  {
+    day: 5,
+    prize: "Kindle Paperwhite Signature",
+    pun: "Sleep in. Cancel your plans. Read.",
+    value: 200,
+    emoji: "📖",
+  },
+  {
+    day: 6,
+    prize: "Nintendo Switch 2",
+    pun: "Two players, one console.",
+    value: 450,
+    emoji: "🎮",
+  },
+  {
+    day: 7,
+    prize: "Running gear bundle",
+    pun: "Pace yourself.",
+    value: 300,
+    emoji: "👟",
+  },
+  {
+    day: 8,
+    prize: "Custom mechanical keyboard",
+    pun: "Every keypress, debounced.",
+    value: 300,
+    emoji: "⌨️",
+  },
+  {
+    day: 9,
+    prize: "LEGO mega set",
+    pun: "One box, many parts.",
+    value: 350,
+    emoji: "🧱",
+  },
+  {
+    day: 10,
+    prize: "Desk upgrade: light bar + MX mouse and keys",
+    pun: "Your desk, prioritized.",
+    value: 350,
+    emoji: "💡",
+  },
+  {
+    day: 11,
+    prize: "Breville espresso machine",
+    pun: "Batch your caffeine.",
+    value: 400,
+    emoji: "🫘",
+  },
+  {
+    day: 12,
+    prize: "Meta Quest 3S",
+    pun: "Evaluate reality.",
+    value: 300,
+    emoji: "🥽",
+  },
+];
+
+export function prizeFor(day: number): DailyPrize | undefined {
+  return DAILY_PRIZES.find((p) => p.day === day);
+}
+
+/**
+ * The daily raffle (RaffleSection.tsx, RaffleDialog.tsx). One entry per
+ * door per person; each day's entries win that day's prize, and every
+ * entry also counts toward the grand prize on the finale stream.
+ *
+ * TODO before launch: the grand prize, and the official rules at
+ * /12-days-of-workflows/raffle-rules.
  */
 export const RAFFLE = {
   eyebrow: "The daily raffle",
-  title: ["Open a door.", "Enter the raffle."],
-  body: "Every door you open is one more entry. Enter on all twelve days and you've got twelve chances at the prizes. We draw the winners live on CodeTV on December 29.",
+  title: ["A prize a day.", "Open the door to enter."],
+  body: "Every door has a prize behind it. Enter on the day to win that day's prize, and every entry also counts toward the grand prize, drawn live on CodeTV on December 29.",
   steps: [
     "Open today's door.",
     "Enter the day's raffle. One entry per day.",
-    "Watch the draw live on December 29.",
+    "Win today's prize, or the grand prize on December 29.",
   ],
-  prizesTitle: "Up for grabs",
-  /** TODO: real prizes. */
-  prizes: [
-    { name: "Grand prize: TBD", note: "Placeholder. Something very nice." },
-    { name: "Runner-up prize: TBD", note: "Placeholder. Also very nice." },
-  ],
+  calendar: {
+    title: "December",
+    today: "Today",
+    entered: "Entered",
+    grand: "Grand prize, drawn live on CodeTV",
+    /** TODO: the grand prize. */
+    grandPrize: "TBD",
+  },
+  todaysPrize: "Today's prize",
   tracker: "Your entries",
   enter: "Enter today's raffle",
   entered: "You're in for today",
@@ -576,7 +690,7 @@ export const RAFFLE = {
   },
   dialog: {
     title: (day: number) => `Day ${day} raffle`,
-    body: "Enter for a shot at the prizes. You'll also get an email when each new door opens.",
+    body: "Enter to win today's prize. Your entry also counts toward the grand prize, and you'll get an email when each new door opens.",
     name: "Name",
     email: "Work email",
     button: "Enter the raffle",

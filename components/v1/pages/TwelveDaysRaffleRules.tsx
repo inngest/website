@@ -1,6 +1,11 @@
 import Link from "next/link";
 import PageShell from "@/components/v1/PageShell";
-import { COLORS, REF } from "@/components/v1/sections/TwelveDays/data";
+import {
+  COLORS,
+  DAILY_PRIZES,
+  REF,
+  UNLOCK_DATES,
+} from "@/components/v1/sections/TwelveDays/data";
 import {
   buttonClass,
   POSTER_TITLE,
@@ -35,8 +40,33 @@ export default function TwelveDaysRaffleRules() {
           </p>
           <p className="text-[18px] leading-[28px]">
             No purchase necessary. One entry per person per day, December 7–18.
-            Winners are drawn live on CodeTV on December 29.
+            Each day&rsquo;s prize is drawn from that day&rsquo;s entries, and
+            every entry also counts toward the grand prize, drawn live on CodeTV
+            on December 29.
           </p>
+          <h2 className="font-sans text-[24px] font-black">
+            Daily prizes and approximate retail value
+          </h2>
+          <table className="w-full border-collapse text-left text-[16px]">
+            <thead>
+              <tr className="border-b-2 border-[#010101] font-v1Label text-[13px]">
+                <th className="py-2 pr-4">Date</th>
+                <th className="py-2 pr-4">Prize</th>
+                <th className="py-2 text-right">ARV (USD)</th>
+              </tr>
+            </thead>
+            <tbody>
+              {DAILY_PRIZES.map((p) => (
+                <tr key={p.day} className="border-b border-[#010101]/20">
+                  <td className="py-2 pr-4 font-v1Label text-[14px]">
+                    Dec {UNLOCK_DATES[p.day - 1]}
+                  </td>
+                  <td className="py-2 pr-4">{p.prize}</td>
+                  <td className="py-2 text-right">${p.value}</td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
           <Link
             href={`/12-days-of-workflows?ref=${REF}-raffle-rules#raffle`}
             className={buttonClass("ink") + " self-start"}

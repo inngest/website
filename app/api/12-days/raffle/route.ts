@@ -7,7 +7,10 @@ import {
   trackSegment,
 } from "@/app/api/12-days/shared";
 import { appendRow } from "@/app/api/12-days/sheets";
-import { raffleDayAt } from "@/components/v1/sections/TwelveDays/data";
+import {
+  prizeFor,
+  raffleDayAt,
+} from "@/components/v1/sections/TwelveDays/data";
 
 export const runtime = "nodejs";
 
@@ -26,8 +29,8 @@ export const runtime = "nodejs";
  *
  * Sheet setup (Vercel, Sensitive): TWELVE_DAYS_RAFFLE_SHEET_ID, plus the
  * service account in sheets.ts. Optional TWELVE_DAYS_RAFFLE_SHEET_RANGE
- * (default "Entries!A:I"). Columns: submitted_at, day, name, email,
- * ref, utm_source, utm_medium, utm_campaign, anonymous_id.
+ * (default "Entries!A:J"). Columns: submitted_at, day, name, email,
+ * ref, utm_source, utm_medium, utm_campaign, anonymous_id, prize.
  *
  * Do not rename either event without Patrick: Segment, Customer.io,
  * Attio and GTM mappings key on the names.
@@ -99,6 +102,7 @@ export async function POST(req: Request) {
   const anonymousId = str(raw.anonymousId, 100) || crypto.randomUUID();
   const ids = { ...raw, anonymousId };
   const ref = str(raw.ref, 100);
+  const prize = prizeFor(day)?.prize ?? "";
   const touch = firstTouch(raw);
   const shared = {
     name,
@@ -113,7 +117,7 @@ export async function POST(req: Request) {
     trackSegment(
       req,
       RAFFLE_EVENT,
-      { ...shared, day, form_type: "12_days_raffle" },
+      { ...shared, day, prize, form_type: "12_days_raffle" },
       ids
     ),
     trackSegment(
@@ -131,7 +135,7 @@ export async function POST(req: Request) {
   }
 
   const sheetId = process.env.TWELVE_DAYS_RAFFLE_SHEET_ID ?? "";
-  const range = process.env.TWELVE_DAYS_RAFFLE_SHEET_RANGE || "Entries!A:I";
+  const range = process.env.TWELVE_DAYS_RAFFLE_SHEET_RANGE || "Entries!A:J";
   after(() =>
     appendRow(sheetId, range, [
       new Date().toISOString(),
@@ -143,6 +147,7 @@ export async function POST(req: Request) {
       touch.first_utm_medium ?? "",
       touch.first_utm_campaign ?? "",
       anonymousId,
+      prize,
     ])
   );
 
