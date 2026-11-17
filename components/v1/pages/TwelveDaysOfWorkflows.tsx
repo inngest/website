@@ -18,9 +18,8 @@ import { useCalendarClock } from "@/components/v1/sections/TwelveDays/useCalenda
  * inngest.com/12-days-of-workflows — the Inngest × CodeTV holiday
  * campaign, in the Build for the Lonng Run brand.
  *
- * Hero → countdown ticker → the advent calendar → the daily raffle →
- * the build-a-thon →
- * the live CodeTV finale → closing quick starts. (The playable machine,
+ * Hero → countdown ticker → the advent calendar → the build-a-thon →
+ * the live CodeTV finale → the daily raffle → closing quick starts. (The playable machine,
  * Machine.tsx, is off the page after Lauren's review.)
  *
  * One clock for the whole page, so the ticker and the doors flip at
@@ -46,9 +45,11 @@ export default function TwelveDaysOfWorkflows({
         <Hero />
         <BuildathonMarquee now={now} />
         <AdventCalendar now={now} />
-        <RaffleSection now={now} />
         <BuildathonTeaser />
         <Finale />
+        {/* Lower priority than the lessons and the build-a-thon. The
+            pop-up still opens from today's door. */}
+        <RaffleSection now={now} />
         {/* The shared closing section sets its buttons and cards in
             caps; this page has none, so they're turned off here. */}
         <div className="[&_*]:!normal-case">

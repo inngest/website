@@ -31,7 +31,7 @@ const TERMS = [
   },
   {
     title: "A valid Inngest account",
-    body: "You must have a valid Inngest account, free or paid, registered to the same email address you enter with. Entries without a matching account when the winner is drawn aren't eligible. A free account qualifies, so no purchase is necessary.",
+    body: "You must have a valid Inngest account, free or paid, registered to the same email address you enter with. If there's no account under your entry email when the winner is drawn, that entry can't win. A free account qualifies, so no purchase is necessary.",
   },
   {
     title: "One entry per person per day",
@@ -39,11 +39,11 @@ const TERMS = [
   },
   {
     title: "How winners are picked",
-    body: "Each day's winner is drawn at random from that day's eligible entries. Every eligible entry also counts toward the grand prize, drawn live on CodeTV on December 29.",
+    body: "Each day's winner is drawn at random from that day's entries after that day's raffle closes.",
   },
   {
     title: "Contacting winners",
-    body: "We'll email winners at the address they entered with. If a winner doesn't reply within 7 days, or isn't eligible, we'll draw another winner.",
+    body: "We'll email winners at the address they entered with. If a winner doesn't reply within 7 days, or doesn't meet these terms, we'll draw another winner for that day.",
   },
   {
     title: "Prizes",
@@ -51,7 +51,7 @@ const TERMS = [
   },
   {
     title: "Who can't enter",
-    body: "Inngest employees and their immediate families aren't eligible.",
+    body: "Inngest employees and their immediate families can't enter.",
   },
 ];
 
@@ -76,9 +76,7 @@ export default function TwelveDaysRaffleRules() {
           </p>
           <p className="text-[18px] leading-[28px]">
             No purchase necessary. One entry per person per day, December 7–18.
-            Each day&rsquo;s prize is drawn from that day&rsquo;s entries, and
-            every entry also counts toward the grand prize, drawn live on CodeTV
-            on December 29.
+            Each day&rsquo;s prize is drawn from that day&rsquo;s entries.
           </p>
           <h2 className="font-sans text-[24px] font-black">
             Terms and conditions

@@ -255,12 +255,6 @@ function PrizeCalendar({
           </li>
         ))}
       </ol>
-      <p className="font-v1Label text-[14px]">
-        <span className="rounded bg-[#010101] px-2 py-1 text-[#ECFE08]">
-          Dec 29
-        </span>{" "}
-        {RAFFLE.calendar.grand}: {RAFFLE.calendar.grandPrize}
-      </p>
     </motion.div>
   );
 }
