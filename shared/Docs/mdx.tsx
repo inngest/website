@@ -17,6 +17,7 @@ import {
 
 import Zoom from "react-medium-image-zoom";
 import "react-medium-image-zoom/dist/styles.css";
+import { refLinkProps } from "@/utils/v1/ref";
 
 export { default as YouTube } from "react-youtube-embed";
 
@@ -25,10 +26,14 @@ export { default as YouTube } from "react-youtube-embed";
 // );
 
 export const a: React.FunctionComponent<
-  React.AnchorHTMLAttributes<HTMLAnchorElement>
-> = ({ children, href, target, rel, download }) => (
+  React.AnchorHTMLAttributes<HTMLAnchorElement> & {
+    /** Set by the rehypeRefLinks MDX plugin; see utils/v1/refLinks.mjs. */
+    "data-ref"?: string;
+  }
+> = ({ children, href, target, rel, download, "data-ref": dataRef }) => (
   <Link
-    href={href}
+    data-ref={dataRef}
+    {...refLinkProps(href)}
     target={target}
     rel={rel}
     download={download}
@@ -298,7 +303,7 @@ export function ButtonDeploy({ label, type, href }) {
 
   return (
     <a
-      href={href}
+      {...refLinkProps(href)}
       target="_blank"
       className="group/deploy block cursor-pointer rounded-lg bg-slate-200 px-6 py-8 text-slate-800 no-underline transition-all hover:bg-indigo-300/60 dark:bg-slate-800/40 dark:text-slate-200 dark:hover:bg-indigo-800/40"
     >
@@ -482,7 +487,7 @@ export function Compatibility({
         return (
           <Link
             key={href}
-            href={href}
+            {...refLinkProps(href)}
             title={
               supported
                 ? `Works with ${label.toLowerCase()}`
@@ -626,6 +631,7 @@ export function Card<T extends React.ElementType = "div">({
         className
       )}
       {...props}
+      {...(props.href != undefined ? refLinkProps(props.href) : {})}
     >
       <div
         className={clsx("flex items-start gap-1 px-6 py-6", {

@@ -2,6 +2,7 @@
 import { useState } from "react";
 import { RiArrowDownSLine } from "@remixicon/react";
 import Link from "next/link";
+import { refLinkProps } from "@/utils/v1/ref";
 
 export default function Dropdown({
   title,
@@ -48,7 +49,7 @@ export default function Dropdown({
           {items.map((item, idx) => (
             <li className="" key={idx}>
               <Link
-                href={item.href}
+                {...refLinkProps(item.href)}
                 target={item.target}
                 className="text-nowrap font-medium text-basis/90 hover:text-inngestLux"
               >

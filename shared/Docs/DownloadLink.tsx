@@ -1,3 +1,4 @@
+import { refLinkProps } from "@/utils/v1/ref";
 type Props = {
   url: string;
   filename: string;
@@ -6,7 +7,7 @@ type Props = {
 
 export const DownloadLink = ({ url, filename, children }: Props) => {
   return (
-    <a href={url} download={filename}>
+    <a {...refLinkProps(url)} download={filename}>
       {children}
     </a>
   );

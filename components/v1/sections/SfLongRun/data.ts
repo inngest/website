@@ -166,8 +166,8 @@ export const SF_CAMPAIGN_CARDS: SfCampaignCard[] = [
   {
     id: "community",
     title: "The Lonng Run Coffee Club.",
-    body: "Free coffee and a little post-run fuel, 7–10 AM on October 22 at Marina Green Field. Out for your morning miles or just passing through? Grab a coffee on us.",
-    detail: "October 22 · Marina Green Field · 7–10 AM",
+    body: "Free coffee and a little post-run fuel, 9–11 AM on Saturday, November 14 at Marina Green Field. Out for your morning miles or just passing through? Grab a coffee on us.",
+    detail: "November 14 · Marina Green Field · 9–11 AM",
     cta: { label: "Register", href: "https://luma.com/inngest-mgvz" },
     image: {
       src: "/assets/v1/sf-long-run/sf-run.png",
@@ -215,10 +215,11 @@ export const SF_RESOURCES: SfResource[] = [
     href: "/blog/all-your-workflows-are-about-to-be-long-running?ref=sf-long-run-resources",
   },
   {
-    id: "visual-primer",
-    kind: "Walkthrough",
-    title: "What are Durable Functions? A visual JavaScript primer",
-    href: "/blog/durable-functions-a-visual-javascript-primer?ref=sf-long-run-resources",
+    id: "ordinal-case-study",
+    kind: "Case study",
+    title:
+      "Built for the Lonng Run: How Ordinal scaled social orchestration to 1K enterprises with just two engineers.",
+    href: "/customers/ordinal?ref=sf-long-run-resources",
   },
   {
     id: "steps-guide",

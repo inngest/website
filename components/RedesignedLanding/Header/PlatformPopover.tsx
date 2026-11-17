@@ -8,6 +8,7 @@ import {
   PopoverTrigger,
   PopoverContent,
 } from "src/components/RedesignedLanding/Header/Popover";
+import { refLinkProps } from "@/utils/v1/ref";
 
 export const platformDropdown = [
   {
@@ -31,7 +32,7 @@ export const platformDropdown = [
   },
   {
     name: "Durable Workflows",
-    href: "/uses/durable-workflows?ref=nav",
+    href: "/platform/durable-execution?ref=nav",
     description: "Learn about durable workflows, retries, and more",
     icon: (
       <svg
@@ -52,7 +53,7 @@ export const platformDropdown = [
   },
   {
     name: "Durable Endpoints",
-    href: "/durable-endpoints?ref=nav",
+    href: "/platform/durable-execution?ref=nav",
     description: "Build fault-tolerant API endpoints",
     icon: (
       <svg
@@ -71,7 +72,7 @@ export const platformDropdown = [
   },
   {
     name: "Platform",
-    href: "/platform?ref=nav",
+    href: "/platform/durable-execution?ref=nav",
     description: "Learn about features, flow control, and more",
     icon: (
       <svg
@@ -90,7 +91,7 @@ export const platformDropdown = [
   },
   {
     name: "Queueing",
-    href: "/compare-to-legacy-queues?ref=nav",
+    href: "/platform/flow-control?ref=nav",
     description: "Compare Inngest to legacy queues",
     icon: (
       <svg
@@ -109,7 +110,7 @@ export const platformDropdown = [
   },
   {
     name: "Workflow Engines",
-    href: "/uses/workflow-engine?ref=nav",
+    href: "/uses/webhooks?ref=nav",
     description: "Learn about workflow engines",
     icon: (
       <svg
@@ -147,7 +148,7 @@ export const platformDropdown = [
   },
   {
     name: "Scheduled and cron jobs",
-    href: "/uses/serverless-cron-jobs?ref=nav",
+    href: "/uses/scheduled-jobs?ref=nav",
     description: "Learn about scheduled and recurring jobs",
     icon: (
       <svg
@@ -222,7 +223,7 @@ export default function PlatformPopover() {
                     {platformDropdown.slice(0, 4).map((item) => (
                       <Link
                         key={item.name}
-                        href={item.href}
+                        {...refLinkProps(item.href)}
                         className="flex gap-x-2 rounded-sm px-2 py-2 text-sm font-semibold leading-6 text-stone-50 transition-colors hover:bg-stone-800"
                       >
                         <div className="flex items-center gap-x-2">
@@ -252,7 +253,7 @@ export default function PlatformPopover() {
                     {platformDropdown.slice(4).map((item) => (
                       <Link
                         key={item.name}
-                        href={item.href}
+                        {...refLinkProps(item.href)}
                         className="flex gap-x-2 rounded-sm px-2 py-2 text-sm font-semibold leading-6 text-stone-50 transition-colors hover:bg-stone-800"
                       >
                         <div className="flex items-center gap-x-2">

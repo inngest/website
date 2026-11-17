@@ -39,9 +39,9 @@ export default function Testimonial() {
                 src="/assets/customers/resend.svg"
                 alt="Resend"
                 title="Resend"
-                width={80}
+                width={94}
                 height={20}
-                className="width-auto opacity-90 sm:h-6 sm:w-24"
+                className="h-auto w-[94px] opacity-90 sm:h-6 sm:w-auto"
               />
               <div className="h-6 w-px bg-stone-600 sm:h-8"></div>
               <div className="font-circular text-stone-50">

@@ -1,19 +1,32 @@
 ---
 tags: ["Queues & Flow Control"]
-heading: Fixing noisy neighbor problems in multi-tenant queueing systems
-subtitle: Ensuring fairness and consistent performance for all users with concurrency controls
+heading: "How to Fix the Noisy Neighbor Problem in Your Queue"
+subtitle: "One tenant's backlog shouldn't stall everyone else's jobs. Here's where the noisy neighbor problem starts, and how per-tenant limits fix it."
 showSubtitle: true
 image: /assets/blog/multi-tenant-queueing-concurrency/featured-image-v2.png
 date: 2024-06-28
 author: Dan Farrelly
 disableCTA: true
+faq:
+  - question: "What is the noisy neighbor problem?"
+    answer: "The noisy neighbor problem is what happens when one tenant in a shared system consumes enough of a common resource that other tenants' work slows down or fails. It applies to shared infrastructure, where virtual machines compete for CPU and disk, and to shared application resources like a single queue and worker pool. The tenant causing it is usually doing nothing wrong and usually has no idea."
+  - question: "What causes noisy neighbors in cloud computing?"
+    answer: "Shared resources cause it. In cloud computing and shared hosting, multiple virtual machines run on one physical server and compete for CPU, memory bandwidth, SSD and disk I/O, so one heavy workload degrades the others. The same thing happens one layer up, inside your own application, when every tenant's background jobs go through one queue drained by one worker pool in arrival order."
+  - question: "How do you stop one tenant from starving everyone else's jobs?"
+    answer: "Apply a limit per tenant rather than per system. Set a concurrency limit keyed to a stable tenant ID so each tenant gets their own allowance of executing steps, and add a throttle on the same key to cap how fast their runs start. A tenant's backlog then consumes their own allowance instead of the shared pool, and tenants with small workloads keep getting served."
+  - question: "Is a queue per tenant the right fix for the noisy neighbor problem?"
+    answer: "Rarely, once you are past a few dozen tenants. It isolates workloads perfectly, but it means provisioning and managing thousands of queues, building workers that scan across all of them, and running a single-tenant architecture inside a multi-tenant product. It also breaks down at scale, because a scheduler draining lanes one at a time never gets around to a hundred thousand of them."
+  - question: "Do dedicated resources eliminate the noisy neighbor problem?"
+    answer: "They eliminate it at the infrastructure layer only. Dedicated resources, single-tenant instances and tiers with stronger isolation guarantees stop tenants competing for CPU, memory and disk on a shared physical server. They do nothing about a shared queue, because that queue lives in your application. Give every tenant their own machine and one tenant's bulk import still lands ahead of everyone else's jobs."
+  - question: "What is the difference between throttling and rate limiting per tenant?"
+    answer: "Both limit how often runs start for a given key, and they differ in what happens to the excess. Throttling queues it, so a tenant's burst is spread over time and nothing is lost. Rate limiting skips it, so triggers above the limit never produce a run. Use throttling when the work still has to happen, and rate limiting only when you can afford to discard it."
 ---
 
-Multi-tenant queueing systems are complex to manage and prone to noisy neighbor problems. High volume users can monopolize resources, causing delays and perceived performance degradation for other users. Systems need to ensure fairness and consistent performance for all users, regardless of their usage levels.
+A customer emails to say your app feels slow. What they're describing is usually the noisy neighbor problem, and it rarely announces itself as an error. Nothing is down, no alert has fired, and the only thing that changed this morning is that a different customer kicked off a 50,000-row bulk import. The tenant causing it isn't abusing anything. Their jobs arrived first, and your queue hands work out in arrival order, which has no opinion about who sent it or how much of it they sent. The 20 jobs behind the import wait, the wait stretches as the backlog grows, and the people at the back of it decide your product is glitchy.
 
-There are several approaches to solving this problem, but many require complex infrastructure management and custom worker logic.
+What makes this hard to act on is that you can't tell yet how big it is. The same complaint can mean a host you need to resize or a queue you'll end up rebuilding, and those two are an afternoon and a quarter apart. Most teams guess. The guess is wrong often enough, and costly enough when it is, that it's worth the few minutes it takes to tell them apart properly.
 
-In this post, we'll walk through these approaches and how Inngest is purpose-built to handle multi-tenant queueing systems without the overhead and complexity.
+It's also a problem that gets worse quietly while you leave it alone. Every enterprise customer you sign widens the gap between your heaviest tenant and your median one, and the fix lives in how work gets scheduled, which is the part of a system nobody wants to change twice. Teams who hit this at 50 tenants still have options. Teams who hit it at 5,000 have a migration, and a few months of support tickets they can't explain in the meantime.
 
 _If you're a visual learner, check out the video:_
 
@@ -21,15 +34,42 @@ _If you're a visual learner, check out the video:_
 
 ## Noisy neighbors and queueing systems
 
-In multi-tenant systems, users share the same infrastructure resources. A "[noisy neighbor](https://learn.microsoft.com/en-us/azure/architecture/antipatterns/noisy-neighbor/noisy-neighbor)" refers to a high-usage user consuming excessive resources, thereby affecting other users' performance.
+The noisy neighbor problem is what happens when one tenant in a shared system consumes enough of a common resource that the other tenants' work slows down or fails.
 
-In queueing systems, a noisy neighbor can [monopolize a queue](/blog/long-running-jobs-shouldnt-be-first-come-first-served?ref=blog-fixing-multi-tenant-queueing-concurrency-problems) (or multiple queues), causing other users to wait longer for their jobs to be processed. This can lead to delays and frustration for users with lower usage levels. In these systems it's important to ensure fairness and consistent performance for all users, regardless of their usage levels.
+Microsoft's Azure Architecture Center catalogs it as the [noisy neighbor antipattern](https://learn.microsoft.com/en-us/azure/architecture/antipatterns/noisy-neighbor/noisy-neighbor), and its account of the problem matches what a queue does under load. Pooling resources across tenants is cheaper and more efficient, right up to the point where one tenant takes a disproportionate share and overall performance degrades. Azure also notes that tenants generally do not know they are the noisy one, which is worth remembering before contacting a customer about it.
+
+In a queue, the shared resource is the queue itself and the workers draining it. A first-in-first-out queue processes jobs in the order they were enqueued, and nothing about that order encodes who sent the work or how much is already in flight for them. That is why [arrival order is the wrong default for long-running jobs](/blog/long-running-jobs-shouldnt-be-first-come-first-served?ref=blog-fixing-multi-tenant-queueing-concurrency-problems) in any system with more than one customer in it.
+
+What you see first is latency, not failure. Queue delay climbs and gets jittery across every tenant at once, p50 drifts, p99 goes sideways, and no single job errors. There is nothing to page on, so the signal arrives through support tickets instead of monitoring. By the time you correlate the complaints with one tenant's import job, that tenant has usually finished, and the queue has drained.
 
 Here is a visualization of a single user monopolizing a [first-in-first-out (FIFO) queue](https://en.wikipedia.org/wiki/FIFO_(computing_and_electronics)):
 
 <video controls autoPlay loop muted playsInline src="/assets/blog/multi-tenant-queueing-concurrency/noisy-neighbor.mp4" />
 
-As we can see in this visualization, the high-usage user is causing delays for other users.
+## Shared resources are where the noisy neighbor problem starts
+
+The noisy neighbor problem starts at any layer where tenants share something finite, and there are two of those in most applications. Search for the term and most of what comes back is about the first layer, where virtual machines on one physical server compete for CPU, memory bandwidth, SSD and disk I/O. In shared hosting and cloud computing that layer belongs to your hosting provider.
+
+The second layer is your own. One shared queue and one shared worker pool, serving every tenant in your product, scheduled by code you wrote and can change.
+
+<div className="my-6 overflow-x-auto">
+
+| Layer | What is shared | Who controls it | How you fix it |
+| --- | --- | --- | --- |
+| Infrastructure | CPU, memory bandwidth, SSD and disk I/O across virtual machines on one physical server, in shared hosting and cloud computing | Your hosting provider | Resource isolation: move to dedicated resources, a single-tenant instance, or a tier with stronger isolation guarantees |
+| Application | One queue and one worker pool across every tenant | You | Per-tenant flow control in the code that schedules the work |
+
+</div>
+
+_The two layers where tenants share resources, what is shared at each, who controls it, and the fix available at each._
+
+Telling the two apart is usually quick. If the slowdown tracks your own queue depth, and jobs are waiting rather than running slowly once they start, it's the application layer. If individual jobs that normally take two seconds start taking eight while the queue stays short, the machine underneath is contended, and that's your provider's layer. Both can be true at once, so you need to figure out the culprit before you spend a sprint on the wrong one.
+
+More workers drain the backlog faster without changing whose jobs sit at the front of it, because a queue has no concept of who a job belongs to. Scale the worker pool and the import still goes first. It just goes first more quickly, and the 20 jobs behind it still wait for all 50,000 to clear.
+
+There's one real exception, and Azure's account names it. The problem also appears when no single tenant is heavy and many ordinary tenants together peak above what you provisioned. In that scenario the issue is insufficient capacity rather than unfair resource allocation, so fairness controls alone won't solve it and more workers will. The test is whether one tenant's volume stands out from the others.
+
+Dedicated infrastructure can isolate tenants at the compute level, but it doesn't necessarily prevent contention within the application. Even when each tenant has its own virtual machine, a bulk import from one tenant can still delay other tenants' jobs if they share the same application queue. Addressing this requires isolation and resource controls at the application level.
 
 ## Ensuring fairness in multi-tenant systems
 
@@ -39,105 +79,207 @@ Here is a visualization of a fair queueing system where each user receives equal
 
 <video controls autoPlay loop muted playsInline src="/assets/blog/multi-tenant-queueing-concurrency/fairness-queue.mp4" />
 
-### Achieving fairness - A queue per user
+Fairness in a multi-tenant queue means no tenant's work is delayed by the size of another tenant's backlog, and it's a property you have to design in rather than one you get by default. The goal isn't equal throughput for everyone. It's that a tenant with 20 jobs gets a predictable wait whether the tenant next to them has 20 jobs or 50,000.
 
-An ideal approach to fairness is to provide a queue per user. This way, each user's workloads are isolated, preventing any single user from affecting others.
+Two designs are considered first, and it's important to understand them thoroughly because their failure modes influence every other method. The first gives every tenant a queue of their own, which is the direct translation of "stop sharing" into queue architecture. The second keeps one queue and demotes heavy tenants into a lower priority lane once their volume crosses a line.
+
+Judge both on three things: what they cost to stand up, what they cost to keep running as your tenant list changes, and where they stop working. The third one is essential, but many skip it because both designs work fine in staging with four tenants and a test workload.
+
+Fairness is also measurable, which you'll want before and after you change anything. Track queue delay per tenant rather than in aggregate, since an aggregate p99 hides the exact thing you're looking for. A fair system shows a similar delay distribution for a tenant with 20 jobs and a tenant with 50,000. An unfair one shows the two diverging the moment the big tenant starts.
+
+### Give every tenant its own queue
+
+A queue per tenant isolates each tenant's workload completely, so no tenant can affect another. It's the application-layer version of buying dedicated resources at the infrastructure layer, and it carries the same bill: you stop sharing, so you stop getting the economics of sharing.
 
 <img src="/assets/blog/multi-tenant-queueing-concurrency/queue-per-user.png" alt="A visualization of a single queue fanning out into a queue per user" />
 
-This approach introduces several challenges:
+Four costs show up immediately:
 
-* **Infrastructure overhead and costs**: Creating and maintaining thousands of individual queues is cumbersome and potentially very expensive.
-* **Worker complexity and performance**: Workers need to be designed to scan and pull from multiple queues intelligently to prioritize work effectively. It's not likely that you can afford a worker-per user at scale so workers need to be able to handle multiple queues and re-adjust as more users are added to your system. If not done well, this can lead to poor performance for all users.
-* **Queue configuration and management**: Most traditional message queues require pre-configuring your queues either in infrastructure-as-code or programmatically. This may work for a small number of users, but it's not practical at scale. Additionally, you'll need some sort of state management to keep track of all these queues.
-* **Hybrid of multi- and single-tenant architecture**: Managing a queue per user represents a shift towards a single-tenant architecture which may be a significant departure from the existing architecture of your multi-tenant system. This can lead to additional architectural complexity which adds to overhead of the engineering team that is maintaining it.
+- **Infrastructure overhead and costs:** Creating and maintaining thousands of individual queues is cumbersome and potentially very expensive.
+- **Worker complexity and performance:** Workers need to be designed to scan and pull from multiple queues intelligently to prioritize work effectively. It's not likely that you can afford a worker per tenant at scale, so workers need to handle multiple queues and re-adjust as more tenants are added to your system. If that isn't done well, it leads to poor performance for all tenants.
+- **Queue configuration and management:** Most traditional message queues require pre-configuring your queues either in infrastructure-as-code or programmatically. This may work for a small number of tenants, but it isn't practical at scale. You'll also need some sort of state management to keep track of all these queues.
+- **Hybrid of multi- and single-tenant architecture:** Managing a queue per tenant represents a shift towards a single-tenant architecture, which may be a significant departure from the existing architecture of your multi-tenant system. That adds architectural complexity, and overhead for the engineering team maintaining it.
 
-### Alternative approaches - Priority queues
+The failure that ends the idea is a scheduling one. A queue works through its backlog in passes, and each pass grabs a fixed number of items; ask for more and you hold the thread long enough to slow everything behind it. Give every tenant a lane, and a customer with a hundred thousand users behind one function is a hundred thousand lanes, [drained a thousand items at a time, one lane per pass](/blog/building-the-inngest-queue-pt-i-fairness-multi-tenancy?ref=blog-fixing-multi-tenant-queueing-concurrency-problems). You never get around to all of them.
 
-An alternative approach might be to use low/high priority queues. As usage increases for a particular user, they are moved to a lower priority queue. This approach can help to ensure that high-usage users don't monopolize resources.
+### Move heavy tenants to a lower priority queue
+
+An alternative approach is low and high priority queues. As usage increases for a particular tenant, they're moved to a lower priority queue, which stops the heaviest tenants monopolizing the resources everyone else is waiting on. It keeps one shared pool rather than fragmenting it, so none of the per-tenant provisioning costs above apply, and it can be retrofitted onto a queue you already run.
 
 <img src="/assets/blog/multi-tenant-queueing-concurrency/priority-queue-v2.png" alt="A visualization of a priority queue that first determines the rate of jobs" />
 
 This approach can be effective, but has other challenges:
 
-* **Implementing rate limiting**: The system needs to track the rate of jobs for each user, for every queue. This is similar to API endpoint rate limiting, but requires additional infrastructure and logic to manage.
-* **Shifting the problem to the low priority queue**: If a user is moved to a low priority queue, they may still flood that queue, causing delays for other users who just narrowly exceed the defined rate.
-* **Fine-tuning the system for efficiency**: Rate limits and worker capacity for high and low priority queues will have to be tuned to ensure that the system is efficient and fair. This takes additional time and must be monitored and adjusted as usage patterns change.
+- **Distinguishing between different flow controls:** To detect a heavy tenant, the system needs to track the rate of work per tenant, for every queue. This is similar to API endpoint rate limiting, but requires additional infrastructure and logic to manage. What you do with the excess then splits into two different controls. [Throttling](/docs/durable-execution/flow-control/throttling?ref=blog-fixing-multi-tenant-queueing-concurrency-problems) limits how often runs start and queues the excess, so nothing is discarded. [Rate limiting](/docs/durable-execution/flow-control/rate-limiting?ref=blog-fixing-multi-tenant-queueing-concurrency-problems) also limits how often runs start, but skips the excess triggers entirely. Use rate limiting only where you can genuinely afford to drop the work.
+- **Shifting the problem to the low priority queue:** If a tenant is moved to a low priority queue, they may still flood that queue, causing delays for other tenants who just narrowly exceed the defined rate.
+- **Fine-tuning the system for efficiency:** Rate limits and worker capacity for high and low priority queues will have to be tuned to ensure that the system is efficient and fair. This takes additional time and must be monitored and adjusted as usage patterns change.
+
+The threshold itself is the part that ages badly. A number that correctly identified your heaviest tenant last quarter will catch three ordinary ones after your next enterprise signup, and nothing in the system tells you it has drifted.
+
+## Should you build per-tenant fairness yourself?
+
+Building per-tenant fairness yourself is a reasonable call in some systems and a trap in others, and the difference comes down to three decisions you can make before writing any code.
+
+What follows is deliberately not a queue design. If you want the architecture, Inngest's engineers have written it up at length: [how a fair multi-tenant queue is built](/blog/building-the-inngest-queue-pt-i-fairness-multi-tenancy?ref=blog-fixing-multi-tenant-queueing-concurrency-problems) covers the data layout, [the queue is durable, your worker is not](/blog/the-queue-is-durable-your-worker-is-not?ref=blog-fixing-multi-tenant-queueing-concurrency-problems) covers what durability actually obliges you to guarantee, and [the move to FoundationDB](/blog/migration-to-foundationdb-part-1?ref=blog-fixing-multi-tenant-queueing-concurrency-problems) covers what happens when the store underneath runs out of room.
+
+The decisions themselves are about scope, not implementation. Pick the wrong storage engine, and you inherit a throughput ceiling you cannot tune away. Build a multi-tenant workflow queue when you needed a durable pipe and you have spent a quarter on a solved problem. A single-tenant product doesn't need per-tenant fairness.
+
+Building wins in a narrow set of cases, and they are worth naming because the answer is not always buy. If the queue is your product rather than plumbing underneath it, if your scheduling requirements are genuinely unusual, or if you have an engineer who will own the thing for years instead of shipping it and moving on, owning it is defensible. The common failure is none of those being true, and the team finding that out eighteen months in, when fairness turns out to be the part that cannot be retrofitted.
+
+### Start on a KV or NoSQL store, not Postgres
+
+Postgres and MySQL can work well for smaller queues, but high-throughput workloads introduce additional challenges. Frequent inserts, updates, and deletes can create storage and maintenance overhead, especially as queue volume grows.
+
+Two problems appear. PostgreSQL assigns a 32-bit transaction ID to every writing transaction, and [its own documentation](https://www.postgresql.org/docs/current/routine-vacuuming.html#VACUUM-FOR-WRAPAROUND) is explicit that a cluster running past roughly four billion transactions suffers transaction ID wraparound unless vacuum keeps freezing old rows ahead of it. A high-churn queue table marches toward that line far faster than an ordinary application table.
+
+Second, the vacuuming that holds the line is not free. PostgreSQL's documentation notes that installations with extremely high update rates may vacuum their busiest tables [as often as every few minutes](https://www.postgresql.org/docs/current/routine-vacuuming.html), and that when several large tables become eligible at once, [every autovacuum worker can be tied up for a long stretch](https://www.postgresql.org/docs/current/routine-vacuuming.html#AUTOVACUUM). Aggressive freezing passes happen [even when autovacuum is nominally disabled](https://www.postgresql.org/docs/current/routine-vacuuming.html#VACUUM-FOR-WRAPAROUND).
+
+If you build your own queue, put it on a key-value or NoSQL store. Queues perform frequent writes and deletes against a heavily accessed set of keys. These operations can become expensive in transactional databases, making storage performance and cost important considerations.
+
+Go in-memory only if you genuinely do not need durability, and if you do, settle your replication factor before you need it rather than after. Tools that put a durable queue directly on Postgres are real and convenient at the low end. Just know the throughput ceiling you are accepting is a property of the design.
+
+### Decide which kind of queue you need
+
+"Queue" can refer to two different types of systems. A basic durable queue, where work goes in one end and comes out the other and strict ordering is not critical, is a solved problem. RabbitMQ or a managed Pub/Sub service already does it well, and writing your own buys you nothing.
+
+The hard version is a multi-tenant queue that supports real workflows: retries that resume rather than restart, flow control that decides when a job becomes eligible and whether it runs when its turn comes, and scheduling that holds across all of it. Fairness only exists in that second product. A dumb pipe has no concept of who sent the work, so there is no layer in it where per-tenant fairness could live.
+
+Retries are the clearest tell between the two. A pipe redelivers a message and leaves you to work out what already happened. A workflow queue has to resume a half-finished run at the step it reached, which means it needs the run's recorded state as well as its place in line, and that state is a second system with its own durability problem.
+
+The useful way to frame the decision is that the decision depends on which scheduling capabilities you need. Rate limiting, debouncing, batching and one-at-a-time keys decide when a job becomes eligible to run. Throttling, concurrency and retries decide whether it actually runs when its turn arrives. Priority cuts across both.
+
+If your answer is "the pipe, none of the schedule," take the managed pipe and move on. If your answer includes any of the scheduling mechanisms, you are signing up for the data-layout problem, not a weekend project.
+
+### Decide whether fairness matters
+
+Fairness does not matter in every system. If you have one tenant, or a handful of tenants whose workloads never overlap, there is no noisy neighbor to fix and a simpler queue is the right call.
+
+It also does not matter where crowding is acceptable. An internal batch system where one team's overnight job can delay another's without significant consequences doesn't need per-tenant scheduling. Neither does a product where every tenant's work is small and uniform enough that no one can build a backlog worth noticing.
+
+Fairness becomes important when these three conditions line up: tenants share the queue, their volumes differ by an order of magnitude or more, and someone outside your company notices when their work is late. That last condition is the one that turns an engineering preference into a commercial problem, because a customer who cannot tell the difference between a queue backlog and a broken product will describe it to you as a broken product.
+
+The test is cheap to run first. Compare your heaviest tenant's job volume over a busy week against your median tenant's. If the ratio is small and stable, you do not have this problem yet and you can revisit it when you do. If it is already 50 to 1 and climbing with every enterprise customer you sign, you will have the problem before you have time to build for it.
+
+If that is your system, the decision is not whether to have fairness. It is whether to build the data layout that makes fairness possible, or to use an execution layer that already has it.
 
 ## Inngest: Concurrency limits for each tenant
 
-The Inngest platform has built-in support for easily defining concurrency limits that are automatically applied for each tenant.
+[Inngest](/platform/durable-execution?ref=blog-fixing-multi-tenant-queueing-concurrency-problems) applies flow control limits per tenant through a key expression you set in the function definition, and it does this without you provisioning a queue for anyone. Two separate things sit behind that sentence, and the [multi-tenancy documentation](/docs/durable-execution/flow-control/multi-tenancy?ref=blog-fixing-multi-tenant-queueing-concurrency-problems) sets them out separately because they're easy to run together. Per-key limits are configured in your function and available to you today. Key-queue scheduling, the separate feature that reduces queue blocking between keys, is currently available to Enterprise customers on request.
 
-Compared to approaches that have to combine queue infrastructure management, custom worker logic, and state management, Inngest manages all infrastructure and has embedded [_flow control_](/docs/durable-execution/flow-control?ref=blog-fixing-multi-tenant-queueing-concurrency-problems) logic within the queue itself. This allows your system to have the best of both worlds: the simplicity of a multi-tenant system with the fairness of a single-tenant system.
+A queue per key sounds like the same lane-per-tenant design that stops working at a hundred thousand lanes, so it's worth saying exactly where the two part company. That design breaks on provisioning and on scheduling at once: you create and manage every lane, and the scheduler has to visit each one in turn, so every tenant you add makes every other tenant wait longer. Keys are Common Expression Language expressions evaluated from event data, so groups appear and disappear with your traffic and you never create, register or tear one down. With key-queue scheduling enabled, the scheduler can consider a ready key's work without walking a blocked key's backlog first, which is the round trip the lane-per-tenant design can't avoid.
 
-### How it works
+Two honest caveats. The ordering is best effort rather than a guarantee of equal share, and retries, available capacity and other flow controls all influence which item runs next. And setting per-key limits in a function doesn't by itself mean key-queue scheduling is switched on for your account.
 
-Concurrency controls are defined within each Inngest function configuration in just a couple lines of code. Here's how it works:
+Compared to approaches that have to combine queue infrastructure management, custom worker logic and state management, Inngest manages the infrastructure and has [flow control](/docs/durable-execution/flow-control?ref=blog-fixing-multi-tenant-queueing-concurrency-problems) logic embedded in the queue itself. That gives your system the simplicity of a multi-tenant system with the fairness of a single-tenant one.
 
-* You define the concurrency `limit` in your function configuration.
-* Specifying a concurrency `key` will apply this limit to _each unique value of the key_. This key can be anything relevant to your system, such as user ID, organization ID, email, workspace ID, etc.
-* As new runs (aka _jobs_) are created, **Inngest dynamically creates a new queue for each unique key value**. The system internally handles the complexity of managing these queues, and consuming work efficiently off of each queue so you don't have to.
+### How a concurrency key groups one tenant's work
 
-Let's take a look at some example code:
+A concurrency key turns one limit into a separate limit for every value the key evaluates to, so each tenant gets their own allowance out of a single function definition. Pair it with a throttle on the same key and you control both how much of a tenant's work executes at once and how fast their runs are allowed to start.
 
-```ts multiTenantConcurrency.ts
-export const multiTenantConcurrency = inngest.createFunction(
+```ts
+import { Inngest } from "inngest";
+
+const inngest = new Inngest({ id: "tenant-sync" });
+
+export const syncTenant = inngest.createFunction(
   {
-    id: 'multi-tenant-concurrency',
-    concurrency: [
-      {
-        limit: 1,
-        // !mark(1:2)
-        // Add a key to apply the concurrency limit to each unique user_slug
-        key: 'event.data.user_slug',
-      },
-    ],
+    id: "sync-tenant-data",
+    triggers: { event: "app/tenant.sync.requested" },
+    concurrency: {
+      key: "event.data.tenant_id",
+      limit: 5,
+    },
+    throttle: {
+      key: "event.data.tenant_id",
+      limit: 100,
+      period: "1m",
+    },
   },
-  { event: 'demo/job.created' },
   async ({ event, step }) => {
-    /* function logic omitted for example */
-    return { status: 'success' };
+    await step.run("sync-data", async () => {
+      console.log(event.data.tenant_id);
+    });
   }
 );
 ```
 
-### Going further - Combining concurrency limits
+Replace the step body with your actual work. Each `tenant_id` now gets its own limit of five executing steps and its own throttle of 100 run starts per minute, and a backlog for one tenant does not consume another tenant's allowance. Concurrency counts steps executing code rather than runs in progress, so hundreds of runs can be in flight while only five steps execute, and a run that is sleeping or waiting for an event is not holding a slot.
 
-Inngest allows you to "stack" or combine concurrency limits. This means you can limit the concurrent items for individual users while also setting a total concurrency limit for _all_ users. This provides a flexible way to manage resources. Let's take a look at a function that limits the concurrency to `5` per user, but also limits the total concurrency to `100`:
+Pick the key from an identifier your domain already has: an account ID, a workspace ID, or an organization ID. The expression is evaluated in Common Expression Language against the triggering event rather than as a JavaScript callback, so whatever you key on has to be present in the event payload. It cannot be looked up at schedule time, which in practice means that the producer has to put it on the event.
 
-```ts combinedConcurrencyLimits.ts
-export const combinedConcurrencyLimits = inngest.createFunction(
+The keys have to be stable to be worth anything. Use one identifier per tenant across every relevant event and every relevant function, and check that your event producer always sends it, because two events for the same tenant carrying different IDs are two tenants as far as the limit is concerned. Changing the expression later does not rewrite history either: items already queued keep the key they were assigned on the way in, and only new items group under the new expression.
+
+### Stack a per-tenant limit with a global one
+
+Stacking a per-tenant limit with a global one protects your downstream services and your tenants at the same time, and a function can carry up to two concurrency constraints to do it. The per-tenant constraint stops one customer monopolizing the function. The unkeyed constraint caps what the function can do to the database or API behind it, no matter how many tenants are active.
+
+```ts
+export const runTenantJob = inngest.createFunction(
   {
-    id: 'multi-tenant-concurrency-with-shared-limit',
+    id: "multi-tenant-concurrency-with-shared-limit",
+    triggers: { event: "demo/job.created" },
     concurrency: [
-      {
-        // !mark(1:3)
-        // Each unique user_slug has a concurrency limit of 5
-        limit: 5,
-        key: 'event.data.user_slug',
-      },
-      {
-        // !mark(1:2)
-        // Overall concurrency for all users is limited to 100
-        limit: 100,
-      },
+      { key: "event.data.user_slug", limit: 5 },
+      { limit: 100 },
     ],
   },
-  { event: 'demo/job.created' },
   async ({ event, step }) => {
-    /* function logic omitted for example */
-    return { status: 'success' };
+    await step.run("process-job", () => handleJob(event.data));
   }
 );
 ```
 
-### Further Flexibility
+Swap `handleJob` for your own work. Each `user_slug` gets five concurrent executing steps, and all users together are capped at 100. A step starts only when it fits both limits, and the order they are written in does not matter.
 
-Beyond using keys and combining concurrency limits, for additional control within your system, you might also consider:
+Two constraints is the ceiling, so this pattern spends the budget. If one step inside the function needs a limit of its own, pull it into its own function with its own concurrency setting and call it with `step.invoke()`.
 
-* **Setting concurrency limits that are shared across functions** - Concurrency limits can be shared across multiple functions by [specifying a `scope`](/docs/durable-execution/flow-control/concurrency?ref=blog-fixing-multi-tenant-queueing-concurrency-problems#how-global-limits-work) which allows to combine limits across functions.
-* **Combining with other flow control methods** - Inngest's concurrency limits can be combined with other methods like [throttling](/docs/durable-execution/flow-control/throttling?ref=blog-fixing-multi-tenant-queueing-concurrency-problems) and [prioritization](/docs/durable-execution/flow-control/priority?ref=blog-fixing-multi-tenant-queueing-concurrency-problems), giving you even more control over your system's workload management.
+Sharing a limit across functions is different. The account and env scopes let several functions draw on one named ceiling, and both require a key. Keep that limit in a shared constant. Two functions can declare different limits against the same key, and each checks the shared active count against its own number. The function with the higher limit keeps starting work while the lower one waits, which reads as a bug and is not one.
 
-## Give it a try
+Picking the two numbers is the actual work, and it's worth knowing [when you need more concurrency](/blog/how-to-know-when-you-need-more-concurrency?ref=blog-fixing-multi-tenant-queueing-concurrency-problems) before you raise either of them. Take the global number from whatever your downstream dependency can survive. The per-tenant number is a different question: how much of that ceiling are you willing to let a single customer hold at once? Set it too low and you've built your own backlog, so add a [start timeout](/docs/durable-execution/guides-and-advanced/cancellation/timeouts?ref=blog-fixing-multi-tenant-queueing-concurrency-problems) wherever queued work stops being worth running after a deadline.
 
-Managing queues in multi-tenant systems can be complex, but with Inngest's built-in multi-tenant-aware concurrency controls, you can ensure a fair, efficient, and smooth experience in your applications. Learn more about how to implement concurrency limits in your functions by checking out the [Inngest Concurrency Documentation](/docs/durable-execution/flow-control/concurrency?ref=blog-fixing-multi-tenant-queueing-concurrency-problems). For applying the same per-tenant model across many SaaS integrations, see [Have lots of SaaS integrations? You don't need lots of reliability models](/blog/have-lots-of-saas-integrations-you-dont-need-lots-of-reliability-models?ref=blog-fixing-multi-tenant-queueing-concurrency-problems).
+### Other flow control options worth knowing about
+
+There are three more controls to consider once per-tenant limits are in place because the noisy neighbor is rarely the only flow problem in a system. Each is configured in the function definition the same way, and the [full set of flow control options](/docs/durable-execution/flow-control?ref=blog-fixing-multi-tenant-queueing-concurrency-problems) is documented together.
+
+- **Setting concurrency limits that are shared across functions.** Concurrency limits can be shared across multiple functions by [specifying a scope](/docs/durable-execution/flow-control/concurrency?ref=blog-fixing-multi-tenant-queueing-concurrency-problems#how-global-limits-work) which allows to combine limits across functions.
+- **Combining with other flow control methods.** Inngest's concurrency limits can be combined with other methods like [throttling](/docs/durable-execution/flow-control/throttling?ref=blog-fixing-multi-tenant-queueing-concurrency-problems) and [prioritization](/docs/durable-execution/flow-control/priority?ref=blog-fixing-multi-tenant-queueing-concurrency-problems), giving you even more control over your system's workload management. Throttling queues the excess rather than discarding it, so set it per tenant with a key and nothing gets dropped when a burst arrives.
+- **[Singleton](/docs/durable-execution/flow-control/singleton?ref=blog-fixing-multi-tenant-queueing-concurrency-problems)** keeps one run active for a chosen key, which is the control you want when a second concurrent run for the same tenant would be wrong rather than merely slow.
+- **[Debounce](/docs/durable-execution/flow-control/debounce?ref=blog-fixing-multi-tenant-queueing-concurrency-problems)** waits for a quiet period, so a burst of updates starts one run instead of twenty, which is useful when a tenant's integration fires an event on every keystroke.
+
+These controls apply at different stages of the workflow. Rate limiting rejects excess runs before they enter the queue, while batching groups events before scheduling a run. Debounce and singleton determine which unbatched runs enter the queue, and step concurrency limits how many steps can execute simultaneously. Batching can work alongside concurrency controls but cannot be combined with rate limiting or priority.
+
+There is also a [flow control simulator](/docs/durable-execution/flow-control/simulator?ref=blog-fixing-multi-tenant-queueing-concurrency-problems) in the documentation. Set two tenants against a shared limit, give one of them a burst, and watch the second tenant's runs start on time while the first tenant's backlog drains. It is the fastest way to confirm what a configuration will actually do before you ship it.
+
+## Where to start
+
+First, identify which layer is causing the problem. If tenants are competing for CPU, memory bandwidth or disk on shared infrastructure, that is your hosting provider's layer, and resource isolation or dedicated resources is the answer. If tenants are competing for a queue and a worker pool in your own application, no amount of dedicated infrastructure will address it, and the fix is per-tenant flow control in the code that schedules the work.
+
+Then pick the control that matches the symptom. If one tenant is holding too much of a downstream dependency at once, that's concurrency. If they're starting runs faster than the service behind them can absorb, that's throttling. If their events arrive in bursts you only need to act on once, debounce collapses them into a single run. The [concurrency documentation](/docs/durable-execution/flow-control/concurrency?ref=blog-fixing-multi-tenant-queueing-concurrency-problems) covers the first in full, and the same per-tenant model holds when you are [running many SaaS integrations without many reliability models](/blog/have-lots-of-saas-integrations-you-dont-need-lots-of-reliability-models?ref=blog-fixing-multi-tenant-queueing-concurrency-problems).
+
+The thing worth testing before you commit to building anything is how little configuration the managed version takes. Per-tenant limits on Inngest are a few lines of function config rather than a system, and the [free plan](https://app.inngest.com/sign-up?ref=blog-fixing-multi-tenant-queueing-concurrency-problems) is enough to point one at a real workload and watch a busy tenant's backlog stop blocking everyone else. If it holds, you have skipped the data-layout problem. If it does not fit your system, you will have learned that in an afternoon rather than a quarter.
+
+## Frequently asked questions about the noisy neighbor problem
+
+### What is the noisy neighbor problem?
+
+The noisy neighbor problem is what happens when one tenant in a shared system consumes enough of a common resource that other tenants' work slows down or fails. It applies to shared infrastructure, where virtual machines compete for CPU and disk, and to shared application resources like a single queue and worker pool. The tenant causing it is usually doing nothing wrong and usually has no idea.
+
+### What causes noisy neighbors in cloud computing?
+
+Shared resources cause it. In cloud computing and shared hosting, multiple virtual machines run on one physical server and compete for CPU, memory bandwidth, SSD and disk I/O, so one heavy workload degrades the others. The same thing happens one layer up, inside your own application, when every tenant's background jobs go through one queue drained by one worker pool in arrival order.
+
+### How do you stop one tenant from starving everyone else's jobs?
+
+Apply a limit per tenant rather than per system. Set a concurrency limit keyed to a stable tenant ID so each tenant gets their own allowance of executing steps, and add a throttle on the same key to cap how fast their runs start. A tenant's backlog then consumes their own allowance instead of the shared pool, and tenants with small workloads keep getting served.
+
+### Is a queue per tenant the right fix for the noisy neighbor problem?
+
+Rarely, once you are past a few dozen tenants. It isolates workloads perfectly, but it means provisioning and managing thousands of queues, building workers that scan across all of them, and running a single-tenant architecture inside a multi-tenant product. It also breaks down at scale, because a scheduler draining lanes one at a time never gets around to a hundred thousand of them.
+
+### Do dedicated resources eliminate the noisy neighbor problem?
+
+They eliminate it at the infrastructure layer only. Dedicated resources, single-tenant instances and tiers with stronger isolation guarantees stop tenants competing for CPU, memory and disk on a shared physical server. They do nothing about a shared queue, because that queue lives in your application. Give every tenant their own machine and one tenant's bulk import still lands ahead of everyone else's jobs.
+
+### What is the difference between throttling and rate limiting per tenant?
+
+Both limit how often runs start for a given key, and they differ in what happens to the excess. [Throttling](/docs/durable-execution/flow-control/throttling?ref=blog-fixing-multi-tenant-queueing-concurrency-problems) queues it, so a tenant's burst is spread over time and nothing is lost. [Rate limiting](/docs/durable-execution/flow-control/rate-limiting?ref=blog-fixing-multi-tenant-queueing-concurrency-problems) skips it, so triggers above the limit never produce a run. Use throttling when the work still has to happen, and rate limiting only when you can afford to discard it.

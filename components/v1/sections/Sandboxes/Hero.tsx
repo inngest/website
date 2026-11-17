@@ -13,6 +13,7 @@ import {
   type ChapterId,
   type CodeLine,
 } from "./heroChapters";
+import { refLinkProps } from "@/utils/v1/ref";
 
 /**
  * /platform/sandboxes hero.
@@ -506,7 +507,7 @@ export default function Hero() {
               })}
             </div>
             <a
-              href={fullHref}
+              {...refLinkProps(fullHref)}
               title="Open the full playground"
               className="group/cta text-v1-label-sm hidden shrink-0 items-center gap-2 border-l border-v1-subtle px-5 uppercase text-v1-frost hover:bg-v1-frost/[0.03] motion-safe:transition-colors motion-safe:duration-200 md:flex"
             >

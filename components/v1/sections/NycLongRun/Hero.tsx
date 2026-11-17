@@ -10,10 +10,10 @@ import InstallButton from "@/components/v1/sections/NycLongRun/InstallButton";
 import RunningFriend from "@/components/v1/sections/NycLongRun/RunningFriend";
 
 /**
- * Campaign hero — what someone sees after scanning a step.run/sf
+ * Campaign hero — what someone sees after scanning a step.run/nyc
  * placement. Split layout: the copy stack reads down the left column
- * with the product panel beside it, and the campaign illustration runs
- * full-bleed underneath, bleeding over the logo strip below.
+ * with the marathon photograph beside it, and the campaign illustration
+ * runs full-bleed underneath, bleeding over the logo strip below.
  */
 
 // SSR-renders the from-state inline so each line is at opacity 0 / y +14
@@ -111,8 +111,7 @@ export default function Hero() {
           </motion.div>
         </div>
 
-        {/* No frame: the panel artwork carries its own chrome and sits
-            directly on the page background. */}
+        {/* The photograph sits directly on the page background. */}
         <motion.div {...entry(700)} className="mt-12 lg:mt-0">
           <Image
             src={HERO.visual.src}
@@ -123,8 +122,11 @@ export default function Hero() {
             // lets Next pick a variant that matches the column.
             priority
             sizes="(max-width: 1024px) 92vw, 46vw"
-            className="h-auto w-full"
+            className="h-auto w-full rounded-lg"
           />
+          <p className="text-v1-caption mt-3 text-v1-frost/60">
+            {HERO.visual.caption}
+          </p>
         </motion.div>
       </div>
 

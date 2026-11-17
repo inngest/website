@@ -14,6 +14,7 @@ import {
   type ReportGraphId,
 } from "app/content/ai-in-production-report-2026/graphs";
 import { getFullURL } from "src/utils/social";
+import { refLinkProps } from "@/utils/v1/ref";
 
 type Props = {
   graphId: ReportGraphId;
@@ -56,7 +57,7 @@ export function ReportChart({ graphId, tight = false }: Props) {
       <figcaption className="mt-3 flex flex-wrap items-center gap-x-4 gap-y-2 border-t border-white/10 pt-3">
         <span className="sr-only">Share or download this chart</span>
         <a
-          href={tweetUrl}
+          {...refLinkProps(tweetUrl)}
           target="_blank"
           rel="noopener noreferrer"
           className="inline-flex items-center gap-1.5 text-sm text-subtle transition-colors hover:text-basis"
@@ -65,7 +66,7 @@ export function ReportChart({ graphId, tight = false }: Props) {
           Post to X
         </a>
         <a
-          href={linkedInUrl}
+          {...refLinkProps(linkedInUrl)}
           target="_blank"
           rel="noopener noreferrer"
           className="inline-flex items-center gap-1.5 text-sm text-subtle transition-colors hover:text-basis"
@@ -74,14 +75,14 @@ export function ReportChart({ graphId, tight = false }: Props) {
           Post to LinkedIn
         </a>
         <a
-          href={downloadUrl}
+          {...refLinkProps(downloadUrl)}
           className="inline-flex items-center gap-1.5 text-sm text-subtle transition-colors hover:text-basis"
         >
           <RiDownload2Line className="h-4 w-4" aria-hidden="true" />
           Download image
         </a>
         <a
-          href={REPORT_PATH}
+          {...refLinkProps(REPORT_PATH)}
           className="inline-flex items-center gap-1.5 text-sm font-medium text-[rgb(var(--color-matcha-400))] transition-colors hover:text-[rgb(var(--color-matcha-300))]"
         >
           <RiFilePdf2Line className="h-4 w-4" aria-hidden="true" />

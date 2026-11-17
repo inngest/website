@@ -9,6 +9,7 @@ import Section from "@/components/v1/sections/shared/Section";
 import SectionHeader from "@/components/v1/sections/shared/SectionHeader";
 import { V1_HEADER_CONTENT_MT } from "@/components/v1/sections/shared/sectionShell";
 import { reveals } from "@/utils/v1/reveals";
+import { refLinkProps } from "@/utils/v1/ref";
 
 interface Feature {
   id: string;
@@ -98,7 +99,7 @@ export default function Features() {
               <p className="text-v1-body-sm">{f.body}</p>
               {f.docsHref && (
                 <Link
-                  href={f.docsHref}
+                  {...refLinkProps(f.docsHref)}
                   prefetch={false}
                   className="inline-flex w-fit items-center gap-1 rounded border border-v1-frost/20 px-3 py-1 font-v1Mono text-[11px] uppercase tracking-[0.08em] text-v1-frost/70 motion-safe:transition-colors motion-safe:duration-200 hover:border-v1-accent-salmon hover:text-v1-accent-salmon"
                 >

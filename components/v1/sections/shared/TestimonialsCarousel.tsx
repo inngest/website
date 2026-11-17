@@ -92,6 +92,13 @@ interface TestimonialsCarouselProps {
    */
   compact?: boolean;
   /**
+   * Let the quote column size to its content instead of reserving a
+   * minimum height (on top of `compact`'s smaller reserve). Only safe
+   * for one-slide decks, where nothing swaps in to reflow the section.
+   * With `portraitFill` the portrait shrinks to match. Off by default.
+   */
+  fitContent?: boolean;
+  /**
    * Optional heading lockup rendered INSIDE the grid, in the quote
    * column above the logos (on mobile it stacks first). Lets a section
    * title share the portrait's column structure so the portrait can
@@ -120,6 +127,7 @@ export default function TestimonialsCarousel({
   bylineStaggerMs = 80,
   disablePortraitReveal = false,
   compact = false,
+  fitContent = false,
   header,
   portraitFill = false,
 }: TestimonialsCarouselProps) {
@@ -154,20 +162,19 @@ export default function TestimonialsCarousel({
   const next = () => setActive((i) => (i + 1) % total);
   const prev = () => setActive((i) => (i - 1 + total) % total);
 
-  return (
-    <AdvanceClick
-      ref={rootRef}
-      onAdvance={next}
-      ariaLabel="Show next testimonial"
-      hideCursor
-      className={cn(
-        "grid cursor-grab select-none grid-cols-1 gap-4 sm:grid-cols-[minmax(0,1fr)_minmax(0,2fr)] sm:gap-10 sm:gap-x-[clamp(16px,2vw,32px)]",
-        portraitFill ? "sm:items-stretch" : "sm:items-center",
-        // With a header the grid is two rows at sm+: header top-right,
-        // quote bottom-right, portrait spanning both on the left.
-        header && "sm:grid-rows-[auto_1fr]"
-      )}
-    >
+  // A one-slide deck is a static testimonial: no pagination rail and
+  // no click-anywhere-to-advance surface, since there's nothing to
+  // advance to.
+  const single = total <= 1;
+  const gridClassName = cn(
+    "grid grid-cols-1 gap-4 sm:grid-cols-[minmax(0,1fr)_minmax(0,2fr)] sm:gap-10 sm:gap-x-[clamp(16px,2vw,32px)]",
+    portraitFill ? "sm:items-stretch" : "sm:items-center",
+    // With a header the grid is two rows at sm+: header top-right,
+    // quote bottom-right, portrait spanning both on the left.
+    header && "sm:grid-rows-[auto_1fr]"
+  );
+  const content = (
+    <>
       {header && <div className="sm:col-start-2 sm:row-start-1">{header}</div>}
       <div
         className={cn(
@@ -192,7 +199,9 @@ export default function TestimonialsCarousel({
         className={cn(
           "flex flex-col justify-between gap-7",
           header && "sm:col-start-2 sm:row-start-2",
-          compact
+          fitContent
+            ? "sm:gap-6"
+            : compact
             ? "sm:min-h-[clamp(240px,23vw,330px)] sm:gap-[clamp(16px,2.2vw,28px)]"
             : "sm:min-h-[clamp(320px,32vw,460px)] sm:gap-[clamp(20px,3.5vw,45px)]"
         )}
@@ -206,18 +215,40 @@ export default function TestimonialsCarousel({
           bylineStaggerMs={bylineStaggerMs}
           compact={compact}
         />
-        <PaginationRail
-          active={active}
-          total={total}
-          durationMs={autoAdvanceMs}
-          running={inView && total > 1}
-          onPrev={prev}
-          onNext={next}
-          onAdvance={next}
-          prevLabel="Previous testimonial"
-          nextLabel="Next testimonial"
-        />
+        {!single && (
+          <PaginationRail
+            active={active}
+            total={total}
+            durationMs={autoAdvanceMs}
+            running={inView}
+            onPrev={prev}
+            onNext={next}
+            onAdvance={next}
+            prevLabel="Previous testimonial"
+            nextLabel="Next testimonial"
+          />
+        )}
       </div>
+    </>
+  );
+
+  if (single) {
+    return (
+      <div ref={rootRef} className={gridClassName}>
+        {content}
+      </div>
+    );
+  }
+
+  return (
+    <AdvanceClick
+      ref={rootRef}
+      onAdvance={next}
+      ariaLabel="Show next testimonial"
+      hideCursor
+      className={cn(gridClassName, "cursor-grab select-none")}
+    >
+      {content}
     </AdvanceClick>
   );
 }

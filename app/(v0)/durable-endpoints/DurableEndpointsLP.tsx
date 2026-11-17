@@ -7,6 +7,7 @@ import { H1 } from "src/components/LandingPage/Heading";
 import { Button } from "components/RedesignedLanding/Button";
 import Resources from "src/components/LandingPage/Resources";
 import Link from "next/link";
+import { refLinkProps } from "@/utils/v1/ref";
 
 const ref = "product-durable-endpoints";
 
@@ -258,7 +259,7 @@ function Hero({
           <div className="flex flex-row flex-wrap justify-center gap-4 md:justify-start">
             {ctas.map((cta, idx) => (
               <Button key={idx} variant={cta.variant} asChild>
-                <Link href={cta.href}>{cta.text}</Link>
+                <Link {...refLinkProps(cta.href)}>{cta.text}</Link>
               </Button>
             ))}
           </div>

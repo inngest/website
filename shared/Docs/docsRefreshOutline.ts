@@ -282,7 +282,7 @@ export const docsRefreshOutline: DocsRefreshPage[] = [
                 href: "/docs/durable-execution/guides-and-advanced/events-and-triggers/receive-webhook-events",
               },
               {
-                title: "Schedules and delayed starts",
+                title: "Cron, schedules, and delayed starts",
                 href: "/docs/durable-execution/guides-and-advanced/events-and-triggers/schedules-and-delayed-starts",
               },
             ],
@@ -474,6 +474,10 @@ export const docsRefreshOutline: DocsRefreshPage[] = [
                 href: "/docs/sandboxes/features/base-images",
               },
               {
+                title: "Custom images",
+                href: "/docs/sandboxes/features/custom-images",
+              },
+              {
                 title: "Pause and resume",
                 href: "/docs/sandboxes/features/pause-and-resume",
               },
@@ -500,6 +504,14 @@ export const docsRefreshOutline: DocsRefreshPage[] = [
               {
                 title: "Managed lifecycle",
                 href: "/docs/sandboxes/features/managed-lifecycle",
+              },
+              {
+                title: "Commands",
+                href: "/docs/sandboxes/features/commands",
+              },
+              {
+                title: "Tools",
+                href: "/docs/sandboxes/features/tools",
               },
               {
                 title: "Isolation and security",

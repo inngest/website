@@ -12,6 +12,7 @@ import {
   RiMarkdownLine,
 } from "@remixicon/react";
 import clsx from "clsx";
+import { refLinkProps } from "@/utils/v1/ref";
 
 // Scira AI icon component
 function SciraIcon({ className }: { className?: string }) {
@@ -255,7 +256,7 @@ function ActionLink({
 }) {
   return (
     <a
-      href={href}
+      {...refLinkProps(href)}
       target="_blank"
       rel="noreferrer noopener"
       className="flex w-full items-center gap-2 rounded-sm px-2 py-1.5 text-sm text-slate-700 hover:bg-slate-100 hover:text-slate-900 dark:text-slate-300 dark:hover:bg-slate-800 dark:hover:text-slate-50"

@@ -23,6 +23,7 @@ import PlatformPopover, { platformDropdown } from "./PlatformPopover";
 import ResourcePopover, { resourceDropdown } from "./ResourcePopover";
 import { featuredBlogPost } from "./helpers";
 import classNames from "src/utils/classNames";
+import { refLinkProps } from "@/utils/v1/ref";
 
 export default function Header() {
   const pathname = usePathname();
@@ -93,20 +94,20 @@ export default function Header() {
           <div className="hidden md:flex md:gap-x-6">
             <PlatformPopover />
             <Link
-              href={"/customers?ref=nav"}
+              {...refLinkProps("/customers?ref=nav")}
               className="flex hidden items-center gap-x-1 text-sm/6 font-semibold text-white min-[920px]:flex"
             >
               CUSTOMERS
             </Link>
             <ResourcePopover />
             <Link
-              href={"/docs?ref=nav"}
+              {...refLinkProps("/docs?ref=nav")}
               className="flex items-center gap-x-1 text-sm/6 font-semibold text-white"
             >
               DOCS
             </Link>
             <Link
-              href={"/pricing?ref=nav"}
+              {...refLinkProps("/pricing?ref=nav")}
               className="flex hidden items-center gap-x-1 text-sm/6 font-semibold text-white min-[820px]:flex"
             >
               PRICING
@@ -118,12 +119,12 @@ export default function Header() {
           <OpenSourceButton className="h-9 rounded-none border" />
           <div className="hidden space-x-4 md:flex">
             <Button variant="outline" className="hidden xl:flex" asChild>
-              <Link href={`${process.env.NEXT_PUBLIC_APP_HOST}?ref=nav`}>
+              <Link {...refLinkProps(`${process.env.NEXT_PUBLIC_APP_HOST}?ref=nav`)}>
                 Sign In
               </Link>
             </Button>
             <Button variant="default" asChild>
-              <Link href={`${process.env.NEXT_PUBLIC_SIGNUP_URL}?ref=nav`}>
+              <Link {...refLinkProps(`${process.env.NEXT_PUBLIC_SIGNUP_URL}?ref=nav`)}>
                 Sign up <span aria-hidden="true">→</span>
               </Link>
             </Button>
@@ -234,7 +235,7 @@ export default function Header() {
                       {platformDropdown.map((item) => (
                         <a
                           key={item.name}
-                          href={item.href}
+                          {...refLinkProps(item.href)}
                           className="flex gap-x-2 px-6 py-3 text-sm font-semibold leading-6 text-stone-50 hover:bg-stone-800"
                         >
                           <div className="flex items-center gap-x-2">
@@ -257,14 +258,14 @@ export default function Header() {
                 </Disclosure>
 
                 <Link
-                  href="/docs?ref=nav"
+                  {...refLinkProps("/docs?ref=nav")}
                   className="-mx-3 block border-b border-stone-700 px-3 py-4 text-base/7 font-semibold uppercase text-stone-50 hover:bg-stone-800"
                 >
                   Docs
                 </Link>
 
                 <Link
-                  href="/customers?ref=nav"
+                  {...refLinkProps("/customers?ref=nav")}
                   className="-mx-3 block border-b border-stone-700 px-3 py-4 text-base/7 font-semibold uppercase text-stone-50 hover:bg-stone-800"
                 >
                   Customers
@@ -286,7 +287,7 @@ export default function Header() {
                       {resourceDropdown.map((item) => (
                         <a
                           key={item.name}
-                          href={item.href}
+                          {...refLinkProps(item.href)}
                           className="flex gap-x-2 px-6 py-3 text-sm font-semibold leading-6 text-stone-50 hover:bg-stone-800"
                         >
                           <div className="flex items-center gap-x-2">
@@ -320,7 +321,7 @@ export default function Header() {
                         </div>
                         <div className="flex items-center">
                           <h4 className="ml-4 mt-2 font-whyte text-sm font-normal leading-[1.05rem] text-stone-50">
-                            <a href={featuredBlogPost.href}>
+                            <a {...refLinkProps(featuredBlogPost.href)}>
                               <span className="absolute inset-0" />
                               {featuredBlogPost.title}
                             </a>
@@ -342,14 +343,14 @@ export default function Header() {
                 <div className="flex space-x-4">
                   <Button variant="outline" asChild>
                     <Link
-                      href={`${process.env.NEXT_PUBLIC_APP_HOST}?ref=nav`}
+                      {...refLinkProps(`${process.env.NEXT_PUBLIC_APP_HOST}?ref=nav`)}
                     >
                       Sign In
                     </Link>
                   </Button>
                   <Button variant="default" asChild>
                     <Link
-                      href={`${process.env.NEXT_PUBLIC_SIGNUP_URL}?ref=nav`}
+                      {...refLinkProps(`${process.env.NEXT_PUBLIC_SIGNUP_URL}?ref=nav`)}
                     >
                       Sign up <span aria-hidden="true">→</span>
                     </Link>

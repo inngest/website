@@ -5,6 +5,7 @@ import { useState } from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { cn } from "../utils/classNames";
+import { refLinkProps } from "@/utils/v1/ref";
 
 export default function FooterCTA() {
   const [trackMouse, setTrackMouse] = useState(false);
@@ -39,7 +40,7 @@ export default function FooterCTA() {
           <div className="flex flex-col items-center justify-center gap-x-6 sm:flex-row">
             <div className="mt-4 flex w-64 justify-center sm:w-auto">
               <Button className="w-full sm:w-auto" variant="default" asChild>
-                <Link href={`/contact?ref=${refSlug}-footer-cta`}>
+                <Link {...refLinkProps(`/contact?ref=${refSlug}-footer-cta`)}>
                   Let's Talk
                 </Link>
               </Button>
@@ -52,7 +53,7 @@ export default function FooterCTA() {
               )}
             >
               <Button variant="outline" className="w-full sm:w-auto" asChild>
-                <Link href={`/docs?ref=${refSlug}-footer-cta`}>
+                <Link {...refLinkProps(`/docs?ref=${refSlug}-footer-cta`)}>
                   I'd rather look at the docs first
                 </Link>
               </Button>

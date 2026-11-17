@@ -1,5 +1,6 @@
 import { analytics } from "@/utils/segment";
 import { readFirstTouch } from "src/shared/firstTouch";
+import { getPageRef } from "@/utils/v1/refHandoff";
 
 export const CONTACT_EVENT_NAME = "contact.form.sent";
 export const CONTACT_EVENT_VERSION = "2023-12-12.1";
@@ -67,13 +68,9 @@ export function calculateSpamScore(
   return score;
 }
 
+// URL `?ref=` first, then a ref handed off by a tracked link click.
 function readRef(): string {
-  if (typeof window === "undefined") return "";
-  try {
-    return new URLSearchParams(window.location.search).get("ref") ?? "";
-  } catch {
-    return "";
-  }
+  return getPageRef()?.ref ?? "";
 }
 
 export interface ContactSubmission {

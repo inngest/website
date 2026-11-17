@@ -4,7 +4,6 @@ import PageShell from "@/components/v1/PageShell";
 import LogoStrip from "@/components/v1/sections/Home/LogoStrip";
 import StartBuilding from "@/components/v1/sections/Home/StartBuilding";
 import Hero from "@/components/v1/sections/NycLongRun/Hero";
-import KeepGoing from "@/components/v1/sections/NycLongRun/KeepGoing";
 import NycDifference from "@/components/v1/sections/NycLongRun/NycDifference";
 import NycUseCases from "@/components/v1/sections/NycLongRun/NycUseCases";
 import OnTheGround from "@/components/v1/sections/NycLongRun/OnTheGround";
@@ -15,10 +14,8 @@ import { NYC_SECTION_PADDING } from "@/components/v1/sections/NycLongRun/nycHead
  * inngest.com/nyc-long-run — the "Build for the Lonng Run" campaign page
  * behind the New York placements. step.run/nyc points here.
  *
- * Structurally the San Francisco page plus one section: hero → what a
- * lonng run is made of → the product difference → use cases → quick
- * starts → the city's programming → resources. What differs beyond that
- * is the city, its events, and the runner — NYC gets the pizza slice
+ * Hero, then use cases, the product difference, resources, the
+ * city's programming, and quick starts. NYC gets the pizza slice
  * rather than the coffee cup.
  */
 export default function NycLongRun() {
@@ -29,17 +26,16 @@ export default function NycLongRun() {
         {/* Customer logos sit directly under the hero, per design — the
             swoosh above bleeds over them. */}
         <LogoStrip contained />
-        <KeepGoing />
-        <NycDifference />
         <NycUseCases />
+        <NycDifference />
+        <NycResources />
+        <OnTheGround />
         <StartBuilding
           refTag="nyc-long-run-start-building"
           title="Start building."
           titleClassName="normal-case"
           className={NYC_SECTION_PADDING}
         />
-        <OnTheGround />
-        <NycResources />
       </div>
     </PageShell>
   );

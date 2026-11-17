@@ -9,6 +9,7 @@ import {
   onCursorTiltMove,
   onCursorTiltLeave,
 } from "@/utils/v1/cursorFx";
+import { refLinkProps } from "@/utils/v1/ref";
 
 /**
  * Customer-story card — the shared component used both
@@ -44,7 +45,7 @@ export default function StoryCard({
 }: StoryCardProps) {
   return (
     <Link
-      href={href}
+      {...refLinkProps(href)}
       onPointerMove={onCursorTiltMove}
       onPointerLeave={onCursorTiltLeave}
       style={CURSOR_TILT_SEED}

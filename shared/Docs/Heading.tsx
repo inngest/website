@@ -4,6 +4,7 @@ import { useInView } from "framer-motion";
 import { useSectionStore } from "./SectionProvider";
 import { Tag } from "./Tag";
 import { remToPx } from "../../utils/remToPx";
+import { refLinkProps } from "@/utils/v1/ref";
 
 function AnchorIcon(props) {
   return (
@@ -40,7 +41,7 @@ function Eyebrow({ tag, label }) {
 function Anchor({ id, inView, children, className = "" }) {
   return (
     <a
-      href={`#${id}`}
+      {...refLinkProps(`#${id}`)}
       className={`group text-inherit no-underline hover:text-inherit ${className}`}
     >
       {inView && (

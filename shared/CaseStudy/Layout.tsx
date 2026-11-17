@@ -8,6 +8,7 @@ import Footer from "src/components/RedesignedLanding/Footer";
 import { Button } from "../Button";
 import { SectionProvider } from "shared/Docs/SectionProvider";
 import AnnouncementBanner from "src/components/AnnouncementBanner";
+import { refLinkProps } from "@/utils/v1/ref";
 
 export type Props = {
   children: React.ReactNode;
@@ -139,7 +140,7 @@ export function Layout({
             {companyURL && (
               <p>
                 <a
-                  href={companyURL}
+                  {...refLinkProps(companyURL)}
                   target="_blank"
                   className="hover:underline"
                 >

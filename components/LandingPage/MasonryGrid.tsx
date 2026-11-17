@@ -1,6 +1,7 @@
 import Link from "next/link";
 import clsx from "clsx";
 import { RiArrowRightSLine } from "@remixicon/react";
+import { refLinkProps } from "@/utils/v1/ref";
 
 export type MasonryGridItem = {
   title: string;
@@ -35,7 +36,7 @@ export default function MasonryGrid({
             <h3 className="text-xl">
               {url ? (
                 <Link
-                  href={url}
+                  {...refLinkProps(url)}
                   className="flex flex-row gap-2 items-center group hover:underline underline-offset-2 transition-all cursor-pointer"
                 >
                   {title}{" "}

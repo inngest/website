@@ -13,7 +13,7 @@ OpenAI Codex is the model that powers GitHub Copilot, an “AI pair programmer�
 Today, we’re leveraging that power to release an AI workflow builder, so you can instantly understand how your problem might be solved with Inngest by simply explaining what you’d like to achieve.
 
 <aside>
-  <Button href="/ai-personalized-documentation" arrow="right">
+  <Button href="/docs/ai-dev-tools/agent-skills" arrow="right">
     <span className="text-white">Try it out now</span>
   </Button>
 </aside>
@@ -131,6 +131,6 @@ Even specific to just software, personalizing learning experiences will accelera
 
 Make sure to check out Inngest’s offering and see how we might be able to solve your problem today.
 
-- [Try it out now on our site →](/ai-personalized-documentation) (no Discord needed)
+- [Try it out now on our site →](/docs/ai-dev-tools/agent-skills) (no Discord needed)
 - [Introduction to Inngest](/docs)
 - Check out the [inngest/inngestabot](https://github.com/inngest/inngestabot) code

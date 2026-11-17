@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { motion } from "motion/react";
-import { appendRef } from "@/utils/v1/ref";
+import { appendRef, refLinkProps } from "@/utils/v1/ref";
 import { reveals } from "@/utils/v1/reveals";
 import Section from "@/components/v1/sections/shared/Section";
 import SectionHeader from "@/components/v1/sections/shared/SectionHeader";
@@ -126,7 +126,7 @@ function UseCaseCard({ useCase }: { useCase: UseCase }) {
   // stays on. Accessibility: aria-label restated, focus-visible ring.
   return (
     <Link
-      href={appendRef(useCase.href, "home-use-cases")}
+      {...refLinkProps(appendRef(useCase.href, "home-use-cases"))}
       aria-label={`${useCase.title} — learn more`}
       onPointerMove={onCursorTiltMove}
       onPointerLeave={onCursorTiltLeave}

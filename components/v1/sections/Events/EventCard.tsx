@@ -4,6 +4,7 @@ import SpotlightFrame from "@/components/v1/sections/Events/SpotlightFrame";
 import RegisterCue from "@/components/v1/sections/Events/RegisterCue";
 import { cn } from "@/utils/v1/cn";
 import { isPastEvent, type EventItem } from "@/components/v1/sections/Events/data";
+import { refLinkProps } from "@/utils/v1/ref";
 
 // The grid card used in the All Events section. Hover matches the home
 // "Get Started" cards: cursor spotlight + 4px lift + soft shadow + a
@@ -11,7 +12,7 @@ import { isPastEvent, type EventItem } from "@/components/v1/sections/Events/dat
 // well).
 export default function EventCard({ ev, newTab }: { ev: EventItem; newTab?: boolean }) {
   return (
-    <Link href={ev.href} className="block h-full rounded-lg" {...(newTab ? { target: "_blank", rel: "noopener noreferrer" } : {})}>
+    <Link {...refLinkProps(ev.href)} className="block h-full rounded-lg" {...(newTab ? { target: "_blank", rel: "noopener noreferrer" } : {})}>
       <SpotlightFrame
         tilt
         className="h-full"

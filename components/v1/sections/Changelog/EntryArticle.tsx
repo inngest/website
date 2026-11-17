@@ -11,6 +11,7 @@ import {
   entryId,
   type ChangelogItem,
 } from "@/components/v1/sections/Changelog/data";
+import { refLinkProps } from "@/utils/v1/ref";
 
 // A single changelog entry — date over title, then
 // the MDX body. The DOM id matches the content menu's scroll-spy target.
@@ -28,7 +29,7 @@ export default function EntryArticle({ item }: { item: ChangelogItem }) {
         </p>
         <h2 className="text-v1-heading-sm text-white">
           <Link
-            href={getChangelogURL(item.slug, true)}
+            {...refLinkProps(getChangelogURL(item.slug, true))}
             className="motion-safe:transition-colors hover:text-v1-accent-salmon-light"
           >
             {item.metadata.title}

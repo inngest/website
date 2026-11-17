@@ -55,7 +55,7 @@ const STUDIES: CaseStudyItem[] = [
         automatically if the user acts first.
       </>
     ),
-    logo: { src: "/assets/v1/logos/resend.svg", alt: "Resend", width: 96, height: 24 },
+    logo: { src: "/assets/v1/logos/resend.svg", alt: "Resend", width: 113, height: 24 },
     cta: { label: "See the example", href: "/customers/resend" },
   },
   {

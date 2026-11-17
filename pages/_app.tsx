@@ -9,6 +9,8 @@ import { trackPageView } from "../utils/tracking";
 import { getOpenGraphImageURL } from "../utils/social";
 import { useAnonymousID } from "../shared/trackingHooks";
 import { useFirstTouch } from "../shared/firstTouch";
+import { TS_STABLE } from "../shared/Docs/LanguageStore";
+import { canonicalDocsPath } from "../utils/docsCanonical.mjs";
 import "../styles/globals.css";
 import * as fullstory from "@fullstory/browser";
 import Analytics from "@/components/Analytics";
@@ -118,11 +120,15 @@ function MyApp({ Component, pageProps }: AppProps<DefaultProps>) {
     }
   }
 
+  // Path only (no query or hash). The stable TypeScript reference canonicalises
+  // to its versionless "latest" URL; see utils/docsCanonical.mjs.
+  const canonicalPath = canonicalDocsPath(
+    router.asPath.split(/[?#]/)[0],
+    TS_STABLE
+  );
   const canonicalUrl =
     pageProps?.meta?.canonical_url ||
-    `https://www.inngest.com${
-      router.asPath === "/" ? "" : router.asPath
-    }`.split("?")[0];
+    `https://www.inngest.com${canonicalPath === "/" ? "" : canonicalPath}`;
   const ogImage = pageProps?.meta?.image
     ? pageProps.meta.image.match(/^\//) // Prefix URLs starting with "/" with the host
       ? `${process.env.NEXT_PUBLIC_HOST}${pageProps.meta.image}`

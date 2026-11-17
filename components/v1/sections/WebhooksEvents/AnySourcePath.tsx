@@ -9,6 +9,7 @@ import GradientFrame from "@/components/v1/sections/shared/GradientFrame";
 import Section from "@/components/v1/sections/shared/Section";
 import SectionHeader from "@/components/v1/sections/shared/SectionHeader";
 import { cn } from "@/utils/v1/cn";
+import { refLinkProps } from "@/utils/v1/ref";
 
 // "ANY SOURCE, ANY PATH" — left heading + body, right 2-up
 // bordered card grid. Each card has an uppercase eyebrow + glyph
@@ -156,7 +157,7 @@ function Card({
       <p className={cn("text-v1-body-sm", textAlign)}>{body}</p>
 
       {href && (
-        <Link href={href} aria-label={eyebrow} className="absolute inset-0 z-10" />
+        <Link {...refLinkProps(href)} aria-label={eyebrow} className="absolute inset-0 z-10" />
       )}
     </motion.li>
   );

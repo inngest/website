@@ -1,5 +1,6 @@
 import { useState } from "react";
 import "./agentView.css";
+import { refLinkProps } from "@/utils/v1/ref";
 
 type Props = {
   title: string;   // e.g. "/patterns.md" or "/patterns/flash-sales.md"
@@ -82,7 +83,7 @@ export default function AgentView({ title, markdown, mdUrl }: Props) {
         <p className="av-desc">
           Raw markdown for LLMs, copilots, and any agent that speaks docs.{" "}
           Stable URL:{" "}
-          <a href={mdUrl} className="av-url-link">
+          <a {...refLinkProps(mdUrl)} className="av-url-link">
             {mdUrl}
           </a>
         </p>

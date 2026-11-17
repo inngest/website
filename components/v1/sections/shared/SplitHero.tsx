@@ -9,6 +9,7 @@ import { tweens } from "@/utils/v1/springs";
 import { CURSOR_SPOTLIGHT_SEED } from "@/utils/v1/cursorFx";
 import { setHeroPanel, clearHeroPanel } from "@/utils/v1/heroNav";
 import { cn } from "@/utils/v1/cn";
+import { refLinkProps } from "@/utils/v1/ref";
 
 /**
  * Shared layout shell for landing-page heroes: a coloured panel on the
@@ -180,7 +181,7 @@ function HeroBreadcrumb({
                 )}
                 {item.href && !isLast ? (
                   <Link
-                    href={item.href}
+                    {...refLinkProps(item.href)}
                     className="transition-opacity duration-200 hover:opacity-70"
                   >
                     {item.label}

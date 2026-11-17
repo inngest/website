@@ -15,7 +15,7 @@ For the full API surface, see the [metadata reference](/docs/reference/typescrip
 
 ## Add metadata to a run
 
-`step.metadata()` works like any other step tool. Pass a memoization ID and call `.update()` with your key-value pairs. The ID ensures the update runs exactly once, even if the function re-executes during later steps.
+`step.metadata()` works like any other step tool. Pass a memoization ID and call `.set()` with your key-value pairs. The ID ensures the write runs exactly once, even if the function re-executes during later steps.
 
 <CodeGroup>
 ```ts {{ title: "TypeScript" }}
@@ -27,7 +27,7 @@ const processOrder = inngest.createFunction(
     });
 
     // Creates its own step in the trace, attaches metadata to the run
-    await step.metadata("record-payment-info").update({
+    await step.metadata("record-payment-info").set({
       paymentId: charge.id,
       processor: "stripe",
       amount: event.data.amount,
@@ -60,7 +60,7 @@ const processOrder = inngest.createFunction(
     const user = await step.run("fetch-user", async () => {
       const user = await fetchUser(event.data.userId);
       // Batched with the step output, no additional step created
-      await inngest.metadata.update({ company: user.company });
+      await inngest.metadata.set({ company: user.company });
       return user;
     });
   },
@@ -75,16 +75,16 @@ const processOrder = inngest.createFunction(
 
 ## Use custom kinds to group metadata
 
-By default, all metadata lands under the "default" kind. Pass a second argument to `.update()` to organize metadata into named groups:
+By default, all metadata lands under the "default" kind. Pass a second argument to `.set()` to organize metadata into named groups:
 
 <CodeGroup>
 ```ts {{ title: "TypeScript" }}
-await step.metadata("payment-meta").update(
+await step.metadata("payment-meta").set(
   { invoiceId: "inv_123", total: 99.99 },
   "billing",
 );
 
-await step.metadata("tracking-meta").update(
+await step.metadata("tracking-meta").set(
   { source: "organic", campaign: "spring-2025" },
   "analytics",
 );
@@ -98,16 +98,51 @@ await step.metadata("tracking-meta").update(
 
 In the dashboard, these show up as separate sections: "User Metadata (billing)" and "User Metadata (analytics)". This keeps things readable when a run has several categories of metadata.
 
-## Batch multiple updates in one step
+## Send all values for a kind in one call
 
-Use `.do()` to send several metadata updates within a single memoized step. This avoids creating a separate step for each update:
+Each write replaces all of the values for its kind on its target. The latest write for a kind wins, so keys from an earlier write to the same kind are not kept:
+
+<CodeGroup>
+```ts {{ title: "TypeScript" }}
+await step.metadata("order-received").set({ orderId: "ord_123" });
+await step.metadata("order-shipped").set({ trackingNumber: "1Z999" });
+// The run's metadata is now { trackingNumber: "1Z999" }
+```
+
+<SdkUnsupported title="Python" feature="Metadata" />
+
+<SdkUnsupported title="Go" feature="Metadata" />
+</CodeGroup>
+
+
+Send everything for a kind in a single `.set()` call, or use a separate kind for each group of values you write independently:
+
+<CodeGroup>
+```ts {{ title: "TypeScript" }}
+await step.metadata("order-received").set({ orderId: "ord_123" }, "order");
+await step.metadata("order-shipped").set({ trackingNumber: "1Z999" }, "shipping");
+```
+
+<SdkUnsupported title="Python" feature="Metadata" />
+
+<SdkUnsupported title="Go" feature="Metadata" />
+</CodeGroup>
+
+
+<Info>
+  `.update()` is deprecated in favor of `.set()`. Its writes also replace the values for their kind, but calls to the same kind within a single step are merged before they are sent. See the [reference](/docs/reference/typescript/v4/functions/metadata#update-deprecated) for details.
+</Info>
+
+## Batch multiple writes in one step
+
+Use `.do()` to send several metadata writes within a single memoized step. This avoids creating a separate step for each write:
 
 <CodeGroup>
 ```ts {{ title: "TypeScript" }}
 await step.metadata("update-all-statuses").do(async (builder) => {
-  await builder.update({ phase: "started", initiator: "system" }, "workflow");
-  await builder.update({ estimatedDuration: 30 }, "timing");
-  await builder.update({ region: "us-east-1" }, "infra");
+  await builder.set({ phase: "started", initiator: "system" }, "workflow");
+  await builder.set({ estimatedDuration: 30 }, "timing");
+  await builder.set({ region: "us-east-1" }, "infra");
 });
 ```
 
@@ -117,7 +152,7 @@ await step.metadata("update-all-statuses").do(async (builder) => {
 </CodeGroup>
 
 
-All three updates share the same memoization step and execute exactly once.
+All three writes share the same memoization step and execute exactly once.
 
 ## Scope metadata to a specific target
 
@@ -129,17 +164,17 @@ const myFunction = inngest.createFunction(
   { id: "my-function", triggers: [{ event: "app/task.started" }] },
   async ({ event, step }) => {
     // Explicitly scope to the current run (same as default)
-    await step.metadata("run-status").run().update({
+    await step.metadata("run-status").run().set({
       priority: "high",
     });
 
     // Scope to a specific step by its ID
-    await step.metadata("step-annotation").step("process-data").update({
+    await step.metadata("step-annotation").step("process-data").set({
       recordsProcessed: 1500,
     });
 
     // Scope to an extended trace span
-    await step.metadata("span-details").span(spanId).update({
+    await step.metadata("span-details").span(spanId).set({
       externalCallDuration: 230,
     });
   },
@@ -154,7 +189,7 @@ const myFunction = inngest.createFunction(
 
 Builder methods are chainable and self-removing. Once you call `.run()`, you can't also call `.step()` on the same builder.
 
-## Update metadata on a different run
+## Set metadata on a different run
 
 You can attach metadata to a completed or in-progress run from a separate function. This is useful for post-processing, like scoring the output of an AI run:
 
@@ -169,7 +204,7 @@ const evaluateRun = inngest.createFunction(
 
     await step.metadata("record-score")
       .run(event.data.runId)
-      .update({
+      .set({
         qualityScore: score.quality,
         relevanceScore: score.relevance,
         evaluatedAt: Date.now(),
@@ -184,15 +219,15 @@ const evaluateRun = inngest.createFunction(
 </CodeGroup>
 
 
-When targeting a different run, the update is sent via REST API (not batched), since the target run has a different execution context.
+When targeting a different run, the write is sent via REST API (not batched), since the target run has a different execution context.
 
-## Update metadata from outside a function
+## Set metadata from outside a function
 
-Use `inngest.metadata` with an explicit run ID to update metadata from an API route or external service:
+Use `inngest.metadata` with an explicit run ID to set metadata from an API route or external service:
 
 <CodeGroup>
 ```ts {{ title: "TypeScript" }}
-await inngest.metadata.run(runId).update({
+await inngest.metadata.run(runId).set({
   approvedBy: "admin@example.com",
   approvalTimestamp: Date.now(),
 });
@@ -205,7 +240,7 @@ await inngest.metadata.run(runId).update({
 
 
 <Warning>
-  Calling `inngest.metadata.update()` in the function body but outside of a `step.run()` is not durable. The function re-executes from the top on each subsequent step, so that update will fire again during every driver call. Use `step.metadata()` or call `inngest.metadata` inside a `step.run()` for durable updates.
+  Calling `inngest.metadata.set()` in the function body but outside of a `step.run()` is not durable. The function re-executes from the top on each subsequent step, so that write will fire again during every driver call. Use `step.metadata()` or call `inngest.metadata` inside a `step.run()` for durable writes.
 </Warning>
 
 ## View metadata in the dashboard

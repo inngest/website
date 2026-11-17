@@ -5,6 +5,7 @@ import Header from "src/components/RedesignedLanding/Header/Header";
 import Footer from "../../shared/Footer";
 import Container from "../../shared/layout/Container";
 import HowInngestWorksGraphic from "src/shared/Graphics/HowInngestWorks";
+import { refLinkProps } from "@/utils/v1/ref";
 
 export async function getStaticProps() {
   return {
@@ -42,7 +43,7 @@ export default function HowInngestWorks() {
           <div className="my-12 max-w-2xl">
             <p>
               Using the{" "}
-              <a href="/docs/getting-started/nextjs-quick-start?ref=product-how-it-works">
+              <a {...refLinkProps("/docs/getting-started/nextjs-quick-start?ref=product-how-it-works")}>
                 Inngest SDK
               </a>
               , you define your functions within your existing codebase and

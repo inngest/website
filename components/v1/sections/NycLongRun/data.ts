@@ -17,12 +17,9 @@ export const HERO = {
   // "Built here, running here" is SF's line — Inngest is built there.
   // NYC gets the campaign line instead, which is true anywhere.
   eyebrowAccent: "Build for the lonng run.",
-  // Three paragraphs: the campaign line, then what goes wrong on a long
-  // run, then what Inngest does about it.
   body: [
     "26.2 is one kind of lonng run. Another happens in production.",
-    "Agents and workflows can run for hours, days, or weeks. When something fails along the way, the work that already finished shouldn't have to start over.",
-    "Inngest makes lonng-running work durable — checkpointing every step so failures can retry from where they happened instead of sending the whole run back to the starting line.",
+    "If you're building agents, you know they might have to wait hours or days for user input. Wrap code in APIs that tell it when to stop, start, fan-out, and retry, so your app picks up where it left off, not back at the starting line.",
   ],
   cta: {
     label: "Start Free",
@@ -33,21 +30,21 @@ export const HERO = {
   },
   // Shows the command itself rather than a generic label, per design.
   installCta: { label: "npm install inngest", command: "npm install inngest" },
-  // The design's run-trace panel: a step.run function with a flaky step
-  // retrying across three attempts before completing.
+  // Marathon weekend photograph: the campaign sign, held up on the course.
   visual: {
-    src: "/assets/v1/nyc-long-run/dashboard-header-ui.png",
-    alt: "An Inngest run trace: a step.run function with a flaky step retrying across three attempts before completing, alongside each step's duration.",
-    width: 1255,
-    height: 973,
+    src: "/assets/v1/nyc-long-run/keep-running-sign.webp",
+    alt: "A person at the New York City Marathon holding an orange sign that reads “Some things should keep running. You, apparently.” with the Inngest logo.",
+    width: 750,
+    height: 500,
+    caption: "Inngest at the 2026 NYC Marathon",
   },
 } as const;
 
 /* ── 02 · The product difference ───────────────────────────────────── */
 
 export const NYC_DIFFERENCE = {
-  title: ["Durable doesn't have to be hard."],
-  body: "Orchestrating lonng-running code is tough. But you don't need to wrangle a bunch of extra infrastructure to do it. The Inngest SDK is the fastest way to make any code durable and observable by default.",
+  title: ["Building durable agents doesn't have to be hard."],
+  body: "Orchestrating long-running code is tough. But you don't need to wrangle a bunch of extra infrastructure to do it. The Inngest SDK is the fastest way to make any code durable and observable by default.",
   /** Reuses the homepage's before/after assets and the shared slider. */
   before: {
     src: "/assets/v1/it-doesnt-have-to-be-hard/before.webp",
@@ -82,7 +79,7 @@ export const NYC_USE_CASES: NycUseCase[] = [
     title: "Workflows",
     body: "Coordinate multi-step processes without losing completed work.",
     icon: "durable-execution",
-    href: "/docs/features/inngest-functions/steps-workflows?ref=nyc-long-run-use-cases",
+    href: "/docs/durable-execution/primitives?ref=nyc-long-run-use-cases",
     image: {
       src: "/assets/v1/nyc-long-run/workflows.png",
       // Decorative: the card title and body already say what it is.
@@ -95,7 +92,7 @@ export const NYC_USE_CASES: NycUseCase[] = [
     title: "Background jobs",
     body: "Run work beyond the request-response cycle.",
     icon: "background-jobs",
-    href: "/docs/guides/background-jobs?ref=nyc-long-run-use-cases",
+    href: "/docs/patterns/jobs/keeping-your-api-fast?ref=nyc-long-run-use-cases",
     image: {
       src: "/assets/v1/nyc-long-run/background-jobs.png",
       // Decorative: the card title and body already say what it is.
@@ -108,7 +105,7 @@ export const NYC_USE_CASES: NycUseCase[] = [
     title: "AI agents",
     body: "Support unpredictable sequences of model calls and tool use.",
     icon: "ai-workflows",
-    href: "/docs/learn/durable-agents?ref=nyc-long-run-use-cases",
+    href: "/docs/durable-execution/durable-agents?ref=nyc-long-run-use-cases",
     image: {
       src: "/assets/v1/nyc-long-run/agent-bot.png",
       // Decorative: the card title and body already say what it is.
@@ -121,7 +118,7 @@ export const NYC_USE_CASES: NycUseCase[] = [
     title: "Data pipelines",
     body: "Process multi-step data operations with durable execution.",
     icon: "queues",
-    href: "/docs/guides/flow-control?ref=nyc-long-run-use-cases",
+    href: "/docs/durable-execution/flow-control?ref=nyc-long-run-use-cases",
     image: {
       src: "/assets/v1/nyc-long-run/data-pipelines.png",
       // Decorative: the card title and body already say what it is.
@@ -153,11 +150,9 @@ export interface NycCampaignCard {
 /**
  * New York programming.
  *
- * Founders Run Club is fully confirmed — date, time, venue and a real
- * registration site — so it carries a live CTA. Marathon weekend is
- * called out separately: the date is the campaign's anchor, but there's
- * no confirmed venue, meeting point or registration page yet, so it
- * shows what is known and no button.
+ * Both events have already happened. Founders Run Club keeps its
+ * registration link. Marathon weekend has no venue or registration
+ * page, so it shows the date and no button.
  */
 export const NYC_CAMPAIGN_CARDS: NycCampaignCard[] = [
   {
@@ -175,7 +170,7 @@ export const NYC_CAMPAIGN_CARDS: NycCampaignCard[] = [
     id: "marathon-weekend",
     title: "Marathon weekend.",
     body: "The city fills up with people doing something unreasonable for an unreasonably long time. We'll be out there for it.",
-    pending: "November 1 · Details to come",
+    detail: "Past event · November 1",
     image: {
       src: "/assets/v1/nyc-long-run/campaign-posters.webp",
       // Describes what the picture shows, not an event that happened —
@@ -204,6 +199,9 @@ export interface NycResource {
   /** Exact published title. Do not paraphrase — these are real pages. */
   title: string;
   href: string;
+  /** Featured image for the linked page. Decorative: the card title
+   *  repeats it, so the alt stays empty. */
+  image: { src: string; alt: string };
 }
 
 /**
@@ -222,29 +220,43 @@ export const NYC_RESOURCES: NycResource[] = [
     // running", not the campaign's "lonng".
     title: "All your workflows are about to be long running. Build for it.",
     href: "/blog/all-your-workflows-are-about-to-be-long-running?ref=nyc-long-run-resources",
+    image: {
+      src: "/assets/v1/long-run/long-running-blog.webp",
+      alt: "",
+    },
   },
   {
-    id: "visual-primer",
-    kind: "Walkthrough",
-    title: "What are Durable Functions? A visual JavaScript primer",
-    href: "/blog/durable-functions-a-visual-javascript-primer?ref=nyc-long-run-resources",
+    id: "ordinal-case-study",
+    kind: "Case study",
+    title:
+      "Built for the Lonng Run: How Ordinal scaled social orchestration to 1K enterprises with just two engineers.",
+    href: "/customers/ordinal?ref=nyc-long-run-resources",
+    image: {
+      src: "/assets/blog/ordinal-customer-story/featured-image.jpg",
+      alt: "",
+    },
   },
   {
-    id: "steps-guide",
-    kind: "Developer guide",
-    title: "Steps in Inngest: checkpointed, retriable units of work",
-    href: "/docs/learn/inngest-steps?ref=nyc-long-run-resources",
+    id: "first-come-first-served",
+    kind: "Blog",
+    title: "Long running jobs shouldn't be first-come first-served",
+    href: "/blog/long-running-jobs-shouldnt-be-first-come-first-served?ref=nyc-long-run-resources",
+    image: {
+      // Page-only cover. The post itself keeps its green featured image.
+      src: "/assets/v1/nyc-long-run/long-running-jobs-cover.jpg",
+      alt: "",
+    },
   },
 ];
 
 export const NYC_USE_CASES_COPY = {
   title: "Because one request is never the finish line.",
-  body: "However it's written, wherever it runs, Inngest makes lonng running jobs (and short sprints), unbreakable.",
+  body: "However it's written, wherever it runs, Inngest makes long running jobs (and short sprints), unbreakable.",
 } as const;
 
 export const NYC_RESOURCES_COPY = {
-  title: ["Keep building."],
-  body: "Explore the technical ideas behind lonng-running agents and workflows.",
+  title: ["Learn more."],
+  body: "Explore the technical ideas behind long-running agents and workflows.",
 } as const;
 
 /* ── 02 · What a lonng run is made of ──────────────────────────────── */

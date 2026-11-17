@@ -14,6 +14,7 @@ import {
   SF_CAMPAIGN,
   SF_CAMPAIGN_CARDS,
 } from "@/components/v1/sections/SfLongRun/data";
+import { refLinkProps } from "@/utils/v1/ref";
 
 /**
  * Section 06 — the San Francisco programming.
@@ -113,7 +114,7 @@ export default function OnTheGround() {
 
               {card.cta && (
                 <Link
-                  href={card.cta.href}
+                  {...refLinkProps(card.cta.href)}
                   className="text-v1-label-md uppercase text-v1-frost transition-opacity duration-200 hover:opacity-70"
                 >
                   {card.cta.label}{" "}

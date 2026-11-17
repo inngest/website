@@ -4,6 +4,7 @@ import Container from "../layout/Container";
 
 import { FullWidthCTA } from "src/components/FullWidthCTA";
 import { INSTALL_COMMAND } from "../consts";
+import { refLinkProps } from "@/utils/v1/ref";
 
 const MeshGradient = `
 radial-gradient(at 35% 95%, hsla(258,82%,61%,1) 0px, transparent 50%),
@@ -65,9 +66,9 @@ export default function FooterCallout({
               </code>
             )}
             <Link
-              href={`${ctaHref}?ref=${
-                ctaRef ? `${ctaRef}-callout` : "callout"
-              }`}
+              {...refLinkProps(
+                `${ctaHref}?ref=${ctaRef ? `${ctaRef}-callout` : "callout"}`
+              )}
               className="rounded-[6px] bg-slate-800 px-5 py-3 text-sm text-white transition-all hover:bg-slate-900"
             >
               {ctaText}

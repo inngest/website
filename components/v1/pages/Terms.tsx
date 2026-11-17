@@ -2,6 +2,7 @@ import { type ReactNode } from "react";
 import { RiArrowDownSLine } from "@remixicon/react";
 import PageShell from "@/components/v1/PageShell";
 import LogoMarquee from "@/components/v1/sections/Home/LogoMarquee";
+import { refLinkProps } from "@/utils/v1/ref";
 
 // Terms & Conditions — an 800px reading column centred on the page: a
 // centred title, then the iubenda-generated T&C document. The document is
@@ -87,7 +88,7 @@ function Link({ href, children }: { href: string; children: ReactNode }) {
   const external = /^https?:/.test(href);
   return (
     <a
-      href={href}
+      {...refLinkProps(href)}
       {...(external && { target: "_blank", rel: "noreferrer" })}
       className="underline underline-offset-2 motion-safe:transition-colors hover:text-v1-frost/70"
     >

@@ -2,6 +2,7 @@
 
 import { useEffect, useMemo, useState } from "react";
 import { cn } from "@/utils/v1/cn";
+import { refLinkProps } from "@/utils/v1/ref";
 
 // Side-rail content menu: a gradient-filled, hairline-bordered panel
 // listing a page's sections, each with a small square bullet. The active
@@ -106,7 +107,7 @@ export default function ContentMenu({
                 {/* Month label — links to the group's first entry so a
                     click scrolls there; scroll-spy then opens the group. */}
                 <a
-                  href={`#${group.items[0]?.id ?? ""}`}
+                  {...refLinkProps(`#${group.items[0]?.id ?? ""}`)}
                   className="flex items-start gap-3 no-underline"
                 >
                   <Bullet active={open} />
@@ -177,7 +178,7 @@ function MenuLink({
 }) {
   return (
     <a
-      href={`#${item.id}`}
+      {...refLinkProps(`#${item.id}`)}
       className="flex items-start gap-3 no-underline"
       tabIndex={tabIndex}
     >

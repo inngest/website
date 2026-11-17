@@ -8,6 +8,7 @@ import {
 } from "@remixicon/react";
 import PageShell from "@/components/v1/PageShell";
 import LogoMarquee from "@/components/v1/sections/Home/LogoMarquee";
+import { refLinkProps } from "@/utils/v1/ref";
 
 // Privacy Policy — an 800px content column centred on the page: title, a
 // list of data-processing services, contact info, and the iubenda footer
@@ -90,7 +91,7 @@ function IconRow({
 function FootnoteLink({ href, children }: { href: string; children: ReactNode }) {
   return (
     <a
-      href={href}
+      {...refLinkProps(href)}
       target="_blank"
       rel="noreferrer"
       className="underline underline-offset-2 motion-safe:transition-colors hover:text-v1-frost/70"

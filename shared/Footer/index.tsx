@@ -14,6 +14,7 @@ import footerLinks from "./footerLinks";
 import StatusWidget from "../StatusWidget";
 import FooterCallout from "./FooterCallout";
 import React from "react";
+import { refLinkProps } from "@/utils/v1/ref";
 
 const communityLinks = [
   {
@@ -101,7 +102,7 @@ export default function Footer({
             <li>
               <a
                 className="text-muted py-1.5 block hover:text-primary-intense transition-colors"
-                href="/privacy?ref=footer"
+                {...refLinkProps("/privacy?ref=footer")}
               >
                 Privacy
               </a>
@@ -109,7 +110,7 @@ export default function Footer({
             <li>
               <a
                 className="text-muted py-1.5 block hover:text-primary-intense transition-colors"
-                href="/terms?ref=footer"
+                {...refLinkProps("/terms?ref=footer")}
               >
                 Terms and Conditions
               </a>
@@ -117,7 +118,7 @@ export default function Footer({
             <li>
               <a
                 className="text-muted py-1.5 block hover:text-primary-intense transition-colors"
-                href="/security?ref=footer"
+                {...refLinkProps("/security?ref=footer")}
               >
                 Security
               </a>
@@ -125,7 +126,7 @@ export default function Footer({
             <li>
               <a
                 className="text-muted py-1.5 block hover:text-primary-intense transition-colors"
-                href="/blog/soc2-compliant?ref=footer"
+                {...refLinkProps("/blog/soc2-compliant?ref=footer")}
               >
                 Inngest is SOC 2 Compliant
               </a>
@@ -152,7 +153,7 @@ function Link({
 }) {
   return (
     <NextLink
-      href={href}
+      {...refLinkProps(href)}
       target={target}
       className="text-subtle text-sm font-medium flex items-center group gap-1.5 hover:text-primary-intense transition-all"
     >

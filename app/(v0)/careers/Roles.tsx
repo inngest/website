@@ -1,3 +1,4 @@
+import { refLinkProps } from "@/utils/v1/ref";
 const url = "https://api.ashbyhq.com/jobPosting.list";
 const apiKey = process.env.ASHBY_API_KEY;
 
@@ -27,7 +28,7 @@ export default async function Roles() {
         >
           <h3 className="font-medium m-0">
             <a
-              href={role.externalLink}
+              {...refLinkProps(role.externalLink)}
               className="hover:underline"
               target="_blank"
             >

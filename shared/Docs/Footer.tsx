@@ -13,6 +13,8 @@ import {
 } from "./navigationStructure";
 import SocialBadges from "./SocialBadges";
 import { useUnreleasedLabels } from "./Unreleased";
+import { toDocsNavPath } from "./docsNavPath";
+import { refLinkProps } from "@/utils/v1/ref";
 
 function CheckIcon(props) {
   return (
@@ -138,7 +140,7 @@ function PageLink({ label, page, previous = false }) {
         {label}
       </Button>
       <Link
-        href={page.href}
+        {...refLinkProps(page.href)}
         tabIndex={-1}
         aria-hidden="true"
         className="mx-4 text-lg font-medium text-slate-900 no-underline transition hover:text-slate-600 dark:text-white dark:hover:text-slate-300"
@@ -169,7 +171,7 @@ function PageNavigation() {
     (page) => !page.unreleased || unreleasedLabels.has(page.unreleased)
   );
   let currentPageIndex = allPages.findIndex(
-    (page) => page.href === router.pathname
+    (page) => page.href === toDocsNavPath(router.pathname)
   );
 
   if (currentPageIndex === -1) {
@@ -220,7 +222,7 @@ function EditPageLink({ url }: { url?: string }) {
   return (
     <div className="flex justify-center md:justify-start">
       <Link
-        href={url}
+        {...refLinkProps(url)}
         className="flex items-center gap-1.5 text-xs font-medium text-breeze-600 transition-all duration-150 hover:text-slate-800 hover:underline dark:text-breeze-400 dark:hover:text-white"
       >
         <PencilSquareIcon className="h-3.5 w-3.5" />
@@ -238,7 +240,7 @@ function SmallPrint() {
       </div>
       {IS_HIRING && (
         <a
-          href="/about?ref=docs-footer"
+          {...refLinkProps("/about?ref=docs-footer")}
           className="text-xs text-slate-600 dark:text-slate-400"
         >
           We're hiring!
