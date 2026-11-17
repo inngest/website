@@ -301,9 +301,12 @@ export const CALENDAR = {
  */
 export const NEW_TO_INNGEST = {
   lead: "New to Inngest? Get started here:",
-  copy: "Copy prompt to get started locally",
+  copy: "Copy prompt to start locally",
   copied: "Prompt copied. Paste it into your coding agent.",
-  signUp: { label: "Sign up free", href: `/sign-up?ref=${REF}-new-to-inngest` },
+  signUp: {
+    label: "Start free in cloud",
+    href: `/sign-up?ref=${REF}-new-to-inngest`,
+  },
   /** Pasted into a coding agent (Claude Code, Cursor, …) in their project. */
   prompt: `Add Inngest to this project and run my first durable workflow locally.
 
