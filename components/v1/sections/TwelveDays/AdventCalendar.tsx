@@ -10,7 +10,6 @@ import {
   DAYS,
   DOOR_ART,
   DOOR_FACES,
-  REF,
   raffleDayAt,
   RAFFLE,
   unlockAt,
@@ -19,7 +18,8 @@ import {
 } from "@/components/v1/sections/TwelveDays/data";
 import { buttonClass } from "@/components/v1/sections/TwelveDays/poster";
 import EmailSignup from "@/components/v1/sections/TwelveDays/EmailSignup";
-import { handleStartFreeClick } from "@/utils/v1/startFreeCta";
+import { copyText } from "@/components/v1/sections/TwelveDays/copyText";
+import NewToInngest from "@/components/v1/sections/TwelveDays/NewToInngest";
 import {
   formatCountdown,
   useOpenedDoors,
@@ -98,6 +98,7 @@ export default function AdventCalendar({ now }: { now: Date | null }) {
           </p>
           {/* The subhead above asks for the email, so no separate prompt. */}
           <EmailSignup />
+          <NewToInngest />
         </div>
 
         <ul
@@ -295,35 +296,28 @@ function Door({
                 label={`Copy the Day ${day.day} code`}
               />
             </div>
-            {raffle && (
-              <button
-                type="button"
-                onClick={() => openRaffle(day.day)}
-                className={
-                  buttonClass(raffle.entered ? "white" : "ink", "sm") +
-                  " shrink-0 self-start"
-                }
-              >
-                {raffle.entered ? `${RAFFLE.entered} ✓` : `${RAFFLE.enter} →`}
-              </button>
-            )}
-            {/* Sign-ups from each door are attributed to its day, and carry
-                the visitor id so Customer.io can tie them to email sign-ups. */}
-            <a
-              href={`/sign-up?ref=${REF}-day-${day.day}`}
-              onClick={handleStartFreeClick(
-                `/sign-up?ref=${REF}-day-${day.day}`
+            {/* One way on per door: today's raffle, and the docs. Getting
+                started with Inngest lives once, above the grid. */}
+            <div className="mt-auto flex flex-col items-start gap-3 pt-1">
+              {raffle && (
+                <button
+                  type="button"
+                  onClick={() => openRaffle(day.day)}
+                  className={
+                    buttonClass(raffle.entered ? "white" : "ink", "sm") +
+                    " shrink-0"
+                  }
+                >
+                  {raffle.entered ? `${RAFFLE.entered} ✓` : `${RAFFLE.enter} →`}
+                </button>
               )}
-              className="mt-auto self-start font-v1Label text-[12px] underline underline-offset-4"
-            >
-              {CALENDAR.tryIt} <span aria-hidden="true">→</span>
-            </a>
-            <Link
-              href={day.docs.href}
-              className="inline-flex items-center gap-2 pt-1 font-v1Label text-[13px] underline-offset-4 hover:underline"
-            >
-              {day.docs.label} docs <span aria-hidden="true">→</span>
-            </Link>
+              <Link
+                href={day.docs.href}
+                className="inline-flex items-center gap-2 font-v1Label text-[13px] underline-offset-4 hover:underline"
+              >
+                {day.docs.label} docs <span aria-hidden="true">→</span>
+              </Link>
+            </div>
           </div>
         )}
       </div>
@@ -556,33 +550,6 @@ function LockIcon({ open }: { open: boolean }) {
       />
     </svg>
   );
-}
-
-/**
- * Copies `text`: the Clipboard API where it's allowed, else the old
- * hidden-textarea copy. Resolves false if neither works.
- */
-async function copyText(text: string): Promise<boolean> {
-  try {
-    await navigator.clipboard.writeText(text);
-    return true;
-  } catch {
-    const area = document.createElement("textarea");
-    area.value = text;
-    area.setAttribute("readonly", "");
-    area.style.position = "fixed";
-    area.style.opacity = "0";
-    document.body.appendChild(area);
-    area.select();
-    let ok = false;
-    try {
-      ok = document.execCommand("copy");
-    } catch {
-      ok = false;
-    }
-    area.remove();
-    return ok;
-  }
 }
 
 /** Copies a door's code sample; says "Copied" for two seconds. */

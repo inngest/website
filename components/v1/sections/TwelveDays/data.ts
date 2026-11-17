@@ -293,8 +293,26 @@ export const CALENDAR = {
     label: "Skip to submission.",
     href: `/12-days-of-workflows/build-a-thon?ref=${REF}-calendar#submit`,
   },
-  /** Each door's sign-up link. */
-  tryIt: "Try it free",
+} as const;
+
+/**
+ * "New to Inngest?" under the calendar's email sign-up (NewToInngest.tsx):
+ * the one place to get started, instead of a sign-up link on every door.
+ */
+export const NEW_TO_INNGEST = {
+  lead: "New to Inngest? Get started here:",
+  copy: "Copy prompt to get started locally",
+  copied: "Prompt copied. Paste it into your coding agent.",
+  signUp: { label: "Sign up free", href: `/sign-up?ref=${REF}-new-to-inngest` },
+  /** Pasted into a coding agent (Claude Code, Cursor, …) in their project. */
+  prompt: `Add Inngest to this project and run my first durable workflow locally.
+
+1. Install the Inngest SDK for this project's language and framework.
+2. Create an Inngest client and one function triggered by an event, with at least two step.run() calls.
+3. Serve the function from an /api/inngest endpoint.
+4. Start the Inngest Dev Server with \`npx inngest-cli@latest dev\`, send a test event, and show me the run in the Dev Server UI at http://localhost:8288.
+
+Follow the quick start for this stack: https://www.inngest.com/docs/getting-started`,
 } as const;
 
 /** The email sign-up in the calendar (EmailSignup.tsx). */
