@@ -84,7 +84,8 @@ export default function Hero() {
             </p>
             <p className="text-v1-caption text-v1-frost/60">
               Inngest may change or end the Startup Program at any time.
-              Approvals are at Inngest&apos;s discretion.
+              Approvals are at Inngest&apos;s discretion, and we may remove the
+              discount if application details turn out to be inaccurate.
             </p>
           </div>
 

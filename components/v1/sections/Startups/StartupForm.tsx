@@ -48,6 +48,7 @@ export default function StartupForm() {
   const [survey, setSurvey] = useState("");
   const [message, setMessage] = useState("");
   const [honeyPot, setHoneyPot] = useState("");
+  const [confirmed, setConfirmed] = useState(false);
   const [status, setStatus] = useState<Status>("idle");
 
   const isBootstrapped = fundingStage === "bootstrapped";
@@ -62,7 +63,8 @@ export default function StartupForm() {
 
   async function handleSubmit(e: FormEvent<HTMLFormElement>) {
     e.preventDefault();
-    if (status === "sending" || status === "sent" || isIneligible) return;
+    if (status === "sending" || status === "sent" || isIneligible || !confirmed)
+      return;
     setStatus("sending");
 
     if (honeyPot.length > 0) {
@@ -92,6 +94,7 @@ export default function StartupForm() {
       linkedinUrl,
       githubUrl,
       crunchbaseUrl,
+      confirmedAccurate: confirmed,
     };
 
     try {
@@ -370,6 +373,24 @@ export default function StartupForm() {
           labelClassName={labelClassName}
         />
       </div>
+
+      {/* Applicants confirm their answers instead of support verifying
+          every detail by hand; the page terms note the discount can be
+          removed if details turn out to be inaccurate. */}
+      <label
+        htmlFor="startup-confirm"
+        className="text-v1-body-sm-loose flex cursor-pointer items-start gap-3 text-v1-frost/80"
+      >
+        <input
+          id="startup-confirm"
+          type="checkbox"
+          required
+          checked={confirmed}
+          onChange={(e) => setConfirmed(e.target.checked)}
+          className="mt-1 h-4 w-4 shrink-0 cursor-pointer accent-v1-accent-salmon"
+        />
+        <span>I confirm the information above is accurate.</span>
+      </label>
 
       {isIneligible && (
         <div
