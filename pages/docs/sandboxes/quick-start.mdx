@@ -15,7 +15,7 @@ You need:
 - An existing server-side TypeScript Inngest app and a function handler connected to an Inngest Cloud environment. If you need an app, start with the [Node.js quick start](/docs/durable-execution/quick-start/typescript-quick-start).
 - A Node.js 20 or newer server runtime with the standard Fetch API.
 - An Inngest Cloud account on Pro or above. If Create returns `403 access_denied`, your plan does not include Sandboxes; [upgrade your plan](https://app.inngest.com/billing/plans).
-- `inngest` version 4.21.1 or newer.
+- `inngest` version 4.21.1 or newer for TypeScript, or the Python SDK (`inngest`) 0.5.20 or newer on Python 3.10+.
 - Your environment's signing key set as `INNGEST_SIGNING_KEY` in your **server** environment. Keep it out of browser code and source control.
 
 ## 1. Install the SDK
@@ -30,9 +30,15 @@ npm install inngest@latest
 
 Check that the installed version is 4.21.1 or newer before continuing.
 
+For Python, install the SDK with pip:
+
+```bash
+pip install "inngest>=0.5.20"
+```
+
 ## 2. Enable durable Sandbox steps
 
-Add the Sandbox middleware to your shared Inngest client. This makes `step.sandbox` available inside Inngest functions.
+Add the Sandbox middleware to your shared Inngest client. This makes `step.sandbox` available inside Inngest functions. The Python SDK needs no middleware: `ctx.step.sandbox` is available in every function.
 
 `inngest/client.ts`
 
@@ -47,7 +53,10 @@ export const inngest = new Inngest({
 });
 ```
 
-<SdkUnsupported title="Python" feature="Sandboxes" />
+```python {{ title: "Python" }}
+!snippet:path=snippets/py/latest/sandboxes/quick_start/client.py
+```
+
 <SdkUnsupported title="Go" feature="Sandboxes" />
 </CodeGroup>
 
@@ -97,7 +106,10 @@ export const runInSandbox = inngest.createFunction(
 );
 ```
 
-<SdkUnsupported title="Python" feature="Sandboxes" />
+```python {{ title: "Python" }}
+!snippet:path=snippets/py/latest/sandboxes/quick_start/run_in_sandbox.py
+```
+
 <SdkUnsupported title="Go" feature="Sandboxes" />
 </CodeGroup>
 
@@ -137,6 +149,8 @@ Inspect the run's steps. You should find `create-sandbox`, `run-command`, and `d
 ## Cleanup and beta behavior
 
 This example explicitly destroys the Sandbox after the command succeeds. **Durable Sandbox steps do not automatically guarantee cleanup after a permanent function failure.** For a workflow where a leaked Sandbox matters, add an Inngest `onFailure` handler or a separate deferred cleanup function that receives the Sandbox ID. A JavaScript `finally` block inside the function is not a substitute for cleanup after a permanently failed run.
+
+In Python, don't put a durable Sandbox step in a `try/finally` around other steps. Each step pauses the function by raising an internal exception, so the `finally` would run on every step and destroy the Sandbox early. Use `ctx.group.sandbox()` instead: it destroys the Sandbox in a step when its `async with` block ends, including after an error.
 
 Destroying a Sandbox removes its filesystem, processes, and retained output. Save anything you need outside the Sandbox before destroying it.
 
