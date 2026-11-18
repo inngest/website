@@ -1,0 +1,255 @@
+import { AnnotatedCode, Annotation, Callout, Compatibility } from "shared/Docs/mdx";
+export const metaTitle = "step.subscribe() | Receive Events While a Run Works";
+export const description = "Open a durable inbox in an Inngest function with step.subscribe(). Matching events are kept in order, and the run reads them one at a time or in batches.";
+
+# `step.subscribe`
+
+> Receive a stream of events inside a running function, and read them when you're ready.
+
+<Compatibility endpoints={false} />
+
+[`step.waitForEvent()`](/docs/durable-execution/primitives/step-waitforevent) waits for one event. `step.subscribe()` opens an inbox that keeps every matching event, in order, while the run works.
+
+It's useful when:
+
+- A run follows something that changes many times, like a pull request's reviews and checks.
+- Events can arrive while the run is busy, and none may be missed.
+- You want to handle everything that piled up in one go.
+
+{/* TODO(release): name the minimum TypeScript SDK and Dev Server versions here once step.subscribe confirms them. */}
+<Callout variant="info">
+  `step.subscribe()` is experimental in the TypeScript SDK, and the API may change. Run it on the latest Dev Server: on an older one, the run fails at once with an error that says to upgrade. Python and Go don't support it.
+</Callout>
+
+## Watch a pull request
+
+This function merges a pull request once it is approved and its checks pass.
+
+<AnnotatedCode>
+
+```typescript {{ title: "TypeScript" }}
+import { eventType, Inngest } from "inngest";
+import { z } from "zod";
+import { mergePr } from "./github";
+
+const inngest = new Inngest({ id: "github-bot" });
+
+const prOpened = eventType("github/pr.opened", {
+  schema: z.object({ pr: z.number() }),
+});
+
+const prReviewed = eventType("github/pr.reviewed", {
+  schema: z.object({ pr: z.number(), approved: z.boolean() }),
+});
+
+const prChecked = eventType("github/pr.checked", {
+  schema: z.object({ pr: z.number(), passed: z.boolean() }),
+});
+
+export const autoMerge = inngest.createFunction(
+  { id: "auto-merge", triggers: [prOpened] },
+  async ({ event, step }) => {
+    await using inbox = step.subscribe("pr-activity", [
+      { event: prReviewed, if: "async.data.pr == event.data.pr" },
+      { event: prChecked, if: "async.data.pr == event.data.pr" },
+    ]);
+
+    let approved = false;
+    let passed = false;
+
+    for await (const message of inbox) {
+      if (message.is(prReviewed)) {
+        approved = message.data.approved;
+      }
+
+      if (message.is(prChecked)) {
+        passed = message.data.passed;
+      }
+
+      if (approved && passed) {
+        break;
+      }
+    }
+
+    await step.run("merge", () => mergePr(event.data.pr));
+  },
+);
+```
+
+<Annotation id="open" lines="22" tease="opens the inbox" title="Open an inbox" href="#close-an-inbox" linkText="Close an inbox">
+Events that match from here on are kept. `await using` (TypeScript 5.2 or later) closes the inbox when the function returns.
+</Annotation>
+
+<Annotation id="sources" lines="23-24" tease="written like triggers" title="Sources" href="/docs/durable-execution/guides-and-advanced/writing-expressions" linkText="Writing expressions">
+An event type plus an optional `if`. In `if`, `async` is the arriving event and `event` is the one that started this run.
+</Annotation>
+
+<Annotation id="read" lines="30" tease="sleeps while empty" title="Read in order" href="#read-in-batches" linkText="Read in batches">
+Takes one message at a time. When nothing is unread, the run sleeps until a message arrives.
+</Annotation>
+
+<Annotation id="is" lines="31,35" tease="narrows the type" title="`is()`" href="/docs/durable-execution/guides-and-advanced/events-and-triggers/event-payloads-and-schemas#narrow-an-event-with-is" linkText="Narrow an event">
+A message is the event as it was sent. With several sources, `message.is()` checks which one it is and types its `data`.
+</Annotation>
+
+</AnnotatedCode>
+
+## Read in batches
+
+Take everything that piled up at once. This digest tells a pull request's owner about new comments at most once an hour.
+
+<AnnotatedCode>
+
+```typescript {{ title: "TypeScript" }}
+import { notifyOwner } from "./github";
+
+const prCommented = eventType("github/pr.commented", {
+  schema: z.object({ pr: z.number(), body: z.string() }),
+});
+
+export const commentDigest = inngest.createFunction(
+  { id: "comment-digest", triggers: [prOpened] },
+  async ({ event, step }) => {
+    await using inbox = step.subscribe("comments", {
+      event: prCommented,
+      if: "async.data.pr == event.data.pr",
+    });
+
+    const batches = inbox.batches({ max: 50, timeout: "1d" });
+
+    for await (const batch of batches) {
+      await step.run("notify-owner", () => {
+        return notifyOwner(event.data.pr, batch);
+      });
+
+      await step.sleep("wait-an-hour", "1h");
+    }
+  },
+);
+```
+
+<Annotation id="batch" lines="15" tease="takes what's unread" title="`batches()`" href="/docs/reference/typescript/v4/functions/step-subscribe#batches-options" linkText="Reference">
+Each batch waits for at least one message, then takes every unread one, up to `max`. The loop ends after a quiet `timeout`, or when the inbox closes.
+</Annotation>
+
+<Annotation id="sleep" lines="22" tease="comments keep arriving" title="Nothing is missed">
+Comments that arrive during the sleep are kept for the next batch.
+</Annotation>
+
+</AnnotatedCode>
+
+`nextBatch()` reads one batch, and `drain()` takes every unread message without waiting.
+
+## More inboxes
+
+Open another inbox inside `autoMerge` for a separate stream:
+
+<AnnotatedCode>
+
+```typescript {{ title: "TypeScript" }}
+await using comments = step.subscribe("comments", {
+  event: prCommented,
+  if: "async.data.pr == event.data.pr",
+});
+
+const comment = await comments.next({ timeout: "1h" });
+
+if (comment) {
+  console.log(comment.data.body);
+}
+```
+
+<Annotation id="separate" lines="1" tease="its own stream" title="One inbox per stream">
+Order holds within an inbox, not across inboxes.
+</Annotation>
+
+<Annotation id="typed" lines="9" tease="typed from its sources" title="Typed messages">
+Messages are typed from the inbox's event types, so after `if (comment)`, `comment.data.body` is a `string`. A source given as a name stays `unknown` until you narrow it with `message.is()`.
+</Annotation>
+
+</AnnotatedCode>
+
+## Close an inbox
+
+`close()` stops the inbox's sources, ends any waiting read, and returns the messages it hadn't read.
+
+```typescript {{ title: "TypeScript" }}
+const inbox = step.subscribe("reviews", prReviewed);
+
+const first = await inbox.next({ timeout: "1h" });
+const unread = await inbox.close();
+```
+
+After `close()`, reads return `undefined` and `drain()` returns `[]`.
+
+## API
+
+```ts {{ title: "TypeScript" }}
+const inbox = step.subscribe(id, sources);
+```
+
+- **`id`**: a stable step ID.
+- **`sources`**: one source or an array. A source is an event type, an event name, or `{ event, if }`.
+- **Returns** an `Inbox`.
+
+See the [`step.subscribe()` reference](/docs/reference/typescript/v4/functions/step-subscribe) for every method.
+
+## Read in the background
+
+With the default [`optimizeParallelism: true`](/docs/durable-execution/primitives/group-parallel#optimize-parallel-step-performance), a read that keeps waiting beside your steps keeps the run waiting, like `step.waitForEvent()`. Put the foreground work in `group.parallel({ mode: "race" }, ...)`, not the loop, and call `close()` right after the group, before any later step outside it.
+
+<AnnotatedCode>
+
+```typescript {{ title: "TypeScript" }}
+export const collectComments = inngest.createFunction(
+  { id: "collect-comments", triggers: [prOpened] },
+  async ({ event, step, group }) => {
+    const comments = step.subscribe("comments", {
+      event: prCommented,
+      if: "async.data.pr == event.data.pr",
+    });
+
+    const bodies: string[] = [];
+
+    const reading = (async () => {
+      for await (const comment of comments) {
+        bodies.push(comment.data.body);
+      }
+    })();
+
+    await group.parallel({ mode: "race" }, async () => {
+      await step.run("merge", () => mergePr(event.data.pr));
+      await step.sleep("late-comments", "1h");
+    });
+
+    await comments.close();
+    await reading;
+
+    await step.run("notify-owner", () => {
+      return notifyOwner(event.data.pr, bodies);
+    });
+  },
+);
+```
+
+<Annotation id="parallel" lines="17-20" tease="the foreground work" title="Race group" href="/docs/durable-execution/primitives/group-parallel#continue-after-the-first-step-settles" linkText="Parallel steps">
+Comments that arrive meanwhile reach the loop.
+</Annotation>
+
+<Annotation id="end" lines="22-23" tease="before any later step" title="Close right after">
+Closing ends the loop's waiting read, so `reading` settles.
+</Annotation>
+
+</AnnotatedCode>
+
+## Things to know
+
+- **Open before you act.** An inbox receives only events that arrive after it opens, so open it before the step that causes them.
+- **Race inside `group.parallel()`.** By default, a plain `Promise.race()` of a read and a step waits for both. Create the read once (`const reply = inbox.next()`) and race it inside [`group.parallel()`](/docs/durable-execution/primitives/group-parallel#continue-after-the-first-step-settles). A read that loses keeps waiting: race the same `reply` again, or call `close()` before the next step outside the group.
+- **One wait, one inbox.** To wait on two streams at once, put their sources in one inbox, like reviews and checks in `autoMerge`.
+
+## How it works
+
+- Each message is saved as its own step when it arrives, read or not. An event that matches two inboxes is saved in each.
+- Opening, `close()` and each batch read cost one step each. A `next()` that receives a message adds none. A `next()` loop over 10 messages is 11 steps, or 12 with `close()`.
+- Messages count toward the run's [step and state limits](/docs/durable-execution/limits#platform-limits). A run that goes over a limit fails with the usual limit error, even while it sleeps.
