@@ -285,29 +285,157 @@ There are no hooks around tool calls: you replace the tool with a checked one. L
 
 ## Watching for things
 
-You want the model to follow the PR's checks on its own, the way a human reviewer might subscribe to a thread. It already can: every model agent has `listen` and `unlisten`, and you write nothing.
+You want the model to follow reviews of its PR on its own, the way a human reviewer might subscribe to a thread. List the events it may watch in `listen`, and the model gets a `listen` and an `unlisten` tool.
 
-Asked to watch PR 412, the model calls:
+<AnnotatedCode>
+
+{/* not type-checked: a listen list on an agent definition */}
+```typescript {{ title: "inngest/agents/prHelper.ts" }}
+import { prReviewed } from "../events";
+
+export const prHelper = agents.agent({
+  id: "pr-helper",
+  triggers,
+  thread: "event.data.pr",
+  inbox: [ciPassed],
+  model: claude,
+  system: "You help with pull requests on acme/web.",
+  tools: { readLog },
+  listen: [
+    {
+      event: prReviewed,
+      description: "A review was submitted on this pull request.",
+      scope: ({ thread }) => {
+        return { "data.pr": Number(thread.key) };
+      },
+    },
+  ],
+});
+```
+
+<Annotation id="event" lines="13" tease="what it may watch" title="event">
+An event type or a name. The model can ask for the events in this list and no others.
+</Annotation>
+
+<Annotation id="description" lines="14" tease="what the model reads" title="description">
+The `listen` tool shows the model each event with its description.
+</Annotation>
+
+<Annotation id="scope" lines="15-17" tease="which of them, decided by you" title="scope" href="/docs/labs/agents/reference?ref=docs-labs-agents-tools#what-the-model-may-watch" linkText="Reference: what the model may watch">
+The paths an arriving event must have, and their values. Here the thread only brings the model reviews of its own PR.
+</Annotation>
+
+</AnnotatedCode>
+
+Asked to say when changes are requested, the model on the thread of PR 42 calls:
 
 ```json
 {
   "tool": "listen",
   "input": {
-    "event": "github/pull_request.review",
-    "where": { "data.number": 412 },
-    "reason": "following reviews of 412"
+    "event": "pr/reviewed",
+    "where": { "data.state": "changes_requested" },
+    "reason": "following reviews that request changes"
   }
 }
 ```
 
-The tool builds the filter from `where` and asks the **thread** to subscribe. It returns once the thread has recorded the subscription, and does not wait for the event itself: reviews of 412 arrive from then on as ordinary messages, which the loop folds into the next model call. `unlisten` with the same `event` and `where` drops it again.
+The tool joins your `scope` and the model's `where`, and asks the **thread** to subscribe with the result:
 
-This has to be a tool rather than configuration. "Watch PR 412" is a decision the model makes while it works, so nothing written at definition time could express it - which is why there is no `listen` list on the definition.
+```text {{ title: "What the thread subscribes with" }}
+async.data.pr == 42 && async.data.state == "changes_requested"
+```
 
-- **The thread holds the watch, not the run.** So it survives the run that asked for it ending, is there for the runs after it, and is re-established when the thread hands over.
-- **A path must look like `data.number` or `name`.** Anything else comes back as an error the model can read rather than being put into an expression.
+It returns once the thread has recorded the subscription, and does not wait for the event itself. Matching reviews arrive from then on as ordinary messages, which the loop folds into the next model call. `unlisten` with the same `event` and `where` drops it again.
+
+### Why there is a list
+
+An event name belongs to the whole environment, not to one thread. A subscription to `pr/reviewed` with no filter receives every review of every PR, and a subscription to your chat event receives every user's messages.
+
+The model reads text you did not write, and that text can ask it to watch things. So what a thread may watch is your decision:
+
+- **An agent with no `listen` list has no `listen` tool.** Nothing is watchable until you say so.
+- **The model can only narrow your scope.** Its `where` is added to the scope. A `where` that sets a path the scope already sets, to another value, is refused.
+- **A value is never part of the expression.** You return paths and values, and the tool writes and quotes the filter, so a value taken from an event cannot change it.
+
+| The model asks for | What happens |
+| --- | --- |
+| `pr/reviewed` with `where: { "data.state": "approved" }` | The thread watches approvals of PR 42. |
+| `pr/reviewed` with no `where` | The thread watches every review of PR 42. |
+| `pr/reviewed` with `where: { "data.pr": 7 }` | Refused: the scope sets `data.pr`. |
+| `pr/comment`, or any event not in the list | Refused, with the list of what it can watch. |
+
+A refusal comes back as an error the model can read, and nothing reaches the thread.
+
+### What a scope can be
+
+{/* not type-checked: the three forms of a listen scope */}
+```typescript
+listen: [
+  {
+    event: deployed,
+    scope: { "data.env": "production" },
+  },
+  {
+    event: invoicePaid,
+    scope: ({ event, asked }) => {
+      if (asked.where?.["data.invoice"] === undefined) {
+        return false;
+      }
+
+      return { "data.org": event.data.org };
+    },
+  },
+  {
+    event: incidentOpened,
+    scope: "any",
+  },
+],
+```
+
+- **An object** is the filter every watch of that event gets.
+- **A function** gets `{ event, thread, asked }` and returns the object. `event` is the event that started the run, `thread` is `{ key }`, and `asked` is what the model asked for. Return `false` to refuse, or throw an error to tell the model why.
+- **`"any"`** lets the thread watch every event of that name in the environment. Write it only for events with nothing private in them. An empty object is an error, so an unfiltered watch is always a choice you can see.
+
+The function runs when the model calls the tool, and again on replay, so return the same value for the same input.
+
+### Several events, or a family of them
+
+{/* not type-checked: a list of events and a pattern in a listen list */}
+```typescript
+listen: [
+  {
+    event: [invoicePaid, invoiceFailed],
+    scope: ({ event }) => {
+      return { "data.org": event.data.org };
+    },
+  },
+  {
+    event: "billing/*",
+    scope: ({ event, asked }) => {
+      if (asked.event === "billing/card.updated") {
+        return false;
+      }
+
+      return { "data.org": event.data.org };
+    },
+  },
+],
+```
+
+- **A list of events shares one scope.**
+- **A name that ends in `*`** lets the model ask for any event whose name starts with what comes before it. The model still names one exact event, such as `billing/refund.created`, and the thread subscribes to that name only. Asking for `billing/*` itself is refused.
+- **The closest entry is used.** An exact name comes before a pattern, and a longer pattern before a shorter one.
+- **A pattern grows on its own.** A new `billing/` event is watchable the day it ships, under a scope written before it existed. Use `asked.event` to refuse the ones that should stay out, or list the events by name.
+
+### The rest
+
+- **The thread keeps the watch, not the run.** So it survives the run that asked for it ending, is there for the runs after it, and is re-established when the thread hands over.
+- **A path must look like `data.number` or `name`**, in a scope and in the model's `where`. Anything else is an error rather than part of an expression.
+- **A scope compares for equality.** Every path must have its value. There is no "greater than" or "one of".
+- **`agent/` and `inngest/` events can't be watched**, by a model or by a handler. Listing one is an error when the agent is defined.
 - **A tool of your own named `listen` or `unlisten` replaces that one**, under the usual rule for a name that collides.
-- **Handler code asks the same thing** with [`thread.listen`](/docs/labs/agents/threads?ref=docs-labs-agents-tools#watch-for-something-else), for an agent that has no model to decide for it. [Reference: listen and unlisten →](/docs/labs/agents/reference?ref=docs-labs-agents-tools#listen-and-unlisten)
+- **Handler code asks the same thing** with [`thread.listen`](/docs/labs/agents/threads?ref=docs-labs-agents-tools#watch-for-something-else). That is your code, so the list does not apply to it. [Reference: listen and unlisten →](/docs/labs/agents/reference?ref=docs-labs-agents-tools#listen-and-unlisten)
 
 {/* Go deeper */}
 ## Someone else's tools

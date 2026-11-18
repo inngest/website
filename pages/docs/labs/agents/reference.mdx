@@ -74,6 +74,7 @@ export const agents = createAgents(inngest);
 | `triggers` | value | What starts a run: what a function's `triggers` take (event types, event names, `{ cron }`, `invoke(schema)`). With none, `start()` and `start_agent` start the agent. |
 | `thread` | value | A CEL expression over `event` that names the thread an event belongs to, such as `"event.data.customer"`. [Thread keys](#thread-keys-and-inbox-sources) |
 | `inbox` | value | Event sources a live run receives, written like triggers. A bare event type is placed by the agent's `thread`. [Inbox sources](#thread-keys-and-inbox-sources) |
+| `listen` | value | EXPERIMENTAL. The events the model may ask its thread to watch, each with a `scope` you write. With none, the model has no `listen` tool. [What the model may watch](#what-the-model-may-watch) |
 | `model` | value or function | What the loop calls each turn, such as `anthropic({ model })`. A model function of your own is wrapped in `agentModel()`; any other function is read as the per-run form. Without one the handler has no `loop`. [Models](#models), [Custom models](#custom-models) |
 | `system` | value or function | The system prompt. |
 | `tools` | value or function | Extra tools for the model, by name. Tools of listed sandboxes, discovery, the agent tools and `wait` need no listing. Sandbox code calls the tools given to `runCode.with({ tools })`. A shared tool (`tool.shared()`) listed here is called in the app that hosts it. |
@@ -117,6 +118,59 @@ inbox: [{ event: ciPassed, if: "async.data.pr == event.data.pr" }],
 - In a source's `if`, `async` is the arriving event and `event` is the run's trigger, as in `waitForEvent`.
 - A plain event trigger with no `thread` opens a fresh thread per event. `start()` settles its own key.
 - A trigger with nothing at its `thread` path opens a fresh thread. A source with nothing at its path reaches no thread. The trace warns in both cases and nothing throws.
+
+### What the model may watch
+
+EXPERIMENTAL. `listen` is the list of events the model's [`listen` tool](#listen-and-unlisten) may ask the thread to watch. [Watching for things →](/docs/labs/agents/tools?ref=docs-labs-agents-reference#watching-for-things)
+
+```typescript {{ title: "Signature" }}
+listen?: {
+  event: string | EventType | (string | EventType)[];
+  description?: string;
+  scope:
+    | Record<string, string | number | boolean>
+    | "any"
+    | ((context: {
+        event: TriggerEvent;
+        thread: { key: string };
+        asked: {
+          event: string;
+          where?: Record<string, string | number | boolean>;
+          reason?: string;
+        };
+      }) => Record<string, string | number | boolean> | "any" | false);
+}[]
+```
+
+{/* not type-checked: a listen list on an agent definition */}
+```typescript
+listen: [
+  {
+    event: prReviewed,
+    description: "A review was submitted on this pull request.",
+    scope: ({ thread }) => {
+      return { "data.pr": Number(thread.key) };
+    },
+  },
+  {
+    event: [invoicePaid, "billing/*"],
+    scope: ({ event }) => {
+      return { "data.org": event.data.org };
+    },
+  },
+],
+```
+
+- `event`: an event type, a name, or a list of them that share one `scope`. A name that ends in `*`, such as `billing/*`, lets the model ask for any one event whose name starts with `billing/`. The model always names one exact event, and the thread subscribes to that name only.
+- An exact name is used before a pattern, and a longer pattern before a shorter one.
+- `description`: what the event means. The `listen` tool shows it to the model.
+- `scope` as an object: paths into the arriving event and the values they must have. The thread subscribes with these on every watch of that event.
+- `scope` as a function: returns that object, `"any"`, or `false` to refuse. `event` is the event that started the run and `asked` is what the model asked for. An error it throws reaches the model as the reason. It runs when the model calls the tool and again on replay, so it must return the same value for the same input.
+- `scope: "any"`: the thread may watch every event of that name in the environment. An empty object is an error, so this is always written out.
+- The model's `where` is added to the scope. A `where` that sets a path the scope sets, to another value, is refused.
+- A path must look like `data.number` or `name`. The tool writes the filter and quotes each value, so a value never becomes part of the expression.
+- These are errors when the agent is defined: an `agent/` or `inngest/` name, a `*` anywhere but the end, a `*` with nothing before it, an event listed twice, and an entry with no `scope`.
+- The list limits the model only. A handler's [`thread.listen`](#the-handlers-thread) is not checked against it.
 
 ### Short-lived runs
 
@@ -209,8 +263,9 @@ thread.report(type: EventType, data): Promise<void>
 
 - `key`: the thread's key.
 - `message(content)`: puts a message in the agent's own inbox. It is how work you did not wait for reports back.
-- `listen(event, where?)`: EXPERIMENTAL. Asks the thread to watch for an event and bring it to the agent as a message. `where` is paths into the arriving event and the values they must have, as in `{ "data.number": 412 }`; with none, every event of that name reaches the agent. It returns once the thread has recorded the subscription, which is the only thing it waits for, and the boolean says whether the thread confirmed.
-- The **thread** holds the subscription, not the run, so a watch outlives the run that asked for it and is re-established after a handover. A model has the same thing as [a tool](#listen-and-unlisten), which is usually the right place for it: what to watch for is its decision.
+- `listen(event, where?)`: EXPERIMENTAL. Asks the thread to watch for an event and bring it to the agent as a message. `where` is paths into the arriving event and the values they must have, as in `{ "data.number": 412 }`; with none, every event of that name in the environment reaches the agent. It returns once the thread has recorded the subscription, which is the only thing it waits for, and the boolean says whether the thread confirmed.
+- It throws for an `agent/` or `inngest/` event and for a name with a `*`. The agent's [`listen` list](#what-the-model-may-watch) does not apply: this is your code, so you choose the event and the filter.
+- The **thread** holds the subscription, not the run, so a watch outlives the run that asked for it and is re-established after a handover. A model has the same thing as [a tool](#listen-and-unlisten) once the agent lists what it may watch.
 - `unlisten(event, where?)`: EXPERIMENTAL. Asks the thread to stop watching. The `event` and `where` must be the ones it was asked to watch with.
 - `report(type, data)`: EXPERIMENTAL. Sends a typed report to where the run's starter asked for that type. `data` is checked against the type's schema first, and a bad report throws and sends nothing. It throws when the run was not started with that report type. Sent from a step, so a replay sends it once. [Reports](#reports)
 - To tell people something, call your own code in a step (`gh` is a client you write), or give the model a tool. [Answer every message →](/docs/labs/agents/inboxes?ref=docs-labs-agents-reference#answer-every-message)
@@ -918,11 +973,12 @@ listen({ event: string; where?: Record<string, string | number | boolean>; reaso
 unlisten({ event: string; where?: Record<string, string | number | boolean> }): string
 ```
 
-- `listen`: EXPERIMENTAL. Asks the thread to watch for an event and bring it to the model as a message when it happens. `event` is the event's name. `where` is paths into the arriving event and the values they must have, as in `{ "data.number": 412 }`; the tool builds the filter from it. Left out, every event of that name reaches the agent. `reason` is a few words on why, for the trace.
+- `listen`: EXPERIMENTAL. Asks the thread to watch for an event and bring it to the model as a message when it happens. `event` is the name of one event from the agent's [`listen` list](#what-the-model-may-watch), or one that a pattern in the list covers. `where` is paths into the arriving event and the values they must have, as in `{ "data.number": 412 }`. The tool joins it to the entry's `scope` and builds the filter from both. Left out, every event the scope allows reaches the agent. `reason` is a few words on why, for the trace.
+- It refuses an event that is not in the list, an `agent/` or `inngest/` event, a name with a `*`, a request the entry's `scope` returns `false` for, and a `where` that changes a path the scope sets. Each comes back as an error the model can read, and nothing reaches the thread.
 - It returns once the **thread** has recorded the subscription, and does not wait for the event. The thread holds the watch, not the run, so it outlives the run that asked and is re-established after a handover.
 - A path must look like `data.number` or `name`. Anything else is refused with a message the model can read, rather than being put into an expression.
-- `unlisten`: EXPERIMENTAL. Asks the thread to stop. The `event` and `where` must be the ones it was asked to watch with.
-- Every model agent's loop has both. A tool of your own named `listen` or `unlisten` replaces that one.
+- `unlisten`: EXPERIMENTAL. Asks the thread to stop. The `event` and `where` must be the ones it was asked to watch with. The scope is not part of the match, so a scope that changed since still finds the watch.
+- A model agent's loop has both when the agent has a `listen` list, and neither when it has none. A tool of your own named `listen` or `unlisten` replaces that one.
 - A handler asks the same thing with [`thread.listen`](#the-handlers-thread). [Watching for things →](/docs/labs/agents/tools?ref=docs-labs-agents-reference#watching-for-things)
 
 ### For sandbox code

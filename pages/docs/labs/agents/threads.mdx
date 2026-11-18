@@ -192,7 +192,9 @@ async ({ event, thread }) => {
 
 The **thread** holds the watch, not this run, so it outlives the run that asked for it and the events reach whichever run is live when they land. `thread.unlisten(prReviewed, { "data.pr": 42 })` drops it again, with the same event and filter it was asked for. Both return whether the thread confirmed.
 
-This is for a handler. An agent with a `model` needs neither: the model has the same two things as tools, because what to watch for is usually its decision rather than yours. [Watching for things →](/docs/labs/agents/tools?ref=docs-labs-agents-threads#watching-for-things)
+With no filter, `thread.listen(prReviewed)` brings this thread every review of every PR in the environment, so pass the filter that ties the event to this thread. `agent/` and `inngest/` events can't be watched, and asking for one throws.
+
+This is for a handler. A model can have the same two things as tools, because what to watch for is usually its decision rather than yours. You list the events it may watch and the filter each one gets, in the agent's `listen`. [Watching for things →](/docs/labs/agents/tools?ref=docs-labs-agents-threads#watching-for-things)
 
 ## A trigger with its own key
 
