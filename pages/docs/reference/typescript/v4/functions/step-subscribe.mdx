@@ -1,0 +1,170 @@
+import { Info, Callout, Properties, Property, Row, Col, CodeGroup, VersionBadge } from "src/shared/Docs/mdx";
+
+
+export const metaTitle = "step.subscribe() | TypeScript SDK v4 Reference"
+export const description = "Open a durable inbox inside a run with step.subscribe() in TypeScript SDK v4, then read matching events in order with next(), nextBatch(), drain(), and batches()."
+export const unreleased = "subscribe"
+
+# `step.subscribe()` <VersionBadge version="v4.27.0+" />
+
+<Callout>
+  `step.subscribe()` is **experimental**. Its API may change in a minor release.
+</Callout>
+
+Opens an **inbox** inside a run. Every event that matches one of the inbox's sources, and arrives after the inbox opens, becomes a **message**. Inngest saves each message as it arrives, whether or not the run is waiting at that moment. The run reads unread messages in order, one at a time or as a batch.
+
+```ts
+await using inbox = step.subscribe("reviews", prReviewed);
+
+const review = await inbox.next();
+```
+
+---
+
+## `step.subscribe(id, sources): Inbox`
+
+<Row>
+  <Col>
+    <Properties>
+      <Property name="id" type="string" required>
+        The ID of the step. Every read and the close of the inbox derive their step IDs from it, so keep it stable across deployments.
+      </Property>
+      <Property name="sources" type="InboxSources" required>
+        What the inbox receives: one source or an array of sources. Each source is written like an event trigger:
+        - An [`eventType()`](/docs/reference/typescript/v4/functions/triggers#eventtype) result,
+        - An event name string, such as `"app/pr.reviewed"`, or
+        - An object with an `event` (an event type or name) and an optional `if` expression.
+        <Properties nested={true}>
+          <Property name="event" type="string | EventType" required>
+            The event to receive.
+          </Property>
+          <Property name="if" type="string">
+            A [CEL expression](/docs/durable-execution/guides-and-advanced/writing-expressions) the event must match. The arriving event is available as `async`, as in `step.waitForEvent()`. For example: `async.data.prId == "pr_123"`.
+          </Property>
+        </Properties>
+      </Property>
+    </Properties>
+  </Col>
+  <Col>
+    <CodeGroup title="One event type">
+    ```ts
+    await using inbox = step.subscribe("reviews", prReviewed);
+    ```
+    </CodeGroup>
+    <CodeGroup title="Several sources with a filter">
+    ```ts
+    await using inbox = step.subscribe("activity", [
+      prReviewed,
+      {
+        event: prCommented,
+        if: `async.data.prId == "${event.data.prId}"`,
+      },
+    ]);
+    ```
+    </CodeGroup>
+  </Col>
+</Row>
+
+`step.subscribe()` returns an `Inbox` synchronously. Don't `await` the call itself; `await` its reads.
+
+Events that arrive before the inbox opens are not received.
+
+### Message types
+
+Messages are typed from the sources: the union of the shapes of the event types passed. A source written as a name string has no schema, so its messages have `data: unknown`. Narrow a message with `message.is(type)` or `type.is(message)`; see [Narrow events with `is()`](/docs/reference/typescript/v4/functions/triggers#narrow-events-with-is).
+
+```ts
+await using inbox = step.subscribe("activity", [prReviewed, prCommented]);
+
+const message = await inbox.next();
+
+if (message?.is(prReviewed)) {
+  // message.data is typed from prReviewed's schema
+}
+```
+
+To name the message type of an inbox, use the exported `InboxMessage` type:
+
+```ts
+import type { InboxMessage } from "inngest";
+
+const handle = (message: InboxMessage<typeof inbox>) => {
+  // ...
+};
+```
+
+## Close the inbox
+
+Open the inbox with `await using` so it closes when the block ends. You can also call `close()` yourself.
+
+When an inbox closes, its sources stop receiving events, any read that is waiting ends with `undefined`, and later reads that would have to wait return `undefined` at once.
+
+<Info>
+  `await using` requires TypeScript 5.2+ with the `esnext.disposable` lib (or `esnext`). The SDK provides `Symbol.asyncDispose` on runtimes that lack it, such as Node.js before 20.5.
+</Info>
+
+## Inbox methods
+
+### `inbox.next(options?): Promise<Message | null | undefined>`
+
+Returns the next unread message. If none is unread, the run waits until one arrives.
+
+<Properties>
+  <Property name="options.timeout" type="number | string | Date">
+    How long to wait: a `number` of milliseconds, a duration string compatible with the [ms](https://npm.im/ms) package such as `"30m"`, or an absolute `Date`.
+  </Property>
+</Properties>
+
+Resolves with:
+- The message,
+- `null` if `timeout` was set and no message arrived in time, or
+- `undefined` once the inbox is closed, including for a read that was waiting when it closed.
+
+### `inbox.nextBatch(options?): Promise<Message[] | null | undefined>`
+
+Returns every unread message, waiting for at least one to arrive.
+
+<Properties>
+  <Property name="options.max" type="number">
+    Take at most this many messages, oldest first. The rest stay unread.
+  </Property>
+  <Property name="options.timeout" type="number | string | Date">
+    How long to wait for a message. Resolves with `null` if none arrives in time.
+  </Property>
+</Properties>
+
+Resolves with `undefined` once the inbox is closed.
+
+### `inbox.drain(options?): Promise<Message[]>`
+
+Returns every unread message without waiting, or an empty array if there are none. The read is still saved as a step, so a replay returns the same messages. Accepts `options.max`.
+
+### `inbox.batches(options?): AsyncGenerator<Message[]>`
+
+Reads the inbox batch by batch with `for await`. Each batch waits for at least one message. Accepts `options.max` and `options.timeout`. The loop ends when the inbox closes, when a wait passes `timeout` with nothing unread, or when you `break` out of it.
+
+```ts
+for await (const batch of inbox.batches({ max: 10, timeout: "1h" })) {
+  await step.run("process-batch", () => processAll(batch));
+}
+```
+
+### `for await (const message of inbox)`
+
+An inbox is an async iterable of its messages. The loop reads with `next()` and ends when the inbox closes or you `break` out of it.
+
+### `inbox.close(): Promise<Message[]>`
+
+Closes the inbox and resolves with the messages it received that were not read. Calling `close()` more than once returns the same result.
+
+### `inbox.closed: boolean`
+
+Whether the inbox is closed. A closed inbox reads nothing.
+
+## Ordering
+
+An inbox has one reader. Each message is read once, and reads are served in the order they were made.
+
+## Requirements
+
+`step.subscribe()` needs an Inngest server that supports inboxes. On an executor that does not, such as an older Dev Server, `step.subscribe()` fails the run immediately with a non-retriable error instead of leaving a read waiting. Upgrade the Dev Server with `npx inngest-cli@latest dev`.
