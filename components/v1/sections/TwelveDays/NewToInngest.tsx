@@ -33,7 +33,10 @@ export default function NewToInngest() {
   }
 
   return (
-    <div className="flex flex-col gap-3 sm:flex-row sm:flex-wrap sm:items-center">
+    <div
+      id="new-to-inngest"
+      className="flex scroll-mt-24 flex-col gap-3 sm:flex-row sm:flex-wrap sm:items-center"
+    >
       <p className="font-v1Label text-[15px]">{NEW_TO_INNGEST.lead}</p>
       <div className="flex flex-col gap-3 sm:flex-row">
         <button

@@ -272,10 +272,6 @@ export const HERO = {
   body: "Twelve doors. Twelve lessons to make all your weird workflows durable. Combine them and submit your weird workflow for a chance to win cash and other prizes.",
   /** Down to the calendar: the doors and the email sign-up. */
   signup: { label: "Sign up for the challenge", href: "#calendar" },
-  cta: {
-    label: "Submit your build",
-    href: `/12-days-of-workflows/build-a-thon?ref=${REF}-hero`,
-  },
 } as const;
 
 /** Section id the hero's "Explore the calendar" jumps to. */
@@ -288,11 +284,6 @@ export const CALENDAR = {
   title: "No peeking.",
   subtitle:
     "The lessons are still wrapping themselves. Add your email to get notified when each lesson drops.",
-  skip: {
-    lead: "Already ready to build?",
-    label: "Skip to submission.",
-    href: `/12-days-of-workflows/build-a-thon?ref=${REF}-calendar#submit`,
-  },
 } as const;
 
 /**
@@ -318,16 +309,34 @@ export const NEW_TO_INNGEST = {
 Follow the quick start for this stack: https://www.inngest.com/docs/getting-started`,
 } as const;
 
-/** The email sign-up in the calendar (EmailSignup.tsx). */
+/**
+ * The one sign-up form (JoinForm.tsx), in the calendar and in the raffle
+ * pop-up. Before the doors open it's email only; while a day's raffle is
+ * open the same submit also enters that day's raffle.
+ */
 export const SIGNUP = {
   prompt: "Get an email when each door opens.",
   label: "Email address",
+  name: "Name",
   placeholder: "you@company.com",
+  namePlaceholder: "Your name",
   button: "Email me when doors open",
+  raffleButton: "Sign up and enter today's raffle",
+  /** Already signed up: one click per day after that. */
+  quick: (name: string) => `Enter today's raffle as ${name}`,
+  notYou: "Not you?",
   sending: "Signing you up…",
   sent: "You're on the list.",
   sentBody: "We'll email you the moment each new door opens.",
+  enteredBody: (day: number) =>
+    `You're in the Day ${day} raffle, and we'll email you when each new door opens. Come back tomorrow for another entry.`,
   failed: "That didn't go through. Try again?",
+  /** In the pop-up: points to the "New to Inngest?" block. */
+  account: {
+    lead: "Need an Inngest account? It's free:",
+    label: "get started",
+    href: "#new-to-inngest",
+  },
 } as const;
 
 export const FINALE = {
@@ -351,12 +360,6 @@ export const FINALE = {
   image: "/assets/v1/12-days/finale.webp",
   imageAlt:
     "A cat's paw nudges an eyeball off a shelf and down a green ramp toward a funnel balanced on the head of a woman with green lips and big curly buns.",
-} as const;
-
-export const CLOSING = {
-  title: "All is calm. Your workflows are still running.",
-  body: "Make something weird. Make it durable. Build for the long run.",
-  cta: { label: "Start building free", href: `/sign-up?ref=${REF}` },
 } as const;
 
 /**
@@ -664,18 +667,12 @@ export const RAFFLE = {
   eyebrow: "The daily raffle",
   title: ["A prize a day.", "Open the door to enter."],
   body: "Every door has a prize behind it. Enter on the day to win that day's prize. Come back tomorrow for the next one: twelve doors, twelve chances.",
-  steps: [
-    "Open today's door.",
-    "Enter the day's raffle. One entry per day.",
-    "We draw a winner after each day's raffle closes.",
-  ],
   calendar: {
     title: "December",
     today: "Today",
     entered: "Entered",
   },
   todaysPrize: "Today's prize",
-  tracker: "Your entries",
   enter: "Enter today's raffle",
   entered: "You're in for today",
   notYet: "The raffle opens with the first door on December 7.",
@@ -685,22 +682,9 @@ export const RAFFLE = {
     label: "Official rules",
     href: `/12-days-of-workflows/raffle-rules?ref=${REF}-raffle`,
   },
-  /** Winners need an Inngest account under the email they entered. */
-  account: {
-    lead: "No Inngest account yet?",
-    label: "Start free in cloud",
-    href: `/sign-up?ref=${REF}-raffle`,
-  },
   dialog: {
     title: (day: number) => `Day ${day} raffle`,
     body: "Enter to win today's prize. You'll also get an email when each new door opens.",
-    name: "Name",
-    email: "Work email",
-    button: "Enter the raffle",
-    sending: "Entering…",
-    sent: (day: number) =>
-      `You're in for Day ${day}. Come back tomorrow for another entry.`,
-    failed: "That didn't go through. Try again?",
     close: "Close",
   },
 } as const;

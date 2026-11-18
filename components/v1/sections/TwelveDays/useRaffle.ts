@@ -55,6 +55,57 @@ export function saveEntry(day: number, name: string, email: string) {
   window.dispatchEvent(new CustomEvent(CHANGED, { detail: next }));
 }
 
+/** Remembers who signed up (email only, before the raffle opens) so
+ *  the form can prefill and offer one-click entries later. */
+export function saveDetails(name: string, email: string) {
+  const prev = read();
+  const next: RaffleState = {
+    days: prev.days,
+    name: name || prev.name,
+    email,
+  };
+  try {
+    window.localStorage.setItem(KEY, JSON.stringify(next));
+  } catch {
+    // noop
+  }
+  window.dispatchEvent(new CustomEvent(CHANGED, { detail: next }));
+}
+
+/**
+ * Whether this browser has signed up for the daily door emails. Entering
+ * a raffle signs people up too, so both set it.
+ */
+const SUBSCRIBED_KEY = "12-days-of-workflows:subscribed";
+const SUBSCRIBED_CHANGED = "12-days:subscribed-changed";
+
+export function markSubscribed() {
+  try {
+    window.localStorage.setItem(SUBSCRIBED_KEY, "1");
+  } catch {
+    // Still subscribed; the form just shows again next visit.
+  }
+  window.dispatchEvent(new Event(SUBSCRIBED_CHANGED));
+}
+
+export function useSubscribed(): boolean {
+  const [subscribed, setSubscribed] = useState(false);
+  useEffect(() => {
+    const check = () => {
+      try {
+        setSubscribed(Boolean(window.localStorage.getItem(SUBSCRIBED_KEY)));
+      } catch {
+        // Blocked storage: show the form.
+      }
+    };
+    check();
+    const onChange = () => setSubscribed(true);
+    window.addEventListener(SUBSCRIBED_CHANGED, onChange);
+    return () => window.removeEventListener(SUBSCRIBED_CHANGED, onChange);
+  }, []);
+  return subscribed;
+}
+
 const PROMPTED_KEY = "12-days-of-workflows:raffle-prompted";
 
 /**

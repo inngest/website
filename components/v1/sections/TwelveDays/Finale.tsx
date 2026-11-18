@@ -10,11 +10,7 @@ import {
   LIVESTREAM,
 } from "@/components/v1/sections/TwelveDays/data";
 import LivestreamForm from "@/components/v1/sections/TwelveDays/LivestreamForm";
-import {
-  buttonClass,
-  Chip,
-  POSTER_TITLE,
-} from "@/components/v1/sections/TwelveDays/poster";
+import { Chip, POSTER_TITLE } from "@/components/v1/sections/TwelveDays/poster";
 
 /**
  * The finale: a live CodeTV episode building a Rube Goldberg machine
@@ -127,12 +123,6 @@ export default function Finale() {
                 </span>
               </span>
             </div>
-          </Link>
-          <Link
-            href={FINALE.watch.href}
-            className={buttonClass("ink") + " w-full sm:w-auto sm:self-start"}
-          >
-            {FINALE.watch.label} <span aria-hidden="true">→</span>
           </Link>
         </motion.div>
       </div>

@@ -10,7 +10,6 @@ import {
   DAYS,
   DOOR_ART,
   DOOR_FACES,
-  prizeFor,
   raffleDayAt,
   RAFFLE,
   unlockAt,
@@ -18,7 +17,7 @@ import {
   type WorkflowDay,
 } from "@/components/v1/sections/TwelveDays/data";
 import { buttonClass } from "@/components/v1/sections/TwelveDays/poster";
-import EmailSignup from "@/components/v1/sections/TwelveDays/EmailSignup";
+import JoinForm from "@/components/v1/sections/TwelveDays/JoinForm";
 import { copyText } from "@/components/v1/sections/TwelveDays/copyText";
 import NewToInngest from "@/components/v1/sections/TwelveDays/NewToInngest";
 import {
@@ -102,16 +101,11 @@ export default function AdventCalendar({ now }: { now: Date | null }) {
             {CALENDAR.title}
           </h2>
           <p className="max-w-[640px] font-v1Label text-[15px] leading-[1.5]">
-            {CALENDAR.subtitle} {CALENDAR.skip.lead}{" "}
-            <Link
-              href={CALENDAR.skip.href}
-              className="text-[#ECFE08] underline underline-offset-4 hover:no-underline"
-            >
-              {CALENDAR.skip.label}
-            </Link>
+            {CALENDAR.subtitle}
           </p>
-          {/* The subhead above asks for the email, so no separate prompt. */}
-          <EmailSignup />
+          {/* The page's one sign-up form. While a day's raffle is open it
+              also enters that day's raffle. */}
+          <JoinForm day={raffleDay} tone="blue" id="twelve-days" />
           <NewToInngest />
         </div>
 
@@ -312,24 +306,17 @@ function Door({
                 label={`Copy the Day ${day.day} code`}
               />
             </div>
-            {/* One way on per door: today's raffle, and the docs. Getting
-                started with Inngest lives once, above the grid. */}
+            {/* One way on per door: the docs, plus today's raffle until
+                this visitor is in. Getting started with Inngest lives
+                once, above the grid. */}
             <div className="mt-auto flex flex-col items-start gap-3 pt-1">
-              {raffle && prizeFor(day.day) && (
-                <p className="font-v1Label text-[12px]">
-                  {RAFFLE.todaysPrize}: {prizeFor(day.day)!.prize}
-                </p>
-              )}
-              {raffle && (
+              {raffle && !raffle.entered && (
                 <button
                   type="button"
                   onClick={() => openRaffle(day.day)}
-                  className={
-                    buttonClass(raffle.entered ? "white" : "ink", "sm") +
-                    " shrink-0"
-                  }
+                  className={buttonClass("ink", "sm") + " shrink-0"}
                 >
-                  {raffle.entered ? `${RAFFLE.entered} ✓` : `${RAFFLE.enter} →`}
+                  {RAFFLE.enter} →
                 </button>
               )}
               <Link

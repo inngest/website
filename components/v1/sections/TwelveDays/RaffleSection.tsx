@@ -1,7 +1,6 @@
 "use client";
 
 import { motion } from "motion/react";
-import Link from "next/link";
 import { reveals } from "@/utils/v1/reveals";
 import {
   COLORS,
@@ -28,10 +27,10 @@ import {
 const WEEKDAYS = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"];
 
 /**
- * The daily raffle: how it works, today's prize, this visitor's entries,
- * and a December calendar with each day's prize as a neon-outlined
+ * The daily raffle showcase: today's prize with the entry button, and a
+ * December calendar with each day's prize as a neon-outlined
  * sticker on its date. The entry itself is the pop-up (RaffleDialog),
- * which also opens from today's door.
+ * which also opens from today's door; the rules live in that form.
  */
 export default function RaffleSection({ now }: { now: Date | null }) {
   const { days } = useRaffleState();
@@ -68,31 +67,6 @@ export default function RaffleSection({ now }: { now: Date | null }) {
             >
               {RAFFLE.body}
             </motion.p>
-            <motion.ol {...reveals.body} className="flex flex-col gap-2 pl-0">
-              {RAFFLE.steps.map((step, i) => (
-                <li
-                  key={step}
-                  className="flex list-none items-baseline gap-3 font-v1Label text-[15px]"
-                >
-                  <span
-                    aria-hidden="true"
-                    className="flex h-7 w-7 shrink-0 items-center justify-center rounded-full bg-[#010101] text-[13px] text-[#ECFE08]"
-                  >
-                    {i + 1}
-                  </span>
-                  {step}
-                </li>
-              ))}
-            </motion.ol>
-            <p className="font-v1Label text-[12px]">
-              {RAFFLE.rules.lead}{" "}
-              <Link
-                href={RAFFLE.rules.href}
-                className="underline underline-offset-4 hover:no-underline"
-              >
-                {RAFFLE.rules.label}
-              </Link>
-            </p>
           </div>
 
           {/* Today's prize, front and centre, with the entry button. */}
@@ -135,9 +109,6 @@ export default function RaffleSection({ now }: { now: Date | null }) {
                   {before ? RAFFLE.notYet : RAFFLE.closed}
                 </p>
               )}
-              <p className="border-t border-white/20 pt-4 font-v1Label text-[13px]">
-                {RAFFLE.tracker}: {days.length} of {UNLOCK_DATES.length}
-              </p>
             </motion.div>
           )}
         </div>
