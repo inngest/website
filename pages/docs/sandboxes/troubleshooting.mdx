@@ -6,11 +6,11 @@ export const description = "Troubleshoot Inngest Sandboxes: diagnose a failed Sa
 
 When a Sandbox operation fails, find its step in the run trace or inspect the direct SDK error. Check the resource’s current state before retrying: a lost response does not prove that a command or mutation failed. Keep the error `code`, `requestId`, and resource ID for investigation.
 
-> **Open beta.** Sandboxes are available on Pro plans and above. The guidance below describes the `inngest@4.21.1+` beta. The API and limits can change. The newer beta reference documents selecting existing workspace secrets for a fresh Sandbox.
+> **Open beta.** Sandboxes are available on Pro plans and above. The guidance below describes the `inngest@4.21.1+` beta; selecting an image and Sandbox tools need `inngest@4.25.0+`. The API and limits can change.
 
 ## Before you retry
 
-1. **Find the operation.** Record whether the call used `step.sandbox`, `inngest.sandboxes`, or REST. For an SDK error, read `SandboxError.action`, `code`, `ambiguous`, `retryable`, `requestId`, and any Sandbox, process, or snapshot ID. Branch on the code, not the message.
+1. **Find the operation.** Record whether the call used `step.sandbox`, `inngest.sandboxes`, or REST. For an SDK error, read `SandboxError.action`, `code`, `ambiguous`, `retryable`, `requestId`, and any Sandbox, process, or snapshot ID. Branch on the code, not the message. A `SandboxValidationError` has no `code`: the SDK rejected the options before sending the request, or could not read the response. Fix the call rather than retrying it.
 2. **Check current state.** Get the Sandbox, process, or snapshot with its ID. SDK objects are views of an earlier response; a fresh Get shows the current state. A missing resource can also mean it belongs to another workspace or environment.
 3. **Check the effect.** A failed response can follow a successful command or mutation. Inspect an external result or application completion marker before repeating work that changes state.
 4. **Preserve evidence.** Keep the run ID, step ID, error code, request ID, resource IDs, and the time of the attempt when you contact Inngest.
@@ -19,31 +19,43 @@ When a Sandbox operation fails, find its step in the run trace or inspect the di
 
 **Check:** Confirm that the account is on Pro or above, that the call targets the intended Inngest Cloud environment, and that server-side code uses that environment’s `INNGEST_SIGNING_KEY`. Keep the key out of browser code.
 
-**Fix:** If the account is on a plan below Pro, [upgrade your plan](https://app.inngest.com/billing/plans), then retry Create. Changing the Sandbox name or size does not grant access.
+**Fix:** If the account is on a plan below Pro, [upgrade your plan](https://app.inngest.com/billing/plans), then retry Create. Changing the Sandbox name or size does not grant access. Resume and snapshot Create check access the same way.
+
+## Too many Sandboxes are active
+
+**Check:** Create or Resume returns `429 sandbox_concurrency_limit_exceeded` when the account reaches its plan's limit on active Sandboxes. Starting, running, pausing, resuming, and terminating Sandboxes count; `PAUSED` Sandboxes do not. Unfinished custom image builds also count.
+
+**Fix:** Destroy Sandboxes you no longer need, or pause ones you will come back to, then retry. If you need more concurrent Sandboxes, contact Inngest.
 
 ## Create rejects a size or cannot place the Sandbox
 
-**Check:** A fresh beta Sandbox accepts 1, 2, or 4 vCPU with 1, 2, or 4 GiB of memory per vCPU (for example `2 / 2048`, `2 / 4096`, or `2 / 8192`). Other sizes return `invalid_field_format`. A supported pair can still fail because of account entitlement or unavailable matching capacity. Check the error code and current entitlement. `compute_unavailable` reports a temporary compute or storage availability failure.
+**Check:** A fresh beta Sandbox accepts 1, 2, 4, 8, or 16 vCPU with 1, 2, or 4 GiB of memory per vCPU (for example `2 / 2048`, `2 / 4096`, or `2 / 8192`). Other sizes return `400 invalid_field_format`. A supported size can still fail when no matching capacity is available. That returns `503 compute_unavailable`, the same code as any other temporary compute or storage availability failure.
 
-**Fix:** Correct an unsupported pair. For a capacity rejection, retry later or use another supported size. If Create returned an unconfirmed availability failure, reuse the **same active name and configuration** rather than making a second named Sandbox. A matching Create returns the existing Sandbox; a conflicting configuration returns `sandbox_name_taken`. Do not claim a placement time from the SDK’s readiness wait.
+**Fix:** Correct an unsupported size. For `compute_unavailable`, retry later or use another supported size. If Create returned an unconfirmed availability failure, reuse the **same active name and configuration** rather than making a second named Sandbox. Do not claim a placement time from the SDK’s readiness wait.
+
+## Create returns `409 sandbox_name_taken`
+
+**Check:** Active Sandbox names are unique within a workspace. Create with the same name returns the existing Sandbox only when that Sandbox is still starting or `RUNNING` and the configuration matches: size, image, environment, selected secrets, and source snapshot. A paused, pausing, or resuming Sandbox with that name returns `sandbox_name_taken`. Image references are compared as written, so `my-image` and `my-image:latest` do not match.
+
+**Fix:** Get or list the existing Sandbox and use it, Resume it if it is paused, or Destroy it before reusing the name. To start a separate Sandbox, use a different name.
 
 ## A custom-image Sandbox stops right after it starts
 
-**Check:** If the image sets `ENTRYPOINT` or `CMD`, that command owns the Sandbox's lifetime, as with `docker run`. When it exits, the Sandbox becomes `TERMINATED`. Many base images, such as `alpine`, default to a shell that exits immediately.
+**Check:** If the image sets `ENTRYPOINT` or `CMD`, that command owns the Sandbox's lifetime, as with `docker run`. When it exits with status 0, the Sandbox becomes `TERMINATED`. When it exits with a nonzero status, the Sandbox becomes `FAILED` and its error reports the exit status. Many base images, such as `alpine`, default to a shell that exits immediately.
 
 **Fix:** Give the image a long-running command, such as your server or `CMD ["tail", "-f", "/dev/null"]`, then publish a new tag and create a new Sandbox. See [how the image's command runs](/docs/sandboxes/features/custom-images#how-the-image-s-command-runs).
 
 ## Create rejects selected secrets
 
-**Check:** The newer beta selects active workspace secrets by exact, case-sensitive name. Names must be unique, valid environment keys, and different from keys in the literal `environment` object. The caller must use the workspace that owns those secrets.
+**Check:** Create selects active workspace secrets by exact, case-sensitive name. Names must be unique, valid environment keys, and different from keys in the literal `environment` object. The caller must use the workspace that owns those secrets. Each of these problems, and a secret that is missing or archived, returns `400 invalid_field_format`.
 
 **Fix:** Correct the names or key overlap and retry Create with the intended configuration. A clone cannot select new secrets; it carries values captured in the source snapshot. Pause and Resume do not fetch rotated values again.
 
 ## Create rejects the image
 
-**Check:** `sandbox_image_not_found` means the image is not published to this workspace. A reference is a name, `name:tag`, or `name@sha256:<hex>`. A name without a tag uses `latest`. A snapshot clone cannot select an image.
+**Check:** `404 sandbox_image_not_found` means the image is not published to this workspace. `409 sandbox_image_not_ready` means it exists but its build or upload has not finished. A reference is a name, `name:tag`, or `name@sha256:<hex>`. A name without a tag uses `latest`. A snapshot clone cannot select an image.
 
-**Fix:** Correct the reference, or publish the image first. See [Choose an image](/docs/sandboxes/features/base-images#choose-an-image).
+**Fix:** Correct the reference, publish the image first, or wait for its build to finish and retry. See [Choose an image](/docs/sandboxes/features/base-images#choose-an-image).
 
 ## Code in the Sandbox gets a `ToolError`
 
@@ -53,13 +65,13 @@ When a Sandbox operation fails, find its step in the run trace or inspect the di
 
 ## Create returns an ID but the Sandbox is not ready
 
-**Check:** A TypeScript Create waits up to 120 seconds for `RUNNING` by default. A `runningTimeout` deadline ends that wait; it does not cancel Create or destroy the Sandbox. Get the Sandbox ID and inspect `PENDING`, `STARTING`, `RUNNING`, `FAILED`, or a terminal state.
+**Check:** A TypeScript Create waits up to 120 seconds for `RUNNING` by default. When that wait ends, the SDK throws `sandbox_start_timed_out`; it does not cancel Create or destroy the Sandbox. If the Sandbox reaches `FAILED` or a terminal state instead, the SDK throws `sandbox_start_failed`. Get the Sandbox by ID and inspect `PENDING`, `STARTING`, `RUNNING`, `FAILED`, or `TERMINATED`.
 
 **Fix:** If it is still starting, wait for `RUNNING` before running commands. If it failed, inspect the resource error and clean up the Sandbox. When cleanup after readiness failure matters, create with `runningTimeout: false` so you retain the ID, then call `waitUntilRunning` separately. Do not issue an unrelated new Create while the first Sandbox may still be starting.
 
 ## A command failed, timed out, or lost output
 
-**Check:** A nonzero `exitCode` is a command result, not an SDK exception. Read `stdout`, `stderr`, and `exitCode`. A captured command has a 30-second default observation timeout and a five-minute maximum. `sandbox_exec_timed_out`, `sandbox_exec_output_too_large`, or `operation_ambiguous` can arrive after the command ran.
+**Check:** A nonzero `exitCode` is a command result, not an SDK exception. Read `stdout`, `stderr`, and `exitCode`. Through the direct client and REST, a captured command has a 30-second default observation timeout and a five-minute maximum; in `step.sandbox`, see [Long-running commands](/docs/sandboxes/features/commands#long-running-commands). `sandbox_exec_timed_out`, `sandbox_exec_output_too_large`, or `operation_ambiguous` can arrive after the command ran.
 
 **Fix:** Correct the command when its exit code shows an application error. For a timeout or unconfirmed result, inspect the command’s external effects or an application-defined completion marker before running it again. Use a managed process for work that must run longer than a captured command. If output is too large, write it to a file or external store and return a small summary. The direct client and REST cap captured output at 4 MiB; `step.sandbox` retains a 2 MiB tail and reports `result.output.truncated`. A truncated tail does not contain the full output.
 
@@ -80,31 +92,31 @@ Create, Destroy, Pause, Resume, snapshot Delete, and an identical file upload ha
 
 **Check:** Get the process and Sandbox states. `LOST` can follow Sandbox runtime loss. In the beta, process metadata and retained output live with that runtime and have no recovery path. Also check how you sent a signal: the SDK defaults `includeChildren` to `true`, REST defaults it to `false`, and descendant delivery is reliable only with signal 9 in the current beta. Another descendant signal can make terminal state unobservable. A `sandbox_process_wait_timed_out` response ends the wait, not the process.
 
-**Fix:** Treat a `LOST` process as an unknown outcome. Check external effects before starting replacement work. Pass `includeChildren` explicitly. Use `false` for graceful `SIGTERM`; use signal 9 when you need descendant delivery in the beta. If output returns `sandbox_process_output_not_retained`, it has been evicted: each process keeps about 512 KiB, and only the newest 32 output rings remain. Persist important output before destroying the Sandbox. Live streams are best effort and can miss or replay chunks after manual reconnection.
+**Fix:** Treat a `LOST` process as an unknown outcome. Check external effects before starting replacement work. Pass `includeChildren` explicitly. Use `false` for graceful `SIGTERM`; use signal 9 when you need descendant delivery in the beta. If output returns `sandbox_process_output_not_retained`, it has been evicted: each process keeps about 512 KiB, and only the newest 32 output rings remain. Persist important output before destroying the Sandbox. Live streams are best effort. The SDK does not reconnect a stream; opening it again starts from the retained tail, so it can repeat chunks you already read.
 
 ## Pause or Resume did not finish
 
-**Check:** Get the Sandbox again. Pause may return `PAUSING`; Resume may return `RESUMING`. Commands, files, logs, and process operations require `RUNNING`. A pause is a cold checkpoint and can interrupt external connections.
+**Check:** Get the Sandbox again. The TypeScript SDK's `pause()` and `resume()` wait up to five minutes for `PAUSED` or `RUNNING`. If that wait ends first, they throw `sandbox_start_timed_out`, for Pause as well as Resume; if the Sandbox reaches `FAILED` or `TERMINATED`, they throw `invalid_request`. While a pause or resume is in progress, REST reports the Sandbox as `STARTING`. Commands, files, logs, and process operations require `RUNNING`; calling them on a Sandbox in another state returns `409 invalid_request`. A pause is a cold checkpoint and can interrupt external connections.
 
-**Fix:** Wait for `PAUSED` before treating the Sandbox as paused, or for `RUNNING` before using it after Resume. The same Sandbox ID, filesystem, memory, and remaining runtime return on Resume. Repeating Pause or Resume after an unconfirmed availability failure continues the state-based transition in the beta. If the Sandbox is `FAILED` or terminal, inspect its error; Resume does not restore a destroyed Sandbox. A user snapshot does not support in-place restore.
+**Fix:** Wait for `PAUSED` before treating the Sandbox as paused, or for `RUNNING` before using it after Resume. Resume returns the same Sandbox ID, filesystem, and memory. Repeating Pause or Resume after an unconfirmed availability failure continues the state-based transition in the beta. If the Sandbox is `FAILED` or terminal, inspect its error; Resume does not restore a destroyed Sandbox. A paused Sandbox is kept for a limited retention period; after that it becomes `TERMINATED` and cannot resume. A user snapshot does not support in-place restore.
 
 ## A snapshot or clone is pending, unavailable, or expired
 
-**Check:** Snapshot Create first returns `CREATING`. The TypeScript SDK waits up to five minutes for `READY`; a polling timeout does not cancel the background upload. Get the snapshot or list recent snapshots before another Create. A clone needs a `READY` snapshot. Check `expiresAt`, status, and any snapshot error. `sandbox_snapshot_not_ready` means the requested operation cannot use the current status; `sandbox_snapshot_not_found` can also mean the snapshot is outside the selected workspace.
+**Check:** Snapshot Create first returns `CREATING`. The TypeScript SDK waits up to five minutes for `READY`; when that wait ends it throws `sandbox_snapshot_wait_timed_out`, which does not cancel the background upload. `403 sandbox_snapshot_limit_exceeded` means the account reached its snapshot count or storage quota, and `409 sandbox_snapshot_name_taken` means another snapshot already uses that name. Get the snapshot or list recent snapshots before another Create. A clone needs a `READY` snapshot. Check `expiresAt`, status (`CREATING`, `READY`, `DELETING`, `DELETED`, `FAILED`, or `LOST`), and any snapshot error. A snapshot past its `expiresAt` cannot be cloned. `sandbox_snapshot_not_ready` means the requested operation cannot use the current status; `sandbox_snapshot_not_found` can also mean the snapshot is outside the selected workspace.
 
-**Fix:** Wait for `READY` before cloning. If Snapshot Create had an ambiguous result, list recent snapshots and reconcile rather than creating another immediately. If a snapshot is `FAILED`, `LOST`, deleted, or expired, use a valid source Sandbox to make a new one; an expired snapshot is not permanent storage. A clone is a **new** Sandbox with a new ID. A clone that is still `STARTING` follows the Create readiness checks above. Flush application state before taking a new snapshot because beta snapshots are crash-consistent.
+**Fix:** Wait for `READY` before cloning. For a quota error, delete snapshots you no longer need. If Snapshot Create had an ambiguous result, list recent snapshots and reconcile rather than creating another immediately. If a snapshot is `FAILED`, `LOST`, deleted, or expired, use a valid source Sandbox to make a new one; an expired snapshot is not permanent storage. A clone is a **new** Sandbox with a new ID. A clone that is still `STARTING` follows the Create readiness checks above. Flush application state before taking a new snapshot because beta snapshots are crash-consistent.
 
 ## The Sandbox reached its runtime limit
 
-**Check:** The newer beta reference allows one hour of active runtime per Sandbox. Time spent paused does not consume that limit. Get the Sandbox to inspect its current status before trying another command. Track active time in your application if you need to plan against the limit.
+**Check:** Your plan sets how long a Sandbox can run, up to 24 hours. When a Sandbox reaches that limit, Inngest pauses it; it is not destroyed or marked `FAILED`. Commands then fail because the Sandbox is no longer `RUNNING`. Get the Sandbox to check whether it is `PAUSED`. See [Runtime expiry](/docs/sandboxes/limits#runtime-expiry) for what happens to running commands and processes.
 
-**Fix:** Save lasting artifacts outside the Sandbox. Create a new Sandbox for later work, or pause while waiting. A destroyed or terminal Sandbox cannot resume.
+**Fix:** Resume the Sandbox to keep working. Each Resume starts a new runtime window of the full length. Save lasting artifacts outside the Sandbox, because a paused Sandbox is only kept for a limited retention period. A destroyed or terminal Sandbox cannot resume.
 
 ## A durable run failed before Destroy
 
 **Check:** Find the Sandbox ID from the successful Create step or from a stable job-derived name. Check whether the Sandbox is still active, already `TERMINATING`, terminal, or missing. A completed `step.sandbox` result is memoized, but that does not preserve the guest process or guarantee cleanup after a permanent function failure.
 
-**Fix:** Destroy a Sandbox that the failed run no longer needs. In the beta low-level API, keep a Destroy step on the successful path and use an Inngest `onFailure` handler or separate cleanup function when permanent failure must release it. Direct client code should normally use `finally`. Cleanup should tolerate an already terminating, terminal, or missing Sandbox. A JavaScript `finally` around durable steps does not guarantee cleanup after permanent failure or cancellation.
+**Fix:** Destroy a Sandbox that the failed run no longer needs. To avoid manual cleanup, scope the Sandbox with `await using` or `group.sandbox()`, or use `step.sandbox.python` or `step.sandbox.typescript`; these destroy it for you. See [Managed lifecycle](/docs/sandboxes/features/managed-lifecycle#scope-a-sandbox-to-a-block). In the beta low-level API, keep a Destroy step on the successful path and use an Inngest `onFailure` handler or separate cleanup function when permanent failure must release it. Direct client code should normally use `finally`. Cleanup should tolerate an already terminating, terminal, or missing Sandbox. A JavaScript `finally` around durable steps does not guarantee cleanup after permanent failure or cancellation.
 
 ## A Sandbox operation does not appear in the trace
 
@@ -114,6 +126,6 @@ Create, Destroy, Pause, Resume, snapshot Delete, and an identical file upload ha
 
 ## More help
 
-Use the [Quick start](/docs/sandboxes/quick-start) to reproduce a Create–command–Destroy run. [Reference](/docs/sandboxes/reference) lists API calls and errors, [Limits](/docs/sandboxes/limits) lists beta bounds, and [Managed lifecycle](/docs/sandboxes/features/managed-lifecycle) explains durable cleanup and uncertain outcomes.
+Use the [Quick start](/docs/sandboxes/quick-start) to reproduce a Create–command–Destroy run. [Reference](/docs/sandboxes/reference) lists API calls and errors, [Limits](/docs/sandboxes/limits) lists beta bounds and their errors, and [Managed lifecycle](/docs/sandboxes/features/managed-lifecycle) explains durable cleanup and uncertain outcomes.
 
 When reporting an issue, include the SDK or REST surface, operation, stable error code, request ID, run and step IDs when relevant, resource IDs, and whether repeating the operation could duplicate a mutation. A Sandbox is an isolated microVM for code. A [branch deploy](/docs/platform-and-operations/environments-and-branch-deploys) is a deployment preview for a Git branch.

@@ -74,7 +74,7 @@ Destroy removes the Sandbox filesystem, processes, and retained process output. 
 
 ## Pause, resume, and reuse state
 
-Pause releases the live runtime into a private checkpoint. Resume returns the **same** Sandbox ID with its filesystem, memory, and remaining runtime. The current beta allows one hour of active runtime per Sandbox; time spent paused does not consume it. Use the returned running Sandbox before making another command, file, log, or process call.
+Pause releases the live runtime into a private checkpoint. Resume returns the **same** Sandbox ID with its filesystem and memory, and starts a new runtime window. Your plan sets how long a Sandbox can run, up to 24 hours. Use the returned running Sandbox before making another command, file, log, or process call.
 
 A user snapshot keeps a copy of memory, disk, environment, image, and resource settings while the source Sandbox continues running. Clone creates a **new** Sandbox ID from a ready snapshot. Snapshot creation and readiness are separate phases. A wait timeout does not cancel the snapshot being created.
 
