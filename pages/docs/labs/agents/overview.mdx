@@ -52,10 +52,15 @@ You define an agent once. Inngest runs it on many threads, one for each conversa
 
 ## How a run works
 
+1. **An event arrives.** The agent's `thread` expression reads a key from it, such as a ticket ID, and the event joins that thread.
+2. **A run picks it up.** If a run is already working on the thread, the event goes into that run's inbox. Otherwise Inngest starts a new run.
+3. **The loop works.** The loop calls the model with the thread's history and runs the tools the model asks for. Each call is a step in the run's trace.
+4. **Messages land mid-task.** Before each model call, the loop adds any messages that arrived in the inbox.
+5. **The run ends.** When the model answers and the inbox is empty, the run saves the history to the thread and ends. The next message on the thread starts a new run with that history.
+
 <Mermaid
-  wide
   label="An event names a thread. If a run is already working on that thread, the event goes into its inbox. Otherwise a new run starts. The run's loop calls the model and runs the tools it asks for, each as a step, until the model answers. The history is saved on the thread, and the run ends when its inbox is empty."
-  chart={`flowchart LR
+  chart={`flowchart TB
   E["Event"] --> T["Thread"]
   T --> R["Run"]
   R --> I["Inbox"]
@@ -68,12 +73,6 @@ You define an agent once. Inngest runs it on many threads, one for each conversa
   class E,A accent
   class T,I info`}
 />
-
-1. **An event arrives.** The agent's `thread` expression reads a key from it, such as a ticket ID, and the event joins that thread.
-2. **A run picks it up.** If a run is already working on the thread, the event goes into that run's inbox. Otherwise Inngest starts a new run.
-3. **The loop works.** The loop calls the model with the thread's history and runs the tools the model asks for. Each call is a step in the run's trace.
-4. **Messages land mid-task.** Before each model call, the loop adds any messages that arrived in the inbox.
-5. **The run ends.** When the model answers and the inbox is empty, the run saves the history to the thread and ends. The next message on the thread starts a new run with that history.
 
 ## Set up the client
 
