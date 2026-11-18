@@ -1,88 +1,62 @@
 import { Info } from "shared/Docs/mdx";
+import { SdkSupport } from "src/shared/Docs/SdkSupport";
 
 export const metaTitle = "Inngest Agents | Labs";
-export const description = "Inngest Agents is an Inngest Labs project: agents that keep a thread going for days, take new messages while they work, run code in their own sandbox and never repeat finished work.";
+export const description = "Inngest Agents is an Inngest Labs project: build AI agents as durable functions that keep conversations for days, take new messages while they work, and run code in their own sandbox.";
 
 # Inngest Agents
 
-> Build agents that keep a thread going for days, take new messages mid-task, and never repeat finished work.
+> Build AI agents as durable functions that keep a conversation for days, take new messages while they work, and never repeat finished work.
+
+<SdkSupport
+  feature="Inngest Agents"
+  sdks={[
+    {
+      sdk: "typescript",
+      href: "/docs/labs/agents/reference",
+      status: "Labs",
+      note: "Install inngest@agents and import from inngest/experimental/agents. APIs may change between releases.",
+    },
+  ]}
+/>
 
 <Info>
-  Inngest Agents is experimental and moves fast. Install it with `npm install inngest@agents` - the primitives are not in `inngest@latest` - and import it from `inngest/experimental/agents`. The API may change between releases. [What's Labs?](/docs/labs?ref=docs-labs-agents)
+  Inngest Agents is an Inngest Labs project: early, moving fast, and shaped by your feedback. [What's Labs?](/docs/labs?ref=docs-labs-agents)
 </Info>
 
-An agent is an Inngest function that holds conversations. Every model call and tool call is a durable step, so a crash or a deploy never repeats one.
-
-- **No loop to write.** A model, a prompt and tools make a whole agent. [Agents →](/docs/labs/agents/agents?ref=docs-labs-agents)
-- **Threads that remember.** A pull request, a ticket or a customer is one thread, with its history and state. [Threads →](/docs/labs/agents/threads?ref=docs-labs-agents)
-- **New messages reach the model mid-task.** Everything that arrives lands in the next model call. [Inboxes →](/docs/labs/agents/inboxes?ref=docs-labs-agents)
-- **A machine per thread.** The model's shell pauses when the run ends and is back on its next use. [Sandboxes →](/docs/labs/agents/sandboxes?ref=docs-labs-agents)
-- **Agents that find each other.** The model looks up other agents and hands them work. [Agent discovery →](/docs/labs/agents/agent-discovery?ref=docs-labs-agents)
+Inngest Agents lets you define an agent with a model, a system prompt, and tools, and run it on Inngest. Each conversation is a thread that keeps its history between runs. Messages that arrive while the agent works reach the model on its next call. Every model call and tool call is a durable step, so a crash or a deploy never repeats work that already finished.
 
 ```typescript {{ title: "inngest/agents/support.ts" }}
-import { eventType } from "inngest";
-import { z } from "zod";
-import { agents } from "../client";
-import { claude } from "../models/claude";
-import { lookupOrder } from "../tools/lookupOrder";
-
-export const question = eventType("support/question", {
-  schema: z.object({ customer: z.string(), text: z.string() }),
-});
-
 export const support = agents.agent({
   id: "support",
-  triggers: [question],
-  thread: "event.data.customer",
+  triggers: [ticketOpened, ticketReplied],
+  thread: "event.data.ticket",
   model: claude,
-  system: "You answer questions about orders.",
-  tools: { lookupOrder },
+  system: "You answer customer questions about orders.",
+  tools: { lookupOrder, sendReply },
 });
 ```
 
-```typescript {{ title: "inngest/tools/lookupOrder.ts" }}
-import { tool } from "inngest/experimental";
-import { z } from "zod";
+## What you can do
 
-export const lookupOrder = tool.step({
-  description: "Find an order by ID",
-  input: z.object({ id: z.string() }),
-  run: async ({ id }) => {
-    return { id, status: "shipped", eta: "Friday" };
-  },
-});
-```
+- **Define an agent without writing a loop.** A model, a system prompt, and tools make a complete agent. Write a handler when you want control over each turn. See [Models and the loop](/docs/labs/agents/models?ref=docs-labs-agents).
+- **Keep conversations across runs.** Name a thread from your events, such as a ticket or a pull request, and every run on it shares the model's history and your own state. See [Threads](/docs/labs/agents/threads?ref=docs-labs-agents).
+- **Take new messages mid-task.** Messages that arrive while the agent works wait in its inbox and reach the model on its next call. See [Inboxes](/docs/labs/agents/inboxes?ref=docs-labs-agents).
+- **Act through your own code.** Tools run in your app as durable steps, with your credentials. Connect MCP servers and share tools between apps. See [Tools](/docs/labs/agents/tools?ref=docs-labs-agents).
+- **Give each thread a machine.** A sandbox gives the model a shell, files, and a checked-out repository that are still there on the next message. See [Sandboxes](/docs/labs/agents/sandboxes?ref=docs-labs-agents).
+- **Build teams of agents.** Agents start other agents, talk to them while they work, and find each other at run time. See [Agent teams](/docs/labs/agents/agent-teams?ref=docs-labs-agents).
+- **See and score every run.** Each model call, tool call, and message is a row in the run's trace, with usage, cost, and scores. See [Observability](/docs/labs/agents/observability?ref=docs-labs-agents).
 
-Send a `support/question` event and the model looks up the order and answers, in the run's output. A question from the same customer days later picks up the same thread.
+## Start here
 
-## Concepts
+- [Overview](/docs/labs/agents/overview?ref=docs-labs-agents) introduces the concepts and walks through three complete agents.
+- [Quick start](/docs/labs/agents/quick-start?ref=docs-labs-agents) runs your first agent on the Dev Server.
+- [Recipes](/docs/labs/agents/recipes?ref=docs-labs-agents) are complete projects to copy, from a support assistant to a coding agent.
+- [Agents reference](/docs/labs/agents/reference?ref=docs-labs-agents) and [Tools and sandboxes reference](/docs/labs/agents/reference-sandboxes?ref=docs-labs-agents) list every option.
 
-Read them in order, or jump to the one you need.
+## Next steps
 
-1. [Agents](/docs/labs/agents/agents?ref=docs-labs-agents): run as functions Inngest starts, retries and records.
-2. [Threads](/docs/labs/agents/threads?ref=docs-labs-agents): group events into one thread.
-3. [Inboxes](/docs/labs/agents/inboxes?ref=docs-labs-agents): let an agent keep listening while it works.
-4. [Models](/docs/labs/agents/models?ref=docs-labs-agents): call a model in a loop of turns you rarely write.
-5. [Tools](/docs/labs/agents/tools?ref=docs-labs-agents): give a model its only way to act on the world.
-6. [Skills](/docs/labs/agents/skills?ref=docs-labs-agents): give the model know-how it reads when it needs it.
-7. [Sandboxes](/docs/labs/agents/sandboxes?ref=docs-labs-agents): run code on the thread's own machine.
-8. [Calling home](/docs/labs/agents/calling-home?ref=docs-labs-agents): lets sandbox code call your tools, inside your run.
-9. [Agent Teams](/docs/labs/agents/agent-teams?ref=docs-labs-agents): start an agent, talk to it, wait for its result.
-10. [Agent discovery](/docs/labs/agents/agent-discovery?ref=docs-labs-agents): publishes a card for every agent, so models find them.
-11. [Reliability](/docs/labs/agents/reliability?ref=docs-labs-agents): retries, depth limits and what happens when a run fails for good.
-12. [Observability](/docs/labs/agents/observability?ref=docs-labs-agents): shows traces, usage and scores.
-
-## Recipes
-
-- [Support assistant](/docs/labs/agents/recipes/support-assistant?ref=docs-labs-agents): answers each ticket in its own thread and looks up orders.
-- [Issue triage](/docs/labs/agents/recipes/issue-triage?ref=docs-labs-agents): labels new issues and links duplicates.
-- [PR reviewer](/docs/labs/agents/recipes/pr-reviewer?ref=docs-labs-agents): checks out a pull request, runs its tests and reviews it.
-- [Coding agent](/docs/labs/agents/recipes/coding-agent?ref=docs-labs-agents): changes a repository on a branch without holding the write token.
-- [Scheduled watcher](/docs/labs/agents/recipes/scheduled-watcher?ref=docs-labs-agents): a weekday digest, as a plain function.
-- [Lead and specialists](/docs/labs/agents/recipes/agent-teams?ref=docs-labs-agents): a lead that finds specialists and combines their answers.
-- [MCP assistant](/docs/labs/agents/recipes/mcp-assistant?ref=docs-labs-agents): works in each person's own account on a remote MCP server.
-- [Sandbox tools](/docs/labs/agents/recipes/sandbox-tools?ref=docs-labs-agents): answers by writing a script that calls your tools.
-
-## Where to start
-
-Follow the [Quick start](/docs/labs/agents/quick-start?ref=docs-labs-agents). [Project structure](/docs/labs/agents/structure?ref=docs-labs-agents) shows where agents, tools and sandboxes live, and the [Agents reference](/docs/labs/agents/reference?ref=docs-labs-agents) lists the agents API. Sandbox and tool exports are on [Tools and sandboxes reference](/docs/labs/agents/reference-sandboxes?ref=docs-labs-agents).
+- [About Labs](/docs/labs?ref=docs-labs-agents) explains what a lab is.
+- [Durable agents](/docs/durable-execution/durable-agents?ref=docs-labs-agents) shows how to build your own agent loop with steps.
+- [Sandboxes](/docs/sandboxes/overview?ref=docs-labs-agents) covers the microVMs that agents run code in.
+- [Agent Evals](/docs/agent-evals/overview?ref=docs-labs-agents) scores and compares agent runs.

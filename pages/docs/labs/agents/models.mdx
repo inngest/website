@@ -1,110 +1,103 @@
-import { AnnotatedCode, Annotation } from "shared/Docs/mdx";
+import { Info, AnnotatedCode, Annotation } from "shared/Docs/mdx";
 
-export const metaTitle = "Models | Inngest Agents";
-export const description = "Give an Inngest agent a model and a prompt and it runs the loop for you: it remembers the thread, folds in corrections, takes any model (not just Anthropic) and can answer with a typed value.";
+export const metaTitle = "Models and the loop | Inngest Agents";
+export const description = "How an Inngest agent calls its model: choose a model, let the agent run the loop, take it over in a handler, change its options, steer what reaches the model, report progress, get typed answers, and replace the loop.";
 
-# Models
+# Models and the loop
 
-> Give an agent a model and a prompt, and it runs the loop of turns for you.
+> Give an agent a model and a system prompt, and it runs the loop of model calls and tool calls for you.
 
-The PR helper is the one from [Inboxes](/docs/labs/agents/inboxes?ref=docs-labs-agents-models), with the triggers [Threads](/docs/labs/agents/threads?ref=docs-labs-agents-models) gave it.
+<Info>
+  Inngest Agents is an Inngest Labs project: early, moving fast, and shaped by your feedback. [What's Labs?](/docs/labs?ref=docs-labs-agents-models)
+</Info>
 
-## Ask a model
+The loop is the core of an agent. It sends the thread's history to the model, runs the tools the model asks for, sends back their results, and repeats until the model answers. One model call and the tool calls it asks for make a **turn**. Each model call and each tool call is its own durable step.
 
-You want a summary of the pull request, written by a model.
+## Choose a model
+
+`anthropic()` returns a model for the Anthropic API. Define it once and import it in each agent.
 
 ```typescript {{ title: "inngest/models/claude.ts" }}
 import { anthropic } from "inngest/experimental/agents";
 
 export const claude = anthropic({ model: "claude-sonnet-5-5" });
+
+export const quick = claude.with({ effort: "low", maxTokens: 500 });
 ```
 
-<AnnotatedCode>
+- `anthropic()` reads `ANTHROPIC_API_KEY` from the environment unless you pass `apiKey`. It needs the `@anthropic-ai/sdk` package.
+- `.with()` returns a variant of the model with other options, for one agent or one call.
+- `anthropic()` knows its prices, so every loop result reports cost in dollars as well as tokens.
 
-{/* not type-checked: the anthropic() one-shot call inside a handler */}
+To use another provider, see [Bring your own model](/docs/labs/agents/custom-models?ref=docs-labs-agents-models).
+
+`model` can also be a function of the run that returns a model. It's called once when each run starts:
+
 ```typescript
-import { gh } from "../lib/github";
-import { claude } from "../models/claude";
-
-async ({ inbox, thread, step }) => {
-  for await (const batch of inbox.batches({ max: 20 })) {
-    const summary = await step.run("summarize", async () => {
-      return await claude({
-        prompt: `Summarize:\n${JSON.stringify(batch)}`,
-      });
-    });
-
-    await step.run("comment", async () => {
-      return await gh.comment(Number(thread.key), summary.text);
-    });
-  }
+model: ({ event }) => {
+  return event.name === "ci/run.failed" ? claude.with({ effort: "high" }) : claude;
 },
 ```
 
-<Annotation id="step" lines="6" tease="not a step by itself" title="Wrap it in a step" href="/docs/labs/agents/agents?ref=docs-labs-agents-models#steps" linkText="Steps">
-A retry would repeat a bare model call.
-</Annotation>
+## Let the agent run the loop
 
-</AnnotatedCode>
+With a `model` and no handler, the agent runs the loop on every batch of messages in its inbox. The model's last answer is the run's output. The examples on this page use the pull request events from [Threads](/docs/labs/agents/threads?ref=docs-labs-agents-models#name-a-thread).
 
-`gh` is the comment helper from [Inboxes](/docs/labs/agents/inboxes?ref=docs-labs-agents-models#answer-every-message):
+```typescript {{ title: "inngest/agents/prHelper.ts" }}
+import { agents } from "../client";
+import { ciFailed, prComment, prOpened } from "../events";
+import { claude } from "../models/claude";
+import { comment } from "../tools/comment";
+import { readLog } from "../tools/readLog";
 
-```typescript {{ title: "inngest/lib/github.ts" }}
-const api = "https://api.github.com/repos/acme/web";
-
-export const gh = {
-  comment: async (pr: number, body: string) => {
-    const response = await fetch(`${api}/issues/${pr}/comments`, {
-      method: "POST",
-      headers: {
-        accept: "application/vnd.github+json",
-        authorization: `Bearer ${process.env.GITHUB_TOKEN}`,
-      },
-      body: JSON.stringify({ body }),
-    });
-
-    if (!response.ok) {
-      throw new Error(`Comment on #${pr}: ${response.status}`);
-    }
-
-    return await response.json();
-  },
-};
+export const prHelper = agents.agent({
+  id: "pr-helper",
+  triggers: [prOpened, prComment, ciFailed],
+  thread: "event.data.pr",
+  model: claude,
+  system: "You help with pull requests on acme/web. Post your answers with comment.",
+  tools: { readLog, comment },
+});
 ```
 
-A follow-up question gets an answer that knows nothing of the summary.
+The run's output isn't sent anywhere. To reach a person, give the model a tool that does, such as `comment` here, or [write a handler](#write-a-handler).
 
-## The loop
+The loop does these things for you:
 
-You want follow-ups to work. A turn is one model call plus the tool calls it asked for.
+- **Keeps the history.** After each batch, the loop saves the model's history on the [thread](/docs/labs/agents/threads?ref=docs-labs-agents-models#what-a-thread-keeps). When the history gets long, it's summarized, and the summary is reused.
+- **Adds new messages.** Before each model call, the loop takes any new messages from the [inbox](/docs/labs/agents/inboxes?ref=docs-labs-agents-models). A correction such as "focus on the tests" reaches the very next call.
+- **Caps turns.** The loop stops after 40 turns by default. See [Change the loop's options](#change-the-loop-s-options).
+- **Adds built-in tools.** Every model agent can [find and start other agents](/docs/labs/agents/agent-teams?ref=docs-labs-agents-models), and has a `wait` tool that ends its turn until the next message arrives.
+
+## Write a handler
+
+To do something with each answer, write a handler and call `loop()` yourself. `loop` is in the handler's argument when the agent has a `model`.
 
 <AnnotatedCode>
 
 ```typescript {{ title: "inngest/agents/prHelper.ts" }}
 import { agents } from "../client";
-import { ciFailed, ciPassed, deployed, prComment, prOpened } from "../events";
+import { ciFailed, prComment, prOpened } from "../events";
 import { gh } from "../lib/github";
 import { claude } from "../models/claude";
-
-const triggers = [
-  prOpened,
-  prComment,
-  ciFailed,
-  { event: deployed, thread: "event.data.pull" },
-];
+import { readLog } from "../tools/readLog";
 
 export const prHelper = agents.agent(
   {
     id: "pr-helper",
-    triggers,
+    triggers: [prOpened, prComment, ciFailed],
     thread: "event.data.pr",
-    inbox: [ciPassed],
     model: claude,
     system: "You help with pull requests on acme/web.",
+    tools: { readLog },
   },
-  async ({ inbox, loop, thread, step }) => {
+  async ({ inbox, loop, step, thread }) => {
     for await (const batch of inbox.batches({ max: 20 })) {
       const result = await loop(batch);
+
+      if (result.end === "maxTurns") {
+        continue;
+      }
 
       await step.run("comment", async () => {
         return await gh.comment(Number(thread.key), result.text);
@@ -114,417 +107,78 @@ export const prHelper = agents.agent(
 );
 ```
 
-<Annotation id="model" lines="20-21" tease="what the loop runs" title="Model and system" href="#delete-the-handler" linkText="Delete the handler">
-With a model and a system, the agent needs no handler.
+<Annotation id="loop" lines="18" tease="runs the turns" title="loop(batch)" href="/docs/labs/agents/reference?ref=docs-labs-agents-models#the-loop" linkText="Reference: the loop">
+Runs turns until the model answers, and returns the answer in `result.text`.
 </Annotation>
 
-<Annotation id="loop" lines="25" tease="runs the turns" title="loop(batch)">
-Calls the model until it stops asking for tools or calls the built-in `wait`, and returns the answer in `result.text`.
+<Annotation id="end" lines="20" tease="why it stopped" title="result.end" href="/docs/labs/agents/reference?ref=docs-labs-agents-models#the-result" linkText="Reference: the result">
+`"done"` when the model answered, `"maxTurns"` when it ran out of turns, `"stop"` when a `stop` condition matched, `"budget"` when a `budget` check ended it, and `"noToolCall"` when the model kept answering without a tool call under `toolChoice: "required"`.
 </Annotation>
 
-</AnnotatedCode>
-
-The trace shows a row for each model call and each tool call; `loop` is in the handler's argument only when the agent has a `model`.
-
-The events are as [Inboxes](/docs/labs/agents/inboxes?ref=docs-labs-agents-models) left them:
-
-```typescript {{ title: "inngest/events.ts" }}
-import { eventType } from "inngest";
-import { z } from "zod";
-
-const ciRun = z.object({ pr: z.number() });
-
-export const prOpened = eventType("pr/opened", {
-  schema: z.object({ pr: z.number(), author: z.string() }),
-});
-
-export const prComment = eventType("pr/comment", {
-  schema: z.object({ pr: z.number(), author: z.string(), body: z.string() }),
-});
-
-export const ciFailed = eventType("ci/run.failed", { schema: ciRun });
-
-export const ciPassed = eventType("ci/run.passed", { schema: ciRun });
-
-export const deployed = eventType("deploy/finished", {
-  schema: z.object({ env: z.string(), pull: z.number() }),
-});
-```
-
-## It remembers
-
-You want the helper to pick the thread up after its run ends.
-
-The loop saves the model's history in [the thread](/docs/labs/agents/threads?ref=docs-labs-agents-models#what-a-conversation-keeps) after each batch, so the next run — even a fresh, short-lived one on the same thread — sees it. When the history gets long, the loop summarizes it and reuses the summary. There's no option to turn this off: the thread is what makes a resumed run continuous, so remembering isn't something an agent opts out of.
-
-## Corrections land
-
-You want "focus on the tests" to count while the model works.
-
-Before every model call the loop takes everything that arrived in the [inbox](/docs/labs/agents/inboxes?ref=docs-labs-agents-models#while-it-works), so the correction reaches the very next call.
-
-## Delete the handler
-
-You want the same agent with no code.
-
-{/* not type-checked: a model agent with no handler */}
-```typescript
-export const prHelper = agents.agent({
-  id: "pr-helper",
-  triggers,
-  thread: "event.data.pr",
-  inbox: [ciPassed],
-  model: claude,
-  system: "You help with pull requests on acme/web.",
-});
-```
-
-This is the handler the SDK writes: each batch goes through the loop. Its answer is only the run's output; to put it on the PR, the model needs a tool. [Your own GitHub tools →](/docs/labs/agents/tools?ref=docs-labs-agents-models#your-own-git-hub-tools)
-
-The run itself is short-lived: it answers and ends as soon as its inbox is empty, there's no quiet period to wait out first. What feels continuous is the thread, not the run — a later message to the same PR resumes it with a fresh, equally short-lived run that reads the history back. [Reference: short-lived runs →](/docs/labs/agents/reference?ref=docs-labs-agents-models#short-lived-runs)
-
-In a handler, `end` says why the loop stopped: `"done"`, `"maxTurns"`, `"stop"` or `"noToolCall"`. [Reference: the result →](/docs/labs/agents/reference?ref=docs-labs-agents-models#the-result)
-
-## Swap in a variant
-
-You want to try another model without touching the agent.
-
-<AnnotatedCode>
-
-```typescript {{ title: "inngest/models/variants.ts" }}
-import { agentModel } from "inngest/experimental/agents";
-import { claude } from "./claude";
-
-export const quick = claude.with({ effort: "low", maxTokens: 500 });
-
-export const timed = agentModel(async (request) => {
-  const started = Date.now();
-  const reply = await quick(request);
-
-  console.log(`model took ${Date.now() - started}ms`);
-
-  return reply;
-});
-```
-
-<Annotation id="with" lines="4" tease="same client, other options" title=".with()" href="/docs/labs/agents/reference?ref=docs-labs-agents-models#models" linkText="Reference: models">
-A variant of the model, for one agent or one call.
-</Annotation>
-
-<Annotation id="shape" lines="6" tease="any function of this shape" title="agentModel()">
-The history in, the reply out. `agentModel()` marks it as a model, so an agent's `model` doesn't read it as a function of the run.
+<Annotation id="comment" lines="24-26" tease="once, even on retry" title="Your code, in a step" href="/docs/durable-execution/primitives/step-run?ref=docs-labs-agents-models" linkText="step.run">
+The comment is posted once, even if the run retries.
 </Annotation>
 
 </AnnotatedCode>
 
-Swap `model: claude` for `model: timed` and the same agent runs.
+The result also has `usage` (tokens and dollars), `toolCalls`, `turns`, and `unread`, the messages the loop took from the inbox but didn't send to the model. See [The result](/docs/labs/agents/reference?ref=docs-labs-agents-models#the-result).
 
-`model` also takes a function of `{ event, thread }` that returns a model, read once at the start of each run:
+## Change the loop's options
 
-{/* not type-checked: model as a function of the run */}
-```typescript
-model: ({ event }) => {
-  if (event.name === "ci/run.failed") {
-    return claude.with({ effort: "high" });
-  }
-
-  return claude;
-},
-```
-
-## Any model, not just Anthropic
-
-`anthropic()` is the one adapter the SDK ships, but `model` takes any function of the right shape — the loop doesn't know or care which provider answered. Writing your own adapter is how you use OpenAI, a local model, or anything else: the pattern is general on purpose, so the models Inngest ships with aren't a ceiling.
-
-### The shape
-
-A model is a function that takes the loop's request and returns a reply. That's the whole contract:
-
-```typescript {{ title: "Signature" }}
-interface AgentModel {
-  (request: AgentModelRequest): Promise<AgentModelResponse>;
-  contextWindow?: number;
-  placesBriefing?: boolean;
-}
-
-interface AgentModelRequest {
-  system?: string;
-  messages: ModelMessage[]; // { role: "user" | "assistant" | "tool", ... }
-  turn: number;
-  maxTurns: number;
-  toolChoice?: "auto" | "required" | "none" | { tool: string };
-  tools: ToolJsonDefinition[]; // { name, description?, input_schema }
-  briefing?: BriefingParts; // only for a model that places it itself
-}
-
-interface AgentModelResponse {
-  message: { role: "assistant"; content: unknown }; // kept in history untouched
-  text?: string;
-  toolCalls: { id: string; name: string; input: unknown }[];
-  usage?: AgentUsage; // { input, output, usd?, cacheRead?, cacheWrite? }
-  model?: string;
-  usd?: number;
-  details?: Record<string, Json>; // shows up as turn.model in onTurn
-}
-```
-
-Only `message` and `toolCalls` are required of a reply. Everything else is something to report when you have it.
-
-`contextWindow` is the model's context size in tokens, which a loop that summarizes a long history uses to decide when; `placesBriefing` says your model places the agent's [briefing](/docs/labs/agents/reference?ref=docs-labs-agents-models#the-definition) itself from `request.briefing`, rather than having it appended to `system`. Leave both out and the loop does the sensible thing.
-
-It runs inside a step, so a thrown error retries like any other step failure; throw `NonRetriableError` for one retrying can't fix (a 4xx the provider will never accept twice).
-
-Putting it on an agent is no different from `anthropic()`: `model: myModel(options)` goes in the same slot, or a function of `{ event, thread }` that returns one.
+Set `loop` on the definition to change the options of the agent's loop:
 
 ```typescript
-agents.agent({
-  id: "triage",
-  model: myModel({ apiKey: process.env.MY_PROVIDER_KEY }),
-  // ...
+loop: { maxTurns: 10 },
+```
+
+| Option | What it does |
+| --- | --- |
+| `maxTurns` | The most model calls the loop makes. Default `40`. |
+| `toolChoice` | `"auto"`, `"required"`, `"none"`, or `{ tool: "name" }`. Use `"required"` for a model that tends to answer in chat instead of calling tools. |
+| `stop` | Ends the loop when a condition matches, such as `hasToolCall("finish")` to stop after a `finish` tool runs. |
+| `budget` | Runs before each model call. Return a reason to end the loop, for example when a cost cap is reached. |
+| `parallelTools` | Runs the tool calls of one reply at the same time. |
+
+In a handler, pass options to one call, `loop(batch, { maxTurns: 10 })`, or derive a loop with `loop.with({ maxTurns: 10 })`. The [loop reference](/docs/labs/agents/reference?ref=docs-labs-agents-models#the-loop) lists every option.
+
+## Choose which messages reach the model
+
+`steer` receives the new messages the loop took from the inbox before a model call, and returns the ones to send. The rest come back in `result.unread`. Here, CI passing doesn't interrupt the model:
+
+```typescript
+const result = await loop(batch, {
+  steer: (messages) => {
+    return messages.filter((message) => !ciPassed.is(message));
+  },
 });
 ```
 
-The one thing a model function must do that an ordinary async function doesn't: mark itself with `agentModel()`, so the loop can tell "a model" apart from "a function of `{ event, thread }` that returns a model" — both are functions, and without the mark there's no way to know which you meant.
+## Report progress after each turn
+
+`onTurn` runs after each turn, with the turn's number, text, tool calls, and usage.
 
 ```typescript
-import { agentModel } from "inngest/experimental/agents";
-
-export const myModel = (options: MyOptions) => {
-  return agentModel(async (request) => {
-    // call your provider, return an AgentModelResponse
-  });
-};
+await loop(batch, {
+  onTurn: async ({ turn, toolCalls }) => {
+    await step.run("progress", async () => {
+      return await gh.comment(Number(thread.key), `Turn ${turn}: ${toolCalls.length} tool calls`);
+    });
+  },
+});
 ```
 
-### Worked example: OpenAI
+`onTurn` doesn't hold up the next model call. See [onTurn](/docs/labs/agents/reference?ref=docs-labs-agents-models#on-turn) for every field.
 
-The common case — another hosted chat API, its own tool-call format, but otherwise well-behaved. This maps `AgentModelRequest` onto the Chat Completions API and maps the reply back.
+## Call a model directly
 
-```typescript {{ title: "inngest/models/openai.ts" }}
-import OpenAI from "openai";
-import { agentModel } from "inngest/experimental/agents";
-import type { AgentModelRequest, AgentModelResponse } from "inngest/experimental/agents";
-
-interface OpenAiOptions {
-  model: string;
-  client?: OpenAI;
-}
-
-export const openaiModel = (options: OpenAiOptions) => {
-  const client = options.client ?? new OpenAI();
-
-  return agentModel(async (request: AgentModelRequest): Promise<AgentModelResponse> => {
-    const messages = toOpenAiMessages(request);
-
-    const reply = await client.chat.completions.create({
-      model: options.model,
-      messages: request.system
-        ? [{ role: "system", content: request.system }, ...messages]
-        : messages,
-      tools: request.tools.map((tool) => {
-        return {
-          type: "function" as const,
-          function: {
-            name: tool.name,
-            description: tool.description,
-            parameters: tool.input_schema,
-          },
-        };
-      }),
-      tool_choice: toToolChoice(request.toolChoice),
-    });
-
-    const choice = reply.choices[0];
-    const message = choice.message;
-
-    const toolCalls = (message.tool_calls ?? []).map((call) => {
-      return {
-        id: call.id,
-        name: call.function.name,
-        // Untrusted JSON until the tool's own schema checks it.
-        input: JSON.parse(call.function.arguments) as unknown,
-      };
-    });
-
-    return {
-      // Kept in history untouched, and fed back to this adapter next turn.
-      message: { role: "assistant", content: message },
-      text: message.content ?? undefined,
-      toolCalls,
-      usage: reply.usage
-        ? { input: reply.usage.prompt_tokens, output: reply.usage.completion_tokens }
-        : undefined,
-      model: reply.model,
-      details: { finishReason: choice.finish_reason },
-    };
-  });
-};
-
-const toToolChoice = (choice: AgentModelRequest["toolChoice"]) => {
-  if (!choice || choice === "auto") return "auto";
-  if (choice === "none") return "none";
-  if (choice === "required") return "required";
-
-  return { type: "function" as const, function: { name: choice.tool } };
-};
-
-// OpenAI's assistant/tool messages don't match ModelMessage's shape
-// one-for-one, so this adapter keeps its own history alongside the loop's,
-// built fresh from `request.messages` each call. The `assistant` message's
-// `content` is whatever this adapter put there last turn (above), so it
-// comes back out the same shape it went in.
-const toOpenAiMessages = (request: AgentModelRequest) => {
-  return request.messages.flatMap((message) => {
-    if (message.role === "user") {
-      return [{ role: "user" as const, content: toText(message.content) }];
-    }
-
-    if (message.role === "assistant") {
-      return [message.content as OpenAI.Chat.ChatCompletionAssistantMessageParam];
-    }
-
-    // message.role === "tool": one OpenAI message per result, keyed by call id.
-    return message.results.map((result) => {
-      return {
-        role: "tool" as const,
-        tool_call_id: result.toolCallId,
-        content: result.content,
-      };
-    });
-  });
-};
-
-const toText = (content: unknown): string => {
-  return typeof content === "string" ? content : JSON.stringify(content);
-};
-```
-
-- **The tool-call format differs, nothing else does.** OpenAI's `tool_calls` and `tool_choice` shapes aren't Anthropic's, but the loop never sees either — it only sees `AgentModelResponse.toolCalls`, a flat array the adapter is responsible for producing.
-- **`message.content` is a pass-through, not a rendering.** The loop stores `message` verbatim and hands it back on the next call unchanged; this is why `toOpenAiMessages` can cast the previous assistant message straight back rather than re-deriving it.
-- **Usage is optional per field.** Report `input`/`output` tokens when the provider returns them; a budget or cost calculation downstream reads whatever's there and no more.
-
-### Worked example: a model with no native tool calling
-
-The hard case: a local or self-hosted model (an OpenAI-compatible server such as Ollama or vLLM, or anything else) that has no structured tool-call API at all. The adapter has to ask the model to emit tool calls as text, in a format it then parses — the model doesn't call tools, the adapter does, on the model's behalf.
-
-```typescript {{ title: "inngest/models/local.ts" }}
-import { agentModel } from "inngest/experimental/agents";
-import type { AgentModelRequest, AgentModelResponse } from "inngest/experimental/agents";
-
-interface LocalOptions {
-  baseURL: string; // an OpenAI-compatible completions endpoint
-  model: string;
-}
-
-// Ask the model to answer in plain text, or to call a tool by writing one
-// line of JSON and nothing else. No provider-native tool calling involved.
-const toolInstructions = (tools: AgentModelRequest["tools"]): string => {
-  if (tools.length === 0) return "";
-
-  const names = tools.map((tool) => `${tool.name}: ${tool.description ?? ""}`);
-
-  return [
-    "",
-    "You may call one of these tools by replying with exactly one line",
-    'of JSON and nothing else: {"tool": "<name>", "input": { ... }}.',
-    "Otherwise just answer in plain text.",
-    "Tools:",
-    ...names,
-  ].join("\n");
-};
-
-// The model's whole reply is either a JSON tool call or plain text; there is
-// no structured split between the two; the adapter has to decide which it got.
-const parseReply = (text: string): { toolCall?: { tool: string; input: unknown } } => {
-  const trimmed = text.trim();
-
-  if (!trimmed.startsWith("{")) return {};
-
-  try {
-    const parsed = JSON.parse(trimmed) as { tool?: string; input?: unknown };
-
-    if (typeof parsed.tool === "string") {
-      return { toolCall: { tool: parsed.tool, input: parsed.input ?? {} } };
-    }
-  } catch {
-    // Not a tool call — treat the whole reply as text.
-  }
-
-  return {};
-};
-
-export const localModel = (options: LocalOptions) => {
-  return agentModel(async (request: AgentModelRequest): Promise<AgentModelResponse> => {
-    const prompt = buildPrompt(request) + toolInstructions(request.tools);
-
-    const response = await fetch(`${options.baseURL}/v1/completions`, {
-      method: "POST",
-      headers: { "content-type": "application/json" },
-      body: JSON.stringify({ model: options.model, prompt, max_tokens: 1024 }),
-    });
-
-    if (!response.ok) {
-      throw new Error(`Local model answered ${response.status}`);
-    }
-
-    const body = (await response.json()) as {
-      choices: { text: string }[];
-      usage?: { prompt_tokens: number; completion_tokens: number };
-    };
-
-    const text = body.choices[0]?.text ?? "";
-    const { toolCall } = parseReply(text);
-
-    return {
-      message: { role: "assistant", content: text },
-      text: toolCall ? undefined : text,
-      toolCalls: toolCall
-        ? [{ id: `local-${request.turn}`, name: toolCall.tool, input: toolCall.input }]
-        : [],
-      // This model doesn't report token counts; leave usage out rather than
-      // guess at it. Your own cost tracking for this model needs its own
-      // pricing logic, since there's nothing here for it to read.
-    };
-  });
-};
-
-// Renders the whole history as plain text, since there's no structured
-// messages API on the other end of this fetch.
-const buildPrompt = (request: AgentModelRequest): string => {
-  const lines = request.system ? [`System: ${request.system}`] : [];
-
-  for (const message of request.messages) {
-    if (message.role === "user") {
-      lines.push(`User: ${typeof message.content === "string" ? message.content : JSON.stringify(message.content)}`);
-    } else if (message.role === "assistant") {
-      lines.push(`Assistant: ${typeof message.content === "string" ? message.content : JSON.stringify(message.content)}`);
-    } else {
-      for (const result of message.results) {
-        lines.push(`Tool result (${result.name}): ${result.content}`);
-      }
-    }
-  }
-
-  return lines.join("\n");
-};
-```
-
-- **The model never calls a tool — the adapter decides it did.** There's no `tool_calls` field from this provider; `parseReply` is the entire boundary between "the model answered" and "the model wants a tool run," and a model that ignores the formatting instruction just gets a reply forwarded as text instead of a tool call. This is inherently less reliable than a provider with native tool calling, which is exactly why it's the harder of the two examples.
-- **No usage reported, and that's honest, not a bug.** Leaving `usage` out entirely (rather than guessing zeros) means a budget or cost dashboard built on `AgentUsage` correctly shows this model as unaccounted-for rather than silently free.
-- **Every other primitive — discovery, reports, reliability — works unmodified.** None of them read anything model-specific; they only ever see `AgentModelResponse`, so a model this unlike Anthropic's still composes with the rest of the SDK exactly like `anthropic()` does.
-
-{/* Go deeper */}
-## A typed answer
-
-You want a yes or no you can branch on, not prose.
+A model is also a function you can call once, outside the loop. Wrap the call in a step so a retry doesn't repeat it. Pass `output` with a schema to get a typed value back.
 
 <AnnotatedCode>
 
-{/* not type-checked: the anthropic() one-shot call with an output schema */}
 ```typescript
-const verdict = await step.run("safe to merge?", async () => {
+const verdict = await step.run("check-safety", async () => {
   return await claude({
-    prompt: `Is this PR safe to merge?\n${JSON.stringify(batch)}`,
+    prompt: `Is this pull request safe to merge?\n${diff}`,
     output: z.object({ safe: z.boolean(), reason: z.string() }),
   });
 });
@@ -536,86 +190,26 @@ if (!verdict.output.safe) {
 }
 ```
 
-<Annotation id="output" lines="4" tease="a schema in, a value out" title="output">
-`verdict.output.safe` is a boolean the editor knows.
+<Annotation id="output" lines="4" tease="a schema in, a value out" title="output" href="/docs/labs/agents/reference?ref=docs-labs-agents-models#models" linkText="Reference: models">
+`verdict.output` is typed from the schema. Without `output`, the answer is in `verdict.text`.
 </Annotation>
 
 </AnnotatedCode>
 
-## Choose what folds in
+## Replace the loop
 
-You want CI passing not to interrupt the model mid-review.
+To run your own loop, set `loop` to a function. It receives a batch of messages and returns a [result](/docs/labs/agents/reference?ref=docs-labs-agents-models#the-result). The agent's triggers, thread, and inbox work as before.
 
-<AnnotatedCode>
-
-{/* not type-checked: loop(batch, { steer }) with message.is() */}
-```typescript
-const result = await loop(batch, {
-  steer: (drained) => {
-    return drained.filter((message) => {
-      return !message.is(ciPassed);
-    });
-  },
-});
-```
-
-<Annotation id="steer" lines="2-6" tease="what the model sees next" title="steer" href="/docs/labs/agents/reference?ref=docs-labs-agents-models#the-loop" linkText="Reference: the loop">
-Gets the messages the loop took and returns the ones to fold in.
-</Annotation>
-
-</AnnotatedCode>
-
-The passes come back on `result.unread`.
-
-## Progress on every turn
-
-You want a line on the PR for each turn.
-
-<AnnotatedCode>
-
-{/* not type-checked: loop(batch, { onTurn }) commenting from a step */}
-```typescript
-await loop(batch, {
-  onTurn: async ({ turn, toolCalls }) => {
-    await step.run("progress", async () => {
-      return await gh.comment(
-        Number(thread.key),
-        `Turn ${turn}: ${toolCalls.length} tool calls`,
-      );
-    });
-  },
-});
-```
-
-<Annotation id="onturn" lines="2-9" tease="after each turn's tools" title="onTurn" href="/docs/labs/agents/reference?ref=docs-labs-agents-models#on-turn" linkText="Reference: onTurn">
-Gets the turn: `turn`, `stepId`, `text`, `toolCalls`, `runs`, `model` and `usage`. A slow or failing comment never holds up the next model call.
-</Annotation>
-
-</AnnotatedCode>
-
-## Your own loop
-
-You want the agent's turns to run your way, or just a little differently. To change the loop's own options, set `loop` on the definition:
-
-{/* not type-checked: loop options on an agent definition */}
-```typescript
-loop: { maxTurns: 10 },
-```
-
-The loop makes at most 10 model calls, down from the default 40. Other options work the same way, such as `toolChoice: "required"` for a small model that answers in chat, or `stop: hasToolCall("finish")` to end once a `finish` tool has run. In a handler, `loop.with({ maxTurns: 10 })` derives that loop from the agent's. For more than options, give `loop` a whole loop of your own:
-
-<AnnotatedCode>
-
-```typescript {{ title: "inngest/agents/parrot.ts" }}
+```typescript {{ title: "inngest/agents/echo.ts" }}
 import { agents } from "../client";
 
-export const parrot = agents.agent({
-  id: "parrot",
+export const echo = agents.agent({
+  id: "echo",
   loop: async (batch) => {
-    const heard = typeof batch === "string" ? batch : JSON.stringify(batch);
+    const text = typeof batch === "string" ? batch : JSON.stringify(batch);
 
     return {
-      text: heard,
+      text,
       end: "done",
       unread: [],
       turns: 0,
@@ -628,22 +222,11 @@ export const parrot = agents.agent({
 });
 ```
 
-<Annotation id="own-loop" lines="5" tease="the batch in, the result out" title="A whole loop" href="/docs/labs/agents/reference?ref=docs-labs-agents-models#the-loop" linkText="Reference: the loop">
-A function shaped like the handler's `loop`. It reaches its model and tools however it likes.
-</Annotation>
+With no handler, the agent returns `text` as the run's output.
 
-<Annotation id="own-result" lines="8-17" tease="what a loop returns" title="The result" href="/docs/labs/agents/reference?ref=docs-labs-agents-models#the-result" linkText="Reference: the result">
-The answer in `text`, why the loop stopped in `end` and the messages it left in `unread`. A loop with no model calls leaves the rest empty.
-</Annotation>
+## Next steps
 
-</AnnotatedCode>
-
-The default handler returns `text` as the run's output, and the agent's triggers, inbox and thread stay as they are. [Reference: the loop →](/docs/labs/agents/reference?ref=docs-labs-agents-models#the-loop)
-
-## Recipes and reference
-
-- [Support assistant](/docs/labs/agents/recipes/support-assistant?ref=docs-labs-agents-models)
-- [Coding agent](/docs/labs/agents/recipes/coding-agent?ref=docs-labs-agents-models)
-- [Reliability](/docs/labs/agents/reliability?ref=docs-labs-agents-models): depth limits and model errors.
-- [Reference: the loop](/docs/labs/agents/reference?ref=docs-labs-agents-models#the-loop)
-- [Reference: models](/docs/labs/agents/reference?ref=docs-labs-agents-models#models)
+- [Tools](/docs/labs/agents/tools?ref=docs-labs-agents-models) gives the model ways to act.
+- [Bring your own model](/docs/labs/agents/custom-models?ref=docs-labs-agents-models) connects OpenAI, a local model, or any other provider.
+- [Reliability](/docs/labs/agents/reliability?ref=docs-labs-agents-models) covers model errors and limits.
+- [Agents reference](/docs/labs/agents/reference?ref=docs-labs-agents-models#the-loop) lists every loop option and result field.

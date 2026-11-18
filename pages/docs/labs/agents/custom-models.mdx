@@ -1,0 +1,302 @@
+import { Info } from "shared/Docs/mdx";
+
+export const metaTitle = "Bring your own model | Inngest Agents";
+export const description = "Use any model with Inngest Agents: write a model function that maps the loop's request to your provider's API, with worked examples for OpenAI and for a local model with no native tool calling.";
+
+# Bring your own model
+
+> Use OpenAI, a local model, or any other provider by writing one function.
+
+<Info>
+  Inngest Agents is an Inngest Labs project: early, moving fast, and shaped by your feedback. [What's Labs?](/docs/labs?ref=docs-labs-agents-custom-models)
+</Info>
+
+`anthropic()` is the model the SDK ships. An agent's `model` accepts any function that takes the loop's request and returns the model's reply, so you can connect any provider. The loop, tools, discovery, and observability work the same with any model.
+
+## The model contract
+
+A model function receives an `AgentModelRequest` and returns an `AgentModelResponse`:
+
+```typescript {{ title: "Signature" }}
+interface AgentModel {
+  (request: AgentModelRequest): Promise<AgentModelResponse>;
+  contextWindow?: number;
+  placesBriefing?: boolean;
+}
+
+interface AgentModelRequest {
+  system?: string;
+  messages: ModelMessage[]; // { role: "user" | "assistant" | "tool", ... }
+  turn: number;
+  maxTurns: number;
+  toolChoice?: "auto" | "required" | "none" | { tool: string };
+  tools: ToolJsonDefinition[]; // { name, description?, input_schema }
+  briefing?: BriefingParts; // only for a model that places the briefing itself
+}
+
+interface AgentModelResponse {
+  message: { role: "assistant"; content: unknown }; // stored in history as is
+  text?: string;
+  toolCalls: { id: string; name: string; input: unknown }[];
+  usage?: AgentUsage; // { input, output, usd?, cacheRead?, cacheWrite? }
+  model?: string;
+  usd?: number;
+  details?: Record<string, Json>; // shown as turn.model in onTurn
+}
+```
+
+- **Required fields.** A reply needs only `message` and `toolCalls`. Report the other fields when your provider returns them.
+- **`message`.** The loop stores it in the history unchanged and passes it back to your function on the next call, so it can be in your provider's own format.
+- **`contextWindow`.** The model's context size in tokens. The loop uses it to decide when to summarize a long history.
+- **`placesBriefing`.** Set it when your function places the agent's briefing itself from `request.briefing`. Otherwise the loop appends the briefing to `system`.
+- **Errors.** The model call runs inside a step, so a thrown error is retried. Throw [`NonRetriableError`](/docs/durable-execution/guides-and-advanced/error-handling/non-retriable-errors?ref=docs-labs-agents-custom-models) for errors a retry can't fix, such as a request the provider rejects.
+
+## Mark the function with `agentModel()`
+
+Wrap your function in `agentModel()`. An agent's `model` also accepts a function of the run that returns a model, and `agentModel()` is how the agent tells the two apart.
+
+```typescript {{ title: "inngest/models/myModel.ts" }}
+import { agentModel } from "inngest/experimental/agents";
+
+export const myModel = agentModel(async (request) => {
+  // Call your provider, and return an AgentModelResponse.
+  return { message: { role: "assistant", content: "Hello" }, text: "Hello", toolCalls: [] };
+});
+```
+
+Then use it like `anthropic()`:
+
+```typescript
+agents.agent({
+  id: "triage",
+  model: myModel,
+  system: "You triage support tickets.",
+});
+```
+
+## Example: OpenAI
+
+This function maps the request to the OpenAI Chat Completions API and maps the reply back. OpenAI's tool-call format differs from Anthropic's, but the loop only reads `toolCalls`, which the function builds.
+
+```typescript {{ title: "inngest/models/openai.ts" }}
+import OpenAI from "openai";
+import { agentModel } from "inngest/experimental/agents";
+import type { AgentModelRequest, AgentModelResponse } from "inngest/experimental/agents";
+
+type ChatMessage = OpenAI.Chat.ChatCompletionMessageParam;
+
+interface OpenAiOptions {
+  model: string;
+  client?: OpenAI;
+}
+
+export const openaiModel = (options: OpenAiOptions) => {
+  const client = options.client ?? new OpenAI();
+
+  return agentModel(async (request: AgentModelRequest): Promise<AgentModelResponse> => {
+    const messages = toOpenAiMessages(request);
+
+    const reply = await client.chat.completions.create({
+      model: options.model,
+      messages: request.system
+        ? [{ role: "system", content: request.system }, ...messages]
+        : messages,
+      tools: request.tools.map((tool) => {
+        return {
+          type: "function" as const,
+          function: {
+            name: tool.name,
+            description: tool.description,
+            parameters: tool.input_schema,
+          },
+        };
+      }),
+      tool_choice: toToolChoice(request.toolChoice),
+    });
+
+    const choice = reply.choices[0];
+    const message = choice.message;
+
+    const toolCalls = (message.tool_calls ?? []).flatMap((call) => {
+      if (call.type !== "function") {
+        return [];
+      }
+
+      return [
+        {
+          id: call.id,
+          name: call.function.name,
+          // Untrusted JSON until the tool's own schema checks it.
+          input: JSON.parse(call.function.arguments) as unknown,
+        },
+      ];
+    });
+
+    return {
+      // Stored in the history as is, and passed back to this function next turn.
+      message: { role: "assistant", content: message },
+      text: message.content ?? undefined,
+      toolCalls,
+      usage: reply.usage
+        ? { input: reply.usage.prompt_tokens, output: reply.usage.completion_tokens }
+        : undefined,
+      model: reply.model,
+      details: { finishReason: choice.finish_reason },
+    };
+  });
+};
+
+const toToolChoice = (choice: AgentModelRequest["toolChoice"]) => {
+  if (!choice || choice === "auto") return "auto";
+  if (choice === "none") return "none";
+  if (choice === "required") return "required";
+
+  return { type: "function" as const, function: { name: choice.tool } };
+};
+
+// Rebuilds OpenAI's messages from the loop's history on every call. An
+// assistant message's `content` is the OpenAI message this function returned
+// on an earlier turn, so it goes back out unchanged.
+const toOpenAiMessages = (request: AgentModelRequest): ChatMessage[] => {
+  return request.messages.flatMap((message): ChatMessage[] => {
+    if (message.role === "user") {
+      return [{ role: "user", content: toText(message.content) }];
+    }
+
+    if (message.role === "assistant") {
+      return [message.content as OpenAI.Chat.ChatCompletionAssistantMessageParam];
+    }
+
+    // A tool message holds one result per call, keyed by the call's ID.
+    return message.results.map((result) => {
+      return {
+        role: "tool",
+        tool_call_id: result.toolCallId,
+        content: result.content,
+      };
+    });
+  });
+};
+
+const toText = (content: unknown): string => {
+  return typeof content === "string" ? content : JSON.stringify(content);
+};
+```
+
+- The function returns OpenAI's assistant message as `message.content`, and casts it back on the next call, because the loop stores it unchanged.
+- `input` is untrusted JSON from the model. The tool's own schema checks it before the tool runs.
+- Usage is reported when OpenAI returns it, so cost tracking and scores work.
+
+## Example: a model without tool calling
+
+Some local and self-hosted models have no tool-calling API. This function asks the model to reply with one line of JSON when it wants a tool, and parses the reply.
+
+```typescript {{ title: "inngest/models/local.ts" }}
+import { agentModel } from "inngest/experimental/agents";
+import type { AgentModelRequest, AgentModelResponse } from "inngest/experimental/agents";
+
+interface LocalOptions {
+  baseURL: string; // an OpenAI-compatible completions endpoint
+  model: string;
+}
+
+// Ask the model to answer in plain text, or to call a tool by writing one
+// line of JSON and nothing else. No provider-native tool calling involved.
+const toolInstructions = (tools: AgentModelRequest["tools"]): string => {
+  if (tools.length === 0) return "";
+
+  const names = tools.map((tool) => `${tool.name}: ${tool.description ?? ""}`);
+
+  return [
+    "",
+    "You may call one of these tools by replying with exactly one line",
+    'of JSON and nothing else: {"tool": "<name>", "input": { ... }}.',
+    "Otherwise just answer in plain text.",
+    "Tools:",
+    ...names,
+  ].join("\n");
+};
+
+// The model's whole reply is either a JSON tool call or plain text; there is
+// no structured split between the two, so this function decides which it got.
+const parseReply = (text: string): { toolCall?: { tool: string; input: unknown } } => {
+  const trimmed = text.trim();
+
+  if (!trimmed.startsWith("{")) return {};
+
+  try {
+    const parsed = JSON.parse(trimmed) as { tool?: string; input?: unknown };
+
+    if (typeof parsed.tool === "string") {
+      return { toolCall: { tool: parsed.tool, input: parsed.input ?? {} } };
+    }
+  } catch {
+    // Not a tool call, so treat the whole reply as text.
+  }
+
+  return {};
+};
+
+export const localModel = (options: LocalOptions) => {
+  return agentModel(async (request: AgentModelRequest): Promise<AgentModelResponse> => {
+    const prompt = buildPrompt(request) + toolInstructions(request.tools);
+
+    const response = await fetch(`${options.baseURL}/v1/completions`, {
+      method: "POST",
+      headers: { "content-type": "application/json" },
+      body: JSON.stringify({ model: options.model, prompt, max_tokens: 1024 }),
+    });
+
+    if (!response.ok) {
+      throw new Error(`Local model answered ${response.status}`);
+    }
+
+    const body = (await response.json()) as {
+      choices: { text: string }[];
+      usage?: { prompt_tokens: number; completion_tokens: number };
+    };
+
+    const text = body.choices[0]?.text ?? "";
+    const { toolCall } = parseReply(text);
+
+    return {
+      message: { role: "assistant", content: text },
+      text: toolCall ? undefined : text,
+      toolCalls: toolCall
+        ? [{ id: `local-${request.turn}`, name: toolCall.tool, input: toolCall.input }]
+        : [],
+      // This model doesn't report token counts; leave usage out rather than
+      // guess at it. Your own cost tracking for this model needs its own
+      // pricing logic, since there's nothing here for it to read.
+    };
+  });
+};
+
+// Renders the whole history as plain text, since there's no structured
+// messages API on the other end of this fetch.
+const buildPrompt = (request: AgentModelRequest): string => {
+  const lines = request.system ? [`System: ${request.system}`] : [];
+
+  for (const message of request.messages) {
+    if (message.role === "user") {
+      lines.push(`User: ${typeof message.content === "string" ? message.content : JSON.stringify(message.content)}`);
+    } else if (message.role === "assistant") {
+      lines.push(`Assistant: ${typeof message.content === "string" ? message.content : JSON.stringify(message.content)}`);
+    } else {
+      for (const result of message.results) {
+        lines.push(`Tool result (${result.name}): ${result.content}`);
+      }
+    }
+  }
+
+  return lines.join("\n");
+};
+```
+
+- The function decides whether the model called a tool. A model that ignores the format gets its reply treated as text, so expect this to be less reliable than native tool calling.
+- The function leaves out `usage` because this server doesn't report tokens. Cost dashboards then show the model as unaccounted for, rather than free.
+
+## Next steps
+
+- [Models and the loop](/docs/labs/agents/models?ref=docs-labs-agents-custom-models) covers loop options and handlers.
+- [Custom models reference](/docs/labs/agents/reference?ref=docs-labs-agents-custom-models#custom-models) lists the request and response types.

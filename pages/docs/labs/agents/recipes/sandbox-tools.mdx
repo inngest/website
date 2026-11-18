@@ -1,4 +1,4 @@
-import { AnnotatedCode, Annotation } from "shared/Docs/mdx";
+import { Info, AnnotatedCode, Annotation } from "shared/Docs/mdx";
 
 export const metaTitle = "Sandbox tools | Inngest Agents";
 export const description = "Build an agent that answers a data question by writing one script in a sandbox that calls your own tools, so many calls cost one model turn and your credentials stay in your app.";
@@ -6,6 +6,10 @@ export const description = "Build an agent that answers a data question by writi
 # Sandbox tools
 
 > An agent that answers by writing one script that calls your tools.
+
+<Info>
+  Inngest Agents is an Inngest Labs project: early, moving fast, and shaped by your feedback. [What's Labs?](/docs/labs?ref=docs-labs-agents-recipes-sandbox-tools)
+</Info>
 
 The model writes the script once, and each call it makes runs your tool as a step, so a failed call retries by itself.
 
@@ -34,7 +38,7 @@ while True:
 print(counts)
 ```
 
-Screenshot needed: the run's trace, with one step per `listPullRequests` call.
+{/* Screenshot to add: the run's trace, with one step per `listPullRequests` call. */}
 
 ## The code
 
@@ -92,8 +96,8 @@ export const analysis = sandbox({
 });
 ```
 
-<Annotation id="tools" lines="10" tease="tools for scripts" title="Tools for the script" href="/docs/labs/agents/calling-home?ref=docs-labs-agents-recipes-sandbox-tools#the-model-writes-code" linkText="Let code call your tools">
-The script calls `tools.listPullRequests(...)`. The model never sees it as a tool of its own; `runCode`'s description lists it.
+<Annotation id="tools" lines="10" tease="tools for scripts" title="Tools for the script" href="/docs/labs/agents/call-tools-from-sandboxes?ref=docs-labs-agents-recipes-sandbox-tools#give-the-model-run-code" linkText="Let code call your tools">
+Scripts call it as `tools.listPullRequests(...)`. The model can't call it directly. It's listed in the description of `runCode`.
 </Annotation>
 
 </AnnotatedCode>
@@ -117,8 +121,8 @@ export const analyst = agents.agent({
 });
 ```
 
-<Annotation id="sandboxes" lines="13" tease="named after the sandbox" title="Listed sandbox" href="/docs/labs/agents/sandboxes?ref=docs-labs-agents-recipes-sandbox-tools#a-sandbox" linkText="Give the agent a sandbox">
-The model gets `analysis_runCode`, and `analysis_run` for the shell. Each tool's key in the sandbox's `tools` is the second half of its name.
+<Annotation id="sandboxes" lines="13" tease="named after the sandbox" title="Listed sandbox" href="/docs/labs/agents/sandboxes?ref=docs-labs-agents-recipes-sandbox-tools#give-an-agent-a-sandbox" linkText="Give the agent a sandbox">
+The model gets `analysis_runCode`, and `analysis_run` for the shell. The model sees each tool as `<sandbox>_<key>`.
 </Annotation>
 
 </AnnotatedCode>
@@ -134,17 +138,17 @@ createServer({
 }).listen(3000);
 ```
 
-The [model](/docs/labs/agents/quick-start?ref=docs-labs-agents-recipes-sandbox-tools#pick-a-model) is the quick start's, and [the client](/docs/labs/agents/structure?ref=docs-labs-agents-recipes-sandbox-tools#the-client) adds `sandboxMiddleware()`.
+The [model](/docs/labs/agents/quick-start?ref=docs-labs-agents-recipes-sandbox-tools#3-choose-a-model) is the quick start's, and [the client](/docs/labs/agents/structure?ref=docs-labs-agents-recipes-sandbox-tools#the-client) adds `sandboxMiddleware()`.
 
-## What it shows off
+## How it works
 
-- [Code that calls tools](/docs/labs/agents/calling-home?ref=docs-labs-agents-recipes-sandbox-tools#the-model-writes-code) makes many calls in one model turn.
-- [Tools](/docs/labs/agents/calling-home?ref=docs-labs-agents-recipes-sandbox-tools#the-keys-stay-home) keep the GitHub token in your app, never in the sandbox.
-- [A typed input](/docs/labs/agents/agent-teams?ref=docs-labs-agents-recipes-sandbox-tools#a-second-agent) starts an agent with no handler.
+- [Code that calls tools](/docs/labs/agents/call-tools-from-sandboxes?ref=docs-labs-agents-recipes-sandbox-tools#give-the-model-run-code) makes many calls in one model turn.
+- [Tools](/docs/labs/agents/call-tools-from-sandboxes?ref=docs-labs-agents-recipes-sandbox-tools#keep-credentials-out-of-the-sandbox) keep the GitHub token in your app, never in the sandbox.
+- [A typed input](/docs/labs/agents/agent-teams?ref=docs-labs-agents-recipes-sandbox-tools#start-an-agent-from-code) starts an agent with no handler.
 
 ## Run it
 
-Set the project up as in the [quick start](/docs/labs/agents/quick-start?ref=docs-labs-agents-recipes-sandbox-tools#install), with Sandboxes.
+Set the project up as in the [quick start](/docs/labs/agents/quick-start?ref=docs-labs-agents-recipes-sandbox-tools#1-install-the-packages), with Sandboxes.
 
 ```bash
 export ANTHROPIC_API_KEY=sk-ant-...
@@ -161,10 +165,10 @@ At [localhost:8288](http://localhost:8288), invoke `analyst` with `{ "question":
 ## Variations
 
 - [Group tools](/docs/labs/agents/reference-sandboxes?ref=docs-labs-agents-recipes-sandbox-tools#tools) can run for hours with `waits: true`.
-- [Your own scripts](/docs/labs/agents/calling-home?ref=docs-labs-agents-recipes-sandbox-tools#your-own-scripts) call the same tools with `sandboxes.analysis.commands.run` and `{ tools }`.
-- [Other agents](/docs/labs/agents/agent-discovery?ref=docs-labs-agents-recipes-sandbox-tools) are in reach of the script too (experimental): with discovery on, the default, it can call `tools.list_agents(...)` and `tools.start_agent(...)` like the model does. `discovery: false` removes them.
+- [Your own scripts](/docs/labs/agents/call-tools-from-sandboxes?ref=docs-labs-agents-recipes-sandbox-tools#call-tools-from-your-own-scripts) call the same tools with `sandboxes.analysis.commands.run` and `{ tools }`.
+- [Other agents](/docs/labs/agents/agent-discovery?ref=docs-labs-agents-recipes-sandbox-tools): scripts can call `tools.list_agents(...)` and `tools.start_agent(...)`, like the model. This is experimental, and `discovery: false` removes them.
 
-## Learn more
+## Next steps
 
 - [Sandboxes](/docs/labs/agents/sandboxes?ref=docs-labs-agents-recipes-sandbox-tools)
 - [Tools](/docs/labs/agents/tools?ref=docs-labs-agents-recipes-sandbox-tools)

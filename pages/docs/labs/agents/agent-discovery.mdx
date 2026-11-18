@@ -1,17 +1,19 @@
-import { AnnotatedCode, Annotation } from "shared/Docs/mdx";
+import { Info, AnnotatedCode, Annotation } from "shared/Docs/mdx";
 
 export const metaTitle = "Agent discovery | Inngest Agents";
-export const description = "How Inngest agents find each other: every agent publishes a card, a model finds agents with list_agents and describe_agent, and share and discovery filters decide who can see and start an agent.";
+export const description = "How Inngest agents find each other: each agent publishes a card, a model finds agents with list_agents and describe_agent, and share and discovery settings decide who can see and start an agent.";
 
 # Agent discovery
 
-> Agents find each other at run time, by what they do.
+> Let models find the right agent at run time, by what it does, with no wiring in code.
 
-Every agent publishes a card. A model agent reads the roster of cards it can see and starts the one it needs, with nothing wired in code.
+<Info>
+  Inngest Agents is an Inngest Labs project: early, moving fast, and shaped by your feedback. [What's Labs?](/docs/labs?ref=docs-labs-agents-agent-discovery)
+</Info>
 
-## A card
+Every agent publishes a card that says what it does and what input it takes. An agent with a model can list the cards it's allowed to see, read one in full, and start the agent it needs. You decide which agents each card is visible to, and which agents each model may start.
 
-You want other agents to find yours. Give it a card that says what it does, and when to pick it.
+## Give an agent a card
 
 <AnnotatedCode>
 
@@ -34,46 +36,46 @@ export const securityReviewer = agents.agent({
 });
 ```
 
+<Annotation id="input" lines="8" tease="the card's input" title="invoke()">
+The card's input schema comes from this trigger, and `start_agent` checks input against it.
+</Annotation>
+
 <Annotation id="description" lines="12" tease="written for a model" title="description">
-A model chooses by this line.
+One line a model reads when it picks an agent.
 </Annotation>
 
-<Annotation id="capabilities" lines="13" tease="when to pick this agent" title="capabilities" href="#capabilities-not-tags" linkText="Capabilities, not tags">
-Required prose: the problem domains this agent handles, in the reader's words.
+<Annotation id="capabilities" lines="13" tease="when to pick it" title="capabilities" href="#write-capabilities" linkText="Write capabilities">
+The problems this agent handles, in the words a caller would use.
 </Annotation>
 
-<Annotation id="share" lines="14" tease="who can find it" title="share" href="#who-can-find-it" linkText="Who can find it">
-Who else can find it.
+<Annotation id="share" lines="14" tease="who can find it" title="share" href="#choose-who-can-find-it" linkText="Choose who can find it">
+`"team"` shows the card to every app in the environment.
 </Annotation>
 
 </AnnotatedCode>
 
-In an app named `platform`, its address is `platform/security-reviewer`. `start_agent` and [`discovery.agents`](#who-it-may-start) take that address.
+In an app with the ID `platform`, this agent's address is `platform/security-reviewer`. `start_agent` and discovery settings refer to agents by address.
 
-## Capabilities, not tags
+## Write capabilities
 
-`capabilities` is what a model reads to decide whether this agent is the right one — short prose labels of the problem domains it handles, not the tools it has. Write `["pipeline failures", "deployment readiness"]`, not `["run_tests", "deploy"]`: the first says *when* to pick the agent, the second just restates what it can do.
+`capabilities` tells a model when to pick the agent. Name the problems it handles, not the tools it has:
 
 ```typescript
-// Hard to route on — a model can't tell when this is the right agent.
-card: { capabilities: ["helps with stuff"] }
+// Hard to choose by: a model can't tell when this agent fits.
+card: { description: "General helper", capabilities: ["helps with stuff"] },
 
-// Routes cleanly — names the problem domain in the reader's words.
-card: { capabilities: ["pipeline failures", "deployment readiness"] }
+// Easy to choose by: it names the problems, in a caller's words.
+card: { description: "Investigates failed deploys", capabilities: ["pipeline failures", "deployment readiness"] },
 ```
 
-`capabilities` is always present on a published card. Leave it out and the card derives one from `tags` instead, logging a warning at definition time — a derived list is worse than an authored one, so write it yourself. An agent with neither has an empty `capabilities`: nothing a model can find it by.
+If you leave out `capabilities`, the card uses `tags` instead and logs a warning. Write them yourself.
 
-`tags`, if you still set them, are a different thing entirely: authorization labels a `discovery.agents` filter checks exact matches against (`{ tags: ["billing"] }`). `list_agents` never searches tags — it has no free-text search at all, see below — so a tag added for routing never doubles as something that widens who can reach the agent, and a tag added for authorization never doubles as something that makes the agent easier to stumble onto.
+## How a model finds agents
 
-## Finding
-
-You want the [PR helper](/docs/labs/agents/agent-teams?ref=docs-labs-agents-agent-discovery)'s model to use an agent nobody wired in. A model agent has the discovery tools by default, so the PR helper needs no change.
+Every agent with a model has `list_agents`, `describe_agent`, and `start_agent` tools by default:
 
 ```text {{ title: "What the model calls" }}
 list_agents()
-  ttlMs: 60000
-  cacheScope: "private"
   agents: [
     {
       address: "platform/security-reviewer",
@@ -81,130 +83,72 @@ list_agents()
       capabilities: ["security review", "vulnerability triage"],
       effects: "write",
     },
-    // every other agent the caller can currently see
+    ...
   ]
 
 describe_agent({ address: "platform/security-reviewer" })
-  input: { type: "object", properties: { pr: { type: "number" } }, ... }
-  instructions: "Give it a PR number. It posts its findings as a comment..."
+  input: { type: "object", properties: { pr: { type: "number" } } }
+  instructions: "Give it a pull request number. It reports its findings to whoever started it."
 
-start_agent({
-  address: "platform/security-reviewer",
-  input: { pr: 42 },
-})
+start_agent({ address: "platform/security-reviewer", input: { pr: 42 } })
   { thread: "a1b2c3" }
 ```
 
-`list_agents` takes no input — there is no query, no paging, no free-text search. It returns every agent the caller can currently see, every time, and the model reads the whole thing to pick. `ttlMs` says how long that answer stays good for, and `cacheScope: "private"` is a reminder that the answer is specific to this caller and was never meant to be reused for another one.
+- **`list_agents`** takes no input and returns every agent the caller can see. There's no search: the model reads the list and picks. An agent never lists itself.
+- **`describe_agent`** returns the full card, including the input schema, `instructions`, and the agent's skills.
+- **`start_agent`** checks the input against the card and starts the agent. Its result comes back as an `agent/finished` message. See [Agent teams](/docs/labs/agents/agent-teams?ref=docs-labs-agents-agent-discovery#let-the-model-start-agents).
 
-An agent never lists itself. `describe_agent` and `start_agent` still take its own address, since starting another run of itself can be meant.
+An agent that isn't visible to the caller gets the same error as one that doesn't exist, so a model can't probe for agents it isn't allowed to see.
 
-`start_agent` checks the input against the card first, and the review returns as `agent/finished`. [The model calls agents →](/docs/labs/agents/agent-teams?ref=docs-labs-agents-agent-discovery#the-model-calls-agents)
-
-## Asking about an agent that isn't shared with you
-
-Try `describe_agent` or `start_agent` on an address that was never shared with your app, and you get the same error as asking about an address that doesn't exist at all:
-
-```text {{ title: "Either way" }}
-describe_agent({ address: "payments/refund-bot" })
-  Error: No agent "payments/refund-bot" is shared with you. Use list_agents to see the ones that are.
-```
-
-This is deliberate, not a rough edge: a model that could tell "not shared with you" apart from "doesn't exist" could probe for the existence of agents it has no business knowing about. The fix either way is the same — call `list_agents` and work from what's actually there.
-
-## Keeping to itself
-
-You want an agent to stop reaching for others. Switch discovery off.
-
-```typescript
-discovery: false,
-```
-
-That removes `list_agents`, `describe_agent` and the [agent tools](/docs/labs/agents/agent-teams?ref=docs-labs-agents-agent-discovery#the-model-calls-agents) except `reply`, from the model and from the code it runs in a sandbox. Its card is still published.
-
-{/* Go deeper */}
-
-## What a card says
-
-You want to tell the model more about an agent. Fill in the rest of the card.
+## Fill in the rest of the card
 
 ```typescript
 card: {
   description: "Reviews a pull request for security problems",
   capabilities: ["security review", "vulnerability triage"],
-  instructions: "Give it a PR number. It posts its findings as a PR comment and reports a summary back to whoever started it.",
+  instructions: "Give it a pull request number. It reports its findings to whoever started it.",
   tags: ["security", "review"],
-  share: "team",
   owner: "platform",
   effects: "read",
   speed: "minutes",
-},
-```
-
-```text {{ title: "What describe_agent returns" }}
-{
-  address: "platform/security-reviewer",
-  description: "Reviews a pull request for security problems",
-  input: { type: "object", properties: { pr: { type: "number" } }, ... },
-  capabilities: ["security review", "vulnerability triage"],
-  instructions: "Give it a PR number. It posts its findings as a PR comment and reports a summary back to whoever started it.",
-  tags: ["security", "review"],
   share: "team",
-  owner: "platform",
-  effects: "read",
-  speed: "minutes",
-}
-```
-
-`input` comes from the `invoke()` trigger, and the card lists the agent's skills. A paused agent shows `paused: true`.
-
-`instructions` is free prose on how to work with the agent once you've chosen it — what to give it, how it expects to be asked. It only ever appears in the full card `describe_agent` returns, never in the roster `list_agents` returns: by the time you're reading `instructions` you've already picked this agent, so there's no reason to pay for it (or let the model see it) while still deciding between agents.
-
-An agent with tools of its own also lists them, as `tools`: each by the name its model sees, with its description. A `tools` written as a function of the run and an MCP server's tools aren't listed. In dev mode the card says where the agent and each tool were defined, as `source`. Both are experimental, and `list_agents` leaves them out.
-
-## What a call does: effects
-
-`effects` says what calling the agent does to the world, and it has three values:
-
-- `"read"` — looks something up or computes an answer, changes nothing outside its own thread.
-- `"write"` — the default. Can send, post, charge or otherwise change the world.
-- `"destructive"` — deletes, or does something a write cannot undo (closing an account, force-pushing over history).
-
-```typescript
-card: {
-  description: "Deletes a customer's account and every record attached to it",
-  capabilities: ["account deletion"],
-  effects: "destructive",
 },
 ```
 
-The three values matter for discovery filters. `{ effects: "write" }` reaches read and write agents, but it never matches a `"destructive"` one — a filter written to admit ordinary write agents does not quietly also admit one that deletes things. Reaching a destructive agent takes naming it explicitly, either by importing it or by writing `{ effects: "destructive" }` into the filter on purpose.
+| Field | What it's for |
+| --- | --- |
+| `instructions` | How to work with the agent once it's chosen. Only `describe_agent` returns it. |
+| `tags` | Labels that discovery filters match exactly. They don't help a model find the agent. |
+| `owner` | The team that owns the agent. Filters can match it. |
+| `effects` | What calling the agent does to the world. See [Describe what a call does](#describe-what-a-call-does). |
+| `speed` | Roughly how long a call takes: `"seconds"` or `"minutes"`. |
 
-```typescript
-discovery: {
-  // Ordinary write agents, never the destructive ones.
-  agents: [{ app: "self" }, { effects: "write" }],
-},
+The card also lists the agent's own tools, and a paused agent shows `paused: true`.
 
-discovery: {
-  // Explicitly admits the destructive ones too.
-  agents: [{ app: "self" }, { effects: "destructive" }],
-},
-```
+## Describe what a call does
 
-`effects` doesn't by itself make a destructive agent ask permission before it runs — that's a job for an approval pattern around the call, not a property the card declares. [Reliability →](/docs/labs/agents/reliability?ref=docs-labs-agents-agent-discovery)
+`effects` has three values:
 
-## Who can find it
+- **`"read"`** looks something up or computes an answer, and changes nothing outside its own thread.
+- **`"write"`**, the default, can send, post, charge, or otherwise change something.
+- **`"destructive"`** deletes data, or does something that can't be undone, such as closing an account.
 
-You want to choose who finds an agent. `share: "private"`, the default, shows it to its own app; `share: "team"` to every app in the environment.
+A discovery filter for `{ effects: "write" }` matches read and write agents, but never destructive ones. To allow a destructive agent, name it, or write `{ effects: "destructive" }` in the filter on purpose. `effects` doesn't add an approval step: put one around the call if you need it.
 
-An agent of your own app is found at once, from its definition. Another app's agent appears after that app's next announce, every six hours. On the Dev Server, invoke the announce function by hand.
+## Choose who can find it
 
-Announced cards are signed with the app's signing key, and a reader drops one that isn't. `share` still isn't access control: code in your app can import and start any of its agents, and anyone with an event key can send an agent's trigger.
+`share` sets who can see an agent's card:
 
-## Who it may start
+- **`"private"`**, the default, shows it to agents in its own app.
+- **`"team"`** shows it to every app in the environment.
 
-You want to limit what the PR helper's model may find and start. List the agents in `discovery.agents`. This is experimental.
+Agents in the same app see each other's cards as soon as they're defined. Other apps see a card after that app's next announcement, which happens every six hours. On the Dev Server, invoke the announce function to send one now. Cards are signed with the app's signing key, and unsigned cards are dropped.
+
+`share` isn't access control. Code in your app can start any agent it imports, and anyone with an event key can send an agent's trigger event.
+
+## Limit who it may start
+
+`discovery.agents` limits which agents a model can find and start. This is experimental.
 
 ```typescript
 discovery: {
@@ -212,18 +156,25 @@ discovery: {
 },
 ```
 
-An entry is an imported agent, an exact address, or a filter over card fields: `app` (`"self"` is the agent's own app), `tags` (all must match), `owner` and `effects`. Any entry may match, and every field of one filter must. `list_agents` and `describe_agent` show only what matches, and `start_agent` refuses the rest.
+An entry is an imported agent, an address, or a filter over card fields: `app` (`"self"` for the agent's own app), `tags` (all must match), `owner`, and `effects`. An agent is allowed if any entry matches it. `list_agents` and `describe_agent` show only allowed agents, and `start_agent` refuses the rest.
 
-With no list, an agent may use the agents of its own app and the read-only agents of other apps: `[{ app: "self" }, { effects: "read" }]`. A card without `effects` counts as `"write"`, and that default filter never reaches a `"destructive"` agent. `share` still applies on top.
+Without `discovery.agents`, a model may use every agent in its own app, and read-only agents in other apps: `[{ app: "self" }, { effects: "read" }]`. `share` still applies.
 
-- **Keep an agent out of filters.** `card: { explicit: true }` means no filter object matches it; only an imported agent or its exact address does.
-- **Started agents inherit it.** An agent started by the model never sees more than its starter allowed, at every level of the chain.
-- **Shared tools too.** `discovery.tools` filters [shared tools](/docs/labs/agents/tools?ref=docs-labs-agents-agent-discovery) the same way, with the same default.
-- **Code isn't filtered.** `agent.start()` in your code starts any agent it imports.
+- **Leave an agent out of filters.** `card: { explicit: true }` means filters never match it. Only its address or an import does.
+- **Started agents inherit the limit.** An agent started by a model never sees more than its starter was allowed, however deep the chain.
+- **Shared tools work the same way.** `discovery.tools` limits the [shared tools](/docs/labs/agents/tools?ref=docs-labs-agents-agent-discovery#share-a-tool-between-apps) a model can use, with the same default.
+- **Your code isn't limited.** `agent.start()` in your code starts any agent it imports.
 
-`limits.depth` (default `3`, to encourage composing agents through discovery rather than everyone having to raise it by hand) says how deep chains of started agents go. The lowest `depth` in a chain wins.
+## Turn discovery off
 
-## Recipes and reference
+```typescript
+discovery: false,
+```
 
-- [Lead and specialists](/docs/labs/agents/recipes/agent-teams?ref=docs-labs-agents-agent-discovery)
-- [Reference: cards and discovery](/docs/labs/agents/reference?ref=docs-labs-agents-agent-discovery#cards-and-discovery)
+The model loses `list_agents`, `describe_agent`, and the tools that start and message agents, in its own calls and in sandbox scripts. It keeps `reply`, and the agent's card is still published.
+
+## Next steps
+
+- [Agent teams](/docs/labs/agents/agent-teams?ref=docs-labs-agents-agent-discovery) covers starting and talking to agents.
+- [Lead and specialists recipe](/docs/labs/agents/recipes/agent-teams?ref=docs-labs-agents-agent-discovery) builds a lead that finds its specialists by card.
+- [Cards and discovery reference](/docs/labs/agents/reference?ref=docs-labs-agents-agent-discovery#cards-and-discovery) lists every field.

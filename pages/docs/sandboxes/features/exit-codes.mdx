@@ -5,12 +5,14 @@ export const description = "A Sandbox command that exits non-zero fails its step
 
 # Exit codes and errors
 
-> A failed command stops your function and shows red in the trace. Allow the codes that are information.
+> A failed command stops your function and shows red in the trace. Allow the exit codes you expect.
 
-- **Fail loud by default.** A bad `npm ci` stops the run. [How it works →](#how-it-works)
-- **Allow the codes you expect.** `grep` exiting `1` is an answer, not an error. [Allow exit codes →](#allow-exit-codes)
-- **Read why it failed.** Command, exit code, and output tails. [Read the failure →](#read-the-failure)
-- **Same rule in CI.** `$` throws, `$({ exitCodes: "any" })` returns. [Inngest CI →](/docs/labs/ci/commands?ref=docs-sandboxes-exit-codes)
+By default, a command that exits with a code other than `0` fails its step. Some exit codes are answers rather than errors, such as `grep` exiting `1` when nothing matches. Allow those codes, and the command returns normally.
+
+- **Failures stop the run.** A failed `npm ci` fails its step. See [How it works](#how-it-works).
+- **Allow the codes you expect.** Treat `grep` exiting `1` as an answer. See [Allow exit codes](#allow-exit-codes).
+- **Read why it failed.** Get the command, the exit code, and the end of its output. See [Read the failure](#read-the-failure).
+- **The same rule in Inngest CI.** `$` throws, and `$({ exitCodes: "any" })` returns. See [Inngest CI](/docs/labs/ci/commands).
 
 <AnnotatedCode>
 
@@ -41,15 +43,15 @@ Only exit `0` succeeds.
 </Annotation>
 
 <Annotation id="allow" lines="7-9" tease="1 is information" title="Allow specific codes" href="#allow-exit-codes" linkText="Allow exit codes">
-`1` is "no match". `hit.ok` is `false` for it.
+For `grep`, `1` means no match. `hit.ok` is `false` when it exits `1`.
 </Annotation>
 
 <Annotation id="any" lines="11" tease="never throws" title="Inspect it yourself" href="#allow-exit-codes" linkText="Allow exit codes">
-Never throws on an exit code.
+Never throws because of an exit code.
 </Annotation>
 
 <Annotation id="read" lines="16" tease="read the details" title="Read what failed" href="#read-the-failure" linkText="Read the failure">
-Command, exit code, and output tails.
+The command, its exit code, and the end of its output.
 </Annotation>
 
 </AnnotatedCode>
@@ -62,7 +64,7 @@ const result = await sb.sh("diff", "diff -q a.txt b.txt", { exitCodes: [0, 1] })
 const hit = await sb.$({ exitCodes: [0, 1] })`grep ${needle} log`;
 ```
 
-Works on `sh`, `python`, `typescript`, `run`, `commands.run`, and [`$`](/docs/sandboxes/features/run-code?ref=docs-sandboxes-exit-codes#the-template).
+`exitCodes` works with `sh`, `python`, `typescript`, `run`, `commands.run`, and [`$`](/docs/sandboxes/features/run-code#the-template).
 
 ## Read the failure
 
@@ -83,12 +85,15 @@ const fn = inngest.createFunction(
 );
 ```
 
-`getSandboxError(err)` covers timeouts and capacity: `code`, `retryable`, `ambiguous`.
+For timeouts and capacity errors, `getSandboxError(err)` returns `code`, `retryable`, and `ambiguous`.
 
 ## How it works
 
-- A non-zero exit fails the step without retries, so `npm publish` never repeats.
-- The row and its group go red, and replays throw the same error.
-- Timeouts are `sandbox_exec_timed_out`. An unknown outcome is `operation_ambiguous`.
+- A non-zero exit code fails the step without retrying it, so a command such as `npm publish` never runs twice.
+- The command's row and its group turn red in the trace, and replays throw the same error.
+- A timeout has the code `sandbox_exec_timed_out`. A command whose outcome is unknown has the code `operation_ambiguous`.
 
-[Run code →](/docs/sandboxes/features/run-code?ref=docs-sandboxes-exit-codes)
+## Next steps
+
+- [Run code](/docs/sandboxes/features/run-code) covers the runners and the `$` template.
+- [Commands](/docs/sandboxes/features/commands) covers long-running commands and output.

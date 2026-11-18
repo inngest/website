@@ -1,18 +1,31 @@
-import { AnnotatedCode, Annotation, ScreenshotNeeded } from "shared/Docs/mdx";
+import { Info, AnnotatedCode, Annotation } from "shared/Docs/mdx";
 
 export const metaTitle = "Observability | Inngest Agents";
-export const description = "See what an Inngest agent did, what it cost and how well it worked: one trace row per statement, inbox ticks for every message, automatic scores, your own scores, usage and cost on the loop result, and progress as turns finish.";
+export const description = "See what an Inngest agent did and what it cost: read a run's trace, use the scores every agent records, record your own scores, and read usage and cost from the loop.";
 
 # Observability
 
-> See what an agent did, what it cost and how well it worked.
+> See what an agent did, what it cost, and how well it worked.
 
-Every statement of a run is a row in its trace, and scores add numbers to those rows.
+<Info>
+  Inngest Agents is an Inngest Labs project: early, moving fast, and shaped by your feedback. [What's Labs?](/docs/labs?ref=docs-labs-agents-observability)
+</Info>
 
-- **A row per statement.** Calls and reads. [Read a trace →](#read-a-trace)
-- **Scores you don't write.** Time, tokens, failures. [Automatic scores →](#automatic-scores)
-- **Scores you do.** From a handler or a tool. [Score outcomes →](#score-outcomes)
-- **Progress as it happens.** `onTurn` after each turn. [Show progress →](/docs/labs/agents/models?ref=docs-labs-agents-observability#progress-on-every-turn)
+Every agent run has a trace in the Inngest dashboard and the Dev Server. Each model call, tool call, and inbox read is a row, and scores add numbers you can chart and compare across runs.
+
+## Read a run's trace
+
+- **Model calls and tool calls** are each a row. Open one to see what went in and what came back. A retried call shows each attempt.
+- **The inbox** has one row for its whole life, with a mark for each message that arrived, read or not.
+- **Your own steps**, such as `step.run()`, appear in order with the rest.
+
+## Use the scores every agent records
+
+Every agent records these scores without any code: model time, tokens, tool calls, tool time, tool errors, and messages added mid-task. They appear on the trace and in function dashboards, and [Agent Evals](/docs/agent-evals/overview?ref=docs-labs-agents-observability) can compare them across variants. See [Where scores appear](/docs/agent-evals/scores?ref=docs-labs-agents-observability#where-scores-appear).
+
+## Record your own scores
+
+Call `score(name, value)` with a number or a boolean. In a handler, it's in the handler's argument:
 
 <AnnotatedCode>
 
@@ -41,75 +54,47 @@ export const support = agents.agent(
 );
 ```
 
-<Annotation id="score" lines="13" tease="beside the loop" title="score" href="#score-outcomes" linkText="Score outcomes">
-In the handler's argument and in every tool's context.
+<Annotation id="bool" lines="17" tease="true counts as 1" title="A boolean score">
+`true` is recorded as 1 and `false` as 0.
 </Annotation>
 
-<Annotation id="bool" lines="17" tease="true counts as 1" title="A yes or no" href="#score-outcomes" linkText="Score outcomes">
-A boolean or a finite number.
-</Annotation>
-
-<Annotation id="usage" lines="19" tease="dollars spent" title="Usage" href="/docs/labs/agents/reference?ref=docs-labs-agents-observability#models" linkText="Reference: models">
-Every loop result carries its tokens and dollars, when the model knows its own prices. `anthropic()` does.
+<Annotation id="usage" lines="19" tease="dollars spent" title="Usage and cost" href="/docs/labs/agents/reference?ref=docs-labs-agents-observability#the-result" linkText="The result">
+Every loop result has its tokens in `usage`, and its cost in `usage.usd` when the model knows its prices. `anthropic()` does.
 </Annotation>
 
 </AnnotatedCode>
 
-The event is:
-
-```typescript {{ title: "inngest/events.ts" }}
-import { eventType } from "inngest";
-import { z } from "zod";
-
-export const ticketOpened = eventType("ticket/opened", {
-  schema: z.object({ ticket: z.string(), text: z.string() }),
-});
-```
-
-## Read a trace
-
-A model call, a tool call and an inbox read are each one row. An inbox has one row for its whole life, with a tick for every message that arrived, read or not. [Inboxes →](/docs/labs/agents/inboxes?ref=docs-labs-agents-observability)
-
-<ScreenshotNeeded>an inbox row with three ticks, and the read row expanded to its messages</ScreenshotNeeded>
-
-## Automatic scores
-
-Every agent records model time, tokens, tool calls, folded messages, tool time and tool errors. They show on the trace and in function dashboards, and [agent evals](/docs/agent-evals/overview?ref=docs-labs-agents-observability) compare variants with them. [Where scores appear →](/docs/agent-evals/scores?ref=docs-labs-agents-observability#where-scores-appear)
-
-## Score outcomes
-
-`score(name, value)` from a tool's context lands on that tool call's row.
+In a tool, `score` is in the tool's context, and the score lands on that tool call's row:
 
 ```typescript {{ title: "inngest/tools/escalate.ts" }}
 import { tool } from "inngest/experimental";
 import { z } from "zod";
 
 export const escalate = tool.step({
-  description: "Hands the thread to a person",
+  description: "Hand the ticket to a person",
   input: z.object({ reason: z.string() }),
   run: async ({ reason }, { score }) => {
     await score("escalated", true);
 
-    return `escalated: ${reason}`;
+    return `Escalated: ${reason}`;
   },
 });
 ```
 
-An un-awaited score is still written before the run ends. Names can't start with `agent.`, which the automatic scores use.
+- **Several scores at once.** `score({ answered: true, cost: 0.02 })` writes them in one step.
+- **From any module.** Import `score` from `inngest/experimental/agents` to record a score from a helper. It finds the running agent.
+- **In experiments.** Inside a variant of an [experiment](/docs/agent-evals/experiments?ref=docs-labs-agents-observability), a score also counts toward that variant.
+- **Steps.** A score in a handler is a step. A score in a tool adds no step, and is never written twice on replay.
+- **Names.** Keep names stable, because a renamed score is a separate series. Names can't start with `agent.`, which the automatic scores use.
 
-Code anywhere in an agent run, such as a helper module, can import `score` from `inngest/experimental/agents`. It is the same function, found from the running agent. Pass a record to write several scores in one step: `score({ answered: true, cost: 0.02 })`. Inside a variant of an [experiment](/docs/agent-evals/overview?ref=docs-labs-agents-observability), a score also credits that variant.
+A score is best effort. If one is refused, the SDK logs a warning and the run continues.
 
-## Gotchas
+## Show progress as it happens
 
-- **A score in handler code is a step.** In a tool it adds none.
-- **Keep score names stable.** A changed name is a separate series. [Scores →](/docs/agent-evals/scores?ref=docs-labs-agents-observability)
+`onTurn` runs after each turn of the loop, with the turn's text, tool calls, and usage. Use it to post progress or stream it with [Realtime](/docs/realtime?ref=docs-labs-agents-observability). See [Report progress after each turn](/docs/labs/agents/models?ref=docs-labs-agents-observability#report-progress-after-each-turn).
 
-## How it works
+## Next steps
 
-- A score on a call rides on its result, so replay never writes it twice.
-- A score is best effort: a refused one logs a warning and the run goes on.
-
-## Recipes and reference
-
-- [Reference: the handler](/docs/labs/agents/reference?ref=docs-labs-agents-observability#the-handler): `score()` beside the rest of the handler's argument.
-- [Reference: scores](/docs/labs/agents/reference?ref=docs-labs-agents-observability#scores)
+- [Agent Evals](/docs/agent-evals/overview?ref=docs-labs-agents-observability) compares prompts and models with scores.
+- [Reliability](/docs/labs/agents/reliability?ref=docs-labs-agents-observability) covers retries and limits.
+- [Scores reference](/docs/labs/agents/reference?ref=docs-labs-agents-observability#scores) lists the automatic scores.

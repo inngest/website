@@ -1,4 +1,4 @@
-import { AnnotatedCode, Annotation } from "shared/Docs/mdx";
+import { Info, AnnotatedCode, Annotation } from "shared/Docs/mdx";
 
 export const metaTitle = "Support assistant | Inngest Agents";
 export const description = "Build an agent that answers each support ticket on its own thread, looks up orders and replies through a tool you write.";
@@ -6,6 +6,12 @@ export const description = "Build an agent that answers each support ticket on i
 # Support assistant
 
 > An agent that answers every ticket on its own thread, and remembers the ticket across restarts.
+
+<Info>
+  Inngest Agents is an Inngest Labs project: early, moving fast, and shaped by your feedback. [What's Labs?](/docs/labs?ref=docs-labs-agents-recipes-support-assistant)
+</Info>
+
+Each ticket is its own thread, so a follow-up on `T-1` reaches a model that knows the first question:
 
 ```text
 ticket/opened    T-1  Where is order 7?
@@ -19,7 +25,7 @@ ticket/opened    T-2  Where is order 9?
 Support          sendReply: Order 9 shipped with UPS, arriving Friday.
 ```
 
-Screenshot needed: the first run's trace in the Dev Server, with the `sendReply` step.
+{/* Screenshot to add: the first run's trace in the Dev Server, with the `sendReply` step. */}
 
 ## The code
 
@@ -61,11 +67,11 @@ export const support = agents.agent({
 });
 ```
 
-<Annotation id="thread" lines="8-9" tease="one thread per ticket" title="Start from your events" href="/docs/labs/agents/threads?ref=docs-labs-agents-recipes-support-assistant#which-conversation-is-this" linkText="Which conversation is this?">
+<Annotation id="thread" lines="8-9" tease="one thread per ticket" title="Start from your events" href="/docs/labs/agents/threads?ref=docs-labs-agents-recipes-support-assistant#name-a-thread" linkText="Which conversation is this?">
 Both events carry the ticket, so a ticket's messages share one thread and its history.
 </Annotation>
 
-<Annotation id="tools" lines="10-11" tease="no handler needed" title="Model and tools" href="/docs/labs/agents/models?ref=docs-labs-agents-recipes-support-assistant#delete-the-handler" linkText="Delete the handler">
+<Annotation id="tools" lines="10-11" tease="no handler needed" title="Model and tools" href="/docs/labs/agents/models?ref=docs-labs-agents-recipes-support-assistant#let-the-agent-run-the-loop" linkText="Delete the handler">
 With no handler, the agent runs the model with these tools until it answers. The answer is only the run's output, so `sendReply` is how the customer hears it.
 </Annotation>
 
@@ -132,17 +138,17 @@ export const { GET, POST, PUT } = serve({
 });
 ```
 
-The [client](/docs/labs/agents/quick-start?ref=docs-labs-agents-recipes-support-assistant#create-the-client) and [model](/docs/labs/agents/quick-start?ref=docs-labs-agents-recipes-support-assistant#pick-a-model) are the quick start's.
+The [client](/docs/labs/agents/quick-start?ref=docs-labs-agents-recipes-support-assistant#2-create-the-client) and [model](/docs/labs/agents/quick-start?ref=docs-labs-agents-recipes-support-assistant#3-choose-a-model) are the quick start's.
 
-## What it shows off
+## How it works
 
-- [Threads](/docs/labs/agents/threads?ref=docs-labs-agents-recipes-support-assistant#what-a-conversation-keeps) give each ticket its own history.
-- [An agent with no handler](/docs/labs/agents/models?ref=docs-labs-agents-recipes-support-assistant#delete-the-handler) answers from a definition alone.
-- [A tool you write](/docs/labs/agents/tools?ref=docs-labs-agents-recipes-support-assistant#your-own-git-hub-tools) tells the customer, as a step that retries and never repeats.
+- [Threads](/docs/labs/agents/threads?ref=docs-labs-agents-recipes-support-assistant#what-a-thread-keeps) give each ticket its own history.
+- [An agent with no handler](/docs/labs/agents/models?ref=docs-labs-agents-recipes-support-assistant#let-the-agent-run-the-loop) answers from a definition alone.
+- [A tool you write](/docs/labs/agents/tools?ref=docs-labs-agents-recipes-support-assistant#give-tools-to-an-agent) sends the reply, as a step that retries on failure and never sends twice.
 
 ## Run it
 
-Set the project up as in the [quick start](/docs/labs/agents/quick-start?ref=docs-labs-agents-recipes-support-assistant#install), in a Next.js app.
+Set the project up as in the [quick start](/docs/labs/agents/quick-start?ref=docs-labs-agents-recipes-support-assistant#1-install-the-packages), in a Next.js app.
 
 ```bash
 export ANTHROPIC_API_KEY=sk-ant-...
@@ -169,10 +175,10 @@ Then send `ticket/replied` for `T-1` with `from: "maya"` and a follow-up `text`,
 
 ## Variations
 
-- [Check before acting](/docs/labs/agents/tools?ref=docs-labs-agents-recipes-support-assistant#check-before-acting) wraps `sendReply` so it refuses a reply that holds a secret.
+- [Check before acting](/docs/labs/agents/tools?ref=docs-labs-agents-recipes-support-assistant#check-a-call-before-it-acts) wraps `sendReply` so it refuses a reply that holds a secret.
 - [Sandboxes](/docs/labs/agents/sandboxes?ref=docs-labs-agents-recipes-support-assistant) gives it a sandbox to run code.
 
-## Learn more
+## Next steps
 
 - [Agents](/docs/labs/agents/agents?ref=docs-labs-agents-recipes-support-assistant)
 - [Threads](/docs/labs/agents/threads?ref=docs-labs-agents-recipes-support-assistant)

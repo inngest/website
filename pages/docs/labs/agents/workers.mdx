@@ -1,16 +1,46 @@
-import { AnnotatedCode, Annotation } from "shared/Docs/mdx";
+import { Info, AnnotatedCode, Annotation } from "shared/Docs/mdx";
 
-export const metaTitle = "Run on Workers | Inngest Agents";
-export const description = "Run Inngest Agents on Cloudflare Workers: bindings exist only per request, so give the model and tokens as functions, and serve from the Worker's fetch.";
+export const metaTitle = "Run on Cloudflare Workers | Inngest Agents";
+export const description = "Run Inngest agents on Cloudflare Workers: read bindings when a run starts instead of at import time, and serve agents from the Worker's fetch handler.";
 
-# Run on Workers
+# Run on Cloudflare Workers
 
-> Run your agents on Cloudflare Workers, with secrets read at run time.
+> Serve agents from a Worker, and read API keys and tokens from bindings when each run starts.
 
-A Worker has no secrets at import time, so fields that take a function read them when a run starts.
+<Info>
+  Inngest Agents is an Inngest Labs project: early, moving fast, and shaped by your feedback. [What's Labs?](/docs/labs?ref=docs-labs-agents-workers)
+</Info>
 
-- **Read secrets at run time.** The model and the repo's `auth` are functions. [Bindings →](#read-bindings-at-run-time)
-- **Serve from `fetch`.** One export that sets the bindings, then serves Inngest. [Serve →](#serve-from-fetch)
+A Worker gets its bindings, such as API keys, with each request, not when your modules load. Agent fields that take a function, such as `model`, run when a run starts, which is always inside a request. Read bindings there.
+
+## Keep the request's bindings
+
+Store each request's bindings in a module, and read them from your agents.
+
+```typescript {{ title: "inngest/env.ts" }}
+export type Env = {
+  ANTHROPIC_API_KEY: string;
+  GITHUB_READ_TOKEN: string;
+};
+
+let current: Env | undefined;
+
+export const setEnv = (env: unknown) => {
+  current = env as Env;
+};
+
+export const getEnv = () => {
+  if (!current) {
+    throw new Error("No request has reached the Worker yet.");
+  }
+
+  return current;
+};
+```
+
+## Read bindings when a run starts
+
+Pass `model` as a function. It runs once when each run starts, so it can read the bindings.
 
 <AnnotatedCode>
 
@@ -36,68 +66,13 @@ export const triage = agents.agent({
 });
 ```
 
-<Annotation id="model" lines="11-16" tease="called per run" title="A field as a function" href="/docs/labs/agents/reference?ref=docs-labs-agents-workers#the-definition" linkText="Reference: the definition">
-`getEnv()` reads the request's bindings (`env.ts`, below) and is safe here: a run only starts inside a request.
+<Annotation id="model" lines="11-16" tease="runs per run" title="model as a function" href="/docs/labs/agents/reference?ref=docs-labs-agents-workers#the-definition" linkText="The definition">
+`getEnv()` is safe here, because a run only starts inside a request.
 </Annotation>
 
 </AnnotatedCode>
 
-`ticketOpened` is the event the [Support assistant](/docs/labs/agents/recipes/support-assistant?ref=docs-labs-agents-workers) listens for.
-
-```typescript {{ title: "inngest/events.ts" }}
-import { eventType } from "inngest";
-import { z } from "zod";
-
-export const ticketOpened = eventType("ticket/opened", {
-  schema: z.object({ ticket: z.string(), text: z.string() }),
-});
-```
-
-## Declare the bindings
-
-`env.ts` keeps the bindings of the latest request, which are the same for the whole deployment.
-
-```typescript {{ title: "inngest/env.ts" }}
-export type Env = {
-  ANTHROPIC_API_KEY: string;
-  GITHUB_READ_TOKEN: string;
-};
-
-let current: Env | undefined;
-
-export const setEnv = (env: unknown) => {
-  current = env as Env;
-};
-
-export const getEnv = () => {
-  if (!current) {
-    throw new Error("No request has reached the Worker yet.");
-  }
-
-  return current;
-};
-```
-
-A thread's state lives on the thread's own run, the same way it does on any host - there's no store to bind to D1 or anywhere else, and `kv.thread` reaches no service. [Your own values →](/docs/labs/agents/threads?ref=docs-labs-agents-workers#your-own-values)
-
-```typescript {{ title: "inngest/client.ts" }}
-import { Inngest } from "inngest";
-import { sandboxMiddleware } from "inngest/experimental";
-import { createAgents } from "inngest/experimental/agents";
-
-export const inngest = new Inngest({
-  id: "support",
-  middleware: [sandboxMiddleware()],
-});
-
-export const agents = createAgents(inngest);
-```
-
-Add `sandboxMiddleware()` when an agent lists sandboxes.
-
-## Read bindings at run time
-
-Fields that take a function (`model`, `tools`, `sandboxes` and the rest) get the event and thread. So does a sandbox's `repo`, whose `auth` can be a function of its own. [The definition →](/docs/labs/agents/reference?ref=docs-labs-agents-workers#the-definition)
+A sandbox repository's `auth` can be a function too. It runs each time a token is needed:
 
 ```typescript {{ title: "inngest/sandboxes/work.ts" }}
 import { sandbox } from "inngest/experimental/agents";
@@ -115,11 +90,12 @@ export const work = sandbox({
 });
 ```
 
-## Serve from fetch
+`system`, `tools`, `sandboxes`, and `skills` can also be functions of the run. `id`, `triggers`, `thread`, `inbox`, `card`, and `discovery` must be plain values, because Inngest reads them when your app syncs. See [The definition](/docs/labs/agents/reference?ref=docs-labs-agents-workers#the-definition).
 
-`setEnv(env)` runs first on every request, so everything after it can read the bindings. Workers require a default export for the entry point.
+## Serve from `fetch`
 
-{/* not type-checked: serve() from inngest/cloudflare with agents.functions() */}
+Call `setEnv()` at the start of every request, then hand the request to Inngest.
+
 ```typescript {{ title: "inngest/serve.ts" }}
 import { serve } from "inngest/cloudflare";
 import { agents, inngest } from "./client";
@@ -141,21 +117,31 @@ export default {
 };
 ```
 
-Turn on the `nodejs_compat` flag, as [Serve functions](/docs/durable-execution/deploying-functions/serve?ref=docs-labs-agents-workers) says for Workers.
+The client is the same as on any host:
 
-## Gotchas
+```typescript {{ title: "inngest/client.ts" }}
+import { Inngest } from "inngest";
+import { inboxMiddleware, sandboxMiddleware } from "inngest/experimental";
+import { createAgents } from "inngest/experimental/agents";
 
-- **Import time has no bindings.** Read them inside a function.
-- **Some fields stay values.** Inngest reads them when the app syncs or an event is routed, so keep bindings out of them. [The definition →](/docs/labs/agents/reference?ref=docs-labs-agents-workers#the-definition)
-- **Field functions have no side effects.** They run again on replay.
-- **Other entry points call `setEnv`.** A scheduled handler that sends messages calls `setEnv(env)` first.
+export const inngest = new Inngest({
+  id: "support",
+  middleware: [inboxMiddleware(), sandboxMiddleware()],
+});
 
-## How it works
+export const agents = createAgents(inngest);
+```
 
-- A field's function runs once when a run starts, and a token function at each use.
-- Everything else is the same as on any host. [Project structure →](/docs/labs/agents/structure?ref=docs-labs-agents-workers)
+Turn on the `nodejs_compat` compatibility flag, as [Serve functions](/docs/durable-execution/deploying-functions/serve?ref=docs-labs-agents-workers) describes for Workers.
 
-## Recipes and reference
+## Things to know
 
-- [Threads](/docs/labs/agents/threads?ref=docs-labs-agents-workers): what a thread keeps, with no store to configure.
-- [Reference: the definition](/docs/labs/agents/reference?ref=docs-labs-agents-workers#the-definition)
+- **Nothing is read at import time.** Read bindings inside a function, never at the top of a module.
+- **Keep field functions free of side effects.** They run again when a run resumes.
+- **Other entry points need `setEnv()` too.** A `scheduled` handler that sends events calls `setEnv(env)` first.
+- **No storage to bind.** Threads, history, and `kv.thread` are held by Inngest, so there's nothing to set up in D1 or KV.
+
+## Next steps
+
+- [Project structure](/docs/labs/agents/structure?ref=docs-labs-agents-workers) shows the files of an agents app.
+- [Serve functions](/docs/durable-execution/deploying-functions/serve?ref=docs-labs-agents-workers) covers every framework Inngest serves from.

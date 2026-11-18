@@ -1,63 +1,61 @@
+import { Info } from "shared/Docs/mdx";
+
 export const metaTitle = "Project structure | Inngest Agents";
-export const description = "Lay out an Inngest Agents project: a client, one file per agent, tool, sandbox and model, plain functions beside them, event types in one file, skills in a folder, and a serve file that imports every agent.";
+export const description = "Lay out an Inngest Agents project: a client, one file per agent, model, tool and sandbox, event types in one file, skills in a folder, and a serve file that imports every agent.";
 
 # Project structure
 
-> One file per agent, tool, sandbox and model, each imported by name where it is used.
+> Keep one agent, model, tool, or sandbox per file, and import each one where it's used.
 
-Agents, tools, sandboxes and models are plain exports. An agent imports what it uses, and code that calls an agent imports that agent.
+<Info>
+  Inngest Agents is an Inngest Labs project: early, moving fast, and shaped by your feedback. [What's Labs?](/docs/labs?ref=docs-labs-agents-structure)
+</Info>
+
+Agents, models, tools, and sandboxes are plain exports. An agent imports the model, tools, and sandboxes it uses, and code that starts an agent imports the agent. Tools, models, and sandboxes don't depend on the client, so several agents can share one.
 
 ```
 inngest/
   client.ts
   serve.ts
   events.ts
-  keys.ts
   models/
     claude.ts
   agents/
     support.ts
     reviewer.ts
-  functions/
-    nightlyReview.ts
-  lib/
-    ci.ts
-    github.ts
-    openPrs.ts
   tools/
     lookupOrder.ts
   sandboxes/
     work.ts
+  functions/
+    nightlyReview.ts
+  lib/
+    github.ts
 skills/
   refunds/
     SKILL.md
-app/
-  api/
-    mcp/
-      callback/
-        route.ts
 ```
 
 ## The client
 
-The client holds the Inngest client and `agents`, which defines every agent. Add `sandboxMiddleware()` when any agent lists sandboxes.
+The client creates `agents`, which defines every agent in the app. Add `sandboxMiddleware()` when any agent uses sandboxes.
 
 ```typescript {{ title: "inngest/client.ts" }}
 import { Inngest } from "inngest";
-import { sandboxMiddleware } from "inngest/experimental";
+import { inboxMiddleware, sandboxMiddleware } from "inngest/experimental";
 import { createAgents } from "inngest/experimental/agents";
 
 export const inngest = new Inngest({
   id: "support",
-  middleware: [sandboxMiddleware()],
+  middleware: [inboxMiddleware(), sandboxMiddleware()],
 });
 
 export const agents = createAgents(inngest);
 ```
 
-## One model per file
+## Models
 
-Agents import their model, so a different model for another environment is a change to this file.
+Agents import their model, so you change a model in one file.
 
 ```typescript {{ title: "inngest/models/claude.ts" }}
 import { anthropic } from "inngest/experimental/agents";
@@ -65,9 +63,9 @@ import { anthropic } from "inngest/experimental/agents";
 export const claude = anthropic({ model: "claude-sonnet-5-5" });
 ```
 
-## Event types in one file
+## Events
 
-Agents trigger on these types, and the code that sends the events imports the same ones.
+Keep event types in one file. Agents trigger on them, and the code that sends events imports the same types.
 
 ```typescript {{ title: "inngest/events.ts" }}
 import { eventType } from "inngest";
@@ -78,14 +76,14 @@ export const question = eventType("support/question", {
 });
 ```
 
-## One tool per file
+## Tools and sandboxes
 
 ```typescript {{ title: "inngest/tools/lookupOrder.ts" }}
 import { tool } from "inngest/experimental";
 import { z } from "zod";
 
 export const lookupOrder = tool.step({
-  description: "Find an order by ID",
+  description: "Look up an order by its ID",
   input: z.object({ id: z.string() }),
   run: async ({ id }) => {
     return { id, status: "shipped", eta: "Friday" };
@@ -93,17 +91,15 @@ export const lookupOrder = tool.step({
 });
 ```
 
-## One sandbox per file
-
 ```typescript {{ title: "inngest/sandboxes/work.ts" }}
 import { sandbox } from "inngest/experimental/agents";
 
 export const work = sandbox({ id: "work" });
 ```
 
-## One agent per file
+## Agents
 
-An agent is a module-level export that imports the client, its model, and its tools and sandboxes.
+Each agent is a module-level export.
 
 ```typescript {{ title: "inngest/agents/support.ts" }}
 import { skills } from "inngest/experimental/agents";
@@ -117,7 +113,7 @@ export const support = agents.agent({
   triggers: [question],
   thread: "event.data.customer",
   model: claude,
-  system: "You answer questions about orders. Keep it short.",
+  system: "You answer questions about orders. Keep answers short.",
   tools: { lookupOrder },
   skills: [skills.folder("./skills")],
 });
@@ -134,14 +130,14 @@ export const reviewer = agents.agent({
   id: "reviewer",
   triggers: [invoke(z.object({ pr: z.number() }))],
   model: claude,
-  system: "Review the pull request you are given.",
+  system: "Review the pull request you're given.",
   sandboxes: { work },
 });
 ```
 
-## Plain functions beside them
+## Plain functions
 
-Work that needs no thread is a plain function. It lives in `functions/` and imports any agent it starts. [Not everything is an agent →](/docs/labs/agents/agent-teams?ref=docs-labs-agents-structure#not-everything-is-an-agent)
+Work that doesn't need a thread, such as a nightly job, is a plain Inngest function. Keep these in `functions/`. A plain function can start an agent:
 
 ```typescript {{ title: "inngest/functions/nightlyReview.ts" }}
 import { inngest } from "../client";
@@ -150,25 +146,18 @@ import { reviewer } from "../agents/reviewer";
 export const nightlyReview = inngest.createFunction(
   { id: "nightly-review", triggers: [{ cron: "TZ=UTC 0 2 * * *" }] },
   async () => {
-    const pr = 42;
-
-    return await reviewer.start({ pr }).result();
+    return await reviewer.start({ pr: 42 }).result();
   },
 );
 ```
 
-## Skills in a folder
+## Skills
 
-Each skill is a folder with a `SKILL.md`. `skills.folder("./skills")` finds them from the directory you start the app in. [Skills →](/docs/labs/agents/skills?ref=docs-labs-agents-structure)
+Each skill is a folder with a `SKILL.md`. `skills.folder("./skills")` resolves against the directory your app starts in, so deploy the folder with your app. See [Skills](/docs/labs/agents/skills?ref=docs-labs-agents-structure).
 
-## The other files
+## Serve
 
-- [`inngest/lib/`](/docs/labs/agents/agents?ref=docs-labs-agents-structure#steps) holds plain helpers, such as `ci.ts` and `openPrs.ts`. `github.ts` is your own client for the GitHub API.
-- [`app/api/mcp/callback/route.ts`](/docs/labs/agents/reference-sandboxes?ref=docs-labs-agents-structure#mcp) finishes an MCP sign-in.
-
-## Serve them
-
-Import every agent file before you call `agents.functions()`, then add your plain functions to the list.
+Import every agent file before you call `agents.functions()`, and add your plain functions to the list.
 
 ```typescript {{ title: "inngest/serve.ts" }}
 import { createServer } from "inngest/node";
@@ -183,9 +172,11 @@ createServer({
 }).listen(3000);
 ```
 
-## Grow it
+An agent is registered when its file is imported, and `agents.functions()` returns what's registered. Each agent is served as several functions: the one that runs it, the ones that hold its threads, and relays for cleanup and results. The app also serves a function that announces its agents' cards. Serve all of them.
 
-When a folder gets crowded, group by area. Imports stay relative.
+## Group files as the app grows
+
+When a folder gets crowded, group files by area:
 
 ```
 inngest/
@@ -201,13 +192,7 @@ inngest/
       commentOnIssue.ts
 ```
 
-## How it works
+## Next steps
 
-- An agent registers when its file is imported, and `agents.functions()` returns what is registered, so `serve.ts` imports each agent. The list is longer than the number of agents: one declared agent is served as three functions - the one that runs your handler, and the two that hold its threads - plus its cleanup and finished relays, and the app's own card announcements. Serve all of it. [Reference: the thread →](/docs/labs/agents/reference?ref=docs-labs-agents-structure#the-thread)
-- Tools, sandboxes and models are plain definitions with no client, so many agents share one.
-
-## Recipes and reference
-
-- [Quick start](/docs/labs/agents/quick-start?ref=docs-labs-agents-structure): the first agent, file by file.
-- [Run on Workers](/docs/labs/agents/workers?ref=docs-labs-agents-structure): the same layout on Cloudflare.
-- [Reference: the definition](/docs/labs/agents/reference?ref=docs-labs-agents-structure#the-definition)
+- [Quick start](/docs/labs/agents/quick-start?ref=docs-labs-agents-structure) builds a first agent, file by file.
+- [Run on Cloudflare Workers](/docs/labs/agents/workers?ref=docs-labs-agents-structure) uses the same layout on Workers.

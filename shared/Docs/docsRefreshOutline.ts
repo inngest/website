@@ -854,8 +854,82 @@ export const docsRefreshOutline: DocsRefreshPage[] = [
         href: "/docs/labs/agents",
         children: [
           {
+            title: "Overview",
+            href: "/docs/labs/agents/overview",
+          },
+          {
             title: "Quick start",
             href: "/docs/labs/agents/quick-start",
+          },
+          {
+            title: "Concepts",
+            children: [
+              {
+                title: "Agents",
+                href: "/docs/labs/agents/agents",
+              },
+              {
+                title: "Threads",
+                href: "/docs/labs/agents/threads",
+              },
+              {
+                title: "Inboxes",
+                href: "/docs/labs/agents/inboxes",
+              },
+              {
+                title: "Models and the loop",
+                href: "/docs/labs/agents/models",
+              },
+              {
+                title: "Tools",
+                href: "/docs/labs/agents/tools",
+              },
+              {
+                title: "Skills",
+                href: "/docs/labs/agents/skills",
+              },
+              {
+                title: "Sandboxes",
+                href: "/docs/labs/agents/sandboxes",
+              },
+              {
+                title: "Agent teams",
+                href: "/docs/labs/agents/agent-teams",
+              },
+              {
+                title: "Agent discovery",
+                href: "/docs/labs/agents/agent-discovery",
+              },
+              {
+                title: "Reliability",
+                href: "/docs/labs/agents/reliability",
+              },
+              {
+                title: "Observability",
+                href: "/docs/labs/agents/observability",
+              },
+            ],
+          },
+          {
+            title: "Guides",
+            children: [
+              {
+                title: "Project structure",
+                href: "/docs/labs/agents/structure",
+              },
+              {
+                title: "Call your tools from a sandbox",
+                href: "/docs/labs/agents/call-tools-from-sandboxes",
+              },
+              {
+                title: "Bring your own model",
+                href: "/docs/labs/agents/custom-models",
+              },
+              {
+                title: "Run on Cloudflare Workers",
+                href: "/docs/labs/agents/workers",
+              },
+            ],
           },
           {
             title: "Recipes",
@@ -896,78 +970,17 @@ export const docsRefreshOutline: DocsRefreshPage[] = [
             ],
           },
           {
-            title: "Concepts",
+            title: "Reference",
             children: [
               {
                 title: "Agents",
-                href: "/docs/labs/agents/agents",
+                href: "/docs/labs/agents/reference",
               },
               {
-                title: "Threads",
-                href: "/docs/labs/agents/threads",
-              },
-              {
-                title: "Inboxes",
-                href: "/docs/labs/agents/inboxes",
-              },
-              {
-                title: "Models",
-                href: "/docs/labs/agents/models",
-              },
-              {
-                title: "Tools",
-                href: "/docs/labs/agents/tools",
-              },
-              {
-                title: "Skills",
-                href: "/docs/labs/agents/skills",
-              },
-              {
-                title: "Sandboxes",
-                href: "/docs/labs/agents/sandboxes",
-              },
-              {
-                title: "Calling home",
-                href: "/docs/labs/agents/calling-home",
-              },
-              {
-                title: "Agent Teams",
-                href: "/docs/labs/agents/agent-teams",
-              },
-              {
-                title: "Agent discovery",
-                href: "/docs/labs/agents/agent-discovery",
-              },
-              {
-                title: "Reliability",
-                href: "/docs/labs/agents/reliability",
-              },
-              {
-                title: "Observability",
-                href: "/docs/labs/agents/observability",
+                title: "Tools and sandboxes",
+                href: "/docs/labs/agents/reference-sandboxes",
               },
             ],
-          },
-          {
-            title: "Guides",
-            children: [
-              {
-                title: "Project structure",
-                href: "/docs/labs/agents/structure",
-              },
-              {
-                title: "Run on Workers",
-                href: "/docs/labs/agents/workers",
-              },
-            ],
-          },
-          {
-            title: "Agents reference",
-            href: "/docs/labs/agents/reference",
-          },
-          {
-            title: "Tools and sandboxes reference",
-            href: "/docs/labs/agents/reference-sandboxes",
           },
         ],
       },

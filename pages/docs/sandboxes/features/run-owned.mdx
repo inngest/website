@@ -1,15 +1,17 @@
 import { AnnotatedCode, Annotation } from "shared/Docs/mdx";
 
 export const metaTitle = "Run-owned Sandboxes | Sandboxes";
-export const description = "Sandboxes and snapshots your function creates belong to its run and are cleaned up when the run ends, however it ends. Pick another active run as owner, or opt out with persistent.";
+export const description = "Sandboxes and snapshots your function creates belong to its run and are cleaned up when the run ends, however it ends. Choose another active run as the owner, or keep a Sandbox with owner: \"persistent\".";
 
 # Run-owned Sandboxes and snapshots
 
-> Sandboxes and snapshots your run creates are cleaned up when it ends, however it ends.
+> Sandboxes and snapshots your run creates are cleaned up when the run ends, however it ends.
 
-- **No leaks.** Failed, cancelled, and crashed runs all clean up the same way. [Choose the owner →](#choose-the-owner)
-- **No cleanup code.** No `onFailure`, no stored IDs. [Managed lifecycle →](/docs/sandboxes/features/managed-lifecycle?ref=docs-sandboxes-run-owned)
-- **Snapshots too.** [Snapshots →](#snapshots-follow-the-same-rule)
+A Sandbox belongs to the run that created it. When the run ends, whether it completes, fails, is cancelled, or crashes, Inngest destroys the Sandboxes and snapshots the run still owns. You don't need `onFailure` handlers or stored Sandbox IDs to avoid leaks.
+
+## Choose the owner
+
+Set `owner` when you create a Sandbox to change which run it belongs to.
 
 <AnnotatedCode>
 
@@ -24,37 +26,37 @@ const shared = await step.sandbox.create("shared", {
 const base = await step.sandbox.create("long-lived", { owner: "persistent" });
 ```
 
-<Annotation id="default" lines="1-2" tease="destroyed with the run" title="Owned by this run" href="#choose-the-owner" linkText="Choose the owner">
-Never destroyed here. Cleaned up when the run ends.
+<Annotation id="default" lines="1-2" tease="this run owns it" title="Owned by this run">
+The default. The Sandbox is destroyed when this run ends, so the code never destroys it.
 </Annotation>
 
-<Annotation id="other" lines="4-6" tease="another run owns it" title="Owned by another run" href="#choose-the-owner" linkText="Choose the owner">
-Lives until that run ends. The run must be active.
+<Annotation id="other" lines="4-6" tease="another run owns it" title="Owned by another run">
+The Sandbox lasts until that run ends. The owning run must still be active, or the call fails with `sandbox_owner_run_not_active`.
 </Annotation>
 
-<Annotation id="persistent" lines="8" tease="you destroy it" title="Opt out" href="#choose-the-owner" linkText="Choose the owner">
-Kept until you destroy it.
+<Annotation id="persistent" lines="8" tease="you destroy it" title="Persistent">
+The Sandbox is kept until you destroy it.
 </Annotation>
 
 </AnnotatedCode>
 
-## Choose the owner
+`owner` works with `step.sandbox.create()`, `group.sandbox()`, the [runners](/docs/sandboxes/features/run-code), and `snapshot()`.
 
-- Works on `create()`, `group.sandbox()`, the runners, and `snapshot()`.
-- An ended run fails with `sandbox_owner_run_not_active`.
+## Snapshots
 
-## Snapshots follow the same rule
+Snapshots follow the same rule. A snapshot belongs to the run that took it, and is deleted after its clones when the run ends.
 
 ```typescript {{ title: "TypeScript" }}
 const snapshot = await sb.snapshot("prepared");
+
 const clones = await Promise.all(
   tasks.map((task) => snapshot.clone(`clone-${task.id}`)),
 );
 ```
 
-Owners aren't inherited between a snapshot and its clones.
+A clone doesn't inherit its snapshot's owner. Each clone belongs to the run that created it, unless you set `owner`.
 
-## How it works
+## Next steps
 
-- When the run ends in any state, Inngest destroys what it still owns.
-- Snapshots are deleted after their clones.
+- [Managed lifecycle](/docs/sandboxes/features/managed-lifecycle) compares the ways to create and destroy Sandboxes.
+- [Snapshots and restore](/docs/sandboxes/features/snapshots-and-restore) covers snapshots and clones.

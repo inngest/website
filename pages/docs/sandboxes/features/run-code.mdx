@@ -7,11 +7,13 @@ export const description = "Run Python, TypeScript, or shell in an isolated Sand
 
 > Run Python, TypeScript, or shell in a Sandbox with one statement, and get the result back as a value.
 
-- **One statement.** Create, run, and destroy in a single call. [The runners →](#the-runners)
-- **Data in, value out.** Keys become variables, `return` sends JSON back. [Pass data in →](#pass-data-in)
-- **Typed results.** Validate the value with Zod, Valibot, or ArkType. [Type the result →](#type-the-result)
-- **Pick the runtime.** Node, Deno, Bun, or Python, at an exact version. [Choose a runtime →](#choose-a-runtime)
-- **Safe commands.** Interpolated values never reach a shell unquoted. [The `$` template →](#the-template)
+The runners create a Sandbox, run your code in it, return the result, and destroy the Sandbox, all in one call. Use them for short jobs, such as running generated code or a quick computation, where you don't need to keep the Sandbox.
+
+- **One statement.** Create, run, and destroy a Sandbox in a single call. See [The runners](#the-runners).
+- **Data in, value out.** Each `input` key becomes a variable, and `return` sends JSON back. See [Pass data in](#pass-data-in).
+- **Typed results.** Validate the returned value with Zod, Valibot, or ArkType. See [Type the result](#type-the-result).
+- **Pick the runtime.** Run Node, Deno, Bun, or Python, at an exact version. See [Choose a runtime](#choose-a-runtime).
+- **Safe commands.** Values you interpolate into a command never reach a shell unquoted. See [The `$` template](#the-template).
 
 <AnnotatedCode>
 
@@ -37,7 +39,7 @@ const grade = await step.sandbox.python(
 ```
 
 <Annotation id="runner" lines="4" tease="one statement" title="One call runs the whole job" href="#the-runners" linkText="The runners">
-Boots a Sandbox, runs the code, and destroys it.
+Starts a Sandbox, runs the code, and destroys the Sandbox.
 </Annotation>
 
 <Annotation id="return" lines="8" tease="top-level return" title="Return a value" href="#return-a-value" linkText="Return a value">
@@ -45,11 +47,11 @@ A top-level `return` sends JSON back to your function.
 </Annotation>
 
 <Annotation id="input" lines="11" tease="becomes globals" title="Pass data in as variables" href="#pass-data-in" linkText="Pass data in">
-Each key is a variable. Values are never spliced into source.
+Each key becomes a variable. Values are never pasted into the source code.
 </Annotation>
 
 <Annotation id="runtime" lines="12" tease="pick the version" title="Choose the version" href="#choose-a-runtime" linkText="Choose a runtime">
-Picks the language and exact version.
+Sets the language and its exact version.
 </Annotation>
 
 <Annotation id="schema" lines="14-16" tease="typed result" title="Check the result" href="#type-the-result" linkText="Type the result">
@@ -71,7 +73,7 @@ await using sb = await step.sandbox.create("many");
 await sb.python("a", "return 1");
 ```
 
-`python` and `typescript` return the `return` value, `sh` returns `stdout`, and `run` returns the [full result](#the-full-result). Created Sandboxes share the method names.
+`python` and `typescript` return the value of `return`, `sh` returns `stdout`, and `run` returns the [full result](#the-full-result). A Sandbox you create with `step.sandbox.create()` has methods with the same names.
 
 ## Pass data in
 
@@ -83,8 +85,8 @@ const label = await step.sandbox.python<string>(
 );
 ```
 
-- Values are JSON. A `Date` or `Map` throws before any Sandbox starts.
-- `input` shows in the trace. Use [`secrets`](/docs/sandboxes/features/secrets?ref=docs-sandboxes-run-code) for sensitive values.
+- Values must be JSON. A `Date` or a `Map` throws an error before any Sandbox starts.
+- `input` appears in the trace. Use [`secrets`](/docs/sandboxes/features/secrets) for sensitive values.
 
 ## Return a value
 
@@ -93,7 +95,7 @@ await step.sandbox.typescript("a", `const total = rows.length; return { total };
 await step.sandbox.python("b", `total = len(rows)\nreturn {"total": total}`, { input: { rows } });
 ```
 
-Top-level `await` works. No `return` gives `undefined`.
+Top-level `await` works. Code with no `return` returns `undefined`.
 
 ## Type the result
 
@@ -110,7 +112,7 @@ const stats = await step.sandbox.python(
 stats.mean;
 ```
 
-Any [Standard Schema](https://standardschema.dev) works. A failing value fails the step with the issues.
+Any [Standard Schema](https://standardschema.dev) library works. A value that doesn't match fails the step, and the error lists the problems.
 
 ## Choose a runtime
 
@@ -121,7 +123,7 @@ await step.sandbox.typescript("fast", code, { runtime: "bun" });
 await step.sandbox.python("ml", code, { runtime: "python@3.13" });
 ```
 
-Also `node@20`, `node@24`, `python@3.11`, `python@3.12`. Each is a [runtime image](/docs/sandboxes/features/base-images?ref=docs-sandboxes-run-code).
+Other versions include `node@20`, `node@24`, `python@3.11`, and `python@3.12`. Each is a [runtime image](/docs/sandboxes/features/base-images).
 
 ## The `$` template
 
@@ -134,10 +136,10 @@ const pkg = await sb.$`cat /work/repo/package.json`.json();
 const tests = await sb.$.sh({ exitCodes: [0, 1], timeout: "4m" })`cd /work/repo && npm test`;
 ```
 
-- `` sb.$`…` `` runs the command directly, with no shell. Each `${value}` is one argument.
-- `` sb.$.sh`…` `` runs `/bin/sh -c`, with values quoted, for pipes and `&&`.
-- Pass options by calling `$` first: `timeout`, `env`, `cwd`, `retries`, `exitCodes`, `id`, and `quiet`. Keep the configured tag to reuse it: `const repo$ = sb.$({ cwd: "/work/repo" })`.
-- Non-zero exits stop the run, as in [Exit codes](/docs/sandboxes/features/exit-codes?ref=docs-sandboxes-run-code).
+- `` sb.$`…` `` runs the command directly, without a shell. Each `${value}` is passed as one argument.
+- `` sb.$.sh`…` `` runs the command with `/bin/sh -c`, with values quoted. Use it for pipes and `&&`.
+- To set options, call `$` with them first: `timeout`, `env`, `cwd`, `retries`, `exitCodes`, `id`, and `quiet`. Save the configured tag to reuse it: `const repo$ = sb.$({ cwd: "/work/repo" })`.
+- A non-zero exit code fails the step. See [Exit codes](/docs/sandboxes/features/exit-codes).
 
 ## The full result
 
@@ -153,7 +155,7 @@ type SandboxResult = {
 };
 ```
 
-`result` is absent for shell. `ok` is `false` only for an [allowed exit code](/docs/sandboxes/features/exit-codes?ref=docs-sandboxes-run-code).
+Shell commands have no `result`. `ok` is `false` only for an [allowed exit code](/docs/sandboxes/features/exit-codes).
 
 ## Options
 
@@ -177,13 +179,17 @@ type RunnerOptions = {
 };
 ```
 
-- Defaults: `vcpu` 2, `memoryMb` 2048, `timeout` `"30s"` up to `"5m"`. See [limits](/docs/sandboxes/limits?ref=docs-sandboxes-run-code).
-- `from` is [`image.inngest()` or `image.custom()`](/docs/sandboxes/features/base-images?ref=docs-sandboxes-run-code#choose-an-image).
-- [`tools`](/docs/sandboxes/features/tools?ref=docs-sandboxes-run-code) and [`owner`](/docs/sandboxes/features/run-owned?ref=docs-sandboxes-run-code) have their own pages.
+- The defaults are 2 `vcpu`, 2048 `memoryMb`, and a `timeout` of `"30s"`, which you can raise to `"5m"`. See [limits](/docs/sandboxes/limits).
+- `from` is [`image.inngest()` or `image.custom()`](/docs/sandboxes/features/base-images#choose-an-image).
+- [`tools`](/docs/sandboxes/features/tools) and [`owner`](/docs/sandboxes/features/run-owned) are covered on their own pages.
 
 ## How it works
 
-- Each runner is a group of durable steps. A retry repeats only the failed phase.
-- Each statement is one [trace](/docs/sandboxes/features/traces?ref=docs-sandboxes-run-code) row with create, run, and destroy phases.
+- Each runner is a group of durable steps, so a retry repeats only the phase that failed.
+- Each call is one row in the [trace](/docs/sandboxes/features/traces), with create, run, and destroy phases.
 
-[Exit codes and errors →](/docs/sandboxes/features/exit-codes?ref=docs-sandboxes-run-code)
+## Next steps
+
+- [Exit codes and errors](/docs/sandboxes/features/exit-codes) covers commands that fail.
+- [Reusable sandbox functions](/docs/sandboxes/features/sandbox-functions) wraps a runner in a typed function.
+- [Managed lifecycle](/docs/sandboxes/features/managed-lifecycle) compares the runners with `step.sandbox.create()`.

@@ -1,4 +1,4 @@
-import { AnnotatedCode, Annotation } from "shared/Docs/mdx";
+import { Info, AnnotatedCode, Annotation } from "shared/Docs/mdx";
 
 export const metaTitle = "Issue triage | Inngest Agents";
 export const description = "Build an agent that labels each reported bug, links similar open issues and leaves one comment, with every GitHub call a tool you write that runs as its own step.";
@@ -6,6 +6,10 @@ export const description = "Build an agent that labels each reported bug, links 
 # Issue triage
 
 > An agent that labels every reported issue and links duplicates.
+
+<Info>
+  Inngest Agents is an Inngest Labs project: early, moving fast, and shaped by your feedback. [What's Labs?](/docs/labs?ref=docs-labs-agents-recipes-issue-triage)
+</Info>
 
 Each GitHub call is its own step, so a retry repeats only the call that failed.
 
@@ -15,7 +19,7 @@ Labels         bug
 Comment        Thanks. This looks like #198, which has a fix in review.
 ```
 
-Screenshot needed: the labeled issue with the agent's comment.
+{/* Screenshot to add: the labeled issue with the agent's comment. */}
 
 ## The code
 
@@ -51,12 +55,12 @@ export const triage = agents.agent({
 });
 ```
 
-<Annotation id="trigger" lines="10-11" tease="one thread per issue" title="Start from your event" href="/docs/labs/agents/threads?ref=docs-labs-agents-recipes-issue-triage#which-conversation-is-this" linkText="Which conversation is this?">
+<Annotation id="trigger" lines="10-11" tease="one thread per issue" title="Start from your event" href="/docs/labs/agents/threads?ref=docs-labs-agents-recipes-issue-triage#name-a-thread" linkText="Which conversation is this?">
 Starts when a bug is reported. Each issue is its own thread, keyed by its number.
 </Annotation>
 
-<Annotation id="tools" lines="15" tease="GitHub calls you write" title="Search, label, comment" href="/docs/labs/agents/tools?ref=docs-labs-agents-recipes-issue-triage#your-own-git-hub-tools" linkText="Your own GitHub tools">
-Each tool is a `fetch` with your token. Commenting once is the prompt's rule; the tools don't limit it.
+<Annotation id="tools" lines="15" tease="GitHub calls you write" title="Search, label, comment" href="/docs/labs/agents/tools?ref=docs-labs-agents-recipes-issue-triage#give-tools-to-an-agent" linkText="Your own GitHub tools">
+Each tool is a `fetch` with your token. The prompt tells the model to comment once. The tools don't enforce it.
 </Annotation>
 
 </AnnotatedCode>
@@ -153,17 +157,17 @@ export const githubRest = async <T>(path: string, init?: RequestInit) => {
 };
 ```
 
-The [client](/docs/labs/agents/quick-start?ref=docs-labs-agents-recipes-issue-triage#create-the-client) and [model](/docs/labs/agents/quick-start?ref=docs-labs-agents-recipes-issue-triage#pick-a-model) are the quick start's. The serve route is the [Support assistant's](/docs/labs/agents/recipes/support-assistant?ref=docs-labs-agents-recipes-issue-triage), importing `inngest/agents/triage`.
+The [client](/docs/labs/agents/quick-start?ref=docs-labs-agents-recipes-issue-triage#2-create-the-client) and [model](/docs/labs/agents/quick-start?ref=docs-labs-agents-recipes-issue-triage#3-choose-a-model) are the quick start's. The serve route is the [Support assistant's](/docs/labs/agents/recipes/support-assistant?ref=docs-labs-agents-recipes-issue-triage), importing `inngest/agents/triage`.
 
-## What it shows off
+## How it works
 
-- [Your own events](/docs/labs/agents/threads?ref=docs-labs-agents-recipes-issue-triage#which-conversation-is-this) start the agent and name its thread.
-- [Tools](/docs/labs/agents/tools?ref=docs-labs-agents-recipes-issue-triage#your-own-git-hub-tools) are the functions the model calls to search, label and comment.
-- [An agent with no handler](/docs/labs/agents/models?ref=docs-labs-agents-recipes-issue-triage#delete-the-handler) needs only a model, a prompt and tools.
+- [Your own events](/docs/labs/agents/threads?ref=docs-labs-agents-recipes-issue-triage#name-a-thread) start the agent and name its thread.
+- [Tools](/docs/labs/agents/tools?ref=docs-labs-agents-recipes-issue-triage#give-tools-to-an-agent) are the functions the model calls to search, label and comment.
+- [An agent with no handler](/docs/labs/agents/models?ref=docs-labs-agents-recipes-issue-triage#let-the-agent-run-the-loop) needs only a model, a prompt and tools.
 
 ## Run it
 
-Set the project up as in the [quick start](/docs/labs/agents/quick-start?ref=docs-labs-agents-recipes-issue-triage#install), in a Next.js app.
+Set the project up as in the [quick start](/docs/labs/agents/quick-start?ref=docs-labs-agents-recipes-issue-triage#1-install-the-packages), in a Next.js app.
 
 ```bash
 export ANTHROPIC_API_KEY=sk-ant-...
@@ -192,11 +196,11 @@ await inngest.send({
 
 ## Variations
 
-- [Check before acting](/docs/labs/agents/tools?ref=docs-labs-agents-recipes-issue-triage#check-before-acting) wraps `comment` so it refuses text that looks like a secret.
+- [Check before acting](/docs/labs/agents/tools?ref=docs-labs-agents-recipes-issue-triage#check-a-call-before-it-acts) wraps `comment` so it refuses text that looks like a secret.
 - [Scheduled watcher](/docs/labs/agents/recipes/scheduled-watcher?ref=docs-labs-agents-recipes-issue-triage) watches for stale pull requests on a schedule.
 - [Coding agent](/docs/labs/agents/recipes/coding-agent?ref=docs-labs-agents-recipes-issue-triage) opens a branch for simple bugs.
 
-## Learn more
+## Next steps
 
 - [Agents](/docs/labs/agents/agents?ref=docs-labs-agents-recipes-issue-triage)
 - [Tools](/docs/labs/agents/tools?ref=docs-labs-agents-recipes-issue-triage)

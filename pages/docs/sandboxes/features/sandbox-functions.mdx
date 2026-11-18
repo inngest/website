@@ -1,15 +1,15 @@
 import { AnnotatedCode, Annotation } from "shared/Docs/mdx";
 
 export const metaTitle = "Reusable sandbox functions | Sandboxes";
-export const description = "Wrap a runner in a plain function to get typed, reusable sandbox code you call like a step.";
+export const description = "Wrap a Sandbox runner in a plain function to get typed, reusable Sandbox code that you call like a step from any Inngest function.";
 
 # Reusable sandbox functions
 
-> Wrap a runner in a function and call it like a step.
+> Wrap a runner in a typed function, and call it like a step from any Inngest function.
 
-- **Typed end to end.** Arguments in, output schema out. [Define it →](#define-it)
-- **Works anywhere in a run.** `step` is a global. [Call it →](#call-it)
-- **Just a function.** Export it, test it, share it. No new API.
+A [runner](/docs/sandboxes/features/run-code) such as `step.sandbox.python()` is a durable step, and `step` is available as a global. So you can wrap a runner in an ordinary function with typed arguments and a typed result, export it, and call it from any function. There's no new API to learn.
+
+## Define the function
 
 <AnnotatedCode>
 
@@ -28,23 +28,21 @@ return {"mean": statistics.mean(values), "stdev": statistics.stdev(values)}`, {
 };
 ```
 
-<Annotation id="args" lines="6" tease="typed input" title="Your arguments are the input" href="#define-it" linkText="Define it">
-The signature types what callers pass.
+<Annotation id="args" lines="6" tease="typed input" title="Arguments">
+The function's signature types what callers pass. Take an `id`, so each call is a separately named step.
 </Annotation>
 
-<Annotation id="runner" lines="7-9" tease="a runner" title="Code with a top-level return" href="/docs/sandboxes/features/run-code?ref=docs-sandboxes-sandbox-functions#return-a-value" linkText="Return a value">
-`input` keys become variables. Same rules as the runners.
+<Annotation id="runner" lines="7-9" tease="a runner" title="The runner" href="/docs/sandboxes/features/run-code#return-a-value" linkText="Return a value">
+Each `input` key becomes a variable in the code, and a top-level `return` sends the result back.
 </Annotation>
 
-<Annotation id="schema" lines="11" tease="typed output" title="An output schema" href="/docs/sandboxes/features/run-code?ref=docs-sandboxes-sandbox-functions#options" linkText="Runner options">
-A mismatch fails the step.
+<Annotation id="schema" lines="10" tease="typed output" title="Output schema" href="/docs/sandboxes/features/run-code#options" linkText="Runner options">
+Types the result, and fails the step if the returned value doesn't match.
 </Annotation>
 
 </AnnotatedCode>
 
-## Define it
-
-Pass `runtime`, `from`, `tools`, and the other [runner options](/docs/sandboxes/features/run-code?ref=docs-sandboxes-sandbox-functions#options) on the runner call inside the function.
+Set `runtime`, `from`, `tools`, and the other [runner options](/docs/sandboxes/features/run-code#options) on the runner call inside the function.
 
 ## Call it
 
@@ -54,9 +52,9 @@ import { stats } from "../sandbox/stats";
 const { mean } = await stats("stats", [1, 2, 3, 4]);
 ```
 
-A non-zero exit fails the step, per [Exit codes](/docs/sandboxes/features/exit-codes?ref=docs-sandboxes-sandbox-functions).
+Each call is a durable step. A non-zero exit code fails the step, as described in [Exit codes and errors](/docs/sandboxes/features/exit-codes).
 
-## How it works
+## Next steps
 
-- The function calls `step.sandbox.python` through the global `step`, so each call is a durable step.
-- Give an LLM your code through [Tools and code mode](/docs/sandboxes/features/tools?ref=docs-sandboxes-sandbox-functions).
+- [Run code](/docs/sandboxes/features/run-code) covers every runner and option.
+- [Tools](/docs/sandboxes/features/tools) lets code in a Sandbox call your functions.

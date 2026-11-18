@@ -8,7 +8,7 @@ export const description = "Reference for Inngest Agents sandboxes, code tools, 
 > Signatures, options and defaults for sandboxes, code tools, repos, tools, MCP servers, secrets and skills.
 
 <Info>
-  Inngest Agents is experimental and moves fast. Install it with `npm install inngest@agents` - the primitives are not in `inngest@latest` - and import it from `inngest/experimental/agents`. The API may change between releases. [What's Labs?](/docs/labs?ref=docs-labs-agents-reference-sandboxes)
+  Inngest Agents is an Inngest Labs project: early, moving fast, and shaped by your feedback. Install it with `npm install inngest@agents`, and import it from `inngest/experimental/agents`. [What's Labs?](/docs/labs?ref=docs-labs-agents-reference-sandboxes)
 </Info>
 
 The agent definition, handler and loop are in the [Agents reference](/docs/labs/agents/reference?ref=docs-labs-agents-reference-sandboxes). The sandbox platform itself is in the [Sandboxes reference](/docs/sandboxes/reference?ref=docs-labs-agents-reference-sandboxes).
@@ -35,7 +35,7 @@ Names here come from `inngest/experimental`, except `sandbox`, `skills`, `agent`
 
 ## sandbox()
 
-Defines a sandbox at module scope. It creates nothing; an agent that lists it gets a machine the first time something uses it. [Sandboxes →](/docs/labs/agents/sandboxes?ref=docs-labs-agents-reference-sandboxes)
+Defines a sandbox at module scope. It creates nothing; an agent that lists it gets a machine the first time something uses it. See [Sandboxes](/docs/labs/agents/sandboxes?ref=docs-labs-agents-reference-sandboxes).
 
 ```typescript {{ title: "Signature" }}
 sandbox<TTool>(
@@ -114,7 +114,7 @@ Types: `SandboxDefinition`, `SandboxDefinitionOptions`, `SandboxSetup`, `Sandbox
 
 ## Sandboxes on an agent
 
-An agent's `sandboxes` is a record. The key names the sandbox in its tool names and in a handler. The record takes a value, or a function of `{ event, thread }` that may be async and runs once when a run starts. [Agents reference →](/docs/labs/agents/reference?ref=docs-labs-agents-reference-sandboxes#the-definition)
+An agent's `sandboxes` is a record. The key names the sandbox in its tool names and in a handler. The record takes a value, or a function of `{ event, thread }` that may be async and runs once when a run starts. See [Agents reference](/docs/labs/agents/reference?ref=docs-labs-agents-reference-sandboxes#the-definition).
 
 A value in the record is a definition, or a binding:
 
@@ -175,7 +175,7 @@ Types: `SandboxBinding`, `SandboxStart`, `SandboxToolsOf`.
 
 ## The handler's sandbox
 
-In a handler, `sandboxes.<key>` is the thread's sandbox. It opens on first use, so reading it starts nothing. [Sandboxes →](/docs/labs/agents/sandboxes?ref=docs-labs-agents-reference-sandboxes#a-sandbox-for-your-code)
+In a handler, `sandboxes.<key>` is the thread's sandbox. It opens on first use, so reading it starts nothing. See [Sandboxes](/docs/labs/agents/sandboxes?ref=docs-labs-agents-reference-sandboxes#run-commands-from-your-handler).
 
 ```typescript {{ title: "Signature" }}
 interface AgentSandbox {
@@ -202,7 +202,7 @@ interface AgentSandboxWithRepo extends AgentSandbox {
 | `recycle()` | Sets the sandbox aside at once, as `idle` says. The next use brings it back. Throws if the snapshot or destroy fails. |
 | `close()` | Saves the sandbox as `idle` says, then destroys it, if it was created. Call it only when the run is ending. |
 
-`gh` is the comment helper from [Inboxes](/docs/labs/agents/inboxes?ref=docs-labs-agents-reference-sandboxes#answer-every-message).
+`gh` is the comment helper from [Inboxes](/docs/labs/agents/inboxes?ref=docs-labs-agents-reference-sandboxes#handle-each-message).
 
 ```typescript {{ title: "inngest/agents/fixer.ts" }}
 import { PushRefusedError } from "inngest/experimental/agents";
@@ -261,7 +261,7 @@ Commands from `commands`, `$` and the tools carry the sandbox's `shims`. Types: 
 
 ## Code tools
 
-`sandbox.tools` holds the built-in tools as ready-made values. List the ones you want in `sandbox({ tools })`, beside tools of your own; a sandbox with no `tools` brings `run`. Configure one with `.with(options)`, which gives a new tool and adds to the options it already has. [Sandboxes →](/docs/labs/agents/sandboxes?ref=docs-labs-agents-reference-sandboxes)
+`sandbox.tools` holds the built-in tools as ready-made values. List the ones you want in `sandbox({ tools })`, beside tools of your own; a sandbox with no `tools` brings `run`. Configure one with `.with(options)`, which gives a new tool and adds to the options it already has. See [Sandboxes](/docs/labs/agents/sandboxes?ref=docs-labs-agents-reference-sandboxes).
 
 ```typescript {{ title: "Signature" }}
 sandbox.tools.run: ConfiguredTool<SandboxTool, RunToolOptions>
@@ -345,7 +345,7 @@ A command with a `timeout` over five minutes runs as a process that steps follow
 
 ## Repos
 
-A sandbox's `repo` is checked out when the sandbox starts. The write token never enters the sandbox: your app makes the push, after `policy` has looked at it. [Sandboxes →](/docs/labs/agents/sandboxes?ref=docs-labs-agents-reference-sandboxes)
+A sandbox's `repo` is checked out when the sandbox starts. The write token never enters the sandbox: your app makes the push, after `policy` has looked at it. See [Sandboxes](/docs/labs/agents/sandboxes?ref=docs-labs-agents-reference-sandboxes).
 
 `repo` takes a value, or a function of `{ event, thread }` that may be async. The function runs once when a run starts and must be pure.
 
@@ -440,7 +440,7 @@ Types: `RepoOptions`, `RepoAuth`, `PushResult`, `PushRefusedError`.
 
 ## Tools
 
-A tool is defined once and works from the model and from sandbox code. The key in the `tools` record names it on both sides. [Tools →](/docs/labs/agents/tools?ref=docs-labs-agents-reference-sandboxes)
+A tool is defined once and works from the model and from sandbox code. The key in the `tools` record names it on both sides. See [Tools](/docs/labs/agents/tools?ref=docs-labs-agents-reference-sandboxes).
 
 | Call | Description |
 | --- | --- |
@@ -679,7 +679,7 @@ Types: `SharedTool`, `SharedToolDefinition`, `SharedToolContext`.
 
 ## MCP
 
-`tool.mcp()` turns a remote MCP server into tools. Put it in a `tools` record and the model and sandbox code get every tool the server offers, named `<key>_<tool>`. [Tools →](/docs/labs/agents/tools?ref=docs-labs-agents-reference-sandboxes)
+`tool.mcp()` turns a remote MCP server into tools. Put it in a `tools` record and the model and sandbox code get every tool the server offers, named `<key>_<tool>`. See [Tools](/docs/labs/agents/tools?ref=docs-labs-agents-reference-sandboxes).
 
 ```typescript {{ title: "Signature" }}
 tool.mcp(options: McpServerOptions): McpServer
@@ -726,7 +726,7 @@ Types: `McpServer`, `McpServerOptions`, `McpAuth`.
 | `user` | required | A stable ID for the person, or `({ runId, event, thread }) => string`. A function gets the run's ID, its trigger event and `thread` (`{ key: string }`), and runs for every call. |
 | `redirectUri` | required | The URL of your [callback route](#the-callback-route). Register it with the server when it has no dynamic registration. |
 | `onNeedsAuthorization` | none | `({ url, server, thread, user }) => void \| Promise<void>`. Gets the sign-in link of a person with no token. [Deliver the link](#deliver-the-link) |
-| `store` | required | Where tokens, registered clients and pending sign-ins live. There is no built-in store to default to; implement `McpOAuthStore` over your own durable storage. [Bring your own store](#bring-your-own-store) |
+| `store` | required | Where tokens, registered clients, and pending sign-ins are kept. Implement `McpOAuthStore` over your own durable storage. [Bring your own store](#bring-your-own-store) |
 | `clientId` | registered for you | An OAuth client you registered, for servers without dynamic registration. |
 | `clientSecret` | none | That client's secret, as a string or a `secret()`. |
 | `scopes` | the server's | Plus `offline_access` when offered, so the token can refresh. |
@@ -743,7 +743,7 @@ Types: `McpServer`, `McpServerOptions`, `McpAuth`.
 
 ### Bring your own store
 
-There is no built-in token store in this iteration — no KV service to lean on, for this or anything else. What survives is the interface `tool.mcp`'s `auth.oauth.store` and `mcpCallback({ store })` both take: three methods, and you implement them over durable storage you already run (Redis, a table in your own database).
+Per-user sign-in needs a token store. Implement the three methods below over durable storage you already run, such as Redis or a database table, and pass the same store to `tool.mcp`'s `auth.oauth.store` and to `mcpCallback({ store })`.
 
 ```typescript {{ title: "Signature" }}
 interface McpOAuthStore {
@@ -758,10 +758,10 @@ interface McpOAuthStore {
 ```
 
 - `get(key)`: the value, or `null` if there is none.
-- `compareAndSet(key, expected, next)`: writes `next` only when the current value is exactly `expected` (`null` meaning "no value yet"), and returns whether it wrote. This has to be a true atomic compare-and-set — two token refreshes racing on the same key is exactly the case this exists to prevent.
+- `compareAndSet(key, expected, next)`: writes `next` only when the current value is exactly `expected` (`null` meaning "no value yet"), and returns whether it wrote. It must be atomic, because two token refreshes can race on the same key.
 - `delete(key)`: removes the key.
-- Give the same store instance to both `tool.mcp`'s `auth.oauth.store` and `mcpCallback({ store })` — they read and write the same keys. [MCP assistant →](/docs/labs/agents/recipes/mcp-assistant?ref=docs-labs-agents-reference-sandboxes) builds one over Redis in about twenty lines, with a Lua script for the atomic compare-and-set.
-- Encrypting what you store (as the values are raw OAuth tokens) is your responsibility now too — there's no `encryptionKey` option wrapping this for you.
+- Give the same store to `tool.mcp`'s `auth.oauth.store` and `mcpCallback({ store })`, because they read and write the same keys. The [MCP assistant recipe](/docs/labs/agents/recipes/mcp-assistant?ref=docs-labs-agents-reference-sandboxes) builds one over Redis, with a Lua script for the compare-and-set.
+- The values are raw OAuth tokens. Encrypt them before you store them.
 
 ### Deliver the link
 
@@ -770,12 +770,14 @@ interface McpOAuthStore {
 ```typescript {{ title: "inngest/tools/notion.ts" }}
 import { tool } from "inngest/experimental";
 import { chat } from "../lib/chat";
+import { oauthStore } from "../lib/oauthStore";
 
 export const notion = tool.mcp({
   id: "notion",
   url: "https://mcp.notion.com/mcp",
   auth: {
     oauth: {
+      store: oauthStore,
       user: ({ event }) => {
         return (event?.data as { user: string }).user;
       },
@@ -839,13 +841,13 @@ secret(source: string | (() => string | Promise<string>)): Secret
 - `secret("NAME")` reads the environment variable `NAME` inside the call. A function gives a value that depends on the caller.
 - A `Secret` printed or serialized gives its label, so a token never lands in a log, a prompt or a trace.
 - `secret()` is accepted wherever a token goes, such as `auth.bearer`, `auth.headers` and `clientSecret` in [MCP](#mcp), and the tokens of a repo's [`RepoAuth`](#repo-auth).
-- Once a value is inside the sandbox, code there can read it. Prefer a tool, a [shim](#shims) or a short-lived token for anything sensitive. [Secrets in Sandboxes →](/docs/sandboxes/features/secrets?ref=docs-labs-agents-reference-sandboxes)
+- Once a value is inside the sandbox, code there can read it. Prefer a tool, a [shim](#shims) or a short-lived token for anything sensitive. See [Secrets in Sandboxes](/docs/sandboxes/features/secrets?ref=docs-labs-agents-reference-sandboxes).
 
 Types: `Secret`, `SecretSource`.
 
 ## Skills
 
-A skill is know-how the model reads, in the `SKILL.md` format: a name, a description, instructions, and optional scripts and files. A skill never adds a tool, and its scripts act only by calling tools. [Skills →](/docs/labs/agents/skills?ref=docs-labs-agents-reference-sandboxes)
+A skill is know-how the model reads, in the `SKILL.md` format: a name, a description, instructions, and optional scripts and files. A skill never adds a tool, and its scripts act only by calling tools. See [Skills](/docs/labs/agents/skills?ref=docs-labs-agents-reference-sandboxes).
 
 ```typescript {{ title: "Signature" }}
 skills.folder(path: string): SkillSource
@@ -855,7 +857,7 @@ skills.folder(path: string): SkillSource
 - Two skills with one name are an error when the agent is defined.
 - The model sees every skill's name and description in its prompt. `open_skill({ name: string }): string` returns one skill's body. It is the same tool for every skill, and only an agent with skills has it. It works with no sandbox.
 - A skill's files are placed in `/skills/<name>/` in the first sandbox the model can use among the agent's listed sandboxes. An agent with skills and no sandbox gets instructions only.
-- The agent's card lists each skill's name and description. [Agent discovery →](/docs/labs/agents/agent-discovery?ref=docs-labs-agents-reference-sandboxes)
+- The agent's card lists each skill's name and description. See [Agent discovery](/docs/labs/agents/agent-discovery?ref=docs-labs-agents-reference-sandboxes).
 
 ```md
 ---
@@ -893,11 +895,11 @@ export const support = agents.agent({
 | `image.inngest(name)` | An image Inngest maintains, such as `image.inngest("base")`. |
 | `image.custom(ref)` | An image in your workspace: `"my-image"`, `"my-image:v1"` or `"my-image@sha256:<hex>"`. |
 
-`SandboxImage` is `{ kind: "inngest/sandbox.image", ref }`. [Base images →](/docs/sandboxes/features/base-images?ref=docs-labs-agents-reference-sandboxes)
+`SandboxImage` is `{ kind: "inngest/sandbox.image", ref }`. See [Base images](/docs/sandboxes/features/base-images?ref=docs-labs-agents-reference-sandboxes).
 
 ## Sandbox middleware
 
-Enables `step.sandbox`, `group.sandbox` and the runners, and serves the cleanup function. An app whose agents list sandboxes adds it to the client. [Sandboxes reference →](/docs/sandboxes/reference?ref=docs-labs-agents-reference-sandboxes)
+Enables `step.sandbox`, `group.sandbox` and the runners, and serves the cleanup function. An app whose agents list sandboxes adds it to the client. See [Sandboxes reference](/docs/sandboxes/reference?ref=docs-labs-agents-reference-sandboxes).
 
 ```typescript {{ title: "Signature" }}
 sandboxMiddleware(): MiddlewareClass
@@ -907,18 +909,18 @@ createSandboxCleanup(client: Inngest): DeferredFunction
 | Export | Description |
 | --- | --- |
 | `sandboxMiddleware()` | Add to `middleware` of `new Inngest(...)`. It adds `step.sandbox`, `step.sandbox.python`, `step.sandbox.typescript` and `group.sandbox`. |
-| `createSandboxCleanup(client)` | The function that destroys the sandboxes of scopes whose run ended early (cancel, timeout). An app with the middleware serves it automatically; pass it to `serve()` only when serving without the client's middleware. It is experimental. |
+| `createSandboxCleanup(client)` | The function that destroys the sandboxes of scopes whose run ended early (cancel, timeout). An app with the middleware serves it automatically; pass it to `serve()` only when serving without the client's middleware. It's experimental. |
 
 Using the global `step.sandbox` without the middleware throws an error that says to add it. The direct `inngest.sandboxes` client does not need the middleware.
 
 ```typescript {{ title: "inngest/client.ts" }}
 import { Inngest } from "inngest";
-import { sandboxMiddleware } from "inngest/experimental";
+import { inboxMiddleware, sandboxMiddleware } from "inngest/experimental";
 import { createAgents } from "inngest/experimental/agents";
 
 export const inngest = new Inngest({
   id: "coder",
-  middleware: [sandboxMiddleware()],
+  middleware: [inboxMiddleware(), sandboxMiddleware()],
 });
 
 export const agents = createAgents(inngest);
@@ -973,11 +975,11 @@ interface DurableSandboxTools {
 
 `DurableSandboxProcess` has `signal`, `wait`, `getOutput`. `DurableSandboxSnapshot` has `waitUntilReady`, `delete`, `clone`, and the snapshot resource fields.
 
-The types of these methods, their options and their results are named after the call: `SandboxCommandOptions`, `SandboxCommandResult`, `SandboxProcessStartOptions` and `SandboxSnapshotCreateOptions`. [Snapshots and restore →](/docs/sandboxes/features/snapshots-and-restore?ref=docs-labs-agents-reference-sandboxes)
+The types of these methods, their options and their results are named after the call: `SandboxCommandOptions`, `SandboxCommandResult`, `SandboxProcessStartOptions` and `SandboxSnapshotCreateOptions`. See [Snapshots and restore](/docs/sandboxes/features/snapshots-and-restore?ref=docs-labs-agents-reference-sandboxes).
 
 ## Commands with dollar
 
-`sandbox.$` runs a command as one step. [Exit codes →](/docs/sandboxes/features/exit-codes?ref=docs-labs-agents-reference-sandboxes)
+`sandbox.$` runs a command as one step. See [Exit codes](/docs/sandboxes/features/exit-codes?ref=docs-labs-agents-reference-sandboxes).
 
 | Form | Description |
 | --- | --- |
