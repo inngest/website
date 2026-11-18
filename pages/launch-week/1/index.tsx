@@ -8,6 +8,7 @@ import Logo from "src/shared/Icons/Logo";
 import Container from "src/shared/layout/Container";
 import Footer from "src/shared/Footer";
 import type { PageProps } from "src/shared/types";
+import { refLinkProps } from "@/utils/v1/ref";
 
 export async function getStaticProps(): Promise<
   GetStaticPropsResult<PageProps>
@@ -182,7 +183,7 @@ function RowItem({
           orientation === "right" ? "md:order-2" : "justify-end"
         )}
       >
-        <a href={`${buttonHref}?ref=launch-week`}>
+        <a {...refLinkProps(`${buttonHref}?ref=launch-week`)}>
           <Image
             src={image}
             height={220}
@@ -226,14 +227,14 @@ function RowItem({
         </div>
         <div className="flex flex-row gap-x-10 gap-y-4 items-center flex-wrap">
           <a
-            href={`${buttonHref}?ref=launch-week`}
+            {...refLinkProps(`${buttonHref}?ref=launch-week`)}
             className="px-3 py-2 text-slate-950 font-medium rounded-md shadow-sm bg-gradient-to-r from-[#5EEAD4] to-[#FDE68A] transition-all hover:from-[#B0F4E9] hover:to-[#FBEDB7]"
           >
             Read blog post
           </a>
           {docsHref && (
             <a
-              href={docsHref}
+              {...refLinkProps(docsHref)}
               className="px-3 py-2 text-white hover:text-slate-100"
             >
               Documentation

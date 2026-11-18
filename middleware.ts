@@ -1,17 +1,20 @@
 import { NextRequest, NextResponse } from "next/server";
-import { resolveDocsPath } from "@/redirects.mjs";
+import { resolveDocsPath, TS_STABLE_VERSION } from "@/redirects.mjs";
+import { canonicalDocsPath } from "@/utils/docsCanonical.mjs";
 
 /**
  * Middleware for AI agent content negotiation and SEO canonicalization.
  *
  * Responsibilities:
  *
- * 1. SEO canonicalization (all pages)
- *    Emits a `Link: <canonical>; rel="canonical"` HTTP response header (clean
- *    pathname, no query params) as a belt-and-suspenders signal to crawlers.
- *    The HTML `<link rel="canonical">` tag itself comes from the root layout's
- *    `metadata.alternates.canonical` (app router) and `pages/_app.tsx` (pages
- *    router) — not from middleware.
+ * 1. SEO canonicalization (markdown mirrors only)
+ *    Emits a `Link: <canonical>; rel="canonical"` HTTP response header on
+ *    /docs-markdown and /blog-markdown, which have no HTML to carry a tag.
+ *    HTML pages declare their canonical in the page itself: the root layout's
+ *    `metadata.alternates.canonical` (app router), the blog post metadata and
+ *    `pages/_app.tsx` (pages router). Those know about page-level overrides
+ *    (e.g. a syndicated post's `canonical_url`); a header built here from the
+ *    request path cannot, so it is not sent on HTML pages.
  *
  * 2. Markdown serving for AI agents / AEO (blog + docs only)
  *
@@ -40,8 +43,51 @@ function acceptsMarkdown(req: NextRequest): boolean {
   return accept.includes("text/markdown");
 }
 
+/**
+ * The employee preview of 12 Days of Workflows. It shows every door
+ * before its day, so it sits behind HTTP Basic Auth. Any username works;
+ * the password is the TWELVE_DAYS_TEAM_PASSWORD env var in Vercel. With
+ * the var unset it stays locked everywhere except local dev.
+ */
+const TEAM_PREVIEW_PATH = /^\/12-days-of-workflows\/team(\/|$)/;
+
+function teamPreviewGate(req: NextRequest): NextResponse | null {
+  const password = process.env.TWELVE_DAYS_TEAM_PASSWORD;
+  if (!password && process.env.NODE_ENV === "development") return null;
+
+  const header = req.headers.get("authorization") ?? "";
+  if (password && header.startsWith("Basic ")) {
+    try {
+      const decoded = atob(header.slice("Basic ".length));
+      const given = decoded.slice(decoded.indexOf(":") + 1);
+      if (given === password) return null;
+    } catch {
+      // Malformed header: fall through to the challenge.
+    }
+  }
+
+  return new NextResponse("Employees only.", {
+    status: 401,
+    headers: {
+      "WWW-Authenticate": 'Basic realm="12 Days of Workflows team preview"',
+      "Cache-Control": "no-store",
+      "X-Robots-Tag": "noindex, nofollow",
+    },
+  });
+}
+
 export function middleware(req: NextRequest) {
   const { pathname } = req.nextUrl;
+
+  if (TEAM_PREVIEW_PATH.test(pathname)) {
+    const denied = teamPreviewGate(req);
+    if (denied) return denied;
+    const res = NextResponse.next();
+    // Never cache the unlocked page where someone else could get it.
+    res.headers.set("Cache-Control", "private, no-store");
+    res.headers.set("X-Robots-Tag", "noindex, nofollow");
+    return res;
+  }
 
   // ── Strategy A: .md extension routes ──────────────────────────────────────
 
@@ -83,28 +129,38 @@ export function middleware(req: NextRequest) {
     }
   }
 
-  // ── Pass-through: add Vary, canonical Link, and markdown alternate headers ─
+  // ── Pass-through: add Vary, mirror canonical, and markdown alternate headers
 
   const res = NextResponse.next();
   res.headers.set("Vary", "Accept");
 
-  // Canonical: always the clean pathname with no query params. For the
-  // markdown mirrors (/docs-markdown, /blog-markdown), canonicalize to the
-  // corresponding HTML page so crawlers don't index the raw markdown as a
-  // duplicate.
+  // Canonical header for the markdown mirrors (/docs-markdown,
+  // /blog-markdown) only: point crawlers at the corresponding HTML page so
+  // they don't index the raw markdown as a duplicate. HTML pages carry their
+  // own canonical tag (see the note at the top of this file).
   // For /docs-markdown the canonical must name where the doc actually lives:
   // the route serves moved docs in place (see resolveDocsPath), so canonicalising
   // to the requested slug would point crawlers at a URL that only 308s.
   const docsMarkdownSlug = pathname.match(/^\/docs-markdown(?:\/(.*))?$/);
-  const canonicalPathname = docsMarkdownSlug
-    ? `/docs${
-        docsMarkdownSlug[1] ? `/${resolveDocsPath(docsMarkdownSlug[1])}` : ""
-      }`
-    : pathname.replace(/^\/blog-markdown(\/|$)/, "/blog$1");
-  res.headers.set(
-    "Link",
-    `<${SITE_ORIGIN}${canonicalPathname}>; rel="canonical"`
-  );
+  const isBlogMarkdown = /^\/blog-markdown(\/|$)/.test(pathname);
+  if (docsMarkdownSlug || isBlogMarkdown) {
+    // The stable TypeScript reference canonicalises to its versionless URL
+    // (utils/docsCanonical.mjs), matching the HTML canonical tag.
+    const canonicalPathname = canonicalDocsPath(
+      docsMarkdownSlug
+        ? `/docs${
+            docsMarkdownSlug[1]
+              ? `/${resolveDocsPath(docsMarkdownSlug[1])}`
+              : ""
+          }`
+        : pathname.replace(/^\/blog-markdown(\/|$)/, "/blog$1"),
+      TS_STABLE_VERSION
+    );
+    res.headers.set(
+      "Link",
+      `<${SITE_ORIGIN}${canonicalPathname}>; rel="canonical"`
+    );
+  }
 
   // Markdown alternate link for blog/docs so agents can discover raw content.
   if (/^\/blog\/[^/]+$/.test(pathname)) {

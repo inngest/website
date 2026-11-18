@@ -101,7 +101,7 @@ That mitigation introduced a further problem. The new route reaches the database
 - **October 9, 21:05–21:49:** Function execution halted and event processing was delayed for most accounts.
 - **October 10, 14:00–14:48 and 15:30–16:25:** Run scheduling and queue processing were delayed for most accounts.
 - **October 10, 21:07 – October 11, 04:17:** Intermittent delays.
-- **Runs left `Running`:** some runs that were in progress during these windows were left `Running` and will not continue on their own. You can [cancel](/docs/guides/cancel-running-functions?ref=blog-incident-report-for-october-9-and-10-2026) and [replay](/docs/platform-and-operations/replay-runs-in-bulk?ref=blog-incident-report-for-october-9-and-10-2026) them yourself; replayed runs start again from the beginning, so steps that already completed will run again. If you need assistance, please contact [our support team](https://support.inngest.com).
+- **Runs left `Running`:** some runs that were in progress during these windows were left `Running` and will not continue on their own. You can [cancel](/docs/durable-execution/guides-and-advanced/cancellation/bulk-cancellation?ref=blog-incident-report-for-october-9-and-10-2026) and [replay](/docs/platform-and-operations/replay-runs-in-bulk?ref=blog-incident-report-for-october-9-and-10-2026) them yourself; replayed runs start again from the beginning, so steps that already completed will run again. If you need assistance, please contact [our support team](https://support.inngest.com).
 
 We apologize for the disruption. The work above is aimed at removing an entire class of cross-data-center dependencies behind both incidents.
 

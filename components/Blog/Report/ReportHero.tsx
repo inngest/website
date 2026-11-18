@@ -42,11 +42,11 @@ export function ReportHero({ author, date, readingTime }: Props = {}) {
           <p className="font-mono text-xs uppercase tracking-[0.25em] text-white/80">
             Benchmark report · 2026
           </p>
-          <h2 className="mt-4 font-whyteInktrap text-4xl font-black leading-[1.05] text-white sm:text-5xl md:text-6xl">
+          <h1 className="mt-4 font-whyteInktrap text-4xl font-black leading-[1.05] text-white sm:text-5xl md:text-6xl">
             AI in Production:
             <br />
             The 2026 Benchmark Report
-          </h2>
+          </h1>
           <p className="mt-6 max-w-2xl text-base leading-relaxed text-white/90 md:text-lg">
             We surveyed 130 backend, full-stack, and AI engineers about what it
             takes to run reliable AI workflows in production—and which

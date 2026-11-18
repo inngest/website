@@ -6,6 +6,7 @@ import Button from "@/components/v1/Button";
 import Chip from "@/components/v1/sections/shared/Chip";
 import EventCardLarge from "@/components/v1/sections/Events/EventCardLarge";
 import { ALL_EVENTS, isPastEvent } from "@/components/v1/sections/Events/data";
+import { refLinkProps } from "@/utils/v1/ref";
 
 const COVER_IMAGE = "/assets/v1/events/the-ai-conference-2026.png";
 
@@ -97,7 +98,7 @@ export default function TheAIConference2026() {
               ) : (
                 <Button asChild variant="accent" className="self-start">
                   <a
-                    href={REGISTER_URL}
+                    {...refLinkProps(REGISTER_URL)}
                     target="_blank"
                     rel="noopener noreferrer"
                   >

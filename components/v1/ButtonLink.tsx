@@ -7,6 +7,7 @@ import {
   type ReactNode,
 } from "react";
 import Button, { type ButtonVariant, type ButtonSize } from "./Button";
+import { refLinkProps } from "@/utils/v1/ref";
 
 /**
  * `Button`-styled Next.js `<Link>`. Composes `<Button asChild>` with
@@ -38,7 +39,7 @@ const ButtonLink = forwardRef<HTMLAnchorElement, ButtonLinkProps>(
   ) {
     return (
       <Button asChild variant={variant} size={size} wide={wide} className={className}>
-        <Link ref={ref} href={href} {...linkProps}>
+        <Link ref={ref} {...refLinkProps(href)} {...linkProps}>
           {children}
         </Link>
       </Button>

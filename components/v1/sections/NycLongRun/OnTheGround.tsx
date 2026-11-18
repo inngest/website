@@ -14,6 +14,7 @@ import {
   NYC_CAMPAIGN,
   NYC_CAMPAIGN_CARDS,
 } from "@/components/v1/sections/NycLongRun/data";
+import { refLinkProps } from "@/utils/v1/ref";
 
 /**
  * Section 06 — the San Francisco programming.
@@ -113,7 +114,7 @@ export default function OnTheGround() {
 
               {card.cta && (
                 <Link
-                  href={card.cta.href}
+                  {...refLinkProps(card.cta.href)}
                   // Founders RC is someone else's site: open it in a new
                   // tab and drop the opener reference.
                   {...(/^https?:/.test(card.cta.href)

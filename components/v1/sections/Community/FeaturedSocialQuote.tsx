@@ -15,6 +15,7 @@ import {
   RiRedditFill,
   RiTwitterXFill,
 } from "@remixicon/react";
+import { refLinkProps } from "@/utils/v1/ref";
 
 const SOURCE_LABEL: Record<SocialQuoteSource, string> = {
   x: "X",
@@ -48,7 +49,7 @@ export default function FeaturedSocialQuote({
 
   return (
     <a
-      href={sourceHref}
+      {...refLinkProps(sourceHref)}
       target="_blank"
       rel="noopener noreferrer"
       onPointerMove={onCursorTiltMove}

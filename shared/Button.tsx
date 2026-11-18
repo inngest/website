@@ -1,5 +1,6 @@
 import { AnchorHTMLAttributes } from "react";
 import { RiArrowRightSLine, RiArrowLeftSLine } from "@remixicon/react";
+import { refLinkProps } from "@/utils/v1/ref";
 
 export type ButtonVariant =
   | "primary"
@@ -65,7 +66,7 @@ export function Button({
   return (
     <a
       target={target}
-      href={props.href}
+      {...refLinkProps(props.href)}
       className={`group button inline-flex items-center justify-center gap-0.5 whitespace-nowrap font-medium tracking-tight ${variants[variant]} ${sizes[size]} ${props.className} ${width}`}
     >
       {arrow && arrow === "left" ? (

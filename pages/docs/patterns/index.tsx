@@ -12,6 +12,7 @@ import AgentView from "../../../shared/Patterns/AgentView";
 import { indexMarkdown } from "../../../shared/Patterns/markdown";
 import { useUnreleasedLabels } from "../../../shared/Docs/Unreleased";
 import "../../../shared/Patterns/patterns-docs.css";
+import { refLinkProps } from "@/utils/v1/ref";
 
 const META_DESCRIPTION =
   "Architectural patterns for Inngest: AI agents, durable workflows, fan-out, scheduling, flow control, and background jobs, with tradeoffs and code examples.";
@@ -89,7 +90,9 @@ export default function PatternsLanding() {
       {featuredSection && featuredPattern && (
         <Link
           className="feat"
-          href={`/docs/patterns/${featuredSection.id}/${featuredPattern.slug}`}
+          {...refLinkProps(
+            `/docs/patterns/${featuredSection.id}/${featuredPattern.slug}`
+          )}
           style={scope(featuredSection)}
         >
           <div className="feat-body">
@@ -129,7 +132,7 @@ export default function PatternsLanding() {
           <Link
             key={s.id}
             className="cat-card"
-            href={`/docs/patterns/${s.id}`}
+            {...refLinkProps(`/docs/patterns/${s.id}`)}
             style={scope(s)}
           >
             <div className="cat-card-head">

@@ -35,14 +35,14 @@ const REASONS: {
     id: "flow-control",
     title: "Flow control",
     body: "Concurrency, throttle, and the other limits you already set apply to sandbox usage, the same way they protect the rest of your system.",
-    href: "/docs/guides/flow-control?ref=sandboxes",
+    href: "/docs/durable-execution/flow-control?ref=sandboxes",
     icon: "/assets/v1/feature-cards/flow-control.svg",
   },
   {
     id: "experiments",
     title: "Experiments and scoring",
     body: "The sandbox, the experiment, and the score are the same code. Grade generated output without handing the run to another product.",
-    href: "/docs/learn/agent-evals?ref=sandboxes",
+    href: "/docs/agent-evals/overview?ref=sandboxes",
     icon: "/assets/v1/primitives/icon-4-human-loop.svg",
   },
   {

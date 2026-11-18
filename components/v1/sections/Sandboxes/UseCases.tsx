@@ -12,6 +12,7 @@ import Section from "@/components/v1/sections/shared/Section";
 import SectionHeader from "@/components/v1/sections/shared/SectionHeader";
 import { V1_HEADER_CONTENT_MT } from "@/components/v1/sections/shared/sectionShell";
 import { reveals } from "@/utils/v1/reveals";
+import { refLinkProps } from "@/utils/v1/ref";
 
 // Same ivory and fractal-noise grain as the hero band (see Hero.tsx).
 const IVORY = "#F3F1EA";
@@ -234,7 +235,7 @@ function UseCaseCard({ item }: { item: typeof CASES[number] }) {
         {/* "Read the docs →" — the site's text-cue vocabulary, linking to
             the specific docs page this case is drawn from. */}
         <Link
-          href={`${item.docsHref}?ref=sandboxes-use-cases`}
+          {...refLinkProps(`${item.docsHref}?ref=sandboxes-use-cases`)}
           className="group/cta text-v1-label-md mt-2 inline-flex w-fit items-center uppercase text-v1-frost hover:text-v1-accent-salmon focus:outline-none focus-visible:text-v1-accent-salmon motion-safe:transition-colors motion-safe:duration-300"
         >
           <span>Read the docs</span>

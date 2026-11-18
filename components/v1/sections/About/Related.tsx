@@ -3,6 +3,7 @@
 import { useState } from "react";
 import { cn } from "@/utils/v1/cn";
 import { RELATED } from "./data";
+import { refLinkProps } from "@/utils/v1/ref";
 
 // Active-state card bg — single pre-composited greydient/dot texture.
 // The original design stacks two source PNGs blended with soft-light;
@@ -92,7 +93,7 @@ function RelatedCard({
 }: RelatedCardProps) {
   return (
     <a
-      href={href}
+      {...refLinkProps(href)}
       onPointerEnter={onActivate}
       onFocus={onActivate}
       onBlur={onDeactivate}

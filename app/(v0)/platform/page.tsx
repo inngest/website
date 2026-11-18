@@ -119,7 +119,7 @@ export default function Page() {
                 text: "Cancel",
               },
               {
-                href: "/docs/reference/typescript/v4/functions/step-wait-for-event",
+                href: "/docs/reference/typescript/functions/step-wait-for-event",
                 text: "Wait for event",
               },
             ]}
@@ -311,7 +311,7 @@ const durableExecutionFeatures = [
     description:
       "Functions can sleep or be scheduled for days, weeks, or months in the future.",
     href: [
-      { href: "/docs/reference/typescript/v4/functions/step-sleep", text: "Sleep" },
+      { href: "/docs/reference/typescript/functions/step-sleep", text: "Sleep" },
       { href: "/docs/durable-execution/guides-and-advanced/events-and-triggers/schedules-and-delayed-starts", text: "Crons" },
     ],
   },
@@ -319,7 +319,7 @@ const durableExecutionFeatures = [
     title: "Pause for additional data",
     description:
       "Create human-in-the-loop flows that wait for additional input.",
-    href: "/docs/reference/typescript/v4/functions/step-wait-for-event",
+    href: "/docs/reference/typescript/functions/step-wait-for-event",
   },
   {
     title: "Automatically retry on errors",

@@ -4,6 +4,7 @@ import { useRouter } from "next/navigation";
 import { cn } from "src/components/utils/classNames";
 import { analytics } from "@/utils/segment";
 import { readFirstTouch } from "src/shared/firstTouch";
+import { getPageRef } from "@/utils/v1/refHandoff";
 import { FORM_TYPE } from "src/components/ContactForm.constants";
 
 // Re-export FORM_TYPE so existing imports of `FORM_TYPE` from this file keep
@@ -125,18 +126,8 @@ export default function ContactForm({
       return;
     }
 
-    let ref = "";
-    try {
-      const u = new URLSearchParams(window.location.search);
-      if (u.get("ref")) {
-        ref = u.get("ref") || "";
-      }
-    } catch (err) {
-      // noop
-      if (DEBUG) {
-        console.error(err);
-      }
-    }
+    // URL `?ref=` first, then a ref handed off by a tracked link click.
+    const ref = getPageRef()?.ref ?? "";
 
     // Pull first-touch attribution from the cookie (set on the visitor's
     // first landing). Used to recover UTMs on submissions that came in via
@@ -211,7 +202,7 @@ export default function ContactForm({
       });
       if (redirectTo) {
         const redirectURL = new URL(redirectTo);
-        // If the URL of the page has a ref param, we override the UTM source
+        // If the page has a ref (URL or link handoff), override the UTM source
         if (ref) {
           redirectURL.searchParams.set("utm_source", ref);
         }

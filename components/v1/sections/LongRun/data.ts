@@ -1,4 +1,5 @@
 import type { NavIconName } from "@/components/v1/NavIcons";
+import type { Slide } from "@/components/v1/sections/shared/TestimonialsCarousel";
 
 /**
  * "Build for the Lonng Run" — step.run.
@@ -27,29 +28,19 @@ export const HERO = {
   },
   // Shows the command itself rather than a generic label, per design.
   installCta: { label: "npm install inngest", command: "npm install inngest" },
-  // The design's run-trace panel: a step.run function with a flaky step
-  // retrying across three attempts before completing.
-  visual: {
-    src: "/assets/v1/sf-long-run/dashboard-header-ui.png",
-    alt: "An Inngest run trace: a step.run function with a flaky step retrying across three attempts before completing, alongside each step's duration.",
-    width: 1255,
-    height: 973,
-  },
 } as const;
 
-/* ── 02 · The product difference ───────────────────────────────────── */
+/* ── 02 · Product demo ────────────────────────────────────────────── */
 
-export const LR_DIFFERENCE = {
-  title: ["Durable doesn't have to be hard."],
+export const LR_DEMO = {
+  title: "Durable doesn't have to be hard.",
   body: "Orchestrating lonng-running code is tough. But you don't need to wrangle a bunch of extra infrastructure to do it. The Inngest SDK is the fastest way to make any code durable and observable by default.",
-  /** Reuses the homepage's before/after assets and the shared slider. */
-  before: {
-    src: "/assets/v1/it-doesnt-have-to-be-hard/before.webp",
-    alt: "Before: the tangle of infrastructure (queues, pubsub, idempotency, error handling, capacity management) you have to build yourself.",
-  },
-  after: {
-    src: "/assets/v1/it-doesnt-have-to-be-hard/after.webp",
-    alt: "After: a single step.run() call replacing all that infrastructure.",
+  cta: {
+    label: "Start Free",
+    // Same destination as the hero's "Start Free" (`/sign-up`, the
+    // site-wide signup redirect), with a section ref tag per the repo
+    // convention so signups from here are attributed separately.
+    href: "/sign-up?ref=long-run-demo",
   },
 } as const;
 
@@ -124,6 +115,39 @@ export const LR_USE_CASES: UseCase[] = [
     imageNote: "Step DAG graph",
   },
 ];
+
+/* ── 04 · Customer testimonial ─────────────────────────────────────── */
+
+/**
+ * Ordinal testimonial. Quote, byline, and headshot come from the Ordinal
+ * case study (content/customers/ordinal.mdx); the body line is the
+ * story's summary from the customers page.
+ */
+export const LR_TESTIMONIAL = {
+  title: "Built for the lonng run.",
+  body: "Two engineers run more than a million executions a month.",
+  slides: [
+    {
+      id: "ordinal",
+      label: "Ordinal",
+      // ordinal-logo-white.svg is 113×31; 32px tall renders it ~117 wide.
+      logo: {
+        src: "/assets/customers/ordinal-logo-white.svg",
+        width: 117,
+        height: 32,
+      },
+      testimonial: {
+        quote:
+          "Inngest let us outsource all the infrastructure under our orchestration, to continue to scale Ordinal with just two engineers. Defining what needs to happen in code just makes sense to me.",
+        authorName: "Francisco Delgado",
+        authorTitle: "Co-founder, Ordinal",
+        caseStudyHref: "/customers/ordinal?ref=long-run-testimonial",
+        portrait: "/assets/customers/ordinal-francisco-delgado.jpg",
+        portraitAlt: "Francisco Delgado, Co-founder at Ordinal",
+      },
+    },
+  ] satisfies Slide[],
+} as const;
 
 /* ── 06 · Learn more ───────────────────────────────────────────────── */
 

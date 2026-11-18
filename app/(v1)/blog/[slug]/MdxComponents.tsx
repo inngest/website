@@ -2,6 +2,7 @@ import Link from "next/link";
 import type { AnchorHTMLAttributes, ReactNode } from "react";
 import { cn } from "@/utils/v1/cn";
 import HlsVideo from "@/shared/HlsVideo";
+import { refLinkProps } from "@/utils/v1/ref";
 
 type BlogButtonProps = AnchorHTMLAttributes<HTMLAnchorElement> & {
   arrow?: "left" | "right";
@@ -29,14 +30,14 @@ export function BlogButton({
 
   if (/^(https?:|mailto:|tel:)/.test(href)) {
     return (
-      <a className={classes} href={href} {...props}>
+      <a className={classes} {...refLinkProps(href)} {...props}>
         {content}
       </a>
     );
   }
 
   return (
-    <Link className={classes} href={href} {...props}>
+    <Link className={classes} {...refLinkProps(href)} {...props}>
       {content}
     </Link>
   );
@@ -181,7 +182,7 @@ export function BlogProductHunt() {
   return (
     <a
       className="not-prose my-6 inline-block"
-      href={PRODUCT_HUNT_URL}
+      {...refLinkProps(PRODUCT_HUNT_URL)}
       target="_blank"
       rel="noopener noreferrer"
     >

@@ -1,5 +1,6 @@
 "use client";
 import { useState, useEffect } from "react";
+import { refLinkProps } from "@/utils/v1/ref";
 
 type Impact = "partial_outage" | "degraded_performance" | "full_outage";
 type Indicator = Impact | "none" | "maintenance";
@@ -126,7 +127,7 @@ export default function StatusWidget({
   const status = useStatus();
   return (
     <a
-      href={status.url}
+      {...refLinkProps(status.url)}
       target="_blank"
       rel="noopener noreferrer"
       className={`${className} text-slate-200 font-medium bg-canvasSubtle hover:bg-canvasMuted transition-all rounded text-sm px-4 py-2 inline-flex items-center`}

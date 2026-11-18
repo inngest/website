@@ -11,10 +11,12 @@ import {
   topLevelNav,
 } from "./navigationStructure";
 import { getAllSections, hasNavGroupPath } from "./Navigation";
+import { toDocsNavPath } from "./docsNavPath";
 import Link from "next/link";
 import ChevronRight from "../Icons/ChevronRight";
 
 import clsx from "clsx";
+import { refLinkProps } from "@/utils/v1/ref";
 
 function getHierarchyLinks(
   currentPath: string,
@@ -49,7 +51,7 @@ export function Breadcrumb() {
   let router = useRouter();
 
   const hierarchyLinks = useMemo(
-    () => getHierarchyLinks(router.pathname),
+    () => getHierarchyLinks(toDocsNavPath(router.pathname)),
     [router.pathname]
   );
 
@@ -68,7 +70,7 @@ export function Breadcrumb() {
           )}
           {href ? (
             <Link
-              href={href}
+              {...refLinkProps(href)}
               className={
                 "font-normal text-carbon-600 no-underline dark:text-[#9B9B9B] dark:hover:text-carbon-50"
               }

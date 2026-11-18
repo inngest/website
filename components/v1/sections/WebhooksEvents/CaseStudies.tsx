@@ -21,8 +21,8 @@ const STUDIES: CaseStudyItem[] = [
         notify Slack—all from one event, each step independent.
       </>
     ),
-    logo: { src: "/assets/v1/logos/resend.svg", alt: "Resend", width: 96, height: 24 },
-    cta: { label: "See the reliable webhook patterns", href: "/patterns/build-reliable-webhooks" },
+    logo: { src: "/assets/v1/logos/resend.svg", alt: "Resend", width: 113, height: 24 },
+    cta: { label: "See the reliable webhook patterns", href: "/docs/patterns/jobs/build-reliable-webhooks" },
   },
   {
     id: "clerk-auth",
@@ -49,7 +49,7 @@ const STUDIES: CaseStudyItem[] = [
         what users actually do, not just timers.
       </>
     ),
-    logo: { src: "/assets/v1/logos/resend.svg", alt: "Resend", width: 96, height: 24 },
+    logo: { src: "/assets/v1/logos/resend.svg", alt: "Resend", width: 113, height: 24 },
     cta: { label: "Read the Resend webhook guide", href: "/docs/guides/resend-webhook-events?ref=webhooks-events-use-cases" },
   },
   {
@@ -65,7 +65,7 @@ const STUDIES: CaseStudyItem[] = [
       </>
     ),
     logo: { src: "/assets/v1/logos/outtake.svg", alt: "Outtake", width: 136, height: 24 },
-    cta: { label: "Read the event coordination pattern", href: "/patterns/event-coordination-for-lost-customers" },
+    cta: { label: "Read the event coordination pattern", href: "/docs/patterns/events/event-coordination-for-lost-customers" },
   },
   {
     id: "internal-events",

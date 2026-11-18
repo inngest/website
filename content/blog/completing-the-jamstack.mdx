@@ -54,7 +54,7 @@ What would this solution look like [for modern developers](/blog/modern-serverle
 - **It calls your code, your code doesn't call it** - It should follow the model of serverless API functions and be automatically run on-demand as needed - there should not be some idling process checking for jobs to perform that you need to worry about scaling.
 - **Scales automatically** - This should be a given in 2022, but it should be a system that works from MVP to the enterprise.
 - **Great defaults, power as you need it** - Functionality every system needs for reliability and scalability should be included by default. From automatic retries of failures, concurrency, and throttling - developers should not have to roll this on their own.
-- **Combine functionality for complex workflows** - Every product eventually needs to run conditional logic based on activity (aka events) that occur over the span of hours, days, or weeks. Instead of writing separate, but related jobs, they should be able to be declared in code in [a single logical function](/features/step-functions).
+- **Combine functionality for complex workflows** - Every product eventually needs to run conditional logic based on activity (aka events) that occur over the span of hours, days, or weeks. Instead of writing separate, but related jobs, they should be able to be declared in code in [a single logical function](/docs/durable-execution/primitives).
 - **Developer-first** - The user experience must be imagined with the developer-first. Over are the days of enterprise tech that require massive sales and implementation engineering efforts just to figure it out.
 
 ## Meet Inngest

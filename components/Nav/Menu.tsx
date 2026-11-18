@@ -1,5 +1,6 @@
 import Link from "next/link";
 import { type RemixiconComponentType } from "@remixicon/react";
+import { refLinkProps } from "@/utils/v1/ref";
 
 export type MenuProps = {
   title: string;
@@ -37,14 +38,14 @@ export default function Menu({
     <div className="px-4 md:py-2 md:px-2 w-full md:w-auto md:overflow-auto bg-surfaceBase md:border border-subtle md:rounded-lg md:absolute top-[70px] -left-4 md:hidden group-hover:md:block md:shadow-2xl">
       <div className="flex flex-col md:w-[520px]">
         <h3 className="text-base text-basis md:hidden font-semibold mb-2 px-2 pt-3">
-          {headerUrl ? <a href={headerUrl}>{title}</a> : title}
+          {headerUrl ? <a {...refLinkProps(headerUrl)}>{title}</a> : title}
         </h3>
         {!!primaryLinks.length && (
           <div className="flex w-full flex-col gap-1.5">
             {primaryLinks.map(({ title, url, description, ...link }) => (
               <Link
                 key={title}
-                href={url}
+                {...refLinkProps(url)}
                 className="group hover:bg-surfaceSubtle px-2 py-2 rounded-md transition-all duration-150 flex items-start lg:items-center leading-none group/nav-item"
               >
                 <div
@@ -76,7 +77,7 @@ export default function Menu({
                 return (
                   <Link
                     key={idx}
-                    href={url}
+                    {...refLinkProps(url)}
                     className={`text-basis rounded-sm flex gap-2 items-center py-2.5 pl-2 pr-2 lg:bg-surfaceSubtle/40 hover:bg-surfaceSubtle hover:text-white transition-all duration-150 group/nav-item`}
                   >
                     <link.icon size={28} className={iconClassName} />

@@ -12,6 +12,7 @@ import AgentView from "../../../../shared/Patterns/AgentView";
 import { categoryMarkdown } from "../../../../shared/Patterns/markdown";
 import { useUnreleasedLabels } from "../../../../shared/Docs/Unreleased";
 import "../../../../shared/Patterns/patterns-docs.css";
+import { refLinkProps } from "@/utils/v1/ref";
 
 function Arrow({ s = 14 }: { s?: number }) {
   return (
@@ -95,7 +96,7 @@ export default function CategoryPage({ category }: { category: string }) {
           <Link
             key={p.slug}
             className="cat-row"
-            href={`/docs/patterns/${section.id}/${p.slug}`}
+            {...refLinkProps(`/docs/patterns/${section.id}/${p.slug}`)}
           >
             <span className="cat-row-num mono">{String(i + 1).padStart(2, "0")}</span>
             <span className="cat-row-body">
@@ -112,7 +113,7 @@ export default function CategoryPage({ category }: { category: string }) {
       {next && (
         <Link
           className="next-cat"
-          href={`/docs/patterns/${next.id}`}
+          {...refLinkProps(`/docs/patterns/${next.id}`)}
           style={
             {
               "--accent": next.accent.hex,

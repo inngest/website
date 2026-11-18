@@ -9,6 +9,7 @@ import {
   RiArrowDownSLine,
 } from "@remixicon/react";
 import * as Accordion from "@radix-ui/react-accordion";
+import { refLinkProps } from "@/utils/v1/ref";
 
 export default function ComparisonTable({ plans, features, sections }) {
   const [selectedPlan, setSelectedPlan] = useState(plans[0].name);
@@ -150,7 +151,7 @@ const renderTable = (sectionFeatures, sectionName, plans, selectedPlan) => {
                       {feature.name}
                       {Boolean(feature.infoUrl) && (
                         <Link
-                          href={feature.infoUrl}
+                          {...refLinkProps(feature.infoUrl)}
                           target="_blank"
                           className="transition-all text-muted hover:text-white inline-flex align-text-top ml-1"
                         >
@@ -237,7 +238,7 @@ const renderHighlightGrid = (
               {feature.name}
               {Boolean(feature.infoUrl) && (
                 <Link
-                  href={feature.infoUrl}
+                  {...refLinkProps(feature.infoUrl)}
                   target="_blank"
                   className="transition-all text-muted hover:text-white inline-flex align-text-top ml-1"
                 >

@@ -116,11 +116,9 @@ export function getSdkVersionFromPath(path: string): TSVersion | null {
     return "v3";
   }
 
-  // Versionless TypeScript reference paths map to stable
-  if (
-    path === "/docs/reference/typescript/intro" ||
-    path.startsWith("/docs/reference/typescript/intro")
-  ) {
+  // Versionless TypeScript reference paths are the stable version (a
+  // rewrite in next.config.mjs serves them from the stable version's pages)
+  if (/^\/docs\/reference\/typescript\/(?!v\d+(\/|$))/.test(path)) {
     return TS_STABLE;
   }
   return null;

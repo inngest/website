@@ -15,6 +15,7 @@ import Resources from "src/components/LandingPage/Resources";
 import CaseStudy from "src/components/LandingPage/CaseStudy";
 import Quote from "src/components/Quote";
 import Link from "next/link";
+import { refLinkProps } from "@/utils/v1/ref";
 
 const ref = "product-ai";
 
@@ -180,7 +181,9 @@ export function AIPage({
                     Orchestrate iterative tool calling loops with automatic
                     retries and full observability.{" "}
                     <Link
-                      href={`/docs/durable-execution/durable-agents/agent-tool-loops?ref=${ref}`}
+                      {...refLinkProps(
+                        `/docs/durable-execution/durable-agents/agent-tool-loops?ref=${ref}`
+                      )}
                       className="text-link"
                     >
                       Learn more →
@@ -195,7 +198,9 @@ export function AIPage({
                     Compose complex workflows by invoking child functions as
                     sub-agents, each with their own configuration.{" "}
                     <Link
-                      href={`/docs/durable-execution/durable-agents/sub-agent-delegation?ref=${ref}`}
+                      {...refLinkProps(
+                        `/docs/durable-execution/durable-agents/sub-agent-delegation?ref=${ref}`
+                      )}
                       className="text-link"
                     >
                       Learn more →
@@ -210,7 +215,9 @@ export function AIPage({
                     Pause agent execution to wait for human approval or input
                     before continuing.{" "}
                     <Link
-                      href={`/docs/durable-execution/durable-agents/human-in-the-loop?ref=${ref}`}
+                      {...refLinkProps(
+                        `/docs/durable-execution/durable-agents/human-in-the-loop?ref=${ref}`
+                      )}
                       className="text-link"
                     >
                       Learn more →
@@ -429,7 +436,7 @@ function Hero({
           <div className="flex flex-row flex-wrap justify-center gap-4 md:justify-start">
             {ctas.map((cta) => (
               <Button variant={cta.variant} asChild>
-                <Link href={cta.href}>{cta.text}</Link>
+                <Link {...refLinkProps(cta.href)}>{cta.text}</Link>
               </Button>
             ))}
           </div>

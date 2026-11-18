@@ -29,7 +29,7 @@ const STUDIES: CaseStudyItem[] = [
     id: "resend",
     title: "Notifications & Communications",
     body: "The DX and visibility with Inngest is really incredible. Faster to develop locally than with our previous queue.",
-    logo: { src: "/assets/v1/logos/resend.svg", alt: "Resend", width: 96, height: 24 },
+    logo: { src: "/assets/v1/logos/resend.svg", alt: "Resend", width: 113, height: 24 },
     cta: { label: CTA_LABEL, href: "/customers/resend?ref=background-jobs" },
   },
   {
@@ -44,7 +44,7 @@ const STUDIES: CaseStudyItem[] = [
     title: "Billing & payments",
     body: "Stripe webhooks, invoice generation, subscription lifecycle events, and reconciliation jobs.",
     logo: { src: "/assets/v1/logos/replit.svg", alt: "Replit", width: 112, height: 28 },
-    cta: { label: CTA_LABEL, href: "/customers/replit?ref=background-jobs" },
+    // No Replit customer story is published yet, so the card has no link.
   },
 ];
 

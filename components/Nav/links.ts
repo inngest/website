@@ -26,7 +26,7 @@ export const productLinks: MenuProps = {
     {
       title: "Platform",
       description: "Learn about features, flow control, and more",
-      url: "/platform?ref=nav",
+      url: "/platform/durable-execution?ref=nav",
       icon: IconSteps,
       iconBg: "bg-matcha-800/30",
     },
@@ -40,17 +40,17 @@ export const productLinks: MenuProps = {
     },
     {
       title: "Durable workflows",
-      url: "/uses/durable-workflows?ref=nav",
+      url: "/platform/durable-execution?ref=nav",
       icon: IconRetry,
     },
     {
       title: "Workflow engines",
-      url: "/uses/workflow-engine?ref=nav",
+      url: "/uses/webhooks?ref=nav",
       icon: IconJourney,
     },
     {
       title: "Queuing",
-      url: "/compare-to-legacy-queues?ref=nav",
+      url: "/platform/flow-control?ref=nav",
       icon: IconSteps,
     },
     {
@@ -60,7 +60,7 @@ export const productLinks: MenuProps = {
     },
     {
       title: "Scheduled & cron jobs",
-      url: "/uses/serverless-cron-jobs?ref=nav",
+      url: "/uses/scheduled-jobs?ref=nav",
       icon: IconScheduled,
     },
   ],

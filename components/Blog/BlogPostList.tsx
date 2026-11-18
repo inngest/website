@@ -2,6 +2,7 @@ import Image from "next/image";
 import { RiCalendarLine } from "@remixicon/react";
 import Tags from "src/shared/Blog/Tags";
 import { type MDXBlogPost } from "./index";
+import { refLinkProps } from "@/utils/v1/ref";
 
 export default function BlogPostList({ posts }: { posts: MDXBlogPost[] }) {
   return (
@@ -9,7 +10,7 @@ export default function BlogPostList({ posts }: { posts: MDXBlogPost[] }) {
       {posts.map((post) => (
         <li key={post.slug}>
           <a
-            href={post.redirect ?? `/blog/${post.slug}`}
+            {...refLinkProps(post.redirect ?? `/blog/${post.slug}`)}
             className="group flex flex-col rounded-lg transition-all ease-out "
           >
             {post.image && (

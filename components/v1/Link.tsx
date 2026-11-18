@@ -6,6 +6,7 @@ import {
 } from "react";
 
 import { WipeLabel } from "@/components/v1/sections/shared/WipeLabel";
+import { refLinkProps } from "@/utils/v1/ref";
 
 /**
  * v1 Link — `next/link` wrapper that auto-wraps string children in
@@ -45,7 +46,7 @@ export default function Link({
     ? `v1-hyperlink ${className ?? ""}`.trim()
     : className;
   return (
-    <NextLink {...rest} className={finalClassName}>
+    <NextLink {...rest} {...refLinkProps(rest.href)} className={finalClassName}>
       {wrapped}
     </NextLink>
   );

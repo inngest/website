@@ -11,6 +11,7 @@ import {
 import IconTypeScript from "../Icons/TypeScript";
 import IconPython from "../Icons/Python";
 import IconGo from "../Icons/Go";
+import { refLinkProps } from "@/utils/v1/ref";
 
 type SdkId = "typescript" | "python" | "go";
 
@@ -151,7 +152,7 @@ function SdkPill({
         </span>
       ) : (
         <Link
-          href={href}
+          {...refLinkProps(href)}
           className={clsx(
             PILL,
             "border-subtle bg-canvasBase text-basis hover:bg-surfaceSubtle"
@@ -248,7 +249,7 @@ function FeatureList({
             <span className="flex-1">
               {href ? (
                 <Link
-                  href={href}
+                  {...refLinkProps(href)}
                   className="text-inherit underline decoration-transparent underline-offset-2 transition-colors hover:text-basis hover:decoration-current"
                 >
                   {name}

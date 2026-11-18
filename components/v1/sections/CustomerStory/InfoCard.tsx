@@ -1,6 +1,7 @@
 import ButtonLink from "@/components/v1/ButtonLink";
 import GradientFrame from "@/components/v1/sections/shared/GradientFrame";
 import type { CustomerStoryData } from "@/components/v1/sections/CustomerStory/types";
+import { refLinkProps } from "@/utils/v1/ref";
 
 // Right info card (162:17529).
 export default function InfoCard({ story }: { story: CustomerStoryData }) {
@@ -20,7 +21,7 @@ export default function InfoCard({ story }: { story: CustomerStoryData }) {
         <div className="flex flex-col gap-6">
           {story.brandSiteHref && (
             <a
-              href={story.brandSiteHref}
+              {...refLinkProps(story.brandSiteHref)}
               target="_blank"
               rel="noreferrer noopener"
               className="text-v1-body-lg inline-block w-fit text-v1-accent-salmon-light underline decoration-solid underline-offset-2"

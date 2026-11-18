@@ -28,6 +28,7 @@ import {
   TraceTimeline,
   type TraceSpec,
 } from "./Trace";
+import { refLinkProps } from "@/utils/v1/ref";
 
 export { Trace, TraceRow, TraceBar, TraceMarker } from "./Trace";
 
@@ -855,7 +856,7 @@ function NoteCard({
       </div>
       {note.href && (
         <Link
-          href={note.href}
+          {...refLinkProps(note.href)}
           className="mt-2 inline-block text-[13px] font-medium text-matcha-600 hover:text-matcha-700 dark:text-matcha-400 dark:hover:text-matcha-300"
         >
           {note.linkText ?? "Read more"} →

@@ -5,7 +5,7 @@ import Image from "next/image";
 import Link from "next/link";
 import { motion } from "motion/react";
 import { cn } from "@/utils/v1/cn";
-import { appendRef } from "@/utils/v1/ref";
+import { appendRef, refLinkProps } from "@/utils/v1/ref";
 import { reveals } from "@/utils/v1/reveals";
 import { useIsDesktop } from "@/utils/v1/hooks/useIsDesktop";
 import GradientFrame from "@/components/v1/sections/shared/GradientFrame";
@@ -41,7 +41,7 @@ const CAPABILITIES: Capability[] = [
     videoSrc:
       "https://cdn.inngest.com/homepage/june-2026-redesign-dashboard-tour-v2.mp4",
     videoPoster: "/assets/v1/home/posters/observability.webp",
-    docsHref: "/docs/platform/monitor/traces",
+    docsHref: "/docs/platform-and-operations/traces",
   },
   {
     id: "flow-control",
@@ -52,7 +52,7 @@ const CAPABILITIES: Capability[] = [
     videoSrc:
       "https://cdn.inngest.com/homepage/june-2026-flow-control-website.mp4",
     videoPoster: "/assets/v1/home/posters/flow-control.webp",
-    docsHref: "/docs/guides/flow-control",
+    docsHref: "/docs/durable-execution/flow-control",
   },
   {
     id: "sandboxes",
@@ -74,7 +74,7 @@ const CAPABILITIES: Capability[] = [
     body: "How do you know if your agent works? If you want to know which variant actually performed better, you used to have to stitch together data from multiple systems, implement human reviews, and build a layer of instrumentation on top. Inngest captures all of this data by default, so you can add scoring the same way you add retries.",
     videoSrc: "https://cdn.inngest.com/homepage/june-2026-score-website.mp4",
     videoPoster: "/assets/v1/home/posters/scoring.webp",
-    docsHref: "/docs/learn/agent-evals",
+    docsHref: "/docs/agent-evals/overview",
   },
 ];
 
@@ -452,7 +452,7 @@ function StackedCard({
 function DocsCue({ href }: { href: string }) {
   return (
     <Link
-      href={href}
+      {...refLinkProps(href)}
       className="group/cta text-v1-label-md inline-flex w-fit items-center uppercase text-v1-frost hover:text-v1-accent-salmon focus:outline-none focus-visible:text-v1-accent-salmon motion-safe:transition-colors motion-safe:duration-300"
     >
       <span>See docs</span>
