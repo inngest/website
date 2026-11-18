@@ -10,7 +10,7 @@ import {
 export const runtime = "nodejs";
 
 /**
- * Livestream registrations from /12-days-of-workflows/livestream, sent to
+ * Livestream registrations from the 12 Days page's finale (#register), sent to
  * Segment from the server as "12 Days Livestream Registered".
  *
  * NEEDS SEGMENT SETUP: map this event in Segment (a Customer.io person

@@ -1,8 +1,8 @@
 import Image from "next/image";
 import type { DailyPrize } from "@/components/v1/sections/TwelveDays/data";
 
-/** Neon lime from the poster art. */
-const NEON = "#ECFE08";
+/** Brand yellow. */
+const NEON = "#F7DA10";
 
 /**
  * A prize as a die-cut sticker: the art with a solid outline traced

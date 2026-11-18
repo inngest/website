@@ -41,14 +41,14 @@ export default function RaffleDialog() {
     <dialog
       ref={ref}
       aria-labelledby="raffle-title"
-      className="m-auto w-[calc(100%-32px)] max-w-[480px] overflow-visible rounded-xl border-[3px] border-[#010101] bg-[#ECFE08] p-0 text-[#010101] shadow-[8px_8px_0_#010101] backdrop:bg-[#010101]/60"
+      className="m-auto w-[calc(100%-32px)] max-w-[480px] overflow-visible rounded-xl border-[3px] border-[#020202] bg-[#F7DA10] p-0 text-[#020202] shadow-[8px_8px_0_#020202] backdrop:bg-[#020202]/60"
     >
       <div className="relative flex flex-col gap-5 p-6 sm:p-8">
         <button
           type="button"
           onClick={close}
           aria-label={copy.close}
-          className="absolute right-3 top-3 flex h-9 w-9 items-center justify-center rounded-md border-2 border-[#010101] bg-white text-[18px] leading-none hover:bg-[#010101] hover:text-white focus-visible:outline focus-visible:outline-4 focus-visible:outline-offset-2 focus-visible:outline-[#0035F1]"
+          className="absolute right-3 top-3 flex h-9 w-9 items-center justify-center rounded-md border-2 border-[#020202] bg-white text-[18px] leading-none hover:bg-[#020202] hover:text-white focus-visible:outline focus-visible:outline-4 focus-visible:outline-offset-2 focus-visible:outline-[#020202]"
         >
           <span aria-hidden="true">×</span>
         </button>
@@ -64,12 +64,12 @@ export default function RaffleDialog() {
         </div>
 
         {prize && (
-          <div className="flex items-center gap-4 rounded-lg border-2 border-[#010101] bg-[#010101] p-3 text-white">
+          <div className="flex items-center gap-4 rounded-lg border-2 border-[#020202] bg-[#020202] p-3 text-white">
             <span className="flex h-14 w-14 shrink-0 items-center justify-center">
               <PrizeSticker prize={prize} size={48} glow />
             </span>
             <span className="flex min-w-0 flex-col">
-              <span className="font-v1Label text-[12px] text-[#ECFE08]">
+              <span className="font-v1Label text-[12px] text-[#F7DA10]">
                 {RAFFLE.todaysPrize}
               </span>
               <span className="font-sans text-[18px] font-black leading-[1.15]">
@@ -84,7 +84,7 @@ export default function RaffleDialog() {
           <JoinForm
             key={day}
             day={day}
-            tone="lime"
+            tone="yellow"
             id="raffle"
             onLeave={close}
             onClose={close}

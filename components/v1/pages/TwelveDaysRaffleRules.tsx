@@ -61,7 +61,7 @@ export default function TwelveDaysRaffleRules() {
       <section
         aria-labelledby="raffle-rules-heading"
         className="w-full"
-        style={{ backgroundColor: COLORS.cream, color: COLORS.ink }}
+        style={{ backgroundColor: COLORS.white, color: COLORS.ink }}
       >
         <div className="mx-auto flex w-full max-w-[800px] flex-col gap-6 px-6 pb-16 pt-24 sm:px-9 lg:pb-24 lg:pt-36">
           <h1
@@ -70,7 +70,7 @@ export default function TwelveDaysRaffleRules() {
           >
             Raffle rules
           </h1>
-          <p className="rounded-md border-2 border-dashed border-[#010101] bg-white p-4 font-v1Label text-[14px]">
+          <p className="rounded-md border-2 border-dashed border-[#020202] bg-white p-4 font-v1Label text-[14px]">
             Draft placeholder. The official rules for the 12 Days of Workflows
             daily raffle will be published here before the raffle opens.
           </p>
@@ -93,7 +93,7 @@ export default function TwelveDaysRaffleRules() {
           </h2>
           <table className="w-full border-collapse text-left text-[16px]">
             <thead>
-              <tr className="border-b-2 border-[#010101] font-v1Label text-[13px]">
+              <tr className="border-b-2 border-[#020202] font-v1Label text-[13px]">
                 <th className="py-2 pr-4">Date</th>
                 <th className="py-2 pr-4">Prize</th>
                 <th className="py-2 text-right">ARV (USD)</th>
@@ -101,7 +101,7 @@ export default function TwelveDaysRaffleRules() {
             </thead>
             <tbody>
               {DAILY_PRIZES.map((p) => (
-                <tr key={p.day} className="border-b border-[#010101]/20">
+                <tr key={p.day} className="border-b border-[#020202]/20">
                   <td className="py-2 pr-4 font-v1Label text-[14px]">
                     Dec {UNLOCK_DATES[p.day - 1]}
                   </td>

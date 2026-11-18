@@ -197,7 +197,7 @@ function Contraption({ animate }: { animate: boolean }) {
             cx={x}
             cy={88}
             r={18}
-            fill={COLORS.lime}
+            fill={COLORS.yellow}
             stroke={INK}
             strokeWidth={6}
           />
@@ -288,7 +288,7 @@ function Contraption({ animate }: { animate: boolean }) {
       <path
         d="M600 650 L600 780 Q600 812 632 812 L1300 812"
         fill="none"
-        stroke={COLORS.lime}
+        stroke={COLORS.yellow}
         strokeWidth={18}
         strokeLinecap="round"
       />
@@ -299,7 +299,7 @@ function Contraption({ animate }: { animate: boolean }) {
         cy={680}
         r={96}
         teeth={12}
-        fill={COLORS.lime}
+        fill={COLORS.yellow}
         direction={1}
         seconds={9}
         animate={animate}
@@ -320,7 +320,7 @@ function Contraption({ animate }: { animate: boolean }) {
         r={22}
         cx={animate ? 0 : 520}
         cy={animate ? 0 : 492}
-        fill={COLORS.lime}
+        fill={COLORS.yellow}
         stroke={INK}
         strokeWidth={6}
       >
@@ -355,7 +355,7 @@ export default function LiveStage() {
 
   if (youtubeId && left !== null && left <= PLAYER_LEAD_MS) {
     return (
-      <div className="overflow-hidden rounded-xl border-[3px] border-[#010101] bg-[#010101] shadow-[8px_8px_0_#010101]">
+      <div className="overflow-hidden rounded-xl border-[3px] border-[#020202] bg-[#020202] shadow-[8px_8px_0_#020202]">
         <iframe
           src={`https://www.youtube-nocookie.com/embed/${youtubeId}?rel=0`}
           title={live.title}
@@ -373,8 +373,8 @@ export default function LiveStage() {
 
   return (
     <div
-      className="relative overflow-hidden rounded-xl border-[3px] border-[#010101] text-[#010101] shadow-[8px_8px_0_#010101] sm:aspect-video"
-      style={{ backgroundColor: COLORS.cream }}
+      className="relative overflow-hidden rounded-xl border-[3px] border-[#020202] text-[#020202] shadow-[8px_8px_0_#020202] sm:aspect-video"
+      style={{ backgroundColor: COLORS.white }}
     >
       <div className="hidden sm:block">
         <Contraption animate={!reduceMotion} />

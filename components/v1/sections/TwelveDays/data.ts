@@ -49,13 +49,16 @@ export function unlockLabel(day: number, short = false): string {
 }
 
 /** Campaign colours, sampled from the poster art. */
+/**
+ * The 12 Days brand palette, and nothing else: yellow, salmon, green,
+ * black and white.
+ */
 export const COLORS = {
-  salmon: "#F55C50",
-  blue: "#0035F1",
-  lime: "#ECFE08",
+  yellow: "#F7DA10",
+  salmon: "#F65C4F",
   green: "#0BDD48",
-  cream: "#FBF0A8",
-  ink: "#010101",
+  ink: "#020202",
+  white: "#FFFFFF",
 } as const;
 
 export interface WorkflowDay {
@@ -235,7 +238,7 @@ export const DAYS: WorkflowDay[] = [
 /** Door front colours from Savannah's design, cycled by day. */
 export const DOOR_FACES = [
   { bg: "#0BDD48", num: "#FFFFFF" },
-  { bg: "#FCD900", num: "#020202" },
+  { bg: "#F7DA10", num: "#020202" },
   { bg: "#F65C4F", num: "#FFFFFF" },
 ];
 
@@ -485,17 +488,9 @@ export const BUILDATHON = {
   /** Shown after `sent`: the finale is where the winners are picked. */
   register: {
     label: "Register for the livestream",
-    href: `/12-days-of-workflows?ref=${REF}-build-a-thon-sent#register`,
+    href: "#register",
   },
   failed: "That didn't go through. Try again?",
-  back: {
-    label: "Back to the calendar",
-    href: `/12-days-of-workflows?ref=${REF}-build-a-thon`,
-  },
-  startCta: {
-    label: "Start building free",
-    href: `/sign-up?ref=${REF}-build-a-thon`,
-  },
 } as const;
 
 /**
@@ -515,16 +510,7 @@ export const TICKER = {
 export const BUILDATHON_TEASER = {
   eyebrow: "The build-a-thon",
   title: ["Build your", "weird workflow."],
-  body: "Twelve lessons, twelve primitives. Put every one of them into a single workflow that does something really simple in the most overengineered way you can make work.",
-  when: BUILDATHON.when,
   prizesTitle: "The prizes",
-  prizes: BUILDATHON.prizes,
-  footnote:
-    "Make it weird: as in a toaster that needs three approvals and a cron job to make toast. Not weirdo weird. Keep it silly, keep it kind.",
-  cta: {
-    label: "Submit your workflow",
-    href: `/12-days-of-workflows/build-a-thon?ref=${REF}-build-a-thon-section`,
-  },
 } as const;
 
 /**
@@ -690,7 +676,8 @@ export const RAFFLE = {
 } as const;
 
 /**
- * The finale livestream: registration at /12-days-of-workflows/livestream
+ * The finale livestream: registration in the main page's finale
+ * (#register; /12-days-of-workflows/livestream redirects there)
  * and the stream itself at /12-days-of-workflows/live.
  *
  * December 29, 10am Pacific. TODO: set `youtubeId` once the stream is

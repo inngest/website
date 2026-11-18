@@ -90,7 +90,7 @@ export default function AdventCalendar({ now }: { now: Date | null }) {
       id={CALENDAR_ID}
       aria-labelledby="twelve-days-calendar-heading"
       className="relative w-full scroll-mt-20 overflow-hidden text-white"
-      style={{ backgroundColor: COLORS.blue }}
+      style={{ backgroundColor: COLORS.ink }}
     >
       <div className="relative mx-auto flex w-full max-w-[1440px] flex-col gap-12 px-6 py-16 sm:px-9 sm:py-20 lg:px-8 lg:py-24">
         <div className="flex flex-col gap-5">
@@ -105,7 +105,7 @@ export default function AdventCalendar({ now }: { now: Date | null }) {
           </p>
           {/* The page's one sign-up form. While a day's raffle is open it
               also enters that day's raffle. */}
-          <JoinForm day={raffleDay} tone="blue" id="twelve-days" />
+          <JoinForm day={raffleDay} tone="dark" id="twelve-days" />
           <NewToInngest />
         </div>
 
@@ -167,8 +167,8 @@ const HOLD_MS = 1200;
 const BURST = [
   COLORS.salmon,
   COLORS.green,
-  COLORS.lime,
-  COLORS.cream,
+  COLORS.yellow,
+  COLORS.white,
   "#FFFFFF",
   COLORS.green,
 ];
@@ -258,7 +258,7 @@ function Door({
           normal flow, so a long lesson makes its door (and its row)
           taller instead of being clipped; the shutter covers it. */}
       <div
-        className="relative h-full min-h-[580px] overflow-hidden rounded-[20px] border-[#020202] bg-white text-[#010101]"
+        className="relative h-full min-h-[580px] overflow-hidden rounded-[20px] border-[#020202] bg-white text-[#020202]"
         style={DOOR_BORDER}
       >
         {unlocked && (
@@ -279,14 +279,14 @@ function Door({
                 controls
                 playsInline
                 preload="metadata"
-                className="aspect-video w-full rounded-md border-2 border-[#010101] bg-[#010101]"
+                className="aspect-video w-full rounded-md border-2 border-[#020202] bg-[#020202]"
               />
             ) : (
               <div
                 role="img"
                 aria-label={`Lesson ${day.day} video coming soon`}
-                className="flex aspect-video w-full items-center justify-center rounded-md border-2 border-dashed border-[#010101] text-center font-v1Label text-[12px]"
-                style={{ backgroundColor: COLORS.cream }}
+                className="flex aspect-video w-full items-center justify-center rounded-md border-2 border-dashed border-[#020202] text-center font-v1Label text-[12px]"
+                style={{ backgroundColor: COLORS.white }}
               >
                 ▶ Lesson video coming
               </div>
@@ -294,11 +294,11 @@ function Door({
             <h3 className="font-sans text-[22px] font-black leading-[1.05] tracking-[-0.01em]">
               {day.title}
             </h3>
-            <p className="text-[14px] leading-[20px] text-[#010101]/75">
+            <p className="text-[14px] leading-[20px] text-[#020202]/75">
               {day.body}
             </p>
             <div className="relative shrink-0">
-              <pre className="overflow-x-auto rounded-md bg-[#010101] p-3 pr-16 font-v1Mono text-[12px] leading-[18px] text-[#0BDD48]">
+              <pre className="overflow-x-auto rounded-md bg-[#020202] p-3 pr-16 font-v1Mono text-[12px] leading-[18px] text-[#0BDD48]">
                 <code>{day.code}</code>
               </pre>
               <CopyButton
@@ -341,7 +341,7 @@ function Door({
             return (
               <motion.span
                 key={i}
-                className="absolute block h-3 w-3 rounded-full border border-[#010101]"
+                className="absolute block h-3 w-3 rounded-full border border-[#020202]"
                 style={{ backgroundColor: color }}
                 initial={{ x: 0, y: 0, scale: 1, opacity: 1 }}
                 animate={{
@@ -393,7 +393,7 @@ function Door({
           }}
           // Stop the long-press menu on touch screens while holding.
           onContextMenu={(e) => needsHold && e.preventDefault()}
-          className="absolute inset-0 rounded-[20px] focus-visible:outline focus-visible:outline-4 focus-visible:outline-offset-[-7px] focus-visible:outline-[#ECFE08]"
+          className="absolute inset-0 rounded-[20px] focus-visible:outline focus-visible:outline-4 focus-visible:outline-offset-[-7px] focus-visible:outline-[#F7DA10]"
           style={{
             pointerEvents: open ? "none" : "auto",
             touchAction: needsHold ? "none" : undefined,
@@ -576,7 +576,7 @@ function CopyButton({ text, label }: { text: string; label: string }) {
       onClick={() => {
         copyText(text).then((ok) => ok && setCopied(true));
       }}
-      className="absolute right-2 top-2 rounded border border-[#0BDD48]/60 bg-[#010101] px-2 py-0.5 font-v1Label text-[11px] text-[#0BDD48] hover:bg-[#0BDD48] hover:text-[#010101] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#ECFE08]"
+      className="absolute right-2 top-2 rounded border border-[#0BDD48]/60 bg-[#020202] px-2 py-0.5 font-v1Label text-[11px] text-[#0BDD48] hover:bg-[#0BDD48] hover:text-[#020202] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#F7DA10]"
     >
       <span aria-live="polite">{copied ? "Copied" : "Copy"}</span>
     </button>

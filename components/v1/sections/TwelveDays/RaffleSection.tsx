@@ -73,9 +73,9 @@ export default function RaffleSection({ now }: { now: Date | null }) {
           {featured && (
             <motion.div
               {...reveals.item(0)}
-              className="flex flex-col gap-5 rounded-xl border-[3px] border-[#010101] bg-[#010101] p-6 text-white shadow-[8px_8px_0_#ffffff] sm:p-8"
+              className="flex flex-col gap-5 rounded-xl border-[3px] border-[#020202] bg-[#020202] p-6 text-white shadow-[8px_8px_0_#ffffff] sm:p-8"
             >
-              <p className="font-v1Label text-[13px] text-[#ECFE08]">
+              <p className="font-v1Label text-[13px] text-[#F7DA10]">
                 {today !== null
                   ? `${RAFFLE.todaysPrize} · Day ${today}`
                   : `Day 1 prize · December ${UNLOCK_DATES[0]}`}
@@ -98,7 +98,7 @@ export default function RaffleSection({ now }: { now: Date | null }) {
                   type="button"
                   onClick={() => openRaffle(today)}
                   className={
-                    buttonClass(enteredToday ? "ghost" : "lime") +
+                    buttonClass(enteredToday ? "ghost" : "yellow") +
                     " w-full sm:w-auto sm:self-start"
                   }
                 >
@@ -157,9 +157,9 @@ function PrizeCalendar({
           <li
             key={`lead-${i}`}
             aria-hidden="true"
-            className="hidden list-none rounded-lg border-2 border-dashed border-[#010101]/30 lg:block"
+            className="hidden list-none rounded-lg border-2 border-dashed border-[#020202]/30 lg:block"
           >
-            <span className="block p-3 font-v1Label text-[14px] text-[#010101]/40">
+            <span className="block p-3 font-v1Label text-[14px] text-[#020202]/40">
               {UNLOCK_DATES[0] - lead + i}
             </span>
           </li>
@@ -176,10 +176,10 @@ function PrizeCalendar({
             <li
               key={p.day}
               className={
-                "relative flex min-h-[176px] list-none flex-col gap-2 rounded-lg border-2 bg-[#010101] p-3 text-white " +
+                "relative flex min-h-[176px] list-none flex-col gap-2 rounded-lg border-2 bg-[#020202] p-3 text-white " +
                 (isToday
-                  ? "border-[#ECFE08] shadow-[0_0_0_3px_#ECFE08]"
-                  : "border-[#010101]") +
+                  ? "border-[#F7DA10] shadow-[0_0_0_3px_#F7DA10]"
+                  : "border-[#020202]") +
                 (isPast ? " opacity-60" : "")
               }
             >
@@ -188,11 +188,11 @@ function PrizeCalendar({
                   {UNLOCK_DATES[p.day - 1]}
                 </span>
                 {isToday ? (
-                  <span className="rounded bg-[#ECFE08] px-1.5 py-0.5 font-v1Label text-[11px] text-[#010101]">
+                  <span className="rounded bg-[#F7DA10] px-1.5 py-0.5 font-v1Label text-[11px] text-[#020202]">
                     {RAFFLE.calendar.today}
                   </span>
                 ) : didEnter ? (
-                  <span className="font-v1Label text-[11px] text-[#ECFE08]">
+                  <span className="font-v1Label text-[11px] text-[#F7DA10]">
                     {RAFFLE.calendar.entered} ✓
                   </span>
                 ) : null}
@@ -201,7 +201,7 @@ function PrizeCalendar({
                 <PrizeSticker
                   prize={p}
                   size={64}
-                  color={isToday ? "#ECFE08" : "#FFFFFF"}
+                  color={isToday ? "#F7DA10" : "#FFFFFF"}
                   glow={isToday}
                 />
               </div>
@@ -218,9 +218,9 @@ function PrizeCalendar({
           <li
             key={`trail-${i}`}
             aria-hidden="true"
-            className="hidden list-none rounded-lg border-2 border-dashed border-[#010101]/30 lg:block"
+            className="hidden list-none rounded-lg border-2 border-dashed border-[#020202]/30 lg:block"
           >
-            <span className="block p-3 font-v1Label text-[14px] text-[#010101]/40">
+            <span className="block p-3 font-v1Label text-[14px] text-[#020202]/40">
               {UNLOCK_DATES[UNLOCK_DATES.length - 1] + i + 1}
             </span>
           </li>

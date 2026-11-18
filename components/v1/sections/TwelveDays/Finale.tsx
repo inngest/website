@@ -81,9 +81,9 @@ export default function Finale() {
           <Link
             href={FINALE.watch.href}
             aria-label={`${FINALE.watch.label}: ${FINALE.player.title}`}
-            className="group block overflow-hidden rounded-xl border-[3px] border-[#010101] bg-white shadow-[8px_8px_0_#010101] focus-visible:outline focus-visible:outline-4 focus-visible:outline-offset-4 focus-visible:outline-[#ECFE08] motion-safe:transition-transform motion-safe:hover:-translate-y-1"
+            className="group block overflow-hidden rounded-xl border-[3px] border-[#020202] bg-white shadow-[8px_8px_0_#020202] focus-visible:outline focus-visible:outline-4 focus-visible:outline-offset-4 focus-visible:outline-[#F7DA10] motion-safe:transition-transform motion-safe:hover:-translate-y-1"
           >
-            <div className="relative aspect-video overflow-hidden bg-[#F55C50]">
+            <div className="relative aspect-video overflow-hidden bg-[#F65C4F]">
               <Image
                 src={FINALE.image}
                 alt={FINALE.imageAlt}
@@ -92,7 +92,7 @@ export default function Finale() {
                 sizes="(max-width: 1024px) 480px, 34vw"
                 className="absolute left-1/2 top-0 h-auto w-[78%] -translate-x-1/2 -translate-y-[6%]"
               />
-              <span className="absolute left-3 top-3 inline-flex items-center gap-1.5 rounded bg-[#FF0000] px-2 py-0.5 font-v1Label text-[12px] font-semibold text-white">
+              <span className="absolute left-3 top-3 inline-flex items-center gap-1.5 rounded bg-[#020202] px-2 py-0.5 font-v1Label text-[12px] font-semibold text-white">
                 <span
                   aria-hidden="true"
                   className="h-1.5 w-1.5 rounded-full bg-white"
@@ -102,15 +102,15 @@ export default function Finale() {
               {/* Play button */}
               <span
                 aria-hidden="true"
-                className="absolute left-1/2 top-1/2 flex h-12 w-[68px] -translate-x-1/2 -translate-y-1/2 items-center justify-center rounded-[14px] bg-[#FF0000] group-hover:scale-110 motion-safe:transition-transform"
+                className="absolute left-1/2 top-1/2 flex h-12 w-[68px] -translate-x-1/2 -translate-y-1/2 items-center justify-center rounded-[14px] bg-[#020202] group-hover:scale-110 motion-safe:transition-transform"
               >
                 <span className="ml-1 block h-0 w-0 border-y-[10px] border-l-[17px] border-y-transparent border-l-white" />
               </span>
             </div>
-            <div className="flex items-center gap-3 border-t-[3px] border-[#010101] p-4">
+            <div className="flex items-center gap-3 border-t-[3px] border-[#020202] p-4">
               <span
                 aria-hidden="true"
-                className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-[#010101] font-v1Label text-[11px] font-semibold text-[#ECFE08]"
+                className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-[#020202] font-v1Label text-[11px] font-semibold text-[#F7DA10]"
               >
                 TV
               </span>
@@ -118,7 +118,7 @@ export default function Finale() {
                 <span className="truncate font-sans text-[16px] font-black leading-[1.2]">
                   {FINALE.player.title}
                 </span>
-                <span className="font-v1Label text-[13px] text-[#010101]/60">
+                <span className="font-v1Label text-[13px] text-[#020202]/60">
                   {FINALE.player.channel}
                 </span>
               </span>

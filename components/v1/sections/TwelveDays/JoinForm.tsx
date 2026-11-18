@@ -50,10 +50,10 @@ const RAFFLE_URL = "/api/12-days/raffle";
 // happens if it's blocked; give up after this and offer a retry.
 const SEND_TIMEOUT_MS = 8000;
 
-type Tone = "blue" | "lime";
+type Tone = "dark" | "yellow";
 
 const INPUT =
-  "h-[42px] w-full min-w-0 rounded-md border-2 border-[#010101] bg-white px-4 text-[16px] text-[#010101] placeholder:text-[#010101]/50 focus-visible:outline focus-visible:outline-4 focus-visible:outline-offset-2";
+  "h-[42px] w-full min-w-0 rounded-md border-2 border-[#020202] bg-white px-4 text-[16px] text-[#020202] placeholder:text-[#020202]/50 focus-visible:outline focus-visible:outline-4 focus-visible:outline-offset-2";
 
 /**
  * The page's one sign-up form, used in the calendar and in the raffle
@@ -108,11 +108,11 @@ export default function JoinForm({
   const done = subscribed && (!raffle || entered);
   const quick =
     raffle && subscribed && !entered && !editing && saved.name && saved.email;
-  const lime = tone === "lime";
-  const focus = lime
-    ? "focus-visible:outline-[#0035F1]"
-    : "focus-visible:outline-[#ECFE08]";
-  const note = lime ? "text-[#010101]" : "text-[#ECFE08]";
+  const light = tone === "yellow";
+  const focus = light
+    ? "focus-visible:outline-[#020202]"
+    : "focus-visible:outline-[#F7DA10]";
+  const note = light ? "text-[#020202]" : "text-[#F7DA10]";
 
   async function send(n: string, em: string) {
     setRejected(null);
@@ -161,13 +161,13 @@ export default function JoinForm({
         <div
           role="status"
           className={
-            "flex w-full items-center gap-4 rounded-xl border-[3px] border-[#010101] p-4 text-[#010101] shadow-[6px_6px_0_#010101] sm:p-5 " +
-            (lime ? "bg-white" : "bg-[#ECFE08]")
+            "flex w-full items-center gap-4 rounded-xl border-[3px] border-[#020202] p-4 text-[#020202] shadow-[6px_6px_0_#020202] sm:p-5 " +
+            (light ? "bg-white" : "bg-[#F7DA10]")
           }
         >
           <span
             aria-hidden="true"
-            className="flex h-11 w-11 shrink-0 items-center justify-center rounded-full bg-[#010101] text-[22px] font-black text-[#ECFE08]"
+            className="flex h-11 w-11 shrink-0 items-center justify-center rounded-full bg-[#020202] text-[22px] font-black text-[#F7DA10]"
           >
             ✓
           </span>
@@ -202,7 +202,7 @@ export default function JoinForm({
   const finePrint = raffle && (
     <div
       className={`flex flex-col gap-1 font-v1Label text-[12px] ${
-        lime ? "text-[#010101]/70" : "text-white/80"
+        light ? "text-[#020202]/70" : "text-white/80"
       }`}
     >
       <p>
@@ -230,9 +230,9 @@ export default function JoinForm({
   );
 
   // On the calendar, name today's prize (the pop-up has its own card).
-  const prize = raffle && !lime ? prizeFor(day) : undefined;
+  const prize = raffle && !light ? prizeFor(day) : undefined;
   const prizeLine = prize && (
-    <p className="font-v1Label text-[14px] text-[#ECFE08]">
+    <p className="font-v1Label text-[14px] text-[#F7DA10]">
       {RAFFLE.todaysPrize}: {prize.prize}
     </p>
   );
@@ -246,7 +246,9 @@ export default function JoinForm({
             type="button"
             disabled={status === "sending"}
             onClick={() => void send(saved.name, saved.email)}
-            className={buttonClass(lime ? "ink" : "lime") + " w-full sm:w-auto"}
+            className={
+              buttonClass(light ? "ink" : "yellow") + " w-full sm:w-auto"
+            }
           >
             {status === "sending" ? SIGNUP.sending : SIGNUP.quick(saved.name)}
           </button>
@@ -271,7 +273,7 @@ export default function JoinForm({
         onSubmit={handleSubmit}
         className={
           "flex w-full flex-col gap-3 " +
-          (raffle && lime ? "" : "sm:flex-row sm:flex-wrap")
+          (raffle && light ? "" : "sm:flex-row sm:flex-wrap")
         }
       >
         <div
@@ -324,8 +326,8 @@ export default function JoinForm({
           type="submit"
           disabled={status === "sending"}
           className={
-            buttonClass(lime || !raffle ? "ink" : "lime") +
-            (raffle && lime ? " w-full sm:w-auto sm:self-start" : "")
+            buttonClass(light || !raffle ? "ink" : "yellow") +
+            (raffle && light ? " w-full sm:w-auto sm:self-start" : "")
           }
         >
           {status === "sending"

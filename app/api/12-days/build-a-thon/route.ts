@@ -10,7 +10,7 @@ import {
 export const runtime = "nodejs";
 
 /**
- * Build-a-thon entries from /12-days-of-workflows/build-a-thon. Each one
+ * Build-a-thon entries from the 12 Days page's build-a-thon section (#submit). Each one
  * is sent to Segment from the server as "12 Days Build-a-thon Submitted",
  * so an ad blocker that stops Segment in the browser can't lose an entry.
  *

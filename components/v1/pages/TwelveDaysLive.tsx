@@ -23,7 +23,7 @@ export default function TwelveDaysLive() {
         <section
           aria-labelledby="live-heading"
           className="w-full text-white"
-          style={{ backgroundColor: COLORS.blue }}
+          style={{ backgroundColor: COLORS.ink }}
         >
           <div className="mx-auto flex w-full max-w-[1200px] flex-col gap-8 px-6 pb-16 pt-24 sm:px-9 lg:px-8 lg:pb-24 lg:pt-36">
             <div className="flex flex-col gap-5">
@@ -53,14 +53,14 @@ export default function TwelveDaysLive() {
                   href={`https://www.youtube.com/watch?v=${youtubeId}`}
                   target="_blank"
                   rel="noopener noreferrer"
-                  className={buttonClass("lime") + " w-full sm:w-auto"}
+                  className={buttonClass("yellow") + " w-full sm:w-auto"}
                 >
                   {live.youtube} <span aria-hidden="true">↗</span>
                 </a>
               ) : null}
               <Link
                 href={live.register.href}
-                className={buttonClass("lime") + " w-full sm:w-auto"}
+                className={buttonClass("yellow") + " w-full sm:w-auto"}
               >
                 {live.register.label}
               </Link>

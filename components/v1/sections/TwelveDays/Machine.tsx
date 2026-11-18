@@ -41,10 +41,10 @@ const wait = (ms: number) => new Promise((r) => setTimeout(r, ms));
 const TRACE_COLOR: Record<TraceKind, string> = {
   start: "text-white/60",
   ok: "text-[#0BDD48]",
-  fail: "text-[#F55C50]",
-  retry: "text-[#ECFE08]",
-  crash: "text-[#F55C50]",
-  resume: "text-[#ECFE08]",
+  fail: "text-[#F65C4F]",
+  retry: "text-[#F7DA10]",
+  crash: "text-[#F65C4F]",
+  resume: "text-[#F7DA10]",
   end: "text-white",
 };
 
@@ -184,7 +184,7 @@ export default function Machine({ now }: { now: Date | null }) {
     >
       <div className="mx-auto flex w-full max-w-[1440px] flex-col gap-10 px-6 py-16 sm:px-9 sm:py-20 lg:px-8 lg:py-24">
         <div className="flex flex-col gap-5">
-          <p className={`${POSTER_EYEBROW} text-[#ECFE08]`}>
+          <p className={`${POSTER_EYEBROW} text-[#F7DA10]`}>
             {MACHINE.eyebrow}
           </p>
           <h2 id="twelve-days-machine-heading" className={POSTER_TITLE}>
@@ -208,7 +208,7 @@ export default function Machine({ now }: { now: Date | null }) {
               💥 Crash it
             </MachineButton>
           ) : runState === "crashed" ? (
-            <MachineButton onClick={resume} tone="lime">
+            <MachineButton onClick={resume} tone="yellow">
               ↻ Resume
             </MachineButton>
           ) : (
@@ -230,7 +230,7 @@ export default function Machine({ now }: { now: Date | null }) {
               type="checkbox"
               checked={flaky}
               onChange={(e) => setFlaky(e.target.checked)}
-              className="h-4 w-4 accent-[#ECFE08]"
+              className="h-4 w-4 accent-[#F7DA10]"
             />
             Flaky steps
           </label>
@@ -255,7 +255,7 @@ export default function Machine({ now }: { now: Date | null }) {
                           : s === "failed"
                           ? COLORS.salmon
                           : s === "running"
-                          ? COLORS.lime
+                          ? COLORS.yellow
                           : "transparent",
                       color:
                         s === "idle"
@@ -286,7 +286,7 @@ export default function Machine({ now }: { now: Date | null }) {
                       <motion.span
                         layoutId="machine-ball"
                         aria-hidden="true"
-                        className="absolute -right-2 -top-2 flex h-7 w-7 items-center justify-center rounded-full border-[3px] border-[#010101]"
+                        className="absolute -right-2 -top-2 flex h-7 w-7 items-center justify-center rounded-full border-[3px] border-[#020202]"
                         style={{ backgroundColor: ballColor }}
                         transition={{
                           type: "spring",
@@ -294,7 +294,7 @@ export default function Machine({ now }: { now: Date | null }) {
                           damping: 22,
                         }}
                       >
-                        <span className="h-2.5 w-2.5 rounded-full bg-[#010101]" />
+                        <span className="h-2.5 w-2.5 rounded-full bg-[#020202]" />
                       </motion.span>
                     )}
                   </li>
@@ -310,9 +310,9 @@ export default function Machine({ now }: { now: Date | null }) {
               <span
                 className={
                   runState === "running"
-                    ? "text-[#ECFE08]"
+                    ? "text-[#F7DA10]"
                     : runState === "crashed"
-                    ? "text-[#F55C50]"
+                    ? "text-[#F65C4F]"
                     : runState === "finished"
                     ? "text-[#0BDD48]"
                     : "text-white/50"
@@ -368,7 +368,7 @@ function MachineButton({
 }: {
   children: ReactNode;
   onClick: () => void;
-  tone: "green" | "lime" | "salmon" | "ghost";
+  tone: "green" | "yellow" | "salmon" | "ghost";
   disabled?: boolean;
 }) {
   return (

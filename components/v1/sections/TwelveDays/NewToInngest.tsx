@@ -56,7 +56,7 @@ export default function NewToInngest() {
       </div>
       <p
         role="status"
-        className="min-h-0 font-v1Label text-[13px] text-[#ECFE08] sm:basis-full"
+        className="min-h-0 font-v1Label text-[13px] text-[#F7DA10] sm:basis-full"
       >
         {copied ? NEW_TO_INNGEST.copied : ""}
       </p>
