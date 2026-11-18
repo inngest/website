@@ -15,6 +15,12 @@ A skill is a folder with a `SKILL.md` file: a name, a description, and instructi
 
 Skills tell the model how to do something. [Tools](/docs/labs/agents/tools?ref=docs-labs-agents-skills) are what it does it with. A skill never adds a tool.
 
+## What skills solve
+
+- **Short prompts with deep knowledge.** Your system prompt stays short however many skills you add, because the model only opens the ones a task needs.
+- **Instructions in files, not code.** Skills are Markdown files in your repository, so you review and change them like any other file, and they ship with your deploys.
+- **Shared know-how.** Several agents can use the same skills folder, and other agents see each agent's skills on its card.
+
 ## Write a skill
 
 Put each skill in its own folder, in the `SKILL.md` format.
@@ -70,7 +76,7 @@ export const prHelper = agents.agent({
 
 The path resolves against the working directory of your app's process, so deploy the `skills` folder with your app. Skills change when you deploy.
 
-## How the model uses skills
+## How skills work
 
 - **Names and descriptions are always in the prompt.** The model sees what each skill is for, and nothing more, until it needs one.
 - **`open_skill` returns the instructions.** An agent with skills gets an `open_skill` tool. Asked for a review, the model calls `open_skill({ name: "review-checklist" })` and follows the checklist.

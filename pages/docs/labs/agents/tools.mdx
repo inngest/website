@@ -13,6 +13,22 @@ export const description = "Give an Inngest agent tools: define a tool that runs
 
 Tools are how an agent acts. The model reads each tool's description and input schema, and asks for a call when it needs one. The loop validates the input, runs the tool as a step, and sends the result back to the model. A tool's code and credentials stay in your app. The model only sees what the tool returns.
 
+## What tools solve
+
+- **Side effects that happen once.** Each call is a step. A retry or a resumed run returns the saved result instead of sending the email, posting the comment, or issuing the refund again.
+- **Credentials that stay in your app.** The tool runs in your app with your keys. The model, the trace, and any sandbox only see what the tool returns.
+- **Input you can trust.** The input is checked against your schema before your code runs.
+- **Failures the model can handle.** A failed call reaches the model as an error it can read, so it can try something else or explain the problem.
+- **Outside text kept in its place.** Results from outside your app can be marked as untrusted, so the model treats them as data, not instructions.
+
+## How a tool call works
+
+1. **The model sees the tool.** The loop turns each tool's `description` and `input` schema into a definition the model can read.
+2. **The model asks for a call.** Its reply names the tool and the input.
+3. **The input is checked.** Input that doesn't match the schema goes back to the model as an error, and your code doesn't run.
+4. **Your code runs as a step.** `tool.step()` runs `run` as one step. `tool.group()` runs it as a group, so each `step.run()` inside is its own step. A failed step is retried. A call that still fails returns its error to the model.
+5. **The result goes back to the model.** The loop adds it to the history, and the next model call reads it.
+
 ## Define a tool
 
 `tool.step()` defines a tool that runs as one durable step.

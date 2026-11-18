@@ -13,6 +13,13 @@ export const description = "How Inngest agents find each other: each agent publi
 
 Every agent publishes a card that says what it does and what input it takes. An agent with a model can list the cards it's allowed to see, read one in full, and start the agent it needs. You decide which agents each card is visible to, and which agents each model may start.
 
+## What discovery solves
+
+- **No hard-coded routing.** A lead agent doesn't import or name its specialists. Its model reads their cards and starts the one that fits the task.
+- **New agents without rewiring.** Add a specialist with a card, and agents that may see it can use it on their next run, with no change to their code.
+- **Agents across apps.** A card shared with your team is visible to agents in other apps in the same environment.
+- **Policy you control.** Your code, not the model, decides which agents each model can find and start, and destructive agents are kept out unless you name them.
+
 ## Give an agent a card
 
 <AnnotatedCode>

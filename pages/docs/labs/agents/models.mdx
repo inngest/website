@@ -13,6 +13,26 @@ export const description = "How an Inngest agent calls its model: choose a model
 
 The loop is the core of an agent. It sends the thread's history to the model, runs the tools the model asks for, sends back their results, and repeats until the model answers. One model call and the tool calls it asks for make a **turn**. Each model call and each tool call is its own durable step.
 
+## What the loop solves
+
+- **No loop to write or maintain.** A model and a system prompt are enough. The loop calls tools, sends back their results, and stops when the model answers.
+- **No repeated model calls.** Each model call is a step, so a crash or a failed tool call never pays for the same model call twice.
+- **Memory without a database.** The loop saves the model's history to the thread, and the next run starts with it.
+- **Corrections that land mid-task.** New messages reach the model on its next call, instead of waiting for the task to finish.
+- **Limits and cost tracking.** The loop caps turns, summarizes long histories, and reports tokens and cost for every call.
+- **Any provider.** The loop only needs a function that takes a request and returns a reply, so you can [bring your own model](/docs/labs/agents/custom-models?ref=docs-labs-agents-models).
+
+## How the loop works
+
+On each batch of messages from the inbox, the loop:
+
+1. **Builds the request.** It sends the system prompt, the thread's history, the new messages, and the definitions of every tool the agent has.
+2. **Calls the model, as a step.** Rate limits and server errors are retried inside the step, after the provider's `retry-after` when it sends one.
+3. **Runs the tools the model asked for, each as a step.** Calls from one reply run at the same time by default, and their results go back to the model in the order it called them. A tool that throws or returns an error gives the model an error result to react to.
+4. **Adds new messages.** Before the next model call, it takes anything new from the inbox, filtered by your `steer` function if you set one.
+5. **Repeats until the model answers.** The loop stops when the model replies without asking for a tool, calls `wait`, reaches `maxTurns`, or matches a `stop` condition.
+6. **Saves the history.** The model's history is saved to the thread. When it nears the model's context window, the start of the conversation is summarized, and the summary is reused on later calls.
+
 ## Choose a model
 
 `anthropic()` returns a model for the Anthropic API. Define it once and import it in each agent.
@@ -62,12 +82,7 @@ export const prHelper = agents.agent({
 
 The run's output isn't sent anywhere. To reach a person, give the model a tool that does, such as `comment` here, or [write a handler](#write-a-handler).
 
-The loop does these things for you:
-
-- **Keeps the history.** After each batch, the loop saves the model's history on the [thread](/docs/labs/agents/threads?ref=docs-labs-agents-models#what-a-thread-keeps). When the history gets long, it's summarized, and the summary is reused.
-- **Adds new messages.** Before each model call, the loop takes any new messages from the [inbox](/docs/labs/agents/inboxes?ref=docs-labs-agents-models). A correction such as "focus on the tests" reaches the very next call.
-- **Caps turns.** The loop stops after 40 turns by default. See [Change the loop's options](#change-the-loop-s-options).
-- **Adds built-in tools.** Every model agent can [find and start other agents](/docs/labs/agents/agent-teams?ref=docs-labs-agents-models), and has a `wait` tool that ends its turn until the next message arrives.
+The loop keeps the history on the [thread](/docs/labs/agents/threads?ref=docs-labs-agents-models#what-a-thread-keeps), adds new [inbox](/docs/labs/agents/inboxes?ref=docs-labs-agents-models) messages before each model call, and stops after 40 turns by default. See [How the loop works](#how-the-loop-works). Every model agent also has the [agent tools](/docs/labs/agents/agent-teams?ref=docs-labs-agents-models#let-the-model-start-agents) for working with other agents, and a `wait` tool that ends its turn until the next message arrives.
 
 ## Write a handler
 

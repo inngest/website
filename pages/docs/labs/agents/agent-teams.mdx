@@ -13,6 +13,17 @@ export const description = "Build teams of Inngest agents: start an agent from c
 
 Agents can work together. Your code or an agent's model can start another agent, send it messages while it works, ask it questions, and wait for its result. Messages between agents arrive in each agent's [inbox](/docs/labs/agents/inboxes?ref=docs-labs-agents-agent-teams). Results go back to whoever started the agent.
 
+Splitting work across agents keeps each agent's prompt and tools focused. [Agents working together](/docs/labs/agents/agents?ref=docs-labs-agents-agent-teams#agents-working-together) explains the problems this creates in most multi-agent setups, and how Inngest Agents handles them.
+
+## How agents talk to each other
+
+- **Each start opens a thread.** `start()` and the model's `start_agent` tool send an event that starts the agent on a new thread, with a signed key, unless you pass a thread key. The started agent has its own runs, retries, and trace.
+- **Messages are events.** `message()`, `ask()`, and the model's `message_agent` and `ask_agent` tools send events to that thread. Each one goes into the working run's inbox, or starts a new run on the thread.
+- **Results go back to the starter.** Your code waits for a result with `result()`. A model's run receives an `agent/finished` message in its inbox instead, and stays open until every agent it started has finished, for up to 24 hours.
+- **Questions get answers.** A question arrives as an `agent/question` message. The answer goes back only to whoever asked.
+- **Nothing blocks the model.** The model's agent tools return right away, and replies arrive as messages, so two agents can't deadlock waiting on each other.
+- **Reach follows lineage.** A model can message, ask, and stop only the agents its thread started, and the agents those started.
+
 ## Start an agent from code
 
 Give the agent an `invoke()` trigger to type its input, then call `start()`. `start()` returns a handle as soon as the run starts, and `result()` waits for the run's output.
@@ -134,7 +145,7 @@ Every agent with a model has tools to work with other agents. It needs no setup.
 | `reply` | Answers a question it was asked, by the question's ID. |
 | `wait` | Ends the model's turn until the next message arrives. |
 
-None of these tools waits for the other agent, so two agents can't deadlock. Replies arrive in the model's inbox as `agent/message`, `agent/question`, `agent/answer`, and `agent/finished` messages, and the loop adds them to the next model call. A run that started agents with `start_agent` stays open until they finish.
+Replies arrive in the model's inbox as `agent/message`, `agent/question`, `agent/answer`, and `agent/finished` messages, and the loop adds them to the next model call. A run that started agents with `start_agent` stays open until they finish.
 
 - **Who it can reach.** A model can message, ask, and stop only the agents its thread started, and the agents those started. Thread keys from `start()` and `start_agent` are signed, so a guessed key is refused.
 - **What happens when the starter ends.** A started agent keeps running when the run that started it ends. Start it with `attach: true` to cancel it when the starting run ends: when it completes, fails after its retries, or is cancelled.

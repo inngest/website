@@ -1,17 +1,96 @@
 import { Info, AnnotatedCode, Annotation } from "shared/Docs/mdx";
+import { Mermaid } from "src/shared/Docs/Mermaid";
 
 export const metaTitle = "Agents | Inngest Agents";
 export const description = "Define an Inngest agent: give it an ID, triggers and a thread, run the model loop or your own handler, wrap work in steps, set function options, and serve it.";
 
 # Agents
 
-> Define an agent, choose what starts it, and decide whether the SDK runs the model loop or your own handler does.
+> Learn what an agent solves and how it works, then define one, choose what starts it, and decide whether the SDK runs the model loop or your own handler does.
 
 <Info>
   Inngest Agents is an Inngest Labs project: early, moving fast, and shaped by your feedback. [What's Labs?](/docs/labs?ref=docs-labs-agents-agents)
 </Info>
 
 An agent is an Inngest function you define with `agents.agent()`. Inngest starts it from its triggers, retries what fails, and records every run. An agent adds three things to a plain function: a [thread](/docs/labs/agents/threads?ref=docs-labs-agents-agents) that keeps each conversation, an [inbox](/docs/labs/agents/inboxes?ref=docs-labs-agents-agents) that receives messages while it works, and a [model loop](/docs/labs/agents/models?ref=docs-labs-agents-agents) that calls the model and its tools.
+
+## What an agent solves
+
+An agent loop is easy to write in a request handler: call the model, run the tools it asks for, and repeat. Running that loop in production is the hard part. An Inngest agent handles it for you.
+
+| Without Inngest Agents | With Inngest Agents |
+| --- | --- |
+| A crash or a deploy mid-loop loses the work. A retry calls the model again and repeats side effects, such as sending the same email twice. | Each model call and each tool call is a durable step. A retry repeats only the step that failed. |
+| A long task hits a request timeout, or holds a worker while the model or a person thinks. | A run waits for minutes or days without holding a process or using compute. |
+| You store conversation history in a database, and load and save it on every request. | The thread keeps the model's history and your state between runs. |
+| Two messages for the same conversation race, and start two loops that overwrite each other. | A thread runs one run at a time. A message that arrives mid-task goes into the working run's inbox. |
+| You add queues, locks, and retry logic around every external call. | Triggers, retries, concurrency, and throttling come from Inngest functions. |
+| You piece together logs to see what the agent did and what it cost. | Every model call, tool call, and message is a row in the run's trace, with tokens and cost. |
+
+## How an agent works
+
+`agents.agent()` registers a small set of Inngest functions for each agent. You don't configure them:
+
+- **The thread functions** hold each thread. They receive your triggers, keep one thread per thread key, and hold the thread's message log, state, and subscriptions.
+- **The agent run** runs your handler, or the loop. A run starts with the thread's state, reads messages from its inbox, and ends when the inbox is empty.
+
+<Mermaid
+  wide
+  label="Your app sends ticket/opened for ticket T-1. The thread starts an agent run with the thread's state. The run calls the model, which asks for lookupOrder, and the run calls lookupOrder, each as a step. Meanwhile your app sends ticket/replied for T-1, which the thread delivers to the working run's inbox. The run's next model call includes the new message, and the model answers. The run saves the history to the thread and ends."
+  chart={`sequenceDiagram
+  participant App as Your app
+  participant Thread as Thread T-1
+  participant Run as Agent run
+  participant Model
+  App->>Thread: ticket/opened
+  Thread->>Run: Start a run with the thread's state
+  Run->>Model: Model call (step)
+  Model-->>Run: Call lookupOrder
+  Run->>Run: lookupOrder (step)
+  App->>Thread: ticket/replied
+  Thread-->>Run: Deliver to the run's inbox
+  Run->>Model: Model call with the new message (step)
+  Model-->>Run: Answer
+  Run->>Thread: Save history, then end`}
+/>
+
+1. **An event arrives.** The thread functions read its thread key and add it to that thread's log.
+2. **A run picks it up.** If no run is working on the thread, Inngest starts one. Otherwise the event goes into the working run's inbox.
+3. **The run works in steps.** Each model call and tool call is a step whose result is saved. If the run retries or resumes, finished steps return their saved results.
+4. **The run ends.** When the inbox is empty, the run saves the model's history to the thread and ends. The next event on the thread starts a new run with that history.
+
+## Agents working together
+
+One agent with dozens of tools and a long prompt gets hard to steer and to test. Splitting the work into focused agents, such as a lead that hands parts of a task to specialists, keeps each prompt short. It also adds problems that a single agent doesn't have. Inngest Agents handles them:
+
+| The problem | How Inngest Agents handles it |
+| --- | --- |
+| A handoff to another agent is lost if the process that made it dies. | `start()` and the model's `start_agent` tool send an event. The other agent runs on its own thread, with its own retries and trace. |
+| The coordinating agent holds a process open while specialists work. | A run waiting on agents it started uses no compute. Their results arrive in its inbox as `agent/finished` messages. |
+| Two agents wait on each other and deadlock. | The model's agent tools never wait. Replies and results arrive as messages, and the loop adds them to the next model call. |
+| Agents start agents without end. | `limits.depth` caps how deep a chain of started agents goes, three levels by default. |
+| Routing is hard-coded into the coordinator. | Each agent publishes a card, and the model finds the agent it needs at run time with `list_agents`. |
+| Any agent can reach any other. | `discovery.agents` and `share` limit what a model can find and start. A model can only message agents its own thread started, and thread keys are signed. |
+| The model passes along the caller's identity, and could change it. | `discovery.prepare` fills parts of a start's input from your code, not the model. |
+| A specialist needs the coordinator's files. | Lend your sandbox's tools to the agent you start, so it works on the same machine. |
+
+<Mermaid
+  wide
+  label="A lead agent's run calls start_agent for a security reviewer. Inngest starts the reviewer on a new thread, and the lead's run waits without using compute. The reviewer's run calls the model and tools as steps. When it finishes, its result arrives in the lead's inbox as an agent/finished message, and the lead's next model call includes it."
+  chart={`sequenceDiagram
+  participant Lead as Lead run
+  participant Inngest
+  participant Reviewer as Reviewer run
+  Lead->>Inngest: start_agent security-reviewer
+  Inngest->>Reviewer: Start a run on a new thread
+  Note over Lead: Waits, using no compute
+  Reviewer->>Reviewer: Model and tool calls (steps)
+  Reviewer-->>Inngest: Finish with a result
+  Inngest-->>Lead: agent/finished in the lead's inbox
+  Lead->>Lead: Next model call includes the result`}
+/>
+
+Your code can do the same without a model: `reviewer.start(input)` returns a handle, and `.result()` waits for the output. See [Agent teams](/docs/labs/agents/agent-teams?ref=docs-labs-agents-agents) for starting and talking to agents, and [Agent discovery](/docs/labs/agents/agent-discovery?ref=docs-labs-agents-agents) for cards and limits.
 
 ## Define an agent
 
