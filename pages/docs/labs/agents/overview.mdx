@@ -166,6 +166,89 @@ export const sendReply = tool.step({
 
 `orders` and `helpdesk` are your own API clients. The [Support assistant recipe](/docs/labs/agents/recipes/support-assistant?ref=docs-labs-agents-overview) has the complete project.
 
+### Add your own steps
+
+To run your own code before and after the model, write a handler. Here, the handler loads the customer, runs the loop, sends the reply itself, and tells the account manager about enterprise tickets. Each of those is a step, in the same run as the loop's model calls and tool calls.
+
+<AnnotatedCode>
+
+```typescript {{ title: "inngest/agents/support.ts" }}
+import { agents } from "../client";
+import { ticketOpened, ticketReplied } from "../events";
+import { helpdesk } from "../lib/helpdesk";
+import { claude } from "../models/claude";
+import { lookupOrder } from "../tools/lookupOrder";
+
+export const support = agents.agent(
+  {
+    id: "support",
+    triggers: [ticketOpened, ticketReplied],
+    thread: "event.data.ticket",
+    model: claude,
+    system: "You answer customer questions about orders.",
+    tools: { lookupOrder },
+  },
+  async ({ inbox, loop, step, thread }) => {
+    const customer = await step.run("load-customer", async () => {
+      return await helpdesk.customer(thread.key);
+    });
+
+    for await (const batch of inbox.batches()) {
+      const result = await loop(batch);
+
+      await step.run("send-reply", async () => {
+        return await helpdesk.reply(thread.key, result.text);
+      });
+
+      if (customer.plan === "enterprise") {
+        await step.run("notify-account-manager", async () => {
+          return await helpdesk.notify(customer.accountManager, thread.key);
+        });
+      }
+    }
+  },
+);
+```
+
+<Annotation id="load" lines="17-19" tease="before the model" title="A step before the loop" href="/docs/durable-execution/primitives/step-run?ref=docs-labs-agents-overview" linkText="step.run">
+Runs once per run. Its result is saved, so a retry later in the run doesn't call the helpdesk again.
+</Annotation>
+
+<Annotation id="loop" lines="22" tease="model and tool steps" title="The loop" href="/docs/labs/agents/models?ref=docs-labs-agents-overview#write-a-handler" linkText="Models and the loop">
+Each model call and each `lookupOrder` call is its own step. The model no longer needs a `sendReply` tool, because your code sends the answer.
+</Annotation>
+
+<Annotation id="reply" lines="24-26" tease="after the model" title="A step after the loop">
+Sends the model's answer. If it fails, only this step retries.
+</Annotation>
+
+<Annotation id="notify" lines="28-32" tease="plain code decides" title="Branch on your own data">
+Ordinary `if` statements decide which steps run.
+</Annotation>
+
+</AnnotatedCode>
+
+A ticket that needs one order lookup produces this run:
+
+```text {{ title: "The run's steps" }}
+load-customer             your step
+model call                the loop: the model asks for lookupOrder
+lookupOrder               the loop: a tool call
+model call                the loop: the model answers
+send-reply                your step
+notify-account-manager    your step, for enterprise customers
+```
+
+What happens when something goes wrong, or something new arrives:
+
+- **A step fails.** Inngest retries that step alone. If `send-reply` fails, the retry sends the saved answer. The model isn't called again, and `lookupOrder` doesn't run again.
+- **Your app restarts or deploys mid-run.** The run continues from the first unfinished step. Finished steps return their saved results.
+- **The customer writes again while the loop works.** If the model hasn't answered yet, the loop adds the message to its next model call, so the answer covers both messages. Otherwise the message waits for the next batch.
+- **The customer writes again during `send-reply`.** The message waits in the inbox. When `send-reply` finishes, the `for await` loop takes it as the next batch, and the model, `send-reply`, and `notify-account-manager` run again for it. Inngest numbers repeated step IDs, so reusing `"send-reply"` in a loop is fine.
+- **The inbox is empty.** The `for await` loop ends, and so does the run. The next message on the ticket starts a new run, which runs `load-customer` again.
+
+Each step counts toward the run's [step limit](/docs/durable-execution/limits?ref=docs-labs-agents-overview#platform-limits). Because a run ends when its inbox is empty, a long conversation is spread across many runs.
+
 ## Example: a pull request reviewer
 
 This agent reviews each pull request in a sandbox that has the pull request checked out. It runs the tests, follows your team's review checklist, and posts its review. Because it has a handler, you control what happens with each answer.
