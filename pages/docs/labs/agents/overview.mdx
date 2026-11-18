@@ -16,17 +16,39 @@ An Inngest agent is a durable function that calls a model in a loop. You give it
 
 ## Concepts
 
-An agent is built from a small set of parts. Each part has its own page under Concepts.
+You define an agent once. Inngest runs it on many threads, one for each conversation, and each thread has its own inbox, history, state, and sandbox.
+
+### What you define
 
 - **Agent.** An Inngest function you define with `agents.agent()`. It starts from triggers, such as events or a schedule, and either runs the model loop for you or runs a handler you write. See [Agents](/docs/labs/agents/agents?ref=docs-labs-agents-overview).
-- **Thread.** The conversation an event belongs to, such as a customer, a support ticket, or a pull request. You name it with an expression over your event, such as `"event.data.ticket"`. A thread keeps the model's history and your own state between runs. See [Threads](/docs/labs/agents/threads?ref=docs-labs-agents-overview).
-- **Run.** One execution of the agent on a thread. A run handles the messages in front of it and ends. The next message on the thread starts a new run that picks up the same history.
-- **Inbox.** The queue of messages on a thread. Messages that arrive while a run works wait in its inbox and reach the model on its next call, so a correction lands mid-task instead of starting a second run. See [Inboxes](/docs/labs/agents/inboxes?ref=docs-labs-agents-overview).
 - **Model and loop.** The loop sends the thread's history to the model, runs the tools the model asks for, and repeats until the model answers. Each model call and each tool call is its own step. See [Models and the loop](/docs/labs/agents/models?ref=docs-labs-agents-overview).
 - **Tools.** Functions the model can call. A tool runs in your app as a durable step, with your code and your credentials. See [Tools](/docs/labs/agents/tools?ref=docs-labs-agents-overview).
 - **Skills.** Instructions in `SKILL.md` files that the model opens when a task needs them, such as your team's review checklist. See [Skills](/docs/labs/agents/skills?ref=docs-labs-agents-overview).
-- **Sandboxes.** An isolated machine for each thread, where the model can run commands, read and edit files, and work in a checked-out repository. See [Sandboxes](/docs/labs/agents/sandboxes?ref=docs-labs-agents-overview).
-- **Agent teams.** Agents can start other agents, message them while they work, and wait for their results. Each agent publishes a card, so a model can find the right agent at run time. See [Agent teams](/docs/labs/agents/agent-teams?ref=docs-labs-agents-overview) and [Agent discovery](/docs/labs/agents/agent-discovery?ref=docs-labs-agents-overview).
+
+### What each conversation gets
+
+- **Thread.** The conversation an event belongs to, such as a customer, a support ticket, or a pull request. You name it with an expression over your event, such as `"event.data.ticket"`. A thread keeps the model's history and your own state between runs. See [Threads](/docs/labs/agents/threads?ref=docs-labs-agents-overview).
+- **Inbox.** The queue of messages on a thread. Messages that arrive while a run works wait in its inbox and reach the model on its next call, so a correction lands mid-task instead of starting a second run. See [Inboxes](/docs/labs/agents/inboxes?ref=docs-labs-agents-overview).
+- **Run.** One execution of the agent on a thread. A run handles the messages in its inbox and ends. The next message on the thread starts a new run that picks up the same history.
+- **Sandbox.** An isolated machine for the thread, where the model can run commands, read and edit files, and work in a checked-out repository. It pauses between runs and keeps its files. See [Sandboxes](/docs/labs/agents/sandboxes?ref=docs-labs-agents-overview).
+
+### How agents work together
+
+- **Agent teams.** A run can start other agents, message them while they work, and wait for their results. See [Agent teams](/docs/labs/agents/agent-teams?ref=docs-labs-agents-overview).
+- **Agent discovery.** Each agent publishes a card that says what it does, so a model can find the right agent at run time. See [Agent discovery](/docs/labs/agents/agent-discovery?ref=docs-labs-agents-overview).
+
+<Mermaid
+  label="Events and messages reach an agent, which defines the model, system prompt, tools, and skills. The agent routes each event by its thread key, here to thread T-1 or thread T-2. Inside thread T-1, the inbox feeds a run, where the loop calls the model and tools, each as a step. The run reads and writes the thread's history, state, and sandbox, and starts, messages, and receives results from other agents."
+  chart={`flowchart TB
+  E(["Events and messages"]):::muted --> AG["Agent<br>model, system prompt, tools, skills"]:::accent
+  AG -->|"thread key: T-1"| I
+  AG -->|"thread key: T-2"| T2["Thread T-2"]:::muted
+  subgraph T1["Thread T-1"]
+    I["Inbox"]:::info --> R["Run<br>the loop calls the model and tools,<br>each as a step"]:::accent
+    R <-.-> H["History, state, and sandbox"]:::info
+  end
+  R <-->|"start, message, results"| O(["Other agents"]):::muted`}
+/>
 
 ## How a run works
 
@@ -165,6 +187,83 @@ export const sendReply = tool.step({
 ```
 
 `orders` and `helpdesk` are your own API clients. The [Support assistant recipe](/docs/labs/agents/recipes/support-assistant?ref=docs-labs-agents-overview) has the complete project.
+
+### Give a tool several steps
+
+`tool.step()` runs the whole tool as one step. When a tool does several things that can fail separately, such as loading an order, issuing a refund, and emailing a receipt, define it with `tool.group()` and put each part in its own `step.run()`.
+
+<AnnotatedCode>
+
+```typescript {{ title: "inngest/tools/refundOrder.ts" }}
+import { step } from "inngest";
+import { tool } from "inngest/experimental";
+import { agent } from "inngest/experimental/agents";
+import { z } from "zod";
+import { helpdesk } from "../lib/helpdesk";
+import { orders } from "../lib/orders";
+import { payments } from "../lib/payments";
+
+export const refundOrder = tool.group({
+  description: "Refund a delivered order in full and email the customer a receipt",
+  input: z.object({ id: z.string(), ticket: z.string() }),
+  run: async ({ id, ticket }, { idempotencyKey }) => {
+    const order = await step.run("load-order", async () => {
+      return await orders.get(id);
+    });
+
+    if (order.status !== "delivered") {
+      return agent.toolError(`Order ${id} hasn't been delivered yet, so it can't be refunded.`);
+    }
+
+    const refund = await step.run("issue-refund", async () => {
+      return await payments.refund(order.paymentId, order.total, idempotencyKey);
+    });
+
+    await step.run("email-receipt", async () => {
+      return await helpdesk.reply(ticket, `We refunded ${order.total} for order ${id}.`);
+    });
+
+    return { refundId: refund.id, amount: order.total };
+  },
+});
+```
+
+<Annotation id="group" lines="9" tease="a tool made of steps" title="tool.group()" href="/docs/labs/agents/tools?ref=docs-labs-agents-overview#run-several-steps-in-one-tool" linkText="Tools">
+The tool has no step of its own. Each `step.run()` inside it is a step in the agent's run.
+</Annotation>
+
+<Annotation id="key" lines="12" tease="the same on every retry" title="idempotencyKey">
+Stays the same across retries of this tool call. Pass it to APIs that deduplicate writes, so a retry never refunds twice.
+</Annotation>
+
+<Annotation id="error" lines="17-19" tease="the model reads it" title="Stop early">
+Returns an error the model can read and explain to the customer. The steps after it don't run.
+</Annotation>
+
+<Annotation id="steps" lines="21-27" tease="retried one at a time" title="One step per action">
+If `email-receipt` fails, only the email is retried. The refund already issued is saved and isn't repeated.
+</Annotation>
+
+<Annotation id="result" lines="29" tease="what the model sees" title="The result">
+The model sees this value once every step has finished, and never sees the retries.
+</Annotation>
+
+</AnnotatedCode>
+
+Add it to the agent's tools, `tools: { lookupOrder, sendReply, refundOrder }`. When a customer asks for a refund, the run looks like this:
+
+```text {{ title: "The run's steps" }}
+model call        the model asks for refundOrder
+load-order        refundOrder
+issue-refund      refundOrder
+email-receipt     refundOrder
+model call        the model reads the result
+sendReply         the model replies to the customer
+```
+
+- **A step inside the tool fails.** Inngest retries that step alone. The model call before the tool, and the tool's finished steps, aren't repeated.
+- **Your app restarts in the middle of the tool.** The run continues from the first unfinished step, so `load-order` returns its saved order and the refund isn't issued again.
+- **The model calls the tool twice in one run.** Each call runs its own steps. Inngest numbers repeated step IDs, and each call gets its own `idempotencyKey`.
 
 ### Add your own steps
 
