@@ -602,6 +602,7 @@ export type DailyPrize = {
   pun: string;
   value: number;
   emoji: string;
+  /** Transparent product photo, from the prize cards in Figma. */
   image?: string;
 };
 
@@ -612,6 +613,7 @@ export const DAILY_PRIZES: DailyPrize[] = [
     pun: "Count every step.",
     value: 300,
     emoji: "⌚",
+    image: "/assets/v1/12-days/prizes/garmin-watch.png",
   },
   {
     day: 2,
@@ -619,6 +621,7 @@ export const DAILY_PRIZES: DailyPrize[] = [
     pun: "Fail fast, print again.",
     value: 300,
     emoji: "🖨️",
+    image: "/assets/v1/12-days/prizes/bambu-a1-mini.png",
   },
   {
     day: 3,
@@ -626,6 +629,7 @@ export const DAILY_PRIZES: DailyPrize[] = [
     pun: "Invoke focus.",
     value: 350,
     emoji: "🎧",
+    image: "/assets/v1/12-days/prizes/sony-headphones.png",
   },
   {
     day: 4,
@@ -633,6 +637,7 @@ export const DAILY_PRIZES: DailyPrize[] = [
     pun: "Wait for it…",
     value: 250,
     emoji: "☕",
+    image: "/assets/v1/12-days/prizes/ember-mug.png",
   },
   {
     day: 5,

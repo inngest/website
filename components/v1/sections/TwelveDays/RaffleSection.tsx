@@ -13,7 +13,7 @@ import {
   UNLOCK_DATES,
   YEAR,
 } from "@/components/v1/sections/TwelveDays/data";
-import PrizeSticker from "@/components/v1/sections/TwelveDays/PrizeSticker";
+import PrizePanel from "@/components/v1/sections/TwelveDays/PrizePanel";
 import {
   buttonClass,
   POSTER_EYEBROW,
@@ -81,9 +81,12 @@ export default function RaffleSection({ now }: { now: Date | null }) {
                   : `Day 1 prize · December ${UNLOCK_DATES[0]}`}
               </p>
               <div className="flex items-center gap-6">
-                <div className="flex h-[120px] w-[120px] shrink-0 items-center justify-center">
-                  <PrizeSticker prize={featured} size={104} glow />
-                </div>
+                <PrizePanel
+                  prize={featured}
+                  className="h-[132px] w-[156px] shrink-0"
+                  sizes="132px"
+                  emojiClassName="text-[64px]"
+                />
                 <div className="flex min-w-0 flex-col gap-2">
                   <p className="font-sans text-[28px] font-black leading-[1.05] tracking-[-0.02em]">
                     {featured.prize}
@@ -176,15 +179,17 @@ function PrizeCalendar({
             <li
               key={p.day}
               className={
-                "relative flex min-h-[176px] list-none flex-col gap-2 rounded-lg border-2 bg-[#020202] p-3 text-white " +
+                // The prize card from Figma: slate card, thin black border
+                // with a heavy bottom-right edge, date, panel, name.
+                "relative flex list-none flex-col gap-3 rounded-[16px] border-[1.5px] border-b-[6px] border-r-[6px] border-[#020202] bg-[#212121] p-3 text-white " +
                 (isToday
-                  ? "border-[#F7DA10] shadow-[0_0_0_3px_#F7DA10]"
-                  : "border-[#020202]") +
-                (isPast ? " opacity-60" : "")
+                  ? "outline outline-[3px] outline-offset-[3px] outline-[#F7DA10]"
+                  : "") +
+                (isPast ? " brightness-75 saturate-[.35]" : "")
               }
             >
               <div className="flex items-start justify-between gap-2">
-                <span className="font-sans text-[24px] font-black leading-none">
+                <span className="font-sans text-[28px] font-black leading-none tracking-[-0.01em]">
                   {UNLOCK_DATES[p.day - 1]}
                 </span>
                 {isToday ? (
@@ -197,15 +202,8 @@ function PrizeCalendar({
                   </span>
                 ) : null}
               </div>
-              <div className="flex flex-1 items-center justify-center py-1">
-                <PrizeSticker
-                  prize={p}
-                  size={64}
-                  color={isToday ? "#F7DA10" : "#FFFFFF"}
-                  glow={isToday}
-                />
-              </div>
-              <p className="font-v1Label text-[12px] leading-[1.3]">
+              <PrizePanel prize={p} className="h-[116px] w-full" sizes="96px" />
+              <p className="text-center font-v1Mono text-[13px] leading-[1.5]">
                 {p.prize}
               </p>
               <p className="sr-only">
