@@ -1,29 +1,34 @@
 "use client";
 
-import ButtonLink from "@/components/v1/ButtonLink";
 import PageShell from "@/components/v1/PageShell";
-import StartBuilding from "@/components/v1/sections/Home/StartBuilding";
 import AdventCalendar from "@/components/v1/sections/TwelveDays/AdventCalendar";
 import BuildathonMarquee from "@/components/v1/sections/TwelveDays/BuildathonMarquee";
 import BuildathonTeaser from "@/components/v1/sections/TwelveDays/BuildathonTeaser";
-import { CLOSING } from "@/components/v1/sections/TwelveDays/data";
 import Finale from "@/components/v1/sections/TwelveDays/Finale";
 import Hero from "@/components/v1/sections/TwelveDays/Hero";
+import HowItWorks from "@/components/v1/sections/TwelveDays/HowItWorks";
 import PreviewClock from "@/components/v1/sections/TwelveDays/PreviewClock";
+import RaffleDialog from "@/components/v1/sections/TwelveDays/RaffleDialog";
+import RaffleSection from "@/components/v1/sections/TwelveDays/RaffleSection";
 import { useCalendarClock } from "@/components/v1/sections/TwelveDays/useCalendarClock";
 
 /**
  * inngest.com/12-days-of-workflows — the Inngest × CodeTV holiday
  * campaign, in the Build for the Lonng Run brand.
  *
- * Hero → countdown ticker → the advent calendar → the build-a-thon →
- * the live CodeTV finale → closing quick starts. (The playable machine,
+ * Hero → countdown ticker → how it works → the advent calendar → the build-a-thon →
+ * the live CodeTV finale → the daily raffle. (The playable machine,
  * Machine.tsx, is off the page after Lauren's review.)
+ *
+ * Four things to do, each with one home: join (the one form in the
+ * calendar, which is also the raffle entry), open today's door, submit
+ * to the build-a-thon (BuildathonTeaser), and get started with Inngest
+ * (NewToInngest, under the form).
  *
  * One clock for the whole page, so the ticker and the doors flip at
  * the same instant at midnight.
  *
- * There's no sign-in. The email sign-up in the calendar is how people
+ * There's no sign-in. The sign-up form in the calendar is how people
  * hear about each new door.
  *
  * `employeePreview` is the password-gated copy at
@@ -42,27 +47,16 @@ export default function TwelveDaysOfWorkflows({
       <div className="overflow-x-clip">
         <Hero />
         <BuildathonMarquee now={now} />
+        <HowItWorks />
         <AdventCalendar now={now} />
         <BuildathonTeaser />
         <Finale />
-        {/* The shared closing section sets its buttons and cards in
-            caps; this page has none, so they're turned off here. */}
-        <div className="[&_*]:!normal-case">
-          <StartBuilding
-            refTag="12-days-of-workflows-start-building"
-            title={CLOSING.title}
-            body={CLOSING.body}
-            titleClassName="normal-case"
-            className="!py-16 sm:!py-20 lg:!py-24"
-            actions={
-              <ButtonLink variant="primary" href={CLOSING.cta.href}>
-                {CLOSING.cta.label}
-              </ButtonLink>
-            }
-          />
-        </div>
+        {/* Lower priority than the lessons and the build-a-thon. The
+            pop-up still opens from today's door. */}
+        <RaffleSection now={now} />
       </div>
       <PreviewClock always={employeePreview} />
+      <RaffleDialog />
     </PageShell>
   );
 }

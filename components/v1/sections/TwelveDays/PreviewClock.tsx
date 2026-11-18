@@ -82,13 +82,13 @@ export default function PreviewClock({ always = false }: { always?: boolean }) {
     <div
       role="region"
       aria-label="Preview controls"
-      className="fixed bottom-4 left-4 right-4 z-50 mx-auto max-w-[720px] rounded-xl border-[3px] border-[#010101] bg-white p-3 font-v1Label text-[12px] text-[#010101] shadow-[4px_4px_0_#010101]"
+      className="fixed bottom-4 left-4 right-4 z-50 mx-auto max-w-[720px] rounded-xl border-[3px] border-[#020202] bg-white p-3 font-v1Label text-[12px] text-[#020202] shadow-[4px_4px_0_#020202]"
     >
       <div className="flex items-center justify-between gap-3">
         <span>
           Preview only · jump to a day
           {current ? (
-            <span className="ml-2 text-[#010101]/60">now = {current}</span>
+            <span className="ml-2 text-[#020202]/60">now = {current}</span>
           ) : null}
         </span>
         <button
@@ -107,8 +107,8 @@ export default function PreviewClock({ always = false }: { always?: boolean }) {
               type="button"
               title={"title" in stop ? stop.title : undefined}
               onClick={() => go(stop.now)}
-              className={`rounded-md border-2 border-[#010101] px-2 py-1 ${
-                current === stop.now ? "bg-[#ECFE08]" : "bg-white"
+              className={`rounded-md border-2 border-[#020202] px-2 py-1 ${
+                current === stop.now ? "bg-[#F7DA10]" : "bg-white"
               }`}
             >
               {stop.label}
@@ -117,7 +117,7 @@ export default function PreviewClock({ always = false }: { always?: boolean }) {
           <button
             type="button"
             onClick={resetDoors}
-            className="rounded-md border-2 border-[#010101] bg-[#F55C50] px-2 py-1 text-white"
+            className="rounded-md border-2 border-[#020202] bg-[#F65C4F] px-2 py-1 text-white"
           >
             Reset doors
           </button>

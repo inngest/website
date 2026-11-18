@@ -31,8 +31,8 @@ export function Chip({
       className={
         "inline-flex items-center rounded-full px-3 py-1 font-v1Label text-[14px] " +
         (tone === "light"
-          ? "bg-white/35 text-[#010101]"
-          : "bg-[#010101] text-white")
+          ? "bg-white/35 text-[#020202]"
+          : "bg-[#020202] text-white")
       }
     >
       {children}
@@ -44,24 +44,25 @@ export type ButtonTone =
   | "ink"
   | "outline"
   | "white"
-  | "lime"
+  | "yellow"
   | "green"
   | "salmon"
   | "ghost";
 
 const BUTTON_TONES: Record<ButtonTone, string> = {
-  ink: "border-[#010101] bg-[#010101] text-white hover:bg-white hover:text-[#010101]",
+  ink: "border-[#020202] bg-[#020202] text-white hover:bg-white hover:text-[#020202]",
   outline:
-    "border-[#010101] bg-transparent text-[#010101] hover:bg-[#010101] hover:text-white",
+    "border-[#020202] bg-transparent text-[#020202] hover:bg-[#020202] hover:text-white",
   white:
-    "border-[#010101] bg-white text-[#010101] hover:bg-[#010101] hover:text-white",
-  lime: "border-[#ECFE08] bg-[#ECFE08] text-[#010101] hover:border-white hover:bg-white",
+    "border-[#020202] bg-white text-[#020202] hover:bg-[#020202] hover:text-white",
+  yellow:
+    "border-[#F7DA10] bg-[#F7DA10] text-[#020202] hover:border-white hover:bg-white",
   green:
-    "border-[#0BDD48] bg-[#0BDD48] text-[#010101] hover:border-white hover:bg-white",
+    "border-[#0BDD48] bg-[#0BDD48] text-[#020202] hover:border-white hover:bg-white",
   salmon:
-    "border-[#F55C50] bg-[#F55C50] text-[#010101] hover:border-white hover:bg-white",
+    "border-[#F65C4F] bg-[#F65C4F] text-[#020202] hover:border-white hover:bg-white",
   ghost:
-    "border-white bg-transparent text-white hover:bg-white hover:text-[#010101]",
+    "border-white bg-transparent text-white hover:bg-white hover:text-[#020202]",
 };
 
 /**
@@ -71,7 +72,7 @@ const BUTTON_TONES: Record<ButtonTone, string> = {
  */
 export function buttonClass(tone: ButtonTone, size: "md" | "sm" = "md") {
   return (
-    "inline-flex shrink-0 items-center justify-center whitespace-nowrap rounded-md border-2 font-v1Label font-semibold tracking-[0.05rem] focus-visible:outline focus-visible:outline-4 focus-visible:outline-offset-2 focus-visible:outline-[#ECFE08] disabled:cursor-not-allowed disabled:opacity-50 motion-safe:transition-colors motion-safe:duration-200 " +
+    "inline-flex shrink-0 items-center justify-center whitespace-nowrap rounded-md border-2 font-v1Label font-semibold tracking-[0.05rem] focus-visible:outline focus-visible:outline-4 focus-visible:outline-offset-2 focus-visible:outline-[#F7DA10] disabled:cursor-not-allowed disabled:opacity-50 motion-safe:transition-colors motion-safe:duration-200 " +
     (size === "md"
       ? "h-[42px] min-w-[124px] px-5 text-[12px] "
       : "h-8 px-3 text-[12px] ") +

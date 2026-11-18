@@ -2,7 +2,6 @@
 
 import { useEffect, useRef } from "react";
 import Image from "next/image";
-import Link from "next/link";
 import { motion } from "motion/react";
 import { clearHeroPanel, setHeroPanel } from "@/utils/v1/heroNav";
 import { tweens } from "@/utils/v1/springs";
@@ -106,13 +105,6 @@ export default function Hero() {
             <a href={HERO.signup.href} className={buttonClass("ink")}>
               {HERO.signup.label}
             </a>
-            <Link
-              href={HERO.cta.href}
-              prefetch={false}
-              className={buttonClass("outline")}
-            >
-              {HERO.cta.label}
-            </Link>
           </motion.div>
         </div>
 

@@ -54,7 +54,7 @@ export default function BuildathonMarquee({ now }: { now: Date | null }) {
     <a
       href={`#${CALENDAR_ID}`}
       aria-label={TICKER.label}
-      className="block overflow-hidden border-y-[3px] border-[#010101] bg-[#010101] py-4 font-sans text-[20px] font-black leading-none tracking-[-0.01em] text-[#ECFE08] focus-visible:outline focus-visible:outline-4 focus-visible:-outline-offset-4 focus-visible:outline-[#0035F1] sm:text-[26px]"
+      className="block overflow-hidden border-y-[3px] border-[#020202] bg-[#020202] py-4 font-sans text-[20px] font-black leading-none tracking-[-0.01em] text-[#F7DA10] focus-visible:outline focus-visible:outline-4 focus-visible:-outline-offset-4 focus-visible:outline-[#020202] sm:text-[26px]"
     >
       <span className="v1-12days-marquee flex w-max">
         <Row text={text} />

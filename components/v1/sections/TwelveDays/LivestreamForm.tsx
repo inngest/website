@@ -76,7 +76,7 @@ function calendarLinks(origin: string) {
 }
 
 const INPUT =
-  "h-[42px] w-full min-w-0 rounded-md border-2 border-[#010101] bg-white px-4 text-[16px] text-[#010101] placeholder:text-[#010101]/40 focus-visible:outline focus-visible:outline-4 focus-visible:outline-offset-2 focus-visible:outline-[#0035F1]";
+  "h-[42px] w-full min-w-0 rounded-md border-2 border-[#020202] bg-white px-4 text-[16px] text-[#020202] placeholder:text-[#020202]/40 focus-visible:outline focus-visible:outline-4 focus-visible:outline-offset-2 focus-visible:outline-[#020202]";
 
 /**
  * Name and email for the finale livestream. Track only, no identify, like
@@ -175,7 +175,7 @@ export default function LivestreamForm() {
     return (
       <div
         role="status"
-        className="flex flex-col gap-3 rounded-xl border-[3px] border-[#010101] bg-[#0BDD48] p-6 text-[#010101] shadow-[8px_8px_0_#010101]"
+        className="flex flex-col gap-3 rounded-xl border-[3px] border-[#020202] bg-[#0BDD48] p-6 text-[#020202] shadow-[8px_8px_0_#020202]"
       >
         <p className="font-v1Label text-[16px] leading-[1.4]">{copy.sent}</p>
         <Link
@@ -210,7 +210,7 @@ export default function LivestreamForm() {
   return (
     <form
       onSubmit={handleSubmit}
-      className="relative flex flex-col gap-5 rounded-xl border-[3px] border-[#010101] bg-[#FBF0A8] p-6 shadow-[8px_8px_0_#010101] sm:p-8"
+      className="relative flex flex-col gap-5 rounded-xl border-[3px] border-[#020202] bg-[#F7DA10] p-6 shadow-[8px_8px_0_#020202] sm:p-8"
     >
       <div
         aria-hidden="true"
@@ -228,7 +228,7 @@ export default function LivestreamForm() {
       <div className="flex flex-col gap-1.5">
         <label
           htmlFor="livestream-name"
-          className="font-v1Label text-[13px] text-[#010101]"
+          className="font-v1Label text-[13px] text-[#020202]"
         >
           {copy.name}
         </label>
@@ -245,7 +245,7 @@ export default function LivestreamForm() {
       <div className="flex flex-col gap-1.5">
         <label
           htmlFor="livestream-email"
-          className="font-v1Label text-[13px] text-[#010101]"
+          className="font-v1Label text-[13px] text-[#020202]"
         >
           {copy.email}
         </label>
@@ -266,7 +266,7 @@ export default function LivestreamForm() {
           id="livestream-email-typo"
           problem={typo.problem}
           onApplySuggestion={typo.applySuggestion}
-          className="text-[#010101]"
+          className="text-[#020202]"
         />
       </div>
       <div className="flex flex-col gap-3 sm:flex-row sm:items-center">
@@ -278,7 +278,7 @@ export default function LivestreamForm() {
           {status === "sending" ? copy.sending : copy.button}
         </button>
         {status === "failed" && (
-          <p role="alert" className="font-v1Label text-[12px] text-[#F55C50]">
+          <p role="alert" className="font-v1Label text-[12px] text-[#F65C4F]">
             {rejected ?? copy.failed}
           </p>
         )}

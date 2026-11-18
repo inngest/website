@@ -49,13 +49,16 @@ export function unlockLabel(day: number, short = false): string {
 }
 
 /** Campaign colours, sampled from the poster art. */
+/**
+ * The 12 Days brand palette, and nothing else: yellow, salmon, green,
+ * black and white.
+ */
 export const COLORS = {
-  salmon: "#F55C50",
-  blue: "#0035F1",
-  lime: "#ECFE08",
+  yellow: "#F7DA10",
+  salmon: "#F65C4F",
   green: "#0BDD48",
-  cream: "#FBF0A8",
-  ink: "#010101",
+  ink: "#020202",
+  white: "#FFFFFF",
 } as const;
 
 export interface WorkflowDay {
@@ -235,7 +238,7 @@ export const DAYS: WorkflowDay[] = [
 /** Door front colours from Savannah's design, cycled by day. */
 export const DOOR_FACES = [
   { bg: "#0BDD48", num: "#FFFFFF" },
-  { bg: "#FCD900", num: "#020202" },
+  { bg: "#F7DA10", num: "#020202" },
   { bg: "#F65C4F", num: "#FFFFFF" },
 ];
 
@@ -272,10 +275,6 @@ export const HERO = {
   body: "Twelve doors. Twelve lessons to make all your weird workflows durable. Combine them and submit your weird workflow for a chance to win cash and other prizes.",
   /** Down to the calendar: the doors and the email sign-up. */
   signup: { label: "Sign up for the challenge", href: "#calendar" },
-  cta: {
-    label: "Submit your build",
-    href: `/12-days-of-workflows/build-a-thon?ref=${REF}-hero`,
-  },
 } as const;
 
 /** Section id the hero's "Explore the calendar" jumps to. */
@@ -288,24 +287,61 @@ export const CALENDAR = {
   title: "No peeking.",
   subtitle:
     "The lessons are still wrapping themselves. Add your email to get notified when each lesson drops.",
-  skip: {
-    lead: "Already ready to build?",
-    label: "Skip to submission.",
-    href: `/12-days-of-workflows/build-a-thon?ref=${REF}-calendar#submit`,
-  },
-  /** Each door's sign-up link. */
-  tryIt: "Try it free",
 } as const;
 
-/** The email sign-up in the calendar (EmailSignup.tsx). */
+/**
+ * "New to Inngest?" under the calendar's email sign-up (NewToInngest.tsx):
+ * the one place to get started, instead of a sign-up link on every door.
+ */
+export const NEW_TO_INNGEST = {
+  lead: "New to Inngest? Get started here:",
+  copy: "Copy prompt to start locally",
+  copied: "Prompt copied. Paste it into your coding agent.",
+  signUp: {
+    label: "Start free in cloud",
+    href: `/sign-up?ref=${REF}-new-to-inngest`,
+  },
+  /** Pasted into a coding agent (Claude Code, Cursor, …) in their project. */
+  prompt: `Add Inngest to this project and run my first durable workflow locally.
+
+1. Install the Inngest SDK for this project's language and framework.
+2. Create an Inngest client and one function triggered by an event, with at least two step.run() calls.
+3. Serve the function from an /api/inngest endpoint.
+4. Start the Inngest Dev Server with \`npx inngest-cli@latest dev\`, send a test event, and show me the run in the Dev Server UI at http://localhost:8288.
+
+Follow the quick start for this stack: https://www.inngest.com/docs/getting-started`,
+} as const;
+
+/**
+ * The one sign-up form (JoinForm.tsx), in the calendar and in the raffle
+ * pop-up. Before the doors open it's email only; while a day's raffle is
+ * open the same submit also enters that day's raffle.
+ */
 export const SIGNUP = {
   prompt: "Get an email when each door opens.",
   label: "Email address",
+  name: "Name",
   placeholder: "you@company.com",
+  namePlaceholder: "Your name",
   button: "Email me when doors open",
+  raffleButton: "Sign up and enter today's raffle",
+  /** Already signed up: one click per day after that. */
+  quick: (name: string) => `Enter today's raffle as ${name}`,
+  notYou: "Not you?",
   sending: "Signing you up…",
-  sent: "You're on the list. See you at the next door.",
+  sent: "You're on the list.",
+  sentBody: "We'll email you the moment each new door opens.",
+  enteredBody: (day: number) =>
+    `You're in the Day ${day} raffle, and we'll email you when each new door opens. Come back tomorrow for another entry.`,
   failed: "That didn't go through. Try again?",
+  /** After joining: step 2 of the journey. */
+  next: { label: "Next: set up Inngest locally", href: "#new-to-inngest" },
+  /** In the pop-up: points to the "New to Inngest?" block. */
+  account: {
+    lead: "Need an Inngest account? It's free:",
+    label: "get started",
+    href: "#new-to-inngest",
+  },
 } as const;
 
 export const FINALE = {
@@ -329,12 +365,6 @@ export const FINALE = {
   image: "/assets/v1/12-days/finale.webp",
   imageAlt:
     "A cat's paw nudges an eyeball off a shelf and down a green ramp toward a funnel balanced on the head of a woman with green lips and big curly buns.",
-} as const;
-
-export const CLOSING = {
-  title: "All is calm. Your workflows are still running.",
-  body: "Make something weird. Make it durable. Build for the long run.",
-  cta: { label: "Start building free", href: `/sign-up?ref=${REF}` },
 } as const;
 
 /**
@@ -460,23 +490,67 @@ export const BUILDATHON = {
   /** Shown after `sent`: the finale is where the winners are picked. */
   register: {
     label: "Register for the livestream",
-    href: `/12-days-of-workflows?ref=${REF}-build-a-thon-sent#register`,
+    href: "#register",
   },
   failed: "That didn't go through. Try again?",
-  back: {
-    label: "Back to the calendar",
-    href: `/12-days-of-workflows?ref=${REF}-build-a-thon`,
-  },
-  startCta: {
-    label: "Start building free",
-    href: `/sign-up?ref=${REF}-build-a-thon`,
-  },
 } as const;
 
 /**
  * The scrolling ticker under the hero: what's open and what's next,
  * linking down to the calendar. `idle` shows until the clock mounts.
  */
+/**
+ * "How it works" under the hero (HowItWorks.tsx): the journey in order,
+ * each step linking to the section where it happens. Mirrors the
+ * FigJam journey map.
+ */
+export const HOW_IT_WORKS = {
+  title: "How it works",
+  /** The shortcut: no need to go through the doors first. */
+  skip: {
+    lead: "Already know Inngest?",
+    label: "Skip straight to the build-a-thon and submit",
+    href: "#submit",
+  },
+  steps: [
+    {
+      when: "Now",
+      title: "Join",
+      body: "Get each day's lesson by email. From December 7, the same sign-up enters you in that day's raffle.",
+      href: "#calendar",
+      cta: "Sign up",
+    },
+    {
+      when: "Once",
+      title: "Set up",
+      body: "Run Inngest locally with one copied prompt. A free cloud account is only needed to win a prize or deploy.",
+      href: "#new-to-inngest",
+      cta: "Get set up",
+    },
+    {
+      when: "December 7–18",
+      title: "Open a door a day",
+      body: "A five-minute lesson, the code and the docs. The email links straight to that day's door.",
+      href: "#calendar",
+      cta: "See the doors",
+    },
+    {
+      when: "Any time until December 23",
+      title: "Build (optional)",
+      body: "Combine all twelve primitives into one weird workflow and submit it for cash prizes. No need to wait for the doors.",
+      href: "#build-a-thon",
+      cta: "See the rules",
+    },
+    {
+      when: "December 29",
+      title: "Watch live",
+      body: "We pick the build-a-thon winners live on CodeTV.",
+      href: "#register",
+      cta: "Register",
+    },
+  ],
+} as const;
+
 export const TICKER = {
   idle: "A new lesson every day, December 7–18",
   allOpen: "All twelve doors are open.",
@@ -490,20 +564,174 @@ export const TICKER = {
 export const BUILDATHON_TEASER = {
   eyebrow: "The build-a-thon",
   title: ["Build your", "weird workflow."],
-  body: "Twelve lessons, twelve primitives. Put every one of them into a single workflow that does something really simple in the most overengineered way you can make work.",
-  when: BUILDATHON.when,
   prizesTitle: "The prizes",
-  prizes: BUILDATHON.prizes,
-  footnote:
-    "Make it weird: as in a toaster that needs three approvals and a cron job to make toast. Not weirdo weird. Keep it silly, keep it kind.",
-  cta: {
-    label: "Submit your workflow",
-    href: `/12-days-of-workflows/build-a-thon?ref=${REF}-build-a-thon-section`,
+} as const;
+
+/**
+ * The door whose raffle is open at `now`, or null. A day's raffle opens
+ * with its door and closes when the next door opens (the last one stays
+ * open for a day), so each entry counts for its own day only.
+ */
+export function raffleDayAt(now: Date): number | null {
+  const t = now.getTime();
+  for (let day = UNLOCK_DATES.length; day >= 1; day--) {
+    const opens = unlockAt(day).getTime();
+    if (t < opens) continue;
+    const closes =
+      day < UNLOCK_DATES.length
+        ? unlockAt(day + 1).getTime()
+        : opens + 24 * 60 * 60 * 1000;
+    return t < closes ? day : null;
+  }
+  return null;
+}
+
+/**
+ * One prize a day, each a pun on that day's lesson, drawn from that
+ * day's entries. (The finale stream is for the build-a-thon winners;
+ * the raffle has no grand prize.) `value` is the approximate retail
+ * value in USD, for the official rules (check prices when buying).
+ *
+ * `emoji` stands in for the prize art until there are transparent
+ * product cutouts: set `image` (e.g. "/assets/v1/12-days/prizes/day-1.png")
+ * and the calendar shows that instead.
+ */
+export type DailyPrize = {
+  day: number;
+  prize: string;
+  pun: string;
+  value: number;
+  emoji: string;
+  image?: string;
+};
+
+export const DAILY_PRIZES: DailyPrize[] = [
+  {
+    day: 1,
+    prize: "Garmin running watch",
+    pun: "Count every step.",
+    value: 300,
+    emoji: "⌚",
+  },
+  {
+    day: 2,
+    prize: "Bambu Lab A1 mini 3D printer",
+    pun: "Fail fast, print again.",
+    value: 300,
+    emoji: "🖨️",
+  },
+  {
+    day: 3,
+    prize: "Sony noise-cancelling headphones",
+    pun: "Invoke focus.",
+    value: 350,
+    emoji: "🎧",
+  },
+  {
+    day: 4,
+    prize: "Ember mug + coffee subscription",
+    pun: "Wait for it…",
+    value: 250,
+    emoji: "☕",
+  },
+  {
+    day: 5,
+    prize: "Kindle Paperwhite Signature",
+    pun: "Sleep in. Cancel your plans. Read.",
+    value: 200,
+    emoji: "📖",
+  },
+  {
+    day: 6,
+    prize: "Nintendo Switch 2",
+    pun: "Two players, one console.",
+    value: 450,
+    emoji: "🎮",
+  },
+  {
+    day: 7,
+    prize: "Running gear bundle",
+    pun: "Pace yourself.",
+    value: 300,
+    emoji: "👟",
+  },
+  {
+    day: 8,
+    prize: "Custom mechanical keyboard",
+    pun: "Every keypress, debounced.",
+    value: 300,
+    emoji: "⌨️",
+  },
+  {
+    day: 9,
+    prize: "LEGO mega set",
+    pun: "One box, many parts.",
+    value: 350,
+    emoji: "🧱",
+  },
+  {
+    day: 10,
+    prize: "Desk upgrade: light bar + MX mouse and keys",
+    pun: "Your desk, prioritized.",
+    value: 350,
+    emoji: "💡",
+  },
+  {
+    day: 11,
+    prize: "Breville espresso machine",
+    pun: "Batch your caffeine.",
+    value: 400,
+    emoji: "🫘",
+  },
+  {
+    day: 12,
+    prize: "Meta Quest 3S",
+    pun: "Evaluate reality.",
+    value: 300,
+    emoji: "🥽",
+  },
+];
+
+export function prizeFor(day: number): DailyPrize | undefined {
+  return DAILY_PRIZES.find((p) => p.day === day);
+}
+
+/**
+ * The daily raffle (RaffleSection.tsx, RaffleDialog.tsx). One entry per
+ * door per person; each day's entries win that day's prize.
+ *
+ * TODO before launch: the official rules at
+ * /12-days-of-workflows/raffle-rules.
+ */
+export const RAFFLE = {
+  eyebrow: "The daily raffle",
+  title: ["A prize a day.", "Open the door to enter."],
+  body: "Every door has a prize behind it. Enter on the day to win that day's prize. Come back tomorrow for the next one: twelve doors, twelve chances.",
+  calendar: {
+    title: "December",
+    today: "Today",
+    entered: "Entered",
+  },
+  todaysPrize: "Today's prize",
+  enter: "Enter today's raffle",
+  entered: "You're in for today",
+  notYet: "The raffle opens with the first door on December 7.",
+  closed: "Entries are closed. See you at the draw.",
+  rules: {
+    lead: "No purchase necessary. Open to people in the US with an Inngest account under the email they enter.",
+    label: "Official rules",
+    href: `/12-days-of-workflows/raffle-rules?ref=${REF}-raffle`,
+  },
+  dialog: {
+    title: (day: number) => `Day ${day} raffle`,
+    body: "Enter to win today's prize. You'll also get an email when each new door opens.",
+    close: "Close",
   },
 } as const;
 
 /**
- * The finale livestream: registration at /12-days-of-workflows/livestream
+ * The finale livestream: registration in the main page's finale
+ * (#register; /12-days-of-workflows/livestream redirects there)
  * and the stream itself at /12-days-of-workflows/live.
  *
  * December 29, 10am Pacific. TODO: set `youtubeId` once the stream is

@@ -52,7 +52,8 @@ async function redirects() {
       permanent: true,
     },
     {
-      source: "/docs/durable-execution/guides-and-advanced/max-runtime-for-serverless-environments",
+      source:
+        "/docs/durable-execution/guides-and-advanced/max-runtime-for-serverless-environments",
       destination: "/docs/durable-execution/guides-and-advanced/checkpointing",
       permanent: true,
     },
@@ -67,6 +68,19 @@ async function redirects() {
       source: "/careers",
       destination: "/about",
       permanent: true,
+    },
+    {
+      // 12 Days of Workflows: everything lives on the one page now.
+      // Temporary, so the paths can come back if the campaign needs them.
+      // Query strings (ref, UTMs) carry through.
+      source: "/12-days-of-workflows/build-a-thon",
+      destination: "/12-days-of-workflows#build-a-thon",
+      permanent: false,
+    },
+    {
+      source: "/12-days-of-workflows/livestream",
+      destination: "/12-days-of-workflows#register",
+      permanent: false,
     },
     {
       source: "/workflow-kit",
@@ -96,7 +110,8 @@ async function redirects() {
     {
       // From the UI's source editing page:
       source: "/docs/event-webhooks",
-      destination: "/docs/durable-execution/guides-and-advanced/events-and-triggers/receive-webhook-events",
+      destination:
+        "/docs/durable-execution/guides-and-advanced/events-and-triggers/receive-webhook-events",
       permanent: true,
     },
     {
@@ -245,8 +260,14 @@ async function rewrites() {
   const trySandboxesOrigin = process.env.TRY_SANDBOXES_ORIGIN;
   const trySandboxes = trySandboxesOrigin
     ? [
-        { source: "/try-sandboxes", destination: `${trySandboxesOrigin}/try-sandboxes` },
-        { source: "/try-sandboxes/:path*", destination: `${trySandboxesOrigin}/try-sandboxes/:path*` },
+        {
+          source: "/try-sandboxes",
+          destination: `${trySandboxesOrigin}/try-sandboxes`,
+        },
+        {
+          source: "/try-sandboxes/:path*",
+          destination: `${trySandboxesOrigin}/try-sandboxes/:path*`,
+        },
       ]
     : [];
   return {
