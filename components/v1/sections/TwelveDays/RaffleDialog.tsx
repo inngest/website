@@ -3,7 +3,7 @@
 import { useEffect, useRef, useState } from "react";
 import { prizeFor, RAFFLE } from "@/components/v1/sections/TwelveDays/data";
 import JoinForm from "@/components/v1/sections/TwelveDays/JoinForm";
-import PrizeSticker from "@/components/v1/sections/TwelveDays/PrizeSticker";
+import PrizePanel from "@/components/v1/sections/TwelveDays/PrizePanel";
 import { useRaffleOpenRequests } from "@/components/v1/sections/TwelveDays/useRaffle";
 
 /**
@@ -65,9 +65,12 @@ export default function RaffleDialog() {
 
         {prize && (
           <div className="flex items-center gap-4 rounded-lg border-2 border-[#020202] bg-[#020202] p-3 text-white">
-            <span className="flex h-14 w-14 shrink-0 items-center justify-center">
-              <PrizeSticker prize={prize} size={48} glow />
-            </span>
+            <PrizePanel
+              prize={prize}
+              className="h-16 w-20 shrink-0 !p-1.5"
+              sizes="64px"
+              emojiClassName="text-[32px]"
+            />
             <span className="flex min-w-0 flex-col">
               <span className="font-v1Label text-[12px] text-[#F7DA10]">
                 {RAFFLE.todaysPrize}
