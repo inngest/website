@@ -16,16 +16,14 @@ An agent is an Inngest function you define with `agents.agent()`. Inngest starts
 
 ## What an agent solves
 
-An agent loop is easy to write in a request handler: call the model, run the tools it asks for, and repeat. Running that loop in production is the hard part. An Inngest agent handles it for you.
+An agent loop is easy to write in a request handler: call the model, run the tools it asks for, and repeat. Running that loop in production is the hard part. An Inngest agent handles it for you:
 
-| Without Inngest Agents | With Inngest Agents |
-| --- | --- |
-| A crash or a deploy mid-loop loses the work. A retry calls the model again and repeats side effects, such as sending the same email twice. | Each model call and each tool call is a durable step. A retry repeats only the step that failed. |
-| A long task hits a request timeout, or holds a worker while the model or a person thinks. | A run waits for minutes or days without holding a process or using compute. |
-| You store conversation history in a database, and load and save it on every request. | The thread keeps the model's history and your state between runs. |
-| Two messages for the same conversation race, and start two loops that overwrite each other. | A thread runs one run at a time. A message that arrives mid-task goes into the working run's inbox. |
-| You add queues, locks, and retry logic around every external call. | Triggers, retries, concurrency, and throttling come from Inngest functions. |
-| You piece together logs to see what the agent did and what it cost. | Every model call, tool call, and message is a row in the run's trace, with tokens and cost. |
+- **Crashes and deploys don't lose work.** Each model call and tool call is a durable step. A retry repeats only the step that failed, so the model isn't called twice and a tool never sends the same email twice.
+- **No timeouts on long tasks.** A run waits for minutes or days without holding a process or using compute.
+- **Memory without a database.** The thread keeps the model's history and your state between runs, so you don't load and save the conversation on every request.
+- **No races between messages.** A thread runs one run at a time. A message that arrives mid-task goes into the working run's inbox instead of starting a second loop.
+- **No queues or retry code to write.** Triggers, retries, concurrency, and throttling come from Inngest functions.
+- **A trace for every run.** Every model call, tool call, and message is a row in the run's trace, with tokens and cost.
 
 ## How an agent works
 
@@ -61,18 +59,16 @@ An agent loop is easy to write in a request handler: call the model, run the too
 
 ## Agents working together
 
-One agent with dozens of tools and a long prompt gets hard to steer and to test. Splitting the work into focused agents, such as a lead that hands parts of a task to specialists, keeps each prompt short. It also adds problems that a single agent doesn't have. Inngest Agents handles them:
+One agent with dozens of tools and a long prompt gets hard to steer and to test. Splitting the work into focused agents, such as a lead that hands parts of a task to specialists, keeps each prompt short. It also adds problems that a single agent doesn't have. Inngest Agents handles them for you:
 
-| The problem | How Inngest Agents handles it |
-| --- | --- |
-| A handoff to another agent is lost if the process that made it dies. | `start()` and the model's `start_agent` tool send an event. The other agent runs on its own thread, with its own retries and trace. |
-| The coordinating agent holds a process open while specialists work. | A run waiting on agents it started uses no compute. Their results arrive in its inbox as `agent/finished` messages. |
-| Two agents wait on each other and deadlock. | The model's agent tools never wait. Replies and results arrive as messages, and the loop adds them to the next model call. |
-| Agents start agents without end. | `limits.depth` caps how deep a chain of started agents goes, three levels by default. |
-| Routing is hard-coded into the coordinator. | Each agent publishes a card, and the model finds the agent it needs at run time with `list_agents`. |
-| Any agent can reach any other. | `discovery.agents` and `share` limit what a model can find and start. A model can only message agents its own thread started, and thread keys are signed. |
-| The model passes along the caller's identity, and could change it. | `discovery.prepare` fills parts of a start's input from your code, not the model. |
-| A specialist needs the coordinator's files. | Lend your sandbox's tools to the agent you start, so it works on the same machine. |
+- **Handoffs aren't lost.** `start()` and the model's `start_agent` tool send an event, so a handoff survives a crash. The other agent runs on its own thread, with its own retries and trace.
+- **Waiting is free.** A coordinating run that waits on the agents it started uses no compute. Their results arrive in its inbox as `agent/finished` messages.
+- **Agents can't deadlock.** The model's agent tools never wait. Replies and results arrive as messages, and the loop adds them to the next model call.
+- **Delegation has a limit.** `limits.depth` caps how deep a chain of started agents goes, three levels by default.
+- **Routing isn't hard-coded.** Each agent publishes a card, and the model finds the agent it needs at run time with `list_agents`.
+- **You decide who can reach whom.** `discovery.agents` and `share` limit what a model can find and start. A model can only message agents its own thread started, and thread keys are signed.
+- **Your code sets the caller's identity.** `discovery.prepare` fills parts of a start's input from your code, so the model can't change them.
+- **Specialists can share a machine.** Lend your sandbox's tools to the agent you start, so it works on the same files.
 
 <Mermaid
   wide
