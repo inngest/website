@@ -69,6 +69,27 @@ export default function AdventCalendar({ now }: { now: Date | null }) {
         .find((d) => unlockAt(d.day).getTime() <= now.getTime())?.day
     : undefined;
 
+  // Arriving from a daily email (…#day-N) means they've come for that
+  // lesson: skip the press-and-hold and let today's door open itself,
+  // without the raffle pop-up on top of it.
+  useEffect(() => {
+    if (today === undefined) return;
+    const check = () => {
+      const match = /^#day-(\d+)$/.exec(window.location.hash);
+      if (match && Number(match[1]) === today) {
+        markOpened(today);
+        // They came for the lesson, so no pop-up over it; the door's
+        // raffle button is right there.
+        claimAutoPrompt(today);
+      }
+    };
+    check();
+    window.addEventListener("hashchange", check);
+    return () => window.removeEventListener("hashchange", check);
+    // markOpened is stable enough: it only appends to storage.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [today]);
+
   // The day whose raffle is open, and the days this browser has entered.
   const raffleDay = now ? raffleDayAt(now) : null;
   const { days: entered } = useRaffleState();

@@ -180,6 +180,13 @@ export default function JoinForm({
             </span>
           </span>
         </div>
+        <a
+          href={SIGNUP.next.href}
+          onClick={onLeave}
+          className={`inline-flex items-center gap-2 self-start font-v1Label text-[14px] underline underline-offset-4 hover:no-underline ${note}`}
+        >
+          {SIGNUP.next.label} <span aria-hidden="true">↓</span>
+        </a>
         {onClose && (
           <button
             type="button"

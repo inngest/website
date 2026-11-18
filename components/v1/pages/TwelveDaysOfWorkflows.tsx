@@ -6,6 +6,7 @@ import BuildathonMarquee from "@/components/v1/sections/TwelveDays/BuildathonMar
 import BuildathonTeaser from "@/components/v1/sections/TwelveDays/BuildathonTeaser";
 import Finale from "@/components/v1/sections/TwelveDays/Finale";
 import Hero from "@/components/v1/sections/TwelveDays/Hero";
+import HowItWorks from "@/components/v1/sections/TwelveDays/HowItWorks";
 import PreviewClock from "@/components/v1/sections/TwelveDays/PreviewClock";
 import RaffleDialog from "@/components/v1/sections/TwelveDays/RaffleDialog";
 import RaffleSection from "@/components/v1/sections/TwelveDays/RaffleSection";
@@ -15,7 +16,7 @@ import { useCalendarClock } from "@/components/v1/sections/TwelveDays/useCalenda
  * inngest.com/12-days-of-workflows — the Inngest × CodeTV holiday
  * campaign, in the Build for the Lonng Run brand.
  *
- * Hero → countdown ticker → the advent calendar → the build-a-thon →
+ * Hero → countdown ticker → how it works → the advent calendar → the build-a-thon →
  * the live CodeTV finale → the daily raffle. (The playable machine,
  * Machine.tsx, is off the page after Lauren's review.)
  *
@@ -46,6 +47,7 @@ export default function TwelveDaysOfWorkflows({
       <div className="overflow-x-clip">
         <Hero />
         <BuildathonMarquee now={now} />
+        <HowItWorks />
         <AdventCalendar now={now} />
         <BuildathonTeaser />
         <Finale />

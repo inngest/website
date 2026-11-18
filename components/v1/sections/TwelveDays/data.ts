@@ -334,6 +334,8 @@ export const SIGNUP = {
   enteredBody: (day: number) =>
     `You're in the Day ${day} raffle, and we'll email you when each new door opens. Come back tomorrow for another entry.`,
   failed: "That didn't go through. Try again?",
+  /** After joining: step 2 of the journey. */
+  next: { label: "Next: set up Inngest locally", href: "#new-to-inngest" },
   /** In the pop-up: points to the "New to Inngest?" block. */
   account: {
     lead: "Need an Inngest account? It's free:",
@@ -497,6 +499,58 @@ export const BUILDATHON = {
  * The scrolling ticker under the hero: what's open and what's next,
  * linking down to the calendar. `idle` shows until the clock mounts.
  */
+/**
+ * "How it works" under the hero (HowItWorks.tsx): the journey in order,
+ * each step linking to the section where it happens. Mirrors the
+ * FigJam journey map.
+ */
+export const HOW_IT_WORKS = {
+  title: "How it works",
+  /** The shortcut: no need to go through the doors first. */
+  skip: {
+    lead: "Already know Inngest?",
+    label: "Skip straight to the build-a-thon and submit",
+    href: "#submit",
+  },
+  steps: [
+    {
+      when: "Now",
+      title: "Join",
+      body: "Get each day's lesson by email. From December 7, the same sign-up enters you in that day's raffle.",
+      href: "#calendar",
+      cta: "Sign up",
+    },
+    {
+      when: "Once",
+      title: "Set up",
+      body: "Run Inngest locally with one copied prompt. A free cloud account is only needed to win a prize or deploy.",
+      href: "#new-to-inngest",
+      cta: "Get set up",
+    },
+    {
+      when: "December 7–18",
+      title: "Open a door a day",
+      body: "A five-minute lesson, the code and the docs. The email links straight to that day's door.",
+      href: "#calendar",
+      cta: "See the doors",
+    },
+    {
+      when: "Any time until December 23",
+      title: "Build (optional)",
+      body: "Combine all twelve primitives into one weird workflow and submit it for cash prizes. No need to wait for the doors.",
+      href: "#build-a-thon",
+      cta: "See the rules",
+    },
+    {
+      when: "December 29",
+      title: "Watch live",
+      body: "We pick the build-a-thon winners live on CodeTV.",
+      href: "#register",
+      cta: "Register",
+    },
+  ],
+} as const;
+
 export const TICKER = {
   idle: "A new lesson every day, December 7–18",
   allOpen: "All twelve doors are open.",
