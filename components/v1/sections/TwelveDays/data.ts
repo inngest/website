@@ -18,6 +18,18 @@
 /** Ref tag for links on this page. Each door's sign-up and docs links add `-day-N`. */
 export const REF = "12-days-of-workflows";
 
+/**
+ * The course repo: every lesson's code, plus how to run it. Linked from
+ * the "New to Inngest?" block, each open door and the build-a-thon's
+ * primitives list.
+ */
+export const COURSE_REPO = {
+  label: "Get the course repo",
+  doorLabel: "Code on GitHub",
+  buildLabel: "Start from the course repo",
+  href: "https://github.com/inngest/12-days-of-workflows/blob/main/README.md",
+} as const;
+
 /** Year the calendar runs. */
 export const YEAR = 2026;
 

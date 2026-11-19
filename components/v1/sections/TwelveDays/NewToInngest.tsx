@@ -1,7 +1,10 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { NEW_TO_INNGEST } from "@/components/v1/sections/TwelveDays/data";
+import {
+  COURSE_REPO,
+  NEW_TO_INNGEST,
+} from "@/components/v1/sections/TwelveDays/data";
 import { copyText } from "@/components/v1/sections/TwelveDays/copyText";
 import { buttonClass } from "@/components/v1/sections/TwelveDays/poster";
 import { handleStartFreeClick } from "@/utils/v1/startFreeCta";
@@ -52,6 +55,14 @@ export default function NewToInngest() {
           className={buttonClass("ghost") + " w-full sm:w-auto"}
         >
           {NEW_TO_INNGEST.signUp.label}
+        </a>
+        <a
+          href={COURSE_REPO.href}
+          target="_blank"
+          rel="noopener noreferrer"
+          className={buttonClass("ghost") + " w-full sm:w-auto"}
+        >
+          {COURSE_REPO.label} <span aria-hidden="true">↗</span>
         </a>
       </div>
       <p
