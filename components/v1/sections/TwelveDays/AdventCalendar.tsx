@@ -4,6 +4,7 @@ import { useEffect, useRef, useState } from "react";
 import Link from "next/link";
 import { motion, useInView, useReducedMotion } from "motion/react";
 import {
+  COURSE_REPO,
   CALENDAR,
   CALENDAR_ID,
   COLORS,
@@ -346,6 +347,14 @@ function Door({
               >
                 {day.docs.label} docs <span aria-hidden="true">→</span>
               </Link>
+              <a
+                href={COURSE_REPO.href}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="inline-flex items-center gap-2 font-v1Label text-[13px] underline-offset-4 hover:underline"
+              >
+                {COURSE_REPO.doorLabel} <span aria-hidden="true">↗</span>
+              </a>
             </div>
           </div>
         )}

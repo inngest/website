@@ -8,6 +8,7 @@ import {
   BUILDATHON,
   BUILDATHON_TEASER,
   COLORS,
+  COURSE_REPO,
   DAYS,
 } from "@/components/v1/sections/TwelveDays/data";
 import {
@@ -132,6 +133,14 @@ export default function BuildathonTeaser() {
                 </li>
               ))}
             </ol>
+            <a
+              href={COURSE_REPO.href}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="inline-flex items-center gap-2 font-v1Label text-[14px] underline underline-offset-4 hover:no-underline"
+            >
+              {COURSE_REPO.buildLabel} <span aria-hidden="true">↗</span>
+            </a>
           </motion.div>
         </div>
 
