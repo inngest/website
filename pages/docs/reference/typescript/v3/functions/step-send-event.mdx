@@ -52,8 +52,12 @@ To send events from outside of the context of a function, use [`inngest.send()`]
 <Row>
   <Col>
     <Properties>
-      <Property name="id" type="string" required>
-        The ID of the step. This will be what appears in your function's logs and is used to memoize step state across function versions.
+      <Property name="id" type="string | StepOptions" required>
+        A stable step ID, or an object with `id` and an optional `name`. A string is shorthand for `{ id: string }`; the UI displays the ID when `name` is omitted. Keep `id` stable and change only `name` to rename the step without changing its saved state.
+
+        See [step IDs and display names](/docs/durable-execution/primitives#step-ids-and-display-names) for an example.
+
+        This step ID is separate from the optional `id` in each event payload, which controls [event deduplication](/docs/durable-execution/guides-and-advanced/idempotency). Reusing a step ID across function runs does not deduplicate the events sent by those runs.
       </Property>
       <Property name="eventPayload" type="object | object[]" required>
         An event payload object or an array of event payload objects.
