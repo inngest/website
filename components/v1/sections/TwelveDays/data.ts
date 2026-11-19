@@ -723,7 +723,7 @@ export const RAFFLE = {
   notYet: "The raffle opens with the first door on December 7.",
   closed: "Entries are closed. See you at the draw.",
   rules: {
-    lead: "No purchase necessary. Open to people in the US with an Inngest account under the email they enter.",
+    lead: "No purchase necessary. Legal US residents 18+ only, with an Inngest account (free is fine) under the email you enter. One prize per person. Void where prohibited.",
     label: "Official rules",
     href: `/12-days-of-workflows/raffle-rules?ref=${REF}-raffle`,
   },
