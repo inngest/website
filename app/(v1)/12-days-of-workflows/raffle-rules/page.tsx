@@ -6,7 +6,7 @@ import TwelveDaysRaffleRules from "@/components/v1/pages/TwelveDaysRaffleRules";
  * rest of 12 Days, and kept out of the sitemap by "/12-days-of-workflows/*".
  */
 export const metadata: Metadata = {
-  title: "Raffle rules · 12 Days of Workflows",
+  title: "Official raffle rules · 12 Days of Workflows",
   robots: { index: false, follow: false },
 };
 
