@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import Image from "next/image";
 import { animate, motion, useMotionValue, useTransform } from "motion/react";
 import ButtonLink from "@/components/v1/ButtonLink";
 import Chip from "@/components/v1/sections/shared/Chip";
@@ -133,6 +134,44 @@ export default function Hero() {
             />
           ))}
         </ul>
+      </div>
+
+      {/* Startup Program callout: centered under the plan cards (same
+          pattern as LangChain's pricing page), with no box. A faint static
+          copy of the stipple logomark sits off to the right as a watermark,
+          fading out toward the copy. Static image rather than the animated
+          canvas, since the page's closing CTA already uses the animation. */}
+      <div className="relative overflow-hidden py-10 lg:py-12">
+        <Image
+          src="/assets/v1/quote/stipple-logomark.webp"
+          alt=""
+          aria-hidden="true"
+          width={800}
+          height={419}
+          className="pointer-events-none absolute right-[-160px] top-1/2 hidden w-[560px] max-w-none -translate-y-1/2 select-none opacity-[0.14] sm:block lg:right-[-40px]"
+          style={{
+            maskImage:
+              "linear-gradient(to left, black 45%, transparent 100%)",
+            WebkitMaskImage:
+              "linear-gradient(to left, black 45%, transparent 100%)",
+          }}
+        />
+        <div className="relative flex flex-col items-center gap-4 text-center">
+          <p className="text-v1-heading-sm text-v1-frost">
+            Early-stage startup? Get 50% off Pro for 12 months.
+          </p>
+          <p className="max-w-[40rem] text-v1-body-sm-loose text-v1-frost/80">
+            New customers that are bootstrapped or have raised between $100K
+            and $5M can apply for the Inngest Startup Program.
+          </p>
+          <ButtonLink
+            href="/startups?ref=pricing-startups-callout"
+            variant="accent"
+            size="md"
+          >
+            Apply for the Startup Program
+          </ButtonLink>
+        </div>
       </div>
     </section>
   );

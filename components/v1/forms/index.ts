@@ -5,6 +5,11 @@
 export { RadioOption, type RadioOptionProps } from "./RadioOption";
 export { TextField, type TextFieldProps } from "./TextField";
 export { TextareaField, type TextareaFieldProps } from "./TextareaField";
+export {
+  SelectField,
+  type SelectFieldProps,
+  type SelectOption,
+} from "./SelectField";
 export { FieldLabel, type FieldLabelProps } from "./FieldLabel";
 export { FIELD_BASE, INPUT_CLASSES, TEXTAREA_CLASSES } from "./fieldStyles";
 export { INTEREST_OPTIONS, type Interest } from "./interestOptions";

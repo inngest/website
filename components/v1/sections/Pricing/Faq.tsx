@@ -1,6 +1,7 @@
 import SharedFaq, { type Faq as FaqItem } from "@/components/v1/sections/AI/Faq";
 
-const FAQS: FaqItem[] = [
+// Exported for the page's FAQPage structured data.
+export const PRICING_FAQS: FaqItem[] = [
   {
     id: "what-is-execution",
     question: 'What counts as one "execution"?',
@@ -58,6 +59,13 @@ const FAQS: FaqItem[] = [
       'Because "cost per run" depends on three separate variables that each vendor weights differently: step count, compute time per step, and whether overage is metered continuously or in fixed tiers. A workflow with few, fast steps and one with many, slow steps won\'t rank vendors the same way.',
   },
   {
+    id: "startup-discount",
+    question: "Do you offer a startup discount?",
+    answer:
+      "Yes. Through the Inngest Startup Program, qualifying early-stage startups get 50% off the Pro plan for 12 months. It's for new customers founded in the last 5 years, with 3 to 24 employees, that are bootstrapped or have raised between $100K and $5M.",
+    link: { label: "Apply for the Startup Program", href: "/startups" },
+  },
+  {
     id: "swap-plans",
     question: "Can I switch plans later?",
     answer:
@@ -81,7 +89,7 @@ const FAQS: FaqItem[] = [
 export default function Faq() {
   return (
     <SharedFaq
-      faqs={FAQS}
+      faqs={PRICING_FAQS}
       heading="FAQ"
       refTag="pricing"
       className="!pt-20 sm:!pt-24 lg:!pt-16"
