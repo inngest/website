@@ -33,6 +33,13 @@ export const COURSE_REPO = {
 /** Year the calendar runs. */
 export const YEAR = 2026;
 
+/**
+ * Build-a-thon submissions close at the end of December 23, Eastern
+ * (the copy says "Submit by December 23"). The hero's second button
+ * switches to the livestream from here.
+ */
+export const BUILDATHON_CLOSES_AT = new Date("2026-12-24T00:00:00-05:00");
+
 /** Doors unlock at midnight here; dates on the page are shown in it. */
 export const TIMEZONE = "America/New_York";
 
@@ -289,6 +296,16 @@ export const HERO = {
   signup: { label: "Get the daily lessons", href: "#calendar" },
   /** For people who don't need the lessons: straight to the build-a-thon. */
   build: { label: "Submit your workflow", href: "#submit" },
+  /**
+   * The second hero button changes on its own (see Hero.tsx): "Submit
+   * your workflow" until submissions close, then the livestream sign-up,
+   * then "Watch live" while the stream is on. Gone once it's over.
+   */
+  livestream: { label: "Join the livestream", href: "#register" },
+  watchLive: {
+    label: "Watch live",
+    href: `/12-days-of-workflows/live?ref=${REF}-hero`,
+  },
 } as const;
 
 /** Section id the hero's "Explore the calendar" jumps to. */
@@ -543,7 +560,7 @@ export const BUILDATHON = {
   sent: "Got it. Your workflow is in the running. Watch the finale to see if it makes the show.",
   /** Shown after `sent`: the finale is where the winners are picked. */
   register: {
-    label: "Register for the livestream",
+    label: "Save your spot for the livestream",
     href: "#register",
   },
   failed: "That didn't go through. Try again?",

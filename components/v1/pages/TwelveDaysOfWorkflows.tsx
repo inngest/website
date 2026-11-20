@@ -45,7 +45,7 @@ export default function TwelveDaysOfWorkflows({
   return (
     <PageShell>
       <div className="overflow-x-clip">
-        <Hero />
+        <Hero now={now} />
         <BuildathonMarquee now={now} />
         <AdventCalendar now={now} />
         <BuildathonTeaser />

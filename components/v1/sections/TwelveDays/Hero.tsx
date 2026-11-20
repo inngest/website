@@ -5,7 +5,12 @@ import Image from "next/image";
 import { motion } from "motion/react";
 import { clearHeroPanel, setHeroPanel } from "@/utils/v1/heroNav";
 import { tweens } from "@/utils/v1/springs";
-import { COLORS, HERO } from "@/components/v1/sections/TwelveDays/data";
+import {
+  BUILDATHON_CLOSES_AT,
+  COLORS,
+  HERO,
+  LIVESTREAM,
+} from "@/components/v1/sections/TwelveDays/data";
 import {
   buttonClass,
   Chip,
@@ -31,7 +36,23 @@ const entry = (delayMs: number) => ({
  * huge black line — set like the "Huge day for people who refuse to
  * stop running" posters — with the cat-and-rats wreath on the right.
  */
-export default function Hero() {
+/**
+ * The hero's second button, by the page clock: the build-a-thon until
+ * submissions close, then the livestream sign-up, then the stream itself
+ * while it's on, then nothing. Before the clock has ticked (the first
+ * render), the build-a-thon button.
+ */
+function secondButton(now: Date | null) {
+  if (!now || now < BUILDATHON_CLOSES_AT) return HERO.build;
+  const start = new Date(LIVESTREAM.start).getTime();
+  const end = start + LIVESTREAM.minutes * 60_000;
+  if (now.getTime() < start) return HERO.livestream;
+  if (now.getTime() < end) return HERO.watchLive;
+  return null;
+}
+
+export default function Hero({ now }: { now: Date | null }) {
+  const second = secondButton(now);
   // Tell the fixed header it sits on salmon, so its nav-hover wipe goes
   // dark instead of vanishing (same signal SplitHero publishes).
   const heroToken = useRef<object>({});
@@ -105,10 +126,12 @@ export default function Hero() {
             <a href={HERO.signup.href} className={buttonClass("ink")}>
               {HERO.signup.label}
             </a>
-            {/* Second button: for people who don't need the lessons. */}
-            <a href={HERO.build.href} className={buttonClass("outline")}>
-              {HERO.build.label}
-            </a>
+            {/* Second button: changes with the date (secondButton). */}
+            {second && (
+              <a href={second.href} className={buttonClass("outline")}>
+                {second.label}
+              </a>
+            )}
           </motion.div>
         </div>
 
