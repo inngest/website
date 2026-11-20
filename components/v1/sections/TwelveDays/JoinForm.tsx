@@ -333,7 +333,11 @@ export default function JoinForm({
           type="submit"
           disabled={status === "sending"}
           className={
-            buttonClass(light || !raffle ? "ink" : "yellow") +
+            // On the dark calendar: a white outline before the raffle opens
+            // (ink on ink disappeared; yellow competed with the doors), and
+            // yellow while a raffle is open, as before. Ink on the yellow
+            // pop-up.
+            buttonClass(light ? "ink" : raffle ? "yellow" : "ghost") +
             (raffle && light ? " w-full sm:w-auto sm:self-start" : "")
           }
         >

@@ -311,7 +311,7 @@ export const CALENDAR = {
 export const CALENDAR_JOIN = {
   when: "December 7–18",
   title: "Open a door a day",
-  body: "A five-minute lesson, the code and the docs behind every door. Add your email to get notified when each lesson drops.",
+  body: "A five-minute lesson, the code and the docs behind every door. Sign up to get notified when each lesson drops.",
   /** "raffle" links down to the raffle section. */
   note: {
     before: "From December 7, the same sign-up enters you in that day's ",
@@ -377,7 +377,7 @@ export const SIGNUP = {
   name: "Name",
   placeholder: "you@company.com",
   namePlaceholder: "Your name",
-  button: "Email me when doors open",
+  button: "Sign up",
   raffleButton: "Sign up and enter today's raffle",
   /** Already signed up: one click per day after that. */
   quick: (name: string) => `Enter today's raffle as ${name}`,
