@@ -1,0 +1,347 @@
+import { Info, AnnotatedCode, Annotation } from "shared/Docs/mdx";
+
+export const metaTitle = "Tools | Inngest Agents";
+export const description = "Give an Inngest agent tools: define a tool that runs as a durable step, return errors the model can read, mark outside text as untrusted, let the model watch events, connect MCP servers, and share tools between apps.";
+
+# Tools
+
+> Give the model functions it can call. Each call runs in your app as a durable step, with your credentials.
+
+<Info>
+  Inngest Agents is an Inngest Labs project: early, moving fast, and shaped by your feedback. [What's Labs?](/docs/labs?ref=docs-labs-agents-tools)
+</Info>
+
+Tools are how an agent acts. The model reads each tool's description and input schema, and asks for a call when it needs one. The loop validates the input, runs the tool as a step, and sends the result back to the model. A tool's code and credentials stay in your app. The model only sees what the tool returns.
+
+## What tools solve
+
+- **Side effects that happen once.** Each call is a step. A retry or a resumed run returns the saved result instead of sending the email, posting the comment, or issuing the refund again.
+- **Credentials that stay in your app.** The tool runs in your app with your keys. The model, the trace, and any sandbox only see what the tool returns.
+- **Input you can trust.** The input is checked against your schema before your code runs.
+- **Failures the model can handle.** A failed call reaches the model as an error it can read, so it can try something else or explain the problem.
+- **Outside text kept in its place.** Results from outside your app can be marked as untrusted, so the model treats them as data, not instructions.
+
+## How a tool call works
+
+1. **The model sees the tool.** The loop turns each tool's `description` and `input` schema into a definition the model can read.
+2. **The model asks for a call.** Its reply names the tool and the input.
+3. **The input is checked.** Input that doesn't match the schema goes back to the model as an error, and your code doesn't run.
+4. **Your code runs as a step.** `tool.step()` runs `run` as one step. `tool.group()` runs it as a group, so each `step.run()` inside is its own step. A failed step is retried. A call that still fails returns its error to the model.
+5. **The result goes back to the model.** The loop adds it to the history, and the next model call reads it.
+
+## Define a tool
+
+`tool.step()` defines a tool that runs as one durable step.
+
+<AnnotatedCode>
+
+```typescript {{ title: "inngest/tools/readLog.ts" }}
+import { tool } from "inngest/experimental";
+import { z } from "zod";
+import { fetchLog } from "../lib/ci";
+
+export const readLog = tool.step({
+  description: "Read the CI log of a pull request",
+  input: z.object({ pr: z.number() }),
+  run: async ({ pr }) => {
+    return await fetchLog(pr);
+  },
+});
+```
+
+<Annotation id="describe" lines="6-7" tease="what the model reads" title="description and input">
+The model decides when to call the tool, and what to pass, from these. Input that doesn't match the schema goes back to the model as an error, and `run` doesn't run.
+</Annotation>
+
+<Annotation id="run" lines="8-10" tease="one step per call" title="run">
+Your code. A failure retries this call alone, and a finished call is never repeated.
+</Annotation>
+
+</AnnotatedCode>
+
+## Give tools to an agent
+
+List tools in the agent's `tools`. The key is the name the model calls the tool by.
+
+```typescript {{ title: "inngest/agents/prHelper.ts" }}
+import { agents } from "../client";
+import { ciFailed, prComment, prOpened } from "../events";
+import { claude } from "../models/claude";
+import { comment } from "../tools/comment";
+import { readLog } from "../tools/readLog";
+
+export const prHelper = agents.agent({
+  id: "pr-helper",
+  triggers: [prOpened, prComment, ciFailed],
+  thread: "event.data.pr",
+  model: claude,
+  system: "You help with pull requests on acme/web. Post your answers with comment.",
+  tools: { readLog, comment },
+});
+```
+
+```typescript {{ title: "inngest/tools/comment.ts" }}
+import { tool } from "inngest/experimental";
+import { z } from "zod";
+import { gh } from "../lib/github";
+
+export const comment = tool.step({
+  description: "Post a comment on a pull request",
+  input: z.object({ pr: z.number(), body: z.string() }),
+  run: async ({ pr, body }) => {
+    return await gh.comment(pr, body);
+  },
+});
+```
+
+`gh` is your own GitHub client, which reads your token from the environment. Each tool call is a row in the run's trace.
+
+The model also has tools you don't list: the tools of the agent's [sandboxes](/docs/labs/agents/sandboxes?ref=docs-labs-agents-tools), the [agent tools](/docs/labs/agents/agent-teams?ref=docs-labs-agents-tools#let-the-model-start-agents) for working with other agents, and `wait`. A tool you list with the same name replaces the built-in one.
+
+## Run several steps in one tool
+
+`tool.group()` defines a tool whose body can run several steps. Each step retries on its own, and the model only sees the final result.
+
+```typescript {{ title: "inngest/tools/readLogs.ts" }}
+import { step } from "inngest";
+import { tool } from "inngest/experimental";
+import { z } from "zod";
+import { fetchLog } from "../lib/ci";
+
+export const readLogs = tool.group({
+  description: "Read the CI logs of several pull requests",
+  input: z.object({ prs: z.array(z.number()) }),
+  run: async ({ prs }) => {
+    return await Promise.all(
+      prs.map((pr) => {
+        return step.run(`read-log-${pr}`, async () => {
+          return await fetchLog(pr);
+        });
+      }),
+    );
+  },
+});
+```
+
+## Return an error to the model
+
+Return `agent.toolError()` to tell the model a call failed, without throwing. The model reads the message and can try something else.
+
+```typescript {{ title: "inngest/tools/readLog.ts" }}
+import { tool } from "inngest/experimental";
+import { agent } from "inngest/experimental/agents";
+import { z } from "zod";
+import { fetchLog } from "../lib/ci";
+
+export const readLog = tool.step({
+  description: "Read the CI log of a pull request",
+  input: z.object({ pr: z.number() }),
+  run: async ({ pr }) => {
+    const log = await fetchLog(pr);
+
+    if (log === "") {
+      return agent.toolError("That run's log has expired.");
+    }
+
+    return log;
+  },
+});
+```
+
+A thrown error is retried like any step. If it still fails, the model receives the error message.
+
+## Check a call before it acts
+
+There are no hooks around tool calls. To check a call, write the check into the tool. Here, a comment that looks like it contains a secret is refused before it's posted:
+
+```typescript {{ title: "inngest/tools/safeComment.ts" }}
+import { tool } from "inngest/experimental";
+import { agent } from "inngest/experimental/agents";
+import { z } from "zod";
+import { gh } from "../lib/github";
+
+export const safeComment = tool.step({
+  description: "Post a comment on a pull request",
+  input: z.object({ pr: z.number(), body: z.string() }),
+  run: async ({ pr, body }) => {
+    if (/ghp_\w+|sk-\w+/.test(body)) {
+      return agent.toolError("That comment looks like it contains a secret, so it wasn't posted.");
+    }
+
+    return await gh.comment(pr, body);
+  },
+});
+```
+
+List it under the original's name, `tools: { readLog, comment: safeComment }`, and both the model and sandbox code get the checked version.
+
+## Mark outside text as untrusted
+
+Text from outside your app, such as a CI log or a customer's message, can contain instructions. Set `untrusted` so the model receives the result marked as data, not as instructions.
+
+```typescript {{ title: "inngest/tools/readLog.ts" }}
+import { tool } from "inngest/experimental";
+import { z } from "zod";
+import { fetchLog } from "../lib/ci";
+
+export const readLog = tool.step({
+  description: "Read the CI log of a pull request",
+  input: z.object({ pr: z.number() }),
+  untrusted: ({ pr }) => `CI log of #${pr}`,
+  run: async ({ pr }) => {
+    return await fetchLog(pr);
+  },
+});
+```
+
+`untrusted: true` marks the result. A function also labels where the text came from. Your own code that calls the tool still gets the plain result. Tools from MCP servers are untrusted by default. See [Untrusted results](/docs/labs/agents/reference-sandboxes?ref=docs-labs-agents-tools#untrusted-results).
+
+## Give tools to one loop call
+
+A tool you define inside a handler can use the run's values, such as `thread`. Pass it to one `loop()` call with `tools`, and it's added to the agent's tools for that call.
+
+```typescript
+async ({ inbox, loop, thread }) => {
+  const note = tool.step({
+    description: "Leave a note on this pull request",
+    input: z.object({ text: z.string() }),
+    run: async ({ text }) => {
+      return await gh.comment(Number(thread.key), text);
+    },
+  });
+
+  for await (const batch of inbox.batches()) {
+    await loop(batch, { tools: { note } });
+  }
+},
+```
+
+## Let the model watch events
+
+List events in the agent's `listen`, and the model gets `listen` and `unlisten` tools. It can then ask its thread to receive more events, for example to follow the reviews of its pull request. You decide which events it may watch, and the filter each one gets.
+
+<AnnotatedCode>
+
+```typescript {{ title: "inngest/agents/prHelper.ts" }}
+import { agents } from "../client";
+import { prOpened, prReviewed } from "../events";
+import { claude } from "../models/claude";
+
+export const prHelper = agents.agent({
+  id: "pr-helper",
+  triggers: [prOpened],
+  thread: "event.data.pr",
+  model: claude,
+  system: "You help with pull requests on acme/web.",
+  listen: [
+    {
+      event: prReviewed,
+      description: "A review was submitted on this pull request.",
+      scope: ({ thread }) => {
+        return { "data.pr": Number(thread.key) };
+      },
+    },
+  ],
+});
+```
+
+<Annotation id="event" lines="13" tease="what it may watch" title="event">
+An event type or name. The model can only ask for events in this list.
+</Annotation>
+
+<Annotation id="description" lines="14" tease="what the model reads" title="description">
+Tells the model what the event means.
+</Annotation>
+
+<Annotation id="scope" lines="15-17" tease="your filter" title="scope" href="/docs/labs/agents/reference?ref=docs-labs-agents-tools#what-the-model-may-watch" linkText="What the model may watch">
+The fields an event must have, and their values. Here, the thread only receives reviews of its own pull request.
+</Annotation>
+
+</AnnotatedCode>
+
+The model can add its own conditions with `where`, such as `{ "data.state": "changes_requested" }`, but it can't override your scope. Matching events then arrive in the thread's inbox like any other message, and the thread keeps the watch until the model calls `unlisten`.
+
+| The model asks for | Result |
+| --- | --- |
+| `pr/reviewed`, with `where: { "data.state": "approved" }` | The thread receives approvals of its pull request. |
+| `pr/reviewed`, with no `where` | The thread receives every review of its pull request. |
+| `pr/reviewed`, with `where: { "data.pr": 7 }` | Refused, because the scope already sets `data.pr`. |
+| An event that isn't listed | Refused, with the list of events it can watch. |
+
+Other forms of `scope`:
+
+- **An object** is a fixed filter, such as `{ "data.env": "production" }`.
+- **A function** receives `{ event, thread, asked }` and returns the filter. Return `false` to refuse the request.
+- **`"any"`** allows every event with that name in the environment. Use it only for events with nothing private in them.
+
+An `event` can also be a list of events that share a scope, or a name ending in `*`, such as `"billing/*"`, which lets the model ask for any event with that prefix. Events whose names start with `agent/` or `inngest/` can't be listed. See [listen and unlisten](/docs/labs/agents/reference?ref=docs-labs-agents-tools#listen-and-unlisten) for every rule.
+
+## Connect an MCP server
+
+`tool.mcp()` connects a remote MCP server. List it in `tools` like any other tool, and the model sees the server's tools prefixed with the key, such as `docs_search`.
+
+```typescript {{ title: "inngest/tools/docs.ts" }}
+import { secret, tool } from "inngest/experimental";
+
+export const docs = tool.mcp({
+  id: "docs",
+  url: "https://docs.acme.test/mcp",
+  auth: { bearer: secret("DOCS_TOKEN") },
+});
+```
+
+- **`id`** identifies the server's connections. Changing it signs every user out.
+- **`secret("DOCS_TOKEN")`** reads the environment variable only when a call needs it. The trace, the model, and logs show `[secret DOCS_TOKEN]` instead of the value.
+- **Per-user sign-in.** With `auth.oauth`, each person connects their own account. The sign-in link goes to your `onNeedsAuthorization` function, never to the model. See [MCP](/docs/labs/agents/reference-sandboxes?ref=docs-labs-agents-tools#mcp) and the [MCP assistant recipe](/docs/labs/agents/recipes/mcp-assistant?ref=docs-labs-agents-tools).
+
+## Share a tool between apps
+
+`tool.shared()` defines a tool that one app hosts and other apps' agents call. Use it to keep a credential, such as a GitHub write token, in one app.
+
+<AnnotatedCode>
+
+```typescript {{ title: "inngest/tools/postComment.ts" }}
+import { tool } from "inngest/experimental";
+import { z } from "zod";
+import { gh } from "../lib/github";
+
+export const postComment = tool.shared({
+  id: "post-comment",
+  description: "Post a comment on a pull request on acme/web",
+  input: z.object({ pr: z.number(), body: z.string() }),
+  card: { tags: ["github"], share: "team" },
+  run: async ({ pr, body }, { step }) => {
+    return await step.run("comment", async () => {
+      return await gh.comment(pr, body);
+    });
+  },
+});
+```
+
+<Annotation id="id" lines="6" tease="its address" title="id">
+Names the function that hosts the tool. Other apps reach it by `<app id>/post-comment`.
+</Annotation>
+
+<Annotation id="card" lines="9" tease="who can find it" title="card" href="/docs/labs/agents/agent-discovery?ref=docs-labs-agents-tools" linkText="Agent discovery">
+Takes the same fields as an agent's card. `share: "team"` makes it visible to every app in the environment.
+</Annotation>
+
+<Annotation id="run" lines="10-14" tease="runs in the host app" title="run">
+Each call is a run of the hosting app's function, with that app's secrets and its own steps.
+</Annotation>
+
+</AnnotatedCode>
+
+The hosting app passes it to `createAgents()`, and `agents.functions()` serves it:
+
+```typescript
+export const agents = createAgents(inngest, { tools: [postComment] });
+```
+
+Agents can use the shared tools their [discovery settings](/docs/labs/agents/agent-discovery?ref=docs-labs-agents-tools#limit-who-it-may-start) allow, without listing them. By default, that's every shared tool in their own app, and read-only tools in other apps. `postComment` writes, so an agent in another app has to allow it by address: `discovery: { tools: ["acme-web/post-comment"] }`.
+
+## Next steps
+
+- [Sandboxes](/docs/labs/agents/sandboxes?ref=docs-labs-agents-tools) gives the model a machine to run commands on.
+- [Call your tools from a sandbox](/docs/labs/agents/call-tools-from-sandboxes?ref=docs-labs-agents-tools) lets the model call many tools from one script.
+- [Tools and sandboxes reference](/docs/labs/agents/reference-sandboxes?ref=docs-labs-agents-tools#tools) lists every kind of tool and option.

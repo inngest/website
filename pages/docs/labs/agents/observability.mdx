@@ -1,0 +1,100 @@
+import { Info, AnnotatedCode, Annotation } from "shared/Docs/mdx";
+
+export const metaTitle = "Observability | Inngest Agents";
+export const description = "See what an Inngest agent did and what it cost: read a run's trace, use the scores every agent records, record your own scores, and read usage and cost from the loop.";
+
+# Observability
+
+> See what an agent did, what it cost, and how well it worked.
+
+<Info>
+  Inngest Agents is an Inngest Labs project: early, moving fast, and shaped by your feedback. [What's Labs?](/docs/labs?ref=docs-labs-agents-observability)
+</Info>
+
+Every agent run has a trace in the Inngest dashboard and the Dev Server. Each model call, tool call, and inbox read is a row, and scores add numbers you can chart and compare across runs.
+
+## Read a run's trace
+
+- **Model calls and tool calls** are each a row. Open one to see what went in and what came back. A retried call shows each attempt.
+- **The inbox** has one row for its whole life, with a mark for each message that arrived, read or not.
+- **Your own steps**, such as `step.run()`, appear in order with the rest.
+
+## Use the scores every agent records
+
+Every agent records these scores without any code: model time, tokens, tool calls, tool time, tool errors, and messages added mid-task. They appear on the trace and in function dashboards, and [Agent Evals](/docs/agent-evals/overview?ref=docs-labs-agents-observability) can compare them across variants. See [Where scores appear](/docs/agent-evals/scores?ref=docs-labs-agents-observability#where-scores-appear).
+
+## Record your own scores
+
+Call `score(name, value)` with a number or a boolean. In a handler, it's in the handler's argument:
+
+<AnnotatedCode>
+
+```typescript {{ title: "inngest/agents/support.ts" }}
+import { agents } from "../client";
+import { ticketOpened } from "../events";
+import { claude } from "../models/claude";
+
+export const support = agents.agent(
+  {
+    id: "support",
+    triggers: [ticketOpened],
+    thread: "event.data.ticket",
+    model: claude,
+    system: "You answer support questions.",
+  },
+  async ({ inbox, loop, score }) => {
+    for await (const batch of inbox.batches()) {
+      const result = await loop(batch);
+
+      await score("answered", result.text.length > 0);
+
+      await score("cost", result.usage.usd ?? 0);
+    }
+  },
+);
+```
+
+<Annotation id="bool" lines="17" tease="true counts as 1" title="A boolean score">
+`true` is recorded as 1 and `false` as 0.
+</Annotation>
+
+<Annotation id="usage" lines="19" tease="dollars spent" title="Usage and cost" href="/docs/labs/agents/reference?ref=docs-labs-agents-observability#the-result" linkText="The result">
+Every loop result has its tokens in `usage`, and its cost in `usage.usd` when the model knows its prices. `anthropic()` does.
+</Annotation>
+
+</AnnotatedCode>
+
+In a tool, `score` is in the tool's context, and the score lands on that tool call's row:
+
+```typescript {{ title: "inngest/tools/escalate.ts" }}
+import { tool } from "inngest/experimental";
+import { z } from "zod";
+
+export const escalate = tool.step({
+  description: "Hand the ticket to a person",
+  input: z.object({ reason: z.string() }),
+  run: async ({ reason }, { score }) => {
+    await score("escalated", true);
+
+    return `Escalated: ${reason}`;
+  },
+});
+```
+
+- **Several scores at once.** `score({ answered: true, cost: 0.02 })` writes them in one step.
+- **From any module.** Import `score` from `inngest/experimental/agents` to record a score from a helper. It finds the running agent.
+- **In experiments.** Inside a variant of an [experiment](/docs/agent-evals/experiments?ref=docs-labs-agents-observability), a score also counts toward that variant.
+- **Steps.** A score in a handler is a step. A score in a tool adds no step, and is never written twice on replay.
+- **Names.** Keep names stable, because a renamed score is a separate series. Names can't start with `agent.`, which the automatic scores use.
+
+A score is best effort. If one is refused, the SDK logs a warning and the run continues.
+
+## Show progress as it happens
+
+`onTurn` runs after each turn of the loop, with the turn's text, tool calls, and usage. Use it to post progress or stream it with [Realtime](/docs/realtime?ref=docs-labs-agents-observability). See [Report progress after each turn](/docs/labs/agents/models?ref=docs-labs-agents-observability#report-progress-after-each-turn).
+
+## Next steps
+
+- [Agent Evals](/docs/agent-evals/overview?ref=docs-labs-agents-observability) compares prompts and models with scores.
+- [Reliability](/docs/labs/agents/reliability?ref=docs-labs-agents-observability) covers retries and limits.
+- [Scores reference](/docs/labs/agents/reference?ref=docs-labs-agents-observability#scores) lists the automatic scores.

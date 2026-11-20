@@ -1,0 +1,99 @@
+import { AnnotatedCode, Annotation } from "shared/Docs/mdx";
+
+export const metaTitle = "Exit codes and errors | Sandboxes";
+export const description = "A Sandbox command that exits non-zero fails its step by default and shows red in the trace. Allow the exit codes that are information with exitCodes, and read failures with getCommandError.";
+
+# Exit codes and errors
+
+> A failed command stops your function and shows red in the trace. Allow the exit codes you expect.
+
+By default, a command that exits with a code other than `0` fails its step. Some exit codes are answers rather than errors, such as `grep` exiting `1` when nothing matches. Allow those codes, and the command returns normally.
+
+- **Failures stop the run.** A failed `npm ci` fails its step. See [How it works](#how-it-works).
+- **Allow the codes you expect.** Treat `grep` exiting `1` as an answer. See [Allow exit codes](#allow-exit-codes).
+- **Read why it failed.** Get the command, the exit code, and the end of its output. See [Read the failure](#read-the-failure).
+- **The same rule in Inngest CI.** `$` throws, and `$({ exitCodes: "any" })` returns. See [Inngest CI](/docs/labs/ci/commands).
+
+<AnnotatedCode>
+
+```typescript {{ title: "inngest/functions/review.ts" }}
+import { getCommandError } from "inngest/experimental";
+
+await using sb = await step.sandbox.create("review");
+
+await sb.sh("install", "npm ci");
+
+const hit = await sb.sh("find", `grep -q ${needle} /work/log`, {
+  exitCodes: [0, 1],
+});
+
+const probe = await sb.sh("probe", "./flaky-tool", { exitCodes: "any" });
+
+try {
+  await sb.sh("lint", "npx eslint .");
+} catch (err) {
+  const failure = getCommandError(err);
+  await step.run("report", () => postComment(failure?.stderrTail));
+  throw err;
+}
+```
+
+<Annotation id="default" lines="5" tease="fails on non-zero" title="Throws by default" href="#how-it-works" linkText="How it works">
+Only exit `0` succeeds.
+</Annotation>
+
+<Annotation id="allow" lines="7-9" tease="1 is information" title="Allow specific codes" href="#allow-exit-codes" linkText="Allow exit codes">
+For `grep`, `1` means no match. `hit.ok` is `false` when it exits `1`.
+</Annotation>
+
+<Annotation id="any" lines="11" tease="never throws" title="Inspect it yourself" href="#allow-exit-codes" linkText="Allow exit codes">
+Never throws because of an exit code.
+</Annotation>
+
+<Annotation id="read" lines="16" tease="read the details" title="Read what failed" href="#read-the-failure" linkText="Read the failure">
+The command, its exit code, and the end of its output.
+</Annotation>
+
+</AnnotatedCode>
+
+## Allow exit codes
+
+```typescript {{ title: "TypeScript" }}
+const result = await sb.sh("diff", "diff -q a.txt b.txt", { exitCodes: [0, 1] });
+
+const hit = await sb.$({ exitCodes: [0, 1] })`grep ${needle} log`;
+```
+
+`exitCodes` works with `sh`, `python`, `typescript`, `run`, `commands.run`, and [`$`](/docs/sandboxes/features/run-code#the-template).
+
+## Read the failure
+
+```typescript {{ title: "TypeScript" }}
+const fn = inngest.createFunction(
+  {
+    id: "ci-lint",
+    triggers: { event: "repo/pushed" },
+    onFailure: async ({ error, step }) => {
+      const failure = getCommandError(error);
+      // { command, exitCode, stdoutTail, stderrTail, truncated } | undefined
+      await step.run("comment", () => postComment(failure?.stderrTail));
+    },
+  },
+  async ({ step }) => {
+    await step.sandbox.sh("lint", "npx eslint .");
+  },
+);
+```
+
+For timeouts and capacity errors, `getSandboxError(err)` returns `code`, `retryable`, and `ambiguous`.
+
+## How it works
+
+- A non-zero exit code fails the step without retrying it, so a command such as `npm publish` never runs twice.
+- The command's row and its group turn red in the trace, and replays throw the same error.
+- A timeout has the code `sandbox_exec_timed_out`. A command whose outcome is unknown has the code `operation_ambiguous`.
+
+## Next steps
+
+- [Run code](/docs/sandboxes/features/run-code) covers the runners and the `$` template.
+- [Commands](/docs/sandboxes/features/commands) covers long-running commands and output.

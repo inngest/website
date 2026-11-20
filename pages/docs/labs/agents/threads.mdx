@@ -1,0 +1,228 @@
+import { Info, AnnotatedCode, Annotation } from "shared/Docs/mdx";
+
+export const metaTitle = "Threads | Inngest Agents";
+export const description = "Group an Inngest agent's events into threads: name a thread from your events, see what a thread keeps between runs, keep your own state on it, and watch more events.";
+
+# Threads
+
+> Group related events into one conversation, so every run on it shares the model's history and your state.
+
+<Info>
+  Inngest Agents is an Inngest Labs project: early, moving fast, and shaped by your feedback. [What's Labs?](/docs/labs?ref=docs-labs-agents-threads)
+</Info>
+
+A thread is one conversation with an agent, such as a support ticket, a customer, or a pull request. Runs on the same thread see the same model history, the same sandbox, and the same values you stored. A run ends when it has handled its messages, and the next message on the thread starts a new run that picks up where the last one stopped.
+
+## Name a thread
+
+Set `thread` to an [expression](/docs/durable-execution/guides-and-advanced/writing-expressions?ref=docs-labs-agents-threads) over the event. Events whose expressions return the same value share a thread.
+
+<AnnotatedCode>
+
+```typescript {{ title: "inngest/agents/prHelper.ts" }}
+import { agents } from "../client";
+import { ciFailed, prComment, prOpened } from "../events";
+import { claude } from "../models/claude";
+
+export const prHelper = agents.agent({
+  id: "pr-helper",
+  triggers: [prOpened, prComment, ciFailed],
+  thread: "event.data.pr",
+  model: claude,
+  system: "You help with pull requests on acme/web.",
+});
+```
+
+<Annotation id="thread" lines="8" tease="one thread per PR" title="thread" href="/docs/labs/agents/reference?ref=docs-labs-agents-threads#thread-keys-and-inbox-sources" linkText="Thread keys">
+Every event about pull request 42 lands on the thread with key `"42"`. The key is always a string.
+</Annotation>
+
+</AnnotatedCode>
+
+```typescript {{ title: "inngest/events.ts" }}
+import { eventType } from "inngest";
+import { z } from "zod";
+
+export const prOpened = eventType("pr/opened", {
+  schema: z.object({ pr: z.number(), author: z.string() }),
+});
+
+export const prComment = eventType("pr/comment", {
+  schema: z.object({ pr: z.number(), author: z.string(), body: z.string() }),
+});
+
+export const ciFailed = eventType("ci/run.failed", {
+  schema: z.object({ pr: z.number() }),
+});
+
+export const deployed = eventType("deploy/finished", {
+  schema: z.object({ env: z.string(), pull: z.number() }),
+});
+
+export const prReviewed = eventType("pr/reviewed", {
+  schema: z.object({ pr: z.number(), reviewer: z.string(), state: z.string() }),
+});
+```
+
+When pull request 42 opens and then fails CI, both events land on thread `"42"`. A thread runs one run at a time, and handles its messages in the order they arrive. An event that arrives while a run is working goes into that run's [inbox](/docs/labs/agents/inboxes?ref=docs-labs-agents-threads). Pull request 43 has its own thread, and runs alongside it.
+
+In a handler, `thread.key` is the run's thread key:
+
+```typescript
+async ({ thread }) => {
+  const pr = Number(thread.key);
+},
+```
+
+If an event has nothing at the `thread` path, it starts a fresh thread of its own, and the run's trace shows a warning.
+
+## What a thread keeps
+
+A thread keeps these between runs, with nothing for you to configure:
+
+- **The model's history.** The [loop](/docs/labs/agents/models?ref=docs-labs-agents-threads) saves it after each batch, so the next run's model sees the whole conversation. Long histories are summarized automatically.
+- **Unhandled messages.** A message that a run didn't get to, for example because the run failed, is delivered first to the next run on the thread.
+- **Sandboxes.** Each [sandbox](/docs/labs/agents/sandboxes?ref=docs-labs-agents-threads) belongs to its thread. It pauses when a run ends and resumes with its files on the next run.
+- **Your own values.** Anything you store with `kv.thread`. See [Keep your own state](#keep-your-own-state).
+- **How the last run ended.** A handler's `previousRun` is `undefined` on a thread's first run. After that it's `{ runId, status, at, error? }`, where `status` is `"completed"`, `"failed"`, or `"cancelled"`.
+
+Inngest holds all of this, not your app. You don't set up a database, and restarting or redeploying your app loses nothing.
+
+## Start a thread for each event
+
+Leave out `thread` and every event, and every `start()` call, opens a new thread.
+
+```typescript {{ title: "inngest/agents/summarize.ts" }}
+import { agents } from "../client";
+import { claude } from "../models/claude";
+
+export const summarize = agents.agent({
+  id: "summarize",
+  model: claude,
+  system: "Summarize the text you're given in one paragraph.",
+});
+```
+
+To continue a thread you already have, pass its key to `start()`:
+
+```typescript
+const first = await summarize.start("Summarize this release note: ...");
+const next = summarize.start("Now make it shorter.", { thread: first.key });
+```
+
+## Give a trigger its own key
+
+When an event names the conversation with a different field, give that trigger its own `thread`. It overrides the agent's expression for that event.
+
+```typescript {{ title: "inngest/agents/prHelper.ts" }}
+import { agents } from "../client";
+import { ciFailed, deployed, prComment, prOpened } from "../events";
+import { claude } from "../models/claude";
+
+export const prHelper = agents.agent({
+  id: "pr-helper",
+  triggers: [
+    prOpened,
+    prComment,
+    ciFailed,
+    { event: deployed, thread: "event.data.pull" },
+  ],
+  thread: "event.data.pr",
+  model: claude,
+  system: "You help with pull requests on acme/web.",
+});
+```
+
+A `deploy/finished` event with `pull: 42` now lands on the same thread as the pull request's other events.
+
+## Keep your own state
+
+`kv.thread` stores values on the thread under names you choose. The values are there on every later run on the thread.
+
+<AnnotatedCode>
+
+```typescript {{ title: "inngest/agents/prHelper.ts" }}
+import { agents } from "../client";
+import { ciFailed, prComment, prOpened } from "../events";
+
+export const prHelper = agents.agent(
+  {
+    id: "pr-helper",
+    triggers: [prOpened, prComment, ciFailed],
+    thread: "event.data.pr",
+  },
+  async ({ event, kv, thread }) => {
+    if (event.is(ciFailed)) {
+      const failures = ((await kv.thread.get<number>("failures")) ?? 0) + 1;
+
+      await kv.thread.set("failures", failures);
+
+      return `CI has failed ${failures} times on #${thread.key}`;
+    }
+  },
+);
+```
+
+<Annotation id="get" lines="12" tease="no step" title="get()" href="/docs/labs/agents/reference?ref=docs-labs-agents-threads#thread-state" linkText="Thread state">
+A run receives the thread's values when it starts, so reading one is local and isn't a step.
+</Annotation>
+
+<Annotation id="set" lines="14" tease="one step" title="set()" href="/docs/labs/agents/reference?ref=docs-labs-agents-threads#thread-state" linkText="Thread state">
+Sends the new value to the thread as one step. The thread applies writes in the order it receives them.
+</Annotation>
+
+</AnnotatedCode>
+
+- `kv.thread.delete(key)` removes a value.
+- `kv.thread.all()` returns every value the run holds, including the agent's own values, whose keys start with `__`. Don't start your own keys with `__`.
+- `kv.thread` is only available inside a run. To read a thread's state from a route or a script, send the agent an event and have it reply. See [Reading state from outside a run](/docs/labs/agents/reference?ref=docs-labs-agents-threads#reading-state-from-outside-a-run).
+
+## Watch more events
+
+`thread.listen()` asks the thread to receive an event that isn't one of the agent's triggers. Matching events then arrive in the inbox of whichever run is working on the thread, now and in later runs.
+
+```typescript {{ title: "inngest/agents/prHelper.ts" }}
+import { agents } from "../client";
+import { prOpened, prReviewed } from "../events";
+
+export const prHelper = agents.agent(
+  {
+    id: "pr-helper",
+    triggers: [prOpened],
+    thread: "event.data.pr",
+  },
+  async ({ event, thread }) => {
+    if (event.is(prOpened)) {
+      await thread.listen(prReviewed, { "data.pr": Number(thread.key) });
+    }
+  },
+);
+```
+
+- **Always filter.** The second argument is the filter that ties the event to this thread. Without one, the thread receives every `pr/reviewed` event in the environment.
+- **The thread keeps the watch.** It lasts after the run that asked for it ends. `thread.unlisten()`, with the same event and filter, removes it.
+- **Some events can't be watched.** Events whose names start with `agent/` or `inngest/` throw an error.
+
+To let the model decide what to watch, give it `listen` and `unlisten` tools. See [Tools](/docs/labs/agents/tools?ref=docs-labs-agents-threads#let-the-model-watch-events).
+
+## Message a thread from other code
+
+`agent.thread(key)` returns a handle to one of an agent's threads. A plain function can use it to send a message, which starts a run or joins the one that's working.
+
+```typescript {{ title: "inngest/functions/morningCheck.ts" }}
+import { inngest } from "../client";
+import { prHelper } from "../agents/prHelper";
+
+export const morningCheck = inngest.createFunction(
+  { id: "morning-check", triggers: [{ cron: "0 9 * * 1-5" }] },
+  async () => {
+    await prHelper.thread("42").message("Morning check: is anything blocking this pull request?");
+  },
+);
+```
+
+## Next steps
+
+- [Inboxes](/docs/labs/agents/inboxes?ref=docs-labs-agents-threads) covers the messages that arrive while a run works.
+- [Models and the loop](/docs/labs/agents/models?ref=docs-labs-agents-threads) explains how the model's history is kept.
+- [Agents reference](/docs/labs/agents/reference?ref=docs-labs-agents-threads#thread-keys-and-inbox-sources) lists the rules for thread keys.

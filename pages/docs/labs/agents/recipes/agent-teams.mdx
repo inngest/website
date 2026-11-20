@@ -1,0 +1,203 @@
+import { Info, AnnotatedCode, Annotation } from "shared/Docs/mdx";
+
+export const metaTitle = "Lead and specialists | Inngest Agents";
+export const description = "Build a lead agent that finds a researcher and a coder at run time, with no imports between them, hands each its part and combines their answers.";
+
+# Lead and specialists
+
+> A lead that finds the right specialists by what they do, hands each its part and combines the answers.
+
+<Info>
+  Inngest Agents is an Inngest Labs project: early, moving fast, and shaped by your feedback. [What's Labs?](/docs/labs?ref=docs-labs-agents-recipes-agent-teams)
+</Info>
+
+The lead doesn't import the specialists. Its model reads their cards, starts the ones that fit the request, and waits for their results. Because the lead started them, it can also message them while they work.
+
+```text
+You         What does HTTP 429 mean? Then write a fetch wrapper
+            that waits and retries on it.
+
+lead        list_agents: researcher, coder
+lead        start_agent researcher: What does HTTP 429 mean?
+lead        start_agent coder: Write fetchWithRetry for Retry-After.
+researcher  finished: Too Many Requests. Wait for Retry-After.
+coder       finished: Wrote and ran fetchWithRetry.ts. Its test passes.
+
+lead        429 means Too Many Requests. Here is fetchWithRetry: ...
+```
+
+{/* Screenshot to add: the lead's run beside both specialists' runs. */}
+
+## The code
+
+<AnnotatedCode>
+
+```typescript {{ title: "inngest/agents/researcher.ts" }}
+import { agents } from "../client";
+import { claude } from "../models/claude";
+
+export const researcher = agents.agent({
+  id: "researcher",
+  model: claude,
+  system:
+    "Answer in five sentences or fewer, and say what you are unsure of.",
+  card: {
+    description: "Answers a factual question",
+    capabilities: ["general research", "fact-checking"],
+  },
+});
+```
+
+<Annotation id="card" lines="10-11" tease="found by capabilities" title="Card" href="/docs/labs/agents/agent-discovery?ref=docs-labs-agents-recipes-agent-teams#give-an-agent-a-card" linkText="Publish a card">
+The lead's model reads `capabilities` to decide when to pick this agent. Agents in the lead's own app are visible as soon as they're defined.
+</Annotation>
+
+</AnnotatedCode>
+
+```typescript {{ title: "inngest/sandboxes/work.ts" }}
+import { sandbox } from "inngest/experimental/agents";
+
+export const work = sandbox({ id: "work" });
+```
+
+```typescript {{ title: "inngest/agents/coder.ts" }}
+import { agents } from "../client";
+import { claude } from "../models/claude";
+import { work } from "../sandboxes/work";
+
+export const coder = agents.agent({
+  id: "coder",
+  model: claude,
+  system: "Write the code, run it and its tests, then say what you ran.",
+  sandboxes: { work },
+  card: {
+    description: "Writes and tests code in a sandbox",
+    capabilities: ["writing code", "running tests"],
+  },
+});
+```
+
+<AnnotatedCode>
+
+```typescript {{ title: "inngest/agents/lead.ts" }}
+import { invoke } from "inngest";
+import { z } from "zod";
+import { agents } from "../client";
+import { claude } from "../models/claude";
+
+export const teamRequest = z.object({
+  request: z.string(),
+  requestedBy: z.string().optional(),
+});
+
+export const lead = agents.agent({
+  id: "lead",
+  triggers: [invoke(teamRequest)],
+  model: claude,
+  system: "Find specialists, start them, then combine their results.",
+  discovery: {
+    prepare: ({ input, event }) => {
+      return { ...input, requestedBy: event.data.requestedBy };
+    },
+  },
+});
+```
+
+<Annotation id="invoke" lines="7-10" tease="a typed request" title="invoke()" href="/docs/labs/agents/agent-teams?ref=docs-labs-agents-recipes-agent-teams#start-an-agent-from-code" linkText="Take a typed input">
+Types what callers send, and appears on the agent's card.
+</Annotation>
+
+<Annotation id="system" lines="15" tease="no names in code" title="Discovery" href="/docs/labs/agents/agent-discovery?ref=docs-labs-agents-recipes-agent-teams#how-a-model-finds-agents" linkText="Find agents">
+The lead has `list_agents` and `start_agent` by default. Each result comes back as an `agent/finished` message.
+</Annotation>
+
+<Annotation id="prepare" lines="16-20" tease="fills in requestedBy for every start" title="discovery.prepare" href="/docs/labs/agents/reference?ref=docs-labs-agents-recipes-agent-teams#turn-discovery-off" linkText="Reference: discovery.prepare">
+Your code fills in `requestedBy` on every `start_agent` call the lead's model makes, from whoever called the lead. The model never sees or sets it, so the specialists don't depend on the model to pass the caller's identity.
+</Annotation>
+
+</AnnotatedCode>
+
+<AnnotatedCode>
+
+```typescript {{ title: "inngest/functions/askTeam.ts" }}
+import { invoke } from "inngest";
+import { lead, teamRequest } from "../agents/lead";
+import { inngest } from "../client";
+
+export const askTeam = inngest.createFunction(
+  { id: "ask-team", triggers: [invoke(teamRequest)] },
+  async ({ event }) => {
+    return await lead.start(event.data).result();
+  },
+);
+```
+
+<Annotation id="result" lines="8" tease="wait for the answer" title="Start and wait" href="/docs/labs/agents/agent-teams?ref=docs-labs-agents-recipes-agent-teams#start-an-agent-from-code" linkText="Wait for the result">
+`result()` returns the lead's answer, after the specialists it started have finished.
+</Annotation>
+
+</AnnotatedCode>
+
+```typescript {{ title: "inngest/serve.ts" }}
+import { createServer } from "inngest/node";
+import { agents, inngest } from "./client";
+import "./agents/coder";
+import "./agents/lead";
+import "./agents/researcher";
+import { askTeam } from "./functions/askTeam";
+
+createServer({
+  client: inngest,
+  functions: [...agents.functions(), askTeam],
+}).listen(3000);
+```
+
+```typescript {{ title: "inngest/client.ts" }}
+import { Inngest } from "inngest";
+import { inboxMiddleware, sandboxMiddleware } from "inngest/experimental";
+import { createAgents } from "inngest/experimental/agents";
+
+export const inngest = new Inngest({
+  id: "agent-teams",
+  middleware: [inboxMiddleware(), sandboxMiddleware()],
+});
+
+export const agents = createAgents(inngest);
+```
+
+The [model](/docs/labs/agents/quick-start?ref=docs-labs-agents-recipes-agent-teams#3-choose-a-model) is the quick start's.
+
+## How it works
+
+- [Agent discovery](/docs/labs/agents/agent-discovery?ref=docs-labs-agents-recipes-agent-teams#how-a-model-finds-agents) lets the lead find specialists by `capabilities`, with no imports between them.
+- [Start and wait](/docs/labs/agents/agent-teams?ref=docs-labs-agents-recipes-agent-teams#start-an-agent-from-code) lets a plain function wait for the lead's answer.
+- [`discovery.prepare`](/docs/labs/agents/reference?ref=docs-labs-agents-recipes-agent-teams#cards-and-discovery) adds the caller's identity to every start, without relying on the model.
+- [`limits.depth`](/docs/labs/agents/reliability?ref=docs-labs-agents-recipes-agent-teams#cap-delegation-depth) limits how many levels of agents the specialists can start below them.
+- [A sandbox](/docs/labs/agents/sandboxes?ref=docs-labs-agents-recipes-agent-teams) gives the coder a machine to run its code.
+
+## Run it
+
+Set the project up as in the [quick start](/docs/labs/agents/quick-start?ref=docs-labs-agents-recipes-agent-teams#1-install-the-packages), with Sandboxes for the coder.
+
+```bash
+export ANTHROPIC_API_KEY=sk-ant-...
+npx tsx inngest/serve.ts
+```
+
+```bash
+npx inngest-cli@latest dev -u http://localhost:3000/api/inngest
+```
+
+At [localhost:8288](http://localhost:8288), open `ask-team`, choose **Invoke** and send `{ "request": "What does HTTP 429 mean? Then write a retrying fetch.", "requestedBy": "maya" }`. `ask-team` returns the combined answer. Open the lead's run to see its `list_agents` and `start_agent` calls. Open a specialist's run to see `requestedBy: "maya"` in its input, which your code added.
+
+## Variations
+
+- [`discovery.agents`](/docs/labs/agents/agent-discovery?ref=docs-labs-agents-recipes-agent-teams#limit-who-it-may-start) limits who the lead may find and start Use it once there are agents the lead shouldn't start.
+- [Reports](/docs/labs/agents/agent-teams?ref=docs-labs-agents-recipes-agent-teams#receive-reports-while-an-agent-works) let the lead ask each specialist for typed updates while it works, instead of waiting for one `agent/finished` at the end.
+- [`share: "team"`](/docs/labs/agents/agent-discovery?ref=docs-labs-agents-recipes-agent-teams#choose-who-can-find-it) lets other apps find the researcher once its card refreshes.
+
+## Next steps
+
+- [Agent teams](/docs/labs/agents/agent-teams?ref=docs-labs-agents-recipes-agent-teams)
+- [Agent discovery](/docs/labs/agents/agent-discovery?ref=docs-labs-agents-recipes-agent-teams)
+- Next recipe: [MCP assistant](/docs/labs/agents/recipes/mcp-assistant?ref=docs-labs-agents-recipes-agent-teams)

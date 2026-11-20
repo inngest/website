@@ -1,0 +1,91 @@
+import { Info, AnnotatedCode, Annotation } from "shared/Docs/mdx";
+
+export const metaTitle = "Skills | Inngest Agents";
+export const description = "Teach an Inngest agent how your team works with SKILL.md files: write a skill, give an agent a folder of skills, and see how the model opens a skill only when it needs it.";
+
+# Skills
+
+> Teach an agent how your team does things, in plain files the model reads when it needs them.
+
+<Info>
+  Inngest Agents is an Inngest Labs project: early, moving fast, and shaped by your feedback. [What's Labs?](/docs/labs?ref=docs-labs-agents-skills)
+</Info>
+
+A skill is a folder with a `SKILL.md` file: a name, a description, and instructions, with optional scripts and files beside it. The model sees every skill's name and description, and opens a skill's instructions only when a task calls for them. That keeps the system prompt short however many skills you add.
+
+Skills tell the model how to do something. [Tools](/docs/labs/agents/tools?ref=docs-labs-agents-skills) are what it does it with. A skill never adds a tool.
+
+## What skills solve
+
+- **Short prompts with deep knowledge.** Your system prompt stays short however many skills you add, because the model only opens the ones a task needs.
+- **Instructions in files, not code.** Skills are Markdown files in your repository, so you review and change them like any other file, and they ship with your deploys.
+- **Shared know-how.** Several agents can use the same skills folder, and other agents see each agent's skills on its card.
+
+## Write a skill
+
+Put each skill in its own folder, in the `SKILL.md` format.
+
+<AnnotatedCode>
+
+```markdown {{ title: "skills/review-checklist/SKILL.md" }}
+---
+name: review-checklist
+description: How we review a pull request. Use before you review any pull request.
+---
+
+# Review checklist
+
+1. Read the CI log first.
+2. Check that every changed function has a test.
+3. Run the linter.
+4. Say what is good about the change as well as what is wrong.
+```
+
+<Annotation id="name" lines="2" tease="what the model opens" title="name">
+The model opens the skill by this name. Two skills with the same name are an error.
+</Annotation>
+
+<Annotation id="description" lines="3" tease="always in the prompt" title="description">
+Say what the skill is for and when to use it. The model decides whether to open the skill from this line.
+</Annotation>
+
+</AnnotatedCode>
+
+## Give skills to an agent
+
+`skills.folder()` loads every skill in a folder, one skill per subfolder.
+
+```typescript {{ title: "inngest/agents/prHelper.ts" }}
+import { skills } from "inngest/experimental/agents";
+import { agents } from "../client";
+import { prComment, prOpened } from "../events";
+import { claude } from "../models/claude";
+import { comment } from "../tools/comment";
+import { readLog } from "../tools/readLog";
+
+export const prHelper = agents.agent({
+  id: "pr-helper",
+  triggers: [prOpened, prComment],
+  thread: "event.data.pr",
+  model: claude,
+  system: "You help with pull requests on acme/web.",
+  tools: { readLog, comment },
+  skills: [skills.folder("./skills")],
+});
+```
+
+The path resolves against the working directory of your app's process, so deploy the `skills` folder with your app. Skills change when you deploy.
+
+## How skills work
+
+- **Names and descriptions are always in the prompt.** The model sees what each skill is for, and nothing more, until it needs one.
+- **`open_skill` returns the instructions.** An agent with skills gets an `open_skill` tool. Asked for a review, the model calls `open_skill({ name: "review-checklist" })` and follows the checklist.
+- **Files go to the sandbox.** A skill's other files, such as scripts, are copied to `/skills/<name>/` in the agent's first sandbox the model can use. Without a sandbox, the model gets the instructions only.
+- **Skills don't add tools.** If a skill says "Run the linter" and the agent has no way to run it, the model says so. Give it a [sandbox](/docs/labs/agents/sandboxes?ref=docs-labs-agents-skills) or a `lint` tool of your own.
+- **Skills appear on the agent's card.** Other agents see the skill names and descriptions when they [discover](/docs/labs/agents/agent-discovery?ref=docs-labs-agents-skills) this agent.
+
+## Next steps
+
+- [Sandboxes](/docs/labs/agents/sandboxes?ref=docs-labs-agents-skills) gives the model a machine to run a skill's scripts on.
+- [Tools](/docs/labs/agents/tools?ref=docs-labs-agents-skills) gives the model ways to act.
+- [Skills reference](/docs/labs/agents/reference-sandboxes?ref=docs-labs-agents-skills#skills) lists the rules for skill folders.

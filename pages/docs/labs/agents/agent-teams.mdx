@@ -1,0 +1,255 @@
+import { Info, AnnotatedCode, Annotation } from "shared/Docs/mdx";
+
+export const metaTitle = "Agent teams | Inngest Agents";
+export const description = "Build teams of Inngest agents: start an agent from code and wait for its result, talk to it while it works, let the model start and message agents, receive typed reports, and lend a sandbox.";
+
+# Agent teams
+
+> Start another agent, talk to it while it works, and get its result back.
+
+<Info>
+  Inngest Agents is an Inngest Labs project: early, moving fast, and shaped by your feedback. [What's Labs?](/docs/labs?ref=docs-labs-agents-agent-teams)
+</Info>
+
+Agents can work together. Your code or an agent's model can start another agent, send it messages while it works, ask it questions, and wait for its result. Messages between agents arrive in each agent's [inbox](/docs/labs/agents/inboxes?ref=docs-labs-agents-agent-teams). Results go back to whoever started the agent.
+
+Splitting work across agents keeps each agent's prompt and tools focused. [Agents working together](/docs/labs/agents/agents?ref=docs-labs-agents-agent-teams#agents-working-together) explains the problems this creates in most multi-agent setups, and how Inngest Agents handles them.
+
+## How agents talk to each other
+
+- **Each start opens a thread.** `start()` and the model's `start_agent` tool send an event that starts the agent on a new thread, with a signed key, unless you pass a thread key. The started agent has its own runs, retries, and trace.
+- **Messages are events.** `message()`, `ask()`, and the model's `message_agent` and `ask_agent` tools send events to that thread. Each one goes into the working run's inbox, or starts a new run on the thread.
+- **Results go back to the starter.** Your code waits for a result with `result()`. A model's run receives an `agent/finished` message in its inbox instead, and stays open until every agent it started has finished, for up to 24 hours.
+- **Questions get answers.** A question arrives as an `agent/question` message. The answer goes back only to whoever asked.
+- **Nothing blocks the model.** The model's agent tools return right away, and replies arrive as messages, so two agents can't deadlock waiting on each other.
+- **Reach follows lineage.** A model can message, ask, and stop only the agents its thread started, and the agents those started.
+
+## Start an agent from code
+
+Give the agent an `invoke()` trigger to type its input, then call `start()`. `start()` returns a handle as soon as the run starts, and `result()` waits for the run's output.
+
+```typescript {{ title: "inngest/agents/reviewer.ts" }}
+import { invoke } from "inngest";
+import { z } from "zod";
+import { agents } from "../client";
+import { claude } from "../models/claude";
+import { readDiff } from "../tools/readDiff";
+
+export const reviewer = agents.agent({
+  id: "reviewer",
+  triggers: [invoke(z.object({ pr: z.number() }))],
+  model: claude,
+  system: "You review pull requests and list the problems you find.",
+  tools: { readDiff },
+});
+```
+
+<AnnotatedCode>
+
+```typescript {{ title: "inngest/agents/prHelper.ts" }}
+import { agents } from "../client";
+import { ciPassed, prOpened } from "../events";
+import { gh } from "../lib/github";
+import { reviewer } from "./reviewer";
+
+export const prHelper = agents.agent(
+  {
+    id: "pr-helper",
+    triggers: [prOpened, ciPassed],
+    thread: "event.data.pr",
+  },
+  async ({ event, step, thread }) => {
+    if (event.is(ciPassed)) {
+      const review = await reviewer.start({ pr: Number(thread.key) }).result();
+
+      await step.run("post-review", async () => {
+        return await gh.comment(Number(thread.key), review);
+      });
+    }
+  },
+);
+```
+
+<Annotation id="result" lines="14" tease="waits for the answer" title="start() and result()">
+The input is typed by the reviewer's `invoke()` trigger. `result()` returns the reviewer's output, a string here, and throws if its run fails or is stopped.
+</Annotation>
+
+</AnnotatedCode>
+
+`start()` opens a new thread each time. To keep one thread, with its history and sandbox, across calls, pass a key: `reviewer.start({ pr: 42 }, { thread: "42" })`.
+
+## Talk to an agent while it works
+
+The handle from `start()` can message the run, ask it a question, or stop it.
+
+<AnnotatedCode>
+
+```typescript
+const review = await reviewer.start({ pr: Number(thread.key) });
+
+await review.message("The author says the migration is safe to skip.");
+
+const worry = await review.ask("Which file worries you most?");
+
+await review.stop();
+```
+
+<Annotation id="message" lines="3" tease="doesn't wait" title="message()">
+Lands in the reviewer's inbox and reaches its next model call.
+</Annotation>
+
+<Annotation id="ask" lines="5" tease="waits for the answer" title="ask()">
+Returns the answer, or `null` if the reviewer refuses or doesn't answer within an hour. Pass `{ timeout }` to change the hour.
+</Annotation>
+
+<Annotation id="stop" lines="7" tease="cancels the run" title="stop()">
+Cancels the run. A `result()` waiting on it throws.
+</Annotation>
+
+</AnnotatedCode>
+
+Once the reviewer has answered, its run has ended. A later `message()` or `ask()` starts a new run on the same thread, which has the earlier history:
+
+```typescript
+const followUp = await review.message("Now check the tests.").result();
+```
+
+## Answer questions from other agents
+
+A question from another agent arrives in the inbox as an `agent/question` message. `message.reply()` answers it, and `message.from` says who asked.
+
+```typescript
+import { agentQuestion } from "inngest/experimental/agents";
+
+async ({ inbox }) => {
+  for await (const message of inbox) {
+    if (message.is(agentQuestion)) {
+      await message.reply("Yes, the author asked for the migration.");
+    }
+  }
+},
+```
+
+An agent with a model answers questions itself, with its `reply` tool.
+
+## Let the model start agents
+
+Every agent with a model has tools to work with other agents. It needs no setup.
+
+| Tool | What it does |
+| --- | --- |
+| `list_agents`, `describe_agent` | Find agents and read their cards. See [Agent discovery](/docs/labs/agents/agent-discovery?ref=docs-labs-agents-agent-teams). |
+| `start_agent` | Starts an agent by its address, such as `acme/reviewer`, with input that matches its card. |
+| `message_agent`, `ask_agent` | Sends a message or a question to an agent it started. |
+| `stop_agent` | Stops an agent it started. |
+| `reply` | Answers a question it was asked, by the question's ID. |
+| `wait` | Ends the model's turn until the next message arrives. |
+
+Replies arrive in the model's inbox as `agent/message`, `agent/question`, `agent/answer`, and `agent/finished` messages, and the loop adds them to the next model call. A run that started agents with `start_agent` stays open until they finish.
+
+- **Who it can reach.** A model can message, ask, and stop only the agents its thread started, and the agents those started. Thread keys from `start()` and `start_agent` are signed, so a guessed key is refused.
+- **What happens when the starter ends.** A started agent keeps running when the run that started it ends. Start it with `attach: true` to cancel it when the starting run ends: when it completes, fails after its retries, or is cancelled.
+- **How deep it goes.** Started agents can start agents, three levels deep by default. Set `limits.depth` to change it. See [Reliability](/docs/labs/agents/reliability?ref=docs-labs-agents-agent-teams#cap-delegation-depth).
+- **Messages from outside.** In a thread another agent started, a message with no sender, such as one a person sent, is labeled as coming from outside the team, so the model doesn't mistake it for its starter.
+
+`discovery: false` removes every tool here except `reply`.
+
+## Handle an agent that fails
+
+A run started with `start_agent` reports back with an `agent/finished` message, whether it succeeded or failed:
+
+```typescript
+import { agentFinished } from "inngest/experimental/agents";
+
+if (message.is(agentFinished) && message.data.outcome === "failed") {
+  const text = `The review failed: ${message.data.error}`;
+
+  await step.run("report-failure", async () => {
+    return await gh.comment(Number(thread.key), text);
+  });
+}
+```
+
+## Receive reports while an agent works
+
+To get findings as an agent finds them, instead of one result at the end, ask for typed reports when you start it. This is experimental.
+
+<AnnotatedCode>
+
+```typescript
+import { eventType } from "inngest";
+import { z } from "zod";
+
+const findingSchema = z.object({ file: z.string(), problem: z.string() });
+
+const finding = eventType("review/finding", { schema: findingSchema });
+
+await reviewer.start(
+  { pr: Number(thread.key) },
+  { reports: [{ event: finding, required: true }] },
+);
+
+for await (const message of inbox) {
+  const named: { name: string; data: unknown } = message;
+
+  if (named.name === finding.name) {
+    const found = findingSchema.parse(named.data);
+
+    await step.run("post-finding", async () => {
+      return await gh.comment(Number(thread.key), `${found.file}: ${found.problem}`);
+    });
+  }
+}
+```
+
+<Annotation id="type" lines="4-6" tease="an event type" title="A report type">
+Any `eventType()`. Its name can't start with `agent/` or `inngest/`.
+</Annotation>
+
+<Annotation id="reports" lines="8-11" tease="what it owes" title="reports" href="/docs/labs/agents/reference?ref=docs-labs-agents-agent-teams#reports" linkText="Reports">
+Each entry is an event type, or `{ event, to, if, required }`. `to` sends reports to other threads, and `if` filters them.
+</Annotation>
+
+<Annotation id="parse" lines="14-17" tease="match the name, then parse" title="Read a report">
+`message.is(finding)` can't narrow to a report type yet, so compare the name and parse the data with the report's schema.
+</Annotation>
+
+</AnnotatedCode>
+
+The reviewer's model gets a `report` tool, and its handler gets `thread.report(finding, data)`. Each report is checked against the schema before it's sent. If the model tries to finish without sending a `required` report, it's reminded. If it never sends one, its `agent/finished` message lists the type in `missing`.
+
+## Lend a sandbox
+
+To have another agent work on the same machine, lend it your sandbox's tools when you start it. This is experimental.
+
+```typescript
+await fixer.start({ pr: Number(thread.key) }, { tools: sandboxes.work.tools });
+```
+
+The fixer's model gets `work_run`, `work_read`, and the other built-in tools, and they run against your thread's machine. To lend the machine to the fixer's handler instead, pass `sandboxes: { work: sandboxes.work }`.
+
+- Only built-in tools can be lent. The push tool never is.
+- Both agents must be in the same app.
+- An agent that borrows a sandbox is attached: it's cancelled when your run ends for good, so it never outlives the machine.
+
+## Run work in the background
+
+To check with another agent without holding up the current batch, start the work in a function you don't await, and have it message the thread when it's done:
+
+```typescript
+const reviewLater = async () => {
+  const review = await reviewer.start({ pr: Number(thread.key) }).result();
+
+  await thread.message({ review });
+};
+
+void reviewLater();
+```
+
+`thread.message()` puts the review in this thread's inbox, for a later batch. Work you start and don't await still runs once, and the run ends after it finishes.
+
+## Next steps
+
+- [Agent discovery](/docs/labs/agents/agent-discovery?ref=docs-labs-agents-agent-teams) controls which agents a model can find and start.
+- [Lead and specialists recipe](/docs/labs/agents/recipes/agent-teams?ref=docs-labs-agents-agent-teams) builds a lead that hands work to specialists.
+- [Thread handles reference](/docs/labs/agents/reference?ref=docs-labs-agents-agent-teams#thread-handles) lists every method of a handle.

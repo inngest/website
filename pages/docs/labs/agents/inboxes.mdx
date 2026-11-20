@@ -1,0 +1,183 @@
+import { Info, AnnotatedCode, Annotation, Callout } from "shared/Docs/mdx";
+
+export const metaTitle = "Inboxes | Inngest Agents";
+export const description = "Read an Inngest agent's inbox: handle the messages that arrive while a run works, one at a time or in batches, receive events that never start a run, wait with a timeout, and open more inboxes.";
+
+# Inboxes
+
+> Receive new messages while a run works, in the order they arrive.
+
+<Info>
+  Inngest Agents is an Inngest Labs project: early, moving fast, and shaped by your feedback. [What's Labs?](/docs/labs?ref=docs-labs-agents-inboxes)
+</Info>
+
+Every run has an inbox for its thread. The event that started the run is the first message in it. Anything sent to the thread while the run works, such as a customer's follow-up or a CI result, waits in the inbox in order instead of starting a second run. An agent with no handler reads its inbox for you, and adds new messages to the model's next call.
+
+The inbox is built on [`step.subscribe()`](/docs/durable-execution/primitives/step-subscribe?ref=docs-labs-agents-inboxes), which the client's `inboxMiddleware()` adds.
+
+## Handle each message
+
+Loop over `inbox` to take one message at a time. The loop ends when nothing is unread, and the run ends with it.
+
+```typescript {{ title: "inngest/agents/prHelper.ts" }}
+import { agents } from "../client";
+import { ciFailed, prComment, prOpened } from "../events";
+import { gh } from "../lib/github";
+
+export const prHelper = agents.agent(
+  {
+    id: "pr-helper",
+    triggers: [prOpened, prComment, ciFailed],
+    thread: "event.data.pr",
+  },
+  async ({ inbox, step, thread }) => {
+    for await (const message of inbox) {
+      await step.run("acknowledge", async () => {
+        return await gh.comment(Number(thread.key), `Seen: ${message.name}`);
+      });
+    }
+  },
+);
+```
+
+```typescript {{ title: "inngest/events.ts" }}
+import { eventType } from "inngest";
+import { z } from "zod";
+
+const ciRun = z.object({ pr: z.number() });
+
+export const prOpened = eventType("pr/opened", {
+  schema: z.object({ pr: z.number(), author: z.string() }),
+});
+
+export const prComment = eventType("pr/comment", {
+  schema: z.object({ pr: z.number(), author: z.string(), body: z.string() }),
+});
+
+export const ciFailed = eventType("ci/run.failed", { schema: ciRun });
+
+export const ciPassed = eventType("ci/run.passed", { schema: ciRun });
+
+export const buildFinished = eventType("build/finished", {
+  schema: z.object({ pr: z.number(), artifact: z.string() }),
+});
+```
+
+A message is the event as it was sent, with its `name` and `data`. `message.is(prComment)` checks which event it is and types its `data`.
+
+## Handle messages in batches
+
+`inbox.batches()` takes every unread message at once. Use it when several messages that arrive together should be handled together, such as five comments posted in a minute.
+
+```typescript
+async ({ inbox, step, thread }) => {
+  for await (const batch of inbox.batches({ max: 20 })) {
+    await step.run("acknowledge", async () => {
+      return await gh.comment(Number(thread.key), `Seen ${batch.length} updates`);
+    });
+  }
+},
+```
+
+`max` caps the size of a batch. Messages over the cap stay unread, oldest first, for the next batch. Pass a batch to [`loop()`](/docs/labs/agents/models?ref=docs-labs-agents-inboxes#write-a-handler) to send it to the model as one turn.
+
+## When a run ends
+
+Both forms of `for await` end as soon as nothing is unread. They don't wait for more messages to arrive. The run then ends, and its sandboxes pause.
+
+The thread stays. The next message on the thread starts a new run, which reads the model's history and state from the thread and carries on. A run started from code with `start()` or a handle's `message()` works the same way. See [Threads](/docs/labs/agents/threads?ref=docs-labs-agents-inboxes#what-a-thread-keeps).
+
+## Receive events that don't start a run
+
+List an event in `inbox` to deliver it to a working run without letting it start one. Here, CI passing is useful context while the agent works on a pull request, but isn't a reason to start.
+
+```typescript {{ title: "inngest/agents/prHelper.ts" }}
+import { agents } from "../client";
+import { ciFailed, ciPassed, prComment, prOpened } from "../events";
+
+export const prHelper = agents.agent(
+  {
+    id: "pr-helper",
+    triggers: [prOpened, prComment, ciFailed],
+    thread: "event.data.pr",
+    inbox: [ciPassed],
+  },
+  async ({ inbox }) => {
+    for await (const message of inbox) {
+      if (message.is(ciPassed)) {
+        console.log(`CI passed on #${message.data.pr}`);
+      }
+    }
+  },
+);
+```
+
+An `inbox` event is placed on a thread by the agent's `thread` expression. A source can set its own `thread`, or an `if` condition, in the same form as a trigger. See [Thread keys and inbox sources](/docs/labs/agents/reference?ref=docs-labs-agents-inboxes#thread-keys-and-inbox-sources).
+
+## Wait for the next message
+
+`inbox.next()` returns the oldest unread message. If nothing is unread, it waits until a message arrives. The run uses no compute while it waits, and the wait survives restarts and deploys of your app.
+
+Pass a `timeout` to stop waiting. `next()` then returns `null`.
+
+```typescript
+async ({ inbox, step, thread }) => {
+  await inbox.next();
+
+  const next = await inbox.next({ timeout: "10m" });
+
+  if (next === null) {
+    await step.run("nudge", async () => {
+      return await gh.comment(Number(thread.key), "CI hasn't reported in 10 minutes.");
+    });
+  }
+},
+```
+
+The first `next()` returns the event that started the run.
+
+## Check without waiting
+
+`inbox.drain()` returns every unread message without waiting. It returns `[]` when nothing is unread.
+
+```typescript
+const waiting = await inbox.drain();
+```
+
+## Open another inbox
+
+To receive an event for this run only, open a second inbox with `step.subscribe()`. Filter it with `if`, because an inbox you open isn't tied to the thread.
+
+<AnnotatedCode>
+
+```typescript
+await using builds = step.subscribe("builds", [
+  { event: buildFinished, if: "async.data.pr == event.data.pr" },
+]);
+
+const build = await builds.next({ timeout: "30m" });
+```
+
+<Annotation id="using" lines="1" tease="closes itself" title="await using" href="/docs/durable-execution/primitives/step-subscribe?ref=docs-labs-agents-inboxes#close-an-inbox" linkText="Close an inbox">
+Closes the inbox when the handler returns, even if it throws. Call `builds.close()` to close it sooner and get back the messages it didn't read.
+</Annotation>
+
+<Annotation id="if" lines="2" tease="only this PR" title="if" href="/docs/durable-execution/guides-and-advanced/writing-expressions?ref=docs-labs-agents-inboxes" linkText="Writing expressions">
+`async` is the arriving event, and `event` is the event that started the run.
+</Annotation>
+
+</AnnotatedCode>
+
+An inbox receives only events that arrive after it opens, so open it before the step that causes them.
+
+<Callout variant="warning">
+  Only subscribe to events the thread doesn't already receive. If an event is one of the agent's triggers or `inbox` sources and also matches an inbox you open, whichever inbox reads it first takes it, and the other never sees it.
+</Callout>
+
+To receive an event on the thread, in this run and later ones, use [`thread.listen()`](/docs/labs/agents/threads?ref=docs-labs-agents-inboxes#watch-more-events) instead.
+
+## Next steps
+
+- [Models and the loop](/docs/labs/agents/models?ref=docs-labs-agents-inboxes) shows how the loop adds new messages to the model's next call.
+- [`step.subscribe()`](/docs/durable-execution/primitives/step-subscribe?ref=docs-labs-agents-inboxes) covers the inbox primitive in any Inngest function.
+- [Agents reference](/docs/labs/agents/reference?ref=docs-labs-agents-inboxes#inbox) lists every inbox method.

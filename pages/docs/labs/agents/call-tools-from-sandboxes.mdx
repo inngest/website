@@ -1,0 +1,149 @@
+import { Info, AnnotatedCode, Annotation } from "shared/Docs/mdx";
+
+export const metaTitle = "Call your tools from a sandbox | Inngest Agents";
+export const description = "Let code in an Inngest agent's sandbox call your tools: the model writes one script instead of taking many turns, each call runs in your app as a durable step, and your credentials stay out of the sandbox.";
+
+# Call your tools from a sandbox
+
+> Let the model write one script that calls your tools, instead of taking a turn for each call.
+
+<Info>
+  Inngest Agents is an Inngest Labs project: early, moving fast, and shaped by your feedback. [What's Labs?](/docs/labs?ref=docs-labs-agents-call-tools-from-sandboxes)
+</Info>
+
+Some tasks need many tool calls, such as reading the CI log of every open pull request. Instead of one model turn per call, the model can write a script that runs in the [sandbox](/docs/labs/agents/sandboxes?ref=docs-labs-agents-call-tools-from-sandboxes) and calls your tools directly. Each call still runs in your app, as a durable step, with your credentials. The sandbox only sees what each tool returns.
+
+## Give the model `runCode`
+
+Add the `runCode` tool to the sandbox, and pass it the tools a script may call.
+
+<AnnotatedCode>
+
+```typescript {{ title: "inngest/sandboxes/work.ts" }}
+import { sandbox } from "inngest/experimental/agents";
+import { readLog } from "../tools/readLog";
+
+const { run, runCode } = sandbox.tools;
+
+export const work = sandbox({
+  id: "work",
+  tools: { run, runCode: runCode.with({ tools: { readLog } }) },
+});
+```
+
+<Annotation id="tools" lines="8" tease="adds work_runCode" title="runCode" href="/docs/labs/agents/reference-sandboxes?ref=docs-labs-agents-call-tools-from-sandboxes#code-tools" linkText="Code tools">
+The model gets `work_runCode`. Its description lists the tools a script can call, by their keys in this record.
+</Annotation>
+
+</AnnotatedCode>
+
+`readLog` is a [tool](/docs/labs/agents/tools?ref=docs-labs-agents-call-tools-from-sandboxes#define-a-tool) like any other. Asked which pull requests are failing, the model writes one script:
+
+```python {{ title: "A script the model writes" }}
+failing = []
+
+for pr in [41, 42, 43, 44, 45]:
+    log = await tools.readLog(pr=pr)
+
+    if "FAIL" in log:
+        failing.append(pr)
+
+print(failing)
+```
+
+The run's trace shows each `readLog` call as its own step. A failed call is retried like any step, and a call that still fails raises an error the script can catch.
+
+Scripts also get the agent tools with no setup: `tools.list_agents`, `describe_agent`, `start_agent`, `message_agent`, `stop_agent`, and `agent_result`, which waits for a started agent to finish. The same [discovery rules](/docs/labs/agents/agent-discovery?ref=docs-labs-agents-call-tools-from-sandboxes) apply as for the model, and `discovery: false` removes them.
+
+## Give scripts a tool that uses the run
+
+A tool you define inside the handler can use the run's values, such as the thread's pull request. Pass it to `loop()`, and both the model and its scripts can call it.
+
+<AnnotatedCode>
+
+```typescript {{ title: "inngest/agents/prHelper.ts" }}
+import { tool } from "inngest/experimental";
+import { z } from "zod";
+import { agents } from "../client";
+import { ciFailed, prOpened } from "../events";
+import { gh } from "../lib/github";
+import { claude } from "../models/claude";
+import { work } from "../sandboxes/work";
+
+export const prHelper = agents.agent(
+  {
+    id: "pr-helper",
+    triggers: [prOpened, ciFailed],
+    thread: "event.data.pr",
+    model: claude,
+    system: "You help with pull requests on acme/web.",
+    sandboxes: { work },
+  },
+  async ({ inbox, loop, thread }) => {
+    const note = tool.step({
+      description: "Leave a note on this pull request",
+      input: z.object({ text: z.string() }),
+      run: async ({ text }) => {
+        return await gh.comment(Number(thread.key), text);
+      },
+    });
+
+    for await (const batch of inbox.batches()) {
+      await loop(batch, { tools: { note } });
+    }
+  },
+);
+```
+
+<Annotation id="note" lines="19-25" tease="uses thread" title="A tool made in the handler">
+Its body can use `thread` and other values of the run. It runs as a durable step, so the note is posted once.
+</Annotation>
+
+<Annotation id="tools" lines="28" tease="for this call" title="Tools for one call" href="/docs/labs/agents/reference?ref=docs-labs-agents-call-tools-from-sandboxes#tools-passed-to-a-loop" linkText="Tools passed to a loop">
+Added to the agent's tools for this call, for the model and for scripts.
+</Annotation>
+
+</AnnotatedCode>
+
+```python {{ title: "A script that calls note" }}
+log = await tools.readLog(pr=42)
+
+if "FAIL" in log:
+    await tools.note(text="The checkout test is failing.")
+```
+
+## Keep credentials out of the sandbox
+
+`note` comments with your app's GitHub token, and `readLog` reads CI with yours. A script calls them, but never sees either token. Only a repository's read token and the values in `sandbox({ secrets })` enter the sandbox. See [Secrets](/docs/labs/agents/reference-sandboxes?ref=docs-labs-agents-call-tools-from-sandboxes#secrets).
+
+## Call tools from your own scripts
+
+Your handler can run its own scripts with the same tools. Pass them to the command:
+
+```typescript
+await sandboxes.work.commands.run("triage", "node triage.cjs", {
+  tools: { readLog, note },
+});
+```
+
+```js {{ title: "triage.cjs" }}
+const { tools } = require("inngest_tools");
+
+const main = async () => {
+  const log = await tools.readLog({ pr: 42 });
+
+  if (log.includes("FAIL")) {
+    await tools.note({ text: "The checkout test is failing." });
+  }
+};
+
+main();
+```
+
+Scripts find the tools in `inngest_tools`, by their keys in the record. In Python, use `from inngest_tools import tools`. See [Tools in Sandboxes](/docs/sandboxes/features/tools?ref=docs-labs-agents-call-tools-from-sandboxes).
+
+## Next steps
+
+- [Sandbox tools recipe](/docs/labs/agents/recipes/sandbox-tools?ref=docs-labs-agents-call-tools-from-sandboxes) answers a data question with one script.
+- [Tools](/docs/labs/agents/tools?ref=docs-labs-agents-call-tools-from-sandboxes) covers defining tools.
+- [Code tools reference](/docs/labs/agents/reference-sandboxes?ref=docs-labs-agents-call-tools-from-sandboxes#code-tools) lists the `runCode` options.

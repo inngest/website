@@ -1,0 +1,77 @@
+import { Info } from "shared/Docs/mdx";
+
+export const metaTitle = "Reliability | Inngest Agents";
+export const description = "How Inngest agents handle failure: durable retries for model and tool calls, caps on turns and delegation depth, model errors, deploys, and what happens to messages when a run fails.";
+
+# Reliability
+
+> Leave an agent running: it retries what fails, stops runaway loops, and carries a failed run's messages over to the next run.
+
+<Info>
+  Inngest Agents is an Inngest Labs project: early, moving fast, and shaped by your feedback. [What's Labs?](/docs/labs?ref=docs-labs-agents-reliability)
+</Info>
+
+An agent run is a durable function run. Every model call, tool call, and inbox message is a step. When a step fails, Inngest retries that step, and finished steps return their saved results. A retry never calls the model again for a turn that already finished, and never repeats a tool call that already succeeded.
+
+## Cap turns
+
+The loop makes at most 40 model calls per batch by default. Lower it for an agent that should finish quickly:
+
+```typescript
+loop: { maxTurns: 10 },
+```
+
+In a handler, check why the loop stopped:
+
+```typescript
+const result = await loop(batch, { maxTurns: 10 });
+
+if (result.end === "maxTurns") {
+  return "I ran out of turns before I finished.";
+}
+```
+
+To stop on cost or another condition, pass a `budget` function. See [Change the loop's options](/docs/labs/agents/models?ref=docs-labs-agents-reliability#change-the-loop-s-options).
+
+## Cap delegation depth
+
+Agents can start agents, which can start more. `limits.depth` caps how many levels of started agents sit below an agent. The default is `3`.
+
+```typescript
+limits: { depth: 2 },
+```
+
+The lowest `depth` in a chain applies to the whole chain, so one agent near the top bounds every agent below it. A start that a limit refuses throws an error in your code, and returns an error result the model can read.
+
+## Model errors
+
+- **Rate limits and server errors** (429, 529, and 5xx responses) are retried inside the step. When the provider sends `retry-after`, the retry waits that long.
+- **Errors a retry can't fix**, such as a bad request, a refusal, or a reply cut off by `maxTokens`, fail the step without retrying. The error shows in the run's trace.
+
+## Deploys
+
+A run ends as soon as its inbox is empty, so most deploys land between runs. The next message on the thread starts a new run on the new code, with the same history.
+
+A run that's still open during a deploy, for example because it's waiting for an agent it started, resumes on your latest code, like any Inngest function run. Keep your handler compatible with runs that started on the previous version. See [Versioning](/docs/durable-execution/guides-and-advanced/versioning?ref=docs-labs-agents-reliability).
+
+## When a run fails
+
+When a run fails after its retries, its error shows in the trace, and the thread keeps going:
+
+- **Its messages carry over.** Messages the failed run didn't finish are delivered first to the next run on the thread.
+- **The next run knows.** Its handler's `previousRun` is `{ runId, status: "failed", at, error }`.
+- **A message can arrive twice.** In rare cases, the next run is handed a message the failed run had already handled. Make tools that change things safe to repeat.
+
+Threads have a few limits on delivery, such as a short window when a thread first starts. See [Known limits](/docs/labs/agents/reference?ref=docs-labs-agents-reliability#known-limits).
+
+A cancelled run, for example one stopped with `stop()` or `cancelOn`, isn't treated as a failure.
+
+## Limits
+
+Each model call, tool call, `step.run()`, and inbox message counts toward the run's [step and state limits](/docs/durable-execution/limits?ref=docs-labs-agents-reliability#platform-limits). Because a run ends when its inbox is empty, a long conversation is spread across many runs, and each run starts its count again.
+
+## Next steps
+
+- [Observability](/docs/labs/agents/observability?ref=docs-labs-agents-reliability) shows what each run did and what it cost.
+- [Agent discovery](/docs/labs/agents/agent-discovery?ref=docs-labs-agents-reliability#limit-who-it-may-start) limits which agents a model can start.
+- [Limits reference](/docs/labs/agents/reference?ref=docs-labs-agents-reliability#limits) lists every limit.
