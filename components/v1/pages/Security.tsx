@@ -139,7 +139,8 @@ export default function Security() {
             <Body>
               <p>
                 Inngest offers a standard signed Data Processing Agreement (DPA)
-                to customers on paid plans.{" "}
+                to customers on paid plans. Our DPA includes Standard
+                Contractual Clauses (SCCs).{" "}
                 <Link href="https://support.inngest.com/">
                   File a support ticket
                 </Link>{" "}
@@ -240,16 +241,10 @@ export default function Security() {
             <H3>Cloud Infrastructure Security</H3>
             <Body>
               <p>
-                All of our services are hosted with Amazon Web Services (AWS)
-                and Google Cloud Platform (GCP). They employ a robust security
-                program with multiple certifications. For more information on
-                our provider&rsquo;s security processes, please visit{" "}
-                <Link href="http://aws.amazon.com/security/">AWS Security</Link>{" "}
-                and{" "}
-                <Link href="https://cloud.google.com/security">
-                  GCP Security
-                </Link>
-                .
+                Our services are hosted with leading cloud infrastructure
+                providers that maintain robust security programs with multiple
+                certifications. For a full list of our subprocessors, visit our{" "}
+                <Link href="https://trust.inngest.com/">Trust Center</Link>.
               </p>
             </Body>
           </Group>
@@ -257,10 +252,19 @@ export default function Security() {
             <H3>Data Hosting Security</H3>
             <Body>
               <p>
-                All of our data is hosted on Amazon Web Services (AWS)
-                databases. These databases are all located in the United States.
-                Please reference the above vendor specific documentation linked
-                above for more information.
+                All of our data is hosted in databases that are located in the
+                United States. We do not currently offer the option to host data
+                in the EU.
+              </p>
+            </Body>
+          </Group>
+          <Group>
+            <H3>Data Retention</H3>
+            <Body>
+              <p>
+                Regardless of plan, we permanently delete event data after 365
+                days and trace data after 90 days, so no event or trace data is
+                kept longer than one year.
               </p>
             </Body>
           </Group>
