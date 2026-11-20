@@ -159,16 +159,20 @@ export default function AdventCalendar({ now }: { now: Date | null }) {
               <div className="mt-4">
                 <JoinForm day={raffleDay} tone="dark" id="twelve-days" />
               </div>
-              <p className="mt-3 font-v1Label text-[13px] text-white/60">
-                {CALENDAR_JOIN.note.before}
-                <a
-                  href={CALENDAR_JOIN.note.link.href}
-                  className="underline underline-offset-4 hover:no-underline"
-                >
-                  {CALENDAR_JOIN.note.link.label}
-                </a>
-                {CALENDAR_JOIN.note.after}
-              </p>
+              {/* Only before the first door: once a raffle is open the
+                  form says so itself, and after the 18th it's over. */}
+              {(!now || now.getTime() < unlockAt(1).getTime()) && (
+                <p className="mt-3 font-v1Label text-[13px] text-white/60">
+                  {CALENDAR_JOIN.note.before}
+                  <a
+                    href={CALENDAR_JOIN.note.link.href}
+                    className="underline underline-offset-4 hover:no-underline"
+                  >
+                    {CALENDAR_JOIN.note.link.label}
+                  </a>
+                  {CALENDAR_JOIN.note.after}
+                </p>
+              )}
             </div>
           </div>
           {DAY_ZERO_PLACEMENT === "header" && (
