@@ -1,3 +1,5 @@
+import { llmContextPlansSection } from "./pricing-content";
+
 export const llmContextContent = `# Inngest Integration Guide
 
 After provisioning, your \`access_configuration\` contains the credentials needed to integrate Inngest into your application.
@@ -240,6 +242,8 @@ X-Inngest-Env: <environment-id>
 ## Dashboard
 
 Access your Inngest dashboard using the \`dashboard_url\` from your \`access_configuration\` to view function runs, manage environments, and monitor your workflows.
+
+${llmContextPlansSection()}
 
 ## Further Documentation
 

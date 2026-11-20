@@ -15,6 +15,13 @@ export const PROGRAM_RULES = {
   maxRaisedLabel: "$5M",
 } as const;
 
+/** The offer in one sentence, for /llms.txt and /llm-context.md. */
+export const PROGRAM_OFFER =
+  "Qualifying startups get 50% off the Inngest Pro plan for 12 months.";
+
+/** Page meta description. */
+export const PROGRAM_SUMMARY = `${PROGRAM_OFFER} Bootstrapped or venture-backed, apply here.`;
+
 /** Review turnaround promised on the page, the FAQ, and the confirmation. */
 export const REVIEW_TIME_LABEL = "5 to 7 business days";
 

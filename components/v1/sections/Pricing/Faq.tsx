@@ -1,6 +1,7 @@
 import SharedFaq, { type Faq as FaqItem } from "@/components/v1/sections/AI/Faq";
 
-const FAQS: FaqItem[] = [
+// Exported for the page's FAQPage structured data.
+export const PRICING_FAQS: FaqItem[] = [
   {
     id: "what-is-execution",
     question: 'What counts as one "execution"?',
@@ -88,7 +89,7 @@ const FAQS: FaqItem[] = [
 export default function Faq() {
   return (
     <SharedFaq
-      faqs={FAQS}
+      faqs={PRICING_FAQS}
       heading="FAQ"
       refTag="pricing"
       className="!pt-20 sm:!pt-24 lg:!pt-16"

@@ -3,7 +3,8 @@ import SharedFaq, {
 } from "@/components/v1/sections/AI/Faq";
 import { PROGRAM_RULES, REVIEW_TIME_LABEL } from "./program";
 
-const FAQS: FaqItem[] = [
+// Exported for the page's FAQPage structured data.
+export const STARTUP_FAQS: FaqItem[] = [
   {
     id: "what-you-get",
     question: "What does the Startup Program include?",
@@ -76,7 +77,7 @@ const FAQS: FaqItem[] = [
 export default function Faq() {
   return (
     <SharedFaq
-      faqs={FAQS}
+      faqs={STARTUP_FAQS}
       heading="FAQ"
       refTag="startups-faq"
       className="!pt-20 sm:!pt-24 lg:!pt-16"

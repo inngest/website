@@ -5,6 +5,7 @@ import {
   type NavSection,
   type NavLinkGroup,
 } from "shared/Docs/navigationStructure";
+import { llmsPricingSection } from "../pricing-content";
 
 export const dynamic = "force-static";
 
@@ -24,6 +25,8 @@ export async function GET() {
 - [Full documentation as single file](${process.env.NEXT_PUBLIC_HOST}/llms-full.txt)
 - [LLM integration context](${process.env.NEXT_PUBLIC_HOST}/llm-context.md)
 - [Blog index](${process.env.NEXT_PUBLIC_HOST}/blog.txt)
+
+${llmsPricingSection()}
 
 ${sections}
 
