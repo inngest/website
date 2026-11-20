@@ -152,9 +152,7 @@ export default function Security() {
           <Body>
             <p>
               To read how we handle SDK and function security,{" "}
-              <Link href="/docs/platform-and-operations/cloud-architecture-and-security?ref=security">
-                read our docs on security
-              </Link>
+              <Link href="/docs/platform-and-operations/cloud-architecture-and-security?ref=security">read our docs on security</Link>
               .
             </p>
           </Body>
