@@ -545,6 +545,11 @@ module.exports = {
         // 12 Days: the Day 0 door rests a crack open (swung away from the
         // viewer, so a sliver of what's behind shows) and creaks wider on
         // the same beat as the "Start here" wiggle. Transform only.
+        // 12 Days: the arrow on "Get started with Day 0 →" after signing up.
+        "nudge-right": {
+          "0%, 100%": { transform: "translateX(0)" },
+          "50%": { transform: "translateX(5px)" },
+        },
         // 12 Days: the hero candle's flame. Never smaller than the painted
         // flame under it (scale >= 1 from its base), so nothing peeks out.
         "flame-flicker": {
@@ -587,6 +592,7 @@ module.exports = {
         "door-ajar": "door-ajar 3.2s ease-in-out infinite",
         "wheel-spin": "wheel-spin 3.2s ease-in-out infinite",
         "flame-flicker": "flame-flicker 1.7s ease-in-out infinite",
+        "nudge-right": "nudge-right 0.8s ease-in-out 0.5s 4",
         "v1-nav-pop": "v1-nav-pop 180ms cubic-bezier(0.2, 0.8, 0.2, 1) both",
       },
       // v1 z-index scale. Names map intent → number so the stacking
