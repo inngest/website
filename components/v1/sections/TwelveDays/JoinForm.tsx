@@ -161,31 +161,41 @@ export default function JoinForm({
         <div
           role="status"
           className={
-            "flex w-full items-center gap-4 rounded-xl border-[3px] border-[#020202] p-4 text-[#020202] shadow-[6px_6px_0_#020202] sm:p-5 " +
+            "flex w-full items-center gap-3 rounded-xl border-[3px] border-[#020202] px-4 py-3 text-[#020202] shadow-[6px_6px_0_#020202] " +
             (light ? "bg-white" : "bg-[#F7DA10]")
           }
         >
           <span
             aria-hidden="true"
-            className="flex h-11 w-11 shrink-0 items-center justify-center rounded-full bg-[#020202] text-[22px] font-black text-[#F7DA10]"
+            className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-[#020202] text-[16px] font-black text-[#F7DA10]"
           >
             ✓
           </span>
-          <span className="flex flex-col gap-1">
-            <span className="font-sans text-[22px] font-black leading-[1.1] tracking-[-0.01em]">
+          {/* One line where it fits: the bold heading, then the note. */}
+          <p className="leading-[1.3]">
+            <span className="font-sans text-[20px] font-black tracking-[-0.01em]">
               {SIGNUP.sent}
-            </span>
-            <span className="font-v1Label text-[14px] leading-[1.4]">
+            </span>{" "}
+            <span className="ml-1.5 font-v1Label text-[14px]">
               {entered ? SIGNUP.enteredBody(day) : SIGNUP.sentBody}
             </span>
-          </span>
+          </p>
         </div>
         <a
           href={SIGNUP.next.href}
           onClick={onLeave}
           className={`inline-flex items-center gap-2 self-start font-v1Label text-[14px] underline underline-offset-4 hover:no-underline ${note}`}
         >
-          {SIGNUP.next.label} <span aria-hidden="true">↓</span>
+          {SIGNUP.next.label}{" "}
+          {/* The arrow nudges right a few times when the confirmation
+              appears, then rests. Transform only; still with reduced
+              motion. */}
+          <span
+            aria-hidden="true"
+            className="inline-block motion-safe:animate-nudge-right"
+          >
+            →
+          </span>
         </a>
         {onClose && (
           <button

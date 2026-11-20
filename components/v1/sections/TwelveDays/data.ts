@@ -383,13 +383,13 @@ export const SIGNUP = {
   quick: (name: string) => `Enter today's raffle as ${name}`,
   notYou: "Not you?",
   sending: "Signing you up…",
-  sent: "You're on the list.",
+  sent: "You're in!",
   sentBody: "We'll email you the moment each new door opens.",
   enteredBody: (day: number) =>
     `You're in the Day ${day} raffle, and we'll email you when each new door opens. Come back tomorrow for another entry.`,
   failed: "That didn't go through. Try again?",
   /** After joining: step 2 of the journey. */
-  next: { label: "Next: set up Inngest locally", href: "#day-0" },
+  next: { label: "Get started with Day 0", href: "#day-0" },
   /** In the pop-up: points to the "New to Inngest?" block. */
   account: {
     lead: "Need an Inngest account? It's free:",
