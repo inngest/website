@@ -286,7 +286,9 @@ export const HERO = {
   label: "12 Days of Weird Workflows",
   body: "Twelve doors. Twelve lessons to make all your weird workflows durable. Combine them and submit your weird workflow for a chance to win cash and other prizes.",
   /** Down to the calendar: the doors and the email sign-up. */
-  signup: { label: "Sign up for the challenge", href: "#calendar" },
+  signup: { label: "Get the daily lessons", href: "#calendar" },
+  /** For people who don't need the lessons: straight to the build-a-thon. */
+  build: { label: "Submit your workflow", href: "#submit" },
 } as const;
 
 /** Section id the hero's "Explore the calendar" jumps to. */
@@ -299,6 +301,23 @@ export const CALENDAR = {
   title: "No peeking.",
   subtitle:
     "The lessons are still wrapping themselves. Add your email to get notified when each lesson drops.",
+} as const;
+
+/**
+ * Under "No peeking." (AdventCalendar.tsx), in place of the old "How it
+ * works" section: the doors and the sign-up in one block. Setting up,
+ * is the Day 0 door. The build-a-thon button is in the hero.
+ */
+export const CALENDAR_JOIN = {
+  when: "December 7–18",
+  title: "Open a door a day",
+  body: "A five-minute lesson, the code and the docs behind every door. Add your email to get notified when each lesson drops.",
+  /** "raffle" links down to the raffle section. */
+  note: {
+    before: "From December 7, the same sign-up enters you in that day's ",
+    link: { label: "raffle", href: "#raffle" },
+    after: ".",
+  },
 } as const;
 
 /**
@@ -325,6 +344,29 @@ Follow the quick start for this stack: https://www.inngest.com/docs/getting-star
 } as const;
 
 /**
+ * Day 0: the setup door, full width above the twelve lessons
+ * (AdventCalendar.tsx). Open from the start. Its buttons reuse the
+ * "New to Inngest?" copy and links above.
+ */
+export const DAY_ZERO = {
+  label: "Day 0 · Setup",
+  /** On the front of the door, in the same voice as the lesson teasers. */
+  teaser: "“Wait, do I need to set anything up first?”",
+  cue: "Open me first",
+  title: "Get set up before Day 1",
+  body: "Get Inngest running locally before the first door opens, so Day 1 is all lesson and no setup.",
+  steps: {
+    prompt:
+      "Paste the prompt into your coding agent. It adds Inngest to your project and runs your first durable workflow locally.",
+    repo: "Grab the course repo. Every lesson's code is there, with how to run it.",
+    cloud:
+      "Start free in cloud when you're ready to deploy. You'll need a free account to win a prize.",
+  },
+  promptHeading: "The prompt",
+  signUpHref: `/sign-up?ref=${REF}-day-0`,
+} as const;
+
+/**
  * The one sign-up form (JoinForm.tsx), in the calendar and in the raffle
  * pop-up. Before the doors open it's email only; while a day's raffle is
  * open the same submit also enters that day's raffle.
@@ -347,12 +389,12 @@ export const SIGNUP = {
     `You're in the Day ${day} raffle, and we'll email you when each new door opens. Come back tomorrow for another entry.`,
   failed: "That didn't go through. Try again?",
   /** After joining: step 2 of the journey. */
-  next: { label: "Next: set up Inngest locally", href: "#new-to-inngest" },
+  next: { label: "Next: set up Inngest locally", href: "#day-0" },
   /** In the pop-up: points to the "New to Inngest?" block. */
   account: {
     lead: "Need an Inngest account? It's free:",
     label: "get started",
-    href: "#new-to-inngest",
+    href: "#day-0",
   },
 } as const;
 
@@ -458,7 +500,7 @@ export const BUILDATHON = {
   title: ["Build your", "weird workflow."],
   when: "Submit by December 23. Winners picked live on CodeTV, December 29.",
   cta: { label: "Submit your workflow", href: "#submit" },
-  body: "Use all twelve primitives from behind the doors to build one gloriously overengineered workflow that does something really simple, the Rube Goldberg way. Toast a slice of bread. Water a plant. Say good morning.",
+  body: "Use all twelve primitives to build one gloriously overengineered workflow that does something really simple, the Rube Goldberg way. Toast a slice of bread. Water a plant. Say good morning.",
   rulesTitle: "The rules",
   rules: [
     "Your workflow uses every one of the twelve primitives below.",

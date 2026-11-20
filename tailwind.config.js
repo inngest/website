@@ -532,6 +532,42 @@ module.exports = {
           "0%, 100%": { transform: "rotate(-4deg)" },
           "50%": { transform: "rotate(4deg)" },
         },
+        // 12 Days: the Day 0 door's "Start here" sticker rests, then gives
+        // a quick wiggle every few seconds. Transform only, so it stays on
+        // the compositor.
+        "start-here": {
+          "0%, 62%, 100%": { transform: "rotate(-3deg) scale(1)" },
+          "68%": { transform: "rotate(4deg) scale(1.1)" },
+          "74%": { transform: "rotate(-6deg) scale(1.1)" },
+          "80%": { transform: "rotate(3deg) scale(1.05)" },
+          "86%": { transform: "rotate(-3deg) scale(1)" },
+        },
+        // 12 Days: the Day 0 door rests a crack open (swung away from the
+        // viewer, so a sliver of what's behind shows) and creaks wider on
+        // the same beat as the "Start here" wiggle. Transform only.
+        // 12 Days: the hero candle's flame. Never smaller than the painted
+        // flame under it (scale >= 1 from its base), so nothing peeks out.
+        "flame-flicker": {
+          "0%, 100%": { transform: "scale(1, 1) skewX(0deg)" },
+          "15%": { transform: "scale(1.06, 1.22) skewX(-3deg)" },
+          "30%": { transform: "scale(1.02, 1.06) skewX(2deg)" },
+          "48%": { transform: "scale(1.08, 1.32) skewX(3deg)" },
+          "62%": { transform: "scale(1.03, 1.1) skewX(-2deg)" },
+          "80%": { transform: "scale(1.06, 1.2) skewX(1deg)" },
+        },
+        // 12 Days: the rat wheel on the Day 0 door turns a quarter turn
+        // (two spokes' worth, so the loop is seamless) on the door's creak.
+        "wheel-spin": {
+          "0%, 58%": { transform: "rotate(0deg)" },
+          "92%, 100%": { transform: "rotate(90deg)" },
+        },
+        "door-ajar": {
+          "0%, 60%, 100%": { transform: "perspective(1600px) rotateY(3deg)" },
+          "68%": { transform: "perspective(1600px) rotateY(10deg)" },
+          "75%": { transform: "perspective(1600px) rotateY(6deg)" },
+          "81%": { transform: "perspective(1600px) rotateY(8deg)" },
+          "90%": { transform: "perspective(1600px) rotateY(3deg)" },
+        },
         // v1 logo strip carousel — translate by -50% across the duplicated track
         // for a seamless infinite loop.
         "v1-logo-marquee": {
@@ -547,6 +583,10 @@ module.exports = {
       animation: {
         "ac-pulse": "ac-pulse 6s ease-out infinite both",
         "ac-card": "ac-card 160ms ease-out",
+        "start-here": "start-here 3.2s ease-in-out infinite",
+        "door-ajar": "door-ajar 3.2s ease-in-out infinite",
+        "wheel-spin": "wheel-spin 3.2s ease-in-out infinite",
+        "flame-flicker": "flame-flicker 1.7s ease-in-out infinite",
         "v1-nav-pop": "v1-nav-pop 180ms cubic-bezier(0.2, 0.8, 0.2, 1) both",
       },
       // v1 z-index scale. Names map intent → number so the stacking

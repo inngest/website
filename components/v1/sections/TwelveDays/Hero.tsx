@@ -105,6 +105,10 @@ export default function Hero() {
             <a href={HERO.signup.href} className={buttonClass("ink")}>
               {HERO.signup.label}
             </a>
+            {/* Second button: for people who don't need the lessons. */}
+            <a href={HERO.build.href} className={buttonClass("outline")}>
+              {HERO.build.label}
+            </a>
           </motion.div>
         </div>
 
@@ -121,6 +125,25 @@ export default function Hero() {
             priority
             sizes="(max-width: 1024px) 360px, 34vw"
             className="h-auto w-full"
+          />
+          {/* The candle flame, cut out of the wreath art (wreath-flame.webp,
+              3KB) and laid exactly over it, flickers on a loop. CSS
+              transform only, and it only ever grows from its base, so the
+              flame painted underneath never peeks out. Still for anyone
+              who prefers reduced motion. */}
+          <img
+            src="/assets/v1/12-days/wreath-flame.webp"
+            alt=""
+            aria-hidden="true"
+            draggable={false}
+            decoding="async"
+            className="pointer-events-none absolute max-w-none select-none motion-safe:animate-flame-flicker"
+            style={{
+              left: `${(664 / 1400) * 100}%`,
+              top: `${(284 / 1842) * 100}%`,
+              width: `${(40 / 1400) * 100}%`,
+              transformOrigin: "48.75% 100%",
+            }}
           />
         </motion.div>
       </div>
