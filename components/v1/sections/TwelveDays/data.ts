@@ -284,7 +284,7 @@ export const DOOR_ART = [
 ];
 
 export const HERO = {
-  chips: ["Inngest × CodeTV", "December 7–18"],
+  chips: ["Inngest × CodeTV", "December 7–18", "Live finale · Dec 29"],
   // Set like the posters: a huge line, a mono line, a huge line. Read
   // as one heading (`label`).
   titleTop: "12 Days",
