@@ -181,7 +181,10 @@ function LegalLinks() {
       <li>
         {/* Opens the DataGrail consent preferences (CPRA opt-out link,
             GDPR consent withdrawal). Falls back to /privacy. */}
-        <PrivacyChoicesLink className="underline underline-offset-2">
+        <PrivacyChoicesLink
+          refSource="footer"
+          className="underline underline-offset-2"
+        >
           <WipeLabel>Your Privacy Choices</WipeLabel>
         </PrivacyChoicesLink>
       </li>

@@ -239,7 +239,10 @@ function SmallPrint() {
       <div className="text-xs text-slate-600 dark:text-slate-400">
         &copy; {new Date().getFullYear()} Inngest Inc. All rights reserved.
       </div>
-      <PrivacyChoicesLink className="text-xs text-slate-600 underline underline-offset-2 hover:text-slate-900 dark:text-slate-400 dark:hover:text-white" />
+      <PrivacyChoicesLink
+        refSource="docs-footer"
+        className="text-xs text-slate-600 underline underline-offset-2 hover:text-slate-900 dark:text-slate-400 dark:hover:text-white"
+      />
       {IS_HIRING && (
         <a
           {...refLinkProps("/about?ref=docs-footer")}
