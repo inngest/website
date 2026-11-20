@@ -284,7 +284,7 @@ export const HERO = {
   titleMid: "of [weird]",
   titleBottom: "Workflows",
   label: "12 Days of Weird Workflows",
-  body: "Twelve doors. Twelve lessons to make all your weird workflows durable. Combine them and submit your weird workflow for a chance to win cash and other prizes.",
+  body: "Twelve doors. Twelve lessons to make all your weird workflows durable. Combine them for a chance to win cash and other prizes, and tune in live on CodeTV as we pick the winners.",
   /** Down to the calendar: the doors and the email sign-up. */
   signup: { label: "Get the daily lessons", href: "#calendar" },
   /** For people who don't need the lessons: straight to the build-a-thon. */
