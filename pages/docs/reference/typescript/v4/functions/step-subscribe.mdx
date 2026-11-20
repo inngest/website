@@ -1,0 +1,122 @@
+import { Callout, Properties, Property } from "src/shared/Docs/mdx";
+
+
+export const metaTitle = "step.subscribe() | TypeScript SDK v4 Reference"
+export const description = "Open an inbox inside a run with step.subscribe() in SDK v4. Read messages with next(), nextBatch(), drain() and for await, and close it."
+
+# Subscribe
+
+Use `step.subscribe()` to open an inbox inside a run: every matching event that arrives becomes a message, kept in order. For a walkthrough, see [step.subscribe](/docs/durable-execution/primitives/step-subscribe).
+
+<Callout>
+  `step.subscribe()` is experimental, and the API may change.
+</Callout>
+
+## `step.subscribe(id, sources): Inbox`
+
+<Properties>
+  <Property name="id" type="string" required>
+    The ID of the step. Opening the inbox is one step.
+  </Property>
+  <Property name="sources" type="InboxSources" required>
+    One source or an array of them. A source is an event name, an [`eventType()`](/docs/reference/typescript/v4/functions/triggers#event-type), or an object:
+    <Properties nested={true}>
+      <Property name="event" type="string | EventType" required>
+        The event to receive.
+      </Property>
+      <Property name="if" type="string">
+        An expression the event must match. The arriving event is `async` and the event that started the run is `event`, as in [`step.waitForEvent()`](/docs/reference/typescript/v4/functions/step-wait-for-event). See [writing expressions](/docs/durable-execution/guides-and-advanced/writing-expressions).
+      </Property>
+    </Properties>
+  </Property>
+</Properties>
+
+```ts
+// One source
+await using inbox = step.subscribe("reviews", prReviewed);
+
+// Several, filtered to this run's pull request
+await using activity = step.subscribe("pr-activity", [
+  { event: prReviewed, if: "async.data.pr == event.data.pr" },
+  { event: prChecked, if: "async.data.pr == event.data.pr" },
+]);
+```
+
+`step.subscribe()` returns at once. The inbox receives only events that arrive after it opens, though an event up to 5 seconds older can still match. `await using` (TypeScript 5.2 or later) closes it at the end of the block.
+
+## `Inbox`
+
+Each inbox has its own sources. For a separate stream, open another inbox with `step.subscribe()`.
+
+A message is the event as it was sent, with `name`, `data`, `id`, `ts` and `v`. It's typed from the inbox's event types. A source given as a name has no schema, so its `data` is `unknown`.
+
+With several sources, narrow a message with `message.is(type)`, which takes one event type or an array. [`eventType.is(message)`](/docs/reference/typescript/v4/functions/triggers#narrowing-with-is) works too.
+
+Import the types with `import type { Inbox, InboxMessage } from "inngest"`. `InboxMessage<typeof inbox>` is the type of an inbox's messages, for code that handles them outside the loop:
+
+```ts
+const kindOf = (message: InboxMessage<typeof activity>) => {
+  return message.is(prReviewed) ? "review" : "check";
+};
+```
+
+### `next(options?)`
+
+Returns the next unread message, waiting for one if none is unread.
+
+<Properties>
+  <Property name="timeout" type="number | string | Date">
+    How long to wait: milliseconds, a duration such as `"30m"`, or a `Date`. Returns `null` if no message arrives in time.
+  </Property>
+</Properties>
+
+Returns `undefined` once the inbox is closed, even for a read that was already waiting. Two reads return messages in order. A read that loses a race keeps its place for the next message.
+
+### `nextBatch(options?)`
+
+Returns an array of every unread message, waiting for at least one. Each batch read is one step.
+
+<Properties>
+  <Property name="max" type="number">
+    Takes at most this many messages, oldest first. The rest stays unread.
+  </Property>
+  <Property name="timeout" type="number | string | Date">
+    Returns `null` if no message arrives in time.
+  </Property>
+</Properties>
+
+Returns `undefined` once the inbox is closed.
+
+### `drain(options?)`
+
+Returns every unread message without waiting, or `[]`. Takes `max`, like `nextBatch()`. Each `drain()` is one step.
+
+### `batches(options?)`
+
+Reads batch after batch with `for await`, using `nextBatch()`. Takes `max` and `timeout`. The loop ends when the inbox closes or a wait times out.
+
+```ts
+for await (const batch of inbox.batches({ max: 20 })) {
+  await step.run("handle-batch", () => handleBatch(batch));
+}
+```
+
+### `[Symbol.asyncIterator]()`
+
+Reads one message at a time with `for await`, using `next()`. The loop ends when the inbox closes.
+
+```ts
+for await (const message of inbox) {
+  await step.run("handle", () => handle(message));
+}
+```
+
+### `close()`
+
+Stops the inbox's sources and returns an array of the messages it hadn't read. `close()` is one step.
+
+After `close()`, `next()` and `nextBatch()` return `undefined`, loops end, and `drain()` returns `[]`. The executor takes the cut-off when it handles the close, so a message saved before then is returned if you hadn't read it, and a message that arrives after is dropped.
+
+### `closed`
+
+`true` once the inbox is closed.
