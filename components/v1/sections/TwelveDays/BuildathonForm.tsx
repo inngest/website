@@ -167,18 +167,24 @@ export default function BuildathonForm() {
 
   if (status === "sent") {
     return (
-      <p
+      <div
         role="status"
-        className="rounded-xl border-[3px] border-[#020202] bg-[#0BDD48] p-6 font-v1Label text-[16px] leading-[1.4] text-[#020202] shadow-[8px_8px_0_#020202]"
+        className="flex flex-col items-start gap-4 rounded-xl border-[3px] border-[#020202] bg-[#0BDD48] p-6 font-v1Label text-[16px] leading-[1.4] text-[#020202] shadow-[8px_8px_0_#020202]"
       >
-        {BUILDATHON.sent}{" "}
+        <p>{BUILDATHON.sent}</p>
+        {/* The next step, as a button: the finale is where winners are
+            picked. */}
         <a
           href={BUILDATHON.register.href}
-          className="underline underline-offset-4 hover:no-underline"
+          // Wraps on narrow screens instead of running out of the box.
+          className={
+            buttonClass("ink") +
+            " !h-auto min-h-[42px] max-w-full shrink !whitespace-normal py-2 text-left"
+          }
         >
-          {BUILDATHON.register.label}
+          {BUILDATHON.register.label}&nbsp;<span aria-hidden="true">→</span>
         </a>
-      </p>
+      </div>
     );
   }
 
