@@ -195,6 +195,31 @@ export function schemaGraph(...nodes: (Schema | Schema[])[]): Schema {
   return { "@context": "https://schema.org", "@graph": graph };
 }
 
+/**
+ * FAQPage node built from the FAQ entries shown on the page, so the
+ * structured data always matches the visible questions and answers.
+ */
+export function faqPageSchema({
+  path,
+  faqs,
+}: {
+  path: string;
+  faqs: { question: string; answer: string }[];
+}): Schema {
+  const url = `${HOST}${path}`;
+  return {
+    "@type": "FAQPage",
+    "@id": `${url}#faq`,
+    url,
+    isPartOf: { "@id": WEBSITE_ID },
+    mainEntity: faqs.map((faq) => ({
+      "@type": "Question",
+      name: faq.question,
+      acceptedAnswer: { "@type": "Answer", text: faq.answer },
+    })),
+  };
+}
+
 export interface QuotationSchemaInput {
   quote: string;
   authorName: string;
