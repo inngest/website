@@ -333,7 +333,7 @@ export default function JoinForm({
           type="submit"
           disabled={status === "sending"}
           className={
-            buttonClass(light || !raffle ? "ink" : "yellow") +
+            buttonClass(light ? "ink" : "yellow") +
             (raffle && light ? " w-full sm:w-auto sm:self-start" : "")
           }
         >
