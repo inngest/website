@@ -9,15 +9,15 @@ import { copyText } from "@/components/v1/sections/TwelveDays/copyText";
 import { handleStartFreeClick } from "@/utils/v1/startFreeCta";
 import { trackInstallCopy } from "@/utils/v1/trackInstallCopy";
 
+const LINK =
+  "font-v1Label text-white underline underline-offset-4 hover:text-[#F7DA10] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#F7DA10]";
+
 /**
  * The one "get started" spot on the page, under the calendar's email
  * sign-up: copy a prompt for a coding agent to set Inngest up locally,
  * or sign up for Inngest Cloud. Replaces the "Try it free" link that
  * used to sit behind every door.
  */
-const LINK =
-  "font-v1Label text-white underline underline-offset-4 hover:text-[#F7DA10] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#F7DA10]";
-
 export default function NewToInngest() {
   const [copied, setCopied] = useState(false);
 
