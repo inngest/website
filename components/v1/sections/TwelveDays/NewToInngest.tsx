@@ -6,7 +6,6 @@ import {
   NEW_TO_INNGEST,
 } from "@/components/v1/sections/TwelveDays/data";
 import { copyText } from "@/components/v1/sections/TwelveDays/copyText";
-import { buttonClass } from "@/components/v1/sections/TwelveDays/poster";
 import { handleStartFreeClick } from "@/utils/v1/startFreeCta";
 import { trackInstallCopy } from "@/utils/v1/trackInstallCopy";
 
@@ -16,6 +15,9 @@ import { trackInstallCopy } from "@/utils/v1/trackInstallCopy";
  * or sign up for Inngest Cloud. Replaces the "Try it free" link that
  * used to sit behind every door.
  */
+const LINK =
+  "font-v1Label text-white underline underline-offset-4 hover:text-[#F7DA10] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#F7DA10]";
+
 export default function NewToInngest() {
   const [copied, setCopied] = useState(false);
 
@@ -36,38 +38,35 @@ export default function NewToInngest() {
   }
 
   return (
-    <div
-      id="new-to-inngest"
-      className="flex scroll-mt-24 flex-col gap-3 sm:flex-row sm:flex-wrap sm:items-center"
-    >
-      <p className="font-v1Label text-[15px]">{NEW_TO_INNGEST.lead}</p>
-      <div className="flex flex-col gap-3 sm:flex-row">
-        <button
-          type="button"
-          onClick={copy}
-          className={buttonClass("ghost") + " w-full sm:w-auto"}
-        >
+    <div id="new-to-inngest" className="flex scroll-mt-24 flex-col gap-1">
+      {/* Text links, not buttons: the sign-up button above stays the
+          one button in this area. */}
+      <p className="font-v1Label text-[14px] leading-[1.6] text-white/80">
+        {NEW_TO_INNGEST.lead}{" "}
+        <button type="button" onClick={copy} className={LINK}>
           {copied ? "Copied ✓" : NEW_TO_INNGEST.copy}
         </button>
+        {" · "}
         <a
           href={NEW_TO_INNGEST.signUp.href}
           onClick={handleStartFreeClick(NEW_TO_INNGEST.signUp.href)}
-          className={buttonClass("ghost") + " w-full sm:w-auto"}
+          className={LINK}
         >
           {NEW_TO_INNGEST.signUp.label}
         </a>
+        {" · "}
         <a
           href={COURSE_REPO.href}
           target="_blank"
           rel="noopener noreferrer"
-          className={buttonClass("ghost") + " w-full sm:w-auto"}
+          className={LINK}
         >
           {COURSE_REPO.label} <span aria-hidden="true">↗</span>
         </a>
-      </div>
+      </p>
       <p
         role="status"
-        className="min-h-0 font-v1Label text-[13px] text-[#F7DA10] sm:basis-full"
+        className="min-h-0 font-v1Label text-[13px] text-[#F7DA10]"
       >
         {copied ? NEW_TO_INNGEST.copied : ""}
       </p>
