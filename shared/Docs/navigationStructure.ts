@@ -224,6 +224,12 @@ const sectionReference: (NavGroup | NavLink)[] = [
       },
       { title: "Scoring", href: tsRef("v4", "functions/scoring"), tag: "beta" },
       {
+        title: "Loops and FSMs",
+        href: tsRef("v4", "functions/loops"),
+        tag: "beta",
+        unreleased: "loops",
+      },
+      {
         title: "Group",
         links: [
           {
