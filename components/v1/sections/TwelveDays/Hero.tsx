@@ -5,6 +5,7 @@ import Image from "next/image";
 import { motion } from "motion/react";
 import { clearHeroPanel, setHeroPanel } from "@/utils/v1/heroNav";
 import { tweens } from "@/utils/v1/springs";
+import { refLinkProps } from "@/utils/v1/ref";
 import {
   BUILDATHON_CLOSES_AT,
   COLORS,
@@ -128,7 +129,10 @@ export default function Hero({ now }: { now: Date | null }) {
             </a>
             {/* Second button: changes with the date (secondButton). */}
             {second && (
-              <a href={second.href} className={buttonClass("outline")}>
+              <a
+                {...refLinkProps(second.href)}
+                className={buttonClass("outline")}
+              >
                 {second.label}
               </a>
             )}
@@ -154,13 +158,16 @@ export default function Hero({ now }: { now: Date | null }) {
               transform only, and it only ever grows from its base, so the
               flame painted underneath never peeks out. Still for anyone
               who prefers reduced motion. */}
-          <img
+          <Image
             src="/assets/v1/12-days/wreath-flame.webp"
             alt=""
             aria-hidden="true"
             draggable={false}
-            decoding="async"
-            className="pointer-events-none absolute max-w-none select-none motion-safe:animate-flame-flicker"
+            width={40}
+            height={73}
+            quality={95}
+            sizes="16px"
+            className="pointer-events-none absolute h-auto max-w-none select-none motion-safe:animate-flame-flicker"
             style={{
               left: `${(664 / 1400) * 100}%`,
               top: `${(284 / 1842) * 100}%`,

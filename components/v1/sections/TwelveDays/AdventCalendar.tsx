@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useRef, useState } from "react";
+import Image from "next/image";
 import Link from "next/link";
 import { motion, useInView, useReducedMotion } from "motion/react";
 import {
@@ -513,24 +514,28 @@ function DayZeroDoor({ variant }: { variant: "banner" | "card" }) {
                 className="pointer-events-none absolute inset-x-0 top-0 block select-none"
                 style={{ aspectRatio: `${WHEEL_ART.w} / ${WHEEL_ART.h}` }}
               >
-                <img
+                <Image
                   src="/assets/v1/12-days/contraption-wheel-base.webp"
                   alt=""
                   aria-hidden="true"
                   draggable={false}
-                  loading="lazy"
-                  decoding="async"
+                  width={WHEEL_ART.w}
+                  height={WHEEL_ART.h}
+                  sizes="(min-width: 1024px) 25vw, 90vw"
                   className="absolute inset-0 h-full w-full"
                 />
-                <img
+                <Image
                   src="/assets/v1/12-days/contraption-wheel-spokes.webp"
                   alt=""
                   aria-hidden="true"
                   draggable={false}
-                  loading="lazy"
-                  decoding="async"
+                  width={WHEEL_ART.size}
+                  height={WHEEL_ART.size}
+                  // Thin spokes: the higher quality keeps them crisp.
+                  quality={95}
+                  sizes="(min-width: 1024px) 17vw, 60vw"
                   className={
-                    "absolute max-w-none " +
+                    "absolute h-auto max-w-none " +
                     (open ? "" : "motion-safe:animate-wheel-spin")
                   }
                   style={{
