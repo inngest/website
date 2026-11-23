@@ -1,3 +1,5 @@
+import { CodeGroup, SdkUnsupported } from "shared/Docs/mdx";
+
 export const metaTitle = "Custom images | Sandboxes";
 export const description =
   "Build a Docker image locally, upload its saved archive, and launch an Inngest Sandbox from the published image.";
@@ -207,7 +209,8 @@ need to identify the exact artifact independently of a tag.
 
 Use the published image from trusted server-side code:
 
-```ts
+<CodeGroup>
+```typescript {{ title: "TypeScript" }}
 import { Inngest } from "inngest";
 import { image } from "inngest/experimental";
 
@@ -234,7 +237,14 @@ try {
 }
 ```
 
-Inside an Inngest function, use the same `from` option with
+```python {{ title: "Python" }}
+!snippet:path=snippets/py/latest/sandboxes/custom_images/launch_direct.py
+```
+
+<SdkUnsupported title="Go" feature="Sandboxes" />
+</CodeGroup>
+
+Inside an Inngest function, use the same `from` option (Python: `image=`) with
 `step.sandbox.create("create-python", options)` and add stable step IDs to
 command and cleanup calls. With REST, set `"image": "my-python:v1"` on
 `POST /v2/sandboxes`.
