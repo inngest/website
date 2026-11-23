@@ -46,19 +46,29 @@ function CopiedIcon() {
 }
 
 /**
- * "npm install inngest" copy chip. Rendered through the shared `Button`
- * (secondary / outline variant) so it sits on the same height, type and
- * hover vocabulary as every other CTA on the site — the outline floods
- * salmon on hover like all secondary buttons do. Click copies the
- * install command and swaps the label to "Copied" for two seconds.
+ * Copy chip. Rendered through the shared `Button` (secondary / outline
+ * variant) so it sits on the same height, type and hover vocabulary as
+ * every other CTA on the site — the outline floods salmon on hover like
+ * all secondary buttons do. Click copies `command` (the npm install
+ * command, unless a caller passes something else) and swaps the label
+ * to "Copied" for two seconds.
  */
 export default function InstallCommandButton({
   className,
   label = INSTALL_COMMAND,
+  command = INSTALL_COMMAND,
+  analyticsCommand,
   placement,
 }: {
   className?: string;
   label?: string;
+  /** Text written to the clipboard. Defaults to the npm install command. */
+  command?: string;
+  /**
+   * Value sent as `cta_command`. Defaults to `command`. Pass a short id
+   * when `command` is a long prompt so analytics stays a stable label.
+   */
+  analyticsCommand?: string;
   /** Analytics placement — see utils/v1/trackInstallCopy.ts. */
   placement: InstallCtaPlacement;
 }) {
@@ -70,20 +80,23 @@ export default function InstallCommandButton({
     return () => window.clearTimeout(id);
   }, [copied]);
 
+  const trackedCommand = analyticsCommand ?? command;
+  const showsCommand = label === command;
+
   async function copy() {
     try {
-      await navigator.clipboard.writeText(INSTALL_COMMAND);
+      await navigator.clipboard.writeText(command);
       setCopied(true);
       trackInstallCopy({
         placement,
-        command: INSTALL_COMMAND,
+        command: trackedCommand,
         status: "success",
       });
     } catch {
       setCopied(false);
       trackInstallCopy({
         placement,
-        command: INSTALL_COMMAND,
+        command: trackedCommand,
         status: "failed",
       });
     }
@@ -97,7 +110,13 @@ export default function InstallCommandButton({
       data-cta="npm-install"
       data-cta-placement={placement}
       aria-label={
-        copied ? `Copied ${INSTALL_COMMAND}` : `Copy ${INSTALL_COMMAND}`
+        showsCommand
+          ? copied
+            ? `Copied ${command}`
+            : `Copy ${command}`
+          : copied
+            ? `Copied ${label.replace(/^Copy\s+/i, "")}`
+            : label
       }
       // The install command is code — keep it in the mono face and
       // don't uppercase it (the shared Button uppercases labels).
