@@ -54,9 +54,6 @@ export default function BuildathonTeaser() {
             >
               {BUILDATHON.body}
             </motion.p>
-            <motion.p {...reveals.body} className="font-v1Label text-[15px]">
-              {BUILDATHON.when}
-            </motion.p>
           </div>
 
           {/* The prizes, compact: amount and place on one line each. */}

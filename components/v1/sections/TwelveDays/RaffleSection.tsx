@@ -48,7 +48,8 @@ export default function RaffleSection({ now }: { now: Date | null }) {
       style={{ backgroundColor: COLORS.green, color: COLORS.ink }}
     >
       <div className="mx-auto flex w-full max-w-[1440px] flex-col gap-12 px-6 py-16 sm:px-9 sm:py-20 lg:px-8 lg:py-24">
-        <div className="grid grid-cols-1 gap-12 lg:grid-cols-2 lg:items-start">
+        {/* The prize card sits centred against the heading and copy. */}
+        <div className="grid grid-cols-1 gap-12 lg:grid-cols-2 lg:items-center">
           <div className="flex flex-col gap-6">
             <motion.p {...reveals.body} className={POSTER_EYEBROW}>
               {RAFFLE.eyebrow}
