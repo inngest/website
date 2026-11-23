@@ -138,11 +138,8 @@ module.exports = {
     // Pages with noindex set in code — sitemap + noindex is contradictory.
     "/content/ai-in-production-report-2026",
     "/content/ai-in-production-report-2026/*",
-    // NYC campaign page — still in review, noindex in its own metadata,
-    // so it must stay out of the sitemap. Remove this line to list it.
-    "/nyc-long-run",
-    // step.run campaign page — noindex until it's reviewed.
-    "/long-run",
+    // YC deal page — shared directly, noindex in its own metadata.
+    "/yc",
     // Holiday campaign page — noindex until it's reviewed.
     "/12-days-of-workflows",
     "/12-days-of-workflows/*",

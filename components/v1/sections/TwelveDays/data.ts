@@ -599,21 +599,21 @@ export const HOW_IT_WORKS = {
       cta: "Get set up",
     },
     {
-      when: "December 7–18",
+      when: "Dec 7 – Dec 18",
       title: "Open a door a day",
       body: "A five-minute lesson, the code and the docs. The email links straight to that day's door.",
       href: "#calendar",
       cta: "See the doors",
     },
     {
-      when: "Any time until December 23",
-      title: "Build (optional)",
+      when: "Dec 7 – Dec 23",
+      title: "Submit",
       body: "Combine all twelve primitives into one weird workflow and submit it for cash prizes. No need to wait for the doors.",
       href: "#build-a-thon",
       cta: "See the rules",
     },
     {
-      when: "December 29",
+      when: "Dec 29",
       title: "Watch live",
       body: "We pick the build-a-thon winners live on CodeTV.",
       href: "#register",
@@ -716,6 +716,7 @@ export const DAILY_PRIZES: DailyPrize[] = [
     pun: "Sleep in. Cancel your plans. Read.",
     value: 200,
     emoji: "📖",
+    image: "/assets/v1/12-days/prizes/kindle-paperwhite.png",
   },
   {
     day: 6,
@@ -723,6 +724,7 @@ export const DAILY_PRIZES: DailyPrize[] = [
     pun: "Two players, one console.",
     value: 450,
     emoji: "🎮",
+    image: "/assets/v1/12-days/prizes/nintendo-switch-2.png",
   },
   {
     day: 7,
@@ -730,6 +732,7 @@ export const DAILY_PRIZES: DailyPrize[] = [
     pun: "Pace yourself.",
     value: 300,
     emoji: "👟",
+    image: "/assets/v1/12-days/prizes/running-gear.png",
   },
   {
     day: 8,
@@ -737,6 +740,7 @@ export const DAILY_PRIZES: DailyPrize[] = [
     pun: "Every keypress, debounced.",
     value: 300,
     emoji: "⌨️",
+    image: "/assets/v1/12-days/prizes/mechanical-keyboard.png",
   },
   {
     day: 9,
@@ -744,6 +748,7 @@ export const DAILY_PRIZES: DailyPrize[] = [
     pun: "One box, many parts.",
     value: 350,
     emoji: "🧱",
+    image: "/assets/v1/12-days/prizes/lego-set.png",
   },
   {
     day: 10,
@@ -751,6 +756,7 @@ export const DAILY_PRIZES: DailyPrize[] = [
     pun: "Your desk, prioritized.",
     value: 350,
     emoji: "💡",
+    image: "/assets/v1/12-days/prizes/desk-upgrade.png",
   },
   {
     day: 11,
@@ -758,6 +764,7 @@ export const DAILY_PRIZES: DailyPrize[] = [
     pun: "Batch your caffeine.",
     value: 400,
     emoji: "🫘",
+    image: "/assets/v1/12-days/prizes/breville-espresso.png",
   },
   {
     day: 12,
@@ -765,6 +772,7 @@ export const DAILY_PRIZES: DailyPrize[] = [
     pun: "Evaluate reality.",
     value: 300,
     emoji: "🥽",
+    image: "/assets/v1/12-days/prizes/meta-quest-3s.png",
   },
 ];
 
