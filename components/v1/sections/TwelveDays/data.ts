@@ -782,10 +782,8 @@ export function prizeFor(day: number): DailyPrize | undefined {
 
 /**
  * The daily raffle (RaffleSection.tsx, RaffleDialog.tsx). One entry per
- * door per person; each day's entries win that day's prize.
- *
- * TODO before launch: the official rules at
- * /12-days-of-workflows/raffle-rules.
+ * door per person; each day's entries win that day's prize. Official
+ * rules: /12-days-of-workflows/raffle-rules.
  */
 export const RAFFLE = {
   eyebrow: "The daily raffle",

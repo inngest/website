@@ -4,6 +4,7 @@ import { useEffect, useState, type FormEvent } from "react";
 import Link from "next/link";
 import { analytics } from "@/utils/segment";
 import { readFirstTouch } from "src/shared/firstTouch";
+import { getPageRef } from "@/utils/v1/refHandoff";
 import { LIVESTREAM, REF } from "@/components/v1/sections/TwelveDays/data";
 import { buttonClass } from "@/components/v1/sections/TwelveDays/poster";
 import {
@@ -111,12 +112,8 @@ export default function LivestreamForm() {
     }
     setStatus("sending");
 
-    let ref = "";
-    try {
-      ref = new URLSearchParams(window.location.search).get("ref") ?? "";
-    } catch {
-      // noop
-    }
+    // The URL's ?ref= or, for a tagged internal link, its click handoff.
+    const ref = getPageRef()?.ref ?? "";
 
     // The browser's Segment ID, so the server's event joins this visitor's
     // page views. A blocked or slow analytics client just means no ID.

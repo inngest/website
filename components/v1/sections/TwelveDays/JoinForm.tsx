@@ -4,6 +4,7 @@ import { useEffect, useState, type FormEvent } from "react";
 import Link from "next/link";
 import { analytics } from "@/utils/segment";
 import { readFirstTouch } from "src/shared/firstTouch";
+import { getPageRef } from "@/utils/v1/refHandoff";
 import {
   prizeFor,
   RAFFLE,
@@ -24,15 +25,15 @@ import {
 } from "@/components/v1/sections/TwelveDays/useRaffle";
 
 /**
- * Segment event for the sign-up. Its own name, like the content download
- * and contact sales forms, because the Customer.io - Website destination
- * maps it by this exact name: one mapping records the event and another
- * creates the person from `properties.email` (setting
- * `twelve_days_subscribed_at`). The generic `Form Submitted` has no person
- * mapping, so sign-ups sent under it land in Customer.io as anonymous
- * events. Rename only together with those Segment mappings.
+ * The sign-up's Segment event is "12 Days Signup Form Submitted", sent by
+ * the server: the signup route (email only, `form_type:
+ * "12_days_of_workflows"`) or the raffle route (`"12_days_raffle"`). It
+ * has its own name, like the content download and contact sales forms,
+ * because the Customer.io - Website destination maps it by this exact
+ * name: one mapping records the event and another creates the person
+ * from `properties.email` (setting `twelve_days_subscribed_at`). Rename
+ * only together with those Segment mappings and both routes.
  */
-const SEGMENT_EVENT = "12 Days Signup Form Submitted";
 export const FORM_TYPE = "12_days_of_workflows";
 
 /**
@@ -46,9 +47,8 @@ export const RAFFLE_EVENT = "12 Days Raffle Entered";
 
 const RAFFLE_URL = "/api/12-days/raffle";
 
-// The track call waits for the analytics client to load, which never
-// happens if it's blocked; give up after this and offer a retry.
-const SEND_TIMEOUT_MS = 8000;
+/** Email-only sign-ups, sent to Segment from the server. */
+const SIGNUP_URL = "/api/12-days/signup";
 
 type Tone = "dark" | "yellow";
 
@@ -118,16 +118,12 @@ export default function JoinForm({
     setRejected(null);
     setStatus("sending");
 
-    let ref = "";
-    try {
-      ref = new URLSearchParams(window.location.search).get("ref") ?? "";
-    } catch {
-      // noop
-    }
+    // The URL's ?ref= or, for a tagged internal link, its click handoff.
+    const ref = getPageRef()?.ref ?? "";
 
     try {
       if (raffle) await enterRaffle(day, n, em, honeypot, ref, setRejected);
-      else await subscribe(em, ref);
+      else await subscribe(em, honeypot, ref, setRejected);
     } catch (err) {
       console.warn("12 Days sign-up not sent", err);
       setStatus("failed");
@@ -370,25 +366,52 @@ export default function JoinForm({
   );
 }
 
-/** Email only: the browser's track call, as the sign-up always sent. */
-async function subscribe(email: string, ref: string) {
-  const firstTouch = readFirstTouch();
-  await Promise.race([
-    analytics.track(SEGMENT_EVENT, {
+/**
+ * The browser's Segment ID, so the server's events join this visitor's
+ * page views. Blocked or slow analytics just means no ID.
+ */
+async function browserAnonymousId(): Promise<string | null> {
+  try {
+    const user = await Promise.race([
+      analytics.user(),
+      new Promise<null>((resolve) => setTimeout(() => resolve(null), 1500)),
+    ]);
+    return user?.anonymousId() ?? null;
+  } catch {
+    return null;
+  }
+}
+
+/**
+ * Email only, through the signup route, which sends the same sign-up
+ * event the browser used to, from the server so an ad blocker can't
+ * drop it.
+ */
+async function subscribe(
+  email: string,
+  honeypot: string,
+  ref: string,
+  onRejected: (message: string | null) => void
+) {
+  const res = await fetch(SIGNUP_URL, {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({
       email,
-      campaign: REF,
-      form_type: FORM_TYPE,
-      form_source: "website",
+      website: honeypot,
       ref,
-      ...(firstTouch || {}),
+      campaign: REF,
+      firstTouch: readFirstTouch(),
+      anonymousId: await browserAnonymousId(),
     }),
-    new Promise((_, reject) =>
-      setTimeout(
-        () => reject(new Error("Analytics didn't load")),
-        SEND_TIMEOUT_MS
-      )
-    ),
-  ]);
+  });
+  if (res.status === 400) {
+    const data = (await res.json().catch(() => null)) as {
+      error?: string;
+    } | null;
+    onRejected(data?.error ?? null);
+  }
+  if (!res.ok) throw new Error(`Sign-up failed: ${res.status}`);
 }
 
 /**
@@ -403,18 +426,7 @@ async function enterRaffle(
   ref: string,
   onRejected: (message: string | null) => void
 ) {
-  // The browser's Segment ID, so the server's events join this
-  // visitor's page views. Blocked or slow analytics just means no ID.
-  let anonymousId: string | null = null;
-  try {
-    const user = await Promise.race([
-      analytics.user(),
-      new Promise<null>((resolve) => setTimeout(() => resolve(null), 1500)),
-    ]);
-    anonymousId = user?.anonymousId() ?? null;
-  } catch {
-    // noop
-  }
+  const anonymousId = await browserAnonymousId();
 
   const res = await fetch(RAFFLE_URL, {
     method: "POST",
