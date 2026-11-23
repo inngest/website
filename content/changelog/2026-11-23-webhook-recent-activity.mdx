@@ -1,4 +1,4 @@
-export const title = "Webhook Recent activity: see why requests fail";
+export const title = "Webhooks: see why requests fail, and fix them from the API, CLI, and MCP";
 export const date = "2026-11-23";
 
 Every webhook page in the dashboard now has a Recent activity section. It shows how many events the webhook ingested over the last 7 days, and which requests failed and why.
@@ -10,5 +10,17 @@ Every webhook page in the dashboard now has a Recent activity section. It shows 
 - **Per-minute detail** — Expand a reason to see each minute it happened, with the request count, the latest error message, and the latest request ID.
 
 A request that sends a batch of events and only partly ingests counts toward both totals: its ingested events count as events, and the request counts as a failure.
+
+## Update webhooks from the API, CLI, and MCP
+
+Once you've found the problem, you can fix it without the dashboard. Webhooks can now be updated, as well as created and listed, through the REST API, the CLI, and MCP. An update changes a webhook's name, its transform, or both; fields you leave out stay the same.
+
+- **API** — `POST /v2/webhooks/{id}` with `name` and/or `transform` in the JSON body and the `X-Inngest-Env` header set to the environment.
+- **CLI** — `inngest api --prod --env production update-webhook <id> --transform '<js>'`. Use `--name` to rename it.
+- **MCP** — The `update_webhook` tool, so your coding agent can patch a broken transform.
+
+Updating requires the `webhooks:write:update` permission, which `webhooks:write:*` also covers. Create and list webhooks at `POST /v2/webhooks` and `GET /v2/webhooks`; the older `/v2/env/webhooks` routes still work but are deprecated. Webhook management is only available in Inngest Cloud, not the Dev Server.
+
+See the [API reference](https://api-docs.inngest.com), the [CLI docs](/docs/cli?ref=changelog-webhook-recent-activity), and the [MCP docs](/docs/ai-dev-tools/mcp?ref=changelog-webhook-recent-activity).
 
 Open any webhook under [Manage → Webhooks](https://app.inngest.com/env/production/manage/webhooks) to see it, or read the [webhooks docs](/docs/durable-execution/guides-and-advanced/events-and-triggers/receive-webhook-events?ref=changelog-webhook-recent-activity) to set one up.
