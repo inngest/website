@@ -5,6 +5,7 @@ import { motion } from "motion/react";
 import { reveals } from "@/utils/v1/reveals";
 import ButtonLink from "@/components/v1/ButtonLink";
 import InstallCommandButton from "@/components/v1/sections/Home/InstallCommandButton";
+import { LOCAL_SETUP_PROMPT } from "@/components/v1/sections/Home/localSetupPrompt";
 import GradientFrame from "@/components/v1/sections/shared/GradientFrame";
 import Section from "@/components/v1/sections/shared/Section";
 import { HOME_SECTION_TITLE } from "@/components/v1/sections/shared/sectionTitle";
@@ -58,6 +59,7 @@ export default function Quote() {
         >
           <InstallCommandButton
             label="Copy prompt to start locally"
+            copyText={LOCAL_SETUP_PROMPT}
             placement="homepage_dx"
           />
           <ButtonLink variant="accent" href="/pricing?ref=homepage-dx">
