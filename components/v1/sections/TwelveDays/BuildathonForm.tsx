@@ -3,6 +3,7 @@
 import { useEffect, useState, type FormEvent, type ReactNode } from "react";
 import { analytics } from "@/utils/segment";
 import { readFirstTouch } from "src/shared/firstTouch";
+import { getPageRef } from "@/utils/v1/refHandoff";
 import { BUILDATHON, REF } from "@/components/v1/sections/TwelveDays/data";
 import { buttonClass } from "@/components/v1/sections/TwelveDays/poster";
 import {
@@ -107,12 +108,8 @@ export default function BuildathonForm() {
     }
     setStatus("sending");
 
-    let ref = "";
-    try {
-      ref = new URLSearchParams(window.location.search).get("ref") ?? "";
-    } catch {
-      // noop
-    }
+    // The URL's ?ref= or, for a tagged internal link, its click handoff.
+    const ref = getPageRef()?.ref ?? "";
     const firstTouch = readFirstTouch();
 
     // The browser's Segment ID, so the server's event joins this visitor's
