@@ -41,7 +41,7 @@ const test = ci.job("test", async () => {
 
 ## Choose the key
 
-A key is `files()`, a string, an array of them, or an async function that returns a string. `files()` hashes the matched files in the git tree for the run's commit. Locally it hashes the working tree.
+A key is `files()`, a string, an array of them, or an async function that returns a string. `files()` hashes the matched files in the git tree for the run's commit. On a pull request that is GitHub's test merge of the head into the base, the same commit `checkout()` clones. Locally it hashes the working tree.
 
 ```typescript {{ title: "TypeScript" }}
 key: files("migrations/**", "seeds/**")
