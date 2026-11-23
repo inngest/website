@@ -205,6 +205,7 @@ await $.sh`pnpm build && pnpm test | tee test.log`;
 | `.text()`, `.lines()`, `.json()` | Returns stdout as a trimmed string, an array of lines, or parsed JSON. |
 
 - `$` runs without a shell. `$.sh` runs `/bin/sh -c` and escapes interpolated values.
+- A heredoc body ignores that escaping, so a `$.sh` template with values throws `CiUsageError` if its text contains `<<`, even quoted or escaped. Use `` printf %s ${value} `` to pass text instead. A heredoc with no values still works.
 - A result holds `exitCode`, `stdout`, `stderr`, `truncated`, and `durationMs`. `stdout` and `stderr` keep the last 64 KiB. `durationMs` is missing when the Sandbox API does not time the command, which today is any command with a timeout of 5 minutes or less.
 - `$` outside a job throws `CiUsageError`.
 - `.background()` returns once the process starts. `kill()` sends `SIGTERM` unless you pass a signal number, `output()` reads the last 64 KiB by default, and `exited()` polls for exit. It ignores `.retries()`, `.timeout()`, and `.nothrow()`.
