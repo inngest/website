@@ -428,7 +428,7 @@ export const FINALE = {
   /** The YouTube-style frame around the art. */
   player: {
     channel: "CodeTV",
-    title: "12 Days of Workflows: the finale",
+    title: "12 Days of [weird] Workflows: the finale",
     live: "Live",
   },
   /** The player and this button both go to the countdown / stream page. */
@@ -853,7 +853,7 @@ export const LIVESTREAM = {
   },
   live: {
     chips: ["Live on CodeTV"],
-    title: "12 Days of Workflows: the finale",
+    title: "12 Days of [weird] Workflows: the finale",
     /** The countdown in place of the player, before the stream. */
     countdown: {
       lead: "Come back in",
