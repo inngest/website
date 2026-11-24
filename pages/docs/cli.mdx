@@ -143,6 +143,18 @@ inngest api get-function-run --help
 |---------|-------------|
 | `invoke-function <app_id> <function_id>` | Invoke a function with a JSON payload |
 
+### Webhooks
+
+Cloud only. Requires `--prod`.
+
+| Command | Description |
+|---------|-------------|
+| `create-webhook --name <name> --transform '<js>'` | Create a webhook |
+| `get-webhooks` | List webhooks in the environment |
+| `update-webhook <id> [--name <name>] [--transform '<js>']` | Update a webhook's name, transform, or both (CLI v1.54.0+) |
+
+See [Manage webhooks with the API, CLI, or MCP](/docs/durable-execution/guides-and-advanced/events-and-triggers/receive-webhook-events#manage-webhooks-with-the-api-cli-or-mcp).
+
 Common flags:
 
 - `--include-output` includes step and run output in the response

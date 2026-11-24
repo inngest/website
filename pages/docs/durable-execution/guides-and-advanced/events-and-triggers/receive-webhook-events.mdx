@@ -186,6 +186,28 @@ function transform(evt, headers = {}, queryParams = {}) {
 Use the dashboard transform preview before enabling production delivery. Paste a provider payload into the **Incoming Event JSON** editor to see the transformed event right away. If a provider doesn't publish sample payloads, use [TypedWebhook.tools](https://typedwebhook.tools/?ref=) to capture test webhooks and browse payloads.
 
 After the provider sends a request, inspect the resulting event and its linked run in the target environment. The **Events** tab lists every event received.
+## Monitor webhook requests
+Each webhook's page under **Manage → Webhooks** has a **Recent activity** section. It shows:
+
+- **Totals**: events ingested, failed requests, and filtered requests over the last 7 days, or over your account's event history if that is shorter. Filtered requests are counted apart from failures.
+- **Failures by reason**: one row per failure reason, with the latest message, the request count, and when it was first and last seen. Click a reason above the table to show only that reason.
+- **Per-minute detail**: click a row to see each minute that reason occurred, with the request count, the latest error message, and the latest request ID. Hover a message to see it in full.
+
+The events total counts events, while the failed and filtered totals count requests. A request that sends a batch and only partly ingests adds its ingested events to the events total and also counts as a failed request.
+
+Common failure reasons:
+
+| Reason | What it means |
+| --- | --- |
+| Transform failed | The transform threw an error. See [Handle transform failures](#handle-transform-failures). |
+| Transform returned invalid output | The transform returned something other than an event or an array of events. |
+| Invalid request body | The body couldn't be parsed, or it didn't contain an event or an array of events. |
+| Invalid event | An event failed validation, for example because it used a name reserved for Inngest. |
+| Request body too large | The request was larger than the maximum event size. |
+| Too many events | The request contained more events than one batch allows. |
+| Filtered | A [filter](#filter-requests) rejected the event. |
+
+Fix transform failures by testing the transform against the latest failing payload, then saving the corrected transform in the dashboard or [with the API, CLI, or MCP](#manage-webhooks-with-the-api-cli-or-mcp).
 ## Develop locally
 For local development, send a copy of a cloud event to the Dev Server. Click **Send to Dev Server** anywhere the dashboard shows an event payload, and Inngest sends a copy to your [Dev Server](/docs/local-development) so you can test your functions.
 
@@ -315,10 +337,31 @@ The event data is:
 ```
 
 The parsed values are always arrays of strings.
-## Manage webhooks with the REST API
-Create, update, and delete webhooks with the Inngest REST API. This lets you keep transforms in your codebase and sync them to Inngest.
+## Manage webhooks with the API, CLI, or MCP
+Create, list, and update webhooks without the dashboard. This lets you keep transforms in your codebase and sync them to Inngest, or have a coding agent fix a transform for you. Webhook management is available in Inngest Cloud only, not the Dev Server.
 
-- [API: Webhooks](https://api-docs.inngest.com/v1/webhooks/ListWebhooks) documents the webhook endpoints.
+| Action | REST API v2 | CLI | MCP tool |
+| --- | --- | --- | --- |
+| Create | `POST /v2/webhooks` | `inngest api create-webhook` | `create_webhook` |
+| List | `GET /v2/webhooks` | `inngest api get-webhooks` | `list_webhooks` |
+| Update | `POST /v2/webhooks/{id}` | `inngest api update-webhook <id>` | `update_webhook` |
+
+Set the target environment with the `X-Inngest-Env` header, or `--env` in the CLI. The older `/v2/env/webhooks` routes still work but are deprecated.
+
+An update changes a webhook's name, its transform, or both. Fields you leave out stay the same. This command replaces a webhook's transform in production:
+
+```sh
+inngest api --prod --env production update-webhook <webhook_id> \
+  --transform 'function transform(evt) { return { name: `stripe/${evt.type}`, data: evt }; }'
+```
+
+Use `--name` to rename the webhook. `update-webhook` requires CLI v1.54.0 or later.
+
+Each action needs its own permission: `webhooks:write:create` to create and `webhooks:write:update` to update. `webhooks:write:*` covers both. See [Keys and access](/docs/platform-and-operations/keys-and-access) to grant permissions to an API key.
+
+- [REST API v2 reference](https://api-docs.inngest.com) documents the request and response bodies.
+- [Inngest CLI](/docs/cli) and [MCP](/docs/ai-dev-tools/mcp) explain how to authenticate.
+- [API: Webhooks (v1)](https://api-docs.inngest.com/v1/webhooks/ListWebhooks) documents the v1 endpoints, which can also delete webhooks.
 - [Demo: Webhook transform sync](https://github.com/inngest/webhook-transform-sync) shows how to test and sync webhooks from your codebase end to end.
 ## Build webhook integrations
 Use **webhook intents** to build a webhook integration with any application. See [Build a webhook integration](/docs/platform/webhooks/build-an-integration).
