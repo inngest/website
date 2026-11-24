@@ -140,8 +140,8 @@ module.exports = {
     "/content/ai-in-production-report-2026/*",
     // YC deal page — shared directly, noindex in its own metadata.
     "/yc",
-    // Holiday campaign page — noindex until it's reviewed.
-    "/12-days-of-workflows",
+    // Holiday campaign subpages (/live, /raffle-rules, /team) — noindex in
+    // their own metadata. The main /12-days-of-workflows page is listed.
     "/12-days-of-workflows/*",
     "/resources/access/*",
   ],
