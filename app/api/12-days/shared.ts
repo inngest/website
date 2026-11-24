@@ -148,3 +148,48 @@ export async function sendToSegment(
 /** The answer when the email's domain can't receive mail. */
 export const BAD_DOMAIN =
   "That email domain doesn't take mail. Check for a typo?";
+
+/** Slack's mrkdwn treats these three as control characters. */
+function slackEscape(text: string): string {
+  return text
+    .replace(/&/g, "&amp;")
+    .replace(/</g, "&lt;")
+    .replace(/>/g, "&gt;");
+}
+
+/**
+ * One line in the team's 12 Days Slack channel for each sign-up, entry
+ * or registration. Call it inside `after()` so Slack never slows down or
+ * fails a form.
+ *
+ * Set in Vercel (Production, Sensitive), never in the repo:
+ * TWELVE_DAYS_SLACK_WEBHOOK_URL, a Slack incoming webhook for the
+ * channel. Set it for Production only, so preview tests stay out of the
+ * channel (add it to Preview briefly to test). Without it, nothing posts.
+ */
+export async function notifySlack(
+  headline: string,
+  details: Record<string, string>
+): Promise<void> {
+  const url = process.env.TWELVE_DAYS_SLACK_WEBHOOK_URL;
+  if (!url) {
+    if (process.env.NODE_ENV === "development") {
+      console.log(`Slack (not sent): ${headline}`, details);
+    }
+    return;
+  }
+  const parts = Object.entries(details)
+    .filter(([, value]) => value)
+    .map(([key, value]) => `${key}: ${slackEscape(value)}`);
+  const text = [headline, ...parts].join(" · ");
+  try {
+    const res = await fetch(url, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ text }),
+    });
+    if (!res.ok) console.error("Slack notify failed", res.status);
+  } catch (err) {
+    console.error("Slack notify failed", err);
+  }
+}

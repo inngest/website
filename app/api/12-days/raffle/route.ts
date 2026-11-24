@@ -3,6 +3,7 @@ import {
   BAD_DOMAIN,
   domainTakesMail,
   firstTouch,
+  notifySlack,
   str,
   trackSegment,
 } from "@/app/api/12-days/shared";
@@ -149,6 +150,9 @@ export async function POST(req: Request) {
       anonymousId,
       prize,
     ])
+  );
+  after(() =>
+    notifySlack(`🎁 New Day ${day} raffle entry`, { name, email, ref })
   );
 
   return NextResponse.json({ ok: true }, { status: 201 });

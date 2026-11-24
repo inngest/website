@@ -1,8 +1,9 @@
-import { NextResponse } from "next/server";
+import { after, NextResponse } from "next/server";
 import {
   BAD_DOMAIN,
   domainTakesMail,
   firstTouch,
+  notifySlack,
   sendToSegment,
   str,
 } from "@/app/api/12-days/shared";
@@ -56,7 +57,8 @@ export async function POST(req: Request) {
     return NextResponse.json({ error: BAD_DOMAIN }, { status: 400 });
   }
 
-  return sendToSegment(
+  const ref = str(raw.ref, 100);
+  const res = await sendToSegment(
     req,
     EVENT,
     {
@@ -65,9 +67,15 @@ export async function POST(req: Request) {
       campaign: str(raw.campaign, 100),
       form_type: "12_days_livestream",
       form_source: "website",
-      ref: str(raw.ref, 100),
+      ref,
       ...firstTouch(raw),
     },
     raw
   );
+  if (res.ok) {
+    after(() =>
+      notifySlack("📺 New finale registration", { name, email, ref })
+    );
+  }
+  return res;
 }

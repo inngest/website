@@ -1,8 +1,9 @@
-import { NextResponse } from "next/server";
+import { after, NextResponse } from "next/server";
 import {
   BAD_DOMAIN,
   domainTakesMail,
   firstTouch,
+  notifySlack,
   sendToSegment,
   str,
 } from "@/app/api/12-days/shared";
@@ -104,5 +105,17 @@ export async function POST(req: Request) {
     ...firstTouch(props),
   };
 
-  return sendToSegment(req, EVENT, properties, props);
+  const res = await sendToSegment(req, EVENT, properties, props);
+  if (res.ok) {
+    after(() =>
+      notifySlack("🛠️ New build-a-thon submission", {
+        name: entry.name,
+        email: entry.email,
+        company: entry.company,
+        github: entry.github,
+        ref,
+      })
+    );
+  }
+  return res;
 }
