@@ -15,6 +15,8 @@
  * page says lives here so those land as data edits, not layout changes.
  */
 
+import { LOCAL_SETUP_PROMPT } from "@/components/v1/sections/Home/localSetupPrompt";
+
 /** Ref tag for links on this page. Each door's sign-up and docs links add `-day-N`. */
 export const REF = "12-days-of-workflows";
 
@@ -349,15 +351,12 @@ export const NEW_TO_INNGEST = {
     label: "Start free in cloud",
     href: `/sign-up?ref=${REF}-new-to-inngest`,
   },
-  /** Pasted into a coding agent (Claude Code, Cursor, …) in their project. */
-  prompt: `Add Inngest to this project and run my first durable workflow locally.
-
-1. Install the Inngest SDK for this project's language and framework.
-2. Create an Inngest client and one function triggered by an event, with at least two step.run() calls.
-3. Serve the function from an /api/inngest endpoint.
-4. Start the Inngest Dev Server with \`npx inngest-cli@latest dev\`, send a test event, and show me the run in the Dev Server UI at http://localhost:8288.
-
-Follow the quick start for this stack: https://www.inngest.com/docs/getting-started`,
+  /**
+   * Pasted into a coding agent (Claude Code, Cursor, …) in their project.
+   * The same prompt as the homepage's "Copy prompt to start locally", so
+   * the two never drift; edit it in Home/localSetupPrompt.ts.
+   */
+  prompt: LOCAL_SETUP_PROMPT,
 } as const;
 
 /**
