@@ -777,7 +777,7 @@ function Door({
               ? `Day ${day.day} is ready. Press and hold to open.`
               : unlocked
               ? `Day ${day.day}: ${day.title}`
-              : `Day ${day.day}, opens ${opensOn} at midnight Eastern`
+              : `Day ${day.day}, ${day.primitive}, opens ${opensOn} at midnight Eastern`
           }
           aria-disabled={!open && !needsHold}
           tabIndex={open ? -1 : 0}
@@ -854,19 +854,26 @@ function Door({
                 transition={{ duration: 1.4, repeat: Infinity }}
               />
             )}
-            <span className="flex items-start justify-between">
-              <span className="flex flex-col">
-                <span className={`${DOOR_LABEL} -mb-2.5`}>Day</span>
+            {/* Day and lock state across the top, then the number with
+                the lesson's concept beside it. */}
+            <span className="flex flex-col">
+              <span className="flex items-start justify-between">
+                <span className={DOOR_LABEL}>Day</span>
+                <span className={`${DOOR_LABEL} flex items-center gap-[7px]`}>
+                  <LockIcon open={unlocked} />
+                  {needsHold ? "Today" : unlocked ? "Open" : "Locked"}
+                </span>
+              </span>
+              <span className="-mt-2.5 flex items-center gap-4">
                 <span
-                  className="font-sans text-[100px] font-black leading-none tracking-[-1px]"
+                  className="shrink-0 font-sans text-[100px] font-black leading-none tracking-[-1px]"
                   style={{ color: face.num }}
                 >
                   {day.day}
                 </span>
-              </span>
-              <span className={`${DOOR_LABEL} flex items-center gap-[7px]`}>
-                <LockIcon open={unlocked} />
-                {needsHold ? "Today" : unlocked ? "Open" : "Locked"}
+                <span className="mt-2 min-w-0 font-sans text-[22px] font-black leading-[1.05] tracking-[-0.01em]">
+                  {day.primitive}
+                </span>
               </span>
             </span>
 
