@@ -256,9 +256,13 @@ export const DAYS: WorkflowDay[] = [
   },
 ];
 
-/** Door front colours from Savannah's design, cycled by day. */
+/**
+ * Door front colours from Savannah's design, cycled by day. The doors are
+ * buttons, so the day number on green is black: white on #0BDD48 is
+ * about 1.8:1 and fails WCAG contrast even for large text.
+ */
 export const DOOR_FACES = [
-  { bg: "#0BDD48", num: "#FFFFFF" },
+  { bg: "#0BDD48", num: "#020202" },
   { bg: "#F7DA10", num: "#020202" },
   { bg: "#F65C4F", num: "#FFFFFF" },
 ];
