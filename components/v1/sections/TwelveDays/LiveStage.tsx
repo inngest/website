@@ -71,7 +71,7 @@ export default function LiveStage() {
 
       {/* The countdown, on the conveyor's sign. On phones it stands alone. */}
       <div
-        className="relative flex items-center justify-center p-6 sm:absolute sm:p-0 sm:[height:var(--h)] sm:[left:var(--l)] sm:[top:var(--t)] sm:[width:var(--w)]"
+        className="relative flex items-center justify-center p-6 sm:absolute sm:p-0 sm:[container-type:size] sm:[height:var(--h)] sm:[left:var(--l)] sm:[top:var(--t)] sm:[width:var(--w)]"
         style={
           {
             "--l": `${SIGN.left}%`,
@@ -84,7 +84,7 @@ export default function LiveStage() {
         <div
           role="timer"
           aria-live="off"
-          className="flex w-full flex-col items-center justify-center gap-3 rounded-[20px] border-[#020202] bg-white px-4 py-6 text-center sm:h-full sm:gap-[clamp(4px,0.9vw,12px)] sm:!border-0 sm:bg-transparent sm:py-3"
+          className="flex w-full flex-col items-center justify-center gap-3 rounded-[20px] border-[#020202] bg-white px-4 py-6 text-center sm:h-full sm:gap-[2.5cqw] sm:!border-0 sm:bg-transparent sm:py-3"
           style={{
             borderTopWidth: 1.5,
             borderLeftWidth: 1.5,
@@ -94,31 +94,31 @@ export default function LiveStage() {
           }}
         >
           {left !== null && left <= 0 ? (
-            <p className="font-sans text-[clamp(20px,2.4vw,30px)] font-black leading-[1.1]">
+            <p className="font-sans text-[20px] font-black leading-[1.1] sm:text-[7cqw]">
               {copy.starting}
             </p>
           ) : (
             <>
-              <p className="font-v1Label text-[13px] sm:text-[clamp(11px,1.3vw,17px)]">
+              <p className="font-v1Label text-[13px] sm:text-[4.6cqw]">
                 {copy.lead}
               </p>
-              <div className="flex items-start justify-center gap-[clamp(10px,2vw,28px)]">
+              <div className="flex items-start justify-center gap-[clamp(10px,2vw,28px)] sm:gap-[6cqw]">
                 {(["day", "hour", "minute"] as const).map((unit) => {
                   const n = parts ? parts[unit] : null;
                   const [one, many] = copy.units[unit];
                   return (
                     <div key={unit} className="flex flex-col items-center">
-                      <span className="font-sans text-[44px] font-black tabular-nums leading-[0.9] tracking-[-0.02em] sm:text-[clamp(32px,5.4vw,72px)]">
+                      <span className="font-sans text-[44px] font-black tabular-nums leading-[0.9] tracking-[-0.02em] sm:text-[19cqw]">
                         {n === null ? "–" : n}
                       </span>
-                      <span className="font-v1Label text-[12px] sm:text-[clamp(10px,1.2vw,15px)]">
+                      <span className="font-v1Label text-[12px] sm:text-[3.8cqw]">
                         {n === 1 ? one : many}
                       </span>
                     </div>
                   );
                 })}
               </div>
-              <p className="font-v1Label text-[13px] sm:text-[clamp(11px,1.3vw,17px)]">
+              <p className="font-v1Label text-[13px] sm:text-[4.6cqw]">
                 {copy.tail}
               </p>
             </>
