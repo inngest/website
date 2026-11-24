@@ -56,18 +56,21 @@ const Banner: React.FC<Props> = ({ href, children, className, target, rel }) => 
   </a>
 );
 
+/**
+ * 12 Days of Workflows finale, December 24–29: sends people to register
+ * for the CodeTV livestream (Dec 29, 10am PT) on the campaign page.
+ * Merge on December 24; swap or remove it after the stream.
+ */
 export default function AnnouncementBanner() {
   return (
-    <Banner
-      href="https://www.youtube.com/watch?v=pui1mW9sexM&ref=site-banner"
-      target="_blank"
-      rel="noopener noreferrer"
-    >
+    <Banner href="/12-days-of-workflows?ref=site-banner#register">
       <span className="inline-flex items-center gap-1.5">
-        <span className="font-normal underline underline-offset-2">
-          Watch our CodeTV episode on YouTube!
-        </span>
         <span aria-hidden="true">📺</span>
+        <span className="font-normal underline underline-offset-2">
+          12 Days of Workflows finale: live on CodeTV, Dec 29 at 10am PT.
+          Register free
+        </span>
+        <span aria-hidden="true">→</span>
       </span>
     </Banner>
   );
