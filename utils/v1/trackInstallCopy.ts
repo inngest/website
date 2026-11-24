@@ -14,7 +14,8 @@ export type InstallCtaPlacement =
   | "homepage_dx"
   | "long_run_hero"
   | "sf_long_run_hero"
-  | "nyc_long_run_hero";
+  | "nyc_long_run_hero"
+  | "twelve_days_calendar";
 
 export const INSTALL_CTA_EVENT = "npm_install_copy";
 

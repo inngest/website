@@ -15,12 +15,17 @@ export default function ResourceCard({ post }: { post: PostCard }) {
       : post.type === "REPORT"
       ? "Read report"
       : "Read article";
+  // Cards whose `redirect` points off-site (e.g. a podcast episode) open in a
+  // new tab. rel="noopener" only: no nofollow (keep the link's search value)
+  // and no noreferrer (keep inngest.com visible in the destination's analytics).
+  const isExternal = /^https?:\/\//.test(post.href ?? "");
   return (
     // TODO(blog-migration): all cards are currently BLOG posts routed to
     // /blog/[slug]. Add per-type routing once REPORT/VIDEO/DEMO content
     // sources exist.
     <Link
       {...refLinkProps(post.href ?? `/blog/${post.slug}`)}
+      {...(isExternal ? { target: "_blank", rel: "noopener" } : {})}
       className="block h-full rounded-lg"
     >
       {/* Black gradient frame + cursor spotlight / lift / tilt hover —
