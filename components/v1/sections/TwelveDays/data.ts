@@ -15,7 +15,7 @@
  * page says lives here so those land as data edits, not layout changes.
  */
 
-import { LOCAL_SETUP_PROMPT } from "@/components/v1/sections/Home/localSetupPrompt";
+import { TWELVE_DAYS_SETUP_PROMPT } from "./setupPrompt";
 
 /** Ref tag for links on this page. Each door's sign-up and docs links add `-day-N`. */
 export const REF = "12-days-of-workflows";
@@ -357,10 +357,10 @@ export const NEW_TO_INNGEST = {
   },
   /**
    * Pasted into a coding agent (Claude Code, Cursor, …) in their project.
-   * The same prompt as the homepage's "Copy prompt to start locally", so
-   * the two never drift; edit it in Home/localSetupPrompt.ts.
+   * Clones the course repo, installs it and runs Day 01. Edit it in
+   * ./setupPrompt.ts (mirrors docs/setup-prompt.md in the course repo).
    */
-  prompt: LOCAL_SETUP_PROMPT,
+  prompt: TWELVE_DAYS_SETUP_PROMPT,
 } as const;
 
 /**
@@ -377,7 +377,7 @@ export const DAY_ZERO = {
   body: "Get Inngest running locally before the first door opens, so Day 1 is all lesson and no setup.",
   steps: {
     prompt:
-      "Paste the prompt into your coding agent. It adds Inngest to your project and runs your first durable workflow locally.",
+      "Paste the prompt into your coding agent. It clones the course repo, installs it and runs Day 1 locally.",
     repo: "Grab the course repo. Every lesson's code is there, with how to run it.",
     cloud:
       "Start free in cloud when you're ready to deploy. You'll need a free account to win a prize.",
