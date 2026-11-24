@@ -59,7 +59,7 @@ const Banner: React.FC<Props> = ({ href, children, className, target, rel }) => 
 // 12 Days of Workflows banner (Nov 23 – Dec 7) — BRAND-139
 export default function AnnouncementBanner() {
   return (
-    <Banner href="/12-days-of-workflows?ref=site-banner#twelve-days-email">
+    <Banner href="/12-days-of-workflows?ref=site-banner#calendar">
       <span className="inline-flex flex-wrap items-center justify-center gap-x-1.5">
         <span className="font-semibold">
           12 Days of Workflows starts December 7.
