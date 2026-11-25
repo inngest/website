@@ -37,7 +37,7 @@ A tree sorted by time raises an obvious worry: if you always take the leftmost n
 
 A job that can't run yet, held back by a concurrency or throttle limit, isn't dropped. It gets pushed back to a later point in the tree and picked up on a later pass. 
 
-Two systems split this work, and it's worth pulling them apart because they get conflated. A run is one execution of your function, and it's made of steps. The queue owns timing: when a run happens, and the durability of that scheduling. The **state store** owns the run's data, the memoized result of every step, so a retry never repeats work that already finished. It lives as long as the run is active, then archives to ClickHouse when the run ends. Darwin calls it "the firmware of state." The executor reads both to rebuild a run: the queue says when, the state store says what's happened so far. A queue item itself is mostly a bag of identifiers pointing at the rest.
+Two systems split this work, and it's worth pulling them apart because they get conflated. A run is one execution of your function, and it's made of steps. The queue owns timing: when a run happens, and the durability of that scheduling. The **[state store](/blog/our-migration-to-scylladb?ref=blog-the-queue-is-the-easy-part)** owns the run's data, the memoized result of every step, so a retry never repeats work that already finished. It lives as long as the run is active, then archives to ClickHouse when the run ends. Darwin calls it "the firmware of state." The executor reads both to rebuild a run: the queue says when, the state store says what's happened so far. A queue item itself is mostly a bag of identifiers pointing at the rest.
 
 ```go
 // a queue item — the identifiers that let the

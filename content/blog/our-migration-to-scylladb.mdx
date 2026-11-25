@@ -1,0 +1,49 @@
+---
+tags:
+  [
+    "Engineering",
+    "Durable Execution",
+    "Queues & Flow Control",
+  ]
+heading: "Our migration to ScyllaDB"
+subtitle: "We moved our state store from MemoryDB to ScyllaDB. There's a lot to say about why and how—this is first in a series of posts where we really get into it."
+showSubtitle: true
+image: /assets/blog/our-migration-to-scylladb/featured-image.png
+date: "2026-11-25"
+author:
+  - Muzammil Abdul Rehman
+  - Riadh Daghmoura
+category: engineering
+---
+
+If you've read our [FoundationDB series](/blog/migration-to-foundationdb-part-1?ref=blog-our-migration-to-scylladb), you know the queue team is moving Inngest's queue onto FoundationDB. If you haven't read it yet, it's worth your time.
+
+Meanwhile, the state store has already moved.
+
+Today, the state of every in-flight function run lives in [ScyllaDB](https://www.scylladb.com/), in our own data centers. AWS MemoryDB doesn't hold run state anymore. No customer changed a line of code or a setting, and no run lost its state on the way.
+
+## What's the state store?
+
+Every Inngest function run has a memory. When a [step](/docs/durable-execution/primitives/step-run?ref=blog-our-migration-to-scylladb) finishes, its output has to live somewhere the next step can read it. When a run [sleeps](/docs/durable-execution/primitives/step-sleep?ref=blog-our-migration-to-scylladb) for three days, [waits for an event](/docs/durable-execution/primitives/step-waitforevent?ref=blog-our-migration-to-scylladb), or [retries](/docs/durable-execution/guides-and-advanced/error-handling/retries?ref=blog-our-migration-to-scylladb) after a crash, everything it has done so far has to survive. That place is the state store.
+
+The queue decides *when* your code runs. The state store remembers *what it has already done*. Both are on the critical path of every step of every run.
+
+![Your functions talk to the Inngest Executor. The queue decides when a step runs. Run state used to live in AWS MemoryDB; it now lives in ScyllaDB in our data centers.](/assets/blog/our-migration-to-scylladb/state-store.png)
+
+## Why move at all?
+
+For years the state store ran on a sharded AWS MemoryDB cluster. It's Redis-compatible and fast, and it served us well. The problem was that memory was the unit of capacity. Every byte of in-flight state had to sit in RAM, so more traffic meant more shards. Adding a shard took hours to provision, and then slot rebalancing had to finish before it helped. And we paid for the memory whether we used it or not.
+
+Our workload doesn't make this easier. It's write-heavy and delete-heavy: almost everything we write is deleted soon after. Most runs finish in seconds, but some sleep for days or months. We wanted something durable, that scales horizontally, and that our own team could run. We weren't looking for the best database in the world, just a way off MemoryDB. We eventually settled on ScyllaDB.
+
+## Coming up
+
+Over the next few weeks we'll go through it in detail:
+
+1. **We moved Inngest's state store to ScyllaDB.** Why we left MemoryDB.
+2. **Ten databases, one workload.** Valkey, Garnet, ScyllaDB, Aerospike, FoundationDB, TiKV, YugabyteDB and others, tested against our workload.
+3. **Garnet 1.0: what we learned running it.** What worked, what broke, and why we moved on.
+4. **Giving up serializability in the state store.** How we moved the guarantees that needed Redis's Lua scripts into the queue.
+5. **Moving state between data centers without downtime.** Dual writes, cutovers, and moving runs as they're written to.
+6. **How we used Inngest to migrate Inngest.** Backfilling millions of runs with our own product.
+7. **Running ScyllaDB in production for a delete-heavy workload.** Tombstones, compaction and repairs.
