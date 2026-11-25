@@ -25,7 +25,7 @@ We needed to improve this quickly, but the state store was tightly coupled with 
 
 Our Redis cluster was both read- and write-heavy. Scaling writes with more shards helped for a while, but it didn't address the read pressure at all. Executors repeatedly fetched event data and step inputs/outputs they had already read earlier in the same run, which meant Redis was serving a large number of redundant reads.
 
-What we really needed was to change the access pattern. Not because Redis reads are slow (they are extremely fast), but because reducing the total number of operations would both lower pressure on the cluster and give us more flexibility in the storage backend we might use in the future.
+What we really needed was to change the access pattern. Not because Redis reads are slow (they are extremely fast), but because reducing the total number of operations would both lower pressure on the cluster and give us more flexibility in the [storage backend we might use in the future](/blog/our-migration-to-scylladb?ref=blog-redis-stateful-caching).
 
 **Key Insight:** Although run state as a whole is mutable, many of the highest-read pieces of that state are immutable once written. In particular, triggering events and step inputs/outputs do not change, which made aggressive caching possible without complex cache invalidation.
 
