@@ -23,6 +23,9 @@ export function useLearnFilters(posts: PostCard[]) {
     const q = search.trim().toLowerCase();
     return posts
       .filter((p) => {
+        // Search-only posts stay off the default grid (and type/topic
+        // filters) until the query matches them.
+        if (p.searchOnly && !q) return false;
         if (resourceTypes.length > 0 && !resourceTypes.includes(p.type))
           return false;
         if (topics.length > 0 && !topics.some((t) => p.tags.includes(t))) return false;

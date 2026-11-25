@@ -8,13 +8,14 @@ import { refLinkProps } from "@/utils/v1/ref";
 
 export default function ResourceCard({ post }: { post: PostCard }) {
   const ctaLabel =
-    post.type === "VIDEO"
+    post.cta ??
+    (post.type === "VIDEO"
       ? "Watch video"
       : post.type === "DEMO"
       ? "View demo"
       : post.type === "REPORT"
       ? "Read report"
-      : "Read article";
+      : "Read article");
   // Cards whose `redirect` points off-site (e.g. a podcast episode) open in a
   // new tab. rel="noopener" only: no nofollow (keep the link's search value)
   // and no noreferrer (keep inngest.com visible in the destination's analytics).

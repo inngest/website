@@ -56,6 +56,8 @@ export default async function BlogIndex() {
         tags,
         image: p.image ? String(p.image) : null,
         href: p.redirect ? String(p.redirect) : undefined,
+        cta: p.cta ? String(p.cta) : undefined,
+        searchOnly: p.searchOnly === true,
         prettyDate: formatMDY(dateISO ?? undefined),
       };
     })
