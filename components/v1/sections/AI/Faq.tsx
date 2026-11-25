@@ -165,7 +165,9 @@ function FaqRow({ faq, refTag }: { faq: Faq; refTag: string }) {
         </>
       )}
     >
-      <p className="text-pretty text-v1-body-sm">{faq.answer}</p>
+      <p className="whitespace-pre-line text-pretty text-v1-body-sm">
+        {faq.answer}
+      </p>
       {faq.link && (
         <Link
           href={appendRef(faq.link.href, refTag)}
