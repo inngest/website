@@ -26,6 +26,10 @@ export type BlogPost = {
   focus?: boolean;
   /** Hero CTA label on /blog when this post is `focus` (default: "Read article") */
   focusCta?: string;
+  /** Card CTA on /blog (default follows the resource type, e.g. "Read article") */
+  cta?: string;
+  // Stays at its URL, but the /blog grid only shows it when search matches.
+  searchOnly?: boolean;
   // When hidden, the post will be available at the URL, but not in the blog
   // index, related cards, RSS, blog.txt, or the .md mirror
   hide?: boolean;
