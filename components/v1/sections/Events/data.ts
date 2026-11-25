@@ -203,6 +203,19 @@ export const UPCOMING: EventItem[] = [
     image: "/assets/v1/events/the-ai-conference-2026.png",
     imagePosition: "left center",
   },
+  {
+    id: "sf-5k-founders-running-club",
+    title: "5K Run with Inngest x Founders Running Club",
+    date: "Saturday, November 14, 2026 · 9:30–11:30 AM PST",
+    startsAt: "2026-11-14T09:30:00-08:00",
+    endsAt: "2026-11-14T11:30:00-08:00",
+    location: "SAN FRANCISCO, CA",
+    topics: ["Meetups"],
+    excerpt:
+      "An easy, all-levels 5K from the Palace of Fine Arts to Marina Green Field, then free coffee, pastries, and Inngest swag on us.",
+    href: "https://luma.com/sywu8x2z",
+    image: "/assets/v1/sf-long-run/sf-run.png",
+  },
 ];
 
 const CODETV_HACKATHON: EventItem = {
@@ -459,6 +472,19 @@ export const ALL_EVENTS: EventItem[] = sortEventsByDate([
       "Coffee and conversation at Corgi Café for people building agents and workflows — a free campaign drink and Inngest swag, part of Build for the Lonng Run.",
     href: "https://luma.com/inngest-2gu5",
     image: "/assets/v1/sf-long-run/corgi-cup.png",
+  },
+  {
+    id: "sf-5k-founders-running-club",
+    title: "5K Run with Inngest x Founders Running Club",
+    date: "Saturday, November 14, 2026 · 9:30–11:30 AM PST",
+    startsAt: "2026-11-14T09:30:00-08:00",
+    endsAt: "2026-11-14T11:30:00-08:00",
+    location: "SAN FRANCISCO, CA",
+    topics: ["Meetups"],
+    excerpt:
+      "An easy, all-levels 5K from the Palace of Fine Arts to Marina Green Field, then free coffee, pastries, and Inngest swag on us.",
+    href: "https://luma.com/sywu8x2z",
+    image: "/assets/v1/sf-long-run/sf-run.png",
   },
   CODETV_HACKATHON,
   SF_LONG_RUN,

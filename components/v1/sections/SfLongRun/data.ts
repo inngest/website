@@ -165,10 +165,10 @@ export const SF_CAMPAIGN_CARDS: SfCampaignCard[] = [
   },
   {
     id: "community",
-    title: "The Lonng Run Coffee Club.",
-    body: "Free coffee and a little post-run fuel, 9–11 AM on Saturday, November 14 at Marina Green Field. Out for your morning miles or just passing through? Grab a coffee on us.",
-    detail: "November 14 · Marina Green Field · 9–11 AM",
-    cta: { label: "Register", href: "https://luma.com/inngest-mgvz" },
+    title: "5K with Founders Running Club.",
+    body: "An easy, all-levels 5K with Founders Running Club on Saturday, November 14. We start at the Palace of Fine Arts and finish at Marina Green Field with free coffee, pastries, and Inngest swag.",
+    detail: "November 14 · Palace of Fine Arts · 9:30–11:30 AM",
+    cta: { label: "Register", href: "https://luma.com/sywu8x2z" },
     image: {
       src: "/assets/v1/sf-long-run/sf-run.png",
       alt: "The San Francisco bay, looking toward the Golden Gate Bridge.",
