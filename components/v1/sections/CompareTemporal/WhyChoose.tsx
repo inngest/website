@@ -10,7 +10,7 @@ import { V1_HEADER_CONTENT_MT } from "@/components/v1/sections/shared/sectionShe
  * "Why devs choose Inngest over Temporal" — uses the shared 3-column
  * feature cards (FeatureCardsGrid: elevated surfaces, salmon-flood
  * hover, serialised hand-off) under this section's heading. The lead
- * "Best DX" card is the idle-active highlight; each card carries a
+ * "Any Skill" card is the idle-active highlight; each card carries a
  * line-art icon + title + subtitle tagline + body. Copy is verbatim
  * from the design (incl. "confir" / "memorization").
  *
@@ -47,7 +47,7 @@ const ICON_DIR = "/assets/v1/compare-temporal/why-choose";
 const CARDS: FeatureCard[] = [
   {
     ...CARD_STYLE,
-    label: "Best DX",
+    label: "Any Skill",
     subtitle: "Zero infrastructure to deploy",
     vector: `${ICON_DIR}/no-workers.svg`,
     vectorWidth: 81,
@@ -58,7 +58,7 @@ const CARDS: FeatureCard[] = [
   },
   {
     ...CARD_STYLE,
-    label: "For AI & Non-AI",
+    label: "Any Workflow",
     subtitle: "Built to handle both.",
     vector: `${ICON_DIR}/built-for-ai.svg`,
     vectorWidth: 86,
@@ -69,7 +69,7 @@ const CARDS: FeatureCard[] = [
   },
   {
     ...CARD_STYLE,
-    label: "Deployed Anywhere",
+    label: "Any Runtime",
     subtitle: "TypeScript, Python, Go – or anything with HTTP",
     vector: `${ICON_DIR}/any-runtime.svg`,
     vectorWidth: 81,
