@@ -42,6 +42,8 @@ const BLOG_DIR = path.join(process.cwd(), "content/blog");
 type Scope = {
   path: string;
   heading: string;
+  // Optional document title. The visible H1 stays `heading`.
+  metaTitle?: string;
   subtitle?: string;
   showSubtitle?: boolean;
   author?: string | string[];
@@ -180,8 +182,8 @@ function loadRelated(currentSlug: string): RelatedPost[] {
         fm.date instanceof Date
           ? fm.date.toISOString()
           : typeof fm.date === "string"
-            ? fm.date
-            : null;
+          ? fm.date
+          : null;
       return {
         slug: p.slug,
         title: String(fm.heading),
@@ -264,7 +266,9 @@ export function generateStaticParams(): { slug: string }[] {
     .map((p) => p.slug);
   if (missingHeading.length > 0) {
     throw new Error(
-      `Blog posts missing a "heading" in front matter: ${missingHeading.join(", ")}`
+      `Blog posts missing a "heading" in front matter: ${missingHeading.join(
+        ", "
+      )}`
     );
   }
 
@@ -281,8 +285,11 @@ export async function generateMetadata({
   if (!post) return {};
   const scope = post.data;
   // `absolute` so the root "%s | Inngest" template doesn't append a
-  // second "Inngest" after "… - Inngest Blog".
-  const title = `${scope.heading} - Inngest Blog`;
+  // second "Inngest" after "… - Inngest Blog". `metaTitle` is the
+  // document title as written; otherwise the visible heading is used.
+  const title = scope.metaTitle?.trim()
+    ? scope.metaTitle.trim()
+    : `${scope.heading} - Inngest Blog`;
   const description = scope.subtitle ?? "";
   const url = `${process.env.NEXT_PUBLIC_HOST ?? ""}${scope.path}`;
   // `getFullURL` leaves an already-absolute URL (e.g. a cdn.inngest.com
@@ -350,28 +357,28 @@ export default async function BlogPostPage({
       authors.length > 0
         ? authors.map((name) => ({ "@type": "Person", name }))
         : [
-          {
-            "@type": "Organization",
-            name: "Inngest",
-            url: process.env.NEXT_PUBLIC_HOST,
-          },
-        ],
+            {
+              "@type": "Organization",
+              name: "Inngest",
+              url: process.env.NEXT_PUBLIC_HOST,
+            },
+          ],
   };
 
   const faqStructuredData =
     Array.isArray(scope.faq) && scope.faq.length > 0
       ? {
-        "@context": "https://schema.org",
-        "@type": "FAQPage",
-        mainEntity: scope.faq.map((item) => ({
-          "@type": "Question",
-          name: item.question,
-          acceptedAnswer: {
-            "@type": "Answer",
-            text: item.answer,
-          },
-        })),
-      }
+          "@context": "https://schema.org",
+          "@type": "FAQPage",
+          mainEntity: scope.faq.map((item) => ({
+            "@type": "Question",
+            name: item.question,
+            acceptedAnswer: {
+              "@type": "Answer",
+              text: item.answer,
+            },
+          })),
+        }
       : null;
 
   const body = (
@@ -402,9 +409,7 @@ export default async function BlogPostPage({
             <>
               <BlogHero
                 heading={scope.heading}
-                subtitle={
-                  scope.showSubtitle ? scope.subtitle : undefined
-                }
+                subtitle={scope.showSubtitle ? scope.subtitle : undefined}
                 authors={authors}
                 dateStr={dateStr}
                 readingText={readingText}
@@ -631,7 +636,10 @@ function RelatedContent({ posts }: { posts: RelatedPost[] }) {
                 way — rather than `asChild` — avoids cloneElement/
                 Children.only, so this whole tree can render in a Server
                 Component without the lazy-child RSC failure. */}
-            <Link {...refLinkProps(`/blog/${p.slug}`)} className="block h-full rounded-lg">
+            <Link
+              {...refLinkProps(`/blog/${p.slug}`)}
+              className="block h-full rounded-lg"
+            >
               <SpotlightFrame
                 tilt
                 className="h-full"
