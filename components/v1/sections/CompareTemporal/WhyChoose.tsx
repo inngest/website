@@ -59,7 +59,7 @@ const CARDS: FeatureCard[] = [
   {
     ...CARD_STYLE,
     label: "For AI & Non-AI",
-    subtitle: "Built for how agents actually fail",
+    subtitle: "Built to handle both.",
     vector: `${ICON_DIR}/built-for-ai.svg`,
     vectorWidth: 86,
     vectorHeight: 61, // viewBox 85.98 × 60.75
