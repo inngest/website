@@ -1,0 +1,178 @@
+import { Info, AnnotatedCode, Annotation } from "shared/Docs/mdx";
+
+export const metaTitle = "Quick start | Inngest Agents";
+export const description = "Inngest Agents quick start: create a client, define an agent with a model and a tool, serve it to the Dev Server, and send it a question.";
+
+# Inngest Agents quick start
+
+> Define an agent with a model and a tool, run it on the Dev Server, and follow up on the same conversation.
+
+<Info>
+  Inngest Agents is an Inngest Labs project: early, moving fast, and shaped by your feedback. [What's Labs?](/docs/labs?ref=docs-labs-agents-quick-start)
+</Info>
+
+Build a support agent that looks up orders. Send it a question, see each model call and tool call in the run's trace, then ask a follow-up and see the agent answer with the first question in mind.
+
+## Before you start
+
+You need:
+
+- Node.js 20 or newer.
+- An [Anthropic API key](https://console.anthropic.com/).
+- The Inngest Dev Server 1.52.0 or newer. `npx inngest-cli@latest` is always new enough.
+
+## 1. Install the packages
+
+```bash
+npm install inngest@agents zod @anthropic-ai/sdk
+```
+
+The agent APIs ship on the `agents` tag of the `inngest` package. `inngest@latest` doesn't include `inngest/experimental/agents`.
+
+Set your API key:
+
+```bash
+export ANTHROPIC_API_KEY=sk-ant-...
+```
+
+## 2. Create the client
+
+```typescript {{ title: "inngest/client.ts" }}
+import { Inngest } from "inngest";
+import { inboxMiddleware } from "inngest/experimental";
+import { createAgents } from "inngest/experimental/agents";
+
+export const inngest = new Inngest({
+  id: "support",
+  middleware: [inboxMiddleware()],
+});
+
+export const agents = createAgents(inngest);
+```
+
+`inboxMiddleware()` adds `step.subscribe()`, which agents use to read their inboxes. `createAgents()` returns `agents`, which defines every agent in the app.
+
+## 3. Choose a model
+
+```typescript {{ title: "inngest/models/claude.ts" }}
+import { anthropic } from "inngest/experimental/agents";
+
+export const claude = anthropic({ model: "claude-sonnet-5-5" });
+```
+
+`anthropic()` reads `ANTHROPIC_API_KEY` from the environment. To use another provider, see [Bring your own model](/docs/labs/agents/custom-models?ref=docs-labs-agents-quick-start).
+
+## 4. Add a tool
+
+A tool is a function the model can call. It runs in your app as a durable step.
+
+```typescript {{ title: "inngest/tools/lookupOrder.ts" }}
+import { tool } from "inngest/experimental";
+import { z } from "zod";
+
+export const lookupOrder = tool.step({
+  description: "Look up an order by its ID",
+  input: z.object({ id: z.string() }),
+  run: async ({ id }) => {
+    return { id, status: "shipped", eta: "Friday" };
+  },
+});
+```
+
+The model reads `description` and `input` to decide when to call the tool and what to pass. Input that doesn't match the schema is returned to the model as an error, and `run` doesn't run.
+
+## 5. Define the agent
+
+<AnnotatedCode>
+
+```typescript {{ title: "inngest/agents/support.ts" }}
+import { eventType } from "inngest";
+import { z } from "zod";
+import { agents } from "../client";
+import { claude } from "../models/claude";
+import { lookupOrder } from "../tools/lookupOrder";
+
+export const question = eventType("support/question", {
+  schema: z.object({ customer: z.string(), text: z.string() }),
+});
+
+export const support = agents.agent({
+  id: "support",
+  triggers: [question],
+  thread: "event.data.customer",
+  model: claude,
+  system: "You answer questions about orders. Keep answers short.",
+  tools: { lookupOrder },
+});
+```
+
+<Annotation id="triggers" lines="13" tease="what starts a run" title="Triggers" href="/docs/labs/agents/agents?ref=docs-labs-agents-quick-start#add-triggers" linkText="Agents">
+A `support/question` event starts a run. An agent takes the same triggers as any Inngest function.
+</Annotation>
+
+<Annotation id="thread" lines="14" tease="one thread per customer" title="Thread" href="/docs/labs/agents/threads?ref=docs-labs-agents-quick-start" linkText="Threads">
+Questions from the same customer share one thread, so the model sees the earlier conversation.
+</Annotation>
+
+<Annotation id="model" lines="15-17" tease="no handler needed" title="Model, prompt, and tools" href="/docs/labs/agents/models?ref=docs-labs-agents-quick-start" linkText="Models and the loop">
+With a model and no handler, the agent sends each message to the model and runs its tool calls until it answers.
+</Annotation>
+
+</AnnotatedCode>
+
+## 6. Serve the agent
+
+```typescript {{ title: "inngest/serve.ts" }}
+import { createServer } from "inngest/node";
+import { agents, inngest } from "./client";
+import "./agents/support";
+
+createServer({
+  client: inngest,
+  functions: agents.functions(),
+}).listen(3000);
+```
+
+`agents.functions()` returns every agent you defined, plus the functions that hold their threads. Import each agent file before you call it. You'll see more functions than agents in the Dev Server, because each agent is served as several functions.
+
+Start your app and the Dev Server in two terminals:
+
+```bash
+npx tsx inngest/serve.ts
+```
+
+```bash
+npx inngest-cli@latest dev -u http://localhost:3000/api/inngest
+```
+
+## 7. Ask a question
+
+Send a `support/question` event from the Dev Server's **Send event** button, or from code:
+
+```typescript {{ title: "ask.ts" }}
+import { inngest } from "./inngest/client";
+
+await inngest.send({
+  name: "support/question",
+  data: { customer: "42", text: "Where is order 7?" },
+});
+```
+
+```bash
+npx tsx ask.ts
+```
+
+## 8. Inspect the run
+
+Open the Dev Server at [localhost:8288](http://localhost:8288) and select the run. The trace shows each model call and the `lookupOrder` call as its own step. The run's output is the model's answer.
+
+Now send a follow-up for the same customer, such as `"When will it arrive?"`. The new run is on the same thread, so the model knows which order you mean. If you send the follow-up while the first run is still working, it joins that run's inbox instead of starting a second run.
+
+Stop and restart your app between the two questions. The thread's history is held by Inngest, not by your app, so nothing is lost.
+
+## Next steps
+
+- [Overview](/docs/labs/agents/overview?ref=docs-labs-agents-quick-start) introduces every concept and walks through three complete agents.
+- [Tools](/docs/labs/agents/tools?ref=docs-labs-agents-quick-start) shows how to let the agent act, for example by replying to the customer.
+- [Models and the loop](/docs/labs/agents/models?ref=docs-labs-agents-quick-start) shows how to write a handler that takes over the loop.
+- [Project structure](/docs/labs/agents/structure?ref=docs-labs-agents-quick-start) shows where agents, tools, and models live as your app grows.

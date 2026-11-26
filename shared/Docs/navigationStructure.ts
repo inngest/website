@@ -268,6 +268,12 @@ const sectionReference: (NavGroup | NavLink)[] = [
             className: "font-mono",
           },
           {
+            title: "step.subscribe()",
+            href: tsRef("v4", "functions/step-subscribe"),
+            className: "font-mono",
+            tag: "experimental",
+          },
+          {
             title: "step.sendEvent()",
             href: tsRef("v4", "functions/step-send-event"),
             className: "font-mono",
@@ -509,7 +515,9 @@ function docsRefreshNav(page: DocsRefreshPage): NavGroup | NavLink {
       title: page.title,
       ...(page.openWhenIdle ? { openWhenIdle: true } : {}),
       links: [
-        ...(!hasOverview ? [{ title: "Overview", href: page.href }] : []),
+        ...(!hasOverview && page.href
+          ? [{ title: "Overview", href: page.href }]
+          : []),
         ...page.children.map(docsRefreshNav),
       ],
     };

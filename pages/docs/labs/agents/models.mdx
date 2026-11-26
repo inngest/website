@@ -1,0 +1,247 @@
+import { Info, AnnotatedCode, Annotation } from "shared/Docs/mdx";
+
+export const metaTitle = "Models and the loop | Inngest Agents";
+export const description = "How an Inngest agent calls its model: choose a model, let the agent run the loop, take it over in a handler, change its options, steer what reaches the model, report progress, get typed answers, and replace the loop.";
+
+# Models and the loop
+
+> Give an agent a model and a system prompt, and it runs the loop of model calls and tool calls for you.
+
+<Info>
+  Inngest Agents is an Inngest Labs project: early, moving fast, and shaped by your feedback. [What's Labs?](/docs/labs?ref=docs-labs-agents-models)
+</Info>
+
+The loop is the core of an agent. It sends the thread's history to the model, runs the tools the model asks for, sends back their results, and repeats until the model answers. One model call and the tool calls it asks for make a **turn**. Each model call and each tool call is its own durable step.
+
+## What the loop solves
+
+- **No loop to write or maintain.** A model and a system prompt are enough. The loop calls tools, sends back their results, and stops when the model answers.
+- **No repeated model calls.** Each model call is a step, so a crash or a failed tool call never pays for the same model call twice.
+- **Memory without a database.** The loop saves the model's history to the thread, and the next run starts with it.
+- **Corrections that land mid-task.** New messages reach the model on its next call, instead of waiting for the task to finish.
+- **Limits and cost tracking.** The loop caps turns, summarizes long histories, and reports tokens and cost for every call.
+- **Any provider.** The loop only needs a function that takes a request and returns a reply, so you can [bring your own model](/docs/labs/agents/custom-models?ref=docs-labs-agents-models).
+
+## How the loop works
+
+On each batch of messages from the inbox, the loop:
+
+1. **Builds the request.** It sends the system prompt, the thread's history, the new messages, and the definitions of every tool the agent has.
+2. **Calls the model, as a step.** Rate limits and server errors are retried inside the step, after the provider's `retry-after` when it sends one.
+3. **Runs the tools the model asked for, each as a step.** Calls from one reply run at the same time by default, and their results go back to the model in the order it called them. A tool that throws or returns an error gives the model an error result to react to.
+4. **Adds new messages.** Before the next model call, it takes anything new from the inbox, filtered by your `steer` function if you set one.
+5. **Repeats until the model answers.** The loop stops when the model replies without asking for a tool, calls `wait`, reaches `maxTurns`, or matches a `stop` condition.
+6. **Saves the history.** The model's history is saved to the thread. When it nears the model's context window, the start of the conversation is summarized, and the summary is reused on later calls.
+
+## Choose a model
+
+`anthropic()` returns a model for the Anthropic API. Define it once and import it in each agent.
+
+```typescript {{ title: "inngest/models/claude.ts" }}
+import { anthropic } from "inngest/experimental/agents";
+
+export const claude = anthropic({ model: "claude-sonnet-5-5" });
+
+export const quick = claude.with({ effort: "low", maxTokens: 500 });
+```
+
+- `anthropic()` reads `ANTHROPIC_API_KEY` from the environment unless you pass `apiKey`. It needs the `@anthropic-ai/sdk` package.
+- `.with()` returns a variant of the model with other options, for one agent or one call.
+- `anthropic()` knows its prices, so every loop result reports cost in dollars as well as tokens.
+
+To use another provider, see [Bring your own model](/docs/labs/agents/custom-models?ref=docs-labs-agents-models).
+
+`model` can also be a function of the run that returns a model. It's called once when each run starts:
+
+```typescript
+model: ({ event }) => {
+  return event.name === "ci/run.failed" ? claude.with({ effort: "high" }) : claude;
+},
+```
+
+## Let the agent run the loop
+
+With a `model` and no handler, the agent runs the loop on every batch of messages in its inbox. The model's last answer is the run's output. The examples on this page use the pull request events from [Threads](/docs/labs/agents/threads?ref=docs-labs-agents-models#name-a-thread).
+
+```typescript {{ title: "inngest/agents/prHelper.ts" }}
+import { agents } from "../client";
+import { ciFailed, prComment, prOpened } from "../events";
+import { claude } from "../models/claude";
+import { comment } from "../tools/comment";
+import { readLog } from "../tools/readLog";
+
+export const prHelper = agents.agent({
+  id: "pr-helper",
+  triggers: [prOpened, prComment, ciFailed],
+  thread: "event.data.pr",
+  model: claude,
+  system: "You help with pull requests on acme/web. Post your answers with comment.",
+  tools: { readLog, comment },
+});
+```
+
+The run's output isn't sent anywhere. To reach a person, give the model a tool that does, such as `comment` here, or [write a handler](#write-a-handler).
+
+The loop keeps the history on the [thread](/docs/labs/agents/threads?ref=docs-labs-agents-models#what-a-thread-keeps), adds new [inbox](/docs/labs/agents/inboxes?ref=docs-labs-agents-models) messages before each model call, and stops after 40 turns by default. See [How the loop works](#how-the-loop-works). Every model agent also has the [agent tools](/docs/labs/agents/agent-teams?ref=docs-labs-agents-models#let-the-model-start-agents) for working with other agents, and a `wait` tool that ends its turn until the next message arrives.
+
+## Write a handler
+
+To do something with each answer, write a handler and call `loop()` yourself. `loop` is in the handler's argument when the agent has a `model`.
+
+<AnnotatedCode>
+
+```typescript {{ title: "inngest/agents/prHelper.ts" }}
+import { agents } from "../client";
+import { ciFailed, prComment, prOpened } from "../events";
+import { gh } from "../lib/github";
+import { claude } from "../models/claude";
+import { readLog } from "../tools/readLog";
+
+export const prHelper = agents.agent(
+  {
+    id: "pr-helper",
+    triggers: [prOpened, prComment, ciFailed],
+    thread: "event.data.pr",
+    model: claude,
+    system: "You help with pull requests on acme/web.",
+    tools: { readLog },
+  },
+  async ({ inbox, loop, step, thread }) => {
+    for await (const batch of inbox.batches({ max: 20 })) {
+      const result = await loop(batch);
+
+      if (result.end === "maxTurns") {
+        continue;
+      }
+
+      await step.run("comment", async () => {
+        return await gh.comment(Number(thread.key), result.text);
+      });
+    }
+  },
+);
+```
+
+<Annotation id="loop" lines="18" tease="runs the turns" title="loop(batch)" href="/docs/labs/agents/reference?ref=docs-labs-agents-models#the-loop" linkText="Reference: the loop">
+Runs turns until the model answers, and returns the answer in `result.text`.
+</Annotation>
+
+<Annotation id="end" lines="20" tease="why it stopped" title="result.end" href="/docs/labs/agents/reference?ref=docs-labs-agents-models#the-result" linkText="Reference: the result">
+`"done"` when the model answered, `"maxTurns"` when it ran out of turns, `"stop"` when a `stop` condition matched, `"budget"` when a `budget` check ended it, and `"noToolCall"` when the model kept answering without a tool call under `toolChoice: "required"`.
+</Annotation>
+
+<Annotation id="comment" lines="24-26" tease="once, even on retry" title="Your code, in a step" href="/docs/durable-execution/primitives/step-run?ref=docs-labs-agents-models" linkText="step.run">
+The comment is posted once, even if the run retries.
+</Annotation>
+
+</AnnotatedCode>
+
+The result also has `usage` (tokens and dollars), `toolCalls`, `turns`, and `unread`, the messages the loop took from the inbox but didn't send to the model. See [The result](/docs/labs/agents/reference?ref=docs-labs-agents-models#the-result).
+
+## Change the loop's options
+
+Set `loop` on the definition to change the options of the agent's loop:
+
+```typescript
+loop: { maxTurns: 10 },
+```
+
+| Option | What it does |
+| --- | --- |
+| `maxTurns` | The most model calls the loop makes. Default `40`. |
+| `toolChoice` | `"auto"`, `"required"`, `"none"`, or `{ tool: "name" }`. Use `"required"` for a model that tends to answer in chat instead of calling tools. |
+| `stop` | Ends the loop when a condition matches, such as `hasToolCall("finish")` to stop after a `finish` tool runs. |
+| `budget` | Runs before each model call. Return a reason to end the loop, for example when a cost cap is reached. |
+| `parallelTools` | Runs the tool calls of one reply at the same time. |
+
+In a handler, pass options to one call, `loop(batch, { maxTurns: 10 })`, or derive a loop with `loop.with({ maxTurns: 10 })`. The [loop reference](/docs/labs/agents/reference?ref=docs-labs-agents-models#the-loop) lists every option.
+
+## Choose which messages reach the model
+
+`steer` receives the new messages the loop took from the inbox before a model call, and returns the ones to send. The rest come back in `result.unread`. Here, CI passing doesn't interrupt the model:
+
+```typescript
+const result = await loop(batch, {
+  steer: (messages) => {
+    return messages.filter((message) => !ciPassed.is(message));
+  },
+});
+```
+
+## Report progress after each turn
+
+`onTurn` runs after each turn, with the turn's number, text, tool calls, and usage.
+
+```typescript
+await loop(batch, {
+  onTurn: async ({ turn, toolCalls }) => {
+    await step.run("progress", async () => {
+      return await gh.comment(Number(thread.key), `Turn ${turn}: ${toolCalls.length} tool calls`);
+    });
+  },
+});
+```
+
+`onTurn` doesn't hold up the next model call. See [onTurn](/docs/labs/agents/reference?ref=docs-labs-agents-models#on-turn) for every field.
+
+## Call a model directly
+
+A model is also a function you can call once, outside the loop. Wrap the call in a step so a retry doesn't repeat it. Pass `output` with a schema to get a typed value back.
+
+<AnnotatedCode>
+
+```typescript
+const verdict = await step.run("check-safety", async () => {
+  return await claude({
+    prompt: `Is this pull request safe to merge?\n${diff}`,
+    output: z.object({ safe: z.boolean(), reason: z.string() }),
+  });
+});
+
+if (!verdict.output.safe) {
+  await step.run("comment", async () => {
+    return await gh.comment(Number(thread.key), verdict.output.reason);
+  });
+}
+```
+
+<Annotation id="output" lines="4" tease="a schema in, a value out" title="output" href="/docs/labs/agents/reference?ref=docs-labs-agents-models#models" linkText="Reference: models">
+`verdict.output` is typed from the schema. Without `output`, the answer is in `verdict.text`.
+</Annotation>
+
+</AnnotatedCode>
+
+## Replace the loop
+
+To run your own loop, set `loop` to a function. It receives a batch of messages and returns a [result](/docs/labs/agents/reference?ref=docs-labs-agents-models#the-result). The agent's triggers, thread, and inbox work as before.
+
+```typescript {{ title: "inngest/agents/echo.ts" }}
+import { agents } from "../client";
+
+export const echo = agents.agent({
+  id: "echo",
+  loop: async (batch) => {
+    const text = typeof batch === "string" ? batch : JSON.stringify(batch);
+
+    return {
+      text,
+      end: "done",
+      unread: [],
+      turns: 0,
+      noToolCallTurns: 0,
+      history: [],
+      usage: { input: 0, output: 0 },
+      toolCalls: [],
+    };
+  },
+});
+```
+
+With no handler, the agent returns `text` as the run's output.
+
+## Next steps
+
+- [Tools](/docs/labs/agents/tools?ref=docs-labs-agents-models) gives the model ways to act.
+- [Bring your own model](/docs/labs/agents/custom-models?ref=docs-labs-agents-models) connects OpenAI, a local model, or any other provider.
+- [Reliability](/docs/labs/agents/reliability?ref=docs-labs-agents-models) covers model errors and limits.
+- [Agents reference](/docs/labs/agents/reference?ref=docs-labs-agents-models#the-loop) lists every loop option and result field.

@@ -52,7 +52,7 @@ const accountCreated = eventType("app/account.created", {
 
 ### Return value
 
-`eventType()` returns an `EventType` object. The only use case for directly interacting with this object is calling its `create` method when sending events.
+`eventType()` returns an `EventType` object. Call its `create` method when sending events, and its `is` method to [narrow a value](#narrowing-with-is) to this event type.
 
 ### As a trigger
 
@@ -155,7 +155,7 @@ await step.sendEvent("notify-order",
 
 ### Multiple event types
 
-When a function has multiple event triggers, use `event.name` to narrow the type:
+When a function has multiple event triggers, use `event.is()` to narrow the type. It takes one event type or an array. Checking `event.name` works too.
 
 ```ts
 const userCreated = eventType("app/user.created", {
@@ -172,16 +172,30 @@ inngest.createFunction(
     triggers: [userCreated, userUpdated],
   },
   async ({ event }) => {
-    if (event.name === "app/user.created") {
+    if (event.is(userCreated)) {
       // event.data typed as { userId: string }
     }
 
-    if (event.name === "app/user.updated") {
+    if (event.is(userUpdated)) {
       // event.data typed as { userId: string; changes: Record<string, unknown> }
     }
   }
 );
 ```
+
+### Narrowing with `is()`
+
+`eventType().is(value)` narrows any value to this event type, such as JSON from another service or a [`step.subscribe()`](/docs/reference/typescript/v4/functions/step-subscribe) message.
+
+```ts
+const value: unknown = JSON.parse(body);
+
+if (userCreated.is(value)) {
+  // value.data typed as { userId: string }
+}
+```
+
+`is()` checks for an exact event name. It doesn't validate `data` against the schema.
 
 ### Wildcards
 
@@ -200,6 +214,8 @@ inngest.createFunction(
   }
 );
 ```
+
+`is()` doesn't take a wildcard event type; it checks for an exact event name.
 
 <Callout>
   Wildcard event types cannot define a schema, since the matched events may have different payload shapes.
