@@ -10,7 +10,7 @@ import { V1_HEADER_CONTENT_MT } from "@/components/v1/sections/shared/sectionShe
  * "Why devs choose Inngest over Temporal" — uses the shared 3-column
  * feature cards (FeatureCardsGrid: elevated surfaces, salmon-flood
  * hover, serialised hand-off) under this section's heading. The lead
- * "No workers" card is the idle-active highlight; each card carries a
+ * "Best DX" card is the idle-active highlight; each card carries a
  * line-art icon + title + subtitle tagline + body. Copy is verbatim
  * from the design (incl. "confir" / "memorization").
  *
@@ -26,7 +26,8 @@ const CARD_STYLE = {
   cardClassName:
     "justify-start gap-10 sm:gap-10 px-5 pt-6 pb-16 sm:px-5 sm:pt-6 sm:pb-16",
   titleBlockClassName: "gap-[20px]",
-  titleClassName: "text-v1-heading-md-cap lg:text-v1-heading-md-cap",
+  titleClassName:
+    "whitespace-normal text-v1-heading-md-cap lg:text-v1-heading-md-cap",
   subtitleClassName: "text-v1-body-lg leading-[1.5] text-v1-frost",
   bodyClassName: "text-v1-body-lg lg:text-v1-body-lg",
   bodyWrap: true,
@@ -46,7 +47,7 @@ const ICON_DIR = "/assets/v1/compare-temporal/why-choose";
 const CARDS: FeatureCard[] = [
   {
     ...CARD_STYLE,
-    label: "No workers",
+    label: "Best DX",
     subtitle: "Zero infrastructure to deploy",
     vector: `${ICON_DIR}/no-workers.svg`,
     vectorWidth: 81,
@@ -57,7 +58,7 @@ const CARDS: FeatureCard[] = [
   },
   {
     ...CARD_STYLE,
-    label: "Built for AI",
+    label: "For AI & Non-AI",
     subtitle: "Built for how agents actually fail",
     vector: `${ICON_DIR}/built-for-ai.svg`,
     vectorWidth: 86,
@@ -68,7 +69,7 @@ const CARDS: FeatureCard[] = [
   },
   {
     ...CARD_STYLE,
-    label: "Any runtime",
+    label: "Deployed Anywhere",
     subtitle: "TypeScript, Python, Go – or anything with HTTP",
     vector: `${ICON_DIR}/any-runtime.svg`,
     vectorWidth: 81,
